@@ -224,17 +224,16 @@
             showPopup(Reconnect, {}, eventToHTMLElement(e), onReconnect)
           }}
         />
-      {:else}
-        <Button
-          icon={IconShare}
-          kind={'transparent'}
-          size={'medium'}
-          showTooltip={{ label: telegram.string.Share }}
-          on:click={async () => {
-            selectable = !selectable
-          }}
-        />
       {/if}
+      <Button
+        icon={IconShare}
+        kind={'transparent'}
+        size={'medium'}
+        showTooltip={{ label: telegram.string.Share }}
+        on:click={async () => {
+          selectable = !selectable
+        }}
+      />
     </svelte:fragment>
 
     <Scroller bottomStart autoscroll>
@@ -243,36 +242,34 @@
       {/if}
     </Scroller>
 
-    {#if integration !== undefined && !integration.disabled}
-      <div class="popupPanel-body__main-header ref-input" class:selectable>
-        {#if selectable}
-          <div class="flex-between">
-            <span>{selected.size} messages selected</span>
-            <div class="flex">
-              <div>
-                <Button label={telegram.string.Cancel} size={'medium'} on:click={clear} />
-              </div>
-              <div class="ml-3">
-                <Button
-                  label={telegram.string.PublishSelected}
-                  size={'medium'}
-                  kind={'primary'}
-                  disabled={!selected.size}
-                  on:click={share}
-                />
-              </div>
+    <div class="popupPanel-body__main-header ref-input" class:selectable>
+      {#if selectable}
+        <div class="flex-between">
+          <span>{selected.size} messages selected</span>
+          <div class="flex">
+            <div>
+              <Button label={telegram.string.Cancel} size={'medium'} on:click={clear} />
+            </div>
+            <div class="ml-3">
+              <Button
+                label={telegram.string.PublishSelected}
+                size={'medium'}
+                kind={'primary'}
+                disabled={!selected.size}
+                on:click={share}
+              />
             </div>
           </div>
-        {:else}
-          <AttachmentRefInput
-            space={telegram.space.Telegram}
-            _class={telegram.class.NewMessage}
-            {objectId}
-            on:message={onMessage}
-          />
-        {/if}
-      </div>
-    {/if}
+        </div>
+      {:else if integration !== undefined && !integration.disabled}
+        <AttachmentRefInput
+          space={telegram.space.Telegram}
+          _class={telegram.class.NewMessage}
+          {objectId}
+          on:message={onMessage}
+        />
+      {/if}
+    </div>
   </Panel>
 {/if}
 
@@ -281,7 +278,7 @@
     padding: 0.5rem 0 1.5rem;
 
     &.selectable {
-      padding: 1rem 0;
+      padding: 1rem;
       color: var(--theme-caption-color);
       border-top: 1px solid var(--divider-color);
     }

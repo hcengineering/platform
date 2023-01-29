@@ -157,7 +157,9 @@ export function createModel (builder: Builder): void {
       txClass: core.class.TxCreateDoc,
       component: gmail.activity.TxSharedCreate,
       label: gmail.string.SharedMessages,
-      display: 'content'
+      display: 'content',
+      editable: true,
+      hideOnRemove: true
     },
     gmail.ids.TxSharedCreate
   )

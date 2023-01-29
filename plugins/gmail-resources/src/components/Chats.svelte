@@ -121,28 +121,26 @@
   }
 </script>
 
-{#if enabled}
-  <div class="popupPanel-body__main-header bottom-divider p-2">
+<div class="popupPanel-body__main-header bottom-divider p-2">
+  <div class="flex-between">
     {#if selectable}
-      <div class="flex-between">
-        <span><b>{selected.size}</b> <Label label={gmail.string.MessagesSelected} /></span>
-        <div class="flex">
-          <div>
-            <Button label={gmail.string.Cancel} size={'small'} on:click={clear} />
-          </div>
-          <div class="ml-3">
-            <Button
-              label={gmail.string.PublishSelected}
-              size={'small'}
-              kind={'primary'}
-              disabled={!selected.size}
-              on:click={share}
-            />
-          </div>
+      <span><b>{selected.size}</b> <Label label={gmail.string.MessagesSelected} /></span>
+      <div class="flex">
+        <div>
+          <Button label={gmail.string.Cancel} size={'small'} on:click={clear} />
+        </div>
+        <div class="ml-3">
+          <Button
+            label={gmail.string.PublishSelected}
+            size={'small'}
+            kind={'primary'}
+            disabled={!selected.size}
+            on:click={share}
+          />
         </div>
       </div>
     {:else}
-      <div class="flex-between">
+      {#if enabled}
         <Button
           label={gmail.string.CreateMessage}
           size={'small'}
@@ -151,18 +149,18 @@
             newMessage = true
           }}
         />
-        <Button
-          icon={IconShare}
-          kind={'transparent'}
-          showTooltip={{ label: gmail.string.ShareMessages }}
-          on:click={async () => {
-            selectable = !selectable
-          }}
-        />
-      </div>
+      {/if}
+      <Button
+        icon={IconShare}
+        kind={'transparent'}
+        showTooltip={{ label: gmail.string.ShareMessages }}
+        on:click={async () => {
+          selectable = !selectable
+        }}
+      />
     {/if}
   </div>
-{/if}
+</div>
 <Scroller>
   <div class="popupPanel-body__main-content py-4 clear-mins flex-no-shrink">
     {#if messages && messages.length > 0}
