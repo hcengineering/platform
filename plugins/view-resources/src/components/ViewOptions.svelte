@@ -60,7 +60,7 @@
 <div class="antiCard">
   <div class="antiCard-group grid">
     {#each groups as group, i}
-      <span class="label"><Label label={i === 0 ? view.string.Grouping : view.string.Than} /></span>
+      <span class="label"><Label label={i === 0 ? view.string.Grouping : view.string.Then} /></span>
       <div class="value grouping">
         <DropdownLabelsIntl
           label={view.string.Grouping}
