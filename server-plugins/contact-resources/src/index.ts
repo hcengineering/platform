@@ -77,7 +77,7 @@ export function personHTMLPresenter (doc: Doc, control: TriggerControl): string 
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
   return `<a href="${front}/${workbenchId}/${control.workspace.name}/${contactId}#${view.component.EditDoc}|${
     person._id
-  }|${person._class}">${formatName(person.name)}</a>`
+  }|${person._class}|content">${formatName(person.name)}</a>`
 }
 
 /**
@@ -94,7 +94,7 @@ export function personTextPresenter (doc: Doc): string {
 export function organizationHTMLPresenter (doc: Doc, control: TriggerControl): string {
   const organization = doc as Organization
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbenchId}/${control.workspace.name}/${contactId}#${view.component.EditDoc}|${organization._id}|${organization._class}">${organization.name}</a>`
+  return `<a href="${front}/${workbenchId}/${control.workspace.name}/${contactId}#${view.component.EditDoc}|${organization._id}|${organization._class}|content">${organization.name}</a>`
 }
 
 /**

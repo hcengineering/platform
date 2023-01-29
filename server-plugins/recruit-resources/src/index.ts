@@ -39,7 +39,7 @@ import { workbenchId } from '@hcengineering/workbench'
 export async function vacancyHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const vacancy = doc as Vacancy
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbenchId}/${control.workspace.name}/${recruitId}/${vacancy._id}/#${recruit.component.EditVacancy}|${vacancy._id}|${vacancy._class}">${vacancy.name}</a>`
+  return `<a href="${front}/${workbenchId}/${control.workspace.name}/${recruitId}/${vacancy._id}/#${recruit.component.EditVacancy}|${vacancy._id}|${vacancy._class}|content">${vacancy.name}</a>`
 }
 
 /**
@@ -56,7 +56,7 @@ export async function vacancyTextPresenter (doc: Doc): Promise<string> {
 export async function applicationHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const applicant = doc as Applicant
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbenchId}/${control.workspace.name}/${recruitId}/${applicant.space}/#${view.component.EditDoc}|${applicant._id}|${applicant._class}">APP-${applicant.number}</a>`
+  return `<a href="${front}/${workbenchId}/${control.workspace.name}/${recruitId}/${applicant.space}/#${view.component.EditDoc}|${applicant._id}|${applicant._class}|content">APP-${applicant.number}</a>`
 }
 
 /**

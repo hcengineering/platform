@@ -37,7 +37,7 @@ import { addAssigneeNotification } from '@hcengineering/server-task-resources'
 export async function leadHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const lead = doc as Lead
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbenchId}/${control.workspace.name}/${leadId}/${lead.space}/#${view.component.EditDoc}|${lead._id}|${lead._class}">${lead.title}</a>`
+  return `<a href="${front}/${workbenchId}/${control.workspace.name}/${leadId}/${lead.space}/#${view.component.EditDoc}|${lead._id}|${lead._class}|content">${lead.title}</a>`
 }
 
 /**
