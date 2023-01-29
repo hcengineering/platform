@@ -151,7 +151,13 @@
       class="select-text cover-channel"
       class:show
       class:copied={label === plugin.string.Copied}
-      data-tooltip={lTraslate}>{value}</span
+      class:cursor-pointer={openable}
+      data-tooltip={lTraslate}
+      on:click={() => {
+        if (openable) {
+          dispatch('update', 'open')
+        }
+      }}>{value}</span
     >
     <Button
       focusIndex={3}

@@ -41,15 +41,18 @@
 
   const client = getClient()
   const notificationClient = NotificationClientImpl.getClient()
+  const channelQuery = createQuery()
 
-  client
-    .findOne(contact.class.Channel, {
+  $: channelQuery.query(
+    contact.class.Channel,
+    {
       attachedTo: _id,
       provider: contact.channelProvider.Telegram
-    })
-    .then((res) => {
-      channel = res
-    })
+    },
+    (res) => {
+      channel = res[0]
+    }
+  )
 
   const query = createQuery()
   $: _id &&

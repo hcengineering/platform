@@ -29,12 +29,6 @@
 
   const copyLink = (): void => {
     copyTextToClipboard(value.value)
-    // .then(() => {
-    //   console.log('Copied!', value.value)
-    // })
-    // .catch((err) => {
-    //   console.log('Something went wrong', err)
-    // })
     closeTooltip()
   }
 </script>

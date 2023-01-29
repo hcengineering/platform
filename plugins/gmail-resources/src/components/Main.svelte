@@ -14,23 +14,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, Doc, Class } from '@hcengineering/core'
   import contact, { Channel, formatName } from '@hcengineering/contact'
+  import { Class, Doc, Ref } from '@hcengineering/core'
   import { SharedMessage } from '@hcengineering/gmail'
-  import NewMessage from './NewMessage.svelte'
-  import FullMessage from './FullMessage.svelte'
-  import Chats from './Chats.svelte'
-  import { createQuery, getClient } from '@hcengineering/presentation'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
-  import { Panel, Icon, Label, Button, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Button, eventToHTMLElement, Icon, Label, Panel, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import gmail from '../plugin'
+  import Chats from './Chats.svelte'
   import Connect from './Connect.svelte'
+  import FullMessage from './FullMessage.svelte'
+  import NewMessage from './NewMessage.svelte'
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
 
-  // export let object: Contact
   let object: any
   let newMessage: boolean = false
   let currentMessage: SharedMessage | undefined = undefined
@@ -38,17 +37,19 @@
   const notificationClient = NotificationClientImpl.getClient()
   let enabled: boolean
 
-  const client = getClient()
+  const channelQuery = createQuery()
   const dispatch = createEventDispatcher()
 
-  client
-    .findOne(contact.class.Channel, {
+  $: channelQuery.query(
+    contact.class.Channel,
+    {
       attachedTo: _id,
       provider: contact.channelProvider.Email
-    })
-    .then((res) => {
-      channel = res
-    })
+    },
+    (res) => {
+      channel = res[0]
+    }
+  )
 
   const query = createQuery()
   $: _id &&
