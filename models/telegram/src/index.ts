@@ -123,7 +123,9 @@ export function createModel (builder: Builder): void {
       txClass: core.class.TxCreateDoc,
       component: telegram.activity.TxSharedCreate,
       label: telegram.string.SharedMessages,
-      display: 'content'
+      display: 'content',
+      editable: true,
+      hideOnRemove: true
     },
     telegram.ids.TxSharedCreate
   )
