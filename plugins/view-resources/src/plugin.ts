@@ -61,7 +61,7 @@ export default mergeIds(viewId, view, {
     Grouping: '' as IntlString,
     Ordering: '' as IntlString,
     Manual: '' as IntlString,
-    Than: '' as IntlString,
+    Then: '' as IntlString,
     ShowPreviewOnClick: '' as IntlString
   }
 })
