@@ -107,6 +107,7 @@ services:
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin  
       - REKONI_URL=http://rekoni:4005
+      - FRONT_URL=http://localhost:8083
   rekoni:
     image: hardcoreeng/rekoni-service
     restart: on-failure
