@@ -41,8 +41,9 @@
     margin: 0.3rem auto;
     padding: 0.25rem 0.75rem;
     width: fit-content;
-    color: var(--theme-content-accent-color);
-    background-color: var(--theme-menu-divider);
+    font-weight: 500;
+    color: var(--caption-color);
+    background-color: var(--divider-color);
     border-radius: 1.25rem;
     user-select: text;
   }

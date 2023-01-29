@@ -32,7 +32,8 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="message-row-bg" class:selectable class:selected-row={selected}>
+<div class="message-row-bg" class:selectable class:selected-row={selected} data-type={message.incoming ? 'in' : 'out'}>
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     class="message-row"
     class:selectable
@@ -133,19 +134,19 @@
     max-width: 66%;
     width: fit-content;
     background-color: var(--incoming-msg);
-    border-radius: 0.75rem 0.75rem 0.75rem 0.25rem;
+    border-radius: 0.75rem 0.75rem 0.75rem 0.125rem;
     overflow-wrap: anywhere;
     user-select: text;
     cursor: default;
 
     &.outcoming {
       background-color: var(--outcoming-msg);
-      border-radius: 0.75rem 0.75rem 0.25rem 0.75rem;
+      border-radius: 0.75rem 0.75rem 0.125rem 0.75rem;
     }
     .time {
       align-self: flex-end;
       margin-left: auto;
-      color: var(--theme-content-trans-color);
+      color: var(--dark-color);
       font-size: 0.75rem;
       font-style: italic;
       white-space: nowrap;
