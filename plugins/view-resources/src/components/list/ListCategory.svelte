@@ -62,8 +62,8 @@
   const autoFoldLimit = 20
   const defaultLimit = 20
   const singleCategoryLimit = 200
-  $: initialLimit = singleCat ? singleCategoryLimit : defaultLimit
-  $: limit = !lastLevel ? items.length : initialLimit
+  $: initialLimit = !lastLevel ? items.length : singleCat ? singleCategoryLimit : defaultLimit
+  $: limit = initialLimit
 
   let collapsed = true
 
