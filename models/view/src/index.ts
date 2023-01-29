@@ -46,6 +46,7 @@ import type {
   ListItemPresenter,
   ObjectEditor,
   ObjectEditorHeader,
+  ObjectEditorFooter,
   ObjectFactory,
   ObjectPresenter,
   ObjectTitle,
@@ -170,6 +171,11 @@ export class TObjectEditor extends TClass implements ObjectEditor {
 
 @Mixin(view.mixin.ObjectEditorHeader, core.class.Class)
 export class TObjectEditorHeader extends TClass implements ObjectEditorHeader {
+  editor!: AnyComponent
+}
+
+@Mixin(view.mixin.ObjectEditorFooter, core.class.Class)
+export class TObjectEditorFooter extends TClass implements ObjectEditorFooter {
   editor!: AnyComponent
 }
 
@@ -325,6 +331,7 @@ export function createModel (builder: Builder): void {
     TObjectFactory,
     TObjectTitle,
     TObjectEditorHeader,
+    TObjectEditorFooter,
     TSpaceHeader,
     TSpaceName,
     TIgnoreActions,

@@ -21,8 +21,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Vacancy } from '@hcengineering/recruit'
   import { FullDescriptionBox } from '@hcengineering/text-editor'
-  import tracker from '@hcengineering/tracker'
-  import { Button, Component, EditBox, Grid, IconMoreH, showPopup } from '@hcengineering/ui'
+  import { Button, EditBox, Grid, IconMoreH, showPopup } from '@hcengineering/ui'
   import { ClassAttributeBar, ContextMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
@@ -65,7 +64,6 @@
   <Panel
     icon={clazz.icon}
     title={object.name}
-    subtitle={object.description}
     isHeader={true}
     isAside={true}
     {object}
@@ -73,6 +71,11 @@
       dispatch('close')
     }}
   >
+    <svelte:fragment slot="subtitle">
+      <a href={object.description} target="_blank" rel="noreferrer noopener">
+        {object.description}
+      </a>
+    </svelte:fragment>
     <svelte:fragment slot="attributes" let:direction={dir}>
       {#if dir === 'column'}
         <div class="ac-subtitle">
@@ -129,9 +132,6 @@
         space={object.space}
         attachments={object.attachments ?? 0}
       />
-      <!-- <MembersBox label={recruit.string.Members} space={object} /> -->
-
-      <Component is={tracker.component.RelatedIssuesSection} props={{ object, label: recruit.string.RelatedIssues }} />
     </Grid>
   </Panel>
 {/if}

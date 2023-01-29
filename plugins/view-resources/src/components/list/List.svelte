@@ -48,8 +48,8 @@
   $: orderBy = viewOptions.orderBy
 
   const docsQuery = createQuery()
-  $: lookup = options?.lookup ?? buildConfigLookup(client.getHierarchy(), _class, config)
-  $: resultOptions = { lookup, ...options, sort: { [orderBy[0]]: orderBy[1] } }
+  $: lookup = buildConfigLookup(client.getHierarchy(), _class, config, options?.lookup)
+  $: resultOptions = { ...options, lookup, sort: { [orderBy[0]]: orderBy[1] } }
 
   let resultQuery: DocumentQuery<Doc> = query
   $: getResultQuery(query, viewOptionsConfig, viewOptions).then((p) => {

@@ -134,8 +134,8 @@ export class TTask extends TAttachedDoc implements Task {
 
   declare rank: string
 
-  @Prop(Collection(task.class.TodoItem), task.string.Todos)
-    todoItems!: number
+  // @Prop(Collection(task.class.TodoItem), task.string.Todos)
+  //   todoItems!: number
 
   @Prop(Collection(tags.class.TagReference, task.string.TaskLabels), task.string.TaskLabels)
     labels!: number

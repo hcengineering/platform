@@ -171,6 +171,14 @@ export interface ObjectEditor extends Class<Doc> {
 /**
  * @public
  */
+export interface ObjectEditorFooter extends Class<Doc> {
+  editor: AnyComponent
+  props?: Record<string, any>
+}
+
+/**
+ * @public
+ */
 export interface SpaceHeader extends Class<Doc> {
   header: AnyComponent
 }
@@ -523,6 +531,7 @@ const view = plugin(viewId, {
     ObjectEditor: '' as Ref<Mixin<ObjectEditor>>,
     ObjectPresenter: '' as Ref<Mixin<ObjectPresenter>>,
     ObjectEditorHeader: '' as Ref<Mixin<ObjectEditorHeader>>,
+    ObjectEditorFooter: '' as Ref<Mixin<ObjectEditorFooter>>,
     ObjectValidator: '' as Ref<Mixin<ObjectValidator>>,
     ObjectFactory: '' as Ref<Mixin<ObjectFactory>>,
     ObjectTitle: '' as Ref<Mixin<ObjectTitle>>,

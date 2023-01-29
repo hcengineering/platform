@@ -15,6 +15,7 @@
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
   import contact, { Channel, Contact, formatName } from '@hcengineering/contact'
+  import { Hierarchy } from '@hcengineering/core'
   import { Avatar, createQuery } from '@hcengineering/presentation'
   import { Component, Label, showPanel } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -42,11 +43,12 @@
     <Avatar avatar={object.avatar} size={'large'} icon={contact.icon.Company} />
   </div>
   {#if object}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
       class="name lines-limit-2"
       class:over-underline={!disabled}
       on:click={() => {
-        if (!disabled) showPanel(view.component.EditDoc, object._id, object._class, 'content')
+        if (!disabled) showPanel(view.component.EditDoc, object._id, Hierarchy.mixinOrClass(object), 'content')
       }}
     >
       {formatName(object.name)}

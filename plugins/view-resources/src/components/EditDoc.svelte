@@ -35,8 +35,8 @@
   import { categorizeFields, getCollectionCounter, getFiltredKeys } from '../utils'
   import ActionContext from './ActionContext.svelte'
   import DocAttributeBar from './DocAttributeBar.svelte'
-  import UpDownNavigator from './UpDownNavigator.svelte'
   import IconMixin from './icons/Mixin.svelte'
+  import UpDownNavigator from './UpDownNavigator.svelte'
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
@@ -147,19 +147,32 @@
     pinned?: boolean
   }
 
-  async function getEditor (_class: Ref<Class<Doc>>): Promise<MixinEditor> {
+  function getEditor (_class: Ref<Class<Doc>>): MixinEditor {
     const clazz = hierarchy.getClass(_class)
     const editorMixin = hierarchy.as(clazz, view.mixin.ObjectEditor)
     if (editorMixin?.editor == null && clazz.extends != null) return getEditor(clazz.extends)
     return { editor: editorMixin.editor, pinned: editorMixin?.pinned }
   }
 
+  function getEditorFooter (_class: Ref<Class<Doc>>): { footer: AnyComponent; props?: Record<string, any> } | undefined {
+    const clazz = hierarchy.getClass(_class)
+    const editorMixin = hierarchy.as(clazz, view.mixin.ObjectEditorFooter)
+    if (editorMixin?.editor == null && clazz.extends != null) return getEditorFooter(clazz.extends)
+    if (editorMixin.editor) {
+      return { footer: editorMixin.editor, props: editorMixin?.props }
+    }
+    return undefined
+  }
+
   let mainEditor: MixinEditor | undefined
+
+  $: editorFooter = getEditorFooter(_class)
+
   $: getEditorOrDefault(realObjectClass, showAllMixins, _id)
 
-  async function getEditorOrDefault (_class: Ref<Class<Doc>>, showAllMixins: boolean, _id: Ref<Doc>): Promise<void> {
+  function getEditorOrDefault (_class: Ref<Class<Doc>>, showAllMixins: boolean, _id: Ref<Doc>): void {
     parentClass = getParentClass(_class)
-    mainEditor = await getEditor(_class)
+    mainEditor = getEditor(_class)
     updateKeys(showAllMixins)
   }
 
@@ -370,5 +383,8 @@
         </div>
       {/if}
     {/each}
+    {#if editorFooter}
+      <Component is={editorFooter.footer} props={{ object, _class, ...editorFooter.props }} />
+    {/if}
   </Panel>
 {/if}

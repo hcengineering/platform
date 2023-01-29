@@ -185,7 +185,7 @@
       <UpDownNavigator element={issue} />
     </svelte:fragment>
     <svelte:fragment slot="header">
-      <span class="fs-title">
+      <span class="fs-title select-text-i">
         {#if issueId}{issueId}{/if}
       </span>
     </svelte:fragment>
@@ -265,7 +265,7 @@
       </div>
     {/if}
 
-    <span slot="actions-label">
+    <span slot="actions-label" class="select-text">
       {#if issueId}{issueId}{/if}
     </span>
     <svelte:fragment slot="actions">

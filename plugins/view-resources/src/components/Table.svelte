@@ -57,7 +57,7 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $: lookup = options?.lookup ?? buildConfigLookup(hierarchy, _class, config)
+  $: lookup = buildConfigLookup(hierarchy, _class, config, options?.lookup)
 
   let _sortKey = prefferedSorting
   $: if (!userSorting) {
@@ -109,7 +109,7 @@
         dispatch('content', objects)
         loading = loading === 1 ? 0 : -1
       },
-      { sort, limit: 200, lookup, ...options }
+      { sort, limit: 200, ...options, lookup }
     )
     if (update && ++loading > 0) {
       objects = []

@@ -17,6 +17,7 @@
   import chunter from '@hcengineering/chunter'
   import contact, { Channel, formatName, Person } from '@hcengineering/contact'
   import { ChannelsEditor } from '@hcengineering/contact-resources'
+  import { Hierarchy } from '@hcengineering/core'
   import { Avatar, createQuery, getClient } from '@hcengineering/presentation'
   import { Component, Label, showPanel } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -47,12 +48,13 @@
   <div class="label uppercase"><Label label={recruit.string.Talent} /></div>
   <Avatar avatar={candidate?.avatar} size={'large'} />
   {#if candidate}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
       class="name lines-limit-2"
       class:over-underline={!disabled}
       on:click={() => {
         if (!disabled && candidate) {
-          showPanel(view.component.EditDoc, candidate._id, candidate._class, 'content')
+          showPanel(view.component.EditDoc, candidate._id, Hierarchy.mixinOrClass(candidate), 'content')
         }
       }}
     >
