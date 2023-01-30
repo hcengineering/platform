@@ -79,6 +79,15 @@ export interface SettingsCategory extends Doc {
 /**
  * @public
  */
+export interface InviteSettings extends Doc {
+  expirationTime: number
+  emailMask: string
+  limit: number
+}
+
+/**
+ * @public
+ */
 export const settingId = 'setting' as Plugin
 
 export default plugin(settingId, {
@@ -93,7 +102,8 @@ export default plugin(settingId, {
     Privacy: '' as Ref<Doc>,
     Terms: '' as Ref<Doc>,
     ClassSetting: '' as Ref<Doc>,
-    Owners: '' as Ref<Doc>
+    Owners: '' as Ref<Doc>,
+    InviteSettings: '' as Ref<Doc>
   },
   mixin: {
     Editable: '' as Ref<Mixin<Editable>>,
@@ -103,7 +113,8 @@ export default plugin(settingId, {
     SettingsCategory: '' as Ref<Class<SettingsCategory>>,
     WorkspaceSettingCategory: '' as Ref<Class<SettingsCategory>>,
     Integration: '' as Ref<Class<Integration>>,
-    IntegrationType: '' as Ref<Class<IntegrationType>>
+    IntegrationType: '' as Ref<Class<IntegrationType>>,
+    InviteSettings: '' as Ref<Class<InviteSettings>>
   },
   component: {
     Settings: '' as AnyComponent,

@@ -22,12 +22,10 @@
     fetchMetadataLocalStorage,
     getCurrentLocation,
     navigate,
-    setMetadataLocalStorage,
-    showPopup
+    setMetadataLocalStorage
   } from '@hcengineering/ui'
   import login from '../plugin'
   import { workbenchId } from '@hcengineering/workbench'
-  import InviteLink from './InviteLink.svelte'
 
   const fields = [
     {
@@ -59,9 +57,7 @@
         setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
         setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
         setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
-        showPopup(InviteLink, {}, undefined, () => {
-          navigate({ path: [workbenchId, object.workspace] })
-        })
+        navigate({ path: [workbenchId, object.workspace, 'setting', 'setting', 'invites'] })
       }
     }
   }

@@ -45,7 +45,8 @@ export default mergeIds(workbenchId, workbench, {
     OpenPlatformGuide: '' as IntlString,
     AccessWorkspaceSettings: '' as IntlString,
     HowToWorkFaster: '' as IntlString,
-    OpenInNewTab: '' as IntlString
+    OpenInNewTab: '' as IntlString,
+    UseWorkspaceInviteSettings: '' as IntlString
   },
   component: {
     SpacePanel: '' as AnyComponent

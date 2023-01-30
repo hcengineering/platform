@@ -13,20 +13,58 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Timestamp } from '@hcengineering/core'
-  import { copyTextToClipboard } from '@hcengineering/presentation'
-  import { Button, EditBox, getCurrentLocation, Label, Loading, locationToUrl, ticker } from '@hcengineering/ui'
-  import { getInviteLink } from '../utils'
-  import { createEventDispatcher, onMount } from 'svelte'
-  import login from '../plugin'
-  import InviteWorkspace from './icons/InviteWorkspace.svelte'
+  import { AccountRole, getCurrentAccount, Timestamp } from '@hcengineering/core'
+  import { copyTextToClipboard, getClient, LiveQuery } from '@hcengineering/presentation'
+  import {
+    Button,
+    EditBox,
+    getCurrentLocation,
+    Label,
+    Loading,
+    locationToUrl,
+    MiniToggle,
+    ticker
+  } from '@hcengineering/ui'
+  import { getInviteLink } from '@hcengineering/login-resources/src/utils'
+  import { createEventDispatcher } from 'svelte'
+  import login from '@hcengineering/login-resources/src/plugin'
+  import InviteWorkspace from '@hcengineering/login-resources/src/components/icons/InviteWorkspace.svelte'
   import { loginId } from '@hcengineering/login'
+  import workbench from '../plugin'
+  import setting, { InviteSettings } from '@hcengineering/setting'
+  import preference from '@hcengineering/preference'
+
 
   const dispatch = createEventDispatcher()
 
-  async function getLink (expHours: number): Promise<void> {
+  const query = new LiveQuery()
+  const client = getClient()
+
+  $: query.query(setting.class.InviteSettings, {}, (set) => {
+    if (set !== undefined && set.length > 0) {
+      expHours = set[0].expirationTime
+      emailMask = set[0].emailMask
+      limit = set[0].limit
+    }
+  })
+
+
+  async function setInviteSettings () {
+    const newSettings: InviteSettings = {
+      expirationTime: expHours,
+      emailMask: emailMask,
+      limit: limit
+    }
+    await client.createDoc(
+      setting.class.InviteSettings,
+      preference.space.Preference,
+      newSettings
+    )
+  }
+
+  async function getLink (expHours: number, mask: string, limit: number): Promise<void> {
     loading = true
-    const inviteId = await getInviteLink(expHours)
+    const inviteId = await getInviteLink(expHours, mask, limit)
     const loc = getCurrentLocation()
     loc.path[0] = loginId
     loc.path[1] = 'join'
@@ -57,19 +95,11 @@
     copiedTime = Date.now()
   }
 
-  let expHours = 48
-
-  function _onchange (ev: Event) {
-    const value = (ev.target as HTMLInputElement).valueAsNumber
-    if (Number.isFinite(value)) {
-      expHours = value
-      getLink(expHours)
-    }
-  }
-
-  onMount(() => {
-    getLink(expHours)
-  })
+  let expHours: number | undefined = undefined
+  let emailMask: string = ''
+  let limit: number | undefined = undefined
+  let useDefault: boolean | undefined = true
+  const isOwnerOrMaintainer: boolean = getCurrentAccount().role > AccountRole.Maintainer
 
   let link: string | undefined
   let loading = false
@@ -80,13 +110,32 @@
     <Label label={login.string.InviteDescription} />
     <InviteWorkspace size="large" />
   </div>
+    <MiniToggle bind:on={useDefault} label={workbench.string.UseWorkspaceInviteSettings} disabled={!isOwnerOrMaintainer} />
   <div class="mt-2">
     <EditBox
       label={login.string.LinkValidHours}
-      value={expHours}
+      bind:value={expHours}
       format={'number'}
       on:keypress={() => (link = undefined)}
-      on:change={_onchange}
+      disabled={useDefault || !isOwnerOrMaintainer}
+    />
+  </div>
+  <div class="mt-2">
+    <EditBox
+      label={login.string.EmailMask}
+      bind:value={emailMask}
+      format={'string'}
+      on:keypress={() => (link = undefined)}
+      disabled={useDefault || !isOwnerOrMaintainer}
+    />
+  </div>
+  <div class="mt-2">
+    <EditBox
+      label={login.string.InviteLimit}
+      bind:value={limit}
+      format={'number'}
+      on:keypress={() => (link = undefined)}
+      disabled={useDefault || !isOwnerOrMaintainer}
     />
   </div>
   {#if loading}
@@ -112,7 +161,7 @@
         size={'medium'}
         kind={'primary'}
         on:click={() => {
-          getLink(expHours)
+          getLink(expHours, emailMask, limit)
         }}
       />
     </div>

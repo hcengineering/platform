@@ -18,11 +18,12 @@
 
   export let label: IntlString | undefined = undefined
   export let on: boolean = false
+  export let disabled: boolean = false
 </script>
 
 <div class="flex-row-center">
   <label class="mini-toggle">
-    <input class="chBox" type="checkbox" bind:checked={on} on:change />
+    <input class="chBox" type="checkbox" bind:checked={on} on:change disabled={disabled}/>
     <span class="toggle-switch" />
   </label>
   {#if label}

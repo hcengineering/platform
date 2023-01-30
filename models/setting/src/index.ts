@@ -24,6 +24,7 @@ import {
   Handler,
   Integration,
   IntegrationType,
+  InviteSettings,
   settingId,
   SettingsCategory,
   UserMixin
@@ -78,6 +79,13 @@ export class TEditable extends TClass implements Editable {
 @Mixin(setting.mixin.UserMixin, core.class.Class)
 export class TUserMixin extends TClass implements UserMixin {}
 
+@Model(setting.class.InviteSettings, core.class.Doc, DOMAIN_SETTING)
+export class TInviteSettings extends TDoc implements InviteSettings {
+  expirationTime!: number
+  emailMask!: string
+  limit!: number
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TIntegration,
@@ -85,7 +93,8 @@ export function createModel (builder: Builder): void {
     TSettingsCategory,
     TWorkspaceSettingCategory,
     TEditable,
-    TUserMixin
+    TUserMixin,
+    TInviteSettings
   )
 
   builder.createDoc(
@@ -199,6 +208,20 @@ export function createModel (builder: Builder): void {
       order: 4600
     },
     setting.ids.EnumSetting
+  )
+  builder.createDoc(
+    setting.class.WorkspaceSettingCategory,
+    core.space.Model,
+    {
+      name: 'invites',
+      label: setting.string.InviteSettings,
+      icon: setting.icon.Setting,
+      component: setting.component.InviteSetting,
+      group: 'settings-editor',
+      secured: true,
+      order: 4700
+    },
+    setting.ids.InviteSettings
   )
   // Currently remove Support item from settings
   // builder.createDoc(
