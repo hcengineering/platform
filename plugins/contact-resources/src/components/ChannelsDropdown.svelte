@@ -33,6 +33,7 @@
     showPopup
   } from '@hcengineering/ui'
   import { ViewAction } from '@hcengineering/view'
+  import { invokeAction } from '@hcengineering/view-resources'
   import { createEventDispatcher, tick } from 'svelte'
   import { getChannelProviders } from '../utils'
   import ChannelEditor from './ChannelEditor.svelte'
@@ -58,6 +59,7 @@
     presenter?: AnyComponent
     action?: ViewAction
     placeholder: IntlString
+    channel: AttachedData<Channel> | Channel
     provider: Ref<ChannelProvider>
     integration: boolean
     notification: boolean
@@ -67,7 +69,7 @@
     item: AttachedData<Channel>,
     map: Map<Ref<ChannelProvider>, ChannelProvider>,
     lastViews: Map<Ref<Doc>, Timestamp>
-  ): any | undefined {
+  ): Item | undefined {
     const provider = map.get(item.provider)
     if (provider) {
       const notification = (item as Channel)._id !== undefined ? isNew(item as Channel, lastViews) : false
@@ -79,6 +81,7 @@
         action: provider.action,
         placeholder: provider.placeholder,
         provider: provider._id,
+        channel: item,
         notification,
         integration: provider.integrationType !== undefined ? integrations.has(provider.integrationType) : false
       }
@@ -98,7 +101,7 @@
       displayItems = []
       return
     }
-    const result = []
+    const result: Item[] = []
     const map = await getChannelProviders()
     if (Array.isArray(value)) {
       for (const item of value) {
@@ -186,7 +189,7 @@
           value: item.value,
           placeholder: item.placeholder,
           editable,
-          openable: item.presenter ?? false
+          openable: item.presenter ?? item.action ?? false
         },
         el,
         (result) => {
@@ -201,7 +204,14 @@
           }
           if (result === undefined && item.value === '') displayItems = dropItem(n)
           opened = undefined
-          if (result === 'open') dispatch('open', item)
+          if (result === 'open') {
+            if (item.action) {
+              const doc = item.channel as Channel
+              invokeAction(doc, result, item.action)
+            } else {
+              dispatch('open', item)
+            }
+          }
         },
         (result) => {
           if (result != null) {
@@ -214,6 +224,21 @@
           }
         }
       )
+    }
+  }
+
+  const updateTooltip = (result: CustomEvent, item: Item, i: number): void => {
+    if (result.detail === 'open') {
+      closeTooltip()
+      if (item.action) {
+        const doc = item.channel as Channel
+        invokeAction(doc, result, item.action)
+      } else {
+        dispatch('open', item)
+      }
+    } else if (result.detail === 'edit') {
+      closeTooltip()
+      editChannel(btns[i], i, item)
     }
   }
 </script>
@@ -249,46 +274,26 @@
           value: item.value,
           placeholder: item.placeholder,
           editable: editable !== undefined ? false : undefined,
-          openable: item.presenter ?? false
+          openable: item.presenter ?? item.action ?? false
         },
         onUpdate: (result) => {
-          if (result.detail === 'open') {
-            closeTooltip()
-            dispatch('open', item)
-          } else if (result.detail === 'edit') {
-            closeTooltip()
-            editChannel(btns[i], i, item)
-          }
+          updateTooltip(result, item, i)
         }
       }}
     />
   {/each}
   {#if actions.length > 0 && editable}
-    {#if displayItems.length === 0}
-      <Button
-        focusIndex={focusIndex === -1 ? focusIndex : focusIndex + 2 + displayItems.length}
-        id={presentation.string.AddSocialLinks}
-        bind:input={addBtn}
-        icon={contact.icon.SocialEdit}
-        label={presentation.string.AddSocialLinks}
-        notSelected
-        {kind}
-        {size}
-        {shape}
-        on:click={showMenu}
-      />
-    {:else}
-      <Button
-        focusIndex={focusIndex === -1 ? focusIndex : focusIndex + 2 + displayItems.length}
-        id={presentation.string.AddSocialLinks}
-        bind:input={addBtn}
-        icon={contact.icon.SocialEdit}
-        {kind}
-        {size}
-        {shape}
-        showTooltip={{ label: presentation.string.AddSocialLinks }}
-        on:click={showMenu}
-      />
-    {/if}
+    <Button
+      focusIndex={focusIndex === -1 ? focusIndex : focusIndex + 2 + displayItems.length}
+      id={presentation.string.AddSocialLinks}
+      bind:input={addBtn}
+      icon={contact.icon.SocialEdit}
+      label={displayItems.length === 0 ? presentation.string.AddSocialLinks : undefined}
+      {kind}
+      {size}
+      {shape}
+      showTooltip={{ label: presentation.string.AddSocialLinks }}
+      on:click={showMenu}
+    />
   {/if}
 </div>

@@ -107,11 +107,10 @@
   }
 
   function _open (ev: any) {
-    if (ev.detail.presenter !== undefined && Array.isArray(channels)) {
-      const channel = channels[0]
-      if (channel !== undefined && allowOpen) {
+    if (ev.detail.presenter !== undefined) {
+      if (allowOpen) {
         closeTooltip()
-        showPopup(ev.detail.presenter, { _id: channel.attachedTo, _class: channel.attachedToClass }, 'float')
+        showPopup(ev.detail.presenter, { _id: attachedTo, _class: attachedClass }, 'float')
       }
     }
   }
