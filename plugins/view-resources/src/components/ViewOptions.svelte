@@ -1,6 +1,6 @@
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { DropdownLabelsIntl, Label, MiniToggle } from '@hcengineering/ui'
+  import { DropdownIntlItem, DropdownLabelsIntl, Label, MiniToggle } from '@hcengineering/ui'
   import { Viewlet, ViewOptions, ViewOptionsModel } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
@@ -41,19 +41,22 @@
 
   function selectGrouping (value: string, i: number) {
     viewOptions.groupBy[i] = value
-    if (value !== noCategory) {
-      if (i + 1 === viewOptions.groupBy.length) {
-        viewOptions.groupBy[i + 1] = noCategory
-        viewOptions.groupBy = viewOptions.groupBy
-      }
+    if (value === noCategory) {
+      viewOptions.groupBy.length = i
     } else {
       viewOptions.groupBy.length = i + 1
-      viewOptions.groupBy = viewOptions.groupBy
+      viewOptions.groupBy[i + 1] = noCategory
     }
+    viewOptions.groupBy = viewOptions.groupBy
     dispatch('update', {
       key: 'groupBy',
       value: viewOptions.groupBy.length > 1 ? viewOptions.groupBy.filter((p) => p !== noCategory) : viewOptions.groupBy
     })
+  }
+
+  function getItems (groupBy: DropdownIntlItem[], i: number, current: string[]): DropdownIntlItem[] {
+    const notAllowed = current.slice(0, i)
+    return groupBy.filter((p) => !notAllowed.includes(p.id as string))
   }
 </script>
 
@@ -64,7 +67,7 @@
       <div class="value grouping">
         <DropdownLabelsIntl
           label={view.string.Grouping}
-          items={groupBy.filter((p) => !viewOptions.groupBy.includes(p.id) || [group, noCategory].includes(p.id))}
+          items={getItems(groupBy, i, viewOptions.groupBy)}
           selected={group}
           width="10rem"
           justify="left"
