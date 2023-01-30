@@ -480,3 +480,13 @@
     &:focus-within .caption { border-color: var(--primary-edit-border-color); }
   }
 }
+
+// Consecutive messages in Telegram (incomung/outcoming)
+.message-row-bg[data-type="in"] + .message-row-bg[data-type="in"] .message-row .message-container {
+  padding-top: 0;
+  .message { border-radius: 0.125rem 0.75rem 0.75rem 0.125rem; }
+}
+.message-row-bg[data-type="out"] + .message-row-bg[data-type="out"] .message-row .message-container {
+  padding-top: 0;
+  .message.outcoming { border-radius: 0.75rem 0.125rem 0.125rem 0.75rem; }
+}
