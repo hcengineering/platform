@@ -30,7 +30,7 @@ import {
   Persons,
   Status
 } from '@hcengineering/contact'
-import type { Class, Domain, Ref, Timestamp } from '@hcengineering/core'
+import type { Class, Domain, Ref, Timestamp, Obj } from '@hcengineering/core'
 import { DOMAIN_MODEL, IndexKind } from '@hcengineering/core'
 import {
   Builder,
@@ -163,7 +163,7 @@ export class TOrganizations extends TSpace implements Organizations {}
 @UX(contact.string.PersonsFolder, contact.icon.Person)
 export class TPersons extends TSpace implements Persons {}
 
-export function createModel (builder: Builder): void {
+export function createModel (builder: Builder, employeeClass?: new () => Obj): void {
   builder.createModel(
     TAvatarProvider,
     TChannelProvider,
@@ -172,7 +172,7 @@ export function createModel (builder: Builder): void {
     TPersons,
     TOrganization,
     TOrganizations,
-    TEmployee,
+    employeeClass === undefined ? TEmployee : employeeClass,
     TEmployeeAccount,
     TChannel,
     TStatus,
