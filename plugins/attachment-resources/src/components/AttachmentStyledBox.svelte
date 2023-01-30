@@ -261,6 +261,9 @@
       }
     }
   }
+  export function isEmptyContent (): boolean {
+    return refInput.isEmptyContent()
+  }
 </script>
 
 <svelte:window on:paste={(ev) => (fakeAttach === 'normal' ? pasteAction(ev) : undefined)} />

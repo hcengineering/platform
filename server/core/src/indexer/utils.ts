@@ -28,6 +28,7 @@ import core, {
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   DOMAIN_TX,
+  FullTextSearchContext,
   generateId,
   Hierarchy,
   IndexStageState,
@@ -123,24 +124,23 @@ export function isClassIndexable (hierarchy: Hierarchy, c: Ref<Class<Doc>>): boo
     }
   }
 
-  if (attrs.length === 0) {
+  let result = true
+
+  if (attrs.length === 0 && !(getFullTextContext(hierarchy, c)?.forceIndex ?? false)) {
+    result = false
     // We need check if document has collections with indexable fields.
     const attrs = hierarchy.getAllAttributes(c).values()
     for (const attr of attrs) {
       if (attr.type._class === core.class.Collection) {
         if (isClassIndexable(hierarchy, (attr.type as Collection<AttachedDoc>).of)) {
-          hierarchy.setClassifierProp(c, 'class_indexed', true)
-          return true
+          result = true
+          break
         }
       }
     }
-
-    // No need, since no indixable fields or attachments.
-    hierarchy.setClassifierProp(c, 'class_indexed', false)
-    return false
   }
-  hierarchy.setClassifierProp(c, 'class_indexed', true)
-  return true
+  hierarchy.setClassifierProp(c, 'class_indexed', result)
+  return result
 }
 /**
  * @public
@@ -208,4 +208,32 @@ export async function loadIndexStageStage (
     }
   }
   return [result, state]
+}
+
+/**
+ * @public
+ */
+export function getFullTextContext (
+  hierarchy: Hierarchy,
+  objectClass: Ref<Class<Doc>>
+): Omit<FullTextSearchContext, keyof Class<Doc>> {
+  let objClass = hierarchy.getClass(objectClass)
+
+  while (true) {
+    if (hierarchy.hasMixin(objClass, core.mixin.FullTextSearchContext)) {
+      const ctx = hierarchy.as<Class<Doc>, FullTextSearchContext>(objClass, core.mixin.FullTextSearchContext)
+      if (ctx !== undefined) {
+        return ctx
+      }
+    }
+    if (objClass.extends === undefined) {
+      break
+    }
+    objClass = hierarchy.getClass(objClass.extends)
+  }
+  return {
+    fullTextSummary: false,
+    forceIndex: false,
+    propogate: []
+  }
 }

@@ -72,7 +72,7 @@ if (rekoniUrl === undefined) {
 
 const frontUrl = process.env.FRONT_URL
 if (frontUrl === undefined) {
-  console.log('Please provide REKONI_URL url')
+  console.log('Please provide FRONT_URL url')
   process.exit(1)
 }
 

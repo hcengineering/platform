@@ -27,6 +27,7 @@ import core, {
   Ref,
   ServerStorage,
   setObjectValue,
+  TxFactory,
   WorkspaceId,
   _getOperator
 } from '@hcengineering/core'
@@ -53,13 +54,14 @@ export const globalIndexer = {
 
 const rateLimitter = new RateLimitter(() => ({ rate: globalIndexer.allowParallel }))
 
+let indexCounter = 0
 /**
  * @public
  */
 export class FullTextIndexPipeline implements FullTextPipeline {
   pending: Map<Ref<DocIndexState>, DocumentUpdate<DocIndexState>> = new Map()
   toIndex: Map<Ref<DocIndexState>, DocIndexState> = new Map()
-  toIndexParents: Map<Ref<DocIndexState>, DocIndexState> = new Map()
+  extraIndex: Map<Ref<DocIndexState>, DocIndexState> = new Map()
   stageChanged = 0
 
   cancelling: boolean = false
@@ -72,6 +74,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
   // Temporary skipped items
   skipped = new Map<Ref<DocIndexState>, number>()
+
+  indexId = indexCounter++
 
   constructor (
     private readonly storage: DbAdapter,
@@ -86,13 +90,22 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   }
 
   async cancel (): Promise<void> {
-    console.log('Cancel indexing', this.workspace)
+    console.log('Cancel indexing', this.indexId, this.workspace)
     this.cancelling = true
     clearTimeout(this.waitTimeout)
     this.triggerIndexing()
     await this.indexing
     await this.flush(true)
-    console.log('Indexing canceled', this.workspace)
+    console.log('Indexing canceled', this.indexId, this.workspace)
+  }
+
+  async markRemove (doc: DocIndexState): Promise<void> {
+    const ops = new TxFactory(core.account.System)
+    await this.storage.tx(
+      ops.createTxUpdateDoc(doc._class, doc.space, doc._id, {
+        removed: true
+      })
+    )
   }
 
   async search (
@@ -154,6 +167,10 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     this.triggerIndexing()
   }
 
+  add (doc: DocIndexState): void {
+    this.extraIndex.set(doc._id, doc)
+  }
+
   // Update are commulative
   async update (
     docId: Ref<DocIndexState>,
@@ -170,11 +187,11 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     }
 
     if (udoc === undefined) {
-      udoc = this.toIndexParents.get(docId)
+      udoc = this.extraIndex.get(docId)
       if (udoc !== undefined) {
         await this.stageUpdate(udoc, update)
         udoc = this.updateDoc(udoc, update, mark !== false)
-        this.toIndexParents.set(docId, udoc)
+        this.extraIndex.set(docId, udoc)
       }
     }
 
@@ -240,7 +257,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     try {
       this.hierarchy.getClass(core.class.DocIndexState)
     } catch (err: any) {
-      console.log('Models is not upgraded to support indexer', this.workspace)
+      console.log('Models is not upgraded to support indexer', this.indexId, this.workspace)
       return
     }
     await this.initStates()
@@ -248,14 +265,14 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       await this.initializeStages()
       await this.processRemove()
 
-      console.log('Indexing:', this.workspace)
+      console.log('Indexing:', this.indexId, this.workspace)
       await rateLimitter.exec(() => this.processIndex())
 
       if (this.toIndex.size === 0 || this.stageChanged === 0) {
         if (this.toIndex.size === 0) {
-          console.log(`${this.workspace.name} Indexing complete, waiting changes`)
+          console.log(`${this.workspace.name} Indexing complete, waiting changes`, this.indexId)
         } else {
-          console.log(`${this.workspace.name} Partial Indexing complete, waiting changes`)
+          console.log(`${this.workspace.name} Partial Indexing complete, waiting changes`, this.indexId)
         }
         if (!this.cancelling) {
           await new Promise((resolve) => {
@@ -274,7 +291,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         }
       }
     }
-    console.log('Exit indexer', this.workspace)
+    console.log('Exit indexer', this.indexId, this.workspace)
   }
 
   private async processIndex (): Promise<void> {
@@ -311,7 +328,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
           if (result.length > 0) {
             console.log(
-              `Fulltext: Indexing ${this.workspace.name} ${st.stageId}`,
+              `Fulltext: Indexing ${this.indexId} ${this.workspace.name} ${st.stageId}`,
               Object.entries(this.stats)
                 .map((it) => `${it[0]}:${it[1]}`)
                 .join(' '),
@@ -324,7 +341,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
           this.toIndex = new Map(result.map((it) => [it._id, it]))
 
-          this.toIndexParents.clear()
+          this.extraIndex.clear()
           this.stageChanged = 0
           // Find documents matching query
           const toIndex = this.matchStates(st)
@@ -383,7 +400,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
       this.toIndex = new Map(result.map((it) => [it._id, it]))
 
-      this.toIndexParents.clear()
+      this.extraIndex.clear()
 
       const toIndex = Array.from(this.toIndex.values())
       const toRemoveIds = []

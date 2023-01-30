@@ -5,7 +5,7 @@
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
-    "start": "cross-env MONGO_URL=mongodb://localhost:27017 ELASTIC_URL=http://localhost:9200 MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin METRICS_CONSOLE=true SERVER_SECRET=secret REKONI_URL=http://localhost:4004 ts-node src/__start.ts",
+    "start": "cross-env MONGO_URL=mongodb://localhost:27017 ELASTIC_URL=http://localhost:9200 MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin METRICS_CONSOLE=true SERVER_SECRET=secret REKONI_URL=http://localhost:4004 FRONT_URL=http://localhost:8080 ts-node src/__start.ts",
     "build": "heft build",
     "lint:fix": "eslint --fix src",
     "bundle": "esbuild src/__start.ts --bundle --sourcemap=inline --minify --platform=node > bundle.js",

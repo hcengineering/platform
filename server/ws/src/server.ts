@@ -233,7 +233,7 @@ class SessionManager {
       }
     }
     await Promise.race([
-      closePipeline,
+      closePipeline(),
       new Promise((resolve) => {
         setTimeout(resolve, 15000)
       })

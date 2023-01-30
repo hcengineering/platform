@@ -376,7 +376,11 @@ export interface IndexStageState extends Doc {
  * If defined for class, this class will be enabled for embedding search like openai.
  */
 export interface FullTextSearchContext extends Class<Doc> {
-  fullTextSummary: boolean
+  fullTextSummary?: boolean
+  forceIndex?: boolean
+
+  // If defined, will propogate changes to childs with defined set of classes
+  propogate?: Ref<Class<Doc>>[]
 }
 
 /**

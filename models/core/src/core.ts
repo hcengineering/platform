@@ -262,9 +262,7 @@ export class TIndexStageState extends TDoc implements IndexStageState {
 }
 
 @MMixin(core.mixin.FullTextSearchContext, core.class.Class)
-export class TFullTextSearchContext extends TClass implements FullTextSearchContext {
-  fullTextSummary!: boolean
-}
+export class TFullTextSearchContext extends TClass implements FullTextSearchContext {}
 
 @MMixin(core.mixin.ConfigurationElement, core.class.Class)
 export class TConfigurationElement extends TClass implements ConfigurationElement {

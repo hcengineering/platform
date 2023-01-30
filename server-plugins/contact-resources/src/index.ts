@@ -50,7 +50,7 @@ export async function OnContactDelete (tx: Tx, { findAll, hierarchy, storageFx }
     return []
   }
 
-  if (avatar.includes('://') && !avatar.startsWith('image://')) {
+  if (avatar?.includes('://') && !avatar?.startsWith('image://')) {
     return []
   }
 

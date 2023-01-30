@@ -324,6 +324,7 @@ export class TIssueTemplate extends TDoc implements IssueTemplate {
 @Model(tracker.class.TimeSpendReport, core.class.AttachedDoc, DOMAIN_TRACKER)
 @UX(tracker.string.TimeSpendReport, tracker.icon.TimeReport, tracker.string.TimeSpendReport)
 export class TTimeSpendReport extends TAttachedDoc implements TimeSpendReport {
+  @Prop(TypeRef(tracker.class.Issue), tracker.string.Parent)
   declare attachedTo: Ref<Issue>
 
   @Prop(TypeRef(contact.class.Employee), contact.string.Employee)

@@ -89,6 +89,9 @@
   export function setContent (data: string): void {
     textEditor.setContent(data)
   }
+  export function isEmptyContent (): boolean {
+    return textEditor.isEmptyContent()
+  }
 
   $: varsStyle =
     maxHeight === 'card'

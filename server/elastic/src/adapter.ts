@@ -59,7 +59,7 @@ class ElasticAdapter implements FullTextAdapter {
       const wsMappings = mappings.body[toWorkspaceString(this.workspaceId)]
 
       // Collect old values.
-      for (const [k, v] of Object.entries(wsMappings?.mappings?.properties)) {
+      for (const [k, v] of Object.entries(wsMappings?.mappings?.properties ?? {})) {
         const va = v as any
         if (va?.type === 'dense_vector') {
           result[k] = va?.dims as number
