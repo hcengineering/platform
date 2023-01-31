@@ -35,6 +35,7 @@ import { DOMAIN_MODEL, IndexKind } from '@hcengineering/core'
 import {
   Builder,
   Collection,
+  Hidden,
   Index,
   Model,
   Prop,
@@ -76,6 +77,7 @@ export class TChannelProvider extends TDoc implements ChannelProvider {
 export class TContact extends TDoc implements Contact {
   @Prop(TypeString(), contact.string.Name)
   @Index(IndexKind.FullText)
+  @Hidden()
     name!: string
 
   avatar?: string | null

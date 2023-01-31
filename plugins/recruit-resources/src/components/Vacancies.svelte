@@ -19,6 +19,7 @@
   import { Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
   import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
   import {
+    FilterBar,
     FilterButton,
     getViewOptions,
     setActiveViewletId,
@@ -30,9 +31,10 @@
   import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   let search: string = ''
+  let searchQuery: DocumentQuery<Doc> = {}
   let resultQuery: DocumentQuery<Doc> = {}
 
-  $: resultQuery = search === '' ? {} : { $search: search }
+  $: searchQuery = search === '' ? {} : { $search: search }
 
   type ApplicationInfo = { count: number; modifiedOn: number }
   let applications: Map<Ref<Vacancy>, ApplicationInfo> = new Map<Ref<Vacancy>, ApplicationInfo>()
@@ -168,6 +170,13 @@
     <ViewletSettingButton bind:viewOptions viewlet={descr} />
   </div>
 </div>
+
+<FilterBar
+  _class={recruit.class.Vacancy}
+  {viewOptions}
+  query={searchQuery}
+  on:change={(e) => (resultQuery = e.detail)}
+/>
 
 {#if descr}
   {#if loading}

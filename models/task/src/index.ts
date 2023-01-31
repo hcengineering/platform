@@ -121,6 +121,7 @@ export class TTask extends TAttachedDoc implements Task {
 
   @Prop(TypeString(), task.string.TaskNumber)
   @Index(IndexKind.FullText)
+  @Hidden()
     number!: number
 
   // @Prop(TypeRef(contact.class.Employee), task.string.TaskAssignee)

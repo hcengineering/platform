@@ -148,23 +148,22 @@
     transition-duration: 0.15s;
 
     .btn-icon {
-      color: var(--content-color);
       transition: color 0.15s;
       pointer-events: none;
-    }
-    &:hover {
-      color: var(--accent-color);
-      transition-duration: 0;
-
-      .btn-icon {
-        color: var(--caption-color);
-      }
     }
     &.disabled {
       color: rgb(var(--caption-color) / 40%);
 
       .btn-icon {
         opacity: 0.5;
+      }
+    }
+    &:hover {
+      color: var(--caption-color);
+      transition-duration: 0;
+
+      .btn-icon {
+        color: var(--caption-color);
       }
     }
 

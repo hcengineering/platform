@@ -512,7 +512,7 @@ export function createModel (builder: Builder): void {
   )
 
   builder.mixin(core.class.Space, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: view.component.SpacePresenter
+    presenter: view.component.SpaceRefPresenter
   })
 
   // Selection stuff

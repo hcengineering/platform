@@ -20,6 +20,7 @@
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
   import {
     ActionContext,
+    FilterBar,
     FilterButton,
     getViewOptions,
     setActiveViewletId,
@@ -31,10 +32,11 @@
   import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   let search = ''
-  let resultQuery: DocumentQuery<Doc> = {}
+  let searchQuery: DocumentQuery<Doc> = {}
+  let resultQuery: DocumentQuery<Doc> = searchQuery
 
   function updateResultQuery (search: string): void {
-    resultQuery = search === '' ? {} : { $search: search }
+    searchQuery = search === '' ? {} : { $search: search }
   }
 
   let viewlet: Viewlet | undefined
@@ -108,6 +110,13 @@
       <ViewletSettingButton bind:viewOptions {viewlet} />
     </div>
   </div>
+
+  <FilterBar
+    _class={contact.class.Contact}
+    {viewOptions}
+    query={searchQuery}
+    on:change={(e) => (resultQuery = e.detail)}
+  />
 
   {#if viewlet}
     {#if loading}

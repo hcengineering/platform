@@ -62,6 +62,7 @@ import TimestampPresenter from './components/TimestampPresenter.svelte'
 import UpDownNavigator from './components/UpDownNavigator.svelte'
 import ValueSelector from './components/ValueSelector.svelte'
 import ViewletSettingButton from './components/ViewletSettingButton.svelte'
+import SpaceRefPresenter from './components/SpaceRefPresenter.svelte'
 
 import {
   afterResult,
@@ -172,7 +173,8 @@ export default async (): Promise<Resources> => ({
     HTMLEditor,
     ListView,
     GrowPresenter,
-    IndexedDocumentPreview
+    IndexedDocumentPreview,
+    SpaceRefPresenter
   },
   popup: {
     PositionElementAlignment
