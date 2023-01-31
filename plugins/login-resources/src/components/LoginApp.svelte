@@ -25,6 +25,8 @@
   import { onDestroy } from 'svelte'
   import login from '../plugin'
   import { getMetadata } from '@hcengineering/platform'
+  import PasswordRequest from './PasswordRequest.svelte'
+  import PasswordRestore from './PasswordRestore.svelte'
 
   export let page: string = 'login'
 
@@ -58,6 +60,10 @@
       <SignupForm />
     {:else if page === 'createWorkspace'}
       <CreateWorkspaceForm />
+    {:else if page === 'password'}
+      <PasswordRequest />
+    {:else if page === 'recovery'}
+      <PasswordRestore />
     {:else if page === 'selectWorkspace'}
       <SelectWorkspace {navigateUrl} />
     {:else if page === 'join'}

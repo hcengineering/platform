@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { OK, Status, Severity, setMetadata } from '@hcengineering/platform'
+  import { OK, setMetadata, Severity, Status } from '@hcengineering/platform'
   import { getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
 
-  import Form from './Form.svelte'
   import { doLogin } from '../utils'
+  import Form from './Form.svelte'
 
   import login from '../plugin'
 
@@ -63,20 +63,28 @@
       }
     }
   }
+
+  const recoveryAction = {
+    caption: login.string.ForgotPassword,
+    i18n: login.string.Recover,
+    func: () => {
+      const loc = getCurrentLocation()
+      loc.path[1] = 'password'
+      loc.path.length = 2
+      navigate(loc)
+    }
+  }
+
+  const signUpAction = {
+    caption: login.string.DoNotHaveAnAccount,
+    i18n: login.string.SignUp,
+    func: () => {
+      const loc = getCurrentLocation()
+      loc.path[1] = 'signup'
+      loc.path.length = 2
+      navigate(loc)
+    }
+  }
 </script>
 
-<Form
-  caption={login.string.LogIn}
-  {status}
-  {fields}
-  {object}
-  {action}
-  bottomCaption={login.string.DoNotHaveAnAccount}
-  bottomActionLabel={login.string.SignUp}
-  bottomActionFunc={() => {
-    const loc = getCurrentLocation()
-    loc.path[1] = 'signup'
-    loc.path.length = 2
-    navigate(loc)
-  }}
-/>
+<Form caption={login.string.LogIn} {status} {fields} {object} {action} bottomActions={[recoveryAction, signUpAction]} />

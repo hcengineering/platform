@@ -29,6 +29,11 @@
     "NotSeeingWorkspace": "Not seeing your workspace?",
     "WorkspaceNameRule": "The workspace name can contains lowercase letters, numbers, and symbols !@#%&^-",
     "LinkValidHours": "Link valid (hours):",
-    "GetLink": "Get invite link"
+    "GetLink": "Get invite link",
+    "ForgotPassword": "Forgot your password",
+    "KnowPassword": "Know your password?",
+    "Recover": "Recover",
+    "PasswordRecovery": "Password recovery",
+    "RecoveryLinkSent": "Password recovery link sent to email"
   }
 }

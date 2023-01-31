@@ -73,12 +73,16 @@
   {fields}
   {object}
   {action}
-  bottomCaption={login.string.HaveWorkspace}
-  bottomActionLabel={login.string.SelectWorkspace}
-  bottomActionFunc={() => {
-    const loc = getCurrentLocation()
-    loc.path[1] = 'selectWorkspace'
-    loc.path.length = 2
-    navigate(loc)
-  }}
+  bottomActions={[
+    {
+      caption: login.string.HaveWorkspace,
+      i18n: login.string.SelectWorkspace,
+      func: () => {
+        const loc = getCurrentLocation()
+        loc.path[1] = 'selectWorkspace'
+        loc.path.length = 2
+        navigate(loc)
+      }
+    }
+  ]}
 />

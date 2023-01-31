@@ -34,6 +34,7 @@ import core, {
 import { MigrateOperation } from '@hcengineering/model'
 import platform, {
   getMetadata,
+  Metadata,
   PlatformError,
   Plugin,
   plugin,
@@ -47,6 +48,7 @@ import { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin, { connect, initModel, upgradeModel } from '@hcengineering/server-tool'
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { Binary, Db, Filter, ObjectId } from 'mongodb'
+import fetch from 'node-fetch'
 
 const WORKSPACE_COLLECTION = 'workspace'
 const ACCOUNT_COLLECTION = 'account'
@@ -73,6 +75,10 @@ const accountPlugin = plugin(accountId, {
     AccountAlreadyExists: '' as StatusCode<{ account: string }>,
     WorkspaceAlreadyExists: '' as StatusCode<{ workspace: string }>,
     ProductIdMismatch: '' as StatusCode<{ productId: string }>
+  },
+  metadata: {
+    FrontURL: '' as Metadata<string>,
+    SES_URL: '' as Metadata<string>
   }
 })
 
@@ -637,12 +643,79 @@ export async function replacePassword (db: Db, productId: string, email: string,
   const account = await getAccount(db, email)
 
   if (account === null) {
-    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.InvalidPassword, { account: email }))
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: email }))
   }
   const salt = randomBytes(32)
   const hash = hashWithSalt(password, salt)
 
   await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { salt, hash } })
+}
+
+/**
+ * @public
+ */
+export async function requestPassword (db: Db, productId: string, email: string): Promise<void> {
+  const account = await getAccount(db, email)
+
+  if (account === null) {
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: email }))
+  }
+
+  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
+  if (sesURL === undefined || sesURL === '') {
+    throw new Error('Please provide email service url')
+  }
+  const front = getMetadata(accountPlugin.metadata.FrontURL)
+  if (front === undefined || front === '') {
+    throw new Error('Please provide front url')
+  }
+
+  const token = generateToken('@restore', getWorkspaceId('', productId), {
+    restore: email
+  })
+
+  const link = `${front}/login/recovery?id=${token}`
+
+  const text = `We received a request to reset the password for your account. To reset your password, please paste the following link in your web browser's address bar: ${link}. If you have not ordered a password recovery just ignore this letter.`
+  const html = `<p>We received a request to reset the password for your account. To reset your password, please click the link below: <a href=${link}>Reset password</a></p><p>
+  If the Reset password link above does not work, paste the following link in your web browser's address bar: ${link}
+</p><p>If you have not ordered a password recovery just ignore this letter.</p>`
+  const subject = 'Password recovery'
+  const to = account.email
+  await fetch(`${sesURL}/send`, {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      text,
+      html,
+      subject,
+      to
+    })
+  })
+}
+
+/**
+ * @public
+ */
+export async function restorePassword (db: Db, productId: string, token: string, password: string): Promise<LoginInfo> {
+  const decode = decodeToken(token)
+  const email = decode.extra?.restore
+  if (email === undefined) {
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: accountId }))
+  }
+  const account = await getAccount(db, email)
+
+  if (account === null) {
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: accountId }))
+  }
+  const salt = randomBytes(32)
+  const hash = hashWithSalt(password, salt)
+
+  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { salt, hash } })
+
+  return await login(db, productId, email, password)
 }
 
 /**
@@ -868,7 +941,9 @@ export function getMethods (
     leaveWorkspace: wrap(leaveWorkspace),
     listWorkspaces: wrap(listWorkspaces),
     changeName: wrap(changeName),
-    changePassword: wrap(changePassword)
+    changePassword: wrap(changePassword),
+    requestPassword: wrap(requestPassword),
+    restorePassword: wrap(restorePassword)
     // updateAccount: wrap(updateAccount)
   }
 }

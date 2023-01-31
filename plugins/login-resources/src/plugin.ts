@@ -50,6 +50,11 @@ export default mergeIds(loginId, login, {
     ChangeAccount: '' as IntlString,
     WorkspaceNameRule: '' as IntlString,
     LinkValidHours: '' as IntlString,
-    GetLink: '' as IntlString
+    GetLink: '' as IntlString,
+    ForgotPassword: '' as IntlString,
+    Recover: '' as IntlString,
+    KnowPassword: '' as IntlString,
+    PasswordRecovery: '' as IntlString,
+    RecoveryLinkSent: '' as IntlString
   }
 })

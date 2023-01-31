@@ -1,6 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2022 Hardcore Engineering Inc.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,25 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Status, Severity, OK, setMetadata } from '@hcengineering/platform'
+  import { OK, setMetadata, Severity, Status } from '@hcengineering/platform'
 
-  import Form from './Form.svelte'
-  import { signUp } from '../utils'
-  import login from '../plugin'
   import { getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
+  import login from '../plugin'
+  import { restorePassword } from '../utils'
+  import Form from './Form.svelte'
 
   const fields = [
-    { id: 'given-name', name: 'first', i18n: login.string.FirstName, short: true },
-    { id: 'family-name', name: 'last', i18n: login.string.LastName, short: true },
-    { id: 'email', name: 'username', i18n: login.string.Email },
     { id: 'new-password', name: 'password', i18n: login.string.Password, password: true },
     { id: 'new-password', name: 'password2', i18n: login.string.PasswordRepeat, password: true }
   ]
 
   const object = {
-    first: '',
-    last: '',
-    username: '',
     password: '',
     password2: ''
   }
@@ -40,11 +33,13 @@
   let status: Status<any> = OK
 
   const action = {
-    i18n: login.string.SignUp,
+    i18n: login.string.Recover,
     func: async () => {
+      const location = getCurrentLocation()
+      if (location.query?.id === undefined || location.query?.id === null) return
       status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
-      const [loginStatus, result] = await signUp(object.username, object.password, object.first, object.last)
+      const [loginStatus, result] = await restorePassword(location.query?.id, object.password)
 
       status = loginStatus
 
@@ -61,22 +56,4 @@
   }
 </script>
 
-<Form
-  caption={login.string.SignUp}
-  {status}
-  {fields}
-  {object}
-  {action}
-  bottomActions={[
-    {
-      caption: login.string.HaveAccount,
-      i18n: login.string.LogIn,
-      func: () => {
-        const loc = getCurrentLocation()
-        loc.path[1] = 'login'
-        loc.path.length = 2
-        navigate(loc)
-      }
-    }
-  ]}
-/>
+<Form caption={login.string.PasswordRecovery} {status} {fields} {object} {action} />

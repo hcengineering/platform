@@ -319,6 +319,7 @@ specifiers:
   mini-css-extract-plugin: ^2.2.0
   minio: ^7.0.26
   mongodb: ^4.11.0
+  node-fetch: ^2.6.6
   p-queue: ~7.3.0
   pdfkit: ~0.13.0
   postcss: ^8.4.20
@@ -686,6 +687,7 @@ dependencies:
   mini-css-extract-plugin: 2.6.1_webpack@5.75.0
   minio: 7.0.32
   mongodb: 4.11.0
+  node-fetch: 2.6.7
   p-queue: 7.3.0
   pdfkit: 0.13.0
   postcss: 8.4.20
@@ -3425,6 +3427,13 @@ packages:
     resolution: {integrity: sha512-NZbszX8FSiMKq3RTR4J0n3Q8914Y4XRBdjpdexMWByy7eC59ujTcf1q6Rn7w4Jt/B/ZBoNzxOBX3jzhewWgItQ==}
     dependencies:
       '@types/node': 16.11.68
+    dev: false
+
+  /@types/node-fetch/2.6.2:
+    resolution: {integrity: sha512-DHqhlq5jeESLy19TYhLakJ07kNumXWjcDdxXsLUMJZ6ue8VZJj4kLPQVE/2mdHh3xZziNF1xppu5lwmS53HR+A==}
+    dependencies:
+      '@types/node': 16.11.68
+      form-data: 3.0.1
     dev: false
 
   /@types/node/12.20.24:
@@ -11462,13 +11471,14 @@ packages:
     dev: false
 
   file:projects/account.tgz:
-    resolution: {integrity: sha512-1O91BX+tpcoZjaOTfyy1CvFF8Bea7RUvkQShNBsMgMthz1S4C82Q5htsCJDYSdm7TC3qDORBJGG4VBVN/Pwcrw==, tarball: file:projects/account.tgz}
+    resolution: {integrity: sha512-aJKpRhl1z/VBWuJpIUi71qe6EicrFQjmyQ7wGSDBM/b1M6Sm9wKSTBOjjhknIHNwno2toNAEmyV0nkwZcit9hQ==, tarball: file:projects/account.tgz}
     name: '@rush-temp/account'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.47.11
       '@types/heft-jest': 1.0.3
       '@types/minio': 7.0.14
+      '@types/node-fetch': 2.6.2
       '@types/ws': 8.5.3
       '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
       '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
@@ -11479,12 +11489,14 @@ packages:
       eslint-plugin-promise: 6.1.1_eslint@8.27.0
       minio: 7.0.32
       mongodb: 4.11.0
+      node-fetch: 2.6.7
       prettier: 2.7.1
       typescript: 4.8.4
       ws: 8.11.0
     transitivePeerDependencies:
       - aws-crt
       - bufferutil
+      - encoding
       - supports-color
       - utf-8-validate
     dev: false
@@ -13477,7 +13489,7 @@ packages:
     dev: false
 
   file:projects/model-recruit.tgz_typescript@4.8.4:
-    resolution: {integrity: sha512-d2S1FnV9nadIWl5JBjdxs7lZo109fWavsI6SVq/lc6enCzQWas5m/ZVu7dF9HvT9OaD+6HHnqx3pQ/oqTl3fSw==, tarball: file:projects/model-recruit.tgz}
+    resolution: {integrity: sha512-KqP/U4mkxWwAYH7pD0Z//Cv+/CXMxRrwdnlWRoJOr3nKGFshVb64dRAdkgVdRYNG2rcIlNeaFrBKuqW+6rdjBw==, tarball: file:projects/model-recruit.tgz}
     id: file:projects/model-recruit.tgz
     name: '@rush-temp/model-recruit'
     version: 0.0.0
