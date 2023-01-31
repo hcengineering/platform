@@ -355,7 +355,11 @@
             ev.preventDefault()
           }}
         >
-          <div class="timeline-row__header-wrapper" style:min-width={`${panelWidth}px`}>
+          <div
+            class="timeline-row__header-wrapper"
+            style:min-width={`${panelWidth}px`}
+            style:max-width={`${panelWidth}px`}
+          >
             <div class="timeline-row__header-item">
               <div class="timeline-row__checkbox">
                 <CheckBox
