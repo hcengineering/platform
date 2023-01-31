@@ -19,6 +19,7 @@
   import { tagLevel } from '../utils'
 
   export let value: number | undefined
+  export let schema: '3' | '9' = '9'
 
   const dispatch = createEventDispatcher()
 
@@ -29,18 +30,30 @@
   <div class="header no-border p-3">
     {#each labels as l, i}
       <div class="flex gap-2 p-1">
-        {#each Object.entries(tagLevel) as k, j}
-          {@const valueK = i * 3 + j}
+        {#if schema === '9'}
+          {#each Object.entries(tagLevel) as k, j}
+            {@const valueK = i * 3 + j}
+            <Button
+              label={l}
+              icon={k[1]}
+              size={'small'}
+              justify={'left'}
+              selected={value === valueK}
+              on:click={() => dispatch('close', valueK)}
+              width={'8rem'}
+            />
+          {/each}
+        {:else}
+          {@const valueK = i * 3}
           <Button
             label={l}
-            icon={k[1]}
             size={'small'}
             justify={'left'}
             selected={value === valueK}
             on:click={() => dispatch('close', valueK)}
             width={'8rem'}
           />
-        {/each}
+        {/if}
       </div>
     {/each}
   </div>

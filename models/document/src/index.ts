@@ -89,7 +89,7 @@ export class TDocumentVersion extends TAttachedDoc implements DocumentVersion {
   @Hidden()
     content!: Markup
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments!: number
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
@@ -116,7 +116,7 @@ export class TDocument extends TDoc implements Document {
   @Hidden()
     latest!: number
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)

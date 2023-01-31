@@ -35,8 +35,8 @@
   import { getActions, ObjectPresenter } from '@hcengineering/view-resources'
   import { ActivityKey, DisplayTx } from '../activity'
   import activity from '../plugin'
-  import TxViewTx from './TxViewTx.svelte'
   import { getValue, TxDisplayViewlet, updateViewlet } from '../utils'
+  import TxViewTx from './TxViewTx.svelte'
 
   export let tx: DisplayTx
   export let viewlets: Map<ActivityKey, TxViewlet>
@@ -70,7 +70,7 @@
   const query = createQuery()
 
   function getProps (props: any, edit: boolean): any {
-    return { ...props, edit }
+    return { ...props, edit, attr: tx.collectionAttribute }
   }
 
   $: updateViewlet(client, viewlets, tx).then((result) => {

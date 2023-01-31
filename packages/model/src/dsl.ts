@@ -120,7 +120,7 @@ function getAttrs (target: any, prop: string): Record<string, any> {
  * @param icon -
  * @returns
  */
-export function Prop (type: Type<PropertyType>, label: IntlString, icon?: Asset, shortLabel?: IntlString) {
+export function Prop (type: Type<PropertyType>, label: IntlString, extra: Partial<Attribute<PropertyType>> = {}) {
   return function (target: any, propertyKey: string): void {
     const txes = getTxes(target)
     const tx: TxCreateDoc<Attribute<PropertyType>> = {
@@ -133,12 +133,11 @@ export function Prop (type: Type<PropertyType>, label: IntlString, icon?: Asset,
       objectId: propertyKey as Ref<Attribute<PropertyType>>,
       objectClass: core.class.Attribute,
       attributes: {
+        ...extra,
         name: propertyKey,
         index: getIndex(target, propertyKey),
         type,
         label,
-        icon,
-        shortLabel,
         attributeOf: txes._id, // undefined, need to fix later
         ...getAttrs(target, propertyKey)
       }

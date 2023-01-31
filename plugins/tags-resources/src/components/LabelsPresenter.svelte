@@ -38,6 +38,7 @@
   })
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
   class="labels-container"
   style:justify-content={kind === 'short' ? 'space-between' : 'flex-start'}
@@ -52,7 +53,7 @@
 >
   {#each items as value, i}
     <div class="label-box wrap-{kind}">
-      <TagReferencePresenter {value} kind={'kanban-labels'} bind:realWidth={widths[i]} />
+      <TagReferencePresenter attr={undefined} {value} kind={'kanban-labels'} bind:realWidth={widths[i]} />
     </div>
   {/each}
 </div>

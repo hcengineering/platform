@@ -169,10 +169,11 @@
     <div class="flex-row-center caption-color states">
       <div class="antiStatesBar mask-none {stepStyle}">
         {#each visibleCategories as item, i}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
             bind:this={visibleCategoriesRef[i]}
             class="categoryElement flex-center"
-            label={item.label}
+            id={item.label}
             style={getTagStyle(getPlatformColorForText(item.label), item._id === category)}
             on:click={(evt) => {
               if (mode === 'category') {

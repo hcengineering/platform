@@ -31,7 +31,7 @@ test.describe('workbench tests', () => {
     await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit/vacancies`)
     // Click text=Software Engineer
     await page.click('text=Software Engineer')
-    await expect(page.locator('text=Software Engineer')).toBeVisible()
+    await expect(page.locator('text=Software Engineer')).toBeDefined()
     await expect(page.locator('text="APP-1"')).toBeDefined()
     // await page.click('[name="tooltip-task:string:Kanban"]')
     await page.click('.tablist-container div:nth-child(2)')

@@ -24,12 +24,13 @@
   export let element: TagElement | undefined = undefined
   export let action: Asset | AnySvelteComponent | undefined = undefined
   export let selected: boolean = false
+  export let schema: '0' | '3' | '9' = '9'
 
   const dispatch = createEventDispatcher()
 
   $: name = element?.title ?? tag?.title ?? 'New item'
 
-  $: tagIcon = tagLevel[(((tag?.weight ?? 0) % 3) + 1) as 1 | 2 | 3]
+  $: tagIcon = schema === '3' ? undefined : tagLevel[(((tag?.weight ?? 0) % 3) + 1) as 1 | 2 | 3]
 </script>
 
 <div
@@ -45,7 +46,7 @@
 >
   {name}
   <span class="ml-1">
-    {#if tag}
+    {#if tag && tagIcon && schema !== '0'}
       <Icon icon={tagIcon} size={'small'} />
     {/if}
   </span>

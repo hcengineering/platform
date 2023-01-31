@@ -72,6 +72,7 @@
     return {
       _class,
       key: isCollection ? '_id' : key,
+      attribute,
       label: attribute.label,
       icon: attribute.icon ?? clazz.icon ?? attrOf.icon ?? view.icon.Setting,
       component: filter.component

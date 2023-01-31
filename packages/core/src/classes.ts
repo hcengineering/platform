@@ -114,6 +114,9 @@ export interface Attribute<T extends PropertyType> extends Doc, UXObject {
   index?: IndexKind
   shortLabel?: IntlString
   isCustom?: boolean
+
+  // Extra customization properties
+  [key: string]: any
 }
 
 /**

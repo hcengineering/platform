@@ -37,6 +37,7 @@
   export let key: KeyedAttribute
   export let showTitle = true
   export let elements: Map<Ref<TagElement>, TagElement>
+  export let schema: '3' | '9' = key.attr.schema ?? '9'
 
   const dispatch = createEventDispatcher()
 
@@ -131,6 +132,7 @@
               <TagItem
                 {tag}
                 element={elements.get(tag.tag)}
+                {schema}
                 action={IconClose}
                 on:action={() => {
                   removeTag(tag._id)
@@ -138,7 +140,7 @@
                 on:click={(evt) => {
                   showPopup(
                     WeightPopup,
-                    { value: tag.weight ?? 1, format: 'number' },
+                    { value: tag.weight ?? 1, format: 'number', schema },
                     getEventPopupPositionElement(evt),
                     (res) => {
                       if (Number.isFinite(res) && res >= 0 && res <= 8) {

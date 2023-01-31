@@ -183,6 +183,15 @@ export async function convert (
       if (lval != null && lval !== '') {
         const vals = Array.isArray(lval) ? lval : [lval]
         for (const llVal of vals) {
+          const svalue = typeof llVal === 'string' ? llVal : `${JSON.stringify(llVal)}`
+          if (f.include != null || f.exclude != null) {
+            if (f.include !== undefined && svalue.match(f.include) == null) {
+              continue
+            }
+            if (f.exclude !== undefined && svalue.match(f.exclude) != null) {
+              continue
+            }
+          }
           const c: Channel = {
             _id: generateId(),
             _class: contact.class.Channel,
@@ -190,7 +199,7 @@ export async function convert (
             attachedToClass: attr.attributeOf,
             collection: attr.name,
             modifiedBy: document.modifiedBy,
-            value: llVal,
+            value: svalue,
             provider: f.provider,
             space: document.space,
             modifiedOn: document.modifiedOn

@@ -65,7 +65,7 @@ export class TVacancy extends TSpaceWithStates implements Vacancy {
   @Index(IndexKind.FullText)
     fullDescription?: string
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
   @Prop(TypeDate(), recruit.string.Due, recruit.icon.Calendar)
@@ -75,7 +75,7 @@ export class TVacancy extends TSpaceWithStates implements Vacancy {
   @Index(IndexKind.FullText)
     location?: string
 
-  @Prop(TypeRef(contact.class.Organization), recruit.string.Company, contact.icon.Company)
+  @Prop(TypeRef(contact.class.Organization), recruit.string.Company, { icon: contact.icon.Company })
     company?: Ref<Organization>
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
@@ -96,7 +96,9 @@ export class TCandidate extends TPerson implements Candidate {
   @Index(IndexKind.FullText)
     title?: string
 
-  @Prop(Collection(recruit.class.Applicant), recruit.string.Applications, undefined, recruit.string.ApplicationsShort)
+  @Prop(Collection(recruit.class.Applicant), recruit.string.Applications, {
+    shortLabel: recruit.string.ApplicationsShort
+  })
     applications?: number
 
   @Prop(TypeBoolean(), recruit.string.Onsite)
@@ -109,7 +111,10 @@ export class TCandidate extends TPerson implements Candidate {
   @Index(IndexKind.FullText)
     source?: string
 
-  @Prop(Collection(tags.class.TagReference, recruit.string.SkillLabel), recruit.string.SkillsLabel, recruit.icon.Skills)
+  @Prop(Collection(tags.class.TagReference, recruit.string.SkillLabel), recruit.string.SkillsLabel, {
+    icon: recruit.icon.Skills,
+    schema: '3'
+  })
     skills?: number
 
   @Prop(Collection(recruit.class.Review, recruit.string.Review), recruit.string.Reviews)
@@ -142,7 +147,7 @@ export class TApplicant extends TTask implements Applicant {
   @Index(IndexKind.Indexed)
   declare space: Ref<Vacancy>
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)

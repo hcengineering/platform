@@ -38,8 +38,9 @@ export async function getRefs (filter: Filter, onUpdate: () => void): Promise<Ar
   return await promise
 }
 
-export const tagLevel: Record<1 | 2 | 3, Asset> = {
+export const tagLevel: Record<0 | 1 | 2 | 3, Asset> = {
   3: tags.icon.Level3,
   2: tags.icon.Level2,
-  1: tags.icon.Level1
+  1: tags.icon.Level1,
+  0: tags.icon.Tags
 }

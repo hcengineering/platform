@@ -46,7 +46,7 @@ export class TFunnel extends TSpaceWithStates implements Funnel {
   @Index(IndexKind.FullText)
     fullDescription?: string
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
@@ -66,7 +66,7 @@ export class TLead extends TTask implements Lead {
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
     comments?: number
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
   @Prop(TypeRef(contact.class.Employee), lead.string.Assignee)

@@ -102,6 +102,7 @@
   <div class="flex-row-center">
     <div class="flex-col">
       <div class="fs-title flex-row-center">
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="color"
           style={getTagStyle(getPlatformColor(data.color))}
