@@ -281,3 +281,11 @@ export interface TimelineState {
   timelineBox: DOMRect
   viewBox: DOMRect
 }
+
+export interface WizardModel {
+  label: IntlString
+  component: AnyComponent | AnySvelteComponent
+  props?: any
+}
+export type WizardItemPosition = 'start' | 'middle' | 'end'
+export type WizardItemPositionState = 'current' | 'prev' | 'next'
