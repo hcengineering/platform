@@ -21,7 +21,7 @@
   import Form from './Form.svelte'
 
   import login from '../plugin'
-  
+
   export let navigateUrl: string | undefined = undefined
 
   const fields = [
@@ -87,11 +87,4 @@
   }
 </script>
 
-<Form
-  caption={login.string.LogIn}
-  {status}
-  {fields}
-  {object}
-  {action}
-  bottomActions={[recoveryAction, signUpAction]}
-/>
+<Form caption={login.string.LogIn} {status} {fields} {object} {action} bottomActions={[recoveryAction, signUpAction]} />

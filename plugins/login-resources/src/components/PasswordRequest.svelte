@@ -21,12 +21,10 @@
   import { requestPassword } from '../utils'
   import Form from './Form.svelte'
 
-  const fields = [
-    { id: 'email', name: 'username', i18n: login.string.Email },
-  ]
+  const fields = [{ id: 'email', name: 'username', i18n: login.string.Email }]
 
   const object = {
-    username: '',
+    username: ''
   }
 
   let status: Status<any> = OK
@@ -36,18 +34,23 @@
     func: async () => {
       status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
-      const loginStatus =  await requestPassword(object.username)
+      const loginStatus = await requestPassword(object.username)
       status = loginStatus
       if (loginStatus === OK) {
-        showPopup(MessageBox, {
-          label: login.string.PasswordRecovery,
-          message: login.string.RecoveryLinkSent,
-          canSubmit: false
-        }, undefined, () => {
-          const loc = getCurrentLocation()
-          loc.path[1] = 'login'
-          navigate(loc)
-        })
+        showPopup(
+          MessageBox,
+          {
+            label: login.string.PasswordRecovery,
+            message: login.string.RecoveryLinkSent,
+            canSubmit: false
+          },
+          undefined,
+          () => {
+            const loc = getCurrentLocation()
+            loc.path[1] = 'login'
+            navigate(loc)
+          }
+        )
       }
     }
   }
@@ -63,23 +66,19 @@
     }
   }
 
-  const bottomActions = [{
-    caption: login.string.KnowPassword,
-    i18n: login.string.LogIn,
-    func: () => {
-      const loc = getCurrentLocation()
-      loc.path[1] = 'login'
-      loc.path.length = 2
-      navigate(loc)
-    }
-  }, signUpAction]
+  const bottomActions = [
+    {
+      caption: login.string.KnowPassword,
+      i18n: login.string.LogIn,
+      func: () => {
+        const loc = getCurrentLocation()
+        loc.path[1] = 'login'
+        loc.path.length = 2
+        navigate(loc)
+      }
+    },
+    signUpAction
+  ]
 </script>
 
-<Form
-  caption={login.string.PasswordRecovery}
-  {status}
-  {fields}
-  {object}
-  {action}
-  {bottomActions}
-/>
+<Form caption={login.string.PasswordRecovery} {status} {fields} {object} {action} {bottomActions} />

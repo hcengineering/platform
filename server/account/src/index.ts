@@ -682,7 +682,7 @@ export async function requestPassword (db: Db, productId: string, email: string)
 </p><p>If you have not ordered a password recovery just ignore this letter.</p>`
   const subject = 'Password recovery'
   const to = account.email
-  const res = await fetch(`${sesURL}/send`, {
+  await fetch(`${sesURL}/send`, {
     method: 'post',
     headers: {
       'Content-Type': 'application/json'

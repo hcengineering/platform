@@ -67,14 +67,16 @@
   {fields}
   {object}
   {action}
-  bottomActions={[{
-    caption: login.string.HaveAccount,
-    i18n: login.string.LogIn,
-    func: () => {
-      const loc = getCurrentLocation()
-      loc.path[1] = 'login'
-      loc.path.length = 2
-      navigate(loc)
+  bottomActions={[
+    {
+      caption: login.string.HaveAccount,
+      i18n: login.string.LogIn,
+      func: () => {
+        const loc = getCurrentLocation()
+        loc.path[1] = 'login'
+        loc.path.length = 2
+        navigate(loc)
+      }
     }
-  }]}
+  ]}
 />

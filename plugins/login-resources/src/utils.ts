@@ -567,7 +567,7 @@ export async function leaveWorkspace (email: string): Promise<void> {
   })
 }
 
-export async function requestPassword (email: string): Promise<Status>  {
+export async function requestPassword (email: string): Promise<Status> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -601,10 +601,7 @@ export async function requestPassword (email: string): Promise<Status>  {
   }
 }
 
-export async function restorePassword (
-  token: string,
-  password: string,
-): Promise<[Status, LoginInfo | undefined]> {
+export async function restorePassword (token: string, password: string): Promise<[Status, LoginInfo | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {

@@ -93,13 +93,13 @@
   const signUpAction = {
     caption: login.string.DoNotHaveAnAccount,
     i18n: login.string.SignUp,
-    func: () => page = 'signUp'
+    func: () => (page = 'signUp')
   }
 
   const loginAction = {
     caption: login.string.HaveAccount,
     i18n: login.string.LogIn,
-    func: () => page = 'login'
+    func: () => (page = 'login')
   }
 
   onMount(() => {

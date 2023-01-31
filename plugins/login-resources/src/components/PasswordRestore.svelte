@@ -39,7 +39,7 @@
       if (location.query?.id === undefined || location.query?.id === null) return
       status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
-      const [loginStatus, result] = await restorePassword(location.query?.id, object.password,)
+      const [loginStatus, result] = await restorePassword(location.query?.id, object.password)
 
       status = loginStatus
 
@@ -56,10 +56,4 @@
   }
 </script>
 
-<Form
-  caption={login.string.PasswordRecovery}
-  {status}
-  {fields}
-  {object}
-  {action}
-/>
+<Form caption={login.string.PasswordRecovery} {status} {fields} {object} {action} />
