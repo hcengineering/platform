@@ -21,6 +21,12 @@
       ->
       {#if mapping.bitrixFields}
         {p.field ? mapping.bitrixFields[p.field]?.formLabel ?? mapping.bitrixFields[p.field]?.title : p.field ?? ''}
+        {#if p.include !== undefined && p.include !== ''}
+          /{p.include}/gi
+        {/if}
+        {#if p.exclude !== undefined && p.exclude !== ''}
+          ^/{p.exclude}/gi
+        {/if}
       {/if}
     </div>
   {/each}

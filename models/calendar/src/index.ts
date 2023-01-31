@@ -62,7 +62,7 @@ export class TEvent extends TAttachedDoc implements Event {
   @Index(IndexKind.FullText)
     description!: Markup
 
-  @Prop(TypeString(), calendar.string.Location, calendar.icon.Location)
+  @Prop(TypeString(), calendar.string.Location, { icon: calendar.icon.Location })
   @Index(IndexKind.FullText)
     location?: string
 
@@ -72,7 +72,7 @@ export class TEvent extends TAttachedDoc implements Event {
   @Prop(TypeDate(true), calendar.string.DueTo)
     dueDate!: Timestamp
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)

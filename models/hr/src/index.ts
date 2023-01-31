@@ -57,7 +57,7 @@ export class TDepartment extends TSpace implements Department {
   @Prop(Collection(contact.class.Channel), contact.string.ContactInfo)
     channels?: number
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
@@ -131,7 +131,7 @@ export class TRequest extends TAttachedDoc implements Request {
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
     comments?: number
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
   @Prop(TypeMarkup(), core.string.Description)

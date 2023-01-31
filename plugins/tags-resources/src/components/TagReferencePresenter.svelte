@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { AnyAttribute } from '@hcengineering/core'
   import type { TagReference } from '@hcengineering/tags'
   import { getPlatformColor, Icon, IconClose, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -23,6 +24,7 @@
   export let isEditable: boolean = false
   export let kind: 'labels' | 'kanban-labels' | 'skills' = 'skills'
   export let realWidth: number | undefined = undefined
+  export let attr: AnyAttribute | undefined
 
   const dispatch = createEventDispatcher()
   $: tagIcon = tagLevel[(((value?.weight ?? 0) % 3) + 1) as 1 | 2 | 3]
@@ -30,7 +32,7 @@
 
 {#if value}
   {#if kind === 'skills'}
-    <TagItem tag={value} />
+    <TagItem tag={value} schema={attr?.schema ?? '0'} />
   {:else if kind === 'kanban-labels'}
     <button
       class="label-container"

@@ -202,6 +202,8 @@ export interface CreateTagOperation {
 export interface ChannelFieldMapping {
   provider: Ref<ChannelProvider>
   field: string
+  include?: string // Regexp pattern to match value.
+  exclude?: string // Regexp pattern to match value.
 }
 
 /**
@@ -229,4 +231,15 @@ export interface BitrixFieldMapping extends AttachedDoc {
   attributeName: string
 
   operation: CopyValueOperation | CreateTagOperation | CreateChannelOperation | DownloadAttachmentOperation
+}
+
+/**
+ * @public
+ */
+export interface BitrixActivity {
+  ID: string
+  SUBJECT: string
+  DESCRIPTION: string
+  AUTHOR_ID: string
+  CREATED: number
 }

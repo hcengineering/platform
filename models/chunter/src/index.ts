@@ -81,7 +81,7 @@ export class TChunterMessage extends TAttachedDoc implements ChunterMessage {
   @Index(IndexKind.FullText)
     content!: string
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
   @Prop(TypeRef(core.class.Account), chunter.string.CreateBy)
@@ -138,7 +138,7 @@ export class TComment extends TAttachedDoc implements Comment {
   @Index(IndexKind.FullText)
     message!: string
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 }
 

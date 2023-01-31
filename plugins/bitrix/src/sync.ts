@@ -19,7 +19,14 @@ import core, {
 import tags, { TagElement } from '@hcengineering/tags'
 import { deepEqual } from 'fast-equals'
 import { BitrixClient } from './client'
-import { BitrixEntityMapping, BitrixEntityType, BitrixFieldMapping, BitrixSyncDoc, LoginInfo } from './types'
+import {
+  BitrixActivity,
+  BitrixEntityMapping,
+  BitrixEntityType,
+  BitrixFieldMapping,
+  BitrixSyncDoc,
+  LoginInfo
+} from './types'
 import { convert, ConvertResult } from './utils'
 import bitrix from './index'
 
@@ -293,6 +300,7 @@ export async function performSynchronization (ops: {
   frontUrl: string
   loginInfo: LoginInfo
   monitor: (total: number) => void
+  blobProvider?: (blobRef: any) => Promise<Blob | undefined>
 }): Promise<void> {
   const commentFields = await ops.bitrixClient.call(BitrixEntityType.Comment + '.fields', {})
 
@@ -352,7 +360,6 @@ export async function performSynchronization (ops: {
 
       const extraDocs: Doc[] = []
 
-      const convertResults: ConvertResult[] = []
       const fields = ops.mapping.$lookup?.fields as BitrixFieldMapping[]
 
       const toProcess = result.result as any[]
@@ -374,7 +381,9 @@ export async function performSynchronization (ops: {
       })
       let synchronized = 0
       while (toProcess.length > 0) {
-        console.log('LOAD:', synchronized, toProcess.length)
+        const convertResults: ConvertResult[] = []
+
+        console.log('LOAD:', synchronized, added)
         synchronized++
         const [r] = toProcess.slice(0, 1)
         // Convert documents.
@@ -389,7 +398,8 @@ export async function performSynchronization (ops: {
             tagElements,
             userList,
             existingDocuments,
-            defaultCategories
+            defaultCategories,
+            ops.blobProvider
           )
           if (ops.mapping.comments) {
             res.comments = await ops.bitrixClient
@@ -419,15 +429,48 @@ export async function performSynchronization (ops: {
                   return c
                 })
               })
+            const communications = await ops.bitrixClient.call('crm.activity.list', {
+              order: { ID: 'DESC' },
+              filter: {
+                OWNER_ID: res.document.bitrixId
+              },
+              select: ['*', 'COMMUNICATIONS']
+            })
+            const cr = Array.isArray(communications.result)
+              ? (communications.result as BitrixActivity[])
+              : [communications.result as BitrixActivity]
+            for (const comm of cr) {
+              const c: Comment & { bitrixId: string, type: string } = {
+                _id: generateId(),
+                _class: chunter.class.Comment,
+                message: `e-mail:<br/> 
+                            Subject: ${comm.SUBJECT}
+                            ${comm.DESCRIPTION}`,
+                bitrixId: comm.ID,
+                type: 'email',
+                attachedTo: res.document._id,
+                attachedToClass: res.document._class,
+                collection: 'comments',
+                space: res.document.space,
+                modifiedBy: userList.get(comm.AUTHOR_ID) ?? core.account.System,
+                modifiedOn: new Date(comm.CREATED ?? new Date().toString()).getTime()
+              }
+              res.comments?.push(c)
+            }
           }
+
           convertResults.push(res)
           extraDocs.push(...res.extraDocs)
           added++
+          const total = result.total
+          await syncPlatform(ops.client, ops.mapping, convertResults, ops.loginInfo, ops.frontUrl, () => {
+            ops.monitor?.(total)
+          })
           if (added >= ops.limit) {
             break
           }
         } catch (err: any) {
-          console.log('failed to obtain data for', r)
+          console.log('failed to obtain data for', r, err)
           await new Promise((resolve) => {
             // Sleep for a while
             setTimeout(resolve, 1000)
@@ -435,10 +478,6 @@ export async function performSynchronization (ops: {
         }
         toProcess.splice(0, 1)
       }
-      const total = result.total
-      await syncPlatform(ops.client, ops.mapping, convertResults, ops.loginInfo, ops.frontUrl, () => {
-        ops.monitor?.(total)
-      })
 
       processed = result.next
     }

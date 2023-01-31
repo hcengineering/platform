@@ -20,13 +20,13 @@
   import {
     Button,
     CheckBox,
+    deviceOptionsStore,
     getEventPopupPositionElement,
     getPlatformColor,
     Label,
     Loading,
     resizeObserver,
-    showPopup,
-    deviceOptionsStore
+    showPopup
   } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { FilterQuery } from '@hcengineering/view-resources'
@@ -111,10 +111,12 @@
     categories = categories
   }
 
+  $: schema = filter.key.attribute.schema ?? '9'
+
   const dispatch = createEventDispatcher()
   getValues(search)
 
-  $: tagLevelIcon = tagLevel[((level % 3) + 1) as 1 | 2 | 3]
+  $: tagLevelIcon = schema === '3' ? undefined : tagLevel[((level % 3) + 1) as 1 | 2 | 3]
   $: tagLevelLabel = [tags.string.Initial, tags.string.Meaningfull, tags.string.Expert][Math.floor(level / 3)]
 </script>
 
@@ -135,7 +137,7 @@
         label={tagLevelLabel}
         icon={tagLevelIcon}
         on:click={(evt) => {
-          showPopup(WeightPopup, { value: level }, getEventPopupPositionElement(evt), (res) => {
+          showPopup(WeightPopup, { value: level, schema }, getEventPopupPositionElement(evt), (res) => {
             if (Number.isFinite(res) && res >= 0 && res <= 8) {
               if (res != null) {
                 level = res

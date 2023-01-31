@@ -89,7 +89,7 @@ export class TCard extends TTask implements Card {
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
     comments?: number
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
   @Prop(TypeRef(contact.class.Employee), board.string.Assignee)

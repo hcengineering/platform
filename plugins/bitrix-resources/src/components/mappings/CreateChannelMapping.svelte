@@ -12,7 +12,7 @@
   import { getClient } from '@hcengineering/presentation'
 
   import contact, { ChannelProvider } from '@hcengineering/contact'
-  import { Button, DropdownLabelsIntl, IconAdd, IconDelete } from '@hcengineering/ui'
+  import { Button, DropdownLabelsIntl, EditBox, IconAdd, IconDelete } from '@hcengineering/ui'
   import DropdownLabels from '@hcengineering/ui/src/components/DropdownLabels.svelte'
   import bitrix from '../../plugin'
 
@@ -72,6 +72,8 @@
         bind:selected={p.provider}
       />
       <DropdownLabels minW0={false} label={bitrix.string.FieldMapping} {items} bind:selected={p.field} />
+      <EditBox bind:value={p.include} placeholder={getEmbeddedLabel('should...')} />
+      <EditBox bind:value={p.exclude} placeholder={getEmbeddedLabel('not...')} />
 
       <div class="ml-1">
         <Button

@@ -58,7 +58,7 @@ export class TTelegramMessage extends TAttachedDoc implements TelegramMessage {
   @Prop(TypeBoolean(), telegram.string.Incoming)
     incoming!: boolean
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
   @Prop(TypeTimestamp(), core.string.Modified)
@@ -74,7 +74,7 @@ export class TNewTelegramMessage extends TAttachedDoc implements NewTelegramMess
   @Prop(TypeString(), telegram.string.Status)
     status!: 'new' | 'sent'
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 }
 

@@ -126,16 +126,12 @@
       props: { edit: true, keyTitle },
       sortingKey: 'title'
     },
-    ...(category === undefined
-      ? [
-          {
-            key: '$lookup.category',
-            presenter: tags.component.CategoryPresenter,
-            sortingKey: 'category',
-            label: tags.string.CategoryLabel
-          }
-        ]
-      : []),
+    {
+      key: '$lookup.category',
+      presenter: tags.component.CategoryPresenter,
+      sortingKey: 'category',
+      label: tags.string.CategoryLabel
+    },
     {
       key: '',
       presenter: tags.component.TagElementCountPresenter,

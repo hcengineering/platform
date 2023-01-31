@@ -393,7 +393,7 @@ export class TProject extends TDoc implements Project {
   @Prop(Collection(tracker.class.Document), tracker.string.Document)
     documents!: number
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
   @Prop(TypeDate(true), tracker.string.StartDate)
@@ -430,7 +430,7 @@ export class TSprint extends TDoc implements Sprint {
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
     comments!: number
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
   @Prop(TypeDate(false), tracker.string.StartDate)

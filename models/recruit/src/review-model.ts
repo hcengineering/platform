@@ -24,7 +24,7 @@ export class TReview extends TEvent implements Review {
   @Index(IndexKind.FullText)
     verdict!: string
 
-  @Prop(TypeRef(contact.class.Organization), recruit.string.Company, contact.icon.Company)
+  @Prop(TypeRef(contact.class.Organization), recruit.string.Company, { icon: contact.icon.Company })
     company?: Ref<Organization>
 
   @Prop(Collection(recruit.class.Opinion), recruit.string.Opinions)
@@ -41,7 +41,7 @@ export class TOpinion extends TAttachedDoc implements Opinion {
   @Prop(TypeRef(recruit.class.Review), recruit.string.Review)
   declare attachedTo: Ref<Review>
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)

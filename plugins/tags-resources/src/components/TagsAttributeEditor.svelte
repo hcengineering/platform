@@ -1,6 +1,6 @@
 <script lang="ts">
   import { IntlString } from '@hcengineering/platform'
-  import { Doc, Ref } from '@hcengineering/core'
+  import { AnyAttribute, Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import type { TagReference, TagElement } from '@hcengineering/tags'
   import tags from '@hcengineering/tags'
@@ -11,6 +11,7 @@
   export let object: Doc
   export let label: IntlString
   export let isEditable: boolean = true
+  export let attr: AnyAttribute | undefined = undefined
 
   let items: TagReference[] = []
   const query = createQuery()
@@ -33,7 +34,7 @@
   <div class="flex-row-center flex-wrap">
     {#each items as value}
       <div class="step-container">
-        <TagReferencePresenter {value} {isEditable} kind={'labels'} on:remove={(res) => removeTag(res.detail)} />
+        <TagReferencePresenter {attr} {value} {isEditable} kind={'labels'} on:remove={(res) => removeTag(res.detail)} />
       </div>
     {/each}
     {#if isEditable}

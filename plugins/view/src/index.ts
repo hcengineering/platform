@@ -47,6 +47,7 @@ import type {
 export interface KeyFilter {
   _class: Ref<Class<Doc>>
   key: string
+  attribute: AnyAttribute
   component: AnyComponent
   label: IntlString
   icon: Asset | AnySvelteComponent | undefined
