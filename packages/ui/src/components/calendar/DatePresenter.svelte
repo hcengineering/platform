@@ -35,7 +35,7 @@
   export let showIcon = true
   export let shouldShowLabel: boolean = true
   export let size: 'x-small' | 'small' = 'small'
-  export let kind: 'transparent' | 'primary' | 'link' | 'list' = 'primary'
+  export let kind: 'transparent' | 'primary' | 'link' | 'link-bordered' | 'list' = 'primary'
   export let label = ui.string.DueDate
   export let detail = ui.string.IssueNeedsToBeCompletedByThisDate
 
@@ -220,7 +220,7 @@
       height: 2rem;
       border-radius: 0.25rem;
 
-      .btn-icon {
+      .btn-icon:not(.buttonIconNoLabel) {
         margin-right: 0.5rem;
       }
       &:hover {
@@ -229,6 +229,26 @@
         border-color: var(--divider-color);
         .btn-icon {
           color: var(--content-color);
+        }
+      }
+    }
+    &.link-bordered {
+      justify-content: center;
+      padding: 0 0.375rem;
+      height: 1.75rem;
+      color: var(--accent-color);
+      border-color: var(--divider-color);
+      border-radius: 0.25rem;
+
+      .btn-icon:not(.buttonIconNoLabel) {
+        margin-right: 0.5rem;
+      }
+      &:hover {
+        color: var(--accent-color);
+        background-color: var(--button-bg-hover);
+        border-color: var(--button-border-hover);
+        .btn-icon {
+          color: var(--accent-color);
         }
       }
     }

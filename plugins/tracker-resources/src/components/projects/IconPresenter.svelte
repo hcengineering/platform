@@ -15,9 +15,11 @@
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
   import { Project } from '@hcengineering/tracker'
-  import { Button } from '@hcengineering/ui'
+  import { Button, ButtonKind, ButtonSize } from '@hcengineering/ui'
 
   export let value: WithLookup<Project>
+  export let kind: ButtonKind = 'link'
+  export let size: ButtonSize = 'small'
 </script>
 
-<Button size="small" kind="link" icon={value.icon} />
+<Button {size} {kind} icon={value.icon} />

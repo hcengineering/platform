@@ -18,6 +18,7 @@
   import CommonTrackerDatePresenter from '../CommonTrackerDatePresenter.svelte'
 
   export let value: Project
+  export let kind: 'transparent' | 'primary' | 'link' | 'link-bordered' | 'list' = 'primary'
 
   const client = getClient()
 
@@ -28,4 +29,4 @@
   }
 </script>
 
-<CommonTrackerDatePresenter dateMs={dueDateMs} shouldRender={true} onDateChange={handleDueDateChanged} />
+<CommonTrackerDatePresenter dateMs={dueDateMs} shouldRender={true} {kind} onDateChange={handleDueDateChanged} />

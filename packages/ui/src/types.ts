@@ -281,3 +281,8 @@ export interface TimelineState {
   timelineBox: DOMRect
   viewBox: DOMRect
 }
+export interface TimelineSelect {
+  row: number
+  range: TTimelineRow
+  point: TimelinePoint
+}

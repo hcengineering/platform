@@ -21,7 +21,7 @@
   export let dateMs: number | null = null
   export let shouldRender: boolean = true
   export let onDateChange: (newDate: number | null) => void
-  export let kind: 'transparent' | 'primary' | 'link' | 'list' = 'primary'
+  export let kind: 'transparent' | 'primary' | 'link' | 'link-bordered' | 'list' = 'primary'
 
   $: today = new Date(new Date(Date.now()).setHours(0, 0, 0, 0))
   $: isOverdue = dateMs !== null && dateMs < today.getTime()

@@ -25,7 +25,7 @@
   } from '@hcengineering/view-resources'
   import { Project } from '@hcengineering/tracker'
   import { onMount } from 'svelte'
-  import ProjectsList from './ProjectsList.svelte'
+  import ProjectsTimeline from './ProjectsTimeline.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let itemsConfig: (BuildModelKey | string)[]
@@ -34,13 +34,13 @@
 
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
     if (dir === 'vertical') {
-      projectsList.onElementSelected(offset, of)
+      projectsTimeline.onElementSelected(offset, of)
     }
   })
 
-  let projectsList: ProjectsList
+  let projectsTimeline: ProjectsTimeline
 
-  $: if (projectsList !== undefined) {
+  $: if (projectsTimeline !== undefined) {
     listProvider.update(projects)
   }
 
@@ -55,8 +55,8 @@
   }}
 />
 
-<ProjectsList
-  bind:this={projectsList}
+<ProjectsTimeline
+  bind:this={projectsTimeline}
   {_class}
   {itemsConfig}
   {loadingProps}

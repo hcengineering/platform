@@ -39,6 +39,7 @@
   const NOT_ENDED = MILLISECONDS_IN_WEEK * 4
   let currentDate: Date = new Date(currentTime)
   $: currentDate = new Date(currentTime)
+  $: currentYear = currentDate.getFullYear()
 
   export const onObjectChecked = (row: number, value: boolean) => {
     dispatch('check', { row, value })
@@ -54,6 +55,7 @@
   const dayWidth: number = 5
   let container: HTMLElement
   let viewbox: HTMLElement
+  let labelWidth: number
   let scroller: Scroller
   let scrollDir: 'horizontal' | 'vertical' | 'none' = 'none'
 
@@ -159,7 +161,13 @@
       const offset = cur - time.offsetView
       const t = getDateByOffset(offset)
       time.cursorMarker = {
-        label: t.date.getDate().toString(),
+        // label: t.date.getDate().toString(),
+        label: Intl.DateTimeFormat(
+          locale,
+          t.date.getFullYear() === currentYear
+            ? { day: '2-digit', month: 'short' }
+            : { day: '2-digit', month: 'short', year: '2-digit' }
+        ).format(t.date),
         x: offset,
         date: t.date
       }
@@ -289,6 +297,7 @@
     <div class="timeline-header__title" style:width={`${panelWidth}px`}>
       <Button
         label={ui.string.Today}
+        disabled={time.offsetView <= time.viewBox.width && time.offsetView >= 0}
         on:click={() => {
           time.offsetView = Math.floor(time.viewBox.width / 2)
         }}
@@ -313,17 +322,17 @@
         {/if}
         <div class="cursor" style:left={`${time.todayMarker.x}px`}>{time.todayMarker.date.getDate()}</div>
         <!-- {#if time.cursorMarker}
-          <div class="cursor" style:left={`${time.cursorMarker.x}px`}>{time.cursorMarker.label}</div>
+          <div class="cursor new" style:left={`${time.cursorMarker.x}px`}>{time.cursorMarker.label}</div>
         {/if} -->
       </div>
     </div>
   </div>
   <div class="timeline-background__headers" style:width={`${panelWidth}px`} />
   <div class="timeline-background__viewbox" style:left={`${panelWidth}px`}>
-    <div class="timeline-wrapped_content" style:transform={`translateX(${time.offsetView}px)`}>
+    <div class="timeline-wrapped__content" style:transform={`translateX(${time.offsetView}px)`}>
       {#if time.months}
         {#each time.months as month}
-          <div class="monthMarker" style:left={`${month.x}px`} />
+          <div class="timeline-marker__month" style:left={`${month.x}px`} />
         {/each}
       {/if}
     </div>
@@ -332,21 +341,23 @@
     <Scroller bind:this={scroller}>
       {#each lines as line, row}
         {@const rangeRow = time.rows ? time.rows[row] : null}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
-          class="listGrid"
-          class:mListGridChecked={selectedRows.find((x) => x === row) !== undefined}
-          class:mListGridSelected={selectedRow === row}
+          class="timeline-row__container"
+          class:checked={selectedRows.find((x) => x === row) !== undefined}
+          class:hovered={selectedRow === row}
           on:focus={() => {}}
+          on:click={() => {
+            if (time.cursorMarker !== undefined) dispatch('select', { row, range: rangeRow, point: time.cursorMarker })
+          }}
           on:mousemove={(ev) => {
-            if (row !== selectedRow) {
-              handleRowFocused(row)
-            }
+            if (row !== selectedRow) handleRowFocused(row)
             ev.preventDefault()
           }}
         >
-          <div class="headerWrapper" style:width={`${panelWidth}px`}>
-            <div class="gridElement">
-              <div class="eListGridCheckBox">
+          <div class="timeline-row__header-wrapper" style:min-width={`${panelWidth}px`}>
+            <div class="timeline-row__header-item">
+              <div class="timeline-row__checkbox">
                 <CheckBox
                   checked={selectedRows.filter((i) => i === row).length > 0}
                   on:value={(event) => onObjectChecked(row, event.detail)}
@@ -355,25 +366,23 @@
             </div>
             <slot {row} />
           </div>
-          <div class="contentWrapper" class:nullRow={rangeRow === null && !moving}>
-            <div class="timeline-wrapped_content" style:transform={`translateX(${time.offsetView}px)`}>
+          <div class="timeline-row__content-wrapper" class:nullRow={rangeRow === null && !moving}>
+            <div class="timeline-wrapped__content" style:transform={`translateX(${time.offsetView}px)`}>
               {#if line.items}
                 {#each line.items as item}
                   {#if item.startDate}
                     {@const target = item.targetDate ?? item.startDate + NOT_ENDED}
                     <div
-                      class="project-item"
+                      class="timeline-item__container"
                       class:noTarget={item.targetDate === null}
                       style:left={`${getOffsetByDate(item.startDate)}px`}
                       style:right={`${getOffsetByDate(target) + dayWidth - 1}px`}
                       style:width={`${getOffsetByDate(target) - getOffsetByDate(item.startDate) + dayWidth - 1}px`}
                     >
-                      <div class="project-presenter gap-2">
-                        {#if item.icon}<Icon
-                            icon={item.icon}
-                            size={item.iconSize ?? 'small'}
-                            iconProps={item.iconProps}
-                          />{/if}
+                      <div class="timeline-item__presenter">
+                        {#if item.icon}
+                          <Icon icon={item.icon} size={item.iconSize ?? 'small'} iconProps={item.iconProps} />
+                        {/if}
                         {#if item.presenter}<svelte:component this={item.presenter} {...item.props} />{/if}
                         {#if item.label}<span>{item.label}</span>{/if}
                       </div>
@@ -407,6 +416,16 @@
               {/if}
             {/if}
             {#if rangeRow === null && selectedRow === row && time.cursorMarker && !moving}
+              <div
+                class="timeline-action__label"
+                bind:clientWidth={labelWidth}
+                style:left={`${time.offsetView + time.cursorMarker.x}px`}
+                style:transform={time.offsetView + time.cursorMarker.x > time.viewBox.width / 2
+                  ? `translate(${-labelWidth - 24}px, -50%)`
+                  : 'translate(24px, -50%)'}
+              >
+                {time.cursorMarker.label}
+              </div>
               <button class="timeline-action__button add" style:left={`${time.offsetView + time.cursorMarker.x}px`}>
                 <IconAdd size={'small'} />
               </button>
@@ -416,361 +435,10 @@
       {/each}
     </Scroller>
     <div class="timeline-foreground__viewbox" style:left={`${panelWidth}px`}>
-      <div class="timeline-wrapped_content" style:transform={`translateX(${time.offsetView}px)`}>
-        <div class="todayMarker" style:left={`${time.todayMarker.x}px`} />
+      <div class="timeline-wrapped__content" style:transform={`translateX(${time.offsetView}px)`}>
+        <div class="timeline-marker__today" style:left={`${time.todayMarker.x}px`} />
       </div>
     </div>
   {/if}
   <div class="timeline-splitter" class:moving style:left={`${panelWidth}px`} on:mousedown={splitterStart} />
 </div>
-
-<style lang="scss">
-  .timeline-container {
-    overflow: hidden;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100%;
-    min-width: 0;
-    min-height: 0;
-
-    & > * {
-      overscroll-behavior-x: contain;
-    }
-  }
-  .timeline-header {
-    display: flex;
-    align-items: center;
-    min-height: 4rem;
-    border-bottom: 1px solid var(--divider-color);
-  }
-  .timeline-header__title {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-    padding: 0 2.25rem;
-    height: 100%;
-    background-color: var(--body-accent);
-    box-shadow: var(--accent-shadow);
-    // z-index: 2;
-  }
-  .timeline-header__time {
-    // overflow: hidden;
-    position: relative;
-    flex-grow: 1;
-    height: 100%;
-    background-color: var(--body-color);
-    mask-image: linear-gradient(
-      90deg,
-      rgba(0, 0, 0, 0) 0,
-      rgba(0, 0, 0, 1) 2rem,
-      rgba(0, 0, 0, 1) calc(100% - 2rem),
-      rgba(0, 0, 0, 0) 100%
-    );
-
-    &-content {
-      width: 100%;
-      height: 100%;
-      will-change: transform;
-
-      .day,
-      .month {
-        position: absolute;
-        pointer-events: none;
-      }
-      .month {
-        width: max-content;
-        top: 0.25rem;
-        font-size: 1rem;
-        color: var(--accent-color);
-
-        &:first-letter {
-          text-transform: uppercase;
-        }
-      }
-      .day {
-        bottom: 0.5rem;
-        font-size: 1rem;
-        color: var(--content-color);
-        transform: translateX(-50%);
-      }
-      .cursor {
-        position: absolute;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding-bottom: 1px;
-        width: 1.75rem;
-        height: 1.75rem;
-        bottom: 0.375rem;
-        font-size: 1rem;
-        font-weight: 600;
-        color: #fff;
-        background-color: var(--primary-bg-color);
-        border-radius: 50%;
-        transform: translateX(-50%);
-        pointer-events: none;
-      }
-    }
-  }
-  .todayMarker,
-  .monthMarker {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 0;
-    height: 100%;
-    pointer-events: none;
-  }
-  .monthMarker {
-    border-left: 1px dashed var(--highlight-select);
-  }
-  .todayMarker {
-    border-left: 1px solid var(--primary-bg-color);
-  }
-
-  .timeline-background__headers,
-  .timeline-background__viewbox,
-  .timeline-foreground__viewbox {
-    overflow: hidden;
-    position: absolute;
-    top: 4rem;
-    bottom: 0;
-    height: 100%;
-    z-index: -1;
-  }
-  .timeline-background__headers {
-    left: 0;
-    background-color: var(--body-accent);
-  }
-  .timeline-background__viewbox,
-  .timeline-foreground__viewbox {
-    right: 0;
-    mask-image: linear-gradient(
-      90deg,
-      rgba(0, 0, 0, 0) 0,
-      rgba(0, 0, 0, 1) 2rem,
-      rgba(0, 0, 0, 1) calc(100% - 2rem),
-      rgba(0, 0, 0, 0) 100%
-    );
-  }
-  .timeline-foreground__viewbox {
-    z-index: 1;
-    pointer-events: none;
-  }
-
-  .timeline-splitter,
-  .timeline-splitter::before {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    height: 100%;
-    transform: translateX(-50%);
-  }
-  .timeline-splitter {
-    width: 1px;
-    background-color: var(--divider-color);
-    cursor: col-resize;
-    z-index: 3;
-    transition-property: width, background-color;
-    transition-timing-function: var(--timing-main);
-    transition-duration: 0.1s;
-    transition-delay: 0s;
-
-    &:hover {
-      width: 3px;
-      background-color: var(--button-border-hover);
-      transition-duration: 0.15s;
-      transition-delay: 0.3s;
-    }
-    &::before {
-      content: '';
-      width: 10px;
-      left: 50%;
-    }
-    &.moving {
-      width: 2px;
-      background-color: var(--primary-edit-border-color);
-      transition-duration: 0.1s;
-      transition-delay: 0s;
-    }
-  }
-
-  .headerWrapper {
-    display: flex;
-    align-items: center;
-    height: 100%;
-    min-width: 0;
-    padding-left: 0.75rem;
-    padding-right: 1.15rem;
-    // border-bottom: 1px solid var(--accent-bg-color);
-  }
-  .contentWrapper {
-    overflow: hidden;
-    position: relative;
-    display: flex;
-    align-items: center;
-    flex-grow: 1;
-    height: 100%;
-    min-width: 0;
-    min-height: 0;
-    mask-image: linear-gradient(
-      90deg,
-      rgba(0, 0, 0, 0) 0,
-      rgba(0, 0, 0, 1) 2rem,
-      rgba(0, 0, 0, 1) calc(100% - 2rem),
-      rgba(0, 0, 0, 0) 100%
-    );
-
-    &.nullRow {
-      cursor: pointer;
-    }
-  }
-  .timeline-wrapped_content {
-    width: 100%;
-    height: 100%;
-    min-width: 0;
-    min-height: 0;
-    will-change: transform;
-  }
-
-  .timeline-action__button,
-  .project-item {
-    position: absolute;
-    display: flex;
-    align-items: center;
-    padding: 0.5rem;
-    box-shadow: var(--button-shadow);
-  }
-  .project-item {
-    top: 0.25rem;
-    bottom: 0.25rem;
-    background-color: var(--button-bg-color);
-    border: 1px solid var(--button-border-color);
-    border-radius: 0.75rem;
-
-    &:hover {
-      background-color: var(--button-bg-hover);
-      border-color: var(--button-border-hover);
-    }
-    &.noTarget {
-      mask-image: linear-gradient(to left, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 1) 2rem);
-      border-right-color: transparent;
-    }
-
-    .project-presenter {
-      display: flex;
-      align-items: center;
-
-      .space {
-        flex-shrink: 0;
-        width: 0.25rem;
-        min-width: 0.25rem;
-        max-width: 0.25rem;
-      }
-    }
-  }
-  .timeline-action__button {
-    top: 0.625rem;
-    bottom: 0.625rem;
-    width: 2rem;
-    color: var(--content-color);
-    background-color: var(--button-bg-color);
-    border: 1px solid var(--button-border-color);
-    border-radius: 0.5rem;
-
-    // color: var(--caption-color);
-    // font-size: 0.65rem;
-    // font-weight: 600;
-
-    &:hover {
-      color: var(--accent-color);
-      background-color: var(--button-bg-hover);
-      border-color: var(--button-border-hover);
-    }
-
-    &.left {
-      left: 1rem;
-    }
-    &.right {
-      right: 1rem;
-    }
-    &.add {
-      transform: translateX(-50%);
-      pointer-events: none;
-    }
-  }
-
-  .listGrid {
-    display: flex;
-    justify-content: stretch;
-    align-items: center;
-    flex-shrink: 0;
-    width: 100%;
-    height: 3.25rem;
-    min-height: 0;
-    color: var(--caption-color);
-    z-index: 2;
-
-    &.mListGridChecked {
-      .headerWrapper {
-        background-color: var(--highlight-select);
-      }
-      .contentWrapper {
-        background-color: var(--trans-content-05);
-      }
-      .eListGridCheckBox {
-        opacity: 1;
-      }
-    }
-
-    &.mListGridSelected {
-      .headerWrapper {
-        background-color: var(--highlight-select-hover);
-      }
-      .contentWrapper {
-        background-color: var(--trans-content-10);
-      }
-    }
-
-    .eListGridCheckBox {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-    }
-
-    &:hover .eListGridCheckBox {
-      opacity: 1;
-    }
-  }
-
-  .filler {
-    display: flex;
-    flex-grow: 1;
-  }
-
-  .gridElement {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    margin-left: 0.5rem;
-
-    &:first-child {
-      margin-left: 0;
-    }
-  }
-
-  .iconPresenter {
-    padding-left: 0.45rem;
-  }
-
-  .projectPresenter {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-    width: 5.5rem;
-    margin-left: 0.5rem;
-  }
-</style>

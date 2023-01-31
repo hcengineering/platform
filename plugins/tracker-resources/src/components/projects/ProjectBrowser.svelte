@@ -15,6 +15,7 @@
 <script lang="ts">
   import contact from '@hcengineering/contact'
   import { DocumentQuery, FindOptions, SortingOrder } from '@hcengineering/core'
+  import { BuildModelKey } from '@hcengineering/view'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Project } from '@hcengineering/tracker'
@@ -25,6 +26,7 @@
   import { getIncludedProjectStatuses, projectsTitleMap, ProjectsViewMode } from '../../utils'
   import NewProject from './NewProject.svelte'
   import ProjectsListBrowser from './ProjectsListBrowser.svelte'
+  import ProjectsTimelineBrowser from './ProjectsTimelineBrowser.svelte'
 
   export let label: IntlString
   export let query: DocumentQuery<Project> = {}
@@ -86,6 +88,18 @@
     { id: 'list', icon: view.icon.List, tooltip: view.string.List },
     { id: 'timeline', icon: view.icon.Timeline, tooltip: view.string.Timeline }
   ]
+  const itemsConfig: (BuildModelKey | string)[] = [
+    { key: '', presenter: tracker.component.IconPresenter, props: { kind: 'transparent', size: 'medium' } },
+    { key: '', presenter: tracker.component.ProjectPresenter, props: { kind: 'link-bordered', size: 'medium' } },
+    {
+      key: '$lookup.lead',
+      presenter: tracker.component.LeadPresenter,
+      props: { _class: tracker.class.Project, defaultClass: contact.class.Employee, shouldShowLabel: false }
+    },
+    { key: '', presenter: tracker.component.TargetDatePresenter, props: { kind: 'link-bordered' } },
+    { key: '', presenter: tracker.component.ProjectMembersPresenter, props: { kind: 'link-bordered', size: 'medium' } },
+    { key: '', presenter: tracker.component.ProjectStatusPresenter, props: { kind: 'link-bordered', size: 'medium' } }
+  ]
 </script>
 
 <div class="fs-title flex-between header">
@@ -128,23 +142,11 @@
     }}
   />
 </div>
-<ProjectsListBrowser
-  _class={tracker.class.Project}
-  itemsConfig={[
-    { key: '', presenter: tracker.component.IconPresenter },
-    { key: '', presenter: tracker.component.ProjectPresenter, props: { kind: 'list' } },
-    {
-      key: '$lookup.lead',
-      presenter: tracker.component.LeadPresenter,
-      props: { _class: tracker.class.Project, defaultClass: contact.class.Employee, shouldShowLabel: false }
-    },
-    { key: '', presenter: tracker.component.ProjectMembersPresenter, props: { kind: 'link' } },
-    { key: '', presenter: tracker.component.TargetDatePresenter },
-    { key: '', presenter: tracker.component.ProjectStatusPresenter }
-  ]}
-  projects={resultProjects}
-  {viewMode}
-/>
+{#if viewMode === 'list'}
+  <ProjectsListBrowser _class={tracker.class.Project} {itemsConfig} projects={resultProjects} />
+{:else}
+  <ProjectsTimelineBrowser _class={tracker.class.Project} {itemsConfig} projects={resultProjects} />
+{/if}
 
 <style lang="scss">
   .header {
