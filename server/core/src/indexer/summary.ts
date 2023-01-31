@@ -21,7 +21,6 @@ import core, {
   DocumentQuery,
   DocumentUpdate,
   extractDocKey,
-  FullTextSearchContext,
   Hierarchy,
   IndexStageState,
   isFullTextAttribute,
@@ -32,7 +31,7 @@ import { translate } from '@hcengineering/platform'
 import { convert } from 'html-to-text'
 import { IndexedDoc } from '../types'
 import { contentStageId, DocUpdateHandler, fieldStateId, FullTextPipeline, FullTextPipelineStage } from './types'
-import { loadIndexStageStage } from './utils'
+import { getFullTextContext, loadIndexStageStage } from './utils'
 
 /**
  * @public
@@ -119,23 +118,7 @@ export class FullSummaryStage implements FullTextPipelineStage {
  * @public
  */
 export function isIndexingRequired (pipeline: FullTextPipeline, doc: DocIndexState): boolean {
-  let objClass = pipeline.hierarchy.getClass(doc.objectClass)
-
-  let needIndex = false
-  while (true) {
-    if (pipeline.hierarchy.hasMixin(objClass, core.mixin.FullTextSearchContext)) {
-      needIndex = pipeline.hierarchy.as<Class<Doc>, FullTextSearchContext>(
-        objClass,
-        core.mixin.FullTextSearchContext
-      ).fullTextSummary
-      break
-    }
-    if (objClass.extends === undefined) {
-      break
-    }
-    objClass = pipeline.hierarchy.getClass(objClass.extends)
-  }
-  return needIndex
+  return getFullTextContext(pipeline.hierarchy, doc.objectClass).fullTextSummary ?? false
 }
 
 /**

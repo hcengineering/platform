@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { SortingOrder, WithLookup } from '@hcengineering/core'
-  import presentation, { Card, createQuery } from '@hcengineering/presentation'
+  import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
   import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
   import { Button, EditStyle, eventToHTMLElement, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import EditBoxPopup from '@hcengineering/view-resources/src/components/EditBoxPopup.svelte'
@@ -27,14 +27,14 @@
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
   import TimeSpendReports from './TimeSpendReports.svelte'
 
-  export let value: number
   export let format: 'text' | 'password' | 'number'
   export let kind: EditStyle = 'search-style'
   export let object: Issue
 
-  let _value = value
+  $: _value = object.estimation
 
   const dispatch = createEventDispatcher()
+  const client = getClient()
 
   $: childIds = Array.from((object.childInfo ?? []).map((it) => it.childId))
 
@@ -80,9 +80,9 @@
   label={tracker.string.Estimation}
   canSave={true}
   okAction={() => {
-    dispatch('close', _value)
+    dispatch('close')
   }}
-  okLabel={_value !== value ? presentation.string.Save : presentation.string.Close}
+  okLabel={presentation.string.Ok}
   on:close={() => {
     dispatch('close', null)
   }}
@@ -96,7 +96,7 @@
           showPopup(
             EditBoxPopup,
             {
-              value: _value === 0 ? undefined : _value,
+              value: object.estimation === 0 ? undefined : object.estimation,
               format,
               kind,
               placeholder: tracker.string.Estimation,
@@ -105,7 +105,11 @@
             eventToHTMLElement(evt),
             (res) => {
               if (typeof res === 'number') {
-                _value = res
+                if (_value !== res) {
+                  _value = res
+                  client.update(object, { estimation: res })
+                  object.estimation = res
+                }
               }
             }
           )

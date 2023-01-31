@@ -91,6 +91,10 @@
     textEditor.focus()
     needFocus = false
   }
+
+  export function isEmptyContent (): boolean {
+    return textEditor.isEmptyContent()
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->

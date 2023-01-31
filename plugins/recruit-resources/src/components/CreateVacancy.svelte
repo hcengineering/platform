@@ -17,12 +17,12 @@
   import contact, { Organization } from '@hcengineering/contact'
   import core, { FindResult, generateId, getCurrentAccount, Ref } from '@hcengineering/core'
   import { Card, createQuery, getClient, UserBox } from '@hcengineering/presentation'
+  import { Vacancy as VacancyClass } from '@hcengineering/recruit'
   import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
+  import tracker, { IssueStatus, IssueTemplate, TimeReportDayType, WorkDayLength } from '@hcengineering/tracker'
   import { Button, Component, createFocusManager, EditBox, FocusHandler, IconAttachment } from '@hcengineering/ui'
-  import tracker, { IssueStatus, IssueTemplate } from '@hcengineering/tracker'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
-  import { Vacancy as VacancyClass } from '@hcengineering/recruit'
   import Company from './icons/Company.svelte'
   import Vacancy from './icons/Vacancy.svelte'
 
@@ -34,6 +34,8 @@
   let objectId: Ref<VacancyClass> = generateId()
   let issueTemplates: FindResult<IssueTemplate>
 
+  let fullDescription: string = template?.description ?? ''
+
   export let company: Ref<Organization> | undefined
   export let preserveCompany: boolean = false
 
@@ -41,10 +43,16 @@
     return name === '' && templateId !== undefined
   }
 
+  let changed = false
+
   const client = getClient()
   const templateQ = createQuery()
   $: templateQ.query(task.class.KanbanTemplate, { _id: templateId }, (result) => {
     template = result[0]
+    if (!changed || descriptionBox?.isEmptyContent()) {
+      changed = false
+      fullDescription = template.description ?? fullDescription
+    }
   })
 
   const issueTemplatesQ = createQuery()
@@ -67,7 +75,7 @@
         ...template,
         name,
         description: template?.shortDescription ?? '',
-        fullDescription: template?.description ?? '',
+        fullDescription,
         private: false,
         archived: false,
         company,
@@ -110,7 +118,9 @@
           estimation: issueTemplate.estimation,
           reports: 0,
           relations: [{ _id: id, _class: recruit.class.Vacancy }],
-          childInfo: []
+          childInfo: [],
+          workDayLength: WorkDayLength.EIGHT_HOURS,
+          defaultTimeReportDay: TimeReportDayType.PreviousWorkDay
         }
       )
     }
@@ -159,9 +169,12 @@
       alwaysEdit
       showButtons={false}
       maxHeight={'card'}
-      content={template?.description ?? ''}
+      bind:content={fullDescription}
       placeholder={recruit.string.FullDescription}
       emphasized
+      on:changeContent={() => {
+        changed = true
+      }}
     />
   {/key}
 

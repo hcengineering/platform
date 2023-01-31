@@ -140,6 +140,10 @@
     })
   }
 
+  export function isEmptyContent (): boolean {
+    return isEmpty
+  }
+
   let needFocus = false
   let focused = false
   let posFocus: FocusPosition | undefined = undefined

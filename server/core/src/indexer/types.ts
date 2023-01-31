@@ -39,6 +39,9 @@ export interface FullTextPipeline {
     flush?: boolean
   ) => Promise<void>
 
+  add: (doc: DocIndexState) => void
+  markRemove: (doc: DocIndexState) => void
+
   search: (
     _classes: Ref<Class<Doc>>[],
     search: DocumentQuery<Doc>,
@@ -98,7 +101,7 @@ export const contentStageId = 'cnt-v2b'
 /**
  * @public
  */
-export const fieldStateId = 'fld-v1'
+export const fieldStateId = 'fld-v2'
 
 /**
  * @public

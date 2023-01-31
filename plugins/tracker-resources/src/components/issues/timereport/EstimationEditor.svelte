@@ -43,13 +43,9 @@
     }
 
     if (kind === 'list') {
-      showPopup(EstimationPopup, { value: value.estimation, format: 'number', object: value }, 'top', (res) => {
-        if (res != null) {
-          changeEstimation(res)
-        }
-      })
+      showPopup(EstimationPopup, { value: value.estimation, format: 'number', object: value }, 'top')
     } else {
-      showPopup(EditBoxPopup, { value, format: 'number' }, eventToHTMLElement(event), (res) => {
+      showPopup(EditBoxPopup, { value: value.estimation, format: 'number' }, eventToHTMLElement(event), (res) => {
         if (res !== undefined) {
           changeEstimation(res)
         }
@@ -60,6 +56,9 @@
   const changeEstimation = async (newEstimation: number | undefined) => {
     if (!isEditable || newEstimation === undefined || value.estimation === newEstimation) {
       return
+    }
+    if (newEstimation == null) {
+      newEstimation = 0
     }
 
     dispatch('change', newEstimation)

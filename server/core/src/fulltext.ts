@@ -45,7 +45,6 @@ import type { FullTextAdapter, IndexedDoc, WithFind } from './types'
  */
 export class FullTextIndex implements WithFind {
   txFactory = new TxFactory(core.account.System)
-  closed = false
 
   consistency: Promise<void> | undefined
 
@@ -69,9 +68,8 @@ export class FullTextIndex implements WithFind {
   }
 
   async close (): Promise<void> {
-    this.closed = true
-    await this.consistency
     await this.indexer.cancel()
+    await this.consistency
   }
 
   async tx (ctx: MeasureContext, tx: Tx): Promise<TxResult> {
