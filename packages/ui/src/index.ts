@@ -163,6 +163,7 @@ export { default as notificationsStore } from './components/notifications/store'
 export { NotificationPosition } from './components/notifications/NotificationPosition'
 export { NotificationSeverity } from './components/notifications/NotificationSeverity'
 export { Notification } from './components/notifications/Notification'
+export { default as Wizard } from './components/wizard/Wizard.svelte'
 
 export * from './types'
 export * from './location'
