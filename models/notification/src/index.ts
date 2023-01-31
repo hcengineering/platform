@@ -162,7 +162,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: notification.string.EmailNotification,
-      default: false
+      default: true
     },
     notification.ids.EmailNotification
   )
