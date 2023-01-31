@@ -84,11 +84,22 @@
     }
   }
 
-  $: bottomCaption = page === 'login' ? login.string.DoNotHaveAnAccount : login.string.HaveAccount
-  $: bottomActionLabel = page === 'login' ? login.string.SignUp : login.string.LogIn
+  $: bottom = page === 'login' ? [signUpAction] : [loginAction]
   $: secondaryButtonLabel = page === 'login' ? login.string.SignUp : undefined
   $: secondaryButtonAction = () => {
     page = 'signUp'
+  }
+
+  const signUpAction = {
+    caption: login.string.DoNotHaveAnAccount,
+    i18n: login.string.SignUp,
+    func: () => page = 'signUp'
+  }
+
+  const loginAction = {
+    caption: login.string.HaveAccount,
+    i18n: login.string.LogIn,
+    func: () => page = 'login'
   }
 
   onMount(() => {
@@ -121,9 +132,5 @@
   {action}
   {secondaryButtonLabel}
   {secondaryButtonAction}
-  {bottomCaption}
-  {bottomActionLabel}
-  bottomActionFunc={() => {
-    page = page === 'login' ? 'signUp' : 'login'
-  }}
+  bottomActions={bottom}
 />

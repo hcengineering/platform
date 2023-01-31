@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { AccountMethod, ACCOUNT_DB } from '@hcengineering/account'
+import account, { AccountMethod, ACCOUNT_DB } from '@hcengineering/account'
 import platform, { Response, serialize, setMetadata, Severity, Status } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
 import toolPlugin from '@hcengineering/server-tool'
@@ -49,6 +49,12 @@ export function serveAccount (methods: Record<string, AccountMethod>, productId 
     console.log('Please provide server secret')
     process.exit(1)
   }
+
+  const ses = process.env.SES_URL
+  const frontURL = process.env.FRONT_URL
+
+  setMetadata(account.metadata.SES_URL, ses)
+  setMetadata(account.metadata.FrontURL, frontURL)
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
   setMetadata(toolPlugin.metadata.Endpoint, endpointUri)

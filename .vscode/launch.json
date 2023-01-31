@@ -48,10 +48,12 @@
       "request": "launch",
       "args": ["src/__start.ts"],
       "env": {
-        "MONGO_URL": "mongodb://localhost:27018",
+        "MONGO_URL": "mongodb://localhost:27017",
         "SERVER_SECRET": "secret",
         "TRANSACTOR_URL": "ws:/localhost:3333",
-        "ACCOUNT_PORT": "3000"
+        "ACCOUNT_PORT": "3000",
+        "FRONT_URL": "http://localhost:8080",
+        "SES_URL": "http://localhost:8091"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,

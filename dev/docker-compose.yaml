@@ -58,6 +58,8 @@ services:
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
+      - FRONT_URL=http://localhost:8087
+      - SES_URL=http://localhost:8091
     restart: unless-stopped
   collaborator:
     image: hardcoreeng/collaborator

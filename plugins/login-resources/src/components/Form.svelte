@@ -38,15 +38,19 @@
     func: () => Promise<void>
   }
 
+  interface BottomAction {
+    i18n: IntlString
+    func: () => void
+    caption: IntlString
+  }
+
   export let caption: IntlString
   export let status: Status
   export let fields: Field[]
   export let action: Action
   export let secondaryButtonLabel: IntlString | undefined = undefined
   export let secondaryButtonAction: (() => void) | undefined = undefined
-  export let bottomCaption: IntlString | undefined = undefined
-  export let bottomActionLabel: IntlString | undefined = undefined
-  export let bottomActionFunc: (() => void) | undefined = undefined
+  export let bottomActions: BottomAction[] = []
   export let object: any
 
   async function validate () {
@@ -152,15 +156,15 @@
       {/if}
     </div>
   </Scroller>
-  {#if bottomCaption || (bottomActionLabel && bottomActionFunc)}
+  {#if bottomActions.length}
     <div class="grow-separator" />
     <div class="footer">
-      {#if bottomCaption}
-        <span><Label label={bottomCaption} /></span>
-      {/if}
-      {#if bottomActionLabel && bottomActionFunc}
-        <a href="." on:click|preventDefault={bottomActionFunc}><Label label={bottomActionLabel} /></a>
-      {/if}
+      {#each bottomActions as action}
+        <div>
+          <span><Label label={action.caption} /></span>
+          <a href="." on:click|preventDefault={action.func}><Label label={action.i18n} /></a>
+        </div>
+      {/each}
     </div>
   {/if}
 </form>

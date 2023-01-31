@@ -566,3 +566,68 @@ export async function leaveWorkspace (email: string): Promise<void> {
     body: serialize(request)
   })
 }
+
+export async function requestPassword (email: string): Promise<Status>  {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
+  if (overrideToken !== undefined) {
+    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
+    if (endpoint !== undefined) {
+      return OK
+    }
+  }
+  const request: Request<[string]> = {
+    method: 'requestPassword',
+    params: [email]
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: serialize(request)
+    })
+    const result: Response<any> = await response.json()
+    return result.error ?? OK
+  } catch (err) {
+    return unknownError(err)
+  }
+}
+
+export async function restorePassword (
+  token: string,
+  password: string,
+): Promise<[Status, LoginInfo | undefined]> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const request: Request<[string]> = {
+    method: 'restorePassword',
+    params: [password]
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: serialize(request)
+    })
+    const result: Response<any> = await response.json()
+    return [result.error ?? OK, result.result]
+  } catch (err) {
+    return [unknownError(err), undefined]
+  }
+}
