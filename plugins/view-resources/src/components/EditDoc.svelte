@@ -123,8 +123,8 @@
       }
     }
     const filtredKeys = Array.from(keysMap.values())
-
     const { attributes, collections } = categorizeFields(hierarchy, filtredKeys, collectionArrays, allowedCollections)
+
     keys = attributes.map((it) => it.key)
 
     const editors: { key: KeyedAttribute; editor: AnyComponent; category: AttributeCategory }[] = []
@@ -171,7 +171,7 @@
   $: getEditorOrDefault(realObjectClass, showAllMixins, _id)
 
   function getEditorOrDefault (_class: Ref<Class<Doc>>, showAllMixins: boolean, _id: Ref<Doc>): void {
-    parentClass = getParentClass(_class)
+    parentClass = hierarchy.getParentClass(_class)
     mainEditor = getEditor(_class)
     updateKeys(showAllMixins)
   }
@@ -209,21 +209,6 @@
   }
 
   $: icon = getIcon(realObjectClass)
-
-  function getParentClass (_class: Ref<Class<Doc>>): Ref<Class<Doc>> {
-    const baseDomain = hierarchy.getDomain(_class)
-    const ancestors = hierarchy.getAncestors(_class)
-    let result: Ref<Class<Doc>> = _class
-    for (const ancestor of ancestors) {
-      try {
-        const domain = hierarchy.getClass(ancestor).domain
-        if (domain === baseDomain) {
-          result = ancestor
-        }
-      } catch {}
-    }
-    return result
-  }
 
   let title: string = ''
 

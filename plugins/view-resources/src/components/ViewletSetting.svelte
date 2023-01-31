@@ -14,10 +14,17 @@
 -->
 <script lang="ts">
   import core, { AnyAttribute, ArrOf, Class, Doc, Ref, Type } from '@hcengineering/core'
-  import { IntlString } from '@hcengineering/platform'
+  import { Asset, IntlString } from '@hcengineering/platform'
   import preferencePlugin from '@hcengineering/preference'
   import presentation, { Card, createQuery, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
-  import { Button, getPlatformColorForText, ToggleButton } from '@hcengineering/ui'
+  import {
+    Button,
+    getEventPositionElement,
+    getPlatformColorForText,
+    SelectPopup,
+    showPopup,
+    ToggleButton
+  } from '@hcengineering/ui'
   import { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
@@ -55,14 +62,16 @@
     label: IntlString
     value: string | BuildModelKey
     _class: Ref<Class<Doc>>
+    icon: Asset | undefined
   }
 
   function getObjectConfig (_class: Ref<Class<Doc>>, param: string): AttributeConfig {
-    const clazz = client.getHierarchy().getClass(_class)
+    const clazz = hierarchy.getClass(_class)
     return {
       value: param,
       label: clazz.label,
       enabled: true,
+      icon: clazz.icon,
       _class
     }
   }
@@ -70,6 +79,7 @@
   function getBaseConfig (viewlet: Viewlet): AttributeConfig[] {
     const lookup = buildConfigLookup(hierarchy, viewlet.attachTo, viewlet.config, viewlet.options?.lookup)
     const result: AttributeConfig[] = []
+    const clazz = hierarchy.getClass(viewlet.attachTo)
     for (const param of viewlet.config) {
       if (typeof param === 'string') {
         if (param.length === 0) {
@@ -79,7 +89,8 @@
             value: param,
             enabled: true,
             label: getKeyLabel(client, viewlet.attachTo, param, lookup),
-            _class: viewlet.attachTo
+            _class: viewlet.attachTo,
+            icon: clazz.icon
           })
         }
       } else {
@@ -87,7 +98,8 @@
           value: param,
           label: param.label as IntlString,
           enabled: true,
-          _class: viewlet.attachTo
+          _class: viewlet.attachTo,
+          icon: clazz.icon
         })
       }
     }
@@ -126,13 +138,15 @@
       parent = pclazz.extends
     }
     if (presenter === undefined) return
+    const clazz = hierarchy.getClass(attribute.attributeOf)
 
     if (useMixinProxy) {
       const newValue = {
         value: attribute.attributeOf + '.' + attribute.name,
         label: attribute.label,
         enabled: false,
-        _class: attribute.attributeOf
+        _class: attribute.attributeOf,
+        icon: clazz.icon
       }
       if (!isExist(result, newValue)) {
         result.push(newValue)
@@ -142,7 +156,8 @@
         value,
         label: attribute.label,
         enabled: false,
-        _class: attribute.attributeOf
+        _class: attribute.attributeOf,
+        icon: clazz.icon
       }
       if (!isExist(result, newValue)) {
         result.push(newValue)
@@ -169,11 +184,21 @@
     }
 
     hierarchy.getDescendants(viewlet.attachTo).forEach((it) => {
-      const ancestor = hierarchy.getAncestors(it)[1]
-      hierarchy.getAllAttributes(it, ancestor).forEach((attr) => {
-        if (attr.isCustom === true) {
-          processAttribute(attr, result, true)
-        }
+      hierarchy.getOwnAttributes(it).forEach((attr) => {
+        processAttribute(attr, result, true)
+      })
+    })
+
+    const ancestors = new Set(hierarchy.getAncestors(viewlet.attachTo))
+    const parent = hierarchy.getParentClass(viewlet.attachTo)
+    const parentMixins = hierarchy
+      .getDescendants(parent)
+      .map((p) => hierarchy.getClass(p))
+      .filter((p) => hierarchy.isMixin(p._id) && p.extends && ancestors.has(p.extends))
+
+    parentMixins.forEach((it) => {
+      hierarchy.getOwnAttributes(it._id).forEach((attr) => {
+        processAttribute(attr, result, true)
       })
     })
 
@@ -252,6 +277,24 @@
     const color = getPlatformColorForText(attribute._class)
     return `border: 1px solid ${color + (attribute.enabled ? 'ff' : 'cc')};`
   }
+
+  function groupByClasses (attributes: AttributeConfig[]): Map<Ref<Class<Doc>>, AttributeConfig[]> {
+    const res = new Map()
+    for (const attribute of attributes) {
+      if (attribute.enabled) continue
+      const arr = res.get(attribute._class) ?? []
+      arr.push(attribute)
+      res.set(attribute._class, arr)
+    }
+    return res
+  }
+
+  $: enabled = attributes.filter((p) => p.enabled)
+  $: classes = groupByClasses(attributes)
+
+  function getClassLabel (_class: Ref<Class<Doc>>): IntlString {
+    return hierarchy.getClass(_class).label
+  }
 </script>
 
 <Card
@@ -264,7 +307,7 @@
   }}
 >
   <div class="flex-row-stretch flex-wrap">
-    {#each attributes as attribute, i}
+    {#each enabled as attribute, i}
       <div
         class="m-0-5 border-radius-1 overflow-label"
         style={getStyle(attribute)}
@@ -281,7 +324,41 @@
           selected = undefined
         }}
       >
-        <ToggleButton backgroundColor={getColor(attribute)} label={attribute.label} bind:value={attribute.enabled} />
+        <ToggleButton
+          backgroundColor={getColor(attribute)}
+          icon={attribute.icon}
+          label={attribute.label}
+          bind:value={attribute.enabled}
+        />
+      </div>
+    {/each}
+  </div>
+  <div class="flex-row-stretch flex-wrap">
+    {#each Array.from(classes.keys()) as _class}
+      <div class="m-0-5">
+        <Button
+          label={getClassLabel(_class)}
+          on:click={(e) => {
+            showPopup(
+              SelectPopup,
+              {
+                value: classes.get(_class)?.map((it) => ({ id: it.value, label: it.label }))
+              },
+              getEventPositionElement(e),
+              (val) => {
+                console.log('val')
+                console.log(val)
+                if (val !== undefined) {
+                  const value = classes.get(_class)?.find((it) => it.value === val)
+                  if (value) {
+                    value.enabled = true
+                    attributes = attributes
+                  }
+                }
+              }
+            )
+          }}
+        />
       </div>
     {/each}
   </div>

@@ -22,11 +22,20 @@
     Doc,
     Ref,
     RefTo,
-    Type,
-    Space
+    Space,
+    Type
   } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { closePopup, closeTooltip, Icon, Label, showPopup, Submenu, resizeObserver } from '@hcengineering/ui'
+  import {
+    closePopup,
+    closeTooltip,
+    Icon,
+    Label,
+    resizeObserver,
+    Scroller,
+    showPopup,
+    Submenu
+  } from '@hcengineering/ui'
   import { Filter, KeyFilter } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { FilterQuery } from '../../filter'
@@ -86,9 +95,6 @@
   }
 
   function buildFilterForAttr (_class: Ref<Class<Doc>>, attribute: AnyAttribute, result: KeyFilter[]): void {
-    if (attribute.isCustom !== true) {
-      return
-    }
     if (attribute.label === undefined || attribute.hidden) {
       return
     }
@@ -101,6 +107,7 @@
       result.push(filter)
     }
   }
+
   function buildFilterFor (
     _class: Ref<Class<Doc>>,
     allAttributes: Map<string, AnyAttribute>,
@@ -118,11 +125,28 @@
 
     const desc = hierarchy.getDescendants(_class)
     for (const d of desc) {
-      const extra = hierarchy.getAllAttributes(d, _class)
+      const extra = hierarchy.getOwnAttributes(d)
       for (const [k, v] of extra) {
         if (!allAttributes.has(k)) {
           allAttributes.set(k, v)
           buildFilterForAttr(d, v, result)
+        }
+      }
+    }
+
+    const ancestors = new Set(hierarchy.getAncestors(_class))
+    const parent = hierarchy.getParentClass(_class)
+    const parentMixins = hierarchy
+      .getDescendants(parent)
+      .map((p) => hierarchy.getClass(p))
+      .filter((p) => hierarchy.isMixin(p._id) && p.extends && ancestors.has(p.extends))
+
+    for (const d of parentMixins) {
+      const extra = hierarchy.getOwnAttributes(d._id)
+      for (const [k, v] of extra) {
+        if (!allAttributes.has(k)) {
+          allAttributes.set(k, v)
+          buildFilterForAttr(d._id, v, result)
         }
       }
     }
@@ -207,44 +231,42 @@
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
-  <div class="scroll">
-    <div class="box">
-      {#each getTypes(_class) as type, i}
-        {#if filter === undefined && type.component === view.component.ObjectFilter && hasNested(type)}
-          <Submenu
-            on:keydown={(event) => keyDown(event, i)}
-            on:click={(event) => {
-              click(type)
-            }}
-            icon={type.icon}
-            label={type.label}
-            props={getNestedProps(type)}
-            options={{ component: view.component.FilterTypePopup }}
-            withHover
-          />
-        {:else}
-          <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-          <button
-            class="menu-item withIcon"
-            on:keydown={(event) => keyDown(event, i)}
-            on:mouseover={(event) => {
-              event.currentTarget.focus()
-            }}
-            on:click={(event) => {
-              click(type)
-            }}
-          >
-            <div class="icon mr-3">
-              {#if type.icon}
-                <Icon icon={type.icon} size={'small'} />
-              {/if}
-            </div>
-            <div class="pr-1"><Label label={type.label} /></div>
-          </button>
-        {/if}
-      {/each}
-    </div>
-  </div>
+  <Scroller>
+    {#each getTypes(_class) as type, i}
+      {#if filter === undefined && type.component === view.component.ObjectFilter && hasNested(type)}
+        <Submenu
+          on:keydown={(event) => keyDown(event, i)}
+          on:click={(event) => {
+            click(type)
+          }}
+          icon={type.icon}
+          label={type.label}
+          props={getNestedProps(type)}
+          options={{ component: view.component.FilterTypePopup }}
+          withHover
+        />
+      {:else}
+        <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+        <button
+          class="menu-item withIcon"
+          on:keydown={(event) => keyDown(event, i)}
+          on:mouseover={(event) => {
+            event.currentTarget.focus()
+          }}
+          on:click={(event) => {
+            click(type)
+          }}
+        >
+          <div class="icon mr-3">
+            {#if type.icon}
+              <Icon icon={type.icon} size={'small'} />
+            {/if}
+          </div>
+          <div class="pr-1"><Label label={type.label} /></div>
+        </button>
+      {/if}
+    {/each}
+  </Scroller>
 </div>
 
 <style lang="scss">

@@ -16,7 +16,6 @@
 import type { Employee, Organization } from '@hcengineering/contact'
 import { Doc, FindOptions, IndexKind, Lookup, Ref, Timestamp } from '@hcengineering/core'
 import {
-  ArrOf,
   Builder,
   Collection,
   Index,
@@ -125,7 +124,7 @@ export class TCandidate extends TPerson implements Candidate {
 @Mixin(recruit.mixin.VacancyList, contact.class.Organization)
 @UX(recruit.string.VacancyList, recruit.icon.RecruitApplication, undefined, 'name')
 export class TVacancyList extends TOrganization implements VacancyList {
-  @Prop(ArrOf(TypeRef(recruit.class.Vacancy)), recruit.string.Vacancies)
+  @Prop(Collection(recruit.class.Vacancy), recruit.string.Vacancies)
     vacancies!: number
 }
 
@@ -192,7 +191,7 @@ export function createModel (builder: Builder): void {
     editor: recruit.component.Applications
   })
 
-  builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.ArrayEditor, {
+  builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.CollectionEditor, {
     editor: recruit.component.VacancyList
   })
 

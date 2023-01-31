@@ -150,6 +150,7 @@ export default plugin(coreId, {
     Name: '' as IntlString,
     Enum: '' as IntlString,
     Description: '' as IntlString,
-    Hyperlink: '' as IntlString
+    Hyperlink: '' as IntlString,
+    Object: '' as IntlString
   }
 })

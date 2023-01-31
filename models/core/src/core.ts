@@ -70,17 +70,21 @@ import core from './component'
 export class TObj implements Obj {
   @Prop(TypeRef(core.class.Class), core.string.ClassLabel)
   @Index(IndexKind.Indexed)
+  @Hidden()
     _class!: Ref<Class<this>>
 }
 
 @Model(core.class.Doc, core.class.Obj)
+@UX(core.string.Object)
 export class TDoc extends TObj implements Doc {
   @Prop(TypeRef(core.class.Doc), core.string.Id)
+  @Hidden()
   // @Index(IndexKind.Indexed) // - automatically indexed by default.
     _id!: Ref<this>
 
   @Prop(TypeRef(core.class.Space), core.string.Space)
   @Index(IndexKind.Indexed)
+  @Hidden()
     space!: Ref<Space>
 
   @Prop(TypeTimestamp(), core.string.Modified)
@@ -94,10 +98,12 @@ export class TDoc extends TObj implements Doc {
 export class TAttachedDoc extends TDoc implements AttachedDoc {
   @Prop(TypeRef(core.class.Doc), core.string.AttachedTo)
   @Index(IndexKind.Indexed)
+  @Hidden()
     attachedTo!: Ref<Doc>
 
   @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
   @Index(IndexKind.Indexed)
+  @Hidden()
     attachedToClass!: Ref<Class<Doc>>
 
   @Prop(TypeString(), core.string.Collection)

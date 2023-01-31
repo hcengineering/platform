@@ -394,6 +394,34 @@ export class Hierarchy {
     return result
   }
 
+  getOwnAttributes (clazz: Ref<Classifier>): Map<string, AnyAttribute> {
+    const result = new Map<string, AnyAttribute>()
+
+    const attributes = this.attributes.get(clazz)
+    if (attributes !== undefined) {
+      for (const [name, attr] of attributes) {
+        result.set(name, attr)
+      }
+    }
+
+    return result
+  }
+
+  getParentClass (_class: Ref<Class<Obj>>): Ref<Class<Obj>> {
+    const baseDomain = this.getDomain(_class)
+    const ancestors = this.getAncestors(_class)
+    let result: Ref<Class<Obj>> = _class
+    for (const ancestor of ancestors) {
+      try {
+        const domain = this.getClass(ancestor).domain
+        if (domain === baseDomain) {
+          result = ancestor
+        }
+      } catch {}
+    }
+    return result
+  }
+
   getAttribute (classifier: Ref<Classifier>, name: string): AnyAttribute {
     const attr = this.findAttribute(classifier, name)
     if (attr === undefined) {

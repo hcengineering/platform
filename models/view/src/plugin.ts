@@ -64,7 +64,8 @@ export default mergeIds(viewId, view, {
     MarkupEditor: '' as AnyComponent,
     MarkupEditorPopup: '' as AnyComponent,
     ListView: '' as AnyComponent,
-    IndexedDocumentPreview: '' as AnyComponent
+    IndexedDocumentPreview: '' as AnyComponent,
+    SpaceRefPresenter: '' as AnyComponent
   },
   string: {
     Table: '' as IntlString,
