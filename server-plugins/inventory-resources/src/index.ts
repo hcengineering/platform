@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Doc } from '@hcengineering/core'
+import { concatLink, Doc } from '@hcengineering/core'
 import { inventoryId, Product } from '@hcengineering/inventory'
 import login from '@hcengineering/login'
 import { getMetadata } from '@hcengineering/platform'
@@ -27,7 +27,9 @@ import { workbenchId } from '@hcengineering/workbench'
 export async function productHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const product = doc as Product
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbenchId}/${control.workspace.name}/${inventoryId}/Products/#${view.component.EditDoc}|${product._id}|${product._class}|content">${product.name}</a>`
+  const path = `${workbenchId}/${control.workspace.name}/${inventoryId}/Products/#${view.component.EditDoc}|${product._id}|${product._class}|content`
+  const link = concatLink(front, path)
+  return `<a href="${link}">${product.name}</a>`
 }
 
 /**

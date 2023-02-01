@@ -21,6 +21,7 @@ import Connect from './components/Connect.svelte'
 import Reconnect from './components/Reconnect.svelte'
 import IconTelegram from './components/icons/TelegramColor.svelte'
 import TxSharedCreate from './components/activity/TxSharedCreate.svelte'
+import { concatLink } from '@hcengineering/core'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -35,7 +36,7 @@ export default async (): Promise<Resources> => ({
   handler: {
     DisconnectHandler: async () => {
       const url = getMetadata(login.metadata.TelegramUrl) ?? ''
-      await fetch(url + '/signout', {
+      await fetch(concatLink(url, '/signout'), {
         method: 'POST',
         headers: {
           Authorization: 'Bearer ' + (getMetadata(login.metadata.LoginToken) ?? ''),

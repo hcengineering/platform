@@ -185,3 +185,17 @@ export interface IdMap<T extends Doc> extends Map<Ref<T>, T> {}
 export function toIdMap<T extends Doc> (arr: T[]): IdMap<T> {
   return new Map(arr.map((p) => [p._id, p]))
 }
+
+/**
+ * @public
+ */
+export function concatLink (host: string, path: string): string {
+  if (!host.endsWith('/') && !path.startsWith('/')) {
+    return `${host}/${path}`
+  } else if (host.endsWith('/') && path.startsWith('/')) {
+    const newPath = path.slice(1)
+    return `${host}${newPath}`
+  } else {
+    return `${host}${path}`
+  }
+}

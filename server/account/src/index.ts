@@ -23,6 +23,7 @@ import contact, {
 } from '@hcengineering/contact'
 import core, {
   AccountRole,
+  concatLink,
   Data,
   getWorkspaceId,
   Ref,
@@ -674,7 +675,7 @@ export async function requestPassword (db: Db, productId: string, email: string)
     restore: email
   })
 
-  const link = `${front}/login/recovery?id=${token}`
+  const link = concatLink(front, `/login/recovery?id=${token}`)
 
   const text = `We received a request to reset the password for your account. To reset your password, please paste the following link in your web browser's address bar: ${link}. If you have not ordered a password recovery just ignore this letter.`
   const html = `<p>We received a request to reset the password for your account. To reset your password, please click the link below: <a href=${link}>Reset password</a></p><p>
