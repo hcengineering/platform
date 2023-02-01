@@ -24,7 +24,8 @@
 
   export let placeholder: IntlString = plugin.string.SearchDots
   export let items: DropdownTextItem[]
-  export let selected: DropdownTextItem['id'] | undefined = undefined
+  export let selected: DropdownTextItem['id'] | DropdownTextItem['id'][] | undefined = undefined
+  export let multiselect: boolean = false
 
   let search: string = ''
   let phTraslate: string = ''
@@ -45,8 +46,18 @@
 
   async function handleSelection (evt: Event | undefined, selection: number): Promise<void> {
     const item = objects[selection]
-
-    dispatch('close', item.id)
+    if (multiselect && Array.isArray(selected)) {
+      const index = selected.indexOf(item.id)
+      if (index !== -1) {
+        selected.splice(index, 1)
+        selected = selected
+      } else {
+        selected = selected === undefined ? [item.id] : [...selected, item.id]
+      }
+      dispatch('update', selected)
+    } else {
+      dispatch('close', item.id)
+    }
   }
 
   function onKeydown (key: KeyboardEvent): void {
@@ -69,6 +80,17 @@
       key.preventDefault()
       key.stopPropagation()
       dispatch('close')
+    }
+  }
+
+  function isSelected (
+    selected: DropdownTextItem['id'] | DropdownTextItem['id'][] | undefined,
+    item: DropdownTextItem
+  ): boolean {
+    if (Array.isArray(selected)) {
+      return selected.includes(item.id)
+    } else {
+      return item.id === selected
     }
   }
 </script>
@@ -99,11 +121,22 @@
           <button
             class="menu-item flex-between w-full"
             on:click={() => {
-              dispatch('close', item.id)
+              if (multiselect && Array.isArray(selected)) {
+                const index = selected.indexOf(item.id)
+                if (index !== -1) {
+                  selected.splice(index, 1)
+                  selected = selected
+                } else {
+                  selected = selected === undefined ? [item.id] : [...selected, item.id]
+                }
+                dispatch('update', selected)
+              } else {
+                dispatch('close', item.id)
+              }
             }}
           >
             <div class="flex-grow caption-color lines-limit-2">{item.label}</div>
-            {#if item.id === selected}
+            {#if isSelected(selected, item)}
               <div class="check-right"><CheckBox checked primary /></div>
             {/if}
           </button>

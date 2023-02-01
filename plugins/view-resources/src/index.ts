@@ -63,6 +63,7 @@ import UpDownNavigator from './components/UpDownNavigator.svelte'
 import ValueSelector from './components/ValueSelector.svelte'
 import ViewletSettingButton from './components/ViewletSettingButton.svelte'
 import SpaceRefPresenter from './components/SpaceRefPresenter.svelte'
+import EnumArrayEditor from './components/EnumArrayEditor.svelte'
 
 import {
   afterResult,
@@ -174,7 +175,8 @@ export default async (): Promise<Resources> => ({
     ListView,
     GrowPresenter,
     IndexedDocumentPreview,
-    SpaceRefPresenter
+    SpaceRefPresenter,
+    EnumArrayEditor
   },
   popup: {
     PositionElementAlignment

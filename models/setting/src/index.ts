@@ -302,6 +302,10 @@ export function createModel (builder: Builder): void {
     editor: setting.component.EnumTypeEditor
   })
 
+  builder.mixin(core.class.ArrOf, core.class.Class, view.mixin.ObjectEditor, {
+    editor: setting.component.ArrayEditor
+  })
+
   builder.mixin(core.class.Class, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Delete]
   })
