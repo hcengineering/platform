@@ -43,7 +43,7 @@
 </script>
 
 <DropdownLabels
-  bind:selected={value}
+  selected={value ?? []}
   {items}
   {label}
   useFlexGrow={true}

@@ -40,7 +40,7 @@
       )
     })
 
-  let refClass: Ref<Type<Doc>> | undefined = type?.of._id
+  let refClass: Ref<Doc> | undefined = type !== undefined ? hierarchy.getClass(type.of._class)._id : undefined
 
   $: selected = types.find((p) => p._id === refClass)
 
@@ -50,7 +50,7 @@
     dispatch('change', res)
   }
 
-  function getComponent (selected: Type<Doc>): AnyComponent {
+  function getComponent (selected: Class<Type<Doc>>): AnyComponent {
     const editor = hierarchy.as(selected, view.mixin.ObjectEditor)
     return editor.editor
   }
