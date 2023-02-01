@@ -39,12 +39,19 @@
   const client = getClient()
   const attrs = client.getHierarchy().getAllAttributes(object._class)
 
-  let filterLabel: IntlString = activityPlg.string.All
+  let labels: IntlString[] = []
   const filters: ActivityFilter[] = []
   const saved = localStorage.getItem('activity-filter')
-  let selectedFilter: Ref<Doc> | 'All' = saved !== null && saved !== undefined ? JSON.parse(saved) : 'All'
+  let selectedFilter: Ref<Doc>[] | 'All' =
+    saved !== null && saved !== undefined ? (JSON.parse(saved) as Ref<Doc>[] | 'All') : 'All'
   $: localStorage.setItem('activity-filter', JSON.stringify(selectedFilter))
-  client.findAll(activity.class.ActivityFilter, {}).then((res) => res.map((it) => filters.push(it)))
+  client.findAll(activity.class.ActivityFilter, {}).then((res) => {
+    res.map((it) => filters.push(it))
+    if (saved !== null && saved !== undefined) {
+      const temp: Ref<Doc>[] | 'All' = JSON.parse(saved)
+      if (temp !== 'All' && Array.isArray(temp)) { selectedFilter = temp.filter((it) => filters.findIndex((f) => it === f._id) > -1) }
+    }
+  })
 
   const activityQuery = newActivity(client, attrs)
   getResource(notification.function.GetNotificationClient).then((res) => {
@@ -96,21 +103,43 @@
 
   let optionsBtn: HTMLButtonElement
   const handleOptions = () => {
-    showPopup(FilterPopup, { selectedFilter, filters }, optionsBtn, (res) => {
-      if (res === undefined) return
-      if (res.action === 'select') selectedFilter = res.value as Ref<Doc> | 'All'
-    })
+    showPopup(
+      FilterPopup,
+      { selectedFilter, filters },
+      optionsBtn,
+      () => {},
+      (res) => {
+        if (res === undefined) return
+        if (res.action === 'select') selectedFilter = res.value as Ref<Doc>[] | 'All'
+      }
+    )
   }
 
+  let filterLoading: boolean = false
+  let loadingCount: number = 0
+  let tempTxes: DisplayTx[] = []
+  const filtering = () => {
+    labels = []
+    tempTxes = []
+    const checked = new Set(selectedFilter as Ref<Doc>[])
+    const checkedFilters = filters.filter((it) => checked.has(it._id))
+    loadingCount = checkedFilters.length
+    filterLoading = true
+    checkedFilters.forEach((filter) => {
+      labels.push(filter.label)
+      getResource(filter.filter).then((result) => {
+        tempTxes.push(...result(txes))
+        loadingCount--
+      })
+    })
+  }
   $: if (selectedFilter || txes) {
-    const filter = filters.find((it) => it._id === selectedFilter)
-    if (filter) {
-      filterLabel = filter.label
-      getResource(filter.filter).then((result) => (txesF = result(txes)))
-    } else {
-      filterLabel = activityPlg.string.All
-      txesF = txes
-    }
+    if (selectedFilter === 'All') txesF = txes
+    else filtering()
+  }
+  $: if (filterLoading && loadingCount === 0) {
+    txesF = txes.filter((tx) => tempTxes.findIndex((t) => t === tx) > -1)
+    filterLoading = false
   }
 </script>
 
@@ -152,7 +181,13 @@
   <div class="antiSection-header mt-6">
     <div class="antiSection-header__icon"><IconActivity size={'small'} /></div>
     <span class="antiSection-header__title"><Label label={activity.string.Activity} /></span>
-    <span class="dark-color text-md"><Label label={filterLabel} /></span>
+    {#if selectedFilter === 'All'}
+      <span class="antiSection-header__tag highlight"><Label label={activityPlg.string.All} /></span>
+    {:else}
+      {#each labels as label}
+        <span class="antiSection-header__tag overflow-label"><Label {label} /></span>
+      {/each}
+    {/if}
     <div class="w-2 min-w-2 max-w-2" />
     <Button
       bind:input={optionsBtn}
