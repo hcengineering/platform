@@ -21,7 +21,7 @@
   import telegram from '../plugin'
   import { getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
-  import { getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import { concatLink, getCurrentAccount, Ref, Space } from '@hcengineering/core'
 
   const dispatch = createEventDispatcher()
 
@@ -63,7 +63,7 @@
 
   async function sendRequest (path: string, data: any): Promise<any> {
     connecting = true
-    const response = await fetch(url + path, {
+    const response = await fetch(concatLink(url, path), {
       method: 'POST',
       headers: {
         Authorization: 'Bearer ' + getMetadata(login.metadata.LoginToken),

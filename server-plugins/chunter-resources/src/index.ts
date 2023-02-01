@@ -28,7 +28,8 @@ import core, {
   TxProcessor,
   TxUpdateDoc,
   TxRemoveDoc,
-  TxCollectionCUD
+  TxCollectionCUD,
+  concatLink
 } from '@hcengineering/core'
 import login from '@hcengineering/login'
 import { getMetadata } from '@hcengineering/platform'
@@ -41,7 +42,9 @@ import { workbenchId } from '@hcengineering/workbench'
 export async function channelHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const channel = doc as ChunterSpace
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbenchId}/${control.workspace.name}/${chunterId}/${channel._id}">${channel.name}</a>`
+  const path = `${workbenchId}/${control.workspace.name}/${chunterId}/${channel._id}`
+  const link = concatLink(front, path)
+  return `<a href="${link}">${channel.name}</a>`
 }
 
 /**

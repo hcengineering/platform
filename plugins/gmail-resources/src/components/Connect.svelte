@@ -19,6 +19,7 @@
   import { createEventDispatcher } from 'svelte'
   import login from '@hcengineering/login'
   import gmail from '../plugin'
+  import { concatLink } from '@hcengineering/core'
 
   const dispatch = createEventDispatcher()
 
@@ -27,7 +28,8 @@
 
   async function sendRequest (): Promise<void> {
     connecting = true
-    const url = new URL(gmailUrl + '/signin')
+    const link = concatLink(gmailUrl, '/signin')
+    const url = new URL(link)
     url.search = new URLSearchParams({
       redirectURL: window.location.href
     }).toString()

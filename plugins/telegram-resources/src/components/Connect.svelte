@@ -19,6 +19,7 @@
   import login from '@hcengineering/login'
   import PinPad from './PinPad.svelte'
   import telegram from '../plugin'
+  import { concatLink } from '@hcengineering/core'
 
   const dispatch = createEventDispatcher()
 
@@ -60,7 +61,7 @@
 
   async function sendRequest (path: string, data: any): Promise<any> {
     connecting = true
-    const response = await fetch(url + path, {
+    const response = await fetch(concatLink(url, path), {
       method: 'POST',
       headers: {
         Authorization: 'Bearer ' + getMetadata(login.metadata.LoginToken),

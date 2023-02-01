@@ -14,7 +14,16 @@
 //
 
 import { Employee } from '@hcengineering/contact'
-import core, { AttachedDoc, Doc, Ref, Tx, TxCollectionCUD, TxProcessor, TxUpdateDoc } from '@hcengineering/core'
+import core, {
+  AttachedDoc,
+  concatLink,
+  Doc,
+  Ref,
+  Tx,
+  TxCollectionCUD,
+  TxProcessor,
+  TxUpdateDoc
+} from '@hcengineering/core'
 import login from '@hcengineering/login'
 import { NotificationAction } from '@hcengineering/notification'
 import { getMetadata, Resource } from '@hcengineering/platform'
@@ -31,7 +40,9 @@ import { workbenchId } from '@hcengineering/workbench'
 export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const issue = doc as Issue
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbenchId}/${control.workspace.name}/${taskId}/${issue.space}/#${view.component.EditDoc}|${issue._id}|${issue._class}|content">Task-${issue.number}</a>`
+  const path = `${workbenchId}/${control.workspace.name}/${taskId}/${issue.space}/#${view.component.EditDoc}|${issue._id}|${issue._class}|content`
+  const link = concatLink(front, path)
+  return `<a href="${link}">Task-${issue.number}</a>`
 }
 
 /**

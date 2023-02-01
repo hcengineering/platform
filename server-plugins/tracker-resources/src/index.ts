@@ -16,6 +16,7 @@
 import { Employee } from '@hcengineering/contact'
 import core, {
   AttachedDoc,
+  concatLink,
   Doc,
   DocumentUpdate,
   Ref,
@@ -59,7 +60,9 @@ export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Pr
   const issueName = `${team?.identifier ?? '?'}-${issue.number}`
 
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbenchId}/${control.workspace.name}/${trackerId}/${issue.space}/#${tracker.component.EditIssue}|${issue._id}|${issue._class}|content">${issueName}</a>`
+  const path = `${workbenchId}/${control.workspace.name}/${trackerId}/${issue.space}/#${tracker.component.EditIssue}|${issue._id}|${issue._class}|content`
+  const link = concatLink(front, path)
+  return `<a href="${link}">${issueName}</a>`
 }
 
 /**

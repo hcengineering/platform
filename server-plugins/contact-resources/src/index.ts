@@ -15,7 +15,7 @@
 //
 
 import contact, { Contact, contactId, formatName, Organization, Person } from '@hcengineering/contact'
-import core, { Doc, Tx, TxCreateDoc, TxRemoveDoc, TxUpdateDoc } from '@hcengineering/core'
+import core, { concatLink, Doc, Tx, TxCreateDoc, TxRemoveDoc, TxUpdateDoc } from '@hcengineering/core'
 import login from '@hcengineering/login'
 import { getMetadata } from '@hcengineering/platform'
 import type { TriggerControl } from '@hcengineering/server-core'
@@ -75,9 +75,9 @@ export async function OnContactDelete (tx: Tx, { findAll, hierarchy, storageFx }
 export function personHTMLPresenter (doc: Doc, control: TriggerControl): string {
   const person = doc as Person
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbenchId}/${control.workspace.name}/${contactId}#${view.component.EditDoc}|${
-    person._id
-  }|${person._class}|content">${formatName(person.name)}</a>`
+  const path = `${workbenchId}/${control.workspace.name}/${contactId}#${view.component.EditDoc}|${person._id}|${person._class}|content`
+  const link = concatLink(front, path)
+  return `<a href="${link}">${formatName(person.name)}</a>`
 }
 
 /**
@@ -94,7 +94,9 @@ export function personTextPresenter (doc: Doc): string {
 export function organizationHTMLPresenter (doc: Doc, control: TriggerControl): string {
   const organization = doc as Organization
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbenchId}/${control.workspace.name}/${contactId}#${view.component.EditDoc}|${organization._id}|${organization._class}|content">${organization.name}</a>`
+  const path = `${workbenchId}/${control.workspace.name}/${contactId}#${view.component.EditDoc}|${organization._id}|${organization._class}|content`
+  const link = concatLink(front, path)
+  return `<a href="${link}">${organization.name}</a>`
 }
 
 /**
