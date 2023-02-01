@@ -49,7 +49,9 @@
     res.map((it) => filters.push(it))
     if (saved !== null && saved !== undefined) {
       const temp: Ref<Doc>[] | 'All' = JSON.parse(saved)
-      if (temp !== 'All' && Array.isArray(temp)) { selectedFilter = temp.filter((it) => filters.findIndex((f) => it === f._id) > -1) }
+      if (temp !== 'All' && Array.isArray(temp)) {
+        selectedFilter = temp.filter((it) => filters.findIndex((f) => it === f._id) > -1)
+      }
     }
   })
 
