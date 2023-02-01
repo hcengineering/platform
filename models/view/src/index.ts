@@ -383,6 +383,9 @@ export function createModel (builder: Builder): void {
   builder.mixin(core.class.Class, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: view.component.ClassPresenter
   })
+  builder.mixin(core.class.EnumOf, core.class.Class, view.mixin.ArrayEditor, {
+    inlineEditor: view.component.EnumArrayEditor
+  })
 
   classPresenter(builder, core.class.TypeRelatedDocument, view.component.ObjectPresenter)
 

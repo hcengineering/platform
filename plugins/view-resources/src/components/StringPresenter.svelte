@@ -14,7 +14,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  export let value: string
+  export let value: string | string[]
 </script>
 
-<span class="lines-limit-2 select-text">{value}</span>
+<span class="lines-limit-2 select-text">
+  {#if Array.isArray(value)}
+    {#each value as str, i}
+      <span class:ml-1={i !== 0}>{str}</span>
+    {/each}
+  {:else}
+    {value}
+  {/if}
+</span>

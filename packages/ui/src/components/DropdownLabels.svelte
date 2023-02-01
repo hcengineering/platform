@@ -27,7 +27,8 @@
   export let label: IntlString
   export let placeholder: IntlString | undefined = ui.string.SearchDots
   export let items: DropdownTextItem[]
-  export let selected: DropdownTextItem['id'] | undefined = undefined
+  export let multiselect = false
+  export let selected: DropdownTextItem['id'] | DropdownTextItem['id'][] | undefined = multiselect ? [] : undefined
 
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
@@ -41,13 +42,10 @@
 
   let container: HTMLElement
   let opened: boolean = false
-  let isDisabled = false
-  $: isDisabled = items.length === 0
 
-  let selectedItem = items.find((x) => x.id === selected)
-  $: selectedItem = items.find((x) => x.id === selected)
+  $: selectedItem = multiselect ? items.filter((p) => selected?.includes(p.id)) : items.find((x) => x.id === selected)
   $: if (autoSelect && selected === undefined && items[0] !== undefined) {
-    selected = items[0].id
+    selected = multiselect ? [items[0].id] : items[0].id
   }
 
   const dispatch = createEventDispatcher()
@@ -66,19 +64,42 @@
     on:click={() => {
       if (!opened) {
         opened = true
-        showPopup(DropdownLabelsPopup, { placeholder, items, selected }, container, (result) => {
-          if (result) {
-            selected = result
-            dispatch('selected', result)
+        showPopup(
+          DropdownLabelsPopup,
+          { placeholder, items, multiselect, selected },
+          container,
+          (result) => {
+            if (result) {
+              selected = result
+              dispatch('selected', result)
+            }
+            opened = false
+            mgr?.setFocusPos(focusIndex)
+          },
+          (result) => {
+            if (result) {
+              selected = result
+              dispatch('selected', result)
+            }
           }
-          opened = false
-          mgr?.setFocusPos(focusIndex)
-        })
+        )
       }
     }}
   >
     <span slot="content" class="overflow-label disabled" class:content-color={selectedItem === undefined}>
-      {#if selectedItem}{selectedItem.label}{:else}<Label label={label ?? ui.string.NotSelected} />{/if}
+      {#if Array.isArray(selectedItem)}
+        {#if selectedItem.length > 0}
+          {#each selectedItem as seleceted, i}
+            <span class:ml-1={i !== 0}>{seleceted.label}</span>
+          {/each}
+        {:else}
+          <Label label={label ?? ui.string.NotSelected} />
+        {/if}
+      {:else if selectedItem}
+        {selectedItem.label}
+      {:else}
+        <Label label={label ?? ui.string.NotSelected} />
+      {/if}
     </span>
   </Button>
 </div>

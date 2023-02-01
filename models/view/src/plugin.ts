@@ -60,6 +60,7 @@ export default mergeIds(viewId, view, {
     ClassPresenter: '' as AnyComponent,
     ClassRefPresenter: '' as AnyComponent,
     EnumEditor: '' as AnyComponent,
+    EnumArrayEditor: '' as AnyComponent,
     HTMLEditor: '' as AnyComponent,
     MarkupEditor: '' as AnyComponent,
     MarkupEditorPopup: '' as AnyComponent,

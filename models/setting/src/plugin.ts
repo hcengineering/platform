@@ -40,7 +40,8 @@ export default mergeIds(settingId, setting, {
     RefEditor: '' as AnyComponent,
     EnumTypeEditor: '' as AnyComponent,
     Owners: '' as AnyComponent,
-    CreateMixin: '' as AnyComponent
+    CreateMixin: '' as AnyComponent,
+    ArrayEditor: '' as AnyComponent
   },
   category: {
     Settings: '' as Ref<ActionCategory>
