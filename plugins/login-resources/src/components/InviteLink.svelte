@@ -57,7 +57,7 @@
     copiedTime = Date.now()
   }
 
-  let expHours = 1
+  let expHours = 48
 
   function _onchange (ev: Event) {
     const value = (ev.target as HTMLInputElement).valueAsNumber
