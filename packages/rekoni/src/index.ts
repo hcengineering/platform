@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { concatLink } from '@hcengineering/core'
 import { getMetadata, PlatformError, unknownError } from '@hcengineering/platform'
 import plugin from './plugin'
 import { ReconiDocument } from './types'
@@ -30,7 +31,7 @@ export async function recognizeDocument (token: string, url: string, contentType
     throw new PlatformError(unknownError('recognition framework is not configured'))
   }
   return (await (
-    await fetch(rekoniUrl + '/recognize', {
+    await fetch(concatLink(rekoniUrl, '/recognize'), {
       method: 'POST',
       headers: {
         Authorization: 'Bearer ' + token,

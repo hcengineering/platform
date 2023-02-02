@@ -6,6 +6,7 @@ import core, {
   ApplyOperations,
   AttachedDoc,
   Class,
+  concatLink,
   Data,
   Doc,
   DocumentUpdate,
@@ -149,7 +150,7 @@ export async function syncPlatform (
 
           const data = new FormData()
           data.append('file', ed)
-          const resp = await fetch(frontUrl + '/files', {
+          const resp = await fetch(concatLink(frontUrl, '/files'), {
             method: 'POST',
             headers: {
               Authorization: 'Bearer ' + info.token

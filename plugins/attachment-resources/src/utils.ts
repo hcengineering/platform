@@ -15,7 +15,7 @@
 //
 
 import { Attachment } from '@hcengineering/attachment'
-import type { Class, Data, Doc, Ref, Space, TxOperations as Client } from '@hcengineering/core'
+import { Class, concatLink, Data, Doc, Ref, Space, TxOperations as Client } from '@hcengineering/core'
 import login from '@hcengineering/login'
 import { getMetadata, setPlatformStatus, unknownError } from '@hcengineering/platform'
 
@@ -47,9 +47,9 @@ export async function uploadFile (file: File): Promise<string> {
 }
 
 export async function deleteFile (id: string): Promise<void> {
-  const uploadUrl = getMetadata(login.metadata.UploadUrl)
+  const uploadUrl = getMetadata(login.metadata.UploadUrl) ?? ''
 
-  const url = `${uploadUrl as string}?file=${id}`
+  const url = concatLink(uploadUrl, `?file=${id}`)
   const resp = await fetch(url, {
     method: 'DELETE',
     headers: {
