@@ -1,6 +1,18 @@
-import { Comment } from '@hcengineering/chunter'
+import attachment, { Attachment } from '@hcengineering/attachment'
 import contact, { Channel, EmployeeAccount } from '@hcengineering/contact'
-import core, { AnyAttribute, Class, Client, Data, Doc, generateId, Mixin, Ref, Space } from '@hcengineering/core'
+import core, {
+  AnyAttribute,
+  AttachedDoc,
+  Class,
+  Client,
+  Data,
+  Doc,
+  generateId,
+  Mixin,
+  Ref,
+  Space,
+  WithLookup
+} from '@hcengineering/core'
 import tags, { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
 import {
   BitrixEntityMapping,
@@ -12,7 +24,6 @@ import {
   DownloadAttachmentOperation,
   MappingOperation
 } from '.'
-import bitrix from './index'
 
 /**
  * @public
@@ -42,10 +53,11 @@ export function collectFields (fieldMapping: BitrixFieldMapping[]): string[] {
  */
 export interface ConvertResult {
   document: BitrixSyncDoc // Document we should achive
+  rawData: any
   mixins: Record<Ref<Mixin<Doc>>, Data<Doc>> // Mixins of document we will achive
-  extraDocs: Doc[] // Extra documents we will achive, comments etc.
-  blobs: File[] //
-  comments?: Array<BitrixSyncDoc & Comment>
+  extraDocs: Doc[] // Extra documents we will achive, etc.
+  extraSync: (AttachedDoc & BitrixSyncDoc)[] // Extra documents we will achive, etc.
+  blobs: [Attachment & BitrixSyncDoc, () => Promise<File | undefined>][]
 }
 
 /**
@@ -57,11 +69,10 @@ export async function convert (
   space: Ref<Space>,
   fields: BitrixFieldMapping[],
   rawDocument: any,
-  prevExtra: Doc[], // <<-- a list of previous extra documents, so for example TagElement will be reused, if present for more what one item and required to be created
-  tagElements: Map<Ref<Class<Doc>>, TagElement[]>, // TagElement cache.
   userList: Map<string, Ref<EmployeeAccount>>,
-  existingDocuments: Doc[],
+  existingDoc: WithLookup<Doc> | undefined,
   defaultCategories: TagCategory[],
+  allTagElements: TagElement[],
   blobProvider?: (blobRef: any) => Promise<Blob | undefined>
 ): Promise<ConvertResult> {
   const hierarchy = client.getHierarchy()
@@ -76,13 +87,13 @@ export async function convert (
     modifiedBy: userList.get(rawDocument.CREATED_BY_ID) ?? core.account.System
   }
 
-  const existingId = existingDocuments.find((it) => (it as any)[bitrix.mixin.BitrixSyncDoc].bitrixId === bitrixId)
-    ?._id as Ref<BitrixSyncDoc>
+  const existingId = existingDoc?._id
 
   // Obtain a proper modified by for document
 
+  const newExtraSyncDocs: (AttachedDoc & BitrixSyncDoc)[] = []
   const newExtraDocs: Doc[] = []
-  const blobs: File[] = []
+  const blobs: [Attachment & BitrixSyncDoc, () => Promise<File | undefined>][] = []
   const mixins: Record<Ref<Mixin<Doc>>, Data<Doc>> = {}
 
   const extractValue = (field?: string, alternatives?: string[]): any | undefined => {
@@ -119,18 +130,32 @@ export async function convert (
         return lval
       } else if (bfield.type === 'date') {
         if (lval !== '' && lval != null) {
-          return new Date(lval)
+          return new Date(lval).getTime()
         }
       } else if (bfield.type === 'char') {
         return lval === 'Y'
       } else if (bfield.type === 'enumeration' || bfield.type === 'crm_status') {
         if (lval != null && lval !== '') {
-          if (bfield.isMultiple && Array.isArray(lval)) {
-            lval = lval[0] ?? ''
-          }
-          const eValue = bfield.items?.find((it) => it.ID === lval)?.VALUE
-          if (eValue !== undefined) {
-            return eValue
+          if (bfield.isMultiple) {
+            const results: any[] = []
+            for (let llval of Array.isArray(lval) ? lval : [lval]) {
+              if (typeof llval === 'number') {
+                llval = llval.toString()
+              }
+              const eValue = bfield.items?.find((it) => it.ID === llval)?.VALUE
+              if (eValue !== undefined) {
+                results.push(eValue)
+              }
+            }
+            return results
+          } else {
+            if (typeof lval === 'number') {
+              lval = lval.toString()
+            }
+            const eValue = bfield.items?.find((it) => it.ID === lval)?.VALUE
+            if (eValue !== undefined) {
+              return eValue
+            }
           }
         }
       }
@@ -145,15 +170,24 @@ export async function convert (
       }
       const lval = extractValue(o.field, o.alternatives)
       if (lval != null) {
-        r.push(lval)
+        if (Array.isArray(lval)) {
+          r.push(...lval)
+        } else {
+          r.push(lval)
+        }
       }
-    }
-    if (r.length === 1) {
-      return r[0]
     }
     if (r.length === 0) {
       return
     }
+
+    if (attr.type._class === core.class.ArrOf) {
+      return r
+    }
+    if (r.length === 1) {
+      return r[0]
+    }
+
     return r.join('').trim()
   }
   const getDownloadValue = async (attr: AnyAttribute, operation: DownloadAttachmentOperation): Promise<any> => {
@@ -192,7 +226,7 @@ export async function convert (
               continue
             }
           }
-          const c: Channel = {
+          const c: Channel & BitrixSyncDoc = {
             _id: generateId(),
             _class: contact.class.Channel,
             attachedTo: document._id,
@@ -202,9 +236,10 @@ export async function convert (
             value: svalue,
             provider: f.provider,
             space: document.space,
-            modifiedOn: document.modifiedOn
+            modifiedOn: document.modifiedOn,
+            bitrixId: svalue
           }
-          newExtraDocs.push(c)
+          newExtraSyncDocs.push(c)
         }
       }
     }
@@ -212,22 +247,6 @@ export async function convert (
   }
 
   const getTagValue = async (attr: AnyAttribute, operation: CreateTagOperation): Promise<any> => {
-    const elements =
-      tagElements.get(attr.attributeOf) ??
-      (await client.findAll<TagElement>(tags.class.TagElement, {
-        targetClass: attr.attributeOf
-      }))
-
-    const references =
-      existingId !== undefined
-        ? await client.findAll<TagReference>(tags.class.TagReference, {
-          attachedTo: existingId
-        })
-        : []
-    // Add tags creation requests from previous conversions.
-    elements.push(...prevExtra.filter((it) => it._class === tags.class.TagElement).map((it) => it as TagElement))
-
-    tagElements.set(attr.attributeOf, elements)
     const defaultCategory = defaultCategories.find((it) => it.targetClass === attr.attributeOf)
 
     if (defaultCategory === undefined) {
@@ -245,13 +264,14 @@ export async function convert (
       } else {
         vals = [lval as string]
       }
+      let ci = 0
       for (let vv of vals) {
         vv = vv.trim()
         if (vv === '') {
           continue
         }
         // Find existing element and create reference based on it.
-        let tag: TagElement | undefined = elements.find((it) => it.title === vv)
+        let tag: TagElement | undefined = allTagElements.find((it) => it.title === vv)
         if (tag === undefined) {
           tag = {
             _id: generateId(),
@@ -267,24 +287,22 @@ export async function convert (
           }
           newExtraDocs.push(tag)
         }
-        const ref: TagReference = {
+        const ref: TagReference & BitrixSyncDoc = {
           _id: generateId(),
           attachedTo: existingId ?? document._id,
           attachedToClass: attr.attributeOf,
           collection: attr.name,
           _class: tags.class.TagReference,
           tag: tag._id,
-          color: 1,
+          color: ci++,
           title: vv,
           weight: o.weight,
           modifiedBy: document.modifiedBy,
           modifiedOn: document.modifiedOn,
-          space: tags.space.Tags
+          space: tags.space.Tags,
+          bitrixId: vv
         }
-        if (references.find((it) => it.title === vv) === undefined) {
-          // Add only if not already added
-          newExtraDocs.push(ref)
-        }
+        newExtraSyncDocs.push(ref)
       }
     }
     return undefined
@@ -310,19 +328,45 @@ export async function convert (
       case MappingOperation.DownloadAttachment: {
         const blobRef: { file: string, id: string } = await getDownloadValue(attr, f.operation)
         if (blobRef !== undefined) {
-          const response = await blobProvider?.(blobRef)
-          if (response !== undefined) {
-            let fname = blobRef.id
-            switch (response.type) {
-              case 'application/pdf':
-                fname += '.pdf'
-                break
-              case 'application/msword':
-                fname += '.doc'
-                break
-            }
-            blobs.push(new File([response], fname, { type: response.type }))
+          const attachDoc: Attachment & BitrixSyncDoc = {
+            _id: generateId(),
+            bitrixId: blobRef.id,
+            file: '', // Empty since not uploaded yet.
+            name: blobRef.id,
+            size: -1,
+            type: 'application/octet-stream',
+            lastModified: 0,
+            attachedTo: existingId ?? document._id,
+            attachedToClass: attr.attributeOf,
+            collection: attr.name,
+            _class: attachment.class.Attachment,
+            modifiedBy: document.modifiedBy,
+            modifiedOn: document.modifiedOn,
+            space: document.space
           }
+
+          blobs.push([
+            attachDoc,
+            async () => {
+              if (blobRef !== undefined) {
+                const response = await blobProvider?.(blobRef)
+                if (response !== undefined) {
+                  let fname = blobRef.id
+                  switch (response.type) {
+                    case 'application/pdf':
+                      fname += '.pdf'
+                      break
+                    case 'application/msword':
+                      fname += '.doc'
+                      break
+                  }
+                  attachDoc.type = response.type
+                  attachDoc.name = fname
+                  return new File([response], fname, { type: response.type })
+                }
+              }
+            }
+          ])
         }
         break
       }
@@ -339,7 +383,7 @@ export async function convert (
     }
   }
 
-  return { document, mixins, extraDocs: newExtraDocs, blobs }
+  return { document, mixins, extraSync: newExtraSyncDocs, extraDocs: newExtraDocs, blobs, rawData: rawDocument }
 }
 
 /**

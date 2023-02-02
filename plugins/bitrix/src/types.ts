@@ -86,8 +86,11 @@ export interface LoginInfo {
  * @public
  */
 export interface BitrixSyncDoc extends Doc {
-  type: string
+  type?: string
   bitrixId: string
+  syncTime?: number
+  // raw bitrix document data.
+  rawData?: any
 }
 
 /**
