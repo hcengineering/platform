@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Employee, EmployeeAccount } from '@hcengineering/contact'
-  import { Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { Class, DateRangeMode, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import { Card, getClient, UserBoxList } from '@hcengineering/presentation'
   import ui, { EditBox, DateRangePresenter } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -73,7 +73,7 @@
   <EditBox bind:value={title} placeholder={calendar.string.Title} kind={'large-style'} focus />
   <svelte:fragment slot="pool">
     <!-- <TimeShiftPicker title={calendar.string.Date} bind:value direction="after" /> -->
-    <DateRangePresenter bind:value withTime={true} editable={true} labelNull={ui.string.SelectDate} />
+    <DateRangePresenter bind:value mode={DateRangeMode.DATETIME} editable={true} labelNull={ui.string.SelectDate} />
     <UserBoxList bind:items={participants} label={calendar.string.Participants} />
   </svelte:fragment>
 </Card>

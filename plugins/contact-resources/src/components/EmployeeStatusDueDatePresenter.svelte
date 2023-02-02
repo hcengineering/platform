@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Timestamp, TypeDate } from '@hcengineering/core'
+  import { DateRangeMode, Timestamp, TypeDate } from '@hcengineering/core'
   import { ticker, tooltip } from '@hcengineering/ui'
   import { DateEditor } from '@hcengineering/view-resources'
   import EmployeeStatusDueDatePopup from './EmployeeStatusDueDatePopup.svelte'
@@ -12,7 +12,7 @@
   $: formattedDate = statusDueDate && formatDate(statusDueDate)
 
   const dispatch = createEventDispatcher()
-  const type = { withTime: true } as TypeDate
+  const type = { mode: DateRangeMode.DATETIME, withShift: true } as TypeDate
 </script>
 
 <div

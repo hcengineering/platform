@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { Event } from '@hcengineering/calendar'
+  import { DateRangeMode } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import { DateRangePresenter } from '@hcengineering/ui'
   import calendar from '../plugin'
@@ -21,10 +22,19 @@
   export let value: Event
   export let noShift: boolean = false
 
+  let dateRangeMode: DateRangeMode
+
   $: date = value ? new Date(value.date) : undefined
   $: dueDate = value ? new Date(value.dueDate ?? value.date) : undefined
 
   $: interval = (value.dueDate ?? value.date) - value.date
+  $: {
+    if (date && date.getMinutes() !== 0 && date.getHours() !== 0 && interval < DAY) {
+      dateRangeMode = DateRangeMode.DATETIME
+    } else {
+      dateRangeMode = DateRangeMode.DATE
+    }
+  }
 
   const SECOND = 1000
   const MINUTE = SECOND * 60
@@ -46,11 +56,7 @@
 
 <div class="antiSelect">
   {#if date}
-    <DateRangePresenter
-      value={date.getTime()}
-      withTime={date.getMinutes() !== 0 && date.getHours() !== 0 && interval < DAY}
-      {noShift}
-    />
+    <DateRangePresenter value={date.getTime()} mode={dateRangeMode} {noShift} />
     {#if interval > 0}
       {#await formatDueDate(interval) then t}
         <span class="ml-2 mr-1 whitespace-nowrap">({t})</span>

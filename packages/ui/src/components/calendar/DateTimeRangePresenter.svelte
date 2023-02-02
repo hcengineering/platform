@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { DateRangeMode } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import ui from '../../plugin'
   import DateRangePresenter from './DateRangePresenter.svelte'
@@ -25,4 +26,4 @@
   export let noShift: boolean = false
 </script>
 
-<DateRangePresenter bind:value withTime {editable} {icon} {labelOver} {labelNull} {noShift} />
+<DateRangePresenter bind:value mode={DateRangeMode.DATETIME} {editable} {icon} {labelOver} {labelNull} {noShift} />
