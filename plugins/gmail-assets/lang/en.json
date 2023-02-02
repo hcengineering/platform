@@ -29,6 +29,7 @@
     "Incoming": "Incoming",
     "Email": "Email",
     "Status": "Status",
-    "EmailPlaceholder": "john.appleseed@apple.com"
+    "EmailPlaceholder": "john.appleseed@apple.com",
+    "WrtieEmail": "Wrtie Email"
   }
 }
