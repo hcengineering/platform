@@ -93,7 +93,7 @@ export default mergeIds(chunterId, chunter, {
     ChunterBrowserVisible: '' as Resource<(spaces: Space[]) => boolean>
   },
   filter: {
-    CommentsFilter: '' as Resource<(txes: DisplayTx[]) => DisplayTx[]>,
-    BacklinksFilter: '' as Resource<(txes: DisplayTx[]) => DisplayTx[]>
+    CommentsFilter: '' as Resource<(tx: DisplayTx) => boolean>,
+    BacklinksFilter: '' as Resource<(tx: DisplayTx) => boolean>
   }
 })

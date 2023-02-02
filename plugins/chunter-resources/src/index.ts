@@ -207,12 +207,12 @@ async function update (source: Doc, key: string, target: RelatedDocument[], msg:
   await updateBacklinksList(getClient(), q, backlinks)
 }
 
-export function commentsFilter (txes: DisplayTx[]): DisplayTx[] {
-  return txes.filter((tx) => tx.tx.objectClass === chunter.class.Comment)
+export function commentsFilter (tx: DisplayTx): boolean {
+  return tx.tx.objectClass === chunter.class.Comment
 }
 
-export function backlinksFilter (txes: DisplayTx[]): DisplayTx[] {
-  return txes.filter((tx) => tx.tx.objectClass === chunter.class.Backlink)
+export function backlinksFilter (tx: DisplayTx): boolean {
+  return tx.tx.objectClass === chunter.class.Backlink
 }
 
 export default async (): Promise<Resources> => ({

@@ -91,7 +91,7 @@
 
   $: if (editableMap) updateTxes(object)
 
-  $: newTxPos = newTx(txes, $lastViews)
+  $: newTxPos = newTx(filtered, $lastViews)
 
   function newTx (txes: DisplayTx[], lastViews: Map<Ref<Doc>, number> | undefined): number {
     const lastView = lastViews?.get(object._id)
@@ -117,30 +117,23 @@
     )
   }
 
-  const filtered = new Map<Ref<Doc>, [Ref<Doc>[], IntlString]>()
-  let checked = new Set<Ref<Doc>>()
-  $: if (filters || txes) {
-    filters.forEach((filter) => {
-      getResource(filter.filter).then((result) => {
-        filtered.set(filter._id, [[...result(txes).map((it) => it.tx._id)], filter.label])
-      })
-    })
-  }
-  $: if (selectedFilter || filtered) {
-    checked.clear()
-    if (selectedFilter !== 'All' && Array.isArray(selectedFilter)) {
+  let filterActions: ((tx: DisplayTx) => boolean)[] = [] // Enabled filters
+  const updateFiltered = () => (filtered = txes.filter((it) => filterActions.some((f) => f(it))))
+  async function updateFilterActions (fls: ActivityFilter[], selected: Ref<Doc>[] | 'All'): Promise<void> {
+    if (selected === 'All' || !Array.isArray(selected)) filterActions = [() => true]
+    else {
+      const tf = fls.filter((filter) => (selected as Ref<Doc>[]).includes(filter._id))
+      filterActions = []
       labels = []
-      const tempIds: Ref<Doc>[] = []
-      ;(selectedFilter as Ref<Doc>[]).forEach((filter) => {
-        const res = filtered.get(filter)
-        if (res) {
-          labels.push(res[1])
-          tempIds.push(...res[0])
-        }
+      tf.forEach((filter) => {
+        labels.push(filter.label)
+        getResource(filter.filter).then((res) => filterActions.push(res))
       })
-      checked = new Set(tempIds)
     }
+    setTimeout(() => updateFiltered(), 0)
   }
+  $: updateFilterActions(filters, selectedFilter)
+  $: filtered = txes.filter((it) => filterActions.some((f) => f(it)))
 </script>
 
 {#if !integrate || transparent}
@@ -155,20 +148,16 @@
   <div class="flex-col flex-grow min-h-0" class:background-accent-bg-color={!transparent}>
     <Scroller>
       <div class="p-10 select-text" id={activity.string.Activity}>
-        {#if txes}
+        {#if filtered}
           <Grid column={1} rowGap={1.5}>
-            {#key selectedFilter}
-              {#each txes as tx, i}
-                {#if selectedFilter === 'All' || checked.has(tx.tx._id)}
-                  <TxView
-                    {tx}
-                    {viewlets}
-                    isNew={newTxPos >= i && newTxPos !== -1}
-                    isNextNew={newTxPos > i && newTxPos !== -1}
-                  />
-                {/if}
-              {/each}
-            {/key}
+            {#each filtered as tx, i}
+              <TxView
+                {tx}
+                {viewlets}
+                isNew={newTxPos >= i && newTxPos !== -1}
+                isNextNew={newTxPos > i && newTxPos !== -1}
+              />
+            {/each}
           </Grid>
         {/if}
       </div>
@@ -207,20 +196,16 @@
     </div>
   {/if}
   <div class="p-activity select-text" id={activity.string.Activity}>
-    {#if txes}
+    {#if filtered}
       <Grid column={1} rowGap={1.5}>
-        {#key selectedFilter}
-          {#each txes as tx, i}
-            {#if selectedFilter === 'All' || checked.has(tx.tx._id)}
-              <TxView
-                {tx}
-                {viewlets}
-                isNew={newTxPos >= i && newTxPos !== -1}
-                isNextNew={newTxPos > i && newTxPos !== -1}
-              />
-            {/if}
-          {/each}
-        {/key}
+        {#each filtered as tx, i}
+          <TxView
+            {tx}
+            {viewlets}
+            isNew={newTxPos >= i && newTxPos !== -1}
+            isNextNew={newTxPos > i && newTxPos !== -1}
+          />
+        {/each}
       </Grid>
     {/if}
   </div>
