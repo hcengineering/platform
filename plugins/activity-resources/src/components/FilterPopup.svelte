@@ -105,6 +105,7 @@
     }
     menu = menu
     dispatch('update', { action: 'select', value: selectedFilter })
+    setTimeout(() => dispatch('changeContent'), 0)
   }
 
   onMount(() => {
