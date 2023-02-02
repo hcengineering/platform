@@ -68,7 +68,7 @@
   $: if (docWidth > 900 && docSize) docSize = false
 
   const showCreateDialog = async () => {
-    showPopup(CreateIssueTemplate, { targetElement: null }, 'top')
+    showPopup(CreateIssueTemplate, { targetElement: null, space }, 'top')
   }
 
   $: viewOptions = getViewOptions(viewlet)
@@ -114,7 +114,7 @@
 />
 <div class="flex w-full h-full clear-mins">
   {#if viewlet && viewOptions}
-    <IssueTemplatesContent {viewOptions} {viewlet} query={resultQuery} />
+    <IssueTemplatesContent {viewOptions} {viewlet} {space} query={resultQuery} />
   {/if}
   {#if $$slots.aside !== undefined && asideShown}
     <div class="popupPanel-body__aside flex" class:float={asideFloat} class:shown={asideShown}>

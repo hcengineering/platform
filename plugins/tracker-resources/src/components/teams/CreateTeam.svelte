@@ -25,8 +25,8 @@
     ToggleWithLabel
   } from '@hcengineering/ui'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
-  import core, { getCurrentAccount, Ref } from '@hcengineering/core'
-  import { IssueStatus, Team, TimeReportDayType, WorkDayLength } from '@hcengineering/tracker'
+  import core, { generateId, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
+  import { genRanks, IssueStatus, Team, TimeReportDayType, WorkDayLength } from '@hcengineering/tracker'
   import { StyledTextBox } from '@hcengineering/text-editor'
   import { Asset } from '@hcengineering/platform'
   import tracker from '../../plugin'
@@ -62,6 +62,8 @@
     isNew ? createTeam() : updateTeam()
   }
 
+  const defaultStatusId: Ref<IssueStatus> = generateId()
+
   function getTeamData () {
     return {
       name,
@@ -72,7 +74,7 @@
       identifier: name.toUpperCase().replaceAll(' ', '_'),
       sequence: 0,
       issueStatuses: 0,
-      defaultIssueStatus: '' as Ref<IssueStatus>,
+      defaultIssueStatus: defaultStatusId,
       icon,
       defaultTimeReportDay: selectedWorkDayType ?? TimeReportDayType.PreviousWorkDay,
       workDayLength: selectedWorkDayLength ?? WorkDayLength.EIGHT_HOURS
@@ -97,7 +99,36 @@
   }
 
   async function createTeam () {
-    await client.createDoc(tracker.class.Team, core.space.Space, getTeamData())
+    const id = await client.createDoc(tracker.class.Team, core.space.Space, getTeamData())
+    await createTeamIssueStatuses(id, defaultStatusId)
+  }
+
+  async function createTeamIssueStatuses (
+    teamId: Ref<Team>,
+    defaultStatusId: Ref<IssueStatus>,
+    defaultCategoryId = tracker.issueStatusCategory.Backlog
+  ): Promise<void> {
+    const categories = await client.findAll(
+      tracker.class.IssueStatusCategory,
+      {},
+      { sort: { order: SortingOrder.Ascending } }
+    )
+    const issueStatusRanks = [...genRanks(categories.length)]
+
+    for (const [i, statusCategory] of categories.entries()) {
+      const { _id: category, defaultStatusName } = statusCategory
+      const rank = issueStatusRanks[i]
+
+      await client.addCollection(
+        tracker.class.IssueStatus,
+        teamId,
+        teamId,
+        tracker.class.Team,
+        'issueStatuses',
+        { name: defaultStatusName, category, rank },
+        category === defaultCategoryId ? defaultStatusId : undefined
+      )
+    }
   }
 
   function chooseIcon (ev: MouseEvent) {

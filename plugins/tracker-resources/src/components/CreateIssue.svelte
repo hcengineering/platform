@@ -553,8 +553,7 @@
         }
       }
     }
-
-    addNotification(tracker.string.IssueCreated, getTitle(object.title), IssueNotification, {
+    addNotification(await translate(tracker.string.IssueCreated, {}), getTitle(object.title), IssueNotification, {
       issueId: objectId,
       subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase(),
       issueUrl: currentTeam && generateIssueShortLink(getIssueId(currentTeam, value as Issue))
@@ -707,6 +706,9 @@
     <ObjectBox
       _class={tracker.class.IssueTemplate}
       value={templateId}
+      docQuery={{
+        space: _space
+      }}
       on:change={handleTemplateChange}
       size={'small'}
       label={tracker.string.NoIssueTemplate}
