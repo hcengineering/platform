@@ -15,7 +15,7 @@
 <script lang="ts">
   import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
   import { Account, DocumentQuery, Ref, SortingOrder, Space } from '@hcengineering/core'
-  import login from '@hcengineering/login'
+  import workbench from '@hcengineering/workbench'
   import { translate } from '@hcengineering/platform'
   import setting from '@hcengineering/setting'
   import { IconAdd, Label, SearchEdit, showPopup } from '@hcengineering/ui'
@@ -65,7 +65,7 @@
   }
 
   function inviteWorkspace (): void {
-    showPopup(login.component.InviteLink, {})
+    showPopup(workbench.component.InviteLink, {})
   }
 </script>
 

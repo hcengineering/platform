@@ -15,8 +15,6 @@
 //
 
 import LoginApp from './components/LoginApp.svelte'
-import InviteLink from '../../workbench-resources/src/components/InviteLink.svelte'
-
 /*!
  * Anticrm Platform™ Login Plugin
  * © 2020, 2021 Anticrm Platform Contributors.
@@ -26,8 +24,7 @@ import InviteLink from '../../workbench-resources/src/components/InviteLink.svel
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   component: {
-    LoginApp,
-    InviteLink
+    LoginApp
   }
 })
 

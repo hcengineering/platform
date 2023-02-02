@@ -23,7 +23,7 @@
 
 <div class="flex-row-center">
   <label class="mini-toggle">
-    <input class="chBox" type="checkbox" bind:checked={on} on:change disabled={disabled}/>
+    <input class="chBox" type="checkbox" bind:checked={on} on:change {disabled} />
     <span class="toggle-switch" />
   </label>
   {#if label}

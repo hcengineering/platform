@@ -14,11 +14,9 @@
 -->
 <script lang="ts">
   import { Button, EditBox } from '@hcengineering/ui'
-  import login from '../../../login-resources/src/plugin'
+  import workbench from '@hcengineering/workbench-resources/src/plugin'
   import presentation, { getClient, LiveQuery } from '@hcengineering/presentation'
   import setting, { InviteSettings } from '@hcengineering/setting'
-  import preference from '../../../preference'
-  import { getCurrentAccount } from '@hcengineering/core'
 
   const client = getClient()
   let expTime: number
@@ -35,23 +33,19 @@
       limit = set[0].limit
     }
   })
-  const curAcc = getCurrentAccount()
+
   async function setInviteSettings () {
     const newSettings: InviteSettings = {
       expirationTime: expTime,
       emailMask: mask,
-      limit: limit
+      limit
     }
     if (existingInviteSettings.length === 0) {
-      await client.createDoc(
-        setting.class.InviteSettings,
-        preference.space.Preference,
-        newSettings
-      )
+      await client.createDoc(setting.class.InviteSettings, setting.space.Setting, newSettings)
     } else {
       await client.updateDoc(
         setting.class.InviteSettings,
-        preference.space.Preference,
+        setting.space.Setting,
         existingInviteSettings[0]._id,
         newSettings
       )
@@ -61,38 +55,21 @@
 
 <div class="form">
   <div class="mt-2">
-    <EditBox
-      label={login.string.LinkValidHours}
-      format={'number'}
-      bind:value={expTime}
-    />
+    <EditBox label={workbench.string.LinkValidHours} format={'number'} bind:value={expTime} />
   </div>
   <div class="mt-2">
-    <EditBox
-      label={login.string.EmailMask}
-      format={'string'}
-      bind:value={mask}
-    />
+    <EditBox label={workbench.string.EmailMask} format={'string'} bind:value={mask} />
   </div>
   <div class="mt-2">
-    <EditBox
-      label={login.string.InviteLimit}
-      format={'number'}
-      bind:value={limit}
-    />
+    <EditBox label={workbench.string.InviteLimit} format={'number'} bind:value={limit} />
   </div>
   <div class="mt-2">
-  <Button
-    label={presentation.string.Save}
-    size={'medium'}
-    kind={'primary'}
-    on:click={() => setInviteSettings()}
-  />
+    <Button label={presentation.string.Save} size={'medium'} kind={'primary'} on:click={() => setInviteSettings()} />
   </div>
 </div>
 
 <style lang="scss">
   .form {
-      padding: 1.5rem;
+    padding: 1.5rem;
   }
 </style>

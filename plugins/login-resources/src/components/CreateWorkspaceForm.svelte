@@ -18,12 +18,7 @@
 
   import Form from './Form.svelte'
   import { createWorkspace } from '../utils'
-  import {
-    fetchMetadataLocalStorage,
-    getCurrentLocation,
-    navigate,
-    setMetadataLocalStorage
-  } from '@hcengineering/ui'
+  import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
   import login from '../plugin'
   import { workbenchId } from '@hcengineering/workbench'
 

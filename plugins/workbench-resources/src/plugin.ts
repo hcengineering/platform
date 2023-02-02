@@ -46,7 +46,11 @@ export default mergeIds(workbenchId, workbench, {
     AccessWorkspaceSettings: '' as IntlString,
     HowToWorkFaster: '' as IntlString,
     OpenInNewTab: '' as IntlString,
-    UseWorkspaceInviteSettings: '' as IntlString
+    UseWorkspaceInviteSettings: '' as IntlString,
+    LinkValidHours: '' as IntlString,
+    EmailMask: '' as IntlString,
+    InviteLimit: '' as IntlString,
+    GetLink: '' as IntlString
   },
   component: {
     SpacePanel: '' as AnyComponent

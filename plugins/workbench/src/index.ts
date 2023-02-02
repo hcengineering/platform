@@ -118,7 +118,8 @@ export default plugin(workbenchId, {
     SpaceView: '' as Ref<Mixin<SpaceView>>
   },
   component: {
-    WorkbenchApp: '' as AnyComponent
+    WorkbenchApp: '' as AnyComponent,
+    InviteLink: '' as AnyComponent
   },
   icon: {
     Search: '' as Asset

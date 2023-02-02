@@ -32,8 +32,6 @@
   import { loginId } from '@hcengineering/login'
   import workbench from '../plugin'
   import setting, { InviteSettings } from '@hcengineering/setting'
-  import preference from '@hcengineering/preference'
-
 
   const dispatch = createEventDispatcher()
 
@@ -48,18 +46,13 @@
     }
   })
 
-
   async function setInviteSettings () {
     const newSettings: InviteSettings = {
       expirationTime: expHours,
-      emailMask: emailMask,
-      limit: limit
+      emailMask,
+      limit
     }
-    await client.createDoc(
-      setting.class.InviteSettings,
-      preference.space.Preference,
-      newSettings
-    )
+    await client.createDoc(setting.class.InviteSettings, setting.space.Setting, newSettings)
   }
 
   async function getLink (expHours: number, mask: string, limit: number): Promise<void> {
@@ -110,10 +103,14 @@
     <Label label={login.string.InviteDescription} />
     <InviteWorkspace size="large" />
   </div>
-    <MiniToggle bind:on={useDefault} label={workbench.string.UseWorkspaceInviteSettings} disabled={!isOwnerOrMaintainer} />
+  <MiniToggle
+    bind:on={useDefault}
+    label={workbench.string.UseWorkspaceInviteSettings}
+    disabled={!isOwnerOrMaintainer}
+  />
   <div class="mt-2">
     <EditBox
-      label={login.string.LinkValidHours}
+      label={workbench.string.LinkValidHours}
       bind:value={expHours}
       format={'number'}
       on:keypress={() => (link = undefined)}
@@ -122,7 +119,7 @@
   </div>
   <div class="mt-2">
     <EditBox
-      label={login.string.EmailMask}
+      label={workbench.string.EmailMask}
       bind:value={emailMask}
       format={'string'}
       on:keypress={() => (link = undefined)}
@@ -131,7 +128,7 @@
   </div>
   <div class="mt-2">
     <EditBox
-      label={login.string.InviteLimit}
+      label={workbench.string.InviteLimit}
       bind:value={limit}
       format={'number'}
       on:keypress={() => (link = undefined)}
@@ -157,7 +154,7 @@
   {:else}
     <div class="buttons flex">
       <Button
-        label={login.string.GetLink}
+        label={workbench.string.GetLink}
         size={'medium'}
         kind={'primary'}
         on:click={() => {

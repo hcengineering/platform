@@ -87,7 +87,7 @@
   }
 
   function inviteWorkspace (): void {
-    showPopup(login.component.InviteLink, {})
+    showPopup(workbench.component.InviteLink, {})
   }
 
   function helpAndSupport (): void {
