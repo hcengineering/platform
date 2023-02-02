@@ -50,7 +50,8 @@
       const temp: Ref<Doc>[] | 'All' = JSON.parse(saved)
       if (temp !== 'All' && Array.isArray(temp)) {
         selectedFilter = temp.filter((it) => filters.findIndex((f) => it === f._id) > -1)
-      }
+        if ((selectedFilter as Ref<Doc>[]).length === 0) selectedFilter = 'All'
+      } else selectedFilter = 'All'
     }
   })
 
@@ -127,7 +128,7 @@
   }
   $: if (selectedFilter || filtered) {
     checked.clear()
-    if (selectedFilter !== 'All') {
+    if (selectedFilter !== 'All' && Array.isArray(selectedFilter)) {
       labels = []
       const tempIds: Ref<Doc>[] = []
       ;(selectedFilter as Ref<Doc>[]).forEach((filter) => {
