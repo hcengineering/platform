@@ -333,6 +333,7 @@ export default mergeIds(trackerId, tracker, {
     TimeSpendReport: '' as AnyComponent,
     EstimationEditor: '' as AnyComponent,
     TemplateEstimationEditor: '' as AnyComponent,
+    DeleteProjectPresenter: '' as AnyComponent,
 
     ProjectSelector: '' as AnyComponent,
 
