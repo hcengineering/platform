@@ -19,23 +19,23 @@
   import setting, { InviteSettings } from '@hcengineering/setting'
 
   const client = getClient()
-  let expTime: number
+  let expTime: number = 48
   let mask: string
-  let limit: number
-  let existingInviteSettings: InviteSettings
+  let limit: number = -1
+  let existingInviteSettings: InviteSettings[]
   const query = new LiveQuery()
 
   $: query.query(setting.class.InviteSettings, {}, (set) => {
     existingInviteSettings = set
-    if (set !== undefined && set.length > 0) {
-      expTime = set[0].expirationTime
-      mask = set[0].emailMask
-      limit = set[0].limit
+    if (existingInviteSettings !== undefined) {
+      expTime = existingInviteSettings[0].expirationTime
+      mask = existingInviteSettings[0].emailMask
+      limit = existingInviteSettings[0].limit
     }
   })
 
   async function setInviteSettings () {
-    const newSettings: InviteSettings = {
+    const newSettings = {
       expirationTime: expTime,
       emailMask: mask,
       limit
@@ -58,7 +58,7 @@
     <EditBox label={workbench.string.LinkValidHours} format={'number'} bind:value={expTime} />
   </div>
   <div class="mt-2">
-    <EditBox label={workbench.string.EmailMask} format={'string'} bind:value={mask} />
+    <EditBox label={workbench.string.EmailMask} bind:value={mask} />
   </div>
   <div class="mt-2">
     <EditBox label={workbench.string.InviteLimit} format={'number'} bind:value={limit} />

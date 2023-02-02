@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { AccountRole, getCurrentAccount, Timestamp } from '@hcengineering/core'
-  import { copyTextToClipboard, getClient, LiveQuery } from '@hcengineering/presentation'
+  import { copyTextToClipboard, LiveQuery } from '@hcengineering/presentation'
   import {
     Button,
     EditBox,
@@ -31,29 +31,22 @@
   import InviteWorkspace from '@hcengineering/login-resources/src/components/icons/InviteWorkspace.svelte'
   import { loginId } from '@hcengineering/login'
   import workbench from '../plugin'
-  import setting, { InviteSettings } from '@hcengineering/setting'
+  import setting from '@hcengineering/setting'
 
   const dispatch = createEventDispatcher()
 
   const query = new LiveQuery()
-  const client = getClient()
 
   $: query.query(setting.class.InviteSettings, {}, (set) => {
     if (set !== undefined && set.length > 0) {
       expHours = set[0].expirationTime
       emailMask = set[0].emailMask
       limit = set[0].limit
+    } else {
+      expHours = 48
+      limit = -1
     }
   })
-
-  async function setInviteSettings () {
-    const newSettings: InviteSettings = {
-      expirationTime: expHours,
-      emailMask,
-      limit
-    }
-    await client.createDoc(setting.class.InviteSettings, setting.space.Setting, newSettings)
-  }
 
   async function getLink (expHours: number, mask: string, limit: number): Promise<void> {
     loading = true
