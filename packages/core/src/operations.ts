@@ -80,7 +80,9 @@ export class TxOperations implements Omit<Client, 'notify'> {
       attachedTo,
       space,
       collection,
-      this.txFactory.createTxCreateDoc<P>(_class, space, attributes as unknown as Data<P>, id, modifiedOn, modifiedBy)
+      this.txFactory.createTxCreateDoc<P>(_class, space, attributes as unknown as Data<P>, id, modifiedOn, modifiedBy),
+      modifiedOn,
+      modifiedBy
     )
     await this.client.tx(tx)
     return tx.tx.objectId as unknown as Ref<P>
@@ -103,7 +105,9 @@ export class TxOperations implements Omit<Client, 'notify'> {
       attachedTo,
       space,
       collection,
-      this.txFactory.createTxUpdateDoc(_class, space, objectId, operations, retrieve, modifiedOn, modifiedBy)
+      this.txFactory.createTxUpdateDoc(_class, space, objectId, operations, retrieve, modifiedOn, modifiedBy),
+      modifiedOn,
+      modifiedBy
     )
     await this.client.tx(tx)
     return tx.objectId
@@ -124,7 +128,9 @@ export class TxOperations implements Omit<Client, 'notify'> {
       attachedTo,
       space,
       collection,
-      this.txFactory.createTxRemoveDoc(_class, space, objectId, modifiedOn, modifiedBy)
+      this.txFactory.createTxRemoveDoc(_class, space, objectId, modifiedOn, modifiedBy),
+      modifiedOn,
+      modifiedBy
     )
     await this.client.tx(tx)
     return tx.objectId

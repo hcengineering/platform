@@ -304,7 +304,13 @@ export abstract class TxProcessor implements WithTx {
 
   static updateDoc2Doc<T extends Doc>(rawDoc: T, tx: TxUpdateDoc<T>): T {
     const doc = _toDoc(rawDoc)
-    const ops = tx.operations as any
+    TxProcessor.applyUpdate<T>(doc, tx.operations as any)
+    doc.modifiedBy = tx.modifiedBy
+    doc.modifiedOn = tx.modifiedOn
+    return rawDoc
+  }
+
+  static applyUpdate<T extends Doc>(doc: T, ops: any): void {
     for (const key in ops) {
       if (key.startsWith('$')) {
         const operator = _getOperator(key)
@@ -313,9 +319,6 @@ export abstract class TxProcessor implements WithTx {
         setObjectValue(key, doc, ops[key])
       }
     }
-    doc.modifiedBy = tx.modifiedBy
-    doc.modifiedOn = tx.modifiedOn
-    return rawDoc
   }
 
   static updateMixin4Doc<D extends Doc, M extends D>(rawDoc: D, tx: TxMixin<D, M>): D {

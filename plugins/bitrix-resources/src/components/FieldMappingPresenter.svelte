@@ -2,7 +2,7 @@
   import { BitrixEntityMapping, BitrixFieldMapping, MappingOperation } from '@hcengineering/bitrix'
   import { AnyAttribute } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Icon, IconArrowLeft, Label } from '@hcengineering/ui'
+  import { Button, Icon, IconArrowLeft, IconClose, Label } from '@hcengineering/ui'
   import CopyMappingPresenter from './mappings/CopyMappingPresenter.svelte'
   import CreateChannelMappingPresenter from './mappings/CreateChannelMappingPresenter.svelte'
   import CreateTagMappingPresenter from './mappings/CreateTagMappingPresenter.svelte'
@@ -12,7 +12,12 @@
   export let value: BitrixFieldMapping
   $: kind = value.operation.kind
 
-  const attr: AnyAttribute | undefined = getClient().getHierarchy().getAttribute(value.ofClass, value.attributeName)
+  let attr: AnyAttribute | undefined
+  try {
+    attr = getClient().getHierarchy().getAttribute(value.ofClass, value.attributeName)
+  } catch (err: any) {
+    console.error(err)
+  }
 </script>
 
 <div class="flex-row-center top-divider">
@@ -33,5 +38,13 @@
     {:else if kind === MappingOperation.DownloadAttachment}
       <DownloadAttachmentPresenter {mapping} {value} />
     {/if}
+
+    <Button
+      icon={IconClose}
+      size={'small'}
+      on:click={() => {
+        getClient().remove(value)
+      }}
+    />
   {/if}
 </div>
