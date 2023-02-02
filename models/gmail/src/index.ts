@@ -33,6 +33,7 @@ import contact from '@hcengineering/model-contact'
 import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import setting from '@hcengineering/setting'
 import gmail from './plugin'
+import view, { createAction } from '@hcengineering/model-view'
 
 export const DOMAIN_GMAIL = 'gmail' as Domain
 
@@ -162,6 +163,30 @@ export function createModel (builder: Builder): void {
       hideOnRemove: true
     },
     gmail.ids.TxSharedCreate
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: gmail.component.NewMessages,
+        element: 'float',
+        fillProps: {
+          _objects: 'value'
+        }
+      },
+      label: gmail.string.WrtieEmail,
+      icon: contact.icon.Email,
+      keyBinding: [],
+      input: 'none',
+      category: contact.category.Contact,
+      target: contact.class.Contact,
+      context: {
+        mode: ['context', 'browser']
+      }
+    },
+    gmail.action.WriteEmail
   )
 }
 

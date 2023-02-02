@@ -21,12 +21,14 @@ import Connect from './components/Connect.svelte'
 import IconGmail from './components/icons/GmailColor.svelte'
 import TxSharedCreate from './components/activity/TxSharedCreate.svelte'
 import { concatLink } from '@hcengineering/core'
+import NewMessages from './components/NewMessages.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
     Main,
     Connect,
-    IconGmail
+    IconGmail,
+    NewMessages
   },
   activity: {
     TxSharedCreate
