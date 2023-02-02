@@ -20,12 +20,15 @@ import Main from './components/Main.svelte'
 import Connect from './components/Connect.svelte'
 import IconGmail from './components/icons/GmailColor.svelte'
 import TxSharedCreate from './components/activity/TxSharedCreate.svelte'
+import { concatLink } from '@hcengineering/core'
+import NewMessages from './components/NewMessages.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
     Main,
     Connect,
-    IconGmail
+    IconGmail,
+    NewMessages
   },
   activity: {
     TxSharedCreate
@@ -33,7 +36,7 @@ export default async (): Promise<Resources> => ({
   handler: {
     DisconnectHandler: async () => {
       const url = getMetadata(login.metadata.GmailUrl) ?? ''
-      await fetch(url + '/signout', {
+      await fetch(concatLink(url, '/signout'), {
         method: 'GET',
         headers: {
           Authorization: 'Bearer ' + (getMetadata(login.metadata.LoginToken) ?? ''),

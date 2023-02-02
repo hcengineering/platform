@@ -20,8 +20,12 @@ import { gmailId } from '@hcengineering/gmail'
 import gmail from '@hcengineering/gmail-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui'
 import type { TxViewlet } from '@hcengineering/activity'
+import { Action } from '@hcengineering/view'
 
 export default mergeIds(gmailId, gmail, {
+  action: {
+    WriteEmail: '' as Ref<Action>
+  },
   string: {
     MessageID: '' as IntlString,
     IntegrationLabel: '' as IntlString,

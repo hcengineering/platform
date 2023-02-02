@@ -94,34 +94,36 @@
 
 {#each categories as category, i}
   {@const items = groupedDocs[category] ?? []}
-  <ListCategory
-    {elementByIndex}
-    {indexById}
-    {extraHeaders}
-    {space}
-    {selectedObjectIds}
-    {headerComponent}
-    initIndex={getInitIndex(categories, i)}
-    {baseMenuClass}
-    {level}
-    {viewOptions}
-    {groupByKey}
-    {config}
-    {docByIndex}
-    {itemModels}
-    {_class}
-    singleCat={level === 0 && categories.length === 1}
-    {category}
-    {items}
-    {newObjectProps}
-    {createItemDialog}
-    {createItemLabel}
-    {loadingPropsLength}
-    on:check
-    on:uncheckAll
-    on:row-focus
-    {flatHeaders}
-    {disableHeader}
-    {props}
-  />
+  {#key category}
+    <ListCategory
+      {elementByIndex}
+      {indexById}
+      {extraHeaders}
+      {space}
+      {selectedObjectIds}
+      {headerComponent}
+      initIndex={getInitIndex(categories, i)}
+      {baseMenuClass}
+      {level}
+      {viewOptions}
+      {groupByKey}
+      {config}
+      {docByIndex}
+      {itemModels}
+      {_class}
+      singleCat={level === 0 && categories.length === 1}
+      {category}
+      {items}
+      {newObjectProps}
+      {createItemDialog}
+      {createItemLabel}
+      {loadingPropsLength}
+      on:check
+      on:uncheckAll
+      on:row-focus
+      {flatHeaders}
+      {disableHeader}
+      {props}
+    />
+  {/key}
 {/each}

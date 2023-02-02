@@ -35,6 +35,8 @@
     "@hcengineering/gmail": "^0.6.0",
     "@hcengineering/gmail-resources": "^0.6.0",
     "@hcengineering/model-attachment": "^0.6.0",
+    "@hcengineering/model-view": "^0.6.0",
+    "@hcengineering/view": "^0.6.2",
     "@hcengineering/setting": "^0.6.2",
     "@hcengineering/ui": "^0.6.3"
   }
