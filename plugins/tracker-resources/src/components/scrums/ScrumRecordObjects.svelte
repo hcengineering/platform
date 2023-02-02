@@ -109,5 +109,6 @@
       props: {}
     }
   ]}
-  viewOptions={{ orderBy: ['modifiedOn', SortingOrder.Descending], groupBy: ['_class'] }}
+  viewOptions={{ orderBy: ['modifiedOn', SortingOrder.Descending], groupBy: [] }}
+  disableHeader
 />
