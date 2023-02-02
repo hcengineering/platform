@@ -49,6 +49,7 @@
     "@hcengineering/notification": "^0.6.5",
     "@hcengineering/notification-resources": "^0.6.0",
     "@hcengineering/contact": "^0.6.9",
+    "@hcengineering/contact-resources": "^0.6.0",
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/text-editor": "^0.6.0",
     "@hcengineering/panel": "^0.6.0",
@@ -57,6 +58,8 @@
     "@hcengineering/workbench": "^0.6.2",
     "@hcengineering/attachment": "^0.6.1",
     "@hcengineering/chunter-resources": "^0.6.0",
-    "@hcengineering/workbench-resources": "^0.6.1"
+    "@hcengineering/workbench-resources": "^0.6.1",
+    "@hcengineering/activity-resources": "~0.6.1",
+    "@hcengineering/activity": "~0.6.0"
   }
 }

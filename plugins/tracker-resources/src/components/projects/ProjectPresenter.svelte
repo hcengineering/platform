@@ -15,11 +15,20 @@
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
   import { Project } from '@hcengineering/tracker'
-  import { getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { getCurrentLocation, Icon, navigate, tooltip } from '@hcengineering/ui'
+  import tracker from '../../plugin'
 
   export let value: WithLookup<Project>
+  export let withIcon = false
+  export let onClick: () => void | undefined
+
   function navigateToProject () {
+    if (onClick) {
+      onClick()
+    }
+
     const loc = getCurrentLocation()
+    loc.path[4] = 'projects'
     loc.path[5] = value._id
     loc.path.length = 6
     navigate(loc)
@@ -28,11 +37,14 @@
 
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <span
-    title={value.label}
-    class="cursor-pointer fs-bold caption-color overflow-label clear-mins"
-    on:click={navigateToProject}
-  >
-    {value.label}
-  </span>
+  <div class="flex" on:click={navigateToProject}>
+    {#if withIcon}
+      <div class="mr-2" use:tooltip={{ label: tracker.string.Project }}>
+        <Icon icon={tracker.icon.Projects} size={'small'} />
+      </div>
+    {/if}
+    <span title={value.label} class="fs-bold cursor-pointer caption-color overflow-label clear-mins">
+      {value.label}
+    </span>
+  </div>
 {/if}

@@ -77,6 +77,8 @@
 
     mode = newMode
   }
+
+  const retrieveMembers = (s: Sprint) => s.members
 </script>
 
 <div class="fs-title flex-between header">
@@ -171,7 +173,16 @@
             size: 'x-small'
           }
         },
-        { key: '', presenter: tracker.component.SprintMembersPresenter, props: { kind: 'link' } },
+        {
+          key: '',
+          presenter: contact.component.MembersPresenter,
+          props: {
+            kind: 'link',
+            intlTitle: tracker.string.SprintMembersTitle,
+            intlSearchPh: tracker.string.SprintMembersSearchPlaceholder,
+            retrieveMembers
+          }
+        },
         { key: '', presenter: SprintDatePresenter, props: { field: 'startDate' } },
         { key: '', presenter: SprintDatePresenter, props: { field: 'targetDate' } },
         { key: '', presenter: tracker.component.SprintStatusPresenter }

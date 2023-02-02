@@ -21,6 +21,7 @@
 
   export let value: WithLookup<Issue>
   export let kind: 'transparent' | 'primary' | 'link' | 'list' = 'primary'
+  export let isEditable = true
 
   const client = getClient()
 
@@ -48,5 +49,6 @@
   dateMs={dueDateMs}
   shouldRender={shouldRenderPresenter}
   onDateChange={handleDueDateChanged}
+  editable={isEditable}
   {kind}
 />

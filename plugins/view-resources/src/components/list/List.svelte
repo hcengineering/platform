@@ -32,9 +32,10 @@
   export let loadingProps: LoadingProps | undefined = undefined
   export let createItemDialog: AnyComponent | undefined = undefined
   export let createItemLabel: IntlString | undefined = undefined
-  export let viewOptionsConfig: ViewOptionModel[] | undefined
+  export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
   export let viewOptions: ViewOptions
   export let flatHeaders = false
+  export let disableHeader = false
   export let props: Record<string, any> = {}
 
   export let documents: Doc[] | undefined = undefined
@@ -154,6 +155,7 @@
     on:uncheckAll={uncheckAll}
     on:row-focus
     {flatHeaders}
+    {disableHeader}
     {props}
   />
 </div>
