@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { DateRangeMode } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import ui from '../../plugin'
   import Label from '../Label.svelte'
@@ -34,11 +35,13 @@
       dispatch('change', value)
     }
   }
+
+  $: mode = withTime ? DateRangeMode.DATETIME : DateRangeMode.DATE
 </script>
 
 <div class="antiSelect antiWrapper cursor-default">
   <div class="flex-col">
     <span class="label mb-1"><Label label={title} /></span>
-    <DatePresenter {value} {withTime} {icon} {labelOver} {labelNull} editable on:change={changeValue} />
+    <DatePresenter {value} {mode} {icon} {labelOver} {labelNull} editable on:change={changeValue} />
   </div>
 </div>

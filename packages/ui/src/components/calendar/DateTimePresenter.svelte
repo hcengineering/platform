@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { DateRangeMode } from '@hcengineering/core'
   import DatePresenter from './DatePresenter.svelte'
 
   export let value: number | null | undefined
@@ -20,4 +21,4 @@
   export let editable: boolean = false
 </script>
 
-<DatePresenter bind:value withTime {mondayStart} {editable} />
+<DatePresenter bind:value mode={DateRangeMode.DATETIME} {mondayStart} {editable} />
