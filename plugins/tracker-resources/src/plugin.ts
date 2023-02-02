@@ -178,6 +178,9 @@ export default mergeIds(trackerId, tracker, {
     NewIssueDialogClose: '' as IntlString,
     NewIssueDialogCloseNote: '' as IntlString,
 
+    RemoveProjectDialogClose: '' as IntlString,
+    RemoveProjectDialogCloseNote: '' as IntlString,
+
     CopyIssueUrl: '' as IntlString,
     CopyIssueId: '' as IntlString,
     CopyIssueBranch: '' as IntlString,

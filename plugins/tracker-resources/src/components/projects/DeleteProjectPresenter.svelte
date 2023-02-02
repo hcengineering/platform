@@ -15,10 +15,12 @@
 <script lang="ts">
 
   import view from '@hcengineering/view'
-  import { Button, ButtonSize, LabelAndProps } from '@hcengineering/ui'
-  import { getClient } from '@hcengineering/presentation'
-  import tracker, { Project } from '@hcengineering/tracker'
+  import { Button, ButtonSize, LabelAndProps, showPopup } from '@hcengineering/ui'
+  import { getClient, MessageBox } from '@hcengineering/presentation'
+  import type { Project } from '@hcengineering/tracker'
+  import tracker from '../../plugin'
   import { Ref, Space } from '@hcengineering/core'
+  import { createEventDispatcher } from 'svelte'
 
   export let space: Ref<Space>
   export let value: Project
@@ -27,6 +29,24 @@
   export let width: string | undefined = 'min-content'
   export let showTooltip: LabelAndProps | undefined = undefined
   const client = getClient()
+  const dispatch = createEventDispatcher()
+
+  async function showConfirmationDialog () {
+    showPopup(
+      MessageBox,
+      {
+        label: tracker.string.RemoveProjectDialogClose,
+        message: tracker.string.RemoveProjectDialogCloseNote
+      },
+      'top',
+      (result?: boolean) => {
+        if (result === true) {
+          dispatch('close')
+          removeProject()
+        }
+      }
+    )
+  }
 
   async function removeProject () {
     await client.removeDoc(tracker.class.Project, space, value._id)
@@ -39,5 +59,5 @@
   {justify}
   {showTooltip}
   icon={view.icon.Delete}
-  on:click={() => removeProject()}
+  on:click={() => showConfirmationDialog()}
 />
