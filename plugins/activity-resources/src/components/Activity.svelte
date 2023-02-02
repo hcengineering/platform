@@ -34,7 +34,6 @@
   export let transparent: boolean = false
 
   let txes: DisplayTx[] = []
-  let txesF: DisplayTx[] = []
 
   const client = getClient()
   const attrs = client.getHierarchy().getAllAttributes(object._class)
@@ -91,7 +90,7 @@
 
   $: if (editableMap) updateTxes(object)
 
-  $: newTxPos = newTx(txesF, $lastViews)
+  $: newTxPos = newTx(txes, $lastViews)
 
   function newTx (txes: DisplayTx[], lastViews: Map<Ref<Doc>, number> | undefined): number {
     const lastView = lastViews?.get(object._id)
@@ -117,31 +116,29 @@
     )
   }
 
-  let filterLoading: boolean = false
-  let loadingCount: number = 0
-  let tempTxes: DisplayTx[] = []
-  const filtering = () => {
-    labels = []
-    tempTxes = []
-    const checked = new Set(selectedFilter as Ref<Doc>[])
-    const checkedFilters = filters.filter((it) => checked.has(it._id))
-    loadingCount = checkedFilters.length
-    filterLoading = true
-    checkedFilters.forEach((filter) => {
-      labels.push(filter.label)
+  const filtered = new Map<Ref<Doc>, [Ref<Doc>[], IntlString]>()
+  let checked = new Set<Ref<Doc>>()
+  $: if (filters || txes) {
+    filters.forEach((filter) => {
       getResource(filter.filter).then((result) => {
-        tempTxes.push(...result(txes))
-        loadingCount--
+        filtered.set(filter._id, [[...result(txes).map((it) => it.tx._id)], filter.label])
       })
     })
   }
-  $: if (selectedFilter || txes) {
-    if (selectedFilter === 'All') txesF = txes
-    else filtering()
-  }
-  $: if (filterLoading && loadingCount === 0) {
-    txesF = txes.filter((tx) => tempTxes.findIndex((t) => t === tx) > -1)
-    filterLoading = false
+  $: if (selectedFilter || filtered) {
+    checked.clear()
+    if (selectedFilter !== 'All') {
+      labels = []
+      const tempIds: Ref<Doc>[] = []
+      ;(selectedFilter as Ref<Doc>[]).forEach((filter) => {
+        const res = filtered.get(filter)
+        if (res) {
+          labels.push(res[1])
+          tempIds.push(...res[0])
+        }
+      })
+      checked = new Set(tempIds)
+    }
   }
 </script>
 
@@ -157,16 +154,20 @@
   <div class="flex-col flex-grow min-h-0" class:background-accent-bg-color={!transparent}>
     <Scroller>
       <div class="p-10 select-text" id={activity.string.Activity}>
-        {#if txesF}
+        {#if txes}
           <Grid column={1} rowGap={1.5}>
-            {#each txesF as tx, i}
-              <TxView
-                {tx}
-                {viewlets}
-                isNew={newTxPos >= i && newTxPos !== -1}
-                isNextNew={newTxPos > i && newTxPos !== -1}
-              />
-            {/each}
+            {#key selectedFilter}
+              {#each txes as tx, i}
+                {#if selectedFilter === 'All' || checked.has(tx.tx._id)}
+                  <TxView
+                    {tx}
+                    {viewlets}
+                    isNew={newTxPos >= i && newTxPos !== -1}
+                    isNextNew={newTxPos > i && newTxPos !== -1}
+                  />
+                {/if}
+              {/each}
+            {/key}
           </Grid>
         {/if}
       </div>
@@ -205,16 +206,20 @@
     </div>
   {/if}
   <div class="p-activity select-text" id={activity.string.Activity}>
-    {#if txesF}
+    {#if txes}
       <Grid column={1} rowGap={1.5}>
-        {#each txesF as tx, i}
-          <TxView
-            {tx}
-            {viewlets}
-            isNew={newTxPos >= i && newTxPos !== -1}
-            isNextNew={newTxPos > i && newTxPos !== -1}
-          />
-        {/each}
+        {#key selectedFilter}
+          {#each txes as tx, i}
+            {#if selectedFilter === 'All' || checked.has(tx.tx._id)}
+              <TxView
+                {tx}
+                {viewlets}
+                isNew={newTxPos >= i && newTxPos !== -1}
+                isNextNew={newTxPos > i && newTxPos !== -1}
+              />
+            {/if}
+          {/each}
+        {/key}
       </Grid>
     {/if}
   </div>
