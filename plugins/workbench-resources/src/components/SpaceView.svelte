@@ -97,7 +97,7 @@
       {viewlets}
       {createItemDialog}
       {createItemLabel}
-      {viewOptions}
+      bind:viewOptions
       bind:search
       bind:viewlet
     />

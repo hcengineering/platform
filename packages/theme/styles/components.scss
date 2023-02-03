@@ -459,9 +459,22 @@
 
 .scroller-thead {
   position: sticky;
-  top: 0;
   z-index: 2;
+  top: 0;
+  height: 2.5rem;
   background-color: var(--body-color);
+}
+
+.scroller-tfoot {
+  position: sticky;
+  z-index: 2;
+  bottom: 0;
+  height: 2.5rem;
+  background-color: var(--body-color);
+
+  tr {
+    box-shadow: inset 0 1px 0 0 var(--divider-color);
+  }
 }
 
 // THead background-color in Tooltip and Popups

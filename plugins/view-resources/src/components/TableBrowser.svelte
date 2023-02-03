@@ -93,6 +93,7 @@
     {loadingProps}
     highlightRows={true}
     enableChecking
+    showFooter
     checked={$selectionStore ?? []}
     {prefferedSorting}
     selection={listProvider.current($focusStore)}
