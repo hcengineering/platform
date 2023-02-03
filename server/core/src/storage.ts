@@ -129,6 +129,28 @@ class TServerStorage implements ServerStorage {
     await this.fulltextAdapter.close()
   }
 
+  async drop (): Promise<void> {
+    await this.fulltext.close()
+    for (const o of this.adapters.values()) {
+      try {
+        await o.drop()
+      } catch (e) {
+        console.log('Error when drop adapter', this.workspace)
+        console.error(e)
+      }
+    }
+    try {
+      await this.fulltextAdapter.drop()
+    } catch (e) {
+      console.log('Error when drop fulltext adapter', this.workspace)
+      console.error(e)
+    }
+    const storage = this.storageAdapter
+    if (storage !== undefined) {
+      await storage.drop(this.workspace)
+    }
+  }
+
   private getAdapter (domain: Domain): DbAdapter {
     const name = this._domains[domain] ?? this.defaultAdapter
     const adapter = this.adapters.get(name)
@@ -747,6 +769,7 @@ export function createNullStorageFactory (): MinioService {
     exists: async (workspaceId: WorkspaceId) => {
       return false
     },
+    drop: async (workspaceId: WorkspaceId) => {},
     make: async (workspaceId: WorkspaceId) => {},
     remove: async (workspaceId: WorkspaceId, objectNames: string[]) => {},
     delete: async (workspaceId: WorkspaceId) => {},

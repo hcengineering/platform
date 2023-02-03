@@ -48,6 +48,21 @@ export class MinioService {
     await this.client.makeBucket(getBucketId(workspaceId), 'k8s')
   }
 
+  async drop (workspaceId: WorkspaceId): Promise<void> {
+    try {
+      if (!(await this.exists(workspaceId))) return
+      const list = await this.list(workspaceId)
+      await this.remove(
+        workspaceId,
+        list.map((p) => p.name)
+      )
+      await this.delete(workspaceId)
+    } catch (e) {
+      console.log('Error when dropping minio', workspaceId)
+      console.error(e)
+    }
+  }
+
   async remove (workspaceId: WorkspaceId, objectNames: string[]): Promise<void> {
     await this.client.removeObjects(getBucketId(workspaceId), objectNames)
   }

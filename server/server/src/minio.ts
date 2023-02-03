@@ -52,6 +52,7 @@ class MinioBlobAdapter implements DbAdapter {
   async init (model: Tx[]): Promise<void> {}
 
   async close (): Promise<void> {}
+  async drop (): Promise<void> {}
 
   find (domain: Domain): StorageIterator {
     let listRecieved = false

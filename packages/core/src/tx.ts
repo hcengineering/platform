@@ -50,6 +50,12 @@ export interface Tx extends Doc {
 export interface TxModelUpgrade extends Tx {}
 
 /**
+ * Event to be send by server when workspace droping.
+ * @public
+ */
+export interface TxRemoveWorkspace extends Tx {}
+
+/**
  * @public
  */
 export interface TxCUD<T extends Doc> extends Tx {

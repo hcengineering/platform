@@ -40,6 +40,7 @@ interface Workspace {
   pipeline: Promise<Pipeline>
   sessions: [Session, WebSocket][]
   upgrade: boolean
+  removed: boolean
   closing?: Promise<void>
 }
 
@@ -56,8 +57,7 @@ class SessionManager {
     ctx: MeasureContext,
     ws: WebSocket,
     token: Token,
-    pipelineFactory: (ws: WorkspaceId, upgrade: boolean) => Promise<Pipeline>,
-    productId: string
+    pipelineFactory: (ws: WorkspaceId, upgrade: boolean) => Promise<Pipeline>
   ): Promise<Session> {
     const wsString = toWorkspaceString(token.workspace, '@')
 
@@ -68,6 +68,30 @@ class SessionManager {
     if (workspace === undefined) {
       workspace = this.createWorkspace(pipelineFactory, token)
     }
+
+    if (workspace.removed) {
+      ws.close()
+      throw new Error('Workspace have been removed')
+    }
+
+    // if token extra workspace drop we should send all clients TxDropWorkspace
+    // clients should handle and close connections byself and call onUnauthorized
+    if (token.extra?.workspace_action === 'drop') {
+      workspace.removed = true
+      workspace.sessions.forEach(([session, webSocket]) => {
+        webSocket.send(
+          serialize({
+            result: {
+              _class: core.class.TxRemoveWorkspace
+            }
+          })
+        )
+      })
+    }
+
+    // TG, gmail should remove tokens and workspace workers and mark all integrations as deactivated
+    // Backup service should make last backup and after this send some command to server
+    // Server should remove all storages (db, index, file) when all clients disconnected
 
     if (token.extra?.model === 'upgrade') {
       console.log('reloading workspace', JSON.stringify(token))
@@ -112,7 +136,8 @@ class SessionManager {
       id: generateId(),
       pipeline: pipelineFactory(token.workspace, upgrade),
       sessions: [],
-      upgrade
+      upgrade,
+      removed: false
     }
     console.log('Creating Workspace:', workspace.id)
     this.workspaces.set(toWorkspaceString(token.workspace), workspace)
@@ -157,8 +182,8 @@ class SessionManager {
     reason: string
   ): Promise<void> {
     if (LOGGING_ENABLED) console.log(`closing websocket, code: ${code}, reason: ${reason}`)
-    const wsid = toWorkspaceString(workspaceId)
-    const workspace = this.workspaces.get(wsid)
+    const wsId = toWorkspaceString(workspaceId)
+    const workspace = this.workspaces.get(wsId)
     if (workspace === undefined) {
       console.error(new Error('internal: cannot find sessions'))
       return
@@ -174,26 +199,26 @@ class SessionManager {
         await this.setStatus(ctx, session[0], false)
       }
       if (workspace.sessions.length === 0) {
-        const workspaceId = workspace.id
-        if (LOGGING_ENABLED) console.log('no sessions for workspace', wsid, workspaceId)
-
-        async function waitAndClose (workspace: Workspace): Promise<void> {
-          const pipeline = await workspace.pipeline
-          await pipeline.close()
-        }
-        workspace.closing = waitAndClose(workspace).then(() => {
-          if (this.workspaces.get(wsid)?.id === workspaceId) {
-            this.workspaces.delete(wsid)
-          }
-          console.log('Closed workspace', workspaceId)
-        })
-        workspace.closing.catch((err) => {
-          this.workspaces.delete(wsid)
-          console.error(err)
-        })
-        await workspace.closing
+        await this.closeWS(wsId, workspace)
       }
     }
+  }
+
+  async closeWS (wsid: string, workspace: Workspace): Promise<void> {
+    const workspaceId = workspace.id
+    if (LOGGING_ENABLED) console.log('no sessions for workspace', wsid, workspaceId)
+
+    workspace.closing = waitAndClose(workspace).then(() => {
+      if (this.workspaces.get(wsid)?.id === workspaceId) {
+        this.workspaces.delete(wsid)
+      }
+      console.log('Closed workspace', workspaceId)
+    })
+    workspace.closing.catch((err) => {
+      this.workspaces.delete(wsid)
+      console.error(err)
+    })
+    await workspace.closing
   }
 
   async closeAll (ctx: MeasureContext, wsId: string, workspace: Workspace, code: number, reason: string): Promise<void> {
@@ -267,6 +292,14 @@ class SessionManager {
   }
 }
 
+async function waitAndClose (workspace: Workspace): Promise<void> {
+  const pipeline = await workspace.pipeline
+  if (workspace.removed) {
+    await pipeline.drop()
+  }
+  await pipeline.close()
+}
+
 async function handleRequest<S extends Session> (
   ctx: MeasureContext,
   service: S,
@@ -336,7 +369,7 @@ export function start (
     ws.on('message', (msg: string) => {
       buffer?.push(msg)
     })
-    const session = await sessions.addSession(ctx, ws, token, pipelineFactory, productId)
+    const session = await sessions.addSession(ctx, ws, token, pipelineFactory)
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('message', async (msg: string) => await handleRequest(ctx, session, ws, msg))
     // eslint-disable-next-line @typescript-eslint/no-misused-promises

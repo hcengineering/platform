@@ -41,6 +41,7 @@ export interface DbAdapter {
    */
   init: (model: Tx[]) => Promise<void>
   close: () => Promise<void>
+  drop: () => Promise<void>
   findAll: <T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
@@ -102,6 +103,7 @@ export class DummyDbAdapter implements DbAdapter {
   }
 
   async close (): Promise<void> {}
+  async drop (): Promise<void> {}
 
   find (domain: Domain): StorageIterator {
     return {

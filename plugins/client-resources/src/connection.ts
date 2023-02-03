@@ -135,12 +135,15 @@ class Connection implements ClientConnection {
             console.log('Processing upgrade')
             websocket.send(
               serialize({
-                method: '#upgrading',
+                method: '#upgrade',
                 params: [],
                 id: -1
               })
             )
             this.onUpgrade?.()
+          }
+          if (tx._class === core.class.TxRemoveWorkspace) {
+            this.onUnauthorized?.()
           }
           this.handler(tx)
         }

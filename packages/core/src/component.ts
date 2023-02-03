@@ -53,6 +53,7 @@ import type {
   TxMixin,
   TxModelUpgrade,
   TxRemoveDoc,
+  TxRemoveWorkspace,
   TxUpdateDoc
 } from './tx'
 
@@ -72,6 +73,7 @@ export default plugin(coreId, {
     Attribute: '' as Ref<Class<AnyAttribute>>,
     Tx: '' as Ref<Class<Tx>>,
     TxModelUpgrade: '' as Ref<Class<TxModelUpgrade>>,
+    TxRemoveWorkspace: '' as Ref<Class<TxRemoveWorkspace>>,
     TxApplyIf: '' as Ref<Class<TxApplyIf>>,
     TxCUD: '' as Ref<Class<TxCUD<Doc>>>,
     TxCreateDoc: '' as Ref<Class<TxCreateDoc<Doc>>>,

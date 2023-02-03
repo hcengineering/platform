@@ -92,6 +92,17 @@ class ElasticAdapter implements FullTextAdapter {
     await this.client.close()
   }
 
+  async drop (): Promise<void> {
+    const existsIndex = await this.client.indices.exists({
+      index: toWorkspaceString(this.workspaceId)
+    })
+    if (existsIndex.body) {
+      await this.client.indices.delete({
+        index: toWorkspaceString(this.workspaceId)
+      })
+    }
+  }
+
   metrics (): MeasureContext {
     return this._metrics
   }

@@ -57,6 +57,8 @@ class ElasticDataAdapter implements DbAdapter {
     await this.client.close()
   }
 
+  async drop (): Promise<void> {}
+
   find (domain: Domain): StorageIterator {
     let listRecieved = false
     let pos = 0

@@ -35,9 +35,11 @@ export async function connect (title: string): Promise<Client | undefined> {
     },
     () => {
       clearMetadata(ws)
-      navigate({
-        path: [loginId],
-        query: {}
+      void instance.close().then(() => {
+        navigate({
+          path: [loginId],
+          query: {}
+        })
       })
     }
   )

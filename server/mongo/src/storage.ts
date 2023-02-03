@@ -561,6 +561,10 @@ class MongoAdapter extends MongoAdapterBase {
     return {}
   }
 
+  async drop (): Promise<void> {
+    await this.db.dropDatabase()
+  }
+
   protected async txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
     const domain = this.hierarchy.getDomain(tx.objectClass)
 
@@ -796,6 +800,8 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
     await this.txCollection().insertOne(translateDoc(tx))
     return {}
   }
+
+  async drop (): Promise<void> {}
 
   private txCollection (): Collection {
     if (this.txColl !== undefined) {

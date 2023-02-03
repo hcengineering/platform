@@ -138,31 +138,6 @@ export async function initModel (
 /**
  * @public
  */
-export async function dropDb (
-  workspaceId: WorkspaceId
-): Promise<void> {
-  const { mongodbUri, minio } = prepareTools([])
-
-  const client = new MongoClient(mongodbUri)
-  try {
-    await client.connect()
-    const db = getWorkspaceDB(client, workspaceId)
-
-    console.log('dropping database...')
-    await db.dropDatabase()
-
-    console.log('dropping minio bucket')
-    if ((await minio.exists(workspaceId))) {
-      await minio.delete(workspaceId)
-    }
-  } finally {
-    await client.close()
-  }
-}
-
-/**
- * @public
- */
 export async function upgradeModel (
   transactorUrl: string,
   workspaceId: WorkspaceId,

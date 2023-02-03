@@ -74,6 +74,7 @@ describe('server', () => {
         next: async () => undefined,
         close: async () => {}
       }),
+      drop: async () => {},
       load: async (domain: Domain, docs: Ref<Doc>[]) => [],
       upload: async (domain: Domain, docs: Doc[]) => {},
       clean: async (domain: Domain, docs: Ref<Doc>[]) => {}

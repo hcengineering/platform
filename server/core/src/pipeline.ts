@@ -97,4 +97,8 @@ class TPipeline implements Pipeline {
   async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
     await this.storage.clean(domain, docs)
   }
+
+  async drop (): Promise<void> {
+    await this.storage.drop()
+  }
 }

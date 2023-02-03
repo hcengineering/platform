@@ -94,6 +94,7 @@ export interface Pipeline extends LowLevelStorage {
   ) => Promise<FindResult<T>>
   tx: (ctx: SessionContext, tx: Tx) => Promise<[TxResult, Tx[], string | undefined]>
   close: () => Promise<void>
+  drop: () => Promise<void>
 }
 
 /**
@@ -177,6 +178,7 @@ export interface FullTextAdapter {
   ) => Promise<IndexedDoc[]>
 
   close: () => Promise<void>
+  drop: () => Promise<void>
   metrics: () => MeasureContext
 
   // If no field is provided, will return existing mapping of all dimms.
@@ -225,6 +227,8 @@ export class DummyFullTextAdapter implements FullTextAdapter {
   async remove (id: Ref<Doc>[]): Promise<void> {}
 
   async close (): Promise<void> {}
+
+  async drop (): Promise<void> {}
 
   metrics (): MeasureContext {
     return new MeasureMetricsContext('', {})
