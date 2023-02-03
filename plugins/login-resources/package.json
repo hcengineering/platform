@@ -35,7 +35,7 @@
     "@hcengineering/login": "^0.6.1",
     "@hcengineering/ui": "^0.6.3",
     "@hcengineering/workbench": "^0.6.2",
-    "@hcengineering/core": "^0.6.20",
+    "@hcengineering/core": "^0.6.21",
     "@hcengineering/presentation": "^0.6.2"
   }
 }

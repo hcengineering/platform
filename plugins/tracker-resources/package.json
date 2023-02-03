@@ -34,7 +34,7 @@
     "svelte": "^3.47",
     "fast-equals": "^2.0.3",
     "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/core": "^0.6.20",
+    "@hcengineering/core": "^0.6.21",
     "@hcengineering/client": "^0.6.6",
     "@hcengineering/tracker": "^0.6.1",
     "@hcengineering/ui": "^0.6.3",

@@ -45,7 +45,7 @@
     "@hcengineering/attachment": "^0.6.1",
     "@hcengineering/attachment-resources": "^0.6.0",
     "@hcengineering/login": "^0.6.1",
-    "@hcengineering/core": "^0.6.20",
+    "@hcengineering/core": "^0.6.21",
     "@hcengineering/panel": "^0.6.0"
   }
 }

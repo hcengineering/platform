@@ -46,7 +46,7 @@
     "mongodb": "^4.11.0",
     "commander": "^8.1.0",
     "@hcengineering/account": "^0.6.0",
-    "@hcengineering/core": "^0.6.20",
+    "@hcengineering/core": "^0.6.21",
     "@hcengineering/contact": "^0.6.9",
     "@hcengineering/model-all": "^0.6.0",
     "@hcengineering/model-telegram": "^0.6.0",
