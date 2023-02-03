@@ -39,7 +39,7 @@ export class TTxViewlet extends TDoc implements TxViewlet {
 @Model(activity.class.ActivityFilter, core.class.Class, DOMAIN_MODEL)
 export class TActivityFilter extends TDoc implements ActivityFilter {
   label!: IntlString
-  filter!: Resource<(txes: DisplayTx[]) => DisplayTx[]>
+  filter!: Resource<(tx: DisplayTx) => boolean>
 }
 
 export function createModel (builder: Builder): void {

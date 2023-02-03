@@ -97,7 +97,7 @@ export interface DisplayTx {
  */
 export interface ActivityFilter extends Doc {
   label: IntlString
-  filter: Resource<(txes: DisplayTx[]) => DisplayTx[]>
+  filter: Resource<(tx: DisplayTx) => boolean>
 }
 
 /**

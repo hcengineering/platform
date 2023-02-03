@@ -51,6 +51,6 @@ export default mergeIds(attachmentId, attachment, {
     Attachments: '' as Ref<ActionCategory>
   },
   filter: {
-    AttachmentsFilter: '' as Resource<(txes: DisplayTx[]) => DisplayTx[]>
+    AttachmentsFilter: '' as Resource<(tx: DisplayTx) => boolean>
   }
 })

@@ -159,7 +159,7 @@
     {/if}
 
     <div
-      class="flex-grow flex-col clear-mins"
+      class="flex-grow flex-col clear-mins mr-2-5"
       class:comment={viewlet && viewlet?.editable}
       class:mention={viewlet?.display === 'emphasized' || isMessageType(model[0]?.attribute)}
     >

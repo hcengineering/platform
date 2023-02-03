@@ -34,17 +34,26 @@
   export let transparent: boolean = false
 
   let txes: DisplayTx[] = []
-  let txesF: DisplayTx[] = []
 
   const client = getClient()
   const attrs = client.getHierarchy().getAllAttributes(object._class)
 
-  let filterLabel: IntlString = activityPlg.string.All
+  let labels: IntlString[] = []
   const filters: ActivityFilter[] = []
   const saved = localStorage.getItem('activity-filter')
-  let selectedFilter: Ref<Doc> | 'All' = saved !== null && saved !== undefined ? JSON.parse(saved) : 'All'
+  let selectedFilter: Ref<Doc>[] | 'All' =
+    saved !== null && saved !== undefined ? (JSON.parse(saved) as Ref<Doc>[] | 'All') : 'All'
   $: localStorage.setItem('activity-filter', JSON.stringify(selectedFilter))
-  client.findAll(activity.class.ActivityFilter, {}).then((res) => res.map((it) => filters.push(it)))
+  client.findAll(activity.class.ActivityFilter, {}).then((res) => {
+    res.map((it) => filters.push(it))
+    if (saved !== null && saved !== undefined) {
+      const temp: Ref<Doc>[] | 'All' = JSON.parse(saved)
+      if (temp !== 'All' && Array.isArray(temp)) {
+        selectedFilter = temp.filter((it) => filters.findIndex((f) => it === f._id) > -1)
+        if ((selectedFilter as Ref<Doc>[]).length === 0) selectedFilter = 'All'
+      } else selectedFilter = 'All'
+    }
+  })
 
   const activityQuery = newActivity(client, attrs)
   getResource(notification.function.GetNotificationClient).then((res) => {
@@ -82,7 +91,7 @@
 
   $: if (editableMap) updateTxes(object)
 
-  $: newTxPos = newTx(txesF, $lastViews)
+  $: newTxPos = newTx(filtered, $lastViews)
 
   function newTx (txes: DisplayTx[], lastViews: Map<Ref<Doc>, number> | undefined): number {
     const lastView = lastViews?.get(object._id)
@@ -96,22 +105,35 @@
 
   let optionsBtn: HTMLButtonElement
   const handleOptions = () => {
-    showPopup(FilterPopup, { selectedFilter, filters }, optionsBtn, (res) => {
-      if (res === undefined) return
-      if (res.action === 'select') selectedFilter = res.value as Ref<Doc> | 'All'
-    })
+    showPopup(
+      FilterPopup,
+      { selectedFilter, filters },
+      optionsBtn,
+      () => {},
+      (res) => {
+        if (res === undefined) return
+        if (res.action === 'select') selectedFilter = res.value as Ref<Doc>[] | 'All'
+      }
+    )
   }
 
-  $: if (selectedFilter || txes) {
-    const filter = filters.find((it) => it._id === selectedFilter)
-    if (filter) {
-      filterLabel = filter.label
-      getResource(filter.filter).then((result) => (txesF = result(txes)))
-    } else {
-      filterLabel = activityPlg.string.All
-      txesF = txes
+  let filterActions: ((tx: DisplayTx) => boolean)[] = [] // Enabled filters
+  const updateFiltered = () => (filtered = txes.filter((it) => filterActions.some((f) => f(it))))
+  async function updateFilterActions (fls: ActivityFilter[], selected: Ref<Doc>[] | 'All'): Promise<void> {
+    if (selected === 'All' || !Array.isArray(selected)) filterActions = [() => true]
+    else {
+      const tf = fls.filter((filter) => (selected as Ref<Doc>[]).includes(filter._id))
+      filterActions = []
+      labels = []
+      tf.forEach((filter) => {
+        labels.push(filter.label)
+        getResource(filter.filter).then((res) => filterActions.push(res))
+      })
     }
+    setTimeout(() => updateFiltered(), 0)
   }
+  $: updateFilterActions(filters, selectedFilter)
+  $: filtered = txes.filter((it) => filterActions.some((f) => f(it)))
 </script>
 
 {#if !integrate || transparent}
@@ -126,9 +148,9 @@
   <div class="flex-col flex-grow min-h-0" class:background-accent-bg-color={!transparent}>
     <Scroller>
       <div class="p-10 select-text" id={activity.string.Activity}>
-        {#if txesF}
+        {#if filtered}
           <Grid column={1} rowGap={1.5}>
-            {#each txesF as tx, i}
+            {#each filtered as tx, i}
               <TxView
                 {tx}
                 {viewlets}
@@ -152,7 +174,13 @@
   <div class="antiSection-header mt-6">
     <div class="antiSection-header__icon"><IconActivity size={'small'} /></div>
     <span class="antiSection-header__title"><Label label={activity.string.Activity} /></span>
-    <span class="dark-color text-md"><Label label={filterLabel} /></span>
+    {#if selectedFilter === 'All'}
+      <span class="antiSection-header__tag highlight"><Label label={activityPlg.string.All} /></span>
+    {:else}
+      {#each labels as label}
+        <span class="antiSection-header__tag overflow-label"><Label {label} /></span>
+      {/each}
+    {/if}
     <div class="w-2 min-w-2 max-w-2" />
     <Button
       bind:input={optionsBtn}
@@ -168,9 +196,9 @@
     </div>
   {/if}
   <div class="p-activity select-text" id={activity.string.Activity}>
-    {#if txesF}
+    {#if filtered}
       <Grid column={1} rowGap={1.5}>
-        {#each txesF as tx, i}
+        {#each filtered as tx, i}
           <TxView
             {tx}
             {viewlets}
