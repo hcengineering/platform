@@ -65,6 +65,8 @@
             options: viewlet.options,
             config: preference?.config ?? viewlet.config,
             viewlet,
+            viewOptions,
+            viewOptionsConfig: viewlet.viewOptions?.other,
             createItemDialog,
             createItemLabel,
             query: resultQuery
