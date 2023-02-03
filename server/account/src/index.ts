@@ -46,7 +46,7 @@ import platform, {
   StatusCode
 } from '@hcengineering/platform'
 import { decodeToken, generateToken } from '@hcengineering/server-token'
-import toolPlugin, { connect, initModel, upgradeModel } from '@hcengineering/server-tool'
+import toolPlugin, { connect, initModel, upgradeModel, dropDb } from '@hcengineering/server-tool'
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { Binary, Db, Filter, ObjectId } from 'mongodb'
 import fetch from 'node-fetch'
@@ -810,6 +810,8 @@ export async function dropWorkspace (db: Db, productId: string, workspace: strin
   await db
     .collection<Account>(ACCOUNT_COLLECTION)
     .updateMany({ _id: { $in: ws.accounts ?? [] } }, { $pull: { workspaces: ws._id } })
+
+  await dropDb(getWorkspaceId(workspace, productId))
 }
 
 /**
