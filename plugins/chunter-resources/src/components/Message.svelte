@@ -165,6 +165,7 @@
       attachments: newAttachments
     })
     isEditing = false
+    loading = false
   }
 
   function getEmployee (message: WithLookup<ChunterMessage>): Employee | undefined {
@@ -245,6 +246,7 @@
     })
     return res
   }
+  let loading = false
 </script>
 
 <div class="container" class:highlighted={isHighlighted} id={message._id}>
@@ -270,6 +272,7 @@
         content={message.content}
         showSend={false}
         on:message={onMessageEdit}
+        bind:loading
       />
       <div class="flex-row-reverse gap-2 reverse">
         <Button label={chunter.string.EditCancel} on:click={() => (isEditing = false)} />

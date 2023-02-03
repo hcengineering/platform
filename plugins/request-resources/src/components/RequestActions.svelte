@@ -71,6 +71,7 @@
     // We need to update backlinks before and after.
     await updateBacklinks(client, value.attachedTo, value.attachedToClass, value._id, message)
     refInput.submit()
+    loading = false
   }
 
   function commentIsEmpty (message: string, attachments: number | undefined): boolean {
@@ -97,6 +98,7 @@
       disabled
     }
   ]
+  let loading = false
 </script>
 
 {#if value.status === RequestStatus.Active}
@@ -111,6 +113,7 @@
       on:update={onUpdate}
       placeholder={request.string.PleaseTypeMessage}
       extraActions={approvable ? extraActions : undefined}
+      bind:loading
     />
   </div>
 {/if}
