@@ -157,12 +157,14 @@
     await createBacklinks(client, parent.space, chunter.class.ChunterSpace, commentId, message)
 
     commentId = generateId()
+    loading = false
   }
   let comments: ThreadMessage[] = []
 
   async function getChannel (_id: Ref<ChunterSpace>): Promise<ChunterSpace | undefined> {
     return await client.findOne(chunter.class.ChunterSpace, { _id })
   }
+  let loading = false
 </script>
 
 <div class="ml-8 mt-4">
@@ -202,6 +204,7 @@
         _class={chunter.class.ThreadMessage}
         objectId={commentId}
         on:message={onMessage}
+        bind:loading
       />
     </div>
   {/if}

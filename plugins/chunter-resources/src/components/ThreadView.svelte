@@ -172,6 +172,7 @@
 
     commentId = generateId()
     isScrollForced = true
+    loading = false
   }
   let comments: ThreadMessage[] = []
 
@@ -193,6 +194,7 @@
     }
   }
   let newMessagesPos: number = -1
+  let loading = false
 </script>
 
 <div class="header">
@@ -234,6 +236,7 @@
     _class={chunter.class.ThreadMessage}
     objectId={commentId}
     on:message={onMessage}
+    bind:loading
   />
 </div>
 

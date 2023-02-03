@@ -128,6 +128,7 @@
     )
 
     objectId = generateId()
+    loading = false
   }
 
   function getName (message: TelegramMessage, accounts: EmployeeAccount[]): string {
@@ -185,6 +186,7 @@
       })
     }
   }
+  let loading = false
 </script>
 
 {#if object !== undefined}
@@ -270,6 +272,7 @@
           _class={telegram.class.NewMessage}
           {objectId}
           on:message={onMessage}
+          bind:loading
         />
       {/if}
     </div>

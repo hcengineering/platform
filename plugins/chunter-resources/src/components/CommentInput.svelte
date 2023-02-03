@@ -147,5 +147,5 @@
   {shouldSaveDraft}
   on:message={onMessage}
   on:update={onUpdate}
-  {loading}
+  bind:loading
 />
