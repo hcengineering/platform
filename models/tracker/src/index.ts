@@ -809,7 +809,7 @@ export function createModel (builder: Builder): void {
   const projectsId = 'projects'
   const sprintsId = 'sprints'
   const templatesId = 'templates'
-  const scrumsId = 'scrums'
+  // const scrumsId = 'scrums'
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: tracker.component.IssuePresenter
@@ -980,12 +980,12 @@ export function createModel (builder: Builder): void {
                 icon: tracker.icon.Sprint,
                 component: tracker.component.Sprints
               },
-              {
-                id: scrumsId,
-                label: tracker.string.Scrums,
-                icon: tracker.icon.Scrum,
-                component: tracker.component.Scrums
-              },
+              // {
+              //   id: scrumsId,
+              //   label: tracker.string.Scrums,
+              //   icon: tracker.icon.Scrum,
+              //   component: tracker.component.Scrums
+              // },
               {
                 id: templatesId,
                 label: tracker.string.IssueTemplates,
