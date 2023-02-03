@@ -135,7 +135,7 @@
         })
       }
 
-      addNotification(tracker.string.IssueCreated, getTitle(newIssue.title), IssueNotification, {
+      addNotification(await translate(tracker.string.IssueCreated, {}), getTitle(newIssue.title), IssueNotification, {
         issueId: objectId,
         subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase()
       })
