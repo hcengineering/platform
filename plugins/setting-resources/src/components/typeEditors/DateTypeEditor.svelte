@@ -13,40 +13,58 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { TypeDate as DateType } from '@hcengineering/core'
+  import { DateRangeMode, TypeDate as DateType } from '@hcengineering/core'
   import { TypeDate } from '@hcengineering/model'
-  import { Label } from '@hcengineering/ui'
+  import { Label, ListItem } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import setting from '../../plugin'
-  import BooleanEditor from '@hcengineering/view-resources/src/components/BooleanEditor.svelte'
-  import BooleanPresenter from '@hcengineering/view-resources/src/components/BooleanPresenter.svelte'
+  import Dropdown from '@hcengineering/ui/src/components/Dropdown.svelte'
+  import StringPresenter from '@hcengineering/view-resources/src/components/StringPresenter.svelte'
 
   export let type: DateType | undefined
   export let editable: boolean = true
-  const dispatch = createEventDispatcher()
 
-  let withTime: boolean = type?.withTime ?? false
+  const dispatch = createEventDispatcher()
+  const items: ListItem[] = [
+    {
+      _id: DateRangeMode.DATE,
+      label: DateRangeMode.DATE
+    },
+    {
+      _id: DateRangeMode.TIME,
+      label: DateRangeMode.TIME
+    },
+    {
+      _id: DateRangeMode.DATETIME,
+      label: DateRangeMode.DATETIME
+    }
+  ]
+
+  let selected = items.find((item) => item._id === type?.mode)
 
   onMount(() => {
     if (type === undefined) {
-      dispatch('change', { type: TypeDate(withTime) })
+      dispatch('change', { type: TypeDate() })
     }
   })
 </script>
 
 <div class="flex-row-center">
-  <Label label={setting.string.WithTime} />
+  <Label label={setting.string.DateMode} />
   <div class="ml-2">
     {#if editable}
-      <BooleanEditor
-        withoutUndefined
-        bind:value={withTime}
-        onChange={(e) => {
-          dispatch('change', { type: TypeDate(e) })
+      <Dropdown
+        {selected}
+        {items}
+        size="medium"
+        placeholder={setting.string.DateMode}
+        on:selected={(res) => {
+          selected = res.detail
+          dispatch('change', { type: TypeDate(res.detail._id) })
         }}
       />
     {:else}
-      <BooleanPresenter value={withTime} />
+      <StringPresenter value={selected?.label ?? ''} />
     {/if}
   </div>
 </div>

@@ -196,12 +196,20 @@ export type AttachedData<T extends AttachedDoc> = Omit<T, keyof AttachedDoc>
 /**
  * @public
  */
+export enum DateRangeMode {
+  DATE = 'date',
+  TIME = 'time',
+  DATETIME = 'datetime'
+}
 
+/**
+ * @public
+ */
 export interface TypeDate extends Type<Date> {
+  // If not set date mode default
+  mode: DateRangeMode
   // If not set to true, will be false
-  withTime?: boolean
-  // If not set to true, will be false
-  withShift?: boolean
+  withShift: boolean
 }
 
 /**

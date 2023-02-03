@@ -24,9 +24,10 @@
   import DPCalendarOver from './icons/DPCalendarOver.svelte'
   import { getMonthName } from './internal/DateUtils'
   import DatePopup from './DatePopup.svelte'
+  import { DateRangeMode } from '@hcengineering/core'
 
   export let value: number | null | undefined
-  export let withTime: boolean = false
+  export let mode: DateRangeMode = DateRangeMode.DATE
   export let mondayStart: boolean = true
   export let editable: boolean = false
   export let icon: 'normal' | 'warning' | 'critical' | 'overdue' = 'normal'
@@ -58,6 +59,8 @@
     dispatch('change', value)
     opened = false
   }
+
+  $: withTime = mode !== DateRangeMode.DATE
 </script>
 
 <button

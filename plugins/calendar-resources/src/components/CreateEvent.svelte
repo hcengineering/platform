@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Employee, EmployeeAccount } from '@hcengineering/contact'
-  import { Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { Class, DateRangeMode, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import { Card, getClient, UserBoxList } from '@hcengineering/presentation'
   import ui, { EditBox, DateRangePresenter } from '@hcengineering/ui'
   import { tick } from 'svelte'
@@ -101,7 +101,7 @@
       value={startDate}
       labelNull={ui.string.SelectDate}
       on:change={async (event) => await handleNewStartDate(event.detail)}
-      withTime
+      mode={DateRangeMode.DATETIME}
       editable
     />
     <DateRangePresenter
@@ -109,7 +109,7 @@
       value={dueDate}
       labelNull={calendar.string.DueTo}
       on:change={async (event) => await handleNewDueDate(event.detail)}
-      withTime
+      mode={DateRangeMode.DATETIME}
       editable
     />
     <UserBoxList bind:items={participants} label={calendar.string.Participants} />

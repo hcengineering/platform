@@ -1,3 +1,4 @@
+import { DateRangeMode } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { writable } from 'svelte/store'
 import type {
@@ -83,6 +84,7 @@ interface IDatePopup {
   anchor: HTMLElement | undefined
   popup: HTMLElement | undefined
   frendlyFocus: HTMLElement[] | undefined
+  mode?: DateRangeMode
   onClose?: (result: any) => void
   onChange?: (result: any) => void
   shift?: boolean
@@ -96,7 +98,8 @@ export const dpstore = writable<IDatePopup>({
   frendlyFocus: undefined,
   onClose: undefined,
   onChange: undefined,
-  shift: undefined
+  shift: undefined,
+  mode: undefined
 })
 
 export function showDatePopup (

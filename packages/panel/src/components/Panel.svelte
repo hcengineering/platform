@@ -34,6 +34,7 @@
   export let isHeader: boolean = true
   export let isSub: boolean = true
   export let isAside: boolean = true
+  export let isUtils: boolean = true
   export let isCustomAttr: boolean = true
   export let floatAside = false
   export let allowClose = true
@@ -89,7 +90,7 @@
   <svelte:fragment slot="utils">
     <Component is={calendar.component.DocReminder} props={{ value: object, title }} />
     <Component is={notification.component.LastViewEditor} props={{ value: object }} />
-    {#if $$slots.utils}
+    {#if isUtils && $$slots.utils}
       <div class="buttons-divider" />
       <slot name="utils" />
     {/if}

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Employee } from '@hcengineering/contact'
+import { Employee, EmployeeAccount } from '@hcengineering/contact'
 import type { AttachedDoc, Class, Doc, Markup, Ref, RelatedDocument, Space, Timestamp, Type } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -360,6 +360,37 @@ export interface Project extends Doc {
 /**
  * @public
  */
+export interface ScrumRecord extends AttachedDoc {
+  label: string
+  startTs: Timestamp
+  endTs?: Timestamp
+  scrumRecorder: Ref<EmployeeAccount>
+
+  comments: number
+  attachments?: number
+
+  space: Ref<Team>
+  attachedTo: Ref<Scrum>
+}
+
+/**
+ * @public
+ */
+export interface Scrum extends Doc {
+  title: string
+  description?: Markup
+  beginTime: Timestamp
+  endTime: Timestamp
+  members: Ref<Employee>[]
+  space: Ref<Team>
+
+  scrumRecords?: number
+  attachments?: number
+}
+
+/**
+ * @public
+ */
 export interface ViewOptions {
   groupBy: IssuesGrouping
   orderBy: IssuesOrdering
@@ -388,6 +419,8 @@ export default plugin(trackerId, {
     TypeIssuePriority: '' as Ref<Class<Type<IssuePriority>>>,
     TypeProjectStatus: '' as Ref<Class<Type<ProjectStatus>>>,
     Sprint: '' as Ref<Class<Sprint>>,
+    Scrum: '' as Ref<Class<Scrum>>,
+    ScrumRecord: '' as Ref<Class<ScrumRecord>>,
     TypeSprintStatus: '' as Ref<Class<Type<SprintStatus>>>,
     TimeSpendReport: '' as Ref<Class<TimeSpendReport>>,
     TypeReportedTime: '' as Ref<Class<Type<number>>>
@@ -432,6 +465,9 @@ export default plugin(trackerId, {
     DueDate: '' as Asset,
     Parent: '' as Asset,
     Sprint: '' as Asset,
+    Scrum: '' as Asset,
+    Start: '' as Asset,
+    Stop: '' as Asset,
 
     CategoryBacklog: '' as Asset,
     CategoryUnstarted: '' as Asset,

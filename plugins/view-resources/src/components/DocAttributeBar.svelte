@@ -19,7 +19,7 @@
   import ClassAttributeBar from './ClassAttributeBar.svelte'
 
   export let object: Doc
-  export let mixins: Mixin<Doc>[]
+  export let mixins: Mixin<Doc>[] = []
   export let ignoreKeys: string[]
   export let allowedCollections: string[] = []
 

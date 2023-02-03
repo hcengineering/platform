@@ -1,48 +1,51 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
-// 
+// Copyright © 2023 Hardcore Engineering Inc.
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@hcengineering/core'
-  import { Project } from '@hcengineering/tracker'
+  import { Doc, Ref } from '@hcengineering/core'
   import { Button, showPopup, eventToHTMLElement } from '@hcengineering/ui'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import contact, { Employee } from '@hcengineering/contact'
   import { getClient, UsersPopup } from '@hcengineering/presentation'
-  import { translate } from '@hcengineering/platform'
-  import tracker from '../../plugin'
+  import { IntlString, translate } from '@hcengineering/platform'
+  import tracker from '../../../tracker-resources/src/plugin'
 
-  export let value: Project
+  export let value: Doc
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = 'min-content'
+  export let intlTitle: IntlString
+  export let intlSearchPh: IntlString
+  export let retrieveMembers: (doc: Doc) => Ref<Employee>[]
 
   const client = getClient()
 
   let buttonTitle = ''
 
-  $: translate(tracker.string.ProjectMembersTitle, {}).then((res) => {
+  $: members = retrieveMembers(value)
+  $: translate(intlTitle, {}).then((res) => {
     buttonTitle = res
   })
 
-  const handleProjectMembersChanged = async (result: Ref<Employee>[] | undefined) => {
+  const handleMembersChanged = async (result: Ref<Employee>[] | undefined) => {
     if (result === undefined) {
       return
     }
 
-    const memberToPull = value.members.filter((x) => !result.includes(x))[0]
-    const memberToPush = result.filter((x) => !value.members.includes(x))[0]
+    const memberToPull = members.filter((x) => !result.includes(x))[0]
+    const memberToPush = result.filter((x) => !members.includes(x))[0]
 
     if (memberToPull) {
       await client.update(value, { $pull: { members: memberToPull } })
@@ -53,22 +56,22 @@
     }
   }
 
-  const handleProjectMembersEditorOpened = async (event: MouseEvent) => {
+  const handleMembersEditorOpened = async (event: MouseEvent) => {
     showPopup(
       UsersPopup,
       {
         _class: contact.class.Employee,
-        selectedUsers: value.members,
+        selectedUsers: members,
         allowDeselect: true,
         multiSelect: true,
         docQuery: {
           active: true
         },
-        placeholder: tracker.string.ProjectMembersSearchPlaceholder
+        placeholder: intlSearchPh
       },
       eventToHTMLElement(event),
       undefined,
-      handleProjectMembersChanged
+      handleMembersChanged
     )
   }
 </script>
@@ -80,5 +83,5 @@
   {justify}
   title={buttonTitle}
   icon={tracker.icon.ProjectMembers}
-  on:click={handleProjectMembersEditorOpened}
+  on:click={handleMembersEditorOpened}
 />

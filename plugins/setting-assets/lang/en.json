@@ -42,6 +42,7 @@
     "Custom": "Custom",
     "Type": "Type",
     "WithTime": "WithTime",
+    "DateMode": "Date mode",
     "CreatingAttribute": "Creating an attribute",
     "EditAttribute": "Edit attribute",
     "CreateEnum": "Create enum",

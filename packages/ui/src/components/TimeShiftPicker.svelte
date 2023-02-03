@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { DateRangeMode } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import { createEventDispatcher, onMount } from 'svelte'
   import { showPopup } from '../popups'
@@ -75,7 +76,7 @@
     {#if value?.shift !== undefined}
       <TimeShiftPresenter value={value.shift} />
     {:else}
-      <DateRangePresenter value={value?.date} withTime={true} editable={false} />
+      <DateRangePresenter value={value?.date} mode={DateRangeMode.DATETIME} editable={false} />
     {/if}
   </div>
 </div>

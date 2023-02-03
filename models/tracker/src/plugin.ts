@@ -41,7 +41,6 @@ export default mergeIds(trackerId, tracker, {
     // Required to pass build without errorsF
     Nope: '' as AnyComponent,
     SprintSelector: '' as AnyComponent,
-    SubIssuesSelector: '' as AnyComponent,
     IssueStatistics: '' as AnyComponent
   },
   app: {

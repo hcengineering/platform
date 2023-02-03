@@ -16,8 +16,7 @@
 import activity from '@hcengineering/activity'
 import { calendarId, Calendar, Event, Reminder } from '@hcengineering/calendar'
 import { Employee } from '@hcengineering/contact'
-import type { Domain, Markup, Ref, Timestamp } from '@hcengineering/core'
-import { IndexKind } from '@hcengineering/core'
+import { DateRangeMode, Domain, Markup, Ref, Timestamp, IndexKind } from '@hcengineering/core'
 import {
   ArrOf,
   Builder,
@@ -66,10 +65,10 @@ export class TEvent extends TAttachedDoc implements Event {
   @Index(IndexKind.FullText)
     location?: string
 
-  @Prop(TypeDate(true), calendar.string.Date)
+  @Prop(TypeDate(DateRangeMode.DATETIME), calendar.string.Date)
     date!: Timestamp
 
-  @Prop(TypeDate(true), calendar.string.DueTo)
+  @Prop(TypeDate(DateRangeMode.DATETIME), calendar.string.DueTo)
     dueDate!: Timestamp
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
@@ -85,7 +84,7 @@ export class TEvent extends TAttachedDoc implements Event {
 @Mixin(calendar.mixin.Reminder, calendar.class.Event)
 @UX(calendar.string.Reminder, calendar.icon.Calendar)
 export class TReminder extends TEvent implements Reminder {
-  @Prop(TypeDate(true), calendar.string.Shift)
+  @Prop(TypeDate(DateRangeMode.DATETIME), calendar.string.Shift)
   @Hidden()
     shift!: Timestamp
 

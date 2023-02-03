@@ -37,6 +37,7 @@ export default mergeIds(settingId, setting, {
     Attributes: '' as IntlString,
     Custom: '' as IntlString,
     WithTime: '' as IntlString,
+    DateMode: '' as IntlString,
     Type: '' as IntlString,
     CreatingAttribute: '' as IntlString,
     EditAttribute: '' as IntlString,

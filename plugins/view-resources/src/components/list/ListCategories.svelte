@@ -36,6 +36,7 @@
   export let createItemLabel: IntlString | undefined
   export let viewOptions: ViewOptions
   export let flatHeaders = false
+  export let disableHeader = false
   export let props: Record<string, any> = {}
   export let level: number
   export let initIndex = 0
@@ -121,6 +122,7 @@
       on:uncheckAll
       on:row-focus
       {flatHeaders}
+      {disableHeader}
       {props}
     />
   {/key}

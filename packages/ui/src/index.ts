@@ -103,6 +103,8 @@ export { default as Chevron } from './components/Chevron.svelte'
 export { default as Timeline } from './components/Timeline.svelte'
 
 export { default as IconAdd } from './components/icons/Add.svelte'
+export { default as IconStart } from './components/icons/Start.svelte'
+export { default as IconStop } from './components/icons/Stop.svelte'
 export { default as IconBack } from './components/icons/Back.svelte'
 export { default as IconForward } from './components/icons/Forward.svelte'
 export { default as IconClose } from './components/icons/Close.svelte'

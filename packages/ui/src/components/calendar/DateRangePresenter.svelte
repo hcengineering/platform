@@ -24,9 +24,10 @@
   import DPCalendar from './icons/DPCalendar.svelte'
   import DPCalendarOver from './icons/DPCalendarOver.svelte'
   import DateRangePopup from './DateRangePopup.svelte'
+  import { DateRangeMode } from '@hcengineering/core'
 
   export let value: number | null | undefined = null
-  export let withTime: boolean = false
+  export let mode: DateRangeMode = DateRangeMode.DATE
   export let editable: boolean = false
   export let icon: 'normal' | 'warning' | 'overdue' = 'normal'
   export let labelOver: IntlString | undefined = undefined // label instead of date
@@ -44,9 +45,12 @@
   }
   const editsType: TEdits[] = ['day', 'month', 'year', 'hour', 'min']
   const getIndex = (id: TEdits): number => editsType.indexOf(id)
-  const today: Date = new Date(Date.now())
+  const today = new Date(Date.now())
+  const startDate = new Date(0)
+  const defaultSelected: TEdits = mode === DateRangeMode.TIME ? 'hour' : 'day'
+
   let currentDate: Date
-  let selected: TEdits = 'day'
+  let selected: TEdits = defaultSelected
 
   let edit: boolean = false
   let opened: boolean = false
@@ -57,6 +61,9 @@
   let edits: IEdits[] = editsType.map((edit) => {
     return { id: edit, value: -1 }
   })
+
+  $: withTime = mode !== DateRangeMode.DATE
+  $: withDate = mode !== DateRangeMode.TIME
 
   const getValue = (date: Date | null | undefined = today, id: TEdits): number => {
     switch (id) {
@@ -126,7 +133,7 @@
     edits.forEach((edit, i) => {
       tempValues[i] = edit.value > 0 || i > 2 ? edit.value : getValue(currentDate, edit.id)
     })
-    currentDate = new Date(tempValues[2], tempValues[1] - 1, tempValues[0], tempValues[3], tempValues[4])
+    setCurrentDate(new Date(tempValues[2], tempValues[1] - 1, tempValues[0], tempValues[3], tempValues[4]))
   }
   const isNull = (full: boolean = false): boolean => {
     let result: boolean = false
@@ -162,7 +169,7 @@
 
       if (!isNull() && edits[2].value > 999) {
         fixEdits()
-        currentDate = setValue(edits[index].value, currentDate, ed)
+        setCurrentDate(setValue(edits[index].value, currentDate, ed))
         $dpstore.currentDate = currentDate
         dateToEdits()
       }
@@ -183,17 +190,29 @@
       if (edits[index].value !== -1) {
         const val = ev.code === 'ArrowUp' ? edits[index].value + 1 : edits[index].value - 1
         if (currentDate) {
-          currentDate = setValue(val, currentDate, ed)
+          setCurrentDate(setValue(val, currentDate, ed))
           $dpstore.currentDate = currentDate
           dateToEdits()
         }
       }
     }
     if (ev.code === 'ArrowLeft' && edits[index].el) {
-      selected = index === 0 ? edits[withTime ? 4 : 2].id : edits[index - 1].id
+      if (mode === DateRangeMode.TIME) {
+        selected = index === 3 ? edits[4].id : edits[index - 1].id
+      } else if (mode === DateRangeMode.DATETIME) {
+        selected = index === 0 ? edits[4].id : edits[index - 1].id
+      } else {
+        selected = index === 0 ? edits[2].id : edits[index - 1].id
+      }
     }
     if (ev.code === 'ArrowRight' && edits[index].el) {
-      selected = index === (withTime ? 4 : 2) ? edits[0].id : edits[index + 1].id
+      if (mode === DateRangeMode.TIME) {
+        selected = index === 4 ? edits[3].id : edits[index + 1].id
+      } else if (mode === DateRangeMode.DATETIME) {
+        selected = index === 4 ? edits[0].id : edits[index + 1].id
+      } else {
+        selected = index === 2 ? edits[0].id : edits[index + 1].id
+      }
     }
     if (ev.code === 'Tab') {
       if ((ed === 'year' && !withTime) || (ed === 'min' && withTime)) closeDP()
@@ -220,16 +239,39 @@
     if (tempEl) tempEl.focus()
   })
 
+  const setEmptyEdits = () => {
+    edits.forEach((edit, index) => {
+      if (mode !== DateRangeMode.TIME || index > 2) {
+        edit.value = -1
+      } else {
+        edit.value = getValue(startDate, edit.id)
+      }
+    })
+    edits = edits
+  }
+
+  const setCurrentDate = (date: Date) => {
+    if (mode === DateRangeMode.TIME) {
+      const resultDate = new Date(startDate)
+      resultDate.setHours(date.getHours())
+      resultDate.setMinutes(date.getMinutes())
+
+      currentDate = resultDate
+    } else {
+      currentDate = date
+    }
+  }
+
   const _change = (result: any): void => {
     if (result !== undefined) {
-      currentDate = result
+      setCurrentDate(result)
       saveDate()
     }
   }
   const _close = (result: any): void => {
     if (result !== undefined) {
       if (result !== null) {
-        currentDate = result
+        setCurrentDate(result)
         saveDate()
       }
       closeDP()
@@ -244,6 +286,7 @@
     $dpstore.onClose = _close
     $dpstore.component = DateRangePopup
     $dpstore.shift = !noShift
+    $dpstore.mode = mode
   }
   let popupComp: HTMLElement
   $: if (opened && $dpstore.popup) popupComp = $dpstore.popup
@@ -257,15 +300,12 @@
   }
 
   export const adaptValue = () => {
-    currentDate = new Date(value ?? Date.now())
+    setCurrentDate(new Date(value ?? Date.now()))
     currentDate.setSeconds(0, 0)
     if (value !== null && value !== undefined) {
       dateToEdits()
     } else if (value === null) {
-      edits.forEach((edit) => {
-        edit.value = -1
-      })
-      currentDate = today
+      setEmptyEdits()
     }
   }
 
@@ -283,46 +323,50 @@
   }}
 >
   {#if edit}
-    <span
-      bind:this={edits[0].el}
-      class="digit"
-      tabindex="0"
-      on:keydown={(ev) => keyDown(ev, edits[0].id)}
-      on:focus={() => focused(edits[0].id)}
-      on:blur={(ev) => unfocus(ev, edits[0].id)}
-    >
-      {#if edits[0].value > -1}
-        {edits[0].value.toString().padStart(2, '0')}
-      {:else}DD{/if}
-    </span>
-    <span class="separator">.</span>
-    <span
-      bind:this={edits[1].el}
-      class="digit"
-      tabindex="0"
-      on:keydown={(ev) => keyDown(ev, edits[1].id)}
-      on:focus={() => focused(edits[1].id)}
-      on:blur={(ev) => unfocus(ev, edits[1].id)}
-    >
-      {#if edits[1].value > -1}
-        {edits[1].value.toString().padStart(2, '0')}
-      {:else}MM{/if}
-    </span>
-    <span class="separator">.</span>
-    <span
-      bind:this={edits[2].el}
-      class="digit"
-      tabindex="0"
-      on:keydown={(ev) => keyDown(ev, edits[2].id)}
-      on:focus={() => focused(edits[2].id)}
-      on:blur={(ev) => unfocus(ev, edits[2].id)}
-    >
-      {#if edits[2].value > -1}
-        {edits[2].value.toString().padStart(4, '0')}
-      {:else}YYYY{/if}
-    </span>
+    {#if withDate}
+      <span
+        bind:this={edits[0].el}
+        class="digit"
+        tabindex="0"
+        on:keydown={(ev) => keyDown(ev, edits[0].id)}
+        on:focus={() => focused(edits[0].id)}
+        on:blur={(ev) => unfocus(ev, edits[0].id)}
+      >
+        {#if edits[0].value > -1}
+          {edits[0].value.toString().padStart(2, '0')}
+        {:else}DD{/if}
+      </span>
+      <span class="separator">.</span>
+      <span
+        bind:this={edits[1].el}
+        class="digit"
+        tabindex="0"
+        on:keydown={(ev) => keyDown(ev, edits[1].id)}
+        on:focus={() => focused(edits[1].id)}
+        on:blur={(ev) => unfocus(ev, edits[1].id)}
+      >
+        {#if edits[1].value > -1}
+          {edits[1].value.toString().padStart(2, '0')}
+        {:else}MM{/if}
+      </span>
+      <span class="separator">.</span>
+      <span
+        bind:this={edits[2].el}
+        class="digit"
+        tabindex="0"
+        on:keydown={(ev) => keyDown(ev, edits[2].id)}
+        on:focus={() => focused(edits[2].id)}
+        on:blur={(ev) => unfocus(ev, edits[2].id)}
+      >
+        {#if edits[2].value > -1}
+          {edits[2].value.toString().padStart(4, '0')}
+        {:else}YYYY{/if}
+      </span>
+    {/if}
     {#if withTime}
-      <div class="time-divider" />
+      {#if mode === DateRangeMode.DATETIME}
+        <div class="time-divider" />
+      {/if}
       <span
         bind:this={edits[3].el}
         class="digit"
@@ -356,13 +400,12 @@
         class="close-btn"
         tabindex="0"
         on:click={() => {
-          selected = 'day'
+          selected = defaultSelected
           startTyping = true
           value = null
-          edits.forEach((edit) => {
-            edit.value = -1
-          })
-          if (edits[0].el) edits[0].el.focus()
+          setEmptyEdits()
+          const newFocusElement = edits[mode === DateRangeMode.TIME ? 2 : 0].el
+          if (newFocusElement) newFocusElement.focus()
         }}
         on:blur={(ev) => unfocus(ev, closeBtn)}
       >
@@ -376,14 +419,18 @@
     {#if value !== undefined && value !== null && value.toString() !== ''}
       {#if labelOver !== undefined}
         <Label label={labelOver} />
-      {:else if value}
-        {new Date(value).getDate()}
-        {getMonthName(new Date(value), 'short')}
-        {#if new Date(value).getFullYear() !== today.getFullYear()}
-          {new Date(value).getFullYear()}
+      {:else}
+        {#if withDate}
+          {new Date(value).getDate()}
+          {getMonthName(new Date(value), 'short')}
+          {#if new Date(value).getFullYear() !== today.getFullYear()}
+            {new Date(value).getFullYear()}
+          {/if}
         {/if}
         {#if withTime}
-          <div class="time-divider" />
+          {#if withDate}
+            <div class="time-divider" />
+          {/if}
           {new Date(value).getHours().toString().padStart(2, '0')}
           <span class="separator">:</span>
           {new Date(value).getMinutes().toString().padStart(2, '0')}

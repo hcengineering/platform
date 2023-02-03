@@ -13,10 +13,19 @@
 // limitations under the License.
 //
 
-import { Class, Client, DocumentQuery, Ref, RelatedDocument, toIdMap, TxOperations } from '@hcengineering/core'
+import {
+  Class,
+  Client,
+  DocumentQuery,
+  getCurrentAccount,
+  Ref,
+  RelatedDocument,
+  toIdMap,
+  TxOperations
+} from '@hcengineering/core'
 import { Resources, translate } from '@hcengineering/platform'
 import { getClient, MessageBox, ObjectSearchResult } from '@hcengineering/presentation'
-import { Issue, Sprint, Team } from '@hcengineering/tracker'
+import { Issue, Scrum, ScrumRecord, Sprint, Team } from '@hcengineering/tracker'
 import { showPopup } from '@hcengineering/ui'
 import CreateIssue from './components/CreateIssue.svelte'
 import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
@@ -46,7 +55,6 @@ import EditProject from './components/projects/EditProject.svelte'
 import IconPresenter from './components/projects/IconPresenter.svelte'
 import LeadPresenter from './components/projects/LeadPresenter.svelte'
 import ProjectEditor from './components/projects/ProjectEditor.svelte'
-import ProjectMembersPresenter from './components/projects/ProjectMembersPresenter.svelte'
 import ProjectPresenter from './components/projects/ProjectPresenter.svelte'
 import Projects from './components/projects/Projects.svelte'
 import ProjectStatusEditor from './components/projects/ProjectStatusEditor.svelte'
@@ -76,9 +84,11 @@ import SprintEditor from './components/sprints/SprintEditor.svelte'
 import SprintPresenter from './components/sprints/SprintPresenter.svelte'
 import Sprints from './components/sprints/Sprints.svelte'
 import SprintSelector from './components/sprints/SprintSelector.svelte'
-import SprintMembersPresenter from './components/sprints/SprintMembersPresenter.svelte'
 import SprintStatusPresenter from './components/sprints/SprintStatusPresenter.svelte'
 import SprintTitlePresenter from './components/sprints/SprintTitlePresenter.svelte'
+
+import Scrums from './components/scrums/Scrums.svelte'
+import ScrumRecordPanel from './components/scrums/ScrumRecordPanel.svelte'
 
 import SubIssuesSelector from './components/issues/edit/SubIssuesSelector.svelte'
 import EstimationEditor from './components/issues/timereport/EstimationEditor.svelte'
@@ -104,6 +114,7 @@ import TeamPresenter from './components/teams/TeamPresenter.svelte'
 import IssueStatistics from './components/sprints/IssueStatistics.svelte'
 import StatusRefPresenter from './components/issues/StatusRefPresenter.svelte'
 import SprintRefPresenter from './components/sprints/SprintRefPresenter.svelte'
+import { EmployeeAccount } from '@hcengineering/contact'
 
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 
@@ -216,6 +227,79 @@ async function deleteSprint (sprint: Sprint): Promise<void> {
   }
 }
 
+async function startRecordingScrum (
+  client: TxOperations,
+  newRecordingScrum: Scrum,
+  previousScrumRecord?: ScrumRecord
+): Promise<void> {
+  const newRecordLabel = `${newRecordingScrum.title}-${newRecordingScrum.scrumRecords ?? 0}`
+  const startRecord = async (): Promise<void> => {
+    await client.addCollection(
+      tracker.class.ScrumRecord,
+      newRecordingScrum.space,
+      newRecordingScrum._id,
+      tracker.class.Scrum,
+      'scrumRecords',
+      {
+        label: newRecordLabel,
+        scrumRecorder: getCurrentAccount()._id as Ref<EmployeeAccount>,
+        startTs: Date.now(),
+        comments: 0
+      }
+    )
+  }
+
+  if (previousScrumRecord !== undefined) {
+    showPopup(
+      MessageBox,
+      {
+        label: tracker.string.ChangeScrumRecord,
+        message: tracker.string.ChangeScrumRecordConfirm,
+        params: { previousRecord: previousScrumRecord.label, newRecord: newRecordLabel }
+      },
+      undefined,
+      (result?: boolean) => {
+        if (result === true) {
+          void client
+            .updateCollection(
+              tracker.class.ScrumRecord,
+              previousScrumRecord.space,
+              previousScrumRecord._id,
+              previousScrumRecord.attachedTo,
+              tracker.class.Scrum,
+              'scrumRecords',
+              { endTs: Date.now() }
+            )
+            .then(async () => await startRecord())
+        }
+      }
+    )
+  } else {
+    await startRecord()
+  }
+}
+
+export async function handleRecordingScrum (
+  client: TxOperations,
+  currentScrum: Scrum,
+  activeScrumRecord?: ScrumRecord
+): Promise<void> {
+  // Stop recording scrum if active record attached to current scrum
+  if (activeScrumRecord?.attachedTo === currentScrum._id) {
+    await client.updateCollection(
+      tracker.class.ScrumRecord,
+      activeScrumRecord.space,
+      activeScrumRecord._id,
+      activeScrumRecord.attachedTo,
+      tracker.class.Scrum,
+      'scrumRecords',
+      { endTs: Date.now() }
+    )
+  } else {
+    await startRecordingScrum(client, currentScrum, activeScrumRecord)
+  }
+}
+
 export default async (): Promise<Resources> => ({
   component: {
     NopeComponent,
@@ -245,7 +329,6 @@ export default async (): Promise<Resources> => ({
     IconPresenter,
     LeadPresenter,
     TargetDatePresenter,
-    ProjectMembersPresenter,
     ProjectStatusPresenter,
     ProjectStatusEditor,
     SetDueDateActionPopup,
@@ -261,7 +344,8 @@ export default async (): Promise<Resources> => ({
     CreateIssueTemplate,
     Sprints,
     SprintPresenter,
-    SprintMembersPresenter,
+    Scrums,
+    ScrumRecordPanel,
     SprintStatusPresenter,
     SprintTitlePresenter,
     SprintSelector,

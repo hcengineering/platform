@@ -16,12 +16,14 @@
   import { Ref, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import type { Issue, Team } from '@hcengineering/tracker'
-  import { showPanel } from '@hcengineering/ui'
+  import { Icon, showPanel, tooltip } from '@hcengineering/ui'
   import tracker from '../../plugin'
 
   export let value: WithLookup<Issue>
   export let disableClick = false
   export let onClick: (() => void) | undefined = undefined
+  export let withIcon = false
+  export let noUnderline = false
 
   // Extra properties
   export let teams: Map<Ref<Team>, Team> | undefined = undefined
@@ -56,18 +58,22 @@
 
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <span
-    class="issuePresenterRoot"
-    class:noPointer={disableClick}
-    title={value?.title}
-    on:click={handleIssueEditorOpened}
-  >
-    {title}
+  <span class="issuePresenterRoot" class:noPointer={disableClick} class:noUnderline on:click={handleIssueEditorOpened}>
+    {#if withIcon}
+      <div class="mr-2" use:tooltip={{ label: tracker.string.Issue }}>
+        <Icon icon={tracker.icon.Issues} size={'small'} />
+      </div>
+    {/if}
+    <span title={value?.title}>
+      {title}
+    </span>
   </span>
 {/if}
 
 <style lang="scss">
   .issuePresenterRoot {
+    display: flex;
+
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -82,10 +88,18 @@
       cursor: default;
     }
 
-    &:hover {
+    &.noUnderline {
       color: var(--caption-color);
-      text-decoration: underline;
+      font-weight: 500;
     }
+
+    &:not(.noUnderline) {
+      &:hover {
+        color: var(--caption-color);
+        text-decoration: underline;
+      }
+    }
+
     &:active {
       color: var(--accent-color);
     }

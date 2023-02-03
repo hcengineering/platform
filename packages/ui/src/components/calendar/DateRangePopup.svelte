@@ -18,46 +18,69 @@
   import Month from './Month.svelte'
   import Scroller from '../Scroller.svelte'
   import TimeShiftPresenter from '../TimeShiftPresenter.svelte'
+  import { DateRangeMode } from '@hcengineering/core'
 
   export let direction: 'before' | 'after' = 'after'
   export let minutes: number[] = [5, 15, 30]
   export let hours: number[] = [1, 2, 4, 8, 12]
   export let days: number[] = [1, 3, 7, 30]
   export let shift: boolean = false
+  export let mode: DateRangeMode = DateRangeMode.DATE
+
+  $: withTime = mode !== DateRangeMode.DATE
+  $: withDate = mode !== DateRangeMode.TIME
 
   const dispatch = createEventDispatcher()
 
-  const today: Date = new Date(Date.now())
-  $: currentDate = $dpstore.currentDate ?? today
+  const today = new Date(Date.now())
+  const startDate = new Date(0)
+
+  $: defaultDate =
+    mode === DateRangeMode.TIME
+      ? new Date(
+        startDate.getFullYear(),
+        startDate.getMonth(),
+        startDate.getDate(),
+        today.getHours(),
+        today.getMinutes()
+      )
+      : today
+  $: currentDate = $dpstore.currentDate ?? defaultDate
   const mondayStart: boolean = true
 
   $: base = direction === 'before' ? -1 : 1
   const MINUTE = 60 * 1000
   const HOUR = 60 * MINUTE
   const DAY = 24 * HOUR
-  $: values = [
-    ...minutes.map((m) => m * MINUTE),
-    'divider',
-    ...hours.map((m) => m * HOUR),
-    'divider',
-    ...days.map((m) => m * DAY)
-  ]
+
+  const shiftValues: (number | string)[] = []
+
+  $: {
+    if (withTime) {
+      shiftValues.push(...minutes.map((m) => m * MINUTE), 'divider', ...hours.map((m) => m * HOUR))
+    }
+    if (withDate) {
+      shiftValues.push('divider', ...days.map((m) => m * DAY))
+    }
+  }
 </script>
 
 <div class="month-popup-container">
-  <Month
-    bind:currentDate
-    {mondayStart}
-    on:update={(result) => {
-      if (result.detail !== undefined) {
-        dispatch('close', result.detail)
-      }
-    }}
-  />
+  {#if mode !== DateRangeMode.TIME}
+    <Month
+      bind:currentDate
+      {mondayStart}
+      on:update={(result) => {
+        if (result.detail !== undefined) {
+          dispatch('close', result.detail)
+        }
+      }}
+    />
+  {/if}
   {#if shift}
     <div class="shift-container">
       <Scroller>
-        {#each values as value}
+        {#each shiftValues as value}
           {#if typeof value === 'number'}
             <div
               class="btn"
@@ -92,6 +115,7 @@
       top: 1rem;
       right: calc(100% - 0.5rem);
       bottom: 1rem;
+      height: fit-content;
       width: fit-content;
       width: 12rem;
       min-width: 12rem;

@@ -208,7 +208,8 @@ const contactPlugin = plugin(contactId, {
     SocialEditor: '' as AnyComponent,
     CreateOrganization: '' as AnyComponent,
     CreatePerson: '' as AnyComponent,
-    ChannelsPresenter: '' as AnyComponent
+    ChannelsPresenter: '' as AnyComponent,
+    MembersPresenter: '' as AnyComponent
   },
   channelProvider: {
     Email: '' as Ref<ChannelProvider>,
