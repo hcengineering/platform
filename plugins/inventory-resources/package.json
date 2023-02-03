@@ -39,7 +39,7 @@
     "@hcengineering/presentation": "^0.6.2",
     "@hcengineering/view": "^0.6.2",
     "@hcengineering/view-resources": "^0.6.0",
-    "@hcengineering/core": "^0.6.20",
+    "@hcengineering/core": "^0.6.21",
     "@hcengineering/login": "^0.6.1",
     "@hcengineering/workbench": "^0.6.2"
   }

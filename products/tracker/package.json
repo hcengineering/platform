@@ -104,7 +104,7 @@
     "@hcengineering/calendar": "^0.6.2",
     "@hcengineering/calendar-assets": "^0.6.0",
     "@hcengineering/calendar-resources": "^0.6.0",
-    "@hcengineering/core": "^0.6.20",
+    "@hcengineering/core": "^0.6.21",
     "@hcengineering/server-chunter": "^0.6.0",
     "@hcengineering/server-chunter-resources": "^0.6.0",
     "@hcengineering/server-task": "^0.6.0",
