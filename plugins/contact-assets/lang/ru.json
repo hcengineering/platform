@@ -73,6 +73,7 @@
     "UseImage": "Загрузить фото",
     "UseGravatar": "Использовать Gravatar",
     "UseColor": "Использовать цвет",
-    "NotSpecified": "Не указан"
+    "NotSpecified": "Не указан",
+    "CreatedOn": "Создан"
   }
 }

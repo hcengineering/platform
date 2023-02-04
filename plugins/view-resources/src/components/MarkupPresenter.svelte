@@ -17,9 +17,9 @@
   import { MessageViewer } from '@hcengineering/presentation'
   import { ShowMore } from '@hcengineering/ui'
 
-  export let value: string
+  export let value: string | undefined
 </script>
 
 <ShowMore>
-  <MessageViewer message={value} />
+  <MessageViewer message={value ?? ''} />
 </ShowMore>

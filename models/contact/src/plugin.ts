@@ -70,7 +70,8 @@ export default mergeIds(contactId, contact, {
     Facebook: '' as IntlString,
     TypeLabel: '' as IntlString,
     Homepage: '' as IntlString,
-    Birthday: '' as IntlString
+    Birthday: '' as IntlString,
+    CreatedOn: '' as IntlString
   },
   completion: {
     PersonQuery: '' as Resource<ObjectSearchFactory>,

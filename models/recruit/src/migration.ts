@@ -14,14 +14,14 @@
 //
 
 import { Organization } from '@hcengineering/contact'
-import core, { Doc, Ref, Space, TxOperations } from '@hcengineering/core'
+import core, { Doc, DOMAIN_TX, Ref, Space, TxCreateDoc, TxOperations } from '@hcengineering/core'
 import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import { DOMAIN_CALENDAR } from '@hcengineering/model-calendar'
 import contact, { DOMAIN_CONTACT } from '@hcengineering/model-contact'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import tags, { TagCategory } from '@hcengineering/model-tags'
-import { createKanbanTemplate, createSequence } from '@hcengineering/model-task'
-import { Vacancy } from '@hcengineering/recruit'
+import { createKanbanTemplate, createSequence, DOMAIN_TASK } from '@hcengineering/model-task'
+import { Applicant, Vacancy } from '@hcengineering/recruit'
 import { getCategories } from '@anticrm/skillset'
 import { KanbanTemplate } from '@hcengineering/task'
 import recruit from './plugin'
@@ -38,8 +38,44 @@ async function fixImportedTitle (client: MigrationClient): Promise<void> {
   )
 }
 
+async function setCreate (client: MigrationClient): Promise<void> {
+  const docs = await client.find<Applicant>(DOMAIN_TASK, {
+    _class: recruit.class.Applicant,
+    createOn: { $exists: false }
+  })
+  for (const doc of docs) {
+    const tx = (
+      await client.find<TxCreateDoc<Applicant>>(DOMAIN_TX, {
+        objectId: doc._id,
+        _class: core.class.TxCreateDoc
+      })
+    )[0]
+    if (tx !== undefined) {
+      await client.update(
+        DOMAIN_CONTACT,
+        {
+          _id: doc._id
+        },
+        {
+          createOn: tx.modifiedOn
+        }
+      )
+      await client.update(
+        DOMAIN_TX,
+        {
+          _id: tx._id
+        },
+        {
+          'attributes.createOn': tx.modifiedOn
+        }
+      )
+    }
+  }
+}
+
 export const recruitOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
+    await setCreate(client)
     await fixImportedTitle(client)
     await client.update(
       DOMAIN_CALENDAR,

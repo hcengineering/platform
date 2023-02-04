@@ -161,7 +161,8 @@ async function genApplicant (
     doneState: null,
     rank: rank as string,
     startDate: null,
-    dueDate: null
+    dueDate: null,
+    createOn: Date.now()
   }
 
   // Update or create candidate
@@ -232,7 +233,8 @@ async function genCandidate (
   const candidate: Data<Person> = {
     name: fName + ',' + lName,
     city: faker.address.city(),
-    avatar: imgId
+    avatar: imgId,
+    createOn: Date.now()
   }
 
   const candidateMixin: MixinUpdate<Person, Candidate> = {

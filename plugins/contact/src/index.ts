@@ -103,6 +103,7 @@ export interface Contact extends Doc {
   comments?: number
   channels?: number
   city: string
+  createOn: Timestamp
 }
 
 /**
