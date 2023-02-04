@@ -369,17 +369,27 @@ export function start (
     ws.on('message', (msg: string) => {
       buffer?.push(msg)
     })
-    const session = await sessions.addSession(ctx, ws, token, pipelineFactory)
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    ws.on('message', async (msg: string) => await handleRequest(ctx, session, ws, msg))
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    ws.on('close', (code: number, reason: string) => {
-      void sessions.close(ctx, ws, token.workspace, code, reason)
-    })
-    const b = buffer
-    buffer = undefined
-    for (const msg of b) {
-      await handleRequest(ctx, session, ws, msg)
+    try {
+      const session = await sessions.addSession(ctx, ws, token, pipelineFactory)
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      ws.on('message', async (msg: string) => await handleRequest(ctx, session, ws, msg))
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      ws.on('close', (code: number, reason: string) => {
+        void sessions.close(ctx, ws, token.workspace, code, reason)
+      })
+      const b = buffer
+      buffer = undefined
+      for (const msg of b) {
+        await handleRequest(ctx, session, ws, msg)
+      }
+    } catch (e) {
+      console.log('Couldn\'t create session', e)
+      const resp: Response<any> = {
+        error: UNAUTHORIZED,
+      }
+      ws.send(serialize(resp))
+      ws.close()
+      buffer = []
     }
   })
 

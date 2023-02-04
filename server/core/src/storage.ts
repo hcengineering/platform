@@ -677,10 +677,13 @@ export async function createServerStorage (
 
   const txAdapter = adapters.get(conf.domains[DOMAIN_TX]) as TxAdapter
   if (txAdapter === undefined) {
-    console.log('no txadapter found')
+    throw new Error('no txadapter found')
   }
 
   const model = await txAdapter.getModel()
+  if (model.length === 0) {
+    throw new Error(`no model found, ${conf.workspace.name}, ${conf.workspace.productId}`)
+  }
 
   for (const tx of model) {
     try {
