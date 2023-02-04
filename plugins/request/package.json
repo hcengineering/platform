@@ -30,6 +30,6 @@
     "@hcengineering/core": "^0.6.21",
     "@hcengineering/chunter": "^0.6.2",
     "@hcengineering/ui": "^0.6.3",
-    "@hcengineering/contact": "^0.6.9"
+    "@hcengineering/contact": "^0.6.11"
   }
 }

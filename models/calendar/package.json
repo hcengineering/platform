@@ -42,6 +42,6 @@
     "@hcengineering/workbench": "^0.6.2",
     "@hcengineering/model-chunter": "^0.6.0",
     "@hcengineering/model-contact": "^0.6.1",
-    "@hcengineering/contact": "^0.6.9"
+    "@hcengineering/contact": "^0.6.11"
   }
 }
