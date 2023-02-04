@@ -130,6 +130,10 @@ class Connection implements ClientConnection {
             promise.resolve(resp.result)
           }
         } else {
+          if (resp.error !== undefined && resp.error.code === UNAUTHORIZED.code) {
+            this.onUnauthorized?.()
+            return
+          }
           const tx = resp.result as Tx
           if (tx?._class === core.class.TxModelUpgrade) {
             console.log('Processing upgrade')
@@ -142,7 +146,7 @@ class Connection implements ClientConnection {
             )
             this.onUpgrade?.()
           }
-          if (tx._class === core.class.TxRemoveWorkspace) {
+          if (tx?._class === core.class.TxRemoveWorkspace) {
             this.onUnauthorized?.()
           }
           this.handler(tx)
