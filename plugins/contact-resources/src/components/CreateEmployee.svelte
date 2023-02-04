@@ -42,6 +42,7 @@
   async function createPerson () {
     const name = combineName(firstName, lastName)
     const person: Data<Employee> = {
+      createOn: Date.now(),
       name,
       city: object.city,
       active: true
