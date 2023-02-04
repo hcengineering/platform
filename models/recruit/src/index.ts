@@ -28,6 +28,7 @@ import {
   TypeMarkup,
   TypeRef,
   TypeString,
+  TypeTimestamp,
   UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
@@ -154,6 +155,9 @@ export class TApplicant extends TTask implements Applicant {
 
   @Prop(TypeRef(contact.class.Employee), recruit.string.AssignedRecruiter)
   declare assignee: Ref<Employee> | null
+
+  @Prop(TypeTimestamp(), contact.string.CreatedOn)
+    createOn!: Timestamp
 }
 
 @Model(recruit.class.ApplicantMatch, core.class.AttachedDoc, DOMAIN_TASK)

@@ -32,7 +32,7 @@
   }
   const query = createQuery()
 
-  $: if (value._class === contact.class.EmployeeAccount) {
+  $: if (value && value._class === contact.class.EmployeeAccount) {
     query.query(contact.class.Employee, { _id: (value as EmployeeAccount).employee }, (r) => ([employee] = r))
   }
 </script>

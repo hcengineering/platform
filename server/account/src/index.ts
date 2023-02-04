@@ -277,7 +277,7 @@ export async function checkInvite (invite: Invite | null, email: string): Promis
   if (invite === null || invite.limit === 0) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
-  if (invite.exp < new Date().getTime()) {
+  if (invite.exp < Date.now()) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
   if (!new RegExp(invite.emailMask).test(email)) {
@@ -484,7 +484,7 @@ export async function getInviteLink (
   }
   const result = await db.collection(INVITE_COLLECTION).insertOne({
     workspace,
-    exp: new Date().getTime() + exp,
+    exp: Date.now() + exp,
     emailMask,
     limit
   })
@@ -568,7 +568,8 @@ async function createEmployee (ops: TxOperations, name: string, email: string): 
     name,
     city: '',
     ...(hasGravatar ? { avatar: `${AvatarType.GRAVATAR}://${gravatarId}` } : {}),
-    active: true
+    active: true,
+    createOn: Date.now()
   })
   if (!hasGravatar) {
     await ops.updateDoc(contact.class.Employee, contact.space.Employee, id, {

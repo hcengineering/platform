@@ -188,14 +188,12 @@
   }
   function getValue (attribute: AttributeModel, object: Doc): any {
     if (attribute.castRequest) {
-      return (
-        getObjectValue(
-          attribute.key.substring(attribute.castRequest.length + 1),
-          client.getHierarchy().as(object, attribute.castRequest)
-        ) ?? ''
+      return getObjectValue(
+        attribute.key.substring(attribute.castRequest.length + 1),
+        client.getHierarchy().as(object, attribute.castRequest)
       )
     }
-    return getObjectValue(attribute.key, object) ?? ''
+    return getObjectValue(attribute.key, object)
   }
 </script>
 
@@ -299,7 +297,7 @@
                 <div class:antiTable-cells__firstCell={!cell}>
                   <svelte:component
                     this={attribute.presenter}
-                    value={getValue(attribute, object) ?? ''}
+                    value={getValue(attribute, object)}
                     {...joinProps(attribute.collectionAttr, object, attribute.props)}
                   />
                 </div>

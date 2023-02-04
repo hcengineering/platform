@@ -28,7 +28,7 @@
   import ui from '../plugin'
   import { tooltip } from '../tooltips'
 
-  export let value: number
+  export let value: number | undefined
 
   let time: string = ''
 
@@ -48,15 +48,17 @@
     }
   }
 
-  $: formatTime($ticker, value)
+  $: value && formatTime($ticker, value)
 
-  $: tooltipValue = new Date(value).toLocaleString('default', {
-    minute: '2-digit',
-    hour: 'numeric',
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  })
+  $: tooltipValue = value
+    ? new Date(value).toLocaleString('default', {
+      minute: '2-digit',
+      hour: 'numeric',
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    })
+    : undefined
 </script>
 
 <span use:tooltip={{ label: ui.string.TimeTooltip, props: { value: tooltipValue } }} style="white-space: nowrap;">

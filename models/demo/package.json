@@ -30,6 +30,6 @@
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/model-recruit": "^0.6.0",
     "@hcengineering/model-contact": "^0.6.1",
-    "@hcengineering/contact": "^0.6.9"
+    "@hcengineering/contact": "^0.6.11"
   }
 }

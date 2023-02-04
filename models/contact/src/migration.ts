@@ -1,32 +1,10 @@
 //
-// Copyright © 2022 Hardcore Engineering Inc.
-//
-// Licensed under the Eclipse Public License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License. You may
-// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
 
-import fetch from 'cross-fetch'
-
-import {
-  Employee,
-  EmployeeAccount,
-  AvatarType,
-  buildGravatarId,
-  checkHasGravatar,
-  getAvatarColorForId
-} from '@hcengineering/contact'
-import { AccountRole, DOMAIN_TX, toIdMap, TxCreateDoc, TxOperations } from '@hcengineering/core'
+import { Contact } from '@hcengineering/contact'
+import { DOMAIN_TX, TxCreateDoc, TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
-import contact from './index'
+import contact, { DOMAIN_CONTACT } from './index'
 
 async function createSpace (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(core.class.Space, {
@@ -65,65 +43,47 @@ async function createSpace (tx: TxOperations): Promise<void> {
   }
 }
 
-async function setActiveEmployeeTx (client: MigrationClient): Promise<void> {
-  await client.update<TxCreateDoc<Employee>>(
-    DOMAIN_TX,
-    {
-      _class: core.class.TxCreateDoc,
-      objectClass: contact.class.Employee,
-      'attributes.active': { $exists: false }
-    },
-    {
-      'attributes.active': true
-    }
-  )
-}
-
-async function setRole (client: MigrationClient): Promise<void> {
-  await client.update<TxCreateDoc<EmployeeAccount>>(
-    DOMAIN_TX,
-    {
-      _class: core.class.TxCreateDoc,
-      objectClass: contact.class.EmployeeAccount,
-      'attributes.role': { $exists: false }
-    },
-    {
-      'attributes.role': AccountRole.User
-    }
-  )
-}
-
-async function updateEmployeeAvatar (tx: TxOperations): Promise<void> {
-  const accounts = await tx.findAll(contact.class.EmployeeAccount, {})
-  const employees = await tx.findAll(contact.class.Employee, { _id: { $in: accounts.map((a) => a.employee) } })
-  const employeesById = toIdMap(employees)
-
-  // set gravatar for users without avatar
-  const promises = accounts.map(async (account) => {
-    const employee = employeesById.get(account.employee)
-    if (employee === undefined) return
-    if (employee.avatar != null && employee.avatar !== undefined) return
-
-    const gravatarId = buildGravatarId(account.email)
-    const hasGravatar = await checkHasGravatar(gravatarId, fetch)
-
-    await tx.update(employee, {
-      avatar: hasGravatar
-        ? `${AvatarType.GRAVATAR}://${gravatarId}`
-        : `${AvatarType.COLOR}://${getAvatarColorForId(employee._id)}`
-    })
+async function setCreate (client: MigrationClient): Promise<void> {
+  const docs = await client.find<Contact>(DOMAIN_CONTACT, {
+    _class: { $in: [contact.class.Contact, contact.class.Organization, contact.class.Person, contact.class.Employee] },
+    createOn: { $exists: false }
   })
-  await Promise.all(promises)
+  for (const doc of docs) {
+    const tx = (
+      await client.find<TxCreateDoc<Contact>>(DOMAIN_TX, {
+        objectId: doc._id,
+        _class: core.class.TxCreateDoc
+      })
+    )[0]
+    if (tx !== undefined) {
+      await client.update(
+        DOMAIN_CONTACT,
+        {
+          _id: doc._id
+        },
+        {
+          createOn: tx.modifiedOn
+        }
+      )
+      await client.update(
+        DOMAIN_TX,
+        {
+          _id: tx._id
+        },
+        {
+          'attributes.createOn': tx.modifiedOn
+        }
+      )
+    }
+  }
 }
 
 export const contactOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
-    await setActiveEmployeeTx(client)
-    await setRole(client)
+    await setCreate(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createSpace(tx)
-    await updateEmployeeAvatar(tx)
   }
 }

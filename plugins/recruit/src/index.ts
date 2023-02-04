@@ -87,6 +87,7 @@ export interface Applicant extends Task {
   attachedTo: Ref<Candidate>
   attachments?: number
   comments?: number
+  createOn: Timestamp
 }
 
 /**
