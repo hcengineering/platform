@@ -383,9 +383,9 @@ export function start (
         await handleRequest(ctx, session, ws, msg)
       }
     } catch (e) {
-      console.log('Couldn\'t create session', e)
+      console.log("Couldn't create session", e)
       const resp: Response<any> = {
-        error: UNAUTHORIZED,
+        error: UNAUTHORIZED
       }
       ws.send(serialize(resp))
       ws.close()
