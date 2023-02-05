@@ -14,19 +14,16 @@
 -->
 <script lang="ts">
   import type { Ref } from '@hcengineering/core'
-  import type { Application } from '@hcengineering/workbench'
-  import { createEventDispatcher } from 'svelte'
-  import AppItem from './AppItem.svelte'
-  import { Scroller, IconDownOutline } from '@hcengineering/ui'
-  import { showApplication, hideApplication } from '../utils'
   import { createQuery } from '@hcengineering/presentation'
+  import { IconDownOutline, NavLink, Scroller } from '@hcengineering/ui'
+  import type { Application } from '@hcengineering/workbench'
   import workbench from '@hcengineering/workbench'
+  import { hideApplication, showApplication } from '../utils'
+  import App from './App.svelte'
 
   export let active: Ref<Application> | undefined
   export let apps: Application[] = []
   export let direction: 'vertical' | 'horizontal' = 'vertical'
-
-  const dispatch = createEventDispatcher()
 
   let loaded: boolean = false
   let hiddenAppsIds: Ref<Application>[] = []
@@ -49,22 +46,20 @@
     >
       <div class="apps-space-{direction}" />
       {#each apps.filter((it) => (shown ? true : !hiddenAppsIds.includes(it._id))) as app}
-        <AppItem
-          selected={app._id === active}
-          icon={app.icon}
-          label={app.label}
-          hidden={hiddenAppsIds.includes(app._id)}
-          editable={shown}
-          action={async () => {
-            dispatch('active', app)
-          }}
-          notify={false}
-          on:visible={(res) => {
-            if (res.detail === undefined) return
-            if (res.detail) showApplication(app)
-            else hideApplication(app)
-          }}
-        />
+        <NavLink app={app.alias}>
+          <App
+            selected={app._id === active}
+            icon={app.icon}
+            label={app.label}
+            hidden={hiddenAppsIds.includes(app._id)}
+            editable={shown}
+            on:visible={(res) => {
+              if (res.detail === undefined) return
+              if (res.detail) showApplication(app)
+              else hideApplication(app)
+            }}
+          />
+        </NavLink>
       {/each}
       <div class="apps-space-{direction}" />
     </Scroller>
