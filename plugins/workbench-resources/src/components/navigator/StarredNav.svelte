@@ -20,10 +20,9 @@
   import { getResource, IntlString } from '@hcengineering/platform'
   import preference from '@hcengineering/preference'
   import { getClient } from '@hcengineering/presentation'
-  import { Action, IconEdit } from '@hcengineering/ui'
+  import { Action, IconEdit, NavLink } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { getActions as getContributedActions } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
   import { classIcon, getSpaceName } from '../../utils'
   import TreeItem from './TreeItem.svelte'
   import TreeNode from './TreeNode.svelte'
@@ -32,7 +31,6 @@
   export let currentSpace: Ref<Space> | undefined
   export let spaces: Space[]
   const client = getClient()
-  const dispatch = createEventDispatcher()
 
   const unStarSpace: Action = {
     label: preference.string.Unstar,
@@ -58,10 +56,6 @@
         })
       )
     }
-  }
-
-  function selectSpace (id: Ref<Space>, spaceSpecial?: string) {
-    dispatch('space', { space: id, spaceSpecial })
   }
 
   async function getActions (space: Space): Promise<Action[]> {
@@ -102,18 +96,17 @@
 <TreeNode {label} parent actions={async () => [unStarAll]} indent={'ml-2'}>
   {#each spaces as space (space._id)}
     {#await getSpaceName(client, space) then name}
-      <TreeItem
-        indent={'ml-4'}
-        _id={space._id}
-        title={name}
-        icon={classIcon(client, space._class)}
-        selected={currentSpace === space._id}
-        actions={() => getActions(space)}
-        bold={isChanged(space, $lastViews)}
-        on:click={() => {
-          selectSpace(space._id)
-        }}
-      />
+      <NavLink space={space._id}>
+        <TreeItem
+          indent={'ml-4'}
+          _id={space._id}
+          title={name}
+          icon={classIcon(client, space._class)}
+          selected={currentSpace === space._id}
+          actions={() => getActions(space)}
+          bold={isChanged(space, $lastViews)}
+        />
+      </NavLink>
     {/await}
   {/each}
 </TreeNode>

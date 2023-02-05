@@ -15,33 +15,28 @@
 <script lang="ts">
   import { Ref, Space } from '@hcengineering/core'
   import { Team } from '@hcengineering/tracker'
+  import { NavLink } from '@hcengineering/ui'
   import { SpacesNavModel } from '@hcengineering/workbench'
-  import { TreeNode, SpecialElement } from '@hcengineering/workbench-resources'
-  import { createEventDispatcher } from 'svelte'
+  import { SpecialElement, TreeNode } from '@hcengineering/workbench-resources'
 
   export let space: Team
   export let model: SpacesNavModel
   export let currentSpace: Ref<Space> | undefined
   export let currentSpecial: string | undefined
-  export let selectSpace: Function
   export let getActions: Function
-
-  const dispatch = createEventDispatcher()
 </script>
 
 {#if model.specials}
   <TreeNode icon={space?.icon ?? model.icon} title={space.name} indent={'ml-2'} actions={() => getActions(space)}>
     {#each model.specials as special}
-      <SpecialElement
-        indent={'ml-4'}
-        label={special.label}
-        icon={special.icon}
-        on:click={() => dispatch('special', special.id)}
-        selected={currentSpace === space._id && special.id === currentSpecial}
-        on:click={() => {
-          selectSpace(space._id, special.id)
-        }}
-      />
+      <NavLink space={space._id} special={special.id}>
+        <SpecialElement
+          indent={'ml-4'}
+          label={special.label}
+          icon={special.icon}
+          selected={currentSpace === space._id && special.id === currentSpecial}
+        />
+      </NavLink>
     {/each}
   </TreeNode>
 {/if}

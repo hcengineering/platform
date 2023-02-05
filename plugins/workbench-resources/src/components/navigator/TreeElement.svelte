@@ -17,7 +17,6 @@
   import type { Asset, IntlString } from '@hcengineering/platform'
   import type { Action } from '@hcengineering/ui'
   import { ActionIcon, Icon, IconMoreV, Label, Menu, showPopup } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
 
   export let _id: Ref<Space> | undefined = undefined
   export let icon: Asset | undefined = undefined
@@ -31,8 +30,6 @@
   export let bold = false
   export let actions: () => Promise<Action[]> = async () => []
   export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
-
-  const dispatch = createEventDispatcher()
 
   let hovered = false
   async function onMenuClick (ev: MouseEvent) {
@@ -53,9 +50,8 @@
   class:parent
   class:collapsed
   class:child={!node}
-  on:click|stopPropagation={() => {
+  on:click={() => {
     collapsed = !collapsed
-    dispatch('click')
   }}
 >
   <span class="an-element__label" class:bold class:title={node}>
@@ -79,7 +75,7 @@
     </div>
   </span>
   {#if node === false}
-    <div class="an-element__tool" on:click|stopPropagation={onMenuClick}>
+    <div class="an-element__tool" on:click|preventDefault|stopPropagation={onMenuClick}>
       <IconMoreV size={'small'} />
     </div>
   {:else}
@@ -96,7 +92,7 @@
           />
         </div>
       {:else if actionItems.length > 1}
-        <div class="an-element__tool" on:click|stopPropagation={onMenuClick}>
+        <div class="an-element__tool" on:click|preventDefault|stopPropagation={onMenuClick}>
           <IconMoreV size={'small'} />
         </div>
       {/if}

@@ -166,6 +166,7 @@ export { NotificationPosition } from './components/notifications/NotificationPos
 export { NotificationSeverity } from './components/notifications/NotificationSeverity'
 export { Notification } from './components/notifications/Notification'
 export { default as Wizard } from './components/wizard/Wizard.svelte'
+export { default as NavLink } from './components/NavLink.svelte'
 
 export * from './types'
 export * from './location'
