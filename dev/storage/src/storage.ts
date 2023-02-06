@@ -49,8 +49,11 @@ class InMemoryTxAdapter extends DummyDbAdapter implements TxAdapter {
     for (const t of tx) {
       r.push(await this.txdb.tx(t))
     }
-    if (r.length === 0) {
+    if (r.length === 1) {
       return r[0]
+    }
+    if (r.length === 0) {
+      return {}
     }
     return r
   }

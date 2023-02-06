@@ -39,10 +39,8 @@ import core, {
   Tx,
   TxApplyIf,
   TxCollectionCUD,
-  TxCreateDoc,
   TxCUD,
   TxFactory,
-  TxMixin,
   TxProcessor,
   TxRemoveDoc,
   TxResult,
@@ -346,12 +344,11 @@ class TServerStorage implements ServerStorage {
     const removeObjectIds: Ref<Doc>[] = []
     const removeAttachObjectIds: Ref<AttachedDoc>[] = []
 
-    for (const tx of rawTxes) {
-      const actualTx = TxProcessor.extractTx(tx)
-      if (!this.hierarchy.isDerived(actualTx._class, core.class.TxRemoveDoc)) {
-        continue
-      }
-      const rtx = actualTx as TxRemoveDoc<Doc>
+    const removeTxes = rawTxes
+      .filter((it) => this.hierarchy.isDerived(it._class, core.class.TxRemoveDoc))
+      .map((it) => TxProcessor.extractTx(it) as TxRemoveDoc<Doc>)
+
+    for (const rtx of removeTxes) {
       const isAttached = this.hierarchy.isDerived(rtx.objectClass, core.class.AttachedDoc)
       if (isAttached) {
         removeAttachObjectIds.push(rtx.objectId as Ref<AttachedDoc>)
@@ -383,35 +380,17 @@ class TServerStorage implements ServerStorage {
         )
         : []
 
-    for (const tx of rawTxes) {
-      const actualTx = TxProcessor.extractTx(tx)
-      if (!this.hierarchy.isDerived(actualTx._class, core.class.TxRemoveDoc)) {
-        continue
-      }
-      const rtx = actualTx as TxRemoveDoc<Doc>
+    for (const rtx of removeTxes) {
       const isAttached = this.hierarchy.isDerived(rtx.objectClass, core.class.AttachedDoc)
 
       const objTxex = isAttached
         ? txesAttach.filter((tx) => tx.tx.objectId === rtx.objectId)
         : txes.filter((it) => it.objectId === rtx.objectId)
 
-      const createTx = isAttached
-        ? objTxex.find((tx) => (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxCreateDoc)
-        : objTxex.find((tx) => tx._class === core.class.TxCreateDoc)
-      if (createTx === undefined) {
-        continue
+      const doc = TxProcessor.buildDoc2Doc(objTxex)
+      if (doc !== undefined) {
+        result.push(doc)
       }
-      let doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Doc>)
-      for (let tx of objTxex) {
-        tx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-        if (tx._class === core.class.TxUpdateDoc) {
-          doc = TxProcessor.updateDoc2Doc(doc, tx as TxUpdateDoc<Doc>)
-        } else if (tx._class === core.class.TxMixin) {
-          const mixinTx = tx as TxMixin<Doc, Doc>
-          doc = TxProcessor.updateMixin4Doc(doc, mixinTx)
-        }
-      }
-      result.push(doc)
     }
 
     return result
@@ -477,7 +456,7 @@ class TServerStorage implements ServerStorage {
 
   private deleteObject (ctx: MeasureContext, object: Doc, removedMap: Map<Ref<Doc>, Doc>): Tx[] {
     const result: Tx[] = []
-    const factory = new TxFactory(core.account.System)
+    const factory = new TxFactory(object.modifiedBy)
     if (this.hierarchy.isDerived(object._class, core.class.AttachedDoc)) {
       const adoc = object as AttachedDoc
       const nestedTx = factory.createTxRemoveDoc(adoc._class, adoc.space, adoc._id)
@@ -532,7 +511,7 @@ class TServerStorage implements ServerStorage {
       if (rtx.operations.space === undefined || rtx.operations.space === rtx.objectSpace) {
         continue
       }
-      const factory = new TxFactory(core.account.System)
+      const factory = new TxFactory(tx.modifiedBy)
       for (const [, attribute] of this.hierarchy.getAllAttributes(rtx.objectClass)) {
         if (!this.hierarchy.isDerived(attribute.type._class, core.class.Collection)) {
           continue
