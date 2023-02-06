@@ -22,7 +22,8 @@
     core.class.TypeDate,
     core.class.TypeNumber,
     core.class.EnumOf,
-    core.class.Collection
+    core.class.Collection,
+    core.class.ArrOf
   ])
 
   function addMapping (evt: MouseEvent, kind: MappingOperation): void {

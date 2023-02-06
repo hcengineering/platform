@@ -75,6 +75,7 @@
 
     _id = generateId()
     isScrollForced = true
+    loading = false
   }
 
   function openThread (_id: Ref<Message>) {
@@ -106,6 +107,7 @@
   savedAttachmentsQuery.query(attachment.class.SavedAttachments, {}, (res) => {
     savedAttachmentsIds = res.map((r) => r.attachedTo)
   })
+  let loading = false
 </script>
 
 <PinnedMessages {space} {pinnedIds} />
@@ -120,7 +122,7 @@
   {savedAttachmentsIds}
 />
 <div class="reference">
-  <AttachmentRefInput {space} {_class} objectId={_id} on:message={onMessage} />
+  <AttachmentRefInput bind:loading {space} {_class} objectId={_id} on:message={onMessage} />
 </div>
 
 <style lang="scss">

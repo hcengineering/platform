@@ -46,6 +46,7 @@
   export let itemModels: AttributeModel[]
   export let extraHeaders: AnyComponent[] | undefined
   export let flatHeaders = false
+  export let disableHeader = false
   export let props: Record<string, any> = {}
   export let level: number
   export let elementByIndex: Map<number, HTMLDivElement>
@@ -74,7 +75,7 @@
   }
 
   function initCollapsed (singleCat: boolean, lastLevel: boolean, category: any): void {
-    collapsed = !singleCat && items.length > (lastLevel ? autoFoldLimit : singleCategoryLimit)
+    collapsed = !disableHeader && !singleCat && items.length > (lastLevel ? autoFoldLimit : singleCategoryLimit)
   }
 
   $: initCollapsed(singleCat, lastLevel, category)
@@ -108,27 +109,29 @@
   }
 </script>
 
-<ListHeader
-  {groupByKey}
-  {category}
-  {space}
-  {level}
-  limited={limited.length}
-  {items}
-  {headerComponent}
-  {createItemDialog}
-  {createItemLabel}
-  {extraHeaders}
-  {newObjectProps}
-  flat={flatHeaders}
-  {props}
-  on:more={() => {
-    limit += 20
-  }}
-  on:collapse={() => {
-    collapsed = !collapsed
-  }}
-/>
+{#if !disableHeader}
+  <ListHeader
+    {groupByKey}
+    {category}
+    {space}
+    {level}
+    limited={limited.length}
+    {items}
+    {headerComponent}
+    {createItemDialog}
+    {createItemLabel}
+    {extraHeaders}
+    {newObjectProps}
+    flat={flatHeaders}
+    {props}
+    on:more={() => {
+      limit += 20
+    }}
+    on:collapse={() => {
+      collapsed = !collapsed
+    }}
+  />
+{/if}
 <ExpandCollapse isExpanded={!collapsed} duration={400}>
   {#if !lastLevel}
     <div class="p-2">

@@ -22,6 +22,7 @@
   export let shouldRender: boolean = true
   export let onDateChange: (newDate: number | null) => void
   export let kind: 'transparent' | 'primary' | 'link' | 'list' = 'primary'
+  export let editable: boolean = true
 
   $: today = new Date(new Date(Date.now()).setHours(0, 0, 0, 0))
   $: isOverdue = dateMs !== null && dateMs < today.getTime()
@@ -33,7 +34,7 @@
   const handleDueDateChanged = async (event: CustomEvent<Timestamp>) => {
     const newDate = event.detail
 
-    if (newDate === undefined || dateMs === newDate) {
+    if (newDate === undefined || dateMs === newDate || !editable) {
       return
     }
 
@@ -58,7 +59,7 @@
     >
       <DatePresenter
         value={dateMs}
-        editable={true}
+        {editable}
         shouldShowLabel={false}
         icon={iconModifier}
         {kind}
@@ -68,7 +69,7 @@
   {:else}
     <DatePresenter
       value={dateMs}
-      editable={true}
+      {editable}
       shouldShowLabel={false}
       icon={iconModifier}
       {kind}

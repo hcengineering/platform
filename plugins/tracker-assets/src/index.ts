@@ -36,6 +36,9 @@ loadMetadata(tracker.icon, {
   DueDate: `${icons}#inbox`, // TODO: add icon
   Parent: `${icons}#myissues`, // TODO: add icon
   Sprint: `${icons}#sprint`,
+  Scrum: `${icons}#scrum`,
+  Start: `${icons}#start`,
+  Stop: `${icons}#stop`,
 
   CategoryBacklog: `${icons}#status-backlog`,
   CategoryUnstarted: `${icons}#status-todo`,

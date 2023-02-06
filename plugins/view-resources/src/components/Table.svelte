@@ -33,6 +33,7 @@
   import { createEventDispatcher } from 'svelte'
   import { buildConfigLookup, buildModel, LoadingProps } from '../utils'
   import Menu from './Menu.svelte'
+  import view from '../plugin'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -45,6 +46,7 @@
   export let config: (BuildModelKey | string)[]
   export let tableId: string | undefined = undefined
   export let readonly = false
+  export let showFooter = false
 
   export let prefferedSorting: string = 'modifiedOn'
 
@@ -70,6 +72,7 @@
   let userSorting = false
 
   let objects: Doc[] = []
+  let total: number
   let objectsRecieved = false
   const refs: HTMLElement[] = []
 
@@ -101,6 +104,7 @@
       query,
       (result) => {
         objects = result
+        total = result.total
         objectsRecieved = true
         if (sortingFunction !== undefined) {
           const sf = sortingFunction
@@ -184,14 +188,12 @@
   }
   function getValue (attribute: AttributeModel, object: Doc): any {
     if (attribute.castRequest) {
-      return (
-        getObjectValue(
-          attribute.key.substring(attribute.castRequest.length + 1),
-          client.getHierarchy().as(object, attribute.castRequest)
-        ) ?? ''
+      return getObjectValue(
+        attribute.key.substring(attribute.castRequest.length + 1),
+        client.getHierarchy().as(object, attribute.castRequest)
       )
     }
-    return getObjectValue(attribute.key, object) ?? ''
+    return getObjectValue(attribute.key, object)
   }
 </script>
 
@@ -259,28 +261,11 @@
               }
             }}
           >
-            {#each model as attribute, cell}
-              {#if !cell}
-                {#if enableChecking || showNotification}
-                  <td class="relative">
-                    {#if showNotification}
-                      <div class="antiTable-cells__notifyCell">
-                        {#if enableChecking}
-                          <div class="antiTable-cells__checkCell">
-                            <CheckBox
-                              checked={checkedSet.has(object._id)}
-                              on:value={(event) => {
-                                check([object], event.detail)
-                              }}
-                            />
-                          </div>
-                        {/if}
-                        <Component
-                          is={notification.component.NotificationPresenter}
-                          props={{ value: object, kind: enableChecking ? 'table' : 'block' }}
-                        />
-                      </div>
-                    {:else}
+            {#if enableChecking || showNotification}
+              <td class="relative">
+                {#if showNotification}
+                  <div class="antiTable-cells__notifyCell">
+                    {#if enableChecking}
                       <div class="antiTable-cells__checkCell">
                         <CheckBox
                           checked={checkedSet.has(object._id)}
@@ -290,33 +275,33 @@
                         />
                       </div>
                     {/if}
-                  </td>
-                {/if}
-                <td>
-                  <div class="antiTable-cells__firstCell">
-                    <svelte:component
-                      this={attribute.presenter}
-                      value={getValue(attribute, object) ?? ''}
-                      {...joinProps(attribute.collectionAttr, object, attribute.props)}
+                    <Component
+                      is={notification.component.NotificationPresenter}
+                      props={{ value: object, kind: enableChecking ? 'table' : 'block' }}
                     />
-                    <!-- <div
-                      id="context-menu"
-                      class="antiTable-cells__firstCell-menuRow"
-                      on:click={(ev) => showMenu(ev, object, row)}
-                    >
-                      <MoreV size={'small'} />
-                    </div> -->
                   </div>
-                </td>
-              {:else}
-                <td>
+                {:else}
+                  <div class="antiTable-cells__checkCell">
+                    <CheckBox
+                      checked={checkedSet.has(object._id)}
+                      on:value={(event) => {
+                        check([object], event.detail)
+                      }}
+                    />
+                  </div>
+                {/if}
+              </td>
+            {/if}
+            {#each model as attribute, cell}
+              <td>
+                <div class:antiTable-cells__firstCell={!cell}>
                   <svelte:component
                     this={attribute.presenter}
-                    value={getValue(attribute, object) ?? ''}
+                    value={getValue(attribute, object)}
                     {...joinProps(attribute.collectionAttr, object, attribute.props)}
                   />
-                </td>
-              {/if}
+                </div>
+              </td>
             {/each}
           </tr>
         {/each}
@@ -346,3 +331,36 @@
   </table>
   {#if loading > 0}<Loading />{/if}
 {/await}
+{#if showFooter && total}
+  <div class="footer">
+    <div class="content" class:padding={showNotification || enableChecking}>
+      <Label label={view.string.Total} />: {total}
+      {#if objects.length > 0 && objects.length < total}
+        <Label label={view.string.Showed} />: {objects.length}
+      {/if}
+    </div>
+  </div>
+{/if}
+
+<style lang="scss">
+  .footer {
+    background-color: var(--body-color);
+    display: flex;
+    align-items: flex-end;
+    height: 100%;
+    z-index: 2;
+    position: sticky;
+    bottom: 0;
+
+    .content {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      box-shadow: inset 0 1px 0 0 var(--divider-color);
+      height: 2.5rem;
+      &.padding {
+        padding-left: 2.5rem;
+      }
+    }
+  }
+</style>

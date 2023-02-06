@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { DateRangeMode } from '@hcengineering/core'
   import { createEventDispatcher } from 'svelte'
   import ui from '../plugin'
   import { DateOrShift } from '../types'
@@ -39,7 +40,7 @@
   <div class="flex-center mt-1 mb-1">
     <DateRangePresenter
       bind:value={date}
-      withTime={true}
+      mode={DateRangeMode.DATETIME}
       editable={true}
       labelNull={ui.string.SelectDate}
       on:change={() => {

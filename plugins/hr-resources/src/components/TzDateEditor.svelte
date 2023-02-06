@@ -29,7 +29,6 @@
 
 <DateRangePresenter
   value={_value}
-  withTime={false}
   editable
   {kind}
   {noShift}

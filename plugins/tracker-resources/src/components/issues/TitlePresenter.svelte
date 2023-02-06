@@ -21,8 +21,13 @@
   export let value: Issue
   export let shouldUseMargin: boolean = false
   export let showParent = true
+  export let onClick: (() => void) | undefined = undefined
 
   function handleIssueEditorOpened () {
+    if (onClick) {
+      onClick()
+    }
+
     showPanel(tracker.component.EditIssue, value._id, value._class, 'content')
   }
 </script>

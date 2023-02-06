@@ -62,7 +62,7 @@
 <div class:editing class="content-accent-color">
   {#if edit}
     <AttachmentRefInput
-      {loading}
+      bind:loading
       bind:this={refInput}
       _class={value._class}
       objectId={value._id}

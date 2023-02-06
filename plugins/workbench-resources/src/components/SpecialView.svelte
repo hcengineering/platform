@@ -141,6 +141,7 @@
       config: preference?.config ?? viewlet.config,
       viewlet,
       viewOptions,
+      viewOptionsConfig: viewlet.viewOptions?.other,
       createItemDialog: createComponent,
       createItemLabel: createLabel,
       query: resultQuery

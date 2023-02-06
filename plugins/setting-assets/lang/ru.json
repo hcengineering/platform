@@ -42,6 +42,7 @@
     "Custom": "Пользовательский",
     "Type": "Тип",
     "WithTime": "Со временем",
+    "DateMode": "Тип времени",
     "CreatingAttribute": "Создание атрибута",
     "EditAttribute": "Редактирование атрибута",
     "CreateEnum": "Создать справочник",

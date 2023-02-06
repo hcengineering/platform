@@ -33,7 +33,8 @@ async function createCandidate (
   if (current !== undefined) return
   const u1 = await tx.createDoc(contact.class.Person, recruit.space.CandidatesPublic, {
     name,
-    city
+    city,
+    createOn: Date.now()
   })
   await tx.addCollection(contact.class.Channel, recruit.space.CandidatesPublic, u1, contact.class.Person, 'channels', {
     provider: contact.channelProvider.Email,
@@ -73,7 +74,8 @@ export const demoOperation: MigrateOperation = {
       const employee = await ops.createDoc(contact.class.Employee, contact.space.Employee, {
         name: 'Chen,Rosamund',
         city: 'Mountain View',
-        active: true
+        active: true,
+        createOn: Date.now()
       })
 
       await ops.createDoc<EmployeeAccount>(contact.class.EmployeeAccount, core.space.Model, {

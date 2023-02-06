@@ -40,6 +40,7 @@
 
   async function createPerson () {
     const person: Data<Person> = {
+      createOn: Date.now(),
       name: combineName(firstName, lastName),
       city: object.city
     }

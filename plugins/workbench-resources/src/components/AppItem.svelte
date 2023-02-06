@@ -13,10 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString, Asset } from '@hcengineering/platform'
+  import type { Asset, IntlString } from '@hcengineering/platform'
   import type { AnySvelteComponent } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
-  import { Icon, tooltip, IconColStar } from '@hcengineering/ui'
+  import { Icon, tooltip } from '@hcengineering/ui'
 
   export let label: IntlString
   export let icon: Asset | AnySvelteComponent
@@ -24,18 +23,12 @@
   export let selected: boolean
   export let mini: boolean = false
   export let notify: boolean
-  export let hidden: boolean = false
-  export let editable: boolean = false
-
-  const dispatch = createEventDispatcher()
 </script>
 
 <button
   class="app"
   class:selected
   class:mini
-  class:hidden
-  class:editable
   id={'app-' + label}
   use:tooltip={{ label }}
   on:click|stopPropagation={action}
@@ -44,22 +37,6 @@
     <Icon {icon} size={mini ? 'small' : 'large'} />
   </div>
   {#if notify}<div class="marker" />{/if}
-  {#if editable}
-    <div
-      class="starButton"
-      class:hidden
-      on:click|preventDefault|stopPropagation={() => {
-        hidden = !hidden
-        dispatch('visible', !hidden)
-      }}
-    >
-      <IconColStar
-        size={'small'}
-        fill={hidden ? 'var(--warning-color)' : 'var(--activity-status-busy)'}
-        border={'var(--button-border-hover)'}
-      />
-    </div>
-  {/if}
 </button>
 
 <style lang="scss">
@@ -74,9 +51,6 @@
     cursor: pointer;
     outline: none;
 
-    &.editable {
-      margin: 0.125rem;
-    }
     &.mini,
     .icon-container.mini {
       width: calc(var(--status-bar-height) - 8px);
@@ -117,16 +91,6 @@
         color: var(--caption-color);
       }
     }
-
-    &.hidden {
-      border: 1px dashed var(--dark-color);
-      .icon-container {
-        color: var(--dark-color);
-      }
-      &:hover .icon-container {
-        color: var(--content-color);
-      }
-    }
   }
 
   .marker {
@@ -137,32 +101,5 @@
     height: 0.5rem;
     border-radius: 50%;
     background-color: var(--highlight-red);
-  }
-
-  .starButton {
-    position: absolute;
-    right: 0.25rem;
-    bottom: 0.25rem;
-    height: 1rem;
-    width: 1rem;
-    transform-origin: center center;
-    transform: scale(1);
-    opacity: 0.8;
-    z-index: 10000;
-    cursor: pointer;
-
-    &:hover {
-      transform: scale(1.2);
-      opacity: 1;
-    }
-    &.hidden {
-      transform: scale(0.7);
-      opacity: 0.5;
-
-      &:hover {
-        transform: scale(0.9);
-        opacity: 0.8;
-      }
-    }
   }
 </style>

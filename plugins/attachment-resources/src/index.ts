@@ -228,8 +228,8 @@ export async function DeleteAttachment (attach: Attachment): Promise<void> {
   )
 }
 
-export function attachmentsFilter (txes: DisplayTx[]): DisplayTx[] {
-  return txes.filter((tx) => tx.tx.objectClass === attachment.class.Attachment)
+export function attachmentsFilter (tx: DisplayTx): boolean {
+  return tx.tx.objectClass === attachment.class.Attachment
 }
 
 export default async (): Promise<Resources> => ({

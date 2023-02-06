@@ -16,7 +16,7 @@
   import calendar from '@hcengineering/calendar'
   import type { Contact, EmployeeAccount, Organization, Person } from '@hcengineering/contact'
   import contact from '@hcengineering/contact'
-  import { Account, Class, Client, Doc, generateId, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { Account, Class, Client, Doc, generateId, getCurrentAccount, Ref, DateRangeMode } from '@hcengineering/core'
   import { getResource, OK, Resource, Severity, Status } from '@hcengineering/platform'
   import { Card, getClient, UserBox, UserBoxList } from '@hcengineering/presentation'
   import type { Candidate, Review } from '@hcengineering/recruit'
@@ -173,11 +173,16 @@
     <DateRangePresenter
       bind:value={startDate}
       labelNull={recruit.string.StartDate}
-      withTime
+      mode={DateRangeMode.DATETIME}
       editable
       on:change={updateStart}
     />
-    <DateRangePresenter bind:value={dueDate} labelNull={recruit.string.DueDate} withTime editable />
+    <DateRangePresenter
+      bind:value={dueDate}
+      labelNull={recruit.string.DueDate}
+      mode={DateRangeMode.DATETIME}
+      editable
+    />
     <UserBoxList bind:items={doc.participants} label={calendar.string.Participants} />
   </svelte:fragment>
 </Card>

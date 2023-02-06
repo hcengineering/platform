@@ -25,9 +25,9 @@
     "@rushstack/heft": "^0.47.9"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.20",
+    "@hcengineering/core": "^0.6.21",
     "@hcengineering/model": "^0.6.0",
-    "@hcengineering/contact": "^0.6.9",
+    "@hcengineering/contact": "^0.6.11",
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/server-gmail": "^0.6.0",
     "@hcengineering/server-core": "^0.6.1"

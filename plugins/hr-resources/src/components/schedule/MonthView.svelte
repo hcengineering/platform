@@ -23,6 +23,7 @@
     day as getDay,
     daysInMonth,
     eventToHTMLElement,
+    FadeOptions,
     floorFractionDigits,
     getWeekDayName,
     isWeekend,
@@ -97,10 +98,18 @@
       3
     )
   }
+
+  const fade: FadeOptions = {
+    ...tableSP,
+    multipler: {
+      ...tableSP.multipler,
+      bottom: 3.5
+    }
+  }
 </script>
 
 {#if departmentStaff.length}
-  <Scroller fade={tableSP} horizontal>
+  <Scroller {fade} horizontal>
     <table>
       <thead class="scroller-thead">
         <tr class="scroller-thead__tr">
@@ -184,6 +193,8 @@
             {/each}
           </tr>
         {/each}
+      </tbody>
+      <tfoot class="scroller-tfoot">
         <tr>
           <td class="summary">
             <Label label={hr.string.Summary} />
@@ -218,7 +229,7 @@
             </td>
           {/each}
         </tr>
-      </tbody>
+      </tfoot>
     </table>
   </Scroller>
 {:else}
@@ -289,9 +300,13 @@
     td:not(:last-child) {
       border-right: 1px solid var(--divider-color);
     }
-    tr:not(.scroller-thead__tr) {
-      border-bottom: 1px solid var(--divider-color);
+
+    tbody {
+      tr {
+        border-bottom: 1px solid var(--divider-color);
+      }
     }
+
     tr.scroller-thead__tr:not(:last-child) {
       border-right: 1px solid var(--divider-color);
     }

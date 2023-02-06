@@ -23,6 +23,7 @@ import core, {
   ClassifierKind,
   Collection as TypeCollection,
   Data,
+  DateRangeMode,
   Doc,
   Domain,
   Enum,
@@ -405,8 +406,8 @@ export function TypeTimestamp (): Type<Timestamp> {
 /**
  * @public
  */
-export function TypeDate (withTime?: boolean, withShift?: boolean): TypeDateType {
-  return { _class: core.class.TypeDate, label: core.string.Date, withTime, withShift }
+export function TypeDate (mode: DateRangeMode = DateRangeMode.DATE, withShift: boolean = true): TypeDateType {
+  return { _class: core.class.TypeDate, label: core.string.Date, mode, withShift }
 }
 
 /**

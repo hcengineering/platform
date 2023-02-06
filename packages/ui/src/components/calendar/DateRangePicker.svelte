@@ -18,6 +18,7 @@
   import ui from '../../plugin'
   import Label from '../Label.svelte'
   import DateRangePresenter from './DateRangePresenter.svelte'
+  import { DateRangeMode } from '@hcengineering/core'
 
   export let title: IntlString
   export let value: number | null | undefined = null
@@ -39,6 +40,14 @@
 <div class="antiSelect antiWrapper cursor-default">
   <div class="flex-col">
     <span class="label mb-1"><Label label={title} /></span>
-    <DateRangePresenter {value} {withTime} {icon} {labelOver} {labelNull} editable on:change={changeValue} />
+    <DateRangePresenter
+      {value}
+      mode={DateRangeMode.DATETIME}
+      {icon}
+      {labelOver}
+      {labelNull}
+      editable
+      on:change={changeValue}
+    />
   </div>
 </div>

@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  export let value: string | string[]
+  export let value: string | string[] | undefined
 </script>
 
 <span class="lines-limit-2 select-text">
@@ -23,6 +23,6 @@
       <span class:ml-1={i !== 0}>{str}</span>
     {/each}
   {:else}
-    {value}
+    {value ?? ''}
   {/if}
 </span>

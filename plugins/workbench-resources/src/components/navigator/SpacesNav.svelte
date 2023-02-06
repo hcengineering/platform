@@ -20,7 +20,16 @@
   import { getResource } from '@hcengineering/platform'
   import preference from '@hcengineering/preference'
   import { getClient } from '@hcengineering/presentation'
-  import { Action, getCurrentLocation, IconAdd, IconEdit, IconSearch, navigate, showPopup } from '@hcengineering/ui'
+  import {
+    Action,
+    getCurrentLocation,
+    IconAdd,
+    IconEdit,
+    IconSearch,
+    navigate,
+    NavLink,
+    showPopup
+  } from '@hcengineering/ui'
   import { getActions as getContributedActions, getObjectPresenter } from '@hcengineering/view-resources'
   import { SpacesNavModel } from '@hcengineering/workbench'
   import { createEventDispatcher } from 'svelte'
@@ -67,10 +76,6 @@
     }
   }
 
-  function selectSpace (id: Ref<Space>, spaceSpecial?: string) {
-    dispatch('space', { space: id, spaceSpecial })
-  }
-
   async function getActions (space: Space): Promise<Action[]> {
     const result = [starSpace]
 
@@ -114,30 +119,21 @@
   {#each spaces as space (space._id)}
     {#await getObjectPresenter(client, space._class, { key: '' }) then presenter}
       {#if model.specials && presenter}
-        <svelte:component
-          this={presenter.presenter}
-          {space}
-          {model}
-          {currentSpace}
-          {currentSpecial}
-          {getActions}
-          {selectSpace}
-        />
+        <svelte:component this={presenter.presenter} {space} {model} {currentSpace} {currentSpecial} {getActions} />
       {:else}
-        {#await getSpaceName(client, space) then name}
-          <TreeItem
-            indent={'ml-4'}
-            _id={space._id}
-            title={name}
-            icon={classIcon(client, space._class)}
-            selected={currentSpace === space._id}
-            actions={() => getActions(space)}
-            bold={isChanged(space, $lastViews)}
-            on:click={() => {
-              selectSpace(space._id)
-            }}
-          />
-        {/await}
+        <NavLink space={space._id}>
+          {#await getSpaceName(client, space) then name}
+            <TreeItem
+              indent={'ml-4'}
+              _id={space._id}
+              title={name}
+              icon={classIcon(client, space._class)}
+              selected={currentSpace === space._id}
+              actions={() => getActions(space)}
+              bold={isChanged(space, $lastViews)}
+            />
+          {/await}
+        </NavLink>
       {/if}
     {/await}
   {/each}

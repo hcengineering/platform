@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DocumentQuery, WithLookup } from '@hcengineering/core'
+  import { DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
   import { IssueTemplate } from '@hcengineering/tracker'
   import { Component } from '@hcengineering/ui'
   import { Viewlet, ViewOptions } from '@hcengineering/view'
@@ -9,6 +9,7 @@
   export let viewlet: WithLookup<Viewlet>
   export let viewOptions: ViewOptions
   export let query: DocumentQuery<IssueTemplate> = {}
+  export let space: Ref<Space> | undefined
 
   const createItemDialog = CreateIssueTemplate
   const createItemLabel = tracker.string.IssueTemplate
@@ -26,6 +27,7 @@
       viewOptions,
       viewOptionsConfig: viewlet.viewOptions?.other,
       viewlet,
+      space,
       query
     }}
   />

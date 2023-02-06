@@ -16,11 +16,12 @@
   import calendar from '@hcengineering/calendar'
   import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
   import core, { Class, Client, Doc, getCurrentAccount, Ref, setCurrentAccount, Space } from '@hcengineering/core'
+  import { getWorkspaces, Workspace } from '@hcengineering/login-resources'
   import notification, { NotificationStatus } from '@hcengineering/notification'
-  import request, { RequestStatus } from '@hcengineering/request'
   import { BrowserNotificatator, NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getMetadata, getResource, IntlString } from '@hcengineering/platform'
   import { Avatar, createQuery, setClient } from '@hcengineering/presentation'
+  import request, { RequestStatus } from '@hcengineering/request'
   import {
     AnyComponent,
     areLocationsEqual,
@@ -47,7 +48,7 @@
   import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { subscribeMobile } from '../mobile'
   import workbench from '../plugin'
-  import { doNavigate, workspacesStore } from '../utils'
+  import { workspacesStore } from '../utils'
   import AccountPopup from './AccountPopup.svelte'
   import AppItem from './AppItem.svelte'
   import Applications from './Applications.svelte'
@@ -55,7 +56,6 @@
   import NavHeader from './NavHeader.svelte'
   import Navigator from './Navigator.svelte'
   import SpaceView from './SpaceView.svelte'
-  import { getWorkspaces, Workspace } from '@hcengineering/login-resources'
 
   export let client: Client
   let contentPanel: HTMLElement
@@ -168,6 +168,7 @@
 
       await syncLoc(loc)
       await updateWindowTitle(loc)
+      checkOnHide()
     })
   )
 
@@ -272,38 +273,6 @@
           specialComponent = undefined
         }
     }
-  }
-
-  function navigateApp (app: Application): void {
-    if (currentAppAlias === app.alias) {
-      // Nothing to do.
-      return
-    }
-    visibileNav = true
-
-    doNavigate([], undefined, {
-      mode: 'app',
-      application: app.alias
-    })
-  }
-
-  function selectSpecial (id: string): void {
-    if (currentSpecial === id) return
-
-    doNavigate([], undefined, {
-      mode: 'special',
-      special: id
-    })
-    checkOnHide()
-  }
-
-  function selectSpace (spaceId?: Ref<Space>, spaceSpecial?: string): void {
-    doNavigate([], undefined, {
-      mode: 'space',
-      space: spaceId,
-      spaceSpecial
-    })
-    checkOnHide()
   }
 
   function closeAside (): void {
@@ -459,14 +428,7 @@
           notify={false}
         />
       </div>
-      <Applications
-        {apps}
-        active={currentApplication?._id}
-        direction={appsDirection}
-        on:active={(evt) => {
-          navigateApp(evt.detail)
-        }}
-      />
+      <Applications {apps} active={currentApplication?._id} />
       <div class="info-box {appsDirection}" class:vertical-mobile={appsDirection === 'vertical' && appsMini}>
         <AppItem
           icon={request.icon.Requests}
@@ -533,8 +495,6 @@
             {currentSpecial}
             model={navigatorModel}
             {currentApplication}
-            on:special={(evt) => selectSpecial(evt.detail)}
-            on:space={(evt) => selectSpace(evt.detail.space, evt.detail.spaceSpecial)}
             on:open={checkOnHide}
           />
           {#if currentApplication.navFooterComponent}

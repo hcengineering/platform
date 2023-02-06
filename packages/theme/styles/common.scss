@@ -308,6 +308,17 @@
       font-size: 1rem;
       color: var(--caption-color);  
     }
+    &__tag {
+      padding: .125rem .25rem;
+      min-width: 0;
+      font-size: .8125rem;
+      background-color: var(--accent-bg-color);
+      color: var(--dark-color);
+      border-radius: .25rem;
+
+      &.highlight { color: var(--content-color); }
+    }
+    &__tag + &__tag { margin-left: .125rem; }
   }
   .invisible { display: none; }
   &-empty {

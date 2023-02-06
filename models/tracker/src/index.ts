@@ -13,9 +13,10 @@
 // limitations under the License.
 //
 
-import type { Employee } from '@hcengineering/contact'
+import type { Employee, EmployeeAccount } from '@hcengineering/contact'
 import contact from '@hcengineering/contact'
 import {
+  DateRangeMode,
   Domain,
   DOMAIN_MODEL,
   FindOptions,
@@ -41,6 +42,7 @@ import {
   TypeNumber,
   TypeRef,
   TypeString,
+  TypeTimestamp,
   UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
@@ -64,6 +66,8 @@ import {
   IssueTemplateChild,
   Project,
   ProjectStatus,
+  Scrum,
+  ScrumRecord,
   Sprint,
   SprintStatus,
   Team,
@@ -241,7 +245,7 @@ export class TIssue extends TAttachedDoc implements Issue {
 
   declare space: Ref<Team>
 
-  @Prop(TypeDate(true), tracker.string.DueDate)
+  @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.DueDate)
     dueDate!: Timestamp | null
 
   @Prop(TypeString(), tracker.string.Rank)
@@ -295,7 +299,7 @@ export class TIssueTemplate extends TDoc implements IssueTemplate {
 
   declare space: Ref<Team>
 
-  @Prop(TypeDate(true), tracker.string.DueDate)
+  @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.DueDate)
     dueDate!: Timestamp | null
 
   @Prop(TypeRef(tracker.class.Sprint), tracker.string.Sprint)
@@ -370,10 +374,10 @@ export class TProject extends TDoc implements Project {
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
-  @Prop(TypeDate(true), tracker.string.StartDate)
+  @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.StartDate)
     startDate!: Timestamp | null
 
-  @Prop(TypeDate(true), tracker.string.TargetDate)
+  @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.TargetDate)
     targetDate!: Timestamp | null
 
   declare space: Ref<Team>
@@ -407,10 +411,10 @@ export class TSprint extends TDoc implements Sprint {
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
-  @Prop(TypeDate(false), tracker.string.StartDate)
+  @Prop(TypeDate(), tracker.string.StartDate)
     startDate!: Timestamp
 
-  @Prop(TypeDate(false), tracker.string.TargetDate)
+  @Prop(TypeDate(), tracker.string.TargetDate)
     targetDate!: Timestamp
 
   declare space: Ref<Team>
@@ -420,6 +424,62 @@ export class TSprint extends TDoc implements Sprint {
 
   @Prop(TypeRef(tracker.class.Project), tracker.string.Project)
     project!: Ref<Project>
+}
+
+/**
+ * @public
+ */
+@Model(tracker.class.Scrum, core.class.Doc, DOMAIN_TRACKER)
+@UX(tracker.string.Scrum, tracker.icon.Scrum, tracker.string.Scrum)
+export class TScrum extends TDoc implements Scrum {
+  @Prop(TypeString(), tracker.string.Title)
+    title!: string
+
+  @Prop(TypeMarkup(), tracker.string.Description)
+    description?: Markup
+
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
+    attachments?: number
+
+  @Prop(ArrOf(TypeRef(contact.class.Employee)), tracker.string.Members)
+    members!: Ref<Employee>[]
+
+  @Prop(Collection(tracker.class.Scrum), tracker.string.ScrumRecords)
+    scrumRecords?: number
+
+  @Prop(TypeDate(DateRangeMode.TIME), tracker.string.ScrumBeginTime)
+    beginTime!: Timestamp
+
+  @Prop(TypeDate(DateRangeMode.TIME), tracker.string.ScrumEndTime)
+    endTime!: Timestamp
+
+  declare space: Ref<Team>
+}
+
+/**
+ * @public
+ */
+@Model(tracker.class.ScrumRecord, core.class.Doc, DOMAIN_TRACKER)
+@UX(tracker.string.ScrumRecord, tracker.icon.Scrum, tracker.string.ScrumRecord)
+export class TScrumRecord extends TAttachedDoc implements ScrumRecord {
+  @Prop(TypeString(), tracker.string.Title)
+    label!: string
+
+  @Prop(TypeTimestamp(), tracker.string.ScrumBeginTime)
+    startTs!: Timestamp
+
+  @Prop(TypeTimestamp(), tracker.string.ScrumEndTime)
+    endTs?: Timestamp
+
+  @Prop(Collection(chunter.class.Comment), tracker.string.Comments)
+    comments!: number
+
+  @Prop(Collection(attachment.class.Attachment), tracker.string.Attachments)
+    attachments!: number
+
+  declare attachedTo: Ref<Scrum>
+  declare space: Ref<Team>
+  declare scrumRecorder: Ref<EmployeeAccount>
 }
 
 @UX(core.string.Number)
@@ -437,6 +497,8 @@ export function createModel (builder: Builder): void {
     TTypeIssuePriority,
     TTypeProjectStatus,
     TSprint,
+    TScrum,
+    TScrumRecord,
     TTypeSprintStatus,
     TTimeSpendReport,
     TTypeReportedTime
@@ -721,6 +783,7 @@ export function createModel (builder: Builder): void {
   const projectsId = 'projects'
   const sprintsId = 'sprints'
   const templatesId = 'templates'
+  // const scrumsId = 'scrums'
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: tracker.component.IssuePresenter
@@ -779,7 +842,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(tracker.class.Project, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: tracker.component.ProjectTitlePresenter
+    presenter: tracker.component.ProjectPresenter
   })
 
   builder.mixin(tracker.class.Team, core.class.Class, view.mixin.ObjectPresenter, {
@@ -793,7 +856,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: tracker.component.SprintTitlePresenter
+    presenter: tracker.component.SprintPresenter
   })
 
   builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.AttributePresenter, {
@@ -891,6 +954,12 @@ export function createModel (builder: Builder): void {
                 icon: tracker.icon.Sprint,
                 component: tracker.component.Sprints
               },
+              // {
+              //   id: scrumsId,
+              //   label: tracker.string.Scrums,
+              //   icon: tracker.icon.Scrum,
+              //   component: tracker.component.Scrums
+              // },
               {
                 id: templatesId,
                 label: tracker.string.IssueTemplates,

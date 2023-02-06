@@ -247,6 +247,26 @@ export default mergeIds(trackerId, tracker, {
     MoveAndDeleteSprint: '' as IntlString,
     MoveAndDeleteSprintConfirm: '' as IntlString,
 
+    Scrum: '' as IntlString,
+    Scrums: '' as IntlString,
+    ScrumMembersTitle: '' as IntlString,
+    ScrumMembersSearchPlaceholder: '' as IntlString,
+    ScrumBeginTime: '' as IntlString,
+    ScrumEndTime: '' as IntlString,
+    NewScrum: '' as IntlString,
+    CreateScrum: '' as IntlString,
+    ScrumTitlePlaceholder: '' as IntlString,
+    ScrumDescriptionPlaceholder: '' as IntlString,
+    ScrumRecords: '' as IntlString,
+    ScrumRecord: '' as IntlString,
+    StartRecord: '' as IntlString,
+    StopRecord: '' as IntlString,
+    ChangeScrumRecord: '' as IntlString,
+    ChangeScrumRecordConfirm: '' as IntlString,
+    ScrumRecorder: '' as IntlString,
+    ScrumRecordTimeReports: '' as IntlString,
+    ScrumRecordObjects: '' as IntlString,
+
     Estimation: '' as IntlString,
     ReportedTime: '' as IntlString,
     TimeSpendReport: '' as IntlString,
@@ -314,7 +334,6 @@ export default mergeIds(trackerId, tracker, {
     IconPresenter: '' as AnyComponent,
     LeadPresenter: '' as AnyComponent,
     TargetDatePresenter: '' as AnyComponent,
-    ProjectMembersPresenter: '' as AnyComponent,
     ProjectStatusPresenter: '' as AnyComponent,
     ProjectStatusEditor: '' as AnyComponent,
     SetDueDateActionPopup: '' as AnyComponent,
@@ -331,17 +350,20 @@ export default mergeIds(trackerId, tracker, {
     SprintPresenter: '' as AnyComponent,
     SprintStatusPresenter: '' as AnyComponent,
     SprintTitlePresenter: '' as AnyComponent,
-    SprintMembersPresenter: '' as AnyComponent,
     ReportedTimeEditor: '' as AnyComponent,
     TimeSpendReport: '' as AnyComponent,
     EstimationEditor: '' as AnyComponent,
     TemplateEstimationEditor: '' as AnyComponent,
     DeleteProjectPresenter: '' as AnyComponent,
 
+    Scrums: '' as AnyComponent,
+    ScrumRecordPanel: '' as AnyComponent,
+
     ProjectSelector: '' as AnyComponent,
 
     IssueTemplates: '' as AnyComponent,
-    IssueTemplatePresenter: '' as AnyComponent
+    IssueTemplatePresenter: '' as AnyComponent,
+    SubIssuesSelector: '' as AnyComponent
   },
   metadata: {
     CreateIssueDraft: '' as Metadata<IssueDraft>

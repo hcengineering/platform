@@ -43,6 +43,7 @@ import EmployeeBrowser from './components/EmployeeBrowser.svelte'
 import EmployeeEditor from './components/EmployeeEditor.svelte'
 import EmployeePresenter from './components/EmployeePresenter.svelte'
 import MemberPresenter from './components/MemberPresenter.svelte'
+import MembersPresenter from './components/MembersPresenter.svelte'
 import Members from './components/Members.svelte'
 import OrganizationEditor from './components/OrganizationEditor.svelte'
 import OrganizationPresenter from './components/OrganizationPresenter.svelte'
@@ -68,7 +69,9 @@ export {
   MemberPresenter,
   EmployeeEditor,
   EmployeeAccountRefPresenter,
-  EditPerson
+  MembersPresenter,
+  EditPerson,
+  EmployeeRefPresenter
 }
 
 const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({
@@ -158,6 +161,7 @@ export default async (): Promise<Resources> => ({
     EmployeeRefPresenter,
     Members,
     MemberPresenter,
+    MembersPresenter,
     EditMember,
     EmployeeArrayEditor,
     EmployeeEditor,

@@ -16,7 +16,6 @@
   import type { Asset, IntlString } from '@hcengineering/platform'
   import type { Action } from '@hcengineering/ui'
   import { ActionIcon, Icon, Label } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
 
   export let icon: Asset | undefined = undefined
   export let label: IntlString | undefined = undefined
@@ -24,8 +23,6 @@
   export let actions: Action[] = []
   export let selected: boolean = false
   export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
-
-  const dispatch = createEventDispatcher()
 </script>
 
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
@@ -36,9 +33,6 @@
   class:ml-2={indent === 'ml-2'}
   class:ml-4={indent === 'ml-4'}
   class:ml-8={indent === 'ml-8'}
-  on:click|stopPropagation={() => {
-    dispatch('click')
-  }}
 >
   <div class="an-element__icon">
     {#if icon}

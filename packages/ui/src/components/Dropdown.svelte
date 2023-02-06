@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import type { Asset, IntlString } from '@hcengineering/platform'
+  import { createEventDispatcher } from 'svelte'
   import { getFocusManager } from '../focus'
   import { showPopup } from '../popups'
   import type { AnySvelteComponent, ButtonKind, ButtonSize, ListItem, TooltipAlignment } from '../types'
@@ -37,6 +38,7 @@
   let container: HTMLElement
   let opened: boolean = false
 
+  const dispatch = createEventDispatcher()
   const mgr = getFocusManager()
 </script>
 
@@ -53,7 +55,10 @@
       if (!opened) {
         opened = true
         showPopup(DropdownPopup, { title: label, items, icon }, container, (result) => {
-          if (result) selected = result
+          if (result) {
+            selected = result
+            dispatch('selected', result)
+          }
           opened = false
           mgr?.setFocusPos(focusIndex)
         })

@@ -18,9 +18,8 @@
   import preference, { SpacePreference } from '@hcengineering/preference'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
-  import { Button, Scroller, showPopup } from '@hcengineering/ui'
+  import { Button, NavLink, Scroller, showPopup } from '@hcengineering/ui'
   import type { Application, NavigatorModel, SpecialNavModel } from '@hcengineering/workbench'
-  import { createEventDispatcher } from 'svelte'
   import workbench from '../plugin'
   import { getSpecialSpaceClass } from '../utils'
   import HelpAndSupport from './HelpAndSupport.svelte'
@@ -124,7 +123,6 @@
     await Promise.all(promises)
     return [result, requestIndex]
   }
-  const dispatch = createEventDispatcher()
 </script>
 
 {#if model}
@@ -134,13 +132,14 @@
         {#if row > 0 && specials[row].position !== specials[row - 1].position}
           <TreeSeparator />
         {/if}
-        <SpecialElement
-          label={special.label}
-          icon={special.icon}
-          on:click={() => dispatch('special', special.id)}
-          selected={special.id === currentSpecial}
-          indent={'ml-2'}
-        />
+        <NavLink space={special.id}>
+          <SpecialElement
+            label={special.label}
+            icon={special.icon}
+            selected={special.id === currentSpecial}
+            indent={'ml-2'}
+          />
+        </NavLink>
       {/each}
     {/if}
 
@@ -156,7 +155,6 @@
         {currentSpace}
         hasSpaceBrowser={model.specials?.find((p) => p.id === 'spaceBrowser') !== undefined}
         model={m}
-        on:space
         on:open
         {currentSpecial}
       />

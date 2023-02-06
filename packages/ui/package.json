@@ -35,7 +35,7 @@
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/theme": "^0.6.2",
-    "@hcengineering/core": "^0.6.20",
+    "@hcengineering/core": "^0.6.21",
     "svelte": "^3.47",
     "fast-equals": "^2.0.3"
   },

@@ -30,8 +30,7 @@ import {
   Persons,
   Status
 } from '@hcengineering/contact'
-import type { Class, Domain, Ref, Timestamp } from '@hcengineering/core'
-import { DOMAIN_MODEL, IndexKind } from '@hcengineering/core'
+import { Class, DateRangeMode, Domain, Ref, Timestamp, DOMAIN_MODEL, IndexKind } from '@hcengineering/core'
 import {
   Builder,
   Collection,
@@ -94,6 +93,9 @@ export class TContact extends TDoc implements Contact {
   @Prop(TypeString(), contact.string.Location)
   @Index(IndexKind.FullText)
     city!: string
+
+  @Prop(TypeTimestamp(), contact.string.CreatedOn)
+    createOn!: Timestamp
 }
 
 @Model(contact.class.Channel, core.class.AttachedDoc, DOMAIN_CHANNEL)
@@ -115,7 +117,7 @@ export class TChannel extends TAttachedDoc implements Channel {
 @Model(contact.class.Person, contact.class.Contact)
 @UX(contact.string.Person, contact.icon.Person, undefined, 'name')
 export class TPerson extends TContact implements Person {
-  @Prop(TypeDate(false, false), contact.string.Birthday)
+  @Prop(TypeDate(DateRangeMode.DATE, false), contact.string.Birthday)
     birthday?: Timestamp
 }
 

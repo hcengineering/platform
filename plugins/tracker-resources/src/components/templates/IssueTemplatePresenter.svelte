@@ -15,12 +15,13 @@
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
   import type { IssueTemplate } from '@hcengineering/tracker'
-  import { Icon, showPanel } from '@hcengineering/ui'
+  import { Icon, showPanel, tooltip } from '@hcengineering/ui'
   import tracker from '../../plugin'
 
   export let value: WithLookup<IssueTemplate>
   // export let inline: boolean = false
   export let disableClick = false
+  export let noUnderline = false
 
   function handleIssueEditorOpened () {
     if (disableClick) {
@@ -34,9 +35,11 @@
 
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <span class="issuePresenterRoot flex" class:noPointer={disableClick} on:click={handleIssueEditorOpened}>
-    <Icon icon={tracker.icon.Issues} size={'small'} />
-    <span class="ml-2">
+  <span class="issuePresenterRoot" class:noPointer={disableClick} class:noUnderline on:click={handleIssueEditorOpened}>
+    <div class="mr-2" use:tooltip={{ label: tracker.string.IssueTemplate }}>
+      <Icon icon={tracker.icon.Issues} size={'small'} />
+    </div>
+    <span title={value?.title}>
       {title}
     </span>
   </span>
@@ -44,6 +47,8 @@
 
 <style lang="scss">
   .issuePresenterRoot {
+    display: flex;
+
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -58,9 +63,18 @@
       cursor: default;
     }
 
-    &:hover {
+    &.noUnderline {
+      font-weight: 500;
       color: var(--caption-color);
     }
+
+    &:not(.noUnderline) {
+      &:hover {
+        color: var(--caption-color);
+        text-decoration: underline;
+      }
+    }
+
     &:active {
       color: var(--accent-color);
     }

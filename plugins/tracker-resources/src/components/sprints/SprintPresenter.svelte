@@ -15,11 +15,20 @@
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
   import { Sprint } from '@hcengineering/tracker'
-  import { getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { getCurrentLocation, Icon, navigate, tooltip } from '@hcengineering/ui'
+  import tracker from '../../plugin'
 
   export let value: WithLookup<Sprint>
+  export let withIcon = false
+  export let onClick: () => void | undefined
+
   function navigateToSprint () {
+    if (onClick) {
+      onClick()
+    }
+
     const loc = getCurrentLocation()
+    loc.path[4] = 'sprints'
     loc.path[5] = value._id
     loc.path.length = 6
     navigate(loc)
@@ -28,20 +37,13 @@
 
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="flex-presenter flex-grow" on:click={navigateToSprint}>
-    <span title={value.label} class="projectLabel flex-grow">{value.label}</span>
+  <div class="flex" on:click={navigateToSprint}>
+    {#if withIcon}
+      <div class="mr-2" use:tooltip={{ label: tracker.string.Sprint }}>
+        <Icon icon={tracker.icon.Sprint} size={'small'} />
+      </div>
+    {/if}
+    <span title={value.label} class="cursor-pointer fs-bold caption-color overflow-label clear-mins">{value.label}</span
+    >
   </div>
 {/if}
-
-<style lang="scss">
-  .projectLabel {
-    display: block;
-    min-width: 0;
-    font-weight: 500;
-    text-align: left;
-    color: var(--theme-caption-color);
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-</style>

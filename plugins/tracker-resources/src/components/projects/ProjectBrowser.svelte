@@ -86,6 +86,8 @@
     { id: 'list', icon: view.icon.List, tooltip: view.string.List },
     { id: 'timeline', icon: view.icon.Timeline, tooltip: view.string.Timeline }
   ]
+
+  const retrieveMembers = (p: Project) => p.members
 </script>
 
 <div class="fs-title flex-between header">
@@ -138,7 +140,16 @@
       presenter: tracker.component.LeadPresenter,
       props: { _class: tracker.class.Project, defaultClass: contact.class.Employee, shouldShowLabel: false }
     },
-    { key: '', presenter: tracker.component.ProjectMembersPresenter, props: { kind: 'link' } },
+    {
+      key: '',
+      presenter: contact.component.MembersPresenter,
+      props: {
+        kind: 'link',
+        intlTitle: tracker.string.ProjectMembersTitle,
+        intlSearchPh: tracker.string.ProjectMembersSearchPlaceholder,
+        retrieveMembers
+      }
+    },
     { key: '', presenter: tracker.component.TargetDatePresenter },
     { key: '', presenter: tracker.component.ProjectStatusPresenter },
     { key: '', presenter: tracker.component.DeleteProjectPresenter, props: { space } }

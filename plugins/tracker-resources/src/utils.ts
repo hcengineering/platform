@@ -258,6 +258,8 @@ export type ProjectsViewMode = 'all' | 'backlog' | 'active' | 'closed'
 
 export type SprintViewMode = 'all' | 'planned' | 'active' | 'closed'
 
+export type ScrumRecordViewMode = 'timeReports' | 'objects'
+
 export const getIncludedProjectStatuses = (mode: ProjectsViewMode): ProjectStatus[] => {
   switch (mode) {
     case 'all': {
@@ -310,6 +312,11 @@ export const sprintTitleMap: Record<SprintViewMode, IntlString> = Object.freeze(
   planned: tracker.string.PlannedSprints,
   active: tracker.string.ActiveSprints,
   closed: tracker.string.ClosedSprints
+})
+
+export const scrumRecordTitleMap: Record<ScrumRecordViewMode, IntlString> = Object.freeze({
+  timeReports: tracker.string.ScrumRecordTimeReports,
+  objects: tracker.string.ScrumRecordObjects
 })
 
 const listIssueStatusOrder = [
