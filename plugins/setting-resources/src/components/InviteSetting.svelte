@@ -39,7 +39,8 @@
     const newSettings = {
       expirationTime: expTime,
       emailMask: mask,
-      limit
+      limit,
+      enabled: true
     }
     if (existingInviteSettings.length === 0) {
       await client.createDoc(setting.class.InviteSettings, setting.space.Setting, newSettings)
