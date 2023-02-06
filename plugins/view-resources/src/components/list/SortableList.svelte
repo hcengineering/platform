@@ -13,16 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import {
-    Class,
-    Doc,
-    DocumentQuery,
-    FindOptions,
-    FindResult,
-    Ref,
-    SortingOrder,
-    SortingQuery
-  } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, FindOptions, FindResult, Ref, SortingOrder } from '@hcengineering/core'
   import { Asset, getResource, IntlString } from '@hcengineering/platform'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { calcRank, DocWithRank } from '@hcengineering/task'
