@@ -35,6 +35,8 @@
   const attachments: AttachmentStyledBox[] = []
   const edits: TextEditor[] = []
   let hasAttachments: boolean = false
+  const expanded: boolean[] = []
+  items.forEach(() => expanded.push(false))
 
   const flip = (index: number, ev?: MouseEvent): void => {
     ev?.stopPropagation()
@@ -54,6 +56,14 @@
         break
     }
   }
+
+  const onScroll = (row: number, ev: Event) => {
+    const target = ev.target as HTMLDivElement
+    if (target && !expanded[row] && target.clientHeight < target.scrollHeight) {
+      expanded[row] = true
+      flip(row)
+    }
+  }
 </script>
 
 <div class="antiAccordion">
@@ -71,7 +81,7 @@
         }}
       >
         <span class="label"><Label label={item.label} /></span>
-        <div class="value">
+        <div class="value" on:scroll={(ev) => onScroll(i, ev)}>
           {#if item.state === 'closed'}
             <TextEditor
               bind:content={item.content}
