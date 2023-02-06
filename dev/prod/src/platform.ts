@@ -99,7 +99,7 @@ export async function configurePlatform() {
 
   setMetadata(rekoni.metadata.RekoniUrl, process.env.REKONI_URL)
 
-  setMetadata(uiPlugin.metadata.DefaultApplication, workbench.component.WorkbenchApp)
+  setMetadata(uiPlugin.metadata.DefaultApplication, login.component.LoginApp)
 
   setMetadata(
     uiPlugin.metadata.Routes,
