@@ -14,19 +14,19 @@
 -->
 <script lang="ts">
   import login, { loginId } from '@hcengineering/login'
+  import { getWorkspaces, selectWorkspace, Workspace } from '@hcengineering/login-resources'
   import {
-    getWorkspaces,
-    navigateToWorkspace,
-    selectWorkspace,
-    setLoginInfo,
-    Workspace,
-    WorkspaceLoginInfo
-  } from '@hcengineering/login-resources'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { fetchMetadataLocalStorage, Loading, locationToUrl, Menu, navigate } from '@hcengineering/ui'
+    closePopup,
+    fetchMetadataLocalStorage,
+    getCurrentLocation,
+    Loading,
+    Location,
+    locationToUrl,
+    navigate,
+    setMetadataLocalStorage
+  } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
-  import workbench from '../plugin'
   import { workspacesStore } from '../utils'
 
   onMount(() => {
@@ -35,63 +35,121 @@
     })
   })
 
-  async function getLoginIngo (ws: string): Promise<WorkspaceLoginInfo | undefined> {
+  $: doLogin($workspacesStore)
+
+  async function doLogin (ws: Workspace[]) {
     const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
-    const endpoint = fetchMetadataLocalStorage(login.metadata.LoginEndpoint)
-    const email = fetchMetadataLocalStorage(login.metadata.LoginEmail)
-    const token = tokens[ws]
-    if (token && email && endpoint) {
-      return {
-        token,
-        endpoint,
-        email,
-        workspace: ws
+    await Promise.all(
+      ws.map(async (p) => {
+        const ws = p.workspace
+        const token = tokens[ws]
+        if (!token) {
+          const loginInfo = (await selectWorkspace(ws))[1]
+          if (loginInfo !== undefined) {
+            tokens[ws] = loginInfo?.token
+          }
+        }
+      })
+    )
+    setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
+  }
+
+  const loginPath: Location = {
+    path: [loginId, 'selectWorkspace']
+  }
+
+  function getWorkspaceLink (ws: Workspace): string {
+    const loc: Location = {
+      path: [workbenchId, ws.workspace]
+    }
+    return locationToUrl(loc)
+  }
+
+  async function clickHandler (e: MouseEvent, ws: string) {
+    if (!e.metaKey && !e.ctrlKey) {
+      e.preventDefault()
+      closePopup()
+      closePopup()
+      if (ws !== getCurrentLocation().path[1]) {
+        navigate({ path: [workbenchId, ws] })
       }
-    } else {
-      const loginInfo = (await selectWorkspace(ws))[1]
-      return loginInfo
     }
   }
 
-  $: actions = [
-    ...$workspacesStore.map((w) => ({
-      label: getEmbeddedLabel(w.workspace),
-      action: async () => {
-        const loginInfo = await getLoginIngo(w.workspace)
-        navigateToWorkspace(w.workspace, loginInfo)
-      },
-      isSubmenuRightClicking: true,
-      component: Menu,
-      props: {
-        actions: [
-          {
-            label: workbench.string.OpenInNewTab,
-            action: async () => {
-              const loginInfo = await getLoginIngo(w.workspace)
+  let activeElement: HTMLElement
+  const btns: HTMLElement[] = []
 
-              if (!loginInfo) {
-                return
-              }
-              setLoginInfo(loginInfo)
-              const url = locationToUrl({ path: [workbenchId, w.workspace] })
-              window.open(url, '_blank')?.focus()
-            }
-          }
-        ]
-      }
-    })),
-    {
-      label: getEmbeddedLabel('...'),
-      action: async () => {
-        navigate({ path: [loginId, 'selectWorkspace'] })
-      },
-      isSubmenuRightClicking: false
+  function focusTarget (target: HTMLElement): void {
+    activeElement = target
+  }
+
+  const keyDown = (ev: KeyboardEvent): void => {
+    if (ev.key === 'Tab') {
+      ev.preventDefault()
+      ev.stopPropagation()
     }
-  ]
+    const n = btns.indexOf(activeElement) ?? 0
+    if (ev.key === 'ArrowDown') {
+      if (n < btns.length - 1) {
+        activeElement = btns[n + 1]
+      }
+      ev.preventDefault()
+      ev.stopPropagation()
+    }
+    if (ev.key === 'ArrowUp') {
+      if (n > 0) {
+        activeElement = btns[n - 1]
+      }
+      ev.preventDefault()
+      ev.stopPropagation()
+    }
+  }
+
+  function handleOther (e: MouseEvent) {
+    if (e.metaKey || e.ctrlKey) return
+    e.preventDefault()
+    closePopup()
+    navigate({ path: [loginId, 'selectWorkspace'] })
+  }
+
+  $: last = $workspacesStore.length
 </script>
 
 {#if $workspacesStore.length}
-  <Menu {actions} on:update on:close />
+  <div class="antiPopup" on:keydown={keyDown}>
+    <div class="ap-space" />
+    <div class="ap-scroll">
+      <div class="ap-box">
+        {#each $workspacesStore as ws, i}
+          <a class="stealth" href={getWorkspaceLink(ws)} on:click={(e) => clickHandler(e, ws.workspace)}>
+            <button
+              bind:this={btns[i]}
+              class="ap-menuItem flex-row-center withIcon w-full"
+              class:hover={btns[i] === activeElement}
+              on:mousemove={() => {
+                focusTarget(btns[i])
+              }}
+            >
+              <span class="overflow-label pr-1 flex-grow">{ws.workspace}</span>
+            </button>
+          </a>
+        {/each}
+        <a class="stealth" href={locationToUrl(loginPath)} on:click={handleOther}>
+          <button
+            bind:this={btns[last]}
+            class="ap-menuItem flex-row-center withIcon w-full"
+            class:hover={btns[last] === activeElement}
+            on:mousemove={() => {
+              focusTarget(btns[last])
+            }}
+          >
+            <span class="overflow-label pr-1 flex-grow">...</span>
+          </button>
+        </a>
+      </div>
+    </div>
+    <div class="ap-space" />
+  </div>
 {:else}
   <div class="antiPopup"><Loading /></div>
 {/if}
