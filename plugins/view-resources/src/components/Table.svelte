@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, DocumentQuery, FindOptions, Lookup, Ref } from '@hcengineering/core'
+  import core, { AnyAttribute, Class, Doc, DocumentQuery, FindOptions, Lookup, Ref } from '@hcengineering/core'
   import { getObjectValue, SortingOrder } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient, updateAttribute } from '@hcengineering/presentation'
   import {
     CheckBox,
     Component,
@@ -31,9 +31,9 @@
   } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
+  import view from '../plugin'
   import { buildConfigLookup, buildModel, LoadingProps } from '../utils'
   import Menu from './Menu.svelte'
-  import view from '../plugin'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -180,11 +180,14 @@
     }
   }
 
-  const joinProps = (collectionAttr: boolean, object: Doc, props: any) => {
-    if (collectionAttr) {
-      return { object, ...props }
+  const joinProps = (attribute: AttributeModel, object: Doc) => {
+    if (attribute.collectionAttr) {
+      return { object, ...attribute.props }
     }
-    return props
+    if (attribute.attribute?.type._class === core.class.EnumOf) {
+      return { ...attribute.props, type: attribute.attribute.type }
+    }
+    return attribute.props
   }
   function getValue (attribute: AttributeModel, object: Doc): any {
     if (attribute.castRequest) {
@@ -194,6 +197,19 @@
       )
     }
     return getObjectValue(attribute.key, object)
+  }
+
+  function onChange (value: any, doc: Doc, key: string, attribute: AnyAttribute) {
+    updateAttribute(client, doc, _class, { key, attr: attribute }, value)
+  }
+
+  function getOnChange (doc: Doc, attribute: AttributeModel) {
+    const attr = attribute.attribute
+    if (attr === undefined) return
+    if (attribute.collectionAttr) return
+    if (attribute.isLookup) return
+    const key = attribute.castRequest ? attribute.key.substring(attribute.castRequest.length + 1) : attribute.key
+    return (value: any) => onChange(value, doc, key, attr)
   }
 </script>
 
@@ -295,10 +311,12 @@
             {#each model as attribute, cell}
               <td>
                 <div class:antiTable-cells__firstCell={!cell}>
+                  <!-- {getOnChange(object, attribute) !== undefined} -->
                   <svelte:component
                     this={attribute.presenter}
                     value={getValue(attribute, object)}
-                    {...joinProps(attribute.collectionAttr, object, attribute.props)}
+                    onChange={getOnChange(object, attribute)}
+                    {...joinProps(attribute, object)}
                   />
                 </div>
               </td>

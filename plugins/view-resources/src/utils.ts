@@ -92,7 +92,8 @@ export async function getObjectPresenter (
     presenter,
     props: preserveKey.props,
     sortingKey,
-    collectionAttr: isCollectionAttr
+    collectionAttr: isCollectionAttr,
+    isLookup: false
   }
 }
 
@@ -164,7 +165,8 @@ async function getAttributePresenter (
     props: preserveKey.props,
     icon: presenterMixin.icon,
     attribute,
-    collectionAttr: isCollectionAttr
+    collectionAttr: isCollectionAttr,
+    isLookup: false
   }
 }
 
@@ -185,7 +187,8 @@ export async function getPresenter<T extends Doc> (
       label: label as IntlString,
       presenter: typeof presenter === 'string' ? await getResource(presenter) : presenter,
       props: preserveKey.props,
-      collectionAttr: isCollectionAttr
+      collectionAttr: isCollectionAttr,
+      isLookup: false
     }
   }
   if (key.key.length === 0) {
@@ -293,7 +296,8 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
           label: stringKey as IntlString,
           _class: core.class.TypeString,
           props: { error: err },
-          collectionAttr: false
+          collectionAttr: false,
+          isLookup: false
         }
         return errorPresenter
       }
@@ -348,6 +352,7 @@ async function getLookupPresenter<T extends Doc> (
   const lookupKey = { ...key, key: lookupProperty[0] }
   const model = await getPresenter(client, lookupClass[0], lookupKey, preserveKey, undefined, lookupClass[2])
   model.label = getLookupLabel(client, lookupClass[1], lookupClass[0], lookupKey, lookupProperty[1])
+  model.isLookup = true
   return model
 }
 

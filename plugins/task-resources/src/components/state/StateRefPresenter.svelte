@@ -17,9 +17,11 @@
   import { Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import task, { State } from '@hcengineering/task'
+  import StateEditor from './StateEditor.svelte'
   import StatePresenter from './StatePresenter.svelte'
 
   export let value: Ref<State>
+  export let onChange: ((value: Ref<State>) => void) | undefined = undefined
 
   let state: State | undefined
   const query = createQuery()
@@ -27,5 +29,9 @@
 </script>
 
 {#if state}
-  <StatePresenter value={state} />
+  {#if onChange !== undefined}
+    <StateEditor {value} space={state.space} {onChange} kind="link" size="medium" />
+  {:else}
+    <StatePresenter value={state} />
+  {/if}
 {/if}
