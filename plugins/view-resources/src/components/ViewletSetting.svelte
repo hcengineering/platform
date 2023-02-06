@@ -121,6 +121,7 @@
     if (viewlet.hiddenKeys?.includes(attribute.name)) return
     if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) return
     const value = getValue(attribute.name, attribute.type)
+    if (result.findIndex((p) => p.value === attribute.name) !== -1) return
     if (result.findIndex((p) => p.value === value) !== -1) return
     const { attrClass, category } = getAttributePresenterClass(hierarchy, attribute)
     const typeClass = hierarchy.getClass(attrClass)
