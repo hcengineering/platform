@@ -13,16 +13,16 @@
 // limitations under the License.
 //
 
+import { getCategories } from '@anticrm/skillset'
 import { Organization } from '@hcengineering/contact'
-import core, { Doc, DOMAIN_TX, Ref, Space, TxCreateDoc, TxOperations } from '@hcengineering/core'
+import core, { Doc, DOMAIN_TX, Ref, Space, TxCollectionCUD, TxOperations } from '@hcengineering/core'
 import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import { DOMAIN_CALENDAR } from '@hcengineering/model-calendar'
 import contact, { DOMAIN_CONTACT } from '@hcengineering/model-contact'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import tags, { TagCategory } from '@hcengineering/model-tags'
 import { createKanbanTemplate, createSequence, DOMAIN_TASK } from '@hcengineering/model-task'
-import { Applicant, Vacancy } from '@hcengineering/recruit'
-import { getCategories } from '@anticrm/skillset'
+import { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
 import { KanbanTemplate } from '@hcengineering/task'
 import recruit from './plugin'
 
@@ -39,36 +39,42 @@ async function fixImportedTitle (client: MigrationClient): Promise<void> {
 }
 
 async function setCreate (client: MigrationClient): Promise<void> {
-  const docs = await client.find<Applicant>(DOMAIN_TASK, {
-    _class: recruit.class.Applicant,
-    createOn: { $exists: false }
-  })
-  for (const doc of docs) {
-    const tx = (
-      await client.find<TxCreateDoc<Applicant>>(DOMAIN_TX, {
-        objectId: doc._id,
-        _class: core.class.TxCreateDoc
-      })
-    )[0]
-    if (tx !== undefined) {
-      await client.update(
-        DOMAIN_CONTACT,
-        {
-          _id: doc._id
-        },
-        {
-          createOn: tx.modifiedOn
-        }
-      )
-      await client.update(
-        DOMAIN_TX,
-        {
-          _id: tx._id
-        },
-        {
-          'attributes.createOn': tx.modifiedOn
-        }
-      )
+  while (true) {
+    const docs = await client.find<Applicant>(
+      DOMAIN_TASK,
+      {
+        _class: recruit.class.Applicant,
+        createOn: { $exists: false }
+      },
+      { limit: 500 }
+    )
+    if (docs.length === 0) break
+    const txex = await client.find<TxCollectionCUD<Candidate, Applicant>>(DOMAIN_TX, {
+      'tx.objectId': { $in: docs.map((it) => it._id) },
+      'tx._class': core.class.TxCreateDoc
+    })
+    for (const doc of docs) {
+      const tx = txex.find((it) => it.tx.objectId === doc._id)
+      if (tx !== undefined) {
+        await client.update(
+          DOMAIN_TASK,
+          {
+            _id: doc._id
+          },
+          {
+            createOn: tx.modifiedOn
+          }
+        )
+        await client.update(
+          DOMAIN_TX,
+          {
+            _id: tx._id
+          },
+          {
+            'tx.attributes.createOn': tx.modifiedOn
+          }
+        )
+      }
     }
   }
 }
