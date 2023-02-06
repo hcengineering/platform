@@ -105,6 +105,7 @@ export interface TriggerControl {
   findAll: Storage['findAll']
   hierarchy: Hierarchy
   modelDb: ModelDb
+  removedMap: Map<Ref<Doc>, Doc>
 
   fulltextFx: (f: (adapter: FullTextAdapter) => Promise<void>) => void
   // Since we don't have other storages let's consider adapter is MinioClient

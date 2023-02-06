@@ -64,16 +64,14 @@ export async function onTagReference (tx: Tx, control: TriggerControl): Promise<
   }
   if (isRemove) {
     const ctx = actualTx as TxRemoveDoc<TagReference>
-    const createTx = (
-      await control.findAll(core.class.TxCollectionCUD, { 'tx.objectId': ctx.objectId }, { limit: 1 })
-    )[0]
-    if (createTx !== undefined) {
-      const actualCreateTx = TxProcessor.extractTx(createTx)
-      const doc = TxProcessor.createDoc2Doc(actualCreateTx as TxCreateDoc<TagReference>)
-      const res = control.txFactory.createTxUpdateDoc(tags.class.TagElement, tags.space.Tags, doc.tag, {
-        $inc: { refCount: -1 }
-      })
-      return [res]
+    const doc = control.removedMap.get(ctx.objectId) as TagReference
+    if (doc !== undefined) {
+      if (!control.removedMap.has(doc.tag)) {
+        const res = control.txFactory.createTxUpdateDoc(tags.class.TagElement, tags.space.Tags, doc.tag, {
+          $inc: { refCount: -1 }
+        })
+        return [res]
+      }
     }
   }
   return []

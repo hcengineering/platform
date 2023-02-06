@@ -15,7 +15,7 @@
 //
 
 import contact, { Contact, contactId, formatName, Organization, Person } from '@hcengineering/contact'
-import core, { concatLink, Doc, Tx, TxCreateDoc, TxRemoveDoc, TxUpdateDoc } from '@hcengineering/core'
+import core, { concatLink, Doc, Tx, TxRemoveDoc } from '@hcengineering/core'
 import login from '@hcengineering/login'
 import { getMetadata } from '@hcengineering/platform'
 import type { TriggerControl } from '@hcengineering/server-core'
@@ -25,7 +25,10 @@ import { workbenchId } from '@hcengineering/workbench'
 /**
  * @public
  */
-export async function OnContactDelete (tx: Tx, { findAll, hierarchy, storageFx }: TriggerControl): Promise<Tx[]> {
+export async function OnContactDelete (
+  tx: Tx,
+  { findAll, hierarchy, storageFx, removedMap }: TriggerControl
+): Promise<Tx[]> {
   if (tx._class !== core.class.TxRemoveDoc) {
     return []
   }
@@ -36,15 +39,12 @@ export async function OnContactDelete (tx: Tx, { findAll, hierarchy, storageFx }
     return []
   }
 
-  const createTx = (await findAll<TxCreateDoc<Contact>>(core.class.TxCreateDoc, { objectId: rmTx.objectId }))[0]
-  if (createTx === undefined) {
+  const removeContact = removedMap.get(rmTx.objectId) as Contact
+  if (removeContact === undefined) {
     return []
   }
 
-  const updateTxes = await findAll<TxUpdateDoc<Contact>>(core.class.TxUpdateDoc, { objectId: rmTx.objectId })
-  const avatar: string | undefined = [createTx.attributes.avatar, ...updateTxes.map((x) => x.operations.avatar)]
-    .filter((x): x is string => x !== undefined)
-    .slice(-1)[0]
+  const avatar: string | undefined = [removeContact.avatar].filter((x): x is string => x !== undefined).slice(-1)[0]
 
   if (avatar === undefined) {
     return []

@@ -393,7 +393,7 @@ export async function listAccounts (db: Db): Promise<Account[]> {
 export async function createWorkspace (
   version: Data<Version>,
   txes: Tx[],
-  migrationOperation: MigrateOperation[],
+  migrationOperation: [string, MigrateOperation][],
   db: Db,
   productId: string,
   workspace: string,
@@ -421,7 +421,7 @@ export async function createWorkspace (
 export async function upgradeWorkspace (
   version: Data<Version>,
   txes: Tx[],
-  migrationOperation: MigrateOperation[],
+  migrationOperation: [string, MigrateOperation][],
   productId: string,
   db: Db,
   workspace: string
@@ -449,7 +449,7 @@ export async function upgradeWorkspace (
  * @public
  */
 export const createUserWorkspace =
-  (version: Data<Version>, txes: Tx[], migrationOperation: MigrateOperation[]) =>
+  (version: Data<Version>, txes: Tx[], migrationOperation: [string, MigrateOperation][]) =>
     async (db: Db, productId: string, token: string, workspace: string): Promise<LoginInfo> => {
       const { email } = decodeToken(token)
       await createWorkspace(version, txes, migrationOperation, db, productId, workspace, '')
@@ -925,7 +925,7 @@ function wrap (f: (db: Db, productId: string, ...args: any[]) => Promise<any>): 
 export function getMethods (
   version: Data<Version>,
   txes: Tx[],
-  migrateOperations: MigrateOperation[]
+  migrateOperations: [string, MigrateOperation][]
 ): Record<string, AccountMethod> {
   return {
     login: wrap(login),

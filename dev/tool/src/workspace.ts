@@ -105,7 +105,7 @@ export async function restoreWorkspace (
   elasticUrl: string,
   transactorUrl: string,
   rawTxes: Tx[],
-  migrateOperations: MigrateOperation[]
+  migrateOperations: [string, MigrateOperation][]
 ): Promise<void> {
   console.log('Restoring workspace', mongoUrl, workspaceId, fileName)
   const client = new MongoClient(mongoUrl)

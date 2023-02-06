@@ -44,36 +44,47 @@ async function createSpace (tx: TxOperations): Promise<void> {
 }
 
 async function setCreate (client: MigrationClient): Promise<void> {
-  const docs = await client.find<Contact>(DOMAIN_CONTACT, {
-    _class: { $in: [contact.class.Contact, contact.class.Organization, contact.class.Person, contact.class.Employee] },
-    createOn: { $exists: false }
-  })
-  for (const doc of docs) {
-    const tx = (
-      await client.find<TxCreateDoc<Contact>>(DOMAIN_TX, {
-        objectId: doc._id,
-        _class: core.class.TxCreateDoc
-      })
-    )[0]
-    if (tx !== undefined) {
-      await client.update(
-        DOMAIN_CONTACT,
-        {
-          _id: doc._id
+  while (true) {
+    const docs = await client.find<Contact>(
+      DOMAIN_CONTACT,
+      {
+        _class: {
+          $in: [contact.class.Contact, contact.class.Organization, contact.class.Person, contact.class.Employee]
         },
-        {
-          createOn: tx.modifiedOn
-        }
-      )
-      await client.update(
-        DOMAIN_TX,
-        {
-          _id: tx._id
-        },
-        {
-          'attributes.createOn': tx.modifiedOn
-        }
-      )
+        createOn: { $exists: false }
+      },
+      { limit: 500 }
+    )
+    if (docs.length === 0) {
+      break
+    }
+    console.log('processing createOn migration', docs.length)
+    const creates = await client.find<TxCreateDoc<Contact>>(DOMAIN_TX, {
+      objectId: { $in: docs.map((it) => it._id) },
+      _class: core.class.TxCreateDoc
+    })
+    for (const doc of docs) {
+      const tx = creates.find((it) => it.objectId === doc._id)
+      if (tx !== undefined) {
+        await client.update(
+          DOMAIN_CONTACT,
+          {
+            _id: doc._id
+          },
+          {
+            createOn: tx.modifiedOn
+          }
+        )
+        await client.update(
+          DOMAIN_TX,
+          {
+            _id: tx._id
+          },
+          {
+            'attributes.createOn': tx.modifiedOn
+          }
+        )
+      }
     }
   }
 }

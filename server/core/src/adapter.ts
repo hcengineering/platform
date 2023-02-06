@@ -46,7 +46,7 @@ export interface DbAdapter {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
-  tx: (tx: Tx) => Promise<TxResult>
+  tx: (...tx: Tx[]) => Promise<TxResult>
 
   find: (domain: Domain) => StorageIterator
 
@@ -97,7 +97,7 @@ export class DummyDbAdapter implements DbAdapter {
     return toFindResult([])
   }
 
-  async tx (tx: Tx): Promise<TxResult> {
+  async tx (...tx: Tx[]): Promise<TxResult> {
     return {}
   }
 
@@ -137,8 +137,8 @@ class InMemoryAdapter extends DummyDbAdapter implements DbAdapter {
     return await this.modeldb.findAll(_class, query, options)
   }
 
-  async tx (tx: Tx): Promise<TxResult> {
-    return await this.modeldb.tx(tx)
+  async tx (...tx: Tx[]): Promise<TxResult> {
+    return await this.modeldb.tx(...tx)
   }
 
   async init (model: Tx[]): Promise<void> {
