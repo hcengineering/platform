@@ -620,7 +620,7 @@ class MongoAdapter extends MongoAdapterBase {
       }
       await bulkExecute()
     } else {
-      return await this.getOperations(txes[0])?.raw() ?? {}
+      return (await this.getOperations(txes[0])?.raw()) ?? {}
     }
     if (result.length === 0) {
       return {}
