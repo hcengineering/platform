@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, EditBox } from '@hcengineering/ui'
-  import workbench from '@hcengineering/workbench-resources/src/plugin'
+  import { Button, EditBox, MiniToggle } from '@hcengineering/ui'
+  import login from '@hcengineering/login-resources/src/plugin'
   import presentation, { getClient, LiveQuery } from '@hcengineering/presentation'
   import setting, { InviteSettings } from '@hcengineering/setting'
 
@@ -22,6 +22,7 @@
   let expTime: number = 48
   let mask: string
   let limit: number = -1
+  let noLimit: boolean = true
   let existingInviteSettings: InviteSettings[]
   const query = new LiveQuery()
 
@@ -55,14 +56,19 @@
 
 <div class="form">
   <div class="mt-2">
-    <EditBox label={workbench.string.LinkValidHours} format={'number'} bind:value={expTime} />
+    <EditBox label={login.string.LinkValidHours} format={'number'} bind:value={expTime} />
   </div>
   <div class="mt-2">
-    <EditBox label={workbench.string.EmailMask} bind:value={mask} />
+    <EditBox label={login.string.EmailMask} bind:value={mask} />
   </div>
   <div class="mt-2">
-    <EditBox label={workbench.string.InviteLimit} format={'number'} bind:value={limit} />
+    <MiniToggle bind:on={noLimit} label={login.string.NoLimit} on:change={() => noLimit && (limit = -1)} />
   </div>
+  {#if !noLimit}
+    <div class="mt-2">
+      <EditBox label={login.string.InviteLimit} format={'number'} bind:value={limit} />
+    </div>
+  {/if}
   <div class="mt-2">
     <Button label={presentation.string.Save} size={'medium'} kind={'primary'} on:click={() => setInviteSettings()} />
   </div>

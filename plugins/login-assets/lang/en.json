@@ -32,6 +32,12 @@
     "KnowPassword": "Know your password?",
     "Recover": "Recover",
     "PasswordRecovery": "Password recovery",
-    "RecoveryLinkSent": "Password recovery link sent to email"
+    "RecoveryLinkSent": "Password recovery link sent to email",
+    "UseWorkspaceInviteSettings": "Use workspace invite settings",
+    "LinkValidHours": "Link valid (hours):",
+    "EmailMask": "Email mask:",
+    "InviteLimit": "Invite limit:",
+    "GetLink": "Get invite link",
+    "NoLimit": "No limit"
   }
 }

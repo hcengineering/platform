@@ -37,7 +37,8 @@ export default plugin(loginId, {
     OverrideEndpoint: '' as Metadata<string>
   },
   component: {
-    LoginApp: '' as AnyComponent
+    LoginApp: '' as AnyComponent,
+    InviteLink: '' as AnyComponent
   },
   icon: {
     InviteWorkspace: '' as Asset

@@ -21,7 +21,6 @@ import SpacePanel from './components/navigator/SpacePanel.svelte'
 import SpaceBrowser from './components/SpaceBrowser.svelte'
 import SpecialView from './components/SpecialView.svelte'
 import WorkbenchApp from './components/WorkbenchApp.svelte'
-import InviteLink from './components/InviteLink.svelte'
 import { doNavigate } from './utils'
 
 function hasArchiveSpaces (spaces: Space[]): boolean {
@@ -38,8 +37,7 @@ export default async (): Promise<Resources> => ({
     Archive,
     SpacePanel,
     SpecialView,
-    SpaceBrowser,
-    InviteLink
+    SpaceBrowser
   },
   function: {
     HasArchiveSpaces: hasArchiveSpaces

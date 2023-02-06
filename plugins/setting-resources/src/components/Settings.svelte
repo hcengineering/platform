@@ -28,7 +28,6 @@
   import { onDestroy } from 'svelte'
   import CategoryElement from './CategoryElement.svelte'
   import login, { loginId } from '@hcengineering/login'
-  import workbench from '@hcengineering/workbench'
   import { AccountRole, getCurrentAccount } from '@hcengineering/core'
   import { EmployeeAccount } from '@hcengineering/contact'
   import { setMetadata } from '@hcengineering/platform'
@@ -83,7 +82,7 @@
     navigate({ path: [loginId, 'selectWorkspace'] })
   }
   function inviteWorkspace (): void {
-    showPopup(workbench.component.InviteLink, {})
+    showPopup(login.component.InviteLink, {})
   }
 </script>
 

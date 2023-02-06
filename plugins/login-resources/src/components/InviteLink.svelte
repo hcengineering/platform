@@ -25,12 +25,11 @@
     MiniToggle,
     ticker
   } from '@hcengineering/ui'
-  import { getInviteLink } from '@hcengineering/login-resources/src/utils'
+  import { getInviteLink } from '../utils'
   import { createEventDispatcher } from 'svelte'
-  import login from '@hcengineering/login-resources/src/plugin'
-  import InviteWorkspace from '@hcengineering/login-resources/src/components/icons/InviteWorkspace.svelte'
+  import login from '../plugin'
+  import InviteWorkspace from './icons/InviteWorkspace.svelte'
   import { loginId } from '@hcengineering/login'
-  import workbench from '../plugin'
   import setting from '@hcengineering/setting'
 
   const dispatch = createEventDispatcher()
@@ -46,7 +45,19 @@
       expHours = 48
       limit = -1
     }
+    if (limit === -1) noLimit = true
+    defaultValues = {
+      expirationTime: expHours,
+      emailMask,
+      limit
+    }
   })
+
+  function setToDefault () {
+    expHours = defaultValues.expirationTime
+    emailMask = defaultValues.emailMask
+    limit = defaultValues.limit
+  }
 
   async function getLink (expHours: number, mask: string, limit: number): Promise<void> {
     loading = true
@@ -85,49 +96,67 @@
   let emailMask: string = ''
   let limit: number | undefined = undefined
   let useDefault: boolean | undefined = true
+  let noLimit: boolean = false
   const isOwnerOrMaintainer: boolean = getCurrentAccount().role > AccountRole.Maintainer
+  let defaultValues = {
+    expirationTime: undefined,
+    emailMask: '',
+    limit: undefined
+  }
 
   let link: string | undefined
   let loading = false
 </script>
 
 <div class="antiPopup popup">
-  <div class="flex-between fs-title">
+  <div class="flex-between fs-title mb-2">
     <Label label={login.string.InviteDescription} />
     <InviteWorkspace size="large" />
   </div>
-  <MiniToggle
-    bind:on={useDefault}
-    label={workbench.string.UseWorkspaceInviteSettings}
-    disabled={!isOwnerOrMaintainer}
-  />
-  <div class="mt-2">
-    <EditBox
-      label={workbench.string.LinkValidHours}
-      bind:value={expHours}
-      format={'number'}
-      on:keypress={() => (link = undefined)}
-      disabled={useDefault || !isOwnerOrMaintainer}
-    />
-  </div>
-  <div class="mt-2">
-    <EditBox
-      label={workbench.string.EmailMask}
-      bind:value={emailMask}
-      format={'string'}
-      on:keypress={() => (link = undefined)}
-      disabled={useDefault || !isOwnerOrMaintainer}
-    />
-  </div>
-  <div class="mt-2">
-    <EditBox
-      label={workbench.string.InviteLimit}
-      bind:value={limit}
-      format={'number'}
-      on:keypress={() => (link = undefined)}
-      disabled={useDefault || !isOwnerOrMaintainer}
-    />
-  </div>
+  {#if isOwnerOrMaintainer}
+    <div class="mb-2">
+      <MiniToggle
+        bind:on={useDefault}
+        label={login.string.UseWorkspaceInviteSettings}
+        on:click={() => setToDefault()}
+      />
+      {#if !useDefault}
+        <div class="mt-2">
+          <EditBox
+            label={login.string.LinkValidHours}
+            bind:value={expHours}
+            format={'number'}
+            on:keypress={() => (link = undefined)}
+            disabled={useDefault || !isOwnerOrMaintainer}
+          />
+        </div>
+        <div class="mt-2">
+          <EditBox
+            label={login.string.EmailMask}
+            bind:value={emailMask}
+            format={'string'}
+            on:keypress={() => (link = undefined)}
+            disabled={useDefault || !isOwnerOrMaintainer}
+          />
+        </div>
+
+        <div class="mt-2">
+          <MiniToggle bind:on={noLimit} label={login.string.NoLimit} on:change={() => noLimit && (limit = -1)} />
+        </div>
+        {#if !noLimit}
+          <div class="mt-2">
+            <EditBox
+              label={login.string.InviteLimit}
+              bind:value={limit}
+              format={'number'}
+              on:keypress={() => (link = undefined)}
+              disabled={useDefault || !isOwnerOrMaintainer}
+            />
+          </div>
+        {/if}
+      {/if}
+    </div>
+  {/if}
   {#if loading}
     <Loading />
   {:else if link !== undefined}
@@ -147,11 +176,11 @@
   {:else}
     <div class="buttons flex">
       <Button
-        label={workbench.string.GetLink}
+        label={login.string.GetLink}
         size={'medium'}
         kind={'primary'}
         on:click={() => {
-          getLink(expHours, emailMask, limit)
+          ;(limit > 0 || noLimit) && getLink(expHours, emailMask, limit)
         }}
       />
     </div>

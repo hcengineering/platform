@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Mixin, Ref, Space } from '@hcengineering/core'
+import type { Class, Configuration, Doc, Mixin, Ref, Space } from '@hcengineering/core'
 import type { Plugin } from '@hcengineering/platform'
 import { Asset, IntlString, plugin, Resource } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
@@ -79,7 +79,7 @@ export interface SettingsCategory extends Doc {
 /**
  * @public
  */
-export interface InviteSettings extends Doc {
+export interface InviteSettings extends Configuration {
   expirationTime: number
   emailMask: string
   limit: number

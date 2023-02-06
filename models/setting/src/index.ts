@@ -16,7 +16,7 @@
 import activity from '@hcengineering/activity'
 import { Domain, DOMAIN_MODEL, Ref } from '@hcengineering/core'
 import { Builder, Mixin, Model } from '@hcengineering/model'
-import core, { TClass, TDoc } from '@hcengineering/model-core'
+import core, { TClass, TConfiguration, TDoc } from '@hcengineering/model-core'
 import view, { createAction } from '@hcengineering/model-view'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import {
@@ -79,8 +79,8 @@ export class TEditable extends TClass implements Editable {
 @Mixin(setting.mixin.UserMixin, core.class.Class)
 export class TUserMixin extends TClass implements UserMixin {}
 
-@Model(setting.class.InviteSettings, core.class.Doc, DOMAIN_SETTING)
-export class TInviteSettings extends TDoc implements InviteSettings {
+@Model(setting.class.InviteSettings, core.class.Configuration, DOMAIN_SETTING)
+export class TInviteSettings extends TConfiguration implements InviteSettings {
   expirationTime!: number
   emailMask!: string
   limit!: number

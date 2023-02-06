@@ -27,10 +27,6 @@
     "HowToWorkFaster": "Learn how to work faster",
     "HiddenApplication": "Hidden application",
     "OpenInNewTab": "Open in a new tab",
-    "UseWorkspaceInviteSettings": "Use workspace invite settings",
-    "LinkValidHours": "Link valid (hours):",
-    "EmailMask": "Email mask:",
-    "InviteLimit": "Invite limit:",
-    "GetLink": "Get invite link"
+    "UseWorkspaceInviteSettings": "Use workspace invite settings"
   }
 }

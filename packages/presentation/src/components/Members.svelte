@@ -15,7 +15,6 @@
 <script lang="ts">
   import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
   import { Account, DocumentQuery, Ref, SortingOrder, Space } from '@hcengineering/core'
-  import workbench from '@hcengineering/workbench'
   import { translate } from '@hcengineering/platform'
   import setting from '@hcengineering/setting'
   import { IconAdd, Label, SearchEdit, showPopup } from '@hcengineering/ui'
@@ -23,6 +22,7 @@
   import presentation from '../plugin'
   import { getClient } from '../utils'
   import UserInfo from './UserInfo.svelte'
+  import login from '@hcengineering/login'
 
   export let space: Space
   export let withAddButton: boolean = false
@@ -65,7 +65,7 @@
   }
 
   function inviteWorkspace (): void {
-    showPopup(workbench.component.InviteLink, {})
+    showPopup(login.component.InviteLink, {})
   }
 </script>
 
