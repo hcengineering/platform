@@ -13,7 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, FindOptions, FindResult, Ref } from '@hcengineering/core'
+  import {
+    Class,
+    Doc,
+    DocumentQuery,
+    FindOptions,
+    FindResult,
+    Ref,
+    SortingOrder,
+    SortingQuery
+  } from '@hcengineering/core'
   import { Asset, getResource, IntlString } from '@hcengineering/platform'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { calcRank, DocWithRank } from '@hcengineering/task'
@@ -49,6 +58,7 @@
   export let icon: Asset | undefined = undefined
   export let iconSize: IconSize = 'small'
 
+  const SORTING_ORDER = SortingOrder.Ascending
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const itemsQuery = createQuery()
@@ -121,9 +131,12 @@
         items[draggingIndex < itemIndex ? itemIndex + 1 : itemIndex] as DocWithRank
       ]
 
+      const sortingOrder = queryOptions?.sort?.rank ?? SORTING_ORDER
+      const rank = sortingOrder === SortingOrder.Ascending ? calcRank(prev, next) : calcRank(next, prev)
+
       try {
         areItemsSorting = true
-        await client.update(item, { rank: calcRank(prev, next) })
+        await client.update(item, { rank })
       } finally {
         areItemsSorting = false
       }
@@ -149,7 +162,11 @@
 
   $: !$$slots.object && updatePresenter(_class)
   $: updateObjectFactory(_class)
-  $: itemsQuery.query(_class, query, updateItems, { ...queryOptions, limit: Math.max(queryOptions?.limit ?? 0, 200) })
+  $: itemsQuery.query(_class, query, updateItems, {
+    ...(isSortable ? { sort: { rank: SORTING_ORDER } } : {}),
+    ...(queryOptions ?? {}),
+    limit: Math.max(queryOptions?.limit ?? 0, 200)
+  })
 
   $: isLoading = isPresenterLoading || areItemsloading
   $: isSortable = hierarchy.getAllAttributes(_class).has('rank')
