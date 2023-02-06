@@ -23,6 +23,7 @@
   export let issues: Issue[] | undefined = undefined
   export let viewlet: Viewlet
   export let viewOptions: ViewOptions
+  export let disableHeader = false
 
   // Extra properties
   export let teams: Map<Ref<Team>, Team> | undefined
@@ -45,5 +46,6 @@
     {query}
     flatHeaders={true}
     props={{ teams, issueStatuses }}
+    {disableHeader}
   />
 {/if}

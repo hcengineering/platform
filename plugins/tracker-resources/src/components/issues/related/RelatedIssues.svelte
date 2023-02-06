@@ -13,17 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import { Doc, DocumentQuery, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
-  import presentation, { createQuery } from '@hcengineering/presentation'
+  import { createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
   import { Label, Spinner } from '@hcengineering/ui'
   import { Viewlet, ViewOptions } from '@hcengineering/view'
   import tracker from '../../../plugin'
   import SubIssueList from '../edit/SubIssueList.svelte'
+  import AddIssueDuo from '../../icons/AddIssueDuo.svelte'
 
   export let object: Doc
   export let viewlet: Viewlet
   export let viewOptions: ViewOptions
+
+  const dispatch = createEventDispatcher()
 
   let query: DocumentQuery<Issue>
   $: query = { 'relations._id': object._id, 'relations._class': object._class }
@@ -65,18 +69,25 @@
   )
 </script>
 
-<div class="mt-1">
-  {#if subIssues !== undefined && viewlet !== undefined}
-    {#if issueStatuses.size > 0 && teams}
-      <SubIssueList bind:viewOptions {viewlet} issues={subIssues} {teams} {issueStatuses} />
-    {:else}
-      <div class="p-1">
-        <Label label={presentation.string.NoMatchesFound} />
-      </div>
-    {/if}
+{#if subIssues !== undefined && viewlet !== undefined}
+  {#if issueStatuses.size > 0 && teams && subIssues.length > 0}
+    <SubIssueList bind:viewOptions {viewlet} issues={subIssues} {teams} {issueStatuses} disableHeader />
   {:else}
-    <div class="flex-center pt-3">
-      <Spinner />
+    <div class="antiSection-empty solid flex-col mt-3">
+      <div class="flex-center content-accent-color">
+        <AddIssueDuo size={'large'} />
+      </div>
+      <div class="text-sm dark-color" style:pointer-events="none">
+        <Label label={tracker.string.RelatedIssuesNotFound} />
+      </div>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <div class="over-underline text-sm content-accent-color" on:click={() => dispatch('add-issue')}>
+        <Label label={tracker.string.NewRelatedIssue} />
+      </div>
     </div>
   {/if}
-</div>
+{:else}
+  <div class="flex-center pt-3">
+    <Spinner />
+  </div>
+{/if}

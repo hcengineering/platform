@@ -18,6 +18,7 @@
   })
 
   let viewOptions = getViewOptions(viewlet)
+  const createIssue = () => showPopup(tracker.component.CreateIssue, { relatedTo: object, space: object.space }, 'top')
 </script>
 
 <div class="antiSection">
@@ -34,21 +35,16 @@
       {/if}
       <Button
         id="add-sub-issue"
-        width="min-content"
         icon={IconAdd}
         label={undefined}
         labelParams={{ subIssues: 0 }}
         kind={'transparent'}
-        size={'small'}
-        on:click={() => {
-          showPopup(tracker.component.CreateIssue, { relatedTo: object, space: object.space }, 'top')
-        }}
+        shape={'circle'}
+        on:click={createIssue}
       />
     </div>
   </div>
-  <div class="flex-row">
-    {#if viewlet}
-      <RelatedIssues {object} {viewOptions} {viewlet} />
-    {/if}
-  </div>
+  {#if viewlet}
+    <RelatedIssues {object} {viewOptions} {viewlet} on:add-issue={createIssue} />
+  {/if}
 </div>

@@ -260,6 +260,7 @@
     "Capacity": "Capacity",
     "CapacityValue": "of {value}d",
     "NewRelatedIssue": "New related issue",
+    "RelatedIssuesNotFound": "Related issues not found",
 
     "AddedReference": "Added reference",
     "AddedAsBlocked": "Marked as blocked",
