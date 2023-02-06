@@ -104,7 +104,7 @@ import TeamPresenter from './components/teams/TeamPresenter.svelte'
 import IssueStatistics from './components/sprints/IssueStatistics.svelte'
 import StatusRefPresenter from './components/issues/StatusRefPresenter.svelte'
 import SprintRefPresenter from './components/sprints/SprintRefPresenter.svelte'
-import DeleteProjectPresenter from "./components/projects/DeleteProjectPresenter.svelte";
+import DeleteProjectPresenter from './components/projects/DeleteProjectPresenter.svelte'
 
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 

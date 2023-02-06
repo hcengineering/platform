@@ -354,7 +354,6 @@ export interface Project extends Doc {
   targetDate: Timestamp | null
 
   // Ref<Document>[]
-  documents: number
 }
 
 /**
@@ -381,7 +380,6 @@ export default plugin(trackerId, {
     Issue: '' as Ref<Class<Issue>>,
     IssueDraft: '' as Ref<Class<IssueDraft>>,
     IssueTemplate: '' as Ref<Class<IssueTemplate>>,
-    Document: '' as Ref<Class<Document>>,
     Project: '' as Ref<Class<Project>>,
     IssueStatus: '' as Ref<Class<IssueStatus>>,
     IssueStatusCategory: '' as Ref<Class<IssueStatusCategory>>,

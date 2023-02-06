@@ -32,6 +32,7 @@ export default plugin(serverTrackerId, {
     IssueTextPresenter: '' as Resource<Presenter>
   },
   trigger: {
-    OnIssueUpdate: '' as Resource<TriggerFunc>
+    OnIssueUpdate: '' as Resource<TriggerFunc>,
+    OnProjectRemove: '' as Resource<TriggerFunc>
   }
 })

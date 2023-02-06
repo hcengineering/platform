@@ -37,8 +37,7 @@
     comments: 0,
     attachments: 0,
     startDate: null,
-    targetDate: null,
-    documents: 0
+    targetDate: null
   }
 
   async function onSave () {

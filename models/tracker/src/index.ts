@@ -54,7 +54,6 @@ import setting from '@hcengineering/setting'
 import tags, { TagElement } from '@hcengineering/tags'
 import task from '@hcengineering/task'
 import {
-  Document,
   Issue,
   IssueChildInfo,
   IssueParentInfo,
@@ -339,28 +338,6 @@ export class TTimeSpendReport extends TAttachedDoc implements TimeSpendReport {
   @Prop(TypeString(), tracker.string.TimeSpendReportDescription)
     description!: string
 }
-/**
- * @public
- */
-@Model(tracker.class.Document, core.class.Doc, DOMAIN_TRACKER)
-@UX(tracker.string.Document, tracker.icon.Document, tracker.string.Document)
-export class TDocument extends TDoc implements Document {
-  @Prop(TypeString(), tracker.string.Title)
-  @Index(IndexKind.FullText)
-    title!: string
-
-  @Prop(TypeString(), tracker.string.DocumentIcon)
-    icon!: string | null
-
-  @Prop(TypeString(), tracker.string.DocumentColor)
-    color!: number
-
-  @Prop(TypeMarkup(), tracker.string.Description)
-  @Index(IndexKind.FullText)
-    content!: Markup
-
-  declare space: Ref<Team>
-}
 
 /**
  * @public
@@ -389,9 +366,6 @@ export class TProject extends TDoc implements Project {
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
     comments!: number
-
-  @Prop(Collection(tracker.class.Document), tracker.string.Document)
-    documents!: number
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number

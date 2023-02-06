@@ -13,7 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-
   import view from '@hcengineering/view'
   import { Button, ButtonSize, LabelAndProps, showPopup } from '@hcengineering/ui'
   import { getClient, MessageBox } from '@hcengineering/presentation'
@@ -53,11 +52,6 @@
   }
 </script>
 
-<Button
-  {size}
-  {width}
-  {justify}
-  {showTooltip}
-  icon={view.icon.Delete}
-  on:click={() => showConfirmationDialog()}
-/>
+{#if value}
+  <Button {size} {width} {justify} {showTooltip} icon={view.icon.Delete} on:click={() => showConfirmationDialog()} />
+{/if}
