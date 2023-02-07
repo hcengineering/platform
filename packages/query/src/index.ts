@@ -335,9 +335,7 @@ export class LiveQuery extends TxProcessor implements Client {
           }
           this.sort(q, tx)
           const udoc = q.result.find((p) => p._id === tx.objectId)
-          if (udoc !== undefined) {
-            await this.updatedDocCallback(udoc, q)
-          }
+          await this.updatedDocCallback(udoc, q)
         } else if (isMixin) {
           // Mixin potentially added to object we doesn't have in out results
           const doc = await this.findOne(q._class, { _id: tx.objectId }, q.options)
@@ -421,15 +419,11 @@ export class LiveQuery extends TxProcessor implements Client {
       }
       this.sort(q, tx)
       const udoc = q.result.find((p) => p._id === tx.objectId)
-      if (udoc !== undefined) {
-        await this.updatedDocCallback(q.result[pos], q)
-      }
+      await this.updatedDocCallback(udoc, q)
     } else if (await this.matchQuery(q, tx)) {
       this.sort(q, tx)
       const udoc = q.result.find((p) => p._id === tx.objectId)
-      if (udoc !== undefined) {
-        await this.updatedDocCallback(udoc, q)
-      }
+      await this.updatedDocCallback(udoc, q)
     }
     await this.handleDocUpdateLookup(q, tx)
   }
@@ -967,10 +961,13 @@ export class LiveQuery extends TxProcessor implements Client {
     return false
   }
 
-  private async updatedDocCallback (updatedDoc: Doc, q: Query): Promise<void> {
+  private async updatedDocCallback (updatedDoc: Doc | undefined, q: Query): Promise<void> {
     q.result = q.result as Doc[]
 
     if (q.options?.limit !== undefined && q.result.length > q.options.limit) {
+      if (updatedDoc === undefined) {
+        return await this.refresh(q)
+      }
       if (q.result[q.options?.limit]._id === updatedDoc._id) {
         return await this.refresh(q)
       }
