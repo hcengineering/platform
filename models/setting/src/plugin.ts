@@ -41,6 +41,7 @@ export default mergeIds(settingId, setting, {
     EnumTypeEditor: '' as AnyComponent,
     Owners: '' as AnyComponent,
     CreateMixin: '' as AnyComponent,
+    InviteSetting: '' as AnyComponent,
     ArrayEditor: '' as AnyComponent
   },
   category: {

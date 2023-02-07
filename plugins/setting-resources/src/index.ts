@@ -42,6 +42,7 @@ import ArrayEditor from './components/typeEditors/ArrayEditor.svelte'
 import RefEditor from './components/typeEditors/RefEditor.svelte'
 import StringTypeEditor from './components/typeEditors/StringTypeEditor.svelte'
 import WorkspaceSettings from './components/WorkspaceSettings.svelte'
+import InviteSetting from './components/InviteSetting.svelte'
 import setting from './plugin'
 
 export { ClassSetting }
@@ -95,7 +96,8 @@ export default async (): Promise<Resources> => ({
     EditEnum,
     EnumSetting,
     Owners,
-    CreateMixin
+    CreateMixin,
+    InviteSetting
   },
   actionImpl: {
     DeleteMixin

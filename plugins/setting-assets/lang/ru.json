@@ -69,6 +69,7 @@
     "HideAttribute": "Спрятать",
     "Visibility": "Видимость",
     "Hidden": "Спрятанный",
-    "Configure": "Настроить..."
+    "Configure": "Настроить...",
+    "InviteSettings": "Настройки приглашений в пространство"
   }
 }

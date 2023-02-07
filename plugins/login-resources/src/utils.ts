@@ -353,12 +353,10 @@ export async function checkJoined (inviteId: string): Promise<[Status, Workspace
   }
 }
 
-export async function getInviteLink (expHours: number = 1): Promise<string> {
+export async function getInviteLink (expHours: number = 1, emailMask: string = '', limit: number = -1): Promise<string> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   const exp = expHours * 1000 * 60 * 60
-  const emailMask = ''
-  const limit = -1
 
   if (accountsUrl === undefined) {
     throw new Error('accounts url not specified')
