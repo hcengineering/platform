@@ -51,6 +51,7 @@
   {#each requests as request}
     {#await getType(request) then type}
       {#if type}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="request flex-center"
           class:cursor-pointer={editable}

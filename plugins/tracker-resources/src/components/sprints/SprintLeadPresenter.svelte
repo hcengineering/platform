@@ -15,19 +15,18 @@
 <script lang="ts">
   import contact, { Employee } from '@hcengineering/contact'
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { Project, Sprint } from '@hcengineering/tracker'
-  import { UsersPopup, getClient } from '@hcengineering/presentation'
-  import { AttributeModel } from '@hcengineering/view'
-  import { eventToHTMLElement, IconSize, showPopup } from '@hcengineering/ui'
-  import { getObjectPresenter } from '@hcengineering/view-resources'
   import { IntlString } from '@hcengineering/platform'
+  import { getClient, UsersPopup } from '@hcengineering/presentation'
+  import { Sprint } from '@hcengineering/tracker'
+  import { eventToHTMLElement, IconSize, showPopup } from '@hcengineering/ui'
+  import { AttributeModel } from '@hcengineering/view'
+  import { getObjectPresenter } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
-  import LeadPopup from './LeadPopup.svelte'
+  import LeadPopup from '../projects/LeadPopup.svelte'
 
   export let value: Employee | null
-  export let _class: Ref<Class<Project | Sprint>>
   export let size: IconSize = 'x-small'
-  export let parentId: Ref<Doc>
+  export let object: Sprint
   export let defaultClass: Ref<Class<Doc>> | undefined = undefined
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
@@ -53,16 +52,9 @@
     if (!isEditable || result === undefined) {
       return
     }
-
-    const currentParent = await client.findOne(_class, { _id: parentId as Ref<Project> })
-
-    if (currentParent === undefined) {
-      return
-    }
-
     const newLead = result === null ? null : result._id
 
-    await client.update(currentParent, { lead: newLead })
+    await client.update(object, { lead: newLead })
   }
 
   const handleLeadEditorOpened = async (event: MouseEvent) => {

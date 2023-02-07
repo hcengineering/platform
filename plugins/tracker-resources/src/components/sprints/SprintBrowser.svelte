@@ -13,62 +13,84 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@hcengineering/contact'
-  import { DocumentQuery, FindOptions, SortingOrder, WithLookup } from '@hcengineering/core'
+  import { DocumentQuery, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { Sprint } from '@hcengineering/tracker'
-  import { Button, defaultSP, Icon, IconAdd, Label, Scroller, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, Label, SearchEdit, showPopup } from '@hcengineering/ui'
+  import view, { Viewlet } from '@hcengineering/view'
+  import {
+    FilterBar,
+    FilterButton,
+    getActiveViewletId,
+    getViewOptions,
+    setActiveViewletId,
+    ViewletSettingButton
+  } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import { getIncludedSprintStatuses, sprintTitleMap, SprintViewMode } from '../../utils'
   import NewSprint from './NewSprint.svelte'
-  import SprintDatePresenter from './SprintDatePresenter.svelte'
-  import SprintListBrowser from './SprintListBrowser.svelte'
-  import SprintProjectEditor from './SprintProjectEditor.svelte'
+  import SprintContent from './SprintContent.svelte'
 
   export let label: IntlString
   export let query: DocumentQuery<Sprint> = {}
   export let search: string = ''
   export let mode: SprintViewMode = 'all'
 
-  const ENTRIES_LIMIT = 200
-  const resultSprintsQuery = createQuery()
-
-  const sprintOptions: FindOptions<Sprint> = {
-    sort: { startDate: SortingOrder.Descending },
-    limit: ENTRIES_LIMIT,
-    lookup: {
-      lead: contact.class.Employee,
-      project: tracker.class.Project
-    }
+  const space = typeof query.space === 'string' ? query.space : tracker.team.DefaultTeam
+  const showCreateDialog = async () => {
+    showPopup(NewSprint, { space, targetElement: null }, 'top')
   }
 
-  let resultSprints: WithLookup<Sprint>[] = []
+  export let panelWidth: number = 0
+
+  let viewlet: WithLookup<Viewlet> | undefined = undefined
+
+  let searchQuery: DocumentQuery<Sprint> = { ...query }
+  function updateSearchQuery (search: string): void {
+    searchQuery = search === '' ? { ...query } : { ...query, $search: search }
+  }
+  $: if (query) updateSearchQuery(search)
 
   $: includedSprintStatuses = getIncludedSprintStatuses(mode)
   $: title = sprintTitleMap[mode]
   $: includedSprintsQuery = { status: { $in: includedSprintStatuses } }
 
-  $: baseQuery = {
-    ...includedSprintsQuery,
-    ...query
+  const client = getClient()
+  let resultQuery: DocumentQuery<Sprint> = { ...searchQuery }
+
+  let viewlets: WithLookup<Viewlet>[] = []
+
+  $: update()
+
+  async function update (): Promise<void> {
+    viewlets = await client.findAll(
+      view.class.Viewlet,
+      { attachTo: tracker.class.Sprint },
+      {
+        lookup: {
+          descriptor: view.class.ViewletDescriptor
+        }
+      }
+    )
+    const _id = getActiveViewletId()
+    viewlet = viewlets.find((viewlet) => viewlet._id === _id) || viewlets[0]
+    setActiveViewletId(viewlet._id)
   }
 
-  $: resultQuery = search === '' ? baseQuery : { $search: search, ...baseQuery }
-
-  $: resultSprintsQuery.query<Sprint>(
-    tracker.class.Sprint,
-    { ...resultQuery },
-    (result) => {
-      resultSprints = result
-    },
-    sprintOptions
-  )
-
-  const space = typeof query.space === 'string' ? query.space : tracker.team.DefaultTeam
-  const showCreateDialog = async () => {
-    showPopup(NewSprint, { space, targetElement: null }, 'top')
+  let asideFloat: boolean = false
+  let asideShown: boolean = true
+  $: if (panelWidth < 900 && !asideFloat) asideFloat = true
+  $: if (panelWidth >= 900 && asideFloat) {
+    asideFloat = false
+    asideShown = false
   }
+  let docWidth: number
+  let docSize: boolean = false
+  $: if (docWidth <= 900 && !docSize) docSize = true
+  $: if (docWidth > 900 && docSize) docSize = false
+
+  $: viewOptions = getViewOptions(viewlet)
 
   const handleViewModeChanged = (newMode: SprintViewMode) => {
     if (newMode === undefined || newMode === mode) {
@@ -77,18 +99,25 @@
 
     mode = newMode
   }
-
-  const retrieveMembers = (s: Sprint) => s.members
 </script>
 
 <div class="fs-title flex-between header">
-  <div class="flex-center">
+  <div class="flex-row-center">
     <Label {label} />
     <div class="projectTitle">
       › <Label label={title} />
     </div>
+    <div class="ml-4">
+      <FilterButton _class={tracker.class.Issue} {space} />
+    </div>
   </div>
-  <Button size="small" icon={IconAdd} label={tracker.string.Sprint} kind={'primary'} on:click={showCreateDialog} />
+  <div class="flex-row-center gap-2">
+    <SearchEdit bind:value={search} on:change={() => {}} />
+    <Button size="small" icon={IconAdd} label={tracker.string.Sprint} kind={'primary'} on:click={showCreateDialog} />
+    {#if viewlet}
+      <ViewletSettingButton bind:viewOptions {viewlet} />
+    {/if}
+  </div>
 </div>
 <div class="itemsContainer">
   <div class="flex-center">
@@ -130,66 +159,23 @@
         />
       </div>
     </div>
-    <!-- <div class="ml-3 filterButton">
-        <Button
-          size="small"
-          icon={IconAdd}
-          kind={'link-bordered'}
-          borderStyle={'dashed'}
-          label={tracker.string.Filter}
-          on:click={() => {}}
-        />
-      </div> -->
   </div>
-  <!-- <div class="flex-center">
-      <div class="flex-center">
-        <div class="buttonWrapper">
-          <Button selected size="small" shape="rectangle-right" icon={tracker.icon.ProjectsList} />
-        </div>
-        <div class="buttonWrapper">
-          <Button size="small" shape="rectangle-left" icon={tracker.icon.ProjectsTimeline} />
-        </div>
-      </div>
-      <div class="ml-3">
-        <Button size="small" icon={IconOptions} />
-      </div>
-    </div> -->
 </div>
-<div class="w-full h-full clear-mins">
-  <Scroller fade={defaultSP}>
-    <SprintListBrowser
-      _class={tracker.class.Sprint}
-      itemsConfig={[
-        { key: '', presenter: Icon, props: { icon: tracker.icon.Sprint, size: 'small' } },
-        { key: '', presenter: tracker.component.SprintPresenter, props: { kind: 'list' } },
-        { key: '', presenter: SprintProjectEditor, props: { kind: 'list' } },
-        {
-          key: '$lookup.lead',
-          presenter: tracker.component.LeadPresenter,
-          props: {
-            _class: tracker.class.Sprint,
-            defaultClass: contact.class.Employee,
-            shouldShowLabel: false,
-            size: 'x-small'
-          }
-        },
-        {
-          key: '',
-          presenter: contact.component.MembersPresenter,
-          props: {
-            kind: 'link',
-            intlTitle: tracker.string.SprintMembersTitle,
-            intlSearchPh: tracker.string.SprintMembersSearchPlaceholder,
-            retrieveMembers
-          }
-        },
-        { key: '', presenter: SprintDatePresenter, props: { field: 'startDate' } },
-        { key: '', presenter: SprintDatePresenter, props: { field: 'targetDate' } },
-        { key: '', presenter: tracker.component.SprintStatusPresenter }
-      ]}
-      sprints={resultSprints}
-    />
-  </Scroller>
+<FilterBar
+  _class={tracker.class.Sprint}
+  query={searchQuery}
+  {viewOptions}
+  on:change={(e) => (resultQuery = e.detail)}
+/>
+<div class="flex w-full h-full clear-mins">
+  {#if viewlet}
+    <SprintContent {viewlet} query={{ ...resultQuery, ...includedSprintsQuery }} {space} {viewOptions} />
+  {/if}
+  {#if $$slots.aside !== undefined && asideShown}
+    <div class="popupPanel-body__aside flex" class:float={asideFloat} class:shown={asideShown}>
+      <slot name="aside" />
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">
@@ -220,8 +206,4 @@
       margin-right: 0;
     }
   }
-
-  // .filterButton {
-  //   color: var(--caption-color);
-  // }
 </style>

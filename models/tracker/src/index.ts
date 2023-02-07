@@ -1241,6 +1241,10 @@ export function createModel (builder: Builder): void {
     filters: ['priority', 'assignee', 'project', 'sprint', 'modifiedOn']
   })
 
+  builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.ClassFilters, {
+    filters: ['status', 'project', 'lead', 'startDate', 'targetDate', 'modifiedOn', 'capacity']
+  })
+
   builder.createDoc(
     presentation.class.ObjectSearchCategory,
     core.space.Model,
@@ -1599,5 +1603,79 @@ export function createModel (builder: Builder): void {
     tracker.class.TypeReportedTime,
     view.component.NumberPresenter,
     tracker.component.ReportedTimeEditor
+  )
+
+  const sprintOptions: ViewOptionsModel = {
+    groupBy: ['project', 'lead'],
+    orderBy: [
+      ['startDate', SortingOrder.Descending],
+      ['modifiedOn', SortingOrder.Descending],
+      ['targetDate', SortingOrder.Descending],
+      ['capacity', SortingOrder.Ascending]
+    ],
+    other: []
+  }
+
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: tracker.class.Sprint,
+    descriptor: view.viewlet.List,
+    viewOptions: sprintOptions,
+    config: [
+      {
+        key: '',
+        presenter: tracker.component.SprintStatusPresenter,
+        props: { width: '1rem', kind: 'list', size: 'small', justify: 'center' }
+      },
+      { key: '', presenter: tracker.component.SprintPresenter, props: { shouldUseMargin: true } },
+      { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
+      { key: '', presenter: tracker.component.SprintProjectEditor, props: { kind: 'list' } },
+      {
+        key: '',
+        presenter: contact.component.MembersPresenter,
+        props: {
+          kind: 'link',
+          intlTitle: tracker.string.SprintMembersTitle,
+          intlSearchPh: tracker.string.SprintMembersSearchPlaceholder
+        }
+      },
+      { key: '', presenter: tracker.component.SprintDatePresenter, props: { field: 'startDate' } },
+      { key: '', presenter: tracker.component.SprintDatePresenter, props: { field: 'targetDate' } },
+      {
+        key: '$lookup.lead',
+        presenter: tracker.component.SprintLeadPresenter,
+        props: {
+          _class: tracker.class.Sprint,
+          defaultClass: contact.class.Employee,
+          shouldShowLabel: false,
+          size: 'x-small'
+        }
+      }
+    ]
+  })
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ValueSelector,
+      actionPopup: view.component.ValueSelector,
+      actionProps: {
+        attribute: 'lead',
+        _class: contact.class.Employee,
+        query: {},
+        placeholder: tracker.string.SprintLead
+      },
+      label: tracker.string.SprintLead,
+      icon: contact.icon.Person,
+      keyBinding: [],
+      input: 'none',
+      category: tracker.category.Tracker,
+      target: tracker.class.Sprint,
+      context: {
+        mode: ['context'],
+        application: tracker.app.Tracker,
+        group: 'edit'
+      }
+    },
+    tracker.action.SetSprintLead
   )
 }

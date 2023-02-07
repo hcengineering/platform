@@ -148,7 +148,7 @@
 
   const reportQuery = createQuery()
 
-  import tracker from '@hcengineering/tracker'
+  import tracker, { Issue } from '@hcengineering/tracker'
   import { EmployeeReports, fromTzDate, getEndDate, getStartDate } from '../utils'
 
   let timeReports: Map<Ref<Employee>, EmployeeReports> = new Map()
@@ -163,17 +163,24 @@
       const newMap = new Map<Ref<Employee>, EmployeeReports>()
       for (const r of res) {
         if (r.employee != null) {
-          const or = newMap.get(r.employee)
-          newMap.set(r.employee, { value: (or?.value ?? 0) + r.value, reports: [...(or?.reports ?? []), r] })
+          const or = newMap.get(r.employee) ?? {
+            value: 0,
+            reports: [],
+            tasks: new Map()
+          }
+          const tsk = r.$lookup?.attachedTo as Issue
+          newMap.set(r.employee, {
+            value: or.value + r.value,
+            reports: [...or.reports, r],
+            tasks: or.tasks.set(tsk._id, tsk)
+          })
         }
       }
       timeReports = newMap
     },
     {
       lookup: {
-        _id: {
-          attachedTo: tracker.class.Issue
-        }
+        attachedTo: tracker.class.Issue
       }
     }
   )
