@@ -179,7 +179,7 @@ export function createModel (builder: Builder): void {
       label: gmail.string.WrtieEmail,
       icon: contact.icon.Email,
       keyBinding: [],
-      input: 'none',
+      input: 'any',
       category: contact.category.Contact,
       target: contact.class.Contact,
       context: {

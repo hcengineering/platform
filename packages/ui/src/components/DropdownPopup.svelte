@@ -16,11 +16,11 @@
   import type { Asset, IntlString } from '@hcengineering/platform'
   import { translate } from '@hcengineering/platform'
   import { createEventDispatcher, onMount } from 'svelte'
-  import type { AnySvelteComponent, ListItem } from '../types'
+  import { deviceOptionsStore, resizeObserver } from '..'
   import plugin from '../plugin'
+  import type { AnySvelteComponent, ListItem } from '../types'
   import Icon from './Icon.svelte'
   import ListView from './ListView.svelte'
-  import { resizeObserver, deviceOptionsStore } from '..'
 
   export let icon: Asset | AnySvelteComponent
   export let placeholder: IntlString = plugin.string.SearchDots
@@ -68,11 +68,6 @@
       key.preventDefault()
       key.stopPropagation()
       handleSelection(key, selection)
-    }
-    if (key.code === 'Escape') {
-      key.preventDefault()
-      key.stopPropagation()
-      dispatch('close')
     }
   }
 </script>

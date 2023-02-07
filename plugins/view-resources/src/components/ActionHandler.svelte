@@ -38,6 +38,9 @@
   })
 
   let lastKey: KeyboardEvent | undefined
+  let sequences: Action<Doc, Record<string, any>>[] = []
+  let delayedAction: (() => Promise<void>) | undefined
+  let timer: number | undefined
 
   async function getCurrentActions (
     context: {
@@ -70,23 +73,39 @@
     )
   }
   function m (s1: string, s2: string): boolean {
-    return s1 === s2.toLowerCase()
+    return s1 === s2
   }
-  function matchKey (key: KeyboardEvent, pattern: string, lastKey?: KeyboardEvent): boolean {
+
+  function findKeySequence (pattern: string, key: KeyboardEvent): boolean {
+    const lc = pattern.toLowerCase()
+    const pfp = (keyPrefix(key) + key.key).toLowerCase()
+    const pfp2 = (keyPrefix(key) + key.code).toLowerCase()
+    return lc.startsWith(`${pfp}->`) || lc.startsWith(`${pfp2}->`)
+  }
+
+  function getSequences (
+    key: KeyboardEvent,
+    currentActions: Action<Doc, Record<string, any>>[]
+  ): Action<Doc, Record<string, any>>[] {
+    const res = currentActions.filter((p) => p.keyBinding?.find((p) => findKeySequence(p, key)))
+    return res
+  }
+
+  function matchKeySequence (key: KeyboardEvent, pattern: string, lastKey: KeyboardEvent): boolean {
     const fp = (keyPrefix(key) + key.key).toLowerCase()
     const fp2 = (keyPrefix(key) + key.code).toLowerCase()
     const lc = pattern.toLowerCase()
-    if (m(fp, lc) || m(fp2, lc)) {
-      return true
-    }
-    if (lastKey !== undefined) {
-      // Check with last key
-      const pfp = (keyPrefix(key) + lastKey.key).toLowerCase()
-      const pfp2 = (keyPrefix(key) + lastKey.code).toLowerCase()
+    const pfp = (keyPrefix(lastKey) + lastKey.key).toLowerCase()
+    const pfp2 = (keyPrefix(lastKey) + lastKey.code).toLowerCase()
 
-      return m(`${pfp}->${fp}`, lc) || m(`${pfp2}->${fp}`, lc) || m(`${pfp}->${fp2}`, lc) || m(`${pfp2}->${fp2}`, lc)
-    }
-    return false
+    return m(`${pfp}->${fp}`, lc) || m(`${pfp2}->${fp}`, lc) || m(`${pfp}->${fp2}`, lc) || m(`${pfp2}->${fp2}`, lc)
+  }
+
+  function matchKey (key: KeyboardEvent, pattern: string): boolean {
+    const fp = (keyPrefix(key) + key.key).toLowerCase()
+    const fp2 = (keyPrefix(key) + key.code).toLowerCase()
+    const lc = pattern.toLowerCase()
+    return m(fp, lc) || m(fp2, lc)
   }
 
   async function handleKeys (evt: KeyboardEvent): Promise<void> {
@@ -114,6 +133,7 @@
     if (ctx.mode === 'none') {
       return
     }
+    clearTimeout(timer)
 
     const docs = getSelection($focusStore, $selectionStore)
 
@@ -121,22 +141,56 @@
       // Retrieve actual list of actions for input context
       currentActions = await getContextActions(client, docs, { ...ctx, mode: 'input' })
     }
-    for (const a of currentActions) {
-      // TODO: Handle multiple keys here
-      if (a.keyBinding?.find((it) => matchKey(evt, it, lastKey)) !== undefined) {
-        lastKey = undefined
-        const action = await getResource(a.action)
-        if (action !== undefined) {
-          await action($focusStore.focus, evt, a.actionProps)
+    currentActions = currentActions.filter((p) => p.keyBinding !== undefined && p.keyBinding.length > 0)
+    if (lastKey !== undefined) {
+      for (const a of sequences) {
+        // TODO: Handle multiple keys here
+        if (a.keyBinding?.find((it) => (lastKey ? matchKeySequence(evt, it, lastKey) : false)) !== undefined) {
+          const action = await getResource(a.action)
+          if (action !== undefined) {
+            sequences = []
+            lastKey = undefined
+            delayedAction = undefined
+            return await action(docs, evt, a.actionProps)
+          }
         }
       }
     }
 
+    sequences = getSequences(evt, currentActions)
+    let found = false
+    for (const a of currentActions) {
+      // TODO: Handle multiple keys here
+      if (a.keyBinding?.find((it) => matchKey(evt, it)) !== undefined) {
+        const action = await getResource(a.action)
+        if (action !== undefined) {
+          if (sequences.length === 0) {
+            lastKey = undefined
+            sequences = []
+            delayedAction = undefined
+            return await action(docs, evt, a.actionProps)
+          } else {
+            delayedAction = async () => await action(docs, evt, a.actionProps)
+            found = true
+          }
+        }
+      }
+    }
+    if (!found && delayedAction) {
+      delayedAction()
+      delayedAction = undefined
+    }
+
     lastKey = evt
 
-    setTimeout(() => {
+    timer = setTimeout(() => {
       lastKey = undefined
-    }, 500)
+      sequences = []
+      if (delayedAction !== undefined) {
+        delayedAction()
+        delayedAction = undefined
+      }
+    }, 300)
   }
 
   let presenter: AnyComponent | undefined

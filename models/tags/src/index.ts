@@ -117,6 +117,10 @@ export function createModel (builder: Builder): void {
     component: tags.component.TagsFilter
   })
 
+  builder.mixin(tags.class.TagElement, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [view.action.Open]
+  })
+
   builder.createDoc(
     view.class.FilterMode,
     core.space.Model,

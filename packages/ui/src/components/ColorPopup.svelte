@@ -16,9 +16,9 @@
   import type { IntlString } from '@hcengineering/platform'
   import { translate } from '@hcengineering/platform'
   import { createEventDispatcher, onMount } from 'svelte'
+  import { deviceOptionsStore, resizeObserver } from '..'
   import { getPlatformColor } from '../colors'
   import ListView from './ListView.svelte'
-  import { resizeObserver, deviceOptionsStore } from '..'
 
   export let placeholder: IntlString | undefined = undefined
   export let placeholderParam: any | undefined = undefined
@@ -61,11 +61,6 @@
       key.preventDefault()
       key.stopPropagation()
       handleSelection(key, selection)
-    }
-    if (key.code === 'Escape') {
-      key.preventDefault()
-      key.stopPropagation()
-      dispatch('close')
     }
   }
   let input: HTMLElement

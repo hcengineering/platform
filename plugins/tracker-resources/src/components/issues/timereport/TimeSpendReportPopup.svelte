@@ -23,10 +23,11 @@
   import { getTimeReportDate, getTimeReportDayType } from '../../../utils'
   import TimeReportDayDropdown from './TimeReportDayDropdown.svelte'
 
-  export let issueId: Ref<Issue>
-  export let issueClass: Ref<Class<Issue>>
-  export let space: Ref<Space>
-  export let assignee: Ref<Employee> | undefined
+  export let issue: Issue | undefined = undefined
+  export let issueId: Ref<Issue> | undefined = issue?._id
+  export let issueClass: Ref<Class<Issue>> = issue?._class ?? tracker.class.Issue
+  export let space: Ref<Space> | undefined = issue?.space
+  export let assignee: Ref<Employee> | null | undefined = issue?.assignee
 
   export let value: TimeSpendReport | undefined
   export let placeholder: IntlString = tracker.string.TimeSpendReportValue
@@ -45,16 +46,20 @@
     return true
   }
 
+  const client = getClient()
+
   async function create (): Promise<void> {
     if (value === undefined) {
-      getClient().addCollection(
-        tracker.class.TimeSpendReport,
-        space,
-        issueId,
-        issueClass,
-        'reports',
-        data as AttachedData<TimeSpendReport>
-      )
+      if (space && issueId) {
+        await client.addCollection(
+          tracker.class.TimeSpendReport,
+          space,
+          issueId,
+          issueClass,
+          'reports',
+          data as AttachedData<TimeSpendReport>
+        )
+      }
     } else {
       const ops: DocumentUpdate<TimeSpendReport> = {}
       if (value.value !== data.value) {
@@ -70,15 +75,17 @@
         ops.date = data.date
       }
       if (Object.keys(ops).length > 0) {
-        getClient().update(value, ops)
+        await client.update(value, ops)
       }
     }
   }
+
+  $: canSave = Number.isFinite(data.value) && data.value !== 0 && space !== undefined && issueId !== undefined
 </script>
 
 <Card
   label={tracker.string.TimeSpendReportAdd}
-  canSave={Number.isFinite(data.value) && data.value !== 0}
+  {canSave}
   okAction={create}
   on:close
   okLabel={value === undefined ? presentation.string.Create : presentation.string.Save}

@@ -620,7 +620,7 @@ export function createModel (builder: Builder): void {
     },
     label: recruit.string.CreateTalent,
     icon: recruit.icon.Create,
-    keyBinding: ['c'],
+    keyBinding: ['keyC'],
     input: 'none',
     category: recruit.category.Recruit,
     target: core.class.Doc,
@@ -720,7 +720,7 @@ export function createModel (builder: Builder): void {
     },
     input: 'focus',
     category: recruit.category.Recruit,
-    keyBinding: ['e'],
+    keyBinding: ['keyE'],
     target: recruit.class.Vacancy,
     context: {
       mode: ['context', 'browser'],

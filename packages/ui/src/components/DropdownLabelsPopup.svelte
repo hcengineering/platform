@@ -16,11 +16,11 @@
   import type { IntlString } from '@hcengineering/platform'
   import { translate } from '@hcengineering/platform'
   import { createEventDispatcher, onMount } from 'svelte'
-  import type { DropdownTextItem } from '../types'
+  import { deviceOptionsStore, resizeObserver } from '..'
   import plugin from '../plugin'
+  import type { DropdownTextItem } from '../types'
   import CheckBox from './CheckBox.svelte'
   import ListView from './ListView.svelte'
-  import { resizeObserver, deviceOptionsStore } from '..'
 
   export let placeholder: IntlString = plugin.string.SearchDots
   export let items: DropdownTextItem[]
@@ -75,11 +75,6 @@
       key.preventDefault()
       key.stopPropagation()
       handleSelection(key, selection)
-    }
-    if (key.code === 'Escape') {
-      key.preventDefault()
-      key.stopPropagation()
-      dispatch('close')
     }
   }
 

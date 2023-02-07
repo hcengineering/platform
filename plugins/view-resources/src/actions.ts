@@ -148,9 +148,6 @@ export function filterActions (
     if (role < AccountRole.Maintainer && action.secured === true) {
       continue
     }
-    if (action.override !== undefined) {
-      overrideRemove.push(...action.override)
-    }
     if (action.query !== undefined) {
       const r = matchQuery([doc], action.query, doc._class, hierarchy)
       if (r.length === 0) {
@@ -161,6 +158,9 @@ export function filterActions (
       (hierarchy.isDerived(doc._class, action.target) && client.getHierarchy().isDerived(action.target, derived)) ||
       (hierarchy.isMixin(action.target) && hierarchy.hasMixin(doc, action.target))
     ) {
+      if (action.override !== undefined) {
+        overrideRemove.push(...action.override)
+      }
       result.push(action)
     }
   }

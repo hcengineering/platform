@@ -30,7 +30,7 @@ import {
   Persons,
   Status
 } from '@hcengineering/contact'
-import { Class, DateRangeMode, Domain, Ref, Timestamp, DOMAIN_MODEL, IndexKind } from '@hcengineering/core'
+import { Class, DateRangeMode, Domain, DOMAIN_MODEL, IndexKind, Ref, Timestamp } from '@hcengineering/core'
 import {
   Builder,
   Collection,
@@ -48,7 +48,7 @@ import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
 import core, { TAccount, TAttachedDoc, TDoc, TSpace } from '@hcengineering/model-core'
 import presentation from '@hcengineering/model-presentation'
-import view, { actionTemplates, createAction, ViewAction, Viewlet } from '@hcengineering/model-view'
+import view, { createAction, ViewAction, Viewlet } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
@@ -497,15 +497,6 @@ export function createModel (builder: Builder): void {
     },
     contact.completion.OrganizationCategory
   )
-
-  createAction(builder, {
-    ...actionTemplates.open,
-    target: contact.class.Contact,
-    context: {
-      mode: ['browser', 'context'],
-      group: 'create'
-    }
-  })
 
   createAction(
     builder,

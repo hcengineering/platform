@@ -15,10 +15,10 @@
 <script lang="ts">
   import { IntlString } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
+  import { resizeObserver } from '..'
   import CheckBox from './CheckBox.svelte'
   import Label from './Label.svelte'
   import ListView from './ListView.svelte'
-  import { resizeObserver } from '..'
 
   export let items: Record<any, IntlString>
   export let selected: any | undefined = undefined
@@ -50,11 +50,6 @@
       key.preventDefault()
       key.stopPropagation()
       handleSelection(key, selection)
-    }
-    if (key.code === 'Escape') {
-      key.preventDefault()
-      key.stopPropagation()
-      dispatch('close')
     }
   }
 </script>

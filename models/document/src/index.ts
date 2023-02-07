@@ -245,11 +245,15 @@ export function createModel (builder: Builder): void {
 
   createAction(builder, {
     ...actionTemplates.open,
+    actionProps: {
+      component: document.component.EditDoc
+    },
     target: document.class.Document,
     context: {
       mode: ['browser', 'context'],
       group: 'create'
-    }
+    },
+    override: [view.action.Open]
   })
   builder.mixin(document.class.DocumentVersion, core.class.Class, view.mixin.CollectionEditor, {
     editor: document.component.DocumentVersions
