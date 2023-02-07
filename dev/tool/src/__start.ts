@@ -63,7 +63,7 @@ function prepareTools (): {
   minio: MinioService
   txes: Tx[]
   version: Data<Version>
-  migrateOperations: MigrateOperation[]
+  migrateOperations: [string, MigrateOperation][]
 } {
   return { ...prepareToolsRaw(builder.getTxes()), version, migrateOperations }
 }

@@ -14,6 +14,7 @@
 //
 
 import core, {
+  AttachedDoc,
   Class,
   Doc,
   DocumentQuery,
@@ -38,6 +39,7 @@ import core, {
   StorageIterator,
   toFindResult,
   Tx,
+  TxCollectionCUD,
   TxCreateDoc,
   TxMixin,
   TxProcessor,
@@ -48,7 +50,7 @@ import core, {
   WorkspaceId
 } from '@hcengineering/core'
 import type { DbAdapter, TxAdapter } from '@hcengineering/server-core'
-import { Collection, Db, Document, Filter, MongoClient, Sort, UpdateFilter } from 'mongodb'
+import { AnyBulkWriteOperation, Collection, Db, Document, Filter, MongoClient, Sort, UpdateFilter } from 'mongodb'
 import { createHash } from 'node:crypto'
 import { getMongoClient, getWorkspaceDB } from './utils'
 
@@ -80,17 +82,19 @@ interface LookupStep {
   pipeline?: any
 }
 
-abstract class MongoAdapterBase extends TxProcessor {
+abstract class MongoAdapterBase implements DbAdapter {
   constructor (
     protected readonly db: Db,
     protected readonly hierarchy: Hierarchy,
     protected readonly modelDb: ModelDb,
     protected readonly client: MongoClient
-  ) {
-    super()
-  }
+  ) {}
 
   async init (): Promise<void> {}
+
+  async tx (...tx: Tx[]): Promise<TxResult> {
+    return {}
+  }
 
   async close (): Promise<void> {
     await this.client.close()
@@ -105,14 +109,7 @@ abstract class MongoAdapterBase extends TxProcessor {
       if (value !== null && typeof value === 'object') {
         const keys = Object.keys(value)
         if (keys[0] === '$like') {
-          const pattern = value.$like as string
-          translated[tkey] = {
-            $regex: `^${pattern
-              .split('%')
-              .map((it) => escapeLikeForRegexp(it))
-              .join('.*')}$`,
-            $options: 'i'
-          }
+          translated[tkey] = translateLikeQuery(value.$like as string)
           continue
         }
       }
@@ -130,7 +127,6 @@ abstract class MongoAdapterBase extends TxProcessor {
       // Add an mixin to be exists flag
       translated[clazz] = { $exists: true }
     }
-    // return Object.assign({}, query, { _class: { $in: classes } })
     return translated
   }
 
@@ -522,9 +518,6 @@ abstract class MongoAdapterBase extends TxProcessor {
           }
         }))
       )
-
-      // await coll.deleteMany({ _id: { $in: keys } })
-      // await coll.insertMany(Array.from(docMap.values()) as Document[])
     }
   }
 
@@ -555,75 +548,173 @@ abstract class MongoAdapterBase extends TxProcessor {
   }
 }
 
+interface DomainOperation {
+  raw: () => Promise<TxResult>
+  domain: Domain
+  bulk?: AnyBulkWriteOperation[]
+}
+
 class MongoAdapter extends MongoAdapterBase {
-  protected override async txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult> {
-    const domain = this.hierarchy.getDomain(tx.objectClass)
-    await this.db.collection(domain).deleteOne({ _id: tx.objectId })
-    return {}
+  getOperations (tx: Tx): DomainOperation | undefined {
+    switch (tx._class) {
+      case core.class.TxCreateDoc:
+        return this.txCreateDoc(tx as TxCreateDoc<Doc>)
+      case core.class.TxCollectionCUD:
+        return this.txCollectionCUD(tx as TxCollectionCUD<Doc, AttachedDoc>)
+      case core.class.TxUpdateDoc:
+        return this.txUpdateDoc(tx as TxUpdateDoc<Doc>)
+      case core.class.TxRemoveDoc:
+        return this.txRemoveDoc(tx as TxRemoveDoc<Doc>)
+      case core.class.TxMixin:
+        return this.txMixin(tx as TxMixin<Doc, Doc>)
+      case core.class.TxApplyIf:
+        return undefined
+    }
+
+    console.error('Unknown/Unsupported operation:', tx._class, tx)
   }
 
-  protected async txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
+  async tx (...txes: Tx[]): Promise<TxResult> {
+    const result: TxResult[] = []
+
+    const bulkOperations: DomainOperation[] = []
+
+    let lastDomain: Domain | undefined
+
+    const bulkExecute = async (): Promise<void> => {
+      if (lastDomain === undefined || bulkOperations.length === 0) {
+        return
+      }
+      try {
+        await this.db
+          .collection(lastDomain)
+          .bulkWrite(bulkOperations.reduce<AnyBulkWriteOperation[]>((ops, op) => ops.concat(...(op.bulk ?? [])), []))
+      } catch (err: any) {
+        console.trace(err)
+        throw err
+      }
+      bulkOperations.splice(0, bulkOperations.length)
+      lastDomain = undefined
+    }
+
+    if (txes.length > 1) {
+      for (const tx of txes) {
+        const dop: DomainOperation | undefined = this.getOperations(tx)
+        if (dop === undefined) {
+          continue
+        }
+        if (dop.bulk === undefined) {
+          // Execute previous bulk and capture result.
+          await bulkExecute()
+          try {
+            result.push(await dop.raw())
+          } catch (err: any) {
+            console.error(err)
+          }
+          continue
+        }
+        if (lastDomain === undefined) {
+          lastDomain = dop.domain
+        }
+        bulkOperations.push(dop)
+      }
+      await bulkExecute()
+    } else {
+      return (await this.getOperations(txes[0])?.raw()) ?? {}
+    }
+    if (result.length === 0) {
+      return {}
+    }
+    if (result.length === 1) {
+      return result[0]
+    }
+    return result
+  }
+
+  protected txCollectionCUD (tx: TxCollectionCUD<Doc, AttachedDoc>): DomainOperation {
+    // We need update only create transactions to contain attached, attachedToClass.
+    if (tx.tx._class === core.class.TxCreateDoc) {
+      const createTx = tx.tx as TxCreateDoc<AttachedDoc>
+      const d: TxCreateDoc<AttachedDoc> = {
+        ...createTx,
+        attributes: {
+          ...createTx.attributes,
+          attachedTo: tx.objectId,
+          attachedToClass: tx.objectClass,
+          collection: tx.collection
+        }
+      }
+      return this.txCreateDoc(d)
+    }
+    // We could cast since we know collection cud is supported.
+    return this.getOperations(tx.tx) as DomainOperation
+  }
+
+  protected txRemoveDoc (tx: TxRemoveDoc<Doc>): DomainOperation {
+    const domain = this.hierarchy.getDomain(tx.objectClass)
+    return {
+      raw: () => this.db.collection(domain).deleteOne({ _id: tx.objectId }),
+      domain,
+      bulk: [{ deleteOne: { filter: { _id: tx.objectId } } }]
+    }
+  }
+
+  protected txMixin (tx: TxMixin<Doc, Doc>): DomainOperation {
     const domain = this.hierarchy.getDomain(tx.objectClass)
 
+    const filter = { _id: tx.objectId }
+    const modifyOp = {
+      modifiedBy: tx.modifiedBy,
+      modifiedOn: tx.modifiedOn
+    }
     if (isOperator(tx.attributes)) {
       const operator = Object.keys(tx.attributes)[0]
       if (operator === '$move') {
         const keyval = (tx.attributes as any).$move
         const arr = tx.mixin + '.' + Object.keys(keyval)[0]
         const desc = keyval[arr]
-        const ops = [
+        const ops: any = [
+          { updateOne: { filter, update: { $pull: { [arr]: desc.$value } } } },
           {
             updateOne: {
-              filter: { _id: tx.objectId },
-              update: {
-                $pull: {
-                  [arr]: desc.$value
-                }
-              }
-            }
-          },
-          {
-            updateOne: {
-              filter: { _id: tx.objectId },
-              update: {
-                $set: {
-                  modifiedBy: tx.modifiedBy,
-                  modifiedOn: tx.modifiedOn
-                },
-                $push: {
-                  [arr]: {
-                    $each: [desc.$value],
-                    $position: desc.$position
-                  }
-                }
-              }
+              filter,
+              update: { $set: modifyOp, $push: { [arr]: { $each: [desc.$value], $position: desc.$position } } }
             }
           }
         ]
-        return await this.db.collection(domain).bulkWrite(ops as any)
-      } else {
-        return await this.db.collection(domain).updateOne(
-          { _id: tx.objectId },
+        // return await this.db.collection(domain).bulkWrite(ops as any)
+        return {
+          raw: async () => await this.db.collection(domain).bulkWrite(ops),
+          domain,
+          bulk: ops
+        }
+      }
+      const update = { ...this.translateMixinAttrs(tx.mixin, tx.attributes), $set: { ...modifyOp } }
+      return {
+        raw: async () => await this.db.collection(domain).updateOne(filter, update),
+        domain,
+        bulk: [
           {
-            ...this.translateMixinAttrs(tx.mixin, tx.attributes),
-            $set: {
-              modifiedBy: tx.modifiedBy,
-              modifiedOn: tx.modifiedOn
+            updateOne: {
+              filter,
+              update
             }
           }
-        )
+        ]
       }
-    } else {
-      return await this.db.collection(domain).updateOne(
-        { _id: tx.objectId },
+    }
+    const update = { $set: { ...this.translateMixinAttrs(tx.mixin, tx.attributes), ...modifyOp } }
+    return {
+      raw: async () => await this.db.collection(domain).updateOne(filter, update),
+      domain,
+      bulk: [
         {
-          $set: {
-            ...this.translateMixinAttrs(tx.mixin, tx.attributes),
-            modifiedBy: tx.modifiedBy,
-            modifiedOn: tx.modifiedOn
+          updateOne: {
+            filter,
+            update
           }
         }
-      )
+      ]
     }
   }
 
@@ -647,14 +738,22 @@ class MongoAdapter extends MongoAdapterBase {
     return attrs
   }
 
-  protected override async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult> {
+  protected txCreateDoc (tx: TxCreateDoc<Doc>): DomainOperation {
     const doc = TxProcessor.createDoc2Doc(tx)
     const domain = this.hierarchy.getDomain(doc._class)
-    await this.db.collection(domain).insertOne(translateDoc(doc))
-    return {}
+    const tdoc = translateDoc(doc)
+    return {
+      raw: async () => await this.db.collection(domain).insertOne(tdoc),
+      domain,
+      bulk: [
+        {
+          insertOne: { document: tdoc }
+        }
+      ]
+    }
   }
 
-  protected override async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult> {
+  protected txUpdateDoc (tx: TxUpdateDoc<Doc>): DomainOperation {
     const domain = this.hierarchy.getDomain(tx.objectClass)
     if (isOperator(tx.operations)) {
       const operator = Object.keys(tx.operations)[0]
@@ -662,7 +761,8 @@ class MongoAdapter extends MongoAdapterBase {
         const keyval = (tx.operations as any).$move
         const arr = Object.keys(keyval)[0]
         const desc = keyval[arr]
-        const ops = [
+
+        const ops: any = [
           {
             updateOne: {
               filter: { _id: tx.objectId },
@@ -691,7 +791,11 @@ class MongoAdapter extends MongoAdapterBase {
             }
           }
         ]
-        return await this.db.collection(domain).bulkWrite(ops as any)
+        return {
+          raw: async () => await this.db.collection(domain).bulkWrite(ops),
+          domain,
+          bulk: ops
+        }
       } else if (operator === '$update') {
         const keyval = (tx.operations as any).$update
         const arr = Object.keys(keyval)[0]
@@ -722,51 +826,66 @@ class MongoAdapter extends MongoAdapterBase {
             }
           }
         ]
-        return await this.db.collection(domain).bulkWrite(ops as any)
+        return {
+          raw: async () => await this.db.collection(domain).bulkWrite(ops),
+          domain,
+          bulk: ops
+        }
       } else {
         if (tx.retrieve === true) {
-          const result = await this.db.collection(domain).findOneAndUpdate(
-            { _id: tx.objectId },
-            {
-              ...tx.operations,
-              $set: {
-                modifiedBy: tx.modifiedBy,
-                modifiedOn: tx.modifiedOn
-              }
-            } as unknown as UpdateFilter<Document>,
-            { returnDocument: 'after' }
-          )
-          return { object: result.value }
+          const raw = async (): Promise<TxResult> => {
+            const result = await this.db.collection(domain).findOneAndUpdate(
+              { _id: tx.objectId },
+              {
+                ...tx.operations,
+                $set: {
+                  modifiedBy: tx.modifiedBy,
+                  modifiedOn: tx.modifiedOn
+                }
+              } as unknown as UpdateFilter<Document>,
+              { returnDocument: 'after' }
+            )
+            return { object: result.value }
+          }
+          return {
+            raw,
+            domain,
+            bulk: undefined
+          }
         } else {
-          return await this.db.collection(domain).updateOne(
-            { _id: tx.objectId },
-            {
-              ...tx.operations,
-              $set: {
-                modifiedBy: tx.modifiedBy,
-                modifiedOn: tx.modifiedOn
-              }
+          const filter = { _id: tx.objectId }
+          const update = {
+            ...tx.operations,
+            $set: {
+              modifiedBy: tx.modifiedBy,
+              modifiedOn: tx.modifiedOn
             }
-          )
+          }
+          return {
+            raw: async () => await this.db.collection(domain).updateOne(filter, update),
+            domain,
+            bulk: [{ updateOne: { filter, update } }]
+          }
         }
       }
     } else {
-      if (tx.retrieve === true) {
-        const result = await this.db.collection(domain).findOneAndUpdate(
-          { _id: tx.objectId },
-          {
-            $set: { ...tx.operations, modifiedBy: tx.modifiedBy, modifiedOn: tx.modifiedOn }
-          } as unknown as UpdateFilter<Document>,
-          { returnDocument: 'after' }
-        )
-        return { object: result.value }
-      } else {
-        return await this.db
-          .collection(domain)
-          .updateOne(
-            { _id: tx.objectId },
-            { $set: { ...tx.operations, modifiedBy: tx.modifiedBy, modifiedOn: tx.modifiedOn } }
-          )
+      const filter = { _id: tx.objectId }
+      const update = { $set: { ...tx.operations, modifiedBy: tx.modifiedBy, modifiedOn: tx.modifiedOn } }
+      const raw =
+        tx.retrieve === true
+          ? async (): Promise<TxResult> => {
+            const result = await this.db
+              .collection(domain)
+              .findOneAndUpdate(filter, update, { returnDocument: 'after' })
+            return { object: result.value }
+          }
+          : async () => await this.db.collection(domain).updateOne(filter, update)
+
+      // Disable bulk for operators
+      return {
+        raw,
+        domain,
+        bulk: [{ updateOne: { filter, update } }]
       }
     }
   }
@@ -774,27 +893,9 @@ class MongoAdapter extends MongoAdapterBase {
 
 class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
   txColl: Collection | undefined
-  protected txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult> {
-    throw new Error('Method not implemented.')
-  }
 
-  protected txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult> {
-    throw new Error('Method not implemented.')
-  }
-
-  protected txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult> {
-    throw new Error('Method not implemented.')
-  }
-
-  protected txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
-    throw new Error('Method not implemented.')
-  }
-
-  override async tx (tx: Tx, user: string): Promise<TxResult>
-  override async tx (tx: Tx): Promise<TxResult>
-
-  override async tx (tx: Tx, user?: string): Promise<TxResult> {
-    await this.txCollection().insertOne(translateDoc(tx))
+  override async tx (...tx: Tx[]): Promise<TxResult> {
+    await this.txCollection().insertMany(tx.map((it) => translateDoc(it)))
     return {}
   }
 
@@ -819,6 +920,16 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
     model.forEach((tx) => (tx.modifiedBy === core.account.System ? systemTr : userTx).push(tx))
 
     return systemTr.concat(userTx)
+  }
+}
+
+function translateLikeQuery (pattern: string): { $regex: string, $options: string } {
+  return {
+    $regex: `^${pattern
+      .split('%')
+      .map((it) => escapeLikeForRegexp(it))
+      .join('.*')}$`,
+    $options: 'i'
   }
 }
 

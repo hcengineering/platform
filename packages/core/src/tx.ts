@@ -264,30 +264,44 @@ export const DOMAIN_TX = 'tx' as Domain
  * @public
  */
 export interface WithTx {
-  tx: (tx: Tx) => Promise<TxResult>
+  tx: (...txs: Tx[]) => Promise<TxResult>
 }
 
 /**
  * @public
  */
 export abstract class TxProcessor implements WithTx {
-  async tx (tx: Tx): Promise<TxResult> {
-    switch (tx._class) {
-      case core.class.TxCreateDoc:
-        return await this.txCreateDoc(tx as TxCreateDoc<Doc>)
-      case core.class.TxCollectionCUD:
-        return await this.txCollectionCUD(tx as TxCollectionCUD<Doc, AttachedDoc>)
-      case core.class.TxUpdateDoc:
-        return await this.txUpdateDoc(tx as TxUpdateDoc<Doc>)
-      case core.class.TxRemoveDoc:
-        return await this.txRemoveDoc(tx as TxRemoveDoc<Doc>)
-      case core.class.TxMixin:
-        return await this.txMixin(tx as TxMixin<Doc, Doc>)
-      case core.class.TxApplyIf:
-        // Apply if processed on server
-        return await Promise.resolve({})
+  async tx (...txes: Tx[]): Promise<TxResult> {
+    const result: TxResult[] = []
+    for (const tx of txes) {
+      switch (tx._class) {
+        case core.class.TxCreateDoc:
+          result.push(await this.txCreateDoc(tx as TxCreateDoc<Doc>))
+          break
+        case core.class.TxCollectionCUD:
+          result.push(await this.txCollectionCUD(tx as TxCollectionCUD<Doc, AttachedDoc>))
+          break
+        case core.class.TxUpdateDoc:
+          result.push(await this.txUpdateDoc(tx as TxUpdateDoc<Doc>))
+          break
+        case core.class.TxRemoveDoc:
+          result.push(await this.txRemoveDoc(tx as TxRemoveDoc<Doc>))
+          break
+        case core.class.TxMixin:
+          result.push(await this.txMixin(tx as TxMixin<Doc, Doc>))
+          break
+        case core.class.TxApplyIf:
+          // Apply if processed on server
+          return await Promise.resolve({})
+      }
     }
-    throw new Error('TxProcessor: unhandled transaction class: ' + tx._class)
+    if (result.length === 0) {
+      return {}
+    }
+    if (result.length === 1) {
+      return result[0]
+    }
+    return result
   }
 
   static createDoc2Doc<T extends Doc>(tx: TxCreateDoc<T>): T {

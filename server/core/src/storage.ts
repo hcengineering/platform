@@ -39,10 +39,8 @@ import core, {
   Tx,
   TxApplyIf,
   TxCollectionCUD,
-  TxCreateDoc,
   TxCUD,
   TxFactory,
-  TxMixin,
   TxProcessor,
   TxRemoveDoc,
   TxResult,
@@ -64,6 +62,7 @@ import type {
   FullTextAdapterFactory,
   ObjectDDParticipant
 } from './types'
+import { createCacheFindAll } from './utils'
 
 /**
  * @public
@@ -138,16 +137,50 @@ class TServerStorage implements ServerStorage {
     return adapter
   }
 
-  private async routeTx (ctx: MeasureContext, tx: Tx): Promise<TxResult> {
-    if (this.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
-      const txCUD = tx as TxCUD<Doc>
+  private async routeTx (ctx: MeasureContext, ...txes: Tx[]): Promise<TxResult> {
+    let part: TxCUD<Doc>[] = []
+    let lastDomain: Domain | undefined
+    const result: TxResult[] = []
+    const processPart = async (): Promise<void> => {
+      if (part.length > 0) {
+        const adapter = this.getAdapter(lastDomain as Domain)
+        const r = await adapter.tx(...part)
+        if (Array.isArray(r)) {
+          result.push(...r)
+        } else {
+          result.push(r)
+        }
+        part = []
+      }
+    }
+    for (const tx of txes) {
+      const txCUD = TxProcessor.extractTx(tx) as TxCUD<Doc>
+      if (!this.hierarchy.isDerived(txCUD._class, core.class.TxCUD)) {
+        // Skip unsupported tx
+        console.error('Unsupported transacton', tx)
+        continue
+      }
       const domain = this.hierarchy.getDomain(txCUD.objectClass)
-      const adapter = this.getAdapter(domain)
-      const res = await adapter.tx(txCUD)
-      return res
-    } else {
+      if (part.length > 0) {
+        if (lastDomain !== domain) {
+          await processPart()
+        }
+        lastDomain = domain
+        part.push(txCUD)
+      } else {
+        lastDomain = domain
+        part.push(txCUD)
+      }
+    }
+    await processPart()
+
+    if (result.length === 1) {
+      return result[0]
+    }
+    if (result.length === 0) {
       return [{}, false]
     }
+    return result
   }
 
   private async getCollectionUpdateTx<D extends Doc>(
@@ -174,7 +207,7 @@ class TServerStorage implements ServerStorage {
     }
   }
 
-  private async updateCollection (ctx: MeasureContext, tx: Tx): Promise<Tx[]> {
+  private async updateCollection (ctx: MeasureContext, tx: Tx, findAll: ServerStorage['findAll']): Promise<Tx[]> {
     if (tx._class !== core.class.TxCollectionCUD) {
       return []
     }
@@ -195,7 +228,7 @@ class TServerStorage implements ServerStorage {
       return []
     }
 
-    const oldAttachedTo = (await this.findAll(ctx, _class, { _id }, { limit: 1 }))[0]
+    const oldAttachedTo = (await findAll(ctx, _class, { _id }, { limit: 1 }))[0]
     let oldTx: Tx | null = null
     if (oldAttachedTo !== undefined) {
       const attr = this.hierarchy.getAttribute(oldAttachedTo._class, colTx.collection)
@@ -209,7 +242,7 @@ class TServerStorage implements ServerStorage {
 
     const newAttachedToClass = operations.attachedToClass ?? _class
     const newAttachedToCollection = operations.collection ?? colTx.collection
-    const newAttachedTo = (await this.findAll(ctx, newAttachedToClass, { _id: operations.attachedTo }, { limit: 1 }))[0]
+    const newAttachedTo = (await findAll(ctx, newAttachedToClass, { _id: operations.attachedTo }, { limit: 1 }))[0]
     let newTx: Tx | null = null
     const newAttr = this.hierarchy.getAttribute(newAttachedToClass, newAttachedToCollection)
     if (newAttachedTo !== undefined && newAttr !== undefined) {
@@ -226,37 +259,45 @@ class TServerStorage implements ServerStorage {
     return [...(oldTx !== null ? [oldTx] : []), ...(newTx !== null ? [newTx] : [])]
   }
 
-  private async processCollection (ctx: MeasureContext, tx: Tx): Promise<Tx[]> {
-    if (tx._class === core.class.TxCollectionCUD) {
-      const colTx = tx as TxCollectionCUD<Doc, AttachedDoc>
-      const _id = colTx.objectId
-      const _class = colTx.objectClass
+  private async processCollection (
+    ctx: MeasureContext,
+    txes: Tx[],
+    findAll: ServerStorage['findAll'],
+    removedMap: Map<Ref<Doc>, Doc>
+  ): Promise<Tx[]> {
+    const result: Tx[] = []
+    for (const tx of txes) {
+      if (tx._class === core.class.TxCollectionCUD) {
+        const colTx = tx as TxCollectionCUD<Doc, AttachedDoc>
+        const _id = colTx.objectId
+        const _class = colTx.objectClass
 
-      // Skip model operations
-      if (this.hierarchy.getDomain(_class) === DOMAIN_MODEL) {
-        // We could not update increments for model classes
-        return []
-      }
+        // Skip model operations
+        if (this.hierarchy.getDomain(_class) === DOMAIN_MODEL) {
+          // We could not update increments for model classes
+          continue
+        }
 
-      const isCreateTx = colTx.tx._class === core.class.TxCreateDoc
-      const isDeleteTx = colTx.tx._class === core.class.TxRemoveDoc
-      const isUpdateTx = colTx.tx._class === core.class.TxUpdateDoc
-      if (isUpdateTx) {
-        return await this.updateCollection(ctx, tx)
-      }
+        const isCreateTx = colTx.tx._class === core.class.TxCreateDoc
+        const isDeleteTx = colTx.tx._class === core.class.TxRemoveDoc
+        const isUpdateTx = colTx.tx._class === core.class.TxUpdateDoc
+        if (isUpdateTx) {
+          result.push(...(await this.updateCollection(ctx, tx, findAll)))
+        }
 
-      if (isCreateTx || isDeleteTx) {
-        const attachedTo = (await this.findAll(ctx, _class, { _id }, { limit: 1 }))[0]
-        if (attachedTo !== undefined) {
-          return [
-            await this.getCollectionUpdateTx(_id, _class, tx.modifiedBy, colTx.modifiedOn, attachedTo, {
-              $inc: { [colTx.collection]: isCreateTx ? 1 : -1 }
-            })
-          ]
+        if ((isCreateTx || isDeleteTx) && !removedMap.has(_id)) {
+          const attachedTo = (await findAll(ctx, _class, { _id }, { limit: 1 }))[0]
+          if (attachedTo !== undefined) {
+            result.push(
+              await this.getCollectionUpdateTx(_id, _class, tx.modifiedBy, colTx.modifiedOn, attachedTo, {
+                $inc: { [colTx.collection]: isCreateTx ? 1 : -1 }
+              })
+            )
+          }
         }
       }
     }
-    return []
+    return result
   }
 
   async findAll<T extends Doc>(
@@ -299,49 +340,95 @@ class TServerStorage implements ServerStorage {
     )
   }
 
-  private async buildRemovedDoc (ctx: MeasureContext, tx: TxRemoveDoc<Doc>): Promise<Doc | undefined> {
-    const isAttached = this.hierarchy.isDerived(tx.objectClass, core.class.AttachedDoc)
-    const txes = await this.findAll<TxCUD<Doc>>(
-      ctx,
-      isAttached ? core.class.TxCollectionCUD : core.class.TxCUD,
-      isAttached
-        ? { 'tx.objectId': tx.objectId as Ref<AttachedDoc> }
-        : {
-            objectId: tx.objectId
-          },
-      { sort: { modifiedOn: 1 } }
-    )
-    const createTx = isAttached
-      ? txes.find((tx) => (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxCreateDoc)
-      : txes.find((tx) => tx._class === core.class.TxCreateDoc)
-    if (createTx === undefined) return
-    let doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Doc>)
-    for (let tx of txes) {
-      tx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-      if (tx._class === core.class.TxUpdateDoc) {
-        doc = TxProcessor.updateDoc2Doc(doc, tx as TxUpdateDoc<Doc>)
-      } else if (tx._class === core.class.TxMixin) {
-        const mixinTx = tx as TxMixin<Doc, Doc>
-        doc = TxProcessor.updateMixin4Doc(doc, mixinTx)
+  private async buildRemovedDoc (ctx: MeasureContext, rawTxes: Tx[], findAll: ServerStorage['findAll']): Promise<Doc[]> {
+    const removeObjectIds: Ref<Doc>[] = []
+    const removeAttachObjectIds: Ref<AttachedDoc>[] = []
+
+    const removeTxes = rawTxes
+      .filter((it) => this.hierarchy.isDerived(it._class, core.class.TxRemoveDoc))
+      .map((it) => TxProcessor.extractTx(it) as TxRemoveDoc<Doc>)
+
+    for (const rtx of removeTxes) {
+      const isAttached = this.hierarchy.isDerived(rtx.objectClass, core.class.AttachedDoc)
+      if (isAttached) {
+        removeAttachObjectIds.push(rtx.objectId as Ref<AttachedDoc>)
+      } else {
+        removeObjectIds.push(rtx.objectId)
       }
     }
 
-    return doc
+    const txes =
+      removeObjectIds.length > 0
+        ? await findAll<TxCUD<Doc>>(
+          ctx,
+          core.class.TxCUD,
+          {
+            objectId: { $in: removeObjectIds }
+          },
+          { sort: { modifiedOn: 1 } }
+        )
+        : []
+    const result: Doc[] = []
+
+    const txesAttach =
+      removeAttachObjectIds.length > 0
+        ? await findAll<TxCollectionCUD<Doc, AttachedDoc>>(
+          ctx,
+          core.class.TxCollectionCUD,
+          { 'tx.objectId': { $in: removeAttachObjectIds } },
+          { sort: { modifiedOn: 1 } }
+        )
+        : []
+
+    for (const rtx of removeTxes) {
+      const isAttached = this.hierarchy.isDerived(rtx.objectClass, core.class.AttachedDoc)
+
+      const objTxex = isAttached
+        ? txesAttach.filter((tx) => tx.tx.objectId === rtx.objectId)
+        : txes.filter((it) => it.objectId === rtx.objectId)
+
+      const doc = TxProcessor.buildDoc2Doc(objTxex)
+      if (doc !== undefined) {
+        result.push(doc)
+      }
+    }
+
+    return result
   }
 
-  private async processRemove (ctx: MeasureContext, tx: Tx): Promise<Tx[]> {
-    const actualTx = TxProcessor.extractTx(tx)
-    if (!this.hierarchy.isDerived(actualTx._class, core.class.TxRemoveDoc)) return []
-    const rtx = actualTx as TxRemoveDoc<Doc>
+  private async processRemove (
+    ctx: MeasureContext,
+    txes: Tx[],
+    findAll: ServerStorage['findAll'],
+    removedMap: Map<Ref<Doc>, Doc>
+  ): Promise<Tx[]> {
     const result: Tx[] = []
-    const object = await this.buildRemovedDoc(ctx, rtx)
-    if (object === undefined) return []
-    result.push(...(await this.deleteClassCollections(ctx, object._class, rtx.objectId)))
-    const mixins = this.getMixins(object._class, object)
-    for (const mixin of mixins) {
-      result.push(...(await this.deleteClassCollections(ctx, mixin, rtx.objectId, object._class)))
+
+    const objects = await this.buildRemovedDoc(ctx, txes, findAll)
+    for (const obj of objects) {
+      removedMap.set(obj._id, obj)
     }
-    result.push(...(await this.deleteRelatedDocuments(ctx, object)))
+
+    for (const tx of txes) {
+      const actualTx = TxProcessor.extractTx(tx)
+      if (!this.hierarchy.isDerived(actualTx._class, core.class.TxRemoveDoc)) {
+        continue
+      }
+      const rtx = actualTx as TxRemoveDoc<Doc>
+      const object = removedMap.get(rtx.objectId)
+      if (object === undefined) {
+        continue
+      }
+      result.push(...(await this.deleteClassCollections(ctx, object._class, rtx.objectId, findAll, removedMap)))
+      const mixins = this.getMixins(object._class, object)
+      for (const mixin of mixins) {
+        result.push(
+          ...(await this.deleteClassCollections(ctx, mixin, rtx.objectId, findAll, removedMap, object._class))
+        )
+      }
+
+      result.push(...(await this.deleteRelatedDocuments(ctx, object, findAll, removedMap)))
+    }
     return result
   }
 
@@ -349,6 +436,8 @@ class TServerStorage implements ServerStorage {
     ctx: MeasureContext,
     _class: Ref<Class<Doc>>,
     objectId: Ref<Doc>,
+    findAll: ServerStorage['findAll'],
+    removedMap: Map<Ref<Doc>, Doc>,
     to?: Ref<Class<Doc>>
   ): Promise<Tx[]> {
     const attributes = this.hierarchy.getAllAttributes(_class, to)
@@ -356,18 +445,18 @@ class TServerStorage implements ServerStorage {
     for (const attribute of attributes) {
       if (this.hierarchy.isDerived(attribute[1].type._class, core.class.Collection)) {
         const collection = attribute[1].type as Collection<AttachedDoc>
-        const allAttached = await this.findAll(ctx, collection.of, { attachedTo: objectId })
+        const allAttached = await findAll(ctx, collection.of, { attachedTo: objectId })
         for (const attached of allAttached) {
-          result.push(...(await this.deleteObject(ctx, attached)))
+          result.push(...this.deleteObject(ctx, attached, removedMap))
         }
       }
     }
     return result
   }
 
-  private async deleteObject (ctx: MeasureContext, object: Doc): Promise<Tx[]> {
+  private deleteObject (ctx: MeasureContext, object: Doc, removedMap: Map<Ref<Doc>, Doc>): Tx[] {
     const result: Tx[] = []
-    const factory = new TxFactory(core.account.System)
+    const factory = new TxFactory(object.modifiedBy)
     if (this.hierarchy.isDerived(object._class, core.class.AttachedDoc)) {
       const adoc = object as AttachedDoc
       const nestedTx = factory.createTxRemoveDoc(adoc._class, adoc.space, adoc._id)
@@ -378,14 +467,21 @@ class TServerStorage implements ServerStorage {
         adoc.collection,
         nestedTx
       )
+      removedMap.set(adoc._id, adoc)
       result.push(tx)
     } else {
       result.push(factory.createTxRemoveDoc(object._class, object.space, object._id))
+      removedMap.set(object._id, object)
     }
     return result
   }
 
-  private async deleteRelatedDocuments (ctx: MeasureContext, object: Doc): Promise<Tx[]> {
+  private async deleteRelatedDocuments (
+    ctx: MeasureContext,
+    object: Doc,
+    findAll: ServerStorage['findAll'],
+    removedMap: Map<Ref<Doc>, Doc>
+  ): Promise<Tx[]> {
     const result: Tx[] = []
     const objectClass = this.hierarchy.getClass(object._class)
     if (this.hierarchy.hasMixin(objectClass, serverCore.mixin.ObjectDDParticipant)) {
@@ -395,39 +491,48 @@ class TServerStorage implements ServerStorage {
       )
       const collector = await getResource(removeParticipand.collectDocs)
       const docs = await collector(object, this.hierarchy, async (_class, query, options) => {
-        return await this.findAll(ctx, _class, query, options)
+        return await findAll(ctx, _class, query, options)
       })
       for (const d of docs) {
-        result.push(...(await this.deleteObject(ctx, d)))
+        result.push(...this.deleteObject(ctx, d, removedMap))
       }
     }
     return result
   }
 
-  private async processMove (ctx: MeasureContext, tx: Tx): Promise<Tx[]> {
-    const actualTx = TxProcessor.extractTx(tx)
-    if (!this.hierarchy.isDerived(actualTx._class, core.class.TxUpdateDoc)) return []
-    const rtx = actualTx as TxUpdateDoc<Doc>
-    if (rtx.operations.space === undefined || rtx.operations.space === rtx.objectSpace) return []
+  private async processMove (ctx: MeasureContext, txes: Tx[], findAll: ServerStorage['findAll']): Promise<Tx[]> {
     const result: Tx[] = []
-    const factory = new TxFactory(core.account.System)
-    for (const [, attribute] of this.hierarchy.getAllAttributes(rtx.objectClass)) {
-      if (!this.hierarchy.isDerived(attribute.type._class, core.class.Collection)) continue
-      const collection = attribute.type as Collection<AttachedDoc>
-      const allAttached = await this.findAll(ctx, collection.of, { attachedTo: rtx.objectId, space: rtx.objectSpace })
-      const allTx = allAttached.map(({ _class, space, _id }) =>
-        factory.createTxUpdateDoc(_class, space, _id, { space: rtx.operations.space })
-      )
-      result.push(...allTx)
+    for (const tx of txes) {
+      const actualTx = TxProcessor.extractTx(tx)
+      if (!this.hierarchy.isDerived(actualTx._class, core.class.TxUpdateDoc)) {
+        continue
+      }
+      const rtx = actualTx as TxUpdateDoc<Doc>
+      if (rtx.operations.space === undefined || rtx.operations.space === rtx.objectSpace) {
+        continue
+      }
+      const factory = new TxFactory(tx.modifiedBy)
+      for (const [, attribute] of this.hierarchy.getAllAttributes(rtx.objectClass)) {
+        if (!this.hierarchy.isDerived(attribute.type._class, core.class.Collection)) {
+          continue
+        }
+        const collection = attribute.type as Collection<AttachedDoc>
+        const allAttached = await findAll(ctx, collection.of, { attachedTo: rtx.objectId, space: rtx.objectSpace })
+        const allTx = allAttached.map(({ _class, space, _id }) =>
+          factory.createTxUpdateDoc(_class, space, _id, { space: rtx.operations.space })
+        )
+        result.push(...allTx)
+      }
     }
     return result
   }
 
   private async proccessDerived (
     ctx: MeasureContext,
-    tx: Tx,
-    _class: Ref<Class<Tx>>,
-    triggerFx: Effects
+    txes: Tx[],
+    triggerFx: Effects,
+    findAll: ServerStorage['findAll'],
+    removedMap: Map<Ref<Doc>, Doc>
   ): Promise<Tx[]> {
     const fAll =
       (mctx: MeasureContext) =>
@@ -436,48 +541,62 @@ class TServerStorage implements ServerStorage {
           query: DocumentQuery<T>,
           options?: FindOptions<T>
         ): Promise<FindResult<T>> =>
-          this.findAll(mctx, clazz, query, options)
-    const derived = [
-      ...(await ctx.with('process-collection', { _class }, () => this.processCollection(ctx, tx))),
-      ...(await ctx.with('process-remove', { _class }, () => this.processRemove(ctx, tx))),
-      ...(await ctx.with('process-move', { _class }, () => this.processMove(ctx, tx))),
-      ...(await ctx.with('process-triggers', {}, (ctx) =>
-        this.triggers.apply(tx.modifiedBy, tx, {
-          workspace: this.workspace,
-          fx: triggerFx.fx,
-          fulltextFx: (f) => triggerFx.fx(() => f(this.fulltextAdapter)),
-          storageFx: (f) => {
-            const adapter = this.storageAdapter
-            if (adapter === undefined) {
-              return
+          findAll(mctx, clazz, query, options)
+
+    const removed = await ctx.with('process-remove', {}, () => this.processRemove(ctx, txes, findAll, removedMap))
+    const collections = await ctx.with('process-collection', {}, () =>
+      this.processCollection(ctx, txes, findAll, removedMap)
+    )
+    const moves = await ctx.with('process-move', {}, () => this.processMove(ctx, txes, findAll))
+
+    const triggers = await ctx.with('process-triggers', {}, async (ctx) => {
+      const result: Tx[] = []
+      for (const tx of txes) {
+        result.push(
+          ...(await this.triggers.apply(tx.modifiedBy, tx, {
+            removedMap,
+            workspace: this.workspace,
+            fx: triggerFx.fx,
+            fulltextFx: (f) => triggerFx.fx(() => f(this.fulltextAdapter)),
+            storageFx: (f) => {
+              const adapter = this.storageAdapter
+              if (adapter === undefined) {
+                return
+              }
+
+              triggerFx.fx(() => f(adapter, this.workspace))
+            },
+            findAll: fAll(ctx),
+            modelDb: this.modelDb,
+            hierarchy: this.hierarchy,
+            txFx: async (f) => {
+              await f(this.getAdapter(DOMAIN_TX))
             }
+          }))
+        )
+      }
+      return result
+    })
 
-            triggerFx.fx(() => f(adapter, this.workspace))
-          },
-          findAll: fAll(ctx),
-          modelDb: this.modelDb,
-          hierarchy: this.hierarchy,
-          txFx: async (f) => {
-            await f(this.getAdapter(DOMAIN_TX))
-          }
-        })
-      ))
-    ]
+    const derived = [...removed, ...collections, ...moves, ...triggers]
 
-    return await this.processDerivedTxes(derived, ctx, triggerFx)
+    return await this.processDerivedTxes(derived, ctx, triggerFx, findAll, removedMap)
   }
 
-  private async processDerivedTxes (derived: Tx[], ctx: MeasureContext, triggerFx: Effects): Promise<Tx[]> {
+  private async processDerivedTxes (
+    derived: Tx[],
+    ctx: MeasureContext,
+    triggerFx: Effects,
+    findAll: ServerStorage['findAll'],
+    removedMap: Map<Ref<Doc>, Doc>
+  ): Promise<Tx[]> {
     derived.sort((a, b) => a.modifiedOn - b.modifiedOn)
 
-    for (const tx of derived) {
-      await ctx.with('derived-route-tx', { _class: txClass(tx) }, (ctx) => this.routeTx(ctx, tx))
-    }
+    await ctx.with('derived-route-tx', {}, (ctx) => this.routeTx(ctx, ...derived))
 
     const nestedTxes: Tx[] = []
-    for (const tx of derived) {
-      const _class = txClass(tx)
-      nestedTxes.push(...(await this.proccessDerived(ctx, tx, _class, triggerFx)))
+    if (derived.length > 0) {
+      nestedTxes.push(...(await this.proccessDerived(ctx, derived, triggerFx, findAll, removedMap)))
     }
 
     const res = [...derived, ...nestedTxes]
@@ -490,7 +609,8 @@ class TServerStorage implements ServerStorage {
    */
   async verifyApplyIf (
     ctx: MeasureContext,
-    applyIf: TxApplyIf
+    applyIf: TxApplyIf,
+    findAll: ServerStorage['findAll']
   ): Promise<{
       onEnd: () => void
       passed: boolean
@@ -510,7 +630,7 @@ class TServerStorage implements ServerStorage {
     )
     let passed = true
     for (const { _class, query } of applyIf.match) {
-      const res = await this.findAll(ctx, _class, query, { limit: 1 })
+      const res = await findAll(ctx, _class, query, { limit: 1 })
       if (res.length === 0) {
         passed = false
         break
@@ -522,6 +642,7 @@ class TServerStorage implements ServerStorage {
   async tx (ctx: MeasureContext, tx: Tx): Promise<[TxResult, Tx[]]> {
     // store tx
     const _class = txClass(tx)
+    const cacheFind = createCacheFindAll(this)
     const objClass = txObjectClass(tx)
     return await ctx.with('tx', { _class, objClass }, async (ctx) => {
       if (tx.space !== core.space.DerivedTx && !this.hierarchy.isDerived(tx._class, core.class.TxApplyIf)) {
@@ -546,23 +667,21 @@ class TServerStorage implements ServerStorage {
           const applyIf = tx as TxApplyIf
           // Wait for scope promise if found
           let passed: boolean
-          ;({ passed, onEnd } = await this.verifyApplyIf(ctx, applyIf))
+          ;({ passed, onEnd } = await this.verifyApplyIf(ctx, applyIf, cacheFind))
           result = passed
           if (passed) {
             // Store apply if transaction's
             await ctx.with('domain-tx', { _class, objClass }, async () => {
               const atx = await this.getAdapter(DOMAIN_TX)
-              for (const ctx of applyIf.txes) {
-                await atx.tx(ctx)
-              }
+              await atx.tx(...applyIf.txes)
             })
-            derived = await this.processDerivedTxes(applyIf.txes, ctx, triggerFx)
+            derived = await this.processDerivedTxes(applyIf.txes, ctx, triggerFx, cacheFind, new Map<Ref<Doc>, Doc>())
           }
         } else {
           // store object
           result = await ctx.with('route-tx', { _class, objClass }, (ctx) => this.routeTx(ctx, tx))
           // invoke triggers and store derived objects
-          derived = await this.proccessDerived(ctx, tx, _class, triggerFx)
+          derived = await this.proccessDerived(ctx, [tx], triggerFx, cacheFind, new Map<Ref<Doc>, Doc>())
         }
 
         // index object

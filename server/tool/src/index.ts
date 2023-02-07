@@ -89,7 +89,7 @@ export async function initModel (
   transactorUrl: string,
   workspaceId: WorkspaceId,
   rawTxes: Tx[],
-  migrateOperations: MigrateOperation[]
+  migrateOperations: [string, MigrateOperation][]
 ): Promise<void> {
   const { mongodbUri, minio, txes } = prepareTools(rawTxes)
   if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
@@ -115,7 +115,8 @@ export async function initModel (
     })) as unknown as CoreClient & BackupClient
     try {
       for (const op of migrateOperations) {
-        await op.upgrade(connection)
+        console.log('Migrage', op[0])
+        await op[1].upgrade(connection)
       }
     } catch (e) {
       console.log(e)
@@ -142,7 +143,7 @@ export async function upgradeModel (
   transactorUrl: string,
   workspaceId: WorkspaceId,
   rawTxes: Tx[],
-  migrateOperations: MigrateOperation[]
+  migrateOperations: [string, MigrateOperation][]
 ): Promise<void> {
   const { mongodbUri, txes } = prepareTools(rawTxes)
 
@@ -171,7 +172,8 @@ export async function upgradeModel (
 
     const migrateClient = new MigrateClientImpl(db)
     for (const op of migrateOperations) {
-      await op.migrate(migrateClient)
+      console.log('migrate:', op[0])
+      await op[1].migrate(migrateClient)
     }
 
     console.log('Apply upgrade operations')
@@ -182,7 +184,8 @@ export async function upgradeModel (
     await createUpdateIndexes(connection, db)
 
     for (const op of migrateOperations) {
-      await op.upgrade(connection)
+      console.log('upgrade:', op[0])
+      await op[1].upgrade(connection)
     }
 
     await connection.close()

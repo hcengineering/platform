@@ -70,7 +70,9 @@
   $: if (_id && _class) {
     query.query(_class, { _id }, (result) => {
       object = result[0]
-      realObjectClass = object._class
+      if (object != null) {
+        realObjectClass = object._class
+      }
     })
   } else {
     query.unsubscribe()

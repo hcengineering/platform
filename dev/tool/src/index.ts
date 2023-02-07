@@ -61,7 +61,7 @@ export function devTool (
     minio: MinioService
     txes: Tx[]
     version: Data<Version>
-    migrateOperations: MigrateOperation[]
+    migrateOperations: [string, MigrateOperation][]
   },
   productId: string
 ): void {

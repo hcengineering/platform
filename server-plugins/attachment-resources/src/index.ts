@@ -14,41 +14,18 @@
 // limitations under the License.
 //
 
-import type { Doc, Ref, Tx, TxCollectionCUD, TxCreateDoc, TxRemoveDoc } from '@hcengineering/core'
-import type { TriggerControl } from '@hcengineering/server-core'
 import type { Attachment } from '@hcengineering/attachment'
 import attachment from '@hcengineering/attachment'
+import type { Doc, Ref, Tx, TxRemoveDoc } from '@hcengineering/core'
 import core, { TxProcessor } from '@hcengineering/core'
-
-const findCreateTx = async (
-  id: Ref<Attachment>,
-  findAll: TriggerControl['findAll']
-): Promise<TxCreateDoc<Attachment> | undefined> => {
-  const createTx = (await findAll<TxCreateDoc<Attachment>>(core.class.TxCreateDoc, { objectId: id }))[0]
-
-  if (createTx !== undefined) {
-    return createTx
-  }
-
-  const colTx = (
-    await findAll<TxCollectionCUD<Doc, Attachment>>(core.class.TxCollectionCUD, {
-      'tx._class': core.class.TxCreateDoc,
-      'tx.objectClass': attachment.class.Attachment,
-      'tx.objectId': id
-    })
-  )[0]
-
-  if (colTx === undefined) return
-
-  return colTx.tx as TxCreateDoc<Attachment>
-}
+import type { TriggerControl } from '@hcengineering/server-core'
 
 /**
  * @public
  */
 export async function OnAttachmentDelete (
   tx: Tx,
-  { findAll, hierarchy, fulltextFx, storageFx }: TriggerControl
+  { findAll, hierarchy, fulltextFx, storageFx, removedMap }: TriggerControl
 ): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx)
   if (actualTx._class !== core.class.TxRemoveDoc) {
@@ -61,14 +38,12 @@ export async function OnAttachmentDelete (
     return []
   }
 
-  const createTx = await findCreateTx(rmTx.objectId, findAll)
+  // Obtain document being deleted.
+  const attach = removedMap.get(rmTx.objectId) as Attachment
 
-  if (createTx === undefined) {
+  if (attach === undefined) {
     return []
   }
-
-  const attach = TxProcessor.createDoc2Doc(createTx)
-
   fulltextFx(async (adapter) => {
     await adapter.remove([attach.file as Ref<Doc>])
   })
