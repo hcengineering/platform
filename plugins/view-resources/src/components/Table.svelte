@@ -104,6 +104,7 @@
       query,
       (result) => {
         objects = result
+        console.log('OBJECTS', JSON.stringify(objects, undefined, 2))
         total = result.total
         objectsRecieved = true
         if (sortingFunction !== undefined) {

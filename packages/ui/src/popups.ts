@@ -55,14 +55,15 @@ export function showPopup (
       return popups
     })
   }
+  const _element = element instanceof HTMLElement ? getPopupPositionElement(element) : element
   if (typeof component === 'string') {
     getResource(component)
       .then((resolved) =>
-        addPopup({ id, is: resolved, props, element, onClose, onUpdate, close: closePopupOp, options })
+        addPopup({ id, is: resolved, props, element: _element, onClose, onUpdate, close: closePopupOp, options })
       )
       .catch((err) => console.log(err))
   } else {
-    addPopup({ id, is: component, props, element, onClose, onUpdate, close: closePopupOp, options })
+    addPopup({ id, is: component, props, element: _element, onClose, onUpdate, close: closePopupOp, options })
   }
   return closePopupOp
 }
@@ -352,7 +353,8 @@ export function getPopupPositionElement (
   return undefined
 }
 export function getEventPositionElement (evt: MouseEvent): PopupAlignment | undefined {
+  const rect = DOMRect.fromRect({ width: 1, height: 1, x: evt.clientX, y: evt.clientY })
   return {
-    getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: evt.clientX, y: evt.clientY })
+    getBoundingClientRect: () => rect
   }
 }

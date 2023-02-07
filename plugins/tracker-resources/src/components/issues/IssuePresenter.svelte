@@ -64,7 +64,7 @@
         <Icon icon={tracker.icon.Issues} size={'small'} />
       </div>
     {/if}
-    <span title={value?.title}>
+    <span class="select-text" title={value?.title}>
       {title}
     </span>
   </span>

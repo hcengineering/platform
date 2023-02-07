@@ -14,12 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { onMount } from 'svelte'
-  import { fitPopupElement } from '../popups'
-  import type { AnyComponent, AnySvelteComponent, PopupAlignment, PopupOptions, PopupPositionElement } from '../types'
   import { deviceOptionsStore as deviceInfo } from '..'
+  import { fitPopupElement } from '../popups'
+  import type { AnySvelteComponent, PopupAlignment, PopupOptions, PopupPositionElement } from '../types'
 
-  export let is: AnyComponent | AnySvelteComponent
+  export let is: AnySvelteComponent
   export let props: object
   export let element: PopupAlignment | undefined
   export let onClose: ((result: any) => void) | undefined
@@ -68,18 +67,16 @@
     _close(undefined)
   }
 
-  const fitPopup = (): void => {
-    if (modalHTML) {
-      if ((fullSize || docSize) && element === 'float') {
-        options = fitPopupElement(modalHTML, 'full')
-        options.props.maxHeight = '100vh'
-        if (!modalHTML.classList.contains('fullsize')) modalHTML.classList.add('fullsize')
-      } else {
-        options = fitPopupElement(modalHTML, element)
-        if (modalHTML.classList.contains('fullsize')) modalHTML.classList.remove('fullsize')
-      }
-      options.fullSize = fullSize
+  const fitPopup = (modalHTML: HTMLElement, element: PopupAlignment | undefined): void => {
+    if ((fullSize || docSize) && element === 'float') {
+      options = fitPopupElement(modalHTML, 'full')
+      options.props.maxHeight = '100vh'
+      if (!modalHTML.classList.contains('fullsize')) modalHTML.classList.add('fullsize')
+    } else {
+      options = fitPopupElement(modalHTML, element)
+      if (modalHTML.classList.contains('fullsize')) modalHTML.classList.remove('fullsize')
     }
+    options.fullSize = fullSize
   }
 
   function handleKeydown (ev: KeyboardEvent) {
@@ -102,19 +99,35 @@
   const alignment: PopupPositionElement = element as PopupPositionElement
   let showing: boolean | undefined = alignment?.kind === 'submenu' ? undefined : false
 
-  onMount(() => {
-    fitPopup()
-    setTimeout(() => {
-      modalHTML.addEventListener('transitionend', () => (showing = undefined), { once: true })
-      showing = true
-    }, 0)
-  })
+  let oldModalHTML: HTMLElement | undefined = undefined
+
+  $: if (modalHTML !== undefined && oldModalHTML !== modalHTML) {
+    oldModalHTML = modalHTML
+    fitPopup(modalHTML, element)
+    showing = true
+    modalHTML.addEventListener(
+      'transitionend',
+      () => {
+        showing = undefined
+      },
+      { once: true }
+    )
+  }
+
   $: if ($deviceInfo.docWidth <= 900 && !docSize) docSize = true
   $: if ($deviceInfo.docWidth > 900 && docSize) docSize = false
 </script>
 
-<svelte:window on:resize={fitPopup} on:keydown={handleKeydown} />
+<svelte:window
+  on:resize={() => {
+    if (modalHTML) {
+      fitPopup(modalHTML, element)
+    }
+  }}
+  on:keydown={handleKeydown}
+/>
 
+{JSON.stringify(options)}
 <div
   class="popup {showing === undefined ? 'endShow' : showing === false ? 'preShow' : 'startShow'}"
   class:anim={element === 'float'}
@@ -143,10 +156,10 @@
     on:close={(ev) => _close(ev?.detail)}
     on:fullsize={() => {
       fullSize = !fullSize
-      fitPopup()
+      fitPopup(modalHTML, element)
     }}
     on:changeContent={() => {
-      fitPopup()
+      fitPopup(modalHTML, element)
     }}
   />
 </div>

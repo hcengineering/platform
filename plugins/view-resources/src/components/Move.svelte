@@ -14,15 +14,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Label, Button, Status as StatusControl } from '@hcengineering/ui'
   import { getClient } from '@hcengineering/presentation'
+  import { Button, Label, Status as StatusControl } from '@hcengineering/ui'
 
-  import core, { AttachedDoc, Collection, Doc, Ref, Space, SortingOrder, Client, Class } from '@hcengineering/core'
+  import core, { Class, Client, Doc, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import { getResource, OK, Resource, Status, translate } from '@hcengineering/platform'
   import { SpaceSelect } from '@hcengineering/presentation'
+  import task, { calcRank, Task } from '@hcengineering/task'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
-  import task, { Task, calcRank } from '@hcengineering/task'
-  import { getResource, OK, Resource, Status, translate } from '@hcengineering/platform'
+  import { moveToSpace } from '../utils'
 
   export let selected: Doc | Doc[]
   $: docs = Array.isArray(selected) ? selected : [selected]
@@ -45,19 +46,6 @@
   $: _class && translate(_class, {}).then((res) => (classLabel = res.toLocaleLowerCase()))
 
   async function move (doc: Doc): Promise<void> {
-    const attributes = hierarchy.getAllAttributes(doc._class)
-    for (const [name, attribute] of attributes) {
-      if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) {
-        const collection = attribute.type as Collection<AttachedDoc>
-        const allAttached = await client.findAll(collection.of, { attachedTo: doc._id })
-        for (const attached of allAttached) {
-          move(attached).catch((err) => console.log('failed to move', name, err))
-        }
-      }
-    }
-    const update: any = {
-      space: doc.space
-    }
     const needStates = currentSpace ? hierarchy.isDerived(currentSpace._class, task.class.SpaceWithStates) : false
     if (needStates) {
       const state = await client.findOne(task.class.State, { space: doc.space })
@@ -69,10 +57,14 @@
         { state: state._id },
         { sort: { rank: SortingOrder.Descending } }
       )
-      update.state = state._id
-      update.rank = calcRank(lastOne, undefined)
+      await moveToSpace(client, doc, space, {
+        state: state._id,
+        rank: calcRank(lastOne, undefined)
+      })
+    } else {
+      await moveToSpace(client, doc, space)
     }
-    client.updateDoc(doc._class, doc.space, doc._id, update)
+
     dispatch('close')
   }
 
