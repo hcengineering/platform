@@ -17,12 +17,25 @@
   import { TabModel, Tabs } from '@hcengineering/ui'
   import contact from '@hcengineering/contact'
 
+  import plugin from '../plugin'
   import Contacts from './Contacts.svelte'
 
   const client = getClient()
 
   let tabs: TabModel | undefined
-  client.findOne(contact.class.Tabs, {}).then((ts) => ts && (tabs = ts.tabs))
+
+  client.findAll(contact.class.ContactsTab, {}).then(
+    (ts) =>
+      ts.length &&
+      (tabs = [
+        {
+          component: Contacts,
+          label: plugin.string.Contacts,
+          props: {}
+        },
+        ...ts.sort((a, b) => (a.index > b.index ? 1 : (a.index < b.index && -1) || 0)).map((t) => t.tab)
+      ])
+  )
 </script>
 
 {#if tabs}

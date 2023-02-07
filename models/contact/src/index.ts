@@ -29,7 +29,7 @@ import {
   Person,
   Persons,
   Status,
-  Tabs
+  ContactsTab
 } from '@hcengineering/contact'
 import { Class, DateRangeMode, Domain, DOMAIN_MODEL, IndexKind, Ref, Timestamp } from '@hcengineering/core'
 import {
@@ -53,7 +53,7 @@ import view, { createAction, ViewAction, Viewlet } from '@hcengineering/model-vi
 import workbench from '@hcengineering/model-workbench'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
-import { TabModel } from '@hcengineering/ui'
+import { Tab } from '@hcengineering/ui'
 import contact from './plugin'
 
 export const DOMAIN_CONTACT = 'contact' as Domain
@@ -169,9 +169,10 @@ export class TOrganizations extends TSpace implements Organizations {}
 @UX(contact.string.PersonsFolder, contact.icon.Person)
 export class TPersons extends TSpace implements Persons {}
 
-@Model(contact.class.Tabs, core.class.Doc, DOMAIN_MODEL)
-export class TTabs extends TDoc implements Tabs {
-  tabs!: TabModel
+@Model(contact.class.ContactsTab, core.class.Doc, DOMAIN_MODEL)
+export class TContactsTab extends TDoc implements ContactsTab {
+  tab!: Tab
+  index!: number
 }
 
 export function createModel (builder: Builder): void {
@@ -188,7 +189,7 @@ export function createModel (builder: Builder): void {
     TChannel,
     TStatus,
     TMember,
-    TTabs
+    TContactsTab
   )
 
   builder.mixin(contact.class.Employee, core.class.Class, view.mixin.ObjectFactory, {

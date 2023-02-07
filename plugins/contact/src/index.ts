@@ -31,7 +31,7 @@ import {
 } from '@hcengineering/core'
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
-import type { AnyComponent, IconSize, TabModel } from '@hcengineering/ui'
+import type { AnyComponent, IconSize, Tab } from '@hcengineering/ui'
 import { ViewAction, Viewlet } from '@hcengineering/view'
 
 /**
@@ -155,8 +155,9 @@ export interface EmployeeAccount extends Account {
 /**
  * @public
  */
-export interface Tabs extends Doc {
-  tabs: TabModel
+export interface ContactsTab extends Doc {
+  tab: Tab
+  index: number
 }
 
 const SEP = ','
@@ -211,7 +212,7 @@ const contactPlugin = plugin(contactId, {
     Employee: '' as Ref<Class<Employee>>,
     EmployeeAccount: '' as Ref<Class<EmployeeAccount>>,
     Status: '' as Ref<Class<Status>>,
-    Tabs: '' as Ref<Class<Tabs>>
+    ContactsTab: '' as Ref<Class<ContactsTab>>
   },
   component: {
     SocialEditor: '' as AnyComponent,
