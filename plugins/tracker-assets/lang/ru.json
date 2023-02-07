@@ -109,6 +109,8 @@
     "AddIssueTooltip": "Добавить задачу\u2026",
     "NewIssueDialogClose": "Вы действительно хотите закрыть окно?",
     "NewIssueDialogCloseNote": "Все внесенные изменения будут потеряны",
+    "RemoveProjectDialogClose": "Удалить проект?",
+    "RemoveProjectDialogCloseNote": "Уверены, что хотите удалить этот проект? Эта операция не может быть отменена",
     "DueDatePopupTitle": "Срок {value}",
     "DueDatePopupOverdueTitle": "Должна была завершится {value}",
     "DueDatePopupDescription": "{value, plural, =0 {Сегодня} =1 {Завтра} other {# дней осталось}}",

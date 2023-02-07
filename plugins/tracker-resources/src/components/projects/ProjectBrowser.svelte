@@ -151,7 +151,8 @@
       }
     },
     { key: '', presenter: tracker.component.TargetDatePresenter },
-    { key: '', presenter: tracker.component.ProjectStatusPresenter }
+    { key: '', presenter: tracker.component.ProjectStatusPresenter },
+    { key: '', presenter: tracker.component.DeleteProjectPresenter, props: { space } }
   ]}
   projects={resultProjects}
   {viewMode}

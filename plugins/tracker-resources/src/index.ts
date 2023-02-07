@@ -115,6 +115,7 @@ import IssueStatistics from './components/sprints/IssueStatistics.svelte'
 import StatusRefPresenter from './components/issues/StatusRefPresenter.svelte'
 import SprintRefPresenter from './components/sprints/SprintRefPresenter.svelte'
 import { EmployeeAccount } from '@hcengineering/contact'
+import DeleteProjectPresenter from './components/projects/DeleteProjectPresenter.svelte'
 
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 
@@ -366,7 +367,8 @@ export default async (): Promise<Resources> => ({
     IssueStatistics,
     StatusRefPresenter,
     RelatedIssuesSection,
-    RelatedIssueSelector
+    RelatedIssueSelector,
+    DeleteProjectPresenter
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>

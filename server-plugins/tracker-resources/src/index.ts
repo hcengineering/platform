@@ -36,7 +36,7 @@ import { getMetadata } from '@hcengineering/platform'
 import { Resource } from '@hcengineering/platform/lib/platform'
 import { TriggerControl } from '@hcengineering/server-core'
 import { addAssigneeNotification } from '@hcengineering/server-task-resources'
-import tracker, { Issue, IssueParentInfo, TimeSpendReport, trackerId } from '@hcengineering/tracker'
+import tracker, { Issue, IssueParentInfo, Project, TimeSpendReport, trackerId } from '@hcengineering/tracker'
 
 async function updateSubIssues (
   updateTx: TxUpdateDoc<Issue>,
@@ -94,6 +94,34 @@ export async function addTrackerAssigneeNotification (
     ptx,
     tracker.component.EditIssue as unknown as Resource<string>
   )
+}
+
+/**
+ * @public
+ */
+export async function OnProjectRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const actualTx = TxProcessor.extractTx(tx)
+  if (actualTx._class !== core.class.TxRemoveDoc) {
+    return []
+  }
+
+  const ctx = actualTx as TxUpdateDoc<Project>
+
+  const issues = await control.findAll(tracker.class.Issue, {
+    project: ctx.objectId
+  })
+  if (issues === undefined) return []
+  const res: Tx[] = []
+
+  for (const issue of issues) {
+    const issuePush = {
+      ...issue,
+      project: null
+    }
+    const tx = control.txFactory.createTxUpdateDoc(issue._class, issue.space, issue._id, issuePush)
+    res.push(tx)
+  }
+  return res
 }
 
 /**
@@ -173,7 +201,8 @@ export default async () => ({
     IssueTextPresenter: issueTextPresenter
   },
   trigger: {
-    OnIssueUpdate
+    OnIssueUpdate,
+    OnProjectRemove
   }
 })
 
