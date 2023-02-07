@@ -23,7 +23,7 @@
     showPopup,
     Spinner
   } from '@hcengineering/ui'
-  import { AttributeModel, BuildModelKey, ViewOptions } from '@hcengineering/view'
+  import { AttributeModel, BuildModelKey, ViewOptionModel, ViewOptions } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { FocusSelection, focusStore } from '../../selection'
   import Menu from '../Menu.svelte'
@@ -57,6 +57,7 @@
   export let viewOptions: ViewOptions
   export let newObjectProps: Record<string, any>
   export let docByIndex: Map<number, Doc>
+  export let viewOptionsConfig: ViewOptionModel[] | undefined
 
   $: lastLevel = level + 1 >= viewOptions.groupBy.length
 
@@ -155,6 +156,7 @@
         level={level + 1}
         {initIndex}
         {docByIndex}
+        {viewOptionsConfig}
         on:check
         on:uncheckAll
         on:row-focus

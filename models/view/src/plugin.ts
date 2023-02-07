@@ -13,10 +13,9 @@
 // limitations under the License.
 //
 
-import { ObjQueryType } from '@hcengineering/core'
-import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
+import { IntlString, mergeIds } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
-import { Filter, ViewAction, viewId } from '@hcengineering/view'
+import { FilterFunction, ViewAction, ViewCategoryAction, viewId } from '@hcengineering/view'
 import view from '@hcengineering/view-resources/src/plugin'
 
 export default mergeIds(viewId, view, {
@@ -93,13 +92,14 @@ export default mergeIds(viewId, view, {
     MarkdownFormatting: '' as IntlString
   },
   function: {
-    FilterObjectInResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
-    FilterObjectNinResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
-    FilterValueInResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
-    FilterValueNinResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
-    FilterBeforeResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
-    FilterAfterResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
-    FilterNestedMatchResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
-    FilterNestedDontMatchResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>
+    FilterObjectInResult: '' as FilterFunction,
+    FilterObjectNinResult: '' as FilterFunction,
+    FilterValueInResult: '' as FilterFunction,
+    FilterValueNinResult: '' as FilterFunction,
+    FilterBeforeResult: '' as FilterFunction,
+    FilterAfterResult: '' as FilterFunction,
+    FilterNestedMatchResult: '' as FilterFunction,
+    FilterNestedDontMatchResult: '' as FilterFunction,
+    ShowEmptyGroups: '' as ViewCategoryAction
   }
 })

@@ -14,10 +14,16 @@
 -->
 <script lang="ts">
   import { Class, Doc, Lookup, Ref, Space } from '@hcengineering/core'
-  import { IntlString } from '@hcengineering/platform'
+  import { getResource, IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { AnyComponent } from '@hcengineering/ui'
-  import view, { AttributeModel, BuildModelKey, ViewOptions } from '@hcengineering/view'
+  import view, {
+    AttributeModel,
+    BuildModelKey,
+    CategoryOption,
+    ViewOptionModel,
+    ViewOptions
+  } from '@hcengineering/view'
   import { buildModel, getCategories, getPresenter, groupBy } from '../../utils'
   import { noCategory } from '../../viewOptions'
   import ListCategory from './ListCategory.svelte'
@@ -42,13 +48,41 @@
   export let initIndex = 0
   export let newObjectProps: Record<string, any>
   export let docByIndex: Map<number, Doc>
+  export let viewOptionsConfig: ViewOptionModel[] | undefined
 
   $: groupByKey = viewOptions.groupBy[level] ?? noCategory
   $: groupedDocs = groupBy(docs, groupByKey)
   let categories: any[] = []
-  $: getCategories(client, _class, docs, groupByKey).then((p) => {
-    categories = p
-  })
+  $: updateCategories(_class, docs, groupByKey, viewOptions, viewOptionsConfig)
+
+  async function updateCategories (
+    _class: Ref<Class<Doc>>,
+    docs: Doc[],
+    groupByKey: string,
+    viewOptions: ViewOptions,
+    viewOptionsModel: ViewOptionModel[] | undefined
+  ) {
+    categories = await getCategories(client, _class, docs, groupByKey)
+    if (level === 0) {
+      for (const viewOption of viewOptionsModel ?? []) {
+        if (viewOption.actionTartget !== 'category') continue
+        const categoryFunc = viewOption as CategoryOption
+        if (viewOptions[viewOption.key]) {
+          const f = await getResource(categoryFunc.action)
+          const res = await f(_class, space, groupByKey)
+          if (res !== undefined) {
+            for (const category of categories) {
+              if (!res.includes(category)) {
+                res.push(category)
+              }
+            }
+            categories = res
+            return
+          }
+        }
+      }
+    }
+  }
 
   const client = getClient()
   const hierarchy = client.getHierarchy()

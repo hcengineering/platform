@@ -106,7 +106,17 @@ import IssueTemplates from './components/templates/IssueTemplates.svelte'
 import EditIssueTemplate from './components/templates/EditIssueTemplate.svelte'
 import TemplateEstimationEditor from './components/templates/EstimationEditor.svelte'
 import MoveAndDeleteSprintPopup from './components/sprints/MoveAndDeleteSprintPopup.svelte'
-import { moveIssuesToAnotherSprint, issueStatusSort, issuePrioritySort, sprintSort, subIssueQuery } from './utils'
+import {
+  moveIssuesToAnotherSprint,
+  issueStatusSort,
+  issuePrioritySort,
+  sprintSort,
+  subIssueQuery,
+  getAllStatuses,
+  getAllPriority,
+  getAllProjects,
+  getAllSprints
+} from './utils'
 import { deleteObject } from '@hcengineering/view-resources/src/utils'
 
 import CreateTeam from './components/teams/CreateTeam.svelte'
@@ -384,7 +394,11 @@ export default async (): Promise<Resources> => ({
     IssueStatusSort: issueStatusSort,
     IssuePrioritySort: issuePrioritySort,
     SprintSort: sprintSort,
-    SubIssueQuery: subIssueQuery
+    SubIssueQuery: subIssueQuery,
+    GetAllStatuses: getAllStatuses,
+    GetAllPriority: getAllPriority,
+    GetAllProjects: getAllProjects,
+    GetAllSprints: getAllSprints
   },
   actionImpl: {
     EditWorkflowStatuses: editWorkflowStatuses,

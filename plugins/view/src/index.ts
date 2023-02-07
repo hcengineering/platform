@@ -59,8 +59,13 @@ export interface KeyFilter {
 export interface FilterMode extends Doc {
   label: IntlString
   disableValueSelector?: boolean
-  result: Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>
+  result: FilterFunction
 }
+
+/**
+ * @public
+ */
+export type FilterFunction = Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>
 
 /**
  * @public
@@ -236,6 +241,13 @@ export type SortFunc = Resource<(values: any[]) => Promise<any[]>>
  */
 export interface ClassSortFuncs extends Class<Doc> {
   func: SortFunc
+}
+
+/**
+ * @public
+ */
+export interface AllValuesFunc extends Class<Doc> {
+  func: Resource<(space: Ref<Space> | undefined) => Promise<any[]>>
 }
 
 /**
@@ -468,16 +480,36 @@ export interface ViewOption {
   defaultValue: any
   label: IntlString
   hidden?: (viewOptions: ViewOptions) => boolean
-  actionTartget?: 'query'
+  actionTartget?: 'query' | 'category'
   action?: Resource<(value: any, ...params: any) => any>
 }
 
 /**
  * @public
  */
+export type ViewCategoryAction = Resource<
+(_class: Ref<Class<Doc>>, space: Ref<Space> | undefined, key: string) => Promise<any[] | undefined>
+>
+
+/**
+ * @public
+ */
+export interface CategoryOption extends ViewOption {
+  actionTartget: 'category'
+  action: ViewCategoryAction
+}
+
+/**
+ * @public
+ */
+export type ViewQueryAction = Resource<(value: any, query: DocumentQuery<Doc>) => DocumentQuery<Doc>>
+
+/**
+ * @public
+ */
 export interface ViewQueryOption extends ViewOption {
   actionTartget: 'query'
-  action: Resource<(value: any, query: DocumentQuery<Doc>) => DocumentQuery<Doc>>
+  action: ViewQueryAction
 }
 
 /**
@@ -514,6 +546,7 @@ export interface ViewOptionsModel {
   groupBy: string[]
   orderBy: OrderOption[]
   other: ViewOptionModel[]
+  groupDepth?: number
 }
 
 /**
@@ -542,7 +575,8 @@ const view = plugin(viewId, {
     IgnoreActions: '' as Ref<Mixin<IgnoreActions>>,
     PreviewPresenter: '' as Ref<Mixin<PreviewPresenter>>,
     ListHeaderExtra: '' as Ref<Mixin<ListHeaderExtra>>,
-    SortFuncs: '' as Ref<Mixin<ClassSortFuncs>>
+    SortFuncs: '' as Ref<Mixin<ClassSortFuncs>>,
+    AllValuesFunc: '' as Ref<Mixin<AllValuesFunc>>
   },
   class: {
     ViewletPreference: '' as Ref<Class<ViewletPreference>>,

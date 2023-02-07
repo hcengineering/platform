@@ -13,25 +13,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@hcengineering/contact'
-  import { Class, Doc, DocumentQuery, Lookup, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import contact, { Employee } from '@hcengineering/contact'
+  import { Class, Doc, DocumentQuery, IdMap, Lookup, Ref, toIdMap, WithLookup } from '@hcengineering/core'
   import { Kanban, TypeState } from '@hcengineering/kanban'
   import notification from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
-  import { Issue, IssuesGrouping, IssuesOrdering, IssueStatus, Team } from '@hcengineering/tracker'
+  import { Issue, IssuesGrouping, IssuesOrdering, IssueStatus, Project, Sprint, Team } from '@hcengineering/tracker'
   import {
     Button,
     Component,
     getEventPositionElement,
+    Icon,
     IconAdd,
     Loading,
     showPanel,
     showPopup,
     tooltip
   } from '@hcengineering/ui'
-  import { ViewOptionModel, ViewOptions, ViewQueryOption } from '@hcengineering/view'
+  import { CategoryOption, ViewOptionModel, ViewOptions, ViewQueryOption } from '@hcengineering/view'
   import {
     focusStore,
     ListSelectionProvider,
@@ -41,9 +42,10 @@
   } from '@hcengineering/view-resources'
   import ActionContext from '@hcengineering/view-resources/src/components/ActionContext.svelte'
   import Menu from '@hcengineering/view-resources/src/components/Menu.svelte'
+  import { getCategories } from '@hcengineering/view-resources/src/utils'
   import { onMount } from 'svelte'
   import tracker from '../../plugin'
-  import { getIssueStatusStates, getKanbanStatuses, getPriorityStates, issuesGroupBySorting } from '../../utils'
+  import { issuesGroupBySorting, mapKanbanCategories } from '../../utils'
   import CreateIssue from '../CreateIssue.svelte'
   import ProjectEditor from '../projects/ProjectEditor.svelte'
   import AssigneePresenter from './AssigneePresenter.svelte'
@@ -68,7 +70,6 @@
   $: dontUpdateRank = orderBy[0] !== IssuesOrdering.Manual
 
   const spaceQuery = createQuery()
-  const statusesQuery = createQuery()
 
   let currentTeam: Team | undefined
   $: spaceQuery.query(tracker.class.Team, { _id: currentSpace }, (res) => {
@@ -97,20 +98,6 @@
     return result
   }
 
-  let issueStatuses: WithLookup<IssueStatus>[] | undefined
-  $: issueStatusStates = getIssueStatusStates(issueStatuses)
-  $: statusesQuery.query(
-    tracker.class.IssueStatus,
-    { attachedTo: currentSpace },
-    (is) => {
-      issueStatuses = is
-    },
-    {
-      lookup: { category: tracker.class.IssueStatusCategory },
-      sort: { rank: SortingOrder.Ascending }
-    }
-  )
-
   function toIssue (object: any): WithLookup<Issue> {
     return object as WithLookup<Issue>
   }
@@ -138,9 +125,9 @@
     })
   }
   const issuesQuery = createQuery()
-  let issueStates: TypeState[] = []
+  let issues: Issue[] = []
   const lookupIssue: Lookup<Issue> = {
-    status: [tracker.class.IssueStatus, { category: tracker.class.IssueStatusCategory }],
+    status: tracker.class.IssueStatus,
     project: tracker.class.Project,
     sprint: tracker.class.Sprint,
     assignee: contact.class.Employee
@@ -148,8 +135,8 @@
   $: issuesQuery.query(
     tracker.class.Issue,
     resultQuery,
-    async (result) => {
-      issueStates = await getKanbanStatuses(groupBy, result)
+    (result) => {
+      issues = result
     },
     {
       lookup: lookupIssue,
@@ -157,27 +144,107 @@
     }
   )
 
-  let priorityStates: TypeState[] = []
-  getPriorityStates().then((states) => {
-    priorityStates = states
+  const assigneeQuery = createQuery()
+  let assignee: Employee[] = []
+  $: assigneeQuery.query(contact.class.Employee, {}, (result) => {
+    assignee = result
   })
-  function getIssueStates (
-    groupBy: IssuesGrouping,
-    states: TypeState[],
-    statusStates: TypeState[],
-    priorityStates: TypeState[]
+
+  const statusesQuery = createQuery()
+  let statuses: WithLookup<IssueStatus>[] = []
+  let statusesMap: IdMap<IssueStatus> = new Map()
+  $: statusesQuery.query(
+    tracker.class.IssueStatus,
+    {
+      space: currentSpace
+    },
+    (result) => {
+      statuses = result
+      statusesMap = toIdMap(result)
+    },
+    {
+      lookup: { category: tracker.class.IssueStatusCategory }
+    }
+  )
+
+  const projectsQuery = createQuery()
+  let projects: Project[] = []
+  $: projectsQuery.query(
+    tracker.class.Project,
+    {
+      space: currentSpace
+    },
+    (result) => {
+      projects = result
+    }
+  )
+
+  const sprintsQuery = createQuery()
+  let sprints: Sprint[] = []
+  $: sprintsQuery.query(
+    tracker.class.Sprint,
+    {
+      space: currentSpace
+    },
+    (result) => {
+      sprints = result
+    }
+  )
+
+  let states: TypeState[]
+
+  $: updateCategories(
+    tracker.class.Issue,
+    issues,
+    groupBy,
+    viewOptions,
+    viewOptionsConfig,
+    statuses,
+    projects,
+    sprints,
+    assignee
+  )
+
+  async function updateCategories (
+    _class: Ref<Class<Doc>>,
+    docs: Doc[],
+    groupByKey: string,
+    viewOptions: ViewOptions,
+    viewOptionsModel: ViewOptionModel[] | undefined,
+    statuses: WithLookup<IssueStatus>[],
+    projects: Project[],
+    sprints: Sprint[],
+    assignee: Employee[]
   ) {
-    if (states.length > 0) return states
-    if (groupBy === IssuesGrouping.Status) return statusStates
-    if (groupBy === IssuesGrouping.Priority) return priorityStates
-    return []
+    let categories = await getCategories(client, _class, docs, groupByKey)
+    for (const viewOption of viewOptionsModel ?? []) {
+      if (viewOption.actionTartget !== 'category') continue
+      const categoryFunc = viewOption as CategoryOption
+      if (viewOptions[viewOption.key]) {
+        const f = await getResource(categoryFunc.action)
+        const res = await f(_class, space, groupByKey)
+        if (res !== undefined) {
+          for (const category of categories) {
+            if (!res.includes(category)) {
+              res.push(category)
+            }
+          }
+          categories = res
+          break
+        }
+      }
+    }
+    const indexes = new Map(categories.map((p, i) => [p, i]))
+    const res = await mapKanbanCategories(groupByKey, categories, statuses, projects, sprints, assignee)
+    res.sort((a, b) => {
+      const aIndex = indexes.get(a._id ?? undefined) ?? -1
+      const bIndex = indexes.get(b._id ?? undefined) ?? -1
+      return aIndex - bIndex
+    })
+    states = res
   }
-  $: states = getIssueStates(groupBy, issueStates, issueStatusStates, priorityStates)
 
   const fullFilled: { [key: string]: boolean } = {}
-  const getState = (state: any): WithLookup<IssueStatus> | undefined => {
-    return issueStatuses?.filter((is) => is._id === state._id)[0]
-  }
 </script>
 
 {#if !states?.length}
@@ -211,11 +278,17 @@
     on:contextmenu={(evt) => showMenu(evt.detail.evt, evt.detail.objects)}
   >
     <svelte:fragment slot="header" let:state let:count>
-      {@const stateWLU = getState(state)}
+      {@const status = statusesMap.get(state._id)}
       <div class="header flex-col">
         <div class="flex-between label font-medium w-full h-full">
           <div class="flex-row-center gap-2">
-            {#if stateWLU !== undefined}<IssueStatusIcon value={stateWLU} size={'small'} />{/if}
+            {#if state.icon}
+              {#if groupBy === 'status' && status}
+                <IssueStatusIcon value={status} size="small" />
+              {:else}
+                <Icon icon={state.icon} size="small" />
+              {/if}
+            {/if}
             <span class="lines-limit-2 ml-2">{state.title}</span>
             <span class="counter ml-2 text-md">{count}</span>
           </div>

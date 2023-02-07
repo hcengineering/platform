@@ -11,11 +11,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ObjQueryType } from '@hcengineering/core'
 import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
 import tags, { tagsId } from '@hcengineering/tags'
 import { AnyComponent } from '@hcengineering/ui'
-import { Filter } from '@hcengineering/view'
+import { FilterFunction } from '@hcengineering/view'
 
 export default mergeIds(tagsId, tags, {
   component: {
@@ -53,8 +52,8 @@ export default mergeIds(tagsId, tags, {
     Initial: '' as IntlString
   },
   function: {
-    FilterTagsInResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
-    FilterTagsNinResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
+    FilterTagsInResult: '' as FilterFunction,
+    FilterTagsNinResult: '' as FilterFunction,
     CreateTagElement: '' as Resource<(props?: Record<string, any>) => Promise<void>>
   }
 })

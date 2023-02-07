@@ -64,6 +64,7 @@
     "Then": "Then",
     "ShowPreviewOnClick": "Please click to show document index preview...",
     "Showed": "Showed",
-    "Total": "Total"
+    "Total": "Total",
+    "ShowEmptyGroups": "Show empty groups"
   }
 }

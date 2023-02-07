@@ -26,24 +26,21 @@
     })
     .concat({ id: noCategory, label: view.string.NoGrouping })
 
-  const orderBy = config.orderBy.map((p) => {
-    const key = p[0]
-    return {
-      id: key,
-      label: key === 'rank' ? view.string.Manual : getKeyLabel(client, viewlet.attachTo, key, lookup)
-    }
-  })
-
-  $: groups =
-    viewOptions.groupBy[viewOptions.groupBy.length - 1] === noCategory
-      ? viewOptions.groupBy
-      : [...viewOptions.groupBy, noCategory]
+  $: orderBy = config.orderBy
+    .filter((p) => !viewOptions.groupBy.includes(p[0]))
+    .map((p) => {
+      const key = p[0]
+      return {
+        id: key,
+        label: key === 'rank' ? view.string.Manual : getKeyLabel(client, viewlet.attachTo, key, lookup)
+      }
+    })
 
   function selectGrouping (value: string, i: number) {
     viewOptions.groupBy[i] = value
     if (value === noCategory) {
-      viewOptions.groupBy.length = i
-    } else {
+      viewOptions.groupBy.length = i + 1
+    } else if (config.groupDepth === undefined || config.groupDepth > viewOptions.groupBy.length) {
       viewOptions.groupBy.length = i + 1
       viewOptions.groupBy[i + 1] = noCategory
     }
@@ -62,7 +59,7 @@
 
 <div class="antiCard">
   <div class="antiCard-group grid">
-    {#each groups as group, i}
+    {#each viewOptions.groupBy as group, i}
       <span class="label"><Label label={i === 0 ? view.string.Grouping : view.string.Then} /></span>
       <div class="value grouping">
         <DropdownLabelsIntl
@@ -93,7 +90,7 @@
         }}
       />
     </div>
-    {#each config.other as model}
+    {#each config.other.filter((p) => !p.hidden?.(viewOptions)) as model}
       <span class="label"><Label label={model.label} /></span>
       <div class="value">
         {#if isToggleType(model)}

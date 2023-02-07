@@ -1,4 +1,6 @@
-import { SortingOrder } from '@hcengineering/core'
+import { Class, Doc, Ref, SortingOrder, Space } from '@hcengineering/core'
+import { getResource } from '@hcengineering/platform'
+import { getAttributePresenterClass, getClient } from '@hcengineering/presentation'
 import { getCurrentLocation, locationToUrl } from '@hcengineering/ui'
 import {
   DropdownViewOption,
@@ -8,6 +10,7 @@ import {
   ViewOptions,
   ViewOptionsModel
 } from '@hcengineering/view'
+import view from './plugin'
 
 export const noCategory = '#no_category'
 
@@ -80,5 +83,30 @@ export function migrateViewOpttions (): void {
       res.groupBy = [res.groupBy]
     }
     localStorage.setItem(key, JSON.stringify(res))
+  }
+}
+
+export async function showEmptyGroups (
+  _class: Ref<Class<Doc>>,
+  space: Ref<Space> | undefined,
+  key: string
+): Promise<any[] | undefined> {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const attr = hierarchy.getAttribute(_class, key)
+  if (attr === undefined) return
+  const { attrClass } = getAttributePresenterClass(hierarchy, attr)
+  const attributeClass = hierarchy.getClass(attrClass)
+  const mixin = hierarchy.as(attributeClass, view.mixin.AllValuesFunc)
+  if (mixin.func !== undefined) {
+    const f = await getResource(mixin.func)
+    const res = await f(space)
+    if (res !== undefined) {
+      const sortFunc = hierarchy.as(attributeClass, view.mixin.SortFuncs)
+      if (sortFunc?.func === undefined) return res
+      const f = await getResource(sortFunc.func)
+
+      return await f(res)
+    }
   }
 }

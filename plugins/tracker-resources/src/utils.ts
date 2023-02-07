@@ -13,13 +13,14 @@
 // limitations under the License.
 //
 
-import { Employee } from '@hcengineering/contact'
+import { Employee, formatName } from '@hcengineering/contact'
 import core, {
   AttachedData,
   Doc,
   DocumentQuery,
   Ref,
   SortingOrder,
+  Space,
   toIdMap,
   TxCollectionCUD,
   TxOperations,
@@ -28,7 +29,7 @@ import core, {
 } from '@hcengineering/core'
 import { TypeState } from '@hcengineering/kanban'
 import { Asset, IntlString, translate } from '@hcengineering/platform'
-import { createQuery } from '@hcengineering/presentation'
+import { createQuery, getClient } from '@hcengineering/presentation'
 import {
   Issue,
   IssuePriority,
@@ -37,6 +38,7 @@ import {
   IssuesOrdering,
   IssueStatus,
   IssueTemplateData,
+  Project,
   ProjectStatus,
   Sprint,
   SprintStatus,
@@ -51,7 +53,6 @@ import {
   isWeekend,
   MILLISECONDS_IN_WEEK
 } from '@hcengineering/ui'
-import { ViewOptionModel } from '@hcengineering/view'
 import { ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
 import tracker from './plugin'
 import { defaultPriorities, defaultProjectStatuses, defaultSprintStatuses, issuePriorities } from './types'
@@ -360,152 +361,106 @@ export async function sprintSort (value: Array<Ref<Sprint>>): Promise<Array<Ref<
   })
 }
 
-export async function getKanbanStatuses (
-  groupBy: IssuesGrouping,
-  issues: Array<WithLookup<Issue>>
+export async function mapKanbanCategories (
+  groupBy: string,
+  categories: any[],
+  statuses: Array<WithLookup<IssueStatus>>,
+  projects: Project[],
+  sprints: Sprint[],
+  assignee: Employee[]
 ): Promise<TypeState[]> {
   if (groupBy === IssuesGrouping.NoGrouping) {
     return [{ _id: undefined, color: UNSET_COLOR, title: await translate(tracker.string.NoGrouping, {}) }]
   }
   if (groupBy === IssuesGrouping.Priority) {
-    const states = issues.reduce<TypeState[]>((result, issue) => {
-      const { priority } = issue
-      if (result.find(({ _id }) => _id === priority) !== undefined) return result
-      return [
-        ...result,
-        {
-          _id: priority,
-          title: issuePriorities[priority].label,
-          color: UNSET_COLOR,
-          icon: issuePriorities[priority].icon
-        }
-      ]
-    }, [])
-    await Promise.all(
-      states.map(async (state) => {
-        state.title = await translate(state.title as IntlString, {})
+    const res: TypeState[] = []
+    for (const priority of categories) {
+      const title = await translate((issuePriorities as any)[priority].label, {})
+      res.push({
+        _id: priority,
+        title,
+        color: UNSET_COLOR,
+        icon: (issuePriorities as any)[priority].icon
       })
-    )
-    return states
+    }
+    return res
   }
   if (groupBy === IssuesGrouping.Status) {
-    return issues.reduce<TypeState[]>((result, issue) => {
-      const status = issue.$lookup?.status
-      if (status === undefined || result.find(({ _id }) => _id === status._id) !== undefined) return result
-      const category = '$lookup' in status ? status.$lookup?.category : undefined
-      return [
-        ...result,
-        {
+    return statuses
+      .filter((p) => categories.includes(p._id))
+      .map((status) => {
+        const category = '$lookup' in status ? status.$lookup?.category : undefined
+        return {
           _id: status._id,
           title: status.name,
           icon: category?.icon,
           color: status.color ?? category?.color ?? UNSET_COLOR
         }
-      ]
-    }, [])
+      })
   }
   if (groupBy === IssuesGrouping.Assignee) {
     const noAssignee = await translate(tracker.string.NoAssignee, {})
-    return issues.reduce<TypeState[]>((result, issue) => {
-      if (result.find(({ _id }) => _id === issue.assignee) !== undefined) return result
-      return [
-        ...result,
-        {
-          _id: issue.assignee,
-          title: issue.$lookup?.assignee?.name ?? noAssignee,
+    const res: TypeState[] = assignee
+      .filter((p) => categories.includes(p._id))
+      .map((employee) => {
+        return {
+          _id: employee._id,
+          title: formatName(employee.name),
           color: UNSET_COLOR,
           icon: undefined
         }
-      ]
-    }, [])
+      })
+    if (categories.includes(undefined)) {
+      res.push({
+        _id: null,
+        title: noAssignee,
+        color: UNSET_COLOR,
+        icon: undefined
+      })
+    }
+    return res
   }
   if (groupBy === IssuesGrouping.Project) {
     const noProject = await translate(tracker.string.NoProject, {})
-    return issues.reduce<TypeState[]>((result, issue) => {
-      if (result.find(({ _id }) => _id === issue.project) !== undefined) return result
-      return [
-        ...result,
-        {
-          _id: issue.project,
-          title: issue.$lookup?.project?.label ?? noProject,
-          color: UNSET_COLOR,
-          icon: undefined
-        }
-      ]
-    }, [])
+    const res: TypeState[] = projects
+      .filter((p) => categories.includes(p._id))
+      .map((project) => ({
+        _id: project._id,
+        title: project.label,
+        color: UNSET_COLOR,
+        icon: undefined
+      }))
+    if (categories.includes(undefined)) {
+      res.push({
+        _id: null,
+        title: noProject,
+        color: UNSET_COLOR,
+        icon: undefined
+      })
+    }
+    return res
   }
   if (groupBy === IssuesGrouping.Sprint) {
     const noSprint = await translate(tracker.string.NoSprint, {})
-    return issues.reduce<TypeState[]>((result, issue) => {
-      if (result.find(({ _id }) => _id === issue.sprint) !== undefined) return result
-      return [
-        ...result,
-        {
-          _id: issue.sprint,
-          title: issue.$lookup?.sprint?.label ?? noSprint,
-          color: UNSET_COLOR,
-          icon: undefined
-        }
-      ]
-    }, [])
+    const res: TypeState[] = sprints
+      .filter((p) => categories.includes(p._id))
+      .map((sprint) => ({
+        _id: sprint._id,
+        title: sprint.label,
+        color: UNSET_COLOR,
+        icon: undefined
+      }))
+    if (categories.includes(undefined)) {
+      res.push({
+        _id: null,
+        title: noSprint,
+        color: UNSET_COLOR,
+        icon: undefined
+      })
+    }
+    return res
   }
   return []
-}
-
-export function getIssueStatusStates (issueStatuses: Array<WithLookup<IssueStatus>> = []): TypeState[] {
-  return issueStatuses.map((status) => ({
-    _id: status._id,
-    title: status.name,
-    color: status.color ?? status.$lookup?.category?.color ?? UNSET_COLOR,
-    icon: status.$lookup?.category?.icon ?? undefined
-  }))
-}
-
-export async function getPriorityStates (): Promise<TypeState[]> {
-  return await Promise.all(
-    defaultPriorities.map(async (priority) => ({
-      _id: priority,
-      title: await translate(issuePriorities[priority].label, {}),
-      color: UNSET_COLOR,
-      icon: issuePriorities[priority].icon
-    }))
-  )
-}
-
-export function getDefaultViewOptionsTemplatesConfig (): ViewOptionModel[] {
-  const groupByCategory: ViewOptionModel = {
-    key: 'groupBy',
-    label: tracker.string.Grouping,
-    defaultValue: 'project',
-    values: [
-      { id: 'assignee', label: tracker.string.Assignee },
-      { id: 'priority', label: tracker.string.Priority },
-      { id: 'project', label: tracker.string.Project },
-      { id: 'sprint', label: tracker.string.Sprint },
-      { id: '#no_category', label: tracker.string.NoGrouping }
-    ],
-    type: 'dropdown'
-  }
-  const orderByCategory: ViewOptionModel = {
-    key: 'orderBy',
-    label: tracker.string.Ordering,
-    defaultValue: 'priority',
-    values: [
-      { id: 'modifiedOn', label: tracker.string.LastUpdated },
-      { id: 'priority', label: tracker.string.Priority },
-      { id: 'dueDate', label: tracker.string.DueDate }
-    ],
-    type: 'dropdown'
-  }
-  const showEmptyGroups: ViewOptionModel = {
-    key: 'shouldShowEmptyGroups',
-    label: tracker.string.ShowEmptyGroups,
-    defaultValue: false,
-    type: 'toggle'
-  }
-  const result: ViewOptionModel[] = [groupByCategory, orderByCategory]
-  result.push(showEmptyGroups)
-  return result
 }
 
 /**
@@ -589,6 +544,28 @@ export function getTimeReportDayType (timestamp: number): TimeReportDayType | un
 
 export function subIssueQuery (value: boolean, query: DocumentQuery<Issue>): DocumentQuery<Issue> {
   return value ? query : { ...query, attachedTo: tracker.ids.NoParent }
+}
+
+export async function getAllStatuses (space: Ref<Space> | undefined): Promise<Array<Ref<IssueStatus>> | undefined> {
+  if (space === undefined) return
+  const client = getClient()
+  return (await client.findAll(tracker.class.IssueStatus, { space })).map((p) => p._id)
+}
+
+export async function getAllPriority (space: Ref<Space> | undefined): Promise<IssuePriority[] | undefined> {
+  return defaultPriorities
+}
+
+export async function getAllProjects (space: Ref<Team> | undefined): Promise<Array<Ref<Project>> | undefined> {
+  if (space === undefined) return
+  const client = getClient()
+  return (await client.findAll(tracker.class.Project, { space })).map((p) => p._id)
+}
+
+export async function getAllSprints (space: Ref<Team> | undefined): Promise<Array<Ref<Sprint>> | undefined> {
+  if (space === undefined) return
+  const client = getClient()
+  return (await client.findAll(tracker.class.Sprint, { space })).map((p) => p._id)
 }
 
 export function subIssueListProvider (subIssues: Issue[], target: Ref<Issue>): void {

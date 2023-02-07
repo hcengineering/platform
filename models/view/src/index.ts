@@ -62,7 +62,8 @@ import type {
   ViewletDescriptor,
   ViewletPreference,
   ViewOptionsModel,
-  ViewOptions
+  ViewOptions,
+  AllValuesFunc
 } from '@hcengineering/view'
 import view from './plugin'
 
@@ -215,6 +216,11 @@ export class TSortFuncs extends TClass implements ClassSortFuncs {
   func!: SortFunc
 }
 
+@Mixin(view.mixin.AllValuesFunc, core.class.Class)
+export class TAllValuesFunc extends TClass implements AllValuesFunc {
+  func!: Resource<(space: Ref<Space> | undefined) => Promise<any[]>>
+}
+
 @Model(view.class.ViewletPreference, preference.class.Preference)
 export class TViewletPreference extends TPreference implements ViewletPreference {
   attachedTo!: Ref<Viewlet>
@@ -339,7 +345,8 @@ export function createModel (builder: Builder): void {
     TLinkPresenter,
     TArrayEditor,
     TInlineAttributEditor,
-    TFilteredView
+    TFilteredView,
+    TAllValuesFunc
   )
 
   classPresenter(
