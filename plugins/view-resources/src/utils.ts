@@ -20,14 +20,16 @@ import core, {
   Client,
   Collection,
   Doc,
+  DocumentUpdate,
   Hierarchy,
   Lookup,
   Obj,
   Ref,
   RefTo,
-  TxOperations,
   ReverseLookup,
-  ReverseLookups
+  ReverseLookups,
+  Space,
+  TxOperations
 } from '@hcengineering/core'
 import type { IntlString } from '@hcengineering/platform'
 import { getResource } from '@hcengineering/platform'
@@ -36,8 +38,8 @@ import {
   AnyComponent,
   ErrorPresenter,
   getCurrentLocation,
-  Location,
   getPlatformColorForText,
+  Location,
   locationToUrl
 } from '@hcengineering/ui'
 import type { BuildModelOptions, Viewlet } from '@hcengineering/view'
@@ -597,4 +599,31 @@ export function cosinesim (A: number[], B: number[]): number {
   mB = Math.sqrt(mB)
   const similarity = dotproduct / (mA * mB) // here you needed extra brackets
   return similarity
+}
+
+/**
+ * @public
+ */
+export async function moveToSpace (
+  client: TxOperations,
+  doc: Doc,
+  space: Ref<Space>,
+  extra?: DocumentUpdate<any>
+): Promise<void> {
+  const hierarchy = client.getHierarchy()
+  const attributes = hierarchy.getAllAttributes(doc._class)
+  for (const [name, attribute] of attributes) {
+    if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) {
+      const collection = attribute.type as Collection<AttachedDoc>
+      const allAttached = await client.findAll(collection.of, { attachedTo: doc._id })
+      for (const attached of allAttached) {
+        // Do not use extra for childs.
+        await moveToSpace(client, attached, space).catch((err) => console.log('failed to move', name, err))
+      }
+    }
+  }
+  await client.update(doc, {
+    space,
+    ...extra
+  })
 }

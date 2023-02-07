@@ -117,7 +117,8 @@ export default mergeIds(recruitId, recruit, {
     VacancyMatching: '' as IntlString,
     Score: '' as IntlString,
     Match: '' as IntlString,
-    PerformMatch: '' as IntlString
+    PerformMatch: '' as IntlString,
+    MoveApplication: '' as IntlString
   },
   space: {
     CandidatesPublic: '' as Ref<Space>

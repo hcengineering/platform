@@ -64,6 +64,8 @@ import VacancyList from './components/VacancyList.svelte'
 import VacancyTemplateEditor from './components/VacancyTemplateEditor.svelte'
 import MatchVacancy from './components/MatchVacancy.svelte'
 
+import { MoveApplicant } from './actionImpl'
+
 async function createOpinion (object: Doc): Promise<void> {
   showPopup(CreateOpinion, { space: object.space, review: object._id })
 }
@@ -265,7 +267,8 @@ async function noneApplicant (filter: Filter, onUpdate: () => void): Promise<Obj
 
 export default async (): Promise<Resources> => ({
   actionImpl: {
-    CreateOpinion: createOpinion
+    CreateOpinion: createOpinion,
+    MoveApplicant
   },
   validator: {
     ApplicantValidator: applicantValidator

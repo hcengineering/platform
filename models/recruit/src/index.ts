@@ -1014,6 +1014,24 @@ export function createModel (builder: Builder): void {
       label: recruit.string.RelatedIssues
     }
   })
+
+  createAction(
+    builder,
+    {
+      label: view.string.Move,
+      action: recruit.actionImpl.MoveApplicant,
+      icon: view.icon.Move,
+      input: 'any',
+      category: view.category.General,
+      target: recruit.class.Applicant,
+      context: {
+        mode: ['context', 'browser'],
+        group: 'tools'
+      },
+      override: [task.action.Move]
+    },
+    recruit.action.MoveApplicant
+  )
 }
 
 export { recruitOperation } from './migration'

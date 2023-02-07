@@ -36,7 +36,7 @@
   <span class="titlePresenter-container" class:with-margin={shouldUseMargin} title={value.title}>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <span
-      class="name overflow-label cursor-pointer"
+      class="name overflow-label cursor-pointer select-text"
       style:max-width={showParent ? `${value.parents.length !== 0 ? 95 : 100}%` : '100%'}
       on:click={handleIssueEditorOpened}>{value.title}</span
     >

@@ -29,10 +29,12 @@ export default mergeIds(recruitId, recruit, {
     CreateGlobalApplication: '' as Ref<Action>,
     CopyApplicationId: '' as Ref<Action>,
     CopyApplicationLink: '' as Ref<Action>,
-    CopyCandidateLink: '' as Ref<Action>
+    CopyCandidateLink: '' as Ref<Action>,
+    MoveApplicant: '' as Ref<Action>
   },
   actionImpl: {
-    CreateOpinion: '' as ViewAction
+    CreateOpinion: '' as ViewAction,
+    MoveApplicant: '' as ViewAction
   },
   category: {
     Recruit: '' as Ref<ActionCategory>

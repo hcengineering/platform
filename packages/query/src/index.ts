@@ -230,30 +230,34 @@ export class LiveQuery extends TxProcessor implements Client {
     }
   }
 
-  private async checkSearch (q: Query, pos: number, _id: Ref<Doc>): Promise<boolean> {
+  private async checkSearch (q: Query, _id: Ref<Doc>): Promise<boolean> {
+    const match = await this.findOne(q._class, { $search: q.query.$search, _id }, q.options)
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
-    const match = await this.findOne(q._class, { $search: q.query.$search, _id }, q.options)
     if (match === undefined) {
       if (q.options?.limit === q.result.length) {
         await this.refresh(q)
         return true
       } else {
+        const pos = q.result.findIndex((p) => p._id === _id)
         q.result.splice(pos, 1)
         q.total--
       }
     } else {
+      const pos = q.result.findIndex((p) => p._id === _id)
       q.result[pos] = match
     }
     return false
   }
 
-  private async getCurrentDoc (q: Query, pos: number, _id: Ref<Doc>): Promise<boolean> {
+  private async getCurrentDoc (q: Query, _id: Ref<Doc>): Promise<boolean> {
+    const current = await this.findOne(q._class, { _id }, q.options)
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
-    const current = await this.findOne(q._class, { _id }, q.options)
+
+    const pos = q.result.findIndex((p) => p._id === _id)
     if (current !== undefined && this.match(q, current)) {
       q.result[pos] = current
     } else {
@@ -279,10 +283,11 @@ export class LiveQuery extends TxProcessor implements Client {
     await this.__updateLookup(q, updatedDoc, ops)
   }
 
-  private async checkUpdatedDocMatch (q: Query, pos: number, updatedDoc: WithLookup<Doc>): Promise<boolean> {
+  private async checkUpdatedDocMatch (q: Query, updatedDoc: WithLookup<Doc>): Promise<boolean> {
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
+    const pos = q.result.findIndex((p) => p._id === updatedDoc._id)
     if (!this.match(q, updatedDoc)) {
       if (q.options?.limit === q.result.length) {
         await this.refresh(q)
@@ -315,21 +320,22 @@ export class LiveQuery extends TxProcessor implements Client {
         if (pos !== -1) {
           // If query contains search we must check use fulltext
           if (q.query.$search != null && q.query.$search.length > 0) {
-            const searchRefresh = await this.checkSearch(q, pos, tx.objectId)
+            const searchRefresh = await this.checkSearch(q, tx.objectId)
             if (searchRefresh) return {}
           } else {
             const updatedDoc = q.result[pos]
             if (updatedDoc.modifiedOn < tx.modifiedOn) {
               await this.__updateMixinDoc(q, updatedDoc, tx)
-              const updateRefresh = await this.checkUpdatedDocMatch(q, pos, updatedDoc)
+              const updateRefresh = await this.checkUpdatedDocMatch(q, updatedDoc)
               if (updateRefresh) return {}
             } else {
-              const currentRefresh = await this.getCurrentDoc(q, pos, updatedDoc._id)
+              const currentRefresh = await this.getCurrentDoc(q, updatedDoc._id)
               if (currentRefresh) return {}
             }
           }
           this.sort(q, tx)
-          await this.updatedDocCallback(q.result[pos], q)
+          const udoc = q.result.find((p) => p._id === tx.objectId)
+          await this.updatedDocCallback(udoc, q)
         } else if (isMixin) {
           // Mixin potentially added to object we doesn't have in out results
           const doc = await this.findOne(q._class, { _id: tx.objectId }, q.options)
@@ -398,24 +404,26 @@ export class LiveQuery extends TxProcessor implements Client {
     if (pos !== -1) {
       // If query contains search we must check use fulltext
       if (q.query.$search != null && q.query.$search.length > 0) {
-        const searchRefresh = await this.checkSearch(q, pos, tx.objectId)
+        const searchRefresh = await this.checkSearch(q, tx.objectId)
         if (searchRefresh) return
       } else {
         const updatedDoc = q.result[pos]
         if (updatedDoc.modifiedOn < tx.modifiedOn) {
           await this.__updateDoc(q, updatedDoc, tx)
-          const updateRefresh = await this.checkUpdatedDocMatch(q, pos, updatedDoc)
+          const updateRefresh = await this.checkUpdatedDocMatch(q, updatedDoc)
           if (updateRefresh) return
         } else {
-          const currentRefresh = await this.getCurrentDoc(q, pos, updatedDoc._id)
+          const currentRefresh = await this.getCurrentDoc(q, updatedDoc._id)
           if (currentRefresh) return
         }
       }
       this.sort(q, tx)
-      await this.updatedDocCallback(q.result[pos], q)
+      const udoc = q.result.find((p) => p._id === tx.objectId)
+      await this.updatedDocCallback(udoc, q)
     } else if (await this.matchQuery(q, tx)) {
       this.sort(q, tx)
-      await this.updatedDocCallback(q.result[pos], q)
+      const udoc = q.result.find((p) => p._id === tx.objectId)
+      await this.updatedDocCallback(udoc, q)
     }
     await this.handleDocUpdateLookup(q, tx)
   }
@@ -953,10 +961,13 @@ export class LiveQuery extends TxProcessor implements Client {
     return false
   }
 
-  private async updatedDocCallback (updatedDoc: Doc, q: Query): Promise<void> {
+  private async updatedDocCallback (updatedDoc: Doc | undefined, q: Query): Promise<void> {
     q.result = q.result as Doc[]
 
     if (q.options?.limit !== undefined && q.result.length > q.options.limit) {
+      if (updatedDoc === undefined) {
+        return await this.refresh(q)
+      }
       if (q.result[q.options?.limit]._id === updatedDoc._id) {
         return await this.refresh(q)
       }

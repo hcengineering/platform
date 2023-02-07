@@ -21,10 +21,11 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Vacancy } from '@hcengineering/recruit'
   import { FullDescriptionBox } from '@hcengineering/text-editor'
-  import { Button, EditBox, Grid, IconMoreH, showPopup } from '@hcengineering/ui'
+  import { Button, Component, EditBox, Grid, IconMoreH, showPopup } from '@hcengineering/ui'
   import { ClassAttributeBar, ContextMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
+  import tracker from '@hcengineering/tracker'
 
   export let _id: Ref<Vacancy>
 
@@ -132,6 +133,7 @@
         space={object.space}
         attachments={object.attachments ?? 0}
       />
+      <Component is={tracker.component.RelatedIssuesSection} props={{ object, label: recruit.string.RelatedIssues }} />
     </Grid>
   </Panel>
 {/if}
