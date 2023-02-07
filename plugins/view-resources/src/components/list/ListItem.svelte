@@ -13,8 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, getObjectValue, Ref } from '@hcengineering/core'
+  import { AnyAttribute, Doc, getObjectValue, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
+  import { getClient, updateAttribute } from '@hcengineering/presentation'
   import { CheckBox, Component, deviceOptionsStore as deviceInfo, tooltip } from '@hcengineering/ui'
   import { AttributeModel } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
@@ -50,6 +51,20 @@
   $: elem && elementByIndex.set(index, elem)
   $: indexById.set(docObject._id, index)
   $: docByIndex.set(index, docObject)
+
+  const client = getClient()
+
+  function onChange (value: any, doc: Doc, key: string, attribute: AnyAttribute) {
+    updateAttribute(client, doc, doc._class, { key, attr: attribute }, value)
+  }
+
+  function getOnChange (docObject: Doc, attribute: AttributeModel) {
+    const attr = attribute.attribute
+    if (attr === undefined) return
+    if (attribute.collectionAttr) return
+    if (attribute.isLookup) return
+    return (value: any) => onChange(value, docObject, attribute.key, attr)
+  }
 </script>
 
 <div
@@ -90,6 +105,7 @@
             {...props}
             value={getObjectValue(attributeModel.key, docObject) ?? ''}
             object={docObject}
+            onChange={getOnChange(docObject, attributeModel)}
             kind={'list'}
             {...attributeModel.props}
           />
@@ -100,6 +116,7 @@
           {...props}
           value={getObjectValue(attributeModel.key, docObject) ?? ''}
           object={docObject}
+          onChange={getOnChange(docObject, attributeModel)}
           kind={'list'}
           {...attributeModel.props}
         />
@@ -127,6 +144,7 @@
               {...props}
               value={value ?? ''}
               objectId={docObject._id}
+              onChange={getOnChange(docObject, attributeModel)}
               groupBy={groupByKey}
               {...attributeModel.props}
             />

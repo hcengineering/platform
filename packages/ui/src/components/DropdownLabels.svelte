@@ -24,7 +24,7 @@
   import Label from './Label.svelte'
 
   export let icon: Asset | AnySvelteComponent | undefined = undefined
-  export let label: IntlString
+  export let label: IntlString | undefined = undefined
   export let placeholder: IntlString | undefined = ui.string.SearchDots
   export let items: DropdownTextItem[]
   export let multiselect = false

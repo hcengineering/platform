@@ -18,7 +18,12 @@
   import { DateRangePresenter } from '@hcengineering/ui'
 
   export let value: number | null | undefined
+  export let onChange: ((value: number | null) => void) | undefined = undefined
   export let noShift: boolean = false
 </script>
 
-<DateRangePresenter {value} {noShift} />
+{#if onChange !== undefined}
+  <DateRangePresenter {value} {noShift} editable on:change={(e) => onChange?.(e.detail)} />
+{:else}
+  <DateRangePresenter {value} {noShift} />
+{/if}

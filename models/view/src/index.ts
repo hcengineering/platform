@@ -713,7 +713,7 @@ export function createModel (builder: Builder): void {
     view.filter.FilterNestedDontMatch
   )
 
-  classPresenter(builder, core.class.EnumOf, view.component.StringPresenter, view.component.EnumEditor)
+  classPresenter(builder, core.class.EnumOf, view.component.EnumPresenter, view.component.EnumEditor)
 
   createAction(builder, {
     action: view.actionImpl.ShowPopup,

@@ -20,10 +20,10 @@
   import Won from '../icons/Won.svelte'
   import Lost from '../icons/Lost.svelte'
 
-  export let value: DoneState
+  export let value: DoneState | null | undefined
   export let showTitle: boolean = true
 
-  $: color = value._class === task.class.WonState ? getPlatformColor(0) : getPlatformColor(11)
+  $: color = value?._class === task.class.WonState ? getPlatformColor(0) : getPlatformColor(11)
 </script>
 
 {#if value}

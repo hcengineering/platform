@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Card } from '@hcengineering/board'
+  import { DateRangeMode } from '@hcengineering/core'
   import { DatePresenter } from '@hcengineering/ui'
 
   export let value: Card
@@ -19,7 +20,7 @@
         {#if value.dueDate}
           <DatePresenter
             bind:value={value.dueDate}
-            withTime={true}
+            mode={DateRangeMode.DATETIME}
             icon={isOverdue ? 'overdue' : undefined}
             {size}
             kind="transparent"

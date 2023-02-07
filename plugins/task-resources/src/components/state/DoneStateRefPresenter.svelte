@@ -20,12 +20,12 @@
   import task from '@hcengineering/task'
   import DoneStatePresenter from './DoneStatePresenter.svelte'
 
-  export let value: Ref<DoneState>
+  export let value: Ref<DoneState> | null | undefined
   export let showTitle: boolean = true
 
   let state: DoneState | undefined
   const query = createQuery()
-  $: query.query(task.class.DoneState, { _id: value }, (res) => ([state] = res), { limit: 1 })
+  $: value && query.query(task.class.DoneState, { _id: value }, (res) => ([state] = res), { limit: 1 })
 </script>
 
 {#if state}

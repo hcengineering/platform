@@ -416,6 +416,7 @@ export interface AttributeModel {
 
   attribute?: AnyAttribute
   collectionAttr: boolean
+  isLookup: boolean
 
   castRequest?: Ref<Mixin<Doc>>
 }
