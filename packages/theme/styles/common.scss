@@ -302,12 +302,43 @@
       color: var(--caption-color);
     }
     &__title {
-      flex-grow: 1;
       min-width: 0;
       font-weight: 500;
       font-size: 1rem;
-      color: var(--caption-color);  
+      color: var(--caption-color);
+      
+      &:not(.short) { flex-grow: 1; }
     }
+    &__header {
+      display: flex;
+      align-items: center;
+      flex-grow: 1;
+      margin: 0 .5rem 0 .75rem;
+      padding: .25rem .75rem;
+      height: 100%;
+      min-width: 0;
+      font-weight: 500;
+      font-size: 1rem;
+      color: var(--caption-color);
+      background: var(--header-bg-color);
+      border-radius: .5rem .5rem 0 0;
+    }
+    &__counter {
+      display: flex;
+      align-items: center;
+      flex-wrap: nowrap;
+      flex-shrink: 0;
+      padding: 0.25rem 0.5rem;
+      min-width: 1.325rem;
+      text-align: center;
+      font-weight: 500;
+      font-size: 1rem;
+      line-height: 1rem;
+      color: var(--accent-color);
+      background-color: var(--body-color);
+      border: 1px solid var(--divider-color);
+      border-radius: 1rem;
+    }  
     &__tag {
       padding: .125rem .25rem;
       min-width: 0;

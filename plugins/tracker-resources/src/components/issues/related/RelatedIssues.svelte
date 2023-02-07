@@ -26,6 +26,7 @@
   export let object: Doc
   export let viewlet: Viewlet
   export let viewOptions: ViewOptions
+  export let disableHeader = false
 
   const dispatch = createEventDispatcher()
 
@@ -71,7 +72,7 @@
 
 {#if subIssues !== undefined && viewlet !== undefined}
   {#if issueStatuses.size > 0 && teams && subIssues.length > 0}
-    <SubIssueList bind:viewOptions {viewlet} issues={subIssues} {teams} {issueStatuses} disableHeader />
+    <SubIssueList bind:viewOptions {viewlet} issues={subIssues} {teams} {issueStatuses} {disableHeader} />
   {:else}
     <div class="antiSection-empty solid flex-col mt-3">
       <div class="flex-center content-accent-color">
