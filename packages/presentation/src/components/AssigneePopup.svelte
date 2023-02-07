@@ -137,11 +137,6 @@
       key.stopPropagation()
       handleSelection(key, selection)
     }
-    if (key.code === 'Escape') {
-      key.preventDefault()
-      key.stopPropagation()
-      dispatch('close')
-    }
   }
   const manager = createFocusManager()
 

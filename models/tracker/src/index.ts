@@ -48,7 +48,7 @@ import {
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
 import core, { DOMAIN_SPACE, TAttachedDoc, TDoc, TSpace, TType } from '@hcengineering/model-core'
-import view, { classPresenter, createAction } from '@hcengineering/model-view'
+import view, { actionTemplates, classPresenter, createAction } from '@hcengineering/model-view'
 import workbench, { createNavigateAction } from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import { Asset, IntlString } from '@hcengineering/platform'
@@ -1059,6 +1059,29 @@ export function createModel (builder: Builder): void {
       action: view.actionImpl.ShowPopup,
       actionProps: {
         component: tracker.component.CreateIssue,
+        element: 'top'
+      },
+      label: tracker.string.NewIssue,
+      icon: tracker.icon.Issue,
+      keyBinding: ['keyC'],
+      input: 'none',
+      category: tracker.category.Tracker,
+      target: tracker.class.Issue,
+      context: {
+        mode: ['browser'],
+        application: tracker.app.Tracker,
+        group: 'create'
+      }
+    },
+    tracker.action.NewSubIssue
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: tracker.component.CreateIssue,
         element: 'top',
         fillProps: {
           _object: 'parentIssue',
@@ -1156,6 +1179,32 @@ export function createModel (builder: Builder): void {
     }
   })
 
+  createAction(builder, {
+    ...actionTemplates.open,
+    actionProps: {
+      component: tracker.component.EditIssue
+    },
+    target: tracker.class.Issue,
+    context: {
+      mode: ['browser', 'context'],
+      group: 'create'
+    },
+    override: [view.action.Open]
+  })
+
+  createAction(builder, {
+    ...actionTemplates.open,
+    actionProps: {
+      component: tracker.component.EditIssueTemplate
+    },
+    target: tracker.class.IssueTemplate,
+    context: {
+      mode: ['browser', 'context'],
+      group: 'create'
+    },
+    override: [view.action.Open]
+  })
+
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ClassFilters, {
     filters: ['status', 'priority', 'assignee', 'project', 'sprint', 'estimation', 'dueDate', 'modifiedOn']
   })
@@ -1182,6 +1231,27 @@ export function createModel (builder: Builder): void {
     sort: { rank: SortingOrder.Ascending }
   }
 
+  createAction(builder, {
+    action: view.actionImpl.ShowPopup,
+    actionProps: {
+      component: tracker.component.TimeSpendReportPopup,
+      fillProps: {
+        _object: 'issue'
+      }
+    },
+    label: tracker.string.TimeSpendReportAdd,
+    icon: tracker.icon.TimeReport,
+    input: 'focus',
+    keyBinding: ['keyT'],
+    category: tracker.category.Tracker,
+    target: tracker.class.Issue,
+    context: {
+      mode: ['context', 'browser'],
+      application: tracker.app.Tracker,
+      group: 'edit'
+    }
+  })
+
   createAction(
     builder,
     {
@@ -1198,12 +1268,12 @@ export function createModel (builder: Builder): void {
       },
       label: tracker.string.Status,
       icon: tracker.icon.CategoryBacklog,
-      keyBinding: [],
-      input: 'none',
+      keyBinding: ['keyS->keyS'],
+      input: 'any',
       category: tracker.category.Tracker,
       target: tracker.class.Issue,
       context: {
-        mode: ['context'],
+        mode: ['context', 'browser'],
         application: tracker.app.Tracker,
         group: 'edit'
       }
@@ -1222,12 +1292,12 @@ export function createModel (builder: Builder): void {
       },
       label: tracker.string.Priority,
       icon: tracker.icon.PriorityHigh,
-      keyBinding: [],
-      input: 'none',
+      keyBinding: ['keyP-keyR'],
+      input: 'any',
       category: tracker.category.Tracker,
       target: tracker.class.Issue,
       context: {
-        mode: ['context'],
+        mode: ['context', 'browser'],
         application: tracker.app.Tracker,
         group: 'edit'
       }
@@ -1247,12 +1317,12 @@ export function createModel (builder: Builder): void {
       },
       label: tracker.string.Assignee,
       icon: contact.icon.Person,
-      keyBinding: [],
-      input: 'none',
+      keyBinding: ['keyA'],
+      input: 'any',
       category: tracker.category.Tracker,
       target: tracker.class.Issue,
       context: {
-        mode: ['context'],
+        mode: ['context', 'browser'],
         application: tracker.app.Tracker,
         group: 'edit'
       }
@@ -1274,12 +1344,12 @@ export function createModel (builder: Builder): void {
       },
       label: tracker.string.Project,
       icon: tracker.icon.Project,
-      keyBinding: [],
-      input: 'none',
+      keyBinding: ['keyP->keyP'],
+      input: 'any',
       category: tracker.category.Tracker,
       target: tracker.class.Issue,
       context: {
-        mode: ['context'],
+        mode: ['context', 'browser'],
         application: tracker.app.Tracker,
         group: 'edit'
       }
@@ -1307,12 +1377,12 @@ export function createModel (builder: Builder): void {
       },
       label: tracker.string.Sprint,
       icon: tracker.icon.Sprint,
-      keyBinding: [],
-      input: 'none',
+      keyBinding: ['keyS->keyP'],
+      input: 'any',
       category: tracker.category.Tracker,
       target: tracker.class.Issue,
       context: {
-        mode: ['context'],
+        mode: ['context', 'browser'],
         application: tracker.app.Tracker,
         group: 'edit'
       }
@@ -1334,8 +1404,8 @@ export function createModel (builder: Builder): void {
       },
       label: tracker.string.SetDueDate,
       icon: tracker.icon.DueDate,
-      keyBinding: [],
-      input: 'none',
+      keyBinding: ['keyD'],
+      input: 'any',
       category: tracker.category.Tracker,
       target: tracker.class.Issue,
       context: {
@@ -1356,7 +1426,7 @@ export function createModel (builder: Builder): void {
       label: tracker.string.CopyIssueId,
       icon: tracker.icon.CopyID,
       keyBinding: [],
-      input: 'none',
+      input: 'focus',
       category: tracker.category.Tracker,
       target: tracker.class.Issue,
       context: {
@@ -1377,7 +1447,7 @@ export function createModel (builder: Builder): void {
       label: tracker.string.CopyIssueTitle,
       icon: tracker.icon.CopyBranch,
       keyBinding: [],
-      input: 'none',
+      input: 'focus',
       category: tracker.category.Tracker,
       target: tracker.class.Issue,
       context: {
@@ -1398,7 +1468,7 @@ export function createModel (builder: Builder): void {
       label: tracker.string.CopyIssueUrl,
       icon: tracker.icon.CopyURL,
       keyBinding: [],
-      input: 'none',
+      input: 'focus',
       category: tracker.category.Tracker,
       target: tracker.class.Issue,
       context: {
@@ -1416,7 +1486,7 @@ export function createModel (builder: Builder): void {
       label: tracker.string.MoveToTeam,
       icon: view.icon.Move,
       keyBinding: [],
-      input: 'none',
+      input: 'any',
       category: tracker.category.Tracker,
       target: tracker.class.Issue,
       context: {
@@ -1465,7 +1535,7 @@ export function createModel (builder: Builder): void {
       label: tracker.string.Duplicate,
       icon: tracker.icon.Duplicate,
       keyBinding: [],
-      input: 'none',
+      input: 'focus',
       category: tracker.category.Tracker,
       target: tracker.class.Issue,
       context: {

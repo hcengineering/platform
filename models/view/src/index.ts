@@ -731,6 +731,17 @@ export function createModel (builder: Builder): void {
     target: core.class.Doc,
     context: { mode: ['context', 'browser', 'editor'] }
   })
+
+  createAction(
+    builder,
+    {
+      ...actionTemplates.open,
+      target: core.class.Doc,
+      category: view.category.Editor,
+      context: { mode: ['browser', 'context'], group: 'edit' }
+    },
+    view.action.Open
+  )
 }
 
 export default view

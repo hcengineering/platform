@@ -284,7 +284,9 @@ export function createModel (builder: Builder): void {
       input: 'any',
       category: board.category.Card,
       target: board.class.Card,
-      context: { mode: 'context', application: board.app.Board, group: 'create' }
+      keyBinding: ['Enter'],
+      context: { mode: 'context', application: board.app.Board, group: 'create' },
+      override: [view.action.Open]
     },
     board.action.Open
   )

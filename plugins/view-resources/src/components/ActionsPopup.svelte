@@ -147,11 +147,6 @@
       key.stopPropagation()
       handleSelection(key, selection)
     }
-    if (key.code === 'Escape') {
-      key.preventDefault()
-      key.stopPropagation()
-      closePopup()
-    }
   }
   function formatKey (key: string): string[][] {
     const thens = key.split('->')

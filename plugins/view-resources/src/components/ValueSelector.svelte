@@ -33,6 +33,7 @@
   const dispatch = createEventDispatcher()
 
   const changeStatus = async (newStatus: any) => {
+    console.log('CHANGE VALUE', newStatus)
     if (newStatus === '#null') {
       newStatus = null
       return
@@ -118,7 +119,10 @@
   {#if values}
     <SelectPopup
       value={valuesToShow}
-      on:close={(evt) => changeStatus(evt.detail)}
+      on:close={(evt) => {
+        console.log(evt)
+        changeStatus(evt.detail)
+      }}
       placeholder={placeholder ?? view.string.Filter}
       searchable
       {width}
@@ -133,7 +137,10 @@
       {searchField}
       allowDeselect={true}
       selected={current}
-      on:close={(evt) => changeStatus(evt.detail === null ? null : evt.detail?._id)}
+      on:close={(evt) => {
+        console.log(evt)
+        changeStatus(evt.detail === null ? null : evt.detail?._id)
+      }}
       placeholder={placeholder ?? view.string.Filter}
       {width}
       {size}

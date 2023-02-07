@@ -11,7 +11,7 @@ import {
   showPanel,
   showPopup
 } from '@hcengineering/ui'
-import { Action, ViewContext } from '@hcengineering/view'
+import { ViewContext } from '@hcengineering/view'
 import MoveView from './components/Move.svelte'
 import { contextStore } from './context'
 import view from './plugin'
@@ -96,12 +96,13 @@ export function select (evt: Event | undefined, offset: 1 | -1 | 0, of?: Doc, di
   }
 }
 
-function SelectItem (doc: Doc | undefined, evt: Event): void {
-  if (doc !== undefined) {
+function SelectItem (doc: Doc | Doc[] | undefined, evt: Event): void {
+  const focus = $focusStore.focus
+  if (focus !== undefined) {
     selectionStore.update((selection) => {
-      const ind = selection.findIndex((it) => it._id === doc._id)
+      const ind = selection.findIndex((it) => it._id === focus._id)
       if (ind === -1) {
-        selection.push(doc)
+        selection.push(focus)
       } else {
         selection.splice(ind, 1)
       }
@@ -122,10 +123,10 @@ function SelectItemAll (doc: Doc | undefined, evt: Event): void {
   evt.preventDefault()
 }
 
-const MoveUp = (doc: Doc | undefined, evt: Event): void => select(evt, -1, doc, 'vertical')
-const MoveDown = (doc: Doc | undefined, evt: Event): void => select(evt, 1, doc, 'vertical')
-const MoveLeft = (doc: Doc | undefined, evt: Event): void => select(evt, -1, doc, 'horizontal')
-const MoveRight = (doc: Doc | undefined, evt: Event): void => select(evt, 1, doc, 'horizontal')
+const MoveUp = (doc: Doc | undefined, evt: Event): void => select(evt, -1, $focusStore.focus, 'vertical')
+const MoveDown = (doc: Doc | undefined, evt: Event): void => select(evt, 1, $focusStore.focus, 'vertical')
+const MoveLeft = (doc: Doc | undefined, evt: Event): void => select(evt, -1, $focusStore.focus, 'horizontal')
+const MoveRight = (doc: Doc | undefined, evt: Event): void => select(evt, 1, $focusStore.focus, 'horizontal')
 
 function ShowActions (doc: Doc | Doc[] | undefined, evt: Event): void {
   evt.preventDefault()
@@ -143,9 +144,17 @@ function ShowPreview (doc: Doc | undefined, evt: Event): void {
   evt.preventDefault()
 }
 
-function Open (doc: Doc, evt: Event): void {
+function Open (
+  doc: Doc,
+  evt: Event,
+  props:
+  | {
+    component?: AnyComponent
+  }
+  | undefined
+): void {
   evt.preventDefault()
-  showPanel(view.component.EditDoc, doc._id, Hierarchy.mixinOrClass(doc), 'content')
+  showPanel(props?.component ?? view.component.EditDoc, doc._id, Hierarchy.mixinOrClass(doc), 'content')
 }
 
 /**
@@ -319,7 +328,7 @@ function ValueSelector (
   doc: Doc | Doc[],
   evt: Event,
   props: {
-    action: Action
+    actionPopup: AnyComponent
 
     attribute: string
 
@@ -340,9 +349,7 @@ function ValueSelector (
     placeholder?: IntlString
   }
 ): void {
-  if (props.action.actionPopup !== undefined) {
-    showPopup(props.action.actionPopup, { ...props, ...props.action.actionProps, value: doc, width: 'large' }, 'top')
-  }
+  showPopup(view.component.ValueSelector, { ...props, value: doc, width: 'large' }, 'top')
 }
 
 async function getPopupAlignment (

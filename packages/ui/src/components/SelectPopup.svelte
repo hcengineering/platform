@@ -15,15 +15,15 @@
 <script lang="ts">
   import type { Asset, IntlString } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
+  import { deviceOptionsStore, resizeObserver } from '..'
   import { createFocusManager } from '../focus'
+  import type { AnySvelteComponent } from '../types'
   import EditBox from './EditBox.svelte'
   import FocusHandler from './FocusHandler.svelte'
   import Icon from './Icon.svelte'
   import IconCheck from './icons/Check.svelte'
   import Label from './Label.svelte'
   import ListView from './ListView.svelte'
-  import type { AnySvelteComponent } from '../types'
-  import { resizeObserver, deviceOptionsStore } from '..'
 
   interface ValueType {
     id: number | string | null
@@ -73,11 +73,6 @@
       key.preventDefault()
       key.stopPropagation()
       dispatch('close', value[selection].id)
-    }
-    if (key.code === 'Escape') {
-      key.preventDefault()
-      key.stopPropagation()
-      dispatch('close')
     }
   }
   const manager = createFocusManager()
