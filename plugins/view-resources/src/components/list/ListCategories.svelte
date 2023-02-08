@@ -17,13 +17,7 @@
   import { getResource, IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { AnyComponent } from '@hcengineering/ui'
-  import {
-    AttributeModel,
-    BuildModelKey,
-    CategoryOption,
-    ViewOptionModel,
-    ViewOptions
-  } from '@hcengineering/view'
+  import { AttributeModel, BuildModelKey, CategoryOption, ViewOptionModel, ViewOptions } from '@hcengineering/view'
   import { buildModel, getAdditionalHeader, getCategories, getPresenter, groupBy } from '../../utils'
   import { noCategory } from '../../viewOptions'
   import ListCategory from './ListCategory.svelte'
