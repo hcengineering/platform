@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact, { Employee } from '@hcengineering/contact'
-  import { Class, Doc, DocumentQuery, IdMap, Lookup, Ref, toIdMap, WithLookup } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, generateId, IdMap, Lookup, Ref, toIdMap, WithLookup } from '@hcengineering/core'
   import { Kanban, TypeState } from '@hcengineering/kanban'
   import notification from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
@@ -193,6 +193,8 @@
 
   let states: TypeState[]
 
+  const queryId = generateId()
+
   $: updateCategories(
     tracker.class.Issue,
     issues,
@@ -204,6 +206,20 @@
     sprints,
     assignee
   )
+
+  function update () {
+    updateCategories(
+      tracker.class.Issue,
+      issues,
+      groupBy,
+      viewOptions,
+      viewOptionsConfig,
+      statuses,
+      projects,
+      sprints,
+      assignee
+    )
+  }
 
   async function updateCategories (
     _class: Ref<Class<Doc>>,
@@ -222,7 +238,7 @@
       const categoryFunc = viewOption as CategoryOption
       if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
         const f = await getResource(categoryFunc.action)
-        const res = await f(_class, space, groupByKey)
+        const res = await f(_class, space, groupByKey, update, queryId)
         if (res !== undefined) {
           for (const category of categories) {
             if (!res.includes(category)) {
