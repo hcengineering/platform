@@ -627,3 +627,18 @@ export async function moveToSpace (
     ...extra
   })
 }
+
+/**
+ * @public
+ */
+export function getAdditionalHeader (client: TxOperations, _class: Ref<Class<Doc>>): AnyComponent[] | undefined {
+  const hierarchy = client.getHierarchy()
+  const clazz = hierarchy.getClass(_class)
+  let mixinClazz = hierarchy.getClass(_class)
+  let presenterMixin = hierarchy.as(clazz, view.mixin.ListHeaderExtra)
+  while (presenterMixin.presenters === undefined && mixinClazz.extends !== undefined) {
+    presenterMixin = hierarchy.as(mixinClazz, view.mixin.ListHeaderExtra)
+    mixinClazz = hierarchy.getClass(mixinClazz.extends)
+  }
+  return presenterMixin.presenters
+}

@@ -259,6 +259,7 @@
     "Capacity": "Вместимость",
     "CapacityValue": "из {value}d",
     "NewRelatedIssue": "Завести связанную задачу",
+    "RelatedIssuesNotFound": "Связанные задачи не найдены",
 
     "AddedReference": "Добавлена зависимость",
     "AddedAsBlocked": "Отмечено как заблокировано",

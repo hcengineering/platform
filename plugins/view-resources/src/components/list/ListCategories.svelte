@@ -17,14 +17,14 @@
   import { getResource, IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { AnyComponent } from '@hcengineering/ui'
-  import view, {
+  import {
     AttributeModel,
     BuildModelKey,
     CategoryOption,
     ViewOptionModel,
     ViewOptions
   } from '@hcengineering/view'
-  import { buildModel, getCategories, getPresenter, groupBy } from '../../utils'
+  import { buildModel, getAdditionalHeader, getCategories, getPresenter, groupBy } from '../../utils'
   import { noCategory } from '../../viewOptions'
   import ListCategory from './ListCategory.svelte'
 
@@ -85,7 +85,6 @@
   }
 
   const client = getClient()
-  const hierarchy = client.getHierarchy()
 
   let itemModels: AttributeModel[]
 
@@ -112,18 +111,7 @@
     return res
   }
 
-  $: extraHeaders = getAdditionalHeader(_class)
-
-  function getAdditionalHeader (_class: Ref<Class<Doc>>): AnyComponent[] | undefined {
-    const clazz = hierarchy.getClass(_class)
-    let mixinClazz = hierarchy.getClass(_class)
-    let presenterMixin = hierarchy.as(clazz, view.mixin.ListHeaderExtra)
-    while (presenterMixin.presenters === undefined && mixinClazz.extends !== undefined) {
-      presenterMixin = hierarchy.as(mixinClazz, view.mixin.ListHeaderExtra)
-      mixinClazz = hierarchy.getClass(mixinClazz.extends)
-    }
-    return presenterMixin.presenters
-  }
+  $: extraHeaders = getAdditionalHeader(client, _class)
 </script>
 
 {#each categories as category, i}

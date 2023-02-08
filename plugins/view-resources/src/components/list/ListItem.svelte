@@ -71,7 +71,6 @@
   bind:this={elem}
   class="listGrid antiList__row row gap-2 flex-grow"
   class:checking={checked}
-  class:mListGridFixed={selected}
   class:mListGridSelected={selected}
   on:contextmenu
   on:focus

@@ -49,12 +49,16 @@ export default mergeIds(loginId, login, {
     NotSeeingWorkspace: '' as IntlString,
     ChangeAccount: '' as IntlString,
     WorkspaceNameRule: '' as IntlString,
-    LinkValidHours: '' as IntlString,
-    GetLink: '' as IntlString,
     ForgotPassword: '' as IntlString,
     Recover: '' as IntlString,
     KnowPassword: '' as IntlString,
     PasswordRecovery: '' as IntlString,
-    RecoveryLinkSent: '' as IntlString
+    RecoveryLinkSent: '' as IntlString,
+    UseWorkspaceInviteSettings: '' as IntlString,
+    LinkValidHours: '' as IntlString,
+    EmailMask: '' as IntlString,
+    InviteLimit: '' as IntlString,
+    GetLink: '' as IntlString,
+    NoLimit: '' as IntlString
   }
 })

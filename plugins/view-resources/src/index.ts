@@ -110,7 +110,8 @@ export {
   getObjectPreview,
   isCollectionAttr,
   LoadingProps,
-  setActiveViewletId
+  setActiveViewletId,
+  getAdditionalHeader
 } from './utils'
 export * from './viewOptions'
 export {

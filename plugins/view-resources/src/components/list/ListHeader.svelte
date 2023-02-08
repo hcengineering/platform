@@ -81,7 +81,7 @@
         {/each}
       {/if}
       {#if limited < items.length}
-        <div class="counter">
+        <div class="antiSection-header__counter ml-4">
           {limited}
           <div class="text-xs mx-1">/</div>
           {items.length}
@@ -95,7 +95,7 @@
           }}
         />
       {:else}
-        <span class="counter">{items.length}</span>
+        <span class="antiSection-header__counter ml-4">{items.length}</span>
       {/if}
     </div>
     {#if createItemDialog !== undefined && createItemLabel !== undefined}
@@ -137,23 +137,5 @@
 
   .row:not(:last-child) {
     border-bottom: 1px solid var(--accent-bg-color);
-  }
-
-  .counter {
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
-    flex-shrink: 0;
-    margin-left: 1rem;
-    padding: 0.25rem 0.5rem;
-    min-width: 1.325rem;
-    text-align: center;
-    font-weight: 500;
-    font-size: 1rem;
-    line-height: 1rem;
-    color: var(--accent-color);
-    background-color: var(--body-color);
-    border: 1px solid var(--divider-color);
-    border-radius: 1rem;
   }
 </style>

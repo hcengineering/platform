@@ -522,5 +522,8 @@ export default plugin(trackerId, {
   },
   resolver: {
     Location: '' as Resource<(loc: Location) => Promise<Location | undefined>>
+  },
+  string: {
+    NewRelatedIssue: '' as IntlString
   }
 })

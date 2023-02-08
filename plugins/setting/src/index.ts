@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Mixin, Ref } from '@hcengineering/core'
+import type { Class, Configuration, Doc, Mixin, Ref, Space } from '@hcengineering/core'
 import type { Plugin } from '@hcengineering/platform'
 import { Asset, IntlString, plugin, Resource } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
@@ -79,6 +79,15 @@ export interface SettingsCategory extends Doc {
 /**
  * @public
  */
+export interface InviteSettings extends Configuration {
+  expirationTime: number
+  emailMask: string
+  limit: number
+}
+
+/**
+ * @public
+ */
 export const settingId = 'setting' as Plugin
 
 export default plugin(settingId, {
@@ -93,17 +102,22 @@ export default plugin(settingId, {
     Privacy: '' as Ref<Doc>,
     Terms: '' as Ref<Doc>,
     ClassSetting: '' as Ref<Doc>,
-    Owners: '' as Ref<Doc>
+    Owners: '' as Ref<Doc>,
+    InviteSettings: '' as Ref<Doc>
   },
   mixin: {
     Editable: '' as Ref<Mixin<Editable>>,
     UserMixin: '' as Ref<Mixin<UserMixin>>
   },
+  space: {
+    Setting: '' as Ref<Space>
+  },
   class: {
     SettingsCategory: '' as Ref<Class<SettingsCategory>>,
     WorkspaceSettingCategory: '' as Ref<Class<SettingsCategory>>,
     Integration: '' as Ref<Class<Integration>>,
-    IntegrationType: '' as Ref<Class<IntegrationType>>
+    IntegrationType: '' as Ref<Class<IntegrationType>>,
+    InviteSettings: '' as Ref<Class<InviteSettings>>
   },
   component: {
     Settings: '' as AnyComponent,

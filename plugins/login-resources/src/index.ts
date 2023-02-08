@@ -16,7 +16,6 @@
 
 import LoginApp from './components/LoginApp.svelte'
 import InviteLink from './components/InviteLink.svelte'
-
 /*!
  * Anticrm Platform™ Login Plugin
  * © 2020, 2021 Anticrm Platform Contributors.
