@@ -33,7 +33,9 @@
           label: plugin.string.Contacts,
           props: {}
         },
-        ...ts.sort((a, b) => (a.index > b.index ? 1 : (a.index < b.index && -1) || 0)).map((t) => ({component: t.component, label: t.label, props: {}}))
+        ...ts
+          .sort((a, b) => (a.index > b.index ? 1 : (a.index < b.index && -1) || 0))
+          .map((t) => ({ component: t.component, label: t.label, props: {} }))
       ])
   )
 </script>
