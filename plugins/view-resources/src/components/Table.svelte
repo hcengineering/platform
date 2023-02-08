@@ -362,6 +362,7 @@
 
 <style lang="scss">
   .footer {
+    width: 100%;
     background-color: var(--body-color);
     display: flex;
     align-items: flex-end;
@@ -369,12 +370,14 @@
     z-index: 2;
     position: sticky;
     bottom: 0;
+    box-shadow: inset 0 1px 0 0 var(--divider-color);
 
     .content {
       display: flex;
       align-items: center;
-      width: 100%;
-      box-shadow: inset 0 1px 0 0 var(--divider-color);
+      width: max-content;
+      position: sticky;
+      left: 0;
       height: 2.5rem;
       &.padding {
         padding-left: 2.5rem;
