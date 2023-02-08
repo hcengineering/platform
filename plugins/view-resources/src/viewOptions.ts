@@ -1,6 +1,6 @@
 import { Class, Doc, Ref, SortingOrder, Space } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
-import { getAttributePresenterClass, getClient } from '@hcengineering/presentation'
+import { createQuery, getAttributePresenterClass, getClient, LiveQuery } from '@hcengineering/presentation'
 import { getCurrentLocation, locationToUrl } from '@hcengineering/ui'
 import {
   DropdownViewOption,
@@ -89,7 +89,9 @@ export function migrateViewOpttions (): void {
 export async function showEmptyGroups (
   _class: Ref<Class<Doc>>,
   space: Ref<Space> | undefined,
-  key: string
+  key: string,
+  onUpdate: () => void,
+  queryId: Ref<Doc>
 ): Promise<any[] | undefined> {
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -101,7 +103,7 @@ export async function showEmptyGroups (
   const mixin = hierarchy.as(attributeClass, view.mixin.AllValuesFunc)
   if (mixin.func !== undefined) {
     const f = await getResource(mixin.func)
-    const res = await f(space)
+    const res = await f(space, onUpdate, queryId)
     if (res !== undefined) {
       const sortFunc = hierarchy.as(attributeClass, view.mixin.SortFuncs)
       if (sortFunc?.func === undefined) return res
@@ -109,5 +111,24 @@ export async function showEmptyGroups (
 
       return await f(res)
     }
+  }
+}
+
+export const CategoryQuery = {
+  queries: new Map<string, LiveQuery>(),
+  results: new Map<string, any[]>(),
+
+  getLiveQuery (index: string): LiveQuery {
+    const current = CategoryQuery.queries.get(index)
+    if (current !== undefined) return current
+    const query = createQuery(true)
+    this.queries.set(index, query)
+    return query
+  },
+  remove (index: string): void {
+    const lq = this.queries.get(index)
+    lq?.unsubscribe()
+    this.queries.delete(index)
+    this.results.delete(index)
   }
 }

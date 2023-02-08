@@ -13,13 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Lookup, Ref, Space } from '@hcengineering/core'
+  import { Class, Doc, generateId, Lookup, Ref, Space } from '@hcengineering/core'
   import { getResource, IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { AnyComponent } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, CategoryOption, ViewOptionModel, ViewOptions } from '@hcengineering/view'
+  import { onDestroy } from 'svelte'
   import { buildModel, getAdditionalHeader, getCategories, getPresenter, groupBy } from '../../utils'
-  import { noCategory } from '../../viewOptions'
+  import { CategoryQuery, noCategory } from '../../viewOptions'
   import ListCategory from './ListCategory.svelte'
 
   export let elementByIndex: Map<number, HTMLDivElement>
@@ -49,6 +50,15 @@
   let categories: any[] = []
   $: updateCategories(_class, docs, groupByKey, viewOptions, viewOptionsConfig)
 
+  const queryId = generateId()
+  onDestroy(() => {
+    CategoryQuery.remove(queryId)
+  })
+
+  function update () {
+    updateCategories(_class, docs, groupByKey, viewOptions, viewOptionsConfig)
+  }
+
   async function updateCategories (
     _class: Ref<Class<Doc>>,
     docs: Doc[],
@@ -63,7 +73,7 @@
         const categoryFunc = viewOption as CategoryOption
         if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
           const f = await getResource(categoryFunc.action)
-          const res = await f(_class, space, groupByKey)
+          const res = await f(_class, space, groupByKey, update, queryId)
           if (res !== undefined) {
             for (const category of categories) {
               if (!res.includes(category)) {
