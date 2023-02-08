@@ -371,7 +371,9 @@
       {/if}
     {/each}
     {#if editorFooter}
-      <Component is={editorFooter.footer} props={{ object, _class, ...editorFooter.props }} />
+      <div class="step-tb-6">
+        <Component is={editorFooter.footer} props={{ object, _class, ...editorFooter.props }} />
+      </div>
     {/if}
   </Panel>
 {/if}
