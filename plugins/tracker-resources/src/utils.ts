@@ -29,7 +29,7 @@ import core, {
 } from '@hcengineering/core'
 import { TypeState } from '@hcengineering/kanban'
 import { Asset, IntlString, translate } from '@hcengineering/platform'
-import { createQuery, getClient } from '@hcengineering/presentation'
+import { createQuery } from '@hcengineering/presentation'
 import {
   Issue,
   IssuePriority,
@@ -548,8 +548,13 @@ export function subIssueQuery (value: boolean, query: DocumentQuery<Issue>): Doc
 
 export async function getAllStatuses (space: Ref<Space> | undefined): Promise<Array<Ref<IssueStatus>> | undefined> {
   if (space === undefined) return
-  const client = getClient()
-  return (await client.findAll(tracker.class.IssueStatus, { space })).map((p) => p._id)
+  return await new Promise((resolve) => {
+    const query = createQuery(true)
+    query.query(tracker.class.IssueStatus, { space }, (res) => {
+      resolve(res.map((p) => p._id))
+      query.unsubscribe()
+    })
+  })
 }
 
 export async function getAllPriority (space: Ref<Space> | undefined): Promise<IssuePriority[] | undefined> {
@@ -558,14 +563,24 @@ export async function getAllPriority (space: Ref<Space> | undefined): Promise<Is
 
 export async function getAllProjects (space: Ref<Team> | undefined): Promise<Array<Ref<Project>> | undefined> {
   if (space === undefined) return
-  const client = getClient()
-  return (await client.findAll(tracker.class.Project, { space })).map((p) => p._id)
+  return await new Promise((resolve) => {
+    const query = createQuery(true)
+    query.query(tracker.class.Project, { space }, (res) => {
+      resolve(res.map((p) => p._id))
+      query.unsubscribe()
+    })
+  })
 }
 
 export async function getAllSprints (space: Ref<Team> | undefined): Promise<Array<Ref<Sprint>> | undefined> {
   if (space === undefined) return
-  const client = getClient()
-  return (await client.findAll(tracker.class.Sprint, { space })).map((p) => p._id)
+  return await new Promise((resolve) => {
+    const query = createQuery(true)
+    query.query(tracker.class.Sprint, { space }, (res) => {
+      resolve(res.map((p) => p._id))
+      query.unsubscribe()
+    })
+  })
 }
 
 export function subIssueListProvider (subIssues: Issue[], target: Ref<Issue>): void {

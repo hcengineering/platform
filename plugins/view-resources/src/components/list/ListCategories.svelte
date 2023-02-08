@@ -67,7 +67,7 @@
       for (const viewOption of viewOptionsModel ?? []) {
         if (viewOption.actionTartget !== 'category') continue
         const categoryFunc = viewOption as CategoryOption
-        if (viewOptions[viewOption.key]) {
+        if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
           const f = await getResource(categoryFunc.action)
           const res = await f(_class, space, groupByKey)
           if (res !== undefined) {

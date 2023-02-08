@@ -26,13 +26,13 @@
     })
     .concat({ id: noCategory, label: view.string.NoGrouping })
 
-    const orderBy = config.orderBy.map((p) => {
-      const key = p[0]
-      return {
-        id: key,
-        label: key === 'rank' ? view.string.Manual : getKeyLabel(client, viewlet.attachTo, key, lookup)
-      }
-    })
+  const orderBy = config.orderBy.map((p) => {
+    const key = p[0]
+    return {
+      id: key,
+      label: key === 'rank' ? view.string.Manual : getKeyLabel(client, viewlet.attachTo, key, lookup)
+    }
+  })
 
   function selectGrouping (value: string, i: number) {
     viewOptions.groupBy[i] = value
@@ -93,7 +93,7 @@
       <div class="value">
         {#if isToggleType(model)}
           <MiniToggle
-            on={viewOptions[model.key]}
+            on={viewOptions[model.key] ?? model.defaultValue}
             on:change={() => {
               viewOptions[model.key] = !viewOptions[model.key]
               dispatch('update', { key: model.key, value: viewOptions[model.key] })
@@ -104,7 +104,7 @@
           <DropdownLabelsIntl
             label={model.label}
             {items}
-            selected={viewOptions[model.key]}
+            selected={viewOptions[model.key] ?? model.defaultValue}
             width="10rem"
             justify="left"
             on:selected={(e) => {
