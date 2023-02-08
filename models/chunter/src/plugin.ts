@@ -16,7 +16,7 @@
 import type { DisplayTx, TxViewlet } from '@hcengineering/activity'
 import { Channel, chunterId } from '@hcengineering/chunter'
 import chunter from '@hcengineering/chunter-resources/src/plugin'
-import type { Ref, Space } from '@hcengineering/core'
+import type { Ref, Space, Doc } from '@hcengineering/core'
 import type { IntlString, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
@@ -93,7 +93,7 @@ export default mergeIds(chunterId, chunter, {
     ChunterBrowserVisible: '' as Resource<(spaces: Space[]) => boolean>
   },
   filter: {
-    CommentsFilter: '' as Resource<(tx: DisplayTx) => boolean>,
-    BacklinksFilter: '' as Resource<(tx: DisplayTx) => boolean>
+    CommentsFilter: '' as Resource<(tx: DisplayTx, _class?: Ref<Doc>) => boolean>,
+    BacklinksFilter: '' as Resource<(tx: DisplayTx, _class?: Ref<Doc>) => boolean>
   }
 })

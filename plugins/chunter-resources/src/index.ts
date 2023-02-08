@@ -207,11 +207,11 @@ async function update (source: Doc, key: string, target: RelatedDocument[], msg:
   await updateBacklinksList(getClient(), q, backlinks)
 }
 
-export function commentsFilter (tx: DisplayTx): boolean {
+export function commentsFilter (tx: DisplayTx, _class?: Ref<Doc>): boolean {
   return tx.tx.objectClass === chunter.class.Comment
 }
 
-export function backlinksFilter (tx: DisplayTx): boolean {
+export function backlinksFilter (tx: DisplayTx, _class?: Ref<Doc>): boolean {
   return tx.tx.objectClass === chunter.class.Backlink
 }
 

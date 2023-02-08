@@ -14,7 +14,7 @@
 //
 
 import attachment, { Attachment } from '@hcengineering/attachment'
-import { ObjQueryType, SortingOrder, SortingQuery, Markup } from '@hcengineering/core'
+import { ObjQueryType, SortingOrder, SortingQuery, Markup, Ref, Doc } from '@hcengineering/core'
 import { IntlString, Resources } from '@hcengineering/platform'
 import preference from '@hcengineering/preference'
 import { getClient } from '@hcengineering/presentation'
@@ -228,7 +228,7 @@ export async function DeleteAttachment (attach: Attachment): Promise<void> {
   )
 }
 
-export function attachmentsFilter (tx: DisplayTx): boolean {
+export function attachmentsFilter (tx: DisplayTx, _class?: Ref<Doc>): boolean {
   return tx.tx.objectClass === attachment.class.Attachment
 }
 

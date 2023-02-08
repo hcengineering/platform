@@ -1,5 +1,5 @@
 //
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -12,27 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-import { Doc, Ref } from '@hcengineering/core'
-import { Resources } from '@hcengineering/platform'
 import type { DisplayTx } from '@hcengineering/activity'
-import Activity from './components/Activity.svelte'
-import TxView from './components/TxView.svelte'
+import { activityId } from '@hcengineering/activity'
+import activity from '@hcengineering/activity-resources/src/plugin'
+import type { Resource, IntlString } from '@hcengineering/platform'
+import { mergeIds } from '@hcengineering/platform'
+import { Doc, Ref } from '@hcengineering/core'
 
-export { TxView }
-
-export * from './activity'
-export * from './utils'
-
-export function attributeFilter (tx: DisplayTx, _class?: Ref<Doc>): boolean {
-  return tx.tx.objectClass === _class
-}
-
-export default async (): Promise<Resources> => ({
+export default mergeIds(activityId, activity, {
   filter: {
-    AttributeFilter: attributeFilter
+    AttributeFilter: '' as Resource<(tx: DisplayTx, _class?: Ref<Doc>) => boolean>
   },
-  component: {
-    Activity
+  string: {
+    Attributes: '' as IntlString
   }
 })

@@ -117,8 +117,8 @@
     )
   }
 
-  let filterActions: ((tx: DisplayTx) => boolean)[] = [] // Enabled filters
-  const updateFiltered = () => (filtered = txes.filter((it) => filterActions.some((f) => f(it))))
+  let filterActions: ((tx: DisplayTx, _class?: Ref<Doc>) => boolean)[] = [] // Enabled filters
+  const updateFiltered = () => (filtered = txes.filter((it) => filterActions.some((f) => f(it, object._class))))
   async function updateFilterActions (fls: ActivityFilter[], selected: Ref<Doc>[] | 'All'): Promise<void> {
     if (selected === 'All' || !Array.isArray(selected)) filterActions = [() => true]
     else {
@@ -133,7 +133,7 @@
     setTimeout(() => updateFiltered(), 0)
   }
   $: updateFilterActions(filters, selectedFilter)
-  $: filtered = txes.filter((it) => filterActions.some((f) => f(it)))
+  $: filtered = txes.filter((it) => filterActions.some((f) => f(it, object._class)))
 </script>
 
 {#if !integrate || transparent}
