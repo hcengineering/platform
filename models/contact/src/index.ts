@@ -38,6 +38,7 @@ import {
   Index,
   Model,
   Prop,
+  ReadOnly,
   TypeDate,
   TypeRef,
   TypeString,
@@ -95,6 +96,7 @@ export class TContact extends TDoc implements Contact {
     city!: string
 
   @Prop(TypeTimestamp(), contact.string.CreatedOn)
+  @ReadOnly()
     createOn!: Timestamp
 }
 

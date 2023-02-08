@@ -379,7 +379,12 @@ export function createModel (builder: Builder): void {
   })
 
   classPresenter(builder, core.class.TypeBoolean, view.component.BooleanPresenter, view.component.BooleanEditor)
-  classPresenter(builder, core.class.TypeTimestamp, view.component.TimestampPresenter)
+  classPresenter(
+    builder,
+    core.class.TypeTimestamp,
+    view.component.TimestampPresenter,
+    view.component.TimestampPresenter
+  )
   classPresenter(builder, core.class.TypeDate, view.component.DatePresenter, view.component.DateEditor)
   classPresenter(builder, core.class.Space, view.component.ObjectPresenter)
   classPresenter(builder, core.class.Class, view.component.ClassRefPresenter)
