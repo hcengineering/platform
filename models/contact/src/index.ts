@@ -218,6 +218,12 @@ export function createModel (builder: Builder): void {
     contact.app.Contacts
   )
 
+  builder.createDoc(contact.class.ContactsTab, core.space.Model, {
+    component: contact.component.Contacts,
+    label: contact.string.Contacts,
+    index: 100
+  })
+
   builder.createDoc<Viewlet>(
     view.class.Viewlet,
     core.space.Model,

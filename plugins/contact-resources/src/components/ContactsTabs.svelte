@@ -14,36 +14,31 @@
 -->
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { TabModel, Tabs } from '@hcengineering/ui'
+  import { TabModel, Tabs, Component } from '@hcengineering/ui'
   import contact from '@hcengineering/contact'
-
-  import plugin from '../plugin'
-  import Contacts from './Contacts.svelte'
 
   const client = getClient()
 
   let tabs: TabModel | undefined
 
-  client.findAll(contact.class.ContactsTab, {}).then(
-    (ts) =>
-      ts.length &&
-      (tabs = [
-        {
-          component: Contacts,
-          label: plugin.string.Contacts,
-          props: {}
-        },
-        ...ts
+  client
+    .findAll(contact.class.ContactsTab, {})
+    .then(
+      (ts) =>
+        (tabs = ts
           .sort((a, b) => (a.index > b.index ? 1 : (a.index < b.index && -1) || 0))
-          .map((t) => ({ component: t.component, label: t.label, props: {} }))
-      ])
-  )
+          .map((t) => ({ component: t.component, label: t.label, props: {} })))
+    )
 </script>
 
-{#if tabs}
+{#if tabs && tabs.length > 1}
   <div class="pl-2">
     <Tabs model={tabs} />
   </div>
-{:else}
-  <Contacts />
+{:else if tabs?.[0]}
+  {#if typeof tabs[0].component === 'string'}
+    <Component is={tabs[0].component} />
+  {:else}
+    <svelte:component this={tabs[0].component} />
+  {/if}
 {/if}
