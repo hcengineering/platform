@@ -32,9 +32,7 @@
   let avatarEditor: EditableAvatar
 
   $: editable =
-    !hierarchy.isDerived(object._class, contact.class.Employee) ||
-    account.role === AccountRole.Owner ||
-    object._id === account.employee
+    !hierarchy.isDerived(object._class, contact.class.Employee)
   let firstName = getFirstName(object.name)
   let lastName = getLastName(object.name)
 
