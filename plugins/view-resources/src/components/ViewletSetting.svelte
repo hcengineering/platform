@@ -21,6 +21,7 @@
     Button,
     getEventPositionElement,
     getPlatformColorForText,
+    Loading,
     SelectPopup,
     showPopup,
     ToggleButton
@@ -45,6 +46,7 @@
       (res) => {
         preference = res[0]
         attributes = getConfig(viewlet, preference)
+        loading = false
       },
       { limit: 1 }
     )
@@ -55,7 +57,8 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
-  let attributes = getConfig(viewlet, preference)
+  let attributes: AttributeConfig[] = []
+  let loading = true
 
   interface AttributeConfig {
     enabled: boolean
@@ -307,60 +310,64 @@
     dispatch('close')
   }}
 >
-  <div class="flex-row-stretch flex-wrap">
-    {#each enabled as attribute, i}
-      <div
-        class="m-0-5 border-radius-1 overflow-label"
-        style={getStyle(attribute)}
-        bind:this={elements[i]}
-        draggable={true}
-        on:dragover|preventDefault={(ev) => {
-          dragover(ev, i)
-        }}
-        on:drop|preventDefault
-        on:dragstart={() => {
-          selected = i
-        }}
-        on:dragend={() => {
-          selected = undefined
-        }}
-      >
-        <ToggleButton
-          backgroundColor={getColor(attribute)}
-          icon={attribute.icon}
-          label={attribute.label}
-          bind:value={attribute.enabled}
-        />
-      </div>
-    {/each}
-  </div>
-  <div class="flex-row-stretch flex-wrap">
-    {#each Array.from(classes.keys()) as _class}
-      <div class="m-0-5">
-        <Button
-          label={getClassLabel(_class)}
-          on:click={(e) => {
-            showPopup(
-              SelectPopup,
-              {
-                value: classes.get(_class)?.map((it) => ({ id: it.value, label: it.label }))
-              },
-              getEventPositionElement(e),
-              (val) => {
-                if (val !== undefined) {
-                  const value = classes.get(_class)?.find((it) => it.value === val)
-                  if (value) {
-                    value.enabled = true
-                    attributes = attributes
+  {#if loading}
+    <Loading />
+  {:else}
+    <div class="flex-row-stretch flex-wrap">
+      {#each enabled as attribute, i}
+        <div
+          class="m-0-5 border-radius-1 overflow-label"
+          style={getStyle(attribute)}
+          bind:this={elements[i]}
+          draggable={true}
+          on:dragover|preventDefault={(ev) => {
+            dragover(ev, i)
+          }}
+          on:drop|preventDefault
+          on:dragstart={() => {
+            selected = i
+          }}
+          on:dragend={() => {
+            selected = undefined
+          }}
+        >
+          <ToggleButton
+            backgroundColor={getColor(attribute)}
+            icon={attribute.icon}
+            label={attribute.label}
+            bind:value={attribute.enabled}
+          />
+        </div>
+      {/each}
+    </div>
+    <div class="flex-row-stretch flex-wrap">
+      {#each Array.from(classes.keys()) as _class}
+        <div class="m-0-5">
+          <Button
+            label={getClassLabel(_class)}
+            on:click={(e) => {
+              showPopup(
+                SelectPopup,
+                {
+                  value: classes.get(_class)?.map((it) => ({ id: it.value, label: it.label }))
+                },
+                getEventPositionElement(e),
+                (val) => {
+                  if (val !== undefined) {
+                    const value = classes.get(_class)?.find((it) => it.value === val)
+                    if (value) {
+                      value.enabled = true
+                      attributes = attributes
+                    }
                   }
                 }
-              }
-            )
-          }}
-        />
-      </div>
-    {/each}
-  </div>
+              )
+            }}
+          />
+        </div>
+      {/each}
+    </div>
+  {/if}
   <svelte:fragment slot="footer">
     <Button label={view.string.RestoreDefaults} on:click={restoreDefault} />
   </svelte:fragment>
