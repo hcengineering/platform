@@ -70,6 +70,10 @@ import Views from './components/views/Views.svelte'
 import Statuses from './components/workflow/Statuses.svelte'
 import RelatedIssuesSection from './components/issues/related/RelatedIssuesSection.svelte'
 import RelatedIssueSelector from './components/issues/related/RelatedIssueSelector.svelte'
+import SprintProjectEditor from './components/sprints/SprintProjectEditor.svelte'
+import SprintDatePresenter from './components/sprints/SprintDatePresenter.svelte'
+import SprintLeadPresenter from './components/sprints/SprintLeadPresenter.svelte'
+
 import {
   getIssueId,
   getIssueTitle,
@@ -380,7 +384,10 @@ export default async (): Promise<Resources> => ({
     RelatedIssuesSection,
     RelatedIssueSelector,
     DeleteProjectPresenter,
-    TimeSpendReportPopup
+    TimeSpendReportPopup,
+    SprintProjectEditor,
+    SprintDatePresenter,
+    SprintLeadPresenter
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>

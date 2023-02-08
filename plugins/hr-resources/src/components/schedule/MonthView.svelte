@@ -39,6 +39,7 @@
   import CreateRequest from '../CreateRequest.svelte'
   import RequestsPopup from '../RequestsPopup.svelte'
   import ScheduleRequests from '../ScheduleRequests.svelte'
+  import ReportsPopup from './ReportsPopup.svelte'
 
   export let currentDate: Date = new Date()
 
@@ -106,6 +107,13 @@
       bottom: 3.5
     }
   }
+
+  function showReportInfo (employee: Staff, rTime: EmployeeReports | undefined): void {
+    if (rTime === undefined) {
+      return
+    }
+    showPopup(ReportsPopup, { employee, reports: rTime.reports }, 'top')
+  }
 </script>
 
 {#if departmentStaff.length}
@@ -152,9 +160,14 @@
             >
               {getTotal(requests, startDate, endDate, types)}
             </td>
-            <td class="p-1 text-center">
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <td
+              class="p-1 text-center whitespace-nowrap cursor-pointer"
+              on:click={() => showReportInfo(employee, rTime)}
+            >
               {#if rTime !== undefined}
                 {floorFractionDigits(rTime.value, 3)}
+                ({rTime.tasks.size})
               {:else}
                 0
               {/if}
@@ -166,6 +179,7 @@
               {@const tooltipValue = getTooltip(requests)}
               {@const ww = findReports(employee, day, timeReports)}
               {#key [tooltipValue, editable]}
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <td
                   class="w-9 max-w-9 min-w-9"
                   class:today={areDatesEqual(todayDate, day)}

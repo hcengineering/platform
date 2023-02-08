@@ -62,6 +62,7 @@ export default mergeIds(trackerId, tracker, {
   },
   action: {
     NewRelatedIssue: '' as Ref<Action<Doc, Record<string, any>>>,
-    DeleteSprint: '' as Ref<Action<Doc, Record<string, any>>>
+    DeleteSprint: '' as Ref<Action<Doc, Record<string, any>>>,
+    SetSprintLead: '' as Ref<Action<Doc, Record<string, any>>>
   }
 })

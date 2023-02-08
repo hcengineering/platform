@@ -83,6 +83,18 @@
   function getOverrideConfig (startDate: Date): Map<string, BuildModelKey> {
     const typevals = getTypeVals(startDate)
     const endDate = getEndDate(startDate.getFullYear(), startDate.getMonth())
+
+    const getReport = (id: Ref<Doc>): EmployeeReports => {
+      return timeReports.get(id as Ref<Employee>) ?? { value: 0, reports: [], tasks: new Map() }
+    }
+    const getTPD = (id: Ref<Doc>): number => {
+      const rr = getReport(id)
+      if (rr.value === 0) {
+        return 0
+      }
+      return rr.tasks.size / rr.value
+    }
+
     return new Map<string, BuildModelKey>([
       [
         '@wdCount',
@@ -109,12 +121,38 @@
           presenter: ReportPresenter,
           props: {
             month: startDate ?? getStartDate(currentDate.getFullYear(), currentDate.getMonth()),
-            display: (staff: Staff) => (timeReports.get(staff._id) ?? { value: 0 }).value
+            display: (staff: Staff) => getReport(staff._id).value
           },
-          sortingKey: '@wdCount',
-          sortingFunction: (a: Doc, b: Doc) =>
-            getTotal(getStatRequests(b._id as Ref<Staff>, startDate), startDate, endDate, types) -
-            getTotal(getStatRequests(a._id as Ref<Staff>, startDate), startDate, endDate, types)
+          sortingKey: '@wdCountReported',
+          sortingFunction: (a: Doc, b: Doc) => getReport(b._id).value - getReport(a._id).value
+        }
+      ],
+      [
+        '@wdTaskCountReported',
+        {
+          key: '',
+          label: getEmbeddedLabel('Tasks'),
+          presenter: ReportPresenter,
+          props: {
+            month: startDate ?? getStartDate(currentDate.getFullYear(), currentDate.getMonth()),
+            display: (staff: Staff) => getReport(staff._id).tasks.size
+          },
+          sortingKey: '@wdTaskCountReported',
+          sortingFunction: (a: Doc, b: Doc) => getReport(b._id).tasks.size - getReport(a._id).tasks.size
+        }
+      ],
+      [
+        '@wdTaskPerDayReported',
+        {
+          key: '',
+          label: getEmbeddedLabel('TPD'),
+          presenter: ReportPresenter,
+          props: {
+            month: startDate ?? getStartDate(currentDate.getFullYear(), currentDate.getMonth()),
+            display: (staff: Staff) => getTPD(staff._id)
+          },
+          sortingKey: '@wdTaskPerDayReported',
+          sortingFunction: (a: Doc, b: Doc) => getTPD(b._id) - getTPD(a._id)
         }
       ],
       [
