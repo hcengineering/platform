@@ -165,8 +165,11 @@ test.describe('tracker layout tests', () => {
       } else {
         orderedIssueNames = issuesProps.map((props) => props.name).reverse()
       }
-      await setViewOrder(page, order)
       await page.click(ViewletSelectors.Board)
+      await setViewGroup(page, 'No grouping')
+      await setViewOrder(page, order)
+      console.log('expected text')
+      console.log(orderedIssueNames)
       await expect(locator).toContainText(orderedIssueNames)
     })
   }
