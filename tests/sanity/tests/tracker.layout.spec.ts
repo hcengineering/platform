@@ -168,8 +168,6 @@ test.describe('tracker layout tests', () => {
       await page.click(ViewletSelectors.Board)
       await setViewGroup(page, 'No grouping')
       await setViewOrder(page, order)
-      console.log('expected text')
-      console.log(orderedIssueNames)
       await expect(locator).toContainText(orderedIssueNames)
     })
   }
