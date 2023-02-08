@@ -31,7 +31,7 @@ import {
 } from '@hcengineering/core'
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
-import type { AnyComponent, IconSize, Tab } from '@hcengineering/ui'
+import type { AnyComponent, IconSize, AnySvelteComponent } from '@hcengineering/ui'
 import { ViewAction, Viewlet } from '@hcengineering/view'
 
 /**
@@ -156,7 +156,8 @@ export interface EmployeeAccount extends Account {
  * @public
  */
 export interface ContactsTab extends Doc {
-  tab: Tab
+  label: IntlString
+  component: AnyComponent | AnySvelteComponent
   index: number
 }
 

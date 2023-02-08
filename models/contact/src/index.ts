@@ -53,7 +53,7 @@ import view, { createAction, ViewAction, Viewlet } from '@hcengineering/model-vi
 import workbench from '@hcengineering/model-workbench'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
-import { Tab } from '@hcengineering/ui'
+import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
 import contact from './plugin'
 
 export const DOMAIN_CONTACT = 'contact' as Domain
@@ -171,7 +171,8 @@ export class TPersons extends TSpace implements Persons {}
 
 @Model(contact.class.ContactsTab, core.class.Doc, DOMAIN_MODEL)
 export class TContactsTab extends TDoc implements ContactsTab {
-  tab!: Tab
+  label!: IntlString
+  component!: AnyComponent | AnySvelteComponent
   index!: number
 }
 
