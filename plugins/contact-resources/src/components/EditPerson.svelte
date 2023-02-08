@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { combineName, Employee, EmployeeAccount, getFirstName, getLastName, Person } from '@hcengineering/contact'
+  import { Employee, EmployeeAccount, getFirstName, getLastName, Person } from '@hcengineering/contact'
   import { AccountRole, getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import { AttributeEditor, Avatar, createQuery, EditableAvatar, getClient } from '@hcengineering/presentation'
   import setting, { IntegrationType } from '@hcengineering/setting'
-  import { EditBox, createFocusManager, FocusHandler } from '@hcengineering/ui'
+  import { createFocusManager, FocusHandler } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import contact from '../plugin'
   import ChannelsEditor from './ChannelsEditor.svelte'
@@ -53,18 +53,6 @@
   }
 
   const dispatch = createEventDispatcher()
-
-  function firstNameChange () {
-    client.updateDoc(object._class, object.space, object._id, {
-      name: combineName(firstName, getLastName(object.name))
-    })
-  }
-
-  function lastNameChange () {
-    client.updateDoc(object._class, object.space, object._id, {
-      name: combineName(getFirstName(object.name), lastName)
-    })
-  }
 
   let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
   const settingsQuery = createQuery()
@@ -115,28 +103,10 @@
     <div class="flex-grow flex-col">
       <div class="flex-grow flex-col">
         <div class="name">
-          {#if editable}
-            <EditBox
-              placeholder={contact.string.PersonFirstNamePlaceholder}
-              bind:value={firstName}
-              on:change={firstNameChange}
-              focusIndex={1}
-            />
-          {:else}
-            {firstName}
-          {/if}
+          {firstName}
         </div>
         <div class="name">
-          {#if editable}
-            <EditBox
-              placeholder={contact.string.PersonLastNamePlaceholder}
-              bind:value={lastName}
-              on:change={lastNameChange}
-              focusIndex={2}
-            />
-          {:else}
-            {lastName}
-          {/if}
+          {lastName}
         </div>
         <div class="location">
           <AttributeEditor
