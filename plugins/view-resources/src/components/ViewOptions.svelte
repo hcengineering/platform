@@ -26,9 +26,7 @@
     })
     .concat({ id: noCategory, label: view.string.NoGrouping })
 
-  $: orderBy = config.orderBy
-    .filter((p) => !viewOptions.groupBy.includes(p[0]))
-    .map((p) => {
+    const orderBy = config.orderBy.map((p) => {
       const key = p[0]
       return {
         id: key,
