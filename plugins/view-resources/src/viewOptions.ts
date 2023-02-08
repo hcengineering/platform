@@ -93,6 +93,7 @@ export async function showEmptyGroups (
 ): Promise<any[] | undefined> {
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  if (key === noCategory) return
   const attr = hierarchy.getAttribute(_class, key)
   if (attr === undefined) return
   const { attrClass } = getAttributePresenterClass(hierarchy, attr)
