@@ -21,7 +21,7 @@
   import SprintPopup from './SprintPopup.svelte'
   import { Sprint } from '@hcengineering/tracker'
 
-  export let sprint: Sprint
+  export let sprints: Sprint[]
   export let moveAndDeleteSprint: (selectedSprint?: Sprint) => Promise<void>
 
   let selectedSprint: Sprint | undefined
@@ -34,14 +34,14 @@
 <Card
   canSave
   label={tracker.string.MoveAndDeleteSprint}
-  labelProps={{ newSprint: selectedSprintLabel, deleteSprint: sprint.label }}
+  labelProps={{ newSprint: selectedSprintLabel, deleteSprint: sprints.map((p) => p.label) }}
   okLabel={tracker.string.Delete}
   okAction={() => moveAndDeleteSprint(selectedSprint)}
   on:close
 >
   <SprintPopup
     _class={tracker.class.Sprint}
-    ignoreSprints={[sprint]}
+    ignoreSprints={sprints}
     allowDeselect
     closeAfterSelect={false}
     shadows={false}

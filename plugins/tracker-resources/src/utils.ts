@@ -16,6 +16,7 @@
 import { Employee, formatName } from '@hcengineering/contact'
 import core, {
   AttachedData,
+  Class,
   Doc,
   DocumentQuery,
   Ref,
@@ -53,7 +54,7 @@ import {
   isWeekend,
   MILLISECONDS_IN_WEEK
 } from '@hcengineering/ui'
-import { ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
+import { CategoryQuery, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
 import tracker from './plugin'
 import { defaultPriorities, defaultProjectStatuses, defaultSprintStatuses, issuePriorities } from './types'
 
@@ -499,7 +500,7 @@ export async function moveIssuesToAnotherSprint (
     // Update Issues by new Sprint
     const awaitedUpdates = []
     for (const issue of movedIssues) {
-      awaitedUpdates.push(client.update(issue, { sprint: newSprint?._id ?? undefined }))
+      awaitedUpdates.push(client.update(issue, { sprint: newSprint?._id ?? null }))
     }
     await Promise.all(awaitedUpdates)
 
@@ -546,41 +547,65 @@ export function subIssueQuery (value: boolean, query: DocumentQuery<Issue>): Doc
   return value ? query : { ...query, attachedTo: tracker.ids.NoParent }
 }
 
-export async function getAllStatuses (space: Ref<Space> | undefined): Promise<Array<Ref<IssueStatus>> | undefined> {
-  if (space === undefined) return
-  return await new Promise((resolve) => {
-    const query = createQuery(true)
-    query.query(tracker.class.IssueStatus, { space }, (res) => {
-      resolve(res.map((p) => p._id))
-      query.unsubscribe()
-    })
+async function getAllSomething (
+  _class: Ref<Class<Doc>>,
+  space: Ref<Space> | undefined,
+  onUpdate: () => void,
+  queryId: Ref<Doc>
+): Promise<any[] | undefined> {
+  const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
+    let refresh: boolean = false
+    const lq = CategoryQuery.getLiveQuery(queryId)
+    refresh = lq.query(
+      _class,
+      {
+        space
+      },
+      (res) => {
+        const result = res.map((p) => p._id)
+        CategoryQuery.results.set(queryId, result)
+        resolve(result)
+        onUpdate()
+      }
+    )
+
+    if (!refresh) {
+      resolve(CategoryQuery.results.get(queryId) ?? [])
+    }
   })
+  return await promise
 }
 
-export async function getAllPriority (space: Ref<Space> | undefined): Promise<IssuePriority[] | undefined> {
+export async function getAllStatuses (
+  space: Ref<Space> | undefined,
+  onUpdate: () => void,
+  queryId: Ref<Doc>
+): Promise<any[] | undefined> {
+  return await getAllSomething(tracker.class.IssueStatus, space, onUpdate, queryId)
+}
+
+export async function getAllPriority (
+  space: Ref<Space> | undefined,
+  onUpdate: () => void,
+  queryId: Ref<Doc>
+): Promise<any[] | undefined> {
   return defaultPriorities
 }
 
-export async function getAllProjects (space: Ref<Team> | undefined): Promise<Array<Ref<Project>> | undefined> {
-  if (space === undefined) return
-  return await new Promise((resolve) => {
-    const query = createQuery(true)
-    query.query(tracker.class.Project, { space }, (res) => {
-      resolve(res.map((p) => p._id))
-      query.unsubscribe()
-    })
-  })
+export async function getAllProjects (
+  space: Ref<Team> | undefined,
+  onUpdate: () => void,
+  queryId: Ref<Doc>
+): Promise<any[] | undefined> {
+  return await getAllSomething(tracker.class.Project, space, onUpdate, queryId)
 }
 
-export async function getAllSprints (space: Ref<Team> | undefined): Promise<Array<Ref<Sprint>> | undefined> {
-  if (space === undefined) return
-  return await new Promise((resolve) => {
-    const query = createQuery(true)
-    query.query(tracker.class.Sprint, { space }, (res) => {
-      resolve(res.map((p) => p._id))
-      query.unsubscribe()
-    })
-  })
+export async function getAllSprints (
+  space: Ref<Team> | undefined,
+  onUpdate: () => void,
+  queryId: Ref<Doc>
+): Promise<any[] | undefined> {
+  return await getAllSomething(tracker.class.Sprint, space, onUpdate, queryId)
 }
 
 export function subIssueListProvider (subIssues: Issue[], target: Ref<Issue>): void {

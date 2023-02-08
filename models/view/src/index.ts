@@ -218,7 +218,9 @@ export class TSortFuncs extends TClass implements ClassSortFuncs {
 
 @Mixin(view.mixin.AllValuesFunc, core.class.Class)
 export class TAllValuesFunc extends TClass implements AllValuesFunc {
-  func!: Resource<(space: Ref<Space> | undefined) => Promise<any[]>>
+  func!: Resource<
+  (space: Ref<Space> | undefined, onUpdate: () => void, queryId: Ref<Doc>) => Promise<any[] | undefined>
+  >
 }
 
 @Model(view.class.ViewletPreference, preference.class.Preference)

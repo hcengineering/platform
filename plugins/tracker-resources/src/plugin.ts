@@ -15,7 +15,7 @@
 import { Client, Doc, Ref, Space } from '@hcengineering/core'
 import type { IntlString, Metadata, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
-import { IssueDraft, IssuePriority, IssueStatus, Project, Sprint } from '@hcengineering/tracker'
+import { IssueDraft } from '@hcengineering/tracker'
 import { AnyComponent } from '@hcengineering/ui'
 import { SortFunc, Viewlet, ViewQueryAction } from '@hcengineering/view'
 import tracker, { trackerId } from '../../tracker/lib'
@@ -380,9 +380,17 @@ export default mergeIds(trackerId, tracker, {
     IssuePrioritySort: '' as SortFunc,
     SprintSort: '' as SortFunc,
     SubIssueQuery: '' as ViewQueryAction,
-    GetAllStatuses: '' as Resource<(space: Ref<Space> | undefined) => Promise<Array<Ref<IssueStatus>>>>,
-    GetAllPriority: '' as Resource<(space: Ref<Space> | undefined) => Promise<IssuePriority[]>>,
-    GetAllProjects: '' as Resource<(space: Ref<Space> | undefined) => Promise<Array<Ref<Project>>>>,
-    GetAllSprints: '' as Resource<(space: Ref<Space> | undefined) => Promise<Array<Ref<Sprint>>>>
+    GetAllStatuses: '' as Resource<
+    (space: Ref<Space> | undefined, onUpdate: () => void, queryId: Ref<Doc>) => Promise<any[] | undefined>
+    >,
+    GetAllPriority: '' as Resource<
+    (space: Ref<Space> | undefined, onUpdate: () => void, queryId: Ref<Doc>) => Promise<any[] | undefined>
+    >,
+    GetAllProjects: '' as Resource<
+    (space: Ref<Space> | undefined, onUpdate: () => void, queryId: Ref<Doc>) => Promise<any[] | undefined>
+    >,
+    GetAllSprints: '' as Resource<
+    (space: Ref<Space> | undefined, onUpdate: () => void, queryId: Ref<Doc>) => Promise<any[] | undefined>
+    >
   }
 })

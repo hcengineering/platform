@@ -247,7 +247,7 @@ export interface ClassSortFuncs extends Class<Doc> {
  * @public
  */
 export interface AllValuesFunc extends Class<Doc> {
-  func: Resource<(space: Ref<Space> | undefined) => Promise<any[]>>
+  func: Resource<(space: Ref<Space> | undefined, onUpdate: () => void, queryId: Ref<Doc>) => Promise<any[] | undefined>>
 }
 
 /**
@@ -488,7 +488,13 @@ export interface ViewOption {
  * @public
  */
 export type ViewCategoryAction = Resource<
-(_class: Ref<Class<Doc>>, space: Ref<Space> | undefined, key: string) => Promise<any[] | undefined>
+(
+  _class: Ref<Class<Doc>>,
+  space: Ref<Space> | undefined,
+  key: string,
+  onUpdate: () => void,
+  queryId: Ref<Doc>
+) => Promise<any[] | undefined>
 >
 
 /**

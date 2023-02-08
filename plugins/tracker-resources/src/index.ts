@@ -201,7 +201,7 @@ async function editTeam (team: Team | undefined): Promise<void> {
   }
 }
 
-async function moveAndDeleteSprint (client: TxOperations, oldSprint: Sprint, newSprint?: Sprint): Promise<void> {
+async function moveAndDeleteSprints (client: TxOperations, oldSprints: Sprint[], newSprint?: Sprint): Promise<void> {
   const noSprintLabel = await translate(tracker.string.NoSprint, {})
 
   showPopup(
@@ -209,37 +209,39 @@ async function moveAndDeleteSprint (client: TxOperations, oldSprint: Sprint, new
     {
       label: tracker.string.MoveAndDeleteSprint,
       message: tracker.string.MoveAndDeleteSprintConfirm,
-      labelProps: { newSprint: newSprint?.label ?? noSprintLabel, deleteSprint: oldSprint.label }
+      labelProps: { newSprint: newSprint?.label ?? noSprintLabel, deleteSprint: oldSprints.map((p) => p.label) }
     },
     undefined,
     (result?: boolean) => {
       if (result === true) {
-        void moveIssuesToAnotherSprint(client, oldSprint, newSprint).then((succes) => {
-          if (succes) {
-            void deleteObject(client, oldSprint)
-          }
-        })
+        for (const oldSprint of oldSprints) {
+          void moveIssuesToAnotherSprint(client, oldSprint, newSprint).then((succes) => {
+            if (succes) {
+              void deleteObject(client, oldSprint)
+            }
+          })
+        }
       }
     }
   )
 }
 
-async function deleteSprint (sprint: Sprint): Promise<void> {
+async function deleteSprint (sprints: Sprint[]): Promise<void> {
   const client = getClient()
   // Check if available to move issues to another sprint
-  const firstSearchedSprint = await client.findOne(tracker.class.Sprint, { _id: { $nin: [sprint._id] } })
+  const firstSearchedSprint = await client.findOne(tracker.class.Sprint, { _id: { $nin: sprints.map((p) => p._id) } })
   if (firstSearchedSprint !== undefined) {
     showPopup(
       MoveAndDeleteSprintPopup,
       {
-        sprint,
+        sprints,
         moveAndDeleteSprint: async (selectedSprint?: Sprint) =>
-          await moveAndDeleteSprint(client, sprint, selectedSprint)
+          await moveAndDeleteSprints(client, sprints, selectedSprint)
       },
       'top'
     )
   } else {
-    await moveAndDeleteSprint(client, sprint)
+    await moveAndDeleteSprints(client, sprints)
   }
 }
 
