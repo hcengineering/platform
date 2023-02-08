@@ -157,6 +157,7 @@ export class TApplicant extends TTask implements Applicant {
   declare assignee: Ref<Employee> | null
 
   @Prop(TypeTimestamp(), contact.string.CreatedOn)
+  @ReadOnly()
     createOn!: Timestamp
 }
 

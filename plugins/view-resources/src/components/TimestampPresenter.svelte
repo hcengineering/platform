@@ -14,9 +14,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { TimeSince } from '@hcengineering/ui'
+  import { Button, ButtonSize, TimeSince } from '@hcengineering/ui'
 
   export let value: number
+  export let kind: 'no-border' | 'link' = 'no-border'
+  export let readonly = false
+  export let size: ButtonSize = 'small'
+  export let justify: 'left' | 'center' = 'center'
+  export let width: string | undefined = 'fit-content'
 </script>
 
-<TimeSince {value} />
+{#if kind === 'link'}
+  <Button {kind} {size} {justify} {width}>
+    <svelte:fragment slot="content">
+      <TimeSince {value} />
+    </svelte:fragment>
+  </Button>
+{:else}
+  <TimeSince {value} />
+{/if}
