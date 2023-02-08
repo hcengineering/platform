@@ -78,6 +78,7 @@ import {
 } from './filter'
 
 import { IndexedDocumentPreview } from '@hcengineering/presentation'
+import { showEmptyGroups } from './viewOptions'
 
 function PositionElementAlignment (e?: Event): PopupAlignment | undefined {
   return getEventPopupPositionElement(e)
@@ -192,6 +193,7 @@ export default async (): Promise<Resources> => ({
     FilterBeforeResult: beforeResult,
     FilterAfterResult: afterResult,
     FilterNestedMatchResult: nestedMatchResult,
-    FilterNestedDontMatchResult: nestedDontMatchResult
+    FilterNestedDontMatchResult: nestedDontMatchResult,
+    ShowEmptyGroups: showEmptyGroups
   }
 })

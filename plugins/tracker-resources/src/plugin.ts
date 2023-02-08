@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Client, Doc, DocumentQuery, Ref } from '@hcengineering/core'
+import { Client, Doc, Ref, Space } from '@hcengineering/core'
 import type { IntlString, Metadata, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
-import { IssueDraft } from '@hcengineering/tracker'
+import { IssueDraft, IssuePriority, IssueStatus, Project, Sprint } from '@hcengineering/tracker'
 import { AnyComponent } from '@hcengineering/ui'
-import { SortFunc, Viewlet } from '@hcengineering/view'
+import { SortFunc, Viewlet, ViewQueryAction } from '@hcengineering/view'
 import tracker, { trackerId } from '../../tracker/lib'
 
 export default mergeIds(trackerId, tracker, {
@@ -143,7 +143,6 @@ export default mergeIds(trackerId, tracker, {
     Grouping: '' as IntlString,
     Ordering: '' as IntlString,
     CompletedIssues: '' as IntlString,
-    ShowEmptyGroups: '' as IntlString,
     NoGrouping: '' as IntlString,
     NoAssignee: '' as IntlString,
     LastUpdated: '' as IntlString,
@@ -377,6 +376,10 @@ export default mergeIds(trackerId, tracker, {
     IssueStatusSort: '' as SortFunc,
     IssuePrioritySort: '' as SortFunc,
     SprintSort: '' as SortFunc,
-    SubIssueQuery: '' as Resource<(value: any, query: DocumentQuery<Doc>) => DocumentQuery<Doc>>
+    SubIssueQuery: '' as ViewQueryAction,
+    GetAllStatuses: '' as Resource<(space: Ref<Space> | undefined) => Promise<Array<Ref<IssueStatus>>>>,
+    GetAllPriority: '' as Resource<(space: Ref<Space> | undefined) => Promise<IssuePriority[]>>,
+    GetAllProjects: '' as Resource<(space: Ref<Space> | undefined) => Promise<Array<Ref<Project>>>>,
+    GetAllSprints: '' as Resource<(space: Ref<Space> | undefined) => Promise<Array<Ref<Sprint>>>>
   }
 })

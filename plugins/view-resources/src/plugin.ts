@@ -64,6 +64,7 @@ export default mergeIds(viewId, view, {
     Then: '' as IntlString,
     ShowPreviewOnClick: '' as IntlString,
     Showed: '' as IntlString,
+    ShowEmptyGroups: '' as IntlString,
     Total: '' as IntlString
   }
 })

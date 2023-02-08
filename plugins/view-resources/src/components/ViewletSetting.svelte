@@ -347,8 +347,6 @@
               },
               getEventPositionElement(e),
               (val) => {
-                console.log('val')
-                console.log(val)
                 if (val !== undefined) {
                   const value = classes.get(_class)?.find((it) => it.value === val)
                   if (value) {

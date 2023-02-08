@@ -133,7 +133,6 @@
           on:select={(result) => {
             if (result.detail !== undefined) {
               viewlet = viewlets.find((vl) => vl._id === result.detail.id)
-              console.log('set viewlet by space headed')
               if (viewlet) setActiveViewletId(viewlet._id)
             }
           }}

@@ -58,7 +58,6 @@
     const attr = hieararchy.getAttribute(filter.key._class, filter.key.key)
     if (hieararchy.isMixin(attr.attributeOf)) {
       prefix = attr.attributeOf + '.'
-      console.log('prefix', prefix)
     }
     objectsPromise = client.findAll(
       _class,

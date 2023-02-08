@@ -521,6 +521,14 @@ export function createModel (builder: Builder): void {
         actionTartget: 'query',
         action: tracker.function.SubIssueQuery,
         label: tracker.string.SubIssues
+      },
+      {
+        key: 'shouldShowAll',
+        type: 'toggle',
+        defaultValue: false,
+        actionTartget: 'category',
+        action: view.function.ShowEmptyGroups,
+        label: view.string.ShowEmptyGroups
       }
     ]
   }
@@ -596,6 +604,7 @@ export function createModel (builder: Builder): void {
       ['dueDate', SortingOrder.Descending],
       ['rank', SortingOrder.Ascending]
     ],
+    groupDepth: 1,
     other: []
   }
 
@@ -696,7 +705,10 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: tracker.class.Issue,
     descriptor: tracker.viewlet.Kanban,
-    viewOptions: issuesOptions,
+    viewOptions: {
+      ...issuesOptions,
+      groupDepth: 1
+    },
     config: []
   })
 
@@ -876,6 +888,22 @@ export function createModel (builder: Builder): void {
     fields: ['assignee']
   })
 
+  builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.AllValuesFunc, {
+    func: tracker.function.GetAllStatuses
+  })
+
+  builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AllValuesFunc, {
+    func: tracker.function.GetAllPriority
+  })
+
+  builder.mixin(tracker.class.Project, core.class.Class, view.mixin.AllValuesFunc, {
+    func: tracker.function.GetAllProjects
+  })
+
+  builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.AllValuesFunc, {
+    func: tracker.function.GetAllSprints
+  })
+
   builder.createDoc(
     workbench.class.Application,
     core.space.Model,
@@ -933,13 +961,13 @@ export function createModel (builder: Builder): void {
               {
                 id: activeId,
                 label: tracker.string.Active,
-                // icon: tracker.icon.TrackerApplication,
+                icon: tracker.icon.CategoryStarted,
                 component: tracker.component.Active
               },
               {
                 id: backlogId,
                 label: tracker.string.Backlog,
-                // icon: tracker.icon.TrackerApplication,
+                icon: tracker.icon.CategoryBacklog,
                 component: tracker.component.Backlog
               },
               {

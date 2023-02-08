@@ -34,16 +34,11 @@
     }
   })
 
-  $: groups =
-    viewOptions.groupBy[viewOptions.groupBy.length - 1] === noCategory
-      ? viewOptions.groupBy
-      : [...viewOptions.groupBy, noCategory]
-
   function selectGrouping (value: string, i: number) {
     viewOptions.groupBy[i] = value
     if (value === noCategory) {
-      viewOptions.groupBy.length = i
-    } else {
+      viewOptions.groupBy.length = i + 1
+    } else if (config.groupDepth === undefined || config.groupDepth > viewOptions.groupBy.length) {
       viewOptions.groupBy.length = i + 1
       viewOptions.groupBy[i + 1] = noCategory
     }
@@ -62,7 +57,7 @@
 
 <div class="antiCard">
   <div class="antiCard-group grid">
-    {#each groups as group, i}
+    {#each viewOptions.groupBy as group, i}
       <span class="label"><Label label={i === 0 ? view.string.Grouping : view.string.Then} /></span>
       <div class="value grouping">
         <DropdownLabelsIntl
@@ -93,12 +88,12 @@
         }}
       />
     </div>
-    {#each config.other as model}
+    {#each config.other.filter((p) => !p.hidden?.(viewOptions)) as model}
       <span class="label"><Label label={model.label} /></span>
       <div class="value">
         {#if isToggleType(model)}
           <MiniToggle
-            on={viewOptions[model.key]}
+            on={viewOptions[model.key] ?? model.defaultValue}
             on:change={() => {
               viewOptions[model.key] = !viewOptions[model.key]
               dispatch('update', { key: model.key, value: viewOptions[model.key] })
@@ -109,7 +104,7 @@
           <DropdownLabelsIntl
             label={model.label}
             {items}
-            selected={viewOptions[model.key]}
+            selected={viewOptions[model.key] ?? model.defaultValue}
             width="10rem"
             justify="left"
             on:selected={(e) => {

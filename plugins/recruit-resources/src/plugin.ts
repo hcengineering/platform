@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-import { Client, Doc, ObjQueryType, Ref, Space } from '@hcengineering/core'
+import { Client, Doc, Ref, Space } from '@hcengineering/core'
 import type { IntlString, Resource, StatusCode } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import recruit, { recruitId } from '@hcengineering/recruit'
 import { TagCategory } from '@hcengineering/tags'
 import { AnyComponent } from '@hcengineering/ui'
-import { Filter, FilterMode } from '@hcengineering/view'
+import { FilterFunction, FilterMode } from '@hcengineering/view'
 
 export default mergeIds(recruitId, recruit, {
   status: {
@@ -137,9 +137,9 @@ export default mergeIds(recruitId, recruit, {
   },
   function: {
     ApplicationTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>,
-    HasActiveApplicant: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
-    HasNoActiveApplicant: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
-    NoneApplications: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>
+    HasActiveApplicant: '' as FilterFunction,
+    HasNoActiveApplicant: '' as FilterFunction,
+    NoneApplications: '' as FilterFunction
   },
   filter: {
     HasActive: '' as Ref<FilterMode>,
