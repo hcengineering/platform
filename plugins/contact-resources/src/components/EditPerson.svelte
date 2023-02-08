@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { combineName, Employee, EmployeeAccount, getFirstName, getLastName, Person } from '@hcengineering/contact'
-  import { AccountRole, getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import { getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import { AttributeEditor, Avatar, createQuery, EditableAvatar, getClient } from '@hcengineering/presentation'
   import setting, { IntegrationType } from '@hcengineering/setting'
   import { EditBox, createFocusManager, FocusHandler } from '@hcengineering/ui'
@@ -31,10 +31,7 @@
 
   let avatarEditor: EditableAvatar
 
-  $: editable =
-    !hierarchy.isDerived(object._class, contact.class.Employee) ||
-    account.role === AccountRole.Owner ||
-    object._id === account.employee
+  $: editable = !hierarchy.isDerived(object._class, contact.class.Employee)
   let firstName = getFirstName(object.name)
   let lastName = getLastName(object.name)
 
