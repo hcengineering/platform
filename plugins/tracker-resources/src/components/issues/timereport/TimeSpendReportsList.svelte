@@ -51,8 +51,9 @@
     showPopup(
       TimeSpendReportPopup,
       {
-        issue: value.attachedTo,
+        issueId: value.attachedTo,
         issueClass: value.attachedToClass,
+        space: value.space,
         value,
         assignee: value.employee,
         defaultTimeReportDay

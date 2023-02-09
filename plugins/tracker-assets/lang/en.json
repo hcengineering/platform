@@ -42,6 +42,7 @@
     "CreateTeam": "Create team",
     "NewTeam": "New team",
     "TeamTitlePlaceholder": "Team title",
+    "TeamIdentifierPlaceholder": "Team ID",
     "MakePrivate": "Make private",
     "MakePrivateDescription": "Only members can see it",
     "ChooseIcon": "Choose icon",

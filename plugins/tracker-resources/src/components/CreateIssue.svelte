@@ -13,7 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { deepEqual } from 'fast-equals'
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import chunter from '@hcengineering/chunter'
   import { Employee } from '@hcengineering/contact'
@@ -49,9 +48,7 @@
     IssueTemplateChild,
     Project,
     Sprint,
-    Team,
-    TimeReportDayType,
-    WorkDayLength
+    Team
   } from '@hcengineering/tracker'
   import {
     ActionIcon,
@@ -69,10 +66,12 @@
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
+  import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
   import { activeProject, activeSprint, generateIssueShortLink, getIssueId, updateIssueRelation } from '../issues'
   import tracker from '../plugin'
   import AssigneeEditor from './issues/AssigneeEditor.svelte'
+  import IssueNotification from './issues/IssueNotification.svelte'
   import ParentIssue from './issues/ParentIssue.svelte'
   import PriorityEditor from './issues/PriorityEditor.svelte'
   import StatusEditor from './issues/StatusEditor.svelte'
@@ -82,7 +81,6 @@
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
   import SprintSelector from './sprints/SprintSelector.svelte'
   import IssueTemplateChilds from './templates/IssueTemplateChilds.svelte'
-  import IssueNotification from './issues/IssueNotification.svelte'
 
   export let space: Ref<Team>
   export let status: Ref<IssueStatus> | undefined = undefined
@@ -130,9 +128,7 @@
     reportedTime: 0,
     estimation: 0,
     reports: 0,
-    childInfo: [],
-    workDayLength: currentTeam?.workDayLength ?? WorkDayLength.EIGHT_HOURS,
-    defaultTimeReportDay: currentTeam?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay
+    childInfo: []
   }
 
   let object = originalIssue
@@ -146,13 +142,6 @@
         childInfo: []
       }
     : toIssue(defaultIssue, draft)
-
-  $: {
-    defaultIssue.workDayLength = currentTeam?.workDayLength ?? WorkDayLength.EIGHT_HOURS
-    defaultIssue.defaultTimeReportDay = currentTeam?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay
-    object.workDayLength = defaultIssue.workDayLength
-    object.defaultTimeReportDay = defaultIssue.defaultTimeReportDay
-  }
 
   function resetObject (): void {
     templateId = undefined
@@ -453,9 +442,7 @@
       estimation: object.estimation,
       reports: 0,
       relations: relatedTo !== undefined ? [{ _id: relatedTo._id, _class: relatedTo._class }] : [],
-      childInfo: [],
-      workDayLength: object.workDayLength,
-      defaultTimeReportDay: object.defaultTimeReportDay
+      childInfo: []
     }
 
     await client.addCollection(
@@ -527,9 +514,7 @@
         estimation: subIssue.estimation,
         reports: 0,
         relations: [],
-        childInfo: [],
-        workDayLength: object.workDayLength,
-        defaultTimeReportDay: object.defaultTimeReportDay
+        childInfo: []
       }
 
       await client.addCollection(
@@ -803,7 +788,7 @@
           labels = labels.filter((it) => it._id !== evt.detail)
         }}
       />
-      <EstimationEditor kind={'no-border'} size={'small'} value={object} />
+      <EstimationEditor kind={'no-border'} size={'small'} value={object} {currentTeam} />
       <ProjectSelector value={object.project} onChange={handleProjectIdChanged} />
       <SprintSelector
         value={object.sprint}

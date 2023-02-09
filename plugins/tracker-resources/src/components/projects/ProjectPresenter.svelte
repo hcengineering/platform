@@ -21,8 +21,12 @@
   export let value: WithLookup<Project>
   export let withIcon = false
   export let onClick: () => void | undefined
+  export let isInteractive = true
 
   function navigateToProject () {
+    if (!isInteractive) {
+      return
+    }
     if (onClick) {
       onClick()
     }

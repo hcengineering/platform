@@ -13,27 +13,18 @@
 // limitations under the License.
 //
 
-import core, {
-  Doc,
-  DocumentUpdate,
-  generateId,
-  Ref,
-  SortingOrder,
-  toIdMap,
-  TxOperations,
-  TxResult
-} from '@hcengineering/core'
+import core, { Doc, DocumentUpdate, generateId, Ref, SortingOrder, TxOperations, TxResult } from '@hcengineering/core'
 import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import tags from '@hcengineering/tags'
 import {
+  genRanks,
+  Issue,
   IssueStatus,
   IssueStatusCategory,
   Team,
-  genRanks,
-  Issue,
   TimeReportDayType,
   WorkDayLength
 } from '@hcengineering/tracker'
-import tags from '@hcengineering/tags'
 import { DOMAIN_TRACKER } from '.'
 import tracker from './plugin'
 
@@ -212,25 +203,6 @@ async function upgradeIssueStatuses (tx: TxOperations): Promise<void> {
   }
 }
 
-async function upgradeIssueTimeReportSettings (tx: TxOperations): Promise<void> {
-  const issues = await tx.findAll(tracker.class.Issue, {
-    defaultTimeReportDay: { $exists: false },
-    workDayLength: { $exists: false }
-  })
-
-  const teams = await tx.findAll(tracker.class.Team, {
-    _id: { $in: Array.from(new Set(issues.map((issue) => issue.space))) }
-  })
-  const teamsById = toIdMap(teams)
-
-  await Promise.all(
-    issues.map((issue) => {
-      const team = teamsById.get(issue.space)
-      return tx.update(issue, { defaultTimeReportDay: team?.defaultTimeReportDay, workDayLength: team?.workDayLength })
-    })
-  )
-}
-
 async function migrateParentIssues (client: MigrationClient): Promise<void> {
   let { updated } = await client.update(
     DOMAIN_TRACKER,
@@ -363,7 +335,6 @@ async function upgradeTeams (tx: TxOperations): Promise<void> {
 
 async function upgradeIssues (tx: TxOperations): Promise<void> {
   await upgradeIssueStatuses(tx)
-  await upgradeIssueTimeReportSettings(tx)
 
   const issues = await tx.findAll(tracker.class.Issue, {
     $or: [{ blockedBy: { $exists: true } }, { relatedIssue: { $exists: true } }]

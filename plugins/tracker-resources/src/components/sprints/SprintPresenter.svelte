@@ -21,8 +21,12 @@
   export let value: WithLookup<Sprint>
   export let withIcon = false
   export let onClick: () => void | undefined
+  export let isInteractive = true
 
   function navigateToSprint () {
+    if (!isInteractive) {
+      return
+    }
     if (onClick) {
       onClick()
     }

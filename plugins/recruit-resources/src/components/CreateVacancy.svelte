@@ -19,7 +19,7 @@
   import { Card, createQuery, getClient, UserBox } from '@hcengineering/presentation'
   import { Vacancy as VacancyClass } from '@hcengineering/recruit'
   import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
-  import tracker, { IssueStatus, IssueTemplate, TimeReportDayType, WorkDayLength } from '@hcengineering/tracker'
+  import tracker, { IssueStatus, IssueTemplate } from '@hcengineering/tracker'
   import { Button, Component, createFocusManager, EditBox, FocusHandler, IconAttachment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
@@ -118,9 +118,7 @@
           estimation: issueTemplate.estimation,
           reports: 0,
           relations: [{ _id: id, _class: recruit.class.Vacancy }],
-          childInfo: [],
-          workDayLength: WorkDayLength.EIGHT_HOURS,
-          defaultTimeReportDay: TimeReportDayType.PreviousWorkDay
+          childInfo: []
         }
       )
     }

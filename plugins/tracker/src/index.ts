@@ -193,9 +193,6 @@ export interface Issue extends AttachedDoc {
 
   childInfo: IssueChildInfo[]
 
-  workDayLength: WorkDayLength
-  defaultTimeReportDay: TimeReportDayType
-
   template?: {
     // A template issue is based on
     template: Ref<IssueTemplate>

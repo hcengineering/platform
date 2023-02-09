@@ -58,7 +58,7 @@ services:
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
-      - FRONT_URL=http://localhost:8087
+      - FRONT_URL=http://front:8080
       - SES_URL=http://localhost:8091
     restart: unless-stopped
   collaborator:
@@ -87,8 +87,9 @@ services:
       - SERVER_PORT=8080
       - SERVER_SECRET=secret
       - ACCOUNTS_URL=http://localhost:3000
+      - REKONI_URL=http://localhost:4004
       - COLLABORATOR_URL=ws://localhost:3078
-      - FRONT_URL=http://localhost:8087
+      - FRONT_URL=http://front:8080
       - UPLOAD_URL=/files
       - TRANSACTOR_URL=ws://localhost:3333
       - ELASTIC_URL=http://elastic:9200

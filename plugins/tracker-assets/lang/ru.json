@@ -42,6 +42,7 @@
     "CreateTeam": "Создать команду",
     "NewTeam": "Новая команда",
     "TeamTitlePlaceholder": "Название команды",
+    "TeamIdentifierPlaceholder": "Идентификатор Команды",
     "MakePrivate": "Сделать личным",
     "MakePrivateDescription": "Только пользователи могут видеть это",
     "ChooseIcon": "Выбрать иконку",

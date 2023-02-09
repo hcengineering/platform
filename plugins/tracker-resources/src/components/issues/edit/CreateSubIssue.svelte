@@ -65,9 +65,7 @@
       estimation: 0,
       reportedTime: 0,
       reports: 0,
-      childInfo: [],
-      workDayLength: currentTeam.workDayLength,
-      defaultTimeReportDay: currentTeam.defaultTimeReportDay
+      childInfo: []
     }
   }
 
@@ -247,7 +245,7 @@
           labels = labels.filter((it) => it._id !== evt.detail)
         }}
       />
-      <EstimationEditor kind={'no-border'} size={'small'} value={newIssue} />
+      <EstimationEditor kind={'no-border'} size={'small'} value={newIssue} {currentTeam} />
     </div>
     <div class="buttons-group small-gap">
       <Button label={presentation.string.Cancel} size="small" kind="transparent" on:click={close} />

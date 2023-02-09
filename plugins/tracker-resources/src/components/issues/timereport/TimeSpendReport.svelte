@@ -15,12 +15,13 @@
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Issue, TimeSpendReport } from '@hcengineering/tracker'
+  import { Issue, Team, TimeSpendReport } from '@hcengineering/tracker'
   import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import TimePresenter from './TimePresenter.svelte'
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
 
   export let value: WithLookup<TimeSpendReport>
+  export let currentTeam: Team | undefined
   const client = getClient()
 
   $: issue = value.$lookup?.attachedTo
@@ -29,15 +30,16 @@
       issue = r as Issue
     })
   }
-  $: workDayLength = issue?.workDayLength
-  $: defaultTimeReportDay = issue?.defaultTimeReportDay
+  $: workDayLength = currentTeam?.workDayLength
+  $: defaultTimeReportDay = currentTeam?.defaultTimeReportDay
 
   function editSpendReport (event: MouseEvent): void {
     showPopup(
       TimeSpendReportPopup,
       {
-        issue: value.attachedTo,
+        issue,
         issueClass: value.attachedToClass,
+        space: value.space,
         value,
         assignee: value.employee,
         defaultTimeReportDay

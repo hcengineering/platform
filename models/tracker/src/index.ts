@@ -266,9 +266,6 @@ export class TIssue extends TAttachedDoc implements Issue {
     reports!: number
 
   declare childInfo: IssueChildInfo[]
-
-  declare workDayLength: WorkDayLength
-  declare defaultTimeReportDay: TimeReportDayType
 }
 
 /**

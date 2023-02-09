@@ -127,7 +127,6 @@
   on:keydown={handleKeydown}
 />
 
-{JSON.stringify(options)}
 <div
   class="popup {showing === undefined ? 'endShow' : showing === false ? 'preShow' : 'startShow'}"
   class:anim={element === 'float'}

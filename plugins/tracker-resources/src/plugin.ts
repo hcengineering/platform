@@ -66,6 +66,7 @@ export default mergeIds(trackerId, tracker, {
     CreateTeam: '' as IntlString,
     NewTeam: '' as IntlString,
     TeamTitlePlaceholder: '' as IntlString,
+    TeamIdentifierPlaceholder: '' as IntlString,
     MakePrivate: '' as IntlString,
     MakePrivateDescription: '' as IntlString,
     ChooseIcon: '' as IntlString,
