@@ -34,9 +34,10 @@
       _id: type.of
     },
     (res) => {
-      items = res[0]?.enumValues?.map((p) => {
-        return { id: p, label: p }
-      })
+      items =
+        res[0]?.enumValues?.map((p) => {
+          return { id: p, label: p }
+        }) ?? []
     },
     { limit: 1 }
   )

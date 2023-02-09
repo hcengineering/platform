@@ -91,7 +91,8 @@
     modifiedOn: Date.now(),
     modifiedBy: '' as Ref<Account>,
     startDate: null,
-    dueDate: null
+    dueDate: null,
+    createOn: Date.now()
   }
 
   const dispatch = createEventDispatcher()
@@ -149,7 +150,8 @@
         assignee: doc.assignee,
         rank: calcRank(lastOne, undefined),
         startDate: null,
-        dueDate: null
+        dueDate: null,
+        createOn: Date.now()
       },
       doc._id
     )
@@ -181,7 +183,8 @@
         modifiedOn: Date.now(),
         modifiedBy: '' as Ref<Account>,
         startDate: null,
-        dueDate: null
+        dueDate: null,
+        createOn: Date.now()
       }
     }
   }
