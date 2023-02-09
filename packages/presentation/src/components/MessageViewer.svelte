@@ -17,12 +17,15 @@
   import Nodes from './message/Nodes.svelte'
 
   export let message: string
+  export let isEmpty: boolean | undefined = undefined
 
   let dom: HTMLElement
 
   const parser = new DOMParser()
 
-  $: dom = parser.parseFromString(message, 'text/html').firstChild?.childNodes[1] as HTMLElement
+  $: doc = parser.parseFromString(message, 'text/html')
+  $: dom = doc.firstChild?.childNodes[1] as HTMLElement
+  $: isEmpty = doc.documentElement.innerText.length === 0
 </script>
 
 <Nodes nodes={dom.childNodes} />
