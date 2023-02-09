@@ -15,11 +15,11 @@
 <script lang="ts">
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import contact, { Organization } from '@hcengineering/contact'
-  import core, { FindResult, generateId, getCurrentAccount, Ref } from '@hcengineering/core'
+  import core, { FindResult, generateId, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
   import { Card, createQuery, getClient, UserBox } from '@hcengineering/presentation'
   import { Vacancy as VacancyClass } from '@hcengineering/recruit'
   import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
-  import tracker, { IssueStatus, IssueTemplate } from '@hcengineering/tracker'
+  import tracker, { calcRank, Issue, IssueStatus, IssueTemplate } from '@hcengineering/tracker'
   import { Button, Component, createFocusManager, EditBox, FocusHandler, IconAttachment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
@@ -85,6 +85,12 @@
     )
 
     for (const issueTemplate of issueTemplates) {
+      const lastOne = await client.findOne<Issue>(
+        tracker.class.Issue,
+        { space: issueTemplate.space },
+        { sort: { rank: SortingOrder.Descending } }
+      )
+
       const incResult = await client.updateDoc(
         tracker.class.Team,
         core.space.Space,
@@ -109,7 +115,7 @@
           number: (incResult as any).object.sequence,
           status: '' as Ref<IssueStatus>,
           priority: issueTemplate.priority,
-          rank: '',
+          rank: calcRank(lastOne, undefined),
           comments: 0,
           subIssues: 0,
           dueDate: null,

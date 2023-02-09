@@ -13,10 +13,20 @@
 // limitations under the License.
 //
 
-import core, { Doc, DocumentUpdate, generateId, Ref, SortingOrder, TxOperations, TxResult } from '@hcengineering/core'
+import core, {
+  Doc,
+  DocumentUpdate,
+  DOMAIN_TX,
+  generateId,
+  Ref,
+  SortingOrder,
+  TxOperations,
+  TxResult
+} from '@hcengineering/core'
 import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import tags from '@hcengineering/tags'
 import {
+  calcRank,
   genRanks,
   Issue,
   IssueStatus,
@@ -327,6 +337,45 @@ async function createDefaults (tx: TxOperations): Promise<void> {
   )
 }
 
+async function fillRank (client: MigrationClient): Promise<void> {
+  const docs = await client.find<Issue>(DOMAIN_TRACKER, {
+    _class: tracker.class.Issue,
+    rank: ''
+  })
+  let last = (
+    await client.find<Issue>(
+      DOMAIN_TRACKER,
+      {
+        _class: tracker.class.Issue,
+        rank: { $ne: '' }
+      },
+      {
+        sort: { rank: SortingOrder.Descending },
+        limit: 1
+      }
+    )
+  )[0]
+  for (const doc of docs) {
+    const rank = calcRank(last)
+    await client.update(
+      DOMAIN_TRACKER,
+      {
+        _id: doc._id
+      },
+      {
+        rank
+      }
+    )
+    await client.update(
+      DOMAIN_TX,
+      { 'tx.objectId': doc._id, 'tx._class': core.class.TxCreateDoc },
+      { 'tx.attributes.rank': rank }
+    )
+    doc.rank = rank
+    last = doc
+  }
+}
+
 async function upgradeTeams (tx: TxOperations): Promise<void> {
   await upgradeTeamIssueStatuses(tx)
   await fixTeamsIssueStatusesOrder(tx)
@@ -375,6 +424,7 @@ export const trackerOperation: MigrateOperation = {
     )
     await Promise.all([migrateIssueProjects(client), migrateParentIssues(client)])
     await migrateIssueParentInfo(client)
+    await fillRank(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
