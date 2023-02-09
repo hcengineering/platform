@@ -620,10 +620,10 @@
     if (sprintId === undefined) {
       return
     }
-    let projectSprintId: Ref<Project>
+    let projectSprintId: Ref<Project> | null
     if (sprintId !== null) {
       const sprint = await client.findOne(tracker.class.Sprint, { _id: sprintId })
-      projectSprintId = sprint.project
+      projectSprintId = sprint && sprint.project ? sprint.project : null
     } else projectSprintId = null
 
     object = { ...object, sprint: sprintId, project: projectSprintId }
