@@ -14,12 +14,13 @@
 -->
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { TabModel, Tabs, Component } from '@hcengineering/ui'
+  import { Tabs, Component, AnyComponent } from '@hcengineering/ui'
   import contact from '@hcengineering/contact'
+  import { IntlString } from '@hcengineering/platform'
 
   const client = getClient()
 
-  let tabs: TabModel | undefined
+  let tabs: { component: AnyComponent; label: IntlString; props: any }[] | undefined
 
   client
     .findAll(contact.class.ContactsTab, {})
@@ -36,9 +37,5 @@
     <Tabs model={tabs} />
   </div>
 {:else if tabs?.[0]}
-  {#if typeof tabs[0].component === 'string'}
-    <Component is={tabs[0].component} />
-  {:else}
-    <svelte:component this={tabs[0].component} />
-  {/if}
+  <Component is={tabs[0].component} />
 {/if}
