@@ -218,7 +218,7 @@
   }
 
   function getNestedProps (type: KeyFilter): any {
-    const targetClass = (hierarchy.getAttribute(_class, type.key).type as RefTo<Doc>).to
+    const targetClass = (hierarchy.getAttribute(type._class, type.key).type as RefTo<Doc>).to
     return {
       _class: targetClass,
       space,
