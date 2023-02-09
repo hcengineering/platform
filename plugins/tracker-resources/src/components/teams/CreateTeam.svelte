@@ -13,7 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import core, { generateId, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
+  import { Asset } from '@hcengineering/platform'
+  import presentation, { Card, getClient } from '@hcengineering/presentation'
+  import { StyledTextBox } from '@hcengineering/text-editor'
+  import { genRanks, IssueStatus, Team, TimeReportDayType, WorkDayLength } from '@hcengineering/tracker'
   import {
     Button,
     DropdownIntlItem,
@@ -24,14 +28,10 @@
     showPopup,
     ToggleWithLabel
   } from '@hcengineering/ui'
-  import presentation, { Card, getClient } from '@hcengineering/presentation'
-  import core, { generateId, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
-  import { genRanks, IssueStatus, Team, TimeReportDayType, WorkDayLength } from '@hcengineering/tracker'
-  import { StyledTextBox } from '@hcengineering/text-editor'
-  import { Asset } from '@hcengineering/platform'
+  import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
-  import TeamIconChooser from './TeamIconChooser.svelte'
   import TimeReportDayDropdown from '../issues/timereport/TimeReportDayDropdown.svelte'
+  import TeamIconChooser from './TeamIconChooser.svelte'
 
   export let team: Team | undefined = undefined
 
@@ -62,6 +62,8 @@
     isNew ? createTeam() : updateTeam()
   }
 
+  let identifier: string = 'TSK'
+
   const defaultStatusId: Ref<IssueStatus> = generateId()
 
   function getTeamData () {
@@ -71,7 +73,7 @@
       private: isPrivate,
       members: [getCurrentAccount()._id],
       archived: false,
-      identifier: name.toUpperCase().replaceAll(' ', '_'),
+      identifier,
       sequence: 0,
       issueStatuses: 0,
       defaultIssueStatus: defaultStatusId,
@@ -82,20 +84,9 @@
   }
 
   async function updateTeam () {
-    const teamData = getTeamData()
+    const { sequence, issueStatuses, defaultIssueStatus, members, identifier, ...teamData } = getTeamData()
     // update team doc
     await client.update(team!, teamData)
-
-    // update issues related to team
-    const issuesByTeam = await client.findAll(tracker.class.Issue, { space: team!._id })
-    await Promise.all(
-      issuesByTeam.map((issue) =>
-        client.update(issue, {
-          defaultTimeReportDay: teamData.defaultTimeReportDay,
-          workDayLength: teamData.workDayLength
-        })
-      )
-    )
   }
 
   async function createTeam () {
@@ -149,7 +140,23 @@
     dispatch('close')
   }}
 >
-  <EditBox bind:value={name} placeholder={tracker.string.TeamTitlePlaceholder} kind={'large-style'} focus />
+  <div class="flex-row-center flex-between">
+    <EditBox
+      bind:value={name}
+      placeholder={tracker.string.TeamTitlePlaceholder}
+      kind={'large-style'}
+      focus
+      on:input={() => {
+        identifier = name.toLocaleUpperCase().replaceAll(' ', '_').substring(0, 5)
+      }}
+    />
+    <EditBox
+      bind:value={identifier}
+      disabled={!isNew}
+      placeholder={tracker.string.TeamIdentifierPlaceholder}
+      kind={'large-style'}
+    />
+  </div>
   <StyledTextBox
     alwaysEdit
     showButtons={false}

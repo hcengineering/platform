@@ -43,7 +43,6 @@
   let currentTeam: Team | undefined
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
 
-  $: defaultTimeReportDay = object.defaultTimeReportDay
   $: query.query(
     object._class,
     { _id: object._id },
@@ -60,6 +59,7 @@
       }
     }
   )
+  $: defaultTimeReportDay = currentTeam?.defaultTimeReportDay
 
   const statusesQuery = createQuery()
 
@@ -115,7 +115,7 @@
           )
         }}
       >
-        <EstimationStatsPresenter value={object} estimation={_value} />
+        <EstimationStatsPresenter value={object} estimation={_value} {currentTeam} />
       </div>
     </div>
   </svelte:fragment>
@@ -147,6 +147,7 @@
         showPopup(
           TimeSpendReportPopup,
           {
+            issue: object,
             issueId: object._id,
             issueClass: object._class,
             space: object.space,

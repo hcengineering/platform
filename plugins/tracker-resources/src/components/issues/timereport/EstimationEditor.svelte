@@ -16,7 +16,7 @@
   import { AttachedData } from '@hcengineering/core'
 
   import { getClient } from '@hcengineering/presentation'
-  import { Issue } from '@hcengineering/tracker'
+  import { Issue, Team } from '@hcengineering/tracker'
   import { Button, ButtonKind, ButtonSize, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import EditBoxPopup from '@hcengineering/view-resources/src/components/EditBoxPopup.svelte'
   import { createEventDispatcher } from 'svelte'
@@ -31,6 +31,7 @@
   export let size: ButtonSize = 'large'
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = undefined
+  export let currentTeam: Team | undefined
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -73,7 +74,7 @@
 
 {#if value}
   {#if kind === 'list'}
-    <EstimationStatsPresenter {value} on:click={handleestimationEditorOpened} />
+    <EstimationStatsPresenter {value} on:click={handleestimationEditorOpened} {currentTeam} />
   {:else}
     <Button
       showTooltip={isEditable ? { label: tracker.string.Estimation } : undefined}

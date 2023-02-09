@@ -29,7 +29,7 @@
 
   let reports: TimeSpendReport[] | undefined
 
-  $: workDayLength = issue.workDayLength
+  $: workDayLength = teams.get(issue.space)?.workDayLength
   $: subIssuesQuery.query(tracker.class.TimeSpendReport, query, async (result) => (reports = result), {
     sort: { modifiedOn: SortingOrder.Descending },
     lookup: {

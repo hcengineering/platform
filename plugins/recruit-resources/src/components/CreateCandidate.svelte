@@ -246,7 +246,8 @@
   async function createCandidate () {
     const candidate: Data<Person> = {
       name: combineName(firstName, lastName),
-      city: object.city
+      city: object.city,
+      createOn: Date.now()
     }
     if (avatar !== undefined) {
       candidate.avatar = await avatarEditor.createAvatar()
@@ -349,7 +350,8 @@
 
   async function recognize (contentType: string): Promise<void> {
     const token = getMetadata(login.metadata.LoginToken) ?? ''
-    const fileUrl = window.location.origin + getFileUrl(resume.uuid)
+    const frontUrl = getMetadata(login.metadata.FrontUrl) ?? ''
+    const fileUrl = frontUrl + getFileUrl(resume.uuid)
 
     try {
       const doc = await recognizeDocument(token, fileUrl, contentType)

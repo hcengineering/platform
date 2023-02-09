@@ -21,12 +21,17 @@ const CompressionPlugin = require('compression-webpack-plugin')
 const DefinePlugin = require('webpack').DefinePlugin
 const { resolve } = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { Configuration } = require('webpack')
 
 const mode = process.env.NODE_ENV || 'development'
 const prod = mode === 'production'
 const devServer = (process.env.CLIENT_TYPE ?? '') === 'dev-server'
 const dev = (process.env.CLIENT_TYPE ?? '') === 'dev' || devServer
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
+/**
+ * @type {Configuration}
+ */
 module.exports = {
   entry: {
     bundle: [
@@ -57,14 +62,21 @@ module.exports = {
     path: __dirname + '/dist',
     filename: '[name].[contenthash].js',
     chunkFilename: '[name].[contenthash].js',
-    publicPath: '/'
+    publicPath: '/',
+    pathinfo: false
+  },
+  optimization: {
+    minimize: prod
   },
   module: {
     rules: [
       {
         test: /\.ts?$/,
-        use: 'ts-loader',
-        exclude: /node_modules/
+        loader:'ts-loader',
+        options: {
+          transpileOnly: true
+        },
+        exclude: /node_modules/,
       },
       {
         test: /\.svelte$/,
@@ -190,8 +202,15 @@ module.exports = {
     new Dotenv({path: prod ? '.env-prod' : '.env'}),
     new DefinePlugin({
       'process.env.CLIENT_TYPE': JSON.stringify(process.env.CLIENT_TYPE)
-    })    
+    }),
+    new ForkTsCheckerWebpackPlugin()
   ],
+  watchOptions: {
+    // for some systems, watching many files can result in a lot of CPU or memory usage
+    // https://webpack.js.org/configuration/watch/#watchoptionsignored
+    // don't use this pattern, if you have a monorepo with linked packages
+    ignored: /node_modules/,
+  },
   devtool: prod ? false : 'inline-source-map',
   devServer: {
     static: {
