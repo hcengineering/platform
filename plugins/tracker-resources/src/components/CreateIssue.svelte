@@ -621,7 +621,7 @@
       return
     }
     let projectSprintId: Ref<Project> | null
-    if (sprintId !== null) {
+    if (sprintId != null) {
       const sprint = await client.findOne(tracker.class.Sprint, { _id: sprintId })
       projectSprintId = sprint && sprint.project ? sprint.project : null
     } else projectSprintId = null

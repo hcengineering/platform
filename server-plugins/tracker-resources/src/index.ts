@@ -338,7 +338,7 @@ async function doIssueUpdate (
   }
 
   if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'sprint')) {
-    if (updateTx.operations.sprint !== null) {
+    if (updateTx.operations.sprint != null) {
       const [sprint] = await control.findAll(
         tracker.class.Sprint,
         { _id: updateTx.operations.sprint as Ref<Sprint> },
