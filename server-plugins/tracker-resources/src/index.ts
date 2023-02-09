@@ -36,7 +36,7 @@ import { getMetadata } from '@hcengineering/platform'
 import { Resource } from '@hcengineering/platform/lib/platform'
 import { TriggerControl } from '@hcengineering/server-core'
 import { addAssigneeNotification } from '@hcengineering/server-task-resources'
-import tracker, { Issue, IssueParentInfo, Project, TimeSpendReport, trackerId } from '@hcengineering/tracker'
+import tracker, { Issue, IssueParentInfo, Project, TimeSpendReport, trackerId, Sprint } from '@hcengineering/tracker'
 
 async function updateSubIssues (
   updateTx: TxUpdateDoc<Issue>,
@@ -336,6 +336,28 @@ async function doIssueUpdate (
       }))
     )
   }
+
+  if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'sprint')) {
+    if (updateTx.operations.sprint !== null) {
+      const [sprint] = await control.findAll(
+        tracker.class.Sprint,
+        { _id: updateTx.operations.sprint as Ref<Sprint> },
+        { limit: 1 }
+      )
+      res.push(
+        control.txFactory.createTxUpdateDoc(updateTx.objectClass, updateTx.objectSpace, updateTx.objectId, {
+          project: sprint.project
+        })
+      )
+    } else {
+      res.push(
+        control.txFactory.createTxUpdateDoc(updateTx.objectClass, updateTx.objectSpace, updateTx.objectId, {
+          project: null
+        })
+      )
+    }
+  }
+
   if (
     Object.prototype.hasOwnProperty.call(updateTx.operations, 'estimation') ||
     Object.prototype.hasOwnProperty.call(updateTx.operations, 'reportedTime')
