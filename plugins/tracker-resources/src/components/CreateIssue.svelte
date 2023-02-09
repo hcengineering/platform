@@ -407,11 +407,7 @@
       return
     }
 
-    const lastOne = await client.findOne<Issue>(
-      tracker.class.Issue,
-      { status: object.status },
-      { sort: { rank: SortingOrder.Descending } }
-    )
+    const lastOne = await client.findOne<Issue>(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
     const incResult = await client.updateDoc(
       tracker.class.Team,
       core.space.Space,
@@ -475,11 +471,7 @@
       }
     }
     for (const subIssue of subIssues) {
-      const lastOne = await client.findOne<Issue>(
-        tracker.class.Issue,
-        { status: object.status },
-        { sort: { rank: SortingOrder.Descending } }
-      )
+      const lastOne = await client.findOne<Issue>(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
       const incResult = await client.updateDoc(
         tracker.class.Team,
         core.space.Space,

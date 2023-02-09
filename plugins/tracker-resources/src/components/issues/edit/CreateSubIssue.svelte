@@ -91,11 +91,7 @@
     loading = true
     try {
       const space = currentTeam._id
-      const lastOne = await client.findOne<Issue>(
-        tracker.class.Issue,
-        { space },
-        { sort: { rank: SortingOrder.Descending } }
-      )
+      const lastOne = await client.findOne<Issue>(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
       const incResult = await client.updateDoc(
         tracker.class.Team,
         core.space.Space,

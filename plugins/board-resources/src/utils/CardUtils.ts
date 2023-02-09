@@ -24,7 +24,7 @@ export async function createCard (
     throw new Error('sequence object not found')
   }
 
-  const lastOne = await client.findOne(board.class.Card, { state }, { sort: { rank: SortingOrder.Descending } })
+  const lastOne = await client.findOne(board.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
   const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
   const value: AttachedData<Card> = {

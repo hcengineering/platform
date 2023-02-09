@@ -63,11 +63,7 @@
       throw new Error('sequence object not found')
     }
 
-    const lastOne = await client.findOne(
-      lead.class.Lead,
-      { state: state._id },
-      { sort: { rank: SortingOrder.Descending } }
-    )
+    const lastOne = await client.findOne(lead.class.Lead, {}, { sort: { rank: SortingOrder.Descending } })
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
     const value: AttachedData<Lead> = {

@@ -75,7 +75,7 @@
   }
 
   async function onAdd (_class: Ref<Class<State | DoneState>>) {
-    const lastOne = await client.findOne(_class, { space: kanban.space }, { sort: { rank: SortingOrder.Descending } })
+    const lastOne = await client.findOne(_class, {}, { sort: { rank: SortingOrder.Descending } })
     if (hierarchy.isDerived(_class, task.class.DoneState)) {
       await client.createDoc(_class, kanban.space, {
         title: 'New Done State',

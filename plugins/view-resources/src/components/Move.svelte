@@ -52,11 +52,7 @@
       if (state === undefined) {
         throw new Error('Move: state not found')
       }
-      const lastOne = await client.findOne(
-        (doc as Task)._class,
-        { state: state._id },
-        { sort: { rank: SortingOrder.Descending } }
-      )
+      const lastOne = await client.findOne((doc as Task)._class, {}, { sort: { rank: SortingOrder.Descending } })
       await moveToSpace(client, doc, space, {
         state: state._id,
         rank: calcRank(lastOne, undefined)
