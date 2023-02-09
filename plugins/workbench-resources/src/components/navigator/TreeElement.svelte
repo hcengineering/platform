@@ -17,6 +17,7 @@
   import type { Asset, IntlString } from '@hcengineering/platform'
   import type { Action } from '@hcengineering/ui'
   import { ActionIcon, Icon, IconMoreV, Label, Menu, showPopup } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
 
   export let _id: Ref<Space> | undefined = undefined
   export let icon: Asset | undefined = undefined
@@ -38,6 +39,8 @@
     })
     hovered = true
   }
+
+  const dispatch = createEventDispatcher()
 </script>
 
 <div
@@ -52,6 +55,7 @@
   class:child={!node}
   on:click={() => {
     collapsed = !collapsed
+    dispatch('click')
   }}
 >
   <span class="an-element__label" class:bold class:title={node}>

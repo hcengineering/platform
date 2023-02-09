@@ -17,7 +17,6 @@
   import type { Asset } from '@hcengineering/platform'
   import type { Ref, Space } from '@hcengineering/core'
   import type { Action } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
 
   export let _id: Ref<Space>
   export let icon: Asset | undefined
@@ -27,21 +26,6 @@
   export let selected: boolean = false
   export let bold = false
   export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
-
-  const dispatch = createEventDispatcher()
 </script>
 
-<TreeElement
-  {_id}
-  {icon}
-  {title}
-  {notifications}
-  {selected}
-  {actions}
-  {bold}
-  collapsed
-  {indent}
-  on:click={() => {
-    dispatch('click')
-  }}
-/>
+<TreeElement {_id} {icon} {title} {notifications} {selected} {actions} {bold} collapsed {indent} on:click />
