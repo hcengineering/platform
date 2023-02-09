@@ -16,7 +16,7 @@
 import type { DisplayTx, TxViewlet } from '@hcengineering/activity'
 import { attachmentId } from '@hcengineering/attachment'
 import attachment from '@hcengineering/attachment-resources/src/plugin'
-import type { Ref } from '@hcengineering/core'
+import type { Ref, Doc } from '@hcengineering/core'
 import type { IntlString, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
@@ -51,6 +51,6 @@ export default mergeIds(attachmentId, attachment, {
     Attachments: '' as Ref<ActionCategory>
   },
   filter: {
-    AttachmentsFilter: '' as Resource<(tx: DisplayTx) => boolean>
+    AttachmentsFilter: '' as Resource<(tx: DisplayTx, _class?: Ref<Doc>) => boolean>
   }
 })

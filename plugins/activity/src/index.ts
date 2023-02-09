@@ -97,7 +97,7 @@ export interface DisplayTx {
  */
 export interface ActivityFilter extends Doc {
   label: IntlString
-  filter: Resource<(tx: DisplayTx) => boolean>
+  filter: Resource<(tx: DisplayTx, _class?: Ref<Doc>) => boolean>
 }
 
 /**

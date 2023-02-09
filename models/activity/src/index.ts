@@ -14,7 +14,7 @@
 //
 
 import type { ActivityFilter, DisplayTx, TxViewlet } from '@hcengineering/activity'
-import activity from '@hcengineering/activity'
+import activity from './plugin'
 import core, { Class, Doc, DocumentQuery, DOMAIN_MODEL, Ref, Tx } from '@hcengineering/core'
 import { Builder, Model } from '@hcengineering/model'
 import { TDoc } from '@hcengineering/model-core'
@@ -39,9 +39,16 @@ export class TTxViewlet extends TDoc implements TxViewlet {
 @Model(activity.class.ActivityFilter, core.class.Class, DOMAIN_MODEL)
 export class TActivityFilter extends TDoc implements ActivityFilter {
   label!: IntlString
-  filter!: Resource<(tx: DisplayTx) => boolean>
+  filter!: Resource<(tx: DisplayTx, _class?: Ref<Doc>) => boolean>
 }
 
 export function createModel (builder: Builder): void {
   builder.createModel(TTxViewlet, TActivityFilter)
+
+  builder.createDoc(activity.class.ActivityFilter, core.space.Model, {
+    label: activity.string.Attributes,
+    filter: activity.filter.AttributeFilter
+  })
 }
+
+export default activity
