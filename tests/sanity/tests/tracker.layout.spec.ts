@@ -104,8 +104,6 @@ test.describe('tracker layout tests', () => {
       let groupLabels: any[]
       if (group === 'Sprint') {
         groupLabels = issuesProps.map((props) => props.sprint)
-      } else if (group === 'Project') {
-        groupLabels = issuesProps.map((props) => props.project)
       } else {
         groupLabels = groupsLabels[group] ?? []
       }
