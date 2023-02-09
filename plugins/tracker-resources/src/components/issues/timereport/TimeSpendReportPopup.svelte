@@ -96,6 +96,7 @@
     <Button kind={'link-bordered'} on:click={() => (data.value = 0.25)}><span slot="content">1/4</span></Button>
     <Button kind={'link-bordered'} on:click={() => (data.value = 0.5)}><span slot="content">1/2</span></Button>
     <Button kind={'link-bordered'} on:click={() => (data.value = 0.75)}><span slot="content">3/4</span></Button>
+    <Button kind={'link-bordered'} on:click={() => (data.value = 0.875)}><span slot="content">7/8</span></Button>
     <div class="buttons-divider" />
     <Button kind={'link-bordered'} on:click={() => (data.value = 1)}><span slot="content">1</span></Button>
   </div>
