@@ -22,7 +22,12 @@
 
   const parser = new DOMParser()
 
-  $: dom = parser.parseFromString(message, 'text/html').firstChild?.childNodes[1] as HTMLElement
+  export function isEmpty () {
+    return doc.documentElement.innerText.length === 0
+  }
+
+  $: doc = parser.parseFromString(message, 'text/html')
+  $: dom = doc.firstChild?.childNodes[1] as HTMLElement
 </script>
 
 <Nodes nodes={dom.childNodes} />
