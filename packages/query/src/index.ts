@@ -109,6 +109,16 @@ export class LiveQuery extends TxProcessor implements Client {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
+    const q = this.findQuery(_class, query, options)
+    if (q !== undefined) {
+      if (q.result instanceof Promise) {
+        q.result = await q.result
+      }
+      if (this.removeFromQueue(q)) {
+        this.queue.push(q)
+      }
+      return toFindResult(this.clone(q.result), q.total) as FindResult<T>
+    }
     return await this.client.findAll(_class, query, options)
   }
 
@@ -117,6 +127,16 @@ export class LiveQuery extends TxProcessor implements Client {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<WithLookup<T> | undefined> {
+    const q = this.findQuery(_class, query, options)
+    if (q !== undefined) {
+      if (q.result instanceof Promise) {
+        q.result = await q.result
+      }
+      if (this.removeFromQueue(q)) {
+        this.queue.push(q)
+      }
+      return this.clone(q.result)[0] as WithLookup<T>
+    }
     return await this.client.findOne(_class, query, options)
   }
 
@@ -133,13 +153,15 @@ export class LiveQuery extends TxProcessor implements Client {
     }
   }
 
-  private removeFromQueue (q: Query): void {
+  private removeFromQueue (q: Query): boolean {
     if (q.callbacks.length === 0) {
       const queueIndex = this.queue.indexOf(q)
       if (queueIndex !== -1) {
         this.queue.splice(queueIndex, 1)
+        return true
       }
     }
+    return false
   }
 
   private pushCallback (q: Query, callback: (result: Doc[]) => void): void {
