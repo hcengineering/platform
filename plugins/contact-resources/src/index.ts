@@ -27,6 +27,7 @@ import ChannelsPresenter from './components/ChannelsPresenter.svelte'
 import ChannelsView from './components/ChannelsView.svelte'
 import ContactPresenter from './components/ContactPresenter.svelte'
 import Contacts from './components/Contacts.svelte'
+import ContactsTabs from './components/ContactsTabs.svelte'
 import CreateEmployee from './components/CreateEmployee.svelte'
 import CreateOrganization from './components/CreateOrganization.svelte'
 import CreateOrganizations from './components/CreateOrganizations.svelte'
@@ -156,6 +157,7 @@ export default async (): Promise<Resources> => ({
     CreateOrganizations,
     SocialEditor,
     Contacts,
+    ContactsTabs,
     EmployeeAccountPresenter,
     EmployeePresenter,
     EmployeeRefPresenter,

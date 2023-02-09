@@ -152,6 +152,15 @@ export interface EmployeeAccount extends Account {
   name: string
 }
 
+/**
+ * @public
+ */
+export interface ContactsTab extends Doc {
+  label: IntlString
+  component: AnyComponent
+  index: number
+}
+
 const SEP = ','
 
 /**
@@ -203,7 +212,8 @@ const contactPlugin = plugin(contactId, {
     Organizations: '' as Ref<Class<Organizations>>,
     Employee: '' as Ref<Class<Employee>>,
     EmployeeAccount: '' as Ref<Class<EmployeeAccount>>,
-    Status: '' as Ref<Class<Status>>
+    Status: '' as Ref<Class<Status>>,
+    ContactsTab: '' as Ref<Class<ContactsTab>>
   },
   component: {
     SocialEditor: '' as AnyComponent,

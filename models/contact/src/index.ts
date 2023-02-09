@@ -28,7 +28,8 @@ import {
   Organizations,
   Person,
   Persons,
-  Status
+  Status,
+  ContactsTab
 } from '@hcengineering/contact'
 import { Class, DateRangeMode, Domain, DOMAIN_MODEL, IndexKind, Ref, Timestamp } from '@hcengineering/core'
 import {
@@ -53,6 +54,7 @@ import view, { createAction, ViewAction, Viewlet } from '@hcengineering/model-vi
 import workbench from '@hcengineering/model-workbench'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
+import { AnyComponent } from '@hcengineering/ui'
 import contact from './plugin'
 
 export const DOMAIN_CONTACT = 'contact' as Domain
@@ -169,6 +171,13 @@ export class TOrganizations extends TSpace implements Organizations {}
 @UX(contact.string.PersonsFolder, contact.icon.Person)
 export class TPersons extends TSpace implements Persons {}
 
+@Model(contact.class.ContactsTab, core.class.Doc, DOMAIN_MODEL)
+export class TContactsTab extends TDoc implements ContactsTab {
+  label!: IntlString
+  component!: AnyComponent
+  index!: number
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TAvatarProvider,
@@ -182,7 +191,8 @@ export function createModel (builder: Builder): void {
     TEmployeeAccount,
     TChannel,
     TStatus,
-    TMember
+    TMember,
+    TContactsTab
   )
 
   builder.mixin(contact.class.Employee, core.class.Class, view.mixin.ObjectFactory, {
@@ -205,10 +215,16 @@ export function createModel (builder: Builder): void {
       icon: contact.icon.ContactApplication,
       alias: contactId,
       hidden: false,
-      component: contact.component.Contacts
+      component: contact.component.ContactsTabs
     },
     contact.app.Contacts
   )
+
+  builder.createDoc(contact.class.ContactsTab, core.space.Model, {
+    component: contact.component.Contacts,
+    label: contact.string.Contacts,
+    index: 100
+  })
 
   builder.createDoc<Viewlet>(
     view.class.Viewlet,
