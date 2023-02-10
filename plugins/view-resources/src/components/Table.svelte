@@ -211,12 +211,20 @@
     const key = attribute.castRequest ? attribute.key.substring(attribute.castRequest.length + 1) : attribute.key
     return (value: any) => onChange(value, doc, key, attr)
   }
+
+  let width: number
 </script>
 
 {#await buildModel({ client, _class, keys: config, lookup })}
   <Loading />
 {:then model}
-  <table id={tableId} class="antiTable" class:metaColumn={enableChecking || showNotification} class:highlightRows>
+  <table
+    id={tableId}
+    bind:clientWidth={width}
+    class="antiTable"
+    class:metaColumn={enableChecking || showNotification}
+    class:highlightRows
+  >
     {#if !hiddenHeader}
       <thead class="scroller-thead">
         <tr class="scroller-thead__tr">
@@ -350,7 +358,8 @@
   {#if loading > 0}<Loading />{/if}
 {/await}
 {#if showFooter && total}
-  <div class="footer">
+  <div class="space" />
+  <div class="footer" style="width: {width}px;">
     <div class="content" class:padding={showNotification || enableChecking}>
       <Label label={view.string.Total} />: {total}
       {#if objects.length > 0 && objects.length < total}
@@ -361,12 +370,17 @@
 {/if}
 
 <style lang="scss">
+  .space {
+    flex-grow: 1;
+    height: 100%;
+  }
+
   .footer {
     width: 100%;
     background-color: var(--body-color);
     display: flex;
     align-items: flex-end;
-    height: 100%;
+    height: 2.5rem;
     z-index: 2;
     position: sticky;
     bottom: 0;
