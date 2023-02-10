@@ -128,11 +128,8 @@
     }
   }
   function cardDragOver (evt: CardDragEvent, object: ExtItem): void {
-    if (dragCard !== undefined) {
-      ;(dragCard as any)[fieldName] = (dragCard as any)[fieldName]
-      if (!dontUpdateRank) {
-        dragCard.rank = doCalcRank(object, evt)
-      }
+    if (dragCard !== undefined && !dontUpdateRank) {
+      dragCard.rank = doCalcRank(object, evt)
     }
   }
   function cardDrop (evt: CardDragEvent, object: ExtItem): void {

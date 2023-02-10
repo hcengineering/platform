@@ -13,6 +13,11 @@
 
   const dispatch = createEventDispatcher()
 
+  $: grops = viewOptions.groupBy =
+    viewOptions.groupBy[viewOptions.groupBy.length - 1] === noCategory
+      ? viewOptions.groupBy
+      : [...viewOptions.groupBy, noCategory]
+
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const lookup = buildConfigLookup(hierarchy, viewlet.attachTo, viewlet.config, viewlet.options?.lookup)
@@ -57,7 +62,7 @@
 
 <div class="antiCard">
   <div class="antiCard-group grid">
-    {#each viewOptions.groupBy as group, i}
+    {#each grops as group, i}
       <span class="label"><Label label={i === 0 ? view.string.Grouping : view.string.Then} /></span>
       <div class="value grouping">
         <DropdownLabelsIntl

@@ -129,9 +129,13 @@
 
     return props.length
   }
+
+  let dragItem: Doc | undefined = undefined
+
+  let listDiv: HTMLDivElement
 </script>
 
-<div class="list-container">
+<div class="list-container" bind:this={listDiv}>
   <ListCategories
     newObjectProps={space ? { space } : {}}
     {elementByIndex}
@@ -157,6 +161,8 @@
     {flatHeaders}
     {disableHeader}
     {props}
+    {listDiv}
+    bind:dragItem
   />
 </div>
 

@@ -35,11 +35,13 @@
     {/if}
   {:then Ctor}
     <ErrorBoundary>
-      <Ctor {...props} on:change on:close on:open on:click on:delete on:action>
-        {#if $$slots.default}
+      {#if $$slots.default !== undefined}
+        <Ctor {...props} on:change on:close on:open on:click on:delete on:action>
           <slot />
-        {/if}
-      </Ctor>
+        </Ctor>
+      {:else}
+        <Ctor {...props} on:change on:close on:open on:click on:delete on:action />
+      {/if}
     </ErrorBoundary>
   {:catch err}
     <pre style="max-height: 140px; overflow: auto;">

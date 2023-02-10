@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { DocumentQuery, Ref, SortingOrder, Space, toIdMap, WithLookup } from '@hcengineering/core'
+  import { DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
+  import { getClient } from '@hcengineering/presentation'
+  import { Issue } from '@hcengineering/tracker'
   import { Button, IconDetails, IconDetailsFilled } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
   import { FilterBar, getActiveViewletId, getViewOptions, setActiveViewletId } from '@hcengineering/view-resources'
@@ -65,33 +65,6 @@
   $: if (docWidth <= 900 && !docSize) docSize = true
   $: if (docWidth > 900 && docSize) docSize = false
 
-  const teamQuery = createQuery()
-
-  let _teams: Map<Ref<Team>, Team> | undefined = undefined
-
-  $: teamQuery.query(tracker.class.Team, {}, (result) => {
-    _teams = toIdMap(result)
-  })
-
-  let issueStatuses: Map<Ref<Team>, WithLookup<IssueStatus>[]>
-
-  const statusesQuery = createQuery()
-  statusesQuery.query(
-    tracker.class.IssueStatus,
-    {},
-    (statuses) => {
-      const st = new Map<Ref<Team>, WithLookup<IssueStatus>[]>()
-      for (const s of statuses) {
-        const id = s.attachedTo as Ref<Team>
-        st.set(id, [...(st.get(id) ?? []), s])
-      }
-      issueStatuses = st
-    },
-    {
-      lookup: { category: tracker.class.IssueStatusCategory },
-      sort: { rank: SortingOrder.Ascending }
-    }
-  )
   $: viewOptions = getViewOptions(viewlet)
 </script>
 
@@ -120,8 +93,8 @@
 <slot name="afterHeader" />
 <FilterBar _class={tracker.class.Issue} query={searchQuery} {viewOptions} on:change={(e) => (resultQuery = e.detail)} />
 <div class="flex w-full h-full clear-mins">
-  {#if viewlet && _teams && issueStatuses}
-    <IssuesContent {viewlet} query={resultQuery} {space} teams={_teams} {issueStatuses} {viewOptions} />
+  {#if viewlet}
+    <IssuesContent {viewlet} query={resultQuery} {space} {viewOptions} />
   {/if}
   {#if $$slots.aside !== undefined && asideShown}
     <div class="popupPanel-body__aside flex" class:float={asideFloat} class:shown={asideShown}>

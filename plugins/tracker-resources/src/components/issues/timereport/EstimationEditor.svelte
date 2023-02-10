@@ -31,7 +31,7 @@
   export let size: ButtonSize = 'large'
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = undefined
-  export let currentTeam: Team | undefined
+  export let currentTeam: Team | undefined = undefined
 
   const client = getClient()
   const dispatch = createEventDispatcher()

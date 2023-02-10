@@ -421,8 +421,6 @@ export interface AttributeModel {
   // Extra properties for component
   props?: Record<string, any>
   sortingKey: string | string[]
-  optional?: boolean
-  excludeByKey?: string
   // Extra icon if applicable
   icon?: Asset
 

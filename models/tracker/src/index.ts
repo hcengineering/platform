@@ -540,7 +540,7 @@ export function createModel (builder: Builder): void {
         presenter: tracker.component.PriorityEditor,
         props: { type: 'priority', kind: 'list', size: 'small' }
       },
-      { key: '', presenter: tracker.component.IssuePresenter, props: { type: 'issue', fixed: 'left' } },
+      { key: '', presenter: tracker.component.IssuePresenter, props: { type: 'issue', listProps: { fixed: 'left' } } },
       {
         key: '',
         presenter: tracker.component.StatusEditor,
@@ -558,8 +558,10 @@ export function createModel (builder: Builder): void {
           size: 'small',
           shape: 'round',
           shouldShowPlaceholder: false,
-          excludeByKey: 'project',
-          optional: true
+          listProps: {
+            excludeByKey: 'project',
+            optional: true
+          }
         }
       },
       {
@@ -570,24 +572,26 @@ export function createModel (builder: Builder): void {
           size: 'small',
           shape: 'round',
           shouldShowPlaceholder: false,
-          excludeByKey: 'sprint',
-          optional: true
+          listProps: {
+            excludeByKey: 'sprint',
+            optional: true
+          }
         }
       },
       {
         key: '',
         presenter: tracker.component.EstimationEditor,
-        props: { kind: 'list', size: 'small', optional: true }
+        props: { kind: 'list', size: 'small', listProps: { optional: true } }
       },
       {
         key: 'modifiedOn',
         presenter: tracker.component.ModificationDatePresenter,
-        props: { fixed: 'right', optional: true }
+        props: { listProps: { fixed: 'right', optional: true } }
       },
       {
         key: '$lookup.assignee',
         presenter: tracker.component.AssigneePresenter,
-        props: { issueClass: tracker.class.Issue, defaultClass: contact.class.Employee, shouldShowLabel: false }
+        props: { defaultClass: contact.class.Employee, shouldShowLabel: false }
       }
     ]
   })
@@ -595,11 +599,11 @@ export function createModel (builder: Builder): void {
   const subIssuesOptions: ViewOptionsModel = {
     groupBy: ['status', 'assignee', 'priority', 'sprint'],
     orderBy: [
+      ['rank', SortingOrder.Ascending],
       ['status', SortingOrder.Ascending],
       ['priority', SortingOrder.Ascending],
       ['modifiedOn', SortingOrder.Descending],
-      ['dueDate', SortingOrder.Descending],
-      ['rank', SortingOrder.Ascending]
+      ['dueDate', SortingOrder.Descending]
     ],
     groupDepth: 1,
     other: []
@@ -619,7 +623,11 @@ export function createModel (builder: Builder): void {
           presenter: tracker.component.PriorityEditor,
           props: { type: 'priority', kind: 'list', size: 'small' }
         },
-        { key: '', presenter: tracker.component.IssuePresenter, props: { type: 'issue', fixed: 'left' } },
+        {
+          key: '',
+          presenter: tracker.component.IssuePresenter,
+          props: { type: 'issue', listProps: { fixed: 'left' } }
+        },
         {
           key: '',
           presenter: tracker.component.StatusEditor,
@@ -637,24 +645,26 @@ export function createModel (builder: Builder): void {
             size: 'small',
             shape: 'round',
             shouldShowPlaceholder: false,
-            excludeByKey: 'sprint',
-            optional: true
+            listProps: {
+              excludeByKey: 'sprint',
+              optional: true
+            }
           }
         },
         {
           key: '',
           presenter: tracker.component.EstimationEditor,
-          props: { kind: 'list', size: 'small', optional: true }
+          props: { kind: 'list', size: 'small', listProps: { optional: true } }
         },
         {
           key: 'modifiedOn',
           presenter: tracker.component.ModificationDatePresenter,
-          props: { fixed: 'right', optional: true }
+          props: { listProps: { fixed: 'right', optional: true } }
         },
         {
           key: '$lookup.assignee',
           presenter: tracker.component.AssigneePresenter,
-          props: { issueClass: tracker.class.Issue, defaultClass: contact.class.Employee, shouldShowLabel: false }
+          props: { defaultClass: contact.class.Employee, shouldShowLabel: false }
         }
       ]
     },
@@ -690,11 +700,15 @@ export function createModel (builder: Builder): void {
         props: { kind: 'list', size: 'small', shape: 'round', shouldShowPlaceholder: false }
       },
       { key: '', presenter: tracker.component.TemplateEstimationEditor, props: { kind: 'list', size: 'small' } },
-      { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter, props: { fixed: 'right' } },
+      {
+        key: 'modifiedOn',
+        presenter: tracker.component.ModificationDatePresenter,
+        props: { listProps: { fixed: 'right' } }
+      },
       {
         key: '$lookup.assignee',
         presenter: tracker.component.AssigneePresenter,
-        props: { issueClass: tracker.class.IssueTemplate, defaultClass: contact.class.Employee, shouldShowLabel: false }
+        props: { defaultClass: contact.class.Employee, shouldShowLabel: false }
       }
     ]
   })

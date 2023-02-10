@@ -32,7 +32,7 @@
   import { subIssueListProvider } from '../../../utils'
 
   export let value: WithLookup<Issue>
-  export let currentTeam: Team | undefined
+  export let currentTeam: Team | undefined = undefined
 
   export let kind: ButtonKind = 'link-bordered'
   export let size: ButtonSize = 'inline'
@@ -41,9 +41,23 @@
 
   let btn: HTMLElement
 
+  $: team = currentTeam
+
   let subIssues: Issue[] = []
   let countComplate: number = 0
 
+  const teamQuery = createQuery()
+  $: if (currentTeam === undefined) {
+    teamQuery.query(
+      tracker.class.Team,
+      {
+        _id: value.space
+      },
+      (res) => ([team] = res)
+    )
+  } else {
+    teamQuery.unsubscribe()
+  }
   const query = createQuery()
   const statusesQuery = createQuery()
 
@@ -103,7 +117,7 @@
         SelectPopup,
         {
           value: subIssues.map((iss) => {
-            const text = currentTeam ? `${getIssueId(currentTeam, iss)} ${iss.title}` : iss.title
+            const text = team ? `${getIssueId(team, iss)} ${iss.title}` : iss.title
 
             return { id: iss._id, text, isSelected: iss._id === value._id, ...getIssueStatusIcon(iss, statuses) }
           }),
