@@ -121,6 +121,24 @@ abstract class MongoAdapterBase implements DbAdapter {
     // Only replace if not specified
     if (translated._class === undefined) {
       translated._class = { $in: classes }
+    } else if (typeof translated._class === 'string') {
+      if (!classes.includes(translated._class)) {
+        translated._class = { $in: classes }
+      }
+    } else if (typeof translated._class === 'object') {
+      const classesIds = new Set(classes)
+      let descendants: Ref<Class<Doc>>[] = classes
+
+      if (Array.isArray(translated._class.$in)) {
+        descendants = translated._class.$in.filter((c: Ref<Class<Doc>>) => classesIds.has(c))
+      }
+
+      if (Array.isArray(translated._class.$nin)) {
+        const excludedClassesIds = new Set<Ref<Class<Doc>>>(translated._class.$nin)
+        descendants = descendants.filter((c) => !excludedClassesIds.has(c))
+      }
+
+      translated._class = { $in: descendants }
     }
 
     if (baseClass !== clazz) {
