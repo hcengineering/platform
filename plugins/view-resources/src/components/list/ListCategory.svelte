@@ -13,8 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Lookup, Ref, Space } from '@hcengineering/core'
+  import { Class, Doc, DocumentUpdate, Lookup, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
+  import { calcRank, DocWithRank } from '@hcengineering/task'
   import {
     AnyComponent,
     CheckBox,
@@ -58,28 +60,31 @@
   export let newObjectProps: Record<string, any>
   export let docByIndex: Map<number, Doc>
   export let viewOptionsConfig: ViewOptionModel[] | undefined
+  export let dragItem: Doc | undefined
+  export let listDiv: HTMLDivElement
 
   $: lastLevel = level + 1 >= viewOptions.groupBy.length
 
   const autoFoldLimit = 20
   const defaultLimit = 20
   const singleCategoryLimit = 200
-  $: initialLimit = !lastLevel ? items.length : singleCat ? singleCategoryLimit : defaultLimit
+  $: initialLimit = !lastLevel ? undefined : singleCat ? singleCategoryLimit : defaultLimit
   $: limit = initialLimit
 
   let collapsed = true
 
   const dispatch = createEventDispatcher()
 
-  function limitGroup (items: Doc[], limit: number): Doc[] {
-    return items.slice(0, limit)
+  function limitGroup (items: Doc[], limit: number | undefined): Doc[] {
+    const res = limit !== undefined ? items.slice(0, limit) : items
+    return res
   }
 
-  function initCollapsed (singleCat: boolean, lastLevel: boolean, category: any): void {
+  function initCollapsed (singleCat: boolean, lastLevel: boolean): void {
     collapsed = !disableHeader && !singleCat && items.length > (lastLevel ? autoFoldLimit : singleCategoryLimit)
   }
 
-  $: initCollapsed(singleCat, lastLevel, category)
+  $: initCollapsed(singleCat, lastLevel)
 
   const handleRowFocused = (object: Doc) => {
     dispatch('row-focus', object)
@@ -108,96 +113,272 @@
   function isSelected (doc: Doc, focusStore: FocusSelection): boolean {
     return focusStore.focus?._id === doc._id
   }
+
+  $: byRank = viewOptions.orderBy[0] === 'rank'
+
+  const client = getClient()
+
+  let dragItemIndex: number | undefined
+
+  function dragswap (ev: MouseEvent, i: number): boolean {
+    if (dragItemIndex === undefined || !byRank) return false
+    const s = dragItemIndex
+    if (i < s) {
+      return ev.offsetY < (ev.target as HTMLElement).offsetHeight / 2
+    } else if (i > s) {
+      return ev.offsetY > (ev.target as HTMLElement).offsetHeight / 2
+    }
+    return false
+  }
+
+  function dragOverCat (ev: MouseEvent) {
+    ev.preventDefault()
+    ev.stopPropagation()
+  }
+
+  let div: HTMLDivElement
+
+  function isBorder (ev: MouseEvent, direction: 'top' | 'bottom'): boolean {
+    const target = ev.target as HTMLDivElement
+    return Math.abs(ev.clientY - target.getBoundingClientRect()[direction]) < 5
+  }
+
+  function dragEnterCat (ev: MouseEvent) {
+    ev.preventDefault()
+    if (dragItemIndex === undefined && dragItem !== undefined) {
+      const index = items.findIndex((p) => p._id === dragItem?._id)
+      if (index !== -1) {
+        dragItemIndex = index
+        return
+      }
+      if (isBorder(ev, 'top')) {
+        items.unshift(dragItem)
+        dragItemIndex = 0
+        items = items
+        dispatch('row-focus', dragItem)
+      } else if (isBorder(ev, 'bottom')) {
+        items.push(dragItem)
+        dragItemIndex = items.length - 1
+        items = items
+        dispatch('row-focus', dragItem)
+      }
+    }
+  }
+
+  function dragLeaveCat (ev: MouseEvent) {
+    ev.stopPropagation()
+    if (dragItemIndex !== undefined) {
+      items.splice(dragItemIndex, 1)
+      items = items
+      dragItemIndex = undefined
+    }
+  }
+
+  function dragItemLeave (ev: MouseEvent, i: number) {
+    if (dragItemIndex !== undefined) {
+      const isLastItem = i === limited.length - 1
+      const isFirstItemWithoutHeader = i === 0 && disableHeader
+      if (isFirstItemWithoutHeader && isBorder(ev, 'top')) {
+        return
+      }
+      if (isLastItem && isBorder(ev, 'bottom')) {
+        return
+      }
+      ev.stopPropagation()
+      ev.preventDefault()
+    }
+  }
+
+  function dragover (ev: MouseEvent, i: number) {
+    if (dragItemIndex === undefined || !lastLevel) return
+    ev.preventDefault()
+    ev.stopPropagation()
+    const s = dragItemIndex
+    if (dragswap(ev, i) && items[i] !== undefined && items[s] !== undefined) {
+      ;[items[i], items[s]] = [items[s], items[i]]
+      items = items
+      dragItemIndex = i
+      dispatch('row-focus', dragItem)
+    }
+  }
+
+  function dropItemHandle (ev: MouseEvent) {
+    ev.stopPropagation()
+    ev.preventDefault()
+    const update: DocumentUpdate<Doc> = {}
+    if (dragItemIndex !== undefined) {
+      const prev = limited[dragItemIndex - 1] as DocWithRank
+      const next = limited[dragItemIndex + 1] as DocWithRank
+      try {
+        const newRank = calcRank(prev, next)
+        if ((dragItem as DocWithRank)?.rank !== newRank) {
+          ;(update as any).rank = newRank
+        }
+      } catch {}
+    }
+    drop(update)
+  }
+
+  async function drop (update: DocumentUpdate<Doc> = {}) {
+    if (dragItem !== undefined) {
+      for (const key in newObjectProps) {
+        const value = newObjectProps[key]
+        if ((dragItem as any)[key] !== value) {
+          ;(update as any)[key] = value
+        }
+      }
+      if (Object.keys(update).length > 0) {
+        await client.update(dragItem, update)
+      }
+    }
+    dragItem = undefined
+    dragItemIndex = undefined
+  }
+
+  const dragEndListener: any = (ev: DragEvent, initIndex: number) => {
+    ev.preventDefault()
+    const rect = listDiv.getBoundingClientRect()
+    const inRect = ev.clientY > rect.top && ev.clientY < rect.top + rect.height
+    if (!inRect) {
+      if (items.findIndex((p) => p._id === dragItem?._id) === -1 && dragItem !== undefined) {
+        items = [...items.slice(0, initIndex), dragItem, ...items.slice(initIndex)]
+      }
+      if (level === 0) {
+        dragItem = undefined
+      }
+    }
+  }
+
+  function dragStartHandler (e: CustomEvent<any>) {
+    const { target, index } = e.detail
+    dragItemIndex = index
+    ;(target as EventTarget).addEventListener('dragend', (e) => dragEndListener(e, index))
+  }
+
+  function dragStart (ev: DragEvent, docObject: Doc, i: number) {
+    if (ev.dataTransfer) {
+      ev.dataTransfer.effectAllowed = 'move'
+      ev.dataTransfer.dropEffect = 'move'
+    }
+    ev.target?.addEventListener('dragend', (e) => dragEndListener(e, i))
+    dragItem = docObject
+    dragItemIndex = i
+    dispatch('dragstart', {
+      target: ev.target,
+      index: i
+    })
+  }
 </script>
 
-{#if !disableHeader}
-  <ListHeader
-    {groupByKey}
-    {category}
-    {space}
-    {level}
-    limited={limited.length}
-    {items}
-    {headerComponent}
-    {createItemDialog}
-    {createItemLabel}
-    {extraHeaders}
-    {newObjectProps}
-    flat={flatHeaders}
-    {props}
-    on:more={() => {
-      limit += 20
-    }}
-    on:collapse={() => {
-      collapsed = !collapsed
-    }}
-  />
-{/if}
-<ExpandCollapse isExpanded={!collapsed} duration={400}>
-  {#if !lastLevel}
-    <div class="p-2">
-      <ListCategories
-        {elementByIndex}
-        {indexById}
-        docs={items}
-        {_class}
-        {space}
-        {lookup}
-        {loadingPropsLength}
-        {baseMenuClass}
-        {config}
-        {selectedObjectIds}
-        {createItemDialog}
-        {createItemLabel}
-        {viewOptions}
-        {newObjectProps}
-        {flatHeaders}
-        {props}
-        level={level + 1}
-        {initIndex}
-        {docByIndex}
-        {viewOptionsConfig}
-        on:check
-        on:uncheckAll
-        on:row-focus
-      />
-    </div>
-  {:else if itemModels}
-    {#if limited}
-      {#each limited as docObject, i (docObject._id)}
-        <ListItem
-          {docObject}
+<div
+  bind:this={div}
+  on:drop|preventDefault={drop}
+  on:dragover={dragOverCat}
+  on:dragenter={dragEnterCat}
+  on:dragleave={dragLeaveCat}
+>
+  {#if !disableHeader}
+    <ListHeader
+      {groupByKey}
+      {category}
+      {space}
+      {level}
+      limited={limited.length}
+      {items}
+      {headerComponent}
+      {createItemDialog}
+      {createItemLabel}
+      {extraHeaders}
+      {newObjectProps}
+      flat={flatHeaders}
+      {props}
+      on:more={() => {
+        if (limit !== undefined) limit += 20
+      }}
+      on:collapse={() => {
+        collapsed = !collapsed
+      }}
+    />
+  {/if}
+  <ExpandCollapse isExpanded={!collapsed || dragItemIndex !== undefined} duration={400}>
+    {#if !lastLevel}
+      <div class="p-2">
+        <ListCategories
           {elementByIndex}
-          {docByIndex}
           {indexById}
-          model={itemModels}
-          index={initIndex + i}
-          {groupByKey}
-          selected={isSelected(docObject, $focusStore)}
-          checked={selectedObjectIdsSet.has(docObject._id)}
-          on:check={(ev) => dispatch('check', { docs: ev.detail.docs, value: ev.detail.value })}
-          on:contextmenu={(event) => handleMenuOpened(event, docObject, initIndex + i)}
-          on:focus={() => {}}
-          on:mouseover={() => handleRowFocused(docObject)}
+          docs={items}
+          {_class}
+          {space}
+          {lookup}
+          {loadingPropsLength}
+          {baseMenuClass}
+          {config}
+          {selectedObjectIds}
+          {createItemDialog}
+          {createItemLabel}
+          {viewOptions}
+          {newObjectProps}
+          {flatHeaders}
           {props}
+          level={level + 1}
+          {initIndex}
+          {docByIndex}
+          {viewOptionsConfig}
+          {listDiv}
+          bind:dragItem
+          on:check
+          on:uncheckAll
+          on:row-focus
+          on:dragstart={dragStartHandler}
         />
-      {/each}
-    {/if}
-  {:else if loadingPropsLength !== undefined}
-    {#each Array(Math.max(loadingPropsLength, limit)) as _, rowIndex}
-      <div class="listGrid row">
-        <div class="flex-center clear-mins h-full">
-          <div class="gridElement">
-            <CheckBox checked={false} />
-            <div class="ml-4">
-              <Spinner size="small" />
+      </div>
+    {:else if itemModels}
+      {#if limited}
+        {#each limited as docObject, i (docObject._id)}
+          <ListItem
+            {docObject}
+            {elementByIndex}
+            {docByIndex}
+            {indexById}
+            model={itemModels}
+            index={initIndex + i}
+            {groupByKey}
+            selected={isSelected(docObject, $focusStore)}
+            checked={selectedObjectIdsSet.has(docObject._id)}
+            on:dragstart={(e) => dragStart(e, docObject, i)}
+            on:dragenter={(e) => {
+              if (dragItemIndex !== undefined) {
+                e.stopPropagation()
+                e.preventDefault()
+              }
+            }}
+            on:dragleave={(e) => dragItemLeave(e, i)}
+            on:dragover={(e) => dragover(e, i)}
+            on:drop={dropItemHandle}
+            on:check={(ev) => dispatch('check', { docs: ev.detail.docs, value: ev.detail.value })}
+            on:contextmenu={(event) => handleMenuOpened(event, docObject, initIndex + i)}
+            on:focus={() => {}}
+            on:mouseover={() => handleRowFocused(docObject)}
+            {props}
+          />
+        {/each}
+      {/if}
+    {:else if loadingPropsLength !== undefined}
+      {#each Array(Math.max(loadingPropsLength, limit ?? 0)) as _, rowIndex}
+        <div class="listGrid row">
+          <div class="flex-center clear-mins h-full">
+            <div class="gridElement">
+              <CheckBox checked={false} />
+              <div class="ml-4">
+                <Spinner size="small" />
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    {/each}
-  {/if}
-</ExpandCollapse>
+      {/each}
+    {/if}
+  </ExpandCollapse>
+</div>
 
 <style lang="scss">
   .row:not(:last-child) {

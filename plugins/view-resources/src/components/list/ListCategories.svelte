@@ -18,7 +18,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { AnyComponent } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, CategoryOption, ViewOptionModel, ViewOptions } from '@hcengineering/view'
-  import { onDestroy } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import { buildModel, getAdditionalHeader, getCategories, getPresenter, groupBy } from '../../utils'
   import { CategoryQuery, noCategory } from '../../viewOptions'
   import ListCategory from './ListCategory.svelte'
@@ -44,6 +44,8 @@
   export let newObjectProps: Record<string, any>
   export let docByIndex: Map<number, Doc>
   export let viewOptionsConfig: ViewOptionModel[] | undefined
+  export let dragItem: Doc | undefined
+  export let listDiv: HTMLDivElement
 
   $: groupByKey = viewOptions.groupBy[level] ?? noCategory
   $: groupedDocs = groupBy(docs, groupByKey)
@@ -110,12 +112,14 @@
     let res = initIndex
     for (let index = 0; index < i; index++) {
       const cat = categories[index]
-      res += groupedDocs[cat]?.length
+      res += groupedDocs[cat]?.length ?? 0
     }
     return res
   }
 
   $: extraHeaders = getAdditionalHeader(client, _class)
+
+  const dispatch = createEventDispatcher()
 </script>
 
 {#each categories as category, i}
@@ -133,6 +137,7 @@
       {level}
       {viewOptions}
       {groupByKey}
+      {lookup}
       {config}
       {docByIndex}
       {itemModels}
@@ -147,9 +152,17 @@
       on:check
       on:uncheckAll
       on:row-focus
+      on:dragstart={(e) => {
+        dispatch('dragstart', {
+          target: e.detail.target,
+          index: e.detail.index + getInitIndex(categories, i)
+        })
+      }}
       {flatHeaders}
       {disableHeader}
       {props}
+      {listDiv}
+      bind:dragItem
     />
   {/key}
 {/each}

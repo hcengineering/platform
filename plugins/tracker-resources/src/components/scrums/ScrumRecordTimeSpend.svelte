@@ -175,7 +175,9 @@
         size: 'small',
         shape: 'round',
         shouldShowPlaceholder: false,
-        excludeByKey: 'sprint',
+        listProps: {
+          excludeByKey: 'sprint'
+        },
         isEditable: false
       }
     },

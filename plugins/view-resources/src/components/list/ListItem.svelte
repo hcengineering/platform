@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AnyAttribute, Doc, getObjectValue, Ref } from '@hcengineering/core'
+  import core, { AnyAttribute, Doc, getObjectValue, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { getClient, updateAttribute } from '@hcengineering/presentation'
   import { CheckBox, Component, deviceOptionsStore as deviceInfo, tooltip } from '@hcengineering/ui'
@@ -65,6 +65,14 @@
     if (attribute.isLookup) return
     return (value: any) => onChange(value, docObject, attribute.key, attr)
   }
+
+  function joinProps (attribute: AttributeModel, object: Doc, props: Record<string, any>) {
+    const { listProps, ...clearAttributeProps } = attribute.props as any
+    if (attribute.attribute?.type._class === core.class.EnumOf) {
+      return { ...clearAttributeProps, type: attribute.attribute.type, ...props }
+    }
+    return { object, ...clearAttributeProps, ...props }
+  }
 </script>
 
 <div
@@ -72,10 +80,19 @@
   class="listGrid antiList__row row gap-2 flex-grow"
   class:checking={checked}
   class:mListGridSelected={selected}
+  draggable={true}
   on:contextmenu
   on:focus
   on:mouseover
+  on:dragover
+  on:dragenter
+  on:dragleave
+  on:drop
+  on:dragstart
 >
+  <div class="draggable-container">
+    <div class="draggable-mark"><Circles /></div>
+  </div>
   <div class="flex-center relative" use:tooltip={{ label: view.string.Select, direction: 'bottom' }}>
     <div class="antiList-cells__notifyCell">
       <div class="antiList-cells__checkCell">
@@ -94,30 +111,27 @@
     </div>
   </div>
   {#each model as attributeModel}
+    {@const listProps = attributeModel.props?.listProps}
     {#if attributeModel.props?.type === 'grow'}
       <svelte:component this={attributeModel.presenter} />
-    {:else if (!groupByKey || attributeModel.props?.excludeByKey !== groupByKey) && !(attributeModel.props?.optional && compactMode)}
-      {#if attributeModel.props?.fixed}
-        <FixedColumn key={`list_item_${attributeModel.key}`} justify={attributeModel.props.fixed}>
+    {:else if (!groupByKey || listProps?.excludeByKey !== groupByKey) && !(listProps?.optional && compactMode)}
+      {#if listProps?.fixed}
+        <FixedColumn key={`list_item_${attributeModel.key}`} justify={listProps.fixed}>
           <svelte:component
             this={attributeModel.presenter}
-            {...props}
             value={getObjectValue(attributeModel.key, docObject) ?? ''}
-            object={docObject}
-            onChange={getOnChange(docObject, attributeModel)}
             kind={'list'}
-            {...attributeModel.props}
+            onChange={getOnChange(docObject, attributeModel)}
+            {...joinProps(attributeModel, docObject, props)}
           />
         </FixedColumn>
       {:else}
         <svelte:component
           this={attributeModel.presenter}
-          {...props}
           value={getObjectValue(attributeModel.key, docObject) ?? ''}
-          object={docObject}
           onChange={getOnChange(docObject, attributeModel)}
           kind={'list'}
-          {...attributeModel.props}
+          {...joinProps(attributeModel, docObject, props)}
         />
       {/if}
     {/if}
@@ -136,16 +150,15 @@
       </div>
       <div class="scroll-box gap-2">
         {#each model as attributeModel}
+          {@const listProps = attributeModel.props?.listProps}
           {@const value = getObjectValue(attributeModel.key, docObject)}
-          {#if attributeModel.props?.optional && attributeModel.props?.excludeByKey !== groupByKey && value !== undefined}
+          {#if listProps?.optional && listProps?.excludeByKey !== groupByKey && value !== undefined}
             <svelte:component
               this={attributeModel.presenter}
-              {...props}
-              value={value ?? ''}
-              objectId={docObject._id}
+              value={getObjectValue(attributeModel.key, docObject) ?? ''}
               onChange={getOnChange(docObject, attributeModel)}
-              groupBy={groupByKey}
-              {...attributeModel.props}
+              kind={'list'}
+              {...joinProps(attributeModel, docObject, props)}
             />
           {/if}
         {/each}
@@ -181,6 +194,29 @@
 
     &.mListGridSelected {
       background-color: var(--highlight-hover);
+    }
+
+    .draggable-container {
+      position: absolute;
+      left: 0;
+      display: flex;
+      align-items: center;
+      height: 100%;
+      width: 1.5rem;
+      cursor: grabbing;
+
+      .draggable-mark {
+        opacity: 0;
+        width: 0.375rem;
+        height: 1rem;
+        margin-left: 0.75rem;
+        transition: opacity 0.1s;
+      }
+    }
+    &:hover {
+      .draggable-mark {
+        opacity: 0.4;
+      }
     }
 
     .hidden-panel,
