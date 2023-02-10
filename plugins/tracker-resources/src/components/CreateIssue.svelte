@@ -593,12 +593,17 @@
     object = { ...object, project: projectId }
   }
 
-  const handleSprintIdChanged = (sprintId: Ref<Sprint> | null | undefined) => {
+  const handleSprintIdChanged = async (sprintId: Ref<Sprint> | null | undefined) => {
     if (sprintId === undefined) {
       return
     }
+    let projectSprintId: Ref<Project> | null
+    if (sprintId != null) {
+      const sprint = await client.findOne(tracker.class.Sprint, { _id: sprintId })
+      projectSprintId = sprint && sprint.project ? sprint.project : null
+    } else projectSprintId = null
 
-    object = { ...object, sprint: sprintId }
+    object = { ...object, sprint: sprintId, project: projectSprintId }
   }
 
   function addTagRef (tag: TagElement): void {
