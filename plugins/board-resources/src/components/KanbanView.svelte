@@ -70,7 +70,7 @@
   const client = getClient()
 
   async function addItem (title: any) {
-    const lastOne = await client.findOne(task.class.State, { space }, { sort: { rank: SortingOrder.Descending } })
+    const lastOne = await client.findOne(task.class.State, {}, { sort: { rank: SortingOrder.Descending } })
     await client.createDoc(task.class.State, space, {
       title,
       color: 9,

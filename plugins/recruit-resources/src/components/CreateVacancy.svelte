@@ -15,11 +15,11 @@
 <script lang="ts">
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import contact, { Organization } from '@hcengineering/contact'
-  import core, { FindResult, generateId, getCurrentAccount, Ref } from '@hcengineering/core'
+  import core, { FindResult, generateId, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
   import { Card, createQuery, getClient, UserBox } from '@hcengineering/presentation'
   import { Vacancy as VacancyClass } from '@hcengineering/recruit'
   import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
-  import tracker, { IssueStatus, IssueTemplate } from '@hcengineering/tracker'
+  import tracker, { calcRank, Issue, IssueStatus, IssueTemplate } from '@hcengineering/tracker'
   import { Button, Component, createFocusManager, EditBox, FocusHandler, IconAttachment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
@@ -84,43 +84,56 @@
       objectId
     )
 
-    for (const issueTemplate of issueTemplates) {
-      const incResult = await client.updateDoc(
-        tracker.class.Team,
-        core.space.Space,
-        issueTemplate.space,
-        {
-          $inc: { sequence: 1 }
-        },
-        true
-      )
-      await client.addCollection(
-        tracker.class.Issue,
-        issueTemplate.space,
-        tracker.ids.NoParent,
-        tracker.class.Issue,
-        'subIssues',
-        {
-          title: issueTemplate.title,
-          description: issueTemplate.description,
-          assignee: issueTemplate.assignee,
-          project: issueTemplate.project,
-          sprint: issueTemplate.sprint,
-          number: (incResult as any).object.sequence,
-          status: '' as Ref<IssueStatus>,
-          priority: issueTemplate.priority,
-          rank: '',
-          comments: 0,
-          subIssues: 0,
-          dueDate: null,
-          parents: [],
-          reportedTime: 0,
-          estimation: issueTemplate.estimation,
-          reports: 0,
-          relations: [{ _id: id, _class: recruit.class.Vacancy }],
-          childInfo: []
+    if (issueTemplates.length > 0) {
+      for (const issueTemplate of issueTemplates) {
+        // we need find for each because it can be in another space
+        const lastOne = await client.findOne<Issue>(
+          tracker.class.Issue,
+          { space: issueTemplate.space },
+          { sort: { rank: SortingOrder.Descending } }
+        )
+        const incResult = await client.updateDoc(
+          tracker.class.Team,
+          core.space.Space,
+          issueTemplate.space,
+          {
+            $inc: { sequence: 1 }
+          },
+          true
+        )
+        const team = await client.findOne(tracker.class.Team, { _id: issueTemplate.space })
+        const rank = calcRank(lastOne, undefined)
+        await client.addCollection(
+          tracker.class.Issue,
+          issueTemplate.space,
+          tracker.ids.NoParent,
+          tracker.class.Issue,
+          'subIssues',
+          {
+            title: issueTemplate.title,
+            description: issueTemplate.description,
+            assignee: issueTemplate.assignee,
+            project: issueTemplate.project,
+            sprint: issueTemplate.sprint,
+            number: (incResult as any).object.sequence,
+            status: team?.defaultIssueStatus as Ref<IssueStatus>,
+            priority: issueTemplate.priority,
+            rank,
+            comments: 0,
+            subIssues: 0,
+            dueDate: null,
+            parents: [],
+            reportedTime: 0,
+            estimation: issueTemplate.estimation,
+            reports: 0,
+            relations: [{ _id: id, _class: recruit.class.Vacancy }],
+            childInfo: []
+          }
+        )
+        if (lastOne !== undefined) {
+          lastOne.rank = rank
         }
-      )
+      }
     }
 
     await createKanban(client, id, templateId)

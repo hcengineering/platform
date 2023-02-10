@@ -116,11 +116,7 @@
       throw new Error('sequence object not found')
     }
 
-    const lastOne = await client.findOne(
-      recruit.class.Applicant,
-      { state: state._id },
-      { sort: { rank: SortingOrder.Descending } }
-    )
+    const lastOne = await client.findOne(recruit.class.Applicant, {}, { sort: { rank: SortingOrder.Descending } })
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
     const candidateInstance = await client.findOne(contact.class.Person, { _id: _candidate })
