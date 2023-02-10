@@ -428,7 +428,7 @@
           notify={false}
         />
       </div>
-      <Applications {apps} active={currentApplication?._id} />
+      <Applications {apps} active={currentApplication?._id} direction={appsDirection}/>
       <div class="info-box {appsDirection}" class:vertical-mobile={appsDirection === 'vertical' && appsMini}>
         <AppItem
           icon={request.icon.Requests}
