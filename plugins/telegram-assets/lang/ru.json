@@ -22,6 +22,7 @@
     "Telegram": "Telegram",
     "TelegramIntegrationDesc": "Подключить Telegram",
     "Status": "Статус",
-    "YouAnd": "Вы и"
+    "YouAnd": "Вы и",
+    "MessagesSelected": "сообщений выбрано"
   }
 }

@@ -237,7 +237,10 @@
     if (!isScrolling && horizontal) checkBarH()
   }
 
+  $: console.error('scrollHeight change', divScroll?.scrollHeight)
+
   const scrollDown = (): void => {
+    console.error('scrollHeight when scroll down', divScroll?.scrollHeight)
     if (divScroll) divScroll.scrollTop = divScroll.scrollHeight - divHeight
   }
   $: if (scrolling && belowContent && belowContent > 10) scrollDown()
@@ -284,10 +287,6 @@
   onMount(() => {
     if (divScroll && divBox) {
       divScroll.addEventListener('scroll', checkFade)
-      if (autoscroll && scrolling) {
-        scrollDown()
-        firstScroll = false
-      }
       checkBar()
       if (horizontal) checkBarH()
     }
@@ -296,6 +295,14 @@
     if (observer) observer.disconnect()
     if (divScroll) divScroll.removeEventListener('scroll', checkFade)
   })
+
+  $: if (firstScroll && divHeight && divScroll) {
+    // we need it to wait full update
+    setTimeout(() => {
+      scrollDown()
+      firstScroll = false
+    }, 0)
+  }
 
   let oldTop: number
   beforeUpdate(() => {
