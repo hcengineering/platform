@@ -26,6 +26,7 @@
     IconUp,
     Label,
     Loading,
+    resizeObserver,
     showPopup,
     Spinner
   } from '@hcengineering/ui'
@@ -220,7 +221,9 @@
 {:then model}
   <table
     id={tableId}
-    bind:clientWidth={width}
+    use:resizeObserver={(element) => {
+      width = element.clientWidth
+    }}
     class="antiTable"
     class:metaColumn={enableChecking || showNotification}
     class:highlightRows
