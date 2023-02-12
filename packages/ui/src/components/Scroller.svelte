@@ -237,10 +237,7 @@
     if (!isScrolling && horizontal) checkBarH()
   }
 
-  $: console.error('scrollHeight change', divScroll?.scrollHeight)
-
   const scrollDown = (): void => {
-    console.error('scrollHeight when scroll down', divScroll?.scrollHeight)
     if (divScroll) divScroll.scrollTop = divScroll.scrollHeight - divHeight
   }
   $: if (scrolling && belowContent && belowContent > 10) scrollDown()
