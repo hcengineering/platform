@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { beforeUpdate, afterUpdate, onDestroy, onMount, createEventDispatcher } from 'svelte'
-  import { resizeObserver } from '../resize'
   import { themeStore as themeOptions } from '@hcengineering/theme'
+  import { afterUpdate, beforeUpdate, createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import { resizeObserver } from '../resize'
+  import { closeTooltip, tooltipstore } from '../tooltips'
   import type { FadeOptions } from '../types'
   import { defaultSP } from '../types'
-  import { closeTooltip, tooltipstore } from '../tooltips'
 
   export let padding: string | undefined = undefined
   export let autoscroll: boolean = false
@@ -237,6 +237,13 @@
     if (!isScrolling && horizontal) checkBarH()
   }
 
+  function checkAutoScroll () {
+    if (firstScroll && divHeight && divScroll) {
+      scrollDown()
+      firstScroll = false
+    }
+  }
+
   const scrollDown = (): void => {
     if (divScroll) divScroll.scrollTop = divScroll.scrollHeight - divHeight
   }
@@ -293,14 +300,6 @@
     if (divScroll) divScroll.removeEventListener('scroll', checkFade)
   })
 
-  $: if (firstScroll && divHeight && divScroll) {
-    // we need it to wait full update
-    setTimeout(() => {
-      scrollDown()
-      firstScroll = false
-    }, 0)
-  }
-
   let oldTop: number
   beforeUpdate(() => {
     if (divBox && divScroll) oldTop = divScroll.scrollTop
@@ -317,11 +316,6 @@
 
   let divHeight: number
   const _resize = (): void => checkFade()
-
-  let boxHeight: number
-  $: if (boxHeight) checkFade()
-  let boxWidth: number
-  $: if (boxWidth) checkFade()
 </script>
 
 <svelte:window on:resize={_resize} />
@@ -350,10 +344,11 @@
           : contentDirection === 'vertical-reverse'
           ? 'column-reverse'
           : 'row'}
-        style:height={contentDirection === 'vertical-reverse' ? 'max-content' : noStretch ? 'auto' : '100%'}
+        style:height={contentDirection === 'vertical-reverse' ? 'max-content' : 'auto'}
+        style:min-height={noStretch ? 'auto' : '100%'}
         use:resizeObserver={(element) => {
-          boxHeight = element.clientHeight
-          boxWidth = element.clientWidth
+          checkAutoScroll()
+          checkFade()
         }}
         on:dragover
         on:drop
