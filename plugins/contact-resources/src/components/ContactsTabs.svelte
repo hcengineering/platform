@@ -33,7 +33,7 @@
 </script>
 
 {#if tabs && tabs.length > 1}
-  <Tabs model={tabs} hasLeftIndent />
+  <Tabs model={tabs} />
 {:else if tabs?.[0]}
   <Component is={tabs[0].component} />
 {/if}
