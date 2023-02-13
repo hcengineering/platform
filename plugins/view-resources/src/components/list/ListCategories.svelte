@@ -122,9 +122,8 @@
   const dispatch = createEventDispatcher()
 </script>
 
-{#each categories as category, i}
+{#each categories as category, i (category)}
   {@const items = groupedDocs[category] ?? []}
-  {#key category}
     <ListCategory
       {elementByIndex}
       {indexById}
@@ -164,5 +163,4 @@
       {listDiv}
       bind:dragItem
     />
-  {/key}
 {/each}
