@@ -67,7 +67,11 @@
   }
 
   function joinProps (attribute: AttributeModel, object: Doc, props: Record<string, any>) {
-    const { listProps, ...clearAttributeProps } = attribute.props as any
+    let clearAttributeProps = attribute.props
+    if (attribute.props?.listProps !== undefined) {
+      const { listProps, ...other } = attribute.props as any
+      clearAttributeProps = other
+    }
     if (attribute.attribute?.type._class === core.class.EnumOf) {
       return { ...clearAttributeProps, type: attribute.attribute.type, ...props }
     }
