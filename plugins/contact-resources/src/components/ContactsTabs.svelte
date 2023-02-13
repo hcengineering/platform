@@ -33,9 +33,7 @@
 </script>
 
 {#if tabs && tabs.length > 1}
-  <div class="pl-2">
-    <Tabs model={tabs} />
-  </div>
+  <Tabs model={tabs} hasLeftIndent />
 {:else if tabs?.[0]}
   <Component is={tabs[0].component} />
 {/if}

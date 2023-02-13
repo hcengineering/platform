@@ -20,6 +20,7 @@
 
   export let model: TabModel
   export let selected = 0
+  export let hasLeftIndent = false
 </script>
 
 <div class="flex-stretch container">
@@ -27,6 +28,7 @@
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
       class="flex-row-center tab"
+      class:tabNoFirstLeftMargin={!hasLeftIndent}
       class:selected={i === selected}
       on:click={() => {
         selected = i
@@ -74,8 +76,14 @@
         cursor: default;
       }
     }
-    .tab + .tab {
+    .tab {
       margin-left: 2.5rem;
+
+      &.tabNoFirstLeftMargin {
+        &:first-child {
+          margin-left: 0;
+        }
+      }
     }
     .grow {
       min-width: 2.5rem;
