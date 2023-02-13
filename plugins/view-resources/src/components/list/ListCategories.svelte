@@ -124,43 +124,43 @@
 
 {#each categories as category, i (category)}
   {@const items = groupedDocs[category] ?? []}
-    <ListCategory
-      {elementByIndex}
-      {indexById}
-      {extraHeaders}
-      {space}
-      {selectedObjectIds}
-      {headerComponent}
-      initIndex={getInitIndex(categories, i)}
-      {baseMenuClass}
-      {level}
-      {viewOptions}
-      {groupByKey}
-      {lookup}
-      {config}
-      {docByIndex}
-      {itemModels}
-      {_class}
-      singleCat={level === 0 && categories.length === 1}
-      {category}
-      {items}
-      {newObjectProps}
-      {createItemDialog}
-      {createItemLabel}
-      {loadingPropsLength}
-      on:check
-      on:uncheckAll
-      on:row-focus
-      on:dragstart={(e) => {
-        dispatch('dragstart', {
-          target: e.detail.target,
-          index: e.detail.index + getInitIndex(categories, i)
-        })
-      }}
-      {flatHeaders}
-      {disableHeader}
-      {props}
-      {listDiv}
-      bind:dragItem
-    />
+  <ListCategory
+    {elementByIndex}
+    {indexById}
+    {extraHeaders}
+    {space}
+    {selectedObjectIds}
+    {headerComponent}
+    initIndex={getInitIndex(categories, i)}
+    {baseMenuClass}
+    {level}
+    {viewOptions}
+    {groupByKey}
+    {lookup}
+    {config}
+    {docByIndex}
+    {itemModels}
+    {_class}
+    singleCat={level === 0 && categories.length === 1}
+    {category}
+    {items}
+    {newObjectProps}
+    {createItemDialog}
+    {createItemLabel}
+    {loadingPropsLength}
+    on:check
+    on:uncheckAll
+    on:row-focus
+    on:dragstart={(e) => {
+      dispatch('dragstart', {
+        target: e.detail.target,
+        index: e.detail.index + getInitIndex(categories, i)
+      })
+    }}
+    {flatHeaders}
+    {disableHeader}
+    {props}
+    {listDiv}
+    bind:dragItem
+  />
 {/each}
