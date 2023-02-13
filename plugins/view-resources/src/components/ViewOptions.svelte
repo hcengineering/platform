@@ -13,10 +13,10 @@
 
   const dispatch = createEventDispatcher()
 
-  $: grops = viewOptions.groupBy =
+  const groups = (viewOptions.groupBy =
     viewOptions.groupBy[viewOptions.groupBy.length - 1] === noCategory
       ? viewOptions.groupBy
-      : [...viewOptions.groupBy, noCategory]
+      : [...viewOptions.groupBy, noCategory])
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -40,17 +40,17 @@
   })
 
   function selectGrouping (value: string, i: number) {
-    viewOptions.groupBy[i] = value
+    groups[i] = value
     if (value === noCategory) {
-      viewOptions.groupBy.length = i + 1
+      groups.length = i + 1
     } else if (config.groupDepth === undefined || config.groupDepth > viewOptions.groupBy.length) {
-      viewOptions.groupBy.length = i + 1
-      viewOptions.groupBy[i + 1] = noCategory
+      groups.length = i + 1
+      groups[i + 1] = noCategory
     }
-    viewOptions.groupBy = viewOptions.groupBy
+    viewOptions.groupBy = groups.length > 1 ? groups.filter((p) => p !== noCategory) : [...groups]
     dispatch('update', {
       key: 'groupBy',
-      value: viewOptions.groupBy.length > 1 ? viewOptions.groupBy.filter((p) => p !== noCategory) : viewOptions.groupBy
+      value: viewOptions.groupBy
     })
   }
 
@@ -62,7 +62,7 @@
 
 <div class="antiCard">
   <div class="antiCard-group grid">
-    {#each grops as group, i}
+    {#each groups as group, i}
       <span class="label"><Label label={i === 0 ? view.string.Grouping : view.string.Then} /></span>
       <div class="value grouping">
         <DropdownLabelsIntl
