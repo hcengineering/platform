@@ -52,6 +52,9 @@
   let categories: any[] = []
   $: updateCategories(_class, docs, groupByKey, viewOptions, viewOptionsConfig)
 
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
   const queryId = generateId()
   onDestroy(() => {
     CategoryQuery.remove(queryId)
@@ -75,7 +78,7 @@
         const categoryFunc = viewOption as CategoryOption
         if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
           const f = await getResource(categoryFunc.action)
-          const res = await f(_class, space, groupByKey, update, queryId)
+          const res = hierarchy.clone(await f(_class, space, groupByKey, update, queryId))
           if (res !== undefined) {
             for (const category of categories) {
               if (!res.includes(category)) {
@@ -89,8 +92,6 @@
       }
     }
   }
-
-  const client = getClient()
 
   let itemModels: AttributeModel[]
 
