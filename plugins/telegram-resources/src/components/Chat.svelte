@@ -210,7 +210,6 @@
           </span>
         </div>
       </div>
-      <!-- You and {formatName(object.name)} -->
     </svelte:fragment>
     <svelte:fragment slot="utils">
       {#if integration === undefined}
@@ -250,7 +249,7 @@
     <div class="popupPanel-body__main-header ref-input" class:selectable>
       {#if selectable}
         <div class="flex-between">
-          <span>{selected.size} messages selected</span>
+          <span>{selected.size} <Label label={telegram.string.MessagesSelected} /></span>
           <div class="flex">
             <div>
               <Button label={telegram.string.Cancel} size={'medium'} on:click={clear} />

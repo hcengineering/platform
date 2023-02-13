@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { beforeUpdate, afterUpdate, onDestroy, onMount, createEventDispatcher } from 'svelte'
-  import { resizeObserver } from '../resize'
   import { themeStore as themeOptions } from '@hcengineering/theme'
+  import { afterUpdate, beforeUpdate, createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import { resizeObserver } from '../resize'
+  import { closeTooltip, tooltipstore } from '../tooltips'
   import type { FadeOptions } from '../types'
   import { defaultSP } from '../types'
-  import { closeTooltip, tooltipstore } from '../tooltips'
 
   export let padding: string | undefined = undefined
   export let autoscroll: boolean = false
@@ -27,7 +27,7 @@
   export let invertScroll: boolean = false
   export let horizontal: boolean = false
   export let contentDirection: 'vertical' | 'vertical-reverse' | 'horizontal' = 'vertical'
-  export let noStretch: boolean = false
+  export let noStretch: boolean = autoscroll
   export let divScroll: HTMLElement | undefined = undefined
 
   export function scroll (top: number, left?: number, behavior: 'auto' | 'smooth' = 'auto') {
@@ -237,6 +237,13 @@
     if (!isScrolling && horizontal) checkBarH()
   }
 
+  function checkAutoScroll () {
+    if (firstScroll && divHeight && divScroll) {
+      scrollDown()
+      firstScroll = false
+    }
+  }
+
   const scrollDown = (): void => {
     if (divScroll) divScroll.scrollTop = divScroll.scrollHeight - divHeight
   }
@@ -284,10 +291,6 @@
   onMount(() => {
     if (divScroll && divBox) {
       divScroll.addEventListener('scroll', checkFade)
-      if (autoscroll && scrolling) {
-        scrollDown()
-        firstScroll = false
-      }
       checkBar()
       if (horizontal) checkBarH()
     }
@@ -313,11 +316,6 @@
 
   let divHeight: number
   const _resize = (): void => checkFade()
-
-  let boxHeight: number
-  $: if (boxHeight) checkFade()
-  let boxWidth: number
-  $: if (boxWidth) checkFade()
 </script>
 
 <svelte:window on:resize={_resize} />
@@ -348,8 +346,8 @@
           : 'row'}
         style:height={contentDirection === 'vertical-reverse' ? 'max-content' : noStretch ? 'auto' : '100%'}
         use:resizeObserver={(element) => {
-          boxHeight = element.clientHeight
-          boxWidth = element.clientWidth
+          checkAutoScroll()
+          checkFade()
         }}
         on:dragover
         on:drop

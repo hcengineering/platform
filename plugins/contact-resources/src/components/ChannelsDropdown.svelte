@@ -193,17 +193,7 @@
         },
         el,
         (result) => {
-          if (result != null) {
-            if (result === '') {
-              displayItems = dropItem(n)
-            } else {
-              if (result !== 'open') item.value = result
-            }
-            saveItems()
-            focusManager?.setFocusPos(focusIndex + 1 + n)
-          }
           if (result === undefined && item.value === '') displayItems = dropItem(n)
-          opened = undefined
           if (result === 'open') {
             if (item.action) {
               const doc = item.channel as Channel
@@ -211,7 +201,16 @@
             } else {
               dispatch('open', item)
             }
+          } else if (result != null) {
+            if (result === '') {
+              displayItems = dropItem(n)
+            } else {
+              item.value = result
+            }
+            saveItems()
+            focusManager?.setFocusPos(focusIndex + 1 + n)
           }
+          opened = undefined
         },
         (result) => {
           if (result != null) {
