@@ -126,10 +126,10 @@ abstract class MongoAdapterBase implements DbAdapter {
         translated._class = { $in: classes }
       }
     } else if (typeof translated._class === 'object') {
-      const classesIds = new Set(classes)
       let descendants: Ref<Class<Doc>>[] = classes
 
       if (Array.isArray(translated._class.$in)) {
+        const classesIds = new Set(classes)
         descendants = translated._class.$in.filter((c: Ref<Class<Doc>>) => classesIds.has(c))
       }
 
