@@ -1085,6 +1085,26 @@ export function createModel (builder: Builder): void {
     tracker.action.EditTeam
   )
 
+  createAction(
+    builder,
+    {
+      action: tracker.actionImpl.DeleteTeam,
+      label: tracker.string.DeleteTeam,
+      icon: view.icon.Delete,
+      input: 'focus',
+      category: tracker.category.Tracker,
+      target: tracker.class.Team,
+      query: {
+        archived: false
+      },
+      context: {
+        mode: ['context', 'browser'],
+        group: 'edit'
+      }
+    },
+    tracker.action.DeleteTeam
+  )
+
   builder.createDoc(
     view.class.ActionCategory,
     core.space.Model,

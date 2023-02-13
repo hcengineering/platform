@@ -30,7 +30,7 @@ import core, {
 } from '@hcengineering/core'
 import { TypeState } from '@hcengineering/kanban'
 import { Asset, IntlString, translate } from '@hcengineering/platform'
-import { createQuery } from '@hcengineering/presentation'
+import { createQuery, getClient } from '@hcengineering/presentation'
 import {
   Issue,
   IssuePriority,
@@ -649,4 +649,9 @@ export async function getPreviousAssignees (
       }
     )
   })
+}
+
+export async function removeTeam (teamToDelete: Team): Promise<void> {
+  const client = getClient()
+  await client.removeDoc(tracker.class.Team, core.space.Space, teamToDelete._id)
 }
