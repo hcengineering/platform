@@ -27,7 +27,7 @@
   export let invertScroll: boolean = false
   export let horizontal: boolean = false
   export let contentDirection: 'vertical' | 'vertical-reverse' | 'horizontal' = 'vertical'
-  export let noStretch: boolean = false
+  export let noStretch: boolean = autoscroll
   export let divScroll: HTMLElement | undefined = undefined
 
   export function scroll (top: number, left?: number, behavior: 'auto' | 'smooth' = 'auto') {
@@ -344,8 +344,7 @@
           : contentDirection === 'vertical-reverse'
           ? 'column-reverse'
           : 'row'}
-        style:height={contentDirection === 'vertical-reverse' ? 'max-content' : 'auto'}
-        style:min-height={noStretch ? 'auto' : '100%'}
+        style:height={contentDirection === 'vertical-reverse' ? 'max-content' : noStretch ? 'auto' : '100%'}
         use:resizeObserver={(element) => {
           checkAutoScroll()
           checkFade()

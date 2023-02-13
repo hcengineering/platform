@@ -24,7 +24,6 @@
     IconArrowRight,
     IconBlueCheck,
     IconClose,
-    IconEdit,
     registerFocus
   } from '@hcengineering/ui'
   import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
@@ -89,7 +88,7 @@
 
 <svelte:window on:resize={fitEditor} on:scroll={fitEditor} />
 <FocusHandler manager={mgr} />
-{#if editable && editable === true}
+{#if editable}
   <div class="editor-container {dir} buttons-group xsmall-gap">
     <div class="cover-channel" class:show class:copied={label === plugin.string.Copied} data-tooltip={lTraslate}>
       <input
@@ -180,17 +179,6 @@
       }}
       on:click={copyChannel}
     />
-    {#if editable && editable === true}
-      <Button
-        focusIndex={4}
-        kind={'transparent'}
-        size={'small'}
-        icon={IconEdit}
-        on:click={() => {
-          dispatch('update', 'edit')
-        }}
-      />
-    {/if}
     {#if openable}
       <Button
         focusIndex={5}
