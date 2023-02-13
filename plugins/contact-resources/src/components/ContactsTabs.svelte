@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient } from '@hcengineering/presentation'
-  import { Tabs, Component, AnyComponent } from '@hcengineering/ui'
   import contact from '@hcengineering/contact'
   import { IntlString } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
+  import { AnyComponent, Component, Tabs } from '@hcengineering/ui'
 
   const client = getClient()
 
@@ -33,7 +33,7 @@
 </script>
 
 {#if tabs && tabs.length > 1}
-  <div class="pl-2">
+  <div class="flex-col p-4 flex-grow">
     <Tabs model={tabs} />
   </div>
 {:else if tabs?.[0]}

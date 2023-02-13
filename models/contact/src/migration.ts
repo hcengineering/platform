@@ -43,6 +43,7 @@ async function createSpace (tx: TxOperations): Promise<void> {
   }
 }
 
+let totalCreateOn = 0
 async function setCreate (client: MigrationClient): Promise<void> {
   while (true) {
     const docs = await client.find<Contact>(
@@ -58,7 +59,8 @@ async function setCreate (client: MigrationClient): Promise<void> {
     if (docs.length === 0) {
       break
     }
-    console.log('processing createOn migration', docs.length)
+    totalCreateOn += docs.length
+    console.log('processing createOn migration', totalCreateOn)
     const creates = await client.find<TxCreateDoc<Contact>>(DOMAIN_TX, {
       objectId: { $in: docs.map((it) => it._id) },
       _class: core.class.TxCreateDoc
@@ -82,6 +84,16 @@ async function setCreate (client: MigrationClient): Promise<void> {
           },
           {
             'attributes.createOn': tx.modifiedOn
+          }
+        )
+      } else {
+        await client.update(
+          DOMAIN_CONTACT,
+          {
+            _id: doc._id
+          },
+          {
+            createOn: doc.modifiedOn
           }
         )
       }
