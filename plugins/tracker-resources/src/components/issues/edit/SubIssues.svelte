@@ -16,7 +16,7 @@
   import { Ref, SortingOrder, toIdMap, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
-  import { Button, Chevron, closeTooltip, ExpandCollapse, IconAdd, Label } from '@hcengineering/ui'
+  import { Button, Chevron, closeTooltip, ExpandCollapse, IconAdd, IconArrowRight, Label } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
   import { getViewOptions, ViewletSettingButton } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
@@ -27,6 +27,7 @@
   export let teams: Map<Ref<Team>, Team>
   export let issueStatuses: Map<Ref<Team>, WithLookup<IssueStatus>[]>
 
+  let subIssueEditorRef: HTMLDivElement
   let isCollapsed = false
   let isCreating = false
 
@@ -101,7 +102,7 @@
     <Button
       id="add-sub-issue"
       width="min-content"
-      icon={hasSubIssues ? IconAdd : undefined}
+      icon={hasSubIssues ? (isCreating ? IconArrowRight : IconAdd) : undefined}
       label={hasSubIssues ? undefined : tracker.string.AddSubIssues}
       labelParams={{ subIssues: 0 }}
       kind={'transparent'}
@@ -109,6 +110,7 @@
       showTooltip={{ label: tracker.string.AddSubIssues, props: { subIssues: 1 }, direction: 'bottom' }}
       on:click={() => {
         closeTooltip()
+        isCreating && subIssueEditorRef && subIssueEditorRef.scrollIntoView({ behavior: 'smooth' })
         isCreating = true
         isCollapsed = false
       }}
@@ -135,7 +137,7 @@
         {@const team = teams.get(issue.space)}
         {@const statuses = issueStatuses.get(issue.space)}
         {#if team !== undefined && statuses !== undefined}
-          <div class="pt-4">
+          <div class="pt-4" bind:this={subIssueEditorRef}>
             <CreateSubIssue
               parentIssue={issue}
               issueStatuses={statuses}
