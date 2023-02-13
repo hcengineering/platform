@@ -119,7 +119,8 @@ import {
   getAllStatuses,
   getAllPriority,
   getAllProjects,
-  getAllSprints
+  getAllSprints,
+  removeTeam
 } from './utils'
 import { deleteObject } from '@hcengineering/view-resources/src/utils'
 
@@ -198,6 +199,31 @@ async function editWorkflowStatuses (team: Team | undefined): Promise<void> {
 async function editTeam (team: Team | undefined): Promise<void> {
   if (team !== undefined) {
     showPopup(CreateTeam, { team })
+  }
+}
+
+async function deleteTeam (team: Team | undefined): Promise<void> {
+  if (team !== undefined) {
+    const client = getClient()
+    const anyIssue = await client.findOne(tracker.class.Issue, { space: team._id })
+    if (anyIssue !== undefined) {
+      showPopup(
+        MessageBox,
+        {
+          label: tracker.string.DeleteTeamName,
+          labelProps: { name: team.name },
+          message: tracker.string.TeamHasIssues
+        },
+        undefined,
+        (result?: boolean) => {
+          if (result === true) {
+            void removeTeam(team)
+          }
+        }
+      )
+    } else {
+      await removeTeam(team)
+    }
   }
 }
 
@@ -412,7 +438,8 @@ export default async (): Promise<Resources> => ({
   actionImpl: {
     EditWorkflowStatuses: editWorkflowStatuses,
     EditTeam: editTeam,
-    DeleteSprint: deleteSprint
+    DeleteSprint: deleteSprint,
+    DeleteTeam: deleteTeam
   },
   resolver: {
     Location: resolveLocation
