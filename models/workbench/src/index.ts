@@ -15,7 +15,7 @@
 
 import type { IntlString, Asset } from '@hcengineering/platform'
 import { Class, DOMAIN_MODEL, Ref, Space } from '@hcengineering/core'
-import { Model, Mixin, Builder, UX, Prop, TypeRef, TypeString } from '@hcengineering/model'
+import { Model, Mixin, Builder, UX, Prop, TypeRef } from '@hcengineering/model'
 import type { Application, SpaceView, ViewConfiguration, HiddenApplication } from '@hcengineering/workbench'
 import view, { KeyBinding } from '@hcengineering/view'
 import { createAction } from '@hcengineering/model-view'
@@ -31,10 +31,7 @@ export { Application }
 export class TApplication extends TDoc implements Application {
   label!: IntlString
   icon!: Asset
-
-  @Prop(TypeString(), core.string.Name)
-    alias!: string
-
+  alias!: string
   hidden!: boolean
 }
 
