@@ -366,7 +366,7 @@
     <div class="content" class:padding={showNotification || enableChecking}>
       <Label label={view.string.Total} />: {total}
       {#if objects.length > 0 && objects.length < total}
-        <Label label={view.string.Showed} />: {objects.length}
+        <Label label={view.string.Shown} />: {objects.length}
       {/if}
     </div>
   </div>
