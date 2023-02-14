@@ -66,5 +66,6 @@ export interface ServerStorage extends LowLevelStorage {
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
   tx: (ctx: MeasureContext, tx: Tx) => Promise<[TxResult, Tx[]]>
+  apply: (ctx: MeasureContext, tx: Tx[], broadcast: boolean) => Promise<Tx[]>
   close: () => Promise<void>
 }

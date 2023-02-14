@@ -54,13 +54,15 @@ import { FullTextIndex } from './fulltext'
 import { FullTextIndexPipeline } from './indexer'
 import { FullTextPipelineStage } from './indexer/types'
 import serverCore from './plugin'
+import { AsyncTriggerProcessor } from './processor'
 import { Triggers } from './triggers'
 import type {
   ContentAdapterFactory,
   ContentTextAdapter,
   FullTextAdapter,
   FullTextAdapterFactory,
-  ObjectDDParticipant
+  ObjectDDParticipant,
+  TriggerControl
 } from './types'
 import { createCacheFindAll } from './utils'
 
@@ -82,16 +84,15 @@ export interface DbConfiguration {
   domains: Record<string, string>
   defaultAdapter: string
   workspace: WorkspaceId
+  metrics: MeasureContext
   fulltextAdapter: {
     factory: FullTextAdapterFactory
     url: string
-    metrics: MeasureContext
     stages: FullTextPipelineStageFactory
   }
   contentAdapter: {
     factory: ContentAdapterFactory
     url: string
-    metrics: MeasureContext
   }
   storageFactory?: () => MinioService
 }
@@ -99,6 +100,7 @@ export interface DbConfiguration {
 class TServerStorage implements ServerStorage {
   private readonly fulltext: FullTextIndex
   hierarchy: Hierarchy
+  triggerProcessor: AsyncTriggerProcessor
 
   scopes = new Map<string, Promise<any>>()
 
@@ -112,16 +114,19 @@ class TServerStorage implements ServerStorage {
     readonly storageAdapter: MinioService | undefined,
     readonly modelDb: ModelDb,
     private readonly workspace: WorkspaceId,
-    private readonly contentAdapter: ContentTextAdapter,
     readonly indexFactory: (storage: ServerStorage) => FullTextIndex,
-    options?: ServerStorageOptions
+    readonly options: ServerStorageOptions,
+    metrics: MeasureContext
   ) {
     this.hierarchy = hierarchy
     this.fulltext = indexFactory(this)
+    this.triggerProcessor = new AsyncTriggerProcessor(modelDb, hierarchy, this, metrics.newChild('triggers', {}))
+    void this.triggerProcessor.start()
   }
 
   async close (): Promise<void> {
     await this.fulltext.close()
+    await this.triggerProcessor.cancel()
     for (const o of this.adapters.values()) {
       await o.close()
     }
@@ -549,31 +554,28 @@ class TServerStorage implements ServerStorage {
     )
     const moves = await ctx.with('process-move', {}, () => this.processMove(ctx, txes, findAll))
 
+    const triggerControl: Omit<TriggerControl, 'txFactory'> = {
+      removedMap,
+      workspace: this.workspace,
+      fx: triggerFx.fx,
+      fulltextFx: (f) => triggerFx.fx(() => f(this.fulltextAdapter)),
+      storageFx: (f) => {
+        const adapter = this.storageAdapter
+        if (adapter === undefined) {
+          return
+        }
+
+        triggerFx.fx(() => f(adapter, this.workspace))
+      },
+      findAll: fAll(ctx),
+      modelDb: this.modelDb,
+      hierarchy: this.hierarchy
+    }
     const triggers = await ctx.with('process-triggers', {}, async (ctx) => {
       const result: Tx[] = []
       for (const tx of txes) {
-        result.push(
-          ...(await this.triggers.apply(tx.modifiedBy, tx, {
-            removedMap,
-            workspace: this.workspace,
-            fx: triggerFx.fx,
-            fulltextFx: (f) => triggerFx.fx(() => f(this.fulltextAdapter)),
-            storageFx: (f) => {
-              const adapter = this.storageAdapter
-              if (adapter === undefined) {
-                return
-              }
-
-              triggerFx.fx(() => f(adapter, this.workspace))
-            },
-            findAll: fAll(ctx),
-            modelDb: this.modelDb,
-            hierarchy: this.hierarchy,
-            txFx: async (f) => {
-              await f(this.getAdapter(DOMAIN_TX))
-            }
-          }))
-        )
+        result.push(...(await this.triggers.apply(tx.modifiedBy, tx, triggerControl)))
+        await ctx.with('async-triggers', {}, (ctx) => this.triggerProcessor.tx([tx]))
       }
       return result
     })
@@ -637,6 +639,40 @@ class TServerStorage implements ServerStorage {
       }
     }
     return { passed, onEnd }
+  }
+
+  async apply (ctx: MeasureContext, tx: Tx[], broadcast: boolean): Promise<Tx[]> {
+    const triggerFx = new Effects()
+    const cacheFind = createCacheFindAll(this)
+
+    const txToStore = tx.filter(
+      (it) => it.space !== core.space.DerivedTx && !this.hierarchy.isDerived(it._class, core.class.TxApplyIf)
+    )
+    await ctx.with('domain-tx', {}, async () => await this.getAdapter(DOMAIN_TX).tx(...txToStore))
+
+    await ctx.with('apply', {}, (ctx) => this.routeTx(ctx, ...tx))
+
+    // send transactions
+    if (broadcast) {
+      this.options?.broadcast?.(tx)
+    }
+    // invoke triggers and store derived objects
+    const derived = await this.proccessDerived(ctx, tx, triggerFx, cacheFind, new Map<Ref<Doc>, Doc>())
+
+    // index object
+    for (const _tx of tx) {
+      await ctx.with('fulltext', {}, (ctx) => this.fulltext.tx(ctx, _tx))
+    }
+
+    // index derived objects
+    for (const tx of derived) {
+      await ctx.with('derived-processor', { _class: txClass(tx) }, (ctx) => this.fulltext.tx(ctx, tx))
+    }
+
+    for (const fx of triggerFx.effects) {
+      await fx()
+    }
+    return [...tx, ...derived]
   }
 
   async tx (ctx: MeasureContext, tx: Tx): Promise<[TxResult, Tx[]]> {
@@ -753,13 +789,15 @@ export interface ServerStorageOptions {
 
   // Indexing is not required to be started for upgrade mode.
   upgrade: boolean
+
+  broadcast?: (tx: Tx[]) => void
 }
 /**
  * @public
  */
 export async function createServerStorage (
   conf: DbConfiguration,
-  options?: ServerStorageOptions
+  options: ServerStorageOptions
 ): Promise<ServerStorage> {
   const hierarchy = new Hierarchy()
   const triggers = new Triggers()
@@ -803,13 +841,15 @@ export async function createServerStorage (
   const fulltextAdapter = await conf.fulltextAdapter.factory(
     conf.fulltextAdapter.url,
     conf.workspace,
-    conf.fulltextAdapter.metrics
+    conf.metrics.newChild('fulltext', {})
   )
+
+  const metrics = conf.metrics.newChild('server-storage', {})
 
   const contentAdapter = await conf.contentAdapter.factory(
     conf.contentAdapter.url,
     conf.workspace,
-    conf.contentAdapter.metrics
+    metrics.newChild('content', {})
   )
 
   const defaultAdapter = adapters.get(conf.defaultAdapter)
@@ -827,7 +867,7 @@ export async function createServerStorage (
       stages,
       hierarchy,
       conf.workspace,
-      fulltextAdapter.metrics(),
+      metrics.newChild('fulltext', {}),
       modelDb
     )
     return new FullTextIndex(
@@ -837,10 +877,9 @@ export async function createServerStorage (
       storageAdapter,
       conf.workspace,
       indexer,
-      options?.upgrade ?? false
+      options.upgrade ?? false
     )
   }
-
   return new TServerStorage(
     conf.domains,
     conf.defaultAdapter,
@@ -851,9 +890,9 @@ export async function createServerStorage (
     storageAdapter,
     modelDb,
     conf.workspace,
-    contentAdapter,
     indexFactory,
-    options
+    options,
+    metrics
   )
 }
 

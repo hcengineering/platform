@@ -196,22 +196,22 @@ class ElasticAdapter implements FullTextAdapter {
                 }
               },
               script: {
-                source: `Math.abs(cosineSimilarity(params.queryVector, '${options.field}')) + 1`,
+                source: `cosineSimilarity(params.queryVector, '${options.field}') + 1`,
                 params: {
                   queryVector: embedding
                 }
               },
-              boost: options.embeddingBoost ?? 100.0
+              boost: options.embeddingBoost ?? 10.0
+            }
+          },
+          {
+            simple_query_string: {
+              query: search.$search,
+              flags: 'OR|PREFIX|PHRASE',
+              default_operator: 'and',
+              boost: options.fulltextBoost ?? 1
             }
           }
-          // ,{
-          //   simple_query_string: {
-          //     query: search.$search,
-          //     flags: 'OR|PREFIX|PHRASE',
-          //     default_operator: 'and',
-          //     boost: options.fulltextBoost ?? 1
-          //   }
-          // }
         ],
         filter: [
           {
@@ -235,9 +235,10 @@ class ElasticAdapter implements FullTextAdapter {
       const sourceHits = result.body.hits.hits
 
       const min = options?.minScore ?? 75
-      const hits: any[] = sourceHits.filter((it: any) => it._score > min)
+      const embBoost = options.embeddingBoost ?? 10.0
 
-      return hits.map((hit) => ({ ...hit._source, _score: hit._score - (options.embeddingBoost ?? 100.0) }))
+      const hits: any[] = sourceHits.filter((it: any) => it._score - embBoost > min)
+      return hits.map((hit) => ({ ...hit._source, _score: hit._score - embBoost }))
     } catch (err) {
       console.error(JSON.stringify(err, null, 2))
       return []

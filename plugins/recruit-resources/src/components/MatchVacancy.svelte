@@ -5,15 +5,15 @@
     Card,
     createQuery,
     getClient,
-    IndexedDocumentPreview,
+    IndexedDocumentCompare,
     MessageViewer,
     SpaceSelect
   } from '@hcengineering/presentation'
   import { Applicant, ApplicantMatch, Candidate, Vacancy } from '@hcengineering/recruit'
-  import { Button, IconActivity, IconAdd, Label, resizeObserver, showPopup, tooltip } from '@hcengineering/ui'
+  import { Button, IconActivity, IconAdd, Label, resizeObserver, showPopup, Spinner, tooltip } from '@hcengineering/ui'
   import Scroller from '@hcengineering/ui/src/components/Scroller.svelte'
   import { MarkupPreviewPopup, ObjectPresenter } from '@hcengineering/view-resources'
-  import { cosinesim } from '@hcengineering/view-resources/src/utils'
+  import { calcSørensenDiceCoefficient, cosinesim } from '@hcengineering/view-resources/src/utils'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
   import CreateApplication from './CreateApplication.svelte'
@@ -50,7 +50,19 @@
       state = new Map(res.map((it) => [it._id, it] ?? []))
     }
   )
+
   $: vacancyState = state.get(_space as unknown as Ref<DocIndexState>)
+
+  $: scoreState = new Map(
+    _objects.map((it) => [
+      it._id,
+      Math.round(
+        calcSørensenDiceCoefficient(state.get(it._id)?.fullSummary ?? '', vacancyState?.fullSummary ?? '') * 100
+      ) / 100
+    ])
+  )
+
+  $: _sortedObjects = [..._objects].sort((a, b) => (scoreState.get(b._id) ?? 0) - (scoreState.get(a._id) ?? 0))
 
   const matchQuery = createQuery()
   let matches: Map<Ref<Doc>, ApplicantMatch> = new Map()
@@ -88,6 +100,7 @@
     }
   }
   $: vacancyEmbedding = vacancyState && getEmbedding(vacancyState)
+
   const dispatch = createEventDispatcher()
 
   const client = getClient()
@@ -126,8 +139,8 @@
       'top'
     )
   }
-  async function showSummary (doc: Candidate): Promise<void> {
-    showPopup(IndexedDocumentPreview, { objectId: doc._id }, 'top')
+  async function showSummary (left: DocIndexState, right?: DocIndexState): Promise<void> {
+    showPopup(IndexedDocumentCompare, { left, right }, 'top')
   }
 </script>
 
@@ -172,7 +185,7 @@
         <div class="p-1">
           {#if vacancy}
             <Scroller>
-              <div class="flex-col max-h-60">
+              <div class="flex-col max-h-60 select-text">
                 {#if vacancy.description}
                   {vacancy.description}
                 {/if}
@@ -197,7 +210,7 @@
           </thead>
 
           <tbody>
-            {#each _objects as doc}
+            {#each _sortedObjects as doc}
               {@const docState = state.get(doc._id)}
               {@const docEmbedding = docState && getEmbedding(docState)}
               {@const match = matches.get(doc._id)}
@@ -213,10 +226,12 @@
                     {/if}
                   </div>
                 </td>
-                <td>
+                <td class="whitespace-nowrap">
                   {#if docEmbedding && vacancyEmbedding}
                     {Math.round(cosinesim(docEmbedding, vacancyEmbedding) * 100)}
+                    /
                   {/if}
+                  {scoreState.get(doc._id) ?? 0}
                 </td>
                 <td>
                   {#if match?.complete}
@@ -232,13 +247,13 @@
                   {#if docState}
                     <Button
                       label={recruit.string.PerformMatch}
-                      loading={matching.has(doc._id) || !(match?.complete ?? true)}
+                      icon={matching.has(doc._id) || !(match?.complete ?? true) ? Spinner : IconActivity}
                       on:click={() => requestMatch(doc, docState)}
                     />
                     <Button
                       icon={IconActivity}
                       showTooltip={{ label: presentation.string.DocumentPreview }}
-                      on:click={() => showSummary(doc)}
+                      on:click={() => showSummary(docState, vacancyState)}
                     />
                     <Button
                       icon={IconAdd}

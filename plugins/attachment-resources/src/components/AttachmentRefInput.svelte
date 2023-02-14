@@ -210,12 +210,9 @@
 
   async function onMessage (event: CustomEvent) {
     loading = true
-    try {
-      await createAttachments()
-      dispatch('message', { message: event.detail, attachments: attachments.size })
-    } finally {
-      loading = false
-    }
+    await createAttachments()
+    loading = false
+    dispatch('message', { message: event.detail, attachments: attachments.size })
   }
 
   async function onUpdate (event: CustomEvent) {

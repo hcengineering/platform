@@ -13,10 +13,27 @@
 // limitations under the License.
 //
 
-import type { Account, Arr, Class, Data, Doc, Mixin, Obj, Ref, TxCreateDoc, TxCUD } from '@hcengineering/core'
-import core, { AttachedDoc, ClassifierKind, DOMAIN_MODEL, DOMAIN_TX, TxFactory } from '@hcengineering/core'
+import core, {
+  Account,
+  Arr,
+  AttachedDoc,
+  Class,
+  ClassifierKind,
+  Data,
+  Doc,
+  DOMAIN_DOC_INDEX_STATE,
+  DOMAIN_MODEL,
+  DOMAIN_TX,
+  Mixin,
+  Obj,
+  Ref,
+  TxCreateDoc,
+  TxCUD,
+  TxFactory
+} from '@hcengineering/core'
 import type { IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
+import server from '@hcengineering/server-core'
 
 export const txFactory = new TxFactory(core.account.System)
 
@@ -99,6 +116,30 @@ export function genMinModel (): TxCUD<Doc>[] {
       extends: core.class.Doc,
       kind: ClassifierKind.CLASS,
       domain: DOMAIN_MODEL
+    })
+  )
+  txes.push(
+    createClass(core.class.DocIndexState, {
+      label: 'DocIndexState' as IntlString,
+      extends: core.class.Doc,
+      kind: ClassifierKind.CLASS,
+      domain: DOMAIN_DOC_INDEX_STATE
+    })
+  )
+  txes.push(
+    createClass(server.class.AsyncTrigger, {
+      label: 'AsyncTrigger' as IntlString,
+      extends: core.class.Doc,
+      kind: ClassifierKind.CLASS,
+      domain: DOMAIN_MODEL
+    })
+  )
+  txes.push(
+    createClass(server.class.AsyncTriggerState, {
+      label: 'AsyncTriggerState' as IntlString,
+      extends: core.class.Doc,
+      kind: ClassifierKind.CLASS,
+      domain: DOMAIN_DOC_INDEX_STATE
     })
   )
   txes.push(

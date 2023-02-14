@@ -84,7 +84,6 @@
     "@hcengineering/minio": "^0.6.0",
     "@hcengineering/openai": "^0.6.0",
     "@hcengineering/translate": "^0.6.0",
-
     "@hcengineering/login-assets": "^0.6.0",
     "@hcengineering/view-assets": "^0.6.0",
     "@hcengineering/task-assets": "^0.6.0",
@@ -111,7 +110,6 @@
     "@hcengineering/document-assets": "^0.6.0",
     "@hcengineering/bitrix-assets": "^0.6.0",
     "@hcengineering/request-assets": "^0.6.0",
-
     "@hcengineering/login": "^0.6.1",
     "@hcengineering/view": "^0.6.2",
     "@hcengineering/task": "^0.6.1",

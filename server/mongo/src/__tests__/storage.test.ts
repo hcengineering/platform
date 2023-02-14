@@ -143,21 +143,20 @@ describe('mongo operations', () => {
           url: ''
         }
       },
+      metrics: new MeasureMetricsContext('', {}),
       fulltextAdapter: {
         factory: createNullFullTextAdapter,
         url: '',
-        stages: () => [],
-        metrics: new MeasureMetricsContext('', {})
+        stages: () => []
       },
       contentAdapter: {
         factory: createNullContentTextAdapter,
-        url: '',
-        metrics: new MeasureMetricsContext('', {})
+        url: ''
       },
       workspace: getWorkspaceId(dbId, ''),
       storageFactory: () => createNullStorageFactory()
     }
-    const serverStorage = await createServerStorage(conf)
+    const serverStorage = await createServerStorage(conf, { upgrade: false })
     const ctx = new MeasureMetricsContext('client', {})
     client = await createClient(async (handler) => {
       const st: ClientConnection = {

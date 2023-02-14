@@ -63,17 +63,16 @@ export async function start (port: number, host?: string): Promise<void> {
         fulltextAdapter: {
           factory: createNullFullTextAdapter,
           url: '',
-          metrics: new MeasureMetricsContext('', {}),
           stages: () => []
         },
+        metrics: new MeasureMetricsContext('', {}),
         contentAdapter: {
           url: '',
-          factory: createNullContentTextAdapter,
-          metrics: new MeasureMetricsContext('', {})
+          factory: createNullContentTextAdapter
         },
         workspace: getWorkspaceId('')
       }
-      return createPipeline(conf, [], false)
+      return createPipeline(conf, [], false, () => {})
     },
     (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
     port,

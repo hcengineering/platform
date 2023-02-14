@@ -30,6 +30,8 @@
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/model-core": "^0.6.0",
     "@hcengineering/openai": "^0.6.0",
-    "@hcengineering/server-core": "^0.6.1"
+    "@hcengineering/server-core": "^0.6.1",
+    "@hcengineering/model-chunter": "^0.6.0",
+    "@hcengineering/model-recruit": "^0.6.0"
   }
 }
