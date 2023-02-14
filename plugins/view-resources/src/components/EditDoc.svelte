@@ -116,7 +116,7 @@
   let inplaceAttributes: string[] = []
   let ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
 
-  async function updateKeys (showAllMixins: boolean): Promise<void> {
+  async function updateKeys (): Promise<void> {
     const keysMap = new Map(getFiltredKeys(hierarchy, realObjectClass, ignoreKeys).map((p) => [p.attr._id, p]))
     for (const m of mixins) {
       const mkeys = getFiltredKeys(hierarchy, m._id, ignoreKeys)
@@ -170,12 +170,12 @@
 
   $: editorFooter = getEditorFooter(_class)
 
-  $: getEditorOrDefault(realObjectClass, showAllMixins, _id)
+  $: getEditorOrDefault(realObjectClass, _id)
 
-  function getEditorOrDefault (_class: Ref<Class<Doc>>, showAllMixins: boolean, _id: Ref<Doc>): void {
+  async function getEditorOrDefault (_class: Ref<Class<Doc>>, _id: Ref<Doc>): Promise<void> {
     parentClass = hierarchy.getParentClass(_class)
+    await updateKeys()
     mainEditor = getEditor(_class)
-    updateKeys(showAllMixins)
   }
 
   async function getFieldEditor (key: KeyedAttribute): Promise<AnyComponent | undefined> {
@@ -267,7 +267,7 @@
     allowedCollections = ev.detail.allowedCollections ?? []
     collectionArrays = ev.detail.collectionArrays ?? []
     getMixins(parentClass, object, showAllMixins)
-    updateKeys(showAllMixins)
+    updateKeys()
   }
 </script>
 
@@ -323,7 +323,7 @@
           <Component
             is={headerEditor}
             props={{ object, keys, mixins, ignoreKeys, vertical: dir === 'column', allowedCollections }}
-            on:update={() => updateKeys(showAllMixins)}
+            on:update={updateKeys}
           />
         {:else if dir === 'column'}
           <DocAttributeBar
@@ -331,7 +331,7 @@
             {mixins}
             ignoreKeys={[...ignoreKeys, ...collectionArrays, ...inplaceAttributes]}
             {allowedCollections}
-            on:update={() => updateKeys(showAllMixins)}
+            on:update={updateKeys}
           />
         {:else}
           <AttributesBar {object} _class={realObjectClass} {keys} />
