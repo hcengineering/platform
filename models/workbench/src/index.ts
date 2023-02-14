@@ -27,7 +27,7 @@ import workbench from './plugin'
 export { Application }
 
 @Model(workbench.class.Application, core.class.Doc, DOMAIN_MODEL)
-@UX(workbench.string.Application, workbench.icon.Search)
+@UX(workbench.string.Application)
 export class TApplication extends TDoc implements Application {
   label!: IntlString
   icon!: Asset
