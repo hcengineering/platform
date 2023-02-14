@@ -166,6 +166,7 @@
     project={object.project}
     sprint={object.sprint}
     teamId={spaceRef?.identifier ?? 'TSK'}
+    maxHeight="limited"
   />
   <svelte:fragment slot="pool">
     <PriorityEditor

@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { IssueTemplateChild, Project, Sprint } from '@hcengineering/tracker'
-  import { Button, closeTooltip, ExpandCollapse, IconAdd } from '@hcengineering/ui'
+  import { Button, closeTooltip, ExpandCollapse, IconAdd, Scroller } from '@hcengineering/ui'
   import { afterUpdate } from 'svelte'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
@@ -86,15 +86,17 @@
 </div>
 {#if hasSubIssues}
   <ExpandCollapse isExpanded={!isCollapsed} duration={400} on:changeContent>
-    <div class="flex-col flex-no-shrink list clear-mins" class:collapsed={isCollapsed}>
-      <IssueTemplateChildList
-        {project}
-        {sprint}
-        bind:issues={children}
-        {teamId}
-        on:move={handleIssueSwap}
-        on:update-issue
-      />
+    <div class="flex-col flex-no-shrink max-h-30 list clear-mins" class:collapsed={isCollapsed}>
+      <Scroller>
+        <IssueTemplateChildList
+          {project}
+          {sprint}
+          bind:issues={children}
+          {teamId}
+          on:move={handleIssueSwap}
+          on:update-issue
+        />
+      </Scroller>
     </div>
   </ExpandCollapse>
 {/if}
