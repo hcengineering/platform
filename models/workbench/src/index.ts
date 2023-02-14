@@ -15,7 +15,7 @@
 
 import type { IntlString, Asset } from '@hcengineering/platform'
 import { Class, DOMAIN_MODEL, Ref, Space } from '@hcengineering/core'
-import { Model, Mixin, Builder, UX, Prop, TypeRef } from '@hcengineering/model'
+import { Model, Mixin, Builder, UX, Prop, TypeRef, TypeString } from '@hcengineering/model'
 import type { Application, SpaceView, ViewConfiguration, HiddenApplication } from '@hcengineering/workbench'
 import view, { KeyBinding } from '@hcengineering/view'
 import { createAction } from '@hcengineering/model-view'
@@ -27,11 +27,14 @@ import workbench from './plugin'
 export { Application }
 
 @Model(workbench.class.Application, core.class.Doc, DOMAIN_MODEL)
-@UX(workbench.string.Application)
+@UX(workbench.string.Application, workbench.icon.Search)
 export class TApplication extends TDoc implements Application {
   label!: IntlString
   icon!: Asset
-  alias!: string
+
+  @Prop(TypeString(), core.string.Name)
+    alias!: string
+
   hidden!: boolean
 }
 
@@ -50,6 +53,10 @@ export function createModel (builder: Builder): void {
   builder.createModel(TApplication, TSpaceView, THiddenApplication)
   builder.mixin(workbench.class.Application, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: workbench.component.ApplicationPresenter
+  })
+
+  builder.mixin(workbench.class.Application, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [view.action.Delete]
   })
 }
 
