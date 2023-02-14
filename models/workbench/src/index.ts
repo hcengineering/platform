@@ -51,6 +51,10 @@ export function createModel (builder: Builder): void {
   builder.mixin(workbench.class.Application, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: workbench.component.ApplicationPresenter
   })
+
+  builder.mixin(workbench.class.Application, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [view.action.Delete]
+  })
 }
 
 export default workbench
