@@ -741,7 +741,13 @@
       }}
     />
   {/key}
-  <IssueTemplateChilds bind:children={subIssues} sprint={object.sprint} project={object.project} isScrollable />
+  <IssueTemplateChilds
+    bind:children={subIssues}
+    sprint={object.sprint}
+    project={object.project}
+    isScrollable
+    maxHeight="limited"
+  />
   <svelte:fragment slot="pool">
     {#if issueStatuses}
       <div id="status-editor">

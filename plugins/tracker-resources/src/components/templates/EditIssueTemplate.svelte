@@ -254,6 +254,7 @@
         {#key template._id && currentTeam !== undefined}
           {#if currentTeam !== undefined}
             <SubIssueTemplates
+              maxHeight="limited"
               bind:children={template.children}
               on:create-issue={createIssue}
               on:update-issue={updateIssue}
