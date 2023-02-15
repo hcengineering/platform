@@ -1,6 +1,6 @@
+import { getCurrentAccount } from '@hcengineering/core'
 import { fetchMetadataLocalStorage, setMetadataLocalStorage } from '@hcengineering/ui'
-import { writable, get } from 'svelte/store'
-import { getClient } from '.'
+import { get, writable } from 'svelte/store'
 import presentation from './plugin'
 
 /**
@@ -14,7 +14,7 @@ export const draftStore = writable<Record<string, any>>(fetchMetadataLocalStorag
  */
 export function updateDraftStore (id: string, draft: any): void {
   draftStore.update((drafts) => {
-    if (draft === undefined) {
+    if (draft !== undefined) {
       drafts[id] = draft
     } else {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
@@ -29,12 +29,12 @@ export function updateDraftStore (id: string, draft: any): void {
  * @public
  */
 export function updateUserDraft (id: string, draft: any): void {
-  const client = getClient()
+  const me = getCurrentAccount()._id
   draftStore.update((drafts) => {
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    const userDrafts: Record<string, any> = drafts[client.user] || {}
+    const userDrafts: Record<string, any> = drafts[me] || {}
     userDrafts[id] = draft
-    drafts[client.user] = userDrafts
+    drafts[me] = userDrafts
     setMetadataLocalStorage(presentation.metadata.Draft, drafts)
     return drafts
   })
@@ -44,10 +44,10 @@ export function updateUserDraft (id: string, draft: any): void {
  * @public
  */
 export function getUserDraft (id: string): any {
-  const client = getClient()
+  const me = getCurrentAccount()._id
   const drafts: Record<string, any> = get(draftStore)
   // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-  const userDrafts: Record<string, any> = drafts[client.user] || {}
+  const userDrafts: Record<string, any> = drafts[me] || {}
   const draft: Record<string, any> = userDrafts[id]
   return draft
 }
@@ -56,9 +56,9 @@ export function getUserDraft (id: string): any {
  * @public
  */
 export function isUserDraftExists (id: string): boolean {
-  const client = getClient()
+  const me = getCurrentAccount()._id
   const drafts: Record<string, any> = get(draftStore)
-  const userDrafts: Record<string, any> = drafts[client.user]
+  const userDrafts: Record<string, any> = drafts[me]
   // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
   if (!userDrafts) {
     return false
