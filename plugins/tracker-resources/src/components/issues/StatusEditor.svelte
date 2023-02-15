@@ -15,7 +15,7 @@
 <script lang="ts">
   import { AttachedData, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
+  import { DraftIssueChild, Issue, IssueStatus, Team } from '@hcengineering/tracker'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { Button, eventToHTMLElement, SelectPopup, showPopup, TooltipAlignment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -23,7 +23,7 @@
   import IssueStatusIcon from './IssueStatusIcon.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
 
-  export let value: Issue | AttachedData<Issue>
+  export let value: Issue | AttachedData<Issue> | DraftIssueChild
   export let statuses: WithLookup<IssueStatus>[] | undefined = undefined
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false

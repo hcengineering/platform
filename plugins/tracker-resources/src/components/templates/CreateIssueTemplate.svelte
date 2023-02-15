@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import { Employee } from '@hcengineering/contact'
   import { Data, Doc, generateId, Ref } from '@hcengineering/core'
   import { Card, getClient, KeyedAttribute, SpaceSelector } from '@hcengineering/presentation'
   import tags, { TagElement } from '@hcengineering/tags'
+  import { StyledTextBox } from '@hcengineering/text-editor'
   import { IssuePriority, IssueTemplate, Project, Sprint, Team } from '@hcengineering/tracker'
-  import { Button, Component, EditBox, IconAttachment, Label } from '@hcengineering/ui'
+  import { Component, EditBox, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { activeProject, activeSprint } from '../../issues'
   import tracker from '../../plugin'
@@ -58,7 +58,7 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  let descriptionBox: AttachmentStyledBox
+  let descriptionBox: StyledTextBox
 
   const key: KeyedAttribute = {
     key: 'labels',
@@ -150,11 +150,8 @@
   </svelte:fragment>
 
   <EditBox bind:value={object.title} placeholder={tracker.string.IssueTitlePlaceholder} kind={'large-style'} focus />
-  <AttachmentStyledBox
+  <StyledTextBox
     bind:this={descriptionBox}
-    {objectId}
-    _class={tracker.class.Issue}
-    space={_space}
     alwaysEdit
     showButtons={false}
     emphasized
@@ -165,7 +162,7 @@
     bind:children={object.children}
     project={object.project}
     sprint={object.sprint}
-    teamId={spaceRef?.identifier ?? 'TSK'}
+    team={_space}
     maxHeight="limited"
   />
   <svelte:fragment slot="pool">
@@ -203,14 +200,5 @@
     <EstimationEditor kind={'no-border'} size={'small'} value={object} />
     <ProjectSelector value={object.project} onChange={handleProjectIdChanged} />
     <SprintSelector value={object.sprint} onChange={handleSprintIdChanged} useProject={object.project ?? undefined} />
-  </svelte:fragment>
-  <svelte:fragment slot="footer">
-    <Button
-      icon={IconAttachment}
-      kind={'transparent'}
-      on:click={() => {
-        descriptionBox.attach()
-      }}
-    />
   </svelte:fragment>
 </Card>

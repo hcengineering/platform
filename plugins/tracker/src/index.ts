@@ -221,7 +221,7 @@ export interface IssueDraft extends Doc {
   parentIssue?: string
   attachments?: number
   labels?: TagReference[]
-  subIssues?: IssueTemplateChild[]
+  subIssues?: DraftIssueChild[]
   template?: {
     // A template issue is based on
     template: Ref<IssueTemplate>
@@ -253,7 +253,7 @@ export interface IssueTemplateData {
  * @public
  */
 export interface IssueTemplateChild extends IssueTemplateData {
-  id: string
+  id: Ref<Issue>
 }
 
 /**
@@ -269,6 +269,13 @@ export interface IssueTemplate extends Doc, IssueTemplateData {
   attachments?: number
 
   relations?: RelatedDocument[]
+}
+
+/**
+ * @public
+ */
+export interface DraftIssueChild extends IssueTemplateChild {
+  status: Ref<IssueStatus>
 }
 
 /**

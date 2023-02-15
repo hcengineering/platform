@@ -13,9 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@hcengineering/core'
+  import { Ref, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import tracker, { IssueTemplateChild, Project, Sprint, Team } from '@hcengineering/tracker'
+  import tracker, {
+    DraftIssueChild,
+    IssueStatus,
+    IssueTemplateChild,
+    Project,
+    Sprint,
+    Team
+  } from '@hcengineering/tracker'
   import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { ActionContext, FixedColumn } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -23,30 +30,33 @@
   import Circles from '../icons/Circles.svelte'
   import AssigneeEditor from '../issues/AssigneeEditor.svelte'
   import PriorityEditor from '../issues/PriorityEditor.svelte'
+  import StatusEditor from '../issues/StatusEditor.svelte'
+  import DraftIssueChildEditor from './DraftIssueChildEditor.svelte'
   import EstimationEditor from './EstimationEditor.svelte'
-  import IssueTemplateChildEditor from './IssueTemplateChildEditor.svelte'
 
-  export let issues: IssueTemplateChild[]
+  export let issues: DraftIssueChild[]
   export let team: Ref<Team>
   export let sprint: Ref<Sprint> | null = null
   export let project: Ref<Project> | null = null
-
+  export let statuses: WithLookup<IssueStatus>[]
   const dispatch = createEventDispatcher()
 
   let draggingIndex: number | null = null
   let hoveringIndex: number | null = null
 
-  function openIssue (evt: MouseEvent, target: IssueTemplateChild) {
+  function openIssue (evt: MouseEvent, target: DraftIssueChild) {
     showPopup(
-      IssueTemplateChildEditor,
+      DraftIssueChildEditor,
       {
         showBorder: true,
+        team: currentTeam,
         sprint,
         project,
+        statuses,
         childIssue: target
       },
       eventToHTMLElement(evt),
-      (evt: IssueTemplateChild | undefined | null) => {
+      (evt: DraftIssueChild | undefined | null) => {
         if (evt != null) {
           const pos = issues.findIndex((it) => it.id === evt.id)
           if (pos !== -1) {
@@ -124,6 +134,14 @@
       <div class="draggable-mark"><Circles /></div>
     </div>
     <div class="flex-row-center ml-6 clear-mins gap-2">
+      <StatusEditor
+        value={issue}
+        {statuses}
+        kind="list"
+        size="small"
+        shouldShowLabel={true}
+        on:change={({ detail }) => (issue.status = detail)}
+      />
       <PriorityEditor
         value={issue}
         isEditable

@@ -40,12 +40,12 @@
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import {
     calcRank,
+    DraftIssueChild,
     Issue,
     IssueDraft,
     IssuePriority,
     IssueStatus,
     IssueTemplate,
-    IssueTemplateChild,
     Project,
     Sprint,
     Team
@@ -80,7 +80,7 @@
   import SetDueDateActionPopup from './SetDueDateActionPopup.svelte'
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
   import SprintSelector from './sprints/SprintSelector.svelte'
-  import IssueTemplateChilds from './templates/IssueTemplateChilds.svelte'
+  import SubIssues from './SubIssues.svelte'
 
   export let space: Ref<Team>
   export let status: Ref<IssueStatus> | undefined = undefined
@@ -95,6 +95,8 @@
   export let onDraftChanged: () => void
 
   const draft: IssueDraft | undefined = shouldSaveDraft ? getUserDraft(tracker.class.IssueDraft) : undefined
+
+  let subIssuesComponent: SubIssues
 
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
   let labels: TagReference[] = draft?.labels || []
@@ -147,7 +149,6 @@
     templateId = undefined
     template = undefined
     object = { ...defaultIssue }
-    subIssues = []
     if (!originalIssue && !draft) {
       updateIssueStatusId(_space, status)
     }
@@ -158,7 +159,7 @@
   let template: IssueTemplate | undefined = undefined
   const templateQuery = createQuery()
 
-  let subIssues: IssueTemplateChild[] = draft?.subIssues || []
+  let subIssues: DraftIssueChild[] = draft?.subIssues || []
 
   $: if (templateId !== undefined) {
     templateQuery.query(tracker.class.IssueTemplate, { _id: templateId }, (res) => {
@@ -192,7 +193,9 @@
 
     const { _class, _id, space, children, comments, attachments, labels: labels_, ...templBase } = template
 
-    subIssues = template.children
+    subIssues = template.children.map((p) => {
+      return { ...p, status: currentTeam?.defaultIssueStatus ?? ('' as Ref<IssueStatus>) }
+    })
 
     object = {
       ...object,
@@ -306,10 +309,8 @@
       return
     }
 
-    const team = await client.findOne(tracker.class.Team, { _id: teamId })
-
-    if (team?.defaultIssueStatus) {
-      object.status = team.defaultIssueStatus
+    if (currentTeam?.defaultIssueStatus) {
+      object.status = currentTeam.defaultIssueStatus
     }
   }
 
@@ -342,9 +343,9 @@
       }
     }
 
-    // if (object.attachments && object.attachments > 0) {
-    //   return false
-    // }
+    if (object.attachments && object.attachments > 0) {
+      return false
+    }
 
     if (draft.project && draft.project !== defaultIssue.project) {
       return false
@@ -358,10 +359,8 @@
       return true
     }
 
-    const team = await client.findOne(tracker.class.Team, { _id: _space })
-
-    if (team?.defaultIssueStatus) {
-      return draft.status === team.defaultIssueStatus
+    if (currentTeam?.defaultIssueStatus) {
+      return draft.status === currentTeam.defaultIssueStatus
     }
 
     return false
@@ -470,66 +469,14 @@
         }
       }
     }
-    for (const subIssue of subIssues) {
-      const lastOne = await client.findOne<Issue>(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
-      const incResult = await client.updateDoc(
-        tracker.class.Team,
-        core.space.Space,
-        _space,
-        {
-          $inc: { sequence: 1 }
-        },
-        true
-      )
-      const childId: Ref<Issue> = generateId()
-      const cvalue: AttachedData<Issue> = {
-        title: getTitle(subIssue.title),
-        description: subIssue.description,
-        assignee: subIssue.assignee,
-        project: subIssue.project,
-        sprint: subIssue.sprint,
-        number: (incResult as any).object.sequence,
-        status: object.status,
-        priority: subIssue.priority,
-        rank: calcRank(lastOne, undefined),
-        comments: 0,
-        subIssues: 0,
-        dueDate: null,
-        parents: parentIssue
-          ? [
-              { parentId: objectId, parentTitle: value.title },
-              { parentId: parentIssue._id, parentTitle: parentIssue.title },
-              ...parentIssue.parents
-            ]
-          : [{ parentId: objectId, parentTitle: value.title }],
-        reportedTime: 0,
-        estimation: subIssue.estimation,
-        reports: 0,
-        relations: [],
-        childInfo: []
-      }
-
-      await client.addCollection(
-        tracker.class.Issue,
-        _space,
-        objectId,
-        tracker.class.Issue,
-        'subIssues',
-        cvalue,
-        childId
-      )
-
-      if ((subIssue.labels?.length ?? 0) > 0) {
-        const tagElements = await client.findAll(tags.class.TagElement, { _id: { $in: subIssue.labels } })
-        for (const label of tagElements) {
-          await client.addCollection(tags.class.TagReference, _space, childId, tracker.class.Issue, 'labels', {
-            title: label.title,
-            color: label.color,
-            tag: label._id
-          })
-        }
-      }
-    }
+    const parents = parentIssue
+      ? [
+          { parentId: objectId, parentTitle: value.title },
+          { parentId: parentIssue._id, parentTitle: parentIssue.title },
+          ...parentIssue.parents
+        ]
+      : [{ parentId: objectId, parentTitle: value.title }]
+    await subIssuesComponent.save(parents)
     addNotification(await translate(tracker.string.IssueCreated, {}), getTitle(object.title), IssueNotification, {
       issueId: objectId,
       subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase(),
@@ -677,14 +624,6 @@
     <div class="flex-row-center">
       <SpaceSelector _class={tracker.class.Team} label={tracker.string.Team} bind:space={_space} />
     </div>
-    <!-- <Button
-      icon={tracker.icon.Home}
-      label={presentation.string.Save}
-      size={'small'}
-      kind={'no-border'}
-      disabled
-      on:click={() => {}}
-    /> -->
     <ObjectBox
       _class={tracker.class.IssueTemplate}
       value={templateId}
@@ -741,13 +680,17 @@
       }}
     />
   {/key}
-  <IssueTemplateChilds
-    bind:children={subIssues}
-    sprint={object.sprint}
-    project={object.project}
-    isScrollable
-    maxHeight="limited"
-  />
+  {#if issueStatuses}
+    <SubIssues
+      bind:this={subIssuesComponent}
+      teamId={_space}
+      parent={objectId}
+      statuses={issueStatuses ?? []}
+      team={currentTeam}
+      sprint={object.sprint}
+      project={object.project}
+    />
+  {/if}
   <svelte:fragment slot="pool">
     {#if issueStatuses}
       <div id="status-editor">
