@@ -56,7 +56,7 @@ async function updateSubIssues (
  */
 export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const issue = doc as Issue
-  const team = (await control.findAll(tracker.class.Team, { _id: issue.space }))[0]
+  const team = (await control.findAll(tracker.class.Team, { _id: issue.space })).shift()
   const issueName = `${team?.identifier ?? '?'}-${issue.number}`
 
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
@@ -70,7 +70,7 @@ export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Pr
  */
 export async function issueTextPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const issue = doc as Issue
-  const team = (await control.findAll(tracker.class.Team, { _id: issue.space }))[0]
+  const team = (await control.findAll(tracker.class.Team, { _id: issue.space })).shift()
   const issueName = `${team?.identifier ?? '?'}-${issue.number}`
 
   return issueName
