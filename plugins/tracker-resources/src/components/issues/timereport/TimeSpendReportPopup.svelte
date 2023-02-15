@@ -18,9 +18,10 @@
   import type { IntlString } from '@hcengineering/platform'
   import presentation, { Card, getClient, UserBox } from '@hcengineering/presentation'
   import { Issue, TimeReportDayType, TimeSpendReport } from '@hcengineering/tracker'
-  import { DatePresenter, EditBox, Button } from '@hcengineering/ui'
+  import { Button, DatePresenter, EditBox } from '@hcengineering/ui'
   import tracker from '../../../plugin'
   import { getTimeReportDate, getTimeReportDayType } from '../../../utils'
+  import TitlePresenter from '../TitlePresenter.svelte'
   import TimeReportDayDropdown from './TimeReportDayDropdown.svelte'
 
   export let issue: Issue | undefined = undefined
@@ -84,12 +85,17 @@
 </script>
 
 <Card
-  label={tracker.string.TimeSpendReportAdd}
+  label={value === undefined ? tracker.string.TimeSpendReportAdd : tracker.string.TimeSpendReportValue}
   {canSave}
   okAction={create}
   on:close
   okLabel={value === undefined ? presentation.string.Create : presentation.string.Save}
 >
+  <svelte:fragment slot="header">
+    {#if issue}
+      <TitlePresenter showParent={false} value={issue} />
+    {/if}
+  </svelte:fragment>
   <div class="flex-row-center gap-2">
     <EditBox focus bind:value={data.value} {placeholder} format={'number'} maxDigitsAfterPoint={3} kind={'editbox'} />
     <Button kind={'link-bordered'} on:click={() => (data.value = 0.125)}><span slot="content">1/8</span></Button>
