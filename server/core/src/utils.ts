@@ -16,7 +16,6 @@ import {
 export function createCacheFindAll (storage: ServerStorage): ServerStorage['findAll'] {
   // We will cache all queries for same objects for all derived data checks.
   const queryCache = new Map<string, FindResult<Doc>>()
-  const hierarchy = new Hierarchy()
 
   return async <T extends Doc>(
     ctx: MeasureContext,
@@ -31,6 +30,6 @@ export function createCacheFindAll (storage: ServerStorage): ServerStorage['find
     }
     cacheResult = await storage.findAll(ctx, clazz, query, options)
     queryCache.set(key, cacheResult)
-    return hierarchy.clone(cacheResult) as FindResult<T>
+    return storage.hierarchy.clone(cacheResult) as FindResult<T>
   }
 }
