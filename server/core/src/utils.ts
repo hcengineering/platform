@@ -4,7 +4,6 @@ import {
   DocumentQuery,
   FindOptions,
   FindResult,
-  Hierarchy,
   MeasureContext,
   Ref,
   ServerStorage
