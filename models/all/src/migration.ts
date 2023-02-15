@@ -47,7 +47,7 @@ export const migrateOperations: [string, MigrateOperation][] = [
   ['telegram', telegramOperation],
   ['task', taskOperation],
   ['attachment', attachmentOperation],
-  ['', automationOperation],
+  ['automation', automationOperation],
   ['lead', leadOperation],
   ['recruit', recruitOperation],
   ['view', viewOperation],

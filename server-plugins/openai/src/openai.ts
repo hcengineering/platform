@@ -107,7 +107,7 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
   updateSummary (summary: FullSummaryStage): void {
     summary.fieldFilter.push((attr, value) => {
       const tMarkup = attr.type._class === core.class.TypeMarkup
-      const lowerCase = value.toLocaleLowerCase()
+      const lowerCase: string = value.toLocaleLowerCase()
       if (tMarkup && (lowerCase.includes('gpt:') || lowerCase.includes('gpt Answer:'))) {
         return false
       }
@@ -253,11 +253,11 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
     const docs = await this.adapter.searchEmbedding(_classes, query, embedding, {
       size,
       from,
-      minScore: -100,
-      embeddingBoost: 100,
+      minScore: -9,
+      embeddingBoost: 10,
       field: this.field,
       field_enable: this.field_enabled,
-      fulltextBoost: 10
+      fulltextBoost: 1
     })
     return {
       docs,

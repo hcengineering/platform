@@ -14,6 +14,7 @@
 //
 
 import {
+  coreId,
   DOMAIN_BLOB,
   DOMAIN_FULLTEXT_BLOB,
   DOMAIN_MODEL,
@@ -99,6 +100,8 @@ import { trackerId } from '@hcengineering/tracker'
 import { viewId } from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 
+import coreEng from '@hcengineering/core/src/lang/en.json'
+
 import loginEng from '@hcengineering/login-assets/lang/en.json'
 
 import taskEn from '@hcengineering/task-assets/lang/en.json'
@@ -126,6 +129,8 @@ import hrEn from '@hcengineering/hr-assets/lang/en.json'
 import documentEn from '@hcengineering/document-assets/lang/en.json'
 import bitrixEn from '@hcengineering/bitrix-assets/lang/en.json'
 import requestEn from '@hcengineering/request-assets/lang/en.json'
+
+addStringsLoader(coreId, async (lang: string) => coreEng)
 addStringsLoader(loginId, async (lang: string) => loginEng)
 
 addStringsLoader(taskId, async (lang: string) => taskEn)
@@ -190,7 +195,7 @@ export function start (
     ConfigurationMiddleware.create
   ]
 
-  const fullText = getMetricsContext().newChild('fulltext', {})
+  const metrics = getMetricsContext().newChild('indexing', {})
   function createIndexStages (
     fullText: MeasureContext,
     workspace: WorkspaceId,
@@ -243,7 +248,7 @@ export function start (
 
   return startJsonRpc(
     getMetricsContext(),
-    (workspace: WorkspaceId, upgrade: boolean) => {
+    (workspace, upgrade, broadcast) => {
       const conf: DbConfiguration = {
         domains: {
           [DOMAIN_TX]: 'MongoTx',
@@ -252,6 +257,7 @@ export function start (
           [DOMAIN_FULLTEXT_BLOB]: 'FullTextBlob',
           [DOMAIN_MODEL]: 'Null'
         },
+        metrics,
         defaultAdapter: 'Mongo',
         adapters: {
           MongoTx: {
@@ -282,14 +288,19 @@ export function start (
         fulltextAdapter: {
           factory: createElasticAdapter,
           url: fullTextUrl,
-          metrics: fullText,
           stages: (adapter, storage, storageAdapter, contentAdapter) =>
-            createIndexStages(fullText, workspace, adapter, storage, storageAdapter, contentAdapter)
+            createIndexStages(
+              metrics.newChild('stages', {}),
+              workspace,
+              adapter,
+              storage,
+              storageAdapter,
+              contentAdapter
+            )
         },
         contentAdapter: {
           factory: createRekoniAdapter,
-          url: rekoniUrl,
-          metrics: getMetricsContext().newChild('content', {})
+          url: rekoniUrl
         },
         storageFactory: () =>
           new MinioService({
@@ -299,7 +310,7 @@ export function start (
           }),
         workspace
       }
-      return createPipeline(conf, middlewares, upgrade)
+      return createPipeline(conf, middlewares, upgrade, broadcast)
     },
     (token: Token, pipeline: Pipeline, broadcast: BroadcastCall) => {
       if (token.extra?.mode === 'backup') {

@@ -38,3 +38,8 @@ export type BroadcastCall = (
   resp: Response<any>,
   target?: string
 ) => void
+
+/**
+ * @public
+ */
+export type PipelineFactory = (ws: WorkspaceId, upgrade: boolean, broadcast: (tx: Tx[]) => void) => Promise<Pipeline>

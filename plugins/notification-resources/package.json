@@ -10,7 +10,8 @@
     "lint": "svelte-check && eslint",
     "lint:fix": "eslint --fix src",
     "format": "prettier --write --plugin-search-dir=. src && eslint --fix src",
-    "svelte-check": "svelte-check"
+    "svelte-check": "svelte-check",
+    "build:watch": "tsc --incremental --noEmit --outDir ./dist_cache"
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",

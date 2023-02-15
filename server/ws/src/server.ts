@@ -19,6 +19,7 @@ import core, {
   Ref,
   Space,
   toWorkspaceString,
+  Tx,
   TxFactory,
   WorkspaceId
 } from '@hcengineering/core'
@@ -27,7 +28,7 @@ import type { Pipeline } from '@hcengineering/server-core'
 import { decodeToken, Token } from '@hcengineering/server-token'
 import { createServer, IncomingMessage } from 'http'
 import WebSocket, { WebSocketServer } from 'ws'
-import { BroadcastCall, Session } from './types'
+import { BroadcastCall, PipelineFactory, Session } from './types'
 
 let LOGGING_ENABLED = true
 
@@ -56,7 +57,7 @@ class SessionManager {
     ctx: MeasureContext,
     ws: WebSocket,
     token: Token,
-    pipelineFactory: (ws: WorkspaceId, upgrade: boolean) => Promise<Pipeline>,
+    pipelineFactory: PipelineFactory,
     productId: string
   ): Promise<Session> {
     const wsString = toWorkspaceString(token.workspace, '@')
@@ -83,7 +84,7 @@ class SessionManager {
       }
       if (LOGGING_ENABLED) console.log('no sessions for workspace', wsString)
       // Re-create pipeline.
-      workspace.pipeline = pipelineFactory(token.workspace, true)
+      workspace.pipeline = pipelineFactory(token.workspace, true, (tx) => this.broadcastAll(workspace as Workspace, tx))
 
       const pipeline = await workspace.pipeline
       const session = this.createSession(token, pipeline)
@@ -103,14 +104,20 @@ class SessionManager {
     return session
   }
 
-  private createWorkspace (
-    pipelineFactory: (ws: WorkspaceId, upgrade: boolean) => Promise<Pipeline>,
-    token: Token
-  ): Workspace {
+  broadcastAll (workspace: Workspace, tx: Tx[]): void {
+    for (const _tx of tx) {
+      const msg = serialize({ result: _tx })
+      for (const session of workspace.sessions) {
+        session[1].send(msg)
+      }
+    }
+  }
+
+  private createWorkspace (pipelineFactory: PipelineFactory, token: Token): Workspace {
     const upgrade = token.extra?.model === 'upgrade'
-    const workspace = {
+    const workspace: Workspace = {
       id: generateId(),
-      pipeline: pipelineFactory(token.workspace, upgrade),
+      pipeline: pipelineFactory(token.workspace, upgrade, (tx) => this.broadcastAll(workspace, tx)),
       sessions: [],
       upgrade
     }
@@ -305,7 +312,7 @@ async function handleRequest<S extends Session> (
  */
 export function start (
   ctx: MeasureContext,
-  pipelineFactory: (workspace: WorkspaceId, upgrade: boolean) => Promise<Pipeline>,
+  pipelineFactory: PipelineFactory,
   sessionFactory: (token: Token, pipeline: Pipeline, broadcast: BroadcastCall) => Session,
   port: number,
   productId: string,

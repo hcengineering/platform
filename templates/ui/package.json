@@ -3,6 +3,7 @@
   "version": "0.6.0",
   "scripts": {
     "build": "tsc --incremental --noEmit --outDir ./dist_cache && echo build",
+    "build:watch": "tsc --incremental --noEmit --outDir ./dist_cache",
     "lint:fix": "eslint --fix src",
     "lint": "svelte-check && eslint",
     "format": "prettier --write --plugin-search-dir=. src && eslint --fix src"

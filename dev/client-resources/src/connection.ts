@@ -112,20 +112,21 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
         url: ''
       }
     },
+    metrics: new MeasureMetricsContext('', {}),
     fulltextAdapter: {
       factory: createNullFullTextAdapter,
       url: '',
-      metrics: new MeasureMetricsContext('', {}),
       stages: () => []
     },
     contentAdapter: {
       url: '',
-      factory: createNullContentTextAdapter,
-      metrics: new MeasureMetricsContext('', {})
+      factory: createNullContentTextAdapter
     },
     workspace: getWorkspaceId('')
   }
-  const serverStorage = await createServerStorage(conf)
+  const serverStorage = await createServerStorage(conf, {
+    upgrade: false
+  })
   setMetadata(devmodel.metadata.DevModel, serverStorage)
   return new ServerStorageWrapper(serverStorage, handler)
 }

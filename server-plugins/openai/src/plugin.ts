@@ -17,7 +17,7 @@ import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 
 import type { Account, Class, Ref } from '@hcengineering/core'
-import { TriggerFunc } from '@hcengineering/server-core'
+import { AsyncTriggerFunc } from '@hcengineering/server-core'
 import type { OpenAIConfiguration } from './types'
 
 export * from './types'
@@ -31,7 +31,7 @@ export const openAIId = 'openai' as Plugin
  */
 const openaiPlugin = plugin(openAIId, {
   trigger: {
-    OnGPTRequest: '' as Resource<TriggerFunc>
+    AsyncOnGPTRequest: '' as Resource<AsyncTriggerFunc>
   },
   class: {
     OpenAIConfiguration: '' as Ref<Class<OpenAIConfiguration>>

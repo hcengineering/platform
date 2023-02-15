@@ -18,22 +18,43 @@ import { Model, Builder } from '@hcengineering/model'
 import type { Resource } from '@hcengineering/platform'
 import { TClass, TDoc } from '@hcengineering/model-core'
 
-import type { ObjectDDParticipant, Trigger, TriggerFunc } from '@hcengineering/server-core'
+import type {
+  AsyncTrigger,
+  ObjectDDParticipant,
+  Trigger,
+  TriggerFunc,
+  AsyncTriggerState,
+  AsyncTriggerFunc
+} from '@hcengineering/server-core'
 import core, {
   Class,
   Doc,
   DocumentQuery,
+  DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MODEL,
   FindOptions,
   FindResult,
   Hierarchy,
-  Ref
+  Ref,
+  TxCUD
 } from '@hcengineering/core'
 import serverCore from '@hcengineering/server-core'
 
 @Model(serverCore.class.Trigger, core.class.Doc, DOMAIN_MODEL)
 export class TTrigger extends TDoc implements Trigger {
   trigger!: Resource<TriggerFunc>
+}
+
+@Model(serverCore.class.AsyncTrigger, core.class.Doc, DOMAIN_MODEL)
+export class TAsyncTrigger extends TDoc implements AsyncTrigger {
+  trigger!: Resource<AsyncTriggerFunc>
+  classes!: Ref<Class<Doc>>[]
+}
+
+@Model(serverCore.class.AsyncTriggerState, core.class.Doc, DOMAIN_DOC_INDEX_STATE)
+export class TAsyncTriggerState extends TDoc implements AsyncTriggerState {
+  tx!: TxCUD<Doc>
+  message!: string
 }
 
 @Model(serverCore.mixin.ObjectDDParticipant, core.class.Class)
@@ -52,5 +73,5 @@ export class TObjectDDParticipant extends TClass implements ObjectDDParticipant 
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TTrigger, TObjectDDParticipant)
+  builder.createModel(TTrigger, TObjectDDParticipant, TAsyncTriggerState, TAsyncTrigger)
 }

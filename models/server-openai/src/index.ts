@@ -22,6 +22,9 @@ import core, { DOMAIN_CONFIGURATION } from '@hcengineering/core'
 import openai, { OpenAIConfiguration } from '@hcengineering/openai/src/plugin'
 import serverCore from '@hcengineering/server-core'
 
+import chunter from '@hcengineering/model-chunter'
+import recruit from '@hcengineering/model-recruit'
+
 @Model(openai.class.OpenAIConfiguration, core.class.Configuration, DOMAIN_CONFIGURATION)
 @UX(getEmbeddedLabel('OpenAI'))
 export class TOpenAIConfiguration extends TConfiguration implements OpenAIConfiguration {
@@ -41,7 +44,8 @@ export class TOpenAIConfiguration extends TConfiguration implements OpenAIConfig
 export function createModel (builder: Builder): void {
   builder.createModel(TOpenAIConfiguration)
 
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: openai.trigger.OnGPTRequest
+  builder.createDoc(serverCore.class.AsyncTrigger, core.space.Model, {
+    trigger: openai.trigger.AsyncOnGPTRequest,
+    classes: [chunter.class.Comment, recruit.class.ApplicantMatch]
   })
 }

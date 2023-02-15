@@ -23,7 +23,7 @@
     "eslint-config-standard-with-typescript": "^23.0.0",
     "prettier": "^2.7.1",
     "@rushstack/heft": "^0.47.9",
-    "typescript": "^4.3.5",    
+    "typescript": "^4.3.5",
     "@types/qs": "~6.9.7"
   },
   "dependencies": {
