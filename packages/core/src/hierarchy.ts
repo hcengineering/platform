@@ -489,6 +489,9 @@ export class Hierarchy {
   }
 
   clone (obj: any): any {
+    if (typeof obj === 'undefined') {
+      return undefined
+    }
     if (typeof obj === 'function') {
       return obj
     }
