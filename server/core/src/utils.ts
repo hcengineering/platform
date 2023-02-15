@@ -29,6 +29,6 @@ export function createCacheFindAll (storage: ServerStorage): ServerStorage['find
     }
     cacheResult = await storage.findAll(ctx, clazz, query, options)
     queryCache.set(key, cacheResult)
-    return cacheResult as FindResult<T>
+    return storage.hierarchy.clone(cacheResult) as FindResult<T>
   }
 }
