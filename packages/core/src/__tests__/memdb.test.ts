@@ -370,4 +370,27 @@ describe('memdb', () => {
     expect(attached).toBeDefined()
     expect(Hierarchy.mixinOrClass(attached as Doc)).toEqual(test.mixin.TaskMixinTodos)
   })
+
+  it('createDoc for AttachedDoc', async () => {
+    expect.assertions(1)
+    const { model } = await createModel()
+
+    const client = new TxOperations(model, core.account.System)
+    const spaces = await client.findAll(core.class.Space, {})
+    const task = await client.createDoc(test.class.Task, spaces[0]._id, {
+      name: 'TSK1',
+      number: 1,
+      state: 0
+    })
+    try {
+      await client.createDoc(test.class.TestMixinTodo, spaces[0]._id, {
+        text: '',
+        attachedTo: task,
+        attachedToClass: test.mixin.TaskMixinTodos,
+        collection: 'todos'
+      })
+    } catch (e) {
+      expect(e).toEqual(new Error('createDoc cannot be used for objects inherited from AttachedDoc'))
+    }
+  })
 })
