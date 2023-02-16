@@ -19,9 +19,21 @@ import { setMetadata } from '@hcengineering/platform'
 import { backup, createMinioBackupStorage } from '@hcengineering/server-backup'
 import serverToken from '@hcengineering/server-token'
 import got from 'got'
+import { ObjectId } from 'mongodb'
 import config from './config'
 
-async function getWorkspaces (): Promise<string[]> {
+/**
+ * @public
+ */
+export interface Workspace {
+  _id: ObjectId
+  workspace: string
+  organisation: string
+  accounts: ObjectId[]
+  productId: string
+}
+
+async function getWorkspaces (): Promise<Workspace[]> {
   const { body }: { body: { error?: string, result?: any[] } } = await got.post(config.AccountsURL, {
     json: {
       method: 'listWorkspaces',
@@ -34,7 +46,7 @@ async function getWorkspaces (): Promise<string[]> {
     throw Error(body.error)
   }
 
-  return (body.result ?? []).map((x) => x.workspace)
+  return (body.result as Workspace[]) ?? []
 }
 
 export class PlatformWorker {
@@ -79,8 +91,12 @@ export class PlatformWorker {
     for (const ws of workspaces) {
       console.log('\n\nBACKUP WORKSPACE ', ws)
       try {
-        const storage = await createMinioBackupStorage(this.minio, getWorkspaceId('backups', config.ProductId), ws)
-        await backup(config.TransactorURL, getWorkspaceId(ws, config.ProductId), storage)
+        const storage = await createMinioBackupStorage(
+          this.minio,
+          getWorkspaceId('backups', ws.productId),
+          ws.workspace
+        )
+        await backup(config.TransactorURL, getWorkspaceId(ws.workspace, ws.productId), storage)
       } catch (err: any) {
         console.error('\n\nFAILED to BACKUP', ws, err)
       }

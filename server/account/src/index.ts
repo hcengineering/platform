@@ -377,7 +377,9 @@ export async function createAccount (
  * @public
  */
 export async function listWorkspaces (db: Db, productId: string): Promise<Workspace[]> {
-  return await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, {})).toArray()
+  return (await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, {})).toArray()).map(
+    (it) => ({ ...it, productId })
+  )
 }
 
 /**

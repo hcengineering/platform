@@ -25,8 +25,6 @@ interface Config {
   MinioEndpoint: string
   MinioAccessKey: string
   MinioSecretKey: string
-
-  ProductId: string
 }
 
 const envMap: { [key in keyof Config]: string } = {
@@ -38,8 +36,7 @@ const envMap: { [key in keyof Config]: string } = {
   Interval: 'INTERVAL',
   MinioEndpoint: 'MINIO_ENDPOINT',
   MinioAccessKey: 'MINIO_ACCESS_KEY',
-  MinioSecretKey: 'MINIO_SECRET_KEY',
-  ProductId: 'PRODUCT_ID'
+  MinioSecretKey: 'MINIO_SECRET_KEY'
 }
 
 const required: Array<keyof Config> = [
@@ -63,8 +60,7 @@ const config: Config = (() => {
     Interval: parseInt(process.env[envMap.Interval] ?? '3600'),
     MinioEndpoint: process.env[envMap.MinioEndpoint],
     MinioAccessKey: process.env[envMap.MinioAccessKey],
-    MinioSecretKey: process.env[envMap.MinioSecretKey],
-    ProductId: process.env[envMap.ProductId] ?? ''
+    MinioSecretKey: process.env[envMap.MinioSecretKey]
   }
 
   const missingEnv = required.filter((key) => params[key] === undefined).map((key) => envMap[key])
