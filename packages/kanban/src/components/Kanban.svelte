@@ -40,7 +40,7 @@
     query,
     (result) => {
       objects = result
-      fillStateObjects(result)
+      fillStateObjects(result, fieldName)
       dispatch('content', objects)
     },
     {
@@ -49,7 +49,13 @@
     }
   )
 
-  function fillStateObjects (objects: Item[]): void {
+  function fieldNameChange (fieldName: string) {
+    fillStateObjects(objects, fieldName)
+  }
+
+  $: fieldNameChange(fieldName)
+
+  function fillStateObjects (objects: Item[], fieldName: string): void {
     objectByState.clear()
     for (const object of objects) {
       const arr = objectByState.get((object as any)[fieldName]) ?? []
