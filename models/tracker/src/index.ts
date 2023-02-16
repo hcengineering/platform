@@ -194,7 +194,7 @@ export function TypeReportedTime (): Type<number> {
  * @public
  */
 @Model(tracker.class.Issue, core.class.AttachedDoc, DOMAIN_TRACKER)
-@UX(tracker.string.Issue, tracker.icon.Issue, tracker.string.Issue)
+@UX(tracker.string.Issue, tracker.icon.Issue, tracker.string.Issue, 'title')
 export class TIssue extends TAttachedDoc implements Issue {
   @Prop(TypeRef(tracker.class.Issue), tracker.string.Parent)
   declare attachedTo: Ref<Issue>
