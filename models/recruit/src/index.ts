@@ -59,7 +59,7 @@ import { createReviewModel, reviewTableConfig, reviewTableOptions } from './revi
 import { TOpinion, TReview } from './review-model'
 
 @Model(recruit.class.Vacancy, task.class.SpaceWithStates)
-@UX(recruit.string.Vacancy, recruit.icon.Vacancy)
+@UX(recruit.string.Vacancy, recruit.icon.Vacancy, undefined, 'name')
 export class TVacancy extends TSpaceWithStates implements Vacancy {
   @Prop(TypeMarkup(), recruit.string.FullDescription)
   @Index(IndexKind.FullText)
