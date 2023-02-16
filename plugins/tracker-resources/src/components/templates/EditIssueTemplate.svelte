@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachmentDocList, AttachmentStyledBox } from '@hcengineering/attachment-resources'
+  import { AttachmentDocList } from '@hcengineering/attachment-resources'
   import { Class, Data, Doc, Ref, WithLookup } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
   import presentation, { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
-  import type { IssueTemplate, IssueTemplateChild, Team } from '@hcengineering/tracker'
   import tags from '@hcengineering/tags'
+  import type { IssueTemplate, IssueTemplateChild, Team } from '@hcengineering/tracker'
   import {
     Button,
     EditBox,
@@ -38,6 +38,7 @@
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import tracker from '../../plugin'
 
+  import { StyledTextBox } from '@hcengineering/text-editor'
   import SubIssueTemplates from './IssueTemplateChilds.svelte'
   import TemplateControlPanel from './TemplateControlPanel.svelte'
 
@@ -56,7 +57,7 @@
   let description = ''
   let innerWidth: number
   let isEditing = false
-  let descriptionBox: AttachmentStyledBox
+  let descriptionBox: StyledTextBox
 
   const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
 
@@ -213,11 +214,8 @@
           />
           <div class="flex-between mt-6">
             <div class="flex-grow">
-              <AttachmentStyledBox
+              <StyledTextBox
                 bind:this={descriptionBox}
-                objectId={_id}
-                _class={tracker.class.Issue}
-                space={template.space}
                 alwaysEdit
                 showButtons
                 maxHeight={'card'}
@@ -255,6 +253,7 @@
           {#if currentTeam !== undefined}
             <SubIssueTemplates
               maxHeight="limited"
+              team={template.space}
               bind:children={template.children}
               on:create-issue={createIssue}
               on:update-issue={updateIssue}
