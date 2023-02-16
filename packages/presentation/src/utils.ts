@@ -27,6 +27,8 @@ import core, {
   FindResult,
   getCurrentAccount,
   Hierarchy,
+  Mixin,
+  Obj,
   Ref,
   RefTo,
   Tx,
@@ -34,13 +36,14 @@ import core, {
   TxResult
 } from '@hcengineering/core'
 import login from '@hcengineering/login'
-import { getMetadata, IntlString } from '@hcengineering/platform'
+import { getMetadata, getResource, IntlString } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
 import { onDestroy } from 'svelte'
 import { deepEqual } from 'fast-equals'
-import { IconSize, DropdownIntlItem } from '@hcengineering/ui'
+import { IconSize, DropdownIntlItem, AnySvelteComponent } from '@hcengineering/ui'
+import view, { AttributeEditor } from '@hcengineering/view'
 import contact, { AvatarType, AvatarProvider } from '@hcengineering/contact'
-import presentation from '..'
+import presentation, { KeyedAttribute } from '..'
 
 let liveQuery: LQ
 let client: TxOperations
@@ -312,4 +315,72 @@ export const assigneeCategoryOrder: AssigneeCategory[] = [
 export function getCategorytitle (category: AssigneeCategory | undefined): IntlString {
   const cat: AssigneeCategory = category ?? 'Other'
   return assigneeCategoryTitleMap[cat]
+}
+
+function getAttributeEditorNotFoundError (
+  _class: Ref<Class<Obj>>,
+  key: KeyedAttribute | string,
+  exception?: unknown
+): string {
+  const attributeKey = typeof key === 'string' ? key : key.key
+  const error = exception !== undefined ? `, cause: ${exception as string}` : ''
+
+  return (
+    `attribute editor not found for class "${_class}", attribute "${attributeKey}"` + error
+  )
+}
+
+export async function getAttributeEditor (
+  client: Client,
+  _class: Ref<Class<Obj>>,
+  key: KeyedAttribute | string
+): Promise<AnySvelteComponent | undefined> {
+  const hierarchy = client.getHierarchy()
+  const attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
+  const presenterClass = attribute !== undefined ? getAttributePresenterClass(hierarchy, attribute) : undefined
+
+  if (presenterClass === undefined) {
+    return
+  }
+
+  const typeClass = hierarchy.getClass(presenterClass.attrClass)
+  let mixin: Ref<Mixin<AttributeEditor>>
+
+  switch (presenterClass.category) {
+    case 'collection': {
+      mixin = view.mixin.CollectionEditor
+      break
+    }
+    case 'array': {
+      mixin = view.mixin.ArrayEditor
+      break
+    }
+    default: {
+      mixin = view.mixin.AttributeEditor
+    }
+  }
+
+  let editorMixin = hierarchy.as(typeClass, mixin)
+  let parent = typeClass.extends
+
+  while (editorMixin.inlineEditor === undefined && parent !== undefined) {
+    const parentClass = hierarchy.getClass(parent)
+    editorMixin = hierarchy.as(parentClass, mixin)
+    parent = parentClass.extends
+  }
+
+  if (editorMixin.inlineEditor === undefined) {
+    if (presenterClass.category === 'array') {
+      // NOTE: Don't show error for array attributes for compatibility with previous implementation
+    } else {
+      console.error(getAttributeEditorNotFoundError(_class, key))
+    }
+    return
+  }
+
+  try {
+    return await getResource(editorMixin.inlineEditor)
+  } catch (ex) {
+    console.error(getAttributeEditorNotFoundError(_class, key, ex))
+  }
 }
