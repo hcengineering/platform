@@ -14,13 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { AnyAttribute, Class, Doc, Ref } from '@hcengineering/core'
-  import { getResource } from '@hcengineering/platform'
+  import type { Class, Doc, Ref } from '@hcengineering/core'
   import { AnySvelteComponent, Label, tooltip } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { getAttribute, KeyedAttribute, updateAttribute } from '../attributes'
-  import { AttributeCategory, getAttributePresenterClass, getClient } from '../utils'
+  import { getAttributeEditor, getClient } from '../utils'
 
   export let key: KeyedAttribute | string
   export let object: Doc | Record<string, any>
@@ -33,41 +31,9 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-
   const dispatch = createEventDispatcher()
 
-  $: attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
-  $: attributeKey = typeof key === 'string' ? key : key.key
-  $: presenterClass = attribute !== undefined ? getAttributePresenterClass(hierarchy, attribute) : undefined
-
   let editor: Promise<void | AnySvelteComponent> | undefined
-
-  function update (
-    attribute: AnyAttribute,
-    presenterClass?: { attrClass: Ref<Class<Doc>>; category: AttributeCategory }
-  ): void {
-    if (presenterClass?.attrClass === undefined) {
-      return
-    }
-    const category = presenterClass.category
-    let mixinRef = view.mixin.AttributeEditor
-    if (category === 'collection') {
-      mixinRef = view.mixin.CollectionEditor
-    }
-    if (category === 'array') {
-      mixinRef = view.mixin.ArrayEditor
-    }
-
-    const typeClass = hierarchy.getClass(presenterClass.attrClass)
-    const editorMixin = hierarchy.as(typeClass, mixinRef)
-    if (category === 'array' && editorMixin.inlineEditor === undefined) {
-      return
-    }
-    editor = getResource(editorMixin.inlineEditor).catch((cause) => {
-      console.error(`failed to find editor for ${_class} ${attribute} ${presenterClass.attrClass} cause: ${cause}`)
-    })
-  }
-  $: update(attribute, presenterClass)
 
   function onChange (value: any) {
     const doc = object as Doc
@@ -78,6 +44,10 @@
       updateAttribute(client, doc, _class, { key: attributeKey, attr: attribute }, value)
     }
   }
+
+  $: attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
+  $: attributeKey = typeof key === 'string' ? key : key.key
+  $: editor = getAttributeEditor(client, _class, key)
   $: isReadonly = (attribute.readonly ?? false) || readonly
 </script>
 
