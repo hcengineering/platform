@@ -13,10 +13,9 @@
 
   const dispatch = createEventDispatcher()
 
-  const groups = (viewOptions.groupBy =
-    viewOptions.groupBy[viewOptions.groupBy.length - 1] === noCategory
-      ? viewOptions.groupBy
-      : [...viewOptions.groupBy, noCategory])
+  const groups = viewOptions.groupBy[viewOptions.groupBy.length - 1] === noCategory
+    ? [...viewOptions.groupBy]
+    : [...viewOptions.groupBy, noCategory]
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
