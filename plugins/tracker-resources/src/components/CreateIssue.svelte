@@ -150,7 +150,7 @@
     template = undefined
     object = { ...defaultIssue }
     if (!originalIssue && !draft) {
-      updateIssueStatusId(_space, status)
+      updateIssueStatusId(currentTeam, status)
     }
   }
 
@@ -229,7 +229,7 @@
   }
 
   $: _space = draft?.team || space
-  $: !originalIssue && !draft && updateIssueStatusId(_space, status)
+  $: !originalIssue && !draft && updateIssueStatusId(currentTeam, status)
   $: canSave = getTitle(object.title ?? '').length > 0
 
   $: statusesQuery.query(
@@ -303,7 +303,7 @@
     }
   }
 
-  async function updateIssueStatusId (teamId: Ref<Team>, issueStatusId?: Ref<IssueStatus>) {
+  async function updateIssueStatusId (currentTeam: Team | undefined, issueStatusId?: Ref<IssueStatus>) {
     if (issueStatusId !== undefined) {
       object.status = issueStatusId
       return
