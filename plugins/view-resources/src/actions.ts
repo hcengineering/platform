@@ -34,10 +34,10 @@ import { FocusSelection } from './selection'
  */
 export function getSelection (focusStore: FocusSelection, selectionStore: Doc[]): Doc[] {
   let docs: Doc[] = []
-  if (selectionStore.find((it) => it._id === focusStore.focus?._id) === undefined && focusStore.focus !== undefined) {
-    docs = [focusStore.focus]
-  } else {
+  if (selectionStore.length > 0) {
     docs = selectionStore
+  } else if (focusStore.focus !== undefined) {
+    docs = [focusStore.focus]
   }
   return docs
 }
