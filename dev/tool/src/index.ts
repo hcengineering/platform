@@ -283,10 +283,17 @@ export function devTool (
 
   program
     .command('backup-restore <dirName> <workspace> [date]')
+    .option('-m, --merge', 'Enable merge of remote and backup content.', false)
     .description('dump workspace transactions and minio resources')
-    .action(async (dirName: string, workspace: string, date, cmd) => {
+    .action(async (dirName: string, workspace: string, date, cmd: { merge: boolean }) => {
       const storage = await createFileBackupStorage(dirName)
-      return await restore(transactorUrl, getWorkspaceId(workspace, productId), storage, parseInt(date ?? '-1'))
+      return await restore(
+        transactorUrl,
+        getWorkspaceId(workspace, productId),
+        storage,
+        parseInt(date ?? '-1'),
+        cmd.merge
+      )
     })
 
   program

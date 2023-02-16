@@ -326,7 +326,8 @@ export async function restore (
   transactorUrl: string,
   workspaceId: WorkspaceId,
   storage: BackupStorage,
-  date: number
+  date: number,
+  merge?: boolean
 ): Promise<void> {
   const infoFile = 'backup.json.gz'
 
@@ -357,6 +358,7 @@ export async function restore (
     mode: 'backup',
     model: 'upgrade'
   })) as unknown as CoreClient & BackupClient
+
   try {
     for (const c of domains) {
       console.log('loading server changeset for', c)
@@ -514,7 +516,7 @@ export async function restore (
       }
 
       await sendChunk(undefined, 0)
-      if (docsToRemove.length > 0) {
+      if (docsToRemove.length > 0 && merge !== true) {
         console.log('cleanup', docsToRemove.length)
         await connection.clean(c, docsToRemove)
       }
