@@ -13,10 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DocumentQuery, Ref, WithLookup } from '@hcengineering/core'
+  import { Doc, DocumentQuery, Ref, WithLookup } from '@hcengineering/core'
   import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
   import { Viewlet, ViewOptions } from '@hcengineering/view'
-  import { ActionContext, List } from '@hcengineering/view-resources'
+  import {
+    ActionContext,
+    List,
+    ListSelectionProvider,
+    SelectDirection,
+    selectionStore
+  } from '@hcengineering/view-resources'
+  import { onDestroy } from 'svelte'
   import tracker from '../../../plugin'
 
   export let query: DocumentQuery<Issue> | undefined = undefined
@@ -28,6 +35,19 @@
   // Extra properties
   export let teams: Map<Ref<Team>, Team> | undefined
   export let issueStatuses: Map<Ref<Team>, WithLookup<IssueStatus>[]>
+
+  let list: List
+
+  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
+    if (dir === 'vertical') {
+      // Select next
+      list.select(offset, of)
+    }
+  })
+
+  onDestroy(() => {
+    ListSelectionProvider.Pop()
+  })
 </script>
 
 <ActionContext
@@ -38,6 +58,7 @@
 
 {#if viewlet}
   <List
+    bind:this={list}
     _class={tracker.class.Issue}
     {viewOptions}
     viewOptionsConfig={viewlet.viewOptions?.other}
@@ -47,5 +68,15 @@
     flatHeaders={true}
     props={{ teams, issueStatuses }}
     {disableHeader}
+    selectedObjectIds={$selectionStore ?? []}
+    on:row-focus={(event) => {
+      listProvider.updateFocus(event.detail ?? undefined)
+    }}
+    on:check={(event) => {
+      listProvider.updateSelection(event.detail.docs, event.detail.value)
+    }}
+    on:content={(evt) => {
+      listProvider.update(evt.detail)
+    }}
   />
 {/if}
