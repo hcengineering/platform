@@ -21,11 +21,11 @@
   import bitrix from '../plugin'
 
   import { BitrixClient, BitrixEntityMapping, BitrixProfile, StatusValue } from '@hcengineering/bitrix'
-  import { Button, eventToHTMLElement, IconAdd, Label, showPopup } from '@hcengineering/ui'
+  import { Button, eventToHTMLElement, IconAdd, showPopup } from '@hcengineering/ui'
 
+  import { bitrixQueue } from '../queue'
   import CreateMapping from './CreateMapping.svelte'
   import EntiryMapping from './EntityMapping.svelte'
-  import { bitrixQueue } from '../queue'
 
   export let integration: Integration
 
@@ -78,18 +78,14 @@
     {/if}
   </svelte:fragment>
   {#if profile}
-    {#if !profile.ADMIN}
-      <Label label={bitrix.string.NotAllowed} />
-    {:else}
-      <div class="flex flex-reverse flex-grab">
-        <Button icon={IconAdd} label={presentation.string.Add} on:click={addMapping} />
-      </div>
-      <div class="flex-row">
-        {#each mappings as mapping}
-          <EntiryMapping {mapping} {bitrixClient} {statusList} />
-        {/each}
-      </div>
-    {/if}
+    <div class="flex flex-reverse flex-grab">
+      <Button icon={IconAdd} label={presentation.string.Add} on:click={addMapping} />
+    </div>
+    <div class="flex-row">
+      {#each mappings as mapping}
+        <EntiryMapping {mapping} {bitrixClient} {statusList} />
+      {/each}
+    </div>
   {/if}
   <!-- <EditBox label={bitrix.string.BitrixTokenUrl} bind:value={url} /> -->
   <svelte:fragment slot="pool" />

@@ -73,9 +73,15 @@
     }}
   >
     <svelte:fragment slot="subtitle">
-      <a href={object.description} target="_blank" rel="noreferrer noopener">
-        {object.description}
-      </a>
+      {#if object.description}
+        {#if object.description.trim().startsWith('http://') || object.description.trim().startsWith('https://')}
+          <a href={object.description} class="whitespace-nowrap" target="_blank" rel="noreferrer noopener">
+            {object.description}
+          </a>
+        {:else}
+          {object.description}
+        {/if}
+      {/if}
     </svelte:fragment>
     <svelte:fragment slot="attributes" let:direction={dir}>
       {#if dir === 'column'}

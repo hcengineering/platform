@@ -149,6 +149,8 @@
     templateId = undefined
     template = undefined
     object = { ...defaultIssue }
+    subIssues = []
+    labels = []
     if (!originalIssue && !draft) {
       updateIssueStatusId(currentTeam, status)
     }

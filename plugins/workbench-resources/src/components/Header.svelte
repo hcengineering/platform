@@ -26,13 +26,23 @@
 
 <div class="ac-header__wrap-description">
   <div class="flex-row-center clear-mins">
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="ac-header__wrap-title" on:click>
       {#if icon}<div class="ac-header__icon"><Icon {icon} size={'small'} /></div>{/if}
       <span class="ac-header__title">{label}</span>
     </div>
     {#if _class}<div class="ml-4"><FilterButton {_class} /></div>{/if}
   </div>
-  {#if description}<span class="ac-header__description">{description}</span>{/if}
+  {#if description}
+    <span class="ac-header__description">
+      {#if description.trim().startsWith('http://') || description.trim().startsWith('https://')}
+        <a href={description} class="whitespace-nowrap" target="_blank" rel="noreferrer noopener">
+          {description}
+        </a>
+      {:else}
+        {description}
+      {/if}
+    </span>{/if}
 </div>
 
 <style lang="scss">
