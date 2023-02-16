@@ -59,6 +59,10 @@ export class TxOperations implements Omit<Client, 'notify'> {
     modifiedOn?: Timestamp,
     modifiedBy?: Ref<Account>
   ): Promise<Ref<T>> {
+    const hierarchy = this.client.getHierarchy()
+    if (hierarchy.isDerived(_class, core.class.AttachedDoc)) {
+      throw new Error('createDoc cannot be used for objects inherited from AttachedDoc')
+    }
     const tx = this.txFactory.createTxCreateDoc(_class, space, attributes, id, modifiedOn, modifiedBy)
     await this.client.tx(tx)
     return tx.objectId
