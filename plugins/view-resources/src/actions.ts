@@ -34,10 +34,10 @@ import { FocusSelection } from './selection'
  */
 export function getSelection (focusStore: FocusSelection, selectionStore: Doc[]): Doc[] {
   let docs: Doc[] = []
-  if (selectionStore.find((it) => it._id === focusStore.focus?._id) === undefined && focusStore.focus !== undefined) {
-    docs = [focusStore.focus]
-  } else {
+  if (selectionStore.length > 0) {
     docs = selectionStore
+  } else if (focusStore.focus !== undefined) {
+    docs = [focusStore.focus]
   }
   return docs
 }
@@ -46,9 +46,9 @@ export function getSelection (focusStore: FocusSelection, selectionStore: Doc[])
  * @public
  *
  * Find all action contributions applicable for specified _class.
- * If derivedFrom is specifie, only actions applicable to derivedFrom class will be used.
+ * If derivedFrom is specified, only actions applicable to derivedFrom class will be used.
  * So if we have contribution for Doc, Space and we ask for SpaceWithStates and derivedFrom=Space,
- * we won't recieve Doc contribution but recieve Space ones.
+ * we won't receive Doc contribution but receive Space ones.
  */
 export async function getActions (
   client: Client,
