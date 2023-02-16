@@ -325,9 +325,7 @@ function getAttributeEditorNotFoundError (
   const attributeKey = typeof key === 'string' ? key : key.key
   const error = exception !== undefined ? `, cause: ${exception as string}` : ''
 
-  return (
-    `attribute editor not found for class "${_class}", attribute "${attributeKey}"` + error
-  )
+  return `attribute editor not found for class "${_class}", attribute "${attributeKey}"` + error
 }
 
 export async function getAttributeEditor (
