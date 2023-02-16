@@ -30,7 +30,7 @@
   }
 </script>
 
-{#if _value}
+{#if _value !== undefined}
   {_value}
 {:else}
   {label}
