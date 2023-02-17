@@ -70,6 +70,7 @@
   } else {
     docsQuery.unsubscribe()
     docs = documents
+    dispatch('content', docs)
   }
 
   const dispatch = createEventDispatcher()
