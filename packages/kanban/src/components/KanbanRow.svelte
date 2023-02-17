@@ -16,9 +16,9 @@
   import { Doc, Ref } from '@hcengineering/core'
   import { createEventDispatcher } from 'svelte'
   import { slide } from 'svelte/transition'
-  import { CardDragEvent, ExtItem, Item, TypeState } from '../types'
+  import { CardDragEvent, Item, TypeState } from '../types'
 
-  export let stateObjects: ExtItem[]
+  export let stateObjects: Item[]
   export let isDragging: boolean
   export let dragCard: Item | undefined
   export let objects: Item[]
@@ -26,10 +26,10 @@
   export let checkedSet: Set<Ref<Doc>>
   export let state: TypeState
 
-  export let cardDragOver: (evt: CardDragEvent, object: ExtItem) => void
-  export let cardDrop: (evt: CardDragEvent, object: ExtItem) => void
-  export let onDragStart: (object: ExtItem, state: TypeState) => void
-  export let showMenu: (evt: MouseEvent, object: ExtItem) => void
+  export let cardDragOver: (evt: CardDragEvent, object: Item) => void
+  export let cardDrop: (evt: CardDragEvent, object: Item) => void
+  export let onDragStart: (object: Item, state: TypeState) => void
+  export let showMenu: (evt: MouseEvent, object: Item) => void
 
   const dispatch = createEventDispatcher()
 
@@ -43,7 +43,7 @@
 
   $: stateRefs.length = stateObjects.length
   export function scroll (item: Item): void {
-    const pos = stateObjects.findIndex((it) => it.it._id === item._id)
+    const pos = stateObjects.findIndex((it) => it._id === item._id)
     if (pos >= 0) {
       stateRefs[pos]?.scrollIntoView({ behavior: 'auto', block: 'nearest' })
     }
@@ -51,7 +51,7 @@
 </script>
 
 {#each stateObjects as object, i}
-  {@const dragged = isDragging && object.it._id === dragCard?._id}
+  {@const dragged = isDragging && object._id === dragCard?._id}
   <div
     bind:this={stateRefs[i]}
     transition:slideD|local={{ isDragging }}
@@ -61,9 +61,9 @@
   >
     <div
       class="card-container"
-      class:selection={selection !== undefined ? objects[selection]?._id === object.it._id : false}
-      class:checked={checkedSet.has(object.it._id)}
-      on:mouseover={() => dispatch('obj-focus', object.it)}
+      class:selection={selection !== undefined ? objects[selection]?._id === object._id : false}
+      class:checked={checkedSet.has(object._id)}
+      on:mouseover={() => dispatch('obj-focus', object)}
       on:focus={() => {}}
       on:contextmenu={(evt) => showMenu(evt, object)}
       draggable={true}
@@ -76,7 +76,7 @@
         isDragging = false
       }}
     >
-      <slot name="card" object={toAny(object.it)} {dragged} />
+      <slot name="card" object={toAny(object)} {dragged} />
     </div>
   </div>
 {/each}

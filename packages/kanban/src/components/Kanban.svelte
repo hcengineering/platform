@@ -17,7 +17,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { getPlatformColor, ScrollBox, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { CardDragEvent, ExtItem, Item, StateType, TypeState } from '../types'
+  import { CardDragEvent, Item, StateType, TypeState } from '../types'
   import { calcRank } from '../utils'
   import KanbanRow from './KanbanRow.svelte'
 
@@ -40,6 +40,7 @@
     query,
     (result) => {
       objects = result
+      fillStateObjects(result, fieldName)
       dispatch('content', objects)
     },
     {
@@ -48,18 +49,20 @@
     }
   )
 
-  function getStateObjects (
-    objects: Item[],
-    state: TypeState,
-    dragItem?: Item // required for svelte to properly recalculate state.
-  ): ExtItem[] {
-    const stateCards = objects.filter((it) => (it as any)[fieldName] === state._id)
-    return stateCards.map((it, idx, arr) => ({
-      it,
-      prev: arr[idx - 1],
-      next: arr[idx + 1],
-      pos: objects.findIndex((pi) => pi._id === it._id)
-    }))
+  function fieldNameChange (fieldName: string) {
+    fillStateObjects(objects, fieldName)
+  }
+
+  $: fieldNameChange(fieldName)
+
+  function fillStateObjects (objects: Item[], fieldName: string): void {
+    objectByState.clear()
+    for (const object of objects) {
+      const arr = objectByState.get((object as any)[fieldName]) ?? []
+      arr.push(object)
+      objectByState.set((object as any)[fieldName], arr)
+    }
+    objectByState = objectByState
   }
 
   async function move (state: StateType) {
@@ -94,6 +97,8 @@
   let dragCardInitialRank: string | undefined
   let dragCardInitialState: StateType
 
+  let objectByState: Map<StateType, Item[]> = new Map<StateType, Item[]>()
+
   let isDragging = false
 
   async function updateDone (query: DocumentUpdate<Item>): Promise<void> {
@@ -103,47 +108,71 @@
     }
     await client.update(dragCard, query)
   }
-  function doCalcRank (
-    object: { prev?: Item; it: Item; next?: Item },
-    event: DragEvent & { currentTarget: EventTarget & HTMLDivElement }
-  ): string {
-    const rect = event.currentTarget.getBoundingClientRect()
-
-    if (event.clientY < rect.top + (rect.height * 2) / 3) {
-      return calcRank(object.prev, object.it)
-    } else {
-      return calcRank(object.it, object.next)
-    }
-  }
 
   function panelDragOver (event: Event, state: TypeState): void {
     event.preventDefault()
     const card = dragCard as any
     if (card !== undefined && card[fieldName] !== state._id) {
+      const oldArr = objectByState.get(card[fieldName]) ?? []
+      const index = oldArr.findIndex((p) => p._id === card._id)
+      if (index !== -1) {
+        oldArr.splice(index, 1)
+        objectByState.set(card[fieldName], oldArr)
+      }
       card[fieldName] = state._id
-      const objs = getStateObjects(objects, state)
-      if (!dontUpdateRank) {
-        card.rank = calcRank(objs[objs.length - 1]?.it, undefined)
+      const arr = objectByState.get(card[fieldName]) ?? []
+      arr.push(card)
+      objectByState.set(card[fieldName], arr)
+      objectByState = objectByState
+    }
+  }
+
+  function dragswap (ev: MouseEvent, i: number, s: number): boolean {
+    if (s === -1) return false
+    if (i < s) {
+      return ev.offsetY < (ev.target as HTMLElement).offsetHeight / 2
+    } else if (i > s) {
+      return ev.offsetY > (ev.target as HTMLElement).offsetHeight / 2
+    }
+    return false
+  }
+
+  function cardDragOver (evt: CardDragEvent, object: Item): void {
+    if (dragCard !== undefined && !dontUpdateRank) {
+      if (object._id !== dragCard._id) {
+        let arr = objectByState.get((object as any)[fieldName]) ?? []
+        const dragCardIndex = arr.findIndex((p) => p._id === dragCard?._id)
+        const targetIndex = arr.findIndex((p) => p._id === object._id)
+        if (
+          dragswap(evt, targetIndex, dragCardIndex) &&
+          arr[targetIndex] !== undefined &&
+          arr[dragCardIndex] !== undefined
+        ) {
+          arr.splice(dragCardIndex, 1)
+          arr = [...arr.slice(0, targetIndex), dragCard, ...arr.slice(targetIndex)]
+          objectByState.set((object as any)[fieldName], arr)
+          objectByState = objectByState
+        }
       }
     }
   }
-  function cardDragOver (evt: CardDragEvent, object: ExtItem): void {
-    if (dragCard !== undefined && !dontUpdateRank) {
-      dragCard.rank = doCalcRank(object, evt)
-    }
-  }
-  function cardDrop (evt: CardDragEvent, object: ExtItem): void {
+  function cardDrop (evt: CardDragEvent, object: Item): void {
     if (!dontUpdateRank && dragCard !== undefined) {
-      dragCard.rank = doCalcRank(object, evt)
+      const arr = objectByState.get((object as any)[fieldName]) ?? []
+      const s = arr.findIndex((p) => p._id === dragCard?._id)
+      if (s !== -1) {
+        const newRank = calcRank(arr[s - 1], arr[s + 1])
+        dragCard.rank = newRank
+      }
     }
     isDragging = false
   }
-  function onDragStart (object: ExtItem, state: TypeState): void {
+  function onDragStart (object: Item, state: TypeState): void {
     dragCardInitialState = state._id
-    dragCardInitialRank = object.it.rank
-    dragCard = object.it
+    dragCardInitialRank = object.rank
+    dragCard = object
     isDragging = true
-    dispatch('obj-focus', object.it)
+    dispatch('obj-focus', object)
   }
   // eslint-disable-next-line
   let dragged: boolean = false
@@ -151,9 +180,6 @@
   function toAny (object: any): any {
     return object
   }
-
-  // eslint-disable-next-line no-unused-vars
-  let stateObjects: ExtItem[]
 
   const stateRefs: HTMLElement[] = []
   const stateRows: KanbanRow[] = []
@@ -170,9 +196,9 @@
     let pos = (of !== undefined ? objects.findIndex((it) => it._id === of._id) : selection) ?? -1
     if (pos === -1) {
       for (const st of states) {
-        const stateObjs = getStateObjects(objects, st)
+        const stateObjs = objectByState.get(st) ?? []
         if (stateObjs.length > 0) {
-          pos = objects.findIndex((it) => it._id === stateObjs[0].it._id)
+          pos = objects.findIndex((it) => it._id === stateObjs[0]._id)
           break
         }
       }
@@ -194,24 +220,24 @@
     if (objState === -1) {
       return
     }
-    const stateObjs = getStateObjects(objects, states[objState])
-    const statePos = stateObjs.findIndex((it) => it.it._id === obj._id)
+    const stateObjs = objectByState.get(states[objState]) ?? []
+    const statePos = stateObjs.findIndex((it) => it._id === obj._id)
     if (statePos === undefined) {
       return
     }
 
     if (offset === -1) {
       if (dir === undefined || dir === 'vertical') {
-        const obj = (stateObjs[statePos - 1] ?? stateObjs[0]).it
+        const obj = stateObjs[statePos - 1] ?? stateObjs[0]
         scrollInto(objState, obj)
         dispatch('obj-focus', obj)
         return
       } else {
         while (objState > 0) {
           objState--
-          const nstateObjs = getStateObjects(objects, states[objState])
+          const nstateObjs = objectByState.get(states[objState]) ?? []
           if (nstateObjs.length > 0) {
-            const obj = (nstateObjs[statePos] ?? nstateObjs[nstateObjs.length - 1]).it
+            const obj = nstateObjs[statePos] ?? nstateObjs[nstateObjs.length - 1]
             scrollInto(objState, obj)
             dispatch('obj-focus', obj)
             break
@@ -221,16 +247,16 @@
     }
     if (offset === 1) {
       if (dir === undefined || dir === 'vertical') {
-        const obj = (stateObjs[statePos + 1] ?? stateObjs[stateObjs.length - 1]).it
+        const obj = stateObjs[statePos + 1] ?? stateObjs[stateObjs.length - 1]
         scrollInto(objState, obj)
         dispatch('obj-focus', obj)
         return
       } else {
         while (objState < states.length - 1) {
           objState++
-          const nstateObjs = getStateObjects(objects, states[objState])
+          const nstateObjs = objectByState.get(states[objState]) ?? []
           if (nstateObjs.length > 0) {
-            const obj = (nstateObjs[statePos] ?? nstateObjs[nstateObjs.length - 1]).it
+            const obj = nstateObjs[statePos] ?? nstateObjs[nstateObjs.length - 1]
             scrollInto(objState, obj)
             dispatch('obj-focus', obj)
             break
@@ -249,13 +275,13 @@
   export function check (docs: Doc[], value: boolean) {
     dispatch('check', { docs, value })
   }
-  const showMenu = async (evt: MouseEvent, object: ExtItem): Promise<void> => {
-    selection = object.pos
-    if (!checkedSet.has(object.it._id)) {
+  const showMenu = async (evt: MouseEvent, object: Item): Promise<void> => {
+    selection = objects.findIndex((p) => p._id === object._id)
+    if (!checkedSet.has(object._id)) {
       check(objects, false)
       checked = []
     }
-    dispatch('contextmenu', { evt, objects: checked.length > 0 ? checked : object.it })
+    dispatch('contextmenu', { evt, objects: checked.length > 0 ? checked : object })
   }
 </script>
 
@@ -263,7 +289,7 @@
   <ScrollBox>
     <div class="kanban-content">
       {#each states as state, si (state._id)}
-        {@const stateObjects = getStateObjects(objects, state, dragCard)}
+        {@const stateObjects = objectByState.get(state._id) ?? []}
 
         <div
           class="panel-container step-lr75"
