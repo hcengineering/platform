@@ -13,18 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, {
-    AnyAttribute,
-    ArrOf,
-    AttachedDoc,
-    Class,
-    Collection,
-    Doc,
-    Ref,
-    RefTo,
-    Space,
-    Type
-  } from '@hcengineering/core'
+  import core, { AnyAttribute, ArrOf, Class, Doc, Ref, RefTo, Space, Type } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import {
     closePopup,
@@ -38,7 +27,7 @@
   } from '@hcengineering/ui'
   import { Filter, KeyFilter } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import { FilterQuery } from '../../filter'
+  import { buildFilterKey, FilterQuery } from '../../filter'
   import view from '../../plugin'
 
   export let _class: Ref<Class<Doc>>
@@ -67,25 +56,7 @@
 
   function buildFilterFromKey (_class: Ref<Class<Doc>>, key: string): KeyFilter | undefined {
     const attribute = hierarchy.getAttribute(_class, key)
-    return buildFilter(_class, key, attribute)
-  }
-
-  function buildFilter (_class: Ref<Class<Doc>>, key: string, attribute: AnyAttribute): KeyFilter | undefined {
-    const isCollection = hierarchy.isDerived(attribute.type._class, core.class.Collection)
-    const targetClass = isCollection ? (attribute.type as Collection<AttachedDoc>).of : attribute.type._class
-    const clazz = hierarchy.getClass(targetClass)
-    const filter = hierarchy.as(clazz, view.mixin.AttributeFilter)
-
-    const attrOf = hierarchy.getClass(attribute.attributeOf)
-    if (filter.component === undefined) return undefined
-    return {
-      _class,
-      key: isCollection ? '_id' : key,
-      attribute,
-      label: attribute.label,
-      icon: attribute.icon ?? clazz.icon ?? attrOf.icon ?? view.icon.Setting,
-      component: filter.component
-    }
+    return buildFilterKey(hierarchy, _class, key, attribute)
   }
 
   function getValue (name: string, type: Type<any>): string {
@@ -103,7 +74,7 @@
     if (result.findIndex((p) => p.key === value) !== -1) {
       return
     }
-    const filter = buildFilter(_class, value, attribute)
+    const filter = buildFilterKey(hierarchy, _class, value, attribute)
     if (filter !== undefined) {
       result.push(filter)
     }
