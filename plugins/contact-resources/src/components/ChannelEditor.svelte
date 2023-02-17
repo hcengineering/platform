@@ -146,6 +146,7 @@
   </div>
 {:else}
   <div class="buttons-group xsmall-gap">
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <span
       class="select-text cover-channel"
       class:show

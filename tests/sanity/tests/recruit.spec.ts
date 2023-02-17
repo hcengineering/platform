@@ -22,11 +22,11 @@ test.describe('recruit tests', () => {
     const loc = 'Cupertino'
     const email = `ej-${generateId(4)}@test.com`
 
-    const firstName = page.locator('[placeholder="John"]')
+    const firstName = page.locator('[placeholder="First name"]')
     await firstName.click()
     await firstName.fill(first)
 
-    const lastName = page.locator('[placeholder="Appleseed"]')
+    const lastName = page.locator('[placeholder="Last name"]')
     await lastName.click()
     await lastName.fill(last)
 
@@ -60,6 +60,7 @@ test.describe('recruit tests', () => {
 
   test('create-application', async ({ page }) => {
     await page.locator('[id="app-recruit\\:string\\:RecruitApplication"]').click()
+    await page.waitForLoadState('load')
 
     const vacancyId = 'My vacancy ' + generateId(4)
 

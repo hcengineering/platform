@@ -8,9 +8,9 @@ test.use({
 test.describe('recruit tests', () => {
   test.beforeEach(async ({ page }) => {
     // Create user and workspace
-    await page.goto(`${PlatformURI}/workbench/sanity-ws`)
+    await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
-  test('create-candidate-with-skill', async ({ page }) => {
+  test('create-skill-candidate-with-skill', async ({ page }) => {
     // Go to http://localhost:8083/workbench/sanity-ws
     await page.goto(`${PlatformURI}/workbench/sanity-ws`)
     // Click [id="app-recruit\:string\:RecruitApplication"]
@@ -22,11 +22,11 @@ test.describe('recruit tests', () => {
     // Click button:has-text("Talent")
     await page.click('button:has-text("Talent")')
     // Fill [placeholder="John"]
-    await page.fill('[placeholder="John"]', 'Petr')
+    await page.fill('[placeholder="First name"]', 'Petr')
     // Click [placeholder="Appleseed"]
-    await page.click('[placeholder="Appleseed"]')
+    await page.click('[placeholder="Last name"]')
     // Fill [placeholder="Appleseed"]
-    await page.fill('[placeholder="Appleseed"]', 'Dooliutl')
+    await page.fill('[placeholder="Last name"]', 'Dooliutl')
     // Click .ml-4 .tooltip-trigger .flex-center
     await page.click('button:has-text("Skills")')
     // Click text=Add/Create Skill Suggested Cancel >> button
@@ -93,15 +93,15 @@ test.describe('recruit tests', () => {
     // await page.click('button:has-text("Cancel")')
     await page.keyboard.press('Escape')
     // Click [placeholder="John"]
-    await page.click('[placeholder="John"]')
+    await page.click('[placeholder="First name"]')
     // Fill [placeholder="John"]
     const first = 'first-' + generateId(4)
-    await page.fill('[placeholder="John"]', first)
+    await page.fill('[placeholder="First name"]', first)
     // Click [placeholder="Appleseed"]
-    await page.click('[placeholder="Appleseed"]')
+    await page.click('[placeholder="Last name"]')
     // Fill [placeholder="Appleseed"]
     const last = 'last-' + generateId(4)
-    await page.fill('[placeholder="Appleseed"]', last)
+    await page.fill('[placeholder="Last name"]', last)
     // Click button:has-text("Create")
     await page.click('button:has-text("Create")')
     await page.waitForSelector('form.antiCard', { state: 'detached' })

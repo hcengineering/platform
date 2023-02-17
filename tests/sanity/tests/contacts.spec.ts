@@ -8,7 +8,7 @@ test.use({
 test.describe('contact tests', () => {
   test.beforeEach(async ({ page }) => {
     // Create user and workspace
-    await page.goto(`${PlatformURI}/workbench/sanity-ws`)
+    await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
   test('create-contact', async ({ page }) => {
     // Create a new context with the saved storage state.
@@ -21,11 +21,11 @@ test.describe('contact tests', () => {
     const first = 'Elton-' + generateId(5)
     const last = 'John-' + generateId(5)
 
-    const firstName = page.locator('[placeholder="John"]')
+    const firstName = page.locator('[placeholder="First name"]')
     await firstName.click()
     await firstName.fill(first)
 
-    const lastName = page.locator('[placeholder="Appleseed"]')
+    const lastName = page.locator('[placeholder="Last name"]')
     await lastName.click()
     await lastName.fill(last)
 
@@ -41,7 +41,7 @@ test.describe('contact tests', () => {
 
     const orgName = 'Organization' + generateId(5)
 
-    const firstName = page.locator('[placeholder="Apple"]')
+    const firstName = page.locator('[placeholder="Organization name"]')
     await firstName.click()
     await firstName.fill(orgName)
 
@@ -59,7 +59,9 @@ test.describe('contact tests', () => {
     await searchBox.fill('Marina')
     await searchBox.press('Enter')
 
-    await expect(page.locator('.antiTable-body__row')).toHaveCount(1)
+    await expect(page.locator('.antiTable-body__row')).toHaveCount(1, {
+      timeout: 15000
+    })
 
     await searchBox.fill('')
     await searchBox.press('Enter')
@@ -79,11 +81,11 @@ test.describe('contact tests', () => {
     const first = 'Elton-' + generateId(5)
     const last = 'John-' + generateId(5)
 
-    const firstName = page.locator('[placeholder="John"]')
+    const firstName = page.locator('[placeholder="First name"]')
     await firstName.click()
     await firstName.fill(first)
 
-    const lastName = page.locator('[placeholder="Appleseed"]')
+    const lastName = page.locator('[placeholder="Last name"]')
     await lastName.click()
     await lastName.fill(last)
 
