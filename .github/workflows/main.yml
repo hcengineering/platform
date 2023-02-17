@@ -154,7 +154,7 @@ jobs:
       - name: Install...
         run: node common/scripts/install-run-rush.js install
       - name: Formatting...
-        run: node common/scripts/install-run-rush.js format
+        run: node common/scripts/install-run-rush.js fast-format
       - name: Check files formatting
         run: |
           echo '================================================================'

@@ -316,6 +316,14 @@
       "description": "Clean package-deps-*.json files",
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "find .|grep .rush/temp/package-deps_ | xargs rm"
+    },
+    {
+      "commandKind": "global",
+      "name": "fast-format",
+      "summary": "Format changed projects",
+      "description": "Format and autofix linting issues in changed projects",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "./common/scripts/each-diff.sh rushx format"
     }
   ],
 
