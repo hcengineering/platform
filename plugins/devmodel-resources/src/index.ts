@@ -23,7 +23,6 @@ import core, {
   Hierarchy,
   ModelDb,
   Ref,
-  toFindResult,
   Tx,
   TxResult,
   WithLookup
@@ -51,17 +50,16 @@ export interface QueryWithResult {
 }
 
 export const transactions: TxWitHResult[] = []
-export const notifications: Tx[] = []
-export const queries: QueryWithResult[] = []
 
 class ModelClient implements Client {
+  notifyEnabled = true
   constructor (readonly client: Client) {
+    this.notifyEnabled = (localStorage.getItem('#platform.notification.logging') ?? 'true') === 'true'
+
     client.notify = (tx) => {
       this.notify?.(tx)
-      console.info('devmodel# notify=>', tx, this.client.getModel(), getMetadata(devmodel.metadata.DevModel))
-      notifications.push(tx)
-      if (notifications.length > 500) {
-        notifications.shift()
+      if (this.notifyEnabled) {
+        console.info('devmodel# notify=>', tx, this.client.getModel(), getMetadata(devmodel.metadata.DevModel))
       }
     }
   }
@@ -82,26 +80,18 @@ class ModelClient implements Client {
     options?: FindOptions<T>
   ): Promise<WithLookup<T> | undefined> {
     const result = await this.client.findOne(_class, query, options)
-    console.info(
-      'devmodel# findOne=>',
-      _class,
-      query,
-      options,
-      'result => ',
-      result,
-      ' =>model',
-      this.client.getModel(),
-      getMetadata(devmodel.metadata.DevModel)
-    )
-    queries.push({
-      _class,
-      query,
-      options: options as FindOptions<Doc>,
-      result: toFindResult(result !== undefined ? [result] : []),
-      findOne: true
-    })
-    if (queries.length > 100) {
-      queries.shift()
+    if (this.notifyEnabled) {
+      console.info(
+        'devmodel# findOne=>',
+        _class,
+        query,
+        options,
+        'result => ',
+        result,
+        ' =>model',
+        this.client.getModel(),
+        getMetadata(devmodel.metadata.DevModel)
+      )
     }
     return result
   }
@@ -112,27 +102,27 @@ class ModelClient implements Client {
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     const result = await this.client.findAll(_class, query, options)
-    console.info(
-      'devmodel# findAll=>',
-      _class,
-      query,
-      options,
-      'result => ',
-      result,
-      ' =>model',
-      this.client.getModel(),
-      getMetadata(devmodel.metadata.DevModel)
-    )
-    queries.push({ _class, query, options: options as FindOptions<Doc>, result, findOne: false })
-    if (queries.length > 100) {
-      queries.shift()
+    if (this.notifyEnabled) {
+      console.info(
+        'devmodel# findAll=>',
+        _class,
+        query,
+        options,
+        'result => ',
+        result,
+        ' =>model',
+        this.client.getModel(),
+        getMetadata(devmodel.metadata.DevModel)
+      )
     }
     return result
   }
 
   async tx (tx: Tx): Promise<TxResult> {
     const result = await this.client.tx(tx)
-    console.info('devmodel# tx=>', tx, result, getMetadata(devmodel.metadata.DevModel))
+    if (this.notifyEnabled) {
+      console.info('devmodel# tx=>', tx, result, getMetadata(devmodel.metadata.DevModel))
+    }
     transactions.push({ tx, result })
     if (transactions.length > 100) {
       transactions.shift()
@@ -166,12 +156,6 @@ export async function Hook (client: Client): Promise<Client> {
             icon: view.icon.Table,
             id: 'transactions',
             component: devmodel.component.ModelView
-          },
-          {
-            label: 'Queries' as IntlString,
-            icon: view.icon.Table,
-            id: 'queries',
-            component: devmodel.component.QueryView
           }
         ]
       }

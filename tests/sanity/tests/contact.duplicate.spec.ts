@@ -8,7 +8,7 @@ test.use({
 test.describe('duplicate-org-test', () => {
   test.beforeEach(async ({ page }) => {
     // Create user and workspace
-    await page.goto(`${PlatformURI}/workbench/sanity-ws`)
+    await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
   test('check-contact-exists', async ({ page }) => {
     await page.click('[id="app-lead\\:string\\:LeadApplication"]')
@@ -26,11 +26,11 @@ test.describe('duplicate-org-test', () => {
     await page.click('button:has-text("Organization")')
 
     // Click [placeholder="Apple"]
-    await page.click('[placeholder="Apple"]')
+    await page.click('[placeholder="Organization name"]')
 
     const genId = 'Asoft-' + generateId(4)
     // Fill [placeholder="Apple"]
-    await page.fill('[placeholder="Apple"]', genId)
+    await page.fill('[placeholder="Organization name"]', genId)
 
     // Click button:has-text("Create")
     await page.click('button:has-text("Create")')
@@ -47,10 +47,10 @@ test.describe('duplicate-org-test', () => {
     await page.click('button:has-text("Organization")')
 
     // Click [placeholder="Apple"]
-    await page.click('[placeholder="Apple"]')
+    await page.click('[placeholder="Organization name"]')
 
     // Fill [placeholder="Apple"]
-    await page.fill('[placeholder="Apple"]', genId)
+    await page.fill('[placeholder="Organization name"]', genId)
 
     // Click text=Person already exists...
     await page.click('text=Contact already exists...')

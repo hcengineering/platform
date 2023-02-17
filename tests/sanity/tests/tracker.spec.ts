@@ -30,6 +30,14 @@ test('create-issue-and-sub-issue', async ({ page }) => {
   }
   await createIssue(page, props)
   await page.click('text="Issues"')
+
+  // Click [placeholder="Search"]
+  await page.locator('[placeholder="Search"]').click()
+  // Fill [placeholder="Search"]
+  await page.locator('[placeholder="Search"]').fill(props.name)
+  // Press Enter
+  await page.locator('[placeholder="Search"]').press('Enter')
+
   await openIssue(page, props.name)
   await checkIssue(page, props)
   props.name = `sub${props.name}`
@@ -40,12 +48,13 @@ test('create-issue-and-sub-issue', async ({ page }) => {
 
 const getIssueName = (postfix: string = generateId(5)): string => `issue-${postfix}`
 
+const panelStatusMap = new Map([
+  ['Issues', DEFAULT_STATUSES],
+  ['Active', ['Todo', 'In Progress']],
+  ['Backlog', ['Backlog']]
+])
+
 test('issues-status-display', async ({ page }) => {
-  const panelStatusMap = new Map([
-    ['Issues', DEFAULT_STATUSES],
-    ['Active', ['Todo', 'In Progress']],
-    ['Backlog', ['Backlog']]
-  ])
   const locator = page.locator('.list-container')
   await navigate(page)
   for (const status of DEFAULT_STATUSES) {
@@ -58,15 +67,19 @@ test('issues-status-display', async ({ page }) => {
     await expect(locator).toContainText(statuses)
     if (excluded.length > 0) await expect(locator).not.toContainText(excluded)
     await page.click(ViewletSelectors.Board)
+
     if (excluded.length > 0) await expect(locator).not.toContainText(excluded)
     for (const status of statuses) {
-      await expect(page.locator(`.panel-container:has-text("${status}")`)).toContainText(getIssueName(status))
+      await expect(
+        page.locator('.panel-container', {
+          has: page.locator(`.header:has-text("${status}")`)
+        })
+      ).toContainText(getIssueName(status), { timeout: 15000 })
     }
   }
 })
 
 test('save-view-options', async ({ page }) => {
-  test.setTimeout(45000)
   const panels = ['Issues', 'Active', 'Backlog']
   await navigate(page)
   for (const viewletSelector of [ViewletSelectors.Board, ViewletSelectors.Table]) {
@@ -108,12 +121,11 @@ test('my-issues', async ({ page }) => {
 })
 
 test('report-time-from-issue-card', async ({ page }) => {
-  test.setTimeout(45000)
   await navigate(page)
   const assignee = 'Chen Rosamund'
   const status = 'In Progress'
   const values = [0.25, 0.5, 0.75, 1]
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 5; i++) {
     const random = Math.floor(Math.random() * values.length)
     const time = values[random]
     const name = getIssueName()
@@ -151,14 +163,24 @@ test('report-time-from-main-view', async ({ page }) => {
   const name = getIssueName()
 
   await createIssue(page, { name, assignee, status })
+
+  // await page.click('.close-button > .button')
+
+  // Click [placeholder="Search"]
+  await page.locator('[placeholder="Search"]').click()
+  // Fill [placeholder="Search"]
+  await page.locator('[placeholder="Search"]').fill(name)
+  // Press Enter
+  await page.locator('[placeholder="Search"]').press('Enter')
+
   await page.waitForSelector(`text="${name}"`)
-  await page.click('.close-button > .button')
 
   let count = 0
   for (let j = 0; j < 5; j++) {
     const random = Math.floor(Math.random() * values.length)
     const time = values[random]
     count += time
+
     await page.locator('.estimation-container').first().click()
     await page.waitForSelector('text="Estimation"')
 

@@ -8,7 +8,7 @@ test.use({
 test.describe('recruit review tests', () => {
   test.beforeEach(async ({ page }) => {
     // Create user and workspace
-    await page.goto(`${PlatformURI}/workbench/sanity-ws`)
+    await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
   test('create-review', async ({ page, context }) => {
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')

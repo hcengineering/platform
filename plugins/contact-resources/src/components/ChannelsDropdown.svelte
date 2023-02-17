@@ -168,7 +168,6 @@
   }
   const saveItems = (): void => {
     value = filterUndefined(displayItems)
-    dispatch('change', value)
     updateMenu(displayItems)
   }
 
@@ -206,6 +205,9 @@
               displayItems = dropItem(n)
             } else {
               item.value = result
+              if (displayItems.find((it) => item.value === it.value) === undefined) {
+                displayItems = [...displayItems, item]
+              }
             }
             saveItems()
             focusManager?.setFocusPos(focusIndex + 1 + n)

@@ -15,6 +15,14 @@
         {
           "name": "login:metadata:LoginEndpoint",
           "value": "ws://localhost:3333"
+        },
+        {
+          "name": "#platform.notification.timeout",
+          "value": "1"
+        },
+        {
+          "name": "#platform.notification.logging",
+          "value": "false"
         }
       ]
     }

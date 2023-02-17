@@ -16,7 +16,7 @@
 import { generateId } from '@hcengineering/core'
 import type { Metadata } from '@hcengineering/platform'
 import { setMetadata } from '@hcengineering/platform'
-import { Notification, notificationsStore, NotificationPosition, NotificationSeverity } from '.'
+import { Notification, NotificationPosition, NotificationSeverity, notificationsStore } from '.'
 import { AnyComponent, AnySvelteComponent } from './types'
 
 export function setMetadataLocalStorage<T> (id: Metadata<T>, value: T | null): void {
@@ -64,7 +64,7 @@ export function addNotification (
     severity: NotificationSeverity.Success,
     position: NotificationPosition.BottomRight,
     component,
-    closeTimeout: 10000,
+    closeTimeout: parseInt(localStorage.getItem('#platform.notification.timeout') ?? '10000'),
     params
   }
 

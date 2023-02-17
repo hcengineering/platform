@@ -22,7 +22,7 @@ export const DEFAULT_STATUSES = ['Backlog', 'Todo', 'In Progress', 'Done', 'Canc
 export const DEFAULT_USER = 'Appleseed John'
 
 export async function navigate (page: Page): Promise<void> {
-  await page.goto(`${PlatformURI}/workbench/sanity-ws`)
+  await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   await page.click('[id="app-tracker\\:string\\:TrackerApplication"]')
   await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/tracker`)
 }
