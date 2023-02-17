@@ -18,8 +18,9 @@
   import core, { FindResult, generateId, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
   import { Card, createQuery, getClient, UserBox } from '@hcengineering/presentation'
   import { Vacancy as VacancyClass } from '@hcengineering/recruit'
+  import tags from '@hcengineering/tags'
   import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
-  import tracker, { calcRank, Issue, IssueStatus, IssueTemplate } from '@hcengineering/tracker'
+  import tracker, { calcRank, Issue, IssueStatus, IssueTemplate, IssueTemplateData, Team } from '@hcengineering/tracker'
   import { Button, Component, createFocusManager, EditBox, FocusHandler, IconAttachment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
@@ -60,6 +61,61 @@
     issueTemplates = result
   })
 
+  async function saveIssue (
+    id: Ref<VacancyClass>,
+    space: Ref<Team>,
+    template: IssueTemplateData,
+    parent: Ref<Issue> = tracker.ids.NoParent
+  ): Promise<Ref<Issue>> {
+    const lastOne = await client.findOne<Issue>(
+      tracker.class.Issue,
+      { space },
+      { sort: { rank: SortingOrder.Descending } }
+    )
+    const incResult = await client.updateDoc(
+      tracker.class.Team,
+      core.space.Space,
+      space,
+      {
+        $inc: { sequence: 1 }
+      },
+      true
+    )
+    const team = await client.findOne(tracker.class.Team, { _id: space })
+    const rank = calcRank(lastOne, undefined)
+    const resId = await client.addCollection(tracker.class.Issue, space, parent, tracker.class.Issue, 'subIssues', {
+      title: template.title + ` (${name})`,
+      description: template.description,
+      assignee: template.assignee,
+      project: template.project,
+      sprint: template.sprint,
+      number: (incResult as any).object.sequence,
+      status: team?.defaultIssueStatus as Ref<IssueStatus>,
+      priority: template.priority,
+      rank,
+      comments: 0,
+      subIssues: 0,
+      dueDate: null,
+      parents: [],
+      reportedTime: 0,
+      estimation: template.estimation,
+      reports: 0,
+      relations: [{ _id: id, _class: recruit.class.Vacancy }],
+      childInfo: []
+    })
+    if ((template.labels?.length ?? 0) > 0) {
+      const tagElements = await client.findAll(tags.class.TagElement, { _id: { $in: template.labels } })
+      for (const label of tagElements) {
+        await client.addCollection(tags.class.TagReference, space, resId, tracker.class.Issue, 'labels', {
+          title: label.title,
+          color: label.color,
+          tag: label._id
+        })
+      }
+    }
+    return resId
+  }
+
   async function createVacancy () {
     if (
       templateId !== undefined &&
@@ -86,52 +142,9 @@
 
     if (issueTemplates.length > 0) {
       for (const issueTemplate of issueTemplates) {
-        // we need find for each because it can be in another space
-        const lastOne = await client.findOne<Issue>(
-          tracker.class.Issue,
-          { space: issueTemplate.space },
-          { sort: { rank: SortingOrder.Descending } }
-        )
-        const incResult = await client.updateDoc(
-          tracker.class.Team,
-          core.space.Space,
-          issueTemplate.space,
-          {
-            $inc: { sequence: 1 }
-          },
-          true
-        )
-        const team = await client.findOne(tracker.class.Team, { _id: issueTemplate.space })
-        const rank = calcRank(lastOne, undefined)
-        await client.addCollection(
-          tracker.class.Issue,
-          issueTemplate.space,
-          tracker.ids.NoParent,
-          tracker.class.Issue,
-          'subIssues',
-          {
-            title: issueTemplate.title,
-            description: issueTemplate.description,
-            assignee: issueTemplate.assignee,
-            project: issueTemplate.project,
-            sprint: issueTemplate.sprint,
-            number: (incResult as any).object.sequence,
-            status: team?.defaultIssueStatus as Ref<IssueStatus>,
-            priority: issueTemplate.priority,
-            rank,
-            comments: 0,
-            subIssues: 0,
-            dueDate: null,
-            parents: [],
-            reportedTime: 0,
-            estimation: issueTemplate.estimation,
-            reports: 0,
-            relations: [{ _id: id, _class: recruit.class.Vacancy }],
-            childInfo: []
-          }
-        )
-        if (lastOne !== undefined) {
-          lastOne.rank = rank
+        const issue = await saveIssue(id, issueTemplate.space, issueTemplate)
+        for (const sub of issueTemplate.children) {
+          await saveIssue(id, issueTemplate.space, sub, issue)
         }
       }
     }
