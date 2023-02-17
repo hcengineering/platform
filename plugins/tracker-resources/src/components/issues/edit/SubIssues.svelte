@@ -15,10 +15,21 @@
 <script lang="ts">
   import { Ref, SortingOrder, toIdMap, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
-  import { Button, Chevron, closeTooltip, ExpandCollapse, IconAdd, IconArrowRight, Label } from '@hcengineering/ui'
+  import { Issue, IssueStatus, Team, trackerId } from '@hcengineering/tracker'
+  import {
+    Button,
+    Chevron,
+    closeTooltip,
+    ExpandCollapse,
+    getCurrentLocation,
+    IconScaleFull,
+    IconAdd,
+    IconArrowRight,
+    Label,
+    navigate
+  } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
-  import { getViewOptions, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { createFilter, filterStore, getViewOptions, ViewletSettingButton } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
   import CreateSubIssue from './CreateSubIssue.svelte'
   import SubIssueList from './SubIssueList.svelte'
@@ -99,6 +110,27 @@
     {#if viewlet && hasSubIssues && viewOptions}
       <ViewletSettingButton bind:viewOptions {viewlet} kind={'transparent'} />
     {/if}
+    <Button
+      width="min-content"
+      icon={IconScaleFull}
+      kind={'transparent'}
+      size={'small'}
+      showTooltip={{ label: tracker.string.OpenSubIssues, direction: 'bottom' }}
+      on:click={() => {
+        const filter = createFilter(tracker.class.Issue, 'attachedTo', [issue._id])
+        if (filter !== undefined) {
+          closeTooltip()
+          const loc = getCurrentLocation()
+          loc.fragment = undefined
+          loc.query = undefined
+          loc.path[2] = trackerId
+          loc.path[3] = issue.space
+          loc.path[4] = 'issues'
+          navigate(loc)
+          $filterStore = [filter]
+        }
+      }}
+    />
     <Button
       id="add-sub-issue"
       width="min-content"

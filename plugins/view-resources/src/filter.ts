@@ -1,7 +1,18 @@
-import { Doc, FindResult, ObjQueryType, Ref } from '@hcengineering/core'
+import core, {
+  AnyAttribute,
+  AttachedDoc,
+  Class,
+  Collection,
+  Doc,
+  FindResult,
+  Hierarchy,
+  ObjQueryType,
+  Ref
+} from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { createQuery, getClient, LiveQuery } from '@hcengineering/presentation'
-import { Filter } from '@hcengineering/view'
+import { AnyComponent } from '@hcengineering/ui'
+import { Filter, FilterMode, KeyFilter } from '@hcengineering/view'
 import { writable } from 'svelte/store'
 import view from './plugin'
 
@@ -93,4 +104,71 @@ export async function getRefs (filter: Filter, onUpdate: () => void): Promise<Ar
     }
   })
   return await promise
+}
+
+export function buildFilterKey (
+  hierarchy: Hierarchy,
+  _class: Ref<Class<Doc>>,
+  key: string,
+  attribute: AnyAttribute
+): KeyFilter | undefined {
+  const isCollection = hierarchy.isDerived(attribute.type._class, core.class.Collection)
+  const targetClass = isCollection ? (attribute.type as Collection<AttachedDoc>).of : attribute.type._class
+  const clazz = hierarchy.getClass(targetClass)
+  const filter = hierarchy.as(clazz, view.mixin.AttributeFilter)
+
+  const attrOf = hierarchy.getClass(attribute.attributeOf)
+  if (filter.component === undefined) return undefined
+  return {
+    _class,
+    key: isCollection ? '_id' : key,
+    attribute,
+    label: attribute.label,
+    icon: attribute.icon ?? clazz.icon ?? attrOf.icon ?? view.icon.Setting,
+    component: filter.component
+  }
+}
+
+interface FilterModes {
+  modes: Array<Ref<FilterMode>>
+  mode: Ref<FilterMode>
+}
+
+function getFilterModes (component: AnyComponent): FilterModes | undefined {
+  if (component === view.component.ObjectFilter) {
+    return {
+      modes: [view.filter.FilterObjectIn, view.filter.FilterObjectNin],
+      mode: view.filter.FilterObjectIn
+    }
+  }
+  if (component === view.component.ValueFilter) {
+    return {
+      modes: [view.filter.FilterValueIn, view.filter.FilterValueNin],
+      mode: view.filter.FilterValueIn
+    }
+  }
+  if (component === view.component.TimestampFilter) {
+    return {
+      modes: [view.filter.FilterBefore, view.filter.FilterAfter],
+      mode: view.filter.FilterBefore
+    }
+  }
+}
+
+export function createFilter (_class: Ref<Class<Doc>>, key: string, value: any[]): Filter | undefined {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const attribute = hierarchy.getAttribute(_class, key)
+  const filterKey = buildFilterKey(hierarchy, _class, key, attribute)
+  if (filterKey === undefined) return
+
+  const modes = getFilterModes(filterKey.component)
+  if (modes === undefined) return
+  return {
+    key: filterKey,
+    value,
+    index: 1,
+    modes: modes.modes,
+    mode: modes.mode
+  }
 }
