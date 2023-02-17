@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, WithLookup } from '@hcengineering/core'
+  import { ClassifierKind, Doc, Mixin, Ref, WithLookup } from '@hcengineering/core'
   import { AttributeBarEditor, createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import type { Issue, IssueStatus } from '@hcengineering/tracker'
@@ -31,6 +31,7 @@
 
   export let issue: Issue
   export let issueStatuses: WithLookup<IssueStatus>[]
+  export let showAllMixins: boolean = false
 
   const query = createQuery()
   let showIsBlocking = false
@@ -48,6 +49,27 @@
   function updateKeys (ignoreKeys: string[]): void {
     const filtredKeys = getFiltredKeys(hierarchy, issue._class, ignoreKeys)
     keys = filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key))
+  }
+
+  let mixins: Mixin<Doc>[] = []
+
+  $: getMixins(issue, showAllMixins)
+
+  function getMixins (object: Issue, showAllMixins: boolean): void {
+    const descendants = hierarchy.getDescendants(tracker.class.Issue).map((p) => hierarchy.getClass(p))
+
+    mixins = descendants.filter(
+      (m) =>
+        m.kind === ClassifierKind.MIXIN &&
+        (hierarchy.hasMixin(object, m._id) ||
+          (showAllMixins && hierarchy.isDerived(tracker.class.Issue, hierarchy.getBaseClass(m._id))))
+    )
+  }
+
+  function getMixinKeys (mixin: Ref<Mixin<Doc>>): KeyedAttribute[] {
+    const filtredKeys = getFiltredKeys(hierarchy, mixin, [], issue._class)
+    const res = filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key))
+    return res
   }
 
   $: updateKeys(['title', 'description', 'priority', 'status', 'number', 'assignee', 'project', 'dueDate', 'sprint'])
@@ -143,6 +165,13 @@
       <AttributeBarEditor {key} _class={issue._class} object={issue} showHeader={true} />
     {/each}
   {/if}
+
+  {#each mixins as mixin}
+    <div class="divider" />
+    {#each getMixinKeys(mixin._id) as key (typeof key === 'string' ? key : key.key)}
+      <AttributeBarEditor {key} _class={mixin._id} object={hierarchy.as(issue, mixin._id)} showHeader={true} />
+    {/each}
+  {/each}
 </div>
 
 <style lang="scss">

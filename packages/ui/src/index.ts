@@ -145,6 +145,7 @@ export { default as IconCheckCircle } from './components/icons/CheckCircle.svelt
 export { default as IconColStar } from './components/icons/ColStar.svelte'
 export { default as IconMinWidth } from './components/icons/MinWidth.svelte'
 export { default as IconMaxWidth } from './components/icons/MaxWidth.svelte'
+export { default as IconMixin } from './components/icons/Mixin.svelte'
 
 export { default as PanelInstance } from './components/PanelInstance.svelte'
 export { default as Panel } from './components/Panel.svelte'

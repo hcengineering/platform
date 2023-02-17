@@ -26,6 +26,7 @@
     EditBox,
     getCurrentLocation,
     IconEdit,
+    IconMixin,
     IconMoreH,
     Label,
     navigate,
@@ -61,6 +62,7 @@
   let innerWidth: number
   let isEditing = false
   let descriptionBox: AttachmentStyledBox
+  let showAllMixins: boolean
 
   const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
 
@@ -289,11 +291,23 @@
           navigate(loc)
         }}
       />
+      <Button
+        kind={'transparent'}
+        shape={'round'}
+        selected={showAllMixins}
+        on:click={() => {
+          showAllMixins = !showAllMixins
+        }}
+      >
+        <svelte:fragment slot="content">
+          <IconMixin size={'small'} />
+        </svelte:fragment>
+      </Button>
     </svelte:fragment>
 
     <svelte:fragment slot="custom-attributes">
       {#if issue && currentTeam && issueStatuses}
-        <ControlPanel {issue} {issueStatuses} />
+        <ControlPanel {issue} {issueStatuses} {showAllMixins} />
       {/if}
 
       <div class="divider" />

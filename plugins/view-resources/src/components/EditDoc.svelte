@@ -28,14 +28,13 @@
     getClient,
     KeyedAttribute
   } from '@hcengineering/presentation'
-  import { AnyComponent, Button, Component, IconMoreH, showPopup } from '@hcengineering/ui'
+  import { AnyComponent, Button, Component, IconMixin, IconMoreH, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { ContextMenu } from '..'
   import { categorizeFields, getCollectionCounter, getFiltredKeys } from '../utils'
   import ActionContext from './ActionContext.svelte'
   import DocAttributeBar from './DocAttributeBar.svelte'
-  import IconMixin from './icons/Mixin.svelte'
   import UpDownNavigator from './UpDownNavigator.svelte'
 
   export let _id: Ref<Doc>
