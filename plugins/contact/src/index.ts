@@ -230,7 +230,8 @@ const contactPlugin = plugin(contactId, {
     Telegram: '' as Ref<ChannelProvider>,
     GitHub: '' as Ref<ChannelProvider>,
     Facebook: '' as Ref<ChannelProvider>,
-    Homepage: '' as Ref<ChannelProvider>
+    Homepage: '' as Ref<ChannelProvider>,
+    Whatsapp: '' as Ref<ChannelProvider>
   },
   avatarProvider: {
     Color: '' as Ref<AvatarProvider>,
@@ -260,7 +261,8 @@ const contactPlugin = plugin(contactId, {
     Person: '' as Asset,
     Company: '' as Asset,
     SocialEdit: '' as Asset,
-    Homepage: '' as Asset
+    Homepage: '' as Asset,
+    Whatsapp: '' as Asset
   },
   space: {
     Employee: '' as Ref<Space>,

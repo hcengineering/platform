@@ -72,7 +72,9 @@ export default mergeIds(contactId, contact, {
     TypeLabel: '' as IntlString,
     Homepage: '' as IntlString,
     Birthday: '' as IntlString,
-    CreatedOn: '' as IntlString
+    CreatedOn: '' as IntlString,
+    Whatsapp: '' as IntlString,
+    WhatsappPlaceholder: '' as IntlString
   },
   completion: {
     PersonQuery: '' as Resource<ObjectSearchFactory>,

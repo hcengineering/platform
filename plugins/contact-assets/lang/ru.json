@@ -74,6 +74,8 @@
     "UseGravatar": "Использовать Gravatar",
     "UseColor": "Использовать цвет",
     "NotSpecified": "Не указан",
-    "CreatedOn": "Создан"
+    "CreatedOn": "Создан",
+    "Whatsapp": "Whatsapp",
+    "WhatsappPlaceholder": "Whatsapp"
   }
 }
