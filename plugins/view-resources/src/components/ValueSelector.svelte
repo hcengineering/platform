@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, FindOptions, Hierarchy, Ref } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, FindOptions, Hierarchy, Mixin, Ref } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
   import { getClient, ObjectPopup, updateAttribute } from '@hcengineering/presentation'
   import { Label, SelectPopup, resizeObserver } from '@hcengineering/ui'
@@ -13,6 +13,7 @@
   export let _class: Ref<Class<Doc>> | undefined
   export let query: DocumentQuery<Doc> | undefined
   export let queryOptions: FindOptions<Doc> | undefined
+  export let castRequest: Ref<Mixin<Doc>> | undefined = undefined
 
   export let attribute: string
   export let searchField: string
@@ -31,7 +32,8 @@
   export let size: 'small' | 'medium' | 'large' = 'small'
 
   const dispatch = createEventDispatcher()
-
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
   const changeStatus = async (newStatus: any) => {
     if (newStatus === '#null') {
       newStatus = null
@@ -42,18 +44,20 @@
       return
     }
     const docs = Array.isArray(value) ? value : [value]
-    const c = getClient()
 
     const changed = (d: Doc) => (d as any)[attribute] !== newStatus
     await Promise.all(
       docs.filter(changed).map((it) => {
         // c.update(it, { [attribute]: newStatus } )
         const cl = Hierarchy.mixinOrClass(it)
-        const attr = c.getHierarchy().getAttribute(cl, attribute)
+        const attr =
+          castRequest !== undefined
+            ? hierarchy.getAttribute(castRequest, attribute)
+            : hierarchy.getAttribute(cl, attribute)
         if (attr === undefined) {
           throw new Error('attribute not found')
         }
-        return updateAttribute(c, it, cl, { key: attribute, attr }, newStatus)
+        return updateAttribute(client, it, cl, { key: attribute, attr }, newStatus)
       })
     )
 

@@ -721,6 +721,9 @@ const view = plugin(viewId, {
       docMatches?: string[]
       searchField?: string
 
+      // Cast doc to mixin
+      castRequest?: Ref<Mixin<Doc>>
+
       // Or list of values to select from
       values?: { icon?: Asset, label: IntlString, id: number | string }[]
 
