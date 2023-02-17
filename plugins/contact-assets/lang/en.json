@@ -74,6 +74,8 @@
     "UseGravatar": "Use Gravatar",
     "UseColor": "Use color",
     "NotSpecified": "Not specified",
-    "CreatedOn": "Created"
+    "CreatedOn": "Created",
+    "Whatsapp": "Whatsapp",
+    "WhatsappPlaceholder": "Whatsapp"
   }
 }
