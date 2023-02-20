@@ -102,7 +102,7 @@ function publish (name) {
 function main () {
   const args = process.argv
 
-  const config = JSON.parse(execSync('rush list -p --json', { encoding: 'utf-8' }))
+  const config = JSON.parse(execSync('node common/scripts/install-run-rush.js list -p --json', { encoding: 'utf-8' }))
 
   fillPackages(config)
   buildDependencyTree()

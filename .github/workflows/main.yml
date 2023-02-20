@@ -376,7 +376,7 @@ jobs:
       - name: Login to NPM
         run: |
           echo @hcengineering/anticrm:https://npm.pkg.github.com/ > ~/.npmrc
-          echo '//npm.pkg.github.com/:_authToken=${NPM_TOKEN}' >> ~/.npmrc
+          echo '//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}' >> ~/.npmrc
       - name: NPM bump
         run: node common/scripts/bump.js
 
