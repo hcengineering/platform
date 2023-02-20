@@ -16,14 +16,15 @@
   import calendar from '@hcengineering/calendar'
   import type { Contact, EmployeeAccount, Organization, Person } from '@hcengineering/contact'
   import contact from '@hcengineering/contact'
-  import { Account, Class, Client, Doc, generateId, getCurrentAccount, Ref, DateRangeMode } from '@hcengineering/core'
+  import { Account, Class, Client, DateRangeMode, Doc, generateId, getCurrentAccount, Ref } from '@hcengineering/core'
   import { getResource, OK, Resource, Severity, Status } from '@hcengineering/platform'
   import { Card, getClient, UserBox, UserBoxList } from '@hcengineering/presentation'
-  import type { Candidate, Review } from '@hcengineering/recruit'
+  import type { Applicant, Candidate, Review } from '@hcengineering/recruit'
   import task from '@hcengineering/task'
   import { StyledTextArea } from '@hcengineering/text-editor'
   import { DateRangePresenter, EditBox, Status as StatusControl } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import { ObjectSearchBox } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../../plugin'
 
@@ -46,7 +47,9 @@
   let startDate: number = initDate.getTime()
   let dueDate: number = initDate.getTime() + 30 * 60 * 1000
   let location: string = ''
-  let company: Ref<Organization> | undefined = undefined
+
+  export let company: Ref<Organization> | undefined = undefined
+  export let application: Ref<Applicant> | undefined = undefined
 
   const doc: Review = {
     number: 0,
@@ -61,6 +64,7 @@
     date: 0,
     dueDate: undefined,
     description,
+    application,
     company,
     verdict: '',
     title,
@@ -106,6 +110,7 @@
       title,
       participants: doc.participants,
       company,
+      application,
       location
     })
   }
@@ -169,6 +174,19 @@
       label={recruit.string.Company}
       kind={'no-border'}
       size={'small'}
+      showNavigate={false}
+      create={{ component: contact.component.CreateOrganization, label: contact.string.CreateOrganization }}
+    />
+    <ObjectSearchBox
+      _class={recruit.class.Applicant}
+      bind:value={application}
+      label={recruit.string.Application}
+      placeholder={recruit.string.ApplicationCreateLabel}
+      kind={'no-border'}
+      searchField={'number'}
+      size={'small'}
+      showNavigate={false}
+      allowCategory={[recruit.completion.ApplicationCategory]}
     />
     <DateRangePresenter
       bind:value={startDate}

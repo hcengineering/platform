@@ -111,6 +111,8 @@ export interface Review extends Event {
 
   verdict: string
 
+  application?: Ref<Applicant>
+
   company?: Ref<Organization>
 
   opinions?: number

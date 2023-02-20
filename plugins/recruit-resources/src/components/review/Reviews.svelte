@@ -13,11 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Doc, Ref } from '@hcengineering/core'
-  import core from '@hcengineering/core'
-  import { IntlString } from '@hcengineering/platform'
   import calendar from '@hcengineering/calendar'
-  import { Button, IconAdd, Label, showPopup, resizeObserver, Scroller } from '@hcengineering/ui'
+  import { Organization } from '@hcengineering/contact'
+  import { DateRangeMode, Doc, FindOptions, Ref } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
+  import { Applicant, Review } from '@hcengineering/recruit'
+  import { Button, DatePresenter, IconAdd, Label, resizeObserver, showPopup } from '@hcengineering/ui'
   import { Table } from '@hcengineering/view-resources'
   import recruit from '../../plugin'
   import FileDuo from '../icons/FileDuo.svelte'
@@ -26,11 +27,27 @@
   export let objectId: Ref<Doc>
   export let reviews: number
   export let label: IntlString = recruit.string.Reviews
+  export let application: Ref<Applicant> | undefined
+  export let company: Ref<Organization> | undefined
 
   const createApp = (): void => {
-    showPopup(CreateReview, { candidate: objectId, preserveCandidate: true }, 'top')
+    showPopup(
+      CreateReview,
+      {
+        candidate: objectId,
+        preserveCandidate: true,
+        application,
+        company
+      },
+      'top'
+    )
   }
   let wSection: number
+  const options: FindOptions<Review> = {
+    lookup: {
+      application: recruit.class.Applicant
+    }
+  }
 </script>
 
 <div class="antiSection" use:resizeObserver={(element) => (wSection = element.clientWidth)}>
@@ -41,58 +58,34 @@
     <Button icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createApp} />
   </div>
   {#if reviews > 0}
-    {#if wSection < 640}
-      <Scroller horizontal>
-        <Table
-          _class={recruit.class.Review}
-          config={[
-            '',
-            'verdict',
-            {
-              key: '',
-              presenter: recruit.component.OpinionsPresenter,
-              label: recruit.string.Opinions,
-              sortingKey: 'opinions'
-            },
-            {
-              key: '',
-              presenter: calendar.component.DateTimePresenter,
-              label: calendar.string.Date,
-              sortingKey: 'date'
-            }
-          ]}
-          options={{
-            lookup: {
-              space: core.class.Space
-            }
-          }}
-          query={{ attachedTo: objectId }}
-          loadingProps={{ length: reviews }}
-        />
-      </Scroller>
-    {:else}
-      <Table
-        _class={recruit.class.Review}
-        config={[
-          '',
-          'verdict',
-          {
-            key: '',
-            presenter: recruit.component.OpinionsPresenter,
-            label: recruit.string.Opinions,
-            sortingKey: 'opinions'
-          },
-          { key: '', presenter: calendar.component.DateTimePresenter, label: calendar.string.Date, sortingKey: 'date' }
-        ]}
-        options={{
-          lookup: {
-            space: core.class.Space
+    <Table
+      _class={recruit.class.Review}
+      config={[
+        '',
+        '$lookup.application',
+        'company',
+        'verdict',
+        {
+          key: '',
+          presenter: recruit.component.OpinionsPresenter,
+          label: recruit.string.Opinions,
+          sortingKey: 'opinions'
+        },
+        {
+          key: 'date',
+          presenter: DatePresenter,
+          label: calendar.string.Date,
+          sortingKey: 'date',
+          props: {
+            editable: false,
+            mode: DateRangeMode.DATE
           }
-        }}
-        query={{ attachedTo: objectId }}
-        loadingProps={{ length: reviews }}
-      />
-    {/if}
+        }
+      ]}
+      {options}
+      query={{ attachedTo: objectId }}
+      loadingProps={{ length: reviews }}
+    />
   {:else}
     <div class="antiSection-empty solid flex-col-center mt-3">
       <div class="caption-color">
@@ -101,6 +94,7 @@
       <span class="dark-color mt-2">
         <Label label={recruit.string.NoReviewForCandidate} />
       </span>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <span class="over-underline content-accent-color" on:click={createApp}>
         <Label label={recruit.string.CreateAnReview} />
       </span>

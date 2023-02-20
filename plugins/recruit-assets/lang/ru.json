@@ -107,7 +107,8 @@
     "Score": "Оценка",
     "Match": "Совпадение",
     "PerformMatch": "Сопоставить",
-    "MoveApplication": "Поменять Вакансию"
+    "MoveApplication": "Поменять Вакансию",
+    "SearchVacancy": "Найти вакансию..."
   },
   "status": {
     "TalentRequired": "Пожалуйста выберите таланта",

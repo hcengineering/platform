@@ -7,7 +7,7 @@ import chunter from '@hcengineering/model-chunter'
 import contact from '@hcengineering/model-contact'
 import core, { TAttachedDoc } from '@hcengineering/model-core'
 import task from '@hcengineering/model-task'
-import { Candidate, Opinion, Review } from '@hcengineering/recruit'
+import { Applicant, Candidate, Opinion, Review } from '@hcengineering/recruit'
 import recruit from './plugin'
 
 @Model(recruit.class.Review, calendar.class.Event)
@@ -23,6 +23,9 @@ export class TReview extends TEvent implements Review {
   @Prop(TypeString(), recruit.string.Verdict)
   @Index(IndexKind.FullText)
     verdict!: string
+
+  @Prop(TypeRef(recruit.class.Applicant), recruit.string.Application, { icon: recruit.icon.Application })
+    application?: Ref<Applicant>
 
   @Prop(TypeRef(contact.class.Organization), recruit.string.Company, { icon: contact.icon.Company })
     company?: Ref<Organization>

@@ -105,7 +105,8 @@
     "Score": "Score",
     "Match": "Match",
     "PerformMatch": "Match",
-    "MoveApplication": "Move to another vacancy"
+    "MoveApplication": "Move to another vacancy",
+    "SearchVacancy": "Search vacancy..."
   },
   "status": {
     "TalentRequired": "Please select talent",

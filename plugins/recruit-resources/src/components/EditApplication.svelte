@@ -60,7 +60,13 @@
     </div>
   </Scroller>
   <div class="mt-6">
-    <Reviews objectId={candidate._id} reviews={candidate.reviews ?? 0} label={recruit.string.TalentReviews} />
+    <Reviews
+      objectId={candidate._id}
+      reviews={candidate.reviews ?? 0}
+      label={recruit.string.TalentReviews}
+      application={object?._id}
+      company={vacancy?.company}
+    />
   </div>
 {/if}
 
