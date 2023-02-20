@@ -14,7 +14,6 @@
 //
 
 import type { Client, Doc, Ref } from '@hcengineering/core'
-import { ObjectSearchCategory, ObjectSearchFactory } from '@hcengineering/model-presentation'
 import type { IntlString, Resource, Status } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { recruitId } from '@hcengineering/recruit'
@@ -51,7 +50,6 @@ export default mergeIds(recruitId, recruit, {
     TalentPools: '' as IntlString,
     SearchApplication: '' as IntlString,
     SearchVacancy: '' as IntlString,
-    Application: '' as IntlString,
     AssignedRecruiter: '' as IntlString,
     Due: '' as IntlString,
     Source: '' as IntlString,
@@ -63,8 +61,7 @@ export default mergeIds(recruitId, recruit, {
     GotoAssigned: '' as IntlString,
     GotoApplicants: '' as IntlString,
     GotoRecruitApplication: '' as IntlString,
-    VacancyList: '' as IntlString,
-    RecognizeAttachment: '' as IntlString
+    VacancyList: '' as IntlString
   },
   validator: {
     ApplicantValidator: '' as Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
@@ -99,12 +96,6 @@ export default mergeIds(recruitId, recruit, {
   template: {
     DefaultVacancy: '' as Ref<KanbanTemplate>,
     Task: '' as Ref<KanbanTemplate>
-  },
-  completion: {
-    ApplicationQuery: '' as Resource<ObjectSearchFactory>,
-    ApplicationCategory: '' as Ref<ObjectSearchCategory>,
-    VacancyCategory: '' as Ref<ObjectSearchCategory>,
-    VacancyQuery: '' as Resource<ObjectSearchFactory>
   },
   viewlet: {
     TableCandidate: '' as Ref<Viewlet>,

@@ -23,7 +23,7 @@
 
 <Table
   _class={recruit.class.Applicant}
-  config={['', '$lookup.space.name', 'state', 'doneState']}
+  config={['', '$lookup.space.name', '$lookup.space.company', 'state', 'doneState']}
   query={{ attachedTo: value._id }}
   loadingProps={{ length: value.applications ?? 0 }}
 />

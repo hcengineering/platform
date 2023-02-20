@@ -22,6 +22,7 @@
   import { FullDescriptionBox } from '@hcengineering/text-editor'
   import { EditBox, Grid, showPanel } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import { ObjectPresenter } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import recruit from '../../plugin'
 
@@ -67,14 +68,16 @@
           if (rawTitle !== object.title) client.update(object, { title: rawTitle })
         }}
       />
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
-        class="clear-mins"
+        class="clear-mins flex-row-center"
         on:click={() => {
           if (candidate !== undefined) {
             showPanel(view.component.EditDoc, candidate._id, Hierarchy.mixinOrClass(candidate), 'content')
           }
         }}
       >
+        <ObjectPresenter _class={recruit.class.Applicant} bind:objectId={object.application} />
         <UserBox
           readonly
           _class={contact.class.Person}
@@ -85,6 +88,7 @@
           size={'x-large'}
           justify={'left'}
           width={'100%'}
+          showNavigate={false}
         />
       </div>
     </Grid>

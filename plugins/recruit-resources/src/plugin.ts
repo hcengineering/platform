@@ -16,6 +16,7 @@
 import { Client, Doc, Ref, Space } from '@hcengineering/core'
 import type { IntlString, Resource, StatusCode } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
+import { ObjectSearchCategory, ObjectSearchFactory } from '@hcengineering/presentation'
 import recruit, { recruitId } from '@hcengineering/recruit'
 import { TagCategory } from '@hcengineering/tags'
 import { AnyComponent } from '@hcengineering/ui'
@@ -118,7 +119,8 @@ export default mergeIds(recruitId, recruit, {
     Score: '' as IntlString,
     Match: '' as IntlString,
     PerformMatch: '' as IntlString,
-    MoveApplication: '' as IntlString
+    MoveApplication: '' as IntlString,
+    Application: '' as IntlString
   },
   space: {
     CandidatesPublic: '' as Ref<Space>
@@ -126,6 +128,12 @@ export default mergeIds(recruitId, recruit, {
   category: {
     Other: '' as Ref<TagCategory>,
     Category: '' as Ref<TagCategory>
+  },
+  completion: {
+    ApplicationQuery: '' as Resource<ObjectSearchFactory>,
+    ApplicationCategory: '' as Ref<ObjectSearchCategory>,
+    VacancyCategory: '' as Ref<ObjectSearchCategory>,
+    VacancyQuery: '' as Resource<ObjectSearchFactory>
   },
   component: {
     VacancyItemPresenter: '' as AnyComponent,
