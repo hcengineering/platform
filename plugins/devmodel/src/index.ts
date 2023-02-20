@@ -29,7 +29,6 @@ export default plugin(devModelId, {
   },
   component: {
     ModelView: '' as AnyComponent,
-    QueryView: '' as AnyComponent,
     TransactionView: '' as AnyComponent,
     NotificationsView: '' as AnyComponent
   },

@@ -33,7 +33,6 @@ import { getMetadata, IntlString, Resources } from '@hcengineering/platform'
 import view from '@hcengineering/view'
 import workbench from '@hcengineering/workbench'
 import ModelView from './components/ModelView.svelte'
-import QueryView from './components/QueryView.svelte'
 import devmodel from './plugin'
 
 export interface TxWitHResult {
@@ -177,8 +176,7 @@ export function toIntl (value: string): IntlString {
 
 export default async (): Promise<Resources> => ({
   component: {
-    ModelView,
-    QueryView
+    ModelView
   },
   hook: {
     Hook
