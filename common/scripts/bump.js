@@ -94,15 +94,21 @@ function bumpPackage (name, dependency, depVersion) {
 
 function publish (name) {
   const package = packages[name]
-  execSync(`cd ${package.path}`, { encoding: 'utf-8' })
-  execSync(`npm publish`, { encoding: 'utf-8' })
-  execSync(`cd ../..`, { encoding: 'utf-8' })
+  execSync(`cd ${package.path} && npm publish && cd ../..`, { encoding: 'utf-8' })
+}
+
+function getConfig () {
+  const res = execSync('node common/scripts/install-run-rush.js list -p --json', { encoding: 'utf-8' })
+  const index = res.indexOf('{')
+  const list = res.substring(index)
+  const config = JSON.parse(list)
+  return config
 }
 
 function main () {
   const args = process.argv
 
-  const config = JSON.parse(execSync('node common/scripts/install-run-rush.js list -p --json', { encoding: 'utf-8' }))
+  const config = getConfig()
 
   fillPackages(config)
   buildDependencyTree()
