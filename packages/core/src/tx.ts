@@ -356,17 +356,19 @@ export abstract class TxProcessor implements WithTx {
   static buildDoc2Doc<D extends Doc>(txes: Tx[]): D | undefined {
     let doc: Doc
     let createTx = txes.find((tx) => tx._class === core.class.TxCreateDoc)
-    const collectionTxes = false
     if (createTx === undefined) {
       const collectionTxes = txes.filter((tx) => tx._class === core.class.TxCollectionCUD) as Array<
       TxCollectionCUD<Doc, AttachedDoc>
       >
-      createTx = collectionTxes.find((p) => p.tx._class === core.class.TxCreateDoc)
+      const collectionCreateTx = collectionTxes.find((p) => p.tx._class === core.class.TxCreateDoc)
+      if (collectionCreateTx === undefined) return
+      createTx = TxProcessor.extractTx(collectionCreateTx)
     }
     if (createTx === undefined) return
+    const objectId = (createTx as TxCreateDoc<D>).objectId
     doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Doc>)
     for (let tx of txes) {
-      if (collectionTxes) {
+      if ((tx as TxCUD<D>).objectId !== objectId && tx._class === core.class.TxCollectionCUD) {
         tx = TxProcessor.extractTx(tx)
       }
       if (tx._class === core.class.TxUpdateDoc) {

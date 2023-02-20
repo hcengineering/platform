@@ -350,8 +350,8 @@ class TServerStorage implements ServerStorage {
     const removeAttachObjectIds: Ref<AttachedDoc>[] = []
 
     const removeTxes = rawTxes
-      .filter((it) => this.hierarchy.isDerived(it._class, core.class.TxRemoveDoc))
       .map((it) => TxProcessor.extractTx(it) as TxRemoveDoc<Doc>)
+      .filter((it) => this.hierarchy.isDerived(it._class, core.class.TxRemoveDoc))
 
     for (const rtx of removeTxes) {
       const isAttached = this.hierarchy.isDerived(rtx.objectClass, core.class.AttachedDoc)
