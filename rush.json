@@ -449,7 +449,7 @@
     {
       "packageName": "@hcengineering/platform-rig",
       "projectFolder": "packages/platform-rig",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/platform",
@@ -464,17 +464,17 @@
     {
       "packageName": "@hcengineering/server-ws",
       "projectFolder": "server/ws",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/dev-storage",
       "projectFolder": "dev/storage",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/dev-server",
       "projectFolder": "dev/server",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/theme",
@@ -499,7 +499,7 @@
     {
       "packageName": "@hcengineering/server-core",
       "projectFolder": "server/core",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-token",
@@ -509,7 +509,7 @@
     {
       "packageName": "@hcengineering/server",
       "projectFolder": "server/server",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/login",
@@ -519,12 +519,12 @@
     {
       "packageName": "@hcengineering/login-assets",
       "projectFolder": "plugins/login-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/login-resources",
       "projectFolder": "plugins/login-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/workbench",
@@ -539,17 +539,17 @@
     {
       "packageName": "@hcengineering/workbench-resources",
       "projectFolder": "plugins/workbench-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/presentation",
       "projectFolder": "packages/presentation",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-presentation",
       "projectFolder": "models/presentation",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/client",
@@ -579,7 +579,7 @@
     {
       "packageName": "@hcengineering/view-resources",
       "projectFolder": "plugins/view-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model",
@@ -589,22 +589,22 @@
     {
       "packageName": "@hcengineering/model-core",
       "projectFolder": "models/core",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-rig",
       "projectFolder": "models/model-rig",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-all",
       "projectFolder": "models/all",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-view",
       "projectFolder": "models/view",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/contact",
@@ -619,7 +619,7 @@
     {
       "packageName": "@hcengineering/contact-resources",
       "projectFolder": "plugins/contact-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/task",
@@ -634,32 +634,32 @@
     {
       "packageName": "@hcengineering/task-resources",
       "projectFolder": "plugins/task-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/dev-client-resources",
       "projectFolder": "dev/client-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-workbench",
       "projectFolder": "models/workbench",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-task",
       "projectFolder": "models/task",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-contact",
       "projectFolder": "models/contact",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/text-editor",
       "projectFolder": "packages/text-editor",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/chunter",
@@ -674,12 +674,12 @@
     {
       "packageName": "@hcengineering/chunter-resources",
       "projectFolder": "plugins/chunter-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-chunter",
       "projectFolder": "models/chunter",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/recruit",
@@ -694,82 +694,82 @@
     {
       "packageName": "@hcengineering/recruit-resources",
       "projectFolder": "plugins/recruit-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-recruit",
       "projectFolder": "models/recruit",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-demo",
       "projectFolder": "models/demo",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/image-cropper",
       "projectFolder": "plugins/image-cropper",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/image-cropper-resources",
       "projectFolder": "plugins/image-cropper-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-server-core",
       "projectFolder": "models/server-core",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/dev-account",
       "projectFolder": "dev/account",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {    
       "packageName": "@hcengineering/server-attachment",
       "projectFolder": "server-plugins/attachment",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-server-attachment",
       "projectFolder": "models/server-attachment",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-attachment-resources",
       "projectFolder": "server-plugins/attachment-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-contact",
       "projectFolder": "server-plugins/contact",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-server-contact",
       "projectFolder": "models/server-contact",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-contact-resources",
       "projectFolder": "server-plugins/contact-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/mongo",
       "projectFolder": "server/mongo",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/elastic",
       "projectFolder": "server/elastic",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/contrib",
       "projectFolder": "server/contrib",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/pod-front",
@@ -784,12 +784,12 @@
     {
       "packageName": "@hcengineering/front",
       "projectFolder": "server/front",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/account",
       "projectFolder": "server/account",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/tool",
@@ -814,7 +814,7 @@
     {
       "packageName": "@hcengineering/activity",
       "projectFolder": "plugins/activity",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/activity-assets",
@@ -824,12 +824,12 @@
     {
       "packageName": "@hcengineering/activity-resources",
       "projectFolder": "plugins/activity-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-activity",
       "projectFolder": "models/activity",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/setting",
@@ -844,12 +844,12 @@
     {
       "packageName": "@hcengineering/setting-resources",
       "projectFolder": "plugins/setting-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-setting",
       "projectFolder": "models/setting",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/telegram",
@@ -859,27 +859,27 @@
     {
       "packageName": "@hcengineering/telegram-assets",
       "projectFolder": "plugins/telegram-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/telegram-resources",
       "projectFolder": "plugins/telegram-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-telegram",
       "projectFolder": "models/telegram",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/devmodel-resources",
       "projectFolder": "plugins/devmodel-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/devmodel",
       "projectFolder": "plugins/devmodel",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/attachment",
@@ -894,32 +894,32 @@
     {
       "packageName": "@hcengineering/attachment-resources",
       "projectFolder": "plugins/attachment-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-attachment",
       "projectFolder": "models/attachment",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/lead",
       "projectFolder": "plugins/lead",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/lead-assets",
       "projectFolder": "plugins/lead-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/lead-resources",
       "projectFolder": "plugins/lead-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-lead",
       "projectFolder": "models/lead",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/generator",
@@ -929,7 +929,7 @@
     {
       "packageName": "@hcengineering/model-gmail",
       "projectFolder": "models/gmail",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/gmail",
@@ -939,17 +939,17 @@
     {
       "packageName": "@hcengineering/gmail-assets",
       "projectFolder": "plugins/gmail-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/gmail-resources",
       "projectFolder": "plugins/gmail-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-inventory",
       "projectFolder": "models/inventory",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/inventory",
@@ -964,7 +964,7 @@
     {
       "packageName": "@hcengineering/inventory-resources",
       "projectFolder": "plugins/inventory-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/templates",
@@ -979,22 +979,22 @@
     {
       "packageName": "@hcengineering/templates-resources",
       "projectFolder": "plugins/templates-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-templates",
       "projectFolder": "models/templates",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-text-editor",
       "projectFolder": "models/text-editor",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-tool",
       "projectFolder": "server/tool",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/tests-sanity",
@@ -1004,12 +1004,12 @@
     {
       "packageName": "@hcengineering/rekoni",
       "projectFolder": "packages/rekoni",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-notification",
       "projectFolder": "models/notification",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/notification",
@@ -1024,22 +1024,22 @@
     {
       "packageName": "@hcengineering/notification-resources",
       "projectFolder": "plugins/notification-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-notification",
       "projectFolder": "server-plugins/notification",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-server-notification",
       "projectFolder": "models/server-notification",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-notification-resources",
       "projectFolder": "server-plugins/notification-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
     "packageName": "@hcengineering/tags",
@@ -1049,122 +1049,122 @@
     {
       "packageName": "@hcengineering/tags-assets",
       "projectFolder": "plugins/tags-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/tags-resources",
       "projectFolder": "plugins/tags-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-tags",
       "projectFolder": "models/tags",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-chunter",
       "projectFolder": "server-plugins/chunter",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-server-chunter",
       "projectFolder": "models/server-chunter",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-chunter-resources",
       "projectFolder": "server-plugins/chunter-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-inventory",
       "projectFolder": "server-plugins/inventory",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-server-inventory",
       "projectFolder": "models/server-inventory",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-inventory-resources",
       "projectFolder": "server-plugins/inventory-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-lead",
       "projectFolder": "server-plugins/lead",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-server-lead",
       "projectFolder": "models/server-lead",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-lead-resources",
       "projectFolder": "server-plugins/lead-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-recruit",
       "projectFolder": "server-plugins/recruit",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-server-recruit",
       "projectFolder": "models/server-recruit",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-recruit-resources",
       "projectFolder": "server-plugins/recruit-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-task",
       "projectFolder": "server-plugins/task",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-server-task",
       "projectFolder": "models/server-task",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-tracker",
       "projectFolder": "server-plugins/tracker",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-server-tracker",
       "projectFolder": "models/server-tracker",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-tracker-resources",
       "projectFolder": "server-plugins/tracker-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-task-resources",
       "projectFolder": "server-plugins/task-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-setting",
       "projectFolder": "server-plugins/setting",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-server-setting",
       "projectFolder": "models/server-setting",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-setting-resources",
       "projectFolder": "server-plugins/setting-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/calendar",
@@ -1179,72 +1179,72 @@
     {
       "packageName": "@hcengineering/calendar-resources",
       "projectFolder": "plugins/calendar-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-calendar",
       "projectFolder": "models/calendar",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-tags",
       "projectFolder": "server-plugins/tags",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-server-tags",
       "projectFolder": "models/server-tags",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-tags-resources",
       "projectFolder": "server-plugins/tags-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-calendar",
       "projectFolder": "server-plugins/calendar",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-server-calendar",
       "projectFolder": "models/server-calendar",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-calendar-resources",
       "projectFolder": "server-plugins/calendar-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-gmail",
       "projectFolder": "server-plugins/gmail",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-server-gmail",
       "projectFolder": "models/server-gmail",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-gmail-resources",
       "projectFolder": "server-plugins/gmail-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-telegram",
       "projectFolder": "server-plugins/telegram",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-server-telegram",
       "projectFolder": "models/server-telegram",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-telegram-resources",
       "projectFolder": "server-plugins/telegram-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
 
     {
@@ -1255,23 +1255,23 @@
     {
       "packageName": "@hcengineering/tracker-assets",
       "projectFolder": "plugins/tracker-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/tracker-resources",
       "projectFolder": "plugins/tracker-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-tracker",
       "projectFolder": "models/tracker",
-      "shouldPublish": true
+      "shouldPublish": false
     },
 
     {
       "packageName": "@hcengineering/board",
       "projectFolder": "plugins/board",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/board-assets",
@@ -1281,17 +1281,17 @@
     {
       "packageName": "@hcengineering/board-resources",
       "projectFolder": "plugins/board-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-board",
       "projectFolder": "models/board",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/kanban",
       "projectFolder": "packages/kanban",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/preference",
@@ -1301,27 +1301,27 @@
     {
       "packageName": "@hcengineering/preference-assets",
       "projectFolder": "plugins/preference-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-preference",
       "projectFolder": "models/preference",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-preference",
       "projectFolder": "server-plugins/preference",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/middleware",
       "projectFolder": "server/middleware",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-backup",
       "projectFolder": "server/backup",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/pod-backup",
@@ -1331,22 +1331,22 @@
     {
       "packageName": "@hcengineering/automation",
       "projectFolder": "plugins/automation",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/automation-resources",
       "projectFolder": "plugins/automation-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/automation-assets",
       "projectFolder": "plugins/automation-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-automation",
       "projectFolder": "models/automation",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/hr",
@@ -1361,48 +1361,48 @@
     {
       "packageName": "@hcengineering/hr-resources",
       "projectFolder": "plugins/hr-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-hr",
       "projectFolder": "models/hr",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-hr",
       "projectFolder": "server-plugins/hr",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-server-hr",
       "projectFolder": "models/server-hr",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-hr-resources",
       "projectFolder": "server-plugins/hr-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
 
     {
       "packageName": "@hcengineering/document",
       "projectFolder": "plugins/document",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/document-assets",
       "projectFolder": "plugins/document-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/document-resources",
       "projectFolder": "plugins/document-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-document",
       "projectFolder": "models/document",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/apm",
@@ -1412,7 +1412,7 @@
     {
       "packageName": "@hcengineering/minio",
       "projectFolder": "server/minio",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/bitrix",
@@ -1422,87 +1422,87 @@
     {
       "packageName": "@hcengineering/bitrix-assets",
       "projectFolder": "plugins/bitrix-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/bitrix-resources",
       "projectFolder": "plugins/bitrix-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-bitrix",
       "projectFolder": "models/bitrix",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/request",
       "projectFolder": "plugins/request",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/request-assets",
       "projectFolder": "plugins/request-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/request-resources",
       "projectFolder": "plugins/request-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-request",
       "projectFolder": "models/request",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-request",
       "projectFolder": "server-plugins/request",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-server-request",
       "projectFolder": "models/server-request",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-request-resources",
       "projectFolder": "server-plugins/request-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/openai",
       "projectFolder": "server-plugins/openai",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/translate",
       "projectFolder": "server/translate",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-server-translate",
       "projectFolder": "models/server-translate",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-server-openai",
       "projectFolder": "models/server-openai",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-view",
       "projectFolder": "server-plugins/view",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/model-server-view",
       "projectFolder": "models/server-view",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-view-resources",
       "projectFolder": "server-plugins/view-resources",
-      "shouldPublish": true
+      "shouldPublish": false
     },
   ]
 }
