@@ -374,7 +374,7 @@ jobs:
       - name: Bundle
         run: node common/scripts/install-run-rush.js bundle
       - name: Login to NPM
-      - run: |
+        run: |
           echo @hcengineering/anticrm:https://npm.pkg.github.com/ > build/.npmrc
           echo '//npm.pkg.github.com/:_authToken=${NPM_TOKEN}' >> build/.npmrc
       - name: NPM bump
