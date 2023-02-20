@@ -54,8 +54,9 @@ import SocialEditor from './components/SocialEditor.svelte'
 import ContactRefPresenter from './components/ContactRefPresenter.svelte'
 import PersonRefPresenter from './components/PersonRefPresenter.svelte'
 import EmployeeRefPresenter from './components/EmployeeRefPresenter.svelte'
+import ChannelFilter from './components/ChannelFilter.svelte'
 import contact from './plugin'
-import { employeeSort } from './utils'
+import { employeeSort, filterChannelInResult, filterChannelNinResult } from './utils'
 
 export {
   Channels,
@@ -168,7 +169,8 @@ export default async (): Promise<Resources> => ({
     EmployeeArrayEditor,
     EmployeeEditor,
     CreateEmployee,
-    AccountArrayEditor
+    AccountArrayEditor,
+    ChannelFilter
   },
   completion: {
     EmployeeQuery: async (
@@ -188,6 +190,8 @@ export default async (): Promise<Resources> => ({
     GetFileUrl: getFileUrl,
     GetGravatarUrl: getGravatarUrl,
     GetColorUrl: (uri: string) => uri,
-    EmployeeSort: employeeSort
+    EmployeeSort: employeeSort,
+    FilterChannelInResult: filterChannelInResult,
+    FilterChannelNinResult: filterChannelNinResult
   }
 })

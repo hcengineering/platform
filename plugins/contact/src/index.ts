@@ -32,7 +32,7 @@ import {
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import type { AnyComponent, IconSize } from '@hcengineering/ui'
-import { ViewAction, Viewlet } from '@hcengineering/view'
+import { FilterMode, ViewAction, Viewlet } from '@hcengineering/view'
 
 /**
  * @public
@@ -283,6 +283,10 @@ const contactPlugin = plugin(contactId, {
   viewlet: {
     TableMember: '' as Ref<Viewlet>,
     TableContact: '' as Ref<Viewlet>
+  },
+  filter: {
+    FilterChannelIn: '' as Ref<FilterMode>,
+    FilterChannelNin: '' as Ref<FilterMode>
   }
 })
 

@@ -15,8 +15,10 @@
 //
 
 import contact, { ChannelProvider, Employee, formatName } from '@hcengineering/contact'
-import { Ref, Timestamp, toIdMap } from '@hcengineering/core'
+import { Doc, ObjQueryType, Ref, Timestamp, toIdMap } from '@hcengineering/core'
 import { createQuery, getClient } from '@hcengineering/presentation'
+import view, { Filter } from '@hcengineering/view'
+import { FilterQuery } from '@hcengineering/view-resources'
 
 const client = getClient()
 const channelProviders = client.findAll(contact.class.ChannelProvider, {})
@@ -69,4 +71,39 @@ export async function employeeSort (value: Array<Ref<Employee>>): Promise<Array<
       query.unsubscribe()
     })
   })
+}
+
+export async function filterChannelInResult (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
+  const result = await getRefs(filter, onUpdate)
+  return { $in: result }
+}
+
+export async function filterChannelNinResult (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
+  const result = await getRefs(filter, onUpdate)
+  return { $nin: result }
+}
+
+export async function getRefs (filter: Filter, onUpdate: () => void): Promise<Array<Ref<Doc>>> {
+  const lq = FilterQuery.getLiveQuery(filter.index)
+  const client = getClient()
+  const mode = await client.findOne(view.class.FilterMode, { _id: filter.mode })
+  if (mode === undefined) return []
+  const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
+    const refresh = lq.query(
+      contact.class.Channel,
+      {
+        provider: { $in: filter.value }
+      },
+      (refs) => {
+        const result = Array.from(new Set(refs.map((p) => p.attachedTo)))
+        FilterQuery.results.set(filter.index, result)
+        resolve(result)
+        onUpdate()
+      }
+    )
+    if (!refresh) {
+      resolve(FilterQuery.results.get(filter.index) ?? [])
+    }
+  })
+  return await promise
 }

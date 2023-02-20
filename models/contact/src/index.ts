@@ -487,6 +487,10 @@ export function createModel (builder: Builder): void {
     filters: ['_class', 'city', 'modifiedOn']
   })
 
+  builder.mixin(contact.class.Channel, core.class.Class, view.mixin.AttributeFilter, {
+    component: contact.component.ChannelFilter
+  })
+
   builder.mixin(contact.class.Contact, core.class.Class, setting.mixin.Editable, {
     value: true
   })
@@ -552,6 +556,26 @@ export function createModel (builder: Builder): void {
   builder.mixin(contact.class.Contact, core.class.Class, core.mixin.FullTextSearchContext, {
     fullTextSummary: true
   })
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.FilterIsEither,
+      result: contact.function.FilterChannelInResult
+    },
+    contact.filter.FilterChannelIn
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.FilterIsNot,
+      result: contact.function.FilterChannelNinResult
+    },
+    contact.filter.FilterChannelNin
+  )
 }
 
 export { contactOperation } from './migration'
