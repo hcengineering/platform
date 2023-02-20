@@ -16,7 +16,7 @@
 
 import contact, { contactId } from '@hcengineering/contact'
 import { IntlString, mergeIds } from '@hcengineering/platform'
-import { SortFunc } from '@hcengineering/view'
+import { FilterFunction, SortFunc } from '@hcengineering/view'
 
 export default mergeIds(contactId, contact, {
   string: {
@@ -66,6 +66,8 @@ export default mergeIds(contactId, contact, {
     NotSpecified: '' as IntlString
   },
   function: {
-    EmployeeSort: '' as SortFunc
+    EmployeeSort: '' as SortFunc,
+    FilterChannelInResult: '' as FilterFunction,
+    FilterChannelNinResult: '' as FilterFunction
   }
 })
