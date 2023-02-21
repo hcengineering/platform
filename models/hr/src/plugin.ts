@@ -18,7 +18,7 @@ import { hrId } from '@hcengineering/hr'
 import hr from '@hcengineering/hr-resources/src/plugin'
 import { IntlString, mergeIds } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
-import { Action, ActionCategory } from '@hcengineering/view'
+import { Action, ActionCategory, ViewAction } from '@hcengineering/view'
 
 export default mergeIds(hrId, hr, {
   string: {
@@ -51,6 +51,10 @@ export default mergeIds(hrId, hr, {
     EditDepartment: '' as Ref<Action>,
     DeleteDepartment: '' as Ref<Action>,
     EditRequest: '' as Ref<Action>,
+    EditRequestType: '' as Ref<Action>,
     DeleteRequest: '' as Ref<Action>
+  },
+  actionImpl: {
+    EditRequestType: '' as ViewAction
   }
 })

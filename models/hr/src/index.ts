@@ -332,6 +332,21 @@ export function createModel (builder: Builder): void {
     hr.action.EditRequest
   )
 
+  createAction(
+    builder,
+    {
+      action: hr.actionImpl.EditRequestType,
+      actionProps: {},
+      label: hr.string.EditRequestType,
+      icon: view.icon.Open,
+      input: 'any',
+      category: hr.category.HR,
+      target: hr.class.Request,
+      context: { mode: 'context', application: hr.app.HR, group: 'edit' }
+    },
+    hr.action.EditRequestType
+  )
+
   builder.createDoc(
     view.class.Viewlet,
     core.space.Model,
