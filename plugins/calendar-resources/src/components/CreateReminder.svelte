@@ -45,10 +45,7 @@
     //   date = new Date().getTime() + value.shift
     // }
     if (date === undefined) return
-    const _id = await client.createDoc(calendar.class.Event, space, {
-      attachedTo,
-      attachedToClass,
-      collection: 'reminders',
+    const _id = await client.addCollection(calendar.class.Event, space, attachedTo, attachedToClass, 'reminders', {
       date,
       description: '',
       participants,

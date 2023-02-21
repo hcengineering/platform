@@ -41,10 +41,7 @@
         } else if (status && !newStatus) {
           client.removeDoc(contact.class.Status, status.space, status._id)
         } else {
-          client.createDoc(contact.class.Status, employee!.space, {
-            attachedTo: employeeId,
-            attachedToClass: contact.class.Employee,
-            collection: 'statuses',
+          client.addCollection(contact.class.Status, employee!.space, employeeId, contact.class.Employee, 'statuses', {
             name: newStatus.name,
             dueDate: newStatus.dueDate
           })

@@ -195,13 +195,17 @@
 
         const reaction = reactions?.find((r) => r.emoji === emoji && r.createBy === me)
         if (!reaction) {
-          await client.createDoc(chunter.class.Reaction, message.space, {
-            attachedTo: message._id,
-            attachedToClass: chunter.class.ChunterMessage,
-            emoji,
-            createBy: me,
-            collection: 'reactions'
-          })
+          await client.addCollection(
+            chunter.class.Reaction,
+            message.space,
+            message._id,
+            chunter.class.ChunterMessage,
+            'reactions',
+            {
+              emoji,
+              createBy: me
+            }
+          )
         } else {
           await client.removeDoc(chunter.class.Reaction, message.space, reaction._id)
         }

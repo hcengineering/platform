@@ -36,13 +36,13 @@
   async function onMessage (event: CustomEvent) {
     const { message, attachments } = event.detail
     const me = getCurrentAccount()._id
-    await client.createDoc<Message>(
+    await client.addCollection(
       _class,
       space,
+      space,
+      chunter.class.ChunterSpace,
+      'messages',
       {
-        attachedTo: space,
-        attachedToClass: chunter.class.ChunterSpace,
-        collection: 'messages',
         content: message,
         createOn: Date.now(),
         createBy: me,
@@ -59,12 +59,9 @@
         chunterSpace.members
           .filter((accId) => accId !== me)
           .map((accId) =>
-            client.createDoc(notification.class.LastView, space, {
+            client.addCollection(notification.class.LastView, space, space, chunterSpace._class, 'lastViews', {
               user: accId,
-              lastView: 0,
-              attachedTo: space,
-              attachedToClass: chunterSpace._class,
-              collection: 'lastViews'
+              lastView: 0
             })
           )
       )

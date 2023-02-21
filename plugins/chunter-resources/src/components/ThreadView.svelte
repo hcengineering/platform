@@ -152,13 +152,13 @@
   async function onMessage (event: CustomEvent) {
     const { message, attachments } = event.detail
     const me = getCurrentAccount()._id
-    await client.createDoc(
+    await client.addCollection(
       chunter.class.ThreadMessage,
       currentSpace,
+      _id,
+      chunter.class.Message,
+      'replies',
       {
-        attachedTo: _id,
-        attachedToClass: chunter.class.Message,
-        collection: 'replies',
         content: message,
         createBy: me,
         createOn: Date.now(),

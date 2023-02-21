@@ -129,16 +129,16 @@
   async function onMessage (event: CustomEvent) {
     if (channel === undefined) return
     const { message, attachments } = event.detail
-    await client.createDoc(
+    await client.addCollection(
       telegram.class.NewMessage,
       telegram.space.Telegram,
+      channel._id,
+      channel._class,
+      'newMessages',
       {
         content: message,
         status: 'new',
-        attachments,
-        attachedTo: channel._id,
-        attachedToClass: channel._class,
-        collection: 'newMessages'
+        attachments
       },
       objectId
     )
