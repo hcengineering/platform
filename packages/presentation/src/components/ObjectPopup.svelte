@@ -53,7 +53,7 @@
   export let size: 'small' | 'medium' | 'large' = 'small'
 
   export let searchField: string = 'name'
-
+  export let noSearchField: boolean = false
   export let groupBy = '_class'
 
   export let create: ObjectCreate | undefined = undefined
@@ -72,7 +72,11 @@
     _class,
     {
       ...(docQuery ?? {}),
-      [searchField]: { $like: '%' + search + '%' },
+      ...(noSearchField
+        ? search !== ''
+          ? { $search: search }
+          : {}
+        : { [searchField]: { $like: '%' + search + '%' } }),
       _id: { $nin: ignoreObjects, ..._idExtra }
     },
     (result) => {

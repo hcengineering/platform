@@ -95,7 +95,6 @@
   {ignoreObjects}
   shadows={true}
   {width}
-  searchField="title"
   on:update
   on:close={onClose}
 >
