@@ -19,6 +19,7 @@
   import { TextEditorHandler } from '@hcengineering/text-editor'
   import { closePopup, EditWithIcon, IconSearch, Label, deviceOptionsStore } from '@hcengineering/ui'
   import templates from '../plugin'
+  import { getTemplateDataProvider } from '../utils'
 
   export let editor: TextEditorHandler
   let items: MessageTemplate[] = []
@@ -33,8 +34,10 @@
 
   let selected = 0
 
-  function dispatchItem (item: MessageTemplate): void {
-    editor.insertText(item.message)
+  const provider = getTemplateDataProvider()
+  async function dispatchItem (item: MessageTemplate): Promise<void> {
+    const message = await provider.fillTemplate(item.message)
+    editor.insertText(message)
     closePopup()
   }
 

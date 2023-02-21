@@ -14,7 +14,7 @@
 //
 
 import type { Class, Doc, Ref, Space } from '@hcengineering/core'
-import type { Plugin } from '@hcengineering/platform'
+import type { IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { Asset, plugin } from '@hcengineering/platform'
 
 /**
@@ -28,11 +28,52 @@ export interface MessageTemplate extends Doc {
 /**
  * @public
  */
+export interface TemplateData {
+  owner: string
+  data: any
+}
+
+/**
+ * @public
+ */
+export interface TemplateDataProvider {
+  set: (key: Ref<TemplateFieldCategory>, value: any) => void
+  get: (key: Ref<TemplateFieldCategory>) => any | undefined
+  fillTemplate: (message: string) => Promise<string>
+  destroy: () => void
+}
+
+/**
+ * @public
+ */
+export interface TemplateFieldCategory extends Doc {
+  label: IntlString
+}
+
+/**
+ * @public
+ */
+export declare type TemplateFieldFunc = (provider: TemplateDataProvider) => Promise<string | undefined>
+
+/**
+ * @public
+ */
+export interface TemplateField extends Doc {
+  category: Ref<TemplateFieldCategory>
+  label: IntlString
+  func: Resource<TemplateFieldFunc>
+}
+
+/**
+ * @public
+ */
 export const templatesId = 'templates' as Plugin
 
 export default plugin(templatesId, {
   class: {
-    MessageTemplate: '' as Ref<Class<MessageTemplate>>
+    MessageTemplate: '' as Ref<Class<MessageTemplate>>,
+    TemplateField: '' as Ref<Class<TemplateField>>,
+    TemplateFieldCategory: '' as Ref<Class<TemplateFieldCategory>>
   },
   space: {
     Templates: '' as Ref<Space>
@@ -40,5 +81,8 @@ export default plugin(templatesId, {
   icon: {
     Templates: '' as Asset,
     Template: '' as Asset
+  },
+  function: {
+    GetTemplateDataProvider: '' as Resource<() => TemplateDataProvider>
   }
 })

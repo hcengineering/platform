@@ -16,21 +16,31 @@
   import attachmentP, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import contact, { Channel, Contact, formatName } from '@hcengineering/contact'
-  import { generateId, Ref, toIdMap } from '@hcengineering/core'
+  import { generateId, getCurrentAccount, Ref, Space, toIdMap } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
+  import setting, { Integration } from '@hcengineering/setting'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { TextEditor } from '@hcengineering/text-editor'
-  import { Icon, IconAttachment, Label, Panel, Scroller } from '@hcengineering/ui'
-  import Button from '@hcengineering/ui/src/components/Button.svelte'
-  import EditBox from '@hcengineering/ui/src/components/EditBox.svelte'
-  import { createEventDispatcher } from 'svelte'
+  import {
+    Button,
+    EditBox,
+    eventToHTMLElement,
+    Icon,
+    IconAttachment,
+    Label,
+    Panel,
+    Scroller,
+    showPopup
+  } from '@hcengineering/ui'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import plugin from '../plugin'
+  import templates, { TemplateDataProvider } from '@hcengineering/templates'
+  import Connect from './Connect.svelte'
+  import { StyledTextEditor } from '@hcengineering/text-editor'
 
   export let value: Contact[] | Contact
   const contacts = Array.isArray(value) ? value : [value]
 
-  console.log(contacts)
   const contactMap = toIdMap(contacts)
 
   const query = createQuery()
@@ -51,17 +61,23 @@
 
   const attachmentParentId = generateId()
 
-  let editor: TextEditor
+  let editor: StyledTextEditor
   let subject: string = ''
   let content: string = ''
   let copy: string = ''
   let saved = false
 
   async function sendMsg () {
+    const templateProvider = (await getResource(templates.function.GetTemplateDataProvider))()
+    if (templateProvider === undefined) return
     for (const channel of channels) {
+      const target = contacts.find((p) => p._id === channel.attachedTo)
+      if (target === undefined) continue
+      templateProvider.set(contact.templateFieldCategory.Contact, target)
+      const message = await templateProvider.fillTemplate(content)
       const id = await client.createDoc(plugin.class.NewMessage, plugin.space.Gmail, {
         subject,
-        content,
+        content: message,
         to: channel.value,
         status: 'new',
         copy: copy
@@ -86,6 +102,7 @@
           }
         )
       }
+      templateProvider.destroy()
     }
     saved = true
     dispatch('close')
@@ -166,6 +183,30 @@
     if (contact === undefined) return channel.value
     return `${formatName(contact.name)} (${channel.value})`
   }
+
+  const settingsQuery = createQuery()
+  const accountId = getCurrentAccount()._id
+
+  let templateProvider: TemplateDataProvider | undefined
+  let integration: Integration | undefined
+
+  getResource(templates.function.GetTemplateDataProvider).then((p) => {
+    templateProvider = p()
+  })
+
+  onDestroy(() => {
+    templateProvider?.destroy()
+  })
+
+  $: templateProvider && integration && templateProvider.set(setting.templateFieldCategory.Integration, integration)
+
+  settingsQuery.query(
+    setting.class.Integration,
+    { type: plugin.integrationType.Gmail, space: accountId as string as Ref<Space> },
+    (res) => {
+      integration = res[0]
+    }
+  )
 </script>
 
 <Panel
@@ -187,6 +228,18 @@
         <span class="wrapped-title">Email</span>
       </div>
     </div>
+  </svelte:fragment>
+
+  <svelte:fragment slot="utils">
+    {#if !integration}
+      <Button
+        label={plugin.string.Connect}
+        kind={'primary'}
+        on:click={(e) => {
+          showPopup(Connect, {}, eventToHTMLElement(e))
+        }}
+      />
+    {/if}
   </svelte:fragment>
 
   <input
@@ -223,13 +276,15 @@
             inputFile.click()
           }}
         />
-        <Button
-          label={plugin.string.Send}
-          size={'small'}
-          kind={'primary'}
-          disabled={channels.length === 0}
-          on:click={sendMsg}
-        />
+        {#if integration}
+          <Button
+            label={plugin.string.Send}
+            size={'small'}
+            kind={'primary'}
+            disabled={channels.length === 0}
+            on:click={sendMsg}
+          />
+        {/if}
       </div>
     </div>
   </div>
@@ -262,7 +317,7 @@
         </div>
       {/if}
       <div class="input mt-4 clear-mins">
-        <TextEditor bind:this={editor} bind:content on:blur={editor.submit} />
+        <StyledTextEditor bind:this={editor} full bind:content on:blur={editor.submit} />
       </div>
     </div>
   </Scroller>
@@ -291,7 +346,8 @@
     color: #d6d6d6;
     caret-color: var(--caret-color);
     min-height: 0;
-    height: calc(100% - 12rem);
+    height: 100%;
+    margin-bottom: 2rem;
     border-radius: 0.25rem;
 
     :global(.ProseMirror) {

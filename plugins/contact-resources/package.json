@@ -45,6 +45,7 @@
     "@hcengineering/panel": "^0.6.0",
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/attachment": "^0.6.1",
-    "@hcengineering/login-resources": "^0.6.2"
+    "@hcengineering/login-resources": "^0.6.2",
+    "@hcengineering/templates": "^0.6.0"
   }
 }

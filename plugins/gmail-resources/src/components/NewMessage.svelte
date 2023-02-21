@@ -15,16 +15,16 @@
 <script lang="ts">
   import attachmentP, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
-  import { Channel, Contact, formatName } from '@hcengineering/contact'
+  import contact, { Channel, Contact, formatName } from '@hcengineering/contact'
   import { Data, generateId } from '@hcengineering/core'
   import { NewMessage, SharedMessage } from '@hcengineering/gmail'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { TextEditor } from '@hcengineering/text-editor'
-  import { Scroller, IconArrowLeft, IconAttachment, Label } from '@hcengineering/ui'
-  import Button from '@hcengineering/ui/src/components/Button.svelte'
-  import EditBox from '@hcengineering/ui/src/components/EditBox.svelte'
+  import templates, { TemplateDataProvider } from '@hcengineering/templates'
+  import { StyledTextEditor } from '@hcengineering/text-editor'
+  import { Button, EditBox, IconArrowLeft, IconAttachment, Label, Scroller } from '@hcengineering/ui'
+  import { onDestroy } from 'svelte'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../plugin'
 
@@ -35,7 +35,7 @@
   const notificationClient = NotificationClientImpl.getClient()
   let objectId = generateId()
 
-  let editor: TextEditor
+  let editor: StyledTextEditor
   let copy: string = ''
 
   const obj: Data<NewMessage> = {
@@ -45,6 +45,18 @@
     replyTo: currentMessage?.messageId,
     status: 'new'
   }
+
+  let templateProvider: TemplateDataProvider | undefined
+
+  getResource(templates.function.GetTemplateDataProvider).then((p) => {
+    templateProvider = p()
+  })
+
+  onDestroy(() => {
+    templateProvider?.destroy()
+  })
+
+  $: templateProvider && templateProvider.set(contact.templateFieldCategory.Contact, object)
 
   async function sendMsg () {
     await client.createDoc(
@@ -202,7 +214,7 @@
       </div>
     {/if}
     <div class="input mt-4 clear-mins">
-      <TextEditor bind:this={editor} bind:content={obj.content} on:blur={editor.submit} />
+      <StyledTextEditor bind:this={editor} full bind:content={obj.content} maxHeight="panel" on:blur={editor.submit} />
     </div>
   </div>
 </Scroller>
@@ -230,7 +242,8 @@
     color: #d6d6d6;
     caret-color: var(--caret-color);
     min-height: 0;
-    height: calc(100% - 12rem);
+    margin-bottom: 2rem;
+    height: 100%;
     border-radius: 0.25rem;
 
     :global(.ProseMirror) {

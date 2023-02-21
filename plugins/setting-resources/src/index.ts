@@ -44,6 +44,7 @@ import StringTypeEditor from './components/typeEditors/StringTypeEditor.svelte'
 import WorkspaceSettings from './components/WorkspaceSettings.svelte'
 import InviteSetting from './components/InviteSetting.svelte'
 import setting from './plugin'
+import { getOwnerName, getValue } from './utils'
 
 export { ClassSetting }
 
@@ -101,5 +102,9 @@ export default async (): Promise<Resources> => ({
   },
   actionImpl: {
     DeleteMixin
+  },
+  function: {
+    GetOwnerName: getOwnerName,
+    GetValue: getValue
   }
 })

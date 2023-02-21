@@ -76,6 +76,7 @@
     "NotSpecified": "Не указан",
     "CreatedOn": "Создан",
     "Whatsapp": "Whatsapp",
-    "WhatsappPlaceholder": "Whatsapp"
+    "WhatsappPlaceholder": "Whatsapp",
+    "CurrentEmployee": "Текущий сотрудник"
   }
 }

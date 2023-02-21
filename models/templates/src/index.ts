@@ -14,12 +14,13 @@
 // limitations under the License.
 //
 
-import { Domain, IndexKind } from '@hcengineering/core'
+import { Domain, DOMAIN_MODEL, IndexKind, Ref } from '@hcengineering/core'
 import { Builder, Index, Model, Prop, TypeString } from '@hcengineering/model'
 import core, { TDoc } from '@hcengineering/model-core'
 import textEditor from '@hcengineering/model-text-editor'
+import { IntlString, Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
-import type { MessageTemplate } from '@hcengineering/templates'
+import type { MessageTemplate, TemplateField, TemplateFieldCategory, TemplateFieldFunc } from '@hcengineering/templates'
 import templates from './plugin'
 
 export const DOMAIN_TEMPLATES = 'templates' as Domain
@@ -35,8 +36,20 @@ export class TMessageTemplate extends TDoc implements MessageTemplate {
     message!: string
 }
 
+@Model(templates.class.TemplateFieldCategory, core.class.Doc, DOMAIN_MODEL)
+export class TTemplateFieldCategory extends TDoc implements TemplateFieldCategory {
+  label!: IntlString
+}
+
+@Model(templates.class.TemplateField, core.class.Doc, DOMAIN_MODEL)
+export class TTemplateField extends TDoc implements TemplateField {
+  category!: Ref<TemplateFieldCategory>
+  label!: IntlString
+  func!: Resource<TemplateFieldFunc>
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TMessageTemplate)
+  builder.createModel(TMessageTemplate, TTemplateFieldCategory, TTemplateField)
 
   builder.createDoc(
     setting.class.WorkspaceSettingCategory,

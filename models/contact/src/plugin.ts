@@ -19,6 +19,7 @@ import type { Ref } from '@hcengineering/core'
 import {} from '@hcengineering/core'
 import { ObjectSearchCategory, ObjectSearchFactory } from '@hcengineering/model-presentation'
 import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
+import { TemplateFieldFunc } from '@hcengineering/templates'
 import type { AnyComponent } from '@hcengineering/ui'
 import { Action, ActionCategory, ViewAction } from '@hcengineering/view'
 
@@ -75,7 +76,8 @@ export default mergeIds(contactId, contact, {
     Birthday: '' as IntlString,
     CreatedOn: '' as IntlString,
     Whatsapp: '' as IntlString,
-    WhatsappPlaceholder: '' as IntlString
+    WhatsappPlaceholder: '' as IntlString,
+    CurrentEmployee: '' as IntlString
   },
   completion: {
     PersonQuery: '' as Resource<ObjectSearchFactory>,
@@ -94,5 +96,10 @@ export default mergeIds(contactId, contact, {
   actionImpl: {
     KickEmployee: '' as ViewAction,
     OpenChannel: '' as ViewAction
+  },
+  function: {
+    GetCurrentEmployeeName: '' as Resource<TemplateFieldFunc>,
+    GetCurrentEmployeeEmail: '' as Resource<TemplateFieldFunc>,
+    GetContactName: '' as Resource<TemplateFieldFunc>
   }
 })

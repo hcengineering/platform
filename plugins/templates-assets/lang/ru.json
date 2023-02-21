@@ -11,6 +11,7 @@
     "SearchTemplate": "Поиск шаблона",
     "TemplatePlaceholder": "Новый шаблон",
     "Title": "Заголовок",
-    "Message": "Сообщение"
+    "Message": "Сообщение",
+    "Field": "Поле"
   }
 }

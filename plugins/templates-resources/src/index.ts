@@ -19,6 +19,7 @@ import Templates from './components/Templates.svelte'
 import { TextEditorHandler } from '@hcengineering/text-editor'
 import { showPopup } from '@hcengineering/ui'
 import TemplatePopup from './components/TemplatePopup.svelte'
+import { getTemplateDataProvider } from './utils'
 
 function ShowTemplates (element: HTMLElement, editor: TextEditorHandler): void {
   showPopup(TemplatePopup, { editor }, element)
@@ -30,5 +31,8 @@ export default async (): Promise<Resources> => ({
   },
   action: {
     ShowTemplates
+  },
+  function: {
+    GetTemplateDataProvider: getTemplateDataProvider
   }
 })

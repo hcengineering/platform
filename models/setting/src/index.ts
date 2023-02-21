@@ -31,6 +31,7 @@ import {
 } from '@hcengineering/setting'
 import task from '@hcengineering/task'
 import setting from './plugin'
+import templates from '@hcengineering/templates'
 
 import workbench from '@hcengineering/model-workbench'
 import { AnyComponent } from '@hcengineering/ui'
@@ -411,6 +412,37 @@ export function createModel (builder: Builder): void {
       group: 'edit'
     }
   })
+
+  builder.createDoc(
+    templates.class.TemplateFieldCategory,
+    core.space.Model,
+    {
+      label: setting.string.Integrations
+    },
+    setting.templateFieldCategory.Integration
+  )
+
+  builder.createDoc(
+    templates.class.TemplateField,
+    core.space.Model,
+    {
+      label: setting.string.IntegrationWith,
+      category: setting.templateFieldCategory.Integration,
+      func: setting.function.GetValue
+    },
+    setting.templateField.Value
+  )
+
+  builder.createDoc(
+    templates.class.TemplateField,
+    core.space.Model,
+    {
+      label: setting.string.Owner,
+      category: setting.templateFieldCategory.Integration,
+      func: setting.function.GetOwnerName
+    },
+    setting.templateField.OwnerName
+  )
 }
 
 export { settingOperation } from './migration'
