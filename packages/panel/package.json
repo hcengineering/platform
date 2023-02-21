@@ -42,5 +42,9 @@
     "@hcengineering/activity": "^0.6.0",
     "@hcengineering/calendar": "^0.6.2",
     "@hcengineering/notification": "^0.6.5"
+  },
+  "repository": "https://github.com/hcenginneing/anticrm",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }

@@ -31,5 +31,9 @@
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/core": "^0.6.21",
     "fast-equals": "^2.0.3"
+  },
+  "repository": "https://github.com/hcenginneing/anticrm",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }

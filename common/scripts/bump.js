@@ -94,21 +94,17 @@ function bumpPackage (name, dependency, depVersion) {
 
 function publish (name) {
   const package = packages[name]
-  execSync(`cd ${package.path} && npm publish && cd ../..`, { encoding: 'utf-8' })
-}
-
-function getConfig () {
-  const res = execSync('node common/scripts/install-run-rush.js list -p --json', { encoding: 'utf-8' })
-  const index = res.indexOf('{')
-  const list = res.substring(index)
-  const config = JSON.parse(list)
-  return config
+  // try {
+  //   execSync(`cd ${package.path} && npm publish && cd ../..`, { encoding: 'utf-8' })
+  // } catch (err) {
+  //   console.log(err)
+  // }
 }
 
 function main () {
   const args = process.argv
 
-  const config = getConfig()
+  const config = JSON.parse(execSync('rush list -p --json', { encoding: 'utf-8' }))
 
   fillPackages(config)
   buildDependencyTree()
@@ -116,11 +112,11 @@ function main () {
   let changedPackages = []
   if (args[2] === '-p') {
     changedPackages = args[3].split(',').map((p) => `${repo}/${p}`)
+  } else if (args[2] === '-all') {
+    changedPackages = Object.keys(packages)
   } else {
-    const tags = execSync(`git tag -l v* --sort=committerdate`, { encoding: 'utf-8' }).split('\n').filter((p) => p !== '')
-    const current = tags[tags.length - 1]
-    const last = tags[tags.length - 2]
-    const diff = execSync(`git diff ${current} ${last} --name-only --diff-filter=ACMR | sed 's| |\\ |g\'`, { encoding: 'utf-8' })
+    const tag = execSync(`git describe --tags --abbrev=0`, { encoding: 'utf-8' })
+    const diff = execSync(`git diff ${tag} --name-only --diff-filter=ACMR | sed 's| |\\ |g\'`, { encoding: 'utf-8' })
     const changedFiles = diff.split('\n')
     changedPackages = getChangedPackages(changedFiles)
   }

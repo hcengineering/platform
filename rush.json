@@ -1271,7 +1271,7 @@
     {
       "packageName": "@hcengineering/board",
       "projectFolder": "plugins/board",
-      "shouldPublish": false
+      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/board-assets",
