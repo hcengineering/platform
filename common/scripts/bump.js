@@ -94,11 +94,11 @@ function bumpPackage (name, dependency, depVersion) {
 
 function publish (name) {
   const package = packages[name]
-  // try {
-  //   execSync(`cd ${package.path} && npm publish && cd ../..`, { encoding: 'utf-8' })
-  // } catch (err) {
-  //   console.log(err)
-  // }
+  try {
+    execSync(`cd ${package.path} && npm publish && cd ../..`, { encoding: 'utf-8' })
+  } catch (err) {
+    console.log(err)
+  }
 }
 
 function main () {
