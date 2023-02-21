@@ -27,7 +27,7 @@ import { workbenchId } from '@hcengineering/workbench'
  */
 export async function OnContactDelete (
   tx: Tx,
-  { findAll, hierarchy, storageFx, removedMap }: TriggerControl
+  { findAll, hierarchy, storageFx, removedMap, txFactory }: TriggerControl
 ): Promise<Tx[]> {
   if (tx._class !== core.class.TxRemoveDoc) {
     return []
@@ -66,7 +66,22 @@ export async function OnContactDelete (
     }
   })
 
-  return []
+  const result: Tx[] = []
+
+  const members = await findAll(contact.class.Member, { contact: removeContact._id })
+  for (const member of members) {
+    const removeTx = txFactory.createTxRemoveDoc(member._class, member.space, member._id)
+    const tx = txFactory.createTxCollectionCUD(
+      member.attachedToClass,
+      member.attachedTo,
+      member.space,
+      member.collection,
+      removeTx
+    )
+    result.push(tx)
+  }
+
+  return result
 }
 
 /**
