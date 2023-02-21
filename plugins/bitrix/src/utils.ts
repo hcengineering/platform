@@ -57,7 +57,7 @@ export interface ConvertResult {
   mixins: Record<Ref<Mixin<Doc>>, Data<Doc>> // Mixins of document we will achive
   extraDocs: Doc[] // Extra documents we will achive, etc.
   extraSync: (AttachedDoc & BitrixSyncDoc)[] // Extra documents we will achive, etc.
-  blobs: [Attachment & BitrixSyncDoc, () => Promise<File | undefined>][]
+  blobs: [Attachment & BitrixSyncDoc, () => Promise<File | undefined>, (file: File, attach: Attachment) => void][]
 }
 
 /**
@@ -73,7 +73,7 @@ export async function convert (
   existingDoc: WithLookup<Doc> | undefined,
   defaultCategories: TagCategory[],
   allTagElements: TagElement[],
-  blobProvider?: (blobRef: any) => Promise<Blob | undefined>
+  blobProvider?: (blobRef: { file: string, id: string }) => Promise<Blob | undefined>
 ): Promise<ConvertResult> {
   const hierarchy = client.getHierarchy()
   const bitrixId = `${rawDocument.ID as string}`
@@ -93,7 +93,11 @@ export async function convert (
 
   const newExtraSyncDocs: (AttachedDoc & BitrixSyncDoc)[] = []
   const newExtraDocs: Doc[] = []
-  const blobs: [Attachment & BitrixSyncDoc, () => Promise<File | undefined>][] = []
+  const blobs: [
+    Attachment & BitrixSyncDoc,
+    () => Promise<File | undefined>,
+    (file: File, attach: Attachment) => void
+  ][] = []
   const mixins: Record<Ref<Mixin<Doc>>, Data<Doc>> = {}
 
   const extractValue = (field?: string, alternatives?: string[]): any | undefined => {
@@ -120,10 +124,12 @@ export async function convert (
           return lval.map((it) => it.VALUE)
         }
       } else if (bfield.type === 'file') {
-        if (Array.isArray(lval)) {
+        if (Array.isArray(lval) && bfield.isMultiple) {
           return lval.map((it) => ({ id: it.id, file: it.downloadUrl }))
+        } else if (lval != null) {
+          return [{ id: lval.id, file: lval.downloadUrl }]
         }
-      } else if (bfield.type === 'string' || bfield.type === 'url') {
+      } else if (bfield.type === 'string' || bfield.type === 'url' || bfield.type === 'crm_company') {
         if (bfield.isMultiple && Array.isArray(lval)) {
           return lval.join(', ')
         }
@@ -365,6 +371,11 @@ export async function convert (
                   return new File([response], fname, { type: response.type })
                 }
               }
+            },
+            (file, attach) => {
+              attach.attachedTo = document._id
+              attach.size = file.size
+              attach.type = file.type
             }
           ])
         }
