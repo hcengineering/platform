@@ -324,6 +324,14 @@
       "description": "Format and autofix linting issues in changed projects",
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "./common/scripts/each-diff.sh rushx format"
+    },
+    {
+      "commandKind": "global",
+      "name": "bump-packages",
+      "summary": "Bump and publish packages from last tag",
+      "description": "Bump and publish packages from last tag",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "node common/scripts/bump.js"
     }
   ],
 

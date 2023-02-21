@@ -31,5 +31,9 @@
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/hr": "^0.6.0"
+  },
+  "repository": "https://github.com/hcenginneing/anticrm",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }
