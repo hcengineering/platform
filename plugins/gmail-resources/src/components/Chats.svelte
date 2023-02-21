@@ -14,17 +14,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import contact, { Channel, Contact, EmployeeAccount, formatName } from '@hcengineering/contact'
+  import { Ref, SortingOrder } from '@hcengineering/core'
   import { Message, SharedMessage } from '@hcengineering/gmail'
-  import gmail from '../plugin'
-  import { Channel, Contact, EmployeeAccount, formatName } from '@hcengineering/contact'
-  import contact from '@hcengineering/contact'
-  import plugin, { IconShare, Button, Icon, Label, Scroller } from '@hcengineering/ui'
-  import { getCurrentAccount, Ref, SortingOrder, Space } from '@hcengineering/core'
-  import setting from '@hcengineering/setting'
-  import Messages from './Messages.svelte'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import plugin, { Button, Icon, IconShare, Label, Scroller } from '@hcengineering/ui'
+  import gmail from '../plugin'
   import IconInbox from './icons/Inbox.svelte'
+  import Messages from './Messages.svelte'
 
   export let object: Contact
   export let channel: Channel
@@ -41,8 +39,7 @@
 
   const messagesQuery = createQuery()
   const accauntsQuery = createQuery()
-  const settingsQuery = createQuery()
-  const accountId = getCurrentAccount()._id
+
   const notificationClient = NotificationClientImpl.getClient()
 
   function updateMessagesQuery (channelId: Ref<Channel>): void {
@@ -67,13 +64,6 @@
     })
   }
 
-  settingsQuery.query(
-    setting.class.Integration,
-    { type: gmail.integrationType.Gmail, space: accountId as string as Ref<Space> },
-    (res) => {
-      enabled = res.length > 0
-    }
-  )
   const client = getClient()
 
   async function share (): Promise<void> {

@@ -76,6 +76,7 @@
     "NotSpecified": "Not specified",
     "CreatedOn": "Created",
     "Whatsapp": "Whatsapp",
-    "WhatsappPlaceholder": "Whatsapp"
+    "WhatsappPlaceholder": "Whatsapp",
+    "CurrentEmployee": "Current employee"
   }
 }

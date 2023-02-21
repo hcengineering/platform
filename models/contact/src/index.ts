@@ -55,6 +55,7 @@ import workbench from '@hcengineering/model-workbench'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import { AnyComponent } from '@hcengineering/ui'
+import templates from '@hcengineering/templates'
 import contact from './plugin'
 
 export const DOMAIN_CONTACT = 'contact' as Domain
@@ -575,6 +576,57 @@ export function createModel (builder: Builder): void {
       result: contact.function.FilterChannelNinResult
     },
     contact.filter.FilterChannelNin
+  )
+
+  builder.createDoc(
+    templates.class.TemplateFieldCategory,
+    core.space.Model,
+    {
+      label: contact.string.CurrentEmployee
+    },
+    contact.templateFieldCategory.CurrentEmployee
+  )
+
+  builder.createDoc(
+    templates.class.TemplateField,
+    core.space.Model,
+    {
+      label: contact.string.Name,
+      category: contact.templateFieldCategory.CurrentEmployee,
+      func: contact.function.GetCurrentEmployeeName
+    },
+    contact.templateField.CurrentEmployeeName
+  )
+
+  builder.createDoc(
+    templates.class.TemplateField,
+    core.space.Model,
+    {
+      label: contact.string.Email,
+      category: contact.templateFieldCategory.CurrentEmployee,
+      func: contact.function.GetCurrentEmployeeEmail
+    },
+    contact.templateField.CurrentEmployeeEmail
+  )
+
+  builder.createDoc(
+    templates.class.TemplateFieldCategory,
+    core.space.Model,
+    {
+      label: contact.string.Contact
+    },
+    contact.templateFieldCategory.Contact
+  )
+
+  builder.createDoc(
+    templates.class.TemplateField,
+    core.space.Model,
+    {
+      label: contact.string.Name,
+      category: contact.templateFieldCategory.Contact,
+      func: contact.function.GetContactName
+    },
+    contact.templateField.ContactName
   )
 }
 

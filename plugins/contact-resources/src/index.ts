@@ -56,7 +56,14 @@ import PersonRefPresenter from './components/PersonRefPresenter.svelte'
 import EmployeeRefPresenter from './components/EmployeeRefPresenter.svelte'
 import ChannelFilter from './components/ChannelFilter.svelte'
 import contact from './plugin'
-import { employeeSort, filterChannelInResult, filterChannelNinResult } from './utils'
+import {
+  employeeSort,
+  filterChannelInResult,
+  filterChannelNinResult,
+  getContactName,
+  getCurrentEmployeeEmail,
+  getCurrentEmployeeName
+} from './utils'
 
 export {
   Channels,
@@ -192,6 +199,9 @@ export default async (): Promise<Resources> => ({
     GetColorUrl: (uri: string) => uri,
     EmployeeSort: employeeSort,
     FilterChannelInResult: filterChannelInResult,
-    FilterChannelNinResult: filterChannelNinResult
+    FilterChannelNinResult: filterChannelNinResult,
+    GetCurrentEmployeeName: getCurrentEmployeeName,
+    GetCurrentEmployeeEmail: getCurrentEmployeeEmail,
+    GetContactName: getContactName
   }
 })

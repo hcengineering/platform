@@ -17,6 +17,7 @@ import type { Class, Configuration, Doc, Mixin, Ref, Space } from '@hcengineerin
 import type { Plugin } from '@hcengineering/platform'
 import { Asset, IntlString, plugin, Resource } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
+import { TemplateFieldCategory, TemplateField } from '@hcengineering/templates'
 
 /**
  * @public
@@ -145,7 +146,6 @@ export default plugin(settingId, {
     Delete: '' as IntlString,
     Disconnect: '' as IntlString,
     Add: '' as IntlString,
-    LearnMore: '' as IntlString,
     EditProfile: '' as IntlString,
     ChangePassword: '' as IntlString,
     CurrentPassword: '' as IntlString,
@@ -175,5 +175,12 @@ export default plugin(settingId, {
     SelectWorkspace: '' as Asset,
     Clazz: '' as Asset,
     Enums: '' as Asset
+  },
+  templateFieldCategory: {
+    Integration: '' as Ref<TemplateFieldCategory>
+  },
+  templateField: {
+    OwnerName: '' as Ref<TemplateField>,
+    Value: '' as Ref<TemplateField>
   }
 })

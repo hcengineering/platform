@@ -15,12 +15,15 @@
 -->
 <script lang="ts">
   import contact, { Channel, formatName } from '@hcengineering/contact'
-  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { Class, Doc, getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import { SharedMessage } from '@hcengineering/gmail'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
+  import { getResource } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
+  import setting, { Integration } from '@hcengineering/setting'
+  import templates, { TemplateDataProvider } from '@hcengineering/templates'
   import { Button, eventToHTMLElement, Icon, Label, Panel, showPopup } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import gmail from '../plugin'
   import Chats from './Chats.svelte'
   import Connect from './Connect.svelte'
@@ -35,7 +38,7 @@
   let currentMessage: SharedMessage | undefined = undefined
   let channel: Channel | undefined = undefined
   const notificationClient = NotificationClientImpl.getClient()
-  let enabled: boolean
+  let integration: Integration | undefined
 
   const channelQuery = createQuery()
   const dispatch = createEventDispatcher()
@@ -71,6 +74,29 @@
       await notificationClient.updateLastView(channel._id, channel._class, undefined, true)
     }
   }
+
+  const settingsQuery = createQuery()
+  const accountId = getCurrentAccount()._id
+
+  let templateProvider: TemplateDataProvider | undefined
+
+  getResource(templates.function.GetTemplateDataProvider).then((p) => {
+    templateProvider = p()
+  })
+
+  onDestroy(() => {
+    templateProvider?.destroy()
+  })
+
+  $: templateProvider && integration && templateProvider.set(setting.templateFieldCategory.Integration, integration)
+
+  settingsQuery.query(
+    setting.class.Integration,
+    { type: gmail.integrationType.Gmail, space: accountId as string as Ref<Space> },
+    (res) => {
+      integration = res[0]
+    }
+  )
 </script>
 
 {#if channel && object}
@@ -97,7 +123,7 @@
     </svelte:fragment>
 
     <svelte:fragment slot="utils">
-      {#if !enabled}
+      {#if !integration}
         <Button
           label={gmail.string.Connect}
           kind={'primary'}
@@ -113,7 +139,7 @@
     {:else if currentMessage}
       <FullMessage {currentMessage} bind:newMessage on:close={back} />
     {:else}
-      <Chats {object} {channel} bind:newMessage bind:enabled on:select={selectHandler} />
+      <Chats {object} {channel} bind:newMessage enabled={integration !== undefined} on:select={selectHandler} />
     {/if}
   </Panel>
 {/if}

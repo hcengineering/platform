@@ -15,11 +15,12 @@
 
 import type { TxViewlet } from '@hcengineering/activity'
 import { Doc, Ref } from '@hcengineering/core'
-import { mergeIds } from '@hcengineering/platform'
+import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
 import { settingId } from '@hcengineering/setting'
 import setting from '@hcengineering/setting-resources/src/plugin'
 import { AnyComponent } from '@hcengineering/ui'
 import { Action, ActionCategory, ViewAction } from '@hcengineering/view'
+import { TemplateFieldFunc } from '@hcengineering/templates'
 
 export default mergeIds(settingId, setting, {
   activity: {
@@ -52,5 +53,12 @@ export default mergeIds(settingId, setting, {
   },
   actionImpl: {
     DeleteMixin: '' as ViewAction<Record<string, any>>
+  },
+  string: {
+    Value: '' as IntlString
+  },
+  function: {
+    GetValue: '' as Resource<TemplateFieldFunc>,
+    GetOwnerName: '' as Resource<TemplateFieldFunc>
   }
 })

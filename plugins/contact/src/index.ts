@@ -33,6 +33,7 @@ import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import type { AnyComponent, IconSize } from '@hcengineering/ui'
 import { FilterMode, ViewAction, Viewlet } from '@hcengineering/view'
+import { TemplateFieldCategory, TemplateField } from '@hcengineering/templates'
 
 /**
  * @public
@@ -287,6 +288,15 @@ const contactPlugin = plugin(contactId, {
   filter: {
     FilterChannelIn: '' as Ref<FilterMode>,
     FilterChannelNin: '' as Ref<FilterMode>
+  },
+  templateFieldCategory: {
+    CurrentEmployee: '' as Ref<TemplateFieldCategory>,
+    Contact: '' as Ref<TemplateFieldCategory>
+  },
+  templateField: {
+    CurrentEmployeeName: '' as Ref<TemplateField>,
+    CurrentEmployeeEmail: '' as Ref<TemplateField>,
+    ContactName: '' as Ref<TemplateField>
   }
 })
 

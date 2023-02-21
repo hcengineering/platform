@@ -11,6 +11,7 @@
     "SearchTemplate": "search for template",
     "TemplatePlaceholder": "New template",
     "Title": "Title",
-    "Message": "Message"
+    "Message": "Message",
+    "Field": "Field"
   }
 }

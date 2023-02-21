@@ -29,6 +29,9 @@
   import TelegramIcon from './icons/Telegram.svelte'
   import Messages from './Messages.svelte'
   import Reconnect from './Reconnect.svelte'
+  import templates, { TemplateDataProvider } from '@hcengineering/templates'
+  import { getResource } from '@hcengineering/platform'
+  import { onDestroy } from 'svelte'
 
   export let _id: Ref<Contact>
   export let _class: Ref<Class<Contact>>
@@ -53,6 +56,19 @@
       channel = res[0]
     }
   )
+
+  let templateProvider: TemplateDataProvider | undefined
+
+  getResource(templates.function.GetTemplateDataProvider).then((p) => {
+    templateProvider = p()
+  })
+
+  onDestroy(() => {
+    templateProvider?.destroy()
+  })
+
+  $: templateProvider && object && templateProvider.set(contact.templateFieldCategory.Contact, object)
+  $: templateProvider && integration && templateProvider.set(setting.templateFieldCategory.Integration, integration)
 
   const query = createQuery()
   $: _id &&

@@ -1,5 +1,8 @@
+import contact, { EmployeeAccount, formatName } from '@hcengineering/contact'
 import { Class, Doc, Hierarchy, Ref } from '@hcengineering/core'
-import setting from '@hcengineering/setting'
+import { getClient } from '@hcengineering/presentation'
+import setting, { Integration } from '@hcengineering/setting'
+import { TemplateDataProvider } from '@hcengineering/templates'
 
 function isEditable (hierarchy: Hierarchy, p: Class<Doc>): boolean {
   let ancestors = [p._id]
@@ -44,4 +47,20 @@ export function filterDescendants (
   } while (len !== _classes.length)
 
   return _classes.map((p) => p._id)
+}
+
+export async function getValue (provider: TemplateDataProvider): Promise<string | undefined> {
+  const value = provider.get(setting.templateFieldCategory.Integration) as Integration
+  if (value === undefined) return
+  return value.value
+}
+
+export async function getOwnerName (provider: TemplateDataProvider): Promise<string | undefined> {
+  const value = provider.get(setting.templateFieldCategory.Integration) as Integration
+  if (value === undefined) return
+  const client = getClient()
+  const employeeAccount = await client.findOne(contact.class.EmployeeAccount, {
+    _id: value.modifiedBy as Ref<EmployeeAccount>
+  })
+  return employeeAccount != null ? formatName(employeeAccount.name) : undefined
 }

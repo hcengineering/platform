@@ -13,47 +13,46 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IntlString, getEmbeddedLabel } from '@hcengineering/platform'
+  import { Asset, getEmbeddedLabel, getResource, IntlString } from '@hcengineering/platform'
+  import presentation, { getClient } from '@hcengineering/presentation'
   import {
+    AnySvelteComponent,
+    getEventPositionElement,
     IconSize,
     Scroller,
-    showPopup,
     SelectPopup,
-    AnySvelteComponent,
-    getEventPositionElement
+    showPopup
   } from '@hcengineering/ui'
+  import { Level } from '@tiptap/extension-heading'
   import { createEventDispatcher } from 'svelte'
   import textEditorPlugin from '../plugin'
+  import { FormatMode, FORMAT_MODES, RefInputAction, RefInputActionItem, TextEditorHandler } from '../types'
   import EmojiPopup from './EmojiPopup.svelte'
-  import Emoji from './icons/Emoji.svelte'
-  import TextStyle from './icons/TextStyle.svelte'
-  import TextEditor from './TextEditor.svelte'
-  import { Asset } from '@hcengineering/platform'
-  import { FormatMode, FORMAT_MODES, RefInputAction, TextEditorHandler } from '../types'
   import { headingLevels, mInsertTable } from './extensions'
-  import { Level } from '@tiptap/extension-heading'
-  import presentation from '@hcengineering/presentation'
-  import Header from './icons/Header.svelte'
-  import IconTable from './icons/IconTable.svelte'
   import Attach from './icons/Attach.svelte'
   import Bold from './icons/Bold.svelte'
   import Code from './icons/Code.svelte'
   import CodeBlock from './icons/CodeBlock.svelte'
+  import Emoji from './icons/Emoji.svelte'
+  import Header from './icons/Header.svelte'
+  import IconTable from './icons/IconTable.svelte'
   import Italic from './icons/Italic.svelte'
   import Link from './icons/Link.svelte'
   import ListBullet from './icons/ListBullet.svelte'
   import ListNumber from './icons/ListNumber.svelte'
   import Quote from './icons/Quote.svelte'
   import Strikethrough from './icons/Strikethrough.svelte'
+  import AddColAfter from './icons/table/AddColAfter.svelte'
+  import AddColBefore from './icons/table/AddColBefore.svelte'
+  import AddRowAfter from './icons/table/AddRowAfter.svelte'
+  import AddRowBefore from './icons/table/AddRowBefore.svelte'
+  import DeleteCol from './icons/table/DeleteCol.svelte'
+  import DeleteRow from './icons/table/DeleteRow.svelte'
+  import DeleteTable from './icons/table/DeleteTable.svelte'
+  import TextStyle from './icons/TextStyle.svelte'
   import LinkPopup from './LinkPopup.svelte'
   import StyleButton from './StyleButton.svelte'
-  import AddRowBefore from './icons/table/AddRowBefore.svelte'
-  import AddRowAfter from './icons/table/AddRowAfter.svelte'
-  import AddColBefore from './icons/table/AddColBefore.svelte'
-  import AddColAfter from './icons/table/AddColAfter.svelte'
-  import DeleteRow from './icons/table/DeleteRow.svelte'
-  import DeleteCol from './icons/table/DeleteCol.svelte'
-  import DeleteTable from './icons/table/DeleteTable.svelte'
+  import TextEditor from './TextEditor.svelte'
 
   const dispatch = createEventDispatcher()
 
@@ -68,6 +67,7 @@
   export let withoutTopBorder = false
   export let enableFormatting = false
   export let autofocus = false
+  export let full = false
 
   let textEditor: TextEditor
 
@@ -92,6 +92,9 @@
   export function isEmptyContent (): boolean {
     return textEditor.isEmptyContent()
   }
+  export function insertText (text: string): void {
+    textEditor.insertText(text)
+  }
 
   $: varsStyle =
     maxHeight === 'card'
@@ -113,8 +116,7 @@
     order: number
     hidden?: boolean
   }
-  let defActions: RefAction[]
-  $: defActions = [
+  const defActions: RefAction[] = [
     {
       label: textEditorPlugin.string.Attach,
       icon: Attach,
@@ -158,6 +160,21 @@
     //   order: 4000
     // }
   ]
+
+  const client = getClient()
+  let actions: RefAction[] = []
+  client.findAll<RefInputActionItem>(textEditorPlugin.class.RefInputActionItem, {}).then(async (res) => {
+    const cont: RefAction[] = []
+    for (const r of res) {
+      cont.push({
+        label: r.label,
+        icon: r.icon,
+        order: r.order ?? 10000,
+        action: await getResource(r.action)
+      })
+    }
+    actions = defActions.concat(...cont).sort((a, b) => a.order - b.order)
+  })
 
   function updateFormattingState () {
     activeModes = new Set(FORMAT_MODES.filter(textEditor.checkIsActive))
@@ -361,7 +378,12 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="ref-container clear-mins" tabindex="-1" on:click|preventDefault|stopPropagation={() => (needFocus = true)}>
+<div
+  class="ref-container clear-mins"
+  class:h-full={full}
+  tabindex="-1"
+  on:click|preventDefault|stopPropagation={() => (needFocus = true)}
+>
   {#if isFormatting}
     <div class="formatPanel buttons-group xsmall-gap mb-4" class:withoutTopBorder>
       <StyleButton
@@ -497,26 +519,19 @@
     </div>
   </div>
   {#if showButtons}
-    {#if $$slots.right}
-      <div class="flex-between">
-        <div class="buttons-group xsmall-gap mt-4">
-          {#each defActions.filter((it) => it.hidden === undefined || it.hidden === false) as a}
-            <StyleButton icon={a.icon} size={buttonSize} on:click={(evt) => handleAction(a, evt)} />
-          {/each}
-          <slot />
-        </div>
-        <div class="buttons-group xsmall-gap mt-4">
-          <slot name="right" />
-        </div>
-      </div>
-    {:else}
+    <div class="flex-between">
       <div class="buttons-group xsmall-gap mt-4">
-        {#each defActions.filter((it) => it.hidden === undefined || it.hidden === false) as a}
+        {#each actions.filter((it) => it.hidden !== true) as a}
           <StyleButton icon={a.icon} size={buttonSize} on:click={(evt) => handleAction(a, evt)} />
         {/each}
         <slot />
       </div>
-    {/if}
+      {#if $$slots.right}
+        <div class="buttons-group xsmall-gap mt-4">
+          <slot name="right" />
+        </div>
+      {/if}
+    </div>
   {/if}
 </div>
 

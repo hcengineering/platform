@@ -14,11 +14,13 @@
 // limitations under the License.
 //
 
-import contact, { ChannelProvider, Employee, formatName } from '@hcengineering/contact'
-import { Doc, ObjQueryType, Ref, Timestamp, toIdMap } from '@hcengineering/core'
+import { ChannelProvider, Contact, Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
+import { Doc, getCurrentAccount, ObjQueryType, Ref, Timestamp, toIdMap } from '@hcengineering/core'
 import { createQuery, getClient } from '@hcengineering/presentation'
+import { TemplateDataProvider } from '@hcengineering/templates'
 import view, { Filter } from '@hcengineering/view'
 import { FilterQuery } from '@hcengineering/view-resources'
+import contact from './plugin'
 
 const client = getClient()
 const channelProviders = client.findAll(contact.class.ChannelProvider, {})
@@ -106,4 +108,26 @@ export async function getRefs (filter: Filter, onUpdate: () => void): Promise<Ar
     }
   })
   return await promise
+}
+
+export async function getCurrentEmployeeName (): Promise<string> {
+  const me = getCurrentAccount() as EmployeeAccount
+  return formatName(me.name)
+}
+
+export async function getCurrentEmployeeEmail (): Promise<string> {
+  const me = getCurrentAccount() as EmployeeAccount
+  return me.email
+}
+
+export async function getContactName (provider: TemplateDataProvider): Promise<string | undefined> {
+  const value = provider.get(contact.templateFieldCategory.Contact) as Contact
+  if (value === undefined) return
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  if (hierarchy.isDerived(value._class, contact.class.Person)) {
+    return formatName(value.name)
+  } else {
+    return value.name
+  }
 }

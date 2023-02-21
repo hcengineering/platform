@@ -3,8 +3,9 @@
   import { getClient, LiveQuery, MessageViewer } from '@hcengineering/presentation'
   import { MessageTemplate } from '@hcengineering/templates'
   import { StyledTextEditor } from '@hcengineering/text-editor'
-  import { Button, CircleButton, EditBox, Icon, IconAdd, Label } from '@hcengineering/ui'
+  import { Button, CircleButton, EditBox, eventToHTMLElement, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import templatesPlugin from '../plugin'
+  import FieldPopup from './FieldPopup.svelte'
   import TemplateElement from './TemplateElement.svelte'
 
   const client = getClient()
@@ -69,6 +70,14 @@
   const updateTemplate = (evt: any) => {
     newTemplate = { title: newTemplate?.title ?? '', message: evt.detail }
   }
+
+  function addField (ev: MouseEvent) {
+    showPopup(FieldPopup, {}, eventToHTMLElement(ev), (res) => {
+      if (res !== undefined) {
+        textEditor.insertText(`\${${res._id}}`)
+      }
+    })
+  }
 </script>
 
 <div class="antiComponent">
@@ -132,15 +141,18 @@
                   on:click={saveNewTemplate}
                 />
               </div>
-              <Button
-                label={templatesPlugin.string.Cancel}
-                on:click={() => {
-                  if (mode === Mode.Create) {
-                    newTemplate = undefined
-                  }
-                  mode = Mode.View
-                }}
-              />
+              <div class="ml-2">
+                <Button
+                  label={templatesPlugin.string.Cancel}
+                  on:click={() => {
+                    if (mode === Mode.Create) {
+                      newTemplate = undefined
+                    }
+                    mode = Mode.View
+                  }}
+                />
+              </div>
+              <Button label={templatesPlugin.string.Field} on:click={addField} />
             </div>
           </StyledTextEditor>
         {:else}
