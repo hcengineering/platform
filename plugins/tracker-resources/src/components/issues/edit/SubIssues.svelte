@@ -110,27 +110,29 @@
     {#if viewlet && hasSubIssues && viewOptions}
       <ViewletSettingButton bind:viewOptions {viewlet} kind={'transparent'} />
     {/if}
-    <Button
-      width="min-content"
-      icon={IconScaleFull}
-      kind={'transparent'}
-      size={'small'}
-      showTooltip={{ label: tracker.string.OpenSubIssues, direction: 'bottom' }}
-      on:click={() => {
-        const filter = createFilter(tracker.class.Issue, 'attachedTo', [issue._id])
-        if (filter !== undefined) {
-          closeTooltip()
-          const loc = getCurrentLocation()
-          loc.fragment = undefined
-          loc.query = undefined
-          loc.path[2] = trackerId
-          loc.path[3] = issue.space
-          loc.path[4] = 'issues'
-          navigate(loc)
-          $filterStore = [filter]
-        }
-      }}
-    />
+    {#if hasSubIssues}
+      <Button
+        width="min-content"
+        icon={IconScaleFull}
+        kind={'transparent'}
+        size={'small'}
+        showTooltip={{ label: tracker.string.OpenSubIssues, direction: 'bottom' }}
+        on:click={() => {
+          const filter = createFilter(tracker.class.Issue, 'attachedTo', [issue._id])
+          if (filter !== undefined) {
+            closeTooltip()
+            const loc = getCurrentLocation()
+            loc.fragment = undefined
+            loc.query = undefined
+            loc.path[2] = trackerId
+            loc.path[3] = issue.space
+            loc.path[4] = 'issues'
+            navigate(loc)
+            $filterStore = [filter]
+          }
+        }}
+      />
+    {/if}
     <Button
       id="add-sub-issue"
       width="min-content"
