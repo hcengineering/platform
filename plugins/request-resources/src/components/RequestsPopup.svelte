@@ -14,12 +14,11 @@
 -->
 <script lang="ts">
   import { EmployeeAccount } from '@hcengineering/contact'
-  import { getCurrentAccount, Ref } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
+  import { Class, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { Request, RequestStatus } from '@hcengineering/request'
-  import { Label, Scroller, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import { Label, Scroller, deviceOptionsStore as deviceInfo, AnyComponent, Component } from '@hcengineering/ui'
   import request from '../plugin'
-  import RequestView from './RequestView.svelte'
 
   let requests: Request[] = []
   const me = getCurrentAccount()._id as Ref<EmployeeAccount>
@@ -35,6 +34,31 @@
         (p) => p.requested.filter((a) => a === me).length > p.approved.filter((a) => a === me).length
       ))
   )
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const defaultPresenter = request.component.RequestPresenter
+
+  $: classes = new Set(requests.map((r) => r._class))
+
+  const presenters: Record<Ref<Class<Request>>, AnyComponent> = {}
+
+  function getEditor (_class: Ref<Class<Request>>): AnyComponent {
+    const clazz = hierarchy.getClass(_class)
+    const mixin = hierarchy.as(clazz, request.mixin.RequestPresenter)
+    if (mixin?.presenter == null && clazz.extends != null) return getEditor(clazz.extends)
+    return mixin.presenter
+  }
+
+  $: updatePresenters(classes)
+
+  function updatePresenters (classes: Set<Ref<Class<Request>>>) {
+    classes.forEach((cl) => {
+      const presenter = getEditor(cl)
+      presenters[cl] = presenter || defaultPresenter
+    })
+  }
+
   $: isMobile = $deviceInfo.isMobile
 </script>
 
@@ -44,8 +68,8 @@
   </div>
   {#if requests.length > 0}
     <Scroller padding={'0 .5rem'}>
-      {#each requests as request (request._id)}
-        <RequestView value={request} />
+      {#each requests as request}
+        <Component is={presenters[request._class]} props={{ value: request }} />
       {/each}
     </Scroller>
   {:else}

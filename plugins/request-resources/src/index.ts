@@ -19,6 +19,7 @@ import TxCreateRequest from './components/activity/TxCreateRequest.svelte'
 import RequestLabel from './components/activity/TxRequestLabel.svelte'
 import EditRequest from './components/EditRequest.svelte'
 import RequestPresenter from './components/RequestPresenter.svelte'
+import RequestView from './components/RequestView.svelte'
 
 export default async (): Promise<Resources> => ({
   activity: {
@@ -28,6 +29,7 @@ export default async (): Promise<Resources> => ({
   component: {
     RequestsPopup,
     EditRequest,
-    RequestPresenter
+    RequestPresenter,
+    RequestView
   }
 })

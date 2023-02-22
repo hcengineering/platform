@@ -27,8 +27,7 @@ export default mergeIds(requestId, request, {
     RequestLabel: '' as AnyComponent
   },
   component: {
-    EditRequest: '' as AnyComponent,
-    RequestPresenter: '' as AnyComponent
+    EditRequest: '' as AnyComponent
   },
   ids: {
     TxRequestCreate: '' as Ref<TxViewlet>
