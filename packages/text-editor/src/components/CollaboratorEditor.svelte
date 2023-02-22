@@ -65,6 +65,7 @@
 
   export let documentId: string
   export let readonly = false
+  export let visible = true
 
   export let token: string
   export let collaboratorURL: string
@@ -129,8 +130,10 @@
     editor.commands.toggleStrike()
   }
 
-  export function getHTML (): string {
-    return editor.getHTML()
+  export function getHTML (): string | undefined {
+    if (editor) {
+      return editor.getHTML()
+    }
   }
 
   export function getLink () {
@@ -466,144 +469,146 @@
   let showDiff = true
 </script>
 
-<div class="ref-container" class:autoOverflow>
-  {#if isFormatting && !readonly}
-    <div class="formatPanelRef formatPanel flex-between clear-mins" class:focused>
-      <div class="flex-row-center buttons-group xsmall-gap">
-        <StyleButton
-          icon={Header}
-          size={buttonSize}
-          selected={activeModes.has('heading')}
-          showTooltip={{ label: getEmbeddedLabel(`H${headingLevel}`) }}
-          on:click={toggleHeader}
-        />
-
-        <StyleButton
-          icon={Bold}
-          size={buttonSize}
-          selected={activeModes.has('bold')}
-          showTooltip={{ label: textEditorPlugin.string.Bold }}
-          on:click={getToggler(toggleBold)}
-        />
-        <StyleButton
-          icon={Italic}
-          size={buttonSize}
-          selected={activeModes.has('italic')}
-          showTooltip={{ label: textEditorPlugin.string.Italic }}
-          on:click={getToggler(toggleItalic)}
-        />
-        <StyleButton
-          icon={Strikethrough}
-          size={buttonSize}
-          selected={activeModes.has('strike')}
-          showTooltip={{ label: textEditorPlugin.string.Strikethrough }}
-          on:click={getToggler(toggleStrike)}
-        />
-        <StyleButton
-          icon={LinkEl}
-          size={buttonSize}
-          selected={activeModes.has('link')}
-          disabled={isSelectionEmpty && !activeModes.has('link')}
-          showTooltip={{ label: textEditorPlugin.string.Link }}
-          on:click={formatLink}
-        />
-        <div class="buttons-divider" />
-        <StyleButton
-          icon={ListNumber}
-          size={buttonSize}
-          selected={activeModes.has('orderedList')}
-          showTooltip={{ label: textEditorPlugin.string.OrderedList }}
-          on:click={getToggler(toggleOrderedList)}
-        />
-        <StyleButton
-          icon={ListBullet}
-          size={buttonSize}
-          selected={activeModes.has('bulletList')}
-          showTooltip={{ label: textEditorPlugin.string.BulletedList }}
-          on:click={getToggler(toggleBulletList)}
-        />
-        <div class="buttons-divider" />
-        <StyleButton
-          icon={Quote}
-          size={buttonSize}
-          selected={activeModes.has('blockquote')}
-          showTooltip={{ label: textEditorPlugin.string.Blockquote }}
-          on:click={getToggler(toggleBlockquote)}
-        />
-        <div class="buttons-divider" />
-        <StyleButton
-          icon={Code}
-          size={buttonSize}
-          selected={activeModes.has('code')}
-          showTooltip={{ label: textEditorPlugin.string.Code }}
-          on:click={getToggler(toggleCode)}
-        />
-        <StyleButton
-          icon={CodeBlock}
-          size={buttonSize}
-          selected={activeModes.has('codeBlock')}
-          showTooltip={{ label: textEditorPlugin.string.CodeBlock }}
-          on:click={getToggler(toggleCodeBlock)}
-        />
-
-        <StyleButton
-          icon={IconTable}
-          iconProps={{ style: 'table' }}
-          size={buttonSize}
-          selected={activeModes.has('table')}
-          on:click={insertTable}
-          showTooltip={{ label: textEditorPlugin.string.InsertTable }}
-        />
-        {#if activeModes.has('table')}
-          <StyleButton
-            icon={IconTable}
-            iconProps={{ style: 'tableProps' }}
-            size={buttonSize}
-            on:click={tableOptions}
-            showTooltip={{ label: textEditorPlugin.string.TableOptions }}
-          />
-        {/if}
-      </div>
-      <div class="flex-grow" />
-      {#if comparedVersion !== undefined}
+{#if visible}
+  <div class="ref-container" class:autoOverflow>
+    {#if isFormatting && !readonly}
+      <div class="formatPanelRef formatPanel flex-between clear-mins" class:focused>
         <div class="flex-row-center buttons-group xsmall-gap">
           <StyleButton
-            icon={Objects}
+            icon={Header}
             size={buttonSize}
-            selected={showDiff}
-            showTooltip={{ label: textEditorPlugin.string.EnableDiffMode }}
-            on:click={() => {
-              showDiff = !showDiff
-              editor.chain().focus()
-            }}
+            selected={activeModes.has('heading')}
+            showTooltip={{ label: getEmbeddedLabel(`H${headingLevel}`) }}
+            on:click={toggleHeader}
           />
-          <slot name="tools" />
+
+          <StyleButton
+            icon={Bold}
+            size={buttonSize}
+            selected={activeModes.has('bold')}
+            showTooltip={{ label: textEditorPlugin.string.Bold }}
+            on:click={getToggler(toggleBold)}
+          />
+          <StyleButton
+            icon={Italic}
+            size={buttonSize}
+            selected={activeModes.has('italic')}
+            showTooltip={{ label: textEditorPlugin.string.Italic }}
+            on:click={getToggler(toggleItalic)}
+          />
+          <StyleButton
+            icon={Strikethrough}
+            size={buttonSize}
+            selected={activeModes.has('strike')}
+            showTooltip={{ label: textEditorPlugin.string.Strikethrough }}
+            on:click={getToggler(toggleStrike)}
+          />
+          <StyleButton
+            icon={LinkEl}
+            size={buttonSize}
+            selected={activeModes.has('link')}
+            disabled={isSelectionEmpty && !activeModes.has('link')}
+            showTooltip={{ label: textEditorPlugin.string.Link }}
+            on:click={formatLink}
+          />
+          <div class="buttons-divider" />
+          <StyleButton
+            icon={ListNumber}
+            size={buttonSize}
+            selected={activeModes.has('orderedList')}
+            showTooltip={{ label: textEditorPlugin.string.OrderedList }}
+            on:click={getToggler(toggleOrderedList)}
+          />
+          <StyleButton
+            icon={ListBullet}
+            size={buttonSize}
+            selected={activeModes.has('bulletList')}
+            showTooltip={{ label: textEditorPlugin.string.BulletedList }}
+            on:click={getToggler(toggleBulletList)}
+          />
+          <div class="buttons-divider" />
+          <StyleButton
+            icon={Quote}
+            size={buttonSize}
+            selected={activeModes.has('blockquote')}
+            showTooltip={{ label: textEditorPlugin.string.Blockquote }}
+            on:click={getToggler(toggleBlockquote)}
+          />
+          <div class="buttons-divider" />
+          <StyleButton
+            icon={Code}
+            size={buttonSize}
+            selected={activeModes.has('code')}
+            showTooltip={{ label: textEditorPlugin.string.Code }}
+            on:click={getToggler(toggleCode)}
+          />
+          <StyleButton
+            icon={CodeBlock}
+            size={buttonSize}
+            selected={activeModes.has('codeBlock')}
+            showTooltip={{ label: textEditorPlugin.string.CodeBlock }}
+            on:click={getToggler(toggleCodeBlock)}
+          />
+
+          <StyleButton
+            icon={IconTable}
+            iconProps={{ style: 'table' }}
+            size={buttonSize}
+            selected={activeModes.has('table')}
+            on:click={insertTable}
+            showTooltip={{ label: textEditorPlugin.string.InsertTable }}
+          />
+          {#if activeModes.has('table')}
+            <StyleButton
+              icon={IconTable}
+              iconProps={{ style: 'tableProps' }}
+              size={buttonSize}
+              on:click={tableOptions}
+              showTooltip={{ label: textEditorPlugin.string.TableOptions }}
+            />
+          {/if}
         </div>
-      {:else}
-        <div class="formatPanelRef formatPanel buttons-group xsmall-gap">
-          <slot name="tools" />
-        </div>
-      {/if}
+        <div class="flex-grow" />
+        {#if comparedVersion !== undefined}
+          <div class="flex-row-center buttons-group xsmall-gap">
+            <StyleButton
+              icon={Objects}
+              size={buttonSize}
+              selected={showDiff}
+              showTooltip={{ label: textEditorPlugin.string.EnableDiffMode }}
+              on:click={() => {
+                showDiff = !showDiff
+                editor.chain().focus()
+              }}
+            />
+            <slot name="tools" />
+          </div>
+        {:else}
+          <div class="formatPanelRef formatPanel buttons-group xsmall-gap">
+            <slot name="tools" />
+          </div>
+        {/if}
+      </div>
+    {:else if comparedVersion !== undefined}
+      <div class="formatPanelRef formatPanel flex flex-grow flex-reverse">
+        <StyleButton
+          icon={Objects}
+          size={buttonSize}
+          selected={showDiff}
+          showTooltip={{ label: textEditorPlugin.string.EnableDiffMode }}
+          on:click={() => {
+            showDiff = !showDiff
+            editor.chain().focus()
+          }}
+        />
+        <slot name="tools" />
+      </div>
+    {/if}
+    <div class="textInput" class:focusable>
+      <div class="select-text" style="width: 100%;" bind:this={element} />
     </div>
-  {:else if comparedVersion !== undefined}
-    <div class="formatPanelRef formatPanel flex flex-grow flex-reverse">
-      <StyleButton
-        icon={Objects}
-        size={buttonSize}
-        selected={showDiff}
-        showTooltip={{ label: textEditorPlugin.string.EnableDiffMode }}
-        on:click={() => {
-          showDiff = !showDiff
-          editor.chain().focus()
-        }}
-      />
-      <slot name="tools" />
-    </div>
-  {/if}
-  <div class="textInput" class:focusable>
-    <div class="select-text" style="width: 100%;" bind:this={element} />
   </div>
-</div>
+{/if}
 
 <style lang="scss" global>
   .ProseMirror {

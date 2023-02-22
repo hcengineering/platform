@@ -32,7 +32,7 @@
   const token = getMetadata(login.metadata.LoginToken) ?? ''
   const collaboratorURL = getMetadata(document.metadata.CollaboratorUrl) ?? ''
   let editor: CollaboratorEditor
-  export function getHTML (): string {
+  export function getHTML (): string | undefined {
     return editor.getHTML()
   }
 </script>
