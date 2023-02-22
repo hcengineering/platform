@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Class, Configuration, Doc, Mixin, Ref, Space } from '@hcengineering/core'
+import type { Account, Class, Configuration, Doc, Mixin, Ref, Space } from '@hcengineering/core'
 import type { Plugin } from '@hcengineering/platform'
 import { Asset, IntlString, plugin, Resource } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
@@ -46,6 +46,7 @@ export interface Integration extends Doc {
   type: Ref<IntegrationType>
   disabled: boolean
   value: string
+  shared?: Ref<Account>[]
 }
 
 /**

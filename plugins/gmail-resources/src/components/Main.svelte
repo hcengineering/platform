@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import contact, { Channel, formatName } from '@hcengineering/contact'
-  import { Class, Doc, getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import { Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import { SharedMessage } from '@hcengineering/gmail'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
@@ -28,6 +28,7 @@
   import Chats from './Chats.svelte'
   import Connect from './Connect.svelte'
   import FullMessage from './FullMessage.svelte'
+  import IntegrationSelector from './IntegrationSelector.svelte'
   import NewMessage from './NewMessage.svelte'
 
   export let _id: Ref<Doc>
@@ -38,7 +39,8 @@
   let currentMessage: SharedMessage | undefined = undefined
   let channel: Channel | undefined = undefined
   const notificationClient = NotificationClientImpl.getClient()
-  let integration: Integration | undefined
+  let integrations: Integration[] = []
+  let selectedIntegration: Integration | undefined = undefined
 
   const channelQuery = createQuery()
   const dispatch = createEventDispatcher()
@@ -76,7 +78,7 @@
   }
 
   const settingsQuery = createQuery()
-  const accountId = getCurrentAccount()._id
+  const me = getCurrentAccount()._id
 
   let templateProvider: TemplateDataProvider | undefined
 
@@ -88,15 +90,14 @@
     templateProvider?.destroy()
   })
 
-  $: templateProvider && integration && templateProvider.set(setting.templateFieldCategory.Integration, integration)
+  $: templateProvider &&
+    selectedIntegration &&
+    templateProvider.set(setting.templateFieldCategory.Integration, selectedIntegration)
 
-  settingsQuery.query(
-    setting.class.Integration,
-    { type: gmail.integrationType.Gmail, space: accountId as string as Ref<Space> },
-    (res) => {
-      integration = res[0]
-    }
-  )
+  settingsQuery.query(setting.class.Integration, { type: gmail.integrationType.Gmail, disabled: false }, (res) => {
+    integrations = res.filter((p) => (p.space as string) === me || p.shared?.includes(me))
+    selectedIntegration = integrations.find((p) => (p.space as string) === me) ?? integrations[0]
+  })
 </script>
 
 {#if channel && object}
@@ -123,7 +124,7 @@
     </svelte:fragment>
 
     <svelte:fragment slot="utils">
-      {#if !integration}
+      {#if integrations.length === 0}
         <Button
           label={gmail.string.Connect}
           kind={'primary'}
@@ -131,15 +132,18 @@
             showPopup(Connect, {}, eventToHTMLElement(e))
           }}
         />
+      {:else}
+        <Label label={gmail.string.From} />
+        <IntegrationSelector bind:selected={selectedIntegration} {integrations} />
       {/if}
     </svelte:fragment>
 
-    {#if newMessage}
-      <NewMessage {object} {channel} {currentMessage} on:close={back} />
+    {#if newMessage && selectedIntegration}
+      <NewMessage {object} {channel} {currentMessage} {selectedIntegration} on:close={back} />
     {:else if currentMessage}
       <FullMessage {currentMessage} bind:newMessage on:close={back} />
     {:else}
-      <Chats {object} {channel} bind:newMessage enabled={integration !== undefined} on:select={selectHandler} />
+      <Chats {object} {channel} bind:newMessage enabled={integrations.length > 0} on:select={selectHandler} />
     {/if}
   </Panel>
 {/if}

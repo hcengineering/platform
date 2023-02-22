@@ -1,13 +1,30 @@
+<!--
+// Copyright © 2023 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
 <script lang="ts">
   import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
   import core, { Account, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient, UserBoxList } from '@hcengineering/presentation'
+  import { ButtonKind } from '@hcengineering/ui'
 
   export let label: IntlString
   export let value: Ref<Account>[]
   export let onChange: (refs: Ref<Account>[]) => void
   export let readonly = false
+  export let kind: ButtonKind = 'link'
+  export let excludeItems: Ref<Account>[] | undefined = undefined
 
   let timer: any
   const client = getClient()
@@ -28,15 +45,38 @@
     accounts = res
   })
 
+  const excludedQuery = createQuery()
+
+  let excluded: Account[] = []
+
+  $: if (excludeItems !== undefined && excludeItems.length > 0) {
+    excludedQuery.query(core.class.Account, { _id: { $in: excludeItems } }, (res) => {
+      excluded = res
+    })
+  } else {
+    excludedQuery.unsubscribe()
+    excluded = []
+  }
+
   $: employess = accounts.map((it) => (it as EmployeeAccount).employee)
+
+  $: docQuery =
+    excluded.length > 0
+      ? {
+          active: true,
+          _id: { $nin: excluded.map((p) => (p as EmployeeAccount).employee) }
+        }
+      : {
+          active: true
+        }
 </script>
 
 <UserBoxList
   items={employess}
   {label}
   {readonly}
+  {docQuery}
   on:update={onUpdate}
-  kind={'link'}
   size={'medium'}
   justify={'left'}
   width={'100%'}

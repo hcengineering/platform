@@ -15,7 +15,7 @@
 
 import { plugin } from '@hcengineering/platform'
 import type { Plugin } from '@hcengineering/platform'
-import type { Doc, Ref, Class, Space, AttachedDoc, Timestamp } from '@hcengineering/core'
+import type { Doc, Ref, Class, Space, AttachedDoc, Timestamp, Account } from '@hcengineering/core'
 import type { AnyComponent } from '@hcengineering/ui'
 import type { IntegrationType, Handler } from '@hcengineering/setting'
 import { Channel } from '@hcengineering/contact'
@@ -50,6 +50,7 @@ export interface BaseMessage extends Doc {
  */
 export interface NewMessage extends BaseMessage {
   status: 'new' | 'sent'
+  from?: Ref<Account>
 }
 
 /**
@@ -85,7 +86,8 @@ export default plugin(gmailId, {
     Main: '' as AnyComponent,
     Connect: '' as AnyComponent,
     IconGmail: '' as AnyComponent,
-    NewMessages: '' as AnyComponent
+    NewMessages: '' as AnyComponent,
+    Configure: '' as AnyComponent
   },
   integrationType: {
     Gmail: '' as Ref<IntegrationType>

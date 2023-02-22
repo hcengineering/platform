@@ -16,11 +16,13 @@
   import attachmentP, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import contact, { Channel, Contact, formatName } from '@hcengineering/contact'
-  import { generateId, getCurrentAccount, Ref, Space, toIdMap } from '@hcengineering/core'
+  import { Account, generateId, getCurrentAccount, Ref, toIdMap } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import setting, { Integration } from '@hcengineering/setting'
   import { createQuery, getClient } from '@hcengineering/presentation'
+  import setting, { Integration } from '@hcengineering/setting'
+  import templates, { TemplateDataProvider } from '@hcengineering/templates'
+  import { StyledTextEditor } from '@hcengineering/text-editor'
   import {
     Button,
     EditBox,
@@ -34,9 +36,8 @@
   } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import plugin from '../plugin'
-  import templates, { TemplateDataProvider } from '@hcengineering/templates'
   import Connect from './Connect.svelte'
-  import { StyledTextEditor } from '@hcengineering/text-editor'
+  import IntegrationSelector from './IntegrationSelector.svelte'
 
   export let value: Contact[] | Contact
   const contacts = Array.isArray(value) ? value : [value]
@@ -69,7 +70,7 @@
 
   async function sendMsg () {
     const templateProvider = (await getResource(templates.function.GetTemplateDataProvider))()
-    if (templateProvider === undefined) return
+    if (templateProvider === undefined || selectedIntegration === undefined) return
     for (const channel of channels) {
       const target = contacts.find((p) => p._id === channel.attachedTo)
       if (target === undefined) continue
@@ -80,6 +81,7 @@
         content: message,
         to: channel.value,
         status: 'new',
+        from: selectedIntegration.space as string as Ref<Account>,
         copy: copy
           .split(',')
           .map((m) => m.trim())
@@ -185,10 +187,11 @@
   }
 
   const settingsQuery = createQuery()
-  const accountId = getCurrentAccount()._id
+  const me = getCurrentAccount()._id
 
   let templateProvider: TemplateDataProvider | undefined
-  let integration: Integration | undefined
+  let integrations: Integration[] = []
+  let selectedIntegration: Integration | undefined = undefined
 
   getResource(templates.function.GetTemplateDataProvider).then((p) => {
     templateProvider = p()
@@ -198,15 +201,14 @@
     templateProvider?.destroy()
   })
 
-  $: templateProvider && integration && templateProvider.set(setting.templateFieldCategory.Integration, integration)
+  $: templateProvider &&
+    selectedIntegration &&
+    templateProvider.set(setting.templateFieldCategory.Integration, selectedIntegration)
 
-  settingsQuery.query(
-    setting.class.Integration,
-    { type: plugin.integrationType.Gmail, space: accountId as string as Ref<Space> },
-    (res) => {
-      integration = res[0]
-    }
-  )
+  settingsQuery.query(setting.class.Integration, { type: plugin.integrationType.Gmail, disabled: false }, (res) => {
+    integrations = res.filter((p) => (p.space as string) === me || p.shared?.includes(me))
+    selectedIntegration = integrations.find((p) => (p.space as string) === me) ?? integrations[0]
+  })
 </script>
 
 <Panel
@@ -231,7 +233,7 @@
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
-    {#if !integration}
+    {#if integrations.length === 0}
       <Button
         label={plugin.string.Connect}
         kind={'primary'}
@@ -239,6 +241,9 @@
           showPopup(Connect, {}, eventToHTMLElement(e))
         }}
       />
+    {:else}
+      <Label label={plugin.string.From} />
+      <IntegrationSelector bind:selected={selectedIntegration} {integrations} />
     {/if}
   </svelte:fragment>
 
@@ -276,7 +281,7 @@
             inputFile.click()
           }}
         />
-        {#if integration}
+        {#if selectedIntegration}
           <Button
             label={plugin.string.Send}
             size={'small'}
