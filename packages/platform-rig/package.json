@@ -2,7 +2,8 @@
   "name": "@hcengineering/platform-rig",
   "version": "0.6.0",
   "scripts": {
-    "build": ""
+    "build": "",
+    "format": ""
   },
   "devDependencies": {
     "@rushstack/heft-jest-plugin": "^0.3.16",
