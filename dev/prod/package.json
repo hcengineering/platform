@@ -87,7 +87,7 @@
     "@hcengineering/lead": "^0.6.0",
     "@hcengineering/lead-assets": "^0.6.0",
     "@hcengineering/lead-resources": "^0.6.0",
-    "@hcengineering/gmail": "^0.6.0",
+    "@hcengineering/gmail": "^0.6.3",
     "@hcengineering/gmail-assets": "^0.6.0",
     "@hcengineering/gmail-resources": "^0.6.0",
     "@hcengineering/image-cropper": "^0.6.0",

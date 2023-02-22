@@ -123,7 +123,7 @@
     "@hcengineering/workbench": "^0.6.2",
     "@hcengineering/attachment": "^0.6.1",
     "@hcengineering/lead": "^0.6.0",
-    "@hcengineering/gmail": "^0.6.0",
+    "@hcengineering/gmail": "^0.6.3",
     "@hcengineering/inventory": "^0.6.0",
     "@hcengineering/templates": "^0.6.0",
     "@hcengineering/notification": "^0.6.5",
