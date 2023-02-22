@@ -484,11 +484,11 @@ export function createModel (builder: Builder, options = { addApplication: true 
   })
 
   builder.mixin(chunter.class.ChunterMessage, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['space', 'modifiedOn', 'createBy', '_class']
+    filters: ['space', '_class']
   })
 
   builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['private', 'archived']
+    filters: []
   })
 
   createAction(builder, {

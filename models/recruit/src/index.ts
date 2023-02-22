@@ -734,15 +734,15 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(recruit.mixin.Candidate, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['_class', 'title', 'source', 'city', 'skills', 'modifiedOn', 'onsite', 'remote', 'applications']
+    filters: ['_class']
   })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['attachedTo', 'space', 'assignee', 'state', 'doneState', 'modifiedOn']
+    filters: ['attachedTo']
   })
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['company', 'location', 'dueTo']
+    filters: []
   })
 
   createReviewModel(builder)
