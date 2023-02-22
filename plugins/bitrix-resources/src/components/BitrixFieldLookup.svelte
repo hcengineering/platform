@@ -1,6 +1,6 @@
 <script lang="ts">
   import { BitrixClient, BitrixEntityMapping, Fields, FieldValue } from '@hcengineering/bitrix'
-  import core, { Enum, Ref } from '@hcengineering/core'
+  import core, { DateRangeMode, Enum, Ref } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting-resources/src/plugin'
@@ -125,7 +125,10 @@
             <div class="ml-2">
               {#if value !== null && value !== undefined && value !== ''}
                 {#if (field.type === 'datetime' || field.type === 'date') && value != null && value !== ''}
-                  <DatePresenter value={new Date(value).getTime()} withTime={field.type === 'datetime'} />
+                  <DatePresenter
+                    value={new Date(value).getTime()}
+                    mode={field.type === 'datetime' ? DateRangeMode.DATETIME : DateRangeMode.DATE}
+                  />
                 {:else if field.type === 'enumeration'}
                   {field.items?.find((it) => it.ID === value)?.VALUE}
                 {:else}

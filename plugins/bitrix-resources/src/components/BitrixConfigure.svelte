@@ -25,7 +25,7 @@
 
   import { bitrixQueue } from '../queue'
   import CreateMapping from './CreateMapping.svelte'
-  import EntiryMapping from './EntityMapping.svelte'
+  import EntityMapping from './EntityMapping.svelte'
 
   export let integration: Integration
 
@@ -83,7 +83,7 @@
     </div>
     <div class="flex-row">
       {#each mappings as mapping}
-        <EntiryMapping {mapping} {bitrixClient} {statusList} />
+        <EntityMapping {mapping} {bitrixClient} {statusList} />
       {/each}
     </div>
   {/if}

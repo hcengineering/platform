@@ -1,6 +1,6 @@
 import attachment, { Attachment } from '@hcengineering/attachment'
 import chunter, { Comment } from '@hcengineering/chunter'
-import contact, { combineName, EmployeeAccount } from '@hcengineering/contact'
+import contact, { combineName, Contact, EmployeeAccount } from '@hcengineering/contact'
 import core, {
   AccountRole,
   ApplyOperations,
@@ -30,6 +30,8 @@ import {
   BitrixEntityMapping,
   BitrixEntityType,
   BitrixFieldMapping,
+  BitrixFiles,
+  BitrixOwnerType,
   BitrixSyncDoc,
   LoginInfo
 } from './types'
@@ -147,7 +149,7 @@ export async function syncDocument (
       attachedTo: resultDoc.document._id,
       [bitrix.mixin.BitrixSyncDoc + '.bitrixId']: { $in: resultDoc.blobs.map((it) => it[0].bitrixId) }
     })
-    for (const [ed, op] of resultDoc.blobs) {
+    for (const [ed, op, upd] of resultDoc.blobs) {
       const existing = existingBlobs.find(
         (it) => hierarchy.as<Doc, BitrixSyncDoc>(it, bitrix.mixin.BitrixSyncDoc).bitrixId === ed.bitrixId
       )
@@ -171,13 +173,13 @@ export async function syncDocument (
           })
           if (resp.status === 200) {
             const uuid = await resp.text()
-
+            upd(edData, ed)
             await applyOp.addCollection(
-              attachment.class.Attachment,
-              resultDoc.document.space,
-              resultDoc.document._id,
-              resultDoc.document._class,
-              'attachments',
+              ed._class,
+              ed.space,
+              ed.attachedTo,
+              ed.attachedToClass,
+              ed.collection,
               {
                 file: uuid,
                 lastModified: edData.lastModified,
@@ -186,8 +188,8 @@ export async function syncDocument (
                 type: edData.type
               },
               attachmentId,
-              resultDoc.document.modifiedOn,
-              resultDoc.document.modifiedBy
+              ed.modifiedOn,
+              ed.modifiedBy
             )
           }
         } catch (err: any) {
@@ -355,10 +357,11 @@ export function processComment (comment: string): string {
 
 // 1 day
 const syncPeriod = 1000 * 60 * 60 * 24
+
 /**
  * @public
  */
-export async function performSynchronization (ops: {
+export interface SyncOptions {
   client: TxOperations
   bitrixClient: BitrixClient
   space: Ref<Space> | undefined
@@ -368,41 +371,83 @@ export async function performSynchronization (ops: {
   frontUrl: string
   loginInfo: LoginInfo
   monitor: (total: number) => void
-  blobProvider?: (blobRef: any) => Promise<Blob | undefined>
-}): Promise<void> {
+  blobProvider?: (blobRef: { file: string, id: string }) => Promise<Blob | undefined>
+  extraFilter?: Record<string, any>
+}
+interface SyncOptionsExtra {
+  ownerTypeValues: BitrixOwnerType[]
+  commentFieldKeys: string[]
+  allMappings: FindResult<BitrixEntityMapping>
+  allEmployee: FindResult<EmployeeAccount>
+  userList: Map<string, Ref<EmployeeAccount>>
+}
+
+/**
+ * @public
+ */
+export async function performSynchronization (ops: SyncOptions): Promise<BitrixSyncDoc[]> {
   const commentFields = await ops.bitrixClient.call(BitrixEntityType.Comment + '.fields', {})
+
+  const ownerTypes = await ops.bitrixClient.call('crm.enum.ownertype', {})
+
+  const ownerTypeValues = ownerTypes.result as BitrixOwnerType[]
 
   const commentFieldKeys = Object.keys(commentFields.result)
 
   const allEmployee = await ops.client.findAll(contact.class.EmployeeAccount, {})
+
+  const allMappings = await ops.client.findAll<BitrixEntityMapping>(
+    bitrix.class.EntityMapping,
+    {},
+    {
+      lookup: {
+        _id: {
+          fields: bitrix.class.FieldMapping
+        }
+      }
+    }
+  )
 
   const userList = new Map<string, Ref<EmployeeAccount>>()
 
   // Fill all users and create new ones, if required.
   await synchronizeUsers(userList, ops, allEmployee)
 
+  return await doPerformSync({
+    ...ops,
+    ownerTypeValues,
+    commentFieldKeys,
+    allMappings,
+    allEmployee,
+    userList
+  })
+}
+
+async function doPerformSync (ops: SyncOptions & SyncOptionsExtra): Promise<BitrixSyncDoc[]> {
+  const resultDocs: BitrixSyncDoc[] = []
+
   try {
     if (ops.space === undefined || ops.mapping.$lookup?.fields === undefined) {
-      return
+      return []
     }
     let processed = 0
 
     let added = 0
 
-    const sel = ['*', 'UF_*']
-    if (ops.mapping.type === BitrixEntityType.Lead) {
-      sel.push('EMAIL')
-      sel.push('IM')
-    }
+    const sel = ['*', 'UF_*', 'EMAIL', 'IM']
 
     const allTagElements = await ops.client.findAll<TagElement>(tags.class.TagElement, {})
 
     while (added < ops.limit) {
-      const result = await ops.bitrixClient.call(ops.mapping.type + '.list', {
+      const q: Record<string, any> = {
         select: sel,
         order: { ID: ops.direction },
         start: processed
-      })
+      }
+      if (ops.extraFilter !== undefined) {
+        q.filter = ops.extraFilter
+      }
+      const result = await ops.bitrixClient.call(ops.mapping.type + '.list', q)
 
       const fields = ops.mapping.$lookup?.fields as BitrixFieldMapping[]
 
@@ -445,7 +490,7 @@ export async function performSynchronization (ops: {
             ops.space,
             fields,
             r,
-            userList,
+            ops.userList,
             existingDoc,
             defaultCategories,
             allTagElements,
@@ -453,7 +498,7 @@ export async function performSynchronization (ops: {
           )
 
           if (ops.mapping.comments) {
-            await downloadComments(res, ops, commentFieldKeys, userList)
+            await downloadComments(res, ops, ops.commentFieldKeys, ops.userList, ops.ownerTypeValues)
           }
 
           added++
@@ -461,12 +506,34 @@ export async function performSynchronization (ops: {
           await syncDocument(ops.client, existingDoc, res, ops.loginInfo, ops.frontUrl, () => {
             ops.monitor?.(total)
           })
+          if (existingDoc !== undefined) {
+            res.document._id = existingDoc._id as Ref<BitrixSyncDoc>
+          }
+          resultDocs.push(res.document)
           for (const d of res.extraDocs) {
             // update tags if required
             if (d._class === tags.class.TagElement) {
               allTagElements.push(d as TagElement)
             }
           }
+
+          if (ops.mapping.type === BitrixEntityType.Company) {
+            // We need to perform contact mapping if they are defined.
+            const contactMapping = ops.allMappings.find((it) => it.type === BitrixEntityType.Contact)
+            if (contactMapping !== undefined) {
+              await performOrganizationContactSynchronization(
+                {
+                  ...ops,
+                  mapping: contactMapping,
+                  limit: 100
+                },
+                {
+                  res
+                }
+              )
+            }
+          }
+
           if (added >= ops.limit) {
             break
           }
@@ -481,11 +548,53 @@ export async function performSynchronization (ops: {
       }
 
       processed = result.next
+      if (processed === undefined) {
+        // No more elements
+        break
+      }
     }
   } catch (err: any) {
     console.error(err)
   }
+  return resultDocs
 }
+
+async function performOrganizationContactSynchronization (
+  ops: SyncOptions & SyncOptionsExtra,
+  extra: {
+    res: ConvertResult
+  }
+): Promise<void> {
+  const contacts = await doPerformSync({
+    ...ops,
+    extraFilter: { COMPANY_ID: extra.res.document.bitrixId },
+    monitor: (total) => {
+      console.log('total', total)
+    }
+  })
+  const existingContacts = await ops.client.findAll(contact.class.Member, {
+    attachedTo: extra.res.document._id,
+    contact: { $in: contacts.map((it) => it._id as unknown as Ref<Contact>) }
+  })
+  for (const c of contacts) {
+    const ex = existingContacts.find((e) => e.contact === (c._id as unknown as Ref<Contact>))
+    if (ex === undefined) {
+      await ops.client.addCollection(
+        contact.class.Member,
+        extra.res.document.space,
+        extra.res.document._id,
+        extra.res.document._class,
+        'members',
+        {
+          contact: c._id as unknown as Ref<Contact>
+        }
+      )
+    }
+  }
+
+  // We need to create Member's for organization contacts.
+}
+
 async function downloadComments (
   res: ConvertResult,
   ops: {
@@ -498,15 +607,21 @@ async function downloadComments (
     frontUrl: string
     loginInfo: LoginInfo
     monitor: (total: number) => void
-    blobProvider?: ((blobRef: any) => Promise<Blob | undefined>) | undefined
+    blobProvider?: ((blobRef: { file: string, id: string }) => Promise<Blob | undefined>) | undefined
   },
   commentFieldKeys: string[],
-  userList: Map<string, Ref<EmployeeAccount>>
+  userList: Map<string, Ref<EmployeeAccount>>,
+  ownerTypeValues: BitrixOwnerType[]
 ): Promise<void> {
+  const entityType = ops.mapping.type.replace('crm.', '')
+  const ownerType = ownerTypeValues.find((it) => it.SYMBOL_CODE.toLowerCase() === entityType)
+  if (ownerType === undefined) {
+    throw new Error(`No owner type found for ${entityType}`)
+  }
   const commentsData = await ops.bitrixClient.call(BitrixEntityType.Comment + '.list', {
     filter: {
       ENTITY_ID: res.document.bitrixId,
-      ENTITY_TYPE: ops.mapping.type.replace('crm.', '')
+      ENTITY_TYPE: entityType
     },
     select: commentFieldKeys,
     order: { ID: ops.direction }
@@ -523,14 +638,53 @@ async function downloadComments (
       collection: 'comments',
       space: res.document.space,
       modifiedBy: userList.get(it.AUTHOR_ID) ?? core.account.System,
-      modifiedOn: new Date(it.CREATED ?? new Date().toString()).getTime()
+      modifiedOn: new Date(it.CREATED ?? new Date().toString()).getTime(),
+      attachments: 0
+    }
+    if (Object.keys(it.FILES ?? {}).length > 0) {
+      for (const [, v] of Object.entries(it.FILES as BitrixFiles)) {
+        c.message += `</br> Attachment: <a href='${v.urlDownload}'>${v.name} by ${v.authorName}</a>`
+        // Direct link, we could download using fetch.
+        c.attachments = (c.attachments ?? 0) + 1
+        res.blobs.push([
+          {
+            _id: generateId(),
+            _class: attachment.class.Attachment,
+            attachedTo: c._id,
+            attachedToClass: c._class,
+            bitrixId: `attach-${v.id}`,
+            collection: 'attachments',
+            file: '',
+            lastModified: Date.now(),
+            modifiedBy: userList.get(it.AUTHOR_ID) ?? core.account.System,
+            modifiedOn: new Date(it.CREATED ?? new Date().toString()).getTime(),
+            name: v.name,
+            size: v.size,
+            space: c.space,
+            type: 'file'
+          },
+          async (): Promise<File | undefined> => {
+            const blob = await ops.blobProvider?.({ file: v.urlDownload, id: `${v.id}` })
+            if (blob !== undefined) {
+              return new File([blob], v.name)
+            }
+          },
+          (file: File, attach: Attachment) => {
+            attach.attachedTo = c._id
+            attach.type = file.type
+            attach.size = file.size
+            attach.name = file.name
+          }
+        ])
+      }
     }
     res.extraSync.push(c)
   }
   const communications = await ops.bitrixClient.call('crm.activity.list', {
     order: { ID: 'DESC' },
     filter: {
-      OWNER_ID: res.document.bitrixId
+      OWNER_ID: res.document.bitrixId,
+      OWNER_TYPE: ownerType.ID
     },
     select: ['*', 'COMMUNICATIONS']
   })
@@ -538,12 +692,23 @@ async function downloadComments (
     ? (communications.result as BitrixActivity[])
     : [communications.result as BitrixActivity]
   for (const comm of cr) {
+    const cummunications = comm.COMMUNICATIONS?.map((it) => it.ENTITY_SETTINGS?.LEAD_TITLE ?? '')
+    let message = `<p>
+        e-mail: ${cummunications?.join(',') ?? ''}<br/>\n
+        Subject: ${comm.SUBJECT}<br/>\n`
+
+    for (const [k, v] of Object.entries(comm.SETTINGS?.EMAIL_META ?? {}).concat(
+      Object.entries(comm.SETTINGS?.MESSAGE_HEADERS ?? {})
+    )) {
+      if (v.trim().length > 0) {
+        message += `<div>${k}: ${v}</div><br/>\n`
+      }
+    }
+    message += '</p>' + comm.DESCRIPTION
     const c: Comment & { bitrixId: string, type: string } = {
       _id: generateId(),
       _class: chunter.class.Comment,
-      message: `e-mail:<br/> 
-                            Subject: ${comm.SUBJECT}
-                            ${comm.DESCRIPTION}`,
+      message,
       bitrixId: comm.ID,
       type: 'email',
       attachedTo: res.document._id,
@@ -553,6 +718,7 @@ async function downloadComments (
       modifiedBy: userList.get(comm.AUTHOR_ID) ?? core.account.System,
       modifiedOn: new Date(comm.CREATED ?? new Date().toString()).getTime()
     }
+
     res.extraSync.push(c)
   }
 }
@@ -569,7 +735,7 @@ async function synchronizeUsers (
     frontUrl: string
     loginInfo: LoginInfo
     monitor: (total: number) => void
-    blobProvider?: ((blobRef: any) => Promise<Blob | undefined>) | undefined
+    blobProvider?: ((blobRef: { file: string, id: string }) => Promise<Blob | undefined>) | undefined
   },
   allEmployee: FindResult<EmployeeAccount>
 ): Promise<void> {

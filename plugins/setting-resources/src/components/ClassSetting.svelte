@@ -49,6 +49,23 @@
   let classes: Ref<Class<Doc>>[] = []
   clQuery.query(core.class.Class, {}, (res) => {
     classes = filterDescendants(hierarchy, ofClass, res)
+
+    if (ofClass !== undefined) {
+      // We need to include all possible mixins as well
+      for (const ancestor of hierarchy.getAncestors(ofClass)) {
+        if (ancestor === ofClass) {
+          continue
+        }
+        const mixins = hierarchy.getDescendants(ancestor).filter((it) => hierarchy.isMixin(it))
+        for (const m of mixins) {
+          const mm = hierarchy.getClass(m)
+          if (!classes.includes(m) && mm.extends === ancestor && mm.label !== undefined) {
+            // Check if parent of
+            classes.push(m)
+          }
+        }
+      }
+    }
   })
 </script>
 

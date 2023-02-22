@@ -110,7 +110,8 @@
     {:else if node.nodeName === 'S'}
       <s><svelte:self nodes={node.childNodes} /></s>
     {:else}
-      Unknown {node.nodeName}
+      unknown: {node.nodeName}
+      <svelte:self nodes={node.childNodes} />
     {/if}
   {/each}
 {/if}

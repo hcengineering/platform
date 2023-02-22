@@ -51,6 +51,8 @@
 
   export let prefferedSorting: string = 'modifiedOn'
 
+  export let limit = 200
+
   // If defined, will show a number of dummy items before real data will appear.
   export let loadingProps: LoadingProps | undefined = undefined
 
@@ -92,6 +94,7 @@
     sortKey: string | string[],
     sortOrder: SortingOrder,
     lookup: Lookup<Doc>,
+    limit: number,
     options?: FindOptions<Doc>
   ) {
     const sort = Array.isArray(sortKey)
@@ -114,13 +117,13 @@
         dispatch('content', objects)
         loading = loading === 1 ? 0 : -1
       },
-      { sort, limit: 200, ...options, lookup }
+      { sort, limit, ...options, lookup }
     )
     if (update && ++loading > 0) {
       objects = []
     }
   }
-  $: update(_class, query, _sortKey, sortOrder, lookup, options)
+  $: update(_class, query, _sortKey, sortOrder, lookup, limit, options)
 
   const showMenu = async (ev: MouseEvent, object: Doc, row: number): Promise<void> => {
     selection = row
@@ -366,7 +369,15 @@
     <div class="content" class:padding={showNotification || enableChecking}>
       <Label label={view.string.Total} />: {total}
       {#if objects.length > 0 && objects.length < total}
-        <Label label={view.string.Shown} />: {objects.length}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <div
+          class="cursor-pointer ml-2"
+          on:click={() => {
+            limit = limit + 100
+          }}
+        >
+          <Label label={view.string.Shown} />: {objects.length}
+        </div>
       {/if}
     </div>
   </div>

@@ -17,7 +17,7 @@
   import { Class, ClassifierKind, Doc, Mixin, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
-  import { Label } from '@hcengineering/ui'
+  import { Icon, Label, tooltip } from '@hcengineering/ui'
   import { getMixinStyle } from '../utils'
 
   export let value: Doc
@@ -43,10 +43,8 @@
     mixins = hierarchy
       .getDescendants(parentClass)
       .filter(
-        (m) =>
-          hierarchy.getClass(m).kind === ClassifierKind.MIXIN &&
-          hierarchy.hasMixin(value, m) &&
-          !hierarchy.hasMixin(hierarchy.getClass(m), setting.mixin.UserMixin)
+        (m) => hierarchy.getClass(m).kind === ClassifierKind.MIXIN && hierarchy.hasMixin(value, m)
+        // && !hierarchy.hasMixin(hierarchy.getClass(m), setting.mixin.UserMixin)
       )
       .map((m) => hierarchy.getClass(m) as Mixin<Doc>)
   }
@@ -55,8 +53,19 @@
 {#if mixins.length > 0}
   <div class="mixin-container">
     {#each mixins as mixin}
-      <div class="mixin-selector" style={getMixinStyle(mixin._id, true)}>
-        <Label label={mixin.label} />
+      {@const userMixin = hierarchy.hasMixin(mixin, setting.mixin.UserMixin)}
+      <div class="mixin-selector" class:user-selector={userMixin} style={getMixinStyle(mixin._id, true)}>
+        {#if !userMixin}
+          <Label label={mixin.label} />
+        {:else}
+          <div use:tooltip={{ label: mixin.label }}>
+            {#if mixin.icon}
+              <Icon icon={mixin.icon} size={'small'} />
+            {:else}
+              Ⱞ
+            {/if}
+          </div>
+        {/if}
       </div>
     {/each}
   </div>
@@ -82,6 +91,9 @@
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+    .user-selector {
+      min-width: 24px;
     }
   }
 </style>

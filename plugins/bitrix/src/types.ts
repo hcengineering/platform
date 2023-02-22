@@ -101,7 +101,17 @@ export enum BitrixEntityType {
   Binding = 'crm.timeline.bindings',
   Lead = 'crm.lead',
   Activity = 'crm.activity',
-  Company = 'crm.company'
+  Company = 'crm.company',
+  Contact = 'crm.contact'
+}
+
+/**
+ * @public
+ */
+export interface BitrixOwnerType {
+  ID: string
+  NAME: string
+  SYMBOL_CODE: string
 }
 
 /**
@@ -109,9 +119,8 @@ export enum BitrixEntityType {
  */
 export const mappingTypes = [
   { label: 'Leads', id: BitrixEntityType.Lead },
-  // { label: 'Comments', id: BitrixEntityType.Comment },
-  { label: 'Company', id: BitrixEntityType.Company }
-  // { label: 'Activity', id: BitrixEntityType.Activity }
+  { label: 'Company', id: BitrixEntityType.Company },
+  { label: 'Contacts', id: BitrixEntityType.Contact }
 ]
 
 /**
@@ -242,7 +251,36 @@ export interface BitrixFieldMapping extends AttachedDoc {
 export interface BitrixActivity {
   ID: string
   SUBJECT: string
+  COMMUNICATIONS?: {
+    ENTITY_SETTINGS?: {
+      LAST_NAME: string
+      NAME: string
+      LEAD_TITLE: string
+    }
+  }[]
   DESCRIPTION: string
   AUTHOR_ID: string
   CREATED: number
+  SETTINGS?: {
+    MESSAGE_HEADERS?: Record<string, string>
+    EMAIL_META?: Record<string, string>
+  }
 }
+/**
+ * @public
+ */
+export type BitrixFiles = Record<
+string,
+{
+  authorId: string
+  authorName: string
+  date: string
+  id: number
+  image: boolean
+  name: string
+  size: number
+  type: string
+  urlDownload: string
+  urlShow: string
+}
+>
