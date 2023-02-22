@@ -31,11 +31,12 @@ import {
   TypeString,
   UX
 } from '@hcengineering/model'
-import core, { TAttachedDoc } from '@hcengineering/model-core'
-import { Request, RequestDecisionComment, RequestStatus } from '@hcengineering/request'
+import core, { TAttachedDoc, TClass } from '@hcengineering/model-core'
+import { Request, RequestDecisionComment, RequestStatus, RequestPresenter } from '@hcengineering/request'
 import request from './plugin'
 import view from '@hcengineering/model-view'
 import { TComment } from '@hcengineering/model-chunter'
+import { AnyComponent } from '@hcengineering/ui'
 
 export const DOMAIN_REQUEST = 'request' as Domain
 
@@ -69,8 +70,13 @@ export class TRequest extends TAttachedDoc implements Request {
 @Mixin(request.mixin.RequestDecisionComment, chunter.class.Comment)
 export class TRequestDecisionComment extends TComment implements RequestDecisionComment {}
 
+@Mixin(request.mixin.RequestPresenter, core.class.Class)
+export class TRequestPresenter extends TClass implements RequestPresenter {
+  presenter!: AnyComponent
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TRequest, TRequestDecisionComment)
+  builder.createModel(TRequest, TRequestDecisionComment, TRequestPresenter)
 
   builder.mixin(request.class.Request, core.class.Class, view.mixin.ObjectEditor, {
     editor: request.component.EditRequest
@@ -78,6 +84,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(request.class.Request, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: request.component.RequestPresenter
+  })
+
+  builder.mixin(request.class.Request, core.class.Class, request.mixin.RequestPresenter, {
+    presenter: request.component.RequestView
   })
 
   builder.createDoc(

@@ -50,6 +50,13 @@ export enum RequestStatus {
 /**
  * @public
  */
+export interface RequestPresenter extends Class<Doc> {
+  presenter: AnyComponent
+}
+
+/**
+ * @public
+ */
 export const requestId = 'request' as Plugin
 
 /**
@@ -60,10 +67,13 @@ const request = plugin(requestId, {
     Request: '' as Ref<Class<Request>>
   },
   mixin: {
-    RequestDecisionComment: '' as Ref<Mixin<RequestDecisionComment>>
+    RequestDecisionComment: '' as Ref<Mixin<RequestDecisionComment>>,
+    RequestPresenter: '' as Ref<Mixin<RequestPresenter>>
   },
   component: {
-    RequestsPopup: '' as AnyComponent
+    RequestsPopup: '' as AnyComponent,
+    RequestPresenter: '' as AnyComponent,
+    RequestView: '' as AnyComponent
   },
   string: {
     Requests: '' as IntlString
