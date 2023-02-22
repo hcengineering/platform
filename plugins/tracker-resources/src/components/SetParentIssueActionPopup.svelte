@@ -95,6 +95,7 @@
   {ignoreObjects}
   shadows={true}
   {width}
+  noSearchField
   on:update
   on:close={onClose}
 >
