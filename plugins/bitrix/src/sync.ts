@@ -132,15 +132,22 @@ export async function syncDocument (
     for (const [cl, vals] of byClass.entries()) {
       if (applyOp.getHierarchy().isDerived(cl, core.class.AttachedDoc)) {
         const existingByClass = await client.findAll(cl, {
-          attachedTo: resultDoc.document._id,
-          [bitrix.mixin.BitrixSyncDoc + '.bitrixId']: { $in: vals.map((it) => it.bitrixId) }
+          attachedTo: resultDoc.document._id
         })
 
         for (const valValue of vals) {
-          const existing = existingByClass.find(
+          const existingIdx = existingByClass.findIndex(
             (it) => hierarchy.as<Doc, BitrixSyncDoc>(it, bitrix.mixin.BitrixSyncDoc).bitrixId === valValue.bitrixId
           )
-          await updateAttachedDoc(existing, applyOp, valValue)
+          if (existingIdx >= 0) {
+            const existing = existingByClass.splice(existingIdx, 1).shift()
+            await updateAttachedDoc(existing, applyOp, valValue)
+          }
+        }
+
+        // Remove previous merged documents, probable they are deleted in bitrix or wrongly migrated.
+        for (const doc of existingByClass) {
+          await client.remove(doc)
         }
       }
     }
@@ -355,8 +362,10 @@ export function processComment (comment: string): string {
   return comment
 }
 
-// 1 day
-const syncPeriod = 1000 * 60 * 60 * 24
+/**
+ * @public
+ */
+export const defaultSyncPeriod = 1000 * 60 * 60 * 24
 
 /**
  * @public
@@ -373,6 +382,7 @@ export interface SyncOptions {
   monitor: (total: number) => void
   blobProvider?: (blobRef: { file: string, id: string }) => Promise<Blob | undefined>
   extraFilter?: Record<string, any>
+  syncPeriod?: number
 }
 interface SyncOptionsExtra {
   ownerTypeValues: BitrixOwnerType[]
@@ -471,7 +481,7 @@ async function doPerformSync (ops: SyncOptions & SyncOptionsExtra): Promise<Bitr
         )
         if (existingDoc !== undefined) {
           const bd = ops.client.getHierarchy().as(existingDoc, bitrix.mixin.BitrixSyncDoc)
-          if (bd.syncTime !== undefined && bd.syncTime + syncPeriod > syncTime) {
+          if (bd.syncTime !== undefined && bd.syncTime + (ops.syncPeriod ?? defaultSyncPeriod) > syncTime) {
             // No need to sync, sime sync time is not yet arrived.
             toProcess.splice(0, 1)
             added++
@@ -694,14 +704,14 @@ async function downloadComments (
   for (const comm of cr) {
     const cummunications = comm.COMMUNICATIONS?.map((it) => it.ENTITY_SETTINGS?.LEAD_TITLE ?? '')
     let message = `<p>
-        e-mail: ${cummunications?.join(',') ?? ''}<br/>\n
-        Subject: ${comm.SUBJECT}<br/>\n`
+        <span style="color: var(--primary-color-skyblue);">e-mail: ${cummunications?.join(',') ?? ''}</span><br/>\n
+        <span style="color: var(--primary-color-skyblue);">Subject: ${comm.SUBJECT}</span><br/>\n`
 
     for (const [k, v] of Object.entries(comm.SETTINGS?.EMAIL_META ?? {}).concat(
       Object.entries(comm.SETTINGS?.MESSAGE_HEADERS ?? {})
     )) {
       if (v.trim().length > 0) {
-        message += `<div>${k}: ${v}</div><br/>\n`
+        message += `<span style="color: var(--primary-color-skyblue);">${k}: ${v}</span><br/>\n`
       }
     }
     message += '</p>' + comm.DESCRIPTION

@@ -516,5 +516,18 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         .map((it) => it._id)
       await this.storage.clean(DOMAIN_DOC_INDEX_STATE, docIds)
     }
+
+    // Clean for non existing clases
+
+    const unknownClasses = (
+      await this.storage.findAll(
+        core.class.DocIndexState,
+        { objectClass: { $nin: allClasses } },
+        { projection: { _id: 1 } }
+      )
+    ).map((it) => it._id)
+    if (unknownClasses.length > 0) {
+      await this.storage.clean(DOMAIN_DOC_INDEX_STATE, unknownClasses)
+    }
   }
 }

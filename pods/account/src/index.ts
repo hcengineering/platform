@@ -106,6 +106,7 @@ export function serveAccount (methods: Record<string, AccountMethod>, productId 
 
   const close = (): void => {
     server.close()
+    process.exit(0)
   }
 
   process.on('uncaughtException', (e) => {
