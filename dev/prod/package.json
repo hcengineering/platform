@@ -12,6 +12,7 @@
     "preformat-svelte": "prettier -w src/**/*.svelte",
     "lint": "",
     "lint:fix": "yarn preformat-svelte && eslint --fix src",
+    "format": "",
     "deploy": "cp -p public/* dist && aws s3 sync dist s3://anticrm-platform --delete --acl public-read"
   },
   "devDependencies": {
@@ -87,7 +88,7 @@
     "@hcengineering/lead": "^0.6.0",
     "@hcengineering/lead-assets": "^0.6.0",
     "@hcengineering/lead-resources": "^0.6.0",
-    "@hcengineering/gmail": "^0.6.0",
+    "@hcengineering/gmail": "^0.6.3",
     "@hcengineering/gmail-assets": "^0.6.0",
     "@hcengineering/gmail-resources": "^0.6.0",
     "@hcengineering/image-cropper": "^0.6.0",

@@ -2,7 +2,8 @@
   "name": "@hcengineering/model-rig",
   "version": "0.6.0",
   "scripts": {
-    "build": ""
+    "build": "",
+    "format": ""
   },
   "devDependencies": {
     "@rushstack/heft": "^0.47.9",
