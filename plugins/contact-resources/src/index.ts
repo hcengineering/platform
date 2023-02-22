@@ -55,6 +55,7 @@ import ContactRefPresenter from './components/ContactRefPresenter.svelte'
 import PersonRefPresenter from './components/PersonRefPresenter.svelte'
 import EmployeeRefPresenter from './components/EmployeeRefPresenter.svelte'
 import ChannelFilter from './components/ChannelFilter.svelte'
+import AccountBox from './components/AccountBox.svelte'
 import contact from './plugin'
 import {
   employeeSort,
@@ -80,7 +81,9 @@ export {
   EmployeeAccountRefPresenter,
   MembersPresenter,
   EditPerson,
-  EmployeeRefPresenter
+  EmployeeRefPresenter,
+  AccountArrayEditor,
+  AccountBox
 }
 
 const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({

@@ -16,11 +16,12 @@
   import attachmentP, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import contact, { Channel, Contact, formatName } from '@hcengineering/contact'
-  import { Data, generateId } from '@hcengineering/core'
+  import { Account, Data, generateId, Ref } from '@hcengineering/core'
   import { NewMessage, SharedMessage } from '@hcengineering/gmail'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Integration } from '@hcengineering/setting'
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
   import { StyledTextEditor } from '@hcengineering/text-editor'
   import { Button, EditBox, IconArrowLeft, IconAttachment, Label, Scroller } from '@hcengineering/ui'
@@ -31,6 +32,7 @@
   export let object: Contact
   export let channel: Channel
   export let currentMessage: SharedMessage | undefined
+  export let selectedIntegration: Integration
   const client = getClient()
   const notificationClient = NotificationClientImpl.getClient()
   let objectId = generateId()
@@ -65,6 +67,7 @@
       {
         ...obj,
         attachments: attachments.length,
+        from: selectedIntegration.space as string as Ref<Account>,
         copy: copy
           .split(',')
           .map((m) => m.trim())

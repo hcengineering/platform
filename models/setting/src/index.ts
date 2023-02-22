@@ -14,7 +14,7 @@
 //
 
 import activity from '@hcengineering/activity'
-import { Domain, DOMAIN_MODEL, Ref } from '@hcengineering/core'
+import { Account, Domain, DOMAIN_MODEL, Ref } from '@hcengineering/core'
 import { Builder, Mixin, Model } from '@hcengineering/model'
 import core, { TClass, TConfiguration, TDoc } from '@hcengineering/model-core'
 import view, { createAction } from '@hcengineering/model-view'
@@ -43,6 +43,7 @@ export class TIntegration extends TDoc implements Integration {
   type!: Ref<IntegrationType>
   disabled!: boolean
   value!: string
+  shared!: Ref<Account>[]
 }
 @Model(setting.class.SettingsCategory, core.class.Doc, DOMAIN_MODEL)
 export class TSettingsCategory extends TDoc implements SettingsCategory {
@@ -70,6 +71,7 @@ export class TIntegrationType extends TDoc implements IntegrationType {
   createComponent!: AnyComponent
   reconnectComponent?: AnyComponent
   onDisconnect!: Handler
+  configureComponent?: AnyComponent
 }
 
 @Mixin(setting.mixin.Editable, core.class.Class)
