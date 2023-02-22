@@ -56,7 +56,6 @@
 
   function buildFilterFromKey (_class: Ref<Class<Doc>>, key: string): KeyFilter | undefined {
     const attribute = hierarchy.getAttribute(_class, key)
-    if (attribute.hidden) return
     return buildFilterKey(hierarchy, _class, key, attribute)
   }
 

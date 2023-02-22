@@ -172,7 +172,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(inventory.class.Product, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['attachedTo', 'name', 'modifiedOn']
+    filters: ['attachedTo']
   })
 }
 

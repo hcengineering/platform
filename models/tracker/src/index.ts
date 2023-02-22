@@ -1265,15 +1265,15 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['status', 'priority', 'assignee', 'project', 'sprint', 'estimation', 'dueDate', 'modifiedOn']
+    filters: []
   })
 
   builder.mixin(tracker.class.IssueTemplate, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['priority', 'assignee', 'project', 'sprint', 'modifiedOn']
+    filters: []
   })
 
   builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['status', 'project', 'lead', 'startDate', 'targetDate', 'modifiedOn', 'capacity']
+    filters: []
   })
 
   builder.createDoc(

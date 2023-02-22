@@ -301,11 +301,11 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(lead.class.Lead, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['attachedTo', 'title', 'assignee', 'state', 'doneState', 'modifiedOn']
+    filters: ['attachedTo']
   })
 
   builder.mixin(lead.mixin.Customer, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['_class', 'description', 'city', 'modifiedOn']
+    filters: ['_class']
   })
 
   builder.createDoc(
