@@ -84,10 +84,6 @@
     value = !value
     dispatch('change', value)
   }}
-  on:focus
-  on:blur
-  on:mousemove
-  on:mouseleave
   {id}
 >
   {#if icon}

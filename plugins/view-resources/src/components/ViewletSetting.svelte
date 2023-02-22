@@ -46,6 +46,7 @@
       (res) => {
         preference = res[0]
         attributes = getConfig(viewlet, preference)
+        enabled = attributes.filter((p) => p.enabled)
         loading = false
       },
       { limit: 1 }
@@ -58,6 +59,7 @@
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
   let attributes: AttributeConfig[] = []
+  let enabled: AttributeConfig[] = []
   let loading = true
 
   interface AttributeConfig {
@@ -210,7 +212,7 @@
   }
 
   async function save (): Promise<void> {
-    const config = attributes.filter((p) => p.enabled).map((p) => p.value)
+    const config = enabled.map((p) => p.value)
     if (preference !== undefined) {
       await client.update(preference, {
         config
@@ -225,6 +227,7 @@
 
   function restoreDefault (): void {
     attributes = getConfig(viewlet, undefined)
+    enabled = attributes.filter((p) => p.enabled)
   }
 
   function setStatus (result: AttributeConfig[], preference: ViewletPreference): AttributeConfig[] {
@@ -246,8 +249,7 @@
   const elements: HTMLElement[] = []
   let selected: number | undefined
 
-  function dragswap (ev: MouseEvent, i: number): boolean {
-    const s = selected as number
+  function dragswap (ev: MouseEvent, i: number, s: number): boolean {
     if (i < s) {
       if (elements[i].offsetTop !== elements[s].offsetTop) {
         return ev.offsetY < elements[i].offsetHeight / 2
@@ -266,8 +268,8 @@
 
   function dragover (ev: MouseEvent, i: number) {
     const s = selected as number
-    if (dragswap(ev, i)) {
-      ;[attributes[i], attributes[s]] = [attributes[s], attributes[i]]
+    if (dragswap(ev, i, s)) {
+      ;[enabled[i], enabled[s]] = [enabled[s], enabled[i]]
       selected = i
     }
   }
@@ -293,7 +295,6 @@
     return res
   }
 
-  $: enabled = attributes.filter((p) => p.enabled)
   $: classes = groupByClasses(attributes)
 
   function getClassLabel (_class: Ref<Class<Doc>>): IntlString {
@@ -336,6 +337,10 @@
             icon={attribute.icon}
             label={attribute.label}
             bind:value={attribute.enabled}
+            on:change={() => {
+              enabled.splice(i, 1)
+              enabled = enabled
+            }}
           />
         </div>
       {/each}
@@ -357,7 +362,8 @@
                     const value = classes.get(_class)?.find((it) => it.value === val)
                     if (value) {
                       value.enabled = true
-                      attributes = attributes
+                      enabled.push(value)
+                      enabled = enabled
                     }
                   }
                 }
