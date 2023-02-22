@@ -3,6 +3,7 @@
     BitrixClient,
     BitrixEntityMapping,
     BitrixFieldMapping,
+    defaultSyncPeriod,
     Fields,
     performSynchronization,
     StatusValue,
@@ -34,6 +35,7 @@
   let direction: 'ASC' | 'DSC' = 'ASC'
   let limit = 1
   let space: Ref<Space> | undefined
+  let syncPeriod = defaultSyncPeriod
 
   export let loading = false
   let state = ''
@@ -67,7 +69,8 @@
           docsProcessed++
           state = `processed: ${docsProcessed}/${total ?? 1}`
         },
-        extraFilter: filterFields.length === 0 ? undefined : mappedFilter
+        extraFilter: filterFields.length === 0 ? undefined : mappedFilter,
+        syncPeriod
       })
     } catch (err: any) {
       state = err.message
@@ -140,6 +143,17 @@
         { id: 'DSC', label: 'Descending' }
       ]}
       bind:selected={direction}
+    />
+    <NumberEditor
+      kind={'button'}
+      value={syncPeriod}
+      focus={false}
+      placeholder={getEmbeddedLabel('Period')}
+      onChange={(val) => {
+        if (val) {
+          syncPeriod = val
+        }
+      }}
     />
     <div class="fs-title">
       <NumberEditor

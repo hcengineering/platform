@@ -86,17 +86,22 @@
         </div>
       {/if}
     {:else if node.nodeName === 'SPAN'}
-      <Component
-        is={view.component.ObjectPresenter}
-        props={{
-          objectId: node.getAttribute('data-id'),
-          title: node.getAttribute('data-label'),
-          _class: node.getAttribute('data-objectclass'),
-          props: {
-            shouldShowAvatar: false
-          }
-        }}
-      />
+      <span style={node.getAttribute('style')}>
+        <svelte:self nodes={node.childNodes} />
+        {#if node.getAttribute('data-objectclass') !== undefined && node.getAttribute('data-id') !== undefined}
+          <Component
+            is={view.component.ObjectPresenter}
+            props={{
+              objectId: node.getAttribute('data-id'),
+              title: node.getAttribute('data-label'),
+              _class: node.getAttribute('data-objectclass'),
+              props: {
+                shouldShowAvatar: false
+              }
+            }}
+          />
+        {/if}
+      </span>
     {:else if node.nodeName === 'TABLE'}
       <table class={node.className}><svelte:self nodes={node.childNodes} /></table>
     {:else if node.nodeName === 'TBODY'}
