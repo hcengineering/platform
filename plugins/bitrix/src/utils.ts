@@ -196,25 +196,22 @@ export async function convert (
 
     return r.join('').trim()
   }
-  const getDownloadValue = async (attr: AnyAttribute, operation: DownloadAttachmentOperation): Promise<any> => {
-    const r: Array<string | number | boolean | Date> = []
+  const getDownloadValue = async (
+    attr: AnyAttribute,
+    operation: DownloadAttachmentOperation
+  ): Promise<{ id: string, file: string }[]> => {
+    const files: Array<{ id: string, file: string }> = []
     for (const o of operation.fields) {
       const lval = extractValue(o.field)
       if (lval != null) {
         if (Array.isArray(lval)) {
-          r.push(...lval)
+          files.push(...lval)
         } else {
-          r.push(lval)
+          files.push(lval)
         }
       }
     }
-    if (r.length === 1) {
-      return r[0]
-    }
-    if (r.length === 0) {
-      return
-    }
-    return r.join('').trim()
+    return files
   }
 
   const getChannelValue = async (attr: AnyAttribute, operation: CreateChannelOperation): Promise<any> => {
@@ -332,8 +329,8 @@ export async function convert (
         value = await getTagValue(attr, f.operation)
         break
       case MappingOperation.DownloadAttachment: {
-        const blobRef: { file: string, id: string } = await getDownloadValue(attr, f.operation)
-        if (blobRef !== undefined) {
+        const blobRefs: { file: string, id: string }[] = await getDownloadValue(attr, f.operation)
+        for (const blobRef of blobRefs) {
           const attachDoc: Attachment & BitrixSyncDoc = {
             _id: generateId(),
             bitrixId: blobRef.id,
@@ -379,6 +376,7 @@ export async function convert (
             }
           ])
         }
+
         break
       }
     }

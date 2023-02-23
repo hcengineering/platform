@@ -153,8 +153,7 @@ export async function syncDocument (
     }
 
     const existingBlobs = await client.findAll(attachment.class.Attachment, {
-      attachedTo: resultDoc.document._id,
-      [bitrix.mixin.BitrixSyncDoc + '.bitrixId']: { $in: resultDoc.blobs.map((it) => it[0].bitrixId) }
+      attachedTo: resultDoc.document._id
     })
     for (const [ed, op, upd] of resultDoc.blobs) {
       const existing = existingBlobs.find(
@@ -181,23 +180,29 @@ export async function syncDocument (
           if (resp.status === 200) {
             const uuid = await resp.text()
             upd(edData, ed)
-            await applyOp.addCollection(
-              ed._class,
-              ed.space,
-              ed.attachedTo,
-              ed.attachedToClass,
-              ed.collection,
-              {
-                file: uuid,
-                lastModified: edData.lastModified,
-                name: edData.name,
-                size: edData.size,
-                type: edData.type
-              },
-              attachmentId,
-              ed.modifiedOn,
-              ed.modifiedBy
-            )
+
+            ed.file = uuid
+            ed.lastModified = edData.lastModified
+            ed.size = edData.size
+            ed.type = edData.type
+            ed._id = attachmentId as Ref<Attachment & BitrixSyncDoc>
+
+            // We need to find and remove duplicate attachments, from both attachments and transaction store, and add new one.
+            let updated = false
+            for (const existingObj of existingBlobs) {
+              if (existingObj.name === ed.name && existingObj.size === ed.size && existingObj.type === ed.type) {
+                if (!updated) {
+                  await updateAttachedDoc(existingObj, applyOp, ed)
+                  updated = true
+                } else {
+                  // Remove duplicate attachment
+                  await applyOp.remove(existingObj)
+                }
+              }
+            }
+            if (!updated) {
+              await updateAttachedDoc(undefined, applyOp, ed)
+            }
           }
         } catch (err: any) {
           console.error(err)
