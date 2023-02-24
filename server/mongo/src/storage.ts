@@ -603,10 +603,9 @@ class MongoAdapter extends MongoAdapterBase {
       if (lastDomain === undefined || bulkOperations.length === 0) {
         return
       }
+      const ops = bulkOperations.reduce<AnyBulkWriteOperation[]>((ops, op) => ops.concat(...(op.bulk ?? [])), [])
       try {
-        await this.db
-          .collection(lastDomain)
-          .bulkWrite(bulkOperations.reduce<AnyBulkWriteOperation[]>((ops, op) => ops.concat(...(op.bulk ?? [])), []))
+        await this.db.collection(lastDomain).bulkWrite(ops)
       } catch (err: any) {
         console.trace(err)
         throw err
@@ -913,6 +912,9 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
   txColl: Collection | undefined
 
   override async tx (...tx: Tx[]): Promise<TxResult> {
+    if (tx.length === 0) {
+      return {}
+    }
     await this.txCollection().insertMany(tx.map((it) => translateDoc(it)))
     return {}
   }
