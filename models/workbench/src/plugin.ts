@@ -32,6 +32,6 @@ export default mergeIds(workbenchId, workbench, {
     HiddenApplication: '' as IntlString
   },
   function: {
-    HasArchiveSpaces: '' as Resource<(spaces: Space[]) => boolean>
+    HasArchiveSpaces: '' as Resource<(spaces: Space[]) => Promise<boolean>>
   }
 })

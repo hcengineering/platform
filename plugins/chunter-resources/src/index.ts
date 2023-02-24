@@ -187,7 +187,7 @@ export async function DeleteMessageFromSaved (message: ChunterMessage): Promise<
 
 export const userSearch = writable('')
 
-export function chunterBrowserVisible (spaces: Space[]): boolean {
+export async function chunterBrowserVisible (spaces: Space[]): Promise<boolean> {
   return false
 }
 
