@@ -14,7 +14,7 @@
 //
 
 import clientPlugin from '@hcengineering/client'
-import { Client, createClient, TxHander } from '@hcengineering/core'
+import { Client, createClient, TxHandler } from '@hcengineering/core'
 import { getMetadata, getPlugins, getResource } from '@hcengineering/platform'
 import { connect } from './connection'
 
@@ -49,7 +49,7 @@ export default async () => {
         if (client === undefined) {
           const filterModel = getMetadata(clientPlugin.metadata.FilterModel) ?? false
           client = createClient(
-            (handler: TxHander) => {
+            (handler: TxHandler) => {
               const url = new URL(`/${token}`, endpoint)
               console.log('connecting to', url.href)
               return connect(url.href, handler, onUpgrade, onUnauthorized)

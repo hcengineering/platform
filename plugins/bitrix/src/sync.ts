@@ -14,6 +14,7 @@ import core, {
   generateId,
   Hierarchy,
   Mixin,
+  MixinData,
   MixinUpdate,
   Ref,
   Space,
@@ -45,7 +46,7 @@ async function updateDoc (client: ApplyOperations, doc: Doc, raw: Doc | Data<Doc
       continue
     }
     const dv = (doc as any)[k]
-    if (!deepEqual(dv, v) && dv != null && v != null) {
+    if (!deepEqual(dv, v) && v != null) {
       ;(documentUpdate as any)[k] = v
     }
   }
@@ -63,13 +64,19 @@ async function updateMixin (
   mixin: Ref<Class<Mixin<Doc>>>
 ): Promise<Doc> {
   // We need to update fields if they are different.
+
+  if (!client.getHierarchy().hasMixin(doc, mixin)) {
+    await client.createMixin(doc._id, doc._class, doc.space, mixin, raw as MixinData<Doc, Doc>)
+    return doc
+  }
+
   const documentUpdate: MixinUpdate<Doc, Doc> = {}
   for (const [k, v] of Object.entries(raw)) {
     if (['_class', '_id', 'modifiedBy', 'modifiedOn', 'space', 'attachedTo', 'attachedToClass'].includes(k)) {
       continue
     }
     const dv = (doc as any)[k]
-    if (!deepEqual(dv, v) && dv != null && v != null) {
+    if (!deepEqual(dv, v) && v != null) {
       ;(documentUpdate as any)[k] = v
     }
   }
@@ -139,10 +146,13 @@ export async function syncDocument (
           const existingIdx = existingByClass.findIndex(
             (it) => hierarchy.as<Doc, BitrixSyncDoc>(it, bitrix.mixin.BitrixSyncDoc).bitrixId === valValue.bitrixId
           )
+          // Update document id, for existing document.
+          valValue.attachedTo = resultDoc.document._id
+          let existing: Doc | undefined
           if (existingIdx >= 0) {
-            const existing = existingByClass.splice(existingIdx, 1).shift()
-            await updateAttachedDoc(existing, applyOp, valValue)
+            existing = existingByClass.splice(existingIdx, 1).shift()
           }
+          await updateAttachedDoc(existing, applyOp, valValue)
         }
 
         // Remove previous merged documents, probable they are deleted in bitrix or wrongly migrated.
@@ -153,8 +163,7 @@ export async function syncDocument (
     }
 
     const existingBlobs = await client.findAll(attachment.class.Attachment, {
-      attachedTo: resultDoc.document._id,
-      [bitrix.mixin.BitrixSyncDoc + '.bitrixId']: { $in: resultDoc.blobs.map((it) => it[0].bitrixId) }
+      attachedTo: resultDoc.document._id
     })
     for (const [ed, op, upd] of resultDoc.blobs) {
       const existing = existingBlobs.find(
@@ -171,33 +180,43 @@ export async function syncDocument (
           }
           const data = new FormData()
           data.append('file', edData)
-          const resp = await fetch(concatLink(frontUrl, '/files'), {
-            method: 'POST',
-            headers: {
-              Authorization: 'Bearer ' + info.token
-            },
-            body: data
-          })
-          if (resp.status === 200) {
-            const uuid = await resp.text()
-            upd(edData, ed)
-            await applyOp.addCollection(
-              ed._class,
-              ed.space,
-              ed.attachedTo,
-              ed.attachedToClass,
-              ed.collection,
-              {
-                file: uuid,
-                lastModified: edData.lastModified,
-                name: edData.name,
-                size: edData.size,
-                type: edData.type
+
+          upd(edData, ed)
+
+          ed.lastModified = edData.lastModified
+          ed.size = edData.size
+          ed.type = edData.type
+
+          let updated = false
+          for (const existingObj of existingBlobs) {
+            if (existingObj.name === ed.name && existingObj.size === ed.size && existingObj.type === ed.type) {
+              if (!updated) {
+                await updateAttachedDoc(existingObj, applyOp, ed)
+                updated = true
+              } else {
+                // Remove duplicate attachment
+                await applyOp.remove(existingObj)
+              }
+            }
+          }
+
+          if (!updated) {
+            // No attachment, send to server
+            const resp = await fetch(concatLink(frontUrl, '/files'), {
+              method: 'POST',
+              headers: {
+                Authorization: 'Bearer ' + info.token
               },
-              attachmentId,
-              ed.modifiedOn,
-              ed.modifiedBy
-            )
+              body: data
+            })
+            if (resp.status === 200) {
+              const uuid = await resp.text()
+
+              ed.file = uuid
+              ed._id = attachmentId as Ref<Attachment & BitrixSyncDoc>
+
+              await updateAttachedDoc(undefined, applyOp, ed)
+            }
           }
         } catch (err: any) {
           console.error(err)

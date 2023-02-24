@@ -26,7 +26,7 @@ import core, {
   FindResult,
   Ref,
   Tx,
-  TxHander,
+  TxHandler,
   TxResult
 } from '@hcengineering/core'
 import { getMetadata, PlatformError, readResponse, ReqId, serialize, UNAUTHORIZED } from '@hcengineering/platform'
@@ -51,7 +51,7 @@ class Connection implements ClientConnection {
 
   constructor (
     private readonly url: string,
-    private readonly handler: TxHander,
+    private readonly handler: TxHandler,
     private readonly onUpgrade?: () => void,
     private readonly onUnauthorized?: () => void
   ) {
@@ -229,7 +229,7 @@ class Connection implements ClientConnection {
  */
 export async function connect (
   url: string,
-  handler: TxHander,
+  handler: TxHandler,
   onUpgrade?: () => void,
   onUnauthorized?: () => void
 ): Promise<ClientConnection> {

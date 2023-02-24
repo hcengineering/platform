@@ -28,7 +28,7 @@ import {
   Ref,
   ServerStorage,
   Tx,
-  TxHander,
+  TxHandler,
   TxResult
 } from '@hcengineering/core'
 import { createInMemoryTxAdapter } from '@hcengineering/dev-storage'
@@ -45,7 +45,7 @@ import {
 
 class ServerStorageWrapper implements ClientConnection {
   measureCtx = new MeasureMetricsContext('client', {})
-  constructor (private readonly storage: ServerStorage, private readonly handler: TxHander) {}
+  constructor (private readonly storage: ServerStorage, private readonly handler: TxHandler) {}
 
   findAll<T extends Doc>(
     _class: Ref<Class<T>>,

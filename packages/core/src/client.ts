@@ -28,7 +28,7 @@ import { toFindResult } from './utils'
 /**
  * @public
  */
-export type TxHander = (tx: Tx) => void
+export type TxHandler = (tx: Tx) => void
 
 /**
  * @public
@@ -146,7 +146,7 @@ class ClientImpl implements Client, BackupClient {
  * @public
  */
 export async function createClient (
-  connect: (txHandler: TxHander) => Promise<ClientConnection>,
+  connect: (txHandler: TxHandler) => Promise<ClientConnection>,
   // If set will build model with only allowed plugins.
   allowedPlugins?: Plugin[]
 ): Promise<Client> {
@@ -156,7 +156,7 @@ export async function createClient (
   const hierarchy = new Hierarchy()
   const model = new ModelDb(hierarchy)
 
-  function txHander (tx: Tx): void {
+  function txHandler (tx: Tx): void {
     if (client === null) {
       txBuffer?.push(tx)
     } else {
@@ -165,7 +165,7 @@ export async function createClient (
     }
   }
 
-  const conn = await connect(txHander)
+  const conn = await connect(txHandler)
   const atxes = await conn.findAll(
     core.class.Tx,
     { objectSpace: core.space.Model },
@@ -238,7 +238,7 @@ export async function createClient (
 
   client = new ClientImpl(hierarchy, model, conn)
 
-  for (const tx of txBuffer) txHander(tx)
+  for (const tx of txBuffer) txHandler(tx)
   txBuffer = undefined
 
   return client

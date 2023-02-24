@@ -10,6 +10,7 @@
     "AddField": "Add mapping",
     "Attribute": "Attribute",
     "MapField": "Map...",
-    "BitrixImport": "Synchronize with Bitrix"
+    "BitrixImport": "Synchronize with Bitrix",
+    "AddMapping": "Добавить отображение"
   }
 }
