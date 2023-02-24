@@ -107,20 +107,27 @@
     requestIndex: number
   ): Promise<[Map<string, SpecialNavModel[]>, number]> {
     const result = new Map<string, SpecialNavModel[]>()
-    const promises = specials.map(async (sp) => {
-      const pos = sp.position ?? 'top'
-      let visible = true
-      if (sp.visibleIf !== undefined) {
-        const f = await getResource(sp.visibleIf)
-        visible = f(spaces)
-      }
-      if (visible) {
-        const list = result.get(pos) ?? []
-        list.push(sp)
-        result.set(pos, list)
-      }
-    })
-    await Promise.all(promises)
+
+    const spHandlers = await Promise.all(
+      specials.map(async (sp) => {
+        const pos = sp.position ?? 'top'
+        let visible = true
+        if (sp.visibleIf !== undefined) {
+          const f = await getResource(sp.visibleIf)
+          visible = await f(spaces)
+        }
+
+        return () => {
+          if (visible) {
+            const list = result.get(pos) ?? []
+            list.push(sp)
+            result.set(pos, list)
+          }
+        }
+      })
+    )
+    spHandlers.forEach((spHandler) => spHandler())
+
     return [result, requestIndex]
   }
 </script>
