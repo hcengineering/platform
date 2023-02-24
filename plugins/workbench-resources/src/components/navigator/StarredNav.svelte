@@ -22,10 +22,8 @@
   import { getClient } from '@hcengineering/presentation'
   import { Action, IconEdit, NavLink } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { getActions as getContributedActions } from '@hcengineering/view-resources'
+  import { getActions as getContributedActions, TreeItem, TreeNode } from '@hcengineering/view-resources'
   import { classIcon, getSpaceName } from '../../utils'
-  import TreeItem from './TreeItem.svelte'
-  import TreeNode from './TreeNode.svelte'
 
   export let label: IntlString
   export let currentSpace: Ref<Space> | undefined
@@ -66,7 +64,7 @@
       result.push({
         icon: act.icon ?? IconEdit,
         label: act.label,
-        action: async (evt: Event) => {
+        action: async (ctx: any, evt: Event) => {
           const impl = await getResource(act.action)
           await impl(space, evt, act.actionProps)
         }

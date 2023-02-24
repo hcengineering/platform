@@ -19,7 +19,7 @@
   import type { Action } from '@hcengineering/ui'
 
   export let _id: Ref<Space>
-  export let icon: Asset | undefined
+  export let icon: Asset | undefined = undefined
   export let title: string
   export let notifications = 0
   export let actions: () => Promise<Action[]> = async () => []

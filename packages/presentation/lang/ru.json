@@ -35,6 +35,9 @@
     "CategoryProjectMembers": "Участники проекта",
     "CategoryOther": "Прочие",
     "InltPropsValue": "{value}",
-    "DocumentPreview": "Предпросмотр"
+    "DocumentPreview": "Предпросмотр",
+    "MakePrivate": "Сделать личным",
+    "MakePrivateDescription": "Только пользователи могут видеть это",
+    "AddMembersHeader": "Добавить пользователей в {value}:"
   }
 }

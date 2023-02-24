@@ -25,8 +25,7 @@
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
   import { StyledTextEditor } from '@hcengineering/text-editor'
   import { Button, EditBox, IconArrowLeft, IconAttachment, Label, Scroller } from '@hcengineering/ui'
-  import { onDestroy } from 'svelte'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import plugin from '../plugin'
 
   export let object: Contact
@@ -58,7 +57,7 @@
     templateProvider?.destroy()
   })
 
-  $: templateProvider && templateProvider.set(contact.templateFieldCategory.Contact, object)
+  $: templateProvider && templateProvider.set(contact.class.Contact, object)
 
   async function sendMsg () {
     await client.createDoc(

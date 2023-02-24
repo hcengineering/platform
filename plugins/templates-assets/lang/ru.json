@@ -12,6 +12,9 @@
     "TemplatePlaceholder": "Новый шаблон",
     "Title": "Заголовок",
     "Message": "Сообщение",
-    "Field": "Поле"
+    "Field": "Поле",
+    "TemplateGroup": "Группа шаблонов",
+    "CreateTemplateGroup": "Создать группу",
+    "Copy": "Копировать"
   }
 }

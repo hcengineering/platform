@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, EditBox, MiniToggle } from '@hcengineering/ui'
   import login from '@hcengineering/login-resources/src/plugin'
-  import presentation, { getClient, LiveQuery } from '@hcengineering/presentation'
+  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { InviteSettings } from '@hcengineering/setting'
+  import { Button, EditBox, MiniToggle } from '@hcengineering/ui'
 
   const client = getClient()
   let expTime: number = 48
@@ -24,7 +24,7 @@
   let limit: number = -1
   let noLimit: boolean = true
   let existingInviteSettings: InviteSettings[]
-  const query = new LiveQuery()
+  const query = createQuery()
 
   $: query.query(setting.class.InviteSettings, {}, (set) => {
     existingInviteSettings = set

@@ -19,6 +19,10 @@ import Templates from './components/Templates.svelte'
 import { TextEditorHandler } from '@hcengineering/text-editor'
 import { showPopup } from '@hcengineering/ui'
 import TemplatePopup from './components/TemplatePopup.svelte'
+import CreateTemplateGroup from './components/CreateTemplateGroup.svelte'
+import Move from './components/Move.svelte'
+import Copy from './components/Copy.svelte'
+import EditGroup from './components/EditGroup.svelte'
 import { getTemplateDataProvider } from './utils'
 
 function ShowTemplates (element: HTMLElement, editor: TextEditorHandler): void {
@@ -27,7 +31,11 @@ function ShowTemplates (element: HTMLElement, editor: TextEditorHandler): void {
 
 export default async (): Promise<Resources> => ({
   component: {
-    Templates
+    Templates,
+    CreateTemplateGroup,
+    Move,
+    Copy,
+    EditGroup
   },
   action: {
     ShowTemplates

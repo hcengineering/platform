@@ -30,7 +30,6 @@ export default mergeIds(viewId, view, {
   string: {
     MoveClass: '' as IntlString,
     SelectToMove: '' as IntlString,
-    Move: '' as IntlString,
     Cancel: '' as IntlString,
     LabelYes: '' as IntlString,
     LabelNo: '' as IntlString,

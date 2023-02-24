@@ -14,10 +14,10 @@
 -->
 <script lang="ts">
   import { DocumentQuery, FindOptions, IdMap, toIdMap } from '@hcengineering/core'
-  import type { Asset, IntlString } from '@hcengineering/platform'
+  import type { IntlString } from '@hcengineering/platform'
   import presentation, { createQuery, ObjectPopup } from '@hcengineering/presentation'
   import { TemplateField, TemplateFieldCategory } from '@hcengineering/templates'
-  import { AnySvelteComponent, Label } from '@hcengineering/ui'
+  import { Label } from '@hcengineering/ui'
   import templates from '../plugin'
 
   export let options: FindOptions<TemplateField> | undefined = undefined
@@ -25,7 +25,6 @@
 
   export let placeholder: IntlString = presentation.string.Search
   export let shadows: boolean = true
-  export let icon: Asset | AnySvelteComponent | undefined = undefined
 
   const query = createQuery()
 

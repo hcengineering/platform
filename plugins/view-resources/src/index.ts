@@ -65,6 +65,8 @@ import ViewletSettingButton from './components/ViewletSettingButton.svelte'
 import SpaceRefPresenter from './components/SpaceRefPresenter.svelte'
 import EnumArrayEditor from './components/EnumArrayEditor.svelte'
 import EnumPresenter from './components/EnumPresenter.svelte'
+import TreeNode from './components/navigator/TreeNode.svelte'
+import TreeItem from './components/navigator/TreeItem.svelte'
 
 import {
   afterResult,
@@ -113,7 +115,8 @@ export {
   isCollectionAttr,
   LoadingProps,
   setActiveViewletId,
-  getAdditionalHeader
+  getAdditionalHeader,
+  groupBy
 } from './utils'
 export * from './viewOptions'
 export {
@@ -137,7 +140,9 @@ export {
   TimestampPresenter,
   SortableList,
   SortableListItem,
-  MarkupEditor
+  MarkupEditor,
+  TreeNode,
+  TreeItem
 }
 
 export default async (): Promise<Resources> => ({

@@ -74,7 +74,7 @@
     for (const channel of channels) {
       const target = contacts.find((p) => p._id === channel.attachedTo)
       if (target === undefined) continue
-      templateProvider.set(contact.templateFieldCategory.Contact, target)
+      templateProvider.set(contact.class.Contact, target)
       const message = await templateProvider.fillTemplate(content)
       const id = await client.createDoc(plugin.class.NewMessage, plugin.space.Gmail, {
         subject,
@@ -201,9 +201,7 @@
     templateProvider?.destroy()
   })
 
-  $: templateProvider &&
-    selectedIntegration &&
-    templateProvider.set(setting.templateFieldCategory.Integration, selectedIntegration)
+  $: templateProvider && selectedIntegration && templateProvider.set(setting.class.Integration, selectedIntegration)
 
   settingsQuery.query(setting.class.Integration, { type: plugin.integrationType.Gmail, disabled: false }, (res) => {
     integrations = res.filter((p) => (p.space as string) === me || p.shared?.includes(me))

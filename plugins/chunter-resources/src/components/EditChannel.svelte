@@ -15,14 +15,12 @@
 -->
 <script lang="ts">
   import { ChunterSpace } from '@hcengineering/chunter'
-  import { EmployeeAccount } from '@hcengineering/contact'
   import type { Class, Ref } from '@hcengineering/core'
   import { createQuery, getClient, Members } from '@hcengineering/presentation'
-  import { Icon, Label, Scroller, showPopup, Panel } from '@hcengineering/ui'
+  import { Icon, Label, Panel, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   import chunter from '../plugin'
-  import AddMembersPopup from './AddMembersPopup.svelte'
   import EditChannelDescriptionTab from './EditChannelDescriptionTab.svelte'
   import EditChannelSettingsTab from './EditChannelSettingsTab.svelte'
   import Lock from './icons/Lock.svelte'
@@ -41,24 +39,6 @@
   $: query.query(chunter.class.ChunterSpace, { _id }, (result) => {
     channel = result[0]
   })
-
-  function openAddMembersPopup () {
-    showPopup(
-      AddMembersPopup,
-      { channel },
-      undefined,
-      () => {},
-      async (membersIds: Ref<EmployeeAccount>[]) => {
-        if (membersIds) {
-          membersIds
-            .filter((m: Ref<EmployeeAccount>) => !channel.members.includes(m))
-            .forEach(async (m) => {
-              await client.update(channel, { $push: { members: m } })
-            })
-        }
-      }
-    )
-  }
 </script>
 
 <Panel
@@ -111,12 +91,7 @@
           <span class="fs-title text-xl overflow-label mb-2 flex-no-shrink">
             <Label label={chunter.string.Members} />
           </span>
-          <Members
-            space={channel}
-            withAddButton={true}
-            withInviteWorkspaceButton={true}
-            on:addMembers={openAddMembersPopup}
-          />
+          <Members space={channel} withAddButton={true} withInviteWorkspaceButton={true} />
         </div>
       {/if}
     </div>

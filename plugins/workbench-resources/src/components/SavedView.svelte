@@ -4,10 +4,8 @@
   import setting from '@hcengineering/setting'
   import { Action, navigate } from '@hcengineering/ui'
   import view, { FilteredView } from '@hcengineering/view'
-  import { filterStore, setActiveViewletId, setViewOptions } from '@hcengineering/view-resources'
+  import { filterStore, setActiveViewletId, setViewOptions, TreeNode, TreeItem } from '@hcengineering/view-resources'
   import { Application } from '@hcengineering/workbench'
-  import TreeItem from './navigator/TreeItem.svelte'
-  import TreeNode from './navigator/TreeNode.svelte'
 
   export let currentApplication: Application | undefined
 

@@ -73,6 +73,7 @@
       private: isPrivate,
       members: [getCurrentAccount()._id],
       archived: false,
+      createdBy: getCurrentAccount()._id,
       identifier,
       sequence: 0,
       issueStatuses: 0,
@@ -164,8 +165,8 @@
     placeholder={tracker.string.IssueDescriptionPlaceholder}
   />
   <ToggleWithLabel
-    label={tracker.string.MakePrivate}
-    description={tracker.string.MakePrivateDescription}
+    label={presentation.string.MakePrivate}
+    description={presentation.string.MakePrivateDescription}
     bind:on={isPrivate}
   />
   <div class="flex-between">

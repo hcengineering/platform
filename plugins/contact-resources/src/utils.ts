@@ -121,7 +121,7 @@ export async function getCurrentEmployeeEmail (): Promise<string> {
 }
 
 export async function getContactName (provider: TemplateDataProvider): Promise<string | undefined> {
-  const value = provider.get(contact.templateFieldCategory.Contact) as Contact
+  const value = provider.get(contact.class.Contact) as Contact
   if (value === undefined) return
   const client = getClient()
   const hierarchy = client.getHierarchy()

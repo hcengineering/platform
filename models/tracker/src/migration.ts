@@ -20,10 +20,12 @@ import core, {
   generateId,
   Ref,
   SortingOrder,
+  TxCreateDoc,
   TxOperations,
   TxResult
 } from '@hcengineering/core'
 import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import tags from '@hcengineering/tags'
 import {
   calcRank,
@@ -407,6 +409,38 @@ async function upgradeIssues (tx: TxOperations): Promise<void> {
   }
 }
 
+async function fillCreatedBy (client: MigrationClient): Promise<void> {
+  const objects = await client.find<Team>(DOMAIN_SPACE, {
+    _class: tracker.class.Team,
+    createdBy: { $exists: false }
+  })
+  const txes = await client.find<TxCreateDoc<Team>>(DOMAIN_TX, {
+    objectClass: tracker.class.Team,
+    _class: core.class.TxCreateDoc
+  })
+  const txMap = new Map(txes.map((p) => [p.objectId, p]))
+
+  for (const object of objects) {
+    const createTx = txMap.get(object._id)
+    if (createTx !== undefined && createTx.attributes.createdBy === undefined) {
+      await client.update(
+        DOMAIN_TX,
+        { _id: createTx._id },
+        {
+          'attributes.createdBy': createTx.modifiedBy
+        }
+      )
+    }
+    await client.update(
+      DOMAIN_SPACE,
+      { _id: object._id },
+      {
+        createdBy: createTx?.modifiedBy ?? object.modifiedBy
+      }
+    )
+  }
+}
+
 async function upgradeProjects (tx: TxOperations): Promise<void> {
   await upgradeProjectIcons(tx)
 }
@@ -425,6 +459,7 @@ export const trackerOperation: MigrateOperation = {
     await Promise.all([migrateIssueProjects(client), migrateParentIssues(client)])
     await migrateIssueParentInfo(client)
     await fillRank(client)
+    await fillCreatedBy(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)

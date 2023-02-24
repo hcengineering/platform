@@ -22,8 +22,6 @@ export default mergeIds(boardId, board, {
     Completed: '' as IntlString,
     Name: '' as IntlString,
     BoardName: '' as IntlString,
-    MakePrivate: '' as IntlString,
-    MakePrivateDescription: '' as IntlString,
     CreateBoard: '' as IntlString,
     OpenCard: '' as IntlString,
     CardName: '' as IntlString,

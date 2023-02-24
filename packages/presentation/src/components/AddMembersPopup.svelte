@@ -1,19 +1,19 @@
 <script lang="ts">
-  import { Channel } from '@hcengineering/chunter'
   import contact, { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
-  import core, { Ref } from '@hcengineering/core'
-  import presentation, { getClient, UsersPopup } from '@hcengineering/presentation'
+  import core, { Ref, Space } from '@hcengineering/core'
   import { Label, Button, ActionIcon, IconClose } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import chunter from '../plugin'
+  import { getClient } from '../utils'
+  import presentation from '../plugin'
+  import UsersPopup from './UsersPopup.svelte'
 
-  export let channel: Channel
+  export let value: Space
   const dispatch = createEventDispatcher()
   const client = getClient()
 
   let membersToAdd: EmployeeAccount[] = []
   let channelMembers: Ref<Employee>[] = []
-  client.findAll(core.class.Account, { _id: { $in: channel.members } }).then((res) => {
+  client.findAll(core.class.Account, { _id: { $in: value.members } }).then((res) => {
     channelMembers = res
       .filter((e) => e._class === contact.class.EmployeeAccount)
       .map((e) => (e as EmployeeAccount).employee)
@@ -39,7 +39,7 @@
 <div class="antiPopup antiPopup-withHeader">
   <div class="ap-header flex-between header">
     <div class="ap-caption">
-      <Label label={chunter.string.AddMembersHeader} params={{ channel: channel.name }} />
+      <Label label={presentation.string.AddMembersHeader} params={{ value: value.name }} />
     </div>
     <div class="tool">
       <ActionIcon
@@ -54,7 +54,7 @@
   {#if membersToAdd.length}
     <div class="flex-row-top flex-wrap ml-6 mr-6 mt-4">
       {#each membersToAdd as m}
-        <div class=" mr-2 p-1 item">
+        <div class="mr-2 p-1 item">
           {formatName(m.name)}
           <div class="tool">
             <ActionIcon
@@ -87,10 +87,9 @@
   <Button
     on:click={() => {
       dispatch(
-        'update',
+        'close',
         membersToAdd.map((m) => m._id)
       )
-      dispatch('close')
     }}
     label={presentation.string.Add}
   />

@@ -90,9 +90,7 @@
     templateProvider?.destroy()
   })
 
-  $: templateProvider &&
-    selectedIntegration &&
-    templateProvider.set(setting.templateFieldCategory.Integration, selectedIntegration)
+  $: templateProvider && selectedIntegration && templateProvider.set(setting.class.Integration, selectedIntegration)
 
   settingsQuery.query(setting.class.Integration, { type: gmail.integrationType.Gmail, disabled: false }, (res) => {
     integrations = res.filter((p) => (p.space as string) === me || p.shared?.includes(me))

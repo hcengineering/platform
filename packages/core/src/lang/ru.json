@@ -26,6 +26,7 @@
     "Enum": "Справочник",
     "Members": "Участники",
     "Hyperlink": "URL",
-    "Object": "Объект"
+    "Object": "Объект",
+    "CreatedBy": "Создан"
   }
 }

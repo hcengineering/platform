@@ -12,6 +12,9 @@
     "TemplatePlaceholder": "New template",
     "Title": "Title",
     "Message": "Message",
-    "Field": "Field"
+    "Field": "Field",
+    "TemplateGroup": "Template group",
+    "CreateTemplateGroup": "Create group",
+    "Copy": "Copy"
   }
 }
