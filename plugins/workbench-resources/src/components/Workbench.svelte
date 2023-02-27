@@ -386,6 +386,12 @@
         : 'account'
 
   onMount(() => subscribeMobile(setTheme))
+
+  async function checkIsHeaderHidden () {
+    return (
+      currentApplication?.checkIsHeaderHidden && (await (await getResource(currentApplication.checkIsHeaderHidden))())
+    )
+  }
 </script>
 
 {#if employee?.active === true}
@@ -487,7 +493,11 @@
           {#if currentApplication}
             <NavHeader label={currentApplication.label} />
             {#if currentApplication.navHeaderComponent}
-              <Component is={currentApplication.navHeaderComponent} props={{ currentSpace }} shrink />
+              {#await checkIsHeaderHidden() then isHidden}
+                {#if !isHidden}
+                  <Component is={currentApplication.navHeaderComponent} props={{ currentSpace }} shrink />
+                {/if}
+              {/await}
             {/if}
           {/if}
           <Navigator
