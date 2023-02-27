@@ -23,7 +23,7 @@ import SpecialView from './components/SpecialView.svelte'
 import WorkbenchApp from './components/WorkbenchApp.svelte'
 import { doNavigate } from './utils'
 
-function hasArchiveSpaces (spaces: Space[]): boolean {
+async function hasArchiveSpaces (spaces: Space[]): Promise<boolean> {
   return spaces.find((sp) => sp.archived) !== undefined
 }
 export { default as SpaceBrowser } from './components/SpaceBrowser.svelte'

@@ -90,7 +90,7 @@ export default mergeIds(chunterId, chunter, {
     Random: '' as Ref<Channel>
   },
   function: {
-    ChunterBrowserVisible: '' as Resource<(spaces: Space[]) => boolean>
+    ChunterBrowserVisible: '' as Resource<(spaces: Space[]) => Promise<boolean>>
   },
   filter: {
     CommentsFilter: '' as Resource<(tx: DisplayTx, _class?: Ref<Doc>) => boolean>,
