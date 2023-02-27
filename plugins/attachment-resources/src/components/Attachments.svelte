@@ -72,7 +72,15 @@
   </div>
 
   {#if !loading && (attachments === null || attachments === 0) && !readonly}
-    <AttachmentDroppable bind:loading bind:dragover objectClass={_class} {objectId} {space}>
+    <AttachmentDroppable
+      bind:loading
+      bind:dragover
+      objectClass={_class}
+      {objectId}
+      {space}
+      {attachmentClass}
+      {attachmentClassOptions}
+    >
       <div class="antiSection-empty attachments flex-col mt-3" class:solid={dragover}>
         <div class="flex-center content-accent-color">
           <UploadDuo size={'large'} />

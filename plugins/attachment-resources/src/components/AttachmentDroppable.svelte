@@ -13,20 +13,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref, Space } from '@hcengineering/core'
+  import { Attachment } from '@hcengineering/attachment'
+  import { Class, Data, Doc, Ref, Space } from '@hcengineering/core'
 
   import { getClient } from '@hcengineering/presentation'
   import { createAttachments } from '../utils'
+  import attachment from '../plugin'
+  import { createEventDispatcher } from 'svelte'
 
   export let loading: number = 0
   export let objectClass: Ref<Class<Doc>>
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
+  export let attachmentClass: Ref<Class<Attachment>> = attachment.class.Attachment
+  export let attachmentClassOptions: Partial<Data<Attachment>> = {}
   export let canDrop: ((e: DragEvent) => boolean) | undefined = undefined
 
   export let dragover = false
 
   const client = getClient()
+  const dispatch = createEventDispatcher()
 
   async function fileDrop (e: DragEvent) {
     dragover = false
@@ -43,10 +49,12 @@
 
     loading++
     try {
-      await createAttachments(client, list, { objectClass, objectId, space })
+      await createAttachments(client, list, { objectClass, objectId, space }, attachmentClass, attachmentClassOptions)
     } finally {
       loading--
     }
+
+    dispatch('attached')
   }
 </script>
 
