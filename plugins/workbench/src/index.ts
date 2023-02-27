@@ -35,6 +35,7 @@ export interface Application extends Doc {
   component?: AnyComponent
 
   navHeaderComponent?: AnyComponent
+  checkIsHeaderHidden?: Resource<() => Promise<boolean>>
   navFooterComponent?: AnyComponent
 }
 
