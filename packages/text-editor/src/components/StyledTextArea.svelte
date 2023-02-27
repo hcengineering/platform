@@ -15,6 +15,7 @@
   export let emphasized: boolean = false
   export let isScrollable: boolean = false
   export let maxHeight: 'max' | 'card' | 'limited' | string | undefined = undefined
+  export let required = false
 
   let rawValue: string
   let oldContent = ''
@@ -55,7 +56,10 @@
   }}
 >
   {#if label}
-    <div class="label"><Label {label} /></div>
+    <div>
+      <span class="label"><Label {label} /></span>
+      {#if required}<span class="error-color">&ast</span>{/if}
+    </div>
   {/if}
   <StyledTextEditor
     {placeholder}
