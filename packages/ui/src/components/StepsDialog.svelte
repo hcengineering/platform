@@ -106,7 +106,11 @@
     {@const isDone = currentStepIndex === steps.length - 1}
 
     {#if currentStepIndex > 0}
-      <Button kind="secondary" label={ui.string.Back} on:click={async () => await handleStepSelect(currentStepIndex - 1)} />
+      <Button
+        kind="secondary"
+        label={ui.string.Back}
+        on:click={async () => await handleStepSelect(currentStepIndex - 1)}
+      />
     {/if}
     <Button
       kind="primary"
