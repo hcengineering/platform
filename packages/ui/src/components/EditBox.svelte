@@ -37,6 +37,7 @@
   export let focusable: boolean = false
   export let disabled: boolean = false
   export let fullSize = false
+  export let required = false
 
   const dispatch = createEventDispatcher()
 
@@ -134,6 +135,7 @@
   {#if label}
     <div class="mb-1 text-sm font-medium content-accent-color select-text">
       <Label {label} />
+      {#if required}<span class="error-color">&ast</span>{/if}
     </div>
   {/if}
   <div class="{kind} flex-row-center clear-mins" class:focusable>
