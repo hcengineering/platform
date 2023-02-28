@@ -179,7 +179,7 @@
       {#if typeof component === 'string'}
         <Component bind:innerRef={step} is={component} {props} on:change={handleComponentChange} />
       {:else}
-        <svelte:component bind:this={step} this={component} {...props} on:change={handleComponentChange} />
+        <svelte:component this={component} bind:this={step} {...props} on:change={handleComponentChange} />
       {/if}
     </div>
   {/if}
