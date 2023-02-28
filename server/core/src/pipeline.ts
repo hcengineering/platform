@@ -20,6 +20,7 @@ import {
   Domain,
   FindOptions,
   FindResult,
+  MeasureContext,
   ModelDb,
   Ref,
   ServerStorage,
@@ -34,6 +35,7 @@ import { Middleware, MiddlewareCreator, Pipeline, SessionContext } from './types
  * @public
  */
 export async function createPipeline (
+  ctx: MeasureContext,
   conf: DbConfiguration,
   constructors: MiddlewareCreator[],
   upgrade: boolean,
@@ -43,22 +45,32 @@ export async function createPipeline (
     upgrade,
     broadcast
   })
-  return new TPipeline(storage, constructors)
+  const pipeline = PipelineImpl.create(ctx, storage, constructors)
+  return await pipeline
 }
 
-class TPipeline implements Pipeline {
-  private readonly head: Middleware | undefined
+class PipelineImpl implements Pipeline {
+  private head: Middleware | undefined
   readonly modelDb: ModelDb
-  constructor (readonly storage: ServerStorage, constructors: MiddlewareCreator[]) {
-    this.head = this.buildChain(constructors)
+  private constructor (readonly storage: ServerStorage) {
     this.modelDb = storage.modelDb
   }
 
-  private buildChain (constructors: MiddlewareCreator[]): Middleware | undefined {
+  static async create (
+    ctx: MeasureContext,
+    storage: ServerStorage,
+    constructors: MiddlewareCreator[]
+  ): Promise<PipelineImpl> {
+    const pipeline = new PipelineImpl(storage)
+    pipeline.head = await pipeline.buildChain(ctx, constructors)
+    return pipeline
+  }
+
+  private async buildChain (ctx: MeasureContext, constructors: MiddlewareCreator[]): Promise<Middleware | undefined> {
     let current: Middleware | undefined
     for (let index = constructors.length - 1; index >= 0; index--) {
       const element = constructors[index]
-      current = element(this.storage, current)
+      current = await element(ctx, this.storage, current)
     }
     return current
   }
@@ -69,15 +81,18 @@ class TPipeline implements Pipeline {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    const [session, resClass, resQuery, resOptions] =
-      this.head === undefined ? [ctx, _class, query, options] : await this.head.findAll(ctx, _class, query, options)
-    return await this.storage.findAll(session, resClass, resQuery, resOptions)
+    return this.head !== undefined
+      ? await this.head.findAll(ctx, _class, query, options)
+      : await this.storage.findAll(ctx, _class, query, options)
   }
 
-  async tx (ctx: SessionContext, tx: Tx): Promise<[TxResult, Tx[], string | undefined]> {
-    const [session, resTx, target] = this.head === undefined ? [ctx, tx] : await this.head.tx(ctx, tx)
-    const res = await this.storage.tx(session, resTx)
-    return [res[0], res[1], target]
+  async tx (ctx: SessionContext, tx: Tx): Promise<[TxResult, Tx[], string[] | undefined]> {
+    if (this.head === undefined) {
+      const res = await this.storage.tx(ctx, tx)
+      return [...res, undefined]
+    } else {
+      return await this.head.tx(ctx, tx)
+    }
   }
 
   async close (): Promise<void> {

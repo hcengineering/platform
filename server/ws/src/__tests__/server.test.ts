@@ -66,7 +66,7 @@ describe('server', () => {
         query: DocumentQuery<T>,
         options?: FindOptions<T>
       ): Promise<FindResult<T>> => toFindResult([]),
-      tx: async (ctx: SessionContext, tx: Tx): Promise<[TxResult, Tx[], string | undefined]> => [{}, [], undefined],
+      tx: async (ctx: SessionContext, tx: Tx): Promise<[TxResult, Tx[], string[] | undefined]> => [{}, [], undefined],
       close: async () => {},
       storage: {} as unknown as ServerStorage,
       domains: async () => [],

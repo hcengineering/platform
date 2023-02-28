@@ -13,7 +13,16 @@
 // limitations under the License.
 //
 
-import core, { AttachedDoc, Doc, ServerStorage, Timestamp, Tx, TxCollectionCUD, TxCreateDoc } from '@hcengineering/core'
+import core, {
+  AttachedDoc,
+  Doc,
+  MeasureContext,
+  ServerStorage,
+  Timestamp,
+  Tx,
+  TxCollectionCUD,
+  TxCreateDoc
+} from '@hcengineering/core'
 import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
 import { BaseMiddleware } from './base'
 
@@ -25,7 +34,7 @@ export class ModifiedMiddleware extends BaseMiddleware implements Middleware {
     super(storage, next)
   }
 
-  static create (storage: ServerStorage, next?: Middleware): ModifiedMiddleware {
+  static async create (ctx: MeasureContext, storage: ServerStorage, next?: Middleware): Promise<ModifiedMiddleware> {
     return new ModifiedMiddleware(storage, next)
   }
 

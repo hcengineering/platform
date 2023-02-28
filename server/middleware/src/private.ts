@@ -14,20 +14,24 @@
 //
 
 import core, {
-  Tx,
-  Doc,
-  Ref,
+  AttachedDoc,
   Class,
+  Doc,
   DocumentQuery,
   FindOptions,
+  FindResult,
+  LookupData,
+  MeasureContext,
+  Ref,
   ServerStorage,
-  Account,
+  Tx,
   TxCUD
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { Middleware, SessionContext, TxMiddlewareResult, FindAllMiddlewareResult } from '@hcengineering/server-core'
+import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
 import { DOMAIN_PREFERENCE } from '@hcengineering/server-preference'
 import { BaseMiddleware } from './base'
+import { getUser, mergeTargets } from './utils'
 
 /**
  * @public
@@ -39,25 +43,25 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
     super(storage, next)
   }
 
-  static create (storage: ServerStorage, next?: Middleware): PrivateMiddleware {
+  static async create (ctx: MeasureContext, storage: ServerStorage, next?: Middleware): Promise<PrivateMiddleware> {
     return new PrivateMiddleware(storage, next)
   }
 
   async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
-    let target: string | undefined
+    let target: string[] | undefined
     if (this.storage.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
       const txCUD = tx as TxCUD<Doc>
       const domain = this.storage.hierarchy.getDomain(txCUD.objectClass)
       if (this.targetDomains.includes(domain)) {
-        const account = await this.getUser(ctx)
+        const account = await getUser(this.storage, ctx)
         if (account !== tx.modifiedBy) {
           throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
         }
-        target = ctx.userEmail
+        target = [ctx.userEmail]
       }
     }
     const res = await this.provideTx(ctx, tx)
-    return [res[0], res[1], res[2] ?? target]
+    return [res[0], res[1], mergeTargets(target, res[2])]
   }
 
   override async findAll<T extends Doc>(
@@ -65,27 +69,53 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
-  ): Promise<FindAllMiddlewareResult<T>> {
+  ): Promise<FindResult<T>> {
     let newQuery = query
     const domain = this.storage.hierarchy.getDomain(_class)
     if (this.targetDomains.includes(domain)) {
-      const account = await this.getUser(ctx)
+      const account = await getUser(this.storage, ctx)
       newQuery = {
         ...query,
         modifiedBy: account
       }
     }
-    return await this.provideFindAll(ctx, _class, newQuery, options)
+    const findResult = this.storage.hierarchy.clone(
+      await this.provideFindAll(ctx, _class, newQuery, options)
+    ) as FindResult<T>
+    for (const object of findResult) {
+      if (object.$lookup !== undefined) {
+        await this.filterLookup(ctx, object.$lookup)
+      }
+    }
+    return findResult
   }
 
-  private async getUser (ctx: SessionContext): Promise<Ref<Account>> {
-    if (ctx.userEmail === undefined) {
-      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  async isAvailable (ctx: SessionContext, doc: Doc): Promise<boolean> {
+    const domain = this.storage.hierarchy.getDomain(doc._class)
+    if (!this.targetDomains.includes(domain)) return true
+    if (ctx.userEmail === 'anticrm@hc.engineering') {
+      return true
     }
-    const account = (await this.storage.modelDb.findAll(core.class.Account, { email: ctx.userEmail }))[0]
-    if (account === undefined) {
-      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    const account = await getUser(this.storage, ctx)
+    return doc.modifiedBy === account
+  }
+
+  async filterLookup<T extends Doc>(ctx: SessionContext, lookup: LookupData<T>): Promise<void> {
+    for (const key in lookup) {
+      const val = lookup[key]
+      if (Array.isArray(val)) {
+        const arr: AttachedDoc[] = []
+        for (const value of val) {
+          if (await this.isAvailable(ctx, value)) {
+            arr.push(value)
+          }
+        }
+        lookup[key] = arr as any
+      } else if (val !== undefined) {
+        if (!(await this.isAvailable(ctx, val))) {
+          lookup[key] = undefined
+        }
+      }
     }
-    return account._id
   }
 }

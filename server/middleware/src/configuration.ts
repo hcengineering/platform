@@ -21,13 +21,15 @@ import core, {
   DocumentQuery,
   DOMAIN_CONFIGURATION,
   FindOptions,
+  FindResult,
+  MeasureContext,
   Ref,
   ServerStorage,
   Tx,
   TxCUD
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { FindAllMiddlewareResult, Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
+import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
 import { BaseMiddleware } from './base'
 
 const configurationAccountEmail = '#configurator@hc.engineering'
@@ -41,7 +43,11 @@ export class ConfigurationMiddleware extends BaseMiddleware implements Middlewar
     super(storage, next)
   }
 
-  static create (storage: ServerStorage, next?: Middleware): ConfigurationMiddleware {
+  static async create (
+    ctx: MeasureContext,
+    storage: ServerStorage,
+    next?: Middleware
+  ): Promise<ConfigurationMiddleware> {
     return new ConfigurationMiddleware(storage, next)
   }
 
@@ -66,7 +72,7 @@ export class ConfigurationMiddleware extends BaseMiddleware implements Middlewar
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
-  ): Promise<FindAllMiddlewareResult<T>> {
+  ): Promise<FindResult<T>> {
     const domain = this.storage.hierarchy.getDomain(_class)
     if (this.targetDomains.includes(domain)) {
       if (ctx.userEmail !== configurationAccountEmail) {

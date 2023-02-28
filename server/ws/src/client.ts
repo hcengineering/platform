@@ -67,7 +67,7 @@ export class ClientSession implements Session {
     context.userEmail = this.token.email
     const [result, derived, target] = await this._pipeline.tx(context, tx)
 
-    this.broadcast(this, this.token.workspace, { result: tx }, target)
+    this. broadcast(this, this.token.workspace, { result: tx }, target)
     for (const dtx of derived) {
       this.broadcast(null, this.token.workspace, { result: dtx }, target)
     }
