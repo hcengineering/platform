@@ -43,7 +43,7 @@
     direction: 'bottom'
   }
 
-  let component: AnySvelteComponent
+  let component: AnySvelteComponent | undefined
 
   let props: PanelProps | undefined
   function _close () {
@@ -53,6 +53,8 @@
   $: props = $panelstore.panel
 
   $: if (props !== undefined) {
+    component = undefined
+
     getResource(props.component).then((r) => {
       component = r
     })
