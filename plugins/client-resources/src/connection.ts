@@ -24,6 +24,7 @@ import core, {
   Domain,
   FindOptions,
   FindResult,
+  generateId,
   Ref,
   Tx,
   TxHandler,
@@ -48,6 +49,7 @@ class Connection implements ClientConnection {
   private readonly requests = new Map<ReqId, DeferredPromise>()
   private lastId = 0
   private readonly interval: number
+  private readonly sessionId = generateId() as string
 
   constructor (
     private readonly url: string,
@@ -106,7 +108,7 @@ class Connection implements ClientConnection {
       const clientSocketFactory =
         getMetadata(client.metadata.ClientSocketFactory) ?? ((url: string) => new WebSocket(url) as ClientSocket)
 
-      const websocket = clientSocketFactory(this.url)
+      const websocket = clientSocketFactory(this.url + `?sessionId=${this.sessionId}`)
       const socketId = this.sockets++
       websocket.onmessage = (event: MessageEvent) => {
         const resp = readResponse(event.data)

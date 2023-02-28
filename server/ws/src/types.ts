@@ -27,6 +27,11 @@ export interface Session {
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
   tx: (ctx: MeasureContext, tx: Tx) => Promise<TxResult>
+
+  // Session restore information
+  sessionId?: string
+  resultBuffer?: TxResult[]
+  closeTimeout?: any
 }
 
 /**
