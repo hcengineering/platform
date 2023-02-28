@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { SvelteComponent } from 'svelte'
   import { getResource } from '@hcengineering/platform'
   import type { AnyComponent } from '../types'
   // import Icon from './Icon.svelte'
@@ -20,6 +21,8 @@
   import ErrorBoundary from './internal/ErrorBoundary'
   import Loading from './Loading.svelte'
 
+  // Reference to rendered component instance
+  export let innerRef: SvelteComponent | undefined = undefined
   export let is: AnyComponent
   export let props = {}
   export let shrink: boolean = false
@@ -36,11 +39,11 @@
   {:then Ctor}
     <ErrorBoundary>
       {#if $$slots.default !== undefined}
-        <Ctor {...props} on:change on:close on:open on:click on:delete on:action>
+        <Ctor bind:this={innerRef} {...props} on:change on:close on:open on:click on:delete on:action>
           <slot />
         </Ctor>
       {:else}
-        <Ctor {...props} on:change on:close on:open on:click on:delete on:action />
+        <Ctor bind:this={innerRef} {...props} on:change on:close on:open on:click on:delete on:action />
       {/if}
     </ErrorBoundary>
   {:catch err}
