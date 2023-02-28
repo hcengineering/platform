@@ -156,6 +156,7 @@ const notification = plugin(notificationId, {
   },
   ids: {
     MentionNotification: '' as Ref<NotificationType>,
+    DMNotification: '' as Ref<NotificationType>,
     PlatformNotification: '' as Ref<NotificationProvider>,
     BrowserNotification: '' as Ref<NotificationProvider>,
     EmailNotification: '' as Ref<NotificationProvider>,

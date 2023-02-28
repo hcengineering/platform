@@ -5,6 +5,7 @@
     "Notifications": "Notifications",
     "NoNotifications": "No notifications",
     "MentionNotification": "Mentioned",
+    "DMNotification": "Sent you message",
     "EmailNotification": "by email",
     "PlatformNotification": "in platform",
     "Track": "Track",
