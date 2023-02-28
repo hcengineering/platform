@@ -48,7 +48,7 @@ test.describe('contact tests', () => {
     await page.click('text=Workspace Notifications >> button')
     await page.click('text=Templates')
     // Click .flex-center.icon-button
-    await page.click('#create-template >> .flex-center.icon-button')
+    await page.click('#create-template')
     // Click [placeholder="New\ template"]
     // await page.click('[placeholder="New\\ template"]')
     // Fill [placeholder="New\ template"]

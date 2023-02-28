@@ -13,9 +13,10 @@
 // limitations under the License.
 //
 
-import { Comment, Message, ThreadMessage } from '@hcengineering/chunter'
+import { ChunterSpace, Comment, Message, ThreadMessage } from '@hcengineering/chunter'
 import core, { Doc, DOMAIN_TX, Ref, TxCreateDoc, TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { DOMAIN_CHUNTER, DOMAIN_COMMENT } from './index'
 import chunter from './plugin'
 
@@ -158,10 +159,43 @@ export async function migrateThreadMessages (client: MigrationClient): Promise<v
   }
 }
 
+async function fillCreatedBy (client: MigrationClient): Promise<void> {
+  const objects = await client.find<ChunterSpace>(DOMAIN_SPACE, {
+    _class: { $in: [chunter.class.DirectMessage, chunter.class.Channel] },
+    createdBy: { $exists: false }
+  })
+  const txes = await client.find<TxCreateDoc<ChunterSpace>>(DOMAIN_TX, {
+    objectClass: { $in: [chunter.class.DirectMessage, chunter.class.Channel] },
+    _class: core.class.TxCreateDoc
+  })
+  const txMap = new Map(txes.map((p) => [p.objectId, p]))
+
+  for (const object of objects) {
+    const createTx = txMap.get(object._id)
+    if (createTx !== undefined && createTx.attributes.createdBy === undefined) {
+      await client.update(
+        DOMAIN_TX,
+        { _id: createTx._id },
+        {
+          'attributes.createdBy': createTx.modifiedBy
+        }
+      )
+    }
+    await client.update(
+      DOMAIN_SPACE,
+      { _id: object._id },
+      {
+        createdBy: createTx?.modifiedBy ?? object.modifiedBy
+      }
+    )
+  }
+}
+
 export const chunterOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await migrateMessages(client)
     await migrateThreadMessages(client)
+    await fillCreatedBy(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)

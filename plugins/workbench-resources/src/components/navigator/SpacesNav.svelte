@@ -30,13 +30,16 @@
     NavLink,
     showPopup
   } from '@hcengineering/ui'
-  import { getActions as getContributedActions, getObjectPresenter } from '@hcengineering/view-resources'
+  import {
+    getActions as getContributedActions,
+    getObjectPresenter,
+    TreeItem,
+    TreeNode
+  } from '@hcengineering/view-resources'
   import { SpacesNavModel } from '@hcengineering/workbench'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
   import { classIcon, getSpaceName } from '../../utils'
-  import TreeItem from './TreeItem.svelte'
-  import TreeNode from './TreeNode.svelte'
 
   export let model: SpacesNavModel
   export let currentSpace: Ref<Space> | undefined

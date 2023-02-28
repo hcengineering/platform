@@ -30,9 +30,13 @@ export default mergeIds(templatesId, templates, {
     Suggested: '' as IntlString,
     SearchTemplate: '' as IntlString,
     TemplatePlaceholder: '' as IntlString,
-    Field: '' as IntlString
+    Field: '' as IntlString,
+    TemplateGroup: '' as IntlString,
+    CreateTemplateGroup: '' as IntlString,
+    Copy: '' as IntlString
   },
   component: {
-    Templates: '' as AnyComponent
+    Templates: '' as AnyComponent,
+    CreateTemplateGroup: '' as AnyComponent
   }
 })

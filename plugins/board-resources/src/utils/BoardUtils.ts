@@ -1,6 +1,6 @@
 import { readable } from 'svelte/store'
 import board, { Board, CommonBoardPreference } from '@hcengineering/board'
-import core, { Ref, TxOperations } from '@hcengineering/core'
+import core, { getCurrentAccount, Ref, TxOperations } from '@hcengineering/core'
 import type { KanbanTemplate, TodoItem } from '@hcengineering/task'
 import preference from '@hcengineering/preference'
 import { createKanban } from '@hcengineering/task'
@@ -30,7 +30,8 @@ export async function createBoard (
     description,
     private: false,
     archived: false,
-    members: []
+    members: [getCurrentAccount()._id],
+    createdBy: getCurrentAccount()._id
   })
 
   await Promise.all([createKanban(client, boardRef, templateId)])

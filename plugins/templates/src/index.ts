@@ -20,7 +20,13 @@ import { Asset, plugin } from '@hcengineering/platform'
 /**
  * @public
  */
+export interface TemplateGroup extends Space {}
+
+/**
+ * @public
+ */
 export interface MessageTemplate extends Doc {
+  space: Ref<TemplateGroup>
   title: string
   message: string
 }
@@ -37,8 +43,8 @@ export interface TemplateData {
  * @public
  */
 export interface TemplateDataProvider {
-  set: (key: Ref<TemplateFieldCategory>, value: any) => void
-  get: (key: Ref<TemplateFieldCategory>) => any | undefined
+  set: (key: Ref<Class<Doc>>, value: any) => void
+  get: (key: Ref<Class<Doc>>) => any | undefined
   fillTemplate: (message: string) => Promise<string>
   destroy: () => void
 }
@@ -72,15 +78,17 @@ export const templatesId = 'templates' as Plugin
 export default plugin(templatesId, {
   class: {
     MessageTemplate: '' as Ref<Class<MessageTemplate>>,
+    TemplateGroup: '' as Ref<Class<TemplateGroup>>,
     TemplateField: '' as Ref<Class<TemplateField>>,
     TemplateFieldCategory: '' as Ref<Class<TemplateFieldCategory>>
   },
   space: {
-    Templates: '' as Ref<Space>
+    Templates: '' as Ref<TemplateGroup>
   },
   icon: {
     Templates: '' as Asset,
-    Template: '' as Asset
+    Template: '' as Asset,
+    Copy: '' as Asset
   },
   function: {
     GetTemplateDataProvider: '' as Resource<() => TemplateDataProvider>

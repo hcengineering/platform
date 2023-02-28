@@ -135,6 +135,7 @@
         private: false,
         archived: false,
         company,
+        createdBy: getCurrentAccount()._id,
         members: [getCurrentAccount()._id]
       },
       objectId

@@ -20,21 +20,28 @@ import { SettingsCategory } from '@hcengineering/setting'
 import { templatesId } from '@hcengineering/templates'
 import templates from '@hcengineering/templates-resources/src/plugin'
 
-import type { AnyComponent } from '@hcengineering/ui'
 import { RefInputAction, RefInputActionItem } from '@hcengineering/model-text-editor'
+import type { AnyComponent } from '@hcengineering/ui'
+import { Action, ActionCategory } from '@hcengineering/view'
 
 export default mergeIds(templatesId, templates, {
   ids: {
     Templates: '' as Ref<SettingsCategory>,
     TemplatePopupAction: '' as Ref<RefInputActionItem>
   },
-
-  // Without it, CLI version is failed with some svelte dependency exception.
-  componnets: {
-    Dummy: '' as AnyComponent
+  component: {
+    Move: '' as AnyComponent,
+    Copy: '' as AnyComponent,
+    EditGroup: '' as AnyComponent
   },
   action: {
+    Copy: '' as Ref<Action>,
+    Move: '' as Ref<Action>,
+    EditGroup: '' as Ref<Action>,
     ShowTemplates: '' as Resource<RefInputAction>
+  },
+  category: {
+    MessageTemplate: '' as Ref<ActionCategory>
   },
   string: {
     Title: '' as IntlString,

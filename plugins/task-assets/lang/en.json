@@ -37,8 +37,6 @@
     "ProjectNamePlaceholder": "Project name",
     "TaskNamePlaceholder": "The boring task",
     "TodoDescriptionPlaceholder": "todo...",
-    "MakePrivate": "Make Private",
-    "MakePrivateDescription": "Only members can see it",
     "TaskProject": "selected project",
     "SelectProject": "Select project",
     "TaskName": "Task name *",

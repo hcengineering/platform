@@ -30,9 +30,7 @@ import Contacts from './components/Contacts.svelte'
 import ContactsTabs from './components/ContactsTabs.svelte'
 import CreateEmployee from './components/CreateEmployee.svelte'
 import CreateOrganization from './components/CreateOrganization.svelte'
-import CreateOrganizations from './components/CreateOrganizations.svelte'
 import CreatePerson from './components/CreatePerson.svelte'
-import CreatePersons from './components/CreatePersons.svelte'
 import EditMember from './components/EditMember.svelte'
 import EditOrganization from './components/EditOrganization.svelte'
 import EditPerson from './components/EditPerson.svelte'
@@ -164,8 +162,6 @@ export default async (): Promise<Resources> => ({
     CreateOrganization,
     EditPerson,
     EditOrganization,
-    CreatePersons,
-    CreateOrganizations,
     SocialEditor,
     Contacts,
     ContactsTabs,

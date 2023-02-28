@@ -428,7 +428,7 @@ export function createModel (builder: Builder): void {
     templates.class.TemplateField,
     core.space.Model,
     {
-      label: setting.string.IntegrationWith,
+      label: setting.string.Value,
       category: setting.templateFieldCategory.Integration,
       func: setting.function.GetValue
     },

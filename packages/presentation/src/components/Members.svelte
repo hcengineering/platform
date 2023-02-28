@@ -14,22 +14,21 @@
 -->
 <script lang="ts">
   import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
-  import { Account, DocumentQuery, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import { Account, AccountRole, DocumentQuery, getCurrentAccount, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import login from '@hcengineering/login'
   import { translate } from '@hcengineering/platform'
   import setting from '@hcengineering/setting'
-  import { IconAdd, Label, SearchEdit, showPopup } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { ActionIcon, IconAdd, IconClose, Label, SearchEdit, showPopup } from '@hcengineering/ui'
   import presentation from '../plugin'
   import { getClient } from '../utils'
+  import AddMembersPopup from './AddMembersPopup.svelte'
   import UserInfo from './UserInfo.svelte'
-  import login from '@hcengineering/login'
 
   export let space: Space
   export let withAddButton: boolean = false
   export let withInviteWorkspaceButton: boolean = false
 
   const client = getClient()
-  const dispatch = createEventDispatcher()
   const hierarchy = client.getHierarchy()
   $: label = hierarchy.getClass(space._class).label
   let spaceClass = ''
@@ -64,9 +63,29 @@
     })
   }
 
+  async function removeMember (employee: Ref<Employee>): Promise<void> {
+    const account = await client.findOne(contact.class.EmployeeAccount, { employee })
+    if (account === undefined) return
+    await client.update(space, { $pull: { members: account._id } })
+  }
+
   function inviteWorkspace (): void {
     showPopup(login.component.InviteLink, {})
   }
+
+  function openAddMembersPopup () {
+    showPopup(AddMembersPopup, { value: space }, undefined, async (membersIds: Ref<EmployeeAccount>[]) => {
+      if (membersIds) {
+        for (const member of membersIds) {
+          if (space.members.includes(member)) continue
+          await client.update(space, { $push: { members: member } })
+        }
+      }
+    })
+  }
+
+  const account = getCurrentAccount()
+  $: canRemove = account.role >= AccountRole.Maintainer && space.createdBy === account._id
 </script>
 
 <div class="flex-row-reverse mb-3 mt-3"><SearchEdit bind:value={search} /></div>
@@ -88,7 +107,7 @@
     {/if}
     {#if !isSearch && withAddButton}
       <div class="item fs-title">
-        <div class="flex-row-center" on:click={() => dispatch('addMembers')}>
+        <div class="flex-row-center" on:click={openAddMembersPopup}>
           <div class="flex-center ml-1 mr-1"><IconAdd size={'large'} /></div>
           <div class="flex-col ml-2 min-w-0 content-accent-color">
             <Label label={presentation.string.Add} />
@@ -97,7 +116,18 @@
       </div>
     {/if}
     {#each current as person}
-      <div class="item fs-title"><UserInfo size={'medium'} value={person} /></div>
+      <div class="flex-between">
+        <div class="item fs-title"><UserInfo size={'medium'} value={person} /></div>
+        {#if canRemove}
+          <ActionIcon
+            icon={IconClose}
+            size={'small'}
+            action={() => {
+              removeMember(person._id)
+            }}
+          />
+        {/if}
+      </div>
     {/each}
     {#if foreign.length}
       <div class="mt-4 notIn h-full">

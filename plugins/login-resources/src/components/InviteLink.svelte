@@ -14,7 +14,9 @@
 -->
 <script lang="ts">
   import { AccountRole, getCurrentAccount, Timestamp } from '@hcengineering/core'
-  import { copyTextToClipboard, LiveQuery } from '@hcengineering/presentation'
+  import { loginId } from '@hcengineering/login'
+  import { copyTextToClipboard, createQuery } from '@hcengineering/presentation'
+  import setting from '@hcengineering/setting'
   import {
     Button,
     EditBox,
@@ -25,16 +27,20 @@
     MiniToggle,
     ticker
   } from '@hcengineering/ui'
-  import { getInviteLink } from '../utils'
   import { createEventDispatcher } from 'svelte'
   import login from '../plugin'
+  import { getInviteLink } from '../utils'
   import InviteWorkspace from './icons/InviteWorkspace.svelte'
-  import { loginId } from '@hcengineering/login'
-  import setting from '@hcengineering/setting'
 
   const dispatch = createEventDispatcher()
 
-  const query = new LiveQuery()
+  const query = createQuery()
+
+  interface InviteParams {
+    expirationTime: number
+    emailMask: string
+    limit: number | undefined
+  }
 
   $: query.query(setting.class.InviteSettings, {}, (set) => {
     if (set !== undefined && set.length > 0) {
@@ -59,7 +65,7 @@
     limit = defaultValues.limit
   }
 
-  async function getLink (expHours: number, mask: string, limit: number): Promise<void> {
+  async function getLink (expHours: number, mask: string, limit: number | undefined): Promise<void> {
     loading = true
     const inviteId = await getInviteLink(expHours, mask, limit)
     const loc = getCurrentLocation()
@@ -92,14 +98,14 @@
     copiedTime = Date.now()
   }
 
-  let expHours: number | undefined = undefined
+  let expHours: number = 1
   let emailMask: string = ''
   let limit: number | undefined = undefined
   let useDefault: boolean | undefined = true
   let noLimit: boolean = false
   const isOwnerOrMaintainer: boolean = getCurrentAccount().role > AccountRole.Maintainer
-  let defaultValues = {
-    expirationTime: undefined,
+  let defaultValues: InviteParams = {
+    expirationTime: 1,
     emailMask: '',
     limit: undefined
   }
@@ -134,7 +140,6 @@
           <EditBox
             label={login.string.EmailMask}
             bind:value={emailMask}
-            format={'string'}
             on:keypress={() => (link = undefined)}
             disabled={useDefault || !isOwnerOrMaintainer}
           />
@@ -180,7 +185,7 @@
         size={'medium'}
         kind={'primary'}
         on:click={() => {
-          ;(limit > 0 || noLimit) && getLink(expHours, emailMask, limit)
+          ;((limit !== undefined && limit > 0) || noLimit) && getLink(expHours, emailMask, limit)
         }}
       />
     </div>

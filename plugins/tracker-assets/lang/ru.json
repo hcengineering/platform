@@ -43,8 +43,6 @@
     "NewTeam": "Новая команда",
     "TeamTitlePlaceholder": "Название команды",
     "TeamIdentifierPlaceholder": "Идентификатор Команды",
-    "MakePrivate": "Сделать личным",
-    "MakePrivateDescription": "Только пользователи могут видеть это",
     "ChooseIcon": "Выбрать иконку",
     "AddIssue": "Добавить задачу",
     "NewIssue": "Новая задача",

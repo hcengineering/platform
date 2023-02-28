@@ -15,12 +15,19 @@
 //
 
 import { Domain, DOMAIN_MODEL, IndexKind, Ref } from '@hcengineering/core'
-import { Builder, Index, Model, Prop, TypeString } from '@hcengineering/model'
-import core, { TDoc } from '@hcengineering/model-core'
+import { Builder, Index, Model, Prop, TypeString, UX } from '@hcengineering/model'
+import core, { DOMAIN_SPACE, TDoc, TSpace } from '@hcengineering/model-core'
 import textEditor from '@hcengineering/model-text-editor'
+import view, { createAction } from '@hcengineering/model-view'
 import { IntlString, Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
-import type { MessageTemplate, TemplateField, TemplateFieldCategory, TemplateFieldFunc } from '@hcengineering/templates'
+import type {
+  MessageTemplate,
+  TemplateField,
+  TemplateFieldCategory,
+  TemplateFieldFunc,
+  TemplateGroup
+} from '@hcengineering/templates'
 import templates from './plugin'
 
 export const DOMAIN_TEMPLATES = 'templates' as Domain
@@ -36,6 +43,10 @@ export class TMessageTemplate extends TDoc implements MessageTemplate {
     message!: string
 }
 
+@Model(templates.class.TemplateGroup, core.class.Space, DOMAIN_SPACE)
+@UX(templates.string.TemplateGroup)
+export class TTemplateGroup extends TSpace implements TemplateGroup {}
+
 @Model(templates.class.TemplateFieldCategory, core.class.Doc, DOMAIN_MODEL)
 export class TTemplateFieldCategory extends TDoc implements TemplateFieldCategory {
   label!: IntlString
@@ -49,7 +60,7 @@ export class TTemplateField extends TDoc implements TemplateField {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TMessageTemplate, TTemplateFieldCategory, TTemplateField)
+  builder.createModel(TMessageTemplate, TTemplateFieldCategory, TTemplateField, TTemplateGroup)
 
   builder.createDoc(
     setting.class.WorkspaceSettingCategory,
@@ -76,6 +87,77 @@ export function createModel (builder: Builder): void {
       order: 1500
     },
     templates.ids.TemplatePopupAction
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: templates.component.Copy,
+        element: 'top',
+        fillProps: {
+          _object: 'value'
+        }
+      },
+      label: templates.string.Copy,
+      icon: templates.icon.Copy,
+      input: 'focus',
+      inline: true,
+      category: templates.category.MessageTemplate,
+      target: templates.class.MessageTemplate,
+      context: { mode: 'context', group: 'create' }
+    },
+    templates.action.Copy
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        element: 'top',
+        fillProps: {
+          _object: 'object'
+        },
+        component: templates.component.EditGroup
+      },
+      label: view.string.Open,
+      input: 'focus',
+      icon: view.icon.Open,
+      category: templates.category.MessageTemplate,
+      target: templates.class.TemplateGroup,
+      keyBinding: ['keyE'],
+      context: {
+        mode: ['browser', 'context'],
+        group: 'create'
+      },
+      override: [view.action.Open]
+    },
+    templates.action.EditGroup
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: templates.component.Move,
+        element: 'top',
+        fillProps: {
+          _object: 'value'
+        }
+      },
+      keyBinding: ['keyM'],
+      label: view.string.Move,
+      icon: view.icon.Move,
+      input: 'focus',
+      inline: true,
+      category: templates.category.MessageTemplate,
+      target: templates.class.MessageTemplate,
+      context: { mode: 'context', group: 'create' }
+    },
+    templates.action.Move
   )
 }
 

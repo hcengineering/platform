@@ -533,8 +533,8 @@ export type FixedWidthStore = Record<string, number>
 
 export const fixedWidthStore = writable<FixedWidthStore>({})
 
-export const groupBy = (docs: Doc[], key: string): { [key: string]: Doc[] } => {
-  return docs.reduce((storage: { [key: string]: Doc[] }, item: Doc) => {
+export function groupBy<T extends Doc> (docs: T[], key: string): { [key: string]: T[] } {
+  return docs.reduce((storage: { [key: string]: T[] }, item: T) => {
     const group = (item as any)[key] ?? undefined
 
     storage[group] = storage[group] ?? []

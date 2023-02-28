@@ -1,4 +1,4 @@
-import { generateId, Ref } from '@hcengineering/core'
+import { Class, Doc, generateId, Ref } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
 import templates, {
@@ -15,7 +15,7 @@ const templateData: Map<Ref<TemplateFieldCategory>, TemplateData[]> = new Map()
 class TemplateDataProviderImpl implements TemplateDataProvider {
   private readonly id = generateId()
 
-  set (key: Ref<TemplateFieldCategory>, value: any): void {
+  set (key: Ref<Class<Doc>>, value: any): void {
     const data = templateData.get(key) ?? []
     data.unshift({
       owner: this.id,
@@ -24,7 +24,7 @@ class TemplateDataProviderImpl implements TemplateDataProvider {
     templateData.set(key, data)
   }
 
-  get (key: Ref<TemplateFieldCategory>): any | undefined {
+  get (key: Ref<Class<Doc>>): any | undefined {
     const data = templateData.get(key) ?? []
     const current = data.find((p) => p.owner === this.id)
     return current?.data ?? data[0]?.data

@@ -27,7 +27,6 @@ async function hasArchiveSpaces (spaces: Space[]): Promise<boolean> {
   return spaces.find((sp) => sp.archived) !== undefined
 }
 export { default as SpaceBrowser } from './components/SpaceBrowser.svelte'
-export { default as TreeNode } from './components/navigator/TreeNode.svelte'
 export { default as SpecialElement } from './components/navigator/SpecialElement.svelte'
 export { SpecialView }
 export default async (): Promise<Resources> => ({

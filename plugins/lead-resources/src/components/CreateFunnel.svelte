@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Ref } from '@hcengineering/core'
-  import { getClient, SpaceCreateCard } from '@hcengineering/presentation'
+  import core, { getCurrentAccount, Ref } from '@hcengineering/core'
+  import presentation, { getClient, SpaceCreateCard } from '@hcengineering/presentation'
   import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
   import { Component, EditBox, Grid, IconFolder, ToggleWithLabel } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -26,6 +26,7 @@
   let name: string = ''
   const description: string = ''
   let templateId: Ref<KanbanTemplate> | undefined
+  let isPrivate: boolean = false
 
   export function canClose (): boolean {
     return name === '' && templateId !== undefined
@@ -44,9 +45,10 @@
     const id = await client.createDoc(lead.class.Funnel, core.space.Space, {
       name,
       description,
-      private: false,
+      private: isPrivate,
       archived: false,
-      members: []
+      members: [getCurrentAccount()._id],
+      createdBy: getCurrentAccount()._id
     })
 
     await createKanban(client, id, templateId)
@@ -69,7 +71,11 @@
       placeholder={lead.string.FunnelName}
       focus
     />
-    <ToggleWithLabel label={lead.string.MakePrivate} description={lead.string.MakePrivateDescription} />
+    <ToggleWithLabel
+      label={presentation.string.MakePrivate}
+      description={presentation.string.MakePrivateDescription}
+      bind:on={isPrivate}
+    />
 
     <Component
       is={task.component.KanbanTemplateSelector}

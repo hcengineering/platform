@@ -35,6 +35,10 @@
     "CategoryProjectMembers": "Project members",
     "CategoryOther": "Other",
     "InltPropsValue": "{value}",
-    "DocumentPreview": "Preview"
+    "DocumentPreview": "Preview",
+    "MakePrivate": "Make private",
+    "MakePrivateDescription": "Only members can see it",
+    "AddMembersHeader": "Add members to {value}:"
+
   }
 }

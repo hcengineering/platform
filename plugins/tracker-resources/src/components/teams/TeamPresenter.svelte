@@ -17,7 +17,8 @@
   import { Team } from '@hcengineering/tracker'
   import { NavLink } from '@hcengineering/ui'
   import { SpacesNavModel } from '@hcengineering/workbench'
-  import { SpecialElement, TreeNode } from '@hcengineering/workbench-resources'
+  import { SpecialElement } from '@hcengineering/workbench-resources'
+  import { TreeNode } from '@hcengineering/view-resources'
 
   export let space: Team
   export let model: SpacesNavModel
