@@ -203,7 +203,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
 
   async getTargets (accounts: Ref<Account>[] | undefined): Promise<string[] | undefined> {
     if (accounts === undefined) return
-    const users = await this.storage.modelDb.findAll(core.class.Account, { _id: { $in: accounts }})
+    const users = await this.storage.modelDb.findAll(core.class.Account, { _id: { $in: accounts } })
     return users.map((p) => p.email)
   }
 
@@ -242,7 +242,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       await this.provideFindAll(ctx, _class, query, options)
     ) as FindResult<T>
     const res: FindResult<T> = toFindResult([], findResult.total)
-    const isSpace = this. storage.hierarchy.isDerived(_class, core.class.Space)
+    const isSpace = this.storage.hierarchy.isDerived(_class, core.class.Space)
     for (const object of findResult) {
       const key: Ref<Space> = isSpace ? (object._id as string as Ref<Space>) : object.space
       if (await this.isUnavailable(ctx, key)) {
