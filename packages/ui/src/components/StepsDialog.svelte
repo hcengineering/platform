@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Asset, IntlString } from '@hcengineering/platform'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, SvelteComponent } from 'svelte'
   import ui from '../plugin'
   import {
     AnySvelteComponent,
@@ -43,7 +43,8 @@
 
   const dispatch = createEventDispatcher()
 
-  let currentStep: DialogStep | undefined
+  let step: SvelteComponent | undefined
+  let currentStepModel: DialogStep | undefined
   let currentStepIndex = 0
   let isStepValid = false
   let isSaving = false
@@ -70,26 +71,26 @@
   }
 
   async function completeCurrentStep () {
-    if (!currentStep?.onDone) {
+    if (!step?.done) {
       return
     }
 
     isSaving = true
     try {
-      await currentStep.onDone()
+      await step.done()
     } finally {
       isSaving = false
     }
   }
 
-  $: currentStep = steps[currentStepIndex]
+  $: currentStepModel = steps[currentStepIndex]
   $: stepIndex = currentStepIndex
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <Panel bind:panelWidth bind:innerWidth bind:useMaxWidth {floatAside} {allowClose} isAside isHeader on:close>
   <svelte:fragment slot="title">
-    {@const additionalStepInfo = currentStep?.additionalInfo}
+    {@const additionalStepInfo = currentStepModel?.additionalInfo}
 
     <div class="popupPanel-title__content-container antiTitle">
       <div class="icon-wrapper">
@@ -122,8 +123,8 @@
   </svelte:fragment>
 
   <svelte:fragment slot="header">
-    {@const stepName = currentStep?.name}
-    {@const stepDescription = currentStep?.description}
+    {@const stepName = currentStepModel?.name}
+    {@const stepDescription = currentStepModel?.description}
 
     <div class="header header-row between">
       {#if stepName}<h4 class="no-margin"><Label label={stepName} /></h4>{/if}
@@ -164,8 +165,8 @@
     </Scroller>
   </svelte:fragment>
 
-  {#if currentStep?.component}
-    {@const { component, props } = currentStep}
+  {#if currentStepModel?.component}
+    {@const { component, props } = currentStepModel}
     {@const isMobile = $deviceInfo.isMobile}
 
     <div
@@ -176,9 +177,9 @@
       class:max={!isMobile && useMaxWidth}
     >
       {#if typeof component === 'string'}
-        <Component is={component} {props} on:change={handleComponentChange} />
+        <Component bind:innerRef={step} is={component} {props} on:change={handleComponentChange} />
       {:else}
-        <svelte:component this={component} {...props} on:change={handleComponentChange} />
+        <svelte:component bind:this={step} this={component} {...props} on:change={handleComponentChange} />
       {/if}
     </div>
   {/if}
