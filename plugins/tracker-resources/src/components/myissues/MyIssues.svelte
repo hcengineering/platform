@@ -52,12 +52,12 @@
   const subscribedQuery = createQuery()
   $: subscribedQuery.query(
     notification.class.LastView,
-    { user: getCurrentAccount()._id, attachedToClass: tracker.class.Issue, lastView: { $gte: 0 } },
+    { user: getCurrentAccount()._id, attachedToClass: tracker.class.Issue, lastView: { $ne: -1 } },
     (result) => {
       const newSub = result.map(({ attachedTo }) => attachedTo as Ref<Issue>)
       const curSub = subscribed._id.$in
       if (curSub.length !== newSub.length || curSub.some((id, i) => newSub[i] !== id)) {
-        subscribed = { ...subscribed, _id: { $in: newSub } }
+        subscribed = { _id: { $in: newSub } }
       }
     },
     { sort: { _id: 1 } }
