@@ -675,18 +675,6 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    task.class.KanbanTemplateSpace,
-    core.space.Model,
-    {
-      name: recruit.string.Vacancies,
-      description: recruit.string.ManageVacancyStatuses,
-      icon: recruit.component.TemplatesIcon,
-      editor: recruit.component.VacancyTemplateEditor
-    },
-    recruit.space.VacancyTemplates
-  )
-
-  builder.createDoc(
     presentation.class.ObjectSearchCategory,
     core.space.Model,
     {

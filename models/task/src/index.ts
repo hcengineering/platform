@@ -15,18 +15,7 @@
 
 import type { Employee } from '@hcengineering/contact'
 import contact from '@hcengineering/contact'
-import {
-  Arr,
-  Class,
-  Doc,
-  Domain,
-  DOMAIN_MODEL,
-  FindOptions,
-  IndexKind,
-  Ref,
-  Space,
-  Timestamp
-} from '@hcengineering/core'
+import { Arr, Class, Doc, Domain, FindOptions, IndexKind, Ref, Space, Timestamp } from '@hcengineering/core'
 import {
   Builder,
   Collection,
@@ -208,8 +197,8 @@ export class TKanban extends TDoc implements Kanban {
   attachedTo!: Ref<Space>
 }
 
-@Model(task.class.KanbanTemplateSpace, core.class.Doc, DOMAIN_MODEL)
-export class TKanbanTemplateSpace extends TDoc implements KanbanTemplateSpace {
+@Model(task.class.KanbanTemplateSpace, core.class.Space)
+export class TKanbanTemplateSpace extends TSpace implements KanbanTemplateSpace {
   name!: IntlString
   description!: IntlString
   icon!: AnyComponent
@@ -416,17 +405,6 @@ export function createModel (builder: Builder): void {
   builder.mixin(task.class.Issue, core.class.Class, task.mixin.KanbanCard, {
     card: task.component.KanbanCard
   })
-
-  builder.createDoc(
-    task.class.KanbanTemplateSpace,
-    core.space.Model,
-    {
-      name: task.string.Projects,
-      description: task.string.ManageProjectStatues,
-      icon: task.component.TemplatesIcon
-    },
-    task.space.ProjectTemplates
-  )
 
   builder.createDoc(
     view.class.ActionCategory,

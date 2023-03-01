@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Board, Card } from '@hcengineering/board'
 import {
   AttachedDoc,
   Class,
@@ -20,7 +21,6 @@ import {
   DOMAIN_TX,
   generateId,
   Ref,
-  Space,
   TxCollectionCUD,
   TxCreateDoc,
   TxCUD,
@@ -30,12 +30,11 @@ import {
 } from '@hcengineering/core'
 import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
-import { createKanbanTemplate, createSequence, DOMAIN_TASK } from '@hcengineering/model-task'
-import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
 import { DOMAIN_TAGS } from '@hcengineering/model-tags'
+import { createKanbanTemplate, createSequence, DOMAIN_TASK } from '@hcengineering/model-task'
 import tags, { TagElement, TagReference } from '@hcengineering/tags'
+import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
 import board from './plugin'
-import { Board, Card } from '@hcengineering/board'
 
 async function createSpace (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(core.class.Space, {
@@ -55,6 +54,24 @@ async function createSpace (tx: TxOperations): Promise<void> {
       board.space.DefaultBoard
     )
   }
+  const currentTemplate = await tx.findOne(core.class.Space, {
+    _id: board.space.BoardTemplates
+  })
+  if (currentTemplate === undefined) {
+    await tx.createDoc(
+      task.class.KanbanTemplateSpace,
+      core.space.Space,
+      {
+        name: board.string.Boards,
+        description: board.string.ManageBoardStatuses,
+        icon: board.component.TemplatesIcon,
+        private: false,
+        archived: false,
+        members: []
+      },
+      board.space.BoardTemplates
+    )
+  }
 }
 
 async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<KanbanTemplate>> {
@@ -71,7 +88,7 @@ async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<Kanba
 
   return await createKanbanTemplate(tx, {
     kanbanId: board.template.DefaultBoard,
-    space: board.space.BoardTemplates as Ref<Doc> as Ref<Space>,
+    space: board.space.BoardTemplates,
     title: 'Default board',
     states: defaultKanban.states,
     doneStates: defaultKanban.doneStates

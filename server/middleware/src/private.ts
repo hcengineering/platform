@@ -54,7 +54,7 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
       const domain = this.storage.hierarchy.getDomain(txCUD.objectClass)
       if (this.targetDomains.includes(domain)) {
         const account = await getUser(this.storage, ctx)
-        if (account !== tx.modifiedBy) {
+        if (account !== tx.modifiedBy && account !== core.account.System) {
           throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
         }
         target = [ctx.userEmail]
@@ -74,17 +74,19 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
     const domain = this.storage.hierarchy.getDomain(_class)
     if (this.targetDomains.includes(domain)) {
       const account = await getUser(this.storage, ctx)
-      newQuery = {
-        ...query,
-        modifiedBy: account
+      if (account !== core.account.System) {
+        newQuery = {
+          ...query,
+          modifiedBy: account
+        }
       }
     }
-    const findResult = this.storage.hierarchy.clone(
-      await this.provideFindAll(ctx, _class, newQuery, options)
-    ) as FindResult<T>
-    for (const object of findResult) {
-      if (object.$lookup !== undefined) {
-        await this.filterLookup(ctx, object.$lookup)
+    const findResult = await this.provideFindAll(ctx, _class, newQuery, options)
+    if (options?.lookup !== undefined) {
+      for (const object of findResult) {
+        if (object.$lookup !== undefined) {
+          await this.filterLookup(ctx, object.$lookup)
+        }
       }
     }
     return findResult
@@ -93,11 +95,8 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
   async isAvailable (ctx: SessionContext, doc: Doc): Promise<boolean> {
     const domain = this.storage.hierarchy.getDomain(doc._class)
     if (!this.targetDomains.includes(domain)) return true
-    if (ctx.userEmail === 'anticrm@hc.engineering') {
-      return true
-    }
     const account = await getUser(this.storage, ctx)
-    return doc.modifiedBy === account
+    return doc.modifiedBy === account || account === core.account.System
   }
 
   async filterLookup<T extends Doc>(ctx: SessionContext, lookup: LookupData<T>): Promise<void> {

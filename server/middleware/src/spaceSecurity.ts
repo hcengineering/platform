@@ -23,12 +23,12 @@ import core, {
   FindResult,
   LookupData,
   MeasureContext,
+  ObjQueryType,
   Position,
   PullArray,
   Ref,
   ServerStorage,
   Space,
-  toFindResult,
   Tx,
   TxCreateDoc,
   TxCUD,
@@ -47,6 +47,14 @@ import { getUser, mergeTargets } from './utils'
 export class SpaceSecurityMiddleware extends BaseMiddleware implements Middleware {
   private allowedSpaces: Record<Ref<Account>, Ref<Space>[]> = {}
   private privateSpaces: Record<Ref<Space>, Space | undefined> = {}
+  private publicSpaces: Ref<Space>[] = []
+  private readonly systemSpaces = [
+    core.space.Configuration,
+    core.space.DerivedTx,
+    core.space.Model,
+    core.space.Space,
+    core.space.Tx
+  ]
 
   private constructor (storage: ServerStorage, next?: Middleware) {
     super(storage, next)
@@ -80,6 +88,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     for (const space of spaces) {
       this.addSpace(space)
     }
+    this.publicSpaces = (await this.storage.findAll(ctx, core.class.Space, { private: false })).map((p) => p._id)
   }
 
   private removeMemberSpace (member: Ref<Account>, space: Ref<Space>): void {
@@ -111,6 +120,8 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       if (res !== undefined) {
         this.addSpace(res)
       }
+    } else {
+      this.publicSpaces.push(createTx.objectId)
     }
   }
 
@@ -152,6 +163,13 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     }
   }
 
+  private removePublicSpace (_id: Ref<Space>): void {
+    const publicIndex = this.publicSpaces.findIndex((p) => p === _id)
+    if (publicIndex !== -1) {
+      this.publicSpaces.splice(publicIndex, 1)
+    }
+  }
+
   private async handleUpdate (ctx: SessionContext, tx: TxCUD<Space>): Promise<void> {
     const updateDoc = tx as TxUpdateDoc<Space>
     if (!this.storage.hierarchy.isDerived(updateDoc.objectClass, core.class.Space)) return
@@ -162,9 +180,11 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
         if (res !== undefined) {
           res.private = true
           this.addSpace(res)
+          this.removePublicSpace(res._id)
         }
       } else if (!updateDoc.operations.private) {
         this.removeSpace(updateDoc.objectId)
+        this.publicSpaces.push(updateDoc.objectId)
       }
     }
 
@@ -189,6 +209,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     if (!this.storage.hierarchy.isDerived(removeTx.objectClass, core.class.Space)) return
     if (removeTx._class !== core.class.TxCreateDoc) return
     this.removeSpace(tx.objectId)
+    this.removePublicSpace(tx.objectId)
   }
 
   private async handleTx (ctx: SessionContext, tx: TxCUD<Space>): Promise<void> {
@@ -220,9 +241,11 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       const space = this.privateSpaces[tx.objectSpace]
       if (space !== undefined) {
         const account = await getUser(this.storage, ctx)
-        const allowed = this.allowedSpaces[account]
-        if (allowed === undefined || !allowed.includes(isSpace ? (cudTx.objectId as Ref<Space>) : tx.objectSpace)) {
-          throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+        if (account !== core.account.System) {
+          const allowed = this.allowedSpaces[account]
+          if (allowed === undefined || !allowed.includes(isSpace ? (cudTx.objectId as Ref<Space>) : tx.objectSpace)) {
+            throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+          }
         }
         targets = await this.getTargets(this.privateSpaces[tx.objectSpace]?.members)
       }
@@ -232,36 +255,62 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     return [res[0], res[1], mergeTargets(targets, res[2])]
   }
 
+  private async getAllAllowedSpaces (ctx: SessionContext): Promise<Ref<Space>[]> {
+    let userSpaces: Ref<Space>[] = []
+    try {
+      const account = await getUser(this.storage, ctx)
+      userSpaces = this.allowedSpaces[account] ?? []
+      return [...userSpaces, account as string as Ref<Space>, ...this.publicSpaces, ...this.systemSpaces]
+    } catch {
+      return [...this.publicSpaces, ...this.systemSpaces]
+    }
+  }
+
+  private async mergeQuery<T extends Doc>(
+    ctx: SessionContext,
+    query: ObjQueryType<T['space']>
+  ): Promise<ObjQueryType<T['space']>> {
+    const spaces = await this.getAllAllowedSpaces(ctx)
+    if (typeof query === 'string') {
+      if (!spaces.includes(query)) {
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+      }
+    } else if (query.$in !== undefined) {
+      query.$in = query.$in.filter((p) => spaces.includes(p))
+    } else {
+      query.$in = spaces
+    }
+    return query
+  }
+
   override async findAll<T extends Doc>(
     ctx: SessionContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    const findResult = this.storage.hierarchy.clone(
-      await this.provideFindAll(ctx, _class, query, options)
-    ) as FindResult<T>
-    const res: FindResult<T> = toFindResult([], findResult.total)
-    const isSpace = this.storage.hierarchy.isDerived(_class, core.class.Space)
-    for (const object of findResult) {
-      const key: Ref<Space> = isSpace ? (object._id as string as Ref<Space>) : object.space
-      if (await this.isUnavailable(ctx, key)) {
-        continue
-      }
-      if (object.$lookup !== undefined) {
-        await this.filterLookup(ctx, object.$lookup)
-      }
-      res.push(object)
+    const newQuery = query
+    if (query.space !== undefined) {
+      newQuery.space = await this.mergeQuery(ctx, query.space)
+    } else {
+      const spaces = await this.getAllAllowedSpaces(ctx)
+      newQuery.space = { $in: spaces }
     }
-    return res
+    const findResult = await this.provideFindAll(ctx, _class, newQuery, options)
+    if (options?.lookup !== undefined) {
+      for (const object of findResult) {
+        if (object.$lookup !== undefined) {
+          await this.filterLookup(ctx, object.$lookup)
+        }
+      }
+    }
+    return findResult
   }
 
   async isUnavailable (ctx: SessionContext, space: Ref<Space>): Promise<boolean> {
     if (this.privateSpaces[space] === undefined) return false
-    if (ctx.userEmail === 'anticrm@hc.engineering') {
-      return false
-    }
     const account = await getUser(this.storage, ctx)
+    if (account === core.account.System) return false
     return !this.allowedSpaces[account]?.includes(space)
   }
 

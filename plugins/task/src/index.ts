@@ -176,7 +176,7 @@ export interface KanbanTemplate extends Doc {
 /**
  * @public
  */
-export interface KanbanTemplateSpace extends Doc {
+export interface KanbanTemplateSpace extends Space {
   name: IntlString
   description: IntlString
   icon: AnyComponent

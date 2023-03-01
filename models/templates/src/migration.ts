@@ -31,12 +31,14 @@ export const templatesOperation: MigrateOperation = {
         {
           name: 'Templates',
           description: 'Space for all templates',
-          private: true,
+          private: false,
           archived: false,
           members: []
         },
         templates.space.Templates
       )
+    } else if (current.private) {
+      await tx.update(current, { private: false })
     }
   }
 }
