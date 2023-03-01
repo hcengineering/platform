@@ -16,7 +16,7 @@
   import { createEventDispatcher } from 'svelte'
   import { IconFolder, EditBox, ToggleWithLabel, Grid } from '@hcengineering/ui'
   import workbench from '@hcengineering/workbench'
-  import { getClient, SpaceCreateCard } from '@hcengineering/presentation'
+  import presentation, { getClient, SpaceCreateCard } from '@hcengineering/presentation'
   import { getResource } from '@hcengineering/platform'
 
   import chunter from '../plugin'
@@ -37,7 +37,8 @@
       description: '',
       private: isPrivate,
       archived: false,
-      members: [getCurrentAccount()._id]
+      members: [getCurrentAccount()._id],
+      createdBy: getCurrentAccount()._id
     })
     const navigate = await getResource(workbench.actionImpl.Navigate)
 
@@ -65,8 +66,8 @@
       focus
     />
     <ToggleWithLabel
-      label={chunter.string.MakePrivate}
-      description={chunter.string.MakePrivateDescription}
+      label={presentation.string.MakePrivate}
+      description={presentation.string.MakePrivateDescription}
       bind:on={isPrivate}
     />
   </Grid>

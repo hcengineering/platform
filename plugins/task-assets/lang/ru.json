@@ -37,8 +37,6 @@
     "ProjectNamePlaceholder": "Название проекта",
     "TaskNamePlaceholder": "Задача",
     "TodoDescriptionPlaceholder": "todo...",
-    "MakePrivate": "Сделать личным",
-    "MakePrivateDescription": "Только пользователи могут видеть это",
     "TaskProject": "выбранный проект",
     "SelectProject": "Выбрать проект",
     "TaskName": "Название задачи *",

@@ -26,6 +26,7 @@
     "Enum": "Enum",
     "Members": "Members",
     "Hyperlink": "URL",
-    "Object": "Object"
+    "Object": "Object",
+    "CreatedBy": "Created by"
   }
 }

@@ -86,9 +86,17 @@ export function tzDateEqual (tzDate: TzDate, tzDate2: TzDate): boolean {
  * @public
  */
 export function weekDays (year: number, month: number): number {
-  return new Array(32 - new Date(year, month, 32).getDate())
-    .fill(1)
-    .filter((id, index) => ![0, 6].includes(new Date(year, month, index + 1).getDay())).length
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  let days = 0
+
+  for (let i = 1; i <= daysInMonth; i++) {
+    const dayOfWeek = new Date(year, month, i).getDay()
+
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+      days++
+    }
+  }
+  return days
 }
 
 /**

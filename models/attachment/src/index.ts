@@ -53,7 +53,7 @@ export class TAttachment extends TAttachedDoc implements Attachment {
   @Prop(TypeString(), attachment.string.Type)
     type!: string
 
-  @Prop(TypeTimestamp(), attachment.string.Date)
+  @Prop(TypeTimestamp(), attachment.string.LastModified)
     lastModified!: number
 
   @Prop(TypeString(), attachment.string.Description)

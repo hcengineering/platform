@@ -299,5 +299,4 @@ export interface DialogStep {
   readonly additionalInfo?: string
   readonly component: AnyComponent | AnySvelteComponent
   props?: Record<string, any>
-  readonly onDone?: () => Promise<void> | void
 }

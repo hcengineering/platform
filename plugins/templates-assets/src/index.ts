@@ -20,7 +20,8 @@ import templates, { templatesId } from '@hcengineering/templates'
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(templates.icon, {
   Templates: `${icons}#templates`,
-  Template: `${icons}#template`
+  Template: `${icons}#template`,
+  Copy: `${icons}#copy`
 })
 
 addStringsLoader(templatesId, async (lang: string) => await import(`../lang/${lang}.json`))

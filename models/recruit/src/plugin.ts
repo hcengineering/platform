@@ -77,6 +77,7 @@ export default mergeIds(recruitId, recruit, {
     Applications: '' as AnyComponent,
     SkillsView: '' as AnyComponent,
     Vacancies: '' as AnyComponent,
+    Organizations: '' as AnyComponent,
 
     CreateReview: '' as AnyComponent,
     Reviews: '' as AnyComponent,
@@ -104,6 +105,7 @@ export default mergeIds(recruitId, recruit, {
     TableApplicant: '' as Ref<Viewlet>,
     TableApplicantMatch: '' as Ref<Viewlet>,
     CalendarReview: '' as Ref<Viewlet>,
-    TableReview: '' as Ref<Viewlet>
+    TableReview: '' as Ref<Viewlet>,
+    TableVacancyList: '' as Ref<Viewlet>
   }
 })

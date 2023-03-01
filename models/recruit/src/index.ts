@@ -226,6 +226,7 @@ export function createModel (builder: Builder): void {
   const candidatesId = 'candidates'
   const archiveId = 'archive'
   const assignedId = 'assigned'
+  const organizationsId = 'organizations'
 
   builder.createDoc(
     workbench.class.Application,
@@ -244,6 +245,13 @@ export function createModel (builder: Builder): void {
             icon: recruit.icon.Vacancy,
             label: recruit.string.Vacancies,
             createItemLabel: recruit.string.VacancyCreateLabel,
+            position: 'vacancy'
+          },
+          {
+            id: organizationsId,
+            component: recruit.component.Organizations,
+            icon: contact.icon.Company,
+            label: recruit.string.Organizations,
             position: 'vacancy'
           },
           {
@@ -402,6 +410,32 @@ export function createModel (builder: Builder): void {
       hiddenKeys: ['name', 'space', 'modifiedOn']
     },
     recruit.viewlet.TableVacancy
+  )
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: recruit.mixin.VacancyList,
+      descriptor: view.viewlet.Table,
+      config: [
+        '',
+        {
+          key: '@vacancies',
+          label: recruit.string.Vacancies
+        },
+        {
+          key: '@applications',
+          label: recruit.string.Applications
+        },
+        '$lookup.channels',
+        {
+          key: '@applications.modifiedOn',
+          label: core.string.Modified
+        }
+      ],
+      hiddenKeys: ['name', 'space', 'modifiedOn']
+    },
+    recruit.viewlet.TableVacancyList
   )
 
   builder.createDoc(

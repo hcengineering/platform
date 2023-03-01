@@ -138,6 +138,18 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      label: notification.string.DMNotification,
+      textTemplate: '{sender} has send you a message: {doc} {data}',
+      htmlTemplate: '<p><b>{sender}</b> has send you a message {doc}</p> {data}',
+      subjectTemplate: 'You have new DM message in {doc}'
+    },
+    notification.ids.DMNotification
+  )
+
+  builder.createDoc(
     notification.class.NotificationProvider,
     core.space.Model,
     {

@@ -13,12 +13,15 @@
 // limitations under the License.
 //
 
-import core, { TxOperations } from '@hcengineering/core'
+import core, { DOMAIN_TX, TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import templates from './plugin'
 
 export const templatesOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (client: MigrationClient): Promise<void> {
+    await changeClass(client)
+  },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     const current = await tx.findOne(core.class.Space, {
@@ -26,11 +29,11 @@ export const templatesOperation: MigrateOperation = {
     })
     if (current === undefined) {
       await tx.createDoc(
-        core.class.Space,
+        templates.class.TemplateGroup,
         core.space.Space,
         {
-          name: 'Templates',
-          description: 'Space for all templates',
+          name: 'Public templates',
+          description: 'Space for public templates',
           private: false,
           archived: false,
           members: []
@@ -41,4 +44,35 @@ export const templatesOperation: MigrateOperation = {
       await tx.update(current, { private: false })
     }
   }
+}
+
+async function changeClass (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_SPACE,
+    {
+      _id: templates.space.Templates,
+      _class: core.class.Space
+    },
+    {
+      _class: templates.class.TemplateGroup,
+      private: false,
+      name: 'Public templates',
+      description: 'Space for public templates'
+    }
+  )
+
+  await client.update(
+    DOMAIN_TX,
+    {
+      objectId: templates.space.Templates,
+      objectClass: core.class.Space,
+      _class: core.class.TxCreateDoc
+    },
+    {
+      objectClass: templates.class.TemplateGroup,
+      'attirbutes.private': false,
+      'attirbutes.name': 'Public templates',
+      'attirbutes.description': 'Space for public templates'
+    }
+  )
 }

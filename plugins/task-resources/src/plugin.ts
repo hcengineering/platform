@@ -34,8 +34,6 @@ export default mergeIds(taskId, task, {
     TodoDescriptionPlaceholder: '' as IntlString,
     Todos: '' as IntlString,
     TodoName: '' as IntlString,
-    MakePrivate: '' as IntlString,
-    MakePrivateDescription: '' as IntlString,
     TaskProject: '' as IntlString,
     SelectProject: '' as IntlString,
     TaskName: '' as IntlString,

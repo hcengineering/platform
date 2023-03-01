@@ -194,6 +194,10 @@ export function createModel (builder: Builder, options = { addApplication: true 
     presenter: chunter.component.DmPresenter
   })
 
+  builder.mixin(chunter.class.Message, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: chunter.component.MessagePresenter
+  })
+
   builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: chunter.component.ChannelPresenter
   })
@@ -440,6 +444,22 @@ export function createModel (builder: Builder, options = { addApplication: true 
       hideOnRemove: true
     },
     chunter.ids.TxCommentRemove
+  )
+
+  builder.createDoc(
+    activity.class.TxViewlet,
+    core.space.Model,
+    {
+      objectClass: chunter.class.Message,
+      icon: chunter.icon.Chunter,
+      txClass: core.class.TxCreateDoc,
+      component: chunter.activity.TxMessageCreate,
+      label: notification.string.DMNotification,
+      display: 'content',
+      editable: true,
+      hideOnRemove: true
+    },
+    chunter.ids.TxMessageCreate
   )
 
   builder.createDoc(

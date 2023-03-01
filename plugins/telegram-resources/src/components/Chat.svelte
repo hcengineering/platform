@@ -16,22 +16,21 @@
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import { createEventDispatcher } from 'svelte'
   import contact, { Channel, Contact, EmployeeAccount, formatName } from '@hcengineering/contact'
-  import { generateId, getCurrentAccount, Ref, SortingOrder, Space, Class } from '@hcengineering/core'
+  import { Class, generateId, getCurrentAccount, Ref, SortingOrder, Space } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
+  import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { Integration } from '@hcengineering/setting'
   import type { NewTelegramMessage, SharedTelegramMessage, TelegramMessage } from '@hcengineering/telegram'
-  import { Button, eventToHTMLElement, IconShare, Scroller, showPopup, Panel, Icon, Label } from '@hcengineering/ui'
+  import templates, { TemplateDataProvider } from '@hcengineering/templates'
+  import { Button, eventToHTMLElement, Icon, IconShare, Label, Panel, Scroller, showPopup } from '@hcengineering/ui'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import telegram from '../plugin'
   import Connect from './Connect.svelte'
   import TelegramIcon from './icons/Telegram.svelte'
   import Messages from './Messages.svelte'
   import Reconnect from './Reconnect.svelte'
-  import templates, { TemplateDataProvider } from '@hcengineering/templates'
-  import { getResource } from '@hcengineering/platform'
-  import { onDestroy } from 'svelte'
 
   export let _id: Ref<Contact>
   export let _class: Ref<Class<Contact>>
@@ -67,8 +66,8 @@
     templateProvider?.destroy()
   })
 
-  $: templateProvider && object && templateProvider.set(contact.templateFieldCategory.Contact, object)
-  $: templateProvider && integration && templateProvider.set(setting.templateFieldCategory.Integration, integration)
+  $: templateProvider && object && templateProvider.set(contact.class.Contact, object)
+  $: templateProvider && integration && templateProvider.set(setting.class.Integration, integration)
 
   const query = createQuery()
   $: _id &&

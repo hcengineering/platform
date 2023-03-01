@@ -21,8 +21,6 @@ import { AnyComponent } from '@hcengineering/ui'
 export default mergeIds(leadId, lead, {
   string: {
     FunnelName: '' as IntlString,
-    MakePrivate: '' as IntlString,
-    MakePrivateDescription: '' as IntlString,
     CreateFunnel: '' as IntlString,
     LeadName: '' as IntlString,
     More: '' as IntlString,

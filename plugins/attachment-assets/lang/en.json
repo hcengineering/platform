@@ -14,6 +14,7 @@
     "Size": "Size",
     "Photo": "Photo",
     "Date": "Date",
+    "LastModified": "Last Modified",
     "Name": "Name",
     "FileBrowser": "File browser",
     "FileBrowserFileCounter": "{results, plural, =1 {# result} other {# results}}",

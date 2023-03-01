@@ -532,6 +532,26 @@ async function doPerformSync (ops: SyncOptions & SyncOptionsExtra): Promise<Bitr
 
           added++
           const total = result.total
+
+          if (res.syncRequests.length > 0) {
+            for (const r of res.syncRequests) {
+              const m = ops.allMappings.find((it) => it.type === r.type)
+              if (m !== undefined) {
+                const [d] = await doPerformSync({
+                  ...ops,
+                  mapping: m,
+                  extraFilter: { ID: r.bitrixId },
+                  monitor: (total) => {
+                    console.log('total', total)
+                  }
+                })
+                if (d !== undefined) {
+                  r.update(d._id)
+                }
+              }
+            }
+          }
+
           await syncDocument(ops.client, existingDoc, res, ops.loginInfo, ops.frontUrl, () => {
             ops.monitor?.(total)
           })
@@ -660,7 +680,7 @@ async function downloadComments (
       _id: generateId(),
       _class: chunter.class.Comment,
       message: processComment(it.COMMENT as string),
-      bitrixId: it.ID,
+      bitrixId: `${it.ID as string}`,
       type: it.ENTITY_TYPE,
       attachedTo: res.document._id,
       attachedToClass: res.document._class,
@@ -738,7 +758,7 @@ async function downloadComments (
       _id: generateId(),
       _class: chunter.class.Comment,
       message,
-      bitrixId: comm.ID,
+      bitrixId: `${comm.ID}`,
       type: 'email',
       attachedTo: res.document._id,
       attachedToClass: res.document._class,
@@ -770,12 +790,16 @@ async function synchronizeUsers (
 ): Promise<void> {
   let totalUsers = 1
   let next = 0
+
+  const employees = new Map((await ops.client.findAll(contact.class.Employee, {})).map((it) => [it._id, it]))
+
   while (userList.size < totalUsers) {
     const users = await ops.bitrixClient.call('user.search', { start: next })
     next = users.next
     totalUsers = users.total
     for (const u of users.result) {
-      let accountId = allEmployee.find((it) => it.email === u.EMAIL)?._id
+      const account = allEmployee.find((it) => it.email === u.EMAIL)
+      let accountId = account?._id
       if (accountId === undefined) {
         const employeeId = await ops.client.createDoc(contact.class.Employee, contact.space.Contacts, {
           name: combineName(u.NAME, u.LAST_NAME),
@@ -790,6 +814,26 @@ async function synchronizeUsers (
           employee: employeeId,
           role: AccountRole.User
         })
+        await ops.client.createMixin<Doc, BitrixSyncDoc>(
+          employeeId,
+          contact.class.Employee,
+          contact.space.Contacts,
+          bitrix.mixin.BitrixSyncDoc,
+          {
+            type: 'employee',
+            bitrixId: `${u.ID as string}`,
+            syncTime: Date.now()
+          }
+        )
+      } else if (account != null) {
+        const emp = employees.get(account.employee)
+        if (emp !== undefined && !ops.client.getHierarchy().hasMixin(emp, bitrix.mixin.BitrixSyncDoc)) {
+          await ops.client.createMixin<Doc, BitrixSyncDoc>(emp._id, emp._class, emp.space, bitrix.mixin.BitrixSyncDoc, {
+            type: 'employee',
+            bitrixId: `${u.ID as string}`,
+            syncTime: Date.now()
+          })
+        }
       }
       userList.set(u.ID, accountId)
     }

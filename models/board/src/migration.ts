@@ -29,7 +29,7 @@ import {
   TxUpdateDoc
 } from '@hcengineering/core'
 import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
-import core from '@hcengineering/model-core'
+import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { DOMAIN_TAGS } from '@hcengineering/model-tags'
 import { createKanbanTemplate, createSequence, DOMAIN_TASK } from '@hcengineering/model-task'
 import tags, { TagElement, TagReference } from '@hcengineering/tags'
@@ -192,9 +192,42 @@ async function migrateLabels (client: MigrationClient): Promise<void> {
   }
 }
 
+async function fillCreatedBy (client: MigrationClient): Promise<void> {
+  const objects = await client.find<Board>(DOMAIN_SPACE, {
+    _class: board.class.Board,
+    createdBy: { $exists: false }
+  })
+  const txes = await client.find<TxCreateDoc<Board>>(DOMAIN_TX, {
+    objectClass: board.class.Board,
+    _class: core.class.TxCreateDoc
+  })
+  const txMap = new Map(txes.map((p) => [p.objectId, p]))
+
+  for (const object of objects) {
+    const createTx = txMap.get(object._id)
+    if (createTx !== undefined && createTx.attributes.createdBy === undefined) {
+      await client.update(
+        DOMAIN_TX,
+        { _id: createTx._id },
+        {
+          'attributes.createdBy': createTx.modifiedBy
+        }
+      )
+    }
+    await client.update(
+      DOMAIN_SPACE,
+      { _id: object._id },
+      {
+        createdBy: createTx?.modifiedBy ?? object.modifiedBy
+      }
+    )
+  }
+}
+
 export const boardOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await Promise.all([migrateLabels(client)])
+    await fillCreatedBy(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const ops = new TxOperations(client, core.account.System)

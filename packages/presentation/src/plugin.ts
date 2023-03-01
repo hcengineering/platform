@@ -64,7 +64,10 @@ export default plugin(presentationId, {
     CategoryProjectMembers: '' as IntlString,
     CategoryOther: '' as IntlString,
     InltPropsValue: '' as IntlString,
-    DocumentPreview: '' as IntlString
+    DocumentPreview: '' as IntlString,
+    MakePrivate: '' as IntlString,
+    MakePrivateDescription: '' as IntlString,
+    AddMembersHeader: '' as IntlString
   },
   metadata: {
     RequiredVersion: '' as Metadata<string>,

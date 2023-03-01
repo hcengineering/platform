@@ -23,6 +23,7 @@
   export let label: IntlString
   export let description: IntlString | undefined = undefined
   export let on: boolean = false
+  export let disabled: boolean = false
 
   const dispatch = createEventDispatcher()
 </script>
@@ -36,6 +37,7 @@
   </div>
   <Toggle
     bind:on
+    {disabled}
     on:change={() => {
       dispatch('change', on)
     }}

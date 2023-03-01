@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import core, { Ref } from '@hcengineering/core'
-  import { getClient, SpaceCreateCard } from '@hcengineering/presentation'
+  import presentation, { getClient, SpaceCreateCard } from '@hcengineering/presentation'
   import { EditBox, Grid, IconFolder, ToggleWithLabel } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
@@ -69,7 +69,7 @@
       placeholder={plugin.string.ProjectNamePlaceholder}
       focus
     />
-    <ToggleWithLabel label={plugin.string.MakePrivate} description={plugin.string.MakePrivateDescription} />
+    <ToggleWithLabel label={presentation.string.MakePrivate} description={presentation.string.MakePrivateDescription} />
     <KanbanTemplateSelector folders={[task.space.ProjectTemplates]} bind:template={templateId} />
   </Grid>
 </SpaceCreateCard>

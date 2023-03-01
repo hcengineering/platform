@@ -52,7 +52,7 @@
     template = result[0]
     if (!changed || descriptionBox?.isEmptyContent()) {
       changed = false
-      fullDescription = template.description ?? fullDescription
+      fullDescription = template?.description ?? fullDescription
     }
   })
 
@@ -135,6 +135,7 @@
         private: false,
         archived: false,
         company,
+        createdBy: getCurrentAccount()._id,
         members: [getCurrentAccount()._id]
       },
       objectId

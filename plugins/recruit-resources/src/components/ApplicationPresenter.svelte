@@ -26,7 +26,7 @@
   export let disableClick = false
 
   const client = getClient()
-  const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
+  const shortLabel = value && client.getHierarchy().getClass(value._class).shortLabel
 </script>
 
 {#if value && shortLabel}

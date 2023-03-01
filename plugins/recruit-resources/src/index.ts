@@ -63,6 +63,7 @@ import { objectIdProvider, objectLinkProvider, getApplicationTitle } from './uti
 import VacancyList from './components/VacancyList.svelte'
 import VacancyTemplateEditor from './components/VacancyTemplateEditor.svelte'
 import MatchVacancy from './components/MatchVacancy.svelte'
+import Organizations from './components/Organizations.svelte'
 
 import { MoveApplicant } from './actionImpl'
 
@@ -287,6 +288,7 @@ export default async (): Promise<Resources> => ({
     VacancyPresenter,
     SkillsView,
     Vacancies,
+    Organizations,
     VacancyItemPresenter,
     VacancyCountPresenter,
     VacancyModifiedPresenter,

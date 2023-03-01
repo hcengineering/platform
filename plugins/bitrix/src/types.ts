@@ -172,7 +172,8 @@ export enum MappingOperation {
   CopyValue,
   CreateTag, // Create tag
   CreateChannel, // Create channel
-  DownloadAttachment
+  DownloadAttachment,
+  FindReference
 }
 /**
  * @public
@@ -238,11 +239,31 @@ export interface DownloadAttachmentOperation {
 /**
  * @public
  */
+export interface FindReferenceOperation {
+  kind: MappingOperation.FindReference
+
+  field: string
+
+  // If missing will trigger sync for this kind with extraFilter ID={referenceID}
+  // If defined will be used to synchronize
+  referenceType?: BitrixEntityType | null
+
+  referenceClass: Ref<Class<Doc>>
+}
+
+/**
+ * @public
+ */
 export interface BitrixFieldMapping extends AttachedDoc {
   ofClass: Ref<Class<Doc>> // Specify mixin if applicable
   attributeName: string
 
-  operation: CopyValueOperation | CreateTagOperation | CreateChannelOperation | DownloadAttachmentOperation
+  operation:
+  | CopyValueOperation
+  | CreateTagOperation
+  | CreateChannelOperation
+  | DownloadAttachmentOperation
+  | FindReferenceOperation
 }
 
 /**

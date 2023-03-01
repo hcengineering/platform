@@ -1,6 +1,6 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2022, 2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,18 +15,30 @@
 -->
 <script lang="ts">
   import { createQuery } from '@hcengineering/presentation'
-  import { MessageTemplate } from '@hcengineering/templates'
+  import { MessageTemplate, TemplateGroup } from '@hcengineering/templates'
   import { TextEditorHandler } from '@hcengineering/text-editor'
-  import { closePopup, EditWithIcon, IconSearch, Label, deviceOptionsStore } from '@hcengineering/ui'
+  import { closePopup, deviceOptionsStore, EditWithIcon, IconSearch } from '@hcengineering/ui'
+  import { groupBy } from '@hcengineering/view-resources'
   import templates from '../plugin'
   import { getTemplateDataProvider } from '../utils'
 
   export let editor: TextEditorHandler
   let items: MessageTemplate[] = []
+  let groups: TemplateGroup[] = []
 
   let query: string = ''
 
   const liveQuery = createQuery()
+  const catQuery = createQuery()
+
+  $: catQuery.query(templates.class.TemplateGroup, {}, (res) => {
+    res.sort((a, b) => {
+      return a.name.localeCompare(b.name)
+    })
+    groups = res
+  })
+
+  $: groupedDocs = groupBy(items, 'space')
 
   $: liveQuery.query(templates.class.MessageTemplate, query.trim().length === 0 ? {} : { $search: query }, (res) => {
     items = res
@@ -65,6 +77,15 @@
     }
     return false
   }
+
+  function getInitIndex (groups: TemplateGroup[], i: number): number {
+    let res = 0
+    for (let index = 0; index < i; index++) {
+      const cat = groups[index]
+      res += groupedDocs[cat._id]?.length ?? 0
+    }
+    return res
+  }
 </script>
 
 <svelte:window on:keydown={onKeyDown} />
@@ -77,24 +98,30 @@
       focus={!$deviceOptionsStore.isMobile}
     />
   </div>
-  <Label label={templates.string.Suggested} />
   <div class="scroll mt-2">
-    {#each items as item, i}
-      <div
-        class="item"
-        class:selected={i === selected}
-        on:click={() => {
-          dispatchItem(item)
-        }}
-        on:focus={() => {
-          selected = i
-        }}
-        on:mouseover={() => {
-          selected = i
-        }}
-      >
-        {item.title}
-      </div>
+    {#each groups as group, gi}
+      {@const templates = groupedDocs[group._id]}
+      {@const initIndex = getInitIndex(groups, gi)}
+      {#if templates?.length}
+        <b>{group.name}</b>
+        {#each templates as item, i}
+          <div
+            class="item"
+            class:selected={initIndex + i === selected}
+            on:click={() => {
+              dispatchItem(item)
+            }}
+            on:focus={() => {
+              selected = initIndex + i
+            }}
+            on:mouseover={() => {
+              selected = initIndex + i
+            }}
+          >
+            {item.title}
+          </div>
+        {/each}
+      {/if}
     {/each}
   </div>
 </div>

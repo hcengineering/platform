@@ -7,11 +7,9 @@
     "VacancyName": "Vacancy Name *",
     "VacancyDescription": "Vacancy Description",
     "CreateVacancy": "Create Vacancy",
-    "MakePrivate": "Make Private",
     "Vacancy": "Vacancy",
     "VacancyCreateLabel": "Vacancy",
     "VacancyPlaceholder": "Software Engineer",
-    "MakePrivateDescription": "Only members can see it",
     "CreateAnApplication": "New Application",
     "NoApplicationsForTalent": "There are no applications for this talent.",
     "CreateApplication": "New Application",
@@ -106,7 +104,8 @@
     "Match": "Match",
     "PerformMatch": "Match",
     "MoveApplication": "Move to another vacancy",
-    "SearchVacancy": "Search vacancy..."
+    "SearchVacancy": "Search vacancy...",
+    "Organizations": "Companies"
   },
   "status": {
     "TalentRequired": "Please select talent",

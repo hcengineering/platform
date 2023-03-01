@@ -41,6 +41,9 @@ export class TSpace extends TDoc implements Space {
 
   @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Members)
     members!: Arr<Ref<Account>>
+
+  @Prop(TypeRef(core.class.Account), core.string.CreatedBy)
+    createdBy?: Ref<Account>
 }
 
 @Model(core.class.Account, core.class.Doc, DOMAIN_MODEL)

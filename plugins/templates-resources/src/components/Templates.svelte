@@ -1,15 +1,28 @@
 <script lang="ts">
-  import { Data, Ref } from '@hcengineering/core'
-  import { getClient, LiveQuery, MessageViewer } from '@hcengineering/presentation'
-  import { MessageTemplate } from '@hcengineering/templates'
+  import core, { Data, Ref } from '@hcengineering/core'
+  import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
+  import { createQuery, getClient, MessageViewer, SpaceSelector } from '@hcengineering/presentation'
+  import { MessageTemplate, TemplateGroup } from '@hcengineering/templates'
   import { StyledTextEditor } from '@hcengineering/text-editor'
-  import { Button, CircleButton, EditBox, eventToHTMLElement, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
+  import {
+    Action,
+    Button,
+    EditBox,
+    eventToHTMLElement,
+    Icon,
+    IconAdd,
+    IconEdit,
+    Label,
+    showPopup
+  } from '@hcengineering/ui'
+  import { getActions as getContributedActions, TreeItem, TreeNode } from '@hcengineering/view-resources'
   import templatesPlugin from '../plugin'
+  import CreateTemplateGroup from './CreateTemplateGroup.svelte'
   import FieldPopup from './FieldPopup.svelte'
-  import TemplateElement from './TemplateElement.svelte'
 
   const client = getClient()
-  const query = new LiveQuery()
+  const query = createQuery()
+  const spaceQ = createQuery()
   let templates: MessageTemplate[] = []
   let selected: Ref<MessageTemplate> | undefined
   let newTemplate: Data<MessageTemplate> | undefined = undefined
@@ -22,6 +35,13 @@
       newTemplate = undefined
     }
     loading = false
+  })
+
+  let spaces: TemplateGroup[] = []
+
+  spaceQ.query(templatesPlugin.class.TemplateGroup, {}, (res) => {
+    spaces = res
+    space = res[0]?._id
   })
 
   const Mode = {
@@ -43,12 +63,8 @@
       return
     }
     if (mode === Mode.Create) {
-      if (newTemplate.title.trim().length > 0) {
-        const ref = await client.createDoc(
-          templatesPlugin.class.MessageTemplate,
-          templatesPlugin.space.Templates,
-          newTemplate
-        )
+      if (newTemplate.title.trim().length > 0 && space !== undefined) {
+        const ref = await client.createDoc(templatesPlugin.class.MessageTemplate, space, newTemplate)
         selected = ref
       }
     } else if (selected !== undefined) {
@@ -78,6 +94,52 @@
       }
     })
   }
+
+  function getTemplates (templates: MessageTemplate[], space: Ref<TemplateGroup>): MessageTemplate[] {
+    return templates.filter((p) => p.space === space)
+  }
+
+  async function getActions (t: MessageTemplate): Promise<Action[]> {
+    const result: Action[] = []
+    const extraActions = await getContributedActions(client, t)
+    for (const act of extraActions) {
+      result.push({
+        icon: act.icon ?? IconEdit,
+        label: act.label,
+        action: async (ctx: any, evt: Event) => {
+          const impl = await getResource(act.action)
+          await impl(t, evt, act.actionProps)
+        }
+      })
+    }
+    return result
+  }
+
+  const addSpace: Action = {
+    label: templatesPlugin.string.CreateTemplateGroup,
+    icon: IconAdd,
+    action: async (): Promise<void> => {
+      showPopup(CreateTemplateGroup, {}, 'top')
+    }
+  }
+
+  async function getSpaceActions (space: TemplateGroup): Promise<Action[]> {
+    const result: Action[] = [addSpace]
+    const extraActions = await getContributedActions(client, space, core.class.Space)
+    for (const act of extraActions) {
+      result.push({
+        icon: act.icon ?? IconEdit,
+        label: act.label,
+        action: async (ctx: any, evt: Event) => {
+          const impl = await getResource(act.action)
+          await impl(space, evt, act.actionProps)
+        }
+      })
+    }
+    return result
+  }
+
+  let space: Ref<TemplateGroup> | undefined = undefined
 </script>
 
 <div class="antiComponent">
@@ -89,39 +151,66 @@
   <div class="ac-body columns">
     <div class="ac-column">
       <div id="create-template" class="flex-between trans-title mb-3">
-        <Label label={templatesPlugin.string.TemplatesHeader} />
-        {#if !loading}
-          <CircleButton icon={IconAdd} on:click={addTemplate} />
-        {/if}
+        <Button
+          icon={templatesPlugin.icon.Template}
+          label={templatesPlugin.string.CreateTemplate}
+          justify={'left'}
+          width={'100%'}
+          on:click={addTemplate}
+        />
       </div>
 
       <div class="flex-col overflow-y-auto">
-        {#each templates as t}
-          <TemplateElement
-            label={t.title}
-            active={newTemplate === undefined && t._id === selected}
-            on:click={() => {
-              selected = t._id
-              newTemplate = { title: t.title, message: t.message }
-              mode = Mode.View
-            }}
-            object={t}
-          />
+        {#each spaces as space (space._id)}
+          <TreeNode
+            label={getEmbeddedLabel(space.name)}
+            actions={async () => getSpaceActions(space)}
+            parent
+            indent={'ml-2'}
+          >
+            {#each getTemplates(templates, space._id) as t (t._id)}
+              <TreeItem
+                indent={'ml-4'}
+                _id={space._id}
+                title={t.title}
+                actions={async () => getActions(t)}
+                on:click={() => {
+                  selected = t._id
+                  newTemplate = { title: t.title, message: t.message }
+                  mode = Mode.View
+                }}
+                selected={selected === t._id}
+              />
+            {/each}
+          </TreeNode>
         {/each}
       </div>
     </div>
 
     <div class="ac-column max background-bg-accent template-container">
       {#if newTemplate}
-        <span class="trans-title mb-3">
+        <div class="flex-between mr-4">
+          <span class="trans-title mb-3">
+            {#if mode === Mode.Create}
+              <Label label={templatesPlugin.string.CreateTemplate} />
+            {:else if mode === Mode.Edit}
+              <Label label={templatesPlugin.string.EditTemplate} />
+            {:else}
+              <Label label={templatesPlugin.string.ViewTemplate} />
+            {/if}
+          </span>
           {#if mode === Mode.Create}
-            <Label label={templatesPlugin.string.CreateTemplate} />
-          {:else if mode === Mode.Edit}
-            <Label label={templatesPlugin.string.EditTemplate} />
-          {:else}
-            <Label label={templatesPlugin.string.ViewTemplate} />
+            <SpaceSelector
+              _class={templatesPlugin.class.TemplateGroup}
+              label={templatesPlugin.string.TemplateGroup}
+              bind:space
+              create={{
+                component: templatesPlugin.component.CreateTemplateGroup,
+                label: templatesPlugin.string.CreateTemplateGroup
+              }}
+            />
           {/if}
-        </span>
+        </div>
         <div class="text-lg caption-color">
           {#if mode !== Mode.View}
             <EditBox bind:value={newTemplate.title} placeholder={templatesPlugin.string.TemplatePlaceholder} />

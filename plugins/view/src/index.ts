@@ -631,6 +631,7 @@ const view = plugin(viewId, {
     FilteredViews: '' as IntlString,
     NewFilteredView: '' as IntlString,
     FilteredViewName: '' as IntlString,
+    Move: '' as IntlString,
     List: '' as IntlString,
     Timeline: '' as IntlString
   },

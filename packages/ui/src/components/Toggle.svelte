@@ -14,10 +14,11 @@
 -->
 <script lang="ts">
   export let on: boolean = false
+  export let disabled: boolean = false
 </script>
 
 <label class="toggle">
-  <input class="chBox" type="checkbox" bind:checked={on} on:change />
+  <input class="chBox" type="checkbox" {disabled} bind:checked={on} on:change />
   <span class="toggle-switch" />
 </label>
 
