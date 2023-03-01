@@ -169,19 +169,21 @@
     {@const { component, props } = currentStepModel}
     {@const isMobile = $deviceInfo.isMobile}
 
-    <div
-      class="clear-mins"
-      class:popupPanel-body__mobile-content={isMobile}
-      class:popupPanel-body__main-content={!isMobile}
-      class:py-8={!isMobile}
-      class:max={!isMobile && useMaxWidth}
-    >
-      {#if typeof component === 'string'}
-        <Component bind:innerRef={step} is={component} {props} on:change={handleComponentChange} />
-      {:else}
-        <svelte:component this={component} bind:this={step} {...props} on:change={handleComponentChange} />
-      {/if}
-    </div>
+    <Scroller>
+      <div
+        class="clear-mins flex-no-shrink"
+        class:popupPanel-body__mobile-content={isMobile}
+        class:popupPanel-body__main-content={!isMobile}
+        class:py-8={!isMobile}
+        class:max={!isMobile && useMaxWidth}
+      >
+        {#if typeof component === 'string'}
+          <Component bind:innerRef={step} is={component} {props} on:change={handleComponentChange} />
+        {:else}
+          <svelte:component this={component} bind:this={step} {...props} on:change={handleComponentChange} />
+        {/if}
+      </div>
+    </Scroller>
   {/if}
 </Panel>
 
