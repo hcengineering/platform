@@ -13,6 +13,7 @@ import core, {
   Space,
   WithLookup
 } from '@hcengineering/core'
+import { Message } from '@hcengineering/gmail'
 import tags, { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
 import bitrix, {
   BitrixEntityMapping,
@@ -68,6 +69,7 @@ export interface ConvertResult {
   mixins: Record<Ref<Mixin<Doc>>, Data<Doc>> // Mixins of document we will sync
   extraDocs: Doc[] // Extra documents we will sync, etc.
   extraSync: (AttachedDoc & BitrixSyncDoc)[] // Extra documents we will sync, etc.
+  gmailDocuments: (Message & BitrixSyncDoc)[]
   blobs: [Attachment & BitrixSyncDoc, () => Promise<File | undefined>, (file: File, attach: Attachment) => void][]
   syncRequests: BitrixSyncRequest[]
 }
@@ -134,8 +136,10 @@ export async function convert (
         }
         return lval
       } else if (bfield.type === 'crm_multifield') {
-        if (Array.isArray(lval)) {
-          return lval.map((it) => it.VALUE)
+        if (lval != null && Array.isArray(lval)) {
+          return lval.map((it) => ({ value: it.VALUE, type: it.VALUE_TYPE.toLowerCase() }))
+        } else if (lval != null) {
+          return [{ value: lval.VALUE, type: lval.VALUE_TYPE.toLowerCase() }]
         }
       } else if (bfield.type === 'file') {
         if (Array.isArray(lval) && bfield.isMultiple) {
@@ -236,13 +240,37 @@ export async function convert (
       if (lval != null && lval !== '') {
         const vals = Array.isArray(lval) ? lval : [lval]
         for (const llVal of vals) {
-          const svalue = typeof llVal === 'string' ? llVal : `${JSON.stringify(llVal)}`
-          if (f.include != null || f.exclude != null) {
-            if (f.include !== undefined && svalue.match(f.include) == null) {
+          let svalue: string = typeof llVal === 'string' ? llVal : llVal.value
+
+          if (typeof llVal === 'string') {
+            if (f.include != null || f.exclude != null) {
+              if (f.include !== undefined && svalue.match(f.include) == null) {
+                continue
+              }
+              if (f.exclude !== undefined && svalue.match(f.exclude) != null) {
+                continue
+              }
+            }
+          } else {
+            // TYPE matching to category.
+            if (f.provider === contact.channelProvider.Telegram && llVal.type !== 'telegram') {
               continue
             }
-            if (f.exclude !== undefined && svalue.match(f.exclude) != null) {
+            if (f.provider === contact.channelProvider.Whatsapp && llVal.type !== 'whatsapp') {
               continue
+            }
+            if (f.provider === contact.channelProvider.Twitter && llVal.type !== 'twitter') {
+              continue
+            }
+            if (f.provider === contact.channelProvider.LinkedIn && llVal.type !== 'linkedin') {
+              continue
+            }
+
+            // Fixes
+            if (f.provider === contact.channelProvider.Telegram) {
+              if (!svalue.startsWith('@') && !/^\d+/.test(svalue)) {
+                svalue = '@' + svalue
+              }
             }
           }
           const c: Channel & BitrixSyncDoc = {
@@ -452,7 +480,8 @@ export async function convert (
     extraDocs: newExtraDocs,
     blobs,
     rawData: rawDocument,
-    syncRequests
+    syncRequests,
+    gmailDocuments: []
   }
 }
 

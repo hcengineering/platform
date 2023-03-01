@@ -1,7 +1,8 @@
 import attachment, { Attachment } from '@hcengineering/attachment'
 import chunter, { Comment } from '@hcengineering/chunter'
-import contact, { combineName, Contact, EmployeeAccount } from '@hcengineering/contact'
+import contact, { Channel, combineName, Contact, EmployeeAccount } from '@hcengineering/contact'
 import core, {
+  Account,
   AccountRole,
   ApplyOperations,
   AttachedDoc,
@@ -18,10 +19,12 @@ import core, {
   MixinUpdate,
   Ref,
   Space,
+  Timestamp,
   TxOperations,
   TxProcessor,
   WithLookup
 } from '@hcengineering/core'
+import gmail, { Message } from '@hcengineering/gmail'
 import tags, { TagElement } from '@hcengineering/tags'
 import { deepEqual } from 'fast-equals'
 import { BitrixClient } from './client'
@@ -38,7 +41,7 @@ import {
 } from './types'
 import { convert, ConvertResult } from './utils'
 
-async function updateDoc (client: ApplyOperations, doc: Doc, raw: Doc | Data<Doc>): Promise<Doc> {
+async function updateDoc (client: ApplyOperations, doc: Doc, raw: Doc | Data<Doc>, date: Timestamp): Promise<Doc> {
   // We need to update fields if they are different.
   const documentUpdate: DocumentUpdate<Doc> = {}
   for (const [k, v] of Object.entries(raw)) {
@@ -51,7 +54,7 @@ async function updateDoc (client: ApplyOperations, doc: Doc, raw: Doc | Data<Doc
     }
   }
   if (Object.keys(documentUpdate).length > 0) {
-    await client.update(doc, documentUpdate)
+    await client.update(doc, documentUpdate, false, date, doc.modifiedBy)
     TxProcessor.applyUpdate(doc, documentUpdate)
   }
   return doc
@@ -61,12 +64,14 @@ async function updateMixin (
   client: ApplyOperations,
   doc: Doc,
   raw: Doc | Data<Doc>,
-  mixin: Ref<Class<Mixin<Doc>>>
+  mixin: Ref<Class<Mixin<Doc>>>,
+  modifiedBy: Ref<Account>,
+  modifiedOn: Timestamp
 ): Promise<Doc> {
   // We need to update fields if they are different.
 
   if (!client.getHierarchy().hasMixin(doc, mixin)) {
-    await client.createMixin(doc._id, doc._class, doc.space, mixin, raw as MixinData<Doc, Doc>)
+    await client.createMixin(doc._id, doc._class, doc.space, mixin, raw as MixinData<Doc, Doc>, modifiedOn, modifiedBy)
     return doc
   }
 
@@ -81,7 +86,7 @@ async function updateMixin (
     }
   }
   if (Object.keys(documentUpdate).length > 0) {
-    await client.updateMixin(doc._id, doc._class, doc.space, mixin, documentUpdate)
+    await client.updateMixin(doc._id, doc._class, doc.space, mixin, documentUpdate, modifiedOn, modifiedBy)
   }
   return doc
 }
@@ -129,37 +134,26 @@ export async function syncDocument (
       )
     }
 
-    // Find all attachemnt documents to existing.
+    // Find all attachment documents to existing.
     const byClass = new Map<Ref<Class<Doc>>, (AttachedDoc & BitrixSyncDoc)[]>()
 
+    const idMapping = new Map<Ref<Doc>, Ref<Doc>>()
     for (const d of resultDoc.extraSync) {
       byClass.set(d._class, [...(byClass.get(d._class) ?? []), d])
     }
 
     for (const [cl, vals] of byClass.entries()) {
-      if (applyOp.getHierarchy().isDerived(cl, core.class.AttachedDoc)) {
-        const existingByClass = await client.findAll(cl, {
-          attachedTo: resultDoc.document._id
-        })
+      await syncClass(applyOp, cl, vals, idMapping, resultDoc.document._id)
+    }
 
-        for (const valValue of vals) {
-          const existingIdx = existingByClass.findIndex(
-            (it) => hierarchy.as<Doc, BitrixSyncDoc>(it, bitrix.mixin.BitrixSyncDoc).bitrixId === valValue.bitrixId
-          )
-          // Update document id, for existing document.
-          valValue.attachedTo = resultDoc.document._id
-          let existing: Doc | undefined
-          if (existingIdx >= 0) {
-            existing = existingByClass.splice(existingIdx, 1).shift()
-          }
-          await updateAttachedDoc(existing, applyOp, valValue)
-        }
-
-        // Remove previous merged documents, probable they are deleted in bitrix or wrongly migrated.
-        for (const doc of existingByClass) {
-          await client.remove(doc)
-        }
-      }
+    // Sync gmail documents
+    const emailAccount = resultDoc.extraSync.find(
+      (it) =>
+        it._class === contact.class.Channel && (it as unknown as Channel).provider === contact.channelProvider.Email
+    )
+    if (resultDoc.gmailDocuments.length > 0 && emailAccount !== undefined) {
+      const emailReadId = idMapping.get(emailAccount._id) ?? emailAccount._id
+      await syncClass(applyOp, gmail.class.Message, resultDoc.gmailDocuments, idMapping, emailReadId)
     }
 
     const existingBlobs = await client.findAll(attachment.class.Attachment, {
@@ -229,6 +223,46 @@ export async function syncDocument (
   }
   monitor?.(resultDoc)
 
+  async function syncClass (
+    applyOp: ApplyOperations,
+    cl: Ref<Class<Doc>>,
+    vals: (AttachedDoc & BitrixSyncDoc)[],
+    idMapping: Map<Ref<Doc>, Ref<Doc>>,
+    attachedTo: Ref<Doc>
+  ): Promise<void> {
+    if (applyOp.getHierarchy().isDerived(cl, core.class.AttachedDoc)) {
+      const existingByClass = await client.findAll(cl, {
+        attachedTo
+      })
+
+      for (const valValue of vals) {
+        const id = idMapping.get(valValue.attachedTo)
+        if (id !== undefined) {
+          valValue.attachedTo = id
+        } else {
+          // Update document id, for existing document.
+          valValue.attachedTo = resultDoc.document._id
+        }
+        const existingIdx = existingByClass.findIndex(
+          (it) => hierarchy.as<Doc, BitrixSyncDoc>(it, bitrix.mixin.BitrixSyncDoc).bitrixId === valValue.bitrixId
+        )
+        let existing: Doc | undefined
+        if (existingIdx >= 0) {
+          existing = existingByClass.splice(existingIdx, 1).shift()
+          if (existing !== undefined) {
+            idMapping.set(valValue._id, existing._id)
+          }
+        }
+        await updateAttachedDoc(existing, applyOp, valValue)
+      }
+
+      // Remove previous merged documents, probable they are deleted in bitrix or wrongly migrated.
+      for (const doc of existingByClass) {
+        await applyOp.remove(doc)
+      }
+    }
+  }
+
   async function updateAttachedDoc (
     existing: WithLookup<Doc> | undefined,
     applyOp: ApplyOperations,
@@ -236,7 +270,7 @@ export async function syncDocument (
   ): Promise<void> {
     if (existing !== undefined) {
       // We need to update fields if they are different.
-      existing = await updateDoc(applyOp, existing, valValue)
+      existing = await updateDoc(applyOp, existing, valValue, Date.now())
       const existingM = hierarchy.as(existing, bitrix.mixin.BitrixSyncDoc)
       await updateMixin(
         applyOp,
@@ -246,7 +280,9 @@ export async function syncDocument (
           bitrixId: valValue.bitrixId,
           rawData: valValue.rawData
         },
-        bitrix.mixin.BitrixSyncDoc
+        bitrix.mixin.BitrixSyncDoc,
+        valValue.modifiedBy,
+        valValue.modifiedOn
       )
     } else {
       const { bitrixId, rawData, ...data } = valValue
@@ -283,7 +319,7 @@ export async function syncDocument (
       // We need update doucment id.
       resultDoc.document._id = existing._id as Ref<BitrixSyncDoc>
       // We need to update fields if they are different.
-      return (await updateDoc(applyOp, existing, resultDoc.document)) as BitrixSyncDoc
+      return (await updateDoc(applyOp, existing, resultDoc.document, resultDoc.document.modifiedOn)) as BitrixSyncDoc
       // Go over extra documents.
     } else {
       const { bitrixId, rawData, ...data } = resultDoc.document
@@ -323,7 +359,7 @@ async function updateMixins (
       )
     } else {
       const existingM = hierarchy.as(existing, mRef)
-      await updateMixin(applyOp, existingM, mv, mRef)
+      await updateMixin(applyOp, existingM, mv, mRef, resultDoc.modifiedBy, resultDoc.modifiedOn)
     }
   }
 }
@@ -676,12 +712,13 @@ async function downloadComments (
     order: { ID: ops.direction }
   })
   for (const it of commentsData.result) {
-    const c: Comment & { bitrixId: string, type: string } = {
+    const c: Comment & BitrixSyncDoc = {
       _id: generateId(),
       _class: chunter.class.Comment,
       message: processComment(it.COMMENT as string),
       bitrixId: `${it.ID as string}`,
       type: it.ENTITY_TYPE,
+      rawData: it,
       attachedTo: res.document._id,
       attachedToClass: res.document._class,
       collection: 'comments',
@@ -729,46 +766,51 @@ async function downloadComments (
     }
     res.extraSync.push(c)
   }
-  const communications = await ops.bitrixClient.call('crm.activity.list', {
-    order: { ID: 'DESC' },
-    filter: {
-      OWNER_ID: res.document.bitrixId,
-      OWNER_TYPE: ownerType.ID
-    },
-    select: ['*', 'COMMUNICATIONS']
-  })
-  const cr = Array.isArray(communications.result)
-    ? (communications.result as BitrixActivity[])
-    : [communications.result as BitrixActivity]
-  for (const comm of cr) {
-    const cummunications = comm.COMMUNICATIONS?.map((it) => it.ENTITY_SETTINGS?.LEAD_TITLE ?? '')
-    let message = `<p>
-        <span style="color: var(--primary-color-skyblue);">e-mail: ${cummunications?.join(',') ?? ''}</span><br/>\n
-        <span style="color: var(--primary-color-skyblue);">Subject: ${comm.SUBJECT}</span><br/>\n`
 
-    for (const [k, v] of Object.entries(comm.SETTINGS?.EMAIL_META ?? {}).concat(
-      Object.entries(comm.SETTINGS?.MESSAGE_HEADERS ?? {})
-    )) {
-      if (v.trim().length > 0) {
-        message += `<span style="color: var(--primary-color-skyblue);">${k}: ${v}</span><br/>\n`
+  const emailAccount = res.extraSync.find(
+    (it) => it._class === contact.class.Channel && (it as unknown as Channel).provider === contact.channelProvider.Email
+  )
+  if (emailAccount !== undefined) {
+    const communications = await ops.bitrixClient.call('crm.activity.list', {
+      order: { ID: 'DESC' },
+      filter: {
+        OWNER_ID: res.document.bitrixId,
+        OWNER_TYPE_ID: ownerType.ID
+      },
+      select: ['*', 'COMMUNICATIONS']
+    })
+    const cr = Array.isArray(communications.result)
+      ? (communications.result as BitrixActivity[])
+      : [communications.result as BitrixActivity]
+    for (const comm of cr) {
+      if (comm.PROVIDER_TYPE_ID === 'EMAIL') {
+        const parser = new DOMParser()
+
+        const c: Message & BitrixSyncDoc = {
+          _id: generateId(),
+          _class: gmail.class.Message,
+          content: comm.DESCRIPTION,
+          textContent:
+            parser.parseFromString(comm.DESCRIPTION, 'text/html').textContent?.split('\n').slice(0, 3).join('\n') ?? '',
+          incoming: comm.DIRECTION === '1',
+          sendOn: new Date(comm.CREATED ?? new Date().toString()).getTime(),
+          subject: comm.SUBJECT,
+          bitrixId: `${comm.ID}`,
+          rawData: comm,
+          from: comm.SETTINGS?.EMAIL_META?.from ?? '',
+          to: comm.SETTINGS?.EMAIL_META?.to ?? '',
+          replyTo: comm.SETTINGS?.EMAIL_META?.replyTo ?? comm.SETTINGS?.MESSAGE_HEADERS?.['Reply-To'] ?? '',
+          messageId: comm.SETTINGS?.MESSAGE_HEADERS?.['Message-Id'] ?? '',
+          attachedTo: emailAccount._id as unknown as Ref<Channel>,
+          attachedToClass: emailAccount._class,
+          collection: 'items',
+          space: res.document.space,
+          modifiedBy: userList.get(comm.AUTHOR_ID) ?? core.account.System,
+          modifiedOn: new Date(comm.CREATED ?? new Date().toString()).getTime()
+        }
+        res.gmailDocuments.push(c)
       }
     }
-    message += '</p>' + comm.DESCRIPTION
-    const c: Comment & { bitrixId: string, type: string } = {
-      _id: generateId(),
-      _class: chunter.class.Comment,
-      message,
-      bitrixId: `${comm.ID}`,
-      type: 'email',
-      attachedTo: res.document._id,
-      attachedToClass: res.document._class,
-      collection: 'comments',
-      space: res.document.space,
-      modifiedBy: userList.get(comm.AUTHOR_ID) ?? core.account.System,
-      modifiedOn: new Date(comm.CREATED ?? new Date().toString()).getTime()
-    }
-
-    res.extraSync.push(c)
   }
 }
 
