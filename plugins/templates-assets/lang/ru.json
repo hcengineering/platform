@@ -13,8 +13,8 @@
     "Title": "Заголовок",
     "Message": "Сообщение",
     "Field": "Поле",
-    "TemplateGroup": "Группа шаблонов",
-    "CreateTemplateGroup": "Создать группу",
+    "TemplateCategory": "Группа шаблонов",
+    "CreateTemplateCategory": "Создать группу",
     "Copy": "Копировать"
   }
 }

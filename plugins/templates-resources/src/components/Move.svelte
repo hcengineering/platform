@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import presentation, { Card, getClient, SpaceSelector } from '@hcengineering/presentation'
-  import { MessageTemplate, TemplateGroup } from '@hcengineering/templates'
+  import { MessageTemplate, TemplateCategory } from '@hcengineering/templates'
   import templates from '../plugin'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
@@ -30,7 +30,7 @@
     })
   }
 
-  let space: Ref<TemplateGroup>
+  let space: Ref<TemplateCategory>
   const dispatch = createEventDispatcher()
 </script>
 
@@ -42,5 +42,5 @@
   on:close={() => dispatch('close')}
   canSave={space !== value.space}
 >
-  <SpaceSelector bind:space _class={templates.class.TemplateGroup} label={view.string.Move} />
+  <SpaceSelector bind:space _class={templates.class.TemplateCategory} label={view.string.Move} />
 </Card>

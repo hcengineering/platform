@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { createQuery } from '@hcengineering/presentation'
-  import { MessageTemplate, TemplateGroup } from '@hcengineering/templates'
+  import { MessageTemplate, TemplateCategory } from '@hcengineering/templates'
   import { TextEditorHandler } from '@hcengineering/text-editor'
   import { closePopup, deviceOptionsStore, EditWithIcon, IconSearch } from '@hcengineering/ui'
   import { groupBy } from '@hcengineering/view-resources'
@@ -24,14 +24,14 @@
 
   export let editor: TextEditorHandler
   let items: MessageTemplate[] = []
-  let groups: TemplateGroup[] = []
+  let groups: TemplateCategory[] = []
 
   let query: string = ''
 
   const liveQuery = createQuery()
   const catQuery = createQuery()
 
-  $: catQuery.query(templates.class.TemplateGroup, {}, (res) => {
+  $: catQuery.query(templates.class.TemplateCategory, {}, (res) => {
     res.sort((a, b) => {
       return a.name.localeCompare(b.name)
     })
@@ -78,7 +78,7 @@
     return false
   }
 
-  function getInitIndex (groups: TemplateGroup[], i: number): number {
+  function getInitIndex (groups: TemplateCategory[], i: number): number {
     let res = 0
     for (let index = 0; index < i; index++) {
       const cat = groups[index]

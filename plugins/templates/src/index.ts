@@ -20,13 +20,13 @@ import { Asset, plugin } from '@hcengineering/platform'
 /**
  * @public
  */
-export interface TemplateGroup extends Space {}
+export interface TemplateCategory extends Space {}
 
 /**
  * @public
  */
 export interface MessageTemplate extends Doc {
-  space: Ref<TemplateGroup>
+  space: Ref<TemplateCategory>
   title: string
   message: string
 }
@@ -78,12 +78,12 @@ export const templatesId = 'templates' as Plugin
 export default plugin(templatesId, {
   class: {
     MessageTemplate: '' as Ref<Class<MessageTemplate>>,
-    TemplateGroup: '' as Ref<Class<TemplateGroup>>,
+    TemplateCategory: '' as Ref<Class<TemplateCategory>>,
     TemplateField: '' as Ref<Class<TemplateField>>,
     TemplateFieldCategory: '' as Ref<Class<TemplateFieldCategory>>
   },
   space: {
-    Templates: '' as Ref<TemplateGroup>
+    Templates: '' as Ref<TemplateCategory>
   },
   icon: {
     Templates: '' as Asset,

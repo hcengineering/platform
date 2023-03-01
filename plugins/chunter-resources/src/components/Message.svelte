@@ -16,26 +16,26 @@
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentList, AttachmentRefInput } from '@hcengineering/attachment-resources'
   import type { ChunterMessage, Message, Reaction } from '@hcengineering/chunter'
-  import { Employee, EmployeeAccount } from '@hcengineering/contact'
+  import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
   import { EmployeePresenter } from '@hcengineering/contact-resources'
-  import { Ref, WithLookup, getCurrentAccount } from '@hcengineering/core'
+  import { getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
-  import { Avatar, copyTextToClipboard, getClient, MessageViewer } from '@hcengineering/presentation'
+  import { Avatar, copyTextToClipboard, createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
+  import { EmojiPopup } from '@hcengineering/text-editor'
   import ui, {
     ActionIcon,
-    IconMoreH,
-    Menu,
-    showPopup,
-    Label,
-    tooltip,
     Button,
     getCurrentLocation,
-    locationToUrl
+    IconMoreH,
+    Label,
+    locationToUrl,
+    Menu,
+    showPopup,
+    tooltip
   } from '@hcengineering/ui'
   import { Action } from '@hcengineering/view'
   import { getActions, LinkPresenter } from '@hcengineering/view-resources'
-  import { EmojiPopup } from '@hcengineering/text-editor'
   import { createEventDispatcher } from 'svelte'
   import { AddMessageToSaved, DeleteMessageFromSaved, UnpinMessage } from '../index'
   import chunter from '../plugin'
@@ -48,7 +48,6 @@
   import Replies from './Replies.svelte'
 
   export let message: WithLookup<ChunterMessage>
-  export let employees: Map<Ref<Employee>, Employee>
   export let savedAttachmentsIds: Ref<Attachment>[]
   export let thread: boolean = false
   export let isPinned: boolean = false
@@ -57,7 +56,16 @@
 
   let refInput: AttachmentRefInput
 
-  $: employee = getEmployee(message)
+  let employee: Employee | undefined
+  const employeeQuery = createQuery()
+  $: employeeQuery.query(
+    contact.class.Employee,
+    {
+      _id: (message.$lookup?.createBy as EmployeeAccount)?.employee
+    },
+    (res) => ([employee] = res)
+  )
+
   $: attachments = (message.$lookup?.attachments ?? []) as Attachment[]
 
   const client = getClient()
@@ -166,13 +174,6 @@
     })
     isEditing = false
     loading = false
-  }
-
-  function getEmployee (message: WithLookup<ChunterMessage>): Employee | undefined {
-    const employee = (message.$lookup?.createBy as EmployeeAccount).employee
-    if (employee !== undefined) {
-      return employees.get(employee)
-    }
   }
 
   function openThread () {

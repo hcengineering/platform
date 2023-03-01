@@ -1,14 +1,13 @@
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
   import chunter, { ChunterMessage } from '@hcengineering/chunter'
-  import contact, { Employee } from '@hcengineering/contact'
-  import core, { DocumentQuery, Ref, SortingOrder, toIdMap } from '@hcengineering/core'
+  import core, { DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Label, Scroller, SearchEdit } from '@hcengineering/ui'
   import { FilterBar } from '@hcengineering/view-resources'
-  import MessageComponent from './Message.svelte'
   import plugin from '../plugin'
   import { openMessageFromSpecial } from '../utils'
+  import MessageComponent from './Message.svelte'
 
   export let withHeader: boolean = true
 
@@ -46,13 +45,6 @@
   }
 
   $: updateMessages(resultQuery)
-
-  let employees: Map<Ref<Employee>, Employee> = new Map<Ref<Employee>, Employee>()
-  const employeeQuery = createQuery()
-
-  employeeQuery.query(contact.class.Employee, {}, (res) => (employees = toIdMap(res)), {
-    lookup: { _id: { statuses: contact.class.Status } }
-  })
 
   const pinnedQuery = createQuery()
   const pinnedIds: Ref<ChunterMessage>[] = []
@@ -105,7 +97,6 @@
       <div on:click={() => openMessageFromSpecial(message)}>
         <MessageComponent
           {message}
-          {employees}
           on:openThread
           isPinned={pinnedIds.includes(message._id)}
           isSaved={savedMessagesIds.includes(message._id)}

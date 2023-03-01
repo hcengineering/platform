@@ -26,7 +26,7 @@ import type {
   TemplateField,
   TemplateFieldCategory,
   TemplateFieldFunc,
-  TemplateGroup
+  TemplateCategory
 } from '@hcengineering/templates'
 import templates from './plugin'
 
@@ -43,9 +43,9 @@ export class TMessageTemplate extends TDoc implements MessageTemplate {
     message!: string
 }
 
-@Model(templates.class.TemplateGroup, core.class.Space, DOMAIN_SPACE)
-@UX(templates.string.TemplateGroup)
-export class TTemplateGroup extends TSpace implements TemplateGroup {}
+@Model(templates.class.TemplateCategory, core.class.Space, DOMAIN_SPACE)
+@UX(templates.string.TemplateCategory)
+export class TTemplateCategory extends TSpace implements TemplateCategory {}
 
 @Model(templates.class.TemplateFieldCategory, core.class.Doc, DOMAIN_MODEL)
 export class TTemplateFieldCategory extends TDoc implements TemplateFieldCategory {
@@ -60,7 +60,7 @@ export class TTemplateField extends TDoc implements TemplateField {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TMessageTemplate, TTemplateFieldCategory, TTemplateField, TTemplateGroup)
+  builder.createModel(TMessageTemplate, TTemplateFieldCategory, TTemplateField, TTemplateCategory)
 
   builder.createDoc(
     setting.class.WorkspaceSettingCategory,
@@ -126,7 +126,7 @@ export function createModel (builder: Builder): void {
       input: 'focus',
       icon: view.icon.Open,
       category: templates.category.MessageTemplate,
-      target: templates.class.TemplateGroup,
+      target: templates.class.TemplateCategory,
       keyBinding: ['keyE'],
       context: {
         mode: ['browser', 'context'],
