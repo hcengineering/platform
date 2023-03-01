@@ -32,7 +32,7 @@
   export let value: Attachment
 
   const dispatch = createEventDispatcher()
-  let imgView: 'img-horizontal-fit' | 'img-vertical-fit' | 'img-original-fit' = 'img-original-fit'
+  let imgView: 'img-horizontal-fit' | 'img-vertical-fit' | 'img-original-fit' = 'img-vertical-fit'
 
   function iconLabel (name: string): string {
     const parts = name.split('.')
