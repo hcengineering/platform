@@ -184,7 +184,7 @@
 </div>
 <div class="flex-col content">
   {#if parent}
-    <MsgView message={parent} {employees} thread {savedAttachmentsIds} />
+    <MsgView message={parent} thread {savedAttachmentsIds} />
     {#if total > comments.length}
       <div
         class="label pb-2 pt-2 pl-8 over-underline"
@@ -196,7 +196,7 @@
       </div>
     {/if}
     {#each comments as comment (comment._id)}
-      <MsgView message={comment} {employees} thread {savedAttachmentsIds} />
+      <MsgView message={comment} thread {savedAttachmentsIds} />
     {/each}
     <div class="mr-4 ml-4 mb-4 mt-2">
       <AttachmentRefInput
