@@ -225,13 +225,6 @@
       }
       if (inter.size) checkIntersectionFade()
       renderFade()
-
-      if (autoscroll) {
-        if (scrolling && divScroll.scrollHeight - divScroll.clientHeight - divScroll.scrollTop > 10 && !firstScroll) {
-          scrolling = false
-        }
-        if (!scrolling && belowContent && belowContent <= 10) scrolling = true
-      }
     }
     if (!isScrolling) checkBar()
     if (!isScrolling && horizontal) checkBarH()
@@ -245,9 +238,9 @@
   }
 
   const scrollDown = (): void => {
-    if (divScroll) divScroll.scrollTop = divScroll.scrollHeight - divHeight
+    if (divScroll) divScroll.scrollTop = divScroll.scrollHeight - divHeight + 2
   }
-  $: if (scrolling && belowContent && belowContent > 10) scrollDown()
+  $: if (scrolling && belowContent && belowContent > 0) scrollDown()
 
   const checkIntersection = (entries: IntersectionObserverEntry[], observer: IntersectionObserver) => {
     const interArr: Element[] = []
@@ -287,9 +280,17 @@
     })
   }
 
+  const wheelEvent = (e: WheelEvent) => {
+    e = e || window.event
+    const deltaY = e.deltaY
+    if (deltaY < 0 && autoscroll && scrolling && beforeContent && beforeContent > 0) scrolling = false
+    else if (deltaY > 0 && autoscroll && !scrolling && belowContent && belowContent <= 10) scrolling = true
+  }
+
   let observer: IntersectionObserver
   onMount(() => {
     if (divScroll && divBox) {
+      divScroll.addEventListener('wheel', wheelEvent)
       divScroll.addEventListener('scroll', checkFade)
       checkBar()
       if (horizontal) checkBarH()
@@ -297,7 +298,10 @@
   })
   onDestroy(() => {
     if (observer) observer.disconnect()
-    if (divScroll) divScroll.removeEventListener('scroll', checkFade)
+    if (divScroll) {
+      divScroll.removeEventListener('wheel', wheelEvent)
+      divScroll.removeEventListener('scroll', checkFade)
+    }
   })
 
   let oldTop: number
