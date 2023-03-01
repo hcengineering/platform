@@ -269,22 +269,46 @@ export interface BitrixFieldMapping extends AttachedDoc {
 /**
  * @public
  */
+export interface BitrixCommunication {
+  ID: string
+  TYPE: 'EMAIL' | 'TASK'
+  VALUE: string // "a@gmail.com",
+  ENTITY_ID: string // "89013",
+  ENTITY_TYPE_ID: string // "1",
+  ENTITY_SETTINGS: {
+    HONORIFIC: string
+    NAME: string
+    SECOND_NAME: string
+    LAST_NAME: string
+    LEAD_TITLE: string
+  }
+}
+
+/**
+ * @public
+ */
 export interface BitrixActivity {
   ID: string
   SUBJECT: string
-  COMMUNICATIONS?: {
-    ENTITY_SETTINGS?: {
-      LAST_NAME: string
-      NAME: string
-      LEAD_TITLE: string
-    }
-  }[]
+  PROVIDER_TYPE_ID: 'EMAIL' | 'TASK'
+  COMMUNICATIONS?: BitrixCommunication[]
   DESCRIPTION: string
+  DIRECTION: '1' | '2'
   AUTHOR_ID: string
   CREATED: number
   SETTINGS?: {
-    MESSAGE_HEADERS?: Record<string, string>
-    EMAIL_META?: Record<string, string>
+    MESSAGE_HEADERS?: Record<string, string> & {
+      'Message-Id': string // "<crm.activity.226613-8PWA4M@a.com>",
+      'Reply-To': string // "manager@a.com"
+    }
+    EMAIL_META?: Record<string, string> & {
+      __email: string // some email
+      from: string // From email address
+      replyTo: string // '
+      to: string // To email address
+      cc: string
+      bcc: string
+    }
   }
 }
 /**

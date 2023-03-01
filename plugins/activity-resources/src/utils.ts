@@ -47,7 +47,7 @@ async function createPseudoViewlet (
   }
   const docClass: Class<Doc> = client.getModel().getObject(doc._class)
 
-  let trLabel = await translate(docClass.label, {})
+  let trLabel = docClass.label !== undefined ? await translate(docClass.label, {}) : undefined
   if (dtx.collectionAttribute !== undefined) {
     const itemLabel = (dtx.collectionAttribute.type as Collection<AttachedDoc>).itemLabel
     if (itemLabel !== undefined) {
