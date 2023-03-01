@@ -80,6 +80,7 @@ export default mergeIds(recruitId, recruit, {
     Location: '' as IntlString,
     Title: '' as IntlString,
     Vacancies: '' as IntlString,
+    Organizations: '' as IntlString,
 
     CopyLink: '' as IntlString,
     CopyId: '' as IntlString,

@@ -23,7 +23,8 @@
     core.class.TypeNumber,
     core.class.EnumOf,
     core.class.Collection,
-    core.class.ArrOf
+    core.class.ArrOf,
+    core.class.RefTo
   ])
 
   function addMapping (evt: MouseEvent, kind: MappingOperation): void {
@@ -62,6 +63,12 @@
       label: getEmbeddedLabel('Add Download Attachment mapping'),
       action: (_: any, evt: MouseEvent) => {
         addMapping(evt, MappingOperation.DownloadAttachment)
+      }
+    },
+    {
+      label: getEmbeddedLabel('Add Field reference mapping'),
+      action: (_: any, evt: MouseEvent) => {
+        addMapping(evt, MappingOperation.FindReference)
       }
     }
   ] as Action[]

@@ -80,7 +80,7 @@
             {@const startDate = getStartDate(currentDate.getFullYear(), value)}
             <th class="fixed last-row" class:today={isToday(startDate)}>
               <span class="flex-center">
-                {weekDays(startDate.getUTCFullYear(), startDate.getUTCMonth())}
+                {weekDays(startDate.getFullYear(), startDate.getMonth())}
               </span>
             </th>
           {/each}

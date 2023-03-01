@@ -108,7 +108,8 @@
     "Match": "Совпадение",
     "PerformMatch": "Сопоставить",
     "MoveApplication": "Поменять Вакансию",
-    "SearchVacancy": "Найти вакансию..."
+    "SearchVacancy": "Найти вакансию...",
+    "Organizations": "Компании"
   },
   "status": {
     "TalentRequired": "Пожалуйста выберите таланта",

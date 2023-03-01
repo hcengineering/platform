@@ -7,6 +7,7 @@
   import CreateChannelMappingPresenter from './mappings/CreateChannelMappingPresenter.svelte'
   import CreateTagMappingPresenter from './mappings/CreateTagMappingPresenter.svelte'
   import DownloadAttachmentPresenter from './mappings/DownloadAttachmentPresenter.svelte'
+  import FindReferencePresenter from './mappings/FindReferencePresenter.svelte'
 
   export let mapping: BitrixEntityMapping
   export let value: BitrixFieldMapping
@@ -37,6 +38,8 @@
       <CreateChannelMappingPresenter {mapping} {value} />
     {:else if kind === MappingOperation.DownloadAttachment}
       <DownloadAttachmentPresenter {mapping} {value} />
+    {:else if kind === MappingOperation.FindReference}
+      <FindReferencePresenter {mapping} {value} />
     {/if}
 
     <Button

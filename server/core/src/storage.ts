@@ -142,13 +142,22 @@ class TServerStorage implements ServerStorage {
     return adapter
   }
 
-  private async routeTx (ctx: MeasureContext, ...txes: Tx[]): Promise<TxResult> {
+  private async routeTx (ctx: MeasureContext, removedDocs: Map<Ref<Doc>, Doc>, ...txes: Tx[]): Promise<TxResult> {
     let part: TxCUD<Doc>[] = []
     let lastDomain: Domain | undefined
     const result: TxResult[] = []
     const processPart = async (): Promise<void> => {
       if (part.length > 0) {
+        // Find all deleted documents
+
         const adapter = this.getAdapter(lastDomain as Domain)
+        const toDelete = part.filter((it) => it._class === core.class.TxRemoveDoc).map((it) => it.objectId)
+
+        const toDeleteDocs = await adapter.load(lastDomain as Domain, toDelete)
+        for (const ddoc of toDeleteDocs) {
+          removedDocs.set(ddoc._id, ddoc)
+        }
+
         const r = await adapter.tx(...part)
         if (Array.isArray(r)) {
           result.push(...r)
@@ -345,62 +354,6 @@ class TServerStorage implements ServerStorage {
     )
   }
 
-  private async buildRemovedDoc (ctx: MeasureContext, rawTxes: Tx[], findAll: ServerStorage['findAll']): Promise<Doc[]> {
-    const removeObjectIds: Ref<Doc>[] = []
-    const removeAttachObjectIds: Ref<AttachedDoc>[] = []
-
-    const removeTxes = rawTxes
-      .map((it) => TxProcessor.extractTx(it) as TxRemoveDoc<Doc>)
-      .filter((it) => this.hierarchy.isDerived(it._class, core.class.TxRemoveDoc))
-
-    for (const rtx of removeTxes) {
-      const isAttached = this.hierarchy.isDerived(rtx.objectClass, core.class.AttachedDoc)
-      if (isAttached) {
-        removeAttachObjectIds.push(rtx.objectId as Ref<AttachedDoc>)
-      } else {
-        removeObjectIds.push(rtx.objectId)
-      }
-    }
-
-    const txes =
-      removeObjectIds.length > 0
-        ? await findAll<TxCUD<Doc>>(
-          ctx,
-          core.class.TxCUD,
-          {
-            objectId: { $in: removeObjectIds }
-          },
-          { sort: { modifiedOn: 1 } }
-        )
-        : []
-    const result: Doc[] = []
-
-    const txesAttach =
-      removeAttachObjectIds.length > 0
-        ? await findAll<TxCollectionCUD<Doc, AttachedDoc>>(
-          ctx,
-          core.class.TxCollectionCUD,
-          { 'tx.objectId': { $in: removeAttachObjectIds } },
-          { sort: { modifiedOn: 1 } }
-        )
-        : []
-
-    for (const rtx of removeTxes) {
-      const isAttached = this.hierarchy.isDerived(rtx.objectClass, core.class.AttachedDoc)
-
-      const objTxex = isAttached
-        ? txesAttach.filter((tx) => tx.tx.objectId === rtx.objectId)
-        : txes.filter((it) => it.objectId === rtx.objectId)
-
-      const doc = TxProcessor.buildDoc2Doc(objTxex)
-      if (doc !== undefined) {
-        result.push(doc)
-      }
-    }
-
-    return result
-  }
-
   private async processRemove (
     ctx: MeasureContext,
     txes: Tx[],
@@ -408,11 +361,6 @@ class TServerStorage implements ServerStorage {
     removedMap: Map<Ref<Doc>, Doc>
   ): Promise<Tx[]> {
     const result: Tx[] = []
-
-    const objects = await this.buildRemovedDoc(ctx, txes, findAll)
-    for (const obj of objects) {
-      removedMap.set(obj._id, obj)
-    }
 
     for (const tx of txes) {
       const actualTx = TxProcessor.extractTx(tx)
@@ -532,7 +480,7 @@ class TServerStorage implements ServerStorage {
     return result
   }
 
-  private async proccessDerived (
+  private async processDerived (
     ctx: MeasureContext,
     txes: Tx[],
     triggerFx: Effects,
@@ -594,11 +542,11 @@ class TServerStorage implements ServerStorage {
   ): Promise<Tx[]> {
     derived.sort((a, b) => a.modifiedOn - b.modifiedOn)
 
-    await ctx.with('derived-route-tx', {}, (ctx) => this.routeTx(ctx, ...derived))
+    await ctx.with('derived-route-tx', {}, (ctx) => this.routeTx(ctx, removedMap, ...derived))
 
     const nestedTxes: Tx[] = []
     if (derived.length > 0) {
-      nestedTxes.push(...(await this.proccessDerived(ctx, derived, triggerFx, findAll, removedMap)))
+      nestedTxes.push(...(await this.processDerived(ctx, derived, triggerFx, findAll, removedMap)))
     }
 
     const res = [...derived, ...nestedTxes]
@@ -650,14 +598,15 @@ class TServerStorage implements ServerStorage {
     )
     await ctx.with('domain-tx', {}, async () => await this.getAdapter(DOMAIN_TX).tx(...txToStore))
 
-    await ctx.with('apply', {}, (ctx) => this.routeTx(ctx, ...tx))
+    const removedMap = new Map<Ref<Doc>, Doc>()
+    await ctx.with('apply', {}, (ctx) => this.routeTx(ctx, removedMap, ...tx))
 
     // send transactions
     if (broadcast) {
       this.options?.broadcast?.(tx)
     }
     // invoke triggers and store derived objects
-    const derived = await this.proccessDerived(ctx, tx, triggerFx, cacheFind, new Map<Ref<Doc>, Doc>())
+    const derived = await this.processDerived(ctx, tx, triggerFx, cacheFind, removedMap)
 
     // index object
     for (const _tx of tx) {
@@ -680,6 +629,7 @@ class TServerStorage implements ServerStorage {
     const _class = txClass(tx)
     const cacheFind = createCacheFindAll(this)
     const objClass = txObjectClass(tx)
+    const removedDocs = new Map<Ref<Doc>, Doc>()
     return await ctx.with('tx', { _class, objClass }, async (ctx) => {
       if (tx.space !== core.space.DerivedTx && !this.hierarchy.isDerived(tx._class, core.class.TxApplyIf)) {
         await ctx.with('domain-tx', { _class, objClass }, async () => await this.getAdapter(DOMAIN_TX).tx(tx))
@@ -711,13 +661,13 @@ class TServerStorage implements ServerStorage {
               const atx = await this.getAdapter(DOMAIN_TX)
               await atx.tx(...applyIf.txes)
             })
-            derived = await this.processDerivedTxes(applyIf.txes, ctx, triggerFx, cacheFind, new Map<Ref<Doc>, Doc>())
+            derived = await this.processDerivedTxes(applyIf.txes, ctx, triggerFx, cacheFind, removedDocs)
           }
         } else {
           // store object
-          result = await ctx.with('route-tx', { _class, objClass }, (ctx) => this.routeTx(ctx, tx))
+          result = await ctx.with('route-tx', { _class, objClass }, (ctx) => this.routeTx(ctx, removedDocs, tx))
           // invoke triggers and store derived objects
-          derived = await this.proccessDerived(ctx, [tx], triggerFx, cacheFind, new Map<Ref<Doc>, Doc>())
+          derived = await this.processDerived(ctx, [tx], triggerFx, cacheFind, removedDocs)
         }
 
         // index object

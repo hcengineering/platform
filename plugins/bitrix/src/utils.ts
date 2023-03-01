@@ -14,14 +14,16 @@ import core, {
   WithLookup
 } from '@hcengineering/core'
 import tags, { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
-import {
+import bitrix, {
   BitrixEntityMapping,
+  BitrixEntityType,
   BitrixFieldMapping,
   BitrixSyncDoc,
   CopyValueOperation,
   CreateChannelOperation,
   CreateTagOperation,
   DownloadAttachmentOperation,
+  FindReferenceOperation,
   MappingOperation
 } from '.'
 
@@ -51,13 +53,23 @@ export function collectFields (fieldMapping: BitrixFieldMapping[]): string[] {
 /**
  * @public
  */
+export interface BitrixSyncRequest {
+  type: BitrixEntityType
+  bitrixId: string
+  update: (doc: Ref<Doc>) => void
+}
+
+/**
+ * @public
+ */
 export interface ConvertResult {
-  document: BitrixSyncDoc // Document we should achive
+  document: BitrixSyncDoc // Document we should sync
   rawData: any
-  mixins: Record<Ref<Mixin<Doc>>, Data<Doc>> // Mixins of document we will achive
-  extraDocs: Doc[] // Extra documents we will achive, etc.
-  extraSync: (AttachedDoc & BitrixSyncDoc)[] // Extra documents we will achive, etc.
+  mixins: Record<Ref<Mixin<Doc>>, Data<Doc>> // Mixins of document we will sync
+  extraDocs: Doc[] // Extra documents we will sync, etc.
+  extraSync: (AttachedDoc & BitrixSyncDoc)[] // Extra documents we will sync, etc.
   blobs: [Attachment & BitrixSyncDoc, () => Promise<File | undefined>, (file: File, attach: Attachment) => void][]
+  syncRequests: BitrixSyncRequest[]
 }
 
 /**
@@ -100,6 +112,8 @@ export async function convert (
   ][] = []
   const mixins: Record<Ref<Mixin<Doc>>, Data<Doc>> = {}
 
+  const syncRequests: BitrixSyncRequest[] = []
+
   const extractValue = (field?: string, alternatives?: string[]): any | undefined => {
     if (field !== undefined) {
       let lval = rawDocument[field]
@@ -125,9 +139,9 @@ export async function convert (
         }
       } else if (bfield.type === 'file') {
         if (Array.isArray(lval) && bfield.isMultiple) {
-          return lval.map((it) => ({ id: it.id, file: it.downloadUrl }))
+          return lval.map((it) => ({ id: `${it.id as string}`, file: it.downloadUrl }))
         } else if (lval != null) {
-          return [{ id: lval.id, file: lval.downloadUrl }]
+          return [{ id: `${lval.id as string}`, file: lval.downloadUrl }]
         }
       } else if (bfield.type === 'string' || bfield.type === 'url' || bfield.type === 'crm_company') {
         if (bfield.isMultiple && Array.isArray(lval)) {
@@ -164,6 +178,8 @@ export async function convert (
             }
           }
         }
+      } else {
+        return lval
       }
     }
   }
@@ -311,10 +327,41 @@ export async function convert (
     return undefined
   }
 
+  const getFindValue = async (
+    attr: AnyAttribute,
+    operation: FindReferenceOperation
+  ): Promise<{ ref?: Ref<Doc>, bitrixId: string } | undefined> => {
+    const lval = extractValue(operation.field)
+    if (lval != null) {
+      const bid = Array.isArray(lval) ? lval[0] : lval
+      const doc = await client.findOne(operation.referenceClass, {
+        [bitrix.mixin.BitrixSyncDoc + '.bitrixId']: bid
+      })
+      if (doc !== undefined) {
+        return { ref: doc._id, bitrixId: bid }
+      } else {
+        return { bitrixId: bid }
+      }
+    }
+  }
+
+  const setValue = (value: any, attr: AnyAttribute): void => {
+    if (value !== undefined) {
+      if (hierarchy.isMixin(attr.attributeOf)) {
+        mixins[attr.attributeOf] = {
+          ...mixins[attr.attributeOf],
+          [attr.name]: value
+        }
+      } else {
+        ;(document as any)[attr.name] = value
+      }
+    }
+  }
+
   for (const f of fields) {
     const attr = hierarchy.getAttribute(f.ofClass, f.attributeName)
     if (attr === undefined) {
-      console.trace('Attribue not found', f)
+      console.trace('Attribute not found', f)
       continue
     }
     let value: any
@@ -333,7 +380,7 @@ export async function convert (
         for (const blobRef of blobRefs) {
           const attachDoc: Attachment & BitrixSyncDoc = {
             _id: generateId(),
-            bitrixId: blobRef.id,
+            bitrixId: `${blobRef.id}`,
             file: '', // Empty since not uploaded yet.
             name: blobRef.id,
             size: -1,
@@ -379,20 +426,34 @@ export async function convert (
 
         break
       }
-    }
-    if (value !== undefined) {
-      if (hierarchy.isMixin(attr.attributeOf)) {
-        mixins[attr.attributeOf] = {
-          ...mixins[attr.attributeOf],
-          [attr.name]: value
+      case MappingOperation.FindReference: {
+        const ret = await getFindValue(attr, f.operation)
+        if (ret?.ref !== undefined) {
+          value = ret.ref
+        } else if (ret !== undefined && f.operation.referenceType != null) {
+          syncRequests.push({
+            bitrixId: `${ret.bitrixId}`,
+            type: f.operation.referenceType,
+            update: (newRef: Ref<Doc>) => {
+              setValue(newRef, attr)
+            }
+          })
         }
-      } else {
-        ;(document as any)[attr.name] = value
+        break
       }
     }
+    setValue(value, attr)
   }
 
-  return { document, mixins, extraSync: newExtraSyncDocs, extraDocs: newExtraDocs, blobs, rawData: rawDocument }
+  return {
+    document,
+    mixins,
+    extraSync: newExtraSyncDocs,
+    extraDocs: newExtraDocs,
+    blobs,
+    rawData: rawDocument,
+    syncRequests
+  }
 }
 
 /**
