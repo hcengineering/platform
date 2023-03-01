@@ -117,6 +117,7 @@
     "libphonenumber-js": "^1.9.46",
     "@hcengineering/setting": "^0.6.2",
     "@hcengineering/minio": "^0.6.0",
-    "@hcengineering/openai": "^0.6.0"
+    "@hcengineering/openai": "^0.6.0",
+    "@hcengineering/tracker": "^0.6.1"
   }
 }

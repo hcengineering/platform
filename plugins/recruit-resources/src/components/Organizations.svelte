@@ -1,0 +1,285 @@
+<!--
+// Copyright © 2022 Hardcore Engineering Inc.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+<script lang="ts">
+  import { Organization } from '@hcengineering/contact'
+  import core, { Doc, DocumentQuery, Ref } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Applicant, Vacancy } from '@hcengineering/recruit'
+  import {
+    Button,
+    deviceOptionsStore as deviceInfo,
+    Icon,
+    IconAdd,
+    Label,
+    Loading,
+    SearchEdit,
+    showPopup
+  } from '@hcengineering/ui'
+  import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
+  import {
+    FilterBar,
+    FilterButton,
+    getViewOptions,
+    setActiveViewletId,
+    TableBrowser,
+    ViewletSettingButton
+  } from '@hcengineering/view-resources'
+  import recruit from '../plugin'
+  import CreateVacancy from './CreateVacancy.svelte'
+  import VacancyListApplicationsPopup from './organizations/VacancyListApplicationsPopup.svelte'
+  import VacancyListCountPresenter from './organizations/VacancyListCountPresenter.svelte'
+  import VacancyPopup from './organizations/VacancyPopup.svelte'
+
+  let search: string = ''
+  let searchQuery: DocumentQuery<Doc> = {}
+  let resultQuery: DocumentQuery<Doc> = {}
+
+  $: searchQuery = search === '' ? {} : { $search: search }
+
+  type CountInfo = {
+    count: number
+    modifiedOn: number
+    vacancies: Ref<Vacancy>[]
+  }
+  let applications: Map<Ref<Organization>, CountInfo> = new Map<Ref<Organization>, CountInfo>()
+
+  let vacancies: Map<Ref<Organization>, CountInfo> = new Map<Ref<Organization>, CountInfo>()
+  let vmap: Map<Ref<Vacancy>, Vacancy> | undefined
+
+  const vacancyQuery = createQuery()
+
+  let applicationsList: Applicant[] = []
+  let vacanciesList: Vacancy[] = []
+
+  $: vacancyQuery.query(recruit.class.Vacancy, { company: { $exists: true }, archived: false }, (res) => {
+    vacanciesList = res
+    vmap = new Map(res.map((it) => [it._id, it]))
+  })
+
+  $: vacancies = vacanciesList.reduce<Map<Ref<Organization>, CountInfo>>((map, it) => {
+    const ifo = map.get(it.company as Ref<Organization>) ?? {
+      count: 0,
+      modifiedOn: 0,
+      vacancies: []
+    }
+    map.set(it.company as Ref<Organization>, {
+      count: ifo.count + 1,
+      modifiedOn: Math.max(ifo.modifiedOn, it.modifiedOn),
+      vacancies: [...ifo.vacancies, it._id]
+    })
+    return map
+  }, new Map())
+
+  const applicantQuery = createQuery()
+  $: applicantQuery.query(
+    recruit.class.Applicant,
+    {
+      doneState: null
+    },
+    (res) => {
+      applicationsList = res
+    },
+    {
+      projection: {
+        _id: 1,
+        modifiedOn: 1,
+        space: 1
+      }
+    }
+  )
+
+  $: {
+    const _applications = new Map<Ref<Organization>, CountInfo>()
+    for (const d of applicationsList) {
+      const vacancy = vmap?.get(d.space)
+      if (vacancy?.company !== undefined) {
+        const v = _applications.get(vacancy.company) ?? {
+          count: 0,
+          modifiedOn: 0,
+          vacancies: []
+        }
+        if (!v.vacancies.includes(vacancy._id)) {
+          v.vacancies.push(vacancy._id)
+        }
+        v.count++
+        v.modifiedOn = Math.max(v.modifiedOn, d.modifiedOn)
+        _applications.set(vacancy.company, v)
+      }
+    }
+    applications = _applications
+  }
+
+  function showCreateDialog () {
+    showPopup(CreateVacancy, { space: recruit.space.CandidatesPublic }, 'top')
+  }
+  const applicationSorting = (a: Doc, b: Doc) =>
+    (applications?.get(b._id as Ref<Organization>)?.count ?? 0) -
+      (applications?.get(a._id as Ref<Organization>)?.count ?? 0) ?? 0
+
+  const vacancySorting = (a: Doc, b: Doc) =>
+    (vacancies?.get(b._id as Ref<Organization>)?.count ?? 0) -
+      (vacancies?.get(a._id as Ref<Organization>)?.count ?? 0) ?? 0
+
+  const modifiedSorting = (a: Doc, b: Doc) =>
+    (applications?.get(b._id as Ref<Organization>)?.modifiedOn ?? b.modifiedOn) -
+    (applications?.get(a._id as Ref<Organization>)?.modifiedOn ?? a.modifiedOn)
+
+  $: replacedKeys = new Map<string, BuildModelKey>([
+    [
+      '@vacancies',
+      {
+        key: '',
+        presenter: VacancyListCountPresenter,
+        label: recruit.string.Vacancies,
+        props: {
+          values: vacancies,
+          label: recruit.string.Vacancies,
+          icon: recruit.icon.Vacancy,
+          component: VacancyPopup
+        },
+        sortingKey: '@vacancies',
+        sortingFunction: vacancySorting
+      }
+    ],
+    [
+      '@applications',
+      {
+        key: '',
+        presenter: VacancyListCountPresenter,
+        label: recruit.string.Applications,
+        props: {
+          values: applications,
+          label: recruit.string.Applications,
+          component: VacancyListApplicationsPopup,
+          icon: recruit.icon.Application,
+          resultQuery: {
+            doneState: null
+          }
+        },
+        sortingKey: '@applications',
+        sortingFunction: applicationSorting
+      }
+    ],
+    [
+      '@applications.modifiedOn',
+      {
+        key: '',
+        presenter: recruit.component.VacancyModifiedPresenter,
+        label: core.string.Modified,
+        props: { applications },
+        sortingKey: 'modifiedOn',
+        sortingFunction: modifiedSorting
+      }
+    ]
+  ])
+
+  const client = getClient()
+
+  let descr: Viewlet | undefined
+  let loading = true
+
+  const preferenceQuery = createQuery()
+  let preference: ViewletPreference | undefined
+
+  client
+    .findOne<Viewlet>(view.class.Viewlet, {
+      attachTo: recruit.mixin.VacancyList,
+      descriptor: view.viewlet.Table
+    })
+    .then((res) => {
+      descr = res
+      if (res !== undefined) {
+        setActiveViewletId(res._id)
+        preferenceQuery.query(
+          view.class.ViewletPreference,
+          {
+            attachedTo: res._id
+          },
+          (res) => {
+            preference = res[0]
+            loading = false
+          },
+          { limit: 1 }
+        )
+      }
+    })
+
+  function createConfig (descr: Viewlet, preference: ViewletPreference | undefined): (string | BuildModelKey)[] {
+    const base = preference?.config ?? descr.config
+    const result: (string | BuildModelKey)[] = []
+    for (const key of base) {
+      if (typeof key === 'string') {
+        result.push(replacedKeys.get(key) ?? key)
+      } else {
+        result.push(replacedKeys.get(key.key) ?? key)
+      }
+    }
+    return result
+  }
+
+  $: twoRows = $deviceInfo.twoRows
+
+  $: viewOptions = getViewOptions(descr)
+</script>
+
+<div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
+  <div class:ac-header-full={!twoRows} class:flex-between={twoRows}>
+    <div class="ac-header__wrap-title mr-3">
+      <div class="ac-header__icon"><Icon icon={recruit.icon.Vacancy} size={'small'} /></div>
+      <span class="ac-header__title"><Label label={recruit.string.Organizations} /></span>
+      <div class="ml-4"><FilterButton _class={recruit.class.Vacancy} /></div>
+    </div>
+    <SearchEdit
+      bind:value={search}
+      on:change={(e) => {
+        search = e.detail
+      }}
+    />
+  </div>
+  <div class="ac-header-full" class:secondRow={twoRows}>
+    <Button
+      icon={IconAdd}
+      label={recruit.string.VacancyCreateLabel}
+      size={'small'}
+      kind={'primary'}
+      on:click={showCreateDialog}
+    />
+    <ViewletSettingButton bind:viewOptions viewlet={descr} />
+  </div>
+</div>
+
+<FilterBar
+  _class={recruit.mixin.VacancyList}
+  {viewOptions}
+  query={searchQuery}
+  on:change={(e) => (resultQuery = e.detail)}
+/>
+
+{#if descr}
+  {#if loading}
+    <Loading />
+  {:else}
+    <TableBrowser
+      _class={recruit.mixin.VacancyList}
+      config={createConfig(descr, preference)}
+      options={descr.options}
+      query={{
+        ...resultQuery,
+        _id: { $in: Array.from(vacancies.keys()) }
+      }}
+      showNotification
+    />
+  {/if}
+{/if}

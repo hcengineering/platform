@@ -30,7 +30,7 @@
     fname.length > maxLenght ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2) : fname
 
   function iconLabel (name: string): string {
-    const parts = name.split('.')
+    const parts = `${name}`.split('.')
     const ext = parts[parts.length - 1]
     return ext.substring(0, 4).toUpperCase()
   }

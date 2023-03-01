@@ -51,6 +51,7 @@ import { MigrateOperation } from '@hcengineering/model'
 import { openAIConfigDefaults } from '@hcengineering/openai'
 import { rebuildElastic } from './elastic'
 import { openAIConfig } from './openai'
+import { cleanWorkspace } from './clean'
 
 /**
  * @public
@@ -426,6 +427,26 @@ export function devTool (
     .description('decode token')
     .action(async (token) => {
       console.log(decodeToken(token))
+    })
+
+  program
+    .command('clean-workspace <workspace>')
+    .description('set user role')
+    .option('--recruit', 'Clean recruit', false)
+    .option('--tracker', 'Clean tracker', false)
+    .option('--removedTx', 'Clean removed transactions', false)
+    .action(async (workspace: string, cmd: { recruit: boolean, tracker: boolean, removeTx: boolean }) => {
+      const { mongodbUri, minio } = prepareTools()
+      return await withDatabase(mongodbUri, async (db) => {
+        await cleanWorkspace(
+          mongodbUri,
+          getWorkspaceId(workspace, productId),
+          minio,
+          getElasticUrl(),
+          transactorUrl,
+          cmd
+        )
+      })
     })
 
   program.parse(process.argv)

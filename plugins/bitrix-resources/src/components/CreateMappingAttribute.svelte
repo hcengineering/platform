@@ -8,6 +8,7 @@
   import CreateChannelMapping from './mappings/CreateChannelMapping.svelte'
   import CreateTagMapping from './mappings/CreateTagMapping.svelte'
   import DownloadAttachmentMapping from './mappings/DownloadAttachmentMapping.svelte'
+  import FindReferenceMapping from './mappings/FindReferenceMapping.svelte'
 
   export let mapping: BitrixEntityMapping
   export let fields: Fields = {}
@@ -42,5 +43,7 @@
     <CreateChannelMapping {mapping} {fields} {attribute} {field} bind:this={op} />
   {:else if _kind === MappingOperation.DownloadAttachment}
     <DownloadAttachmentMapping {mapping} {fields} {attribute} {field} bind:this={op} />
+  {:else if _kind === MappingOperation.FindReference}
+    <FindReferenceMapping {mapping} {fields} {attribute} {field} bind:this={op} />
   {/if}
 </Card>

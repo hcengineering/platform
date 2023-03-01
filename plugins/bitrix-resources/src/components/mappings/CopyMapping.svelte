@@ -58,7 +58,7 @@
     })
     .map((it) => ({
       id: it[0],
-      label: `${it[1].formLabel ?? it[1].title}${it[0].startsWith('UF_') ? ' *' : ''} - ${it[0]}`
+      label: `${it[1].formLabel ?? it[1].title}${it[0].startsWith('UF_') ? ' *' : ''} - ${it[0]} - ${it[1].type}`
     }))
 </script>
 

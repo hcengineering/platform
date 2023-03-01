@@ -45,7 +45,7 @@
   export let timeReports: Map<Ref<Employee>, EmployeeReports>
 
   $: month = getStartDate(currentDate.getFullYear(), currentDate.getMonth()) // getMonth(currentDate, currentDate.getMonth())
-  $: wDays = weekDays(month.getUTCFullYear(), month.getUTCMonth())
+  $: wDays = weekDays(month.getFullYear(), month.getMonth())
 
   function getDateRange (request: Request): string {
     const ds = getRequestDates(request, types, month.getFullYear(), month.getMonth())
