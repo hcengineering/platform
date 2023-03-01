@@ -15,14 +15,13 @@
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
   import type { ChunterMessage, Message } from '@hcengineering/chunter'
-  import contact, { Employee } from '@hcengineering/contact'
-  import core, { Doc, Ref, Space, Timestamp, toIdMap, WithLookup } from '@hcengineering/core'
+  import core, { Doc, Ref, Space, Timestamp, WithLookup } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { createQuery } from '@hcengineering/presentation'
   import { location as locationStore } from '@hcengineering/ui'
   import { afterUpdate, beforeUpdate, onDestroy } from 'svelte'
   import chunter from '../plugin'
-  import { getDay, messageIdForScroll, shouldScrollToMessage, isMessageHighlighted, scrollAndHighLight } from '../utils'
+  import { getDay, isMessageHighlighted, messageIdForScroll, scrollAndHighLight, shouldScrollToMessage } from '../utils'
   import ChannelSeparator from './ChannelSeparator.svelte'
   import JumpToDateSelector from './JumpToDateSelector.svelte'
   import MessageComponent from './Message.svelte'
@@ -70,16 +69,10 @@
   })
 
   let messages: WithLookup<Message>[] | undefined
-  let employees: Map<Ref<Employee>, Employee> = new Map<Ref<Employee>, Employee>()
   const query = createQuery()
-  const employeeQuery = createQuery()
 
   const notificationClient = NotificationClientImpl.getClient()
   const lastViews = notificationClient.getLastViews()
-
-  employeeQuery.query(contact.class.Employee, {}, (res) => (employees = toIdMap(res)), {
-    lookup: { _id: { statuses: contact.class.Status } }
-  })
 
   $: updateQuery(space)
 
@@ -220,7 +213,6 @@
       <MessageComponent
         isHighlighted={$messageIdForScroll === message._id && $isMessageHighlighted}
         {message}
-        {employees}
         on:openThread
         isPinned={pinnedIds.includes(message._id)}
         isSaved={savedMessagesIds.includes(message._id)}

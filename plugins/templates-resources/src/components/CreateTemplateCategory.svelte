@@ -32,7 +32,7 @@
   const client = getClient()
 
   async function create (): Promise<void> {
-    await client.createDoc(templates.class.TemplateGroup, core.space.Space, {
+    await client.createDoc(templates.class.TemplateCategory, core.space.Space, {
       name,
       description,
       private: isPrivate,
@@ -44,7 +44,7 @@
 </script>
 
 <SpaceCreateCard
-  label={templates.string.CreateTemplateGroup}
+  label={templates.string.CreateTemplateCategory}
   okAction={create}
   canSave={name.length > 0}
   on:close={() => {
@@ -53,10 +53,10 @@
 >
   <Grid column={1} rowGap={1.5}>
     <EditBox
-      label={templates.string.TemplateGroup}
+      label={templates.string.TemplateCategory}
       icon={IconFolder}
       bind:value={name}
-      placeholder={templates.string.TemplateGroup}
+      placeholder={templates.string.TemplateCategory}
       focus
     />
     <ToggleWithLabel

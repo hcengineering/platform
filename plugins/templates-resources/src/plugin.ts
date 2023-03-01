@@ -31,12 +31,12 @@ export default mergeIds(templatesId, templates, {
     SearchTemplate: '' as IntlString,
     TemplatePlaceholder: '' as IntlString,
     Field: '' as IntlString,
-    TemplateGroup: '' as IntlString,
-    CreateTemplateGroup: '' as IntlString,
+    TemplateCategory: '' as IntlString,
+    CreateTemplateCategory: '' as IntlString,
     Copy: '' as IntlString
   },
   component: {
     Templates: '' as AnyComponent,
-    CreateTemplateGroup: '' as AnyComponent
+    CreateTemplateCategory: '' as AnyComponent
   }
 })

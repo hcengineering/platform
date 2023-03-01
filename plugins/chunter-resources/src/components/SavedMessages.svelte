@@ -1,15 +1,15 @@
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { ChunterMessage } from '@hcengineering/chunter'
-  import core, { IdMap, Ref, toIdMap, WithLookup } from '@hcengineering/core'
-  import contact, { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
-  import { Label, Scroller } from '@hcengineering/ui'
   import AttachmentPreview from '@hcengineering/attachment-resources/src/components/AttachmentPreview.svelte'
-  import Bookmark from './icons/Bookmark.svelte'
-  import Message from './Message.svelte'
+  import { ChunterMessage } from '@hcengineering/chunter'
+  import { EmployeeAccount, formatName } from '@hcengineering/contact'
+  import core, { Ref, WithLookup } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Label, Scroller } from '@hcengineering/ui'
   import chunter from '../plugin'
   import { getTime, openMessageFromSpecial } from '../utils'
+  import Bookmark from './icons/Bookmark.svelte'
+  import Message from './Message.svelte'
 
   const client = getClient()
   let savedMessagesIds: Ref<ChunterMessage>[] = []
@@ -59,13 +59,6 @@
       }
     )
 
-  let employees: IdMap<Employee> = new Map()
-  const employeeQuery = createQuery()
-
-  employeeQuery.query(contact.class.Employee, {}, (res) => (employees = toIdMap(res)), {
-    lookup: { _id: { statuses: contact.class.Status } }
-  })
-
   const pinnedQuery = createQuery()
   const pinnedIds: Ref<ChunterMessage>[] = []
 
@@ -108,7 +101,6 @@
       <div on:click={() => openMessageFromSpecial(message)}>
         <Message
           {message}
-          {employees}
           on:openThread
           thread
           isPinned={pinnedIds.includes(message._id)}

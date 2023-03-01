@@ -2,7 +2,7 @@
   import core, { Data, Ref } from '@hcengineering/core'
   import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
   import { createQuery, getClient, MessageViewer, SpaceSelector } from '@hcengineering/presentation'
-  import { MessageTemplate, TemplateGroup } from '@hcengineering/templates'
+  import { MessageTemplate, TemplateCategory } from '@hcengineering/templates'
   import { StyledTextEditor } from '@hcengineering/text-editor'
   import {
     Action,
@@ -17,7 +17,7 @@
   } from '@hcengineering/ui'
   import { getActions as getContributedActions, TreeItem, TreeNode } from '@hcengineering/view-resources'
   import templatesPlugin from '../plugin'
-  import CreateTemplateGroup from './CreateTemplateGroup.svelte'
+  import CreateTemplateCategory from './CreateTemplateCategory.svelte'
   import FieldPopup from './FieldPopup.svelte'
 
   const client = getClient()
@@ -37,9 +37,9 @@
     loading = false
   })
 
-  let spaces: TemplateGroup[] = []
+  let spaces: TemplateCategory[] = []
 
-  spaceQ.query(templatesPlugin.class.TemplateGroup, {}, (res) => {
+  spaceQ.query(templatesPlugin.class.TemplateCategory, {}, (res) => {
     spaces = res
     space = res[0]?._id
   })
@@ -95,7 +95,7 @@
     })
   }
 
-  function getTemplates (templates: MessageTemplate[], space: Ref<TemplateGroup>): MessageTemplate[] {
+  function getTemplates (templates: MessageTemplate[], space: Ref<TemplateCategory>): MessageTemplate[] {
     return templates.filter((p) => p.space === space)
   }
 
@@ -116,14 +116,14 @@
   }
 
   const addSpace: Action = {
-    label: templatesPlugin.string.CreateTemplateGroup,
+    label: templatesPlugin.string.CreateTemplateCategory,
     icon: IconAdd,
     action: async (): Promise<void> => {
-      showPopup(CreateTemplateGroup, {}, 'top')
+      showPopup(CreateTemplateCategory, {}, 'top')
     }
   }
 
-  async function getSpaceActions (space: TemplateGroup): Promise<Action[]> {
+  async function getSpaceActions (space: TemplateCategory): Promise<Action[]> {
     const result: Action[] = [addSpace]
     const extraActions = await getContributedActions(client, space, core.class.Space)
     for (const act of extraActions) {
@@ -139,7 +139,7 @@
     return result
   }
 
-  let space: Ref<TemplateGroup> | undefined = undefined
+  let space: Ref<TemplateCategory> | undefined = undefined
 </script>
 
 <div class="antiComponent">
@@ -201,12 +201,12 @@
           </span>
           {#if mode === Mode.Create}
             <SpaceSelector
-              _class={templatesPlugin.class.TemplateGroup}
-              label={templatesPlugin.string.TemplateGroup}
+              _class={templatesPlugin.class.TemplateCategory}
+              label={templatesPlugin.string.TemplateCategory}
               bind:space
               create={{
-                component: templatesPlugin.component.CreateTemplateGroup,
-                label: templatesPlugin.string.CreateTemplateGroup
+                component: templatesPlugin.component.CreateTemplateCategory,
+                label: templatesPlugin.string.CreateTemplateCategory
               }}
             />
           {/if}

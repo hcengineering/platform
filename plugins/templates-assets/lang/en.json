@@ -13,8 +13,8 @@
     "Title": "Title",
     "Message": "Message",
     "Field": "Field",
-    "TemplateGroup": "Template group",
-    "CreateTemplateGroup": "Create group",
+    "TemplateCategory": "Template group",
+    "CreateTemplateCategory": "Create group",
     "Copy": "Copy"
   }
 }

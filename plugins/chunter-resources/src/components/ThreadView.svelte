@@ -15,16 +15,15 @@
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import type { ThreadMessage, Message, ChunterMessage } from '@hcengineering/chunter'
-  import contact, { Employee } from '@hcengineering/contact'
+  import type { ChunterMessage, Message, ThreadMessage } from '@hcengineering/chunter'
   import core, { Doc, generateId, getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { IconClose, Label, getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { getCurrentLocation, IconClose, Label, navigate } from '@hcengineering/ui'
   import { afterUpdate, beforeUpdate, createEventDispatcher } from 'svelte'
   import { createBacklinks } from '../backlinks'
   import chunter from '../plugin'
-  import { messageIdForScroll, shouldScrollToMessage, isMessageHighlighted, scrollAndHighLight } from '../utils'
+  import { isMessageHighlighted, messageIdForScroll, scrollAndHighLight, shouldScrollToMessage } from '../utils'
   import ChannelSeparator from './ChannelSeparator.svelte'
   import MsgView from './Message.svelte'
 
@@ -119,23 +118,6 @@
     )
   }
 
-  let employees: Map<Ref<Employee>, Employee> = new Map<Ref<Employee>, Employee>()
-  const employeeQuery = createQuery()
-
-  employeeQuery.query(
-    contact.class.Employee,
-    {},
-    (res) =>
-      (employees = new Map(
-        res.map((r) => {
-          return [r._id, r]
-        })
-      )),
-    {
-      lookup: { _id: { statuses: contact.class.Status } }
-    }
-  )
-
   const savedMessagesQuery = createQuery()
   let savedMessagesIds: Ref<ChunterMessage>[] = []
 
@@ -210,7 +192,7 @@
 </div>
 <div class="flex-col vScroll content" bind:this={div}>
   {#if message}
-    <MsgView {message} {employees} thread isSaved={savedMessagesIds.includes(message._id)} {savedAttachmentsIds} />
+    <MsgView {message} thread isSaved={savedMessagesIds.includes(message._id)} {savedAttachmentsIds} />
     {#if comments.length}
       <ChannelSeparator title={chunter.string.RepliesCount} line params={{ replies: comments.length }} />
     {/if}
@@ -221,7 +203,6 @@
       <MsgView
         isHighlighted={$messageIdForScroll === comment._id && $isMessageHighlighted}
         message={comment}
-        {employees}
         thread
         isPinned={pinnedIds.includes(comment._id)}
         isSaved={savedMessagesIds.includes(comment._id)}

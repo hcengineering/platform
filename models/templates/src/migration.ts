@@ -29,7 +29,7 @@ export const templatesOperation: MigrateOperation = {
     })
     if (current === undefined) {
       await tx.createDoc(
-        templates.class.TemplateGroup,
+        templates.class.TemplateCategory,
         core.space.Space,
         {
           name: 'Public templates',
@@ -52,7 +52,7 @@ async function changeClass (client: MigrationClient): Promise<void> {
       _class: core.class.Space
     },
     {
-      _class: templates.class.TemplateGroup,
+      _class: templates.class.TemplateCategory,
       private: false,
       name: 'Public templates',
       description: 'Space for public templates'
@@ -67,7 +67,7 @@ async function changeClass (client: MigrationClient): Promise<void> {
       _class: core.class.TxCreateDoc
     },
     {
-      objectClass: templates.class.TemplateGroup,
+      objectClass: templates.class.TemplateCategory,
       'attirbutes.private': false,
       'attirbutes.name': 'Public templates',
       'attirbutes.description': 'Space for public templates'

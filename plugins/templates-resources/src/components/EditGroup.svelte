@@ -16,13 +16,13 @@
 <script lang="ts">
   import core from '@hcengineering/core'
   import presentation, { Card, getClient, Members } from '@hcengineering/presentation'
-  import { TemplateGroup } from '@hcengineering/templates'
+  import { TemplateCategory } from '@hcengineering/templates'
   import { EditBox, Grid, Label } from '@hcengineering/ui'
   import { BooleanPresenter } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import templates from '../plugin'
 
-  export let object: TemplateGroup
+  export let object: TemplateCategory
 
   const dispatch = createEventDispatcher()
 
@@ -37,7 +37,7 @@
 </script>
 
 <Card
-  label={templates.string.TemplateGroup}
+  label={templates.string.TemplateCategory}
   okAction={() => {
     dispatch('close')
   }}

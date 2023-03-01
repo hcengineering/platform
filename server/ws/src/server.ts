@@ -145,7 +145,8 @@ class SessionManager {
   private async setStatus (ctx: MeasureContext, session: Session, online: boolean): Promise<void> {
     try {
       const user = (
-        await session.pipeline().modelDb.findAll(
+        await session.findAll(
+          ctx,
           core.class.Account,
           {
             email: session.getUser()
