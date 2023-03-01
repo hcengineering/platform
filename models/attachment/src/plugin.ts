@@ -35,6 +35,7 @@ export default mergeIds(attachmentId, attachment, {
     Type: '' as IntlString,
     Photo: '' as IntlString,
     Date: '' as IntlString,
+    LastModified: '' as IntlString,
     SavedAttachments: '' as IntlString,
     Description: '' as IntlString,
     PinAttachment: '' as IntlString,
