@@ -26,6 +26,7 @@ export default mergeIds(chunterId, chunter, {
   component: {
     CommentPresenter: '' as AnyComponent,
     ChannelPresenter: '' as AnyComponent,
+    MessagePresenter: '' as AnyComponent,
     DmPresenter: '' as AnyComponent,
     Threads: '' as AnyComponent,
     ThreadView: '' as AnyComponent,
@@ -78,12 +79,14 @@ export default mergeIds(chunterId, chunter, {
     TxCommentCreate: '' as Ref<TxViewlet>,
     TxBacklinkCreate: '' as Ref<TxViewlet>,
     TxCommentRemove: '' as Ref<TxViewlet>,
-    TxBacklinkRemove: '' as Ref<TxViewlet>
+    TxBacklinkRemove: '' as Ref<TxViewlet>,
+    TxMessageCreate: '' as Ref<TxViewlet>
   },
   activity: {
     TxCommentCreate: '' as AnyComponent,
     TxBacklinkCreate: '' as AnyComponent,
-    TxBacklinkReference: '' as AnyComponent
+    TxBacklinkReference: '' as AnyComponent,
+    TxMessageCreate: '' as AnyComponent
   },
   space: {
     General: '' as Ref<Channel>,

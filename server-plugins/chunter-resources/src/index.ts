@@ -13,7 +13,14 @@
 // limitations under the License.
 //
 
-import chunter, { chunterId, ChunterSpace, Comment, Message, ThreadMessage } from '@hcengineering/chunter'
+import chunter, {
+  chunterId,
+  ChunterMessage,
+  ChunterSpace,
+  Comment,
+  Message,
+  ThreadMessage
+} from '@hcengineering/chunter'
 import { EmployeeAccount } from '@hcengineering/contact'
 import core, {
   Class,
@@ -35,6 +42,9 @@ import login from '@hcengineering/login'
 import { getMetadata } from '@hcengineering/platform'
 import { TriggerControl } from '@hcengineering/server-core'
 import { workbenchId } from '@hcengineering/workbench'
+import { getEmployeeAccountById } from '../../notification'
+import { createNotificationTxes } from '../../notification-resources'
+import notification from '@hcengineering/notification'
 
 /**
  * @public
@@ -261,10 +271,51 @@ export async function ChunterTrigger (tx: Tx, control: TriggerControl): Promise<
   return res.flat()
 }
 
+/**
+ * @public
+ */
+export async function DMTrigger (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  if (tx._class !== core.class.TxCollectionCUD) return []
+  const hierarchy = control.hierarchy
+  const ctx = tx as TxCollectionCUD<ChunterSpace, Message>
+  if (!hierarchy.isDerived(ctx.tx.objectClass, chunter.class.Message)) {
+    return []
+  }
+  const actualTx = TxProcessor.extractTx(tx)
+  if (actualTx._class !== core.class.TxCreateDoc) {
+    return []
+  }
+  const doc = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<ChunterMessage>)
+  const dms = await control.findAll(chunter.class.DirectMessage, { _id: doc.space })
+  if (dms.total === 0) {
+    return []
+  }
+  const sender = await getEmployeeAccountById(ctx.tx.modifiedBy, control)
+  if (sender === undefined) return []
+  const res: Tx[] = []
+  for (const member of dms[0].members) {
+    const receiver = await getEmployeeAccountById(member, control)
+    if (receiver === undefined) continue
+    if (receiver._id === sender._id) continue
+    const createNotificationTx = await createNotificationTxes(
+      control,
+      ctx,
+      notification.ids.DMNotification,
+      doc,
+      sender,
+      receiver,
+      doc.content
+    )
+    res.push(...createNotificationTx)
+  }
+  return res
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    ChunterTrigger
+    ChunterTrigger,
+    DMTrigger
   },
   function: {
     CommentRemove,

@@ -21,6 +21,7 @@ import { AnyComponent } from '@hcengineering/ui'
 export default mergeIds(notificationId, notification, {
   string: {
     LastView: '' as IntlString,
+    DMNotification: '' as IntlString,
     MentionNotification: '' as IntlString,
     PlatformNotification: '' as IntlString,
     BrowserNotification: '' as IntlString,
