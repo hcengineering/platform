@@ -392,6 +392,15 @@
       currentApplication?.checkIsHeaderHidden && (await (await getResource(currentApplication.checkIsHeaderHidden))())
     )
   }
+
+  async function checkIsHeaderDisabled () {
+    return (
+      currentApplication?.checkIsHeaderDisabled &&
+      (await (
+        await getResource(currentApplication.checkIsHeaderDisabled)
+      )())
+    )
+  }
 </script>
 
 {#if employee?.active === true}
@@ -495,7 +504,9 @@
             {#if currentApplication.navHeaderComponent}
               {#await checkIsHeaderHidden() then isHidden}
                 {#if !isHidden}
-                  <Component is={currentApplication.navHeaderComponent} props={{ currentSpace }} shrink />
+                  {#await checkIsHeaderDisabled() then disabled}
+                    <Component is={currentApplication.navHeaderComponent} props={{ currentSpace, disabled }} shrink />
+                  {/await}
                 {/if}
               {/await}
             {/if}
