@@ -73,6 +73,8 @@
     "CreatedOn": "Created",
     "Whatsapp": "Whatsapp",
     "WhatsappPlaceholder": "Whatsapp",
+    "Profile": "Profile",
+    "ProfilePlaceholder": "Profile...",
     "CurrentEmployee": "Current employee"
   }
 }
