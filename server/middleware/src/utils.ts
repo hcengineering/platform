@@ -35,6 +35,17 @@ export async function getUser (storage: ServerStorage, ctx: SessionContext): Pro
   }
   const account = (await storage.modelDb.findAll(core.class.Account, { email: ctx.userEmail }))[0]
   if (account === undefined) {
+    if (ctx.userEmail === 'anticrm@hc.engineering') {
+      return {
+        _id: core.account.System,
+        _class: core.class.Account,
+        role: AccountRole.Owner,
+        email: 'anticrm@hc.engineering',
+        space: core.space.Model,
+        modifiedBy: core.account.System,
+        modifiedOn: 0
+      }
+    }
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
   return account
