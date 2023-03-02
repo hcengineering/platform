@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { generateId, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
-  import presentation, { Card, getClient } from '@hcengineering/presentation'
+  import presentation, { AssigneeBox, Card, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
   import { genRanks, IssueStatus, Team, TimeReportDayType, WorkDayLength } from '@hcengineering/tracker'
   import {
@@ -32,6 +32,7 @@
   import tracker from '../../plugin'
   import TimeReportDayDropdown from '../issues/timereport/TimeReportDayDropdown.svelte'
   import TeamIconChooser from './TeamIconChooser.svelte'
+  import { Employee } from '@hcengineering/contact'
 
   export let team: Team | undefined = undefined
 
@@ -42,6 +43,7 @@
   let selectedWorkDayType: TimeReportDayType | undefined =
     team?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay
   let selectedWorkDayLength: WorkDayLength | undefined = team?.workDayLength ?? WorkDayLength.EIGHT_HOURS
+  let defaultAssignee: Ref<Employee> | null | undefined = null
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -78,6 +80,7 @@
       sequence: 0,
       issueStatuses: 0,
       defaultIssueStatus: defaultStatusId,
+      defaultAssignee: defaultAssignee ?? undefined,
       icon,
       defaultTimeReportDay: selectedWorkDayType ?? TimeReportDayType.PreviousWorkDay,
       workDayLength: selectedWorkDayLength ?? WorkDayLength.EIGHT_HOURS
@@ -193,6 +196,19 @@
       items={workDayLengthItems}
       shouldUpdateUndefined={false}
       bind:selected={selectedWorkDayLength}
+    />
+  </div>
+
+  <div class="flex-between">
+    <div class="caption">
+      <Label label={tracker.string.DefaultAssignee} />
+    </div>
+    <AssigneeBox
+      label={tracker.string.Assignee}
+      placeholder={tracker.string.Assignee}
+      bind:value={defaultAssignee}
+      titleDeselect={tracker.string.Unassigned}
+      showTooltip={{ label: tracker.string.DefaultAssignee }}
     />
   </div>
 </Card>

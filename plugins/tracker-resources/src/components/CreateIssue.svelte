@@ -115,7 +115,7 @@
   const defaultIssue = {
     title: '',
     description: '',
-    assignee,
+    assignee: '' as Ref<Employee>,
     project,
     sprint,
     number: 0,
@@ -153,6 +153,7 @@
     labels = []
     if (!originalIssue && !draft) {
       updateIssueStatusId(currentTeam, status)
+      updateAssigneeId(currentTeam)
     }
   }
 
@@ -232,6 +233,7 @@
 
   $: _space = draft?.team || space
   $: !originalIssue && !draft && updateIssueStatusId(currentTeam, status)
+  $: !originalIssue && !draft && updateAssigneeId(currentTeam)
   $: canSave = getTitle(object.title ?? '').length > 0
 
   $: statusesQuery.query(
@@ -316,6 +318,13 @@
     }
   }
 
+  function updateAssigneeId (currentTeam: Team | undefined) {
+    if (currentTeam?.defaultAssignee !== undefined) {
+      object.assignee = currentTeam.defaultAssignee
+    } else {
+      object.assignee = null
+    }
+  }
   function clearParentIssue () {
     parentIssue = undefined
   }
@@ -326,7 +335,6 @@
 
   async function isDraftEmpty (draft: Data<IssueDraft>): Promise<boolean> {
     const emptyDraft: Partial<IssueDraft> = {
-      assignee: null,
       description: '',
       dueDate: null,
       estimation: 0,
@@ -363,6 +371,14 @@
 
     if (currentTeam?.defaultIssueStatus) {
       return draft.status === currentTeam.defaultIssueStatus
+    }
+
+    if (draft.assignee === null) {
+      return true
+    }
+
+    if (currentTeam?.defaultAssignee) {
+      return draft.assignee === currentTeam.defaultAssignee
     }
 
     return false

@@ -121,6 +121,7 @@ async function createDefaultTeam (tx: TxOperations): Promise<void> {
         issueStatuses: 0,
         defaultIssueStatus: defaultStatusId,
         defaultTimeReportDay: TimeReportDayType.PreviousWorkDay,
+        defaultAssignee: undefined,
         workDayLength: WorkDayLength.EIGHT_HOURS
       },
       tracker.team.DefaultTeam
