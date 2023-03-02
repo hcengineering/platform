@@ -15,8 +15,8 @@
 <script lang="ts">
   import { CalendarMode } from '@hcengineering/calendar-resources'
   import calendar from '@hcengineering/calendar-resources/src/plugin'
-  import { Ref } from '@hcengineering/core'
-  import { Department } from '@hcengineering/hr'
+  import { DocumentQuery, Ref } from '@hcengineering/core'
+  import { Department, Staff } from '@hcengineering/hr'
   import { createQuery, SpaceSelector } from '@hcengineering/presentation'
   import {
     Button,
@@ -25,15 +25,23 @@
     IconForward,
     Label,
     deviceOptionsStore as deviceInfo,
-    TabList
+    TabList,
+    SearchEdit
   } from '@hcengineering/ui'
   import type { TabItem } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import hr from '../plugin'
-  import ScheduleMonthView from './ScheduleView.svelte'
+  import ScheduleView from './ScheduleView.svelte'
 
   let department = hr.ids.Head
   let currentDate: Date = new Date()
+
+  let search = ''
+  let resultQuery: DocumentQuery<Staff> = {}
+
+  function updateResultQuery (search: string): void {
+    resultQuery = search === '' ? {} : { name: { $like: '%' + search + '%' } }
+  }
 
   const query = createQuery()
 
@@ -168,6 +176,12 @@
           }}
         />
       {/if}
+      <SearchEdit
+        bind:value={search}
+        on:change={() => {
+          updateResultQuery(search)
+        }}
+      />
       <SpaceSelector
         _class={hr.class.Department}
         label={hr.string.Department}
@@ -178,4 +192,12 @@
   </div>
 </div>
 
-<ScheduleMonthView {department} {descendants} departmentById={departments} {currentDate} {mode} {display} />
+<ScheduleView
+  {department}
+  {descendants}
+  departmentById={departments}
+  staffQuery={resultQuery}
+  {currentDate}
+  {mode}
+  {display}
+/>

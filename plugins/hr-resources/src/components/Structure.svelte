@@ -104,6 +104,6 @@
 
 <Scroller>
   {#if head}
-    <DepartmentCard value={head} {descendants} {allEmployees} />
+    <DepartmentCard value={head} {descendants} {allEmployees} dragOver={undefined} dragPerson={undefined} />
   {/if}
 </Scroller>

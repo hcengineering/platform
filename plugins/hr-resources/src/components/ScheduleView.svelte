@@ -15,7 +15,7 @@
 <script lang="ts">
   import { CalendarMode } from '@hcengineering/calendar-resources'
   import { Employee, EmployeeAccount } from '@hcengineering/contact'
-  import { getCurrentAccount, Ref } from '@hcengineering/core'
+  import { DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
   import type { Department, Request, RequestType, Staff } from '@hcengineering/hr'
   import { createQuery } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
@@ -30,6 +30,7 @@
   export let currentDate: Date = new Date()
   export let mode: CalendarMode
   export let display: 'chart' | 'stats'
+  export let staffQuery: DocumentQuery<Staff> = {}
 
   $: startDate =
     mode === CalendarMode.Year
@@ -45,7 +46,7 @@
 
   const lq = createQuery()
   const typeQuery = createQuery()
-  const staffQuery = createQuery()
+  const staffQ = createQuery()
   const currentEmployee = (getCurrentAccount() as EmployeeAccount).employee
 
   let staff: Staff[] = []
@@ -60,9 +61,9 @@
     )
   })
 
-  staffQuery.query(
+  $: staffQ.query(
     hr.mixin.Staff,
-    {},
+    staffQuery,
     (res) => {
       staff = res
     },
