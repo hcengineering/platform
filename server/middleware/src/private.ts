@@ -53,7 +53,7 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
       const txCUD = tx as TxCUD<Doc>
       const domain = this.storage.hierarchy.getDomain(txCUD.objectClass)
       if (this.targetDomains.includes(domain)) {
-        const account = await getUser(this.storage, ctx)
+        const account = (await getUser(this.storage, ctx))._id
         if (account !== tx.modifiedBy && account !== core.account.System) {
           throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
         }
@@ -74,7 +74,7 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
     const domain = this.storage.hierarchy.getDomain(_class)
     if (this.targetDomains.includes(domain)) {
       const account = await getUser(this.storage, ctx)
-      if (account !== core.account.System) {
+      if (account._id !== core.account.System) {
         newQuery = {
           ...query,
           modifiedBy: account
@@ -95,7 +95,7 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
   async isAvailable (ctx: SessionContext, doc: Doc): Promise<boolean> {
     const domain = this.storage.hierarchy.getDomain(doc._class)
     if (!this.targetDomains.includes(domain)) return true
-    const account = await getUser(this.storage, ctx)
+    const account = (await getUser(this.storage, ctx))._id
     return doc.modifiedBy === account || account === core.account.System
   }
 
