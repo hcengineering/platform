@@ -22,6 +22,7 @@
   import tracker from '../../../plugin'
   import SubIssueList from '../edit/SubIssueList.svelte'
   import AddIssueDuo from '../../icons/AddIssueDuo.svelte'
+  import contact from '@hcengineering/contact'
 
   export let object: Doc
   export let viewlet: Viewlet
@@ -40,7 +41,10 @@
   let teams: Map<Ref<Team>, Team> | undefined
 
   $: subIssuesQuery.query(tracker.class.Issue, query, async (result) => (subIssues = result), {
-    sort: { rank: SortingOrder.Ascending }
+    sort: { rank: SortingOrder.Ascending },
+    lookup: {
+      assignee: contact.class.Employee
+    }
   })
 
   const teamsQuery = createQuery()
