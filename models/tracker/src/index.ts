@@ -179,6 +179,9 @@ export class TTeam extends TSpace implements Team {
   @Prop(TypeRef(tracker.class.IssueStatus), tracker.string.DefaultIssueStatus)
     defaultIssueStatus!: Ref<IssueStatus>
 
+  @Prop(TypeRef(contact.class.Employee), tracker.string.DefaultAssignee)
+    defaultAssignee!: Ref<Employee>
+
   declare workDayLength: WorkDayLength
   declare defaultTimeReportDay: TimeReportDayType
 }
