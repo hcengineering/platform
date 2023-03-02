@@ -130,6 +130,10 @@
 
     return [result, requestIndex]
   }
+
+  async function checkIsDisabled (special: SpecialNavModel) {
+    return special.checkIsDisabled && (await (await getResource(special.checkIsDisabled))())
+  }
 </script>
 
 {#if model}
@@ -139,14 +143,17 @@
         {#if row > 0 && specials[row].position !== specials[row - 1].position}
           <TreeSeparator />
         {/if}
-        <NavLink space={special.id}>
-          <SpecialElement
-            label={special.label}
-            icon={special.icon}
-            selected={special.id === currentSpecial}
-            indent={'ml-2'}
-          />
-        </NavLink>
+        {#await checkIsDisabled(special) then disabled}
+          <NavLink space={special.id} {disabled}>
+            <SpecialElement
+              label={special.label}
+              icon={special.icon}
+              selected={special.id === currentSpecial}
+              indent={'ml-2'}
+              {disabled}
+            />
+          </NavLink>
+        {/await}
       {/each}
     {/if}
 

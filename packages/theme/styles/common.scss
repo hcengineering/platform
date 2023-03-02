@@ -184,6 +184,18 @@
     height: auto;
     margin-bottom: .5rem;
   }
+
+  &.disabled {
+    cursor: not-allowed;
+
+    .an-element__icon {
+      opacity: 0.5;
+    }
+
+    .an-element__label {
+      color: rgb(var(--caption-color) / 40%);
+    }
+  }
 }
 .antiNav-divider {
   flex-shrink: 0;

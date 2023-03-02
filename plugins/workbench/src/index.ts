@@ -84,6 +84,7 @@ export interface SpecialNavModel {
   visibleIf?: Resource<(spaces: Space[]) => Promise<boolean>>
   // If defined, will be used to find spaces for visibleIf
   spaceClass?: Ref<Class<Space>>
+  checkIsDisabled?: Resource<() => Promise<boolean>>
 }
 
 /**
