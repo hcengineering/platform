@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
+import { AccountRole } from '@hcengineering/core'
 import { Builder } from '@hcengineering/model'
 import core from './component'
 import {
-  TFullTextSearchContext,
   TArrOf,
   TAttachedDoc,
   TAttribute,
@@ -30,6 +30,8 @@ import {
   TEnum,
   TEnumOf,
   TFulltextData,
+  TFullTextSearchContext,
+  TIndexStageState,
   TInterface,
   TMixin,
   TObj,
@@ -46,8 +48,7 @@ import {
   TTypeRelatedDocument,
   TTypeString,
   TTypeTimestamp,
-  TVersion,
-  TIndexStageState
+  TVersion
 } from './core'
 import { TAccount, TSpace } from './security'
 import { TUserStatus } from './transient'
@@ -104,5 +105,15 @@ export function createModel (builder: Builder): void {
     TFullTextSearchContext,
     TConfiguration,
     TConfigurationElement
+  )
+
+  builder.createDoc(
+    core.class.Account,
+    core.space.Model,
+    {
+      email: 'anticrm@hc.engineering',
+      role: AccountRole.Owner
+    },
+    core.account.System
   )
 }

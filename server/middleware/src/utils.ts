@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { Account, Ref, ServerStorage } from '@hcengineering/core'
+import core, { Account, AccountRole, ServerStorage } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { SessionContext } from '@hcengineering/server-core'
 
@@ -29,13 +29,28 @@ export function mergeTargets (current: string[] | undefined, prev: string[] | un
   return res
 }
 
-export async function getUser (storage: ServerStorage, ctx: SessionContext): Promise<Ref<Account>> {
+export async function getUser (storage: ServerStorage, ctx: SessionContext): Promise<Account> {
   if (ctx.userEmail === undefined) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
   const account = (await storage.modelDb.findAll(core.class.Account, { email: ctx.userEmail }))[0]
   if (account === undefined) {
+    if (ctx.userEmail === 'anticrm@hc.engineering') {
+      return {
+        _id: core.account.System,
+        _class: core.class.Account,
+        role: AccountRole.Owner,
+        email: 'anticrm@hc.engineering',
+        space: core.space.Model,
+        modifiedBy: core.account.System,
+        modifiedOn: 0
+      }
+    }
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
-  return account._id
+  return account
+}
+
+export function isOwner (account: Account): boolean {
+  return account.role === AccountRole.Owner || account._id === core.account.System
 }
