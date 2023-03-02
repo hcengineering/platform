@@ -308,17 +308,6 @@ export function createModel (builder: Builder): void {
     filters: ['_class']
   })
 
-  builder.createDoc(
-    task.class.KanbanTemplateSpace,
-    core.space.Model,
-    {
-      name: lead.string.Funnels,
-      description: lead.string.ManageFunnelStatuses,
-      icon: lead.component.TemplatesIcon
-    },
-    lead.space.FunnelTemplates
-  )
-
   createAction(builder, {
     action: workbench.actionImpl.Navigate,
     actionProps: {

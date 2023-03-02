@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { Class, Doc, DocumentQuery, FindOptions, Ref, ServerStorage, Tx } from '@hcengineering/core'
-import { FindAllMiddlewareResult, Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
+import { Class, Doc, DocumentQuery, FindOptions, FindResult, Ref, ServerStorage, Tx } from '@hcengineering/core'
+import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
 
 /**
  * @public
@@ -27,7 +27,7 @@ export abstract class BaseMiddleware {
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
-  ): Promise<FindAllMiddlewareResult<T>> {
+  ): Promise<FindResult<T>> {
     return await this.provideFindAll(ctx, _class, query, options)
   }
 
@@ -35,7 +35,8 @@ export abstract class BaseMiddleware {
     if (this.next !== undefined) {
       return await this.next.tx(ctx, tx)
     }
-    return [ctx, tx, undefined]
+    const res = await this.storage.tx(ctx, tx)
+    return [res[0], res[1], undefined]
   }
 
   protected async provideFindAll<T extends Doc>(
@@ -43,10 +44,10 @@ export abstract class BaseMiddleware {
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
-  ): Promise<FindAllMiddlewareResult<T>> {
+  ): Promise<FindResult<T>> {
     if (this.next !== undefined) {
       return await this.next.findAll(ctx, _class, query, options)
     }
-    return [ctx, _class, query, options]
+    return await this.storage.findAll(ctx, _class, query, options)
   }
 }

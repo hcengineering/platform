@@ -125,7 +125,7 @@ export interface TxMixin<D extends Doc, M extends D> extends TxCUD<D> {
  * @public
  */
 export type ArrayAsElement<T> = {
-  [P in keyof T]: T[P] extends Arr<infer X> ? Partial<X> | PullArray<X> : never
+  [P in keyof T]: T[P] extends Arr<infer X> ? Partial<X> | PullArray<X> | X : never
 }
 
 /**

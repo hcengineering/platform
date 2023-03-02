@@ -175,7 +175,29 @@ async function createDefaultKanban (tx: TxOperations): Promise<void> {
   await createKanban(tx, task.space.TasksPublic, defaultTmpl)
 }
 
+async function createSpace (tx: TxOperations): Promise<void> {
+  const currentTemplate = await tx.findOne(core.class.Space, {
+    _id: task.space.ProjectTemplates
+  })
+  if (currentTemplate === undefined) {
+    await tx.createDoc(
+      task.class.KanbanTemplateSpace,
+      core.space.Space,
+      {
+        name: task.string.Projects,
+        description: task.string.ManageProjectStatues,
+        icon: task.component.TemplatesIcon,
+        private: false,
+        members: [],
+        archived: false
+      },
+      task.space.ProjectTemplates
+    )
+  }
+}
+
 async function createDefaults (tx: TxOperations): Promise<void> {
+  await createSpace(tx)
   await createDefaultSequence(tx)
   await createDefaultProject(tx)
   await createSequence(tx, task.class.Issue)

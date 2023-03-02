@@ -13,9 +13,28 @@
 // limitations under the License.
 //
 
+import core, { AccountRole, Client, TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 
 export const coreOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {}
+  async upgrade (client: MigrationUpgradeClient): Promise<void> {
+    await createSystemAccount(client)
+  }
+}
+
+async function createSystemAccount (client: Client): Promise<void> {
+  const current = await client.findOne(core.class.Account, { _id: core.account.System })
+  if (current === undefined) {
+    const txop = new TxOperations(client, core.account.System)
+    await txop.createDoc(
+      core.class.Account,
+      core.space.Model,
+      {
+        email: 'anticrm@hc.engineering',
+        role: AccountRole.Owner
+      },
+      core.account.System
+    )
+  }
 }

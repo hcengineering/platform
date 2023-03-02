@@ -23,7 +23,7 @@ import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import tags, { TagCategory } from '@hcengineering/model-tags'
 import { createKanbanTemplate, createSequence, DOMAIN_TASK } from '@hcengineering/model-task'
 import { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
-import { KanbanTemplate } from '@hcengineering/task'
+import task, { KanbanTemplate } from '@hcengineering/task'
 import recruit from './plugin'
 
 async function fixImportedTitle (client: MigrationClient): Promise<void> {
@@ -253,11 +253,33 @@ async function createSpaces (tx: TxOperations): Promise<void> {
       {
         name: 'Reviews',
         description: 'Public reviews',
-        private: true,
+        private: false,
         members: [],
         archived: false
       },
       recruit.space.Reviews
+    )
+  } else if (currentReviews.private) {
+    await tx.update(currentReviews, { private: false })
+  }
+
+  const currentTemplate = await tx.findOne(core.class.Space, {
+    _id: recruit.space.VacancyTemplates
+  })
+  if (currentTemplate === undefined) {
+    await tx.createDoc(
+      task.class.KanbanTemplateSpace,
+      core.space.Space,
+      {
+        name: recruit.string.Vacancies,
+        description: recruit.string.ManageVacancyStatuses,
+        icon: recruit.component.TemplatesIcon,
+        editor: recruit.component.VacancyTemplateEditor,
+        private: false,
+        members: [],
+        archived: false
+      },
+      recruit.space.VacancyTemplates
     )
   }
 }

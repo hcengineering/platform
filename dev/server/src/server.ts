@@ -42,9 +42,10 @@ async function createNullContentTextAdapter (): Promise<ContentTextAdapter> {
  * @public
  */
 export async function start (port: number, host?: string): Promise<void> {
+  const ctx = new MeasureMetricsContext('server', {})
   startJsonRpc(
-    new MeasureMetricsContext('server', {}),
-    () => {
+    ctx,
+    (ctx) => {
       const conf: DbConfiguration = {
         domains: {
           [DOMAIN_TX]: 'InMemoryTx'
@@ -72,7 +73,7 @@ export async function start (port: number, host?: string): Promise<void> {
         },
         workspace: getWorkspaceId('')
       }
-      return createPipeline(conf, [], false, () => {})
+      return createPipeline(ctx, conf, [], false, () => {})
     },
     (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
     port,

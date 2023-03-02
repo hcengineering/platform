@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import { Doc, DOMAIN_TX, Ref, Space, TxCreateDoc, TxOperations } from '@hcengineering/core'
+import { DOMAIN_TX, Ref, TxCreateDoc, TxOperations } from '@hcengineering/core'
 import { Funnel } from '@hcengineering/lead'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { createKanbanTemplate, createSequence } from '@hcengineering/model-task'
-import task, { KanbanTemplate, createKanban } from '@hcengineering/task'
+import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
 import lead from './plugin'
 
 async function createSpace (tx: TxOperations): Promise<void> {
@@ -37,6 +37,25 @@ async function createSpace (tx: TxOperations): Promise<void> {
         members: []
       },
       lead.space.DefaultFunnel
+    )
+  }
+
+  const currentTemplate = await tx.findOne(core.class.Space, {
+    _id: lead.space.FunnelTemplates
+  })
+  if (currentTemplate === undefined) {
+    await tx.createDoc(
+      task.class.KanbanTemplateSpace,
+      core.space.Space,
+      {
+        name: lead.string.Funnels,
+        description: lead.string.ManageFunnelStatuses,
+        icon: lead.component.TemplatesIcon,
+        private: false,
+        members: [],
+        archived: false
+      },
+      lead.space.FunnelTemplates
     )
   }
 }
@@ -59,7 +78,7 @@ async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<Kanba
 
   return await createKanbanTemplate(tx, {
     kanbanId: lead.template.DefaultFunnel,
-    space: lead.space.FunnelTemplates as Ref<Doc> as Ref<Space>,
+    space: lead.space.FunnelTemplates,
     title: 'Default funnel',
     states: defaultKanban.states,
     doneStates: defaultKanban.doneStates

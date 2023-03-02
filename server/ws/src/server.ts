@@ -68,7 +68,7 @@ class SessionManager {
     workspace = this.workspaces.get(wsString)
 
     if (workspace === undefined) {
-      workspace = this.createWorkspace(pipelineFactory, token)
+      workspace = this.createWorkspace(ctx, pipelineFactory, token)
     }
 
     if (token.extra?.model === 'upgrade') {
@@ -85,7 +85,9 @@ class SessionManager {
       }
       if (LOGGING_ENABLED) console.log('no sessions for workspace', wsString)
       // Re-create pipeline.
-      workspace.pipeline = pipelineFactory(token.workspace, true, (tx) => this.broadcastAll(workspace as Workspace, tx))
+      workspace.pipeline = pipelineFactory(ctx, token.workspace, true, (tx) =>
+        this.broadcastAll(workspace as Workspace, tx)
+      )
 
       const pipeline = await workspace.pipeline
       const session = this.createSession(token, pipeline)
@@ -129,11 +131,11 @@ class SessionManager {
     }
   }
 
-  private createWorkspace (pipelineFactory: PipelineFactory, token: Token): Workspace {
+  private createWorkspace (ctx: MeasureContext, pipelineFactory: PipelineFactory, token: Token): Workspace {
     const upgrade = token.extra?.model === 'upgrade'
     const workspace: Workspace = {
       id: generateId(),
-      pipeline: pipelineFactory(token.workspace, upgrade, (tx) => this.broadcastAll(workspace, tx)),
+      pipeline: pipelineFactory(ctx, token.workspace, upgrade, (tx) => this.broadcastAll(workspace, tx)),
       sessions: [],
       upgrade
     }
@@ -272,7 +274,7 @@ class SessionManager {
     }
   }
 
-  broadcast (from: Session | null, workspaceId: WorkspaceId, resp: Response<any>, target?: string): void {
+  broadcast (from: Session | null, workspaceId: WorkspaceId, resp: Response<any>, target?: string[]): void {
     const workspace = this.workspaces.get(toWorkspaceString(workspaceId))
     if (workspace === undefined) {
       console.error(new Error('internal: cannot find sessions'))
@@ -284,7 +286,7 @@ class SessionManager {
       if (session[0] !== from) {
         if (target === undefined) {
           session[1].send(msg)
-        } else if (session[0].getUser() === target) {
+        } else if (target.includes(session[0].getUser())) {
           session[1].send(msg)
         }
       }

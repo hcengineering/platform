@@ -21,7 +21,6 @@ import {
   DOMAIN_TX,
   generateId,
   Ref,
-  Space,
   TxCollectionCUD,
   TxCreateDoc,
   TxCUD,
@@ -55,6 +54,24 @@ async function createSpace (tx: TxOperations): Promise<void> {
       board.space.DefaultBoard
     )
   }
+  const currentTemplate = await tx.findOne(core.class.Space, {
+    _id: board.space.BoardTemplates
+  })
+  if (currentTemplate === undefined) {
+    await tx.createDoc(
+      task.class.KanbanTemplateSpace,
+      core.space.Space,
+      {
+        name: board.string.Boards,
+        description: board.string.ManageBoardStatuses,
+        icon: board.component.TemplatesIcon,
+        private: false,
+        archived: false,
+        members: []
+      },
+      board.space.BoardTemplates
+    )
+  }
 }
 
 async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<KanbanTemplate>> {
@@ -71,7 +88,7 @@ async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<Kanba
 
   return await createKanbanTemplate(tx, {
     kanbanId: board.template.DefaultBoard,
-    space: board.space.BoardTemplates as Ref<Doc> as Ref<Space>,
+    space: board.space.BoardTemplates,
     title: 'Default board',
     states: defaultKanban.states,
     doneStates: defaultKanban.doneStates

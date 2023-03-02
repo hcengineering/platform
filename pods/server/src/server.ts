@@ -25,7 +25,12 @@ import {
   WorkspaceId
 } from '@hcengineering/core'
 import { createElasticAdapter, createElasticBackupDataAdapter } from '@hcengineering/elastic'
-import { ConfigurationMiddleware, ModifiedMiddleware, PrivateMiddleware } from '@hcengineering/middleware'
+import {
+  ConfigurationMiddleware,
+  ModifiedMiddleware,
+  PrivateMiddleware,
+  SpaceSecurityMiddleware
+} from '@hcengineering/middleware'
 import { MinioService } from '@hcengineering/minio'
 import { createMongoAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
 import { OpenAIEmbeddingsStage, openAIId, openAIPluginImpl } from '@hcengineering/openai'
@@ -192,6 +197,7 @@ export function start (
   const middlewares: MiddlewareCreator[] = [
     ModifiedMiddleware.create,
     PrivateMiddleware.create,
+    SpaceSecurityMiddleware.create,
     ConfigurationMiddleware.create
   ]
 
@@ -248,7 +254,7 @@ export function start (
 
   return startJsonRpc(
     getMetricsContext(),
-    (workspace, upgrade, broadcast) => {
+    (ctx, workspace, upgrade, broadcast) => {
       const conf: DbConfiguration = {
         domains: {
           [DOMAIN_TX]: 'MongoTx',
@@ -310,7 +316,7 @@ export function start (
           }),
         workspace
       }
-      return createPipeline(conf, middlewares, upgrade, broadcast)
+      return createPipeline(ctx, conf, middlewares, upgrade, broadcast)
     },
     (token: Token, pipeline: Pipeline, broadcast: BroadcastCall) => {
       if (token.extra?.mode === 'backup') {

@@ -58,28 +58,18 @@ export interface Middleware {
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
-  ) => Promise<FindAllMiddlewareResult<T>>
+  ) => Promise<FindResult<T>>
 }
 
 /**
  * @public
  */
-export type MiddlewareCreator = (storage: ServerStorage, next?: Middleware) => Middleware
+export type MiddlewareCreator = (ctx: MeasureContext, storage: ServerStorage, next?: Middleware) => Promise<Middleware>
 
 /**
  * @public
  */
-export type TxMiddlewareResult = [SessionContext, Tx, string | undefined]
-
-/**
- * @public
- */
-export type FindAllMiddlewareResult<T extends Doc> = [
-  SessionContext,
-  Ref<Class<T>>,
-  DocumentQuery<T>,
-  FindOptions<T> | undefined
-]
+export type TxMiddlewareResult = [TxResult, Tx[], string[] | undefined]
 
 /**
  * @public
@@ -93,7 +83,7 @@ export interface Pipeline extends LowLevelStorage {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
-  tx: (ctx: SessionContext, tx: Tx) => Promise<[TxResult, Tx[], string | undefined]>
+  tx: (ctx: SessionContext, tx: Tx) => Promise<[TxResult, Tx[], string[] | undefined]>
   close: () => Promise<void>
 }
 

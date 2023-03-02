@@ -58,12 +58,14 @@ export const tagsOperation: MigrateOperation = {
         {
           name: 'Tags',
           description: 'Space for all tags',
-          private: true,
+          private: false,
           archived: false,
           members: []
         },
         tags.space.Tags
       )
+    } else if (current.private) {
+      await tx.update(current, { private: false })
     }
   }
 }

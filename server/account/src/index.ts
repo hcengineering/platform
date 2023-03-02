@@ -351,6 +351,11 @@ export async function createAccount (
   const salt = randomBytes(32)
   const hash = hashWithSalt(password, salt)
 
+  const systemEmails = ['anticrm@hc.engineering']
+  if (systemEmails.includes(email)) {
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountAlreadyExists, { account: email }))
+  }
+
   const account = await getAccount(db, email)
   if (account !== null) {
     throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountAlreadyExists, { account: email }))
@@ -588,10 +593,8 @@ async function createEmployeeAccount (account: Account, productId: string, works
     const ops = new TxOperations(connection, core.account.System)
 
     const name = combineName(account.first, account.last)
-
     // Check if EmployeeAccoun is not exists
     const existingAccount = await ops.findOne(contact.class.EmployeeAccount, { email: account.email })
-
     if (existingAccount === undefined) {
       const employee = await createEmployee(ops, name, account.email)
 

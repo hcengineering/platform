@@ -41,10 +41,15 @@ export type BroadcastCall = (
   from: Session | null,
   workspaceId: WorkspaceId,
   resp: Response<any>,
-  target?: string
+  target?: string[]
 ) => void
 
 /**
  * @public
  */
-export type PipelineFactory = (ws: WorkspaceId, upgrade: boolean, broadcast: (tx: Tx[]) => void) => Promise<Pipeline>
+export type PipelineFactory = (
+  ctx: MeasureContext,
+  ws: WorkspaceId,
+  upgrade: boolean,
+  broadcast: (tx: Tx[]) => void
+) => Promise<Pipeline>

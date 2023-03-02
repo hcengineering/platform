@@ -229,17 +229,6 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(
-    task.class.KanbanTemplateSpace,
-    core.space.Model,
-    {
-      name: board.string.Boards,
-      description: board.string.ManageBoardStatuses,
-      icon: board.component.TemplatesIcon
-    },
-    board.space.BoardTemplates
-  )
-
-  builder.createDoc(
     view.class.ViewletDescriptor,
     core.space.Model,
     {

@@ -58,11 +58,33 @@ async function fillNotificationType (client: MigrationUpgradeClient): Promise<vo
   await Promise.all(promises)
 }
 
+async function createSpace (client: MigrationUpgradeClient): Promise<void> {
+  const txop = new TxOperations(client, core.account.System)
+  const currentTemplate = await txop.findOne(core.class.Space, {
+    _id: notification.space.Notifications
+  })
+  if (currentTemplate === undefined) {
+    await txop.createDoc(
+      core.class.Space,
+      core.space.Space,
+      {
+        name: 'Notification space',
+        description: 'Notification space',
+        private: false,
+        archived: false,
+        members: []
+      },
+      notification.space.Notifications
+    )
+  }
+}
+
 export const notificationOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await fillNotificationText(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
+    await createSpace(client)
     await fillNotificationType(client)
   }
 }

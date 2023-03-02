@@ -40,6 +40,8 @@ export const templatesOperation: MigrateOperation = {
         },
         templates.space.Templates
       )
+    } else if (current.private) {
+      await tx.update(current, { private: false })
     }
   }
 }
