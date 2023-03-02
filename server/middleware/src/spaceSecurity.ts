@@ -39,7 +39,7 @@ import core, {
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
 import { BaseMiddleware } from './base'
-import { getUser, mergeTargets } from './utils'
+import { getUser, isOwner, mergeTargets } from './utils'
 
 /**
  * @public
@@ -241,8 +241,8 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       const space = this.privateSpaces[tx.objectSpace]
       if (space !== undefined) {
         const account = await getUser(this.storage, ctx)
-        if (account !== core.account.System) {
-          const allowed = this.allowedSpaces[account]
+        if (!isOwner(account)) {
+          const allowed = this.allowedSpaces[account._id]
           if (allowed === undefined || !allowed.includes(isSpace ? (cudTx.objectId as Ref<Space>) : tx.objectSpace)) {
             throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
           }
@@ -255,22 +255,21 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     return [res[0], res[1], mergeTargets(targets, res[2])]
   }
 
-  private async getAllAllowedSpaces (ctx: SessionContext): Promise<Ref<Space>[]> {
+  private async getAllAllowedSpaces (account: Account): Promise<Ref<Space>[]> {
     let userSpaces: Ref<Space>[] = []
     try {
-      const account = await getUser(this.storage, ctx)
-      userSpaces = this.allowedSpaces[account] ?? []
-      return [...userSpaces, account as string as Ref<Space>, ...this.publicSpaces, ...this.systemSpaces]
+      userSpaces = this.allowedSpaces[account._id] ?? []
+      return [...userSpaces, account._id as string as Ref<Space>, ...this.publicSpaces, ...this.systemSpaces]
     } catch {
       return [...this.publicSpaces, ...this.systemSpaces]
     }
   }
 
   private async mergeQuery<T extends Doc>(
-    ctx: SessionContext,
+    account: Account,
     query: ObjQueryType<T['space']>
   ): Promise<ObjQueryType<T['space']>> {
-    const spaces = await this.getAllAllowedSpaces(ctx)
+    const spaces = await this.getAllAllowedSpaces(account)
     if (typeof query === 'string') {
       if (!spaces.includes(query)) {
         throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
@@ -290,17 +289,22 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     const newQuery = query
-    if (query.space !== undefined) {
-      newQuery.space = await this.mergeQuery(ctx, query.space)
-    } else {
-      const spaces = await this.getAllAllowedSpaces(ctx)
-      newQuery.space = { $in: spaces }
+    const account = await getUser(this.storage, ctx)
+    if (!isOwner(account)) {
+      if (query.space !== undefined) {
+        newQuery.space = await this.mergeQuery(account, query.space)
+      } else {
+        const spaces = await this.getAllAllowedSpaces(account)
+        newQuery.space = { $in: spaces }
+      }
     }
     const findResult = await this.provideFindAll(ctx, _class, newQuery, options)
-    if (options?.lookup !== undefined) {
-      for (const object of findResult) {
-        if (object.$lookup !== undefined) {
-          await this.filterLookup(ctx, object.$lookup)
+    if (!isOwner(account)) {
+      if (options?.lookup !== undefined) {
+        for (const object of findResult) {
+          if (object.$lookup !== undefined) {
+            await this.filterLookup(ctx, object.$lookup)
+          }
         }
       }
     }
@@ -310,8 +314,8 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
   async isUnavailable (ctx: SessionContext, space: Ref<Space>): Promise<boolean> {
     if (this.privateSpaces[space] === undefined) return false
     const account = await getUser(this.storage, ctx)
-    if (account === core.account.System) return false
-    return !this.allowedSpaces[account]?.includes(space)
+    if (isOwner(account)) return false
+    return !this.allowedSpaces[account._id]?.includes(space)
   }
 
   async filterLookup<T extends Doc>(ctx: SessionContext, lookup: LookupData<T>): Promise<void> {
