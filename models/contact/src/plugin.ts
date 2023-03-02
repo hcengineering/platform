@@ -75,6 +75,8 @@ export default mergeIds(contactId, contact, {
     CreatedOn: '' as IntlString,
     Whatsapp: '' as IntlString,
     WhatsappPlaceholder: '' as IntlString,
+    Profile: '' as IntlString,
+    ProfilePlaceholder: '' as IntlString,
     CurrentEmployee: '' as IntlString
   },
   completion: {

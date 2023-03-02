@@ -73,6 +73,8 @@
     "CreatedOn": "Создан",
     "Whatsapp": "Whatsapp",
     "WhatsappPlaceholder": "Whatsapp",
+    "Profile": "Профиль",
+    "ProfilePlaceholder": "Профиль...",
     "CurrentEmployee": "Текущий сотрудник"
   }
 }

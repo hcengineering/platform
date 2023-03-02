@@ -18,7 +18,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { ButtonKind, ButtonSize, closeTooltip } from '@hcengineering/ui'
 
-  import { ChannelProvider, Channel } from '@hcengineering/contact'
+  import { Channel, ChannelProvider } from '@hcengineering/contact'
   import { showPopup } from '@hcengineering/ui'
   import contact from '../plugin'
   import ChannelsDropdown from './ChannelsDropdown.svelte'

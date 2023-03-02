@@ -232,7 +232,8 @@ const contactPlugin = plugin(contactId, {
     GitHub: '' as Ref<ChannelProvider>,
     Facebook: '' as Ref<ChannelProvider>,
     Homepage: '' as Ref<ChannelProvider>,
-    Whatsapp: '' as Ref<ChannelProvider>
+    Whatsapp: '' as Ref<ChannelProvider>,
+    Profile: '' as Ref<ChannelProvider>
   },
   avatarProvider: {
     Color: '' as Ref<AvatarProvider>,
@@ -263,7 +264,8 @@ const contactPlugin = plugin(contactId, {
     Company: '' as Asset,
     SocialEdit: '' as Asset,
     Homepage: '' as Asset,
-    Whatsapp: '' as Asset
+    Whatsapp: '' as Asset,
+    Profile: '' as Asset
   },
   space: {
     Employee: '' as Ref<Space>,

@@ -177,7 +177,7 @@ export function createModel (builder: Builder): void {
           _objects: 'value'
         }
       },
-      label: gmail.string.WrtieEmail,
+      label: gmail.string.WriteEmail,
       icon: contact.icon.Email,
       keyBinding: [],
       input: 'any',

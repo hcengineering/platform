@@ -400,10 +400,20 @@ export function createModel (builder: Builder): void {
     {
       label: contact.string.Whatsapp,
       icon: contact.icon.Whatsapp,
-      placeholder: contact.string.WhatsappPlaceholder,
-      action: contact.actionImpl.OpenChannel
+      placeholder: contact.string.WhatsappPlaceholder
     },
     contact.channelProvider.Whatsapp
+  )
+
+  builder.createDoc(
+    contact.class.ChannelProvider,
+    core.space.Model,
+    {
+      label: contact.string.Profile,
+      icon: contact.icon.Profile,
+      placeholder: contact.string.ProfilePlaceholder
+    },
+    contact.channelProvider.Profile
   )
 
   builder.createDoc(

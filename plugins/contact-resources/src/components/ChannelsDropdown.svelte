@@ -168,6 +168,7 @@
   }
   const saveItems = (): void => {
     value = filterUndefined(displayItems)
+    dispatch('change', value)
     updateMenu(displayItems)
   }
 
