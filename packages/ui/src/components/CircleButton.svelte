@@ -14,11 +14,11 @@
 -->
 <script lang="ts">
   import type { Asset } from '@hcengineering/platform'
-  import type { AnySvelteComponent } from '../types'
+  import type { AnySvelteComponent, ButtonSize } from '../types'
   import Icon from './Icon.svelte'
 
   export let icon: Asset | AnySvelteComponent | undefined
-  export let size: 'small' | 'medium' | 'large' | 'x-large' = 'large'
+  export let size: ButtonSize = 'large'
   export let transparent: boolean = false
   export let selected: boolean = false
   export let primary: boolean = false
@@ -72,6 +72,10 @@
         background-color: var(--primary-button-pressed);
       }
     }
+  }
+  .icon-inline {
+    width: 1em;
+    height: 1em;
   }
   .icon-small {
     width: 1.5rem;

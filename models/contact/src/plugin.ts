@@ -46,7 +46,8 @@ export default mergeIds(contactId, contact, {
     EmployeeEditor: '' as AnyComponent,
     CreateEmployee: '' as AnyComponent,
     AccountArrayEditor: '' as AnyComponent,
-    ChannelFilter: '' as AnyComponent
+    ChannelFilter: '' as AnyComponent,
+    MergeEmployee: '' as AnyComponent
   },
   string: {
     Persons: '' as IntlString,
@@ -55,7 +56,6 @@ export default mergeIds(contactId, contact, {
     SearchOrganization: '' as IntlString,
     ContactInfo: '' as IntlString,
     Contact: '' as IntlString,
-    Location: '' as IntlString,
     Channel: '' as IntlString,
     ChannelProvider: '' as IntlString,
     Value: '' as IntlString,
@@ -91,7 +91,8 @@ export default mergeIds(contactId, contact, {
     Contact: '' as Ref<ActionCategory>
   },
   action: {
-    KickEmployee: '' as Ref<Action>
+    KickEmployee: '' as Ref<Action>,
+    MergeEmployee: '' as Ref<Action>
   },
   actionImpl: {
     KickEmployee: '' as ViewAction,

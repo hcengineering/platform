@@ -142,7 +142,8 @@ export {
   SortableListItem,
   MarkupEditor,
   TreeNode,
-  TreeItem
+  TreeItem,
+  StringEditor
 }
 
 export default async (): Promise<Resources> => ({

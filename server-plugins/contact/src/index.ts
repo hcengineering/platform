@@ -29,7 +29,8 @@ export const serverContactId = 'server-contact' as Plugin
  */
 export default plugin(serverContactId, {
   trigger: {
-    OnContactDelete: '' as Resource<TriggerFunc>
+    OnContactDelete: '' as Resource<TriggerFunc>,
+    OnEmployeeUpdate: '' as Resource<TriggerFunc>
   },
   function: {
     PersonHTMLPresenter: '' as Resource<Presenter>,

@@ -42,6 +42,7 @@ export default mergeIds(contactId, contact, {
     SetStatus: '' as IntlString,
     ClearStatus: '' as IntlString,
     SaveStatus: '' as IntlString,
+    Location: '' as IntlString,
     Cancel: '' as IntlString,
     StatusDueDate: '' as IntlString,
     StatusName: '' as IntlString,
@@ -59,7 +60,8 @@ export default mergeIds(contactId, contact, {
     Email: '' as IntlString,
     CreateEmployee: '' as IntlString,
     Inactive: '' as IntlString,
-    NotSpecified: '' as IntlString
+    NotSpecified: '' as IntlString,
+    MergeEmployee: '' as IntlString
   },
   function: {
     EmployeeSort: '' as SortFunc,
