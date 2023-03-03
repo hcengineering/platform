@@ -75,6 +75,7 @@
     "WhatsappPlaceholder": "Whatsapp",
     "Profile": "Profile",
     "ProfilePlaceholder": "Profile...",
-    "CurrentEmployee": "Current employee"
+    "CurrentEmployee": "Current employee",
+    "MergeEmployee": "Merge employee"
   }
 }

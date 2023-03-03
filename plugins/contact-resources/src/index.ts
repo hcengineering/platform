@@ -54,6 +54,7 @@ import PersonRefPresenter from './components/PersonRefPresenter.svelte'
 import EmployeeRefPresenter from './components/EmployeeRefPresenter.svelte'
 import ChannelFilter from './components/ChannelFilter.svelte'
 import AccountBox from './components/AccountBox.svelte'
+import MergeEmployee from './components/MergeEmployee.svelte'
 import contact from './plugin'
 import {
   employeeSort,
@@ -115,21 +116,24 @@ async function queryContact (
 async function kickEmployee (doc: Employee): Promise<void> {
   const client = getClient()
   const email = await client.findOne(contact.class.EmployeeAccount, { employee: doc._id })
-  if (email === undefined) return
-  showPopup(
-    MessageBox,
-    {
-      label: contact.string.KickEmployee,
-      message: contact.string.KickEmployeeDescr
-    },
-    undefined,
-    (res?: boolean) => {
-      if (res === true) {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        leaveWorkspace(email.email)
+  if (email === undefined) {
+    await client.update(doc, { active: false })
+  } else {
+    showPopup(
+      MessageBox,
+      {
+        label: contact.string.KickEmployee,
+        message: contact.string.KickEmployeeDescr
+      },
+      undefined,
+      (res?: boolean) => {
+        if (res === true) {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          leaveWorkspace(email.email)
+        }
       }
-    }
-  )
+    )
+  }
 }
 async function openChannelURL (doc: Channel): Promise<void> {
   if (doc.value.startsWith('http://') || doc.value.startsWith('https://')) {
@@ -176,7 +180,8 @@ export default async (): Promise<Resources> => ({
     EmployeeEditor,
     CreateEmployee,
     AccountArrayEditor,
-    ChannelFilter
+    ChannelFilter,
+    MergeEmployee
   },
   completion: {
     EmployeeQuery: async (

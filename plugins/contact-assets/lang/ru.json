@@ -75,6 +75,7 @@
     "WhatsappPlaceholder": "Whatsapp",
     "Profile": "Профиль",
     "ProfilePlaceholder": "Профиль...",
-    "CurrentEmployee": "Текущий сотрудник"
+    "CurrentEmployee": "Текущий сотрудник",
+    "MergeEmployee": "Объеденить сотрудника"
   }
 }

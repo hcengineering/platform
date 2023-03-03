@@ -142,6 +142,7 @@ export interface Status extends AttachedDoc {
  */
 export interface Employee extends Person {
   active: boolean
+  mergedTo?: Ref<Employee>
   statuses?: number
 }
 

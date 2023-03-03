@@ -156,6 +156,8 @@ export class TEmployee extends TPerson implements Employee {
 
   @Prop(Collection(contact.class.Status), contact.string.Status)
     statuses?: number
+
+  mergedTo?: Ref<Employee>
 }
 
 @Model(contact.class.EmployeeAccount, core.class.Account)
@@ -561,6 +563,30 @@ export function createModel (builder: Builder): void {
       secured: true
     },
     contact.action.KickEmployee
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: contact.component.MergeEmployee,
+        element: 'top',
+        fillProps: {
+          _object: 'value'
+        }
+      },
+      label: contact.string.MergeEmployee,
+      category: contact.category.Contact,
+      target: contact.class.Employee,
+      input: 'focus',
+      context: {
+        mode: ['context'],
+        group: 'other'
+      },
+      secured: true
+    },
+    contact.action.MergeEmployee
   )
 
   // Allow to use fuzzy search for mixins

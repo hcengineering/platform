@@ -13,12 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
+
   export let on: boolean = false
   export let disabled: boolean = false
+
+  const dispatch = createEventDispatcher()
 </script>
 
 <label class="toggle">
-  <input class="chBox" type="checkbox" {disabled} bind:checked={on} on:change />
+  <input
+    class="chBox"
+    type="checkbox"
+    {disabled}
+    bind:checked={on}
+    on:change={(e) => {
+      dispatch('change', on)
+    }}
+  />
   <span class="toggle-switch" />
 </label>
 
