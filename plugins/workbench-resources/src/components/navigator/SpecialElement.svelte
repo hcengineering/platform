@@ -22,6 +22,7 @@
   export let notifications = 0
   export let actions: Action[] = []
   export let selected: boolean = false
+  export let disabled: boolean = false
   export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
 </script>
 
@@ -30,6 +31,7 @@
 <div
   class="antiNav-element"
   class:selected
+  class:disabled
   class:ml-2={indent === 'ml-2'}
   class:ml-4={indent === 'ml-4'}
   class:ml-8={indent === 'ml-8'}

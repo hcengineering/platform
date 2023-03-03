@@ -20,6 +20,7 @@
   export let app: string | undefined = undefined
   export let space: string | undefined = undefined
   export let special: string | undefined = undefined
+  export let disabled = false
 
   let loc = createLocation(getCurrentLocation(), app, space, special)
 
@@ -62,6 +63,10 @@
   }
 </script>
 
-<a {href} on:click={clickHandler}>
+{#if disabled}
   <slot />
-</a>
+{:else}
+  <a {href} on:click={clickHandler}>
+    <slot />
+  </a>
+{/if}

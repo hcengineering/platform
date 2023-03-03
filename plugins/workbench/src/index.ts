@@ -36,6 +36,7 @@ export interface Application extends Doc {
 
   navHeaderComponent?: AnyComponent
   checkIsHeaderHidden?: Resource<() => Promise<boolean>>
+  checkIsHeaderDisabled?: Resource<() => Promise<boolean>>
   navFooterComponent?: AnyComponent
 }
 
@@ -83,6 +84,7 @@ export interface SpecialNavModel {
   visibleIf?: Resource<(spaces: Space[]) => Promise<boolean>>
   // If defined, will be used to find spaces for visibleIf
   spaceClass?: Ref<Class<Space>>
+  checkIsDisabled?: Resource<() => Promise<boolean>>
 }
 
 /**
