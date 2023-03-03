@@ -44,6 +44,7 @@
   export let prevAssigned: Ref<Employee>[] | undefined = []
   export let projectLead: Ref<Employee> | undefined = undefined
   export let projectMembers: Ref<Employee>[] | undefined = []
+  export let allowDeselect = true
   export let titleDeselect: IntlString | undefined
   export let placeholder: IntlString = presentation.string.Search
   export let ignoreUsers: Ref<Person>[] = []
@@ -72,7 +73,10 @@
     {
       ...(docQuery ?? {}),
       [searchField]: { $like: '%' + search + '%' },
-      _id: { $nin: ignoreUsers }
+      _id: {
+        ...(typeof docQuery?._id === 'object' ? docQuery._id : {}),
+        $nin: ignoreUsers
+      }
     },
     (result) => {
       objects = result
@@ -117,7 +121,7 @@
 
   async function handleSelection (evt: Event | undefined, selection: number): Promise<void> {
     const person = contacts[selection]
-    selected = person._id === selected ? undefined : person._id
+    selected = allowDeselect && person._id === selected ? undefined : person._id
     dispatch('close', selected !== undefined ? person : undefined)
   }
 
@@ -232,7 +236,7 @@
               handleSelection(undefined, item)
             }}
           >
-            {#if selected}
+            {#if allowDeselect && selected}
               <div class="icon">
                 {#if obj._id === selected}
                   <div bind:this={selectedDiv}>
