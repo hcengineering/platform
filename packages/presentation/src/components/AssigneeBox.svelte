@@ -48,6 +48,7 @@
   export let prevAssigned: Ref<Employee>[] | undefined = []
   export let projectLead: Ref<Employee> | undefined = undefined
   export let projectMembers: Ref<Employee>[] | undefined = []
+  export let allowDeselect = true
   export let titleDeselect: IntlString | undefined = undefined
   export let readonly = false
   export let kind: ButtonKind = 'no-border'
@@ -95,6 +96,7 @@
           icon,
           selected: value,
           placeholder,
+          allowDeselect,
           titleDeselect
         },
         !$$slots.content ? container : getEventPositionElement(ev),
