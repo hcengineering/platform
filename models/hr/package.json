@@ -31,6 +31,7 @@
     "@hcengineering/contact": "^0.6.11",
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/model-core": "^0.6.0",
+    "@hcengineering/notification": "^0.6.5",
     "@hcengineering/model-view": "^0.6.0",
     "@hcengineering/model-workbench": "^0.6.1",
     "@hcengineering/model-contact": "^0.6.1",

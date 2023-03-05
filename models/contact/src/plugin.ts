@@ -43,6 +43,7 @@ export default mergeIds(contactId, contact, {
     MemberPresenter: '' as AnyComponent,
     EditMember: '' as AnyComponent,
     EmployeeArrayEditor: '' as AnyComponent,
+    ContactArrayEditor: '' as AnyComponent,
     EmployeeEditor: '' as AnyComponent,
     CreateEmployee: '' as AnyComponent,
     AccountArrayEditor: '' as AnyComponent,

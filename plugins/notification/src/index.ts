@@ -76,6 +76,7 @@ export enum NotificationStatus {
  * @public
  */
 export interface NotificationType extends Doc {
+  hidden: boolean
   label: IntlString
   textTemplate: string
   htmlTemplate: string

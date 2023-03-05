@@ -16,10 +16,12 @@
   import { CalendarMode } from '@hcengineering/calendar-resources'
   import { Employee, EmployeeAccount } from '@hcengineering/contact'
   import { DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
-  import type { Department, Request, RequestType, Staff } from '@hcengineering/hr'
+  import { Department, fromTzDate, Request, RequestType, Staff } from '@hcengineering/hr'
   import { createQuery } from '@hcengineering/presentation'
+  import tracker, { Issue } from '@hcengineering/tracker'
   import { Label } from '@hcengineering/ui'
   import hr from '../plugin'
+  import { EmployeeReports, getEndDate, getStartDate } from '../utils'
   import MonthTableView from './schedule/MonthTableView.svelte'
   import MonthView from './schedule/MonthView.svelte'
   import YearView from './schedule/YearView.svelte'
@@ -148,9 +150,6 @@
   $: updateStaff(staff, departments, employeeRequests)
 
   const reportQuery = createQuery()
-
-  import tracker, { Issue } from '@hcengineering/tracker'
-  import { EmployeeReports, fromTzDate, getEndDate, getStartDate } from '../utils'
 
   let timeReports: Map<Ref<Employee>, EmployeeReports> = new Map()
 

@@ -39,7 +39,7 @@
     Map<Ref<NotificationProvider>, NotificationSetting>
   >()
 
-  typeQuery.query(notification.class.NotificationType, {}, (res) => (types = res))
+  typeQuery.query(notification.class.NotificationType, { hidden: false }, (res) => (types = res))
   providersQuery.query(notification.class.NotificationProvider, {}, (res) => (providers = res))
   settingsQuery.query(notification.class.NotificationSetting, { space }, (res) => {
     settings = convertToMap(res)

@@ -14,10 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Request } from '@hcengineering/hr'
+  import { fromTzDate, Request, tzDateEqual } from '@hcengineering/hr'
   import { getClient } from '@hcengineering/presentation'
   import { DateRangePresenter, Label } from '@hcengineering/ui'
-  import { fromTzDate, tzDateEqual } from '../utils'
 
   export let value: Request | null | undefined
   export let noShift: boolean = false

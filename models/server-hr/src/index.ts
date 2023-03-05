@@ -18,9 +18,31 @@ import { Builder } from '@hcengineering/model'
 import serverCore from '@hcengineering/server-core'
 import core from '@hcengineering/core'
 import serverHr from '@hcengineering/server-hr'
+import serverNotification from '@hcengineering/server-notification'
+import hr from '@hcengineering/hr'
 
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverHr.trigger.OnDepartmentStaff
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverHr.trigger.OnRequestCreate
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverHr.trigger.OnRequestUpdate
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverHr.trigger.OnRequestRemove
+  })
+
+  builder.mixin(hr.class.Request, core.class.Class, serverNotification.mixin.HTMLPresenter, {
+    presenter: serverHr.function.RequestHTMLPresenter
+  })
+
+  builder.mixin(hr.class.Request, core.class.Class, serverNotification.mixin.TextPresenter, {
+    presenter: serverHr.function.RequestTextPresenter
   })
 }

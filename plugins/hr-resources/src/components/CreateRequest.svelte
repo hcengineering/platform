@@ -17,13 +17,12 @@
   import calendar from '@hcengineering/calendar'
   import { Employee } from '@hcengineering/contact'
   import core, { DocumentQuery, generateId, Ref } from '@hcengineering/core'
-  import { Request, RequestType, Staff } from '@hcengineering/hr'
+  import { Request, RequestType, Staff, toTzDate } from '@hcengineering/hr'
   import { translate } from '@hcengineering/platform'
   import { Card, createQuery, EmployeeBox, getClient } from '@hcengineering/presentation'
   import ui, { Button, DateRangePresenter, DropdownLabelsIntl, IconAttachment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import hr from '../plugin'
-  import { toTzDate } from '../utils'
 
   export let staff: Staff
   export let date: Date

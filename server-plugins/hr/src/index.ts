@@ -16,6 +16,7 @@
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { TriggerFunc } from '@hcengineering/server-core'
+import { Presenter } from '@hcengineering/server-notification'
 
 /**
  * @public
@@ -27,6 +28,13 @@ export const serverHrId = 'server-hr' as Plugin
  */
 export default plugin(serverHrId, {
   trigger: {
-    OnDepartmentStaff: '' as Resource<TriggerFunc>
+    OnDepartmentStaff: '' as Resource<TriggerFunc>,
+    OnRequestCreate: '' as Resource<TriggerFunc>,
+    OnRequestUpdate: '' as Resource<TriggerFunc>,
+    OnRequestRemove: '' as Resource<TriggerFunc>
+  },
+  function: {
+    RequestHTMLPresenter: '' as Resource<Presenter>,
+    RequestTextPresenter: '' as Resource<Presenter>
   }
 })

@@ -55,6 +55,7 @@ import EmployeeRefPresenter from './components/EmployeeRefPresenter.svelte'
 import ChannelFilter from './components/ChannelFilter.svelte'
 import AccountBox from './components/AccountBox.svelte'
 import MergeEmployee from './components/MergeEmployee.svelte'
+import ContactArrayEditor from './components/ContactArrayEditor.svelte'
 import contact from './plugin'
 import {
   employeeSort,
@@ -154,6 +155,7 @@ export default async (): Promise<Resources> => ({
     OpenChannel: openChannelURL
   },
   component: {
+    ContactArrayEditor,
     PersonEditor,
     OrganizationEditor,
     ContactPresenter,
