@@ -84,6 +84,7 @@ export class TNotificationType extends TDoc implements NotificationType {
   textTemplate!: string
   htmlTemplate!: string
   subjectTemplate!: string
+  hidden!: boolean
 }
 
 @Model(notification.class.NotificationProvider, core.class.Doc, DOMAIN_MODEL)
@@ -130,6 +131,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: notification.string.MentionNotification,
+      hidden: false,
       textTemplate: '{sender} mentioned you in {doc} {data}',
       htmlTemplate: '<p><b>{sender}</b> mentioned you in {doc}</p> {data}',
       subjectTemplate: 'You was mentioned in {doc}'
@@ -141,7 +143,8 @@ export function createModel (builder: Builder): void {
     notification.class.NotificationType,
     core.space.Model,
     {
-      label: notification.string.DMNotification,
+      label: notification.string.DM,
+      hidden: false,
       textTemplate: '{sender} has send you a message: {doc} {data}',
       htmlTemplate: '<p><b>{sender}</b> has send you a message {doc}</p> {data}',
       subjectTemplate: 'You have new DM message in {doc}'

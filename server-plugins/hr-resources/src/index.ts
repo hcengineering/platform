@@ -13,10 +13,25 @@
 // limitations under the License.
 //
 
-import contact, { Employee } from '@hcengineering/contact'
-import core, { Ref, SortingOrder, Tx, TxFactory, TxMixin, TxProcessor, TxUpdateDoc } from '@hcengineering/core'
-import hr, { Department, DepartmentMember, Staff } from '@hcengineering/hr'
+import contact, { Contact, Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
+import core, {
+  Doc,
+  Ref,
+  SortingOrder,
+  toIdMap,
+  Tx,
+  TxCreateDoc,
+  TxFactory,
+  TxMixin,
+  TxProcessor,
+  TxUpdateDoc
+} from '@hcengineering/core'
+import hr, { Department, DepartmentMember, fromTzDate, Request, Staff, tzDateEqual } from '@hcengineering/hr'
+import notification, { NotificationType } from '@hcengineering/notification'
+import { translate } from '@hcengineering/platform'
 import { TriggerControl } from '@hcengineering/server-core'
+import { getEmployeeAccountById } from '@hcengineering/server-notification'
+import { getContent } from '@hcengineering/server-notification-resources'
 
 async function getOldDepartment (
   currentTx: TxMixin<Employee, Staff> | TxUpdateDoc<Employee>,
@@ -39,19 +54,23 @@ async function getOldDepartment (
   return lastDepartment
 }
 
-async function buildHierarchy (_id: Ref<Department>, control: TriggerControl): Promise<Ref<Department>[]> {
-  const res: Ref<Department>[] = []
-  if (_id === hr.ids.Head) return [hr.ids.Head]
-  const department = (
-    await control.findAll(hr.class.Department, {
-      _id
-    })
-  )[0]
-  if (department !== undefined) {
-    const ancestors = await buildHierarchy(department.space, control)
-    return [department._id, ...ancestors]
+async function buildHierarchy (_id: Ref<Department>, control: TriggerControl): Promise<Department[]> {
+  const res: Department[] = []
+  const ancestors: Map<Ref<Department>, Ref<Department>> = new Map()
+  const departments = await control.findAll(hr.class.Department, {})
+  for (const department of departments) {
+    if (department._id === hr.ids.Head) continue
+    ancestors.set(department._id, department.space)
   }
-  return res
+  const departmentsMap = toIdMap(departments)
+  while (true) {
+    const department = departmentsMap.get(_id)
+    if (department === undefined) return res
+    res.push(department)
+    const next = ancestors.get(department._id)
+    if (next === undefined) return res
+    _id = next
+  }
 }
 
 function exlude (first: Ref<Department>[], second: Ref<Department>[]): Ref<Department>[] {
@@ -112,16 +131,21 @@ export async function OnDepartmentStaff (tx: Tx, control: TriggerControl): Promi
     if (departmentId === null) {
       if (lastDepartment !== undefined) {
         const removed = await buildHierarchy(lastDepartment, control)
-        return getTxes(control.txFactory, targetAccount._id, [], removed)
+        return getTxes(
+          control.txFactory,
+          targetAccount._id,
+          [],
+          removed.map((p) => p._id)
+        )
       }
     }
-    const push = await buildHierarchy(departmentId, control)
+    const push = (await buildHierarchy(departmentId, control)).map((p) => p._id)
 
     if (lastDepartment === undefined) {
       return getTxes(control.txFactory, targetAccount._id, push)
     }
 
-    let removed = await buildHierarchy(lastDepartment, control)
+    let removed = (await buildHierarchy(lastDepartment, control)).map((p) => p._id)
     const added = exlude(removed, push)
     removed = exlude(push, removed)
     return getTxes(control.txFactory, targetAccount._id, added, removed)
@@ -153,13 +177,188 @@ export async function OnEmployeeDeactivate (tx: Tx, control: TriggerControl): Pr
   if (lastDepartment === undefined) return []
 
   const removed = await buildHierarchy(lastDepartment, control)
-  return getTxes(control.txFactory, targetAccount._id, [], removed)
+  return getTxes(
+    control.txFactory,
+    targetAccount._id,
+    [],
+    removed.map((p) => p._id)
+  )
+}
+
+async function getEmailNotification (
+  control: TriggerControl,
+  sender: EmployeeAccount,
+  doc: Request,
+  space: Ref<Department>,
+  type: Ref<NotificationType>
+): Promise<Tx[]> {
+  const contacts: Set<Ref<Contact>> = new Set()
+  const departments = await buildHierarchy(space, control)
+  for (const department of departments) {
+    if (department.subscribers === undefined) continue
+    for (const subscriber of department.subscribers) {
+      contacts.add(subscriber)
+    }
+  }
+
+  const channels = await control.findAll(contact.class.Channel, {
+    provider: contact.channelProvider.Email,
+    attachedTo: { $in: Array.from(contacts) }
+  })
+
+  const senderName = formatName(sender.name)
+  const content = await getContent(doc, senderName, type, control, '')
+  if (content === undefined) return []
+
+  const res: Tx[] = []
+  for (const channel of channels) {
+    const tx = control.txFactory.createTxCreateDoc(
+      notification.class.EmailNotification,
+      notification.space.Notifications,
+      {
+        status: 'new',
+        sender: senderName,
+        receivers: [channel.value],
+        subject: content.subject,
+        text: content.text,
+        html: content.html
+      }
+    )
+    res.push(tx)
+  }
+  return res
+}
+
+/**
+ * @public
+ */
+export async function OnRequestCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const actualTx = TxProcessor.extractTx(tx)
+  if (core.class.TxCreateDoc !== actualTx._class) {
+    return []
+  }
+  const ctx = actualTx as TxCreateDoc<Request>
+  if (ctx.objectClass !== hr.class.Request) {
+    return []
+  }
+
+  const sender = await getEmployeeAccountById(ctx.modifiedBy, control)
+  if (sender === undefined) return []
+
+  const request = TxProcessor.createDoc2Doc(ctx)
+
+  return await getEmailNotification(
+    control,
+    sender,
+    request,
+    ctx.objectSpace as Ref<Department>,
+    hr.ids.CreateRequestNotifcation
+  )
+}
+
+/**
+ * @public
+ */
+export async function OnRequestUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const actualTx = TxProcessor.extractTx(tx)
+  if (core.class.TxUpdateDoc !== actualTx._class) {
+    return []
+  }
+  const ctx = actualTx as TxUpdateDoc<Request>
+  if (ctx.objectClass !== hr.class.Request) {
+    return []
+  }
+
+  const sender = await getEmployeeAccountById(ctx.modifiedBy, control)
+  if (sender === undefined) return []
+
+  const request = (await control.findAll(hr.class.Request, { _id: ctx.objectId }))[0] as Request
+  if (request === undefined) return []
+
+  return await getEmailNotification(
+    control,
+    sender,
+    request,
+    ctx.objectSpace as Ref<Department>,
+    hr.ids.UpdateRequestNotifcation
+  )
+}
+
+/**
+ * @public
+ */
+export async function OnRequestRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const actualTx = TxProcessor.extractTx(tx)
+  if (core.class.TxCreateDoc !== actualTx._class) {
+    return []
+  }
+  const ctx = actualTx as TxCreateDoc<Request>
+  if (ctx.objectClass !== hr.class.Request) {
+    return []
+  }
+
+  const sender = await getEmployeeAccountById(ctx.modifiedBy, control)
+  if (sender === undefined) return []
+
+  const request = control.removedMap.get(ctx.objectId) as Request
+  if (request === undefined) return []
+
+  return await getEmailNotification(
+    control,
+    sender,
+    request,
+    ctx.objectSpace as Ref<Department>,
+    hr.ids.RemoveRequestNotifcation
+  )
+}
+
+/**
+ * @public
+ */
+export async function RequestHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
+  const request = doc as Request
+  const employee = (await control.findAll(contact.class.Employee, { _id: request.attachedTo }))[0]
+  const who = formatName(employee.name)
+  const type = await translate(control.modelDb.getObject(request.type).label, {})
+
+  const date = tzDateEqual(request.tzDate, request.tzDueDate)
+    ? `on ${new Date(fromTzDate(request.tzDate)).toLocaleDateString()}`
+    : `from ${new Date(fromTzDate(request.tzDate)).toLocaleDateString()} to ${new Date(
+        fromTzDate(request.tzDueDate)
+      ).toLocaleDateString()}`
+
+  return `${who} - ${type.toLowerCase()} ${date}`
+}
+
+/**
+ * @public
+ */
+export async function RequestTextPresenter (doc: Doc, control: TriggerControl): Promise<string> {
+  const request = doc as Request
+  const employee = (await control.findAll(contact.class.Employee, { _id: request.attachedTo }))[0]
+  const who = formatName(employee.name)
+  const type = await translate(control.modelDb.getObject(request.type).label, {})
+
+  const date = tzDateEqual(request.tzDate, request.tzDueDate)
+    ? `on ${new Date(fromTzDate(request.tzDate)).toLocaleDateString()}`
+    : `from ${new Date(fromTzDate(request.tzDate)).toLocaleDateString()} to ${new Date(
+        fromTzDate(request.tzDueDate)
+      ).toLocaleDateString()}`
+
+  return `${who} - ${type.toLowerCase()} ${date}`
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
+    OnRequestCreate,
+    OnRequestUpdate,
+    OnRequestRemove,
     OnDepartmentStaff,
     OnEmployeeDeactivate
+  },
+  function: {
+    RequestHTMLPresenter,
+    RequestTextPresenter
   }
 })

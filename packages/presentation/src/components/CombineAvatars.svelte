@@ -15,18 +15,18 @@
 <script lang="ts">
   import type { Class, Doc, Ref } from '@hcengineering/core'
   import { createQuery } from '../utils'
-  import { Person } from '@hcengineering/contact'
+  import { Person as Contact } from '@hcengineering/contact'
   import Avatar from './Avatar.svelte'
   import { IconSize } from '@hcengineering/ui'
 
   export let _class: Ref<Class<Doc>>
-  export let items: Ref<Person>[] = []
+  export let items: Ref<Contact>[] = []
   export let size: IconSize
   export let limit: number = 3
 
-  let persons: Person[] = []
+  let persons: Contact[] = []
   const query = createQuery()
-  $: query.query<Person>(
+  $: query.query<Contact>(
     _class,
     { _id: { $in: items } },
     (result) => {

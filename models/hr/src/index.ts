@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Employee } from '@hcengineering/contact'
+import { Contact, Employee } from '@hcengineering/contact'
 import { Arr, Class, Domain, DOMAIN_MODEL, IndexKind, Markup, Ref, Type } from '@hcengineering/core'
 import { Department, DepartmentMember, hrId, Request, RequestType, Staff, TzDate } from '@hcengineering/hr'
 import {
@@ -40,6 +40,7 @@ import view, { classPresenter, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import { Asset, IntlString } from '@hcengineering/platform'
 import hr from './plugin'
+import notification from '@hcengineering/notification'
 
 export const DOMAIN_HR = 'hr' as Domain
 
@@ -70,6 +71,9 @@ export class TDepartment extends TSpace implements Department {
 
   @Prop(ArrOf(TypeRef(hr.class.DepartmentMember)), contact.string.Members)
   declare members: Arr<Ref<DepartmentMember>>
+
+  @Prop(ArrOf(TypeRef(contact.class.Contact)), hr.string.Subscribers)
+    subscribers?: Arr<Ref<Contact>>
 }
 
 @Model(hr.class.DepartmentMember, contact.class.EmployeeAccount)
@@ -405,6 +409,45 @@ export function createModel (builder: Builder): void {
   builder.mixin(hr.class.Request, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: hr.component.RequestPresenter
   })
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: true,
+      label: hr.string.Request,
+      textTemplate: 'New request: {doc}',
+      htmlTemplate: 'New request: {doc}',
+      subjectTemplate: 'New request'
+    },
+    hr.ids.CreateRequestNotifcation
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: true,
+      label: hr.string.Request,
+      textTemplate: 'Request updated: {doc}',
+      htmlTemplate: 'Request updated: {doc}',
+      subjectTemplate: 'Request updated'
+    },
+    hr.ids.UpdateRequestNotifcation
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: true,
+      label: hr.string.Request,
+      textTemplate: 'Request removed: {doc}',
+      htmlTemplate: 'Request removed: {doc}',
+      subjectTemplate: 'Request removed'
+    },
+    hr.ids.RemoveRequestNotifcation
+  )
 }
 
 export { hrOperation } from './migration'

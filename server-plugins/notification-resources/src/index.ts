@@ -168,7 +168,10 @@ function fillTemplate (template: string, sender: string, doc: string, data: stri
   return res
 }
 
-async function getContent (
+/**
+ * @public
+ */
+export async function getContent (
   doc: Doc | undefined,
   sender: string,
   type: Ref<NotificationType>,
@@ -413,6 +416,8 @@ async function getBacklinkDoc (backlink: Backlink, control: TriggerControl): Pro
     )
   )[0]
 }
+
+export * from './types'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({

@@ -1,6 +1,6 @@
 import { Employee, formatName } from '@hcengineering/contact'
 import { Ref, TxOperations } from '@hcengineering/core'
-import { Department, Request, RequestType, Staff, TzDate } from '@hcengineering/hr'
+import { Department, fromTzDate, Request, RequestType, Staff } from '@hcengineering/hr'
 import { MessageBox } from '@hcengineering/presentation'
 import { Issue, TimeSpendReport } from '@hcengineering/tracker'
 import { isWeekend, MILLISECONDS_IN_DAY, showPopup } from '@hcengineering/ui'
@@ -54,32 +54,6 @@ export async function addMember (client: TxOperations, employee?: Employee, valu
       })
     }
   }
-}
-
-/**
- * @public
- */
-export function toTzDate (date: Date): TzDate {
-  return {
-    year: date.getFullYear(),
-    month: date.getMonth(),
-    day: date.getDate(),
-    offset: date.getTimezoneOffset()
-  }
-}
-
-/**
- * @public
- */
-export function fromTzDate (tzDate: TzDate): number {
-  return new Date().setFullYear(tzDate?.year ?? 0, tzDate.month, tzDate.day)
-}
-
-/**
- * @public
- */
-export function tzDateEqual (tzDate: TzDate, tzDate2: TzDate): boolean {
-  return tzDate.year === tzDate2.year && tzDate.month === tzDate2.month && tzDate.day === tzDate2.day
 }
 
 /**

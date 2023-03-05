@@ -368,11 +368,11 @@ export async function getAttributeEditor (
   }
 
   if (editorMixin.inlineEditor === undefined) {
-    if (presenterClass.category === 'array') {
-      // NOTE: Don't show error for array attributes for compatibility with previous implementation
-    } else {
-      console.error(getAttributeEditorNotFoundError(_class, key))
-    }
+    // if (presenterClass.category === 'array') {
+    //   // NOTE: Don't show error for array attributes for compatibility with previous implementation
+    // } else {
+    console.error(getAttributeEditorNotFoundError(_class, key))
+    // }
     return
   }
 

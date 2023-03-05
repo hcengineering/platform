@@ -13,11 +13,12 @@
 // limitations under the License.
 //
 
-import type { Employee, EmployeeAccount } from '@hcengineering/contact'
+import type { Contact, Employee, EmployeeAccount } from '@hcengineering/contact'
 import type { Arr, AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Type } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { Viewlet } from '@hcengineering/view'
+import { NotificationType } from '@hcengineering/notification'
 
 /**
  * @public
@@ -30,6 +31,7 @@ export interface Department extends Space {
   comments?: number
   channels?: number
   members: Arr<Ref<DepartmentMember>>
+  subscribers?: Arr<Ref<Contact>>
 }
 
 /**
@@ -126,13 +128,18 @@ const hr = plugin(hrId, {
     PTO2: '' as Ref<RequestType>,
     Remote: '' as Ref<RequestType>,
     Overtime: '' as Ref<RequestType>,
-    Overtime2: '' as Ref<RequestType>
+    Overtime2: '' as Ref<RequestType>,
+    CreateRequestNotifcation: '' as Ref<NotificationType>,
+    UpdateRequestNotifcation: '' as Ref<NotificationType>,
+    RemoveRequestNotifcation: '' as Ref<NotificationType>
   },
   viewlet: {
     TableMember: '' as Ref<Viewlet>,
     StaffStats: '' as Ref<Viewlet>
   }
 })
+
+export * from './utils'
 
 /**
  * @public
