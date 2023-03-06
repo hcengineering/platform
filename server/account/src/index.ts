@@ -74,6 +74,7 @@ const accountPlugin = plugin(accountId, {
     WorkspaceNotFound: '' as StatusCode<{ workspace: string }>,
     InvalidPassword: '' as StatusCode<{ account: string }>,
     AccountAlreadyExists: '' as StatusCode<{ account: string }>,
+    AccountWasMerged: '' as StatusCode<{ account: string }>,
     WorkspaceAlreadyExists: '' as StatusCode<{ workspace: string }>,
     ProductIdMismatch: '' as StatusCode<{ productId: string }>
   },
@@ -556,15 +557,15 @@ export async function setRole (email: string, workspace: string, productId: stri
  */
 export async function assignWorkspace (db: Db, productId: string, email: string, workspace: string): Promise<void> {
   const { workspaceId, accountId } = await getWorkspaceAndAccount(db, productId, email, workspace)
+  const account = await db.collection<Account>(ACCOUNT_COLLECTION).findOne({ _id: accountId })
+
+  if (account !== null) await createEmployeeAccount(account, productId, workspace)
+
   // Add account into workspace.
   await db.collection(WORKSPACE_COLLECTION).updateOne({ _id: workspaceId }, { $addToSet: { accounts: accountId } })
 
   // Add workspace to account
   await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: accountId }, { $addToSet: { workspaces: workspaceId } })
-
-  const account = await db.collection<Account>(ACCOUNT_COLLECTION).findOne({ _id: accountId })
-
-  if (account !== null) await createEmployeeAccount(account, productId, workspace)
 }
 
 async function createEmployee (ops: TxOperations, name: string, email: string): Promise<Ref<Employee>> {
@@ -618,6 +619,11 @@ async function createEmployeeAccount (account: Account, productId: string, works
           employee: employeeId
         })
       } else if (!employee.active) {
+        if (employee.mergedTo !== undefined) {
+          throw new PlatformError(
+            new Status(Severity.ERROR, accountPlugin.status.AccountWasMerged, { account: account.email })
+          )
+        }
         await ops.update(employee, {
           active: true
         })
