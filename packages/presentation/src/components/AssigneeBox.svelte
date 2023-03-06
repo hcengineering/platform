@@ -48,6 +48,7 @@
   export let prevAssigned: Ref<Employee>[] | undefined = []
   export let projectLead: Ref<Employee> | undefined = undefined
   export let projectMembers: Ref<Employee>[] | undefined = []
+  export let members: Ref<Employee>[] | undefined = []
   export let allowDeselect = true
   export let titleDeselect: IntlString | undefined = undefined
   export let readonly = false
@@ -92,6 +93,7 @@
           prevAssigned,
           projectLead,
           projectMembers,
+          members,
           ignoreUsers: excluded ?? [],
           icon,
           selected: value,

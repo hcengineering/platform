@@ -24,6 +24,7 @@
   export let onChange: (refs: Ref<Account>[]) => void
   export let readonly = false
   export let kind: ButtonKind = 'link'
+  export let width: string | undefined = undefined
   export let excludeItems: Ref<Account>[] | undefined = undefined
 
   let timer: any
@@ -79,5 +80,6 @@
   on:update={onUpdate}
   size={'medium'}
   justify={'left'}
-  width={'100%'}
+  width={width ?? 'min-content'}
+  {kind}
 />
