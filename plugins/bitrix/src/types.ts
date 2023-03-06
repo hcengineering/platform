@@ -1,5 +1,5 @@
 import { ChannelProvider } from '@hcengineering/contact'
-import { AttachedDoc, Class, Doc, Ref } from '@hcengineering/core'
+import { AttachedDoc, Class, Doc, Mixin, Ref } from '@hcengineering/core'
 import { ExpertKnowledge, InitialKnowledge, MeaningfullKnowledge } from '@hcengineering/tags'
 
 /**
@@ -164,6 +164,9 @@ export interface BitrixEntityMapping extends Doc {
   comments: boolean
   activity: boolean
   attachments: boolean
+
+  // If specified, will include this mixins in any case.
+  mixins?: Ref<Mixin<Doc>>[]
 }
 /**
  * @public

@@ -114,6 +114,11 @@ export async function convert (
   ][] = []
   const mixins: Record<Ref<Mixin<Doc>>, Data<Doc>> = {}
 
+  // Fill required mixins.
+  for (const m of entity.mixins ?? []) {
+    mixins[m] = {}
+  }
+
   const syncRequests: BitrixSyncRequest[] = []
 
   const extractValue = (field?: string, alternatives?: string[]): any | undefined => {
