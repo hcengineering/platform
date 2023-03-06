@@ -286,6 +286,7 @@ export type AssigneeCategory =
   | 'PreviouslyAssigned'
   | 'ProjectLead'
   | 'ProjectMembers'
+  | 'Members'
   | 'Other'
 
 const assigneeCategoryTitleMap: Record<AssigneeCategory, IntlString> = Object.freeze({
@@ -294,6 +295,7 @@ const assigneeCategoryTitleMap: Record<AssigneeCategory, IntlString> = Object.fr
   PreviouslyAssigned: presentation.string.CategoryPreviousAssigned,
   ProjectLead: presentation.string.CategoryProjectLead,
   ProjectMembers: presentation.string.CategoryProjectMembers,
+  Members: presentation.string.Members,
   Other: presentation.string.CategoryOther
 })
 
@@ -306,6 +308,7 @@ export const assigneeCategoryOrder: AssigneeCategory[] = [
   'PreviouslyAssigned',
   'ProjectLead',
   'ProjectMembers',
+  'Members',
   'Other'
 ]
 

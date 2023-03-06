@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee } from '@hcengineering/contact'
+  import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
   import { AttachedData, Ref } from '@hcengineering/core'
   import { AssigneeBox, getClient } from '@hcengineering/presentation'
   import { Issue, IssueTemplateData } from '@hcengineering/tracker'
@@ -34,10 +34,15 @@
   let prevAssigned: Ref<Employee>[] = []
   let projectLead: Ref<Employee> | undefined = undefined
   let projectMembers: Ref<Employee>[] = []
+  let members: Ref<Employee>[] = []
 
   $: getPreviousAssignees(value).then((res) => {
     prevAssigned = res
   })
+
+  function hasSpace (issue: Issue | AttachedData<Issue> | IssueTemplateData): issue is Issue {
+    return (issue as Issue).space !== undefined
+  }
 
   async function updateProjectMembers (issue: Issue | AttachedData<Issue> | IssueTemplateData) {
     if (issue.project) {
@@ -47,6 +52,17 @@
     } else {
       projectLead = undefined
       projectMembers = []
+    }
+    if (hasSpace(issue)) {
+      const team = await client.findOne(tracker.class.Team, { _id: issue.space })
+      if (team !== undefined) {
+        const accounts = await client.findAll(contact.class.EmployeeAccount, {
+          _id: { $in: team.members as Ref<EmployeeAccount>[] }
+        })
+        members = accounts.map((p) => p.employee)
+      } else {
+        members = []
+      }
     }
   }
 
@@ -73,6 +89,7 @@
     {prevAssigned}
     {projectLead}
     {projectMembers}
+    {members}
     titleDeselect={tracker.string.Unassigned}
     {size}
     {kind}

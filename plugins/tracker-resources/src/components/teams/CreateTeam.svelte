@@ -13,7 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { generateId, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
+  import { Employee } from '@hcengineering/contact'
+  import { AccountArrayEditor } from '@hcengineering/contact-resources'
+  import core, { Account, generateId, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import presentation, { AssigneeBox, Card, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
@@ -32,7 +34,6 @@
   import tracker from '../../plugin'
   import TimeReportDayDropdown from '../issues/timereport/TimeReportDayDropdown.svelte'
   import TeamIconChooser from './TeamIconChooser.svelte'
-  import { Employee } from '@hcengineering/contact'
 
   export let team: Team | undefined = undefined
 
@@ -44,6 +45,7 @@
     team?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay
   let selectedWorkDayLength: WorkDayLength | undefined = team?.workDayLength ?? WorkDayLength.EIGHT_HOURS
   let defaultAssignee: Ref<Employee> | null | undefined = null
+  let members: Ref<Account>[] = team?.members ?? [getCurrentAccount()._id]
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -73,7 +75,7 @@
       name,
       description,
       private: isPrivate,
-      members: [getCurrentAccount()._id],
+      members,
       archived: false,
       createdBy: getCurrentAccount()._id,
       identifier,
@@ -88,7 +90,7 @@
   }
 
   async function updateTeam () {
-    const { sequence, issueStatuses, defaultIssueStatus, members, identifier, ...teamData } = getTeamData()
+    const { sequence, issueStatuses, defaultIssueStatus, identifier, ...teamData } = getTeamData()
     // update team doc
     await client.update(team!, teamData)
   }
@@ -137,7 +139,7 @@
 
 <Card
   label={isNew ? tracker.string.NewTeam : tracker.string.EditTeam}
-  okLabel={isNew ? presentation.string.Create : presentation.string.Edit}
+  okLabel={isNew ? presentation.string.Create : presentation.string.Save}
   okAction={handleSave}
   canSave={name.length > 0 && !!selectedWorkDayType && !!selectedWorkDayLength}
   on:close={() => {
@@ -201,11 +203,24 @@
 
   <div class="flex-between">
     <div class="caption">
+      <Label label={tracker.string.Members} />
+    </div>
+    <AccountArrayEditor
+      value={members}
+      label={tracker.string.Members}
+      onChange={(refs) => (members = refs)}
+      kind="link-bordered"
+    />
+  </div>
+
+  <div class="flex-between">
+    <div class="caption">
       <Label label={tracker.string.DefaultAssignee} />
     </div>
     <AssigneeBox
       label={tracker.string.Assignee}
       placeholder={tracker.string.Assignee}
+      kind="link-bordered"
       bind:value={defaultAssignee}
       titleDeselect={tracker.string.Unassigned}
       showTooltip={{ label: tracker.string.DefaultAssignee }}
