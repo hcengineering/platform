@@ -14,12 +14,12 @@
 // limitations under the License.
 //
 
-import { Builder, Collection, Mixin, Model, Prop, TypeRef, TypeString } from '@hcengineering/model'
+import { ArrOf, Builder, Collection, Mixin, Model, Prop, TypeRef, TypeString } from '@hcengineering/model'
 import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import bitrix from './plugin'
 
 import { BitrixEntityMapping, BitrixFieldMapping, BitrixSyncDoc, Fields } from '@hcengineering/bitrix'
-import { AnyAttribute, Class, Doc, Domain, Ref } from '@hcengineering/core'
+import { AnyAttribute, Class, Doc, Domain, Mixin as CoreMixin, Ref } from '@hcengineering/core'
 
 import view, { createAction } from '@hcengineering/model-view'
 
@@ -47,6 +47,10 @@ export class TBitrixEntityMapping extends TDoc implements BitrixEntityMapping {
   comments!: boolean
   activity!: boolean
   attachments!: boolean
+
+  @Prop(ArrOf(TypeRef(core.class.Mixin)), core.string.Class)
+  // If specified, will include this mixins in any case.
+    mixins!: Ref<CoreMixin<Doc>>[]
 }
 
 @Model(bitrix.class.FieldMapping, core.class.Doc, DOMAIN_BITRIX)

@@ -12,13 +12,14 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { ClassSetting } from '@hcengineering/setting-resources'
-  import { Button, Expandable, Icon, IconDelete, IconEdit, Label, showPopup } from '@hcengineering/ui'
+  import { Button, Expandable, Icon, IconAdd, IconDelete, IconEdit, Label, showPopup } from '@hcengineering/ui'
   import bitrix from '../plugin'
 
   import AttributeMapper from './AttributeMapper.svelte'
   import FieldMappingPresenter from './FieldMappingPresenter.svelte'
 
   import CheckBox from '@hcengineering/ui/src/components/CheckBox.svelte'
+  import DropdownLabelsPopup from '@hcengineering/ui/src/components/DropdownLabelsPopup.svelte'
   import { deepEqual } from 'fast-equals'
   import BitrixFieldLookup from './BitrixFieldLookup.svelte'
   import CreateMappingAttribute from './CreateMappingAttribute.svelte'
@@ -111,6 +112,51 @@
           <div class="ml-2">
             <Label label={getEmbeddedLabel('Activity')} />
           </div>
+        </div>
+        <div class="flex-row-center">
+          <div class="ml-2">
+            <Label label={getEmbeddedLabel('Mixins to include')} />
+          </div>
+          {#each mapping.mixins ?? [] as mixin}
+            <div class="flex-row-center p-1 focused-button">
+              {mixin}
+              <Button
+                icon={IconDelete}
+                on:click={() => {
+                  client.update(mapping, { $pull: { mixins: mixin } })
+                }}
+              />
+            </div>
+          {/each}
+          <Button
+            icon={IconAdd}
+            label={getEmbeddedLabel('Add mixin')}
+            on:click={async () => {
+              const h = client.getHierarchy()
+              const mixins = []
+              for (const o of h.getAncestors(mapping.ofClass)) {
+                const ms = await h.getDescendants(h.getBaseClass(o)).filter((it) => h.isMixin(it))
+                for (const m of ms) {
+                  if (mixins.indexOf(m) === -1) {
+                    mixins.push(m)
+                  }
+                }
+              }
+
+              showPopup(
+                DropdownLabelsPopup,
+                {
+                  items: mixins.map((it) => ({ id: it, label: h.getClass(it).label ?? it }))
+                },
+                'top',
+                (res) => {
+                  if (res != null) {
+                    client.update(mapping, { $push: { mixins: res } })
+                  }
+                }
+              )
+            }}
+          />
         </div>
       </div>
     </Expandable>
