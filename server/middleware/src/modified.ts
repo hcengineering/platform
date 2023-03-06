@@ -39,22 +39,24 @@ export class ModifiedMiddleware extends BaseMiddleware implements Middleware {
   }
 
   async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
-    tx.modifiedOn = Date.now()
-    if (this.storage.hierarchy.isDerived(tx._class, core.class.TxCreateDoc)) {
-      const createTx = tx as TxCreateDoc<Doc & { createOn: Timestamp }>
-      const hasCreateOn = this.storage.hierarchy.findAttribute(createTx.objectClass, 'createOn')
-      if (hasCreateOn !== undefined) {
-        createTx.attributes.createOn = tx.modifiedOn
-      }
-    }
-    if (this.storage.hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)) {
-      const coltx = tx as TxCollectionCUD<Doc, AttachedDoc>
-      coltx.tx.modifiedOn = tx.modifiedOn
-      if (this.storage.hierarchy.isDerived(coltx.tx._class, core.class.TxCreateDoc)) {
-        const createTx = coltx.tx as TxCreateDoc<AttachedDoc & { createOn: Timestamp }>
+    if (tx.modifiedBy !== core.account.System) {
+      tx.modifiedOn = Date.now()
+      if (this.storage.hierarchy.isDerived(tx._class, core.class.TxCreateDoc)) {
+        const createTx = tx as TxCreateDoc<Doc & { createOn: Timestamp }>
         const hasCreateOn = this.storage.hierarchy.findAttribute(createTx.objectClass, 'createOn')
         if (hasCreateOn !== undefined) {
           createTx.attributes.createOn = tx.modifiedOn
+        }
+      }
+      if (this.storage.hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)) {
+        const coltx = tx as TxCollectionCUD<Doc, AttachedDoc>
+        coltx.tx.modifiedOn = tx.modifiedOn
+        if (this.storage.hierarchy.isDerived(coltx.tx._class, core.class.TxCreateDoc)) {
+          const createTx = coltx.tx as TxCreateDoc<AttachedDoc & { createOn: Timestamp }>
+          const hasCreateOn = this.storage.hierarchy.findAttribute(createTx.objectClass, 'createOn')
+          if (hasCreateOn !== undefined) {
+            createTx.attributes.createOn = tx.modifiedOn
+          }
         }
       }
     }
