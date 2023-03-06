@@ -34,6 +34,7 @@
   export let size: ButtonSize = 'small'
   export let length: 'short' | 'full' = 'full'
   export let shape: 'circle' | undefined = 'circle'
+  export let restricted: Ref<ChannelProvider>[] = []
 
   let channels: Channel[] = []
 
@@ -123,6 +124,7 @@
   {length}
   {integrations}
   {editable}
+  {restricted}
   {shape}
   {focusIndex}
   on:change={(e) => {

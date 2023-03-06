@@ -47,6 +47,7 @@
   export let shape: 'circle' | undefined = undefined
   export let integrations: Set<Ref<Doc>> = new Set<Ref<Doc>>()
   export let focusIndex = -1
+  export let restricted: Ref<ChannelProvider>[] = []
 
   const notificationClient = NotificationClientImpl.getClient()
   const lastViews = notificationClient.getLastViews()
@@ -263,7 +264,7 @@
       {shape}
       highlight={item.integration || item.notification}
       on:click={(ev) => {
-        if (editable) {
+        if (editable && !restricted.includes(item.provider)) {
           closeTooltip()
           editChannel(eventToHTMLElement(ev), i, item)
         } else {

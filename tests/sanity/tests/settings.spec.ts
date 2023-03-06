@@ -25,14 +25,13 @@ test.describe('contact tests', () => {
     await page.fill('[placeholder="Location"]', 'LoPlaza')
     // Click .flex-center.icon-button
 
-    if ((await page.locator('[id="gmail:string:Email"]').count()) === 0) {
+    if ((await page.locator('[id="contact:string:Phone"]').count()) === 0) {
       await page.click('[id="presentation:string:AddSocialLinks"]')
-      await page.click('.popup button:has-text("Email")')
+      await page.click('.popup button:has-text("Phone")')
     } else {
-      await page.click('id=gmail:string:Email')
+      await page.click('id=contact:string:Phone')
     }
-    // await page.hover('[id="gmail:string:Email"]')
-    await page.fill('[placeholder="john\\.appleseed\\@apple\\.com"]', 'wer@qwe.com')
+    await page.fill('[placeholder="+1 555 333 7777"]', '+1 555 333 7777')
     // Click text=Apply
     await page.click('.editor-container button:nth-child(3)')
   })

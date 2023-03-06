@@ -856,6 +856,19 @@ async function synchronizeUsers (
           employee: employeeId,
           role: AccountRole.User
         })
+        if (u.EMAIL !== undefined && u.EMAIL !== null) {
+          await ops.client.addCollection(
+            contact.class.Channel,
+            contact.space.Contacts,
+            employeeId,
+            contact.class.Employee,
+            'channels',
+            {
+              provider: contact.channelProvider.Email,
+              value: u.EMAIL.trim()
+            }
+          )
+        }
         await ops.client.createMixin<Doc, BitrixSyncDoc>(
           employeeId,
           contact.class.Employee,

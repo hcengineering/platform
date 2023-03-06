@@ -583,12 +583,16 @@ async function createEmployee (ops: TxOperations, name: string, email: string): 
       avatar: `${AvatarType.COLOR}://${getAvatarColorForId(id)}`
     })
   }
+  await ops.addCollection(contact.class.Channel, contact.space.Contacts, id, contact.class.Employee, 'channels', {
+    provider: contact.channelProvider.Email,
+    value: email.trim()
+  })
 
   return id
 }
 
 async function createEmployeeAccount (account: Account, productId: string, workspace: string): Promise<void> {
-  const connection = await connect(getTransactor(), getWorkspaceId(workspace, productId), account.email)
+  const connection = await connect(getTransactor(), getWorkspaceId(workspace, productId))
   try {
     const ops = new TxOperations(connection, core.account.System)
 

@@ -128,7 +128,13 @@
             />
           </div>
           <div class="separator" />
-          <ChannelsEditor attachedTo={employee._id} attachedClass={employee._class} focusIndex={10} allowOpen={false} />
+          <ChannelsEditor
+            attachedTo={employee._id}
+            attachedClass={employee._class}
+            focusIndex={10}
+            allowOpen={false}
+            restricted={[contact.channelProvider.Email]}
+          />
         </div>
       </div>
     {/if}

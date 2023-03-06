@@ -40,6 +40,7 @@
   const client = getClient()
 
   async function createPerson () {
+    changeEmail()
     const name = combineName(firstName, lastName)
     const person: Data<Employee> = {
       createOn: Date.now(),
@@ -68,7 +69,12 @@
     dispatch('close')
   }
 
-  let channels: AttachedData<Channel>[] = []
+  let channels: AttachedData<Channel>[] = [
+    {
+      provider: contact.channelProvider.Email,
+      value: ''
+    }
+  ]
 
   let matches: Person[] = []
   $: findPerson(client, { ...object, name: combineName(firstName, lastName) }, channels).then((p) => {
@@ -76,6 +82,19 @@
   })
 
   const manager = createFocusManager()
+
+  function changeEmail () {
+    const index = channels.findIndex((p) => p.provider === contact.channelProvider.Email)
+    if (index !== -1) {
+      channels[index].value = email.trim()
+    } else {
+      channels.push({
+        provider: contact.channelProvider.Email,
+        value: email.trim()
+      })
+    }
+    channels = channels
+  }
 </script>
 
 <FocusHandler {manager} />
@@ -115,7 +134,13 @@
         focusIndex={2}
       />
       <div class="mt-1">
-        <EditBox placeholder={contact.string.Email} bind:value={email} kind={'small-style'} focusIndex={3} />
+        <EditBox
+          placeholder={contact.string.Email}
+          bind:value={email}
+          kind={'small-style'}
+          focusIndex={3}
+          on:blur={changeEmail}
+        />
       </div>
     </div>
     <div class="ml-4">
@@ -123,6 +148,12 @@
     </div>
   </div>
   <svelte:fragment slot="pool">
-    <ChannelsDropdown bind:value={channels} focusIndex={10} kind={'no-border'} editable />
+    <ChannelsDropdown
+      bind:value={channels}
+      focusIndex={10}
+      kind={'no-border'}
+      editable
+      restricted={[contact.channelProvider.Email]}
+    />
   </svelte:fragment>
 </Card>
