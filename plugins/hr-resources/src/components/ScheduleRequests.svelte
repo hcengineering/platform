@@ -35,7 +35,9 @@
   }
 
   function getStyle (type: RequestType): string {
-    let res = `background-color: ${(isWeekend(date) && noWeekendHolidayType.includes(type._id)) ? getPlatformColor(16) : getPlatformColor(type.color)};`
+    let res = `background-color: ${
+      isWeekend(date) && noWeekendHolidayType.includes(type._id) ? getPlatformColor(16) : getPlatformColor(type.color)
+    };`
     if (Math.abs(type.value % 1) === 0.5) {
       res += ' height: 50%;'
     }
@@ -54,7 +56,7 @@
 <div class="w-full h-full relative p-1 flex">
   {#each requests as request}
     {#await getType(request) then type}
-      {#if type && !(isWeekend(date) || (isHoliday(holidays, date) && noWeekendHolidayType.includes(type._id))) }
+      {#if type && !(isWeekend(date) || (isHoliday(holidays, date) && noWeekendHolidayType.includes(type._id)))}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="request flex-center"
