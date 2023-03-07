@@ -15,14 +15,18 @@
 <script lang="ts">
   import hr, { Request, RequestType } from '@hcengineering/hr'
   import { getClient } from '@hcengineering/presentation'
-  import { closeTooltip, getPlatformColor, Icon, showPopup } from '@hcengineering/ui'
+  import { closeTooltip, getPlatformColor, Icon, isWeekend, showPopup } from '@hcengineering/ui'
   import { ContextMenu } from '@hcengineering/view-resources'
+  import { isHoliday } from '../utils'
+  import { Ref } from '@hcengineering/core'
 
   export let requests: Request[]
-  // export let date: Date
+  export let date: Date
   export let editable: boolean = false
+  export let holidays: Date[] | undefined
 
   const client = getClient()
+  export let noWeekendHolidayType: Ref<RequestType>[]
 
   async function getType (request: Request): Promise<RequestType | undefined> {
     return await client.findOne(hr.class.RequestType, {
@@ -31,7 +35,7 @@
   }
 
   function getStyle (type: RequestType): string {
-    let res = `background-color: ${getPlatformColor(type.color)};`
+    let res = `background-color: ${(isWeekend(date) && noWeekendHolidayType.includes(type._id)) ? getPlatformColor(16) : getPlatformColor(type.color)};`
     if (Math.abs(type.value % 1) === 0.5) {
       res += ' height: 50%;'
     }
@@ -50,7 +54,7 @@
 <div class="w-full h-full relative p-1 flex">
   {#each requests as request}
     {#await getType(request) then type}
-      {#if type}
+      {#if type && !(isWeekend(date) || (isHoliday(holidays, date) && noWeekendHolidayType.includes(type._id))) }
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="request flex-center"

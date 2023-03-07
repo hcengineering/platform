@@ -78,8 +78,11 @@
     return editableList.includes(employee._id)
   }
 
-  function getTooltip (requests: Request[]): LabelAndProps | undefined {
+  const noWeekendHolidayType: Ref<RequestType>[] = [hr.ids.PTO, hr.ids.PTO2, hr.ids.Vacation]
+
+  function getTooltip (requests: Request[], day: Date): LabelAndProps | undefined {
     if (requests.length === 0) return
+    if (day && isWeekend(day) && requests.some((req) => noWeekendHolidayType.includes(req.type))) return
     return {
       component: RequestsPopup,
       props: { requests: requests.map((it) => it._id) }
@@ -211,7 +214,7 @@
                 >
                   <div class:worked={ww > 0} class="h-full w-full">
                     {#if requests.length}
-                      <ScheduleRequests {requests} {editable} />
+                      <ScheduleRequests {requests} {editable} date={day} {holidays} {noWeekendHolidayType} />
                     {/if}
                   </div>
                 </td>
