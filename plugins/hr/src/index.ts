@@ -139,9 +139,9 @@ const hr = plugin(hrId, {
     Remote: '' as Ref<RequestType>,
     Overtime: '' as Ref<RequestType>,
     Overtime2: '' as Ref<RequestType>,
-    CreateRequestNotifcation: '' as Ref<NotificationType>,
-    UpdateRequestNotifcation: '' as Ref<NotificationType>,
-    RemoveRequestNotifcation: '' as Ref<NotificationType>,
+    CreateRequestNotification: '' as Ref<NotificationType>,
+    UpdateRequestNotification: '' as Ref<NotificationType>,
+    RemoveRequestNotification: '' as Ref<NotificationType>,
     CreatePublicHolidayNotification: '' as Ref<NotificationType>
   },
   viewlet: {

@@ -436,7 +436,7 @@ export function createModel (builder: Builder): void {
       htmlTemplate: 'New request: {doc}',
       subjectTemplate: 'New request'
     },
-    hr.ids.CreateRequestNotifcation
+    hr.ids.CreateRequestNotification
   )
 
   builder.createDoc(
@@ -449,7 +449,7 @@ export function createModel (builder: Builder): void {
       htmlTemplate: 'Request updated: {doc}',
       subjectTemplate: 'Request updated'
     },
-    hr.ids.UpdateRequestNotifcation
+    hr.ids.UpdateRequestNotification
   )
 
   builder.createDoc(
@@ -462,7 +462,7 @@ export function createModel (builder: Builder): void {
       htmlTemplate: 'Request removed: {doc}',
       subjectTemplate: 'Request removed'
     },
-    hr.ids.RemoveRequestNotifcation
+    hr.ids.RemoveRequestNotification
   )
 
   builder.createDoc(

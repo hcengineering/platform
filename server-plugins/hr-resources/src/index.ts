@@ -260,7 +260,7 @@ export async function OnRequestCreate (tx: Tx, control: TriggerControl): Promise
     sender,
     request,
     ctx.objectSpace as Ref<Department>,
-    hr.ids.CreateRequestNotifcation
+    hr.ids.CreateRequestNotification
   )
 }
 
@@ -288,7 +288,7 @@ export async function OnRequestUpdate (tx: Tx, control: TriggerControl): Promise
     sender,
     request,
     ctx.objectSpace as Ref<Department>,
-    hr.ids.UpdateRequestNotifcation
+    hr.ids.UpdateRequestNotification
   )
 }
 
@@ -316,7 +316,7 @@ export async function OnRequestRemove (tx: Tx, control: TriggerControl): Promise
     sender,
     request,
     ctx.objectSpace as Ref<Department>,
-    hr.ids.RemoveRequestNotifcation
+    hr.ids.RemoveRequestNotification
   )
 }
 
