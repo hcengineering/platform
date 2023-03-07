@@ -40,6 +40,7 @@
   import RequestsPopup from '../RequestsPopup.svelte'
   import ScheduleRequests from '../ScheduleRequests.svelte'
   import ReportsPopup from './ReportsPopup.svelte'
+  import CreatePublicHoliday from './CreatePublicHoliday.svelte'
 
   export let currentDate: Date = new Date()
 
@@ -114,6 +115,15 @@
     }
     showPopup(ReportsPopup, { employee, reports: rTime.reports }, 'top')
   }
+
+  function setPublicHoliday (date: Date) {
+    showPopup(CreatePublicHoliday, { date })
+  }
+
+  export let holidays: Date[] | undefined = undefined
+  function isHoliday (holidays: Date[], day: Date): boolean {
+    return holidays && holidays.some((date) => areDatesEqual(day, date))
+  }
 </script>
 
 {#if departmentStaff.length}
@@ -130,6 +140,7 @@
             {@const day = getDay(startDate, value)}
             <th
               class:today={areDatesEqual(todayDate, day)}
+              class:holiday={isHoliday(holidays, day)}
               class:weekend={isWeekend(day)}
               class:hoveredCell={hoveredColumn === i}
               on:mousemove={() => {
@@ -138,6 +149,7 @@
               on:mouseleave={() => {
                 hoveredIndex = -1
               }}
+              on:click={() => setPublicHoliday(day)}
             >
               {getWeekDayName(day, 'short')}
               <span>{day.getDate()}</span>
@@ -158,7 +170,7 @@
               class:firstLine={row === 0}
               class:lastLine={row === departmentStaff.length - 1}
             >
-              {getTotal(requests, startDate, endDate, types)}
+              {getTotal(requests, startDate, endDate, types, holidays)}
             </td>
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <td
@@ -183,7 +195,7 @@
                 <td
                   class="w-9 max-w-9 min-w-9"
                   class:today={areDatesEqual(todayDate, day)}
-                  class:weekend={isWeekend(day)}
+                  class:weekend={isWeekend(day) || isHoliday(holidays, day)}
                   class:cursor-pointer={editable}
                   class:hovered={i === hoveredIndex}
                   class:firstLine={row === 0}
@@ -214,7 +226,7 @@
             <Label label={hr.string.Summary} />
           </td>
           <td class="flex-center p-1 whitespace-nowrap text-center summary">
-            {getTotal(Array.from(employeeRequests.values()).flat(), startDate, endDate, types)}
+            {getTotal(Array.from(employeeRequests.values()).flat(), startDate, endDate, types, holidays)}
           </td>
           <td class="p-1 text-center summary">
             {floorFractionDigits(
@@ -230,7 +242,7 @@
             <td
               class="p-1 text-center summary"
               class:hovered={i === hoveredIndex}
-              class:weekend={isWeekend(day)}
+              class:weekend={isWeekend(day) || isHoliday(holidays, day)}
               class:today={areDatesEqual(todayDate, day)}
               on:mousemove={() => {
                 hoveredColumn = i
@@ -239,7 +251,7 @@
                 hoveredColumn = -1
               }}
             >
-              {getTotal(requests, day, day, types)}
+              {getTotal(requests, day, day, types, holidays)}
             </td>
           {/each}
         </tr>
@@ -289,6 +301,9 @@
       }
       &.today {
         color: var(--caption-color);
+      }
+      &.holiday:not(.today) {
+        color: var(--error-color);
       }
       &.weekend:not(.today) {
         color: var(--warning-color);

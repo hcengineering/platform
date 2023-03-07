@@ -32,7 +32,8 @@ export default mergeIds(hrId, hr, {
     Remote: '' as IntlString,
     Overtime: '' as IntlString,
     Overtime2: '' as IntlString,
-    Subscribers: '' as IntlString
+    Subscribers: '' as IntlString,
+    PublicHoliday: '' as IntlString
   },
   component: {
     Structure: '' as AnyComponent,

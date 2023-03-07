@@ -15,7 +15,16 @@
 
 import { Contact, Employee } from '@hcengineering/contact'
 import { Arr, Class, Domain, DOMAIN_MODEL, IndexKind, Markup, Ref, Type } from '@hcengineering/core'
-import { Department, DepartmentMember, hrId, Request, RequestType, Staff, TzDate } from '@hcengineering/hr'
+import {
+  Department,
+  DepartmentMember,
+  hrId,
+  PublicHoliday,
+  Request,
+  RequestType,
+  Staff,
+  TzDate
+} from '@hcengineering/hr'
 import {
   ArrOf,
   Builder,
@@ -149,8 +158,15 @@ export class TRequest extends TAttachedDoc implements Request {
     tzDueDate!: TzDate
 }
 
+@Model(hr.class.PublicHoliday, core.class.Doc, DOMAIN_HR)
+export class TPublicHoliday extends TDoc implements PublicHoliday {
+  title!: string
+  description!: string
+  date!: TzDate
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TDepartment, TDepartmentMember, TRequest, TRequestType, TStaff, TTzDate)
+  builder.createModel(TDepartment, TDepartmentMember, TRequest, TRequestType, TPublicHoliday, TStaff, TTzDate)
 
   builder.createDoc(
     workbench.class.Application,
@@ -447,6 +463,19 @@ export function createModel (builder: Builder): void {
       subjectTemplate: 'Request removed'
     },
     hr.ids.RemoveRequestNotifcation
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: true,
+      label: hr.string.PublicHoliday,
+      textTemplate: 'New public holiday: {doc}',
+      htmlTemplate: 'New public holiday: {doc}',
+      subjectTemplate: 'New public holiday'
+    },
+    hr.ids.CreatePublicHolidayNotification
   )
 }
 
