@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { ChannelProvider, Contact, Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
+import { ChannelProvider, Contact, Employee, EmployeeAccount, formatName, getName } from '@hcengineering/contact'
 import { Doc, getCurrentAccount, ObjQueryType, Ref, Timestamp, toIdMap } from '@hcengineering/core'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { TemplateDataProvider } from '@hcengineering/templates'
@@ -61,8 +61,10 @@ export async function employeeSort (value: Array<Ref<Employee>>): Promise<Array<
         }
 
         if (employeeId1 != null && employeeId2 != null) {
-          const name1 = formatName(employees.get(employeeId1)?.name ?? '')
-          const name2 = formatName(employees.get(employeeId2)?.name ?? '')
+          const employee1 = employees.get(employeeId1)
+          const employee2 = employees.get(employeeId2)
+          const name1 = employee1 != null ? getName(employee1) : ''
+          const name2 = employee2 != null ? getName(employee2) : ''
 
           return name1.localeCompare(name2)
         }
@@ -126,7 +128,7 @@ export async function getContactName (provider: TemplateDataProvider): Promise<s
   const client = getClient()
   const hierarchy = client.getHierarchy()
   if (hierarchy.isDerived(value._class, contact.class.Person)) {
-    return formatName(value.name)
+    return getName(value)
   } else {
     return value.name
   }

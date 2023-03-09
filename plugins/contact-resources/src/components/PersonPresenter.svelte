@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { formatName, Person } from '@hcengineering/contact'
+  import { getName, Person } from '@hcengineering/contact'
   import { IntlString } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
   import { LabelAndProps } from '@hcengineering/ui'
@@ -41,7 +41,7 @@
         ? undefined
         : {
             label: presentation.string.InltPropsValue,
-            props: { value: formatName(value.name) }
+            props: { value: getName(value) }
           }
     }
     const component = value ? tooltipLabels.component : undefined
@@ -50,7 +50,7 @@
         ? tooltipLabels.personLabel
         : presentation.string.InltPropsValue
       : undefined
-    const props = tooltipLabels.props ? tooltipLabels.props : value ? { value: formatName(value.name) } : undefined
+    const props = tooltipLabels.props ? tooltipLabels.props : value ? { value: getName(value) } : undefined
     return {
       component,
       label,

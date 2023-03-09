@@ -15,7 +15,7 @@
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
   import chunter from '@hcengineering/chunter'
-  import contact, { Channel, formatName, Person } from '@hcengineering/contact'
+  import contact, { Channel, getName, Person } from '@hcengineering/contact'
   import { ChannelsEditor } from '@hcengineering/contact-resources'
   import { Hierarchy } from '@hcengineering/core'
   import { Avatar, createQuery, getClient } from '@hcengineering/presentation'
@@ -58,7 +58,7 @@
         }
       }}
     >
-      {formatName(candidate.name)}
+      {getName(candidate)}
     </div>
     {#if client.getHierarchy().hasMixin(candidate, recruit.mixin.Candidate)}
       {@const cand = client.getHierarchy().as(candidate, recruit.mixin.Candidate)}

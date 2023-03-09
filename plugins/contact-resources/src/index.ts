@@ -14,48 +14,49 @@
 // limitations under the License.
 //
 
-import { Channel, Contact, Employee, formatName, getGravatarUrl } from '@hcengineering/contact'
+import { Channel, Contact, Employee, getGravatarUrl, getName } from '@hcengineering/contact'
 import { Class, Client, DocumentQuery, Ref, RelatedDocument, WithLookup } from '@hcengineering/core'
 import { leaveWorkspace } from '@hcengineering/login-resources'
 import { IntlString, Resources } from '@hcengineering/platform'
-import { Avatar, getClient, MessageBox, ObjectSearchResult, UserInfo, getFileUrl } from '@hcengineering/presentation'
+import { Avatar, getClient, getFileUrl, MessageBox, ObjectSearchResult, UserInfo } from '@hcengineering/presentation'
 import { AnyComponent, AnySvelteComponent, showPopup } from '@hcengineering/ui'
+import AccountArrayEditor from './components/AccountArrayEditor.svelte'
+import AccountBox from './components/AccountBox.svelte'
+import ChannelFilter from './components/ChannelFilter.svelte'
 import Channels from './components/Channels.svelte'
 import ChannelsDropdown from './components/ChannelsDropdown.svelte'
 import ChannelsEditor from './components/ChannelsEditor.svelte'
 import ChannelsPresenter from './components/ChannelsPresenter.svelte'
 import ChannelsView from './components/ChannelsView.svelte'
+import ContactArrayEditor from './components/ContactArrayEditor.svelte'
 import ContactPresenter from './components/ContactPresenter.svelte'
+import ContactRefPresenter from './components/ContactRefPresenter.svelte'
 import Contacts from './components/Contacts.svelte'
 import ContactsTabs from './components/ContactsTabs.svelte'
 import CreateEmployee from './components/CreateEmployee.svelte'
 import CreateOrganization from './components/CreateOrganization.svelte'
 import CreatePerson from './components/CreatePerson.svelte'
+import EditEmployee from './components/EditEmployee.svelte'
 import EditMember from './components/EditMember.svelte'
 import EditOrganization from './components/EditOrganization.svelte'
 import EditPerson from './components/EditPerson.svelte'
 import EmployeeAccountPresenter from './components/EmployeeAccountPresenter.svelte'
 import EmployeeAccountRefPresenter from './components/EmployeeAccountRefPresenter.svelte'
 import EmployeeArrayEditor from './components/EmployeeArrayEditor.svelte'
-import AccountArrayEditor from './components/AccountArrayEditor.svelte'
 import EmployeeBrowser from './components/EmployeeBrowser.svelte'
 import EmployeeEditor from './components/EmployeeEditor.svelte'
 import EmployeePresenter from './components/EmployeePresenter.svelte'
+import EmployeeRefPresenter from './components/EmployeeRefPresenter.svelte'
 import MemberPresenter from './components/MemberPresenter.svelte'
-import MembersPresenter from './components/MembersPresenter.svelte'
 import Members from './components/Members.svelte'
+import MembersPresenter from './components/MembersPresenter.svelte'
+import MergeEmployee from './components/MergeEmployee.svelte'
 import OrganizationEditor from './components/OrganizationEditor.svelte'
 import OrganizationPresenter from './components/OrganizationPresenter.svelte'
 import PersonEditor from './components/PersonEditor.svelte'
 import PersonPresenter from './components/PersonPresenter.svelte'
-import SocialEditor from './components/SocialEditor.svelte'
-import ContactRefPresenter from './components/ContactRefPresenter.svelte'
 import PersonRefPresenter from './components/PersonRefPresenter.svelte'
-import EmployeeRefPresenter from './components/EmployeeRefPresenter.svelte'
-import ChannelFilter from './components/ChannelFilter.svelte'
-import AccountBox from './components/AccountBox.svelte'
-import MergeEmployee from './components/MergeEmployee.svelte'
-import ContactArrayEditor from './components/ContactArrayEditor.svelte'
+import SocialEditor from './components/SocialEditor.svelte'
 import contact from './plugin'
 import {
   employeeSort,
@@ -88,7 +89,7 @@ export {
 
 const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({
   doc: e,
-  title: formatName(e.name),
+  title: getName(e),
   icon: Avatar,
   iconProps: { size: 'x-small', avatar: e.avatar },
   component: UserInfo,
@@ -167,6 +168,7 @@ export default async (): Promise<Resources> => ({
     CreatePerson,
     CreateOrganization,
     EditPerson,
+    EditEmployee,
     EditOrganization,
     SocialEditor,
     Contacts,

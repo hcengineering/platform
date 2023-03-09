@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Contact, Employee, formatName } from '@hcengineering/contact'
+  import contact, { Contact, Employee, getName } from '@hcengineering/contact'
   import { Class, DocumentQuery, FindOptions, Hierarchy, Ref } from '@hcengineering/core'
   import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import {
@@ -33,7 +33,7 @@
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import presentation, { IconPerson, UserInfo, getClient } from '..'
+  import presentation, { getClient, IconPerson, UserInfo } from '..'
   import AssigneePopup from './AssigneePopup.svelte'
 
   export let _class: Ref<Class<Employee>> = contact.class.Employee
@@ -76,10 +76,6 @@
 
   $: updateSelected(value)
 
-  function getName (obj: Contact): string {
-    const isPerson = client.getHierarchy().isDerived(obj._class, contact.class.Person)
-    return isPerson ? formatName(obj.name) : obj.name
-  }
   const mgr = getFocusManager()
 
   const _click = (ev: MouseEvent): void => {

@@ -13,8 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Person } from '@hcengineering/contact'
-  import { formatName } from '@hcengineering/contact'
+  import { getName, Person } from '@hcengineering/contact'
   import { Avatar } from '@hcengineering/presentation'
 
   interface IMessage {
@@ -29,7 +28,7 @@
 <div class="flex-nowrap">
   <div class="avatar"><Avatar size={'medium'} /></div>
   <div class="flex-col-stretch message">
-    <div class="header">{formatName(user.name)}<span>{message.createDate}</span></div>
+    <div class="header">{getName(user)}<span>{message.createDate}</span></div>
     <div class="text">{message.text}</div>
   </div>
 </div>

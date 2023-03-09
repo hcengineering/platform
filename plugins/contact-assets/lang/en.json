@@ -76,6 +76,7 @@
     "Profile": "Profile",
     "ProfilePlaceholder": "Profile...",
     "CurrentEmployee": "Current employee",
-    "MergeEmployee": "Merge employee"
+    "MergeEmployee": "Merge employee",
+    "DisplayName": "Display name"
   }
 }

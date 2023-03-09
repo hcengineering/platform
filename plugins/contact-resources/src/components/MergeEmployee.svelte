@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Channel, ChannelProvider, Employee, formatName } from '@hcengineering/contact'
+  import { Channel, ChannelProvider, Employee, getName } from '@hcengineering/contact'
   import core, { Doc, DocumentUpdate, Mixin, Ref, TxProcessor } from '@hcengineering/core'
   import { leaveWorkspace } from '@hcengineering/login-resources'
   import { Avatar, Card, createQuery, EmployeeBox, getClient } from '@hcengineering/presentation'
@@ -217,7 +217,7 @@
       </MergeComparer>
       <MergeComparer key="name" {value} {targetEmp} onChange={select}>
         <svelte:fragment slot="item" let:item>
-          {formatName(item.name)}
+          {getName(item)}
         </svelte:fragment>
       </MergeComparer>
       {#each objectAttributes as attribute}
@@ -263,7 +263,7 @@
     </Grid>
     <div class="flex-col-center">
       <Avatar avatar={result.avatar} size={'large'} icon={contact.icon.Person} />
-      {formatName(result.name)}
+      {getName(result)}
       <DatePresenter value={result.birthday} />
       <StringEditor value={result.city} readonly placeholder={contact.string.Location} />
       <ChannelsDropdown

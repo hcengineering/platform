@@ -1,8 +1,8 @@
 <script lang="ts">
   import chunter, { ChunterMessage } from '@hcengineering/chunter'
-  import contact, { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
-  import { Ref, Space } from '@hcengineering/core'
-  import { Avatar, createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
+  import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
+  import { IdMap, Ref, Space, toIdMap } from '@hcengineering/core'
+  import { Avatar, createQuery, MessageViewer } from '@hcengineering/presentation'
   import { IconClose } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { UnpinMessage } from '../index'
@@ -30,38 +30,40 @@
     })
 
   const employeeAccoutsQuery = createQuery()
-  let employeeAcounts: EmployeeAccount[]
+  let employeeAcounts: IdMap<EmployeeAccount> = new Map()
 
-  employeeAccoutsQuery.query(contact.class.EmployeeAccount, {}, (res) => (employeeAcounts = res))
+  employeeAccoutsQuery.query(contact.class.EmployeeAccount, {}, (res) => (employeeAcounts = toIdMap(res)))
 
-  const client = getClient()
+  const employeeQuery = createQuery()
+  let employees: IdMap<Employee> = new Map()
+
+  employeeQuery.query(contact.class.Employee, {}, (res) => (employees = toIdMap(res)))
+
   const dispatch = createEventDispatcher()
 
-  async function getEmployee (_id?: Ref<Employee>): Promise<Employee | undefined> {
-    if (_id) {
-      return await client.findOne(contact.class.Employee, { _id })
+  function getEmployee (
+    message: ChunterMessage,
+    employeeAcounts: IdMap<EmployeeAccount>,
+    employees: IdMap<Employee>
+  ): Employee | undefined {
+    const acc = employeeAcounts.get(message.createBy as Ref<EmployeeAccount>)
+    if (acc) {
+      return employees.get(acc.employee)
     }
-  }
-
-  function getEmployeeAccount (message: ChunterMessage): EmployeeAccount | undefined {
-    return employeeAcounts?.find((e) => e._id === message.createBy)
   }
 </script>
 
 <div class="antiPopup vScroll popup">
   {#each pinnedMessages as message}
+    {@const employee = getEmployee(message, employeeAcounts, employees)}
     <div class="message">
       <div class="header">
-        {#await getEmployeeAccount(message) then employeeAccount}
-          {#await getEmployee(employeeAccount?.employee) then employee}
-            <div class="avatar">
-              <Avatar size={'medium'} avatar={employee?.avatar} />
-            </div>
-          {/await}
-          <span class="name">
-            {formatName(employeeAccount?.name ?? '')}
-          </span>
-        {/await}
+        <div class="avatar">
+          <Avatar size={'medium'} avatar={employee?.avatar} />
+        </div>
+        <span class="name">
+          {employee ? getName(employee) : ''}
+        </span>
         <div
           class="cross"
           on:click={async () => {

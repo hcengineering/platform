@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import type { TxViewlet } from '@hcengineering/activity'
-  import contact, { EmployeeAccount, formatName } from '@hcengineering/contact'
+  import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
   import core, { AnyAttribute, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import { Asset, getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -50,14 +50,16 @@
 
   let viewlet: TxDisplayViewlet | undefined
   let props: any
-  let employee: EmployeeAccount | undefined
+  let account: EmployeeAccount | undefined
+  let employee: Employee | undefined
   let model: AttributeModel[] = []
   let modelIcon: Asset | undefined = undefined
 
   let edit = false
 
   $: if (tx.tx._id !== ptx?.tx._id) {
-    if (tx.tx.modifiedBy !== employee?._id) {
+    if (tx.tx.modifiedBy !== account?._id) {
+      account = undefined
       employee = undefined
     }
     viewlet = undefined
@@ -68,6 +70,7 @@
 
   const client = getClient()
   const query = createQuery()
+  const employeeQuery = createQuery()
 
   function getProps (props: any, edit: boolean): any {
     return { ...props, edit, attr: tx.collectionAttribute }
@@ -85,11 +88,21 @@
   $: query.query(
     contact.class.EmployeeAccount,
     { _id: tx.tx.modifiedBy as Ref<EmployeeAccount> },
-    (account) => {
-      ;[employee] = account
+    (res) => {
+      ;[account] = res
     },
     { limit: 1 }
   )
+
+  $: account &&
+    employeeQuery.query(
+      contact.class.Employee,
+      { _id: account.employee },
+      (res) => {
+        ;[employee] = res
+      },
+      { limit: 1 }
+    )
 
   const showMenu = async (ev: MouseEvent): Promise<void> => {
     const actions = await getActions(client, tx.doc as Doc)
@@ -167,7 +180,7 @@
         <div class="flex-row-center flex-grow label">
           <div class="bold">
             {#if employee}
-              {formatName(employee.name)}
+              {getName(employee)}
             {:else}
               <Label label={activity.string.System} />
             {/if}

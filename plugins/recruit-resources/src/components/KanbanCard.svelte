@@ -15,7 +15,7 @@
 <script lang="ts">
   import { AttachmentsPresenter } from '@hcengineering/attachment-resources'
   import { CommentsPresenter } from '@hcengineering/chunter-resources'
-  import contact, { formatName } from '@hcengineering/contact'
+  import contact, { getName } from '@hcengineering/contact'
   import { Hierarchy, WithLookup } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Avatar } from '@hcengineering/presentation'
@@ -43,7 +43,7 @@
       <Avatar avatar={object.$lookup?.attachedTo?.avatar} size={'medium'} />
       <div class="flex-grow flex-col min-w-0 ml-2">
         <div class="fs-title over-underline lines-limit-2">
-          {formatName(object.$lookup?.attachedTo?.name ?? '')}
+          {object.$lookup?.attachedTo ? getName(object.$lookup.attachedTo) : ''}
         </div>
         <div class="text-sm lines-limit-2">{object.$lookup?.attachedTo?.title ?? ''}</div>
       </div>

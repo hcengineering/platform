@@ -1,15 +1,19 @@
 <script lang="ts">
-  import contact, { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
-  import core, { Ref, Space } from '@hcengineering/core'
-  import { Label, Button, ActionIcon, IconClose } from '@hcengineering/ui'
+  import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
+  import core, { IdMap, Ref, Space, toIdMap } from '@hcengineering/core'
+  import { ActionIcon, Button, IconClose, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { getClient } from '../utils'
   import presentation from '../plugin'
+  import { createQuery, getClient } from '../utils'
   import UsersPopup from './UsersPopup.svelte'
 
   export let value: Space
   const dispatch = createEventDispatcher()
   const client = getClient()
+  const query = createQuery()
+
+  let employees: IdMap<Employee> = new Map()
+  query.query(contact.class.Employee, {}, (res) => (employees = toIdMap(res)))
 
   let membersToAdd: EmployeeAccount[] = []
   let channelMembers: Ref<Employee>[] = []
@@ -54,8 +58,9 @@
   {#if membersToAdd.length}
     <div class="flex-row-top flex-wrap ml-6 mr-6 mt-4">
       {#each membersToAdd as m}
+        {@const employee = employees.get(m.employee)}
         <div class="mr-2 p-1 item">
-          {formatName(m.name)}
+          {employee ? getName(employee) : ''}
           <div class="tool">
             <ActionIcon
               icon={IconClose}

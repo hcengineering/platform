@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import contact, { Contact, Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
+import contact, { Contact, Employee, EmployeeAccount, formatName, getName } from '@hcengineering/contact'
 import core, {
   Doc,
   Ref,
@@ -318,7 +318,7 @@ export async function OnRequestRemove (tx: Tx, control: TriggerControl): Promise
 export async function RequestHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const request = doc as Request
   const employee = (await control.findAll(contact.class.Employee, { _id: request.attachedTo }))[0]
-  const who = formatName(employee.name)
+  const who = getName(employee)
   const type = await translate(control.modelDb.getObject(request.type).label, {})
 
   const date = tzDateEqual(request.tzDate, request.tzDueDate)
@@ -336,7 +336,7 @@ export async function RequestHTMLPresenter (doc: Doc, control: TriggerControl): 
 export async function RequestTextPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const request = doc as Request
   const employee = (await control.findAll(contact.class.Employee, { _id: request.attachedTo }))[0]
-  const who = formatName(employee.name)
+  const who = getName(employee)
   const type = await translate(control.modelDb.getObject(request.type).label, {})
 
   const date = tzDateEqual(request.tzDate, request.tzDueDate)

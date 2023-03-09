@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
-  import contact, { Channel, Contact, formatName } from '@hcengineering/contact'
+  import contact, { Channel, Contact, getName } from '@hcengineering/contact'
   import { Hierarchy } from '@hcengineering/core'
   import { Avatar, createQuery } from '@hcengineering/presentation'
   import { Component, Label, showPanel } from '@hcengineering/ui'
@@ -51,7 +51,7 @@
         if (!disabled) showPanel(view.component.EditDoc, object._id, Hierarchy.mixinOrClass(object), 'content')
       }}
     >
-      {formatName(object.name)}
+      {getName(object)}
     </div>
     <div class="description overflow-label">{object.city ?? ''}</div>
     <div class="footer flex flex-reverse flex-grow">

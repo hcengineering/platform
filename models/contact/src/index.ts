@@ -158,6 +158,9 @@ export class TEmployee extends TPerson implements Employee {
     statuses?: number
 
   mergedTo?: Ref<Employee>
+
+  @Prop(TypeString(), contact.string.DisplayName)
+    displayName?: string | null
 }
 
 @Model(contact.class.EmployeeAccount, core.class.Account)
@@ -284,7 +287,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(contact.class.Employee, core.class.Class, view.mixin.ObjectEditor, {
-    editor: contact.component.EditPerson,
+    editor: contact.component.EditEmployee,
     pinned: true
   })
 

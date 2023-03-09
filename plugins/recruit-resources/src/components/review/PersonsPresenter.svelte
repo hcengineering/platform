@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import calendar from '@hcengineering/calendar'
-  import { formatName, Person } from '@hcengineering/contact'
+  import { getName, Person } from '@hcengineering/contact'
   import { Hierarchy } from '@hcengineering/core'
   import { Avatar } from '@hcengineering/presentation'
   import { showPanel, tooltip } from '@hcengineering/ui'
@@ -38,7 +38,7 @@
       <div
         class="flex-presenter"
         class:inline-presenter={inline}
-        use:tooltip={{ label: calendar.string.PersonsLabel, props: { name: formatName(p.name) } }}
+        use:tooltip={{ label: calendar.string.PersonsLabel, props: { name: getName(p) } }}
         on:click={() => onClick(p)}
       >
         <div class="icon">

@@ -2,11 +2,11 @@
   import { Employee } from '@hcengineering/contact'
   import { WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { showPopup } from '@hcengineering/ui'
+  import { Label, showPopup } from '@hcengineering/ui'
   import { PersonLabelTooltip } from '..'
   import PersonPresenter from '../components/PersonPresenter.svelte'
+  import contact from '../plugin'
   import EmployeePreviewPopup from './EmployeePreviewPopup.svelte'
-  import EmployeeStatusPresenter from './EmployeeStatusPresenter.svelte'
 
   export let value: WithLookup<Employee> | null | undefined
   export let tooltipLabels: PersonLabelTooltip | undefined = undefined
@@ -56,9 +56,9 @@
     {defaultName}
   />
 </div>
-{#if value?.$lookup?.statuses?.length}
-  <div class="pl-2 status content-color">
-    <EmployeeStatusPresenter employee={value} />
+{#if value?.active === false}
+  <div class="ml-1">
+    (<Label label={contact.string.Inactive} />)
   </div>
 {/if}
 

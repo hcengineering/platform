@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { formatName, Person } from '@hcengineering/contact'
+  import contact, { getName, Person } from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import type { Applicant } from '@hcengineering/recruit'
@@ -39,7 +39,7 @@
     {#if shortLabel}<Label label={shortLabel} />-{/if}{value.number}
   </div>
   {#if person}
-    <div class="ml-1">{formatName(person.name)}</div>
+    <div class="ml-1">{getName(person)}</div>
   {/if}
 </div>
 

@@ -30,6 +30,7 @@
   let employee: Employee | undefined
   let firstName: string
   let lastName: string
+  let displayName: string = ''
   const employeeQ = createQuery()
 
   const account = getCurrentAccount() as EmployeeAccount
@@ -43,6 +44,7 @@
       employee = res[0]
       firstName = getFirstName(employee.name)
       lastName = getLastName(employee.name)
+      displayName = employee.displayName ?? ''
     },
     { limit: 1 }
   )
@@ -75,6 +77,14 @@
         }
       }
     )
+  }
+
+  function changeDisplayName () {
+    if (employee) {
+      client.update(employee, {
+        displayName: displayName === '' ? null : displayName
+      })
+    }
   }
 </script>
 
@@ -117,6 +127,13 @@
             on:change={() => {
               changeName(firstName, lastName)
             }}
+          />
+          <EditBox
+            placeholder={contactRes.string.DisplayName}
+            bind:value={displayName}
+            kind={'large-style'}
+            focusIndex={2}
+            on:change={changeDisplayName}
           />
           <div class="location">
             <AttributeEditor

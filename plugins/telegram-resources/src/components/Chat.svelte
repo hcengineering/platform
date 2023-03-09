@@ -16,7 +16,7 @@
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import contact, { Channel, Contact, EmployeeAccount, formatName } from '@hcengineering/contact'
+  import contact, { Channel, Contact, EmployeeAccount, getName as getContactName } from '@hcengineering/contact'
   import { Class, generateId, getCurrentAccount, Ref, SortingOrder, Space } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
@@ -221,7 +221,7 @@
           <span class="wrapped-title">Telegram</span>
           <span class="wrapped-subtitle">
             <Label label={telegram.string.YouAnd} />
-            <b>{formatName(object.name)}</b>
+            <b>{getContactName(object)}</b>
           </span>
         </div>
       </div>

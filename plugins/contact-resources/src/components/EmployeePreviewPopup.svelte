@@ -1,14 +1,14 @@
 <script lang="ts">
-  import { Employee, EmployeeAccount, formatName, Status } from '@hcengineering/contact'
-  import { getCurrentAccount, Ref, Hierarchy, WithLookup } from '@hcengineering/core'
+  import { Employee, EmployeeAccount, getName, Status } from '@hcengineering/contact'
+  import { getCurrentAccount, Hierarchy, Ref, WithLookup } from '@hcengineering/core'
   import { Avatar, createQuery, getClient } from '@hcengineering/presentation'
-  import { Button, getPanelURI, Label, showPopup, resizeObserver } from '@hcengineering/ui'
-  import EmployeeSetStatusPopup from './EmployeeSetStatusPopup.svelte'
+  import { Button, getPanelURI, Label, resizeObserver, showPopup } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
+  import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
+  import EmployeeSetStatusPopup from './EmployeeSetStatusPopup.svelte'
   import EmployeeStatusPresenter from './EmployeeStatusPresenter.svelte'
   import Edit from './icons/Edit.svelte'
-  import { createEventDispatcher } from 'svelte'
-  import view from '@hcengineering/view'
 
   export let employeeId: Ref<Employee>
 
@@ -60,9 +60,9 @@
 >
   {#if employee}
     <div class="flex-col-center pb-2">
-      <Avatar size="x-large" avatar={employee?.avatar} />
+      <Avatar size="x-large" avatar={employee.avatar} />
     </div>
-    <div class="pb-2">{formatName(employee?.name ?? '')}</div>
+    <div class="pb-2">{getName(employee)}</div>
     <a href={`#${getPanelURI(view.component.EditDoc, employee._id, Hierarchy.mixinOrClass(employee), 'content')}`}
       ><Label label={contact.string.ViewFullProfile} /></a
     >

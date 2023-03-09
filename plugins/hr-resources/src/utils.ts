@@ -1,4 +1,4 @@
-import { Employee, formatName } from '@hcengineering/contact'
+import { Employee, getName } from '@hcengineering/contact'
 import { Ref, TxOperations } from '@hcengineering/core'
 import { Department, fromTzDate, Request, RequestType, Staff } from '@hcengineering/hr'
 import { MessageBox } from '@hcengineering/presentation'
@@ -30,7 +30,7 @@ export async function addMember (client: TxOperations, employee?: Employee, valu
           MessageBox,
           {
             label: hr.string.MoveStaff,
-            labelProps: { name: formatName(employee.name) },
+            labelProps: { name: getName(employee) },
             message: hr.string.MoveStaffDescr,
             params: {
               current: current.name,
