@@ -1,4 +1,4 @@
-import contact, { EmployeeAccount, formatName } from '@hcengineering/contact'
+import contact, { EmployeeAccount, getName } from '@hcengineering/contact'
 import { Class, Doc, Hierarchy, Ref } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import setting from '@hcengineering/setting'
@@ -62,5 +62,10 @@ export async function getOwnerName (provider: TemplateDataProvider): Promise<str
   const employeeAccount = await client.findOne(contact.class.EmployeeAccount, {
     _id: value.modifiedBy as Ref<EmployeeAccount>
   })
-  return employeeAccount != null ? formatName(employeeAccount.name) : undefined
+  if (employeeAccount !== undefined) {
+    const employee = await client.findOne(contact.class.Employee, {
+      _id: employeeAccount.employee
+    })
+    return employee != null ? getName(employee) : undefined
+  }
 }

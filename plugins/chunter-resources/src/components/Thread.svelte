@@ -16,7 +16,7 @@
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import type { ChunterSpace, Message, ThreadMessage } from '@hcengineering/chunter'
-  import contact, { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
+  import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
   import core, {
     FindOptions,
     generateId,
@@ -124,7 +124,7 @@
     for (const account of accounts) {
       const employee = employees.get(account.employee)
       if (employee !== undefined) {
-        res.push(formatName(employee.name))
+        res.push(getName(employee))
       }
     }
     return res

@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
+  import { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
   import { Account } from '@hcengineering/core'
   import { Avatar, createQuery } from '@hcengineering/presentation'
   import { showPopup } from '@hcengineering/ui'
@@ -41,7 +41,7 @@
   <div class="flex-row-center" class:user-container={employee !== undefined} on:click={onClick}>
     {#if employee}
       <Avatar size={'x-small'} avatar={employee.avatar} />
-      <div class="overflow-label user">{formatName(employee.name)}</div>
+      <div class="overflow-label user">{getName(employee)}</div>
     {:else}
       <div class="overflow-label user">{value.email}</div>
     {/if}

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Employee, formatName } from '@hcengineering/contact'
+import { Employee, getName } from '@hcengineering/contact'
 import core, {
   AttachedData,
   Class,
@@ -406,7 +406,7 @@ export async function mapKanbanCategories (
       .map((employee) => {
         return {
           _id: employee._id,
-          title: formatName(employee.name),
+          title: getName(employee),
           color: UNSET_COLOR,
           icon: undefined
         }

@@ -144,6 +144,7 @@ export interface Employee extends Person {
   active: boolean
   mergedTo?: Ref<Employee>
   statuses?: number
+  displayName?: string
 }
 
 /**
@@ -191,6 +192,27 @@ export function getLastName (name: string): string {
  */
 export function formatName (name: string): string {
   return getLastName(name) + ' ' + getFirstName(name)
+}
+
+/**
+ * @public
+ */
+export function getName (value: Contact): string {
+  if (isEmployee(value)) {
+    return value.displayName ?? formatName(value.name)
+  }
+  if (isPerson(value)) {
+    return formatName(value.name)
+  }
+  return value.name
+}
+
+function isEmployee (value: Contact): value is Employee {
+  return value._class === contactPlugin.class.Employee
+}
+
+function isPerson (value: Contact): value is Person {
+  return value._class === contactPlugin.class.Organization
 }
 
 /**

@@ -15,7 +15,7 @@
 <script lang="ts">
   import attachmentP, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
-  import contact, { Channel, Contact, formatName } from '@hcengineering/contact'
+  import contact, { Channel, Contact, getName as getContactName } from '@hcengineering/contact'
   import { Account, generateId, getCurrentAccount, Ref, toIdMap } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
@@ -183,7 +183,7 @@
   function getName (channel: Channel): string {
     const contact = contactMap.get(channel.attachedTo as Ref<Contact>)
     if (contact === undefined) return channel.value
-    return `${formatName(contact.name)} (${channel.value})`
+    return `${getContactName(contact)} (${channel.value})`
   }
 
   const settingsQuery = createQuery()

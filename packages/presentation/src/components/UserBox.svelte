@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Contact, formatName } from '@hcengineering/contact'
+  import { Contact, getName } from '@hcengineering/contact'
   import { Class, DocumentQuery, FindOptions, Hierarchy, Ref } from '@hcengineering/core'
   import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import {
@@ -77,10 +77,6 @@
 
   $: updateSelected(value)
 
-  function getName (obj: Contact): string {
-    const isPerson = client.getHierarchy().isDerived(obj._class, contact.class.Person)
-    return isPerson ? formatName(obj.name) : obj.name
-  }
   const mgr = getFocusManager()
 
   const _click = (ev: MouseEvent): void => {

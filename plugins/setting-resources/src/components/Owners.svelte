@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact, { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
-  import { PersonPresenter } from '@hcengineering/contact-resources'
+  import { EmployeePresenter } from '@hcengineering/contact-resources'
   import { AccountRole, getCurrentAccount, IdMap, SortingOrder, toIdMap } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { DropdownIntlItem, DropdownLabelsIntl, Icon, Label } from '@hcengineering/ui'
@@ -70,7 +70,7 @@
         {@const employee = employees.get(account.employee)}
         <div class="flex-between">
           {#if employee}
-            <PersonPresenter value={employee} isInteractive={false} />
+            <EmployeePresenter value={employee} isInteractive={false} />
           {:else}
             {formatName(account.name)}
           {/if}

@@ -14,8 +14,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Channel, Contact, EmployeeAccount, formatName } from '@hcengineering/contact'
-  import { Ref, SortingOrder } from '@hcengineering/core'
+  import contact, {
+    Channel,
+    Contact,
+    Employee,
+    EmployeeAccount,
+    getName as getContactName
+  } from '@hcengineering/contact'
+  import { IdMap, Ref, SortingOrder, toIdMap } from '@hcengineering/core'
   import { Message, SharedMessage } from '@hcengineering/gmail'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -33,12 +39,17 @@
     /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/
 
   let messages: Message[] = []
-  let accounts: EmployeeAccount[] = []
+  let accounts: IdMap<EmployeeAccount> = new Map()
+  let employees: IdMap<Employee> = new Map()
   let selected: Set<Ref<SharedMessage>> = new Set<Ref<SharedMessage>>()
   let selectable = false
 
   const messagesQuery = createQuery()
-  const accauntsQuery = createQuery()
+  const accountsQuery = createQuery()
+  const employeesQuery = createQuery()
+
+  accountsQuery.query(contact.class.EmployeeAccount, {}, (res) => (accounts = toIdMap(res)))
+  employeesQuery.query(contact.class.Employee, {}, (res) => (employees = toIdMap(res)))
 
   const notificationClient = NotificationClientImpl.getClient()
 
@@ -49,20 +60,12 @@
       (res) => {
         messages = res
         notificationClient.updateLastView(channelId, channel._class, undefined, true)
-        const accountsIds = new Set(messages.map((p) => p.modifiedBy as Ref<EmployeeAccount>))
-        updateAccountsQuery(accountsIds)
       },
       { sort: { sendOn: SortingOrder.Descending } }
     )
   }
 
   $: updateMessagesQuery(channel._id)
-
-  function updateAccountsQuery (accountsIds: Set<Ref<EmployeeAccount>>): void {
-    accauntsQuery.query(contact.class.EmployeeAccount, { _id: { $in: Array.from(accountsIds) } }, (result) => {
-      accounts = result
-    })
-  }
 
   const client = getClient()
 
@@ -75,7 +78,7 @@
       object._class,
       'gmailSharedMessages',
       {
-        messages: convertMessages(selectedMessages, accounts)
+        messages: convertMessages(selectedMessages, accounts, employees)
       }
     )
     await notificationClient.updateLastView(channel._id, channel._class, undefined, true)
@@ -88,25 +91,36 @@
     selected = selected
   }
 
-  function convertMessages (messages: Message[], accounts: EmployeeAccount[]): SharedMessage[] {
+  function convertMessages (
+    messages: Message[],
+    accounts: IdMap<EmployeeAccount>,
+    employees: IdMap<Employee>
+  ): SharedMessage[] {
     return messages.map((m) => {
       return {
         ...m,
         _id: m._id as string as Ref<SharedMessage>,
-        sender: getName(m, accounts, true),
-        receiver: getName(m, accounts, false)
+        sender: getName(m, accounts, employees, true),
+        receiver: getName(m, accounts, employees, false)
       }
     })
   }
 
-  function getName (message: Message, accounts: EmployeeAccount[], sender: boolean): string {
+  function getName (
+    message: Message,
+    accounts: IdMap<EmployeeAccount>,
+    employees: IdMap<Employee>,
+    sender: boolean
+  ): string {
     if (message.incoming === sender) {
-      return `${formatName(object.name)} (${channel.value})`
+      return `${getContactName(object)} (${channel.value})`
     } else {
-      const account = accounts.find((p) => p._id === message.modifiedBy)
+      const account = accounts.get(message.modifiedBy as Ref<EmployeeAccount>)
+      const emp = account ? employees.get(account?.employee) : undefined
       const value = message.incoming ? message.to : message.from
       const email = value.match(EMAIL_REGEX)
-      return account ? `${formatName(account.name)} (${email?.[0] ?? value})` : email?.[0] ?? value
+      const emailVal = email?.[0] ?? value
+      return emp ? `${getContactName(emp)} (${emailVal})` : emailVal
     }
   }
 </script>
@@ -154,7 +168,7 @@
 <Scroller>
   <div class="popupPanel-body__main-content py-4 clear-mins flex-no-shrink">
     {#if messages && messages.length > 0}
-      <Messages messages={convertMessages(messages, accounts)} {selectable} bind:selected on:select />
+      <Messages messages={convertMessages(messages, accounts, employees)} {selectable} bind:selected on:select />
       <div class="clear-mins h-4 flex-no-shrink" />
     {:else}
       <div class="flex-col-center justify-center h-full">

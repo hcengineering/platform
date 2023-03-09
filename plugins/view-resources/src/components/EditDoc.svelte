@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { formatName } from '@hcengineering/contact'
+  import contact, { Contact, getName } from '@hcengineering/contact'
   import { Class, ClassifierKind, Doc, Mixin, Obj, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
@@ -39,6 +39,8 @@
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
+
+  console.log('OPEN EDIT DOC')
 
   let realObjectClass: Ref<Class<Doc>> = _class
   let lastId: Ref<Doc> = _id
@@ -223,7 +225,7 @@
     const name = (object as any).name
     if (name !== undefined) {
       if (hierarchy.isDerived(object._class, contact.class.Person)) {
-        return formatName(name)
+        return getName(object as Contact)
       }
       return name
     }

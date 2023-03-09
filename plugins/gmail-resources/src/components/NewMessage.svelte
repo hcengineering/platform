@@ -15,7 +15,7 @@
 <script lang="ts">
   import attachmentP, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
-  import contact, { Channel, Contact, formatName } from '@hcengineering/contact'
+  import contact, { Channel, Contact, getName } from '@hcengineering/contact'
   import { Account, Data, generateId, Ref } from '@hcengineering/core'
   import { NewMessage, SharedMessage } from '@hcengineering/gmail'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
@@ -172,7 +172,7 @@
       />
       <div class="flex-grow flex-col">
         <Label label={plugin.string.NewMessage} />
-        <span class="content-accent-color"><b>{formatName(object.name)} ({channel.value})</b></span>
+        <span class="content-accent-color"><b>{getName(object)} ({channel.value})</b></span>
       </div>
     </div>
     <div class="buttons-group small-gap">

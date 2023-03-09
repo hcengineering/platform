@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { EmployeeAccount, formatName } from '@hcengineering/contact'
+  import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Request } from '@hcengineering/request'
@@ -25,18 +25,31 @@
 
   export let value: Request
 
-  let employee: EmployeeAccount | undefined
+  let account: EmployeeAccount | undefined
+  let employee: Employee | undefined
 
   const query = createQuery()
 
   $: query.query(
     contact.class.EmployeeAccount,
     { _id: value.tx.modifiedBy as Ref<EmployeeAccount> },
-    (account) => {
-      ;[employee] = account
+    (res) => {
+      ;[account] = res
     },
     { limit: 1 }
   )
+
+  const employeeQuery = createQuery()
+
+  $: account &&
+    employeeQuery.query(
+      contact.class.Employee,
+      { _id: account.employee },
+      (res) => {
+        ;[employee] = res
+      },
+      { limit: 1 }
+    )
 </script>
 
 <div class="container">
@@ -44,7 +57,7 @@
     <div class="label">
       <div class="bold">
         {#if employee}
-          {formatName(employee.name)}
+          {getName(employee)}
         {/if}
       </div>
       <span class="lower">

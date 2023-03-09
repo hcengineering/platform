@@ -15,7 +15,7 @@
 <script lang="ts">
   import Avatar from './Avatar.svelte'
 
-  import { formatName, Person } from '@hcengineering/contact'
+  import { getName, Person } from '@hcengineering/contact'
   import { Asset } from '@hcengineering/platform'
   import { AnySvelteComponent, IconSize } from '@hcengineering/ui'
 
@@ -30,6 +30,6 @@
   <Avatar avatar={value.avatar} {size} {icon} />
   <div class="flex-col min-w-0 {size === 'tiny' || size === 'inline' ? 'ml-1' : 'ml-2'}">
     {#if subtitle}<div class="content-dark-color text-sm">{subtitle}</div>{/if}
-    <div class="content-accent-color overflow-label text-left">{formatName(value.name)}</div>
+    <div class="content-accent-color overflow-label text-left">{getName(value)}</div>
   </div>
 </div>

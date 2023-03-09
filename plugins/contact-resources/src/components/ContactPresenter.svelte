@@ -16,8 +16,8 @@
 <script lang="ts">
   import { Contact, Employee, Organization } from '@hcengineering/contact'
   import { getClient } from '@hcengineering/presentation'
-  import { Label } from '@hcengineering/ui'
   import contact from '../plugin'
+  import EmployeePresenter from './EmployeePresenter.svelte'
 
   import OrganizationPresenter from './OrganizationPresenter.svelte'
   import PersonPresenter from './PersonPresenter.svelte'
@@ -39,13 +39,10 @@
   const toEmployee = (contact: Contact) => contact as Employee
 </script>
 
-{#if isPerson(value)}
+{#if isEmployee(value)}
+  <EmployeePresenter value={toEmployee(value)} />
+{:else if isPerson(value)}
   <PersonPresenter {isInteractive} {value} />
-  {#if isEmployee(value) && toEmployee(value)?.active === false}
-    <div class="ml-1">
-      (<Label label={contact.string.Inactive} />)
-    </div>
-  {/if}
 {:else}
   <OrganizationPresenter value={toOrg(value)} />
 {/if}

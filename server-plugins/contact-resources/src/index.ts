@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import contact, { Contact, contactId, Employee, formatName, Organization, Person } from '@hcengineering/contact'
+import contact, { Contact, contactId, Employee, getName, Organization, Person } from '@hcengineering/contact'
 import core, {
   AnyAttribute,
   ArrOf,
@@ -279,7 +279,7 @@ export function personHTMLPresenter (doc: Doc, control: TriggerControl): string 
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.name}/${contactId}#${view.component.EditDoc}|${person._id}|${person._class}|content`
   const link = concatLink(front, path)
-  return `<a href="${link}">${formatName(person.name)}</a>`
+  return `<a href="${link}">${getName(person)}</a>`
 }
 
 /**
@@ -287,7 +287,7 @@ export function personHTMLPresenter (doc: Doc, control: TriggerControl): string 
  */
 export function personTextPresenter (doc: Doc): string {
   const person = doc as Person
-  return `${formatName(person.name)}`
+  return `${getName(person)}`
 }
 
 /**

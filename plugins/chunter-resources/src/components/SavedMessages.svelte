@@ -2,8 +2,8 @@
   import attachment, { Attachment } from '@hcengineering/attachment'
   import AttachmentPreview from '@hcengineering/attachment-resources/src/components/AttachmentPreview.svelte'
   import { ChunterMessage } from '@hcengineering/chunter'
-  import { EmployeeAccount, formatName } from '@hcengineering/contact'
-  import core, { Ref, WithLookup } from '@hcengineering/core'
+  import contact, { Employee, EmployeeAccount, getName as getContactName } from '@hcengineering/contact'
+  import core, { IdMap, Ref, toIdMap, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Label, Scroller } from '@hcengineering/ui'
   import chunter from '../plugin'
@@ -16,11 +16,18 @@
   let savedMessages: WithLookup<ChunterMessage>[] = []
   let savedAttachmentsIds: Ref<Attachment>[] = []
   let savedAttachments: WithLookup<Attachment>[] = []
+  let accounts: IdMap<EmployeeAccount> = new Map()
+  let employees: IdMap<Employee> = new Map()
 
   const messagesQuery = createQuery()
   const attachmentsQuery = createQuery()
   const savedMessagesQuery = createQuery()
   const savedAttachmentsQuery = createQuery()
+  const accQ = createQuery()
+  const empQ = createQuery()
+
+  accQ.query(contact.class.EmployeeAccount, {}, (res) => (accounts = toIdMap(res)))
+  empQ.query(contact.class.Employee, {}, (res) => (employees = toIdMap(res)))
 
   savedMessagesQuery.query(chunter.class.SavedMessages, {}, (res) => {
     savedMessagesIds = res.map((r) => r.attachedTo)
@@ -46,18 +53,9 @@
     )
 
   $: savedAttachmentsIds &&
-    attachmentsQuery.query(
-      attachment.class.Attachment,
-      { _id: { $in: savedAttachmentsIds } },
-      (res) => {
-        savedAttachments = res
-      },
-      {
-        lookup: {
-          modifiedBy: core.class.Account
-        }
-      }
-    )
+    attachmentsQuery.query(attachment.class.Attachment, { _id: { $in: savedAttachmentsIds } }, (res) => {
+      savedAttachments = res
+    })
 
   const pinnedQuery = createQuery()
   const pinnedIds: Ref<ChunterMessage>[] = []
@@ -82,10 +80,13 @@
     })
   }
 
-  function getName (a: WithLookup<Attachment>): string | undefined {
-    const name = (a.$lookup?.modifiedBy as EmployeeAccount).name
-    if (name !== undefined) {
-      return formatName(name)
+  function getName (a: Attachment): string | undefined {
+    const acc = accounts.get(a.modifiedBy as Ref<EmployeeAccount>)
+    if (acc !== undefined) {
+      const emp = employees.get(acc?.employee)
+      if (emp !== undefined) {
+        return getContactName(emp)
+      }
     }
   }
 </script>

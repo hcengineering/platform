@@ -76,6 +76,7 @@
     "Profile": "Профиль",
     "ProfilePlaceholder": "Профиль...",
     "CurrentEmployee": "Текущий сотрудник",
-    "MergeEmployee": "Объеденить сотрудника"
+    "MergeEmployee": "Объеденить сотрудника",
+    "DisplayName": "Отображаемое имя"
   }
 }

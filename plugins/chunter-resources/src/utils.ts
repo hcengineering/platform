@@ -1,18 +1,11 @@
 import { chunterId, ChunterMessage } from '@hcengineering/chunter'
-import contact, { EmployeeAccount, formatName } from '@hcengineering/contact'
-import { Account, Class, Client, Obj, Ref, Space, getCurrentAccount, Timestamp } from '@hcengineering/core'
+import contact, { EmployeeAccount, getName } from '@hcengineering/contact'
+import { Class, Client, getCurrentAccount, Obj, Ref, Space, Timestamp } from '@hcengineering/core'
 import { Asset } from '@hcengineering/platform'
 import { getCurrentLocation, locationToUrl, navigate } from '@hcengineering/ui'
-import { writable, get } from 'svelte/store'
+import { get, writable } from 'svelte/store'
 
 import chunter from './plugin'
-
-export async function getUser (
-  client: Client,
-  user: Ref<EmployeeAccount> | Ref<Account>
-): Promise<EmployeeAccount | undefined> {
-  return await client.findOne(contact.class.EmployeeAccount, { _id: user as Ref<EmployeeAccount> })
-}
 
 export function getTime (time: number): string {
   let options: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: 'numeric' }
@@ -44,13 +37,19 @@ export function classIcon (client: Client, _class: Ref<Class<Obj>>): Asset | und
 export async function getDmName (client: Client, dm: Space): Promise<string> {
   const myAccId = getCurrentAccount()._id
 
-  const employeeAccounts = await client.findAll(contact.class.EmployeeAccount, {
+  let employeeAccounts: EmployeeAccount[] = await client.findAll(contact.class.EmployeeAccount, {
     _id: { $in: dm.members as Array<Ref<EmployeeAccount>> }
   })
 
-  const name = (dm.members.length > 1 ? employeeAccounts.filter((a) => a._id !== myAccId) : employeeAccounts)
-    .map((a) => formatName(a.name))
-    .join(', ')
+  if (dm.members.length > 1) {
+    employeeAccounts = employeeAccounts.filter((p) => p._id !== myAccId)
+  }
+
+  const emloyees = await client.findAll(contact.class.Employee, {
+    _id: { $in: employeeAccounts.map((p) => p.employee) }
+  })
+
+  const name = emloyees.map((a) => getName(a)).join(', ')
 
   return name
 }

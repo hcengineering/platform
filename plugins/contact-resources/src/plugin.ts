@@ -61,7 +61,8 @@ export default mergeIds(contactId, contact, {
     CreateEmployee: '' as IntlString,
     Inactive: '' as IntlString,
     NotSpecified: '' as IntlString,
-    MergeEmployee: '' as IntlString
+    MergeEmployee: '' as IntlString,
+    DisplayName: '' as IntlString
   },
   function: {
     EmployeeSort: '' as SortFunc,

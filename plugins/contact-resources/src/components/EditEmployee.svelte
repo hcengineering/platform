@@ -14,26 +14,38 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { combineName, EmployeeAccount, getFirstName, getLastName, Person } from '@hcengineering/contact'
-  import { getCurrentAccount, Ref, Space } from '@hcengineering/core'
-  import { AttributeEditor, createQuery, EditableAvatar, getClient } from '@hcengineering/presentation'
+  import { Employee, EmployeeAccount, getFirstName, getLastName, Person } from '@hcengineering/contact'
+  import { AccountRole, getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import { changeName } from '@hcengineering/login-resources'
+  import { AttributeEditor, Avatar, createQuery, EditableAvatar, getClient } from '@hcengineering/presentation'
   import setting, { IntegrationType } from '@hcengineering/setting'
   import { createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import contact from '../plugin'
   import ChannelsEditor from './ChannelsEditor.svelte'
 
-  export let object: Person
+  export let object: Employee
+  console.log('TRY OPEN IT!!!!!')
   const client = getClient()
 
   const account = getCurrentAccount() as EmployeeAccount
 
   let avatarEditor: EditableAvatar
 
+  $: owner = account.employee === object._id
+  $: editable = account.role >= AccountRole.Maintainer || owner
   let firstName = getFirstName(object.name)
   let lastName = getLastName(object.name)
+  let displayName = object.displayName
 
   $: setName(object)
+
+  let email: string | undefined
+  $: if (editable) {
+    client.findOne(contact.class.EmployeeAccount, { employee: (object as Employee)._id }).then((acc) => {
+      email = acc?.email
+    })
+  }
 
   function setName (object: Person) {
     firstName = getFirstName(object.name)
@@ -43,14 +55,16 @@
   const dispatch = createEventDispatcher()
 
   function firstNameChange () {
-    client.update(object, {
-      name: combineName(firstName, getLastName(object.name))
-    })
+    changeName(firstName, getLastName(object.name))
   }
 
   function lastNameChange () {
+    changeName(getFirstName(object.name), lastName)
+  }
+
+  function changeDisplayName () {
     client.update(object, {
-      name: combineName(getFirstName(object.name), lastName)
+      displayName
     })
   }
 
@@ -64,7 +78,7 @@
     }
   )
 
-  const sendOpen = () => dispatch('open', { ignoreKeys: ['comments', 'name', 'channels', 'city'] })
+  const sendOpen = () => dispatch('open', { ignoreKeys: ['comments', 'name', 'channels', 'city', 'displayName'] })
   onMount(sendOpen)
 
   async function onAvatarDone () {
@@ -86,35 +100,67 @@
   <div class="flex-row-stretch flex-grow">
     <div class="mr-8">
       {#key object}
-        <EditableAvatar
-          avatar={object.avatar}
-          id={object._id}
-          size={'x-large'}
-          bind:this={avatarEditor}
-          on:done={onAvatarDone}
-        />
+        {#if editable}
+          <EditableAvatar
+            avatar={object.avatar}
+            {email}
+            id={object._id}
+            size={'x-large'}
+            bind:this={avatarEditor}
+            on:done={onAvatarDone}
+          />
+        {:else}
+          <Avatar avatar={object.avatar} size={'x-large'} />
+        {/if}
       {/key}
     </div>
     <div class="flex-grow flex-col">
       <div class="flex-grow flex-col">
         <div class="name">
-          <EditBox
-            placeholder={contact.string.PersonFirstNamePlaceholder}
-            bind:value={firstName}
-            on:change={firstNameChange}
-            focusIndex={1}
-          />
+          {#if owner}
+            <EditBox
+              placeholder={contact.string.PersonFirstNamePlaceholder}
+              bind:value={firstName}
+              on:change={firstNameChange}
+              focusIndex={1}
+            />
+          {:else}
+            {firstName}
+          {/if}
         </div>
         <div class="name">
-          <EditBox
-            placeholder={contact.string.PersonLastNamePlaceholder}
-            bind:value={lastName}
-            on:change={lastNameChange}
-            focusIndex={2}
-          />
+          {#if owner}
+            <EditBox
+              placeholder={contact.string.PersonLastNamePlaceholder}
+              bind:value={lastName}
+              on:change={lastNameChange}
+              focusIndex={2}
+            />
+          {:else}
+            {lastName}
+          {/if}
+        </div>
+        <div class="name">
+          {#if editable}
+            <EditBox
+              placeholder={contact.string.DisplayName}
+              bind:value={displayName}
+              on:change={changeDisplayName}
+              focusIndex={1}
+            />
+          {:else}
+            {displayName}
+          {/if}
         </div>
         <div class="location">
-          <AttributeEditor maxWidth="20rem" _class={contact.class.Person} {object} key="city" focusIndex={3} />
+          <AttributeEditor
+            maxWidth="20rem"
+            _class={contact.class.Person}
+            {editable}
+            {object}
+            key="city"
+            focusIndex={3}
+          />
         </div>
       </div>
 
@@ -123,6 +169,7 @@
         <ChannelsEditor
           attachedTo={object._id}
           attachedClass={object._class}
+          {editable}
           bind:integrations
           shape={'circle'}
           focusIndex={10}

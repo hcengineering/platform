@@ -17,10 +17,10 @@
   import { AttachmentDocList } from '@hcengineering/attachment-resources'
   import type { Comment } from '@hcengineering/chunter'
   import chunter from '@hcengineering/chunter'
-  import { formatName } from '@hcengineering/contact'
+  import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
+  import { Ref } from '@hcengineering/core'
   import { Avatar, getClient, MessageViewer } from '@hcengineering/presentation'
-  import { TimeSince, ShowMore, Icon } from '@hcengineering/ui'
-  import { getUser } from '../utils'
+  import { Icon, ShowMore, TimeSince } from '@hcengineering/ui'
 
   export let value: Comment
   export let inline: boolean = false
@@ -30,6 +30,14 @@
 
   const cutId = (str: string): string => {
     return str.slice(0, 4) + '...' + str.slice(-4)
+  }
+
+  async function getEmployee (value: Comment): Promise<Employee | undefined> {
+    const acc = await client.findOne(contact.class.EmployeeAccount, { _id: value.modifiedBy as Ref<EmployeeAccount> })
+    if (acc !== undefined) {
+      const emp = await client.findOne(contact.class.Employee, { _id: acc.employee })
+      return emp
+    }
   }
 </script>
 
@@ -43,23 +51,23 @@
   &nbsp;<span class="content-dark-color">#{cutId(value._id.toString())}</span>
 {:else}
   <div class="flex-row-top">
-    <div class="avatar">
-      <Avatar size={'medium'} />
-    </div>
-    <div class="flex-grow flex-col select-text">
-      <div class="header">
-        <div class="fs-title">
-          {#await getUser(client, value.modifiedBy) then user}
-            {#if user}{formatName(user.name)}{/if}
-          {/await}
-        </div>
-        <div class="content-trans-color ml-4"><TimeSince value={value.modifiedOn} /></div>
+    {#await getEmployee(value) then employee}
+      <div class="avatar">
+        <Avatar size={'medium'} avatar={employee?.avatar} />
       </div>
-      <ShowMore limit={126} fixed>
-        <MessageViewer message={value.message} />
-        <AttachmentDocList {value} />
-      </ShowMore>
-    </div>
+      <div class="flex-grow flex-col select-text">
+        <div class="header">
+          <div class="fs-title">
+            {#if employee}{getName(employee)}{/if}
+          </div>
+          <div class="content-trans-color ml-4"><TimeSince value={value.modifiedOn} /></div>
+        </div>
+        <ShowMore limit={126} fixed>
+          <MessageViewer message={value.message} />
+          <AttachmentDocList {value} />
+        </ShowMore>
+      </div>
+    {/await}
   </div>
 {/if}
 

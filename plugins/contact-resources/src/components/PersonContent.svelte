@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { formatName, Person } from '@hcengineering/contact'
+  import { Employee, getName, Person } from '@hcengineering/contact'
   import { Hierarchy } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Avatar } from '@hcengineering/presentation'
   import { getPanelURI, Label, LabelAndProps, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
 
-  export let value: Person | undefined | null
+  export let value: Person | Employee | undefined | null
   export let inline: boolean = false
   export let isInteractive = true
   export let shouldShowAvatar: boolean = true
@@ -78,7 +78,7 @@
     </div>
   {/if}
   {#if value && shouldShowName}
-    <span class="eContentPresenterLabel">{formatName(value.name)}</span>
+    <span class="eContentPresenterLabel">{getName(value)}</span>
   {/if}
   {#if !value && shouldShowName && defaultName}
     <div class="eContentPresenterLabel">

@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Channel, formatName } from '@hcengineering/contact'
-  import { Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+  import contact, { Channel, Contact, getName } from '@hcengineering/contact'
+  import { Class, getCurrentAccount, Ref } from '@hcengineering/core'
   import { SharedMessage } from '@hcengineering/gmail'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
@@ -31,10 +31,11 @@
   import IntegrationSelector from './IntegrationSelector.svelte'
   import NewMessage from './NewMessage.svelte'
 
-  export let _id: Ref<Doc>
-  export let _class: Ref<Class<Doc>>
+  export let _id: Ref<Contact>
+  export let _class: Ref<Class<Contact>>
 
-  let object: any
+  let object: Contact
+
   let newMessage: boolean = false
   let currentMessage: SharedMessage | undefined = undefined
   let channel: Channel | undefined = undefined
@@ -115,7 +116,7 @@
           <span class="wrapped-title">Email</span>
           <span class="wrapped-subtitle">
             <Label label={gmail.string.YouAnd} />
-            <b>{formatName(object.name)}</b>
+            <b>{getName(object)}</b>
           </span>
         </div>
       </div>
