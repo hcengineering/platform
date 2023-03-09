@@ -35,7 +35,7 @@
     "@hcengineering/model-core": "^0.6.0",
     "@hcengineering/model-view": "^0.6.0",
     "@hcengineering/model-workbench": "^0.6.1",
-    "@hcengineering/task": "^0.6.1",
+    "@hcengineering/task": "^0.6.2",
     "@hcengineering/templates": "^0.6.0",
     "@hcengineering/activity": "^0.6.0"
   }

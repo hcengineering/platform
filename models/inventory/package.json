@@ -32,7 +32,7 @@
     "@hcengineering/model-core": "^0.6.0",
     "@hcengineering/ui": "^0.6.3",
     "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/notification": "^0.6.5",
+    "@hcengineering/notification": "^0.6.7",
     "@hcengineering/inventory": "^0.6.0",
     "@hcengineering/inventory-resources": "^0.6.0",
     "@hcengineering/view": "^0.6.2",

@@ -69,8 +69,8 @@
     "@hcengineering/server-attachment-resources": "^0.6.0",
     "xml2js": "~0.4.23",
     "@hcengineering/model-recruit": "^0.6.0",
-    "@hcengineering/recruit": "^0.6.6",
-    "@hcengineering/task": "^0.6.1",
+    "@hcengineering/recruit": "^0.6.7",
+    "@hcengineering/task": "^0.6.2",
     "@hcengineering/chunter": "^0.6.2",
     "mime-types": "~2.1.34",
     "@hcengineering/attachment": "^0.6.1",
@@ -118,6 +118,6 @@
     "@hcengineering/setting": "^0.6.2",
     "@hcengineering/minio": "^0.6.0",
     "@hcengineering/openai": "^0.6.0",
-    "@hcengineering/tracker": "^0.6.1"
+    "@hcengineering/tracker": "^0.6.2"
   }
 }

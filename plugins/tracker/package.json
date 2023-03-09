@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/tracker",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -33,7 +33,7 @@
     "@hcengineering/contact": "^0.6.11",
     "@hcengineering/chunter": "^0.6.2",
     "@hcengineering/attachment": "^0.6.1",
-    "@hcengineering/task": "^0.6.1",
+    "@hcengineering/task": "^0.6.2",
     "@hcengineering/tags": "^0.6.3",
     "lexorank": "~1.0.4"
   },

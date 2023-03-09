@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/task",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -32,7 +32,7 @@
     "@hcengineering/view": "^0.6.2",
     "@hcengineering/ui": "^0.6.3",
     "lexorank": "~1.0.4",
-    "@hcengineering/notification": "^0.6.5"
+    "@hcengineering/notification": "^0.6.7"
   },
   "repository": "https://github.com/hcengineering/anticrm",
   "publishConfig": {

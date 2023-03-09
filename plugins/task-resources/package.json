@@ -33,7 +33,7 @@
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",
     "svelte": "^3.47",
-    "@hcengineering/task": "^0.6.1",
+    "@hcengineering/task": "^0.6.2",
     "@hcengineering/ui": "^0.6.3",
     "@hcengineering/presentation": "^0.6.2",
     "@hcengineering/text-editor": "^0.6.0",
@@ -41,14 +41,14 @@
     "@hcengineering/core": "^0.6.21",
     "@hcengineering/chunter": "^0.6.2",
     "@hcengineering/attachment": "^0.6.1",
-    "@hcengineering/panel": "^0.6.0",
+    "@hcengineering/panel": "^0.6.1",
     "@hcengineering/view": "^0.6.2",
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/login": "^0.6.1",
     "@hcengineering/attachment-resources": "^0.6.0",
     "@hcengineering/chunter-resources": "^0.6.0",
     "@hcengineering/workbench": "^0.6.2",
-    "@hcengineering/notification": "^0.6.5",
+    "@hcengineering/notification": "^0.6.7",
     "@hcengineering/tags": "^0.6.3",
     "@hcengineering/kanban": "^0.6.0"
   }
