@@ -57,6 +57,7 @@ import {
 import { CategoryQuery, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
 import tracker from './plugin'
 import { defaultPriorities, defaultProjectStatuses, defaultSprintStatuses, issuePriorities } from './types'
+import { isHoliday } from '../../hr-resources/src/utils'
 
 export * from './types'
 
@@ -516,7 +517,7 @@ export async function moveIssuesToAnotherSprint (
   }
 }
 
-export function getTimeReportDate (type: TimeReportDayType): number {
+export function getTimeReportDate (type: TimeReportDayType, hd: Date[]): number {
   const date = new Date(Date.now())
 
   if (type === TimeReportDayType.PreviousWorkDay) {
@@ -524,17 +525,17 @@ export function getTimeReportDate (type: TimeReportDayType): number {
   }
 
   // if date is day off then set date to last working day
-  while (isWeekend(date)) {
+  while (isWeekend(date) || isHoliday(hd, date)) {
     date.setDate(date.getDate() - 1)
   }
 
   return date.valueOf()
 }
 
-export function getTimeReportDayType (timestamp: number): TimeReportDayType | undefined {
+export function getTimeReportDayType (timestamp: number, hd: Date[]): TimeReportDayType | undefined {
   const date = new Date(timestamp)
-  const currentWorkDate = new Date(getTimeReportDate(TimeReportDayType.CurrentWorkDay))
-  const previousWorkDate = new Date(getTimeReportDate(TimeReportDayType.PreviousWorkDay))
+  const currentWorkDate = new Date(getTimeReportDate(TimeReportDayType.CurrentWorkDay, hd))
+  const previousWorkDate = new Date(getTimeReportDate(TimeReportDayType.PreviousWorkDay, hd))
 
   if (areDatesEqual(date, currentWorkDate)) {
     return TimeReportDayType.CurrentWorkDay

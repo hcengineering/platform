@@ -23,6 +23,7 @@
   import { getTimeReportDate, getTimeReportDayType } from '../../../utils'
   import TitlePresenter from '../TitlePresenter.svelte'
   import TimeReportDayDropdown from './TimeReportDayDropdown.svelte'
+  import hr, { fromTzDate } from '../../../../../hr'
 
   export let issue: Issue | undefined = undefined
   export let issueId: Ref<Issue> | undefined = issue?._id
@@ -33,15 +34,35 @@
   export let value: TimeSpendReport | undefined
   export let placeholder: IntlString = tracker.string.TimeSpendReportValue
   export let defaultTimeReportDay: TimeReportDayType = TimeReportDayType.PreviousWorkDay
-
-  const data = {
-    date: value?.date ?? getTimeReportDate(defaultTimeReportDay),
-    description: value?.description ?? '',
-    value: value?.value,
-    employee: value?.employee ?? assignee ?? null
+  let data = {
+    date: null,
+    description: '',
+    value: undefined,
+    employee: null
   }
+  let selectedTimeReportDay
 
-  let selectedTimeReportDay = getTimeReportDayType(data.date)
+  async function initState () {
+    const today = new Date(Date.now())
+    const thisMonthHolidays = await client.findAll(hr.class.PublicHoliday, {
+      'date.year': today.getFullYear(),
+      'date.month': today.getMonth()
+    })
+    const prevMonth = new Date(today.setDate(0))
+    const prevMonthHolidays = await client.findAll(hr.class.PublicHoliday, {
+      'date.year': prevMonth.getFullYear(),
+      'date.month': prevMonth.getMonth()
+    })
+    const holidays = [...thisMonthHolidays, ...prevMonthHolidays].map((r) => new Date(fromTzDate(r.date)))
+    data = {
+      date: value?.date ?? getTimeReportDate(defaultTimeReportDay, holidays),
+      description: value?.description ?? '',
+      value: value?.value,
+      employee: value?.employee ?? assignee ?? null
+    }
+    selectedTimeReportDay = getTimeReportDayType(data.date, holidays)
+    return holidays
+  }
 
   export function canClose (): boolean {
     return true
@@ -81,49 +102,51 @@
     }
   }
 
-  $: canSave = Number.isFinite(data.value) && data.value !== 0 && space !== undefined && issueId !== undefined
+  $: canSave = data && Number.isFinite(data.value) && data.value !== 0 && space !== undefined && issueId !== undefined
 </script>
 
-<Card
-  label={value === undefined ? tracker.string.TimeSpendReportAdd : tracker.string.TimeSpendReportValue}
-  {canSave}
-  okAction={create}
-  on:close
-  okLabel={value === undefined ? presentation.string.Create : presentation.string.Save}
->
-  <svelte:fragment slot="header">
-    {#if issue}
-      <TitlePresenter showParent={false} value={issue} />
-    {/if}
-  </svelte:fragment>
-  <div class="flex-row-center gap-2">
-    <EditBox focus bind:value={data.value} {placeholder} format={'number'} maxDigitsAfterPoint={3} kind={'editbox'} />
-    <Button kind={'link-bordered'} on:click={() => (data.value = 0.125)}><span slot="content">1/8</span></Button>
-    <Button kind={'link-bordered'} on:click={() => (data.value = 0.25)}><span slot="content">1/4</span></Button>
-    <Button kind={'link-bordered'} on:click={() => (data.value = 0.5)}><span slot="content">1/2</span></Button>
-    <Button kind={'link-bordered'} on:click={() => (data.value = 0.75)}><span slot="content">3/4</span></Button>
-    <Button kind={'link-bordered'} on:click={() => (data.value = 0.875)}><span slot="content">7/8</span></Button>
-    <div class="buttons-divider" />
-    <Button kind={'link-bordered'} on:click={() => (data.value = 1)}><span slot="content">1</span></Button>
-  </div>
-  <EditBox bind:value={data.description} placeholder={tracker.string.TimeSpendReportDescription} kind={'editbox'} />
-  <svelte:fragment slot="pool">
-    <UserBox
-      _class={contact.class.Employee}
-      label={contact.string.Employee}
-      kind={'no-border'}
-      bind:value={data.employee}
-      showNavigate={false}
-    />
-    <TimeReportDayDropdown
-      kind={'no-border'}
-      bind:selected={selectedTimeReportDay}
-      on:selected={({ detail }) => (data.date = getTimeReportDate(detail))}
-    />
-    <DatePresenter
-      bind:value={data.date}
-      editable
-      on:change={({ detail }) => (selectedTimeReportDay = getTimeReportDayType(detail))}
-    />
-  </svelte:fragment>
-</Card>
+{#await initState() then holidays}
+  <Card
+    label={value === undefined ? tracker.string.TimeSpendReportAdd : tracker.string.TimeSpendReportValue}
+    {canSave}
+    okAction={create}
+    on:close
+    okLabel={value === undefined ? presentation.string.Create : presentation.string.Save}
+  >
+    <svelte:fragment slot="header">
+      {#if issue}
+        <TitlePresenter showParent={false} value={issue} />
+      {/if}
+    </svelte:fragment>
+    <div class="flex-row-center gap-2">
+      <EditBox focus bind:value={data.value} {placeholder} format={'number'} maxDigitsAfterPoint={3} kind={'editbox'} />
+      <Button kind={'link-bordered'} on:click={() => (data.value = 0.125)}><span slot="content">1/8</span></Button>
+      <Button kind={'link-bordered'} on:click={() => (data.value = 0.25)}><span slot="content">1/4</span></Button>
+      <Button kind={'link-bordered'} on:click={() => (data.value = 0.5)}><span slot="content">1/2</span></Button>
+      <Button kind={'link-bordered'} on:click={() => (data.value = 0.75)}><span slot="content">3/4</span></Button>
+      <Button kind={'link-bordered'} on:click={() => (data.value = 0.875)}><span slot="content">7/8</span></Button>
+      <div class="buttons-divider" />
+      <Button kind={'link-bordered'} on:click={() => (data.value = 1)}><span slot="content">1</span></Button>
+    </div>
+    <EditBox bind:value={data.description} placeholder={tracker.string.TimeSpendReportDescription} kind={'editbox'} />
+    <svelte:fragment slot="pool">
+      <UserBox
+        _class={contact.class.Employee}
+        label={contact.string.Employee}
+        kind={'no-border'}
+        bind:value={data.employee}
+        showNavigate={false}
+      />
+      <TimeReportDayDropdown
+        kind={'no-border'}
+        bind:selected={selectedTimeReportDay}
+        on:selected={({ detail }) => (data.date = getTimeReportDate(detail, holidays))}
+      />
+      <DatePresenter
+        bind:value={data.date}
+        editable
+        on:change={({ detail }) => (selectedTimeReportDay = getTimeReportDayType(detail, holidays))}
+      />
+    </svelte:fragment>
+  </Card>
+{/await}
