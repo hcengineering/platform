@@ -3,7 +3,7 @@ import { Ref, TxOperations } from '@hcengineering/core'
 import { Department, fromTzDate, Request, RequestType, Staff } from '@hcengineering/hr'
 import { MessageBox } from '@hcengineering/presentation'
 import { Issue, TimeSpendReport } from '@hcengineering/tracker'
-import { isWeekend, MILLISECONDS_IN_DAY, showPopup } from '@hcengineering/ui'
+import { areDatesEqual, isWeekend, MILLISECONDS_IN_DAY, showPopup } from '@hcengineering/ui'
 import hr from './plugin'
 
 const todayDate = new Date()
@@ -140,7 +140,8 @@ export function getRequestDates (
   request: Request,
   types: Map<Ref<RequestType>, RequestType>,
   year: number,
-  month: number
+  month: number,
+  holidays: Date[] | undefined
 ): number[] {
   const type = types.get(request.type)
   const startDate = request.tzDate.month === month ? fromTzDate(request.tzDate) : new Date().setFullYear(year, month, 1)
@@ -151,7 +152,7 @@ export function getRequestDates (
   const stDateDate = stDate.getDate()
   let ds = Array.from(Array(days).keys()).map((it) => stDateDate + it)
   if ((type?.value ?? -1) < 0) {
-    ds = ds.filter((it) => !isWeekend(new Date(stDate.setDate(it))))
+    ds = ds.filter((it) => !isWeekend(new Date(stDate.setDate(it))) && !isHoliday(holidays ?? undefined, stDate))
   }
   return ds
 }
@@ -160,7 +161,8 @@ export function getRequestDays (
   request: Request,
   types: Map<Ref<RequestType>, RequestType>,
   startDate: Date,
-  endDate: Date
+  endDate: Date,
+  holidays: Date[] | undefined
 ): number {
   const type = types.get(request.type)
   const startTime = new Date(fromTzDate(request.tzDate)).setHours(0, 0, 0, 0)
@@ -172,7 +174,10 @@ export function getRequestDays (
     if (
       current >= startTime &&
       current <= endTime &&
-      ((type?.value ?? -1) > 0 || ((type?.value ?? -1) < 0 && !isWeekend(new Date(current))))
+      ((type?.value ?? -1) > 0 ||
+        ((type?.value ?? -1) < 0 &&
+          !isWeekend(new Date(current)) &&
+          !isHoliday(holidays ?? undefined, new Date(current))))
     ) {
       days++
     }
@@ -186,16 +191,22 @@ export function getTotal (
   startDate: Date,
   endDate: Date,
   types: Map<Ref<RequestType>, RequestType>,
+  holidays: Date[] | undefined,
   f: (v: number) => number = (f) => f
 ): number {
   let total = 0
   for (const request of requests) {
-    const ds = getRequestDays(request, types, startDate, endDate)
+    const ds = getRequestDays(request, types, startDate, endDate, holidays)
     const type = types.get(request.type)
     const val = ds * (type?.value ?? 0)
     total += f(val)
   }
   return total
+}
+
+export function isHoliday (holidays: Date[] | undefined, day: Date): boolean {
+  if (holidays === undefined) return false
+  return holidays.some((date) => areDatesEqual(day, date))
 }
 
 export function tableToCSV (tableId: string, separator = ','): string {

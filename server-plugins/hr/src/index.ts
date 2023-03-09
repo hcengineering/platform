@@ -31,10 +31,13 @@ export default plugin(serverHrId, {
     OnDepartmentStaff: '' as Resource<TriggerFunc>,
     OnRequestCreate: '' as Resource<TriggerFunc>,
     OnRequestUpdate: '' as Resource<TriggerFunc>,
-    OnRequestRemove: '' as Resource<TriggerFunc>
+    OnRequestRemove: '' as Resource<TriggerFunc>,
+    OnPublicHolidayCreate: '' as Resource<TriggerFunc>
   },
   function: {
     RequestHTMLPresenter: '' as Resource<Presenter>,
-    RequestTextPresenter: '' as Resource<Presenter>
+    RequestTextPresenter: '' as Resource<Presenter>,
+    PublicHolidayHTMLPresenter: '' as Resource<Presenter>,
+    PublicHolidayTextPresenter: '' as Resource<Presenter>
   }
 })

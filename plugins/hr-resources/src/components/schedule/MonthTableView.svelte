@@ -43,12 +43,13 @@
 
   export let employeeRequests: Map<Ref<Staff>, Request[]>
   export let timeReports: Map<Ref<Employee>, EmployeeReports>
+  export let holidays: Date[] | undefined = undefined
 
   $: month = getStartDate(currentDate.getFullYear(), currentDate.getMonth()) // getMonth(currentDate, currentDate.getMonth())
   $: wDays = weekDays(month.getFullYear(), month.getMonth())
 
   function getDateRange (request: Request): string {
-    const ds = getRequestDates(request, types, month.getFullYear(), month.getMonth())
+    const ds = getRequestDates(request, types, month.getFullYear(), month.getMonth(), holidays)
     return ds.join(' ')
   }
 
@@ -104,13 +105,13 @@
           presenter: StatPresenter,
           props: {
             month: startDate ?? getStartDate(currentDate.getFullYear(), currentDate.getMonth()),
-            display: (req: Request[]) => wDays + getTotal(req, startDate, endDate, types),
+            display: (req: Request[]) => wDays + getTotal(req, startDate, endDate, types, holidays),
             getStatRequests
           },
           sortingKey: '@wdCount',
           sortingFunction: (a: Doc, b: Doc) =>
-            getTotal(getStatRequests(b._id as Ref<Staff>, startDate), startDate, endDate, types) -
-            getTotal(getStatRequests(a._id as Ref<Staff>, startDate), startDate, endDate, types)
+            getTotal(getStatRequests(b._id as Ref<Staff>, startDate), startDate, endDate, types, holidays) -
+            getTotal(getStatRequests(a._id as Ref<Staff>, startDate), startDate, endDate, types, holidays)
         }
       ],
       [
@@ -163,15 +164,16 @@
           presenter: StatPresenter,
           props: {
             month: startDate ?? getMonth(currentDate, currentDate.getMonth()),
-            display: (req: Request[]) => getTotal(req, startDate, endDate, types, (a) => (a < 0 ? Math.abs(a) : 0)),
+            display: (req: Request[]) =>
+              getTotal(req, startDate, endDate, types, holidays, (a) => (a < 0 ? Math.abs(a) : 0)),
             getStatRequests
           },
           sortingKey: '@ptoCount',
           sortingFunction: (a: Doc, b: Doc) =>
-            getTotal(getStatRequests(b._id as Ref<Staff>, startDate), startDate, endDate, types, (a) =>
+            getTotal(getStatRequests(b._id as Ref<Staff>, startDate), startDate, endDate, types, holidays, (a) =>
               a < 0 ? Math.abs(a) : 0
             ) -
-            getTotal(getStatRequests(a._id as Ref<Staff>, startDate), startDate, endDate, types, (a) =>
+            getTotal(getStatRequests(a._id as Ref<Staff>, startDate), startDate, endDate, types, holidays, (a) =>
               a < 0 ? Math.abs(a) : 0
             )
         }
@@ -184,15 +186,16 @@
           presenter: StatPresenter,
           props: {
             month: startDate ?? getMonth(currentDate, currentDate.getMonth()),
-            display: (req: Request[]) => getTotal(req, startDate, endDate, types, (a) => (a > 0 ? Math.abs(a) : 0)),
+            display: (req: Request[]) =>
+              getTotal(req, startDate, endDate, types, holidays, (a) => (a > 0 ? Math.abs(a) : 0)),
             getStatRequests
           },
           sortingKey: '@extraCount',
           sortingFunction: (a: Doc, b: Doc) =>
-            getTotal(getStatRequests(b._id as Ref<Staff>, startDate), startDate, endDate, types, (a) =>
+            getTotal(getStatRequests(b._id as Ref<Staff>, startDate), startDate, endDate, types, holidays, (a) =>
               a > 0 ? Math.abs(a) : 0
             ) -
-            getTotal(getStatRequests(a._id as Ref<Staff>, startDate), startDate, endDate, types, (a) =>
+            getTotal(getStatRequests(a._id as Ref<Staff>, startDate), startDate, endDate, types, holidays, (a) =>
               a > 0 ? Math.abs(a) : 0
             )
         }

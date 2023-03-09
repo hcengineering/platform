@@ -184,11 +184,23 @@
       }
     }
   )
+  let holidays: Date[] | undefined = undefined
+  const holidaysQuery = createQuery()
+  $: holidaysQuery.query(
+    hr.class.PublicHoliday,
+    {
+      'date.month': currentDate.getMonth(),
+      'date.year': currentDate.getFullYear()
+    },
+    (res) => {
+      holidays = res.map((holiday) => new Date(fromTzDate(holiday.date)))
+    }
+  )
 </script>
 
 {#if departmentStaff.length}
   {#if mode === CalendarMode.Year}
-    <YearView {departmentStaff} {employeeRequests} {types} {currentDate} />
+    <YearView {departmentStaff} {employeeRequests} {types} {currentDate} {holidays} />
   {:else if mode === CalendarMode.Month}
     {#if display === 'chart'}
       <MonthView
@@ -200,9 +212,11 @@
         {editableList}
         {currentDate}
         {timeReports}
+        {holidays}
+        {department}
       />
     {:else if display === 'stats'}
-      <MonthTableView {departmentStaff} {employeeRequests} {types} {currentDate} {timeReports} />
+      <MonthTableView {departmentStaff} {employeeRequests} {types} {currentDate} {timeReports} {holidays} />
     {/if}
   {/if}
 {:else}

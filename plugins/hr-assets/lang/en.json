@@ -41,6 +41,11 @@
     "Members": "Members",
     "NoMembers": "No members added",
     "AddMember": "Add member",
-    "Subscribers": "Subscribers"
+    "Subscribers": "Subscribers",
+    "PublicHoliday": "Public holiday",
+    "Title": "Title",
+    "Description": "Description",
+    "MarkAsPublicHoliday": "Mark as public holiday",
+    "EditPublicHoliday": "Edit public holiday"
   }
 }

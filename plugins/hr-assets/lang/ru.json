@@ -41,6 +41,11 @@
     "Members": "Сотрудники",
     "NoMembers": "Нет добавленных сотрудников",
     "AddMember": "Добавить сотрудника",
-    "Subscribers": "Подписчики"
+    "Subscribers": "Подписчики",
+    "Title": "Название",
+    "Description": "Описание",
+    "PublicHoliday": "Праздничный день",
+    "MarkAsPublicHoliday": "Отметить как праздничный день",
+    "EditPublicHoliday": "Редактировать праздничный день"
   }
 }

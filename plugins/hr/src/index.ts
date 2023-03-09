@@ -69,6 +69,16 @@ export interface TzDate {
 /**
  * @public
  */
+export interface PublicHoliday extends Doc {
+  title: string
+  description: string
+  date: TzDate
+  department: Ref<Department>
+}
+
+/**
+ * @public
+ */
 export interface Request extends AttachedDoc {
   attachedTo: Ref<Staff>
 
@@ -104,7 +114,8 @@ const hr = plugin(hrId, {
     DepartmentMember: '' as Ref<Class<DepartmentMember>>,
     Request: '' as Ref<Class<Request>>,
     RequestType: '' as Ref<Class<RequestType>>,
-    TzDate: '' as Ref<Class<Type<TzDate>>>
+    TzDate: '' as Ref<Class<Type<TzDate>>>,
+    PublicHoliday: '' as Ref<Class<PublicHoliday>>
   },
   mixin: {
     Staff: '' as Ref<Mixin<Staff>>
@@ -129,9 +140,10 @@ const hr = plugin(hrId, {
     Remote: '' as Ref<RequestType>,
     Overtime: '' as Ref<RequestType>,
     Overtime2: '' as Ref<RequestType>,
-    CreateRequestNotifcation: '' as Ref<NotificationType>,
-    UpdateRequestNotifcation: '' as Ref<NotificationType>,
-    RemoveRequestNotifcation: '' as Ref<NotificationType>
+    CreateRequestNotification: '' as Ref<NotificationType>,
+    UpdateRequestNotification: '' as Ref<NotificationType>,
+    RemoveRequestNotification: '' as Ref<NotificationType>,
+    CreatePublicHolidayNotification: '' as Ref<NotificationType>
   },
   viewlet: {
     TableMember: '' as Ref<Viewlet>,

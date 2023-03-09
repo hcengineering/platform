@@ -38,11 +38,23 @@ export function createModel (builder: Builder): void {
     trigger: serverHr.trigger.OnRequestRemove
   })
 
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverHr.trigger.OnPublicHolidayCreate
+  })
+
   builder.mixin(hr.class.Request, core.class.Class, serverNotification.mixin.HTMLPresenter, {
     presenter: serverHr.function.RequestHTMLPresenter
   })
 
   builder.mixin(hr.class.Request, core.class.Class, serverNotification.mixin.TextPresenter, {
     presenter: serverHr.function.RequestTextPresenter
+  })
+
+  builder.mixin(hr.class.PublicHoliday, core.class.Class, serverNotification.mixin.HTMLPresenter, {
+    presenter: serverHr.function.PublicHolidayHTMLPresenter
+  })
+
+  builder.mixin(hr.class.PublicHoliday, core.class.Class, serverNotification.mixin.TextPresenter, {
+    presenter: serverHr.function.PublicHolidayTextPresenter
   })
 }

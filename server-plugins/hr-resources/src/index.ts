@@ -26,11 +26,19 @@ import core, {
   TxProcessor,
   TxUpdateDoc
 } from '@hcengineering/core'
-import hr, { Department, DepartmentMember, fromTzDate, Request, Staff, tzDateEqual } from '@hcengineering/hr'
+import hr, {
+  Department,
+  DepartmentMember,
+  fromTzDate,
+  PublicHoliday,
+  Request,
+  Staff,
+  tzDateEqual
+} from '@hcengineering/hr'
 import notification, { NotificationType } from '@hcengineering/notification'
 import { translate } from '@hcengineering/platform'
 import { TriggerControl } from '@hcengineering/server-core'
-import { getEmployeeAccountById } from '@hcengineering/server-notification'
+import { getEmployee, getEmployeeAccountById } from '@hcengineering/server-notification'
 import { getContent } from '@hcengineering/server-notification-resources'
 
 async function getOldDepartment (
@@ -188,7 +196,7 @@ export async function OnEmployeeDeactivate (tx: Tx, control: TriggerControl): Pr
 async function getEmailNotification (
   control: TriggerControl,
   sender: EmployeeAccount,
-  doc: Request,
+  doc: Request | PublicHoliday,
   space: Ref<Department>,
   type: Ref<NotificationType>
 ): Promise<Tx[]> {
@@ -252,7 +260,7 @@ export async function OnRequestCreate (tx: Tx, control: TriggerControl): Promise
     sender,
     request,
     ctx.objectSpace as Ref<Department>,
-    hr.ids.CreateRequestNotifcation
+    hr.ids.CreateRequestNotification
   )
 }
 
@@ -280,7 +288,7 @@ export async function OnRequestUpdate (tx: Tx, control: TriggerControl): Promise
     sender,
     request,
     ctx.objectSpace as Ref<Department>,
-    hr.ids.UpdateRequestNotifcation
+    hr.ids.UpdateRequestNotification
   )
 }
 
@@ -308,7 +316,7 @@ export async function OnRequestRemove (tx: Tx, control: TriggerControl): Promise
     sender,
     request,
     ctx.objectSpace as Ref<Department>,
-    hr.ids.RemoveRequestNotifcation
+    hr.ids.RemoveRequestNotification
   )
 }
 
@@ -348,6 +356,66 @@ export async function RequestTextPresenter (doc: Doc, control: TriggerControl): 
   return `${who} - ${type.toLowerCase()} ${date}`
 }
 
+/**
+ * @public
+ */
+export async function OnPublicHolidayCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const actualTx = TxProcessor.extractTx(tx)
+  if (core.class.TxCreateDoc !== actualTx._class) {
+    return []
+  }
+  const ctx = actualTx as TxCreateDoc<PublicHoliday>
+  if (ctx.objectClass !== hr.class.PublicHoliday) {
+    return []
+  }
+
+  const sender = await getEmployeeAccountById(ctx.modifiedBy, control)
+  if (sender === undefined) return []
+  const employee = await getEmployee(sender.employee, control)
+  if (employee === undefined) return []
+
+  const publicHoliday = TxProcessor.createDoc2Doc(ctx)
+  return await getEmailNotification(
+    control,
+    sender,
+    publicHoliday,
+    publicHoliday.department,
+    hr.ids.CreatePublicHolidayNotification
+  )
+}
+
+/**
+ * @public
+ */
+export async function PublicHolidayHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
+  const holiday = doc as PublicHoliday
+  const sender = await getEmployeeAccountById(holiday.modifiedBy, control)
+  if (sender === undefined) return ''
+  const employee = await getEmployee(sender.employee, control)
+  if (employee === undefined) return ''
+  const who = formatName(employee.name)
+
+  const date = `on ${new Date(fromTzDate(holiday.date)).toLocaleDateString()}`
+
+  return `${holiday.title} ${date}<br/>${holiday.description}<br/>Set by ${who}`
+}
+
+/**
+ * @public
+ */
+export async function PublicHolidayTextPresenter (doc: Doc, control: TriggerControl): Promise<string> {
+  const holiday = doc as PublicHoliday
+  const sender = await getEmployeeAccountById(holiday.modifiedBy, control)
+  if (sender === undefined) return ''
+  const employee = await getEmployee(sender.employee, control)
+  if (employee === undefined) return ''
+  const who = formatName(employee.name)
+
+  const date = `on ${new Date(fromTzDate(holiday.date)).toLocaleDateString()}`
+
+  return `${holiday.title} ${date}. ${holiday.description}. Set by ${who}`
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
@@ -355,10 +423,13 @@ export default async () => ({
     OnRequestUpdate,
     OnRequestRemove,
     OnDepartmentStaff,
-    OnEmployeeDeactivate
+    OnEmployeeDeactivate,
+    OnPublicHolidayCreate
   },
   function: {
     RequestHTMLPresenter,
-    RequestTextPresenter
+    RequestTextPresenter,
+    PublicHolidayHTMLPresenter,
+    PublicHolidayTextPresenter
   }
 })

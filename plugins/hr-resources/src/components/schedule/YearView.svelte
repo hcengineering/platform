@@ -29,6 +29,8 @@
 
   export let employeeRequests: Map<Ref<Staff>, Request[]>
 
+  export let holidays: Date[] | undefined = undefined
+
   function getTooltip (requests: Request[]): LabelAndProps | undefined {
     if (requests.length === 0) return
     return {
@@ -100,7 +102,7 @@
               {#key tooltipValue}
                 <td class:today={isToday(startDate)} class="fixed td-body" use:tooltip={tooltipValue}>
                   <div class="flex-center">
-                    {getTotal(requests, startDate, endDate, types)}
+                    {getTotal(requests, startDate, endDate, types, holidays)}
                   </div>
                 </td>
               {/key}
@@ -117,7 +119,7 @@
             {@const requests = getRequests(employeeRequests, startDate, endDate)}
             <td class:today={isToday(startDate)} class="fixed td-body summary">
               <div class="flex-center">
-                {getTotal(requests, startDate, endDate, types)}
+                {getTotal(requests, startDate, endDate, types, holidays)}
               </div>
             </td>
           {/each}

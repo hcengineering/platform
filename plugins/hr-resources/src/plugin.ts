@@ -46,6 +46,10 @@ export default mergeIds(hrId, hr, {
     Staff: '' as IntlString,
     Members: '' as IntlString,
     NoMembers: '' as IntlString,
-    AddMember: '' as IntlString
+    AddMember: '' as IntlString,
+    Title: '' as IntlString,
+    Description: '' as IntlString,
+    MarkAsPublicHoliday: '' as IntlString,
+    EditPublicHoliday: '' as IntlString
   }
 })
