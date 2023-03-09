@@ -163,6 +163,7 @@ export class TPublicHoliday extends TDoc implements PublicHoliday {
   title!: string
   description!: string
   date!: TzDate
+  department!: Ref<Department>
 }
 
 export function createModel (builder: Builder): void {

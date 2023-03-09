@@ -17,7 +17,7 @@
   import { EmployeePresenter } from '@hcengineering/contact-resources'
   import contact from '@hcengineering/contact-resources/src/plugin'
   import { Ref } from '@hcengineering/core'
-  import type { Request, RequestType, Staff } from '@hcengineering/hr'
+  import type { Department, Request, RequestType, Staff } from '@hcengineering/hr'
   import {
     areDatesEqual,
     day as getDay,
@@ -48,6 +48,7 @@
   export let endDate: Date
 
   export let departmentStaff: Staff[]
+  export let department: Ref<Department>
 
   export let employeeRequests: Map<Ref<Staff>, Request[]>
   export let editableList: Ref<Employee>[]
@@ -120,7 +121,7 @@
   }
 
   function setPublicHoliday (date: Date) {
-    showPopup(CreatePublicHoliday, { date })
+    showPopup(CreatePublicHoliday, { date, department })
   }
 
   export let holidays: Date[] | undefined = undefined

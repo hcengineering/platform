@@ -73,6 +73,7 @@ export interface PublicHoliday extends Doc {
   title: string
   description: string
   date: TzDate
+  department: Ref<Department>
 }
 
 /**

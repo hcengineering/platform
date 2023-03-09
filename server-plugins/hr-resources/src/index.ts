@@ -375,17 +375,11 @@ export async function OnPublicHolidayCreate (tx: Tx, control: TriggerControl): P
   if (employee === undefined) return []
 
   const publicHoliday = TxProcessor.createDoc2Doc(ctx)
-  const staff = await control.hierarchy.as(employee, hr.mixin.Staff)
-  const department = (
-    await control.findAll(hr.class.Department, {
-      _id: staff.department
-    })
-  )[0] as Department
   return await getEmailNotification(
     control,
     sender,
     publicHoliday,
-    department._id,
+    publicHoliday.department,
     hr.ids.CreatePublicHolidayNotification
   )
 }

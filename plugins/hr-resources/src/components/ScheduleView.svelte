@@ -213,6 +213,7 @@
         {currentDate}
         {timeReports}
         {holidays}
+        {department}
       />
     {:else if display === 'stats'}
       <MonthTableView {departmentStaff} {employeeRequests} {types} {currentDate} {timeReports} {holidays} />

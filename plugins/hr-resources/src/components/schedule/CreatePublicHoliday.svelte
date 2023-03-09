@@ -16,13 +16,14 @@
   import presentation, { Card, getClient } from '@hcengineering/presentation'
   import { Button, DateRangePresenter, EditBox } from '@hcengineering/ui'
   import hr from '../../plugin'
-  import core, { Data } from '@hcengineering/core'
-  import { toTzDate, PublicHoliday } from '@hcengineering/hr'
+  import core, { Data, Ref } from '@hcengineering/core'
+  import { toTzDate, PublicHoliday, Department } from '@hcengineering/hr'
   import { createEventDispatcher } from 'svelte'
 
   let description: string
   let title: string
   export let date: Date
+  export let department: Ref<Department>
   const client = getClient()
   let existingHoliday: PublicHoliday | undefined = undefined
   const dispatch = createEventDispatcher()
@@ -45,7 +46,8 @@
       const holiday: Data<PublicHoliday> = {
         title,
         description,
-        date: toTzDate(date)
+        date: toTzDate(date),
+        department
       }
       client.createDoc(hr.class.PublicHoliday, core.space.Space, holiday)
     }
