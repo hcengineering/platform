@@ -195,7 +195,7 @@
     .label {
       padding-bottom: 0.25rem;
       font-size: 0.75rem;
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
       opacity: 0.3;
       transition: top 200ms;
       pointer-events: none;

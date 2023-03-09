@@ -135,6 +135,7 @@
     on:drop|preventDefault|stopPropagation={fileDrop}
   >
     {#each images as image (image._id)}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
         class="item flex-center"
         on:click={(ev) => {
@@ -144,6 +145,7 @@
         <img src={getFileUrl(image.file)} alt={image.name} />
       </div>
     {/each}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="flex-center item new-item" on:click={click}>
       <UploadDuo size={'large'} />
     </div>
@@ -156,6 +158,7 @@
     min-width: 5rem;
     height: 5rem;
     color: var(--accent-color);
+    border: 1px solid var(--dark-color);
     border-radius: 0.5rem;
     overflow: hidden;
     cursor: pointer;
@@ -170,7 +173,7 @@
   }
 
   .new-item {
-    background: var(--theme-bg-accent-color);
-    border: 1px dashed var(--theme-zone-border-lite);
+    background: var(--accent-bg-color);
+    border: 1px dashed var(--dark-color);
   }
 </style>

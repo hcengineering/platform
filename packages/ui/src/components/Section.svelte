@@ -25,6 +25,7 @@
   export let closed: boolean = false
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
   class="flex-row-center section-container"
   on:click|preventDefault={() => {
@@ -52,7 +53,7 @@
       flex-grow: 1;
       margin-left: 0.75rem;
       font-weight: 500;
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
     }
     .arrow {
       margin: 0.5rem;
@@ -64,6 +65,6 @@
   }
   :global(.section-container + .section-container),
   :global(.section-content + .section-container) {
-    border-top: 1px solid var(--theme-menu-divider);
+    border-top: 1px solid var(--divider-color);
   }
 </style>

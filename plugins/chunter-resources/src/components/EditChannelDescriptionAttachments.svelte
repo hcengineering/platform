@@ -85,6 +85,7 @@
             <a href={getFileUrl(attachment.file)} download={attachment.name}>
               <Icon icon={FileDownload} size={'small'} />
             </a>
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div id="context-menu" class="eAttachmentRowMenu" on:click={(event) => showMenu(event, attachment, i)}>
               <IconMoreV size={'small'} />
             </div>
@@ -92,6 +93,7 @@
         </div>
       {/each}
       {#if visibleAttachments.length < totalAttachments}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="showMoreAttachmentsButton"
           on:click={() => {
@@ -114,24 +116,24 @@
 
 <style lang="scss">
   .group {
-    border: 1px solid var(--theme-button-border-hovered);
-    border-radius: 12px;
-    padding: 16px 0;
+    padding: 1rem 0;
+    border: 1px solid var(--divider-color);
+    border-radius: 0.75rem;
   }
 
   .eGroupTitle {
-    margin: 0 20px 8px 20px;
+    margin: 0 1.25rem 0.5rem;
     display: flex;
     font-weight: 500;
     font-size: 1rem;
-    color: var(--theme-caption-color);
+    color: var(--caption-color);
     justify-content: space-between;
   }
 
   .showMoreAttachmentsButton {
-    margin-left: 20px;
-    margin-top: 8px;
-    color: var(--theme-caption-color);
+    margin-left: 1.5rem;
+    margin-top: 0.5rem;
+    color: var(--caption-color);
     cursor: pointer;
     &:hover {
       text-decoration: underline;
@@ -142,13 +144,13 @@
     display: flex;
     align-items: center;
     padding-right: 1rem;
-    margin: 0 20px;
-    padding: 5px 0;
+    margin: 0 1.5rem;
+    padding: 0.375rem 0;
 
     .eAttachmentRowActions {
       display: flex;
       visibility: hidden;
-      border: 1px solid var(--theme-bg-focused-border);
+      border: 1px solid var(--divider-color);
       padding: 0.2rem;
       border-radius: 0.375em;
     }

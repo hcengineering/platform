@@ -38,6 +38,7 @@
 </script>
 
 {#if value}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div class="flex-row-center" class:user-container={employee !== undefined} on:click={onClick}>
     {#if employee}
       <Avatar size={'x-small'} avatar={employee.avatar} />
@@ -56,11 +57,11 @@
       margin-left: 0.5rem;
       font-weight: 500;
       text-align: left;
-      color: var(--theme-content-accent-color);
+      color: var(--accent-color);
     }
     &:hover .user {
       text-decoration: underline;
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
     }
   }
 </style>

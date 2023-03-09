@@ -320,7 +320,7 @@
   .title {
     font-weight: 500;
     font-size: 1.125rem;
-    color: var(--theme-caption-color);
+    color: var(--caption-color);
   }
 
   .content {
@@ -328,11 +328,11 @@
   }
 
   .description-preview {
-    color: var(--theme-content-color);
+    color: var(--content-color);
     line-height: 150%;
 
     .placeholder {
-      color: var(--theme-content-trans-color);
+      color: var(--dark-color);
     }
   }
   .divider {

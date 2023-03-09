@@ -45,7 +45,7 @@
       positionState={selected === i ? 'current' : i < selected ? 'prev' : 'next'}
       prevColor={getPlatformColor(COLOR)}
       currentColor={getPlatformColor(COLOR)}
-      nextColor="var(--theme-bg-focused-color)"
+      nextColor="var(--trans-content-10)"
     />
   {/each}
 </ScrollerBar>

@@ -219,8 +219,8 @@
     overflow-y: auto;
     &::-webkit-scrollbar-track { margin: 0; }
     &::-webkit-scrollbar-thumb {
-      background-color: var(--theme-bg-accent-color);
-      &:hover { background-color: var(--theme-menu-divider); }
+      background-color: var(--scrollbar-bar-color);
+      &:hover { background-color: var(--scrollbar-bar-hover); }
     }
   }
   .ap-box {
@@ -243,11 +243,11 @@
       display: flex;
       justify-content: center;
       font-style: italic;
-      color: var(--theme-content-trans-color);
+      color: var(--dark-color);
       cursor: default;
 
       &:hover {
-        color: var(--theme-content-trans-color);
+        color: var(--dark-color);
         background-color: transparent;
       }
     }
@@ -324,7 +324,7 @@
       flex-shrink: 0;
       margin: 1rem 1rem .25rem;
       font-weight: 500;
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
     }
     .ap-header {
       margin: .25rem 1rem 0;
@@ -343,19 +343,19 @@
 
       .ap-categoryItem {
         margin: .25rem;
-        color: var(--theme-content-trans-color);
+        color: var(--dark-color);
         cursor: pointer;
 
         &.selected { 
-          color: var(--theme-content-accent-color) !important; 
+          color: var(--accent-color) !important; 
         }
         &:hover { 
-          color: var(--theme-content-accent-color); 
+          color: var(--accent-color); 
         }
       }
 
       &::-webkit-scrollbar:horizontal { height: .125rem; }
-      &::-webkit-scrollbar-thumb { background-color: var(--theme-button-bg-hovered); }
+      &::-webkit-scrollbar-thumb { background-color: var(--scrollbar-bar-color); }
     }
     .ap-header {
       margin: .25rem 1rem 0;

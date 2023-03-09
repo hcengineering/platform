@@ -184,7 +184,7 @@
     width: 100%;
     height: 2.75rem;
     min-height: 2.75rem;
-    color: var(--theme-caption-color);
+    color: var(--caption-color);
 
     &.checking {
       background-color: var(--highlight-select);

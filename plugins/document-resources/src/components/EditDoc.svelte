@@ -552,7 +552,7 @@
 
 <style lang="scss">
   .description-preview {
-    color: var(--theme-content-color);
+    color: var(--content-color);
     line-height: 150%;
     // overflow: auto;
   }
@@ -579,8 +579,14 @@
   }
   .emphasized {
     padding: 1rem;
-    background-color: var(--theme-bg-accent-color);
-    border: 1px solid var(--theme-bg-accent-hover);
+    background-color: var(--body-color);
+    border: 1px solid var(--divider-color);
     border-radius: 0.5rem;
+    transition: border-color 0.1s var(--timing-main), box-shadow 0.1s var(--timing-main);
+
+    &:focus-within {
+      border-color: var(--primary-button-focused-border);
+      box-shadow: 0 0 0 3px var(--primary-button-outline);
+    }
   }
 </style>

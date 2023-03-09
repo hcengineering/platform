@@ -73,9 +73,8 @@
   .popup {
     padding: 1rem;
     max-height: calc(100vh - 4rem);
-    background-color: var(--theme-button-bg-focused);
-    border: 1px solid var(--theme-button-border-enabled);
+    background-color: var(--popup-bg-hover);
     border-radius: 0.75rem;
-    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--popup-shadow);
   }
 </style>

@@ -105,6 +105,7 @@
       {#if templates?.length}
         <b>{group.name}</b>
         {#each templates as item, i}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
             class="item"
             class:selected={initIndex + i === selected}
@@ -131,10 +132,10 @@
     width: 19.75rem;
     height: 18.5rem;
     padding: 16px;
-    background-color: var(--theme-button-bg-hovered);
+    background: var(--popup-bg-color);
 
     .selected {
-      background-color: var(--theme-button-bg-focused);
+      background: var(--popup-bg-hover);
     }
 
     .scroll {

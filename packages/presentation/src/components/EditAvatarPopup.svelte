@@ -53,6 +53,7 @@
 </script>
 
 <input style="display: none;" type="file" bind:this={inputRef} on:change={onSelect} accept={targetMimes.join(',')} />
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
   class="overlay"
   on:click={() => {
@@ -86,8 +87,8 @@
     bottom: 0;
     right: 0;
 
-    background: var(--theme-menu-color);
-    opacity: 0.7;
+    background: var(--card-overlay-color);
+    touch-action: none;
   }
 
   .root {
@@ -104,7 +105,7 @@
 
     transform: translate(-50%, -50%);
 
-    background: var(--theme-bg-color);
+    background: var(--popup-bg-color);
     border-radius: 1.25rem;
     box-shadow: 0px 44px 154px rgba(0, 0, 0, 0.75);
 

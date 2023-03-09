@@ -77,11 +77,11 @@
       .icon { opacity: .6; }
       .label {
         margin-left: 1rem;
-        color: var(--theme-content-color);
+        color: var(--content-color);
       }
       &:hover {
         .icon { opacity: 1; }
-        .label { color: var(--theme-caption-color); }
+        .label { color: var(--caption-color); }
       }
     }
   }

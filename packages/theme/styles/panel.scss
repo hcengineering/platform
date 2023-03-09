@@ -27,7 +27,7 @@
 
   .ac-header {
     &.highlight { background-color: var(--accent-bg-color); }
-    &.divide { border-bottom: 1px solid var(--theme-card-divider); }
+    &.divide { border-bottom: 1px solid var(--divider-color); }
   }
 
   .ad-section-50 {
@@ -37,7 +37,7 @@
     min-height: 0;
     width: 50%;
 
-    &.divide { border-right: 1px solid var(--theme-card-divider); }
+    &.divide { border-right: 1px solid var(--divider-color); }
   }
 
   .ad-tools {

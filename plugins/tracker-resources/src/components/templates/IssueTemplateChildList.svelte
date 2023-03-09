@@ -225,22 +225,22 @@
     &.is-dragging::before {
       position: absolute;
       content: '';
-      background-color: var(--theme-bg-color);
-      opacity: 0.4;
+      background-color: var(--divider-color);
       inset: 0;
+      z-index: -1;
     }
 
     &.is-dragged-over-up::before {
       position: absolute;
       content: '';
       inset: 0;
-      border-top: 1px solid var(--theme-bg-check);
+      border-top: 1px solid var(--caret-color);
     }
     &.is-dragged-over-down::before {
       position: absolute;
       content: '';
       inset: 0;
-      border-bottom: 1px solid var(--theme-bg-check);
+      border-bottom: 1px solid var(--caret-color);
     }
   }
 </style>

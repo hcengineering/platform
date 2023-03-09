@@ -34,6 +34,7 @@
   </div>
   {#if notify}<div class="marker" />{/if}
   {#if editable}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
       class="starButton"
       class:hidden
@@ -69,7 +70,7 @@
     .icon-container {
       width: 3.25rem;
       height: 3.25rem;
-      color: var(--theme-content-trans-color);
+      color: var(--dark-color);
 
       .normal-font &.noty {
         clip-path: url(#notify-normal);

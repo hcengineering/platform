@@ -184,11 +184,12 @@
   .listGrid {
     width: 100%;
     height: 3.25rem;
-    color: var(--theme-caption-color);
-    border-bottom: 1px solid var(--theme-button-border-hovered);
+    color: var(--caption-color);
+    border-bottom: 1px solid var(--divider-color);
 
     &.mListGridChecked {
-      background-color: var(--theme-table-bg-hover);
+      background-color: var(--highlight-select);
+      border-bottom-color: var(--highlight-select-border);
 
       .eListGridCheckBox {
         opacity: 1;
@@ -196,7 +197,10 @@
     }
 
     &.mListGridSelected {
-      background-color: var(--menu-bg-select);
+      background-color: var(--highlight-hover);
+    }
+    &.mListGridChecked.mListGridSelected {
+      background-color: var(--highlight-select-hover);
     }
 
     .eListGridCheckBox {

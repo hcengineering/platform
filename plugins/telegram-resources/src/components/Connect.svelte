@@ -127,6 +127,7 @@
 <div class="card">
   <div class="flex-between header">
     <div class="overflow-label fs-title"><Label label={telegram.string.ConnectFull} /></div>
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
       class="tool"
       on:click={() => {
@@ -155,6 +156,7 @@
     <div class="footer">
       <Button {label} kind={'primary'} {disabled} on:click={click} />
       {#if requested || secondFactor}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div class="link over-underline" on:click={back}><Label label={telegram.string.Back} /></div>
       {/if}
     </div>
@@ -169,10 +171,9 @@
     width: 20rem;
     min-width: 20rem;
     max-width: 20rem;
-    background-color: var(--theme-tooltip-color);
-    border: 1px solid var(--theme-bg-accent-color);
+    background: var(--popup-bg-color);
     border-radius: 0.75rem;
-    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--popup-shadow);
 
     .header {
       flex-shrink: 0;
@@ -181,10 +182,10 @@
       .tool {
         cursor: pointer;
         &:hover {
-          color: var(--theme-caption-color);
+          color: var(--caption-color);
         }
         &:active {
-          color: var(--theme-content-accent-color);
+          color: var(--accent-color);
         }
       }
     }
@@ -206,12 +207,12 @@
         padding: 1rem 0rem;
 
         .link {
-          color: var(--theme-content-dark-color);
+          color: var(--accent-color);
           &:hover {
-            color: var(--theme-caption-color);
+            color: var(--caption-color);
           }
           &:active {
-            color: var(--theme-content-accent-color);
+            color: var(--accent-color);
           }
         }
       }

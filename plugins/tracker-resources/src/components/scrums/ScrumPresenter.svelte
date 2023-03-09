@@ -36,7 +36,7 @@
     min-width: 0;
     font-weight: 500;
     text-align: left;
-    color: var(--theme-caption-color);
+    color: var(--caption-color);
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;

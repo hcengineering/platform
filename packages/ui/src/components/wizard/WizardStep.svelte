@@ -21,9 +21,9 @@
   export let label: IntlString
   export let position: WizardItemPosition
   export let positionState: WizardItemPositionState
-  export let currentColor = 'var(--theme-bg-focused-color)'
-  export let prevColor = 'var(--theme-bg-focused-color)'
-  export let nextColor = 'var(--theme-bg-accent-color)'
+  export let currentColor = 'var(--trans-content-10)'
+  export let prevColor = 'var(--trans-content-10)'
+  export let nextColor = 'var(--trans-content-05)'
 
   let lenght: number = 0
   let text: HTMLElement

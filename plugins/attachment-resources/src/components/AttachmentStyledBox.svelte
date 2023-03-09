@@ -331,7 +331,7 @@
     margin-top: 0.5rem;
     padding: 0.5rem;
     min-width: 0;
-    color: var(--theme-caption-color);
+    color: var(--caption-color);
     overflow-x: auto;
     overflow-y: hidden;
     background-color: var(--accent-bg-color);

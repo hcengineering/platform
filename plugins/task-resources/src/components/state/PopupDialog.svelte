@@ -21,7 +21,6 @@
 </script>
 
 <div class="card-container">
-  <div class="card-bg" />
   <div class="overflow-label label"><Label {label} /></div>
   <div class="content"><slot /></div>
 </div>
@@ -31,8 +30,10 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    padding: 32px 1.5rem 1.25rem;
+    padding: 2rem 1.75rem 1.75rem;
     border-radius: 0.75rem;
+    background: var(--popup-bg-color);
+    box-shadow: var(--popup-shadow);
 
     .label {
       flex-shrink: 0;
@@ -40,26 +41,13 @@
       text-transform: uppercase;
       font-weight: 600;
       font-size: 0.75rem;
-      color: var(--theme-content-trans-color);
+      color: var(--dark-color);
     }
 
     .content {
       flex-shrink: 0;
       flex-grow: 1;
       height: fit-content;
-    }
-
-    .card-bg {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background-color: var(--theme-card-bg);
-      border-radius: 0.75rem;
-      backdrop-filter: blur(24px);
-      box-shadow: var(--theme-card-shadow);
-      z-index: -1;
     }
   }
 </style>

@@ -21,6 +21,7 @@
 
   export let colors: readonly string[] = getPlatformColors()
   export let columns: number = 5
+  export let selected: string | undefined = undefined
 
   const dispatch = createEventDispatcher()
 </script>
@@ -28,8 +29,10 @@
 <PopupDialog label={view.string.ChooseAColor}>
   <div class="color-grid" style="grid-template-columns: repeat({columns}, 1.5rem)">
     {#each colors as color, i}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
         class="color"
+        class:selected={selected === color}
         style="background-color: {color}"
         on:click={() => {
           dispatch('close', i)
@@ -51,7 +54,17 @@
       cursor: pointer;
 
       &:hover {
-        border-color: var(--theme-button-border-focused);
+        border-color: var(--primary-button-focused-border);
+        box-shadow: 0 0 0 3px var(--primary-button-outline);
+      }
+      &.selected {
+        border-color: var(--caption-color);
+        box-shadow: 0 0 0 3px var(--trans-content-20);
+
+        &:hover {
+          border-color: var(--system-error-color);
+          box-shadow: 0 0 0 3px var(--trans-content-20);
+        }
       }
     }
   }

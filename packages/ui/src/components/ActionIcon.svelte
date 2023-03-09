@@ -60,7 +60,7 @@
       border: 1px solid var(--primary-button-focused-border);
       box-shadow: 0 0 0 3px var(--primary-button-outline);
       .icon {
-        color: var(--theme-caption-color);
+        color: var(--caption-color);
         opacity: 1;
       }
     }

@@ -181,6 +181,7 @@
 
 <div class="header">
   <div class="title"><Label label={chunter.string.Thread} /></div>
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     class="tool"
     on:click={() => {
@@ -234,7 +235,7 @@
       flex-grow: 1;
       font-weight: 500;
       font-size: 1.25rem;
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
       user-select: none;
     }
     .tool {

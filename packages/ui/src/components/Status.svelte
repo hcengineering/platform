@@ -22,7 +22,7 @@
   .container {
     user-select: none;
     font-size: 14px;
-    color: var(--theme-content-color);
+    color: var(--content-color);
     &.WARNING {
       color: yellow;
     }

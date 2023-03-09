@@ -81,7 +81,7 @@
         font-weight: 400;
         font-size: 0.8rem;
         text-align: center;
-        color: var(--theme-caption-color);
+        color: var(--caption-color);
         opacity: 0.8;
       }
     }

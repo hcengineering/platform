@@ -83,6 +83,7 @@
 
   --divider-color: #303236;
   --menu-bg-select: #2d2f36;
+  --menu-bg-select-trans: #2d2f3665;
   --menu-icon-hover: #f3f3f8;
   --header-bg-color: linear-gradient(0deg, var(--accent-bg-color), #2d2e31);
   --popup-bg-color: linear-gradient(136.61deg, var(--accent-bg-color) 13.72%, #2d2e31 74.3%);
@@ -94,6 +95,7 @@
   --card-shadow: rgb(0 0 0 / 50%) 0px 16px 70px;
   --card-overlay-color: rgba(28, 29, 31, .5);
   --avatar-bg-color: #4f5358;
+  --avatar-border-color: rgba(255, 255, 255, .1);
   --tooltip-bg-color: #1f2023f0;
 
   --button-bg-color: #303236;
@@ -124,6 +126,7 @@
 
   --trans-content-05: rgba(138, 143, 152, .05);
   --trans-content-10: rgba(138, 143, 152, .1);
+  --trans-content-20: rgba(138, 143, 152, .2);
 
   --theme-bg-color: #18181e;
   --theme-bg-selection: #282830;
@@ -132,7 +135,6 @@
   --theme-menu-color: #111117;
   --theme-menu-selection: #1D1D23;
   --theme-menu-divider: rgba(255, 255, 255, .05);
-  --theme-scroll-bar: #2C2C34;
   // --theme-dialog-bg: rgba(31, 31, 37, .8);
   --theme-dialog-accent: rgba(255, 255, 255, .03);
   --theme-dialog-divider: rgba(255, 255, 255, .1);
@@ -146,7 +148,6 @@
   --theme-card-bg-dark: rgba(222, 222, 240, .1);
   --theme-card-divider: rgba(255, 255, 255, .1);
   --theme-card-shadow: 0px 15px 60px rgba(24, 25, 28, .8);
-  --theme-avatar-border: rgba(255, 255, 255, .1);
   --theme-msgbox-bg: #26262B;
   --theme-msgbox-shadow: 0px 20px 70px rgba(0, 0, 0, .4);
   --theme-zone-bg: rgba(255, 255, 255, .05);
@@ -239,6 +240,7 @@
 
   --divider-color: #e0e0e0;
   --menu-bg-select: #f0f3f9;
+  --menu-bg-select-trans: #f0f3f965;
   --menu-icon-hover: #282a30;
   --header-bg-color: linear-gradient(0deg, #eee, #f6f6f6);
   --popup-bg-color: linear-gradient(136.61deg, #fff 13.72%, #f8f8f8 74.3%);
@@ -250,6 +252,7 @@
   --card-shadow: rgb(0 0 0 / 50%) 0px 16px 70px;
   --card-overlay-color: rgba(144, 149, 157, .4);
   --avatar-bg-color: #e0e0e0;  // HZ
+  --avatar-border-color: transparent;
   --tooltip-bg-color: #fffffff0;
 
   --button-bg-color: #fff;
@@ -280,13 +283,13 @@
 
   --trans-content-05: rgba(60, 65, 73, .05);
   --trans-content-10: rgba(60, 65, 73, .1);
+  --trans-content-20: rgba(60, 65, 73, .2);
 
   --theme-bg-color: #FFFFFF;
   --theme-bg-selection: #F1F1F4;
   --theme-menu-color: #E7E7E7;
   --theme-menu-selection: #DBDBDB;
   --theme-menu-divider: rgba(0, 0, 0, .08);
-  --theme-scroll-bar: #CBCBCB;
   // --theme-dialog-bg: rgba(255, 255, 255, .4);
   --theme-dialog-accent: rgba(31, 33, 43, .03);
   --theme-dialog-divider: rgba(31, 33, 43, .06);
@@ -300,7 +303,6 @@
   --theme-card-bg-dark: rgba(255, 255, 255, .3);
   --theme-card-divider: rgba(0, 0, 0, .1);
   --theme-card-shadow: 0px 15px 60px rgba(24, 25, 28, .2);
-  --theme-avatar-border: transparent;
   --theme-msgbox-bg: #F2F2F2;
   --theme-msgbox-shadow: 0px 20px 70px rgba(0, 0, 0, .2);
   --theme-zone-bg: rgba(0, 0, 0, .05);

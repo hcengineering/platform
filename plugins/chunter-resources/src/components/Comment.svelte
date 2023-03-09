@@ -45,19 +45,19 @@
       font-weight: 500;
       font-size: 1rem;
       line-height: 150%;
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
 
       span {
         margin-left: 0.5rem;
         font-weight: 400;
         font-size: 0.875rem;
-        color: var(--theme-content-dark-color);
+        color: var(--dark-color);
       }
     }
 
     .text {
       line-height: 150%;
-      color: var(--theme-content-color);
+      color: var(--content-color);
     }
   }
 </style>

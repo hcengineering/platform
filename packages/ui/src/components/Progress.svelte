@@ -47,7 +47,7 @@
     position: relative;
     width: 100%;
     height: 0.25rem;
-    background-color: var(--theme-bg-accent-hover);
+    background-color: var(--trans-content-10);
     border-radius: 0.125rem;
 
     .bar {

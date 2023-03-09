@@ -299,7 +299,7 @@
 
     &.selectable {
       padding: 1rem;
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
       border-top: 1px solid var(--divider-color);
     }
   }

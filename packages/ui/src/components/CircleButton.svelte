@@ -47,19 +47,26 @@
 <style lang="scss">
   .icon-button {
     flex-shrink: 0;
-    color: var(--theme-caption-color);
-    border: 1px solid var(--theme-circle-border);
+    color: var(--caption-color);
+    border: 1px solid var(--trans-content-20);
     border-radius: 50%;
     cursor: pointer;
 
+    &:hover {
+      border-color: var(--button-border-hover);
+    }
     .content {
       pointer-events: none;
     }
     &.selected {
-      background-color: var(--theme-circle-select);
+      background-color: var(--menu-bg-select);
     }
     &.transparent {
-      background-color: var(--theme-circle-trans);
+      background-color: var(--menu-bg-select-trans);
+
+      &:hover {
+        background-color: var(--menu-bg-select);
+      }
     }
     &.primary {
       color: var(--primary-button-color);

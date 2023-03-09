@@ -46,6 +46,7 @@
         {@const date = weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek)}
         <div style={`grid-column-start: ${dayOfWeek + 1}; grid-row-start: ${weekIndex + 1}`}>
           <div style={`display: flex; width: 100%; height: ${cellHeight ? `${cellHeight};` : '100%;'}`}>
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div
               class="cell flex-center"
               class:weekend={isWeekend(date)}
@@ -87,7 +88,7 @@
     grid-template-columns: repeat(7, minmax(0, 1fr));
   }
   .weekend {
-    background-color: var(--theme-bg-accent-color);
+    background-color: var(--button-bg-color);
   }
   .cell {
     height: calc(100% - 5px);

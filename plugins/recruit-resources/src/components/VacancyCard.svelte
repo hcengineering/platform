@@ -171,17 +171,17 @@
       margin-bottom: 1.75rem;
       font-weight: 500;
       font-size: 0.625rem;
-      color: var(--theme-content-dark-color);
+      color: var(--dark-color);
     }
     .name {
       margin: 1rem 0 0.25rem;
       font-weight: 500;
       font-size: 1rem;
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
     }
     .description {
       font-size: 0.75rem;
-      color: var(--theme-content-dark-color);
+      color: var(--dark-color);
     }
 
     &.inline {

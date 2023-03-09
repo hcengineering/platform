@@ -144,26 +144,26 @@
   .name {
     white-space: nowrap;
     font-weight: 500;
-    color: var(--theme-content-accent-color);
+    color: var(--accent-color);
     cursor: pointer;
   }
 
   .type {
     white-space: nowrap;
     font-size: 0.75rem;
-    color: var(--theme-content-dark-color);
+    color: var(--dark-color);
   }
 
   .name:hover,
   .icon:hover + .info > .name,
   .no-line:hover + .info > .name a {
     text-decoration: underline;
-    color: var(--theme-caption-color);
+    color: var(--caption-color);
   }
   .name:active,
   .icon:active + .info > .name,
   .no-line:active + .info > .name a {
     text-decoration: underline;
-    color: var(--theme-content-accent-color);
+    color: var(--accent-color);
   }
 </style>

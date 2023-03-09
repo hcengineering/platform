@@ -145,7 +145,7 @@
     overflow: auto;
     border-style: none;
     border-radius: 0.5rem;
-    background-color: var(--theme-menu-color);
+    background-color: var(--board-bg-color);
   }
   .img-horizontal-fit,
   .img-vertical-fit,

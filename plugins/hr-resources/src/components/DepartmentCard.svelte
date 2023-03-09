@@ -97,6 +97,7 @@
 </script>
 
 <div class="flex-center w-full px-4">
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     class="w-full mt-2 mb-2 container flex"
     class:cursor-pointer={currentDescendants.length}
@@ -123,10 +124,10 @@
     >
       <div class="flex-center">
         <div class="mr-2">
-          <Button icon={IconAdd} kind={'link-bordered'} on:click={createChild} />
+          <Button icon={IconAdd} kind={'list'} on:click={createChild} />
         </div>
         <Avatar size={'medium'} avatar={value.avatar} icon={hr.icon.Department} />
-        <div class="flex-row ml-2">
+        <div class="flex-row ml-2 mr-4">
           <div class="fs-title">
             {value.name}
           </div>
@@ -161,15 +162,16 @@
 
 <style lang="scss">
   .container {
-    background-color: var(--board-card-bg-color);
+    background-color: var(--noborder-bg-color);
     border: 1px solid transparent;
+    border-radius: 0.5rem;
 
     &:hover {
-      background-color: var(--board-card-bg-hover);
+      background-color: var(--noborder-bg-hover);
       cursor: pointer;
     }
     &.dragging {
-      border: 1px solid var(--theme-bg-focused-color);
+      border-color: var(--divider-color);
     }
   }
 </style>

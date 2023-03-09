@@ -20,29 +20,26 @@
 </script>
 
 <div class="itemsContainer">
-  <div class="flex-center">
-    {#each config as [_mode, label, params], i}
-      <div class="buttonWrapper">
-        <Button
-          {label}
-          labelParams={params}
-          size="small"
-          on:click={() => onChange(_mode)}
-          selected={_mode === mode}
-          shape={getButtonShape(i)}
-        />
-      </div>
-    {/each}
-  </div>
+  {#each config as [_mode, label, params], i}
+    <div class="buttonWrapper">
+      <Button
+        {label}
+        labelParams={params}
+        size="small"
+        on:click={() => onChange(_mode)}
+        selected={_mode === mode}
+        shape={getButtonShape(i)}
+      />
+    </div>
+  {/each}
 </div>
 
 <style lang="scss">
   .itemsContainer {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     padding: 0.65rem 1.35rem 0.65rem 2.25rem;
-    border-top: 1px solid var(--theme-button-border-hovered);
+    border-top: 1px solid var(--divider-color);
   }
   .buttonWrapper {
     margin-right: 1px;

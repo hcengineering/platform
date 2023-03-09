@@ -43,7 +43,7 @@
       height: 28px;
       padding: 6px 8px;
       border-radius: 0.5rem;
-      background-color: var(--theme-menu-divider);
+      background-color: var(--trans-content-10);
       span {
         font-weight: 600;
         font-size: 12px;

@@ -59,19 +59,22 @@
     margin-bottom: 0.5rem;
     width: 100%;
     height: 4.5rem;
-    border-bottom: 1px solid var(--theme-menu-divider);
+    border-bottom: 1px solid var(--divider-color);
 
     .tab {
       height: 4.5rem;
-      color: var(--theme-content-trans-color);
+      color: var(--dark-color);
       cursor: pointer;
       user-select: none;
 
       &.selected {
         border-top: 0.125rem solid transparent;
-        border-bottom: 0.125rem solid var(--theme-caption-color);
-        color: var(--theme-caption-color);
+        border-bottom: 0.125rem solid var(--caption-color);
+        color: var(--caption-color);
         cursor: default;
+      }
+      &:not(.selected):hover {
+        color: var(--accent-color);
       }
     }
     .tab + .tab {

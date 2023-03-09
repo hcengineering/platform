@@ -139,15 +139,15 @@
     padding: 2rem 1.75rem 1.75rem;
     width: 25rem;
     max-width: 40rem;
-    background: var(--theme-msgbox-bg);
+    background: var(--popup-bg-color);
     border-radius: 1.25rem;
     user-select: none;
-    box-shadow: var(--theme-msgbox-shadow);
+    box-shadow: var(--popup-shadow);
 
     .spaceSelect {
-      padding: 1rem 1.25rem;
-      background-color: var(--theme-button-bg-enabled);
-      border: 1px solid var(--theme-bg-accent-color);
+      padding: 0.75rem;
+      background-color: var(--body-color);
+      border: 1px solid var(--popup-divider);
       border-radius: 0.75rem;
     }
 

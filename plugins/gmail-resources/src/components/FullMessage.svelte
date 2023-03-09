@@ -103,7 +103,7 @@
 <style lang="scss">
   .list {
     padding: 0.5rem;
-    color: var(--theme-caption-color);
+    color: var(--caption-color);
     overflow-x: auto;
     overflow-y: hidden;
     background-color: var(--accent-bg-color);

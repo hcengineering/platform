@@ -336,7 +336,7 @@ export async function deleteObjects (client: TxOperations, objects: Doc[]): Prom
 export function getMixinStyle (id: Ref<Class<Doc>>, selected: boolean): string {
   const color = getPlatformColorForText(id as string)
   return `
-    color: ${selected ? '#fff' : 'var(--theme-caption-color)'};
+    color: ${selected ? '#fff' : 'var(--caption-color)'};
     background: ${color + (selected ? 'ff' : '33')};
     border: 1px solid ${color + (selected ? '0f' : '66')};
   `

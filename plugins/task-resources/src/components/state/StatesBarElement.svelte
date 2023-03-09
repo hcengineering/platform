@@ -20,7 +20,7 @@
   export let label: string
   export let position: StatesBarPosition = undefined
   export let selected: boolean = false
-  export let color: string = 'var(--theme-button-bg-enabled)'
+  export let color: string = 'var(--body-color)'
 
   let lenght: number = 0
   let text: HTMLElement
@@ -34,6 +34,7 @@
 
 <div class="hidden-text text-md font-medium" bind:this={text}>{label}</div>
 {#if lenght > 0}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     bind:this={divBar}
     class="asb-bar"

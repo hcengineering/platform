@@ -90,7 +90,7 @@
     dispatch('close')
   }
   const showColorPopup = (evt: MouseEvent) => {
-    showPopup(ColorsPopup, {}, eventToHTMLElement(evt), (col) => {
+    showPopup(ColorsPopup, { selected: getPlatformColor(color) }, eventToHTMLElement(evt), (col) => {
       if (col != null) {
         color = col
         colorSet = true

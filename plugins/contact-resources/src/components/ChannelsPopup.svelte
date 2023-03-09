@@ -39,6 +39,7 @@
     <div class="text-sm font-medium"><Label label={value.label} /></div>
     <div class="overflow-label">{value.value}</div>
   </div>
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div class="button" on:click|preventDefault={copyLink}>
     <IconCopy size={'small'} />
   </div>
@@ -48,10 +49,10 @@
   .button {
     flex-shrink: 0;
     margin-left: 1.5rem;
-    color: var(--theme-content-dark-color);
+    color: var(--dark-color);
     cursor: pointer;
     &:hover {
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
     }
   }
 </style>

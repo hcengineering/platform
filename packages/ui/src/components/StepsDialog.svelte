@@ -92,7 +92,7 @@
   <svelte:fragment slot="title">
     {@const additionalStepInfo = currentStepModel?.additionalInfo}
 
-    <div class="popupPanel-title__content-container antiTitle">
+    <div class="popupPanel-title__content-container antiTitle" style:min-height={'2.5rem'}>
       <div class="icon-wrapper">
         {#if icon}<div class="wrapped-icon"><Icon {icon} size="medium" /></div>{/if}
         <div class="title-wrapper">
@@ -217,30 +217,31 @@
     }
 
     &.selected {
-      color: var(--theme-content-accent-color);
+      color: var(--accent-color);
       background-color: var(--noborder-bg-color);
       cursor: default;
 
       &::before {
-        color: var(--theme-content-accent-color);
+        color: var(--accent-color);
         background-color: var(--primary-bg-color);
       }
     }
 
     &.fulfilled {
-      background-color: var(--theme-bg-accent-color);
+      background-color: var(--accent-bg-color);
 
       &::before {
-        background-color: #5e6ad255;
+        background-color: var(--primary-button-outline);
       }
     }
 
     &.disabled {
-      color: var(--theme-content-trans-color);
+      color: var(--dark-color);
       cursor: not-allowed;
 
       &::before {
-        color: var(--theme-content-trans-color);
+        color: var(--dark-color);
+        background-color: var(--trans-content-05);
       }
 
       &:hover {
@@ -255,8 +256,8 @@
       align-items: center;
       margin-right: 1rem;
       content: counter(item);
-      color: var(--theme-content-color);
-      background-color: var(--theme-bg-focused-color);
+      color: var(--content-color);
+      background-color: var(--trans-content-10);
       border-radius: 100%;
       width: 2rem;
       height: 2rem;
