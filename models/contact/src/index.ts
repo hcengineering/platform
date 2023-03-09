@@ -160,7 +160,7 @@ export class TEmployee extends TPerson implements Employee {
   mergedTo?: Ref<Employee>
 
   @Prop(TypeString(), contact.string.DisplayName)
-    displayName?: string
+    displayName?: string | null
 }
 
 @Model(contact.class.EmployeeAccount, core.class.Account)

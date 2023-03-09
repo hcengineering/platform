@@ -25,7 +25,6 @@
   import ChannelsEditor from './ChannelsEditor.svelte'
 
   export let object: Employee
-  console.log('TRY OPEN IT!!!!!')
   const client = getClient()
 
   const account = getCurrentAccount() as EmployeeAccount
@@ -36,7 +35,7 @@
   $: editable = account.role >= AccountRole.Maintainer || owner
   let firstName = getFirstName(object.name)
   let lastName = getLastName(object.name)
-  let displayName = object.displayName
+  let displayName = object.displayName ?? ''
 
   $: setName(object)
 
@@ -64,7 +63,7 @@
 
   function changeDisplayName () {
     client.update(object, {
-      displayName
+      displayName: displayName === '' ? null : displayName
     })
   }
 

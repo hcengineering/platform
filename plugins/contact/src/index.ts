@@ -144,7 +144,7 @@ export interface Employee extends Person {
   active: boolean
   mergedTo?: Ref<Employee>
   statuses?: number
-  displayName?: string
+  displayName?: string | null
 }
 
 /**
@@ -212,7 +212,7 @@ function isEmployee (value: Contact): value is Employee {
 }
 
 function isPerson (value: Contact): value is Person {
-  return value._class === contactPlugin.class.Organization
+  return value._class === contactPlugin.class.Person
 }
 
 /**

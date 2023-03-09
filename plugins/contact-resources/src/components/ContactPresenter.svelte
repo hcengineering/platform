@@ -40,7 +40,7 @@
 </script>
 
 {#if isEmployee(value)}
-  <EmployeePresenter value={toEmployee(value)} />
+  <EmployeePresenter {isInteractive} value={toEmployee(value)} />
 {:else if isPerson(value)}
   <PersonPresenter {isInteractive} {value} />
 {:else}
