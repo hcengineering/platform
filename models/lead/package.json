@@ -40,7 +40,7 @@
     "@hcengineering/lead-resources": "^0.6.0",
     "@hcengineering/setting": "^0.6.2",
     "@hcengineering/view": "^0.6.2",
-    "@hcengineering/task": "^0.6.1",
+    "@hcengineering/task": "^0.6.2",
     "@hcengineering/model-task": "^0.6.0",
     "@hcengineering/workbench": "^0.6.2"
   }

@@ -34,7 +34,7 @@
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",
     "svelte": "^3.47",
-    "@hcengineering/notification": "^0.6.5",
+    "@hcengineering/notification": "^0.6.7",
     "@hcengineering/ui": "^0.6.3",
     "@hcengineering/presentation": "^0.6.2",
     "@hcengineering/activity-resources": "^0.6.1",

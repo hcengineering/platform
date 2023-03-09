@@ -75,7 +75,9 @@ export class TEmaiNotification extends TDoc implements EmailNotification {
     html?: string
 
   @Prop(TypeString(), 'Status' as IntlString)
-    status!: 'new' | 'sent'
+    status!: 'new' | 'sent' | 'error'
+
+  error?: string
 }
 
 @Model(notification.class.NotificationType, core.class.Doc, DOMAIN_MODEL)

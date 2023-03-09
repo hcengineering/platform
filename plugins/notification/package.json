@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/notification",
-  "version": "0.6.6",
+  "version": "0.6.7",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",

@@ -60,7 +60,8 @@ export interface EmailNotification extends Doc {
   subject: string
   text: string
   html?: string
-  status: 'new' | 'sent'
+  status: 'new' | 'sent' | 'error'
+  error?: string
 }
 
 /**

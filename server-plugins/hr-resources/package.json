@@ -32,7 +32,7 @@
     "@hcengineering/contact": "^0.6.11",
     "@hcengineering/server-notification": "^0.6.0",
     "@hcengineering/server-notification-resources": "^0.6.0",
-    "@hcengineering/notification": "^0.6.5",
-    "@hcengineering/hr": "^0.6.0"
+    "@hcengineering/notification": "^0.6.7",
+    "@hcengineering/hr": "^0.6.1"
   }
 }
