@@ -121,33 +121,70 @@
 
   $: updateRequest(reqests, startDate, endDate)
 
-  function updateEditableList () {
-    editableList = []
-    departmentById.forEach((department) => {
-      if (department.teamLead === currentEmployee) {
-        const departmentIds = [department._id]
-        departmentIds.concat(getDescendants(department._id, descendants)).forEach((id) => {
-          editableList.push(
-            ...Array.from(
-              departmentStaff.filter((p) => p.department === id),
-              (s) => s._id
-            )
-          )
-        })
-      }
-    })
-    if (departmentStaff.filter((p) => p._id === currentEmployee).length > 0) {
-      editableList.push(currentEmployee)
+  function pushChilds (
+    department: Ref<Department>,
+    departmentStaff: Staff[],
+    descendants: Map<Ref<Department>, Department[]>
+  ): void {
+    const staff = departmentStaff.filter((p) => p.department === department)
+    editableList.push(...staff.map((p) => p._id))
+    const desc = descendants.get(department) ?? []
+    for (const des of desc) {
+      pushChilds(des._id, departmentStaff, descendants)
     }
-    editableList = [...new Set(editableList)]
   }
 
-  function updateStaff (staff: Staff[], departments: Ref<Department>[], employeeRequests: Map<Ref<Staff>, Request[]>) {
+  function isEditable (department: Department): boolean {
+    return department.teamLead === currentEmployee || department.managers.includes(currentEmployee)
+  }
+
+  function checkDepartmentEditable (
+    departmentById: Map<Ref<Department>, Department>,
+    department: Ref<Department>,
+    departmentStaff: Staff[],
+    descendants: Map<Ref<Department>, Department[]>
+  ) {
+    const dep = departmentById.get(department)
+    if (dep !== undefined && isEditable(dep)) {
+      pushChilds(dep._id, departmentStaff, descendants)
+    } else {
+      const descendantDepartments = descendants.get(department)
+      if (descendantDepartments !== undefined) {
+        for (const department of descendantDepartments) {
+          if (isEditable(department)) {
+            pushChilds(department._id, departmentStaff, descendants)
+          } else {
+            checkDepartmentEditable(departmentById, department._id, departmentStaff, descendants)
+          }
+        }
+      }
+    }
+  }
+
+  function updateEditableList (
+    departmentById: Map<Ref<Department>, Department>,
+    department: Ref<Department>,
+    departmentStaff: Staff[],
+    descendants: Map<Ref<Department>, Department[]>
+  ) {
+    editableList = [currentEmployee]
+    checkDepartmentEditable(departmentById, department, departmentStaff, descendants)
+    editableList = editableList
+  }
+
+  function updateStaff (
+    staff: Staff[],
+    departments: Ref<Department>[],
+    employeeRequests: Map<Ref<Staff>, Request[]>,
+    department: Ref<Department>,
+    descendants: Map<Ref<Department>, Department[]>,
+    departmentById: Map<Ref<Department>, Department>
+  ) {
     departmentStaff = staff.filter((p) => departments.includes(p.department) || employeeRequests.has(p._id))
-    updateEditableList()
+    updateEditableList(departmentById, department, departmentStaff, descendants)
   }
 
-  $: updateStaff(staff, departments, employeeRequests)
+  $: updateStaff(staff, departments, employeeRequests, department, descendants, departmentById)
 
   const reportQuery = createQuery()
 

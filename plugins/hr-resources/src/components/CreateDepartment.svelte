@@ -40,7 +40,8 @@
       private: false,
       archived: false,
       members: [],
-      teamLead: lead
+      teamLead: lead,
+      managers: []
     })
 
     dispatch('close', id)

@@ -83,6 +83,9 @@ export class TDepartment extends TSpace implements Department {
 
   @Prop(ArrOf(TypeRef(contact.class.Contact)), hr.string.Subscribers)
     subscribers?: Arr<Ref<Contact>>
+
+  @Prop(ArrOf(TypeRef(contact.class.Employee)), hr.string.Managers)
+    managers!: Arr<Ref<Employee>>
 }
 
 @Model(hr.class.DepartmentMember, contact.class.EmployeeAccount)

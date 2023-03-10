@@ -46,6 +46,7 @@
     "Description": "Описание",
     "PublicHoliday": "Праздничный день",
     "MarkAsPublicHoliday": "Отметить как праздничный день",
-    "EditPublicHoliday": "Редактировать праздничный день"
+    "EditPublicHoliday": "Редактировать праздничный день",
+    "Managers": "Менеджера"
   }
 }

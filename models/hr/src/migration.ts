@@ -15,9 +15,9 @@
 
 import { Employee } from '@hcengineering/contact'
 import { DOMAIN_TX, TxCollectionCUD, TxCreateDoc, TxOperations, TxUpdateDoc } from '@hcengineering/core'
-import { Request, TzDate } from '@hcengineering/hr'
+import { Department, Request, TzDate } from '@hcengineering/hr'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
-import core from '@hcengineering/model-core'
+import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import hr, { DOMAIN_HR } from './index'
 
 async function createSpace (tx: TxOperations): Promise<void> {
@@ -34,7 +34,8 @@ async function createSpace (tx: TxOperations): Promise<void> {
         private: false,
         archived: false,
         members: [],
-        teamLead: null
+        teamLead: null,
+        managers: []
       },
       hr.ids.Head
     )
@@ -147,9 +148,35 @@ async function migrateTime (client: MigrationClient): Promise<void> {
   }
 }
 
+async function fillManagers (client: MigrationClient): Promise<void> {
+  await client.update<Department>(
+    DOMAIN_SPACE,
+    {
+      _class: hr.class.Department,
+      managers: { $exists: false }
+    },
+    {
+      managers: []
+    }
+  )
+
+  await client.update<TxCreateDoc<Department>>(
+    DOMAIN_TX,
+    {
+      _class: core.class.TxCreateDoc,
+      objectClass: hr.class.Department,
+      'attributes.managers': { $exists: false }
+    },
+    {
+      'attributes.managers': []
+    }
+  )
+}
+
 export const hrOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await migrateTime(client)
+    await fillManagers(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
