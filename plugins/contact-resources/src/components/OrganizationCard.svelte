@@ -28,6 +28,7 @@
     <Avatar avatar={organization.avatar} size={'large'} icon={contact.icon.Company} />
   </div>
   {#if organization}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
       class="name lines-limit-2"
       class:over-underline={!disabled}
@@ -79,13 +80,13 @@
       margin-bottom: 1.75rem;
       font-weight: 500;
       font-size: 0.625rem;
-      color: var(--theme-content-dark-color);
+      color: var(--dark-color);
     }
     .name {
       margin: 1rem 0 0.25rem;
       font-weight: 500;
       font-size: 1rem;
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
     }
   }
 </style>

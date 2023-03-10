@@ -53,6 +53,7 @@
         <td>
           <div class="firstCell" {style}>
             {#if descendants.has(object._id)}
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
               <div class="expand" on:click={() => click(object._id)}>
                 {#if expanded.has(object._id)}
                   <Expand size={'small'} />
@@ -66,6 +67,7 @@
               value={getObjectValue(attribute.key, object) ?? ''}
               {...attribute.props}
             />
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div class="menuRow" on:click={(ev) => showMenu(ev, object)}><IconMoreV size={'small'} /></div>
           </div>
         </td>
@@ -119,8 +121,8 @@
 
   .tr-body {
     height: 3.25rem;
-    color: var(--theme-caption-color);
-    border-bottom: 1px solid var(--theme-button-border-hovered);
+    color: var(--caption-color);
+    border-bottom: 1px solid var(--divider-color);
     &:hover .firstCell .menuRow {
       visibility: visible;
     }
@@ -128,7 +130,7 @@
       border-bottom: none;
     }
     &:hover {
-      background-color: var(--theme-table-bg-hover);
+      background-color: var(--highlight-hover);
     }
   }
 </style>

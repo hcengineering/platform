@@ -641,10 +641,13 @@
     }
 
     &::-webkit-scrollbar-thumb {
-      background-color: var(--theme-bg-accent-hover);
+      background-color: var(--scrollbar-bar-color);
+    }
+    &::-webkit-scrollbar-thumb:hover {
+      background-color: var(--scrollbar-bar-hover);
     }
     &::-webkit-scrollbar-corner {
-      background-color: var(--theme-bg-accent-hover);
+      background-color: var(--scrollbar-bar-color);
     }
     &::-webkit-scrollbar-track {
       margin: 0;

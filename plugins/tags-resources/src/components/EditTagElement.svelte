@@ -107,7 +107,7 @@
           class="color"
           style={getTagStyle(getPlatformColor(data.color))}
           on:click={(evt) => {
-            showPopup(ColorsPopup, {}, eventToHTMLElement(evt), (col) => {
+            showPopup(ColorsPopup, { selected: getPlatformColor(data.color) }, eventToHTMLElement(evt), (col) => {
               if (col != null) {
                 data.color = col
               }

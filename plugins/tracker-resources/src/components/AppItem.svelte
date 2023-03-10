@@ -46,7 +46,7 @@
     .icon-container {
       width: 3.25rem;
       height: 3.25rem;
-      color: var(--theme-content-trans-color);
+      color: var(--dark-color);
 
       .normal-font &.noty {
         clip-path: url(#notify-normal);
@@ -57,20 +57,20 @@
     }
 
     &:hover .icon-container {
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
     }
     &:focus {
       border: 1px solid var(--primary-button-focused-border);
       box-shadow: 0 0 0 3px var(--primary-button-outline);
       .icon-container {
-        color: var(--theme-caption-color);
+        color: var(--caption-color);
       }
     }
 
     &.selected {
-      background-color: var(--theme-menu-selection);
+      background-color: var(--menu-bg-select);
       .icon-container {
-        color: var(--theme-caption-color);
+        color: var(--caption-color);
       }
     }
   }

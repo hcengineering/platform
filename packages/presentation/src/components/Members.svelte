@@ -155,11 +155,11 @@
 
 <style lang="scss">
   .notIn {
-    background-color: var(--theme-bg-accent-color);
+    background-color: var(--body-accent);
   }
 
   .divider {
-    background-color: var(--theme-dialog-divider);
+    background-color: var(--divider-color);
     height: 1px;
   }
 

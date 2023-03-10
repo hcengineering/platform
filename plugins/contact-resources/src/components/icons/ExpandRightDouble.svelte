@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  const fill: string = 'var(--theme-content-dark-color)'
+  const fill: string = 'var(--dark-color)'
 </script>
 
 <svg class="svg-expand" {fill} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">

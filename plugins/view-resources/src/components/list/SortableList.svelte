@@ -243,16 +243,16 @@
     }
 
     &.column.is-dragged-over-before::before {
-      border-top: 1px solid var(--theme-bg-check);
+      border-top: 1px solid var(--caret-color);
     }
     &.column.is-dragged-over-after::before {
-      border-bottom: 1px solid var(--theme-bg-check);
+      border-bottom: 1px solid var(--caret-color);
     }
     &.row.is-dragged-over-before::before {
-      border-left: 1px solid var(--theme-bg-check);
+      border-left: 1px solid var(--caret-color);
     }
     &.row.is-dragged-over-after::before {
-      border-right: 1px solid var(--theme-bg-check);
+      border-right: 1px solid var(--caret-color);
     }
   }
 </style>

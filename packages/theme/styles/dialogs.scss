@@ -83,13 +83,13 @@
     display: flex;
     flex-direction: column;
     margin: 0 1rem .75rem;
-    color: var(--theme-caption-color);
+    color: var(--caption-color);
     flex-wrap: wrap;
 
     &__separator {
       margin: 1rem 0;
       height: 1px;
-      background-color: var(--theme-card-divider);
+      background-color: var(--divider-color);
     }
   }
 

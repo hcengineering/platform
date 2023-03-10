@@ -390,7 +390,7 @@
         padding: 0 0.5rem 0 1rem;
         height: 100%;
         font-weight: 500;
-        color: var(--theme-caption-color);
+        color: var(--caption-color);
       }
     }
   }

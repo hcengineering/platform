@@ -18,7 +18,7 @@
 
   export let size: IconSize
 
-  export let fill: string = 'var(--theme-caption-color)'
+  export let fill: string = 'var(--caption-color)'
 </script>
 
 <svg class="svg-avatar {size}" {fill} viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">

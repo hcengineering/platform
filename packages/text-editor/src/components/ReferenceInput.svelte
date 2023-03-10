@@ -408,7 +408,7 @@
         align-items: center;
         width: 100%;
         height: 100%;
-        color: var(--theme-content-color);
+        color: var(--content-color);
         background-color: transparent;
         border: none;
         outline: none;
@@ -458,11 +458,11 @@
         .icon {
           width: 1.25rem;
           height: 1.25rem;
-          color: var(--theme-content-dark-color);
+          color: var(--dark-color);
           cursor: pointer;
 
           &:hover {
-            color: var(--theme-caption-color);
+            color: var(--caption-color);
           }
         }
         &:focus {
@@ -470,7 +470,7 @@
           box-shadow: 0 0 0 3px var(--primary-button-outline);
 
           & > .icon {
-            color: var(--theme-caption-color);
+            color: var(--caption-color);
           }
         }
 

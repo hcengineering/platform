@@ -53,8 +53,8 @@
     padding: 0.5rem;
     min-width: 0;
     color: var(--accent-color);
-    background: var(--theme-bg-accent-color);
-    border: 1px solid var(--theme-bg-accent-color);
+    background: var(--accent-bg-color);
+    border: 1px solid var(--divider-color);
     border-radius: 0.75rem;
   }
 </style>

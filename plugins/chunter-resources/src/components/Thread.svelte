@@ -186,6 +186,7 @@
   {#if parent}
     <MsgView message={parent} thread {savedAttachmentsIds} />
     {#if total > comments.length}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
         class="label pb-2 pt-2 pl-8 over-underline"
         on:click={() => {
@@ -214,9 +215,9 @@
   .content {
     overflow: hidden;
     margin: 1rem 1rem 0px;
-    background-color: var(--theme-border-modal);
+    background-color: var(--board-bg-color);
+    border: 1px solid var(--divider-color);
     border-radius: 0.75rem;
-    border: 1px solid var(--theme-zone-border);
   }
 
   .label:hover {

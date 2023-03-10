@@ -190,32 +190,28 @@
     padding: $padding;
 
     .issue-title {
-      color: var(--theme-content-accent-color);
+      color: var(--accent-color);
       transition: color 0.15s;
-    }
 
-    &:hover {
-      .issue-title {
-        color: var(--theme-caption-color);
+      &:hover {
+        color: var(--caption-color);
       }
-    }
-    &:active {
-      .issue-title {
-        color: var(--theme-content-accent-color);
+      &:active {
+        color: var(--accent-color);
       }
     }
   }
 
   .sub-issues {
     padding: $padding;
-    color: var(--theme-content-color);
+    color: var(--content-color);
     transition: color 0.15s;
 
     &:hover {
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
     }
     &:active {
-      color: var(--theme-content-accent-color);
+      color: var(--accent-color);
     }
   }
 </style>

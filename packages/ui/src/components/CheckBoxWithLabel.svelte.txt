@@ -99,7 +99,7 @@
     position: relative;
     margin-left: 1rem;
     width: 100%;
-    color: var(--theme-caption-color);
+    color: var(--caption-color);
 
     .edit-item {
       width: 100%;
@@ -109,7 +109,7 @@
       padding: .125rem;
       font-family: inherit;
       font-size: inherit;
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
       background-color: transparent;
       border: .125rem solid transparent;
       border-radius: .125rem;
@@ -140,7 +140,7 @@
 
       &.checked {
         text-decoration: line-through;
-        color: var(--theme-content-dark-color);
+        color: var(--dark-color);
       }
     }
   }

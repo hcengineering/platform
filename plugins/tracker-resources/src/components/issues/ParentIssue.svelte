@@ -55,13 +55,13 @@
     max-width: fit-content;
     border: 1px solid var(--button-border-color);
     border-radius: 0.25rem;
-    box-shadow: var(--primary-shadow);
+    box-shadow: var(--button-shadow);
   }
 
   .issue-title {
     margin: 0 0.75rem 0 0.5rem;
     padding-right: 0.75rem;
-    color: var(--theme-content-accent-color);
+    color: var(--accent-color);
     border-right: 1px solid var(--button-border-color);
   }
 
@@ -72,10 +72,10 @@
     transition: color 0.15s;
 
     &:hover {
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
     }
     &:active {
-      color: var(--theme-content-accent-color);
+      color: var(--accent-color);
     }
     &::before {
       position: absolute;

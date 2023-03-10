@@ -30,7 +30,12 @@
   const dispatch = createEventDispatcher()
 
   function pickColor (evt: MouseEvent) {
-    showPopup(ColorsPopup, {}, eventToHTMLElement(evt), (newColor) => (value.color = newColor))
+    showPopup(
+      ColorsPopup,
+      { selected: value.color ? getPlatformColor(value.color) : undefined },
+      eventToHTMLElement(evt),
+      (newColor) => (value.color = newColor)
+    )
   }
 
   $: canSave = !isSaving && (value.name ?? '').length > 0

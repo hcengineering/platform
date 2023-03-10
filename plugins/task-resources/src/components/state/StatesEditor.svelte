@@ -123,17 +123,19 @@
         }}
       >
         <div class="bar"><Circles /></div>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="color"
           style="background-color: {getPlatformColor(state.color)}"
           on:click={() => {
-            showPopup(ColorsPopup, {}, elements[i], onColorChange(state))
+            showPopup(ColorsPopup, { selected: getPlatformColor(state.color) }, elements[i], onColorChange(state))
           }}
         />
         <div class="flex-grow caption-color">
           <AttributeEditor maxWidth={'20rem'} _class={state._class} object={state} key="title" />
         </div>
         {#if states.length > 1}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
             class="tool hover-trans"
             on:click={(ev) => {
@@ -175,6 +177,7 @@
             <AttributeEditor maxWidth={'13rem'} _class={state._class} object={state} key="title" />
           </div>
           {#if wonStates.length > 1}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div
               class="tool hover-trans"
               on:click={(ev) => {
@@ -217,6 +220,7 @@
             <AttributeEditor maxWidth={'13rem'} _class={state._class} object={state} key="title" />
           </div>
           {#if lostStates.length > 1}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div
               class="tool hover-trans"
               on:click={(ev) => {

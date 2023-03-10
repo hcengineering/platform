@@ -107,11 +107,10 @@
     display: flex;
     flex-direction: column;
     padding: 1rem;
-    color: var(--theme-caption-color);
-    background-color: var(--theme-button-bg-hovered);
-    border: 1px solid var(--theme-button-border-enabled);
+    color: var(--caption-color);
+    background-color: var(--popup-bg-color);
     border-radius: 0.75rem;
-    box-shadow: 0px 1.25rem 3.75rem rgba(0, 0, 0, 0.6);
+    box-shadow: var(--popup-shadow);
     user-select: none;
     z-index: 10;
   }

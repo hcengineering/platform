@@ -76,14 +76,14 @@
     height: 2.5rem;
     font-weight: 500;
     font-size: 0.75rem;
-    color: var(--theme-content-dark-color);
-    box-shadow: inset 0 -1px 0 0 var(--theme-bg-focused-color);
+    color: var(--dark-color);
+    box-shadow: inset 0 -1px 0 0 var(--trans-content-10);
     user-select: none;
   }
 
   .tr-body {
     height: 3.25rem;
-    color: var(--theme-caption-color);
-    border-bottom: 1px solid var(--theme-button-border-hovered);
+    color: var(--caption-color);
+    border-bottom: 1px solid var(--divider-color);
   }
 </style>

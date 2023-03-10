@@ -321,20 +321,21 @@
       border: none;
       color: var(--caption-color);
       &.today {
-        background-color: var(--theme-bg-accent-hover);
+        background-color: var(--primary-button-disabled);
       }
       &.summary {
         font-weight: 600;
       }
       &.weekend:not(.today) {
-        background-color: var(--theme-bg-accent-color);
+        background-color: var(--accent-bg-color);
       }
     }
     td:not(:last-child) {
       border-right: 1px solid var(--divider-color);
     }
 
-    tbody {
+    tbody,
+    tfoot {
       tr {
         border-bottom: 1px solid var(--divider-color);
       }

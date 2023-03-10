@@ -36,8 +36,8 @@
 <style lang="scss">
   .container {
     padding: 1rem;
-    background-color: var(--theme-bg-accent-color);
-    border: 1px solid var(--theme-bg-accent-color);
+    background-color: var(--accent-bg-color);
+    border: 1px solid var(--divider-color);
     border-radius: 0.75rem;
   }
 </style>

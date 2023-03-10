@@ -118,7 +118,7 @@
     min-height: 0;
     width: 100%;
     height: 100%;
-    color: var(--theme-caption-color);
+    color: var(--caption-color);
 
     .header {
       display: flex;

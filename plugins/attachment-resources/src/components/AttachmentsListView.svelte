@@ -59,6 +59,7 @@
         <a href={getFileUrl(attachment.file)} download={attachment.name}>
           <Icon icon={FileDownload} size={'small'} />
         </a>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div class="eAttachmentRowMenu" on:click={(event) => showFileMenu(event, attachment, i)}>
           <IconMoreV size={'small'} />
         </div>
@@ -73,7 +74,7 @@
     align-items: center;
     margin: 0.5rem 1.5rem;
     padding: 0.5rem;
-    border: 1px solid var(--theme-button-border-hovered);
+    border: 1px solid var(--divider-color);
     border-radius: 0.5rem;
 
     .eAttachmentRowActions {

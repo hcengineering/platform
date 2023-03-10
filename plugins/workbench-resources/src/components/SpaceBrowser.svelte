@@ -183,7 +183,7 @@
 
 <style lang="scss">
   .divider {
-    background-color: var(--theme-dialog-divider);
+    background-color: var(--divider-color);
     height: 1px;
   }
 

@@ -19,6 +19,7 @@
   export let selection: number = 0
   export let count: number
   export let addClass: string | undefined = undefined
+  export let noScroll: boolean = false
 
   const refs: HTMLElement[] = []
 
@@ -60,7 +61,7 @@
 {#if count}
   <div
     class="list-container flex-col flex-grow"
-    style:overflow={'auto'}
+    style:overflow={noScroll ? 'visible' : 'auto'}
     use:resizeObserver={() => {
       dispatch('changeContent')
     }}

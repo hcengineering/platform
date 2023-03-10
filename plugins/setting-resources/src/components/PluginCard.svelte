@@ -122,8 +122,8 @@
 
 <style lang="scss">
   .plugin-container {
-    background-color: var(--theme-button-bg-enabled);
-    border: 1px solid var(--theme-bg-accent-color);
+    background-color: var(--accent-bg-color);
+    border: 1px solid var(--divider-color);
     border-radius: 0.75rem;
   }
   .header {
@@ -138,8 +138,9 @@
     min-height: 2.25rem;
   }
   .content {
+    flex-grow: 1;
     margin: 0 1.5rem 0.25rem;
-    color: var(--theme-caption-color);
+    color: var(--caption-color);
   }
   .footer {
     flex-shrink: 0;

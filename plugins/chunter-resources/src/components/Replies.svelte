@@ -47,6 +47,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="flex-row-center container cursor-pointer" on:click>
   <div class="flex-row-center">
     {#each showReplies as reply}
@@ -78,7 +79,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      background-color: var(--theme-bg-color);
+      background-color: var(--body-color);
       border-radius: 50%;
 
       span {
@@ -90,8 +91,8 @@
         font-size: 0.75rem;
         font-weight: 500;
         line-height: 0.5;
-        color: var(--theme-caption-color);
-        background-color: var(--theme-bg-selection);
+        color: var(--caption-color);
+        background-color: var(--body-accent);
         border-radius: 50%;
       }
     }
@@ -101,8 +102,8 @@
     }
 
     &:hover {
-      border: 1px solid var(--theme-button-border-hovered);
-      background-color: var(--theme-bg-color);
+      border: 1px solid var(--button-border-hover);
+      background-color: var(--body-color);
     }
   }
 </style>

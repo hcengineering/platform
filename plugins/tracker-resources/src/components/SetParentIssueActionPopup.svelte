@@ -109,14 +109,8 @@
           </div>
         {/if}
         <span class="overflow-label flex-no-shrink mr-3">{issueId}</span>
-        <span class="overflow-label w-full issue-title">{issue.title}</span>
+        <span class="overflow-label w-full content-color">{issue.title}</span>
       </div>
     {/if}
   </svelte:fragment>
 </ObjectPopup>
-
-<style lang="scss">
-  .issue-title {
-    color: var(--theme-content-color);
-  }
-</style>

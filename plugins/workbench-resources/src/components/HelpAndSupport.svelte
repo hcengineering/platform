@@ -105,6 +105,7 @@
 <div class="helpAndSupportPopup">
   <div class="header">
     {#if shortcuts}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div class="mr-4 cursor-pointer" on:click={() => (shortcuts = !shortcuts)}>
         <Icon icon={IconArrowLeft} size={'medium'} fill={'var(--content-color)'} />
       </div>
@@ -116,6 +117,7 @@
   {#if !shortcuts}
     {#each cards as card}
       <div class="clear-mins card {!card.disabled ? 'cursor-pointer focused-button' : ''}">
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div class="container" on:click={card.onClick}>
           <Icon icon={card.icon} size={'small'} fill={'var(--content-color)'} />
           <div class="content">
@@ -132,15 +134,15 @@
     {/each}
   {:else}
     <!-- Keyboard shortcuts -->
-    <Scroller>
-      <ListView count={actions.length}>
+    <Scroller padding={'0 .5rem'} fade={{ offset: { top: true }, multipler: { top: 2.5, bottom: 0 } }}>
+      <ListView count={actions.length} noScroll>
         <svelte:fragment slot="category" let:item>
           {@const action = actions[item]}
           {#if item === 0 || (item > 0 && actions[item - 1].category !== action.category)}
             {#if action.category}
               {@const category = categories.find((cat) => cat._id === action.category)}
               {#if category?.label && category.label !== categories.find((cat) => cat._id === actions[item - 1]?.category)?.label}
-                <div class="category-box">
+                <div class="category-box font-semi-bold text-base categoryHeader clear-mins">
                   <Label label={category.label} />
                 </div>
               {/if}
@@ -149,7 +151,7 @@
         </svelte:fragment>
         <svelte:fragment slot="item" let:item>
           {@const action = actions[item]}
-          <div class="flex-row-center flex-between flex-grow ml-2 p-3 text-base">
+          <div class="flex-row-center flex-between flex-grow ml-2 p-3 text-base clear-mins">
             <div class="mr-4">
               <Icon icon={action.icon ?? IconArrowLeft} size={'small'} />
             </div>
@@ -195,14 +197,14 @@
 
 <style lang="scss">
   .card {
-    border: 1px solid var(--theme-bg-accent-color);
+    border: 1px solid var(--button-border-color);
     border-radius: 0.75rem;
     margin: 16px 1rem 0 1rem;
   }
   .container {
     display: flex;
     flex-direction: row;
-    padding: 16px;
+    padding: 1rem;
     width: 100%;
   }
   .content {
@@ -214,7 +216,6 @@
   }
   .footer {
     align-items: flex-end;
-    border-top: 1px solid var(--popup-divider);
     display: flex;
     flex: 1;
     justify-content: flex-end;
@@ -233,9 +234,12 @@
     margin-left: 0.5rem;
   }
   .category-box {
-    display: inline-block;
+    position: sticky;
+    padding: 0.5rem 1rem;
+    top: 0;
+    min-height: 2.5rem;
     background-color: var(--divider-color);
     color: var(--caption-color);
-    padding: 0.5rem;
+    border-radius: 0.25rem;
   }
 </style>

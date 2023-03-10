@@ -360,7 +360,7 @@
         font-weight: 500;
         font-size: 1rem;
         line-height: 150%;
-        color: var(--theme-caption-color);
+        color: var(--caption-color);
         margin-bottom: 0.25rem;
 
         span {

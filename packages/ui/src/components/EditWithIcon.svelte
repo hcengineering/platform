@@ -43,6 +43,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="flex-between editbox {size}" style={width ? 'width: ' + width : ''} on:click={() => textHTML.focus()}>
   <div class="mr-2 icon"><Icon {icon} size={'small'} /></div>
   <input bind:this={textHTML} type="text" bind:value placeholder={phTraslate} on:change on:input on:keydown />

@@ -24,14 +24,14 @@
     justify-content: center;
     align-items: center;
     padding: 0.75rem 1.5rem;
-    color: var(--theme-content-dark-color);
-    background-color: var(--theme-button-bg-hovered);
-    border: 1px dotted var(--theme-bg-accent-color);
+    color: var(--dark-color);
+    background-color: var(--board-card-bg-color);
+    border: 1px dotted var(--divider-color);
     border-radius: 0.75rem;
     cursor: pointer;
 
     &:hover {
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
     }
   }
 </style>

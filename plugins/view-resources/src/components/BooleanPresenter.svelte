@@ -36,7 +36,7 @@
       white-space: nowrap;
       text-transform: capitalize;
       font-weight: 500;
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
     }
   }
 </style>

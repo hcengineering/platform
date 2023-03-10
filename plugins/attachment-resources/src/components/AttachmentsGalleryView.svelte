@@ -52,6 +52,7 @@
 <div class="galleryGrid">
   {#each attachments as attachment, i}
     <div class="attachmentCell" class:fixed={i === selectedFileNumber}>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <AttachmentGalleryPresenter value={attachment}>
         <svelte:fragment slot="rowMenu">
           <div class="eAttachmentCellActions" class:fixed={i === selectedFileNumber}>
@@ -80,7 +81,7 @@
       display: flex;
       visibility: hidden;
       padding: 0.5rem;
-      border: 1px solid var(--theme-button-border-hovered);
+      border: 1px solid var(--divider-color);
       border-radius: 0.25rem;
       background-color: var(--board-bg-color);
     }

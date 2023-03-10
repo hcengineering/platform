@@ -105,7 +105,7 @@
     width: 2.5rem;
     height: 3rem;
     text-align: center;
-    background-color: var(--theme-card-bg-dark);
+    background-color: var(--popup-bg-hover);
     border: 1px solid transparent;
     border-style: none;
     border-radius: 0.5rem;

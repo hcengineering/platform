@@ -365,7 +365,7 @@
     max-height: calc(100vh - 2rem);
     width: max-content;
     height: max-content;
-    color: var(--theme-caption-color);
+    color: var(--caption-color);
     background: var(--board-card-bg-color);
     border: 1px solid var(--divider-color);
     border-radius: 0.5rem;

@@ -100,7 +100,7 @@
         bottom: 0;
         left: -1.5rem;
         width: 1px;
-        background-color: var(--theme-bg-accent-hover);
+        background-color: var(--accent-bg-color);
       }
     }
   }

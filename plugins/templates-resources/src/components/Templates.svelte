@@ -271,7 +271,7 @@
     flex-shrink: 0;
     margin: 1.5rem 0;
     height: 1px;
-    background-color: var(--theme-menu-divider);
+    background-color: var(--divider-color);
   }
   .text {
     flex-grow: 1;

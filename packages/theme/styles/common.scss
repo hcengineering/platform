@@ -127,7 +127,7 @@
     }
     &.bold {
       font-weight: 600;
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
     }
   }
   .an-element__icon-arrow {
@@ -216,8 +216,8 @@
 
   &::-webkit-scrollbar-track { margin: 0; }
   &::-webkit-scrollbar-thumb {
-    background-color: var(--theme-bg-accent-color);
-    &:hover { background-color: var(--theme-menu-divider); }
+    background-color: var(--scrollbar-bar-color);
+    &:hover { background-color: var(--scrollbar-bar-hover); }
   }
 }
 .antiNav-box {

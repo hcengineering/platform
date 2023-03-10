@@ -16,6 +16,7 @@
 </script>
 
 <div id={fixed ? '' : time?.toString()} class="flex justify-center mt-5 pr-1 dateSelector">
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     bind:this={div}
     class="mb-1 p-1 border-radius-2 over-underline dateSelectorButton"
@@ -44,13 +45,13 @@
 <style lang="scss">
   .dateSelector {
     &:not(:first-child) {
-      border-top: 1px solid var(--theme-dialog-divider);
+      border-top: 1px solid var(--divider-color);
     }
   }
 
   .dateSelectorButton {
     margin-top: -1rem;
-    border: 1px solid var(--theme-dialog-divider);
     background-color: var(--body-color);
+    border: 1px solid var(--divider-color);
   }
 </style>

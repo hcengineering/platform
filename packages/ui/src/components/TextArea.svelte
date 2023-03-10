@@ -65,7 +65,7 @@
       margin-bottom: 0.25rem;
       font-size: 0.75rem;
       font-weight: 500;
-      color: var(--theme-content-accent-color);
+      color: var(--accent-color);
       pointer-events: none;
       user-select: none;
     }
@@ -78,7 +78,7 @@
       font-family: inherit;
       font-size: inherit;
       line-height: 150%;
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
       background-color: transparent;
       border: 2px solid transparent;
       border-radius: 0.125rem;
@@ -90,7 +90,7 @@
         border-color: var(--primary-button-enabled);
       }
       &::placeholder {
-        color: var(--theme-content-dark-color);
+        color: var(--dark-color);
       }
     }
   }

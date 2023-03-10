@@ -67,17 +67,17 @@
   }
   .item {
     padding: 1.25rem 1rem 1.25rem 1.25rem;
-    background-color: var(--theme-button-bg-enabled);
-    border: 1px solid var(--theme-bg-accent-color);
+    background-color: var(--board-card-bg-color);
+    border: 1px solid var(--button-border-color);
     border-radius: 0.75rem;
     cursor: pointer;
 
     &:hover {
-      background-color: var(--theme-button-bg-hovered);
+      background-color: var(--board-card-bg-hover);
     }
     &.selected {
-      background-color: var(--theme-button-bg-pressed);
-      border-color: var(--theme-bg-accent-color);
+      background-color: var(--button-bg-hover);
+      border-color: var(--button-border-hover);
       cursor: auto;
     }
   }

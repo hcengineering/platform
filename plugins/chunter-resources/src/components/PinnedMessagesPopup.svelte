@@ -84,7 +84,7 @@
   .popup {
     padding: 1.25rem 1.25rem 1.25rem;
     max-height: 20rem;
-    color: var(--theme-caption-color);
+    color: var(--caption-color);
   }
 
   .message {

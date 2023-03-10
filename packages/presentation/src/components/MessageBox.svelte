@@ -71,14 +71,14 @@
     padding: 2rem 1.75rem 1.75rem;
     width: 30rem;
     max-width: 40rem;
-    background: var(--theme-msgbox-bg);
+    background: var(--popup-bg-color);
     border-radius: 1.25rem;
     user-select: none;
-    box-shadow: var(--theme-msgbox-shadow);
+    box-shadow: var(--popup-shadow);
 
     .message {
       margin-bottom: 1.75rem;
-      color: var(--theme-content-accent-color);
+      color: var(--accent-color);
     }
     .footer {
       flex-shrink: 0;

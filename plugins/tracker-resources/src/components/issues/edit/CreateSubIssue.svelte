@@ -259,9 +259,9 @@
 
 <style lang="scss">
   .root {
-    padding: 0.5rem 1.5rem;
-    background-color: var(--theme-bg-accent-color);
-    border: 1px solid var(--theme-button-border-enabled);
+    padding: 0.75rem;
+    background-color: var(--accent-bg-color);
+    border: 1px solid var(--button-border-color);
     border-radius: 0.5rem;
     overflow: hidden;
 

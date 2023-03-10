@@ -46,10 +46,10 @@
 
 <style lang="scss">
   .container {
-    background-color: var(--theme-bg-accent-color);
-    border: 1px solid var(--theme-bg-accent-color);
-    border-radius: 0.75rem;
-    width: 20rem;
     padding: 0.5rem;
+    width: 20rem;
+    background-color: var(--accent-bg-color);
+    border: 1px solid var(--divider-color);
+    border-radius: 0.75rem;
   }
 </style>

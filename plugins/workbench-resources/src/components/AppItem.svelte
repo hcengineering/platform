@@ -64,7 +64,7 @@
     .icon-container {
       width: 3.25rem;
       height: 3.25rem;
-      color: var(--theme-content-trans-color);
+      color: var(--dark-color);
 
       .normal-font &.noty {
         clip-path: url(#notify-normal);

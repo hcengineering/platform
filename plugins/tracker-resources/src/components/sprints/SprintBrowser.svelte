@@ -195,8 +195,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.65rem 1.35rem 0.65rem 2.25rem;
-    border-bottom: 1px solid var(--theme-button-border-hovered);
+    padding: 0.65rem 0.75rem 0.65rem 2.25rem;
+    background-color: var(--board-bg-color);
+    border-top: 1px solid var(--divider-color);
+    border-bottom: 1px solid var(--divider-color);
   }
 
   .buttonWrapper {

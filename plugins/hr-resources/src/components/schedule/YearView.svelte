@@ -184,7 +184,7 @@
       border: none;
       color: var(--caption-color);
       &.today {
-        background-color: var(--theme-bg-accent-hover);
+        background-color: var(--primary-button-disabled);
       }
       &.summary {
         font-weight: 600;

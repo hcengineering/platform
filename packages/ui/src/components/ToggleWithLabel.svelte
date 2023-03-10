@@ -47,12 +47,12 @@
 <style lang="scss">
   .caption {
     margin-right: 1rem;
-    color: var(--theme-caption-color);
+    color: var(--caption-color);
     user-select: none;
     span {
       display: block;
       font-size: 0.75rem;
-      color: var(--theme-content-trans-color);
+      color: var(--dark-color);
     }
   }
 </style>

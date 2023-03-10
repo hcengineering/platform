@@ -155,7 +155,7 @@
 
 {#if visibleCategories.length > 0}
   <div class="flex-between header">
-    <div class="flex-row-center buttons">
+    <div class="buttons-group small-gap">
       <Button
         label={tags.string.AllCategories}
         kind={'transparent'}
@@ -201,7 +201,7 @@
     padding: 0.375rem 0.75rem;
     // height: 2.5rem;
     white-space: nowrap;
-    border: 1px solid var(--theme-button-border-enabled);
+    border: 1px solid var(--divider-color);
     border-radius: 0.25rem;
     cursor: pointer;
   }
@@ -210,31 +210,12 @@
   }
 
   .header {
-    padding: 0 1.75rem 1rem 2.5rem;
-    border-bottom: 1px solid var(--divider-color);
-    .buttons {
-      padding: 0.125rem 0;
-    }
+    padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+    background-color: var(--board-bg-color);
+    border-top: 1px solid var(--divider-color);
+
     .states {
       max-width: 75%;
-    }
-
-    .button {
-      height: 2.5rem;
-      padding: 0.5rem 0.75rem;
-      border: 1px solid transparent;
-      border-radius: 0.5rem;
-      cursor: pointer;
-
-      &:hover {
-        background-color: var(--theme-button-bg-enabled);
-        border-color: var(--theme-button-border-enabled);
-      }
-      &.active {
-        background-color: var(--theme-button-bg-enabled);
-        color: var(--theme-caption-color);
-        border-color: var(--theme-button-border-enabled);
-      }
     }
   }
 </style>

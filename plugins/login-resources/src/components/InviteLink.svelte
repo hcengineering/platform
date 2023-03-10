@@ -25,7 +25,8 @@
     Loading,
     locationToUrl,
     MiniToggle,
-    ticker
+    ticker,
+    Grid
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import login from '../plugin'
@@ -115,60 +116,50 @@
 </script>
 
 <div class="antiPopup popup">
-  <div class="flex-between fs-title mb-2">
+  <div class="flex-between fs-title mb-9">
     <Label label={login.string.InviteDescription} />
-    <InviteWorkspace size="large" />
+    <InviteWorkspace size={'large'} />
   </div>
   {#if isOwnerOrMaintainer}
-    <div class="mb-2">
+    <Grid column={1} rowGap={1.5}>
       <MiniToggle
         bind:on={useDefault}
         label={login.string.UseWorkspaceInviteSettings}
         on:click={() => setToDefault()}
       />
       {#if !useDefault}
-        <div class="mt-2">
+        <EditBox
+          label={login.string.LinkValidHours}
+          bind:value={expHours}
+          format={'number'}
+          on:keypress={() => (link = undefined)}
+          disabled={useDefault || !isOwnerOrMaintainer}
+        />
+        <EditBox
+          label={login.string.EmailMask}
+          bind:value={emailMask}
+          on:keypress={() => (link = undefined)}
+          disabled={useDefault || !isOwnerOrMaintainer}
+        />
+        <MiniToggle bind:on={noLimit} label={login.string.NoLimit} on:change={() => noLimit && (limit = -1)} />
+        {#if !noLimit}
           <EditBox
-            label={login.string.LinkValidHours}
-            bind:value={expHours}
+            label={login.string.InviteLimit}
+            bind:value={limit}
             format={'number'}
             on:keypress={() => (link = undefined)}
             disabled={useDefault || !isOwnerOrMaintainer}
           />
-        </div>
-        <div class="mt-2">
-          <EditBox
-            label={login.string.EmailMask}
-            bind:value={emailMask}
-            on:keypress={() => (link = undefined)}
-            disabled={useDefault || !isOwnerOrMaintainer}
-          />
-        </div>
-
-        <div class="mt-2">
-          <MiniToggle bind:on={noLimit} label={login.string.NoLimit} on:change={() => noLimit && (limit = -1)} />
-        </div>
-        {#if !noLimit}
-          <div class="mt-2">
-            <EditBox
-              label={login.string.InviteLimit}
-              bind:value={limit}
-              format={'number'}
-              on:keypress={() => (link = undefined)}
-              disabled={useDefault || !isOwnerOrMaintainer}
-            />
-          </div>
         {/if}
       {/if}
-    </div>
+    </Grid>
   {/if}
   {#if loading}
     <Loading />
   {:else if link !== undefined}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="over-underline link" on:click={copy}>{link}</div>
-    <div class="buttons flex">
-      <Button label={copied ? login.string.Copied : login.string.Copy} size={'medium'} on:click={copy} />
+    <div class="buttons">
       <Button
         label={login.string.Close}
         size={'medium'}
@@ -177,9 +168,10 @@
           dispatch('close')
         }}
       />
+      <Button label={copied ? login.string.Copied : login.string.Copy} size={'medium'} on:click={copy} />
     </div>
   {:else}
-    <div class="buttons flex">
+    <div class="buttons">
       <Button
         label={login.string.GetLink}
         size={'medium'}
@@ -196,23 +188,28 @@
   .popup {
     display: flex;
     flex-direction: column;
-    padding: 1rem;
-    color: var(--theme-caption-color);
-    background-color: var(--theme-button-bg-hovered);
-    border: 1px solid var(--theme-button-border-enabled);
-    border-radius: 0.75rem;
-    min-width: 30rem;
-    filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, 0.35));
+    padding: 1.75rem;
+    width: 30rem;
+    max-width: 40rem;
+    background: var(--popup-bg-color);
+    border-radius: 1.25rem;
+    user-select: none;
+    box-shadow: var(--popup-shadow);
 
     .link {
-      margin-top: 2rem;
-      margin-bottom: 2rem;
+      margin: 1.75rem 0 0;
       overflow-wrap: break-word;
     }
 
     .buttons {
-      justify-content: space-around;
+      margin-top: 1.75rem;
+      flex-shrink: 0;
+      display: grid;
+      grid-auto-flow: column;
+      direction: rtl;
+      justify-content: flex-start;
       align-items: center;
+      column-gap: 0.5rem;
     }
   }
 </style>

@@ -182,7 +182,7 @@
   .name {
     font-weight: 500;
     font-size: 1.25rem;
-    color: var(--theme-caption-color);
+    color: var(--caption-color);
   }
   .location {
     margin-top: 0.25rem;

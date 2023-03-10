@@ -16,8 +16,8 @@
   import type { DocumentUpdate, Ref } from '@hcengineering/core'
   import { Card, getClient } from '@hcengineering/presentation'
   import { Opinion } from '@hcengineering/recruit'
-  import { StyledTextEditor } from '@hcengineering/text-editor'
-  import { EditBox, Grid, Label } from '@hcengineering/ui'
+  import { StyledTextArea } from '@hcengineering/text-editor'
+  import { EditBox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../../plugin'
 
@@ -67,28 +67,12 @@
   }}
   okLabel={recruit.string.OpinionSave}
 >
-  <Grid column={1} rowGap={1.75}>
-    <EditBox
-      label={recruit.string.OpinionValue}
-      bind:value
-      icon={recruit.icon.Application}
-      placeholder={recruit.string.OpinionValue}
-      focus
-    />
-    <div class="mt-1 mb-1">
-      <Label label={recruit.string.Description} />:
-    </div>
-    <div class="description flex">
-      <StyledTextEditor bind:content={description} placeholder={recruit.string.Description} />
-    </div>
-  </Grid>
+  <EditBox
+    label={recruit.string.OpinionValue}
+    bind:value
+    icon={recruit.icon.Application}
+    placeholder={recruit.string.OpinionValue}
+    focus
+  />
+  <StyledTextArea placeholder={recruit.string.Description} bind:content={description} emphasized />
 </Card>
-
-<style lang="scss">
-  .description {
-    height: 10rem;
-    padding: 0.5rem;
-    border: 1px solid var(--theme-menu-divider);
-    border-radius: 8px;
-  }
-</style>

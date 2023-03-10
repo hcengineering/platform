@@ -48,7 +48,7 @@
       font-size: 0.75rem;
       letter-spacing: 0.5;
       text-transform: uppercase;
-      color: var(--theme-content-trans-color);
+      color: var(--dark-color);
       z-index: 1;
 
       &::before {
@@ -59,7 +59,7 @@
         width: 100%;
         height: 100%;
         border-radius: 1.25rem;
-        background-color: var(--theme-chat-divider);
+        background-color: var(--divider-color);
         z-index: -1;
       }
     }
@@ -74,7 +74,7 @@
         left: 0;
         width: 100%;
         height: 1px;
-        background-color: var(--theme-chat-divider);
+        background-color: var(--divider-color);
       }
     }
   }

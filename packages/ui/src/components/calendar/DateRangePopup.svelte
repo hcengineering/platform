@@ -82,6 +82,7 @@
       <Scroller>
         {#each shiftValues as value}
           {#if typeof value === 'number'}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div
               class="btn"
               on:click={() => {
@@ -115,7 +116,7 @@
       top: 1rem;
       right: calc(100% - 0.5rem);
       bottom: 1rem;
-      height: fit-content;
+      // height: fit-content;
       width: fit-content;
       width: 12rem;
       min-width: 12rem;

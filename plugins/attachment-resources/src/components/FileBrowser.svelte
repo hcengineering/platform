@@ -179,7 +179,7 @@
 
     .eGroupHeaderCount {
       font-size: 0.75rem;
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
     }
   }
 </style>

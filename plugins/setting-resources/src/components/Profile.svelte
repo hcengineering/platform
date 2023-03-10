@@ -176,7 +176,7 @@
   .separator {
     margin: 1rem 0;
     height: 1px;
-    background-color: var(--theme-card-divider);
+    background-color: var(--divider-color);
   }
 
   .footer {

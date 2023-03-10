@@ -74,12 +74,12 @@
   }
 
   .title {
-    color: var(--theme-caption-color);
+    color: var(--caption-color);
     font-weight: 500;
   }
 
   .description {
     margin-top: 0.25rem;
-    color: var(--theme-content-dark-color);
+    color: var(--dark-color);
   }
 </style>

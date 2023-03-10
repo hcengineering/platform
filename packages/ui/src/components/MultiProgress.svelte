@@ -71,16 +71,18 @@
     position: relative;
     width: 100%;
     height: 1.5rem;
-    background-color: var(--theme-bg-accent-hover);
+    background-color: var(--board-bg-color);
+    border: 1px solid var(--accent-bg-color);
     border-radius: 0.25rem;
 
     .bar {
       position: absolute;
+      display: flex;
+      align-items: center;
       top: 0;
       left: 0;
       height: 100%;
       padding-left: 0.5rem;
-      padding-top: 0.125rem;
       &.first {
         border-top-left-radius: 0.25rem;
         border-bottom-left-radius: 0.25rem;

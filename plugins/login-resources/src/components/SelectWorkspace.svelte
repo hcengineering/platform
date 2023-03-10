@@ -119,7 +119,7 @@
     .title {
       font-weight: 600;
       font-size: 1.5rem;
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
     }
     .status {
       min-height: 7.5rem;
@@ -149,13 +149,13 @@
     .footer {
       margin-top: 3.5rem;
       font-size: 0.8rem;
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
       span {
         opacity: 0.3;
       }
       a {
         text-decoration: none;
-        color: var(--theme-caption-color);
+        color: var(--caption-color);
         opacity: 0.8;
         &:hover {
           opacity: 1;

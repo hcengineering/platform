@@ -49,12 +49,14 @@
 <div class="gridCellOverlay">
   <div class="gridCell">
     {#if isImage(value.type)}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div class="cellImagePreview" on:click={openAttachment}>
         <img class={'img-fit'} src={getFileUrl(value.file)} alt={value.name} />
       </div>
     {:else}
       <div class="cellMiscPreview">
         {#if isPDF(value.type)}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div class="flex-center extensionIcon" on:click={openAttachment}>
             {extensionIconLabel(value.name)}
           </div>
@@ -68,6 +70,7 @@
 
     <div class="cellInfo">
       {#if isEmbedded(value.type)}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div class="flex-center extensionIcon" on:click={openAttachment}>
           {extensionIconLabel(value.name)}
         </div>
@@ -78,6 +81,7 @@
       {/if}
       <div class="eCellInfoData">
         {#if isEmbedded(value.type)}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div class="eCellInfoFilename" on:click={openAttachment}>
             {trimFilename(value.name)}
           </div>
@@ -96,7 +100,7 @@
 <style lang="scss">
   .gridCellOverlay {
     position: relative;
-    padding: 0.25rem;
+    padding: 0.5rem;
   }
 
   .gridCell {
@@ -107,7 +111,7 @@
     border-radius: 0.75rem;
     justify-content: space-between;
     overflow: hidden;
-    border: 1px solid var(--theme-button-border-hovered);
+    border: 1px solid var(--divider-color);
   }
 
   .cellImagePreview {
@@ -115,7 +119,7 @@
     justify-content: center;
     height: 10rem;
     overflow: hidden;
-    background-color: var(--theme-menu-color);
+    background-color: var(--body-color);
     cursor: pointer;
   }
 
@@ -135,7 +139,7 @@
   .cellInfo {
     display: flex;
     flex-direction: row;
-    border: 1px solid var(--theme-button-border-hovered);
+    border-top: 1px solid var(--divider-color);
     padding: 0.75rem;
     height: 4rem;
     align-items: center;
@@ -155,14 +159,14 @@
 
     .eCellInfoFilename {
       font-weight: 500;
-      color: var(--theme-content-accent-color);
+      color: var(--accent-color);
       white-space: nowrap;
       cursor: pointer;
     }
 
     .eCellInfoFilesize {
       font-size: 0.75rem;
-      color: var(--theme-content-dark-color);
+      color: var(--dark-color);
     }
   }
 
@@ -187,7 +191,7 @@
   .cellMiscPreview:hover + .cellInfo .eCellInfoFilename a // not embedded on preview hover
   {
     text-decoration: underline;
-    color: var(--theme-caption-color);
+    color: var(--caption-color);
   }
   .eCellInfoFilename:active,
   .extensionIcon:active + .eCellInfoData > .eCellInfoFilename, // embedded on extension hover
@@ -197,6 +201,6 @@
   .cellMiscPreview:active + .cellInfo .eCellInfoFilename a // not embedded on preview hover
   {
     text-decoration: underline;
-    color: var(--theme-content-accent-color);
+    color: var(--accent-color);
   }
 </style>
