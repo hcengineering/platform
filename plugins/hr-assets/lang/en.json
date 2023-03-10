@@ -46,6 +46,7 @@
     "Title": "Title",
     "Description": "Description",
     "MarkAsPublicHoliday": "Mark as public holiday",
-    "EditPublicHoliday": "Edit public holiday"
+    "EditPublicHoliday": "Edit public holiday",
+    "Managers": "Managers"
   }
 }

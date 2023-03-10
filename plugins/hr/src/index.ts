@@ -32,6 +32,7 @@ export interface Department extends Space {
   channels?: number
   members: Arr<Ref<DepartmentMember>>
   subscribers?: Arr<Ref<Contact>>
+  managers: Arr<Ref<Employee>>
 }
 
 /**
