@@ -278,20 +278,26 @@ export async function convert (
               }
             }
           }
-          const c: Channel & BitrixSyncDoc = {
-            _id: generateId(),
-            _class: contact.class.Channel,
-            attachedTo: document._id,
-            attachedToClass: attr.attributeOf,
-            collection: attr.name,
-            modifiedBy: document.modifiedBy,
-            value: svalue,
-            provider: f.provider,
-            space: document.space,
-            modifiedOn: document.modifiedOn,
-            bitrixId: svalue
+          const existingC = newExtraSyncDocs
+            .filter((it) => it._class === contact.class.Channel)
+            .map((it) => it as unknown as Channel)
+            .find((it) => it.value === svalue)
+          if (existingC === undefined) {
+            const c: Channel & BitrixSyncDoc = {
+              _id: generateId(),
+              _class: contact.class.Channel,
+              attachedTo: document._id,
+              attachedToClass: attr.attributeOf,
+              collection: attr.name,
+              modifiedBy: document.modifiedBy,
+              value: svalue,
+              provider: f.provider,
+              space: document.space,
+              modifiedOn: document.modifiedOn,
+              bitrixId: svalue
+            }
+            newExtraSyncDocs.push(c)
           }
-          newExtraSyncDocs.push(c)
         }
       }
     }
