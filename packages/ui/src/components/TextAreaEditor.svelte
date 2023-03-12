@@ -51,7 +51,7 @@
 <svelte:window on:click={onClickOutside} />
 <div bind:this={openedContainerRef}>
   <div
-    class="flex-col background-bg-accent border-bg-accent border-radius-1 pt-1 pb-1 pr-2 pl-2"
+    class="flex-col background-accent-bg-color border-divider-color border-radius-1 pt-1 pb-1 pr-2 pl-2"
     style:user-select="none"
   >
     <TextArea
@@ -68,6 +68,7 @@
   {#if !disabled}
     <div class="flex-row-center mt-3">
       <Button label={submitLabel} kind="no-border" size="medium" on:click={submit} />
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div class="ml-2" on:click={cancel}>
         <ActionIcon icon={IconClose} size="medium" action={cancel} />
       </div>

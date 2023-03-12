@@ -140,7 +140,7 @@
       />
     </svelte:fragment>
     <EditBox bind:value={object.title} kind={'large-style'} focus on:change={() => change('title', object?.title)} />
-    <div class="background-bg-accent border-bg-accent border-radius-3 p-4 mt-4 w-full">
+    <div class="background-accent-bg-color border-divider-color border-radius-3 p-4 mt-4 w-full">
       <StyledTextBox
         alwaysEdit={true}
         showButtons={false}

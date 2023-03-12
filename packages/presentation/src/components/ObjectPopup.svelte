@@ -228,7 +228,7 @@
     {/if}
   </div>
   {#if cHeight === 1}
-    <div class="background-theme-content-accent" style:height={'2px'} />
+    <div class="background-content-accent-color" style:height={'2px'} />
   {/if}
   <div class="scroll" on:scroll={() => updateLocation(scrollDiv, selectedDiv, objects, selected)} bind:this={scrollDiv}>
     <div class="box">
@@ -248,7 +248,7 @@
           {@const obj = objects[item]}
           <button
             class="menu-item w-full flex-row-center"
-            class:background-bg-focused={!allowDeselect && obj._id === selected}
+            class:background-button-bg-color={!allowDeselect && obj._id === selected}
             class:border-radius-1={!allowDeselect && obj._id === selected}
             disabled={readonly}
             on:click={() => {
@@ -291,7 +291,7 @@
     </div>
   </div>
   {#if cHeight === -1}
-    <div class="background-theme-content-accent" style:height={'2px'} />
+    <div class="background-content-accent-color" style:height={'2px'} />
   {/if}
 </div>
 

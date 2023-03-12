@@ -140,7 +140,7 @@
   {/if}
   <div class="{kind} flex-row-center clear-mins" class:focusable>
     {#if icon}
-      <div class="content-trans-color mr-1">
+      <div class="dark-color mr-1">
         <Icon {icon} size={'small'} />
       </div>
     {/if}

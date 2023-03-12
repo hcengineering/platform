@@ -198,7 +198,7 @@
     <EditBox kind={'search-style'} focusIndex={1} focus bind:value={search} {placeholder} />
   </div>
   {#if cHeight === 1}
-    <div class="background-theme-content-accent" style:height={'1px'} />
+    <div class="background-content-accent-color" style:height={'1px'} />
   {/if}
   <div
     class="scroll"
@@ -233,7 +233,7 @@
           {@const obj = contacts[item]}
           <button
             class="menu-item w-full"
-            class:background-bg-focused={obj._id === selected}
+            class:background-button-bg-color={obj._id === selected}
             class:border-radius-1={obj._id === selected}
             on:click={() => {
               handleSelection(undefined, item)
@@ -274,7 +274,7 @@
     </div>
   </div>
   {#if cHeight === -1}
-    <div class="background-theme-content-accent" style:height={'3px'} />
+    <div class="background-content-accent-color" style:height={'3px'} />
   {/if}
 </div>
 

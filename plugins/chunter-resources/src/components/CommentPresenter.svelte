@@ -48,7 +48,7 @@
     </div>
     <span class="label nowrap">Message</span>
   </a>
-  &nbsp;<span class="content-dark-color">#{cutId(value._id.toString())}</span>
+  &nbsp;<span class="dark-color">#{cutId(value._id.toString())}</span>
 {:else}
   <div class="flex-row-top">
     {#await getEmployee(value) then employee}
@@ -60,7 +60,7 @@
           <div class="fs-title">
             {#if employee}{getName(employee)}{/if}
           </div>
-          <div class="content-trans-color ml-4"><TimeSince value={value.modifiedOn} /></div>
+          <div class="dark-color ml-4"><TimeSince value={value.modifiedOn} /></div>
         </div>
         <ShowMore limit={126} fixed>
           <MessageViewer message={value.message} />

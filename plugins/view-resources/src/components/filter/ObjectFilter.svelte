@@ -175,7 +175,7 @@
                     <Label label={ui.string.NotSelected} />
                   {/if}
                 </div>
-                <div class="content-trans-color ml-2">
+                <div class="dark-color ml-2">
                   {#if isState}{statesCount[i]}{:else}{targets.get(value?._id)}{/if}
                 </div>
               </div>

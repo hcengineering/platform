@@ -192,13 +192,13 @@
     .issue-title {
       color: var(--accent-color);
       transition: color 0.15s;
+    }
 
-      &:hover {
-        color: var(--caption-color);
-      }
-      &:active {
-        color: var(--accent-color);
-      }
+    &:hover .issue-title {
+      color: var(--caption-color);
+    }
+    &:active .issue-title {
+      color: var(--accent-color);
     }
   }
 
