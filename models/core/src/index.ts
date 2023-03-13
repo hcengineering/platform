@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { AccountRole } from '@hcengineering/core'
+import { AccountRole, TxCollectionCUD, Doc, AttachedDoc, IndexingConfiguration, Class } from '@hcengineering/core'
 import { Builder } from '@hcengineering/model'
 import core from './component'
 import {
@@ -31,6 +31,7 @@ import {
   TEnumOf,
   TFulltextData,
   TFullTextSearchContext,
+  TIndexConfiguration,
   TIndexStageState,
   TInterface,
   TMixin,
@@ -104,7 +105,8 @@ export function createModel (builder: Builder): void {
     TIndexStageState,
     TFullTextSearchContext,
     TConfiguration,
-    TConfigurationElement
+    TConfigurationElement,
+    TIndexConfiguration
   )
 
   builder.createDoc(
@@ -115,5 +117,24 @@ export function createModel (builder: Builder): void {
       role: AccountRole.Owner
     },
     core.account.System
+  )
+
+  builder.mixin<Class<TxCollectionCUD<Doc, AttachedDoc>>, IndexingConfiguration<TxCollectionCUD<Doc, AttachedDoc>>>(
+    core.class.TxCollectionCUD,
+    core.class.Class,
+    core.mixin.IndexConfiguration,
+    {
+      indexes: [
+        'tx.objectId',
+        'tx._class',
+        'tx.objectClass',
+        'tx.operations.attachedTo',
+        'objectSpace',
+        {
+          objectSpace: 1,
+          _id: 1
+        }
+      ]
+    }
   )
 }

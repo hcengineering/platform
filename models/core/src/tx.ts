@@ -35,7 +35,7 @@ import {
   TxRemoveDoc,
   TxUpdateDoc
 } from '@hcengineering/core'
-import { Index, Model } from '@hcengineering/model'
+import { Hidden, Index, Model, Prop, TypeRef } from '@hcengineering/model'
 import core from './component'
 import { TDoc } from './core'
 
@@ -43,7 +43,10 @@ import { TDoc } from './core'
 
 @Model(core.class.Tx, core.class.Doc, DOMAIN_TX)
 export class TTx extends TDoc implements Tx {
-  objectSpace!: Ref<Space>
+  @Prop(TypeRef(core.class.Space), core.string.Space)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+    objectSpace!: Ref<Space>
 }
 
 @Model(core.class.TxModelUpgrade, core.class.Tx, DOMAIN_TX)
@@ -51,10 +54,15 @@ export class TTxModelUpgrade extends TTx {}
 
 @Model(core.class.TxCUD, core.class.Tx)
 export class TTxCUD<T extends Doc> extends TTx implements TxCUD<T> {
+  @Prop(TypeRef(core.class.Doc), core.string.Object)
   @Index(IndexKind.Indexed)
+  @Hidden()
     objectId!: Ref<T>
 
-  objectClass!: Ref<Class<T>>
+  @Prop(TypeRef(core.class.Class), core.string.ClassLabel)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+    objectClass!: Ref<Class<T>>
 }
 
 @Model(core.class.TxCreateDoc, core.class.TxCUD)

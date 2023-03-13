@@ -34,8 +34,10 @@ import {
   DOMAIN_MODEL,
   Enum,
   EnumOf,
+  FieldIndex,
   FullTextData,
   FullTextSearchContext,
+  IndexingConfiguration,
   IndexKind,
   IndexStageState,
   Interface,
@@ -249,15 +251,22 @@ export class TFulltextData extends TDoc implements FullTextData {
 export class TDocIndexState extends TDoc implements DocIndexState {
   objectClass!: Ref<Class<Doc>>
 
-  attachedTo?: Ref<Doc>
-  attachedToClass?: Ref<Class<Doc>>
+  @Prop(TypeRef(core.class.Doc), core.string.AttachedTo)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+    attachedTo?: Ref<Doc>
+
+  @Prop(TypeRef(core.class.Doc), core.string.AttachedToClass)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+    attachedToClass?: Ref<Class<Doc>>
 
   // Indexable attributes of document.
   attributes!: Record<string, any>
 
   removed!: boolean
 
-  // States for diffetent stages
+  // States for different stages
   stages!: Record<string, boolean | string>
 }
 
@@ -283,4 +292,9 @@ export class TConfigurationElement extends TClass implements ConfigurationElemen
 export class TConfiguration extends TDoc implements Configuration {
   @Prop(TypeBoolean(), core.string.Private)
     enabled!: boolean
+}
+
+@MMixin(core.mixin.IndexConfiguration, core.class.Class)
+export class TIndexConfiguration<T extends Doc = Doc> extends TClass implements IndexingConfiguration<T> {
+  indexes!: FieldIndex<T>[]
 }

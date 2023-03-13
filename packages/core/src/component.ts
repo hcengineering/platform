@@ -42,7 +42,8 @@ import type {
   UserStatus,
   Configuration,
   ConfigurationElement,
-  IndexStageState
+  IndexStageState,
+  IndexingConfiguration
 } from './classes'
 import type {
   Tx,
@@ -109,7 +110,8 @@ export default plugin(coreId, {
   },
   mixin: {
     FullTextSearchContext: '' as Ref<Mixin<FullTextSearchContext>>,
-    ConfigurationElement: '' as Ref<Mixin<ConfigurationElement>>
+    ConfigurationElement: '' as Ref<Mixin<ConfigurationElement>>,
+    IndexConfiguration: '' as Ref<Mixin<IndexingConfiguration<Doc>>>
   },
   space: {
     Tx: '' as Ref<Space>,

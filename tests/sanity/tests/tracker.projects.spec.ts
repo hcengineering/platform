@@ -30,7 +30,7 @@ test.describe('project tests', () => {
     await page.fill('[placeholder="Issue\\ title"]', 'issue')
     await page.click('form button:has-text("Project")')
     await page.click(`.selectPopup button:has-text("${prjId}")`)
-    await page.click('form button:has-text("Save issue")')
+    await page.click('form button:has-text("Create issue")')
     await page.waitForSelector('form.antiCard', { state: 'detached' })
 
     await page.click('.listGrid :has-text("issue")')
