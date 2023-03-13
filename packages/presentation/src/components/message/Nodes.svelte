@@ -86,7 +86,8 @@
         </div>
       {/if}
     {:else if node.nodeName === 'SPAN'}
-      <span style={node.getAttribute('style')}>
+      <span style:margin={'0 .25rem'} style={node.getAttribute('style')}>
+        <!-- <svelte:self nodes={node.childNodes} /> -->
         {#if node.getAttribute('data-objectclass') !== undefined && node.getAttribute('data-id') !== undefined}
           <Component
             is={view.component.ObjectPresenter}
@@ -95,7 +96,10 @@
               title: node.getAttribute('data-label'),
               _class: node.getAttribute('data-objectclass'),
               props: {
-                shouldShowAvatar: false
+                inline: true,
+                avatarSize: 'x-small',
+                withIcon: true
+                // shouldShowAvatar: false
               }
             }}
           />

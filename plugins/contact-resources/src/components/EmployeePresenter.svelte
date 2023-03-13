@@ -19,8 +19,7 @@
   export let inline = false
   export let disableClick = false
   export let defaultName: IntlString | undefined = undefined
-
-  let container: HTMLElement
+  export let element: HTMLElement | undefined
 
   const onEdit = (evt: MouseEvent) => {
     if (disableClick) {
@@ -34,7 +33,7 @@
         {
           employeeId: value._id
         },
-        container
+        element
       )
     }
   }
@@ -42,20 +41,28 @@
   $: handlePersonEdit = onEmployeeEdit ?? onEdit
 </script>
 
-<div bind:this={container} class="flex-presenter inline-presenter">
-  <PersonPresenter
-    {value}
-    {tooltipLabels}
-    onEdit={isInteractive ? handlePersonEdit : () => {}}
-    {shouldShowAvatar}
-    {shouldShowName}
-    {avatarSize}
-    {shouldShowPlaceholder}
-    {isInteractive}
-    {inline}
-    {defaultName}
-  />
-</div>
+<PersonPresenter
+  bind:element
+  {value}
+  {tooltipLabels}
+  onEdit={isInteractive ? handlePersonEdit : () => {}}
+  {shouldShowAvatar}
+  {shouldShowName}
+  {avatarSize}
+  {shouldShowPlaceholder}
+  {isInteractive}
+  {inline}
+  {defaultName}
+/>
 {#if value?.active === false}
-  (<Label label={contact.string.Inactive} />)
+  <div class="status ml-1">
+    (<Label label={contact.string.Inactive} />)
+  </div>
 {/if}
+
+<style lang="scss">
+  .status {
+    font-weight: 400;
+    font-size: 0.875rem;
+  }
+</style>

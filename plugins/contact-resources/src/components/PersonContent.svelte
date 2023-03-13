@@ -31,8 +31,9 @@
   export let onEdit: ((event: MouseEvent) => void) | undefined = undefined
   export let showTooltip: LabelAndProps | undefined = undefined
   export let enlargedText = false
+  export let element: HTMLElement | undefined = undefined
 
-  $: element = getElement(value, onEdit, shouldShowPlaceholder, isInteractive)
+  $: el = getElement(value, onEdit, shouldShowPlaceholder, isInteractive)
 
   const getElement = (
     person: Person | undefined | null,
@@ -56,8 +57,10 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <svelte:element
-  this={element}
+  this={el}
+  bind:this={element}
   use:tooltip={showTooltip}
   class="contentPresenter"
   class:inline-presenter={inline}
@@ -94,12 +97,16 @@
     flex-wrap: nowrap;
     cursor: pointer;
 
+    &.inline-presenter {
+      display: inline-flex;
+      align-items: baseline;
+    }
     &.mContentPresenterNotInteractive {
       cursor: default;
 
       &:hover {
         .eContentPresenterIcon {
-          color: var(--dark-color);
+          color: var(--accent-color);
         }
         .eContentPresenterLabel {
           text-decoration: none;
