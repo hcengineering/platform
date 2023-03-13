@@ -42,7 +42,7 @@
   $: handlePersonEdit = onEmployeeEdit ?? onEdit
 </script>
 
-<div bind:this={container}>
+<div bind:this={container} class="flex-presenter inline-presenter">
   <PersonPresenter
     {value}
     {tooltipLabels}
@@ -57,14 +57,5 @@
   />
 </div>
 {#if value?.active === false}
-  <div class="ml-1">
-    (<Label label={contact.string.Inactive} />)
-  </div>
+  (<Label label={contact.string.Inactive} />)
 {/if}
-
-<style lang="scss">
-  .status {
-    font-weight: 400;
-    font-size: 0.875rem;
-  }
-</style>
