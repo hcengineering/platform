@@ -65,7 +65,6 @@ export interface BitrixSyncRequest {
  */
 export interface ConvertResult {
   document: BitrixSyncDoc // Document we should sync
-  rawData: any
   mixins: Record<Ref<Mixin<Doc>>, Data<Doc>> // Mixins of document we will sync
   extraDocs: Doc[] // Extra documents we will sync, etc.
   extraSync: (AttachedDoc & BitrixSyncDoc)[] // Extra documents we will sync, etc.
@@ -490,7 +489,6 @@ export async function convert (
     extraSync: newExtraSyncDocs,
     extraDocs: newExtraDocs,
     blobs,
-    rawData: rawDocument,
     syncRequests,
     gmailDocuments: []
   }

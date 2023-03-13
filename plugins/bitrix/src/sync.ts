@@ -115,7 +115,6 @@ export async function syncDocument (
     mixins[bitrix.mixin.BitrixSyncDoc] = {
       type: resultDoc.document.type,
       bitrixId: resultDoc.document.bitrixId,
-      rawData: resultDoc.rawData,
       syncTime: Date.now()
     }
 
@@ -283,15 +282,14 @@ export async function syncDocument (
         existingM,
         {
           type: valValue.type,
-          bitrixId: valValue.bitrixId,
-          rawData: valValue.rawData
+          bitrixId: valValue.bitrixId
         },
         bitrix.mixin.BitrixSyncDoc,
         valValue.modifiedBy,
         valValue.modifiedOn
       )
     } else {
-      const { bitrixId, rawData, ...data } = valValue
+      const { bitrixId, ...data } = valValue
       await applyOp.addCollection<Doc, AttachedDoc>(
         valValue._class,
         valValue.space,
@@ -311,8 +309,7 @@ export async function syncDocument (
         bitrix.mixin.BitrixSyncDoc,
         {
           type: valValue.type,
-          bitrixId: valValue.bitrixId,
-          rawData: valValue.rawData
+          bitrixId: valValue.bitrixId
         },
         valValue.modifiedOn,
         valValue.modifiedBy
@@ -328,7 +325,7 @@ export async function syncDocument (
       return (await updateDoc(applyOp, existing, resultDoc.document, resultDoc.document.modifiedOn)) as BitrixSyncDoc
       // Go over extra documents.
     } else {
-      const { bitrixId, rawData, ...data } = resultDoc.document
+      const { bitrixId, ...data } = resultDoc.document
       const id = await applyOp.createDoc<Doc>(
         resultDoc.document._class,
         resultDoc.document.space,
@@ -731,7 +728,6 @@ async function downloadComments (
       message: processComment(it.COMMENT as string),
       bitrixId: `${it.ID as string}`,
       type: it.ENTITY_TYPE,
-      rawData: it,
       attachedTo: res.document._id,
       attachedToClass: res.document._class,
       collection: 'comments',
@@ -809,7 +805,6 @@ async function downloadComments (
           sendOn: new Date(comm.CREATED ?? new Date().toString()).getTime(),
           subject: comm.SUBJECT,
           bitrixId: `${comm.ID}`,
-          rawData: comm,
           from: comm.SETTINGS?.EMAIL_META?.from ?? '',
           to: comm.SETTINGS?.EMAIL_META?.to ?? '',
           replyTo: comm.SETTINGS?.EMAIL_META?.replyTo ?? comm.SETTINGS?.MESSAGE_HEADERS?.['Reply-To'] ?? '',
