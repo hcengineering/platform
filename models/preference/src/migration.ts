@@ -1,5 +1,5 @@
 //
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,34 +13,39 @@
 // limitations under the License.
 //
 
-import core, { TxOperations } from '@hcengineering/core'
+import { TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
-import setting from './plugin'
+import core from '@hcengineering/model-core'
+import preference from '@hcengineering/preference'
 
 async function createSpace (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(core.class.Space, {
-    _id: setting.space.Setting
+    _id: preference.space.Preference
   })
   if (current === undefined) {
     await tx.createDoc(
       core.class.Space,
       core.space.Space,
       {
-        name: 'Setting',
-        description: 'Setting space',
+        name: 'Preference',
+        description: 'Preference space',
         private: false,
         archived: false,
         members: []
       },
-      setting.space.Setting
+      preference.space.Preference
     )
   }
 }
 
-export const settingOperation: MigrateOperation = {
+async function createDefaults (tx: TxOperations): Promise<void> {
+  await createSpace(tx)
+}
+
+export const preferenceOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const tx = new TxOperations(client, core.account.System)
-    await createSpace(tx)
+    const ops = new TxOperations(client, core.account.System)
+    await createDefaults(ops)
   }
 }

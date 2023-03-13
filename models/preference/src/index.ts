@@ -35,3 +35,4 @@ export function createModel (builder: Builder): void {
 }
 
 export { preference as default }
+export { preferenceOperation } from './migration'

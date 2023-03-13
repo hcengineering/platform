@@ -15,29 +15,29 @@
 
 import core, { TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
-import setting from './plugin'
+import calendar from './plugin'
 
 async function createSpace (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(core.class.Space, {
-    _id: setting.space.Setting
+    _id: calendar.space.PersonalEvents
   })
   if (current === undefined) {
     await tx.createDoc(
       core.class.Space,
       core.space.Space,
       {
-        name: 'Setting',
-        description: 'Setting space',
+        name: 'Personal Events',
+        description: 'Personal Events',
         private: false,
         archived: false,
         members: []
       },
-      setting.space.Setting
+      calendar.space.PersonalEvents
     )
   }
 }
 
-export const settingOperation: MigrateOperation = {
+export const calendarOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
