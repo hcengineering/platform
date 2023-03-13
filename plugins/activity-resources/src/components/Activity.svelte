@@ -19,7 +19,7 @@
   import { getResource, IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import notification from '@hcengineering/notification'
-  import { Component, Grid, IconActivity, Label, Scroller, Button, showPopup } from '@hcengineering/ui'
+  import { Component, Grid, IconActivity, Label, Scroller, Button, showPopup, Spinner } from '@hcengineering/ui'
   import { ActivityKey, activityKey, DisplayTx, newActivity } from '../activity'
   import TxView from './TxView.svelte'
   import { filterCollectionTxes } from '../utils'
@@ -78,11 +78,18 @@
 
   $: viewlets = new Map(allViewlets.map((r) => [activityKey(r.objectClass, r.txClass), r]))
 
+  let loading = false
+
   function updateTxes (object: Doc): void {
+    loading = true
     activityQuery.update(
       object,
       (result) => {
         txes = filterCollectionTxes(result)
+
+        if (txes.length > 0) {
+          loading = false
+        }
       },
       SortingOrder.Descending,
       editableMap ?? new Map()
@@ -141,7 +148,14 @@
     <div class="ac-header short mirror-tool highlight">
       <div class="ac-header__wrap-title">
         <div class="flex-center icon"><IconActivity size={'small'} /></div>
-        <span class="ac-header__title"><Label label={activity.string.Activity} /></span>
+        <span class="ac-header__title flex-row-center">
+          <Label label={activity.string.Activity} />
+          {#if loading}
+            <div class="ml-1">
+              <Spinner size={'small'} />
+            </div>
+          {/if}
+        </span>
       </div>
     </div>
   {/if}
@@ -173,7 +187,14 @@
   <!-- <div class="antiDivider" style:margin={'1rem -1.5rem'} /> -->
   <div class="antiSection-header mt-6">
     <div class="antiSection-header__icon"><IconActivity size={'small'} /></div>
-    <span class="antiSection-header__title"><Label label={activity.string.Activity} /></span>
+    <span class="antiSection-header__title flex-row-center">
+      <Label label={activity.string.Activity} />
+      {#if loading}
+        <div class="ml-1">
+          <Spinner size={'small'} />
+        </div>
+      {/if}
+    </span>
     {#if selectedFilter === 'All'}
       <span class="antiSection-header__tag highlight"><Label label={activityPlg.string.All} /></span>
     {:else}

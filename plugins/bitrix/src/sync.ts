@@ -115,7 +115,6 @@ export async function syncDocument (
     mixins[bitrix.mixin.BitrixSyncDoc] = {
       type: resultDoc.document.type,
       bitrixId: resultDoc.document.bitrixId,
-      rawData: resultDoc.rawData,
       syncTime: Date.now()
     }
 
@@ -156,13 +155,18 @@ export async function syncDocument (
       await syncClass(applyOp, gmail.class.Message, resultDoc.gmailDocuments, idMapping, emailReadId)
     }
 
+    const attachIds = Array.from(
+      new Set(resultDoc.blobs.map((it) => idMapping.get(it[0].attachedTo) ?? it[0].attachedTo)).values()
+    )
+
     const existingBlobs = await client.findAll(attachment.class.Attachment, {
-      attachedTo: resultDoc.document._id
+      attachedTo: { $in: [resultDoc.document._id, ...attachIds] }
     })
     for (const [ed, op, upd] of resultDoc.blobs) {
-      const existing = existingBlobs.find(
-        (it) => hierarchy.as<Doc, BitrixSyncDoc>(it, bitrix.mixin.BitrixSyncDoc).bitrixId === ed.bitrixId
-      )
+      const existing = existingBlobs.find((it) => {
+        const bdoc = hierarchy.as<Doc, BitrixSyncDoc>(it, bitrix.mixin.BitrixSyncDoc)
+        return bdoc.bitrixId === ed.bitrixId
+      })
       // For Attachments, just do it once per attachment and assume it is not changed.
       if (existing === undefined) {
         const attachmentId: Ref<Attachment> = generateId()
@@ -243,9 +247,10 @@ export async function syncDocument (
           // Update document id, for existing document.
           valValue.attachedTo = resultDoc.document._id
         }
-        const existingIdx = existingByClass.findIndex(
-          (it) => hierarchy.as<Doc, BitrixSyncDoc>(it, bitrix.mixin.BitrixSyncDoc).bitrixId === valValue.bitrixId
-        )
+        const existingIdx = existingByClass.findIndex((it) => {
+          const bdoc = hierarchy.as<Doc, BitrixSyncDoc>(it, bitrix.mixin.BitrixSyncDoc)
+          return bdoc.bitrixId === valValue.bitrixId && bdoc.type === valValue.type
+        })
         let existing: Doc | undefined
         if (existingIdx >= 0) {
           existing = existingByClass.splice(existingIdx, 1).shift()
@@ -277,15 +282,14 @@ export async function syncDocument (
         existingM,
         {
           type: valValue.type,
-          bitrixId: valValue.bitrixId,
-          rawData: valValue.rawData
+          bitrixId: valValue.bitrixId
         },
         bitrix.mixin.BitrixSyncDoc,
         valValue.modifiedBy,
         valValue.modifiedOn
       )
     } else {
-      const { bitrixId, rawData, ...data } = valValue
+      const { bitrixId, ...data } = valValue
       await applyOp.addCollection<Doc, AttachedDoc>(
         valValue._class,
         valValue.space,
@@ -305,8 +309,7 @@ export async function syncDocument (
         bitrix.mixin.BitrixSyncDoc,
         {
           type: valValue.type,
-          bitrixId: valValue.bitrixId,
-          rawData: valValue.rawData
+          bitrixId: valValue.bitrixId
         },
         valValue.modifiedOn,
         valValue.modifiedBy
@@ -322,7 +325,7 @@ export async function syncDocument (
       return (await updateDoc(applyOp, existing, resultDoc.document, resultDoc.document.modifiedOn)) as BitrixSyncDoc
       // Go over extra documents.
     } else {
-      const { bitrixId, rawData, ...data } = resultDoc.document
+      const { bitrixId, ...data } = resultDoc.document
       const id = await applyOp.createDoc<Doc>(
         resultDoc.document._class,
         resultDoc.document.space,
@@ -499,7 +502,7 @@ async function doPerformSync (ops: SyncOptions & SyncOptionsExtra): Promise<Bitr
 
     let added = 0
 
-    const sel = ['*', 'UF_*', 'EMAIL', 'IM']
+    const sel = ['*', 'UF_*', 'EMAIL', 'IM', 'WEB']
 
     const allTagElements = await ops.client.findAll<TagElement>(tags.class.TagElement, {})
 
@@ -520,7 +523,8 @@ async function doPerformSync (ops: SyncOptions & SyncOptionsExtra): Promise<Bitr
       const syncTime = Date.now()
 
       const existingDocuments = await ops.client.findAll<Doc>(ops.mapping.ofClass, {
-        [bitrix.mixin.BitrixSyncDoc + '.bitrixId']: { $in: toProcess.map((it) => `${it.ID as string}`) }
+        [bitrix.mixin.BitrixSyncDoc + '.bitrixId']: { $in: toProcess.map((it) => `${it.ID as string}`) },
+        [bitrix.mixin.BitrixSyncDoc + '.type']: ops.mapping.type
       })
       const defaultCategories = await ops.client.findAll(tags.class.TagCategory, {
         default: true
@@ -537,7 +541,7 @@ async function doPerformSync (ops: SyncOptions & SyncOptionsExtra): Promise<Bitr
         if (existingDoc !== undefined) {
           const bd = ops.client.getHierarchy().as(existingDoc, bitrix.mixin.BitrixSyncDoc)
           if (bd.syncTime !== undefined && bd.syncTime + (ops.syncPeriod ?? defaultSyncPeriod) > syncTime) {
-            // No need to sync, sime sync time is not yet arrived.
+            // No need to sync, same sync time is not yet arrived.
             toProcess.splice(0, 1)
             added++
             ops.monitor?.(result.total)
@@ -657,13 +661,12 @@ async function performOrganizationContactSynchronization (
       console.log('total', total)
     }
   })
-  const existingContacts = await ops.client.findAll(contact.class.Member, {
-    attachedTo: extra.res.document._id,
-    contact: { $in: contacts.map((it) => it._id as unknown as Ref<Contact>) }
+  const existingMembers = await ops.client.findAll(contact.class.Member, {
+    attachedTo: extra.res.document._id
   })
   for (const c of contacts) {
-    const ex = existingContacts.find((e) => e.contact === (c._id as unknown as Ref<Contact>))
-    if (ex === undefined) {
+    const ex = existingMembers.findIndex((e) => e.contact === (c._id as unknown as Ref<Contact>))
+    if (ex === -1) {
       await ops.client.addCollection(
         contact.class.Member,
         extra.res.document.space,
@@ -674,7 +677,14 @@ async function performOrganizationContactSynchronization (
           contact: c._id as unknown as Ref<Contact>
         }
       )
+    } else {
+      // remove from list
+      existingMembers.splice(ex, 1)
     }
+  }
+  // Remove not expected members
+  for (const ex of existingMembers) {
+    await ops.client.remove(ex)
   }
 
   // We need to create Member's for organization contacts.
@@ -718,7 +728,6 @@ async function downloadComments (
       message: processComment(it.COMMENT as string),
       bitrixId: `${it.ID as string}`,
       type: it.ENTITY_TYPE,
-      rawData: it,
       attachedTo: res.document._id,
       attachedToClass: res.document._class,
       collection: 'comments',
@@ -796,7 +805,6 @@ async function downloadComments (
           sendOn: new Date(comm.CREATED ?? new Date().toString()).getTime(),
           subject: comm.SUBJECT,
           bitrixId: `${comm.ID}`,
-          rawData: comm,
           from: comm.SETTINGS?.EMAIL_META?.from ?? '',
           to: comm.SETTINGS?.EMAIL_META?.to ?? '',
           replyTo: comm.SETTINGS?.EMAIL_META?.replyTo ?? comm.SETTINGS?.MESSAGE_HEADERS?.['Reply-To'] ?? '',

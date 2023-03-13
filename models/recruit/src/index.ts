@@ -398,6 +398,7 @@ export function createModel (builder: Builder): void {
           key: '@applications',
           label: recruit.string.Applications
         },
+        'comments',
         '$lookup.company',
         '$lookup.company.$lookup.channels',
         'location',
@@ -427,6 +428,7 @@ export function createModel (builder: Builder): void {
           key: '@applications',
           label: recruit.string.Applications
         },
+        'comments',
         '$lookup.channels',
         {
           key: '@applications.modifiedOn',

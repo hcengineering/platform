@@ -89,8 +89,6 @@ export interface BitrixSyncDoc extends Doc {
   type?: string
   bitrixId: string
   syncTime?: number
-  // raw bitrix document data.
-  rawData?: any
 }
 
 /**

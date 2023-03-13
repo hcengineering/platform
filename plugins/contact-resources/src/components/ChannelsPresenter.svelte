@@ -38,11 +38,13 @@
     if (ev.detail.action !== undefined && Array.isArray(value)) {
       const action = await getResource(ev.detail.action as ViewAction)
       const channel = value.find((it) => it.value === ev.detail.value)
-      if (action !== undefined && channel !== undefined) {
+      if (action != null && channel != null) {
         action(channel, ev)
       }
     }
   }
 </script>
 
-<ChannelsDropdown bind:value {length} {kind} {size} {shape} {editable} on:open={_open} />
+{#if value}
+  <ChannelsDropdown bind:value {length} {kind} {size} {shape} {editable} on:open={_open} />
+{/if}

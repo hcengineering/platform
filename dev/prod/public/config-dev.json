@@ -1,0 +1,6 @@
+{
+  "ACCOUNTS_URL":"https://account.hc.engineering",
+  "COLLABORATOR_URL": "wss://collaborator.hc.engineering",
+  "UPLOAD_URL":"/files",
+  "MODEL_VERSION": null
+}
