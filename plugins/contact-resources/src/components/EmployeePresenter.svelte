@@ -19,7 +19,7 @@
   export let inline = false
   export let disableClick = false
   export let defaultName: IntlString | undefined = undefined
-  export let element: HTMLElement | undefined
+  export let element: HTMLElement | undefined = undefined
 
   const onEdit = (evt: MouseEvent) => {
     if (disableClick) {
