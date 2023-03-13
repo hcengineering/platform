@@ -62,6 +62,26 @@ export async function createRandom (tx: TxOperations): Promise<void> {
   }
 }
 
+async function createBacklink (tx: TxOperations): Promise<void> {
+  const current = await tx.findOne(core.class.Space, {
+    _id: chunter.space.Backlinks
+  })
+  if (current === undefined) {
+    await tx.createDoc(
+      core.class.Space,
+      core.space.Space,
+      {
+        name: 'Backlinks',
+        description: 'Backlinks',
+        private: false,
+        archived: false,
+        members: []
+      },
+      chunter.space.Backlinks
+    )
+  }
+}
+
 export async function setCreate (client: TxOperations): Promise<void> {
   const messages = (await client.findAll(chunter.class.Message, {}))
     .filter((m) => m.createBy === undefined)
@@ -201,6 +221,7 @@ export const chunterOperation: MigrateOperation = {
     const tx = new TxOperations(client, core.account.System)
     await createGeneral(tx)
     await createRandom(tx)
+    await createBacklink(tx)
     await setCreate(tx)
   }
 }

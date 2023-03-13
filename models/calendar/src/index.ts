@@ -200,4 +200,5 @@ export function createModel (builder: Builder): void {
   })
 }
 
+export { calendarOperation } from './migration'
 export default calendar

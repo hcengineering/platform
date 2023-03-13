@@ -22,6 +22,7 @@ import { contactOperation } from '@hcengineering/model-contact'
 import { coreOperation } from '@hcengineering/model-core'
 import { gmailOperation } from '@hcengineering/model-gmail'
 import { leadOperation } from '@hcengineering/model-lead'
+import { preferenceOperation } from '@hcengineering/model-preference'
 import { notificationOperation } from '@hcengineering/model-notification'
 import { settingOperation } from '@hcengineering/model-setting'
 import { recruitOperation } from '@hcengineering/model-recruit'
@@ -37,10 +38,12 @@ import { demoOperation } from '@hcengineering/model-demo'
 import { hrOperation } from '@hcengineering/model-hr'
 import { documentOperation } from '@hcengineering/model-document'
 import { bitrixOperation } from '@hcengineering/model-bitrix'
+import { calendarOperation } from '@hcengineering/model-calendar'
 
 export const migrateOperations: [string, MigrateOperation][] = [
   ['core', coreOperation],
   ['chunter', chunterOperation],
+  ['calendar', calendarOperation],
   ['demo', demoOperation],
   ['gmail', gmailOperation],
   ['templates', templatesOperation],
@@ -49,6 +52,7 @@ export const migrateOperations: [string, MigrateOperation][] = [
   ['attachment', attachmentOperation],
   ['automation', automationOperation],
   ['lead', leadOperation],
+  ['preference', preferenceOperation],
   ['recruit', recruitOperation],
   ['view', viewOperation],
   ['contact', contactOperation],
