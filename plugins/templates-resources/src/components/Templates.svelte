@@ -187,7 +187,7 @@
       </div>
     </div>
 
-    <div class="ac-column max background-bg-accent template-container">
+    <div class="ac-column max background-accent-bg-color template-container">
       {#if newTemplate}
         <div class="flex-between mr-4">
           <span class="trans-title mb-3">

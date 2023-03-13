@@ -91,7 +91,7 @@
         <div
           style:opacity="0.3"
           style:pointer-events="none"
-          class="abs-full-content background-theme-content-accent h-full w-full flex-center fs-title"
+          class="abs-full-content background-content-accent-color h-full w-full flex-center fs-title"
         />
       {/if}
       {#if !isEditMode}
@@ -140,7 +140,7 @@
         <div
           style:opacity="0.3"
           style:pointer-events="none"
-          class="abs-full-content background-theme-content-accent h-full w-full flex-center fs-title"
+          class="abs-full-content background-content-accent-color h-full w-full flex-center fs-title"
         />
       {/if}
       {#if !isEditMode && !object.cover}

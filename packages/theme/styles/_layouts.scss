@@ -769,25 +769,16 @@ a.no-line {
 .background-body-color { background-color: var(--body-color); }
 .background-accent-bg-color { background-color: var(--accent-bg-color); }
 .background-highlight-select { background-color: var(--highlight-select); }
-
-.background-theme-content-accent { background-color: var(--theme-content-accent-color); }
-.background-theme-bg-color { background-color: var(--theme-bg-color); }
 .background-highlight-red { background-color: var(--highlight-red); }
 .background-button-bg-color { background-color: var(--button-bg-color); }
-.background-button-bg-enabled { background-color: var(--theme-button-bg-enabled); }
 .background-button-noborder-bg-hover { background-color: var(--noborder-bg-hover); }
-.background-menu-divider { background-color: var(--theme-menu-divider); }
-.background-card-divider { background-color: var(--theme-card-divider); }
 .background-primary-color { background-color: var(--primary-button-enabled); }
-.background-bg-accent { background-color: var(--theme-bg-accent-color); }
-.background-bg-focused {background-color: var(--theme-bg-focused-color); }
-.background-bg-accent-normal { background-color: var(--theme-bg-accent-normal); }
+.background-content-accent-color { background-color: var(--accent-color); }
 
-.dark-color { color: var(--dark-color); }
+.dark-color,
+.content-dark-color { color: var(--dark-color); }
 .content-color { color: var(--content-color); }
-.content-trans-color { color: var(--theme-content-trans-color); }
 .content-accent-color { color: var(--accent-color); }
-.content-dark-color { color: var(--theme-content-dark-color); }
 .caption-color { color: var(--caption-color); }
 
 .red-color { color: var(--highlight-red); }
@@ -800,9 +791,8 @@ a.no-line {
 .border-radius-left-1 { border-top-left-radius: 0.25rem; border-bottom-left-radius: 0.25rem; }
 .border-radius-right-1 { border-top-right-radius: 0.25rem; border-bottom-right-radius: 0.25rem; }
 .border-radius-top-1 { border-top-right-radius: 0.25rem; border-top-left-radius: 0.25rem; }
-.border-bg-accent {border: 1px solid var(--theme-bg-accent-color);}
+.border-divider-color {border: 1px solid var(--divider-color);}
 .border-primary-button { border-color: var(--primary-button-border); }
-.border-button-enabled { border: 1px solid var(--theme-button-border-enabled); }
 
 .top-divider { border-top: 1px solid var(--divider-color); }
 .bottom-divider { border-bottom: 1px solid var(--divider-color); }
