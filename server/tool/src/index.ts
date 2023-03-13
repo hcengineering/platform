@@ -17,9 +17,11 @@ import contact from '@hcengineering/contact'
 import core, {
   BackupClient,
   Client as CoreClient,
+  Doc,
   Domain,
   DOMAIN_MODEL,
   DOMAIN_TX,
+  FieldIndex,
   IndexKind,
   Tx,
   WorkspaceId
@@ -198,7 +200,7 @@ async function createUpdateIndexes (connection: CoreClient, db: Db): Promise<voi
   const classes = await connection.findAll(core.class.Class, {})
 
   const hierarchy = connection.getHierarchy()
-  const domains = new Map<Domain, Set<string>>()
+  const domains = new Map<Domain, Set<string | FieldIndex<Doc>>>()
   // Find all domains and indexed fields inside
   for (const c of classes) {
     try {
@@ -207,22 +209,30 @@ async function createUpdateIndexes (connection: CoreClient, db: Db): Promise<voi
         continue
       }
       const attrs = hierarchy.getAllAttributes(c._id)
-      const domainAttrs = domains.get(domain) ?? new Set<string>()
+      const domainAttrs = domains.get(domain) ?? new Set<string | FieldIndex<Doc>>()
       for (const a of attrs.values()) {
         if (a.index !== undefined && a.index === IndexKind.Indexed) {
           domainAttrs.add(a.name)
         }
       }
 
+      // Handle extra configurations
+      if (hierarchy.hasMixin(c, core.mixin.IndexConfiguration)) {
+        const config = hierarchy.as(c, core.mixin.IndexConfiguration)
+        for (const attr of config.indexes) {
+          domainAttrs.add(attr)
+        }
+      }
+
       domains.set(domain, domainAttrs)
     } catch (err: any) {
-      // Ignore, since we have clases without domain.
+      // Ignore, since we have classes without domain.
     }
   }
 
   for (const [d, v] of domains.entries()) {
     const collection = db.collection(d)
-    const bb: string[] = []
+    const bb: (string | FieldIndex<Doc>)[] = []
     for (const vv of v.values()) {
       await collection.createIndex(vv)
       bb.push(vv)

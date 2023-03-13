@@ -166,12 +166,13 @@ export async function createClient (
   }
 
   const conn = await connect(txHandler)
+  const t = Date.now()
   const atxes = await conn.findAll(
     core.class.Tx,
     { objectSpace: core.space.Model },
     { sort: { _id: SortingOrder.Ascending } }
   )
-  console.log('find model', atxes.length)
+  console.log('find model', atxes.length, Date.now() - t)
 
   let systemTx: Tx[] = []
   const userTx: Tx[] = []

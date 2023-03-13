@@ -391,7 +391,7 @@ export interface FullTextSearchContext extends Class<Doc> {
   fullTextSummary?: boolean
   forceIndex?: boolean
 
-  // If defined, will propogate changes to childs with defined set of classes
+  // If defined, will propagate changes to child's with defined set of classes
   propogate?: Ref<Class<Doc>>[]
 }
 
@@ -401,7 +401,7 @@ export interface FullTextSearchContext extends Class<Doc> {
 export interface ConfigurationElement extends Class<Doc> {
   // Title will be presented to owner.
   title: IntlString
-  // Group for groupping.
+  // Group for grouping.
   group: IntlString
 }
 
@@ -410,7 +410,7 @@ export interface ConfigurationElement extends Class<Doc> {
  *
  * Define configuration value configuration for workspace.
  *
- * Configuration is accessble only for owners of workspace and underhood services.
+ * Configuration is accessible only for owners of workspace and under hood services.
  */
 export interface Configuration extends Doc {
   enabled: boolean
@@ -420,3 +420,30 @@ export interface Configuration extends Doc {
  * @public
  */
 export type RelatedDocument = Pick<Doc, '_id' | '_class'>
+
+/**
+ * @public
+ */
+export enum IndexOrder {
+  Ascending = 1,
+  Descending = -1
+}
+
+/**
+ * @public
+ */
+export type FieldIndex<T extends Doc> = {
+  [P in keyof T]?: IndexOrder
+} & {
+  [key: string]: IndexOrder
+}
+
+/**
+ * @public
+ *
+ * Mixin for extra indexing fields.
+ */
+export interface IndexingConfiguration<T extends Doc> extends Class<Doc> {
+  // Define a list of extra index definitions.
+  indexes: (FieldIndex<T> | string)[]
+}

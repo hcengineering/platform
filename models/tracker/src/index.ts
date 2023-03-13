@@ -211,9 +211,11 @@ export class TIssue extends TAttachedDoc implements Issue {
     description!: Markup
 
   @Prop(TypeRef(tracker.class.IssueStatus), tracker.string.Status)
+  @Index(IndexKind.Indexed)
     status!: Ref<IssueStatus>
 
   @Prop(TypeIssuePriority(), tracker.string.Priority)
+  @Index(IndexKind.Indexed)
     priority!: IssuePriority
 
   @Prop(TypeNumber(), tracker.string.Number)
@@ -221,9 +223,11 @@ export class TIssue extends TAttachedDoc implements Issue {
     number!: number
 
   @Prop(TypeRef(contact.class.Employee), tracker.string.Assignee)
+  @Index(IndexKind.Indexed)
     assignee!: Ref<Employee> | null
 
   @Prop(TypeRef(tracker.class.Project), tracker.string.Project)
+  @Index(IndexKind.Indexed)
     project!: Ref<Project> | null
 
   @Prop(Collection(tracker.class.Issue), tracker.string.SubIssues)
@@ -256,6 +260,7 @@ export class TIssue extends TAttachedDoc implements Issue {
     rank!: string
 
   @Prop(TypeRef(tracker.class.Sprint), tracker.string.Sprint)
+  @Index(IndexKind.Indexed)
     sprint!: Ref<Sprint> | null
 
   @Prop(TypeNumber(), tracker.string.Estimation)
@@ -397,6 +402,7 @@ export class TSprint extends TDoc implements Sprint {
     description?: Markup
 
   @Prop(TypeSprintStatus(), tracker.string.Status)
+  @Index(IndexKind.Indexed)
     status!: SprintStatus
 
   @Prop(TypeRef(contact.class.Employee), tracker.string.ProjectLead)
@@ -423,6 +429,7 @@ export class TSprint extends TDoc implements Sprint {
     capacity!: number
 
   @Prop(TypeRef(tracker.class.Project), tracker.string.Project)
+  @Index(IndexKind.Indexed)
     project!: Ref<Project>
 }
 
