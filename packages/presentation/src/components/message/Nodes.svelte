@@ -87,7 +87,6 @@
       {/if}
     {:else if node.nodeName === 'SPAN'}
       <span style={node.getAttribute('style')}>
-        <svelte:self nodes={node.childNodes} />
         {#if node.getAttribute('data-objectclass') !== undefined && node.getAttribute('data-id') !== undefined}
           <Component
             is={view.component.ObjectPresenter}
@@ -100,6 +99,8 @@
               }
             }}
           />
+        {:else}
+          <svelte:self nodes={node.childNodes} />
         {/if}
       </span>
     {:else if node.nodeName === 'TABLE'}
