@@ -38,6 +38,7 @@
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let create: ObjectCreate | undefined = undefined
   export let readonly = false
+  export let preselect: ((itemId: Ref<Doc>, select: () => void) => void) | undefined = undefined
 
   const hierarchy = getClient().getHierarchy()
 
@@ -71,6 +72,7 @@
   on:close
   on:changeContent
   {readonly}
+  {preselect}
 >
   <svelte:fragment slot="item" let:item={person}>
     <div class="flex flex-grow overflow-label">

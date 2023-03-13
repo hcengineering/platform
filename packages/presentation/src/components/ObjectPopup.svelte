@@ -58,11 +58,12 @@
 
   export let create: ObjectCreate | undefined = undefined
   export let readonly = false
+  export let preselect: ((itemId: Ref<Doc>, select: () => void) => void) | undefined = undefined
 
   let search: string = ''
   let objects: Doc[] = []
 
-  $: selectedElements = new Set(selectedObjects)
+  let selectedElements = new Set(selectedObjects)
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
@@ -99,7 +100,7 @@
     } else {
       selectedElements.add(item._id)
     }
-
+    selectedElements = selectedElements
     selectedObjects = Array.from(selectedElements)
 
     dispatch('update', selectedObjects)
@@ -121,7 +122,11 @@
       }
       dispatch(closeAfterSelect ? 'close' : 'update', selected !== undefined ? item : undefined)
     } else {
-      checkSelected(item)
+      if (preselect) {
+        preselect(item._id, () => checkSelected(item))
+      } else {
+        checkSelected(item)
+      }
     }
   }
 

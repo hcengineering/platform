@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact, { Employee } from '@hcengineering/contact'
-  import type { Class, DocumentQuery, Ref } from '@hcengineering/core'
+  import type { Class, DocumentQuery, Ref, Doc } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import { Button, ButtonKind, ButtonSize, Label, showPopup, TooltipAlignment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -36,6 +36,7 @@
   export let labelDirection: TooltipAlignment | undefined = undefined
   export let emptyLabel = presentation.string.Members
   export let readonly: boolean = false
+  export let preselect: ((itemId: Ref<Doc>, select: () => void) => void) | undefined = undefined
 
   let persons: Employee[] = []
 
@@ -57,7 +58,8 @@
         multiSelect: true,
         allowDeselect: false,
         selectedUsers: items,
-        readonly
+        readonly,
+        preselect
       },
       evt.target as HTMLElement,
       undefined,
