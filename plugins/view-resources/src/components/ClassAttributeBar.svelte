@@ -94,7 +94,7 @@
 {/if}
 {#if keys.length}
   <div class="collapsed-container" class:collapsed>
-    <AttributesBar {_class} {object} keys={keys.map((p) => p.key)} {readonly} {draft} on:update />
+    <AttributesBar {_class} {object} {keys} {readonly} {draft} on:update />
   </div>
 {/if}
 

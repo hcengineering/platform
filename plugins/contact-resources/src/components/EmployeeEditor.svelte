@@ -28,6 +28,7 @@
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
+  export let readonly = false
 
   $: _class = type?.to ?? contact.class.Employee
 
@@ -44,6 +45,7 @@
   {size}
   {justify}
   {width}
+  {readonly}
   allowDeselect
   titleDeselect={contact.string.Cancel}
   bind:value
