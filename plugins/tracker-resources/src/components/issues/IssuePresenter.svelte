@@ -24,6 +24,7 @@
   export let onClick: (() => void) | undefined = undefined
   export let withIcon = false
   export let noUnderline = false
+  export let inline = false
 
   // Extra properties
   export let teams: Map<Ref<Team>, Team> | undefined = undefined
@@ -58,9 +59,15 @@
 
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <span class="issuePresenterRoot" class:noPointer={disableClick} class:noUnderline on:click={handleIssueEditorOpened}>
+  <span
+    class="issuePresenterRoot"
+    class:noPointer={disableClick}
+    class:noUnderline
+    class:inline
+    on:click={handleIssueEditorOpened}
+  >
     {#if withIcon}
-      <div class="mr-2" use:tooltip={{ label: tracker.string.Issue }}>
+      <div class="icon" use:tooltip={{ label: tracker.string.Issue }}>
         <Icon icon={tracker.icon.Issues} size={'small'} />
       </div>
     {/if}
@@ -73,17 +80,32 @@
 <style lang="scss">
   .issuePresenterRoot {
     display: flex;
-
+    align-items: center;
+    flex-shrink: 0;
+    max-width: 5rem;
+    color: var(--content-color);
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-
-    flex-shrink: 0;
-    max-width: 5rem;
-    font-size: 0.8125rem;
-    color: var(--content-color);
     cursor: pointer;
 
+    .icon {
+      margin-right: 0.5rem;
+      color: var(--dark-color);
+    }
+
+    &.inline {
+      display: inline-flex;
+      align-items: baseline;
+
+      .icon {
+        transform: translateY(0.2rem);
+      }
+      .select-text {
+        font-weight: 500;
+        color: var(--accent-color);
+      }
+    }
     &.noPointer {
       cursor: default;
     }
@@ -97,6 +119,10 @@
       &:hover {
         color: var(--caption-color);
         text-decoration: underline;
+
+        .icon {
+          color: var(--caption-color);
+        }
       }
     }
 

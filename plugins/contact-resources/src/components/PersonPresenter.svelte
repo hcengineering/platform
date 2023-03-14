@@ -31,6 +31,7 @@
   export let tooltipLabels: PersonLabelTooltip | undefined = undefined
   export let avatarSize: 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' = 'x-small'
   export let onEdit: ((event: MouseEvent) => void) | undefined = undefined
+  export let element: HTMLElement | undefined = undefined
 
   function getTooltip (
     tooltipLabels: PersonLabelTooltip | undefined,
@@ -72,5 +73,6 @@
     {shouldShowName}
     {shouldShowPlaceholder}
     {enlargedText}
+    bind:element
   />
 {/if}

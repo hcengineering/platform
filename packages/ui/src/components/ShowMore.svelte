@@ -88,7 +88,7 @@
     cursor: pointer;
 
     &.outter {
-      bottom: 0.5rem;
+      bottom: 0.25rem;
       transform: translateX(-50%);
     }
     &:hover {
