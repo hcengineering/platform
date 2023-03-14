@@ -77,7 +77,7 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
       if (account._id !== core.account.System) {
         newQuery = {
           ...query,
-          modifiedBy: account
+          modifiedBy: account._id
         }
       }
     }
