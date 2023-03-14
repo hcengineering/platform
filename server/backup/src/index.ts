@@ -28,6 +28,7 @@ import core, {
 import { connect } from '@hcengineering/server-tool'
 import { createGzip } from 'node:zlib'
 import { join } from 'path'
+import { Writable } from 'stream'
 import { extract, Pack, pack } from 'tar-stream'
 import { createGunzip, gunzipSync, gzipSync } from 'zlib'
 import { BackupStorage } from './storage'
@@ -40,6 +41,15 @@ const dataUploadSize = 2 * 1024 * 1024
  * @public
  */
 export interface Snapshot {
+  added: Map<Ref<Doc>, string>
+  updated: Map<Ref<Doc>, string>
+  removed: Ref<Doc>[]
+}
+
+/**
+ * @public
+ */
+export interface SnapshotV6 {
   added: Record<Ref<Doc>, string>
   updated: Record<Ref<Doc>, string>
   removed: Ref<Doc>[]
@@ -49,7 +59,8 @@ export interface Snapshot {
  * @public
  */
 export interface DomainData {
-  snapshot?: string
+  snapshot?: string // 0.6 json snapshot
+  snapshots?: string[]
   storage?: string[]
 
   // Some statistics
@@ -86,8 +97,10 @@ async function loadDigest (
   const result = new Map<Ref<Doc>, string>()
   for (const s of snapshots) {
     const d = s.domains[domain]
+
+    // Load old JSON snapshot
     if (d?.snapshot !== undefined) {
-      const dChanges: Snapshot = JSON.parse(gunzipSync(await storage.loadFile(d.snapshot)).toString())
+      const dChanges: SnapshotV6 = JSON.parse(gunzipSync(await storage.loadFile(d.snapshot)).toString())
       for (const [k, v] of Object.entries(dChanges.added)) {
         result.set(k as Ref<Doc>, v)
       }
@@ -98,12 +111,82 @@ async function loadDigest (
         result.delete(d)
       }
     }
+    for (const snapshot of d?.snapshots ?? []) {
+      try {
+        const dataBlob = gunzipSync(await storage.loadFile(snapshot))
+          .toString()
+          .split('\n')
+        console.log('loaded', snapshot, dataBlob.length)
+
+        const addedCount = parseInt(dataBlob.shift() ?? '0')
+        const added = dataBlob.splice(0, addedCount).map((it) => it.split(';'))
+        for (const [k, v] of added) {
+          result.set(k as Ref<Doc>, v)
+        }
+
+        const updatedCount = parseInt(dataBlob.shift() ?? '0')
+        const updated = dataBlob.splice(0, updatedCount).map((it) => it.split(';'))
+        for (const [k, v] of updated) {
+          result.set(k as Ref<Doc>, v)
+        }
+
+        const removedCount = parseInt(dataBlob.shift() ?? '0')
+        const removed = dataBlob.splice(0, removedCount)
+        for (const k of removed) {
+          result.delete(k as Ref<Doc>)
+        }
+      } catch (err: any) {
+        console.log('digest is broken, will do full backup for', domain)
+      }
+    }
     // Stop if stop date is matched and provided
     if (date !== undefined && date === s.date) {
       break
     }
   }
   return result
+}
+
+async function write (chunk: any, stream: Writable): Promise<void> {
+  let needDrain = false
+  await new Promise((resolve, reject) => {
+    needDrain = !stream.write(chunk, (err) => {
+      if (err != null) {
+        reject(err)
+      } else {
+        resolve(null)
+      }
+    })
+  })
+  if (needDrain) {
+    await new Promise((resolve, reject) => stream.once('drain', resolve))
+  }
+}
+
+async function writeChanges (storage: BackupStorage, snapshot: string, changes: Snapshot): Promise<void> {
+  const snapshotWritable = await storage.write(snapshot)
+  const writable = createGzip()
+  writable.pipe(snapshotWritable)
+
+  // Write size
+  await write(`${changes.added.size}\n`, writable)
+  for (const [k, v] of changes.added.entries()) {
+    await write(`${k};${v}\n`, writable)
+  }
+  await write(`${changes.updated.size}\n`, writable)
+  for (const [k, v] of changes.updated.entries()) {
+    await write(`${k};${v}\n`, writable)
+  }
+  await write(`${changes.removed.length}\n`, writable)
+  for (const k of changes.removed) {
+    await write(`${k}\n`, writable)
+  }
+  writable.end()
+  await new Promise((resolve) =>
+    writable.flush(() => {
+      resolve(null)
+    })
+  )
 }
 
 /**
@@ -122,13 +205,19 @@ export async function backup (transactorUrl: string, workspaceId: WorkspaceId, s
     let backupInfo: BackupInfo = {
       workspace: workspaceId.name,
       productId: workspaceId.productId,
-      version: '0.6',
+      version: '0.6.1',
       snapshots: []
     }
+
+    // Version 0.6.1, format of digest file is changed to
+
     const infoFile = 'backup.json.gz'
 
     if (await storage.exists(infoFile)) {
-      backupInfo = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
+      const backupInfoE = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
+      if (backupInfoE.version === backupInfo.version) {
+        backupInfo = backupInfoE
+      }
     }
 
     backupInfo.workspace = workspaceId.name
@@ -149,21 +238,30 @@ export async function backup (transactorUrl: string, workspaceId: WorkspaceId, s
       console.log('dumping domain...', c)
 
       const changes: Snapshot = {
-        added: {},
-        updated: {},
+        added: new Map(),
+        updated: new Map(),
         removed: []
       }
+
+      const processedChanges: Snapshot = {
+        added: new Map(),
+        updated: new Map(),
+        removed: []
+      }
+
       let changed = 0
       let stIndex = 0
-      const domainInfo: Required<DomainData> = {
-        snapshot: join(backupIndex, `${c}-${snapshot.date}.json.gz`),
+      let snapshotIndex = 0
+      const domainInfo: DomainData = {
+        snapshot: undefined,
+        snapshots: [],
         storage: [],
         added: 0,
         updated: 0,
         removed: 0
       }
 
-      // Comulative digest
+      // Cumulative digest
       const digest = await loadDigest(storage, backupInfo.snapshots, c)
 
       let idx: number | undefined
@@ -174,6 +272,7 @@ export async function backup (transactorUrl: string, workspaceId: WorkspaceId, s
       // update digest tar
       const needRetrieveChunks: Ref<Doc>[][] = []
 
+      let processed = 0
       // Load all digest from collection.
       while (true) {
         try {
@@ -183,16 +282,20 @@ export async function backup (transactorUrl: string, workspaceId: WorkspaceId, s
           const needRetrieve: Ref<Doc>[] = []
 
           for (const [k, v] of Object.entries(it.docs)) {
+            processed++
+            if (processed % 10000 === 0) {
+              console.log('processed', processed, digest.size)
+            }
             const kHash = digest.get(k as Ref<Doc>)
             if (kHash !== undefined) {
               digest.delete(k as Ref<Doc>)
               if (kHash !== v) {
-                changes.updated[k as Ref<Doc>] = v
+                changes.updated.set(k as Ref<Doc>, v)
                 needRetrieve.push(k as Ref<Doc>)
                 changed++
               }
             } else {
-              changes.added[k as Ref<Doc>] = v
+              changes.added.set(k as Ref<Doc>, v)
               needRetrieve.push(k as Ref<Doc>)
               changed++
             }
@@ -235,11 +338,18 @@ export async function backup (transactorUrl: string, workspaceId: WorkspaceId, s
 
           if (changed > 0) {
             snapshot.domains[c] = domainInfo
-            domainInfo.added = Object.keys(changes.added).length
-            domainInfo.updated = Object.keys(changes.updated).length
-            domainInfo.removed = changes.removed.length
-            await storage.writeFile(domainInfo.snapshot, gzipSync(JSON.stringify(changes)))
-            // This will allow to retry in case of critical error.
+            domainInfo.added += processedChanges.added.size
+            domainInfo.updated += processedChanges.updated.size
+            domainInfo.removed += processedChanges.removed.length
+
+            const snapshotFile = join(backupIndex, `${c}-${snapshot.date}-${snapshotIndex}.snp.gz`)
+            snapshotIndex++
+            domainInfo.snapshots = [...(domainInfo.snapshots ?? []), snapshotFile]
+            await writeChanges(storage, snapshotFile, processedChanges)
+
+            processedChanges.added.clear()
+            processedChanges.removed = []
+            processedChanges.updated.clear()
             await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2)))
           }
         }
@@ -248,7 +358,7 @@ export async function backup (transactorUrl: string, workspaceId: WorkspaceId, s
           stIndex++
           const storageFile = join(backupIndex, `${c}-data-${snapshot.date}-${stIndex}.tar.gz`)
           console.log('storing from domain', c, storageFile)
-          domainInfo.storage.push(storageFile)
+          domainInfo.storage = [...(domainInfo.storage ?? []), storageFile]
           const dataStream = await storage.write(storageFile)
           const storageZip = createGzip()
 
@@ -256,7 +366,20 @@ export async function backup (transactorUrl: string, workspaceId: WorkspaceId, s
           storageZip.pipe(dataStream)
         }
 
-        for (const d of docs) {
+        while (docs.length > 0) {
+          const d = docs.shift()
+          if (d === undefined) {
+            break
+          }
+
+          // Move processed document to processedChanges
+          if (changes.added.has(d._id)) {
+            processedChanges.added.set(d._id, changes.added.get(d._id) ?? '')
+            changes.added.delete(d._id)
+          } else {
+            processedChanges.updated.set(d._id, changes.updated.get(d._id) ?? '')
+            changes.updated.delete(d._id)
+          }
           if (d._class === core.class.BlobData) {
             const blob = d as BlobData
             const data = Buffer.from(blob.base64Data, 'base64')
@@ -279,17 +402,25 @@ export async function backup (transactorUrl: string, workspaceId: WorkspaceId, s
           }
         }
       }
-      changes.removed = Array.from(digest.keys())
-      if (changes.removed.length > 0) {
+      processedChanges.removed = Array.from(digest.keys())
+      if (processedChanges.removed.length > 0) {
         changed++
       }
 
       if (changed > 0) {
         snapshot.domains[c] = domainInfo
-        domainInfo.added = Object.keys(changes.added).length
-        domainInfo.updated = Object.keys(changes.updated).length
-        domainInfo.removed = changes.removed.length
-        await storage.writeFile(domainInfo.snapshot, gzipSync(JSON.stringify(changes)))
+        domainInfo.added += processedChanges.added.size
+        domainInfo.updated += processedChanges.updated.size
+        domainInfo.removed += processedChanges.removed.length
+
+        const snapshotFile = join(backupIndex, `${c}-${snapshot.date}-${snapshotIndex}.snp.gz`)
+        snapshotIndex++
+        domainInfo.snapshots = [...(domainInfo.snapshots ?? []), snapshotFile]
+        await writeChanges(storage, snapshotFile, processedChanges)
+
+        processedChanges.added.clear()
+        processedChanges.removed = []
+        processedChanges.updated.clear()
         _pack?.finalize()
         // This will allow to retry in case of critical error.
         await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2)))

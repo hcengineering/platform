@@ -106,7 +106,7 @@ class SessionManager {
       // try restore session
       const existingSession = workspace.sessions.find((it) => it[0].sessionId === sessionId)
       if (existingSession !== undefined) {
-        if (LOGGING_ENABLED) console.log('found existing session', existingSession)
+        if (LOGGING_ENABLED) console.log('found existing session', token.email, existingSession[0].sessionId)
         // Update websocket
         clearTimeout(existingSession[0].closeTimeout)
         existingSession[0].closeTimeout = undefined
