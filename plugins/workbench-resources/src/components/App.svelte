@@ -16,7 +16,9 @@
   import type { IntlString, Asset } from '@hcengineering/platform'
   import type { AnySvelteComponent } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { Icon, tooltip, IconColStar } from '@hcengineering/ui'
+  import { Icon, tooltip } from '@hcengineering/ui'
+  import PreviewOn from './icons/PreviewOn.svelte'
+  import PreviewOff from './icons/PreviewOff.svelte'
 
   export let label: IntlString
   export let icon: Asset | AnySvelteComponent
@@ -43,11 +45,11 @@
         dispatch('visible', !hidden)
       }}
     >
-      <IconColStar
-        size={'small'}
-        fill={hidden ? 'var(--warning-color)' : 'var(--activity-status-busy)'}
-        border={'var(--button-border-hover)'}
-      />
+      {#if hidden}
+        <PreviewOff size={'small'} />
+      {:else}
+        <PreviewOn size={'small'} />
+      {/if}
     </div>
   {/if}
 </button>
@@ -125,6 +127,7 @@
     bottom: 0.25rem;
     height: 1rem;
     width: 1rem;
+    color: var(--activity-status-busy);
     transform-origin: center center;
     transform: scale(1);
     opacity: 0.8;
@@ -136,6 +139,7 @@
       opacity: 1;
     }
     &.hidden {
+      color: var(--warning-color);
       transform: scale(0.7);
       opacity: 0.5;
 

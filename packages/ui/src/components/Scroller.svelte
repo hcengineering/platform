@@ -19,6 +19,8 @@
   import { closeTooltip, tooltipstore } from '../tooltips'
   import type { FadeOptions } from '../types'
   import { defaultSP } from '../types'
+  import IconUpOutline from './icons/UpOutline.svelte'
+  import IconDownOutline from './icons/DownOutline.svelte'
 
   export let padding: string | undefined = undefined
   export let autoscroll: boolean = false
@@ -28,22 +30,24 @@
   export let horizontal: boolean = false
   export let contentDirection: 'vertical' | 'vertical-reverse' | 'horizontal' = 'vertical'
   export let noStretch: boolean = autoscroll
+  export let buttons: boolean = false
   export let divScroll: HTMLElement | undefined = undefined
 
   export function scroll (top: number, left?: number, behavior: 'auto' | 'smooth' = 'auto') {
-    if (divScroll && divHScroll) {
+    if (divScroll) {
       if (top !== 0) divScroll.scroll({ top, left: 0, behavior })
-      if (left !== 0 || left !== undefined) divHScroll.scroll({ top: 0, left, behavior })
+      if (left !== 0 || left !== undefined) divScroll.scroll({ top: 0, left, behavior })
     }
   }
   export function scrollBy (top: number, left?: number, behavior: 'auto' | 'smooth' = 'auto') {
-    if (divScroll && divHScroll) {
+    if (divScroll) {
       if (top !== 0) divScroll.scrollBy({ top, left: 0, behavior })
-      if (left !== 0 || left !== undefined) divHScroll.scrollBy({ top: 0, left, behavior })
+      if (left !== 0 || left !== undefined) divScroll.scrollBy({ top: 0, left, behavior })
     }
   }
 
   const dispatch = createEventDispatcher()
+  const stepScroll = 52
 
   let mask: 'top' | 'bottom' | 'both' | 'none' = 'none'
   let topCrop: 'top' | 'bottom' | 'full' | 'none' = 'none'
@@ -54,6 +58,7 @@
   let divBox: HTMLElement
   let divBar: HTMLElement
   let divBarH: HTMLElement
+  let divScrollContainer: HTMLElement
   let isScrolling: 'vertical' | 'horizontal' | false = false
   let dXY: number
   let belowContent: number | undefined = undefined
@@ -62,6 +67,7 @@
   let rightContent: number | undefined = undefined
   let scrolling: boolean = autoscroll
   let firstScroll: boolean = autoscroll
+  let orientir: 'vertical' | 'horizontal' = 'vertical'
 
   let timer: number
   let timerH: number
@@ -69,8 +75,9 @@
   const inter = new Set<Element>()
 
   $: fz = $themeOptions.fontSize
-  $: shiftTop = fade.offset?.top ? (fade.multipler?.top ?? 0) * fz : 0
-  $: shiftBottom = fade.offset?.bottom ? fade.multipler?.bottom! * fz : 0
+  $: shiftTop = fade.multipler?.top ? fade.multipler?.top * fz : 0
+  $: shiftBottom = fade.multipler?.bottom ? fade.multipler?.bottom * fz : 0
+  $: orientir = contentDirection === 'horizontal' ? 'horizontal' : 'vertical'
 
   const checkBar = (): void => {
     if (divBar && divScroll) {
@@ -78,7 +85,7 @@
       const scrollH = divScroll.scrollHeight
       const proc = scrollH / trackH
       divBar.style.height = divScroll.clientHeight / proc + 'px'
-      divBar.style.top = divScroll.scrollTop / proc + shiftTop + shiftBottom + 2 + 'px'
+      divBar.style.top = divScroll.scrollTop / proc + shiftTop + 2 + 'px'
       if (mask === 'none') divBar.style.visibility = 'hidden'
       else {
         divBar.style.visibility = 'visible'
@@ -260,7 +267,7 @@
   const checkIntersectionFade = () => {
     topCrop = 'none'
     topCropValue = 0
-    if (!fade.offset?.top || !divScroll) return
+    if (!fade.multipler?.top || !divScroll) return
     const offset = divScroll.getBoundingClientRect().top
     inter.forEach((el) => {
       const rect = el.getBoundingClientRect()
@@ -320,11 +327,24 @@
 
   let divHeight: number
   const _resize = (): void => checkFade()
+
+  const tapScroll = (n: number, dir: 'up' | 'down') => {
+    if (divScroll) {
+      if (orientir === 'horizontal') divScroll.scrollBy({ top: 0, left: dir === 'up' ? -n : n, behavior: 'smooth' })
+      else divScroll.scrollBy({ top: dir === 'up' ? -n : n, left: 0, behavior: 'smooth' })
+    }
+  }
 </script>
 
 <svelte:window on:resize={_resize} />
 
-<div class="scroller-container {invertScroll ? 'invert' : 'normal'}">
+<div
+  bind:this={divScrollContainer}
+  class="scroller-container {orientir} {invertScroll ? 'invert' : 'normal'}"
+  class:buttons
+  style:--scroller-header-height={`${fade.multipler?.top ?? 0.125}rem`}
+  style:--scroller-footer-height={`${fade.multipler?.bottom ?? 0.125}rem`}
+>
   <div bind:this={divHScroll} class="horizontalBox flex-col flex-shrink">
     <div
       bind:this={divScroll}
@@ -362,6 +382,32 @@
       </div>
     </div>
   </div>
+  {#if buttons}
+    <button
+      class="scrollButton top {orientir}"
+      style:visibility={(orientir === 'vertical' && (mask === 'top' || mask === 'both')) ||
+      (orientir === 'horizontal' && (maskH === 'right' || maskH === 'both'))
+        ? 'visible'
+        : 'hidden'}
+      on:click|preventDefault|stopPropagation={() => tapScroll(stepScroll, 'up')}
+    >
+      <div style:transform={orientir === 'horizontal' ? 'rotate(-90deg)' : ''}>
+        <IconUpOutline size={'medium'} />
+      </div>
+    </button>
+    <button
+      class="scrollButton bottom {orientir}"
+      style:visibility={(orientir === 'vertical' && (mask === 'bottom' || mask === 'both')) ||
+      (orientir === 'horizontal' && (maskH === 'left' || maskH === 'both'))
+        ? 'visible'
+        : 'hidden'}
+      on:click|preventDefault|stopPropagation={() => tapScroll(stepScroll, 'down')}
+    >
+      <div style:transform={orientir === 'horizontal' ? 'rotate(-90deg)' : ''}>
+        <IconDownOutline size={'medium'} />
+      </div>
+    </button>
+  {/if}
   <div
     class="bar"
     class:hovered={isScrolling === 'vertical'}
@@ -372,8 +418,8 @@
   <div
     class="track"
     class:hovered={isScrolling === 'vertical'}
-    class:fadeTopOffset={fade.offset?.top}
-    class:fadeBottomOffset={fade.offset?.bottom}
+    class:fadeTopOffset={fade.multipler?.top}
+    class:fadeBottomOffset={fade.multipler?.bottom}
   />
   {#if horizontal}
     <div
@@ -392,6 +438,61 @@
 </div>
 
 <style lang="scss">
+  .scrollButton {
+    position: absolute;
+    color: var(--caption-color);
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    visibility: hidden;
+
+    transform-origin: center;
+    transition-property: opacity, transform;
+    transition-timing-function: var(--timing-main);
+    transition-duration: 0.1s;
+    transform: scale(0.8);
+    opacity: 0.1;
+
+    &:hover,
+    &:focus {
+      transform: scale(1);
+      opacity: 0.8;
+    }
+    &:hover {
+      background-color: var(--button-bg-color);
+    }
+    &:focus {
+      border-color: var(--primary-edit-border-color);
+    }
+    &.vertical {
+      width: 2rem;
+      height: 1.25rem;
+    }
+    &.horizontal {
+      width: 1.25rem;
+      height: 2rem;
+    }
+    &.top.vertical {
+      top: calc(var(--scroller-header-height) - 2rem);
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    &.top.horizontal {
+      top: 50%;
+      left: -2rem;
+      transform: translateY(-50%);
+    }
+    &.bottom.vertical {
+      right: 50%;
+      bottom: calc(var(--scroller-footer-height) - 2rem);
+      transform: translateX(50%);
+    }
+    &.bottom.horizontal {
+      right: -2rem;
+      bottom: 50%;
+      transform: translateY(50%);
+    }
+  }
   .overflowXauto {
     overflow-x: auto;
   }
@@ -408,6 +509,12 @@
     min-width: 0;
     min-height: 0;
 
+    &.buttons.vertical {
+      margin: 1.5rem 0;
+    }
+    &.buttons.horizontal {
+      margin: 0 1.5rem;
+    }
     &.normal {
       .track,
       .bar {
@@ -415,7 +522,7 @@
       }
       .track-horizontal,
       .bar-horizontal {
-        bottom: 2px;
+        bottom: var(--scroller-footer-height);
       }
     }
     &.invert {
@@ -476,11 +583,11 @@
       top: var(--scroller-header-height);
     }
     &.fadeBottomOffset {
-      top: var(--scroller-footer-height);
+      bottom: var(--scroller-footer-height);
     }
   }
   .track-horizontal {
-    bottom: 2px;
+    bottom: var(--scroller-footer-height);
     left: 2px;
     right: 2px;
     height: 8px;
@@ -529,7 +636,7 @@
   }
   .bar-horizontal {
     left: 2px;
-    bottom: 2px;
+    bottom: var(--scroller-footer-height);
     height: 8px;
     min-width: 2rem;
     max-width: calc(100% - 12px);

@@ -8,7 +8,8 @@
     Label,
     ListView,
     navigate,
-    Scroller
+    Scroller,
+    topSP
   } from '@hcengineering/ui'
   import setting, { settingId } from '@hcengineering/setting'
   import view, { Action, ActionCategory } from '@hcengineering/view'
@@ -134,7 +135,7 @@
     {/each}
   {:else}
     <!-- Keyboard shortcuts -->
-    <Scroller padding={'0 .5rem'} fade={{ offset: { top: true }, multipler: { top: 2.5, bottom: 0 } }}>
+    <Scroller padding={'0 .5rem'} fade={topSP}>
       <ListView count={actions.length} noScroll>
         <svelte:fragment slot="category" let:item>
           {@const action = actions[item]}

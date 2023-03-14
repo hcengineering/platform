@@ -56,9 +56,11 @@
   import NavHeader from './NavHeader.svelte'
   import Navigator from './Navigator.svelte'
   import SpaceView from './SpaceView.svelte'
+  import Settings from './icons/Settings.svelte'
 
   export let client: Client
   let contentPanel: HTMLElement
+  let shownMenu: boolean = false
 
   const { setTheme } = getContext('theme') as any
   setClient(client)
@@ -442,8 +444,12 @@
           mini={appsMini}
           notify={false}
         />
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <div class="thinButton {appsDirection}" class:shownMenu on:click={() => (shownMenu = !shownMenu)}>
+          <Settings size={'small'} />
+        </div>
       </div>
-      <Applications {apps} active={currentApplication?._id} direction={appsDirection} />
+      <Applications {apps} active={currentApplication?._id} direction={appsDirection} bind:shown={shownMenu} />
       <div class="info-box {appsDirection}" class:vertical-mobile={appsDirection === 'vertical' && appsMini}>
         <AppItem
           icon={request.icon.Requests}
@@ -473,6 +479,7 @@
           notify={hasNotification}
         />
         <div class="flex-center" class:mt-2={appsDirection === 'vertical'} class:ml-2={appsDirection === 'horizontal'}>
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
             id="profile-button"
             class="cursor-pointer"
@@ -590,12 +597,14 @@
   }
   .hamburger-container {
     display: flex;
+    align-items: center;
     flex-shrink: 0;
 
     &.portrait {
       margin-left: 0.375rem;
     }
     &.landscape {
+      flex-direction: column;
       margin-top: 0.25rem;
     }
     &.mini {
@@ -662,6 +671,49 @@
       &::before {
         transition-duration: 0;
         border-left: 2px solid var(--primary-bg-color);
+      }
+    }
+  }
+
+  .thinButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0.25rem;
+    background-color: transparent;
+    border-radius: 0.25rem;
+    opacity: 0.2;
+    cursor: pointer;
+
+    transition-property: opacity, color, background-color;
+    transition-timing-function: var(--timing-main);
+    transition-duration: 0.1s;
+
+    &.vertical {
+      margin-top: 0.5rem;
+      width: 2.5rem;
+    }
+    &.horizontal {
+      margin-left: 0.5rem;
+      height: 2.5rem;
+    }
+
+    &:hover {
+      color: var(--accent-color);
+      background-color: var(--accent-bg-color);
+      opacity: 0.9;
+    }
+
+    &.shownMenu {
+      color: var(--accent-color);
+      background-color: var(--button-bg-color);
+      opacity: 0.8;
+
+      &:hover {
+        color: var(--caption-color);
+        background-color: var(--button-bg-hover);
+        opacity: 1;
       }
     }
   }
