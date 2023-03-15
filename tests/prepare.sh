@@ -3,7 +3,6 @@
 docker-compose -p sanity kill
 docker-compose -p sanity down --volumes
 docker-compose -p sanity up -d --force-recreate --renew-anon-volumes
-./setup-elastic.sh 9201
 
 # Creae workspace record in accounts
 ./tool.sh create-workspace sanity-ws -o SanityTest

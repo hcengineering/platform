@@ -80,8 +80,18 @@ import { textEditorId } from '@hcengineering/text-editor'
 
 import { setMetadata } from '@hcengineering/platform'
 
+interface Config {
+  ACCOUNTS_URL: string
+  UPLOAD_URL: string
+  MODEL_VERSION: string
+  COLLABORATOR_URL: string
+  REKONI_URL: string
+  TELEGRAM_URL: string
+  GMAIL_URL: string
+}
+
 export async function configurePlatform() {
-  const config = await (await fetch('/config.json')).json()
+  const config: Config = await (await fetch('/config.json')).json()
   console.log('loading configuration', config)
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
   setMetadata(login.metadata.UploadUrl, config.UPLOAD_URL)
@@ -92,12 +102,11 @@ export async function configurePlatform() {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)
     setMetadata(presentation.metadata.RequiredVersion, config.MODEL_VERSION)
   }
-  setMetadata(login.metadata.TelegramUrl, process.env.TELEGRAM_URL ?? 'http://localhost:8086')
-  setMetadata(login.metadata.GmailUrl, process.env.GMAIL_URL ?? 'http://localhost:8087')
+  setMetadata(login.metadata.TelegramUrl, config.TELEGRAM_URL ?? 'http://localhost:8086')
+  setMetadata(login.metadata.GmailUrl, config.GMAIL_URL ?? 'http://localhost:8087')
   setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
-  setMetadata(login.metadata.FrontUrl, process.env.FRONT_URL)
 
-  setMetadata(rekoni.metadata.RekoniUrl, process.env.REKONI_URL)
+  setMetadata(rekoni.metadata.RekoniUrl, config.REKONI_URL)
 
   setMetadata(uiPlugin.metadata.DefaultApplication, login.component.LoginApp)
 

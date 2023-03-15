@@ -89,7 +89,8 @@ services:
       - ACCOUNTS_URL=http://localhost:3000
       - REKONI_URL=http://localhost:4004
       - COLLABORATOR_URL=ws://localhost:3078
-      - FRONT_URL=http://front:8080
+      - GMAIL_URL=http://localhost:8088
+      - TELEGRAM_URL=http://localhost:8086
       - UPLOAD_URL=/files
       - TRANSACTOR_URL=ws://localhost:3333
       - ELASTIC_URL=http://elastic:9200

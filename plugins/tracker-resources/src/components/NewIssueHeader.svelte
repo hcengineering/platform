@@ -69,7 +69,6 @@
       </div>
     </Button>
   </div>
-  <Button icon={tracker.icon.Magnifier} on:click={async () => {}} />
 </div>
 
 <style lang="scss">

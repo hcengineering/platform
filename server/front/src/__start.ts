@@ -77,6 +77,24 @@ if (collaboratorUrl === undefined) {
   process.exit(1)
 }
 
+const gmailUrl = process.env.GMAIL_URL
+if (gmailUrl === undefined) {
+  console.error('please provide gmail url')
+  process.exit(1)
+}
+
+const telegramUrl = process.env.TELEGRAM_URL
+if (telegramUrl === undefined) {
+  console.error('please provide telegram url')
+  process.exit(1)
+}
+
+const rekoniUrl = process.env.REKONI_URL
+if (rekoniUrl === undefined) {
+  console.error('please provide rekoni url')
+  process.exit(1)
+}
+
 const modelVersion = process.env.MODEL_VERSION
 if (modelVersion === undefined) {
   console.error('please provide model version requirement')
@@ -91,7 +109,18 @@ if (serverSecret === undefined) {
 
 setMetadata(serverToken.metadata.Secret, serverSecret)
 
-const config = { transactorEndpoint, elasticUrl, minio, accountsUrl, uploadUrl, modelVersion, collaboratorUrl }
+const config = {
+  transactorEndpoint,
+  elasticUrl,
+  minio,
+  accountsUrl,
+  uploadUrl,
+  modelVersion,
+  collaboratorUrl,
+  gmailUrl,
+  telegramUrl,
+  rekoniUrl
+}
 console.log('Starting Front service with', config)
 const shutdown = start(config, SERVER_PORT)
 
