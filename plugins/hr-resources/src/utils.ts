@@ -226,7 +226,7 @@ export function tableToCSV (tableId: string, separator = ','): string {
   return csv.join('\n')
 }
 
-export function getDates (
+export function getHolidayDatesForEmployee (
   departmentMap: Map<Ref<Staff>, Department[]>,
   employee: Ref<Staff>,
   holidays: Map<Ref<Department>, Date[]>

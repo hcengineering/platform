@@ -24,7 +24,7 @@
   import hr from '../../plugin'
   import {
     EmployeeReports,
-    getDates,
+    getHolidayDatesForEmployee,
     getEndDate,
     getMonth,
     getRequestDates,
@@ -59,7 +59,7 @@
       types,
       month.getFullYear(),
       month.getMonth(),
-      getDates(staffDepartmentMap, staff._id, holidays)
+      getHolidayDatesForEmployee(staffDepartmentMap, staff._id, holidays)
     )
     return ds.join(' ')
   }
@@ -118,7 +118,7 @@
           props: {
             month: startDate ?? getStartDate(currentDate.getFullYear(), currentDate.getMonth()),
             display: (req: Request[], staff: Staff) => {
-              const dates = getDates(staffDepartmentMap, staff._id, holidays)
+              const dates = getHolidayDatesForEmployee(staffDepartmentMap, staff._id, holidays)
               const total = getTotal(req, startDate, endDate, types, dates)
               return wDays + total - dates.length
             },
@@ -131,14 +131,14 @@
               startDate,
               endDate,
               types,
-              getDates(staffDepartmentMap, b._id as Ref<Staff>, holidays)
+              getHolidayDatesForEmployee(staffDepartmentMap, b._id as Ref<Staff>, holidays)
             ) -
             getTotal(
               getStatRequests(a._id as Ref<Staff>, startDate),
               startDate,
               endDate,
               types,
-              getDates(staffDepartmentMap, a._id as Ref<Staff>, holidays)
+              getHolidayDatesForEmployee(staffDepartmentMap, a._id as Ref<Staff>, holidays)
             )
         }
       ],
@@ -164,12 +164,12 @@
           presenter: ReportPresenter,
           props: {
             month: startDate ?? getStartDate(currentDate.getFullYear(), currentDate.getMonth()),
-            display: (staff: Staff) => getDates(staffDepartmentMap, staff._id, holidays).length
+            display: (staff: Staff) => getHolidayDatesForEmployee(staffDepartmentMap, staff._id, holidays).length
           },
           sortingKey: '@wdCountPublicHolidays',
           sortingFunction: (a: Doc, b: Doc) =>
-            getDates(staffDepartmentMap, b._id as Ref<Staff>, holidays).length -
-            getDates(staffDepartmentMap, a._id as Ref<Staff>, holidays).length
+            getHolidayDatesForEmployee(staffDepartmentMap, b._id as Ref<Staff>, holidays).length -
+            getHolidayDatesForEmployee(staffDepartmentMap, a._id as Ref<Staff>, holidays).length
         }
       ],
       [
@@ -209,7 +209,7 @@
           props: {
             month: startDate ?? getMonth(currentDate, currentDate.getMonth()),
             display: (req: Request[], staff: Staff) =>
-              getTotal(req, startDate, endDate, types, getDates(staffDepartmentMap, staff._id, holidays), (a) =>
+              getTotal(req, startDate, endDate, types, getHolidayDatesForEmployee(staffDepartmentMap, staff._id, holidays), (a) =>
                 a < 0 ? Math.abs(a) : 0
               ),
             getStatRequests
@@ -221,7 +221,7 @@
               startDate,
               endDate,
               types,
-              getDates(staffDepartmentMap, b._id as Ref<Staff>, holidays),
+              getHolidayDatesForEmployee(staffDepartmentMap, b._id as Ref<Staff>, holidays),
               (a) => (a < 0 ? Math.abs(a) : 0)
             ) -
             getTotal(
@@ -229,7 +229,7 @@
               startDate,
               endDate,
               types,
-              getDates(staffDepartmentMap, a._id as Ref<Staff>, holidays),
+              getHolidayDatesForEmployee(staffDepartmentMap, a._id as Ref<Staff>, holidays),
               (a) => (a < 0 ? Math.abs(a) : 0)
             )
         }
@@ -243,7 +243,7 @@
           props: {
             month: startDate ?? getMonth(currentDate, currentDate.getMonth()),
             display: (req: Request[], staff: Staff) =>
-              getTotal(req, startDate, endDate, types, getDates(staffDepartmentMap, staff._id, holidays), (a) =>
+              getTotal(req, startDate, endDate, types, getHolidayDatesForEmployee(staffDepartmentMap, staff._id, holidays), (a) =>
                 a > 0 ? Math.abs(a) : 0
               ),
             getStatRequests
@@ -255,7 +255,7 @@
               startDate,
               endDate,
               types,
-              getDates(staffDepartmentMap, b._id as Ref<Staff>, holidays),
+              getHolidayDatesForEmployee(staffDepartmentMap, b._id as Ref<Staff>, holidays),
               (a) => (a > 0 ? Math.abs(a) : 0)
             ) -
             getTotal(
@@ -263,7 +263,7 @@
               startDate,
               endDate,
               types,
-              getDates(staffDepartmentMap, a._id as Ref<Staff>, holidays),
+              getHolidayDatesForEmployee(staffDepartmentMap, a._id as Ref<Staff>, holidays),
               (a) => (a > 0 ? Math.abs(a) : 0)
             )
         }
@@ -277,7 +277,7 @@
           props: {
             month: startDate ?? getMonth(currentDate, currentDate.getMonth()),
             display: async (staff: Staff, month: Date) =>
-              getDates(staffDepartmentMap, staff._id, await getHolidays(month))
+              getHolidayDatesForEmployee(staffDepartmentMap, staff._id, await getHolidays(month))
                 .map((date) => date.getDate())
                 .join(' ')
           }

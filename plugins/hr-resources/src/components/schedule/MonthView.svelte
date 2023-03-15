@@ -35,7 +35,7 @@
     tooltip
   } from '@hcengineering/ui'
   import hr from '../../plugin'
-  import { EmployeeReports, getDates, getRequests, getTotal, isHoliday } from '../../utils'
+  import { EmployeeReports, getHolidayDatesForEmployee, getRequests, getTotal, isHoliday } from '../../utils'
   import CreateRequest from '../CreateRequest.svelte'
   import RequestsPopup from '../RequestsPopup.svelte'
   import ScheduleRequests from '../ScheduleRequests.svelte'
@@ -85,7 +85,7 @@
     if (requests.length === 0) return
     if (
       day &&
-      (isWeekend(day) || (holidays?.size > 0 && isHoliday(getDates(staffDepartmentMap, staff._id, holidays), day))) &&
+      (isWeekend(day) || (holidays?.size > 0 && isHoliday(getHolidayDatesForEmployee(staffDepartmentMap, staff._id, holidays), day))) &&
       requests.some((req) => noWeekendHolidayType.includes(req.type))
     ) {
       return
@@ -178,7 +178,7 @@
               class:firstLine={row === 0}
               class:lastLine={row === departmentStaff.length - 1}
             >
-              {getTotal(requests, startDate, endDate, types, getDates(staffDepartmentMap, employee._id, holidays))}
+              {getTotal(requests, startDate, endDate, types, getHolidayDatesForEmployee(staffDepartmentMap, employee._id, holidays))}
             </td>
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <td
@@ -203,8 +203,8 @@
                 <td
                   class="w-9 max-w-9 min-w-9"
                   class:today={areDatesEqual(todayDate, day)}
-                  class:holiday={isHoliday(getDates(staffDepartmentMap, employee._id, holidays), day)}
-                  class:weekend={isWeekend(day) || isHoliday(getDates(staffDepartmentMap, employee._id, holidays), day)}
+                  class:holiday={isHoliday(getHolidayDatesForEmployee(staffDepartmentMap, employee._id, holidays), day)}
+                  class:weekend={isWeekend(day) || isHoliday(getHolidayDatesForEmployee(staffDepartmentMap, employee._id, holidays), day)}
                   class:cursor-pointer={editable}
                   class:hovered={i === hoveredIndex}
                   class:firstLine={row === 0}

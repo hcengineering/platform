@@ -19,7 +19,7 @@
   import type { Request, RequestType, Staff } from '@hcengineering/hr'
   import { Label, LabelAndProps, Scroller, tableHRscheduleY, tooltip } from '@hcengineering/ui'
   import hr from '../../plugin'
-  import { getDates, getEndDate, getRequests, getStartDate, getTotal, isToday, weekDays } from '../../utils'
+  import { getHolidayDatesForEmployee, getEndDate, getRequests, getStartDate, getTotal, isToday, weekDays } from '../../utils'
   import RequestsPopup from '../RequestsPopup.svelte'
   import { Department } from '@hcengineering/hr'
 
@@ -109,7 +109,7 @@
                       startDate,
                       endDate,
                       types,
-                      getDates(staffDepartmentMap, employee._id, holidays)
+                      getHolidayDatesForEmployee(staffDepartmentMap, employee._id, holidays)
                     )}
                   </div>
                 </td>
