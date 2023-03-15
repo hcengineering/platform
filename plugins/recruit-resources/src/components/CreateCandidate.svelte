@@ -37,7 +37,6 @@
     createQuery,
     EditableAvatar,
     getClient,
-    getFileUrl,
     getUserDraft,
     KeyedAttribute,
     MessageBox,
@@ -348,13 +347,11 @@
     }
   }
 
-  async function recognize (contentType: string): Promise<void> {
+  async function recognize (file: File): Promise<void> {
     const token = getMetadata(login.metadata.LoginToken) ?? ''
-    const frontUrl = getMetadata(login.metadata.FrontUrl) ?? ''
-    const fileUrl = frontUrl + getFileUrl(resume.uuid)
 
     try {
-      const doc = await recognizeDocument(token, fileUrl, contentType)
+      const doc = await recognizeDocument(token, file)
 
       if (isUndef(object.title) && doc.title !== undefined) {
         object.title = doc.title
@@ -462,7 +459,7 @@
       resume.type = file.type
       resume.lastModified = file.lastModified
 
-      await recognize(file.type)
+      await recognize(file)
     } catch (err: any) {
       setPlatformStatus(unknownError(err))
     } finally {

@@ -84,6 +84,9 @@ services:
       - UPLOAD_URL=/files
       - TRANSACTOR_URL=ws://localhost:3334
       - ELASTIC_URL=http://elastic:9200
+      - GMAIL_URL=http://localhost:8088
+      - TELEGRAM_URL=http://localhost:8086
+      - REKONI_URL=http://rekoni:4005
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
@@ -112,7 +115,7 @@ services:
     image: hardcoreeng/rekoni-service
     restart: on-failure
     ports:
-      - 4004:4005
+      - 4005:4004
     deploy:
       resources:
         limits:

@@ -28,8 +28,6 @@ spec:
             value: /files
           - name: TRANSACTOR_URL
             value: wss://transactor.hc.engineering/
-          - name: FRONT_URL
-            value: https://front.hc.engineering/
           - name: GMAIL_URL
             value: gmail.hc.engineering
           - name: ELASTIC_URL

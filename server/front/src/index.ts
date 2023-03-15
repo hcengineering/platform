@@ -137,6 +137,9 @@ export function start (
     uploadUrl: string
     modelVersion: string
     collaboratorUrl: string
+    rekoniUrl: string
+    telegramUrl: string
+    gmailUrl: string
   },
   port: number
 ): () => void {
@@ -168,7 +171,10 @@ export function start (
       ACCOUNTS_URL: config.accountsUrl,
       UPLOAD_URL: config.uploadUrl,
       MODEL_VERSION: config.modelVersion,
-      COLLABORATOR_URL: config.collaboratorUrl
+      COLLABORATOR_URL: config.collaboratorUrl,
+      REKONI_URL: config.rekoniUrl,
+      TELEGRAM_URL: config.telegramUrl,
+      GMAIL_URL: config.gmailUrl
     })
   })
 

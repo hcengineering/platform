@@ -36,6 +36,12 @@ export function disableLogging (): void {
   LOGGING_ENABLED = false
 }
 
+function timeoutPromise (time: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, time)
+  })
+}
+
 interface Workspace {
   id: string
   pipeline: Promise<Pipeline>
@@ -203,20 +209,22 @@ class SessionManager {
         const workspaceId = workspace.id
         if (LOGGING_ENABLED) console.log('no sessions for workspace', wsid, workspaceId)
 
-        async function waitAndClose (workspace: Workspace): Promise<void> {
-          const pipeline = await workspace.pipeline
-          await pipeline.close()
-        }
-        workspace.closing = waitAndClose(workspace).then(() => {
-          if (this.workspaces.get(wsid)?.id === workspaceId) {
+        const waitAndClose = async (workspace: Workspace): Promise<void> => {
+          try {
+            const pl = await workspace.pipeline
+            await Promise.race([pl, timeoutPromise(60000)])
+            await Promise.race([pl.close(), timeoutPromise(60000)])
+
+            if (this.workspaces.get(wsid)?.id === workspaceId) {
+              this.workspaces.delete(wsid)
+            }
+            console.log('Closed workspace', workspaceId)
+          } catch (err: any) {
             this.workspaces.delete(wsid)
+            console.error(err)
           }
-          console.log('Closed workspace', workspaceId)
-        })
-        workspace.closing.catch((err) => {
-          this.workspaces.delete(wsid)
-          console.error(err)
-        })
+        }
+        workspace.closing = waitAndClose(workspace)
         await workspace.closing
       }
     }
@@ -259,12 +267,7 @@ class SessionManager {
         console.error(err)
       }
     }
-    await Promise.race([
-      closePipeline(),
-      new Promise((resolve) => {
-        setTimeout(resolve, 15000)
-      })
-    ])
+    await Promise.race([closePipeline(), timeoutPromise(15000)])
     console.log(workspace.id, 'Workspace closed...')
   }
 
