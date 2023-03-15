@@ -387,20 +387,25 @@ export function createModel (builder: Builder): void {
     fields: ['assignee']
   })
 
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: task.class.Issue,
-    descriptor: task.viewlet.Kanban,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: {
-      lookup: {
-        assignee: contact.class.Employee,
-        _id: {
-          todoItems: task.class.TodoItem
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: task.class.Issue,
+      descriptor: task.viewlet.Kanban,
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      options: {
+        lookup: {
+          assignee: contact.class.Employee,
+          _id: {
+            todoItems: task.class.TodoItem
+          }
         }
-      }
-    } as FindOptions<Doc>,
-    config: []
-  })
+      } as FindOptions<Doc>,
+      config: []
+    },
+    task.viewlet.KanbanIssue
+  )
 
   builder.mixin(task.class.Issue, core.class.Class, task.mixin.KanbanCard, {
     card: task.component.KanbanCard

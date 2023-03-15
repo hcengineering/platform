@@ -6,10 +6,11 @@
   import { createEventDispatcher } from 'svelte'
   import { filterStore } from '../../filter'
   import { ViewOptions } from '@hcengineering/view'
-  import { Doc, Ref } from '@hcengineering/core'
+  import { Class, Doc, Ref } from '@hcengineering/core'
   import { getActiveViewletId } from '../../utils'
 
   export let viewOptions: ViewOptions | undefined = undefined
+  export let _class: Ref<Class<Doc>>
 
   let filterName = ''
   const client = getClient()

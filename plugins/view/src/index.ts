@@ -89,6 +89,7 @@ export interface FilteredView extends Preference {
   location: PlatformLocation
   filters: string
   viewOptions?: ViewOptions
+  filterClass?: Ref<Class<Doc>>
   viewletId?: Ref<Viewlet> | null
 }
 

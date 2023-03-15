@@ -192,17 +192,27 @@ export function createModel (builder: Builder): void {
   //   ]
   // })
 
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: board.class.Card,
-    descriptor: board.viewlet.Kanban,
-    config: []
-  })
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: board.class.Card,
+      descriptor: board.viewlet.Kanban,
+      config: []
+    },
+    board.viewlet.KanbanCard
+  )
 
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: board.class.Card,
-    descriptor: board.viewlet.Table,
-    config: []
-  })
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: board.class.Card,
+      descriptor: board.viewlet.Table,
+      config: []
+    },
+    board.viewlet.TableCard
+  )
 
   builder.mixin(board.class.Card, core.class.Class, task.mixin.KanbanCard, {
     card: board.component.KanbanCard

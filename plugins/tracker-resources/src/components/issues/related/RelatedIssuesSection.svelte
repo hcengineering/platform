@@ -4,7 +4,12 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Button, Icon, IconAdd, Label, showPopup, Component } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
-  import { getViewOptions, ViewletSettingButton, getAdditionalHeader } from '@hcengineering/view-resources'
+  import {
+    getViewOptions,
+    ViewletSettingButton,
+    viewOptionStore,
+    getAdditionalHeader
+  } from '@hcengineering/view-resources'
   import viewplg from '@hcengineering/view-resources/src/plugin'
   import tracker from '../../../plugin'
   import RelatedIssues from './RelatedIssues.svelte'
@@ -22,7 +27,7 @@
     ;[viewlet] = res
   })
 
-  let viewOptions = getViewOptions(viewlet)
+  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
   const createIssue = () => showPopup(tracker.component.CreateIssue, { relatedTo: object, space: object.space }, 'top')
 
   let query: DocumentQuery<Issue>

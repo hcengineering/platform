@@ -540,71 +540,80 @@ export function createModel (builder: Builder): void {
     ]
   }
 
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: tracker.class.Issue,
-    descriptor: view.viewlet.List,
-    viewOptions: issuesOptions,
-    config: [
-      {
-        key: '',
-        presenter: tracker.component.PriorityEditor,
-        props: { type: 'priority', kind: 'list', size: 'small' }
-      },
-      { key: '', presenter: tracker.component.IssuePresenter, props: { type: 'issue', listProps: { fixed: 'left' } } },
-      {
-        key: '',
-        presenter: tracker.component.StatusEditor,
-        props: { kind: 'list', size: 'small', justify: 'center' }
-      },
-      { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true } },
-      { key: '', presenter: tracker.component.SubIssuesSelector, props: {} },
-      { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
-      { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
-      {
-        key: '',
-        presenter: tracker.component.ProjectEditor,
-        props: {
-          kind: 'list',
-          size: 'small',
-          shape: 'round',
-          shouldShowPlaceholder: false,
-          listProps: {
-            excludeByKey: 'project',
-            optional: true
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: tracker.class.Issue,
+      descriptor: view.viewlet.List,
+      viewOptions: issuesOptions,
+      config: [
+        {
+          key: '',
+          presenter: tracker.component.PriorityEditor,
+          props: { type: 'priority', kind: 'list', size: 'small' }
+        },
+        {
+          key: '',
+          presenter: tracker.component.IssuePresenter,
+          props: { type: 'issue', listProps: { fixed: 'left' } }
+        },
+        {
+          key: '',
+          presenter: tracker.component.StatusEditor,
+          props: { kind: 'list', size: 'small', justify: 'center' }
+        },
+        { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true } },
+        { key: '', presenter: tracker.component.SubIssuesSelector, props: {} },
+        { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
+        { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
+        {
+          key: '',
+          presenter: tracker.component.ProjectEditor,
+          props: {
+            kind: 'list',
+            size: 'small',
+            shape: 'round',
+            shouldShowPlaceholder: false,
+            listProps: {
+              excludeByKey: 'project',
+              optional: true
+            }
           }
-        }
-      },
-      {
-        key: '',
-        presenter: tracker.component.SprintEditor,
-        props: {
-          kind: 'list',
-          size: 'small',
-          shape: 'round',
-          shouldShowPlaceholder: false,
-          listProps: {
-            excludeByKey: 'sprint',
-            optional: true
+        },
+        {
+          key: '',
+          presenter: tracker.component.SprintEditor,
+          props: {
+            kind: 'list',
+            size: 'small',
+            shape: 'round',
+            shouldShowPlaceholder: false,
+            listProps: {
+              excludeByKey: 'sprint',
+              optional: true
+            }
           }
+        },
+        {
+          key: '',
+          presenter: tracker.component.EstimationEditor,
+          props: { kind: 'list', size: 'small', listProps: { optional: true } }
+        },
+        {
+          key: 'modifiedOn',
+          presenter: tracker.component.ModificationDatePresenter,
+          props: { listProps: { fixed: 'right', optional: true } }
+        },
+        {
+          key: '$lookup.assignee',
+          presenter: tracker.component.AssigneePresenter,
+          props: { defaultClass: contact.class.Employee, shouldShowLabel: false }
         }
-      },
-      {
-        key: '',
-        presenter: tracker.component.EstimationEditor,
-        props: { kind: 'list', size: 'small', listProps: { optional: true } }
-      },
-      {
-        key: 'modifiedOn',
-        presenter: tracker.component.ModificationDatePresenter,
-        props: { listProps: { fixed: 'right', optional: true } }
-      },
-      {
-        key: '$lookup.assignee',
-        presenter: tracker.component.AssigneePresenter,
-        props: { defaultClass: contact.class.Employee, shouldShowLabel: false }
-      }
-    ]
-  })
+      ]
+    },
+    tracker.viewlet.IssueList
+  )
 
   const subIssuesOptions: ViewOptionsModel = {
     groupBy: ['status', 'assignee', 'priority', 'sprint'],
@@ -681,57 +690,71 @@ export function createModel (builder: Builder): void {
     tracker.viewlet.SubIssues
   )
 
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: tracker.class.IssueTemplate,
-    descriptor: view.viewlet.List,
-    viewOptions: {
-      groupBy: ['assignee', 'priority', 'project', 'sprint'],
-      orderBy: [
-        ['priority', SortingOrder.Ascending],
-        ['modifiedOn', SortingOrder.Descending],
-        ['dueDate', SortingOrder.Descending],
-        ['rank', SortingOrder.Ascending]
-      ],
-      other: []
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: tracker.class.IssueTemplate,
+      descriptor: view.viewlet.List,
+      viewOptions: {
+        groupBy: ['assignee', 'priority', 'project', 'sprint'],
+        orderBy: [
+          ['priority', SortingOrder.Ascending],
+          ['modifiedOn', SortingOrder.Descending],
+          ['dueDate', SortingOrder.Descending],
+          ['rank', SortingOrder.Ascending]
+        ],
+        other: []
+      },
+      config: [
+        // { key: '', presenter: tracker.component.PriorityEditor, props: { kind: 'list', size: 'small' } },
+        {
+          key: '',
+          presenter: tracker.component.IssueTemplatePresenter,
+          props: { type: 'issue', shouldUseMargin: true }
+        },
+        { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
+        // { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
+        {
+          key: '',
+          presenter: tracker.component.ProjectEditor,
+          props: { kind: 'list', size: 'small', shape: 'round', shouldShowPlaceholder: false }
+        },
+        {
+          key: '',
+          presenter: tracker.component.SprintEditor,
+          props: { kind: 'list', size: 'small', shape: 'round', shouldShowPlaceholder: false }
+        },
+        { key: '', presenter: tracker.component.TemplateEstimationEditor, props: { kind: 'list', size: 'small' } },
+        {
+          key: 'modifiedOn',
+          presenter: tracker.component.ModificationDatePresenter,
+          props: { listProps: { fixed: 'right' } }
+        },
+        {
+          key: '$lookup.assignee',
+          presenter: tracker.component.AssigneePresenter,
+          props: { defaultClass: contact.class.Employee, shouldShowLabel: false }
+        }
+      ]
     },
-    config: [
-      // { key: '', presenter: tracker.component.PriorityEditor, props: { kind: 'list', size: 'small' } },
-      { key: '', presenter: tracker.component.IssueTemplatePresenter, props: { type: 'issue', shouldUseMargin: true } },
-      { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
-      // { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
-      {
-        key: '',
-        presenter: tracker.component.ProjectEditor,
-        props: { kind: 'list', size: 'small', shape: 'round', shouldShowPlaceholder: false }
-      },
-      {
-        key: '',
-        presenter: tracker.component.SprintEditor,
-        props: { kind: 'list', size: 'small', shape: 'round', shouldShowPlaceholder: false }
-      },
-      { key: '', presenter: tracker.component.TemplateEstimationEditor, props: { kind: 'list', size: 'small' } },
-      {
-        key: 'modifiedOn',
-        presenter: tracker.component.ModificationDatePresenter,
-        props: { listProps: { fixed: 'right' } }
-      },
-      {
-        key: '$lookup.assignee',
-        presenter: tracker.component.AssigneePresenter,
-        props: { defaultClass: contact.class.Employee, shouldShowLabel: false }
-      }
-    ]
-  })
+    tracker.viewlet.IssueTemplateList
+  )
 
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: tracker.class.Issue,
-    descriptor: tracker.viewlet.Kanban,
-    viewOptions: {
-      ...issuesOptions,
-      groupDepth: 1
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: tracker.class.Issue,
+      descriptor: tracker.viewlet.Kanban,
+      viewOptions: {
+        ...issuesOptions,
+        groupDepth: 1
+      },
+      config: []
     },
-    config: []
-  })
+    tracker.viewlet.IssueKanban
+  )
 
   builder.createDoc(
     view.class.ViewletDescriptor,
@@ -1669,42 +1692,47 @@ export function createModel (builder: Builder): void {
     other: []
   }
 
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: tracker.class.Sprint,
-    descriptor: view.viewlet.List,
-    viewOptions: sprintOptions,
-    config: [
-      {
-        key: '',
-        presenter: tracker.component.SprintStatusPresenter,
-        props: { width: '1rem', kind: 'list', size: 'small', justify: 'center' }
-      },
-      { key: '', presenter: tracker.component.SprintPresenter, props: { shouldUseMargin: true } },
-      { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
-      { key: '', presenter: tracker.component.SprintProjectEditor, props: { kind: 'list' } },
-      {
-        key: '',
-        presenter: contact.component.MembersPresenter,
-        props: {
-          kind: 'link',
-          intlTitle: tracker.string.SprintMembersTitle,
-          intlSearchPh: tracker.string.SprintMembersSearchPlaceholder
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: tracker.class.Sprint,
+      descriptor: view.viewlet.List,
+      viewOptions: sprintOptions,
+      config: [
+        {
+          key: '',
+          presenter: tracker.component.SprintStatusPresenter,
+          props: { width: '1rem', kind: 'list', size: 'small', justify: 'center' }
+        },
+        { key: '', presenter: tracker.component.SprintPresenter, props: { shouldUseMargin: true } },
+        { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
+        { key: '', presenter: tracker.component.SprintProjectEditor, props: { kind: 'list' } },
+        {
+          key: '',
+          presenter: contact.component.MembersPresenter,
+          props: {
+            kind: 'link',
+            intlTitle: tracker.string.SprintMembersTitle,
+            intlSearchPh: tracker.string.SprintMembersSearchPlaceholder
+          }
+        },
+        { key: '', presenter: tracker.component.SprintDatePresenter, props: { field: 'startDate' } },
+        { key: '', presenter: tracker.component.SprintDatePresenter, props: { field: 'targetDate' } },
+        {
+          key: '$lookup.lead',
+          presenter: tracker.component.SprintLeadPresenter,
+          props: {
+            _class: tracker.class.Sprint,
+            defaultClass: contact.class.Employee,
+            shouldShowLabel: false,
+            size: 'x-small'
+          }
         }
-      },
-      { key: '', presenter: tracker.component.SprintDatePresenter, props: { field: 'startDate' } },
-      { key: '', presenter: tracker.component.SprintDatePresenter, props: { field: 'targetDate' } },
-      {
-        key: '$lookup.lead',
-        presenter: tracker.component.SprintLeadPresenter,
-        props: {
-          _class: tracker.class.Sprint,
-          defaultClass: contact.class.Employee,
-          shouldShowLabel: false,
-          size: 'x-small'
-        }
-      }
-    ]
-  })
+      ]
+    },
+    tracker.viewlet.SprintList
+  )
 
   createAction(
     builder,

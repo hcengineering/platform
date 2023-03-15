@@ -25,7 +25,8 @@
     getViewOptions,
     setActiveViewletId,
     TableBrowser,
-    ViewletSettingButton
+    ViewletSettingButton,
+    viewOptionStore
   } from '@hcengineering/view-resources'
   import contact from '../plugin'
   import CreateContact from './CreateContact.svelte'
@@ -75,7 +76,7 @@
 
   $: twoRows = $deviceInfo.twoRows
 
-  $: viewOptions = getViewOptions(viewlet)
+  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 </script>
 
 <ActionContext

@@ -20,7 +20,13 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Button, Label, Loading, Scroller, tableSP } from '@hcengineering/ui'
   import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { getViewOptions, setActiveViewletId, Table, ViewletSettingButton } from '@hcengineering/view-resources'
+  import {
+    getViewOptions,
+    setActiveViewletId,
+    Table,
+    viewOptionStore,
+    ViewletSettingButton
+  } from '@hcengineering/view-resources'
   import hr from '../../plugin'
   import {
     EmployeeReports,
@@ -258,7 +264,7 @@
     return result
   }
 
-  $: viewOptions = getViewOptions(descr)
+  $: viewOptions = getViewOptions(descr, $viewOptionStore)
 </script>
 
 {#if departmentStaff.length}

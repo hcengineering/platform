@@ -24,6 +24,7 @@
     FilterButton,
     getActiveViewletId,
     getViewOptions,
+    viewOptionStore,
     setActiveViewletId,
     ViewletSettingButton
   } from '@hcengineering/view-resources'
@@ -90,7 +91,7 @@
   $: if (docWidth <= 900 && !docSize) docSize = true
   $: if (docWidth > 900 && docSize) docSize = false
 
-  $: viewOptions = getViewOptions(viewlet)
+  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 
   const handleViewModeChanged = (newMode: SprintViewMode) => {
     if (newMode === undefined || newMode === mode) {

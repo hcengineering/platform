@@ -69,6 +69,7 @@ export default mergeIds(taskId, task, {
     DefaultProject: '' as Ref<KanbanTemplate>
   },
   viewlet: {
-    TableIssue: '' as Ref<Viewlet>
+    TableIssue: '' as Ref<Viewlet>,
+    KanbanIssue: '' as Ref<Viewlet>
   }
 })

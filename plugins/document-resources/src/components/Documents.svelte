@@ -25,6 +25,7 @@
     FilterButton,
     getViewOptions,
     setActiveViewletId,
+    viewOptionStore,
     TableBrowser,
     ViewletSettingButton
   } from '@hcengineering/view-resources'
@@ -72,7 +73,7 @@
   let twoRows: boolean
   $: twoRows = $deviceInfo.docWidth <= 680
 
-  $: viewOptions = getViewOptions(viewlet)
+  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 </script>
 
 <ActionContext

@@ -52,7 +52,9 @@ export default mergeIds(leadId, lead, {
   viewlet: {
     TableCustomer: '' as Ref<Viewlet>,
     TableLead: '' as Ref<Viewlet>,
-    ListLead: '' as Ref<Viewlet>
+    ListLead: '' as Ref<Viewlet>,
+    DashboardLead: '' as Ref<Viewlet>,
+    KanbanLead: '' as Ref<Viewlet>
   },
   category: {
     Lead: '' as Ref<ActionCategory>

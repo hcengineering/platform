@@ -16,14 +16,14 @@
   import { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { Button, eventToHTMLElement, getCurrentLocation, IconAdd, locationToUrl, showPopup } from '@hcengineering/ui'
+  import { Button, eventToHTMLElement, IconAdd, showPopup } from '@hcengineering/ui'
   import { Filter, ViewOptions } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import { filterStore } from '../../filter'
+  import { filterStore, getFilterKey } from '../../filter'
   import view from '../../plugin'
+  import FilterSave from './FilterSave.svelte'
   import FilterSection from './FilterSection.svelte'
   import FilterTypePopup from './FilterTypePopup.svelte'
-  import FilterSave from './FilterSave.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -71,7 +71,7 @@
   $: saveFilters($filterStore)
 
   function saveFilters (filters: Filter[]) {
-    const key = makeKey(_class)
+    const key = getFilterKey(_class)
     if (filters.length > 0) {
       localStorage.setItem(key, JSON.stringify(filters))
     } else {
@@ -80,7 +80,7 @@
   }
 
   async function saveFilteredView () {
-    showPopup(FilterSave, { viewOptions })
+    showPopup(FilterSave, { viewOptions, _class })
   }
 
   let loading = false
@@ -88,7 +88,7 @@
   function load (_class: Ref<Class<Doc>>) {
     loading = true
     const oldFilters = $filterStore
-    const key = makeKey(_class)
+    const key = getFilterKey(_class)
     const saved = localStorage.getItem(key)
     if (saved !== null) {
       $filterStore = JSON.parse(saved)
@@ -97,13 +97,6 @@
     }
     loading = false
     oldFilters.forEach((p) => p.onRemove?.())
-  }
-
-  function makeKey (_class: Ref<Class<Doc>>): string {
-    const loc = getCurrentLocation()
-    loc.fragment = undefined
-    loc.query = undefined
-    return 'filter' + locationToUrl(loc) + _class
   }
 
   async function makeQuery (query: DocumentQuery<Doc>, filters: Filter[]): Promise<void> {

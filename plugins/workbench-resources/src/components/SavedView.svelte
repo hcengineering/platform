@@ -4,7 +4,14 @@
   import setting from '@hcengineering/setting'
   import { Action, navigate } from '@hcengineering/ui'
   import view, { FilteredView } from '@hcengineering/view'
-  import { filterStore, setActiveViewletId, setViewOptions, TreeNode, TreeItem } from '@hcengineering/view-resources'
+  import {
+    filterStore,
+    getFilterKey,
+    setActiveViewletId,
+    setViewOptions,
+    TreeItem,
+    TreeNode
+  } from '@hcengineering/view-resources'
   import { Application } from '@hcengineering/workbench'
 
   export let currentApplication: Application | undefined
@@ -40,6 +47,11 @@
       if (viewlet !== undefined && fv.viewOptions !== undefined) {
         setViewOptions(viewlet, fv.viewOptions)
       }
+    }
+    if (fv.filterClass !== undefined) {
+      const key = getFilterKey(fv.filterClass)
+      const filters = JSON.parse(fv.filters)
+      localStorage.setItem(key, JSON.stringify(filters))
     }
     navigate(fv.location)
     $filterStore = JSON.parse(fv.filters)

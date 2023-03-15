@@ -11,7 +11,7 @@ import core, {
 } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { createQuery, getClient, LiveQuery } from '@hcengineering/presentation'
-import { AnyComponent } from '@hcengineering/ui'
+import { AnyComponent, getCurrentLocation, locationToUrl } from '@hcengineering/ui'
 import { Filter, FilterMode, KeyFilter } from '@hcengineering/view'
 import { writable } from 'svelte/store'
 import view from './plugin'
@@ -171,4 +171,11 @@ export function createFilter (_class: Ref<Class<Doc>>, key: string, value: any[]
     modes: modes.modes,
     mode: modes.mode
   }
+}
+
+export function getFilterKey (_class: Ref<Class<Doc>>): string {
+  const loc = getCurrentLocation()
+  loc.fragment = undefined
+  loc.query = undefined
+  return 'filter' + locationToUrl(loc) + _class
 }
