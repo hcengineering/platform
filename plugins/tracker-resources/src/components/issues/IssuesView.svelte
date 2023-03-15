@@ -5,7 +5,13 @@
   import { Issue } from '@hcengineering/tracker'
   import { Button, IconDetails, IconDetailsFilled } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
-  import { FilterBar, getActiveViewletId, getViewOptions, setActiveViewletId } from '@hcengineering/view-resources'
+  import {
+    FilterBar,
+    getActiveViewletId,
+    getViewOptions,
+    viewOptionStore,
+    setActiveViewletId
+  } from '@hcengineering/view-resources'
   import ViewletSettingButton from '@hcengineering/view-resources/src/components/ViewletSettingButton.svelte'
   import tracker from '../../plugin'
   import IssuesContent from './IssuesContent.svelte'
@@ -65,7 +71,7 @@
   $: if (docWidth <= 900 && !docSize) docSize = true
   $: if (docWidth > 900 && docSize) docSize = false
 
-  $: viewOptions = getViewOptions(viewlet)
+  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 </script>
 
 <IssuesHeader {viewlets} {label} {space} bind:viewlet bind:search showLabelSelector={$$slots.label_selector}>

@@ -5,7 +5,13 @@
   import { IssueTemplate } from '@hcengineering/tracker'
   import { Button, IconAdd, IconDetails, IconDetailsFilled, showPopup } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
-  import { FilterBar, getActiveViewletId, getViewOptions, setActiveViewletId } from '@hcengineering/view-resources'
+  import {
+    FilterBar,
+    getActiveViewletId,
+    getViewOptions,
+    viewOptionStore,
+    setActiveViewletId
+  } from '@hcengineering/view-resources'
   import ViewletSettingButton from '@hcengineering/view-resources/src/components/ViewletSettingButton.svelte'
   import tracker from '../../plugin'
   import IssuesHeader from '../issues/IssuesHeader.svelte'
@@ -71,7 +77,7 @@
     showPopup(CreateIssueTemplate, { targetElement: null, space }, 'top')
   }
 
-  $: viewOptions = getViewOptions(viewlet)
+  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 </script>
 
 <IssuesHeader {space} {viewlets} {label} bind:viewlet bind:search showLabelSelector={$$slots.label_selector}>

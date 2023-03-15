@@ -24,6 +24,7 @@
     getViewOptions,
     setActiveViewletId,
     TableBrowser,
+    viewOptionStore,
     ViewletSettingButton
   } from '@hcengineering/view-resources'
   import recruit from '../plugin'
@@ -142,7 +143,7 @@
 
   $: twoRows = $deviceInfo.twoRows
 
-  $: viewOptions = getViewOptions(descr)
+  $: viewOptions = getViewOptions(descr, $viewOptionStore)
 </script>
 
 <div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>

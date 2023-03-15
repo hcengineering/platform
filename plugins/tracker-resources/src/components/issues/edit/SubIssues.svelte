@@ -29,7 +29,13 @@
     navigate
   } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
-  import { createFilter, filterStore, getViewOptions, ViewletSettingButton } from '@hcengineering/view-resources'
+  import {
+    createFilter,
+    filterStore,
+    getViewOptions,
+    viewOptionStore,
+    ViewletSettingButton
+  } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
   import CreateSubIssue from './CreateSubIssue.svelte'
   import SubIssueList from './SubIssueList.svelte'
@@ -86,7 +92,7 @@
     statusesQuery.unsubscribe()
   }
 
-  $: viewOptions = viewlet !== undefined ? getViewOptions(viewlet) : undefined
+  $: viewOptions = viewlet !== undefined ? getViewOptions(viewlet, $viewOptionStore) : undefined
 </script>
 
 <div class="flex-between">

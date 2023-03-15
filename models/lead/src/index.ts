@@ -257,24 +257,34 @@ export function createModel (builder: Builder): void {
     lead.viewlet.ListLead
   )
 
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: lead.class.Lead,
-    descriptor: task.viewlet.Kanban,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: {
-      lookup: {
-        attachedTo: lead.mixin.Customer
-      }
-    } as FindOptions<Doc>, // TODO: fix
-    config: []
-  })
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: lead.class.Lead,
+      descriptor: task.viewlet.Kanban,
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      options: {
+        lookup: {
+          attachedTo: lead.mixin.Customer
+        }
+      } as FindOptions<Doc>, // TODO: fix
+      config: []
+    },
+    lead.viewlet.KanbanLead
+  )
 
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: lead.class.Lead,
-    descriptor: task.viewlet.Dashboard,
-    options: {},
-    config: []
-  })
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: lead.class.Lead,
+      descriptor: task.viewlet.Dashboard,
+      options: {},
+      config: []
+    },
+    lead.viewlet.DashboardLead
+  )
 
   builder.mixin(lead.class.Lead, core.class.Class, task.mixin.KanbanCard, {
     card: lead.component.KanbanCard

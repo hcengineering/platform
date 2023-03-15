@@ -565,22 +565,32 @@ export function createModel (builder: Builder): void {
     }
   }
 
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: recruit.class.Applicant,
-    descriptor: task.viewlet.Kanban,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: {
-      lookup: applicantKanbanLookup
-    } as FindOptions<Doc>, // TODO: fix
-    config: []
-  })
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: recruit.class.Applicant,
+      descriptor: task.viewlet.Kanban,
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      options: {
+        lookup: applicantKanbanLookup
+      } as FindOptions<Doc>, // TODO: fix
+      config: []
+    },
+    recruit.viewlet.ApplicantKanban
+  )
 
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: recruit.class.Applicant,
-    descriptor: task.viewlet.Dashboard,
-    options: {},
-    config: []
-  })
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: recruit.class.Applicant,
+      descriptor: task.viewlet.Dashboard,
+      options: {},
+      config: []
+    },
+    recruit.viewlet.ApplicantDashboard
+  )
 
   builder.mixin(recruit.class.Applicant, core.class.Class, task.mixin.KanbanCard, {
     card: recruit.component.KanbanCard

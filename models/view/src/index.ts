@@ -105,6 +105,7 @@ export class TFilteredView extends TPreference implements FilteredView {
   location!: Location
   filters!: string
   viewOptions?: ViewOptions
+  filterClass?: Ref<Class<Doc>>
   viewletId?: Ref<Viewlet> | null
 }
 

@@ -34,6 +34,7 @@
     FilterButton,
     getViewOptions,
     setActiveViewletId,
+    viewOptionStore,
     ViewletSettingButton
   } from '@hcengineering/view-resources'
 
@@ -100,7 +101,7 @@
 
   $: twoRows = $deviceInfo.twoRows
 
-  $: viewOptions = getViewOptions(viewlet)
+  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 </script>
 
 <div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>

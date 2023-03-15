@@ -10,6 +10,7 @@ import {
   ViewOptions,
   ViewOptionsModel
 } from '@hcengineering/view'
+import { get, writable } from 'svelte/store'
 import view from './plugin'
 
 export const noCategory = '#no_category'
@@ -35,20 +36,29 @@ function makeViewOptionsKey (viewlet: Viewlet): string {
   return `viewOptions:${prefix}:${locationToUrl(loc)}`
 }
 
-function _setViewOptions (viewlet: Viewlet, options: ViewOptions): void {
+export function setViewOptions (viewlet: Viewlet, options: ViewOptions): void {
   const key = makeViewOptionsKey(viewlet)
   localStorage.setItem(key, JSON.stringify(options))
+  setStore(key, options)
 }
 
-export function setViewOptions (viewlet: Viewlet, options: ViewOptions): void {
-  _setViewOptions(viewlet, options)
+function setStore (key: string, options: ViewOptions): void {
+  const map = get(viewOptionStore)
+  map.set(key, options)
+  viewOptionStore.set(map)
 }
 
-function _getViewOptions (viewlet: Viewlet): ViewOptions | null {
+function _getViewOptions (viewlet: Viewlet, viewOptionStore: Map<string, ViewOptions>): ViewOptions | null {
   const key = makeViewOptionsKey(viewlet)
+  const store = viewOptionStore.get(key)
+  if (store !== undefined) {
+    return store
+  }
   const options = localStorage.getItem(key)
   if (options === null) return null
-  return JSON.parse(options)
+  const res = JSON.parse(options)
+  setStore(key, res)
+  return res
 }
 
 function getDefaults (viewOptions: ViewOptionsModel): ViewOptions {
@@ -62,11 +72,15 @@ function getDefaults (viewOptions: ViewOptionsModel): ViewOptions {
   return res
 }
 
-export function getViewOptions (viewlet: Viewlet | undefined, defaults = defaulOptions): ViewOptions {
+export function getViewOptions (
+  viewlet: Viewlet | undefined,
+  viewOptionStore: Map<string, ViewOptions>,
+  defaults = defaulOptions
+): ViewOptions {
   if (viewlet === undefined) {
     return { ...defaults }
   }
-  const res = _getViewOptions(viewlet)
+  const res = _getViewOptions(viewlet, viewOptionStore)
   if (res !== null) return res
   return viewlet.viewOptions != null ? getDefaults(viewlet.viewOptions) : defaults
 }
@@ -132,3 +146,5 @@ export const CategoryQuery = {
     this.results.delete(index)
   }
 }
+
+export const viewOptionStore = writable(new Map<string, ViewOptions>())

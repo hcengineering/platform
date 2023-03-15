@@ -18,7 +18,13 @@
   import { createQuery, getClient, UsersPopup, IconMembersOutline } from '@hcengineering/presentation'
   import { Button, IconAdd, Label, showPopup, Icon } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { getViewOptions, setActiveViewletId, Table, ViewletSettingButton } from '@hcengineering/view-resources'
+  import {
+    getViewOptions,
+    setActiveViewletId,
+    Table,
+    ViewletSettingButton,
+    viewOptionStore
+  } from '@hcengineering/view-resources'
   import contact from '../plugin'
 
   export let objectId: Ref<Doc>
@@ -91,7 +97,7 @@
         }
       })
   }
-  $: viewOptions = getViewOptions(descr)
+  $: viewOptions = getViewOptions(descr, $viewOptionStore)
 </script>
 
 <div class="antiSection">

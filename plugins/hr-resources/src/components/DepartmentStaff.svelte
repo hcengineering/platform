@@ -19,7 +19,13 @@
   import { createQuery, getClient, UsersPopup } from '@hcengineering/presentation'
   import { Button, eventToHTMLElement, IconAdd, Label, Scroller, showPopup } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { getViewOptions, setActiveViewletId, Table, ViewletSettingButton } from '@hcengineering/view-resources'
+  import {
+    getViewOptions,
+    setActiveViewletId,
+    viewOptionStore,
+    Table,
+    ViewletSettingButton
+  } from '@hcengineering/view-resources'
   import hr from '../plugin'
   import { addMember } from '../utils'
 
@@ -93,7 +99,7 @@
       })
   }
 
-  $: viewOptions = getViewOptions(descr)
+  $: viewOptions = getViewOptions(descr, $viewOptionStore)
 </script>
 
 <div class="antiSection">

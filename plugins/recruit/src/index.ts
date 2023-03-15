@@ -85,6 +85,7 @@ export interface CandidateDraft extends Doc {
  * @public
  */
 export interface Applicant extends Task {
+  space: Ref<Vacancy>
   attachedTo: Ref<Candidate>
   attachments?: number
   comments?: number

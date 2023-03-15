@@ -20,7 +20,7 @@ import type { Ref, Space } from '@hcengineering/core'
 import { IntlString, mergeIds } from '@hcengineering/platform'
 import { KanbanTemplate, Sequence } from '@hcengineering/task'
 import type { AnyComponent } from '@hcengineering/ui'
-import { Action, ViewAction, ViewletDescriptor } from '@hcengineering/view'
+import { Action, ViewAction, Viewlet, ViewletDescriptor } from '@hcengineering/view'
 
 export default mergeIds(boardId, board, {
   component: {
@@ -51,6 +51,8 @@ export default mergeIds(boardId, board, {
     Sequence: '' as Ref<Sequence>
   },
   viewlet: {
+    KanbanCard: '' as Ref<Viewlet>,
+    TableCard: '' as Ref<Viewlet>,
     Kanban: '' as Ref<ViewletDescriptor>,
     Table: '' as Ref<ViewletDescriptor>
   },

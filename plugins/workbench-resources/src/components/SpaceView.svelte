@@ -18,7 +18,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { AnyComponent, Component } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
-  import { getActiveViewletId, getViewOptions } from '@hcengineering/view-resources'
+  import { getActiveViewletId, getViewOptions, viewOptionStore } from '@hcengineering/view-resources'
   import type { ViewConfiguration } from '@hcengineering/workbench'
   import SpaceContent from './SpaceContent.svelte'
   import SpaceHeader from './SpaceHeader.svelte'
@@ -80,7 +80,7 @@
     viewlet = e.detail
   }
 
-  $: viewOptions = getViewOptions(viewlet)
+  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 </script>
 
 {#if _class && space}
