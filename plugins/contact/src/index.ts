@@ -347,7 +347,11 @@ export async function findContacts (
 
   // Same name persons
 
-  const potentialChannels = await client.findAll(contactPlugin.class.Channel, { value: { $in: values } })
+  const potentialChannels = await client.findAll(
+    contactPlugin.class.Channel,
+    { value: { $in: values } },
+    { limit: 1000 }
+  )
   let potentialContactIds = Array.from(new Set(potentialChannels.map((it) => it.attachedTo as Ref<Contact>)).values())
 
   if (potentialContactIds.length === 0) {
@@ -356,7 +360,11 @@ export async function findContacts (
       const lastName = getLastName(person.name)
       // try match using just first/last name
       potentialContactIds = (
-        await client.findAll(contactPlugin.class.Contact, { name: { $like: `${lastName}%${firstName}%` } })
+        await client.findAll(
+          contactPlugin.class.Contact,
+          { name: { $like: `${lastName}%${firstName}%` } },
+          { limit: 100 }
+        )
       ).map((it) => it._id)
       if (potentialContactIds.length === 0) {
         return { contacts: [], channels: [] }
@@ -364,7 +372,7 @@ export async function findContacts (
     } else if (client.getHierarchy().isDerived(_class, contactPlugin.class.Organization)) {
       // try match using just first/last name
       potentialContactIds = (
-        await client.findAll(contactPlugin.class.Contact, { name: { $like: `${person.name}` } })
+        await client.findAll(contactPlugin.class.Contact, { name: { $like: `${person.name}` } }, { limit: 100 })
       ).map((it) => it._id)
       if (potentialContactIds.length === 0) {
         return { contacts: [], channels: [] }
