@@ -12,6 +12,7 @@
     "VacancyPlaceholder": "Разработчик",
     "CreateAnApplication": "Новый Кандидат",
     "NoApplicationsForTalent": "Нет кандидатов для данного таланта.",
+    "NoApplicationsForVacany": "Нет кандидатов для данной вакансии.",
     "CreateApplication": "Новый Кандидат",
     "SelectVacancy": "Выбрать вакансию",
     "Talent": "Талант",

@@ -105,6 +105,23 @@ export class LiveQuery extends TxProcessor implements Client {
     return true
   }
 
+  private createDumpQuery<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Query {
+    const callback: () => void = () => {}
+    const q = this.createQuery(_class, query, callback, options)
+    const index = q.callbacks.indexOf(callback as (result: Doc[]) => void)
+    if (index !== -1) {
+      q.callbacks.splice(index, 1)
+    }
+    if (q.callbacks.length === 0) {
+      this.queue.push(q)
+    }
+    return q
+  }
+
   async findAll<T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
@@ -113,7 +130,7 @@ export class LiveQuery extends TxProcessor implements Client {
     if (this.client.getHierarchy().getDomain(_class) === DOMAIN_MODEL) {
       return await this.client.findAll(_class, query, options)
     }
-    const q = this.findQuery(_class, query, options) ?? this.createQuery(_class, query, () => {}, options)
+    const q = this.findQuery(_class, query, options) ?? this.createDumpQuery(_class, query, options)
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
@@ -131,7 +148,7 @@ export class LiveQuery extends TxProcessor implements Client {
     if (this.client.getHierarchy().getDomain(_class) === DOMAIN_MODEL) {
       return await this.client.findOne(_class, query, options)
     }
-    const q = this.findQuery(_class, query, options) ?? this.createQuery(_class, query, () => {}, options)
+    const q = this.findQuery(_class, query, options) ?? this.createDumpQuery(_class, query, options)
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
@@ -741,8 +758,10 @@ export class LiveQuery extends TxProcessor implements Client {
         if (Array.isArray(value)) {
           if (this.client.getHierarchy().isDerived(doc._class, core.class.AttachedDoc)) {
             if (reverseLookupKey !== undefined && (doc as any)[reverseLookupKey] === obj._id) {
-              value.push(doc)
-              needCallback = true
+              if ((value as Doc[]).find((p) => p._id === doc._id) === undefined) {
+                value.push(doc)
+                needCallback = true
+              }
             }
           }
         } else {

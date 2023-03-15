@@ -776,6 +776,7 @@ export function createModel (builder: Builder): void {
     },
     input: 'focus',
     category: recruit.category.Recruit,
+    override: [view.action.Open],
     keyBinding: ['keyE'],
     target: recruit.class.Vacancy,
     context: {
@@ -786,6 +787,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Delete]
+  })
+
+  builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.ObjectPanel, {
+    component: recruit.component.EditVacancy
   })
 
   builder.mixin(recruit.mixin.Candidate, core.class.Class, view.mixin.ClassFilters, {

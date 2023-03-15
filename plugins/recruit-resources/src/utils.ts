@@ -65,9 +65,12 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Loca
   }
   const appComponent = loc.path[0] ?? ''
   const workspace = loc.path[1] ?? ''
+  const targetClass = hierarchy.getClass(_class)
+  const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
+  const component = panelComponent.component ?? view.component.EditDoc
   return {
     path: [appComponent, workspace, recruitId],
-    fragment: getPanelURI(view.component.EditDoc, doc._id, doc._class, 'content')
+    fragment: getPanelURI(component, doc._id, doc._class, 'content')
   }
 }
 

@@ -23,8 +23,6 @@
   export let applications: Map<Ref<Vacancy>, { count: number; modifiedOn: number }> | undefined
   export let resultQuery: DocumentQuery<Doc>
 
-  $: count = applications?.get(value._id)?.count ?? 0
-
   function click () {
     const loc = getCurrentLocation()
     loc.fragment = undefined
@@ -35,7 +33,7 @@
   }
 </script>
 
-{#if value && count > 0}
+{#if value}
   <div
     class="sm-tool-icon"
     use:tooltip={{

@@ -13,8 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Doc, Ref } from '@hcengineering/core'
-  import { Button, Icon, IconAdd, Label, resizeObserver, Scroller, showPopup } from '@hcengineering/ui'
+  import type { Ref } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import { recruitId, Vacancy } from '@hcengineering/recruit'
+  import { Button, Icon, IconAdd, Label, NavLink, resizeObserver, Scroller, showPopup } from '@hcengineering/ui'
   import { BuildModelKey } from '@hcengineering/view'
   import { Table } from '@hcengineering/view-resources'
   import recruit from '../plugin'
@@ -22,12 +24,16 @@
   import IconApplication from './icons/Application.svelte'
   import FileDuo from './icons/FileDuo.svelte'
 
-  export let objectId: Ref<Doc>
+  export let objectId: Ref<Vacancy>
+  let applications: number
 
-  export let applications: number
+  const query = createQuery()
+  $: query.query(recruit.class.Applicant, { space: objectId }, (res) => {
+    applications = res.length
+  })
 
   const createApp = (ev: MouseEvent): void => {
-    showPopup(CreateApplication, { candidate: objectId, preserveCandidate: true }, ev.target as HTMLElement)
+    showPopup(CreateApplication, { space: objectId, preserveVacancy: true }, ev.target as HTMLElement)
   }
   const config: (BuildModelKey | string)[] = [
     '',
@@ -39,41 +45,34 @@
   let wSection: number
 </script>
 
-<div class="antiSection" use:resizeObserver={(element) => (wSection = element.clientWidth)}>
+<div class="antiSection max-h-125" use:resizeObserver={(element) => (wSection = element.clientWidth)}>
   <div class="antiSection-header">
     <div class="antiSection-header__icon">
       <Icon icon={IconApplication} size={'small'} />
     </div>
     <span class="antiSection-header__title">
-      <Label label={recruit.string.Applications} />
+      <NavLink app={recruitId} space={objectId}>
+        <Label label={recruit.string.Applications} />
+      </NavLink>
     </span>
     <Button id="appls.add" icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createApp} />
   </div>
   {#if applications > 0}
-    {#if wSection < 640}
-      <Scroller horizontal>
-        <Table
-          _class={recruit.class.Applicant}
-          {config}
-          query={{ attachedTo: objectId }}
-          loadingProps={{ length: applications }}
-        />
-      </Scroller>
-    {:else}
+    <Scroller horizontal={wSection < 640}>
       <Table
         _class={recruit.class.Applicant}
         {config}
-        query={{ attachedTo: objectId }}
+        query={{ space: objectId }}
         loadingProps={{ length: applications }}
       />
-    {/if}
+    </Scroller>
   {:else}
     <div class="antiSection-empty solid flex-col-center mt-3">
       <div class="caption-color">
         <FileDuo size={'large'} />
       </div>
       <span class="dark-color">
-        <Label label={recruit.string.NoApplicationsForTalent} />
+        <Label label={recruit.string.NoApplicationsForVacany} />
       </span>
       <span class="over-underline content-accent-color" on:click={createApp}>
         <Label label={recruit.string.CreateAnApplication} />

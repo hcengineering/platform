@@ -107,7 +107,7 @@ test.describe('recruit tests', () => {
     await page.click('form button:has-text("Create")')
     await page.waitForSelector('form.antiCard', { state: 'detached' })
 
-    await page.click(`tr > :has-text("${vacancyId}")`)
+    await page.click(`tr:has-text("${vacancyId}") > td:nth-child(3) >> .sm-tool-icon`)
 
     // Create Applicatio n1
     await page.click('button:has-text("Application")')
