@@ -209,8 +209,13 @@
           props: {
             month: startDate ?? getMonth(currentDate, currentDate.getMonth()),
             display: (req: Request[], staff: Staff) =>
-              getTotal(req, startDate, endDate, types, getHolidayDatesForEmployee(staffDepartmentMap, staff._id, holidays), (a) =>
-                a < 0 ? Math.abs(a) : 0
+              getTotal(
+                req,
+                startDate,
+                endDate,
+                types,
+                getHolidayDatesForEmployee(staffDepartmentMap, staff._id, holidays),
+                (a) => (a < 0 ? Math.abs(a) : 0)
               ),
             getStatRequests
           },
@@ -243,8 +248,13 @@
           props: {
             month: startDate ?? getMonth(currentDate, currentDate.getMonth()),
             display: (req: Request[], staff: Staff) =>
-              getTotal(req, startDate, endDate, types, getHolidayDatesForEmployee(staffDepartmentMap, staff._id, holidays), (a) =>
-                a > 0 ? Math.abs(a) : 0
+              getTotal(
+                req,
+                startDate,
+                endDate,
+                types,
+                getHolidayDatesForEmployee(staffDepartmentMap, staff._id, holidays),
+                (a) => (a > 0 ? Math.abs(a) : 0)
               ),
             getStatRequests
           },

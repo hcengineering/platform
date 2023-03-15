@@ -265,11 +265,13 @@
     const map = new Map<Ref<Staff>, Department[]>()
     if (departmentStaff && departmentStaff.length > 0) {
       const ids = departmentStaff.map((staff) => staff._id)
-      const staffs = await client.findAll(contact.class.EmployeeAccount, { employee: { $in: ids} })
-      const departments = await client.findAll(hr.class.Department, { members: { $in: staffs.map((staff) => staff._id) }})
+      const staffs = await client.findAll(contact.class.EmployeeAccount, { employee: { $in: ids } })
+      const departments = await client.findAll(hr.class.Department, {
+        members: { $in: staffs.map((staff) => staff._id) }
+      })
       staffs.forEach((staff) => {
-        const departmentsStaff2 = departments.filter((department) => department.members.includes(staff._id))
-        map.set(staff.employee as Ref<Staff>, departmentsStaff2 as Department[])
+        const filteredDepartments = departments.filter((department) => department.members.includes(staff._id))
+        map.set(staff.employee as Ref<Staff>, filteredDepartments as Department[])
       })
     }
     return map

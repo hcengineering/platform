@@ -85,7 +85,8 @@
     if (requests.length === 0) return
     if (
       day &&
-      (isWeekend(day) || (holidays?.size > 0 && isHoliday(getHolidayDatesForEmployee(staffDepartmentMap, staff._id, holidays), day))) &&
+      (isWeekend(day) ||
+        (holidays?.size > 0 && isHoliday(getHolidayDatesForEmployee(staffDepartmentMap, staff._id, holidays), day))) &&
       requests.some((req) => noWeekendHolidayType.includes(req.type))
     ) {
       return
@@ -178,7 +179,13 @@
               class:firstLine={row === 0}
               class:lastLine={row === departmentStaff.length - 1}
             >
-              {getTotal(requests, startDate, endDate, types, getHolidayDatesForEmployee(staffDepartmentMap, employee._id, holidays))}
+              {getTotal(
+                requests,
+                startDate,
+                endDate,
+                types,
+                getHolidayDatesForEmployee(staffDepartmentMap, employee._id, holidays)
+              )}
             </td>
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <td
@@ -204,7 +211,8 @@
                   class="w-9 max-w-9 min-w-9"
                   class:today={areDatesEqual(todayDate, day)}
                   class:holiday={isHoliday(getHolidayDatesForEmployee(staffDepartmentMap, employee._id, holidays), day)}
-                  class:weekend={isWeekend(day) || isHoliday(getHolidayDatesForEmployee(staffDepartmentMap, employee._id, holidays), day)}
+                  class:weekend={isWeekend(day) ||
+                    isHoliday(getHolidayDatesForEmployee(staffDepartmentMap, employee._id, holidays), day)}
                   class:cursor-pointer={editable}
                   class:hovered={i === hoveredIndex}
                   class:firstLine={row === 0}
