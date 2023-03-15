@@ -66,10 +66,10 @@ export async function getActions (
 
   if (Array.isArray(doc)) {
     for (const d of doc) {
-      filteredActions = filterActions(client, d, filteredActions, derived)
+      filteredActions = await filterActions(client, d, filteredActions, derived)
     }
   } else {
-    filteredActions = filterActions(client, doc, filteredActions, derived)
+    filteredActions = await filterActions(client, doc, filteredActions, derived)
   }
   const inputVal: ViewActionInput[] = ['none']
   if (!Array.isArray(doc) || doc.length === 1) {
@@ -118,12 +118,12 @@ export async function getContextActions (
 /**
  * @public
  */
-export function filterActions (
+export async function filterActions (
   client: Client,
   doc: Doc,
   actions: Array<WithLookup<Action>>,
   derived: Ref<Class<Doc>> = core.class.Doc
-): Array<WithLookup<Action>> {
+): Promise<Array<WithLookup<Action>>> {
   let result: Array<WithLookup<Action>> = []
   const hierarchy = client.getHierarchy()
   const role = getCurrentAccount().role
@@ -151,6 +151,13 @@ export function filterActions (
     if (action.query !== undefined) {
       const r = matchQuery([doc], action.query, doc._class, hierarchy)
       if (r.length === 0) {
+        continue
+      }
+    }
+    if (action.checkIsVisible !== undefined) {
+      const checkIsVisible = await getResource(action.checkIsVisible)
+
+      if (!(await checkIsVisible())) {
         continue
       }
     }

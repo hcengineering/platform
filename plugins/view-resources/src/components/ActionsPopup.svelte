@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@hcengineering/core'
+  import { WithLookup, Doc } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import ui, { Button, closePopup, Component, Icon, IconArrowLeft, Label } from '@hcengineering/ui'
@@ -21,7 +21,7 @@
   import { onMount } from 'svelte'
   import { filterActions, getSelection } from '../actions'
   import view from '../plugin'
-  import { focusStore, selectionStore } from '../selection'
+  import { focusStore, selectionStore, FocusSelection } from '../selection'
   import ActionContext from './ActionContext.svelte'
   import { ListView, resizeObserver } from '@hcengineering/ui'
   import ObjectPresenter from './ObjectPresenter.svelte'
@@ -57,12 +57,17 @@
 
   const client = getClient()
 
-  $: {
-    let fActions: WithLookup<Action>[] = actions
+  async function filterSupportedActions (
+    acts: WithLookup<Action>[],
+    fcsStore: FocusSelection,
+    selectStore: Doc[],
+    vContext: ViewContext
+  ) {
+    let fActions: WithLookup<Action>[] = acts
 
-    const docs = getSelection($focusStore, $selectionStore)
+    const docs = getSelection(fcsStore, selectStore)
     for (const d of docs) {
-      fActions = filterActions(client, d, fActions)
+      fActions = await filterActions(client, d, fActions)
     }
     if (docs.length === 0) {
       fActions = fActions.filter((it) => it.input === 'none')
@@ -70,11 +75,12 @@
     fActions = fActions.filter(
       (it) =>
         (it.$lookup?.category?.visible ?? true) &&
-        (it.context.application === viewContext.application || it.context.application === undefined)
+        (it.context.application === vContext.application || it.context.application === undefined)
     )
     // Sort by category.
     supportedActions = fActions.sort((a, b) => a.category.localeCompare(b.category))
   }
+  $: filterSupportedActions(actions, $focusStore, $selectionStore, viewContext)
 
   async function filterSearchActions (actions: WithLookup<Action>[], search: string): Promise<void> {
     const res: WithLookup<Action>[] = []
