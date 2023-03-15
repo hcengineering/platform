@@ -16,7 +16,7 @@
 import { Event } from '@hcengineering/calendar'
 import type { Channel, Organization, Person } from '@hcengineering/contact'
 import type { AttachedData, AttachedDoc, Class, Doc, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
-import type { Asset, Plugin } from '@hcengineering/platform'
+import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@hcengineering/task'
 import { AnyComponent } from '@hcengineering/ui'
@@ -32,6 +32,7 @@ export interface Vacancy extends SpaceWithStates {
   location?: string
   company?: Ref<Organization>
   comments?: number
+  number: number
 }
 
 /**
@@ -171,6 +172,9 @@ const recruit = plugin(recruitId, {
     Reviews: '' as Asset,
     Skills: '' as Asset,
     Issue: '' as Asset
+  },
+  resolver: {
+    Location: '' as Resource<(loc: Location) => Promise<Location | undefined>>
   },
   space: {
     VacancyTemplates: '' as Ref<KanbanTemplateSpace>,

@@ -40,7 +40,7 @@
     UserBox
   } from '@hcengineering/presentation'
   import type { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
-  import task, { calcRank, SpaceWithStates, State } from '@hcengineering/task'
+  import task, { calcRank, State } from '@hcengineering/task'
   import ui, {
     Button,
     ColorPopup,
@@ -59,7 +59,7 @@
   import VacancyCard from './VacancyCard.svelte'
   import VacancyOrgPresenter from './VacancyOrgPresenter.svelte'
 
-  export let space: Ref<SpaceWithStates>
+  export let space: Ref<Vacancy>
   export let candidate: Ref<Candidate>
   export let assignee: Ref<Employee>
   export let comment: Markup = ''

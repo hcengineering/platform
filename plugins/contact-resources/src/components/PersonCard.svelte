@@ -15,10 +15,9 @@
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
   import contact, { Channel, Contact, getName } from '@hcengineering/contact'
-  import { Hierarchy } from '@hcengineering/core'
   import { Avatar, createQuery } from '@hcengineering/presentation'
-  import { Component, Label, showPanel } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import { Component, Label } from '@hcengineering/ui'
+  import { DocNavLink } from '@hcengineering/view-resources'
   import ChannelsEditor from './ChannelsEditor.svelte'
 
   export let object: Contact
@@ -44,15 +43,11 @@
   </div>
   {#if object}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div
-      class="name lines-limit-2"
-      class:over-underline={!disabled}
-      on:click={() => {
-        if (!disabled) showPanel(view.component.EditDoc, object._id, Hierarchy.mixinOrClass(object), 'content')
-      }}
-    >
-      {getName(object)}
-    </div>
+    <DocNavLink {object} disableClick={disabled}>
+      <div class="name lines-limit-2">
+        {getName(object)}
+      </div>
+    </DocNavLink>
     <div class="description overflow-label">{object.city ?? ''}</div>
     <div class="footer flex flex-reverse flex-grow">
       <div class="flex-center flex-wrap">

@@ -109,11 +109,13 @@ window.addEventListener('popstate', () => {
 
 export const location = derived(locationWritable, (loc) => loc)
 
-export function navigate (location: PlatformLocation): void {
+export function navigate (location: PlatformLocation, store = true): void {
   const url = locationToUrl(location)
   if (locationToUrl(getCurrentLocation()) !== url) {
-    history.pushState(null, '', url)
-    localStorage.setItem('platform_last_loc', JSON.stringify(location))
+    if (store) {
+      history.pushState(null, '', url)
+      localStorage.setItem('platform_last_loc', JSON.stringify(location))
+    }
     locationWritable.set(location)
   }
 }

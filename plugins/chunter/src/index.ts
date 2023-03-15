@@ -156,6 +156,9 @@ export default plugin(chunterId, {
     UnarchiveConfirm: '' as IntlString,
     ConvertToPrivate: '' as IntlString
   },
+  resolver: {
+    Location: '' as Resource<(loc: Location) => Promise<Location | undefined>>
+  },
   app: {
     Chunter: '' as Ref<Doc>
   },

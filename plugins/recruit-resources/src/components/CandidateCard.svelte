@@ -17,10 +17,9 @@
   import chunter from '@hcengineering/chunter'
   import contact, { Channel, getName, Person } from '@hcengineering/contact'
   import { ChannelsEditor } from '@hcengineering/contact-resources'
-  import { Hierarchy } from '@hcengineering/core'
   import { Avatar, createQuery, getClient } from '@hcengineering/presentation'
-  import { Component, Label, showPanel } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import { Component, Label } from '@hcengineering/ui'
+  import { DocNavLink } from '@hcengineering/view-resources'
   import recruit from '../plugin'
 
   export let candidate: Person | undefined
@@ -48,18 +47,11 @@
   <div class="label uppercase"><Label label={recruit.string.Talent} /></div>
   <Avatar avatar={candidate?.avatar} size={'large'} />
   {#if candidate}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div
-      class="name lines-limit-2"
-      class:over-underline={!disabled}
-      on:click={() => {
-        if (!disabled && candidate) {
-          showPanel(view.component.EditDoc, candidate._id, Hierarchy.mixinOrClass(candidate), 'content')
-        }
-      }}
-    >
-      {getName(candidate)}
-    </div>
+    <DocNavLink object={candidate} disableClick={disabled}>
+      <div class="name lines-limit-2">
+        {getName(candidate)}
+      </div>
+    </DocNavLink>
     {#if client.getHierarchy().hasMixin(candidate, recruit.mixin.Candidate)}
       {@const cand = client.getHierarchy().as(candidate, recruit.mixin.Candidate)}
       <div class="description lines-limit-2">{cand.title ?? ''}</div>

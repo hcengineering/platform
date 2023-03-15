@@ -16,7 +16,6 @@
   import calendar from '@hcengineering/calendar'
   import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
   import core, { Class, Client, Doc, getCurrentAccount, Ref, setCurrentAccount, Space } from '@hcengineering/core'
-  import { getWorkspaces, Workspace } from '@hcengineering/login-resources'
   import notification, { NotificationStatus } from '@hcengineering/notification'
   import { BrowserNotificatator, NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getMetadata, getResource, IntlString } from '@hcengineering/platform'
@@ -25,6 +24,7 @@
   import {
     AnyComponent,
     areLocationsEqual,
+    closePanel,
     closePopup,
     closeTooltip,
     Component,
@@ -35,8 +35,10 @@
     location,
     Location,
     navigate,
+    openPanel,
     PanelInstance,
     Popup,
+    PopupAlignment,
     PopupPosAlignment,
     resizeObserver,
     showPopup,
@@ -48,7 +50,6 @@
   import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { subscribeMobile } from '../mobile'
   import workbench from '../plugin'
-  import { workspacesStore } from '../utils'
   import AccountPopup from './AccountPopup.svelte'
   import AppItem from './AppItem.svelte'
   import Applications from './Applications.svelte'
@@ -71,6 +72,7 @@
   let currentSpecial: string | undefined
   let specialComponent: SpecialNavModel | undefined
   let asideId: string | undefined
+  let currentFragment: string | undefined = ''
 
   let currentApplication: Application | undefined
   let navigatorModel: NavigatorModel | undefined
@@ -78,19 +80,13 @@
   let createItemDialog: AnyComponent | undefined
   let createItemLabel: IntlString | undefined
 
-  let apps: Application[] = []
   migrateViewOpttions()
 
   const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
 
-  const query = createQuery()
-  $: query.query(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } }, (result) => {
-    apps = result
-  })
-
-  getWorkspaces().then((ws: Workspace[]) => {
-    $workspacesStore = ws
-  })
+  let apps: Application[] | Promise<Application[]> = client
+    .findAll(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
+    .then((res) => (apps = res))
 
   let panelInstance: PanelInstance
 
@@ -197,27 +193,45 @@
     }
   }
 
+  async function resolveShortLink (loc: Location): Promise<Location | undefined> {
+    let locationResolver = currentApplication?.locationResolver
+    if (loc.fragment !== undefined && loc.fragment.trim().length > 0) {
+      const split = loc.fragment.split('|')
+      if (apps instanceof Promise) {
+        apps = await apps
+      }
+      const app = apps.find((p) => p.alias === split[0])
+      if (app?.locationResolver) {
+        locationResolver = app?.locationResolver
+      }
+    }
+    if (locationResolver) {
+      const resolver = await getResource(locationResolver)
+      return await resolver?.(loc)
+    }
+  }
+
   async function syncLoc (loc: Location): Promise<void> {
-    const app = loc.path.length > 2 ? loc.path[2] : undefined
-    const space = loc.path.length > 3 ? (loc.path[3] as Ref<Space>) : undefined
-    const special = loc.path.length > 4 ? loc.path[4] : undefined
+    let app = loc.path[2]
+    let space = loc.path[3] as Ref<Space>
+    let special = loc.path[4]
+    let fragment = loc.fragment
+
+    // resolve short links
+    const resolvedLocation = await resolveShortLink(loc)
+    if (resolvedLocation && !areLocationsEqual(loc, resolvedLocation)) {
+      loc.path[2] = app = resolvedLocation.path[2] ?? app
+      loc.path[3] = space = (resolvedLocation.path[3] as Ref<Space>) ?? space
+      loc.path[4] = special = resolvedLocation.path[4] ?? special
+      loc.fragment = fragment = resolvedLocation.fragment ?? fragment
+      navigate(resolvedLocation, false)
+    }
 
     if (currentAppAlias !== app) {
       clear(1)
       currentAppAlias = app
       currentApplication = await client.findOne(workbench.class.Application, { alias: app })
       navigatorModel = currentApplication?.navigatorModel
-    }
-
-    // resolve short links
-    if (currentApplication?.locationResolver) {
-      const resolver = await getResource(currentApplication.locationResolver)
-      const resolvedLocation = await resolver?.(loc)
-      if (resolvedLocation && !areLocationsEqual(loc, resolvedLocation)) {
-        // make sure not to go into infinite loop here
-        navigate(resolvedLocation)
-        return
-      }
     }
 
     if (space === undefined) {
@@ -251,6 +265,26 @@
     }
     if (app !== undefined) {
       localStorage.setItem(`platform_last_loc_${app}`, JSON.stringify(loc))
+    }
+    if (fragment !== currentFragment) {
+      currentFragment = fragment
+      if (fragment !== undefined && fragment.trim().length > 0) {
+        const props = decodeURIComponent(fragment).split('|')
+
+        if (props.length >= 3) {
+          openPanel(
+            props[0] as AnyComponent,
+            props[1],
+            props[2],
+            (props[3] ?? undefined) as PopupAlignment,
+            (props[4] ?? undefined) as AnyComponent
+          )
+        } else {
+          closePanel(false)
+        }
+      } else {
+        closePanel()
+      }
     }
   }
 
@@ -403,6 +437,14 @@
       )())
     )
   }
+
+  function getApps (apps: Application[] | Promise<Application[]>): Application[] {
+    if (apps instanceof Promise) {
+      return []
+    } else {
+      return apps
+    }
+  }
 </script>
 
 {#if employee?.active === true}
@@ -449,7 +491,7 @@
           <Settings size={'small'} />
         </div>
       </div>
-      <Applications {apps} active={currentApplication?._id} direction={appsDirection} bind:shown={shownMenu} />
+      <Applications apps={getApps(apps)} active={currentApplication?._id} direction={appsDirection} bind:shown={shownMenu} />
       <div class="info-box {appsDirection}" class:vertical-mobile={appsDirection === 'vertical' && appsMini}>
         <AppItem
           icon={request.icon.Requests}

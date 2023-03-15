@@ -76,7 +76,7 @@ export class TChannelProvider extends TDoc implements ChannelProvider {
 }
 
 @Model(contact.class.Contact, core.class.Doc, DOMAIN_CONTACT)
-@UX(contact.string.Contact, contact.icon.Person, undefined, 'name')
+@UX(contact.string.Contact, contact.icon.Person, 'CONT', 'name')
 export class TContact extends TDoc implements Contact {
   @Prop(TypeString(), contact.string.Name)
   @Index(IndexKind.FullText)
@@ -120,7 +120,7 @@ export class TChannel extends TAttachedDoc implements Channel {
 }
 
 @Model(contact.class.Person, contact.class.Contact)
-@UX(contact.string.Person, contact.icon.Person, undefined, 'name')
+@UX(contact.string.Person, contact.icon.Person, 'PRSN', 'name')
 export class TPerson extends TContact implements Person {
   @Prop(TypeDate(DateRangeMode.DATE, false), contact.string.Birthday)
     birthday?: Timestamp
@@ -134,7 +134,7 @@ export class TMember extends TAttachedDoc implements Member {
 }
 
 @Model(contact.class.Organization, contact.class.Contact)
-@UX(contact.string.Organization, contact.icon.Company, undefined, 'name')
+@UX(contact.string.Organization, contact.icon.Company, 'ORG', 'name')
 export class TOrganization extends TContact implements Organization {
   @Prop(Collection(contact.class.Member), contact.string.Members)
     members!: number
@@ -150,7 +150,7 @@ export class TStatus extends TAttachedDoc implements Status {
 }
 
 @Model(contact.class.Employee, contact.class.Person)
-@UX(contact.string.Employee, contact.icon.Person, undefined, 'name')
+@UX(contact.string.Employee, contact.icon.Person, 'EMP', 'name')
 export class TEmployee extends TPerson implements Employee {
   active!: boolean
 
@@ -221,7 +221,8 @@ export function createModel (builder: Builder): void {
       icon: contact.icon.ContactApplication,
       alias: contactId,
       hidden: false,
-      component: contact.component.ContactsTabs
+      component: contact.component.ContactsTabs,
+      locationResolver: contact.resolver.Location
     },
     contact.app.Contacts
   )
@@ -330,6 +331,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(contact.class.Channel, core.class.Class, view.mixin.CollectionPresenter, {
     presenter: contact.component.ChannelsPresenter
+  })
+
+  builder.mixin(contact.class.Contact, core.class.Class, view.mixin.LinkProvider, {
+    encode: contact.function.GetContactLink
   })
 
   builder.createDoc(

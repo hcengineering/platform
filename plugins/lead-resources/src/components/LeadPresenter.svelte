@@ -15,8 +15,8 @@
 -->
 <script lang="ts">
   import type { Lead } from '@hcengineering/lead'
-  import { getPanelURI, Icon } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import { Icon } from '@hcengineering/ui'
+  import { DocNavLink } from '@hcengineering/view-resources'
   import lead from '../plugin'
 
   export let value: Lead
@@ -24,14 +24,12 @@
 </script>
 
 {#if value}
-  <a
-    class="flex-presenter"
-    class:inline-presenter={inline}
-    href="#{getPanelURI(view.component.EditDoc, value._id, value._class, 'content')}"
-  >
-    <div class="icon">
-      <Icon icon={lead.icon.Lead} size={'small'} />
+  <DocNavLink object={value} {inline}>
+    <div class="flex-presenter" class:inline-presenter={inline}>
+      <div class="icon">
+        <Icon icon={lead.icon.Lead} size={'small'} />
+      </div>
+      <span class="label nowrap">LEAD-{value.number}</span>
     </div>
-    <span class="label nowrap">LEAD-{value.number}</span>
-  </a>
+  </DocNavLink>
 {/if}

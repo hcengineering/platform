@@ -93,6 +93,7 @@ async function genVacansyApplicants (
     fullDescription: faker.lorem.sentences(10),
     location: faker.address.city(),
     members: accountIds,
+    number: faker.datatype.number(),
     private: false,
     archived: false
   }
@@ -122,7 +123,7 @@ async function genVacansyApplicants (
     )
   }
 
-  console.log('Vacandy attachments generated', vacancy.name)
+  console.log('Vacancy attachments generated', vacancy.name)
 
   const states = await ctx.with('create-kanbad', {}, (ctx) => createUpdateSpaceKanban(ctx, vacancyId, client))
 

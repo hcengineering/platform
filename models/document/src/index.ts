@@ -182,6 +182,10 @@ export function createModel (builder: Builder): void {
     component: document.component.CreateDocument
   })
 
+  builder.mixin(document.class.Document, core.class.Class, view.mixin.ObjectPanel, {
+    component: document.component.EditDoc
+  })
+
   builder.createDoc(
     view.class.Viewlet,
     core.space.Model,

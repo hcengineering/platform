@@ -159,7 +159,7 @@ export class TTypeSprintStatus extends TType {}
  * @public
  */
 @Model(tracker.class.Team, core.class.Space, DOMAIN_SPACE)
-@UX(tracker.string.Team, tracker.icon.Team, tracker.string.Team)
+@UX(tracker.string.Team, tracker.icon.Team, 'TEAM')
 export class TTeam extends TSpace implements Team {
   @Prop(TypeString(), tracker.string.Title)
   @Index(IndexKind.FullText)
@@ -197,7 +197,7 @@ export function TypeReportedTime (): Type<number> {
  * @public
  */
 @Model(tracker.class.Issue, core.class.AttachedDoc, DOMAIN_TRACKER)
-@UX(tracker.string.Issue, tracker.icon.Issue, tracker.string.Issue, 'title')
+@UX(tracker.string.Issue, tracker.icon.Issue, 'TSK', 'title')
 export class TIssue extends TAttachedDoc implements Issue {
   @Prop(TypeRef(tracker.class.Issue), tracker.string.Parent)
   declare attachedTo: Ref<Issue>
@@ -280,7 +280,7 @@ export class TIssue extends TAttachedDoc implements Issue {
  * @public
  */
 @Model(tracker.class.IssueTemplate, core.class.Doc, DOMAIN_TRACKER)
-@UX(tracker.string.IssueTemplate, tracker.icon.Issue, tracker.string.IssueTemplate)
+@UX(tracker.string.IssueTemplate, tracker.icon.Issue, 'PROCESS')
 export class TIssueTemplate extends TDoc implements IssueTemplate {
   @Prop(TypeString(), tracker.string.Title)
   @Index(IndexKind.FullText)
@@ -330,7 +330,7 @@ export class TIssueTemplate extends TDoc implements IssueTemplate {
  * @public
  */
 @Model(tracker.class.TimeSpendReport, core.class.AttachedDoc, DOMAIN_TRACKER)
-@UX(tracker.string.TimeSpendReport, tracker.icon.TimeReport, tracker.string.TimeSpendReport)
+@UX(tracker.string.TimeSpendReport, tracker.icon.TimeReport)
 export class TTimeSpendReport extends TAttachedDoc implements TimeSpendReport {
   @Prop(TypeRef(tracker.class.Issue), tracker.string.Parent)
   declare attachedTo: Ref<Issue>
@@ -352,7 +352,7 @@ export class TTimeSpendReport extends TAttachedDoc implements TimeSpendReport {
  * @public
  */
 @Model(tracker.class.Project, core.class.Doc, DOMAIN_TRACKER)
-@UX(tracker.string.Project, tracker.icon.Project, tracker.string.Project)
+@UX(tracker.string.Project, tracker.icon.Project, 'PROJECT')
 export class TProject extends TDoc implements Project {
   @Prop(TypeString(), tracker.string.Title)
   // @Index(IndexKind.FullText)
@@ -392,7 +392,7 @@ export class TProject extends TDoc implements Project {
  * @public
  */
 @Model(tracker.class.Sprint, core.class.Doc, DOMAIN_TRACKER)
-@UX(tracker.string.Sprint, tracker.icon.Sprint, tracker.string.Sprint)
+@UX(tracker.string.Sprint, tracker.icon.Sprint)
 export class TSprint extends TDoc implements Sprint {
   @Prop(TypeString(), tracker.string.Title)
   // @Index(IndexKind.FullText)
@@ -437,7 +437,7 @@ export class TSprint extends TDoc implements Sprint {
  * @public
  */
 @Model(tracker.class.Scrum, core.class.Doc, DOMAIN_TRACKER)
-@UX(tracker.string.Scrum, tracker.icon.Scrum, tracker.string.Scrum)
+@UX(tracker.string.Scrum, tracker.icon.Scrum)
 export class TScrum extends TDoc implements Scrum {
   @Prop(TypeString(), tracker.string.Title)
     title!: string
@@ -467,7 +467,7 @@ export class TScrum extends TDoc implements Scrum {
  * @public
  */
 @Model(tracker.class.ScrumRecord, core.class.Doc, DOMAIN_TRACKER)
-@UX(tracker.string.ScrumRecord, tracker.icon.Scrum, tracker.string.ScrumRecord)
+@UX(tracker.string.ScrumRecord, tracker.icon.Scrum)
 export class TScrumRecord extends TAttachedDoc implements ScrumRecord {
   @Prop(TypeString(), tracker.string.Title)
     label!: string
@@ -923,6 +923,18 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.AllValuesFunc, {
     func: tracker.function.GetAllSprints
+  })
+
+  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.LinkProvider, {
+    encode: tracker.function.GetIssueLinkFragment
+  })
+
+  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ObjectPanel, {
+    component: tracker.component.EditIssue
+  })
+
+  builder.mixin(tracker.class.IssueTemplate, core.class.Class, view.mixin.ObjectPanel, {
+    component: tracker.component.EditIssueTemplate
   })
 
   builder.createDoc(

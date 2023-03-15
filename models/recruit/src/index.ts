@@ -18,6 +18,7 @@ import { Doc, FindOptions, IndexKind, Lookup, Ref, Timestamp } from '@hcengineer
 import {
   Builder,
   Collection,
+  Hidden,
   Index,
   Mixin,
   Model,
@@ -59,7 +60,7 @@ import { createReviewModel, reviewTableConfig, reviewTableOptions } from './revi
 import { TOpinion, TReview } from './review-model'
 
 @Model(recruit.class.Vacancy, task.class.SpaceWithStates)
-@UX(recruit.string.Vacancy, recruit.icon.Vacancy, undefined, 'name')
+@UX(recruit.string.Vacancy, recruit.icon.Vacancy, 'VCN', 'name')
 export class TVacancy extends TSpaceWithStates implements Vacancy {
   @Prop(TypeMarkup(), recruit.string.FullDescription)
   @Index(IndexKind.FullText)
@@ -83,6 +84,11 @@ export class TVacancy extends TSpaceWithStates implements Vacancy {
 
   @Prop(Collection(chunter.class.Backlink), chunter.string.Comments)
     relations!: number
+
+  @Prop(TypeString(), recruit.string.Vacancy)
+  @Index(IndexKind.FullText)
+  @Hidden()
+    number!: number
 }
 
 @Model(recruit.class.Candidates, core.class.Space)
@@ -135,7 +141,7 @@ export class TVacancyList extends TOrganization implements VacancyList {
 }
 
 @Model(recruit.class.Applicant, task.class.Task)
-@UX(recruit.string.Application, recruit.icon.Application, recruit.string.ApplicationShort, 'number')
+@UX(recruit.string.Application, recruit.icon.Application, 'APP', 'number')
 export class TApplicant extends TTask implements Applicant {
   // We need to declare, to provide property with label
   @Prop(TypeRef(recruit.mixin.Candidate), recruit.string.Talent)
@@ -162,7 +168,7 @@ export class TApplicant extends TTask implements Applicant {
 }
 
 @Model(recruit.class.ApplicantMatch, core.class.AttachedDoc, DOMAIN_TASK)
-@UX(recruit.string.Application, recruit.icon.Application, recruit.string.ApplicationShort, 'number')
+@UX(recruit.string.Application, recruit.icon.Application, 'APP', 'number')
 export class TApplicantMatch extends TAttachedDoc implements ApplicantMatch {
   // We need to declare, to provide property with label
   @Prop(TypeRef(recruit.mixin.Candidate), recruit.string.Talent)
@@ -234,6 +240,7 @@ export function createModel (builder: Builder): void {
     {
       label: recruit.string.RecruitApplication,
       icon: recruit.icon.RecruitApplication,
+      locationResolver: recruit.resolver.Location,
       alias: recruitId,
       hidden: false,
       navigatorModel: {
@@ -616,7 +623,31 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ObjectTitle, {
-    titleProvider: recruit.function.ApplicationTitleProvider
+    titleProvider: recruit.function.AppTitleProvider
+  })
+
+  builder.mixin(recruit.class.Review, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: recruit.function.RevTitleProvider
+  })
+
+  builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: recruit.function.VacTitleProvider
+  })
+
+  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.LinkProvider, {
+    encode: recruit.function.GetObjectLinkFragment
+  })
+
+  builder.mixin(recruit.class.Opinion, core.class.Class, view.mixin.LinkProvider, {
+    encode: recruit.function.GetObjectLinkFragment
+  })
+
+  builder.mixin(recruit.class.Review, core.class.Class, view.mixin.LinkProvider, {
+    encode: recruit.function.GetObjectLinkFragment
+  })
+
+  builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.LinkProvider, {
+    encode: recruit.function.GetObjectLinkFragment
   })
 
   builder.createDoc(
@@ -887,7 +918,7 @@ export function createModel (builder: Builder): void {
     {
       action: view.actionImpl.CopyTextToClipboard,
       actionProps: {
-        textProvider: recruit.function.GetApplicationId
+        textProvider: recruit.function.IdProvider
       },
       label: recruit.string.CopyId,
       icon: recruit.icon.Application,
@@ -908,7 +939,7 @@ export function createModel (builder: Builder): void {
     {
       action: view.actionImpl.CopyTextToClipboard,
       actionProps: {
-        textProvider: recruit.function.GetApplicationLink
+        textProvider: recruit.function.GetObjectLink
       },
       label: recruit.string.CopyLink,
       icon: recruit.icon.Application,
@@ -929,14 +960,14 @@ export function createModel (builder: Builder): void {
     {
       action: view.actionImpl.CopyTextToClipboard,
       actionProps: {
-        textProvider: recruit.function.GetRecruitLink
+        textProvider: recruit.function.GetObjectLink
       },
       label: recruit.string.CopyLink,
       icon: recruit.icon.Application,
       keyBinding: [],
       input: 'none',
       category: recruit.category.Recruit,
-      target: contact.class.Person,
+      target: recruit.class.Vacancy,
       context: {
         mode: ['context', 'browser'],
         application: recruit.app.Recruit,

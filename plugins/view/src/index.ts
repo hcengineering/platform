@@ -546,6 +546,20 @@ export type OrderOption = [string, SortingOrder]
 /**
  * @public
  */
+export interface LinkProvider extends Class<Doc> {
+  encode: Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>
+}
+
+/**
+ * @public
+ */
+export interface ObjectPanel extends Class<Doc> {
+  component: AnyComponent
+}
+
+/**
+ * @public
+ */
 export interface ViewOptionsModel {
   groupBy: string[]
   orderBy: OrderOption[]
@@ -580,7 +594,9 @@ const view = plugin(viewId, {
     PreviewPresenter: '' as Ref<Mixin<PreviewPresenter>>,
     ListHeaderExtra: '' as Ref<Mixin<ListHeaderExtra>>,
     SortFuncs: '' as Ref<Mixin<ClassSortFuncs>>,
-    AllValuesFunc: '' as Ref<Mixin<AllValuesFunc>>
+    AllValuesFunc: '' as Ref<Mixin<AllValuesFunc>>,
+    ObjectPanel: '' as Ref<Mixin<ObjectPanel>>,
+    LinkProvider: '' as Ref<Mixin<LinkProvider>>
   },
   class: {
     ViewletPreference: '' as Ref<Class<ViewletPreference>>,

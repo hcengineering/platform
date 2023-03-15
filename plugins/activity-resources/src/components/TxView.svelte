@@ -17,7 +17,7 @@
   import type { TxViewlet } from '@hcengineering/activity'
   import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
   import core, { AnyAttribute, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
-  import { Asset, getResource } from '@hcengineering/platform'
+  import { Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     Button,
@@ -26,13 +26,12 @@
     IconEdit,
     IconMoreH,
     Label,
-    Menu,
     ShowMore,
     showPopup,
     TimeSince
   } from '@hcengineering/ui'
   import type { AttributeModel } from '@hcengineering/view'
-  import { getActions, ObjectPresenter } from '@hcengineering/view-resources'
+  import { Menu, ObjectPresenter } from '@hcengineering/view-resources'
   import { ActivityKey, DisplayTx } from '../activity'
   import activity from '../plugin'
   import { getValue, TxDisplayViewlet, updateViewlet } from '../utils'
@@ -105,10 +104,10 @@
     )
 
   const showMenu = async (ev: MouseEvent): Promise<void> => {
-    const actions = await getActions(client, tx.doc as Doc)
     showPopup(
       Menu,
       {
+        object: tx.doc as Doc,
         actions: [
           {
             label: activity.string.Edit,
@@ -117,15 +116,7 @@
               edit = true
               props = getProps(props, edit)
             }
-          },
-          ...actions.map((a) => ({
-            label: a.label,
-            icon: a.icon,
-            action: async (_: any, evt: Event) => {
-              const impl = await getResource(a.action)
-              await impl(tx.doc as Doc, evt)
-            }
-          }))
+          }
         ]
       },
       ev.target as HTMLElement

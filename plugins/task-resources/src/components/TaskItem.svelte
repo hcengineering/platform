@@ -16,7 +16,7 @@
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
   import type { Issue, Task } from '@hcengineering/task'
-  import { Icon, Label } from '@hcengineering/ui'
+  import { Icon } from '@hcengineering/ui'
   import task from '../plugin'
 
   export let value: Task
@@ -34,7 +34,7 @@
 <div class="flex item">
   <Icon icon={task.icon.Task} size={'large'} />
   <div class="ml-2">
-    {#if shortLabel}<Label label={shortLabel} />-{/if}{value.number}
+    {#if shortLabel}{shortLabel}-{/if}{value.number}
   </div>
   {#if name}
     <div class="ml-1">{name}</div>

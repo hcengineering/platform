@@ -13,28 +13,29 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { DirectMessage } from '@hcengineering/chunter'
+  import { chunterId, DirectMessage } from '@hcengineering/chunter'
   import { getClient } from '@hcengineering/presentation'
-  import { Icon } from '@hcengineering/ui'
+  import { Icon, NavLink } from '@hcengineering/ui'
 
-  import { getSpaceLink, getDmName } from '../utils'
+  import { getDmName } from '../utils'
 
   export let value: DirectMessage
   const client = getClient()
 
   $: icon = client.getHierarchy().getClass(value._class).icon
-  $: link = getSpaceLink(value._id)
 </script>
 
 {#if value}
   {#await getDmName(client, value) then name}
-    <a class="flex-presenter" href={link}>
-      <div class="icon">
-        {#if icon}
-          <Icon {icon} size={'small'} />
-        {/if}
+    <NavLink app={chunterId} space={value._id}>
+      <div class="flex-presenter">
+        <div class="icon">
+          {#if icon}
+            <Icon {icon} size={'small'} />
+          {/if}
+        </div>
+        <span class="label">{name}</span>
       </div>
-      <span class="label">{name}</span>
-    </a>
+    </NavLink>
   {/await}
 {/if}

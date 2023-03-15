@@ -1,0 +1,42 @@
+<!--
+// Copyright © 2022 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required bgetObjectLinkFragmentr agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+<script lang="ts">
+  import { Doc, Hierarchy } from '@hcengineering/core'
+  import { getClient, NavLink } from '@hcengineering/presentation'
+  import { AnyComponent, getPanelURI } from '@hcengineering/ui'
+  import view from '../plugin'
+  import { getObjectLinkFragment } from '../utils'
+
+  export let object: Doc
+  export let disableClick = false
+  export let onClick: ((event: MouseEvent) => void) | undefined = undefined
+  export let noUnderline = false
+  export let inline = false
+  export let component: AnyComponent = view.component.EditDoc
+  export let props: Record<string, any> = {}
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  let href: string | undefined = getPanelURI(component, object._id, Hierarchy.mixinOrClass(object), 'content')
+
+  async function getHref (object: Doc): Promise<void> {
+    href = `#${await getObjectLinkFragment(hierarchy, object, props, component)}`
+  }
+
+  $: getHref(object)
+</script>
+
+<NavLink {disableClick} {onClick} {noUnderline} {inline} {href}><slot /></NavLink>

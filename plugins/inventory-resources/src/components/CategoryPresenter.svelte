@@ -15,21 +15,16 @@
 -->
 <script lang="ts">
   import { Category } from '@hcengineering/inventory'
-  import { getPanelURI } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import { DocNavLink } from '@hcengineering/view-resources'
 
   export let value: Category
   export let inline: boolean = false
 </script>
 
 {#if value}
-  <a
-    class="flex-presenter"
-    class:inline-presenter={inline}
-    href="#{getPanelURI(view.component.EditDoc, value._id, value._class, 'content')}"
-  >
-    <div class="overflow-label sm-tool-icon">
+  <DocNavLink object={value} {inline}>
+    <div class="flex-presenter overflow-label sm-tool-icon">
       {value.name}
     </div>
-  </a>
+  </DocNavLink>
 {/if}

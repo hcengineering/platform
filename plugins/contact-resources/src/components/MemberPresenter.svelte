@@ -15,10 +15,8 @@
 -->
 <script lang="ts">
   import contact, { Member } from '@hcengineering/contact'
-  import { Hierarchy } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { getPanelURI } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import { DocNavLink } from '@hcengineering/view-resources'
   import { ContactPresenter } from '..'
 
   export let value: Member
@@ -26,10 +24,10 @@
   const contactRef = getClient().findOne(contact.class.Contact, { _id: value.contact })
 </script>
 
-<a href={`#${getPanelURI(view.component.EditDoc, value._id, Hierarchy.mixinOrClass(value), 'content')}`}>
+<DocNavLink object={value}>
   {#await contactRef then ct}
     {#if ct}
       <ContactPresenter isInteractive={false} value={ct} />
     {/if}
   {/await}
-</a>
+</DocNavLink>

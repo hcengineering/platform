@@ -23,7 +23,7 @@ import {
   RelatedDocument,
   toIdMap
 } from '@hcengineering/core'
-import { IntlString, OK, Resources, Severity, Status, translate } from '@hcengineering/platform'
+import { OK, Resources, Severity, Status } from '@hcengineering/platform'
 import { ObjectSearchResult } from '@hcengineering/presentation'
 import { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
 import task from '@hcengineering/task'
@@ -41,7 +41,9 @@ import CreateVacancy from './components/CreateVacancy.svelte'
 import EditApplication from './components/EditApplication.svelte'
 import EditVacancy from './components/EditVacancy.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
+import MatchVacancy from './components/MatchVacancy.svelte'
 import NewCandidateHeader from './components/NewCandidateHeader.svelte'
+import Organizations from './components/Organizations.svelte'
 import CreateOpinion from './components/review/CreateOpinion.svelte'
 import CreateReview from './components/review/CreateReview.svelte'
 import EditReview from './components/review/EditReview.svelte'
@@ -56,14 +58,20 @@ import Vacancies from './components/Vacancies.svelte'
 import VacancyCountPresenter from './components/VacancyCountPresenter.svelte'
 import VacancyItem from './components/VacancyItem.svelte'
 import VacancyItemPresenter from './components/VacancyItemPresenter.svelte'
+import VacancyList from './components/VacancyList.svelte'
 import VacancyModifiedPresenter from './components/VacancyModifiedPresenter.svelte'
 import VacancyPresenter from './components/VacancyPresenter.svelte'
-import recruit from './plugin'
-import { objectIdProvider, objectLinkProvider, getApplicationTitle } from './utils'
-import VacancyList from './components/VacancyList.svelte'
 import VacancyTemplateEditor from './components/VacancyTemplateEditor.svelte'
-import MatchVacancy from './components/MatchVacancy.svelte'
-import Organizations from './components/Organizations.svelte'
+import recruit from './plugin'
+import {
+  getAppTitle,
+  getRevTitle,
+  getSequenceId,
+  getSequenceLink,
+  getVacTitle,
+  objectLinkProvider,
+  resolveLocation
+} from './utils'
 
 import { MoveApplicant } from './actionImpl'
 
@@ -95,7 +103,7 @@ export async function queryApplication (
 ): Promise<ObjectSearchResult[]> {
   const _class = recruit.class.Applicant
   const cl = client.getHierarchy().getClass(_class)
-  const shortLabel = (await translate(cl.shortLabel ?? ('' as IntlString), {})).toUpperCase()
+  const shortLabel = cl.shortLabel?.toUpperCase() ?? ''
 
   // Check number pattern
 
@@ -320,12 +328,17 @@ export default async (): Promise<Resources> => ({
       await queryVacancy(client, query, filter)
   },
   function: {
-    ApplicationTitleProvider: getApplicationTitle,
+    AppTitleProvider: getAppTitle,
+    VacTitleProvider: getVacTitle,
+    RevTitleProvider: getRevTitle,
+    IdProvider: getSequenceId,
     HasActiveApplicant: hasActiveApplicant,
     HasNoActiveApplicant: hasNoActiveApplicant,
     NoneApplications: noneApplicant,
-    GetApplicationId: objectIdProvider,
-    GetApplicationLink: objectLinkProvider,
-    GetRecruitLink: objectLinkProvider
+    GetObjectLink: objectLinkProvider,
+    GetObjectLinkFragment: getSequenceLink
+  },
+  resolver: {
+    Location: resolveLocation
   }
 })

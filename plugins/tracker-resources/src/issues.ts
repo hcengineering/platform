@@ -1,7 +1,7 @@
 import { Doc, DocumentUpdate, Ref, RelatedDocument, TxOperations } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import { Issue, Project, Sprint, Team, trackerId } from '@hcengineering/tracker'
-import { getCurrentLocation, getPanelURI, Location } from '@hcengineering/ui'
+import { getCurrentLocation, getPanelURI, Location, navigate } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
 import { writable } from 'svelte/store'
 import tracker from './plugin'
@@ -36,6 +36,11 @@ export async function issueIdProvider (doc: Doc): Promise<string> {
   return await getIssueTitle(client, doc._id)
 }
 
+export async function issueLinkFragmentProvider (doc: Doc): Promise<string> {
+  const client = getClient()
+  return await getIssueTitle(client, doc._id).then((p) => `${trackerId}|${p}`)
+}
+
 export async function issueTitleProvider (doc: Issue): Promise<string> {
   return await Promise.resolve(doc.title)
 }
@@ -47,7 +52,7 @@ export async function issueLinkProvider (doc: Doc): Promise<string> {
 
 export function generateIssueShortLink (issueId: string): string {
   const location = getCurrentLocation()
-  return `${window.location.protocol}//${window.location.host}/${workbenchId}/${location.path[1]}/${trackerId}/${issueId}`
+  return `${window.location.protocol}//${window.location.host}/${workbenchId}/${location.path[1]}/${trackerId}#${trackerId}|${issueId}`
 }
 
 export async function generateIssueLocation (loc: Location, issueId: string): Promise<Location | undefined> {
@@ -78,14 +83,25 @@ export async function generateIssueLocation (loc: Location, issueId: string): Pr
   }
 }
 
+function checkOld (loc: Location): void {
+  const short = loc.path[3]
+  if (isIssueId(short)) {
+    loc.fragment = short
+    loc.path.length = 3
+    navigate(loc)
+  }
+}
+
 export async function resolveLocation (loc: Location): Promise<Location | undefined> {
-  const app = loc.path.length > 2 ? loc.path[2] : undefined
-  if (app !== trackerId) {
+  const split = loc.fragment?.split('|') ?? []
+  const app = loc.path[2]
+  if (app !== trackerId && split[0] !== trackerId) {
     return undefined
   }
 
-  const shortLink = loc.path.length > 3 ? loc.path[3] : undefined
-  if (shortLink === undefined || shortLink === null) {
+  const shortLink = split[1] ?? loc.fragment
+  if (shortLink === undefined || shortLink === null || shortLink.trim() === '') {
+    checkOld(loc)
     return undefined
   }
 

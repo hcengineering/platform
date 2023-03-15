@@ -75,7 +75,7 @@ interface ClassTxes {
   icon?: Asset
   txes: Array<Tx>
   kind: ClassifierKind
-  shortLabel?: IntlString
+  shortLabel?: string | IntlString
   sortingKey?: string
 }
 
@@ -226,7 +226,7 @@ export function Mixin<T extends Obj> (_class: Ref<Class<T>>, _extends: Ref<Class
  * @param icon -
  * @returns
  */
-export function UX<T extends Obj> (label: IntlString, icon?: Asset, shortLabel?: IntlString, sortingKey?: string) {
+export function UX<T extends Obj> (label: IntlString, icon?: Asset, shortLabel?: string, sortingKey?: string) {
   return function classDecorator<C extends new () => T> (constructor: C): void {
     const txes = getTxes(constructor.prototype)
     txes.label = label

@@ -38,6 +38,7 @@ import {
   AnyComponent,
   ErrorPresenter,
   getCurrentLocation,
+  getPanelURI,
   getPlatformColorForText,
   Location,
   locationToUrl
@@ -673,4 +674,26 @@ export function getAdditionalHeader (client: TxOperations, _class: Ref<Class<Doc
     mixinClazz = hierarchy.getClass(mixinClazz.extends)
   }
   return presenterMixin.presenters
+}
+
+export async function getObjectLinkFragment (
+  hierarchy: Hierarchy,
+  object: Doc,
+  props: Record<string, any> = {},
+  component: AnyComponent = view.component.EditDoc
+): Promise<string> {
+  let clazz = hierarchy.getClass(object._class)
+  let provider = hierarchy.as(clazz, view.mixin.LinkProvider)
+  while (provider.encode === undefined && clazz.extends !== undefined) {
+    clazz = hierarchy.getClass(clazz.extends)
+    provider = hierarchy.as(clazz, view.mixin.LinkProvider)
+  }
+  if (provider?.encode !== undefined) {
+    const f = await getResource(provider.encode)
+    const res = await f(object, props)
+    if (res !== undefined) {
+      return res
+    }
+  }
+  return getPanelURI(component, object._id, Hierarchy.mixinOrClass(object), 'content')
 }

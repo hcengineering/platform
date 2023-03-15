@@ -16,22 +16,19 @@
   import type { Class, Doc, Ref, Space } from '@hcengineering/core'
   import core, { WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+  import presentation, { createQuery } from '@hcengineering/presentation'
   import {
     AnyComponent,
     Button,
     deviceOptionsStore as deviceInfo,
     IconAdd,
     SearchEdit,
-    showPanel,
     showPopup,
     TabList
   } from '@hcengineering/ui'
-  import view, { Viewlet, ViewOptions } from '@hcengineering/view'
+  import { Viewlet, ViewOptions } from '@hcengineering/view'
   import { getActiveViewletId, setActiveViewletId, ViewletSettingButton } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import plugin from '../plugin'
-  import { classIcon } from '../utils'
   import Header from './Header.svelte'
 
   export let spaceId: Ref<Space> | undefined
@@ -43,8 +40,6 @@
   export let _class: Ref<Class<Doc>> | undefined = undefined
   export let viewOptions: ViewOptions
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const query = createQuery()
   let space: Space | undefined
   const dispatch = createEventDispatcher()
@@ -64,19 +59,6 @@
   $: if (prevSpaceId !== spaceId) {
     search = ''
     dispatch('search', '')
-  }
-
-  async function getEditor (_class: Ref<Class<Doc>>): Promise<AnyComponent | undefined> {
-    const clazz = hierarchy.getClass(_class)
-    const editorMixin = hierarchy.as(clazz, view.mixin.ObjectEditor)
-    if (editorMixin?.editor == null && clazz.extends != null) return getEditor(clazz.extends)
-    return editorMixin.editor
-  }
-
-  async function onSpaceEdit (): Promise<void> {
-    if (space === undefined) return
-    const editor = await getEditor(space._class)
-    showPanel(editor ?? plugin.component.SpacePanel, space._id, space._class, 'content')
   }
 
   function updateViewlets (viewlets: WithLookup<Viewlet>[]) {
@@ -99,13 +81,7 @@
 <div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
   {#if space}
     <div class:ac-header-full={!twoRows} class:flex-stretch={twoRows}>
-      <Header
-        icon={classIcon(client, space._class)}
-        label={space.name}
-        description={space.description}
-        {_class}
-        on:click={onSpaceEdit}
-      />
+      <Header {space} {_class} />
       <SearchEdit
         bind:value={search}
         on:change={() => {

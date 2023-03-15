@@ -16,44 +16,14 @@
 <script lang="ts">
   import { getEmbeddedLabel } from '@hcengineering/platform'
 
-  import type { Vacancy } from '@hcengineering/recruit'
-  import {
-    ActionIcon,
-    getCurrentLocation,
-    Icon,
-    IconEdit,
-    Location,
-    locationToUrl,
-    navigate,
-    showPanel,
-    tooltip
-  } from '@hcengineering/ui'
+  import { Vacancy } from '@hcengineering/recruit'
+  import { Icon, tooltip } from '@hcengineering/ui'
+  import { DocNavLink } from '@hcengineering/view-resources'
   import recruit from '../plugin'
 
   export let value: Vacancy
   export let inline: boolean = false
   export let disableClick = false
-
-  function editVacancy (): void {
-    if (disableClick) {
-      return
-    }
-    showPanel(recruit.component.EditVacancy, value._id, value._class, 'content')
-  }
-
-  function getLoc (): Location {
-    const loc = getCurrentLocation()
-    loc.path[2] = 'recruit'
-    loc.path[3] = value._id
-    loc.path.length = 4
-    loc.fragment = ''
-    return loc
-  }
-
-  function getLink (): string {
-    const loc = getLoc()
-    return document.location.origin + locationToUrl(loc)
-  }
 </script>
 
 {#if value}
@@ -61,23 +31,8 @@
     <div class="icon">
       <Icon icon={recruit.icon.Vacancy} size={'small'} />
     </div>
-    <a
-      on:click|preventDefault={(e) => {
-        if (inline) {
-          editVacancy()
-          return
-        }
-        navigate(getLoc())
-        e.preventDefault()
-      }}
-      href={getLink()}
-    >
+    <DocNavLink {disableClick} object={value} {inline} component={recruit.component.EditVacancy}>
       <span class="label">{value.name}</span>
-    </a>
-    {#if !inline}
-      <div class="action">
-        <ActionIcon label={recruit.string.Edit} size={'small'} icon={IconEdit} action={editVacancy} />
-      </div>
-    {/if}
+    </DocNavLink>
   </div>
 {/if}

@@ -1,9 +1,9 @@
 <script lang="ts">
   import { Employee, EmployeeAccount, getName, Status } from '@hcengineering/contact'
-  import { getCurrentAccount, Hierarchy, Ref, WithLookup } from '@hcengineering/core'
+  import { getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
   import { Avatar, createQuery, getClient } from '@hcengineering/presentation'
-  import { Button, getPanelURI, Label, resizeObserver, showPopup } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import { Button, Label, resizeObserver, showPopup } from '@hcengineering/ui'
+  import { DocNavLink } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
   import EmployeeSetStatusPopup from './EmployeeSetStatusPopup.svelte'
@@ -63,9 +63,9 @@
       <Avatar size="x-large" avatar={employee.avatar} />
     </div>
     <div class="pb-2">{getName(employee)}</div>
-    <a href={`#${getPanelURI(view.component.EditDoc, employee._id, Hierarchy.mixinOrClass(employee), 'content')}`}
-      ><Label label={contact.string.ViewFullProfile} /></a
-    >
+    <DocNavLink object={employee}>
+      <Label label={contact.string.ViewFullProfile} />
+    </DocNavLink>
     {#if status}
       <div class="pb-2">
         <Label label={contact.string.Status} />

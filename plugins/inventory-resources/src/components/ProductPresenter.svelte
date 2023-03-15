@@ -15,8 +15,8 @@
 -->
 <script lang="ts">
   import { Product } from '@hcengineering/inventory'
-  import { getPanelURI, Icon } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import { Icon } from '@hcengineering/ui'
+  import { DocNavLink } from '@hcengineering/view-resources'
   import inventory from '../plugin'
 
   export let value: Product
@@ -24,12 +24,10 @@
 </script>
 
 {#if value}
-  <a
-    class="flex-presenter"
-    class:inline-presenter={inline}
-    href="#{getPanelURI(view.component.EditDoc, value._id, value._class, 'content')}"
-  >
-    <div class="icon"><Icon icon={inventory.icon.Products} size={'small'} /></div>
-    <span class="label">{value.name}</span>
-  </a>
+  <DocNavLink {inline} object={value}>
+    <div class="flex-presenter" class:inline-presenter={inline}>
+      <div class="icon"><Icon icon={inventory.icon.Products} size={'small'} /></div>
+      <span class="label">{value.name}</span>
+    </div>
+  </DocNavLink>
 {/if}

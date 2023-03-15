@@ -17,9 +17,8 @@
   import { getClient } from '@hcengineering/presentation'
   import type { Applicant } from '@hcengineering/recruit'
   import recruit from '@hcengineering/recruit'
-  import { Icon, Label } from '@hcengineering/ui'
-  import { getPanelURI } from '@hcengineering/ui/src/panelup'
-  import view from '@hcengineering/view'
+  import { Icon } from '@hcengineering/ui'
+  import { DocNavLink } from '@hcengineering/view-resources'
 
   export let value: Applicant
   export let inline: boolean = false
@@ -30,16 +29,14 @@
 </script>
 
 {#if value && shortLabel}
-  <a
-    class="flex-presenter"
-    class:inline-presenter={inline}
-    href="#{disableClick ? null : getPanelURI(view.component.EditDoc, value._id, value._class, 'content')}"
-  >
-    <div class="icon">
-      <Icon icon={recruit.icon.Application} size={'small'} />
+  <DocNavLink object={value} {inline} {disableClick}>
+    <div class="flex-presenter" class:inline-presenter={inline}>
+      <div class="icon">
+        <Icon icon={recruit.icon.Application} size={'small'} />
+      </div>
+      <span class="label nowrap">
+        {#if shortLabel}{shortLabel}-{/if}{value.number}
+      </span>
     </div>
-    <span class="label nowrap"
-      >{#if shortLabel}<Label label={shortLabel} />-{/if}{value.number}</span
-    >
-  </a>
+  </DocNavLink>
 {/if}

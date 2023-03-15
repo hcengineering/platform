@@ -63,7 +63,9 @@ import type {
   ViewletPreference,
   ViewOptionsModel,
   ViewOptions,
-  AllValuesFunc
+  AllValuesFunc,
+  LinkProvider,
+  ObjectPanel
 } from '@hcengineering/view'
 import view from './plugin'
 
@@ -289,6 +291,16 @@ export class TLinkPresenter extends TDoc implements LinkPresenter {
   component!: AnyComponent
 }
 
+@Mixin(view.mixin.LinkProvider, core.class.Class)
+export class TLinkProvider extends TClass implements LinkProvider {
+  encode!: Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>
+}
+
+@Mixin(view.mixin.ObjectPanel, core.class.Class)
+export class TObjectPanel extends TClass implements ObjectPanel {
+  component!: AnyComponent
+}
+
 export type ActionTemplate = Partial<Data<Action>>
 
 /**
@@ -318,6 +330,8 @@ export const actionTemplates = template({
 
 export function createModel (builder: Builder): void {
   builder.createModel(
+    TLinkProvider,
+    TObjectPanel,
     TFilterMode,
     TClassFilters,
     TAttributeFilter,

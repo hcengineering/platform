@@ -15,7 +15,8 @@
 //
 
 import contact, { contactId } from '@hcengineering/contact'
-import { IntlString, mergeIds } from '@hcengineering/platform'
+import { Doc } from '@hcengineering/core'
+import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
 import { FilterFunction, SortFunc } from '@hcengineering/view'
 
 export default mergeIds(contactId, contact, {
@@ -65,6 +66,7 @@ export default mergeIds(contactId, contact, {
     DisplayName: '' as IntlString
   },
   function: {
+    GetContactLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
     EmployeeSort: '' as SortFunc,
     FilterChannelInResult: '' as FilterFunction,
     FilterChannelNinResult: '' as FilterFunction

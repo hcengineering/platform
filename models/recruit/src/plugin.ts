@@ -39,12 +39,10 @@ export default mergeIds(recruitId, recruit, {
     Recruit: '' as Ref<ActionCategory>
   },
   function: {
-    GetApplicationId: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
-    GetApplicationLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
-    GetRecruitLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>
+    GetObjectLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
+    GetObjectLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>
   },
   string: {
-    ApplicationShort: '' as IntlString,
     ApplicationsShort: '' as IntlString,
     RecruitApplication: '' as IntlString,
     TalentPools: '' as IntlString,

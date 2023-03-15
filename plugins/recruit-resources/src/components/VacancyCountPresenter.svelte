@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import { Doc, DocumentQuery, Ref } from '@hcengineering/core'
-  import { Vacancy } from '@hcengineering/recruit'
-  import { Icon, tooltip } from '@hcengineering/ui'
+  import { recruitId, Vacancy } from '@hcengineering/recruit'
+  import { getCurrentLocation, Icon, navigate, tooltip } from '@hcengineering/ui'
   import recruit from '../plugin'
   import VacancyApplicationsPopup from './VacancyApplicationsPopup.svelte'
 
@@ -24,6 +24,15 @@
   export let resultQuery: DocumentQuery<Doc>
 
   $: count = applications?.get(value._id)?.count ?? 0
+
+  function click () {
+    const loc = getCurrentLocation()
+    loc.fragment = undefined
+    loc.query = undefined
+    loc.path[2] = recruitId
+    loc.path[3] = value._id
+    navigate(loc)
+  }
 </script>
 
 {#if value && count > 0}
@@ -34,6 +43,7 @@
       component: VacancyApplicationsPopup,
       props: { value: value._id, resultQuery }
     }}
+    on:click={click}
   >
     <div class="icon">
       <Icon icon={recruit.icon.Application} size={'small'} />
