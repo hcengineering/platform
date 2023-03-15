@@ -15,6 +15,8 @@
 -->
 <script lang="ts">
   import { Organization } from '@hcengineering/contact'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { tooltip } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
   import Company from './icons/Company.svelte'
 
@@ -24,7 +26,7 @@
 
 {#if value}
   <DocNavLink {inline} object={value}>
-    <div class="flex-presenter">
+    <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
       <div class="icon circle"><Company size={'small'} /></div>
       <span class="label">{value.name}</span>
     </div>

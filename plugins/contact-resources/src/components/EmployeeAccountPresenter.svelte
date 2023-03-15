@@ -16,8 +16,9 @@
 <script lang="ts">
   import { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
   import { Account } from '@hcengineering/core'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
   import { Avatar, createQuery } from '@hcengineering/presentation'
-  import { showPopup } from '@hcengineering/ui'
+  import { showPopup, tooltip } from '@hcengineering/ui'
   import { EditDoc } from '@hcengineering/view-resources'
   import contact from '../plugin'
 
@@ -39,7 +40,12 @@
 
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="flex-row-center" class:user-container={employee !== undefined} on:click={onClick}>
+  <div
+    class="flex-row-center"
+    class:user-container={employee !== undefined}
+    on:click={onClick}
+    use:tooltip={{ label: getEmbeddedLabel(employee ? getName(employee) : value.email) }}
+  >
     {#if employee}
       <Avatar size={'x-small'} avatar={employee.avatar} />
       <div class="overflow-label user">{getName(employee)}</div>
