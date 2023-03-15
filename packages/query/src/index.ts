@@ -271,7 +271,7 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   private async checkSearch (q: Query, _id: Ref<Doc>): Promise<boolean> {
-    const match = await this.findOne(q._class, { $search: q.query.$search, _id }, q.options)
+    const match = await this.client.findOne(q._class, { $search: q.query.$search, _id }, q.options)
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
@@ -292,7 +292,7 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   private async getCurrentDoc (q: Query, _id: Ref<Doc>): Promise<boolean> {
-    const current = await this.findOne(q._class, { _id }, q.options)
+    const current = await this.client.findOne(q._class, { _id }, q.options)
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
@@ -378,7 +378,7 @@ export class LiveQuery extends TxProcessor implements Client {
           await this.updatedDocCallback(udoc, q)
         } else if (isMixin) {
           // Mixin potentially added to object we doesn't have in out results
-          const doc = await this.findOne(q._class, { _id: tx.objectId }, q.options)
+          const doc = await this.client.findOne(q._class, { _id: tx.objectId }, q.options)
           if (doc !== undefined) {
             await this.handleDocAdd(q, doc, false)
           }
@@ -624,7 +624,7 @@ export class LiveQuery extends TxProcessor implements Client {
       const tkey = checkMixinKey(key, _class, this.client.getHierarchy())
       if (Array.isArray(value)) {
         const [_class, nested] = value
-        const objects = await this.findAll(_class, { _id: getObjectValue(tkey, doc) })
+        const objects = await this.client.findAll(_class, { _id: getObjectValue(tkey, doc) })
         ;(result as any)[key] = objects[0]
         const nestedResult = {}
         const parent = (result as any)[key]
@@ -635,7 +635,7 @@ export class LiveQuery extends TxProcessor implements Client {
           })
         }
       } else {
-        const objects = await this.findAll(value, { _id: getObjectValue(tkey, doc) })
+        const objects = await this.client.findAll(value, { _id: getObjectValue(tkey, doc) })
         ;(result as any)[key] = objects[0]
       }
     }
@@ -658,7 +658,7 @@ export class LiveQuery extends TxProcessor implements Client {
       } else {
         _class = value
       }
-      const objects = await this.findAll(_class, { [attr]: doc._id })
+      const objects = await this.client.findAll(_class, { [attr]: doc._id })
       ;(result as any)[key] = objects
     }
   }
@@ -697,7 +697,7 @@ export class LiveQuery extends TxProcessor implements Client {
 
       // If query contains search we must check use fulltext
       if (q.query.$search != null && q.query.$search.length > 0) {
-        const match = await this.findOne(q._class, { $search: q.query.$search, _id: doc._id }, q.options)
+        const match = await this.client.findOne(q._class, { $search: q.query.$search, _id: doc._id }, q.options)
         if (match === undefined) return
       }
       q.result.push(doc)
