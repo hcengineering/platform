@@ -13,10 +13,9 @@
 // limitations under the License.
 //
 
-import { DOMAIN_TX, Ref, TxCreateDoc, TxOperations } from '@hcengineering/core'
-import { Funnel } from '@hcengineering/lead'
+import { Ref, TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
-import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
+import core from '@hcengineering/model-core'
 import { createKanbanTemplate, createSequence } from '@hcengineering/model-task'
 import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
 import lead from './plugin'
@@ -100,42 +99,8 @@ async function createDefaults (tx: TxOperations): Promise<void> {
   await createDefaultKanban(tx)
 }
 
-async function fillCreatedBy (client: MigrationClient): Promise<void> {
-  const objects = await client.find<Funnel>(DOMAIN_SPACE, {
-    _class: lead.class.Funnel,
-    createdBy: { $exists: false }
-  })
-  const txes = await client.find<TxCreateDoc<Funnel>>(DOMAIN_TX, {
-    objectClass: lead.class.Funnel,
-    _class: core.class.TxCreateDoc
-  })
-  const txMap = new Map(txes.map((p) => [p.objectId, p]))
-
-  for (const object of objects) {
-    const createTx = txMap.get(object._id)
-    if (createTx !== undefined && createTx.attributes.createdBy === undefined) {
-      await client.update(
-        DOMAIN_TX,
-        { _id: createTx._id },
-        {
-          'attributes.createdBy': createTx.modifiedBy
-        }
-      )
-    }
-    await client.update(
-      DOMAIN_SPACE,
-      { _id: object._id },
-      {
-        createdBy: createTx?.modifiedBy ?? object.modifiedBy
-      }
-    )
-  }
-}
-
 export const leadOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await fillCreatedBy(client)
-  },
+  async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const ops = new TxOperations(client, core.account.System)
     await createDefaults(ops)

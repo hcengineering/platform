@@ -56,6 +56,7 @@ export interface Doc extends Obj {
   space: Ref<Space>
   modifiedOn: Timestamp
   modifiedBy: Ref<Account>
+  createdBy?: Ref<Account>
 }
 
 /**
@@ -295,7 +296,6 @@ export interface Space extends Doc {
   private: boolean
   members: Arr<Ref<Account>>
   archived: boolean
-  createdBy?: Ref<Account>
 }
 
 /**

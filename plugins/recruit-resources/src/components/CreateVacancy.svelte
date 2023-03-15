@@ -143,7 +143,6 @@
         archived: false,
         number: (incResult as any).object.sequence,
         company,
-        createdBy: getCurrentAccount()._id,
         members: [getCurrentAccount()._id]
       },
       objectId

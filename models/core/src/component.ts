@@ -19,7 +19,6 @@ import { IntlString, mergeIds } from '@hcengineering/platform'
 export default mergeIds(coreId, core, {
   string: {
     Archived: '' as IntlString,
-    CreatedBy: '' as IntlString,
     ClassLabel: '' as IntlString,
     ClassPropertyLabel: '' as IntlString,
     Members: '' as IntlString

@@ -22,7 +22,9 @@ import core, {
   DOMAIN_MODEL,
   DOMAIN_TX,
   FieldIndex,
+  Hierarchy,
   IndexKind,
+  ModelDb,
   Tx,
   WorkspaceId
 } from '@hcengineering/core'
@@ -172,7 +174,20 @@ export async function upgradeModel (
     const insert = await db.collection(DOMAIN_TX).insertMany(model as Document[])
     console.log(`${insert.insertedCount} model transactions inserted.`)
 
-    const migrateClient = new MigrateClientImpl(db)
+    const hierarchy = new Hierarchy()
+    const modelDb = new ModelDb(hierarchy)
+    for (const tx of txes) {
+      try {
+        hierarchy.tx(tx)
+      } catch (err: any) {}
+    }
+    for (const tx of txes) {
+      try {
+        await modelDb.tx(tx)
+      } catch (err: any) {}
+    }
+
+    const migrateClient = new MigrateClientImpl(db, hierarchy, modelDb)
     for (const op of migrateOperations) {
       console.log('migrate:', op[0])
       await op[1].migrate(migrateClient)

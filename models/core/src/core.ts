@@ -94,6 +94,9 @@ export class TDoc extends TObj implements Doc {
 
   @Prop(TypeRef(core.class.Account), core.string.ModifiedBy)
     modifiedBy!: Ref<Account>
+
+  @Prop(TypeRef(core.class.Account), core.string.CreatedBy)
+    createdBy!: Ref<Account>
 }
 
 @Model(core.class.AttachedDoc, core.class.Doc)

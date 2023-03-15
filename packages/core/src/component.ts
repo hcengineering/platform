@@ -154,6 +154,7 @@ export default plugin(coreId, {
     Description: '' as IntlString,
     Hyperlink: '' as IntlString,
     Private: '' as IntlString,
-    Object: '' as IntlString
+    Object: '' as IntlString,
+    CreatedBy: '' as IntlString
   }
 })

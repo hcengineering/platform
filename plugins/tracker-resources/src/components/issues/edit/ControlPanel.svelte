@@ -13,8 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ClassifierKind, Doc, Mixin, Ref, WithLookup } from '@hcengineering/core'
+  import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
+  import { EmployeePresenter } from '@hcengineering/contact-resources'
+  import core, { ClassifierKind, Doc, Mixin, Ref, WithLookup } from '@hcengineering/core'
   import { AttributeBarEditor, createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
+
   import tags from '@hcengineering/tags'
   import type { Issue, IssueStatus } from '@hcengineering/tracker'
   import { Component, Label } from '@hcengineering/ui'
@@ -73,6 +76,31 @@
   }
 
   $: updateKeys(['title', 'description', 'priority', 'status', 'number', 'assignee', 'project', 'dueDate', 'sprint'])
+
+  const employeeAccountQuery = createQuery()
+  const employeeQuery = createQuery()
+
+  let account: EmployeeAccount | undefined
+  let employee: Employee | undefined
+
+  $: employeeAccountQuery.query(
+    contact.class.EmployeeAccount,
+    { _id: issue.createdBy as Ref<EmployeeAccount> },
+    (res) => {
+      ;[account] = res
+    },
+    { limit: 1 }
+  )
+
+  $: account &&
+    employeeQuery.query(
+      contact.class.Employee,
+      { _id: account.employee },
+      (res) => {
+        ;[employee] = res
+      },
+      { limit: 1 }
+    )
 </script>
 
 <div class="content">
@@ -125,6 +153,13 @@
     <Label label={tracker.string.Priority} />
   </span>
   <PriorityEditor value={issue} shouldShowLabel />
+
+  <span class="label">
+    <Label label={core.string.CreatedBy} />
+  </span>
+  <div class="min-w-0 w-full employee-button overflow-label">
+    <EmployeePresenter value={employee} inline />
+  </div>
 
   <span class="label">
     <Label label={tracker.string.Assignee} />
@@ -195,5 +230,18 @@
   .labelTop {
     align-self: start;
     margin-top: 0.385rem;
+  }
+
+  .employee-button {
+    padding: 0 0.875rem;
+    border: 1px solid transparent;
+    display: flex;
+    min-height: 2rem;
+    &:hover {
+      border: 1px solid var(--button-border-hover);
+      color: var(--accent-color);
+      transition-duration: 0;
+      border-radius: 0.25rem;
+    }
   }
 </style>
