@@ -5,6 +5,18 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "address": "127.0.0.1",
+      "localRoot": "${workspaceFolder}",
+      "name": "Attach to Remote",
+      "port": 9229,
+      "request": "attach",
+      "sourceMaps": true,
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "type": "node"
+    },
+    {
       "name": "Python: Embeddings",
       "type": "python",
       "request": "launch",
@@ -88,10 +100,10 @@
       "protocol": "inspector"
     },
     {
-      "name": "Debug tool import-lead-csv",
+      "name": "Debug backup tool",
       "type": "node",
       "request": "launch",
-      "args": ["src/index.ts", "import-lead-csv", "ws1", "../../../suho/COMPANIES_Agency_of_AlexeyS.csv"],
+      "args": ["src/index.ts", "backup", "../../../dump/alex-staff-agency2", "alex-staff-agency"],
       "env": {
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
@@ -103,7 +115,8 @@
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
-      "cwd": "${workspaceRoot}/dev/tool"
+      "cwd": "${workspaceRoot}/dev/tool",
+      "protocol": "inspector"
     },
     {
       "name": "Debug tool upgrade",
@@ -140,6 +153,27 @@
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/pods/collaborator",
       "protocol": "inspector"
-    }
+    },
+    {
+      "name": "Debug backup",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "MINIO_ENDPOINT": "localhost",
+        "MINIO_ACCESS_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin",
+        "SECRET": "secret",
+        "TRANSACTOR_URL": "ws:/localhost:3333",
+        "BUCKET_NAME":"test_backups",
+        "INTERVAL":"30"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "showAsyncStacks": true,
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/pods/backup",
+      "protocol": "inspector"
+    },
   ]
 }

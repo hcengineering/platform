@@ -58,6 +58,7 @@
       icon={tracker.icon.NewIssue}
       label={draftExists ? tracker.string.ResumeDraft : tracker.string.NewIssue}
       justify={'left'}
+      kind={'primary'}
       width={'100%'}
       on:click={newIssue}
     >

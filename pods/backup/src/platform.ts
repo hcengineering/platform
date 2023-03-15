@@ -89,7 +89,7 @@ export class PlatformWorker {
   async backup (): Promise<void> {
     const workspaces = await getWorkspaces()
     for (const ws of workspaces) {
-      console.log('\n\nBACKUP WORKSPACE ', ws)
+      console.log('\n\nBACKUP WORKSPACE ', ws.workspace, ws.productId)
       try {
         const storage = await createMinioBackupStorage(
           this.minio,
