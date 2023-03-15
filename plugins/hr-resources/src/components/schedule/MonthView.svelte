@@ -35,7 +35,7 @@
     tooltip
   } from '@hcengineering/ui'
   import hr from '../../plugin'
-  import { EmployeeReports, getRequests, getTotal } from '../../utils'
+  import { EmployeeReports, getAll, getDates, getRequests, getTotal, isHoliday } from '../../utils'
   import CreateRequest from '../CreateRequest.svelte'
   import RequestsPopup from '../RequestsPopup.svelte'
   import ScheduleRequests from '../ScheduleRequests.svelte'
@@ -81,9 +81,15 @@
 
   const noWeekendHolidayType: Ref<RequestType>[] = [hr.ids.PTO, hr.ids.PTO2, hr.ids.Vacation]
 
-  function getTooltip (requests: Request[], day: Date): LabelAndProps | undefined {
+  function getTooltip (requests: Request[], day: Date, staff: Staff): LabelAndProps | undefined {
     if (requests.length === 0) return
-    if (day && isWeekend(day) && requests.some((req) => noWeekendHolidayType.includes(req.type))) return
+    if (
+      day &&
+      (isWeekend(day) || (holidays?.size > 0 && isHoliday(getDates(staffDepartmentMap, staff._id, holidays), day))) &&
+      requests.some((req) => noWeekendHolidayType.includes(req.type))
+    ) {
+      return
+    }
     return {
       component: RequestsPopup,
       props: { requests: requests.map((it) => it._id) }
@@ -124,10 +130,8 @@
     showPopup(CreatePublicHoliday, { date, department })
   }
 
-  export let holidays: Date[] | undefined = undefined
-  function isHoliday (holidays: Date[], day: Date): boolean {
-    return holidays && holidays.some((date) => areDatesEqual(day, date))
-  }
+  export let staffDepartmentMap: Map<Ref<Staff>, Department[]>
+  export let holidays: Map<Ref<Department>, Date[]>
 </script>
 
 {#if departmentStaff.length}
@@ -144,7 +148,7 @@
             {@const day = getDay(startDate, value)}
             <th
               class:today={areDatesEqual(todayDate, day)}
-              class:holiday={isHoliday(holidays, day)}
+              class:holiday={isHoliday([...holidays.values()].flat(), day)}
               class:weekend={isWeekend(day)}
               class:hoveredCell={hoveredColumn === i}
               on:mousemove={() => {
@@ -174,7 +178,7 @@
               class:firstLine={row === 0}
               class:lastLine={row === departmentStaff.length - 1}
             >
-              {getTotal(requests, startDate, endDate, types, holidays)}
+              {getTotal(requests, startDate, endDate, types, getDates(staffDepartmentMap, employee._id, holidays))}
             </td>
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <td
@@ -192,14 +196,15 @@
               {@const day = getDay(startDate, value)}
               {@const requests = getRequests(employeeRequests, day, day, employee._id)}
               {@const editable = isEditable(employee)}
-              {@const tooltipValue = getTooltip(requests)}
+              {@const tooltipValue = getTooltip(requests, day, employee)}
               {@const ww = findReports(employee, day, timeReports)}
               {#key [tooltipValue, editable]}
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <td
                   class="w-9 max-w-9 min-w-9"
                   class:today={areDatesEqual(todayDate, day)}
-                  class:weekend={isWeekend(day) || isHoliday(holidays, day)}
+                  class:holiday={isHoliday(getDates(staffDepartmentMap, employee._id, holidays), day)}
+                  class:weekend={isWeekend(day) || isHoliday(getDates(staffDepartmentMap, employee._id, holidays), day)}
                   class:cursor-pointer={editable}
                   class:hovered={i === hoveredIndex}
                   class:firstLine={row === 0}
@@ -215,7 +220,15 @@
                 >
                   <div class:worked={ww > 0} class="h-full w-full">
                     {#if requests.length}
-                      <ScheduleRequests {requests} {editable} date={day} {holidays} {noWeekendHolidayType} />
+                      <ScheduleRequests
+                        {requests}
+                        {editable}
+                        date={day}
+                        {noWeekendHolidayType}
+                        {holidays}
+                        {employee}
+                        {staffDepartmentMap}
+                      />
                     {/if}
                   </div>
                 </td>
@@ -230,7 +243,13 @@
             <Label label={hr.string.Summary} />
           </td>
           <td class="flex-center p-1 whitespace-nowrap text-center summary">
-            {getTotal(Array.from(employeeRequests.values()).flat(), startDate, endDate, types, holidays)}
+            {getTotal(
+              Array.from(employeeRequests.values()).flat(),
+              startDate,
+              endDate,
+              types,
+              [...holidays.values()].flat()
+            )}
           </td>
           <td class="p-1 text-center summary">
             {floorFractionDigits(
@@ -242,11 +261,10 @@
           </td>
           {#each values as value, i}
             {@const day = getDay(startDate, value)}
-            {@const requests = getRequests(employeeRequests, day)}
             <td
               class="p-1 text-center summary"
               class:hovered={i === hoveredIndex}
-              class:weekend={isWeekend(day) || isHoliday(holidays, day)}
+              class:weekend={isWeekend(day)}
               class:today={areDatesEqual(todayDate, day)}
               on:mousemove={() => {
                 hoveredColumn = i
@@ -255,7 +273,7 @@
                 hoveredColumn = -1
               }}
             >
-              {getTotal(requests, day, day, types, holidays)}
+              {getAll(employeeRequests, day, day, types, departmentStaff, holidays, staffDepartmentMap)}
             </td>
           {/each}
         </tr>
@@ -328,6 +346,9 @@
       }
       &.weekend:not(.today) {
         background-color: var(--accent-bg-color);
+      }
+      &.holiday:not(.today) {
+        background-color: var(--system-error-60-color);
       }
     }
     td:not(:last-child) {

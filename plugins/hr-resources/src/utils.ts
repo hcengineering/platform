@@ -203,6 +203,36 @@ export function getTotal (
   }
   return total
 }
+export function getAll (
+  requests: Map<Ref<Staff>, Request[]>,
+  startDate: Date,
+  endDate: Date,
+  types: Map<Ref<RequestType>, RequestType>,
+  departmentStaff: Staff[],
+  holidays: Map<Ref<Department>, Date[]>,
+  departmentMap: Map<Ref<Staff>, Department[]>
+): number {
+  let sum = 0
+  for (const [k, v] of requests) {
+    const staff = departmentStaff.find((staff) => staff._id === k)
+    if (staff === undefined) continue
+    const deps = departmentMap.get(staff._id)
+    const totalHolidays: Date[] = []
+    deps?.forEach((dep) => {
+      if (holidays.size > 0) {
+        const value = holidays?.get(dep._id)
+        if (value !== undefined) {
+          totalHolidays.push(...value)
+        }
+      }
+    })
+    // for (const dep of x.get(staff._id)) {
+    const res = getTotal(v, startDate, endDate, types, totalHolidays)
+    sum += res
+    // }
+  }
+  return sum
+}
 
 export function isHoliday (holidays: Date[] | undefined, day: Date): boolean {
   if (holidays === undefined) return false
@@ -224,6 +254,25 @@ export function tableToCSV (tableId: string, separator = ','): string {
     csv.push(row.join(separator))
   }
   return csv.join('\n')
+}
+
+export function getDates (
+  departmentMap: Map<Ref<Staff>, Department[]>,
+  employee: Ref<Staff>,
+  holidays: Map<Ref<Department>, Date[]>
+): Date[] {
+  if (departmentMap.size === 0) return []
+  const deps = departmentMap.get(employee)
+  if (deps === undefined) return []
+  if (holidays.size === 0) return []
+  const dates = []
+  for (const dep of deps) {
+    const depDates = holidays?.get(dep._id)
+    if (depDates !== undefined) {
+      dates.push(...depDates)
+    }
+  }
+  return dates
 }
 
 export interface EmployeeReports {
