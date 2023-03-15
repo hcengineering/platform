@@ -491,7 +491,12 @@
           <Settings size={'small'} />
         </div>
       </div>
-      <Applications apps={getApps(apps)} active={currentApplication?._id} direction={appsDirection} bind:shown={shownMenu} />
+      <Applications
+        apps={getApps(apps)}
+        active={currentApplication?._id}
+        direction={appsDirection}
+        bind:shown={shownMenu}
+      />
       <div class="info-box {appsDirection}" class:vertical-mobile={appsDirection === 'vertical' && appsMini}>
         <AppItem
           icon={request.icon.Requests}
