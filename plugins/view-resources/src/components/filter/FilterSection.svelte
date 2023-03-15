@@ -32,7 +32,7 @@
 
   function getTargetClass (): Ref<Class<Doc>> | undefined {
     try {
-      return (hierarchy.getAttribute(filter.key._class, filter.key.key).type as RefTo<Doc>).to
+      return (hierarchy.getAttribute(currentFilter.key._class, currentFilter.key.key).type as RefTo<Doc>).to
     } catch (err: any) {
       console.error(err)
     }
@@ -52,7 +52,7 @@
 
   let countLabel: string = ''
   async function getLabel (): Promise<void> {
-    const count = isState ? await getCountStates(filter.value) : filter.value.length
+    const count = isState ? await getCountStates(currentFilter.value) : currentFilter.value.length
     countLabel = await translate(view.string.FilterStatesCount, { value: count })
   }
   $: if (filter) getLabel()
@@ -72,11 +72,11 @@
     return await client.findOne(view.class.FilterMode, { _id: mode })
   }
 
-  function onChange (e: Filter | undefined) {
+  function onChange (e: Filter) {
     if (filter.nested !== undefined) {
-      filter.nested = filter
+      filter.nested = e
     } else {
-      filter = filter
+      filter = e
     }
     dispatch('change')
   }
@@ -87,6 +87,7 @@
   })
 
   $: modeValuePromise = getMode(filter.mode)
+  $: nestedModeValuePromise = filter.nested ? getMode(filter.nested.mode) : undefined
 </script>
 
 <div class="filter-section">
@@ -125,11 +126,13 @@
         toggle(true)
       }}
     >
-      {#await modeValuePromise then mode}
-        {#if mode?.label}
-          <span><Label label={mode.label} params={{ value: filter.value.length }} /></span>
-        {/if}
-      {/await}
+      {#if nestedModeValuePromise}
+        {#await nestedModeValuePromise then mode}
+          {#if mode?.label}
+            <span><Label label={mode.label} params={{ value: filter.value.length }} /></span>
+          {/if}
+        {/await}
+      {/if}
     </button>
   {/if}
   {#await modeValuePromise then mode}

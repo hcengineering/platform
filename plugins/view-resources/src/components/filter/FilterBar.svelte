@@ -41,6 +41,7 @@
     if (index === -1) {
       $filterStore.push(e)
     } else {
+      $filterStore[index].onRemove?.()
       $filterStore[index] = e
     }
     $filterStore = $filterStore
