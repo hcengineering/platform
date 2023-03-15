@@ -223,14 +223,14 @@ interface Sides<T> {
   right?: T
 }
 export interface FadeOptions {
-  offset?: Sides<boolean>
   multipler?: Sides<number>
 }
 export const defaultSP: FadeOptions = { multipler: { top: 0, bottom: 0 } }
-export const tableSP: FadeOptions = { offset: { top: true, bottom: true }, multipler: { top: 2.5, bottom: 2.5 } }
-export const tableHRscheduleY: FadeOptions = { offset: { top: true }, multipler: { top: 5, bottom: 0 } }
-export const issueSP: FadeOptions = { offset: { top: true }, multipler: { top: 3, bottom: 0 } }
-export const emojiSP: FadeOptions = { offset: { top: true }, multipler: { top: 1.5, bottom: 0 } }
+export const tableSP: FadeOptions = { multipler: { top: 2.5, bottom: 2.5 } }
+export const topSP: FadeOptions = { multipler: { top: 2.5, bottom: 0 } }
+export const tableHRscheduleY: FadeOptions = { multipler: { top: 5, bottom: 0 } }
+export const issueSP: FadeOptions = { multipler: { top: 3, bottom: 0 } }
+export const emojiSP: FadeOptions = { multipler: { top: 1.5, bottom: 0 } }
 
 export interface DeviceOptions {
   docWidth: number
