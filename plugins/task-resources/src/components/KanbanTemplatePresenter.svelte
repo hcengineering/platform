@@ -15,7 +15,6 @@
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
   import type { KanbanTemplate } from '@hcengineering/task'
-  import { Label } from '@hcengineering/ui'
 
   export let value: KanbanTemplate
 
@@ -25,5 +24,5 @@
 
 <span class="label nowrap">
   {#if shortLabel}
-    <Label label={shortLabel} />-{/if}{value.title}</span
+    {shortLabel}-{/if}{value.title}</span
 >

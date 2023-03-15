@@ -20,6 +20,7 @@ import core, {
   Client,
   Doc,
   DocumentQuery,
+  DOMAIN_MODEL,
   FindOptions,
   findProperty,
   FindResult,
@@ -46,7 +47,7 @@ import core, {
 } from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
 
-const CACHE_SIZE = 20
+const CACHE_SIZE = 100
 
 type Callback = (result: FindResult<Doc>) => void
 
@@ -104,22 +105,39 @@ export class LiveQuery extends TxProcessor implements Client {
     return true
   }
 
+  private createDumpQuery<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Query {
+    const callback: () => void = () => {}
+    const q = this.createQuery(_class, query, callback, options)
+    const index = q.callbacks.indexOf(callback as (result: Doc[]) => void)
+    if (index !== -1) {
+      q.callbacks.splice(index, 1)
+    }
+    if (q.callbacks.length === 0) {
+      this.queue.push(q)
+    }
+    return q
+  }
+
   async findAll<T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    const q = this.findQuery(_class, query, options)
-    if (q !== undefined) {
-      if (q.result instanceof Promise) {
-        q.result = await q.result
-      }
-      if (this.removeFromQueue(q)) {
-        this.queue.push(q)
-      }
-      return toFindResult(this.clone(q.result), q.total) as FindResult<T>
+    if (this.client.getHierarchy().getDomain(_class) === DOMAIN_MODEL) {
+      return await this.client.findAll(_class, query, options)
     }
-    return await this.client.findAll(_class, query, options)
+    const q = this.findQuery(_class, query, options) ?? this.createDumpQuery(_class, query, options)
+    if (q.result instanceof Promise) {
+      q.result = await q.result
+    }
+    if (this.removeFromQueue(q)) {
+      this.queue.push(q)
+    }
+    return toFindResult(this.clone(q.result), q.total) as FindResult<T>
   }
 
   async findOne<T extends Doc>(
@@ -127,17 +145,17 @@ export class LiveQuery extends TxProcessor implements Client {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<WithLookup<T> | undefined> {
-    const q = this.findQuery(_class, query, options)
-    if (q !== undefined) {
-      if (q.result instanceof Promise) {
-        q.result = await q.result
-      }
-      if (this.removeFromQueue(q)) {
-        this.queue.push(q)
-      }
-      return this.clone(q.result)[0] as WithLookup<T>
+    if (this.client.getHierarchy().getDomain(_class) === DOMAIN_MODEL) {
+      return await this.client.findOne(_class, query, options)
     }
-    return await this.client.findOne(_class, query, options)
+    const q = this.findQuery(_class, query, options) ?? this.createDumpQuery(_class, query, options)
+    if (q.result instanceof Promise) {
+      q.result = await q.result
+    }
+    if (this.removeFromQueue(q)) {
+      this.queue.push(q)
+    }
+    return this.clone(q.result)[0] as WithLookup<T>
   }
 
   private findQuery<T extends Doc>(
@@ -253,7 +271,7 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   private async checkSearch (q: Query, _id: Ref<Doc>): Promise<boolean> {
-    const match = await this.findOne(q._class, { $search: q.query.$search, _id }, q.options)
+    const match = await this.client.findOne(q._class, { $search: q.query.$search, _id }, q.options)
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
@@ -274,7 +292,7 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   private async getCurrentDoc (q: Query, _id: Ref<Doc>): Promise<boolean> {
-    const current = await this.findOne(q._class, { _id }, q.options)
+    const current = await this.client.findOne(q._class, { _id }, q.options)
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
@@ -360,7 +378,7 @@ export class LiveQuery extends TxProcessor implements Client {
           await this.updatedDocCallback(udoc, q)
         } else if (isMixin) {
           // Mixin potentially added to object we doesn't have in out results
-          const doc = await this.findOne(q._class, { _id: tx.objectId }, q.options)
+          const doc = await this.client.findOne(q._class, { _id: tx.objectId }, q.options)
           if (doc !== undefined) {
             await this.handleDocAdd(q, doc, false)
           }
@@ -606,7 +624,7 @@ export class LiveQuery extends TxProcessor implements Client {
       const tkey = checkMixinKey(key, _class, this.client.getHierarchy())
       if (Array.isArray(value)) {
         const [_class, nested] = value
-        const objects = await this.findAll(_class, { _id: getObjectValue(tkey, doc) })
+        const objects = await this.client.findAll(_class, { _id: getObjectValue(tkey, doc) })
         ;(result as any)[key] = objects[0]
         const nestedResult = {}
         const parent = (result as any)[key]
@@ -617,7 +635,7 @@ export class LiveQuery extends TxProcessor implements Client {
           })
         }
       } else {
-        const objects = await this.findAll(value, { _id: getObjectValue(tkey, doc) })
+        const objects = await this.client.findAll(value, { _id: getObjectValue(tkey, doc) })
         ;(result as any)[key] = objects[0]
       }
     }
@@ -640,7 +658,7 @@ export class LiveQuery extends TxProcessor implements Client {
       } else {
         _class = value
       }
-      const objects = await this.findAll(_class, { [attr]: doc._id })
+      const objects = await this.client.findAll(_class, { [attr]: doc._id })
       ;(result as any)[key] = objects
     }
   }
@@ -679,7 +697,7 @@ export class LiveQuery extends TxProcessor implements Client {
 
       // If query contains search we must check use fulltext
       if (q.query.$search != null && q.query.$search.length > 0) {
-        const match = await this.findOne(q._class, { $search: q.query.$search, _id: doc._id }, q.options)
+        const match = await this.client.findOne(q._class, { $search: q.query.$search, _id: doc._id }, q.options)
         if (match === undefined) return
       }
       q.result.push(doc)
@@ -740,8 +758,10 @@ export class LiveQuery extends TxProcessor implements Client {
         if (Array.isArray(value)) {
           if (this.client.getHierarchy().isDerived(doc._class, core.class.AttachedDoc)) {
             if (reverseLookupKey !== undefined && (doc as any)[reverseLookupKey] === obj._id) {
-              value.push(doc)
-              needCallback = true
+              if ((value as Doc[]).find((p) => p._id === doc._id) === undefined) {
+                value.push(doc)
+                needCallback = true
+              }
             }
           }
         } else {

@@ -124,6 +124,13 @@
       throw Error(`Failed to find target kanban template: ${templateId}`)
     }
 
+    const sequence = await client.findOne(task.class.Sequence, { attachedTo: recruit.class.Vacancy })
+    if (sequence === undefined) {
+      throw new Error('sequence object not found')
+    }
+
+    const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
+
     const id = await client.createDoc(
       recruit.class.Vacancy,
       core.space.Space,
@@ -134,6 +141,7 @@
         fullDescription,
         private: false,
         archived: false,
+        number: (incResult as any).object.sequence,
         company,
         createdBy: getCurrentAccount()._id,
         members: [getCurrentAccount()._id]

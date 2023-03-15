@@ -36,6 +36,7 @@ export default mergeIds(recruitId, recruit, {
     CandidatesDescription: '' as IntlString,
     CreateAnApplication: '' as IntlString,
     NoApplicationsForTalent: '' as IntlString,
+    NoApplicationsForVacany: '' as IntlString,
     FirstName: '' as IntlString,
     LastName: '' as IntlString,
     Talents: '' as IntlString,
@@ -96,8 +97,6 @@ export default mergeIds(recruitId, recruit, {
     OpinionValuePlaceholder: '' as IntlString,
     OpinionSave: '' as IntlString,
     Opinions: '' as IntlString,
-    OpinionShortLabel: '' as IntlString,
-    ReviewShortLabel: '' as IntlString,
     StartDate: '' as IntlString,
     DueDate: '' as IntlString,
     TalentReviews: '' as IntlString,
@@ -143,7 +142,10 @@ export default mergeIds(recruitId, recruit, {
     CreateCandidate: '' as AnyComponent
   },
   function: {
-    ApplicationTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>,
+    IdProvider: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
+    AppTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>,
+    VacTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>,
+    RevTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>,
     HasActiveApplicant: '' as FilterFunction,
     HasNoActiveApplicant: '' as FilterFunction,
     NoneApplications: '' as FilterFunction

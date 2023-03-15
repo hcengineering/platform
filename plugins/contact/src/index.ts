@@ -314,6 +314,9 @@ const contactPlugin = plugin(contactId, {
     FilterChannelIn: '' as Ref<FilterMode>,
     FilterChannelNin: '' as Ref<FilterMode>
   },
+  resolver: {
+    Location: '' as Resource<(loc: Location) => Promise<Location | undefined>>
+  },
   templateFieldCategory: {
     CurrentEmployee: '' as Ref<TemplateFieldCategory>,
     Contact: '' as Ref<TemplateFieldCategory>

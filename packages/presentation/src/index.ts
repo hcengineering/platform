@@ -48,6 +48,7 @@ export { default as ObjectSearchPopup } from './components/ObjectSearchPopup.sve
 export { default as IndexedDocumentPreview } from './components/IndexedDocumentPreview.svelte'
 export { default as IndexedDocumentCompare } from './components/IndexedDocumentCompare.svelte'
 export { default as DraggableList } from './components/DraggableList.svelte'
+export { default as NavLink } from './components/NavLink.svelte'
 export { connect, versionError } from './connect'
 export { default } from './plugin'
 export * from './types'

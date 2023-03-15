@@ -24,10 +24,11 @@
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let actions: Action[] = []
   export let mode: ViewContextType | undefined = undefined
+  let resActions = actions
 
   const client = getClient()
 
-  let loaded = 0
+  let loaded = false
 
   const order: Record<ActionGroup, number> = {
     create: 1,
@@ -39,23 +40,24 @@
   }
 
   getActions(client, object, baseMenuClass, mode).then((result) => {
-    actions = result
-      .sort((a, b) => order[a.context.group ?? 'other'] - order[b.context.group ?? 'other'])
-      .map((a) => ({
-        label: a.label,
-        icon: a.icon as Asset,
-        inline: a.inline,
-        group: a.context.group ?? 'other',
-        action: async (_: any, evt: Event) => {
-          invokeAction(object, evt, a.action, a.actionProps)
-        },
-        component: a.actionPopup,
-        props: { ...a.actionProps, value: object }
-      }))
-    loaded = 1
+    const newActions: Action[] = result.map((a) => ({
+      label: a.label,
+      icon: a.icon as Asset,
+      inline: a.inline,
+      group: a.context.group ?? 'other',
+      action: async (_: any, evt: Event) => {
+        invokeAction(object, evt, a.action, a.actionProps)
+      },
+      component: a.actionPopup,
+      props: { ...a.actionProps, value: object }
+    }))
+    resActions = [...newActions, ...actions].sort(
+      (a, b) => (order as any)[a.group ?? 'other'] - (order as any)[b.group ?? 'other']
+    )
+    loaded = true
   })
 </script>
 
 {#if loaded}
-  <Menu {actions} on:close on:changeContent />
+  <Menu actions={resActions} on:close on:changeContent />
 {/if}

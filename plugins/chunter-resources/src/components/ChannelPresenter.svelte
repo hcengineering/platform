@@ -13,26 +13,25 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Channel } from '@hcengineering/chunter'
+  import { Channel, chunterId } from '@hcengineering/chunter'
   import { getClient } from '@hcengineering/presentation'
-  import { Icon } from '@hcengineering/ui'
-
-  import { getSpaceLink } from '../utils'
+  import { Icon, NavLink } from '@hcengineering/ui'
 
   export let value: Channel
   const client = getClient()
 
   $: icon = client.getHierarchy().getClass(value._class).icon
-  $: link = getSpaceLink(value._id)
 </script>
 
 {#if value}
-  <a class="flex-presenter" href={link}>
-    <div class="icon">
-      {#if icon}
-        <Icon {icon} size={'small'} />
-      {/if}
+  <NavLink app={chunterId} space={value._id}>
+    <div class="flex-presenter">
+      <div class="icon">
+        {#if icon}
+          <Icon {icon} size={'small'} />
+        {/if}
+      </div>
+      <span class="label">{value.name}</span>
     </div>
-    <span class="label">{value.name}</span>
-  </a>
+  </NavLink>
 {/if}

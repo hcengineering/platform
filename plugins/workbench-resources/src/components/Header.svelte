@@ -13,24 +13,42 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Ref, Class, Doc } from '@hcengineering/core'
-  import type { Asset } from '@hcengineering/platform'
-  import { Icon } from '@hcengineering/ui'
-  import { FilterButton } from '@hcengineering/view-resources'
+  import type { Class, Doc, Ref, Space } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { AnyComponent, Icon } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
+  import { DocNavLink, FilterButton } from '@hcengineering/view-resources'
+  import plugin from '../plugin'
+  import { classIcon } from '../utils'
 
-  export let icon: Asset | undefined
-  export let label: string
-  export let description: string | undefined
+  export let space: Space
   export let _class: Ref<Class<Doc>> | undefined = undefined
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  $: description = space.description
+
+  function getEditor (_class: Ref<Class<Doc>>): AnyComponent | undefined {
+    const clazz = hierarchy.getClass(_class)
+    const editorMixin = hierarchy.as(clazz, view.mixin.ObjectEditor)
+    if (editorMixin?.editor == null && clazz.extends != null) return getEditor(clazz.extends)
+    return editorMixin.editor
+  }
+
+  const icon = classIcon(client, space._class)
+  const editor = getEditor(space._class) ?? plugin.component.SpacePanel
 </script>
 
 <div class="ac-header__wrap-description">
   <div class="flex-row-center clear-mins">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="ac-header__wrap-title" on:click>
-      {#if icon}<div class="ac-header__icon"><Icon {icon} size={'small'} /></div>{/if}
-      <span class="ac-header__title">{label}</span>
-    </div>
+    <DocNavLink object={space} component={editor}>
+      <div class="ac-header__wrap-title">
+        {#if icon}<div class="ac-header__icon"><Icon {icon} size={'small'} /></div>{/if}
+        <span class="ac-header__title">{space.name}</span>
+      </div>
+    </DocNavLink>
     {#if _class}<div class="ml-4"><FilterButton {_class} /></div>{/if}
   </div>
   {#if description}
@@ -47,7 +65,6 @@
 
 <style lang="scss">
   .ac-header__wrap-title:hover {
-    cursor: pointer;
     span {
       text-decoration: underline;
     }

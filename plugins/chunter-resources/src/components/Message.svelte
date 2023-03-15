@@ -21,21 +21,11 @@
   import { getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
-  import { Avatar, copyTextToClipboard, createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
+  import { Avatar, createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
   import { EmojiPopup } from '@hcengineering/text-editor'
-  import ui, {
-    ActionIcon,
-    Button,
-    getCurrentLocation,
-    IconMoreH,
-    Label,
-    locationToUrl,
-    Menu,
-    showPopup,
-    tooltip
-  } from '@hcengineering/ui'
+  import ui, { ActionIcon, Button, IconMoreH, Label, showPopup, tooltip } from '@hcengineering/ui'
   import { Action } from '@hcengineering/view'
-  import { getActions, LinkPresenter } from '@hcengineering/view-resources'
+  import { LinkPresenter, Menu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import { AddMessageToSaved, DeleteMessageFromSaved, UnpinMessage } from '../index'
   import chunter from '../plugin'
@@ -115,36 +105,20 @@
     }
   }
 
-  const copyLinkAction = {
-    label: chunter.string.CopyLink,
-    action: async () => {
-      const location = getCurrentLocation()
-
-      location.fragment = message._id
-      location.path[3] = message.space
-
-      if (message.attachedToClass === chunter.class.Message) {
-        location.path.length = 5
-        location.path[4] = message.attachedTo
-      } else {
-        location.path.length = 4
-      }
-      const text = `${window.location.origin}${locationToUrl(location)}`
-      await copyTextToClipboard(text)
-    }
-  }
-
   let menuShowed = false
 
   const showMenu = async (ev: Event): Promise<void> => {
-    const actions = await getActions(client, message, message._class)
-    actions.push(subscribeAction)
-    actions.push(pinActions)
+    const actions = [pinActions]
+    if (message._class === chunter.class.Message) {
+      actions.push(subscribeAction)
+    }
 
     menuShowed = true
     showPopup(
       Menu,
       {
+        object: message,
+        baseMenuClass: message._class,
         actions: [
           ...actions.map((a) => ({
             label: a.label,
@@ -154,7 +128,6 @@
               await impl(message, evt)
             }
           })),
-          copyLinkAction,
           ...(getCurrentAccount()._id === message.createBy ? [editAction, deleteAction] : [])
         ]
       },

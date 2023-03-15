@@ -31,8 +31,19 @@ import { getMetadata } from '@hcengineering/platform'
 import recruit, { Applicant, recruitId, Vacancy } from '@hcengineering/recruit'
 import { TriggerControl } from '@hcengineering/server-core'
 import { addAssigneeNotification } from '@hcengineering/server-task-resources'
-import view from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
+
+function getSequenceId (doc: Vacancy | Applicant, control: TriggerControl): string {
+  const hierarchy = control.hierarchy
+  let clazz = hierarchy.getClass(doc._class)
+  let label = clazz.shortLabel
+  while (label === undefined && clazz.extends !== undefined) {
+    clazz = hierarchy.getClass(clazz.extends)
+    label = clazz.shortLabel
+  }
+
+  return label !== undefined ? `${label}-${doc.number}` : doc.number.toString()
+}
 
 /**
  * @public
@@ -40,7 +51,10 @@ import { workbenchId } from '@hcengineering/workbench'
 export async function vacancyHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const vacancy = doc as Vacancy
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.name}/${recruitId}/${vacancy._id}/#${recruit.component.EditVacancy}|${vacancy._id}|${vacancy._class}|content`
+  const path = `${workbenchId}/${control.workspace.name}/${recruitId}/${vacancy._id}/#${recruitId}|${getSequenceId(
+    vacancy,
+    control
+  )}`
   const link = concatLink(front, path)
   return `<a href="${link}">${vacancy.name}</a>`
 }
@@ -59,17 +73,19 @@ export async function vacancyTextPresenter (doc: Doc): Promise<string> {
 export async function applicationHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const applicant = doc as Applicant
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.name}/${recruitId}/${applicant.space}/#${view.component.EditDoc}|${applicant._id}|${applicant._class}|content`
+  const id = getSequenceId(applicant, control)
+  const path = `${workbenchId}/${control.workspace.name}/${recruitId}/${applicant.space}/#${recruitId}|${id}`
   const link = concatLink(front, path)
-  return `<a href="${link}">APP-${applicant.number}</a>`
+  return `<a href="${link}">id</a>`
 }
 
 /**
  * @public
  */
-export async function applicationTextPresenter (doc: Doc): Promise<string> {
+export async function applicationTextPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const applicant = doc as Applicant
-  return `APP-${applicant.number}`
+  const id = getSequenceId(applicant, control)
+  return id
 }
 
 /**

@@ -23,6 +23,7 @@ import core, {
   Collection,
   concatLink,
   Doc,
+  matchQuery,
   Obj,
   Ref,
   RefTo,
@@ -33,7 +34,6 @@ import core, {
 import login from '@hcengineering/login'
 import { getMetadata } from '@hcengineering/platform'
 import type { TriggerControl } from '@hcengineering/server-core'
-import view from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 
 /**
@@ -271,13 +271,36 @@ export async function OnEmployeeUpdate (tx: Tx, control: TriggerControl): Promis
   return result
 }
 
+async function getContactLink (doc: Doc, control: TriggerControl): Promise<string> {
+  const hierarchy = control.hierarchy
+  let clazz = hierarchy.getClass(doc._class)
+  let label = clazz.shortLabel
+  while (label === undefined && clazz.extends !== undefined) {
+    clazz = hierarchy.getClass(clazz.extends)
+    label = clazz.shortLabel
+  }
+  label = label ?? 'CONT'
+  let length = 5
+  let id = doc._id.slice(-length)
+  const contacts = await control.findAll(clazz._id, {}, { projection: { _id: 1 } })
+  let res = matchQuery(contacts, { _id: { $like: `@${id}` } }, clazz._id, hierarchy)
+  while (res.length > 1) {
+    length++
+    id = doc._id.slice(-length)
+    res = matchQuery(contacts, { _id: { $like: `@${id}` } }, clazz._id, hierarchy)
+  }
+
+  return `${contactId}|${label}-${id}`
+}
+
 /**
  * @public
  */
-export function personHTMLPresenter (doc: Doc, control: TriggerControl): string {
+export async function personHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const person = doc as Person
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.name}/${contactId}#${view.component.EditDoc}|${person._id}|${person._class}|content`
+  const fragment = await getContactLink(doc, control)
+  const path = `${workbenchId}/${control.workspace.name}/${contactId}#${fragment}`
   const link = concatLink(front, path)
   return `<a href="${link}">${getName(person)}</a>`
 }
@@ -293,10 +316,11 @@ export function personTextPresenter (doc: Doc): string {
 /**
  * @public
  */
-export function organizationHTMLPresenter (doc: Doc, control: TriggerControl): string {
+export async function organizationHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const organization = doc as Organization
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.name}/${contactId}#${view.component.EditDoc}|${organization._id}|${organization._class}|content`
+  const fragment = await getContactLink(doc, control)
+  const path = `${workbenchId}/${control.workspace.name}/${contactId}#${fragment}`
   const link = concatLink(front, path)
   return `<a href="${link}">${organization.name}</a>`
 }

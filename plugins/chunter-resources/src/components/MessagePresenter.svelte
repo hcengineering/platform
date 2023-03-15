@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { DirectMessage, Message } from '@hcengineering/chunter'
-  import { getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { chunterId, DirectMessage, Message } from '@hcengineering/chunter'
   import { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
-  import { getDmName, getSpaceLink } from '../utils'
+  import { NavLink } from '@hcengineering/ui'
   import chunter from '../plugin'
+  import { getDmName } from '../utils'
 
   export let value: Message
   const client = getClient()
@@ -13,23 +13,13 @@
   $: query.query(chunter.class.DirectMessage, { _id: value.space }, (result) => {
     dm = result[0]
   })
-
-  $: link = getSpaceLink(value.space)
-
-  function goto () {
-    const loc = getCurrentLocation()
-    loc.path[1] = 'chunter'
-    loc.path[2] = value.space
-    loc.query = undefined
-    navigate(loc)
-  }
 </script>
 
 {#if dm}
   {#await getDmName(client, dm) then name}
-    <a class="flex-presenter" href={link} on:click={() => goto()}>
+    <NavLink app={chunterId} space={value.space}>
       <span class="label">{name}</span>
-    </a>
+    </NavLink>
     <div><MessageViewer message={value.content} /></div>
   {/await}
 {/if}

@@ -38,7 +38,10 @@ export default mergeIds(chunterId, chunter, {
     MarkUnread: '' as Ref<Action>,
     ArchiveChannel: '' as Ref<Action>,
     UnarchiveChannel: '' as Ref<Action>,
-    ConvertToPrivate: '' as Ref<Action>
+    ConvertToPrivate: '' as Ref<Action>,
+    CopyCommentLink: '' as Ref<Action>,
+    CopyThreadMessageLink: '' as Ref<Action>,
+    CopyMessageLink: '' as Ref<Action>
   },
   actionImpl: {
     MarkUnread: '' as ViewAction,
@@ -93,7 +96,9 @@ export default mergeIds(chunterId, chunter, {
     Random: '' as Ref<Channel>
   },
   function: {
-    ChunterBrowserVisible: '' as Resource<(spaces: Space[]) => Promise<boolean>>
+    ChunterBrowserVisible: '' as Resource<(spaces: Space[]) => Promise<boolean>>,
+    GetLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
+    GetFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>
   },
   filter: {
     CommentsFilter: '' as Resource<(tx: DisplayTx, _class?: Ref<Doc>) => boolean>,

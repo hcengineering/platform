@@ -15,15 +15,25 @@
 
 import { getCategories } from '@anticrm/skillset'
 import { Organization } from '@hcengineering/contact'
-import core, { Doc, DOMAIN_TX, Ref, Space, TxCollectionCUD, TxCreateDoc, TxOperations } from '@hcengineering/core'
+import core, {
+  Doc,
+  DOMAIN_TX,
+  Ref,
+  Space,
+  TxCollectionCUD,
+  TxCreateDoc,
+  TxFactory,
+  TxOperations,
+  TxProcessor
+} from '@hcengineering/core'
 import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import { DOMAIN_CALENDAR } from '@hcengineering/model-calendar'
 import contact, { DOMAIN_CONTACT } from '@hcengineering/model-contact'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import tags, { TagCategory } from '@hcengineering/model-tags'
-import { createKanbanTemplate, createSequence, DOMAIN_TASK } from '@hcengineering/model-task'
+import { createKanbanTemplate, createSequence, DOMAIN_KANBAN, DOMAIN_TASK } from '@hcengineering/model-task'
 import { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
-import task, { KanbanTemplate } from '@hcengineering/task'
+import task, { KanbanTemplate, Sequence } from '@hcengineering/task'
 import recruit from './plugin'
 
 async function fixImportedTitle (client: MigrationClient): Promise<void> {
@@ -79,6 +89,57 @@ async function setCreate (client: MigrationClient): Promise<void> {
   }
 }
 
+async function fillVacancyNumbers (client: MigrationClient): Promise<void> {
+  const docs = await client.find<Vacancy>(DOMAIN_SPACE, {
+    _class: recruit.class.Vacancy,
+    number: { $exists: false }
+  })
+  if (docs.length === 0) return
+  const txex = await client.find<TxCreateDoc<Vacancy>>(DOMAIN_TX, {
+    objectId: { $in: docs.map((it) => it._id) },
+    _class: core.class.TxCreateDoc
+  })
+  let number = 1
+  for (const doc of docs) {
+    await client.update(
+      DOMAIN_SPACE,
+      {
+        _id: doc._id
+      },
+      {
+        number
+      }
+    )
+    const tx = txex.find((it) => it.objectId === doc._id)
+    if (tx !== undefined) {
+      await client.update(
+        DOMAIN_TX,
+        {
+          _id: tx._id
+        },
+        {
+          'attributes.number': number
+        }
+      )
+    }
+    number++
+  }
+  const current = await client.find<Sequence>(DOMAIN_KANBAN, {
+    _class: task.class.Sequence,
+    attachedto: recruit.class.Vacancy
+  })
+  if (current.length === 0) {
+    const factory = new TxFactory(core.account.System)
+    const tx = factory.createTxCreateDoc(task.class.Sequence, task.space.Sequence, {
+      attachedTo: recruit.class.Vacancy,
+      sequence: number
+    })
+    const doc = TxProcessor.createDoc2Doc(tx)
+    await client.create(DOMAIN_KANBAN, doc)
+    await client.create(DOMAIN_TX, tx)
+  }
+}
+
 async function fillCreatedBy (client: MigrationClient): Promise<void> {
   const objects = await client.find<Vacancy>(DOMAIN_SPACE, {
     _class: recruit.class.Vacancy,
@@ -115,6 +176,7 @@ export const recruitOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await setCreate(client)
     await fixImportedTitle(client)
+    await fillVacancyNumbers(client)
     await client.update(
       DOMAIN_CALENDAR,
       {
@@ -196,6 +258,7 @@ async function createDefaults (tx: TxOperations): Promise<void> {
   await createSequence(tx, recruit.class.Review)
   await createSequence(tx, recruit.class.Opinion)
   await createSequence(tx, recruit.class.Applicant)
+  await createSequence(tx, recruit.class.Vacancy)
   await createDefaultKanbanTemplate(tx)
 }
 

@@ -16,7 +16,8 @@
   import { Ref, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import type { Issue, Team } from '@hcengineering/tracker'
-  import { Icon, showPanel, tooltip } from '@hcengineering/ui'
+  import { Icon, tooltip } from '@hcengineering/ui'
+  import { DocNavLink } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
 
   export let value: WithLookup<Issue>
@@ -28,18 +29,6 @@
 
   // Extra properties
   export let teams: Map<Ref<Team>, Team> | undefined = undefined
-
-  function handleIssueEditorOpened () {
-    if (disableClick) {
-      return
-    }
-
-    if (onClick) {
-      onClick()
-    }
-
-    showPanel(tracker.component.EditIssue, value._id, value._class, 'content')
-  }
 
   const spaceQuery = createQuery()
   let currentTeam: Team | undefined = value?.$lookup?.space
@@ -58,23 +47,18 @@
 </script>
 
 {#if value}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <span
-    class="issuePresenterRoot"
-    class:noPointer={disableClick}
-    class:noUnderline
-    class:inline
-    on:click={handleIssueEditorOpened}
-  >
-    {#if withIcon}
-      <div class="icon" use:tooltip={{ label: tracker.string.Issue }}>
-        <Icon icon={tracker.icon.Issues} size={'small'} />
-      </div>
-    {/if}
-    <span class="select-text" title={value?.title}>
-      {title}
+  <DocNavLink object={value} {onClick} {disableClick} {noUnderline} {inline} component={tracker.component.EditIssue}>
+    <span class="issuePresenterRoot" class:inline>
+      {#if withIcon}
+        <div class="icon" use:tooltip={{ label: tracker.string.Issue }}>
+          <Icon icon={tracker.icon.Issues} size={'small'} />
+        </div>
+      {/if}
+      <span class="select-text" title={value?.title}>
+        {title}
+      </span>
     </span>
-  </span>
+  </DocNavLink>
 {/if}
 
 <style lang="scss">
@@ -105,29 +89,6 @@
         font-weight: 500;
         color: var(--accent-color);
       }
-    }
-    &.noPointer {
-      cursor: default;
-    }
-
-    &.noUnderline {
-      color: var(--caption-color);
-      font-weight: 500;
-    }
-
-    &:not(.noUnderline) {
-      &:hover {
-        color: var(--caption-color);
-        text-decoration: underline;
-
-        .icon {
-          color: var(--caption-color);
-        }
-      }
-    }
-
-    &:active {
-      color: var(--accent-color);
     }
   }
 </style>

@@ -62,9 +62,11 @@ import {
   employeeSort,
   filterChannelInResult,
   filterChannelNinResult,
+  getContactLink,
   getContactName,
   getCurrentEmployeeEmail,
-  getCurrentEmployeeName
+  getCurrentEmployeeName,
+  resolveLocation
 } from './utils'
 
 export {
@@ -210,6 +212,10 @@ export default async (): Promise<Resources> => ({
     FilterChannelNinResult: filterChannelNinResult,
     GetCurrentEmployeeName: getCurrentEmployeeName,
     GetCurrentEmployeeEmail: getCurrentEmployeeEmail,
-    GetContactName: getContactName
+    GetContactName: getContactName,
+    GetContactLink: getContactLink
+  },
+  resolver: {
+    Location: resolveLocation
   }
 })

@@ -16,8 +16,8 @@
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
   import type { Issue } from '@hcengineering/task'
-  import { getPanelURI, Icon, Label } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import { Icon } from '@hcengineering/ui'
+  import { DocNavLink } from '@hcengineering/view-resources'
   import task from '../plugin'
 
   export let value: Issue
@@ -28,16 +28,14 @@
 </script>
 
 {#if value && shortLabel}
-  <a
-    class="flex-presenter"
-    class:inline-presenter={inline}
-    href="#{getPanelURI(view.component.EditDoc, value._id, value._class, 'content')}"
-  >
-    <div class="icon">
-      <Icon icon={task.icon.Task} size={'small'} />
+  <DocNavLink object={value} {inline}>
+    <div class="flex-presenter" class:inline-presenter={inline}>
+      <div class="icon">
+        <Icon icon={task.icon.Task} size={'small'} />
+      </div>
+      <span class="label nowrap"
+        >{#if shortLabel}{shortLabel}-{/if}{value.number}</span
+      >
     </div>
-    <span class="label nowrap"
-      >{#if shortLabel}<Label label={shortLabel} />-{/if}{value.number}</span
-    >
-  </a>
+  </DocNavLink>
 {/if}

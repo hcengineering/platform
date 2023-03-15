@@ -19,16 +19,8 @@
   import { ChannelsEditor } from '@hcengineering/contact-resources'
   import { Ref, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import type { Vacancy } from '@hcengineering/recruit'
-  import {
-    closePanel,
-    closePopup,
-    closeTooltip,
-    Component,
-    getCurrentLocation,
-    Label,
-    navigate
-  } from '@hcengineering/ui'
+  import { recruitId, Vacancy } from '@hcengineering/recruit'
+  import { Component, Label, NavLink } from '@hcengineering/ui'
   import recruit from '../plugin'
   import VacancyIcon from './icons/Vacancy.svelte'
 
@@ -80,35 +72,22 @@
   {/if}
   {#if vacancy}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div
-      class="name lines-limit-2"
-      class:over-underline={!disabled}
-      on:click={() => {
-        if (!disabled && vacancy) {
-          closeTooltip()
-          closePopup()
-          closePanel()
-          const loc = getCurrentLocation()
-          loc.path[2] = 'recruit'
-          loc.path[3] = vacancy._id
-          loc.path.length = 4
-          navigate(loc)
-        }
-      }}
-    >
-      <div class="text-md">
-        {#if inline}
-          <div class="flex-row-center">
-            <VacancyIcon size={'small'} />
-            <span class="ml-1">
-              {vacancy.name}
-            </span>
-          </div>
-        {:else}
-          {vacancy.name}
-        {/if}
+    <NavLink {disabled} space={vacancy._id} app={recruitId}>
+      <div class="name lines-limit-2">
+        <div class="text-md">
+          {#if inline}
+            <div class="flex-row-center">
+              <VacancyIcon size={'small'} />
+              <span class="ml-1">
+                {vacancy.name}
+              </span>
+            </div>
+          {:else}
+            {vacancy.name}
+          {/if}
+        </div>
       </div>
-    </div>
+    </NavLink>
     {#if company}
       <span class="label">{company.name}</span>
     {/if}

@@ -67,6 +67,7 @@ import EnumArrayEditor from './components/EnumArrayEditor.svelte'
 import EnumPresenter from './components/EnumPresenter.svelte'
 import TreeNode from './components/navigator/TreeNode.svelte'
 import TreeItem from './components/navigator/TreeItem.svelte'
+import DocNavLink from './components/DocNavLink.svelte'
 
 import {
   afterResult,
@@ -143,7 +144,8 @@ export {
   MarkupEditor,
   TreeNode,
   TreeItem,
-  StringEditor
+  StringEditor,
+  DocNavLink
 }
 
 export default async (): Promise<Resources> => ({

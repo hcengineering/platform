@@ -13,59 +13,44 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { WithLookup } from '@hcengineering/core'
   import type { Issue } from '@hcengineering/tracker'
-  import { showPanel } from '@hcengineering/ui'
+  import { DocNavLink } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import ParentNamesPresenter from './ParentNamesPresenter.svelte'
 
-  export let value: Issue
+  export let value: WithLookup<Issue>
   export let shouldUseMargin: boolean = false
   export let showParent = true
   export let onClick: (() => void) | undefined = undefined
-
-  function handleIssueEditorOpened () {
-    if (onClick) {
-      onClick()
-    }
-
-    showPanel(tracker.component.EditIssue, value._id, value._class, 'content')
-  }
 </script>
 
 {#if value}
-  <span class="titlePresenter-container" class:with-margin={shouldUseMargin} title={value.title}>
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <DocNavLink object={value} {onClick} component={tracker.component.EditIssue}>
     <span
-      class="name overflow-label cursor-pointer select-text"
-      style:max-width={showParent ? `${value.parents.length !== 0 ? 95 : 100}%` : '100%'}
-      on:click={handleIssueEditorOpened}>{value.title}</span
+      class="name overflow-label select-text"
+      class:with-margin={shouldUseMargin}
+      style:max-width={showParent ? `${value.parents.length !== 0 ? 95 : 100}%` : '100%'}>{value.title}</span
     >
     {#if showParent}
       <ParentNamesPresenter {value} />
     {/if}
-  </span>
+  </DocNavLink>
 {/if}
 
 <style lang="scss">
-  .titlePresenter-container {
-    display: flex;
-    flex-grow: 0;
-    min-width: 1.5rem;
-    // flex-shrink: 10;
-
-    .name {
-      flex-shrink: 0;
-      &:hover {
-        text-decoration: underline;
-      }
-
-      &:active {
-        color: var(--accent-color);
-      }
+  .name {
+    flex-shrink: 0;
+    &:hover {
+      text-decoration: underline;
     }
 
-    &.with-margin {
-      margin-left: 0.5rem;
+    &:active {
+      color: var(--accent-color);
     }
+  }
+
+  .with-margin {
+    margin-left: 0.5rem;
   }
 </style>

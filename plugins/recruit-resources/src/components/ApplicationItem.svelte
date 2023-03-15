@@ -18,7 +18,7 @@
   import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import type { Applicant } from '@hcengineering/recruit'
-  import { Icon, Label } from '@hcengineering/ui'
+  import { Icon } from '@hcengineering/ui'
   import recruit from '../plugin'
 
   export let value: Applicant
@@ -36,7 +36,7 @@
 <div class="flex item">
   <Icon icon={recruit.icon.Application} size={'medium'} />
   <div class="ml-2">
-    {#if shortLabel}<Label label={shortLabel} />-{/if}{value.number}
+    {#if shortLabel}{shortLabel}-{/if}{value.number}
   </div>
   {#if person}
     <div class="ml-1">{getName(person)}</div>

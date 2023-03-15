@@ -2,11 +2,10 @@
   import { Employee } from '@hcengineering/contact'
   import { WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { Label, showPopup } from '@hcengineering/ui'
+  import { Label } from '@hcengineering/ui'
   import { PersonLabelTooltip } from '..'
   import PersonPresenter from '../components/PersonPresenter.svelte'
   import contact from '../plugin'
-  import EmployeePreviewPopup from './EmployeePreviewPopup.svelte'
 
   export let value: WithLookup<Employee> | null | undefined
   export let tooltipLabels: PersonLabelTooltip | undefined = undefined
@@ -20,45 +19,28 @@
   export let disableClick = false
   export let defaultName: IntlString | undefined = undefined
   export let element: HTMLElement | undefined = undefined
-
-  const onEdit = (evt: MouseEvent) => {
-    if (disableClick) {
-      return
-    }
-    evt?.preventDefault()
-    evt?.stopPropagation()
-    if (value) {
-      showPopup(
-        EmployeePreviewPopup,
-        {
-          employeeId: value._id
-        },
-        element
-      )
-    }
-  }
-
-  $: handlePersonEdit = onEmployeeEdit ?? onEdit
 </script>
 
-<PersonPresenter
-  bind:element
-  {value}
-  {tooltipLabels}
-  onEdit={isInteractive ? handlePersonEdit : () => {}}
-  {shouldShowAvatar}
-  {shouldShowName}
-  {avatarSize}
-  {shouldShowPlaceholder}
-  {isInteractive}
-  {inline}
-  {defaultName}
-/>
-{#if value?.active === false}
-  <div class="status ml-1">
-    (<Label label={contact.string.Inactive} />)
-  </div>
-{/if}
+<span class="flex-presenter">
+  <PersonPresenter
+    bind:element
+    {value}
+    {tooltipLabels}
+    onEdit={onEmployeeEdit}
+    {shouldShowAvatar}
+    {shouldShowName}
+    {avatarSize}
+    {shouldShowPlaceholder}
+    isInteractive={isInteractive && !disableClick}
+    {inline}
+    {defaultName}
+  />
+  {#if value?.active === false && shouldShowName}
+    <span class="status ml-1">
+      (<Label label={contact.string.Inactive} />)
+    </span>
+  {/if}
+</span>
 
 <style lang="scss">
   .status {

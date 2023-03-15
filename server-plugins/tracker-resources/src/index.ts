@@ -31,12 +31,12 @@ import core, {
   WithLookup
 } from '@hcengineering/core'
 import login from '@hcengineering/login'
-import { workbenchId } from '@hcengineering/workbench'
 import { getMetadata } from '@hcengineering/platform'
 import { Resource } from '@hcengineering/platform/lib/platform'
 import { TriggerControl } from '@hcengineering/server-core'
 import { addAssigneeNotification } from '@hcengineering/server-task-resources'
 import tracker, { Issue, IssueParentInfo, Project, Team, TimeSpendReport, trackerId } from '@hcengineering/tracker'
+import { workbenchId } from '@hcengineering/workbench'
 
 async function updateSubIssues (
   updateTx: TxUpdateDoc<Issue>,
@@ -55,12 +55,9 @@ async function updateSubIssues (
  * @public
  */
 export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
-  const issue = doc as Issue
-  const team = (await control.findAll(tracker.class.Team, { _id: issue.space })).shift()
-  const issueName = `${team?.identifier ?? '?'}-${issue.number}`
-
+  const issueName = await issueTextPresenter(doc, control)
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.name}/${trackerId}/${issue.space}/#${tracker.component.EditIssue}|${issue._id}|${issue._class}|content`
+  const path = `${workbenchId}/${control.workspace.name}/${trackerId}/${doc.space}/issues/#${trackerId}|${issueName}`
   const link = concatLink(front, path)
   return `<a href="${link}">${issueName}</a>`
 }
@@ -70,7 +67,7 @@ export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Pr
  */
 export async function issueTextPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const issue = doc as Issue
-  const team = (await control.findAll(tracker.class.Team, { _id: issue.space })).shift()
+  const team = (await control.findAll(tracker.class.Team, { _id: issue.space }))[0]
   const issueName = `${team?.identifier ?? '?'}-${issue.number}`
 
   return issueName

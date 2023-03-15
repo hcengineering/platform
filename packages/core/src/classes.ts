@@ -161,7 +161,7 @@ export interface Class<T extends Obj> extends Classifier {
   extends?: Ref<Class<Obj>>
   implements?: Ref<Interface<Doc>>[]
   domain?: Domain
-  shortLabel?: IntlString
+  shortLabel?: string
   sortingKey?: string
 }
 

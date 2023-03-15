@@ -14,10 +14,28 @@
 // limitations under the License.
 //
 
-import { ChannelProvider, Contact, Employee, EmployeeAccount, formatName, getName } from '@hcengineering/contact'
-import { Doc, getCurrentAccount, ObjQueryType, Ref, Timestamp, toIdMap } from '@hcengineering/core'
+import {
+  ChannelProvider,
+  Contact,
+  contactId,
+  Employee,
+  EmployeeAccount,
+  formatName,
+  getName
+} from '@hcengineering/contact'
+import {
+  Doc,
+  getCurrentAccount,
+  matchQuery,
+  ObjQueryType,
+  Ref,
+  SortingOrder,
+  Timestamp,
+  toIdMap
+} from '@hcengineering/core'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { TemplateDataProvider } from '@hcengineering/templates'
+import { getPanelURI, Location } from '@hcengineering/ui'
 import view, { Filter } from '@hcengineering/view'
 import { FilterQuery } from '@hcengineering/view-resources'
 import contact from './plugin'
@@ -131,5 +149,78 @@ export async function getContactName (provider: TemplateDataProvider): Promise<s
     return getName(value)
   } else {
     return value.name
+  }
+}
+
+export async function getContactLink (doc: Doc): Promise<string> {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  let clazz = hierarchy.getClass(doc._class)
+  let label = clazz.shortLabel
+  while (label === undefined && clazz.extends !== undefined) {
+    clazz = hierarchy.getClass(clazz.extends)
+    label = clazz.shortLabel
+  }
+  label = label ?? 'CONT'
+  let length = 5
+  let id = doc._id.slice(-length)
+  const contacts = await client.findAll(clazz._id, {}, { projection: { _id: 1 } })
+  let res = matchQuery(contacts, { _id: { $like: `@${id}` } }, clazz._id, hierarchy)
+  while (res.length > 1) {
+    length++
+    id = doc._id.slice(-length)
+    res = matchQuery(contacts, { _id: { $like: `@${id}` } }, clazz._id, hierarchy)
+  }
+
+  return `${contactId}|${label}-${id}`
+}
+
+function isShortId (shortLink: string): boolean {
+  return /^\w+-\w+$/.test(shortLink)
+}
+
+export async function resolveLocation (loc: Location): Promise<Location | undefined> {
+  const split = loc.fragment?.split('|') ?? []
+  if (split[0] !== contactId) {
+    return undefined
+  }
+
+  const shortLink = split[1]
+
+  // shortlink
+  if (isShortId(shortLink)) {
+    return await generateLocation(loc, shortLink)
+  }
+
+  return undefined
+}
+
+async function generateLocation (loc: Location, shortLink: string): Promise<Location | undefined> {
+  const tokens = shortLink.split('-')
+  if (tokens.length < 2) {
+    return undefined
+  }
+  const classLabel = tokens[0]
+  const lastId = tokens[1]
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const classes = hierarchy.getDescendants(contact.class.Contact)
+  let _class = contact.class.Contact
+  for (const clazz of classes) {
+    if (hierarchy.getClass(clazz).shortLabel === classLabel) {
+      _class = clazz
+      break
+    }
+  }
+  const doc = await client.findOne(_class, { _id: { $like: `%${lastId}` } }, { sort: { _id: SortingOrder.Descending } })
+  if (doc === undefined) {
+    console.error(`Could not find contact ${lastId}.`)
+    return undefined
+  }
+  const appComponent = loc.path[0] ?? ''
+  const workspace = loc.path[1] ?? ''
+  return {
+    path: [appComponent, workspace, contactId],
+    fragment: getPanelURI(view.component.EditDoc, doc._id, doc._class, 'content')
   }
 }

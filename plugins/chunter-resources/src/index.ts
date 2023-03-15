@@ -13,16 +13,16 @@
 // limitations under the License.
 //
 
-import core, { Data, Doc, DocumentQuery, Ref, RelatedDocument, Space } from '@hcengineering/core'
 import chunter, {
-  ChunterSpace,
+  Backlink,
   Channel,
   ChunterMessage,
-  Message,
-  ThreadMessage,
+  ChunterSpace,
   DirectMessage,
-  Backlink
+  Message,
+  ThreadMessage
 } from '@hcengineering/chunter'
+import core, { Data, Doc, DocumentQuery, Ref, RelatedDocument, Space } from '@hcengineering/core'
 import { NotificationClientImpl } from '@hcengineering/notification-resources'
 import { IntlString, Resources, translate } from '@hcengineering/platform'
 import preference from '@hcengineering/preference'
@@ -32,29 +32,29 @@ import TxBacklinkCreate from './components/activity/TxBacklinkCreate.svelte'
 import TxBacklinkReference from './components/activity/TxBacklinkReference.svelte'
 import TxCommentCreate from './components/activity/TxCommentCreate.svelte'
 import TxMessageCreate from './components/activity/TxMessageCreate.svelte'
-import ChannelPresenter from './components/ChannelPresenter.svelte'
-import DmPresenter from './components/DmPresenter.svelte'
-import MessagePresenter from './components/MessagePresenter.svelte'
-import ChannelView from './components/ChannelView.svelte'
 import ChannelHeader from './components/ChannelHeader.svelte'
-import DmHeader from './components/DmHeader.svelte'
+import ChannelPresenter from './components/ChannelPresenter.svelte'
+import ChannelView from './components/ChannelView.svelte'
+import ChunterBrowser from './components/ChunterBrowser.svelte'
 import CommentInput from './components/CommentInput.svelte'
 import CommentPopup from './components/CommentPopup.svelte'
 import CommentPresenter from './components/CommentPresenter.svelte'
 import CommentsPresenter from './components/CommentsPresenter.svelte'
+import ConvertDmToPrivateChannelModal from './components/ConvertDmToPrivateChannel.svelte'
 import CreateChannel from './components/CreateChannel.svelte'
 import CreateDirectMessage from './components/CreateDirectMessage.svelte'
+import DmHeader from './components/DmHeader.svelte'
+import DmPresenter from './components/DmPresenter.svelte'
 import EditChannel from './components/EditChannel.svelte'
-import ChunterBrowser from './components/ChunterBrowser.svelte'
-import ThreadView from './components/ThreadView.svelte'
-import Threads from './components/Threads.svelte'
+import MessagePresenter from './components/MessagePresenter.svelte'
 import SavedMessages from './components/SavedMessages.svelte'
-import ConvertDmToPrivateChannelModal from './components/ConvertDmToPrivateChannel.svelte'
+import Threads from './components/Threads.svelte'
+import ThreadView from './components/ThreadView.svelte'
 
-import { getDmName } from './utils'
 import { writable } from 'svelte/store'
-import { updateBacklinksList } from './backlinks'
 import { DisplayTx } from '../../activity/lib'
+import { updateBacklinksList } from './backlinks'
+import { getDmName, getFragment, getLink, resolveLocation } from './utils'
 
 export { default as Header } from './components/Header.svelte'
 export { classIcon } from './utils'
@@ -242,7 +242,9 @@ export default async (): Promise<Resources> => ({
   },
   function: {
     GetDmName: getDmName,
-    ChunterBrowserVisible: chunterBrowserVisible
+    ChunterBrowserVisible: chunterBrowserVisible,
+    GetFragment: getFragment,
+    GetLink: getLink
   },
   activity: {
     TxCommentCreate,
@@ -263,5 +265,8 @@ export default async (): Promise<Resources> => ({
   },
   backreference: {
     Update: update
+  },
+  resolver: {
+    Location: resolveLocation
   }
 })

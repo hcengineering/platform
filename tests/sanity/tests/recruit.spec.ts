@@ -54,6 +54,7 @@ test.describe('recruit tests', () => {
     await expect(page.locator(`text=${loc}`).first()).toBeVisible()
 
     const activity = page.locator('[id="activity\\:string\\:Activity"]')
+    await activity.locator('[id="gmail\\:string\\:Email"]').scrollIntoViewIfNeeded()
     await activity.locator('[id="gmail\\:string\\:Email"]').hover()
     await expect(page.locator(`text=${email}`).first()).toBeVisible()
   })
@@ -107,7 +108,7 @@ test.describe('recruit tests', () => {
     await page.click('form button:has-text("Create")')
     await page.waitForSelector('form.antiCard', { state: 'detached' })
 
-    await page.click(`tr > :has-text("${vacancyId}")`)
+    await page.click(`tr:has-text("${vacancyId}") > td:nth-child(3) >> .sm-tool-icon`)
 
     // Create Applicatio n1
     await page.click('button:has-text("Application")')
@@ -126,6 +127,7 @@ test.describe('recruit tests', () => {
     await page.click('text=Software Engineer')
 
     // await page.click('[name="tooltip-task:string:Kanban"]')
+    await page.click('.antiSection-header >> text=Applications')
     await page.click('.tablist-container div:nth-child(2)')
 
     await expect(page.locator('text=M. Marina').first()).toBeVisible()

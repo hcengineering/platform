@@ -14,11 +14,10 @@
 -->
 <script lang="ts">
   import { Employee, getName, Person } from '@hcengineering/contact'
-  import { Hierarchy } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Avatar } from '@hcengineering/presentation'
-  import { getPanelURI, Label, LabelAndProps, tooltip } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import { Label, LabelAndProps, tooltip } from '@hcengineering/ui'
+  import { DocNavLink } from '@hcengineering/view-resources'
 
   export let value: Person | Employee | undefined | null
   export let inline: boolean = false
@@ -32,87 +31,53 @@
   export let showTooltip: LabelAndProps | undefined = undefined
   export let enlargedText = false
   export let element: HTMLElement | undefined = undefined
-
-  $: el = getElement(value, onEdit, shouldShowPlaceholder, isInteractive)
-
-  const getElement = (
-    person: Person | undefined | null,
-    onEdit: Function | undefined,
-    shouldShowEmpty: boolean,
-    isInteractive: boolean
-  ) => {
-    if (!person && !shouldShowEmpty) {
-      return undefined
-    }
-
-    if (!isInteractive) {
-      return 'div'
-    }
-
-    if (person && !onEdit) {
-      return 'a'
-    }
-
-    return 'div'
-  }
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<svelte:element
-  this={el}
-  bind:this={element}
-  use:tooltip={showTooltip}
-  class="contentPresenter"
-  class:inline-presenter={inline}
-  class:mContentPresenterNotInteractive={!isInteractive}
-  class:text-base={enlargedText}
-  on:click={onEdit}
-  href={!isInteractive || onEdit || !value
-    ? undefined
-    : `#${getPanelURI(view.component.EditDoc, value._id, Hierarchy.mixinOrClass(value), 'content')}`}
->
-  {#if shouldShowAvatar}
-    <div
-      class="eContentPresenterIcon"
-      class:mr-2={shouldShowName && !enlargedText}
-      class:mr-3={shouldShowName && enlargedText}
-    >
-      <Avatar size={avatarSize} avatar={value?.avatar} />
-    </div>
-  {/if}
-  {#if value && shouldShowName}
-    <span class="eContentPresenterLabel">{getName(value)}</span>
-  {/if}
-  {#if !value && shouldShowName && defaultName}
-    <div class="eContentPresenterLabel">
-      <Label label={defaultName} />
-    </div>
-  {/if}
-</svelte:element>
+{#if value}
+  <DocNavLink object={value} onClick={onEdit} disableClick={!isInteractive}>
+    <span use:tooltip={showTooltip} class="contentPresenter" class:text-base={enlargedText}>
+      {#if shouldShowAvatar}
+        <span
+          class="eContentPresenterIcon"
+          class:mr-2={shouldShowName && !enlargedText}
+          class:mr-3={shouldShowName && enlargedText}
+        >
+          <Avatar size={avatarSize} avatar={value.avatar} />
+        </span>
+      {/if}
+      {#if shouldShowName}
+        <span class="eContentPresenterLabel">{getName(value)}</span>
+      {/if}
+    </span>
+  </DocNavLink>
+{:else if shouldShowPlaceholder}
+  <span use:tooltip={showTooltip} class="contentPresenter" class:text-base={enlargedText}>
+    {#if shouldShowAvatar}
+      <span
+        class="eContentPresenterIcon"
+        class:mr-2={shouldShowName && !enlargedText}
+        class:mr-3={shouldShowName && enlargedText}
+      >
+        <Avatar size={avatarSize} />
+      </span>
+    {/if}
+    {#if shouldShowName && defaultName}
+      <span class="eContentPresenterLabel">
+        <Label label={defaultName} />
+      </span>
+    {/if}
+  </span>
+{/if}
 
 <style lang="scss">
   .contentPresenter {
     display: flex;
     align-items: center;
     flex-wrap: nowrap;
-    cursor: pointer;
 
     &.inline-presenter {
       display: inline-flex;
       align-items: baseline;
-    }
-    &.mContentPresenterNotInteractive {
-      cursor: default;
-
-      &:hover {
-        .eContentPresenterIcon {
-          color: var(--accent-color);
-        }
-        .eContentPresenterLabel {
-          text-decoration: none;
-          color: var(--accent-color);
-        }
-      }
     }
     .eContentPresenterIcon {
       color: var(--dark-color);

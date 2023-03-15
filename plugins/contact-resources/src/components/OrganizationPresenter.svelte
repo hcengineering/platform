@@ -15,8 +15,7 @@
 -->
 <script lang="ts">
   import { Organization } from '@hcengineering/contact'
-  import { getPanelURI } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import { DocNavLink } from '@hcengineering/view-resources'
   import Company from './icons/Company.svelte'
 
   export let value: Organization
@@ -24,12 +23,10 @@
 </script>
 
 {#if value}
-  <a
-    class="flex-presenter"
-    class:inline-presenter={inline}
-    href="#{getPanelURI(view.component.EditDoc, value._id, value._class, 'content')}"
-  >
-    <div class="icon circle"><Company size={'small'} /></div>
-    <span class="label">{value.name}</span>
-  </a>
+  <DocNavLink {inline} object={value}>
+    <div class="flex-presenter">
+      <div class="icon circle"><Company size={'small'} /></div>
+      <span class="label">{value.name}</span>
+    </div>
+  </DocNavLink>
 {/if}

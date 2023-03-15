@@ -378,6 +378,7 @@ export default mergeIds(trackerId, tracker, {
     IssueTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>,
     GetIssueId: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
     GetIssueLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
+    GetIssueLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
     GetIssueTitle: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
     IssueStatusSort: '' as SortFunc,
     IssuePrioritySort: '' as SortFunc,

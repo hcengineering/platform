@@ -98,7 +98,7 @@ export class TChunterMessage extends TAttachedDoc implements ChunterMessage {
 }
 
 @Model(chunter.class.ThreadMessage, chunter.class.ChunterMessage)
-@UX(chunter.string.ThreadMessage)
+@UX(chunter.string.ThreadMessage, undefined, 'TMSG')
 export class TThreadMessage extends TChunterMessage implements ThreadMessage {
   declare attachedTo: Ref<Message>
 
@@ -106,7 +106,7 @@ export class TThreadMessage extends TChunterMessage implements ThreadMessage {
 }
 
 @Model(chunter.class.Message, chunter.class.ChunterMessage)
-@UX(chunter.string.Message)
+@UX(chunter.string.Message, undefined, 'MSG')
 export class TMessage extends TChunterMessage implements Message {
   declare attachedTo: Ref<Space>
 
@@ -132,7 +132,7 @@ export class TReaction extends TAttachedDoc implements Reaction {
 }
 
 @Model(chunter.class.Comment, core.class.AttachedDoc, DOMAIN_COMMENT)
-@UX(chunter.string.Comment)
+@UX(chunter.string.Comment, undefined, 'COM')
 export class TComment extends TAttachedDoc implements Comment {
   @Prop(TypeMarkup(), chunter.string.Message)
   @Index(IndexKind.FullText)
@@ -330,6 +330,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
       {
         label: chunter.string.ApplicationLabelChunter,
         icon: chunter.icon.Chunter,
+        locationResolver: chunter.resolver.Location,
         alias: chunterId,
         hidden: false,
         navigatorModel: {
@@ -430,6 +431,95 @@ export function createModel (builder: Builder, options = { addApplication: true 
       hideOnRemove: true
     },
     chunter.ids.TxCommentCreate
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.CopyTextToClipboard,
+      actionProps: {
+        textProvider: chunter.function.GetLink
+      },
+      label: chunter.string.CopyLink,
+      icon: chunter.icon.Thread,
+      keyBinding: [],
+      input: 'none',
+      category: chunter.category.Chunter,
+      target: chunter.class.Comment,
+      context: {
+        mode: ['context', 'browser'],
+        group: 'copy'
+      }
+    },
+    chunter.action.CopyCommentLink
+  )
+
+  builder.mixin(chunter.class.Comment, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [view.action.Open]
+  })
+
+  builder.mixin(chunter.class.Message, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [view.action.Open]
+  })
+
+  builder.mixin(chunter.class.ThreadMessage, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [view.action.Open]
+  })
+
+  builder.mixin(chunter.class.Comment, core.class.Class, view.mixin.LinkProvider, {
+    encode: chunter.function.GetFragment
+  })
+
+  builder.mixin(chunter.class.ThreadMessage, core.class.Class, view.mixin.LinkProvider, {
+    encode: chunter.function.GetFragment
+  })
+
+  builder.mixin(chunter.class.Message, core.class.Class, view.mixin.LinkProvider, {
+    encode: chunter.function.GetFragment
+  })
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.CopyTextToClipboard,
+      actionProps: {
+        textProvider: chunter.function.GetLink
+      },
+      label: chunter.string.CopyLink,
+      icon: chunter.icon.Thread,
+      keyBinding: [],
+      input: 'none',
+      category: chunter.category.Chunter,
+      target: chunter.class.Message,
+      context: {
+        mode: ['context', 'browser'],
+        application: chunter.app.Chunter,
+        group: 'copy'
+      }
+    },
+    chunter.action.CopyMessageLink
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.CopyTextToClipboard,
+      actionProps: {
+        textProvider: chunter.function.GetLink
+      },
+      label: chunter.string.CopyLink,
+      icon: chunter.icon.Thread,
+      keyBinding: [],
+      input: 'none',
+      category: chunter.category.Chunter,
+      target: chunter.class.ThreadMessage,
+      context: {
+        mode: ['context', 'browser'],
+        application: chunter.app.Chunter,
+        group: 'copy'
+      }
+    },
+    chunter.action.CopyThreadMessageLink
   )
 
   // We need to define this one, to hide default attached object removed case

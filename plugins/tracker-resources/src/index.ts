@@ -28,7 +28,6 @@ import { getClient, MessageBox, ObjectSearchResult } from '@hcengineering/presen
 import { Issue, Scrum, ScrumRecord, Sprint, Team } from '@hcengineering/tracker'
 import { showPopup } from '@hcengineering/ui'
 import CreateIssue from './components/CreateIssue.svelte'
-import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
 import Inbox from './components/inbox/Inbox.svelte'
 import Active from './components/issues/Active.svelte'
 import AssigneePresenter from './components/issues/AssigneePresenter.svelte'
@@ -42,9 +41,11 @@ import Issues from './components/issues/Issues.svelte'
 import IssuesView from './components/issues/IssuesView.svelte'
 import KanbanView from './components/issues/KanbanView.svelte'
 import ModificationDatePresenter from './components/issues/ModificationDatePresenter.svelte'
-import PriorityRefPresenter from './components/issues/PriorityRefPresenter.svelte'
 import PriorityEditor from './components/issues/PriorityEditor.svelte'
 import PriorityPresenter from './components/issues/PriorityPresenter.svelte'
+import PriorityRefPresenter from './components/issues/PriorityRefPresenter.svelte'
+import RelatedIssueSelector from './components/issues/related/RelatedIssueSelector.svelte'
+import RelatedIssuesSection from './components/issues/related/RelatedIssuesSection.svelte'
 import StatusEditor from './components/issues/StatusEditor.svelte'
 import StatusPresenter from './components/issues/StatusPresenter.svelte'
 import TitlePresenter from './components/issues/TitlePresenter.svelte'
@@ -66,18 +67,18 @@ import TeamProjects from './components/projects/TeamProjects.svelte'
 import RelationsPopup from './components/RelationsPopup.svelte'
 import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
-import Views from './components/views/Views.svelte'
-import Statuses from './components/workflow/Statuses.svelte'
-import RelatedIssuesSection from './components/issues/related/RelatedIssuesSection.svelte'
-import RelatedIssueSelector from './components/issues/related/RelatedIssueSelector.svelte'
-import SprintProjectEditor from './components/sprints/SprintProjectEditor.svelte'
 import SprintDatePresenter from './components/sprints/SprintDatePresenter.svelte'
 import SprintLeadPresenter from './components/sprints/SprintLeadPresenter.svelte'
+import SprintProjectEditor from './components/sprints/SprintProjectEditor.svelte'
+import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
+import Views from './components/views/Views.svelte'
+import Statuses from './components/workflow/Statuses.svelte'
 
 import {
   getIssueId,
   getIssueTitle,
   issueIdProvider,
+  issueLinkFragmentProvider,
   issueLinkProvider,
   issueTitleProvider,
   resolveLocation
@@ -91,8 +92,8 @@ import SprintSelector from './components/sprints/SprintSelector.svelte'
 import SprintStatusPresenter from './components/sprints/SprintStatusPresenter.svelte'
 import SprintTitlePresenter from './components/sprints/SprintTitlePresenter.svelte'
 
-import Scrums from './components/scrums/Scrums.svelte'
 import ScrumRecordPanel from './components/scrums/ScrumRecordPanel.svelte'
+import Scrums from './components/scrums/Scrums.svelte'
 
 import SubIssuesSelector from './components/issues/edit/SubIssuesSelector.svelte'
 import EstimationEditor from './components/issues/timereport/EstimationEditor.svelte'
@@ -107,31 +108,31 @@ import ProjectSelector from './components/ProjectSelector.svelte'
 import IssueTemplatePresenter from './components/templates/IssueTemplatePresenter.svelte'
 import IssueTemplates from './components/templates/IssueTemplates.svelte'
 
+import { deleteObject } from '@hcengineering/view-resources/src/utils'
+import MoveAndDeleteSprintPopup from './components/sprints/MoveAndDeleteSprintPopup.svelte'
 import EditIssueTemplate from './components/templates/EditIssueTemplate.svelte'
 import TemplateEstimationEditor from './components/templates/EstimationEditor.svelte'
-import MoveAndDeleteSprintPopup from './components/sprints/MoveAndDeleteSprintPopup.svelte'
 import {
-  moveIssuesToAnotherSprint,
-  issueStatusSort,
-  issuePrioritySort,
-  sprintSort,
-  subIssueQuery,
-  getAllStatuses,
   getAllPriority,
   getAllProjects,
   getAllSprints,
-  removeTeam
+  getAllStatuses,
+  issuePrioritySort,
+  issueStatusSort,
+  moveIssuesToAnotherSprint,
+  removeTeam,
+  sprintSort,
+  subIssueQuery
 } from './utils'
-import { deleteObject } from '@hcengineering/view-resources/src/utils'
 
+import { EmployeeAccount } from '@hcengineering/contact'
+import StatusRefPresenter from './components/issues/StatusRefPresenter.svelte'
+import TimeSpendReportPopup from './components/issues/timereport/TimeSpendReportPopup.svelte'
+import DeleteProjectPresenter from './components/projects/DeleteProjectPresenter.svelte'
+import IssueStatistics from './components/sprints/IssueStatistics.svelte'
+import SprintRefPresenter from './components/sprints/SprintRefPresenter.svelte'
 import CreateTeam from './components/teams/CreateTeam.svelte'
 import TeamPresenter from './components/teams/TeamPresenter.svelte'
-import IssueStatistics from './components/sprints/IssueStatistics.svelte'
-import StatusRefPresenter from './components/issues/StatusRefPresenter.svelte'
-import SprintRefPresenter from './components/sprints/SprintRefPresenter.svelte'
-import { EmployeeAccount } from '@hcengineering/contact'
-import DeleteProjectPresenter from './components/projects/DeleteProjectPresenter.svelte'
-import TimeSpendReportPopup from './components/issues/timereport/TimeSpendReportPopup.svelte'
 
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 
@@ -425,6 +426,7 @@ export default async (): Promise<Resources> => ({
     IssueTitleProvider: getIssueTitle,
     GetIssueId: issueIdProvider,
     GetIssueLink: issueLinkProvider,
+    GetIssueLinkFragment: issueLinkFragmentProvider,
     GetIssueTitle: issueTitleProvider,
     IssueStatusSort: issueStatusSort,
     IssuePrioritySort: issuePrioritySort,

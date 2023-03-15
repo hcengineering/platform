@@ -14,37 +14,27 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { translate } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import type { Review } from '@hcengineering/recruit'
   import recruit from '@hcengineering/recruit'
-  import { getPanelURI, Icon } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import { Icon } from '@hcengineering/ui'
+  import { DocNavLink } from '@hcengineering/view-resources'
 
   export let value: Review
   export let inline: boolean = false
 
   const client = getClient()
-  let shortLabel = ''
 
   const label = client.getHierarchy().getClass(value?._class)?.shortLabel
-
-  if (label !== undefined) {
-    translate(label, {}).then((r) => {
-      shortLabel = r
-    })
-  }
 </script>
 
-{#if value && shortLabel}
-  <a
-    class="flex-presenter"
-    class:inline-presenter={inline}
-    href="#{getPanelURI(view.component.EditDoc, value._id, value._class, 'content')}"
-  >
-    <div class="icon">
-      <Icon icon={recruit.icon.Review} size={'small'} />
+{#if value && label}
+  <DocNavLink object={value} {inline}>
+    <div class="flex-presenter" class:inline-presenter={inline}>
+      <div class="icon">
+        <Icon icon={recruit.icon.Review} size={'small'} />
+      </div>
+      <span class="label nowrap">{label}-{value.number}</span>
     </div>
-    <span class="label nowrap">{shortLabel}-{value.number}</span>
-  </a>
+  </DocNavLink>
 {/if}

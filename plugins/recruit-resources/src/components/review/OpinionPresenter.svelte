@@ -14,7 +14,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { translate } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import type { Opinion } from '@hcengineering/recruit'
   import recruit from '@hcengineering/recruit'
@@ -29,15 +28,9 @@
   }
 
   const client = getClient()
-  let shortLabel = ''
 
-  const label = client.getHierarchy().getClass(value._class).shortLabel
+  const shortLabel = client.getHierarchy().getClass(value._class).shortLabel ?? ''
 
-  if (label !== undefined) {
-    translate(label, {}).then((r) => {
-      shortLabel = r
-    })
-  }
   let element: HTMLElement
 </script>
 
