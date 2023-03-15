@@ -19,7 +19,7 @@
   import type { Request, RequestType, Staff } from '@hcengineering/hr'
   import { Label, LabelAndProps, Scroller, tableHRscheduleY, tooltip } from '@hcengineering/ui'
   import hr from '../../plugin'
-  import { getAll, getDates, getEndDate, getRequests, getStartDate, getTotal, isToday, weekDays } from '../../utils'
+  import { getDates, getEndDate, getRequests, getStartDate, getTotal, isToday, weekDays } from '../../utils'
   import RequestsPopup from '../RequestsPopup.svelte'
   import { Department } from '@hcengineering/hr'
 
@@ -126,8 +126,7 @@
             {@const endDate = getEndDate(currentDate.getFullYear(), value)}
             <td class:today={isToday(startDate)} class="fixed td-body summary">
               <div class="flex-center">
-                <!--{getTotal(requests, startDate, endDate, types, [...holidays.values()].flat())}-->
-                {getAll(employeeRequests, startDate, endDate, types, departmentStaff, holidays, staffDepartmentMap)}
+                {getTotal([...employeeRequests.values()].flat(),startDate, endDate, types, [...holidays.values()].flat())}
               </div>
             </td>
           {/each}

@@ -259,24 +259,25 @@
     return rMap
   }
 
-  let staffDepartmentMap: Map<Ref<Staff>, Department[]> = new Map<Ref<Staff>, Department[]>()
   const client = getClient()
 
-  async function getDepartmentsForEmployee (): Promise<void> {
-    staffDepartmentMap = new Map<Ref<Staff>, Department[]>()
-    if (departmentStaff.length) {
+  async function getDepartmentsForEmployee (departmentStaff: Staff[]): Promise<Map<Ref<Staff>, Department[]>> {
+    const map = new Map<Ref<Staff>, Department[]>()
+    if (departmentStaff && departmentStaff.length > 0) {
       const ids = departmentStaff.map((staff) => staff._id)
-      for (const id of ids) {
-        const staffs = await client.findOne(contact.class.EmployeeAccount, { employee: id })
-        const departmentsMap = await client.findAll(hr.class.Department, { members: staffs._id })
-        staffDepartmentMap.set(id, departmentsMap as Department[])
-      }
+      const staffs = await client.findAll(contact.class.EmployeeAccount, { employee: { $in: ids} })
+      const departments = await client.findAll(hr.class.Department, { members: { $in: staffs.map((staff) => staff._id) }})
+      staffs.forEach((staff) => {
+        const departmentsStaff2 = departments.filter((department) => department.members.includes(staff._id))
+        map.set(staff.employee as Ref<Staff>, departmentsStaff2 as Department[])
+      })
     }
+    return map
   }
 </script>
 
 {#if departmentStaff.length}
-  {#await getDepartmentsForEmployee() then result}
+  {#await getDepartmentsForEmployee(departmentStaff) then staffDepartmentMap}
     {#if mode === CalendarMode.Year}
       <YearView {departmentStaff} {employeeRequests} {types} {currentDate} {holidays} {staffDepartmentMap} />
     {:else if mode === CalendarMode.Month}

@@ -35,7 +35,7 @@
     tooltip
   } from '@hcengineering/ui'
   import hr from '../../plugin'
-  import { EmployeeReports, getAll, getDates, getRequests, getTotal, isHoliday } from '../../utils'
+  import { EmployeeReports, getDates, getRequests, getTotal, isHoliday } from '../../utils'
   import CreateRequest from '../CreateRequest.svelte'
   import RequestsPopup from '../RequestsPopup.svelte'
   import ScheduleRequests from '../ScheduleRequests.svelte'
@@ -273,7 +273,7 @@
                 hoveredColumn = -1
               }}
             >
-              {getAll(employeeRequests, day, day, types, departmentStaff, holidays, staffDepartmentMap)}
+              {getTotal([...employeeRequests.values()].flat(), day, day, types, [...holidays.values()].flat())}
             </td>
           {/each}
         </tr>
