@@ -32,12 +32,12 @@ export interface _IdInfo {
  */
 export function _parseId (id: Id): _IdInfo {
   const path = id.split(_ID_SEPARATOR)
-  if (path.length !== 3) {
+  if (path.length < 3) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidId, { id }))
   }
   return {
     component: path[0] as Plugin,
     kind: path[1],
-    name: path[2]
+    name: path.slice(2).join(_ID_SEPARATOR)
   }
 }

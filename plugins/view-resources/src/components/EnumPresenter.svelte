@@ -14,8 +14,9 @@
 -->
 <script lang="ts">
   import core, { EnumOf } from '@hcengineering/core'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import { DropdownLabels, DropdownTextItem } from '@hcengineering/ui'
+  import { DropdownLabels, DropdownTextItem, tooltip } from '@hcengineering/ui'
   import StringPresenter from './StringPresenter.svelte'
 
   export let value: string
@@ -42,19 +43,21 @@
 </script>
 
 {#if onChange !== undefined && type !== undefined}
-  <DropdownLabels
-    bind:selected={value}
-    {items}
-    useFlexGrow={true}
-    justify={'left'}
-    size={'large'}
-    kind={'link'}
-    width={'100%'}
-    autoSelect={false}
-    on:selected={(e) => {
-      onChange?.(e.detail)
-    }}
-  />
+  <span use:tooltip={value ? { label: getEmbeddedLabel(value) } : undefined}>
+    <DropdownLabels
+      bind:selected={value}
+      {items}
+      useFlexGrow={true}
+      justify={'left'}
+      size={'large'}
+      kind={'link'}
+      width={'100%'}
+      autoSelect={false}
+      on:selected={(e) => {
+        onChange?.(e.detail)
+      }}
+    />
+  </span>
 {:else}
   <StringPresenter {value} />
 {/if}

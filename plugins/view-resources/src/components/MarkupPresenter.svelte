@@ -15,11 +15,14 @@
 -->
 <script lang="ts">
   import { MessageViewer } from '@hcengineering/presentation'
-  import { ShowMore } from '@hcengineering/ui'
+  import { ShowMore, tooltip } from '@hcengineering/ui'
+  import MarkupPreviewPopup from './MarkupPreviewPopup.svelte'
 
   export let value: string | undefined
 </script>
 
-<ShowMore>
-  <MessageViewer message={value ?? ''} />
-</ShowMore>
+<div use:tooltip={value ? { component: MarkupPreviewPopup, props: { value } } : undefined}>
+  <ShowMore>
+    <MessageViewer message={value ?? ''} />
+  </ShowMore>
+</div>
