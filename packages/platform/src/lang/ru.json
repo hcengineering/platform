@@ -8,6 +8,6 @@
     "ExpiredLink": "Недействительная ссылка",
     "Unauthorized": "Неавторизован",
     "UnknownMethod": "Неизвестный метод: {method}",
-    "InternalServerError": "Внутренняя ошибка сервеа"
+    "InternalServerError": "Внутренняя ошибка сервера"
   }
 }
