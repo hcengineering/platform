@@ -563,7 +563,7 @@ export function createModel (builder: Builder): void {
           presenter: tracker.component.StatusEditor,
           props: { kind: 'list', size: 'small', justify: 'center' }
         },
-        { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true } },
+        { key: '', presenter: tracker.component.TitlePresenter, props: {} },
         { key: '', presenter: tracker.component.SubIssuesSelector, props: {} },
         { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
         {

@@ -230,6 +230,7 @@
     height: 100%;
   }
   .ap-menuItem {
+    flex-shrink: 0;
     justify-content: flex-start;
     padding: 0 .5rem;
     height: 2rem;
