@@ -291,33 +291,33 @@ async function migrateIssueParentInfo (client: MigrationClient): Promise<void> {
   await updateIssueParentInfo(client, null)
 }
 
-async function migrateIssueProjects (client: MigrationClient): Promise<void> {
-  const issues = await client.find(DOMAIN_TRACKER, { _class: tracker.class.Issue, project: { $exists: false } })
+async function migrateIssueComponents (client: MigrationClient): Promise<void> {
+  const issues = await client.find(DOMAIN_TRACKER, { _class: tracker.class.Issue, component: { $exists: false } })
 
   if (issues.length === 0) {
     return
   }
 
   for (const issue of issues) {
-    await client.update(DOMAIN_TRACKER, { _id: issue._id }, { project: null })
+    await client.update(DOMAIN_TRACKER, { _id: issue._id }, { component: null })
   }
 }
 
-async function upgradeProjectIcons (tx: TxOperations): Promise<void> {
-  const projects = await tx.findAll(tracker.class.Project, {})
+async function upgradeComponentIcons (tx: TxOperations): Promise<void> {
+  const components = await tx.findAll(tracker.class.Component, {})
 
-  if (projects.length === 0) {
+  if (components.length === 0) {
     return
   }
 
-  for (const project of projects) {
-    const icon = project.icon as unknown
+  for (const component of components) {
+    const icon = component.icon as unknown
 
     if (icon !== undefined) {
       continue
     }
 
-    await tx.update(project, { icon: tracker.icon.Projects })
+    await tx.update(component, { icon: tracker.icon.Components })
   }
 }
 
@@ -408,8 +408,8 @@ async function upgradeIssues (tx: TxOperations): Promise<void> {
   }
 }
 
-async function upgradeProjects (tx: TxOperations): Promise<void> {
-  await upgradeProjectIcons(tx)
+async function upgradeComponents (tx: TxOperations): Promise<void> {
+  await upgradeComponentIcons(tx)
 }
 
 export const trackerOperation: MigrateOperation = {
@@ -423,7 +423,7 @@ export const trackerOperation: MigrateOperation = {
         reportedTime: 0
       }
     )
-    await Promise.all([migrateIssueProjects(client), migrateParentIssues(client)])
+    await Promise.all([migrateIssueComponents(client), migrateParentIssues(client)])
     await migrateIssueParentInfo(client)
     await fillRank(client)
   },
@@ -432,6 +432,6 @@ export const trackerOperation: MigrateOperation = {
     await createDefaults(tx)
     await upgradeTeams(tx)
     await upgradeIssues(tx)
-    await upgradeProjects(tx)
+    await upgradeComponents(tx)
   }
 }

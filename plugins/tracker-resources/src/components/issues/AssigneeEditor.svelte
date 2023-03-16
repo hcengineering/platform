@@ -44,11 +44,11 @@
     return (issue as Issue).space !== undefined
   }
 
-  async function updateProjectMembers (issue: Issue | AttachedData<Issue> | IssueTemplateData) {
-    if (issue.project) {
-      const project = await client.findOne(tracker.class.Project, { _id: issue.project })
-      projectLead = project?.lead || undefined
-      projectMembers = project?.members || []
+  async function updateComponentMembers (issue: Issue | AttachedData<Issue> | IssueTemplateData) {
+    if (issue.component) {
+      const component = await client.findOne(tracker.class.Component, { _id: issue.component })
+      projectLead = component?.lead || undefined
+      projectMembers = component?.members || []
     } else {
       projectLead = undefined
       projectMembers = []
@@ -66,7 +66,7 @@
     }
   }
 
-  $: updateProjectMembers(value)
+  $: updateComponentMembers(value)
 
   const handleAssigneeChanged = async (newAssignee: Ref<Employee> | undefined) => {
     if (newAssignee === undefined || value.assignee === newAssignee) {

@@ -35,7 +35,7 @@ import { getMetadata } from '@hcengineering/platform'
 import { Resource } from '@hcengineering/platform/lib/platform'
 import { TriggerControl } from '@hcengineering/server-core'
 import { addAssigneeNotification } from '@hcengineering/server-task-resources'
-import tracker, { Issue, IssueParentInfo, Project, Team, TimeSpendReport, trackerId } from '@hcengineering/tracker'
+import tracker, { Issue, IssueParentInfo, Component, Team, TimeSpendReport, trackerId } from '@hcengineering/tracker'
 import { workbenchId } from '@hcengineering/workbench'
 
 async function updateSubIssues (
@@ -122,16 +122,16 @@ export async function OnTeamDelete (tx: Tx, control: TriggerControl): Promise<Tx
 /**
  * @public
  */
-export async function OnProjectRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+export async function OnComponentRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx)
   if (actualTx._class !== core.class.TxRemoveDoc) {
     return []
   }
 
-  const ctx = actualTx as TxUpdateDoc<Project>
+  const ctx = actualTx as TxUpdateDoc<Component>
 
   const issues = await control.findAll(tracker.class.Issue, {
-    project: ctx.objectId
+    component: ctx.objectId
   })
   if (issues === undefined) return []
   const res: Tx[] = []
@@ -139,7 +139,7 @@ export async function OnProjectRemove (tx: Tx, control: TriggerControl): Promise
   for (const issue of issues) {
     const issuePush = {
       ...issue,
-      project: null
+      component: null
     }
     const tx = control.txFactory.createTxUpdateDoc(issue._class, issue.space, issue._id, issuePush)
     res.push(tx)
@@ -225,7 +225,7 @@ export default async () => ({
   },
   trigger: {
     OnIssueUpdate,
-    OnProjectRemove,
+    OnComponentRemove,
     OnTeamDelete
   }
 })
@@ -326,7 +326,7 @@ async function doIssueUpdate (
       { limit: 1 }
     )
 
-    const updatedProject = newParent !== undefined ? newParent.project : null
+    const updatedComponent = newParent !== undefined ? newParent.component : null
     const updatedParents =
       newParent !== undefined ? [{ parentId: newParent._id, parentTitle: newParent.title }, ...newParent.parents] : []
 
@@ -337,13 +337,13 @@ async function doIssueUpdate (
           ? {}
           : { parents: [...issue.parents].slice(0, parentInfoIndex + 1).concat(updatedParents) }
 
-      return { ...parentsUpdate, project: updatedProject }
+      return { ...parentsUpdate, component: updatedComponent }
     }
 
     res.push(
       control.txFactory.createTxUpdateDoc(updateTx.objectClass, updateTx.objectSpace, updateTx.objectId, {
         parents: updatedParents,
-        project: updatedProject
+        component: updatedComponent
       }),
       ...(await updateSubIssues(updateTx, control, update))
     )
@@ -353,10 +353,10 @@ async function doIssueUpdate (
     updateIssueParentEstimations(issue, res, control, issue.parents, updatedParents)
   }
 
-  if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'project')) {
+  if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'component')) {
     res.push(
       ...(await updateSubIssues(updateTx, control, {
-        project: updateTx.operations.project
+        component: updateTx.operations.component
       }))
     )
   }
@@ -366,13 +366,13 @@ async function doIssueUpdate (
       const [sprint] = await control.findAll(tracker.class.Sprint, { _id: updateTx.operations.sprint }, { limit: 1 })
       res.push(
         control.txFactory.createTxUpdateDoc(updateTx.objectClass, updateTx.objectSpace, updateTx.objectId, {
-          project: sprint.project
+          component: sprint.component
         })
       )
     } else {
       res.push(
         control.txFactory.createTxUpdateDoc(updateTx.objectClass, updateTx.objectSpace, updateTx.objectId, {
-          project: null
+          component: null
         })
       )
     }

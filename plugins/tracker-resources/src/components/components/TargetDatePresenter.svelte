@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Project } from '@hcengineering/tracker'
+  import { Component } from '@hcengineering/tracker'
   import { getClient } from '@hcengineering/presentation'
   import CommonTrackerDatePresenter from '../CommonTrackerDatePresenter.svelte'
 
-  export let value: Project
+  export let value: Component
 
   const client = getClient()
 

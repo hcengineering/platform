@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import tracker, { IssueTemplateChild, Project, Sprint, Team } from '@hcengineering/tracker'
+  import tracker, { IssueTemplateChild, Component, Sprint, Team } from '@hcengineering/tracker'
   import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { ActionContext, FixedColumn } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -29,7 +29,7 @@
   export let issues: IssueTemplateChild[]
   export let team: Ref<Team>
   export let sprint: Ref<Sprint> | null = null
-  export let project: Ref<Project> | null = null
+  export let component: Ref<Component> | null = null
 
   const dispatch = createEventDispatcher()
 
@@ -42,7 +42,7 @@
       {
         showBorder: true,
         sprint,
-        project,
+        component,
         childIssue: target
       },
       eventToHTMLElement(evt),

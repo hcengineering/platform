@@ -14,16 +14,16 @@
 -->
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
-  import { Project } from '@hcengineering/tracker'
+  import { Component } from '@hcengineering/tracker'
   import { getCurrentLocation, Icon, navigate, tooltip } from '@hcengineering/ui'
   import tracker from '../../plugin'
 
-  export let value: WithLookup<Project>
+  export let value: WithLookup<Component>
   export let withIcon = false
   export let onClick: () => void | undefined
   export let isInteractive = true
 
-  function navigateToProject () {
+  function navigateToComponent () {
     if (!isInteractive) {
       return
     }
@@ -32,7 +32,7 @@
     }
 
     const loc = getCurrentLocation()
-    loc.path[4] = 'projects'
+    loc.path[4] = 'components'
     loc.path[5] = value._id
     loc.path.length = 6
     loc.fragment = undefined
@@ -42,10 +42,10 @@
 
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="flex" on:click={navigateToProject}>
+  <div class="flex" on:click={navigateToComponent}>
     {#if withIcon}
-      <div class="mr-2" use:tooltip={{ label: tracker.string.Project }}>
-        <Icon icon={tracker.icon.Projects} size={'small'} />
+      <div class="mr-2" use:tooltip={{ label: tracker.string.Component }}>
+        <Icon icon={tracker.icon.Components} size={'small'} />
       </div>
     {/if}
     <span title={value.label} class="fs-bold cursor-pointer caption-color overflow-label clear-mins">

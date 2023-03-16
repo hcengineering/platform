@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
-  import { IssueTemplateChild, Project, Sprint, Team } from '@hcengineering/tracker'
+  import { IssueTemplateChild, Component, Sprint, Team } from '@hcengineering/tracker'
   import { Button, closeTooltip, ExpandCollapse, IconAdd, Scroller } from '@hcengineering/ui'
   import { afterUpdate, createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
@@ -26,7 +26,7 @@
   export let children: IssueTemplateChild[] = []
   export let team: Ref<Team>
   export let sprint: Ref<Sprint> | null = null
-  export let project: Ref<Project> | null = null
+  export let component: Ref<Component> | null = null
   export let isScrollable: boolean = false
   export let maxHeight: 'max' | 'card' | 'limited' | string | undefined = undefined
 
@@ -88,7 +88,7 @@
     <div class="flex-col flex-no-shrink max-h-30 list clear-mins" class:collapsed={isCollapsed}>
       <Scroller>
         <IssueTemplateChildList
-          {project}
+          {component}
           {sprint}
           bind:issues={children}
           {team}
@@ -102,7 +102,7 @@
 {#if isCreating}
   <ExpandCollapse isExpanded={!isCollapsed} duration={400} on:changeContent>
     <IssueTemplateChildEditor
-      {project}
+      {component}
       {sprint}
       {isScrollable}
       {maxHeight}

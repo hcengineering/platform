@@ -15,7 +15,7 @@
 <script lang="ts">
   import contact, { Employee } from '@hcengineering/contact'
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { Project, Sprint } from '@hcengineering/tracker'
+  import { Component, Sprint } from '@hcengineering/tracker'
   import { UsersPopup, getClient } from '@hcengineering/presentation'
   import { AttributeModel } from '@hcengineering/view'
   import { eventToHTMLElement, IconSize, showPopup } from '@hcengineering/ui'
@@ -25,7 +25,7 @@
   import LeadPopup from './LeadPopup.svelte'
 
   export let value: Employee | null
-  export let _class: Ref<Class<Project | Sprint>>
+  export let _class: Ref<Class<Component | Sprint>>
   export let size: IconSize = 'x-small'
   export let parentId: Ref<Doc>
   export let defaultClass: Ref<Class<Doc>> | undefined = undefined
@@ -54,7 +54,7 @@
       return
     }
 
-    const currentParent = await client.findOne(_class, { _id: parentId as Ref<Project> })
+    const currentParent = await client.findOne(_class, { _id: parentId as Ref<Component> })
 
     if (currentParent === undefined) {
       return
@@ -78,7 +78,7 @@
           active: true
         },
         allowDeselect: true,
-        placeholder: tracker.string.ProjectLeadSearchPlaceholder
+        placeholder: tracker.string.ComponentLeadSearchPlaceholder
       },
       eventToHTMLElement(event),
       handleLeadChanged

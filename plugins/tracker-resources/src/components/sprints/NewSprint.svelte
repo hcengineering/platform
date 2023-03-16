@@ -16,11 +16,11 @@
   import { Data, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Card, EmployeeBox, getClient, SpaceSelector, UserBoxList } from '@hcengineering/presentation'
-  import { Project, Sprint, SprintStatus, Team } from '@hcengineering/tracker'
+  import { Component, Sprint, SprintStatus, Team } from '@hcengineering/tracker'
   import ui, { DatePresenter, EditBox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
-  import ProjectSelector from '../ProjectSelector.svelte'
+  import ComponentSelector from '../ComponentSelector.svelte'
   import SprintStatusSelector from './SprintStatusSelector.svelte'
   import { StyledTextArea } from '@hcengineering/text-editor'
 
@@ -45,7 +45,7 @@
     await client.createDoc(tracker.class.Sprint, space, object)
   }
 
-  const handleProjectStatusChanged = (newSprintStatus: SprintStatus | undefined) => {
+  const handleComponentStatusChanged = (newSprintStatus: SprintStatus | undefined) => {
     if (newSprintStatus === undefined) {
       return
     }
@@ -53,12 +53,12 @@
     object.status = newSprintStatus
   }
 
-  const handleProjectIdChanged = async (projectId: Ref<Project> | null | undefined) => {
-    if (projectId === undefined) {
+  const handleComponentIdChanged = async (componentId: Ref<Component> | null | undefined) => {
+    if (componentId === undefined) {
       return
     }
 
-    object.project = projectId ?? undefined
+    object.component = componentId ?? undefined
   }
 </script>
 
@@ -75,12 +75,12 @@
   <EditBox bind:value={object.label} placeholder={tracker.string.SprintNamePlaceholder} kind={'large-style'} focus />
   <StyledTextArea
     bind:content={object.description}
-    placeholder={tracker.string.ProjectDescriptionPlaceholder}
+    placeholder={tracker.string.ComponentDescriptionPlaceholder}
     emphasized
   />
   <svelte:fragment slot="pool">
-    <SprintStatusSelector selectedSprintStatus={object.status} onSprintStatusChange={handleProjectStatusChanged} />
-    <ProjectSelector value={object.project} onChange={handleProjectIdChanged} />
+    <SprintStatusSelector selectedSprintStatus={object.status} onSprintStatusChange={handleComponentStatusChanged} />
+    <ComponentSelector value={object.component} onChange={handleComponentIdChanged} />
     <EmployeeBox
       label={tracker.string.SprintLead}
       placeholder={tracker.string.AssignTo}

@@ -13,18 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Project } from '@hcengineering/tracker'
-  import { Icon } from '@hcengineering/ui'
-  import tracker from '../../plugin'
+  import { Ref } from '@hcengineering/core'
+  import { Team } from '@hcengineering/tracker'
+  import Components from './Components.svelte'
 
-  export let value: Project | undefined
+  export let currentSpace: Ref<Team>
 </script>
 
-{#if value}
-  <span class="overflow-label flex">
-    <Icon icon={value.icon ?? tracker.icon.Project} size={'small'} />
-    <div class="ml-2 mr-2">
-      {value.label}
-    </div></span
-  >
-{/if}
+<Components query={{ space: currentSpace }} />

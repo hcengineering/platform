@@ -19,7 +19,7 @@
     DraftIssueChild,
     IssueStatus,
     IssueTemplateChild,
-    Project,
+    Component,
     Sprint,
     Team
   } from '@hcengineering/tracker'
@@ -37,7 +37,7 @@
   export let issues: DraftIssueChild[]
   export let team: Ref<Team>
   export let sprint: Ref<Sprint> | null = null
-  export let project: Ref<Project> | null = null
+  export let component: Ref<Component> | null = null
   export let statuses: WithLookup<IssueStatus>[]
   const dispatch = createEventDispatcher()
 
@@ -51,7 +51,7 @@
         showBorder: true,
         team: currentTeam,
         sprint,
-        project,
+        component,
         statuses,
         childIssue: target
       },

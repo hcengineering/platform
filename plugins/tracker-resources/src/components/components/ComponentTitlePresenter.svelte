@@ -13,11 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@hcengineering/core'
-  import { Project } from '@hcengineering/tracker'
-  import { Button } from '@hcengineering/ui'
+  import { Component } from '@hcengineering/tracker'
+  import { Icon } from '@hcengineering/ui'
+  import tracker from '../../plugin'
 
-  export let value: WithLookup<Project>
+  export let value: Component | undefined
 </script>
 
-<Button size="small" kind="link" icon={value.icon} />
+{#if value}
+  <span class="overflow-label flex">
+    <Icon icon={value.icon ?? tracker.icon.Component} size={'small'} />
+    <div class="ml-2 mr-2">
+      {value.label}
+    </div></span
+  >
+{/if}

@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import Projects from './Projects.svelte'
+  import Components from './Components.svelte'
   import tracker from '../../plugin'
 </script>
 
-<Projects label={tracker.string.Roadmap} />
+<Components label={tracker.string.Roadmap} />

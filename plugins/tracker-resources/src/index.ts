@@ -52,18 +52,18 @@ import TitlePresenter from './components/issues/TitlePresenter.svelte'
 import MyIssues from './components/myissues/MyIssues.svelte'
 import NewIssueHeader from './components/NewIssueHeader.svelte'
 import NopeComponent from './components/NopeComponent.svelte'
-import EditProject from './components/projects/EditProject.svelte'
-import IconPresenter from './components/projects/IconPresenter.svelte'
-import LeadPresenter from './components/projects/LeadPresenter.svelte'
-import ProjectEditor from './components/projects/ProjectEditor.svelte'
-import ProjectPresenter from './components/projects/ProjectPresenter.svelte'
-import Projects from './components/projects/Projects.svelte'
-import ProjectStatusEditor from './components/projects/ProjectStatusEditor.svelte'
-import ProjectStatusPresenter from './components/projects/ProjectStatusPresenter.svelte'
-import ProjectTitlePresenter from './components/projects/ProjectTitlePresenter.svelte'
-import Roadmap from './components/projects/Roadmap.svelte'
-import TargetDatePresenter from './components/projects/TargetDatePresenter.svelte'
-import TeamProjects from './components/projects/TeamProjects.svelte'
+import EditComponent from './components/components/EditComponent.svelte'
+import IconPresenter from './components/components/IconComponent.svelte'
+import LeadPresenter from './components/components/LeadPresenter.svelte'
+import ProjectEditor from './components/components/ComponentEditor.svelte'
+import ProjectPresenter from './components/components/ComponentPresenter.svelte'
+import Components from './components/components/Components.svelte'
+import ProjectStatusEditor from './components/components/ComponentStatusEditor.svelte'
+import ProjectStatusPresenter from './components/components/ComponentStatusPresenter.svelte'
+import ComponentTitlePresenter from './components/components/ComponentTitlePresenter.svelte'
+import Roadmap from './components/components/Roadmap.svelte'
+import TargetDatePresenter from './components/components/TargetDatePresenter.svelte'
+import TeamComponents from './components/components/TeamComponents.svelte'
 import RelationsPopup from './components/RelationsPopup.svelte'
 import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
@@ -103,7 +103,7 @@ import TimeSpendReport from './components/issues/timereport/TimeSpendReport.svel
 import RelatedIssues from './components/issues/related/RelatedIssues.svelte'
 import RelatedIssueTemplates from './components/issues/related/RelatedIssueTemplates.svelte'
 
-import ProjectSelector from './components/ProjectSelector.svelte'
+import ComponentSelector from './components/ComponentSelector.svelte'
 
 import IssueTemplatePresenter from './components/templates/IssueTemplatePresenter.svelte'
 import IssueTemplates from './components/templates/IssueTemplates.svelte'
@@ -114,7 +114,7 @@ import EditIssueTemplate from './components/templates/EditIssueTemplate.svelte'
 import TemplateEstimationEditor from './components/templates/EstimationEditor.svelte'
 import {
   getAllPriority,
-  getAllProjects,
+  getAllComponents,
   getAllSprints,
   getAllStatuses,
   issuePrioritySort,
@@ -128,7 +128,7 @@ import {
 import { EmployeeAccount } from '@hcengineering/contact'
 import StatusRefPresenter from './components/issues/StatusRefPresenter.svelte'
 import TimeSpendReportPopup from './components/issues/timereport/TimeSpendReportPopup.svelte'
-import DeleteProjectPresenter from './components/projects/DeleteProjectPresenter.svelte'
+import DeleteComponentPresenter from './components/components/DeleteComponentPresenter.svelte'
 import IssueStatistics from './components/sprints/IssueStatistics.svelte'
 import SprintRefPresenter from './components/sprints/SprintRefPresenter.svelte'
 import CreateTeam from './components/teams/CreateTeam.svelte'
@@ -353,11 +353,11 @@ export default async (): Promise<Resources> => ({
     Backlog,
     Inbox,
     MyIssues,
-    Projects,
+    Components,
     Views,
     IssuePresenter,
     ProjectPresenter,
-    ProjectTitlePresenter,
+    ProjectTitlePresenter: ComponentTitlePresenter,
     TitlePresenter,
     ModificationDatePresenter,
     PriorityPresenter,
@@ -378,10 +378,10 @@ export default async (): Promise<Resources> => ({
     ProjectStatusEditor,
     SetDueDateActionPopup,
     SetParentIssueActionPopup,
-    EditProject,
+    EditComponent,
     IssuesView,
     KanbanView,
-    TeamProjects,
+    TeamComponents,
     Roadmap,
     IssuePreview,
     RelationsPopup,
@@ -401,7 +401,7 @@ export default async (): Promise<Resources> => ({
     SubIssuesSelector,
     RelatedIssues,
     RelatedIssueTemplates,
-    ProjectSelector,
+    ComponentSelector,
     IssueTemplates,
     IssueTemplatePresenter,
     EditIssueTemplate,
@@ -412,7 +412,7 @@ export default async (): Promise<Resources> => ({
     StatusRefPresenter,
     RelatedIssuesSection,
     RelatedIssueSelector,
-    DeleteProjectPresenter,
+    DeleteComponentPresenter,
     TimeSpendReportPopup,
     SprintProjectEditor,
     SprintDatePresenter,
@@ -434,7 +434,7 @@ export default async (): Promise<Resources> => ({
     SubIssueQuery: subIssueQuery,
     GetAllStatuses: getAllStatuses,
     GetAllPriority: getAllPriority,
-    GetAllProjects: getAllProjects,
+    GetAllComponents: getAllComponents,
     GetAllSprints: getAllSprints
   },
   actionImpl: {

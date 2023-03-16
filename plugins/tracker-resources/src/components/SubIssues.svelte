@@ -24,7 +24,7 @@
     Issue,
     IssueParentInfo,
     IssueStatus,
-    Project,
+    Component,
     Sprint,
     Team
   } from '@hcengineering/tracker'
@@ -40,7 +40,7 @@
   export let teamId: Ref<Team>
   export let team: Team | undefined
   export let sprint: Ref<Sprint> | null = null
-  export let project: Ref<Project> | null = null
+  export let component: Ref<Component> | null = null
   export let subIssues: DraftIssueChild[] = []
   export let statuses: WithLookup<IssueStatus>[]
 
@@ -79,7 +79,7 @@
         title: subIssue.title.trim(),
         description: subIssue.description,
         assignee: subIssue.assignee,
-        project: subIssue.project,
+        component: subIssue.component,
         sprint: subIssue.sprint,
         number: (incResult as any).object.sequence,
         status: subIssue.status,
@@ -208,7 +208,7 @@
       <Scroller>
         <DraftIssueChildList
           {statuses}
-          {project}
+          {component}
           {sprint}
           bind:issues={subIssues}
           team={teamId}
@@ -224,7 +224,7 @@
     <DraftIssueChildEditor
       {team}
       {statuses}
-      {project}
+      {component}
       {sprint}
       on:close={() => {
         isCreating = false

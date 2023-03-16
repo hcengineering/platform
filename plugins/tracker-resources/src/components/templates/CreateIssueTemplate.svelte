@@ -18,14 +18,14 @@
   import { Card, getClient, KeyedAttribute, SpaceSelector } from '@hcengineering/presentation'
   import tags, { TagElement } from '@hcengineering/tags'
   import { StyledTextBox } from '@hcengineering/text-editor'
-  import { IssuePriority, IssueTemplate, Project, Sprint, Team } from '@hcengineering/tracker'
+  import { IssuePriority, IssueTemplate, Component as ComponentType, Sprint, Team } from '@hcengineering/tracker'
   import { Component, EditBox, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { activeProject, activeSprint } from '../../issues'
+  import { activeComponent, activeSprint } from '../../issues'
   import tracker from '../../plugin'
   import AssigneeEditor from '../issues/AssigneeEditor.svelte'
   import PriorityEditor from '../issues/PriorityEditor.svelte'
-  import ProjectSelector from '../ProjectSelector.svelte'
+  import ComponentSelector from '../ComponentSelector.svelte'
   import SprintSelector from '../sprints/SprintSelector.svelte'
   import EstimationEditor from './EstimationEditor.svelte'
   import SubIssueTemplates from './IssueTemplateChilds.svelte'
@@ -33,7 +33,7 @@
   export let space: Ref<Team>
   export let priority: IssuePriority = IssuePriority.NoPriority
   export let assignee: Ref<Employee> | null = null
-  export let project: Ref<Project> | null = $activeProject ?? null
+  export let component: Ref<ComponentType> | null = $activeComponent ?? null
   export let sprint: Ref<Sprint> | null = $activeSprint ?? null
   export let relatedTo: Doc | undefined
 
@@ -44,7 +44,7 @@
     title: '',
     description: '',
     assignee,
-    project,
+    component,
     sprint,
     priority,
     estimation: 0,
@@ -87,7 +87,7 @@
       title: getTitle(object.title),
       description: object.description,
       assignee: object.assignee,
-      project: object.project,
+      component: object.component,
       sprint: object.sprint,
       priority: object.priority,
       estimation: object.estimation,
@@ -104,12 +104,12 @@
     objectId = generateId()
   }
 
-  const handleProjectIdChanged = (projectId: Ref<Project> | null | undefined) => {
-    if (projectId === undefined) {
+  const handleComponentIdChanged = (componentId: Ref<ComponentType> | null | undefined) => {
+    if (componentId === undefined) {
       return
     }
 
-    object = { ...object, project: projectId }
+    object = { ...object, component: componentId }
   }
 
   const handleSprintIdChanged = (sprintId: Ref<Sprint> | null | undefined) => {
@@ -160,7 +160,7 @@
   />
   <SubIssueTemplates
     bind:children={object.children}
-    project={object.project}
+    component={object.component}
     sprint={object.sprint}
     team={_space}
     maxHeight="limited"
@@ -198,7 +198,11 @@
       }}
     />
     <EstimationEditor kind={'no-border'} size={'small'} value={object} />
-    <ProjectSelector value={object.project} onChange={handleProjectIdChanged} />
-    <SprintSelector value={object.sprint} onChange={handleSprintIdChanged} useProject={object.project ?? undefined} />
+    <ComponentSelector value={object.component} onChange={handleComponentIdChanged} />
+    <SprintSelector
+      value={object.sprint}
+      onChange={handleSprintIdChanged}
+      useComponent={object.component ?? undefined}
+    />
   </svelte:fragment>
 </Card>

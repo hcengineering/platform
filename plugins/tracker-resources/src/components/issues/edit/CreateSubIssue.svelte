@@ -52,7 +52,7 @@
       title: '',
       description: '',
       assignee: null,
-      project: null,
+      component: null,
       number: 0,
       rank: '',
       status: '' as Ref<IssueStatus>,
@@ -105,7 +105,7 @@
         title: getTitle(newIssue.title),
         number: (incResult as any).object.sequence,
         rank: calcRank(lastOne, undefined),
-        project: parentIssue.project,
+        component: parentIssue.component,
         parents: [{ parentId: parentIssue._id, parentTitle: parentIssue.title }, ...parentIssue.parents]
       }
 

@@ -23,29 +23,29 @@
     selectionStore,
     LoadingProps
   } from '@hcengineering/view-resources'
-  import { Project } from '@hcengineering/tracker'
+  import { Component } from '@hcengineering/tracker'
   import { onMount } from 'svelte'
-  import ProjectsList from './ProjectsList.svelte'
-  import ProjectsTimeline from './ProjectsTimeline.svelte'
+  import ComponentsList from './ComponentsList.svelte'
+  import ComponentTimeline from './ComponentTimeline.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let itemsConfig: (BuildModelKey | string)[]
   export let loadingProps: LoadingProps | undefined = undefined
-  export let projects: Project[] = []
+  export let components: Component[] = []
   export let viewMode: 'list' | 'timeline' = 'list'
 
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
     if (dir === 'vertical') {
-      if (viewMode === 'list') projectsList.onElementSelected(offset, of)
-      else projectsTimeline.onElementSelected(offset, of)
+      if (viewMode === 'list') componentsList.onElementSelected(offset, of)
+      else componentTimeline.onElementSelected(offset, of)
     }
   })
 
-  let projectsList: ProjectsList
-  let projectsTimeline: ProjectsTimeline
+  let componentsList: ComponentsList
+  let componentTimeline: ComponentTimeline
 
-  $: if (projectsList !== undefined) {
-    listProvider.update(projects)
+  $: if (componentsList !== undefined) {
+    listProvider.update(components)
   }
 
   onMount(() => {
@@ -60,12 +60,12 @@
 />
 
 {#if viewMode === 'list'}
-  <ProjectsList
-    bind:this={projectsList}
+  <ComponentsList
+    bind:this={componentsList}
     {_class}
     {itemsConfig}
     {loadingProps}
-    {projects}
+    {components}
     selectedObjectIds={$selectionStore ?? []}
     selectedRowIndex={listProvider.current($focusStore)}
     on:row-focus={(event) => {
@@ -76,12 +76,12 @@
     }}
   />
 {:else}
-  <ProjectsTimeline
-    bind:this={projectsTimeline}
+  <ComponentTimeline
+    bind:this={componentTimeline}
     {_class}
     {itemsConfig}
     {loadingProps}
-    {projects}
+    {components}
     selectedObjectIds={$selectionStore ?? []}
     selectedRowIndex={listProvider.current($focusStore)}
     on:row-focus={(event) => {

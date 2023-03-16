@@ -11,7 +11,7 @@ import core, {
   TxOperations,
   WorkspaceId
 } from '@hcengineering/core'
-import tracker, { calcRank, Issue, IssuePriority, IssueStatus } from '../../../plugins/tracker/lib'
+import tracker, { calcRank, Issue, IssuePriority, IssueStatus } from '@hcengineering/tracker'
 
 import { connect } from './connect'
 
@@ -22,7 +22,7 @@ const object: AttachedData<Issue> = {
   title: '',
   description: '',
   assignee: null,
-  project: null,
+  component: null,
   sprint: null,
   number: 0,
   rank: '',
@@ -79,7 +79,7 @@ async function genIssue (client: TxOperations): Promise<void> {
     title: faker.name.title(),
     description: faker.lorem.paragraphs(),
     assignee: object.assignee,
-    project: object.project,
+    component: object.component,
     sprint: object.sprint,
     number: (incResult as any).object.sequence,
     status: object.status,

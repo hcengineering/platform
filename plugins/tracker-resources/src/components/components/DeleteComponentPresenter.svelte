@@ -16,17 +16,18 @@
   import view from '@hcengineering/view'
   import { Button, ButtonSize, LabelAndProps, showPopup } from '@hcengineering/ui'
   import { getClient, MessageBox } from '@hcengineering/presentation'
-  import type { Project } from '@hcengineering/tracker'
+  import type { Component } from '@hcengineering/tracker'
   import tracker from '../../plugin'
   import { Ref, Space } from '@hcengineering/core'
   import { createEventDispatcher } from 'svelte'
 
   export let space: Ref<Space>
-  export let value: Project
+  export let value: Component
   export let size: ButtonSize = 'medium'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = 'min-content'
   export let showTooltip: LabelAndProps | undefined = undefined
+
   const client = getClient()
   const dispatch = createEventDispatcher()
 
@@ -34,21 +35,21 @@
     showPopup(
       MessageBox,
       {
-        label: tracker.string.RemoveProjectDialogClose,
-        message: tracker.string.RemoveProjectDialogCloseNote
+        label: tracker.string.RemoveComponentDialogClose,
+        message: tracker.string.RemoveComponentDialogCloseNote
       },
       'top',
       (result?: boolean) => {
         if (result === true) {
           dispatch('close')
-          removeProject()
+          removeComponent()
         }
       }
     )
   }
 
-  async function removeProject () {
-    await client.removeDoc(tracker.class.Project, space, value._id)
+  async function removeComponent () {
+    await client.removeDoc(tracker.class.Component, space, value._id)
   }
 </script>
 

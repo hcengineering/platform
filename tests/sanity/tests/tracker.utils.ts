@@ -8,7 +8,7 @@ export interface IssueProps {
   labels?: string[]
   priority?: string
   assignee?: string
-  project?: string
+  component?: string
   sprint?: string
 }
 
@@ -46,7 +46,7 @@ export async function setViewOrder (page: Page, orderName: string): Promise<void
 }
 
 export async function fillIssueForm (page: Page, props: IssueProps): Promise<void> {
-  const { name, description, status, assignee, labels, priority, project, sprint } = props
+  const { name, description, status, assignee, labels, priority, component, sprint } = props
   await page.fill('[placeholder="Issue\\ title"]', name)
   if (description !== undefined) {
     await page.fill('.ProseMirror', description)
@@ -70,9 +70,9 @@ export async function fillIssueForm (page: Page, props: IssueProps): Promise<voi
     await page.click('.button:has-text("Assignee")')
     await page.click(`.selectPopup button:has-text("${assignee}")`)
   }
-  if (project !== undefined) {
-    await page.click('form button:has-text("Project")')
-    await page.click(`.selectPopup button:has-text("${project}")`)
+  if (component !== undefined) {
+    await page.click('form button:has-text("Component")')
+    await page.click(`.selectPopup button:has-text("${component}")`)
   }
   if (sprint !== undefined) {
     await page.click('.button:has-text("No Sprint")')
@@ -88,13 +88,13 @@ export async function createIssue (page: Page, props: IssueProps): Promise<void>
   await page.waitForSelector('form.antiCard', { state: 'detached' })
 }
 
-export async function createProject (page: Page, projectName: string): Promise<void> {
-  await page.click('text=Projects')
-  await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Ateam%3ADefaultTeam/projects`)
-  await page.click('button:has-text("Project")')
-  await page.click('[placeholder="Project\\ name"]')
-  await page.fill('[placeholder="Project\\ name"]', projectName)
-  await page.click('button:has-text("Create project")')
+export async function createComponent (page: Page, componentName: string): Promise<void> {
+  await page.click('text=Components')
+  await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Ateam%3ADefaultTeam/components`)
+  await page.click('button:has-text("Component")')
+  await page.click('[placeholder="Component\\ name"]')
+  await page.fill('[placeholder="Component\\ name"]', componentName)
+  await page.click('button:has-text("Create component")')
 }
 
 export async function createSprint (page: Page, sprintName: string): Promise<void> {
@@ -125,7 +125,7 @@ export async function createLabel (page: Page, label: string): Promise<void> {
 }
 
 export async function checkIssue (page: Page, props: IssueProps): Promise<void> {
-  const { name, description, status, assignee, labels, priority, project, sprint } = props
+  const { name, description, status, assignee, labels, priority, component, sprint } = props
 
   if (name !== undefined) {
     await expect(page.locator('.popupPanel')).toContainText(name)
@@ -146,8 +146,8 @@ export async function checkIssue (page: Page, props: IssueProps): Promise<void> 
   if (assignee !== undefined) {
     await expect(asideLocator).toContainText(assignee)
   }
-  if (project !== undefined) {
-    await expect(asideLocator).toContainText(project)
+  if (component !== undefined) {
+    await expect(asideLocator).toContainText(component)
   }
   if (sprint !== undefined) {
     await expect(asideLocator).toContainText(sprint)

@@ -92,7 +92,7 @@ export enum IssuesGrouping {
   Status = 'status',
   Assignee = 'assignee',
   Priority = 'priority',
-  Project = 'project',
+  Component = 'component',
   Sprint = 'sprint',
   NoGrouping = '#no_category'
 }
@@ -150,7 +150,7 @@ export interface Sprint extends Doc {
   // Capacity in man days.
   capacity: number
 
-  project?: Ref<Project>
+  component?: Ref<Component>
 }
 
 /**
@@ -164,7 +164,7 @@ export interface Issue extends AttachedDoc {
 
   number: number
   assignee: Ref<Employee> | null
-  project: Ref<Project> | null
+  component: Ref<Component> | null
 
   // For subtasks
   subIssues: number
@@ -212,7 +212,7 @@ export interface IssueDraft extends Doc {
   status: Ref<IssueStatus>
   priority: IssuePriority
   assignee: Ref<Employee> | null
-  project: Ref<Project> | null
+  component: Ref<Component> | null
   team: Ref<Team> | null
   dueDate: Timestamp | null
   sprint?: Ref<Sprint> | null
@@ -240,7 +240,7 @@ export interface IssueTemplateData {
   priority: IssuePriority
 
   assignee: Ref<Employee> | null
-  project: Ref<Project> | null
+  component: Ref<Component> | null
 
   sprint?: Ref<Sprint> | null
 
@@ -328,7 +328,7 @@ export interface Document extends Doc {
 /**
  * @public
  */
-export enum ProjectStatus {
+export enum ComponentStatus {
   Backlog,
   Planned,
   InProgress,
@@ -340,12 +340,12 @@ export enum ProjectStatus {
 /**
  * @public
  */
-export interface Project extends Doc {
+export interface Component extends Doc {
   label: string
   description?: Markup
   icon: Asset
 
-  status: ProjectStatus
+  status: ComponentStatus
 
   lead: Ref<Employee> | null
   members: Ref<Employee>[]
@@ -405,11 +405,11 @@ export default plugin(trackerId, {
     Issue: '' as Ref<Class<Issue>>,
     IssueDraft: '' as Ref<Class<IssueDraft>>,
     IssueTemplate: '' as Ref<Class<IssueTemplate>>,
-    Project: '' as Ref<Class<Project>>,
+    Component: '' as Ref<Class<Component>>,
     IssueStatus: '' as Ref<Class<IssueStatus>>,
     IssueStatusCategory: '' as Ref<Class<IssueStatusCategory>>,
     TypeIssuePriority: '' as Ref<Class<Type<IssuePriority>>>,
-    TypeProjectStatus: '' as Ref<Class<Type<ProjectStatus>>>,
+    TypeComponentStatus: '' as Ref<Class<Type<ComponentStatus>>>,
     Sprint: '' as Ref<Class<Sprint>>,
     Scrum: '' as Ref<Class<Scrum>>,
     ScrumRecord: '' as Ref<Class<ScrumRecord>>,
@@ -440,7 +440,7 @@ export default plugin(trackerId, {
   },
   icon: {
     TrackerApplication: '' as Asset,
-    Project: '' as Asset,
+    Component: '' as Asset,
     Issue: '' as Asset,
     Team: '' as Asset,
     Document: '' as Asset,
@@ -448,7 +448,7 @@ export default plugin(trackerId, {
     MyIssues: '' as Asset,
     Views: '' as Asset,
     Issues: '' as Asset,
-    Projects: '' as Asset,
+    Components: '' as Asset,
     NewIssue: '' as Asset,
     Magnifier: '' as Asset,
     Home: '' as Asset,
@@ -473,16 +473,16 @@ export default plugin(trackerId, {
     PriorityMedium: '' as Asset,
     PriorityLow: '' as Asset,
 
-    ProjectsList: '' as Asset,
-    ProjectsTimeline: '' as Asset,
-    ProjectMembers: '' as Asset,
+    ComponentsList: '' as Asset,
+    ComponentsTimeline: '' as Asset,
+    ComponentMembers: '' as Asset,
 
-    ProjectStatusBacklog: '' as Asset,
-    ProjectStatusPlanned: '' as Asset,
-    ProjectStatusInProgress: '' as Asset,
-    ProjectStatusPaused: '' as Asset,
-    ProjectStatusCompleted: '' as Asset,
-    ProjectStatusCanceled: '' as Asset,
+    ComponentStatusBacklog: '' as Asset,
+    ComponentStatusPlanned: '' as Asset,
+    ComponentStatusInProgress: '' as Asset,
+    ComponentStatusPaused: '' as Asset,
+    ComponentStatusCompleted: '' as Asset,
+    ComponentStatusCanceled: '' as Asset,
 
     SprintStatusPlanned: '' as Asset,
     SprintStatusInProgress: '' as Asset,
@@ -510,7 +510,7 @@ export default plugin(trackerId, {
     SetStatus: '' as Ref<Action>,
     SetPriority: '' as Ref<Action>,
     SetAssignee: '' as Ref<Action>,
-    SetProject: '' as Ref<Action>,
+    SetComponent: '' as Ref<Action>,
     CopyIssueId: '' as Ref<Action>,
     CopyIssueTitle: '' as Ref<Action>,
     CopyIssueLink: '' as Ref<Action>,

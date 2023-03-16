@@ -87,7 +87,7 @@
       title: template.title + ` (${name})`,
       description: template.description,
       assignee: template.assignee,
-      project: template.project,
+      component: template.component,
       sprint: template.sprint,
       number: (incResult as any).object.sequence,
       status: team?.defaultIssueStatus as Ref<IssueStatus>,

@@ -46,7 +46,7 @@
     IssuePriority,
     IssueStatus,
     IssueTemplate,
-    Project,
+    Component as ComponentType,
     Sprint,
     Team
   } from '@hcengineering/tracker'
@@ -68,7 +68,7 @@
   import { ObjectBox } from '@hcengineering/view-resources'
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
-  import { activeProject, activeSprint, generateIssueShortLink, getIssueId, updateIssueRelation } from '../issues'
+  import { activeComponent, activeSprint, generateIssueShortLink, getIssueId, updateIssueRelation } from '../issues'
   import tracker from '../plugin'
   import AssigneeEditor from './issues/AssigneeEditor.svelte'
   import IssueNotification from './issues/IssueNotification.svelte'
@@ -76,7 +76,7 @@
   import PriorityEditor from './issues/PriorityEditor.svelte'
   import StatusEditor from './issues/StatusEditor.svelte'
   import EstimationEditor from './issues/timereport/EstimationEditor.svelte'
-  import ProjectSelector from './ProjectSelector.svelte'
+  import ComponentSelector from './ComponentSelector.svelte'
   import SetDueDateActionPopup from './SetDueDateActionPopup.svelte'
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
   import SprintSelector from './sprints/SprintSelector.svelte'
@@ -86,7 +86,7 @@
   export let status: Ref<IssueStatus> | undefined = undefined
   export let priority: IssuePriority = IssuePriority.NoPriority
   export let assignee: Ref<Employee> | null = null
-  export let project: Ref<Project> | null = $activeProject ?? null
+  export let component: Ref<ComponentType> | null = $activeComponent ?? null
   export let sprint: Ref<Sprint> | null = $activeSprint ?? null
   export let relatedTo: Doc | undefined
   export let shouldSaveDraft: boolean = false
@@ -116,7 +116,7 @@
     title: '',
     description: '',
     assignee: '' as Ref<Employee>,
-    project,
+    component,
     sprint,
     number: 0,
     rank: '',
@@ -357,7 +357,7 @@
       return false
     }
 
-    if (draft.project && draft.project !== defaultIssue.project) {
+    if (draft.component && draft.component !== defaultIssue.component) {
       return false
     }
 
@@ -394,7 +394,7 @@
       title: getTitle(object.title),
       description: (object.description as string).replaceAll('<p></p>', ''),
       assignee: object.assignee,
-      project: object.project,
+      component: object.component,
       sprint: object.sprint,
       status: object.status,
       priority: object.priority,
@@ -439,7 +439,7 @@
       title: getTitle(object.title),
       description: object.description,
       assignee: object.assignee,
-      project: object.project,
+      component: object.component,
       sprint: object.sprint,
       number: (incResult as any).object.sequence,
       status: object.status,
@@ -550,25 +550,25 @@
     )
   }
 
-  const handleProjectIdChanged = (projectId: Ref<Project> | null | undefined) => {
-    if (projectId === undefined) {
+  const handleComponentIdChanged = (componentId: Ref<ComponentType> | null | undefined) => {
+    if (componentId === undefined) {
       return
     }
 
-    object = { ...object, project: projectId }
+    object = { ...object, component: componentId }
   }
 
   const handleSprintIdChanged = async (sprintId: Ref<Sprint> | null | undefined) => {
     if (sprintId === undefined) {
       return
     }
-    let projectSprintId: Ref<Project> | null
+    let componentSprintId: Ref<ComponentType> | null
     if (sprintId != null) {
       const sprint = await client.findOne(tracker.class.Sprint, { _id: sprintId })
-      projectSprintId = sprint && sprint.project ? sprint.project : null
-    } else projectSprintId = null
+      componentSprintId = sprint && sprint.component ? sprint.component : null
+    } else componentSprintId = null
 
-    object = { ...object, sprint: sprintId, project: projectSprintId }
+    object = { ...object, sprint: sprintId, component: componentSprintId }
   }
 
   function addTagRef (tag: TagElement): void {
@@ -706,7 +706,7 @@
       statuses={issueStatuses ?? []}
       team={currentTeam}
       sprint={object.sprint}
-      project={object.project}
+      component={object.component}
     />
   {/if}
   <svelte:fragment slot="pool">
@@ -753,11 +753,11 @@
         }}
       />
       <EstimationEditor kind={'no-border'} size={'small'} value={object} {currentTeam} />
-      <ProjectSelector value={object.project} onChange={handleProjectIdChanged} />
+      <ComponentSelector value={object.component} onChange={handleComponentIdChanged} />
       <SprintSelector
         value={object.sprint}
         onChange={handleSprintIdChanged}
-        useProject={(!originalIssue && object.project) || undefined}
+        useComponent={(!originalIssue && object.component) || undefined}
       />
       {#if object.dueDate !== null}
         <DatePresenter bind:value={object.dueDate} editable />

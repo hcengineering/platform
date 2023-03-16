@@ -64,8 +64,8 @@ import {
   IssueStatusCategory,
   IssueTemplate,
   IssueTemplateChild,
-  Project,
-  ProjectStatus,
+  Component,
+  ComponentStatus,
   Scrum,
   ScrumRecord,
   Sprint,
@@ -132,8 +132,8 @@ export class TTypeIssuePriority extends TType {}
 /**
  * @public
  */
-export function TypeProjectStatus (): Type<ProjectStatus> {
-  return { _class: tracker.class.TypeProjectStatus, label: 'TypeProjectStatus' as IntlString }
+export function TypeComponentStatus (): Type<ComponentStatus> {
+  return { _class: tracker.class.TypeComponentStatus, label: 'TypeComponentStatus' as IntlString }
 }
 
 /**
@@ -146,8 +146,8 @@ export function TypeSprintStatus (): Type<SprintStatus> {
 /**
  * @public
  */
-@Model(tracker.class.TypeProjectStatus, core.class.Type, DOMAIN_MODEL)
-export class TTypeProjectStatus extends TType {}
+@Model(tracker.class.TypeComponentStatus, core.class.Type, DOMAIN_MODEL)
+export class TTypeComponentStatus extends TType {}
 
 /**
  * @public
@@ -226,9 +226,9 @@ export class TIssue extends TAttachedDoc implements Issue {
   @Index(IndexKind.Indexed)
     assignee!: Ref<Employee> | null
 
-  @Prop(TypeRef(tracker.class.Project), tracker.string.Project)
+  @Prop(TypeRef(tracker.class.Component), tracker.string.Component)
   @Index(IndexKind.Indexed)
-    project!: Ref<Project> | null
+    component!: Ref<Component> | null
 
   @Prop(Collection(tracker.class.Issue), tracker.string.SubIssues)
     subIssues!: number
@@ -296,8 +296,8 @@ export class TIssueTemplate extends TDoc implements IssueTemplate {
   @Prop(TypeRef(contact.class.Employee), tracker.string.Assignee)
     assignee!: Ref<Employee> | null
 
-  @Prop(TypeRef(tracker.class.Project), tracker.string.Project)
-    project!: Ref<Project> | null
+  @Prop(TypeRef(tracker.class.Component), tracker.string.Component)
+    component!: Ref<Component> | null
 
   @Prop(ArrOf(TypeRef(tags.class.TagElement)), tracker.string.Labels)
     labels?: Ref<TagElement>[]
@@ -351,9 +351,9 @@ export class TTimeSpendReport extends TAttachedDoc implements TimeSpendReport {
 /**
  * @public
  */
-@Model(tracker.class.Project, core.class.Doc, DOMAIN_TRACKER)
-@UX(tracker.string.Project, tracker.icon.Project, 'PROJECT')
-export class TProject extends TDoc implements Project {
+@Model(tracker.class.Component, core.class.Doc, DOMAIN_TRACKER)
+@UX(tracker.string.Component, tracker.icon.Component, 'COMPONENT')
+export class TComponent extends TDoc implements Component {
   @Prop(TypeString(), tracker.string.Title)
   // @Index(IndexKind.FullText)
     label!: string
@@ -364,10 +364,10 @@ export class TProject extends TDoc implements Project {
   @Prop(TypeString(), tracker.string.AssetLabel)
     icon!: Asset
 
-  @Prop(TypeProjectStatus(), tracker.string.Status)
-    status!: ProjectStatus
+  @Prop(TypeComponentStatus(), tracker.string.Status)
+    status!: ComponentStatus
 
-  @Prop(TypeRef(contact.class.Employee), tracker.string.ProjectLead)
+  @Prop(TypeRef(contact.class.Employee), tracker.string.ComponentLead)
     lead!: Ref<Employee> | null
 
   @Prop(ArrOf(TypeRef(contact.class.Employee)), tracker.string.Members)
@@ -405,7 +405,7 @@ export class TSprint extends TDoc implements Sprint {
   @Index(IndexKind.Indexed)
     status!: SprintStatus
 
-  @Prop(TypeRef(contact.class.Employee), tracker.string.ProjectLead)
+  @Prop(TypeRef(contact.class.Employee), tracker.string.ComponentLead)
     lead!: Ref<Employee> | null
 
   @Prop(ArrOf(TypeRef(contact.class.Employee)), tracker.string.Members)
@@ -428,9 +428,9 @@ export class TSprint extends TDoc implements Sprint {
   @Prop(TypeNumber(), tracker.string.Capacity)
     capacity!: number
 
-  @Prop(TypeRef(tracker.class.Project), tracker.string.Project)
+  @Prop(TypeRef(tracker.class.Component), tracker.string.Component)
   @Index(IndexKind.Indexed)
-    project!: Ref<Project>
+    component!: Ref<Component>
 }
 
 /**
@@ -496,13 +496,13 @@ export class TTypeReportedTime extends TType {}
 export function createModel (builder: Builder): void {
   builder.createModel(
     TTeam,
-    TProject,
+    TComponent,
     TIssue,
     TIssueTemplate,
     TIssueStatus,
     TIssueStatusCategory,
     TTypeIssuePriority,
-    TTypeProjectStatus,
+    TTypeComponentStatus,
     TSprint,
     TScrum,
     TScrumRecord,
@@ -512,7 +512,7 @@ export function createModel (builder: Builder): void {
   )
 
   const issuesOptions: ViewOptionsModel = {
-    groupBy: ['status', 'assignee', 'priority', 'project', 'sprint'],
+    groupBy: ['status', 'assignee', 'priority', 'component', 'sprint'],
     orderBy: [
       ['status', SortingOrder.Ascending],
       ['priority', SortingOrder.Ascending],
@@ -569,14 +569,14 @@ export function createModel (builder: Builder): void {
         { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
         {
           key: '',
-          presenter: tracker.component.ProjectEditor,
+          presenter: tracker.component.ComponentEditor,
           props: {
             kind: 'list',
             size: 'small',
             shape: 'round',
             shouldShowPlaceholder: false,
             listProps: {
-              excludeByKey: 'project',
+              excludeByKey: 'component',
               optional: true
             }
           }
@@ -697,7 +697,7 @@ export function createModel (builder: Builder): void {
       attachTo: tracker.class.IssueTemplate,
       descriptor: view.viewlet.List,
       viewOptions: {
-        groupBy: ['assignee', 'priority', 'project', 'sprint'],
+        groupBy: ['assignee', 'priority', 'component', 'sprint'],
         orderBy: [
           ['priority', SortingOrder.Ascending],
           ['modifiedOn', SortingOrder.Descending],
@@ -717,7 +717,7 @@ export function createModel (builder: Builder): void {
         // { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
         {
           key: '',
-          presenter: tracker.component.ProjectEditor,
+          presenter: tracker.component.ComponentEditor,
           props: { kind: 'list', size: 'small', shape: 'round', shouldShowPlaceholder: false }
         },
         {
@@ -836,7 +836,7 @@ export function createModel (builder: Builder): void {
   const activeId = 'active'
   const backlogId = 'backlog'
   const boardId = 'board'
-  const projectsId = 'projects'
+  const componentsId = 'components'
   const sprintsId = 'sprints'
   const templatesId = 'templates'
   // const scrumsId = 'scrums'
@@ -897,18 +897,23 @@ export function createModel (builder: Builder): void {
     presenter: tracker.component.PriorityRefPresenter
   })
 
-  builder.mixin(tracker.class.Project, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: tracker.component.ProjectPresenter
+  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: tracker.component.ComponentPresenter
   })
 
   builder.mixin(tracker.class.Team, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: tracker.component.TeamPresenter
   })
 
-  classPresenter(builder, tracker.class.Project, tracker.component.ProjectSelector, tracker.component.ProjectSelector)
+  classPresenter(
+    builder,
+    tracker.class.Component,
+    tracker.component.ComponentSelector,
+    tracker.component.ComponentSelector
+  )
 
-  builder.mixin(tracker.class.Project, core.class.Class, view.mixin.AttributeEditor, {
-    inlineEditor: tracker.component.ProjectSelector
+  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.AttributeEditor, {
+    inlineEditor: tracker.component.ComponentSelector
   })
 
   builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.ObjectPresenter, {
@@ -923,8 +928,8 @@ export function createModel (builder: Builder): void {
     value: true
   })
 
-  builder.mixin(tracker.class.TypeProjectStatus, core.class.Class, view.mixin.AttributeEditor, {
-    inlineEditor: tracker.component.ProjectStatusEditor
+  builder.mixin(tracker.class.TypeComponentStatus, core.class.Class, view.mixin.AttributeEditor, {
+    inlineEditor: tracker.component.ComponentStatusEditor
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, notification.mixin.LastViewAttached, {})
@@ -940,8 +945,8 @@ export function createModel (builder: Builder): void {
     func: tracker.function.GetAllPriority
   })
 
-  builder.mixin(tracker.class.Project, core.class.Class, view.mixin.AllValuesFunc, {
-    func: tracker.function.GetAllProjects
+  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.AllValuesFunc, {
+    func: tracker.function.GetAllComponents
   })
 
   builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.AllValuesFunc, {
@@ -996,7 +1001,7 @@ export function createModel (builder: Builder): void {
             id: 'roadmap',
             position: 'top',
             label: tracker.string.Roadmap,
-            icon: tracker.icon.Projects,
+            icon: tracker.icon.Components,
             component: tracker.component.Roadmap
           }
         ],
@@ -1027,10 +1032,10 @@ export function createModel (builder: Builder): void {
                 component: tracker.component.Backlog
               },
               {
-                id: projectsId,
-                label: tracker.string.Projects,
-                icon: tracker.icon.Projects,
-                component: tracker.component.TeamProjects
+                id: componentsId,
+                label: tracker.string.Components,
+                icon: tracker.icon.Components,
+                component: tracker.component.TeamComponents
               },
               {
                 id: sprintsId,
@@ -1072,7 +1077,7 @@ export function createModel (builder: Builder): void {
   createGotoSpecialAction(builder, activeId, 'g->a', tracker.string.GotoActive)
   createGotoSpecialAction(builder, backlogId, 'g->b', tracker.string.GotoBacklog)
   createGotoSpecialAction(builder, boardId, 'g->d', tracker.string.GotoBoard)
-  createGotoSpecialAction(builder, projectsId, 'g->p', tracker.string.GotoProjects)
+  createGotoSpecialAction(builder, componentsId, 'g->c', tracker.string.GotoComponents)
 
   createAction(builder, {
     action: workbench.actionImpl.Navigate,
@@ -1444,15 +1449,15 @@ export function createModel (builder: Builder): void {
       action: view.actionImpl.ValueSelector,
       actionPopup: view.component.ValueSelector,
       actionProps: {
-        attribute: 'project',
-        _class: tracker.class.Project,
+        attribute: 'component',
+        _class: tracker.class.Component,
         query: {},
         searchField: 'label',
-        placeholder: tracker.string.Project
+        placeholder: tracker.string.Component
       },
-      label: tracker.string.Project,
-      icon: tracker.icon.Project,
-      keyBinding: ['keyP->keyP'],
+      label: tracker.string.Component,
+      icon: tracker.icon.Component,
+      keyBinding: ['keyC'],
       input: 'any',
       category: tracker.category.Tracker,
       target: tracker.class.Issue,
@@ -1462,7 +1467,7 @@ export function createModel (builder: Builder): void {
         group: 'edit'
       }
     },
-    tracker.action.SetProject
+    tracker.action.SetComponent
   )
 
   createAction(
@@ -1682,7 +1687,7 @@ export function createModel (builder: Builder): void {
   )
 
   const sprintOptions: ViewOptionsModel = {
-    groupBy: ['project', 'lead'],
+    groupBy: ['component', 'lead'],
     orderBy: [
       ['startDate', SortingOrder.Descending],
       ['modifiedOn', SortingOrder.Descending],
@@ -1707,7 +1712,7 @@ export function createModel (builder: Builder): void {
         },
         { key: '', presenter: tracker.component.SprintPresenter, props: { shouldUseMargin: true } },
         { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
-        { key: '', presenter: tracker.component.SprintProjectEditor, props: { kind: 'list' } },
+        { key: '', presenter: tracker.component.SprintComponentEditor, props: { kind: 'list' } },
         {
           key: '',
           presenter: contact.component.MembersPresenter,
