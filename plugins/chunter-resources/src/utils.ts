@@ -1,22 +1,11 @@
 import { chunterId, ChunterMessage, Comment, ThreadMessage } from '@hcengineering/chunter'
 import contact, { EmployeeAccount, getName } from '@hcengineering/contact'
-import {
-  Class,
-  Client,
-  Doc,
-  getCurrentAccount,
-  matchQuery,
-  Obj,
-  Ref,
-  SortingOrder,
-  Space,
-  Timestamp
-} from '@hcengineering/core'
+import { Class, Client, Doc, getCurrentAccount, Obj, Ref, SortingOrder, Space, Timestamp } from '@hcengineering/core'
 import { Asset } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
-import { getCurrentLocation, navigate, Location, getPanelURI } from '@hcengineering/ui'
-import { workbenchId } from '@hcengineering/workbench'
+import { getCurrentLocation, getPanelURI, Location, navigate } from '@hcengineering/ui'
 import view from '@hcengineering/view'
+import { workbenchId } from '@hcengineering/workbench'
 import { get, writable } from 'svelte/store'
 
 import chunter from './plugin'
@@ -142,17 +131,7 @@ export async function getFragment (doc: Doc): Promise<string> {
     label = clazz.shortLabel
   }
   label = label ?? doc._class
-  let length = 5
-  let id = doc._id.slice(-length)
-  const contacts = await client.findAll(chunter.class.Comment, {}, { projection: { _id: 1 } })
-  let res = matchQuery(contacts, { _id: { $like: `@${id}` } }, chunter.class.Comment, hierarchy)
-  while (res.length > 1) {
-    length++
-    id = doc._id.slice(-length)
-    res = matchQuery(contacts, { _id: { $like: `@${id}` } }, chunter.class.Comment, hierarchy)
-  }
-
-  return `${chunterId}|${label}-${id}`
+  return `${chunterId}|${label}-${doc._id}`
 }
 
 export async function resolveLocation (loc: Location): Promise<Location | undefined> {

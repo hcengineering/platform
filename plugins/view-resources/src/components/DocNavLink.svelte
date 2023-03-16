@@ -30,7 +30,7 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  let href: string | undefined = getPanelURI(component, object._id, Hierarchy.mixinOrClass(object), 'content')
+  let href: string | undefined = '#' + getPanelURI(component, object._id, Hierarchy.mixinOrClass(object), 'content')
 
   async function getHref (object: Doc): Promise<void> {
     href = `#${await getObjectLinkFragment(hierarchy, object, props, component)}`

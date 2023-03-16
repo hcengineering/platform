@@ -23,7 +23,6 @@ import core, {
   Collection,
   concatLink,
   Doc,
-  matchQuery,
   Obj,
   Ref,
   RefTo,
@@ -280,17 +279,7 @@ async function getContactLink (doc: Doc, control: TriggerControl): Promise<strin
     label = clazz.shortLabel
   }
   label = label ?? 'CONT'
-  let length = 5
-  let id = doc._id.slice(-length)
-  const contacts = await control.findAll(clazz._id, {}, { projection: { _id: 1 } })
-  let res = matchQuery(contacts, { _id: { $like: `@${id}` } }, clazz._id, hierarchy)
-  while (res.length > 1) {
-    length++
-    id = doc._id.slice(-length)
-    res = matchQuery(contacts, { _id: { $like: `@${id}` } }, clazz._id, hierarchy)
-  }
-
-  return `${contactId}|${label}-${id}`
+  return `${contactId}|${label}-${doc._id}`
 }
 
 /**
