@@ -66,7 +66,7 @@
 {#if disabled}
   <slot />
 {:else}
-  <a {href} on:click={clickHandler}>
+  <a class="noUnderline" {href} on:click={clickHandler}>
     <slot />
   </a>
 {/if}

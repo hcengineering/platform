@@ -40,6 +40,8 @@
     ]
   }
 
+  let selectedId: Ref<FilteredView> | undefined = undefined
+  let selectedFW: FilteredView[] | undefined = undefined
   async function load (fv: FilteredView): Promise<void> {
     if (fv.viewletId !== undefined && fv.viewletId !== null) {
       const viewlet = await client.findOne(view.class.Viewlet, { _id: fv.viewletId })
@@ -56,12 +58,25 @@
     navigate(fv.location)
     $filterStore = JSON.parse(fv.filters)
   }
+  $: fs = $filterStore
+  $: if (Array.isArray(fs) && Array.isArray(filteredViews)) {
+    const filters = JSON.stringify(fs)
+    selectedFW = filteredViews.filter((fv) => fv.filters === filters)
+    selectedId = selectedFW.length > 0 ? selectedFW[0]._id : undefined
+  } else selectedId = selectedFW = undefined
 </script>
 
 {#if filteredViews && filteredViews.length > 0}
-  <TreeNode label={view.string.FilteredViews}>
+  <TreeNode icon={view.icon.Filter} label={view.string.FilteredViews}>
     {#each filteredViews as fv}
-      <TreeItem _id={fv._id} title={fv.name} on:click={() => load(fv)} actions={() => removeAction(fv)} />
+      <TreeItem
+        _id={fv._id}
+        title={fv.name}
+        indent={'ml-2'}
+        bordered={selectedId === fv._id}
+        on:click={() => load(fv)}
+        actions={() => removeAction(fv)}
+      />
     {/each}
   </TreeNode>
 {/if}

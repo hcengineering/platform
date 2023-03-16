@@ -668,7 +668,8 @@ const view = plugin(viewId, {
     Views: '' as Asset,
     Pin: '' as Asset,
     Model: '' as Asset,
-    ViewButton: '' as Asset
+    ViewButton: '' as Asset,
+    Filter: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,

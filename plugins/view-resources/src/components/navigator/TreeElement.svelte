@@ -28,6 +28,7 @@
   export let parent = false
   export let collapsed = false
   export let selected = false
+  export let bordered = false
   export let bold = false
   export let actions: () => Promise<Action[]> = async () => []
   export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
@@ -43,9 +44,11 @@
   const dispatch = createEventDispatcher()
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
   class="antiNav-element"
   class:selected
+  class:bordered
   class:hovered
   class:ml-2={indent === 'ml-2'}
   class:ml-4={indent === 'ml-4'}

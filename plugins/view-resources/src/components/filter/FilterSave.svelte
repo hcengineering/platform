@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Card, getClient } from '@hcengineering/presentation'
   import view from '../../plugin'
-  import { EditBox, getCurrentLocation } from '@hcengineering/ui'
+  import { EditBox, getCurrentLocation, Button } from '@hcengineering/ui'
   import preference from '@hcengineering/preference'
   import { createEventDispatcher } from 'svelte'
   import { filterStore } from '../../filter'
@@ -41,8 +41,11 @@
     dispatch('close')
   }}
 >
-  <div class="flex-row-center">
-    <div class="flex-grow flex-col">
+  <div class="flex-row-center clear-mins">
+    <div class="mr-3">
+      <Button focusIndex={1} icon={view.icon.Filter} size={'medium'} kind={'link-bordered'} disabled />
+    </div>
+    <div class="clear-mins flex-grow">
       <EditBox
         placeholder={view.string.FilteredViewName}
         bind:value={filterName}

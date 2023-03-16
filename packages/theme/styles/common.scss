@@ -103,6 +103,7 @@
   margin: 1px 1rem;
   padding: .25rem;
   height: 1.75rem;
+  border: 1px solid transparent;
   border-radius: .25rem;
   user-select: none;
   cursor: pointer;
@@ -158,6 +159,7 @@
     color: var(--accent-color);
   }
 
+  &.bordered { border-color: var(--divider-color); }
   &:hover, &.hovered, &.selected {
     background-color: var(--menu-bg-select);
     .an-element__icon { color: var(--menu-icon-hover); }
