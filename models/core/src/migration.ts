@@ -37,52 +37,54 @@ async function fillCreatedBy (client: MigrationClient): Promise<void> {
     ) {
       continue
     }
-    try {
-      const objects = await client.find<Doc>(
-        domain,
-        { createdBy: { $exists: false } },
-        { projection: { _id: 1, modifiedBy: 1 } }
-      )
-      if (objects.length === 0) {
-        continue
-      }
-      const txes = await client.find<TxCreateDoc<Doc>>(
-        DOMAIN_TX,
-        {
-          _class: core.class.TxCreateDoc,
-          objectId: { $in: Array.from(objects.map((it) => it._id)) }
-        },
-        { projection: { _id: 1, modifiedBy: 1, createdBy: 1, objectId: 1 } }
-      )
-
-      const txes2 = (
-        await client.find<TxCollectionCUD<Doc, AttachedDoc>>(
+    while (true) {
+      try {
+        const objects = await client.find<Doc>(
+          domain,
+          { createdBy: { $exists: false } },
+          { projection: { _id: 1, modifiedBy: 1 }, limit: 10000 }
+        )
+        if (objects.length === 0) {
+          break
+        }
+        const txes = await client.find<TxCreateDoc<Doc>>(
           DOMAIN_TX,
           {
-            _class: core.class.TxCollectionCUD,
-            'tx._class': core.class.TxCreateDoc,
-            'tx.objectId': { $in: Array.from(objects.map((it) => it._id)) }
+            _class: core.class.TxCreateDoc,
+            objectId: { $in: Array.from(objects.map((it) => it._id)) }
           },
-          { projection: { _id: 1, modifiedBy: 1, createdBy: 1, tx: 1 } }
+          { projection: { _id: 1, modifiedBy: 1, createdBy: 1, objectId: 1 } }
         )
-      ).map((it) => it.tx as unknown as TxCreateDoc<Doc>)
 
-      const txMap = new Map(txes.concat(txes2).map((p) => [p.objectId, p]))
+        const txes2 = (
+          await client.find<TxCollectionCUD<Doc, AttachedDoc>>(
+            DOMAIN_TX,
+            {
+              _class: core.class.TxCollectionCUD,
+              'tx._class': core.class.TxCreateDoc,
+              'tx.objectId': { $in: Array.from(objects.map((it) => it._id)) }
+            },
+            { projection: { _id: 1, modifiedBy: 1, createdBy: 1, tx: 1 } }
+          )
+        ).map((it) => it.tx as unknown as TxCreateDoc<Doc>)
 
-      console.log('migrateCreateBy', domain, objects.length)
-      await client.bulk(
-        domain,
-        objects.map((it) => {
-          const createTx = txMap.get(it._id)
-          return {
-            filter: { _id: it._id },
-            update: {
-              createdBy: createTx?.modifiedBy ?? it.modifiedBy
+        const txMap = new Map(txes.concat(txes2).map((p) => [p.objectId, p]))
+
+        console.log('migrateCreateBy', domain, objects.length)
+        await client.bulk(
+          domain,
+          objects.map((it) => {
+            const createTx = txMap.get(it._id)
+            return {
+              filter: { _id: it._id },
+              update: {
+                createdBy: createTx?.modifiedBy ?? it.modifiedBy
+              }
             }
-          }
-        })
-      )
-    } catch (err) {}
+          })
+        )
+      } catch (err) {}
+    }
   }
 }
 export const coreOperation: MigrateOperation = {
