@@ -76,7 +76,7 @@
         setMetadata(login.metadata.LoginToken, result.token)
         const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
         tokens[result.workspace] = result.token
-        setMetadataLocalStorage(login.metadata.LoginToken, result.token)
+        setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
         setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
         setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
         navigate({ path: [workbenchId, result.workspace] })
