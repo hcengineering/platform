@@ -33,7 +33,8 @@ import core, {
   RefTo,
   Tx,
   TxOperations,
-  TxResult
+  TxResult,
+  WithLookup
 } from '@hcengineering/core'
 import login from '@hcengineering/login'
 import { getMetadata, getResource, IntlString } from '@hcengineering/platform'
@@ -70,6 +71,22 @@ export function removeTxListener (l: (tx: Tx) => void): void {
 class UIClient extends TxOperations implements Client {
   constructor (client: Client, private readonly liveQuery: LQ) {
     super(client, getCurrentAccount()._id)
+  }
+
+  override async findAll<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindResult<T>> {
+    return await this.liveQuery.findAll(_class, query, options)
+  }
+
+  override async findOne<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<WithLookup<T> | undefined> {
+    return await this.liveQuery.findOne(_class, query, options)
   }
 
   override async tx (tx: Tx): Promise<TxResult> {

@@ -27,18 +27,24 @@ export async function getIssueTitle (client: TxOperations, ref: Ref<Doc>): Promi
   return getIssueId(object.$lookup.space, object)
 }
 
+async function getTitle (doc: Doc): Promise<string> {
+  const client = getClient()
+  const issue = doc as Issue
+  const object = await client.findOne(tracker.class.Team, { _id: issue.space })
+  if (object === undefined) return `?-${issue.number}`
+  return getIssueId(object, issue)
+}
+
 export function generateIssuePanelUri (issue: Issue): string {
   return getPanelURI(tracker.component.EditIssue, issue._id, issue._class, 'content')
 }
 
 export async function issueIdProvider (doc: Doc): Promise<string> {
-  const client = getClient()
-  return await getIssueTitle(client, doc._id)
+  return await getTitle(doc)
 }
 
 export async function issueLinkFragmentProvider (doc: Doc): Promise<string> {
-  const client = getClient()
-  return await getIssueTitle(client, doc._id).then((p) => `${trackerId}|${p}`)
+  return await getTitle(doc).then((p) => `${trackerId}|${p}`)
 }
 
 export async function issueTitleProvider (doc: Issue): Promise<string> {
@@ -46,8 +52,7 @@ export async function issueTitleProvider (doc: Issue): Promise<string> {
 }
 
 export async function issueLinkProvider (doc: Doc): Promise<string> {
-  const client = getClient()
-  return await getIssueTitle(client, doc._id).then(generateIssueShortLink)
+  return await getTitle(doc).then(generateIssueShortLink)
 }
 
 export function generateIssueShortLink (issueId: string): string {
