@@ -165,7 +165,7 @@
               }}
             >
               <div class="flex-between w-full">
-                <div class="flex">
+                <div class="flex clear-mins overflow-label">
                   <div class="check pointer-events-none">
                     <CheckBox checked={isSelected(value, filter.value)} primary />
                   </div>
