@@ -104,7 +104,8 @@ async function queryContact (
   search: string,
   filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
 ): Promise<ObjectSearchResult[]> {
-  const q: DocumentQuery<Contact> = { name: { $like: `%${search}%` } }
+  let q: DocumentQuery<Contact> = { name: { $like: `%${search}%` } }
+  if (_class === contact.class.Employee) q = { ...q, active: true }
   if (filter?.in !== undefined || filter?.nin !== undefined) {
     q._id = {}
     if (filter.in !== undefined) {
