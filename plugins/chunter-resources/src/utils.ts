@@ -212,7 +212,7 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Loca
     const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
     const component = panelComponent.component ?? view.component.EditDoc
     return {
-      path: [appComponent, workspace, chunterId],
+      path: [appComponent, workspace],
       fragment: getPanelURI(component, comment.attachedTo, comment.attachedToClass, 'content')
     }
   }

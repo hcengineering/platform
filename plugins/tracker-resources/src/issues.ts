@@ -78,7 +78,7 @@ export async function generateIssueLocation (loc: Location, issueId: string): Pr
   const appComponent = loc.path[0] ?? ''
   const workspace = loc.path[1] ?? ''
   return {
-    path: [appComponent, workspace, trackerId, team._id, 'issues'],
+    path: [appComponent, workspace],
     fragment: generateIssuePanelUri(issue)
   }
 }

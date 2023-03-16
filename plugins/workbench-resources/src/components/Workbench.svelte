@@ -220,11 +220,17 @@
     // resolve short links
     const resolvedLocation = await resolveShortLink(loc)
     if (resolvedLocation && !areLocationsEqual(loc, resolvedLocation)) {
-      loc.path[2] = app = resolvedLocation.path[2] ?? app
-      loc.path[3] = space = (resolvedLocation.path[3] as Ref<Space>) ?? space
+      if (app !== resolvedLocation.path[2] && resolvedLocation.path[2] !== undefined) {
+        loc.path[2] = app = resolvedLocation.path[2] ?? app
+        loc.path[3] = space = (resolvedLocation.path[3] as Ref<Space>) ?? space
+        loc.path[4] = special = resolvedLocation.path[4] ?? special
+      } else if (space !== (resolvedLocation.path[3] as Ref<Space>) && resolvedLocation.path[3] !== undefined) {
+        loc.path[3] = space = (resolvedLocation.path[3] as Ref<Space>) ?? space
+        loc.path[4] = special = resolvedLocation.path[4] ?? special
+      }
       loc.path[4] = special = resolvedLocation.path[4] ?? special
       loc.fragment = fragment = resolvedLocation.fragment ?? fragment
-      navigate(resolvedLocation, false)
+      navigate(loc, false)
     }
 
     if (currentAppAlias !== app) {

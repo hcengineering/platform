@@ -13,13 +13,28 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Organization } from '@hcengineering/contact'
-  import { Avatar } from '@hcengineering/presentation'
-  import { closePanel, closePopup, closeTooltip, getCurrentLocation, Label, navigate } from '@hcengineering/ui'
+  import attachment from '@hcengineering/attachment'
+  import { Channel, Organization } from '@hcengineering/contact'
+  import { Avatar, createQuery } from '@hcengineering/presentation'
+  import { Component, Label } from '@hcengineering/ui'
+  import { DocNavLink } from '@hcengineering/view-resources'
   import contact from '../plugin'
+  import ChannelsEditor from './ChannelsEditor.svelte'
 
   export let organization: Organization
   export let disabled: boolean = false
+
+  let channels: Channel[] = []
+  const channelsQuery = createQuery()
+  channelsQuery.query(
+    contact.class.Channel,
+    {
+      attachedTo: organization._id
+    },
+    (res) => {
+      channels = res
+    }
+  )
 </script>
 
 <div class="flex-col h-full card-container">
@@ -29,26 +44,29 @@
   </div>
   {#if organization}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div
-      class="name lines-limit-2"
-      class:over-underline={!disabled}
-      on:click={() => {
-        if (!disabled) {
-          closeTooltip()
-          closePopup()
-          closePanel()
-          const loc = getCurrentLocation()
-          loc.path[3] = organization._id
-          loc.path.length = 4
-          navigate(loc)
-        }
-      }}
-    >
-      {organization.name}
+    <DocNavLink object={organization} disableClick={disabled}>
+      <div class="name lines-limit-2">
+        {organization.name}
+      </div>
+    </DocNavLink>
+    <div class="footer flex flex-reverse flex-grow">
+      <div class="flex-center flex-wrap">
+        <Component
+          is={attachment.component.AttachmentsPresenter}
+          props={{ value: organization.attachments, object: organization, size: 'medium', showCounter: true }}
+        />
+      </div>
+      {#if channels[0]}
+        <div class="flex flex-grow">
+          <ChannelsEditor
+            attachedTo={channels[0].attachedTo}
+            attachedClass={channels[0].attachedToClass}
+            length={'short'}
+            editable={false}
+          />
+        </div>
+      {/if}
     </div>
-    {#if organization}
-      <span class="label">{organization.name}</span>
-    {/if}
   {/if}
 </div>
 
