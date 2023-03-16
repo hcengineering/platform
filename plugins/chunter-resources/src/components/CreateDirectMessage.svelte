@@ -52,8 +52,7 @@
       description: '',
       private: true,
       archived: false,
-      members: accIds,
-      createdBy: getCurrentAccount()._id
+      members: accIds
     })
 
     await navigate([], undefined as any, {

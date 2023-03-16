@@ -214,11 +214,9 @@ export async function backup (transactorUrl: string, workspaceId: WorkspaceId, s
     const infoFile = 'backup.json.gz'
 
     if (await storage.exists(infoFile)) {
-      const backupInfoE = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
-      if (backupInfoE.version === backupInfo.version) {
-        backupInfo = backupInfoE
-      }
+      backupInfo = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
     }
+    backupInfo.version = '0.6.1'
 
     backupInfo.workspace = workspaceId.name
     backupInfo.productId = workspaceId.productId

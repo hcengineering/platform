@@ -140,38 +140,6 @@ async function fillVacancyNumbers (client: MigrationClient): Promise<void> {
   }
 }
 
-async function fillCreatedBy (client: MigrationClient): Promise<void> {
-  const objects = await client.find<Vacancy>(DOMAIN_SPACE, {
-    _class: recruit.class.Vacancy,
-    createdBy: { $exists: false }
-  })
-  const txes = await client.find<TxCreateDoc<Vacancy>>(DOMAIN_TX, {
-    objectClass: recruit.class.Vacancy,
-    _class: core.class.TxCreateDoc
-  })
-  const txMap = new Map(txes.map((p) => [p.objectId, p]))
-
-  for (const object of objects) {
-    const createTx = txMap.get(object._id)
-    if (createTx !== undefined && createTx.attributes.createdBy === undefined) {
-      await client.update(
-        DOMAIN_TX,
-        { _id: createTx._id },
-        {
-          'attributes.createdBy': createTx.modifiedBy
-        }
-      )
-    }
-    await client.update(
-      DOMAIN_SPACE,
-      { _id: object._id },
-      {
-        createdBy: createTx?.modifiedBy ?? object.modifiedBy
-      }
-    )
-  }
-}
-
 export const recruitOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await setCreate(client)
@@ -214,7 +182,6 @@ export const recruitOperation: MigrateOperation = {
         )
       }
     }
-    await fillCreatedBy(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)

@@ -77,7 +77,6 @@
       private: isPrivate,
       members,
       archived: false,
-      createdBy: getCurrentAccount()._id,
       identifier,
       sequence: 0,
       issueStatuses: 0,

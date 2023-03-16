@@ -1,12 +1,22 @@
-import { Doc, DocumentQuery, Domain, FindOptions, isOperator, Ref, SortingOrder } from '@hcengineering/core'
-import { MigrationClient, MigrateUpdate, MigrationResult } from '@hcengineering/model'
+import {
+  Doc,
+  DocumentQuery,
+  Domain,
+  FindOptions,
+  Hierarchy,
+  isOperator,
+  ModelDb,
+  Ref,
+  SortingOrder
+} from '@hcengineering/core'
+import { MigrateUpdate, MigrationClient, MigrationResult } from '@hcengineering/model'
 import { Db, Document, Filter, Sort, UpdateFilter } from 'mongodb'
 
 /**
  * Upgrade client implementation.
  */
 export class MigrateClientImpl implements MigrationClient {
-  constructor (readonly db: Db) {}
+  constructor (readonly db: Db, readonly hierarchy: Hierarchy, readonly model: ModelDb) {}
 
   private translateQuery<T extends Doc>(query: DocumentQuery<T>): Filter<Document> {
     const translated: any = {}
@@ -65,6 +75,22 @@ export class MigrateClientImpl implements MigrationClient {
       const result = await this.db.collection(domain).updateMany(this.translateQuery(query), { $set: operations })
       return { matched: result.matchedCount, updated: result.modifiedCount }
     }
+  }
+
+  async bulk<T extends Doc>(
+    domain: Domain,
+    operations: { filter: DocumentQuery<T>, update: MigrateUpdate<T> }[]
+  ): Promise<MigrationResult> {
+    const result = await this.db.collection(domain).bulkWrite(
+      operations.map((it) => ({
+        updateOne: {
+          filter: this.translateQuery(it.filter),
+          update: { $set: it.update }
+        }
+      }))
+    )
+
+    return { matched: result.matchedCount, updated: result.modifiedCount }
   }
 
   async move<T extends Doc>(

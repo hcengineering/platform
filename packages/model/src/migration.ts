@@ -5,7 +5,9 @@ import {
   DocumentQuery,
   Domain,
   FindOptions,
+  Hierarchy,
   IncOptions,
+  ModelDb,
   ObjQueryType,
   OmitNever,
   PushOptions,
@@ -71,11 +73,19 @@ export interface MigrationClient {
     operations: MigrateUpdate<T>
   ) => Promise<MigrationResult>
 
+  bulk: <T extends Doc>(
+    domain: Domain,
+    operations: { filter: MigrationDocumentQuery<T>, update: MigrateUpdate<T> }[]
+  ) => Promise<MigrationResult>
+
   // Move documents per domain
   move: <T extends Doc>(sourceDomain: Domain, query: DocumentQuery<T>, targetDomain: Domain) => Promise<MigrationResult>
 
   create: <T extends Doc>(domain: Domain, doc: T) => Promise<void>
   delete: <T extends Doc>(domain: Domain, _id: Ref<T>) => Promise<void>
+
+  hierarchy: Hierarchy
+  model: ModelDb
 }
 
 /**

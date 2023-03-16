@@ -37,8 +37,7 @@
       description: '',
       private: isPrivate,
       archived: false,
-      members: [getCurrentAccount()._id],
-      createdBy: getCurrentAccount()._id
+      members: [getCurrentAccount()._id]
     })
     const navigate = await getResource(workbench.actionImpl.Navigate)
 

@@ -312,7 +312,8 @@ export abstract class TxProcessor implements WithTx {
       _class: tx.objectClass,
       space: tx.objectSpace,
       modifiedBy: tx.modifiedBy,
-      modifiedOn: tx.modifiedOn
+      modifiedOn: tx.modifiedOn,
+      createdBy: tx.createdBy ?? tx.modifiedBy
     } as T
   }
 
@@ -444,6 +445,7 @@ export class TxFactory {
       objectSpace: space,
       modifiedOn: modifiedOn ?? Date.now(),
       modifiedBy: modifiedBy ?? this.account,
+      createdBy: modifiedBy ?? this.account,
       attributes
     }
   }

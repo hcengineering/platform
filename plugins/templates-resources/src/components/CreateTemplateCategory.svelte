@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { getCurrentAccount } from '@hcengineering/core'
+  import core from '@hcengineering/core'
   import presentation, { getClient, SpaceCreateCard } from '@hcengineering/presentation'
   import { EditBox, Grid, IconFolder, ToggleWithLabel } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -37,8 +37,7 @@
       description,
       private: isPrivate,
       archived: false,
-      members: [],
-      createdBy: getCurrentAccount()._id
+      members: []
     })
   }
 </script>

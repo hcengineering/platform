@@ -47,8 +47,7 @@
       description,
       private: isPrivate,
       archived: false,
-      members: [getCurrentAccount()._id],
-      createdBy: getCurrentAccount()._id
+      members: [getCurrentAccount()._id]
     })
 
     await createKanban(client, id, templateId)
