@@ -65,9 +65,6 @@
         content: '›';
         padding: 0 0.25rem;
       }
-      &:first-child {
-        margin-left: 0;
-      }
     }
   }
 </style>

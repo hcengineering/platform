@@ -22,7 +22,7 @@
   export let _class: Ref<Class<Doc>> | undefined = undefined
   export let value: Doc | RelatedDocument | undefined = undefined
   export let props: Record<string, any> = {}
-  export let inline: boolean = false
+  export let inline: boolean = true
 
   const client = getClient()
   let presenter: AttributeModel | undefined

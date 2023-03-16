@@ -26,7 +26,7 @@
 </script>
 
 {#if value}
-  <DocNavLink object={value} {onClick} component={tracker.component.EditIssue}>
+  <DocNavLink object={value} {onClick} component={tracker.component.EditIssue} inline>
     <span
       class="name overflow-label select-text"
       class:with-margin={shouldUseMargin}

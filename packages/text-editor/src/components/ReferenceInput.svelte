@@ -406,7 +406,7 @@
         display: flex;
         align-self: center;
         align-items: center;
-        width: 100%;
+        width: calc(100% - 1.75rem);
         height: 100%;
         color: var(--content-color);
         background-color: transparent;
