@@ -122,6 +122,17 @@ p:last-child { margin-block-end: 0; }
   }
 }
 
+a.noUnderline {
+  &:hover {
+    color: var(--caption-color);
+    text-decoration: none;
+  }
+  &:active {
+    color: var(--accent-color);
+    text-decoration: none;
+  }
+}
+
 .text-center { text-align: center; }
 
 .firstLetter span{
