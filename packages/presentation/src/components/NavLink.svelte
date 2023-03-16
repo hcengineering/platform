@@ -42,7 +42,7 @@
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    color: var(--content-color);
+    color: var(--accent-color);
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
