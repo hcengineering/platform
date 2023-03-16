@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import presentation, { Card, getClient } from '@hcengineering/presentation'
-  import { Button, DateRangePresenter, EditBox } from '@hcengineering/ui'
+  import presentation, { Card, getClient, SpaceSelector } from '@hcengineering/presentation'
+  import { Button, DateRangePresenter, EditBox, Label } from '@hcengineering/ui'
   import hr from '../../plugin'
   import core, { Data, Ref } from '@hcengineering/core'
   import { toTzDate, PublicHoliday, Department } from '@hcengineering/hr'
@@ -33,6 +33,7 @@
     if (existingHoliday !== undefined) {
       title = existingHoliday.title
       description = existingHoliday.description
+      department = existingHoliday.department
     }
   }
 
@@ -76,6 +77,10 @@
   <div class="flex-grow mt-4">
     <DateRangePresenter bind:value={date} />
   </div>
+  <svelte:fragment slot="pool">
+    <Label label={hr.string.Department} />
+    <SpaceSelector _class={hr.class.Department} label={hr.string.ParentDepartmentLabel} bind:space={department} />
+  </svelte:fragment>
   <svelte:fragment slot="buttons">
     {#if existingHoliday}
       <Button label={presentation.string.Remove} kind="transparent" on:click={() => deleteHoliday()} />

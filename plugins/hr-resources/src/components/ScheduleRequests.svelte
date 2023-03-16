@@ -13,17 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import hr, { Request, RequestType } from '@hcengineering/hr'
+  import hr, { Department, Request, RequestType, Staff } from '@hcengineering/hr'
   import { getClient } from '@hcengineering/presentation'
   import { closeTooltip, getPlatformColor, Icon, isWeekend, showPopup } from '@hcengineering/ui'
   import { ContextMenu } from '@hcengineering/view-resources'
-  import { isHoliday } from '../utils'
+  import { getHolidayDatesForEmployee, isHoliday } from '../utils'
   import { Ref } from '@hcengineering/core'
 
   export let requests: Request[]
   export let date: Date
   export let editable: boolean = false
-  export let holidays: Date[] | undefined
+  export let holidays: Map<Ref<Department>, Date[]>
+  export let employee: Staff
 
   const client = getClient()
   export let noWeekendHolidayType: Ref<RequestType>[]
@@ -51,12 +52,13 @@
     closeTooltip()
     showPopup(ContextMenu, { object: request }, e.target as HTMLElement)
   }
+  export let staffDepartmentMap: Map<Ref<Staff>, Department[]>
 </script>
 
 <div class="w-full h-full relative p-1 flex">
   {#each requests as request}
     {#await getType(request) then type}
-      {#if type && !(isWeekend(date) || (isHoliday(holidays, date) && noWeekendHolidayType.includes(type._id)))}
+      {#if type && !(isWeekend(date) || (isHoliday(getHolidayDatesForEmployee(staffDepartmentMap, employee._id, holidays), date) && noWeekendHolidayType.includes(type._id)))}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="request flex-center"

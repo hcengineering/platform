@@ -226,6 +226,25 @@ export function tableToCSV (tableId: string, separator = ','): string {
   return csv.join('\n')
 }
 
+export function getHolidayDatesForEmployee (
+  departmentMap: Map<Ref<Staff>, Department[]>,
+  employee: Ref<Staff>,
+  holidays: Map<Ref<Department>, Date[]>
+): Date[] {
+  if (departmentMap === undefined || departmentMap.size === 0) return []
+  const deps = departmentMap.get(employee)
+  if (deps === undefined) return []
+  if (holidays.size === 0) return []
+  const dates = []
+  for (const dep of deps) {
+    const depDates = holidays?.get(dep._id)
+    if (depDates !== undefined) {
+      dates.push(...depDates)
+    }
+  }
+  return dates
+}
+
 export interface EmployeeReports {
   reports: TimeSpendReport[]
   tasks: Map<Ref<Issue>, Issue>

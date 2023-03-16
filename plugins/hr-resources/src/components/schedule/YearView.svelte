@@ -19,8 +19,17 @@
   import type { Request, RequestType, Staff } from '@hcengineering/hr'
   import { Label, LabelAndProps, Scroller, tableHRscheduleY, tooltip } from '@hcengineering/ui'
   import hr from '../../plugin'
-  import { getEndDate, getRequests, getStartDate, getTotal, isToday, weekDays } from '../../utils'
+  import {
+    getHolidayDatesForEmployee,
+    getEndDate,
+    getRequests,
+    getStartDate,
+    getTotal,
+    isToday,
+    weekDays
+  } from '../../utils'
   import RequestsPopup from '../RequestsPopup.svelte'
+  import { Department } from '@hcengineering/hr'
 
   export let currentDate: Date = new Date()
 
@@ -29,7 +38,8 @@
 
   export let employeeRequests: Map<Ref<Staff>, Request[]>
 
-  export let holidays: Date[] | undefined = undefined
+  export let holidays: Map<Ref<Department>, Date[]>
+  export let staffDepartmentMap: Map<Ref<Staff>, Department[]>
 
   function getTooltip (requests: Request[]): LabelAndProps | undefined {
     if (requests.length === 0) return
@@ -102,7 +112,13 @@
               {#key tooltipValue}
                 <td class:today={isToday(startDate)} class="fixed td-body" use:tooltip={tooltipValue}>
                   <div class="flex-center">
-                    {getTotal(requests, startDate, endDate, types, holidays)}
+                    {getTotal(
+                      requests,
+                      startDate,
+                      endDate,
+                      types,
+                      getHolidayDatesForEmployee(staffDepartmentMap, employee._id, holidays)
+                    )}
                   </div>
                 </td>
               {/key}
@@ -116,10 +132,15 @@
           {#each values as value, i}
             {@const startDate = getStartDate(currentDate.getFullYear(), value)}
             {@const endDate = getEndDate(currentDate.getFullYear(), value)}
-            {@const requests = getRequests(employeeRequests, startDate, endDate)}
             <td class:today={isToday(startDate)} class="fixed td-body summary">
               <div class="flex-center">
-                {getTotal(requests, startDate, endDate, types, holidays)}
+                {getTotal(
+                  [...employeeRequests.values()].flat(),
+                  startDate,
+                  endDate,
+                  types,
+                  [...holidays.values()].flat()
+                )}
               </div>
             </td>
           {/each}

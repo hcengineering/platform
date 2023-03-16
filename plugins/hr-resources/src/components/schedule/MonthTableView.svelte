@@ -30,6 +30,7 @@
   import hr from '../../plugin'
   import {
     EmployeeReports,
+    getHolidayDatesForEmployee,
     getEndDate,
     getMonth,
     getRequestDates,
@@ -41,6 +42,8 @@
   } from '../../utils'
   import StatPresenter from './StatPresenter.svelte'
   import ReportPresenter from './ReportPresenter.svelte'
+  import HolidayPresenter from './HolidayPresenter.svelte'
+  import { Department } from '@hcengineering/hr'
 
   export let currentDate: Date = new Date()
 
@@ -49,13 +52,21 @@
 
   export let employeeRequests: Map<Ref<Staff>, Request[]>
   export let timeReports: Map<Ref<Employee>, EmployeeReports>
-  export let holidays: Date[] | undefined = undefined
-
+  export let holidays: Map<Ref<Department>, Date[]> = new Map<Ref<Department>, Date[]>()
+  export let getHolidays: (month: Date) => Promise<Map<Ref<Department>, Date[]>>
   $: month = getStartDate(currentDate.getFullYear(), currentDate.getMonth()) // getMonth(currentDate, currentDate.getMonth())
   $: wDays = weekDays(month.getFullYear(), month.getMonth())
 
-  function getDateRange (request: Request): string {
-    const ds = getRequestDates(request, types, month.getFullYear(), month.getMonth(), holidays)
+  export let staffDepartmentMap: Map<Ref<Staff>, Department[]>
+
+  function getDateRange (request: Request, staff: Staff): string {
+    const ds = getRequestDates(
+      request,
+      types,
+      month.getFullYear(),
+      month.getMonth(),
+      getHolidayDatesForEmployee(staffDepartmentMap, staff._id, holidays)
+    )
     return ds.join(' ')
   }
 
@@ -75,10 +86,10 @@
           presenter: StatPresenter,
           props: {
             month: month ?? getStartDate(currentDate.getFullYear(), currentDate.getMonth()),
-            display: (req: Request[]) =>
+            display: (req: Request[], staff: Staff) =>
               req
                 .filter((r) => r.type === it._id)
-                .map((it) => getDateRange(it))
+                .map((it) => getDateRange(it, staff))
                 .join(' '),
             getStatRequests
           }
@@ -87,7 +98,8 @@
     )
   }
 
-  function getOverrideConfig (startDate: Date): Map<string, BuildModelKey> {
+  async function getOverrideConfig (startDate: Date): Promise<Map<string, BuildModelKey>> {
+    const holidays = await getHolidays(startDate)
     const typevals = getTypeVals(startDate)
     const endDate = getEndDate(startDate.getFullYear(), startDate.getMonth())
 
@@ -111,13 +123,29 @@
           presenter: StatPresenter,
           props: {
             month: startDate ?? getStartDate(currentDate.getFullYear(), currentDate.getMonth()),
-            display: (req: Request[]) => wDays + getTotal(req, startDate, endDate, types, holidays),
+            display: (req: Request[], staff: Staff) => {
+              const dates = getHolidayDatesForEmployee(staffDepartmentMap, staff._id, holidays)
+              const total = getTotal(req, startDate, endDate, types, dates)
+              return wDays + total - dates.length
+            },
             getStatRequests
           },
           sortingKey: '@wdCount',
           sortingFunction: (a: Doc, b: Doc) =>
-            getTotal(getStatRequests(b._id as Ref<Staff>, startDate), startDate, endDate, types, holidays) -
-            getTotal(getStatRequests(a._id as Ref<Staff>, startDate), startDate, endDate, types, holidays)
+            getTotal(
+              getStatRequests(b._id as Ref<Staff>, startDate),
+              startDate,
+              endDate,
+              types,
+              getHolidayDatesForEmployee(staffDepartmentMap, b._id as Ref<Staff>, holidays)
+            ) -
+            getTotal(
+              getStatRequests(a._id as Ref<Staff>, startDate),
+              startDate,
+              endDate,
+              types,
+              getHolidayDatesForEmployee(staffDepartmentMap, a._id as Ref<Staff>, holidays)
+            )
         }
       ],
       [
@@ -132,6 +160,22 @@
           },
           sortingKey: '@wdCountReported',
           sortingFunction: (a: Doc, b: Doc) => getReport(b._id).value - getReport(a._id).value
+        }
+      ],
+      [
+        '@wdCountPublicHolidays',
+        {
+          key: '',
+          label: getEmbeddedLabel('Public holidays'),
+          presenter: ReportPresenter,
+          props: {
+            month: startDate ?? getStartDate(currentDate.getFullYear(), currentDate.getMonth()),
+            display: (staff: Staff) => getHolidayDatesForEmployee(staffDepartmentMap, staff._id, holidays).length
+          },
+          sortingKey: '@wdCountPublicHolidays',
+          sortingFunction: (a: Doc, b: Doc) =>
+            getHolidayDatesForEmployee(staffDepartmentMap, b._id as Ref<Staff>, holidays).length -
+            getHolidayDatesForEmployee(staffDepartmentMap, a._id as Ref<Staff>, holidays).length
         }
       ],
       [
@@ -170,17 +214,34 @@
           presenter: StatPresenter,
           props: {
             month: startDate ?? getMonth(currentDate, currentDate.getMonth()),
-            display: (req: Request[]) =>
-              getTotal(req, startDate, endDate, types, holidays, (a) => (a < 0 ? Math.abs(a) : 0)),
+            display: (req: Request[], staff: Staff) =>
+              getTotal(
+                req,
+                startDate,
+                endDate,
+                types,
+                getHolidayDatesForEmployee(staffDepartmentMap, staff._id, holidays),
+                (a) => (a < 0 ? Math.abs(a) : 0)
+              ),
             getStatRequests
           },
           sortingKey: '@ptoCount',
           sortingFunction: (a: Doc, b: Doc) =>
-            getTotal(getStatRequests(b._id as Ref<Staff>, startDate), startDate, endDate, types, holidays, (a) =>
-              a < 0 ? Math.abs(a) : 0
+            getTotal(
+              getStatRequests(b._id as Ref<Staff>, startDate),
+              startDate,
+              endDate,
+              types,
+              getHolidayDatesForEmployee(staffDepartmentMap, b._id as Ref<Staff>, holidays),
+              (a) => (a < 0 ? Math.abs(a) : 0)
             ) -
-            getTotal(getStatRequests(a._id as Ref<Staff>, startDate), startDate, endDate, types, holidays, (a) =>
-              a < 0 ? Math.abs(a) : 0
+            getTotal(
+              getStatRequests(a._id as Ref<Staff>, startDate),
+              startDate,
+              endDate,
+              types,
+              getHolidayDatesForEmployee(staffDepartmentMap, a._id as Ref<Staff>, holidays),
+              (a) => (a < 0 ? Math.abs(a) : 0)
             )
         }
       ],
@@ -192,18 +253,50 @@
           presenter: StatPresenter,
           props: {
             month: startDate ?? getMonth(currentDate, currentDate.getMonth()),
-            display: (req: Request[]) =>
-              getTotal(req, startDate, endDate, types, holidays, (a) => (a > 0 ? Math.abs(a) : 0)),
+            display: (req: Request[], staff: Staff) =>
+              getTotal(
+                req,
+                startDate,
+                endDate,
+                types,
+                getHolidayDatesForEmployee(staffDepartmentMap, staff._id, holidays),
+                (a) => (a > 0 ? Math.abs(a) : 0)
+              ),
             getStatRequests
           },
           sortingKey: '@extraCount',
           sortingFunction: (a: Doc, b: Doc) =>
-            getTotal(getStatRequests(b._id as Ref<Staff>, startDate), startDate, endDate, types, holidays, (a) =>
-              a > 0 ? Math.abs(a) : 0
+            getTotal(
+              getStatRequests(b._id as Ref<Staff>, startDate),
+              startDate,
+              endDate,
+              types,
+              getHolidayDatesForEmployee(staffDepartmentMap, b._id as Ref<Staff>, holidays),
+              (a) => (a > 0 ? Math.abs(a) : 0)
             ) -
-            getTotal(getStatRequests(a._id as Ref<Staff>, startDate), startDate, endDate, types, holidays, (a) =>
-              a > 0 ? Math.abs(a) : 0
+            getTotal(
+              getStatRequests(a._id as Ref<Staff>, startDate),
+              startDate,
+              endDate,
+              types,
+              getHolidayDatesForEmployee(staffDepartmentMap, a._id as Ref<Staff>, holidays),
+              (a) => (a > 0 ? Math.abs(a) : 0)
             )
+        }
+      ],
+      [
+        '@publicHoliday',
+        {
+          key: '',
+          label: getEmbeddedLabel('Public holiday'),
+          presenter: HolidayPresenter,
+          props: {
+            month: startDate ?? getMonth(currentDate, currentDate.getMonth()),
+            display: async (staff: Staff, month: Date) =>
+              getHolidayDatesForEmployee(staffDepartmentMap, staff._id, await getHolidays(month))
+                .map((date) => date.getDate())
+                .join(' ')
+          }
         }
       ],
       ...typevals
@@ -245,14 +338,14 @@
       })
   }
 
-  function createConfig (
+  async function createConfig (
     descr: Viewlet,
     preference: ViewletPreference | undefined,
     month: Date
-  ): (string | BuildModelKey)[] {
+  ): Promise<(string | BuildModelKey)[]> {
     const base = preference?.config ?? descr.config
     const result: (string | BuildModelKey)[] = []
-    const overrideConfig = getOverrideConfig(month)
+    const overrideConfig = await getOverrideConfig(month)
 
     for (const key of [...base, ...overrideConfig.values()]) {
       if (typeof key === 'string') {
@@ -298,13 +391,15 @@
               }}
             />
           </div>
-          <Table
-            tableId={'exportableData'}
-            _class={hr.mixin.Staff}
-            query={{ _id: { $in: departmentStaff.map((it) => it._id) } }}
-            config={createConfig(descr, preference, month)}
-            options={descr.options}
-          />
+          {#await createConfig(descr, preference, month) then config}
+            <Table
+              tableId={'exportableData'}
+              _class={hr.mixin.Staff}
+              query={{ _id: { $in: departmentStaff.map((it) => it._id) } }}
+              {config}
+              options={descr.options}
+            />
+          {/await}
         {/if}
       {/if}
     </div>

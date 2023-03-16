@@ -17,7 +17,7 @@
   import { Employee, EmployeeAccount } from '@hcengineering/contact'
   import { DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
   import { Department, fromTzDate, Request, RequestType, Staff } from '@hcengineering/hr'
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import tracker, { Issue } from '@hcengineering/tracker'
   import { Label } from '@hcengineering/ui'
   import hr from '../plugin'
@@ -25,6 +25,8 @@
   import MonthTableView from './schedule/MonthTableView.svelte'
   import MonthView from './schedule/MonthView.svelte'
   import YearView from './schedule/YearView.svelte'
+  import { groupBy } from '@hcengineering/view-resources'
+  import contact from '@hcengineering/contact-resources/src/plugin'
 
   export let department: Ref<Department>
   export let descendants: Map<Ref<Department>, Department[]>
@@ -221,7 +223,7 @@
       }
     }
   )
-  let holidays: Date[] | undefined = undefined
+  let holidays: Map<Ref<Department>, Date[]> = new Map()
   const holidaysQuery = createQuery()
   $: holidaysQuery.query(
     hr.class.PublicHoliday,
@@ -230,32 +232,85 @@
       'date.year': currentDate.getFullYear()
     },
     (res) => {
-      holidays = res.map((holiday) => new Date(fromTzDate(holiday.date)))
+      const group = groupBy(res, 'department')
+      holidays = new Map()
+      for (const groupKey in group) {
+        holidays.set(
+          groupKey,
+          group[groupKey].map((holiday) => new Date(fromTzDate(holiday.date)))
+        )
+      }
     }
   )
+
+  async function getHolidays (month: Date): Promise<Map<Ref<Department>, Date[]>> {
+    const result = await client.findAll(hr.class.PublicHoliday, {
+      'date.month': month.getMonth(),
+      'date.year': month.getFullYear()
+    })
+    const group = groupBy(result, 'department')
+    const rMap = new Map()
+    for (const groupKey in group) {
+      rMap.set(
+        groupKey,
+        group[groupKey].map((holiday) => new Date(fromTzDate(holiday.date)))
+      )
+    }
+    return rMap
+  }
+
+  const client = getClient()
+
+  async function getDepartmentsForEmployee (departmentStaff: Staff[]): Promise<Map<Ref<Staff>, Department[]>> {
+    const map = new Map<Ref<Staff>, Department[]>()
+    if (departmentStaff && departmentStaff.length > 0) {
+      const ids = departmentStaff.map((staff) => staff._id)
+      const staffs = await client.findAll(contact.class.EmployeeAccount, { employee: { $in: ids } })
+      const departments = await client.findAll(hr.class.Department, {
+        members: { $in: staffs.map((staff) => staff._id) }
+      })
+      staffs.forEach((staff) => {
+        const filteredDepartments = departments.filter((department) => department.members.includes(staff._id))
+        map.set(staff.employee as Ref<Staff>, filteredDepartments as Department[])
+      })
+    }
+    return map
+  }
 </script>
 
 {#if departmentStaff.length}
-  {#if mode === CalendarMode.Year}
-    <YearView {departmentStaff} {employeeRequests} {types} {currentDate} {holidays} />
-  {:else if mode === CalendarMode.Month}
-    {#if display === 'chart'}
-      <MonthView
-        {departmentStaff}
-        {employeeRequests}
-        {types}
-        {startDate}
-        {endDate}
-        {editableList}
-        {currentDate}
-        {timeReports}
-        {holidays}
-        {department}
-      />
-    {:else if display === 'stats'}
-      <MonthTableView {departmentStaff} {employeeRequests} {types} {currentDate} {timeReports} {holidays} />
+  {#await getDepartmentsForEmployee(departmentStaff) then staffDepartmentMap}
+    {#if mode === CalendarMode.Year}
+      <YearView {departmentStaff} {employeeRequests} {types} {currentDate} {holidays} {staffDepartmentMap} />
+    {:else if mode === CalendarMode.Month}
+      {#if display === 'chart'}
+        <MonthView
+          {departmentStaff}
+          {employeeRequests}
+          {types}
+          {startDate}
+          {endDate}
+          {editableList}
+          {currentDate}
+          {timeReports}
+          {holidays}
+          {department}
+          {staffDepartmentMap}
+        />
+      {:else if display === 'stats'}
+        <MonthTableView
+          {departmentStaff}
+          {employeeRequests}
+          {types}
+          {currentDate}
+          {timeReports}
+          {holidays}
+          {staffDepartmentMap}
+          {getHolidays}
+        />
+      {/if}
     {/if}
-  {/if}
+  {/await}
 {:else}
   <div class="flex-center h-full w-full flex-grow fs-title">
     <Label label={hr.string.NoEmployeesInDepartment} />
