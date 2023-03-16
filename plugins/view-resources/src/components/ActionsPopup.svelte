@@ -21,7 +21,7 @@
   import { onMount } from 'svelte'
   import { filterActions, getSelection } from '../actions'
   import view from '../plugin'
-  import { focusStore, selectionStore, FocusSelection } from '../selection'
+  import { focusStore, selectionStore } from '../selection'
   import ActionContext from './ActionContext.svelte'
   import { ListView, resizeObserver } from '@hcengineering/ui'
   import ObjectPresenter from './ObjectPresenter.svelte'
@@ -52,22 +52,36 @@
     }
   )
 
+  let visibleActions: WithLookup<Action>[] = []
   let supportedActions: WithLookup<Action>[] = []
   let filteredActions: WithLookup<Action>[] = []
 
+  async function filterVisibleActions (actions: WithLookup<Action>[], docs: Doc[]) {
+    const resultActions: WithLookup<Action>[] = []
+
+    for (const action of actions) {
+      if (!action.visibilityTester) {
+        resultActions.push(action)
+      } else {
+        const visibilityTester = await getResource(action.visibilityTester)
+
+        if (await visibilityTester(docs)) {
+          resultActions.push(action)
+        }
+      }
+    }
+    visibleActions = resultActions
+  }
+  $: filterVisibleActions(actions, getSelection($focusStore, $selectionStore))
+
   const client = getClient()
 
-  async function filterSupportedActions (
-    acts: WithLookup<Action>[],
-    fcsStore: FocusSelection,
-    selectStore: Doc[],
-    vContext: ViewContext
-  ) {
-    let fActions: WithLookup<Action>[] = acts
+  $: {
+    let fActions: WithLookup<Action>[] = visibleActions
 
-    const docs = getSelection(fcsStore, selectStore)
+    const docs = getSelection($focusStore, $selectionStore)
     for (const d of docs) {
-      fActions = await filterActions(client, d, fActions)
+      fActions = filterActions(client, d, fActions)
     }
     if (docs.length === 0) {
       fActions = fActions.filter((it) => it.input === 'none')
@@ -75,12 +89,11 @@
     fActions = fActions.filter(
       (it) =>
         (it.$lookup?.category?.visible ?? true) &&
-        (it.context.application === vContext.application || it.context.application === undefined)
+        (it.context.application === viewContext.application || it.context.application === undefined)
     )
     // Sort by category.
     supportedActions = fActions.sort((a, b) => a.category.localeCompare(b.category))
   }
-  $: filterSupportedActions(actions, $focusStore, $selectionStore, viewContext)
 
   async function filterSearchActions (actions: WithLookup<Action>[], search: string): Promise<void> {
     const res: WithLookup<Action>[] = []

@@ -62,14 +62,25 @@ export async function getActions (
 
   const categories: Record<string, number> = { top: 1, filter: 50, tools: 100 }
 
-  let filteredActions = actions
+  let filteredActions = []
 
+  for (const action of actions) {
+    if (action.visibilityTester == null) {
+      filteredActions.push(action)
+    } else {
+      const visibilityTester = await getResource(action.visibilityTester)
+
+      if (await visibilityTester(doc)) {
+        filteredActions.push(action)
+      }
+    }
+  }
   if (Array.isArray(doc)) {
     for (const d of doc) {
-      filteredActions = await filterActions(client, d, filteredActions, derived)
+      filteredActions = filterActions(client, d, filteredActions, derived)
     }
   } else {
-    filteredActions = await filterActions(client, doc, filteredActions, derived)
+    filteredActions = filterActions(client, doc, filteredActions, derived)
   }
   const inputVal: ViewActionInput[] = ['none']
   if (!Array.isArray(doc) || doc.length === 1) {
@@ -118,12 +129,12 @@ export async function getContextActions (
 /**
  * @public
  */
-export async function filterActions (
+export function filterActions (
   client: Client,
   doc: Doc,
   actions: Array<WithLookup<Action>>,
   derived: Ref<Class<Doc>> = core.class.Doc
-): Promise<Array<WithLookup<Action>>> {
+): Array<WithLookup<Action>> {
   let result: Array<WithLookup<Action>> = []
   const hierarchy = client.getHierarchy()
   const role = getCurrentAccount().role
@@ -151,13 +162,6 @@ export async function filterActions (
     if (action.query !== undefined) {
       const r = matchQuery([doc], action.query, doc._class, hierarchy)
       if (r.length === 0) {
-        continue
-      }
-    }
-    if (action.checkIsVisible !== undefined) {
-      const checkIsVisible = await getResource(action.checkIsVisible)
-
-      if (!(await checkIsVisible())) {
         continue
       }
     }

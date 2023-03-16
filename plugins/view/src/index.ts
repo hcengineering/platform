@@ -329,7 +329,7 @@ export interface Action<T extends Doc = Doc, P = Record<string, any>> extends Do
   query?: DocumentQuery<T>
 
   // Action is shown only if the check is passed
-  checkIsVisible?: Resource<() => Promise<boolean>>
+  visibilityTester?: Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
 
   // If defined, types should be matched to proposed list
   inputProps?: Record<string, Ref<Class<Doc>>>
