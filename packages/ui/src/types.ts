@@ -139,6 +139,7 @@ export type PopupPosAlignment =
   | 'content'
   | 'middle'
   | 'help-center'
+  | 'centered'
 
 export function isPopupPosAlignment (x: any): x is PopupPosAlignment {
   return (
@@ -150,7 +151,8 @@ export function isPopupPosAlignment (x: any): x is PopupPosAlignment {
       x === 'full' ||
       x === 'content' ||
       x === 'middle' ||
-      x === 'help-center')
+      x === 'help-center' ||
+      x === 'centered')
   )
 }
 

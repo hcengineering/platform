@@ -493,7 +493,7 @@
           notify={false}
         />
         <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div class="thinButton {appsDirection}" class:shownMenu on:click={() => (shownMenu = !shownMenu)}>
+        <div class="thinButton" class:shownMenu on:click={() => (shownMenu = !shownMenu)}>
           <Settings size={'small'} />
         </div>
       </div>
@@ -648,6 +648,7 @@
     height: 100%;
     touch-action: none;
   }
+
   .hamburger-container {
     display: flex;
     align-items: center;
@@ -655,17 +656,70 @@
 
     &.portrait {
       margin-left: 0.375rem;
+
+      .thinButton {
+        margin-left: 0.5rem;
+        padding: 0.25rem;
+        height: 2.5rem;
+      }
     }
     &.landscape {
       flex-direction: column;
       margin-top: 0.25rem;
+
+      .thinButton {
+        margin-top: 0.5rem;
+        padding: 0.25rem;
+        width: 2.5rem;
+      }
     }
     &.mini {
-      position: absolute;
+      position: fixed;
       top: 4px;
       left: 4px;
+
+      .thinButton {
+        margin-left: 0.25rem;
+        padding: 0;
+        width: 1.5rem;
+        height: 1.5rem;
+      }
+    }
+
+    .thinButton {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background-color: transparent;
+      border-radius: 0.25rem;
+      opacity: 0.2;
+      cursor: pointer;
+
+      transition-property: opacity, color, background-color;
+      transition-timing-function: var(--timing-main);
+      transition-duration: 0.1s;
+
+      &:hover {
+        color: var(--accent-color);
+        background-color: var(--accent-bg-color);
+        opacity: 0.9;
+      }
+
+      &.shownMenu {
+        color: var(--accent-color);
+        background-color: var(--button-bg-color);
+        opacity: 0.8;
+
+        &:hover {
+          color: var(--caption-color);
+          background-color: var(--button-bg-hover);
+          opacity: 1;
+        }
+      }
     }
   }
+
   .info-box {
     display: flex;
     align-items: center;
@@ -724,49 +778,6 @@
       &::before {
         transition-duration: 0;
         border-left: 2px solid var(--primary-bg-color);
-      }
-    }
-  }
-
-  .thinButton {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    padding: 0.25rem;
-    background-color: transparent;
-    border-radius: 0.25rem;
-    opacity: 0.2;
-    cursor: pointer;
-
-    transition-property: opacity, color, background-color;
-    transition-timing-function: var(--timing-main);
-    transition-duration: 0.1s;
-
-    &.vertical {
-      margin-top: 0.5rem;
-      width: 2.5rem;
-    }
-    &.horizontal {
-      margin-left: 0.5rem;
-      height: 2.5rem;
-    }
-
-    &:hover {
-      color: var(--accent-color);
-      background-color: var(--accent-bg-color);
-      opacity: 0.9;
-    }
-
-    &.shownMenu {
-      color: var(--accent-color);
-      background-color: var(--button-bg-color);
-      opacity: 0.8;
-
-      &:hover {
-        color: var(--caption-color);
-        background-color: var(--button-bg-hover);
-        opacity: 1;
       }
     }
   }

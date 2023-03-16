@@ -27,12 +27,12 @@
 </script>
 
 {#if value}
-  <div class="flex-presenter" class:inline-presenter={inline} use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
-    <div class="icon">
-      <Icon icon={recruit.icon.Vacancy} size={'small'} />
-    </div>
-    <DocNavLink {disableClick} object={value} {inline} component={recruit.component.EditVacancy}>
+  <DocNavLink {disableClick} object={value} {inline} component={recruit.component.EditVacancy}>
+    <div class="flex-presenter" class:inline-presenter={inline} use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
+      <div class="icon">
+        <Icon icon={recruit.icon.Vacancy} size={'small'} />
+      </div>
       <span class="label">{value.name}</span>
-    </DocNavLink>
-  </div>
+    </div>
+  </DocNavLink>
 {/if}

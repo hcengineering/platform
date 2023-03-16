@@ -20,14 +20,15 @@
   import { ContactPresenter } from '..'
 
   export let value: Member
+  export let inline: boolean = false
 
   const contactRef = getClient().findOne(contact.class.Contact, { _id: value.contact })
 </script>
 
-<DocNavLink object={value}>
+<DocNavLink object={value} {inline}>
   {#await contactRef then ct}
     {#if ct}
-      <ContactPresenter isInteractive={false} value={ct} />
+      <ContactPresenter isInteractive={false} value={ct} {inline} />
     {/if}
   {/await}
 </DocNavLink>

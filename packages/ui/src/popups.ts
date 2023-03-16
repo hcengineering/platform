@@ -256,6 +256,10 @@ export function fitPopupElement (
       newProps.left = '60%'
       newProps.right = '4px'
       show = true
+    } else if (element === 'centered') {
+      newProps.top = newProps.bottom = '15%'
+      newProps.left = newProps.right = '25%'
+      show = true
     } else if (element === 'account') {
       newProps.bottom = '2.75rem'
       newProps.left = '5rem'

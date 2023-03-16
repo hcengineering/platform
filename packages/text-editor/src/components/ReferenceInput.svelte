@@ -445,6 +445,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        flex-shrink: 0;
         margin-left: 0.5rem;
         padding: 0;
         width: 1.25rem;

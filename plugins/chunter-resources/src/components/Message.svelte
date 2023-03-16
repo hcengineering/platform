@@ -232,7 +232,7 @@
   <div class="message">
     <div class="header">
       {#if employee}
-        <EmployeePresenter value={employee} shouldShowAvatar={false} />
+        <EmployeePresenter value={employee} shouldShowAvatar={false} inline />
       {/if}
       <span>{getTime(message.createOn)}</span>
       {#if message.editedOn}

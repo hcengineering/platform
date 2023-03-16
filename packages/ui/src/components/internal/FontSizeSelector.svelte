@@ -15,6 +15,7 @@
 <script lang="ts">
   import { getContext } from 'svelte'
   import FontSize from './icons/FontSize.svelte'
+  import { popupstore } from '../../popups'
 
   const { currentFontSize, setFontSize } = getContext('fontsize') as {
     currentFontSize: string
@@ -28,6 +29,7 @@
   function changeFontSize () {
     current++
     setFontSize(fontsizes[current % fontsizes.length])
+    $popupstore = $popupstore
   }
 </script>
 

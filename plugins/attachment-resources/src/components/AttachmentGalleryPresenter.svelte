@@ -42,7 +42,11 @@
 
   function openAttachment () {
     closeTooltip()
-    showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'float')
+    showPopup(
+      PDFViewer,
+      { file: value.file, name: value.name, contentType: value.type },
+      isImage(value.type) ? 'centered' : 'float'
+    )
   }
 </script>
 

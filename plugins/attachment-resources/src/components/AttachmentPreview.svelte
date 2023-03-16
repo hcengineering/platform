@@ -29,11 +29,16 @@
 </script>
 
 {#if type === 'image'}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     class="content flex-center buttonContainer cursor-pointer"
     on:click={() => {
       closeTooltip()
-      showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'float')
+      showPopup(
+        PDFViewer,
+        { file: value.file, name: value.name, contentType: value.type },
+        value.type.startsWith('image/') ? 'centered' : 'float'
+      )
     }}
   >
     <img src={getFileUrl(value.file)} alt={value.name} />

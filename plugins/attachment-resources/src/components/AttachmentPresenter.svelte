@@ -34,7 +34,9 @@
     const ext = parts[parts.length - 1]
     return ext.substring(0, 4).toUpperCase()
   }
-
+  function isImage (contentType: string) {
+    return contentType.startsWith('image/')
+  }
   function openEmbedded (contentType: string) {
     return (
       contentType.includes('application/pdf') ||
@@ -51,7 +53,11 @@
       class="flex-center icon"
       on:click={() => {
         closeTooltip()
-        showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type, value }, 'float')
+        showPopup(
+          PDFViewer,
+          { file: value.file, name: value.name, contentType: value.type, value },
+          isImage(value.type) ? 'centered' : 'float'
+        )
       }}
     >
       {iconLabel(value.name)}
@@ -93,7 +99,11 @@
         class="name"
         on:click={() => {
           closeTooltip()
-          showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type, value }, 'float')
+          showPopup(
+            PDFViewer,
+            { file: value.file, name: value.name, contentType: value.type, value },
+            isImage(value.type) ? 'centered' : 'float'
+          )
         }}
       >
         {trimFilename(value.name)}
