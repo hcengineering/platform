@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Doc } from '@hcengineering/core'
+  import { Doc, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import type { TagReference } from '@hcengineering/tags'
   import tags from '@hcengineering/tags'
@@ -8,21 +8,28 @@
   import TagsEditorPopup from './TagsEditorPopup.svelte'
   import { createEventDispatcher, afterUpdate } from 'svelte'
 
-  export let object: Doc
+  export let object: WithLookup<Doc>
   export let full: boolean
   export let ckeckFilled: boolean = false
   export let kind: 'short' | 'full' = 'short'
   export let isEditable: boolean = false
   export let action: (evt: MouseEvent) => Promise<void> | void = async () => {}
 
+  export let lookupField: string | undefined
+
   const dispatch = createEventDispatcher()
 
   let items: TagReference[] = []
   const query = createQuery()
 
-  $: query.query(tags.class.TagReference, { attachedTo: object._id }, (result) => {
-    items = result
-  })
+  $: if (lookupField === undefined) {
+    query.query(tags.class.TagReference, { attachedTo: object._id }, (result) => {
+      items = result
+    })
+  } else {
+    query.unsubscribe()
+    items = (object.$lookup as any)[lookupField]
+  }
   async function tagsHandler (evt: MouseEvent): Promise<void> {
     showPopup(TagsEditorPopup, { object }, getEventPopupPositionElement(evt))
   }
@@ -42,6 +49,7 @@
 <div
   class="labels-container"
   style:justify-content={kind === 'short' ? 'space-between' : 'flex-start'}
+  class:w-full={kind === 'full'}
   style:flex-wrap={kind === 'short' ? 'nowrap' : 'wrap'}
   use:resizeObserver={(element) => {
     allWidth = element.clientWidth
@@ -64,7 +72,6 @@
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    width: 100%;
     min-width: 0;
     border-radius: 0.25rem;
   }

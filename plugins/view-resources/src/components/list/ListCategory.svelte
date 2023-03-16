@@ -300,7 +300,7 @@
       }}
     />
   {/if}
-  <ExpandCollapse isExpanded={!collapsed || dragItemIndex !== undefined} duration={400}>
+  <ExpandCollapse isExpanded={!collapsed || dragItemIndex !== undefined}>
     {#if !lastLevel}
       <div class="p-2">
         <ListCategories
@@ -332,7 +332,7 @@
           on:dragstart={dragStartHandler}
         />
       </div>
-    {:else if itemModels}
+    {:else if itemModels && (!collapsed || dragItemIndex !== undefined)}
       {#if limited}
         {#each limited as docObject, i (docObject._id)}
           <ListItem

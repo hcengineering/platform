@@ -566,6 +566,11 @@ export function createModel (builder: Builder): void {
         { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true } },
         { key: '', presenter: tracker.component.SubIssuesSelector, props: {} },
         { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
+        {
+          key: '$lookup.labels',
+          presenter: tags.component.LabelsPresenter,
+          props: { kind: 'list', full: false, lookupField: 'labels' }
+        },
         { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
         {
           key: '',
