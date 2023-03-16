@@ -220,7 +220,7 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Loca
   const appComponent = loc.path[0] ?? ''
   const workspace = loc.path[1] ?? ''
   return {
-    path: [appComponent, workspace, contactId],
+    path: [appComponent, workspace],
     fragment: getPanelURI(view.component.EditDoc, doc._id, doc._class, 'content')
   }
 }
