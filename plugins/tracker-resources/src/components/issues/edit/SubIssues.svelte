@@ -160,19 +160,21 @@
 <div class="mt-1">
   {#if issueStatuses}
     {#if hasSubIssues && viewOptions && viewlet}
-      <ExpandCollapse isExpanded={!isCollapsed} duration={400}>
-        <div class="list" class:collapsed={isCollapsed}>
-          <SubIssueList
-            teams={_teams}
-            {viewlet}
-            {viewOptions}
-            issueStatuses={_issueStatuses}
-            query={{ attachedTo: issue._id }}
-          />
-        </div>
+      <ExpandCollapse isExpanded={!isCollapsed}>
+        {#if !isCollapsed}
+          <div class="list" class:collapsed={isCollapsed}>
+            <SubIssueList
+              teams={_teams}
+              {viewlet}
+              {viewOptions}
+              issueStatuses={_issueStatuses}
+              query={{ attachedTo: issue._id }}
+            />
+          </div>
+        {/if}
       </ExpandCollapse>
     {/if}
-    <ExpandCollapse isExpanded={!isCollapsed} duration={400}>
+    <ExpandCollapse isExpanded={!isCollapsed}>
       {#if isCreating}
         {@const team = teams.get(issue.space)}
         {@const statuses = issueStatuses.get(issue.space)}
