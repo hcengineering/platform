@@ -56,7 +56,7 @@ function parseQuery (query: string): Record<string, string | null> {
   if (query.length === 0 || !query.startsWith('?')) {
     return {}
   }
-  query = query.substring(1)
+  query = decodeURIComponent(query).substring(1)
   const vars = query.split('&')
   const result: Record<string, string | null> = {}
   for (let i = 0; i < vars.length; i++) {
@@ -91,9 +91,9 @@ function parsePath (path: string): string[] {
 
 function parseHash (hash: string): string {
   if (hash.startsWith('#')) {
-    return hash.substring(1)
+    return decodeURIComponent(hash.substring(1))
   }
-  return hash
+  return decodeURIComponent(hash)
 }
 
 // ------------------------
