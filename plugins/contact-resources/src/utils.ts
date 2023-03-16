@@ -23,16 +23,7 @@ import {
   formatName,
   getName
 } from '@hcengineering/contact'
-import {
-  Doc,
-  getCurrentAccount,
-  matchQuery,
-  ObjQueryType,
-  Ref,
-  SortingOrder,
-  Timestamp,
-  toIdMap
-} from '@hcengineering/core'
+import { Doc, getCurrentAccount, ObjQueryType, Ref, SortingOrder, Timestamp, toIdMap } from '@hcengineering/core'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { TemplateDataProvider } from '@hcengineering/templates'
 import { getPanelURI, Location } from '@hcengineering/ui'
@@ -162,15 +153,8 @@ export async function getContactLink (doc: Doc): Promise<string> {
     label = clazz.shortLabel
   }
   label = label ?? 'CONT'
-  let length = 5
-  let id = doc._id.slice(-length)
-  const contacts = await client.findAll(clazz._id, {}, { projection: { _id: 1 } })
-  let res = matchQuery(contacts, { _id: { $like: `@${id}` } }, clazz._id, hierarchy)
-  while (res.length > 1) {
-    length++
-    id = doc._id.slice(-length)
-    res = matchQuery(contacts, { _id: { $like: `@${id}` } }, clazz._id, hierarchy)
-  }
+
+  const id = doc._id
 
   return `${contactId}|${label}-${id}`
 }
