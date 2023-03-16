@@ -5,6 +5,7 @@
     "InvalidId": "Некорректный Id: {id}",
     "BadRequest": "Некорректный запрос",
     "Forbidden": "Запрещено",
+    "ExpiredLink": "Недействительная ссылка",
     "Unauthorized": "Неавторизован",
     "UnknownMethod": "Неизвестный метод: {method}",
     "InternalServerError": "Внутренняя ошибка сервеа"
