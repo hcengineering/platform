@@ -204,9 +204,8 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Loca
 
 export const employeeByIdStore = writable<IdMap<Employee>>(new Map())
 export const employeesStore = writable<Employee[]>([])
-// const query = createQuery(true)
-// query.query(contact.class.Employee, {}, (res) => {
-//   console.log('EMPLOYEE LOADED!!')
-//   employeesStore.set(res)
-//   employeeByIdStore.set(toIdMap(res))
-// })
+const query = createQuery(true)
+query.query(contact.class.Employee, {}, (res) => {
+  employeesStore.set(res)
+  employeeByIdStore.set(toIdMap(res))
+})
