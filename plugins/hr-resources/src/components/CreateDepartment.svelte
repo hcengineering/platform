@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
-  import { Card, getClient, SpaceSelector, EmployeeBox } from '@hcengineering/presentation'
+  import { Card, EmployeeBox, getClient, SpaceSelector } from '@hcengineering/presentation'
   import { Button, createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import hr from '../plugin'
@@ -82,6 +82,7 @@
       placeholder={hr.string.TeamLead}
       bind:value={lead}
       allowDeselect
+      showNavigate={false}
       titleDeselect={hr.string.UnAssignLead}
     />
   </svelte:fragment>

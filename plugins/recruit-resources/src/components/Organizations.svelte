@@ -32,13 +32,13 @@
     FilterBar,
     FilterButton,
     getViewOptions,
-    viewOptionStore,
     setActiveViewletId,
     TableBrowser,
-    ViewletSettingButton
+    ViewletSettingButton,
+    viewOptionStore
   } from '@hcengineering/view-resources'
   import recruit from '../plugin'
-  import CreateVacancy from './CreateVacancy.svelte'
+  import CreateOrganization from './CreateOrganization.svelte'
   import VacancyListApplicationsPopup from './organizations/VacancyListApplicationsPopup.svelte'
   import VacancyListCountPresenter from './organizations/VacancyListCountPresenter.svelte'
   import VacancyPopup from './organizations/VacancyPopup.svelte'
@@ -123,7 +123,7 @@
   }
 
   function showCreateDialog () {
-    showPopup(CreateVacancy, { space: recruit.space.CandidatesPublic }, 'top')
+    showPopup(CreateOrganization, { space: recruit.space.CandidatesPublic }, 'top')
   }
   const applicationSorting = (a: Doc, b: Doc) =>
     (applications?.get(b._id as Ref<Organization>)?.count ?? 0) -
@@ -252,7 +252,7 @@
   <div class="ac-header-full" class:secondRow={twoRows}>
     <Button
       icon={IconAdd}
-      label={recruit.string.VacancyCreateLabel}
+      label={recruit.string.CompanyCreateLabel}
       size={'small'}
       kind={'primary'}
       on:click={showCreateDialog}
@@ -277,8 +277,7 @@
       config={createConfig(descr, preference)}
       options={descr.options}
       query={{
-        ...resultQuery,
-        _id: { $in: Array.from(vacancies.keys()) }
+        ...resultQuery
       }}
       showNotification
     />

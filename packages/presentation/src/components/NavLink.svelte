@@ -47,6 +47,7 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     cursor: pointer;
+    font-weight: inherit;
 
     &.inline {
       display: inline-flex;

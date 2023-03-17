@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import { Channel, findContacts, Organization } from '@hcengineering/contact'
-  import { AttachedData, generateId, WithLookup } from '@hcengineering/core'
-  import { Card, getClient } from '@hcengineering/presentation'
+  import { AttachedData, generateId, Ref, TxOperations, WithLookup } from '@hcengineering/core'
+  import { Card, getClient, InlineAttributeBar } from '@hcengineering/presentation'
   import { Button, createFocusManager, EditBox, FocusHandler, IconInfo, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
@@ -23,11 +23,13 @@
   import Company from './icons/Company.svelte'
   import OrganizationPresenter from './OrganizationPresenter.svelte'
 
+  export let onCreate: ((orgId: Ref<Organization>, client: TxOperations) => Promise<void>) | undefined = undefined
+
   export function canClose (): boolean {
     return object.name === ''
   }
 
-  const id = generateId()
+  const id: Ref<Organization> = generateId()
 
   const object: Organization = {
     name: ''
@@ -50,6 +52,9 @@
           provider: channel.provider
         }
       )
+    }
+    if (onCreate !== undefined) {
+      await onCreate?.(id, client)
     }
 
     dispatch('close', id)
@@ -90,12 +95,22 @@
     />
   </div>
   <svelte:fragment slot="pool">
-    <ChannelsDropdown
-      bind:value={channels}
-      focusIndex={10}
-      editable
-      highlighted={matchedChannels.map((it) => it.provider)}
-    />
+    <div class="flex-row-center flex-wrap">
+      <ChannelsDropdown
+        bind:value={channels}
+        focusIndex={10}
+        editable
+        highlighted={matchedChannels.map((it) => it.provider)}
+      />
+
+      <InlineAttributeBar
+        _class={contact.class.Organization}
+        {object}
+        toClass={contact.class.Contact}
+        on:update
+        extraProps={{ showNavigate: false }}
+      />
+    </div>
   </svelte:fragment>
   <svelte:fragment slot="footer">
     {#if matches.length > 0}

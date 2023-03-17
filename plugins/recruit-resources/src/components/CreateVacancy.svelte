@@ -15,8 +15,8 @@
 <script lang="ts">
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import contact, { Organization } from '@hcengineering/contact'
-  import core, { FindResult, generateId, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
-  import { Card, createQuery, getClient, UserBox } from '@hcengineering/presentation'
+  import core, { Data, FindResult, generateId, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
+  import { Card, createQuery, getClient, InlineAttributeBar, MessageBox, UserBox } from '@hcengineering/presentation'
   import { Vacancy as VacancyClass } from '@hcengineering/recruit'
   import tags from '@hcengineering/tags'
   import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
@@ -28,7 +28,15 @@
     IssueTemplateData,
     Project
   } from '@hcengineering/tracker'
-  import { Button, Component, createFocusManager, EditBox, FocusHandler, IconAttachment } from '@hcengineering/ui'
+  import {
+    Button,
+    Component,
+    createFocusManager,
+    EditBox,
+    FocusHandler,
+    IconAttachment,
+    showPopup
+  } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
   import Company from './icons/Company.svelte'
@@ -42,10 +50,24 @@
   let objectId: Ref<VacancyClass> = generateId()
   let issueTemplates: FindResult<IssueTemplate>
 
-  let fullDescription: string = template?.description ?? ''
+  let fullDescription: string = ''
 
   export let company: Ref<Organization> | undefined
   export let preserveCompany: boolean = false
+
+  let vacancyData: Data<VacancyClass> = {
+    archived: false,
+    description: '',
+    members: [],
+    name: '',
+    number: 0,
+    private: false,
+    attachments: 0,
+    comments: 0,
+    company: '' as Ref<Organization>,
+    fullDescription: '',
+    location: ''
+  }
 
   export function canClose (): boolean {
     return name === '' && templateId !== undefined
@@ -56,11 +78,9 @@
   const client = getClient()
   const templateQ = createQuery()
   $: templateQ.query(task.class.KanbanTemplate, { _id: templateId }, (result) => {
-    template = result[0]
-    if (!changed || descriptionBox?.isEmptyContent()) {
-      changed = false
-      fullDescription = template?.description ?? fullDescription
-    }
+    const { _class, _id, description, ...templateData } = result[0]
+    vacancyData = { ...(templateData as unknown as Data<VacancyClass>), fullDescription: description }
+    fullDescription = description ?? ''
   })
 
   const issueTemplatesQ = createQuery()
@@ -142,7 +162,7 @@
       recruit.class.Vacancy,
       core.space.Space,
       {
-        ...template,
+        ...vacancyData,
         name,
         description: template?.shortDescription ?? '',
         fullDescription,
@@ -174,6 +194,27 @@
   const manager = createFocusManager()
 
   let descriptionBox: AttachmentStyledBox
+
+  function handleTemplateChange (evt: CustomEvent<Ref<KanbanTemplate>>): void {
+    if (templateId == null) {
+      templateId = evt.detail
+      return
+    }
+    // Template is already specified, ask to replace.
+    showPopup(
+      MessageBox,
+      {
+        label: recruit.string.TemplateReplace,
+        message: recruit.string.TemplateReplaceConfirm
+      },
+      'top',
+      (result?: boolean) => {
+        if (result === true) {
+          templateId = evt.detail ?? undefined
+        }
+      }
+    )
+  }
 </script>
 
 <FocusHandler {manager} />
@@ -199,7 +240,7 @@
       />
     </div>
   </div>
-  {#key template?.description}
+  {#key vacancyData?.fullDescription}
     <AttachmentStyledBox
       bind:this={descriptionBox}
       {objectId}
@@ -241,9 +282,17 @@
         template: templateId,
         focusIndex: 4
       }}
-      on:change={(evt) => {
-        templateId = evt.detail
-      }}
+      on:change={handleTemplateChange}
+    />
+  </svelte:fragment>
+
+  <svelte:fragment slot="pool">
+    <InlineAttributeBar
+      _class={recruit.class.Vacancy}
+      object={vacancyData}
+      toClass={core.class.Space}
+      ignoreKeys={['fullDescription', 'company']}
+      extraProps={{ showNavigate: false }}
     />
   </svelte:fragment>
   <svelte:fragment slot="footer">

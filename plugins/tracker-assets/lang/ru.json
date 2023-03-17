@@ -272,7 +272,7 @@
     "SaveProcess": "Сохранить шаблон",
     "NoIssueTemplate": "Шаблон не задан",
     "TemplateReplace": "Вы хотите заменить выбранный шаблон?",
-    "TemplateReplaceConfirm": "Все внесенные изменения в задачу будут заменены шаблоном",
+    "TemplateReplaceConfirm": "Все внесенные изменения в будут заменены значениями из шаблоном",
 
     "CurrentWorkDay": "Текущий Рабочий День",
     "PreviousWorkDay": "Предыдущий Рабочий День",

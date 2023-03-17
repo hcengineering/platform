@@ -28,6 +28,7 @@
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = 'min-content'
+  export let showNavigate = true
 </script>
 
 <UserBox
@@ -43,4 +44,5 @@
   on:change={(evt) => {
     onChange(evt.detail)
   }}
+  {showNavigate}
 />

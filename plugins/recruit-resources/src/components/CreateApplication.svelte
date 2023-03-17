@@ -17,7 +17,7 @@
   import chunter from '@hcengineering/chunter'
   import type { Contact, Employee, Person } from '@hcengineering/contact'
   import contact from '@hcengineering/contact'
-  import ExpandRightDouble from '@hcengineering/contact-resources/src/components/icons/ExpandRightDouble.svelte'
+  import { ExpandRightDouble } from '@hcengineering/contact-resources'
   import {
     Account,
     Class,
@@ -36,6 +36,7 @@
     createQuery,
     EmployeeBox,
     getClient,
+    InlineAttributeBar,
     SpaceSelect,
     UserBox
   } from '@hcengineering/presentation'
@@ -140,6 +141,7 @@
       recruit.mixin.Candidate,
       'applications',
       {
+        ...doc,
         state: state._id,
         doneState: null,
         number: (incResult as any).object.sequence,
@@ -284,6 +286,8 @@
   let btn: HTMLButtonElement
 
   let descriptionBox: AttachmentStyledBox
+
+  const assignAttr = getClient().getHierarchy().getAttribute(recruit.class.Applicant, 'assignee')
 </script>
 
 <FocusHandler {manager} />
@@ -378,10 +382,11 @@
     {#key doc}
       <EmployeeBox
         focusIndex={2}
-        label={recruit.string.AssignRecruiter}
-        placeholder={recruit.string.Recruiters}
+        label={assignAttr.label}
+        placeholder={assignAttr.label}
         bind:value={doc.assignee}
         allowDeselect
+        showNavigate={false}
         titleDeselect={recruit.string.UnAssignRecruiter}
       />
       {#if states.length > 0}
@@ -415,6 +420,16 @@
             {/if}
           </div>
         </Button>
+      {/if}
+
+      {#if vacancy}
+        <InlineAttributeBar
+          _class={recruit.class.Applicant}
+          object={doc}
+          toClass={task.class.Task}
+          ignoreKeys={['assignee']}
+          extraProps={{ showNavigate: false }}
+        />
       {/if}
     {/key}
   </svelte:fragment>
