@@ -115,7 +115,7 @@
   const defaultIssue = {
     title: '',
     description: '',
-    assignee: '' as Ref<Employee>,
+    assignee,
     component,
     sprint,
     number: 0,
@@ -130,7 +130,8 @@
     reportedTime: 0,
     estimation: 0,
     reports: 0,
-    childInfo: []
+    childInfo: [],
+    createOn: Date.now()
   }
 
   let object = originalIssue
@@ -166,7 +167,7 @@
 
   $: if (templateId !== undefined) {
     templateQuery.query(tracker.class.IssueTemplate, { _id: templateId }, (res) => {
-      template = res.shift()
+      template = res[0]
     })
   } else {
     template = undefined
@@ -455,7 +456,8 @@
       estimation: object.estimation,
       reports: 0,
       relations: relatedTo !== undefined ? [{ _id: relatedTo._id, _class: relatedTo._class }] : [],
-      childInfo: []
+      childInfo: [],
+      createOn: Date.now()
     }
 
     await client.addCollection(

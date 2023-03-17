@@ -66,7 +66,6 @@
   }
 
   $: _space = space
-  let spaceRef: Project | undefined
 
   $: canSave = getTitle(object.title ?? '').length > 0
 
@@ -136,14 +135,7 @@
   createMore={false}
 >
   <svelte:fragment slot="header">
-    <SpaceSelector
-      _class={tracker.class.Project}
-      label={tracker.string.Project}
-      bind:space={_space}
-      on:space={(evt) => {
-        spaceRef = evt.detail
-      }}
-    />
+    <SpaceSelector _class={tracker.class.Project} label={tracker.string.Project} bind:space={_space} />
   </svelte:fragment>
   <svelte:fragment slot="title" let:label>
     <Label {label} />

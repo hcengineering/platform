@@ -34,7 +34,8 @@ export default mergeIds(trackerId, tracker, {
     GotoComponents: '' as IntlString,
     GotoTrackerApplication: '' as IntlString,
     SearchIssue: '' as IntlString,
-    Parent: '' as IntlString
+    Parent: '' as IntlString,
+    CreatedOn: '' as IntlString
   },
   component: {
     // Required to pass build without errorsF

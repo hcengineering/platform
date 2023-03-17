@@ -37,6 +37,7 @@ import {
   Index,
   Model,
   Prop,
+  ReadOnly,
   TypeMarkup,
   TypeRef,
   TypeString,
@@ -88,6 +89,7 @@ export class TChunterMessage extends TAttachedDoc implements ChunterMessage {
     createBy!: Ref<Account>
 
   @Prop(TypeTimestamp(), chunter.string.Create)
+  @ReadOnly()
     createOn!: Timestamp
 
   @Prop(TypeTimestamp(), chunter.string.Edit)
