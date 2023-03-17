@@ -13,11 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
+  import { EmployeeAccount, formatName } from '@hcengineering/contact'
+  import { employeeByIdStore } from '@hcengineering/contact-resources'
   import { getCurrentAccount } from '@hcengineering/core'
   import login, { loginId } from '@hcengineering/login'
   import { setMetadata } from '@hcengineering/platform'
-  import { Avatar, createQuery } from '@hcengineering/presentation'
+  import { Avatar } from '@hcengineering/presentation'
   import setting, { settingId, SettingsCategory } from '@hcengineering/setting'
   import {
     closePopup,
@@ -35,19 +36,7 @@
   }
 
   const account = getCurrentAccount() as EmployeeAccount
-  let employee: Employee | undefined
-  const employeeQ = createQuery()
-
-  employeeQ.query(
-    contact.class.Employee,
-    {
-      _id: account.employee
-    },
-    (res) => {
-      employee = res[0]
-    },
-    { limit: 1 }
-  )
+  $: employee = $employeeByIdStore.get(account.employee)
 
   function selectCategory (sp: SettingsCategory): void {
     closePopup()

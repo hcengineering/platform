@@ -1,5 +1,6 @@
 import { chunterId, ChunterMessage, Comment, ThreadMessage } from '@hcengineering/chunter'
 import contact, { EmployeeAccount, getName } from '@hcengineering/contact'
+import { employeeByIdStore } from '@hcengineering/contact-resources'
 import { Class, Client, Doc, getCurrentAccount, Obj, Ref, Space, Timestamp } from '@hcengineering/core'
 import { Asset } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
@@ -48,11 +49,16 @@ export async function getDmName (client: Client, dm: Space): Promise<string> {
     employeeAccounts = employeeAccounts.filter((p) => p._id !== myAccId)
   }
 
-  const emloyees = await client.findAll(contact.class.Employee, {
-    _id: { $in: employeeAccounts.map((p) => p.employee) }
-  })
+  const map = get(employeeByIdStore)
+  const names: string[] = []
 
-  const name = emloyees.map((a) => getName(a)).join(', ')
+  for (const acc of employeeAccounts) {
+    const employee = map.get(acc.employee)
+    if (employee !== undefined) {
+      names.push(getName(employee))
+    }
+  }
+  const name = names.join(', ')
 
   return name
 }

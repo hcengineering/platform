@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
-  import { EmployeePresenter } from '@hcengineering/contact-resources'
+  import contact, { EmployeeAccount } from '@hcengineering/contact'
+  import { employeeByIdStore, EmployeePresenter } from '@hcengineering/contact-resources'
   import core, { ClassifierKind, Doc, Mixin, Ref, WithLookup } from '@hcengineering/core'
   import { AttributeBarEditor, createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
 
@@ -78,10 +78,9 @@
   $: updateKeys(['title', 'description', 'priority', 'status', 'number', 'assignee', 'component', 'dueDate', 'sprint'])
 
   const employeeAccountQuery = createQuery()
-  const employeeQuery = createQuery()
 
   let account: EmployeeAccount | undefined
-  let employee: Employee | undefined
+  $: employee = account && $employeeByIdStore.get(account.employee)
 
   $: employeeAccountQuery.query(
     contact.class.EmployeeAccount,
@@ -91,16 +90,6 @@
     },
     { limit: 1 }
   )
-
-  $: account &&
-    employeeQuery.query(
-      contact.class.Employee,
-      { _id: account.employee },
-      (res) => {
-        ;[employee] = res
-      },
-      { limit: 1 }
-    )
 </script>
 
 <div class="content">

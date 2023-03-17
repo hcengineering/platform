@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import contact, { Employee } from '@hcengineering/contact'
+  import { employeeByIdStore, employeesStore } from '@hcengineering/contact-resources'
   import { Class, Doc, DocumentQuery, generateId, IdMap, Lookup, Ref, toIdMap, WithLookup } from '@hcengineering/core'
   import { Kanban, TypeState } from '@hcengineering/kanban'
   import notification from '@hcengineering/notification'
@@ -21,13 +22,13 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import {
+    Component as ComponentType,
     Issue,
     IssuesGrouping,
     IssuesOrdering,
     IssueStatus,
-    Component as ComponentType,
-    Sprint,
-    Project
+    Project,
+    Sprint
   } from '@hcengineering/tracker'
   import {
     Button,
@@ -54,8 +55,8 @@
   import { onMount } from 'svelte'
   import tracker from '../../plugin'
   import { issuesGroupBySorting, mapKanbanCategories } from '../../utils'
-  import CreateIssue from '../CreateIssue.svelte'
   import ComponentEditor from '../components/ComponentEditor.svelte'
+  import CreateIssue from '../CreateIssue.svelte'
   import AssigneePresenter from './AssigneePresenter.svelte'
   import SubIssuesSelector from './edit/SubIssuesSelector.svelte'
   import IssuePresenter from './IssuePresenter.svelte'
@@ -137,8 +138,7 @@
   const lookupIssue: Lookup<Issue> = {
     status: tracker.class.IssueStatus,
     component: tracker.class.Component,
-    sprint: tracker.class.Sprint,
-    assignee: contact.class.Employee
+    sprint: tracker.class.Sprint
   }
   $: issuesQuery.query(
     tracker.class.Issue,
@@ -151,12 +151,6 @@
       sort: issuesGroupBySorting[groupBy]
     }
   )
-
-  const assigneeQuery = createQuery()
-  let assignee: Employee[] = []
-  $: assigneeQuery.query(contact.class.Employee, {}, (result) => {
-    assignee = result
-  })
 
   const statusesQuery = createQuery()
   let statuses: WithLookup<IssueStatus>[] = []
@@ -212,7 +206,7 @@
     statuses,
     components,
     sprints,
-    assignee
+    $employeesStore
   )
 
   function update () {
@@ -225,7 +219,7 @@
       statuses,
       components,
       sprints,
-      assignee
+      $employeesStore
     )
   }
 
@@ -354,7 +348,7 @@
         </div>
         <div class="abs-rt-content">
           <AssigneePresenter
-            value={issue.$lookup?.assignee}
+            value={issue.assignee ? $employeeByIdStore.get(issue.assignee) : null}
             defaultClass={contact.class.Employee}
             object={issue}
             isEditable={true}

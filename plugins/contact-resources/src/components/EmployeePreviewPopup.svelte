@@ -1,11 +1,12 @@
 <script lang="ts">
   import { Employee, EmployeeAccount, getName, Status } from '@hcengineering/contact'
-  import { getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
+  import { getCurrentAccount, Ref } from '@hcengineering/core'
   import { Avatar, createQuery, getClient } from '@hcengineering/presentation'
   import { Button, Label, resizeObserver, showPopup } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
+  import { employeeByIdStore } from '../utils'
   import EmployeeSetStatusPopup from './EmployeeSetStatusPopup.svelte'
   import EmployeeStatusPresenter from './EmployeeStatusPresenter.svelte'
   import Edit from './icons/Edit.svelte'
@@ -16,14 +17,10 @@
   const me = (getCurrentAccount() as EmployeeAccount).employee
   $: editable = employeeId === me
 
-  const employeeQuery = createQuery()
-  $: status = employee?.$lookup?.statuses?.[0]
-  let employee: WithLookup<Employee> | undefined
-  employeeQuery.query(contact.class.Employee, { _id: employeeId }, (res) => (employee = res[0]), {
-    lookup: {
-      _id: { statuses: contact.class.Status }
-    }
-  })
+  const statusesQuery = createQuery()
+  let status: Status | undefined = undefined
+  $: employee = $employeeByIdStore.get(employeeId)
+  statusesQuery.query(contact.class.Status, { attachedTo: employeeId }, (res) => (status = res[0]))
 
   const dispatch = createEventDispatcher()
 

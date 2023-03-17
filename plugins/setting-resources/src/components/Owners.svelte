@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
-  import { EmployeePresenter } from '@hcengineering/contact-resources'
-  import { AccountRole, getCurrentAccount, IdMap, SortingOrder, toIdMap } from '@hcengineering/core'
+  import contact, { EmployeeAccount, formatName } from '@hcengineering/contact'
+  import { employeeByIdStore, EmployeePresenter } from '@hcengineering/contact-resources'
+  import { AccountRole, getCurrentAccount, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { DropdownIntlItem, DropdownLabelsIntl, Icon, Label } from '@hcengineering/ui'
   import setting from '../plugin'
@@ -23,7 +23,6 @@
   const client = getClient()
 
   const query = createQuery()
-  const employeeQuery = createQuery()
 
   const currentRole = getCurrentAccount().role
 
@@ -35,7 +34,6 @@
 
   let accounts: EmployeeAccount[] = []
   $: owners = accounts.filter((p) => p.role === AccountRole.Owner)
-  let employees: IdMap<Employee> = new Map()
 
   query.query(
     contact.class.EmployeeAccount,
@@ -47,10 +45,6 @@
       sort: { name: SortingOrder.Descending }
     }
   )
-
-  employeeQuery.query(contact.class.Employee, {}, (res) => {
-    employees = toIdMap(res)
-  })
 
   async function change (account: EmployeeAccount, value: AccountRole): Promise<void> {
     await client.update(account, {
@@ -67,7 +61,7 @@
   <div class="ac-body columns">
     <div class="ac-column max">
       {#each accounts as account (account._id)}
-        {@const employee = employees.get(account.employee)}
+        {@const employee = $employeeByIdStore.get(account.employee)}
         <div class="flex-between">
           {#if employee}
             <EmployeePresenter value={employee} isInteractive={false} />
