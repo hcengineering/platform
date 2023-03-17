@@ -115,6 +115,8 @@ export class TMessage extends TChunterMessage implements Message {
   @Prop(ArrOf(TypeRef(contact.class.Employee)), chunter.string.Replies)
     replies?: Ref<Employee>[]
 
+  repliesCount?: number
+
   @Prop(TypeTimestamp(), chunter.string.LastReply)
     lastReply?: Timestamp
 }
