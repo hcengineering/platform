@@ -141,7 +141,7 @@
       {
         attachedTo: _id,
         attachedToClass: chunter.class.Message,
-        collection: 'replies',
+        collection: 'repliesCount',
         content: message,
         createBy: me,
         createOn: 0,

@@ -95,8 +95,9 @@ export async function CommentRemove (
  */
 export async function CommentCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
-  if (tx._class !== core.class.TxCreateDoc) return []
-  const doc = TxProcessor.createDoc2Doc(tx as TxCreateDoc<Doc>)
+  const actualTx = TxProcessor.extractTx(tx)
+  if (actualTx._class !== core.class.TxCreateDoc) return []
+  const doc = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<Doc>)
   if (!hierarchy.isDerived(doc._class, chunter.class.ThreadMessage)) {
     return []
   }
@@ -134,28 +135,15 @@ export async function CommentCreate (tx: Tx, control: TriggerControl): Promise<T
  */
 export async function CommentDelete (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
-  if (tx._class !== core.class.TxRemoveDoc) return []
-
-  const rmTx = tx as TxRemoveDoc<ThreadMessage>
+  const rmTx = TxProcessor.extractTx(tx) as TxRemoveDoc<ThreadMessage>
   if (!hierarchy.isDerived(rmTx.objectClass, chunter.class.ThreadMessage)) {
     return []
   }
-  const createTx = (
-    await control.findAll(
-      core.class.TxCreateDoc,
-      {
-        objectId: rmTx.objectId
-      },
-      { limit: 1 }
-    )
-  )[0]
 
-  if (createTx === undefined) {
+  const comment = control.removedMap.get(rmTx.objectId) as ThreadMessage
+  if (comment === undefined) {
     return []
   }
-
-  const comment = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<ThreadMessage>)
-
   const comments = await control.findAll(chunter.class.ThreadMessage, {
     attachedTo: comment.attachedTo
   })
@@ -177,8 +165,9 @@ export async function CommentDelete (tx: Tx, control: TriggerControl): Promise<T
  */
 export async function MessageCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
-  if (tx._class !== core.class.TxCreateDoc) return []
-  const doc = TxProcessor.createDoc2Doc(tx as TxCreateDoc<Doc>)
+  const actualTx = TxProcessor.extractTx(tx)
+  if (actualTx._class !== core.class.TxCreateDoc) return []
+  const doc = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<Doc>)
   if (!hierarchy.isDerived(doc._class, chunter.class.Message)) {
     return []
   }
@@ -209,27 +198,18 @@ export async function MessageCreate (tx: Tx, control: TriggerControl): Promise<T
  */
 export async function MessageDelete (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
-  if (tx._class !== core.class.TxCollectionCUD) return []
 
-  const rmTx = (tx as TxCollectionCUD<ChunterSpace, Message>).tx
+  const rmTx = TxProcessor.extractTx(tx) as TxCollectionCUD<ChunterSpace, Message>
+  if (rmTx._class !== core.class.TxRemoveDoc) return []
   if (!hierarchy.isDerived(rmTx.objectClass, chunter.class.Message)) {
     return []
   }
-  const createTx = (
-    await control.findAll(
-      core.class.TxCreateDoc,
-      {
-        objectId: rmTx.objectId
-      },
-      { limit: 1 }
-    )
-  )[0]
 
-  if (createTx === undefined) {
+  const message = control.removedMap.get(rmTx.objectId) as Message
+
+  if (message === undefined) {
     return []
   }
-
-  const message = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Message>)
 
   const channel = (
     await control.findAll(
