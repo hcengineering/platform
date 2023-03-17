@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Ref, SortingOrder, toIdMap, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Issue, IssueStatus, Team, trackerId } from '@hcengineering/tracker'
+  import { Issue, IssueStatus, Project, trackerId } from '@hcengineering/tracker'
   import {
     Button,
     Chevron,
@@ -41,8 +41,8 @@
   import SubIssueList from './SubIssueList.svelte'
 
   export let issue: Issue
-  export let teams: Map<Ref<Team>, Team>
-  export let issueStatuses: Map<Ref<Team>, WithLookup<IssueStatus>[]>
+  export let projects: Map<Ref<Project>, Project>
+  export let issueStatuses: Map<Ref<Project>, WithLookup<IssueStatus>[]>
 
   let subIssueEditorRef: HTMLDivElement
   let isCollapsed = false
@@ -57,17 +57,17 @@
     ;[viewlet] = res
   })
 
-  let _teams = teams
+  let _projects = projects
   let _issueStatuses = issueStatuses
 
-  const teamsQuery = createQuery()
+  const projectsQuery = createQuery()
 
-  $: if (teams === undefined) {
-    teamsQuery.query(tracker.class.Team, {}, async (result) => {
-      _teams = toIdMap(result)
+  $: if (projects === undefined) {
+    projectsQuery.query(tracker.class.Project, {}, async (result) => {
+      _projects = toIdMap(result)
     })
   } else {
-    teamsQuery.unsubscribe()
+    projectsQuery.unsubscribe()
   }
 
   const statusesQuery = createQuery()
@@ -76,9 +76,9 @@
       tracker.class.IssueStatus,
       {},
       (statuses) => {
-        const st = new Map<Ref<Team>, WithLookup<IssueStatus>[]>()
+        const st = new Map<Ref<Project>, WithLookup<IssueStatus>[]>()
         for (const s of statuses) {
-          const id = s.attachedTo as Ref<Team>
+          const id = s.attachedTo as Ref<Project>
           st.set(id, [...(st.get(id) ?? []), s])
         }
         _issueStatuses = st
@@ -163,7 +163,7 @@
       <ExpandCollapse isExpanded={!isCollapsed} duration={400}>
         <div class="list" class:collapsed={isCollapsed}>
           <SubIssueList
-            teams={_teams}
+            projects={_projects}
             {viewlet}
             {viewOptions}
             issueStatuses={_issueStatuses}
@@ -174,14 +174,14 @@
     {/if}
     <ExpandCollapse isExpanded={!isCollapsed} duration={400}>
       {#if isCreating}
-        {@const team = teams.get(issue.space)}
+        {@const project = projects.get(issue.space)}
         {@const statuses = issueStatuses.get(issue.space)}
-        {#if team !== undefined && statuses !== undefined}
+        {#if project !== undefined && statuses !== undefined}
           <div class="pt-4" bind:this={subIssueEditorRef}>
             <CreateSubIssue
               parentIssue={issue}
               issueStatuses={statuses}
-              currentTeam={team}
+              currentProject={project}
               on:close={() => (isCreating = false)}
             />
           </div>

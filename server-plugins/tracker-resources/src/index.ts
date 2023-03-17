@@ -35,7 +35,7 @@ import { getMetadata } from '@hcengineering/platform'
 import { Resource } from '@hcengineering/platform/lib/platform'
 import { TriggerControl } from '@hcengineering/server-core'
 import { addAssigneeNotification } from '@hcengineering/server-task-resources'
-import tracker, { Issue, IssueParentInfo, Component, Team, TimeSpendReport, trackerId } from '@hcengineering/tracker'
+import tracker, { Issue, IssueParentInfo, Component, Project, TimeSpendReport, trackerId } from '@hcengineering/tracker'
 import { workbenchId } from '@hcengineering/workbench'
 
 async function updateSubIssues (
@@ -67,8 +67,8 @@ export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Pr
  */
 export async function issueTextPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const issue = doc as Issue
-  const team = (await control.findAll(tracker.class.Team, { _id: issue.space }))[0]
-  const issueName = `${team?.identifier ?? '?'}-${issue.number}`
+  const project = (await control.findAll(tracker.class.Project, { _id: issue.space }))[0]
+  const issueName = `${project?.identifier ?? '?'}-${issue.number}`
 
   return issueName
 }
@@ -96,15 +96,15 @@ export async function addTrackerAssigneeNotification (
 /**
  * @public
  */
-export async function OnTeamDelete (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+export async function OnProjectDelete (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx)
   if (actualTx._class !== core.class.TxRemoveDoc) {
     return []
   }
 
-  const ctx = actualTx as TxRemoveDoc<Team>
+  const ctx = actualTx as TxRemoveDoc<Project>
 
-  if (ctx.objectClass !== tracker.class.Team) {
+  if (ctx.objectClass !== tracker.class.Project) {
     return []
   }
   const issues = await control.findAll(tracker.class.Issue, {
@@ -226,7 +226,7 @@ export default async () => ({
   trigger: {
     OnIssueUpdate,
     OnComponentRemove,
-    OnTeamDelete
+    OnProjectDelete
   }
 })
 

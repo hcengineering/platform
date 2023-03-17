@@ -16,7 +16,9 @@ test.describe('component tests', () => {
 
     await navigate(page)
     await page.click('text=Components')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Ateam%3ADefaultTeam/components`)
+    await expect(page).toHaveURL(
+      `${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Aproject%3ADefaultProject/components`
+    )
     await page.click('button:has-text("Component")')
     await page.click('[placeholder="Component\\ name"]')
     const prjId = 'component-' + generateId()
@@ -27,7 +29,7 @@ test.describe('component tests', () => {
     await page.click(`text=${prjId}`)
     await page.click('button:has-text("New issue")')
     await page.fill('[placeholder="Issue\\ title"]', 'issue')
-    await page.click('form button:has-text("Components")')
+    await page.click('form button:has-text("Component")')
     await page.click(`.selectPopup button:has-text("${prjId}")`)
     await page.click('form button:has-text("Create issue")')
     await page.waitForSelector('form.antiCard', { state: 'detached' })
@@ -38,7 +40,9 @@ test.describe('component tests', () => {
   test('create-component-with-status', async ({ page }) => {
     await page.click('[id="app-tracker\\:string\\:TrackerApplication"]')
     await page.click('text=Components')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Ateam%3ADefaultTeam/components`)
+    await expect(page).toHaveURL(
+      `${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Aproject%3ADefaultProject/components`
+    )
     await page.click('button:has-text("Component")')
     const prjId = 'component-' + generateId()
     await page.fill('[placeholder="Component\\ name"]', prjId)

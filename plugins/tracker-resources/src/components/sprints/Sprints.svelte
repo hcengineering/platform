@@ -16,7 +16,7 @@
   import { Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import { Sprint, Team } from '@hcengineering/tracker'
+  import { Sprint, Project } from '@hcengineering/tracker'
   import { closePopup, closeTooltip, getCurrentLocation, location, navigate } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import tracker from '../../plugin'
@@ -24,7 +24,7 @@
   import EditSprint from './EditSprint.svelte'
   import SprintBrowser from './SprintBrowser.svelte'
 
-  export let currentSpace: Ref<Team>
+  export let currentSpace: Ref<Project>
   export let label: IntlString = tracker.string.Sprints
   export let search: string = ''
   export let mode: SprintViewMode = 'all'

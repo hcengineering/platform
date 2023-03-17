@@ -14,10 +14,10 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
-  import { Team } from '@hcengineering/tracker'
+  import { Project } from '@hcengineering/tracker'
   import Components from './Components.svelte'
 
-  export let currentSpace: Ref<Team>
+  export let currentSpace: Ref<Project>
 </script>
 
 <Components query={{ space: currentSpace }} />

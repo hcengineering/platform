@@ -21,7 +21,7 @@ loadMetadata(tracker.icon, {
   TrackerApplication: `${icons}#tracker`,
   Component: `${icons}#component`,
   Issue: `${icons}#issue`,
-  Team: `${icons}#team`,
+  Project: `${icons}#project`,
   Document: `${icons}#document`,
   Inbox: `${icons}#inbox`,
   MyIssues: `${icons}#myissues`,

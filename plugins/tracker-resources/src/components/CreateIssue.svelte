@@ -48,7 +48,7 @@
     IssueTemplate,
     Component as ComponentType,
     Sprint,
-    Team
+    Project
   } from '@hcengineering/tracker'
   import {
     ActionIcon,
@@ -82,7 +82,7 @@
   import SprintSelector from './sprints/SprintSelector.svelte'
   import SubIssues from './SubIssues.svelte'
 
-  export let space: Ref<Team>
+  export let space: Ref<Project>
   export let status: Ref<IssueStatus> | undefined = undefined
   export let priority: IssuePriority = IssuePriority.NoPriority
   export let assignee: Ref<Employee> | null = null
@@ -102,7 +102,7 @@
   let labels: TagReference[] = draft?.labels || []
   let objectId: Ref<Issue> = draft?.issueId || generateId()
   let saveTimer: number | undefined
-  let currentTeam: Team | undefined
+  let currentProject: Project | undefined
 
   function toIssue (initials: AttachedData<Issue>, draft: IssueDraft | undefined): AttachedData<Issue> {
     if (draft === undefined) {
@@ -152,8 +152,8 @@
     subIssues = []
     labels = []
     if (!originalIssue && !draft) {
-      updateIssueStatusId(currentTeam, status)
-      updateAssigneeId(currentTeam)
+      updateIssueStatusId(currentProject, status)
+      updateAssigneeId(currentProject)
     }
   }
 
@@ -197,7 +197,7 @@
     const { _class, _id, space, children, comments, attachments, labels: labels_, ...templBase } = template
 
     subIssues = template.children.map((p) => {
-      return { ...p, status: currentTeam?.defaultIssueStatus ?? ('' as Ref<IssueStatus>) }
+      return { ...p, status: currentProject?.defaultIssueStatus ?? ('' as Ref<IssueStatus>) }
     })
 
     object = {
@@ -231,9 +231,9 @@
     attr: client.getHierarchy().getAttribute(tracker.class.Issue, 'labels')
   }
 
-  $: _space = draft?.team || space
-  $: !originalIssue && !draft && updateIssueStatusId(currentTeam, status)
-  $: !originalIssue && !draft && updateAssigneeId(currentTeam)
+  $: _space = draft?.project || space
+  $: !originalIssue && !draft && updateIssueStatusId(currentProject, status)
+  $: !originalIssue && !draft && updateAssigneeId(currentProject)
   $: canSave = getTitle(object.title ?? '').length > 0
 
   $: statusesQuery.query(
@@ -247,8 +247,8 @@
       sort: { rank: SortingOrder.Ascending }
     }
   )
-  $: spaceQuery.query(tracker.class.Team, { _id: _space }, (res) => {
-    currentTeam = res.shift()
+  $: spaceQuery.query(tracker.class.Project, { _id: _space }, (res) => {
+    currentProject = res.shift()
   })
 
   async function setPropsFromOriginalIssue () {
@@ -307,20 +307,20 @@
     }
   }
 
-  async function updateIssueStatusId (currentTeam: Team | undefined, issueStatusId?: Ref<IssueStatus>) {
+  async function updateIssueStatusId (currentProject: Project | undefined, issueStatusId?: Ref<IssueStatus>) {
     if (issueStatusId !== undefined) {
       object.status = issueStatusId
       return
     }
 
-    if (currentTeam?.defaultIssueStatus) {
-      object.status = currentTeam.defaultIssueStatus
+    if (currentProject?.defaultIssueStatus) {
+      object.status = currentProject.defaultIssueStatus
     }
   }
 
-  function updateAssigneeId (currentTeam: Team | undefined) {
-    if (currentTeam?.defaultAssignee !== undefined) {
-      object.assignee = currentTeam.defaultAssignee
+  function updateAssigneeId (currentProject: Project | undefined) {
+    if (currentProject?.defaultAssignee !== undefined) {
+      object.assignee = currentProject.defaultAssignee
     } else {
       object.assignee = null
     }
@@ -369,16 +369,16 @@
       return true
     }
 
-    if (currentTeam?.defaultIssueStatus) {
-      return draft.status === currentTeam.defaultIssueStatus
+    if (currentProject?.defaultIssueStatus) {
+      return draft.status === currentProject.defaultIssueStatus
     }
 
     if (draft.assignee === null) {
       return true
     }
 
-    if (currentTeam?.defaultAssignee) {
-      return draft.assignee === currentTeam.defaultAssignee
+    if (currentProject?.defaultAssignee) {
+      return draft.assignee === currentProject.defaultAssignee
     }
 
     return false
@@ -404,7 +404,7 @@
       attachments: object.attachments,
       labels,
       parentIssue: parentIssue?._id,
-      team: _space,
+      project: _space,
       subIssues
     }
 
@@ -426,7 +426,7 @@
 
     const lastOne = await client.findOne<Issue>(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
     const incResult = await client.updateDoc(
-      tracker.class.Team,
+      tracker.class.Project,
       core.space.Space,
       _space,
       {
@@ -498,7 +498,7 @@
     addNotification(await translate(tracker.string.IssueCreated, {}), getTitle(object.title), IssueNotification, {
       issueId: objectId,
       subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase(),
-      issueUrl: currentTeam && generateIssueShortLink(getIssueId(currentTeam, value as Issue))
+      issueUrl: currentProject && generateIssueShortLink(getIssueId(currentProject, value as Issue))
     })
 
     objectId = generateId()
@@ -640,7 +640,7 @@
 >
   <svelte:fragment slot="header">
     <div class="flex-row-center">
-      <SpaceSelector _class={tracker.class.Team} label={tracker.string.Team} bind:space={_space} />
+      <SpaceSelector _class={tracker.class.Project} label={tracker.string.Project} bind:space={_space} />
     </div>
     <ObjectBox
       _class={tracker.class.IssueTemplate}
@@ -701,10 +701,10 @@
   {#if issueStatuses}
     <SubIssues
       bind:this={subIssuesComponent}
-      teamId={_space}
+      projectId={_space}
       parent={objectId}
       statuses={issueStatuses ?? []}
-      team={currentTeam}
+      project={currentProject}
       sprint={object.sprint}
       component={object.component}
     />
@@ -752,7 +752,7 @@
           labels = labels.filter((it) => it._id !== evt.detail)
         }}
       />
-      <EstimationEditor kind={'no-border'} size={'small'} value={object} {currentTeam} />
+      <EstimationEditor kind={'no-border'} size={'small'} value={object} {currentProject} />
       <ComponentSelector value={object.component} onChange={handleComponentIdChanged} />
       <SprintSelector
         value={object.sprint}

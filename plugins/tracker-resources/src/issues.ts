@@ -1,6 +1,6 @@
 import { Doc, DocumentUpdate, Ref, RelatedDocument, TxOperations } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
-import { Issue, Component, Sprint, Team, trackerId } from '@hcengineering/tracker'
+import { Issue, Component, Sprint, Project, trackerId } from '@hcengineering/tracker'
 import { getCurrentLocation, getPanelURI, Location, navigate } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
 import { writable } from 'svelte/store'
@@ -9,8 +9,8 @@ import tracker from './plugin'
 export const activeComponent = writable<Ref<Component> | undefined>(undefined)
 export const activeSprint = writable<Ref<Sprint> | undefined>(undefined)
 
-export function getIssueId (team: Team, issue: Issue): string {
-  return `${team.identifier}-${issue.number}`
+export function getIssueId (project: Project, issue: Issue): string {
+  return `${project.identifier}-${issue.number}`
 }
 
 export function isIssueId (shortLink: string): boolean {
@@ -21,9 +21,9 @@ export async function getIssueTitle (client: TxOperations, ref: Ref<Doc>): Promi
   const object = await client.findOne(
     tracker.class.Issue,
     { _id: ref as Ref<Issue> },
-    { lookup: { space: tracker.class.Team } }
+    { lookup: { space: tracker.class.Project } }
   )
-  if (object?.$lookup?.space === undefined) throw new Error(`Issue Team not found, _id: ${ref}`)
+  if (object?.$lookup?.space === undefined) throw new Error(`Issue project not found, _id: ${ref}`)
   return getIssueId(object.$lookup.space, object)
 }
 
@@ -60,17 +60,17 @@ export async function generateIssueLocation (loc: Location, issueId: string): Pr
   if (tokens.length < 2) {
     return undefined
   }
-  const teamId = tokens[0]
+  const projectId = tokens[0]
   const issueNumber = Number(tokens[1])
   const client = getClient()
-  const team = await client.findOne(tracker.class.Team, { identifier: teamId })
-  if (team === undefined) {
+  const project = await client.findOne(tracker.class.Project, { identifier: projectId })
+  if (project === undefined) {
     console.error(
-      `Could not find team ${teamId}. Make sure you are in correct workspace and the team was not deleted or renamed.`
+      `Could not find project ${projectId}. Make sure you are in correct workspace and the project was not deleted or renamed.`
     )
     return undefined
   }
-  const issue = await client.findOne(tracker.class.Issue, { number: issueNumber, space: team._id })
+  const issue = await client.findOne(tracker.class.Issue, { number: issueNumber, space: project._id })
   if (issue === undefined) {
     console.error(`Could not find issue ${issueId}.`)
     return undefined

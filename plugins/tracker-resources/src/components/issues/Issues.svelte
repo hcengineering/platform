@@ -14,11 +14,11 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
-  import { Team } from '@hcengineering/tracker'
+  import { Project } from '@hcengineering/tracker'
   import tracker from '../../plugin'
   import IssuesView from './IssuesView.svelte'
 
-  export let currentSpace: Ref<Team>
+  export let currentSpace: Ref<Project>
 
   $: query = { space: currentSpace }
 </script>

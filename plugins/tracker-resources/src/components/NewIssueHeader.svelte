@@ -38,14 +38,14 @@
       return
     }
 
-    const team = await client.findOne(tracker.class.Team, {})
-    space = team?._id
+    const project = await client.findOne(tracker.class.Project, {})
+    space = project?._id
   }
 
   async function newIssue (): Promise<void> {
     if (!space) {
-      const team = await client.findOne(tracker.class.Team, {})
-      space = team?._id
+      const project = await client.findOne(tracker.class.Project, {})
+      space = project?._id
     }
 
     showPopup(CreateIssue, { space, shouldSaveDraft: true, onDraftChanged: handleDraftChanged }, 'top')

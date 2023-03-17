@@ -63,7 +63,7 @@
     componentOptions
   )
 
-  const space = typeof query.space === 'string' ? query.space : tracker.team.DefaultTeam
+  const space = typeof query.space === 'string' ? query.space : tracker.project.DefaultProject
   const showCreateDialog = async () => {
     showPopup(NewComponent, { space, targetElement: null }, 'top')
   }

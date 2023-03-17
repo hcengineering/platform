@@ -34,6 +34,6 @@ export default plugin(serverTrackerId, {
   trigger: {
     OnIssueUpdate: '' as Resource<TriggerFunc>,
     OnComponentRemove: '' as Resource<TriggerFunc>,
-    OnTeamDelete: '' as Resource<TriggerFunc>
+    OnProjectDelete: '' as Resource<TriggerFunc>
   }
 })

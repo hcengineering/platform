@@ -24,7 +24,7 @@
     IssueTemplateChild,
     Component as ComponentType,
     Sprint,
-    Team
+    Project
   } from '@hcengineering/tracker'
   import { Button, Component, EditBox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -34,7 +34,7 @@
   import StatusEditor from '../issues/StatusEditor.svelte'
   import EstimationEditor from './EstimationEditor.svelte'
 
-  export let team: Team
+  export let project: Project
   export let sprint: Ref<Sprint> | null = null
   export let component: Ref<ComponentType> | null = null
   export let childIssue: DraftIssueChild | undefined = undefined
@@ -66,7 +66,7 @@
       title: '',
       description: '',
       assignee: null,
-      status: team.defaultIssueStatus,
+      status: project.defaultIssueStatus,
       component,
       priority: IssuePriority.NoPriority,
       sprint,
@@ -130,7 +130,7 @@
       {#key newIssue.id}
         <AttachmentStyledBox
           objectId={newIssue.id}
-          space={team._id}
+          space={project._id}
           _class={tracker.class.Issue}
           bind:content={newIssue.description}
           placeholder={tracker.string.SubIssueDescriptionPlaceholder}

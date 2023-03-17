@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
-  import { IssueTemplateChild, Component, Sprint, Team } from '@hcengineering/tracker'
+  import { IssueTemplateChild, Component, Sprint, Project } from '@hcengineering/tracker'
   import { Button, closeTooltip, ExpandCollapse, IconAdd, Scroller } from '@hcengineering/ui'
   import { afterUpdate, createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
@@ -24,7 +24,7 @@
   import IssueTemplateChildList from './IssueTemplateChildList.svelte'
 
   export let children: IssueTemplateChild[] = []
-  export let team: Ref<Team>
+  export let project: Ref<Project>
   export let sprint: Ref<Sprint> | null = null
   export let component: Ref<Component> | null = null
   export let isScrollable: boolean = false
@@ -91,7 +91,7 @@
           {component}
           {sprint}
           bind:issues={children}
-          {team}
+          {project}
           on:move={handleIssueSwap}
           on:update-issue
         />

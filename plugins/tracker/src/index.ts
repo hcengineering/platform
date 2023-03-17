@@ -47,8 +47,8 @@ export interface IssueStatusCategory extends Doc {
 /**
  * @public
  */
-export interface Team extends Space {
-  identifier: string // Team identifier
+export interface Project extends Space {
+  identifier: string // Project identifier
   sequence: number
   issueStatuses: number
   defaultIssueStatus: Ref<IssueStatus>
@@ -139,7 +139,7 @@ export interface Sprint extends Doc {
   lead: Ref<Employee> | null
   members: Ref<Employee>[]
 
-  space: Ref<Team>
+  space: Ref<Project>
 
   comments: number
   attachments?: number
@@ -176,7 +176,7 @@ export interface Issue extends AttachedDoc {
   attachments?: number
   labels?: number
 
-  space: Ref<Team>
+  space: Ref<Project>
 
   dueDate: Timestamp | null
 
@@ -213,7 +213,7 @@ export interface IssueDraft extends Doc {
   priority: IssuePriority
   assignee: Ref<Employee> | null
   component: Ref<Component> | null
-  team: Ref<Team> | null
+  project: Ref<Project> | null
   dueDate: Timestamp | null
   sprint?: Ref<Sprint> | null
 
@@ -261,7 +261,7 @@ export interface IssueTemplateChild extends IssueTemplateData {
  * @public
  */
 export interface IssueTemplate extends Doc, IssueTemplateData {
-  space: Ref<Team>
+  space: Ref<Project>
 
   children: IssueTemplateChild[]
 
@@ -322,7 +322,7 @@ export interface Document extends Doc {
   color: number
   content?: Markup
 
-  space: Ref<Team>
+  space: Ref<Project>
 }
 
 /**
@@ -350,7 +350,7 @@ export interface Component extends Doc {
   lead: Ref<Employee> | null
   members: Ref<Employee>[]
 
-  space: Ref<Team>
+  space: Ref<Project>
 
   comments: number
   attachments?: number
@@ -373,7 +373,7 @@ export interface ScrumRecord extends AttachedDoc {
   comments: number
   attachments?: number
 
-  space: Ref<Team>
+  space: Ref<Project>
   attachedTo: Ref<Scrum>
 }
 
@@ -386,7 +386,7 @@ export interface Scrum extends Doc {
   beginTime: Timestamp
   endTime: Timestamp
   members: Ref<Employee>[]
-  space: Ref<Team>
+  space: Ref<Project>
 
   scrumRecords?: number
   attachments?: number
@@ -401,7 +401,7 @@ export * from './utils'
 
 export default plugin(trackerId, {
   class: {
-    Team: '' as Ref<Class<Team>>,
+    Project: '' as Ref<Class<Project>>,
     Issue: '' as Ref<Class<Issue>>,
     IssueDraft: '' as Ref<Class<IssueDraft>>,
     IssueTemplate: '' as Ref<Class<IssueTemplate>>,
@@ -442,7 +442,7 @@ export default plugin(trackerId, {
     TrackerApplication: '' as Asset,
     Component: '' as Asset,
     Issue: '' as Asset,
-    Team: '' as Asset,
+    Project: '' as Asset,
     Document: '' as Asset,
     Inbox: '' as Asset,
     MyIssues: '' as Asset,
@@ -514,16 +514,16 @@ export default plugin(trackerId, {
     CopyIssueId: '' as Ref<Action>,
     CopyIssueTitle: '' as Ref<Action>,
     CopyIssueLink: '' as Ref<Action>,
-    MoveToTeam: '' as Ref<Action>,
+    MoveToProject: '' as Ref<Action>,
     Duplicate: '' as Ref<Action>,
     Relations: '' as Ref<Action>,
     NewSubIssue: '' as Ref<Action>,
     EditWorkflowStatuses: '' as Ref<Action>,
-    EditTeam: '' as Ref<Action>,
+    EditProject: '' as Ref<Action>,
     SetSprint: '' as Ref<Action>
   },
-  team: {
-    DefaultTeam: '' as Ref<Team>
+  project: {
+    DefaultProject: '' as Ref<Project>
   },
   resolver: {
     Location: '' as Resource<(loc: Location) => Promise<Location | undefined>>

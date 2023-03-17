@@ -16,7 +16,7 @@
   import { Data, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Card, EmployeeBox, getClient, SpaceSelector, UserBoxList } from '@hcengineering/presentation'
-  import { Component, Sprint, SprintStatus, Team } from '@hcengineering/tracker'
+  import { Component, Sprint, SprintStatus, Project } from '@hcengineering/tracker'
   import ui, { DatePresenter, EditBox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
@@ -24,7 +24,7 @@
   import SprintStatusSelector from './SprintStatusSelector.svelte'
   import { StyledTextArea } from '@hcengineering/text-editor'
 
-  export let space: Ref<Team>
+  export let space: Ref<Project>
   const dispatch = createEventDispatcher()
   const client = getClient()
 
@@ -70,7 +70,7 @@
   on:close={() => dispatch('close')}
 >
   <svelte:fragment slot="header">
-    <SpaceSelector _class={tracker.class.Team} label={tracker.string.Team} bind:space />
+    <SpaceSelector _class={tracker.class.Project} label={tracker.string.Project} bind:space />
   </svelte:fragment>
   <EditBox bind:value={object.label} placeholder={tracker.string.SprintNamePlaceholder} kind={'large-style'} focus />
   <StyledTextArea

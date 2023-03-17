@@ -70,7 +70,7 @@ import {
   ScrumRecord,
   Sprint,
   SprintStatus,
-  Team,
+  Project,
   TimeReportDayType,
   TimeSpendReport,
   trackerId,
@@ -158,9 +158,9 @@ export class TTypeSprintStatus extends TType {}
 /**
  * @public
  */
-@Model(tracker.class.Team, core.class.Space, DOMAIN_SPACE)
-@UX(tracker.string.Team, tracker.icon.Team, 'TEAM')
-export class TTeam extends TSpace implements Team {
+@Model(tracker.class.Project, core.class.Space, DOMAIN_SPACE)
+@UX(tracker.string.Project, tracker.icon.Project, 'Project')
+export class TProject extends TSpace implements Project {
   @Prop(TypeString(), tracker.string.Title)
   @Index(IndexKind.FullText)
     reamLogo!: IntlString
@@ -250,7 +250,7 @@ export class TIssue extends TAttachedDoc implements Issue {
   @Prop(Collection(tags.class.TagReference), tracker.string.Labels)
     labels?: number
 
-  declare space: Ref<Team>
+  declare space: Ref<Project>
 
   @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.DueDate)
     dueDate!: Timestamp | null
@@ -302,7 +302,7 @@ export class TIssueTemplate extends TDoc implements IssueTemplate {
   @Prop(ArrOf(TypeRef(tags.class.TagElement)), tracker.string.Labels)
     labels?: Ref<TagElement>[]
 
-  declare space: Ref<Team>
+  declare space: Ref<Project>
 
   @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.DueDate)
     dueDate!: Timestamp | null
@@ -385,7 +385,7 @@ export class TComponent extends TDoc implements Component {
   @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.TargetDate)
     targetDate!: Timestamp | null
 
-  declare space: Ref<Team>
+  declare space: Ref<Project>
 }
 
 /**
@@ -423,7 +423,7 @@ export class TSprint extends TDoc implements Sprint {
   @Prop(TypeDate(), tracker.string.TargetDate)
     targetDate!: Timestamp
 
-  declare space: Ref<Team>
+  declare space: Ref<Project>
 
   @Prop(TypeNumber(), tracker.string.Capacity)
     capacity!: number
@@ -460,7 +460,7 @@ export class TScrum extends TDoc implements Scrum {
   @Prop(TypeDate(DateRangeMode.TIME), tracker.string.ScrumEndTime)
     endTime!: Timestamp
 
-  declare space: Ref<Team>
+  declare space: Ref<Project>
 }
 
 /**
@@ -485,7 +485,7 @@ export class TScrumRecord extends TAttachedDoc implements ScrumRecord {
     attachments!: number
 
   declare attachedTo: Ref<Scrum>
-  declare space: Ref<Team>
+  declare space: Ref<Project>
   declare scrumRecorder: Ref<EmployeeAccount>
 }
 
@@ -495,7 +495,7 @@ export class TTypeReportedTime extends TType {}
 
 export function createModel (builder: Builder): void {
   builder.createModel(
-    TTeam,
+    TProject,
     TComponent,
     TIssue,
     TIssueTemplate,
@@ -901,8 +901,8 @@ export function createModel (builder: Builder): void {
     presenter: tracker.component.ComponentPresenter
   })
 
-  builder.mixin(tracker.class.Team, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: tracker.component.TeamPresenter
+  builder.mixin(tracker.class.Project, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: tracker.component.ProjectPresenter
   })
 
   classPresenter(
@@ -1007,10 +1007,10 @@ export function createModel (builder: Builder): void {
         ],
         spaces: [
           {
-            label: tracker.string.Teams,
-            spaceClass: tracker.class.Team,
-            addSpaceLabel: tracker.string.CreateTeam,
-            createComponent: tracker.component.CreateTeam,
+            label: tracker.string.Projects,
+            spaceClass: tracker.class.Project,
+            addSpaceLabel: tracker.string.CreateProject,
+            createComponent: tracker.component.CreateProject,
             icon: tracker.icon.Home,
             specials: [
               {
@@ -1035,7 +1035,7 @@ export function createModel (builder: Builder): void {
                 id: componentsId,
                 label: tracker.string.Components,
                 icon: tracker.icon.Components,
-                component: tracker.component.TeamComponents
+                component: tracker.component.ProjectComponents
               },
               {
                 id: sprintsId,
@@ -1069,7 +1069,7 @@ export function createModel (builder: Builder): void {
       application: trackerId,
       mode: 'space',
       spaceSpecial: id,
-      spaceClass: tracker.class.Team
+      spaceClass: tracker.class.Project
     })
   }
 
@@ -1103,7 +1103,7 @@ export function createModel (builder: Builder): void {
       icon: view.icon.Statuses,
       input: 'focus',
       category: tracker.category.Tracker,
-      target: tracker.class.Team,
+      target: tracker.class.Project,
       query: {
         archived: false
       },
@@ -1118,12 +1118,12 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: tracker.actionImpl.EditTeam,
-      label: tracker.string.EditTeam,
+      action: tracker.actionImpl.EditProject,
+      label: tracker.string.EditProject,
       icon: contact.icon.Edit,
       input: 'focus',
       category: tracker.category.Tracker,
-      target: tracker.class.Team,
+      target: tracker.class.Project,
       query: {
         archived: false
       },
@@ -1132,18 +1132,18 @@ export function createModel (builder: Builder): void {
         group: 'edit'
       }
     },
-    tracker.action.EditTeam
+    tracker.action.EditProject
   )
 
   createAction(
     builder,
     {
-      action: tracker.actionImpl.DeleteTeam,
-      label: tracker.string.DeleteTeam,
+      action: tracker.actionImpl.DeleteProject,
+      label: tracker.string.DeleteProject,
       icon: view.icon.Delete,
       input: 'focus',
       category: tracker.category.Tracker,
-      target: tracker.class.Team,
+      target: tracker.class.Project,
       query: {
         archived: false
       },
@@ -1152,7 +1152,7 @@ export function createModel (builder: Builder): void {
         group: 'edit'
       }
     },
-    tracker.action.DeleteTeam
+    tracker.action.DeleteProject
   )
 
   builder.createDoc(
@@ -1596,7 +1596,7 @@ export function createModel (builder: Builder): void {
     builder,
     {
       action: view.actionImpl.Move,
-      label: tracker.string.MoveToTeam,
+      label: tracker.string.MoveToProject,
       icon: view.icon.Move,
       keyBinding: [],
       input: 'any',
@@ -1608,7 +1608,7 @@ export function createModel (builder: Builder): void {
         group: 'associate'
       }
     },
-    tracker.action.MoveToTeam
+    tracker.action.MoveToProject
   )
   // TODO: fix icon
   createAction(

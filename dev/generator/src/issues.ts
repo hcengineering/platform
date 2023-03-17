@@ -16,7 +16,7 @@ import tracker, { calcRank, Issue, IssuePriority, IssueStatus } from '@hcenginee
 import { connect } from './connect'
 
 let objectId: Ref<Issue> = generateId()
-const space = tracker.team.DefaultTeam
+const space = tracker.project.DefaultProject
 
 const object: AttachedData<Issue> = {
   title: '',
@@ -67,7 +67,7 @@ export async function generateIssues (
 async function genIssue (client: TxOperations): Promise<void> {
   const lastOne = await client.findOne<Issue>(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
   const incResult = await client.updateDoc(
-    tracker.class.Team,
+    tracker.class.Project,
     core.space.Space,
     space,
     {

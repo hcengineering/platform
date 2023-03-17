@@ -18,7 +18,7 @@
   import { Card, getClient, KeyedAttribute, SpaceSelector } from '@hcengineering/presentation'
   import tags, { TagElement } from '@hcengineering/tags'
   import { StyledTextBox } from '@hcengineering/text-editor'
-  import { IssuePriority, IssueTemplate, Component as ComponentType, Sprint, Team } from '@hcengineering/tracker'
+  import { IssuePriority, IssueTemplate, Component as ComponentType, Sprint, Project } from '@hcengineering/tracker'
   import { Component, EditBox, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { activeComponent, activeSprint } from '../../issues'
@@ -30,7 +30,7 @@
   import EstimationEditor from './EstimationEditor.svelte'
   import SubIssueTemplates from './IssueTemplateChilds.svelte'
 
-  export let space: Ref<Team>
+  export let space: Ref<Project>
   export let priority: IssuePriority = IssuePriority.NoPriority
   export let assignee: Ref<Employee> | null = null
   export let component: Ref<ComponentType> | null = $activeComponent ?? null
@@ -66,7 +66,7 @@
   }
 
   $: _space = space
-  let spaceRef: Team | undefined
+  let spaceRef: Project | undefined
 
   $: canSave = getTitle(object.title ?? '').length > 0
 
@@ -137,8 +137,8 @@
 >
   <svelte:fragment slot="header">
     <SpaceSelector
-      _class={tracker.class.Team}
-      label={tracker.string.Team}
+      _class={tracker.class.Project}
+      label={tracker.string.Project}
       bind:space={_space}
       on:space={(evt) => {
         spaceRef = evt.detail
@@ -162,7 +162,7 @@
     bind:children={object.children}
     component={object.component}
     sprint={object.sprint}
-    team={_space}
+    project={_space}
     maxHeight="limited"
   />
   <svelte:fragment slot="pool">

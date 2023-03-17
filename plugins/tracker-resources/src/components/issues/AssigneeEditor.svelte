@@ -54,10 +54,10 @@
       projectMembers = []
     }
     if (hasSpace(issue)) {
-      const team = await client.findOne(tracker.class.Team, { _id: issue.space })
-      if (team !== undefined) {
+      const project = await client.findOne(tracker.class.Project, { _id: issue.space })
+      if (project !== undefined) {
         const accounts = await client.findAll(contact.class.EmployeeAccount, {
-          _id: { $in: team.members as Ref<EmployeeAccount>[] }
+          _id: { $in: project.members as Ref<EmployeeAccount>[] }
         })
         members = accounts.map((p) => p.employee)
       } else {

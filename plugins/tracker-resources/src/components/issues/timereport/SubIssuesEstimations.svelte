@@ -15,15 +15,15 @@
 <script lang="ts">
   import { Ref, SortingOrder, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
+  import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import { Spinner } from '@hcengineering/ui'
   import Expandable from '@hcengineering/ui/src/components/Expandable.svelte'
   import tracker from '../../../plugin'
   import EstimationSubIssueList from './EstimationSubIssueList.svelte'
 
   export let issue: Issue
-  export let teams: Map<Ref<Team>, Team>
-  export let issueStatuses: Map<Ref<Team>, WithLookup<IssueStatus>[]>
+  export let projects: Map<Ref<Project>, Project>
+  export let issueStatuses: Map<Ref<Project>, WithLookup<IssueStatus>[]>
 
   const subIssuesQuery = createQuery()
 
@@ -40,7 +40,7 @@
   {#if hasSubIssues}
     <Expandable label={tracker.string.ChildEstimation} contentColor bordered>
       <svelte:fragment slot="title">: <span class="caption-color">{total}</span></svelte:fragment>
-      <EstimationSubIssueList issues={subIssues} {teams} />
+      <EstimationSubIssueList issues={subIssues} {projects} />
     </Expandable>
   {/if}
 {:else}

@@ -20,7 +20,7 @@
   import { getResource } from '@hcengineering/platform'
   import presentation, { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
-  import type { Issue, IssueStatus, Team } from '@hcengineering/tracker'
+  import type { Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import {
     Button,
     EditBox,
@@ -55,7 +55,7 @@
   const client = getClient()
 
   let issue: WithLookup<Issue> | undefined
-  let currentTeam: Team | undefined
+  let currentProject: Project | undefined
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
   let title = ''
   let description = ''
@@ -90,15 +90,15 @@
         ;[issue] = result
         title = issue.title
         description = issue.description
-        currentTeam = issue.$lookup?.space
+        currentProject = issue.$lookup?.space
       },
-      { lookup: { attachedTo: tracker.class.Issue, space: tracker.class.Team } }
+      { lookup: { attachedTo: tracker.class.Issue, space: tracker.class.Project } }
     )
 
-  $: currentTeam &&
+  $: currentProject &&
     statusesQuery.query(
       tracker.class.IssueStatus,
-      { attachedTo: currentTeam._id },
+      { attachedTo: currentProject._id },
       (statuses) => (issueStatuses = statuses),
       {
         lookup: { category: tracker.class.IssueStatusCategory },
@@ -106,7 +106,7 @@
       }
     )
 
-  $: issueId = currentTeam && issue && getIssueId(currentTeam, issue)
+  $: issueId = currentProject && issue && getIssueId(currentProject, issue)
   $: canSave = title.trim().length > 0
   $: isDescriptionEmpty = !new DOMParser().parseFromString(description, 'text/html').documentElement.innerText?.trim()
   $: parentIssue = issue?.$lookup?.attachedTo
@@ -206,7 +206,7 @@
         <div class="popupPanel-body__main-content py-10 clear-mins content">
           {#if parentIssue}
             <div class="mb-6">
-              {#if currentTeam && issueStatuses}
+              {#if currentProject && issueStatuses}
                 <SubIssueSelector {issue} />
               {:else}
                 <Spinner />
@@ -233,7 +233,7 @@
     {:else}
       {#if parentIssue}
         <div class="mb-6">
-          {#if currentTeam && issueStatuses}
+          {#if currentProject && issueStatuses}
             <SubIssueSelector {issue} />
           {:else}
             <Spinner />
@@ -252,12 +252,12 @@
         {/if}
       </div>
       <div class="mt-6">
-        {#key issue._id && currentTeam !== undefined}
-          {#if currentTeam !== undefined && issueStatuses !== undefined}
+        {#key issue._id && currentProject !== undefined}
+          {#if currentProject !== undefined && issueStatuses !== undefined}
             <SubIssues
               {issue}
-              issueStatuses={new Map([[currentTeam._id, issueStatuses]])}
-              teams={new Map([[currentTeam?._id, currentTeam]])}
+              issueStatuses={new Map([[currentProject._id, issueStatuses]])}
+              projects={new Map([[currentProject?._id, currentProject]])}
             />
           {/if}
         {/key}
@@ -306,7 +306,7 @@
     </svelte:fragment>
 
     <svelte:fragment slot="custom-attributes">
-      {#if issue && currentTeam && issueStatuses}
+      {#if issue && currentProject && issueStatuses}
         <ControlPanel {issue} {issueStatuses} {showAllMixins} />
       {/if}
 

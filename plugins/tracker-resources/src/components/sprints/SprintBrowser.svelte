@@ -38,7 +38,7 @@
   export let search: string = ''
   export let mode: SprintViewMode = 'all'
 
-  const space = typeof query.space === 'string' ? query.space : tracker.team.DefaultTeam
+  const space = typeof query.space === 'string' ? query.space : tracker.project.DefaultProject
   const showCreateDialog = async () => {
     showPopup(NewSprint, { space, targetElement: null }, 'top')
   }

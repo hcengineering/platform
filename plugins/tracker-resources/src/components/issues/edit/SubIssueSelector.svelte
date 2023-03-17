@@ -61,7 +61,7 @@
         SelectPopup,
         {
           value: subIssues.map((iss) => {
-            const team = iss.$lookup?.space
+            const project = iss.$lookup?.space
             const status = iss.$lookup?.status as WithLookup<IssueStatus>
             const icon = status.$lookup?.category?.icon
             const color = status.color ?? status.$lookup?.category?.color
@@ -70,7 +70,7 @@
               id: iss._id,
               icon,
               isSelected: iss._id === issue._id,
-              ...(team !== undefined ? { text: `${getIssueId(team, iss)} ${iss.title}` } : undefined),
+              ...(project !== undefined ? { text: `${getIssueId(project, iss)} ${iss.title}` } : undefined),
               ...(color !== undefined ? { iconColor: getPlatformColor(color) } : undefined)
             }
           }),
@@ -100,7 +100,7 @@
       {
         sort: { modifiedOn: SortingOrder.Descending },
         lookup: {
-          space: tracker.class.Team,
+          space: tracker.class.Project,
           status: [tracker.class.IssueStatus, { category: tracker.class.IssueStatusCategory }]
         }
       }

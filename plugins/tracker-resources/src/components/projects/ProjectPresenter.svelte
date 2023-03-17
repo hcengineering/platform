@@ -14,13 +14,13 @@
 -->
 <script lang="ts">
   import { Ref, Space } from '@hcengineering/core'
-  import { Team } from '@hcengineering/tracker'
+  import { Project } from '@hcengineering/tracker'
   import { NavLink } from '@hcengineering/ui'
   import { SpacesNavModel } from '@hcengineering/workbench'
   import { SpecialElement } from '@hcengineering/workbench-resources'
   import { TreeNode } from '@hcengineering/view-resources'
 
-  export let space: Team
+  export let space: Project
   export let model: SpacesNavModel
   export let currentSpace: Ref<Space> | undefined
   export let currentSpecial: string | undefined

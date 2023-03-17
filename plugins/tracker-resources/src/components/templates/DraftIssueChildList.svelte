@@ -21,7 +21,7 @@
     IssueTemplateChild,
     Component,
     Sprint,
-    Team
+    Project
   } from '@hcengineering/tracker'
   import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { ActionContext, FixedColumn } from '@hcengineering/view-resources'
@@ -35,7 +35,7 @@
   import EstimationEditor from './EstimationEditor.svelte'
 
   export let issues: DraftIssueChild[]
-  export let team: Ref<Team>
+  export let project: Ref<Project>
   export let sprint: Ref<Sprint> | null = null
   export let component: Ref<Component> | null = null
   export let statuses: WithLookup<IssueStatus>[]
@@ -49,7 +49,7 @@
       DraftIssueChildEditor,
       {
         showBorder: true,
-        team: currentTeam,
+        project: currentProject,
         sprint,
         component,
         statuses,
@@ -91,19 +91,19 @@
     resetDrag()
   }
 
-  const teamQuery = createQuery()
-  $: teamQuery.query(
-    tracker.class.Team,
+  const projectQuery = createQuery()
+  $: projectQuery.query(
+    tracker.class.Project,
     {
-      _id: team
+      _id: project
     },
-    (res) => ([currentTeam] = res)
+    (res) => ([currentProject] = res)
   )
-  let currentTeam: Team | undefined = undefined
+  let currentProject: Project | undefined = undefined
 
-  function getIssueTemplateId (currentTeam: Team | undefined, issue: IssueTemplateChild): string {
-    return currentTeam
-      ? `${currentTeam.identifier}-${issues.findIndex((it) => it.id === issue.id)}`
+  function getIssueTemplateId (currentProject: Project | undefined, issue: IssueTemplateChild): string {
+    return currentProject
+      ? `${currentProject.identifier}-${issues.findIndex((it) => it.id === issue.id)}`
       : `${issues.findIndex((it) => it.id === issue.id)}}`
   }
 </script>
@@ -156,7 +156,7 @@
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <span class="issuePresenter" on:click={(evt) => openIssue(evt, issue)}>
         <FixedColumn key={'issue_template_issue'} justify={'left'}>
-          {getIssueTemplateId(currentTeam, issue)}
+          {getIssueTemplateId(currentProject, issue)}
         </FixedColumn>
       </span>
       <span class="text name" title={issue.title} on:click={(evt) => openIssue(evt, issue)}>

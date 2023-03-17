@@ -27,7 +27,7 @@
     IssueStatus,
     Component as ComponentType,
     Sprint,
-    Team
+    Project
   } from '@hcengineering/tracker'
   import {
     Button,
@@ -65,13 +65,13 @@
   import StatusEditor from './StatusEditor.svelte'
   import EstimationEditor from './timereport/EstimationEditor.svelte'
 
-  export let space: Ref<Team> | undefined = undefined
+  export let space: Ref<Project> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let query: DocumentQuery<Issue> = {}
   export let viewOptionsConfig: ViewOptionModel[] | undefined
   export let viewOptions: ViewOptions
 
-  $: currentSpace = space || tracker.team.DefaultTeam
+  $: currentSpace = space || tracker.project.DefaultProject
   $: groupBy = (viewOptions.groupBy[0] ?? noCategory) as IssuesGrouping
   $: orderBy = viewOptions.orderBy
   $: sort = { [orderBy[0]]: orderBy[1] }
@@ -79,9 +79,9 @@
 
   const spaceQuery = createQuery()
 
-  let currentTeam: Team | undefined
-  $: spaceQuery.query(tracker.class.Team, { _id: currentSpace }, (res) => {
-    currentTeam = res.shift()
+  let currentProject: Project | undefined
+  $: spaceQuery.query(tracker.class.Project, { _id: currentSpace }, (res) => {
+    currentProject = res.shift()
   })
 
   let resultQuery: DocumentQuery<any> = query
@@ -112,7 +112,7 @@
 
   const lookup: Lookup<Issue> = {
     assignee: contact.class.Employee,
-    space: tracker.class.Team,
+    space: tracker.class.Project,
     _id: {
       subIssues: tracker.class.Issue
     }
@@ -365,7 +365,7 @@
         </div>
         <div class="buttons-group xsmall-gap states-bar">
           {#if issue && issue.subIssues > 0}
-            <SubIssuesSelector value={issue} {currentTeam} />
+            <SubIssuesSelector value={issue} {currentProject} />
           {/if}
           <PriorityEditor value={issue} isEditable={true} kind={'link-bordered'} size={'inline'} justify={'center'} />
           <ComponentEditor
@@ -377,7 +377,7 @@
             width={''}
             bind:onlyIcon={fullFilled[issueId]}
           />
-          <EstimationEditor kind={'list'} size={'small'} value={issue} {currentTeam} />
+          <EstimationEditor kind={'list'} size={'small'} value={issue} {currentProject} />
           <div
             class="clear-mins"
             use:tooltip={{

@@ -18,21 +18,21 @@
   import { AttachedData, Class, Ref, SortingOrder } from '@hcengineering/core'
   import { Button, Icon, Label, Panel, Scroller, IconAdd, Loading, closeTooltip, showPopup } from '@hcengineering/ui'
   import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
-  import { calcRank, IssueStatus, IssueStatusCategory, Team } from '@hcengineering/tracker'
+  import { calcRank, IssueStatus, IssueStatusCategory, Project } from '@hcengineering/tracker'
   import tracker from '../../plugin'
   import StatusEditor from './StatusEditor.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
   import ExpandCollapse from '@hcengineering/ui/src/components/ExpandCollapse.svelte'
 
-  export let teamId: Ref<Team>
-  export let teamClass: Ref<Class<Team>>
+  export let projectId: Ref<Project>
+  export let projectClass: Ref<Class<Project>>
 
   const client = getClient()
   const dispatch = createEventDispatcher()
-  const teamQuery = createQuery()
+  const projectQuery = createQuery()
   const statusesQuery = createQuery()
 
-  let team: Team | undefined
+  let project: Project | undefined
   let statusCategories: IssueStatusCategory[] | undefined
   let workflowStatuses: IssueStatus[] | undefined
 
@@ -50,9 +50,9 @@
     )
   }
 
-  async function updateTeamDefaultStatus (statusId: Ref<IssueStatus>) {
-    if (team) {
-      await client.update(team, { defaultIssueStatus: statusId })
+  async function updateProjectDefaultStatus (statusId: Ref<IssueStatus>) {
+    if (project) {
+      await client.update(project, { defaultIssueStatus: statusId })
     }
   }
 
@@ -63,13 +63,20 @@
       const nextStatus = workflowStatuses[workflowStatuses.findIndex(({ _id }) => _id === prevStatus._id) + 1]
 
       isSaving = true
-      await client.addCollection(tracker.class.IssueStatus, teamId, teamId, tracker.class.Team, 'issueStatuses', {
-        name: editingStatus.name,
-        description: editingStatus.description,
-        color: editingStatus.color,
-        category: editingStatus.category,
-        rank: calcRank(prevStatus, nextStatus)
-      })
+      await client.addCollection(
+        tracker.class.IssueStatus,
+        projectId,
+        projectId,
+        tracker.class.Project,
+        'issueStatuses',
+        {
+          name: editingStatus.name,
+          description: editingStatus.description,
+          color: editingStatus.color,
+          category: editingStatus.category,
+          rank: calcRank(prevStatus, nextStatus)
+        }
+      )
       isSaving = false
     }
 
@@ -147,16 +154,16 @@
         },
         undefined,
         async (result) => {
-          if (result && team && workflowStatuses) {
+          if (result && project && workflowStatuses) {
             isSaving = true
             await client.removeDoc(status._class, status.space, status._id)
 
-            if (team.defaultIssueStatus === status._id) {
+            if (project.defaultIssueStatus === status._id) {
               const newDefaultStatus = workflowStatuses.find(
                 (s) => s._id !== status._id && s.category === status.category
               )
               if (newDefaultStatus?._id) {
-                await updateTeamDefaultStatus(newDefaultStatus._id)
+                await updateProjectDefaultStatus(newDefaultStatus._id)
               }
             }
             isSaving = false
@@ -213,8 +220,8 @@
     hoveringStatus = null
   }
 
-  $: teamQuery.query(teamClass, { _id: teamId }, (result) => ([team] = result), { limit: 1 })
-  $: statusesQuery.query(tracker.class.IssueStatus, { attachedTo: teamId }, (res) => (workflowStatuses = res), {
+  $: projectQuery.query(projectClass, { _id: projectId }, (result) => ([project] = result), { limit: 1 })
+  $: statusesQuery.query(tracker.class.IssueStatus, { attachedTo: projectId }, (res) => (workflowStatuses = res), {
     sort: { rank: SortingOrder.Ascending }
   })
   $: updateStatusCategories()
@@ -230,14 +237,14 @@
         <span class="wrapped-title">
           <Label label={tracker.string.ManageWorkflowStatuses} />
         </span>
-        {#if team}
-          <span class="wrapped-subtitle">{team.name}</span>
+        {#if project}
+          <span class="wrapped-subtitle">{project.name}</span>
         {/if}
       </div>
     </div>
   </svelte:fragment>
 
-  {#if team === undefined || statusCategories === undefined || workflowStatuses === undefined}
+  {#if project === undefined || statusCategories === undefined || workflowStatuses === undefined}
     <Loading />
   {:else}
     <Scroller>
@@ -287,9 +294,9 @@
                 {:else}
                   <StatusPresenter
                     value={status}
-                    isDefault={status._id === team.defaultIssueStatus}
+                    isDefault={status._id === project.defaultIssueStatus}
                     {isSingle}
-                    on:default-update={({ detail }) => updateTeamDefaultStatus(detail)}
+                    on:default-update={({ detail }) => updateProjectDefaultStatus(detail)}
                     on:edit={({ detail }) => {
                       closeTooltip()
                       editingStatus = { ...detail, color: detail.color ?? category.color }

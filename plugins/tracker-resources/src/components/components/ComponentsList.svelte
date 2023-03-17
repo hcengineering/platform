@@ -129,7 +129,7 @@
                   </div>
                 </div>
               {:else if attributeModelIndex === 1}
-                <div class="projectPresenter flex-grow">
+                <div class="componentPresenter flex-grow">
                   <svelte:component
                     this={attributeModel.presenter}
                     value={getObjectValue(attributeModel.key, docObject) ?? ''}
@@ -235,7 +235,7 @@
     padding-left: 0.45rem;
   }
 
-  .projectPresenter {
+  .componentPresenter {
     display: flex;
     align-items: center;
     flex-shrink: 0;

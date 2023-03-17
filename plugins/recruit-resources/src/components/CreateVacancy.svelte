@@ -20,7 +20,14 @@
   import { Vacancy as VacancyClass } from '@hcengineering/recruit'
   import tags from '@hcengineering/tags'
   import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
-  import tracker, { calcRank, Issue, IssueStatus, IssueTemplate, IssueTemplateData, Team } from '@hcengineering/tracker'
+  import tracker, {
+    calcRank,
+    Issue,
+    IssueStatus,
+    IssueTemplate,
+    IssueTemplateData,
+    Project
+  } from '@hcengineering/tracker'
   import { Button, Component, createFocusManager, EditBox, FocusHandler, IconAttachment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
@@ -63,7 +70,7 @@
 
   async function saveIssue (
     id: Ref<VacancyClass>,
-    space: Ref<Team>,
+    space: Ref<Project>,
     template: IssueTemplateData,
     parent: Ref<Issue> = tracker.ids.NoParent
   ): Promise<Ref<Issue>> {
@@ -73,7 +80,7 @@
       { sort: { rank: SortingOrder.Descending } }
     )
     const incResult = await client.updateDoc(
-      tracker.class.Team,
+      tracker.class.Project,
       core.space.Space,
       space,
       {
@@ -81,7 +88,7 @@
       },
       true
     )
-    const team = await client.findOne(tracker.class.Team, { _id: space })
+    const project = await client.findOne(tracker.class.Project, { _id: space })
     const rank = calcRank(lastOne, undefined)
     const resId = await client.addCollection(tracker.class.Issue, space, parent, tracker.class.Issue, 'subIssues', {
       title: template.title + ` (${name})`,
@@ -90,7 +97,7 @@
       component: template.component,
       sprint: template.sprint,
       number: (incResult as any).object.sequence,
-      status: team?.defaultIssueStatus as Ref<IssueStatus>,
+      status: project?.defaultIssueStatus as Ref<IssueStatus>,
       priority: template.priority,
       rank,
       comments: 0,

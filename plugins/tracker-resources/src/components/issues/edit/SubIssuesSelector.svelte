@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Ref, SortingOrder, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
+  import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import {
     Button,
     ButtonKind,
@@ -32,7 +32,7 @@
   import { subIssueListProvider } from '../../../utils'
 
   export let value: WithLookup<Issue>
-  export let currentTeam: Team | undefined = undefined
+  export let currentProject: Project | undefined = undefined
 
   export let kind: ButtonKind = 'link-bordered'
   export let size: ButtonSize = 'inline'
@@ -41,22 +41,22 @@
 
   let btn: HTMLElement
 
-  $: team = currentTeam
+  $: project = currentProject
 
   let subIssues: Issue[] = []
   let countComplate: number = 0
 
-  const teamQuery = createQuery()
-  $: if (currentTeam === undefined) {
-    teamQuery.query(
-      tracker.class.Team,
+  const projectQuery = createQuery()
+  $: if (currentProject === undefined) {
+    projectQuery.query(
+      tracker.class.Project,
       {
         _id: value.space
       },
-      (res) => ([team] = res)
+      (res) => ([project] = res)
     )
   } else {
-    teamQuery.unsubscribe()
+    projectQuery.unsubscribe()
   }
   const query = createQuery()
   const statusesQuery = createQuery()
@@ -117,7 +117,7 @@
         SelectPopup,
         {
           value: subIssues.map((iss) => {
-            const text = team ? `${getIssueId(team, iss)} ${iss.title}` : iss.title
+            const text = project ? `${getIssueId(project, iss)} ${iss.title}` : iss.title
 
             return { id: iss._id, text, isSelected: iss._id === value._id, ...getIssueStatusIcon(iss, statuses) }
           }),

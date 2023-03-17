@@ -43,7 +43,7 @@ import {
   ComponentStatus,
   Sprint,
   SprintStatus,
-  Team,
+  Project,
   TimeReportDayType
 } from '@hcengineering/tracker'
 import {
@@ -72,7 +72,7 @@ export interface NavigationItem {
 }
 
 export interface Selection {
-  currentTeam?: Ref<Team>
+  currentProject?: Ref<Project>
   currentSpecial?: string
 }
 
@@ -593,7 +593,7 @@ export async function getAllPriority (
 }
 
 export async function getAllComponents (
-  space: Ref<Team> | undefined,
+  space: Ref<Project> | undefined,
   onUpdate: () => void,
   queryId: Ref<Doc>
 ): Promise<any[] | undefined> {
@@ -601,7 +601,7 @@ export async function getAllComponents (
 }
 
 export async function getAllSprints (
-  space: Ref<Team> | undefined,
+  space: Ref<Project> | undefined,
   onUpdate: () => void,
   queryId: Ref<Doc>
 ): Promise<any[] | undefined> {
@@ -651,7 +651,7 @@ export async function getPreviousAssignees (
   })
 }
 
-export async function removeTeam (teamToDelete: Team): Promise<void> {
+export async function removeProject (project: Project): Promise<void> {
   const client = getClient()
-  await client.removeDoc(tracker.class.Team, core.space.Space, teamToDelete._id)
+  await client.removeDoc(tracker.class.Project, core.space.Space, project._id)
 }

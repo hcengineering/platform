@@ -38,7 +38,7 @@
 
   const client = getClient()
 
-  const handleProjectIdChanged = async (newComponentId: Ref<Component> | null | undefined) => {
+  const handleComponentIdChanged = async (newComponentId: Ref<Component> | null | undefined) => {
     if (!isEditable || newComponentId === undefined || value.component === newComponentId) {
       return
     }
@@ -64,7 +64,7 @@
       {onlyIcon}
       {enlargedText}
       value={value.component}
-      onChange={handleProjectIdChanged}
+      onChange={handleComponentIdChanged}
     />
   </div>
 {/if}

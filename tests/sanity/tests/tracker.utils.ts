@@ -90,7 +90,9 @@ export async function createIssue (page: Page, props: IssueProps): Promise<void>
 
 export async function createComponent (page: Page, componentName: string): Promise<void> {
   await page.click('text=Components')
-  await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Ateam%3ADefaultTeam/components`)
+  await expect(page).toHaveURL(
+    `${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Aproject%3ADefaultProject/components`
+  )
   await page.click('button:has-text("Component")')
   await page.click('[placeholder="Component\\ name"]')
   await page.fill('[placeholder="Component\\ name"]', componentName)
@@ -99,7 +101,7 @@ export async function createComponent (page: Page, componentName: string): Promi
 
 export async function createSprint (page: Page, sprintName: string): Promise<void> {
   await page.click('text=Sprints')
-  await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Ateam%3ADefaultTeam/sprints`)
+  await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Aproject%3ADefaultProject/sprints`)
   await page.click('button:has-text("Sprint")')
   await page.click('[placeholder="Sprint\\ name"]')
   await page.fill('[placeholder="Sprint\\ name"]', sprintName)
