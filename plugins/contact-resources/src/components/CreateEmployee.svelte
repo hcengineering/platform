@@ -22,6 +22,8 @@
   import contact from '../plugin'
   import PersonPresenter from './PersonPresenter.svelte'
 
+  export let canSave: boolean = true
+
   let avatarEditor: EditableAvatar
 
   let firstName = ''
@@ -66,6 +68,7 @@
         provider: channel.provider
       })
     }
+    dispatch('created', id)
     dispatch('close')
   }
 
@@ -102,7 +105,11 @@
 <Card
   label={contact.string.CreateEmployee}
   okAction={createPerson}
-  canSave={firstName.trim().length > 0 && lastName.trim().length > 0 && matches.length === 0 && email.trim().length > 0}
+  canSave={firstName.trim().length > 0 &&
+    lastName.trim().length > 0 &&
+    matches.length === 0 &&
+    email.trim().length > 0 &&
+    canSave}
   on:close={() => {
     dispatch('close')
   }}
@@ -142,6 +149,7 @@
           on:blur={changeEmail}
         />
       </div>
+      <slot name="extraControls" />
     </div>
     <div class="ml-4">
       <EditableAvatar avatar={object.avatar} {email} {id} size={'large'} bind:this={avatarEditor} />
