@@ -283,7 +283,8 @@
     "WorkDayLength": "Select length of working day",
     "SevenHoursLength": "Seven Hours",
     "EightHoursLength": "Eight Hours",
-    "CreatedOn": "Created on"
+    "CreatedOn": "Created on",
+    "HourLabel": "h"
   },
   "status": {}
 }

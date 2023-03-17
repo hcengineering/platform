@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022-2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -52,7 +52,6 @@
   $: spaceQuery.query(tracker.class.Project, { _id: value.space }, (res) => {
     currentProject = res.shift()
   })
-  $: workDayLength = currentProject?.workDayLength
 
   const handleSprintIdChanged = async (newSprintId: Ref<Sprint> | null | undefined) => {
     if (!isEditable || newSprintId === undefined || value.sprint === newSprintId) {
@@ -114,9 +113,9 @@
         <DatePresenter value={sprint.targetDate} kind={'transparent'} />
         <div class="w-2 min-w-2" />
         <!-- Active sprint in time -->
-        <TimePresenter value={sprintDaysFrom} {workDayLength} />
+        <TimePresenter value={sprintDaysFrom} />
         /
-        <TimePresenter value={sprintDaysTo} {workDayLength} />
+        <TimePresenter value={sprintDaysTo} />
       {/if}
     </div>
   {/if}

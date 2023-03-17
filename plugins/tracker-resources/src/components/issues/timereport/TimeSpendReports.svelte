@@ -1,5 +1,5 @@
 <!-- 
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022-2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -29,7 +29,6 @@
 
   let reports: TimeSpendReport[] | undefined
 
-  $: workDayLength = projects.get(issue.space)?.workDayLength
   $: subIssuesQuery.query(tracker.class.TimeSpendReport, query, async (result) => (reports = result), {
     sort: { modifiedOn: SortingOrder.Descending },
     lookup: {
@@ -46,9 +45,9 @@
     <svelte:fragment slot="title">
       <span class="overflow-label flex-nowrap">
         <Label label={tracker.string.ReportedTime} />:
-        <span class="caption-color"><TimePresenter value={reportedTime} {workDayLength} /></span>.
+        <span class="caption-color"><TimePresenter value={reportedTime} /></span>.
         <Label label={tracker.string.TimeSpendReports} />:
-        <span class="caption-color"><TimePresenter value={total} {workDayLength} /></span>
+        <span class="caption-color"><TimePresenter value={total} /></span>
       </span>
     </svelte:fragment>
     <TimeSpendReportsList {reports} {projects} />

@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022-2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -26,7 +26,6 @@
 
   $: _estimation = estimation ?? value.estimation
 
-  $: workDayLength = currentProject?.workDayLength
   $: childReportTime = floorFractionDigits(
     value.reportedTime + (value.childInfo ?? []).map((it) => it.reportedTime).reduce((a, b) => a + b, 0),
     3
@@ -49,18 +48,18 @@
         {@const reportDiff = floorFractionDigits(rchildReportTime - value.reportedTime, 3)}
         {#if reportDiff !== 0 && value.reportedTime !== 0}
           <div class="flex flex-nowrap mr-1" class:showError={reportDiff > 0}>
-            <TimePresenter value={rchildReportTime} {workDayLength} />
+            <TimePresenter value={rchildReportTime} />
           </div>
           <div class="romColor">
-            (<TimePresenter value={value.reportedTime} {workDayLength} />)
+            (<TimePresenter value={value.reportedTime} />)
           </div>
         {:else if value.reportedTime === 0}
-          <TimePresenter value={childReportTime} {workDayLength} />
+          <TimePresenter value={childReportTime} />
         {:else}
-          <TimePresenter value={value.reportedTime} {workDayLength} />
+          <TimePresenter value={value.reportedTime} />
         {/if}
       {:else}
-        <TimePresenter value={value.reportedTime} {workDayLength} />
+        <TimePresenter value={value.reportedTime} />
       {/if}
       <div class="p-1">/</div>
     {/if}
@@ -69,18 +68,18 @@
       {@const estimationDiff = childEstTime - Math.round(_estimation)}
       {#if estimationDiff !== 0}
         <div class="flex flex-nowrap mr-1" class:showWarning={estimationDiff !== 0}>
-          <TimePresenter value={childEstTime} {workDayLength} />
+          <TimePresenter value={childEstTime} />
         </div>
         {#if _estimation !== 0}
           <div class="romColor">
-            (<TimePresenter value={_estimation} {workDayLength} />)
+            (<TimePresenter value={_estimation} />)
           </div>
         {/if}
       {:else}
-        <TimePresenter value={_estimation} {workDayLength} />
+        <TimePresenter value={_estimation} />
       {/if}
     {:else}
-      <TimePresenter value={_estimation} {workDayLength} />
+      <TimePresenter value={_estimation} />
     {/if}
   </span>
 </div>

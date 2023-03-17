@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022-2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -152,7 +152,7 @@
         '@wdCountReported',
         {
           key: '',
-          label: getEmbeddedLabel('Reported days'),
+          label: getEmbeddedLabel('Reported hours'),
           presenter: ReportPresenter,
           props: {
             month: startDate ?? getStartDate(currentDate.getFullYear(), currentDate.getMonth()),

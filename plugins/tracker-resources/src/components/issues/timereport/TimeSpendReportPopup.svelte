@@ -1,14 +1,14 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
-// 
+// Copyright © 2022-2023 Hardcore Engineering Inc.
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -18,7 +18,7 @@
   import type { IntlString } from '@hcengineering/platform'
   import presentation, { Card, getClient, UserBox } from '@hcengineering/presentation'
   import { Issue, TimeReportDayType, TimeSpendReport } from '@hcengineering/tracker'
-  import { Button, DatePresenter, EditBox } from '@hcengineering/ui'
+  import { Button, DatePresenter, EditBox, Label } from '@hcengineering/ui'
   import tracker from '../../../plugin'
   import { getTimeReportDate, getTimeReportDayType } from '../../../utils'
   import TitlePresenter from '../TitlePresenter.svelte'
@@ -98,13 +98,25 @@
   </svelte:fragment>
   <div class="flex-row-center gap-2">
     <EditBox focus bind:value={data.value} {placeholder} format={'number'} maxDigitsAfterPoint={3} kind={'editbox'} />
-    <Button kind={'link-bordered'} on:click={() => (data.value = 0.125)}><span slot="content">1/8</span></Button>
-    <Button kind={'link-bordered'} on:click={() => (data.value = 0.25)}><span slot="content">1/4</span></Button>
-    <Button kind={'link-bordered'} on:click={() => (data.value = 0.5)}><span slot="content">1/2</span></Button>
-    <Button kind={'link-bordered'} on:click={() => (data.value = 0.75)}><span slot="content">3/4</span></Button>
-    <Button kind={'link-bordered'} on:click={() => (data.value = 0.875)}><span slot="content">7/8</span></Button>
+    <Button kind={'link-bordered'} on:click={() => (data.value = 1)}
+      ><span slot="content">1<Label label={tracker.string.HourLabel} /></span></Button
+    >
+    <Button kind={'link-bordered'} on:click={() => (data.value = 2)}
+      ><span slot="content">2<Label label={tracker.string.HourLabel} /></span></Button
+    >
+    <Button kind={'link-bordered'} on:click={() => (data.value = 4)}
+      ><span slot="content">4<Label label={tracker.string.HourLabel} /></span></Button
+    >
+    <Button kind={'link-bordered'} on:click={() => (data.value = 6)}
+      ><span slot="content">6<Label label={tracker.string.HourLabel} /></span></Button
+    >
+    <Button kind={'link-bordered'} on:click={() => (data.value = 7)}
+      ><span slot="content">7<Label label={tracker.string.HourLabel} /></span></Button
+    >
     <div class="buttons-divider" />
-    <Button kind={'link-bordered'} on:click={() => (data.value = 1)}><span slot="content">1</span></Button>
+    <Button kind={'link-bordered'} on:click={() => (data.value = 8)}
+      ><span slot="content">8<Label label={tracker.string.HourLabel} /></span></Button
+    >
   </div>
   <EditBox bind:value={data.description} placeholder={tracker.string.TimeSpendReportDescription} kind={'editbox'} />
   <svelte:fragment slot="pool">

@@ -31,7 +31,6 @@
     spaceQuery.query(tracker.class.Project, { _id: sprint.space }, (res) => {
       ;[currentProject] = res
     })
-  $: workDayLength = currentProject?.workDayLength
 
   const sprintQuery = createQuery()
   let sprint: Sprint | undefined
@@ -67,9 +66,9 @@
         <DatePresenter value={sprint.targetDate} kind={'transparent'} />
         <div class="w-2 min-w-2" />
         <!-- Active sprint in time -->
-        <TimePresenter value={sprintDaysFrom} {workDayLength} />
+        <TimePresenter value={sprintDaysFrom} />
         /
-        <TimePresenter value={sprintDaysTo} {workDayLength} />
+        <TimePresenter value={sprintDaysTo} />
       {/if}
     </div>
   {/if}

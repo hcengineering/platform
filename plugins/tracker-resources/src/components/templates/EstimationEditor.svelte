@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022-2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -62,7 +62,7 @@
 {#if value}
   <Button
     showTooltip={isEditable ? { label: tracker.string.Estimation } : undefined}
-    label={tracker.string.TimeSpendValue}
+    label={tracker.string.TimeSpendHours}
     labelParams={{ value: value.estimation }}
     icon={tracker.icon.Estimation}
     {justify}

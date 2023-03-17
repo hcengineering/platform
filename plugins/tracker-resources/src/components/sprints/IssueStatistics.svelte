@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022-2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,14 +15,13 @@
 <script lang="ts">
   import { IdMap, Ref, toIdMap } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Issue, IssueStatus, WorkDayLength } from '@hcengineering/tracker'
+  import { Issue, IssueStatus } from '@hcengineering/tracker'
   import { floorFractionDigits, Label } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import EstimationProgressCircle from '../issues/timereport/EstimationProgressCircle.svelte'
   import TimePresenter from '../issues/timereport/TimePresenter.svelte'
   export let docs: Issue[] | undefined = undefined
   export let capacity: number | undefined = undefined
-  export let workDayLength: WorkDayLength = WorkDayLength.EIGHT_HOURS
 
   $: ids = new Set(docs?.map((it) => it._id) ?? [])
 
@@ -97,10 +96,10 @@
     <EstimationProgressCircle value={totalReported} max={totalEstimation} />
     <div class="w-2 min-w-2" />
     {#if totalReported > 0}
-      <TimePresenter value={totalReported} {workDayLength} />
+      <TimePresenter value={totalReported} />
       /
     {/if}
-    <TimePresenter value={totalEstimation} {workDayLength} />
+    <TimePresenter value={totalEstimation} />
     {#if capacity}
       <Label label={tracker.string.CapacityValue} params={{ value: capacity }} />
     {/if}
