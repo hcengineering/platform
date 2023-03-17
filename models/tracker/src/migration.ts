@@ -432,7 +432,7 @@ async function renameProject (client: MigrationClient): Promise<void> {
   await client.update(
     DOMAIN_TRACKER,
     {
-      _id: tracker.class.Project
+      _class: tracker.class.Project
     },
     {
       _class: tracker.class.Component
