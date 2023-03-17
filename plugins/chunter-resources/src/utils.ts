@@ -156,7 +156,7 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Loca
     return undefined
   }
   const classLabel = tokens[0]
-  const lastId = tokens[1]
+  const lastId = tokens[1] as Ref<Doc>
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const classes = [chunter.class.Message, chunter.class.ThreadMessage, chunter.class.Comment]
@@ -171,7 +171,7 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Loca
     console.error(`Could not find class ${classLabel}.`)
     return undefined
   }
-  const doc = await client.findOne(_class, { _id: { $like: `%${lastId}` } }, { sort: { _id: SortingOrder.Descending } })
+  const doc = await client.findOne(_class, { _id: lastId })
   if (doc === undefined) {
     console.error(`Could not find message ${lastId}.`)
     return undefined
