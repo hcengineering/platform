@@ -23,11 +23,12 @@
   import contact from '../plugin'
 
   export let value: Account
+  export let disabled = false
 
   let employee: Employee | undefined
 
   async function onClick () {
-    if (employee !== undefined) {
+    if (employee !== undefined && !disabled) {
       showPopup(EditDoc, { _id: employee._id, _class: employee._class }, 'content')
     }
   }
@@ -48,7 +49,7 @@
   >
     {#if employee}
       <Avatar size={'x-small'} avatar={employee.avatar} />
-      <div class="overflow-label user">{getName(employee)}</div>
+      <div class="overflow-label user" class:user-enabled={!disabled}>{getName(employee)}</div>
     {:else}
       <div class="overflow-label user">{value.email}</div>
     {/if}
@@ -65,7 +66,7 @@
       text-align: left;
       color: var(--accent-color);
     }
-    &:hover .user {
+    &:hover .user-enabled {
       text-decoration: underline;
       color: var(--caption-color);
     }

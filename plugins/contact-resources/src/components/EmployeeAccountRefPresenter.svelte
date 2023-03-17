@@ -21,6 +21,7 @@
   import EmployeeAccountPresenter from './EmployeeAccountPresenter.svelte'
 
   export let value: Ref<EmployeeAccount>
+  export let disabled = false
 
   let account: EmployeeAccount | undefined
 
@@ -30,5 +31,5 @@
 </script>
 
 {#if account}
-  <EmployeeAccountPresenter value={account} />
+  <EmployeeAccountPresenter value={account} {disabled} />
 {/if}
