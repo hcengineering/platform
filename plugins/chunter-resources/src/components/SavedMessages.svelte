@@ -2,7 +2,8 @@
   import attachment, { Attachment } from '@hcengineering/attachment'
   import AttachmentPreview from '@hcengineering/attachment-resources/src/components/AttachmentPreview.svelte'
   import { ChunterMessage } from '@hcengineering/chunter'
-  import contact, { Employee, EmployeeAccount, getName as getContactName } from '@hcengineering/contact'
+  import contact, { EmployeeAccount, getName as getContactName } from '@hcengineering/contact'
+  import { employeeByIdStore } from '@hcengineering/contact-resources'
   import core, { IdMap, Ref, toIdMap, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Label, Scroller } from '@hcengineering/ui'
@@ -17,17 +18,14 @@
   let savedAttachmentsIds: Ref<Attachment>[] = []
   let savedAttachments: WithLookup<Attachment>[] = []
   let accounts: IdMap<EmployeeAccount> = new Map()
-  let employees: IdMap<Employee> = new Map()
 
   const messagesQuery = createQuery()
   const attachmentsQuery = createQuery()
   const savedMessagesQuery = createQuery()
   const savedAttachmentsQuery = createQuery()
   const accQ = createQuery()
-  const empQ = createQuery()
 
   accQ.query(contact.class.EmployeeAccount, {}, (res) => (accounts = toIdMap(res)))
-  empQ.query(contact.class.Employee, {}, (res) => (employees = toIdMap(res)))
 
   savedMessagesQuery.query(chunter.class.SavedMessages, {}, (res) => {
     savedMessagesIds = res.map((r) => r.attachedTo)
@@ -83,7 +81,7 @@
   function getName (a: Attachment): string | undefined {
     const acc = accounts.get(a.modifiedBy as Ref<EmployeeAccount>)
     if (acc !== undefined) {
-      const emp = employees.get(acc?.employee)
+      const emp = $employeeByIdStore.get(acc?.employee)
       if (emp !== undefined) {
         return getContactName(emp)
       }

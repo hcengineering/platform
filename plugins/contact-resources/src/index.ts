@@ -69,6 +69,7 @@ import {
   resolveLocation
 } from './utils'
 
+export { employeeByIdStore, employeesStore } from './utils'
 export {
   Channels,
   ChannelsEditor,

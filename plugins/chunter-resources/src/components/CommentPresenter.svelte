@@ -18,6 +18,7 @@
   import type { Comment } from '@hcengineering/chunter'
   import chunter from '@hcengineering/chunter'
   import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
+  import { employeeByIdStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { Avatar, getClient, MessageViewer } from '@hcengineering/presentation'
   import { Icon, ShowMore, TimeSince } from '@hcengineering/ui'
@@ -35,7 +36,7 @@
   async function getEmployee (value: Comment): Promise<Employee | undefined> {
     const acc = await client.findOne(contact.class.EmployeeAccount, { _id: value.modifiedBy as Ref<EmployeeAccount> })
     if (acc !== undefined) {
-      const emp = await client.findOne(contact.class.Employee, { _id: acc.employee })
+      const emp = $employeeByIdStore.get(acc.employee)
       return emp
     }
   }

@@ -13,7 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
+  import contact, { EmployeeAccount, getName } from '@hcengineering/contact'
+  import { employeeByIdStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Request } from '@hcengineering/request'
@@ -26,7 +27,7 @@
   export let value: Request
 
   let account: EmployeeAccount | undefined
-  let employee: Employee | undefined
+  $: employee = account && $employeeByIdStore.get(account.employee)
 
   const query = createQuery()
 
@@ -38,18 +39,6 @@
     },
     { limit: 1 }
   )
-
-  const employeeQuery = createQuery()
-
-  $: account &&
-    employeeQuery.query(
-      contact.class.Employee,
-      { _id: account.employee },
-      (res) => {
-        ;[employee] = res
-      },
-      { limit: 1 }
-    )
 </script>
 
 <div class="container">

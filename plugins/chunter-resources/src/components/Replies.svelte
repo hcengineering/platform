@@ -14,9 +14,10 @@
 -->
 <script lang="ts">
   import { Message } from '@hcengineering/chunter'
-  import contact, { Employee } from '@hcengineering/contact'
-  import { Ref } from '@hcengineering/core'
-  import { Avatar, createQuery } from '@hcengineering/presentation'
+  import { Employee } from '@hcengineering/contact'
+  import { employeeByIdStore } from '@hcengineering/contact-resources'
+  import { IdMap, Ref } from '@hcengineering/core'
+  import { Avatar } from '@hcengineering/presentation'
   import { Label, TimeSince } from '@hcengineering/ui'
   import chunter from '../plugin'
 
@@ -27,23 +28,17 @@
   const shown: number = 4
   let showReplies: Employee[] = []
 
-  const query = createQuery()
+  $: updateQuery(employees, $employeeByIdStore)
 
-  $: updateQuery(employees)
-
-  function updateQuery (employees: Set<Ref<Employee>>) {
-    query.query(
-      contact.class.Employee,
-      {
-        _id: { $in: Array.from(employees) }
-      },
-      (res) => {
-        showReplies = res
-      },
-      {
-        limit: shown
+  function updateQuery (employees: Set<Ref<Employee>>, map: IdMap<Employee>) {
+    showReplies = []
+    for (const employee of employees) {
+      const emp = map.get(employee)
+      if (emp !== undefined) {
+        showReplies.push(emp)
       }
-    )
+    }
+    showReplies = showReplies
   }
 </script>
 

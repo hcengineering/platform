@@ -1,6 +1,7 @@
 <script lang="ts">
   import chunter, { ChunterMessage } from '@hcengineering/chunter'
   import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
+  import { employeeByIdStore } from '@hcengineering/contact-resources'
   import { IdMap, Ref, Space, toIdMap } from '@hcengineering/core'
   import { Avatar, createQuery, MessageViewer } from '@hcengineering/presentation'
   import { IconClose } from '@hcengineering/ui'
@@ -34,11 +35,6 @@
 
   employeeAccoutsQuery.query(contact.class.EmployeeAccount, {}, (res) => (employeeAcounts = toIdMap(res)))
 
-  const employeeQuery = createQuery()
-  let employees: IdMap<Employee> = new Map()
-
-  employeeQuery.query(contact.class.Employee, {}, (res) => (employees = toIdMap(res)))
-
   const dispatch = createEventDispatcher()
 
   function getEmployee (
@@ -55,7 +51,7 @@
 
 <div class="antiPopup vScroll popup">
   {#each pinnedMessages as message}
-    {@const employee = getEmployee(message, employeeAcounts, employees)}
+    {@const employee = getEmployee(message, employeeAcounts, $employeeByIdStore)}
     <div class="message">
       <div class="header">
         <div class="avatar">

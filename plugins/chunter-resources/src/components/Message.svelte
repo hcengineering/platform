@@ -16,12 +16,12 @@
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentList, AttachmentRefInput } from '@hcengineering/attachment-resources'
   import type { ChunterMessage, Message, Reaction } from '@hcengineering/chunter'
-  import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
-  import { EmployeePresenter } from '@hcengineering/contact-resources'
+  import { EmployeeAccount } from '@hcengineering/contact'
+  import { employeeByIdStore, EmployeePresenter } from '@hcengineering/contact-resources'
   import { getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
-  import { Avatar, createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
+  import { Avatar, getClient, MessageViewer } from '@hcengineering/presentation'
   import { EmojiPopup } from '@hcengineering/text-editor'
   import ui, { ActionIcon, Button, IconMoreH, Label, showPopup, tooltip } from '@hcengineering/ui'
   import { Action } from '@hcengineering/view'
@@ -46,16 +46,8 @@
 
   let refInput: AttachmentRefInput
 
-  let employee: Employee | undefined
-  const employeeQuery = createQuery()
-  $: employeeQuery.query(
-    contact.class.Employee,
-    {
-      _id: (message.$lookup?.createBy as EmployeeAccount)?.employee
-    },
-    (res) => ([employee] = res)
-  )
-
+  $: empRef = (message.$lookup?.createBy as EmployeeAccount)?.employee
+  $: employee = empRef !== undefined ? $employeeByIdStore.get(empRef) : undefined
   $: attachments = (message.$lookup?.attachments ?? []) as Attachment[]
 
   const client = getClient()

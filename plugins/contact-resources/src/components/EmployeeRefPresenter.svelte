@@ -1,10 +1,11 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
-  import { AssigneeBox, createQuery } from '@hcengineering/presentation'
+  import { AssigneeBox } from '@hcengineering/presentation'
   import { ButtonKind } from '@hcengineering/ui'
   import { PersonLabelTooltip } from '..'
   import contact from '../plugin'
+  import { employeeByIdStore } from '../utils'
   import EmployeePresenter from './EmployeePresenter.svelte'
 
   export let value: Ref<Employee> | null | undefined
@@ -12,9 +13,7 @@
   export let tooltipLabels: PersonLabelTooltip | undefined = undefined
   export let onChange: ((value: Ref<Employee>) => void) | undefined = undefined
 
-  let employee: Employee | undefined
-  const query = createQuery()
-  $: value && query.query(contact.class.Employee, { _id: value }, (res) => ([employee] = res), { limit: 1 })
+  $: employee = value ? $employeeByIdStore.get(value) : undefined
 
   function getValue (
     employee: Employee | undefined,
