@@ -430,6 +430,29 @@ async function renameProject (client: MigrationClient): Promise<void> {
     }
   )
   await client.update(
+    DOMAIN_TRACKER,
+    {
+      _id: tracker.class.Project
+    },
+    {
+      _class: tracker.class.Component
+    }
+  )
+  const components = await client.find(DOMAIN_TRACKER, { _class: tracker.class.Component })
+  for (const component of components) {
+    await client.update(
+      DOMAIN_TX,
+      {
+        objectId: component._id,
+        objectClass: tracker.class.Project
+      },
+      {
+        objectClass: tracker.class.Component
+      }
+    )
+  }
+
+  await client.update(
     DOMAIN_TX,
     {
       _class: core.class.TxCollectionCUD,
