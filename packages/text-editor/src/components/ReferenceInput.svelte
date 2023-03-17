@@ -406,7 +406,7 @@
         display: flex;
         align-self: center;
         align-items: center;
-        width: 100%;
+        width: calc(100% - 1.75rem);
         height: 100%;
         color: var(--content-color);
         background-color: transparent;
@@ -445,6 +445,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        flex-shrink: 0;
         margin-left: 0.5rem;
         padding: 0;
         width: 1.25rem;

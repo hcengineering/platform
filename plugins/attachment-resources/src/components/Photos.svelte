@@ -87,7 +87,11 @@
     const el: HTMLElement = ev.currentTarget as HTMLElement
     el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
     if (item !== undefined) {
-      showPopup(PDFViewer, { file: item.file, name: item.name, contentType: item.type }, 'float')
+      showPopup(
+        PDFViewer,
+        { file: item.file, name: item.name, contentType: item.type },
+        item.type.startsWith('image/') ? 'centered' : 'float'
+      )
     } else {
       inputFile.click()
     }

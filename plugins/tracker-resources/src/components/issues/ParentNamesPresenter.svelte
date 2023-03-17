@@ -32,9 +32,9 @@
     <span class="names">
       {#each value.parents as parentInfo}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <span class="name cursor-pointer" on:click={() => handleIssueEditorOpened(parentInfo)}
-          >{parentInfo.parentTitle}</span
-        >
+        <span class="name cursor-pointer" on:click={() => handleIssueEditorOpened(parentInfo)}>
+          {parentInfo.parentTitle}
+        </span>
       {/each}
     </span>
   </div>
@@ -46,6 +46,7 @@
     min-width: 0;
 
     .names {
+      display: inline-flex;
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
@@ -57,15 +58,13 @@
         color: var(--caption-color);
         text-decoration: underline;
       }
-
       &:active {
         color: var(--accent-color);
       }
-    }
-
-    .name::before {
-      content: '›';
-      padding: 0 0.25rem;
+      &::before {
+        content: '›';
+        padding: 0 0.25rem;
+      }
     }
   }
 </style>

@@ -26,7 +26,7 @@
 
 {#if value}
   <DocNavLink {inline} object={value}>
-    <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
+    <div class="flex-presenter" class:inline-presenter={inline} use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
       <div class="icon circle"><Company size={'small'} /></div>
       <span class="label">{value.name}</span>
     </div>

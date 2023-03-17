@@ -2,7 +2,6 @@
   import { Employee } from '@hcengineering/contact'
   import { WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { Label } from '@hcengineering/ui'
   import { PersonLabelTooltip } from '..'
   import PersonPresenter from '../components/PersonPresenter.svelte'
   import contact from '../plugin'
@@ -21,30 +20,17 @@
   export let element: HTMLElement | undefined = undefined
 </script>
 
-<span class="flex-presenter">
-  <PersonPresenter
-    bind:element
-    {value}
-    {tooltipLabels}
-    onEdit={onEmployeeEdit}
-    {shouldShowAvatar}
-    {shouldShowName}
-    {avatarSize}
-    {shouldShowPlaceholder}
-    isInteractive={isInteractive && !disableClick}
-    {inline}
-    {defaultName}
-  />
-  {#if value?.active === false && shouldShowName}
-    <span class="status ml-1">
-      (<Label label={contact.string.Inactive} />)
-    </span>
-  {/if}
-</span>
-
-<style lang="scss">
-  .status {
-    font-weight: 400;
-    font-size: 0.875rem;
-  }
-</style>
+<PersonPresenter
+  bind:element
+  {value}
+  {tooltipLabels}
+  onEdit={onEmployeeEdit}
+  {shouldShowAvatar}
+  {shouldShowName}
+  {avatarSize}
+  {shouldShowPlaceholder}
+  isInteractive={isInteractive && !disableClick}
+  {inline}
+  {defaultName}
+  statusLabel={value?.active === false && shouldShowName ? contact.string.Inactive : undefined}
+/>

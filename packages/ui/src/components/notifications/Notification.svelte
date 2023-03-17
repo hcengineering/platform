@@ -2,6 +2,7 @@
   import { onDestroy } from 'svelte'
 
   import { Notification } from './Notification'
+  import Component from '../Component.svelte'
   import store from './store'
 
   export let notification: Notification
@@ -23,4 +24,8 @@
   })
 </script>
 
-<svelte:component this={notification.component} {notification} onRemove={removeNotificationHandler} />
+{#if typeof notification.component === 'string'}
+  <Component is={notification.component} props={{ notification, onRemove: removeNotificationHandler }} />
+{:else}
+  <svelte:component this={notification.component} {notification} onRemove={removeNotificationHandler} />
+{/if}

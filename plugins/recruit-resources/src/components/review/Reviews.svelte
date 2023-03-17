@@ -18,7 +18,7 @@
   import { DateRangeMode, Doc, FindOptions, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Applicant, Review } from '@hcengineering/recruit'
-  import { Button, DatePresenter, IconAdd, Label, resizeObserver, showPopup } from '@hcengineering/ui'
+  import { Button, DatePresenter, IconAdd, Label, resizeObserver, showPopup, Scroller } from '@hcengineering/ui'
   import { Table } from '@hcengineering/view-resources'
   import recruit from '../../plugin'
   import FileDuo from '../icons/FileDuo.svelte'
@@ -58,34 +58,67 @@
     <Button icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createApp} />
   </div>
   {#if reviews > 0}
-    <Table
-      _class={recruit.class.Review}
-      config={[
-        '',
-        '$lookup.application',
-        'company',
-        'verdict',
-        {
-          key: '',
-          presenter: recruit.component.OpinionsPresenter,
-          label: recruit.string.Opinions,
-          sortingKey: 'opinions'
-        },
-        {
-          key: 'date',
-          presenter: DatePresenter,
-          label: calendar.string.Date,
-          sortingKey: 'date',
-          props: {
-            editable: false,
-            mode: DateRangeMode.DATE
+    {#if wSection < 640}
+      <Scroller horizontal>
+        <Table
+          _class={recruit.class.Review}
+          config={[
+            '',
+            '$lookup.application',
+            'company',
+            'verdict',
+            {
+              key: '',
+              presenter: recruit.component.OpinionsPresenter,
+              label: recruit.string.Opinions,
+              sortingKey: 'opinions'
+            },
+            {
+              key: 'date',
+              presenter: DatePresenter,
+              label: calendar.string.Date,
+              sortingKey: 'date',
+              props: {
+                editable: false,
+                mode: DateRangeMode.DATE
+              }
+            }
+          ]}
+          {options}
+          query={{ attachedTo: objectId }}
+          loadingProps={{ length: reviews }}
+        />
+      </Scroller>
+    {:else}
+      <Table
+        _class={recruit.class.Review}
+        config={[
+          '',
+          '$lookup.application',
+          'company',
+          'verdict',
+          {
+            key: '',
+            presenter: recruit.component.OpinionsPresenter,
+            label: recruit.string.Opinions,
+            sortingKey: 'opinions'
+          },
+          {
+            key: 'date',
+            presenter: DatePresenter,
+            label: calendar.string.Date,
+            sortingKey: 'date',
+            props: {
+              editable: false,
+              mode: DateRangeMode.DATE
+            }
           }
-        }
-      ]}
-      {options}
-      query={{ attachedTo: objectId }}
-      loadingProps={{ length: reviews }}
-    />
+        ]}
+        {options}
+        query={{ attachedTo: objectId }}
+        loadingProps={{ length: reviews }}
+      />
+    {/if}
   {:else}
     <div class="antiSection-empty solid flex-col-center mt-3">
       <div class="caption-color">

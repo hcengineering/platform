@@ -43,14 +43,14 @@
     align-items: center;
     flex-shrink: 0;
     color: var(--accent-color);
-    overflow: hidden;
+    // overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     cursor: pointer;
 
     &.inline {
       display: inline-flex;
-      align-items: baseline;
+      align-items: center;
     }
 
     &.noUnderline {
