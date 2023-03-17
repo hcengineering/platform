@@ -23,7 +23,7 @@ import {
   formatName,
   getName
 } from '@hcengineering/contact'
-import { Doc, getCurrentAccount, ObjQueryType, Ref, SortingOrder, Timestamp, toIdMap } from '@hcengineering/core'
+import { Doc, getCurrentAccount, ObjQueryType, Ref, Timestamp, toIdMap } from '@hcengineering/core'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { TemplateDataProvider } from '@hcengineering/templates'
 import { getPanelURI, Location } from '@hcengineering/ui'
@@ -185,7 +185,7 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Loca
     return undefined
   }
   const classLabel = tokens[0]
-  const lastId = tokens[1]
+  const lastId = tokens[1] as Ref<Contact>
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const classes = hierarchy.getDescendants(contact.class.Contact)
@@ -196,7 +196,7 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Loca
       break
     }
   }
-  const doc = await client.findOne(_class, { _id: { $like: `%${lastId}` } }, { sort: { _id: SortingOrder.Descending } })
+  const doc = await client.findOne(_class, { _id: lastId })
   if (doc === undefined) {
     console.error(`Could not find contact ${lastId}.`)
     return undefined
