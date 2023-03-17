@@ -23,7 +23,7 @@ import {
   formatName,
   getName
 } from '@hcengineering/contact'
-import { Doc, getCurrentAccount, ObjQueryType, Ref, SortingOrder, Timestamp, toIdMap } from '@hcengineering/core'
+import { Doc, getCurrentAccount, ObjQueryType, Ref, Timestamp, toIdMap } from '@hcengineering/core'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { TemplateDataProvider } from '@hcengineering/templates'
 import { getPanelURI, Location } from '@hcengineering/ui'

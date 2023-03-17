@@ -1,6 +1,6 @@
 import { chunterId, ChunterMessage, Comment, ThreadMessage } from '@hcengineering/chunter'
 import contact, { EmployeeAccount, getName } from '@hcengineering/contact'
-import { Class, Client, Doc, getCurrentAccount, Obj, Ref, SortingOrder, Space, Timestamp } from '@hcengineering/core'
+import { Class, Client, Doc, getCurrentAccount, Obj, Ref, Space, Timestamp } from '@hcengineering/core'
 import { Asset } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
 import { getCurrentLocation, getPanelURI, Location, navigate } from '@hcengineering/ui'
