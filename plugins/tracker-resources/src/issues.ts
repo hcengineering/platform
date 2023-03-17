@@ -30,7 +30,7 @@ export async function getIssueTitle (client: TxOperations, ref: Ref<Doc>): Promi
 async function getTitle (doc: Doc): Promise<string> {
   const client = getClient()
   const issue = doc as Issue
-  const object = await client.findOne(tracker.class.Team, { _id: issue.space })
+  const object = await client.findOne(tracker.class.Project, { _id: issue.space })
   if (object === undefined) return `?-${issue.number}`
   return getIssueId(object, issue)
 }
