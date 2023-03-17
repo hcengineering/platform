@@ -57,6 +57,7 @@ import PersonEditor from './components/PersonEditor.svelte'
 import PersonPresenter from './components/PersonPresenter.svelte'
 import PersonRefPresenter from './components/PersonRefPresenter.svelte'
 import SocialEditor from './components/SocialEditor.svelte'
+import ExpandRightDouble from './components/icons/ExpandRightDouble.svelte'
 import contact from './plugin'
 import {
   employeeSort,
@@ -86,7 +87,9 @@ export {
   EditPerson,
   EmployeeRefPresenter,
   AccountArrayEditor,
-  AccountBox
+  AccountBox,
+  CreateOrganization,
+  ExpandRightDouble
 }
 
 const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({

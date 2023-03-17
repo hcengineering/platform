@@ -151,7 +151,9 @@
       kind={'large-style'}
       focus
       on:input={() => {
-        identifier = name.toLocaleUpperCase().replaceAll(' ', '_').substring(0, 5)
+        if (isNew) {
+          identifier = name.toLocaleUpperCase().replaceAll(' ', '_').substring(0, 5)
+        }
       }}
     />
     <EditBox
@@ -221,6 +223,7 @@
       kind="link-bordered"
       bind:value={defaultAssignee}
       titleDeselect={tracker.string.Unassigned}
+      showNavigate={false}
       showTooltip={{ label: tracker.string.DefaultAssignee }}
     />
   </div>

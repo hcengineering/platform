@@ -29,6 +29,7 @@
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
   export let readonly = false
+  export let showNavigate = true
 
   $: _class = type?.to ?? contact.class.Employee
 
@@ -50,4 +51,5 @@
   titleDeselect={contact.string.Cancel}
   bind:value
   on:change={(e) => onChange(e.detail)}
+  {showNavigate}
 />

@@ -20,7 +20,7 @@
   import { OK, Status } from '@hcengineering/platform'
   import { Card, createQuery, EmployeeBox, getClient, SpaceSelector, UserBox } from '@hcengineering/presentation'
   import task, { calcRank } from '@hcengineering/task'
-  import { createFocusManager, EditBox, FocusHandler, Label, Status as StatusControl, Button } from '@hcengineering/ui'
+  import { Button, createFocusManager, EditBox, FocusHandler, Label, Status as StatusControl } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
 
@@ -152,6 +152,7 @@
       label={lead.string.Assignee}
       bind:value={assignee}
       allowDeselect
+      showNavigate={false}
       titleDeselect={lead.string.UnAssign}
     />
     {#if !preserveCustomer}

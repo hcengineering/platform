@@ -38,6 +38,7 @@
     EditableAvatar,
     getClient,
     getUserDraft,
+    InlineAttributeBar,
     KeyedAttribute,
     MessageBox,
     PDFViewer,
@@ -257,9 +258,22 @@
       remote: object.remote
     }
 
-    const id = await client.createDoc(contact.class.Person, contact.space.Contacts, candidate, candidateId)
-    await client.createMixin(
-      id as Ref<Person>,
+    // Store all extra values.
+    for (const [k, v] of Object.entries(object)) {
+      if (v != null && k !== 'createOn' && k !== 'avatar') {
+        if (client.getHierarchy().getAttribute(recruit.mixin.Candidate, k).attributeOf === recruit.mixin.Candidate) {
+          ;(candidateData as any)[k] = v
+        } else {
+          ;(candidate as any)[k] = v
+        }
+      }
+    }
+
+    const applyOps = client.apply(candidateId)
+
+    await applyOps.createDoc(contact.class.Person, contact.space.Contacts, candidate, candidateId)
+    await applyOps.createMixin(
+      candidateId as Ref<Person>,
       contact.class.Person,
       contact.space.Contacts,
       recruit.mixin.Candidate,
@@ -267,10 +281,10 @@
     )
 
     if (resume.uuid !== undefined) {
-      client.addCollection(
+      applyOps.addCollection(
         attachment.class.Attachment,
         contact.space.Contacts,
-        id,
+        candidateId,
         contact.class.Person,
         'attachments',
         {
@@ -283,7 +297,7 @@
       )
     }
     for (const channel of channels) {
-      await client.addCollection(
+      await applyOps.addCollection(
         contact.class.Channel,
         contact.space.Contacts,
         candidateId,
@@ -312,7 +326,7 @@
           category: findTagCategory(skill.title, categories)
         })
       }
-      await client.addCollection(skill._class, skill.space, candidateId, recruit.mixin.Candidate, 'skills', {
+      await applyOps.addCollection(skill._class, skill.space, candidateId, recruit.mixin.Candidate, 'skills', {
         title: skill.title,
         color: skill.color,
         tag: skill.tag,
@@ -320,8 +334,10 @@
       })
     }
 
+    await applyOps.commit()
+
     if (!createMore) {
-      dispatch('close', id)
+      dispatch('close', candidateId)
     }
     resetObject()
     saveDraft()
@@ -706,6 +722,15 @@
         />
       </div>
     {/if}
+    <div class="flex flex-grow flex-wrap">
+      <InlineAttributeBar
+        _class={recruit.mixin.Candidate}
+        {object}
+        toClass={contact.class.Contact}
+        ignoreKeys={['onsite', 'remote']}
+        extraProps={{ showNavigate: false }}
+      />
+    </div>
   </svelte:fragment>
 
   <svelte:fragment slot="footer">

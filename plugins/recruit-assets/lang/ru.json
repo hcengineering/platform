@@ -9,6 +9,7 @@
     "CreateVacancy": "Создать вакансию",
     "Vacancy": "Вакансия",
     "VacancyCreateLabel": "Вакансию",
+    "CompanyCreateLabel": "Компания",
     "VacancyPlaceholder": "Разработчик",
     "CreateAnApplication": "Новый Кандидат",
     "NoApplicationsForTalent": "Нет кандидатов для данного таланта.",
@@ -105,7 +106,9 @@
     "PerformMatch": "Сопоставить",
     "MoveApplication": "Поменять Вакансию",
     "SearchVacancy": "Найти вакансию...",
-    "Organizations": "Компании"
+    "Organizations": "Компании",
+    "TemplateReplace": "Вы хотите заменить выбранный шаблон?",
+    "TemplateReplaceConfirm": "Все внесенные изменения в будут заменены значениями из шаблоном"
   },
   "status": {
     "TalentRequired": "Пожалуйста выберите таланта",
