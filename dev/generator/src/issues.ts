@@ -53,9 +53,13 @@ export async function generateIssues (
   const client = new TxOperations(connection, account._id)
   const ctx = new MeasureMetricsContext('recruit', {})
 
+  const statuses = (await client.findAll(tracker.class.IssueStatus, { space }, { projection: { _id: 1 } })).map(
+    (p) => p._id
+  )
+
   for (let index = 0; index < options.count; index++) {
     console.log(`Generating issue ${index + 1}...`)
-    await genIssue(client)
+    await genIssue(client, statuses)
   }
 
   await connection.close()
@@ -64,7 +68,7 @@ export async function generateIssues (
   console.info(metricsToString(ctx.metrics, 'Client'))
 }
 
-async function genIssue (client: TxOperations): Promise<void> {
+async function genIssue (client: TxOperations, statuses: Ref<IssueStatus>[]): Promise<void> {
   const lastOne = await client.findOne<Issue>(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
   const incResult = await client.updateDoc(
     tracker.class.Project,
@@ -76,14 +80,14 @@ async function genIssue (client: TxOperations): Promise<void> {
     true
   )
   const value: AttachedData<Issue> = {
-    title: faker.name.title(),
+    title: faker.commerce.productName(),
     description: faker.lorem.paragraphs(),
     assignee: object.assignee,
     component: object.component,
     sprint: object.sprint,
     number: (incResult as any).object.sequence,
-    status: object.status,
-    priority: object.priority,
+    status: faker.random.arrayElement(statuses),
+    priority: faker.random.arrayElement(Object.values(IssuePriority)) as IssuePriority,
     rank: calcRank(lastOne, undefined),
     comments: 0,
     subIssues: 0,
