@@ -105,7 +105,6 @@
           bind:value={object.name}
           placeholder={recruit.string.VacancyPlaceholder}
           kind={'large-style'}
-          focus
           focusable
           on:blur={() => {
             if (rawName !== object.name) onChange('name', object.name)
