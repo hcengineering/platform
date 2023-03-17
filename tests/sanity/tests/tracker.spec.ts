@@ -144,7 +144,7 @@ test('report-time-from-issue-card', async ({ page }) => {
     await page.click('button:has-text("Create")')
     await page.click('#card-close')
 
-    await expect(page.locator('#TimeSpendReportValue')).toContainText(`${time}d`)
+    await expect(page.locator('#TimeSpendReportValue')).toContainText(`${time}h`)
   }
 })
 
@@ -192,6 +192,6 @@ test('report-time-from-main-view', async ({ page }) => {
     await page.click('button:has-text("Create")')
     await page.click('#card-close')
 
-    await expect(page.locator('.estimation-container >> span').first()).toContainText(`${Number(count.toFixed(2))}d`)
+    await expect(page.locator('.estimation-container >> span').first()).toContainText(`${Number(count.toFixed(2))}h`)
   }
 })
