@@ -307,7 +307,7 @@
                 {/if}
               </div>
             {/each}
-            <ExpandCollapse duration={200} isExpanded>
+            <ExpandCollapse isExpanded>
               {#if editingStatus && !('_id' in editingStatus) && editingStatus.category === category._id}
                 <StatusEditor value={editingStatus} on:cancel={cancelEditing} on:save={addStatus} {isSaving} isSingle />
               {/if}

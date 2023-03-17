@@ -23,6 +23,7 @@
   import PersonPresenter from './PersonPresenter.svelte'
 
   export let value: Contact
+  export let inline: boolean = false
   export let isInteractive = true
 
   function isPerson (value: Contact): boolean {
@@ -40,9 +41,9 @@
 </script>
 
 {#if isEmployee(value)}
-  <EmployeePresenter {isInteractive} value={toEmployee(value)} />
+  <EmployeePresenter {isInteractive} value={toEmployee(value)} {inline} />
 {:else if isPerson(value)}
-  <PersonPresenter {isInteractive} {value} />
+  <PersonPresenter {isInteractive} {value} {inline} />
 {:else}
-  <OrganizationPresenter value={toOrg(value)} />
+  <OrganizationPresenter value={toOrg(value)} {inline} />
 {/if}

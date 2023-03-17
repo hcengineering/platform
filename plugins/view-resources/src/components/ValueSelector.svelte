@@ -153,7 +153,8 @@
             objectId={item._id}
             _class={item._class}
             value={item}
-            props={{ isInteractive: false, inline: true, size }}
+            inline={false}
+            props={{ isInteractive: false, inline: false, size }}
           />
         </div>
       </svelte:fragment>

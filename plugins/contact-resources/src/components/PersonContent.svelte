@@ -26,6 +26,7 @@
   export let shouldShowName = true
   export let shouldShowPlaceholder = false
   export let defaultName: IntlString | undefined = undefined
+  export let statusLabel: IntlString | undefined = undefined
   export let avatarSize: 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' = 'x-small'
   export let onEdit: ((event: MouseEvent) => void) | undefined = undefined
   export let showTooltip: LabelAndProps | undefined = undefined
@@ -34,8 +35,13 @@
 </script>
 
 {#if value}
-  <DocNavLink object={value} onClick={onEdit} disableClick={!isInteractive}>
-    <span use:tooltip={showTooltip} class="contentPresenter" class:text-base={enlargedText}>
+  <DocNavLink object={value} onClick={onEdit} disableClick={!isInteractive} {inline}>
+    <span
+      use:tooltip={showTooltip}
+      class="contentPresenter"
+      class:text-base={enlargedText}
+      class:inline-presenter={inline}
+    >
       {#if shouldShowAvatar}
         <span
           class="eContentPresenterIcon"
@@ -50,6 +56,11 @@
       {/if}
     </span>
   </DocNavLink>
+  {#if statusLabel}
+    <span class="status">
+      <Label label={statusLabel} />
+    </span>
+  {/if}
 {:else if shouldShowPlaceholder}
   <span use:tooltip={showTooltip} class="contentPresenter" class:text-base={enlargedText}>
     {#if shouldShowAvatar}
@@ -65,6 +76,11 @@
       <span class="eContentPresenterLabel">
         <Label label={defaultName} />
       </span>
+      {#if statusLabel}
+        <span class="eContentStatusLabel">
+          <Label label={statusLabel} />
+        </span>
+      {/if}
     {/if}
   </span>
 {/if}
@@ -106,5 +122,14 @@
         color: var(--caption-color);
       }
     }
+  }
+  .status {
+    margin-left: 0.25rem;
+    padding: 0.125rem 0.25rem;
+    font-weight: 500;
+    font-size: 0.75rem;
+    color: var(--content-color);
+    background-color: var(--noborder-bg-color);
+    border-radius: 0.25rem;
   }
 </style>

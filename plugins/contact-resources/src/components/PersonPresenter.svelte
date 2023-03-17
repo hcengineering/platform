@@ -28,6 +28,7 @@
   export let shouldShowName = true
   export let shouldShowPlaceholder = false
   export let defaultName: IntlString | undefined = undefined
+  export let statusLabel: IntlString | undefined = undefined
   export let tooltipLabels: PersonLabelTooltip | undefined = undefined
   export let avatarSize: 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' = 'x-small'
   export let onEdit: ((event: MouseEvent) => void) | undefined = undefined
@@ -73,6 +74,7 @@
     {shouldShowName}
     {shouldShowPlaceholder}
     {enlargedText}
+    {statusLabel}
     bind:element
   />
 {/if}

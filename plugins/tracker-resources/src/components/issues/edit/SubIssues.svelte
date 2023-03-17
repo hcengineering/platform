@@ -160,7 +160,7 @@
 <div class="mt-1">
   {#if issueStatuses}
     {#if hasSubIssues && viewOptions && viewlet}
-      <ExpandCollapse isExpanded={!isCollapsed} duration={400}>
+      <ExpandCollapse isExpanded={!isCollapsed}>
         <div class="list" class:collapsed={isCollapsed}>
           <SubIssueList
             projects={_projects}
@@ -172,7 +172,7 @@
         </div>
       </ExpandCollapse>
     {/if}
-    <ExpandCollapse isExpanded={!isCollapsed} duration={400}>
+    <ExpandCollapse isExpanded={!isCollapsed}>
       {#if isCreating}
         {@const project = projects.get(issue.space)}
         {@const statuses = issueStatuses.get(issue.space)}

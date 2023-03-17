@@ -84,7 +84,7 @@
   />
 </div>
 {#if hasSubIssues}
-  <ExpandCollapse isExpanded={!isCollapsed} duration={400} on:changeContent>
+  <ExpandCollapse isExpanded={!isCollapsed} on:changeContent>
     <div class="flex-col flex-no-shrink max-h-30 list clear-mins" class:collapsed={isCollapsed}>
       <Scroller>
         <IssueTemplateChildList
@@ -100,7 +100,7 @@
   </ExpandCollapse>
 {/if}
 {#if isCreating}
-  <ExpandCollapse isExpanded={!isCollapsed} duration={400} on:changeContent>
+  <ExpandCollapse isExpanded={!isCollapsed} on:changeContent>
     <IssueTemplateChildEditor
       {component}
       {sprint}

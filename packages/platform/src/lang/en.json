@@ -5,6 +5,7 @@
     "InvalidId": "Invalid Id: {id}",
     "BadRequest": "Bad request",
     "Forbidden": "Forbidden",
+    "ExpiredLink": "This invite link is expired",
     "Unauthorized": "Unauthorized",
     "UnknownMethod": "Unknown method: {method}",
     "InternalServerError": "Internal server error"

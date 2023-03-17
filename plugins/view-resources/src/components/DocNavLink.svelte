@@ -33,6 +33,10 @@
   let href: string | undefined = '#' + getPanelURI(component, object._id, Hierarchy.mixinOrClass(object), 'content')
 
   async function getHref (object: Doc): Promise<void> {
+    if (disableClick) {
+      href = undefined
+      return
+    }
     href = `#${await getObjectLinkFragment(hierarchy, object, props, component)}`
   }
 

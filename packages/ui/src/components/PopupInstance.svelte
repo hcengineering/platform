@@ -68,7 +68,7 @@
   }
 
   const fitPopup = (modalHTML: HTMLElement, element: PopupAlignment | undefined): void => {
-    if ((fullSize || docSize) && element === 'float') {
+    if ((fullSize || docSize) && (element === 'float' || element === 'centered')) {
       options = fitPopupElement(modalHTML, 'full')
       options.props.maxHeight = '100vh'
       if (!modalHTML.classList.contains('fullsize')) modalHTML.classList.add('fullsize')
@@ -129,7 +129,7 @@
 
 <div
   class="popup {showing === undefined ? 'endShow' : showing === false ? 'preShow' : 'startShow'}"
-  class:anim={element === 'float'}
+  class:anim={element === 'float' || element === 'centered'}
   bind:this={modalHTML}
   style={`z-index: ${zIndex + 1};`}
   style:top={options.props.top}

@@ -279,7 +279,7 @@ export async function checkInvite (invite: Invite | null, email: string): Promis
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
   if (invite.exp < Date.now()) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.ExpiredLink, {}))
   }
   if (!new RegExp(invite.emailMask).test(email)) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
@@ -924,6 +924,11 @@ function wrap (f: (db: Db, productId: string, ...args: any[]) => Promise<any>): 
       .then((result) => ({ id: request.id, result }))
       .catch((err) => {
         console.error(err)
+        if (err.status.code === platform.status.ExpiredLink) {
+          return {
+            error: new Status(Severity.ERROR, platform.status.ExpiredLink, {})
+          }
+        }
         return {
           error:
             err instanceof PlatformError

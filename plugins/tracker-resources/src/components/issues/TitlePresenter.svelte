@@ -26,12 +26,14 @@
 </script>
 
 {#if value}
-  <DocNavLink object={value} {onClick} component={tracker.component.EditIssue}>
+  <DocNavLink object={value} {onClick} component={tracker.component.EditIssue} inline>
     <span
       class="name overflow-label select-text"
       class:with-margin={shouldUseMargin}
-      style:max-width={showParent ? `${value.parents.length !== 0 ? 95 : 100}%` : '100%'}>{value.title}</span
+      style:max-width={showParent ? `${value.parents.length !== 0 ? 95 : 100}%` : '100%'}
     >
+      {value.title}
+    </span>
     {#if showParent}
       <ParentNamesPresenter {value} />
     {/if}
