@@ -61,7 +61,6 @@ import Components from './components/components/Components.svelte'
 import ComponentStatusEditor from './components/components/ComponentStatusEditor.svelte'
 import ComponentStatusPresenter from './components/components/ComponentStatusPresenter.svelte'
 import ComponentTitlePresenter from './components/components/ComponentTitlePresenter.svelte'
-import Roadmap from './components/components/Roadmap.svelte'
 import TargetDatePresenter from './components/components/TargetDatePresenter.svelte'
 import ProjectComponents from './components/components/ProjectComponents.svelte'
 import RelationsPopup from './components/RelationsPopup.svelte'
@@ -382,7 +381,6 @@ export default async (): Promise<Resources> => ({
     IssuesView,
     KanbanView,
     ProjectComponents,
-    Roadmap,
     IssuePreview,
     RelationsPopup,
     CreateIssue,

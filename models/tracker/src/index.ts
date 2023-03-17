@@ -994,7 +994,7 @@ export function createModel (builder: Builder): void {
             label: tracker.string.MyIssues,
             icon: tracker.icon.MyIssues,
             component: tracker.component.MyIssues
-          },
+          }
           // {
           //   id: 'views',
           //   position: 'top',
@@ -1002,13 +1002,6 @@ export function createModel (builder: Builder): void {
           //   icon: tracker.icon.Views,
           //   component: tracker.component.Views
           // },
-          {
-            id: 'roadmap',
-            position: 'top',
-            label: tracker.string.Roadmap,
-            icon: tracker.icon.Components,
-            component: tracker.component.Roadmap
-          }
         ],
         spaces: [
           {

@@ -166,7 +166,6 @@ export default mergeIds(trackerId, tracker, {
     ComponentMembersSearchPlaceholder: '' as IntlString,
     List: '' as IntlString,
     NumberLabels: '' as IntlString,
-    Roadmap: '' as IntlString,
     MoveToProject: '' as IntlString,
     Duplicate: '' as IntlString,
 
@@ -344,7 +343,6 @@ export default mergeIds(trackerId, tracker, {
     EditComponent: '' as AnyComponent,
     IssuesView: '' as AnyComponent,
     KanbanView: '' as AnyComponent,
-    Roadmap: '' as AnyComponent,
     ProjectComponents: '' as AnyComponent,
     IssuePreview: '' as AnyComponent,
     RelationsPopup: '' as AnyComponent,
