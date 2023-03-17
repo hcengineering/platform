@@ -28,7 +28,7 @@
   const dispatch = createEventDispatcher()
   const options: FindOptions<Issue> = {
     lookup: {
-      space: tracker.class.Team,
+      space: tracker.class.Project,
       status: [tracker.class.IssueStatus, { category: tracker.class.IssueStatusCategory }]
     },
     sort: { modifiedOn: SortingOrder.Descending }

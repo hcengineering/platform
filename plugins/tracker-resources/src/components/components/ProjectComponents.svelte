@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@hcengineering/core'
+  import { Ref } from '@hcengineering/core'
   import { Project } from '@hcengineering/tracker'
-  import { Button } from '@hcengineering/ui'
+  import Components from './Components.svelte'
 
-  export let value: WithLookup<Project>
+  export let currentSpace: Ref<Project>
 </script>
 
-<Button size="small" kind="link" icon={value.icon} />
+<Components query={{ space: currentSpace }} />

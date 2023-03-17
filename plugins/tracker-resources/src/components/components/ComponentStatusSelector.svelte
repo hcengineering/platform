@@ -13,15 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ProjectStatus } from '@hcengineering/tracker'
+  import { ComponentStatus } from '@hcengineering/tracker'
   import { Button, showPopup, SelectPopup, eventToHTMLElement } from '@hcengineering/ui'
   import type { ButtonKind, ButtonSize, LabelAndProps } from '@hcengineering/ui'
   import tracker from '../../plugin'
-  import { defaultProjectStatuses, projectStatusAssets } from '../../utils'
+  import { defaultComponentStatuses, componentStatusAssets } from '../../utils'
 
-  export let selectedProjectStatus: ProjectStatus | undefined
+  export let selectedComponentStatus: ComponentStatus | undefined
   export let shouldShowLabel: boolean = true
-  export let onProjectStatusChange: ((newProjectStatus: ProjectStatus | undefined) => void) | undefined = undefined
+  export let onComponentStatusChange: ((newComponentStatus: ComponentStatus | undefined) => void) | undefined =
+    undefined
   export let isEditable: boolean = true
 
   export let kind: ButtonKind = 'no-border'
@@ -30,19 +31,19 @@
   export let width: string | undefined = 'min-content'
   export let showTooltip: LabelAndProps | undefined = undefined
 
-  $: selectedStatusIcon = selectedProjectStatus
-    ? projectStatusAssets[selectedProjectStatus].icon
-    : tracker.icon.ProjectStatusBacklog
+  $: selectedStatusIcon = selectedComponentStatus
+    ? componentStatusAssets[selectedComponentStatus].icon
+    : tracker.icon.ComponentStatusBacklog
 
   $: selectedStatusLabel = shouldShowLabel
-    ? selectedProjectStatus
-      ? projectStatusAssets[selectedProjectStatus].label
+    ? selectedComponentStatus
+      ? componentStatusAssets[selectedComponentStatus].label
       : tracker.string.Backlog
     : undefined
 
-  $: statusesInfo = defaultProjectStatuses.map((s) => ({ id: s, ...projectStatusAssets[s] }))
+  $: statusesInfo = defaultComponentStatuses.map((s) => ({ id: s, ...componentStatusAssets[s] }))
 
-  const handleProjectStatusEditorOpened = (event: MouseEvent) => {
+  const handleComponentStatusEditorOpened = (event: MouseEvent) => {
     if (!isEditable) {
       return
     }
@@ -50,7 +51,7 @@
       SelectPopup,
       { value: statusesInfo, placeholder: tracker.string.SetStatus, searchable: true },
       eventToHTMLElement(event),
-      onProjectStatusChange
+      onComponentStatusChange
     )
   }
 </script>
@@ -64,5 +65,5 @@
   icon={selectedStatusIcon}
   label={selectedStatusLabel}
   {showTooltip}
-  on:click={handleProjectStatusEditorOpened}
+  on:click={handleComponentStatusEditorOpened}
 />

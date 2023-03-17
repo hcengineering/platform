@@ -22,7 +22,7 @@
   import tracker from '../../plugin'
   import AssigneeEditor from '../issues/AssigneeEditor.svelte'
   import PriorityEditor from '../issues/PriorityEditor.svelte'
-  import ProjectEditor from '../projects/ProjectEditor.svelte'
+  import ComponentEditor from '../components/ComponentEditor.svelte'
   import SprintEditor from '../sprints/SprintEditor.svelte'
 
   export let issue: WithLookup<IssueTemplate>
@@ -37,7 +37,7 @@
     keys = filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key))
   }
 
-  $: updateKeys(['title', 'description', 'priority', 'number', 'assignee', 'project', 'sprint'])
+  $: updateKeys(['title', 'description', 'priority', 'number', 'assignee', 'component', 'sprint'])
 
   const key: KeyedAttribute = {
     key: 'labels',
@@ -97,9 +97,9 @@
   <div class="divider" />
 
   <span class="label">
-    <Label label={tracker.string.Project} />
+    <Label label={tracker.string.Component} />
   </span>
-  <ProjectEditor value={issue} />
+  <ComponentEditor value={issue} />
 
   {#if issue.sprint}
     <span class="label">

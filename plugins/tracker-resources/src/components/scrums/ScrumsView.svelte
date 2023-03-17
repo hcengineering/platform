@@ -15,7 +15,7 @@
 <script lang="ts">
   import contact from '@hcengineering/contact'
   import { Ref, SortingOrder } from '@hcengineering/core'
-  import { ScrumRecord, Sprint, Team } from '@hcengineering/tracker'
+  import { ScrumRecord, Sprint, Project } from '@hcengineering/tracker'
   import { Button, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import { ActionContext, List } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
@@ -24,7 +24,7 @@
   import ScrumDatePresenter from './ScrumDatePresenter.svelte'
   import ScrumPresenter from './ScrumPresenter.svelte'
 
-  export let currentSpace: Ref<Team>
+  export let currentSpace: Ref<Project>
   export let activeScrumRecord: ScrumRecord | undefined
 
   const showCreateDialog = async () => {

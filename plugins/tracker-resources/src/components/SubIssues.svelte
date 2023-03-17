@@ -24,9 +24,9 @@
     Issue,
     IssueParentInfo,
     IssueStatus,
-    Project,
+    Component,
     Sprint,
-    Team
+    Project
   } from '@hcengineering/tracker'
   import { Button, closeTooltip, ExpandCollapse, IconAdd, Scroller } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
@@ -37,10 +37,10 @@
   import DraftIssueChildList from './templates/DraftIssueChildList.svelte'
 
   export let parent: Ref<Issue>
-  export let teamId: Ref<Team>
-  export let team: Team | undefined
+  export let projectId: Ref<Project>
+  export let project: Project | undefined
   export let sprint: Ref<Sprint> | null = null
-  export let project: Ref<Project> | null = null
+  export let component: Ref<Component> | null = null
   export let subIssues: DraftIssueChild[] = []
   export let statuses: WithLookup<IssueStatus>[]
 
@@ -60,15 +60,15 @@
   const client = getClient()
 
   export async function save (parents: IssueParentInfo[]) {
-    if (team === undefined) return
+    if (project === undefined) return
     saved = true
 
     for (const subIssue of subIssues) {
       const lastOne = await client.findOne<Issue>(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
       const incResult = await client.updateDoc(
-        tracker.class.Team,
+        tracker.class.Project,
         core.space.Space,
-        team._id,
+        project._id,
         {
           $inc: { sequence: 1 }
         },
@@ -79,7 +79,7 @@
         title: subIssue.title.trim(),
         description: subIssue.description,
         assignee: subIssue.assignee,
-        project: subIssue.project,
+        component: subIssue.component,
         sprint: subIssue.sprint,
         number: (incResult as any).object.sequence,
         status: subIssue.status,
@@ -98,7 +98,7 @@
 
       await client.addCollection(
         tracker.class.Issue,
-        team._id,
+        project._id,
         parent,
         tracker.class.Issue,
         'subIssues',
@@ -109,7 +109,7 @@
       if ((subIssue.labels?.length ?? 0) > 0) {
         const tagElements = await client.findAll(tags.class.TagElement, { _id: { $in: subIssue.labels } })
         for (const label of tagElements) {
-          await client.addCollection(tags.class.TagReference, team._id, childId, tracker.class.Issue, 'labels', {
+          await client.addCollection(tags.class.TagReference, project._id, childId, tracker.class.Issue, 'labels', {
             title: label.title,
             color: label.color,
             tag: label._id
@@ -133,7 +133,7 @@
   async function saveAttachment (doc: Attachment, issue: Ref<Issue>): Promise<void> {
     await client.addCollection(
       attachment.class.Attachment,
-      teamId,
+      projectId,
       issue,
       tracker.class.Issue,
       'attachments',
@@ -208,10 +208,10 @@
       <Scroller>
         <DraftIssueChildList
           {statuses}
-          {project}
+          {component}
           {sprint}
           bind:issues={subIssues}
-          team={teamId}
+          project={projectId}
           on:move={handleIssueSwap}
           on:update-issue
         />
@@ -219,12 +219,12 @@
     </div>
   </ExpandCollapse>
 {/if}
-{#if isCreating && team}
+{#if isCreating && project}
   <ExpandCollapse isExpanded={!isCollapsed} on:changeContent>
     <DraftIssueChildEditor
-      {team}
-      {statuses}
       {project}
+      {statuses}
+      {component}
       {sprint}
       on:close={() => {
         isCreating = false

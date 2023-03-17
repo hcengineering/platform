@@ -15,13 +15,13 @@
 -->
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
-  import type { Issue, Team } from '@hcengineering/tracker'
+  import type { Issue, Project } from '@hcengineering/tracker'
   import { Icon } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import { getIssueId } from '../../issues'
 
   export let value: WithLookup<Issue>
-  $: title = getIssueId(value.$lookup?.space as Team, value)
+  $: title = getIssueId(value.$lookup?.space as Project, value)
 </script>
 
 <div class="flex item">

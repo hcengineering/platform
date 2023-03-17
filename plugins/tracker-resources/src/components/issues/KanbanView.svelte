@@ -20,7 +20,15 @@
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
-  import { Issue, IssuesGrouping, IssuesOrdering, IssueStatus, Project, Sprint, Team } from '@hcengineering/tracker'
+  import {
+    Issue,
+    IssuesGrouping,
+    IssuesOrdering,
+    IssueStatus,
+    Component as ComponentType,
+    Sprint,
+    Project
+  } from '@hcengineering/tracker'
   import {
     Button,
     Component,
@@ -47,7 +55,7 @@
   import tracker from '../../plugin'
   import { issuesGroupBySorting, mapKanbanCategories } from '../../utils'
   import CreateIssue from '../CreateIssue.svelte'
-  import ProjectEditor from '../projects/ProjectEditor.svelte'
+  import ComponentEditor from '../components/ComponentEditor.svelte'
   import AssigneePresenter from './AssigneePresenter.svelte'
   import SubIssuesSelector from './edit/SubIssuesSelector.svelte'
   import IssuePresenter from './IssuePresenter.svelte'
@@ -57,13 +65,13 @@
   import StatusEditor from './StatusEditor.svelte'
   import EstimationEditor from './timereport/EstimationEditor.svelte'
 
-  export let space: Ref<Team> | undefined = undefined
+  export let space: Ref<Project> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let query: DocumentQuery<Issue> = {}
   export let viewOptionsConfig: ViewOptionModel[] | undefined
   export let viewOptions: ViewOptions
 
-  $: currentSpace = space || tracker.team.DefaultTeam
+  $: currentSpace = space || tracker.project.DefaultProject
   $: groupBy = (viewOptions.groupBy[0] ?? noCategory) as IssuesGrouping
   $: orderBy = viewOptions.orderBy
   $: sort = { [orderBy[0]]: orderBy[1] }
@@ -71,9 +79,9 @@
 
   const spaceQuery = createQuery()
 
-  let currentTeam: Team | undefined
-  $: spaceQuery.query(tracker.class.Team, { _id: currentSpace }, (res) => {
-    currentTeam = res.shift()
+  let currentProject: Project | undefined
+  $: spaceQuery.query(tracker.class.Project, { _id: currentSpace }, (res) => {
+    currentProject = res.shift()
   })
 
   let resultQuery: DocumentQuery<any> = query
@@ -104,7 +112,7 @@
 
   const lookup: Lookup<Issue> = {
     assignee: contact.class.Employee,
-    space: tracker.class.Team,
+    space: tracker.class.Project,
     _id: {
       subIssues: tracker.class.Issue
     }
@@ -128,7 +136,7 @@
   let issues: Issue[] = []
   const lookupIssue: Lookup<Issue> = {
     status: tracker.class.IssueStatus,
-    project: tracker.class.Project,
+    component: tracker.class.Component,
     sprint: tracker.class.Sprint,
     assignee: contact.class.Employee
   }
@@ -167,15 +175,15 @@
     }
   )
 
-  const projectsQuery = createQuery()
-  let projects: Project[] = []
-  $: projectsQuery.query(
-    tracker.class.Project,
+  const componentsQuery = createQuery()
+  let components: ComponentType[] = []
+  $: componentsQuery.query(
+    tracker.class.Component,
     {
       space: currentSpace
     },
     (result) => {
-      projects = result
+      components = result
     }
   )
 
@@ -202,7 +210,7 @@
     viewOptions,
     viewOptionsConfig,
     statuses,
-    projects,
+    components,
     sprints,
     assignee
   )
@@ -215,7 +223,7 @@
       viewOptions,
       viewOptionsConfig,
       statuses,
-      projects,
+      components,
       sprints,
       assignee
     )
@@ -228,7 +236,7 @@
     viewOptions: ViewOptions,
     viewOptionsModel: ViewOptionModel[] | undefined,
     statuses: WithLookup<IssueStatus>[],
-    projects: Project[],
+    components: ComponentType[],
     sprints: Sprint[],
     assignee: Employee[]
   ) {
@@ -251,7 +259,7 @@
       }
     }
     const indexes = new Map(categories.map((p, i) => [p, i]))
-    const res = await mapKanbanCategories(groupByKey, categories, statuses, projects, sprints, assignee)
+    const res = await mapKanbanCategories(groupByKey, categories, statuses, components, sprints, assignee)
     res.sort((a, b) => {
       const aIndex = indexes.get(a._id ?? undefined) ?? -1
       const bIndex = indexes.get(b._id ?? undefined) ?? -1
@@ -357,10 +365,10 @@
         </div>
         <div class="buttons-group xsmall-gap states-bar">
           {#if issue && issue.subIssues > 0}
-            <SubIssuesSelector value={issue} {currentTeam} />
+            <SubIssuesSelector value={issue} {currentProject} />
           {/if}
           <PriorityEditor value={issue} isEditable={true} kind={'link-bordered'} size={'inline'} justify={'center'} />
-          <ProjectEditor
+          <ComponentEditor
             value={issue}
             isEditable={true}
             kind={'link-bordered'}
@@ -369,7 +377,7 @@
             width={''}
             bind:onlyIcon={fullFilled[issueId]}
           />
-          <EstimationEditor kind={'list'} size={'small'} value={issue} {currentTeam} />
+          <EstimationEditor kind={'list'} size={'small'} value={issue} {currentProject} />
           <div
             class="clear-mins"
             use:tooltip={{

@@ -21,7 +21,7 @@ import {
   IssuesDateModificationPeriod,
   IssuesGrouping,
   IssuesOrdering,
-  ProjectStatus,
+  ComponentStatus,
   SprintStatus
 } from '@hcengineering/tracker'
 import tracker from './plugin'
@@ -38,7 +38,7 @@ export const issuesGroupByOptions: Record<IssuesGrouping, IntlString> = {
   [IssuesGrouping.Status]: tracker.string.Status,
   [IssuesGrouping.Assignee]: tracker.string.Assignee,
   [IssuesGrouping.Priority]: tracker.string.Priority,
-  [IssuesGrouping.Project]: tracker.string.Project,
+  [IssuesGrouping.Component]: tracker.string.Component,
   [IssuesGrouping.Sprint]: tracker.string.Sprint,
   [IssuesGrouping.NoGrouping]: tracker.string.NoGrouping
 }
@@ -56,13 +56,13 @@ export const issuesDateModificationPeriodOptions: Record<IssuesDateModificationP
   [IssuesDateModificationPeriod.PastWeek]: tracker.string.PastWeek,
   [IssuesDateModificationPeriod.PastMonth]: tracker.string.PastMonth
 }
-export const defaultProjectStatuses = [
-  ProjectStatus.Backlog,
-  ProjectStatus.Planned,
-  ProjectStatus.InProgress,
-  ProjectStatus.Paused,
-  ProjectStatus.Completed,
-  ProjectStatus.Canceled
+export const defaultComponentStatuses = [
+  ComponentStatus.Backlog,
+  ComponentStatus.Planned,
+  ComponentStatus.InProgress,
+  ComponentStatus.Paused,
+  ComponentStatus.Completed,
+  ComponentStatus.Canceled
 ]
 
 export const defaultSprintStatuses = [
@@ -72,13 +72,13 @@ export const defaultSprintStatuses = [
   SprintStatus.Canceled
 ]
 
-export const projectStatusAssets: Record<ProjectStatus, { icon: Asset, label: IntlString }> = {
-  [ProjectStatus.Backlog]: { icon: tracker.icon.ProjectStatusBacklog, label: tracker.string.Backlog },
-  [ProjectStatus.Planned]: { icon: tracker.icon.ProjectStatusPlanned, label: tracker.string.Planned },
-  [ProjectStatus.InProgress]: { icon: tracker.icon.ProjectStatusInProgress, label: tracker.string.InProgress },
-  [ProjectStatus.Paused]: { icon: tracker.icon.ProjectStatusPaused, label: tracker.string.Paused },
-  [ProjectStatus.Completed]: { icon: tracker.icon.ProjectStatusCompleted, label: tracker.string.Completed },
-  [ProjectStatus.Canceled]: { icon: tracker.icon.ProjectStatusCanceled, label: tracker.string.Canceled }
+export const componentStatusAssets: Record<ComponentStatus, { icon: Asset, label: IntlString }> = {
+  [ComponentStatus.Backlog]: { icon: tracker.icon.ComponentStatusBacklog, label: tracker.string.Backlog },
+  [ComponentStatus.Planned]: { icon: tracker.icon.ComponentStatusPlanned, label: tracker.string.Planned },
+  [ComponentStatus.InProgress]: { icon: tracker.icon.ComponentStatusInProgress, label: tracker.string.InProgress },
+  [ComponentStatus.Paused]: { icon: tracker.icon.ComponentStatusPaused, label: tracker.string.Paused },
+  [ComponentStatus.Completed]: { icon: tracker.icon.ComponentStatusCompleted, label: tracker.string.Completed },
+  [ComponentStatus.Canceled]: { icon: tracker.icon.ComponentStatusCanceled, label: tracker.string.Canceled }
 }
 
 export const sprintStatusAssets: Record<SprintStatus, { icon: Asset, label: IntlString }> = {
@@ -100,7 +100,7 @@ export const issuesGroupBySorting: Record<IssuesGrouping, SortingQuery<Issue>> =
   [IssuesGrouping.Status]: { '$lookup.status.rank': SortingOrder.Ascending },
   [IssuesGrouping.Assignee]: { '$lookup.assignee.name': SortingOrder.Ascending },
   [IssuesGrouping.Priority]: { priority: SortingOrder.Ascending },
-  [IssuesGrouping.Project]: { '$lookup.project.label': SortingOrder.Ascending },
+  [IssuesGrouping.Component]: { '$lookup.component.label': SortingOrder.Ascending },
   [IssuesGrouping.Sprint]: { '$lookup.sprint.label': SortingOrder.Ascending },
   [IssuesGrouping.NoGrouping]: { rank: SortingOrder.Ascending }
 }

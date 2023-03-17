@@ -30,7 +30,7 @@
     (result) => {
       documents = result
     },
-    { lookup: isIssue ? { space: tracker.class.Team } : {} }
+    { lookup: isIssue ? { space: tracker.class.Project } : {} }
   )
 
   async function handleClick (issue: RelatedDocument) {

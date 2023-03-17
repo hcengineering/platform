@@ -16,13 +16,13 @@
   import { Data, DateRangeMode, generateId, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Card, getClient, SpaceSelector, UserBoxList } from '@hcengineering/presentation'
-  import { Scrum, Team } from '@hcengineering/tracker'
+  import { Scrum, Project } from '@hcengineering/tracker'
   import { DateRangePresenter, EditBox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import { StyledTextArea } from '@hcengineering/text-editor'
 
-  export let space: Ref<Team>
+  export let space: Ref<Project>
 
   const objectId: Ref<Scrum> = generateId()
   const dispatch = createEventDispatcher()
@@ -66,7 +66,7 @@
   on:close={() => dispatch('close')}
 >
   <svelte:fragment slot="header">
-    <SpaceSelector _class={tracker.class.Team} label={tracker.string.Team} bind:space />
+    <SpaceSelector _class={tracker.class.Project} label={tracker.string.Project} bind:space />
   </svelte:fragment>
   <EditBox bind:value={object.title} placeholder={tracker.string.ScrumTitlePlaceholder} kind={'large-style'} focus />
   <StyledTextArea

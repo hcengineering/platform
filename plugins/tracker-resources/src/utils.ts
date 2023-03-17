@@ -39,11 +39,11 @@ import {
   IssuesOrdering,
   IssueStatus,
   IssueTemplateData,
-  Project,
-  ProjectStatus,
+  Component,
+  ComponentStatus,
   Sprint,
   SprintStatus,
-  Team,
+  Project,
   TimeReportDayType
 } from '@hcengineering/tracker'
 import {
@@ -56,7 +56,7 @@ import {
 } from '@hcengineering/ui'
 import { CategoryQuery, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
 import tracker from './plugin'
-import { defaultPriorities, defaultProjectStatuses, defaultSprintStatuses, issuePriorities } from './types'
+import { defaultPriorities, defaultComponentStatuses, defaultSprintStatuses, issuePriorities } from './types'
 
 export * from './types'
 
@@ -72,18 +72,18 @@ export interface NavigationItem {
 }
 
 export interface Selection {
-  currentTeam?: Ref<Team>
+  currentProject?: Ref<Project>
   currentSpecial?: string
 }
 
-export type IssuesGroupByKeys = keyof Pick<Issue, 'status' | 'priority' | 'assignee' | 'project' | 'sprint'>
+export type IssuesGroupByKeys = keyof Pick<Issue, 'status' | 'priority' | 'assignee' | 'component' | 'sprint'>
 export type IssuesOrderByKeys = keyof Pick<Issue, 'status' | 'priority' | 'modifiedOn' | 'dueDate' | 'rank'>
 
 export const issuesGroupKeyMap: Record<IssuesGrouping, IssuesGroupByKeys | undefined> = {
   [IssuesGrouping.Status]: 'status',
   [IssuesGrouping.Priority]: 'priority',
   [IssuesGrouping.Assignee]: 'assignee',
-  [IssuesGrouping.Project]: 'project',
+  [IssuesGrouping.Component]: 'component',
   [IssuesGrouping.Sprint]: 'sprint',
   [IssuesGrouping.NoGrouping]: undefined
 }
@@ -104,10 +104,10 @@ export const issuesSortOrderMap: Record<IssuesOrderByKeys, SortingOrder> = {
   rank: SortingOrder.Ascending
 }
 
-export const issuesGroupEditorMap: Record<'status' | 'priority' | 'project' | 'sprint', AnyComponent | undefined> = {
+export const issuesGroupEditorMap: Record<'status' | 'priority' | 'component' | 'sprint', AnyComponent | undefined> = {
   status: tracker.component.StatusEditor,
   priority: tracker.component.PriorityEditor,
-  project: tracker.component.ProjectEditor,
+  component: tracker.component.ComponentEditor,
   sprint: tracker.component.SprintEditor
 }
 
@@ -201,10 +201,10 @@ export const getIssueFilterAssetsByType = (type: string): { icon: Asset, label: 
         label: tracker.string.Priority
       }
     }
-    case 'project': {
+    case 'component': {
       return {
-        icon: tracker.icon.Project,
-        label: tracker.string.Project
+        icon: tracker.icon.Component,
+        label: tracker.string.Component
       }
     }
     case 'sprint': {
@@ -256,25 +256,25 @@ export const getDueDateIconModifier = (
   }
 }
 
-export type ProjectsViewMode = 'all' | 'backlog' | 'active' | 'closed'
+export type ComponentsViewMode = 'all' | 'backlog' | 'active' | 'closed'
 
 export type SprintViewMode = 'all' | 'planned' | 'active' | 'closed'
 
 export type ScrumRecordViewMode = 'timeReports' | 'objects'
 
-export const getIncludedProjectStatuses = (mode: ProjectsViewMode): ProjectStatus[] => {
+export const getIncludedComponentStatuses = (mode: ComponentsViewMode): ComponentStatus[] => {
   switch (mode) {
     case 'all': {
-      return defaultProjectStatuses
+      return defaultComponentStatuses
     }
     case 'active': {
-      return [ProjectStatus.Planned, ProjectStatus.InProgress, ProjectStatus.Paused]
+      return [ComponentStatus.Planned, ComponentStatus.InProgress, ComponentStatus.Paused]
     }
     case 'backlog': {
-      return [ProjectStatus.Backlog]
+      return [ComponentStatus.Backlog]
     }
     case 'closed': {
-      return [ProjectStatus.Completed, ProjectStatus.Canceled]
+      return [ComponentStatus.Completed, ComponentStatus.Canceled]
     }
     default: {
       return []
@@ -302,11 +302,11 @@ export const getIncludedSprintStatuses = (mode: SprintViewMode): SprintStatus[] 
   }
 }
 
-export const projectsTitleMap: Record<ProjectsViewMode, IntlString> = Object.freeze({
-  all: tracker.string.AllProjects,
-  backlog: tracker.string.BacklogProjects,
-  active: tracker.string.ActiveProjects,
-  closed: tracker.string.ClosedProjects
+export const componentsTitleMap: Record<ComponentsViewMode, IntlString> = Object.freeze({
+  all: tracker.string.AllComponents,
+  backlog: tracker.string.BacklogComponents,
+  active: tracker.string.ActiveComponents,
+  closed: tracker.string.ClosedComponents
 })
 
 export const sprintTitleMap: Record<SprintViewMode, IntlString> = Object.freeze({
@@ -366,7 +366,7 @@ export async function mapKanbanCategories (
   groupBy: string,
   categories: any[],
   statuses: Array<WithLookup<IssueStatus>>,
-  projects: Project[],
+  components: Component[],
   sprints: Sprint[],
   assignee: Employee[]
 ): Promise<TypeState[]> {
@@ -421,20 +421,20 @@ export async function mapKanbanCategories (
     }
     return res
   }
-  if (groupBy === IssuesGrouping.Project) {
-    const noProject = await translate(tracker.string.NoProject, {})
-    const res: TypeState[] = projects
+  if (groupBy === IssuesGrouping.Component) {
+    const noComponent = await translate(tracker.string.NoComponent, {})
+    const res: TypeState[] = components
       .filter((p) => categories.includes(p._id))
-      .map((project) => ({
-        _id: project._id,
-        title: project.label,
+      .map((component) => ({
+        _id: component._id,
+        title: component.label,
         color: UNSET_COLOR,
         icon: undefined
       }))
     if (categories.includes(undefined)) {
       res.push({
         _id: null,
-        title: noProject,
+        title: noComponent,
         color: UNSET_COLOR,
         icon: undefined
       })
@@ -592,16 +592,16 @@ export async function getAllPriority (
   return defaultPriorities
 }
 
-export async function getAllProjects (
-  space: Ref<Team> | undefined,
+export async function getAllComponents (
+  space: Ref<Project> | undefined,
   onUpdate: () => void,
   queryId: Ref<Doc>
 ): Promise<any[] | undefined> {
-  return await getAllSomething(tracker.class.Project, space, onUpdate, queryId)
+  return await getAllSomething(tracker.class.Component, space, onUpdate, queryId)
 }
 
 export async function getAllSprints (
-  space: Ref<Team> | undefined,
+  space: Ref<Project> | undefined,
   onUpdate: () => void,
   queryId: Ref<Doc>
 ): Promise<any[] | undefined> {
@@ -651,7 +651,7 @@ export async function getPreviousAssignees (
   })
 }
 
-export async function removeTeam (teamToDelete: Team): Promise<void> {
+export async function removeProject (project: Project): Promise<void> {
   const client = getClient()
-  await client.removeDoc(tracker.class.Team, core.space.Space, teamToDelete._id)
+  await client.removeDoc(tracker.class.Project, core.space.Space, project._id)
 }

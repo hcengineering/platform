@@ -15,7 +15,7 @@
 <script lang="ts">
   import { AttachedData, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { DraftIssueChild, Issue, IssueStatus, Team } from '@hcengineering/tracker'
+  import { DraftIssueChild, Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { Button, eventToHTMLElement, SelectPopup, showPopup, TooltipAlignment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -35,7 +35,7 @@
   export let width: string | undefined = undefined
 
   // Extra properties
-  export let issueStatuses: Map<Ref<Team>, WithLookup<IssueStatus>[]> | undefined = undefined
+  export let issueStatuses: Map<Ref<Project>, WithLookup<IssueStatus>[]> | undefined = undefined
 
   const client = getClient()
   const statusesQuery = createQuery()

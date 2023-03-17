@@ -30,22 +30,22 @@
     const elements: FilterSectionElement[] = []
 
     const client = getClient()
-    const projects = await client.findAll(tracker.class.Project, {})
+    const components = await client.findAll(tracker.class.Component, {})
     for (const [key, value] of Object.entries(groups)) {
-      const project = key === 'null' ? null : key
-      const label = project
-        ? projects.find(({ _id }) => _id === project)?.label
-        : await translate(tracker.string.NoProject, {})
+      const component = key === 'null' ? null : key
+      const label = component
+        ? components.find(({ _id }) => _id === component)?.label
+        : await translate(tracker.string.NoComponent, {})
 
       if (!label) {
         continue
       }
-      elements.splice(project ? 1 : 0, 0, {
-        icon: tracker.icon.Project,
+      elements.splice(component ? 1 : 0, 0, {
+        icon: tracker.icon.Component,
         title: label,
         count: value,
-        isSelected: selected.includes(project),
-        onSelect: () => onUpdate({ project }, index)
+        isSelected: selected.includes(component),
+        onSelect: () => onUpdate({ component }, index)
       })
     }
     return onBack

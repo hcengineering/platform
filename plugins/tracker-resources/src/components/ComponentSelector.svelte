@@ -16,16 +16,16 @@
   import { Ref, SortingOrder } from '@hcengineering/core'
   import { getEmbeddedLabel, IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import { Project } from '@hcengineering/tracker'
+  import { Component } from '@hcengineering/tracker'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { Button, ButtonShape, eventToHTMLElement, SelectPopup, showPopup, Label } from '@hcengineering/ui'
   import tracker from '../plugin'
 
-  export let value: Ref<Project> | null | undefined
+  export let value: Ref<Component> | null | undefined
   export let shouldShowLabel: boolean = true
   export let isEditable: boolean = true
-  export let onChange: ((newProjectId: Ref<Project> | undefined) => void) | undefined = undefined
-  export let popupPlaceholder: IntlString = tracker.string.AddToProject
+  export let onChange: ((newComponentId: Ref<Component> | undefined) => void) | undefined = undefined
+  export let popupPlaceholder: IntlString = tracker.string.AddToComponent
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
   export let shape: ButtonShape = undefined
@@ -34,17 +34,17 @@
   export let onlyIcon: boolean = false
   export let enlargedText = false
 
-  let selectedProject: Project | undefined
-  let defaultProjectLabel = ''
+  let selectedComponent: Component | undefined
+  let defaultComponentLabel = ''
 
   const query = createQuery()
-  let rawProjects: Project[] = []
+  let rawComponents: Component[] = []
   let loading = true
   query.query(
-    tracker.class.Project,
+    tracker.class.Component,
     {},
     (res) => {
-      rawProjects = res
+      rawComponents = res
       loading = false
     },
     {
@@ -52,58 +52,61 @@
     }
   )
 
-  $: handleSelectedProjectIdUpdated(value, rawProjects)
+  $: handleSelectedComponentIdUpdated(value, rawComponents)
 
-  $: translate(tracker.string.Project, {}).then((result) => (defaultProjectLabel = result))
-  $: projectIcon = selectedProject?.icon ?? tracker.icon.Projects
-  $: projectText = shouldShowLabel ? selectedProject?.label ?? defaultProjectLabel : undefined
+  $: translate(tracker.string.Component, {}).then((result) => (defaultComponentLabel = result))
+  $: componentIcon = selectedComponent?.icon ?? tracker.icon.Components
+  $: componentText = shouldShowLabel ? selectedComponent?.label ?? defaultComponentLabel : undefined
 
-  const handleSelectedProjectIdUpdated = async (newProjectId: Ref<Project> | null | undefined, projects: Project[]) => {
-    if (newProjectId === null || newProjectId === undefined) {
-      selectedProject = undefined
+  const handleSelectedComponentIdUpdated = async (
+    newComponentId: Ref<Component> | null | undefined,
+    components: Component[]
+  ) => {
+    if (newComponentId === null || newComponentId === undefined) {
+      selectedComponent = undefined
 
       return
     }
 
-    selectedProject = projects.find((it) => it._id === newProjectId)
+    selectedComponent = components.find((it) => it._id === newComponentId)
   }
 
-  const handleProjectEditorOpened = async (event: MouseEvent): Promise<void> => {
+  const handleComponentEditorOpened = async (event: MouseEvent): Promise<void> => {
     event.stopPropagation()
     if (!isEditable) {
       return
     }
 
-    const projectsInfo = [
-      { id: null, icon: tracker.icon.Projects, label: tracker.string.NoProject, isSelected: !selectedProject },
-      ...rawProjects.map((p) => ({
+    const componentsInfo = [
+      { id: null, icon: tracker.icon.Components, label: tracker.string.NoComponent, isSelected: !selectedComponent },
+      ...rawComponents.map((p) => ({
         id: p._id,
         icon: p.icon,
         text: p.label,
-        isSelected: selectedProject ? p._id === selectedProject._id : false
+        isSelected: selectedComponent ? p._id === selectedComponent._id : false
       }))
     ]
 
     showPopup(
       SelectPopup,
-      { value: projectsInfo, placeholder: popupPlaceholder, searchable: true },
+      { value: componentsInfo, placeholder: popupPlaceholder, searchable: true },
       eventToHTMLElement(event),
       onChange
     )
   }
 </script>
 
-{#if onlyIcon || projectText === undefined}
+{#if onlyIcon || componentText === undefined}
   <Button
     {kind}
     {size}
     {shape}
     {width}
     {justify}
-    icon={projectIcon}
+    icon={componentIcon}
     disabled={!isEditable}
     {loading}
-    on:click={handleProjectEditorOpened}
+    on:click={handleComponentEditorOpened}
   />
 {:else}
   <Button
@@ -112,17 +115,17 @@
     {shape}
     {width}
     {justify}
-    icon={projectIcon}
+    icon={componentIcon}
     disabled={!isEditable}
     {loading}
-    on:click={handleProjectEditorOpened}
+    on:click={handleComponentEditorOpened}
     ><svelte:fragment slot="content">
       <span
         class="{enlargedText ? 'ml-1 text-base fs-bold' : 'text-md'} overflow-label {!value
           ? 'content-color'
           : 'content-accent-color'} pointer-events-none"
       >
-        <Label label={getEmbeddedLabel(projectText)} />
+        <Label label={getEmbeddedLabel(componentText)} />
       </span>
     </svelte:fragment></Button
   >

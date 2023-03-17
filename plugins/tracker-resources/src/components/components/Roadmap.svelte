@@ -13,18 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Project } from '@hcengineering/tracker'
-  import { Icon } from '@hcengineering/ui'
+  import Components from './Components.svelte'
   import tracker from '../../plugin'
-
-  export let value: Project | undefined
 </script>
 
-{#if value}
-  <span class="overflow-label flex">
-    <Icon icon={value.icon ?? tracker.icon.Project} size={'small'} />
-    <div class="ml-2 mr-2">
-      {value.label}
-    </div></span
-  >
-{/if}
+<Components label={tracker.string.Roadmap} />

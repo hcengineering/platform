@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Project, ProjectStatus } from '@hcengineering/tracker'
+  import { Component, ComponentStatus } from '@hcengineering/tracker'
   import { getClient } from '@hcengineering/presentation'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import tracker from '../../plugin'
 
-  import ProjectStatusSelector from './ProjectStatusSelector.svelte'
+  import ComponentStatusSelector from './ComponentStatusSelector.svelte'
 
-  export let value: Project
+  export let value: Component
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
   export let kind: ButtonKind = 'link'
@@ -30,7 +30,7 @@
 
   const client = getClient()
 
-  const handleProjectStatusChanged = async (newStatus: ProjectStatus | undefined) => {
+  const handleComponentStatusChanged = async (newStatus: ComponentStatus | undefined) => {
     if (!isEditable || newStatus === undefined || value.status === newStatus) {
       return
     }
@@ -40,7 +40,7 @@
 </script>
 
 {#if value}
-  <ProjectStatusSelector
+  <ComponentStatusSelector
     {kind}
     {size}
     {width}
@@ -48,7 +48,7 @@
     {isEditable}
     {shouldShowLabel}
     showTooltip={isEditable ? { label: tracker.string.SetStatus } : undefined}
-    selectedProjectStatus={value.status}
-    onProjectStatusChange={handleProjectStatusChanged}
+    selectedComponentStatus={value.status}
+    onComponentStatusChange={handleComponentStatusChanged}
   />
 {/if}

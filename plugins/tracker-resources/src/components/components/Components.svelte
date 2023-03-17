@@ -16,51 +16,51 @@
   import { DocumentQuery, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import { Project } from '@hcengineering/tracker'
+  import { Component } from '@hcengineering/tracker'
   import { closePopup, closeTooltip, getCurrentLocation, location, navigate } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import tracker from '../../plugin'
-  import { ProjectsViewMode } from '../../utils'
-  import EditProject from './EditProject.svelte'
-  import ProjectBrowser from './ProjectBrowser.svelte'
+  import { ComponentsViewMode } from '../../utils'
+  import EditComponent from './EditComponent.svelte'
+  import ComponentBrowser from './ComponentBrowser.svelte'
 
-  export let label: IntlString = tracker.string.Projects
-  export let query: DocumentQuery<Project> = {}
+  export let label: IntlString = tracker.string.Components
+  export let query: DocumentQuery<Component> = {}
   export let search: string = ''
-  export let mode: ProjectsViewMode = 'all'
+  export let mode: ComponentsViewMode = 'all'
 
-  let projectId: Ref<Project> | undefined
-  let project: Project | undefined
+  let componentId: Ref<Component> | undefined
+  let component: Component | undefined
 
   onDestroy(
     location.subscribe(async (loc) => {
       closeTooltip()
       closePopup()
 
-      projectId = loc.path[5] as Ref<Project>
+      componentId = loc.path[5] as Ref<Component>
     })
   )
 
-  const projectQuery = createQuery()
-  $: if (projectId !== undefined) {
-    projectQuery.query(tracker.class.Project, { _id: projectId }, (result) => {
-      project = result.shift()
+  const componentQuery = createQuery()
+  $: if (componentId !== undefined) {
+    componentQuery.query(tracker.class.Component, { _id: componentId }, (result) => {
+      component = result.shift()
     })
   } else {
-    projectQuery.unsubscribe()
-    project = undefined
+    componentQuery.unsubscribe()
+    component = undefined
   }
 </script>
 
-{#if project}
-  <EditProject
-    {project}
-    on:project={(evt) => {
+{#if component}
+  <EditComponent
+    {component}
+    on:component={(evt) => {
       const loc = getCurrentLocation()
       loc.path[5] = evt.detail
       navigate(loc)
     }}
   />
 {:else}
-  <ProjectBrowser {label} {query} {search} {mode} />
+  <ComponentBrowser {label} {query} {search} {mode} />
 {/if}

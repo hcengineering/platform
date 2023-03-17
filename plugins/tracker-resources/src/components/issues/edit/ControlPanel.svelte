@@ -24,7 +24,7 @@
   import { ObjectBox } from '@hcengineering/view-resources'
   import { getFiltredKeys, isCollectionAttr } from '@hcengineering/view-resources/src/utils'
   import tracker from '../../../plugin'
-  import ProjectEditor from '../../projects/ProjectEditor.svelte'
+  import ComponentEditor from '../../components/ComponentEditor.svelte'
   import SprintEditor from '../../sprints/SprintEditor.svelte'
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import DueDateEditor from '../DueDateEditor.svelte'
@@ -75,7 +75,7 @@
     return res
   }
 
-  $: updateKeys(['title', 'description', 'priority', 'status', 'number', 'assignee', 'project', 'dueDate', 'sprint'])
+  $: updateKeys(['title', 'description', 'priority', 'status', 'number', 'assignee', 'component', 'dueDate', 'sprint'])
 
   const employeeAccountQuery = createQuery()
   const employeeQuery = createQuery()
@@ -174,9 +174,9 @@
   <div class="divider" />
 
   <span class="label">
-    <Label label={tracker.string.Project} />
+    <Label label={tracker.string.Component} />
   </span>
-  <ProjectEditor value={issue} />
+  <ComponentEditor value={issue} />
 
   {#if issue.sprint}
     <span class="label">

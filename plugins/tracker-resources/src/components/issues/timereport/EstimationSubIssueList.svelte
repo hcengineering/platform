@@ -16,7 +16,7 @@
   import contact from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
   import { AssigneeBox } from '@hcengineering/presentation'
-  import { Issue, Team } from '@hcengineering/tracker'
+  import { Issue, Project } from '@hcengineering/tracker'
   import { deviceOptionsStore as deviceInfo, getEventPositionElement, ListView, showPopup } from '@hcengineering/ui'
   import { ContextMenu, FixedColumn, ListSelectionProvider } from '@hcengineering/view-resources'
   import { getIssueId } from '../../../issues'
@@ -25,7 +25,7 @@
 
   export let issues: Issue[]
 
-  export let teams: Map<Ref<Team>, Team>
+  export let projects: Map<Ref<Project>, Project>
 
   function showContextMenu (ev: MouseEvent, object: Issue) {
     showPopup(ContextMenu, { object }, $deviceInfo.isMobile ? 'top' : getEventPositionElement(ev))
@@ -38,7 +38,7 @@
 <ListView count={issues.length} addClass={'step-tb-2-accent'}>
   <svelte:fragment slot="item" let:item>
     {@const issue = issues[item]}
-    {@const currentTeam = teams.get(issue.space)}
+    {@const currentProject = projects.get(issue.space)}
     <div
       class="{twoRows ? 'flex-col' : 'flex-between'} p-text-2"
       on:contextmenu|preventDefault={(ev) => showContextMenu(ev, issue)}
@@ -51,8 +51,8 @@
     >
       <div class="flex-row-center clear-mins gap-2 flex-grow mr-4" class:p-text={twoRows}>
         <FixedColumn key={'estimation_issue'} justify={'left'} addClass={'fs-bold'}>
-          {#if currentTeam}
-            {getIssueId(currentTeam, issue)}
+          {#if currentProject}
+            {getIssueId(currentProject, issue)}
           {/if}
         </FixedColumn>
         <span class="overflow-label fs-bold caption-color" title={issue.title}>
@@ -71,7 +71,7 @@
         />
       </FixedColumn>
       <FixedColumn key={'estimation'} justify={'left'}>
-        <EstimationEditor value={issue} kind={'list'} {currentTeam} />
+        <EstimationEditor value={issue} kind={'list'} {currentProject} />
       </FixedColumn>
     </div>
   </svelte:fragment>

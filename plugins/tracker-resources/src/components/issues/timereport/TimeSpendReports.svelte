@@ -15,21 +15,21 @@
 <script lang="ts">
   import { DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Issue, Team, TimeSpendReport } from '@hcengineering/tracker'
+  import { Issue, Project, TimeSpendReport } from '@hcengineering/tracker'
   import { Expandable, floorFractionDigits, Label, Spinner } from '@hcengineering/ui'
   import tracker from '../../../plugin'
   import TimePresenter from './TimePresenter.svelte'
   import TimeSpendReportsList from './TimeSpendReportsList.svelte'
 
   export let issue: Issue
-  export let teams: Map<Ref<Team>, Team>
+  export let projects: Map<Ref<Project>, Project>
   export let query: DocumentQuery<TimeSpendReport>
 
   const subIssuesQuery = createQuery()
 
   let reports: TimeSpendReport[] | undefined
 
-  $: workDayLength = teams.get(issue.space)?.workDayLength
+  $: workDayLength = projects.get(issue.space)?.workDayLength
   $: subIssuesQuery.query(tracker.class.TimeSpendReport, query, async (result) => (reports = result), {
     sort: { modifiedOn: SortingOrder.Descending },
     lookup: {
@@ -51,7 +51,7 @@
         <span class="caption-color"><TimePresenter value={total} {workDayLength} /></span>
       </span>
     </svelte:fragment>
-    <TimeSpendReportsList {reports} {teams} />
+    <TimeSpendReportsList {reports} {projects} />
   </Expandable>
 {:else}
   <div class="flex-center">

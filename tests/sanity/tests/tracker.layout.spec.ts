@@ -2,7 +2,7 @@ import { test, expect, Page } from '@playwright/test'
 import {
   checkIssueFromList,
   createIssue,
-  createProject,
+  createComponent,
   createSprint,
   DEFAULT_STATUSES,
   DEFAULT_USER,
@@ -20,7 +20,7 @@ test.use({
 
 const getIssueName = (postfix: string = generateId(5)): string => `issue-${postfix}`
 
-async function createIssues (page: Page, projects?: string[], sprints?: string[]): Promise<IssueProps[]> {
+async function createIssues (page: Page, components?: string[], sprints?: string[]): Promise<IssueProps[]> {
   const issuesProps = []
   for (let index = 0; index < 5; index++) {
     const shiftedIndex = 4 - index
@@ -33,7 +33,7 @@ async function createIssues (page: Page, projects?: string[], sprints?: string[]
       status: DEFAULT_STATUSES[shiftedIndex],
       assignee: shiftedIndex % 2 === 0 ? DEFAULT_USER : 'Chen Rosamund',
       priority: PRIORITIES[shiftedIndex],
-      project: projects !== undefined ? projects[index % projects.length] : undefined,
+      component: components !== undefined ? components[index % components.length] : undefined,
       sprint: sprints !== undefined ? sprints[index % sprints.length] : undefined
     }
     issuesProps.push(issueProps)
@@ -44,17 +44,17 @@ async function createIssues (page: Page, projects?: string[], sprints?: string[]
   return issuesProps
 }
 
-async function createProjects (page: Page): Promise<string[]> {
-  const projects = []
+async function createComponents (page: Page): Promise<string[]> {
+  const components = []
 
   for (let index = 0; index < 5; index++) {
-    const prjId = `project-${generateId()}-${index}`
-    projects.push(prjId)
+    const prjId = `component-${generateId()}-${index}`
+    components.push(prjId)
 
-    await createProject(page, prjId)
+    await createComponent(page, prjId)
   }
 
-  return projects
+  return components
 }
 
 async function createSprints (page: Page): Promise<string[]> {
@@ -71,9 +71,9 @@ async function createSprints (page: Page): Promise<string[]> {
 }
 
 async function initIssues (page: Page): Promise<IssueProps[]> {
-  const projects = await createProjects(page)
+  const components = await createComponents(page)
   const sprints = await createSprints(page)
-  const issuesProps = await createIssues(page, projects, sprints)
+  const issuesProps = await createIssues(page, components, sprints)
   await page.click('text="Issues"')
 
   return issuesProps
@@ -88,7 +88,7 @@ test.describe('tracker layout tests', () => {
 
   let issuesProps: IssueProps[] = []
   const orders = ['Status', 'Modified', 'Priority'] as const
-  const groups = ['Status', 'Assignee', 'Priority', 'Project', 'Sprint', 'No grouping'] as const
+  const groups = ['Status', 'Assignee', 'Priority', 'Component', 'Sprint', 'No grouping'] as const
   const groupsLabels: { [key in typeof groups[number]]?: string[] } = {
     Status: DEFAULT_STATUSES,
     Assignee: [DEFAULT_USER, 'Chen Rosamund'],

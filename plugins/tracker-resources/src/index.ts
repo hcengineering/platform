@@ -25,7 +25,7 @@ import {
 } from '@hcengineering/core'
 import { Resources, translate } from '@hcengineering/platform'
 import { getClient, MessageBox, ObjectSearchResult } from '@hcengineering/presentation'
-import { Issue, Scrum, ScrumRecord, Sprint, Team } from '@hcengineering/tracker'
+import { Issue, Scrum, ScrumRecord, Sprint, Project } from '@hcengineering/tracker'
 import { showPopup } from '@hcengineering/ui'
 import CreateIssue from './components/CreateIssue.svelte'
 import Inbox from './components/inbox/Inbox.svelte'
@@ -52,24 +52,24 @@ import TitlePresenter from './components/issues/TitlePresenter.svelte'
 import MyIssues from './components/myissues/MyIssues.svelte'
 import NewIssueHeader from './components/NewIssueHeader.svelte'
 import NopeComponent from './components/NopeComponent.svelte'
-import EditProject from './components/projects/EditProject.svelte'
-import IconPresenter from './components/projects/IconPresenter.svelte'
-import LeadPresenter from './components/projects/LeadPresenter.svelte'
-import ProjectEditor from './components/projects/ProjectEditor.svelte'
-import ProjectPresenter from './components/projects/ProjectPresenter.svelte'
-import Projects from './components/projects/Projects.svelte'
-import ProjectStatusEditor from './components/projects/ProjectStatusEditor.svelte'
-import ProjectStatusPresenter from './components/projects/ProjectStatusPresenter.svelte'
-import ProjectTitlePresenter from './components/projects/ProjectTitlePresenter.svelte'
-import Roadmap from './components/projects/Roadmap.svelte'
-import TargetDatePresenter from './components/projects/TargetDatePresenter.svelte'
-import TeamProjects from './components/projects/TeamProjects.svelte'
+import EditComponent from './components/components/EditComponent.svelte'
+import IconPresenter from './components/components/IconComponent.svelte'
+import LeadPresenter from './components/components/LeadPresenter.svelte'
+import ComponentEditor from './components/components/ComponentEditor.svelte'
+import ComponentPresenter from './components/components/ComponentPresenter.svelte'
+import Components from './components/components/Components.svelte'
+import ComponentStatusEditor from './components/components/ComponentStatusEditor.svelte'
+import ComponentStatusPresenter from './components/components/ComponentStatusPresenter.svelte'
+import ComponentTitlePresenter from './components/components/ComponentTitlePresenter.svelte'
+import Roadmap from './components/components/Roadmap.svelte'
+import TargetDatePresenter from './components/components/TargetDatePresenter.svelte'
+import ProjectComponents from './components/components/ProjectComponents.svelte'
 import RelationsPopup from './components/RelationsPopup.svelte'
 import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
 import SprintDatePresenter from './components/sprints/SprintDatePresenter.svelte'
 import SprintLeadPresenter from './components/sprints/SprintLeadPresenter.svelte'
-import SprintProjectEditor from './components/sprints/SprintProjectEditor.svelte'
+import SprintComponentEditor from './components/sprints/SprintComponentEditor.svelte'
 import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
 import Views from './components/views/Views.svelte'
 import Statuses from './components/workflow/Statuses.svelte'
@@ -103,7 +103,7 @@ import TimeSpendReport from './components/issues/timereport/TimeSpendReport.svel
 import RelatedIssues from './components/issues/related/RelatedIssues.svelte'
 import RelatedIssueTemplates from './components/issues/related/RelatedIssueTemplates.svelte'
 
-import ProjectSelector from './components/ProjectSelector.svelte'
+import ComponentSelector from './components/ComponentSelector.svelte'
 
 import IssueTemplatePresenter from './components/templates/IssueTemplatePresenter.svelte'
 import IssueTemplates from './components/templates/IssueTemplates.svelte'
@@ -114,13 +114,13 @@ import EditIssueTemplate from './components/templates/EditIssueTemplate.svelte'
 import TemplateEstimationEditor from './components/templates/EstimationEditor.svelte'
 import {
   getAllPriority,
-  getAllProjects,
+  getAllComponents,
   getAllSprints,
   getAllStatuses,
   issuePrioritySort,
   issueStatusSort,
   moveIssuesToAnotherSprint,
-  removeTeam,
+  removeProject,
   sprintSort,
   subIssueQuery
 } from './utils'
@@ -128,11 +128,11 @@ import {
 import { EmployeeAccount } from '@hcengineering/contact'
 import StatusRefPresenter from './components/issues/StatusRefPresenter.svelte'
 import TimeSpendReportPopup from './components/issues/timereport/TimeSpendReportPopup.svelte'
-import DeleteProjectPresenter from './components/projects/DeleteProjectPresenter.svelte'
+import DeleteComponentPresenter from './components/components/DeleteComponentPresenter.svelte'
 import IssueStatistics from './components/sprints/IssueStatistics.svelte'
 import SprintRefPresenter from './components/sprints/SprintRefPresenter.svelte'
-import CreateTeam from './components/teams/CreateTeam.svelte'
-import TeamPresenter from './components/teams/TeamPresenter.svelte'
+import CreateProject from './components/projects/CreateProject.svelte'
+import ProjectPresenter from './components/projects/ProjectPresenter.svelte'
 
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 
@@ -142,7 +142,7 @@ export async function queryIssue<D extends Issue> (
   search: string,
   filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
 ): Promise<ObjectSearchResult[]> {
-  const teams = await client.findAll<Team>(tracker.class.Team, {})
+  const projects = await client.findAll<Project>(tracker.class.Project, {})
 
   const q: DocumentQuery<Issue> = { title: { $like: `%${search}%` } }
   if (filter?.in !== undefined || filter?.nin !== undefined) {
@@ -158,13 +158,13 @@ export async function queryIssue<D extends Issue> (
   const named = toIdMap(
     await client.findAll<Issue>(_class, q, {
       limit: 200,
-      lookup: { space: tracker.class.Team }
+      lookup: { space: tracker.class.Project }
     })
   )
-  for (const currentTeam of teams) {
+  for (const currentProject of projects) {
     const nids: number[] = []
-    for (let n = 0; n <= currentTeam.sequence; n++) {
-      const v = `${currentTeam.identifier}-${n}`
+    for (let n = 0; n <= currentProject.sequence; n++) {
+      const v = `${currentProject.identifier}-${n}`
       if (v.includes(search)) {
         nids.push(n)
       }
@@ -174,7 +174,7 @@ export async function queryIssue<D extends Issue> (
       if (q._id !== undefined) {
         q2._id = q._id
       }
-      const numbered = await client.findAll<Issue>(_class, q2, { limit: 200, lookup: { space: tracker.class.Team } })
+      const numbered = await client.findAll<Issue>(_class, q2, { limit: 200, lookup: { space: tracker.class.Project } })
       for (const d of numbered) {
         if (!named.has(d._id)) {
           named.set(d._id, d)
@@ -185,45 +185,45 @@ export async function queryIssue<D extends Issue> (
 
   return Array.from(named.values()).map((e) => ({
     doc: e,
-    title: getIssueId(e.$lookup?.space as Team, e),
+    title: getIssueId(e.$lookup?.space as Project, e),
     icon: tracker.icon.TrackerApplication,
     component: IssueItem
   }))
 }
 
-async function editWorkflowStatuses (team: Team | undefined): Promise<void> {
-  if (team !== undefined) {
-    showPopup(Statuses, { teamId: team._id, teamClass: team._class }, 'float')
+async function editWorkflowStatuses (project: Project | undefined): Promise<void> {
+  if (project !== undefined) {
+    showPopup(Statuses, { projectId: project._id, projectClass: project._class }, 'float')
   }
 }
 
-async function editTeam (team: Team | undefined): Promise<void> {
-  if (team !== undefined) {
-    showPopup(CreateTeam, { team })
+async function editProject (project: Project | undefined): Promise<void> {
+  if (project !== undefined) {
+    showPopup(CreateProject, { project })
   }
 }
 
-async function deleteTeam (team: Team | undefined): Promise<void> {
-  if (team !== undefined) {
+async function deleteProject (project: Project | undefined): Promise<void> {
+  if (project !== undefined) {
     const client = getClient()
-    const anyIssue = await client.findOne(tracker.class.Issue, { space: team._id })
+    const anyIssue = await client.findOne(tracker.class.Issue, { space: project._id })
     if (anyIssue !== undefined) {
       showPopup(
         MessageBox,
         {
-          label: tracker.string.DeleteTeamName,
-          labelProps: { name: team.name },
-          message: tracker.string.TeamHasIssues
+          label: tracker.string.DeleteProjectName,
+          labelProps: { name: project.name },
+          message: tracker.string.ProjectHasIssues
         },
         undefined,
         (result?: boolean) => {
           if (result === true) {
-            void removeTeam(team)
+            void removeProject(project)
           }
         }
       )
     } else {
-      await removeTeam(team)
+      await removeProject(project)
     }
   }
 }
@@ -353,18 +353,18 @@ export default async (): Promise<Resources> => ({
     Backlog,
     Inbox,
     MyIssues,
-    Projects,
+    Components,
     Views,
     IssuePresenter,
-    ProjectPresenter,
-    ProjectTitlePresenter,
+    ComponentPresenter,
+    ComponentTitlePresenter,
     TitlePresenter,
     ModificationDatePresenter,
     PriorityPresenter,
     PriorityEditor,
     PriorityRefPresenter,
     SprintRefPresenter,
-    ProjectEditor,
+    ComponentEditor,
     StatusPresenter,
     StatusEditor,
     AssigneePresenter,
@@ -374,14 +374,14 @@ export default async (): Promise<Resources> => ({
     IconPresenter,
     LeadPresenter,
     TargetDatePresenter,
-    ProjectStatusPresenter,
-    ProjectStatusEditor,
+    ComponentStatusPresenter,
+    ComponentStatusEditor,
     SetDueDateActionPopup,
     SetParentIssueActionPopup,
-    EditProject,
+    EditComponent,
     IssuesView,
     KanbanView,
-    TeamProjects,
+    ProjectComponents,
     Roadmap,
     IssuePreview,
     RelationsPopup,
@@ -401,20 +401,20 @@ export default async (): Promise<Resources> => ({
     SubIssuesSelector,
     RelatedIssues,
     RelatedIssueTemplates,
-    ProjectSelector,
+    ComponentSelector,
     IssueTemplates,
     IssueTemplatePresenter,
     EditIssueTemplate,
     TemplateEstimationEditor,
-    CreateTeam,
-    TeamPresenter,
+    CreateProject,
+    ProjectPresenter,
     IssueStatistics,
     StatusRefPresenter,
     RelatedIssuesSection,
     RelatedIssueSelector,
-    DeleteProjectPresenter,
+    DeleteComponentPresenter,
     TimeSpendReportPopup,
-    SprintProjectEditor,
+    SprintComponentEditor,
     SprintDatePresenter,
     SprintLeadPresenter
   },
@@ -434,14 +434,14 @@ export default async (): Promise<Resources> => ({
     SubIssueQuery: subIssueQuery,
     GetAllStatuses: getAllStatuses,
     GetAllPriority: getAllPriority,
-    GetAllProjects: getAllProjects,
+    GetAllComponents: getAllComponents,
     GetAllSprints: getAllSprints
   },
   actionImpl: {
     EditWorkflowStatuses: editWorkflowStatuses,
-    EditTeam: editTeam,
+    EditProject: editProject,
     DeleteSprint: deleteSprint,
-    DeleteTeam: deleteTeam
+    DeleteProject: deleteProject
   },
   resolver: {
     Location: resolveLocation

@@ -38,6 +38,7 @@
     "@hcengineering/account": "^0.6.0",
     "@hcengineering/core": "^0.6.21",
     "@hcengineering/contact": "^0.6.11",
+    "@hcengineering/tracker": "^0.6.2",
     "@hcengineering/model-all": "^0.6.0",
     "@hcengineering/model-telegram": "^0.6.0",
     "@hcengineering/telegram": "^0.6.2",

@@ -13,8 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import Projects from './Projects.svelte'
-  import tracker from '../../plugin'
+  import { Component } from '@hcengineering/tracker'
+  import { getClient } from '@hcengineering/presentation'
+  import CommonTrackerDatePresenter from '../CommonTrackerDatePresenter.svelte'
+
+  export let value: Component
+
+  const client = getClient()
+
+  $: dueDateMs = value.targetDate
+
+  const handleDueDateChanged = async (newDate: number | null) => {
+    await client.update(value, { targetDate: newDate })
+  }
 </script>
 
-<Projects label={tracker.string.Roadmap} />
+<CommonTrackerDatePresenter dateMs={dueDateMs} shouldRender={true} onDateChange={handleDueDateChanged} />

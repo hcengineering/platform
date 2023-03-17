@@ -82,6 +82,6 @@
   {width}
   {justify}
   title={buttonTitle}
-  icon={tracker.icon.ProjectMembers}
+  icon={tracker.icon.ComponentMembers}
   on:click={handleMembersEditorOpened}
 />

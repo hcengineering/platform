@@ -16,19 +16,19 @@
   import contact from '@hcengineering/contact'
   import { Class, Doc, FindOptions, getObjectValue, Ref, Timestamp } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Issue, Project } from '@hcengineering/tracker'
+  import { Issue, Component } from '@hcengineering/tracker'
   import { CheckBox, Spinner, Timeline, TimelineRow } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey } from '@hcengineering/view'
   import { buildModel, LoadingProps } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
-  import ProjectPresenter from './ProjectPresenter.svelte'
+  import ComponentPresenter from './ComponentPresenter.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let itemsConfig: (BuildModelKey | string)[]
   export let selectedObjectIds: Doc[] = []
   export let selectedRowIndex: number | undefined = undefined
-  export let projects: Project[] | undefined = undefined
+  export let components: Component[] | undefined = undefined
   export let loadingProps: LoadingProps | undefined = undefined
 
   const dispatch = createEventDispatcher()
@@ -42,13 +42,13 @@
     }
   }
 
-  $: options = { ...baseOptions } as FindOptions<Project>
+  $: options = { ...baseOptions } as FindOptions<Component>
   $: selectedObjectIdsSet = new Set<Ref<Doc>>(selectedObjectIds.map((it) => it._id))
   let selectedRows: number[] = []
-  $: if (selectedObjectIdsSet.size > 0 && projects !== undefined) {
+  $: if (selectedObjectIdsSet.size > 0 && components !== undefined) {
     const tRows: number[] = []
     selectedObjectIdsSet.forEach((it) => {
-      const index = projects?.findIndex((f) => f._id === it)
+      const index = components?.findIndex((f) => f._id === it)
       if (index !== undefined) tRows.push(index)
     })
     selectedRows = tRows
@@ -63,16 +63,16 @@
   }
 
   export const onElementSelected = (offset: 1 | -1 | 0, docObject?: Doc) => {
-    if (!projects) return
+    if (!components) return
 
     let position =
-      (docObject !== undefined ? projects?.findIndex((x) => x._id === docObject?._id) : selectedRowIndex) ?? -1
+      (docObject !== undefined ? components?.findIndex((x) => x._id === docObject?._id) : selectedRowIndex) ?? -1
 
     position += offset
     if (position < 0) position = 0
-    if (position >= projects.length) position = projects.length - 1
+    if (position >= components.length) position = components.length - 1
     selectedRowIndex = position
-    handleRowFocused(projects[position])
+    handleRowFocused(components[position])
 
     // if (objectRef) {
     //   objectRef.scrollIntoView({ behavior: 'auto', block: 'nearest' })
@@ -91,12 +91,12 @@
   $: buildModel({ client, _class, keys: itemsConfig, lookup: options.lookup }).then((res) => (itemModels = res))
 
   let lines: TimelineRow[] | undefined
-  $: lines = projects?.map((proj) => {
+  $: lines = components?.map((proj) => {
     const tR: TimelineRow = { items: [] }
     tR.items = [
       {
         icon: proj.icon,
-        presenter: ProjectPresenter,
+        presenter: ComponentPresenter,
         props: { value: proj },
         startDate: proj.startDate as Timestamp,
         targetDate: proj.targetDate as Timestamp
@@ -106,16 +106,18 @@
   })
 </script>
 
-{#if projects && itemModels && lines}
+{#if components && itemModels && lines}
   <Timeline
     {lines}
     {selectedRows}
     selectedRow={selectedRowIndex}
     on:row-focus={(ev) => {
-      if (ev.detail !== undefined && projects !== undefined) handleRowFocused(projects[ev.detail])
+      if (ev.detail !== undefined && components !== undefined) handleRowFocused(components[ev.detail])
     }}
     on:check={(ev) => {
-      if (ev.detail !== undefined && projects !== undefined) onObjectChecked([projects[ev.detail.row]], ev.detail.value)
+      if (ev.detail !== undefined && components !== undefined) {
+        onObjectChecked([components[ev.detail.row]], ev.detail.value)
+      }
     }}
   >
     <svelte:fragment let:row>
@@ -125,16 +127,16 @@
             <div class="iconPresenter">
               <svelte:component
                 this={attributeModel.presenter}
-                value={getObjectValue(attributeModel.key, projects[row]) ?? ''}
+                value={getObjectValue(attributeModel.key, components[row]) ?? ''}
                 {...attributeModel.props}
               />
             </div>
           </div>
         {:else if attributeModelIndex === 1}
-          <div class="projectPresenter flex-grow">
+          <div class="componentPresenter flex-grow">
             <svelte:component
               this={attributeModel.presenter}
-              value={getObjectValue(attributeModel.key, projects[row]) ?? ''}
+              value={getObjectValue(attributeModel.key, components[row]) ?? ''}
               {...attributeModel.props}
             />
           </div>
@@ -143,8 +145,8 @@
           <div class="gridElement">
             <svelte:component
               this={attributeModel.presenter}
-              value={getObjectValue(attributeModel.key, projects[row]) ?? ''}
-              parentId={projects[row]._id}
+              value={getObjectValue(attributeModel.key, components[row]) ?? ''}
+              parentId={components[row]._id}
               {...attributeModel.props}
             />
           </div>
@@ -500,7 +502,7 @@
       margin-left: 0;
     }
   }
-  .projectPresenter {
+  .componentPresenter {
     display: flex;
     align-items: center;
     flex-shrink: 0;

@@ -21,7 +21,7 @@
   import presentation, { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
   import tags from '@hcengineering/tags'
-  import type { IssueTemplate, IssueTemplateChild, Team } from '@hcengineering/tracker'
+  import type { IssueTemplate, IssueTemplateChild, Project } from '@hcengineering/tracker'
   import {
     Button,
     EditBox,
@@ -52,7 +52,7 @@
   const client = getClient()
 
   let template: WithLookup<IssueTemplate> | undefined
-  let currentTeam: Team | undefined
+  let currentProject: Project | undefined
   let title = ''
   let description = ''
   let innerWidth: number
@@ -85,9 +85,9 @@
         ;[template] = result
         title = template.title
         description = template.description
-        currentTeam = template.$lookup?.space
+        currentProject = template.$lookup?.space
       },
-      { lookup: { space: tracker.class.Team, labels: tags.class.TagElement } }
+      { lookup: { space: tracker.class.Project, labels: tags.class.TagElement } }
     )
 
   $: canSave = title.trim().length > 0
@@ -249,11 +249,11 @@
         {/if}
       </div>
       <div class="mt-6">
-        {#key template._id && currentTeam !== undefined}
-          {#if currentTeam !== undefined}
+        {#key template._id && currentProject !== undefined}
+          {#if currentProject !== undefined}
             <SubIssueTemplates
               maxHeight="limited"
-              team={template.space}
+              project={template.space}
               bind:children={template.children}
               on:create-issue={createIssue}
               on:update-issue={updateIssue}
@@ -292,7 +292,7 @@
     </svelte:fragment>
 
     <svelte:fragment slot="custom-attributes">
-      {#if template && currentTeam}
+      {#if template && currentProject}
         <TemplateControlPanel issue={template} />
       {/if}
 

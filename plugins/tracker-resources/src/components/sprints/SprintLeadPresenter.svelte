@@ -22,7 +22,7 @@
   import { AttributeModel } from '@hcengineering/view'
   import { getObjectPresenter } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
-  import LeadPopup from '../projects/LeadPopup.svelte'
+  import LeadPopup from '../components/LeadPopup.svelte'
 
   export let value: Employee | null
   export let size: IconSize = 'x-small'
@@ -70,7 +70,7 @@
           active: true
         },
         allowDeselect: true,
-        placeholder: tracker.string.ProjectLeadSearchPlaceholder
+        placeholder: tracker.string.ComponentLeadSearchPlaceholder
       },
       eventToHTMLElement(event),
       handleLeadChanged

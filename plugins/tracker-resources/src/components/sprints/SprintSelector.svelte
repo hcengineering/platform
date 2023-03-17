@@ -16,7 +16,7 @@
   import { Ref, SortingOrder } from '@hcengineering/core'
   import { getEmbeddedLabel, IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import { Project, Sprint } from '@hcengineering/tracker'
+  import { Component, Sprint } from '@hcengineering/tracker'
   import type { ButtonKind, ButtonSize, LabelAndProps } from '@hcengineering/ui'
   import { Button, ButtonShape, eventToHTMLElement, SelectPopup, showPopup, Label } from '@hcengineering/ui'
   import tracker from '../../plugin'
@@ -35,7 +35,7 @@
   export let onlyIcon: boolean = false
   export let enlargedText = false
 
-  export let useProject: Ref<Project> | undefined = undefined
+  export let useComponent: Ref<Component> | undefined = undefined
   export let showTooltip: LabelAndProps | undefined = undefined
 
   let selectedSprint: Sprint | undefined
@@ -45,7 +45,7 @@
   let rawSprints: Sprint[] = []
   query.query(
     tracker.class.Sprint,
-    useProject ? { project: useProject } : {},
+    useComponent ? { component: useComponent } : {},
     (res) => {
       rawSprints = res
     },

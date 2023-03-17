@@ -16,7 +16,7 @@
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import tracker, { Issue, Team } from '@hcengineering/tracker'
+  import tracker, { Issue, Project } from '@hcengineering/tracker'
   import { ActionIcon, eventToHTMLElement, floorFractionDigits, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import ReportsPopup from './ReportsPopup.svelte'
   import TimePresenter from './TimePresenter.svelte'
@@ -27,19 +27,19 @@
   export let object: Issue
   export let value: number
   export let kind: 'no-border' | 'link' = 'no-border'
-  export let currentTeam: Team | undefined
+  export let currentProject: Project | undefined
 
   const spaceQuery = createQuery()
-  $: if (currentTeam === undefined) {
-    spaceQuery.query(tracker.class.Team, { _id: object.space }, (res) => {
-      currentTeam = res.shift()
+  $: if (currentProject === undefined) {
+    spaceQuery.query(tracker.class.Project, { _id: object.space }, (res) => {
+      currentProject = res.shift()
     })
   } else {
     spaceQuery.unsubscribe()
   }
 
-  $: defaultTimeReportDay = currentTeam?.defaultTimeReportDay
-  $: workDayLength = currentTeam?.workDayLength
+  $: defaultTimeReportDay = currentProject?.defaultTimeReportDay
+  $: workDayLength = currentProject?.workDayLength
 
   function addTimeReport (event: MouseEvent): void {
     showPopup(
@@ -51,7 +51,7 @@
         issueClass: object._class,
         space: object.space,
         assignee: object.assignee,
-        currentTeam
+        currentProject
       },
       eventToHTMLElement(event)
     )
