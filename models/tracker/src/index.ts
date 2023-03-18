@@ -273,6 +273,10 @@ export class TIssue extends TAttachedDoc implements Issue {
   @Prop(Collection(tracker.class.TimeSpendReport), tracker.string.TimeSpendReports)
     reports!: number
 
+  @Prop(TypeTimestamp(), tracker.string.CreatedOn)
+  @ReadOnly()
+    createOn!: Timestamp
+
   declare childInfo: IssueChildInfo[]
 }
 

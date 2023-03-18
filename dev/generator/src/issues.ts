@@ -35,7 +35,8 @@ const object: AttachedData<Issue> = {
   reportedTime: 0,
   estimation: 0,
   reports: 0,
-  childInfo: []
+  childInfo: [],
+  createOn: Date.now()
 }
 
 export interface IssueOptions {
@@ -97,7 +98,8 @@ async function genIssue (client: TxOperations, statuses: Ref<IssueStatus>[]): Pr
     estimation: object.estimation,
     reports: 0,
     relations: [],
-    childInfo: []
+    childInfo: [],
+    createOn: Date.now()
   }
   await client.addCollection(
     tracker.class.Issue,

@@ -282,7 +282,8 @@
 
     "WorkDayLength": "Выберите длину рабочего дня",
     "SevenHoursLength": "Семь Часов",
-    "EightHoursLength": "Восемь Часов"
+    "EightHoursLength": "Восемь Часов",
+    "CreatedOn": "Создана"
   },
   "status": {}
 }

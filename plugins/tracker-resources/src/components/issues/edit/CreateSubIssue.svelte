@@ -65,7 +65,8 @@
       estimation: 0,
       reportedTime: 0,
       reports: 0,
-      childInfo: []
+      childInfo: [],
+      createOn: Date.now()
     }
   }
 

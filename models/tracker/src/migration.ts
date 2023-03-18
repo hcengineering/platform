@@ -21,6 +21,7 @@ import core, {
   generateId,
   Ref,
   SortingOrder,
+  TxCollectionCUD,
   TxCreateDoc,
   TxOperations,
   TxResult,
@@ -710,6 +711,59 @@ async function renameProject (client: MigrationClient): Promise<void> {
   )
 }
 
+async function setCreate (client: MigrationClient): Promise<void> {
+  while (true) {
+    const docs = await client.find<Issue>(
+      DOMAIN_TRACKER,
+      {
+        _class: tracker.class.Issue,
+        createOn: { $exists: false }
+      },
+      { limit: 500 }
+    )
+    if (docs.length === 0) {
+      break
+    }
+    const creates = await client.find<TxCollectionCUD<Issue, Issue>>(DOMAIN_TX, {
+      'tx.objectId': { $in: docs.map((it) => it._id) },
+      'tx._class': core.class.TxCreateDoc
+    })
+    for (const doc of docs) {
+      const tx = creates.find((it) => it.tx.objectId === doc._id)
+      if (tx !== undefined) {
+        await client.update(
+          DOMAIN_TRACKER,
+          {
+            _id: doc._id
+          },
+          {
+            createOn: tx.modifiedOn
+          }
+        )
+        await client.update(
+          DOMAIN_TX,
+          {
+            _id: tx._id
+          },
+          {
+            'tx.attributes.createOn': tx.modifiedOn
+          }
+        )
+      } else {
+        await client.update(
+          DOMAIN_TRACKER,
+          {
+            _id: doc._id
+          },
+          {
+            createOn: doc.modifiedOn
+          }
+        )
+      }
+    }
+  }
+}
+
 export const trackerOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await client.update(
@@ -725,6 +779,7 @@ export const trackerOperation: MigrateOperation = {
     await migrateIssueParentInfo(client)
     await fillRank(client)
     await renameProject(client)
+    await setCreate(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
