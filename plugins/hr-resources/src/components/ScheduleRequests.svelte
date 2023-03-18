@@ -58,7 +58,7 @@
 <div class="w-full h-full relative p-1 flex">
   {#each requests as request}
     {#await getType(request) then type}
-      {#if type && !(isWeekend(date) || (isHoliday(getHolidayDatesForEmployee(staffDepartmentMap, employee._id, holidays), date) && noWeekendHolidayType.includes(type._id)))}
+      {#if type && !((isWeekend(date) || isHoliday(getHolidayDatesForEmployee(staffDepartmentMap, employee._id, holidays), date)) && noWeekendHolidayType.includes(type._id))}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="request flex-center"
