@@ -21,11 +21,6 @@ import view from './plugin'
  */
 export const filterStore = writable<Filter[]>([])
 
-/**
- * @public
- */
-export const menuSelectionStore = writable<boolean>(false)
-
 export async function objectInResult (filter: Filter): Promise<ObjQueryType<any>> {
   return { $in: filter.value }
 }
