@@ -454,6 +454,7 @@ export function start (
   })
 
   app.get('*', function (request, response) {
+    response.set('Cache-Control', 'no-cache')
     response.sendFile(join(dist, 'index.html'))
   })
 
