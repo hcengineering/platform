@@ -18,13 +18,15 @@
   import { NavLink } from '@hcengineering/ui'
   import { SpacesNavModel } from '@hcengineering/workbench'
   import { SpecialElement } from '@hcengineering/workbench-resources'
-  import { TreeNode } from '@hcengineering/view-resources'
+  import { TreeNode, menuSelectionStore } from '@hcengineering/view-resources'
 
   export let space: Project
   export let model: SpacesNavModel
   export let currentSpace: Ref<Space> | undefined
   export let currentSpecial: string | undefined
   export let getActions: Function
+
+  $: ms = $menuSelectionStore
 </script>
 
 {#if model.specials}
@@ -35,7 +37,7 @@
           indent={'ml-4'}
           label={special.label}
           icon={special.icon}
-          selected={currentSpace === space._id && special.id === currentSpecial}
+          selected={ms ? false : currentSpace === space._id && special.id === currentSpecial}
         />
       </NavLink>
     {/each}

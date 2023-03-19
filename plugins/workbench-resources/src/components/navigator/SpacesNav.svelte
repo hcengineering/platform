@@ -34,7 +34,8 @@
     getActions as getContributedActions,
     getObjectPresenter,
     TreeItem,
-    TreeNode
+    TreeNode,
+    menuSelectionStore
   } from '@hcengineering/view-resources'
   import { SpacesNavModel } from '@hcengineering/workbench'
   import { createEventDispatcher } from 'svelte'
@@ -46,6 +47,7 @@
   export let spaces: Space[]
   export let currentSpecial: string | undefined
   export let hasSpaceBrowser: boolean = false
+
   const client = getClient()
   const dispatch = createEventDispatcher()
 
@@ -116,6 +118,8 @@
   function getParentActions (): Action[] {
     return hasSpaceBrowser ? [browseSpaces, addSpace] : [addSpace]
   }
+
+  $: ms = $menuSelectionStore
 </script>
 
 <TreeNode label={model.label} parent actions={async () => getParentActions()} indent={'ml-2'}>
@@ -131,7 +135,7 @@
               _id={space._id}
               title={name}
               icon={classIcon(client, space._class)}
-              selected={currentSpace === space._id}
+              selected={ms ? false : currentSpace === space._id}
               actions={() => getActions(space)}
               bold={isChanged(space, $lastViews)}
             />

@@ -28,6 +28,7 @@
   import StarredNav from './navigator/StarredNav.svelte'
   import TreeSeparator from './navigator/TreeSeparator.svelte'
   import SavedView from './SavedView.svelte'
+  import { menuSelectionStore } from '@hcengineering/view-resources'
 
   export let model: NavigatorModel | undefined
   export let currentSpace: Ref<Space> | undefined
@@ -134,6 +135,8 @@
   async function checkIsDisabled (special: SpecialNavModel) {
     return special.checkIsDisabled && (await (await getResource(special.checkIsDisabled))())
   }
+
+  $: ms = $menuSelectionStore
 </script>
 
 {#if model}
@@ -148,7 +151,7 @@
             <SpecialElement
               label={special.label}
               icon={special.icon}
-              selected={special.id === currentSpecial}
+              selected={ms ? false : special.id === currentSpecial}
               indent={'ml-2'}
               {disabled}
             />

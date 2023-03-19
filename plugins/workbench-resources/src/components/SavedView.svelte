@@ -10,7 +10,8 @@
     setActiveViewletId,
     setViewOptions,
     TreeItem,
-    TreeNode
+    TreeNode,
+    menuSelectionStore
   } from '@hcengineering/view-resources'
   import { Application } from '@hcengineering/workbench'
 
@@ -63,7 +64,11 @@
     const filters = JSON.stringify(fs)
     selectedFW = filteredViews.filter((fv) => fv.filters === filters)
     selectedId = selectedFW.length > 0 ? selectedFW[0]._id : undefined
-  } else selectedId = selectedFW = undefined
+    $menuSelectionStore = selectedId !== undefined
+  } else {
+    selectedId = selectedFW = undefined
+    $menuSelectionStore = false
+  }
 </script>
 
 {#if filteredViews && filteredViews.length > 0}
@@ -73,7 +78,7 @@
         _id={fv._id}
         title={fv.name}
         indent={'ml-2'}
-        bordered={selectedId === fv._id}
+        selected={selectedId === fv._id}
         on:click={() => load(fv)}
         actions={() => removeAction(fv)}
       />
