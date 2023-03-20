@@ -20,9 +20,11 @@
   import { Avatar } from '@hcengineering/presentation'
   import { showPopup, tooltip } from '@hcengineering/ui'
   import { EditDoc } from '@hcengineering/view-resources'
+  import DocNavLink from '@hcengineering/view-resources/src/components/DocNavLink.svelte'
   import { employeeByIdStore } from '../utils'
 
   export let value: Account
+  export let disabled = false
 
   $: employee = $employeeByIdStore.get((value as EmployeeAccount).employee)
 
@@ -35,34 +37,22 @@
 
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div
-    class="flex-row-center"
-    class:user-container={employee !== undefined}
-    on:click={onClick}
-    use:tooltip={{ label: getEmbeddedLabel(employee ? getName(employee) : value.email) }}
-  >
-    {#if employee}
-      <Avatar size={'x-small'} avatar={employee.avatar} />
-      <div class="overflow-label user">{getName(employee)}</div>
-    {:else}
-      <div class="overflow-label user">{value.email}</div>
-    {/if}
-  </div>
+  <DocNavLink object={value} disableClick={disabled} noUnderline={disabled} {onClick}>
+    <span class="flex-row-center" use:tooltip={{ label: getEmbeddedLabel(employee ? getName(employee) : value.email) }}>
+      {#if employee}
+        <Avatar size={'x-small'} avatar={employee.avatar} />
+        <span class="overflow-label user">{getName(employee)}</span>
+      {:else}
+        <span class="overflow-label user">{value.email}</span>
+      {/if}
+    </span>
+  </DocNavLink>
 {/if}
 
 <style lang="scss">
-  .user-container {
-    cursor: pointer;
-
-    .user {
-      margin-left: 0.5rem;
-      font-weight: 500;
-      text-align: left;
-      color: var(--accent-color);
-    }
-    &:hover .user {
-      text-decoration: underline;
-      color: var(--caption-color);
-    }
+  .user {
+    margin-left: 0.5rem;
+    font-weight: 500;
+    text-align: left;
   }
 </style>
