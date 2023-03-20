@@ -260,6 +260,13 @@
     let special = loc.path[4]
     const fragment = loc.fragment
 
+    if (app === undefined) {
+      const last = localStorage.getItem(`platform_last_loc_${loc.path[1]}`)
+      if (last != null) {
+        navigate(JSON.parse(last))
+      }
+    }
+
     if (currentAppAlias !== app) {
       clear(1)
       currentAppAlias = app

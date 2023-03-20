@@ -35,7 +35,7 @@
       }
 
       if (application === undefined) {
-        const last = localStorage.getItem('platform_last_loc')
+        const last = localStorage.getItem(`platform_last_loc_${loc.path[1]}`)
         if (last !== null) {
           navigate(JSON.parse(last))
         } else {

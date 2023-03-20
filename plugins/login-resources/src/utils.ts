@@ -302,7 +302,12 @@ export function navigateToWorkspace (workspace: string, loginInfo?: WorkspaceLog
       // Json parse error could be ignored
     }
   }
-  navigate({ path: [workbenchId, workspace] })
+  const last = localStorage.getItem(`platform_last_loc_${workspace}`)
+  if (last !== null) {
+    navigate(JSON.parse(last))
+  } else {
+    navigate({ path: [workbenchId, workspace] })
+  }
 }
 
 export async function checkJoined (inviteId: string): Promise<[Status, WorkspaceLoginInfo | undefined]> {
