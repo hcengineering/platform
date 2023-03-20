@@ -28,7 +28,7 @@
   on:click
   use:tooltip={{
     component: Label,
-    props: { label: tracker.string.TimeSpendHours, params: { value: floorFractionDigits(value, 2) } }
+    props: { label: tracker.string.TimeSpendHours, params: { value: floorFractionDigits(value * 8, 2) } }
   }}
 >
   <Label label={tracker.string.TimeSpendValue} params={{ value: floorFractionDigits(value, 3) }} />
