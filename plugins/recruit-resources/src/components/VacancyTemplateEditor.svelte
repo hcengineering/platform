@@ -14,11 +14,11 @@
 -->
 <script lang="ts">
   import { AttributesBar, getClient } from '@hcengineering/presentation'
-  import { Button, Component, EditBox, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
-  import { StyledTextBox } from '@hcengineering/text-editor'
   import { KanbanTemplate } from '@hcengineering/task'
-  import { getFiltredKeys } from '@hcengineering/view-resources/src/utils'
+  import { StyledTextBox } from '@hcengineering/text-editor'
   import tracker from '@hcengineering/tracker'
+  import { Button, Component, EditBox, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
+  import { getFiltredKeys } from '@hcengineering/view-resources'
   import recruit from '../plugin'
 
   export let template: KanbanTemplate

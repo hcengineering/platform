@@ -16,8 +16,9 @@
   import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
   import core, { Account, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { createQuery, getClient, UserBoxList } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { ButtonKind } from '@hcengineering/ui'
+  import UserBoxList from './UserBoxList.svelte'
 
   export let label: IntlString
   export let value: Ref<Account>[]

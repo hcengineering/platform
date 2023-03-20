@@ -15,7 +15,8 @@
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
   import contact, { Channel, Contact, getName } from '@hcengineering/contact'
-  import { Avatar, createQuery } from '@hcengineering/presentation'
+  import { createQuery } from '@hcengineering/presentation'
+  import Avatar from './Avatar.svelte'
   import { Component, Label } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
   import ChannelsEditor from './ChannelsEditor.svelte'

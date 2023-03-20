@@ -2,7 +2,7 @@
   import { Employee } from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { UserBoxList } from '@hcengineering/presentation'
+  import UserBoxList from './UserBoxList.svelte'
 
   export let label: IntlString
   export let value: Ref<Employee>[]

@@ -11,12 +11,11 @@
   } from '@hcengineering/bitrix'
   import contact from '@hcengineering/contact'
   import core, { Class, Doc, generateId, Ref, Space, WithLookup } from '@hcengineering/core'
-  import login from '@hcengineering/login'
   import { getEmbeddedLabel, getMetadata } from '@hcengineering/platform'
-  import { getClient, SpaceSelect } from '@hcengineering/presentation'
+  import presentation, { getClient, SpaceSelect } from '@hcengineering/presentation'
   import { Button, Expandable, Icon, IconAdd, IconClose, Label } from '@hcengineering/ui'
-  import DropdownLabels from '@hcengineering/ui/src/components/DropdownLabels.svelte'
-  import EditBox from '@hcengineering/ui/src/components/EditBox.svelte'
+  import { DropdownLabels } from '@hcengineering/ui'
+  import { EditBox } from '@hcengineering/ui'
   import { NumberEditor } from '@hcengineering/view-resources'
   import bitrix from '../plugin'
   import FieldMappingPresenter from './FieldMappingPresenter.svelte'
@@ -44,8 +43,8 @@
 
   async function doSync (): Promise<void> {
     loading = true
-    const uploadUrl = (window.location.origin + getMetadata(login.metadata.UploadUrl)) as string
-    const token = (getMetadata(login.metadata.LoginToken) as string) ?? ''
+    const uploadUrl = (window.location.origin + getMetadata(presentation.metadata.UploadURL)) as string
+    const token = (getMetadata(presentation.metadata.Token) as string) ?? ''
 
     const mappedFilter: Record<string, any> = {}
     for (const f of filterFields) {

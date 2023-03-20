@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { getName, Person } from '@hcengineering/contact'
-  import { Avatar } from '@hcengineering/presentation'
+  import { Avatar } from '@hcengineering/contact-resources'
 
   interface IMessage {
     text: string

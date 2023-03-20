@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery } from '@hcengineering/presentation'
+  import presentation, { createQuery } from '@hcengineering/presentation'
   import setting, { SettingsCategory } from '@hcengineering/setting'
   import {
     Component,
@@ -73,7 +73,7 @@
       delete tokens[loc.path[1]]
       setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
     }
-    setMetadata(login.metadata.LoginToken, null)
+    setMetadata(presentation.metadata.Token, null)
     setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
     setMetadataLocalStorage(login.metadata.LoginEmail, null)
     navigate({ path: [loginId] })

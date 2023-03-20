@@ -43,15 +43,15 @@
   } from '@hcengineering/ui'
   import { CategoryOption, ViewOptionModel, ViewOptions, ViewQueryOption } from '@hcengineering/view'
   import {
+    ActionContext,
     focusStore,
+    getCategories,
     ListSelectionProvider,
+    Menu,
     noCategory,
     SelectDirection,
     selectionStore
   } from '@hcengineering/view-resources'
-  import ActionContext from '@hcengineering/view-resources/src/components/ActionContext.svelte'
-  import Menu from '@hcengineering/view-resources/src/components/Menu.svelte'
-  import { getCategories } from '@hcengineering/view-resources/src/utils'
   import { onMount } from 'svelte'
   import tracker from '../../plugin'
   import { issuesGroupBySorting, mapKanbanCategories } from '../../utils'

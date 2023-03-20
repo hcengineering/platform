@@ -21,7 +21,7 @@
   import { Notification, NotificationStatus } from '@hcengineering/notification'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Button, IconCheckAll, IconDelete, Scroller, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
-  import Label from '@hcengineering/ui/src/components/Label.svelte'
+  import { Label } from '@hcengineering/ui'
   import notification from '../plugin'
   import NotificationView from './NotificationView.svelte'
 

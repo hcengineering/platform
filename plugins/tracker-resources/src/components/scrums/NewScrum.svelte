@@ -15,7 +15,8 @@
 <script lang="ts">
   import { Data, DateRangeMode, generateId, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { Card, getClient, SpaceSelector, UserBoxList } from '@hcengineering/presentation'
+  import { Card, getClient, SpaceSelector } from '@hcengineering/presentation'
+  import { UserBoxList } from '@hcengineering/contact-resources'
   import { Scrum, Project } from '@hcengineering/tracker'
   import { DateRangePresenter, EditBox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'

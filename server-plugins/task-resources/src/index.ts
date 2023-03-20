@@ -24,10 +24,9 @@ import core, {
   TxProcessor,
   TxUpdateDoc
 } from '@hcengineering/core'
-import login from '@hcengineering/login'
 import { NotificationAction } from '@hcengineering/notification'
 import { getMetadata, Resource } from '@hcengineering/platform'
-import { TriggerControl } from '@hcengineering/server-core'
+import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { getEmployeeAccount, getEmployeeAccountById, getUpdateLastViewTx } from '@hcengineering/server-notification'
 import { createNotificationTxes } from '@hcengineering/server-notification-resources'
 import task, { Issue, Task, taskId } from '@hcengineering/task'
@@ -39,7 +38,7 @@ import { workbenchId } from '@hcengineering/workbench'
  */
 export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const issue = doc as Issue
-  const front = getMetadata(login.metadata.FrontUrl) ?? ''
+  const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.name}/${taskId}/${issue.space}/#${view.component.EditDoc}|${issue._id}|${issue._class}|content`
   const link = concatLink(front, path)
   return `<a href="${link}">Task-${issue.number}</a>`
@@ -123,7 +122,7 @@ export async function OnTaskUpdate (tx: Tx, control: TriggerControl): Promise<Tx
   }
   if (updateTx.operations.assignee != null) {
     const assignee = (
-      await control.modelDb.findAll(core.class.Account, { emoloyee: updateTx.operations.assignee }, { limit: 1 })
+      await control.modelDb.findAll(core.class.Account, { employee: updateTx.operations.assignee }, { limit: 1 })
     )[0]
     if (assignee !== undefined) {
       const assigneeTx = await getUpdateLastViewTx(

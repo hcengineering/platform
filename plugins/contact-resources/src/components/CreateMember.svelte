@@ -15,10 +15,11 @@
 <script lang="ts">
   import { Organization, Person } from '@hcengineering/contact'
   import { Class, Ref, Space } from '@hcengineering/core'
-  import { Card, getClient, UserBox } from '@hcengineering/presentation'
+  import { Card, getClient } from '@hcengineering/presentation'
   import { createFocusManager, FocusHandler } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
+  import UserBox from './UserBox.svelte'
 
   export let organization: Ref<Organization>
   export let _class: Ref<Class<Organization>>

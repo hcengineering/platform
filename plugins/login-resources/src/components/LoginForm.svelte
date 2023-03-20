@@ -16,6 +16,7 @@
 <script lang="ts">
   import { OK, setMetadata, Severity, Status } from '@hcengineering/platform'
   import { getCurrentLocation, navigate, Location, setMetadataLocalStorage } from '@hcengineering/ui'
+  import presentation from '@hcengineering/presentation'
 
   import { doLogin, getWorkspaces, navigateToWorkspace, selectWorkspace } from '../utils'
   import Form from './Form.svelte'
@@ -50,7 +51,7 @@
       status = loginStatus
 
       if (result !== undefined) {
-        setMetadata(login.metadata.LoginToken, result.token)
+        setMetadata(presentation.metadata.Token, result.token)
         setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
         setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
 

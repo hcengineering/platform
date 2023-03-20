@@ -15,7 +15,7 @@
 <script lang="ts">
   import contact from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
-  import { AssigneeBox } from '@hcengineering/presentation'
+  import { AssigneeBox } from '@hcengineering/contact-resources'
   import { Issue, Project } from '@hcengineering/tracker'
   import { deviceOptionsStore as deviceInfo, getEventPositionElement, ListView, showPopup } from '@hcengineering/ui'
   import { ContextMenu, FixedColumn, ListSelectionProvider } from '@hcengineering/view-resources'

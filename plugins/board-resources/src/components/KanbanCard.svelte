@@ -22,7 +22,8 @@
   import notification from '@hcengineering/notification'
   import view from '@hcengineering/view'
   import tags from '@hcengineering/tags'
-  import { getClient, UserBoxList } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
+  import contact from '@hcengineering/contact'
   import {
     Button,
     Component,
@@ -215,7 +216,11 @@
       </div>
       {#if (object.members?.length ?? 0) > 0}
         <div class="flex justify-end mt-1 mb-2" style:pointer-events={dragoverAttachment ? 'none' : 'all'}>
-          <UserBoxList items={object.members} label={board.string.Members} on:update={updateMembers} />
+          <Component
+            is={contact.component.UserBoxList}
+            props={{ items: object.members, label: board.string.Members }}
+            on:update={updateMembers}
+          />
         </div>
       {/if}
     </div>

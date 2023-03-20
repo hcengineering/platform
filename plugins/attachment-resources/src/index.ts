@@ -37,6 +37,7 @@ import IconUploadDuo from './components/icons/UploadDuo.svelte'
 import IconAttachment from './components/icons/Attachment.svelte'
 import { deleteFile, uploadFile } from './utils'
 import { DisplayTx } from '@hcengineering/activity'
+import AttachmentPreview from './components/AttachmentPreview.svelte'
 
 export {
   AddAttachment,
@@ -53,7 +54,8 @@ export {
   AttachmentStyledBox,
   AccordionEditor,
   IconUploadDuo,
-  IconAttachment
+  IconAttachment,
+  AttachmentPreview
 }
 
 export enum FileBrowserSortMode {

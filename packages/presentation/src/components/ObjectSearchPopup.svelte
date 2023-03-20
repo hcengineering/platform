@@ -37,6 +37,7 @@
   export let label: IntlString | undefined = undefined
   export let relatedDocuments: RelatedDocument[] | undefined = undefined
   export let ignore: RelatedDocument[] | undefined = undefined
+  export let allowCategory: Ref<ObjectSearchCategory>[] | undefined
 
   let items: ObjectSearchResult[] = []
 
@@ -45,10 +46,15 @@
   const client = getClient()
 
   let category: ObjectSearchCategory | undefined
-  client.findAll(presentation.class.ObjectSearchCategory, {}).then((r) => {
-    categories = r
-    category = categories[0]
-  })
+  client
+    .findAll(
+      presentation.class.ObjectSearchCategory,
+      allowCategory !== undefined ? { _id: { $in: allowCategory } } : {}
+    )
+    .then((r) => {
+      categories = r
+      category = categories[0]
+    })
 
   const dispatch = createEventDispatcher()
 

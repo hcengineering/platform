@@ -16,11 +16,14 @@
   import { Contact } from '@hcengineering/contact'
   import type { Class, DocumentQuery, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
-  import presentation, { CombineAvatars, createQuery, IconMembers, UsersPopup } from '@hcengineering/presentation'
+  import { createQuery } from '@hcengineering/presentation'
   import { Button, ButtonKind, ButtonSize, Label, showPopup, TooltipAlignment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { ContactPresenter } from '..'
   import contact from '../plugin'
+  import CombineAvatars from './CombineAvatars.svelte'
+  import IconMembers from './icons/Members.svelte'
+  import UsersPopup from './UsersPopup.svelte'
 
   export let items: Ref<Contact>[] = []
   export let _class: Ref<Class<Contact>> = contact.class.Contact
@@ -90,7 +93,7 @@
         {:else}
           <CombineAvatars {_class} bind:items size={'inline'} />
           <span class="overflow-label ml-1-5">
-            <Label label={presentation.string.NumberMembers} params={{ count: contacts.length }} />
+            <Label label={contact.string.NumberMembers} params={{ count: contacts.length }} />
           </span>
         {/if}
       </div>

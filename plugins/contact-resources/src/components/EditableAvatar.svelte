@@ -69,6 +69,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="cursor-pointer" on:click|self={showSelectionPopup}>
   <AvatarComponent
     avatar={selectedAvatarType === AvatarType.IMAGE ? selectedAvatar : `${selectedAvatarType}://${selectedAvatar}`}

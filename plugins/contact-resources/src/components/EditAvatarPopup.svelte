@@ -17,7 +17,7 @@
   import { getResource } from '@hcengineering/platform'
   import { Button } from '@hcengineering/ui'
   import imageCropper from '@hcengineering/image-cropper'
-  import plugin from '../plugin'
+  import presentation from '@hcengineering/presentation'
 
   export let file: Blob
   let inputRef: HTMLInputElement
@@ -67,13 +67,13 @@
     </div>
     <div class="footer">
       <div>
-        <Button label={plugin.string.Save} kind={'primary'} on:click={onCrop} />
+        <Button label={presentation.string.Save} kind={'primary'} on:click={onCrop} />
       </div>
       <div class="ml-4 mr-4">
-        <Button label={plugin.string.Change} on:click={selectAnother} />
+        <Button label={presentation.string.Change} on:click={selectAnother} />
       </div>
       <div>
-        <Button label={plugin.string.Remove} on:click={remove} />
+        <Button label={presentation.string.Remove} on:click={remove} />
       </div>
     </div>
   {/await}

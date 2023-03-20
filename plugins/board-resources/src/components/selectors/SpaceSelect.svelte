@@ -1,10 +1,9 @@
 <script lang="ts">
+  import { Board, Card } from '@hcengineering/board'
+  import { Ref } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import { DropdownLabels } from '@hcengineering/ui'
-  import { Ref } from '@hcengineering/core'
-  import { DropdownTextItem } from '@hcengineering/ui/src/types'
-  import { Board, Card } from '@hcengineering/board'
+  import { DropdownLabels, DropdownTextItem } from '@hcengineering/ui'
   import board from '../../plugin'
 
   export let object: Card

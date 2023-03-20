@@ -3,8 +3,8 @@ import contact from '@hcengineering/contact'
 import core, { Client, setCurrentAccount, Version } from '@hcengineering/core'
 import login, { loginId } from '@hcengineering/login'
 import { getMetadata, getResource, setMetadata } from '@hcengineering/platform'
+import presentation, { setClient } from '@hcengineering/presentation'
 import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
-import presentation from './plugin'
 
 export let versionError: string | undefined = ''
 
@@ -14,7 +14,8 @@ export async function connect (title: string): Promise<Client | undefined> {
   if (ws === undefined) return
   const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
   const token = tokens[ws]
-  setMetadata(login.metadata.LoginToken, token)
+  setMetadata(presentation.metadata.Token, token)
+
   const endpoint = fetchMetadataLocalStorage(login.metadata.LoginEndpoint)
   const email = fetchMetadataLocalStorage(login.metadata.LoginEmail)
 
@@ -84,6 +85,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   // Update window title
   document.title = [ws, title].filter((it) => it).join(' - ')
 
+  setClient(instance)
   return instance
 }
 function clearMetadata (ws: string): void {
@@ -94,7 +96,7 @@ function clearMetadata (ws: string): void {
     delete tokens[loc.path[1]]
     setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
   }
-  setMetadata(login.metadata.LoginToken, null)
+  setMetadata(presentation.metadata.Token, null)
   setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
   setMetadataLocalStorage(login.metadata.LoginEmail, null)
 }

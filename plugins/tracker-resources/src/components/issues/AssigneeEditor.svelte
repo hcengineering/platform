@@ -14,8 +14,9 @@
 -->
 <script lang="ts">
   import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
+  import { AssigneeBox } from '@hcengineering/contact-resources'
   import { AttachedData, Ref } from '@hcengineering/core'
-  import { AssigneeBox, getClient } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { Issue, IssueTemplateData } from '@hcengineering/tracker'
   import { ButtonKind, ButtonSize, TooltipAlignment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'

@@ -17,7 +17,7 @@
   import { CommentsPresenter } from '@hcengineering/chunter-resources'
   import type { WithLookup } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
-  import { Avatar } from '@hcengineering/presentation'
+  import { Avatar } from '@hcengineering/contact-resources'
   import type { Issue, TodoItem } from '@hcengineering/task'
   import { ActionIcon, Component, IconMoreH, showPopup, tooltip } from '@hcengineering/ui'
   import { ContextMenu } from '@hcengineering/view-resources'

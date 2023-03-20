@@ -15,8 +15,7 @@
 <script lang="ts">
   import { Event } from '@hcengineering/calendar'
   import { Ref } from '@hcengineering/core'
-  import { getPlatformColorForText, showPanel, tooltip } from '@hcengineering/ui'
-  import { areDatesEqual } from '@hcengineering/ui/src/components/calendar/internal/DateUtils'
+  import { areDatesEqual, getPlatformColorForText, showPanel, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import EventPresenter from './EventPresenter.svelte'

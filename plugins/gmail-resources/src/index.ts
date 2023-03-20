@@ -14,15 +14,16 @@
 // limitations under the License.
 //
 
+import { concatLink } from '@hcengineering/core'
 import { getMetadata, Resources } from '@hcengineering/platform'
-import login from '@hcengineering/login'
-import Main from './components/Main.svelte'
+import presentation from '@hcengineering/presentation'
+import TxSharedCreate from './components/activity/TxSharedCreate.svelte'
+import Configure from './components/Configure.svelte'
 import Connect from './components/Connect.svelte'
 import IconGmail from './components/icons/GmailColor.svelte'
-import TxSharedCreate from './components/activity/TxSharedCreate.svelte'
-import { concatLink } from '@hcengineering/core'
+import Main from './components/Main.svelte'
 import NewMessages from './components/NewMessages.svelte'
-import Configure from './components/Configure.svelte'
+import gmail from '@hcengineering/gmail'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -37,11 +38,11 @@ export default async (): Promise<Resources> => ({
   },
   handler: {
     DisconnectHandler: async () => {
-      const url = getMetadata(login.metadata.GmailUrl) ?? ''
+      const url = getMetadata(gmail.metadata.GmailURL) ?? ''
       await fetch(concatLink(url, '/signout'), {
         method: 'GET',
         headers: {
-          Authorization: 'Bearer ' + (getMetadata(login.metadata.LoginToken) ?? ''),
+          Authorization: 'Bearer ' + (getMetadata(presentation.metadata.Token) ?? ''),
           'Content-Type': 'application/json'
         }
       })

@@ -10,12 +10,12 @@
     EditBox,
     eventToHTMLElement,
     getEventPositionElement,
+    Grid,
     IconAdd,
     IconEdit,
     Menu,
     showPopup
   } from '@hcengineering/ui'
-  import Grid from '@hcengineering/ui/src/components/Grid.svelte'
 
   import EnumPopup from './EnumPopup.svelte'
 

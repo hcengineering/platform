@@ -16,8 +16,7 @@
   import { Ref, SortingOrder, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
-  import { Spinner } from '@hcengineering/ui'
-  import Expandable from '@hcengineering/ui/src/components/Expandable.svelte'
+  import { Expandable, Spinner } from '@hcengineering/ui'
   import tracker from '../../../plugin'
   import EstimationSubIssueList from './EstimationSubIssueList.svelte'
 

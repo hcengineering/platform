@@ -20,6 +20,7 @@
   import { signUp } from '../utils'
   import login from '../plugin'
   import { getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
+  import presentation from '@hcengineering/presentation'
 
   const fields = [
     { id: 'given-name', name: 'first', i18n: login.string.FirstName, short: true },
@@ -49,7 +50,7 @@
       status = loginStatus
 
       if (result !== undefined) {
-        setMetadata(login.metadata.LoginToken, result.token)
+        setMetadata(presentation.metadata.Token, result.token)
         setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
         setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
         const loc = getCurrentLocation()

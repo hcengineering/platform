@@ -15,6 +15,7 @@
 <script lang="ts">
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import contact, { Organization } from '@hcengineering/contact'
+  import { UserBox } from '@hcengineering/contact-resources'
   import core, {
     Data,
     fillDefaults,
@@ -24,7 +25,7 @@
     Ref,
     SortingOrder
   } from '@hcengineering/core'
-  import { Card, createQuery, getClient, InlineAttributeBar, MessageBox, UserBox } from '@hcengineering/presentation'
+  import { Card, createQuery, getClient, InlineAttributeBar, MessageBox } from '@hcengineering/presentation'
   import { Vacancy as VacancyClass } from '@hcengineering/recruit'
   import tags from '@hcengineering/tags'
   import task, { createKanban, KanbanTemplate } from '@hcengineering/task'

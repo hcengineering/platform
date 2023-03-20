@@ -169,20 +169,6 @@
 {/if}
 
 <style lang="scss">
-  // .timeline-container {
-  //   overflow: hidden;
-  //   position: relative;
-  //   display: flex;
-  //   flex-direction: column;
-  //   width: 100%;
-  //   height: 100%;
-  //   min-width: 0;
-  //   min-height: 0;
-
-  //   & > * {
-  //     overscroll-behavior-x: contain;
-  //   }
-  // }
   .timeline-header {
     display: flex;
     align-items: center;

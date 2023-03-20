@@ -18,8 +18,7 @@
   import AttributeMapper from './AttributeMapper.svelte'
   import FieldMappingPresenter from './FieldMappingPresenter.svelte'
 
-  import CheckBox from '@hcengineering/ui/src/components/CheckBox.svelte'
-  import DropdownLabelsPopup from '@hcengineering/ui/src/components/DropdownLabelsPopup.svelte'
+  import { CheckBox, DropdownLabelsPopup } from '@hcengineering/ui'
   import { deepEqual } from 'fast-equals'
   import BitrixFieldLookup from './BitrixFieldLookup.svelte'
   import CreateMappingAttribute from './CreateMappingAttribute.svelte'

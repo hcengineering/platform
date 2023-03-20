@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import { plugin } from '@hcengineering/platform'
-import type { Plugin } from '@hcengineering/platform'
-import type { Doc, Ref, Class, Space, AttachedDoc, Timestamp, Account } from '@hcengineering/core'
-import type { AnyComponent } from '@hcengineering/ui'
-import type { IntegrationType, Handler } from '@hcengineering/setting'
 import { Channel } from '@hcengineering/contact'
+import type { Account, AttachedDoc, Class, Doc, Ref, Space, Timestamp } from '@hcengineering/core'
+import type { Plugin } from '@hcengineering/platform'
+import { Metadata, plugin } from '@hcengineering/platform'
+import type { Handler, IntegrationType } from '@hcengineering/setting'
+import type { AnyComponent } from '@hcengineering/ui'
 
 /**
  * @public
@@ -104,5 +104,8 @@ export default plugin(gmailId, {
   },
   space: {
     Gmail: '' as Ref<Space>
+  },
+  metadata: {
+    GmailURL: '' as Metadata<string>
   }
 })

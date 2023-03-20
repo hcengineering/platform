@@ -14,8 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { SpaceMembers } from '@hcengineering/contact-resources'
+  import contact from '@hcengineering/contact-resources/src/plugin'
   import core from '@hcengineering/core'
-  import presentation, { Card, getClient, Members } from '@hcengineering/presentation'
+  import presentation, { Card, getClient } from '@hcengineering/presentation'
   import { TemplateCategory } from '@hcengineering/templates'
   import { EditBox, Grid, Label } from '@hcengineering/ui'
   import { BooleanPresenter } from '@hcengineering/view-resources'
@@ -61,8 +63,8 @@
   </Grid>
   <div class="flex-col mt-10 flex-no-shrink">
     <span class="fs-title text-xl overflow-label mb-2 flex-no-shrink">
-      <Label label={presentation.string.Members} />
+      <Label label={contact.string.Members} />
     </span>
-    <Members space={object} withAddButton={true} />
+    <SpaceMembers space={object} withAddButton={true} />
   </div>
 </Card>

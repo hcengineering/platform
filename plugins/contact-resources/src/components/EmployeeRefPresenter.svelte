@@ -1,11 +1,11 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
-  import { AssigneeBox } from '@hcengineering/presentation'
   import { ButtonKind } from '@hcengineering/ui'
   import { PersonLabelTooltip } from '..'
   import contact from '../plugin'
   import { employeeByIdStore } from '../utils'
+  import AssigneeBox from './AssigneeBox.svelte'
   import EmployeePresenter from './EmployeePresenter.svelte'
 
   export let value: Ref<Employee> | null | undefined

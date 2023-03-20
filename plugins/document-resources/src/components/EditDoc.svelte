@@ -47,8 +47,7 @@
     SelectPopup,
     showPopup
   } from '@hcengineering/ui'
-  import { ContextMenu, UpDownNavigator } from '@hcengineering/view-resources'
-  import ClassAttributeBar from '@hcengineering/view-resources/src/components/ClassAttributeBar.svelte'
+  import { ClassAttributeBar, ContextMenu, UpDownNavigator } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import document from '../plugin'
   import DocumentEditor from './DocumentEditor.svelte'

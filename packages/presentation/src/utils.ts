@@ -36,15 +36,14 @@ import core, {
   TxResult,
   WithLookup
 } from '@hcengineering/core'
-import login from '@hcengineering/login'
-import { getMetadata, getResource, IntlString } from '@hcengineering/platform'
+import { getMetadata, getResource } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
-import { onDestroy } from 'svelte'
-import { deepEqual } from 'fast-equals'
-import { IconSize, DropdownIntlItem, AnySvelteComponent } from '@hcengineering/ui'
+import { AnySvelteComponent, IconSize } from '@hcengineering/ui'
 import view, { AttributeEditor } from '@hcengineering/view'
-import contact, { AvatarType, AvatarProvider } from '@hcengineering/contact'
-import presentation, { KeyedAttribute } from '..'
+import { deepEqual } from 'fast-equals'
+import { onDestroy } from 'svelte'
+import { KeyedAttribute } from '..'
+import plugin from './plugin'
 
 let liveQuery: LQ
 let client: TxOperations
@@ -183,8 +182,8 @@ export function createQuery (dontDestroy?: boolean): LiveQuery {
  * @public
  */
 export function getFileUrl (file: string, size: IconSize = 'full'): string {
-  const uploadUrl = getMetadata(login.metadata.UploadUrl)
-  const token = getMetadata(login.metadata.LoginToken)
+  const uploadUrl = getMetadata(plugin.metadata.UploadURL)
+  const token = getMetadata(plugin.metadata.Token)
   const url = `${uploadUrl as string}?file=${file}&token=${token as string}&size=${size as string}`
   return url
 }
@@ -254,87 +253,6 @@ export function getAttributePresenterClass (
     category = 'array'
   }
   return { attrClass, category }
-}
-
-export function getAvatarTypeDropdownItems (hasGravatar: boolean): DropdownIntlItem[] {
-  return [
-    {
-      id: AvatarType.COLOR,
-      label: contact.string.UseColor
-    },
-    {
-      id: AvatarType.IMAGE,
-      label: contact.string.UseImage
-    },
-    ...(hasGravatar
-      ? [
-          {
-            id: AvatarType.GRAVATAR,
-            label: contact.string.UseGravatar
-          }
-        ]
-      : [])
-  ]
-}
-
-export function getAvatarProviderId (avatar?: string | null): Ref<AvatarProvider> | undefined {
-  if (avatar === null || avatar === undefined || avatar === '') {
-    return
-  }
-  if (!avatar.includes('://')) {
-    return contact.avatarProvider.Image
-  }
-  const [schema] = avatar.split('://')
-
-  switch (schema) {
-    case AvatarType.GRAVATAR:
-      return contact.avatarProvider.Gravatar
-    case AvatarType.COLOR:
-      return contact.avatarProvider.Color
-  }
-}
-
-/**
- * @public
- */
-export type AssigneeCategory =
-  | 'CurrentUser'
-  | 'Assigned'
-  | 'PreviouslyAssigned'
-  | 'ProjectLead'
-  | 'ProjectMembers'
-  | 'Members'
-  | 'Other'
-
-const assigneeCategoryTitleMap: Record<AssigneeCategory, IntlString> = Object.freeze({
-  CurrentUser: presentation.string.CategoryCurrentUser,
-  Assigned: presentation.string.Assigned,
-  PreviouslyAssigned: presentation.string.CategoryPreviousAssigned,
-  ProjectLead: presentation.string.CategoryProjectLead,
-  ProjectMembers: presentation.string.CategoryProjectMembers,
-  Members: presentation.string.Members,
-  Other: presentation.string.CategoryOther
-})
-
-/**
- * @public
- */
-export const assigneeCategoryOrder: AssigneeCategory[] = [
-  'CurrentUser',
-  'Assigned',
-  'PreviouslyAssigned',
-  'ProjectLead',
-  'ProjectMembers',
-  'Members',
-  'Other'
-]
-
-/**
- * @public
- */
-export function getCategorytitle (category: AssigneeCategory | undefined): IntlString {
-  const cat: AssigneeCategory = category ?? 'Other'
-  return assigneeCategoryTitleMap[cat]
 }
 
 function getAttributeEditorNotFoundError (

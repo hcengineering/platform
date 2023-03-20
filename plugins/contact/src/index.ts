@@ -179,7 +179,9 @@ export const contactPlugin = plugin(contactId, {
     CreateOrganization: '' as AnyComponent,
     CreatePerson: '' as AnyComponent,
     ChannelsPresenter: '' as AnyComponent,
-    MembersPresenter: '' as AnyComponent
+    MembersPresenter: '' as AnyComponent,
+    Avatar: '' as AnyComponent,
+    UserBoxList: '' as AnyComponent
   },
   channelProvider: {
     Email: '' as Ref<ChannelProvider>,

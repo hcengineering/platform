@@ -15,7 +15,8 @@
 <script lang="ts">
   import { Employee, EmployeeAccount } from '@hcengineering/contact'
   import { Class, DateRangeMode, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
-  import { Card, getClient, UserBoxList } from '@hcengineering/presentation'
+  import { Card, getClient } from '@hcengineering/presentation'
+  import { UserBoxList } from '@hcengineering/contact-resources'
   import ui, { EditBox, DateRangePresenter } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'

@@ -10,8 +10,7 @@
   } from '@hcengineering/bitrix'
   import core, { AnyAttribute } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { DropdownTextItem } from '@hcengineering/ui'
-  import DropdownLabels from '@hcengineering/ui/src/components/DropdownLabels.svelte'
+  import { DropdownLabels, DropdownTextItem } from '@hcengineering/ui'
   import bitrix from '../../plugin'
 
   export let mapping: BitrixEntityMapping

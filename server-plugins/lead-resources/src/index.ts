@@ -24,20 +24,19 @@ import core, {
   TxProcessor,
   TxUpdateDoc
 } from '@hcengineering/core'
-import lead, { leadId, Lead } from '@hcengineering/lead'
-import login from '@hcengineering/login'
+import lead, { Lead, leadId } from '@hcengineering/lead'
 import { getMetadata } from '@hcengineering/platform'
-import { TriggerControl } from '@hcengineering/server-core'
+import serverCore, { TriggerControl } from '@hcengineering/server-core'
+import { addAssigneeNotification } from '@hcengineering/server-task-resources'
 import view from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
-import { addAssigneeNotification } from '@hcengineering/server-task-resources'
 
 /**
  * @public
  */
 export async function leadHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const lead = doc as Lead
-  const front = getMetadata(login.metadata.FrontUrl) ?? ''
+  const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.name}/${leadId}/${lead.space}/#${view.component.EditDoc}|${lead._id}|${lead._class}|content`
   const link = concatLink(front, path)
   return `<a href="${link}">${lead.title}</a>`

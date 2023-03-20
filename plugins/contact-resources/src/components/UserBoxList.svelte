@@ -18,9 +18,12 @@
   import type { IntlString } from '@hcengineering/platform'
   import { Button, ButtonKind, ButtonSize, Label, showPopup, TooltipAlignment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import presentation, { CombineAvatars, UserInfo, UsersPopup } from '..'
-  import { createQuery } from '../utils'
+  import { createQuery } from '@hcengineering/presentation'
   import Members from './icons/Members.svelte'
+  import UsersPopup from './UsersPopup.svelte'
+  import UserInfo from './UserInfo.svelte'
+  import CombineAvatars from './CombineAvatars.svelte'
+  import plugin from '../plugin'
 
   export let items: Ref<Employee>[] = []
   export let _class: Ref<Class<Employee>> = contact.class.Employee
@@ -34,7 +37,7 @@
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
-  export let emptyLabel = presentation.string.Members
+  export let emptyLabel = plugin.string.Members
   export let readonly: boolean = false
 
   let persons: Employee[] = []
@@ -90,7 +93,7 @@
         {:else}
           <CombineAvatars {_class} bind:items size={'inline'} />
           <span class="overflow-label ml-1-5">
-            <Label label={presentation.string.NumberMembers} params={{ count: persons.length }} />
+            <Label label={plugin.string.NumberMembers} params={{ count: persons.length }} />
           </span>
         {/if}
       </div>

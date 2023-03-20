@@ -15,7 +15,7 @@
 <script lang="ts">
   import contact from '@hcengineering/contact'
   import { Ref, Space, WithLookup } from '@hcengineering/core'
-  import UserBox from '@hcengineering/presentation/src/components/UserBox.svelte'
+  import { UserBox } from '@hcengineering/contact-resources'
   import { Project, TimeReportDayType, TimeSpendReport } from '@hcengineering/tracker'
   import {
     deviceOptionsStore as deviceInfo,
@@ -24,7 +24,7 @@
     ListView,
     showPopup
   } from '@hcengineering/ui'
-  import DatePresenter from '@hcengineering/ui/src/components/calendar/DatePresenter.svelte'
+  import { DatePresenter } from '@hcengineering/ui'
   import { ContextMenu, FixedColumn, ListSelectionProvider } from '@hcengineering/view-resources'
   import { getIssueId } from '../../../issues'
   import tracker from '../../../plugin'

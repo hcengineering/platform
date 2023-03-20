@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttributeEditor, EditableAvatar, getClient } from '@hcengineering/presentation'
+  import { AttributeEditor, getClient } from '@hcengineering/presentation'
 
   import contact, { EmployeeAccount, getFirstName, getLastName } from '@hcengineering/contact'
-  import { ChannelsEditor, employeeByIdStore } from '@hcengineering/contact-resources'
+  import { ChannelsEditor, EditableAvatar, employeeByIdStore } from '@hcengineering/contact-resources'
   import contactRes from '@hcengineering/contact-resources/src/plugin'
   import { getCurrentAccount } from '@hcengineering/core'
   import { changeName, leaveWorkspace } from '@hcengineering/login-resources'
-  import MessageBox from '@hcengineering/presentation/src/components/MessageBox.svelte'
+  import { MessageBox } from '@hcengineering/presentation'
   import { Button, createFocusManager, EditBox, FocusHandler, Icon, Label, showPopup } from '@hcengineering/ui'
   import setting from '../plugin'
   const client = getClient()

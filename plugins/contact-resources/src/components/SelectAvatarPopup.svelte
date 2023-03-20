@@ -19,11 +19,11 @@
   import { Asset } from '@hcengineering/platform'
   import { AnySvelteComponent, DropdownLabelsIntl, Label, showPopup } from '@hcengineering/ui'
 
-  import presentation from '..'
-  import { getAvatarTypeDropdownItems, getFileUrl } from '../utils'
+  import contact from '../plugin'
   import AvatarComponent from './Avatar.svelte'
-  import Card from './Card.svelte'
   import EditAvatarPopup from './EditAvatarPopup.svelte'
+  import { getAvatarTypeDropdownItems } from '../utils'
+  import presentation, { Card, getFileUrl } from '@hcengineering/presentation'
 
   export let avatar: string | undefined
   export let email: string | undefined
@@ -149,7 +149,7 @@
 </script>
 
 <Card
-  label={presentation.string.SelectAvatar}
+  label={contact.string.SelectAvatar}
   okLabel={presentation.string.Save}
   canSave={selectedAvatarType !== initialSelectedType ||
     selectedAvatar !== initialSelectedAvatar ||
@@ -162,11 +162,12 @@
 >
   <DropdownLabelsIntl
     items={getAvatarTypeDropdownItems(hasGravatar)}
-    label={presentation.string.SelectAvatar}
+    label={contact.string.SelectAvatar}
     bind:selected={selectedAvatarType}
     on:selected={handleDropdownSelection}
   />
   {#if selectedAvatarType === AvatarType.IMAGE}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="cursor-pointer" on:click|self={handleImageAvatarClick}>
       <AvatarComponent avatar={selectedAvatar} direct={selectedFile} size={'x-large'} {icon} />
     </div>
@@ -175,7 +176,7 @@
   {/if}
   {#if selectedAvatarType === AvatarType.GRAVATAR}
     <span>
-      <Label label={presentation.string.GravatarsManaged} />
+      <Label label={contact.string.GravatarsManaged} />
       <a target="”_blank”" href="//gravatar.com">Gravatar.com</a>
     </span>
   {/if}

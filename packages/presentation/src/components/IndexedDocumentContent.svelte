@@ -2,7 +2,7 @@
   import { AnyAttribute, DocIndexState, extractDocKey, isFullTextAttribute } from '@hcengineering/core'
 
   import { Label } from '@hcengineering/ui'
-  import Icon from '@hcengineering/ui/src/components/Icon.svelte'
+  import { Icon } from '@hcengineering/ui'
   import { getClient } from '../utils'
 
   export let indexDoc: DocIndexState

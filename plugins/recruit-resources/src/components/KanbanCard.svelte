@@ -18,7 +18,7 @@
   import contact, { getName } from '@hcengineering/contact'
   import { Hierarchy, WithLookup } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
-  import { Avatar } from '@hcengineering/presentation'
+  import { Avatar } from '@hcengineering/contact-resources'
   import type { Applicant, Candidate } from '@hcengineering/recruit'
   import { AssigneePresenter } from '@hcengineering/task-resources'
   import tracker from '@hcengineering/tracker'

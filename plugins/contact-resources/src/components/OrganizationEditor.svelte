@@ -16,7 +16,7 @@
   import { Organization } from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { UserBox } from '@hcengineering/presentation'
+  import UserBox from './UserBox.svelte'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import contact from '../plugin'
 

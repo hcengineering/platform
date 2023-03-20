@@ -26,10 +26,9 @@ import core, {
   TxRemoveDoc,
   TxUpdateDoc
 } from '@hcengineering/core'
-import login from '@hcengineering/login'
 import { getMetadata } from '@hcengineering/platform'
 import recruit, { Applicant, recruitId, Vacancy } from '@hcengineering/recruit'
-import { TriggerControl } from '@hcengineering/server-core'
+import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { addAssigneeNotification } from '@hcengineering/server-task-resources'
 import { workbenchId } from '@hcengineering/workbench'
 
@@ -50,7 +49,7 @@ function getSequenceId (doc: Vacancy | Applicant, control: TriggerControl): stri
  */
 export async function vacancyHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const vacancy = doc as Vacancy
-  const front = getMetadata(login.metadata.FrontUrl) ?? ''
+  const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.name}/${recruitId}/${getSequenceId(vacancy, control)}`
   const link = concatLink(front, path)
   return `<a href="${link}">${vacancy.name}</a>`
@@ -69,7 +68,7 @@ export async function vacancyTextPresenter (doc: Doc): Promise<string> {
  */
 export async function applicationHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const applicant = doc as Applicant
-  const front = getMetadata(login.metadata.FrontUrl) ?? ''
+  const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const id = getSequenceId(applicant, control)
   const path = `${workbenchId}/${control.workspace.name}/${recruitId}/${id}`
   const link = concatLink(front, path)

@@ -15,7 +15,8 @@
 //
 
 import { getMetadata, Resources } from '@hcengineering/platform'
-import login from '@hcengineering/login'
+import telegram from './plugin'
+import presentation from '@hcengineering/presentation'
 import Chat from './components/Chat.svelte'
 import Connect from './components/Connect.svelte'
 import Reconnect from './components/Reconnect.svelte'
@@ -35,11 +36,11 @@ export default async (): Promise<Resources> => ({
   },
   handler: {
     DisconnectHandler: async () => {
-      const url = getMetadata(login.metadata.TelegramUrl) ?? ''
+      const url = getMetadata(telegram.metadata.TelegramURL) ?? ''
       await fetch(concatLink(url, '/signout'), {
         method: 'POST',
         headers: {
-          Authorization: 'Bearer ' + (getMetadata(login.metadata.LoginToken) ?? ''),
+          Authorization: 'Bearer ' + (getMetadata(presentation.metadata.Token) ?? ''),
           'Content-Type': 'application/json'
         }
       })

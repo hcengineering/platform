@@ -17,7 +17,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { IssueTemplate, IssueTemplateChild } from '@hcengineering/tracker'
   import { Button, ButtonKind, ButtonSize, eventToHTMLElement, showPopup } from '@hcengineering/ui'
-  import EditBoxPopup from '@hcengineering/view-resources/src/components/EditBoxPopup.svelte'
+  import { EditBoxPopup } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
 

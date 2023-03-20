@@ -17,9 +17,9 @@
   import { AccountRole, getCurrentAccount } from '@hcengineering/core'
   import login, { loginId } from '@hcengineering/login'
   import { setMetadata } from '@hcengineering/platform'
-  import { Avatar, createQuery } from '@hcengineering/presentation'
+  import presentation, { createQuery } from '@hcengineering/presentation'
   import setting, { settingId, SettingsCategory } from '@hcengineering/setting'
-  import { Action, fetchMetadataLocalStorage } from '@hcengineering/ui'
+  import { Action, Component, fetchMetadataLocalStorage } from '@hcengineering/ui'
   import {
     closePanel,
     closePopup,
@@ -80,7 +80,7 @@
       delete tokens[loc.path[1]]
       setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
     }
-    setMetadata(login.metadata.LoginToken, null)
+    setMetadata(presentation.metadata.Token, null)
     setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
     setMetadataLocalStorage(login.metadata.LoginEmail, null)
     navigate({ path: [loginId] })
@@ -186,7 +186,7 @@
       }}
     >
       {#if employee}
-        <Avatar avatar={employee.avatar} size={'medium'} />
+        <Component is={contact.component.Avatar} props={{ avatar: employee.avatar, size: 'medium' }} />
       {/if}
       <div class="ml-2 flex-col">
         {#if account}

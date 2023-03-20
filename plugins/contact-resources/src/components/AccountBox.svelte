@@ -16,10 +16,11 @@
   import { Employee, EmployeeAccount } from '@hcengineering/contact'
   import { Account, DocumentQuery, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { createQuery, UserBox } from '@hcengineering/presentation'
+  import { createQuery } from '@hcengineering/presentation'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
+  import UserBox from './UserBox.svelte'
 
   export let label: IntlString = contact.string.Employee
   export let value: Ref<Account> | null | undefined
