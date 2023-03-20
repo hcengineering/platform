@@ -68,4 +68,3 @@
     />
   </div>
 {/if}
-AddToComponent

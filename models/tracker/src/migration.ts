@@ -310,24 +310,6 @@ async function migrateIssueComponents (client: MigrationClient): Promise<void> {
   }
 }
 
-async function upgradeComponentIcons (tx: TxOperations): Promise<void> {
-  const components = await tx.findAll(tracker.class.Component, {})
-
-  if (components.length === 0) {
-    return
-  }
-
-  for (const component of components) {
-    const icon = component.icon as unknown
-
-    if (icon !== undefined) {
-      continue
-    }
-
-    await tx.update(component, { icon: tracker.icon.Components })
-  }
-}
-
 async function createDefaults (tx: TxOperations): Promise<void> {
   await createDefaultProject(tx)
   await createOrUpdate(
@@ -413,10 +395,6 @@ async function upgradeIssues (tx: TxOperations): Promise<void> {
       await tx.update(i, upd)
     }
   }
-}
-
-async function upgradeComponents (tx: TxOperations): Promise<void> {
-  await upgradeComponentIcons(tx)
 }
 
 async function renameProject (client: MigrationClient): Promise<void> {
@@ -786,6 +764,5 @@ export const trackerOperation: MigrateOperation = {
     await createDefaults(tx)
     await upgradeProjects(tx)
     await upgradeIssues(tx)
-    await upgradeComponents(tx)
   }
 }

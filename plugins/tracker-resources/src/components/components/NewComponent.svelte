@@ -30,7 +30,6 @@
   const object: Data<Component> = {
     label: '' as IntlString,
     description: '',
-    icon: tracker.icon.Components,
     status: ComponentStatus.Backlog,
     lead: null,
     members: [],

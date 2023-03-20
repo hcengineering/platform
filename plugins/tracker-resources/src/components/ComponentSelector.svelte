@@ -55,7 +55,6 @@
   $: handleSelectedComponentIdUpdated(value, rawComponents)
 
   $: translate(tracker.string.Component, {}).then((result) => (defaultComponentLabel = result))
-  $: componentIcon = selectedComponent?.icon ?? tracker.icon.Components
   $: componentText = shouldShowLabel ? selectedComponent?.label ?? defaultComponentLabel : undefined
 
   const handleSelectedComponentIdUpdated = async (
@@ -81,7 +80,7 @@
       { id: null, icon: tracker.icon.Components, label: tracker.string.NoComponent, isSelected: !selectedComponent },
       ...rawComponents.map((p) => ({
         id: p._id,
-        icon: p.icon,
+        icon: tracker.icon.Components   ,
         text: p.label,
         isSelected: selectedComponent ? p._id === selectedComponent._id : false
       }))
@@ -103,7 +102,7 @@
     {shape}
     {width}
     {justify}
-    icon={componentIcon}
+    icon={tracker.icon.Components}
     disabled={!isEditable}
     {loading}
     on:click={handleComponentEditorOpened}
@@ -115,7 +114,7 @@
     {shape}
     {width}
     {justify}
-    icon={componentIcon}
+    icon={tracker.icon.Components}
     disabled={!isEditable}
     {loading}
     on:click={handleComponentEditorOpened}

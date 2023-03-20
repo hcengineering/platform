@@ -95,7 +95,6 @@
     const tR: TimelineRow = { items: [] }
     tR.items = [
       {
-        icon: proj.icon,
         presenter: ComponentPresenter,
         props: { value: proj },
         startDate: proj.startDate as Timestamp,
