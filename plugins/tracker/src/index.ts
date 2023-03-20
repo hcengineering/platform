@@ -345,7 +345,6 @@ export enum ComponentStatus {
 export interface Component extends Doc {
   label: string
   description?: Markup
-  icon: Asset
 
   status: ComponentStatus
 

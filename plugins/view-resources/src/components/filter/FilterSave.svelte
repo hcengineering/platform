@@ -23,6 +23,7 @@
     await client.createDoc(view.class.FilteredView, preference.space.Preference, {
       name: filterName,
       location: loc,
+      filterClass: _class,
       filters,
       attachedTo: loc.path[2] as Ref<Doc>,
       viewOptions,

@@ -22,7 +22,7 @@
 
 {#if value}
   <span class="overflow-label flex">
-    <Icon icon={value.icon ?? tracker.icon.Component} size={'small'} />
+    <Icon icon={tracker.icon.Component} size={'small'} />
     <div class="ml-2 mr-2">
       {value.label}
     </div></span

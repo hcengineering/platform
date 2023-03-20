@@ -365,9 +365,6 @@ export class TComponent extends TDoc implements Component {
   @Prop(TypeMarkup(), tracker.string.Description)
     description?: Markup
 
-  @Prop(TypeString(), tracker.string.AssetLabel)
-    icon!: Asset
-
   @Prop(TypeComponentStatus(), tracker.string.Status)
     status!: ComponentStatus
 

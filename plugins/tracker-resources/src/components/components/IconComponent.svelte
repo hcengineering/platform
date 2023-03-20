@@ -13,11 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@hcengineering/core'
-  import { Component } from '@hcengineering/tracker'
   import { Button } from '@hcengineering/ui'
-
-  export let value: WithLookup<Component>
+  import tracker from '../../plugin'
 </script>
 
-<Button size="small" kind="link" icon={value.icon} />
+<Button size="small" kind="link" icon={tracker.icon.Components} />
