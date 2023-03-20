@@ -15,12 +15,12 @@
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { ObjectCreate, ObjectPopup } from '@hcengineering/presentation'
-  import { Project } from '@hcengineering/tracker'
-  import ProjectTitlePresenter from './ProjectTitlePresenter.svelte'
+  import { Component } from '@hcengineering/tracker'
+  import ComponentTitlePresenter from './ComponentTitlePresenter.svelte'
 
-  export let _class: Ref<Class<Project>>
-  export let selected: Ref<Project> | undefined
-  export let sprintQuery: DocumentQuery<Project> = {}
+  export let _class: Ref<Class<Component>>
+  export let selected: Ref<Component> | undefined
+  export let sprintQuery: DocumentQuery<Component> = {}
   export let create: ObjectCreate | undefined = undefined
   export let allowDeselect = false
 
@@ -28,7 +28,7 @@
     create !== undefined
       ? {
           ...create,
-          update: (doc: Doc) => (doc as Project).label
+          update: (doc: Doc) => (doc as Component).label
         }
       : undefined
 </script>
@@ -46,6 +46,6 @@
   on:close
 >
   <svelte:fragment slot="item" let:item={sprint}>
-    <ProjectTitlePresenter value={sprint} />
+    <ComponentTitlePresenter value={sprint} />
   </svelte:fragment>
 </ObjectPopup>

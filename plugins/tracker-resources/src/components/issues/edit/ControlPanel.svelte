@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
-  import { EmployeePresenter } from '@hcengineering/contact-resources'
+  import contact, { EmployeeAccount } from '@hcengineering/contact'
+  import { employeeByIdStore, EmployeePresenter } from '@hcengineering/contact-resources'
   import core, { ClassifierKind, Doc, Mixin, Ref, WithLookup } from '@hcengineering/core'
   import { AttributeBarEditor, createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
 
@@ -24,7 +24,7 @@
   import { ObjectBox } from '@hcengineering/view-resources'
   import { getFiltredKeys, isCollectionAttr } from '@hcengineering/view-resources/src/utils'
   import tracker from '../../../plugin'
-  import ProjectEditor from '../../projects/ProjectEditor.svelte'
+  import ComponentEditor from '../../components/ComponentEditor.svelte'
   import SprintEditor from '../../sprints/SprintEditor.svelte'
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import DueDateEditor from '../DueDateEditor.svelte'
@@ -75,13 +75,12 @@
     return res
   }
 
-  $: updateKeys(['title', 'description', 'priority', 'status', 'number', 'assignee', 'project', 'dueDate', 'sprint'])
+  $: updateKeys(['title', 'description', 'priority', 'status', 'number', 'assignee', 'component', 'dueDate', 'sprint'])
 
   const employeeAccountQuery = createQuery()
-  const employeeQuery = createQuery()
 
   let account: EmployeeAccount | undefined
-  let employee: Employee | undefined
+  $: employee = account && $employeeByIdStore.get(account.employee)
 
   $: employeeAccountQuery.query(
     contact.class.EmployeeAccount,
@@ -91,16 +90,6 @@
     },
     { limit: 1 }
   )
-
-  $: account &&
-    employeeQuery.query(
-      contact.class.Employee,
-      { _id: account.employee },
-      (res) => {
-        ;[employee] = res
-      },
-      { limit: 1 }
-    )
 </script>
 
 <div class="content">
@@ -174,9 +163,9 @@
   <div class="divider" />
 
   <span class="label">
-    <Label label={tracker.string.Project} />
+    <Label label={tracker.string.Component} />
   </span>
-  <ProjectEditor value={issue} />
+  <ComponentEditor value={issue} />
 
   {#if issue.sprint}
     <span class="label">

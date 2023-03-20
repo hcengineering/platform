@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Ref, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import type { Issue, Team } from '@hcengineering/tracker'
+  import type { Issue, Project } from '@hcengineering/tracker'
   import { Icon, tooltip } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
@@ -28,22 +28,22 @@
   export let inline = false
 
   // Extra properties
-  export let teams: Map<Ref<Team>, Team> | undefined = undefined
+  export let projects: Map<Ref<Project>, Project> | undefined = undefined
 
   const spaceQuery = createQuery()
-  let currentTeam: Team | undefined = value?.$lookup?.space
+  let currentProject: Project | undefined = value?.$lookup?.space
 
-  $: if (teams === undefined) {
+  $: if (projects === undefined) {
     if (value && value?.$lookup?.space === undefined) {
-      spaceQuery.query(tracker.class.Team, { _id: value.space }, (res) => ([currentTeam] = res))
+      spaceQuery.query(tracker.class.Project, { _id: value.space }, (res) => ([currentProject] = res))
     } else {
       spaceQuery.unsubscribe()
     }
   } else {
-    currentTeam = teams.get(value.space)
+    currentProject = projects.get(value.space)
   }
 
-  $: title = currentTeam ? `${currentTeam.identifier}-${value?.number}` : `${value?.number}`
+  $: title = currentProject ? `${currentProject.identifier}-${value?.number}` : `${value?.number}`
 </script>
 
 {#if value}

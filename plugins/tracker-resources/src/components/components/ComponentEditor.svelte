@@ -14,18 +14,18 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
-  import { Issue, IssueTemplate, Project } from '@hcengineering/tracker'
-  import { getClient } from '@hcengineering/presentation'
-  import { ButtonKind, ButtonShape, ButtonSize, tooltip } from '@hcengineering/ui'
   import { IntlString } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
+  import { Component, Issue, IssueTemplate } from '@hcengineering/tracker'
+  import { ButtonKind, ButtonShape, ButtonSize, tooltip } from '@hcengineering/ui'
+  import { activeComponent } from '../../issues'
   import tracker from '../../plugin'
-  import ProjectSelector from '../ProjectSelector.svelte'
-  import { activeProject } from '../../issues'
+  import ComponentSelector from '../ComponentSelector.svelte'
 
   export let value: Issue | IssueTemplate
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = true
-  export let popupPlaceholder: IntlString = tracker.string.MoveToProject
+  export let popupPlaceholder: IntlString = tracker.string.MoveToComponent
   export let shouldShowPlaceholder = true
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
@@ -38,21 +38,21 @@
 
   const client = getClient()
 
-  const handleProjectIdChanged = async (newProjectId: Ref<Project> | null | undefined) => {
-    if (!isEditable || newProjectId === undefined || value.project === newProjectId) {
+  const handleComponentIdChanged = async (newComponentId: Ref<Component> | null | undefined) => {
+    if (!isEditable || newComponentId === undefined || value.component === newComponentId) {
       return
     }
 
-    await client.update(value, { project: newProjectId })
+    await client.update(value, { component: newComponentId })
   }
 </script>
 
-{#if (value.project && value.project !== $activeProject && groupBy !== 'project') || shouldShowPlaceholder}
+{#if (value.component && value.component !== $activeComponent && groupBy !== 'component') || shouldShowPlaceholder}
   <div
     class:minus-margin={kind === 'list-header'}
-    use:tooltip={{ label: value.project ? tracker.string.MoveToProject : tracker.string.AddToProject }}
+    use:tooltip={{ label: value.component ? tracker.string.MoveToComponent : tracker.string.AddToComponent }}
   >
-    <ProjectSelector
+    <ComponentSelector
       {kind}
       {size}
       {shape}
@@ -63,8 +63,8 @@
       {popupPlaceholder}
       {onlyIcon}
       {enlargedText}
-      value={value.project}
-      onChange={handleProjectIdChanged}
+      value={value.component}
+      onChange={handleComponentIdChanged}
     />
   </div>
 {/if}

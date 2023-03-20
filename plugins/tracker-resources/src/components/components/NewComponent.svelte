@@ -16,22 +16,22 @@
   import { Data, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Card, getClient, SpaceSelector, EmployeeBox, UserBoxList } from '@hcengineering/presentation'
-  import { Project, ProjectStatus, Team } from '@hcengineering/tracker'
+  import { Component, ComponentStatus, Project } from '@hcengineering/tracker'
   import { DatePresenter, EditBox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
-  import ProjectStatusSelector from './ProjectStatusSelector.svelte'
+  import ComponentStatusSelector from './ComponentStatusSelector.svelte'
   import { StyledTextArea } from '@hcengineering/text-editor'
 
-  export let space: Ref<Team>
+  export let space: Ref<Project>
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  const object: Data<Project> = {
+  const object: Data<Component> = {
     label: '' as IntlString,
     description: '',
-    icon: tracker.icon.Projects,
-    status: ProjectStatus.Backlog,
+    icon: tracker.icon.Components,
+    status: ComponentStatus.Backlog,
     lead: null,
     members: [],
     comments: 0,
@@ -41,45 +41,48 @@
   }
 
   async function onSave () {
-    await client.createDoc(tracker.class.Project, space, object)
+    await client.createDoc(tracker.class.Component, space, object)
   }
 
-  const handleProjectStatusChanged = (newProjectStatus: ProjectStatus | undefined) => {
-    if (newProjectStatus === undefined) {
+  const handleComponentStatusChanged = (newComponentStatus: ComponentStatus | undefined) => {
+    if (newComponentStatus === undefined) {
       return
     }
 
-    object.status = newProjectStatus
+    object.status = newComponentStatus
   }
 </script>
 
 <Card
-  label={tracker.string.NewProject}
+  label={tracker.string.NewComponent}
   okAction={onSave}
   canSave={object.label !== ''}
-  okLabel={tracker.string.CreateProject}
+  okLabel={tracker.string.CreateComponent}
   on:close={() => dispatch('close')}
 >
   <svelte:fragment slot="header">
-    <SpaceSelector _class={tracker.class.Team} label={tracker.string.Team} bind:space />
+    <SpaceSelector _class={tracker.class.Project} label={tracker.string.Project} bind:space />
   </svelte:fragment>
-  <EditBox bind:value={object.label} placeholder={tracker.string.ProjectNamePlaceholder} kind={'large-style'} focus />
+  <EditBox bind:value={object.label} placeholder={tracker.string.ComponentNamePlaceholder} kind={'large-style'} focus />
   <StyledTextArea
     bind:content={object.description}
-    placeholder={tracker.string.ProjectDescriptionPlaceholder}
+    placeholder={tracker.string.ComponentDescriptionPlaceholder}
     emphasized
   />
   <svelte:fragment slot="pool">
-    <ProjectStatusSelector selectedProjectStatus={object.status} onProjectStatusChange={handleProjectStatusChanged} />
+    <ComponentStatusSelector
+      selectedComponentStatus={object.status}
+      onComponentStatusChange={handleComponentStatusChanged}
+    />
     <EmployeeBox
-      label={tracker.string.ProjectLead}
+      label={tracker.string.ComponentLead}
       placeholder={tracker.string.AssignTo}
       bind:value={object.lead}
       allowDeselect
       titleDeselect={tracker.string.Unassigned}
       showNavigate={false}
     />
-    <UserBoxList bind:items={object.members} label={tracker.string.ProjectMembersSearchPlaceholder} />
+    <UserBoxList bind:items={object.members} label={tracker.string.ComponentMembersSearchPlaceholder} />
     <!-- TODO: add labels after customize IssueNeedsToBeCompletedByThisDate -->
     <DatePresenter bind:value={object.startDate} labelNull={tracker.string.StartDate} editable />
     <DatePresenter bind:value={object.targetDate} labelNull={tracker.string.TargetDate} editable />

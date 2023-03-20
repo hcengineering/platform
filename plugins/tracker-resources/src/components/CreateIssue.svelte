@@ -46,9 +46,9 @@
     IssuePriority,
     IssueStatus,
     IssueTemplate,
-    Project,
+    Component as ComponentType,
     Sprint,
-    Team
+    Project
   } from '@hcengineering/tracker'
   import {
     ActionIcon,
@@ -68,7 +68,7 @@
   import { ObjectBox } from '@hcengineering/view-resources'
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
-  import { activeProject, activeSprint, generateIssueShortLink, getIssueId, updateIssueRelation } from '../issues'
+  import { activeComponent, activeSprint, generateIssueShortLink, getIssueId, updateIssueRelation } from '../issues'
   import tracker from '../plugin'
   import AssigneeEditor from './issues/AssigneeEditor.svelte'
   import IssueNotification from './issues/IssueNotification.svelte'
@@ -76,17 +76,17 @@
   import PriorityEditor from './issues/PriorityEditor.svelte'
   import StatusEditor from './issues/StatusEditor.svelte'
   import EstimationEditor from './issues/timereport/EstimationEditor.svelte'
-  import ProjectSelector from './ProjectSelector.svelte'
+  import ComponentSelector from './ComponentSelector.svelte'
   import SetDueDateActionPopup from './SetDueDateActionPopup.svelte'
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
   import SprintSelector from './sprints/SprintSelector.svelte'
   import SubIssues from './SubIssues.svelte'
 
-  export let space: Ref<Team>
+  export let space: Ref<Project>
   export let status: Ref<IssueStatus> | undefined = undefined
   export let priority: IssuePriority = IssuePriority.NoPriority
   export let assignee: Ref<Employee> | null = null
-  export let project: Ref<Project> | null = $activeProject ?? null
+  export let component: Ref<ComponentType> | null = $activeComponent ?? null
   export let sprint: Ref<Sprint> | null = $activeSprint ?? null
   export let relatedTo: Doc | undefined
   export let shouldSaveDraft: boolean = false
@@ -102,7 +102,7 @@
   let labels: TagReference[] = draft?.labels || []
   let objectId: Ref<Issue> = draft?.issueId || generateId()
   let saveTimer: number | undefined
-  let currentTeam: Team | undefined
+  let currentProject: Project | undefined
 
   function toIssue (initials: AttachedData<Issue>, draft: IssueDraft | undefined): AttachedData<Issue> {
     if (draft === undefined) {
@@ -115,8 +115,8 @@
   const defaultIssue = {
     title: '',
     description: '',
-    assignee: '' as Ref<Employee>,
-    project,
+    assignee,
+    component,
     sprint,
     number: 0,
     rank: '',
@@ -130,7 +130,8 @@
     reportedTime: 0,
     estimation: 0,
     reports: 0,
-    childInfo: []
+    childInfo: [],
+    createOn: Date.now()
   }
 
   let object = originalIssue
@@ -152,8 +153,8 @@
     subIssues = []
     labels = []
     if (!originalIssue && !draft) {
-      updateIssueStatusId(currentTeam, status)
-      updateAssigneeId(currentTeam)
+      updateIssueStatusId(currentProject, status)
+      updateAssigneeId(currentProject)
     }
   }
 
@@ -166,7 +167,7 @@
 
   $: if (templateId !== undefined) {
     templateQuery.query(tracker.class.IssueTemplate, { _id: templateId }, (res) => {
-      template = res.shift()
+      template = res[0]
     })
   } else {
     template = undefined
@@ -197,7 +198,7 @@
     const { _class, _id, space, children, comments, attachments, labels: labels_, ...templBase } = template
 
     subIssues = template.children.map((p) => {
-      return { ...p, status: currentTeam?.defaultIssueStatus ?? ('' as Ref<IssueStatus>) }
+      return { ...p, status: currentProject?.defaultIssueStatus ?? ('' as Ref<IssueStatus>) }
     })
 
     object = {
@@ -231,9 +232,9 @@
     attr: client.getHierarchy().getAttribute(tracker.class.Issue, 'labels')
   }
 
-  $: _space = draft?.team || space
-  $: !originalIssue && !draft && updateIssueStatusId(currentTeam, status)
-  $: !originalIssue && !draft && updateAssigneeId(currentTeam)
+  $: _space = draft?.project || space
+  $: !originalIssue && !draft && updateIssueStatusId(currentProject, status)
+  $: !originalIssue && !draft && updateAssigneeId(currentProject)
   $: canSave = getTitle(object.title ?? '').length > 0
 
   $: statusesQuery.query(
@@ -247,8 +248,8 @@
       sort: { rank: SortingOrder.Ascending }
     }
   )
-  $: spaceQuery.query(tracker.class.Team, { _id: _space }, (res) => {
-    currentTeam = res.shift()
+  $: spaceQuery.query(tracker.class.Project, { _id: _space }, (res) => {
+    currentProject = res.shift()
   })
 
   async function setPropsFromOriginalIssue () {
@@ -307,20 +308,20 @@
     }
   }
 
-  async function updateIssueStatusId (currentTeam: Team | undefined, issueStatusId?: Ref<IssueStatus>) {
+  async function updateIssueStatusId (currentProject: Project | undefined, issueStatusId?: Ref<IssueStatus>) {
     if (issueStatusId !== undefined) {
       object.status = issueStatusId
       return
     }
 
-    if (currentTeam?.defaultIssueStatus) {
-      object.status = currentTeam.defaultIssueStatus
+    if (currentProject?.defaultIssueStatus) {
+      object.status = currentProject.defaultIssueStatus
     }
   }
 
-  function updateAssigneeId (currentTeam: Team | undefined) {
-    if (currentTeam?.defaultAssignee !== undefined) {
-      object.assignee = currentTeam.defaultAssignee
+  function updateAssigneeId (currentProject: Project | undefined) {
+    if (currentProject?.defaultAssignee !== undefined) {
+      object.assignee = currentProject.defaultAssignee
     } else {
       object.assignee = null
     }
@@ -357,7 +358,7 @@
       return false
     }
 
-    if (draft.project && draft.project !== defaultIssue.project) {
+    if (draft.component && draft.component !== defaultIssue.component) {
       return false
     }
 
@@ -369,16 +370,16 @@
       return true
     }
 
-    if (currentTeam?.defaultIssueStatus) {
-      return draft.status === currentTeam.defaultIssueStatus
+    if (currentProject?.defaultIssueStatus) {
+      return draft.status === currentProject.defaultIssueStatus
     }
 
     if (draft.assignee === null) {
       return true
     }
 
-    if (currentTeam?.defaultAssignee) {
-      return draft.assignee === currentTeam.defaultAssignee
+    if (currentProject?.defaultAssignee) {
+      return draft.assignee === currentProject.defaultAssignee
     }
 
     return false
@@ -394,7 +395,7 @@
       title: getTitle(object.title),
       description: (object.description as string).replaceAll('<p></p>', ''),
       assignee: object.assignee,
-      project: object.project,
+      component: object.component,
       sprint: object.sprint,
       status: object.status,
       priority: object.priority,
@@ -404,7 +405,7 @@
       attachments: object.attachments,
       labels,
       parentIssue: parentIssue?._id,
-      team: _space,
+      project: _space,
       subIssues
     }
 
@@ -426,7 +427,7 @@
 
     const lastOne = await client.findOne<Issue>(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
     const incResult = await client.updateDoc(
-      tracker.class.Team,
+      tracker.class.Project,
       core.space.Space,
       _space,
       {
@@ -439,7 +440,7 @@
       title: getTitle(object.title),
       description: object.description,
       assignee: object.assignee,
-      project: object.project,
+      component: object.component,
       sprint: object.sprint,
       number: (incResult as any).object.sequence,
       status: object.status,
@@ -455,7 +456,8 @@
       estimation: object.estimation,
       reports: 0,
       relations: relatedTo !== undefined ? [{ _id: relatedTo._id, _class: relatedTo._class }] : [],
-      childInfo: []
+      childInfo: [],
+      createOn: Date.now()
     }
 
     await client.addCollection(
@@ -498,7 +500,7 @@
     addNotification(await translate(tracker.string.IssueCreated, {}), getTitle(object.title), IssueNotification, {
       issueId: objectId,
       subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase(),
-      issueUrl: currentTeam && generateIssueShortLink(getIssueId(currentTeam, value as Issue))
+      issueUrl: currentProject && generateIssueShortLink(getIssueId(currentProject, value as Issue))
     })
 
     objectId = generateId()
@@ -550,25 +552,25 @@
     )
   }
 
-  const handleProjectIdChanged = (projectId: Ref<Project> | null | undefined) => {
-    if (projectId === undefined) {
+  const handleComponentIdChanged = (componentId: Ref<ComponentType> | null | undefined) => {
+    if (componentId === undefined) {
       return
     }
 
-    object = { ...object, project: projectId }
+    object = { ...object, component: componentId }
   }
 
   const handleSprintIdChanged = async (sprintId: Ref<Sprint> | null | undefined) => {
     if (sprintId === undefined) {
       return
     }
-    let projectSprintId: Ref<Project> | null
+    let componentSprintId: Ref<ComponentType> | null
     if (sprintId != null) {
       const sprint = await client.findOne(tracker.class.Sprint, { _id: sprintId })
-      projectSprintId = sprint && sprint.project ? sprint.project : null
-    } else projectSprintId = null
+      componentSprintId = sprint && sprint.component ? sprint.component : null
+    } else componentSprintId = null
 
-    object = { ...object, sprint: sprintId, project: projectSprintId }
+    object = { ...object, sprint: sprintId, component: componentSprintId }
   }
 
   function addTagRef (tag: TagElement): void {
@@ -640,7 +642,7 @@
 >
   <svelte:fragment slot="header">
     <div class="flex-row-center">
-      <SpaceSelector _class={tracker.class.Team} label={tracker.string.Team} bind:space={_space} />
+      <SpaceSelector _class={tracker.class.Project} label={tracker.string.Project} bind:space={_space} />
     </div>
     <ObjectBox
       _class={tracker.class.IssueTemplate}
@@ -701,12 +703,12 @@
   {#if issueStatuses}
     <SubIssues
       bind:this={subIssuesComponent}
-      teamId={_space}
+      projectId={_space}
       parent={objectId}
       statuses={issueStatuses ?? []}
-      team={currentTeam}
+      project={currentProject}
       sprint={object.sprint}
-      project={object.project}
+      component={object.component}
     />
   {/if}
   <svelte:fragment slot="pool">
@@ -752,12 +754,12 @@
           labels = labels.filter((it) => it._id !== evt.detail)
         }}
       />
-      <EstimationEditor kind={'no-border'} size={'small'} value={object} {currentTeam} />
-      <ProjectSelector value={object.project} onChange={handleProjectIdChanged} />
+      <EstimationEditor kind={'no-border'} size={'small'} value={object} {currentProject} />
+      <ComponentSelector value={object.component} onChange={handleComponentIdChanged} />
       <SprintSelector
         value={object.sprint}
         onChange={handleSprintIdChanged}
-        useProject={(!originalIssue && object.project) || undefined}
+        useComponent={(!originalIssue && object.component) || undefined}
       />
       {#if object.dueDate !== null}
         <DatePresenter bind:value={object.dueDate} editable />

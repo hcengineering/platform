@@ -16,7 +16,7 @@
 <script lang="ts">
   import { SortingOrder, WithLookup } from '@hcengineering/core'
   import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
-  import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
+  import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import { Button, EditStyle, eventToHTMLElement, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import EditBoxPopup from '@hcengineering/view-resources/src/components/EditBoxPopup.svelte'
   import { createEventDispatcher } from 'svelte'
@@ -40,7 +40,7 @@
 
   const query = createQuery()
 
-  let currentTeam: Team | undefined
+  let currentProject: Project | undefined
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
 
   $: query.query(
@@ -50,23 +50,23 @@
       const r = res.shift()
       if (r !== undefined) {
         object = r
-        currentTeam = r.$lookup?.space
+        currentProject = r.$lookup?.space
       }
     },
     {
       lookup: {
-        space: tracker.class.Team
+        space: tracker.class.Project
       }
     }
   )
-  $: defaultTimeReportDay = currentTeam?.defaultTimeReportDay
+  $: defaultTimeReportDay = currentProject?.defaultTimeReportDay
 
   const statusesQuery = createQuery()
 
-  $: currentTeam &&
+  $: currentProject &&
     statusesQuery.query(
       tracker.class.IssueStatus,
-      { attachedTo: currentTeam._id },
+      { attachedTo: currentProject._id },
       (statuses) => (issueStatuses = statuses),
       {
         lookup: { category: tracker.class.IssueStatusCategory },
@@ -115,7 +115,7 @@
           )
         }}
       >
-        <EstimationStatsPresenter value={object} estimation={_value} {currentTeam} />
+        <EstimationStatsPresenter value={object} estimation={_value} {currentProject} />
       </div>
     </div>
   </svelte:fragment>
@@ -124,18 +124,18 @@
     <IssuePresenter value={object} disableClick />
   </svelte:fragment>
 
-  {#if currentTeam && issueStatuses}
+  {#if currentProject && issueStatuses}
     <SubIssuesEstimations
       issue={object}
-      issueStatuses={new Map([[currentTeam._id, issueStatuses]])}
-      teams={new Map([[currentTeam?._id, currentTeam]])}
+      issueStatuses={new Map([[currentProject._id, issueStatuses]])}
+      projects={new Map([[currentProject?._id, currentProject]])}
     />
   {/if}
 
-  {#if currentTeam}
+  {#if currentProject}
     <TimeSpendReports
       issue={object}
-      teams={new Map([[currentTeam?._id, currentTeam]])}
+      projects={new Map([[currentProject?._id, currentProject]])}
       query={{ attachedTo: { $in: [object._id, ...childIds] } }}
     />
   {/if}

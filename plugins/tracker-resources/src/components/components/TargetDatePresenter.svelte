@@ -13,18 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Project } from '@hcengineering/tracker'
-  import { Icon } from '@hcengineering/ui'
-  import tracker from '../../plugin'
+  import { Component } from '@hcengineering/tracker'
+  import { getClient } from '@hcengineering/presentation'
+  import CommonTrackerDatePresenter from '../CommonTrackerDatePresenter.svelte'
 
-  export let value: Project | undefined
+  export let value: Component
+
+  const client = getClient()
+
+  $: dueDateMs = value.targetDate
+
+  const handleDueDateChanged = async (newDate: number | null) => {
+    await client.update(value, { targetDate: newDate })
+  }
 </script>
 
-{#if value}
-  <span class="overflow-label flex">
-    <Icon icon={value.icon ?? tracker.icon.Project} size={'small'} />
-    <div class="ml-2 mr-2">
-      {value.label}
-    </div></span
-  >
-{/if}
+<CommonTrackerDatePresenter dateMs={dueDateMs} shouldRender={true} onDateChange={handleDueDateChanged} />

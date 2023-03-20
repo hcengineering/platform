@@ -9,6 +9,7 @@
     "CreateVacancy": "Create Vacancy",
     "Vacancy": "Vacancy",
     "VacancyCreateLabel": "Vacancy",
+    "CompanyCreateLabel": "Company",
     "VacancyPlaceholder": "Software Engineer",
     "CreateAnApplication": "New Application",
     "NoApplicationsForTalent": "There are no applications for this talent.",
@@ -103,7 +104,10 @@
     "PerformMatch": "Match",
     "MoveApplication": "Move to another vacancy",
     "SearchVacancy": "Search vacancy...",
-    "Organizations": "Companies"
+    "Organizations": "Companies",
+
+    "TemplateReplace": "You you replace selected template?",
+    "TemplateReplaceConfirm": "All field changes will be override by template values"
   },
   "status": {
     "TalentRequired": "Please select talent",

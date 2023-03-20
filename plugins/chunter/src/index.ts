@@ -67,6 +67,7 @@ export interface Message extends ChunterMessage {
   attachedTo: Ref<Space>
   attachedToClass: Ref<Class<Space>>
   replies?: Ref<Employee>[]
+  repliesCount?: number
   lastReply?: Timestamp
 }
 

@@ -47,8 +47,8 @@ export interface IssueStatusCategory extends Doc {
 /**
  * @public
  */
-export interface Team extends Space {
-  identifier: string // Team identifier
+export interface Project extends Space {
+  identifier: string // Project identifier
   sequence: number
   issueStatuses: number
   defaultIssueStatus: Ref<IssueStatus>
@@ -92,7 +92,7 @@ export enum IssuesGrouping {
   Status = 'status',
   Assignee = 'assignee',
   Priority = 'priority',
-  Project = 'project',
+  Component = 'component',
   Sprint = 'sprint',
   NoGrouping = '#no_category'
 }
@@ -139,7 +139,7 @@ export interface Sprint extends Doc {
   lead: Ref<Employee> | null
   members: Ref<Employee>[]
 
-  space: Ref<Team>
+  space: Ref<Project>
 
   comments: number
   attachments?: number
@@ -150,7 +150,7 @@ export interface Sprint extends Doc {
   // Capacity in man days.
   capacity: number
 
-  project?: Ref<Project>
+  component?: Ref<Component>
 }
 
 /**
@@ -164,7 +164,7 @@ export interface Issue extends AttachedDoc {
 
   number: number
   assignee: Ref<Employee> | null
-  project: Ref<Project> | null
+  component: Ref<Component> | null
 
   // For subtasks
   subIssues: number
@@ -176,7 +176,7 @@ export interface Issue extends AttachedDoc {
   attachments?: number
   labels?: number
 
-  space: Ref<Team>
+  space: Ref<Project>
 
   dueDate: Timestamp | null
 
@@ -193,6 +193,8 @@ export interface Issue extends AttachedDoc {
   reports: number
 
   childInfo: IssueChildInfo[]
+
+  createOn: Timestamp
 
   template?: {
     // A template issue is based on
@@ -212,8 +214,8 @@ export interface IssueDraft extends Doc {
   status: Ref<IssueStatus>
   priority: IssuePriority
   assignee: Ref<Employee> | null
+  component: Ref<Component> | null
   project: Ref<Project> | null
-  team: Ref<Team> | null
   dueDate: Timestamp | null
   sprint?: Ref<Sprint> | null
 
@@ -240,7 +242,7 @@ export interface IssueTemplateData {
   priority: IssuePriority
 
   assignee: Ref<Employee> | null
-  project: Ref<Project> | null
+  component: Ref<Component> | null
 
   sprint?: Ref<Sprint> | null
 
@@ -261,7 +263,7 @@ export interface IssueTemplateChild extends IssueTemplateData {
  * @public
  */
 export interface IssueTemplate extends Doc, IssueTemplateData {
-  space: Ref<Team>
+  space: Ref<Project>
 
   children: IssueTemplateChild[]
 
@@ -322,13 +324,13 @@ export interface Document extends Doc {
   color: number
   content?: Markup
 
-  space: Ref<Team>
+  space: Ref<Project>
 }
 
 /**
  * @public
  */
-export enum ProjectStatus {
+export enum ComponentStatus {
   Backlog,
   Planned,
   InProgress,
@@ -340,17 +342,17 @@ export enum ProjectStatus {
 /**
  * @public
  */
-export interface Project extends Doc {
+export interface Component extends Doc {
   label: string
   description?: Markup
   icon: Asset
 
-  status: ProjectStatus
+  status: ComponentStatus
 
   lead: Ref<Employee> | null
   members: Ref<Employee>[]
 
-  space: Ref<Team>
+  space: Ref<Project>
 
   comments: number
   attachments?: number
@@ -373,7 +375,7 @@ export interface ScrumRecord extends AttachedDoc {
   comments: number
   attachments?: number
 
-  space: Ref<Team>
+  space: Ref<Project>
   attachedTo: Ref<Scrum>
 }
 
@@ -386,7 +388,7 @@ export interface Scrum extends Doc {
   beginTime: Timestamp
   endTime: Timestamp
   members: Ref<Employee>[]
-  space: Ref<Team>
+  space: Ref<Project>
 
   scrumRecords?: number
   attachments?: number
@@ -401,15 +403,15 @@ export * from './utils'
 
 export default plugin(trackerId, {
   class: {
-    Team: '' as Ref<Class<Team>>,
+    Project: '' as Ref<Class<Project>>,
     Issue: '' as Ref<Class<Issue>>,
     IssueDraft: '' as Ref<Class<IssueDraft>>,
     IssueTemplate: '' as Ref<Class<IssueTemplate>>,
-    Project: '' as Ref<Class<Project>>,
+    Component: '' as Ref<Class<Component>>,
     IssueStatus: '' as Ref<Class<IssueStatus>>,
     IssueStatusCategory: '' as Ref<Class<IssueStatusCategory>>,
     TypeIssuePriority: '' as Ref<Class<Type<IssuePriority>>>,
-    TypeProjectStatus: '' as Ref<Class<Type<ProjectStatus>>>,
+    TypeComponentStatus: '' as Ref<Class<Type<ComponentStatus>>>,
     Sprint: '' as Ref<Class<Sprint>>,
     Scrum: '' as Ref<Class<Scrum>>,
     ScrumRecord: '' as Ref<Class<ScrumRecord>>,
@@ -440,15 +442,15 @@ export default plugin(trackerId, {
   },
   icon: {
     TrackerApplication: '' as Asset,
-    Project: '' as Asset,
+    Component: '' as Asset,
     Issue: '' as Asset,
-    Team: '' as Asset,
+    Project: '' as Asset,
     Document: '' as Asset,
     Inbox: '' as Asset,
     MyIssues: '' as Asset,
     Views: '' as Asset,
     Issues: '' as Asset,
-    Projects: '' as Asset,
+    Components: '' as Asset,
     NewIssue: '' as Asset,
     Magnifier: '' as Asset,
     Home: '' as Asset,
@@ -473,16 +475,16 @@ export default plugin(trackerId, {
     PriorityMedium: '' as Asset,
     PriorityLow: '' as Asset,
 
-    ProjectsList: '' as Asset,
-    ProjectsTimeline: '' as Asset,
-    ProjectMembers: '' as Asset,
+    ComponentsList: '' as Asset,
+    ComponentsTimeline: '' as Asset,
+    ComponentMembers: '' as Asset,
 
-    ProjectStatusBacklog: '' as Asset,
-    ProjectStatusPlanned: '' as Asset,
-    ProjectStatusInProgress: '' as Asset,
-    ProjectStatusPaused: '' as Asset,
-    ProjectStatusCompleted: '' as Asset,
-    ProjectStatusCanceled: '' as Asset,
+    ComponentStatusBacklog: '' as Asset,
+    ComponentStatusPlanned: '' as Asset,
+    ComponentStatusInProgress: '' as Asset,
+    ComponentStatusPaused: '' as Asset,
+    ComponentStatusCompleted: '' as Asset,
+    ComponentStatusCanceled: '' as Asset,
 
     SprintStatusPlanned: '' as Asset,
     SprintStatusInProgress: '' as Asset,
@@ -510,20 +512,20 @@ export default plugin(trackerId, {
     SetStatus: '' as Ref<Action>,
     SetPriority: '' as Ref<Action>,
     SetAssignee: '' as Ref<Action>,
-    SetProject: '' as Ref<Action>,
+    SetComponent: '' as Ref<Action>,
     CopyIssueId: '' as Ref<Action>,
     CopyIssueTitle: '' as Ref<Action>,
     CopyIssueLink: '' as Ref<Action>,
-    MoveToTeam: '' as Ref<Action>,
+    MoveToProject: '' as Ref<Action>,
     Duplicate: '' as Ref<Action>,
     Relations: '' as Ref<Action>,
     NewSubIssue: '' as Ref<Action>,
     EditWorkflowStatuses: '' as Ref<Action>,
-    EditTeam: '' as Ref<Action>,
+    EditProject: '' as Ref<Action>,
     SetSprint: '' as Ref<Action>
   },
-  team: {
-    DefaultTeam: '' as Ref<Team>
+  project: {
+    DefaultProject: '' as Ref<Project>
   },
   resolver: {
     Location: '' as Resource<(loc: Location) => Promise<Location | undefined>>

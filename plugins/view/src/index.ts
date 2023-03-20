@@ -329,6 +329,9 @@ export interface Action<T extends Doc = Doc, P = Record<string, any>> extends Do
   // Action is applicable only for objects matching criteria
   query?: DocumentQuery<T>
 
+  // Action is shown only if the check is passed
+  visibilityTester?: Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
+
   // If defined, types should be matched to proposed list
   inputProps?: Record<string, Ref<Class<Doc>>>
 

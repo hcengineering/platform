@@ -37,6 +37,7 @@ import {
   Index,
   Model,
   Prop,
+  ReadOnly,
   TypeMarkup,
   TypeRef,
   TypeString,
@@ -88,6 +89,7 @@ export class TChunterMessage extends TAttachedDoc implements ChunterMessage {
     createBy!: Ref<Account>
 
   @Prop(TypeTimestamp(), chunter.string.Create)
+  @ReadOnly()
     createOn!: Timestamp
 
   @Prop(TypeTimestamp(), chunter.string.Edit)
@@ -114,6 +116,8 @@ export class TMessage extends TChunterMessage implements Message {
 
   @Prop(ArrOf(TypeRef(contact.class.Employee)), chunter.string.Replies)
     replies?: Ref<Employee>[]
+
+  repliesCount?: number
 
   @Prop(TypeTimestamp(), chunter.string.LastReply)
     lastReply?: Timestamp

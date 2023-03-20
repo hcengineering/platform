@@ -27,7 +27,7 @@
   const TRACKED_OBJECTS = [
     tracker.class.Issue,
     tracker.class.IssueTemplate,
-    tracker.class.Project,
+    tracker.class.Component,
     tracker.class.Sprint
   ] as const
 

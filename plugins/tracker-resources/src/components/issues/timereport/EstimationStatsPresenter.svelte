@@ -15,18 +15,18 @@
 <script lang="ts">
   import { AttachedData } from '@hcengineering/core'
 
-  import { Issue, Team } from '@hcengineering/tracker'
+  import { Issue, Project } from '@hcengineering/tracker'
   import { floorFractionDigits } from '@hcengineering/ui'
   import EstimationProgressCircle from './EstimationProgressCircle.svelte'
   import TimePresenter from './TimePresenter.svelte'
 
   export let value: Issue | AttachedData<Issue>
   export let estimation: number | undefined = undefined
-  export let currentTeam: Team | undefined
+  export let currentProject: Project | undefined
 
   $: _estimation = estimation ?? value.estimation
 
-  $: workDayLength = currentTeam?.workDayLength
+  $: workDayLength = currentProject?.workDayLength
   $: childReportTime = floorFractionDigits(
     value.reportedTime + (value.childInfo ?? []).map((it) => it.reportedTime).reduce((a, b) => a + b, 0),
     3

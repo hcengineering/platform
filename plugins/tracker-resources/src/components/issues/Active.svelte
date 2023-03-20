@@ -15,11 +15,11 @@
 <script lang="ts">
   import { DocumentQuery, Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Issue, Team } from '@hcengineering/tracker'
+  import { Issue, Project } from '@hcengineering/tracker'
   import tracker from '../../plugin'
   import IssuesView from './IssuesView.svelte'
 
-  export let currentSpace: Ref<Team>
+  export let currentSpace: Ref<Project>
 
   const statusQuery = createQuery()
   let query: DocumentQuery<Issue>

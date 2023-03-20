@@ -13,43 +13,31 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@hcengineering/core'
+  import { Ref, Space } from '@hcengineering/core'
   import { Project } from '@hcengineering/tracker'
-  import { getCurrentLocation, Icon, navigate, tooltip } from '@hcengineering/ui'
-  import tracker from '../../plugin'
+  import { NavLink } from '@hcengineering/ui'
+  import { SpacesNavModel } from '@hcengineering/workbench'
+  import { SpecialElement } from '@hcengineering/workbench-resources'
+  import { TreeNode } from '@hcengineering/view-resources'
 
-  export let value: WithLookup<Project>
-  export let withIcon = false
-  export let onClick: () => void | undefined
-  export let isInteractive = true
-
-  function navigateToProject () {
-    if (!isInteractive) {
-      return
-    }
-    if (onClick) {
-      onClick()
-    }
-
-    const loc = getCurrentLocation()
-    loc.path[4] = 'projects'
-    loc.path[5] = value._id
-    loc.path.length = 6
-    loc.fragment = undefined
-    navigate(loc)
-  }
+  export let space: Project
+  export let model: SpacesNavModel
+  export let currentSpace: Ref<Space> | undefined
+  export let currentSpecial: string | undefined
+  export let getActions: Function
 </script>
 
-{#if value}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="flex" on:click={navigateToProject}>
-    {#if withIcon}
-      <div class="mr-2" use:tooltip={{ label: tracker.string.Project }}>
-        <Icon icon={tracker.icon.Projects} size={'small'} />
-      </div>
-    {/if}
-    <span title={value.label} class="fs-bold cursor-pointer caption-color overflow-label clear-mins">
-      {value.label}
-    </span>
-  </div>
+{#if model.specials}
+  <TreeNode icon={space?.icon ?? model.icon} title={space.name} indent={'ml-2'} actions={() => getActions(space)}>
+    {#each model.specials as special}
+      <NavLink space={space._id} special={special.id}>
+        <SpecialElement
+          indent={'ml-4'}
+          label={special.label}
+          icon={special.icon}
+          selected={currentSpace === space._id && special.id === currentSpecial}
+        />
+      </NavLink>
+    {/each}
+  </TreeNode>
 {/if}

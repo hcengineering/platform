@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@hcengineering/core'
+  import { WithLookup, Doc } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import ui, { Button, closePopup, Component, Icon, IconArrowLeft, Label } from '@hcengineering/ui'
@@ -52,13 +52,32 @@
     }
   )
 
+  let visibleActions: WithLookup<Action>[] = []
   let supportedActions: WithLookup<Action>[] = []
   let filteredActions: WithLookup<Action>[] = []
+
+  async function filterVisibleActions (actions: WithLookup<Action>[], docs: Doc[]) {
+    const resultActions: WithLookup<Action>[] = []
+
+    for (const action of actions) {
+      if (!action.visibilityTester) {
+        resultActions.push(action)
+      } else {
+        const visibilityTester = await getResource(action.visibilityTester)
+
+        if (await visibilityTester(docs)) {
+          resultActions.push(action)
+        }
+      }
+    }
+    visibleActions = resultActions
+  }
+  $: filterVisibleActions(actions, getSelection($focusStore, $selectionStore))
 
   const client = getClient()
 
   $: {
-    let fActions: WithLookup<Action>[] = actions
+    let fActions: WithLookup<Action>[] = visibleActions
 
     const docs = getSelection($focusStore, $selectionStore)
     for (const d of docs) {

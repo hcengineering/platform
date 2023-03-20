@@ -44,6 +44,7 @@ export default mergeIds(recruitId, recruit, {
     ApplicationCreateLabel: '' as IntlString,
     Vacancy: '' as IntlString,
     VacancyCreateLabel: '' as IntlString,
+    CompanyCreateLabel: '' as IntlString,
     SelectVacancy: '' as IntlString,
     Talent: '' as IntlString,
     TalentCreateLabel: '' as IntlString,
@@ -118,7 +119,10 @@ export default mergeIds(recruitId, recruit, {
     Match: '' as IntlString,
     PerformMatch: '' as IntlString,
     MoveApplication: '' as IntlString,
-    Application: '' as IntlString
+    Application: '' as IntlString,
+
+    TemplateReplace: '' as IntlString,
+    TemplateReplaceConfirm: '' as IntlString
   },
   space: {
     CandidatesPublic: '' as Ref<Space>

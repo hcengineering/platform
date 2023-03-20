@@ -34,10 +34,10 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverTracker.trigger.OnProjectRemove
+    trigger: serverTracker.trigger.OnComponentRemove
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverTracker.trigger.OnTeamDelete
+    trigger: serverTracker.trigger.OnProjectDelete
   })
 }

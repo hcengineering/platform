@@ -25,7 +25,7 @@
   } from '../../utils'
   import FilterMenu from '../FilterMenu.svelte'
   import PriorityFilterMenuSection from './PriorityFilterMenuSection.svelte'
-  import ProjectFilterMenuSection from './ProjectFilterMenuSection.svelte'
+  import ComponentFilterMenuSection from './ComponentFilterMenuSection.svelte'
   import SprintFilterMenuSection from './SprintFilterMenuSection.svelte'
   import StatusFilterMenuSection from './StatusFilterMenuSection.svelte'
 
@@ -42,7 +42,7 @@
   $: defaultStatusIds = defaultStatuses.map((x) => x._id)
   $: groupedByStatus = getGroupedIssues('status', issues, defaultStatusIds)
   $: groupedByPriority = getGroupedIssues('priority', issues, defaultPriorities)
-  $: groupedByProject = getGroupedIssues('project', issues)
+  $: groupedByComponent = getGroupedIssues('component', issues)
   $: groupedBySprint = getGroupedIssues('sprint', issues)
 
   const handleStatusFilterMenuSectionOpened = () => {
@@ -86,17 +86,17 @@
     )
   }
 
-  const handleProjectFilterMenuSectionOpened = () => {
-    const projectGroups: { [key: string]: number } = {}
+  const handleComponentFilterMenuSectionOpened = () => {
+    const componentGroups: { [key: string]: number } = {}
 
-    for (const [project, value] of Object.entries(groupedByProject)) {
-      projectGroups[project] = value?.length ?? 0
+    for (const [component, value] of Object.entries(groupedByComponent)) {
+      componentGroups[component] = value?.length ?? 0
     }
     showPopup(
-      ProjectFilterMenuSection,
+      ComponentFilterMenuSection,
       {
-        groups: projectGroups,
-        selectedElements: currentFilterQuery?.project?.[currentFilterMode] ?? [],
+        groups: componentGroups,
+        selectedElements: currentFilterQuery?.component?.[currentFilterMode] ?? [],
         index,
         onUpdate,
         onBack
@@ -108,8 +108,8 @@
   const handleSprintFilterMenuSectionOpened = () => {
     const sprintGroups: { [key: string]: number } = {}
 
-    for (const [project, value] of Object.entries(groupedBySprint)) {
-      sprintGroups[project] = value?.length ?? 0
+    for (const [sprint, value] of Object.entries(groupedBySprint)) {
+      sprintGroups[sprint] = value?.length ?? 0
     }
     showPopup(
       SprintFilterMenuSection,
@@ -134,8 +134,8 @@
       onSelect: handlePriorityFilterMenuSectionOpened
     },
     {
-      ...getIssueFilterAssetsByType('project'),
-      onSelect: handleProjectFilterMenuSectionOpened
+      ...getIssueFilterAssetsByType('component'),
+      onSelect: handleComponentFilterMenuSectionOpened
     },
     {
       ...getIssueFilterAssetsByType('sprint'),

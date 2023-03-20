@@ -30,7 +30,7 @@
 
   const client = getClient()
 
-  const handleProjectStatusChanged = async (newStatus: SprintStatus | undefined) => {
+  const handleComponentStatusChanged = async (newStatus: SprintStatus | undefined) => {
     if (!isEditable || newStatus === undefined || value.status === newStatus) {
       return
     }
@@ -49,6 +49,6 @@
     {shouldShowLabel}
     showTooltip={isEditable ? { label: tracker.string.SetStatus } : undefined}
     selectedSprintStatus={value.status}
-    onSprintStatusChange={handleProjectStatusChanged}
+    onSprintStatusChange={handleComponentStatusChanged}
   />
 {/if}

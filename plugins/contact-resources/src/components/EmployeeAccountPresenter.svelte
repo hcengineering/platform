@@ -14,29 +14,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
+  import { EmployeeAccount, getName } from '@hcengineering/contact'
   import { Account } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Avatar, createQuery } from '@hcengineering/presentation'
+  import { Avatar } from '@hcengineering/presentation'
   import { showPopup, tooltip } from '@hcengineering/ui'
   import { EditDoc } from '@hcengineering/view-resources'
   import DocNavLink from '@hcengineering/view-resources/src/components/DocNavLink.svelte'
-  import contact from '../plugin'
+  import { employeeByIdStore } from '../utils'
 
   export let value: Account
   export let disabled = false
 
-  let employee: Employee | undefined
+  $: employee = $employeeByIdStore.get((value as EmployeeAccount).employee)
 
   async function onClick () {
     if (employee !== undefined && !disabled) {
       showPopup(EditDoc, { _id: employee._id, _class: employee._class }, 'content')
     }
-  }
-  const query = createQuery()
-
-  $: if (value && value._class === contact.class.EmployeeAccount) {
-    query.query(contact.class.Employee, { _id: (value as EmployeeAccount).employee }, (r) => ([employee] = r))
   }
 </script>
 

@@ -1,5 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,27 +14,12 @@
 // limitations under the License.
 //
 
-import MD5 from 'crypto-js/md5'
-
-import {
-  Account,
-  AttachedData,
-  AttachedDoc,
-  Class,
-  Client,
-  Data,
-  Doc,
-  FindResult,
-  Ref,
-  Space,
-  Timestamp,
-  UXObject
-} from '@hcengineering/core'
+import { Account, AttachedDoc, Class, Doc, Ref, Space, Timestamp, UXObject } from '@hcengineering/core'
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
+import { TemplateField, TemplateFieldCategory } from '@hcengineering/templates'
 import type { AnyComponent, IconSize } from '@hcengineering/ui'
 import { FilterMode, ViewAction, Viewlet } from '@hcengineering/view'
-import { TemplateFieldCategory, TemplateField } from '@hcengineering/templates'
 
 /**
  * @public
@@ -164,57 +150,6 @@ export interface ContactsTab extends Doc {
   index: number
 }
 
-const SEP = ','
-
-/**
- * @public
- */
-export function combineName (first: string, last: string): string {
-  return last + SEP + first
-}
-
-/**
- * @public
- */
-export function getFirstName (name: string): string {
-  return name !== undefined ? name.substring(name.indexOf(SEP) + 1) : ''
-}
-
-/**
- * @public
- */
-export function getLastName (name: string): string {
-  return name !== undefined ? name.substring(0, name.indexOf(SEP)) : ''
-}
-
-/**
- * @public
- */
-export function formatName (name: string): string {
-  return getLastName(name) + ' ' + getFirstName(name)
-}
-
-/**
- * @public
- */
-export function getName (value: Contact): string {
-  if (isEmployee(value)) {
-    return value.displayName ?? formatName(value.name)
-  }
-  if (isPerson(value)) {
-    return formatName(value.name)
-  }
-  return value.name
-}
-
-function isEmployee (value: Contact): value is Employee {
-  return value._class === contactPlugin.class.Employee
-}
-
-function isPerson (value: Contact): value is Person {
-  return value._class === contactPlugin.class.Person
-}
-
 /**
  * @public
  */
@@ -223,7 +158,7 @@ export const contactId = 'contact' as Plugin
 /**
  * @public
  */
-const contactPlugin = plugin(contactId, {
+export const contactPlugin = plugin(contactId, {
   class: {
     AvatarProvider: '' as Ref<Class<AvatarProvider>>,
     ChannelProvider: '' as Ref<Class<ChannelProvider>>,
@@ -329,188 +264,5 @@ const contactPlugin = plugin(contactId, {
 })
 
 export default contactPlugin
-
-/**
- * @public
- */
-export async function findContacts (
-  client: Client,
-  _class: Ref<Class<Doc>>,
-  person: Data<Contact>,
-  channels: AttachedData<Channel>[]
-): Promise<{ contacts: Contact[], channels: AttachedData<Channel>[] }> {
-  if (channels.length === 0 && person.name.length === 0) {
-    return { contacts: [], channels: [] }
-  }
-  // Take only first part of first name for match.
-  const values = channels.map((it) => it.value)
-
-  // Same name persons
-
-  const potentialChannels = await client.findAll(
-    contactPlugin.class.Channel,
-    { value: { $in: values } },
-    { limit: 1000 }
-  )
-  let potentialContactIds = Array.from(new Set(potentialChannels.map((it) => it.attachedTo as Ref<Contact>)).values())
-
-  if (potentialContactIds.length === 0) {
-    if (client.getHierarchy().isDerived(_class, contactPlugin.class.Person)) {
-      const firstName = getFirstName(person.name).split(' ').shift() ?? ''
-      const lastName = getLastName(person.name)
-      // try match using just first/last name
-      potentialContactIds = (
-        await client.findAll(
-          contactPlugin.class.Contact,
-          { name: { $like: `${lastName}%${firstName}%` } },
-          { limit: 100 }
-        )
-      ).map((it) => it._id)
-      if (potentialContactIds.length === 0) {
-        return { contacts: [], channels: [] }
-      }
-    } else if (client.getHierarchy().isDerived(_class, contactPlugin.class.Organization)) {
-      // try match using just first/last name
-      potentialContactIds = (
-        await client.findAll(contactPlugin.class.Contact, { name: { $like: `${person.name}` } }, { limit: 100 })
-      ).map((it) => it._id)
-      if (potentialContactIds.length === 0) {
-        return { contacts: [], channels: [] }
-      }
-    }
-  }
-
-  const potentialPersons: FindResult<Contact> = await client.findAll(
-    contactPlugin.class.Contact,
-    { _id: { $in: potentialContactIds } },
-    {
-      lookup: {
-        _id: {
-          channels: contactPlugin.class.Channel
-        }
-      }
-    }
-  )
-
-  const result: Contact[] = []
-  const resChannels: AttachedData<Channel>[] = []
-  for (const c of potentialPersons) {
-    let matches = 0
-    if (c.name === person.name) {
-      matches++
-    }
-    for (const ch of (c.$lookup?.channels as Channel[]) ?? []) {
-      for (const chc of channels) {
-        if (chc.provider === ch.provider && chc.value === ch.value.trim()) {
-          // We have matched value
-          resChannels.push(chc)
-          matches += 2
-          break
-        }
-      }
-    }
-
-    if (matches > 0) {
-      result.push(c)
-    }
-  }
-  return { contacts: result, channels: resChannels }
-}
-
-/**
- * @public
- */
-export async function findPerson (
-  client: Client,
-  person: Data<Person>,
-  channels: AttachedData<Channel>[]
-): Promise<Person[]> {
-  const result = await findContacts(client, contactPlugin.class.Person, person, channels)
-  return result.contacts as Person[]
-}
-
-/**
- * @public
- */
-export type GravatarPlaceholderType =
-  | '404'
-  | 'mp'
-  | 'identicon'
-  | 'monsterid'
-  | 'wavatar'
-  | 'retro'
-  | 'robohash'
-  | 'blank'
-
-/**
- * @public
- */
-export function buildGravatarId (email: string): string {
-  return MD5(email.trim().toLowerCase()).toString()
-}
-
-/**
- * @public
- */
-export function getGravatarUrl (
-  gravatarId: string,
-  size: IconSize = 'full',
-  placeholder: GravatarPlaceholderType = 'identicon'
-): string {
-  let width = 64
-  switch (size) {
-    case 'inline':
-    case 'tiny':
-    case 'x-small':
-    case 'small':
-    case 'medium':
-      width = 64
-      break
-    case 'large':
-      width = 256
-      break
-    case 'x-large':
-      width = 512
-      break
-  }
-  return `https://gravatar.com/avatar/${gravatarId}?s=${width}&d=${placeholder}`
-}
-
-/**
- * @public
- */
-export async function checkHasGravatar (gravatarId: string, fetch?: typeof window.fetch): Promise<boolean> {
-  try {
-    return (await (fetch ?? window.fetch)(getGravatarUrl(gravatarId, 'full', '404'))).ok
-  } catch {
-    return false
-  }
-}
-
-const AVATAR_COLORS = [
-  '#4674ca', // blue
-  '#315cac', // blue_dark
-  '#57be8c', // green
-  '#3fa372', // green_dark
-  '#f9a66d', // yellow_orange
-  '#ec5e44', // red
-  '#e63717', // red_dark
-  '#f868bc', // pink
-  '#6c5fc7', // purple
-  '#4e3fb4', // purple_dark
-  '#57b1be', // teal
-  '#847a8c' // gray
-]
-
-/**
- * @public
- */
-export function getAvatarColorForId (id: string): string {
-  let hash = 0
-
-  for (let i = 0; i < id.length; i++) {
-    hash += id.charCodeAt(i)
-  }
-
-  return AVATAR_COLORS[hash % AVATAR_COLORS.length]
-}
+export * from './types'
+export * from './utils'

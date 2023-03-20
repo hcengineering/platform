@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Doc, DocumentQuery, Ref, WithLookup } from '@hcengineering/core'
-  import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
+  import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import { Viewlet, ViewOptions } from '@hcengineering/view'
   import {
     ActionContext,
@@ -33,8 +33,8 @@
   export let disableHeader = false
 
   // Extra properties
-  export let teams: Map<Ref<Team>, Team> | undefined
-  export let issueStatuses: Map<Ref<Team>, WithLookup<IssueStatus>[]>
+  export let projects: Map<Ref<Project>, Project> | undefined
+  export let issueStatuses: Map<Ref<Project>, WithLookup<IssueStatus>[]>
 
   let list: List
 
@@ -66,7 +66,7 @@
     documents={issues}
     {query}
     flatHeaders={true}
-    props={{ teams, issueStatuses }}
+    props={{ projects, issueStatuses }}
     {disableHeader}
     selectedObjectIds={$selectionStore ?? []}
     on:row-focus={(event) => {

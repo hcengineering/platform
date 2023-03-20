@@ -13,41 +13,25 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttributeEditor, createQuery, EditableAvatar, getClient } from '@hcengineering/presentation'
+  import { AttributeEditor, EditableAvatar, getClient } from '@hcengineering/presentation'
 
-  import setting from '../plugin'
-  import { EditBox, Icon, Label, createFocusManager, FocusHandler, Button, showPopup } from '@hcengineering/ui'
-  import contact, { Employee, EmployeeAccount, getFirstName, getLastName } from '@hcengineering/contact'
+  import contact, { EmployeeAccount, getFirstName, getLastName } from '@hcengineering/contact'
+  import { ChannelsEditor, employeeByIdStore } from '@hcengineering/contact-resources'
   import contactRes from '@hcengineering/contact-resources/src/plugin'
   import { getCurrentAccount } from '@hcengineering/core'
   import { changeName, leaveWorkspace } from '@hcengineering/login-resources'
-  import { ChannelsEditor } from '@hcengineering/contact-resources'
   import MessageBox from '@hcengineering/presentation/src/components/MessageBox.svelte'
+  import { Button, createFocusManager, EditBox, FocusHandler, Icon, Label, showPopup } from '@hcengineering/ui'
+  import setting from '../plugin'
   const client = getClient()
 
   let avatarEditor: EditableAvatar
 
-  let employee: Employee | undefined
-  let firstName: string
-  let lastName: string
-  let displayName: string = ''
-  const employeeQ = createQuery()
-
   const account = getCurrentAccount() as EmployeeAccount
-
-  employeeQ.query(
-    contact.class.Employee,
-    {
-      _id: account.employee
-    },
-    (res) => {
-      employee = res[0]
-      firstName = getFirstName(employee.name)
-      lastName = getLastName(employee.name)
-      displayName = employee.displayName ?? ''
-    },
-    { limit: 1 }
-  )
+  const employee = $employeeByIdStore.get(account.employee)
+  let firstName: string = employee ? getFirstName(employee.name) : ''
+  let lastName: string = employee ? getLastName(employee.name) : ''
+  let displayName = employee?.displayName ?? ''
 
   async function onAvatarDone (e: any) {
     if (employee === undefined) return

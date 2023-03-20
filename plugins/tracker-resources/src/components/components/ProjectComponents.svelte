@@ -13,19 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Ref } from '@hcengineering/core'
   import { Project } from '@hcengineering/tracker'
-  import { getClient } from '@hcengineering/presentation'
-  import CommonTrackerDatePresenter from '../CommonTrackerDatePresenter.svelte'
+  import Components from './Components.svelte'
 
-  export let value: Project
-
-  const client = getClient()
-
-  $: dueDateMs = value.targetDate
-
-  const handleDueDateChanged = async (newDate: number | null) => {
-    await client.update(value, { targetDate: newDate })
-  }
+  export let currentSpace: Ref<Project>
 </script>
 
-<CommonTrackerDatePresenter dateMs={dueDateMs} shouldRender={true} onDateChange={handleDueDateChanged} />
+<Components query={{ space: currentSpace }} />

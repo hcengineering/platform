@@ -19,7 +19,7 @@
   import { Asset } from '@hcengineering/platform'
   import presentation, { AssigneeBox, Card, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
-  import { genRanks, IssueStatus, Team, TimeReportDayType, WorkDayLength } from '@hcengineering/tracker'
+  import { genRanks, IssueStatus, Project, TimeReportDayType, WorkDayLength } from '@hcengineering/tracker'
   import {
     Button,
     DropdownIntlItem,
@@ -33,19 +33,19 @@
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import TimeReportDayDropdown from '../issues/timereport/TimeReportDayDropdown.svelte'
-  import TeamIconChooser from './TeamIconChooser.svelte'
+  import ProjectIconChooser from './ProjectIconChooser.svelte'
 
-  export let team: Team | undefined = undefined
+  export let project: Project | undefined = undefined
 
-  let name: string = team?.name ?? ''
-  let description: string = team?.description ?? ''
-  let isPrivate: boolean = team?.private ?? false
-  let icon: Asset | undefined = team?.icon ?? undefined
+  let name: string = project?.name ?? ''
+  let description: string = project?.description ?? ''
+  let isPrivate: boolean = project?.private ?? false
+  let icon: Asset | undefined = project?.icon ?? undefined
   let selectedWorkDayType: TimeReportDayType | undefined =
-    team?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay
-  let selectedWorkDayLength: WorkDayLength | undefined = team?.workDayLength ?? WorkDayLength.EIGHT_HOURS
+    project?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay
+  let selectedWorkDayLength: WorkDayLength | undefined = project?.workDayLength ?? WorkDayLength.EIGHT_HOURS
   let defaultAssignee: Ref<Employee> | null | undefined = null
-  let members: Ref<Account>[] = team?.members ?? [getCurrentAccount()._id]
+  let members: Ref<Account>[] = project?.members ?? [getCurrentAccount()._id]
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -60,17 +60,17 @@
     }
   ]
 
-  $: isNew = !team
+  $: isNew = !project
 
   async function handleSave () {
-    isNew ? createTeam() : updateTeam()
+    isNew ? createProject() : updateProject()
   }
 
   let identifier: string = 'TSK'
 
   const defaultStatusId: Ref<IssueStatus> = generateId()
 
-  function getTeamData () {
+  function getProjectData () {
     return {
       name,
       description,
@@ -88,19 +88,18 @@
     }
   }
 
-  async function updateTeam () {
-    const { sequence, issueStatuses, defaultIssueStatus, identifier, ...teamData } = getTeamData()
-    // update team doc
-    await client.update(team!, teamData)
+  async function updateProject () {
+    const { sequence, issueStatuses, defaultIssueStatus, identifier, ...projectData } = getProjectData()
+    await client.update(project!, projectData)
   }
 
-  async function createTeam () {
-    const id = await client.createDoc(tracker.class.Team, core.space.Space, getTeamData())
-    await createTeamIssueStatuses(id, defaultStatusId)
+  async function createProject () {
+    const id = await client.createDoc(tracker.class.Project, core.space.Space, getProjectData())
+    await createProjectIssueStatuses(id, defaultStatusId)
   }
 
-  async function createTeamIssueStatuses (
-    teamId: Ref<Team>,
+  async function createProjectIssueStatuses (
+    projectId: Ref<Project>,
     defaultStatusId: Ref<IssueStatus>,
     defaultCategoryId = tracker.issueStatusCategory.Backlog
   ): Promise<void> {
@@ -117,9 +116,9 @@
 
       await client.addCollection(
         tracker.class.IssueStatus,
-        teamId,
-        teamId,
-        tracker.class.Team,
+        projectId,
+        projectId,
+        tracker.class.Project,
         'issueStatuses',
         { name: defaultStatusName, category, rank },
         category === defaultCategoryId ? defaultStatusId : undefined
@@ -128,7 +127,7 @@
   }
 
   function chooseIcon (ev: MouseEvent) {
-    showPopup(TeamIconChooser, { icon }, eventToHTMLElement(ev), (result) => {
+    showPopup(ProjectIconChooser, { icon }, eventToHTMLElement(ev), (result) => {
       if (result !== undefined && result !== null) {
         icon = result
       }
@@ -137,7 +136,7 @@
 </script>
 
 <Card
-  label={isNew ? tracker.string.NewTeam : tracker.string.EditTeam}
+  label={isNew ? tracker.string.NewProject : tracker.string.EditProject}
   okLabel={isNew ? presentation.string.Create : presentation.string.Save}
   okAction={handleSave}
   canSave={name.length > 0 && !!selectedWorkDayType && !!selectedWorkDayLength}
@@ -148,17 +147,19 @@
   <div class="flex-row-center flex-between">
     <EditBox
       bind:value={name}
-      placeholder={tracker.string.TeamTitlePlaceholder}
+      placeholder={tracker.string.ProjectTitlePlaceholder}
       kind={'large-style'}
       focus
       on:input={() => {
-        identifier = name.toLocaleUpperCase().replaceAll(' ', '_').substring(0, 5)
+        if (isNew) {
+          identifier = name.toLocaleUpperCase().replaceAll(' ', '_').substring(0, 5)
+        }
       }}
     />
     <EditBox
       bind:value={identifier}
       disabled={!isNew}
-      placeholder={tracker.string.TeamIdentifierPlaceholder}
+      placeholder={tracker.string.ProjectIdentifierPlaceholder}
       kind={'large-style'}
     />
   </div>
@@ -222,6 +223,7 @@
       kind="link-bordered"
       bind:value={defaultAssignee}
       titleDeselect={tracker.string.Unassigned}
+      showNavigate={false}
       showTooltip={{ label: tracker.string.DefaultAssignee }}
     />
   </div>

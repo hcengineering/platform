@@ -139,7 +139,7 @@
       currentSpace,
       _id,
       chunter.class.Message,
-      'replies',
+      'repliesCount',
       {
         content: message,
         createBy: me,

@@ -27,7 +27,7 @@
   </div>
   <div class="textContainer">
     <div class="title">
-      <Label label={tracker.string.ProjectLeadTitle} />
+      <Label label={tracker.string.ComponentLeadTitle} />
     </div>
     <div class="description">
       {lead.name}

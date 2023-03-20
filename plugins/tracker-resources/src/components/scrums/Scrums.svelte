@@ -15,14 +15,14 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Scrum, ScrumRecord, Team } from '@hcengineering/tracker'
+  import { Scrum, ScrumRecord, Project } from '@hcengineering/tracker'
   import { closePopup, closeTooltip, location } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import tracker from '../../plugin'
   import ScrumRecordsView from './ScrumRecordsView.svelte'
   import ScrumsView from './ScrumsView.svelte'
 
-  export let currentSpace: Ref<Team>
+  export let currentSpace: Ref<Project>
 
   let scrumId: Ref<Scrum> | undefined
   let scrum: Scrum | undefined

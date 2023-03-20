@@ -16,7 +16,7 @@
   import { Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Issue, IssueTemplate, Sprint, Team } from '@hcengineering/tracker'
+  import { Issue, IssueTemplate, Sprint, Project } from '@hcengineering/tracker'
   import {
     ButtonKind,
     ButtonShape,
@@ -48,11 +48,11 @@
   const client = getClient()
   const spaceQuery = createQuery()
 
-  let currentTeam: Team | undefined
-  $: spaceQuery.query(tracker.class.Team, { _id: value.space }, (res) => {
-    currentTeam = res.shift()
+  let currentProject: Project | undefined
+  $: spaceQuery.query(tracker.class.Project, { _id: value.space }, (res) => {
+    currentProject = res.shift()
   })
-  $: workDayLength = currentTeam?.workDayLength
+  $: workDayLength = currentProject?.workDayLength
 
   const handleSprintIdChanged = async (newSprintId: Ref<Sprint> | null | undefined) => {
     if (!isEditable || newSprintId === undefined || value.sprint === newSprintId) {

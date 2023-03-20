@@ -21,6 +21,7 @@
     EmployeeAccount,
     getName as getContactName
   } from '@hcengineering/contact'
+  import { employeeByIdStore } from '@hcengineering/contact-resources'
   import { IdMap, Ref, SortingOrder, toIdMap } from '@hcengineering/core'
   import { Message, SharedMessage } from '@hcengineering/gmail'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
@@ -40,16 +41,13 @@
 
   let messages: Message[] = []
   let accounts: IdMap<EmployeeAccount> = new Map()
-  let employees: IdMap<Employee> = new Map()
   let selected: Set<Ref<SharedMessage>> = new Set<Ref<SharedMessage>>()
   let selectable = false
 
   const messagesQuery = createQuery()
   const accountsQuery = createQuery()
-  const employeesQuery = createQuery()
 
   accountsQuery.query(contact.class.EmployeeAccount, {}, (res) => (accounts = toIdMap(res)))
-  employeesQuery.query(contact.class.Employee, {}, (res) => (employees = toIdMap(res)))
 
   const notificationClient = NotificationClientImpl.getClient()
 
@@ -78,7 +76,7 @@
       object._class,
       'gmailSharedMessages',
       {
-        messages: convertMessages(selectedMessages, accounts, employees)
+        messages: convertMessages(selectedMessages, accounts, $employeeByIdStore)
       }
     )
     await notificationClient.updateLastView(channel._id, channel._class, undefined, true)
@@ -168,7 +166,12 @@
 <Scroller>
   <div class="popupPanel-body__main-content py-4 clear-mins flex-no-shrink">
     {#if messages && messages.length > 0}
-      <Messages messages={convertMessages(messages, accounts, employees)} {selectable} bind:selected on:select />
+      <Messages
+        messages={convertMessages(messages, accounts, $employeeByIdStore)}
+        {selectable}
+        bind:selected
+        on:select
+      />
       <div class="clear-mins h-4 flex-no-shrink" />
     {:else}
       <div class="flex-col-center justify-center h-full">

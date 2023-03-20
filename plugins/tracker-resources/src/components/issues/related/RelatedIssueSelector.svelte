@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Doc, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
+  import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import {
     Button,
     ButtonKind,
@@ -33,7 +33,7 @@
 
   export let object: WithLookup<Doc & { related: number }> | undefined
   export let value: WithLookup<Doc & { related: number }> | undefined
-  export let currentTeam: Team | undefined
+  export let currentProject: Project | undefined
 
   export let kind: ButtonKind = 'link-bordered'
   export let size: ButtonSize = 'inline'
@@ -103,7 +103,7 @@
         SelectPopup,
         {
           value: subIssues.map((iss) => {
-            const text = currentTeam ? `${getIssueId(currentTeam, iss)} ${iss.title}` : iss.title
+            const text = currentProject ? `${getIssueId(currentProject, iss)} ${iss.title}` : iss.title
 
             return { id: iss._id, text, isSelected: false, ...getIssueStatusIcon(iss, statuses) }
           }),

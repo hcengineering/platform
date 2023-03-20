@@ -17,6 +17,7 @@
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import type { ChunterSpace, Message, ThreadMessage } from '@hcengineering/chunter'
   import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
+  import { employeeByIdStore } from '@hcengineering/contact-resources'
   import core, {
     FindOptions,
     generateId,
@@ -24,7 +25,6 @@
     IdMap,
     Ref,
     SortingOrder,
-    toIdMap,
     TxFactory
   } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
@@ -102,11 +102,6 @@
     )
   }
 
-  let employees: IdMap<Employee> = new Map()
-  const employeeQuery = createQuery()
-
-  employeeQuery.query(contact.class.Employee, {}, (res) => (employees = toIdMap(res)))
-
   async function getParticipants (
     comments: ThreadMessage[],
     parent: Message | undefined,
@@ -141,7 +136,7 @@
       {
         attachedTo: _id,
         attachedToClass: chunter.class.Message,
-        collection: 'replies',
+        collection: 'repliesCount',
         content: message,
         createBy: me,
         createOn: 0,
@@ -176,7 +171,7 @@
         <DmPresenter value={channel} />
       {/if}
     {/await}
-    {#await getParticipants(comments, parent, employees) then participants}
+    {#await getParticipants(comments, parent, $employeeByIdStore) then participants}
       {participants.join(', ')}
       <Label label={chunter.string.AndYou} params={{ participants: participants.length }} />
     {/await}

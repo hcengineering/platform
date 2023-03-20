@@ -38,7 +38,7 @@
   export let search: string = ''
   export let mode: SprintViewMode = 'all'
 
-  const space = typeof query.space === 'string' ? query.space : tracker.team.DefaultTeam
+  const space = typeof query.space === 'string' ? query.space : tracker.project.DefaultProject
   const showCreateDialog = async () => {
     showPopup(NewSprint, { space, targetElement: null }, 'top')
   }
@@ -105,7 +105,7 @@
 <div class="fs-title flex-between header">
   <div class="flex-row-center">
     <Label {label} />
-    <div class="projectTitle">
+    <div class="title">
       › <Label label={title} />
     </div>
     <div class="ml-4">
@@ -184,7 +184,7 @@
     padding: 0.5rem 0.75rem 0.5rem 2.25rem;
   }
 
-  .projectTitle {
+  .title {
     display: flex;
     margin-left: 0.25rem;
     color: var(--content-color);

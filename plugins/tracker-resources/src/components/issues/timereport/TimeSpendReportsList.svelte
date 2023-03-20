@@ -16,7 +16,7 @@
   import contact from '@hcengineering/contact'
   import { Ref, Space, WithLookup } from '@hcengineering/core'
   import UserBox from '@hcengineering/presentation/src/components/UserBox.svelte'
-  import { Team, TimeReportDayType, TimeSpendReport } from '@hcengineering/tracker'
+  import { Project, TimeReportDayType, TimeSpendReport } from '@hcengineering/tracker'
   import {
     deviceOptionsStore as deviceInfo,
     eventToHTMLElement,
@@ -33,7 +33,7 @@
 
   export let reports: WithLookup<TimeSpendReport>[]
 
-  export let teams: Map<Ref<Team>, Team>
+  export let projects: Map<Ref<Project>, Project>
 
   function showContextMenu (ev: MouseEvent, object: TimeSpendReport) {
     showPopup(ContextMenu, { object }, getEventPositionElement(ev))
@@ -41,7 +41,7 @@
 
   const listProvider = new ListSelectionProvider(() => {})
 
-  const toTeamId = (ref: Ref<Space>) => ref as Ref<Team>
+  const toProjectId = (ref: Ref<Space>) => ref as Ref<Project>
 
   function editSpendReport (
     event: MouseEvent,
@@ -68,7 +68,7 @@
 <ListView count={reports.length} addClass={'step-tb-2-accent'}>
   <svelte:fragment slot="item" let:item>
     {@const report = reports[item]}
-    {@const currentTeam = teams.get(toTeamId(report.space))}
+    {@const currentProject = projects.get(toProjectId(report.space))}
     <div
       class="{twoRows ? 'flex-col' : 'flex-between'} p-text-2"
       on:contextmenu|preventDefault={(ev) => showContextMenu(ev, report)}
@@ -78,12 +78,12 @@
       on:focus={() => {
         listProvider.updateFocus(report)
       }}
-      on:click={(evt) => editSpendReport(evt, report, currentTeam?.defaultTimeReportDay)}
+      on:click={(evt) => editSpendReport(evt, report, currentProject?.defaultTimeReportDay)}
     >
       <div class="flex-row-center clear-mins gap-2 flex-grow mr-4" class:p-text={twoRows}>
         <FixedColumn key={'tmiespend_issue'} justify={'left'} addClass={'fs-bold'}>
-          {#if currentTeam && report.$lookup?.attachedTo}
-            {getIssueId(currentTeam, report.$lookup?.attachedTo)}
+          {#if currentProject && report.$lookup?.attachedTo}
+            {getIssueId(currentProject, report.$lookup?.attachedTo)}
           {/if}
         </FixedColumn>
         {#if report.$lookup?.attachedTo?.title}
@@ -104,7 +104,7 @@
           />
         </FixedColumn>
         <FixedColumn key={'timespend_reported'} justify={'center'}>
-          <TimePresenter value={report.value} workDayLength={currentTeam?.workDayLength} />
+          <TimePresenter value={report.value} workDayLength={currentProject?.workDayLength} />
         </FixedColumn>
         <FixedColumn key={'timespend_date'} justify={'left'}>
           <DatePresenter value={report.date} />

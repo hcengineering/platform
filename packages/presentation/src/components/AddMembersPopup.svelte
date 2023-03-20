@@ -1,19 +1,17 @@
 <script lang="ts">
   import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
-  import core, { IdMap, Ref, Space, toIdMap } from '@hcengineering/core'
+  import core, { IdMap, Ref, Space } from '@hcengineering/core'
   import { ActionIcon, Button, IconClose, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '../plugin'
-  import { createQuery, getClient } from '../utils'
+  import { getClient } from '../utils'
   import UsersPopup from './UsersPopup.svelte'
 
   export let value: Space
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const query = createQuery()
 
-  let employees: IdMap<Employee> = new Map()
-  query.query(contact.class.Employee, {}, (res) => (employees = toIdMap(res)))
+  const employees: IdMap<Employee> = new Map()
 
   let membersToAdd: EmployeeAccount[] = []
   let channelMembers: Ref<Employee>[] = []

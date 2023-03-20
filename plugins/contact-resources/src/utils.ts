@@ -23,12 +23,13 @@ import {
   formatName,
   getName
 } from '@hcengineering/contact'
-import { Doc, getCurrentAccount, ObjQueryType, Ref, SortingOrder, Timestamp, toIdMap } from '@hcengineering/core'
+import { Doc, getCurrentAccount, IdMap, ObjQueryType, Ref, Timestamp, toIdMap } from '@hcengineering/core'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { TemplateDataProvider } from '@hcengineering/templates'
 import { getPanelURI, Location } from '@hcengineering/ui'
 import view, { Filter } from '@hcengineering/view'
 import { FilterQuery } from '@hcengineering/view-resources'
+import { get, writable } from 'svelte/store'
 import contact from './plugin'
 
 const client = getClient()
@@ -53,36 +54,28 @@ export function formatDate (dueDateMs: Timestamp): string {
 }
 
 export async function employeeSort (value: Array<Ref<Employee>>): Promise<Array<Ref<Employee>>> {
-  return await new Promise((resolve) => {
-    const query = createQuery(true)
-    query.query(contact.class.Employee, { _id: { $in: value } }, (res) => {
-      const employees = toIdMap(res)
-      value.sort((a, b) => {
-        const employeeId1 = a as Ref<Employee> | null | undefined
-        const employeeId2 = b as Ref<Employee> | null | undefined
+  return value.sort((a, b) => {
+    const employeeId1 = a as Ref<Employee> | null | undefined
+    const employeeId2 = b as Ref<Employee> | null | undefined
 
-        if (employeeId1 == null && employeeId2 != null) {
-          return 1
-        }
+    if (employeeId1 == null && employeeId2 != null) {
+      return 1
+    }
 
-        if (employeeId1 != null && employeeId2 == null) {
-          return -1
-        }
+    if (employeeId1 != null && employeeId2 == null) {
+      return -1
+    }
 
-        if (employeeId1 != null && employeeId2 != null) {
-          const employee1 = employees.get(employeeId1)
-          const employee2 = employees.get(employeeId2)
-          const name1 = employee1 != null ? getName(employee1) : ''
-          const name2 = employee2 != null ? getName(employee2) : ''
+    if (employeeId1 != null && employeeId2 != null) {
+      const employee1 = get(employeeByIdStore).get(employeeId1)
+      const employee2 = get(employeeByIdStore).get(employeeId2)
+      const name1 = employee1 != null ? getName(employee1) : ''
+      const name2 = employee2 != null ? getName(employee2) : ''
 
-          return name1.localeCompare(name2)
-        }
+      return name1.localeCompare(name2)
+    }
 
-        return 0
-      })
-      resolve(value)
-      query.unsubscribe()
-    })
+    return 0
   })
 }
 
@@ -185,7 +178,7 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Loca
     return undefined
   }
   const classLabel = tokens[0]
-  const lastId = tokens[1]
+  const lastId = tokens[1] as Ref<Contact>
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const classes = hierarchy.getDescendants(contact.class.Contact)
@@ -196,7 +189,7 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Loca
       break
     }
   }
-  const doc = await client.findOne(_class, { _id: { $like: `%${lastId}` } }, { sort: { _id: SortingOrder.Descending } })
+  const doc = await client.findOne(_class, { _id: lastId })
   if (doc === undefined) {
     console.error(`Could not find contact ${lastId}.`)
     return undefined
@@ -208,3 +201,11 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Loca
     fragment: getPanelURI(view.component.EditDoc, doc._id, doc._class, 'content')
   }
 }
+
+export const employeeByIdStore = writable<IdMap<Employee>>(new Map())
+export const employeesStore = writable<Employee[]>([])
+const query = createQuery(true)
+query.query(contact.class.Employee, {}, (res) => {
+  employeesStore.set(res)
+  employeeByIdStore.set(toIdMap(res))
+})

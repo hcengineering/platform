@@ -14,11 +14,11 @@
 -->
 <script lang="ts">
   import { DocumentQuery, Ref } from '@hcengineering/core'
-  import { IssueTemplate, Team } from '@hcengineering/tracker'
+  import { IssueTemplate, Project } from '@hcengineering/tracker'
   import tracker from '../../plugin'
   import IssueTemplatesView from './IssueTemplatesView.svelte'
 
-  export let currentSpace: Ref<Team>
+  export let currentSpace: Ref<Project>
 
   const query: DocumentQuery<IssueTemplate> = { space: currentSpace }
 </script>

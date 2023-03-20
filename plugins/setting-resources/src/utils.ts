@@ -1,8 +1,10 @@
 import contact, { EmployeeAccount, getName } from '@hcengineering/contact'
+import { employeeByIdStore } from '@hcengineering/contact-resources'
 import { Class, Doc, Hierarchy, Ref } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import setting from '@hcengineering/setting'
 import { TemplateDataProvider } from '@hcengineering/templates'
+import { get } from 'svelte/store'
 
 function isEditable (hierarchy: Hierarchy, p: Class<Doc>): boolean {
   let ancestors = [p._id]
@@ -63,9 +65,7 @@ export async function getOwnerName (provider: TemplateDataProvider): Promise<str
     _id: value.modifiedBy as Ref<EmployeeAccount>
   })
   if (employeeAccount !== undefined) {
-    const employee = await client.findOne(contact.class.Employee, {
-      _id: employeeAccount.employee
-    })
+    const employee = get(employeeByIdStore).get(employeeAccount.employee)
     return employee != null ? getName(employee) : undefined
   }
 }

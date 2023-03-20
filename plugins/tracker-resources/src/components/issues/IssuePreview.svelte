@@ -19,7 +19,7 @@
   import { CommentPopup } from '@hcengineering/chunter-resources'
   import { Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
-  import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
+  import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import { Label, resizeObserver, Scroller } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import AssigneeEditor from './AssigneeEditor.svelte'
@@ -57,10 +57,10 @@
       sort: { rank: SortingOrder.Ascending }
     }
   )
-  let currentTeam: Team | undefined
+  let currentProject: Project | undefined
 
-  $: spaceQuery.query(tracker.class.Team, { _id: space }, (res) => ([currentTeam] = res))
-  $: issueName = currentTeam && issue && `${currentTeam.identifier}-${issue.number}`
+  $: spaceQuery.query(tracker.class.Project, { _id: space }, (res) => ([currentProject] = res))
+  $: issueName = currentProject && issue && `${currentProject.identifier}-${issue.number}`
 
   const limit: number = 350
 

@@ -62,8 +62,19 @@ export async function getActions (
 
   const categories: Record<string, number> = { top: 1, filter: 50, tools: 100 }
 
-  let filteredActions = actions
+  let filteredActions = []
 
+  for (const action of actions) {
+    if (action.visibilityTester == null) {
+      filteredActions.push(action)
+    } else {
+      const visibilityTester = await getResource(action.visibilityTester)
+
+      if (await visibilityTester(doc)) {
+        filteredActions.push(action)
+      }
+    }
+  }
   if (Array.isArray(doc)) {
     for (const d of doc) {
       filteredActions = filterActions(client, d, filteredActions, derived)

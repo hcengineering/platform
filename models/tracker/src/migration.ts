@@ -14,16 +14,21 @@
 //
 
 import core, {
+  Class,
   Doc,
   DocumentUpdate,
   DOMAIN_TX,
   generateId,
   Ref,
   SortingOrder,
+  TxCollectionCUD,
+  TxCreateDoc,
   TxOperations,
-  TxResult
+  TxResult,
+  TxUpdateDoc
 } from '@hcengineering/core'
 import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import tags from '@hcengineering/tags'
 import {
   calcRank,
@@ -31,7 +36,9 @@ import {
   Issue,
   IssueStatus,
   IssueStatusCategory,
-  Team,
+  IssueTemplate,
+  IssueTemplateChild,
+  Project,
   TimeReportDayType,
   WorkDayLength
 } from '@hcengineering/tracker'
@@ -46,9 +53,9 @@ enum DeprecatedIssueStatus {
   Canceled
 }
 
-interface CreateTeamIssueStatusesArgs {
+interface CreateProjectIssueStatusesArgs {
   tx: TxOperations
-  teamId: Ref<Team>
+  projectId: Ref<Project>
   categories: IssueStatusCategory[]
   defaultStatusId?: Ref<IssueStatus>
   defaultCategoryId?: Ref<IssueStatusCategory>
@@ -62,13 +69,13 @@ const categoryByDeprecatedIssueStatus = {
   [DeprecatedIssueStatus.Canceled]: tracker.issueStatusCategory.Canceled
 } as const
 
-async function createTeamIssueStatuses ({
+async function createProjectIssueStatuses ({
   tx,
-  teamId: attachedTo,
+  projectId: attachedTo,
   categories,
   defaultStatusId,
   defaultCategoryId = tracker.issueStatusCategory.Backlog
-}: CreateTeamIssueStatusesArgs): Promise<void> {
+}: CreateProjectIssueStatusesArgs): Promise<void> {
   const issueStatusRanks = [...genRanks(categories.length)]
 
   for (const [i, statusCategory] of categories.entries()) {
@@ -79,7 +86,7 @@ async function createTeamIssueStatuses ({
       tracker.class.IssueStatus,
       attachedTo,
       attachedTo,
-      tracker.class.Team,
+      tracker.class.Project,
       'issueStatuses',
       { name: defaultStatusName, category, rank },
       category === defaultCategoryId ? defaultStatusId : undefined
@@ -87,13 +94,13 @@ async function createTeamIssueStatuses ({
   }
 }
 
-async function createDefaultTeam (tx: TxOperations): Promise<void> {
-  const current = await tx.findOne(tracker.class.Team, {
-    _id: tracker.team.DefaultTeam
+async function createDefaultProject (tx: TxOperations): Promise<void> {
+  const current = await tx.findOne(tracker.class.Project, {
+    _id: tracker.project.DefaultProject
   })
 
   const currentDeleted = await tx.findOne(core.class.TxRemoveDoc, {
-    objectId: tracker.team.DefaultTeam
+    objectId: tracker.project.DefaultProject
   })
 
   // Create new if not deleted by customers.
@@ -105,12 +112,12 @@ async function createDefaultTeam (tx: TxOperations): Promise<void> {
       { sort: { order: SortingOrder.Ascending } }
     )
 
-    await tx.createDoc<Team>(
-      tracker.class.Team,
+    await tx.createDoc<Project>(
+      tracker.class.Project,
       core.space.Space,
       {
         name: 'Default',
-        description: 'Default team',
+        description: 'Default project',
         private: false,
         members: [],
         archived: false,
@@ -122,16 +129,16 @@ async function createDefaultTeam (tx: TxOperations): Promise<void> {
         defaultAssignee: undefined,
         workDayLength: WorkDayLength.EIGHT_HOURS
       },
-      tracker.team.DefaultTeam
+      tracker.project.DefaultProject
     )
-    await createTeamIssueStatuses({ tx, teamId: tracker.team.DefaultTeam, categories, defaultStatusId })
+    await createProjectIssueStatuses({ tx, projectId: tracker.project.DefaultProject, categories, defaultStatusId })
   }
 }
 
-async function fixTeamIssueStatusesOrder (tx: TxOperations, team: Team): Promise<TxResult> {
+async function fixProjectIssueStatusesOrder (tx: TxOperations, project: Project): Promise<TxResult> {
   const statuses = await tx.findAll(
     tracker.class.IssueStatus,
-    { attachedTo: team._id },
+    { attachedTo: project._id },
     { lookup: { category: tracker.class.IssueStatusCategory } }
   )
   statuses.sort((a, b) => (a.$lookup?.category?.order ?? 0) - (b.$lookup?.category?.order ?? 0))
@@ -143,19 +150,19 @@ async function fixTeamIssueStatusesOrder (tx: TxOperations, team: Team): Promise
   })
 }
 
-async function fixTeamsIssueStatusesOrder (tx: TxOperations): Promise<void> {
-  const teams = await tx.findAll(tracker.class.Team, {})
-  await Promise.all(teams.map((team) => fixTeamIssueStatusesOrder(tx, team)))
+async function fixProjectsIssueStatusesOrder (tx: TxOperations): Promise<void> {
+  const projects = await tx.findAll(tracker.class.Project, {})
+  await Promise.all(projects.map((project) => fixProjectIssueStatusesOrder(tx, project)))
 }
 
-async function upgradeTeamSettings (tx: TxOperations): Promise<void> {
-  const teams = await tx.findAll(tracker.class.Team, {
+async function upgradeProjectSettings (tx: TxOperations): Promise<void> {
+  const projects = await tx.findAll(tracker.class.Project, {
     defaultTimeReportDay: { $exists: false },
     workDayLength: { $exists: false }
   })
   await Promise.all(
-    teams.map((team) =>
-      tx.update(team, {
+    projects.map((project) =>
+      tx.update(project, {
         defaultTimeReportDay: TimeReportDayType.PreviousWorkDay,
         workDayLength: WorkDayLength.EIGHT_HOURS
       })
@@ -163,21 +170,21 @@ async function upgradeTeamSettings (tx: TxOperations): Promise<void> {
   )
 }
 
-async function upgradeTeamIssueStatuses (tx: TxOperations): Promise<void> {
-  const teams = await tx.findAll(tracker.class.Team, { issueStatuses: undefined })
+async function upgradeProjectIssueStatuses (tx: TxOperations): Promise<void> {
+  const projects = await tx.findAll(tracker.class.Project, { issueStatuses: undefined })
 
-  if (teams.length > 0) {
+  if (projects.length > 0) {
     const categories = await tx.findAll(
       tracker.class.IssueStatusCategory,
       {},
       { sort: { order: SortingOrder.Ascending } }
     )
 
-    for (const team of teams) {
+    for (const project of projects) {
       const defaultStatusId: Ref<IssueStatus> = generateId()
 
-      await tx.update(team, { issueStatuses: 0, defaultIssueStatus: defaultStatusId })
-      await createTeamIssueStatuses({ tx, teamId: team._id, categories, defaultStatusId })
+      await tx.update(project, { issueStatuses: 0, defaultIssueStatus: defaultStatusId })
+      await createProjectIssueStatuses({ tx, projectId: project._id, categories, defaultStatusId })
     }
   }
 }
@@ -291,38 +298,38 @@ async function migrateIssueParentInfo (client: MigrationClient): Promise<void> {
   await updateIssueParentInfo(client, null)
 }
 
-async function migrateIssueProjects (client: MigrationClient): Promise<void> {
-  const issues = await client.find(DOMAIN_TRACKER, { _class: tracker.class.Issue, project: { $exists: false } })
+async function migrateIssueComponents (client: MigrationClient): Promise<void> {
+  const issues = await client.find(DOMAIN_TRACKER, { _class: tracker.class.Issue, component: { $exists: false } })
 
   if (issues.length === 0) {
     return
   }
 
   for (const issue of issues) {
-    await client.update(DOMAIN_TRACKER, { _id: issue._id }, { project: null })
+    await client.update(DOMAIN_TRACKER, { _id: issue._id }, { component: null })
   }
 }
 
-async function upgradeProjectIcons (tx: TxOperations): Promise<void> {
-  const projects = await tx.findAll(tracker.class.Project, {})
+async function upgradeComponentIcons (tx: TxOperations): Promise<void> {
+  const components = await tx.findAll(tracker.class.Component, {})
 
-  if (projects.length === 0) {
+  if (components.length === 0) {
     return
   }
 
-  for (const project of projects) {
-    const icon = project.icon as unknown
+  for (const component of components) {
+    const icon = component.icon as unknown
 
     if (icon !== undefined) {
       continue
     }
 
-    await tx.update(project, { icon: tracker.icon.Projects })
+    await tx.update(component, { icon: tracker.icon.Components })
   }
 }
 
 async function createDefaults (tx: TxOperations): Promise<void> {
-  await createDefaultTeam(tx)
+  await createDefaultProject(tx)
   await createOrUpdate(
     tx,
     tags.class.TagCategory,
@@ -377,10 +384,10 @@ async function fillRank (client: MigrationClient): Promise<void> {
   }
 }
 
-async function upgradeTeams (tx: TxOperations): Promise<void> {
-  await upgradeTeamIssueStatuses(tx)
-  await fixTeamsIssueStatusesOrder(tx)
-  await upgradeTeamSettings(tx)
+async function upgradeProjects (tx: TxOperations): Promise<void> {
+  await upgradeProjectIssueStatuses(tx)
+  await fixProjectsIssueStatusesOrder(tx)
+  await upgradeProjectSettings(tx)
 }
 
 async function upgradeIssues (tx: TxOperations): Promise<void> {
@@ -408,8 +415,353 @@ async function upgradeIssues (tx: TxOperations): Promise<void> {
   }
 }
 
-async function upgradeProjects (tx: TxOperations): Promise<void> {
-  await upgradeProjectIcons(tx)
+async function upgradeComponents (tx: TxOperations): Promise<void> {
+  await upgradeComponentIcons(tx)
+}
+
+async function renameProject (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_TRACKER,
+    {
+      _class: { $in: [tracker.class.Issue, tracker.class.Sprint] },
+      project: { $exists: true }
+    },
+    {
+      $rename: { project: 'component' }
+    }
+  )
+  await client.update(
+    DOMAIN_TRACKER,
+    {
+      _class: tracker.class.Project
+    },
+    {
+      _class: tracker.class.Component
+    }
+  )
+  const components = await client.find(DOMAIN_TRACKER, { _class: tracker.class.Component })
+  for (const component of components) {
+    await client.update(
+      DOMAIN_TX,
+      {
+        objectId: component._id,
+        objectClass: tracker.class.Project
+      },
+      {
+        objectClass: tracker.class.Component
+      }
+    )
+  }
+
+  await client.update(
+    DOMAIN_TX,
+    {
+      _class: core.class.TxCollectionCUD,
+      'tx._class': core.class.TxCreateDoc,
+      'tx.objectClass': tracker.class.Issue,
+      'tx.attributes.project': { $exists: true }
+    },
+    {
+      $rename: { 'tx.attributes.project': 'tx.attributes.component' }
+    }
+  )
+  await client.update(
+    DOMAIN_TX,
+    {
+      _class: core.class.TxCollectionCUD,
+      'tx._class': core.class.TxUpdateDoc,
+      'tx.objectClass': tracker.class.Issue,
+      'tx.operations.project': { $exists: true }
+    },
+    {
+      $rename: { 'tx.operations.project': 'tx.operations.component' }
+    }
+  )
+  await client.update(
+    DOMAIN_TX,
+    {
+      objectClass: tracker.class.Sprint,
+      _class: core.class.TxCreateDoc,
+      'attributes.project': { $exists: true }
+    },
+    {
+      $rename: { 'attributes.project': 'attributes.component' }
+    }
+  )
+  await client.update(
+    DOMAIN_TX,
+    {
+      objectClass: { $in: [tracker.class.Issue, tracker.class.Sprint] },
+      _class: core.class.TxUpdateDoc,
+      'operations.project': { $exists: true }
+    },
+    {
+      $rename: { 'operations.project': 'operations.component' }
+    }
+  )
+
+  const templates = await client.find<IssueTemplate>(DOMAIN_TRACKER, {
+    _class: tracker.class.IssueTemplate,
+    project: { $exists: true }
+  })
+  for (const template of templates) {
+    const children: IssueTemplateChild[] = template.children.map((p) => {
+      const res = {
+        ...p,
+        component: p.component
+      }
+      delete (res as any).project
+      return res
+    })
+    await client.update<IssueTemplate>(
+      DOMAIN_TRACKER,
+      {
+        _id: template._id
+      },
+      {
+        children
+      }
+    )
+    await client.update(
+      DOMAIN_TRACKER,
+      {
+        _id: template._id
+      },
+      {
+        $rename: { project: 'component' }
+      }
+    )
+    const createTxes = await client.find<TxCreateDoc<IssueTemplate>>(DOMAIN_TX, {
+      objectId: template._id,
+      _class: core.class.TxCreateDoc
+    })
+    for (const createTx of createTxes) {
+      const children: IssueTemplateChild[] = createTx.attributes.children.map((p) => {
+        const res = {
+          ...p,
+          component: p.component
+        }
+        delete (res as any).project
+        return res
+      })
+      await client.update<TxCreateDoc<IssueTemplate>>(
+        DOMAIN_TX,
+        {
+          _id: createTx._id
+        },
+        {
+          children
+        }
+      )
+      await client.update(
+        DOMAIN_TX,
+        {
+          _id: createTx._id
+        },
+        {
+          $rename: { 'attributes.project': 'attributes.component' }
+        }
+      )
+    }
+    const updateTxes = await client.find<TxUpdateDoc<IssueTemplate>>(DOMAIN_TX, {
+      objectId: template._id,
+      _class: core.class.TxUpdateDoc
+    })
+    for (const updateTx of updateTxes) {
+      if ((updateTx.operations as any).project !== undefined) {
+        await client.update(
+          DOMAIN_TX,
+          {
+            _id: updateTx._id
+          },
+          {
+            $rename: { 'operations.project': 'operations.component' }
+          }
+        )
+      }
+      if (updateTx.operations.children !== undefined) {
+        const children: IssueTemplateChild[] = updateTx.operations.children.map((p) => {
+          const res = {
+            ...p,
+            component: p.component
+          }
+          delete (res as any).project
+          return res
+        })
+        await client.update(
+          DOMAIN_TX,
+          {
+            _id: updateTx._id
+          },
+          {
+            children
+          }
+        )
+      }
+    }
+  }
+
+  const defaultSpace = (
+    await client.find<Project>(DOMAIN_SPACE, {
+      _id: 'tracker:team:DefaultTeam' as Ref<Project>
+    })
+  )[0]
+  if (defaultSpace !== undefined) {
+    await client.delete(DOMAIN_SPACE, tracker.project.DefaultProject)
+    await client.create(DOMAIN_SPACE, {
+      ...defaultSpace,
+      _id: tracker.project.DefaultProject,
+      _class: tracker.class.Project,
+      description: defaultSpace.description === 'Default team' ? 'Default project' : defaultSpace.description
+    })
+    await client.delete(DOMAIN_SPACE, defaultSpace._id)
+  }
+
+  await client.update(
+    DOMAIN_SPACE,
+    {
+      _id: 'tracker:team:DefaultTeam' as Ref<Project>,
+      _class: 'tracker:class:Team' as Ref<Class<Doc>>
+    },
+    {
+      _id: tracker.project.DefaultProject,
+      _class: tracker.class.Project,
+      description: 'Default project'
+    }
+  )
+
+  await client.update(
+    DOMAIN_TRACKER,
+    {
+      attachedTo: 'tracker:team:DefaultTeam' as Ref<Doc>
+    },
+    {
+      attachedTo: tracker.project.DefaultProject
+    }
+  )
+
+  await client.update(
+    DOMAIN_TRACKER,
+    {
+      space: 'tracker:team:DefaultTeam' as Ref<Project>
+    },
+    {
+      space: tracker.project.DefaultProject
+    }
+  )
+
+  await client.update(
+    DOMAIN_TRACKER,
+    {
+      attachedToClass: 'tracker:class:Team' as Ref<Class<Doc>>
+    },
+    {
+      attachedToClass: tracker.class.Project
+    }
+  )
+
+  await client.update(
+    DOMAIN_TX,
+    {
+      objectId: 'tracker:team:DefaultTeam' as Ref<Project>
+    },
+    {
+      objectId: tracker.project.DefaultProject
+    }
+  )
+
+  await client.update(
+    DOMAIN_TX,
+    {
+      objectClass: 'tracker:class:Team' as Ref<Class<Doc>>
+    },
+    {
+      objectClass: tracker.class.Project
+    }
+  )
+
+  await client.update(
+    DOMAIN_TX,
+    {
+      'tx.objectClass': 'tracker:class:Team' as Ref<Class<Doc>>
+    },
+    {
+      'tx.objectClass': tracker.class.Project
+    }
+  )
+
+  await client.update(
+    DOMAIN_TX,
+    {
+      objectSpace: 'tracker:team:DefaultTeam' as Ref<Project>
+    },
+    {
+      objectSpace: tracker.project.DefaultProject
+    }
+  )
+
+  await client.update(
+    DOMAIN_TX,
+    {
+      'tx.objectSpace': 'tracker:team:DefaultTeam' as Ref<Project>
+    },
+    {
+      'tx.objectSpace': tracker.project.DefaultProject
+    }
+  )
+}
+
+async function setCreate (client: MigrationClient): Promise<void> {
+  while (true) {
+    const docs = await client.find<Issue>(
+      DOMAIN_TRACKER,
+      {
+        _class: tracker.class.Issue,
+        createOn: { $exists: false }
+      },
+      { limit: 500 }
+    )
+    if (docs.length === 0) {
+      break
+    }
+    const creates = await client.find<TxCollectionCUD<Issue, Issue>>(DOMAIN_TX, {
+      'tx.objectId': { $in: docs.map((it) => it._id) },
+      'tx._class': core.class.TxCreateDoc
+    })
+    for (const doc of docs) {
+      const tx = creates.find((it) => it.tx.objectId === doc._id)
+      if (tx !== undefined) {
+        await client.update(
+          DOMAIN_TRACKER,
+          {
+            _id: doc._id
+          },
+          {
+            createOn: tx.modifiedOn
+          }
+        )
+        await client.update(
+          DOMAIN_TX,
+          {
+            _id: tx._id
+          },
+          {
+            'tx.attributes.createOn': tx.modifiedOn
+          }
+        )
+      } else {
+        await client.update(
+          DOMAIN_TRACKER,
+          {
+            _id: doc._id
+          },
+          {
+            createOn: doc.modifiedOn
+          }
+        )
+      }
+    }
+  }
 }
 
 export const trackerOperation: MigrateOperation = {
@@ -423,15 +775,17 @@ export const trackerOperation: MigrateOperation = {
         reportedTime: 0
       }
     )
-    await Promise.all([migrateIssueProjects(client), migrateParentIssues(client)])
+    await Promise.all([migrateIssueComponents(client), migrateParentIssues(client)])
     await migrateIssueParentInfo(client)
     await fillRank(client)
+    await renameProject(client)
+    await setCreate(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createDefaults(tx)
-    await upgradeTeams(tx)
-    await upgradeIssues(tx)
     await upgradeProjects(tx)
+    await upgradeIssues(tx)
+    await upgradeComponents(tx)
   }
 }

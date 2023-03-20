@@ -362,13 +362,13 @@
                   {#if item.startDate}
                     {@const target = item.targetDate ?? item.startDate + NOT_ENDED}
                     <div
-                      class="project-item"
+                      class="component-item"
                       class:noTarget={item.targetDate === null}
                       style:left={`${getOffsetByDate(item.startDate)}px`}
                       style:right={`${getOffsetByDate(target) + dayWidth - 1}px`}
                       style:width={`${getOffsetByDate(target) - getOffsetByDate(item.startDate) + dayWidth - 1}px`}
                     >
-                      <div class="project-presenter gap-2">
+                      <div class="component-presenter gap-2">
                         {#if item.icon}<Icon
                             icon={item.icon}
                             size={item.iconSize ?? 'small'}
@@ -636,14 +636,14 @@
   }
 
   .timeline-action__button,
-  .project-item {
+  .component-item {
     position: absolute;
     display: flex;
     align-items: center;
     padding: 0.5rem;
     box-shadow: var(--button-shadow);
   }
-  .project-item {
+  .component-item {
     top: 0.25rem;
     bottom: 0.25rem;
     background-color: var(--button-bg-color);
@@ -659,7 +659,7 @@
       border-right-color: transparent;
     }
 
-    .project-presenter {
+    .component-presenter {
       display: flex;
       align-items: center;
 
@@ -766,7 +766,7 @@
     padding-left: 0.45rem;
   }
 
-  .projectPresenter {
+  .componentPresenter {
     display: flex;
     align-items: center;
     flex-shrink: 0;

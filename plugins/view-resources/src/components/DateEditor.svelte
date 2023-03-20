@@ -14,18 +14,19 @@
 -->
 <script lang="ts">
   import { TypeDate } from '@hcengineering/core'
-  // import { IntlString } from '@hcengineering/platform'
+  import { IntlString } from '@hcengineering/platform'
   import { DateRangePresenter } from '@hcengineering/ui'
 
   export let value: number | null | undefined
   export let type: TypeDate | undefined
-  // export let label: IntlString
+  export let label: IntlString | undefined = undefined
   export let onChange: (value: any) => void
   export let kind: 'no-border' | 'link' = 'no-border'
 </script>
 
 <DateRangePresenter
   {value}
+  labelNull={label}
   mode={type?.mode}
   noShift={!type?.withShift}
   editable

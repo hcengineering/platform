@@ -16,7 +16,7 @@
   import { createEventDispatcher } from 'svelte'
   import core, { Account, AttachedData, Doc, generateId, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
   import presentation, { getClient, KeyedAttribute } from '@hcengineering/presentation'
-  import { IssueStatus, IssuePriority, Issue, Team, calcRank } from '@hcengineering/tracker'
+  import { IssueStatus, IssuePriority, Issue, Project, calcRank } from '@hcengineering/tracker'
   import { addNotification, Button, Component, EditBox } from '@hcengineering/ui'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import tracker from '../../../plugin'
@@ -30,7 +30,7 @@
 
   export let parentIssue: Issue
   export let issueStatuses: WithLookup<IssueStatus>[]
-  export let currentTeam: Team
+  export let currentProject: Project
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -52,7 +52,7 @@
       title: '',
       description: '',
       assignee: null,
-      project: null,
+      component: null,
       number: 0,
       rank: '',
       status: '' as Ref<IssueStatus>,
@@ -65,7 +65,8 @@
       estimation: 0,
       reportedTime: 0,
       reports: 0,
-      childInfo: []
+      childInfo: [],
+      createOn: Date.now()
     }
   }
 
@@ -90,10 +91,10 @@
     }
     loading = true
     try {
-      const space = currentTeam._id
+      const space = currentProject._id
       const lastOne = await client.findOne<Issue>(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
       const incResult = await client.updateDoc(
-        tracker.class.Team,
+        tracker.class.Project,
         core.space.Space,
         space,
         { $inc: { sequence: 1 } },
@@ -105,7 +106,7 @@
         title: getTitle(newIssue.title),
         number: (incResult as any).object.sequence,
         rank: calcRank(lastOne, undefined),
-        project: parentIssue.project,
+        component: parentIssue.component,
         parents: [{ parentId: parentIssue._id, parentTitle: parentIssue.title }, ...parentIssue.parents]
       }
 
@@ -162,8 +163,8 @@
 
   $: thisRef && thisRef.scrollIntoView({ behavior: 'smooth' })
   $: canSave = getTitle(newIssue.title ?? '').length > 0
-  $: if (!newIssue.status && currentTeam?.defaultIssueStatus) {
-    newIssue.status = currentTeam.defaultIssueStatus
+  $: if (!newIssue.status && currentProject?.defaultIssueStatus) {
+    newIssue.status = currentProject.defaultIssueStatus
   }
 </script>
 
@@ -194,7 +195,7 @@
             {objectId}
             refContainer={thisRef}
             _class={tracker.class.Issue}
-            space={currentTeam._id}
+            space={currentProject._id}
             alwaysEdit
             showButtons
             maxHeight={'20vh'}
@@ -208,7 +209,7 @@
   </div>
   <div class="mt-4 flex-between">
     <div class="buttons-group xsmall-gap">
-      <!-- <SpaceSelector _class={tracker.class.Team} label={tracker.string.Team} bind:space /> -->
+      <!-- <SpaceSelector _class={tracker.class.Project} label={tracker.string.Project} bind:space /> -->
       <PriorityEditor
         value={newIssue}
         shouldShowLabel
@@ -241,7 +242,7 @@
           labels = labels.filter((it) => it._id !== evt.detail)
         }}
       />
-      <EstimationEditor kind={'no-border'} size={'small'} value={newIssue} {currentTeam} />
+      <EstimationEditor kind={'no-border'} size={'small'} value={newIssue} {currentProject} />
     </div>
     <div class="buttons-group small-gap">
       <Button label={presentation.string.Cancel} size="small" kind="transparent" on:click={close} />

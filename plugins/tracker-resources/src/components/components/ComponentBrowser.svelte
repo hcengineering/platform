@@ -17,58 +17,58 @@
   import { DocumentQuery, FindOptions, SortingOrder } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import { Project } from '@hcengineering/tracker'
+  import { Component } from '@hcengineering/tracker'
   import { Button, IconAdd, Label, showPopup, TabList } from '@hcengineering/ui'
   import type { TabItem } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import view from '@hcengineering/view'
-  import { getIncludedProjectStatuses, projectsTitleMap, ProjectsViewMode } from '../../utils'
-  import NewProject from './NewProject.svelte'
-  import ProjectsListBrowser from './ProjectsListBrowser.svelte'
+  import { getIncludedComponentStatuses, componentsTitleMap, ComponentsViewMode } from '../../utils'
+  import NewComponent from './NewComponent.svelte'
+  import ComponentsListBrowser from './ComponentsListBrowser.svelte'
 
   export let label: IntlString
-  export let query: DocumentQuery<Project> = {}
+  export let query: DocumentQuery<Component> = {}
   export let search: string = ''
-  export let mode: ProjectsViewMode = 'all'
+  export let mode: ComponentsViewMode = 'all'
   export let viewMode: 'list' | 'timeline' = 'list'
 
   const ENTRIES_LIMIT = 200
-  const resultProjectsQuery = createQuery()
+  const resultComponentsQuery = createQuery()
 
-  const projectOptions: FindOptions<Project> = {
+  const componentOptions: FindOptions<Component> = {
     sort: { modifiedOn: SortingOrder.Descending },
     limit: ENTRIES_LIMIT,
     lookup: { lead: contact.class.Employee, members: contact.class.Employee }
   }
 
-  let resultProjects: Project[] = []
+  let resultComponents: Component[] = []
 
-  $: includedProjectStatuses = getIncludedProjectStatuses(mode)
-  $: title = projectsTitleMap[mode]
-  $: includedProjectsQuery = { status: { $in: includedProjectStatuses } }
+  $: includedComponentStatuses = getIncludedComponentStatuses(mode)
+  $: title = componentsTitleMap[mode]
+  $: includedComponentsQuery = { status: { $in: includedComponentStatuses } }
 
   $: baseQuery = {
-    ...includedProjectsQuery,
+    ...includedComponentsQuery,
     ...query
   }
 
   $: resultQuery = search === '' ? baseQuery : { $search: search, ...baseQuery }
 
-  $: resultProjectsQuery.query<Project>(
-    tracker.class.Project,
+  $: resultComponentsQuery.query<Component>(
+    tracker.class.Component,
     { ...resultQuery },
     (result) => {
-      resultProjects = result
+      resultComponents = result
     },
-    projectOptions
+    componentOptions
   )
 
-  const space = typeof query.space === 'string' ? query.space : tracker.team.DefaultTeam
+  const space = typeof query.space === 'string' ? query.space : tracker.project.DefaultProject
   const showCreateDialog = async () => {
-    showPopup(NewProject, { space, targetElement: null }, 'top')
+    showPopup(NewComponent, { space, targetElement: null }, 'top')
   }
 
-  const handleViewModeChanged = (newMode: ProjectsViewMode) => {
+  const handleViewModeChanged = (newMode: ComponentsViewMode) => {
     if (newMode === undefined || newMode === mode) {
       return
     }
@@ -77,27 +77,27 @@
   }
 
   const modeList: TabItem[] = [
-    { id: 'all', labelIntl: tracker.string.AllProjects, action: () => handleViewModeChanged('all') },
-    { id: 'backlog', labelIntl: tracker.string.BacklogProjects, action: () => handleViewModeChanged('backlog') },
-    { id: 'active', labelIntl: tracker.string.ActiveProjects, action: () => handleViewModeChanged('active') },
-    { id: 'closed', labelIntl: tracker.string.ClosedProjects, action: () => handleViewModeChanged('closed') }
+    { id: 'all', labelIntl: tracker.string.AllComponents, action: () => handleViewModeChanged('all') },
+    { id: 'backlog', labelIntl: tracker.string.BacklogComponents, action: () => handleViewModeChanged('backlog') },
+    { id: 'active', labelIntl: tracker.string.ActiveComponents, action: () => handleViewModeChanged('active') },
+    { id: 'closed', labelIntl: tracker.string.ClosedComponents, action: () => handleViewModeChanged('closed') }
   ]
   const viewList: TabItem[] = [
     { id: 'list', icon: view.icon.List, tooltip: view.string.List },
     { id: 'timeline', icon: view.icon.Timeline, tooltip: view.string.Timeline }
   ]
 
-  const retrieveMembers = (p: Project) => p.members
+  const retrieveMembers = (p: Component) => p.members
 </script>
 
 <div class="fs-title flex-between header">
   <div class="flex-center">
     <Label {label} />
-    <div class="projectTitle">
+    <div class="componentTitle">
       › <Label label={title} />
     </div>
   </div>
-  <Button size="small" icon={IconAdd} label={tracker.string.Project} kind={'primary'} on:click={showCreateDialog} />
+  <Button size="small" icon={IconAdd} label={tracker.string.Component} kind={'primary'} on:click={showCreateDialog} />
 </div>
 <div class="itemsContainer">
   <div class="flex-row-center">
@@ -110,8 +110,7 @@
       }}
     />
     <!-- <div class="ml-3 filterButton">
-      <Button
-        size="small"
+      <BuComponet      size="small"
         icon={IconAdd}
         kind={'link-bordered'}
         borderStyle={'dashed'}
@@ -130,31 +129,31 @@
     }}
   />
 </div>
-<ProjectsListBrowser
-  _class={tracker.class.Project}
+<ComponentsListBrowser
+  _class={tracker.class.Component}
   itemsConfig={[
     { key: '', presenter: tracker.component.IconPresenter },
-    { key: '', presenter: tracker.component.ProjectPresenter, props: { kind: 'list' } },
+    { key: '', presenter: tracker.component.ComponentPresenter, props: { kind: 'list' } },
     {
       key: '$lookup.lead',
       presenter: tracker.component.LeadPresenter,
-      props: { _class: tracker.class.Project, defaultClass: contact.class.Employee, shouldShowLabel: false }
+      props: { _class: tracker.class.Component, defaultClass: contact.class.Employee, shouldShowLabel: false }
     },
     {
       key: '',
       presenter: contact.component.MembersPresenter,
       props: {
         kind: 'link',
-        intlTitle: tracker.string.ProjectMembersTitle,
-        intlSearchPh: tracker.string.ProjectMembersSearchPlaceholder,
+        intlTitle: tracker.string.ComponentMembersTitle,
+        intlSearchPh: tracker.string.ComponentMembersSearchPlaceholder,
         retrieveMembers
       }
     },
     { key: '', presenter: tracker.component.TargetDatePresenter },
-    { key: '', presenter: tracker.component.ProjectStatusPresenter },
-    { key: '', presenter: tracker.component.DeleteProjectPresenter, props: { space } }
+    { key: '', presenter: tracker.component.ComponentStatusPresenter },
+    { key: '', presenter: tracker.component.DeleteComponentPresenter, props: { space } }
   ]}
-  projects={resultProjects}
+  components={resultComponents}
   {viewMode}
 />
 
@@ -163,7 +162,7 @@
     padding: 0.5rem 0.75rem 0.5rem 2.25rem;
   }
 
-  .projectTitle {
+  .componentTitle {
     display: flex;
     margin-left: 0.25rem;
     color: var(--content-color);
@@ -180,8 +179,4 @@
     border-top: 1px solid var(--divider-color);
     border-bottom: 1px solid var(--divider-color);
   }
-
-  // .filterButton {
-  //   color: var(--caption-color);
-  // }
 </style>

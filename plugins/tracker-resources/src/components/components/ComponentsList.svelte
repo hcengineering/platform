@@ -16,7 +16,7 @@
   import contact from '@hcengineering/contact'
   import { Class, Doc, FindOptions, getObjectValue, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Issue, Project } from '@hcengineering/tracker'
+  import { Issue, Component } from '@hcengineering/tracker'
   import { CheckBox, Spinner, tooltip } from '@hcengineering/ui'
   import { BuildModelKey } from '@hcengineering/view'
   import { buildModel, LoadingProps } from '@hcengineering/view-resources'
@@ -27,7 +27,7 @@
   export let itemsConfig: (BuildModelKey | string)[]
   export let selectedObjectIds: Doc[] = []
   export let selectedRowIndex: number | undefined = undefined
-  export let projects: Project[] | undefined = undefined
+  export let components: Component[] | undefined = undefined
   export let loadingProps: LoadingProps | undefined = undefined
 
   const dispatch = createEventDispatcher()
@@ -42,9 +42,9 @@
     }
   }
 
-  $: options = { ...baseOptions } as FindOptions<Project>
+  $: options = { ...baseOptions } as FindOptions<Component>
   $: selectedObjectIdsSet = new Set<Ref<Doc>>(selectedObjectIds.map((it) => it._id))
-  $: objectRefs.length = projects?.length ?? 0
+  $: objectRefs.length = components?.length ?? 0
 
   export const onObjectChecked = (docs: Doc[], value: boolean) => {
     dispatch('check', { docs, value })
@@ -55,12 +55,12 @@
   }
 
   export const onElementSelected = (offset: 1 | -1 | 0, docObject?: Doc) => {
-    if (!projects) {
+    if (!components) {
       return
     }
 
     let position =
-      (docObject !== undefined ? projects?.findIndex((x) => x._id === docObject?._id) : selectedRowIndex) ?? -1
+      (docObject !== undefined ? components?.findIndex((x) => x._id === docObject?._id) : selectedRowIndex) ?? -1
 
     position += offset
 
@@ -68,15 +68,15 @@
       position = 0
     }
 
-    if (position >= projects.length) {
-      position = projects.length - 1
+    if (position >= components.length) {
+      position = components.length - 1
     }
 
     const objectRef = objectRefs[position]
 
     selectedRowIndex = position
 
-    handleRowFocused(projects[position])
+    handleRowFocused(components[position])
 
     if (objectRef) {
       objectRef.scrollIntoView({ behavior: 'auto', block: 'nearest' })
@@ -94,14 +94,14 @@
 
 {#await buildModel({ client, _class, keys: itemsConfig, lookup: options.lookup }) then itemModels}
   <div class="listRoot">
-    {#if projects}
-      {#each projects as docObject (docObject._id)}
+    {#if components}
+      {#each components as docObject (docObject._id)}
         <div
-          bind:this={objectRefs[projects.findIndex((x) => x === docObject)]}
+          bind:this={objectRefs[components.findIndex((x) => x === docObject)]}
           class="listGrid"
           class:mListGridChecked={selectedObjectIdsSet.has(docObject._id)}
-          class:mListGridFixed={selectedRowIndex === projects.findIndex((x) => x === docObject)}
-          class:mListGridSelected={selectedRowIndex === projects.findIndex((x) => x === docObject)}
+          class:mListGridFixed={selectedRowIndex === components.findIndex((x) => x === docObject)}
+          class:mListGridSelected={selectedRowIndex === components.findIndex((x) => x === docObject)}
           on:focus={() => {}}
           on:mouseover={() => handleRowFocused(docObject)}
         >
@@ -129,7 +129,7 @@
                   </div>
                 </div>
               {:else if attributeModelIndex === 1}
-                <div class="projectPresenter flex-grow">
+                <div class="componentPresenter flex-grow">
                   <svelte:component
                     this={attributeModel.presenter}
                     value={getObjectValue(attributeModel.key, docObject) ?? ''}
@@ -235,7 +235,7 @@
     padding-left: 0.45rem;
   }
 
-  .projectPresenter {
+  .componentPresenter {
     display: flex;
     align-items: center;
     flex-shrink: 0;
