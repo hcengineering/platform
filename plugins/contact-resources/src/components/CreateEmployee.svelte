@@ -23,6 +23,7 @@
   import PersonPresenter from './PersonPresenter.svelte'
 
   export let canSave: boolean = true
+  export let onCreate: ((id: Ref<Employee>) => Promise<void>) | undefined = undefined
 
   let avatarEditor: EditableAvatar
 
@@ -68,7 +69,9 @@
         provider: channel.provider
       })
     }
-    dispatch('created', id)
+    if (onCreate) {
+      await onCreate(id)
+    }
     dispatch('close')
   }
 
