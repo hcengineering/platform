@@ -1,5 +1,5 @@
 //
-// Copyright © 2022-2023 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -126,7 +126,8 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
         issueStatuses: 0,
         defaultIssueStatus: defaultStatusId,
         defaultTimeReportDay: TimeReportDayType.PreviousWorkDay,
-        defaultAssignee: undefined
+        defaultAssignee: undefined,
+        workDayLength: WorkDayLength.EIGHT_HOURS
       },
       tracker.project.DefaultProject
     )
@@ -156,12 +157,14 @@ async function fixProjectsIssueStatusesOrder (tx: TxOperations): Promise<void> {
 
 async function upgradeProjectSettings (tx: TxOperations): Promise<void> {
   const projects = await tx.findAll(tracker.class.Project, {
-    defaultTimeReportDay: { $exists: false }
+    defaultTimeReportDay: { $exists: false },
+    workDayLength: { $exists: false }
   })
   await Promise.all(
     projects.map((project) =>
       tx.update(project, {
-        defaultTimeReportDay: TimeReportDayType.PreviousWorkDay
+        defaultTimeReportDay: TimeReportDayType.PreviousWorkDay,
+        workDayLength: WorkDayLength.EIGHT_HOURS
       })
     )
   )
@@ -214,39 +217,6 @@ async function upgradeIssueStatuses (tx: TxOperations): Promise<void> {
       }
 
       await tx.update(issue, { status: statusByDeprecatedStatus.get(deprecatedStatus) })
-    }
-  }
-}
-
-async function upgradeIssueTimeReports (tx: TxOperations): Promise<void> {
-  const reports = await tx.findAll(tracker.class.TimeSpendReport, {})
-  const projects: Project[] = []
-  if (reports.length > 0) {
-    for (const report of reports) {
-      const issue = await tx.findOne(tracker.class.Issue, { _id: report.attachedTo })
-      if (issue === undefined) continue
-      const project = await tx.findOne(tracker.class.Project, { _id: issue.space })
-      if (project === undefined) continue
-      if (project.workDayLength !== undefined) {
-        projects.push(project)
-        if (project.workDayLength === WorkDayLength.SEVEN_HOURS) {
-          await tx.update(report, { value: report.value * 7 })
-          await tx.update(issue, { estimation: issue.estimation * 7 })
-        }
-        if (project.workDayLength === WorkDayLength.EIGHT_HOURS) {
-          await tx.update(report, { value: report.value * 8 })
-          await tx.update(issue, { estimation: issue.estimation * 8 })
-        }
-      }
-    }
-    if (projects.length > 0) {
-      await Promise.all(
-        projects.map((project) =>
-          tx.update(project, {
-            workDayLength: undefined
-          })
-        )
-      )
     }
   }
 }
@@ -397,7 +367,6 @@ async function fillRank (client: MigrationClient): Promise<void> {
 }
 
 async function upgradeProjects (tx: TxOperations): Promise<void> {
-  await upgradeIssueTimeReports(tx)
   await upgradeProjectIssueStatuses(tx)
   await fixProjectsIssueStatusesOrder(tx)
   await upgradeProjectSettings(tx)
