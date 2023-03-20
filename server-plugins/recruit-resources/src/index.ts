@@ -51,10 +51,7 @@ function getSequenceId (doc: Vacancy | Applicant, control: TriggerControl): stri
 export async function vacancyHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const vacancy = doc as Vacancy
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.name}/${recruitId}/${vacancy._id}/#${recruitId}|${getSequenceId(
-    vacancy,
-    control
-  )}`
+  const path = `${workbenchId}/${control.workspace.name}/${recruitId}/${getSequenceId(vacancy, control)}`
   const link = concatLink(front, path)
   return `<a href="${link}">${vacancy.name}</a>`
 }
@@ -74,9 +71,9 @@ export async function applicationHTMLPresenter (doc: Doc, control: TriggerContro
   const applicant = doc as Applicant
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
   const id = getSequenceId(applicant, control)
-  const path = `${workbenchId}/${control.workspace.name}/${recruitId}/${applicant.space}/#${recruitId}|${id}`
+  const path = `${workbenchId}/${control.workspace.name}/${recruitId}/${id}`
   const link = concatLink(front, path)
-  return `<a href="${link}">id</a>`
+  return `<a href="${link}">${id}</a>`
 }
 
 /**

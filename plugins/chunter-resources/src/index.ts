@@ -27,7 +27,7 @@ import { NotificationClientImpl } from '@hcengineering/notification-resources'
 import { IntlString, Resources, translate } from '@hcengineering/platform'
 import preference from '@hcengineering/preference'
 import { getClient, MessageBox } from '@hcengineering/presentation'
-import { getCurrentLocation, navigate, showPopup } from '@hcengineering/ui'
+import { location, navigate, showPopup } from '@hcengineering/ui'
 import TxBacklinkCreate from './components/activity/TxBacklinkCreate.svelte'
 import TxBacklinkReference from './components/activity/TxBacklinkReference.svelte'
 import TxCommentCreate from './components/activity/TxCommentCreate.svelte'
@@ -51,10 +51,10 @@ import SavedMessages from './components/SavedMessages.svelte'
 import Threads from './components/Threads.svelte'
 import ThreadView from './components/ThreadView.svelte'
 
-import { writable } from 'svelte/store'
+import { get, writable } from 'svelte/store'
 import { DisplayTx } from '../../activity/lib'
 import { updateBacklinksList } from './backlinks'
-import { getDmName, getFragment, getLink, resolveLocation } from './utils'
+import { getDmName, getTitle, getLink, resolveLocation } from './utils'
 
 export { default as Header } from './components/Header.svelte'
 export { classIcon } from './utils'
@@ -134,7 +134,7 @@ export async function ArchiveChannel (channel: Channel, evt: any, afterArchive?:
         client.update(channel, { archived: true })
         if (afterArchive != null) afterArchive()
 
-        const loc = getCurrentLocation()
+        const loc = get(location)
         if (loc.path[3] === channel._id) {
           loc.path.length = 3
           navigate(loc)
@@ -243,7 +243,7 @@ export default async (): Promise<Resources> => ({
   function: {
     GetDmName: getDmName,
     ChunterBrowserVisible: chunterBrowserVisible,
-    GetFragment: getFragment,
+    GetFragment: getTitle,
     GetLink: getLink
   },
   activity: {

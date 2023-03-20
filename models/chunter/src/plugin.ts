@@ -19,7 +19,7 @@ import chunter from '@hcengineering/chunter-resources/src/plugin'
 import type { Ref, Space, Doc } from '@hcengineering/core'
 import type { IntlString, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent, Location } from '@hcengineering/ui'
 import type { Action, ActionCategory, ViewAction, ViewletDescriptor } from '@hcengineering/view'
 
 export default mergeIds(chunterId, chunter, {
@@ -98,7 +98,7 @@ export default mergeIds(chunterId, chunter, {
   function: {
     ChunterBrowserVisible: '' as Resource<(spaces: Space[]) => Promise<boolean>>,
     GetLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
-    GetFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>
+    GetFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
   },
   filter: {
     CommentsFilter: '' as Resource<(tx: DisplayTx, _class?: Ref<Doc>) => boolean>,

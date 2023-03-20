@@ -38,7 +38,8 @@ import type {
   AnySvelteComponent,
   PopupAlignment,
   PopupPosAlignment,
-  Location as PlatformLocation
+  Location as PlatformLocation,
+  Location
 } from '@hcengineering/ui'
 
 /**
@@ -551,7 +552,7 @@ export type OrderOption = [string, SortingOrder]
  * @public
  */
 export interface LinkProvider extends Class<Doc> {
-  encode: Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>
+  encode: Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
 }
 
 /**

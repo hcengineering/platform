@@ -19,7 +19,8 @@
   import { generateId, getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { location, navigate } from '@hcengineering/ui'
+  import { get } from 'svelte/store'
   import { createBacklinks } from '../backlinks'
   import chunter from '../plugin'
   import Channel from './Channel.svelte'
@@ -76,7 +77,7 @@
   }
 
   function openThread (_id: Ref<Message>) {
-    const loc = getCurrentLocation()
+    const loc = get(location)
     loc.path[4] = _id
     navigate(loc)
   }

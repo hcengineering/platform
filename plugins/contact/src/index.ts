@@ -250,7 +250,7 @@ export const contactPlugin = plugin(contactId, {
     FilterChannelNin: '' as Ref<FilterMode>
   },
   resolver: {
-    Location: '' as Resource<(loc: Location) => Promise<Location | undefined>>
+    Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
   },
   templateFieldCategory: {
     CurrentEmployee: '' as Ref<TemplateFieldCategory>,

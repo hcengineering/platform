@@ -16,7 +16,8 @@
   import core, { Class, Doc, Obj, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { AnySvelteComponent, getCurrentLocation, Icon, Label, navigate } from '@hcengineering/ui'
+  import { AnySvelteComponent, location, Icon, Label, navigate } from '@hcengineering/ui'
+  import { get } from 'svelte/store'
   import setting from '../plugin'
   import { filterDescendants } from '../utils'
   import ClassAttributes from './ClassAttributes.svelte'
@@ -32,14 +33,14 @@
     | undefined
   export let withoutHeader = false
 
-  const loc = getCurrentLocation()
+  const loc = get(location)
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
   let _class: Ref<Class<Doc>> | undefined = ofClass ?? (loc.query?._class as Ref<Class<Doc>> | undefined)
 
   $: if (_class !== undefined && ofClass === undefined) {
-    const loc = getCurrentLocation()
+    const loc = get(location)
     loc.query = undefined
     navigate(loc)
   }

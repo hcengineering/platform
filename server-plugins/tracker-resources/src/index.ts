@@ -57,7 +57,7 @@ async function updateSubIssues (
 export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const issueName = await issueTextPresenter(doc, control)
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.name}/${trackerId}/${doc.space}/issues/#${trackerId}|${issueName}`
+  const path = `${workbenchId}/${control.workspace.name}/${trackerId}/${issueName}`
   const link = concatLink(front, path)
   return `<a href="${link}">${issueName}</a>`
 }

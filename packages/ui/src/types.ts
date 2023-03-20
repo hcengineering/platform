@@ -26,6 +26,12 @@ export interface Location {
   fragment?: string // a value of fragment
 }
 
+export interface ResolvedLocation {
+  loc: Location
+  shouldNavigate: boolean
+  defaultLocation: Location
+}
+
 /**
  * Returns true if locations are equal.
  */

@@ -4,7 +4,7 @@ import { employeeByIdStore } from '@hcengineering/contact-resources'
 import { Class, Client, Doc, getCurrentAccount, Obj, Ref, Space, Timestamp } from '@hcengineering/core'
 import { Asset } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
-import { getCurrentLocation, getPanelURI, Location, navigate } from '@hcengineering/ui'
+import { getCurrentLocation, getPanelURI, location, Location, navigate, ResolvedLocation } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 import { get, writable } from 'svelte/store'
@@ -70,7 +70,7 @@ export function getDay (time: Timestamp): Timestamp {
 }
 
 export function openMessageFromSpecial (message: ChunterMessage): void {
-  const loc = getCurrentLocation()
+  const loc = get(location)
 
   if (message.attachedToClass === chunter.class.ChunterSpace) {
     loc.path.length = 4
@@ -84,7 +84,7 @@ export function openMessageFromSpecial (message: ChunterMessage): void {
 }
 
 export function navigateToSpecial (specialId: string): void {
-  const loc = getCurrentLocation()
+  const loc = get(location)
   loc.path[3] = specialId
   navigate(loc)
 }
@@ -120,14 +120,25 @@ export function scrollAndHighLight (): void {
 }
 
 export async function getLink (doc: Doc): Promise<string> {
-  const fragment = await getFragment(doc)
+  const fragment = await getTitle(doc)
   const location = getCurrentLocation()
   return await Promise.resolve(
     `${window.location.protocol}//${window.location.host}/${workbenchId}/${location.path[1]}/${chunterId}#${fragment}`
   )
 }
 
-export async function getFragment (doc: Doc): Promise<string> {
+export async function getFragment (doc: Doc): Promise<Location> {
+  const loc = getCurrentLocation()
+  loc.path.length = 2
+  loc.fragment = undefined
+  loc.query = undefined
+  loc.path[2] = chunterId
+  loc.fragment = await getTitle(doc)
+
+  return loc
+}
+
+export async function getTitle (doc: Doc): Promise<string> {
   const client = getClient()
   const hierarchy = client.getHierarchy()
   let clazz = hierarchy.getClass(doc._class)
@@ -137,26 +148,25 @@ export async function getFragment (doc: Doc): Promise<string> {
     label = clazz.shortLabel
   }
   label = label ?? doc._class
-  return `${chunterId}|${label}-${doc._id}`
+  return `${label}-${doc._id}`
 }
 
-export async function resolveLocation (loc: Location): Promise<Location | undefined> {
-  const split = loc.fragment?.split('|') ?? []
-  if (split[0] !== chunterId) {
+export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
+  if (loc.path[2] !== chunterId) {
     return undefined
   }
 
-  const shortLink = split[1]
+  const shortLink = loc.fragment
 
   // shortlink
-  if (isShortId(shortLink)) {
+  if (shortLink !== undefined && isShortId(shortLink)) {
     return await generateLocation(loc, shortLink)
   }
 
   return undefined
 }
 
-async function generateLocation (loc: Location, shortLink: string): Promise<Location | undefined> {
+async function generateLocation (loc: Location, shortLink: string): Promise<ResolvedLocation | undefined> {
   const tokens = shortLink.split('-')
   if (tokens.length < 2) {
     return undefined
@@ -187,8 +197,15 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Loca
 
   if (hierarchy.isDerived(doc._class, chunter.class.Message)) {
     return {
-      path: [appComponent, workspace, chunterId, doc.space],
-      fragment: doc._id
+      loc: {
+        path: [appComponent, workspace, chunterId, doc.space],
+        fragment: doc._id
+      },
+      shouldNavigate: true,
+      defaultLocation: {
+        path: [appComponent, workspace, chunterId, doc.space],
+        fragment: doc._id
+      }
     }
   }
   if (hierarchy.isDerived(doc._class, chunter.class.Comment)) {
@@ -197,15 +214,29 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Loca
     const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
     const component = panelComponent.component ?? view.component.EditDoc
     return {
-      path: [appComponent, workspace],
-      fragment: getPanelURI(component, comment.attachedTo, comment.attachedToClass, 'content')
+      loc: {
+        path: [appComponent, workspace],
+        fragment: getPanelURI(component, comment.attachedTo, comment.attachedToClass, 'content')
+      },
+      shouldNavigate: false,
+      defaultLocation: {
+        path: [appComponent, workspace],
+        fragment: getPanelURI(component, comment.attachedTo, comment.attachedToClass, 'content')
+      }
     }
   }
   if (hierarchy.isDerived(doc._class, chunter.class.ThreadMessage)) {
     const msg = doc as ThreadMessage
     return {
-      path: [appComponent, workspace, chunterId, doc.space, msg.attachedTo],
-      fragment: doc._id
+      loc: {
+        path: [appComponent, workspace, chunterId, doc.space, msg.attachedTo],
+        fragment: doc._id
+      },
+      shouldNavigate: true,
+      defaultLocation: {
+        path: [appComponent, workspace, chunterId, doc.space],
+        fragment: doc._id
+      }
     }
   }
 }

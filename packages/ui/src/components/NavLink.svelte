@@ -13,8 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { onDestroy } from 'svelte'
-  import { locationToUrl, navigate, location, getCurrentLocation } from '../location'
+  import { location, locationToUrl, navigate } from '../location'
   import { Location } from '../types'
 
   export let app: string | undefined = undefined
@@ -22,13 +21,7 @@
   export let special: string | undefined = undefined
   export let disabled = false
 
-  let loc = createLocation(getCurrentLocation(), app, space, special)
-
-  onDestroy(
-    location.subscribe(async (res) => {
-      loc = createLocation(res, app, space, special)
-    })
-  )
+  $: loc = createLocation($location, app, space, special)
 
   $: href = locationToUrl(loc)
 

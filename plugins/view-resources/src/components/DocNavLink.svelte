@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Doc, Hierarchy } from '@hcengineering/core'
   import { getClient, NavLink } from '@hcengineering/presentation'
-  import { AnyComponent, getPanelURI } from '@hcengineering/ui'
+  import { AnyComponent, getPanelURI, locationToUrl } from '@hcengineering/ui'
   import view from '../plugin'
   import { getObjectLinkFragment } from '../utils'
 
@@ -37,7 +37,8 @@
       href = undefined
       return
     }
-    href = `#${await getObjectLinkFragment(hierarchy, object, props, component)}`
+    const loc = await getObjectLinkFragment(hierarchy, object, props, component)
+    href = `${window.location.origin}${locationToUrl(loc)}`
   }
 
   $: getHref(object)

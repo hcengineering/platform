@@ -1,5 +1,5 @@
-import { writable } from 'svelte/store'
-import { getCurrentLocation, navigate } from './location'
+import { get, writable } from 'svelte/store'
+import { location, navigate } from './location'
 import { AnyComponent, PopupAlignment } from './types'
 
 export interface PanelProps {
@@ -29,10 +29,10 @@ export function showPanel (
   rightSection?: AnyComponent
 ): void {
   openPanel(component, _id, _class, element, rightSection)
-  const location = getCurrentLocation()
-  if (location.fragment !== currentLocation) {
-    location.fragment = currentLocation
-    navigate(location)
+  const loc = get(location)
+  if (loc.fragment !== currentLocation) {
+    loc.fragment = currentLocation
+    navigate(loc)
   }
 }
 
@@ -58,9 +58,9 @@ export function closePanel (shoulRedirect: boolean = true): void {
     return { panel: undefined }
   })
   if (shoulRedirect) {
-    const location = getCurrentLocation()
-    location.fragment = undefined
+    const loc = get(location)
+    loc.fragment = undefined
     currentLocation = undefined
-    navigate(location)
+    navigate(loc)
   }
 }

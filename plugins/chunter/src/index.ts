@@ -18,7 +18,7 @@ import type { Employee } from '@hcengineering/contact'
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
-import { AnyComponent } from '@hcengineering/ui'
+import { AnyComponent, ResolvedLocation } from '@hcengineering/ui'
 
 /**
  * @public
@@ -158,7 +158,7 @@ export default plugin(chunterId, {
     ConvertToPrivate: '' as IntlString
   },
   resolver: {
-    Location: '' as Resource<(loc: Location) => Promise<Location | undefined>>
+    Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
   },
   app: {
     Chunter: '' as Ref<Doc>

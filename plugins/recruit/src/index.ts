@@ -19,7 +19,7 @@ import type { AttachedData, AttachedDoc, Class, Doc, Mixin, Ref, Space, Timestam
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@hcengineering/task'
-import { AnyComponent } from '@hcengineering/ui'
+import { AnyComponent, ResolvedLocation } from '@hcengineering/ui'
 import { TagReference } from '@hcengineering/tags'
 
 /**
@@ -175,7 +175,7 @@ const recruit = plugin(recruitId, {
     Issue: '' as Asset
   },
   resolver: {
-    Location: '' as Resource<(loc: Location) => Promise<Location | undefined>>
+    Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
   },
   space: {
     VacancyTemplates: '' as Ref<KanbanTemplateSpace>,
