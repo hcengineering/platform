@@ -25,6 +25,7 @@
 
   export let filter: Filter
 
+  let currentFilter = filter.nested ? filter.nested : filter
   $: currentFilter = filter.nested ? filter.nested : filter
 
   const client = getClient()
