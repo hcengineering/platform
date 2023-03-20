@@ -50,7 +50,7 @@
     <div bind:this={container}>
       <Button size={'small'} kind={'link'} on:click={selectSprint}>
         <svelte:fragment slot="content">
-          <div class="ac-header__icon"><Icon icon={tracker.icon.Issues} size={'small'} /></div>
+          <div class="ac-header__icon"><Icon icon={tracker.icon.Sprint} size={'small'} /></div>
           <span class="ac-header__title mr-1">{sprint.label}</span>
           <Icon icon={Expanded} size={'small'} />
         </svelte:fragment>

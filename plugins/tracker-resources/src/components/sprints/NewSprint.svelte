@@ -80,7 +80,7 @@
   />
   <svelte:fragment slot="pool">
     <SprintStatusSelector selectedSprintStatus={object.status} onSprintStatusChange={handleComponentStatusChanged} />
-    <ComponentSelector value={object.component} onChange={handleComponentIdChanged} />
+    <ComponentSelector value={object.component} onChange={handleComponentIdChanged} isEditable={true} />
     <EmployeeBox
       label={tracker.string.SprintLead}
       placeholder={tracker.string.AssignTo}

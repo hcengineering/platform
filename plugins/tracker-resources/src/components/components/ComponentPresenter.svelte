@@ -19,7 +19,7 @@
   import tracker from '../../plugin'
 
   export let value: WithLookup<Component>
-  export let withIcon = false
+  export let withIcon = true
   export let onClick: () => void | undefined
   export let isInteractive = true
 
@@ -45,7 +45,7 @@
   <div class="flex" on:click={navigateToComponent}>
     {#if withIcon}
       <div class="mr-2" use:tooltip={{ label: tracker.string.Component }}>
-        <Icon icon={tracker.icon.Components} size={'small'} />
+        <Icon icon={tracker.icon.Component} size={'small'} />
       </div>
     {/if}
     <span title={value.label} class="fs-bold cursor-pointer caption-color overflow-label clear-mins">

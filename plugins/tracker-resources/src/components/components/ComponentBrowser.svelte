@@ -133,7 +133,7 @@
   _class={tracker.class.Component}
   itemsConfig={[
     { key: '', presenter: tracker.component.IconPresenter },
-    { key: '', presenter: tracker.component.ComponentPresenter, props: { kind: 'list' } },
+    { key: '', presenter: tracker.component.ComponentPresenter, props: { kind: 'list', withIcon: false } },
     {
       key: '$lookup.lead',
       presenter: tracker.component.LeadPresenter,
