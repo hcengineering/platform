@@ -12,5 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+<script lang="ts">
+  export let line: boolean = false
+  export let short: boolean = false
+</script>
 
-<div class="antiNav-divider" />
+<div class="antiNav-divider" class:line class:short />

@@ -40,12 +40,16 @@
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
   import { classIcon, getSpaceName } from '../../utils'
+  import TreeSeparator from './TreeSeparator.svelte'
 
   export let model: SpacesNavModel
   export let currentSpace: Ref<Space> | undefined
   export let spaces: Space[]
   export let currentSpecial: string | undefined
   export let hasSpaceBrowser: boolean = false
+  export let deselect: boolean = false
+  export let separate: boolean = false
+
   const client = getClient()
   const dispatch = createEventDispatcher()
 
@@ -120,10 +124,19 @@
 </script>
 
 <TreeNode label={model.label} parent actions={async () => getParentActions()} indent={'ml-2'}>
-  {#each spaces as space (space._id)}
+  {#each spaces as space, i (space._id)}
     {#await getObjectPresenter(client, space._class, { key: '' }) then presenter}
+      {#if separate && i !== 0}<TreeSeparator line />{/if}
       {#if model.specials && presenter}
-        <svelte:component this={presenter.presenter} {space} {model} {currentSpace} {currentSpecial} {getActions} />
+        <svelte:component
+          this={presenter.presenter}
+          {space}
+          {model}
+          {currentSpace}
+          {currentSpecial}
+          {getActions}
+          {deselect}
+        />
       {:else}
         <NavLink space={space._id}>
           {#await getSpaceName(client, space) then name}
@@ -132,7 +145,7 @@
               _id={space._id}
               title={name}
               icon={classIcon(client, space._class)}
-              selected={currentSpace === space._id}
+              selected={deselect ? false : currentSpace === space._id}
               actions={() => getActions(space)}
               bold={isChanged(space, $lastViews)}
             />

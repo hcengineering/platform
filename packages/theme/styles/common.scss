@@ -159,7 +159,6 @@
     color: var(--accent-color);
   }
 
-  &.bordered { border-color: var(--divider-color); }
   &:hover, &.hovered, &.selected {
     background-color: var(--menu-bg-select);
     .an-element__icon { color: var(--menu-icon-hover); }

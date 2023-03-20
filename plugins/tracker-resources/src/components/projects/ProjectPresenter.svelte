@@ -25,6 +25,7 @@
   export let currentSpace: Ref<Space> | undefined
   export let currentSpecial: string | undefined
   export let getActions: Function
+  export let deselect: boolean = false
 </script>
 
 {#if model.specials}
@@ -35,7 +36,7 @@
           indent={'ml-4'}
           label={special.label}
           icon={special.icon}
-          selected={currentSpace === space._id && special.id === currentSpecial}
+          selected={deselect ? false : currentSpace === space._id && special.id === currentSpecial}
         />
       </NavLink>
     {/each}

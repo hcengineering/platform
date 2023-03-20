@@ -2,7 +2,7 @@
   import { Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
-  import { Action, navigate } from '@hcengineering/ui'
+  import { Action, navigate, getCurrentLocation, location } from '@hcengineering/ui'
   import view, { FilteredView } from '@hcengineering/view'
   import {
     filterStore,
@@ -13,9 +13,11 @@
     TreeNode
   } from '@hcengineering/view-resources'
   import { Application } from '@hcengineering/workbench'
+  import { createEventDispatcher } from 'svelte'
 
   export let currentApplication: Application | undefined
 
+  const dispatch = createEventDispatcher()
   const client = getClient()
 
   const filteredViewsQuery = createQuery()
@@ -58,12 +60,26 @@
     navigate(fv.location)
     $filterStore = JSON.parse(fv.filters)
   }
+
+  let oldLocation: string = ''
+  $: loc = $location
+  const clearSelection = () => {
+    selectedId = selectedFW = undefined
+    oldLocation = getCurrentLocation().path.join()
+    dispatch('select', false)
+  }
+
   $: fs = $filterStore
-  $: if (Array.isArray(fs) && Array.isArray(filteredViews)) {
+  $: if (loc && Array.isArray(fs) && fs.length > 0 && Array.isArray(filteredViews)) {
     const filters = JSON.stringify(fs)
     selectedFW = filteredViews.filter((fv) => fv.filters === filters)
-    selectedId = selectedFW.length > 0 ? selectedFW[0]._id : undefined
-  } else selectedId = selectedFW = undefined
+    if (selectedFW.length > 0 && selectedFW[0].location.path.join() === loc.path.join()) {
+      selectedId = selectedFW[0]._id
+      oldLocation = selectedFW[0].location.path.join()
+      dispatch('select', true)
+    } else clearSelection()
+  } else clearSelection()
+  $: dispatch('shown', filteredViews !== undefined && filteredViews.length > 0)
 </script>
 
 {#if filteredViews && filteredViews.length > 0}
@@ -73,7 +89,7 @@
         _id={fv._id}
         title={fv.name}
         indent={'ml-2'}
-        bordered={selectedId === fv._id}
+        selected={selectedId === fv._id}
         on:click={() => load(fv)}
         actions={() => removeAction(fv)}
       />

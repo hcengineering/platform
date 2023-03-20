@@ -134,6 +134,9 @@
   async function checkIsDisabled (special: SpecialNavModel) {
     return special.checkIsDisabled && (await (await getResource(special.checkIsDisabled))())
   }
+
+  let savedMenu: boolean = false
+  let menuSelection: boolean = false
 </script>
 
 {#if model}
@@ -141,14 +144,14 @@
     {#if model.specials}
       {#each specials as special, row}
         {#if row > 0 && specials[row].position !== specials[row - 1].position}
-          <TreeSeparator />
+          <TreeSeparator line />
         {/if}
         {#await checkIsDisabled(special) then disabled}
           <NavLink space={special.id} {disabled}>
             <SpecialElement
               label={special.label}
               icon={special.icon}
-              selected={special.id === currentSpecial}
+              selected={menuSelection ? false : special.id === currentSpecial}
               indent={'ml-2'}
               {disabled}
             />
@@ -157,13 +160,18 @@
       {/each}
     {/if}
 
-    {#if specials.length > 0}<TreeSeparator />{/if}
-    <SavedView {currentApplication} />
+    {#if specials.length > 0 && (starred.length > 0 || savedMenu)}<TreeSeparator line />{/if}
+    <SavedView
+      {currentApplication}
+      on:shown={(res) => (savedMenu = res.detail)}
+      on:select={(res) => (menuSelection = res.detail)}
+    />
     {#if starred.length}
       <StarredNav label={preference.string.Starred} spaces={starred} on:space {currentSpace} />
     {/if}
 
-    {#each model.spaces as m (m.label)}
+    {#each model.spaces as m, i (m.label)}
+      {#if (i === 0 && (specials.length > 0 || starred.length || savedMenu)) || i !== 0}<TreeSeparator line />{/if}
       <SpacesNav
         spaces={shownSpaces.filter((it) => hierarchy.isDerived(it._class, m.spaceClass))}
         {currentSpace}
@@ -171,6 +179,8 @@
         model={m}
         on:open
         {currentSpecial}
+        deselect={menuSelection}
+        separate
       />
     {/each}
     <div class="antiNav-space" />
