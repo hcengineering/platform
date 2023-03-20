@@ -80,7 +80,7 @@
       { id: null, icon: tracker.icon.Components, label: tracker.string.NoComponent, isSelected: !selectedComponent },
       ...rawComponents.map((p) => ({
         id: p._id,
-        icon: tracker.icon.Components   ,
+        icon: tracker.icon.Components,
         text: p.label,
         isSelected: selectedComponent ? p._id === selectedComponent._id : false
       }))
