@@ -29,7 +29,7 @@
   $: employee = $employeeByIdStore.get((value as EmployeeAccount).employee)
 
   async function onClick () {
-    if (employee !== undefined && !disabled) {
+    if (employee !== undefined) {
       showPopup(EditDoc, { _id: employee._id, _class: employee._class }, 'content')
     }
   }
