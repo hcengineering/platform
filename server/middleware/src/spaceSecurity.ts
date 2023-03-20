@@ -270,11 +270,14 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     query: ObjQueryType<T['space']>
   ): Promise<ObjQueryType<T['space']>> {
     const spaces = await this.getAllAllowedSpaces(account)
+    if (query == null) {
+      return { $in: spaces }
+    }
     if (typeof query === 'string') {
       if (!spaces.includes(query)) {
         throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
       }
-    } else if (query.$in !== undefined) {
+    } else if (query.$in != null) {
       query.$in = query.$in.filter((p) => spaces.includes(p))
     } else {
       query.$in = spaces

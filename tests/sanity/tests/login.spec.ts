@@ -9,7 +9,9 @@ test.describe('login test', () => {
     })
 
     // Create user and workspace
-    await page.goto(`${PlatformURI}/login/login`)
+    await (
+      await page.goto(`${PlatformURI}/login/login`)
+    )?.finished
 
     const emaillocator = page.locator('[name=email]')
     await emaillocator.click()

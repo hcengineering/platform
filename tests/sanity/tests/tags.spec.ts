@@ -12,7 +12,7 @@ test.describe('recruit tests', () => {
   })
   test('create-skill-candidate-with-skill', async ({ page }) => {
     // Go to http://localhost:8083/workbench/sanity-ws
-    await page.goto(`${PlatformURI}/workbench/sanity-ws`)
+    await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
     // Click [id="app-recruit\:string\:RecruitApplication"]
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
     await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit`)
@@ -51,7 +51,7 @@ test.describe('recruit tests', () => {
 
   test('create-tag-candidate', async ({ page }) => {
     // Go to http://localhost:8083/workbench/sanity-ws
-    await page.goto(`${PlatformURI}/workbench/sanity-ws`)
+    await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
     // Click [id="app-recruit\:string\:RecruitApplication"]
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
     await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit`)
