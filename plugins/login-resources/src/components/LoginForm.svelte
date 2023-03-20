@@ -15,9 +15,9 @@
 -->
 <script lang="ts">
   import { OK, setMetadata, Severity, Status } from '@hcengineering/platform'
-  import { getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
+  import { getCurrentLocation, navigate, Location, setMetadataLocalStorage } from '@hcengineering/ui'
 
-  import { doLogin } from '../utils'
+  import { doLogin, getWorkspaces, navigateToWorkspace, selectWorkspace } from '../utils'
   import Form from './Form.svelte'
 
   import login from '../plugin'
@@ -53,6 +53,26 @@
         setMetadata(login.metadata.LoginToken, result.token)
         setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
         setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
+
+        if (navigateUrl !== undefined) {
+          try {
+            const loc = JSON.parse(decodeURIComponent(navigateUrl)) as Location
+            const workspace = loc.path[1]
+            if (workspace !== undefined) {
+              const workspaces = await getWorkspaces()
+              if (workspaces.find((p) => p.workspace === workspace) !== undefined) {
+                status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
+
+                const [loginStatus, result] = await selectWorkspace(workspace)
+                status = loginStatus
+                navigateToWorkspace(workspace, result, navigateUrl)
+                return
+              }
+            }
+          } catch (err: any) {
+            // Json parse error could be ignored
+          }
+        }
         const loc = getCurrentLocation()
         loc.path[1] = 'selectWorkspace'
         loc.path.length = 2
