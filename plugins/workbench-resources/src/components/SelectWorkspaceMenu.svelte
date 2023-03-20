@@ -71,7 +71,10 @@
       closePopup()
       closePopup()
       if (ws !== getCurrentLocation().path[1]) {
-        navigate({ path: [workbenchId, ws] })
+        const last = localStorage.getItem(`platform_last_loc_${ws}`)
+        if (last !== null) {
+          navigate(JSON.parse(last))
+        } else navigate({ path: [workbenchId, ws] })
       }
     }
   }
