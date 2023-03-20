@@ -26,7 +26,7 @@ import {
 import { Doc, getCurrentAccount, IdMap, ObjQueryType, Ref, Timestamp, toIdMap } from '@hcengineering/core'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { TemplateDataProvider } from '@hcengineering/templates'
-import { getPanelURI, Location } from '@hcengineering/ui'
+import { getCurrentLocation, getPanelURI, Location, ResolvedLocation } from '@hcengineering/ui'
 import view, { Filter } from '@hcengineering/view'
 import { FilterQuery } from '@hcengineering/view-resources'
 import { get, writable } from 'svelte/store'
@@ -136,69 +136,51 @@ export async function getContactName (provider: TemplateDataProvider): Promise<s
   }
 }
 
-export async function getContactLink (doc: Doc): Promise<string> {
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-  let clazz = hierarchy.getClass(doc._class)
-  let label = clazz.shortLabel
-  while (label === undefined && clazz.extends !== undefined) {
-    clazz = hierarchy.getClass(clazz.extends)
-    label = clazz.shortLabel
-  }
-  label = label ?? 'CONT'
+export async function getContactLink (doc: Doc): Promise<Location> {
+  const loc = getCurrentLocation()
+  loc.path.length = 2
+  loc.fragment = undefined
+  loc.query = undefined
+  loc.path[2] = contactId
+  loc.path[3] = doc._id
 
-  const id = doc._id
-
-  return `${contactId}|${label}-${id}`
+  return loc
 }
 
-function isShortId (shortLink: string): boolean {
-  return /^\w+-\w+$/.test(shortLink)
+function isId (id: Ref<Contact>): boolean {
+  return /^[0-9a-z]{24}$/.test(id)
 }
 
-export async function resolveLocation (loc: Location): Promise<Location | undefined> {
-  const split = loc.fragment?.split('|') ?? []
-  if (split[0] !== contactId) {
+export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
+  if (loc.path[2] !== contactId) {
     return undefined
   }
 
-  const shortLink = split[1]
-
-  // shortlink
-  if (isShortId(shortLink)) {
-    return await generateLocation(loc, shortLink)
+  const id = loc.path[3] as Ref<Contact>
+  if (isId(id)) {
+    return await generateLocation(loc, id)
   }
-
-  return undefined
 }
 
-async function generateLocation (loc: Location, shortLink: string): Promise<Location | undefined> {
-  const tokens = shortLink.split('-')
-  if (tokens.length < 2) {
-    return undefined
-  }
-  const classLabel = tokens[0]
-  const lastId = tokens[1] as Ref<Contact>
+async function generateLocation (loc: Location, id: Ref<Contact>): Promise<ResolvedLocation | undefined> {
   const client = getClient()
-  const hierarchy = client.getHierarchy()
-  const classes = hierarchy.getDescendants(contact.class.Contact)
-  let _class = contact.class.Contact
-  for (const clazz of classes) {
-    if (hierarchy.getClass(clazz).shortLabel === classLabel) {
-      _class = clazz
-      break
-    }
-  }
-  const doc = await client.findOne(_class, { _id: lastId })
+  const doc = await client.findOne(contact.class.Contact, { _id: id })
   if (doc === undefined) {
-    console.error(`Could not find contact ${lastId}.`)
+    console.error(`Could not find contact ${id}.`)
     return undefined
   }
   const appComponent = loc.path[0] ?? ''
   const workspace = loc.path[1] ?? ''
   return {
-    path: [appComponent, workspace],
-    fragment: getPanelURI(view.component.EditDoc, doc._id, doc._class, 'content')
+    loc: {
+      path: [appComponent, workspace],
+      fragment: getPanelURI(view.component.EditDoc, doc._id, doc._class, 'content')
+    },
+    shouldNavigate: false,
+    defaultLocation: {
+      path: [appComponent, workspace, contactId],
+      fragment: getPanelURI(view.component.EditDoc, doc._id, doc._class, 'content')
+    }
   }
 }
 

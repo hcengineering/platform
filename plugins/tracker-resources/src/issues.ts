@@ -1,7 +1,7 @@
 import { Doc, DocumentUpdate, Ref, RelatedDocument, TxOperations } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
-import { Issue, Component, Sprint, Project, trackerId } from '@hcengineering/tracker'
-import { getCurrentLocation, getPanelURI, Location, navigate } from '@hcengineering/ui'
+import { Component, Issue, Project, Sprint, trackerId } from '@hcengineering/tracker'
+import { getCurrentLocation, getPanelURI, Location, ResolvedLocation } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
 import { writable } from 'svelte/store'
 import tracker from './plugin'
@@ -43,8 +43,15 @@ export async function issueIdProvider (doc: Doc): Promise<string> {
   return await getTitle(doc)
 }
 
-export async function issueLinkFragmentProvider (doc: Doc): Promise<string> {
-  return await getTitle(doc).then((p) => `${trackerId}|${p}`)
+export async function issueLinkFragmentProvider (doc: Doc): Promise<Location> {
+  const loc = getCurrentLocation()
+  loc.path.length = 2
+  loc.fragment = undefined
+  loc.query = undefined
+  loc.path[2] = trackerId
+  loc.path[3] = await getTitle(doc)
+
+  return loc
 }
 
 export async function issueTitleProvider (doc: Issue): Promise<string> {
@@ -57,10 +64,10 @@ export async function issueLinkProvider (doc: Doc): Promise<string> {
 
 export function generateIssueShortLink (issueId: string): string {
   const location = getCurrentLocation()
-  return `${window.location.protocol}//${window.location.host}/${workbenchId}/${location.path[1]}/${trackerId}#${trackerId}|${issueId}`
+  return `${window.location.protocol}//${window.location.host}/${workbenchId}/${location.path[1]}/${trackerId}/${issueId}`
 }
 
-export async function generateIssueLocation (loc: Location, issueId: string): Promise<Location | undefined> {
+export async function generateIssueLocation (loc: Location, issueId: string): Promise<ResolvedLocation | undefined> {
   const tokens = issueId.split('-')
   if (tokens.length < 2) {
     return undefined
@@ -83,32 +90,25 @@ export async function generateIssueLocation (loc: Location, issueId: string): Pr
   const appComponent = loc.path[0] ?? ''
   const workspace = loc.path[1] ?? ''
   return {
-    path: [appComponent, workspace],
-    fragment: generateIssuePanelUri(issue)
+    loc: {
+      path: [appComponent, workspace],
+      fragment: generateIssuePanelUri(issue)
+    },
+    shouldNavigate: false,
+    defaultLocation: {
+      path: [appComponent, workspace, trackerId, project._id, 'issues'],
+      fragment: generateIssuePanelUri(issue)
+    }
   }
 }
 
-function checkOld (loc: Location): void {
-  const short = loc.path[3]
-  if (isIssueId(short)) {
-    loc.fragment = short
-    loc.path.length = 3
-    navigate(loc)
-  }
-}
-
-export async function resolveLocation (loc: Location): Promise<Location | undefined> {
-  const split = loc.fragment?.split('|') ?? []
+export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
   const app = loc.path[2]
-  if (app !== trackerId && split[0] !== trackerId) {
+  if (app !== trackerId) {
     return undefined
   }
 
-  const shortLink = split[1] ?? loc.fragment
-  if (shortLink === undefined || shortLink === null || shortLink.trim() === '') {
-    checkOld(loc)
-    return undefined
-  }
+  const shortLink = loc.path[3]
 
   // issue shortlink
   if (isIssueId(shortLink)) {

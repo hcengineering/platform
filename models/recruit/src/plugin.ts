@@ -19,7 +19,7 @@ import { mergeIds } from '@hcengineering/platform'
 import { recruitId } from '@hcengineering/recruit'
 import recruit from '@hcengineering/recruit-resources/src/plugin'
 import { KanbanTemplate } from '@hcengineering/task'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent, Location } from '@hcengineering/ui'
 import type { Action, ActionCategory, ViewAction, Viewlet } from '@hcengineering/view'
 
 export default mergeIds(recruitId, recruit, {
@@ -39,7 +39,7 @@ export default mergeIds(recruitId, recruit, {
     Recruit: '' as Ref<ActionCategory>
   },
   function: {
-    GetObjectLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
+    GetObjectLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     GetObjectLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>
   },
   string: {

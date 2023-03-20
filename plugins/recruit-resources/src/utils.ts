@@ -1,7 +1,7 @@
 import { Class, Client, Doc, Ref } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import { Applicant, recruitId, Review, Vacancy } from '@hcengineering/recruit'
-import { getCurrentLocation, getPanelURI, Location } from '@hcengineering/ui'
+import { getCurrentLocation, getPanelURI, Location, ResolvedLocation } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 import recruit from './plugin'
@@ -11,9 +11,9 @@ type RecruitDocument = Vacancy | Applicant | Review
 export async function objectLinkProvider (doc: RecruitDocument): Promise<string> {
   const location = getCurrentLocation()
   return await Promise.resolve(
-    `${window.location.protocol}//${window.location.host}/${workbenchId}/${location.path[1]}#${await getSequenceLink(
-      doc
-    )}`
+    `${window.location.protocol}//${window.location.host}/${workbenchId}/${
+      location.path[1]
+    }/${recruitId}/${await getSequenceId(doc)}`
   )
 }
 
@@ -21,13 +21,12 @@ function isShortId (shortLink: string): boolean {
   return /^\w+-\d+$/.test(shortLink)
 }
 
-export async function resolveLocation (loc: Location): Promise<Location | undefined> {
-  const split = loc.fragment?.split('|') ?? []
-  if (split[0] !== recruitId) {
+export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
+  if (loc.path[2] !== recruitId) {
     return undefined
   }
 
-  const shortLink = split[1]
+  const shortLink = loc.path[3]
 
   // shortlink
   if (isShortId(shortLink)) {
@@ -37,7 +36,7 @@ export async function resolveLocation (loc: Location): Promise<Location | undefi
   return undefined
 }
 
-async function generateLocation (loc: Location, shortLink: string): Promise<Location | undefined> {
+async function generateLocation (loc: Location, shortLink: string): Promise<ResolvedLocation | undefined> {
   const tokens = shortLink.split('-')
   if (tokens.length < 2) {
     return undefined
@@ -68,14 +67,34 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Loca
   const targetClass = hierarchy.getClass(_class)
   const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
   const component = panelComponent.component ?? view.component.EditDoc
+  const defaultPath = [appComponent, workspace, recruitId]
+  if (_class === recruit.class.Vacancy) {
+    defaultPath.push('vacancies')
+  } else if (_class === recruit.class.Applicant) {
+    defaultPath.push('candidates')
+  }
   return {
-    path: [appComponent, workspace],
-    fragment: getPanelURI(component, doc._id, doc._class, 'content')
+    loc: {
+      path: [appComponent, workspace],
+      fragment: getPanelURI(component, doc._id, doc._class, 'content')
+    },
+    shouldNavigate: false,
+    defaultLocation: {
+      path: defaultPath,
+      fragment: getPanelURI(component, doc._id, doc._class, 'content')
+    }
   }
 }
 
-export async function getSequenceLink (doc: RecruitDocument): Promise<string> {
-  return `${recruitId}|${await getSequenceId(doc)}`
+export async function getSequenceLink (doc: RecruitDocument): Promise<Location> {
+  const loc = getCurrentLocation()
+  loc.path.length = 2
+  loc.fragment = undefined
+  loc.query = undefined
+  loc.path[2] = recruitId
+  loc.path[3] = await getSequenceId(doc)
+
+  return loc
 }
 
 async function getTitle<T extends RecruitDocument> (

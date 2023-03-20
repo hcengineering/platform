@@ -16,7 +16,7 @@ import { Client, Doc, Ref, Space } from '@hcengineering/core'
 import type { IntlString, Metadata, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { IssueDraft } from '@hcengineering/tracker'
-import { AnyComponent } from '@hcengineering/ui'
+import { AnyComponent, Location } from '@hcengineering/ui'
 import { SortFunc, Viewlet, ViewQueryAction } from '@hcengineering/view'
 import tracker, { trackerId } from '../../tracker/lib'
 
@@ -376,7 +376,7 @@ export default mergeIds(trackerId, tracker, {
     IssueTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>,
     GetIssueId: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
     GetIssueLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
-    GetIssueLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
+    GetIssueLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     GetIssueTitle: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
     IssueStatusSort: '' as SortFunc,
     IssuePrioritySort: '' as SortFunc,

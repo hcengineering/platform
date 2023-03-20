@@ -16,7 +16,7 @@
 import type { Class, Doc, Mixin, Obj, Ref, Space } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { AnyComponent, Location } from '@hcengineering/ui'
+import { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
 import { ViewAction } from '@hcengineering/view'
 import type { Preference } from '@hcengineering/preference'
 
@@ -29,7 +29,7 @@ export interface Application extends Doc {
   icon: Asset
   hidden: boolean
   navigatorModel?: NavigatorModel
-  locationResolver?: Resource<(loc: Location) => Promise<Location | undefined>>
+  locationResolver?: Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
 
   // Component will be displayed in case navigator model is not defined, or nothing is selected in navigator model
   component?: AnyComponent

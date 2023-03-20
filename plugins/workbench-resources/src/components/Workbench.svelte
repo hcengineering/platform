@@ -30,7 +30,6 @@
     Component,
     DatePickerPopup,
     deviceOptionsStore as deviceInfo,
-    getCurrentLocation,
     Label,
     location,
     Location,
@@ -41,6 +40,7 @@
     PopupAlignment,
     PopupPosAlignment,
     resizeObserver,
+    ResolvedLocation,
     showPopup,
     TooltipInstance
   } from '@hcengineering/ui'
@@ -48,16 +48,17 @@
   import { ActionContext, ActionHandler, migrateViewOpttions } from '@hcengineering/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
+  import { get } from 'svelte/store'
   import { subscribeMobile } from '../mobile'
   import workbench from '../plugin'
   import AccountPopup from './AccountPopup.svelte'
   import AppItem from './AppItem.svelte'
   import Applications from './Applications.svelte'
+  import Settings from './icons/Settings.svelte'
   import TopMenu from './icons/TopMenu.svelte'
   import NavHeader from './NavHeader.svelte'
   import Navigator from './Navigator.svelte'
   import SpaceView from './SpaceView.svelte'
-  import Settings from './icons/Settings.svelte'
 
   export let client: Client
   let contentPanel: HTMLElement
@@ -193,14 +194,13 @@
     }
   }
 
-  async function resolveShortLink (loc: Location): Promise<Location | undefined> {
+  async function resolveShortLink (loc: Location): Promise<ResolvedLocation | undefined> {
     let locationResolver = currentApplication?.locationResolver
-    if (loc.fragment !== undefined && loc.fragment.trim().length > 0) {
-      const split = loc.fragment.split('|')
+    if (loc.path[2] !== undefined && loc.path[2].trim().length > 0) {
       if (apps instanceof Promise) {
         apps = await apps
       }
-      const app = apps.find((p) => p.alias === split[0])
+      const app = apps.find((p) => p.alias === loc.path[2])
       if (app?.locationResolver) {
         locationResolver = app?.locationResolver
       }
@@ -211,27 +211,54 @@
     }
   }
 
-  async function syncLoc (loc: Location): Promise<void> {
-    let app = loc.path[2]
-    let space = loc.path[3] as Ref<Space>
-    let special = loc.path[4]
-    let fragment = loc.fragment
+  function mergeLoc (loc: Location, resolved: ResolvedLocation): Location {
+    const resolvedApp = resolved.loc.path[2]
+    const resolvedSpace = resolved.loc.path[3]
+    const resolvedSpecial = resolved.loc.path[4]
+    if (resolvedApp === undefined) {
+      loc.path[2] = (currentAppAlias as string) ?? resolved.defaultLocation.path[2]
+      loc.path[3] = currentSpace ?? (currentSpecial as string) ?? resolved.defaultLocation.path[3]
+      if (currentSpace !== undefined) {
+        loc.path[4] = currentSpecial ?? (asideId as string) ?? resolved.defaultLocation.path[4]
+      } else {
+        loc.path.length = 4
+      }
+    } else {
+      loc.path[2] = resolvedApp
+      if (resolvedSpace === undefined) {
+        loc.path[3] = currentSpace ?? (currentSpecial as string) ?? resolved.defaultLocation.path[3]
+        loc.path[4] = (currentSpecial as string) ?? resolved.defaultLocation.path[4]
+      } else {
+        loc.path[3] = resolvedSpace
+        loc.path[4] = resolvedSpecial ?? currentSpecial ?? (asideId as string) ?? resolved.defaultLocation.path[4]
+      }
+    }
+    for (let index = 0; index < loc.path.length; index++) {
+      const path = loc.path[index]
+      if (path === undefined) {
+        loc.path.length = index
+        break
+      }
+    }
+    loc.fragment = resolved.loc.fragment ?? loc.fragment ?? resolved.defaultLocation.fragment
+    return loc
+  }
 
+  async function syncLoc (loc: Location): Promise<void> {
+    const originalLoc = JSON.stringify(loc)
     // resolve short links
     const resolvedLocation = await resolveShortLink(loc)
-    if (resolvedLocation && !areLocationsEqual(loc, resolvedLocation)) {
-      if (app !== resolvedLocation.path[2] && resolvedLocation.path[2] !== undefined) {
-        loc.path[2] = app = resolvedLocation.path[2] ?? app
-        loc.path[3] = space = (resolvedLocation.path[3] as Ref<Space>) ?? space
-        loc.path[4] = special = resolvedLocation.path[4] ?? special
-      } else if (space !== (resolvedLocation.path[3] as Ref<Space>) && resolvedLocation.path[3] !== undefined) {
-        loc.path[3] = space = (resolvedLocation.path[3] as Ref<Space>) ?? space
-        loc.path[4] = special = resolvedLocation.path[4] ?? special
+    if (resolvedLocation && !areLocationsEqual(loc, resolvedLocation.loc)) {
+      loc = mergeLoc(loc, resolvedLocation)
+      if (resolvedLocation.shouldNavigate) {
+        navigate(loc)
+        return
       }
-      loc.path[4] = special = resolvedLocation.path[4] ?? special
-      loc.fragment = fragment = resolvedLocation.fragment ?? fragment
-      navigate(loc, false)
     }
+    const app = loc.path[2]
+    let space = loc.path[3] as Ref<Space>
+    let special = loc.path[4]
+    const fragment = loc.fragment
 
     if (currentAppAlias !== app) {
       clear(1)
@@ -240,20 +267,25 @@
       navigatorModel = currentApplication?.navigatorModel
     }
 
-    if (space === undefined) {
+    if (
+      space === undefined &&
+      ((navigatorModel?.spaces?.length ?? 0) > 0 || (navigatorModel?.specials?.length ?? 0) > 0)
+    ) {
       const last = localStorage.getItem(`platform_last_loc_${app}`)
       if (last !== null) {
         const newLocation: Location = JSON.parse(last)
         if (newLocation.path[3] != null) {
-          loc.path[3] = newLocation.path[3] as Ref<Space>
-          loc.path[4] = newLocation.path[4]
+          space = loc.path[3] = newLocation.path[3] as Ref<Space>
+          special = loc.path[4] = newLocation.path[4]
           if (loc.path[4] == null) {
             loc.path.length = 4
           } else {
             loc.path.length = 5
           }
-          navigate(loc)
-          return
+          if (fragment === undefined) {
+            navigate(loc)
+            return
+          }
         }
       }
     }
@@ -270,7 +302,7 @@
       }
     }
     if (app !== undefined) {
-      localStorage.setItem(`platform_last_loc_${app}`, JSON.stringify(loc))
+      localStorage.setItem(`platform_last_loc_${app}`, originalLoc)
     }
     if (fragment !== currentFragment) {
       currentFragment = fragment
@@ -318,7 +350,7 @@
   }
 
   function closeAside (): void {
-    const loc = getCurrentLocation()
+    const loc = get(location)
     loc.path.length = 4
     checkOnHide()
     navigate(loc)

@@ -13,6 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { navigate, parseLocation } from '@hcengineering/ui'
+
   export let href: string | undefined
   export let disableClick = false
   export let onClick: ((event: MouseEvent) => void) | undefined = undefined
@@ -21,17 +23,28 @@
 
   function clickHandler (e: MouseEvent) {
     if (disableClick) return
-    onClick?.(e)
+    if (onClick) {
+      onClick(e)
+    } else if (href !== undefined) {
+      try {
+        const url = new URL(href)
+
+        if (url.origin === window.location.origin) {
+          e.preventDefault()
+          navigate(parseLocation(url))
+        }
+      } catch {}
+    }
   }
 </script>
 
-{#if disableClick || onClick || href === undefined}
+{#if disableClick || href === undefined}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <span class:cursor-pointer={!disableClick} class:noUnderline class:inline on:click={clickHandler}>
     <slot />
   </span>
 {:else}
-  <a {href} class:noUnderline class:inline>
+  <a {href} class:noUnderline class:inline on:click={clickHandler}>
     <slot />
   </a>
 {/if}

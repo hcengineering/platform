@@ -64,6 +64,7 @@
     action: async (_id: Ref<Doc>): Promise<void> => {
       const loc = getCurrentLocation()
       loc.path[3] = 'spaceBrowser'
+      loc.path.length = 4
       dispatch('open')
       navigate(loc)
     }

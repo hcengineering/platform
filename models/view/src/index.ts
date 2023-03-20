@@ -294,7 +294,7 @@ export class TLinkPresenter extends TDoc implements LinkPresenter {
 
 @Mixin(view.mixin.LinkProvider, core.class.Class)
 export class TLinkProvider extends TClass implements LinkProvider {
-  encode!: Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>
+  encode!: Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
 }
 
 @Mixin(view.mixin.ObjectPanel, core.class.Class)

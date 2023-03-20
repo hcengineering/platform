@@ -4,7 +4,6 @@
   import ui, {
     Button,
     closeTooltip,
-    getCurrentLocation,
     IconDownOutline,
     IconNavPrev,
     IconUpOutline,
@@ -27,11 +26,7 @@
       const doc = await client.findOne($focusStore.focus._class, { _id: $focusStore.focus._id })
       if (doc !== undefined) {
         const link = await getObjectLinkFragment(client.getHierarchy(), doc, {}, $panelstore.panel.component)
-        const location = getCurrentLocation()
-        if (location.fragment !== link) {
-          location.fragment = link
-          navigate(location)
-        }
+        navigate(link)
       }
     }
   }

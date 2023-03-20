@@ -18,7 +18,7 @@ import type { AttachedDoc, Class, Doc, Markup, Ref, RelatedDocument, Space, Time
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { TagCategory, TagElement } from '@hcengineering/tags'
-import { AnyComponent, Location } from '@hcengineering/ui'
+import { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
 import { Action, ActionCategory } from '@hcengineering/view'
 import { TagReference } from '@hcengineering/tags'
 
@@ -527,7 +527,7 @@ export default plugin(trackerId, {
     DefaultProject: '' as Ref<Project>
   },
   resolver: {
-    Location: '' as Resource<(loc: Location) => Promise<Location | undefined>>
+    Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
   },
   string: {
     NewRelatedIssue: '' as IntlString

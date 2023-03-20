@@ -659,7 +659,7 @@ export async function getObjectLinkFragment (
   object: Doc,
   props: Record<string, any> = {},
   component: AnyComponent = view.component.EditDoc
-): Promise<string> {
+): Promise<Location> {
   let clazz = hierarchy.getClass(object._class)
   let provider = hierarchy.as(clazz, view.mixin.LinkProvider)
   while (provider.encode === undefined && clazz.extends !== undefined) {
@@ -673,5 +673,7 @@ export async function getObjectLinkFragment (
       return res
     }
   }
-  return getPanelURI(component, object._id, Hierarchy.mixinOrClass(object), 'content')
+  const loc = getCurrentLocation()
+  loc.fragment = getPanelURI(component, object._id, Hierarchy.mixinOrClass(object), 'content')
+  return loc
 }

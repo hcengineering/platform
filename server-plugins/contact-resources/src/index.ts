@@ -270,26 +270,13 @@ export async function OnEmployeeUpdate (tx: Tx, control: TriggerControl): Promis
   return result
 }
 
-async function getContactLink (doc: Doc, control: TriggerControl): Promise<string> {
-  const hierarchy = control.hierarchy
-  let clazz = hierarchy.getClass(doc._class)
-  let label = clazz.shortLabel
-  while (label === undefined && clazz.extends !== undefined) {
-    clazz = hierarchy.getClass(clazz.extends)
-    label = clazz.shortLabel
-  }
-  label = label ?? 'CONT'
-  return `${contactId}|${label}-${doc._id}`
-}
-
 /**
  * @public
  */
 export async function personHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const person = doc as Person
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  const fragment = await getContactLink(doc, control)
-  const path = `${workbenchId}/${control.workspace.name}/${contactId}#${fragment}`
+  const path = `${workbenchId}/${control.workspace.name}/${contactId}/${doc._id}`
   const link = concatLink(front, path)
   return `<a href="${link}">${getName(person)}</a>`
 }
@@ -308,8 +295,7 @@ export function personTextPresenter (doc: Doc): string {
 export async function organizationHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const organization = doc as Organization
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  const fragment = await getContactLink(doc, control)
-  const path = `${workbenchId}/${control.workspace.name}/${contactId}#${fragment}`
+  const path = `${workbenchId}/${control.workspace.name}/${contactId}/${doc._id}`
   const link = concatLink(front, path)
   return `<a href="${link}">${organization.name}</a>`
 }
