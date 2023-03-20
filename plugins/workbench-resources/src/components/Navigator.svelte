@@ -163,14 +163,8 @@
     {#if specials.length > 0 && (starred.length > 0 || savedMenu)}<TreeSeparator line />{/if}
     <SavedView
       {currentApplication}
-      on:shown={(res) => {
-        if (res.detail === true) savedMenu = true
-        else if (res.detail === false) savedMenu = false
-      }}
-      on:select={(res) => {
-        if (res.detail === true) menuSelection = true
-        else if (res.detail === false) menuSelection = false
-      }}
+      on:shown={(res) => (savedMenu = res.detail)}
+      on:select={(res) => (menuSelection = res.detail)}
     />
     {#if starred.length}
       <StarredNav label={preference.string.Starred} spaces={starred} on:space {currentSpace} />
