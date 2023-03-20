@@ -32,6 +32,12 @@
   export let showTooltip: LabelAndProps | undefined = undefined
   export let enlargedText = false
   export let element: HTMLElement | undefined = undefined
+
+  const onEditClick = (evt: MouseEvent) => {
+    if (isInteractive) {
+      onEdit?.(evt)
+    }
+  }
 </script>
 
 {#if value}
@@ -62,7 +68,8 @@
     </span>
   {/if}
 {:else if shouldShowPlaceholder}
-  <span use:tooltip={showTooltip} class="contentPresenter" class:text-base={enlargedText}>
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <span use:tooltip={showTooltip} on:click={onEditClick} class="contentPresenter" class:text-base={enlargedText}>
     {#if shouldShowAvatar}
       <span
         class="eContentPresenterIcon"
