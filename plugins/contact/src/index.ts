@@ -18,7 +18,7 @@ import { Account, AttachedDoc, Class, Doc, Ref, Space, Timestamp, UXObject } fro
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import { TemplateField, TemplateFieldCategory } from '@hcengineering/templates'
-import type { AnyComponent, IconSize } from '@hcengineering/ui'
+import type { AnyComponent, IconSize, ResolvedLocation } from '@hcengineering/ui'
 import { FilterMode, ViewAction, Viewlet } from '@hcengineering/view'
 
 /**
