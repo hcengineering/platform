@@ -1,5 +1,5 @@
 <!-- 
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022-2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -104,7 +104,7 @@
           />
         </FixedColumn>
         <FixedColumn key={'timespend_reported'} justify={'center'}>
-          <TimePresenter value={report.value} workDayLength={currentProject?.workDayLength} />
+          <TimePresenter value={report.value} />
         </FixedColumn>
         <FixedColumn key={'timespend_date'} justify={'left'}>
           <DatePresenter value={report.date} />

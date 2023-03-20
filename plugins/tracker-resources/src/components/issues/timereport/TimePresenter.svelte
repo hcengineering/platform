@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022-2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,13 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WorkDayLength } from '@hcengineering/tracker'
   import { floorFractionDigits, Label, tooltip } from '@hcengineering/ui'
   import tracker from '../../../plugin'
 
   export let id: string | undefined = undefined
   export let kind: 'link' | undefined = undefined
-  export let workDayLength: WorkDayLength = WorkDayLength.EIGHT_HOURS
   export let value: number
 </script>
 
@@ -30,7 +28,7 @@
   on:click
   use:tooltip={{
     component: Label,
-    props: { label: tracker.string.TimeSpendHours, params: { value: floorFractionDigits(value * workDayLength, 2) } }
+    props: { label: tracker.string.TimeSpendHours, params: { value: floorFractionDigits(value * 8, 2) } }
   }}
 >
   <Label label={tracker.string.TimeSpendValue} params={{ value: floorFractionDigits(value, 3) }} />

@@ -249,7 +249,7 @@
     "TimeSpendReport": "Время",
     "TimeSpendReportAdd": "Добавить затраченное время",
     "TimeSpendReportDate": "Дата",
-    "TimeSpendReportValue": "Затраченное время",
+    "TimeSpendReportValue": "Затраченные дни",
     "TimeSpendReportValueTooltip": "Затраченное время в человеко днях",
     "TimeSpendReportDescription": "Описание",
     "TimeSpendValue": "{value}d",
@@ -283,7 +283,8 @@
     "WorkDayLength": "Выберите длину рабочего дня",
     "SevenHoursLength": "Семь Часов",
     "EightHoursLength": "Восемь Часов",
-    "CreatedOn": "Создана"
+    "CreatedOn": "Создана",
+    "HourLabel": "ч"
   },
   "status": {}
 }

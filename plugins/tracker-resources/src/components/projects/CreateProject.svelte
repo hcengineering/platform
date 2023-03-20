@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022-2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -19,17 +19,8 @@
   import { Asset } from '@hcengineering/platform'
   import presentation, { AssigneeBox, Card, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
-  import { genRanks, IssueStatus, Project, TimeReportDayType, WorkDayLength } from '@hcengineering/tracker'
-  import {
-    Button,
-    DropdownIntlItem,
-    DropdownLabelsIntl,
-    EditBox,
-    eventToHTMLElement,
-    Label,
-    showPopup,
-    ToggleWithLabel
-  } from '@hcengineering/ui'
+  import { genRanks, IssueStatus, Project, TimeReportDayType } from '@hcengineering/tracker'
+  import { Button, EditBox, eventToHTMLElement, Label, showPopup, ToggleWithLabel } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import TimeReportDayDropdown from '../issues/timereport/TimeReportDayDropdown.svelte'
@@ -43,22 +34,11 @@
   let icon: Asset | undefined = project?.icon ?? undefined
   let selectedWorkDayType: TimeReportDayType | undefined =
     project?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay
-  let selectedWorkDayLength: WorkDayLength | undefined = project?.workDayLength ?? WorkDayLength.EIGHT_HOURS
   let defaultAssignee: Ref<Employee> | null | undefined = null
   let members: Ref<Account>[] = project?.members ?? [getCurrentAccount()._id]
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const workDayLengthItems: DropdownIntlItem[] = [
-    {
-      id: WorkDayLength.SEVEN_HOURS,
-      label: tracker.string.SevenHoursLength
-    },
-    {
-      id: WorkDayLength.EIGHT_HOURS,
-      label: tracker.string.EightHoursLength
-    }
-  ]
 
   $: isNew = !project
 
@@ -83,8 +63,7 @@
       defaultIssueStatus: defaultStatusId,
       defaultAssignee: defaultAssignee ?? undefined,
       icon,
-      defaultTimeReportDay: selectedWorkDayType ?? TimeReportDayType.PreviousWorkDay,
-      workDayLength: selectedWorkDayLength ?? WorkDayLength.EIGHT_HOURS
+      defaultTimeReportDay: selectedWorkDayType ?? TimeReportDayType.PreviousWorkDay
     }
   }
 
@@ -139,7 +118,7 @@
   label={isNew ? tracker.string.NewProject : tracker.string.EditProject}
   okLabel={isNew ? presentation.string.Create : presentation.string.Save}
   okAction={handleSave}
-  canSave={name.length > 0 && !!selectedWorkDayType && !!selectedWorkDayLength}
+  canSave={name.length > 0 && !!selectedWorkDayType}
   on:close={() => {
     dispatch('close')
   }}
@@ -186,19 +165,6 @@
       <Label label={tracker.string.DefaultTimeReportDay} />
     </div>
     <TimeReportDayDropdown bind:selected={selectedWorkDayType} label={tracker.string.DefaultTimeReportDay} />
-  </div>
-
-  <div class="flex-between">
-    <div class="caption">
-      <Label label={tracker.string.WorkDayLength} />
-    </div>
-    <DropdownLabelsIntl
-      kind="link-bordered"
-      label={tracker.string.WorkDayLength}
-      items={workDayLengthItems}
-      shouldUpdateUndefined={false}
-      bind:selected={selectedWorkDayLength}
-    />
   </div>
 
   <div class="flex-between">

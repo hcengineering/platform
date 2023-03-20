@@ -1,6 +1,6 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -39,7 +39,6 @@
   }
 
   $: defaultTimeReportDay = currentProject?.defaultTimeReportDay
-  $: workDayLength = currentProject?.workDayLength
 
   function addTimeReport (event: MouseEvent): void {
     showPopup(
@@ -70,9 +69,9 @@
   <div id="ReportedTimeEditor" class="link-container flex-between" on:click={showReports}>
     {#if value !== undefined}
       <span class="overflow-label">
-        <TimePresenter {value} {workDayLength} />
+        <TimePresenter {value} />
         {#if childTime !== 0}
-          / <TimePresenter value={childTime} {workDayLength} />
+          / <TimePresenter value={childTime} />
         {/if}
       </span>
     {:else}
@@ -84,9 +83,9 @@
   </div>
 {:else if value !== undefined}
   <span class="overflow-label">
-    <TimePresenter {value} {workDayLength} />
+    <TimePresenter {value} />
     {#if childTime !== 0}
-      / <TimePresenter value={childTime} {workDayLength} />
+      / <TimePresenter value={childTime} />
     {/if}
   </span>
 {:else}

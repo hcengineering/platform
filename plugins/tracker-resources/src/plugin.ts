@@ -303,7 +303,8 @@ export default mergeIds(trackerId, tracker, {
 
     WorkDayLength: '' as IntlString,
     SevenHoursLength: '' as IntlString,
-    EightHoursLength: '' as IntlString
+    EightHoursLength: '' as IntlString,
+    HourLabel: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,

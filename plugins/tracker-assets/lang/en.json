@@ -249,7 +249,7 @@
     "TimeSpendReport": "Time",
     "TimeSpendReportAdd": "Add time report",
     "TimeSpendReportDate": "Date",
-    "TimeSpendReportValue": "Reported time",
+    "TimeSpendReportValue": "Reported days",
     "TimeSpendReportValueTooltip": "Reported time in man days",
     "TimeSpendReportDescription": "Description",
     "TimeSpendValue": "{value}d",
@@ -283,7 +283,8 @@
     "WorkDayLength": "Select length of working day",
     "SevenHoursLength": "Seven Hours",
     "EightHoursLength": "Eight Hours",
-    "CreatedOn": "Created on"
+    "CreatedOn": "Created on",
+    "HourLabel": "h"
   },
   "status": {}
 }
