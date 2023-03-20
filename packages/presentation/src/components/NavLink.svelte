@@ -20,6 +20,7 @@
   export let onClick: ((event: MouseEvent) => void) | undefined = undefined
   export let noUnderline = false
   export let inline = false
+  export let shrink: number = 0
 
   function clickHandler (e: MouseEvent) {
     if (disableClick) return
@@ -40,11 +41,17 @@
 
 {#if disableClick || href === undefined}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <span class:cursor-pointer={!disableClick} class:noUnderline class:inline on:click={clickHandler}>
+  <span
+    class:cursor-pointer={!disableClick}
+    class:noUnderline
+    class:inline
+    style:flex-shrink={shrink}
+    on:click={clickHandler}
+  >
     <slot />
   </span>
 {:else}
-  <a {href} class:noUnderline class:inline on:click={clickHandler}>
+  <a {href} class:noUnderline class:inline style:flex-shrink={shrink} on:click={clickHandler}>
     <slot />
   </a>
 {/if}
@@ -54,7 +61,7 @@
   a {
     display: flex;
     align-items: center;
-    flex-shrink: 0;
+    min-width: 0;
     color: var(--accent-color);
     // overflow: hidden;
     white-space: nowrap;

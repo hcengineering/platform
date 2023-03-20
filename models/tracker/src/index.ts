@@ -570,7 +570,7 @@ export function createModel (builder: Builder): void {
         {
           key: '$lookup.labels',
           presenter: tags.component.LabelsPresenter,
-          props: { kind: 'list', full: false, lookupField: 'labels' }
+          props: { kind: 'list', full: false, lookupField: 'labels', listProps: { optional: true, compression: true } }
         },
         { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
         {
@@ -583,6 +583,7 @@ export function createModel (builder: Builder): void {
             shouldShowPlaceholder: false,
             listProps: {
               excludeByKey: 'component',
+              compression: true,
               optional: true
             }
           }
@@ -597,6 +598,7 @@ export function createModel (builder: Builder): void {
             shouldShowPlaceholder: false,
             listProps: {
               excludeByKey: 'sprint',
+              compression: true,
               optional: true
             }
           }
