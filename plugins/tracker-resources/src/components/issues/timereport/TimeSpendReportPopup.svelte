@@ -98,23 +98,23 @@
   </svelte:fragment>
   <div class="flex-row-center gap-2">
     <EditBox focus bind:value={data.value} {placeholder} format={'number'} maxDigitsAfterPoint={3} kind={'editbox'} />
-    <Button kind={'link-bordered'} on:click={() => (data.value = 1)}
+    <Button kind={'link-bordered'} on:click={() => (data.value = 0.125)}
       ><span slot="content">1<Label label={tracker.string.HourLabel} /></span></Button
     >
-    <Button kind={'link-bordered'} on:click={() => (data.value = 2)}
+    <Button kind={'link-bordered'} on:click={() => (data.value = 0.25)}
       ><span slot="content">2<Label label={tracker.string.HourLabel} /></span></Button
     >
-    <Button kind={'link-bordered'} on:click={() => (data.value = 4)}
+    <Button kind={'link-bordered'} on:click={() => (data.value = 0.5)}
       ><span slot="content">4<Label label={tracker.string.HourLabel} /></span></Button
     >
-    <Button kind={'link-bordered'} on:click={() => (data.value = 6)}
+    <Button kind={'link-bordered'} on:click={() => (data.value = 0.75)}
       ><span slot="content">6<Label label={tracker.string.HourLabel} /></span></Button
     >
-    <Button kind={'link-bordered'} on:click={() => (data.value = 7)}
+    <Button kind={'link-bordered'} on:click={() => (data.value = 0.875)}
       ><span slot="content">7<Label label={tracker.string.HourLabel} /></span></Button
     >
     <div class="buttons-divider" />
-    <Button kind={'link-bordered'} on:click={() => (data.value = 8)}
+    <Button kind={'link-bordered'} on:click={() => (data.value = 1)}
       ><span slot="content">8<Label label={tracker.string.HourLabel} /></span></Button
     >
   </div>

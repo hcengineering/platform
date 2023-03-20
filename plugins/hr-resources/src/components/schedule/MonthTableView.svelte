@@ -152,7 +152,7 @@
         '@wdCountReported',
         {
           key: '',
-          label: getEmbeddedLabel('Reported hours'),
+          label: getEmbeddedLabel('Reported days'),
           presenter: ReportPresenter,
           props: {
             month: startDate ?? getStartDate(currentDate.getFullYear(), currentDate.getMonth()),

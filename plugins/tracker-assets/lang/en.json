@@ -249,7 +249,7 @@
     "TimeSpendReport": "Time",
     "TimeSpendReportAdd": "Add time report",
     "TimeSpendReportDate": "Date",
-    "TimeSpendReportValue": "Reported time",
+    "TimeSpendReportValue": "Reported days",
     "TimeSpendReportValueTooltip": "Reported time in man days",
     "TimeSpendReportDescription": "Description",
     "TimeSpendValue": "{value}d",

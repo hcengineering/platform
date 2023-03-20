@@ -31,7 +31,7 @@
     props: { label: tracker.string.TimeSpendHours, params: { value: floorFractionDigits(value, 2) } }
   }}
 >
-  <Label label={tracker.string.TimeSpendHours} params={{ value: floorFractionDigits(value, 3) }} />
+  <Label label={tracker.string.TimeSpendValue} params={{ value: floorFractionDigits(value, 3) }} />
 </span>
 
 <style lang="scss">

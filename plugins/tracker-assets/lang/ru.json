@@ -249,7 +249,7 @@
     "TimeSpendReport": "Время",
     "TimeSpendReportAdd": "Добавить затраченное время",
     "TimeSpendReportDate": "Дата",
-    "TimeSpendReportValue": "Затраченное время",
+    "TimeSpendReportValue": "Затраченные дни",
     "TimeSpendReportValueTooltip": "Затраченное время в человеко днях",
     "TimeSpendReportDescription": "Описание",
     "TimeSpendValue": "{value}d",

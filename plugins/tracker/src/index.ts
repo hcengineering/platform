@@ -184,7 +184,7 @@ export interface Issue extends AttachedDoc {
 
   sprint?: Ref<Sprint> | null
 
-  // Estimation in hours
+  // Estimation in man days
   estimation: number
 
   // ReportedTime time, auto updated using trigger.
@@ -292,7 +292,7 @@ export interface TimeSpendReport extends AttachedDoc {
   employee: Ref<Employee> | null
 
   date: Timestamp | null
-  // Value in hours
+  // Value in man days
   value: number
 
   description: string
