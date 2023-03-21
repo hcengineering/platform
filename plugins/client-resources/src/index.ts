@@ -20,8 +20,6 @@ import { connect } from './connection'
 
 export { connect }
 
-let client: Promise<Client> | Client | undefined
-
 /*!
  * Anticrm Platform™ Client Plugin
  * © 2020, 2021 Anticrm Platform Contributors. All Rights Reserved.
@@ -30,6 +28,7 @@ let client: Promise<Client> | Client | undefined
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => {
   let _token: string | undefined
+  let client: Promise<Client> | Client | undefined
 
   return {
     function: {
