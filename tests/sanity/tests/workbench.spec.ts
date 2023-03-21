@@ -7,7 +7,7 @@ test.use({
 test.describe('workbench tests', () => {
   test.beforeEach(async ({ page }) => {
     // Create user and workspace
-    await page.goto(`${PlatformURI}/workbench/sanity-ws`)
+    await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
   test('navigator', async ({ page }) => {
     // Click [id="app-recruit\:string\:RecruitApplication"]

@@ -45,37 +45,38 @@ export async function setViewOrder (page: Page, orderName: string): Promise<void
   await page.keyboard.press('Escape')
 }
 
-export async function fillIssueForm (page: Page, props: IssueProps): Promise<void> {
+export async function fillIssueForm (page: Page, props: IssueProps, addForm: boolean): Promise<void> {
   const { name, description, status, assignee, labels, priority, component, sprint } = props
-  await page.fill('[placeholder="Issue\\ title"]', name)
+  const af = addForm ? 'form ' : ''
+  await page.fill(af + '[placeholder="Issue\\ title"]', name)
   if (description !== undefined) {
     await page.fill('.ProseMirror', description)
   }
   if (status !== undefined) {
-    await page.click('#status-editor')
+    await page.click(af + '#status-editor')
     await page.click(`.menu-item:has-text("${status}")`)
   }
   if (priority !== undefined) {
-    await page.click('button:has-text("No priority")')
+    await page.click(af + 'button:has-text("No priority")')
     await page.click(`.selectPopup button:has-text("${priority}")`)
   }
   if (labels !== undefined) {
-    await page.click('.button:has-text("Labels")')
+    await page.click(af + '.button:has-text("Labels")')
     for (const label of labels) {
       await page.click(`.selectPopup button:has-text("${label}") >> nth=0`)
     }
     await page.keyboard.press('Escape')
   }
   if (assignee !== undefined) {
-    await page.click('.button:has-text("Assignee")')
+    await page.click(af + '.button:has-text("Assignee")')
     await page.click(`.selectPopup button:has-text("${assignee}")`)
   }
   if (component !== undefined) {
-    await page.click('form button:has-text("Component")')
+    await page.click(af + 'button:has-text("Component")')
     await page.click(`.selectPopup button:has-text("${component}")`)
   }
   if (sprint !== undefined) {
-    await page.click('.button:has-text("No Sprint")')
+    await page.click(af + '.button:has-text("No Sprint")')
     await page.click(`.selectPopup button:has-text("${sprint}")`)
   }
 }
@@ -83,8 +84,8 @@ export async function fillIssueForm (page: Page, props: IssueProps): Promise<voi
 export async function createIssue (page: Page, props: IssueProps): Promise<void> {
   await page.waitForSelector('span:has-text("Default")')
   await page.click('button:has-text("New issue")')
-  await fillIssueForm(page, props)
-  await page.click('button:has-text("Create issue")')
+  await fillIssueForm(page, props, true)
+  await page.click('form button:has-text("Create issue")')
   await page.waitForSelector('form.antiCard', { state: 'detached' })
 }
 
@@ -110,7 +111,7 @@ export async function createSprint (page: Page, sprintName: string): Promise<voi
 
 export async function createSubissue (page: Page, props: IssueProps): Promise<void> {
   await page.click('button:has-text("Add sub-issue")')
-  await fillIssueForm(page, props)
+  await fillIssueForm(page, props, false)
   await page.click('button:has-text("Save")')
 }
 

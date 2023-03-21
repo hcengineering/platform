@@ -28,7 +28,7 @@
   let avatarEditor: EditableAvatar
 
   const account = getCurrentAccount() as EmployeeAccount
-  const employee = $employeeByIdStore.get(account.employee)
+  $: employee = $employeeByIdStore.get(account.employee)
   let firstName: string = employee ? getFirstName(employee.name) : ''
   let lastName: string = employee ? getLastName(employee.name) : ''
   let displayName = employee?.displayName ?? ''

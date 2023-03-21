@@ -7,11 +7,11 @@ test.use({
 test.describe('contact tests', () => {
   test.beforeEach(async ({ page }) => {
     // Create user and workspace
-    await page.goto(`${PlatformURI}/workbench/sanity-ws`)
+    await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
   test('update-profile', async ({ page, context }) => {
     // Go to http://localhost:8083/workbench/sanity-ws
-    await page.goto(`${PlatformURI}/workbench/sanity-ws`)
+    await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
     // Click #profile-button
     await page.click('#profile-button')
     await page.click('text=Appleseed John')
@@ -19,6 +19,7 @@ test.describe('contact tests', () => {
     // Click text=Edit profile
     // await page.click('text=Edit profile')
     await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/setting/profile`)
+
     // Click [placeholder="Location"]
     await page.click('[placeholder="Location"]')
     // Fill [placeholder="Location"]
@@ -37,7 +38,7 @@ test.describe('contact tests', () => {
   })
   test('create-template', async ({ page }) => {
     // Go to http://localhost:8083/workbench/sanity-ws
-    await page.goto(`${PlatformURI}/workbench/sanity-ws`)
+    await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
     // Click #profile-button
     await page.click('#profile-button')
     // Click button:has-text("Settings")
@@ -70,7 +71,7 @@ test.describe('contact tests', () => {
 
   test('manage-templates', async ({ page }) => {
     // Go to http://localhost:8083/workbench/sanity-ws
-    await page.goto(`${PlatformURI}/workbench/sanity-ws`)
+    await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
     // Click #profile-button
     await page.click('#profile-button')
     // await page.click('text=Workspace')
