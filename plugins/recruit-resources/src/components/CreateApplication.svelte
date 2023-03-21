@@ -313,7 +313,7 @@
         id={'vacancy.talant.selector'}
         focusIndex={1}
         readonly={preserveCandidate}
-        _class={contact.class.Person}
+        _class={recruit.mixin.Candidate}
         options={{ sort: { modifiedOn: -1 } }}
         excluded={existingApplicants}
         label={recruit.string.Talent}
