@@ -570,7 +570,7 @@ export function createModel (builder: Builder): void {
         {
           key: '$lookup.labels',
           presenter: tags.component.LabelsPresenter,
-          props: { kind: 'list', full: false, lookupField: 'labels', listProps: { optional: true, compression: true } }
+          props: { kind: 'list', full: false, lookupField: 'labels', listProps: { optional: true } }
         },
         { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
         {

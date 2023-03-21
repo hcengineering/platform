@@ -527,6 +527,61 @@
       border-radius: .375rem;
     }
   }
+
+  .compressed {
+    overflow: hidden;
+    display: flex;
+    flex: initial;
+    flex-direction: row;
+    -webkit-box-pack: end;
+    justify-content: flex-end;
+    -webkit-box-align: center;
+    align-items: center;
+    flex-shrink: 2;
+    -webkit-box-flex: 1;
+    flex-grow: 1;
+    gap: 0.5rem;
+    border-radius: 3rem;
+    transition: flex-shrink 0.25s cubic-bezier(0.38, 0.01, 0.33, 1) 0s;
+    
+    &:not(:empty) {
+      min-width: var(--min-w-comp);
+    }
+    &:hover {
+      flex-shrink: .4;
+      max-width: initial;
+    }
+
+    .starter {
+      display: flex;
+      flex-shrink: initial;
+      flex-basis: initial;
+      flex-direction: row;
+      -webkit-box-flex: 1;
+      flex-grow: 1;
+    }
+
+    // overflow: hidden;
+    // display: flex;
+    // align-items: center;
+    // flex-grow: 1;
+    // flex-shrink: 2;
+    // min-width: 3rem;
+    // gap: .5rem;
+
+    // .spacer {
+    //   flex-grow: 1;
+    //   flex-shrink: 10;
+    //   min-width: .5rem;
+    // }
+    // & > *:not(:first-child) { margin-left: .5rem; }
+    & > div:not(:last-child) {
+      min-width: 0;
+    }
+    & > div:last-child {
+      min-width: max-content;
+    }
+  }
 }
 
 /* Select */

@@ -11,10 +11,9 @@
   export let object: WithLookup<Doc>
   export let full: boolean
   export let ckeckFilled: boolean = false
-  export let kind: 'short' | 'full' = 'short'
+  export let kind: 'short' | 'full' | 'list' = 'short'
   export let isEditable: boolean = false
   export let action: (evt: MouseEvent) => Promise<void> | void = async () => {}
-  export let compression: boolean = false
 
   export let lookupField: string | undefined
 
@@ -48,11 +47,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
-  class="labels-container"
-  style:justify-content={kind === 'short' ? 'space-between' : 'flex-start'}
-  class:w-full={kind === 'full'}
-  style:flex-wrap={kind === 'short' || compression ? 'nowrap' : 'wrap'}
-  style:flex-shrink={compression ? 1 : 0}
+  class="labels-container {kind}"
   use:resizeObserver={(element) => {
     allWidth = element.clientWidth
   }}
@@ -73,9 +68,25 @@
     overflow: hidden;
     display: flex;
     align-items: center;
-    // flex-shrink: 0;
     min-width: 0;
     border-radius: 0.25rem;
+
+    &.full {
+      justify-content: flex-start;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+      width: 100%;
+    }
+    &.short {
+      justify-content: space-between;
+      flex-wrap: nowrap;
+      flex-shrink: 0;
+    }
+    &.list {
+      justify-content: flex-end;
+      flex-wrap: nowrap;
+      flex-shrink: 1;
+    }
   }
 
   .label-box {

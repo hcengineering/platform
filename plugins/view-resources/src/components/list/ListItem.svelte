@@ -18,7 +18,7 @@
   import { getClient, updateAttribute } from '@hcengineering/presentation'
   import { CheckBox, Component, deviceOptionsStore as deviceInfo, tooltip } from '@hcengineering/ui'
   import { AttributeModel } from '@hcengineering/view'
-  import { createEventDispatcher } from 'svelte'
+  import { beforeUpdate, createEventDispatcher } from 'svelte'
   import { FixedColumn } from '../..'
   import view from '../../plugin'
   import Circles from '../icons/Circles.svelte'
@@ -78,13 +78,17 @@
     return { object, ...clearAttributeProps, ...props }
   }
 
-  let noCompressed: number
-  $: if (model) {
-    noCompressed = -1
-    model.forEach((m, i) => {
-      if (m.props?.listProps?.compression) noCompressed = i
-    })
+  let needCompression: boolean = true
+  let compressed: AttributeModel[]
+  $: compressed = model.filter((m) => m.props?.listProps?.compression)
+
+  const checkCommpressed = (): any => {
+    if (!needCompression) return false
+    needCompression = false
+    return true
   }
+
+  beforeUpdate(() => (needCompression = true))
 </script>
 
 <div
@@ -137,13 +141,29 @@
             {...joinProps(attributeModel, docObject, props)}
           />
         </FixedColumn>
+      {:else if listProps?.compression}
+        {#if checkCommpressed() && compressed.length > 0}
+          <!-- <div class="starter" /> -->
+          <div style="--min-w-comp: {compressed.length * 2 + 2}rem" class="compressed">
+            {#each compressed as comp, i}
+              <!-- {#if i !== 0}<div class="spacer" />{/if} -->
+              <svelte:component
+                this={comp.presenter}
+                value={getObjectValue(comp.key, docObject) ?? ''}
+                onChange={getOnChange(docObject, comp)}
+                kind={'list'}
+                compression
+                {...joinProps(comp, docObject, props)}
+              />
+            {/each}
+          </div>
+        {/if}
       {:else}
         <svelte:component
           this={attributeModel.presenter}
           value={getObjectValue(attributeModel.key, docObject) ?? ''}
           onChange={getOnChange(docObject, attributeModel)}
           kind={'list'}
-          compression={listProps?.compression && i !== noCompressed}
           {...joinProps(attributeModel, docObject, props)}
         />
       {/if}

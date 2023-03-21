@@ -51,14 +51,14 @@
 {#if (value.component && value.component !== $activeComponent && groupBy !== 'component') || shouldShowPlaceholder}
   <div
     class:minus-margin={kind === 'list-header'}
-    class:compression
+    class:min-w-0={compression}
     use:tooltip={{ label: value.component ? tracker.string.MoveToComponent : tracker.string.AddToComponent }}
   >
     <ComponentSelector
       {kind}
       {size}
       {shape}
-      width={compression ? 'min-content' : width}
+      width={compression ? undefined : 'min-content'}
       {justify}
       {isEditable}
       {shouldShowLabel}
@@ -74,9 +74,5 @@
 <style lang="scss">
   .minus-margin {
     margin-left: -0.5rem;
-  }
-  .compression {
-    flex-shrink: 5;
-    min-width: 1rem;
   }
 </style>
