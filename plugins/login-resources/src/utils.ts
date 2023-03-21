@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import login from '@hcengineering/login'
+import login, { LoginInfo, Workspace, WorkspaceLoginInfo } from '@hcengineering/login'
 import {
   getMetadata,
   OK,
@@ -34,20 +34,6 @@ import {
   Location
 } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
-
-export interface WorkspaceLoginInfo extends LoginInfo {
-  workspace: string
-}
-
-export interface LoginInfo {
-  token: string
-  endpoint: string
-  email: string
-}
-
-export interface Workspace {
-  workspace: string
-}
 
 const DEV_WORKSPACE = 'DEV WORKSPACE'
 

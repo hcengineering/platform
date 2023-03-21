@@ -27,8 +27,6 @@ export default mergeIds(contactId, contact, {
     CreatePerson: '' as IntlString,
     OrganizationNamePlaceholder: '' as IntlString,
     OrganizationsNamePlaceholder: '' as IntlString,
-    PersonFirstNamePlaceholder: '' as IntlString,
-    PersonLastNamePlaceholder: '' as IntlString,
     PersonLocationPlaceholder: '' as IntlString,
     PersonsNamePlaceholder: '' as IntlString,
     Organizations: '' as IntlString,
@@ -63,8 +61,7 @@ export default mergeIds(contactId, contact, {
     CreateEmployee: '' as IntlString,
     Inactive: '' as IntlString,
     NotSpecified: '' as IntlString,
-    MergeEmployee: '' as IntlString,
-    DisplayName: '' as IntlString
+    MergeEmployee: '' as IntlString
   },
   function: {
     GetContactLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,

@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { OK, Status, Severity, setMetadata } from '@hcengineering/platform'
+  import { OK, setMetadata, Severity, Status } from '@hcengineering/platform'
   import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
 
-  import Form from './Form.svelte'
   import { checkJoined, join, signUpJoin } from '../utils'
+  import Form from './Form.svelte'
 
-  import login from '../plugin'
   import { workbenchId } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
+  import login from '../plugin'
 
   const location = getCurrentLocation()
   let page = 'login'
@@ -103,7 +103,7 @@
   }
 
   const loginAction = {
-    caption: login.string.HaveAccount,
+    caption: login.string.AlreadyJoined,
     i18n: login.string.LogIn,
     func: () => {
       const loc = getCurrentLocation()

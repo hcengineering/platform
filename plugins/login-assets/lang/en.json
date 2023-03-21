@@ -38,6 +38,7 @@
     "EmailMask": "Email mask:",
     "InviteLimit": "Invite limit:",
     "GetLink": "Get invite link",
-    "NoLimit": "No limit"
+    "NoLimit": "No limit",
+    "AlreadyJoined": "Already joined?"
   }
 }

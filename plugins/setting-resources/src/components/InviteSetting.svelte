@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import login from '@hcengineering/login-resources/src/plugin'
+  import login from '@hcengineering/login'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { InviteSettings } from '@hcengineering/setting'
   import { Button, EditBox, MiniToggle } from '@hcengineering/ui'

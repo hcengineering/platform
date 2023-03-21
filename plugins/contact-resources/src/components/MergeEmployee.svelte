@@ -15,7 +15,8 @@
 <script lang="ts">
   import { Channel, ChannelProvider, Employee, getName } from '@hcengineering/contact'
   import core, { Doc, DocumentUpdate, Mixin, Ref, TxProcessor } from '@hcengineering/core'
-  import { leaveWorkspace } from '@hcengineering/login-resources'
+  import login from '@hcengineering/login'
+  import { getResource } from '@hcengineering/platform'
   import { Avatar, Card, createQuery, EmployeeBox, getClient } from '@hcengineering/presentation'
   import { DatePresenter, Grid, Toggle } from '@hcengineering/ui'
   import { isCollectionAttr, StringEditor } from '@hcengineering/view-resources'
@@ -111,7 +112,8 @@
     }
     const account = await client.findOne(contact.class.EmployeeAccount, { employee: value._id })
     if (account !== undefined) {
-      leaveWorkspace(account.email)
+      const leaveWorkspace = await getResource(login.function.LeaveWorkspace)
+      await leaveWorkspace(account.email)
     }
     dispatch('close')
   }

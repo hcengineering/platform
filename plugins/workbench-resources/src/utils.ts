@@ -25,7 +25,7 @@ import { getClient } from '@hcengineering/presentation'
 import type { Application } from '@hcengineering/workbench'
 import preference from '@hcengineering/preference'
 import { writable } from 'svelte/store'
-import { Workspace } from '@hcengineering/login-resources'
+import type { Workspace } from '@hcengineering/login'
 
 export function classIcon (client: Client, _class: Ref<Class<Obj>>): Asset | undefined {
   return client.getHierarchy().getClass(_class).icon

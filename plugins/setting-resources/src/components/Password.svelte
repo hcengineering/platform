@@ -16,9 +16,10 @@
   import setting from '@hcengineering/setting'
   import presentation from '@hcengineering/presentation'
   import { Button, EditBox, Icon, Label } from '@hcengineering/ui'
-  import { changePassword } from '@hcengineering/login-resources'
+  import login from '@hcengineering/login'
   import Error from './icons/Error.svelte'
   import plugin from '../plugin'
+  import { getResource } from '@hcengineering/platform'
 
   let oldPassword: string = ''
   let password: string = ''
@@ -34,6 +35,7 @@
     label = setting.string.Saving
     saved = true
     try {
+      const changePassword = await getResource(login.function.ChangePassword)
       await changePassword(oldPassword, password)
       label = setting.string.Saved
     } catch (e) {

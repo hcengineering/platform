@@ -13,14 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttributeEditor, EditableAvatar, getClient } from '@hcengineering/presentation'
-
   import contact, { EmployeeAccount, getFirstName, getLastName } from '@hcengineering/contact'
   import { ChannelsEditor, employeeByIdStore } from '@hcengineering/contact-resources'
-  import contactRes from '@hcengineering/contact-resources/src/plugin'
   import { getCurrentAccount } from '@hcengineering/core'
-  import { changeName, leaveWorkspace } from '@hcengineering/login-resources'
-  import MessageBox from '@hcengineering/presentation/src/components/MessageBox.svelte'
+  import login from '@hcengineering/login'
+  import { getResource } from '@hcengineering/platform'
+  import { AttributeEditor, EditableAvatar, getClient, MessageBox } from '@hcengineering/presentation'
   import { Button, createFocusManager, EditBox, FocusHandler, Icon, Label, showPopup } from '@hcengineering/ui'
   import setting from '../plugin'
   const client = getClient()
@@ -57,6 +55,7 @@
       undefined,
       async (res?: boolean) => {
         if (res === true) {
+          const leaveWorkspace = await getResource(login.function.LeaveWorkspace)
           await leaveWorkspace(getCurrentAccount().email)
         }
       }
@@ -94,26 +93,28 @@
         </div>
         <div class="flex-grow flex-col">
           <EditBox
-            placeholder={contactRes.string.PersonFirstNamePlaceholder}
+            placeholder={contact.string.PersonFirstNamePlaceholder}
             bind:value={firstName}
             kind={'large-style'}
             focus
             focusIndex={1}
-            on:change={() => {
+            on:change={async () => {
+              const changeName = await getResource(login.function.ChangeName)
               changeName(firstName, lastName)
             }}
           />
           <EditBox
-            placeholder={contactRes.string.PersonLastNamePlaceholder}
+            placeholder={contact.string.PersonLastNamePlaceholder}
             bind:value={lastName}
             kind={'large-style'}
             focusIndex={2}
-            on:change={() => {
+            on:change={async () => {
+              const changeName = await getResource(login.function.ChangeName)
               changeName(firstName, lastName)
             }}
           />
           <EditBox
-            placeholder={contactRes.string.DisplayName}
+            placeholder={contact.string.DisplayName}
             bind:value={displayName}
             kind={'large-style'}
             focusIndex={2}

@@ -16,8 +16,8 @@
 
 import { Channel, Contact, Employee, getGravatarUrl, getName } from '@hcengineering/contact'
 import { Class, Client, DocumentQuery, Ref, RelatedDocument, WithLookup } from '@hcengineering/core'
-import { leaveWorkspace } from '@hcengineering/login-resources'
-import { IntlString, Resources } from '@hcengineering/platform'
+import login from '@hcengineering/login'
+import { getResource, IntlString, Resources } from '@hcengineering/platform'
 import { Avatar, getClient, getFileUrl, MessageBox, ObjectSearchResult, UserInfo } from '@hcengineering/presentation'
 import { AnyComponent, AnySvelteComponent, showPopup } from '@hcengineering/ui'
 import AccountArrayEditor from './components/AccountArrayEditor.svelte'
@@ -47,6 +47,7 @@ import EmployeeBrowser from './components/EmployeeBrowser.svelte'
 import EmployeeEditor from './components/EmployeeEditor.svelte'
 import EmployeePresenter from './components/EmployeePresenter.svelte'
 import EmployeeRefPresenter from './components/EmployeeRefPresenter.svelte'
+import ExpandRightDouble from './components/icons/ExpandRightDouble.svelte'
 import MemberPresenter from './components/MemberPresenter.svelte'
 import Members from './components/Members.svelte'
 import MembersPresenter from './components/MembersPresenter.svelte'
@@ -57,7 +58,6 @@ import PersonEditor from './components/PersonEditor.svelte'
 import PersonPresenter from './components/PersonPresenter.svelte'
 import PersonRefPresenter from './components/PersonRefPresenter.svelte'
 import SocialEditor from './components/SocialEditor.svelte'
-import ExpandRightDouble from './components/icons/ExpandRightDouble.svelte'
 import contact from './plugin'
 import {
   employeeSort,
@@ -173,7 +173,9 @@ async function kickEmployee (doc: Employee): Promise<void> {
       (res?: boolean) => {
         if (res === true) {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          leaveWorkspace(email.email)
+          getResource(login.function.LeaveWorkspace).then(async (f) => {
+            await f(email.email)
+          })
         }
       }
     )

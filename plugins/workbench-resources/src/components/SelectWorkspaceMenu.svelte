@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import login, { loginId } from '@hcengineering/login'
-  import { getWorkspaces, selectWorkspace, Workspace } from '@hcengineering/login-resources'
+  import login, { loginId, Workspace } from '@hcengineering/login'
+  import { getResource } from '@hcengineering/platform'
   import {
     closePopup,
     fetchMetadataLocalStorage,
@@ -30,8 +30,9 @@
   import { workspacesStore } from '../utils'
 
   onMount(() => {
-    getWorkspaces().then((ws: Workspace[]) => {
-      $workspacesStore = ws
+    getResource(login.function.GetWorkspaces).then(async (f) => {
+      const workspaces = await f()
+      $workspacesStore = workspaces
     })
   })
 
@@ -44,6 +45,7 @@
         const ws = p.workspace
         const token = tokens[ws]
         if (!token) {
+          const selectWorkspace = await getResource(login.function.SelectWorkspace)
           const loginInfo = (await selectWorkspace(ws))[1]
           if (loginInfo !== undefined) {
             tokens[ws] = loginInfo?.token
