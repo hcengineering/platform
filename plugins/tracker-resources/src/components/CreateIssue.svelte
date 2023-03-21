@@ -159,6 +159,7 @@
   }
 
   let templateId: Ref<IssueTemplate> | undefined = draft?.template?.template
+  let appliedTemplateId: Ref<IssueTemplate> | undefined = draft?.template?.template
 
   let template: IssueTemplate | undefined = undefined
   const templateQuery = createQuery()
@@ -194,8 +195,7 @@
     if (object.template?.template === template._id) {
       return
     }
-
-    const { _class, _id, space, children, comments, attachments, labels: labels_, ...templBase } = template
+    const { _class, _id, space, children, comments, attachments, labels: labels_, description, ...templBase } = template
 
     subIssues = template.children.map((p) => {
       return { ...p, status: currentProject?.defaultIssueStatus ?? ('' as Ref<IssueStatus>) }
@@ -203,11 +203,13 @@
 
     object = {
       ...object,
+      description: description ?? '',
       ...templBase,
       template: {
         template: template._id
       }
     }
+    appliedTemplateId = templateId
     const tagElements = await client.findAll(tags.class.TagElement, { _id: { $in: labels_ } })
     labels = tagElements.map(tagAsRef)
   }
@@ -680,7 +682,7 @@
     <ParentIssue issue={parentIssue} on:close={clearParentIssue} />
   {/if}
   <EditBox bind:value={object.title} placeholder={tracker.string.IssueTitlePlaceholder} kind={'large-style'} focus />
-  {#key objectId}
+  {#key [objectId, appliedTemplateId]}
     <AttachmentStyledBox
       bind:this={descriptionBox}
       {objectId}

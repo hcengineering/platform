@@ -47,6 +47,7 @@
   let name: string = ''
   let template: KanbanTemplate | undefined
   let templateId: Ref<KanbanTemplate> | undefined
+  let appliedTemplateId: Ref<KanbanTemplate> | undefined
   let objectId: Ref<VacancyClass> = generateId()
   let issueTemplates: FindResult<IssueTemplate>
 
@@ -80,7 +81,10 @@
   $: templateQ.query(task.class.KanbanTemplate, { _id: templateId }, (result) => {
     const { _class, _id, description, ...templateData } = result[0]
     vacancyData = { ...(templateData as unknown as Data<VacancyClass>), fullDescription: description }
-    fullDescription = description ?? ''
+    if (appliedTemplateId !== templateId) {
+      fullDescription = description ?? ''
+      appliedTemplateId = templateId
+    }
   })
 
   const issueTemplatesQ = createQuery()
@@ -128,7 +132,8 @@
       estimation: template.estimation,
       reports: 0,
       relations: [{ _id: id, _class: recruit.class.Vacancy }],
-      childInfo: []
+      childInfo: [],
+      createOn: Date.now()
     })
     if ((template.labels?.length ?? 0) > 0) {
       const tagElements = await client.findAll(tags.class.TagElement, { _id: { $in: template.labels } })
@@ -240,7 +245,7 @@
       />
     </div>
   </div>
-  {#key vacancyData?.fullDescription}
+  {#key appliedTemplateId}
     <AttachmentStyledBox
       bind:this={descriptionBox}
       {objectId}

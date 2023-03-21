@@ -18,14 +18,14 @@
   import { Card, getClient, KeyedAttribute, SpaceSelector } from '@hcengineering/presentation'
   import tags, { TagElement } from '@hcengineering/tags'
   import { StyledTextBox } from '@hcengineering/text-editor'
-  import { IssuePriority, IssueTemplate, Component as ComponentType, Sprint, Project } from '@hcengineering/tracker'
+  import { Component as ComponentType, IssuePriority, IssueTemplate, Project, Sprint } from '@hcengineering/tracker'
   import { Component, EditBox, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { activeComponent, activeSprint } from '../../issues'
   import tracker from '../../plugin'
+  import ComponentSelector from '../ComponentSelector.svelte'
   import AssigneeEditor from '../issues/AssigneeEditor.svelte'
   import PriorityEditor from '../issues/PriorityEditor.svelte'
-  import ComponentSelector from '../ComponentSelector.svelte'
   import SprintSelector from '../sprints/SprintSelector.svelte'
   import EstimationEditor from './EstimationEditor.svelte'
   import SubIssueTemplates from './IssueTemplateChilds.svelte'
@@ -57,8 +57,6 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-
-  let descriptionBox: StyledTextBox
 
   const key: KeyedAttribute = {
     key: 'labels',
@@ -98,8 +96,6 @@
     }
 
     await client.createDoc(tracker.class.IssueTemplate, _space, value, objectId)
-
-    await descriptionBox.createAttachments()
     objectId = generateId()
   }
 
@@ -143,7 +139,6 @@
 
   <EditBox bind:value={object.title} placeholder={tracker.string.IssueTitlePlaceholder} kind={'large-style'} focus />
   <StyledTextBox
-    bind:this={descriptionBox}
     alwaysEdit
     showButtons={false}
     emphasized
