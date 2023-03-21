@@ -190,7 +190,7 @@
       }}
     />
     <EstimationEditor kind={'no-border'} size={'small'} value={object} />
-    <ComponentSelector value={object.component} onChange={handleComponentIdChanged} />
+    <ComponentSelector value={object.component} onChange={handleComponentIdChanged} isEditable={true} />
     <SprintSelector
       value={object.sprint}
       onChange={handleSprintIdChanged}

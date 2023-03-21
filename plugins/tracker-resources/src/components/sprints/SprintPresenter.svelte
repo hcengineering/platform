@@ -19,7 +19,7 @@
   import tracker from '../../plugin'
 
   export let value: WithLookup<Sprint>
-  export let withIcon = false
+  export let withIcon = true
   export let onClick: () => void | undefined
   export let isInteractive = true
 

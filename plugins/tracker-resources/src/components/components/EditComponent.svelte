@@ -42,7 +42,7 @@
   <svelte:fragment slot="label_selector">
     <Button size={'small'} kind={'link'} on:click={selectComponent}>
       <svelte:fragment slot="content">
-        <div class="ac-header__icon"><Icon icon={tracker.icon.Issues} size={'small'} /></div>
+        <div class="ac-header__icon"><Icon icon={tracker.icon.Component} size={'small'} /></div>
         <span class="ac-header__title">{component.label}</span>
       </svelte:fragment>
     </Button>

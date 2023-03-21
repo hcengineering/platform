@@ -23,7 +23,7 @@
 
   export let value: Ref<Component> | null | undefined
   export let shouldShowLabel: boolean = true
-  export let isEditable: boolean = true
+  export let isEditable: boolean = false
   export let onChange: ((newComponentId: Ref<Component> | undefined) => void) | undefined = undefined
   export let popupPlaceholder: IntlString = tracker.string.AddToComponent
   export let kind: ButtonKind = 'no-border'
