@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/client-resources",
-  "version": "0.6.11",
+  "version": "0.6.12",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
