@@ -16,7 +16,7 @@
   import { Employee } from '@hcengineering/contact'
   import { EmployeePresenter } from '@hcengineering/contact-resources'
   import contact from '@hcengineering/contact-resources/src/plugin'
-  import { Ref } from '@hcengineering/core'
+  import { AccountRole, getCurrentAccount, Ref } from '@hcengineering/core'
   import type { Department, Request, RequestType, Staff } from '@hcengineering/hr'
   import {
     areDatesEqual,
@@ -75,8 +75,16 @@
     )
   }
 
+  function isFutureDate () {
+    const today = new Date(Date.now())
+    return (
+      currentDate >= today ||
+      (currentDate.getMonth() === today.getMonth() && currentDate.getFullYear() === today.getFullYear())
+    )
+  }
+
   function isEditable (employee: Staff): boolean {
-    return editableList.includes(employee._id)
+    return editableList.includes(employee._id) && (isFutureDate() || getCurrentAccount().role === AccountRole.Owner)
   }
 
   const noWeekendHolidayType: Ref<RequestType>[] = [hr.ids.PTO, hr.ids.PTO2, hr.ids.Vacation]
@@ -158,7 +166,7 @@
               on:mouseleave={() => {
                 hoveredIndex = -1
               }}
-              on:click={() => setPublicHoliday(day)}
+              on:click={() => isFutureDate() && setPublicHoliday(day)}
             >
               {getWeekDayName(day, 'short')}
               <span>{day.getDate()}</span>
