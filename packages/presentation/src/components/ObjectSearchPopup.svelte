@@ -128,17 +128,17 @@
       }
     }
     categoryStatus = newCategoryStatus
-  }
-  $: updateItems(category, query, relatedDocuments)
 
-  $: if (items.length === 0) {
-    for (const c of categories) {
-      if ((categoryStatus[c._id] ?? 0) > 0) {
-        category = c
-        break
+    if (items.length === 0) {
+      for (const c of categories) {
+        if (category !== c && (categoryStatus[c._id] ?? 0) > 0) {
+          category = c
+          break
+        }
       }
     }
   }
+  $: updateItems(category, query, relatedDocuments)
 
   const manager = createFocusManager()
 </script>

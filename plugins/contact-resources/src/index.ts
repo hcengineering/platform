@@ -108,8 +108,38 @@ async function queryContact (
   search: string,
   filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
 ): Promise<ObjectSearchResult[]> {
-  let q: DocumentQuery<Contact> = { name: { $like: `%${search}%` } }
-  if (_class === contact.class.Employee) q = { ...q, active: true }
+  const q: DocumentQuery<Contact> = { name: { $like: `%${search}%` } }
+  return await doContactQuery(_class, q, filter, client)
+}
+
+async function queryEmployee (
+  client: Client,
+  search: string,
+  filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
+): Promise<ObjectSearchResult[]> {
+  const q1 = await doContactQuery(contact.class.Employee, { name: { $like: `%${search}%` } }, filter, client)
+  const q2 = await doContactQuery(
+    contact.class.Employee,
+    { displayName: { $like: `%${search}%` } },
+    {
+      in: filter?.in,
+      nin: [...(filter?.nin ?? []), ...Array.from(q1.map((it) => ({ _id: it.doc._id, _class: it.doc._class })))]
+    },
+    client
+  )
+
+  return q1.concat(q2)
+}
+
+async function doContactQuery (
+  _class: Ref<Class<Contact>>,
+  q: DocumentQuery<Contact>,
+  filter: { in?: RelatedDocument[] | undefined, nin?: RelatedDocument[] | undefined } | undefined,
+  client: Client
+): Promise<ObjectSearchResult[]> {
+  if (_class === contact.class.Employee) {
+    q = { ...q, active: true }
+  }
   if (filter?.in !== undefined || filter?.nin !== undefined) {
     q._id = {}
     if (filter.in !== undefined) {
@@ -199,7 +229,7 @@ export default async (): Promise<Resources> => ({
       client: Client,
       query: string,
       filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
-    ) => await queryContact(contact.class.Employee, client, query, filter),
+    ) => await queryEmployee(client, query, filter),
     PersonQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>
       await queryContact(contact.class.Person, client, query, filter),
     OrganizationQuery: async (
