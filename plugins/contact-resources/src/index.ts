@@ -117,10 +117,15 @@ async function queryEmployee (
   search: string,
   filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
 ): Promise<ObjectSearchResult[]> {
-  const q1 = await doContactQuery(contact.class.Employee, { name: { $like: `%${search}%` } }, filter, client)
+  const q1 = await doContactQuery(
+    contact.class.Employee,
+    { name: { $like: `%${search}%` }, active: true },
+    filter,
+    client
+  )
   const q2 = await doContactQuery(
     contact.class.Employee,
-    { displayName: { $like: `%${search}%` } },
+    { displayName: { $like: `%${search}%` }, active: true },
     {
       in: filter?.in,
       nin: [...(filter?.nin ?? []), ...Array.from(q1.map((it) => ({ _id: it.doc._id, _class: it.doc._class })))]
@@ -131,9 +136,9 @@ async function queryEmployee (
   return q1.concat(q2)
 }
 
-async function doContactQuery (
-  _class: Ref<Class<Contact>>,
-  q: DocumentQuery<Contact>,
+async function doContactQuery<T extends Contact> (
+  _class: Ref<Class<T>>,
+  q: DocumentQuery<T>,
   filter: { in?: RelatedDocument[] | undefined, nin?: RelatedDocument[] | undefined } | undefined,
   client: Client
 ): Promise<ObjectSearchResult[]> {
@@ -143,10 +148,10 @@ async function doContactQuery (
   if (filter?.in !== undefined || filter?.nin !== undefined) {
     q._id = {}
     if (filter.in !== undefined) {
-      q._id.$in = filter.in?.map((it) => it._id as Ref<Contact>)
+      q._id.$in = filter.in?.map((it) => it._id as Ref<T>)
     }
     if (filter.nin !== undefined) {
-      q._id.$nin = filter.nin?.map((it) => it._id as Ref<Contact>)
+      q._id.$nin = filter.nin?.map((it) => it._id as Ref<T>)
     }
   }
   return (await client.findAll(_class, q, { limit: 200 })).map(toObjectSearchResult)
