@@ -23,6 +23,7 @@
     AttachedData,
     Data,
     Doc,
+    fillDefaults,
     generateId,
     MixinData,
     Ref,
@@ -109,8 +110,11 @@
       remote: draft?.remote
     } as Candidate
   }
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
 
   const object: Candidate = toCandidate(draft)
+  fillDefaults(hierarchy, object, recruit.mixin.Candidate)
 
   function resumeDraft () {
     return {
@@ -125,7 +129,6 @@
   let resume = resumeDraft() as resumeFile
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
 
   let inputFile: HTMLInputElement
   let loading = false
@@ -544,6 +547,7 @@
     object.avatar = undefined
     object.onsite = undefined
     object.remote = undefined
+    fillDefaults(hierarchy, object, recruit.mixin.Candidate)
   }
 
   export async function onOutsideClick () {

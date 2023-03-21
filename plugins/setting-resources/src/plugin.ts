@@ -62,6 +62,7 @@ export default mergeIds(settingId, setting, {
     ShowAttribute: '' as IntlString,
     Visibility: '' as IntlString,
     Hidden: '' as IntlString,
-    InviteSettings: '' as IntlString
+    InviteSettings: '' as IntlString,
+    DefaultValue: '' as IntlString
   }
 })

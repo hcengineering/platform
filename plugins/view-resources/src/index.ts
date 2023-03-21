@@ -145,7 +145,8 @@ export {
   TreeNode,
   TreeItem,
   StringEditor,
-  DocNavLink
+  DocNavLink,
+  EnumEditor
 }
 
 export default async (): Promise<Resources> => ({

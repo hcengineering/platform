@@ -40,8 +40,6 @@
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
 
-  console.log('OPEN EDIT DOC')
-
   let realObjectClass: Ref<Class<Doc>> = _class
   let lastId: Ref<Doc> = _id
   let lastClass: Ref<Class<Doc>> = _class
