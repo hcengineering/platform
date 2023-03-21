@@ -26,6 +26,7 @@
   let name: string
   let type: Type<PropertyType> | undefined = attribute.type
   let index: IndexKind | undefined = attribute.index
+  let defaultValue: any | undefined = attribute.defaultValue
   let is: AnyComponent | undefined
 
   const client = getClient()
@@ -39,6 +40,9 @@
     const newLabel = getEmbeddedLabel(name)
     if (newLabel !== attribute.label) {
       update.label = newLabel
+    }
+    if (defaultValue !== attribute.defaultValue) {
+      update.defaultValue = defaultValue
     }
     if (!exist) {
       if (index !== attribute.index) {
@@ -83,6 +87,7 @@
   const handleChange = (e: any) => {
     type = e.detail?.type
     index = e.detail?.index
+    defaultValue = e.detail?.defaultValue
   }
 </script>
 
@@ -119,6 +124,7 @@
           {is}
           props={{
             type,
+            defaultValue,
             editable: !exist
           }}
           on:change={handleChange}

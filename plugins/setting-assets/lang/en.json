@@ -69,6 +69,7 @@
     "Visibility": "Visibility",
     "Hidden": "Hidden",
     "Configure": "Configure",
-    "InviteSettings": "Workspace invite settings"
+    "InviteSettings": "Workspace invite settings",
+    "DefaultValue": "Default value"
   }
 }

@@ -15,7 +15,15 @@
 <script lang="ts">
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import contact, { Organization } from '@hcengineering/contact'
-  import core, { Data, FindResult, generateId, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
+  import core, {
+    Data,
+    fillDefaults,
+    FindResult,
+    generateId,
+    getCurrentAccount,
+    Ref,
+    SortingOrder
+  } from '@hcengineering/core'
   import { Card, createQuery, getClient, InlineAttributeBar, MessageBox, UserBox } from '@hcengineering/presentation'
   import { Vacancy as VacancyClass } from '@hcengineering/recruit'
   import tags from '@hcengineering/tags'
@@ -69,7 +77,6 @@
     fullDescription: '',
     location: ''
   }
-
   export function canClose (): boolean {
     return name === '' && templateId !== undefined
   }
@@ -77,7 +84,9 @@
   let changed = false
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
   const templateQ = createQuery()
+  fillDefaults(hierarchy, vacancyData, recruit.class.Vacancy)
   $: templateQ.query(task.class.KanbanTemplate, { _id: templateId }, (result) => {
     const { _class, _id, description, ...templateData } = result[0]
     vacancyData = { ...(templateData as unknown as Data<VacancyClass>), fullDescription: description }

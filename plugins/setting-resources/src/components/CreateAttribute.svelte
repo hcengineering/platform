@@ -36,6 +36,7 @@
   let name: string
   let type: Type<PropertyType> | undefined
   let index: IndexKind | undefined
+  let defaultValue: any | undefined
   let is: AnyComponent | undefined
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -49,7 +50,8 @@
       name: name.trim().replace('/', '').replace(' ', '') + '_' + generateId(),
       label: getEmbeddedLabel(name),
       isCustom: true,
-      type
+      type,
+      defaultValue
     }
     if (index !== undefined) {
       data.index = index
@@ -89,6 +91,7 @@
   const handleChange = (e: any) => {
     type = e.detail?.type
     index = e.detail?.index
+    defaultValue = e.detail?.defaultValue
   }
 </script>
 

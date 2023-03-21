@@ -21,6 +21,7 @@
     AttachedData,
     Data,
     Doc,
+    fillDefaults,
     generateId,
     Ref,
     SortingOrder,
@@ -95,6 +96,8 @@
   export let onDraftChanged: () => void
 
   const draft: IssueDraft | undefined = shouldSaveDraft ? getUserDraft(tracker.class.IssueDraft) : undefined
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
 
   let subIssuesComponent: SubIssues
 
@@ -145,6 +148,7 @@
         childInfo: []
       }
     : toIssue(defaultIssue, draft)
+  fillDefaults(hierarchy, object, tracker.class.Issue)
 
   function resetObject (): void {
     templateId = undefined
@@ -156,6 +160,7 @@
       updateIssueStatusId(currentProject, status)
       updateAssigneeId(currentProject)
     }
+    fillDefaults(hierarchy, object, tracker.class.Issue)
   }
 
   let templateId: Ref<IssueTemplate> | undefined = draft?.template?.template
@@ -223,7 +228,6 @@
   $: updateTemplate(template)
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
   const statusesQuery = createQuery()
   const spaceQuery = createQuery()
 

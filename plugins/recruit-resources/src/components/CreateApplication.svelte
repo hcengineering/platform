@@ -22,6 +22,7 @@
     Account,
     Class,
     Client,
+    fillDefaults,
     Doc,
     FindOptions,
     generateId,
@@ -99,6 +100,7 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  fillDefaults(hierarchy, doc, recruit.class.Applicant)
 
   export function canClose (): boolean {
     return (preserveCandidate || _candidate === undefined) && assignee === undefined
@@ -184,6 +186,7 @@
         dueDate: null,
         createOn: Date.now()
       }
+      fillDefaults(hierarchy, doc, recruit.class.Applicant)
     }
   }
 

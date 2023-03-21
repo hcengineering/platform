@@ -115,6 +115,7 @@ export interface Attribute<T extends PropertyType> extends Doc, UXObject {
   index?: IndexKind
   shortLabel?: IntlString
   isCustom?: boolean
+  defaultValue?: any
 
   // Extra customization properties
   [key: string]: any
@@ -191,6 +192,11 @@ export type Data<T extends Doc> = Omit<T, keyof Doc>
  * @public
  */
 export type AttachedData<T extends AttachedDoc> = Omit<T, keyof AttachedDoc>
+
+/**
+ * @public
+ */
+export type DocData<T extends Doc> = T extends AttachedDoc ? AttachedData<T> : Data<T>
 
 // T Y P E S
 

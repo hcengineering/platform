@@ -13,9 +13,10 @@
 // limitations under the License.
 //
 
-import { Account, AnyAttribute, Class, Doc, DocIndexState, IndexKind, Obj, Ref } from './classes'
-import { FindResult } from './storage'
+import { Account, AnyAttribute, Class, Doc, DocData, DocIndexState, IndexKind, Obj, Ref } from './classes'
 import core from './component'
+import { Hierarchy } from './hierarchy'
+import { FindResult } from './storage'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -198,4 +199,24 @@ export function concatLink (host: string, path: string): string {
   } else {
     return `${host}${path}`
   }
+}
+
+/**
+ * @public
+ */
+export function fillDefaults<T extends Doc> (
+  hierarchy: Hierarchy,
+  object: DocData<T> | T,
+  _class: Ref<Class<T>>
+): DocData<T> | T {
+  const baseClass = hierarchy.isDerived(_class, core.class.AttachedDoc) ? core.class.AttachedDoc : core.class.Doc
+  const attributes = hierarchy.getAllAttributes(_class, baseClass)
+  for (const attribute of attributes) {
+    if (attribute[1].defaultValue !== undefined) {
+      if ((object as any)[attribute[0]] === undefined) {
+        ;(object as any)[attribute[0]] = attribute[1].defaultValue
+      }
+    }
+  }
+  return object
 }

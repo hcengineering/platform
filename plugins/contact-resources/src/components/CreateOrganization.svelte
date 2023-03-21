@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Channel, findContacts, Organization } from '@hcengineering/contact'
-  import { AttachedData, generateId, Ref, TxOperations, WithLookup } from '@hcengineering/core'
+  import { AttachedData, fillDefaults, generateId, Ref, TxOperations, WithLookup } from '@hcengineering/core'
   import { Card, getClient, InlineAttributeBar } from '@hcengineering/presentation'
   import { Button, createFocusManager, EditBox, FocusHandler, IconInfo, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -37,6 +37,9 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  fillDefaults(hierarchy, object, contact.class.Organization)
 
   async function createOrganization () {
     await client.createDoc(contact.class.Organization, contact.space.Contacts, object, id)

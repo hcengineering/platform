@@ -17,6 +17,7 @@
   import { TypeEnum } from '@hcengineering/model'
   import presentation, { getClient } from '@hcengineering/presentation'
   import { Button, Label, showPopup } from '@hcengineering/ui'
+  import { EnumEditor } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import setting from '../../plugin'
   import EnumSelect from './EnumSelect.svelte'
@@ -24,16 +25,22 @@
   export let type: EnumOf | undefined
   export let editable: boolean = true
   export let value: Enum | undefined
+  export let defaultValue: string | undefined
 
   const client = getClient()
   const dispatch = createEventDispatcher()
 
-  $: value && dispatch('change', { type: TypeEnum(value._id) })
+  $: value && changeEnum(value)
   $: ref = value?._id ?? type?.of
 
   const create = {
     label: setting.string.CreateEnum,
     component: setting.component.EditEnum
+  }
+
+  function changeEnum (value: Enum) {
+    type = TypeEnum(value._id)
+    dispatch('change', { type, defaultValue })
   }
 
   async function updateSelected (ref: Ref<Enum> | undefined) {
@@ -48,24 +55,42 @@
   }
 </script>
 
-<div class="flex-row-center flex-grow">
-  <Label label={core.string.Enum} />
-  <div class="ml-4">
-    {#if editable}
-      <EnumSelect label={core.string.Enum} bind:value {create} />
-    {:else if value}
-      {value.name}
+<div>
+  <div class="flex-row-center flex-grow">
+    <Label label={core.string.Enum} />
+    <div class="ml-4">
+      {#if editable}
+        <EnumSelect label={core.string.Enum} bind:value {create} />
+      {:else if value}
+        {value.name}
+      {/if}
+    </div>
+    {#if value}
+      <div class="ml-2">
+        <Button
+          icon={setting.icon.Setting}
+          kind={'no-border'}
+          size={'small'}
+          showTooltip={{ label: presentation.string.Edit }}
+          on:click={edit}
+        />
+      </div>
     {/if}
   </div>
-  {#if value}
-    <div class="ml-2">
-      <Button
-        icon={setting.icon.Setting}
-        kind={'no-border'}
-        size={'small'}
-        showTooltip={{ label: presentation.string.Edit }}
-        on:click={edit}
-      />
+  {#if value && type}
+    <div class="flex-row-center mt-2">
+      <Label label={setting.string.DefaultValue} />
+      <div class="ml-2">
+        <EnumEditor
+          label={setting.string.DefaultValue}
+          {type}
+          value={defaultValue ?? ''}
+          onChange={(e) => {
+            defaultValue = e
+            dispatch('change', { type, defaultValue })
+          }}
+        />
+      </div>
     </div>
   {/if}
 </div>
