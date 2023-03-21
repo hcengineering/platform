@@ -17,4 +17,4 @@
   export let value: number | undefined
 </script>
 
-<span>{value ? value : ''}</span>
+<span>{value || ''}</span>

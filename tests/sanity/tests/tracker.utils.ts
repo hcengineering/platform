@@ -1,4 +1,4 @@
-import { Page, expect } from '@playwright/test'
+import { expect, Page } from '@playwright/test'
 import { PlatformURI } from './utils'
 
 export interface IssueProps {
@@ -45,12 +45,17 @@ export async function setViewOrder (page: Page, orderName: string): Promise<void
   await page.keyboard.press('Escape')
 }
 
-export async function fillIssueForm (page: Page, props: IssueProps, addForm: boolean): Promise<void> {
+export async function fillIssueForm (page: Page, props: IssueProps, issue: boolean): Promise<void> {
   const { name, description, status, assignee, labels, priority, component, sprint } = props
-  const af = addForm ? 'form ' : ''
-  await page.fill(af + '[placeholder="Issue\\ title"]', name)
+  const af = issue ? 'form ' : '[id="sub-issue-child-editor"] '
+  const issueTitle = page.locator(af + '[placeholder="Issue\\ title"]')
+  await issueTitle.fill(name)
+  await issueTitle.evaluate((e) => e.blur())
+
   if (description !== undefined) {
-    await page.fill('.ProseMirror', description)
+    const pm = await page.locator(af + '.ProseMirror')
+    await pm.fill(description)
+    await pm.evaluate((e) => e.blur())
   }
   if (status !== undefined) {
     await page.click(af + '#status-editor')

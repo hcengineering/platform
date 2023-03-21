@@ -284,7 +284,8 @@
     "SevenHoursLength": "Seven Hours",
     "EightHoursLength": "Eight Hours",
     "CreatedOn": "Created on",
-    "HourLabel": "h"
+    "HourLabel": "h",
+    "Saved": "Saved..."
   },
   "status": {}
 }
