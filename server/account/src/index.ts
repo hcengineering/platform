@@ -924,7 +924,7 @@ function wrap (f: (db: Db, productId: string, ...args: any[]) => Promise<any>): 
       .then((result) => ({ id: request.id, result }))
       .catch((err) => {
         console.error(err)
-        if (err.status.code === platform.status.ExpiredLink) {
+        if (err.status?.code === platform.status.ExpiredLink) {
           return {
             error: new Status(Severity.ERROR, platform.status.ExpiredLink, {})
           }
