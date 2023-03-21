@@ -97,7 +97,15 @@
     {/if}
   </svelte:fragment>
   <div class="flex-row-center gap-2">
-    <EditBox focus bind:value={data.value} {placeholder} maxWidth={'9rem'} format={'number'} maxDigitsAfterPoint={3} kind={'editbox'} />
+    <EditBox
+      focus
+      bind:value={data.value}
+      {placeholder}
+      maxWidth={'9rem'}
+      format={'number'}
+      maxDigitsAfterPoint={3}
+      kind={'editbox'}
+    />
     <Button kind={'link-bordered'} on:click={() => (data.value = 0.125)}
       ><span slot="content">1<Label label={tracker.string.HourLabel} /></span></Button
     >
