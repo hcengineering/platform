@@ -31,6 +31,7 @@
   export let extensions: AnyExtension[] = []
   export let supportSubmit = true
   export let isEmpty = true
+  export let haveAttachment = false
 
   let element: HTMLElement
   let editor: Editor
@@ -50,7 +51,7 @@
     if (editor) editor.setEditable(editable)
   }
   export function submit (): void {
-    if (!editor.isEmpty) {
+    if (!editor.isEmpty || haveAttachment) {
       content = editor.getHTML()
       dispatch('content', content)
     }

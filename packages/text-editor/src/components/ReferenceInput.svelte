@@ -292,6 +292,7 @@
         extensions={editorExtensions}
         on:selection-update={updateFormattingState}
         on:update
+        {haveAttachment}
         placeholder={placeholder ?? textEditorPlugin.string.EditorPlaceholder}
       />
     </div>
