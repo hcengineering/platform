@@ -38,6 +38,7 @@
     "DocumentPreview": "Предпросмотр",
     "MakePrivate": "Сделать личным",
     "MakePrivateDescription": "Только пользователи могут видеть это",
-    "AddMembersHeader": "Добавить пользователей в {value}:"
+    "AddMembersHeader": "Добавить пользователей в {value}:",
+    "OpenInANewTab": "Открыть в новой вкладке"
   }
 }

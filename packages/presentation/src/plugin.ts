@@ -67,7 +67,8 @@ export default plugin(presentationId, {
     DocumentPreview: '' as IntlString,
     MakePrivate: '' as IntlString,
     MakePrivateDescription: '' as IntlString,
-    AddMembersHeader: '' as IntlString
+    AddMembersHeader: '' as IntlString,
+    OpenInANewTab: '' as IntlString
   },
   metadata: {
     RequiredVersion: '' as Metadata<string>,
