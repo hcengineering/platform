@@ -26,6 +26,7 @@
   export let inline = false
   export let component: AnyComponent = view.component.EditDoc
   export let props: Record<string, any> = {}
+  export let shrink: number = 0
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -44,4 +45,4 @@
   $: getHref(object)
 </script>
 
-<NavLink {disableClick} {onClick} {noUnderline} {inline} {href}><slot /></NavLink>
+<NavLink {disableClick} {onClick} {noUnderline} {inline} {shrink} {href}><slot /></NavLink>

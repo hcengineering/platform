@@ -77,6 +77,14 @@
     }
     return { object, ...clearAttributeProps, ...props }
   }
+
+  let noCompressed: number
+  $: if (model) {
+    noCompressed = -1
+    model.forEach((m, i) => {
+      if (m.props?.listProps?.compression) noCompressed = i
+    })
+  }
 </script>
 
 <div
@@ -114,7 +122,7 @@
       />
     </div>
   </div>
-  {#each model as attributeModel}
+  {#each model as attributeModel, i}
     {@const listProps = attributeModel.props?.listProps}
     {#if attributeModel.props?.type === 'grow'}
       <svelte:component this={attributeModel.presenter} />
@@ -135,6 +143,7 @@
           value={getObjectValue(attributeModel.key, docObject) ?? ''}
           onChange={getOnChange(docObject, attributeModel)}
           kind={'list'}
+          compression={listProps?.compression && i !== noCompressed}
           {...joinProps(attributeModel, docObject, props)}
         />
       {/if}

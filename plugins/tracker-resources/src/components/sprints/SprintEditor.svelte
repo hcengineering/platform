@@ -44,6 +44,7 @@
 
   export let groupBy: string | undefined = undefined
   export let enlargedText: boolean = false
+  export let compression: boolean = false
 
   const client = getClient()
   const spaceQuery = createQuery()
@@ -75,15 +76,16 @@
 <div
   class="flex flex-wrap"
   class:minus-margin={kind === 'list-header'}
+  class:compression
   style:flex-direction={twoRows ? 'column' : 'row'}
 >
   {#if (value.sprint && value.sprint !== $activeSprint && groupBy !== 'sprint') || shouldShowPlaceholder}
-    <div class="flex-row-center" class:minus-margin-vSpace={kind === 'list-header'} style:width>
+    <div class="flex-row-center" class:minus-margin-vSpace={kind === 'list-header'} class:compression style:width>
       <SprintSelector
         {kind}
         {size}
         {shape}
-        {width}
+        width={compression ? 'min-content' : width}
         {justify}
         {isEditable}
         {shouldShowLabel}
@@ -130,5 +132,9 @@
     &-space {
       margin: -0.25rem 0 -0.25rem 0.5rem;
     }
+  }
+  .compression {
+    flex-shrink: 5;
+    min-width: 1rem;
   }
 </style>

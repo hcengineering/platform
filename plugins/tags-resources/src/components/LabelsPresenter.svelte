@@ -14,6 +14,7 @@
   export let kind: 'short' | 'full' = 'short'
   export let isEditable: boolean = false
   export let action: (evt: MouseEvent) => Promise<void> | void = async () => {}
+  export let compression: boolean = false
 
   export let lookupField: string | undefined
 
@@ -50,7 +51,8 @@
   class="labels-container"
   style:justify-content={kind === 'short' ? 'space-between' : 'flex-start'}
   class:w-full={kind === 'full'}
-  style:flex-wrap={kind === 'short' ? 'nowrap' : 'wrap'}
+  style:flex-wrap={kind === 'short' || compression ? 'nowrap' : 'wrap'}
+  style:flex-shrink={compression ? 1 : 0}
   use:resizeObserver={(element) => {
     allWidth = element.clientWidth
   }}
@@ -60,7 +62,7 @@
   }}
 >
   {#each items as value, i}
-    <div class="label-box wrap-{kind}">
+    <div class="label-box wrap-{kind}" title={value.title}>
       <TagReferencePresenter attr={undefined} {value} kind={'kanban-labels'} bind:realWidth={widths[i]} />
     </div>
   {/each}
@@ -71,7 +73,7 @@
     overflow: hidden;
     display: flex;
     align-items: center;
-    flex-shrink: 0;
+    // flex-shrink: 0;
     min-width: 0;
     border-radius: 0.25rem;
   }
