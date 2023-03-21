@@ -41,7 +41,7 @@
     "@hcengineering/server-tool": "^0.6.0",
     "@hcengineering/server-token": "^0.6.0",
     "@hcengineering/client": "^0.6.6",
-    "@hcengineering/client-resources": "^0.6.4",
+    "@hcengineering/client-resources": "^0.6.12",
     "@hcengineering/core": "^0.6.21",
     "dotenv": "~16.0.0",
     "got": "^11.8.3",
