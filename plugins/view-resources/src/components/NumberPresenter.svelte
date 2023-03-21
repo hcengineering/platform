@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  export let value: number
+  export let value: number | undefined
 </script>
 
-<span>{value}</span>
+<span>{value ? value : ''}</span>
