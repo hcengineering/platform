@@ -26,6 +26,7 @@
   export let docQuery: DocumentQuery<Account> = {}
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
+  export let readonly = false
 
   const query = createQuery()
 
@@ -60,6 +61,7 @@
   {kind}
   {size}
   {label}
+  {readonly}
   value={selectedEmp}
   on:change={change}
 />
