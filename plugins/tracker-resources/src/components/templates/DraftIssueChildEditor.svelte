@@ -117,7 +117,12 @@
   $: labelRefs = labels.map((it) => ({ ...(it as unknown as TagReference), _id: generateId(), tag: it._id }))
 </script>
 
-<div bind:this={thisRef} class="flex-col antiEmphasized clear-mins" class:antiPopup={showBorder}>
+<div
+  id="sub-issue-child-editor"
+  bind:this={thisRef}
+  class="flex-col antiEmphasized clear-mins"
+  class:antiPopup={showBorder}
+>
   <div class="flex-col w-full clear-mins">
     <EditBox
       bind:value={newIssue.title}

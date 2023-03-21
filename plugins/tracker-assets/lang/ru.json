@@ -284,7 +284,8 @@
     "SevenHoursLength": "Семь Часов",
     "EightHoursLength": "Восемь Часов",
     "CreatedOn": "Создана",
-    "HourLabel": "ч"
+    "HourLabel": "ч",
+    "Saved": "Сохранено..."
   },
   "status": {}
 }

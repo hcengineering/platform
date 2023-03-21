@@ -13,24 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachmentDocList, AttachmentStyledBox } from '@hcengineering/attachment-resources'
+  import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import { Class, Data, Doc, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
-  import presentation, { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
   import type { Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import {
     Button,
     EditBox,
     getCurrentLocation,
-    IconEdit,
     IconMixin,
     IconMoreH,
     Label,
     navigate,
-    Scroller,
     showPopup,
     Spinner
   } from '@hcengineering/ui'
@@ -111,26 +109,8 @@
   $: isDescriptionEmpty = !new DOMParser().parseFromString(description, 'text/html').documentElement.innerText?.trim()
   $: parentIssue = issue?.$lookup?.attachedTo
 
-  function edit (ev: MouseEvent) {
-    ev.preventDefault()
-
-    isEditing = true
-  }
-
-  function cancelEditing (ev: MouseEvent) {
-    ev.preventDefault()
-
-    isEditing = false
-
-    if (issue) {
-      title = issue.title
-      description = issue.description
-    }
-  }
-
-  async function save (ev: MouseEvent) {
-    ev.preventDefault()
-
+  let saved = false
+  async function save () {
     if (!issue || !canSave) {
       return
     }
@@ -156,9 +136,19 @@
         issue.collection,
         updates
       )
+      saved = true
+      setTimeout(() => {
+        saved = false
+      }, 5000)
     }
     await descriptionBox.createAttachments()
     isEditing = false
+  }
+
+  let saveTrigger: any
+  function triggerSave (): void {
+    clearTimeout(saveTrigger)
+    saveTrigger = setTimeout(save, 5000)
   }
 
   function showMenu (ev?: Event): void {
@@ -178,7 +168,7 @@
     isHeader
     isAside={true}
     isSub={false}
-    withoutActivity={isEditing}
+    withoutActivity={false}
     withoutTitle
     bind:innerWidth
     on:close={() => dispatch('close')}
@@ -192,80 +182,54 @@
       </span>
     </svelte:fragment>
     <svelte:fragment slot="tools">
-      {#if isEditing}
-        <Button kind={'transparent'} label={presentation.string.Cancel} on:click={cancelEditing} />
-        <Button disabled={!canSave} label={presentation.string.Save} on:click={save} />
-      {:else}
-        <Button icon={IconEdit} kind={'transparent'} size={'medium'} on:click={edit} />
-        <Button icon={IconMoreH} kind={'transparent'} size={'medium'} on:click={showMenu} />
+      {#if saved}
+        <Label label={tracker.string.Saved} />
       {/if}
+      <Button icon={IconMoreH} kind={'transparent'} size={'medium'} on:click={showMenu} />
     </svelte:fragment>
 
-    {#if isEditing}
-      <Scroller>
-        <div class="popupPanel-body__main-content py-10 clear-mins content">
-          {#if parentIssue}
-            <div class="mb-6">
-              {#if currentProject && issueStatuses}
-                <SubIssueSelector {issue} />
-              {:else}
-                <Spinner />
-              {/if}
-            </div>
-          {/if}
-          <EditBox bind:value={title} placeholder={tracker.string.IssueTitlePlaceholder} kind="large-style" />
-          <div class="w-full mt-6">
-            <AttachmentStyledBox
-              bind:this={descriptionBox}
-              objectId={_id}
-              _class={tracker.class.Issue}
-              space={issue.space}
-              alwaysEdit
-              showButtons
-              maxHeight={'card'}
-              focusable
-              bind:content={description}
-              placeholder={tracker.string.IssueDescriptionPlaceholder}
-            />
-          </div>
-        </div>
-      </Scroller>
-    {:else}
-      {#if parentIssue}
-        <div class="mb-6">
-          {#if currentProject && issueStatuses}
-            <SubIssueSelector {issue} />
-          {:else}
-            <Spinner />
-          {/if}
-        </div>
-      {/if}
-      <span class="title select-text">{title}</span>
-      <div class="mt-6 description-preview select-text">
-        {#if isDescriptionEmpty}
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div class="placeholder" on:click={edit}>
-            <Label label={tracker.string.IssueDescriptionPlaceholder} />
-          </div>
+    {#if parentIssue}
+      <div class="mb-6">
+        {#if currentProject && issueStatuses}
+          <SubIssueSelector {issue} />
         {:else}
-          <MessageViewer message={description} />
+          <Spinner />
         {/if}
       </div>
-      <div class="mt-6">
-        {#key issue._id && currentProject !== undefined}
-          {#if currentProject !== undefined && issueStatuses !== undefined}
-            <SubIssues
-              {issue}
-              issueStatuses={new Map([[currentProject._id, issueStatuses]])}
-              projects={new Map([[currentProject?._id, currentProject]])}
-            />
-          {/if}
-        {/key}
-      </div>
-      <div class="mt-6">
-        <AttachmentDocList value={issue} />
-      </div>
     {/if}
+    <EditBox bind:value={title} placeholder={tracker.string.IssueTitlePlaceholder} kind="large-style" on:blur={save} />
+    <div class="w-full mt-6">
+      <AttachmentStyledBox
+        bind:this={descriptionBox}
+        useAttachmentPreview={true}
+        objectId={_id}
+        _class={tracker.class.Issue}
+        space={issue.space}
+        alwaysEdit
+        shouldSaveDraft={false}
+        on:attached={save}
+        on:detached={save}
+        showButtons
+        on:blur={save}
+        on:changeContent={triggerSave}
+        maxHeight={'card'}
+        focusable
+        bind:content={description}
+        placeholder={tracker.string.IssueDescriptionPlaceholder}
+      />
+    </div>
+
+    <div class="mt-6">
+      {#key issue._id && currentProject !== undefined}
+        {#if currentProject !== undefined && issueStatuses !== undefined}
+          <SubIssues
+            {issue}
+            issueStatuses={new Map([[currentProject._id, issueStatuses]])}
+            projects={new Map([[currentProject?._id, currentProject]])}
+          />
+        {/if}
+      {/key}
+    </div>
 
     <span slot="actions-label" class="select-text">
       {#if issueId}{issueId}{/if}

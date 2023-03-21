@@ -168,7 +168,7 @@
   }
 </script>
 
-<div bind:this={thisRef} class="flex-col root">
+<div id="sub-issue-child-editor" bind:this={thisRef} class="flex-col root">
   <div class="flex-row-top">
     <div id="status-editor" class="mr-1">
       <StatusEditor

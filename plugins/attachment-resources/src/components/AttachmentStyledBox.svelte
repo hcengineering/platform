@@ -23,6 +23,7 @@
   import attachment from '../plugin'
   import { deleteFile, uploadFile } from '../utils'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
+  import AttachmentPreview from './AttachmentPreview.svelte'
 
   export let objectId: Ref<Doc> | undefined = undefined
   export let space: Ref<Space> | undefined = undefined
@@ -38,6 +39,7 @@
   export let fakeAttach: 'fake' | 'hidden' | 'normal' = 'normal'
   export let refContainer: HTMLElement | undefined = undefined
   export let shouldSaveDraft: boolean = false
+  export let useAttachmentPreview = false
 
   const dispatch = createEventDispatcher()
 
@@ -131,6 +133,8 @@
       })
       newAttachments.add(_id)
       attachments = attachments
+      saved = false
+      dispatch('attached', _id)
       saveDraft()
     } catch (err: any) {
       setPlatformStatus(unknownError(err))
@@ -165,6 +169,7 @@
   async function removeAttachment (attachment: Attachment): Promise<void> {
     removedAttachments.add(attachment)
     attachments.delete(attachment._id)
+    dispatch('detached', attachment._id)
     attachments = attachments
     saveDraft()
   }
@@ -179,6 +184,7 @@
         attachment.attachedToClass,
         'attachments'
       )
+      dispatch('detached', attachment._id)
     } else {
       await deleteFile(attachment.file)
     }
@@ -209,7 +215,10 @@
     }
   }
 
-  export function createAttachments (): Promise<void> {
+  export async function createAttachments (): Promise<void> {
+    if (saved) {
+      return
+    }
     saved = true
     const promises: Promise<any>[] = []
     newAttachments.forEach((p) => {
@@ -221,7 +230,8 @@
     removedAttachments.forEach((p) => {
       promises.push(deleteAttachment(p))
     })
-    return Promise.all(promises).then()
+    await Promise.all(promises)
+    saveDraft()
   }
 
   $: if (attachments.size || newAttachments.size || removedAttachments.size) {
@@ -313,13 +323,17 @@
     <div class="flex-row-center list scroll-divider-color">
       {#each Array.from(attachments.values()) as attachment}
         <div class="item flex">
-          <AttachmentPresenter
-            value={attachment}
-            removable
-            on:remove={(result) => {
-              if (result !== undefined) removeAttachment(attachment)
-            }}
-          />
+          {#if useAttachmentPreview}
+            <AttachmentPreview value={attachment} />
+          {:else}
+            <AttachmentPresenter
+              value={attachment}
+              removable
+              on:remove={(result) => {
+                if (result !== undefined) removeAttachment(attachment)
+              }}
+            />
+          {/if}
         </div>
       {/each}
     </div>
