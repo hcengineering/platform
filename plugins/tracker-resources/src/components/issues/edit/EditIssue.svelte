@@ -192,7 +192,7 @@
         _class={tracker.class.Issue}
         space={issue.space}
         alwaysEdit
-        shouldSaveDraft={false}
+        shouldSaveDraft={true}
         on:attached={save}
         on:detached={save}
         showButtons

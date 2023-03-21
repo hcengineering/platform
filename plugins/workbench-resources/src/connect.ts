@@ -3,10 +3,13 @@ import contact from '@hcengineering/contact'
 import core, { Client, setCurrentAccount, Version } from '@hcengineering/core'
 import login, { loginId } from '@hcengineering/login'
 import { getMetadata, getResource, setMetadata } from '@hcengineering/platform'
-import presentation, { setClient } from '@hcengineering/presentation'
+import presentation, { refreshClient, setClient } from '@hcengineering/presentation'
 import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
 
 export let versionError: string | undefined = ''
+
+let _token: string | undefined
+let _client: Client | undefined
 
 export async function connect (title: string): Promise<Client | undefined> {
   const loc = getCurrentLocation()
@@ -27,8 +30,17 @@ export async function connect (title: string): Promise<Client | undefined> {
     return
   }
 
-  const getClient = await getResource(client.function.GetClient)
-  const instance = await getClient(
+  if (_token !== token && _client !== undefined) {
+    await _client.close()
+    _client = undefined
+  }
+  if (_client !== undefined) {
+    return _client
+  }
+  _token = token
+
+  const clientFactory = await getResource(client.function.GetClient)
+  _client = await clientFactory(
     token,
     endpoint,
     () => {
@@ -40,11 +52,13 @@ export async function connect (title: string): Promise<Client | undefined> {
         path: [loginId],
         query: {}
       })
-    }
+    },
+    // We need to refresh all active live queries and clear old queries.
+    refreshClient
   )
   console.log('logging in as', email)
 
-  const me = await instance.findOne(contact.class.EmployeeAccount, { email })
+  const me = await _client.findOne(contact.class.EmployeeAccount, { email })
   if (me !== undefined) {
     console.log('login: employee account', me)
     setCurrentAccount(me)
@@ -55,11 +69,14 @@ export async function connect (title: string): Promise<Client | undefined> {
       path: [loginId],
       query: { navigateUrl: encodeURIComponent(JSON.stringify(getCurrentLocation())) }
     })
+
+    // Update on connect, so it will be triggered
+    setClient(_client)
     return
   }
 
   try {
-    const version = await instance.findOne<Version>(core.class.Version, {})
+    const version = await _client.findOne<Version>(core.class.Version, {})
     console.log('Model version', version)
 
     const requirdVersion = getMetadata(presentation.metadata.RequiredVersion)
@@ -84,9 +101,9 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   // Update window title
   document.title = [ws, title].filter((it) => it).join(' - ')
+  setClient(_client)
 
-  setClient(instance)
-  return instance
+  return _client
 }
 function clearMetadata (ws: string): void {
   const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)

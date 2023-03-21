@@ -88,6 +88,7 @@ export async function monitor<T> (status: Status, promise: Promise<T>): Promise<
     return result
   } catch (err) {
     void setPlatformStatus(unknownError(err)) // eslint-disable-line no-void
+    console.error(err)
     throw err
   }
 }

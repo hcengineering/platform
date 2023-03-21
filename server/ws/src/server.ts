@@ -381,11 +381,12 @@ export function start (
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('message', async (msg: string) => await handleRequest(ctx, session, ws, msg))
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    ws.on('close', (code: number, reason: string) => {
+    ws.on('close', (code: number, reason: Buffer) => {
+      console.log('client closed', code, reason.toString())
       // remove session after 1seconds, give a time to reconnect.
       session.closeTimeout = setTimeout(() => {
-        void sessions.close(ctx, ws, token.workspace, code, reason)
-      }, 1000)
+        void sessions.close(ctx, ws, token.workspace, code, reason.toString())
+      }, 10000)
     })
     const b = buffer
     buffer = undefined

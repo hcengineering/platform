@@ -85,6 +85,15 @@ export class LiveQuery extends TxProcessor implements Client {
     return this.client.getModel()
   }
 
+  // Perform refresh of content since connection established.
+  async refreshConnect (): Promise<void> {
+    for (const q of [...this.queue]) {
+      if (!(await this.removeFromQueue(q))) {
+        await this.refresh(q)
+      }
+    }
+  }
+
   private match (q: Query, doc: Doc): boolean {
     if (!this.getHierarchy().isDerived(doc._class, q._class)) {
       // Check if it is not a mixin and not match class

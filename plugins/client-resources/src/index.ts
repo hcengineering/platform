@@ -20,59 +20,46 @@ import { connect } from './connection'
 
 export { connect }
 
-/*!
- * Anticrm Platform™ Client Plugin
- * © 2020, 2021 Anticrm Platform Contributors. All Rights Reserved.
- * Licensed under the Eclipse Public License, Version 2.0
- */
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => {
-  let _token: string | undefined
-  let client: Promise<Client> | Client | undefined
-
   return {
     function: {
       GetClient: async (
         token: string,
         endpoint: string,
         onUpgrade?: () => void,
-        onUnauthorized?: () => void
+        onUnauthorized?: () => void,
+        onConnect?: () => void
       ): Promise<Client> => {
-        if (client instanceof Promise) {
-          client = await client
-        }
-        if (token !== _token && client !== undefined) {
-          await client.close()
-          client = undefined
-        }
-        if (client === undefined) {
-          const filterModel = getMetadata(clientPlugin.metadata.FilterModel) ?? false
-          client = createClient(
-            (handler: TxHandler) => {
-              const url = new URL(`/${token}`, endpoint)
-              console.log('connecting to', url.href)
-              return connect(url.href, handler, onUpgrade, onUnauthorized)
-            },
-            filterModel ? getPlugins() : undefined
-          )
-          _token = token
+        const filterModel = getMetadata(clientPlugin.metadata.FilterModel) ?? false
 
-          // Check if we had dev hook for client.
-          const hook = getMetadata(clientPlugin.metadata.ClientHook)
-          if (hook !== undefined) {
-            const hookProc = await getResource(hook)
-            const _client = client
-            client = new Promise((resolve, reject) => {
-              _client
-                .then((res) => {
-                  resolve(hookProc(res))
-                })
-                .catch((err) => reject(err))
-            })
-          }
-        }
+        let client = createClient(
+          (handler: TxHandler) => {
+            const url = new URL(`/${token}`, endpoint)
+            console.log('connecting to', url.href)
+            return connect(url.href, handler, onUpgrade, onUnauthorized, onConnect)
+          },
+          filterModel ? getPlugins() : undefined
+        )
+        // Check if we had dev hook for client.
+        client = hookClient(client)
         return await client
       }
     }
   }
+}
+async function hookClient (client: Promise<Client>): Promise<Client> {
+  const hook = getMetadata(clientPlugin.metadata.ClientHook)
+  if (hook !== undefined) {
+    const hookProc = await getResource(hook)
+    const _client = client
+    client = new Promise((resolve, reject) => {
+      _client
+        .then((res) => {
+          resolve(hookProc(res))
+        })
+        .catch((err) => reject(err))
+    })
+  }
+  return await client
 }
