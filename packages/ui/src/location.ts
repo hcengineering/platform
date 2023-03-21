@@ -115,7 +115,9 @@ export function navigate (location: PlatformLocation, store = true): void {
     if (store) {
       history.pushState(null, '', url)
       localStorage.setItem('platform_last_loc', JSON.stringify(location))
-      localStorage.setItem(`platform_last_loc_${location.path[1]}`, JSON.stringify(location))
+      if (location.path[1] !== undefined) {
+        localStorage.setItem(`platform_last_loc_${location.path[1]}`, JSON.stringify(location))
+      }
     }
     locationWritable.set(location)
   }
