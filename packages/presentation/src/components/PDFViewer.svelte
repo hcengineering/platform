@@ -20,9 +20,7 @@
   import presentation from '..'
   import { getFileUrl } from '../utils'
   import Download from './icons/Download.svelte'
-  import MaximizeH from './icons/MaximizeH.svelte'
-  import MaximizeO from './icons/MaximizeO.svelte'
-  import MaximizeV from './icons/MaximizeV.svelte'
+  import NewWindow from './icons/NewWindow.svelte'
   import IndexedDocumentPreview from './IndexedDocumentPreview.svelte'
 
   export let file: string
@@ -32,7 +30,7 @@
   export let value: Attachment
 
   const dispatch = createEventDispatcher()
-  let imgView: 'img-horizontal-fit' | 'img-vertical-fit' | 'img-original-fit' = 'img-vertical-fit'
+  // let imgView: 'img-horizontal-fit' | 'img-vertical-fit' | 'img-original-fit' = 'img-vertical-fit'
 
   function iconLabel (name: string): string {
     const parts = name.split('.')
@@ -66,41 +64,18 @@
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
-    {#if contentType && contentType.startsWith('image/')}
+    <a class="no-line" target="_salf" href={getFileUrl(file)}>
       <Button
-        icon={MaximizeH}
+        icon={NewWindow}
         kind={'transparent'}
-        shape={'circle'}
-        on:click={() => {
-          imgView = 'img-horizontal-fit'
-        }}
-        selected={imgView === 'img-horizontal-fit'}
+        showTooltip={{ label: presentation.string.OpenInANewTab }}
+        on:click={() => window.open(getFileUrl(file), '_blank')}
       />
-      <Button
-        icon={MaximizeV}
-        kind={'transparent'}
-        shape={'circle'}
-        on:click={() => {
-          imgView = 'img-vertical-fit'
-        }}
-        selected={imgView === 'img-vertical-fit'}
-      />
-      <Button
-        icon={MaximizeO}
-        kind={'transparent'}
-        shape={'circle'}
-        on:click={() => {
-          imgView = 'img-original-fit'
-        }}
-        selected={imgView === 'img-original-fit'}
-      />
-      <div class="buttons-divider" />
-    {/if}
+    </a>
     <a class="no-line" href={getFileUrl(file)} download={name} bind:this={download}>
       <Button
         icon={Download}
         kind={'transparent'}
-        shape={'circle'}
         on:click={() => {
           download.click()
         }}
@@ -110,8 +85,8 @@
   </svelte:fragment>
 
   {#if contentType && contentType.startsWith('image/')}
-    <div class="pdfviewer-content" style:margin={$deviceInfo.minWidth ? '.5rem' : '1.5rem'}>
-      <img class={imgView} src={getFileUrl(file)} alt="" />
+    <div class="pdfviewer-content img" style:margin={$deviceInfo.minWidth ? '.5rem' : '1.5rem'}>
+      <img class="img-fit" src={getFileUrl(file)} alt="" />
     </div>
     <div class="space" />
   {:else if contentType && contentType.startsWith('application/msword')}
@@ -146,6 +121,21 @@
     border-style: none;
     border-radius: 0.5rem;
     background-color: var(--board-bg-color);
+
+    &.img {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+      min-height: 0;
+    }
+  }
+  .img-fit {
+    margin: 0 auto;
+    width: fit-content;
+    height: fit-content;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
   }
   .img-horizontal-fit,
   .img-vertical-fit,

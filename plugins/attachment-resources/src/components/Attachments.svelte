@@ -22,7 +22,7 @@
   import attachment from '../plugin'
   import AddAttachment from './AddAttachment.svelte'
   import AttachmentDroppable from './AttachmentDroppable.svelte'
-  import IconAttachment from './icons/Attachment.svelte'
+  import IconAttachments from './icons/Attachments.svelte'
   import UploadDuo from './icons/UploadDuo.svelte'
 
   export let objectId: Ref<Doc>
@@ -46,7 +46,7 @@
   <div class="antiSection-header">
     <div class="antiSection-header__icon">
       {#if showHeader}
-        <Icon icon={IconAttachment} size={'small'} />
+        <Icon icon={IconAttachments} size={'small'} />
       {/if}
     </div>
     <span class="antiSection-header__title">
