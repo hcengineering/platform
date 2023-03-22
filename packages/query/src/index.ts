@@ -130,6 +130,13 @@ export class LiveQuery extends TxProcessor implements Client {
     if (this.client.getHierarchy().getDomain(_class) === DOMAIN_MODEL) {
       return await this.client.findAll(_class, query, options)
     }
+    if (options?.projection !== undefined) {
+      options.projection = {
+        ...options.projection,
+        _class: 1,
+        modifiedOn: 1
+      }
+    }
     const q = this.findQuery(_class, query, options) ?? this.createDumpQuery(_class, query, options)
     if (q.result instanceof Promise) {
       q.result = await q.result
@@ -147,6 +154,13 @@ export class LiveQuery extends TxProcessor implements Client {
   ): Promise<WithLookup<T> | undefined> {
     if (this.client.getHierarchy().getDomain(_class) === DOMAIN_MODEL) {
       return await this.client.findOne(_class, query, options)
+    }
+    if (options?.projection !== undefined) {
+      options.projection = {
+        ...options.projection,
+        _class: 1,
+        modifiedOn: 1
+      }
     }
     const q = this.findQuery(_class, query, options) ?? this.createDumpQuery(_class, query, options)
     if (q.result instanceof Promise) {
@@ -255,6 +269,13 @@ export class LiveQuery extends TxProcessor implements Client {
     callback: (result: FindResult<T>) => void,
     options?: FindOptions<T>
   ): () => void {
+    if (options?.projection !== undefined) {
+      options.projection = {
+        ...options.projection,
+        _class: 1,
+        modifiedOn: 1
+      }
+    }
     const q =
       this.getQuery(_class, query, callback as (result: Doc[]) => void, options) ??
       this.createQuery(_class, query, callback, options)
