@@ -397,6 +397,17 @@ export function createModel (builder: Builder): void {
     view.class.Viewlet,
     core.space.Model,
     {
+      attachTo: recruit.class.Applicant,
+      descriptor: view.viewlet.Table,
+      config: ['', 'attachedTo', 'state', 'doneState', 'modifiedOn']
+    },
+    recruit.viewlet.VacancyApplicationsShort
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
       attachTo: recruit.class.Vacancy,
       descriptor: view.viewlet.Table,
       config: [
