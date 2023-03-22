@@ -64,7 +64,7 @@
       { ...resultQuery, ...(space ? { space } : {}) },
       {
         sort: { [filter.key.key]: SortingOrder.Ascending },
-        projection: { [prefix + filter.key.key]: 1 }
+        projection: { [prefix + filter.key.key]: 1, space: 1 }
       }
     )
     const res = await objectsPromise

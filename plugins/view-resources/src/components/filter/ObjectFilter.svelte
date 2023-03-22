@@ -70,7 +70,7 @@
     }
     targets.clear()
     const baseObjects = await client.findAll(filter.key._class, space ? { space } : {}, {
-      projection: { [filter.key.key]: 1 }
+      projection: { [filter.key.key]: 1, space: 1 }
     })
     for (const object of baseObjects) {
       const value = getObjectValue(filter.key.key, object) ?? undefined
