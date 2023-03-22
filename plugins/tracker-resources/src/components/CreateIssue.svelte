@@ -703,7 +703,7 @@
     project={currentProject}
     sprint={object.sprint}
     component={object.component}
-    bind:subIssues={subIssues}
+    bind:subIssues
   />
   <svelte:fragment slot="pool">
     <div id="status-editor">
