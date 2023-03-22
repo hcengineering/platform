@@ -45,6 +45,7 @@
     recruit.class.Applicant,
     {},
     (res) => {
+      applications.clear()
       for (const d of res) {
         const v = applications.get(d.space) ?? { count: 0, modifiedOn: 0 }
         v.count++
@@ -128,7 +129,11 @@
       }
     })
 
-  function createConfig (descr: Viewlet, preference: ViewletPreference | undefined): (string | BuildModelKey)[] {
+  function createConfig (
+    descr: Viewlet,
+    preference: ViewletPreference | undefined,
+    applications: Map<Ref<Vacancy>, ApplicationInfo>
+  ): (string | BuildModelKey)[] {
     const base = preference?.config ?? descr.config
     const result: (string | BuildModelKey)[] = []
     for (const key of base) {
@@ -185,7 +190,7 @@
   {:else}
     <TableBrowser
       _class={recruit.class.Vacancy}
-      config={createConfig(descr, preference)}
+      config={createConfig(descr, preference, applications)}
       options={descr.options}
       query={{
         ...resultQuery,
