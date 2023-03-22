@@ -26,7 +26,6 @@
   import { Plugin, PluginKey, Transaction } from 'prosemirror-state'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 
-  import { EmployeeAccount } from '@hcengineering/contact'
   import { getCurrentAccount, Markup } from '@hcengineering/core'
   import { getEventPositionElement, getPlatformColorForText, IconSize, SelectPopup, showPopup } from '@hcengineering/ui'
   import { WebsocketProvider } from 'y-websocket'
@@ -42,6 +41,7 @@
   import Code from './icons/Code.svelte'
   import CodeBlock from './icons/CodeBlock.svelte'
 
+  import { getContext } from 'svelte'
   import { calculateDecorations } from './diff/decorations'
   import { defaultExtensions, headingLevels, mInsertTable } from './extensions'
   import Header from './icons/Header.svelte'
@@ -53,15 +53,14 @@
   import Objects from './icons/Objects.svelte'
   import Quote from './icons/Quote.svelte'
   import Strikethrough from './icons/Strikethrough.svelte'
-  import LinkPopup from './LinkPopup.svelte'
-  import AddRowBefore from './icons/table/AddRowBefore.svelte'
-  import AddRowAfter from './icons/table/AddRowAfter.svelte'
-  import AddColBefore from './icons/table/AddColBefore.svelte'
   import AddColAfter from './icons/table/AddColAfter.svelte'
-  import DeleteRow from './icons/table/DeleteRow.svelte'
+  import AddColBefore from './icons/table/AddColBefore.svelte'
+  import AddRowAfter from './icons/table/AddRowAfter.svelte'
+  import AddRowBefore from './icons/table/AddRowBefore.svelte'
   import DeleteCol from './icons/table/DeleteCol.svelte'
+  import DeleteRow from './icons/table/DeleteRow.svelte'
   import DeleteTable from './icons/table/DeleteTable.svelte'
-  import { getContext } from 'svelte'
+  import LinkPopup from './LinkPopup.svelte'
 
   export let documentId: string
   export let readonly = false
@@ -100,7 +99,7 @@
     })
   }
 
-  const currentUser = getCurrentAccount() as EmployeeAccount
+  const currentUser = getCurrentAccount()
 
   let element: HTMLElement
   let editor: Editor
@@ -239,7 +238,7 @@
           CollaborationCursor.configure({
             provider: wsProvider,
             user: {
-              name: currentUser.name,
+              name: currentUser.email,
               color: getPlatformColorForText(currentUser.email)
             }
           }),

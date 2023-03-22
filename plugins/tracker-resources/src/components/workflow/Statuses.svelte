@@ -13,16 +13,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import { flip } from 'svelte/animate'
   import { AttachedData, Class, Ref, SortingOrder } from '@hcengineering/core'
-  import { Button, Icon, Label, Panel, Scroller, IconAdd, Loading, closeTooltip, showPopup } from '@hcengineering/ui'
   import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
   import { calcRank, IssueStatus, IssueStatusCategory, Project } from '@hcengineering/tracker'
+  import {
+    Button,
+    closeTooltip,
+    ExpandCollapse,
+    Icon,
+    IconAdd,
+    Label,
+    Loading,
+    Panel,
+    Scroller,
+    showPopup
+  } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
+  import { flip } from 'svelte/animate'
   import tracker from '../../plugin'
   import StatusEditor from './StatusEditor.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
-  import ExpandCollapse from '@hcengineering/ui/src/components/ExpandCollapse.svelte'
 
   export let projectId: Ref<Project>
   export let projectClass: Ref<Class<Project>>

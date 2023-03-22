@@ -23,11 +23,11 @@
     IconBack,
     IconForward,
     MonthCalendar,
+    Scroller,
     showPopup,
     WeekCalendar,
     YearCalendar
   } from '@hcengineering/ui'
-  import Scroller from '@hcengineering/ui/src/components/Scroller.svelte'
   import { BuildModelKey } from '@hcengineering/view'
   import { CalendarMode } from '../index'
   import calendar from '../plugin'

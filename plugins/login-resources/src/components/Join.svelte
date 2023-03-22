@@ -18,7 +18,7 @@
 
   import Form from './Form.svelte'
   import { checkJoined, join, signUpJoin } from '../utils'
-
+  import presentation from '@hcengineering/presentation'
   import login from '../plugin'
   import { workbenchId } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
@@ -73,7 +73,7 @@
       status = loginStatus
 
       if (result !== undefined) {
-        setMetadata(login.metadata.LoginToken, result.token)
+        setMetadata(presentation.metadata.Token, result.token)
         const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
         tokens[result.workspace] = result.token
         setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
@@ -137,7 +137,7 @@
     status = OK
     if (result !== undefined) {
       const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
-      setMetadata(login.metadata.LoginToken, result.token)
+      setMetadata(presentation.metadata.Token, result.token)
       tokens[result.workspace] = result.token
       setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
       setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)

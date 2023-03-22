@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Plugin } from '@hcengineering/platform'
+import type { Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 
 import type { Class, Ref, Space } from '@hcengineering/core'
@@ -40,6 +40,9 @@ const serverCore = plugin(serverCoreId, {
   space: {
     DocIndexState: '' as Ref<Space>,
     TriggerState: '' as Ref<Space>
+  },
+  metadata: {
+    FrontUrl: '' as Metadata<string>
   }
 })
 

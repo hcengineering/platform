@@ -30,8 +30,9 @@
   import contact, { AvatarProvider, AvatarType } from '@hcengineering/contact'
   import { Client, Ref } from '@hcengineering/core'
   import { Asset, getResource } from '@hcengineering/platform'
+  import { getBlobURL, getClient } from '@hcengineering/presentation'
   import { AnySvelteComponent, Icon, IconSize } from '@hcengineering/ui'
-  import { getAvatarProviderId, getBlobURL, getClient } from '../utils'
+  import { getAvatarProviderId } from '../utils'
   import AvatarIcon from './icons/Avatar.svelte'
 
   export let avatar: string | null | undefined = undefined

@@ -35,12 +35,11 @@
   import presentation, {
     Card,
     createQuery,
-    EmployeeBox,
     getClient,
     InlineAttributeBar,
-    SpaceSelect,
-    UserBox
+    SpaceSelect
   } from '@hcengineering/presentation'
+  import { EmployeeBox, UserBox } from '@hcengineering/contact-resources'
   import type { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
   import task, { calcRank, State } from '@hcengineering/task'
   import ui, {

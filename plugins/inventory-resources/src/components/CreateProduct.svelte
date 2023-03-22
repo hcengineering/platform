@@ -14,13 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Account, generateId, Ref, Doc } from '@hcengineering/core'
+  import { Account, Doc, generateId, Ref } from '@hcengineering/core'
+  import { Category, Product } from '@hcengineering/inventory'
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
-  import { DropdownLabels, EditBox, Button } from '@hcengineering/ui'
+  import { Button, DropdownLabels, DropdownTextItem, EditBox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import inventory from '../plugin'
-  import { Category, Product } from '@hcengineering/inventory'
-  import { DropdownTextItem } from '@hcengineering/ui/src/types'
 
   const doc: Product = {
     name: '',

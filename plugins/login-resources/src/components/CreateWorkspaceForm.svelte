@@ -21,6 +21,7 @@
   import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
   import login from '../plugin'
   import { workbenchId } from '@hcengineering/workbench'
+  import presentation from '@hcengineering/presentation'
 
   const fields = [
     {
@@ -46,7 +47,7 @@
       status = loginStatus
 
       if (result !== undefined) {
-        setMetadata(login.metadata.LoginToken, result.token)
+        setMetadata(presentation.metadata.Token, result.token)
         const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
         tokens[object.workspace] = result.token
         setMetadataLocalStorage(login.metadata.LoginTokens, tokens)

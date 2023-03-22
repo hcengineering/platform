@@ -18,10 +18,11 @@ import { Channel, Contact, Employee, getGravatarUrl, getName } from '@hcengineer
 import { Class, Client, DocumentQuery, Ref, RelatedDocument, WithLookup } from '@hcengineering/core'
 import { leaveWorkspace } from '@hcengineering/login-resources'
 import { IntlString, Resources } from '@hcengineering/platform'
-import { Avatar, getClient, getFileUrl, MessageBox, ObjectSearchResult, UserInfo } from '@hcengineering/presentation'
+import { getClient, getFileUrl, MessageBox, ObjectSearchResult } from '@hcengineering/presentation'
 import { AnyComponent, AnySvelteComponent, showPopup } from '@hcengineering/ui'
 import AccountArrayEditor from './components/AccountArrayEditor.svelte'
 import AccountBox from './components/AccountBox.svelte'
+import Avatar from './components/Avatar.svelte'
 import ChannelFilter from './components/ChannelFilter.svelte'
 import Channels from './components/Channels.svelte'
 import ChannelsDropdown from './components/ChannelsDropdown.svelte'
@@ -36,6 +37,7 @@ import ContactsTabs from './components/ContactsTabs.svelte'
 import CreateEmployee from './components/CreateEmployee.svelte'
 import CreateOrganization from './components/CreateOrganization.svelte'
 import CreatePerson from './components/CreatePerson.svelte'
+import EditableAvatar from './components/EditableAvatar.svelte'
 import EditEmployee from './components/EditEmployee.svelte'
 import EditMember from './components/EditMember.svelte'
 import EditOrganization from './components/EditOrganization.svelte'
@@ -47,6 +49,7 @@ import EmployeeBrowser from './components/EmployeeBrowser.svelte'
 import EmployeeEditor from './components/EmployeeEditor.svelte'
 import EmployeePresenter from './components/EmployeePresenter.svelte'
 import EmployeeRefPresenter from './components/EmployeeRefPresenter.svelte'
+import ExpandRightDouble from './components/icons/ExpandRightDouble.svelte'
 import MemberPresenter from './components/MemberPresenter.svelte'
 import Members from './components/Members.svelte'
 import MembersPresenter from './components/MembersPresenter.svelte'
@@ -57,7 +60,15 @@ import PersonEditor from './components/PersonEditor.svelte'
 import PersonPresenter from './components/PersonPresenter.svelte'
 import PersonRefPresenter from './components/PersonRefPresenter.svelte'
 import SocialEditor from './components/SocialEditor.svelte'
-import ExpandRightDouble from './components/icons/ExpandRightDouble.svelte'
+import UserInfo from './components/UserInfo.svelte'
+import UserBox from './components/UserBox.svelte'
+import AssigneeBox from './components/AssigneeBox.svelte'
+import UsersPopup from './components/UsersPopup.svelte'
+import EmployeeBox from './components/EmployeeBox.svelte'
+import UserBoxList from './components/UserBoxList.svelte'
+import SpaceMembers from './components/SpaceMembers.svelte'
+import CombineAvatars from './components/CombineAvatars.svelte'
+
 import contact from './plugin'
 import {
   employeeSort,
@@ -90,7 +101,17 @@ export {
   AccountArrayEditor,
   AccountBox,
   CreateOrganization,
-  ExpandRightDouble
+  ExpandRightDouble,
+  EditableAvatar,
+  UserBox,
+  AssigneeBox,
+  Avatar,
+  UsersPopup,
+  EmployeeBox,
+  UserBoxList,
+  Members,
+  SpaceMembers,
+  CombineAvatars
 }
 
 const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({
@@ -227,7 +248,9 @@ export default async (): Promise<Resources> => ({
     CreateEmployee,
     AccountArrayEditor,
     ChannelFilter,
-    MergeEmployee
+    MergeEmployee,
+    Avatar,
+    UserBoxList
   },
   completion: {
     EmployeeQuery: async (

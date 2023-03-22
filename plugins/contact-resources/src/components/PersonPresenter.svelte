@@ -14,8 +14,7 @@
 -->
 <script lang="ts">
   import { getName, Person } from '@hcengineering/contact'
-  import { IntlString } from '@hcengineering/platform'
-  import presentation from '@hcengineering/presentation'
+  import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import { LabelAndProps } from '@hcengineering/ui'
   import { PersonLabelTooltip } from '..'
   import PersonContent from './PersonContent.svelte'
@@ -42,17 +41,16 @@
       return !value
         ? undefined
         : {
-            label: presentation.string.InltPropsValue,
-            props: { value: getName(value) }
+            label: getEmbeddedLabel(getName(value))
           }
     }
     const component = value ? tooltipLabels.component : undefined
     const label = value
       ? tooltipLabels.personLabel
         ? tooltipLabels.personLabel
-        : presentation.string.InltPropsValue
+        : getEmbeddedLabel(getName(value))
       : undefined
-    const props = tooltipLabels.props ? tooltipLabels.props : value ? { value: getName(value) } : undefined
+    const props = tooltipLabels.props ? tooltipLabels.props : undefined
     return {
       component,
       label,

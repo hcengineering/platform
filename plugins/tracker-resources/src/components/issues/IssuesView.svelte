@@ -9,10 +9,10 @@
     FilterBar,
     getActiveViewletId,
     getViewOptions,
-    viewOptionStore,
-    setActiveViewletId
+    setActiveViewletId,
+    ViewletSettingButton,
+    viewOptionStore
   } from '@hcengineering/view-resources'
-  import ViewletSettingButton from '@hcengineering/view-resources/src/components/ViewletSettingButton.svelte'
   import tracker from '../../plugin'
   import IssuesContent from './IssuesContent.svelte'
   import IssuesHeader from './IssuesHeader.svelte'

@@ -17,7 +17,7 @@
   import calendar from '@hcengineering/calendar'
   import { getName, Person } from '@hcengineering/contact'
   import { Hierarchy } from '@hcengineering/core'
-  import { Avatar } from '@hcengineering/presentation'
+  import { Avatar } from '@hcengineering/contact-resources'
   import { showPanel, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
 

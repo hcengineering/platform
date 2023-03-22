@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { plugin } from '@hcengineering/platform'
+import { Metadata, plugin } from '@hcengineering/platform'
 import type { Plugin } from '@hcengineering/platform'
 import type { Doc, Ref, Class, Space, AttachedDoc, Timestamp } from '@hcengineering/core'
 import type { AnyComponent } from '@hcengineering/ui'
@@ -89,5 +89,8 @@ export default plugin(telegramId, {
   },
   space: {
     Telegram: '' as Ref<Space>
+  },
+  metadata: {
+    TelegramURL: '' as Metadata<string>
   }
 })

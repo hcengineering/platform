@@ -15,10 +15,9 @@
 <script lang="ts">
   import core, { AttachedDoc, Doc, SortingOrder, TxCollectionCUD, TxCUD } from '@hcengineering/core'
   import { Issue } from '@hcengineering/tracker'
-  import tracker from '../../plugin'
-  import { List } from '@hcengineering/view-resources'
   import view from '@hcengineering/view'
-  import { groupBy } from '@hcengineering/view-resources/src/utils'
+  import { groupBy, List } from '@hcengineering/view-resources'
+  import tracker from '../../plugin'
   import ChangedObjectPresenter from './ChangedObjectPresenter.svelte'
 
   export let txes: TxCUD<Doc>[]

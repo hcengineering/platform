@@ -18,7 +18,7 @@
   import type { Class, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import { ButtonKind, ButtonSize, LabelAndProps } from '@hcengineering/ui'
-  import presentation from '..'
+  import presentation from '@hcengineering/presentation'
   import IconPerson from './icons/Person.svelte'
   import UserBox from './UserBox.svelte'
 

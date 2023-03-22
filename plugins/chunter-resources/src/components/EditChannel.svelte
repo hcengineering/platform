@@ -16,7 +16,8 @@
 <script lang="ts">
   import { ChunterSpace } from '@hcengineering/chunter'
   import type { Class, Ref } from '@hcengineering/core'
-  import { createQuery, getClient, Members } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { SpaceMembers } from '@hcengineering/contact-resources'
   import { Icon, Label, Panel, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
@@ -91,7 +92,7 @@
           <span class="fs-title text-xl overflow-label mb-2 flex-no-shrink">
             <Label label={chunter.string.Members} />
           </span>
-          <Members space={channel} withAddButton={true} withInviteWorkspaceButton={true} />
+          <SpaceMembers space={channel} withAddButton={true} />
         </div>
       {/if}
     </div>

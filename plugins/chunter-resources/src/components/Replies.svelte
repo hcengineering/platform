@@ -17,7 +17,7 @@
   import { Employee } from '@hcengineering/contact'
   import { employeeByIdStore } from '@hcengineering/contact-resources'
   import { IdMap, Ref } from '@hcengineering/core'
-  import { Avatar } from '@hcengineering/presentation'
+  import { Avatar } from '@hcengineering/contact-resources'
   import { Label, TimeSince } from '@hcengineering/ui'
   import chunter from '../plugin'
 

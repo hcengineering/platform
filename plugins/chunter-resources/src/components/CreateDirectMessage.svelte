@@ -18,11 +18,12 @@
 
   import contact, { Employee } from '@hcengineering/contact'
   import core, { getCurrentAccount, Ref } from '@hcengineering/core'
-  import { getClient, SpaceCreateCard, UserBoxList } from '@hcengineering/presentation'
+  import { getClient, SpaceCreateCard } from '@hcengineering/presentation'
   import workbench from '@hcengineering/workbench'
   import { getResource } from '@hcengineering/platform'
 
   import chunter from '../plugin'
+  import { UserBoxList } from '@hcengineering/contact-resources'
 
   const dispatch = createEventDispatcher()
   const client = getClient()

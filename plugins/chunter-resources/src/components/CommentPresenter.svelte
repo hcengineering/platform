@@ -20,7 +20,8 @@
   import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
   import { employeeByIdStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
-  import { Avatar, getClient, MessageViewer } from '@hcengineering/presentation'
+  import { getClient, MessageViewer } from '@hcengineering/presentation'
+  import { Avatar } from '@hcengineering/contact-resources'
   import { Icon, ShowMore, TimeSince } from '@hcengineering/ui'
 
   export let value: Comment

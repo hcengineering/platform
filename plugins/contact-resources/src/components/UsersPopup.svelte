@@ -16,12 +16,9 @@
   import { Contact, getFirstName, Person } from '@hcengineering/contact'
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
   import type { Asset, IntlString } from '@hcengineering/platform'
+  import presentation, { getClient, ObjectCreate, ObjectPopup } from '@hcengineering/presentation'
   import { AnySvelteComponent, Icon, Label } from '@hcengineering/ui'
-  import presentation from '..'
-  import { getClient } from '../utils'
-  import ObjectPopup from './ObjectPopup.svelte'
   import UserInfo from './UserInfo.svelte'
-  import { ObjectCreate } from '../types'
 
   export let _class: Ref<Class<Contact>>
   export let options: FindOptions<Contact> | undefined = undefined

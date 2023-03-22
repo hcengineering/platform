@@ -24,6 +24,7 @@ import chunter, {
 import { EmployeeAccount } from '@hcengineering/contact'
 import core, {
   Class,
+  concatLink,
   Doc,
   DocumentQuery,
   FindOptions,
@@ -31,27 +32,25 @@ import core, {
   Hierarchy,
   Ref,
   Tx,
+  TxCollectionCUD,
   TxCreateDoc,
   TxProcessor,
-  TxUpdateDoc,
   TxRemoveDoc,
-  TxCollectionCUD,
-  concatLink
+  TxUpdateDoc
 } from '@hcengineering/core'
-import login from '@hcengineering/login'
+import notification from '@hcengineering/notification'
 import { getMetadata } from '@hcengineering/platform'
-import { TriggerControl } from '@hcengineering/server-core'
+import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { workbenchId } from '@hcengineering/workbench'
 import { getEmployeeAccountById } from '../../notification'
 import { createNotificationTxes } from '../../notification-resources'
-import notification from '@hcengineering/notification'
 
 /**
  * @public
  */
 export async function channelHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const channel = doc as ChunterSpace
-  const front = getMetadata(login.metadata.FrontUrl) ?? ''
+  const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.name}/${chunterId}/${channel._id}`
   const link = concatLink(front, path)
   return `<a href="${link}">${channel.name}</a>`

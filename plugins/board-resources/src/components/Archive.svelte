@@ -1,10 +1,9 @@
 <script lang="ts">
   import { Ref, Space } from '@hcengineering/core'
-  import { Button } from '@hcengineering/ui'
+  import { Button, TextArea } from '@hcengineering/ui'
   import board from '../plugin'
   import CardsArchive from './CardArchive.svelte'
   import ListArchive from './ListArchive.svelte'
-  import TextArea from '@hcengineering/ui/src/components/TextArea.svelte'
 
   export let space: Ref<Space>
 

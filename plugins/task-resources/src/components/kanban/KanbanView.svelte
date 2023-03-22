@@ -25,10 +25,10 @@
     ActionContext,
     focusStore,
     ListSelectionProvider,
+    Menu,
     SelectDirection,
     selectionStore
   } from '@hcengineering/view-resources'
-  import Menu from '@hcengineering/view-resources/src/components/Menu.svelte'
   import { onMount } from 'svelte'
   import KanbanDragDone from './KanbanDragDone.svelte'
 

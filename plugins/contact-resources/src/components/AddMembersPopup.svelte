@@ -1,10 +1,10 @@
 <script lang="ts">
-  import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
+  import { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
   import core, { IdMap, Ref, Space } from '@hcengineering/core'
+  import presentation, { getClient } from '@hcengineering/presentation'
   import { ActionIcon, Button, IconClose, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import presentation from '../plugin'
-  import { getClient } from '../utils'
+  import contact from '../plugin'
   import UsersPopup from './UsersPopup.svelte'
 
   export let value: Space
@@ -41,7 +41,7 @@
 <div class="antiPopup antiPopup-withHeader">
   <div class="ap-header flex-between header">
     <div class="ap-caption">
-      <Label label={presentation.string.AddMembersHeader} params={{ value: value.name }} />
+      <Label label={contact.string.AddMembersHeader} params={{ value: value.name }} />
     </div>
     <div class="tool">
       <ActionIcon

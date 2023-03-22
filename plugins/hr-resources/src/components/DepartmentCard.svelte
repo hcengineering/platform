@@ -17,7 +17,8 @@
   import { EmployeePresenter } from '@hcengineering/contact-resources'
   import { Ref, WithLookup } from '@hcengineering/core'
   import { Department, Staff } from '@hcengineering/hr'
-  import { Avatar, getClient, UsersPopup } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
+  import { Avatar, UsersPopup } from '@hcengineering/contact-resources'
   import {
     Button,
     closeTooltip,

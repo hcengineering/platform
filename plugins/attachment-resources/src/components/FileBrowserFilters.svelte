@@ -15,10 +15,11 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { Class, Ref, Space } from '@hcengineering/core'
-  import { SpaceMultiBoxList, UserBoxList } from '@hcengineering/presentation'
-  import { DropdownLabelsIntl } from '@hcengineering/ui'
+  import { SpaceMultiBoxList } from '@hcengineering/presentation'
+  import { Component, DropdownLabelsIntl } from '@hcengineering/ui'
   import attachment from '../plugin'
   import { dateFileBrowserFilters, fileTypeFileBrowserFilters } from '..'
+  import contact from '@hcengineering/contact'
 
   export let requestedSpaceClasses: Ref<Class<Space>>[]
   export let spaceId: Ref<Space> | undefined
@@ -30,9 +31,12 @@
 
 <div class="filterBlockContainer">
   <div class="simpleFilterButton">
-    <UserBoxList
-      items={selectedParticipants}
-      label={attachment.string.FileBrowserFilterFrom}
+    <Component
+      is={contact.component.UserBoxList}
+      props={{
+        items: selectedParticipants,
+        label: attachment.string.FileBrowserFilterFrom
+      }}
       on:update={(evt) => {
         selectedParticipants = evt.detail
       }}

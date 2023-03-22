@@ -15,9 +15,9 @@
 //
 
 // Add this to the VERY top of the first file loaded in your app
-import login from '@hcengineering/login'
 import { setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
+import serverCore from '@hcengineering/server-core'
 import { start } from '.'
 
 const serverPort = parseInt(process.env.SERVER_PORT ?? '3333')
@@ -76,7 +76,7 @@ if (frontUrl === undefined) {
   process.exit(1)
 }
 
-setMetadata(login.metadata.FrontUrl, frontUrl)
+setMetadata(serverCore.metadata.FrontUrl, frontUrl)
 setMetadata(serverToken.metadata.Secret, serverSecret)
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises

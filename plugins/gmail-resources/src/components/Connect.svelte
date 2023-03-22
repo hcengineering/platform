@@ -17,14 +17,14 @@
   import { getMetadata } from '@hcengineering/platform'
   import { Button, IconClose, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import login from '@hcengineering/login'
   import gmail from '../plugin'
   import { concatLink } from '@hcengineering/core'
+  import presentation from '@hcengineering/presentation'
 
   const dispatch = createEventDispatcher()
 
   let connecting = false
-  const gmailUrl = getMetadata(login.metadata.GmailUrl) ?? ''
+  const gmailUrl = getMetadata(gmail.metadata.GmailURL) ?? ''
 
   async function sendRequest (): Promise<void> {
     connecting = true
@@ -37,7 +37,7 @@
     const res = await fetch(url.toString(), {
       method: 'GET',
       headers: {
-        Authorization: 'Bearer ' + getMetadata(login.metadata.LoginToken),
+        Authorization: 'Bearer ' + getMetadata(presentation.metadata.Token),
         'Content-Type': 'application/json'
       }
     })

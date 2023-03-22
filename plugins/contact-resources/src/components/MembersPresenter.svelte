@@ -17,9 +17,10 @@
   import { Button, showPopup, eventToHTMLElement } from '@hcengineering/ui'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import contact, { Employee } from '@hcengineering/contact'
-  import { getClient, UsersPopup } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { IntlString, translate } from '@hcengineering/platform'
   import tracker from '../../../tracker-resources/src/plugin'
+  import UsersPopup from './UsersPopup.svelte'
 
   export let value: Doc
   export let kind: ButtonKind = 'no-border'

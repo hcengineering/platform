@@ -16,12 +16,13 @@
 <script lang="ts">
   import { combineName, EmployeeAccount, getFirstName, getLastName, Person } from '@hcengineering/contact'
   import { getCurrentAccount, Ref, Space } from '@hcengineering/core'
-  import { AttributeEditor, createQuery, EditableAvatar, getClient } from '@hcengineering/presentation'
+  import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
   import setting, { IntegrationType } from '@hcengineering/setting'
   import { createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import contact from '../plugin'
   import ChannelsEditor from './ChannelsEditor.svelte'
+  import EditableAvatar from './EditableAvatar.svelte'
 
   export let object: Person
   const client = getClient()

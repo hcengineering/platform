@@ -16,9 +16,9 @@
   import { Employee } from '@hcengineering/contact'
   import { DocumentQuery, Ref, RefTo } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { EmployeeBox } from '@hcengineering/presentation'
   import contact from '../plugin'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
+  import EmployeeBox from './EmployeeBox.svelte'
 
   export let value: Ref<Employee> | undefined
   export let label: IntlString = contact.string.Employee

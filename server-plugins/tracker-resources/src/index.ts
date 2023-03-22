@@ -30,12 +30,11 @@ import core, {
   TxUpdateDoc,
   WithLookup
 } from '@hcengineering/core'
-import login from '@hcengineering/login'
 import { getMetadata } from '@hcengineering/platform'
 import { Resource } from '@hcengineering/platform/lib/platform'
-import { TriggerControl } from '@hcengineering/server-core'
+import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { addAssigneeNotification } from '@hcengineering/server-task-resources'
-import tracker, { Issue, IssueParentInfo, Component, Project, TimeSpendReport, trackerId } from '@hcengineering/tracker'
+import tracker, { Component, Issue, IssueParentInfo, Project, TimeSpendReport, trackerId } from '@hcengineering/tracker'
 import { workbenchId } from '@hcengineering/workbench'
 
 async function updateSubIssues (
@@ -56,7 +55,7 @@ async function updateSubIssues (
  */
 export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const issueName = await issueTextPresenter(doc, control)
-  const front = getMetadata(login.metadata.FrontUrl) ?? ''
+  const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.name}/${trackerId}/${issueName}`
   const link = concatLink(front, path)
   return `<a href="${link}">${issueName}</a>`

@@ -16,7 +16,7 @@
   import { getMetadata, serialize } from '@hcengineering/platform'
   import { Button, EditBox, IconClose, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import login from '@hcengineering/login'
+  import presentation from '@hcengineering/presentation'
   import PinPad from './PinPad.svelte'
   import telegram from '../plugin'
   import { concatLink } from '@hcengineering/core'
@@ -30,7 +30,7 @@
   let code: string = ''
   let password: string = ''
   let error: string | undefined = undefined
-  const url = getMetadata(login.metadata.TelegramUrl) ?? ''
+  const url = getMetadata(telegram.metadata.TelegramURL) ?? ''
 
   async function requestCode (): Promise<void> {
     const res = await sendRequest('/signin', { phone })
@@ -64,7 +64,7 @@
     const response = await fetch(concatLink(url, path), {
       method: 'POST',
       headers: {
-        Authorization: 'Bearer ' + getMetadata(login.metadata.LoginToken),
+        Authorization: 'Bearer ' + getMetadata(presentation.metadata.Token),
         'Content-Type': 'application/json'
       },
       body: serialize(data)

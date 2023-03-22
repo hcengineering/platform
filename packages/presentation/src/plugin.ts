@@ -15,7 +15,7 @@
 //
 
 import { Class, Ref } from '@hcengineering/core'
-import type { IntlString, Metadata, Plugin } from '@hcengineering/platform'
+import type { Asset, IntlString, Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { ObjectSearchCategory } from './types'
 
@@ -42,10 +42,8 @@ export default plugin(presentationId, {
     EditSocialLinks: '' as IntlString,
     Change: '' as IntlString,
     Remove: '' as IntlString,
-    Members: '' as IntlString,
     Search: '' as IntlString,
     Spaces: '' as IntlString,
-    Unassigned: '' as IntlString,
     CreateMore: '' as IntlString,
     NumberMembers: '' as IntlString,
     NumberSpaces: '' as IntlString,
@@ -55,23 +53,16 @@ export default plugin(presentationId, {
     NotInThis: '' as IntlString,
     Add: '' as IntlString,
     Edit: '' as IntlString,
-    SelectAvatar: '' as IntlString,
-    GravatarsManaged: '' as IntlString,
-    CategoryCurrentUser: '' as IntlString,
-    Assigned: '' as IntlString,
-    CategoryPreviousAssigned: '' as IntlString,
-    CategoryProjectLead: '' as IntlString,
-    CategoryProjectMembers: '' as IntlString,
-    CategoryOther: '' as IntlString,
-    InltPropsValue: '' as IntlString,
     DocumentPreview: '' as IntlString,
     MakePrivate: '' as IntlString,
     MakePrivateDescription: '' as IntlString,
-    AddMembersHeader: '' as IntlString,
     OpenInANewTab: '' as IntlString
   },
   metadata: {
     RequiredVersion: '' as Metadata<string>,
-    Draft: '' as Metadata<Record<string, any>>
+    Draft: '' as Metadata<Record<string, any>>,
+    UploadURL: '' as Metadata<string>,
+    Token: '' as Metadata<string>,
+    FrontUrl: '' as Asset
   }
 })

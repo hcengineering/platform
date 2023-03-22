@@ -3,17 +3,16 @@
     BitrixEntityMapping,
     BitrixFieldMapping,
     ChannelFieldMapping,
+    CreateChannelOperation,
     Fields,
-    MappingOperation,
-    CreateChannelOperation
+    MappingOperation
   } from '@hcengineering/bitrix'
   import { AnyAttribute } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
 
   import contact, { ChannelProvider } from '@hcengineering/contact'
-  import { Button, DropdownLabelsIntl, EditBox, IconAdd, IconDelete } from '@hcengineering/ui'
-  import DropdownLabels from '@hcengineering/ui/src/components/DropdownLabels.svelte'
+  import { Button, DropdownLabels, DropdownLabelsIntl, EditBox, IconAdd, IconDelete } from '@hcengineering/ui'
   import bitrix from '../../plugin'
 
   export let mapping: BitrixEntityMapping

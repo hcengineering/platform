@@ -3,7 +3,7 @@
   import core, { Class, ClassifierKind, Doc, Obj, Ref } from '@hcengineering/core'
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
   import setting, { Integration } from '@hcengineering/setting'
-  import DropdownLabels from '@hcengineering/ui/src/components/DropdownLabels.svelte'
+  import { DropdownLabels } from '@hcengineering/ui'
   import { ObjectBox } from '@hcengineering/view-resources'
   import bitrix from '../plugin'
 

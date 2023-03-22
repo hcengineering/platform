@@ -13,9 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PopupOptions } from '@hcengineering/ui'
-  import { Button, deviceOptionsStore as deviceInfo, Panel } from '@hcengineering/ui'
-  import Attachment from '@hcengineering/ui/src/components/icons/Attachment.svelte'
+  import { Doc } from '@hcengineering/core'
+  import { Button, deviceOptionsStore as deviceInfo, Panel, PopupOptions } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
   import { getFileUrl } from '../utils'
@@ -27,7 +26,7 @@
   export let name: string
   export let contentType: string | undefined
   export let popupOptions: PopupOptions
-  export let value: Attachment
+  export let value: Doc
 
   const dispatch = createEventDispatcher()
   // let imgView: 'img-horizontal-fit' | 'img-vertical-fit' | 'img-original-fit' = 'img-vertical-fit'

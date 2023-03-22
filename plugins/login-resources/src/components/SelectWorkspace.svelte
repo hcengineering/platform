@@ -27,6 +27,7 @@
   import login from '../plugin'
   import { getWorkspaces, selectWorkspace, Workspace, navigateToWorkspace } from '../utils'
   import StatusControl from './StatusControl.svelte'
+  import presentation from '@hcengineering/presentation'
 
   export let navigateUrl: string | undefined = undefined
 
@@ -45,7 +46,7 @@
     try {
       return getWorkspaces()
     } catch (err: any) {
-      setMetadataLocalStorage(login.metadata.LoginToken, null)
+      setMetadataLocalStorage(presentation.metadata.Token, null)
       setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
       setMetadataLocalStorage(login.metadata.LoginEmail, null)
       changeAccount()

@@ -15,11 +15,10 @@
 <script lang="ts">
   import { DateRangeMode, TypeDate as DateType } from '@hcengineering/core'
   import { TypeDate } from '@hcengineering/model'
-  import { Label, ListItem } from '@hcengineering/ui'
+  import { Dropdown, Label, ListItem } from '@hcengineering/ui'
+  import { StringPresenter } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import setting from '../../plugin'
-  import Dropdown from '@hcengineering/ui/src/components/Dropdown.svelte'
-  import StringPresenter from '@hcengineering/view-resources/src/components/StringPresenter.svelte'
 
   export let type: DateType | undefined
   export let editable: boolean = true
