@@ -13,16 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import { Doc, DocumentQuery, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import contact from '@hcengineering/contact'
+  import { Doc, DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
+  import { Issue, Project } from '@hcengineering/tracker'
   import { Label, Spinner } from '@hcengineering/ui'
   import { Viewlet, ViewOptions } from '@hcengineering/view'
+  import { createEventDispatcher } from 'svelte'
   import tracker from '../../../plugin'
-  import SubIssueList from '../edit/SubIssueList.svelte'
   import AddIssueDuo from '../../icons/AddIssueDuo.svelte'
-  import contact from '@hcengineering/contact'
+  import SubIssueList from '../edit/SubIssueList.svelte'
 
   export let object: Doc
   export let viewlet: Viewlet
@@ -52,31 +52,11 @@
   $: projectsQuery.query(tracker.class.Project, {}, async (result) => {
     projects = new Map(result.map((it) => [it._id, it]))
   })
-
-  let issueStatuses = new Map<Ref<Project>, WithLookup<IssueStatus>[]>()
-
-  const statusesQuery = createQuery()
-  $: statusesQuery.query(
-    tracker.class.IssueStatus,
-    {},
-    (statuses) => {
-      const st = new Map<Ref<Project>, WithLookup<IssueStatus>[]>()
-      for (const s of statuses) {
-        const id = s.attachedTo as Ref<Project>
-        st.set(id, [...(st.get(id) ?? []), s])
-      }
-      issueStatuses = st
-    },
-    {
-      lookup: { category: tracker.class.IssueStatusCategory },
-      sort: { rank: SortingOrder.Ascending }
-    }
-  )
 </script>
 
 {#if subIssues !== undefined && viewlet !== undefined}
-  {#if issueStatuses.size > 0 && projects && subIssues.length > 0}
-    <SubIssueList bind:viewOptions {viewlet} issues={subIssues} {projects} {issueStatuses} {disableHeader} />
+  {#if projects && subIssues.length > 0}
+    <SubIssueList bind:viewOptions {viewlet} issues={subIssues} {projects} {disableHeader} />
   {:else}
     <div class="antiSection-empty solid flex-col mt-3">
       <div class="flex-center content-accent-color">

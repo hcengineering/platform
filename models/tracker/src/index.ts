@@ -73,8 +73,7 @@ import {
   Project,
   TimeReportDayType,
   TimeSpendReport,
-  trackerId,
-  WorkDayLength
+  trackerId
 } from '@hcengineering/tracker'
 import { KeyBinding, ViewOptionsModel } from '@hcengineering/view'
 import tracker from './plugin'
@@ -92,11 +91,14 @@ export const DOMAIN_TRACKER = 'tracker' as Domain
  */
 @Model(tracker.class.IssueStatus, core.class.AttachedDoc, DOMAIN_TRACKER)
 export class TIssueStatus extends TAttachedDoc implements IssueStatus {
-  name!: string
+  @Index(IndexKind.Indexed)
+    name!: string
+
   description?: string
   color?: number
 
   @Prop(TypeRef(tracker.class.IssueStatusCategory), tracker.string.StatusCategory)
+  @Index(IndexKind.Indexed)
     category!: Ref<IssueStatusCategory>
 
   @Prop(TypeString(), tracker.string.Rank)
@@ -161,10 +163,6 @@ export class TTypeSprintStatus extends TType {}
 @Model(tracker.class.Project, core.class.Space, DOMAIN_SPACE)
 @UX(tracker.string.Project, tracker.icon.Project, 'Project')
 export class TProject extends TSpace implements Project {
-  @Prop(TypeString(), tracker.string.Title)
-  @Index(IndexKind.FullText)
-    reamLogo!: IntlString
-
   @Prop(TypeString(), tracker.string.Identifier)
   @Index(IndexKind.FullText)
     identifier!: IntlString
@@ -182,7 +180,6 @@ export class TProject extends TSpace implements Project {
   @Prop(TypeRef(contact.class.Employee), tracker.string.DefaultAssignee)
     defaultAssignee!: Ref<Employee>
 
-  declare workDayLength: WorkDayLength
   declare defaultTimeReportDay: TimeReportDayType
 }
 

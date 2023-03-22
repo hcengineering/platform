@@ -13,18 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup, SortingOrder } from '@hcengineering/core'
+  import { WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { IssueStatus, IssueStatusCategory } from '@hcengineering/tracker'
   import { getPlatformColor, IconSize } from '@hcengineering/ui'
   import tracker from '../../plugin'
+  import { statusStore } from '../../utils'
   import StatusIcon from '../icons/StatusIcon.svelte'
 
   export let value: WithLookup<IssueStatus>
   export let size: IconSize
   export let fill: string | undefined = undefined
-
-  export let issueStatuses: IssueStatus[] | undefined = undefined
 
   const dynamicFillCategories = [tracker.issueStatusCategory.Started]
 
@@ -40,19 +39,14 @@
   const categoriesQuery = createQuery()
 
   $: if (value.category === tracker.issueStatusCategory.Started) {
-    if (issueStatuses === undefined) {
-      categoriesQuery.query(
-        tracker.class.IssueStatus,
-        { category: tracker.issueStatusCategory.Started },
-        (res) => (statuses = res),
-        { sort: { rank: SortingOrder.Ascending } }
+    const _s = [
+      ...$statusStore.filter(
+        (it) => it.attachedTo === value.attachedTo && it.category === tracker.issueStatusCategory.Started
       )
-    } else {
-      const _s = [...issueStatuses.filter((it) => it.category === tracker.issueStatusCategory.Started)]
-      _s.sort((a, b) => a.rank.localeCompare(b.rank))
-      statuses = _s
-      categoriesQuery.unsubscribe()
-    }
+    ]
+    _s.sort((a, b) => a.rank.localeCompare(b.rank))
+    statuses = _s
+    categoriesQuery.unsubscribe()
   }
 
   async function updateCategory (status: WithLookup<IssueStatus>, statuses: IssueStatus[]) {

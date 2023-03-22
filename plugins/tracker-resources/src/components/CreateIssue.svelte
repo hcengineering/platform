@@ -24,8 +24,7 @@
     fillDefaults,
     generateId,
     Ref,
-    SortingOrder,
-    WithLookup
+    SortingOrder
   } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
   import {
@@ -41,15 +40,15 @@
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import {
     calcRank,
+    Component as ComponentType,
     DraftIssueChild,
     Issue,
     IssueDraft,
     IssuePriority,
     IssueStatus,
     IssueTemplate,
-    Component as ComponentType,
-    Sprint,
-    Project
+    Project,
+    Sprint
   } from '@hcengineering/tracker'
   import {
     ActionIcon,
@@ -62,8 +61,7 @@
     IconMoreH,
     Label,
     Menu,
-    showPopup,
-    Spinner
+    showPopup
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
@@ -71,13 +69,13 @@
   import { createEventDispatcher } from 'svelte'
   import { activeComponent, activeSprint, generateIssueShortLink, getIssueId, updateIssueRelation } from '../issues'
   import tracker from '../plugin'
+  import ComponentSelector from './ComponentSelector.svelte'
   import AssigneeEditor from './issues/AssigneeEditor.svelte'
   import IssueNotification from './issues/IssueNotification.svelte'
   import ParentIssue from './issues/ParentIssue.svelte'
   import PriorityEditor from './issues/PriorityEditor.svelte'
   import StatusEditor from './issues/StatusEditor.svelte'
   import EstimationEditor from './issues/timereport/EstimationEditor.svelte'
-  import ComponentSelector from './ComponentSelector.svelte'
   import SetDueDateActionPopup from './SetDueDateActionPopup.svelte'
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
   import SprintSelector from './sprints/SprintSelector.svelte'
@@ -101,7 +99,6 @@
 
   let subIssuesComponent: SubIssues
 
-  let issueStatuses: WithLookup<IssueStatus>[] | undefined
   let labels: TagReference[] = draft?.labels || []
   let objectId: Ref<Issue> = draft?.issueId || generateId()
   let saveTimer: number | undefined
@@ -137,6 +134,15 @@
     createOn: Date.now()
   }
 
+  $: _space = draft?.project || space
+  $: !originalIssue && !draft && updateIssueStatusId(currentProject, status)
+  $: !originalIssue && !draft && updateAssigneeId(currentProject)
+  $: canSave = getTitle(object.title ?? '').length > 0
+
+  $: if (object.space !== _space) {
+    object.space = _space
+  }
+
   let object = originalIssue
     ? {
         ...originalIssue,
@@ -145,15 +151,16 @@
         attachments: 0,
         reportedTime: 0,
         reports: 0,
-        childInfo: []
+        childInfo: [],
+        space: _space
       }
-    : toIssue(defaultIssue, draft)
+    : { ...toIssue(defaultIssue, draft), space: _space }
   fillDefaults(hierarchy, object, tracker.class.Issue)
 
   function resetObject (): void {
     templateId = undefined
     template = undefined
-    object = { ...defaultIssue }
+    object = { ...defaultIssue, space: _space }
     subIssues = []
     labels = []
     if (!originalIssue && !draft) {
@@ -228,7 +235,6 @@
   $: updateTemplate(template)
 
   const dispatch = createEventDispatcher()
-  const statusesQuery = createQuery()
   const spaceQuery = createQuery()
 
   let descriptionBox: AttachmentStyledBox
@@ -238,22 +244,6 @@
     attr: client.getHierarchy().getAttribute(tracker.class.Issue, 'labels')
   }
 
-  $: _space = draft?.project || space
-  $: !originalIssue && !draft && updateIssueStatusId(currentProject, status)
-  $: !originalIssue && !draft && updateAssigneeId(currentProject)
-  $: canSave = getTitle(object.title ?? '').length > 0
-
-  $: statusesQuery.query(
-    tracker.class.IssueStatus,
-    { attachedTo: _space },
-    (statuses) => {
-      issueStatuses = statuses
-    },
-    {
-      lookup: { category: tracker.class.IssueStatusCategory },
-      sort: { rank: SortingOrder.Ascending }
-    }
-  )
   $: spaceQuery.query(tracker.class.Project, { _id: _space }, (res) => {
     currentProject = res.shift()
   })
@@ -706,72 +696,64 @@
       }}
     />
   {/key}
-  {#if issueStatuses}
-    <SubIssues
-      bind:this={subIssuesComponent}
-      projectId={_space}
-      parent={objectId}
-      statuses={issueStatuses ?? []}
-      project={currentProject}
-      sprint={object.sprint}
-      component={object.component}
-    />
-  {/if}
+  <SubIssues
+    bind:this={subIssuesComponent}
+    projectId={_space}
+    parent={objectId}
+    project={currentProject}
+    sprint={object.sprint}
+    component={object.component}
+  />
   <svelte:fragment slot="pool">
-    {#if issueStatuses}
-      <div id="status-editor">
-        <StatusEditor
-          value={object}
-          statuses={issueStatuses}
-          kind="no-border"
-          size="small"
-          shouldShowLabel={true}
-          on:change={({ detail }) => (object.status = detail)}
-        />
-      </div>
-      <PriorityEditor
+    <div id="status-editor">
+      <StatusEditor
         value={object}
-        shouldShowLabel
-        isEditable
         kind="no-border"
         size="small"
-        justify="center"
-        on:change={({ detail }) => (object.priority = detail)}
+        shouldShowLabel={true}
+        on:change={({ detail }) => (object.status = detail)}
       />
-      <AssigneeEditor
-        value={object}
-        size="small"
-        kind="no-border"
-        width={'min-content'}
-        on:change={({ detail }) => (object.assignee = detail)}
-      />
-      <Component
-        is={tags.component.TagsDropdownEditor}
-        props={{
-          items: labels,
-          key,
-          targetClass: tracker.class.Issue,
-          countLabel: tracker.string.NumberLabels
-        }}
-        on:open={(evt) => {
-          addTagRef(evt.detail)
-        }}
-        on:delete={(evt) => {
-          labels = labels.filter((it) => it._id !== evt.detail)
-        }}
-      />
-      <EstimationEditor kind={'no-border'} size={'small'} value={object} {currentProject} />
-      <ComponentSelector value={object.component} onChange={handleComponentIdChanged} isEditable={true} />
-      <SprintSelector
-        value={object.sprint}
-        onChange={handleSprintIdChanged}
-        useComponent={(!originalIssue && object.component) || undefined}
-      />
-      {#if object.dueDate !== null}
-        <DatePresenter bind:value={object.dueDate} editable />
-      {/if}
-    {:else}
-      <Spinner size="small" />
+    </div>
+    <PriorityEditor
+      value={object}
+      shouldShowLabel
+      isEditable
+      kind="no-border"
+      size="small"
+      justify="center"
+      on:change={({ detail }) => (object.priority = detail)}
+    />
+    <AssigneeEditor
+      value={object}
+      size="small"
+      kind="no-border"
+      width={'min-content'}
+      on:change={({ detail }) => (object.assignee = detail)}
+    />
+    <Component
+      is={tags.component.TagsDropdownEditor}
+      props={{
+        items: labels,
+        key,
+        targetClass: tracker.class.Issue,
+        countLabel: tracker.string.NumberLabels
+      }}
+      on:open={(evt) => {
+        addTagRef(evt.detail)
+      }}
+      on:delete={(evt) => {
+        labels = labels.filter((it) => it._id !== evt.detail)
+      }}
+    />
+    <EstimationEditor kind={'no-border'} size={'small'} value={object} {currentProject} />
+    <ComponentSelector value={object.component} onChange={handleComponentIdChanged} isEditable={true} />
+    <SprintSelector
+      value={object.sprint}
+      onChange={handleSprintIdChanged}
+      useComponent={(!originalIssue && object.component) || undefined}
+    />
+    {#if object.dueDate !== null}
+      <DatePresenter bind:value={object.dueDate} editable />
     {/if}
     <ActionIcon icon={IconMoreH} size={'medium'} action={showMoreActions} />
   </svelte:fragment>

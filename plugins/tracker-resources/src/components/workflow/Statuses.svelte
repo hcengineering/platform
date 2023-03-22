@@ -31,6 +31,7 @@
   import { createEventDispatcher } from 'svelte'
   import { flip } from 'svelte/animate'
   import tracker from '../../plugin'
+  import { statusStore } from '../../utils'
   import StatusEditor from './StatusEditor.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
 
@@ -40,11 +41,9 @@
   const client = getClient()
   const dispatch = createEventDispatcher()
   const projectQuery = createQuery()
-  const statusesQuery = createQuery()
 
   let project: Project | undefined
   let statusCategories: IssueStatusCategory[] | undefined
-  let workflowStatuses: IssueStatus[] | undefined
 
   let editingStatus: IssueStatus | Partial<AttachedData<IssueStatus>> | null = null
   let draggingStatus: IssueStatus | null = null
@@ -67,10 +66,10 @@
   }
 
   async function addStatus () {
-    if (editingStatus?.name && editingStatus?.category && workflowStatuses) {
-      const categoryStatuses = workflowStatuses.filter((s) => s.category === editingStatus!.category)
+    if (editingStatus?.name && editingStatus?.category && $statusStore) {
+      const categoryStatuses = $statusStore.filter((s) => s.category === editingStatus!.category)
       const prevStatus = categoryStatuses[categoryStatuses.length - 1]
-      const nextStatus = workflowStatuses[workflowStatuses.findIndex(({ _id }) => _id === prevStatus._id) + 1]
+      const nextStatus = $statusStore[$statusStore.findIndex(({ _id }) => _id === prevStatus._id) + 1]
 
       isSaving = true
       await client.addCollection(
@@ -94,15 +93,9 @@
   }
 
   async function editStatus () {
-    if (
-      workflowStatuses &&
-      statusCategories &&
-      editingStatus?.name &&
-      editingStatus?.category &&
-      '_id' in editingStatus
-    ) {
+    if ($statusStore && statusCategories && editingStatus?.name && editingStatus?.category && '_id' in editingStatus) {
       const statusId = '_id' in editingStatus ? editingStatus._id : undefined
-      const status = statusId && workflowStatuses.find(({ _id }) => _id === statusId)
+      const status = statusId && $statusStore.find(({ _id }) => _id === statusId)
 
       if (!status) {
         return
@@ -164,14 +157,12 @@
         },
         undefined,
         async (result) => {
-          if (result && project && workflowStatuses) {
+          if (result && project && $statusStore) {
             isSaving = true
             await client.removeDoc(status._class, status.space, status._id)
 
             if (project.defaultIssueStatus === status._id) {
-              const newDefaultStatus = workflowStatuses.find(
-                (s) => s._id !== status._id && s.category === status.category
-              )
+              const newDefaultStatus = $statusStore.find((s) => s._id !== status._id && s.category === status.category)
               if (newDefaultStatus?._id) {
                 await updateProjectDefaultStatus(newDefaultStatus._id)
               }
@@ -205,12 +196,12 @@
   }
 
   async function handleDrop (toItem: IssueStatus) {
-    if (workflowStatuses && draggingStatus?._id !== toItem._id && draggingStatus?.category === toItem.category) {
+    if ($statusStore && draggingStatus?._id !== toItem._id && draggingStatus?.category === toItem.category) {
       const fromIndex = getStatusIndex(draggingStatus)
       const toIndex = getStatusIndex(toItem)
       const [prev, next] = [
-        workflowStatuses[fromIndex < toIndex ? toIndex : toIndex - 1],
-        workflowStatuses[fromIndex < toIndex ? toIndex + 1 : toIndex]
+        $statusStore[fromIndex < toIndex ? toIndex : toIndex - 1],
+        $statusStore[fromIndex < toIndex ? toIndex + 1 : toIndex]
       ]
 
       isSaving = true
@@ -222,7 +213,7 @@
   }
 
   function getStatusIndex (status: IssueStatus) {
-    return workflowStatuses?.findIndex(({ _id }) => _id === status._id) ?? -1
+    return $statusStore?.findIndex(({ _id }) => _id === status._id) ?? -1
   }
 
   function resetDrag () {
@@ -231,9 +222,6 @@
   }
 
   $: projectQuery.query(projectClass, { _id: projectId }, (result) => ([project] = result), { limit: 1 })
-  $: statusesQuery.query(tracker.class.IssueStatus, { attachedTo: projectId }, (res) => (workflowStatuses = res), {
-    sort: { rank: SortingOrder.Ascending }
-  })
   $: updateStatusCategories()
 </script>
 
@@ -254,13 +242,14 @@
     </div>
   </svelte:fragment>
 
-  {#if project === undefined || statusCategories === undefined || workflowStatuses === undefined}
+  {#if project === undefined || statusCategories === undefined || $statusStore === undefined}
     <Loading />
   {:else}
     <Scroller>
       <div class="popupPanel-body__main-content py-10 clear-mins">
         {#each statusCategories as category}
-          {@const statuses = workflowStatuses?.filter((s) => s.category === category._id) ?? []}
+          {@const statuses =
+            $statusStore?.filter((s) => s.attachedTo === projectId && s.category === category._id) ?? []}
           {@const isSingle = statuses.length === 1}
           <div class="flex-between category-name">
             <Label label={category.label} />
@@ -312,7 +301,6 @@
                       editingStatus = { ...detail, color: detail.color ?? category.color }
                     }}
                     on:delete={deleteStatus}
-                    issueStatuses={workflowStatuses}
                   />
                 {/if}
               </div>

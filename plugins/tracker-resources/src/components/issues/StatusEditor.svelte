@@ -13,18 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachedData, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { AttachedData, Ref, WithLookup } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
   import { DraftIssueChild, Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { Button, eventToHTMLElement, SelectPopup, showPopup, TooltipAlignment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
+  import { statusStore } from '../../utils'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
 
-  export let value: Issue | AttachedData<Issue> | DraftIssueChild
-  export let statuses: WithLookup<IssueStatus>[] | undefined = undefined
+  export let value:
+    | Issue
+    | (AttachedData<Issue> & { space: Ref<Project> })
+    | (DraftIssueChild & { space: Ref<Project> })
+
+  let statuses: WithLookup<IssueStatus>[] | undefined = undefined
+
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
   export let tooltipAlignment: TooltipAlignment | undefined = undefined
@@ -34,11 +40,7 @@
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = undefined
 
-  // Extra properties
-  export let issueStatuses: Map<Ref<Project>, WithLookup<IssueStatus>[]> | undefined = undefined
-
   const client = getClient()
-  const statusesQuery = createQuery()
   const dispatch = createEventDispatcher()
 
   const changeStatus = async (newStatus: Ref<IssueStatus> | undefined) => {
@@ -66,6 +68,8 @@
     )
   }
 
+  $: statuses = $statusStore.filter((it) => it.attachedTo === value?.space)
+
   $: selectedStatus = statuses?.find((status) => status._id === value.status) ?? statuses?.[0]
   $: selectedStatusLabel = shouldShowLabel ? selectedStatus?.name : undefined
   $: statusesInfo = statuses?.map((s) => {
@@ -76,25 +80,6 @@
       isSelected: selectedStatus?._id === s._id ?? false
     }
   })
-  $: if (!statuses) {
-    statuses = '_id' in value ? issueStatuses?.get(value.space) : undefined
-    if (statuses === undefined) {
-      const query = '_id' in value ? { attachedTo: value.space } : {}
-      statusesQuery.query(
-        tracker.class.IssueStatus,
-        query,
-        (result) => {
-          statuses = result
-        },
-        {
-          lookup: { category: tracker.class.IssueStatusCategory },
-          sort: { rank: SortingOrder.Ascending }
-        }
-      )
-    } else {
-      statusesQuery.unsubscribe()
-    }
-  }
   $: smallgap = size === 'inline' || size === 'small'
 </script>
 
@@ -103,11 +88,7 @@
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="flex-row-center flex-no-shrink" class:cursor-pointer={isEditable} on:click={handleStatusEditorOpened}>
       <div class="flex-center flex-no-shrink square-4">
-        {#if selectedStatus}<IssueStatusIcon
-            value={selectedStatus}
-            issueStatuses={statuses}
-            size={kind === 'list' ? 'inline' : 'medium'}
-          />{/if}
+        {#if selectedStatus}<IssueStatusIcon value={selectedStatus} size={kind === 'list' ? 'inline' : 'medium'} />{/if}
       </div>
       {#if selectedStatusLabel}
         <span

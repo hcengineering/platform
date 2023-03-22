@@ -14,17 +14,16 @@
 -->
 <script lang="ts">
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import { generateId, Ref, WithLookup } from '@hcengineering/core'
+  import { generateId, Ref } from '@hcengineering/core'
   import presentation, { createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import {
+    Component as ComponentType,
     DraftIssueChild,
     IssuePriority,
-    IssueStatus,
     IssueTemplateChild,
-    Component as ComponentType,
-    Sprint,
-    Project
+    Project,
+    Sprint
   } from '@hcengineering/tracker'
   import { Button, Component, EditBox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -39,12 +38,12 @@
   export let component: Ref<ComponentType> | null = null
   export let childIssue: DraftIssueChild | undefined = undefined
   export let showBorder = false
-  export let statuses: WithLookup<IssueStatus>[]
 
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  let newIssue: DraftIssueChild = childIssue !== undefined ? { ...childIssue } : getIssueDefaults()
+  let newIssue =
+    childIssue !== undefined ? { ...childIssue, space: project._id } : { ...getIssueDefaults(), space: project._id }
   let thisRef: HTMLDivElement
   let focusIssueTitle: () => void
   let labels: TagElement[] = []
@@ -75,7 +74,7 @@
   }
 
   function resetToDefaults () {
-    newIssue = getIssueDefaults()
+    newIssue = { ...getIssueDefaults(), space: project._id }
     focusIssueTitle?.()
   }
 
@@ -152,7 +151,6 @@
     <div class="buttons-group xsmall-gap">
       <StatusEditor
         value={newIssue}
-        {statuses}
         kind="no-border"
         size="small"
         shouldShowLabel={true}

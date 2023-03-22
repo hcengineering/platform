@@ -13,16 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import { Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
+  import { Issue, Project } from '@hcengineering/tracker'
   import { Expandable, Spinner } from '@hcengineering/ui'
   import tracker from '../../../plugin'
   import EstimationSubIssueList from './EstimationSubIssueList.svelte'
 
   export let issue: Issue
   export let projects: Map<Ref<Project>, Project>
-  export let issueStatuses: Map<Ref<Project>, WithLookup<IssueStatus>[]>
 
   const subIssuesQuery = createQuery()
 
@@ -35,7 +34,7 @@
   $: total = (subIssues ?? []).reduce((a, b) => a + b.estimation, 0)
 </script>
 
-{#if subIssues && issueStatuses}
+{#if subIssues}
   {#if hasSubIssues}
     <Expandable label={tracker.string.ChildEstimation} contentColor bordered>
       <svelte:fragment slot="title">: <span class="caption-color">{total}</span></svelte:fragment>

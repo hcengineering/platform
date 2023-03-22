@@ -14,9 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { SortingOrder, WithLookup } from '@hcengineering/core'
   import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
-  import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
+  import { Issue, Project } from '@hcengineering/tracker'
   import { Button, EditStyle, eventToHTMLElement, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import { EditBoxPopup } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -41,7 +40,6 @@
   const query = createQuery()
 
   let currentProject: Project | undefined
-  let issueStatuses: WithLookup<IssueStatus>[] | undefined
 
   $: query.query(
     object._class,
@@ -60,19 +58,6 @@
     }
   )
   $: defaultTimeReportDay = currentProject?.defaultTimeReportDay
-
-  const statusesQuery = createQuery()
-
-  $: currentProject &&
-    statusesQuery.query(
-      tracker.class.IssueStatus,
-      { attachedTo: currentProject._id },
-      (statuses) => (issueStatuses = statuses),
-      {
-        lookup: { category: tracker.class.IssueStatusCategory },
-        sort: { rank: SortingOrder.Ascending }
-      }
-    )
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -124,12 +109,8 @@
     <IssuePresenter value={object} disableClick />
   </svelte:fragment>
 
-  {#if currentProject && issueStatuses}
-    <SubIssuesEstimations
-      issue={object}
-      issueStatuses={new Map([[currentProject._id, issueStatuses]])}
-      projects={new Map([[currentProject?._id, currentProject]])}
-    />
+  {#if currentProject}
+    <SubIssuesEstimations issue={object} projects={new Map([[currentProject?._id, currentProject]])} />
   {/if}
 
   {#if currentProject}

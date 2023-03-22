@@ -14,13 +14,13 @@
 -->
 <script lang="ts">
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import { Class, Data, Doc, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import { Class, Data, Doc, Ref, WithLookup } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
-  import type { Issue, IssueStatus, Project } from '@hcengineering/tracker'
+  import type { Issue, Project } from '@hcengineering/tracker'
   import {
     Button,
     EditBox,
@@ -48,13 +48,11 @@
   let lastId: Ref<Doc> = _id
   let lastClass: Ref<Class<Doc>> = _class
   const queryClient = createQuery()
-  const statusesQuery = createQuery()
   const dispatch = createEventDispatcher()
   const client = getClient()
 
   let issue: WithLookup<Issue> | undefined
   let currentProject: Project | undefined
-  let issueStatuses: WithLookup<IssueStatus>[] | undefined
   let title = ''
   let description = ''
   let innerWidth: number
@@ -93,20 +91,8 @@
       { lookup: { attachedTo: tracker.class.Issue, space: tracker.class.Project } }
     )
 
-  $: currentProject &&
-    statusesQuery.query(
-      tracker.class.IssueStatus,
-      { attachedTo: currentProject._id },
-      (statuses) => (issueStatuses = statuses),
-      {
-        lookup: { category: tracker.class.IssueStatusCategory },
-        sort: { rank: SortingOrder.Ascending }
-      }
-    )
-
   $: issueId = currentProject && issue && getIssueId(currentProject, issue)
   $: canSave = title.trim().length > 0
-  $: isDescriptionEmpty = !new DOMParser().parseFromString(description, 'text/html').documentElement.innerText?.trim()
   $: parentIssue = issue?.$lookup?.attachedTo
 
   let saved = false
@@ -190,7 +176,7 @@
 
     {#if parentIssue}
       <div class="mb-6">
-        {#if currentProject && issueStatuses}
+        {#if currentProject}
           <SubIssueSelector {issue} />
         {:else}
           <Spinner />
@@ -221,12 +207,8 @@
 
     <div class="mt-6">
       {#key issue._id && currentProject !== undefined}
-        {#if currentProject !== undefined && issueStatuses !== undefined}
-          <SubIssues
-            {issue}
-            issueStatuses={new Map([[currentProject._id, issueStatuses]])}
-            projects={new Map([[currentProject?._id, currentProject]])}
-          />
+        {#if currentProject !== undefined}
+          <SubIssues {issue} projects={new Map([[currentProject?._id, currentProject]])} />
         {/if}
       {/key}
     </div>
@@ -270,8 +252,8 @@
     </svelte:fragment>
 
     <svelte:fragment slot="custom-attributes">
-      {#if issue && currentProject && issueStatuses}
-        <ControlPanel {issue} {issueStatuses} {showAllMixins} />
+      {#if issue && currentProject}
+        <ControlPanel {issue} {showAllMixins} />
       {/if}
 
       <div class="divider" />

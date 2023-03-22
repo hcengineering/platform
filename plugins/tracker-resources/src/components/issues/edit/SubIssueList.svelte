@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, DocumentQuery, Ref, WithLookup } from '@hcengineering/core'
-  import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
+  import { Doc, DocumentQuery, Ref } from '@hcengineering/core'
+  import { Issue, Project } from '@hcengineering/tracker'
   import { Viewlet, ViewOptions } from '@hcengineering/view'
   import {
     ActionContext,
@@ -34,7 +34,6 @@
 
   // Extra properties
   export let projects: Map<Ref<Project>, Project> | undefined
-  export let issueStatuses: Map<Ref<Project>, WithLookup<IssueStatus>[]>
 
   let list: List
 
@@ -66,7 +65,7 @@
     documents={issues}
     {query}
     flatHeaders={true}
-    props={{ projects, issueStatuses }}
+    props={{ projects }}
     {disableHeader}
     selectedObjectIds={$selectionStore ?? []}
     on:row-focus={(event) => {

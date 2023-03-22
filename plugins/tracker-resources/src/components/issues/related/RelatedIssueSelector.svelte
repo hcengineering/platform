@@ -29,7 +29,7 @@
   } from '@hcengineering/ui'
   import { getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
-  import { subIssueListProvider } from '../../../utils'
+  import { statusByIdStore, statusStore, subIssueListProvider } from '../../../utils'
 
   export let object: WithLookup<Doc & { related: number }> | undefined
   export let value: WithLookup<Doc & { related: number }> | undefined
@@ -43,10 +43,9 @@
   let btn: HTMLElement
 
   let subIssues: Issue[] = []
-  let countComplate: number = 0
+  let countComplete: number = 0
 
   const query = createQuery()
-  const statusesQuery = createQuery()
 
   $: _object = object ?? value
 
@@ -67,21 +66,18 @@
         }
       )
     }
-    statusesQuery.query(tracker.class.IssueStatus, {}, (res) => (statuses = res), {
-      lookup: { category: tracker.class.IssueStatusCategory }
-    })
   }
 
-  let statuses: WithLookup<IssueStatus>[] = []
-
-  $: if (statuses && subIssues) {
-    const doneStatuses = statuses.filter((s) => s.category === tracker.issueStatusCategory.Completed).map((p) => p._id)
-    countComplate = subIssues.filter((si) => doneStatuses.includes(si.status)).length
+  $: if (subIssues) {
+    const doneStatuses = $statusStore
+      .filter((s) => s.category === tracker.issueStatusCategory.Completed)
+      .map((p) => p._id)
+    countComplete = subIssues.filter((si) => doneStatuses.includes(si.status)).length
   }
   $: hasSubIssues = (subIssues?.length ?? 0) > 0
 
-  function getIssueStatusIcon (issue: Issue, statuses: WithLookup<IssueStatus>[] | undefined) {
-    const status = statuses?.find((s) => issue.status === s._id)
+  function getIssueStatusIcon (issue: Issue, statuses: Map<Ref<WithLookup<IssueStatus>>, WithLookup<IssueStatus>>) {
+    const status = statuses?.get(issue.status)
     const category = status?.$lookup?.category
     const color = status?.color ?? category?.color
 
@@ -105,7 +101,7 @@
           value: subIssues.map((iss) => {
             const text = currentProject ? `${getIssueId(currentProject, iss)} ${iss.title}` : iss.title
 
-            return { id: iss._id, text, isSelected: false, ...getIssueStatusIcon(iss, statuses) }
+            return { id: iss._id, text, isSelected: false, ...getIssueStatusIcon(iss, $statusByIdStore) }
           }),
           width: 'large'
         },
@@ -142,9 +138,9 @@
         {#if subIssues}
           <div class="flex-row-center content-color text-sm pointer-events-none">
             <div class="mr-1">
-              <ProgressCircle bind:value={countComplate} bind:max={subIssues.length} size={'inline'} primary />
+              <ProgressCircle bind:value={countComplete} bind:max={subIssues.length} size={'inline'} primary />
             </div>
-            {countComplate}/{subIssues.length}
+            {countComplete}/{subIssues.length}
           </div>
         {/if}
       </svelte:fragment>

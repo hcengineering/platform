@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IdMap, Ref, toIdMap } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
-  import { Issue, IssueStatus } from '@hcengineering/tracker'
+  import { Ref } from '@hcengineering/core'
+  import { Issue } from '@hcengineering/tracker'
   import { floorFractionDigits, Label } from '@hcengineering/ui'
   import tracker from '../../plugin'
+  import { statusByIdStore } from '../../utils'
   import EstimationProgressCircle from '../issues/timereport/EstimationProgressCircle.svelte'
   import TimePresenter from '../issues/timereport/TimePresenter.svelte'
   export let docs: Issue[] | undefined = undefined
@@ -28,23 +28,13 @@
   $: noParents = docs?.filter((it) => !ids.has(it.attachedTo as Ref<Issue>))
 
   $: rootNoBacklogIssues = noParents?.filter(
-    (it) => issueStatuses.get(it.status)?.category !== tracker.issueStatusCategory.Backlog
+    (it) => $statusByIdStore.get(it.status)?.category !== tracker.issueStatusCategory.Backlog
   )
-
-  const statuses = createQuery()
-  let issueStatuses: IdMap<IssueStatus> = new Map()
-  $: if (noParents !== undefined) {
-    statuses.query(tracker.class.IssueStatus, {}, (res) => {
-      issueStatuses = toIdMap(res)
-    })
-  } else {
-    statuses.unsubscribe()
-  }
 
   $: totalEstimation = floorFractionDigits(
     (rootNoBacklogIssues ?? [{ estimation: 0, childInfo: [] } as unknown as Issue])
       .map((it) => {
-        const cat = issueStatuses.get(it.status)?.category
+        const cat = $statusByIdStore.get(it.status)?.category
 
         let retEst = it.estimation
         if (it.childInfo?.length > 0) {

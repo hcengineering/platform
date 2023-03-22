@@ -23,9 +23,9 @@
   import { Label, resizeObserver, Scroller } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import AssigneeEditor from './AssigneeEditor.svelte'
+  import IssueStatusActivity from './IssueStatusActivity.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
   import StatusEditor from './StatusEditor.svelte'
-  import IssueStatusActivity from './IssueStatusActivity.svelte'
 
   export let object: Issue
   let issue: Issue | undefined
@@ -88,7 +88,7 @@
       {#if issue}
         <div class="fs-title text-xl ml-2">{issueName} {issue.title}</div>
         <div class="flex mt-2">
-          <StatusEditor value={issue} {statuses} shouldShowLabel kind={'transparent'} />
+          <StatusEditor value={issue} shouldShowLabel kind={'transparent'} />
           <PriorityEditor value={issue} shouldShowLabel />
           {#if issue.assignee}
             <AssigneeEditor value={issue} width={'min-content'} />

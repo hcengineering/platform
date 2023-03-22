@@ -39,8 +39,7 @@ import {
   IssueTemplate,
   IssueTemplateChild,
   Project,
-  TimeReportDayType,
-  WorkDayLength
+  TimeReportDayType
 } from '@hcengineering/tracker'
 import { DOMAIN_TRACKER } from '.'
 import tracker from './plugin'
@@ -126,8 +125,7 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
         issueStatuses: 0,
         defaultIssueStatus: defaultStatusId,
         defaultTimeReportDay: TimeReportDayType.PreviousWorkDay,
-        defaultAssignee: undefined,
-        workDayLength: WorkDayLength.EIGHT_HOURS
+        defaultAssignee: undefined
       },
       tracker.project.DefaultProject
     )
@@ -157,14 +155,12 @@ async function fixProjectsIssueStatusesOrder (tx: TxOperations): Promise<void> {
 
 async function upgradeProjectSettings (tx: TxOperations): Promise<void> {
   const projects = await tx.findAll(tracker.class.Project, {
-    defaultTimeReportDay: { $exists: false },
-    workDayLength: { $exists: false }
+    defaultTimeReportDay: { $exists: false }
   })
   await Promise.all(
     projects.map((project) =>
       tx.update(project, {
-        defaultTimeReportDay: TimeReportDayType.PreviousWorkDay,
-        workDayLength: WorkDayLength.EIGHT_HOURS
+        defaultTimeReportDay: TimeReportDayType.PreviousWorkDay
       })
     )
   )
