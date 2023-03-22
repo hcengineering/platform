@@ -19,6 +19,7 @@
   import {
     Button,
     DropdownLabels,
+    DropdownTextItem,
     EditBox,
     eventToHTMLElement,
     getColorNumberByText,
@@ -26,7 +27,6 @@
     IconFolder,
     showPopup
   } from '@hcengineering/ui'
-  import { DropdownTextItem } from '@hcengineering/ui/src/types'
   import { ColorsPopup } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'

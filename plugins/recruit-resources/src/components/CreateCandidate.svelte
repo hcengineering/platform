@@ -16,8 +16,7 @@
   import attachment from '@hcengineering/attachment'
   import { deleteFile } from '@hcengineering/attachment-resources/src/utils'
   import contact, { Channel, ChannelProvider, combineName, findContacts, Person } from '@hcengineering/contact'
-  import { ChannelsDropdown } from '@hcengineering/contact-resources'
-  import PersonPresenter from '@hcengineering/contact-resources/src/components/PersonPresenter.svelte'
+  import { ChannelsDropdown, EditableAvatar, PersonPresenter } from '@hcengineering/contact-resources'
   import {
     Account,
     AttachedData,
@@ -31,12 +30,10 @@
     TxProcessor,
     WithLookup
   } from '@hcengineering/core'
-  import login from '@hcengineering/login'
   import { getMetadata, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import {
+  import presentation, {
     Card,
     createQuery,
-    EditableAvatar,
     getClient,
     getUserDraft,
     InlineAttributeBar,
@@ -367,7 +364,7 @@
   }
 
   async function recognize (file: File): Promise<void> {
-    const token = getMetadata(login.metadata.LoginToken) ?? ''
+    const token = getMetadata(presentation.metadata.Token) ?? ''
 
     try {
       const doc = await recognizeDocument(token, file)

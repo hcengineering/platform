@@ -1,5 +1,6 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2021 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,11 +14,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Contact, Employee, getName } from '@hcengineering/contact'
+  import { Contact, getName } from '@hcengineering/contact'
   import { Class, DocumentQuery, FindOptions, Hierarchy, Ref } from '@hcengineering/core'
-  import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
+  import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
+  import { getClient, ObjectCreate } from '@hcengineering/presentation'
   import {
     ActionIcon,
+    AnySvelteComponent,
     Button,
     ButtonKind,
     ButtonSize,
@@ -33,23 +36,20 @@
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import presentation, { getClient, IconPerson, UserInfo } from '..'
-  import AssigneePopup from './AssigneePopup.svelte'
+  import presentation from '@hcengineering/presentation'
+  import IconPerson from './icons/Person.svelte'
+  import UserInfo from './UserInfo.svelte'
+  import UsersPopup from './UsersPopup.svelte'
 
-  export let _class: Ref<Class<Employee>> = contact.class.Employee
+  export let _class: Ref<Class<Contact>>
   export let excluded: Ref<Contact>[] | undefined = undefined
-  export let options: FindOptions<Employee> | undefined = undefined
-  export let docQuery: DocumentQuery<Employee> | undefined = {
-    active: true
-  }
+  export let options: FindOptions<Contact> | undefined = undefined
+  export let docQuery: DocumentQuery<Contact> | undefined = undefined
   export let label: IntlString
+  export let icon: Asset | AnySvelteComponent | undefined = IconPerson
   export let placeholder: IntlString = presentation.string.Search
-  export let value: Ref<Employee> | null | undefined
-  export let prevAssigned: Ref<Employee>[] | undefined = []
-  export let projectLead: Ref<Employee> | undefined = undefined
-  export let projectMembers: Ref<Employee>[] | undefined = []
-  export let members: Ref<Employee>[] | undefined = []
-  export let allowDeselect = true
+  export let value: Ref<Contact> | null | undefined
+  export let allowDeselect = false
   export let titleDeselect: IntlString | undefined = undefined
   export let readonly = false
   export let kind: ButtonKind = 'no-border'
@@ -61,16 +61,16 @@
   export let showNavigate = true
   export let id: string | undefined = undefined
 
-  const icon = IconPerson
+  export let create: ObjectCreate | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
-  let selected: Employee | undefined
+  let selected: Contact | undefined
   let container: HTMLElement
 
   const client = getClient()
 
-  async function updateSelected (value: Ref<Employee> | null | undefined) {
+  async function updateSelected (value: Ref<Contact> | null | undefined) {
     selected = value ? await client.findOne(_class, { _id: value }) : undefined
   }
 
@@ -81,21 +81,18 @@
   const _click = (ev: MouseEvent): void => {
     if (!readonly) {
       showPopup(
-        AssigneePopup,
+        UsersPopup,
         {
           _class,
           options,
           docQuery,
-          prevAssigned,
-          projectLead,
-          projectMembers,
-          members,
           ignoreUsers: excluded ?? [],
           icon,
-          selected: value,
-          placeholder,
           allowDeselect,
-          titleDeselect
+          selected: value,
+          titleDeselect,
+          placeholder,
+          create
         },
         !$$slots.content ? container : getEventPositionElement(ev),
         (result) => {
@@ -122,17 +119,28 @@
     <div
       class="w-full h-full flex-streatch"
       on:click={_click}
+      class:content-color={selected === undefined}
       use:tooltip={selected !== undefined ? { label: getEmbeddedLabel(getName(selected)) } : undefined}
     >
       <slot name="content" />
     </div>
   {:else}
-    <Button {focusIndex} width={width ?? 'min-content'} {size} {kind} {justify} {showTooltip} on:click={_click}>
-      <span
+    <Button
+      {focusIndex}
+      disabled={readonly}
+      width={width ?? 'min-content'}
+      {size}
+      {kind}
+      {justify}
+      {showTooltip}
+      on:click={_click}
+    >
+      <div
         slot="content"
-        class="overflow-label flex-grow"
+        class="overflow-label flex-row-center"
+        class:w-full={width === '100%'}
         class:flex-between={showNavigate && selected}
-        class:dark-color={value == null}
+        class:content-color={value == null}
       >
         <div
           class="disabled"
@@ -148,7 +156,7 @@
               {getName(selected)}
             {/if}
           {:else}
-            <div class="flex-presenter">
+            <div class="flex-presenter not-selected">
               {#if icon}
                 <div class="icon" class:small-gap={size === 'inline' || size === 'small'}>
                   <Icon {icon} size={kind === 'link' ? 'small' : size} />
@@ -161,6 +169,7 @@
           {/if}
         </div>
         {#if selected && showNavigate}
+          <div class="min-w-2" />
           <ActionIcon
             icon={IconOpen}
             size={'small'}
@@ -171,7 +180,7 @@
             }}
           />
         {/if}
-      </span>
+      </div>
     </Button>
   {/if}
 </div>

@@ -117,7 +117,8 @@ export {
   LoadingProps,
   setActiveViewletId,
   getAdditionalHeader,
-  groupBy
+  groupBy,
+  getCategories
 } from './utils'
 export * from './viewOptions'
 export {
@@ -146,7 +147,9 @@ export {
   TreeItem,
   StringEditor,
   DocNavLink,
-  EnumEditor
+  EnumEditor,
+  StringPresenter,
+  EditBoxPopup
 }
 
 export default async (): Promise<Resources> => ({

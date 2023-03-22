@@ -14,10 +14,10 @@
 -->
 <script lang="ts">
   import type { Class, Doc, Ref } from '@hcengineering/core'
-  import { createQuery } from '../utils'
   import { Person as Contact } from '@hcengineering/contact'
   import Avatar from './Avatar.svelte'
   import { IconSize } from '@hcengineering/ui'
+  import { createQuery } from '@hcengineering/presentation'
 
   export let _class: Ref<Class<Doc>>
   export let items: Ref<Contact>[] = []

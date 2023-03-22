@@ -34,6 +34,7 @@ import {
   Location
 } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
+import presentation from '@hcengineering/presentation'
 
 const DEV_WORKSPACE = 'DEV WORKSPACE'
 
@@ -133,7 +134,7 @@ export async function createWorkspace (workspace: string): Promise<[Status, Logi
     }
   }
 
-  const token = getMetadata(login.metadata.LoginToken)
+  const token = getMetadata(presentation.metadata.Token)
   if (token === undefined) {
     const loc = getCurrentLocation()
     loc.path[1] = 'login'
@@ -182,7 +183,7 @@ export async function getWorkspaces (): Promise<Workspace[]> {
     }
   }
 
-  const token = getMetadata(login.metadata.LoginToken)
+  const token = getMetadata(presentation.metadata.Token)
   if (token === undefined) {
     const loc = getCurrentLocation()
     loc.path[1] = 'login'
@@ -231,7 +232,7 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Work
     }
   }
 
-  const token = getMetadata(login.metadata.LoginToken)
+  const token = getMetadata(presentation.metadata.Token)
   if (token === undefined) {
     const loc = getCurrentLocation()
     loc.path[1] = 'login'
@@ -274,7 +275,7 @@ export function navigateToWorkspace (workspace: string, loginInfo?: WorkspaceLog
   if (loginInfo == null) {
     return
   }
-  setMetadata(login.metadata.LoginToken, loginInfo.token)
+  setMetadata(presentation.metadata.Token, loginInfo.token)
   setLoginInfo(loginInfo)
 
   if (navigateUrl !== undefined) {
@@ -312,7 +313,7 @@ export async function checkJoined (inviteId: string): Promise<[Status, Workspace
     }
   }
 
-  let token = getMetadata(login.metadata.LoginToken)
+  let token = getMetadata(presentation.metadata.Token)
   if (token === undefined) {
     const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
     token = Object.values(tokens)[0]
@@ -351,7 +352,7 @@ export async function getInviteLink (expHours: number = 1, emailMask: string = '
     throw new Error('accounts url not specified')
   }
 
-  const token = getMetadata(login.metadata.LoginToken)
+  const token = getMetadata(presentation.metadata.Token)
   if (token === undefined) {
     const loc = getCurrentLocation()
     loc.path[1] = 'login'
@@ -471,7 +472,7 @@ export async function changeName (first: string, last: string): Promise<void> {
       return
     }
   }
-  const token = getMetadata(login.metadata.LoginToken) as string
+  const token = getMetadata(presentation.metadata.Token) as string
 
   const request: Request<[string, string]> = {
     method: 'changeName',
@@ -502,7 +503,7 @@ export async function changePassword (oldPassword: string, password: string): Pr
       return
     }
   }
-  const token = getMetadata(login.metadata.LoginToken) as string
+  const token = getMetadata(presentation.metadata.Token) as string
 
   const request: Request<[string, string]> = {
     method: 'changePassword',
@@ -537,7 +538,7 @@ export async function leaveWorkspace (email: string): Promise<void> {
       return
     }
   }
-  const token = getMetadata(login.metadata.LoginToken) as string
+  const token = getMetadata(presentation.metadata.Token) as string
 
   const request: Request<[string]> = {
     method: 'leaveWorkspace',

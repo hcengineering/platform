@@ -14,14 +14,14 @@
   import { WeightPopup } from '@hcengineering/tags-resources'
   import {
     Button,
+    DropdownLabels,
     DropdownTextItem,
+    EditBox,
     getEventPopupPositionElement,
     IconAdd,
     IconDelete,
     showPopup
   } from '@hcengineering/ui'
-  import DropdownLabels from '@hcengineering/ui/src/components/DropdownLabels.svelte'
-  import EditBox from '@hcengineering/ui/src/components/EditBox.svelte'
   import bitrix from '../../plugin'
 
   export let mapping: BitrixEntityMapping

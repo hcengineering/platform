@@ -18,8 +18,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
   import { AnyComponent, Component, Label, StylishEdit } from '@hcengineering/ui'
-  import ObjectPresenter from '@hcengineering/view-resources/src/components/ObjectPresenter.svelte'
-  import { getObjectPreview } from '@hcengineering/view-resources/src/utils'
+  import { getObjectPreview, ObjectPresenter } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import calendar from '../plugin'
 

@@ -12,7 +12,7 @@
     viewOptionStore,
     setActiveViewletId
   } from '@hcengineering/view-resources'
-  import ViewletSettingButton from '@hcengineering/view-resources/src/components/ViewletSettingButton.svelte'
+  import { ViewletSettingButton } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import IssuesHeader from '../issues/IssuesHeader.svelte'
   import CreateIssueTemplate from './CreateIssueTemplate.svelte'

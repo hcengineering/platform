@@ -16,8 +16,9 @@
 <script lang="ts">
   import calendar from '@hcengineering/calendar'
   import contact, { Contact } from '@hcengineering/contact'
+  import { UserBox } from '@hcengineering/contact-resources'
   import { Hierarchy } from '@hcengineering/core'
-  import { getClient, UserBox } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import type { Review } from '@hcengineering/recruit'
   import { FullDescriptionBox } from '@hcengineering/text-editor'
   import { EditBox, Grid, showPanel } from '@hcengineering/ui'

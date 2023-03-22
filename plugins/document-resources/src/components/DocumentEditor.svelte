@@ -18,7 +18,7 @@
   import { DocumentVersion } from '@hcengineering/document'
   import { getMetadata } from '@hcengineering/platform'
 
-  import login from '@hcengineering/login'
+  import presentation from '@hcengineering/presentation'
   import document from '../plugin'
 
   import { CollaboratorEditor } from '@hcengineering/text-editor'
@@ -29,7 +29,7 @@
   export let initialContentId: string | undefined = undefined
   export let comparedVersion: Markup | undefined = undefined
 
-  const token = getMetadata(login.metadata.LoginToken) ?? ''
+  const token = getMetadata(presentation.metadata.Token) ?? ''
   const collaboratorURL = getMetadata(document.metadata.CollaboratorUrl) ?? ''
   let editor: CollaboratorEditor
   export function getHTML (): string | undefined {

@@ -9,9 +9,7 @@
   } from '@hcengineering/bitrix'
   import core, { AnyAttribute } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Button, IconActivity, IconAdd, IconClose, IconDelete } from '@hcengineering/ui'
-  import DropdownLabels from '@hcengineering/ui/src/components/DropdownLabels.svelte'
-  import EditBox from '@hcengineering/ui/src/components/EditBox.svelte'
+  import { Button, DropdownLabels, EditBox, IconActivity, IconAdd, IconClose, IconDelete } from '@hcengineering/ui'
   import bitrix from '../../plugin'
 
   export let mapping: BitrixEntityMapping

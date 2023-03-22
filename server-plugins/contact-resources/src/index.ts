@@ -30,9 +30,8 @@ import core, {
   TxRemoveDoc,
   TxUpdateDoc
 } from '@hcengineering/core'
-import login from '@hcengineering/login'
 import { getMetadata } from '@hcengineering/platform'
-import type { TriggerControl } from '@hcengineering/server-core'
+import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { workbenchId } from '@hcengineering/workbench'
 
 /**
@@ -275,7 +274,7 @@ export async function OnEmployeeUpdate (tx: Tx, control: TriggerControl): Promis
  */
 export async function personHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const person = doc as Person
-  const front = getMetadata(login.metadata.FrontUrl) ?? ''
+  const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.name}/${contactId}/${doc._id}`
   const link = concatLink(front, path)
   return `<a href="${link}">${getName(person)}</a>`
@@ -294,7 +293,7 @@ export function personTextPresenter (doc: Doc): string {
  */
 export async function organizationHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const organization = doc as Organization
-  const front = getMetadata(login.metadata.FrontUrl) ?? ''
+  const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.name}/${contactId}/${doc._id}`
   const link = concatLink(front, path)
   return `<a href="${link}">${organization.name}</a>`

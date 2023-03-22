@@ -15,7 +15,8 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
-  import { Card, EmployeeBox, getClient, SpaceSelector } from '@hcengineering/presentation'
+  import { Card, getClient, SpaceSelector } from '@hcengineering/presentation'
+  import { EmployeeBox } from '@hcengineering/contact-resources'
   import { Button, createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import hr from '../plugin'

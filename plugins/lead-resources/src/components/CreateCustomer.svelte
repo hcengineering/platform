@@ -14,12 +14,11 @@
 -->
 <script lang="ts">
   import { Channel, combineName, Contact, findContacts } from '@hcengineering/contact'
-  import { ChannelsDropdown } from '@hcengineering/contact-resources'
-  import PersonPresenter from '@hcengineering/contact-resources/src/components/PersonPresenter.svelte'
+  import { ChannelsDropdown, EditableAvatar, PersonPresenter } from '@hcengineering/contact-resources'
   import contact from '@hcengineering/contact-resources/src/plugin'
   import { AttachedData, Class, Data, Doc, generateId, MixinData, Ref, WithLookup } from '@hcengineering/core'
   import type { Customer } from '@hcengineering/lead'
-  import { Card, EditableAvatar, getClient } from '@hcengineering/presentation'
+  import { Card, getClient } from '@hcengineering/presentation'
   import {
     Button,
     createFocusManager,

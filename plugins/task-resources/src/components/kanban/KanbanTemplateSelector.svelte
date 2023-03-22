@@ -17,8 +17,8 @@
   import { createQuery } from '@hcengineering/presentation'
   import type { KanbanTemplate, KanbanTemplateSpace } from '@hcengineering/task'
   import task from '@hcengineering/task'
+  import type { DropdownTextItem } from '@hcengineering/ui'
   import { DropdownLabels } from '@hcengineering/ui'
-  import type { DropdownTextItem } from '@hcengineering/ui/src/types'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
 

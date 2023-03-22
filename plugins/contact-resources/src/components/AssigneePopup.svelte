@@ -28,15 +28,10 @@
     Label,
     tooltip
   } from '@hcengineering/ui'
-  import presentation, {
-    AssigneeCategory,
-    UserInfo,
-    assigneeCategoryOrder,
-    createQuery,
-    getCategorytitle,
-    getClient
-  } from '..'
+  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { createEventDispatcher } from 'svelte'
+  import { AssigneeCategory, assigneeCategoryOrder, getCategoryTitle } from '../assignee'
+  import UserInfo from './UserInfo.svelte'
 
   export let options: FindOptions<Contact> | undefined = undefined
   export let selected: Ref<Person> | undefined
@@ -221,7 +216,7 @@
                       <Icon icon={cl.icon} size={'small'} />
                     {/if}
                     <div class="ml-1">
-                      <Label label={getCategorytitle(category)} />
+                      <Label label={getCategoryTitle(category)} />
                     </div>
                   </span>
                 </div>

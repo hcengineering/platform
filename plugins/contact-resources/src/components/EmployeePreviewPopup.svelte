@@ -1,7 +1,8 @@
 <script lang="ts">
   import { Employee, EmployeeAccount, getName, Status } from '@hcengineering/contact'
   import { getCurrentAccount, Ref } from '@hcengineering/core'
-  import { Avatar, createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import Avatar from './Avatar.svelte'
   import { Button, Label, resizeObserver, showPopup } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Ref, Space } from '@hcengineering/core'
-  import Label from '@hcengineering/ui/src/components/Label.svelte'
+  import { Label } from '@hcengineering/ui'
   import board from '../plugin'
   import { createQuery } from '@hcengineering/presentation'
   import { MenuPage } from '@hcengineering/board'

@@ -15,9 +15,10 @@
 <script lang="ts">
   import { Member } from '@hcengineering/contact'
   import type { Class, Doc, Ref, Space } from '@hcengineering/core'
-  import { createQuery, getClient, UsersPopup, IconMembersOutline } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { Button, IconAdd, Label, showPopup, Icon } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import IconMembersOutline from './icons/MembersOutline.svelte'
   import {
     getViewOptions,
     setActiveViewletId,
@@ -26,6 +27,7 @@
     viewOptionStore
   } from '@hcengineering/view-resources'
   import contact from '../plugin'
+  import UsersPopup from './UsersPopup.svelte'
 
   export let objectId: Ref<Doc>
   export let space: Ref<Space>

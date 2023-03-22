@@ -13,15 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { concatLink, getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import { getMetadata, serialize } from '@hcengineering/platform'
+  import presentation, { getClient } from '@hcengineering/presentation'
+  import setting from '@hcengineering/setting'
   import { Button, EditBox, IconClose, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import login from '@hcengineering/login'
-  import PinPad from './PinPad.svelte'
   import telegram from '../plugin'
-  import { getClient } from '@hcengineering/presentation'
-  import setting from '@hcengineering/setting'
-  import { concatLink, getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import PinPad from './PinPad.svelte'
 
   const dispatch = createEventDispatcher()
 
@@ -32,7 +31,7 @@
   let code: string = ''
   let password: string = ''
   let error: string | undefined = undefined
-  const url = getMetadata(login.metadata.TelegramUrl) ?? ''
+  const url = getMetadata(telegram.metadata.TelegramURL) ?? ''
 
   async function requestCode (): Promise<void> {
     const res = await sendRequest('/signin', { phone })
@@ -66,7 +65,7 @@
     const response = await fetch(concatLink(url, path), {
       method: 'POST',
       headers: {
-        Authorization: 'Bearer ' + getMetadata(login.metadata.LoginToken),
+        Authorization: 'Bearer ' + getMetadata(presentation.metadata.Token),
         'Content-Type': 'application/json'
       },
       body: serialize(data)

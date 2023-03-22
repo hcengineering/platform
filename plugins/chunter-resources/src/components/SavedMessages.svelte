@@ -1,6 +1,6 @@
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
-  import AttachmentPreview from '@hcengineering/attachment-resources/src/components/AttachmentPreview.svelte'
+  import { AttachmentPreview } from '@hcengineering/attachment-resources'
   import { ChunterMessage } from '@hcengineering/chunter'
   import contact, { EmployeeAccount, getName as getContactName } from '@hcengineering/contact'
   import { employeeByIdStore } from '@hcengineering/contact-resources'

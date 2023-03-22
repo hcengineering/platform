@@ -25,6 +25,8 @@
   function clickHandler (e: MouseEvent) {
     if (disableClick) return
     if (onClick) {
+      e.preventDefault()
+      e.stopPropagation()
       onClick(e)
     } else if (href !== undefined) {
       try {

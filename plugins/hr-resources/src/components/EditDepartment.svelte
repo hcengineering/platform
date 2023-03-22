@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery, EditableAvatar, getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
 
   import { createEventDispatcher, onMount } from 'svelte'
   import { Department } from '@hcengineering/hr'
   import core, { getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import hr from '../plugin'
-  import { ChannelsEditor } from '@hcengineering/contact-resources'
+  import { ChannelsEditor, EditableAvatar } from '@hcengineering/contact-resources'
   import setting, { IntegrationType } from '@hcengineering/setting'
 
   export let object: Department

@@ -16,7 +16,9 @@
   import type { Space } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import { Icon, Label } from '@hcengineering/ui'
-  import plugin, { Members, IconMembersOutline } from '..'
+  import plugin from '../plugin'
+  import IconMembersOutline from './icons/MembersOutline.svelte'
+  import SpaceMembers from './SpaceMembers.svelte'
 
   export let label: IntlString = plugin.string.Members
   export let space: Space
@@ -31,5 +33,5 @@
       <Label {label} />
     </span>
   </div>
-  <Members {space} />
+  <SpaceMembers {space} />
 </div>

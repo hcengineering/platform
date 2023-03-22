@@ -15,11 +15,12 @@
 <script lang="ts">
   import { Channel, combineName, findPerson, Person } from '@hcengineering/contact'
   import { AttachedData, Data, generateId } from '@hcengineering/core'
-  import { Card, EditableAvatar, getClient } from '@hcengineering/presentation'
+  import { Card, getClient } from '@hcengineering/presentation'
   import { EditBox, IconInfo, Label, createFocusManager, FocusHandler } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { ChannelsDropdown } from '..'
   import contact from '../plugin'
+  import EditableAvatar from './EditableAvatar.svelte'
   import PersonPresenter from './PersonPresenter.svelte'
 
   let avatarEditor: EditableAvatar

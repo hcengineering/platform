@@ -16,9 +16,9 @@
   import { Person } from '@hcengineering/contact'
   import { Ref, RefTo } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { UserBox } from '@hcengineering/presentation'
   import contact from '../plugin'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
+  import UserBox from './UserBox.svelte'
 
   export let value: Ref<Person> | undefined
   export let label: IntlString = contact.string.Person

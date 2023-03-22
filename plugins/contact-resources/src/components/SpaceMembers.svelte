@@ -15,18 +15,15 @@
 <script lang="ts">
   import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
   import { Account, AccountRole, DocumentQuery, getCurrentAccount, Ref, SortingOrder, Space } from '@hcengineering/core'
-  import login from '@hcengineering/login'
   import { translate } from '@hcengineering/platform'
-  import setting from '@hcengineering/setting'
+  import { getClient } from '@hcengineering/presentation'
   import { ActionIcon, IconAdd, IconClose, Label, SearchEdit, showPopup } from '@hcengineering/ui'
-  import presentation from '../plugin'
-  import { getClient } from '../utils'
+  import presentation from '@hcengineering/presentation'
   import AddMembersPopup from './AddMembersPopup.svelte'
   import UserInfo from './UserInfo.svelte'
 
   export let space: Space
   export let withAddButton: boolean = false
-  export let withInviteWorkspaceButton: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -67,10 +64,6 @@
     const account = await client.findOne(contact.class.EmployeeAccount, { employee })
     if (account === undefined) return
     await client.update(space, { $pull: { members: account._id } })
-  }
-
-  function inviteWorkspace (): void {
-    showPopup(login.component.InviteLink, {})
   }
 
   function openAddMembersPopup () {
@@ -145,13 +138,6 @@
     {/if}
   {/if}
 {/await}
-{#if withInviteWorkspaceButton}
-  <div class="item fs-title mb-4 mt-2">
-    <div class="flex-row-center p-1" on:click={inviteWorkspace}>
-      <Label label={setting.string.InviteWorkspace} />
-    </div>
-  </div>
-{/if}
 
 <style lang="scss">
   .notIn {

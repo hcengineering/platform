@@ -18,12 +18,14 @@
   import { AccountRole, getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
-  import { AttributeEditor, Avatar, createQuery, EditableAvatar, getClient } from '@hcengineering/presentation'
+  import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
   import setting, { IntegrationType } from '@hcengineering/setting'
   import { createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import contact from '../plugin'
+  import Avatar from './Avatar.svelte'
   import ChannelsEditor from './ChannelsEditor.svelte'
+  import EditableAvatar from './EditableAvatar.svelte'
 
   export let object: Employee
   const client = getClient()

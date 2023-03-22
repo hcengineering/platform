@@ -14,12 +14,11 @@
 -->
 <script lang="ts">
   import { getMetadata } from '@hcengineering/platform'
-  import { connect, versionError } from '@hcengineering/presentation'
-  import { Loading, Notifications, location } from '@hcengineering/ui'
+  import { Component, Loading, location, Notifications } from '@hcengineering/ui'
+  import { connect, versionError } from '../connect'
 
-  import Workbench from './Workbench.svelte'
-  import workbench from '../plugin'
   import { workbenchId } from '@hcengineering/workbench'
+  import workbench from '../plugin'
 </script>
 
 {#if $location.path[0] === workbenchId || $location.path[0] === workbench.component.WorkbenchApp}
@@ -34,7 +33,7 @@
         </div>
       {:else if client}
         <Notifications>
-          <Workbench {client} />
+          <Component is={workbench.component.Workbench} />
         </Notifications>
       {/if}
     {:catch error}

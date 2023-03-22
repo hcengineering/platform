@@ -15,9 +15,9 @@
 <script lang="ts">
   import { Employee, getName, Person } from '@hcengineering/contact'
   import { IntlString } from '@hcengineering/platform'
-  import { Avatar } from '@hcengineering/presentation'
   import { Label, LabelAndProps, tooltip } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
+  import Avatar from './Avatar.svelte'
 
   export let value: Person | Employee | undefined | null
   export let inline: boolean = false

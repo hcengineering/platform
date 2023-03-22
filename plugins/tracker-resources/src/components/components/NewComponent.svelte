@@ -15,7 +15,8 @@
 <script lang="ts">
   import { Data, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { Card, getClient, SpaceSelector, EmployeeBox, UserBoxList } from '@hcengineering/presentation'
+  import { Card, getClient, SpaceSelector } from '@hcengineering/presentation'
+  import { EmployeeBox, UserBoxList } from '@hcengineering/contact-resources'
   import { Component, ComponentStatus, Project } from '@hcengineering/tracker'
   import { DatePresenter, EditBox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'

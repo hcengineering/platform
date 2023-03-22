@@ -15,6 +15,8 @@
 //
 
 import {
+  AvatarProvider,
+  AvatarType,
   ChannelProvider,
   Contact,
   contactId,
@@ -26,17 +28,16 @@ import {
 import { Doc, getCurrentAccount, IdMap, ObjQueryType, Ref, Timestamp, toIdMap } from '@hcengineering/core'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { TemplateDataProvider } from '@hcengineering/templates'
-import { getCurrentLocation, getPanelURI, Location, ResolvedLocation } from '@hcengineering/ui'
+import { DropdownIntlItem, getCurrentLocation, getPanelURI, Location, ResolvedLocation } from '@hcengineering/ui'
 import view, { Filter } from '@hcengineering/view'
 import { FilterQuery } from '@hcengineering/view-resources'
 import { get, writable } from 'svelte/store'
 import contact from './plugin'
 
 const client = getClient()
-const channelProviders = client.findAll(contact.class.ChannelProvider, {})
 
 export async function getChannelProviders (): Promise<Map<Ref<ChannelProvider>, ChannelProvider>> {
-  const cp = await channelProviders
+  const cp = await client.findAll(contact.class.ChannelProvider, {})
   const map = new Map<Ref<ChannelProvider>, ChannelProvider>()
   for (const provider of cp) {
     map.set(provider._id, provider)
@@ -191,3 +192,41 @@ query.query(contact.class.Employee, {}, (res) => {
   employeesStore.set(res)
   employeeByIdStore.set(toIdMap(res))
 })
+
+export function getAvatarTypeDropdownItems (hasGravatar: boolean): DropdownIntlItem[] {
+  return [
+    {
+      id: AvatarType.COLOR,
+      label: contact.string.UseColor
+    },
+    {
+      id: AvatarType.IMAGE,
+      label: contact.string.UseImage
+    },
+    ...(hasGravatar
+      ? [
+          {
+            id: AvatarType.GRAVATAR,
+            label: contact.string.UseGravatar
+          }
+        ]
+      : [])
+  ]
+}
+
+export function getAvatarProviderId (avatar?: string | null): Ref<AvatarProvider> | undefined {
+  if (avatar === null || avatar === undefined || avatar === '') {
+    return
+  }
+  if (!avatar.includes('://')) {
+    return contact.avatarProvider.Image
+  }
+  const [schema] = avatar.split('://')
+
+  switch (schema) {
+    case AvatarType.GRAVATAR:
+      return contact.avatarProvider.Gravatar
+    case AvatarType.COLOR:
+      return contact.avatarProvider.Color
+  }
+}

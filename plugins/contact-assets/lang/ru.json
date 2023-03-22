@@ -57,7 +57,7 @@
     "Copied": "Скопировано",
     "ViewFullProfile": "Посмотреть профиль",
     "Member": "Сотрудник компании",
-    "Members": "Сотрудники",
+    "Members": "Участники",
     "NoMembers": "Нет добавленных сотрудников",
     "AddMember": "Добавить сотрудника",
     "KickEmployee": "Исключить сотрудника",
@@ -77,6 +77,17 @@
     "ProfilePlaceholder": "Профиль...",
     "CurrentEmployee": "Текущий сотрудник",
     "MergeEmployee": "Объеденить сотрудника",
-    "DisplayName": "Отображаемое имя"
+    "DisplayName": "Отображаемое имя",
+    "SelectAvatar": "Выбрать аватар",
+    "GravatarsManaged": "Граватары управляются через",
+    "AddMembersHeader": "Добавить пользователей в {value}:",
+    "NumberMembers": "{count, plural, =0 {нет участников} =1 {1 участник} =2 {2 участника} =3 {3 участника} =4 {4 участника} other {# участников}}",
+    "Assigned": "Назначен",
+    "Unassigned": "Не назначен",
+    "CategoryCurrentUser": "Текущий пользователь",
+    "CategoryPreviousAssigned": "Ранее назначенные",
+    "CategoryProjectLead": "Руководитель проекта",
+    "CategoryProjectMembers": "Участники проекта",
+    "CategoryOther": "Прочие"
   }
 }

@@ -18,7 +18,8 @@
   import { getCurrentAccount } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
-  import { AttributeEditor, EditableAvatar, getClient, MessageBox } from '@hcengineering/presentation'
+  import { AttributeEditor, getClient, MessageBox } from '@hcengineering/presentation'
+  import { EditableAvatar } from '@hcengineering/contact-resources'
   import { Button, createFocusManager, EditBox, FocusHandler, Icon, Label, showPopup } from '@hcengineering/ui'
   import setting from '../plugin'
   const client = getClient()

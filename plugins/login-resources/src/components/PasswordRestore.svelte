@@ -19,6 +19,7 @@
   import login from '../plugin'
   import { restorePassword } from '../utils'
   import Form from './Form.svelte'
+  import presentation from '@hcengineering/presentation'
 
   const fields = [
     { id: 'new-password', name: 'password', i18n: login.string.Password, password: true },
@@ -44,7 +45,7 @@
       status = loginStatus
 
       if (result !== undefined) {
-        setMetadata(login.metadata.LoginToken, result.token)
+        setMetadata(presentation.metadata.Token, result.token)
         setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
         setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
         const loc = getCurrentLocation()

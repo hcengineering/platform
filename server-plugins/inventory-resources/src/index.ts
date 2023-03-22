@@ -15,9 +15,8 @@
 
 import { concatLink, Doc } from '@hcengineering/core'
 import { inventoryId, Product } from '@hcengineering/inventory'
-import login from '@hcengineering/login'
 import { getMetadata } from '@hcengineering/platform'
-import { TriggerControl } from '@hcengineering/server-core'
+import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import view from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 
@@ -26,7 +25,7 @@ import { workbenchId } from '@hcengineering/workbench'
  */
 export async function productHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const product = doc as Product
-  const front = getMetadata(login.metadata.FrontUrl) ?? ''
+  const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.name}/${inventoryId}/Products/#${view.component.EditDoc}|${product._id}|${product._class}|content`
   const link = concatLink(front, path)
   return `<a href="${link}">${product.name}</a>`

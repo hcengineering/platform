@@ -17,11 +17,11 @@
   import { EmployeeAccount, getName } from '@hcengineering/contact'
   import { Account } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Avatar } from '@hcengineering/presentation'
   import { showPopup, tooltip } from '@hcengineering/ui'
   import { EditDoc } from '@hcengineering/view-resources'
   import DocNavLink from '@hcengineering/view-resources/src/components/DocNavLink.svelte'
   import { employeeByIdStore } from '../utils'
+  import Avatar from './Avatar.svelte'
 
   export let value: Account
   export let disabled = false

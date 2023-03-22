@@ -13,24 +13,25 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Employee } from '@hcengineering/contact'
+  import { EmployeeBox } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
-  import { createQuery, getClient, EmployeeBox, MessageBox } from '@hcengineering/presentation'
+  import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
   import type { TodoItem } from '@hcengineering/task'
   import task, { calcRank } from '@hcengineering/task'
   import {
     Button,
     CheckBox,
-    TextAreaEditor,
+    DateRangePresenter,
     getEventPopupPositionElement,
     IconAdd,
     IconDelete,
     IconMoreH,
     Progress,
     showPopup,
-    DateRangePresenter
+    TextAreaEditor
   } from '@hcengineering/ui'
   import { ContextMenu, HTMLPresenter } from '@hcengineering/view-resources'
-  import { Employee } from '@hcengineering/contact'
 
   import board from '../../plugin'
   import { getDateIcon } from '../../utils/BoardUtils'

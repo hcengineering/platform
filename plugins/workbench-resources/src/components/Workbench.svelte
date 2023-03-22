@@ -15,11 +15,11 @@
 <script lang="ts">
   import calendar from '@hcengineering/calendar'
   import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
-  import core, { Class, Client, Doc, getCurrentAccount, Ref, setCurrentAccount, Space } from '@hcengineering/core'
+  import core, { Class, Doc, getCurrentAccount, Ref, setCurrentAccount, Space } from '@hcengineering/core'
   import notification, { NotificationStatus } from '@hcengineering/notification'
   import { BrowserNotificatator, NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getMetadata, getResource, IntlString } from '@hcengineering/platform'
-  import { Avatar, createQuery, setClient } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import request, { RequestStatus } from '@hcengineering/request'
   import {
     AnyComponent,
@@ -62,12 +62,10 @@
   import login from '@hcengineering/login'
   import { workspacesStore } from '../utils'
 
-  export let client: Client
   let contentPanel: HTMLElement
   let shownMenu: boolean = false
 
   const { setTheme } = getContext('theme') as any
-  setClient(client)
   NotificationClientImpl.createClient()
 
   let currentAppAlias: string | undefined
@@ -86,6 +84,8 @@
   migrateViewOpttions()
 
   const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
+
+  const client = getClient()
 
   let apps: Application[] | Promise<Application[]> = client
     .findAll(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
@@ -588,7 +588,7 @@
               showPopup(AccountPopup, {}, popupPosition)
             }}
           >
-            <Avatar avatar={employee.avatar} size={'medium'} />
+            <Component is={contact.component.Avatar} props={{ avatar: employee.avatar, size: 'medium' }} />
           </div>
         </div>
       </div>

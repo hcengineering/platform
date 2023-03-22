@@ -18,11 +18,11 @@
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import type { IssueTemplate } from '@hcengineering/tracker'
   import { Component, Label } from '@hcengineering/ui'
-  import { getFiltredKeys, isCollectionAttr } from '@hcengineering/view-resources/src/utils'
+  import { getFiltredKeys, isCollectionAttr } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
+  import ComponentEditor from '../components/ComponentEditor.svelte'
   import AssigneeEditor from '../issues/AssigneeEditor.svelte'
   import PriorityEditor from '../issues/PriorityEditor.svelte'
-  import ComponentEditor from '../components/ComponentEditor.svelte'
   import SprintEditor from '../sprints/SprintEditor.svelte'
 
   export let issue: WithLookup<IssueTemplate>

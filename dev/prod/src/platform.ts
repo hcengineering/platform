@@ -15,67 +15,66 @@
 
 import { addLocation } from '@hcengineering/platform'
 
-import login, { loginId } from '@hcengineering/login'
-import workbench, { workbenchId } from '@hcengineering/workbench'
-import uiPlugin from '@hcengineering/ui'
-import { viewId } from '@hcengineering/view'
-import { taskId } from '@hcengineering/task'
-import { contactId } from '@hcengineering/contact'
-import { chunterId } from '@hcengineering/chunter'
-import { recruitId } from '@hcengineering/recruit'
 import { activityId } from '@hcengineering/activity'
-import { automationId } from '@hcengineering/automation'
-import { settingId } from '@hcengineering/setting'
-import { telegramId } from '@hcengineering/telegram'
 import { attachmentId } from '@hcengineering/attachment'
-import { leadId } from '@hcengineering/lead'
+import { automationId } from '@hcengineering/automation'
+import { boardId } from '@hcengineering/board'
+import { calendarId } from '@hcengineering/calendar'
+import { chunterId } from '@hcengineering/chunter'
 import { clientId } from '@hcengineering/client'
-import { gmailId } from '@hcengineering/gmail'
+import { contactId } from '@hcengineering/contact'
+import document, { documentId } from '@hcengineering/document'
+import gmail, { gmailId } from '@hcengineering/gmail'
+import { hrId } from '@hcengineering/hr'
 import { imageCropperId } from '@hcengineering/image-cropper'
 import { inventoryId } from '@hcengineering/inventory'
-import { templatesId } from '@hcengineering/templates'
+import { leadId } from '@hcengineering/lead'
+import login, { loginId } from '@hcengineering/login'
 import { notificationId } from '@hcengineering/notification'
-import { preferenceId } from '@hcengineering/preference'
-import { tagsId } from '@hcengineering/tags'
-import { calendarId } from '@hcengineering/calendar'
-import { trackerId } from '@hcengineering/tracker'
-import { boardId } from '@hcengineering/board'
-import { hrId } from '@hcengineering/hr'
-import { requestId } from '@hcengineering/request'
+import { recruitId } from '@hcengineering/recruit'
 import rekoni from '@hcengineering/rekoni'
-import document, { documentId } from '@hcengineering/document'
+import { requestId } from '@hcengineering/request'
+import { settingId } from '@hcengineering/setting'
+import { tagsId } from '@hcengineering/tags'
+import { taskId } from '@hcengineering/task'
+import telegram, { telegramId } from '@hcengineering/telegram'
+import { templatesId } from '@hcengineering/templates'
+import { trackerId } from '@hcengineering/tracker'
+import uiPlugin from '@hcengineering/ui'
+import { viewId } from '@hcengineering/view'
+import workbench, { workbenchId } from '@hcengineering/workbench'
 
-import bitrix, { bitrixId } from '@hcengineering/bitrix'
+import { bitrixId } from '@hcengineering/bitrix'
 
-import '@hcengineering/login-assets'
-import '@hcengineering/task-assets'
-import '@hcengineering/view-assets'
-import '@hcengineering/chunter-assets'
-import '@hcengineering/attachment-assets'
-import '@hcengineering/contact-assets'
-import '@hcengineering/recruit-assets'
 import '@hcengineering/activity-assets'
+import '@hcengineering/attachment-assets'
 import '@hcengineering/automation-assets'
-import '@hcengineering/setting-assets'
-import '@hcengineering/telegram-assets'
-import '@hcengineering/lead-assets'
-import '@hcengineering/gmail-assets'
-import '@hcengineering/workbench-assets'
-import '@hcengineering/inventory-assets'
-import '@hcengineering/templates-assets'
-import '@hcengineering/notification-assets'
-import '@hcengineering/tags-assets'
-import '@hcengineering/calendar-assets'
-import '@hcengineering/tracker-assets'
-import '@hcengineering/board-assets'
-import '@hcengineering/preference-assets'
-import '@hcengineering/hr-assets'
-import '@hcengineering/document-assets'
 import '@hcengineering/bitrix-assets'
+import '@hcengineering/board-assets'
+import '@hcengineering/calendar-assets'
+import '@hcengineering/chunter-assets'
+import '@hcengineering/contact-assets'
+import '@hcengineering/document-assets'
+import '@hcengineering/gmail-assets'
+import '@hcengineering/hr-assets'
+import '@hcengineering/inventory-assets'
+import '@hcengineering/lead-assets'
+import '@hcengineering/login-assets'
+import '@hcengineering/notification-assets'
+import '@hcengineering/preference-assets'
+import '@hcengineering/recruit-assets'
 import '@hcengineering/request-assets'
+import '@hcengineering/setting-assets'
+import '@hcengineering/tags-assets'
+import '@hcengineering/task-assets'
+import '@hcengineering/telegram-assets'
+import '@hcengineering/templates-assets'
+import '@hcengineering/tracker-assets'
+import '@hcengineering/view-assets'
+import '@hcengineering/workbench-assets'
 
-import presentation, { presentationId } from '@hcengineering/presentation'
 import { coreId } from '@hcengineering/core'
+import presentation, { presentationId } from '@hcengineering/presentation'
 import { textEditorId } from '@hcengineering/text-editor'
 
 import { setMetadata } from '@hcengineering/platform'
@@ -94,7 +93,7 @@ export async function configurePlatform() {
   const config: Config = await (await fetch('/config.json')).json()
   console.log('loading configuration', config)
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
-  setMetadata(login.metadata.UploadUrl, config.UPLOAD_URL)
+  setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
   
   setMetadata(document.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
 
@@ -102,8 +101,9 @@ export async function configurePlatform() {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)
     setMetadata(presentation.metadata.RequiredVersion, config.MODEL_VERSION)
   }
-  setMetadata(login.metadata.TelegramUrl, config.TELEGRAM_URL ?? 'http://localhost:8086')
-  setMetadata(login.metadata.GmailUrl, config.GMAIL_URL ?? 'http://localhost:8087')
+  setMetadata(telegram.metadata.TelegramURL, config.TELEGRAM_URL ?? 'http://localhost:8086')
+  setMetadata(gmail.metadata.GmailURL, config.GMAIL_URL ?? 'http://localhost:8087')
+  
   setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
 
   setMetadata(rekoni.metadata.RekoniUrl, config.REKONI_URL)

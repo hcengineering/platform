@@ -23,7 +23,7 @@
   import Join from './Join.svelte'
   import Intro from './Intro.svelte'
   import { onDestroy } from 'svelte'
-  import login from '../plugin'
+  import presentation from '@hcengineering/presentation'
   import { getMetadata } from '@hcengineering/platform'
   import PasswordRequest from './PasswordRequest.svelte'
   import PasswordRestore from './PasswordRestore.svelte'
@@ -33,7 +33,7 @@
   let navigateUrl: string | undefined
 
   function getToken (timer: number): string | undefined {
-    return getMetadata(login.metadata.LoginToken)
+    return getMetadata(presentation.metadata.Token)
   }
   $: token = getToken($ticker)
 

@@ -18,7 +18,7 @@
   import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
   import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import { Button, EditStyle, eventToHTMLElement, IconAdd, Label, showPopup } from '@hcengineering/ui'
-  import EditBoxPopup from '@hcengineering/view-resources/src/components/EditBoxPopup.svelte'
+  import { EditBoxPopup } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../../plugin'
   import IssuePresenter from '../IssuePresenter.svelte'

@@ -16,13 +16,13 @@
 
 import { Attachment } from '@hcengineering/attachment'
 import { Class, concatLink, Data, Doc, Ref, Space, TxOperations as Client } from '@hcengineering/core'
-import login from '@hcengineering/login'
+import presentation from '@hcengineering/presentation'
 import { getMetadata, setPlatformStatus, unknownError } from '@hcengineering/platform'
 
 import attachment from './plugin'
 
 export async function uploadFile (file: File): Promise<string> {
-  const uploadUrl = getMetadata(login.metadata.UploadUrl)
+  const uploadUrl = getMetadata(presentation.metadata.UploadURL)
 
   if (uploadUrl === undefined) {
     throw Error('UploadURL is not defined')
@@ -34,7 +34,7 @@ export async function uploadFile (file: File): Promise<string> {
   const resp = await fetch(uploadUrl, {
     method: 'POST',
     headers: {
-      Authorization: 'Bearer ' + (getMetadata(login.metadata.LoginToken) as string)
+      Authorization: 'Bearer ' + (getMetadata(presentation.metadata.Token) as string)
     },
     body: data
   })
@@ -47,13 +47,13 @@ export async function uploadFile (file: File): Promise<string> {
 }
 
 export async function deleteFile (id: string): Promise<void> {
-  const uploadUrl = getMetadata(login.metadata.UploadUrl) ?? ''
+  const uploadUrl = getMetadata(presentation.metadata.UploadURL) ?? ''
 
   const url = concatLink(uploadUrl, `?file=${id}`)
   const resp = await fetch(url, {
     method: 'DELETE',
     headers: {
-      Authorization: 'Bearer ' + (getMetadata(login.metadata.LoginToken) as string)
+      Authorization: 'Bearer ' + (getMetadata(presentation.metadata.Token) as string)
     }
   })
 
