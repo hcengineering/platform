@@ -25,11 +25,11 @@
     showPopup,
     getPlatformColor,
     eventToHTMLElement,
-    Component
+    Component,
+    IconCircles
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { ColorsPopup } from '@hcengineering/view-resources'
-  import Circles from './Circles.svelte'
   import StatusesPopup from './StatusesPopup.svelte'
   import task from '../../plugin'
   import Won from '../icons/Won.svelte'
@@ -122,7 +122,7 @@
           selected = undefined
         }}
       >
-        <div class="bar"><Circles /></div>
+        <div class="bar"><IconCircles /></div>
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="color"

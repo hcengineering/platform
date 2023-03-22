@@ -14,9 +14,8 @@
 -->
 <script lang="ts">
   import presentation from '@hcengineering/presentation'
-  import { Icon, IconEdit, IconClose, tooltip, Button } from '@hcengineering/ui'
+  import { Icon, IconEdit, IconClose, tooltip, Button, IconCircles } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import Circles from '../icons/Circles.svelte'
 
   export let style = ''
   export let isDraggable = false
@@ -37,7 +36,7 @@
   on:dblclick|preventDefault={isEditable && !isEditing ? () => dispatch('edit') : undefined}
 >
   <div class="flex-center ml-2">
-    <div class="flex-no-shrink circles-mark" class:isDraggable><Circles /></div>
+    <div class="flex-no-shrink circles-mark" class:isDraggable><IconCircles /></div>
   </div>
 
   <div class="root flex flex-between items-center w-full p-2">

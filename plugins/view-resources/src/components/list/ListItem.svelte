@@ -16,12 +16,11 @@
   import core, { AnyAttribute, Doc, getObjectValue, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { getClient, updateAttribute } from '@hcengineering/presentation'
-  import { CheckBox, Component, deviceOptionsStore as deviceInfo, tooltip } from '@hcengineering/ui'
+  import { CheckBox, Component, deviceOptionsStore as deviceInfo, tooltip, IconCircles } from '@hcengineering/ui'
   import { AttributeModel } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { FixedColumn } from '../..'
   import view from '../../plugin'
-  import Circles from '../icons/Circles.svelte'
 
   export let docObject: Doc
   export let index: number
@@ -103,7 +102,7 @@
   on:dragstart
 >
   <div class="draggable-container">
-    <div class="draggable-mark"><Circles /></div>
+    <div class="draggable-mark"><IconCircles /></div>
   </div>
   <div class="flex-center relative" use:tooltip={{ label: view.string.Select, direction: 'bottom' }}>
     <div class="antiList-cells__notifyCell">
@@ -151,15 +150,15 @@
   {/each}
   {#if compactMode}
     <div class="panel-trigger" tabindex="-1">
-      <Circles />
+      <IconCircles />
       <div class="space" />
-      <Circles />
+      <IconCircles />
     </div>
     <div class="hidden-panel" tabindex="-1">
       <div class="header">
-        <Circles />
+        <IconCircles />
         <div class="space" />
-        <Circles />
+        <IconCircles />
       </div>
       <div class="scroll-box gap-2">
         {#each model as attributeModel}

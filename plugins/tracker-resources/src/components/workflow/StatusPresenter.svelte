@@ -14,10 +14,9 @@
 -->
 <script lang="ts">
   import { IssueStatus } from '@hcengineering/tracker'
-  import { Icon, IconClose, IconEdit, Label, tooltip } from '@hcengineering/ui'
+  import { Icon, IconCircles, IconClose, IconEdit, Label, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
-  import Circles from '../icons/Circles.svelte'
   import IssueStatusIcon from '../issues/IssueStatusIcon.svelte'
 
   export let value: IssueStatus
@@ -34,7 +33,7 @@
 <div class="flex-between background-button-bg-color border-radius-1 p-2 root" on:dblclick|preventDefault={edit}>
   <div class="flex flex-grow items-center">
     <div class="flex-no-shrink draggable-mark" class:draggable={!isSingle}>
-      <Circles />
+      <IconCircles />
     </div>
     <div class="flex-no-shrink ml-2">
       <IssueStatusIcon {value} size="small" />

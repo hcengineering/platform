@@ -16,11 +16,10 @@
   import { Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import tracker, { Component, DraftIssueChild, IssueTemplateChild, Project, Sprint } from '@hcengineering/tracker'
-  import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { eventToHTMLElement, IconCircles, showPopup } from '@hcengineering/ui'
   import { ActionContext, FixedColumn } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import { flip } from 'svelte/animate'
-  import Circles from '../icons/Circles.svelte'
   import AssigneeEditor from '../issues/AssigneeEditor.svelte'
   import PriorityEditor from '../issues/PriorityEditor.svelte'
   import StatusEditor from '../issues/StatusEditor.svelte'
@@ -122,7 +121,7 @@
     on:dragend={resetDrag}
   >
     <div class="draggable-container">
-      <div class="draggable-mark"><Circles /></div>
+      <div class="draggable-mark"><IconCircles /></div>
     </div>
     <div class="flex-row-center ml-6 clear-mins gap-2">
       <StatusEditor

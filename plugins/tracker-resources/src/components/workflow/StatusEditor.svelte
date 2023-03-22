@@ -16,11 +16,10 @@
   import { createEventDispatcher } from 'svelte'
   import { Data } from '@hcengineering/core'
   import { IssueStatus } from '@hcengineering/tracker'
-  import { Button, eventToHTMLElement, getPlatformColor, showPopup } from '@hcengineering/ui'
+  import { Button, eventToHTMLElement, getPlatformColor, IconCircles, showPopup } from '@hcengineering/ui'
   import presentation from '@hcengineering/presentation'
   import { ColorsPopup } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
-  import Circles from '../icons/Circles.svelte'
   import StatusInput from './StatusInput.svelte'
 
   export let value: Partial<Data<IssueStatus>>
@@ -44,7 +43,7 @@
 <div class="flex-between background-button-bg-color border-radius-1 p-2 root">
   <div class="flex flex-grow items-center clear-mins inputs">
     <div class="flex-no-shrink draggable-mark">
-      {#if !isSingle}<Circles />{/if}
+      {#if !isSingle}<IconCircles />{/if}
     </div>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="flex-no-shrink ml-2 color" on:click={pickColor}>
