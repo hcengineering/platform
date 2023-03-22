@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact, { EmployeeAccount } from '@hcengineering/contact'
-  import { employeeByIdStore, EmployeePresenter } from '@hcengineering/contact-resources'
+  import { employeeByIdStore, EmployeeBox } from '@hcengineering/contact-resources'
   import core, { ClassifierKind, Doc, Mixin, Ref } from '@hcengineering/core'
   import { AttributeBarEditor, createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
 
@@ -144,9 +144,15 @@
   <span class="label">
     <Label label={core.string.CreatedBy} />
   </span>
-  <div class="min-w-0 w-full employee-button overflow-label">
-    <EmployeePresenter value={employee} inline />
-  </div>
+  <EmployeeBox
+    value={employee?._id}
+    label={core.string.CreatedBy}
+    kind={'link'}
+    size={'large'}
+    width={'100%'}
+    showNavigate={false}
+    readonly
+  />
 
   <span class="label">
     <Label label={tracker.string.Assignee} />
@@ -217,18 +223,5 @@
   .labelTop {
     align-self: start;
     margin-top: 0.385rem;
-  }
-
-  .employee-button {
-    padding: 0 0.875rem;
-    border: 1px solid transparent;
-    display: flex;
-    min-height: 2rem;
-    &:hover {
-      border: 1px solid var(--button-border-hover);
-      color: var(--accent-color);
-      transition-duration: 0;
-      border-radius: 0.25rem;
-    }
   }
 </style>
