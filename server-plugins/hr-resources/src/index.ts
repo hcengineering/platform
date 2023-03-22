@@ -297,7 +297,7 @@ export async function OnRequestUpdate (tx: Tx, control: TriggerControl): Promise
  */
 export async function OnRequestRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx)
-  if (core.class.TxCreateDoc !== actualTx._class) {
+  if (core.class.TxRemoveDoc !== actualTx._class) {
     return []
   }
   const ctx = actualTx as TxCreateDoc<Request>
