@@ -16,9 +16,19 @@
   import type { Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { recruitId, Vacancy } from '@hcengineering/recruit'
-  import { Button, Icon, IconAdd, Label, NavLink, resizeObserver, Scroller, showPopup } from '@hcengineering/ui'
-  import { BuildModelKey } from '@hcengineering/view'
-  import { Table } from '@hcengineering/view-resources'
+  import {
+    Button,
+    Icon,
+    IconAdd,
+    Label,
+    Loading,
+    NavLink,
+    resizeObserver,
+    Scroller,
+    showPopup
+  } from '@hcengineering/ui'
+  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { getViewOptions, Table, ViewletSettingButton, viewOptionStore } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import CreateApplication from './CreateApplication.svelte'
   import IconApplication from './icons/Application.svelte'
@@ -35,17 +45,36 @@
   const createApp = (ev: MouseEvent): void => {
     showPopup(CreateApplication, { space: objectId, preserveVacancy: true }, ev.target as HTMLElement)
   }
-  const config: (BuildModelKey | string)[] = [
-    '',
-    '$lookup.space.name',
-    '$lookup.space.$lookup.company',
-    'state',
-    'doneState'
-  ]
   let wSection: number
+
+  let viewlet: Viewlet | undefined
+  let preference: ViewletPreference | undefined
+  let loading = true
+
+  const viewletQuery = createQuery()
+  $: viewletQuery.query(view.class.Viewlet, { _id: recruit.viewlet.VacancyApplicationsShort }, (res) => {
+    ;[viewlet] = res
+  })
+
+  $: viewOptions = viewlet !== undefined ? getViewOptions(viewlet, $viewOptionStore) : undefined
+
+  const preferenceQuery = createQuery()
+
+  $: viewlet &&
+    preferenceQuery.query(
+      view.class.ViewletPreference,
+      {
+        attachedTo: viewlet._id
+      },
+      (res) => {
+        preference = res[0]
+        loading = false
+      },
+      { limit: 1 }
+    )
 </script>
 
-<div class="antiSection max-h-125" use:resizeObserver={(element) => (wSection = element.clientWidth)}>
+<div class="antiSection max-h-125 clear-mins" use:resizeObserver={(element) => (wSection = element.clientWidth)}>
   <div class="antiSection-header">
     <div class="antiSection-header__icon">
       <Icon icon={IconApplication} size={'small'} />
@@ -55,17 +84,24 @@
         <Label label={recruit.string.Applications} />
       </NavLink>
     </span>
+    {#if viewlet && viewOptions}
+      <ViewletSettingButton bind:viewOptions {viewlet} kind={'transparent'} />
+    {/if}
     <Button id="appls.add" icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createApp} />
   </div>
   {#if applications > 0}
-    <Scroller horizontal={wSection < 640}>
-      <Table
-        _class={recruit.class.Applicant}
-        {config}
-        query={{ space: objectId }}
-        loadingProps={{ length: applications }}
-      />
-    </Scroller>
+    {#if viewlet && !loading}
+      <Scroller horizontal>
+        <Table
+          _class={recruit.class.Applicant}
+          config={preference?.config ?? viewlet.config}
+          query={{ space: objectId }}
+          loadingProps={{ length: applications }}
+        />
+      </Scroller>
+    {:else}
+      <Loading />
+    {/if}
   {:else}
     <div class="antiSection-empty solid flex-col-center mt-3">
       <div class="caption-color">

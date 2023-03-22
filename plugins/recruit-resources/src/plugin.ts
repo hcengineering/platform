@@ -20,9 +20,12 @@ import { ObjectSearchCategory, ObjectSearchFactory } from '@hcengineering/presen
 import recruit, { recruitId } from '@hcengineering/recruit'
 import { TagCategory } from '@hcengineering/tags'
 import { AnyComponent } from '@hcengineering/ui'
-import { FilterFunction, FilterMode } from '@hcengineering/view'
+import { FilterFunction, FilterMode, Viewlet } from '@hcengineering/view'
 
 export default mergeIds(recruitId, recruit, {
+  viewlet: {
+    VacancyApplicationsShort: '' as Ref<Viewlet>
+  },
   status: {
     ApplicationExists: '' as StatusCode,
     TalentRequired: '' as StatusCode,
