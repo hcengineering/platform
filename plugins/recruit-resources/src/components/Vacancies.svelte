@@ -41,7 +41,7 @@
   let applications: Map<Ref<Vacancy>, ApplicationInfo> = new Map<Ref<Vacancy>, ApplicationInfo>()
 
   const applicantQuery = createQuery()
-  $: applicantQuery.query(
+  applicantQuery.query(
     recruit.class.Applicant,
     {},
     (res) => {

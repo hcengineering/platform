@@ -22,6 +22,8 @@ import core, {
   Domain,
   DOMAIN_MODEL,
   DOMAIN_TX,
+  Enum,
+  EnumOf,
   escapeLikeForRegexp,
   FindOptions,
   FindResult,
@@ -331,6 +333,39 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
   }
 
+  private async fillSortPipeline<T extends Doc>(
+    clazz: Ref<Class<T>>,
+    options: FindOptions<T>,
+    pipeline: any[]
+  ): Promise<void> {
+    if (options.sort !== undefined) {
+      const sort = {} as any
+      for (const _key in options.sort) {
+        const key = this.translateKey(_key, clazz)
+        const enumOf = await this.isEnumSortKey(clazz, _key)
+        if (enumOf === undefined) {
+          sort[key] = options.sort[_key] === SortingOrder.Ascending ? 1 : -1
+        } else {
+          const branches = enumOf.enumValues.map((value, index) => {
+            return { case: { $eq: [`$${key}`, value] }, then: index }
+          })
+          pipeline.push({
+            $addFields: {
+              [`sort_${key}`]: {
+                $switch: {
+                  branches,
+                  default: enumOf.enumValues.length
+                }
+              }
+            }
+          })
+          sort[`sort_${key}`] = options.sort[_key] === SortingOrder.Ascending ? 1 : -1
+        }
+      }
+      pipeline.push({ $sort: sort })
+    }
+  }
+
   private async lookup<T extends Doc>(
     clazz: Ref<Class<T>>,
     query: DocumentQuery<T>,
@@ -347,14 +382,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
     pipeline.push(match)
     const resultPipeline: any[] = []
-    if (options.sort !== undefined) {
-      const sort = {} as any
-      for (const _key in options.sort) {
-        const key: string = this.translateKey(_key, clazz)
-        sort[key] = options.sort[_key] === SortingOrder.Ascending ? 1 : -1
-      }
-      pipeline.push({ $sort: sort })
-    }
+    await this.fillSortPipeline(clazz, options, pipeline)
     if (options.limit !== undefined) {
       resultPipeline.push({ $limit: options.limit })
     }
@@ -442,6 +470,30 @@ abstract class MongoAdapterBase implements DbAdapter {
     return key
   }
 
+  private async isEnumSortKey<T extends Doc>(_class: Ref<Class<T>>, key: string): Promise<Enum | undefined> {
+    const attr = this.hierarchy.findAttribute(_class, key)
+    if (attr !== undefined) {
+      if (attr.type._class === core.class.EnumOf) {
+        const ref = (attr.type as EnumOf).of
+        const res = await this.modelDb.findAll(core.class.Enum, { _id: ref })
+        return res[0]
+      }
+    }
+  }
+
+  private isEnumSort<T extends Doc>(_class: Ref<Class<T>>, options?: FindOptions<T>): boolean {
+    if (options?.sort === undefined) return false
+    for (const key in options.sort) {
+      const attr = this.hierarchy.findAttribute(_class, key)
+      if (attr !== undefined) {
+        if (attr.type._class === core.class.EnumOf) {
+          return true
+        }
+      }
+    }
+    return false
+  }
+
   async findAll<T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
@@ -449,7 +501,7 @@ abstract class MongoAdapterBase implements DbAdapter {
   ): Promise<FindResult<T>> {
     // TODO: rework this
     if (options !== null && options !== undefined) {
-      if (options.lookup !== undefined) {
+      if (options.lookup !== undefined || this.isEnumSort(_class, options)) {
         return await this.lookup(_class, query, options)
       }
     }
