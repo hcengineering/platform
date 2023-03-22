@@ -51,10 +51,8 @@
     if (editor) editor.setEditable(editable)
   }
   export function submit (): void {
-    if (!editor.isEmpty || haveAttachment) {
-      content = editor.getHTML()
-      dispatch('content', content)
-    }
+    content = editor.getHTML()
+    dispatch('content', content)
   }
   export function setContent (newContent: string): void {
     if (content !== newContent) {
