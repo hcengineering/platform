@@ -15,8 +15,10 @@
 <script lang="ts">
   import { Channel, combineName, Employee, findPerson, Person } from '@hcengineering/contact'
   import core, { AccountRole, AttachedData, Data, generateId, Ref } from '@hcengineering/core'
+  import login from '@hcengineering/login'
+  import { getResource } from '@hcengineering/platform'
   import { Card, getClient } from '@hcengineering/presentation'
-  import { EditBox, IconInfo, Label, createFocusManager, FocusHandler } from '@hcengineering/ui'
+  import { createFocusManager, EditBox, FocusHandler, IconInfo, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { ChannelsDropdown } from '..'
   import contact from '../plugin'
@@ -63,6 +65,9 @@
       employee: id,
       role: AccountRole.User
     })
+
+    const sendInvite = await getResource(login.function.SendInvite)
+    await sendInvite(email.trim())
 
     for (const channel of channels) {
       await client.addCollection(contact.class.Channel, contact.space.Contacts, id, contact.class.Person, 'channels', {
