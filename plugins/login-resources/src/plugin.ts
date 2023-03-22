@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-import type { StatusCode, IntlString } from '@hcengineering/platform'
+import type { IntlString, StatusCode } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 
 import login, { loginId } from '@hcengineering/login'
@@ -55,10 +55,7 @@ export default mergeIds(loginId, login, {
     PasswordRecovery: '' as IntlString,
     RecoveryLinkSent: '' as IntlString,
     UseWorkspaceInviteSettings: '' as IntlString,
-    LinkValidHours: '' as IntlString,
-    EmailMask: '' as IntlString,
-    InviteLimit: '' as IntlString,
     GetLink: '' as IntlString,
-    NoLimit: '' as IntlString
+    AlreadyJoined: '' as IntlString
   }
 })

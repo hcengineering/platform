@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Plugin, Asset, Metadata } from '@hcengineering/platform'
+import type { Asset, IntlString, Metadata, Plugin, Resource, Status } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 
@@ -21,6 +21,29 @@ import type { AnyComponent } from '@hcengineering/ui'
  * @public
  */
 export const loginId = 'login' as Plugin
+
+/**
+ * @public
+ */
+export interface Workspace {
+  workspace: string
+}
+
+/**
+ * @public
+ */
+export interface WorkspaceLoginInfo extends LoginInfo {
+  workspace: string
+}
+
+/**
+ * @public
+ */
+export interface LoginInfo {
+  token: string
+  endpoint: string
+  email: string
+}
 
 export default plugin(loginId, {
   metadata: {
@@ -37,5 +60,18 @@ export default plugin(loginId, {
   },
   icon: {
     InviteWorkspace: '' as Asset
+  },
+  string: {
+    LinkValidHours: '' as IntlString,
+    EmailMask: '' as IntlString,
+    NoLimit: '' as IntlString,
+    InviteLimit: '' as IntlString
+  },
+  function: {
+    ChangeName: '' as Resource<(first: string, last: string) => Promise<void>>,
+    LeaveWorkspace: '' as Resource<(email: string) => Promise<void>>,
+    ChangePassword: '' as Resource<(oldPassword: string, password: string) => Promise<void>>,
+    SelectWorkspace: '' as Resource<(workspace: string) => Promise<[Status, WorkspaceLoginInfo | undefined]>>,
+    GetWorkspaces: '' as Resource<() => Promise<Workspace[]>>
   }
 })

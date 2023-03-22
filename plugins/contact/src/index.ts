@@ -241,7 +241,10 @@ export const contactPlugin = plugin(contactId, {
     CreateOrganization: '' as IntlString,
     UseImage: '' as IntlString,
     UseGravatar: '' as IntlString,
-    UseColor: '' as IntlString
+    UseColor: '' as IntlString,
+    PersonFirstNamePlaceholder: '' as IntlString,
+    PersonLastNamePlaceholder: '' as IntlString,
+    DisplayName: '' as IntlString
   },
   viewlet: {
     TableMember: '' as Ref<Viewlet>,

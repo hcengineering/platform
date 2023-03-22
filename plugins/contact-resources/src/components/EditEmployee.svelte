@@ -16,7 +16,8 @@
 <script lang="ts">
   import { Employee, EmployeeAccount, getFirstName, getLastName, Person } from '@hcengineering/contact'
   import { AccountRole, getCurrentAccount, Ref, Space } from '@hcengineering/core'
-  import { changeName } from '@hcengineering/login-resources'
+  import login from '@hcengineering/login'
+  import { getResource } from '@hcengineering/platform'
   import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
   import setting, { IntegrationType } from '@hcengineering/setting'
   import { createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
@@ -55,12 +56,14 @@
 
   const dispatch = createEventDispatcher()
 
-  function firstNameChange () {
-    changeName(firstName, getLastName(object.name))
+  async function firstNameChange () {
+    const changeName = await getResource(login.function.ChangeName)
+    await changeName(firstName, getLastName(object.name))
   }
 
-  function lastNameChange () {
-    changeName(getFirstName(object.name), lastName)
+  async function lastNameChange () {
+    const changeName = await getResource(login.function.ChangeName)
+    await changeName(getFirstName(object.name), lastName)
   }
 
   function changeDisplayName () {

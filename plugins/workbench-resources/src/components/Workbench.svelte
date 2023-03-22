@@ -59,6 +59,8 @@
   import NavHeader from './NavHeader.svelte'
   import Navigator from './Navigator.svelte'
   import SpaceView from './SpaceView.svelte'
+  import login from '@hcengineering/login'
+  import { workspacesStore } from '../utils'
 
   let contentPanel: HTMLElement
   let shownMenu: boolean = false
@@ -100,6 +102,13 @@
       panelInstance.fitPopupInstance()
     }
   }
+
+  onMount(() => {
+    getResource(login.function.GetWorkspaces).then(async (f) => {
+      const workspaces = await f()
+      $workspacesStore = workspaces
+    })
+  })
 
   let account = getCurrentAccount() as EmployeeAccount
   const accountQ = createQuery()
