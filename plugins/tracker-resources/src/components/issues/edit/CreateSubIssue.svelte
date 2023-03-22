@@ -13,29 +13,28 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import core, { Account, AttachedData, Doc, generateId, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
+  import core, { Account, AttachedData, Doc, generateId, Ref, SortingOrder } from '@hcengineering/core'
+  import { translate } from '@hcengineering/platform'
   import presentation, { getClient, KeyedAttribute } from '@hcengineering/presentation'
-  import { IssueStatus, IssuePriority, Issue, Project, calcRank } from '@hcengineering/tracker'
-  import { addNotification, Button, Component, EditBox } from '@hcengineering/ui'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
+  import { calcRank, Issue, IssuePriority, IssueStatus, Project } from '@hcengineering/tracker'
+  import { addNotification, Button, Component, EditBox } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
   import tracker from '../../../plugin'
   import AssigneeEditor from '../AssigneeEditor.svelte'
-  import StatusEditor from '../StatusEditor.svelte'
-  import PriorityEditor from '../PriorityEditor.svelte'
-  import EstimationEditor from '../timereport/EstimationEditor.svelte'
-  import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import IssueNotification from '../IssueNotification.svelte'
-  import { translate } from '@hcengineering/platform'
+  import PriorityEditor from '../PriorityEditor.svelte'
+  import StatusEditor from '../StatusEditor.svelte'
+  import EstimationEditor from '../timereport/EstimationEditor.svelte'
 
   export let parentIssue: Issue
-  export let issueStatuses: WithLookup<IssueStatus>[]
   export let currentProject: Project
 
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  let newIssue: AttachedData<Issue> = getIssueDefaults()
+  let newIssue = { ...getIssueDefaults(), space: currentProject._id }
   let thisRef: HTMLDivElement
   let focusIssueTitle: () => void
   let labels: TagReference[] = []
@@ -71,7 +70,7 @@
   }
 
   function resetToDefaults () {
-    newIssue = getIssueDefaults()
+    newIssue = { ...getIssueDefaults(), space: currentProject._id }
     labels = []
     focusIssueTitle?.()
     objectId = generateId()
@@ -173,7 +172,6 @@
     <div id="status-editor" class="mr-1">
       <StatusEditor
         value={newIssue}
-        statuses={issueStatuses}
         kind="transparent"
         size="medium"
         justify="center"

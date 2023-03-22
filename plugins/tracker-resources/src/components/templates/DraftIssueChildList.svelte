@@ -13,16 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, WithLookup } from '@hcengineering/core'
+  import { Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import tracker, {
-    DraftIssueChild,
-    IssueStatus,
-    IssueTemplateChild,
-    Component,
-    Sprint,
-    Project
-  } from '@hcengineering/tracker'
+  import tracker, { Component, DraftIssueChild, IssueTemplateChild, Project, Sprint } from '@hcengineering/tracker'
   import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { ActionContext, FixedColumn } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -38,7 +31,6 @@
   export let project: Ref<Project>
   export let sprint: Ref<Sprint> | null = null
   export let component: Ref<Component> | null = null
-  export let statuses: WithLookup<IssueStatus>[]
   const dispatch = createEventDispatcher()
 
   let draggingIndex: number | null = null
@@ -52,7 +44,6 @@
         project: currentProject,
         sprint,
         component,
-        statuses,
         childIssue: target
       },
       eventToHTMLElement(evt),
@@ -135,8 +126,7 @@
     </div>
     <div class="flex-row-center ml-6 clear-mins gap-2">
       <StatusEditor
-        value={issue}
-        {statuses}
+        value={{ ...issue, space: project }}
         kind="list"
         size="small"
         shouldShowLabel={true}

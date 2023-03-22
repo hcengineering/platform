@@ -15,11 +15,11 @@
 <script lang="ts">
   import contact, { EmployeeAccount } from '@hcengineering/contact'
   import { employeeByIdStore, EmployeePresenter } from '@hcengineering/contact-resources'
-  import core, { ClassifierKind, Doc, Mixin, Ref, WithLookup } from '@hcengineering/core'
+  import core, { ClassifierKind, Doc, Mixin, Ref } from '@hcengineering/core'
   import { AttributeBarEditor, createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
 
   import tags from '@hcengineering/tags'
-  import type { Issue, IssueStatus } from '@hcengineering/tracker'
+  import type { Issue } from '@hcengineering/tracker'
   import { Component, Label } from '@hcengineering/ui'
   import { getFiltredKeys, isCollectionAttr, ObjectBox } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
@@ -32,7 +32,6 @@
   import StatusEditor from '../StatusEditor.svelte'
 
   export let issue: Issue
-  export let issueStatuses: WithLookup<IssueStatus>[]
   export let showAllMixins: boolean = false
 
   const query = createQuery()
@@ -116,7 +115,7 @@
     <Label label={tracker.string.Status} />
   </span>
 
-  <StatusEditor value={issue} statuses={issueStatuses} shouldShowLabel />
+  <StatusEditor value={issue} shouldShowLabel />
 
   {#if issue.blockedBy?.length}
     <span class="labelTop">

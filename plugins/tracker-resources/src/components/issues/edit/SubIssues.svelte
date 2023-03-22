@@ -13,18 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, SortingOrder, toIdMap, WithLookup } from '@hcengineering/core'
+  import { Ref, toIdMap } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Issue, IssueStatus, Project, trackerId } from '@hcengineering/tracker'
+  import { Issue, Project, trackerId } from '@hcengineering/tracker'
   import {
     Button,
     Chevron,
     closeTooltip,
     ExpandCollapse,
     getCurrentLocation,
-    IconScaleFull,
     IconAdd,
     IconArrowRight,
+    IconScaleFull,
     Label,
     navigate
   } from '@hcengineering/ui'
@@ -33,8 +33,8 @@
     createFilter,
     filterStore,
     getViewOptions,
-    viewOptionStore,
-    ViewletSettingButton
+    ViewletSettingButton,
+    viewOptionStore
   } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
   import CreateSubIssue from './CreateSubIssue.svelte'
@@ -42,7 +42,6 @@
 
   export let issue: Issue
   export let projects: Map<Ref<Project>, Project>
-  export let issueStatuses: Map<Ref<Project>, WithLookup<IssueStatus>[]>
 
   let subIssueEditorRef: HTMLDivElement
   let isCollapsed = false
@@ -58,7 +57,6 @@
   })
 
   let _projects = projects
-  let _issueStatuses = issueStatuses
 
   const projectsQuery = createQuery()
 
@@ -68,28 +66,6 @@
     })
   } else {
     projectsQuery.unsubscribe()
-  }
-
-  const statusesQuery = createQuery()
-  $: if (issueStatuses === undefined) {
-    statusesQuery.query(
-      tracker.class.IssueStatus,
-      {},
-      (statuses) => {
-        const st = new Map<Ref<Project>, WithLookup<IssueStatus>[]>()
-        for (const s of statuses) {
-          const id = s.attachedTo as Ref<Project>
-          st.set(id, [...(st.get(id) ?? []), s])
-        }
-        _issueStatuses = st
-      },
-      {
-        lookup: { category: tracker.class.IssueStatusCategory },
-        sort: { rank: SortingOrder.Ascending }
-      }
-    )
-  } else {
-    statusesQuery.unsubscribe()
   }
 
   $: viewOptions = viewlet !== undefined ? getViewOptions(viewlet, $viewOptionStore) : undefined
@@ -158,39 +134,25 @@
   </div>
 </div>
 <div class="mt-1">
-  {#if issueStatuses}
-    {#if hasSubIssues && viewOptions && viewlet}
-      {#if !isCollapsed}
-        <ExpandCollapse isExpanded={!isCollapsed}>
-          <div class="list" class:collapsed={isCollapsed}>
-            <SubIssueList
-              projects={_projects}
-              {viewlet}
-              {viewOptions}
-              issueStatuses={_issueStatuses}
-              query={{ attachedTo: issue._id }}
-            />
-          </div>
-        </ExpandCollapse>
+  {#if hasSubIssues && viewOptions && viewlet}
+    {#if !isCollapsed}
+      <ExpandCollapse isExpanded={!isCollapsed}>
+        <div class="list" class:collapsed={isCollapsed}>
+          <SubIssueList projects={_projects} {viewlet} {viewOptions} query={{ attachedTo: issue._id }} />
+        </div>
+      </ExpandCollapse>
+    {/if}
+  {/if}
+  <ExpandCollapse isExpanded={!isCollapsed}>
+    {#if isCreating}
+      {@const project = projects.get(issue.space)}
+      {#if project !== undefined}
+        <div class="pt-4" bind:this={subIssueEditorRef}>
+          <CreateSubIssue parentIssue={issue} currentProject={project} on:close={() => (isCreating = false)} />
+        </div>
       {/if}
     {/if}
-    <ExpandCollapse isExpanded={!isCollapsed}>
-      {#if isCreating}
-        {@const project = projects.get(issue.space)}
-        {@const statuses = issueStatuses.get(issue.space)}
-        {#if project !== undefined && statuses !== undefined}
-          <div class="pt-4" bind:this={subIssueEditorRef}>
-            <CreateSubIssue
-              parentIssue={issue}
-              issueStatuses={statuses}
-              currentProject={project}
-              on:close={() => (isCreating = false)}
-            />
-          </div>
-        {/if}
-      {/if}
-    </ExpandCollapse>
-  {/if}
+  </ExpandCollapse>
 </div>
 
 <style lang="scss">

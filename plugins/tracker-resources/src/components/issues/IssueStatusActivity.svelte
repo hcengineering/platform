@@ -1,19 +1,10 @@
 <script lang="ts">
-  import core, {
-    IdMap,
-    Ref,
-    Timestamp,
-    toIdMap,
-    Tx,
-    TxCollectionCUD,
-    TxCreateDoc,
-    TxUpdateDoc,
-    WithLookup
-  } from '@hcengineering/core'
+  import core, { Ref, Timestamp, Tx, TxCollectionCUD, TxCreateDoc, TxUpdateDoc, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus } from '@hcengineering/tracker'
   import { Label, ticker } from '@hcengineering/ui'
   import tracker from '../../plugin'
+  import { statusByIdStore } from '../../utils'
   import Duration from './Duration.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
 
@@ -27,23 +18,6 @@
     status: WithLookup<IssueStatus>
     duration: number
   }
-
-  const stQuery = createQuery()
-
-  let statuses: IdMap<IssueStatus> = new Map()
-
-  stQuery.query(
-    tracker.class.IssueStatus,
-    {},
-    (res) => {
-      statuses = toIdMap(res)
-    },
-    {
-      lookup: {
-        category: tracker.class.IssueStatusCategory
-      }
-    }
-  )
 
   $: query.query(
     core.class.Tx,
@@ -109,7 +83,7 @@
     displaySt = result
   }
 
-  $: updateStatus(txes, statuses, $ticker)
+  $: updateStatus(txes, $statusByIdStore, $ticker)
 </script>
 
 <div class="flex-row mt-4 mb-4">

@@ -54,7 +54,6 @@ export interface Project extends Space {
   defaultIssueStatus: Ref<IssueStatus>
   defaultAssignee?: Ref<Employee>
   icon?: Asset
-  workDayLength?: WorkDayLength
   defaultTimeReportDay: TimeReportDayType
 }
 
@@ -64,14 +63,6 @@ export interface Project extends Space {
 export enum TimeReportDayType {
   CurrentWorkDay = 'CurrentWorkDay',
   PreviousWorkDay = 'PreviousWorkDay'
-}
-
-/**
- * @public
- */
-export enum WorkDayLength {
-  SEVEN_HOURS = 7,
-  EIGHT_HOURS = 8
 }
 
 /**

@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import { IssueStatus } from '@hcengineering/tracker'
-  import { Icon, Label, IconEdit, IconClose, tooltip } from '@hcengineering/ui'
+  import { Icon, IconClose, IconEdit, Label, tooltip } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import Circles from '../icons/Circles.svelte'
   import IssueStatusIcon from '../issues/IssueStatusIcon.svelte'
@@ -23,7 +23,6 @@
   export let value: IssueStatus
   export let isDefault = false
   export let isSingle = true
-  export let issueStatuses: IssueStatus[] | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -38,7 +37,7 @@
       <Circles />
     </div>
     <div class="flex-no-shrink ml-2">
-      <IssueStatusIcon {value} size="small" {issueStatuses} />
+      <IssueStatusIcon {value} size="small" />
     </div>
     <span class="content-accent-color ml-2">{value.name}</span>
     {#if value.description}

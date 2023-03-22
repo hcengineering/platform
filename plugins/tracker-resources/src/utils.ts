@@ -19,6 +19,7 @@ import core, {
   Class,
   Doc,
   DocumentQuery,
+  IdMap,
   Ref,
   SortingOrder,
   Space,
@@ -55,6 +56,7 @@ import {
   MILLISECONDS_IN_WEEK
 } from '@hcengineering/ui'
 import { CategoryQuery, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
+import { writable } from 'svelte/store'
 import tracker from './plugin'
 import { defaultPriorities, defaultComponentStatuses, defaultSprintStatuses, issuePriorities } from './types'
 
@@ -655,3 +657,24 @@ export async function removeProject (project: Project): Promise<void> {
   const client = getClient()
   await client.removeDoc(tracker.class.Project, core.space.Space, project._id)
 }
+
+// Issue status live query
+export const statusByIdStore = writable<IdMap<WithLookup<IssueStatus>>>(new Map())
+export const statusStore = writable<Array<WithLookup<IssueStatus>>>([])
+const query = createQuery(true)
+query.query(
+  tracker.class.IssueStatus,
+  {},
+  (res) => {
+    statusStore.set(res)
+    statusByIdStore.set(toIdMap(res))
+  },
+  {
+    lookup: {
+      category: tracker.class.IssueStatusCategory
+    },
+    sort: {
+      rank: SortingOrder.Ascending
+    }
+  }
+)

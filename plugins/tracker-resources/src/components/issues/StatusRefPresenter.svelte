@@ -13,20 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, WithLookup } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
-  import tracker, { IssueStatus } from '@hcengineering/tracker'
+  import { Ref } from '@hcengineering/core'
+  import { IssueStatus } from '@hcengineering/tracker'
+  import { statusByIdStore } from '../../utils'
   import StatusPresenter from './StatusPresenter.svelte'
 
   export let value: Ref<IssueStatus> | undefined
   export let size: 'small' | 'medium' = 'medium'
-
-  let status: WithLookup<IssueStatus> | undefined
-
-  const query = createQuery()
-  $: query.query(tracker.class.IssueStatus, { _id: value }, (res) => ([status] = res), {
-    lookup: { category: tracker.class.IssueStatusCategory }
-  })
 </script>
 
-<StatusPresenter value={status} {size} />
+{#if value}
+  <StatusPresenter value={$statusByIdStore.get(value)} {size} />
+{/if}

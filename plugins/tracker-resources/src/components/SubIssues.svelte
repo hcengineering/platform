@@ -15,19 +15,10 @@
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { deleteFile } from '@hcengineering/attachment-resources/src/utils'
-  import core, { AttachedData, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import core, { AttachedData, Ref, SortingOrder } from '@hcengineering/core'
   import { draftStore, getClient, updateDraftStore } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
-  import {
-    calcRank,
-    DraftIssueChild,
-    Issue,
-    IssueParentInfo,
-    IssueStatus,
-    Component,
-    Sprint,
-    Project
-  } from '@hcengineering/tracker'
+  import { calcRank, Component, DraftIssueChild, Issue, IssueParentInfo, Project, Sprint } from '@hcengineering/tracker'
   import { Button, closeTooltip, ExpandCollapse, IconAdd, Scroller } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import tracker from '../plugin'
@@ -42,7 +33,6 @@
   export let sprint: Ref<Sprint> | null = null
   export let component: Ref<Component> | null = null
   export let subIssues: DraftIssueChild[] = []
-  export let statuses: WithLookup<IssueStatus>[]
 
   let isCollapsed = false
   let isCreating = false
@@ -208,7 +198,6 @@
     <div class="flex-col flex-no-shrink max-h-30 list clear-mins" class:collapsed={isCollapsed}>
       <Scroller>
         <DraftIssueChildList
-          {statuses}
           {component}
           {sprint}
           bind:issues={subIssues}
@@ -224,7 +213,6 @@
   <ExpandCollapse isExpanded={!isCollapsed} on:changeContent>
     <DraftIssueChildEditor
       {project}
-      {statuses}
       {component}
       {sprint}
       on:close={() => {

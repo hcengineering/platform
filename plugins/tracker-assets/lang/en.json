@@ -280,7 +280,6 @@
     "DefaultTimeReportDay": "Select default day for time report",
     "DefaultAssignee": "Select default assignee for issues",
 
-    "WorkDayLength": "Select length of working day",
     "SevenHoursLength": "Seven Hours",
     "EightHoursLength": "Eight Hours",
     "CreatedOn": "Created on",

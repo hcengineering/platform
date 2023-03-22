@@ -13,20 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@hcengineering/core'
   import { IssueStatus } from '@hcengineering/tracker'
+  import { statusByIdStore } from '../../utils'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
 
-  export let value: WithLookup<IssueStatus> | undefined
-  export let size: 'small' | 'medium' = 'medium'
+  export let value: IssueStatus | undefined
+  export let size: 'small' | 'medium' = 'small'
 </script>
 
 {#if value}
+  {@const icon = $statusByIdStore.get(value._id)?.$lookup?.category?.icon}
   <div class="flex-presenter">
-    {#if value.$lookup?.category?.icon}
+    {#if icon}
       <IssueStatusIcon {value} {size} />
     {/if}
-    <span class="overflow-label" class:ml-2={value.$lookup?.category?.icon !== undefined}>
+    <span class="overflow-label" class:ml-2={icon !== undefined}>
       {value.name}
     </span>
   </div>
