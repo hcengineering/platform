@@ -394,7 +394,7 @@ export class LiveQuery extends TxProcessor implements Client {
               if (currentRefresh) return {}
             }
           }
-          this.sort(q, tx)
+          await this.sort(q, tx)
           const udoc = q.result.find((p) => p._id === tx.objectId)
           await this.updatedDocCallback(udoc, q)
         } else if (isMixin) {
@@ -478,11 +478,11 @@ export class LiveQuery extends TxProcessor implements Client {
           if (currentRefresh) return
         }
       }
-      this.sort(q, tx)
+      await this.sort(q, tx)
       const udoc = q.result.find((p) => p._id === tx.objectId)
       await this.updatedDocCallback(udoc, q)
     } else if (await this.matchQuery(q, tx)) {
-      this.sort(q, tx)
+      await this.sort(q, tx)
       const udoc = q.result.find((p) => p._id === tx.objectId)
       await this.updatedDocCallback(udoc, q)
     }
@@ -500,7 +500,7 @@ export class LiveQuery extends TxProcessor implements Client {
 
     if (needCallback) {
       if (q.options?.sort !== undefined) {
-        resultSort(q.result, q.options?.sort, q._class, this.getHierarchy())
+        await resultSort(q.result, q.options?.sort, q._class, this.getHierarchy(), this.client.getModel())
       }
       await this.callback(q)
     }
@@ -725,7 +725,7 @@ export class LiveQuery extends TxProcessor implements Client {
       q.total++
 
       if (q.options?.sort !== undefined) {
-        resultSort(q.result, q.options?.sort, q._class, this.getHierarchy())
+        await resultSort(q.result, q.options?.sort, q._class, this.getHierarchy(), this.client.getModel())
       }
 
       if (q.options?.limit !== undefined && q.result.length > q.options.limit) {
@@ -761,7 +761,7 @@ export class LiveQuery extends TxProcessor implements Client {
 
     if (needCallback) {
       if (q.options?.sort !== undefined) {
-        resultSort(q.result, q.options?.sort, q._class, this.getHierarchy())
+        await resultSort(q.result, q.options?.sort, q._class, this.getHierarchy(), this.getModel())
       }
       await this.callback(q)
     }
@@ -863,7 +863,7 @@ export class LiveQuery extends TxProcessor implements Client {
     }
     if (needCallback) {
       if (q.options?.sort !== undefined) {
-        resultSort(q.result, q.options?.sort, q._class, this.getHierarchy())
+        await resultSort(q.result, q.options?.sort, q._class, this.getHierarchy(), this.getModel())
       }
       await this.callback(q)
     }
@@ -998,13 +998,13 @@ export class LiveQuery extends TxProcessor implements Client {
     await this.__updateLookup(q, updatedDoc, ops)
   }
 
-  private sort (q: Query, tx: TxUpdateDoc<Doc> | TxMixin<Doc, Doc>): void {
+  private async sort (q: Query, tx: TxUpdateDoc<Doc> | TxMixin<Doc, Doc>): Promise<void> {
     const sort = q.options?.sort
     if (sort === undefined) return
     let needSort = sort.modifiedBy !== undefined || sort.modifiedOn !== undefined
     if (!needSort) needSort = this.checkNeedSort(sort, tx)
 
-    if (needSort) resultSort(q.result as Doc[], sort, q._class, this.getHierarchy())
+    if (needSort) await resultSort(q.result as Doc[], sort, q._class, this.getHierarchy(), this.client.getModel())
   }
 
   private checkNeedSort (sort: SortingQuery<Doc>, tx: TxUpdateDoc<Doc> | TxMixin<Doc, Doc>): boolean {

@@ -27,7 +27,7 @@ import { toFindResult } from './utils'
 /**
  * @public
  */
-export abstract class MemDb extends TxProcessor {
+export abstract class MemDb extends TxProcessor implements Storage {
   private readonly objectsByClass = new Map<Ref<Class<Doc>>, Doc[]>()
   private readonly objectById = new Map<Ref<Doc>, Doc>()
 
@@ -162,7 +162,7 @@ export abstract class MemDb extends TxProcessor {
       result = matchQuery(result, query, _class, this.hierarchy)
     }
 
-    if (options?.sort !== undefined) resultSort(result, options?.sort, _class, this.hierarchy)
+    if (options?.sort !== undefined) await resultSort(result, options?.sort, _class, this.hierarchy, this)
     const total = result.length
     result = result.slice(0, options?.limit)
     const tresult = this.hierarchy.clone(result) as WithLookup<T>[]
@@ -194,7 +194,7 @@ export abstract class MemDb extends TxProcessor {
  *
  * @public
  */
-export class TxDb extends MemDb implements Storage {
+export class TxDb extends MemDb {
   protected txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult> {
     throw new Error('Method not implemented.')
   }
@@ -222,7 +222,7 @@ export class TxDb extends MemDb implements Storage {
  *
  * @public
  */
-export class ModelDb extends MemDb implements Storage {
+export class ModelDb extends MemDb {
   protected override async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult> {
     this.addDoc(TxProcessor.createDoc2Doc(tx))
     return {}
