@@ -887,6 +887,64 @@ export async function leaveWorkspace (db: Db, productId: string, token: string, 
   }
 }
 
+/**
+ * @public
+ */
+export async function sendInvite (db: Db, productId: string, token: string, email: string): Promise<void> {
+  const tokenData = decodeToken(token)
+  const currentAccount = await getAccount(db, tokenData.email)
+  if (currentAccount === null) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: tokenData.email })
+    )
+  }
+
+  const workspace = await getWorkspace(db, productId, tokenData.workspace.name)
+  if (workspace === null) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, accountPlugin.status.WorkspaceNotFound, { workspace: tokenData.workspace.name })
+    )
+  }
+
+  const account = await getAccount(db, email)
+  if (account !== null) return
+
+  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
+  if (sesURL === undefined || sesURL === '') {
+    throw new Error('Please provide email service url')
+  }
+  const front = getMetadata(accountPlugin.metadata.FrontURL)
+  if (front === undefined || front === '') {
+    throw new Error('Please provide front url')
+  }
+
+  const expHours = 48
+  const exp = expHours * 60 * 60 * 1000
+
+  const inviteId = await getInviteLink(db, productId, token, exp, email, 1)
+  const link = concatLink(front, `/login/join?inviteId=${inviteId.toString()}`)
+
+  const text = `You was invited to ${workspace.workspace}. To join please paste the following link in your web browser's address bar: ${link}. Link valid for ${expHours} hours.`
+
+  const html = `<p>You was invited to ${workspace.workspace}. To join, please click the link below: <a href=${link}>Join</a></p><p>
+  If the invite link above does not work, paste the following link in your web browser's address bar: ${link}
+</p><p>Link valid for ${expHours} hours.</p>`
+  const subject = `Inivte to ${workspace.workspace}`
+  const to = email
+  await fetch(concatLink(sesURL, '/send'), {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      text,
+      html,
+      subject,
+      to
+    })
+  })
+}
+
 async function deactivateEmployeeAccount (email: string, workspace: string, productId: string): Promise<void> {
   const connection = await connect(getTransactor(), getWorkspaceId(workspace, productId), email)
   try {
@@ -965,7 +1023,8 @@ export function getMethods (
     changeName: wrap(changeName),
     changePassword: wrap(changePassword),
     requestPassword: wrap(requestPassword),
-    restorePassword: wrap(restorePassword)
+    restorePassword: wrap(restorePassword),
+    sendInvite: wrap(sendInvite)
     // updateAccount: wrap(updateAccount)
   }
 }

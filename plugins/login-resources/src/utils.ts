@@ -21,20 +21,20 @@ import {
   Request,
   Response,
   serialize,
+  setMetadata,
   Status,
   unknownError,
-  unknownStatus,
-  setMetadata
+  unknownStatus
 } from '@hcengineering/platform'
+import presentation from '@hcengineering/presentation'
 import {
   fetchMetadataLocalStorage,
   getCurrentLocation,
+  Location,
   navigate,
-  setMetadataLocalStorage,
-  Location
+  setMetadataLocalStorage
 } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
-import presentation from '@hcengineering/presentation'
 
 const DEV_WORKSPACE = 'DEV WORKSPACE'
 
@@ -542,6 +542,37 @@ export async function leaveWorkspace (email: string): Promise<void> {
 
   const request: Request<[string]> = {
     method: 'leaveWorkspace',
+    params: [email]
+  }
+
+  await fetch(accountsUrl, {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + token,
+      'Content-Type': 'application/json'
+    },
+    body: serialize(request)
+  })
+}
+
+export async function sendInvite (email: string): Promise<void> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
+  if (overrideToken !== undefined) {
+    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
+    if (endpoint !== undefined) {
+      return
+    }
+  }
+  const token = getMetadata(presentation.metadata.Token) as string
+
+  const request: Request<[string]> = {
+    method: 'sendInvite',
     params: [email]
   }
 
