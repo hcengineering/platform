@@ -63,6 +63,10 @@ export default mergeIds(settingId, setting, {
     Visibility: '' as IntlString,
     Hidden: '' as IntlString,
     InviteSettings: '' as IntlString,
-    DefaultValue: '' as IntlString
+    DefaultValue: '' as IntlString,
+    SelectAValue: '' as IntlString,
+    DateOnly: '' as IntlString,
+    OnlyTime: '' as IntlString,
+    DateAndTime: '' as IntlString
   }
 })

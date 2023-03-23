@@ -71,6 +71,10 @@
     "Hidden": "Спрятанный",
     "Configure": "Настроить",
     "InviteSettings": "Настройки приглашений в пространство",
-    "DefaultValue": "Значение по умолчанию"
+    "DefaultValue": "Значение по умолчанию",
+    "SelectAValue": "Выбрать значение",
+    "DateOnly": "Только дата",
+    "OnlyTime": "Только время",
+    "DateAndTime": "Дата и время"
   }
 }

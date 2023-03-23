@@ -54,6 +54,7 @@
     resActions = [...newActions, ...actions].sort(
       (a, b) => (order as any)[a.group ?? 'other'] - (order as any)[b.group ?? 'other']
     )
+    console.log('[!!!] resActions: ', resActions)
     loaded = true
   })
 </script>

@@ -16,13 +16,15 @@
   import core, { EnumOf } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import { DropdownLabels, DropdownTextItem } from '@hcengineering/ui'
+  import { DropdownLabels, DropdownTextItem, ButtonKind, ButtonSize } from '@hcengineering/ui'
 
   export let label: IntlString
   export let value: string
   export let type: EnumOf
   // export let focus: boolean
   export let onChange: (value: string) => void
+  export let kind: ButtonKind = 'link'
+  export let size: ButtonSize = 'large'
 
   let items: DropdownTextItem[] = []
 
@@ -49,8 +51,8 @@
   {label}
   useFlexGrow={true}
   justify={'left'}
-  size={'large'}
-  kind={'link'}
+  {size}
+  {kind}
   width={'100%'}
   autoSelect={false}
   on:selected={(e) => {

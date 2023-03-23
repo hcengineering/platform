@@ -15,8 +15,8 @@
 <script lang="ts">
   import { DateRangeMode, TypeDate as DateType } from '@hcengineering/core'
   import { TypeDate } from '@hcengineering/model'
-  import { Dropdown, Label, ListItem } from '@hcengineering/ui'
-  import { StringPresenter } from '@hcengineering/view-resources'
+  import { IntlString } from '@hcengineering/platform'
+  import { DropdownLabelsIntl, Label, DropdownIntlItem } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import setting from '../../plugin'
 
@@ -24,22 +24,23 @@
   export let editable: boolean = true
 
   const dispatch = createEventDispatcher()
-  const items: ListItem[] = [
+  const items: DropdownIntlItem[] = [
     {
-      _id: DateRangeMode.DATE,
-      label: DateRangeMode.DATE
+      id: DateRangeMode.DATE,
+      label: setting.string.DateOnly
     },
     {
-      _id: DateRangeMode.TIME,
-      label: DateRangeMode.TIME
+      id: DateRangeMode.TIME,
+      label: setting.string.OnlyTime
     },
     {
-      _id: DateRangeMode.DATETIME,
-      label: DateRangeMode.DATETIME
+      id: DateRangeMode.DATETIME,
+      label: setting.string.DateAndTime
     }
   ]
 
-  let selected = items.find((item) => item._id === type?.mode)
+  let selected = items.find((item) => item.id === type?.mode)?.id
+  const label = items.find((item) => item.id === type?.mode)?.label ?? ('' as IntlString)
 
   onMount(() => {
     if (type === undefined) {
@@ -52,18 +53,18 @@
   <Label label={setting.string.DateMode} />
   <div class="ml-2">
     {#if editable}
-      <Dropdown
+      <DropdownLabelsIntl
         {selected}
         {items}
         size="medium"
-        placeholder={setting.string.DateMode}
+        label={setting.string.DateMode}
         on:selected={(res) => {
           selected = res.detail
           dispatch('change', { type: TypeDate(res.detail._id) })
         }}
       />
     {:else}
-      <StringPresenter value={selected?.label ?? ''} />
+      <Label {label} />
     {/if}
   </div>
 </div>

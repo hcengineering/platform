@@ -70,6 +70,10 @@
     "Hidden": "Hidden",
     "Configure": "Configure",
     "InviteSettings": "Workspace invite settings",
-    "DefaultValue": "Default value"
+    "DefaultValue": "Default value",
+    "SelectAValue": "Select a value",
+    "DateOnly": "Date only",
+    "OnlyTime": "Only time",
+    "DateAndTime": "Date and time"
   }
 }

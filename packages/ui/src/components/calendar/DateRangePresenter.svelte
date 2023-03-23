@@ -319,7 +319,8 @@
   class:editable
   class:edit
   on:click={() => {
-    if (editable && !opened) openPopup()
+    if (editable && !opened && withDate) openPopup()
+    else if (editable && !opened && mode === DateRangeMode.TIME) edit = true
   }}
 >
   {#if edit}

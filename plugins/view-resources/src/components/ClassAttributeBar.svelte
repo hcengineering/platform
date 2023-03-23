@@ -75,7 +75,8 @@
     <div class="tool">
       <Button
         icon={setting.icon.Setting}
-        kind={'transparent'}
+        kind={'link'}
+        size={'large'}
         showTooltip={{ label: setting.string.ClassSetting }}
         on:click={(ev) => {
           ev.stopPropagation()

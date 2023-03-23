@@ -82,7 +82,9 @@
       <Label label={setting.string.DefaultValue} />
       <div class="ml-2">
         <EnumEditor
-          label={setting.string.DefaultValue}
+          label={setting.string.SelectAValue}
+          kind={'no-border'}
+          size={'small'}
           {type}
           value={defaultValue ?? ''}
           onChange={(e) => {
