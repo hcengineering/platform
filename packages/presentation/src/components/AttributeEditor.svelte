@@ -62,6 +62,7 @@
       placeholder={attribute?.label}
       type={attribute?.type}
       {maxWidth}
+      {attributeKey}
       value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
       {onChange}
       {focus}
