@@ -41,7 +41,7 @@
     showPopup,
     tooltip
   } from '@hcengineering/ui'
-  import { CategoryOption, ViewOptionModel, ViewOptions, ViewQueryOption } from '@hcengineering/view'
+  import { CategoryOption, Viewlet, ViewOptionModel, ViewOptions, ViewQueryOption } from '@hcengineering/view'
   import {
     ActionContext,
     focusStore,
@@ -52,6 +52,7 @@
     SelectDirection,
     selectionStore
   } from '@hcengineering/view-resources'
+  import { sortCategories } from '@hcengineering/view-resources/src/utils'
   import { onMount } from 'svelte'
   import tracker from '../../plugin'
   import { issuesGroupBySorting, mapKanbanCategories } from '../../utils'
@@ -71,6 +72,7 @@
   export let query: DocumentQuery<Issue> = {}
   export let viewOptionsConfig: ViewOptionModel[] | undefined
   export let viewOptions: ViewOptions
+  export let viewlet: Viewlet
 
   $: currentSpace = space || tracker.project.DefaultProject
   $: groupBy = (viewOptions.groupBy[0] ?? noCategory) as IssuesGrouping
@@ -99,7 +101,7 @@
     if (viewOptions === undefined) return query
     let result = hierarchy.clone(query)
     for (const viewOption of viewOptions) {
-      if (viewOption.actionTartget !== 'query') continue
+      if (viewOption.actionTarget !== 'query') continue
       const queryOption = viewOption as ViewQueryOption
       const f = await getResource(queryOption.action)
       result = f(viewOptionsStore[queryOption.key] ?? queryOption.defaultValue, query)
@@ -234,9 +236,9 @@
     sprints: Sprint[],
     assignee: Employee[]
   ) {
-    let categories = await getCategories(client, _class, docs, groupByKey)
+    let categories = await getCategories(client, _class, docs, groupByKey, viewlet.descriptor)
     for (const viewOption of viewOptionsModel ?? []) {
-      if (viewOption.actionTartget !== 'category') continue
+      if (viewOption.actionTarget !== 'category') continue
       const categoryFunc = viewOption as CategoryOption
       if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
         const f = await getResource(categoryFunc.action)
@@ -247,7 +249,8 @@
               res.push(category)
             }
           }
-          categories = res
+
+          categories = await sortCategories(client, _class, res, groupByKey, viewlet.descriptor)
           break
         }
       }

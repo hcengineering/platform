@@ -43,7 +43,7 @@ import {
   Location,
   locationToUrl
 } from '@hcengineering/ui'
-import type { BuildModelOptions, Viewlet } from '@hcengineering/view'
+import type { BuildModelOptions, Viewlet, ViewletDescriptor } from '@hcengineering/view'
 import view, { AttributeModel, BuildModelKey } from '@hcengineering/view'
 import { writable } from 'svelte/store'
 import plugin from './plugin'
@@ -528,11 +528,24 @@ export async function getCategories (
   client: TxOperations,
   _class: Ref<Class<Doc>>,
   docs: Doc[],
-  key: string
+  key: string,
+  viewletDescriptorId?: Ref<ViewletDescriptor>
+): Promise<any[]> {
+  if (key === noCategory) return [undefined]
+  const existingCategories = Array.from(new Set(docs.map((x: any) => x[key] ?? undefined)))
+
+  return await sortCategories(client, _class, existingCategories, key, viewletDescriptorId)
+}
+
+export async function sortCategories (
+  client: TxOperations,
+  _class: Ref<Class<Doc>>,
+  existingCategories: any[],
+  key: string,
+  viewletDescriptorId?: Ref<ViewletDescriptor>
 ): Promise<any[]> {
   if (key === noCategory) return [undefined]
   const hierarchy = client.getHierarchy()
-  const existingCategories = Array.from(new Set(docs.map((x: any) => x[key] ?? undefined)))
   const attr = hierarchy.getAttribute(_class, key)
   if (attr === undefined) return existingCategories
   const attrClass = getAttributePresenterClass(hierarchy, attr).attrClass
@@ -541,7 +554,7 @@ export async function getCategories (
   if (sortFunc?.func === undefined) return existingCategories
   const f = await getResource(sortFunc.func)
 
-  return await f(existingCategories)
+  return await f(existingCategories, viewletDescriptorId)
 }
 
 export function getKeyLabel<T extends Doc> (
