@@ -16,7 +16,7 @@
   import { Attachment } from '@hcengineering/attachment'
   import { Account, Class, Doc, generateId, Ref, Space, toIdMap } from '@hcengineering/core'
   import { IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import { createQuery, getClient, draftStore, updateDraftStore } from '@hcengineering/presentation'
+  import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
   import { IconSize } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
@@ -40,6 +40,9 @@
   export let refContainer: HTMLElement | undefined = undefined
   export let shouldSaveDraft: boolean = false
   export let useAttachmentPreview = false
+
+  let draftKey = objectId ? `${objectId}_attachments` : undefined
+  $: draftKey = objectId ? `${objectId}_attachments` : undefined
 
   const dispatch = createEventDispatcher()
 
@@ -75,10 +78,10 @@
   const newAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
   const removedAttachments: Set<Attachment> = new Set<Attachment>()
 
-  $: objectId && updateAttachments(objectId)
+  $: objectId && draftKey && updateAttachments(objectId, draftKey)
 
-  async function updateAttachments (objectId: Ref<Doc>) {
-    draftAttachments = $draftStore[objectId]
+  async function updateAttachments (objectId: Ref<Doc>, draftKey: string) {
+    draftAttachments = $draftsStore[draftKey]
     if (draftAttachments && shouldSaveDraft) {
       attachments.clear()
       newAttachments.clear()
@@ -105,9 +108,9 @@
   }
 
   async function saveDraft () {
-    if (objectId && shouldSaveDraft) {
+    if (draftKey && shouldSaveDraft) {
       draftAttachments = Object.fromEntries(attachments)
-      updateDraftStore(objectId, draftAttachments)
+      DraftController.save(draftKey, draftAttachments)
     }
   }
 
@@ -202,8 +205,8 @@
   })
 
   export function removeDraft (removeFiles: boolean) {
-    if (objectId) {
-      updateDraftStore(objectId, undefined)
+    if (draftKey) {
+      DraftController.remove(draftKey)
     }
     if (removeFiles) {
       newAttachments.forEach(async (p) => {

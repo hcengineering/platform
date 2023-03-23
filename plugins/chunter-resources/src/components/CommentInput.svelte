@@ -15,68 +15,46 @@
 -->
 <script lang="ts">
   import { Comment } from '@hcengineering/chunter'
-  import { Doc, generateId, Ref } from '@hcengineering/core'
-  import { getClient, draftStore, updateDraftStore } from '@hcengineering/presentation'
+  import { AttachedData, Doc, generateId, Ref } from '@hcengineering/core'
+  import { DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import { createBacklinks } from '../backlinks'
   import chunter from '../plugin'
+  import { onDestroy } from 'svelte'
 
   export let object: Doc
-  export let shouldSaveDraft: boolean = false
+  export let shouldSaveDraft: boolean = true
 
   const client = getClient()
   const _class = chunter.class.Comment
 
-  let _id: Ref<Comment> = generateId()
-  let inputContent: string = ''
+  type CommentDraft = AttachedData<Comment> & { _id: Ref<Comment> }
+
+  const draftKey = `${object._id}_comment`
+  const draftController = new DraftController<CommentDraft>(draftKey)
+
+  const empty = {
+    message: '<p></p>',
+    attachments: 0
+  }
+
   let commentInputBox: AttachmentRefInput
-  let draftComment: Comment | undefined = undefined
-  let saveTimer: number | undefined
+  const draftComment = shouldSaveDraft ? $draftsStore[draftKey] : undefined
+  let comment: CommentDraft = draftComment ?? getDefault()
+  let _id: Ref<Comment> = comment._id
+  let inputContent: string = comment.message
 
-  $: updateDraft(object)
-  $: updateCommentFromDraft(draftComment)
-
-  async function updateDraft (object: Doc) {
-    if (!shouldSaveDraft) {
-      return
-    }
-    draftComment = $draftStore[object._id]
-    if (!draftComment) {
-      _id = generateId()
-    }
+  if (shouldSaveDraft) {
+    draftController.watch(comment, empty)
   }
 
-  async function updateCommentFromDraft (draftComment: Comment | undefined) {
-    if (!shouldSaveDraft) {
-      return
+  onDestroy(draftController.unsubscribe)
+
+  function getDefault (): CommentDraft {
+    return {
+      _id: generateId(),
+      ...empty
     }
-    inputContent = draftComment ? draftComment.message : ''
-    _id = draftComment ? draftComment._id : _id
-  }
-
-  function commentIsEmpty (message: string, attachments: number): boolean {
-    return (message === '<p></p>' || message === '') && !(attachments > 0)
-  }
-
-  async function saveDraft (object: Doc) {
-    updateDraftStore(object._id, draftComment)
-  }
-
-  async function handleCommentUpdate (message: string, attachments: number) {
-    if (commentIsEmpty(message, attachments)) {
-      draftComment = undefined
-      saveDraft(object)
-      _id = generateId()
-      return
-    }
-    if (!draftComment) {
-      draftComment = createDraftFromObject()
-    }
-    draftComment.message = message
-    draftComment.attachments = attachments
-
-    await commentInputBox.createAttachments()
-    saveDraft(object)
   }
 
   async function onUpdate (event: CustomEvent) {
@@ -84,28 +62,16 @@
       return
     }
     const { message, attachments } = event.detail
-    if (saveTimer) {
-      clearTimeout(saveTimer)
+    if (comment) {
+      comment.message = message
+      comment.attachments = message
+    } else {
+      comment = {
+        _id,
+        message,
+        attachments
+      }
     }
-    saveTimer = setTimeout(() => {
-      handleCommentUpdate(message, attachments)
-    }, 200)
-  }
-
-  function createDraftFromObject () {
-    const newDraft: Comment = {
-      _id,
-      _class: chunter.class.Comment,
-      space: object.space,
-      modifiedOn: Date.now(),
-      modifiedBy: object.modifiedBy,
-      attachedTo: object._id,
-      attachedToClass: object._class,
-      collection: 'comments',
-      message: '',
-      attachments: 0
-    }
-    return newDraft
   }
 
   let loading = false
@@ -128,8 +94,8 @@
 
     // Remove draft from Local Storage
     _id = generateId()
-    draftComment = undefined
-    await saveDraft(object)
+    comment = getDefault()
+    draftController.remove()
     commentInputBox.removeDraft(false)
     loading = false
   }

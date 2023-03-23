@@ -15,7 +15,7 @@
 <script lang="ts">
   import { AttachedData } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Issue, IssuePriority, IssueTemplateData } from '@hcengineering/tracker'
+  import { Issue, IssueDraft, IssuePriority, IssueTemplateData } from '@hcengineering/tracker'
   import {
     Button,
     ButtonKind,
@@ -30,7 +30,7 @@
   import tracker from '../../plugin'
   import { defaultPriorities, issuePriorities } from '../../utils'
 
-  export let value: Issue | AttachedData<Issue> | IssueTemplateData
+  export let value: Issue | AttachedData<Issue> | IssueTemplateData | IssueDraft
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
 
@@ -65,7 +65,7 @@
 
     dispatch('change', newPriority)
 
-    if ('_id' in value) {
+    if ('_class' in value) {
       await client.update(value, { priority: newPriority })
     }
   }

@@ -15,7 +15,7 @@
 <script lang="ts">
   import { AttachedData, Ref, WithLookup } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { DraftIssueChild, Issue, IssueStatus, Project } from '@hcengineering/tracker'
+  import { Issue, IssueDraft, IssueStatus, Project } from '@hcengineering/tracker'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { Button, eventToHTMLElement, SelectPopup, showPopup, TooltipAlignment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -24,10 +24,7 @@
   import IssueStatusIcon from './IssueStatusIcon.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
 
-  export let value:
-    | Issue
-    | (AttachedData<Issue> & { space: Ref<Project> })
-    | (DraftIssueChild & { space: Ref<Project> })
+  export let value: Issue | (AttachedData<Issue> & { space: Ref<Project> }) | IssueDraft
 
   let statuses: WithLookup<IssueStatus>[] | undefined = undefined
 
@@ -50,7 +47,7 @@
 
     dispatch('change', newStatus)
 
-    if ('_id' in value) {
+    if ('_class' in value) {
       await client.update(value, { status: newStatus })
     }
   }

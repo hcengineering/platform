@@ -13,19 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { isUserDraftExists } from '@hcengineering/presentation'
+  import { draftsStore } from '@hcengineering/presentation'
   import { Button, showPopup } from '@hcengineering/ui'
   import recruit from '../plugin'
   import CreateCandidate from './CreateCandidate.svelte'
 
-  let draftExists: boolean = isUserDraftExists(recruit.mixin.Candidate)
-
-  const handleDraftChanged = () => {
-    draftExists = isUserDraftExists(recruit.mixin.Candidate)
-  }
+  $: draftExists = $draftsStore[recruit.mixin.Candidate]
 
   async function newCandidate (): Promise<void> {
-    showPopup(CreateCandidate, { shouldSaveDraft: true, onDraftChanged: handleDraftChanged }, 'top')
+    showPopup(CreateCandidate, { shouldSaveDraft: true }, 'top')
   }
 </script>
 

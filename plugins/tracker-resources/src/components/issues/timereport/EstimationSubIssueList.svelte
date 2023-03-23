@@ -71,7 +71,7 @@
         />
       </FixedColumn>
       <FixedColumn key={'estimation'} justify={'left'}>
-        <EstimationEditor value={issue} kind={'list'} {currentProject} />
+        <EstimationEditor value={issue} kind={'list'} />
       </FixedColumn>
     </div>
   </svelte:fragment>

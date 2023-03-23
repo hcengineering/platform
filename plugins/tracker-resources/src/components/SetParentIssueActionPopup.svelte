@@ -15,13 +15,13 @@
 <script lang="ts">
   import { AttachedData, FindOptions, Ref, SortingOrder } from '@hcengineering/core'
   import { getClient, ObjectPopup } from '@hcengineering/presentation'
-  import { calcRank, Issue } from '@hcengineering/tracker'
+  import { calcRank, Issue, IssueDraft } from '@hcengineering/tracker'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
   import { getIssueId } from '../issues'
   import IssueStatusIcon from './issues/IssueStatusIcon.svelte'
 
-  export let value: Issue | AttachedData<Issue> | Issue[]
+  export let value: Issue | AttachedData<Issue> | Issue[] | IssueDraft
   export let width: 'medium' | 'large' | 'full' = 'large'
 
   const client = getClient()
@@ -38,7 +38,7 @@
     const vv = Array.isArray(value) ? value : [value]
     for (const docValue of vv) {
       if (
-        '_id' in docValue &&
+        '_class' in docValue &&
         parentIssue !== undefined &&
         parentIssue?._id !== docValue.attachedTo &&
         parentIssue?._id !== docValue._id

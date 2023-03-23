@@ -18,9 +18,9 @@ import type { Channel, Organization, Person } from '@hcengineering/contact'
 import type { AttachedData, AttachedDoc, Class, Doc, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
+import { TagReference } from '@hcengineering/tags'
 import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@hcengineering/task'
 import { AnyComponent, ResolvedLocation } from '@hcengineering/ui'
-import { TagReference } from '@hcengineering/tags'
 
 /**
  * @public
@@ -63,8 +63,8 @@ export interface Candidate extends Person {
 /**
  * @public
  */
-export interface CandidateDraft extends Doc {
-  candidateId: Ref<Candidate>
+export interface CandidateDraft {
+  _id: Ref<Candidate>
   firstName?: string
   lastName?: string
   title?: string

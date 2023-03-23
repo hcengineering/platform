@@ -374,7 +374,7 @@
             width={''}
             bind:onlyIcon={fullFilled[issueId]}
           />
-          <EstimationEditor kind={'list'} size={'small'} value={issue} {currentProject} />
+          <EstimationEditor kind={'list'} size={'small'} value={issue} />
           <div
             class="clear-mins"
             use:tooltip={{

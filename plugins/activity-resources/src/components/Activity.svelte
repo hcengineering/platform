@@ -178,7 +178,7 @@
     </Scroller>
     {#if showCommenInput}
       <div class="ref-input">
-        <Component is={chunter.component.CommentInput} props={{ object, shouldSaveDraft: true }} />
+        <Component is={chunter.component.CommentInput} props={{ object }} />
       </div>
     {/if}
   </div>
@@ -213,7 +213,7 @@
   </div>
   {#if showCommenInput}
     <div class="ref-input">
-      <Component is={chunter.component.CommentInput} props={{ object, shouldSaveDraft: true }} />
+      <Component is={chunter.component.CommentInput} props={{ object }} />
     </div>
   {/if}
   <div class="p-activity select-text" id={activity.string.Activity}>

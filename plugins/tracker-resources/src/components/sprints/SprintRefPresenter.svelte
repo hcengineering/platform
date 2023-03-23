@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Sprint, Project } from '@hcengineering/tracker'
+  import { Sprint } from '@hcengineering/tracker'
   import { ButtonKind, DatePresenter, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import { getDayOfSprint } from '../../utils'
@@ -24,13 +24,6 @@
 
   export let value: Ref<Sprint>
   export let kind: ButtonKind = 'link'
-
-  const spaceQuery = createQuery()
-  let currentProject: Project | undefined
-  $: sprint &&
-    spaceQuery.query(tracker.class.Project, { _id: sprint.space }, (res) => {
-      ;[currentProject] = res
-    })
 
   const sprintQuery = createQuery()
   let sprint: Sprint | undefined

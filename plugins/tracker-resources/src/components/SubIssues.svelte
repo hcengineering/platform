@@ -16,9 +16,9 @@
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { deleteFile } from '@hcengineering/attachment-resources/src/utils'
   import core, { AttachedData, Ref, SortingOrder } from '@hcengineering/core'
-  import { draftStore, getClient, updateDraftStore } from '@hcengineering/presentation'
+  import { DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
-  import { calcRank, Component, DraftIssueChild, Issue, IssueParentInfo, Project, Sprint } from '@hcengineering/tracker'
+  import { calcRank, Component, Issue, IssueDraft, IssueParentInfo, Project, Sprint } from '@hcengineering/tracker'
   import { Button, closeTooltip, ExpandCollapse, IconAdd, Scroller } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import tracker from '../plugin'
@@ -32,10 +32,11 @@
   export let project: Project | undefined
   export let sprint: Ref<Sprint> | null = null
   export let component: Ref<Component> | null = null
-  export let subIssues: DraftIssueChild[] = []
+  export let subIssues: IssueDraft[] = []
+  export let shouldSaveDraft: boolean = false
 
   let isCollapsed = false
-  let isCreating = false
+  let isCreating = $draftsStore[tracker.ids.IssueDraftChild] !== undefined
 
   async function handleIssueSwap (ev: CustomEvent<{ fromIndex: number; toIndex: number }>) {
     if (subIssues) {
@@ -64,7 +65,7 @@
         },
         true
       )
-      const childId: Ref<Issue> = subIssue.id as Ref<Issue>
+      const childId = subIssue._id
       const cvalue: AttachedData<Issue> = {
         title: subIssue.title.trim(),
         description: subIssue.description,
@@ -72,7 +73,7 @@
         component: subIssue.component,
         sprint: subIssue.sprint,
         number: (incResult as any).object.sequence,
-        status: subIssue.status,
+        status: subIssue.status ?? project.defaultIssueStatus,
         priority: subIssue.priority,
         rank: calcRank(lastOne, undefined),
         comments: 0,
@@ -98,12 +99,11 @@
       )
 
       if ((subIssue.labels?.length ?? 0) > 0) {
-        const tagElements = await client.findAll(tags.class.TagElement, { _id: { $in: subIssue.labels } })
-        for (const label of tagElements) {
+        for (const label of subIssue.labels) {
           await client.addCollection(tags.class.TagReference, project._id, childId, tracker.class.Issue, 'labels', {
             title: label.title,
             color: label.color,
-            tag: label._id
+            tag: label.tag
           })
         }
       }
@@ -112,7 +112,7 @@
   }
 
   async function saveAttachments (issue: Ref<Issue>) {
-    const draftAttachments: Record<Ref<Attachment>, Attachment> | undefined = $draftStore[issue]
+    const draftAttachments = $draftsStore[`${issue}_attachments`]
     if (draftAttachments) {
       for (const key in draftAttachments) {
         await saveAttachment(draftAttachments[key as Ref<Attachment>], issue)
@@ -133,7 +133,7 @@
     )
   }
 
-  export function load (value: DraftIssueChild[]) {
+  export function load (value: IssueDraft[]) {
     subIssues = value
   }
 
@@ -142,14 +142,14 @@
   onDestroy(() => {
     if (!saved) {
       subIssues.forEach((st) => {
-        removeDraft(st.id, true)
+        removeDraft(st._id, true)
       })
     }
   })
 
   export async function removeDraft (_id: string, removeFiles: boolean = false): Promise<void> {
-    const draftAttachments: Record<Ref<Attachment>, Attachment> | undefined = $draftStore[_id]
-    updateDraftStore(_id, undefined)
+    const draftAttachments = $draftsStore[`${_id}_attachments`]
+    DraftController.remove(`${_id}_attachments`)
     if (removeFiles && draftAttachments) {
       for (const key in draftAttachments) {
         const attachment = draftAttachments[key as Ref<Attachment>]
@@ -215,6 +215,7 @@
       {project}
       {component}
       {sprint}
+      {shouldSaveDraft}
       on:close={() => {
         isCreating = false
       }}

@@ -17,9 +17,9 @@
   import { AttachmentDocList } from '@hcengineering/attachment-resources'
   import chunter from '@hcengineering/chunter'
   import { CommentPopup } from '@hcengineering/chunter-resources'
-  import { Ref, SortingOrder } from '@hcengineering/core'
+  import { Ref } from '@hcengineering/core'
   import { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
-  import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
+  import { Issue, Project } from '@hcengineering/tracker'
   import { Label, resizeObserver, Scroller } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import AssigneeEditor from './AssigneeEditor.svelte'
@@ -34,7 +34,6 @@
   $: space = object.space
   const issueQuery = createQuery()
   const spaceQuery = createQuery()
-  const statusesQuery = createQuery()
 
   $: issueQuery.query(
     object._class,
@@ -44,19 +43,7 @@
     },
     { limit: 1 }
   )
-  let statuses: IssueStatus[] = []
 
-  $: statusesQuery.query(
-    tracker.class.IssueStatus,
-    { attachedTo: space },
-    (res) => {
-      statuses = res
-    },
-    {
-      lookup: { category: tracker.class.IssueStatusCategory },
-      sort: { rank: SortingOrder.Ascending }
-    }
-  )
   let currentProject: Project | undefined
 
   $: spaceQuery.query(tracker.class.Project, { _id: space }, (res) => ([currentProject] = res))

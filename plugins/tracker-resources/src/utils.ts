@@ -15,7 +15,6 @@
 
 import { Employee, getName } from '@hcengineering/contact'
 import core, {
-  AttachedData,
   Class,
   Doc,
   DocumentQuery,
@@ -41,7 +40,6 @@ import {
   IssuesGrouping,
   IssuesOrdering,
   IssueStatus,
-  IssueTemplateData,
   Project,
   Sprint,
   SprintStatus,
@@ -654,15 +652,13 @@ export function subIssueListProvider (subIssues: Issue[], target: Ref<Issue>): v
   }
 }
 
-export async function getPreviousAssignees (
-  issue: Issue | AttachedData<Issue> | IssueTemplateData
-): Promise<Array<Ref<Employee>>> {
+export async function getPreviousAssignees (issue: Issue): Promise<Array<Ref<Employee>>> {
   return await new Promise((resolve) => {
     const query = createQuery(true)
     query.query(
       core.class.Tx,
       {
-        'tx.objectId': (issue as Issue)._id,
+        'tx.objectId': issue._id,
         'tx.operations.assignee': { $exists: true }
       },
       (res) => {

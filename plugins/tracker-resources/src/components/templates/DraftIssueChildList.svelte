@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import tracker, { Component, DraftIssueChild, IssueTemplateChild, Project, Sprint } from '@hcengineering/tracker'
+  import tracker, { Component, IssueDraft, Project, Sprint } from '@hcengineering/tracker'
   import { eventToHTMLElement, IconCircles, showPopup } from '@hcengineering/ui'
   import { ActionContext, FixedColumn } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -26,7 +26,7 @@
   import DraftIssueChildEditor from './DraftIssueChildEditor.svelte'
   import EstimationEditor from './EstimationEditor.svelte'
 
-  export let issues: DraftIssueChild[]
+  export let issues: IssueDraft[]
   export let project: Ref<Project>
   export let sprint: Ref<Sprint> | null = null
   export let component: Ref<Component> | null = null
@@ -35,7 +35,7 @@
   let draggingIndex: number | null = null
   let hoveringIndex: number | null = null
 
-  function openIssue (evt: MouseEvent, target: DraftIssueChild) {
+  function openIssue (evt: MouseEvent, target: IssueDraft) {
     showPopup(
       DraftIssueChildEditor,
       {
@@ -46,9 +46,9 @@
         childIssue: target
       },
       eventToHTMLElement(evt),
-      (evt: DraftIssueChild | undefined | null) => {
+      (evt: IssueDraft | undefined | null) => {
         if (evt != null) {
-          const pos = issues.findIndex((it) => it.id === evt.id)
+          const pos = issues.findIndex((it) => it._id === evt._id)
           if (pos !== -1) {
             issues[pos] = evt
             dispatch('update-issue', evt)
@@ -91,10 +91,10 @@
   )
   let currentProject: Project | undefined = undefined
 
-  function getIssueTemplateId (currentProject: Project | undefined, issue: IssueTemplateChild): string {
+  function getIssueTemplateId (currentProject: Project | undefined, issue: IssueDraft): string {
     return currentProject
-      ? `${currentProject.identifier}-${issues.findIndex((it) => it.id === issue.id)}`
-      : `${issues.findIndex((it) => it.id === issue.id)}}`
+      ? `${currentProject.identifier}-${issues.findIndex((it) => it._id === issue._id)}`
+      : `${issues.findIndex((it) => it._id === issue._id)}}`
   }
 </script>
 
@@ -104,7 +104,7 @@
   }}
 />
 
-{#each issues as issue, index (issue.id)}
+{#each issues as issue, index (issue._id)}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     class="flex-between row"
@@ -138,7 +138,7 @@
         size={'small'}
         justify={'center'}
         on:change={(evt) => {
-          dispatch('update-issue', { id: issue.id, priority: evt.detail })
+          dispatch('update-issue', { id: issue._id, priority: evt.detail })
           issue.priority = evt.detail
         }}
       />
@@ -158,14 +158,14 @@
         size={'large'}
         bind:value={issue}
         on:change={(evt) => {
-          dispatch('update-issue', { id: issue.id, estimation: evt.detail })
+          dispatch('update-issue', { id: issue._id, estimation: evt.detail })
           issue.estimation = evt.detail
         }}
       />
       <AssigneeEditor
         value={issue}
         on:change={(evt) => {
-          dispatch('update-issue', { id: issue.id, assignee: evt.detail })
+          dispatch('update-issue', { id: issue._id, assignee: evt.detail })
           issue.assignee = evt.detail
         }}
       />
