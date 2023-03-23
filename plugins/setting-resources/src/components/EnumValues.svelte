@@ -15,19 +15,11 @@
 <script lang="ts">
   import { Enum } from '@hcengineering/core'
   import presentation, { getClient, MessageBox } from '@hcengineering/presentation'
-  import {
-    ActionIcon,
-    EditBox,
-    IconAdd,
-    IconAttachment,
-    IconDelete,
-    Label,
-    ListView,
-    showPopup
-  } from '@hcengineering/ui'
-  import setting from '../plugin'
-  import Copy from './icons/Copy.svelte'
+  import { ActionIcon, EditBox, IconAdd, IconAttachment, IconDelete, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view-resources/src/plugin'
+  import setting from '../plugin'
+  import EnumValuesList from './EnumValuesList.svelte'
+  import Copy from './icons/Copy.svelte'
 
   export let value: Enum
 
@@ -107,6 +99,10 @@
       }
     )
   }
+
+  async function onDrop () {
+    await client.update(value, { enumValues: value.enumValues })
+  }
 </script>
 
 <input
@@ -157,25 +153,12 @@
   </div>
   <div class="scroll">
     <div class="box">
-      <ListView count={filtered.length}>
-        <svelte:fragment slot="item" let:item>
-          {@const evalue = filtered[item]}
-          <div class="flex-between flex-nowrap mb-2">
-            <span class="overflow-label">{evalue}</span>
-            <ActionIcon
-              icon={IconDelete}
-              label={setting.string.Delete}
-              action={() => {
-                remove(evalue)
-              }}
-              size={'small'}
-            />
-          </div>
-        </svelte:fragment>
-      </ListView>
-      {#if filtered.length === 0}
-        <Label label={presentation.string.NoMatchesFound} />
-      {/if}
+      <EnumValuesList
+        bind:values={value.enumValues}
+        bind:filtered
+        on:remove={(e) => remove(e.detail)}
+        on:drop={onDrop}
+      />
     </div>
   </div>
 </div>

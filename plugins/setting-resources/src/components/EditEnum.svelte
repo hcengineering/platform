@@ -15,20 +15,12 @@
 <script lang="ts">
   import core, { Enum } from '@hcengineering/core'
   import presentation, { Card, getClient, MessageBox } from '@hcengineering/presentation'
-  import {
-    ActionIcon,
-    EditBox,
-    IconAdd,
-    IconAttachment,
-    IconDelete,
-    Label,
-    ListView,
-    showPopup
-  } from '@hcengineering/ui'
+  import { ActionIcon, EditBox, IconAdd, IconAttachment, IconDelete, ListView, showPopup } from '@hcengineering/ui'
+  import view from '@hcengineering/view-resources/src/plugin'
   import { createEventDispatcher } from 'svelte'
   import setting from '../plugin'
+  import EnumValuesList from './EnumValuesList.svelte'
   import Copy from './icons/Copy.svelte'
-  import view from '@hcengineering/view-resources/src/plugin'
 
   export let value: Enum | undefined
   export let name: string = value?.name ?? ''
@@ -123,7 +115,7 @@
     processText(text)
   }
   let dragover = false
-  let selection: number = 0
+  const selection: number = 0
 
   function onKeydown (key: KeyboardEvent): void {
     if (key.code === 'ArrowUp') {
@@ -208,25 +200,7 @@
     </div>
     <div class="scroll">
       <div class="box flex max-h-125">
-        <ListView bind:this={list} count={filtered.length} bind:selection>
-          <svelte:fragment slot="item" let:item>
-            {@const value = filtered[item]}
-            <div class="flex-between flex-nowrap mb-2">
-              <span class="overflow-label">{value}</span>
-              <ActionIcon
-                icon={IconDelete}
-                label={setting.string.Delete}
-                action={() => {
-                  remove(value)
-                }}
-                size={'small'}
-              />
-            </div>
-          </svelte:fragment>
-        </ListView>
-        {#if filtered.length === 0}
-          <Label label={presentation.string.NoMatchesFound} />
-        {/if}
+        <EnumValuesList bind:values bind:filtered on:remove={(e) => remove(e.detail)} />
       </div>
     </div>
   </div>

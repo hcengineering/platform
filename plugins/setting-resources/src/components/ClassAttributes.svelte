@@ -253,7 +253,7 @@
           {#if attrType !== undefined}
             : <Label label={attrType} />
           {/if}
-          {#if attr.type._class === core.class.Enum}
+          {#if attr.type._class === core.class.EnumOf}
             {#await getEnumName(attr.type) then name}
               {#if name}
                 : {name}
