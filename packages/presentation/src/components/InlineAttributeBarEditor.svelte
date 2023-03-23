@@ -67,6 +67,7 @@
           justify={'left'}
           type={attribute?.type}
           {maxWidth}
+          {attributeKey}
           value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
           space={object.space}
           {onChange}
