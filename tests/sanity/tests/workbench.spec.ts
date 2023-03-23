@@ -51,4 +51,11 @@ test.describe('workbench tests', () => {
     // Click text=John Appleseed
     await expect(page.locator('text=Appleseed John')).toBeVisible()
   })
+  test('check-for-last-loc', async ({ page }) => {
+    await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
+    await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit`)
+    const urlToCheck = page.url()
+    await page.goto(`${PlatformURI}`)
+    await expect(page).toHaveURL(urlToCheck)
+  })
 })
