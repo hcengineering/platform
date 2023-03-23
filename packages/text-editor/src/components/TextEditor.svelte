@@ -31,7 +31,6 @@
   export let extensions: AnyExtension[] = []
   export let supportSubmit = true
   export let isEmpty = true
-  export let haveAttachment = false
 
   let element: HTMLElement
   let editor: Editor
