@@ -70,6 +70,7 @@
   export let full = false
 
   let textEditor: TextEditor
+  let isEmpty = true
 
   export function submit (): void {
     textEditor.submit()
@@ -487,6 +488,7 @@
             bind:content
             {placeholder}
             bind:this={textEditor}
+            bind:isEmpty
             on:value
             on:content={(ev) => {
               dispatch('message', ev.detail)
@@ -504,6 +506,7 @@
           bind:content
           {placeholder}
           bind:this={textEditor}
+          bind:isEmpty
           on:value
           on:content={(ev) => {
             dispatch('message', ev.detail)

@@ -285,9 +285,11 @@
         bind:isEmpty
         bind:this={textEditor}
         on:content={(ev) => {
-          dispatch('message', ev.detail)
-          content = ''
-          textEditor.clear()
+          if (!isEmpty || haveAttachment) {
+            dispatch('message', ev.detail)
+            content = ''
+            textEditor.clear()
+          }
         }}
         extensions={editorExtensions}
         on:selection-update={updateFormattingState}

@@ -35,6 +35,7 @@
   const attachments: AttachmentStyledBox[] = []
   const edits: TextEditor[] = []
   let hasAttachments: boolean = false
+  const isEmpty: boolean[] = [true]
   const expanded: boolean[] = []
   items.forEach(() => expanded.push(false))
 
@@ -86,13 +87,16 @@
             <TextEditor
               bind:content={item.content}
               bind:this={edits[i]}
+              bind:isEmpty={isEmpty[i]}
               on:value={(ev) => {
                 dispatch('update', { item, value: ev.detail })
               }}
               on:content={(ev) => {
-                items[i].content = ev.detail
-                dispatch('update', { item, value: ev.detail })
-                flip(i)
+                if (!isEmpty[i]) {
+                  items[i].content = ev.detail
+                  dispatch('update', { item, value: ev.detail })
+                  flip(i)
+                }
               }}
               on:blur={() => dispatch('blur', item)}
             />
