@@ -74,7 +74,7 @@
     categories = await getCategories(client, _class, docs, groupByKey)
     if (level === 0) {
       for (const viewOption of viewOptionsModel ?? []) {
-        if (viewOption.actionTartget !== 'category') continue
+        if (viewOption.actionTarget !== 'category') continue
         const categoryFunc = viewOption as CategoryOption
         if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
           const f = await getResource(categoryFunc.action)

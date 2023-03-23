@@ -17,12 +17,14 @@ import type { IntlString, Metadata, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { IssueDraft } from '@hcengineering/tracker'
 import { AnyComponent, Location } from '@hcengineering/ui'
-import { SortFunc, Viewlet, ViewQueryAction } from '@hcengineering/view'
+import { SortFunc, Viewlet, ViewletDescriptor, ViewQueryAction } from '@hcengineering/view'
 import tracker, { trackerId } from '../../tracker/lib'
 
 export default mergeIds(trackerId, tracker, {
   viewlet: {
-    SubIssues: '' as Ref<Viewlet>
+    SubIssues: '' as Ref<Viewlet>,
+    List: '' as Ref<ViewletDescriptor>,
+    Kanban: '' as Ref<ViewletDescriptor>
   },
   string: {
     More: '' as IntlString,

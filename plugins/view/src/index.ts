@@ -236,7 +236,7 @@ export interface ListHeaderExtra extends Class<Doc> {
 /**
  * @public
  */
-export type SortFunc = Resource<(values: any[]) => Promise<any[]>>
+export type SortFunc = Resource<(values: any[], viewletDescriptorId?: Ref<ViewletDescriptor>) => Promise<any[]>>
 
 /**
  * @public
@@ -483,7 +483,7 @@ export interface ViewOption {
   defaultValue: any
   label: IntlString
   hidden?: (viewOptions: ViewOptions) => boolean
-  actionTartget?: 'query' | 'category'
+  actionTarget?: 'query' | 'category'
   action?: Resource<(value: any, ...params: any) => any>
 }
 
@@ -504,7 +504,7 @@ export type ViewCategoryAction = Resource<
  * @public
  */
 export interface CategoryOption extends ViewOption {
-  actionTartget: 'category'
+  actionTarget: 'category'
   action: ViewCategoryAction
 }
 
@@ -517,7 +517,7 @@ export type ViewQueryAction = Resource<(value: any, query: DocumentQuery<Doc>) =
  * @public
  */
 export interface ViewQueryOption extends ViewOption {
-  actionTartget: 'query'
+  actionTarget: 'query'
   action: ViewQueryAction
 }
 

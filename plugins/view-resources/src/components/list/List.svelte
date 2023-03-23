@@ -86,7 +86,7 @@
     if (viewOptions === undefined) return query
     let result = hierarchy.clone(query)
     for (const viewOption of viewOptions) {
-      if (viewOption.actionTartget !== 'query') continue
+      if (viewOption.actionTarget !== 'query') continue
       const queryOption = viewOption as ViewQueryOption
       const f = await getResource(queryOption.action)
       result = f(viewOptionsStore[queryOption.key] ?? queryOption.defaultValue, query)

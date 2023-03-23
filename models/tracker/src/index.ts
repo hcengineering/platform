@@ -523,7 +523,7 @@ export function createModel (builder: Builder): void {
         key: 'shouldShowSubIssues',
         type: 'toggle',
         defaultValue: false,
-        actionTartget: 'query',
+        actionTarget: 'query',
         action: tracker.function.SubIssueQuery,
         label: tracker.string.SubIssues
       },
@@ -531,7 +531,7 @@ export function createModel (builder: Builder): void {
         key: 'shouldShowAll',
         type: 'toggle',
         defaultValue: false,
-        actionTartget: 'category',
+        actionTarget: 'category',
         action: view.function.ShowEmptyGroups,
         label: view.string.ShowEmptyGroups
       }

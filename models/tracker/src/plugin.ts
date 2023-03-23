@@ -20,7 +20,7 @@ import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
 import { trackerId } from '@hcengineering/tracker'
 import tracker from '@hcengineering/tracker-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
-import { Action, ViewAction, Viewlet, ViewletDescriptor } from '@hcengineering/view'
+import { Action, ViewAction, Viewlet } from '@hcengineering/view'
 import { Application } from '@hcengineering/workbench'
 
 export default mergeIds(trackerId, tracker, {
@@ -51,9 +51,7 @@ export default mergeIds(trackerId, tracker, {
     IssueList: '' as Ref<Viewlet>,
     IssueTemplateList: '' as Ref<Viewlet>,
     IssueKanban: '' as Ref<Viewlet>,
-    SprintList: '' as Ref<Viewlet>,
-    List: '' as Ref<ViewletDescriptor>,
-    Kanban: '' as Ref<ViewletDescriptor>
+    SprintList: '' as Ref<Viewlet>
   },
   completion: {
     IssueQuery: '' as Resource<ObjectSearchFactory>,

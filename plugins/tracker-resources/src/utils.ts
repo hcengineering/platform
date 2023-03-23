@@ -33,6 +33,8 @@ import { TypeState } from '@hcengineering/kanban'
 import { Asset, IntlString, translate } from '@hcengineering/platform'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import {
+  Component,
+  ComponentStatus,
   Issue,
   IssuePriority,
   IssuesDateModificationPeriod,
@@ -40,11 +42,9 @@ import {
   IssuesOrdering,
   IssueStatus,
   IssueTemplateData,
-  Component,
-  ComponentStatus,
+  Project,
   Sprint,
   SprintStatus,
-  Project,
   TimeReportDayType
 } from '@hcengineering/tracker'
 import {
@@ -55,10 +55,11 @@ import {
   isWeekend,
   MILLISECONDS_IN_WEEK
 } from '@hcengineering/ui'
+import { ViewletDescriptor } from '@hcengineering/view'
 import { CategoryQuery, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
 import { writable } from 'svelte/store'
 import tracker from './plugin'
-import { defaultPriorities, defaultComponentStatuses, defaultSprintStatuses, issuePriorities } from './types'
+import { defaultComponentStatuses, defaultPriorities, defaultSprintStatuses, issuePriorities } from './types'
 
 export * from './types'
 
@@ -331,11 +332,33 @@ const listIssueStatusOrder = [
   tracker.issueStatusCategory.Canceled
 ] as const
 
-export async function issueStatusSort (value: Array<Ref<IssueStatus>>): Promise<Array<Ref<IssueStatus>>> {
+const listIssueKanbanStatusOrder = [
+  tracker.issueStatusCategory.Backlog,
+  tracker.issueStatusCategory.Unstarted,
+  tracker.issueStatusCategory.Started,
+  tracker.issueStatusCategory.Completed,
+  tracker.issueStatusCategory.Canceled
+] as const
+
+export async function issueStatusSort (
+  value: Array<Ref<IssueStatus>>,
+  viewletDescriptorId?: Ref<ViewletDescriptor>
+): Promise<Array<Ref<IssueStatus>>> {
   return await new Promise((resolve) => {
+    // TODO: How we track category updates.
     const query = createQuery(true)
     query.query(tracker.class.IssueStatus, { _id: { $in: value } }, (res) => {
-      res.sort((a, b) => listIssueStatusOrder.indexOf(a.category) - listIssueStatusOrder.indexOf(b.category))
+      if (viewletDescriptorId === tracker.viewlet.Kanban) {
+        res.sort((a, b) => {
+          const res = listIssueKanbanStatusOrder.indexOf(a.category) - listIssueKanbanStatusOrder.indexOf(b.category)
+          if (res === 0) {
+            return a.rank.localeCompare(b.rank)
+          }
+          return res
+        })
+      } else {
+        res.sort((a, b) => listIssueStatusOrder.indexOf(a.category) - listIssueStatusOrder.indexOf(b.category))
+      }
       resolve(res.map((p) => p._id))
       query.unsubscribe()
     })
