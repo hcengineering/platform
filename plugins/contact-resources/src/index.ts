@@ -111,7 +111,8 @@ export {
   UserBoxList,
   Members,
   SpaceMembers,
-  CombineAvatars
+  CombineAvatars,
+  UserInfo
 }
 
 const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({
