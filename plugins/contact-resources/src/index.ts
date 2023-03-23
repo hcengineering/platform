@@ -68,6 +68,7 @@ import EmployeeBox from './components/EmployeeBox.svelte'
 import UserBoxList from './components/UserBoxList.svelte'
 import SpaceMembers from './components/SpaceMembers.svelte'
 import CombineAvatars from './components/CombineAvatars.svelte'
+import IconMembers from './components/icons/Members.svelte'
 
 import contact from './plugin'
 import {
@@ -111,7 +112,9 @@ export {
   UserBoxList,
   Members,
   SpaceMembers,
-  CombineAvatars
+  CombineAvatars,
+  UserInfo,
+  IconMembers
 }
 
 const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({
