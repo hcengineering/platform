@@ -1,13 +1,13 @@
 import { chunterId, ChunterMessage, Comment, ThreadMessage } from '@hcengineering/chunter'
-import contact, { EmployeeAccount, getName } from '@hcengineering/contact'
+import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
 import { employeeByIdStore } from '@hcengineering/contact-resources'
-import { Class, Client, Doc, getCurrentAccount, Obj, Ref, Space, Timestamp } from '@hcengineering/core'
+import { Class, Client, Doc, getCurrentAccount, IdMap, Obj, Ref, Space, Timestamp } from '@hcengineering/core'
 import { Asset } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
 import { getCurrentLocation, getPanelURI, location, Location, navigate, ResolvedLocation } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
-import { get, writable } from 'svelte/store'
+import { get, Unsubscriber, writable } from 'svelte/store'
 
 import chunter from './plugin'
 
@@ -49,7 +49,19 @@ export async function getDmName (client: Client, dm: Space): Promise<string> {
     employeeAccounts = employeeAccounts.filter((p) => p._id !== myAccId)
   }
 
-  const map = get(employeeByIdStore)
+  let unsub: Unsubscriber | undefined
+  const promise = new Promise<IdMap<Employee>>((resolve) => {
+    unsub = employeeByIdStore.subscribe((p) => {
+      if (p.size !== 0) {
+        resolve(p)
+      }
+    })
+  })
+
+  const map = await promise
+
+  unsub?.()
+
   const names: string[] = []
 
   for (const acc of employeeAccounts) {

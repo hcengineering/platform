@@ -14,23 +14,34 @@
 -->
 <script lang="ts">
   import contact, { EmployeeAccount, getFirstName, getLastName } from '@hcengineering/contact'
-  import { ChannelsEditor, employeeByIdStore } from '@hcengineering/contact-resources'
+  import { ChannelsEditor, EditableAvatar, employeeByIdStore } from '@hcengineering/contact-resources'
   import { getCurrentAccount } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
   import { AttributeEditor, getClient, MessageBox } from '@hcengineering/presentation'
-  import { EditableAvatar } from '@hcengineering/contact-resources'
   import { Button, createFocusManager, EditBox, FocusHandler, Icon, Label, showPopup } from '@hcengineering/ui'
+  import { onDestroy } from 'svelte'
   import setting from '../plugin'
   const client = getClient()
 
   let avatarEditor: EditableAvatar
 
   const account = getCurrentAccount() as EmployeeAccount
-  $: employee = $employeeByIdStore.get(account.employee)
-  let firstName: string = employee ? getFirstName(employee.name) : ''
-  let lastName: string = employee ? getLastName(employee.name) : ''
+  const employee = $employeeByIdStore.get(account.employee)
+  let firstName = employee ? getFirstName(employee.name) : ''
+  let lastName = employee ? getLastName(employee.name) : ''
   let displayName = employee?.displayName ?? ''
+
+  onDestroy(
+    employeeByIdStore.subscribe((p) => {
+      const emp = p.get(account.employee)
+      if (emp) {
+        firstName = getFirstName(emp.name)
+        lastName = getLastName(emp.name)
+        displayName = emp?.displayName ?? ''
+      }
+    })
+  )
 
   async function onAvatarDone (e: any) {
     if (employee === undefined) return
