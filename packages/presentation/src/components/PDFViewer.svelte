@@ -19,7 +19,6 @@
   import presentation from '..'
   import { getFileUrl } from '../utils'
   import Download from './icons/Download.svelte'
-  import NewWindow from './icons/NewWindow.svelte'
   import IndexedDocumentPreview from './IndexedDocumentPreview.svelte'
 
   export let file: string
@@ -63,14 +62,6 @@
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
-    <a class="no-line" target="_salf" href={getFileUrl(file)}>
-      <Button
-        icon={NewWindow}
-        kind={'transparent'}
-        showTooltip={{ label: presentation.string.OpenInANewTab }}
-        on:click={() => window.open(getFileUrl(file), '_blank')}
-      />
-    </a>
     <a class="no-line" href={getFileUrl(file)} download={name} bind:this={download}>
       <Button
         icon={Download}

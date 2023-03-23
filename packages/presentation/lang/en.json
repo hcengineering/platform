@@ -25,7 +25,6 @@
     "Edit": "Edit",    
     "DocumentPreview": "Preview",
     "MakePrivate": "Make private",
-    "MakePrivateDescription": "Only members can see it",
-    "OpenInANewTab": "Open in a new tab"
+    "MakePrivateDescription": "Only members can see it"
   }
 }
