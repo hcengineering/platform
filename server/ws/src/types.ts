@@ -30,8 +30,9 @@ export interface Session {
 
   // Session restore information
   sessionId?: string
-  resultBuffer?: TxResult[]
+  sessionInstanceId?: string
   closeTimeout?: any
+  workspaceClosed?: boolean
 }
 
 /**

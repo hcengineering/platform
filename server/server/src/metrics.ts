@@ -6,7 +6,7 @@ const apmUrl = process.env.APM_SERVER_URL
 const metricsFile = process.env.METRICS_FILE
 const metricsConsole = (process.env.METRICS_CONSOLE ?? 'false') === 'true'
 
-const METRICS_UPDATE_INTERVAL = 30000
+const METRICS_UPDATE_INTERVAL = 60000
 
 /**
  * @public

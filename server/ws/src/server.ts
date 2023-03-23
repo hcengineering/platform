@@ -24,10 +24,10 @@ import core, {
   WorkspaceId
 } from '@hcengineering/core'
 import { readRequest, Response, serialize, UNAUTHORIZED, unknownError } from '@hcengineering/platform'
-import type { Pipeline } from '@hcengineering/server-core'
+import type { Pipeline, SessionContext } from '@hcengineering/server-core'
 import { decodeToken, Token } from '@hcengineering/server-token'
 import { createServer, IncomingMessage } from 'http'
-import WebSocket, { WebSocketServer } from 'ws'
+import WebSocket, { RawData, WebSocketServer } from 'ws'
 import { BroadcastCall, PipelineFactory, Session } from './types'
 
 let LOGGING_ENABLED = true
@@ -59,6 +59,8 @@ class SessionManager {
     return this.sessionFactory(token, pipeline, this.broadcast.bind(this))
   }
 
+  upgradeId: string | undefined
+
   async addSession (
     ctx: MeasureContext,
     ws: WebSocket,
@@ -79,6 +81,7 @@ class SessionManager {
 
     if (token.extra?.model === 'upgrade') {
       console.log('reloading workspace', JSON.stringify(token))
+      this.upgradeId = sessionId
       // If upgrade client is used.
       // Drop all existing clients
       await this.closeAll(ctx, wsString, workspace, 0, 'upgrade')
@@ -101,7 +104,7 @@ class SessionManager {
       return session
     }
 
-    if (workspace.upgrade) {
+    if (workspace.upgrade && sessionId !== this.upgradeId) {
       ws.close()
       throw new Error('Upgrade in progress....')
     }
@@ -112,7 +115,14 @@ class SessionManager {
       // try restore session
       const existingSession = workspace.sessions.find((it) => it[0].sessionId === sessionId)
       if (existingSession !== undefined) {
-        if (LOGGING_ENABLED) console.log('found existing session', token.email, existingSession[0].sessionId)
+        if (LOGGING_ENABLED) {
+          console.log(
+            'found existing session',
+            token.email,
+            existingSession[0].sessionId,
+            existingSession[0].sessionInstanceId
+          )
+        }
         // Update websocket
         clearTimeout(existingSession[0].closeTimeout)
         existingSession[0].closeTimeout = undefined
@@ -123,6 +133,7 @@ class SessionManager {
 
     const session = this.createSession(token, pipeline)
     session.sessionId = sessionId
+    session.sessionInstanceId = generateId()
     workspace.sessions.push([session, ws])
     await this.setStatus(ctx, session, true)
     return session
@@ -230,7 +241,13 @@ class SessionManager {
     }
   }
 
-  async closeAll (ctx: MeasureContext, wsId: string, workspace: Workspace, code: number, reason: string): Promise<void> {
+  async closeAll (
+    ctx: MeasureContext,
+    wsId: string,
+    workspace: Workspace,
+    code: number,
+    reason: 'upgrade' | 'shutdown'
+  ): Promise<void> {
     console.log(`closing workspace ${wsId} - ${workspace.id}, code: ${code}, reason: ${reason}`)
 
     const sessions = Array.from(workspace.sessions)
@@ -238,21 +255,24 @@ class SessionManager {
 
     const closeS = async (s: Session, webSocket: WebSocket): Promise<void> => {
       clearTimeout(s.closeTimeout)
-      // await for message to go to client.
-      await new Promise((resolve) => {
-        // Override message handler, to wait for upgrading response from clients.
-        webSocket.on('close', () => {
-          resolve(null)
-        })
-        webSocket.send(
-          serialize({
-            result: {
-              _class: core.class.TxModelUpgrade
-            }
+      s.workspaceClosed = true
+      if (reason === 'upgrade') {
+        // await for message to go to client.
+        await new Promise((resolve) => {
+          // Override message handler, to wait for upgrading response from clients.
+          webSocket.on('close', () => {
+            resolve(null)
           })
-        )
-        setTimeout(resolve, 1000)
-      })
+          webSocket.send(
+            serialize({
+              result: {
+                _class: core.class.TxModelUpgrade
+              }
+            })
+          )
+          setTimeout(resolve, 1000)
+        })
+      }
       webSocket.close()
       await this.setStatus(ctx, s, false)
     }
@@ -305,30 +325,22 @@ async function handleRequest<S extends Session> (
 ): Promise<void> {
   const request = readRequest(msg)
   if (request.id === -1 && request.method === 'hello') {
+    console.log('hello happen', service.getUser())
     ws.send(serialize({ id: -1, result: 'hello' }))
-
-    // Push result buffer messages to client.
-    for (const r of service.resultBuffer ?? []) {
-      ws.send(serialize(r))
-    }
-    service.resultBuffer = []
     return
   }
   if (request.id === -1 && request.method === '#upgrade') {
     ws.close(0, 'upgrade')
     return
   }
+  const userCtx = ctx.newChild(service.getUser(), { userId: service.getUser() }) as SessionContext
+  userCtx.sessionId = service.sessionInstanceId ?? ''
   const f = (service as any)[request.method]
   try {
-    const params = [ctx, ...request.params]
+    const params = [userCtx, ...request.params]
     const result = await f.apply(service, params)
     const resp: Response<any> = { id: request.id, result }
-    ws.send(serialize(resp), (err) => {
-      if (err !== undefined) {
-        // It seems we failed to send to client.
-        service.resultBuffer = [...(service.resultBuffer ?? []), resp]
-      }
-    })
+    ws.send(serialize(resp))
   } catch (err: any) {
     const resp: Response<any> = {
       id: request.id,
@@ -379,14 +391,33 @@ export function start (
     })
     const session = await sessions.addSession(ctx, ws, token, pipelineFactory, productId, sessionId)
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    ws.on('message', async (msg: string) => await handleRequest(ctx, session, ws, msg))
+    ws.on('message', async (msg: RawData) => {
+      let msgStr = ''
+      if (typeof msg === 'string') {
+        msgStr = msg
+      } else if (msg instanceof Buffer) {
+        msgStr = msg.toString()
+      } else if (Array.isArray(msg)) {
+        msgStr = Buffer.concat(msg).toString()
+      }
+      await handleRequest(ctx, session, ws, msgStr)
+    })
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('close', (code: number, reason: Buffer) => {
-      console.log('client closed', code, reason.toString())
+      if (session.workspaceClosed ?? false) {
+        return
+      }
       // remove session after 1seconds, give a time to reconnect.
-      session.closeTimeout = setTimeout(() => {
+      if (code === 1000) {
+        console.log(`client "${token.email}" closed normally`)
         void sessions.close(ctx, ws, token.workspace, code, reason.toString())
-      }, 10000)
+      } else {
+        console.log(`client "${token.email}" closed abnormally, waiting reconnect`, code, reason.toString())
+        session.closeTimeout = setTimeout(() => {
+          console.log(`client "${token.email}" force closed`)
+          void sessions.close(ctx, ws, token.workspace, code, reason.toString())
+        }, 10000)
+      }
     })
     const b = buffer
     buffer = undefined
@@ -402,8 +433,8 @@ export function start (
 
     try {
       const payload = decodeToken(token ?? '')
-      console.log('client connected with payload', payload)
       const sessionId = url.searchParams.get('sessionId')
+      console.log('client connected with payload', payload, sessionId)
 
       if (payload.workspace.productId !== productId) {
         throw new Error('Invalid workspace product')

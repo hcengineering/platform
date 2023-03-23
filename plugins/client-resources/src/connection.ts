@@ -85,7 +85,7 @@ class Connection implements ClientConnection {
       if (this.websocket instanceof Promise) {
         await this.websocket.then((ws) => ws.close())
       } else {
-        this.websocket.close()
+        this.websocket.close(1000)
       }
       this.websocket = null
     }

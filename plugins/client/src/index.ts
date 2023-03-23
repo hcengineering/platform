@@ -46,7 +46,7 @@ export interface ClientSocket {
 
   send: (data: string | ArrayBufferLike | Blob | ArrayBufferView) => void
 
-  close: () => void
+  close: (code?: number) => void
 }
 
 /**
