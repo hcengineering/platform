@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { AttachedData, Class, Client, Data, Doc, FindResult, Ref } from '@hcengineering/core'
+import { AttachedData, Class, Client, Doc, FindResult, Ref } from '@hcengineering/core'
 import { IconSize } from '@hcengineering/ui'
 import { MD5 } from 'crypto-js'
 import { Channel, Contact, contactPlugin, Employee, Person } from '.'
@@ -83,10 +83,10 @@ export async function checkHasGravatar (gravatarId: string, fetch?: typeof windo
 export async function findContacts (
   client: Client,
   _class: Ref<Class<Doc>>,
-  person: Data<Contact>,
+  name: string,
   channels: AttachedData<Channel>[]
 ): Promise<{ contacts: Contact[], channels: AttachedData<Channel>[] }> {
-  if (channels.length === 0 && person.name.length === 0) {
+  if (channels.length === 0 && name.length === 0) {
     return { contacts: [], channels: [] }
   }
   // Take only first part of first name for match.
@@ -103,8 +103,8 @@ export async function findContacts (
 
   if (potentialContactIds.length === 0) {
     if (client.getHierarchy().isDerived(_class, contactPlugin.class.Person)) {
-      const firstName = getFirstName(person.name).split(' ').shift() ?? ''
-      const lastName = getLastName(person.name)
+      const firstName = getFirstName(name).split(' ').shift() ?? ''
+      const lastName = getLastName(name)
       // try match using just first/last name
       potentialContactIds = (
         await client.findAll(
@@ -119,7 +119,7 @@ export async function findContacts (
     } else if (client.getHierarchy().isDerived(_class, contactPlugin.class.Organization)) {
       // try match using just first/last name
       potentialContactIds = (
-        await client.findAll(contactPlugin.class.Contact, { name: { $like: `${person.name}` } }, { limit: 100 })
+        await client.findAll(contactPlugin.class.Contact, { name: { $like: `${name}` } }, { limit: 100 })
       ).map((it) => it._id)
       if (potentialContactIds.length === 0) {
         return { contacts: [], channels: [] }
@@ -143,7 +143,7 @@ export async function findContacts (
   const resChannels: AttachedData<Channel>[] = []
   for (const c of potentialPersons) {
     let matches = 0
-    if (c.name === person.name) {
+    if (c.name === name) {
       matches++
     }
     for (const ch of (c.$lookup?.channels as Channel[]) ?? []) {
@@ -167,12 +167,8 @@ export async function findContacts (
 /**
  * @public
  */
-export async function findPerson (
-  client: Client,
-  person: Data<Person>,
-  channels: AttachedData<Channel>[]
-): Promise<Person[]> {
-  const result = await findContacts(client, contactPlugin.class.Person, person, channels)
+export async function findPerson (client: Client, name: string, channels: AttachedData<Channel>[]): Promise<Person[]> {
+  const result = await findContacts(client, contactPlugin.class.Person, name, channels)
   return result.contacts as Person[]
 }
 

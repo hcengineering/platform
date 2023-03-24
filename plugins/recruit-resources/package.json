@@ -28,7 +28,6 @@
     "eslint": "^8.26.0",
     "prettier": "^2.7.1",
     "svelte-check": "^2.8.0",
-    "@types/deep-equal": "^1.0.1",
     "typescript": "^4.3.5"
   },
   "dependencies": {
@@ -43,7 +42,6 @@
     "@hcengineering/contact": "^0.6.11",
     "@hcengineering/login": "^0.6.1",
     "@hcengineering/workbench": "^0.6.2",
-    "deep-equal": "^2.0.5",
     "@hcengineering/panel": "^0.6.1",
     "@hcengineering/activity": "^0.6.0",
     "@hcengineering/attachment": "^0.6.1",

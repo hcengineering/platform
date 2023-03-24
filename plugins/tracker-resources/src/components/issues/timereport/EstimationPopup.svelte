@@ -100,7 +100,7 @@
           )
         }}
       >
-        <EstimationStatsPresenter value={object} estimation={_value} {currentProject} />
+        <EstimationStatsPresenter value={object} estimation={_value} />
       </div>
     </div>
   </svelte:fragment>

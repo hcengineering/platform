@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Ref, toIdMap } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, draftsStore } from '@hcengineering/presentation'
   import { Issue, Project, trackerId } from '@hcengineering/tracker'
   import {
     Button,
@@ -42,10 +42,11 @@
 
   export let issue: Issue
   export let projects: Map<Ref<Project>, Project>
+  export let shouldSaveDraft: boolean = false
 
   let subIssueEditorRef: HTMLDivElement
   let isCollapsed = false
-  let isCreating = false
+  let isCreating = $draftsStore[issue._id] !== undefined
 
   $: hasSubIssues = issue.subIssues > 0
 
@@ -148,7 +149,12 @@
       {@const project = projects.get(issue.space)}
       {#if project !== undefined}
         <div class="pt-4" bind:this={subIssueEditorRef}>
-          <CreateSubIssue parentIssue={issue} currentProject={project} on:close={() => (isCreating = false)} />
+          <CreateSubIssue
+            parentIssue={issue}
+            {shouldSaveDraft}
+            currentProject={project}
+            on:close={() => (isCreating = false)}
+          />
         </div>
       {/if}
     {/if}

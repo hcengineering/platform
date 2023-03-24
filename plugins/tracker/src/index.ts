@@ -198,24 +198,24 @@ export interface Issue extends AttachedDoc {
 /**
  * @public
  */
-export interface IssueDraft extends Doc {
-  issueId: Ref<Issue>
+export interface IssueDraft {
+  _id: Ref<Issue>
   title: string
   description: Markup
-  status: Ref<IssueStatus>
+  status?: Ref<IssueStatus>
   priority: IssuePriority
   assignee: Ref<Employee> | null
   component: Ref<Component> | null
-  project: Ref<Project> | null
+  space: Ref<Project>
   dueDate: Timestamp | null
   sprint?: Ref<Sprint> | null
 
   // Estimation in man days
   estimation: number
-  parentIssue?: string
+  parentIssue?: Ref<Issue>
   attachments?: number
-  labels?: TagReference[]
-  subIssues?: DraftIssueChild[]
+  labels: TagReference[]
+  subIssues: IssueDraft[]
   template?: {
     // A template issue is based on
     template: Ref<IssueTemplate>
@@ -263,13 +263,6 @@ export interface IssueTemplate extends Doc, IssueTemplateData {
   attachments?: number
 
   relations?: RelatedDocument[]
-}
-
-/**
- * @public
- */
-export interface DraftIssueChild extends IssueTemplateChild {
-  status: Ref<IssueStatus>
 }
 
 /**
@@ -395,7 +388,6 @@ export default plugin(trackerId, {
   class: {
     Project: '' as Ref<Class<Project>>,
     Issue: '' as Ref<Class<Issue>>,
-    IssueDraft: '' as Ref<Class<IssueDraft>>,
     IssueTemplate: '' as Ref<Class<IssueTemplate>>,
     Component: '' as Ref<Class<Component>>,
     IssueStatus: '' as Ref<Class<IssueStatus>>,
@@ -410,7 +402,9 @@ export default plugin(trackerId, {
     TypeReportedTime: '' as Ref<Class<Type<number>>>
   },
   ids: {
-    NoParent: '' as Ref<Issue>
+    NoParent: '' as Ref<Issue>,
+    IssueDraft: '',
+    IssueDraftChild: ''
   },
   component: {
     Tracker: '' as AnyComponent,

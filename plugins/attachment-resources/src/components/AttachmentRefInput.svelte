@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery, getClient, draftStore, updateDraftStore } from '@hcengineering/presentation'
+  import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import { ReferenceInput } from '@hcengineering/text-editor'
   import type { RefAction } from '@hcengineering/text-editor'
   import { deleteFile, uploadFile } from '../utils'
@@ -50,6 +50,9 @@
   const client = getClient()
   const query = createQuery()
 
+  const draftKey = `${objectId}_attachments`
+  const draftController = new DraftController<Record<Ref<Attachment>, Attachment>>(draftKey)
+
   let draftAttachments: Record<Ref<Attachment>, Attachment> | undefined = undefined
   let originalAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
   const newAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
@@ -60,7 +63,7 @@
   $: objectId && updateAttachments(objectId)
 
   async function updateAttachments (objectId: Ref<Doc>) {
-    draftAttachments = $draftStore[objectId]
+    draftAttachments = $draftsStore[draftKey]
     if (draftAttachments && shouldSaveDraft) {
       attachments.clear()
       newAttachments.clear()
@@ -87,9 +90,9 @@
   }
 
   async function saveDraft () {
-    if (objectId && shouldSaveDraft) {
+    if (shouldSaveDraft) {
       draftAttachments = Object.fromEntries(attachments)
-      updateDraftStore(objectId, draftAttachments)
+      draftController.save(draftAttachments)
     }
   }
 
@@ -180,9 +183,7 @@
   })
 
   export function removeDraft (removeFiles: boolean) {
-    if (objectId) {
-      updateDraftStore(objectId, undefined)
-    }
+    draftController.remove()
     if (removeFiles) {
       newAttachments.forEach(async (p) => {
         const attachment = attachments.get(p)

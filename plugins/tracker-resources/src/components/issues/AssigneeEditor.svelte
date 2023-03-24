@@ -17,13 +17,13 @@
   import { AssigneeBox } from '@hcengineering/contact-resources'
   import { AttachedData, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Issue, IssueTemplateData } from '@hcengineering/tracker'
+  import { Issue, IssueDraft, IssueTemplateData } from '@hcengineering/tracker'
   import { ButtonKind, ButtonSize, TooltipAlignment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import { getPreviousAssignees } from '../../utils'
 
-  export let value: Issue | AttachedData<Issue> | IssueTemplateData
+  export let value: Issue | AttachedData<Issue> | IssueTemplateData | IssueDraft
   export let size: ButtonSize = 'large'
   export let kind: ButtonKind = 'link'
   export let tooltipAlignment: TooltipAlignment | undefined = undefined
@@ -37,15 +37,16 @@
   let projectMembers: Ref<Employee>[] = []
   let members: Ref<Employee>[] = []
 
-  $: getPreviousAssignees(value).then((res) => {
-    prevAssigned = res
-  })
+  $: '_class' in value &&
+    getPreviousAssignees(value).then((res) => {
+      prevAssigned = res
+    })
 
-  function hasSpace (issue: Issue | AttachedData<Issue> | IssueTemplateData): issue is Issue {
+  function hasSpace (issue: Issue | AttachedData<Issue> | IssueTemplateData | IssueDraft): issue is Issue {
     return (issue as Issue).space !== undefined
   }
 
-  async function updateComponentMembers (issue: Issue | AttachedData<Issue> | IssueTemplateData) {
+  async function updateComponentMembers (issue: Issue | AttachedData<Issue> | IssueTemplateData | IssueDraft) {
     if (issue.component) {
       const component = await client.findOne(tracker.class.Component, { _id: issue.component })
       projectLead = component?.lead || undefined
@@ -76,7 +77,7 @@
 
     dispatch('change', newAssignee)
 
-    if ('_id' in value) {
+    if ('_class' in value) {
       await client.update(value, { assignee: newAssignee })
     }
   }

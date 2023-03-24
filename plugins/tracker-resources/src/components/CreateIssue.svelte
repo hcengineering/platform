@@ -16,32 +16,22 @@
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import chunter from '@hcengineering/chunter'
   import { Employee } from '@hcengineering/contact'
-  import core, {
-    Account,
-    AttachedData,
-    Data,
-    Doc,
-    fillDefaults,
-    generateId,
-    Ref,
-    SortingOrder
-  } from '@hcengineering/core'
+  import core, { Account, AttachedData, Doc, fillDefaults, generateId, Ref, SortingOrder } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
   import {
     Card,
     createQuery,
+    DraftController,
+    draftsStore,
     getClient,
-    getUserDraft,
     KeyedAttribute,
     MessageBox,
-    SpaceSelector,
-    updateUserDraft
+    SpaceSelector
   } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import {
     calcRank,
     Component as ComponentType,
-    DraftIssueChild,
     Issue,
     IssueDraft,
     IssuePriority,
@@ -65,7 +55,7 @@
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
-  import { deepEqual } from 'fast-equals'
+  import { onDestroy } from 'svelte'
   import { createEventDispatcher } from 'svelte'
   import { activeComponent, activeSprint, generateIssueShortLink, getIssueId, updateIssueRelation } from '../issues'
   import tracker from '../plugin'
@@ -91,82 +81,105 @@
   export let shouldSaveDraft: boolean = false
   export let parentIssue: Issue | undefined
   export let originalIssue: Issue | undefined
-  export let onDraftChanged: () => void
 
-  const draft: IssueDraft | undefined = shouldSaveDraft ? getUserDraft(tracker.class.IssueDraft) : undefined
+  const draftController = new DraftController<any>(tracker.ids.IssueDraft)
+
+  const draft: IssueDraft | undefined = shouldSaveDraft ? draftController.get() : undefined
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  const parentQuery = createQuery()
+  let _space = space
+
+  let object = draft ?? getDefaultObject()
+
+  $: if (object.parentIssue) {
+    parentQuery.query(
+      tracker.class.Issue,
+      {
+        _id: object.parentIssue
+      },
+      (res) => {
+        ;[parentIssue] = res
+      }
+    )
+  } else {
+    parentQuery.unsubscribe()
+    parentIssue = undefined
+  }
+
+  function getDefaultObject (ignoreOriginal = false): IssueDraft {
+    const base: IssueDraft = {
+      _id: generateId(),
+      title: '',
+      description: '',
+      priority,
+      space: _space,
+      component,
+      dueDate: null,
+      attachments: 0,
+      estimation: 0,
+      sprint,
+      status,
+      assignee,
+      labels: [],
+      parentIssue: parentIssue?._id,
+      subIssues: []
+    }
+    if (originalIssue && !ignoreOriginal) {
+      const res: IssueDraft = {
+        ...base,
+        description: originalIssue.description,
+        status: originalIssue.status,
+        priority: originalIssue.priority,
+        component: originalIssue.component,
+        dueDate: originalIssue.dueDate,
+        assignee: originalIssue.assignee,
+        estimation: originalIssue.estimation,
+        parentIssue: originalIssue.parents[0]?.parentId,
+        title: `${originalIssue.title} (copy)`
+      }
+      client.findAll(tags.class.TagReference, { attachedTo: originalIssue._id }).then((p) => {
+        object.labels = p
+      })
+      if (originalIssue.relations?.[0]) {
+        client.findOne(tracker.class.Issue, { _id: originalIssue.relations[0]._id as Ref<Issue> }).then((p) => {
+          relatedTo = p
+        })
+      }
+
+      return res
+    }
+    return base
+  }
+  fillDefaults(hierarchy, object, tracker.class.Issue)
 
   let subIssuesComponent: SubIssues
 
-  let labels: TagReference[] = draft?.labels || []
-  let objectId: Ref<Issue> = draft?.issueId || generateId()
-  let saveTimer: number | undefined
   let currentProject: Project | undefined
 
-  function toIssue (initials: AttachedData<Issue>, draft: IssueDraft | undefined): AttachedData<Issue> {
-    if (draft === undefined) {
-      return { ...initials }
-    }
-    const { labels, subIssues, ...issue } = draft
-    return { ...initials, ...issue }
-  }
+  $: updateIssueStatusId(object, currentProject)
+  $: updateAssigneeId(object, currentProject)
+  $: canSave = getTitle(object.title ?? '').length > 0 && object.status !== undefined
 
-  const defaultIssue = {
-    title: '',
-    description: '',
-    assignee,
+  $: empty = {
+    assignee: assignee ?? currentProject?.defaultAssignee,
+    status: status ?? currentProject?.defaultIssueStatus,
+    parentIssue: parentIssue?._id,
+    description: '<p></p>',
     component,
     sprint,
-    number: 0,
-    rank: '',
-    status: '' as Ref<IssueStatus>,
     priority,
-    dueDate: null,
-    comments: 0,
-    attachments: 0,
-    subIssues: 0,
-    parents: [],
-    reportedTime: 0,
-    estimation: 0,
-    reports: 0,
-    childInfo: [],
-    createOn: Date.now()
+    space
   }
-
-  $: _space = draft?.project || space
-  $: !originalIssue && !draft && updateIssueStatusId(currentProject, status)
-  $: !originalIssue && !draft && updateAssigneeId(currentProject)
-  $: canSave = getTitle(object.title ?? '').length > 0
 
   $: if (object.space !== _space) {
     object.space = _space
   }
 
-  let object = originalIssue
-    ? {
-        ...originalIssue,
-        title: `${originalIssue.title} (copy)`,
-        subIssues: 0,
-        attachments: 0,
-        reportedTime: 0,
-        reports: 0,
-        childInfo: [],
-        space: _space
-      }
-    : { ...toIssue(defaultIssue, draft), space: _space }
-  fillDefaults(hierarchy, object, tracker.class.Issue)
-
   function resetObject (): void {
     templateId = undefined
     template = undefined
-    object = { ...defaultIssue, space: _space }
-    subIssues = []
-    labels = []
-    if (!originalIssue && !draft) {
-      updateIssueStatusId(currentProject, status)
-      updateAssigneeId(currentProject)
-    }
+    object = getDefaultObject(true)
     fillDefaults(hierarchy, object, tracker.class.Issue)
   }
 
@@ -175,8 +188,6 @@
 
   let template: IssueTemplate | undefined = undefined
   const templateQuery = createQuery()
-
-  let subIssues: DraftIssueChild[] = draft?.subIssues || []
 
   $: if (templateId !== undefined) {
     templateQuery.query(tracker.class.IssueTemplate, { _id: templateId }, (res) => {
@@ -203,14 +214,22 @@
     }
   }
 
-  async function updateObject (template: IssueTemplate): Promise<void> {
+  async function updateTemplate (template: IssueTemplate): Promise<void> {
     if (object.template?.template === template._id) {
       return
     }
-    const { _class, _id, space, children, comments, attachments, labels: labels_, description, ...templBase } = template
+    const { _class, _id, space, children, comments, attachments, labels, description, ...templBase } = template
 
-    subIssues = template.children.map((p) => {
-      return { ...p, status: currentProject?.defaultIssueStatus ?? ('' as Ref<IssueStatus>) }
+    object.subIssues = template.children.map((p) => {
+      return {
+        ...p,
+        _id: p.id,
+        space: _space,
+        subIssues: [],
+        dueDate: null,
+        labels: [],
+        status: currentProject?.defaultIssueStatus
+      }
     })
 
     object = {
@@ -222,17 +241,11 @@
       }
     }
     appliedTemplateId = templateId
-    const tagElements = await client.findAll(tags.class.TagElement, { _id: { $in: labels_ } })
-    labels = tagElements.map(tagAsRef)
+    const tagElements = await client.findAll(tags.class.TagElement, { _id: { $in: labels } })
+    object.labels = tagElements.map(tagAsRef)
   }
 
-  function updateTemplate (template?: IssueTemplate): void {
-    if (template !== undefined) {
-      updateObject(template)
-    }
-  }
-
-  $: updateTemplate(template)
+  $: template && updateTemplate(template)
 
   const dispatch = createEventDispatcher()
   const spaceQuery = createQuery()
@@ -248,81 +261,24 @@
     currentProject = res.shift()
   })
 
-  async function setPropsFromOriginalIssue () {
-    if (!originalIssue) {
-      return
-    }
-    const { _id, relations, parents } = originalIssue
-
-    if (relations?.[0]) {
-      relatedTo = await client.findOne(tracker.class.Issue, { _id: relations[0]._id as Ref<Issue> })
-    }
-    if (parents?.[0]) {
-      parentIssue = await client.findOne(tracker.class.Issue, { _id: parents[0].parentId })
-    }
-    if (originalIssue.labels) {
-      labels = await client.findAll(tags.class.TagReference, { attachedTo: _id })
-    }
-  }
-
-  async function setPropsFromDraft () {
-    if (!draft?.parentIssue) {
-      return
-    }
-
-    parentIssue = await client.findOne(tracker.class.Issue, { _id: draft.parentIssue as Ref<Issue> })
-  }
-
-  $: originalIssue && setPropsFromOriginalIssue()
-  $: draft && setPropsFromDraft()
-  $: object && updateDraft()
-
-  async function updateDraft () {
-    if (saveTimer) {
-      clearTimeout(saveTimer)
-    }
-    saveTimer = setTimeout(() => {
-      saveDraft()
-    }, 200)
-  }
-
-  async function saveDraft () {
-    if (!shouldSaveDraft) {
-      return
-    }
-
-    let newDraft: Data<IssueDraft> | undefined = createDraftFromObject()
-    const isEmpty = await isDraftEmpty(newDraft)
-
-    if (isEmpty) {
-      newDraft = undefined
-    }
-    updateUserDraft(tracker.class.IssueDraft, newDraft)
-
-    if (onDraftChanged) {
-      return onDraftChanged()
-    }
-  }
-
-  async function updateIssueStatusId (currentProject: Project | undefined, issueStatusId?: Ref<IssueStatus>) {
-    if (issueStatusId !== undefined) {
-      object.status = issueStatusId
-      return
-    }
-
-    if (currentProject?.defaultIssueStatus) {
+  async function updateIssueStatusId (object: IssueDraft, currentProject: Project | undefined) {
+    if (currentProject?.defaultIssueStatus && object.status === undefined) {
       object.status = currentProject.defaultIssueStatus
     }
   }
 
-  function updateAssigneeId (currentProject: Project | undefined) {
-    if (currentProject?.defaultAssignee !== undefined) {
-      object.assignee = currentProject.defaultAssignee
-    } else {
-      object.assignee = null
+  function updateAssigneeId (object: IssueDraft, currentProject: Project | undefined) {
+    if (object.assignee === undefined && currentProject !== undefined) {
+      if (currentProject.defaultAssignee !== undefined) {
+        object.assignee = currentProject.defaultAssignee
+      } else {
+        object.assignee = null
+      }
     }
   }
   function clearParentIssue () {
+    object.parentIssue = undefined
+    parentQuery.unsubscribe()
     parentIssue = undefined
   }
 
@@ -330,94 +286,24 @@
     return value.trim()
   }
 
-  async function isDraftEmpty (draft: Data<IssueDraft>): Promise<boolean> {
-    const emptyDraft: Partial<IssueDraft> = {
-      description: '',
-      dueDate: null,
-      estimation: 0,
-      attachments: 0,
-      labels: [],
-      parentIssue: undefined,
-      priority: 0,
-      subIssues: [],
-      template: undefined,
-      title: ''
-    }
-
-    for (const key of Object.keys(emptyDraft)) {
-      if (!deepEqual((emptyDraft as any)[key], (draft as any)[key])) {
-        return false
-      }
-    }
-
-    if (object.attachments && object.attachments > 0) {
-      return false
-    }
-
-    if (draft.component && draft.component !== defaultIssue.component) {
-      return false
-    }
-
-    if (draft.sprint && draft.sprint !== defaultIssue.sprint) {
-      return false
-    }
-
-    if (draft.status === '') {
-      return true
-    }
-
-    if (currentProject?.defaultIssueStatus) {
-      return draft.status === currentProject.defaultIssueStatus
-    }
-
-    if (draft.assignee === null) {
-      return true
-    }
-
-    if (currentProject?.defaultAssignee) {
-      return draft.assignee === currentProject.defaultAssignee
-    }
-
-    return false
-  }
-
   export function canClose (): boolean {
     return true
   }
 
-  function createDraftFromObject () {
-    const newDraft: Data<IssueDraft> = {
-      issueId: objectId,
-      title: getTitle(object.title),
-      description: (object.description as string).replaceAll('<p></p>', ''),
-      assignee: object.assignee,
-      component: object.component,
-      sprint: object.sprint,
-      status: object.status,
-      priority: object.priority,
-      dueDate: object.dueDate,
-      estimation: object.estimation,
-      template: object.template,
-      attachments: object.attachments,
-      labels,
-      parentIssue: parentIssue?._id,
-      project: _space,
-      subIssues
+  export async function onOutsideClick () {
+    if (shouldSaveDraft) {
+      draftController.save(object, empty)
     }
-
-    return newDraft
   }
 
-  export async function onOutsideClick () {
-    saveDraft()
-
-    if (onDraftChanged) {
-      return onDraftChanged()
-    }
+  $: watch(empty)
+  function watch (empty: Record<string, any>): void {
+    if (!shouldSaveDraft) return
+    draftController.watch(object, empty)
   }
 
   async function createIssue () {
-    if (!canSave) {
+    if (!canSave || object.status === undefined) {
       return
     }
 
@@ -463,10 +349,10 @@
       parentIssue?._class ?? tracker.class.Issue,
       'subIssues',
       value,
-      objectId
+      object._id
     )
-    for (const label of labels) {
-      await client.addCollection(label._class, label.space, objectId, tracker.class.Issue, 'labels', {
+    for (const label of object.labels) {
+      await client.addCollection(label._class, label.space, object._id, tracker.class.Issue, 'labels', {
         title: label.title,
         color: label.color,
         tag: label.tag
@@ -475,7 +361,7 @@
     await descriptionBox.createAttachments()
 
     if (relatedTo !== undefined) {
-      const doc = await client.findOne(tracker.class.Issue, { _id: objectId })
+      const doc = await client.findOne(tracker.class.Issue, { _id: object._id })
       if (doc !== undefined) {
         if (client.getHierarchy().isDerived(relatedTo._class, tracker.class.Issue)) {
           await updateIssueRelation(client, relatedTo as Issue, doc, 'relations', '$push')
@@ -487,21 +373,20 @@
     }
     const parents = parentIssue
       ? [
-          { parentId: objectId, parentTitle: value.title },
+          { parentId: object._id, parentTitle: value.title },
           { parentId: parentIssue._id, parentTitle: parentIssue.title },
           ...parentIssue.parents
         ]
-      : [{ parentId: objectId, parentTitle: value.title }]
+      : [{ parentId: object._id, parentTitle: value.title }]
     await subIssuesComponent.save(parents)
     addNotification(await translate(tracker.string.IssueCreated, {}), getTitle(object.title), IssueNotification, {
-      issueId: objectId,
+      issueId: object._id,
       subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase(),
       issueUrl: currentProject && generateIssueShortLink(getIssueId(currentProject, value as Issue))
     })
 
-    objectId = generateId()
+    draftController.remove()
     resetObject()
-    saveDraft()
     descriptionBox?.removeDraft(false)
   }
 
@@ -529,7 +414,12 @@
           SetParentIssueActionPopup,
           { value: { ...object, space: _space, attachedTo: parentIssue?._id } },
           'top',
-          (selectedIssue) => selectedIssue !== undefined && (parentIssue = selectedIssue)
+          (selectedIssue) => {
+            if (selectedIssue !== undefined) {
+              parentIssue = selectedIssue
+              object.parentIssue = parentIssue?._id
+            }
+          }
         )
     }
 
@@ -553,7 +443,7 @@
       return
     }
 
-    object = { ...object, component: componentId }
+    object.component = componentId
   }
 
   const handleSprintIdChanged = async (sprintId: Ref<Sprint> | null | undefined) => {
@@ -566,11 +456,12 @@
       componentSprintId = sprint && sprint.component ? sprint.component : null
     } else componentSprintId = null
 
-    object = { ...object, sprint: sprintId, component: componentSprintId }
+    object.sprint = sprintId
+    object.component = componentSprintId
   }
 
   function addTagRef (tag: TagElement): void {
-    labels = [...labels, tagAsRef(tag)]
+    object.labels = [...object.labels, tagAsRef(tag)]
   }
   function handleTemplateChange (evt: CustomEvent<Ref<IssueTemplate>>): void {
     if (templateId == null) {
@@ -590,7 +481,7 @@
           templateId = evt.detail ?? undefined
 
           if (templateId === undefined) {
-            subIssues = []
+            object.subIssues = []
             resetObject()
           }
         }
@@ -599,11 +490,10 @@
   }
 
   async function showConfirmationDialog () {
-    const newDraft = createDraftFromObject()
-    const isFormEmpty = await isDraftEmpty(newDraft)
+    draftController.save(object, empty)
+    const isFormEmpty = $draftsStore[tracker.ids.IssueDraft] === undefined
 
     if (isFormEmpty) {
-      console.log('isFormEmpty')
       dispatch('close')
     } else {
       showPopup(
@@ -617,13 +507,17 @@
           if (result === true) {
             dispatch('close')
             resetObject()
-            saveDraft()
+            draftController.remove()
             descriptionBox?.removeDraft(true)
           }
         }
       )
     }
   }
+
+  onDestroy(() => draftController.unsubscribe())
+
+  $: objectId = object._id
 </script>
 
 <Card
@@ -675,35 +569,40 @@
   {#if parentIssue}
     <ParentIssue issue={parentIssue} on:close={clearParentIssue} />
   {/if}
-  <EditBox bind:value={object.title} placeholder={tracker.string.IssueTitlePlaceholder} kind={'large-style'} focus />
-  {#key [objectId, appliedTemplateId]}
-    <AttachmentStyledBox
-      bind:this={descriptionBox}
-      {objectId}
-      {shouldSaveDraft}
-      _class={tracker.class.Issue}
-      space={_space}
-      alwaysEdit
-      showButtons={false}
-      emphasized
-      bind:content={object.description}
-      placeholder={tracker.string.IssueDescriptionPlaceholder}
-      on:changeSize={() => dispatch('changeContent')}
-      on:attach={(ev) => {
-        if (ev.detail.action === 'saved') {
-          object.attachments = ev.detail.value
-        }
-      }}
-    />
-  {/key}
+  <div id="issue-name">
+    <EditBox bind:value={object.title} placeholder={tracker.string.IssueTitlePlaceholder} kind={'large-style'} focus />
+  </div>
+  <div id="issue-description">
+    {#key [objectId, appliedTemplateId]}
+      <AttachmentStyledBox
+        bind:this={descriptionBox}
+        objectId={object._id}
+        {shouldSaveDraft}
+        _class={tracker.class.Issue}
+        space={_space}
+        alwaysEdit
+        showButtons={false}
+        emphasized
+        bind:content={object.description}
+        placeholder={tracker.string.IssueDescriptionPlaceholder}
+        on:changeSize={() => dispatch('changeContent')}
+        on:attach={(ev) => {
+          if (ev.detail.action === 'saved') {
+            object.attachments = ev.detail.value
+          }
+        }}
+      />
+    {/key}
+  </div>
   <SubIssues
     bind:this={subIssuesComponent}
     projectId={_space}
-    parent={objectId}
+    parent={object._id}
     project={currentProject}
     sprint={object.sprint}
     component={object.component}
-    bind:subIssues
+    {shouldSaveDraft}
+    bind:subIssues={object.subIssues}
   />
   <svelte:fragment slot="pool">
     <div id="status-editor">
@@ -715,26 +614,30 @@
         on:change={({ detail }) => (object.status = detail)}
       />
     </div>
-    <PriorityEditor
-      value={object}
-      shouldShowLabel
-      isEditable
-      kind="no-border"
-      size="small"
-      justify="center"
-      on:change={({ detail }) => (object.priority = detail)}
-    />
-    <AssigneeEditor
-      value={object}
-      size="small"
-      kind="no-border"
-      width={'min-content'}
-      on:change={({ detail }) => (object.assignee = detail)}
-    />
+    <div id="priority-editor">
+      <PriorityEditor
+        value={object}
+        shouldShowLabel
+        isEditable
+        kind="no-border"
+        size="small"
+        justify="center"
+        on:change={({ detail }) => (object.priority = detail)}
+      />
+    </div>
+    <div id="assignee-editor">
+      <AssigneeEditor
+        value={object}
+        size="small"
+        kind="no-border"
+        width={'min-content'}
+        on:change={({ detail }) => (object.assignee = detail)}
+      />
+    </div>
     <Component
       is={tags.component.TagsDropdownEditor}
       props={{
-        items: labels,
+        items: object.labels,
         key,
         targetClass: tracker.class.Issue,
         countLabel: tracker.string.NumberLabels
@@ -743,10 +646,12 @@
         addTagRef(evt.detail)
       }}
       on:delete={(evt) => {
-        labels = labels.filter((it) => it._id !== evt.detail)
+        object.labels = object.labels.filter((it) => it._id !== evt.detail)
       }}
     />
-    <EstimationEditor kind={'no-border'} size={'small'} value={object} {currentProject} />
+    <div id="estimation-editor">
+      <EstimationEditor kind={'no-border'} size={'small'} value={object} />
+    </div>
     <ComponentSelector value={object.component} onChange={handleComponentIdChanged} isEditable={true} />
     <SprintSelector
       value={object.sprint}
@@ -756,7 +661,7 @@
     {#if object.dueDate !== null}
       <DatePresenter bind:value={object.dueDate} editable />
     {/if}
-    <ActionIcon icon={IconMoreH} size={'medium'} action={showMoreActions} />
+    <div id="more-actions"><ActionIcon icon={IconMoreH} size={'medium'} action={showMoreActions} /></div>
   </svelte:fragment>
   <svelte:fragment slot="footer">
     <Button

@@ -15,13 +15,13 @@
 <script lang="ts">
   import { Data } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { IssueTemplate, IssueTemplateChild } from '@hcengineering/tracker'
+  import { IssueDraft, IssueTemplate, IssueTemplateChild } from '@hcengineering/tracker'
   import { Button, ButtonKind, ButtonSize, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { EditBoxPopup } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
 
-  export let value: IssueTemplateChild | IssueTemplate | Data<IssueTemplate>
+  export let value: IssueTemplateChild | IssueTemplate | Data<IssueTemplate> | IssueDraft
   export let isEditable: boolean = true
 
   export let kind: ButtonKind = 'link'
@@ -51,7 +51,7 @@
       return
     }
 
-    if ('_id' in value) {
+    if ('_class' in value) {
       await client.update(value, { estimation: newEstimation })
     }
     dispatch('change', newEstimation)

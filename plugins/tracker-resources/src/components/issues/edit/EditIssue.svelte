@@ -56,7 +56,6 @@
   let title = ''
   let description = ''
   let innerWidth: number
-  let isEditing = false
   let descriptionBox: AttachmentStyledBox
   let showAllMixins: boolean
 
@@ -128,7 +127,6 @@
       }, 5000)
     }
     await descriptionBox.createAttachments()
-    isEditing = false
   }
 
   let saveTrigger: any
@@ -208,7 +206,7 @@
     <div class="mt-6">
       {#key issue._id && currentProject !== undefined}
         {#if currentProject !== undefined}
-          <SubIssues {issue} projects={new Map([[currentProject?._id, currentProject]])} />
+          <SubIssues {issue} shouldSaveDraft projects={new Map([[currentProject?._id, currentProject]])} />
         {/if}
       {/key}
     </div>
@@ -263,24 +261,6 @@
 {/if}
 
 <style lang="scss">
-  .title {
-    font-weight: 500;
-    font-size: 1.125rem;
-    color: var(--caption-color);
-  }
-
-  .content {
-    height: auto;
-  }
-
-  .description-preview {
-    color: var(--content-color);
-    line-height: 150%;
-
-    .placeholder {
-      color: var(--dark-color);
-    }
-  }
   .divider {
     margin-top: 1rem;
     margin-bottom: 1rem;

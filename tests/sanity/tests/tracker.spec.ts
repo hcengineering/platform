@@ -6,6 +6,7 @@ import {
   createSubissue,
   DEFAULT_STATUSES,
   DEFAULT_USER,
+  fillIssueForm,
   navigate,
   openIssue,
   ViewletSelectors
@@ -194,4 +195,141 @@ test('report-time-from-main-view', async ({ page }) => {
 
     await expect(page.locator('.estimation-container >> span').first()).toContainText(`${Number(count.toFixed(2))}d`)
   }
+})
+
+test('create-issue-draft', async ({ page }) => {
+  await navigate(page)
+
+  const issueName = 'Draft issue'
+  const subIssueName = 'Sub issue draft'
+
+  // Click text=Issues >> nth=1
+  await page.locator('text=Issues').nth(1).click()
+  await expect(page).toHaveURL(
+    'http://localhost:8083/workbench/sanity-ws/tracker/tracker%3Aproject%3ADefaultProject/issues'
+  )
+  await expect(page.locator('#new-issue')).toHaveText('New issue')
+  // Click button:has-text("New issue")
+  await page.locator('#new-issue').click()
+
+  // Click [placeholder="Issue title"]
+  await page.locator('#issue-name').click()
+  // Fill [placeholder="Issue title"]
+  await page.locator('#issue-name >> input').fill(issueName)
+  await expect(page.locator('#new-issue')).toHaveText('Resume draft')
+
+  await page.locator('#issue-description').click()
+  await page.locator('#issue-description >> [contenteditable]').fill(issueName)
+
+  // Click button:has-text("Backlog")
+  await page.locator('#status-editor').click()
+  // Click button:has-text("Todo")
+  await page.locator('button:has-text("Todo")').click()
+
+  // Click button:has-text("No priority")
+  await page.locator('#priority-editor').click()
+  // Click button:has-text("Urgent")
+  await page.locator('button:has-text("Urgent")').click()
+  // Click button:has-text("Assignee")
+  await page.locator('#assignee-editor').click()
+  // Click button:has-text("Appleseed John")
+  await page.locator('button:has-text("Appleseed John")').click()
+  // Click button:has-text("0d")
+  await page.locator('#estimation-editor').click()
+  // Click [placeholder="Type text\.\.\."]
+  await page.locator('[placeholder="Type text\\.\\.\\."]').click()
+  // Fill [placeholder="Type text\.\.\."]
+  await page.locator('[placeholder="Type text\\.\\.\\."]').fill('1')
+  await page.locator('.p-1 > .button').click()
+
+  // Click button:nth-child(8)
+  await page.locator('#more-actions').click()
+  // Click button:has-text("Set due date…")
+  await page.locator('button:has-text("Set due date…")').click()
+  // Click text=24 >> nth=0
+  await page.locator('.date-popup-container >> text=24').first().click()
+  // Click button:has-text("+ Add sub-issues")
+  await page.locator('button:has-text("+ Add sub-issues")').click()
+  // Click [placeholder="Sub-issue title"]
+  await page.locator('#sub-issue-name').click()
+  // Fill [placeholder="Sub-issue title"]
+  await page.locator('#sub-issue-name >> input').fill(subIssueName)
+
+  await page.locator('#sub-issue-description').click()
+  await page.locator('#sub-issue-description >> [contenteditable]').fill(subIssueName)
+
+  // Click button:has-text("Backlog")
+  await page.locator('#sub-issue-status-editor').click()
+  // Click button:has-text("In Progress")
+  await page.locator('button:has-text("In Progress")').click()
+  // Click button:has-text("No priority")
+  await page.locator('#sub-issue-priority-editor').click()
+  // Click button:has-text("High")
+  await page.locator('button:has-text("High")').click()
+  // Click button:has-text("Assignee")
+  await page.locator('#sub-issue-assignee-editor').click()
+  // Click button:has-text("Chen Rosamund")
+  await page.locator('button:has-text("Chen Rosamund")').click()
+  // Click button:has-text("0d")
+  await page.locator('#sub-issue-estimation-editor').click()
+  // Double click [placeholder="Type text\.\.\."]
+  await page.locator('[placeholder="Type text\\.\\.\\."]').dblclick()
+  // Fill [placeholder="Type text\.\.\."]
+  await page.locator('[placeholder="Type text\\.\\.\\."]').fill('2')
+  await page.locator('.p-1 > .button').click()
+
+  await page.keyboard.press('Escape')
+  await page.keyboard.press('Escape')
+
+  await page.locator('#new-issue').click()
+  await expect(page.locator('#issue-name')).toHaveText(issueName)
+  await expect(page.locator('#issue-description')).toHaveText(issueName)
+  await expect(page.locator('#status-editor')).toHaveText('Todo')
+  await expect(page.locator('#priority-editor')).toHaveText('Urgent')
+  await expect(page.locator('#assignee-editor')).toHaveText('Appleseed John')
+  await expect(page.locator('#estimation-editor')).toHaveText('1d')
+  await expect(page.locator('.antiCard >> .datetime-button')).toContainText('24')
+  await expect(page.locator('#sub-issue-name')).toHaveText(subIssueName)
+  await expect(page.locator('#sub-issue-description')).toHaveText(subIssueName)
+  await expect(page.locator('#sub-issue-status-editor')).toHaveText('In Progress')
+  await expect(page.locator('#sub-issue-priority-editor')).toHaveText('High')
+  await expect(page.locator('#sub-issue-assignee-editor')).toHaveText('Chen Rosamund')
+  await expect(page.locator('#sub-issue-estimation-editor')).toHaveText('2d')
+})
+
+test('sub-issue-draft', async ({ page }) => {
+  await navigate(page)
+
+  const props = {
+    name: getIssueName(),
+    description: 'description',
+    status: DEFAULT_STATUSES[1],
+    priority: 'Urgent',
+    assignee: DEFAULT_USER
+  }
+  const originalName = props.name
+  await navigate(page)
+  await createIssue(page, props)
+  await page.click('text="Issues"')
+
+  // Click [placeholder="Search"]
+  await page.locator('[placeholder="Search"]').click()
+  // Fill [placeholder="Search"]
+  await page.locator('[placeholder="Search"]').fill(props.name)
+  // Press Enter
+  await page.locator('[placeholder="Search"]').press('Enter')
+
+  await openIssue(page, props.name)
+  await checkIssue(page, props)
+  props.name = `sub${props.name}`
+  await page.click('button:has-text("Add sub-issue")')
+  await fillIssueForm(page, props, false)
+  await page.keyboard.press('Escape')
+  await page.keyboard.press('Escape')
+
+  await openIssue(page, originalName)
+  await expect(page.locator('#sub-issue-child-editor >> #sub-issue-name')).toHaveText(props.name)
+  await expect(page.locator('#sub-issue-child-editor >> #sub-issue-description')).toHaveText(props.description)
+  await expect(page.locator('#sub-issue-child-editor >> #sub-issue-priority')).toHaveText(props.priority)
+  await expect(page.locator('#sub-issue-child-editor >> #sub-issue-assignee')).toHaveText(props.assignee)
 })

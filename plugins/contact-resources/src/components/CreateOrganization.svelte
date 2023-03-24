@@ -69,7 +69,7 @@
 
   let matches: WithLookup<Organization>[] = []
   let matchedChannels: AttachedData<Channel>[] = []
-  $: findContacts(client, contact.class.Organization, { ...object, name: object.name }, channels).then((p) => {
+  $: findContacts(client, contact.class.Organization, object.name, channels).then((p) => {
     matches = p.contacts as Organization[]
     matchedChannels = p.channels
   })

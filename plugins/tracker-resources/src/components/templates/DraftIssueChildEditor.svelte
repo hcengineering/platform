@@ -14,19 +14,12 @@
 -->
 <script lang="ts">
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import { generateId, Ref } from '@hcengineering/core'
-  import presentation, { createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
+  import { Account, Doc, generateId, Ref } from '@hcengineering/core'
+  import presentation, { DraftController, getClient, KeyedAttribute } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
-  import {
-    Component as ComponentType,
-    DraftIssueChild,
-    IssuePriority,
-    IssueTemplateChild,
-    Project,
-    Sprint
-  } from '@hcengineering/tracker'
+  import { Component as ComponentType, IssueDraft, IssuePriority, Project, Sprint } from '@hcengineering/tracker'
   import { Button, Component, EditBox } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import tracker from '../../plugin'
   import AssigneeEditor from '../issues/AssigneeEditor.svelte'
   import PriorityEditor from '../issues/PriorityEditor.svelte'
@@ -36,36 +29,36 @@
   export let project: Project
   export let sprint: Ref<Sprint> | null = null
   export let component: Ref<ComponentType> | null = null
-  export let childIssue: DraftIssueChild | undefined = undefined
+  export let childIssue: IssueDraft | undefined = undefined
   export let showBorder = false
+  export let shouldSaveDraft: boolean = false
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-
-  let newIssue =
-    childIssue !== undefined ? { ...childIssue, space: project._id } : { ...getIssueDefaults(), space: project._id }
+  const draftController = new DraftController<IssueDraft>(tracker.ids.IssueDraftChild)
+  const draft = shouldSaveDraft ? draftController.get() : undefined
+  let object = childIssue !== undefined ? childIssue : draft ?? getIssueDefaults()
   let thisRef: HTMLDivElement
   let focusIssueTitle: () => void
-  let labels: TagElement[] = []
-
-  const labelsQuery = createQuery()
-
-  $: labelsQuery.query(tags.class.TagElement, { _id: { $in: childIssue?.labels ?? [] } }, (res) => {
-    labels = res
-  })
+  onDestroy(() => draftController.unsubscribe())
 
   const key: KeyedAttribute = {
     key: 'labels',
     attr: client.getHierarchy().getAttribute(tracker.class.IssueTemplate, 'labels')
   }
 
-  function getIssueDefaults (): DraftIssueChild {
+  function getIssueDefaults (): IssueDraft {
     return {
-      id: generateId(),
+      _id: generateId(),
       title: '',
       description: '',
-      assignee: null,
+      assignee: project.defaultAssignee ?? null,
       status: project.defaultIssueStatus,
+      space: project._id,
+      dueDate: null,
+      subIssues: [],
+      attachments: 0,
+      labels: [],
       component,
       priority: IssuePriority.NoPriority,
       sprint,
@@ -73,8 +66,21 @@
     }
   }
 
+  const empty = {
+    space: project._id,
+    status: project.defaultIssueStatus,
+    assignee: project.defaultAssignee ?? null,
+    component,
+    priority: IssuePriority.NoPriority,
+    sprint
+  }
+
+  if (shouldSaveDraft) {
+    draftController.watch(object, empty)
+  }
+
   function resetToDefaults () {
-    newIssue = { ...getIssueDefaults(), space: project._id }
+    object = getIssueDefaults()
     focusIssueTitle?.()
   }
 
@@ -83,6 +89,7 @@
   }
 
   function close () {
+    draftController.remove()
     dispatch('close')
   }
 
@@ -91,29 +98,36 @@
       return
     }
 
-    const value: IssueTemplateChild = {
-      ...newIssue,
-      title: getTitle(newIssue.title),
-      component: component ?? null,
-      labels: labels.map((it) => it._id)
-    }
-    if (childIssue === undefined) {
-      dispatch('create', value)
-    } else {
-      dispatch('close', value)
-    }
+    dispatch(childIssue ? 'close' : 'create', object)
 
+    draftController.remove()
     resetToDefaults()
   }
 
+  function tagAsRef (tag: TagElement): TagReference {
+    return {
+      _class: tags.class.TagReference,
+      _id: generateId() as Ref<TagReference>,
+      attachedTo: '' as Ref<Doc>,
+      attachedToClass: tracker.class.Issue,
+      collection: 'labels',
+      space: tags.space.Tags,
+      modifiedOn: 0,
+      modifiedBy: '' as Ref<Account>,
+      title: tag.title,
+      tag: tag._id,
+      color: tag.color
+    }
+  }
+
   function addTagRef (tag: TagElement): void {
-    labels = [...labels, tag]
+    object.labels = [...object.labels, tagAsRef(tag)]
   }
 
   $: thisRef && thisRef.scrollIntoView({ behavior: 'smooth' })
-  $: canSave = getTitle(newIssue.title ?? '').length > 0
+  $: canSave = getTitle(object.title ?? '').length > 0
 
-  $: labelRefs = labels.map((it) => ({ ...(it as unknown as TagReference), _id: generateId(), tag: it._id }))
+  $: objectId = object._id
 </script>
 
 <div
@@ -123,20 +137,22 @@
   class:antiPopup={showBorder}
 >
   <div class="flex-col w-full clear-mins">
-    <EditBox
-      bind:value={newIssue.title}
-      bind:focusInput={focusIssueTitle}
-      kind={'large-style'}
-      placeholder={tracker.string.SubIssueTitlePlaceholder}
-      focus
-    />
-    <div class="mt-4 clear-mins">
-      {#key newIssue.id}
+    <div id="sub-issue-name">
+      <EditBox
+        bind:value={object.title}
+        bind:focusInput={focusIssueTitle}
+        kind={'large-style'}
+        placeholder={tracker.string.SubIssueTitlePlaceholder}
+        focus
+      />
+    </div>
+    <div class="mt-4 clear-mins" id="sub-issue-description">
+      {#key objectId}
         <AttachmentStyledBox
-          objectId={newIssue.id}
+          objectId={object._id}
           space={project._id}
           _class={tracker.class.Issue}
-          bind:content={newIssue.description}
+          bind:content={object.description}
           placeholder={tracker.string.SubIssueDescriptionPlaceholder}
           showButtons={false}
           alwaysEdit
@@ -149,42 +165,50 @@
   </div>
   <div class="mt-4 flex-between">
     <div class="buttons-group xsmall-gap">
-      <StatusEditor
-        value={newIssue}
-        kind="no-border"
-        size="small"
-        shouldShowLabel={true}
-        on:change={({ detail }) => (newIssue.status = detail)}
-      />
-      <PriorityEditor
-        value={newIssue}
-        shouldShowLabel
-        isEditable
-        kind="no-border"
-        size="small"
-        justify="center"
-        on:change={({ detail }) => (newIssue.priority = detail)}
-      />
-      {#key newIssue.assignee}
-        <AssigneeEditor
-          value={newIssue}
-          size="small"
+      <div id="sub-issue-status-editor">
+        <StatusEditor
+          value={object}
           kind="no-border"
-          on:change={({ detail }) => (newIssue.assignee = detail)}
+          size="small"
+          shouldShowLabel={true}
+          on:change={({ detail }) => (object.status = detail)}
         />
-      {/key}
-      <EstimationEditor
-        kind={'no-border'}
-        size={'small'}
-        bind:value={newIssue}
-        on:change={(evt) => {
-          newIssue.estimation = evt.detail
-        }}
-      />
+      </div>
+      <div id="sub-issue-priority-editor">
+        <PriorityEditor
+          value={object}
+          shouldShowLabel
+          isEditable
+          kind="no-border"
+          size="small"
+          justify="center"
+          on:change={({ detail }) => (object.priority = detail)}
+        />
+      </div>
+      <div id="sub-issue-assignee-editor">
+        {#key object.assignee}
+          <AssigneeEditor
+            value={object}
+            size="small"
+            kind="no-border"
+            on:change={({ detail }) => (object.assignee = detail)}
+          />
+        {/key}
+      </div>
+      <div id="sub-issue-estimation-editor">
+        <EstimationEditor
+          kind={'no-border'}
+          size={'small'}
+          bind:value={object}
+          on:change={(evt) => {
+            object.estimation = evt.detail
+          }}
+        />
+      </div>
       <Component
         is={tags.component.TagsDropdownEditor}
         props={{
-          items: labelRefs,
+          items: object.labels,
           key,
           targetClass: tracker.class.Issue,
           countLabel: tracker.string.NumberLabels
@@ -193,7 +217,7 @@
           addTagRef(evt.detail)
         }}
         on:delete={(evt) => {
-          labels = labels.filter((it) => it._id !== evt.detail)
+          object.labels = object.labels.filter((it) => it._id !== evt.detail)
         }}
       />
     </div>

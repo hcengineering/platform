@@ -16,7 +16,7 @@
   import { AttachedData } from '@hcengineering/core'
 
   import { getClient } from '@hcengineering/presentation'
-  import { Issue, Project } from '@hcengineering/tracker'
+  import { Issue, IssueDraft } from '@hcengineering/tracker'
   import { Button, ButtonKind, ButtonSize, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { EditBoxPopup } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -24,14 +24,13 @@
   import EstimationPopup from './EstimationPopup.svelte'
   import EstimationStatsPresenter from './EstimationStatsPresenter.svelte'
 
-  export let value: Issue | AttachedData<Issue>
+  export let value: Issue | AttachedData<Issue> | IssueDraft
   export let isEditable: boolean = true
 
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = undefined
-  export let currentProject: Project | undefined = undefined
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -64,7 +63,7 @@
 
     dispatch('change', newEstimation)
 
-    if ('_id' in value) {
+    if ('_class' in value) {
       await client.update(value, { estimation: newEstimation })
     } else {
       value.estimation = newEstimation
@@ -73,8 +72,8 @@
 </script>
 
 {#if value}
-  {#if kind === 'list'}
-    <EstimationStatsPresenter {value} on:click={handleestimationEditorOpened} {currentProject} />
+  {#if kind === 'list' && '_class' in value}
+    <EstimationStatsPresenter {value} on:click={handleestimationEditorOpened} />
   {:else}
     <Button
       showTooltip={isEditable ? { label: tracker.string.Estimation } : undefined}

@@ -16,10 +16,10 @@
   import { AttachedData } from '@hcengineering/core'
   import { DatePopup } from '@hcengineering/ui'
   import { getClient } from '@hcengineering/presentation'
-  import { Issue } from '@hcengineering/tracker'
+  import { Issue, IssueDraft } from '@hcengineering/tracker'
   import { createEventDispatcher } from 'svelte'
 
-  export let value: Issue | AttachedData<Issue> | Issue[]
+  export let value: Issue | AttachedData<Issue> | Issue[] | IssueDraft
   export let mondayStart = true
   export let withTime = false
 
@@ -31,7 +31,7 @@
 
     const vv = Array.isArray(value) ? value : [value]
     for (const docValue of vv) {
-      if ('_id' in docValue && newDueDate !== undefined && newDueDate !== docValue.dueDate) {
+      if ('_class' in docValue && newDueDate !== undefined && newDueDate !== docValue.dueDate) {
         await client.update(docValue, { dueDate: newDueDate })
       }
     }
