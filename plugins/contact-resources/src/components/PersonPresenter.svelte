@@ -50,7 +50,7 @@
         ? tooltipLabels.personLabel
         : getEmbeddedLabel(getName(value))
       : undefined
-    const props = tooltipLabels.props ? tooltipLabels.props : undefined
+    const props = tooltipLabels.props ? tooltipLabels.props : value ? { value: getName(value) } : undefined
     return {
       component,
       label,
