@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { EmployeeAccount } from '@hcengineering/contact'
-  import core, { DocumentQuery, getCurrentAccount, Ref, TxCollectionCUD } from '@hcengineering/core'
+  import { DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import type { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
@@ -31,23 +31,8 @@
   ]
   const currentUser = getCurrentAccount() as EmployeeAccount
   const assigned = { assignee: currentUser.employee }
-  let created = { _id: { $in: [] as Ref<Issue>[] } }
+  const created = { createdBy: currentUser._id }
   let subscribed = { _id: { $in: [] as Ref<Issue>[] } }
-
-  const createdQuery = createQuery()
-  $: createdQuery.query<TxCollectionCUD<Issue, Issue>>(
-    core.class.TxCollectionCUD,
-    {
-      modifiedBy: currentUser._id,
-      objectClass: tracker.class.Issue,
-      collection: 'subIssues',
-      'tx._class': core.class.TxCreateDoc
-    },
-    (result) => {
-      created = { ...created, _id: { $in: result.map(({ tx: { objectId } }) => objectId) } }
-    },
-    { sort: { _id: 1 } }
-  )
 
   const subscribedQuery = createQuery()
   $: subscribedQuery.query(
