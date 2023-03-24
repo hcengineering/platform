@@ -18,7 +18,7 @@ import { coreId } from './component'
 //
 export * from './classes'
 export * from './client'
-export { coreId, default } from './component'
+export { coreId, systemAccountEmail, default } from './component'
 export * from './hierarchy'
 export * from './measurements'
 export * from './memdb'

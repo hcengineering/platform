@@ -13,7 +13,15 @@
 // limitations under the License.
 //
 
-import { AccountRole, TxCollectionCUD, Doc, AttachedDoc, IndexingConfiguration, Class } from '@hcengineering/core'
+import {
+  AccountRole,
+  TxCollectionCUD,
+  Doc,
+  AttachedDoc,
+  IndexingConfiguration,
+  Class,
+  systemAccountEmail
+} from '@hcengineering/core'
 import { Builder } from '@hcengineering/model'
 import core from './component'
 import {
@@ -113,7 +121,7 @@ export function createModel (builder: Builder): void {
     core.class.Account,
     core.space.Model,
     {
-      email: 'anticrm@hc.engineering',
+      email: systemAccountEmail,
       role: AccountRole.Owner
     },
     core.account.System

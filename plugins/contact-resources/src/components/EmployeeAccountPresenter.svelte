@@ -14,43 +14,38 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { EmployeeAccount, getName } from '@hcengineering/contact'
-  import { Account } from '@hcengineering/core'
+  import { EmployeeAccount } from '@hcengineering/contact'
+  import core, { Account, systemAccountEmail } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { showPopup, tooltip } from '@hcengineering/ui'
-  import { EditDoc } from '@hcengineering/view-resources'
-  import DocNavLink from '@hcengineering/view-resources/src/components/DocNavLink.svelte'
+  import { Label, tooltip } from '@hcengineering/ui'
   import { employeeByIdStore } from '../utils'
   import Avatar from './Avatar.svelte'
+  import EmployeePresenter from './EmployeePresenter.svelte'
 
   export let value: Account
   export let disabled = false
+  export let inline = false
 
   $: employee = $employeeByIdStore.get((value as EmployeeAccount).employee)
 
-  async function onClick () {
-    if (employee !== undefined) {
-      showPopup(EditDoc, { _id: employee._id, _class: employee._class }, 'content')
-    }
-  }
+  const valueLabel = value.email === systemAccountEmail ? core.string.System : getEmbeddedLabel(value.email)
 </script>
 
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <DocNavLink object={value} disableClick={disabled} noUnderline={disabled} {onClick}>
-    <span class="flex-row-center" use:tooltip={{ label: getEmbeddedLabel(employee ? getName(employee) : value.email) }}>
-      {#if employee}
-        <Avatar size={'x-small'} avatar={employee.avatar} />
-        <span class="overflow-label user">{getName(employee)}</span>
-      {:else}
-        <span class="overflow-label user">{value.email}</span>
-      {/if}
-    </span>
-  </DocNavLink>
+  {#if employee}
+    <EmployeePresenter value={employee} disableClick={disabled} {inline} />
+  {:else}
+    <div class="flex-row-center">
+      <Avatar size="x-small" />
+      <span class="overflow-label user" use:tooltip={{ label: valueLabel }}><Label label={valueLabel} /></span>
+    </div>
+  {/if}
 {/if}
 
 <style lang="scss">
   .user {
+    color: var(--accent-color);
     margin-left: 0.5rem;
     font-weight: 500;
     text-align: left;

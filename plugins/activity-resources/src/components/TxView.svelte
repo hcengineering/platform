@@ -173,7 +173,7 @@
             {#if employee}
               {getName(employee)}
             {:else}
-              <Label label={activity.string.System} />
+              <Label label={core.string.System} />
             {/if}
           </div>
           {#if viewlet && viewlet?.editable}
