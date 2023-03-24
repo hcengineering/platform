@@ -58,6 +58,7 @@
 
   export let create: ObjectCreate | undefined = undefined
   export let readonly = false
+  export let readonlyItemIds: Set<Ref<Doc>> = new Set()
 
   let search: string = ''
   let objects: Doc[] = []
@@ -250,13 +251,13 @@
             class="menu-item w-full flex-row-center"
             class:background-button-bg-color={!allowDeselect && obj._id === selected}
             class:border-radius-1={!allowDeselect && obj._id === selected}
-            disabled={readonly}
+            disabled={readonly || readonlyItemIds.has(obj._id)}
             on:click={() => {
               handleSelection(undefined, objects, item)
             }}
           >
             {#if allowDeselect && selected}
-              <div class="icon" class:disabled={readonly}>
+              <div class="icon" class:disabled={readonly || readonlyItemIds.has(obj._id)}>
                 {#if obj._id === selected}
                   <div bind:this={selectedDiv}>
                     {#if titleDeselect}
@@ -271,7 +272,7 @@
               </div>
             {/if}
 
-            <span class="label" class:disabled={readonly}>
+            <span class="label" class:disabled={readonly || readonlyItemIds.has(obj._id)}>
               {#if obj._id === selected}
                 <div bind:this={selectedDiv}>
                   <slot name="item" item={obj} />
