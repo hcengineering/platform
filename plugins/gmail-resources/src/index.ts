@@ -24,6 +24,7 @@ import IconGmail from './components/icons/GmailColor.svelte'
 import Main from './components/Main.svelte'
 import NewMessages from './components/NewMessages.svelte'
 import gmail from '@hcengineering/gmail'
+import { checkHasEmail } from './utils'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -36,13 +37,18 @@ export default async (): Promise<Resources> => ({
   activity: {
     TxSharedCreate
   },
+  function: {
+    HasEmail: checkHasEmail
+  },
   handler: {
     DisconnectHandler: async () => {
-      const url = getMetadata(gmail.metadata.GmailURL) ?? ''
+      const url = getMetadata(gmail.metadata.GmailURL)
+      const token = getMetadata(presentation.metadata.Token)
+      if (url === undefined || token === undefined) return
       await fetch(concatLink(url, '/signout'), {
         method: 'GET',
         headers: {
-          Authorization: 'Bearer ' + (getMetadata(presentation.metadata.Token) ?? ''),
+          Authorization: 'Bearer ' + token,
           'Content-Type': 'application/json'
         }
       })
