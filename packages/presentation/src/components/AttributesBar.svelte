@@ -15,6 +15,7 @@
 -->
 <script lang="ts">
   import type { Class, Doc, Ref } from '@hcengineering/core'
+  import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { KeyedAttribute } from '../attributes'
   import AttributeBarEditor from './AttributeBarEditor.svelte'
 
@@ -24,6 +25,11 @@
   export let showHeader: boolean = true
   export let readonly = false
   export let draft = false
+
+  export let kind: ButtonKind = 'link'
+  export let size: ButtonSize = 'large'
+  export let width: string | undefined = '100%'
+  export let justify: 'left' | 'center' = 'left'
 </script>
 
 <div class="attributes-bar-container vertical">
@@ -34,14 +40,12 @@
 
 <style lang="scss">
   .attributes-bar-container {
-    flex-shrink: 0;
     display: grid;
-    grid-template-columns: 1fr 2fr;
+    grid-template-columns: 1fr 1.5fr;
     grid-auto-flow: row;
-    justify-content: flex-start;
+    justify-content: start;
     align-items: center;
-    gap: 0.5rem;
-    padding-bottom: 0.5rem;
+    gap: 1rem;
     width: 100%;
     height: min-content;
   }

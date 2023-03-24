@@ -15,7 +15,8 @@
 -->
 <script lang="ts">
   import type { Class, Doc, Ref } from '@hcengineering/core'
-  import { AnySvelteComponent, Label, tooltip } from '@hcengineering/ui'
+  import { Label, tooltip } from '@hcengineering/ui'
+  import type { AnySvelteComponent, ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { getAttribute, KeyedAttribute, updateAttribute } from '../attributes'
   import { getAttributeEditor, getClient } from '../utils'
@@ -28,6 +29,11 @@
   export let showHeader: boolean = true
   export let readonly = false
   export let draft = false
+
+  export let kind: ButtonKind = 'link'
+  export let size: ButtonSize = 'large'
+  export let width: string | undefined = '100%'
+  export let justify: 'left' | 'center' = 'left'
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -56,7 +62,7 @@
     {#if instance}
       {#if showHeader}
         <span
-          class="fs-bold overflow-label"
+          class="overflow-label"
           use:tooltip={{
             component: Label,
             props: { label: attribute.label }
@@ -68,10 +74,10 @@
             readonly={isReadonly}
             label={attribute?.label}
             placeholder={attribute?.label}
-            kind={'link'}
-            size={'large'}
-            width={'100%'}
-            justify={'left'}
+            {kind}
+            {size}
+            {width}
+            {justify}
             type={attribute?.type}
             {maxWidth}
             {attributeKey}

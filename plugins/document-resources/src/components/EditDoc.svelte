@@ -526,9 +526,8 @@
         {readonly}
       />
 
-      <div class="divider" />
-
       <div class="tab-content">
+        <div class="divider" />
         <span class="label labelTop">
           <Label label={document.string.Labels} />
         </span>
@@ -539,7 +538,6 @@
           />
         </div>
         <div class="divider" />
-
         <span class="label">
           <Label label={document.string.LastRevision} />
         </span>
@@ -566,16 +564,17 @@
     margin-top: 1rem;
     width: 100%;
     height: min-content;
+
+    .divider {
+      grid-column: 1 / 3;
+      height: 1px;
+      background-color: var(--divider-color);
+    }
+    .labelTop {
+      align-self: start;
+    }
   }
 
-  .divider {
-    grid-column: 1 / 3;
-    height: 1px;
-    background-color: var(--divider-color);
-  }
-  .labelTop {
-    align-self: start;
-  }
   .emphasized {
     padding: 1rem;
     background-color: var(--body-color);

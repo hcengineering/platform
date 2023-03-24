@@ -140,7 +140,7 @@
         message: view.string.DeleteObjectConfirm,
         params: { count: filtered.length }
       },
-      undefined,
+      'top',
       (result?: boolean) => {
         if (result === true) {
           values = values.filter((it) => !filtered.includes(it))
@@ -176,7 +176,7 @@
     <div class="mb-2">
       <EditBox bind:value={name} placeholder={core.string.Name} />
     </div>
-    <div class="flex-between mb-4">
+    <div class="flex-between mb-2">
       <EditBox placeholder={presentation.string.Search} kind="large-style" bind:value={newValue} />
       <div class="flex gap-2">
         <ActionIcon icon={IconAdd} label={presentation.string.Add} action={add} size={'small'} />
@@ -198,7 +198,7 @@
         />
       </div>
     </div>
-    <div class="scroll">
+    <div class="scroll" style:margin={'0 -.5rem'}>
       <div class="box flex max-h-125">
         <EnumValuesList bind:values bind:filtered on:remove={(e) => remove(e.detail)} />
       </div>

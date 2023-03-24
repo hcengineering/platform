@@ -43,7 +43,7 @@
   })
 
   function create () {
-    showPopup(setting.component.EditEnum, 'top')
+    showPopup(setting.component.EditEnum, {}, 'top')
   }
 
   async function update (value: Enum): Promise<void> {

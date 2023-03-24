@@ -90,7 +90,7 @@
       {#if Array.isArray(selectedItem)}
         {#if selectedItem.length > 0}
           {#each selectedItem as seleceted, i}
-            <span class:ml-1={i !== 0}>{seleceted.label}</span>
+            <span class="step-row">{seleceted.label}</span>
           {/each}
         {:else}
           <Label label={label ?? ui.string.NotSelected} />
@@ -103,3 +103,22 @@
     </span>
   </Button>
 </div>
+
+<style lang="scss">
+  .step-row + .step-row {
+    position: relative;
+    margin-left: 0.75rem;
+
+    &::before {
+      position: absolute;
+      content: '';
+      top: 50%;
+      left: -0.5rem;
+      width: 0.25rem;
+      height: 0.25rem;
+      background-color: var(--dark-color);
+      border-radius: 50%;
+      transform: translateY(-50%);
+    }
+  }
+</style>
