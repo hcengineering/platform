@@ -27,6 +27,7 @@ import core, {
   Data,
   getWorkspaceId,
   Ref,
+  systemAccountEmail,
   Tx,
   TxOperations,
   Version,
@@ -352,7 +353,7 @@ export async function createAccount (
   const salt = randomBytes(32)
   const hash = hashWithSalt(password, salt)
 
-  const systemEmails = ['anticrm@hc.engineering']
+  const systemEmails = [systemAccountEmail]
   if (systemEmails.includes(email)) {
     throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountAlreadyExists, { account: email }))
   }

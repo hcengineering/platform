@@ -15,7 +15,7 @@
 //
 
 import client, { clientId } from '@hcengineering/client'
-import { Client, WorkspaceId } from '@hcengineering/core'
+import { Client, systemAccountEmail, WorkspaceId } from '@hcengineering/core'
 import { addLocation, getResource, setMetadata } from '@hcengineering/platform'
 import { generateToken } from '@hcengineering/server-token'
 
@@ -28,7 +28,7 @@ export async function connect (
   email?: string,
   extra?: Record<string, string>
 ): Promise<Client> {
-  const token = generateToken(email ?? 'anticrm@hc.engineering', workspace, extra)
+  const token = generateToken(email ?? systemAccountEmail, workspace, extra)
 
   // We need to override default factory with 'ws' one.
   // eslint-disable-next-line

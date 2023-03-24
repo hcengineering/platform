@@ -62,6 +62,11 @@ import type {
  */
 export const coreId = 'core' as Plugin
 
+/**
+ * @public
+ */
+export const systemAccountEmail = 'anticrm@hc.engineering'
+
 export default plugin(coreId, {
   class: {
     Obj: '' as Ref<Class<Obj>>,
@@ -155,6 +160,7 @@ export default plugin(coreId, {
     Hyperlink: '' as IntlString,
     Private: '' as IntlString,
     Object: '' as IntlString,
+    System: '' as IntlString,
     CreatedBy: '' as IntlString
   }
 })

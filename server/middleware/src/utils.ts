@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { Account, AccountRole, ServerStorage } from '@hcengineering/core'
+import core, { Account, AccountRole, ServerStorage, systemAccountEmail } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { SessionContext } from '@hcengineering/server-core'
 
@@ -35,12 +35,12 @@ export async function getUser (storage: ServerStorage, ctx: SessionContext): Pro
   }
   const account = (await storage.modelDb.findAll(core.class.Account, { email: ctx.userEmail }))[0]
   if (account === undefined) {
-    if (ctx.userEmail === 'anticrm@hc.engineering') {
+    if (ctx.userEmail === systemAccountEmail) {
       return {
         _id: core.account.System,
         _class: core.class.Account,
         role: AccountRole.Owner,
-        email: 'anticrm@hc.engineering',
+        email: systemAccountEmail,
         space: core.space.Model,
         modifiedBy: core.account.System,
         modifiedOn: 0

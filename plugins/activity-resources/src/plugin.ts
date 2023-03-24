@@ -25,7 +25,6 @@ export default mergeIds(activityId, activity, {
     Changed: '' as IntlString,
     To: '' as IntlString,
     Unset: '' as IntlString,
-    System: '' as IntlString,
     Added: '' as IntlString,
     Removed: '' as IntlString,
     From: '' as IntlString,
