@@ -3,8 +3,7 @@ import { deepEqual } from 'fast-equals'
 import { get, writable } from 'svelte/store'
 import presentation from './plugin'
 
-const drafts = fetchMetadataLocalStorage(presentation.metadata.Draft)
-export const draftsStore = writable<Record<string, any>>(drafts ?? {})
+export const draftsStore = writable<Record<string, any>>(fetchMetadataLocalStorage(presentation.metadata.Draft) ?? {})
 window.addEventListener('storage', storageHandler)
 const saveInterval = 200
 

@@ -169,7 +169,8 @@
     const candidateData: MixinData<Person, Candidate> = {
       title: object.title,
       onsite: object.onsite,
-      remote: object.remote
+      remote: object.remote,
+      skills: 0
     }
 
     // Store all extra values.
