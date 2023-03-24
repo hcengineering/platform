@@ -108,6 +108,23 @@
     return m(fp, lc) || m(fp2, lc)
   }
 
+  let currentElement: EventTarget | null = null
+  let currentActions: Action[] | undefined = undefined
+
+  function clearActions (doc: any) {
+    currentActions = undefined
+  }
+
+  $: selectionDocs = getSelection($focusStore, $selectionStore)
+
+  $: clearActions({
+    mode: mode as ViewContextType,
+    application,
+    focus: $focusStore.focus,
+    selectionStore: $selectionStore,
+    docs: selectionDocs
+  })
+
   async function handleKeys (evt: KeyboardEvent): Promise<void> {
     const targetTagName = (evt.target as any)?.tagName?.toLowerCase()
 
@@ -123,11 +140,22 @@
       elm = prt
     }
 
-    let currentActions = await getCurrentActions(
-      { mode: mode as ViewContextType, application },
-      $focusStore.focus,
-      $selectionStore
-    )
+    if (currentElement !== evt.target) {
+      currentElement = evt.target
+      currentActions = undefined
+    }
+
+    if (currentActions === undefined) {
+      currentActions = await getCurrentActions(
+        { mode: mode as ViewContextType, application },
+        $focusStore.focus,
+        $selectionStore
+      )
+      if (targetTagName === 'input' || targetTagName === 'button' || targetTagName === 'textarea') {
+        // Retrieve actual list of actions for input context
+        currentActions = await getContextActions(client, selectionDocs, { ...ctx, mode: 'input' })
+      }
+    }
 
     // For none we ignore all actions.
     if (ctx.mode === 'none') {
@@ -135,12 +163,6 @@
     }
     clearTimeout(timer)
 
-    const docs = getSelection($focusStore, $selectionStore)
-
-    if (targetTagName === 'input' || targetTagName === 'button' || targetTagName === 'textarea') {
-      // Retrieve actual list of actions for input context
-      currentActions = await getContextActions(client, docs, { ...ctx, mode: 'input' })
-    }
     currentActions = currentActions.filter((p) => p.keyBinding !== undefined && p.keyBinding.length > 0)
     if (lastKey !== undefined) {
       for (const a of sequences) {
@@ -151,7 +173,7 @@
             sequences = []
             lastKey = undefined
             delayedAction = undefined
-            return await action(docs, evt, a.actionProps)
+            return await action(selectionDocs, evt, a.actionProps)
           }
         }
       }
@@ -168,9 +190,9 @@
             lastKey = undefined
             sequences = []
             delayedAction = undefined
-            return await action(docs, evt, a.actionProps)
+            return await action(selectionDocs, evt, a.actionProps)
           } else {
-            delayedAction = async () => await action(docs, evt, a.actionProps)
+            delayedAction = async () => await action(selectionDocs, evt, a.actionProps)
             found = true
           }
         }
