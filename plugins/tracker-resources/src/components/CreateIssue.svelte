@@ -385,8 +385,8 @@
       issueUrl: currentProject && generateIssueShortLink(getIssueId(currentProject, value as Issue))
     })
 
-    resetObject()
     draftController.remove()
+    resetObject()
     descriptionBox?.removeDraft(false)
   }
 
@@ -569,27 +569,31 @@
   {#if parentIssue}
     <ParentIssue issue={parentIssue} on:close={clearParentIssue} />
   {/if}
-  <EditBox bind:value={object.title} placeholder={tracker.string.IssueTitlePlaceholder} kind={'large-style'} focus />
-  {#key [objectId, appliedTemplateId]}
-    <AttachmentStyledBox
-      bind:this={descriptionBox}
-      objectId={object._id}
-      {shouldSaveDraft}
-      _class={tracker.class.Issue}
-      space={_space}
-      alwaysEdit
-      showButtons={false}
-      emphasized
-      bind:content={object.description}
-      placeholder={tracker.string.IssueDescriptionPlaceholder}
-      on:changeSize={() => dispatch('changeContent')}
-      on:attach={(ev) => {
-        if (ev.detail.action === 'saved') {
-          object.attachments = ev.detail.value
-        }
-      }}
-    />
-  {/key}
+  <div id="issue-name">
+    <EditBox bind:value={object.title} placeholder={tracker.string.IssueTitlePlaceholder} kind={'large-style'} focus />
+  </div>
+  <div id="issue-description">
+    {#key [objectId, appliedTemplateId]}
+      <AttachmentStyledBox
+        bind:this={descriptionBox}
+        objectId={object._id}
+        {shouldSaveDraft}
+        _class={tracker.class.Issue}
+        space={_space}
+        alwaysEdit
+        showButtons={false}
+        emphasized
+        bind:content={object.description}
+        placeholder={tracker.string.IssueDescriptionPlaceholder}
+        on:changeSize={() => dispatch('changeContent')}
+        on:attach={(ev) => {
+          if (ev.detail.action === 'saved') {
+            object.attachments = ev.detail.value
+          }
+        }}
+      />
+    {/key}
+  </div>
   <SubIssues
     bind:this={subIssuesComponent}
     projectId={_space}
@@ -610,22 +614,26 @@
         on:change={({ detail }) => (object.status = detail)}
       />
     </div>
-    <PriorityEditor
-      value={object}
-      shouldShowLabel
-      isEditable
-      kind="no-border"
-      size="small"
-      justify="center"
-      on:change={({ detail }) => (object.priority = detail)}
-    />
-    <AssigneeEditor
-      value={object}
-      size="small"
-      kind="no-border"
-      width={'min-content'}
-      on:change={({ detail }) => (object.assignee = detail)}
-    />
+    <div id="priority-editor">
+      <PriorityEditor
+        value={object}
+        shouldShowLabel
+        isEditable
+        kind="no-border"
+        size="small"
+        justify="center"
+        on:change={({ detail }) => (object.priority = detail)}
+      />
+    </div>
+    <div id="assignee-editor">
+      <AssigneeEditor
+        value={object}
+        size="small"
+        kind="no-border"
+        width={'min-content'}
+        on:change={({ detail }) => (object.assignee = detail)}
+      />
+    </div>
     <Component
       is={tags.component.TagsDropdownEditor}
       props={{
@@ -641,7 +649,9 @@
         object.labels = object.labels.filter((it) => it._id !== evt.detail)
       }}
     />
-    <EstimationEditor kind={'no-border'} size={'small'} value={object} />
+    <div id="estimation-editor">
+      <EstimationEditor kind={'no-border'} size={'small'} value={object} />
+    </div>
     <ComponentSelector value={object.component} onChange={handleComponentIdChanged} isEditable={true} />
     <SprintSelector
       value={object.sprint}
@@ -651,7 +661,7 @@
     {#if object.dueDate !== null}
       <DatePresenter bind:value={object.dueDate} editable />
     {/if}
-    <ActionIcon icon={IconMoreH} size={'medium'} action={showMoreActions} />
+    <div id="more-actions"><ActionIcon icon={IconMoreH} size={'medium'} action={showMoreActions} /></div>
   </svelte:fragment>
   <svelte:fragment slot="footer">
     <Button

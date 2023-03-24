@@ -200,13 +200,15 @@
       />
     </div>
     <div class="w-full flex-col content">
-      <EditBox
-        bind:value={object.title}
-        bind:focusInput={focusIssueTitle}
-        placeholder={tracker.string.IssueTitlePlaceholder}
-        focus
-      />
-      <div class="mt-4">
+      <div id="sub-issue-name">
+        <EditBox
+          bind:value={object.title}
+          bind:focusInput={focusIssueTitle}
+          placeholder={tracker.string.IssueTitlePlaceholder}
+          focus
+        />
+      </div>
+      <div class="mt-4" id="sub-issue-description">
         {#key objectId}
           <AttachmentStyledBox
             bind:this={descriptionBox}
@@ -228,23 +230,27 @@
   </div>
   <div class="mt-4 flex-between">
     <div class="buttons-group xsmall-gap">
-      <PriorityEditor
-        value={object}
-        shouldShowLabel
-        isEditable
-        kind="no-border"
-        size="small"
-        justify="center"
-        on:change={({ detail }) => (object.priority = detail)}
-      />
-      {#key object.assignee}
-        <AssigneeEditor
+      <div id="sub-issue-priority">
+        <PriorityEditor
           value={object}
-          size="small"
+          shouldShowLabel
+          isEditable
           kind="no-border"
-          on:change={({ detail }) => (object.assignee = detail)}
+          size="small"
+          justify="center"
+          on:change={({ detail }) => (object.priority = detail)}
         />
-      {/key}
+      </div>
+      <div id="sub-issue-assignee">
+        {#key object.assignee}
+          <AssigneeEditor
+            value={object}
+            size="small"
+            kind="no-border"
+            on:change={({ detail }) => (object.assignee = detail)}
+          />
+        {/key}
+      </div>
       <Component
         is={tags.component.TagsDropdownEditor}
         props={{

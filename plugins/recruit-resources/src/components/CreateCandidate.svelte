@@ -160,6 +160,7 @@
     const candidate: Data<Person> = {
       name: combineName(object.firstName ?? '', object.lastName ?? ''),
       city: object.city,
+      channels: 0,
       createOn: Date.now()
     }
     if (avatar !== undefined) {
@@ -174,10 +175,16 @@
     // Store all extra values.
     for (const [k, v] of Object.entries(object)) {
       if (v != null && k !== 'createOn' && k !== 'avatar') {
-        if (client.getHierarchy().getAttribute(recruit.mixin.Candidate, k).attributeOf === recruit.mixin.Candidate) {
-          ;(candidateData as any)[k] = v
+        const attr = hierarchy.findAttribute(recruit.mixin.Candidate, k)
+        if (attr === undefined) continue
+        if (attr.attributeOf === recruit.mixin.Candidate) {
+          if ((candidateData as any)[k] === undefined) {
+            ;(candidateData as any)[k] = v
+          }
         } else {
-          ;(candidate as any)[k] = v
+          if ((candidate as any)[k] === undefined) {
+            ;(candidate as any)[k] = v
+          }
         }
       }
     }
@@ -249,7 +256,7 @@
     }
 
     await applyOps.commit()
-
+    draftController.remove()
     if (!createMore) {
       dispatch('close', object._id)
     }

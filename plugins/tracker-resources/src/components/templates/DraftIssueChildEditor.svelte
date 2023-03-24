@@ -137,14 +137,16 @@
   class:antiPopup={showBorder}
 >
   <div class="flex-col w-full clear-mins">
-    <EditBox
-      bind:value={object.title}
-      bind:focusInput={focusIssueTitle}
-      kind={'large-style'}
-      placeholder={tracker.string.SubIssueTitlePlaceholder}
-      focus
-    />
-    <div class="mt-4 clear-mins">
+    <div id="sub-issue-name">
+      <EditBox
+        bind:value={object.title}
+        bind:focusInput={focusIssueTitle}
+        kind={'large-style'}
+        placeholder={tracker.string.SubIssueTitlePlaceholder}
+        focus
+      />
+    </div>
+    <div class="mt-4 clear-mins" id="sub-issue-description">
       {#key objectId}
         <AttachmentStyledBox
           objectId={object._id}
@@ -163,38 +165,46 @@
   </div>
   <div class="mt-4 flex-between">
     <div class="buttons-group xsmall-gap">
-      <StatusEditor
-        value={object}
-        kind="no-border"
-        size="small"
-        shouldShowLabel={true}
-        on:change={({ detail }) => (object.status = detail)}
-      />
-      <PriorityEditor
-        value={object}
-        shouldShowLabel
-        isEditable
-        kind="no-border"
-        size="small"
-        justify="center"
-        on:change={({ detail }) => (object.priority = detail)}
-      />
-      {#key object.assignee}
-        <AssigneeEditor
+      <div id="sub-issue-status-editor">
+        <StatusEditor
           value={object}
-          size="small"
           kind="no-border"
-          on:change={({ detail }) => (object.assignee = detail)}
+          size="small"
+          shouldShowLabel={true}
+          on:change={({ detail }) => (object.status = detail)}
         />
-      {/key}
-      <EstimationEditor
-        kind={'no-border'}
-        size={'small'}
-        bind:value={object}
-        on:change={(evt) => {
-          object.estimation = evt.detail
-        }}
-      />
+      </div>
+      <div id="sub-issue-priority-editor">
+        <PriorityEditor
+          value={object}
+          shouldShowLabel
+          isEditable
+          kind="no-border"
+          size="small"
+          justify="center"
+          on:change={({ detail }) => (object.priority = detail)}
+        />
+      </div>
+      <div id="sub-issue-assignee-editor">
+        {#key object.assignee}
+          <AssigneeEditor
+            value={object}
+            size="small"
+            kind="no-border"
+            on:change={({ detail }) => (object.assignee = detail)}
+          />
+        {/key}
+      </div>
+      <div id="sub-issue-estimation-editor">
+        <EstimationEditor
+          kind={'no-border'}
+          size={'small'}
+          bind:value={object}
+          on:change={(evt) => {
+            object.estimation = evt.detail
+          }}
+        />
+      </div>
       <Component
         is={tags.component.TagsDropdownEditor}
         props={{

@@ -58,6 +58,7 @@
       kind={'primary'}
       width={'100%'}
       on:click={newIssue}
+      id="new-issue"
     >
       <div slot="content" class="draft-circle-container">
         {#if draftExists}

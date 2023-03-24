@@ -146,15 +146,12 @@
   let matches: WithLookup<Contact>[] = []
   let matchedChannels: AttachedData<Channel>[] = []
   $: if (targetClass !== undefined) {
-    findContacts(
-      client,
-      targetClass._id,
-      { ...object, name: formatName(targetClass._id, firstName, lastName, object.name) },
-      channels
-    ).then((p) => {
-      matches = p.contacts
-      matchedChannels = p.channels
-    })
+    findContacts(client, targetClass._id, formatName(targetClass._id, firstName, lastName, object.name), channels).then(
+      (p) => {
+        matches = p.contacts
+        matchedChannels = p.channels
+      }
+    )
   }
 </script>
 
