@@ -35,7 +35,7 @@
       }
 
       if (application === undefined) {
-        let last = localStorage.getItem(`platform_last_loc_${loc.path[1]}`)
+        let last = loc.path[1] !== undefined ? localStorage.getItem(`platform_last_loc_${loc.path[1]}`) : null
         if (last === null) {
           last = localStorage.getItem('platform_last_loc')
         }
