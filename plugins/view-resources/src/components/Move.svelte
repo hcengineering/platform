@@ -40,7 +40,7 @@
   let classLabel = ''
   $: {
     const doc = docs[0]
-    space = doc.space
+    if (space === undefined) space = doc.space
     translate(hierarchy.getClass(doc._class).label, {}).then((res) => (label = res.toLocaleLowerCase()))
   }
   $: _class && translate(_class, {}).then((res) => (classLabel = res.toLocaleLowerCase()))
