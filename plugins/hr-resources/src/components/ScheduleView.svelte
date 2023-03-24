@@ -129,7 +129,7 @@
     descendants: Map<Ref<Department>, Department[]>
   ): void {
     const staff = departmentStaff.filter((p) => p.department === department)
-    editableList.push(...staff.map((p) => p._id))
+    editableList.push(...staff.filter((p) => !editableList.includes(p._id)).map((p) => p._id))
     const desc = descendants.get(department) ?? []
     for (const des of desc) {
       pushChilds(des._id, departmentStaff, descendants)
@@ -147,10 +147,11 @@
     descendants: Map<Ref<Department>, Department[]>
   ) {
     const dep = departmentById.get(department)
-    if (dep !== undefined && isEditable(dep)) {
+    if (dep === undefined) return
+    if (isEditable(dep)) {
       pushChilds(dep._id, departmentStaff, descendants)
     } else {
-      const descendantDepartments = descendants.get(department)
+      const descendantDepartments = descendants.get(dep._id)
       if (descendantDepartments !== undefined) {
         for (const department of descendantDepartments) {
           if (isEditable(department)) {
@@ -165,12 +166,11 @@
 
   function updateEditableList (
     departmentById: Map<Ref<Department>, Department>,
-    department: Ref<Department>,
     departmentStaff: Staff[],
     descendants: Map<Ref<Department>, Department[]>
   ) {
     editableList = [currentEmployee]
-    checkDepartmentEditable(departmentById, department, departmentStaff, descendants)
+    checkDepartmentEditable(departmentById, hr.ids.Head, departmentStaff, descendants)
     editableList = editableList
   }
 
@@ -178,15 +178,14 @@
     staff: Staff[],
     departments: Ref<Department>[],
     employeeRequests: Map<Ref<Staff>, Request[]>,
-    department: Ref<Department>,
     descendants: Map<Ref<Department>, Department[]>,
     departmentById: Map<Ref<Department>, Department>
   ) {
     departmentStaff = staff.filter((p) => departments.includes(p.department) || employeeRequests.has(p._id))
-    updateEditableList(departmentById, department, departmentStaff, descendants)
+    updateEditableList(departmentById, departmentStaff, descendants)
   }
 
-  $: updateStaff(staff, departments, employeeRequests, department, descendants, departmentById)
+  $: updateStaff(staff, departments, employeeRequests, descendants, departmentById)
 
   const reportQuery = createQuery()
 
