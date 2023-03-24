@@ -27,15 +27,29 @@ import core, {
   generateId,
   Ref,
   Tx,
+  TxApplyIf,
   TxHandler,
   TxResult
 } from '@hcengineering/core'
-import { getMetadata, PlatformError, readResponse, ReqId, serialize, UNAUTHORIZED } from '@hcengineering/platform'
+import {
+  getMetadata,
+  PlatformError,
+  readResponse,
+  ReqId,
+  serialize,
+  UNAUTHORIZED,
+  unknownError
+} from '@hcengineering/platform'
 
-class DeferredPromise {
+const SECOND = 1000
+const pingTimeout = 10 * SECOND
+const dialTimeout = 20 * SECOND
+
+class RequestPromise {
   readonly promise: Promise<any>
   resolve!: (value?: any) => void
   reject!: (reason?: any) => void
+  reconnect?: () => void
   constructor () {
     this.promise = new Promise((resolve, reject) => {
       this.resolve = resolve
@@ -46,7 +60,7 @@ class DeferredPromise {
 
 class Connection implements ClientConnection {
   private websocket: ClientSocket | Promise<ClientSocket> | null = null
-  private readonly requests = new Map<ReqId, DeferredPromise>()
+  private readonly requests = new Map<ReqId, RequestPromise>()
   private lastId = 0
   private readonly interval: number
   private readonly sessionId = generateId() as string
@@ -55,22 +69,25 @@ class Connection implements ClientConnection {
     private readonly url: string,
     private readonly handler: TxHandler,
     private readonly onUpgrade?: () => void,
-    private readonly onUnauthorized?: () => void
+    private readonly onUnauthorized?: () => void,
+    readonly onConnect?: () => Promise<void>
   ) {
     console.log('connection created')
     this.interval = setInterval(() => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.sendRequest('ping')
-    }, 10000)
+      this.sendRequest({ method: 'ping', params: [] })
+    }, pingTimeout)
   }
 
   async close (): Promise<void> {
     clearInterval(this.interval)
     if (this.websocket !== null) {
       if (this.websocket instanceof Promise) {
-        this.websocket = await this.websocket
+        await this.websocket.then((ws) => ws.close())
+      } else {
+        this.websocket.close(1000)
       }
-      this.websocket.close()
+      this.websocket = null
     }
   }
 
@@ -83,7 +100,7 @@ class Connection implements ClientConnection {
         return conn
       } catch (err: any) {
         console.log('failed to connect', err)
-        if (err.code === UNAUTHORIZED.code) {
+        if (err?.code === UNAUTHORIZED.code) {
           this.onUnauthorized?.()
           throw err
         }
@@ -94,7 +111,7 @@ class Connection implements ClientConnection {
             if (this.delay !== 15) {
               this.delay++
             }
-          }, this.delay * 1000)
+          }, this.delay * SECOND)
         })
       }
     }
@@ -109,7 +126,16 @@ class Connection implements ClientConnection {
         getMetadata(client.metadata.ClientSocketFactory) ?? ((url: string) => new WebSocket(url) as ClientSocket)
 
       const websocket = clientSocketFactory(this.url + `?sessionId=${this.sessionId}`)
+      const opened = false
       const socketId = this.sockets++
+
+      const dialTimer = setTimeout(() => {
+        if (!opened) {
+          websocket.close()
+          reject(new PlatformError(unknownError('timeout')))
+        }
+      }, dialTimeout)
+
       websocket.onmessage = (event: MessageEvent) => {
         const resp = readResponse(event.data)
         if (resp.id === -1 && resp.result === 'hello') {
@@ -117,7 +143,12 @@ class Connection implements ClientConnection {
             reject(resp.error)
             return
           }
+          for (const [, v] of this.requests.entries()) {
+            v.reconnect?.()
+          }
           resolve(websocket)
+          void this.onConnect?.()
+
           return
         }
         if (resp.id !== undefined) {
@@ -144,13 +175,14 @@ class Connection implements ClientConnection {
               })
             )
             this.onUpgrade?.()
+            return
           }
           this.handler(tx)
         }
       }
-      websocket.onclose = () => {
-        console.log('client websocket closed', socketId)
-        // clearInterval(interval)
+      websocket.onclose = (ev) => {
+        console.log('client websocket closed', socketId, ev?.reason)
+
         if (!(this.websocket instanceof Promise)) {
           this.websocket = null
         }
@@ -158,6 +190,7 @@ class Connection implements ClientConnection {
       }
       websocket.onopen = () => {
         console.log('connection opened...', socketId)
+        clearTimeout(dialTimer)
         websocket.send(
           serialize({
             method: 'hello',
@@ -167,30 +200,47 @@ class Connection implements ClientConnection {
         )
       }
       websocket.onerror = (event: any) => {
-        console.log('client websocket error:', socketId, JSON.stringify(event))
+        console.error('client websocket error:', socketId, event)
         reject(new Error(`websocket error:${socketId}`))
       }
     })
   }
 
-  private async sendRequest (method: string, ...params: any[]): Promise<any> {
-    if (this.websocket instanceof Promise) {
-      this.websocket = await this.websocket
-    }
-    if (this.websocket === null) {
-      this.websocket = this.waitOpenConnection()
-      this.websocket = await this.websocket
-    }
+  private async sendRequest (data: {
+    method: string
+    params: any[]
+    // If not defined, on reconnect with timeout, will retry automatically.
+    retry?: () => Promise<boolean>
+  }): Promise<any> {
     const id = this.lastId++
-    this.websocket.send(
-      serialize({
-        method,
-        params,
-        id
-      })
-    )
-    const promise = new DeferredPromise()
-    this.requests.set(id, promise)
+    const promise = new RequestPromise()
+
+    const sendData = async (): Promise<void> => {
+      if (this.websocket instanceof Promise) {
+        this.websocket = await this.websocket
+      }
+      if (this.websocket === null) {
+        this.websocket = this.waitOpenConnection()
+        this.websocket = await this.websocket
+      }
+      this.requests.set(id, promise)
+      this.websocket.send(
+        serialize({
+          method: data.method,
+          params: data.params,
+          id
+        })
+      )
+    }
+    promise.reconnect = () => {
+      setTimeout(async () => {
+        // In case we don't have response yet.
+        if (this.requests.has(id) && ((await data.retry?.()) ?? true)) {
+          await sendData()
+        }
+      }, 500)
+    }
+    await sendData()
     return await promise.promise
   }
 
@@ -199,31 +249,43 @@ class Connection implements ClientConnection {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    return this.sendRequest('findAll', _class, query, options)
+    return this.sendRequest({ method: 'findAll', params: [_class, query, options] })
   }
 
   tx (tx: Tx): Promise<TxResult> {
-    return this.sendRequest('tx', tx)
+    return this.sendRequest({
+      method: 'tx',
+      params: [tx],
+      retry: async () => {
+        if (tx._class === core.class.TxApplyIf) {
+          return (
+            (await (await this.findAll(core.class.Tx, { _id: (tx as TxApplyIf).txes[0]._id }, { limit: 1 })).length) ===
+            0
+          )
+        }
+        return (await (await this.findAll(core.class.Tx, { _id: tx._id }, { limit: 1 })).length) === 0
+      }
+    })
   }
 
   loadChunk (domain: Domain, idx?: number): Promise<DocChunk> {
-    return this.sendRequest('loadChunk', domain, idx)
+    return this.sendRequest({ method: 'loadChunk', params: [domain, idx] })
   }
 
   closeChunk (idx: number): Promise<void> {
-    return this.sendRequest('closeChunk', idx)
+    return this.sendRequest({ method: 'closeChunk', params: [idx] })
   }
 
   loadDocs (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
-    return this.sendRequest('loadDocs', domain, docs)
+    return this.sendRequest({ method: 'loadDocs', params: [domain, docs] })
   }
 
   upload (domain: Domain, docs: Doc[]): Promise<void> {
-    return this.sendRequest('upload', domain, docs)
+    return this.sendRequest({ method: 'upload', params: [domain, docs] })
   }
 
   clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
-    return this.sendRequest('clean', domain, docs)
+    return this.sendRequest({ method: 'clean', params: [domain, docs] })
   }
 }
 
@@ -234,7 +296,10 @@ export async function connect (
   url: string,
   handler: TxHandler,
   onUpgrade?: () => void,
-  onUnauthorized?: () => void
+  onUnauthorized?: () => void,
+  onConnect?: () => void
 ): Promise<ClientConnection> {
-  return new Connection(url, handler, onUpgrade, onUnauthorized)
+  return new Connection(url, handler, onUpgrade, onUnauthorized, async () => {
+    onConnect?.()
+  })
 }

@@ -46,6 +46,7 @@ import { Readable } from 'stream'
  */
 export interface SessionContext extends MeasureContext {
   userEmail: string
+  sessionId: string
 }
 
 /**

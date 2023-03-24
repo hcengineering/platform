@@ -46,7 +46,7 @@ export interface ClientSocket {
 
   send: (data: string | ArrayBufferLike | Blob | ArrayBufferView) => void
 
-  close: () => void
+  close: (code?: number) => void
 }
 
 /**
@@ -56,7 +56,8 @@ export type ClientFactory = (
   token: string,
   endpoint: string,
   onUpgrade?: () => void,
-  onUnauthorized?: () => void
+  onUnauthorized?: () => void,
+  onConnect?: () => void
 ) => Promise<Client>
 
 export default plugin(clientId, {

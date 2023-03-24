@@ -14,10 +14,9 @@
 // limitations under the License.
 //
 
-import client from '@hcengineering/client'
-import clientResources from '@hcengineering/client-resources'
+import client, { clientId } from '@hcengineering/client'
 import { Client, WorkspaceId } from '@hcengineering/core'
-import { setMetadata } from '@hcengineering/platform'
+import { addLocation, getResource, setMetadata } from '@hcengineering/platform'
 import { generateToken } from '@hcengineering/server-token'
 
 /**
@@ -36,5 +35,9 @@ export async function connect (
   const WebSocket = require('ws')
 
   setMetadata(client.metadata.ClientSocketFactory, (url) => new WebSocket(url))
-  return await (await clientResources()).function.GetClient(token, transactorUrl)
+  addLocation(clientId, () => import('@hcengineering/client-resources'))
+
+  return await (
+    await getResource(client.function.GetClient)
+  )(token, transactorUrl)
 }

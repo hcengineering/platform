@@ -116,6 +116,15 @@ export function setClient (_client: Client): void {
 /**
  * @public
  */
+export function refreshClient (): void {
+  if (liveQuery !== undefined) {
+    void liveQuery.refreshConnect()
+  }
+}
+
+/**
+ * @public
+ */
 export class LiveQuery {
   private oldClass: Ref<Class<Doc>> | undefined
   private oldQuery: DocumentQuery<Doc> | undefined

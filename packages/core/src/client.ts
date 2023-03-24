@@ -25,6 +25,8 @@ import { SortingOrder } from './storage'
 import { Tx, TxCreateDoc, TxProcessor, TxUpdateDoc } from './tx'
 import { toFindResult } from './utils'
 
+const transactionThreshold = 3000
+
 /**
  * @public
  */
@@ -50,6 +52,7 @@ export interface Client extends Storage {
  */
 export interface ClientConnection extends Storage, BackupClient {
   close: () => Promise<void>
+  onConnect?: () => Promise<void>
 }
 
 class ClientImpl implements Client, BackupClient {
@@ -151,10 +154,15 @@ export async function createClient (
   allowedPlugins?: Plugin[]
 ): Promise<Client> {
   let client: ClientImpl | null = null
+
+  // Temporal buffer, while we apply model
   let txBuffer: Tx[] | undefined = []
+  const loadedTxIds = new Set<Ref<Tx>>()
 
   const hierarchy = new Hierarchy()
   const model = new ModelDb(hierarchy)
+
+  let lastTx: number
 
   function txHandler (tx: Tx): void {
     if (client === null) {
@@ -163,63 +171,83 @@ export async function createClient (
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       client.updateFromRemote(tx)
     }
+    lastTx = tx.modifiedOn
   }
+  const configs = new Map<Ref<PluginConfiguration>, PluginConfiguration>()
 
   const conn = await connect(txHandler)
+
+  await loadModel(conn, loadedTxIds, allowedPlugins, configs, hierarchy, model)
+
+  txBuffer = txBuffer.filter((tx) => !loadedTxIds.has(tx._id))
+
+  client = new ClientImpl(hierarchy, model, conn)
+
+  for (const tx of txBuffer) {
+    txHandler(tx)
+    loadedTxIds.add(tx._id)
+  }
+  txBuffer = undefined
+
+  const oldOnConnect: (() => void) | undefined = conn.onConnect
+  conn.onConnect = async () => {
+    // Find all new transactions and apply
+    await loadModel(conn, loadedTxIds, allowedPlugins, configs, hierarchy, model)
+
+    // We need to look for last 1000 transactions and if it is more since lastTx one we receive, we need to perform full refresh.
+    const atxes = await conn.findAll(
+      core.class.Tx,
+      { modifiedOn: { $gt: lastTx } },
+      { sort: { _id: SortingOrder.Ascending }, limit: transactionThreshold }
+    )
+    if (atxes.total < transactionThreshold) {
+      console.log('applying input transactions', atxes.length)
+      for (const tx of atxes) {
+        txHandler(tx)
+      }
+    } else {
+      // We need to trigger full refresh on queries, etc.
+      await oldOnConnect?.()
+    }
+  }
+
+  return client
+}
+async function loadModel (
+  conn: ClientConnection,
+  processedTx: Set<Ref<Tx>>,
+  allowedPlugins: Plugin[] | undefined,
+  configs: Map<Ref<PluginConfiguration>, PluginConfiguration>,
+  hierarchy: Hierarchy,
+  model: ModelDb
+): Promise<void> {
   const t = Date.now()
+
   const atxes = await conn.findAll(
     core.class.Tx,
-    { objectSpace: core.space.Model },
+    { objectSpace: core.space.Model, _id: { $nin: Array.from(processedTx.values()) } },
     { sort: { _id: SortingOrder.Ascending } }
   )
-  console.log('find model', atxes.length, Date.now() - t)
 
   let systemTx: Tx[] = []
   const userTx: Tx[] = []
+  console.log('find' + (processedTx.size === 0 ? 'full model' : 'model diff'), atxes.length, Date.now() - t)
 
   atxes.forEach((tx) => (tx.modifiedBy === core.account.System ? systemTx : userTx).push(tx))
 
   if (allowedPlugins !== undefined) {
-    // Filter system transactions
-    const configs = new Map<Ref<PluginConfiguration>, PluginConfiguration>()
-    for (const t of systemTx) {
-      if (t._class === core.class.TxCreateDoc) {
-        const ct = t as TxCreateDoc<Doc>
-        if (ct.objectClass === core.class.PluginConfiguration) {
-          configs.set(ct.objectId as Ref<PluginConfiguration>, TxProcessor.createDoc2Doc(ct) as PluginConfiguration)
-        }
-      } else if (t._class === core.class.TxUpdateDoc) {
-        const ut = t as TxUpdateDoc<Doc>
-        if (ut.objectClass === core.class.PluginConfiguration) {
-          const c = configs.get(ut.objectId as Ref<PluginConfiguration>)
-          if (c !== undefined) {
-            TxProcessor.updateDoc2Doc(c, ut)
-          }
-        }
-      }
-    }
-
+    fillConfiguration(systemTx, configs)
     const excludedPlugins = Array.from(configs.values()).filter((it) => !allowedPlugins.includes(it.pluginId as Plugin))
 
-    for (const a of excludedPlugins) {
-      for (const c of configs.values()) {
-        if (a.pluginId === c.pluginId) {
-          const excluded = new Set<Ref<Tx>>()
-          for (const id of c.transactions) {
-            excluded.add(id as Ref<Tx>)
-          }
-          const exclude = systemTx.filter((t) => excluded.has(t._id))
-          console.log('exclude plugin', c.pluginId, exclude.length)
-          systemTx = systemTx.filter((t) => !excluded.has(t._id))
-        }
-      }
-    }
+    systemTx = pluginFilterTx(excludedPlugins, configs, systemTx)
   }
 
   const txes = systemTx.concat(userTx)
 
-  const txMap = new Map<Ref<Tx>, Ref<Tx>>()
-  for (const tx of txes) txMap.set(tx._id, tx._id)
+  for (const tx of txes) {
+    processedTx.add(tx._id)
+  }
+
   for (const tx of txes) {
     try {
       hierarchy.tx(tx)
@@ -234,13 +262,44 @@ export async function createClient (
       console.error('failed to apply model transaction, skipping', JSON.stringify(tx), err)
     }
   }
+}
 
-  txBuffer = txBuffer.filter((tx) => txMap.get(tx._id) === undefined)
+function fillConfiguration (systemTx: Tx[], configs: Map<Ref<PluginConfiguration>, PluginConfiguration>): void {
+  for (const t of systemTx) {
+    if (t._class === core.class.TxCreateDoc) {
+      const ct = t as TxCreateDoc<Doc>
+      if (ct.objectClass === core.class.PluginConfiguration) {
+        configs.set(ct.objectId as Ref<PluginConfiguration>, TxProcessor.createDoc2Doc(ct) as PluginConfiguration)
+      }
+    } else if (t._class === core.class.TxUpdateDoc) {
+      const ut = t as TxUpdateDoc<Doc>
+      if (ut.objectClass === core.class.PluginConfiguration) {
+        const c = configs.get(ut.objectId as Ref<PluginConfiguration>)
+        if (c !== undefined) {
+          TxProcessor.updateDoc2Doc(c, ut)
+        }
+      }
+    }
+  }
+}
 
-  client = new ClientImpl(hierarchy, model, conn)
-
-  for (const tx of txBuffer) txHandler(tx)
-  txBuffer = undefined
-
-  return client
+function pluginFilterTx (
+  excludedPlugins: PluginConfiguration[],
+  configs: Map<Ref<PluginConfiguration>, PluginConfiguration>,
+  systemTx: Tx[]
+): Tx[] {
+  for (const a of excludedPlugins) {
+    for (const c of configs.values()) {
+      if (a.pluginId === c.pluginId) {
+        const excluded = new Set<Ref<Tx>>()
+        for (const id of c.transactions) {
+          excluded.add(id as Ref<Tx>)
+        }
+        const exclude = systemTx.filter((t) => excluded.has(t._id))
+        console.log('exclude plugin', c.pluginId, exclude.length)
+        systemTx = systemTx.filter((t) => !excluded.has(t._id))
+      }
+    }
+  }
+  return systemTx
 }

@@ -22,7 +22,7 @@ Package allow to create a client to interact with running platform.
 
 ## Node JS
 
-For NodeJS enviornment it is required to configure ClientSocketFactory using 'ws' package.
+For NodeJS environment it is required to configure ClientSocketFactory using 'ws' package.
 
 ```ts
 // We need to override default WebSocket factory with 'ws' one.

@@ -20,6 +20,7 @@ import WebSocket from 'ws'
 import { disableLogging, start } from '../server'
 
 import {
+  Account,
   Class,
   Doc,
   DocumentQuery,
@@ -32,6 +33,7 @@ import {
   ModelDb,
   Ref,
   ServerStorage,
+  Space,
   toFindResult,
   Tx,
   TxResult
@@ -95,7 +97,7 @@ describe('server', () => {
   it('should connect to server', (done) => {
     const conn = connect()
     conn.on('open', () => {
-      conn.close()
+      conn.close(1000)
     })
     conn.on('close', () => {
       done()
@@ -105,13 +107,13 @@ describe('server', () => {
   it('should not connect to server without token', (done) => {
     const conn = new WebSocket('ws://localhost:3335/xyz')
     conn.on('error', () => {
-      conn.close()
+      conn.close(1000)
     })
     conn.on('message', (msg: string) => {
       const resp = readResponse(msg)
       expect(resp.result === 'hello')
       expect(resp.error?.code).toBe(UNAUTHORIZED.code)
-      conn.close()
+      conn.close(1000)
     })
     conn.on('close', () => {
       done()
@@ -132,11 +134,114 @@ describe('server', () => {
       readResponse(msg)
       if (++received === total) {
         // console.log('resp:', resp, ' Time: ', Date.now() - start)
-        conn.close()
+        conn.close(1000)
       }
     })
     conn.on('close', () => {
       done()
     })
+  })
+
+  it('reconnect', async () => {
+    const cancelOp = start(
+      new MeasureMetricsContext('test', {}),
+      async () => ({
+        modelDb: await getModelDb(),
+        findAll: async <T extends Doc>(
+          ctx: SessionContext,
+          _class: Ref<Class<T>>,
+          query: DocumentQuery<T>,
+          options?: FindOptions<T>
+        ): Promise<FindResult<T>> => {
+          const d: Doc & { sessionId: string } = {
+            _class: 'result' as Ref<Class<Doc>>,
+            _id: '1' as Ref<Doc & { sessionId: string }>,
+            space: '' as Ref<Space>,
+            modifiedBy: '' as Ref<Account>,
+            modifiedOn: Date.now(),
+            sessionId: ctx.sessionId
+          }
+          return toFindResult([d as unknown as T])
+        },
+        tx: async (ctx: SessionContext, tx: Tx): Promise<[TxResult, Tx[], string[] | undefined]> => [{}, [], undefined],
+        close: async () => {},
+        storage: {} as unknown as ServerStorage,
+        domains: async () => [],
+        find: (domain: Domain) => ({
+          next: async () => undefined,
+          close: async () => {}
+        }),
+        load: async (domain: Domain, docs: Ref<Doc>[]) => [],
+        upload: async (domain: Domain, docs: Doc[]) => {},
+        clean: async (domain: Domain, docs: Ref<Doc>[]) => {}
+      }),
+      (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
+      3336,
+      ''
+    )
+
+    async function findClose (token: string, timeoutPromise: Promise<void>, code: number): Promise<string> {
+      const newConn = new WebSocket(`ws://localhost:3336/${token}?sessionId=s1`)
+
+      await Promise.race([
+        timeoutPromise,
+        new Promise((resolve) => {
+          newConn.on('open', () => {
+            newConn.send(serialize({ method: 'hello', params: [], id: -1 }))
+            newConn.send(serialize({ method: 'findAll', params: [], id: -1 }))
+            resolve(null)
+          })
+        })
+      ])
+
+      let helloReceived = false
+
+      let responseMsg: any = {}
+
+      await Promise.race([
+        timeoutPromise,
+        new Promise((resolve) => {
+          newConn.on('message', (msg: Buffer) => {
+            try {
+              console.log('resp:', msg.toString())
+              const parsedMsg = readResponse(msg.toString()) // Hello
+              if (!helloReceived) {
+                expect(parsedMsg.result === 'hello')
+                helloReceived = true
+                return
+              }
+              responseMsg = readResponse(msg.toString()) // our message
+              resolve(null)
+            } catch (err: any) {
+              console.error(err)
+            }
+          })
+        })
+      ])
+
+      if (code === 1005) {
+        newConn.close()
+      } else {
+        newConn.close(code)
+      }
+      return responseMsg.result[0].sessionId
+    }
+
+    try {
+      //
+      const token: string = generateToken('my@email.com', getWorkspaceId('latest', ''))
+      const timeoutPromise = new Promise<void>((resolve) => {
+        setTimeout(resolve, 4000)
+      })
+      const t1 = await findClose(token, timeoutPromise, 1005)
+      const t2 = await findClose(token, timeoutPromise, 1000)
+
+      expect(t1).toBe(t2)
+    } catch (err: any) {
+      console.error(err)
+    } finally {
+      console.log('calling shutdown')
+      await cancelOp()
+    }
   })
 })

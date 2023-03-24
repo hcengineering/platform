@@ -92,7 +92,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   async cancel (): Promise<void> {
     console.log('Cancel indexing', this.indexId, this.workspace)
     this.cancelling = true
-    clearTimeout(this.waitTimeout)
+    clearTimeout(this.skippedReiterationTimeout)
     this.triggerIndexing()
     await this.indexing
     await this.flush(true)
@@ -232,7 +232,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   }
 
   triggerIndexing = (): void => {}
-  waitTimeout: any
+  skippedReiterationTimeout: any
   stats: Record<string, number> = {}
 
   private async stageUpdate (udoc: DocIndexState, update: DocumentUpdate<DocIndexState>): Promise<void> {
@@ -270,23 +270,20 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
       if (this.toIndex.size === 0 || this.stageChanged === 0) {
         if (this.toIndex.size === 0) {
-          console.log(`${this.workspace.name} Indexing complete, waiting changes`, this.indexId)
-        } else {
-          console.log(`${this.workspace.name} Partial Indexing complete, waiting changes`, this.indexId)
+          console.log(`${this.workspace.name} Indexing complete`, this.indexId)
         }
         if (!this.cancelling) {
           await new Promise((resolve) => {
             this.triggerIndexing = () => {
               resolve(null)
-              clearTimeout(this.waitTimeout)
+              clearTimeout(this.skippedReiterationTimeout)
             }
-            this.waitTimeout = setTimeout(() => {
+            this.skippedReiterationTimeout = setTimeout(() => {
               // Force skipped reiteration, just decrease by -1
               for (const [s, v] of Array.from(this.skipped.entries())) {
                 this.skipped.set(s, v - 1)
               }
-              resolve(null)
-            }, 30000)
+            }, 60000)
           })
         }
       }
