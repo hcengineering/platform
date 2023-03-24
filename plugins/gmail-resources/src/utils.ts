@@ -1,3 +1,7 @@
+import contact from '@hcengineering/contact'
+import { Doc } from '@hcengineering/core'
+import { getClient } from '@hcengineering/presentation'
+
 export function getTime (time: number): string {
   let options: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: 'numeric' }
   if (!isCurrentYear(time)) {
@@ -32,4 +36,15 @@ export function isCurrentYear (time: number): boolean {
   const current = new Date()
   const target = new Date(time)
   return current.getFullYear() === target.getFullYear()
+}
+
+export async function checkHasEmail (doc: Doc | Doc[] | undefined): Promise<boolean> {
+  if (doc === undefined) return false
+  const client = getClient()
+  const arr = Array.isArray(doc) ? doc.map((p) => p._id) : [doc._id]
+  const res = await client.findAll(contact.class.Channel, {
+    provider: contact.channelProvider.Email,
+    attachedTo: { $in: arr }
+  })
+  return res.length === arr.length
 }

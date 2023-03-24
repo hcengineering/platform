@@ -179,6 +179,7 @@ export function createModel (builder: Builder): void {
       },
       label: gmail.string.WriteEmail,
       icon: contact.icon.Email,
+      visibilityTester: gmail.function.HasEmail,
       keyBinding: [],
       input: 'any',
       category: contact.category.Contact,

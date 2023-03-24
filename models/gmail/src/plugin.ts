@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import { Ref } from '@hcengineering/core'
-import { IntlString, mergeIds } from '@hcengineering/platform'
+import { Doc, Ref } from '@hcengineering/core'
+import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
 import { gmailId } from '@hcengineering/gmail'
 import gmail from '@hcengineering/gmail-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui'
@@ -45,5 +45,8 @@ export default mergeIds(gmailId, gmail, {
   },
   activity: {
     TxSharedCreate: '' as AnyComponent
+  },
+  function: {
+    HasEmail: '' as Resource<(doc?: Doc | Doc[] | undefined) => Promise<boolean>>
   }
 })
