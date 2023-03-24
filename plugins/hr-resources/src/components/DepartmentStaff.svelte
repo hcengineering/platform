@@ -16,7 +16,8 @@
   import contact from '@hcengineering/contact'
   import { Ref, WithLookup } from '@hcengineering/core'
   import { Department, Staff } from '@hcengineering/hr'
-  import { createQuery, getClient, UsersPopup } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { UsersPopup } from '@hcengineering/contact-resources'
   import { Button, eventToHTMLElement, IconAdd, Label, Scroller, showPopup } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
   import {
