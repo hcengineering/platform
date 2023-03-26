@@ -122,7 +122,7 @@ export class TIssueStatusCategory extends TDoc implements IssueStatusCategory {
  * @public
  */
 export function TypeIssuePriority (): Type<IssuePriority> {
-  return { _class: tracker.class.TypeIssuePriority, label: 'TypeIssuePriority' as IntlString }
+  return { _class: tracker.class.TypeIssuePriority, label: tracker.string.TypeIssuePriority }
 }
 
 /**
