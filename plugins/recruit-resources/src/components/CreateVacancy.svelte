@@ -82,20 +82,20 @@
     return name === '' && templateId !== undefined
   }
 
-  let changed = false
-
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const templateQ = createQuery()
   fillDefaults(hierarchy, vacancyData, recruit.class.Vacancy)
-  $: templateQ.query(task.class.KanbanTemplate, { _id: templateId }, (result) => {
-    const { _class, _id, description, ...templateData } = result[0]
-    vacancyData = { ...(templateData as unknown as Data<VacancyClass>), fullDescription: description }
-    if (appliedTemplateId !== templateId) {
-      fullDescription = description ?? ''
-      appliedTemplateId = templateId
-    }
-  })
+  $: templateId &&
+    templateQ.query(task.class.KanbanTemplate, { _id: templateId }, (result) => {
+      const { _class, _id, description, ...templateData } = result[0]
+      vacancyData = { ...(templateData as unknown as Data<VacancyClass>), fullDescription: description }
+      if (appliedTemplateId !== templateId) {
+        fullDescription = description ?? ''
+        appliedTemplateId = templateId
+      }
+      fillDefaults(hierarchy, vacancyData, recruit.class.Vacancy)
+    })
 
   const issueTemplatesQ = createQuery()
   $: issueTemplatesQ.query(tracker.class.IssueTemplate, { 'relations._id': templateId }, async (result) => {
@@ -267,9 +267,6 @@
       bind:content={fullDescription}
       placeholder={recruit.string.FullDescription}
       emphasized
-      on:changeContent={() => {
-        changed = true
-      }}
     />
   {/key}
 

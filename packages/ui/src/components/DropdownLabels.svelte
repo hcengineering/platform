@@ -29,6 +29,7 @@
   export let items: DropdownTextItem[]
   export let multiselect = false
   export let selected: DropdownTextItem['id'] | DropdownTextItem['id'][] | undefined = multiselect ? [] : undefined
+  export let allowDeselect: boolean = false
 
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
@@ -70,8 +71,13 @@
           container,
           (result) => {
             if (result) {
-              selected = result
-              dispatch('selected', result)
+              if (allowDeselect && selected === result) {
+                selected = undefined
+                dispatch('selected', undefined)
+              } else {
+                selected = result
+                dispatch('selected', result)
+              }
             }
             opened = false
             mgr?.setFocusPos(focusIndex)

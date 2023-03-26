@@ -25,6 +25,7 @@
   export let onChange: (value: string) => void
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
+  export let allowDeselect: boolean = false
 
   let items: DropdownTextItem[] = []
 
@@ -54,6 +55,7 @@
   {size}
   {kind}
   width={'100%'}
+  {allowDeselect}
   autoSelect={false}
   on:selected={(e) => {
     onChange(e.detail)
