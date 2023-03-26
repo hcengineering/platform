@@ -37,5 +37,5 @@
 </script>
 
 {#if doc && presenter}
-  <svelte:component this={presenter.presenter} value={doc} onClick={onNavigate} withIcon noUnderline />
+  <svelte:component this={presenter.presenter} value={doc} onClick={onNavigate} shouldShowAvatar noUnderline />
 {/if}

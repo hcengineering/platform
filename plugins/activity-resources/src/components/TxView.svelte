@@ -20,7 +20,7 @@
   import { Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
-    Button,
+    ActionIcon,
     Component,
     Icon,
     IconEdit,
@@ -28,7 +28,8 @@
     Label,
     ShowMore,
     showPopup,
-    TimeSince
+    TimeSince,
+    Like
   } from '@hcengineering/ui'
   import type { AttributeModel } from '@hcengineering/view'
   import { Menu, ObjectPresenter } from '@hcengineering/view-resources'
@@ -36,6 +37,8 @@
   import activity from '../plugin'
   import { getValue, TxDisplayViewlet, updateViewlet } from '../utils'
   import TxViewTx from './TxViewTx.svelte'
+  import Edit from './icons/Edit.svelte'
+  import IconProfile from './icons/Profile.svelte'
 
   export let tx: DisplayTx
   export let viewlets: Map<ActivityKey, TxViewlet>
@@ -146,132 +149,109 @@
   $: updateMessageType(model, tx).then((res) => {
     hasMessageType = res
   })
+  $: isComment = viewlet && viewlet?.editable
+  $: isMention = viewlet?.display === 'emphasized' || isMessageType(model[0]?.attribute)
+  $: isColumn = isComment || isMention || hasMessageType
 </script>
 
 {#if (viewlet !== undefined && !((viewlet?.hideOnRemove ?? false) && tx.removed)) || model.length > 0}
-  <div class="flex-between msgactivity-container" class:showIcon class:isNew class:isNextNew>
+  <div
+    class="msgactivity-container"
+    class:showIcon
+    class:withAvatar={isComment || isMention}
+    class:isNew
+    class:isNextNew
+  >
     {#if showIcon}
-      <div class="flex-center icon">
-        {#if viewlet}
-          <Icon icon={viewlet.icon} size="small" />
-        {:else if viewlet === undefined && model.length > 0}
-          <Icon icon={modelIcon !== undefined ? modelIcon : IconEdit} size="small" />
-        {:else}
-          <Icon icon={activity.icon.Activity} size="small" />
-        {/if}
-      </div>
+      {#if isComment || isMention}
+        <div class="msgactivity-avatar">
+          <Icon icon={IconProfile} size={'medium'} />
+        </div>
+      {:else}
+        <div class="msgactivity-icon">
+          {#if viewlet}
+            <Icon icon={viewlet.icon} size="small" />
+          {:else if viewlet === undefined && model.length > 0}
+            <Icon icon={modelIcon !== undefined ? modelIcon : Edit} size="small" />
+          {:else}
+            <Icon icon={Edit} size="small" />
+          {/if}
+        </div>
+      {/if}
     {/if}
 
-    <div
-      class="flex-grow flex-col clear-mins mr-2-5"
-      class:comment={viewlet && viewlet?.editable}
-      class:mention={viewlet?.display === 'emphasized' || isMessageType(model[0]?.attribute)}
-    >
-      <div class="flex-between">
-        <div class="flex-row-center flex-grow label">
-          <div class="bold">
+    <div class="msgactivity-content" class:content={isColumn} class:comment={isComment}>
+      <div class="msgactivity-content__header">
+        <div class="msgactivity-content__title labels-row">
+          <span class="bold">
             {#if employee}
               {getName(employee)}
             {:else}
               <Label label={core.string.System} />
             {/if}
-          </div>
+          </span>
+
           {#if viewlet && viewlet?.editable}
-            <div class="buttons-group small-gap">
+            <span class="buttons-group small-gap">
               {#if viewlet.label}
                 <Label label={viewlet.label} params={viewlet.labelParams ?? {}} />
               {/if}
               {#if tx.updated}
                 <Label label={activity.string.Edited} />
               {/if}
-              {#if tx.tx.modifiedBy === getCurrentAccount()._id}
-                <Button
-                  icon={IconMoreH}
-                  kind={'transparent'}
-                  shape={'circle'}
-                  size={'medium'}
-                  on:click={(ev) => showMenu(ev)}
-                />
-              {/if}
-            </div>
+              <span class="time"><TimeSince value={tx.tx.modifiedOn} /></span>
+            </span>
           {:else if viewlet && viewlet.label}
-            <div class="flex-row-center">
-              <span class="lower">
-                <Label label={viewlet.label} params={viewlet.labelParams ?? {}} />
-              </span>
-              {#if viewlet.labelComponent}
-                <Component is={viewlet.labelComponent} {props} />
-              {/if}
-            </div>
+            <span class="lower">
+              <Label label={viewlet.label} params={viewlet.labelParams ?? {}} />
+            </span>
+            {#if viewlet.labelComponent}
+              <Component is={viewlet.labelComponent} {props} />
+            {/if}
           {/if}
+
           {#if viewlet === undefined && model.length > 0 && tx.updateTx}
-            {#each model as m, i}
+            {#each model as m}
               {#await getValue(client, m, tx) then value}
                 {#if value.added.length}
-                  <span class="lower" class:flex-grow={hasMessageType}>
-                    <Label label={activity.string.Added} />
-                    <Label label={activity.string.To} />
-                    <Label label={m.label} />
-                  </span>
-                  {#if hasMessageType && value.added.length < 2}
-                    <div class="time"><TimeSince value={tx.tx.modifiedOn} /></div>
-                  {/if}
-                  <div class="strong">
-                    <div class="flex flex-wrap gap-2" class:emphasized={value.added.length > 1}>
-                      {#each value.added as cvalue}
-                        {#if value.isObjectAdded}
-                          <ObjectPresenter value={cvalue} />
-                        {:else}
-                          <svelte:component this={m.presenter} value={cvalue} />
-                        {/if}
-                      {/each}
-                    </div>
-                  </div>
-                  {#if value.added.length > 1}
-                    <div class="time"><TimeSince value={tx.tx.modifiedOn} /></div>
-                  {/if}
-                {:else if value.removed.length}
-                  <span class="lower" class:flex-grow={hasMessageType}>
-                    <Label label={activity.string.Removed} />
-                    <Label label={activity.string.From} />
-                    <Label label={m.label} />
-                  </span>
-                  {#if hasMessageType}
-                    <div class="time"><TimeSince value={tx.tx.modifiedOn} /></div>
-                  {/if}
-                  <div class="strong">
-                    <div class="flex flex-wrap gap-2 flex-grow" class:emphasized={value.removed.length > 1}>
-                      {#each value.removed as cvalue}
-                        {#if value.isObjectRemoved}
-                          <ObjectPresenter value={cvalue} />
-                        {:else}
-                          <svelte:component this={m.presenter} value={cvalue} />
-                        {/if}
-                      {/each}
-                    </div>
-                  </div>
-                {:else if value.set === null || value.set === undefined || value.set === ''}
-                  <span class="lower"><Label label={activity.string.Unset} /> <Label label={m.label} /></span>
-                {:else}
-                  <span class="lower" class:flex-grow={hasMessageType}>
-                    <Label label={activity.string.Changed} />
-                    <Label label={m.label} />
-                    <Label label={activity.string.To} />
-                  </span>
-                  {#if hasMessageType}
-                    <div class="time"><TimeSince value={tx.tx.modifiedOn} /></div>
-                  {/if}
-                  <div
-                    class="strong"
-                    class:message={isMessageType(m.attribute)}
-                    class:emphasized={isMessageType(m.attribute)}
-                  >
-                    {#if value.isObjectSet}
-                      <ObjectPresenter value={value.set} />
+                  <span class="lower"><Label label={activity.string.Added} /></span>
+                  <span class="lower"><Label label={activity.string.To} /></span>
+                  <span class="lower"><Label label={m.label} /></span>
+                  {#each value.added as cvalue}
+                    {#if value.isObjectAdded}
+                      <ObjectPresenter value={cvalue} inline />
                     {:else}
-                      <svelte:component this={m.presenter} value={value.set} />
+                      <svelte:component this={m.presenter} value={cvalue} inline />
                     {/if}
-                  </div>
+                  {/each}
+                {:else if value.removed.length}
+                  <span class="lower"><Label label={activity.string.Removed} /></span>
+                  <span class="lower"><Label label={activity.string.From} /></span>
+                  <span class="lower"><Label label={m.label} /></span>
+                  {#each value.removed as cvalue}
+                    {#if value.isObjectRemoved}
+                      <ObjectPresenter value={cvalue} inline />
+                    {:else}
+                      <svelte:component this={m.presenter} value={cvalue} inline />
+                    {/if}
+                  {/each}
+                {:else if value.set === null || value.set === undefined || value.set === ''}
+                  <span class="lower"><Label label={activity.string.Unset} /></span>
+                  <span class="lower"><Label label={m.label} /></span>
+                {:else}
+                  <span class="lower"><Label label={activity.string.Changed} /></span>
+                  <span class="lower"><Label label={m.label} /></span>
+                  <span class="lower"><Label label={activity.string.To} /></span>
+
+                  {#if !hasMessageType}
+                    <span class="strong">
+                      {#if value.isObjectSet}
+                        <ObjectPresenter value={value.set} inline />
+                      {:else}
+                        <svelte:component this={m.presenter} value={value.set} inline />
+                      {/if}
+                    </span>
+                  {/if}
                 {/if}
               {/await}
             {/each}
@@ -279,49 +259,52 @@
             {#each model as m}
               {#await getValue(client, m, tx) then value}
                 {#if value.set === null || value.set === ''}
-                  <span>
-                    <Label label={activity.string.Unset} /> <span class="lower"><Label label={m.label} /></span>
-                  </span>
+                  <span class="lower"><Label label={activity.string.Unset} /></span>
+                  <span class="lower"><Label label={m.label} /></span>
                 {:else}
-                  <span>
-                    <Label label={activity.string.Changed} />
-                    <span class="lower"><Label label={m.label} /></span>
-                    <Label label={activity.string.To} />
-                  </span>
-                  <div
-                    class="strong"
-                    class:message={isMessageType(m.attribute)}
-                    class:emphasized={isMessageType(m.attribute)}
-                  >
-                    {#if value.isObjectSet}
-                      <ObjectPresenter value={value.set} />
-                    {:else}
-                      <svelte:component this={m.presenter} value={value.set} />
-                    {/if}
-                  </div>
+                  <span class="lower"><Label label={activity.string.Changed} /></span>
+                  <span class="lower"><Label label={m.label} /></span>
+                  <span class="lower"><Label label={activity.string.To} /></span>
+
+                  {#if !hasMessageType}
+                    <div class="strong">
+                      {#if value.isObjectSet}
+                        <ObjectPresenter value={value.set} inline />
+                      {:else}
+                        <svelte:component this={m.presenter} value={value.set} inline />
+                      {/if}
+                    </div>
+                  {/if}
                 {/if}
               {/await}
             {/each}
           {:else if viewlet && viewlet.display === 'inline' && viewlet.component}
             {#if tx.collectionAttribute !== undefined && (tx.txDocIds?.size ?? 0) > 1}
-              <ShowMore ignore={edit}>
-                <div class="flex-row-center flex-grow flex-wrap clear-mins">
-                  <TxViewTx {tx} {onCancelEdit} {edit} {viewlet} />
-                </div>
-              </ShowMore>
+              <TxViewTx {tx} {onCancelEdit} {edit} {viewlet} />
             {:else if typeof viewlet.component === 'string'}
-              <Component is={viewlet.component} {props} on:close={onCancelEdit} />
+              <Component is={viewlet.component} {props} on:close={onCancelEdit} inline />
             {:else}
-              <svelte:component this={viewlet.component} {...props} on:close={onCancelEdit} />
+              <svelte:component this={viewlet.component} {...props} on:close={onCancelEdit} inline />
             {/if}
           {/if}
         </div>
-        {#if !hasMessageType}
-          <div class="time"><TimeSince value={tx.tx.modifiedOn} /></div>
+        {#if isComment}
+          <div class="buttons-group">
+            <Like />
+            {#if tx.tx.modifiedBy === getCurrentAccount()._id}
+              <ActionIcon icon={IconMoreH} size={'small'} action={showMenu} />
+            {/if}
+          </div>
+        {:else if hasMessageType || isColumn}
+          <span class="time top ml-4"><TimeSince value={tx.tx.modifiedOn} /></span>
         {/if}
       </div>
 
-      {#if viewlet && viewlet.component && viewlet.display !== 'inline'}
+      {#if !isColumn}
+        <span class="time top ml-4"><TimeSince value={tx.tx.modifiedOn} /></span>
+      {/if}
+
+      {#if viewlet && viewlet.display !== 'inline'}
         <div class="activity-content {viewlet.display}" class:contentHidden>
           <ShowMore ignore={edit}>
             {#if tx.collectionAttribute !== undefined && (tx.txDocIds?.size ?? 0) > 1}
@@ -335,39 +318,83 @@
             {/if}
           </ShowMore>
         </div>
+      {:else if hasMessageType && model.length > 0 && (tx.updateTx || tx.mixinTx)}
+        {#await getValue(client, model[0], tx) then value}
+          <div class="activity-content content" class:contentHidden>
+            <ShowMore ignore={edit}>
+              {#if value.isObjectSet}
+                <ObjectPresenter value={value.set} inline />
+              {:else}
+                <svelte:component this={model[0].presenter} value={value.set} inline />
+              {/if}
+            </ShowMore>
+          </div>
+        {/await}
       {/if}
     </div>
   </div>
 {/if}
 
 <style lang="scss">
-  .comment,
-  .mention {
-    position: relative;
-    margin-top: 0.25rem;
-
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: -0.75rem;
-      left: -0.625rem;
-      right: -0.625rem;
-      background-color: var(--accent-bg-color);
-      border: 1px solid var(--divider-color);
-      border-radius: 0.5rem;
-      z-index: -1;
-    }
-  }
-  .comment::after {
-    top: -0.375rem;
-  }
-  .mention::after {
-    top: -0.5rem;
-  }
-
   .msgactivity-container {
     position: relative;
-    min-width: 0;
+    display: flex;
+    justify-content: space-between;
+
+    &:hover .time {
+      opacity: 1;
+    }
+
+    .msgactivity-icon,
+    .msgactivity-avatar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-right: 1rem;
+      width: 2.25rem;
+      min-width: 2.25rem;
+      color: var(--darker-color);
+    }
+    .msgactivity-icon {
+      height: 1.75rem;
+    }
+    .msgactivity-avatar {
+      height: 2.25rem;
+      // background-color: var(--darker-color);
+      border: 1px dashed var(--divider-trans-color);
+      border-radius: 50%;
+    }
+
+    .msgactivity-content {
+      display: flex;
+      flex-grow: 1;
+      margin-right: 1rem;
+      color: var(--content-color);
+
+      .msgactivity-content__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-grow: 1;
+      }
+      .msgactivity-content__title {
+        display: inline-flex;
+        align-items: center;
+        flex-grow: 1;
+      }
+
+      &.content {
+        flex-direction: column;
+        padding-bottom: 0.25rem;
+      }
+      &:not(.content) {
+        align-items: center;
+
+        .msgactivity-content__header {
+          justify-content: space-between;
+        }
+      }
+    }
   }
 
   .showIcon {
@@ -376,7 +403,8 @@
       position: absolute;
       left: 1.125rem;
       width: 1px;
-      background-color: var(--popup-divider);
+      background-color: var(--divider-trans-color);
+      z-index: 1;
     }
     &.isNew {
       &::before {
@@ -392,12 +420,17 @@
       }
     }
     &::before {
-      top: -1.5rem;
-      height: 1.5rem;
+      top: -0.75rem;
+      height: 0.75rem;
     }
-    &::after {
+    &.withAvatar::after {
       content: '';
       top: 2.25rem;
+      bottom: 0;
+    }
+    &:not(.withAvatar)::after {
+      content: '';
+      top: 1.75rem;
       bottom: 0;
     }
   }
@@ -413,69 +446,28 @@
       opacity: 1;
     }
   }
-  .icon {
-    flex-shrink: 0;
-    align-self: flex-start;
-    margin-right: 1rem;
-    width: 2.25rem;
-    height: 2.25rem;
-    color: var(--caption-color);
-    border: 1px solid var(--popup-divider);
-    border-radius: 50%;
-  }
-
-  .label {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-
-    & > * {
-      margin-right: 0.5rem;
-    }
-    & > *:last-child {
-      margin-right: 0;
-    }
-    .bold {
-      font-weight: 500;
-      color: var(--caption-color);
-    }
-    .strong {
-      font-weight: 500;
-      color: var(--accent-color);
-    }
-  }
 
   .time {
-    align-self: baseline;
-    margin-left: 1rem;
-    color: var(--dark-color);
-  }
+    font-size: 0.75rem;
+    color: var(--trans-color);
+    opacity: 0.3;
 
-  .content {
-    flex-shrink: 0;
-    margin-top: 0.5rem;
-    min-width: 0;
-    min-height: 0;
-  }
-
-  .emphasized {
-    margin-top: 0.5rem;
-    background-color: var(--body-color);
-    border: 1px solid var(--divider-color);
-    border-radius: 0.5rem;
-    padding: 0.75rem 1rem;
+    &.top {
+      align-self: flex-start;
+    }
+    .comment & {
+      opacity: 1;
+    }
   }
 
   .message {
     flex-basis: 100%;
   }
 
-  .lower {
-    text-transform: lowercase;
-  }
   .activity-content {
     overflow: hidden;
     visibility: visible;
+    margin-top: 0.25rem;
     max-height: max-content;
     opacity: 1;
     transition-property: max-height, opacity;

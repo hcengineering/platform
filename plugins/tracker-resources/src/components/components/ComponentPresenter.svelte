@@ -19,7 +19,7 @@
   import tracker from '../../plugin'
 
   export let value: WithLookup<Component>
-  export let withIcon = true
+  export let shouldShowAvatar = true
   export let onClick: () => void | undefined
   export let isInteractive = true
 
@@ -43,7 +43,7 @@
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div class="flex" on:click={navigateToComponent}>
-    {#if withIcon}
+    {#if shouldShowAvatar}
       <div class="mr-2" use:tooltip={{ label: tracker.string.Component }}>
         <Icon icon={tracker.icon.Component} size={'small'} />
       </div>

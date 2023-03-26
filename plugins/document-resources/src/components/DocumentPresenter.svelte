@@ -30,9 +30,11 @@
     href="#{getPanelURI(document.component.EditDoc, value._id, value._class, 'content')}"
     class:inline-presenter={inline}
   >
-    <div class="icon">
-      <Icon icon={document.icon.Document} size={'small'} />
-    </div>
+    {#if !inline}
+      <div class="icon">
+        <Icon icon={document.icon.Document} size={'small'} />
+      </div>
+    {/if}
     <span class="label">{value.name}-{value.version}</span>
   </a>
 {/if}

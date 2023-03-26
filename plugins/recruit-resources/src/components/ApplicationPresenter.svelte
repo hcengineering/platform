@@ -31,9 +31,11 @@
 {#if value && shortLabel}
   <DocNavLink object={value} {inline} {disableClick}>
     <div class="flex-presenter" class:inline-presenter={inline}>
-      <div class="icon">
-        <Icon icon={recruit.icon.Application} size={'small'} />
-      </div>
+      {#if !inline}
+        <div class="icon">
+          <Icon icon={recruit.icon.Application} size={'small'} />
+        </div>
+      {/if}
       <span class="label nowrap">
         {#if shortLabel}{shortLabel}-{/if}{value.number}
       </span>

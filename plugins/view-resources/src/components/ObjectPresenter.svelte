@@ -23,6 +23,7 @@
   export let value: Doc | RelatedDocument | undefined = undefined
   export let props: Record<string, any> = {}
   export let inline: boolean = true
+  export let shouldShowAvatar: boolean = true
 
   const client = getClient()
   let presenter: AttributeModel | undefined
@@ -57,5 +58,5 @@
 </script>
 
 {#if presenter}
-  <svelte:component this={presenter.presenter} value={doc} {...props} {inline} />
+  <svelte:component this={presenter.presenter} value={doc} {...props} {inline} {shouldShowAvatar} />
 {/if}

@@ -26,9 +26,11 @@
 {#if value}
   <DocNavLink object={value} {inline}>
     <div class="flex-presenter" class:inline-presenter={inline}>
-      <div class="icon">
-        <Icon icon={lead.icon.Lead} size={'small'} />
-      </div>
+      {#if !inline}
+        <div class="icon">
+          <Icon icon={lead.icon.Lead} size={'small'} />
+        </div>
+      {/if}
       <span class="label nowrap">LEAD-{value.number}</span>
     </div>
   </DocNavLink>

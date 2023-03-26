@@ -91,16 +91,12 @@
         {#if node.getAttribute('data-objectclass') !== undefined && node.getAttribute('data-id') !== undefined}
           <Component
             is={view.component.ObjectPresenter}
+            inline
             props={{
               objectId: node.getAttribute('data-id'),
               title: node.getAttribute('data-label'),
               _class: node.getAttribute('data-objectclass'),
-              props: {
-                inline: true,
-                avatarSize: 'x-small',
-                withIcon: true
-                // shouldShowAvatar: false
-              }
+              inline: true
             }}
           />
         {:else}

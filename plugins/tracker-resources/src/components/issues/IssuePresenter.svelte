@@ -23,7 +23,7 @@
   export let value: WithLookup<Issue>
   export let disableClick = false
   export let onClick: (() => void) | undefined = undefined
-  export let withIcon = false
+  export let shouldShowAvatar: boolean = false
   export let noUnderline = false
   export let inline = false
 
@@ -49,7 +49,7 @@
 {#if value}
   <DocNavLink object={value} {onClick} {disableClick} {noUnderline} {inline} component={tracker.component.EditIssue}>
     <span class="issuePresenterRoot" class:inline>
-      {#if withIcon}
+      {#if shouldShowAvatar}
         <div class="icon" use:tooltip={{ label: tracker.string.Issue }}>
           <Icon icon={tracker.icon.Issues} size={'small'} />
         </div>

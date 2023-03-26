@@ -26,7 +26,9 @@
 {#if value}
   <DocNavLink {inline} object={value}>
     <div class="flex-presenter" class:inline-presenter={inline}>
-      <div class="icon"><Icon icon={inventory.icon.Products} size={'small'} /></div>
+      {#if !inline}
+        <div class="icon"><Icon icon={inventory.icon.Products} size={'small'} /></div>
+      {/if}
       <span class="label">{value.name}</span>
     </div>
   </DocNavLink>

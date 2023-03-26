@@ -27,6 +27,7 @@
   export let props = {}
   export let shrink: boolean = false
   export let showLoading = true
+  export let inline: boolean = false
 
   $: component = is != null ? getResource(is) : Promise.reject(new Error('is not defined'))
 </script>
@@ -39,11 +40,11 @@
   {:then Ctor}
     <ErrorBoundary>
       {#if $$slots.default !== undefined}
-        <Ctor bind:this={innerRef} {...props} on:change on:close on:open on:click on:delete on:action>
+        <Ctor bind:this={innerRef} {...props} {inline} on:change on:close on:open on:click on:delete on:action>
           <slot />
         </Ctor>
       {:else}
-        <Ctor bind:this={innerRef} {...props} on:change on:close on:open on:click on:delete on:action />
+        <Ctor bind:this={innerRef} {...props} {inline} on:change on:close on:open on:click on:delete on:action />
       {/if}
     </ErrorBoundary>
   {:catch err}

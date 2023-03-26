@@ -135,7 +135,7 @@ async function checkInlineViewlets (
 ): Promise<{ viewlet: TxDisplayViewlet, model: AttributeModel[] }> {
   if (dtx.collectionAttribute !== undefined && (dtx.txDocIds?.size ?? 0) > 1) {
     // Check if we have a class presenter we could have a pseudo viewlet based on class presenter.
-    viewlet = await createPseudoViewlet(client, dtx, activity.string.CollectionUpdated, 'content')
+    viewlet = await createPseudoViewlet(client, dtx, activity.string.CollectionUpdated, 'inline')
   } else if (dtx.tx._class === core.class.TxCreateDoc) {
     // Check if we have a class presenter we could have a pseudo viewlet based on class presenter.
     viewlet = await createPseudoViewlet(client, dtx, activity.string.DocCreated)

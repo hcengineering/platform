@@ -18,6 +18,7 @@
   import { Icon, NavLink } from '@hcengineering/ui'
 
   export let value: Channel
+  export let inline: boolean = false
   const client = getClient()
 
   $: icon = client.getHierarchy().getClass(value._class).icon
@@ -26,11 +27,13 @@
 {#if value}
   <NavLink app={chunterId} space={value._id}>
     <div class="flex-presenter">
-      <div class="icon">
-        {#if icon}
-          <Icon {icon} size={'small'} />
-        {/if}
-      </div>
+      {#if !inline}
+        <div class="icon">
+          {#if icon}
+            <Icon {icon} size={'small'} />
+          {/if}
+        </div>
+      {/if}
       <span class="label">{value.name}</span>
     </div>
   </NavLink>

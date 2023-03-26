@@ -19,14 +19,26 @@
   import { getResource, IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import notification from '@hcengineering/notification'
-  import { Component, Grid, IconActivity, Label, Scroller, Button, showPopup, Spinner } from '@hcengineering/ui'
+  import {
+    Component,
+    Grid,
+    IconActivity,
+    Label,
+    Scroller,
+    Icon,
+    showPopup,
+    Spinner,
+    ActionIcon,
+    eventToHTMLElement
+  } from '@hcengineering/ui'
   import { ActivityKey, activityKey, DisplayTx, newActivity } from '../activity'
   import TxView from './TxView.svelte'
   import { filterCollectionTxes } from '../utils'
   import { Writable } from 'svelte/store'
-  import view from '@hcengineering/view'
   import activityPlg from '../plugin'
   import FilterPopup from './FilterPopup.svelte'
+  import IconFilter from './icons/Filter.svelte'
+  import IconClose from './icons/Close.svelte'
 
   export let object: Doc
   export let integrate: boolean = false
@@ -91,7 +103,7 @@
           loading = false
         }
       },
-      SortingOrder.Descending,
+      SortingOrder.Ascending,
       editableMap ?? new Map()
     )
   }
@@ -110,12 +122,11 @@
     return -1
   }
 
-  let optionsBtn: HTMLButtonElement
-  const handleOptions = () => {
+  const handleOptions = (ev: MouseEvent) => {
     showPopup(
       FilterPopup,
       { selectedFilter, filters },
-      optionsBtn,
+      eventToHTMLElement(ev),
       () => {},
       (res) => {
         if (res === undefined) return
@@ -144,6 +155,7 @@
 </script>
 
 {#if !integrate || transparent}
+  <!-- OLD TRANSPARENT -->
   {#if transparent !== undefined && !transparent}
     <div class="ac-header short mirror-tool highlight">
       <div class="ac-header__wrap-title">
@@ -183,10 +195,10 @@
     {/if}
   </div>
 {:else}
+  <!-- MODERN -->
   <slot />
   <!-- <div class="antiDivider" style:margin={'1rem -1.5rem'} /> -->
-  <div class="antiSection-header mt-6">
-    <div class="antiSection-header__icon"><IconActivity size={'small'} /></div>
+  <div class="antiSection-header high mt-9">
     <span class="antiSection-header__title flex-row-center">
       <Label label={activity.string.Activity} />
       {#if loading}
@@ -196,29 +208,25 @@
       {/if}
     </span>
     {#if selectedFilter === 'All'}
-      <span class="antiSection-header__tag highlight"><Label label={activityPlg.string.All} /></span>
+      <div class="antiSection-header__tag highlight">
+        <Label label={activityPlg.string.All} />
+      </div>
     {:else}
       {#each labels as label}
-        <span class="antiSection-header__tag overflow-label"><Label {label} /></span>
+        <div class="antiSection-header__tag overflow-label">
+          <Label {label} />
+          <div class="tag-icon">
+            <Icon icon={IconClose} size={'small'} />
+          </div>
+        </div>
       {/each}
     {/if}
-    <div class="w-2 min-w-2 max-w-2" />
-    <Button
-      bind:input={optionsBtn}
-      icon={view.icon.ViewButton}
-      kind={'transparent'}
-      shape={'circle'}
-      on:click={handleOptions}
-    />
+    <div class="w-4 min-w-4 max-w-4" />
+    <ActionIcon icon={IconFilter} size={'medium'} action={handleOptions} />
   </div>
-  {#if showCommenInput}
-    <div class="ref-input">
-      <Component is={chunter.component.CommentInput} props={{ object }} />
-    </div>
-  {/if}
   <div class="p-activity select-text" id={activity.string.Activity}>
     {#if filtered}
-      <Grid column={1} rowGap={1.5}>
+      <Grid column={1} rowGap={0.75}>
         {#each filtered as tx, i}
           <TxView
             {tx}
@@ -230,6 +238,11 @@
       </Grid>
     {/if}
   </div>
+  {#if showCommenInput}
+    <div class="ref-input">
+      <Component is={chunter.component.CommentInput} props={{ object }} />
+    </div>
+  {/if}
 {/if}
 
 <style lang="scss">
@@ -240,13 +253,14 @@
   }
   .ref-input {
     flex-shrink: 0;
-    padding: 0.75rem 0;
+    margin-top: 1.75rem;
+    padding-bottom: 2.5rem;
   }
   .p-activity {
-    padding: 1.5rem 0;
+    margin-top: 1.75rem;
   }
 
-  :global(.grid .msgactivity-container:last-child::after) {
+  :global(.grid .msgactivity-container.showIcon:last-child::after) {
     content: none;
   } // Remove the line in the last Activity message
 </style>
