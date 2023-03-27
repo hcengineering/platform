@@ -317,6 +317,16 @@
           color: var(--content-color);
         }
       }
+      &:disabled {
+        color: var(--accent-color);
+        background-color: transparent;
+        border-color: transparent;
+        cursor: auto;
+
+        .btn-icon {
+          color: var(--content-color);
+        }
+      }
     }
     &.link-bordered {
       padding: 0 0.375rem;
