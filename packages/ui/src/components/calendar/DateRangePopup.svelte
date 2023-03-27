@@ -86,7 +86,9 @@
             <div
               class="btn"
               on:click={() => {
-                const shiftedDate = new Date(currentDate.getTime() + value * base)
+                const abs = Math.abs(value)
+                let shiftedDate = new Date(currentDate.getTime() + value * base)
+                if (abs < DAY && abs >= HOUR) shiftedDate = new Date(Date.now() + value * base)
                 dispatch('change', shiftedDate)
               }}
             >
