@@ -29,6 +29,7 @@
       e.stopPropagation()
       onClick(e)
     } else if (href !== undefined) {
+      if (e.metaKey || e.ctrlKey) return
       try {
         const url = new URL(href)
 
