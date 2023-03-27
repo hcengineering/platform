@@ -243,6 +243,7 @@
     appliedTemplateId = templateId
     const tagElements = await client.findAll(tags.class.TagElement, { _id: { $in: labels } })
     object.labels = tagElements.map(tagAsRef)
+    fillDefaults(hierarchy, object, tracker.class.Issue)
   }
 
   $: template && updateTemplate(template)

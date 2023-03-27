@@ -85,6 +85,7 @@
           label={setting.string.SelectAValue}
           kind={'no-border'}
           size={'small'}
+          allowDeselect
           {type}
           value={defaultValue ?? ''}
           onChange={(e) => {
