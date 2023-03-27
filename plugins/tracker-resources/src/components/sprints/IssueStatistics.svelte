@@ -17,7 +17,7 @@
   import { Issue } from '@hcengineering/tracker'
   import { floorFractionDigits, Label } from '@hcengineering/ui'
   import tracker from '../../plugin'
-  import { statusByIdStore } from '../../utils'
+  import { statusStore } from '../../utils'
   import EstimationProgressCircle from '../issues/timereport/EstimationProgressCircle.svelte'
   import TimePresenter from '../issues/timereport/TimePresenter.svelte'
   export let docs: Issue[] | undefined = undefined
@@ -28,13 +28,13 @@
   $: noParents = docs?.filter((it) => !ids.has(it.attachedTo as Ref<Issue>))
 
   $: rootNoBacklogIssues = noParents?.filter(
-    (it) => $statusByIdStore.get(it.status)?.category !== tracker.issueStatusCategory.Backlog
+    (it) => $statusStore.byId.get(it.status)?.category !== tracker.issueStatusCategory.Backlog
   )
 
   $: totalEstimation = floorFractionDigits(
     (rootNoBacklogIssues ?? [{ estimation: 0, childInfo: [] } as unknown as Issue])
       .map((it) => {
-        const cat = $statusByIdStore.get(it.status)?.category
+        const cat = $statusStore.byId.get(it.status)?.category
 
         let retEst = it.estimation
         if (it.childInfo?.length > 0) {

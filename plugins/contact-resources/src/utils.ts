@@ -34,10 +34,8 @@ import { FilterQuery } from '@hcengineering/view-resources'
 import { get, writable } from 'svelte/store'
 import contact from './plugin'
 
-const client = getClient()
-
 export async function getChannelProviders (): Promise<Map<Ref<ChannelProvider>, ChannelProvider>> {
-  const cp = await client.findAll(contact.class.ChannelProvider, {})
+  const cp = await getClient().findAll(contact.class.ChannelProvider, {})
   const map = new Map<Ref<ChannelProvider>, ChannelProvider>()
   for (const provider of cp) {
     map.set(provider._id, provider)

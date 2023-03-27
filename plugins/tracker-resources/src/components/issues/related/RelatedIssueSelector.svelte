@@ -29,7 +29,7 @@
   } from '@hcengineering/ui'
   import { getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
-  import { statusByIdStore, statusStore, subIssueListProvider } from '../../../utils'
+  import { statusStore, subIssueListProvider } from '../../../utils'
 
   export let object: WithLookup<Doc & { related: number }> | undefined
   export let value: WithLookup<Doc & { related: number }> | undefined
@@ -69,7 +69,7 @@
   }
 
   $: if (subIssues) {
-    const doneStatuses = $statusStore
+    const doneStatuses = $statusStore.statuses
       .filter((s) => s.category === tracker.issueStatusCategory.Completed)
       .map((p) => p._id)
     countComplete = subIssues.filter((si) => doneStatuses.includes(si.status)).length
@@ -101,7 +101,7 @@
           value: subIssues.map((iss) => {
             const text = currentProject ? `${getIssueId(currentProject, iss)} ${iss.title}` : iss.title
 
-            return { id: iss._id, text, isSelected: false, ...getIssueStatusIcon(iss, $statusByIdStore) }
+            return { id: iss._id, text, isSelected: false, ...getIssueStatusIcon(iss, $statusStore.byId) }
           }),
           width: 'large'
         },

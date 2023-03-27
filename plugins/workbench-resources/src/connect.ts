@@ -39,6 +39,8 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
   _token = token
 
+  let clientSet = false
+
   const clientFactory = await getResource(client.function.GetClient)
   _client = await clientFactory(
     token,
@@ -54,7 +56,15 @@ export async function connect (title: string): Promise<Client | undefined> {
       })
     },
     // We need to refresh all active live queries and clear old queries.
-    refreshClient
+    () => {
+      try {
+        if (clientSet) {
+          refreshClient()
+        }
+      } catch (err) {
+        console.error(err)
+      }
+    }
   )
   console.log('logging in as', email)
 
@@ -72,6 +82,7 @@ export async function connect (title: string): Promise<Client | undefined> {
 
     // Update on connect, so it will be triggered
     setClient(_client)
+    clientSet = true
     return
   }
 
@@ -105,6 +116,7 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   return _client
 }
+
 function clearMetadata (ws: string): void {
   const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
   if (tokens !== null) {

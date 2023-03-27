@@ -40,5 +40,8 @@ export const calcRank = (prev?: { rank: string }, next?: { rank: string }): stri
   const a = prev?.rank !== undefined ? LexoRank.parse(prev.rank) : LexoRank.min()
   const b = next?.rank !== undefined ? LexoRank.parse(next.rank) : LexoRank.max()
 
+  if (a.equals(b)) {
+    return a.genNext().toString()
+  }
   return a.between(b).toString()
 }

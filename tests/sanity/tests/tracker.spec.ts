@@ -205,9 +205,7 @@ test('create-issue-draft', async ({ page }) => {
 
   // Click text=Issues >> nth=1
   await page.locator('text=Issues').nth(1).click()
-  await expect(page).toHaveURL(
-    'http://localhost:8083/workbench/sanity-ws/tracker/tracker%3Aproject%3ADefaultProject/issues'
-  )
+  await expect(page).toHaveURL(/.*\/workbench\/sanity-ws\/tracker\/tracker%3Aproject%3ADefaultProject\/issues/)
   await expect(page.locator('#new-issue')).toHaveText('New issue')
   // Click button:has-text("New issue")
   await page.locator('#new-issue').click()
