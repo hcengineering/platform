@@ -58,6 +58,7 @@
 
   export let create: ObjectCreate | undefined = undefined
   export let readonly = false
+  export let disallowDeselect: Ref<Doc>[] | undefined = undefined
 
   let search: string = ''
   let objects: Doc[] = []
@@ -191,6 +192,8 @@
   }
 
   $: updateLocation(scrollDiv, selectedDiv, objects, selected)
+
+  const forbiddenDeselectItemIds = new Set(disallowDeselect)
 </script>
 
 <FocusHandler {manager} />
@@ -246,11 +249,12 @@
         </svelte:fragment>
         <svelte:fragment slot="item" let:item>
           {@const obj = objects[item]}
+          {@const isDeselectDisabled = selectedElements.has(obj._id) && forbiddenDeselectItemIds.has(obj._id)}
           <button
             class="menu-item w-full flex-row-center"
             class:background-button-bg-color={!allowDeselect && obj._id === selected}
             class:border-radius-1={!allowDeselect && obj._id === selected}
-            disabled={readonly}
+            disabled={readonly || isDeselectDisabled}
             on:click={() => {
               handleSelection(undefined, objects, item)
             }}
@@ -271,7 +275,7 @@
               </div>
             {/if}
 
-            <span class="label" class:disabled={readonly}>
+            <span class="label" class:disabled={readonly || isDeselectDisabled}>
               {#if obj._id === selected}
                 <div bind:this={selectedDiv}>
                   <slot name="item" item={obj} />
@@ -282,7 +286,7 @@
             </span>
             {#if multiSelect}
               <div class="check-right pointer-events-none">
-                <CheckBox checked={selectedElements.has(obj._id)} primary />
+                <CheckBox checked={selectedElements.has(obj._id)} primary readonly={readonly || isDeselectDisabled} />
               </div>
             {/if}
           </button>
