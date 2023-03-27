@@ -25,6 +25,7 @@
   export let action: Asset | AnySvelteComponent | undefined = undefined
   export let selected: boolean = false
   export let schema: '0' | '3' | '9' = '9'
+  export let inline: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -33,35 +34,51 @@
   $: tagIcon = schema === '3' ? undefined : tagLevel[(((tag?.weight ?? 0) % 3) + 1) as 1 | 2 | 3]
 </script>
 
-<div
-  class="text-sm flex flex-between tag-item"
-  style={`${getTagStyle(getPlatformColor(tag?.color ?? element?.color ?? 0), selected)}`}
-  on:click
-  on:keydown
-  use:tooltip={{
-    label: element?.description ? tags.string.TagTooltip : undefined,
-    props: { text: element?.description },
-    direction: 'right'
-  }}
->
-  {name}
-  <span class="ml-1">
-    {#if tag && tagIcon && schema !== '0'}
-      <Icon icon={tagIcon} size={'small'} />
-    {/if}
+{#if inline}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <span
+    style={`--tag-color:${getPlatformColor(tag?.color ?? element?.color ?? 0)}`}
+    class="tag-item-inline"
+    on:click
+    use:tooltip={{
+      label: element?.description ? tags.string.TagTooltip : undefined,
+      props: { text: element?.description },
+      direction: 'right'
+    }}
+  >
+    {name}
   </span>
-  {#if action}
-    <div class="ml-1">
-      <ActionIcon
-        icon={action}
-        size={'medium'}
-        action={() => {
-          dispatch('action')
-        }}
-      />
-    </div>
-  {/if}
-</div>
+{:else}
+  <div
+    class="text-sm flex flex-between tag-item"
+    style={`${getTagStyle(getPlatformColor(tag?.color ?? element?.color ?? 0), selected)}`}
+    on:click
+    on:keydown
+    use:tooltip={{
+      label: element?.description ? tags.string.TagTooltip : undefined,
+      props: { text: element?.description },
+      direction: 'right'
+    }}
+  >
+    {name}
+    <span class="ml-1">
+      {#if tag && tagIcon && schema !== '0'}
+        <Icon icon={tagIcon} size={'small'} />
+      {/if}
+    </span>
+    {#if action}
+      <div class="ml-1">
+        <ActionIcon
+          icon={action}
+          size={'medium'}
+          action={() => {
+            dispatch('action')
+          }}
+        />
+      </div>
+    {/if}
+  </div>
+{/if}
 
 <style lang="scss">
   .tag-item {
@@ -82,5 +99,24 @@
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+  .tag-item-inline {
+    position: relative;
+    padding-left: 0.75rem;
+    font-weight: 500;
+    color: var(--accent-color);
+
+    &::before {
+      position: absolute;
+      content: '';
+      top: 50%;
+      left: 0;
+      width: 0.25rem;
+      height: 0.25rem;
+      background-color: var(--tag-color);
+      border-radius: 50%;
+      transform: translateY(-50%);
+      z-index: 1;
+    }
   }
 </style>

@@ -21,40 +21,23 @@
   }
 </script>
 
-<div class="flex-row-center flex-grow flex-wrap content">
-  {#each filterTx([...tx.txes, tx], core.class.TxCreateDoc) as ctx, i}
-    {#if i === 0}
-      <div class="mr-2"><IconAdd size={'small'} /></div>
-    {/if}
-    <div class="mr-2">
-      {#if typeof viewlet?.component === 'string'}
-        <Component is={viewlet?.component} props={getProps(ctx, edit)} on:close={onCancelEdit} />
-      {:else}
-        <svelte:component this={viewlet?.component} {...getProps(ctx, edit)} on:close={onCancelEdit} />
-      {/if}
-    </div>
-  {/each}
-  {#each filterTx([...tx.txes, tx], core.class.TxRemoveDoc) as ctx, i}
-    {#if i === 0}
-      <div class="mr-2"><IconDelete size={'small'} /></div>
-    {/if}
-    <div class="mr-2">
-      {#if typeof viewlet?.component === 'string'}
-        <Component is={viewlet?.component} props={getProps(ctx, edit)} on:close={onCancelEdit} />
-      {:else}
-        <svelte:component this={viewlet?.component} {...getProps(ctx, edit)} on:close={onCancelEdit} />
-      {/if}
-    </div>
-  {/each}
-</div>
-
-<style lang="scss">
-  .content {
-    padding: 0.5rem;
-    min-width: 0;
-    color: var(--accent-color);
-    background: var(--accent-bg-color);
-    border: 1px solid var(--divider-color);
-    border-radius: 0.75rem;
-  }
-</style>
+{#each filterTx([...tx.txes, tx], core.class.TxCreateDoc) as ctx, i}
+  {#if i === 0}
+    <IconAdd size={'x-small'} fill={'var(--trans-color)'} />
+  {/if}
+  {#if typeof viewlet?.component === 'string'}
+    <Component is={viewlet?.component} props={getProps(ctx, edit)} inline on:close={onCancelEdit} />
+  {:else}
+    <svelte:component this={viewlet?.component} {...getProps(ctx, edit)} inline on:close={onCancelEdit} />
+  {/if}
+{/each}
+{#each filterTx([...tx.txes, tx], core.class.TxRemoveDoc) as ctx, i}
+  {#if i === 0}
+    <IconDelete size={'x-small'} fill={'var(--trans-color)'} />
+  {/if}
+  {#if typeof viewlet?.component === 'string'}
+    <Component is={viewlet?.component} props={getProps(ctx, edit)} inline on:close={onCancelEdit} />
+  {:else}
+    <svelte:component this={viewlet?.component} {...getProps(ctx, edit)} inline on:close={onCancelEdit} />
+  {/if}
+{/each}

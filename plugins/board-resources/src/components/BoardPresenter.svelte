@@ -29,9 +29,11 @@
     class:inline-presenter={inline}
     href="#{getPanelURI(view.component.EditDoc, value._id, value._class, 'content')}"
   >
-    <div class="icon">
-      <Icon icon={board.icon.Board} size={'small'} />
-    </div>
+    {#if !inline}
+      <div class="icon">
+        <Icon icon={board.icon.Board} size={'small'} />
+      </div>
+    {/if}
     <span class="label">{value.name}</span>
   </a>
 {/if}

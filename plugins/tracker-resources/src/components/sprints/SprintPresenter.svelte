@@ -19,7 +19,7 @@
   import tracker from '../../plugin'
 
   export let value: WithLookup<Sprint>
-  export let withIcon = true
+  export let shouldShowAvatar: boolean = true
   export let onClick: () => void | undefined
   export let isInteractive = true
 
@@ -42,7 +42,7 @@
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div class="flex" on:click={navigateToSprint}>
-    {#if withIcon}
+    {#if shouldShowAvatar}
       <div class="mr-2" use:tooltip={{ label: tracker.string.Sprint }}>
         <Icon icon={tracker.icon.Sprint} size={'small'} />
       </div>

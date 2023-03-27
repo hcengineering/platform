@@ -127,7 +127,7 @@
     color: var(--white-color);
     background-color: var(--primary-bg-color);
     border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 0.5rem;
+    border-radius: 0.25rem;
     cursor: pointer;
 
     .remove-btn {
@@ -140,12 +140,20 @@
       width: 100%;
       height: 100%;
       background-color: var(--primary-bg-hover);
-      border-radius: 0.5rem;
+      border-radius: 0.25rem;
       opacity: 0;
     }
   }
   .attachment-container {
-    margin-right: 1rem;
+    margin-right: 0.5rem;
+    // padding: .375rem;
+    // width: 14rem;
+    // min-width: 14rem;
+    // max-width: 14rem;
+    // background-color: var(--accent-bg-color);
+    // border: 1px solid var(--divider-color);
+    // border-radius: .25rem;
+
     &:hover .remove-btn {
       opacity: 1;
     }

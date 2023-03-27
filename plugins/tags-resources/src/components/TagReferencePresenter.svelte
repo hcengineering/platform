@@ -25,13 +25,16 @@
   export let kind: 'labels' | 'kanban-labels' | 'skills' = 'skills'
   export let realWidth: number | undefined = undefined
   export let attr: AnyAttribute | undefined
+  export let inline: boolean = false
 
   const dispatch = createEventDispatcher()
   $: tagIcon = tagLevel[(((value?.weight ?? 0) % 3) + 1) as 1 | 2 | 3]
 </script>
 
 {#if value}
-  {#if kind === 'skills'}
+  {#if inline}
+    <TagItem tag={value} schema={attr?.schema ?? '0'} inline />
+  {:else if kind === 'skills'}
     <TagItem tag={value} schema={attr?.schema ?? '0'} />
   {:else if kind === 'kanban-labels'}
     <button

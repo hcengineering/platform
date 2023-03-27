@@ -29,9 +29,9 @@
 {#if value}
   <DocNavLink {disableClick} object={value} {inline} component={recruit.component.EditVacancy}>
     <div class="flex-presenter" class:inline-presenter={inline} use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
-      <div class="icon">
-        <Icon icon={recruit.icon.Vacancy} size={'small'} />
-      </div>
+      {#if !inline}
+        <div class="icon"><Icon icon={recruit.icon.Vacancy} size={'small'} /></div>
+      {/if}
       <span class="label">{value.name}</span>
     </div>
   </DocNavLink>

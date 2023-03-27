@@ -57,13 +57,11 @@
 </script>
 
 {#if presenter}
-  {#if targetPresenter}
-    <div class="mx-2">
-      <svelte:component this={targetPresenter.presenter} value={target} />
-    </div>
-  {/if}
-  <span style:text-transform={'lowercase'}><Label label={chunter.string.In} /></span>
-  <div class="ml-2">
-    <svelte:component this={presenter.presenter} value={doc} />
-  </div>
+  <span class="labels-row">
+    {#if targetPresenter}
+      <svelte:component this={targetPresenter.presenter} value={target} inline />
+    {/if}
+    <span style:text-transform={'lowercase'}><Label label={chunter.string.In} /></span>
+    <svelte:component this={presenter.presenter} value={doc} inline />
+  </span>
 {/if}

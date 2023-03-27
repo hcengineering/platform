@@ -305,7 +305,12 @@
     height: 2.5rem;
     min-height: 2.5rem;
     border-bottom: 1px solid var(--divider-color);
-
+    
+    &.high {
+      padding-right: 1rem;
+      height: 3.5rem;
+      min-height: 3.5rem;
+    }
     &__icon {
       display: flex;
       justify-content: center;
@@ -316,7 +321,6 @@
     }
     &__title {
       min-width: 0;
-      font-weight: 500;
       font-size: 1rem;
       color: var(--caption-color);
       
@@ -353,16 +357,28 @@
       border-radius: 1rem;
     }  
     &__tag {
-      padding: .125rem .25rem;
+      display: flex;
+      align-items: center;
+      padding: .3125rem .5rem;
       min-width: 0;
-      font-size: .8125rem;
+      font-size: .875rem;
       background-color: var(--accent-bg-color);
       color: var(--dark-color);
+      border: 1px solid var(--divider-color);
       border-radius: .25rem;
+
+      .tag-icon {
+        margin-left: .5rem;
+        width: 1rem;
+        height: 1rem;
+        color: var(--accent-color);
+
+        &:hover { color: var(--caption-color); }
+      }
 
       &.highlight { color: var(--content-color); }
     }
-    &__tag + &__tag { margin-left: .125rem; }
+    &__tag + &__tag { margin-left: .375rem; }
   }
   .invisible { display: none; }
   &-empty {

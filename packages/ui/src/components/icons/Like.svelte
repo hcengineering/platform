@@ -1,6 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,19 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ScrollerBar } from '@hcengineering/ui'
-
-  export let value: string
-  export let inline: boolean = false
-  let divScroll: HTMLElement
+  export let size: 'small' | 'medium' | 'large'
+  const fill: string = 'currentColor'
 </script>
 
-{#if inline}
-  <a href={value} target="_blank" rel="noreferrer" class="select-text">{value}</a>
-{:else}
-  <div class="clear-mins max-w-80">
-    <ScrollerBar bind:scroller={divScroll}>
-      <a href={value} target="_blank" rel="noreferrer" class="select-text">{value}</a>
-    </ScrollerBar>
-  </div>
-{/if}
+<svg class="svg-{size}" {fill} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <path d="M0.8,7.3v7c0,0.5,0.4,0.9,0.9,0.9h1.4V6.3H1.7C1.2,6.3,0.8,6.8,0.8,7.3z" />
+  <path
+    d="M13.3,6.3H9.8c0.5-0.9,1.3-3,0.8-4.2C10,0.7,8.2,0.6,8,0.9C7.8,1.3,5.8,4.7,4.8,6.3v8.9h6.5c1.9,0,2.6-0.7,2.8-1.5c0.2-0.9,0.7-3.3,1-5S14.2,6.3,13.3,6.3z"
+  />
+</svg>

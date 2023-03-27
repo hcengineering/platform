@@ -48,7 +48,7 @@
       class:text-base={enlargedText}
       class:inline-presenter={inline}
     >
-      {#if shouldShowAvatar}
+      {#if !inline && shouldShowAvatar}
         <span
           class="eContentPresenterIcon"
           class:mr-2={shouldShowName && !enlargedText}
@@ -70,7 +70,7 @@
 {:else if shouldShowPlaceholder}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <span use:tooltip={showTooltip} on:click={onEditClick} class="contentPresenter" class:text-base={enlargedText}>
-    {#if shouldShowAvatar}
+    {#if !inline && shouldShowAvatar}
       <span
         class="eContentPresenterIcon"
         class:mr-2={shouldShowName && !enlargedText}
