@@ -1,14 +1,14 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -16,15 +16,20 @@
   import type { IntlString } from '@hcengineering/platform'
   import { translate } from '@hcengineering/platform'
 
-  export let label: IntlString
+  export let label: IntlString | undefined
   export let params: Record<string, any> = {}
 
   let _value: string | undefined = undefined
 
   $: if (label !== undefined) {
-    translate(label, params ?? {}).then((r) => {
-      _value = r
-    })
+    translate(label, params ?? {}).then(
+      (r) => {
+        _value = r
+      },
+      () => {
+        _value = undefined
+      }
+    )
   } else {
     _value = label
   }
@@ -32,6 +37,6 @@
 
 {#if _value !== undefined}
   {_value}
-{:else}
+{:else if label !== undefined}
   {label}
 {/if}
