@@ -58,7 +58,7 @@
 
   export let create: ObjectCreate | undefined = undefined
   export let readonly = false
-  export let forbiddenDeselectItemIds: Set<Ref<Doc>> = new Set()
+  export let disallowDeselect: Ref<Doc>[] | undefined = undefined
 
   let search: string = ''
   let objects: Doc[] = []
@@ -192,6 +192,8 @@
   }
 
   $: updateLocation(scrollDiv, selectedDiv, objects, selected)
+
+  const forbiddenDeselectItemIds = new Set(disallowDeselect)
 </script>
 
 <FocusHandler {manager} />
