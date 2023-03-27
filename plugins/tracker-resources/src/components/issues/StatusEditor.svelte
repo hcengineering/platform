@@ -65,7 +65,7 @@
     )
   }
 
-  $: statuses = $statusStore.filter((it) => it.attachedTo === value?.space)
+  $: statuses = $statusStore.statuses.filter((it) => it.attachedTo === value?.space)
 
   $: selectedStatus = statuses?.find((status) => status._id === value.status) ?? statuses?.[0]
   $: selectedStatusLabel = shouldShowLabel ? selectedStatus?.name : undefined

@@ -15,6 +15,7 @@
 <svg
   class="svg-{size}"
   {fill}
+  id={category._id}
   style:transform={category._id === tracker.issueStatusCategory.Started ? 'rotate(-90deg)' : ''}
   viewBox="0 0 14 14"
   xmlns="http://www.w3.org/2000/svg"

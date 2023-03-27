@@ -50,7 +50,7 @@ class RequestPromise {
   resolve!: (value?: any) => void
   reject!: (reason?: any) => void
   reconnect?: () => void
-  constructor () {
+  constructor (readonly method: string, readonly params: any[]) {
     this.promise = new Promise((resolve, reject) => {
       this.resolve = resolve
       this.reject = reject
@@ -64,6 +64,7 @@ class Connection implements ClientConnection {
   private lastId = 0
   private readonly interval: number
   private readonly sessionId = generateId() as string
+  private closed = false
 
   constructor (
     private readonly url: string,
@@ -80,6 +81,7 @@ class Connection implements ClientConnection {
   }
 
   async close (): Promise<void> {
+    this.closed = true
     clearInterval(this.interval)
     if (this.websocket !== null) {
       if (this.websocket instanceof Promise) {
@@ -158,7 +160,7 @@ class Connection implements ClientConnection {
           }
           this.requests.delete(resp.id)
           if (resp.error !== undefined) {
-            console.log('ERROR', resp.id)
+            console.log('ERROR', promise, resp.id)
             promise.reject(new PlatformError(resp.error))
           } else {
             promise.resolve(resp.result)
@@ -212,8 +214,11 @@ class Connection implements ClientConnection {
     // If not defined, on reconnect with timeout, will retry automatically.
     retry?: () => Promise<boolean>
   }): Promise<any> {
+    if (this.closed) {
+      throw new PlatformError(unknownError('connection closed'))
+    }
     const id = this.lastId++
-    const promise = new RequestPromise()
+    const promise = new RequestPromise(data.method, data.params)
 
     const sendData = async (): Promise<void> => {
       if (this.websocket instanceof Promise) {

@@ -4,7 +4,7 @@
   import { Issue, IssueStatus } from '@hcengineering/tracker'
   import { Label, ticker } from '@hcengineering/ui'
   import tracker from '../../plugin'
-  import { statusByIdStore } from '../../utils'
+  import { statusStore } from '../../utils'
   import Duration from './Duration.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
 
@@ -83,7 +83,7 @@
     displaySt = result
   }
 
-  $: updateStatus(txes, $statusByIdStore, $ticker)
+  $: updateStatus(txes, $statusStore.byId, $ticker)
 </script>
 
 <div class="flex-row mt-4 mb-4">

@@ -104,6 +104,10 @@ export function getClient (): TxOperations {
  * @public
  */
 export function setClient (_client: Client): void {
+  if (liveQuery !== undefined) {
+    void liveQuery.close()
+  }
+  const needRefresh = liveQuery !== undefined
   liveQuery = new LQ(_client)
   client = new UIClient(_client, liveQuery)
   _client.notify = (tx: Tx) => {
@@ -111,16 +115,22 @@ export function setClient (_client: Client): void {
 
     txListeners.forEach((it) => it(tx))
   }
+  if (needRefresh) {
+    refreshClient()
+  }
 }
 
 /**
  * @public
  */
 export function refreshClient (): void {
-  if (liveQuery !== undefined) {
-    void liveQuery.refreshConnect()
+  void liveQuery?.refreshConnect()
+  for (const q of globalQueries) {
+    q.refreshClient()
   }
 }
+
+const globalQueries: LiveQuery[] = []
 
 /**
  * @public
@@ -137,6 +147,8 @@ export class LiveQuery {
       onDestroy(() => {
         this.unsubscribe()
       })
+    } else {
+      globalQueries.push(this)
     }
   }
 
@@ -149,11 +161,21 @@ export class LiveQuery {
     if (!this.needUpdate(_class, query, callback, options)) {
       return false
     }
+    return this.doQuery<T>(_class, query, callback, options)
+  }
+
+  private doQuery<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    callback: (result: FindResult<T>) => void,
+    options: FindOptions<T> | undefined
+  ): boolean {
     this.unsubscribe()
     this.oldCallback = callback
     this.oldClass = _class
     this.oldOptions = options
     this.oldQuery = query
+
     const unsub = liveQuery.query(_class, query, callback, options)
     this.unsubscribe = () => {
       unsub()
@@ -164,6 +186,16 @@ export class LiveQuery {
       this.unsubscribe = () => {}
     }
     return true
+  }
+
+  refreshClient (): void {
+    if (this.oldClass !== undefined && this.oldQuery !== undefined && this.oldCallback !== undefined) {
+      const _class = this.oldClass
+      const query = this.oldQuery
+      const callback = this.oldCallback
+      const options = this.oldOptions
+      this.doQuery(_class, query, callback, options)
+    }
   }
 
   private needUpdate<T extends Doc>(

@@ -677,16 +677,27 @@ export async function removeProject (project: Project): Promise<void> {
   await client.removeDoc(tracker.class.Project, core.space.Space, project._id)
 }
 
+/**
+ * @public
+ */
+export interface StatusStore {
+  statuses: Array<WithLookup<IssueStatus>>
+  byId: IdMap<WithLookup<IssueStatus>>
+  version: number
+}
 // Issue status live query
-export const statusByIdStore = writable<IdMap<WithLookup<IssueStatus>>>(new Map())
-export const statusStore = writable<Array<WithLookup<IssueStatus>>>([])
+export const statusStore = writable<StatusStore>({ statuses: [], byId: new Map(), version: 0 })
+
 const query = createQuery(true)
 query.query(
   tracker.class.IssueStatus,
   {},
   (res) => {
-    statusStore.set(res)
-    statusByIdStore.set(toIdMap(res))
+    statusStore.update((old) => ({
+      version: old.version + 1,
+      statuses: res,
+      byId: toIdMap(res)
+    }))
   },
   {
     lookup: {

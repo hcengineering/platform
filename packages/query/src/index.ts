@@ -64,13 +64,18 @@ interface Query {
  * @public
  */
 export class LiveQuery extends TxProcessor implements Client {
-  private readonly client: Client
+  private client: Client
   private readonly queries: Map<Ref<Class<Doc>>, Query[]> = new Map<Ref<Class<Doc>>, Query[]>()
   private readonly queue: Query[] = []
 
   constructor (client: Client) {
     super()
     this.client = client
+  }
+
+  async updateClient (client: Client): Promise<void> {
+    this.client = client
+    await this.refreshConnect()
   }
 
   async close (): Promise<void> {
@@ -89,7 +94,20 @@ export class LiveQuery extends TxProcessor implements Client {
   async refreshConnect (): Promise<void> {
     for (const q of [...this.queue]) {
       if (!(await this.removeFromQueue(q))) {
-        await this.refresh(q)
+        try {
+          await this.refresh(q)
+        } catch (err) {
+          console.error(err)
+        }
+      }
+    }
+    for (const v of this.queries.values()) {
+      for (const q of v) {
+        try {
+          await this.refresh(q)
+        } catch (err) {
+          console.error(err)
+        }
       }
     }
   }

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { IssueStatus } from '@hcengineering/tracker'
-  import { statusByIdStore } from '../../utils'
+  import { statusStore } from '../../utils'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
 
   export let value: IssueStatus | undefined
@@ -22,7 +22,7 @@
 </script>
 
 {#if value}
-  {@const icon = $statusByIdStore.get(value._id)?.$lookup?.category?.icon}
+  {@const icon = $statusStore.byId.get(value._id)?.$lookup?.category?.icon}
   <div class="flex-presenter">
     {#if icon}
       <IssueStatusIcon {value} {size} />

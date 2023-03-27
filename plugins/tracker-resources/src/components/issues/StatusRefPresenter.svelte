@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { IssueStatus } from '@hcengineering/tracker'
-  import { statusByIdStore } from '../../utils'
+  import { statusStore } from '../../utils'
   import StatusPresenter from './StatusPresenter.svelte'
 
   export let value: Ref<IssueStatus> | undefined
@@ -23,5 +23,5 @@
 </script>
 
 {#if value}
-  <StatusPresenter value={$statusByIdStore.get(value)} {size} />
+  <StatusPresenter value={$statusStore.byId.get(value)} {size} />
 {/if}

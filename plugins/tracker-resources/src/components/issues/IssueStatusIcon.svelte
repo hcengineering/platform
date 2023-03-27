@@ -40,7 +40,7 @@
 
   $: if (value.category === tracker.issueStatusCategory.Started) {
     const _s = [
-      ...$statusStore.filter(
+      ...$statusStore.statuses.filter(
         (it) => it.attachedTo === value.attachedTo && it.category === tracker.issueStatusCategory.Started
       )
     ]
