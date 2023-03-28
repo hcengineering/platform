@@ -21,11 +21,11 @@ import core, {
   Collection,
   Doc,
   DocumentQuery,
-  DocumentUpdate,
-  IdMap,
-  Ref,
+
+  DocumentUpdate, Ref,
   SortingOrder,
   Space,
+  StatusCategory,
   toIdMap,
   TxCollectionCUD,
   TxOperations,
@@ -35,6 +35,7 @@ import core, {
 import { TypeState } from '@hcengineering/kanban'
 import { Asset, IntlString, translate } from '@hcengineering/platform'
 import { createQuery, getClient } from '@hcengineering/presentation'
+import { calcRank } from '@hcengineering/task'
 import {
   Component,
   ComponentStatus,
@@ -59,10 +60,8 @@ import {
 } from '@hcengineering/ui'
 import { ViewletDescriptor } from '@hcengineering/view'
 import { CategoryQuery, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
-import { writable } from 'svelte/store'
 import tracker from './plugin'
 import { defaultComponentStatuses, defaultPriorities, defaultSprintStatuses, issuePriorities } from './types'
-import { calcRank } from '@hcengineering/task'
 
 export * from './types'
 
@@ -353,14 +352,24 @@ export async function issueStatusSort (
     query.query(tracker.class.IssueStatus, { _id: { $in: value } }, (res) => {
       if (viewletDescriptorId === tracker.viewlet.Kanban) {
         res.sort((a, b) => {
-          const res = listIssueKanbanStatusOrder.indexOf(a.category) - listIssueKanbanStatusOrder.indexOf(b.category)
+          const res =
+            listIssueKanbanStatusOrder.indexOf(a.category as Ref<StatusCategory>) -
+            listIssueKanbanStatusOrder.indexOf(b.category as Ref<StatusCategory>)
           if (res === 0) {
             return a.rank.localeCompare(b.rank)
           }
           return res
         })
       } else {
-        res.sort((a, b) => listIssueStatusOrder.indexOf(a.category) - listIssueStatusOrder.indexOf(b.category))
+        res.sort((a, b) => {
+          const res =
+            listIssueStatusOrder.indexOf(a.category as Ref<StatusCategory>) -
+            listIssueStatusOrder.indexOf(b.category as Ref<StatusCategory>)
+          if (res === 0) {
+            return a.rank.localeCompare(b.rank)
+          }
+          return res
+        })
       }
       resolve(res.map((p) => p._id))
       query.unsubscribe()
@@ -682,15 +691,6 @@ export async function removeProject (project: Project): Promise<void> {
   await client.removeDoc(tracker.class.Project, core.space.Space, project._id)
 }
 
-/**
- * @public
- */
-export interface StatusStore {
-  statuses: Array<WithLookup<IssueStatus>>
-  byId: IdMap<WithLookup<IssueStatus>>
-  version: number
-}
-
 async function updateIssuesOnMove (
   client: TxOperations,
   applyOps: ApplyOperations,
@@ -761,27 +761,3 @@ export async function moveIssueToSpace (
   }
   await applyOps.commit()
 }
-
-// Issue status live query
-export const statusStore = writable<StatusStore>({ statuses: [], byId: new Map(), version: 0 })
-
-const query = createQuery(true)
-query.query(
-  tracker.class.IssueStatus,
-  {},
-  (res) => {
-    statusStore.update((old) => ({
-      version: old.version + 1,
-      statuses: res,
-      byId: toIdMap(res)
-    }))
-  },
-  {
-    lookup: {
-      category: tracker.class.IssueStatusCategory
-    },
-    sort: {
-      rank: SortingOrder.Ascending
-    }
-  }
-)

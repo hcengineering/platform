@@ -15,11 +15,11 @@
 <script lang="ts">
   import contact, { Employee } from '@hcengineering/contact'
   import { employeeByIdStore, employeesStore } from '@hcengineering/contact-resources'
-  import { Class, Doc, DocumentQuery, generateId, IdMap, Lookup, Ref, toIdMap, WithLookup } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, generateId, Lookup, Ref, WithLookup } from '@hcengineering/core'
   import { Kanban, TypeState } from '@hcengineering/kanban'
   import notification from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient, statusStore } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import {
     Component as ComponentType,
@@ -50,9 +50,9 @@
     Menu,
     noCategory,
     SelectDirection,
-    selectionStore
+    selectionStore,
+    sortCategories
   } from '@hcengineering/view-resources'
-  import { sortCategories } from '@hcengineering/view-resources/src/utils'
   import { onMount } from 'svelte'
   import tracker from '../../plugin'
   import { issuesGroupBySorting, mapKanbanCategories } from '../../utils'
@@ -154,23 +154,6 @@
     }
   )
 
-  const statusesQuery = createQuery()
-  let statuses: WithLookup<IssueStatus>[] = []
-  let statusesMap: IdMap<IssueStatus> = new Map()
-  $: statusesQuery.query(
-    tracker.class.IssueStatus,
-    {
-      space: currentSpace
-    },
-    (result) => {
-      statuses = result
-      statusesMap = toIdMap(result)
-    },
-    {
-      lookup: { category: tracker.class.IssueStatusCategory }
-    }
-  )
-
   const componentsQuery = createQuery()
   let components: ComponentType[] = []
   $: componentsQuery.query(
@@ -205,7 +188,7 @@
     groupBy,
     viewOptions,
     viewOptionsConfig,
-    statuses,
+    $statusStore.statuses,
     components,
     sprints,
     $employeesStore
@@ -218,7 +201,7 @@
       groupBy,
       viewOptions,
       viewOptionsConfig,
-      statuses,
+      $statusStore.statuses,
       components,
       sprints,
       $employeesStore
@@ -299,7 +282,7 @@
     on:contextmenu={(evt) => showMenu(evt.detail.evt, evt.detail.objects)}
   >
     <svelte:fragment slot="header" let:state let:count>
-      {@const status = statusesMap.get(state._id)}
+      {@const status = $statusStore.get(state._id)}
       <div class="header flex-col">
         <div class="flex-between label font-medium w-full h-full">
           <div class="flex-row-center gap-2">

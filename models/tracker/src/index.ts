@@ -47,30 +47,29 @@ import {
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
-import core, { DOMAIN_SPACE, TAttachedDoc, TDoc, TSpace, TType } from '@hcengineering/model-core'
+import core, { DOMAIN_SPACE, TAttachedDoc, TDoc, TSpace, TStatus, TType } from '@hcengineering/model-core'
 import view, { actionTemplates, classPresenter, createAction } from '@hcengineering/model-view'
 import workbench, { createNavigateAction } from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
-import { Asset, IntlString } from '@hcengineering/platform'
+import { IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import tags, { TagElement } from '@hcengineering/tags'
 import task from '@hcengineering/task'
 import {
+  Component,
+  ComponentStatus,
   Issue,
   IssueChildInfo,
   IssueParentInfo,
   IssuePriority,
   IssueStatus,
-  IssueStatusCategory,
   IssueTemplate,
   IssueTemplateChild,
-  Component,
-  ComponentStatus,
+  Project,
   Scrum,
   ScrumRecord,
   Sprint,
   SprintStatus,
-  Project,
   TimeReportDayType,
   TimeSpendReport,
   trackerId
@@ -89,34 +88,8 @@ export const DOMAIN_TRACKER = 'tracker' as Domain
 /**
  * @public
  */
-@Model(tracker.class.IssueStatus, core.class.AttachedDoc, DOMAIN_TRACKER)
-export class TIssueStatus extends TAttachedDoc implements IssueStatus {
-  @Index(IndexKind.Indexed)
-    name!: string
-
-  description?: string
-  color?: number
-
-  @Prop(TypeRef(tracker.class.IssueStatusCategory), tracker.string.StatusCategory)
-  @Index(IndexKind.Indexed)
-    category!: Ref<IssueStatusCategory>
-
-  @Prop(TypeString(), tracker.string.Rank)
-  @Hidden()
-    rank!: string
-}
-
-/**
- * @public
- */
-@Model(tracker.class.IssueStatusCategory, core.class.Doc, DOMAIN_MODEL)
-export class TIssueStatusCategory extends TDoc implements IssueStatusCategory {
-  label!: IntlString
-  icon!: Asset
-  color!: number
-  defaultStatusName!: string
-  order!: number
-}
+@Model(tracker.class.IssueStatus, core.class.Status)
+export class TIssueStatus extends TStatus implements IssueStatus {}
 
 /**
  * @public
@@ -207,7 +180,7 @@ export class TIssue extends TAttachedDoc implements Issue {
   @Index(IndexKind.FullText)
     description!: Markup
 
-  @Prop(TypeRef(tracker.class.IssueStatus), tracker.string.Status)
+  @Prop(TypeRef(tracker.class.IssueStatus), tracker.string.Status, { _id: tracker.attribute.IssueStatus })
   @Index(IndexKind.Indexed)
     status!: Ref<IssueStatus>
 
@@ -498,7 +471,6 @@ export function createModel (builder: Builder): void {
     TIssue,
     TIssueTemplate,
     TIssueStatus,
-    TIssueStatusCategory,
     TTypeIssuePriority,
     TTypeComponentStatus,
     TSprint,
@@ -773,9 +745,10 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    tracker.class.IssueStatusCategory,
+    core.class.StatusCategory,
     core.space.Model,
     {
+      ofAttribute: tracker.attribute.IssueStatus,
       label: tracker.string.CategoryBacklog,
       icon: tracker.icon.CategoryBacklog,
       color: 12,
@@ -786,9 +759,10 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    tracker.class.IssueStatusCategory,
+    core.class.StatusCategory,
     core.space.Model,
     {
+      ofAttribute: tracker.attribute.IssueStatus,
       label: tracker.string.CategoryUnstarted,
       icon: tracker.icon.CategoryUnstarted,
       color: 13,
@@ -799,9 +773,10 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    tracker.class.IssueStatusCategory,
+    core.class.StatusCategory,
     core.space.Model,
     {
+      ofAttribute: tracker.attribute.IssueStatus,
       label: tracker.string.CategoryStarted,
       icon: tracker.icon.CategoryStarted,
       color: 14,
@@ -812,9 +787,10 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    tracker.class.IssueStatusCategory,
+    core.class.StatusCategory,
     core.space.Model,
     {
+      ofAttribute: tracker.attribute.IssueStatus,
       label: tracker.string.CategoryCompleted,
       icon: tracker.icon.CategoryCompleted,
       color: 15,
@@ -825,9 +801,10 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    tracker.class.IssueStatusCategory,
+    core.class.StatusCategory,
     core.space.Model,
     {
+      ofAttribute: tracker.attribute.IssueStatus,
       label: tracker.string.CategoryCanceled,
       icon: tracker.icon.CategoryCanceled,
       color: 16,
@@ -870,6 +847,14 @@ export function createModel (builder: Builder): void {
     presenters: [tracker.component.IssueStatistics]
   })
 
+  builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: tracker.component.StatusPresenter
+  })
+
+  builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: tracker.component.StatusRefPresenter
+  })
+
   builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.SortFuncs, {
     func: tracker.function.IssueStatusSort
   })
@@ -892,14 +877,6 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AttributeFilter, {
     component: view.component.ValueFilter
-  })
-
-  builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: tracker.component.StatusPresenter
-  })
-
-  builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: tracker.component.StatusRefPresenter
   })
 
   builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AttributePresenter, {
@@ -1342,7 +1319,7 @@ export function createModel (builder: Builder): void {
 
   const statusOptions: FindOptions<IssueStatus> = {
     lookup: {
-      category: tracker.class.IssueStatusCategory
+      category: core.class.StatusCategory
     },
     sort: { rank: SortingOrder.Ascending }
   }
@@ -1377,6 +1354,9 @@ export function createModel (builder: Builder): void {
         attribute: 'status',
         _class: tracker.class.IssueStatus,
         placeholder: tracker.string.SetStatus,
+        query: {
+          ofAttribute: tracker.attribute.IssueStatus
+        },
         fillQuery: {
           space: 'space'
         },

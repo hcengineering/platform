@@ -14,35 +14,31 @@
 //
 
 import { Employee, EmployeeAccount } from '@hcengineering/contact'
-import type { AttachedDoc, Class, Doc, Markup, Ref, RelatedDocument, Space, Timestamp, Type } from '@hcengineering/core'
+import type {
+  AttachedDoc,
+  Attribute,
+  Class,
+  Doc,
+  Markup,
+  Ref,
+  RelatedDocument,
+  Space,
+  Status,
+  StatusCategory,
+  Timestamp,
+  Type
+} from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { TagCategory, TagElement } from '@hcengineering/tags'
+import { TagReference } from '@hcengineering/tags'
 import { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
 import { Action, ActionCategory } from '@hcengineering/view'
-import { TagReference } from '@hcengineering/tags'
 
 /**
  * @public
  */
-export interface IssueStatus extends AttachedDoc {
-  name: string
-  description?: string
-  color?: number
-  category: Ref<IssueStatusCategory>
-  rank: string
-}
-
-/**
- * @public
- */
-export interface IssueStatusCategory extends Doc {
-  icon: Asset
-  label: IntlString
-  color: number
-  defaultStatusName: string
-  order: number
-}
+export interface IssueStatus extends Status {}
 
 /**
  * @public
@@ -391,7 +387,6 @@ export default plugin(trackerId, {
     IssueTemplate: '' as Ref<Class<IssueTemplate>>,
     Component: '' as Ref<Class<Component>>,
     IssueStatus: '' as Ref<Class<IssueStatus>>,
-    IssueStatusCategory: '' as Ref<Class<IssueStatusCategory>>,
     TypeIssuePriority: '' as Ref<Class<Type<IssuePriority>>>,
     TypeComponentStatus: '' as Ref<Class<Type<ComponentStatus>>>,
     Sprint: '' as Ref<Class<Sprint>>,
@@ -417,12 +412,15 @@ export default plugin(trackerId, {
     CreateIssue: '' as AnyComponent,
     CreateIssueTemplate: '' as AnyComponent
   },
+  attribute: {
+    IssueStatus: '' as Ref<Attribute<Status>>
+  },
   issueStatusCategory: {
-    Backlog: '' as Ref<IssueStatusCategory>,
-    Unstarted: '' as Ref<IssueStatusCategory>,
-    Started: '' as Ref<IssueStatusCategory>,
-    Completed: '' as Ref<IssueStatusCategory>,
-    Canceled: '' as Ref<IssueStatusCategory>
+    Backlog: '' as Ref<StatusCategory>,
+    Unstarted: '' as Ref<StatusCategory>,
+    Started: '' as Ref<StatusCategory>,
+    Completed: '' as Ref<StatusCategory>,
+    Canceled: '' as Ref<StatusCategory>
   },
   icon: {
     TrackerApplication: '' as Asset,

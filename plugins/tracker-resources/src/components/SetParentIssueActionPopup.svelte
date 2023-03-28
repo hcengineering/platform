@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachedData, FindOptions, Ref, SortingOrder } from '@hcengineering/core'
+  import core, { AttachedData, FindOptions, Ref, SortingOrder } from '@hcengineering/core'
   import { getClient, ObjectPopup } from '@hcengineering/presentation'
   import { calcRank, Issue, IssueDraft } from '@hcengineering/tracker'
   import { createEventDispatcher } from 'svelte'
@@ -29,7 +29,7 @@
   const options: FindOptions<Issue> = {
     lookup: {
       space: tracker.class.Project,
-      status: [tracker.class.IssueStatus, { category: tracker.class.IssueStatusCategory }]
+      status: [tracker.class.IssueStatus, { category: core.class.StatusCategory }]
     },
     sort: { modifiedOn: SortingOrder.Descending }
   }

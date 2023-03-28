@@ -28,6 +28,8 @@
     "Hyperlink": "URL",
     "Object": "Объект",
     "System": "Система",
-    "CreatedBy": "Автор"
+    "CreatedBy": "Автор",
+    "Status": "Статус",
+    "StatusCategory": "Категория статуса"
   }
 }

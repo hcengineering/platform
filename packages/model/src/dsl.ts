@@ -131,7 +131,7 @@ export function Prop (type: Type<PropertyType>, label: IntlString, extra: Partia
       modifiedBy: core.account.System,
       modifiedOn: Date.now(),
       objectSpace: core.space.Model,
-      objectId: propertyKey as Ref<Attribute<PropertyType>>,
+      objectId: extra._id ?? (propertyKey as Ref<Attribute<PropertyType>>),
       objectClass: core.class.Attribute,
       attributes: {
         ...extra,
@@ -240,7 +240,8 @@ function generateIds (objectId: Ref<Doc>, txes: TxCreateDoc<Attribute<PropertyTy
   return txes.map((tx) => {
     const withId = {
       ...tx,
-      objectId: `${objectId}_${tx.objectId}`
+      // Do not override custom attribute id if specified
+      objectId: tx.objectId !== tx.attributes.name ? tx.objectId : `${objectId}_${tx.objectId}`
     }
     withId.attributes.attributeOf = objectId as Ref<Class<Obj>>
     return withId

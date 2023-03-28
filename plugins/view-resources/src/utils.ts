@@ -27,13 +27,15 @@ import core, {
   Ref,
   RefTo,
   ReverseLookup,
+  StatusValue,
   ReverseLookups,
   Space,
+  Status,
   TxOperations
 } from '@hcengineering/core'
 import type { IntlString } from '@hcengineering/platform'
 import { getResource } from '@hcengineering/platform'
-import { AttributeCategory, getAttributePresenterClass, KeyedAttribute } from '@hcengineering/presentation'
+import { AttributeCategory, createQuery, getAttributePresenterClass, KeyedAttribute } from '@hcengineering/presentation'
 import {
   AnyComponent,
   ErrorPresenter,
@@ -521,7 +523,32 @@ export async function getCategories (
   if (key === noCategory) return [undefined]
   const existingCategories = Array.from(new Set(docs.map((x: any) => x[key] ?? undefined)))
 
-  return await sortCategories(client, _class, existingCategories, key, viewletDescriptorId)
+  const result = await sortCategories(client, _class, existingCategories, key, viewletDescriptorId)
+
+  const h = client.getHierarchy()
+  // group categories
+  const attr = h.getAttribute(_class, key)
+  if (attr.type._class === core.class.RefTo && h.isDerived((attr.type as RefTo<Doc>).to, core.class.Status)) {
+    const statuses = await client.findAll(core.class.Status, { _id: { $in: result as unknown as Array<Ref<Status>> } })
+    // We have status attribute and need perform group.
+    const newResult: StatusValue[] = []
+    const unique = [...new Set(statuses.map((v) => v.name))]
+    unique.forEach((label, i) => {
+      let count = 0
+      statuses.forEach((state) => {
+        if (state.name === label) {
+          if (count === 0) {
+            newResult[i] = { name: state.name, value: [state._id], color: state.color }
+          } else {
+            newResult[i] = { name: state.name, value: [...newResult[i].value, state._id], color: state.color }
+          }
+          count++
+        }
+      })
+    })
+    return newResult.map((it) => (it.value.length === 1 ? it.value[0] : it))
+  }
+  return result
 }
 
 export async function sortCategories (
@@ -665,4 +692,35 @@ export async function getObjectLinkFragment (
   const loc = getCurrentLocation()
   loc.fragment = getPanelURI(component, object._id, Hierarchy.mixinOrClass(object), 'content')
   return loc
+}
+
+export async function statusSort (
+  value: Array<Ref<Status>>,
+  viewletDescriptorId?: Ref<ViewletDescriptor>
+): Promise<Array<Ref<Status>>> {
+  return await new Promise((resolve) => {
+    // TODO: How we track category updates.
+    const query = createQuery(true)
+    query.query(
+      core.class.Status,
+      { _id: { $in: value } },
+      (res) => {
+        res.sort((a, b) => {
+          const res = (a.$lookup?.category?.order ?? 0) - (b.$lookup?.category?.order ?? 0)
+          if (res === 0) {
+            return a.rank.localeCompare(b.rank)
+          }
+          return res
+        })
+
+        resolve(res.map((p) => p._id))
+        query.unsubscribe()
+      },
+      {
+        sort: {
+          rank: 1
+        }
+      }
+    )
+  })
 }

@@ -21,6 +21,7 @@ import core, {
   generateId,
   Ref,
   SortingOrder,
+  StatusCategory,
   TxCollectionCUD,
   TxCreateDoc,
   TxOperations,
@@ -28,14 +29,13 @@ import core, {
   TxUpdateDoc
 } from '@hcengineering/core'
 import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
-import { DOMAIN_SPACE } from '@hcengineering/model-core'
+import { DOMAIN_SPACE, DOMAIN_STATUS } from '@hcengineering/model-core'
 import tags from '@hcengineering/tags'
 import {
   calcRank,
   genRanks,
   Issue,
   IssueStatus,
-  IssueStatusCategory,
   IssueTemplate,
   IssueTemplateChild,
   Project,
@@ -55,9 +55,9 @@ enum DeprecatedIssueStatus {
 interface CreateProjectIssueStatusesArgs {
   tx: TxOperations
   projectId: Ref<Project>
-  categories: IssueStatusCategory[]
+  categories: StatusCategory[]
   defaultStatusId?: Ref<IssueStatus>
-  defaultCategoryId?: Ref<IssueStatusCategory>
+  defaultCategoryId?: Ref<StatusCategory>
 }
 
 const categoryByDeprecatedIssueStatus = {
@@ -81,15 +81,14 @@ async function createProjectIssueStatuses ({
     const { _id: category, defaultStatusName } = statusCategory
     const rank = issueStatusRanks[i]
 
-    await tx.addCollection(
-      tracker.class.IssueStatus,
-      attachedTo,
-      attachedTo,
-      tracker.class.Project,
-      'issueStatuses',
-      { name: defaultStatusName, category, rank },
-      category === defaultCategoryId ? defaultStatusId : undefined
-    )
+    if (defaultStatusName !== undefined) {
+      await tx.createDoc(
+        tracker.class.IssueStatus,
+        attachedTo,
+        { ofAttribute: tracker.attribute.IssueStatus, name: defaultStatusName, category, rank },
+        category === defaultCategoryId ? defaultStatusId : undefined
+      )
+    }
   }
 }
 
@@ -105,11 +104,7 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
   // Create new if not deleted by customers.
   if (current === undefined && currentDeleted === undefined) {
     const defaultStatusId: Ref<IssueStatus> = generateId()
-    const categories = await tx.findAll(
-      tracker.class.IssueStatusCategory,
-      {},
-      { sort: { order: SortingOrder.Ascending } }
-    )
+    const categories = await tx.findAll(core.class.StatusCategory, {}, { sort: { order: SortingOrder.Ascending } })
 
     await tx.createDoc<Project>(
       tracker.class.Project,
@@ -137,7 +132,7 @@ async function fixProjectIssueStatusesOrder (tx: TxOperations, project: Project)
   const statuses = await tx.findAll(
     tracker.class.IssueStatus,
     { attachedTo: project._id },
-    { lookup: { category: tracker.class.IssueStatusCategory } }
+    { lookup: { category: core.class.StatusCategory } }
   )
   statuses.sort((a, b) => (a.$lookup?.category?.order ?? 0) - (b.$lookup?.category?.order ?? 0))
   const issueStatusRanks = genRanks(statuses.length)
@@ -170,11 +165,7 @@ async function upgradeProjectIssueStatuses (tx: TxOperations): Promise<void> {
   const projects = await tx.findAll(tracker.class.Project, { issueStatuses: undefined })
 
   if (projects.length > 0) {
-    const categories = await tx.findAll(
-      tracker.class.IssueStatusCategory,
-      {},
-      { sort: { order: SortingOrder.Ascending } }
-    )
+    const categories = await tx.findAll(core.class.StatusCategory, {}, { sort: { order: SortingOrder.Ascending } })
 
     for (const project of projects) {
       const defaultStatusId: Ref<IssueStatus> = generateId()
@@ -754,6 +745,22 @@ export const trackerOperation: MigrateOperation = {
     await fillRank(client)
     await renameProject(client)
     await setCreate(client)
+
+    // Move all status objects into status domain
+    await client.move(
+      DOMAIN_TRACKER,
+      {
+        _class: tracker.class.IssueStatus
+      },
+      DOMAIN_STATUS
+    )
+    await client.update(
+      DOMAIN_STATUS,
+      { _class: tracker.class.IssueStatus, ofAttribute: { $exists: false } },
+      {
+        ofAttribute: tracker.attribute.IssueStatus
+      }
+    )
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)

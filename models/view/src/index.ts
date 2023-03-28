@@ -774,6 +774,18 @@ export function createModel (builder: Builder): void {
     },
     view.action.Open
   )
+
+  builder.mixin(core.class.Status, core.class.Class, view.mixin.SortFuncs, {
+    func: view.function.StatusSort
+  })
+
+  builder.mixin(core.class.Status, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: view.component.StatusPresenter
+  })
+
+  builder.mixin(core.class.Status, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: view.component.StatusRefPresenter
+  })
 }
 
 export default view

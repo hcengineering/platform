@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, generateId, Lookup, Ref, Space } from '@hcengineering/core'
+  import { Class, Doc, generateId, Lookup, Ref, Space, StatusValue } from '@hcengineering/core'
   import { getResource, IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { AnyComponent } from '@hcengineering/ui'
@@ -121,10 +121,22 @@
   $: extraHeaders = getAdditionalHeader(client, _class)
 
   const dispatch = createEventDispatcher()
+
+  function getCategoryValues (groupedDocs: Record<string, Doc[]>, category: any | StatusValue): Doc[] {
+    if (typeof category === 'object') {
+      let r: Doc[] = []
+      for (const rr of category.value) {
+        r = r.concat(groupedDocs[rr] ?? [])
+      }
+      return r
+    } else {
+      return groupedDocs[category] ?? []
+    }
+  }
 </script>
 
 {#each categories as category, i (category)}
-  {@const items = groupedDocs[category] ?? []}
+  {@const items = getCategoryValues(groupedDocs, category)}
   <ListCategory
     {elementByIndex}
     {indexById}

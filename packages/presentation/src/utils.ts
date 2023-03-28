@@ -43,10 +43,14 @@ import view, { AttributeEditor } from '@hcengineering/view'
 import { deepEqual } from 'fast-equals'
 import { onDestroy } from 'svelte'
 import { KeyedAttribute } from '..'
+import { PresentationPipeline, PresentationPipelineImpl } from './pipeline'
 import plugin from './plugin'
+import { StatusMiddleware, statusStore } from './status'
+export { statusStore }
 
 let liveQuery: LQ
 let client: TxOperations
+let pipeline: PresentationPipeline
 
 const txListeners: Array<(tx: Tx) => void> = []
 
@@ -68,7 +72,7 @@ export function removeTxListener (l: (tx: Tx) => void): void {
 }
 
 class UIClient extends TxOperations implements Client {
-  constructor (client: Client, private readonly liveQuery: LQ) {
+  constructor (client: Client, private readonly liveQuery: Client) {
     super(client, getCurrentAccount()._id)
   }
 
@@ -89,7 +93,7 @@ class UIClient extends TxOperations implements Client {
   }
 
   override async tx (tx: Tx): Promise<TxResult> {
-    return await super.tx(tx)
+    return await this.client.tx(tx)
   }
 }
 
@@ -107,9 +111,14 @@ export function setClient (_client: Client): void {
   if (liveQuery !== undefined) {
     void liveQuery.close()
   }
+  pipeline = PresentationPipelineImpl.create(_client, [StatusMiddleware.create])
+
   const needRefresh = liveQuery !== undefined
-  liveQuery = new LQ(_client)
-  client = new UIClient(_client, liveQuery)
+  liveQuery = new LQ(pipeline)
+  client = new UIClient(pipeline, liveQuery)
+
+  void pipeline.initialize()
+
   _client.notify = (tx: Tx) => {
     liveQuery.tx(tx).catch((err) => console.log(err))
 
@@ -142,8 +151,8 @@ export class LiveQuery {
   private oldCallback: ((result: FindResult<any>) => void) | undefined
   unsubscribe = () => {}
 
-  constructor (dontDestroy: boolean = false) {
-    if (!dontDestroy) {
+  constructor (noDestroy: boolean = false) {
+    if (!noDestroy) {
       onDestroy(() => {
         this.unsubscribe()
       })
@@ -177,14 +186,20 @@ export class LiveQuery {
     this.oldQuery = query
 
     const unsub = liveQuery.query(_class, query, callback, options)
+    const removeQuery = pipeline.subscribe(_class, query, options, () => {
+      // Refresh query if pipeline decide it is required.
+      refreshClient()
+    })
     this.unsubscribe = () => {
       unsub()
+      removeQuery()
       this.oldCallback = undefined
       this.oldClass = undefined
       this.oldOptions = undefined
       this.oldQuery = undefined
       this.unsubscribe = () => {}
     }
+
     return true
   }
 

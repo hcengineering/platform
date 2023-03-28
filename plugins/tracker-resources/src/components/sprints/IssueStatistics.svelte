@@ -17,7 +17,7 @@
   import { Issue } from '@hcengineering/tracker'
   import { floorFractionDigits, Label } from '@hcengineering/ui'
   import tracker from '../../plugin'
-  import { statusStore } from '../../utils'
+  import { statusStore } from '@hcengineering/presentation'
   import EstimationProgressCircle from '../issues/timereport/EstimationProgressCircle.svelte'
   import TimePresenter from '../issues/timereport/TimePresenter.svelte'
   export let docs: Issue[] | undefined = undefined

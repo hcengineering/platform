@@ -90,6 +90,7 @@ export default mergeIds(trackerId, tracker, {
     Low: '' as IntlString,
     Title: '' as IntlString,
     Identifier: '' as IntlString,
+    IdentifierExists: '' as IntlString,
     Description: '' as IntlString,
     Status: '' as IntlString,
     DefaultIssueStatus: '' as IntlString,
