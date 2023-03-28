@@ -157,6 +157,8 @@
     "Assigned": "Назначенные",
     "Created": "{value, plural, =1 {Создана} other {Созданные}}",
     "Subscribed": "Отслеживаемые",
+    "MoveIssues": "Переместить задачи",
+    "MoveIssuesDescription": "Выберите проект, в который вы хотите переместить задачи.",
 
     "Relations": "Зависимости",
     "RemoveRelation": "Удалить зависимость...",

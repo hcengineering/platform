@@ -170,6 +170,8 @@ export default mergeIds(trackerId, tracker, {
     NumberLabels: '' as IntlString,
     MoveToProject: '' as IntlString,
     Duplicate: '' as IntlString,
+    MoveIssues: '' as IntlString,
+    MoveIssuesDescription: '' as IntlString,
 
     TypeIssuePriority: '' as IntlString,
     IssueTitlePlaceholder: '' as IntlString,

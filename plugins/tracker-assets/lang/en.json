@@ -157,6 +157,8 @@
     "Assigned": "Assigned",
     "Created": "Created",
     "Subscribed": "Subscribed",
+    "MoveIssues": "Move issues",
+    "MoveIssuesDescription": "Select the project you want to move issues to.",
 
     "Relations": "Relations",
     "RemoveRelation": "Remove relation...",

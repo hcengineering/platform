@@ -15,10 +15,8 @@
 -->
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { Button, Label, Status as StatusControl } from '@hcengineering/ui'
-
-  import core, { Class, Client, Doc, Ref, SortingOrder } from '@hcengineering/core'
-  import { getResource, OK, Resource, Status, translate } from '@hcengineering/platform'
+  import { Button, Label } from '@hcengineering/ui'
+  import core, { Ref, SortingOrder } from '@hcengineering/core'
   import { SpaceSelect } from '@hcengineering/presentation'
   import { calcRank } from '@hcengineering/task'
   import { createEventDispatcher } from 'svelte'
@@ -30,23 +28,17 @@
   export let selected: Issue | Issue[]
   $: docs = Array.isArray(selected) ? selected : [selected]
 
-  let status: Status = OK
   let currentSpace: Project | undefined
   const client = getClient()
   const dispatch = createEventDispatcher()
   const hierarchy = client.getHierarchy()
-  let label = ''
   let space: Ref<Project>
 
-  $: _class = currentSpace ? hierarchy.getClass(currentSpace._class).label : undefined
-  let classLabel = ''
+  $: _class = hierarchy.getClass(tracker.class.Project).label
   $: {
     const doc = docs[0]
     if (space === undefined) space = doc.space
-    translate(hierarchy.getClass(doc._class).label, {}).then((res) => (label = res.toLocaleLowerCase()))
   }
-  $: _class && translate(_class, {}).then((res) => (classLabel = res.toLocaleLowerCase()))
-
   async function move (doc: Issue): Promise<void> {
     const spaceObject = await client.findOne(tracker.class.Project, { _id: space })
     if (spaceObject === undefined) {
@@ -78,41 +70,14 @@
   async function getSpace (): Promise<void> {
     client.findOne(tracker.class.Project, { _id: space }).then((res) => (currentSpace = res))
   }
-
-  async function invokeValidate (
-    doc: Doc,
-    action: Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
-  ): Promise<Status> {
-    const impl = await getResource(action)
-    return await impl(doc, client)
-  }
-
-  async function validate (doc: Doc, _class: Ref<Class<Doc>>): Promise<void> {
-    const clazz = hierarchy.getClass(_class)
-    const validatorMixin = hierarchy.as(clazz, view.mixin.ObjectValidator)
-    if (validatorMixin?.validator != null) {
-      status = await invokeValidate(doc, validatorMixin.validator)
-    } else if (clazz.extends != null) {
-      await validate(doc, clazz.extends)
-    } else {
-      status = OK
-    }
-  }
-
-  $: {
-    docs.forEach((doc) => {
-      validate(doc, doc._class)
-    })
-  }
 </script>
 
 <div class="container">
   <div class="overflow-label fs-title">
-    <Label label={view.string.MoveClass} params={{ class: label }} />
+    <Label label={tracker.string.MoveIssues} />
   </div>
-  <StatusControl {status} />
   <div class="content-accent-color mt-4 mb-4">
-    <Label label={view.string.SelectToMove} params={{ class: label, classLabel }} />
+    <Label label={tracker.string.MoveIssuesDescription} />
   </div>
   <div class="spaceSelect">
     {#await getSpace() then}
@@ -125,7 +90,7 @@
     <Button
       label={view.string.Move}
       size={'small'}
-      disabled={space === currentSpace?._id || status !== OK}
+      disabled={space === currentSpace?._id}
       kind={'primary'}
       on:click={moveAll}
     />
