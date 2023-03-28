@@ -49,7 +49,7 @@
 {#if value}
   <DocNavLink object={value} {onClick} {disableClick} {noUnderline} {inline} component={tracker.component.EditIssue}>
     <span class="issuePresenterRoot" class:inline>
-      {#if shouldShowAvatar}
+      {#if !inline && shouldShowAvatar}
         <div class="icon" use:tooltip={{ label: tracker.string.Issue }}>
           <Icon icon={tracker.icon.Issues} size={'small'} />
         </div>

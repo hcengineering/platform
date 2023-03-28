@@ -19,15 +19,16 @@
 
   export let value: IssueStatus | undefined
   export let size: 'small' | 'medium' = 'small'
+  export let inline: boolean = false
 </script>
 
 {#if value}
   {@const icon = $statusStore.byId.get(value._id)?.$lookup?.category?.icon}
   <div class="flex-presenter">
-    {#if icon}
+    {#if !inline && icon}
       <IssueStatusIcon {value} {size} />
     {/if}
-    <span class="overflow-label" class:ml-2={icon !== undefined}>
+    <span class="overflow-label" class:ml-2={!inline && icon !== undefined}>
       {value.name}
     </span>
   </div>
