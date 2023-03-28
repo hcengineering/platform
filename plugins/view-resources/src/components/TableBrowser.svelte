@@ -31,6 +31,7 @@
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let config: (BuildModelKey | string)[]
   export let showFilterBar = true
+  export let enableChecking = true
 
   // If defined, will show a number of dummy items before real data will appear.
   export let loadingProps: LoadingProps | undefined = undefined
@@ -92,7 +93,7 @@
     {baseMenuClass}
     {loadingProps}
     highlightRows={true}
-    enableChecking
+    {enableChecking}
     showFooter
     checked={$selectionStore ?? []}
     {prefferedSorting}
