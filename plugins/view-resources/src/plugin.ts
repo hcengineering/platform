@@ -28,9 +28,6 @@ export default mergeIds(viewId, view, {
     ProxyPresenter: '' as AnyComponent
   },
   string: {
-    MoveClass: '' as IntlString,
-    SelectToMove: '' as IntlString,
-    Cancel: '' as IntlString,
     LabelYes: '' as IntlString,
     LabelNo: '' as IntlString,
     ChooseAColor: '' as IntlString,

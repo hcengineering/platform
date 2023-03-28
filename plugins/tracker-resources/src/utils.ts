@@ -15,9 +15,12 @@
 
 import { Employee, getName } from '@hcengineering/contact'
 import core, {
+  AttachedDoc,
   Class,
+  Collection,
   Doc,
   DocumentQuery,
+  DocumentUpdate,
   IdMap,
   Ref,
   SortingOrder,
@@ -58,6 +61,7 @@ import { CategoryQuery, ListSelectionProvider, SelectDirection } from '@hcengine
 import { writable } from 'svelte/store'
 import tracker from './plugin'
 import { defaultComponentStatuses, defaultPriorities, defaultSprintStatuses, issuePriorities } from './types'
+import { calcRank } from '@hcengineering/task'
 
 export * from './types'
 
@@ -685,6 +689,50 @@ export interface StatusStore {
   byId: IdMap<WithLookup<IssueStatus>>
   version: number
 }
+
+/**
+ * @public
+ */
+export async function moveIssueToSpace (
+  client: TxOperations,
+  doc: Doc,
+  space: Ref<Project>,
+  extra?: DocumentUpdate<any>
+): Promise<void> {
+  const hierarchy = client.getHierarchy()
+  const attributes = hierarchy.getAllAttributes(doc._class)
+  for (const [name, attribute] of attributes) {
+    if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) {
+      const collection = attribute.type as Collection<AttachedDoc>
+      const allAttached = await client.findAll(collection.of, { attachedTo: doc._id })
+      for (const attached of allAttached) {
+        // Do not use extra for childs.
+        if (name === 'subIssues') {
+          const lastOne = await client.findOne(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
+          const incResult = await client.updateDoc(
+            tracker.class.Project,
+            core.space.Space,
+            space,
+            {
+              $inc: { sequence: 1 }
+            },
+            true
+          )
+          await moveIssueToSpace(client, attached, space, {
+            ...extra,
+            rank: calcRank(lastOne, undefined),
+            number: (incResult as any).object.sequence
+          }).catch((err) => console.log('failed to move', name, err))
+        } else await moveIssueToSpace(client, attached, space).catch((err) => console.log('failed to move', name, err))
+      }
+    }
+  }
+  await client.update(doc, {
+    space,
+    ...extra
+  })
+}
+
 // Issue status live query
 export const statusStore = writable<StatusStore>({ statuses: [], byId: new Map(), version: 0 })
 

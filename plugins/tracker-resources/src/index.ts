@@ -132,6 +132,7 @@ import IssueStatistics from './components/sprints/IssueStatistics.svelte'
 import SprintRefPresenter from './components/sprints/SprintRefPresenter.svelte'
 import CreateProject from './components/projects/CreateProject.svelte'
 import ProjectPresenter from './components/projects/ProjectPresenter.svelte'
+import MoveIssues from './components/issues/Move.svelte'
 
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 
@@ -188,6 +189,10 @@ export async function queryIssue<D extends Issue> (
     icon: tracker.icon.TrackerApplication,
     component: IssueItem
   }))
+}
+
+async function move (issues: Issue | Issue[]): Promise<void> {
+  showPopup(MoveIssues, { selected: issues })
 }
 
 async function editWorkflowStatuses (project: Project | undefined): Promise<void> {
@@ -436,6 +441,7 @@ export default async (): Promise<Resources> => ({
     GetAllSprints: getAllSprints
   },
   actionImpl: {
+    Move: move,
     EditWorkflowStatuses: editWorkflowStatuses,
     EditProject: editProject,
     DeleteSprint: deleteSprint,
