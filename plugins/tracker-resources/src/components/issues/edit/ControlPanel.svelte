@@ -73,7 +73,19 @@
     return res
   }
 
-  $: updateKeys(['title', 'description', 'priority', 'status', 'number', 'assignee', 'component', 'dueDate', 'sprint', 'relations', 'blockedBy'])
+  $: updateKeys([
+    'title',
+    'description',
+    'priority',
+    'status',
+    'number',
+    'assignee',
+    'component',
+    'dueDate',
+    'sprint',
+    'relations',
+    'blockedBy'
+  ])
 
   const employeeAccountQuery = createQuery()
 
