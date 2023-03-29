@@ -1,7 +1,7 @@
 {
   "string": {
     "MoveClass": "Переместить {class}",
-    "SelectToMove": "Выберите {classLabel} который вы хотите переместить в {class}.",
+    "SelectToMove": "Выберите {classLabel}, в который вы хотите переместить {class}.",
     "Delete": "Удалить",
     "Move": "Переместить",
     "Cancel": "Отменть",

@@ -15,9 +15,13 @@
 
 import { Employee, getName } from '@hcengineering/contact'
 import core, {
+  ApplyOperations,
+  AttachedDoc,
   Class,
+  Collection,
   Doc,
   DocumentQuery,
+  DocumentUpdate,
   IdMap,
   Ref,
   SortingOrder,
@@ -58,6 +62,7 @@ import { CategoryQuery, ListSelectionProvider, SelectDirection } from '@hcengine
 import { writable } from 'svelte/store'
 import tracker from './plugin'
 import { defaultComponentStatuses, defaultPriorities, defaultSprintStatuses, issuePriorities } from './types'
+import { calcRank } from '@hcengineering/task'
 
 export * from './types'
 
@@ -685,6 +690,78 @@ export interface StatusStore {
   byId: IdMap<WithLookup<IssueStatus>>
   version: number
 }
+
+async function updateIssuesOnMove (
+  client: TxOperations,
+  applyOps: ApplyOperations,
+  doc: Doc,
+  space: Ref<Project>,
+  extra?: DocumentUpdate<any>
+): Promise<void> {
+  const hierarchy = client.getHierarchy()
+  const attributes = hierarchy.getAllAttributes(doc._class)
+  for (const attribute of attributes.values()) {
+    if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) {
+      const collection = attribute.type as Collection<AttachedDoc>
+      const allAttached = await client.findAll(collection.of, { attachedTo: doc._id })
+      for (const attached of allAttached) {
+        // Do not use extra for childs.
+        if (hierarchy.isDerived(collection.of, tracker.class.Issue)) {
+          const lastOne = await client.findOne(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
+          const incResult = await client.updateDoc(
+            tracker.class.Project,
+            core.space.Space,
+            space,
+            {
+              $inc: { sequence: 1 }
+            },
+            true
+          )
+          await updateIssuesOnMove(client, applyOps, attached, space, {
+            ...extra,
+            rank: calcRank(lastOne, undefined),
+            number: (incResult as any).object.sequence
+          })
+        } else await updateIssuesOnMove(client, applyOps, attached, space)
+      }
+    }
+  }
+  await applyOps.update(doc, {
+    space,
+    ...extra
+  })
+}
+
+/**
+ * @public
+ */
+export async function moveIssueToSpace (
+  client: TxOperations,
+  docs: Doc[],
+  space: Ref<Project>,
+  extra?: DocumentUpdate<any>
+): Promise<void> {
+  const applyOps = client.apply(docs[0]._id)
+  for (const doc of docs) {
+    const lastOne = await client.findOne(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
+    const incResult = await client.updateDoc(
+      tracker.class.Project,
+      core.space.Space,
+      space,
+      {
+        $inc: { sequence: 1 }
+      },
+      true
+    )
+    await updateIssuesOnMove(client, applyOps, doc, space, {
+      ...extra,
+      rank: calcRank(lastOne, undefined),
+      number: (incResult as any).object.sequence
+    })
+  }
+  await applyOps.commit()
+}
+
 // Issue status live query
 export const statusStore = writable<StatusStore>({ statuses: [], byId: new Map(), version: 0 })
 

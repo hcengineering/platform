@@ -1598,7 +1598,7 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: view.actionImpl.Move,
+      action: tracker.actionImpl.Move,
       label: tracker.string.MoveToProject,
       icon: view.icon.Move,
       keyBinding: [],
