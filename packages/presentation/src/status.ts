@@ -15,6 +15,7 @@
 
 import core, {
   AnyAttribute,
+  Attribute,
   Class,
   Client,
   Doc,
@@ -22,10 +23,13 @@ import core, {
   FindOptions,
   FindResult,
   generateId,
+  Hierarchy,
   Ref,
   RefTo,
   SortingOrder,
+  Status,
   StatusManager,
+  StatusValue,
   Tx,
   TxResult
 } from '@hcengineering/core'
@@ -141,7 +145,80 @@ export class StatusMiddleware extends BasePresentationMiddleware implements Pres
     query: DocumentQuery<T>,
     options?: FindOptions<T> | undefined
   ): Promise<FindResult<T>> {
-    return await this.provideFindAll(_class, query, options)
+    await this.initState
+    const mgr = this.mgr
+
+    const statusFields: Array<Attribute<Status>> = []
+    if (mgr !== undefined) {
+      const h = this.client.getHierarchy()
+      const allAttrs = h.getAllAttributes(_class)
+      for (const attr of allAttrs.values()) {
+        try {
+          if (attr.type._class === core.class.RefTo && h.isDerived((attr.type as RefTo<Doc>).to, core.class.Status)) {
+            let target: Array<Ref<Status>> = []
+            statusFields.push(attr)
+            const v = (query as any)[attr.name]
+
+            if (v !== undefined) {
+              // Only add filter if we have filer inside.
+              if (v?.$in !== undefined) {
+                target.push(...v.$in)
+              } else {
+                target.push(v)
+              }
+
+              // Find all similar name statues for same attribute name.
+              for (const sid of [...target]) {
+                const s = mgr.byId.get(sid)
+                if (s !== undefined) {
+                  const statuses = mgr.statuses.filter(
+                    (it) => it.ofAttribute === s.ofAttribute && it.name === s.name && it._id !== s._id
+                  )
+                  statuses.sort((a, b) => a.rank.localeCompare(b.rank))
+                  target.push(...statuses.map((it) => it._id))
+                }
+              }
+              target = target.filter((it, idx, arr) => arr.indexOf(it) === idx)
+
+              // Update query
+              ;(query as any)[attr.name] = { $in: target }
+
+              if (options?.lookup !== undefined) {
+                // Remove lookups by status field
+                if ((options.lookup as any)[attr.name] !== undefined) {
+                  const { [attr.name]: _, ...newLookup } = options.lookup as any
+                  options.lookup = newLookup
+                }
+              }
+            }
+          }
+        } catch (err: any) {
+          console.error(err)
+        }
+      }
+    }
+
+    const result = await this.provideFindAll(_class, query, options)
+    // We need to add $
+    if (statusFields.length > 0 && mgr !== undefined) {
+      // We need to update $lookup for status fields and provide $status group fields.
+      for (const attr of statusFields) {
+        for (const r of result) {
+          const resultDoc = Hierarchy.toDoc(r)
+          if (resultDoc.$lookup === undefined) {
+            resultDoc.$lookup = {}
+          }
+
+          // TODO: Check for mixin?
+          const stateValue = (r as any)[attr.name]
+          const status = mgr?.byId.get(stateValue)
+          if (status !== undefined) {
+            ;(resultDoc.$lookup as any)[attr.name] = status
+          }
+        }
+      }
+    }
+    return result
   }
 
   async tx (tx: Tx): Promise<TxResult> {

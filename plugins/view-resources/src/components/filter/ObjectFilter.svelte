@@ -16,15 +16,11 @@
   import core, { Doc, FindResult, getObjectValue, Ref, RefTo, SortingOrder, Space, Status } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import task from '@hcengineering/task'
   import ui, {
-    Button,
-    CheckBox,
-    Label,
+    addNotification, Button,
+    CheckBox, deviceOptionsStore, Label,
     Loading,
-    resizeObserver,
-    deviceOptionsStore,
-    addNotification
+    resizeObserver
   } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { createEventDispatcher, onMount } from 'svelte'
@@ -51,26 +47,24 @@
   $: targetClass = (filter.key.attribute.type as RefTo<Doc>).to
   $: clazz = hierarchy.getClass(targetClass)
 
-  $: isState =
-    (client.getHierarchy().isDerived(targetClass, task.class.State) ?? false) ||
-    (client.getHierarchy().isDerived(targetClass, core.class.Status) ?? false)
-  let statesCount: number[] = []
-  let states: Status[]
+  $: isStatus = (client.getHierarchy().isDerived(targetClass, core.class.Status) ?? false)
+  let statusesCount: number[] = []
+  let statuses: Status[]
 
   const groupValues = (val: Status[]): (Doc | undefined | null)[] => {
-    states = val
+    statuses = val
     const result: Doc[] = []
-    statesCount = []
+    statusesCount = []
     const unique = [...new Set(val.map((v) => v.name))]
     unique.forEach((label, i) => {
       let count = 0
-      states.forEach((state) => {
+      statuses.forEach((state) => {
         if (state.name === label) {
           if (!count) result[i] = state
           count += targets.get(state._id) ?? 0
         }
       })
-      statesCount[i] = count
+      statusesCount[i] = count
     })
     return result
   }
@@ -115,7 +109,7 @@
     if (targets.has(undefined)) {
       values.unshift(undefined)
     }
-    if (isState) {
+    if (isStatus) {
       values = groupValues(values as Status[])
     }
     objectsPromise = undefined
@@ -127,20 +121,10 @@
 
   function toggle (value: Doc | undefined | null): void {
     if (isSelected(value, filter.value)) {
-      if (isState) {
-        const ids = states.filter((state) => state.name === (value as Status).name).map((s) => s._id)
-        filter.value = filter.value.filter((p) => !ids.includes(p))
-      } else filter.value = filter.value.filter((p) => (value ? p !== value._id : p != null))
+      filter.value = filter.value.filter((p) => (value ? p !== value._id : p != null))
     } else {
       if (value) {
-        if (isState) {
-          filter.value = [
-            ...filter.value,
-            ...states
-              .filter((state) => state.name === states.filter((s) => s._id === value._id)[0].name)
-              .map((state) => state._id)
-          ]
-        } else filter.value = [...filter.value, value._id]
+        filter.value = [...filter.value, value._id]
       } else {
         filter.value = [...filter.value, undefined]
       }
@@ -201,7 +185,7 @@
                   {/if}
                 </div>
                 <div class="dark-color ml-2">
-                  {#if isState}{statesCount[i]}{:else}{targets.get(value?._id)}{/if}
+                  {#if isStatus}{statusesCount[i]}{:else}{targets.get(value?._id)}{/if}
                 </div>
               </div>
             </button>

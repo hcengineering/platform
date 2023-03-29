@@ -22,5 +22,5 @@
 </script>
 
 {#if value}
-  <StatusPresenter value={$statusStore.get(typeof value === 'string' ? value : value.value[0])} {size} />
+  <StatusPresenter value={$statusStore.get(typeof value === 'string' ? value : value.values[0]._id)} {size} />
 {/if}

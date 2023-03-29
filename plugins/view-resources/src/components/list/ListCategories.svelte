@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, generateId, Lookup, Ref, Space, StatusValue } from '@hcengineering/core'
+  import { CategoryType, Class, Doc, generateId, Lookup, Ref, Space, StatusValue } from '@hcengineering/core'
   import { getResource, IntlString } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
+  import { getClient, statusStore } from '@hcengineering/presentation'
   import { AnyComponent } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, CategoryOption, ViewOptionModel, ViewOptions } from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
@@ -41,16 +41,20 @@
   export let props: Record<string, any> = {}
   export let level: number
   export let initIndex = 0
-  export let newObjectProps: Record<string, any>
+  export let newObjectProps: (doc: Doc) => Record<string, any> | undefined
   export let docByIndex: Map<number, Doc>
   export let viewOptionsConfig: ViewOptionModel[] | undefined
-  export let dragItem: Doc | undefined
+  export let dragItem: {
+    doc?: Doc
+    revert?: () => void
+  }
   export let listDiv: HTMLDivElement
 
   $: groupByKey = viewOptions.groupBy[level] ?? noCategory
-  $: groupedDocs = groupBy(docs, groupByKey)
-  let categories: any[] = []
+  let categories: CategoryType[] = []
   $: updateCategories(_class, docs, groupByKey, viewOptions, viewOptionsConfig)
+
+  $: groupedDocs = groupBy(docs, groupByKey, categories)
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -71,7 +75,7 @@
     viewOptions: ViewOptions,
     viewOptionsModel: ViewOptionModel[] | undefined
   ) {
-    categories = await getCategories(client, _class, docs, groupByKey)
+    categories = await getCategories(client, _class, docs, groupByKey, $statusStore)
     if (level === 0) {
       for (const viewOption of viewOptionsModel ?? []) {
         if (viewOption.actionTarget !== 'category') continue
@@ -124,11 +128,7 @@
 
   function getCategoryValues (groupedDocs: Record<string, Doc[]>, category: any | StatusValue): Doc[] {
     if (typeof category === 'object') {
-      let r: Doc[] = []
-      for (const rr of category.value) {
-        r = r.concat(groupedDocs[rr] ?? [])
-      }
-      return r
+      return groupedDocs[category.name] ?? []
     } else {
       return groupedDocs[category] ?? []
     }

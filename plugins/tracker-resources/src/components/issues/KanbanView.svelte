@@ -15,7 +15,7 @@
 <script lang="ts">
   import contact, { Employee } from '@hcengineering/contact'
   import { employeeByIdStore, employeesStore } from '@hcengineering/contact-resources'
-  import { Class, Doc, DocumentQuery, generateId, Lookup, Ref, WithLookup } from '@hcengineering/core'
+  import { CategoryType, Class, Doc, DocumentQuery, generateId, Lookup, Ref, WithLookup } from '@hcengineering/core'
   import { Kanban, TypeState } from '@hcengineering/kanban'
   import notification from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
@@ -25,9 +25,7 @@
     Component as ComponentType,
     Issue,
     IssuesGrouping,
-    IssuesOrdering,
-    IssueStatus,
-    Project,
+    IssuesOrdering, Project,
     Sprint
   } from '@hcengineering/tracker'
   import {
@@ -46,6 +44,7 @@
     ActionContext,
     focusStore,
     getCategories,
+    groupBy,
     ListSelectionProvider,
     Menu,
     noCategory,
@@ -55,7 +54,7 @@
   } from '@hcengineering/view-resources'
   import { onMount } from 'svelte'
   import tracker from '../../plugin'
-  import { issuesGroupBySorting, mapKanbanCategories } from '../../utils'
+  import { mapKanbanCategories } from '../../utils'
   import ComponentEditor from '../components/ComponentEditor.svelte'
   import CreateIssue from '../CreateIssue.svelte'
   import AssigneePresenter from './AssigneePresenter.svelte'
@@ -75,9 +74,12 @@
   export let viewlet: Viewlet
 
   $: currentSpace = space || tracker.project.DefaultProject
-  $: groupBy = (viewOptions.groupBy[0] ?? noCategory) as IssuesGrouping
+  $: groupByKey = (viewOptions.groupBy[0] ?? noCategory) as IssuesGrouping
   $: orderBy = viewOptions.orderBy
   $: sort = { [orderBy[0]]: orderBy[1] }
+
+  // issuesGroupBySorting[groupByKey]
+
   $: dontUpdateRank = orderBy[0] !== IssuesOrdering.Manual
 
   const spaceQuery = createQuery()
@@ -116,6 +118,9 @@
   const lookup: Lookup<Issue> = {
     assignee: contact.class.Employee,
     space: tracker.class.Project,
+    status: tracker.class.IssueStatus,
+    component: tracker.class.Component,
+    sprint: tracker.class.Sprint,
     _id: {
       subIssues: tracker.class.Issue
     }
@@ -137,11 +142,10 @@
   }
   const issuesQuery = createQuery()
   let issues: Issue[] = []
-  const lookupIssue: Lookup<Issue> = {
-    status: tracker.class.IssueStatus,
-    component: tracker.class.Component,
-    sprint: tracker.class.Sprint
-  }
+
+
+  $: groupedDocs = groupBy(issues, groupByKey, categories)
+
   $: issuesQuery.query(
     tracker.class.Issue,
     resultQuery,
@@ -149,8 +153,8 @@
       issues = result
     },
     {
-      lookup: lookupIssue,
-      sort: issuesGroupBySorting[groupBy]
+      lookup,
+      sort
     }
   )
 
@@ -178,6 +182,7 @@
     }
   )
 
+  let categories: CategoryType[] = []
   let states: TypeState[]
 
   const queryId = generateId()
@@ -185,10 +190,9 @@
   $: updateCategories(
     tracker.class.Issue,
     issues,
-    groupBy,
+    groupByKey,
     viewOptions,
     viewOptionsConfig,
-    $statusStore.statuses,
     components,
     sprints,
     $employeesStore
@@ -198,10 +202,9 @@
     updateCategories(
       tracker.class.Issue,
       issues,
-      groupBy,
+      groupByKey,
       viewOptions,
       viewOptionsConfig,
-      $statusStore.statuses,
       components,
       sprints,
       $employeesStore
@@ -214,12 +217,11 @@
     groupByKey: string,
     viewOptions: ViewOptions,
     viewOptionsModel: ViewOptionModel[] | undefined,
-    statuses: WithLookup<IssueStatus>[],
     components: ComponentType[],
     sprints: Sprint[],
     assignee: Employee[]
   ) {
-    let categories = await getCategories(client, _class, docs, groupByKey, viewlet.descriptor)
+    categories = await getCategories(client, _class, docs, groupByKey, $statusStore, viewlet.descriptor)
     for (const viewOption of viewOptionsModel ?? []) {
       if (viewOption.actionTarget !== 'category') continue
       const categoryFunc = viewOption as CategoryOption
@@ -239,7 +241,7 @@
       }
     }
     const indexes = new Map(categories.map((p, i) => [p, i]))
-    const res = await mapKanbanCategories(groupByKey, categories, statuses, components, sprints, assignee)
+    const res = await mapKanbanCategories(groupByKey, categories, components, sprints, assignee)
     res.sort((a, b) => {
       const aIndex = indexes.get(a._id ?? undefined) ?? -1
       const bIndex = indexes.get(b._id ?? undefined) ?? -1
@@ -249,6 +251,19 @@
   }
 
   const fullFilled: { [key: string]: boolean } = {}
+
+  const getStatus = (value: any, object: Doc): any => {
+    if (isGroupByStatus) {
+      const targetState = $statusStore.byId.get(value)
+      if (targetState !== undefined) {
+        const nst = $statusStore.statuses.find(it => it.name === targetState.name && it.space === object.space)
+        if (nst !== undefined) {
+          return nst._id
+        }
+      }
+      throw new Error(`Unknown state ${value}`)
+    }
+  }
 </script>
 
 {#if !states?.length}
@@ -262,12 +277,11 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <Kanban
     bind:this={kanbanUI}
-    _class={tracker.class.Issue}
     {states}
     {dontUpdateRank}
-    options={{ sort, lookup }}
-    query={resultQuery}
-    fieldName={groupBy}
+    fieldName={groupByKey}
+    objects={issues}
+    objectByState={groupedDocs}
     on:content={(evt) => {
       listProvider.update(evt.detail)
     }}

@@ -131,14 +131,17 @@
     return props.length
   }
 
-  let dragItem: Doc | undefined = undefined
+  let dragItem : {
+    doc?: Doc
+    revert?: () => void
+  } = {}
 
   let listDiv: HTMLDivElement
 </script>
 
 <div class="list-container" bind:this={listDiv}>
   <ListCategories
-    newObjectProps={space ? { space } : {}}
+    newObjectProps={() => (space ? { space } : {})}
     {elementByIndex}
     {indexById}
     {docs}

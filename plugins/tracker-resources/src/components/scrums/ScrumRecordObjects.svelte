@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import core, { AttachedDoc, Doc, SortingOrder, TxCollectionCUD, TxCUD } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
   import { Issue } from '@hcengineering/tracker'
   import view from '@hcengineering/view'
   import { groupBy, List } from '@hcengineering/view-resources'

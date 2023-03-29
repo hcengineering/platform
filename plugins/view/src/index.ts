@@ -25,9 +25,11 @@ import type {
   Mixin,
   Obj,
   ObjQueryType,
+  PrimitiveType,
   Ref,
   SortingOrder,
   Space,
+  StatusValue,
   Type,
   UXObject
 } from '@hcengineering/core'
@@ -236,7 +238,7 @@ export interface ListHeaderExtra extends Class<Doc> {
 /**
  * @public
  */
-export type SortFunc = Resource<(values: any[], viewletDescriptorId?: Ref<ViewletDescriptor>) => Promise<any[]>>
+export type SortFunc = Resource<(values: (PrimitiveType | StatusValue)[], viewletDescriptorId?: Ref<ViewletDescriptor>) => Promise<any[]>>
 
 /**
  * @public

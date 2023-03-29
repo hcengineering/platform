@@ -56,10 +56,8 @@ export interface Status extends Doc {
 /**
  * @public
  */
-export interface StatusValue {
-  name: string
-  color?: number
-  value: Ref<Status>[] // Real status items per category.
+export class StatusValue {
+  constructor (readonly name: string, readonly color: number | undefined, readonly values: WithLookup<Status>[]) {}
 }
 
 /**
@@ -82,3 +80,8 @@ export class StatusManager {
     return this.statuses.filter(predicate)
   }
 }
+
+/**
+ * @public
+ */
+export type CategoryType = number | string | undefined | Ref<Doc> | StatusValue

@@ -13,81 +13,49 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, DocumentUpdate, FindOptions, Ref, SortingOrder } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { CategoryType, Doc, DocumentUpdate, Ref } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
   import { getPlatformColor, ScrollBox, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { CardDragEvent, Item, StateType, TypeState } from '../types'
-  import { calcRank } from '../utils'
   import KanbanRow from './KanbanRow.svelte'
 
-  export let _class: Ref<Class<Item>>
-  export let options: FindOptions<Item> | undefined = undefined
   export let states: TypeState[] = []
-  export let query: DocumentQuery<Item> = {}
+  export let objects: Item[] = []
+  export let objectByState: Record<StateType, Item[]>
   export let fieldName: string
+
   export let selection: number | undefined = undefined
   export let checked: Doc[] = []
   export let dontUpdateRank: boolean = false
+  export let getState: (field: string, doc: Item)=> StateType
 
   const dispatch = createEventDispatcher()
 
-  let objects: Item[] = []
 
-  const objsQ = createQuery()
-  $: objsQ.query(
-    _class,
-    query,
-    (result) => {
-      objects = result
-      fillStateObjects(result, fieldName)
-      dispatch('content', objects)
-    },
-    {
-      sort: { rank: SortingOrder.Ascending },
-      ...options
-    }
-  )
-
-  function fieldNameChange (fieldName: string) {
-    fillStateObjects(objects, fieldName)
-  }
-
-  $: fieldNameChange(fieldName)
-
-  function fillStateObjects (objects: Item[], fieldName: string): void {
-    objectByState.clear()
-    for (const object of objects) {
-      const arr = objectByState.get((object as any)[fieldName]) ?? []
-      arr.push(object)
-      objectByState.set((object as any)[fieldName], arr)
-    }
-    objectByState = objectByState
-  }
-
-  async function move (state: StateType) {
+  async function move (state: CategoryType) {
     if (dragCard === undefined) {
       return
     }
-    let updates: DocumentUpdate<Item> = {}
+    // let updates: DocumentUpdate<Item> = {}
 
-    if (dragCardInitialState !== state) {
-      updates = {
-        ...updates,
-        [fieldName]: state
-      }
-    }
+    // if (dragCardInitialState !== state) {
+    //   updates = {
+    //     ...updates,
+    //     [fieldName]: valueSelector?.(state, dragCard) ?? state
+    //   }
+    // }
 
-    if (!dontUpdateRank && dragCardInitialRank !== dragCard.rank) {
-      const dragCardRank = dragCard.rank
-      updates = {
-        ...updates,
-        rank: dragCardRank
-      }
-    }
-    if (Object.keys(updates).length > 0) {
-      await client.update(dragCard, updates)
-    }
+    // if (!dontUpdateRank && dragCardInitialRank !== dragCard.rank) {
+    //   const dragCardRank = dragCard.rank
+    //   updates = {
+    //     ...updates,
+    //     rank: dragCardRank
+    //   }
+    // }
+    // if (Object.keys(updates).length > 0) {
+    //   await client.update(dragCard, updates)
+    // }
     dragCard = undefined
   }
 
@@ -95,35 +63,32 @@
 
   let dragCard: Item | undefined
   let dragCardInitialRank: string | undefined
-  let dragCardInitialState: StateType
-
-  let objectByState: Map<StateType, Item[]> = new Map<StateType, Item[]>()
+  let dragCardInitialState: CategoryType
 
   let isDragging = false
 
-  async function updateDone (query: DocumentUpdate<Item>): Promise<void> {
+  async function updateDone (updateValue: DocumentUpdate<Item>): Promise<void> {
     isDragging = false
     if (dragCard === undefined) {
       return
     }
-    await client.update(dragCard, query)
+    await client.update(dragCard, updateValue)
   }
-
+  
   function panelDragOver (event: Event, state: TypeState): void {
     event.preventDefault()
     const card = dragCard as any
-    if (card !== undefined && card[fieldName] !== state._id) {
-      const oldArr = objectByState.get(card[fieldName]) ?? []
-      const index = oldArr.findIndex((p) => p._id === card._id)
-      if (index !== -1) {
-        oldArr.splice(index, 1)
-        objectByState.set(card[fieldName], oldArr)
-      }
-      card[fieldName] = state._id
-      const arr = objectByState.get(card[fieldName]) ?? []
-      arr.push(card)
-      objectByState.set(card[fieldName], arr)
-      objectByState = objectByState
+    if (card !== undefined && getState(fieldName, card) !== state._id) {
+      // const index = oldArr.findIndex((p) => p._id === card._id)
+      // if (index !== -1) {
+      //   objectByState[getState(fieldName, card)] = oldArr
+      // }
+      // card[getState(fieldName, card)] = state._id
+
+      // const arr = objectByState[getState(fieldName, card)] ?? []
+      // arr.push(card)
+      // objectByState[getState(fieldName, card)] = arr
+      // objectByState = objectByState
     }
   }
 
@@ -140,30 +105,30 @@
   function cardDragOver (evt: CardDragEvent, object: Item): void {
     if (dragCard !== undefined && !dontUpdateRank) {
       if (object._id !== dragCard._id) {
-        let arr = objectByState.get((object as any)[fieldName]) ?? []
-        const dragCardIndex = arr.findIndex((p) => p._id === dragCard?._id)
-        const targetIndex = arr.findIndex((p) => p._id === object._id)
-        if (
-          dragswap(evt, targetIndex, dragCardIndex) &&
-          arr[targetIndex] !== undefined &&
-          arr[dragCardIndex] !== undefined
-        ) {
-          arr.splice(dragCardIndex, 1)
-          arr = [...arr.slice(0, targetIndex), dragCard, ...arr.slice(targetIndex)]
-          objectByState.set((object as any)[fieldName], arr)
-          objectByState = objectByState
-        }
+        // let arr = objectByState.get(getObjectValue(groupField, object)) ?? []
+        // const dragCardIndex = arr.findIndex((p) => p._id === dragCard?._id)
+        // const targetIndex = arr.findIndex((p) => p._id === object._id)
+        // if (
+        //   dragswap(evt, targetIndex, dragCardIndex) &&
+        //   arr[targetIndex] !== undefined &&
+        //   arr[dragCardIndex] !== undefined
+        // ) {
+        //   arr.splice(dragCardIndex, 1)
+        //   arr = [...arr.slice(0, targetIndex), dragCard, ...arr.slice(targetIndex)]
+        //   objectByState.set((object as any)[groupField], arr)
+        //   objectByState = objectByState
+        // }
       }
     }
   }
   function cardDrop (evt: CardDragEvent, object: Item): void {
     if (!dontUpdateRank && dragCard !== undefined) {
-      const arr = objectByState.get((object as any)[fieldName]) ?? []
-      const s = arr.findIndex((p) => p._id === dragCard?._id)
-      if (s !== -1) {
-        const newRank = calcRank(arr[s - 1], arr[s + 1])
-        dragCard.rank = newRank
-      }
+      // const arr = objectByState.get(getObjectValue(groupField, object)) ?? []
+      // const s = arr.findIndex((p) => p._id === dragCard?._id)
+      // if (s !== -1) {
+      //   const newRank = calcRank(arr[s - 1], arr[s + 1])
+      //   dragCard.rank = newRank
+      // }
     }
     isDragging = false
   }
@@ -196,7 +161,7 @@
     let pos = (of !== undefined ? objects.findIndex((it) => it._id === of._id) : selection) ?? -1
     if (pos === -1) {
       for (const st of states) {
-        const stateObjs = objectByState.get(st) ?? []
+        const stateObjs = objectByState[st._id] ?? []
         if (stateObjs.length > 0) {
           pos = objects.findIndex((it) => it._id === stateObjs[0]._id)
           break
@@ -215,12 +180,12 @@
     if (obj === undefined) {
       return
     }
-    const fState = (obj as any)[fieldName]
+    const fState = getState(fieldName, obj)
     let objState = states.findIndex((it) => it._id === fState)
     if (objState === -1) {
       return
     }
-    const stateObjs = objectByState.get(states[objState]) ?? []
+    const stateObjs = objectByState[states[objState]._id] ?? []
     const statePos = stateObjs.findIndex((it) => it._id === obj._id)
     if (statePos === undefined) {
       return
@@ -254,7 +219,7 @@
       } else {
         while (objState < states.length - 1) {
           objState++
-          const nstateObjs = objectByState.get(states[objState]) ?? []
+          const nstateObjs = objectByState[states[objState]._id] ?? []
           if (nstateObjs.length > 0) {
             const obj = nstateObjs[statePos] ?? nstateObjs[nstateObjs.length - 1]
             scrollInto(objState, obj)
@@ -289,7 +254,7 @@
   <ScrollBox>
     <div class="kanban-content">
       {#each states as state, si (state._id)}
-        {@const stateObjects = objectByState.get(state._id) ?? []}
+        {@const stateObjects = objectByState[state._id] ?? []}
 
         <div
           class="panel-container step-lr75"

@@ -16,21 +16,22 @@
 
 import core, {
   AttachedDoc,
+  CategoryType,
   Class,
   Client,
   Collection,
   Doc,
   DocumentUpdate,
+  getObjectValue,
   Hierarchy,
   Lookup,
-  Obj,
-  Ref,
+  Obj, Ref,
   RefTo,
-  ReverseLookup,
-  StatusValue,
-  ReverseLookups,
+  ReverseLookup, ReverseLookups,
   Space,
   Status,
+  StatusManager,
+  StatusValue,
   TxOperations
 } from '@hcengineering/core'
 import type { IntlString } from '@hcengineering/platform'
@@ -501,12 +502,23 @@ export type FixedWidthStore = Record<string, number>
 
 export const fixedWidthStore = writable<FixedWidthStore>({})
 
-export function groupBy<T extends Doc> (docs: T[], key: string): { [key: string]: T[] } {
+export function groupBy<T extends Doc> (docs: T[], key: string, categories?: CategoryType[]): { [key: string | number]: T[] } {
   return docs.reduce((storage: { [key: string]: T[] }, item: T) => {
-    const group = (item as any)[key] ?? undefined
+    let group = getObjectValue(key, item) ?? undefined
+
+    if (categories !== undefined) {
+      for (const c of categories) {
+        if (typeof c === 'object') {
+          const st = c.values.find(it => it._id === group)
+          if (st !== undefined) {
+            group = st.name
+            break
+          }
+        }
+      }
+    }
 
     storage[group] = storage[group] ?? []
-
     storage[group].push(item)
 
     return storage
@@ -518,36 +530,44 @@ export async function getCategories (
   _class: Ref<Class<Doc>>,
   docs: Doc[],
   key: string,
+  mgr: StatusManager,
   viewletDescriptorId?: Ref<ViewletDescriptor>
-): Promise<any[]> {
+): Promise<CategoryType[]> {
   if (key === noCategory) return [undefined]
-  const existingCategories = Array.from(new Set(docs.map((x: any) => x[key] ?? undefined)))
+  const h = client.getHierarchy()
+  const attr = h.getAttribute(_class, key)
+  const isStatusField = attr.type._class === core.class.RefTo && h.isDerived((attr.type as RefTo<Doc>).to, core.class.Status)
+
+  const valueSet = new Set<any>()
+  const existingCategories = []
+  const statusMap = new Map<string, StatusValue>()
+
+  for (const d of docs) {
+    const v = getObjectValue(key, d) ?? undefined
+
+    if (isStatusField) {
+      const status = mgr.byId.get(v)
+      if (status !== undefined) {
+        let fst = statusMap.get(status.name)
+        if (fst === undefined) {
+          const sttt = mgr.statuses
+            .filter((it) => it.ofAttribute === attr._id && it.name === status.name)
+            .sort((a, b) => a.rank.localeCompare(b.rank))
+          fst = new StatusValue(status.name, status.color, sttt)
+          statusMap.set(status.name, fst)
+          existingCategories.push(fst)
+        }
+      }
+    } else {
+      if (!valueSet.has(v)) {
+        valueSet.add(v)
+        existingCategories.push(v)
+      }
+    }
+  }
 
   const result = await sortCategories(client, _class, existingCategories, key, viewletDescriptorId)
 
-  const h = client.getHierarchy()
-  // group categories
-  const attr = h.getAttribute(_class, key)
-  if (attr.type._class === core.class.RefTo && h.isDerived((attr.type as RefTo<Doc>).to, core.class.Status)) {
-    const statuses = await client.findAll(core.class.Status, { _id: { $in: result as unknown as Array<Ref<Status>> } })
-    // We have status attribute and need perform group.
-    const newResult: StatusValue[] = []
-    const unique = [...new Set(statuses.map((v) => v.name))]
-    unique.forEach((label, i) => {
-      let count = 0
-      statuses.forEach((state) => {
-        if (state.name === label) {
-          if (count === 0) {
-            newResult[i] = { name: state.name, value: [state._id], color: state.color }
-          } else {
-            newResult[i] = { name: state.name, value: [...newResult[i].value, state._id], color: state.color }
-          }
-          count++
-        }
-      })
-    })
-    return newResult.map((it) => (it.value.length === 1 ? it.value[0] : it))
-  }
   return result
 }
 

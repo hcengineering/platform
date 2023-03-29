@@ -17,20 +17,20 @@ import { Employee, getName } from '@hcengineering/contact'
 import core, {
   ApplyOperations,
   AttachedDoc,
+  CategoryType,
   Class,
   Collection,
   Doc,
   DocumentQuery,
-
   DocumentUpdate, Ref,
   SortingOrder,
   Space,
   StatusCategory,
+  StatusValue,
   toIdMap,
   TxCollectionCUD,
   TxOperations,
-  TxUpdateDoc,
-  WithLookup
+  TxUpdateDoc
 } from '@hcengineering/core'
 import { TypeState } from '@hcengineering/kanban'
 import { Asset, IntlString, translate } from '@hcengineering/platform'
@@ -43,9 +43,7 @@ import {
   IssuePriority,
   IssuesDateModificationPeriod,
   IssuesGrouping,
-  IssuesOrdering,
-  IssueStatus,
-  Project,
+  IssuesOrdering, Project,
   Sprint,
   SprintStatus,
   TimeReportDayType
@@ -59,7 +57,7 @@ import {
   MILLISECONDS_IN_WEEK
 } from '@hcengineering/ui'
 import { ViewletDescriptor } from '@hcengineering/view'
-import { CategoryQuery, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
+import { CategoryQuery, groupBy, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
 import tracker from './plugin'
 import { defaultComponentStatuses, defaultPriorities, defaultSprintStatuses, issuePriorities } from './types'
 
@@ -130,18 +128,6 @@ export const getIssuesModificationDatePeriodTime = (period: IssuesDateModificati
       return 0
     }
   }
-}
-
-export const groupBy = (data: any, key: any): { [key: string]: any[] } => {
-  return data.reduce((storage: { [key: string]: any[] }, item: any) => {
-    const group = item[key] ?? undefined
-
-    storage[group] = storage[group] ?? []
-
-    storage[group].push(item)
-
-    return storage
-  }, {})
 }
 
 export interface FilterAction {
@@ -343,38 +329,33 @@ const listIssueKanbanStatusOrder = [
 ] as const
 
 export async function issueStatusSort (
-  value: Array<Ref<IssueStatus>>,
+  value: StatusValue[],
   viewletDescriptorId?: Ref<ViewletDescriptor>
-): Promise<Array<Ref<IssueStatus>>> {
-  return await new Promise((resolve) => {
-    // TODO: How we track category updates.
-    const query = createQuery(true)
-    query.query(tracker.class.IssueStatus, { _id: { $in: value } }, (res) => {
-      if (viewletDescriptorId === tracker.viewlet.Kanban) {
-        res.sort((a, b) => {
-          const res =
-            listIssueKanbanStatusOrder.indexOf(a.category as Ref<StatusCategory>) -
-            listIssueKanbanStatusOrder.indexOf(b.category as Ref<StatusCategory>)
-          if (res === 0) {
-            return a.rank.localeCompare(b.rank)
-          }
-          return res
-        })
-      } else {
-        res.sort((a, b) => {
-          const res =
-            listIssueStatusOrder.indexOf(a.category as Ref<StatusCategory>) -
-            listIssueStatusOrder.indexOf(b.category as Ref<StatusCategory>)
-          if (res === 0) {
-            return a.rank.localeCompare(b.rank)
-          }
-          return res
-        })
+): Promise<StatusValue[]> {
+  // TODO: How we track category updates.
+
+  if (viewletDescriptorId === tracker.viewlet.Kanban) {
+    value.sort((a, b) => {
+      const res =
+            listIssueKanbanStatusOrder.indexOf(a.values[0].category as Ref<StatusCategory>) -
+            listIssueKanbanStatusOrder.indexOf(b.values[0].category as Ref<StatusCategory>)
+      if (res === 0) {
+        return a.values[0].rank.localeCompare(b.values[0].rank)
       }
-      resolve(res.map((p) => p._id))
-      query.unsubscribe()
+      return res
     })
-  })
+  } else {
+    value.sort((a, b) => {
+      const res =
+            listIssueStatusOrder.indexOf(a.values[0].category as Ref<StatusCategory>) -
+            listIssueStatusOrder.indexOf(b.values[0].category as Ref<StatusCategory>)
+      if (res === 0) {
+        return a.values[0].rank.localeCompare(b.values[0].rank)
+      }
+      return res
+    })
+  }
+  return value
 }
 
 export async function issuePrioritySort (value: IssuePriority[]): Promise<IssuePriority[]> {
@@ -401,8 +382,7 @@ export async function sprintSort (value: Array<Ref<Sprint>>): Promise<Array<Ref<
 
 export async function mapKanbanCategories (
   groupBy: string,
-  categories: any[],
-  statuses: Array<WithLookup<IssueStatus>>,
+  categories: CategoryType[],
   components: Component[],
   sprints: Sprint[],
   assignee: Employee[]
@@ -413,28 +393,28 @@ export async function mapKanbanCategories (
   if (groupBy === IssuesGrouping.Priority) {
     const res: TypeState[] = []
     for (const priority of categories) {
-      const title = await translate((issuePriorities as any)[priority].label, {})
-      res.push({
-        _id: priority,
-        title,
-        color: UNSET_COLOR,
-        icon: (issuePriorities as any)[priority].icon
-      })
+      if (typeof priority !== 'object' && priority !== undefined) {
+        const title = await translate((issuePriorities as any)[priority].label, {})
+        res.push({
+          _id: priority,
+          title,
+          color: UNSET_COLOR,
+          icon: (issuePriorities as any)[priority].icon
+        })
+      }
     }
     return res
   }
   if (groupBy === IssuesGrouping.Status) {
-    return statuses
-      .filter((p) => categories.includes(p._id))
-      .map((status) => {
-        const category = '$lookup' in status ? status.$lookup?.category : undefined
-        return {
-          _id: status._id,
-          title: status.name,
-          icon: category?.icon,
-          color: status.color ?? category?.color ?? UNSET_COLOR
-        }
-      })
+    return (categories.filter(it => typeof it === 'object') as StatusValue[]).map((category: StatusValue) => {
+      const icon = category.values[0]?.$lookup?.category?.icon
+      return {
+        _id: category.name,
+        title: category.name,
+        icon,
+        color: category.color ?? UNSET_COLOR
+      }
+    })
   }
   if (groupBy === IssuesGrouping.Assignee) {
     const noAssignee = await translate(tracker.string.NoAssignee, {})

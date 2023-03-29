@@ -44,13 +44,13 @@
   export let flat = false
   export let props: Record<string, any> = {}
   export let level: number
-  export let newObjectProps: Record<string, any>
+  export let newObjectProps: (doc: Doc) => Record<string, any> | undefined
 
   const dispatch = createEventDispatcher()
 
   const handleCreateItem = (event: MouseEvent) => {
     if (createItemDialog === undefined) return
-    showPopup(createItemDialog, newObjectProps, eventToHTMLElement(event))
+    showPopup(createItemDialog, newObjectProps(items[0]), eventToHTMLElement(event))
   }
 </script>
 
