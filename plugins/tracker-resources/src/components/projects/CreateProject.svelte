@@ -119,7 +119,7 @@
   label={isNew ? tracker.string.NewProject : tracker.string.EditProject}
   okLabel={isNew ? presentation.string.Create : presentation.string.Save}
   okAction={handleSave}
-  canSave={name.length > 0 && !!selectedWorkDayType}
+  canSave={name.length > 0 && !!selectedWorkDayType && !(members.length === 0 && isPrivate)}
   on:close={() => {
     dispatch('close')
   }}
@@ -153,6 +153,7 @@
     label={presentation.string.MakePrivate}
     description={presentation.string.MakePrivateDescription}
     bind:on={isPrivate}
+    disabled={!isPrivate && members.length === 0}
   />
   <div class="flex-between">
     <div class="caption">
