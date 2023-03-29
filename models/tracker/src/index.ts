@@ -522,7 +522,7 @@ export function createModel (builder: Builder): void {
       {
         key: 'shouldShowSubIssues',
         type: 'toggle',
-        defaultValue: false,
+        defaultValue: true,
         actionTarget: 'query',
         action: tracker.function.SubIssueQuery,
         label: tracker.string.SubIssues
