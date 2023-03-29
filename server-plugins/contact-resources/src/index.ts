@@ -166,7 +166,7 @@ async function processRefArrAttribute<T extends Doc> (
   const res: Tx[] = []
   if (attr.type._class === core.class.ArrOf) {
     const arrOf = (attr.type as ArrOf<RefTo<Doc>>).of
-    if (arrOf._class === core.class.ArrOf) {
+    if (arrOf._class === core.class.RefTo) {
       if (targetClasses.includes((arrOf as RefTo<Doc>).to)) {
         const docs = await control.findAll(clazz, { [key]: oldValue })
         for (const doc of docs) {

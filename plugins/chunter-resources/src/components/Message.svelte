@@ -17,12 +17,10 @@
   import { AttachmentList, AttachmentRefInput } from '@hcengineering/attachment-resources'
   import type { ChunterMessage, Message, Reaction } from '@hcengineering/chunter'
   import { EmployeeAccount } from '@hcengineering/contact'
-  import { employeeByIdStore, EmployeePresenter } from '@hcengineering/contact-resources'
+  import { Avatar, employeeByIdStore, EmployeePresenter } from '@hcengineering/contact-resources'
   import { getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
-  import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
   import { getClient, MessageViewer } from '@hcengineering/presentation'
-  import { Avatar } from '@hcengineering/contact-resources'
   import { EmojiPopup } from '@hcengineering/text-editor'
   import ui, { ActionIcon, Button, IconMoreH, Label, showPopup, tooltip } from '@hcengineering/ui'
   import { Action } from '@hcengineering/view'
@@ -32,6 +30,7 @@
   import chunter from '../plugin'
   import { getTime } from '../utils'
   // import Share from './icons/Share.svelte'
+  import notification, { Collaborators } from '@hcengineering/notification'
   import Bookmark from './icons/Bookmark.svelte'
   import Emoji from './icons/Emoji.svelte'
   import Thread from './icons/Thread.svelte'
@@ -52,13 +51,15 @@
   $: attachments = (message.$lookup?.attachments ?? []) as Attachment[]
 
   const client = getClient()
+  const hieararchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
+  const me = getCurrentAccount()._id
 
   $: reactions = message.$lookup?.reactions as Reaction[] | undefined
 
-  const notificationClient = NotificationClientImpl.getClient()
-  const lastViews = notificationClient.getLastViews()
-  $: subscribed = ($lastViews.get(message._id) ?? -1) > -1
+  $: subscribed = (
+    hieararchy.as(message, notification.mixin.Collaborators) as any as Collaborators
+  ).collaborators?.includes(me)
   $: subscribeAction = subscribed
     ? ({
         label: chunter.string.TurnOffReplies,

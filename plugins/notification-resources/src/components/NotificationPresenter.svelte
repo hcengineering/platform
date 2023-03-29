@@ -23,7 +23,7 @@
   const notificationClient = NotificationClientImpl.getClient()
   const lastViews = notificationClient.getLastViews()
 
-  $: lastView = $lastViews.get(value._id)
+  $: lastView = $lastViews[value._id]
   $: hasNotification = lastView !== undefined && lastView !== -1 && lastView < value.modifiedOn
 </script>
 

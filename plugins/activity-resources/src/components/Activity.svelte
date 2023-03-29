@@ -13,32 +13,32 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import activity, { TxViewlet, ActivityFilter } from '@hcengineering/activity'
+  import activity, { ActivityFilter, TxViewlet } from '@hcengineering/activity'
   import chunter from '@hcengineering/chunter'
   import core, { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
+  import notification, { LastView } from '@hcengineering/notification'
   import { getResource, IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import notification from '@hcengineering/notification'
   import {
+    ActionIcon,
     Component,
+    eventToHTMLElement,
     Grid,
+    Icon,
     IconActivity,
     Label,
     Scroller,
-    Icon,
     showPopup,
-    Spinner,
-    ActionIcon,
-    eventToHTMLElement
+    Spinner
   } from '@hcengineering/ui'
-  import { ActivityKey, activityKey, DisplayTx, newActivity } from '../activity'
-  import TxView from './TxView.svelte'
-  import { filterCollectionTxes } from '../utils'
   import { Writable } from 'svelte/store'
+  import { ActivityKey, activityKey, DisplayTx, newActivity } from '../activity'
   import activityPlg from '../plugin'
+  import { filterCollectionTxes } from '../utils'
   import FilterPopup from './FilterPopup.svelte'
-  import IconFilter from './icons/Filter.svelte'
   import IconClose from './icons/Close.svelte'
+  import IconFilter from './icons/Filter.svelte'
+  import TxView from './TxView.svelte'
 
   export let object: Doc
   export let integrate: boolean = false
@@ -71,7 +71,7 @@
   getResource(notification.function.GetNotificationClient).then((res) => {
     lastViews = res().getLastViews()
   })
-  let lastViews: Writable<Map<Ref<Doc>, number>> | undefined
+  let lastViews: Writable<LastView> | undefined
 
   let viewlets: Map<ActivityKey, TxViewlet>
 
@@ -112,8 +112,8 @@
 
   $: newTxPos = newTx(filtered, $lastViews)
 
-  function newTx (txes: DisplayTx[], lastViews: Map<Ref<Doc>, number> | undefined): number {
-    const lastView = lastViews?.get(object._id)
+  function newTx (txes: DisplayTx[], lastViews: LastView | undefined): number {
+    const lastView = lastViews?.[object._id]
     if (lastView === undefined || lastView === -1) return -1
     for (let index = 0; index < txes.length; index++) {
       const tx = txes[index]

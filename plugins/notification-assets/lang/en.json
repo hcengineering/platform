@@ -15,6 +15,7 @@
     "Remove": "Delete notification",
     "RemoveAll": "Delete all notifications",
     "MarkAllAsRead": "Mark all notifications as read",
-    "MarkAsRead": "Mark as read"
+    "MarkAsRead": "Mark as read",
+    "Collaborators": "Collaborators"
   }
 }

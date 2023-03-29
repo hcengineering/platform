@@ -70,13 +70,8 @@ export async function getObjectPresenter (
   const hierarchy = client.getHierarchy()
   const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : view.mixin.ObjectPresenter
   const clazz = hierarchy.getClass(_class)
-  let mixinClazz = hierarchy.getClass(_class)
-  let presenterMixin = hierarchy.as(clazz, mixin)
-  while (presenterMixin.presenter === undefined && mixinClazz.extends !== undefined) {
-    presenterMixin = hierarchy.as(mixinClazz, mixin)
-    mixinClazz = hierarchy.getClass(mixinClazz.extends)
-  }
-  if (presenterMixin.presenter === undefined) {
+  const presenterMixin = hierarchy.classHierarchyMixin(_class, mixin)
+  if (presenterMixin?.presenter === undefined) {
     throw new Error(
       `object presenter not found for class=${_class}, mixin=${mixin}, preserve key ${JSON.stringify(preserveKey)}`
     )
@@ -141,16 +136,8 @@ async function getAttributePresenter (
   const presenterClass = getAttributePresenterClass(hierarchy, attribute)
   const isCollectionAttr = presenterClass.category === 'collection'
   const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : view.mixin.AttributePresenter
-  const clazz = hierarchy.getClass(presenterClass.attrClass)
-  let presenterMixin = hierarchy.as(clazz, mixin)
-  let parent = clazz.extends
-  while (presenterMixin.presenter === undefined && parent !== undefined) {
-    const pclazz = hierarchy.getClass(parent)
-    presenterClass.attrClass = parent
-    presenterMixin = hierarchy.as(pclazz, mixin)
-    parent = pclazz.extends
-  }
-  if (presenterMixin.presenter === undefined) {
+  const presenterMixin = hierarchy.classHierarchyMixin(presenterClass.attrClass, mixin)
+  if (presenterMixin?.presenter === undefined) {
     throw new Error('attribute presenter not found for ' + JSON.stringify(preserveKey))
   }
   const resultKey = preserveKey.sortingKey ?? preserveKey.key
@@ -657,14 +644,8 @@ export async function moveToSpace (
  */
 export function getAdditionalHeader (client: TxOperations, _class: Ref<Class<Doc>>): AnyComponent[] | undefined {
   const hierarchy = client.getHierarchy()
-  const clazz = hierarchy.getClass(_class)
-  let mixinClazz = hierarchy.getClass(_class)
-  let presenterMixin = hierarchy.as(clazz, view.mixin.ListHeaderExtra)
-  while (presenterMixin.presenters === undefined && mixinClazz.extends !== undefined) {
-    presenterMixin = hierarchy.as(mixinClazz, view.mixin.ListHeaderExtra)
-    mixinClazz = hierarchy.getClass(mixinClazz.extends)
-  }
-  return presenterMixin.presenters
+  const presenterMixin = hierarchy.classHierarchyMixin(_class, view.mixin.ListHeaderExtra)
+  return presenterMixin?.presenters
 }
 
 export async function getObjectLinkFragment (
@@ -673,12 +654,7 @@ export async function getObjectLinkFragment (
   props: Record<string, any> = {},
   component: AnyComponent = view.component.EditDoc
 ): Promise<Location> {
-  let clazz = hierarchy.getClass(object._class)
-  let provider = hierarchy.as(clazz, view.mixin.LinkProvider)
-  while (provider.encode === undefined && clazz.extends !== undefined) {
-    clazz = hierarchy.getClass(clazz.extends)
-    provider = hierarchy.as(clazz, view.mixin.LinkProvider)
-  }
+  const provider = hierarchy.classHierarchyMixin(object._class, view.mixin.LinkProvider)
   if (provider?.encode !== undefined) {
     const f = await getResource(provider.encode)
     const res = await f(object, props)

@@ -16,7 +16,8 @@
 <script lang="ts">
   import type { Channel, ChannelProvider } from '@hcengineering/contact'
   import contact from '@hcengineering/contact'
-  import type { AttachedData, Doc, Ref, Timestamp } from '@hcengineering/core'
+  import type { AttachedData, Doc, Ref } from '@hcengineering/core'
+  import { LastView } from '@hcengineering/notification'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import type { Asset, IntlString } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
@@ -69,7 +70,7 @@
   function getProvider (
     item: AttachedData<Channel>,
     map: Map<Ref<ChannelProvider>, ChannelProvider>,
-    lastViews: Map<Ref<Doc>, Timestamp>
+    lastViews: LastView
   ): Item | undefined {
     const provider = map.get(item.provider)
     if (provider) {
@@ -91,13 +92,13 @@
     }
   }
 
-  function isNew (item: Channel, lastViews: Map<Ref<Doc>, Timestamp>): boolean {
+  function isNew (item: Channel, lastViews: LastView): boolean {
     if (item.lastMessage === undefined) return false
-    const lastView = (item as Channel)._id !== undefined ? lastViews.get((item as Channel)._id) : undefined
+    const lastView = (item as Channel)._id !== undefined ? lastViews[(item as Channel)._id] : undefined
     return lastView ? lastView < item.lastMessage : (item.items ?? 0) > 0
   }
 
-  async function update (value: AttachedData<Channel>[] | Channel | null, lastViews: Map<Ref<Doc>, Timestamp>) {
+  async function update (value: AttachedData<Channel>[] | Channel | null, lastViews: LastView) {
     if (value == null) {
       displayItems = []
       return

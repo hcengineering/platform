@@ -15,7 +15,8 @@
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
   import type { ChunterMessage, Message } from '@hcengineering/chunter'
-  import core, { Doc, Ref, Space, Timestamp, WithLookup } from '@hcengineering/core'
+  import core, { Ref, Space, Timestamp, WithLookup } from '@hcengineering/core'
+  import { LastView } from '@hcengineering/notification'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { createQuery } from '@hcengineering/presentation'
   import { location as locationStore } from '@hcengineering/ui'
@@ -103,7 +104,7 @@
 
   function newMessagesStart (messages: Message[]): number {
     if (space === undefined) return -1
-    const lastView = $lastViews.get(space)
+    const lastView = $lastViews[space]
     if (lastView === undefined || lastView === -1) return -1
     for (let index = 0; index < messages.length; index++) {
       const message = messages[index]
@@ -113,7 +114,7 @@
   }
 
   $: markUnread($lastViews)
-  function markUnread (lastViews: Map<Ref<Doc>, number>) {
+  function markUnread (lastViews: LastView) {
     if (messages === undefined) return
     const newPos = newMessagesStart(messages)
     if (newPos !== -1 || newMessagesPos === -1) {

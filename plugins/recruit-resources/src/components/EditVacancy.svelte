@@ -15,15 +15,14 @@
 -->
 <script lang="ts">
   import { Attachments } from '@hcengineering/attachment-resources'
-  import type { Ref } from '@hcengineering/core'
-  import core from '@hcengineering/core'
+  import core, { ClassifierKind, Doc, Mixin, Ref } from '@hcengineering/core'
   import { Panel } from '@hcengineering/panel'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Vacancy } from '@hcengineering/recruit'
   import { FullDescriptionBox } from '@hcengineering/text-editor'
   import tracker from '@hcengineering/tracker'
   import { Button, Component, EditBox, Grid, IconMoreH, showPopup } from '@hcengineering/ui'
-  import { ClassAttributeBar, ContextMenu } from '@hcengineering/view-resources'
+  import { ContextMenu, DocAttributeBar } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
   import VacancyApplications from './VacancyApplications.svelte'
@@ -60,6 +59,21 @@
       showPopup(ContextMenu, { object }, (ev as MouseEvent).target as HTMLElement)
     }
   }
+
+  const ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
+  const hierarchy = client.getHierarchy()
+  let mixins: Mixin<Doc>[] = []
+
+  function getMixins (object: Doc): void {
+    if (object === undefined) return
+    const descendants = hierarchy.getDescendants(core.class.Doc).map((p) => hierarchy.getClass(p))
+
+    mixins = descendants.filter(
+      (m) => m.kind === ClassifierKind.MIXIN && !ignoreMixins.has(m._id) && hierarchy.hasMixin(object, m._id)
+    )
+  }
+
+  $: getMixins(object)
 </script>
 
 {#if object}
@@ -88,11 +102,10 @@
       {#if dir === 'column'}
         <div class="ac-subtitle">
           <div class="ac-subtitle-content">
-            <ClassAttributeBar
+            <DocAttributeBar
               {object}
-              _class={object._class}
+              {mixins}
               ignoreKeys={['name', 'description', 'fullDescription', 'private', 'archived']}
-              to={core.class.Doc}
             />
           </div>
         </div>

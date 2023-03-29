@@ -57,7 +57,7 @@
   $: getMixins(issue, showAllMixins)
 
   function getMixins (object: Issue, showAllMixins: boolean): void {
-    const descendants = hierarchy.getDescendants(tracker.class.Issue).map((p) => hierarchy.getClass(p))
+    const descendants = hierarchy.getDescendants(core.class.Doc).map((p) => hierarchy.getClass(p))
 
     mixins = descendants.filter(
       (m) =>

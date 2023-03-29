@@ -382,7 +382,7 @@ export function createModel (builder: Builder): void {
     editor: task.component.TaskHeader
   })
 
-  builder.mixin(task.class.Task, core.class.Class, notification.mixin.LastViewAttached, {})
+  builder.mixin(task.class.Task, core.class.Class, notification.mixin.TrackedDoc, {})
   builder.mixin(task.class.Task, core.class.Class, notification.mixin.AnotherUserNotifications, {
     fields: ['assignee']
   })

@@ -886,6 +886,10 @@ export function createModel (builder: Builder): void {
     presenter: tracker.component.PriorityPresenter
   })
 
+  builder.mixin(tracker.class.Issue, core.class.Class, notification.mixin.ClassCollaborators, {
+    fields: ['createdBy', 'assignee']
+  })
+
   builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AttributeFilter, {
     component: view.component.ValueFilter
   })
@@ -937,7 +941,8 @@ export function createModel (builder: Builder): void {
     inlineEditor: tracker.component.ComponentStatusEditor
   })
 
-  builder.mixin(tracker.class.Issue, core.class.Class, notification.mixin.LastViewAttached, {})
+  builder.mixin(tracker.class.Issue, core.class.Class, notification.mixin.TrackedDoc, {})
+
   builder.mixin(tracker.class.Issue, core.class.Class, notification.mixin.AnotherUserNotifications, {
     fields: ['assignee']
   })

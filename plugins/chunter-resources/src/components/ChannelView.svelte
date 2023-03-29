@@ -15,9 +15,8 @@
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import { ChunterMessage, Message, ChunterSpace } from '@hcengineering/chunter'
+  import { ChunterMessage, ChunterSpace, Message } from '@hcengineering/chunter'
   import { generateId, getCurrentAccount, Ref, Space } from '@hcengineering/core'
-  import notification from '@hcengineering/notification'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { location, navigate } from '@hcengineering/ui'
   import { get } from 'svelte/store'
@@ -51,22 +50,6 @@
       },
       _id
     )
-    if (
-      chunterSpace._class === chunter.class.DirectMessage &&
-      !chunterSpace.lastMessage &&
-      chunterSpace.members.length !== 1
-    ) {
-      await Promise.all(
-        chunterSpace.members
-          .filter((accId) => accId !== me)
-          .map((accId) =>
-            client.addCollection(notification.class.LastView, space, space, chunterSpace._class, 'lastViews', {
-              user: accId,
-              lastView: 0
-            })
-          )
-      )
-    }
 
     // Create an backlink to document
     await createBacklinks(client, space, chunter.class.ChunterSpace, _id, message)

@@ -312,6 +312,7 @@ export async function getAttributeEditor (
   _class: Ref<Class<Obj>>,
   key: KeyedAttribute | string
 ): Promise<AnySvelteComponent | undefined> {
+  console.log('get attribute editor', _class, key)
   const hierarchy = client.getHierarchy()
   const attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
   const presenterClass = attribute !== undefined ? getAttributePresenterClass(hierarchy, attribute) : undefined
@@ -320,7 +321,6 @@ export async function getAttributeEditor (
     return
   }
 
-  const typeClass = hierarchy.getClass(presenterClass.attrClass)
   let mixin: Ref<Mixin<AttributeEditor>>
 
   switch (presenterClass.category) {
@@ -337,16 +337,9 @@ export async function getAttributeEditor (
     }
   }
 
-  let editorMixin = hierarchy.as(typeClass, mixin)
-  let parent = typeClass.extends
+  const editorMixin = hierarchy.classHierarchyMixin(presenterClass.attrClass, mixin)
 
-  while (editorMixin.inlineEditor === undefined && parent !== undefined) {
-    const parentClass = hierarchy.getClass(parent)
-    editorMixin = hierarchy.as(parentClass, mixin)
-    parent = parentClass.extends
-  }
-
-  if (editorMixin.inlineEditor === undefined) {
+  if (editorMixin?.inlineEditor === undefined) {
     // if (presenterClass.category === 'array') {
     //   // NOTE: Don't show error for array attributes for compatibility with previous implementation
     // } else {

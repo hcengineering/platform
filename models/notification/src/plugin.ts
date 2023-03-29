@@ -26,7 +26,8 @@ export default mergeIds(notificationId, notification, {
     MentionNotification: '' as IntlString,
     PlatformNotification: '' as IntlString,
     BrowserNotification: '' as IntlString,
-    EmailNotification: '' as IntlString
+    EmailNotification: '' as IntlString,
+    Collaborators: '' as IntlString
   },
   component: {
     NotificationSettings: '' as AnyComponent

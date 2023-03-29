@@ -14,31 +14,33 @@
 // limitations under the License.
 //
 
-import core, { Class, Doc, getCurrentAccount, Ref, Timestamp } from '@hcengineering/core'
+import core, { Account, Class, Doc, getCurrentAccount, Ref, Timestamp } from '@hcengineering/core'
 import notification, { LastView, NotificationClient } from '@hcengineering/notification'
 import { createQuery, getClient } from '@hcengineering/presentation'
-import { writable, Writable } from 'svelte/store'
+import { get, writable, Writable } from 'svelte/store'
 
 /**
  * @public
  */
 export class NotificationClientImpl implements NotificationClient {
   protected static _instance: NotificationClientImpl | undefined = undefined
-  private lastViews = new Map<Ref<Doc>, LastView>()
-  private readonly lastViewsStore = writable(new Map<Ref<Doc>, Timestamp>())
+  private readonly lastViewsStore = writable<LastView>()
 
   private readonly lastViewQuery = createQuery()
+  private readonly user: Ref<Account>
 
   private constructor () {
-    this.lastViewQuery.query(notification.class.LastView, { user: getCurrentAccount()._id }, (result) => {
-      const res: Map<Ref<Doc>, Timestamp> = new Map<Ref<Doc>, Timestamp>()
-      const lastViews: Map<Ref<Doc>, LastView> = new Map<Ref<Doc>, LastView>()
-      result.forEach((p) => {
-        res.set(p.attachedTo, p.lastView)
-        lastViews.set(p.attachedTo, p)
-      })
-      this.lastViews = lastViews
-      this.lastViewsStore.set(res)
+    this.user = getCurrentAccount()._id
+    this.lastViewQuery.query(notification.class.LastView, { user: this.user }, (result) => {
+      this.lastViewsStore.set(result[0])
+      if (result[0] === undefined) {
+        const client = getClient()
+        const u = client.txFactory.createTxCreateDoc(notification.class.LastView, notification.space.Notifications, {
+          user: this.user
+        })
+        u.space = core.space.DerivedTx
+        void client.tx(u)
+      }
     })
   }
 
@@ -53,7 +55,7 @@ export class NotificationClientImpl implements NotificationClient {
     return NotificationClientImpl._instance
   }
 
-  getLastViews (): Writable<Map<Ref<Doc>, Timestamp>> {
+  getLastViews (): Writable<LastView> {
     return this.lastViewsStore
   }
 
@@ -64,39 +66,35 @@ export class NotificationClientImpl implements NotificationClient {
     force: boolean = false
   ): Promise<void> {
     const client = getClient()
-    const user = getCurrentAccount()._id
+    const hierarchy = client.getHierarchy()
+    const mixin = hierarchy.classHierarchyMixin(_class, notification.mixin.TrackedDoc)
+    if (mixin === undefined) return
     const lastView = time ?? new Date().getTime()
-    const current = this.lastViews.get(_id)
-    if (current !== undefined) {
-      if (current.lastView === -1 && !force) return
-      if (current.lastView < lastView || force) {
-        const u = client.txFactory.createTxUpdateDoc(current._class, current.space, current._id, {
-          lastView
-        })
-        u.space = core.space.DerivedTx
-        await client.tx(u)
+    const obj = get(this.lastViewsStore)
+    if (obj !== undefined) {
+      const current = obj[_id] as Timestamp | undefined
+      if (current !== undefined || force) {
+        if (current === -1 && !force) return
+        if (force || (current ?? 0) < lastView) {
+          const u = client.txFactory.createTxUpdateDoc(obj._class, obj.space, obj._id, {
+            [_id]: lastView
+          })
+          u.space = core.space.DerivedTx
+          await client.tx(u)
+        }
       }
-    } else if (force) {
-      const u = client.txFactory.createTxCreateDoc(notification.class.LastView, notification.space.Notifications, {
-        user,
-        lastView,
-        attachedTo: _id,
-        attachedToClass: _class,
-        collection: 'lastViews'
-      })
-      u.space = core.space.DerivedTx
-      await client.tx(u)
     }
   }
 
   async unsubscribe (_id: Ref<Doc>): Promise<void> {
     const client = getClient()
-    const user = getCurrentAccount()._id
-    const current = await client.findOne(notification.class.LastView, { attachedTo: _id, user })
-    if (current !== undefined) {
-      await client.updateDoc(current._class, current.space, current._id, {
-        lastView: -1
+    const obj = get(this.lastViewsStore)
+    if (obj !== undefined) {
+      const u = client.txFactory.createTxUpdateDoc(obj._class, obj.space, obj._id, {
+        [_id]: -1
       })
+      u.space = core.space.DerivedTx
+      await client.tx(u)
     }
   }
 }

@@ -204,6 +204,20 @@ export interface PushOptions<T extends object> {
 /**
  * @public
  */
+export interface UnsetProperties {
+  [key: string]: any
+}
+
+/**
+ * @public
+ */
+export interface UnsetOptions {
+  $unset?: UnsetProperties
+}
+
+/**
+ * @public
+ */
 export interface SetEmbeddedOptions<T extends object> {
   $update?: Partial<OmitNever<ArrayAsElementUpdate<Required<T>>>>
 }

@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { Doc, Ref, Space } from '@hcengineering/core'
   import core from '@hcengineering/core'
-  import notification from '@hcengineering/notification'
+  import notification, { LastView } from '@hcengineering/notification'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getResource, IntlString } from '@hcengineering/platform'
   import preference from '@hcengineering/preference'
@@ -77,11 +77,11 @@
   const lastViews = notificationClient.getLastViews()
   const hierarchy = client.getHierarchy()
 
-  function isChanged (space: Space, lastViews: Map<Ref<Doc>, number>): boolean {
+  function isChanged (space: Space, lastViews: LastView): boolean {
     const clazz = hierarchy.getClass(space._class)
     const lastEditMixin = hierarchy.as(clazz, notification.mixin.SpaceLastEdit)
     const field = lastEditMixin?.lastEditField
-    const lastView = lastViews.get(space._id)
+    const lastView = lastViews[space._id]
     if (lastView === undefined || lastView === -1) return false
     if (field === undefined) return false
     const value = (space as any)[field]

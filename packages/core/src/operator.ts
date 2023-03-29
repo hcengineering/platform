@@ -150,13 +150,24 @@ function $inc (document: Doc, keyval: Record<string, number>): void {
   }
 }
 
+function $unset (document: Doc, keyval: Record<string, PropertyType>): void {
+  const doc = document as any
+  for (const key in keyval) {
+    if (doc[key] !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete doc[key]
+    }
+  }
+}
+
 const operators: Record<string, _OperatorFunc> = {
   $push,
   $pull,
   $update,
   $move,
   $pushMixin,
-  $inc
+  $inc,
+  $unset
 }
 
 /**

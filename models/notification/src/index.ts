@@ -14,14 +14,13 @@
 // limitations under the License.
 //
 
-import { Account, Doc, Domain, DOMAIN_MODEL, Ref, Timestamp, TxCUD } from '@hcengineering/core'
-import { ArrOf, Builder, Mixin, Model, Prop, TypeRef, TypeString, TypeTimestamp } from '@hcengineering/model'
+import { Account, Doc, Domain, DOMAIN_MODEL, IndexKind, Ref, TxCUD } from '@hcengineering/core'
+import { ArrOf, Builder, Index, Mixin, Model, Prop, TypeRef, TypeString, UX } from '@hcengineering/model'
 import core, { TAttachedDoc, TClass, TDoc } from '@hcengineering/model-core'
 import type {
   AnotherUserNotifications,
   EmailNotification,
   LastView,
-  LastViewAttached,
   Notification,
   NotificationProvider,
   NotificationSetting,
@@ -35,12 +34,10 @@ import notification from './plugin'
 
 export const DOMAIN_NOTIFICATION = 'notification' as Domain
 
-@Model(notification.class.LastView, core.class.AttachedDoc, DOMAIN_NOTIFICATION)
-export class TLastView extends TAttachedDoc implements LastView {
-  @Prop(TypeTimestamp(), notification.string.LastView)
-    lastView!: Timestamp
-
+@Model(notification.class.LastView, core.class.Doc, DOMAIN_NOTIFICATION)
+export class TLastView extends TDoc implements LastView {
   @Prop(TypeRef(core.class.Account), core.string.ModifiedBy)
+  @Index(IndexKind.Indexed)
     user!: Ref<Account>
 }
 
@@ -112,8 +109,20 @@ export class TAnotherUserNotifications extends TClass implements AnotherUserNoti
   fields!: string[]
 }
 
-@Mixin(notification.mixin.LastViewAttached, core.class.Class)
-export class TLastViewAttached extends TClass implements LastViewAttached {}
+@Mixin(notification.mixin.ClassCollaborators, core.class.Class)
+export class TClassCollaborators extends TClass {
+  fields!: string[]
+}
+
+@Mixin(notification.mixin.TrackedDoc, core.class.Class)
+export class TTrackedDoc extends TClass {}
+
+@Mixin(notification.mixin.Collaborators, core.class.Doc)
+@UX(notification.string.Collaborators)
+export class TCollaborators extends TDoc {
+  @Prop(ArrOf(TypeRef(core.class.Account)), notification.string.Collaborators)
+    collaborators!: Ref<Account>[]
+}
 
 export function createModel (builder: Builder): void {
   builder.createModel(
@@ -125,7 +134,9 @@ export function createModel (builder: Builder): void {
     TNotificationSetting,
     TSpaceLastEdit,
     TAnotherUserNotifications,
-    TLastViewAttached
+    TClassCollaborators,
+    TTrackedDoc,
+    TCollaborators
   )
 
   builder.createDoc(
@@ -155,24 +166,28 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    notification.class.NotificationProvider,
+    notification.class.NotificationType,
     core.space.Model,
     {
-      label: notification.string.PlatformNotification,
-      default: true
+      label: notification.string.Notification,
+      hidden: true,
+      textTemplate: '',
+      htmlTemplate: '',
+      subjectTemplate: ''
     },
-    notification.ids.PlatformNotification
+    notification.ids.CollaboratorNotification
   )
 
-  builder.createDoc(
-    notification.class.NotificationProvider,
-    core.space.Model,
-    {
-      label: notification.string.BrowserNotification,
-      default: true
-    },
-    notification.ids.BrowserNotification
-  )
+  // Temporarily disabled, we should think about it
+  // builder.createDoc(
+  //   notification.class.NotificationProvider,
+  //   core.space.Model,
+  //   {
+  //     label: notification.string.BrowserNotification,
+  //     default: true
+  //   },
+  //   notification.ids.BrowserNotification
+  // )
 
   builder.createDoc(
     notification.class.NotificationProvider,
