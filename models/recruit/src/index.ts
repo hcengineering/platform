@@ -41,6 +41,7 @@ import presentation from '@hcengineering/model-presentation'
 import tags from '@hcengineering/model-tags'
 import task, { actionTemplates, DOMAIN_TASK, TSpaceWithStates, TTask } from '@hcengineering/model-task'
 import tracker from '@hcengineering/model-tracker'
+import notification from '@hcengineering/notification'
 import view, { actionTemplates as viewTemplates, createAction } from '@hcengineering/model-view'
 import workbench, { Application, createNavigateAction } from '@hcengineering/model-workbench'
 import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
@@ -209,6 +210,14 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.CollectionEditor, {
     editor: recruit.component.VacancyList
+  })
+
+  builder.mixin(recruit.class.Vacancy, core.class.Class, notification.mixin.ClassCollaborators, {
+    fields: ['createdBy']
+  })
+
+  builder.mixin(recruit.class.Applicant, core.class.Class, notification.mixin.ClassCollaborators, {
+    fields: ['createdBy']
   })
 
   builder.mixin(recruit.mixin.Candidate, core.class.Mixin, view.mixin.ObjectFactory, {
@@ -602,6 +611,10 @@ export function createModel (builder: Builder): void {
     },
     recruit.viewlet.ApplicantDashboard
   )
+
+  builder.mixin(recruit.class.Applicant, core.class.Class, notification.mixin.TrackedDoc, {})
+
+  builder.mixin(recruit.class.Vacancy, core.class.Class, notification.mixin.TrackedDoc, {})
 
   builder.mixin(recruit.class.Applicant, core.class.Class, task.mixin.KanbanCard, {
     card: recruit.component.KanbanCard

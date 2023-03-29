@@ -149,7 +149,7 @@
     await client.tx(tx)
 
     // Create an backlink to document
-    await createBacklinks(client, parent.space, chunter.class.ChunterSpace, commentId, message)
+    await createBacklinks(client, parent._id, parent._class, commentId, message)
 
     commentId = generateId()
     loading = false

@@ -156,7 +156,7 @@ export function createModel (builder: Builder): void {
     inventory.category.Inventory
   )
 
-  builder.mixin(inventory.class.Product, core.class.Class, notification.mixin.LastViewAttached, {})
+  builder.mixin(inventory.class.Product, core.class.Class, notification.mixin.TrackedDoc, {})
 
   createAction(builder, {
     label: inventory.string.CreateSubcategory,

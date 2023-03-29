@@ -129,20 +129,13 @@
     if (result.findIndex((p) => p.value === attribute.name) !== -1) return
     if (result.findIndex((p) => p.value === value) !== -1) return
     const { attrClass, category } = getAttributePresenterClass(hierarchy, attribute)
-    const typeClass = hierarchy.getClass(attrClass)
     const mixin =
       category === 'object'
         ? view.mixin.ObjectPresenter
         : category === 'collection'
           ? view.mixin.CollectionPresenter
           : view.mixin.AttributePresenter
-    let presenter = hierarchy.as(typeClass, mixin).presenter
-    let parent = typeClass.extends
-    while (presenter === undefined && parent !== undefined) {
-      const pclazz = hierarchy.getClass(parent)
-      presenter = hierarchy.as(pclazz, mixin).presenter
-      parent = pclazz.extends
-    }
+    const presenter = hierarchy.classHierarchyMixin(attrClass, mixin)?.presenter
     if (presenter === undefined) return
     const clazz = hierarchy.getClass(attribute.attributeOf)
 

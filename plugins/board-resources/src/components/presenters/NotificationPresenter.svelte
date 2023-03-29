@@ -23,7 +23,7 @@
 
   const notificationClient = NotificationClientImpl.getClient()
   const lastViews = notificationClient.getLastViews()
-  $: lastView = $lastViews.get(object._id)
+  $: lastView = $lastViews[object._id]
   $: subscribed = lastView !== undefined && lastView !== -1
 </script>
 

@@ -16,7 +16,8 @@
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import type { ChunterMessage, Message, ThreadMessage } from '@hcengineering/chunter'
-  import core, { Doc, generateId, getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import core, { generateId, getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import { LastView } from '@hcengineering/notification'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { getCurrentLocation, IconClose, Label, navigate } from '@hcengineering/ui'
@@ -150,7 +151,7 @@
     )
 
     // Create an backlink to document
-    await createBacklinks(client, currentSpace, chunter.class.ChunterSpace, commentId, message)
+    await createBacklinks(client, _id, chunter.class.Message, commentId, message)
 
     commentId = generateId()
     isScrollForced = true
@@ -158,8 +159,8 @@
   }
   let comments: ThreadMessage[] = []
 
-  function newMessagesStart (comments: ThreadMessage[], lastViews: Map<Ref<Doc>, number>): number {
-    const lastView = lastViews.get(_id)
+  function newMessagesStart (comments: ThreadMessage[], lastViews: LastView): number {
+    const lastView = (lastViews as any)[_id]
     if (lastView === undefined || lastView === -1) return -1
     for (let index = 0; index < comments.length; index++) {
       const comment = comments[index]
@@ -169,7 +170,7 @@
   }
 
   $: markUnread($lastViews)
-  function markUnread (lastViews: Map<Ref<Doc>, number>) {
+  function markUnread (lastViews: LastView) {
     const newPos = newMessagesStart(comments, lastViews)
     if (newPos !== -1 || newMessagesPos === -1) {
       newMessagesPos = newPos

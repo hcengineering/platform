@@ -22,7 +22,7 @@ import chunter, {
   Message,
   ThreadMessage
 } from '@hcengineering/chunter'
-import core, { Data, Doc, DocumentQuery, Ref, RelatedDocument, Space } from '@hcengineering/core'
+import core, { Data, Doc, DocumentQuery, getCurrentAccount, Ref, RelatedDocument, Space } from '@hcengineering/core'
 import { NotificationClientImpl } from '@hcengineering/notification-resources'
 import { IntlString, Resources, translate } from '@hcengineering/platform'
 import preference from '@hcengineering/preference'
@@ -55,6 +55,7 @@ import { get, writable } from 'svelte/store'
 import { DisplayTx } from '../../activity/lib'
 import { updateBacklinksList } from './backlinks'
 import { getDmName, getTitle, getLink, resolveLocation } from './utils'
+import notification from '@hcengineering/notification'
 
 export { default as Header } from './components/Header.svelte'
 export { classIcon } from './utils'
@@ -72,20 +73,53 @@ async function MarkCommentUnread (object: ThreadMessage): Promise<void> {
 
 async function SubscribeMessage (object: Message): Promise<void> {
   const client = getClient()
-  const notificationClient = NotificationClientImpl.getClient()
-  if (client.getHierarchy().isDerived(object._class, chunter.class.ThreadMessage)) {
-    await notificationClient.updateLastView(object.attachedTo, object.attachedToClass, undefined, true)
+  const acc = getCurrentAccount()
+  const hierarchy = client.getHierarchy()
+  if (hierarchy.isDerived(object._class, chunter.class.ThreadMessage)) {
+    await client.updateMixin(
+      object.attachedTo,
+      object.attachedToClass,
+      object.space,
+      notification.mixin.Collaborators,
+      {
+        $push: {
+          collaborators: acc._id
+        }
+      }
+    )
   } else {
-    await notificationClient.updateLastView(object._id, object._class, undefined, true)
+    await client.updateMixin(object._id, object._class, object.space, notification.mixin.Collaborators, {
+      $push: {
+        collaborators: acc._id
+      }
+    })
   }
 }
 
-async function UnsubscribeMessage (object: Message): Promise<void> {
+async function UnsubscribeMessage (object: ChunterMessage): Promise<void> {
   const client = getClient()
+  const acc = getCurrentAccount()
+  const hierarchy = client.getHierarchy()
   const notificationClient = NotificationClientImpl.getClient()
-  if (client.getHierarchy().isDerived(object._class, chunter.class.ThreadMessage)) {
+  if (hierarchy.isDerived(object._class, chunter.class.ThreadMessage)) {
+    await client.updateMixin(
+      object.attachedTo,
+      object.attachedToClass,
+      object.space,
+      notification.mixin.Collaborators,
+      {
+        $pull: {
+          collaborators: acc._id
+        }
+      }
+    )
     await notificationClient.unsubscribe(object.attachedTo)
   } else {
+    await client.updateMixin(object._id, object._class, object.space, notification.mixin.Collaborators, {
+      $pull: {
+        collaborators: acc._id
+      }
+    })
     await notificationClient.unsubscribe(object._id)
   }
 }

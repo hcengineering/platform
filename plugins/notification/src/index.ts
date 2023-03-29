@@ -13,29 +13,20 @@
 // limitations under the License.
 //
 
-import type { Account, AttachedDoc, Class, Doc, Mixin, Ref, Space, Timestamp, TxCUD } from '@hcengineering/core'
+import { Account, AttachedDoc, Class, Doc, Mixin, Ref, Space, Timestamp, TxCUD } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
+import { IntegrationType } from '@hcengineering/setting'
 import { AnyComponent } from '@hcengineering/ui'
 import { Writable } from './types'
-import { IntegrationType } from '@hcengineering/setting'
 export * from './types'
 
 /**
  * @public
  */
-export interface LastView extends AttachedDoc {
-  lastView: Timestamp
+export interface LastView extends Doc {
   user: Ref<Account>
-}
-
-/**
- * @public
- */
-export interface NotificationAction {
-  component: AnyComponent
-  objectId: Ref<Doc>
-  objectClass: Ref<Class<Doc>>
+  [key: string]: any
 }
 
 /**
@@ -46,9 +37,6 @@ export interface Notification extends AttachedDoc {
   status: NotificationStatus
   text: string
   type: Ref<NotificationType>
-
-  // Defined to open particular item if required.
-  action?: NotificationAction
 }
 
 /**
@@ -111,13 +99,27 @@ export interface SpaceLastEdit extends Class<Doc> {
 /**
  * @public
  */
-export interface LastViewAttached extends Class<AttachedDoc> {}
+export interface AnotherUserNotifications extends Class<Doc> {
+  fields: string[]
+}
 
 /**
  * @public
  */
-export interface AnotherUserNotifications extends Class<Doc> {
-  fields: string[]
+export interface ClassCollaborators extends Class<Doc> {
+  fields: string[] // Ref<Account> | Ref<Employee> | Ref<Account>[] | Ref<Employee>[]
+}
+
+/**
+ * @public
+ */
+export interface TrackedDoc extends Class<Doc> {}
+
+/**
+ * @public
+ */
+export interface Collaborators extends Doc {
+  collaborators: Ref<Account>[]
 }
 
 /**
@@ -129,7 +131,7 @@ export const notificationId = 'notification' as Plugin
  * @public
  */
 export interface NotificationClient {
-  getLastViews: () => Writable<Map<Ref<Doc>, Timestamp>>
+  getLastViews: () => Writable<LastView>
   updateLastView: (_id: Ref<Doc>, _class: Ref<Class<Doc>>, time?: Timestamp, force?: boolean) => Promise<void>
   unsubscribe: (_id: Ref<Doc>) => Promise<void>
 }
@@ -146,7 +148,9 @@ const notification = plugin(notificationId, {
   mixin: {
     SpaceLastEdit: '' as Ref<Mixin<SpaceLastEdit>>,
     AnotherUserNotifications: '' as Ref<Mixin<AnotherUserNotifications>>,
-    LastViewAttached: '' as Ref<Mixin<LastViewAttached>>
+    ClassCollaborators: '' as Ref<Mixin<ClassCollaborators>>,
+    Collaborators: '' as Ref<Mixin<Collaborators>>,
+    TrackedDoc: '' as Ref<Mixin<TrackedDoc>>
   },
   class: {
     LastView: '' as Ref<Class<LastView>>,
@@ -159,6 +163,7 @@ const notification = plugin(notificationId, {
   ids: {
     MentionNotification: '' as Ref<NotificationType>,
     DMNotification: '' as Ref<NotificationType>,
+    CollaboratorNotification: '' as Ref<NotificationType>,
     PlatformNotification: '' as Ref<NotificationProvider>,
     BrowserNotification: '' as Ref<NotificationProvider>,
     EmailNotification: '' as Ref<NotificationProvider>,
@@ -169,8 +174,7 @@ const notification = plugin(notificationId, {
   },
   component: {
     NotificationsPopup: '' as AnyComponent,
-    NotificationPresenter: '' as AnyComponent,
-    LastViewEditor: '' as AnyComponent
+    NotificationPresenter: '' as AnyComponent
   },
   icon: {
     Notifications: '' as Asset,

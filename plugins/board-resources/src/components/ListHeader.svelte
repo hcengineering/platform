@@ -1,7 +1,6 @@
 <script lang="ts">
-  import notification from '@hcengineering/notification'
   import { State } from '@hcengineering/task'
-  import { Button, Component, getEventPositionElement, getPlatformColor, IconMoreV, showPopup } from '@hcengineering/ui'
+  import { Button, getEventPositionElement, getPlatformColor, IconMoreV, showPopup } from '@hcengineering/ui'
   import { ContextMenu } from '@hcengineering/view-resources'
   export let state: State
 
@@ -16,7 +15,6 @@
   <div class="flex-between h-full font-medium pr-2 pl-4">
     <span class="lines-limit-2">{state.title}</span>
     <div class="flex">
-      <Component is={notification.component.LastViewEditor} props={{ value: state }} />
       <Button icon={IconMoreV} kind="transparent" on:click={showMenu} />
     </div>
   </div>

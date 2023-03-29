@@ -15,8 +15,8 @@
 -->
 <script lang="ts">
   import type { Class, Doc, Ref } from '@hcengineering/core'
-  import { Label, tooltip } from '@hcengineering/ui'
   import type { AnySvelteComponent, ButtonKind, ButtonSize } from '@hcengineering/ui'
+  import { Label, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { getAttribute, KeyedAttribute, updateAttribute } from '../attributes'
   import { getAttributeEditor, getClient } from '../utils'
@@ -38,8 +38,7 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
-
-  let editor: Promise<void | AnySvelteComponent> | undefined
+  let editor: AnySvelteComponent | undefined
 
   function onChange (value: any) {
     const doc = object as Doc
@@ -47,63 +46,64 @@
       ;(doc as any)[attributeKey] = value
       dispatch('update', { key, value })
     } else {
-      updateAttribute(client, doc, _class, { key: attributeKey, attr: attribute }, value)
+      updateAttribute(client, doc, doc._class, { key: attributeKey, attr: attribute }, value)
     }
   }
 
+  function getEditor (_class: Ref<Class<Doc>>, key: KeyedAttribute | string) {
+    getAttributeEditor(client, _class, key).then((p) => (editor = p))
+  }
+
+  $: getEditor(_class, key)
+
   $: attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
   $: attributeKey = typeof key === 'string' ? key : key.key
-  $: editor = getAttributeEditor(client, _class, key)
   $: isReadonly = (attribute.readonly ?? false) || readonly
 </script>
 
 {#if editor}
-  {#await editor then instance}
-    {#if instance}
-      {#if showHeader}
-        <span
-          class="overflow-label"
-          use:tooltip={{
-            component: Label,
-            props: { label: attribute.label }
-          }}><Label label={attribute.label} /></span
-        >
-        <div class="flex flex-grow min-w-0">
-          <svelte:component
-            this={instance}
-            readonly={isReadonly}
-            label={attribute?.label}
-            placeholder={attribute?.label}
-            {kind}
-            {size}
-            {width}
-            {justify}
-            type={attribute?.type}
-            {maxWidth}
-            {attributeKey}
-            value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
-            space={object.space}
-            {onChange}
-            {focus}
-            {object}
-          />
-        </div>
-      {:else}
-        <div style="grid-column: 1/3;">
-          <svelte:component
-            this={instance}
-            type={attribute?.type}
-            {maxWidth}
-            {attributeKey}
-            value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
-            readonly={isReadonly}
-            space={object.space}
-            {onChange}
-            {focus}
-            {object}
-          />
-        </div>
-      {/if}
-    {/if}
-  {/await}
+  {#if showHeader}
+    <span
+      class="overflow-label"
+      use:tooltip={{
+        component: Label,
+        props: { label: attribute.label }
+      }}><Label label={attribute.label} /></span
+    >
+    <div class="flex flex-grow min-w-0">
+      <svelte:component
+        this={editor}
+        readonly={isReadonly}
+        label={attribute?.label}
+        placeholder={attribute?.label}
+        {kind}
+        {size}
+        {width}
+        {justify}
+        type={attribute?.type}
+        {maxWidth}
+        {attributeKey}
+        value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
+        space={object.space}
+        {onChange}
+        {focus}
+        {object}
+      />
+    </div>
+  {:else}
+    <div style="grid-column: 1/3;">
+      <svelte:component
+        this={editor}
+        type={attribute?.type}
+        {maxWidth}
+        {attributeKey}
+        value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
+        readonly={isReadonly}
+        space={object.space}
+        {onChange}
+        {focus}
+        {object}
+      />
+    </div>
+  {/if}
 {/if}

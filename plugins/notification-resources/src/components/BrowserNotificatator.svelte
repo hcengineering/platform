@@ -112,6 +112,7 @@
     }
   }
   const client = getClient()
+  const hierarchy = client.getHierarchy()
 
   let clearTimer: number | undefined
 
@@ -136,7 +137,7 @@
       alreadyShown.clear()
     }, 5000)
 
-    const lastView = $lastViews.get(lastViewId)
+    const lastView = ($lastViews as any)[lastViewId]
     if ((lastView ?? notifyInstance.modifiedOn) > 0) {
       await notificationClient.updateLastView(
         lastViewId,
@@ -154,16 +155,10 @@
     })
 
     notification.onclick = () => {
-      if (notifyInstance.action !== undefined) {
-        showPanel(
-          notifyInstance.action.component,
-          notifyInstance.action.objectId,
-          notifyInstance.action.objectClass,
-          'content'
-        )
-      } else {
-        showPanel(view.component.EditDoc, notifyInstance.attachedTo, notifyInstance.attachedToClass, 'content')
-      }
+      const targetClass = hierarchy.getClass(notifyInstance.attachedToClass)
+      const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
+      const component = panelComponent.component ?? view.component.EditDoc
+      showPanel(component, notifyInstance.attachedTo, notifyInstance.attachedToClass, 'content')
     }
   }
 </script>

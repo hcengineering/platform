@@ -55,6 +55,7 @@ import workbench from '@hcengineering/model-workbench'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import { AnyComponent } from '@hcengineering/ui'
+import notification from '@hcengineering/notification'
 import templates from '@hcengineering/templates'
 import contact from './plugin'
 
@@ -311,6 +312,14 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(contact.class.Contact, core.class.Class, view.mixin.ArrayEditor, {
     inlineEditor: contact.component.ContactArrayEditor
+  })
+
+  builder.mixin(contact.class.Contact, core.class.Class, notification.mixin.TrackedDoc, {})
+
+  builder.mixin(contact.class.Channel, core.class.Class, notification.mixin.TrackedDoc, {})
+
+  builder.mixin(contact.class.Contact, core.class.Class, notification.mixin.ClassCollaborators, {
+    fields: []
   })
 
   builder.mixin(contact.class.Member, core.class.Class, view.mixin.ObjectPresenter, {

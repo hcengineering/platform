@@ -38,6 +38,7 @@
     "@hcengineering/ui": "^0.6.3",
     "@hcengineering/setting": "^0.6.2",
     "@hcengineering/presentation": "^0.6.2",
+    "@hcengineering/notification": "^0.6.7",
     "@hcengineering/core": "^0.6.21",
     "@hcengineering/view": "^0.6.2",
     "@hcengineering/attachment-resources": "^0.6.0",

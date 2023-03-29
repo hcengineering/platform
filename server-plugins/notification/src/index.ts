@@ -31,7 +31,6 @@ export const serverNotificationId = 'server-notification' as Plugin
 export async function getUpdateLastViewTx (
   findAll: TriggerControl['findAll'],
   attachedTo: Ref<Doc>,
-  attachedToClass: Ref<Class<Doc>>,
   lastView: number,
   user: Ref<Account>
 ): Promise<TxUpdateDoc<LastView> | TxCreateDoc<LastView> | undefined> {
@@ -39,8 +38,6 @@ export async function getUpdateLastViewTx (
     await findAll(
       notification.class.LastView,
       {
-        attachedTo,
-        attachedToClass,
         user
       },
       { limit: 1 }
@@ -48,21 +45,18 @@ export async function getUpdateLastViewTx (
   )[0]
   const factory = new TxFactory(user)
   if (current !== undefined) {
-    if (current.lastView === -1) {
+    if (current[attachedTo] === -1 || current[attachedTo] >= lastView) {
       return
     }
     const u = factory.createTxUpdateDoc(current._class, current.space, current._id, {
-      lastView
+      [attachedTo]: lastView
     })
     u.space = core.space.DerivedTx
     return u
   } else {
     const u = factory.createTxCreateDoc(notification.class.LastView, notification.space.Notifications, {
       user,
-      lastView,
-      attachedTo,
-      attachedToClass,
-      collection: 'lastViews'
+      [attachedTo]: lastView
     })
     u.space = core.space.DerivedTx
     return u
@@ -129,28 +123,28 @@ export async function getEmployee (employee: Ref<Employee>, control: TriggerCont
 export async function createLastViewTx (
   findAll: TriggerControl['findAll'],
   attachedTo: Ref<Doc>,
-  attachedToClass: Ref<Class<Doc>>,
   user: Ref<Account>
-): Promise<TxCreateDoc<LastView> | undefined> {
+): Promise<TxCreateDoc<LastView> | TxUpdateDoc<LastView> | undefined> {
   const current = (
     await findAll(
       notification.class.LastView,
       {
-        attachedTo,
-        attachedToClass,
         user
       },
       { limit: 1 }
     )
   )[0]
+  const factory = new TxFactory(user)
   if (current === undefined) {
-    const factory = new TxFactory(user)
     const u = factory.createTxCreateDoc(notification.class.LastView, notification.space.Notifications, {
       user,
-      lastView: 1,
-      attachedTo,
-      attachedToClass,
-      collection: 'lastViews'
+      [attachedTo]: 1
+    })
+    u.space = core.space.DerivedTx
+    return u
+  } else if (current[attachedTo] === undefined) {
+    const u = factory.createTxUpdateDoc(current._class, current.space, current._id, {
+      [attachedTo]: 1
     })
     u.space = core.space.DerivedTx
     return u
@@ -186,6 +180,9 @@ export default plugin(serverNotificationId, {
   },
   trigger: {
     OnBacklinkCreate: '' as Resource<TriggerFunc>,
-    UpdateLastView: '' as Resource<TriggerFunc>
+    UpdateLastView: '' as Resource<TriggerFunc>,
+    CreateCollaboratorDoc: '' as Resource<TriggerFunc>,
+    UpdateCollaboratorDoc: '' as Resource<TriggerFunc>,
+    OnAddCollborator: '' as Resource<TriggerFunc>
   }
 })

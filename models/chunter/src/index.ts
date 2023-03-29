@@ -194,6 +194,16 @@ export function createModel (builder: Builder, options = { addApplication: true 
     getName: chunter.function.GetDmName
   })
 
+  builder.mixin(chunter.class.Message, core.class.Class, notification.mixin.TrackedDoc, {})
+  builder.mixin(chunter.class.Message, core.class.Class, notification.mixin.ClassCollaborators, {
+    fields: ['createdBy', 'replies']
+  })
+
+  builder.mixin(chunter.class.ChunterSpace, core.class.Class, notification.mixin.TrackedDoc, {})
+  builder.mixin(chunter.class.DirectMessage, core.class.Class, notification.mixin.ClassCollaborators, {
+    fields: ['members']
+  })
+
   builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: chunter.component.DmPresenter
   })

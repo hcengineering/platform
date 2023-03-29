@@ -18,12 +18,12 @@
   import type { IntlString } from '@hcengineering/platform'
   import { Button, ButtonKind, ButtonSize, Label, showPopup, TooltipAlignment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { createQuery } from '@hcengineering/presentation'
-  import Members from './icons/Members.svelte'
-  import UsersPopup from './UsersPopup.svelte'
-  import UserInfo from './UserInfo.svelte'
-  import CombineAvatars from './CombineAvatars.svelte'
   import plugin from '../plugin'
+  import { employeeByIdStore } from '../utils'
+  import CombineAvatars from './CombineAvatars.svelte'
+  import Members from './icons/Members.svelte'
+  import UserInfo from './UserInfo.svelte'
+  import UsersPopup from './UsersPopup.svelte'
 
   export let items: Ref<Employee>[] = []
   export let _class: Ref<Class<Employee>> = contact.class.Employee
@@ -40,13 +40,8 @@
   export let emptyLabel = plugin.string.Members
   export let readonly: boolean = false
 
-  let persons: Employee[] = []
-
-  const query = createQuery()
-
-  $: query.query<Employee>(_class, { _id: { $in: items } }, (result) => {
-    persons = result
-  })
+  let persons: Employee[] = items.map((p) => $employeeByIdStore.get(p)).filter((p) => p !== undefined) as Employee[]
+  $: persons = items.map((p) => $employeeByIdStore.get(p)).filter((p) => p !== undefined) as Employee[]
 
   const dispatch = createEventDispatcher()
 

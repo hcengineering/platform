@@ -17,10 +17,15 @@
   import activity from '@hcengineering/activity'
   import calendar from '@hcengineering/calendar'
   import type { Doc } from '@hcengineering/core'
-  import notification from '@hcengineering/notification'
   import type { Asset } from '@hcengineering/platform'
-  import { AnySvelteComponent, Component, Panel, Icon, Scroller } from '@hcengineering/ui'
-  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import {
+    AnySvelteComponent,
+    Component,
+    deviceOptionsStore as deviceInfo,
+    Icon,
+    Panel,
+    Scroller
+  } from '@hcengineering/ui'
 
   export let title: string | undefined = undefined
   export let subtitle: string | undefined = undefined
@@ -89,7 +94,6 @@
 
   <svelte:fragment slot="utils">
     <Component is={calendar.component.DocReminder} props={{ value: object, title }} />
-    <Component is={notification.component.LastViewEditor} props={{ value: object }} />
     {#if isUtils && $$slots.utils}
       <div class="buttons-divider" />
       <slot name="utils" />

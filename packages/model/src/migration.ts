@@ -1,5 +1,4 @@
 import {
-  ArrayAsElementPosition,
   Client,
   Doc,
   DocumentQuery,
@@ -9,17 +8,10 @@ import {
   IncOptions,
   ModelDb,
   ObjQueryType,
-  OmitNever,
   PushOptions,
-  Ref
+  Ref,
+  UnsetOptions
 } from '@hcengineering/core'
-
-/**
- * @public
- */
-export interface UnsetOptions<T extends object> {
-  $unset?: Partial<OmitNever<ArrayAsElementPosition<Required<T>>>>
-}
 
 /**
  * @public
@@ -27,7 +19,7 @@ export interface UnsetOptions<T extends object> {
 export type MigrateUpdate<T extends Doc> = Partial<T> &
 Omit<PushOptions<T>, '$move'> &
 IncOptions<T> &
-UnsetOptions<T> & {
+UnsetOptions & {
   // For any other mongo stuff
   [key: string]: any
 }

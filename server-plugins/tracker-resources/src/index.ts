@@ -31,7 +31,6 @@ import core, {
   WithLookup
 } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
-import { Resource } from '@hcengineering/platform/lib/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { addAssigneeNotification } from '@hcengineering/server-task-resources'
 import tracker, { Component, Issue, IssueParentInfo, Project, TimeSpendReport, trackerId } from '@hcengineering/tracker'
@@ -82,14 +81,7 @@ export async function addTrackerAssigneeNotification (
   assignee: Ref<Employee>,
   ptx: TxCollectionCUD<Issue, AttachedDoc>
 ): Promise<void> {
-  await addAssigneeNotification(
-    control,
-    res,
-    issue,
-    assignee,
-    ptx,
-    tracker.component.EditIssue as unknown as Resource<string>
-  )
+  await addAssigneeNotification(control, res, issue, assignee, ptx)
 }
 
 /**
@@ -169,7 +161,7 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
     if (control.hierarchy.isDerived(createTx.objectClass, tracker.class.Issue)) {
       const issue = TxProcessor.createDoc2Doc(createTx)
       const res: Tx[] = []
-      await updateIssueParentEstimations(issue, res, control, [], issue.parents)
+      updateIssueParentEstimations(issue, res, control, [], issue.parents)
 
       if (issue.assignee != null) {
         await addTrackerAssigneeNotification(
