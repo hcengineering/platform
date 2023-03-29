@@ -101,7 +101,7 @@ async function getFile (client: MinioService, workspace: WorkspaceId, uuid: stri
   try {
     const dataStream = await client.get(workspace, uuid)
     res.status(200)
-    res.set('Cache-Control', 'max-age=604800')
+    res.set('Cache-Control', 'max-age=7d')
 
     const contentType = stat.metaData['content-type']
     if (contentType !== undefined) {
@@ -180,7 +180,16 @@ export function start (
 
   const dist = resolve(process.env.PUBLIC_DIR ?? __dirname, 'dist')
   console.log('serving static files from', dist)
-  app.use(express.static(dist, { maxAge: '168h' }))
+  app.use(
+    express.static(dist, {
+      maxAge: '7d',
+      setHeaders (res, path) {
+        if (path.includes('index.html')) {
+          res.setHeader('Cache-Control', 'public, max-age=0')
+        }
+      }
+    })
+  )
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.head('/files', async (req, res: Response) => {
@@ -198,7 +207,6 @@ export function start (
       res.status(200)
 
       res.setHeader('accept-ranges', 'bytes')
-
       res.setHeader('content-length', fileSize)
 
       res.end()
@@ -454,7 +462,7 @@ export function start (
   })
 
   app.get('*', function (request, response) {
-    response.set('Cache-Control', 'no-cache')
+    response.setHeader('Cache-Control', 'max-age=0')
     response.sendFile(join(dist, 'index.html'))
   })
 
