@@ -113,7 +113,7 @@
   $: newTxPos = newTx(filtered, $lastViews)
 
   function newTx (txes: DisplayTx[], lastViews: LastView | undefined): number {
-    const lastView = lastViews?.[object._id]
+    const lastView = (lastViews as any)?.[object._id]
     if (lastView === undefined || lastView === -1) return -1
     for (let index = 0; index < txes.length; index++) {
       const tx = txes[index]

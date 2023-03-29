@@ -104,7 +104,7 @@
 
   function newMessagesStart (messages: Message[]): number {
     if (space === undefined) return -1
-    const lastView = $lastViews[space]
+    const lastView = ($lastViews as any)[space]
     if (lastView === undefined || lastView === -1) return -1
     for (let index = 0; index < messages.length; index++) {
       const message = messages[index]

@@ -160,7 +160,7 @@
   let comments: ThreadMessage[] = []
 
   function newMessagesStart (comments: ThreadMessage[], lastViews: LastView): number {
-    const lastView = lastViews[_id]
+    const lastView = (lastViews as any)[_id]
     if (lastView === undefined || lastView === -1) return -1
     for (let index = 0; index < comments.length; index++) {
       const comment = comments[index]

@@ -40,8 +40,8 @@
   export let emptyLabel = plugin.string.Members
   export let readonly: boolean = false
 
-  let persons: Employee[] = items.map((p) => $employeeByIdStore.get(p)).filter((p) => p !== undefined)
-  $: persons = items.map((p) => $employeeByIdStore.get(p)).filter((p) => p !== undefined)
+  let persons: Employee[] = items.map((p) => $employeeByIdStore.get(p)).filter((p) => p !== undefined) as Employee[]
+  $: persons = items.map((p) => $employeeByIdStore.get(p)).filter((p) => p !== undefined) as Employee[]
 
   const dispatch = createEventDispatcher()
 

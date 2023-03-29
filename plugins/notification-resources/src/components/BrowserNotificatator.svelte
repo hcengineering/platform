@@ -136,7 +136,7 @@
       alreadyShown.clear()
     }, 5000)
 
-    const lastView = $lastViews[lastViewId]
+    const lastView = ($lastViews as any)[lastViewId]
     if ((lastView ?? notifyInstance.modifiedOn) > 0) {
       await notificationClient.updateLastView(
         lastViewId,

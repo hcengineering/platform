@@ -115,8 +115,10 @@ test('my-issues', async ({ page }) => {
   await expect(page.locator('.antiPanel-component')).toContainText(name)
   await openIssue(page, name)
   // click "Don't track"
-  await page.click('.buttons-group > div > .button')
+  await page.click('button:has-text("Appleseed John") >> nth=1')
+  await page.click('.selectPopup >> button:has-text("Appleseed John")')
   await page.waitForTimeout(100)
+  await page.keyboard.press('Escape')
   await page.keyboard.press('Escape')
   await expect(page.locator('.antiPanel-component')).not.toContainText(name)
 })
