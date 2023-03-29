@@ -629,6 +629,7 @@ const view = plugin(viewId, {
 
     ShowPreview: '' as Ref<Action>,
     ShowActions: '' as Ref<Action>,
+    Preview: '' as Ref<Action>,
 
     // Edit document
     Open: '' as Ref<Action>

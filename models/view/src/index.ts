@@ -18,7 +18,6 @@ import { DOMAIN_MODEL } from '@hcengineering/core'
 import { Builder, Mixin, Model } from '@hcengineering/model'
 import core, { TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
-import presenation from '@hcengineering/model-presentation'
 import type { Asset, IntlString, Resource, Status } from '@hcengineering/platform'
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
 import type { AnyComponent, Location } from '@hcengineering/ui'
@@ -744,22 +743,26 @@ export function createModel (builder: Builder): void {
 
   classPresenter(builder, core.class.EnumOf, view.component.EnumPresenter, view.component.EnumEditor)
 
-  createAction(builder, {
-    action: view.actionImpl.ShowPopup,
-    actionProps: {
-      component: view.component.IndexedDocumentPreview,
-      fillProps: {
-        _id: 'objectId'
-      }
-    },
-    label: presenation.string.DocumentPreview,
-    keyBinding: [''],
-    input: 'focus',
-    icon: view.icon.Open,
-    category: view.category.GeneralNavigation,
-    target: core.class.Doc,
-    context: { mode: ['context', 'browser', 'editor'] }
-  })
+  // createAction(
+  //   builder,
+  //   {
+  //     action: view.actionImpl.ShowPopup,
+  //     actionProps: {
+  //       component: view.component.IndexedDocumentPreview,
+  //       fillProps: {
+  //         _id: 'objectId'
+  //       }
+  //     },
+  //     label: presenation.string.DocumentPreview,
+  //     keyBinding: [''],
+  //     input: 'focus',
+  //     icon: view.icon.Open,
+  //     category: view.category.GeneralNavigation,
+  //     target: core.class.Doc,
+  //     context: { mode: ['context', 'browser', 'editor'] }
+  //   },
+  //   view.action.Preview
+  // )
 
   createAction(
     builder,

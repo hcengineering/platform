@@ -54,7 +54,9 @@
     resActions = [...newActions, ...actions].sort(
       (a, b) => (order as any)[a.group ?? 'other'] - (order as any)[b.group ?? 'other']
     )
-    loaded = true
+    if (resActions.length > 0) {
+      loaded = true
+    }
   })
 </script>
 

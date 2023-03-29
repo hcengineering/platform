@@ -35,6 +35,7 @@ export default mergeIds(viewId, view, {
 
     ShowPreview: '' as ViewAction,
     ShowActions: '' as ViewAction,
+    Preview: '' as ViewAction,
 
     Open: '' as ViewAction
   },
