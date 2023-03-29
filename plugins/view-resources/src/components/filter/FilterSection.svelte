@@ -82,6 +82,16 @@
     dispatch('change')
   }
 
+  async function checkIfExists () {
+    for (const value of filter.value) {
+      const actualValue = await client.findOne(filter.key.attribute.type.to, { _id: value })
+      if (actualValue === undefined) {
+        filter.value = filter.value.filter((p) => p !== value)
+      }
+    }
+    onChange(filter)
+  }
+  $: checkIfExists()
   onDestroy(() => {
     filter.nested?.onRemove?.()
     filter.onRemove?.()
