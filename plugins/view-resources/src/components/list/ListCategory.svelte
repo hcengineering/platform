@@ -57,7 +57,7 @@
   export let _class: Ref<Class<Doc>>
   export let config: (string | BuildModelKey)[]
   export let viewOptions: ViewOptions
-  export let newObjectProps: (doc: Doc) => Record<string, any>|undefined
+  export let newObjectProps: (doc: Doc) => Record<string, any> | undefined
   export let docByIndex: Map<number, Doc>
   export let viewOptionsConfig: ViewOptionModel[] | undefined
   export let dragItem: {
@@ -288,7 +288,7 @@
     dragItem = {
       doc: docObject,
       revert: () => {
-        const d = items.find(it => it._id === docObject._id)
+        const d = items.find((it) => it._id === docObject._id)
         if (d === undefined) {
           items.splice(i, 0, docObject)
           items = items

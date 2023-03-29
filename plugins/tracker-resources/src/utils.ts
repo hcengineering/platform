@@ -13,11 +13,10 @@
 // limitations under the License.
 //
 
-import { Employee, getName } from '@hcengineering/contact'
+import { Employee } from '@hcengineering/contact'
 import core, {
   ApplyOperations,
   AttachedDoc,
-  CategoryType,
   Class,
   Collection,
   Doc,
@@ -32,18 +31,17 @@ import core, {
   TxOperations,
   TxUpdateDoc
 } from '@hcengineering/core'
-import { TypeState } from '@hcengineering/kanban'
-import { Asset, IntlString, translate } from '@hcengineering/platform'
+import { Asset, IntlString } from '@hcengineering/platform'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { calcRank } from '@hcengineering/task'
 import {
-  Component,
   ComponentStatus,
   Issue,
   IssuePriority,
   IssuesDateModificationPeriod,
   IssuesGrouping,
-  IssuesOrdering, Project,
+  IssuesOrdering,
+  Project,
   Sprint,
   SprintStatus,
   TimeReportDayType
@@ -59,7 +57,7 @@ import {
 import { ViewletDescriptor } from '@hcengineering/view'
 import { CategoryQuery, groupBy, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
 import tracker from './plugin'
-import { defaultComponentStatuses, defaultPriorities, defaultSprintStatuses, issuePriorities } from './types'
+import { defaultComponentStatuses, defaultPriorities, defaultSprintStatuses } from './types'
 
 export * from './types'
 
@@ -337,8 +335,8 @@ export async function issueStatusSort (
   if (viewletDescriptorId === tracker.viewlet.Kanban) {
     value.sort((a, b) => {
       const res =
-            listIssueKanbanStatusOrder.indexOf(a.values[0].category as Ref<StatusCategory>) -
-            listIssueKanbanStatusOrder.indexOf(b.values[0].category as Ref<StatusCategory>)
+        listIssueKanbanStatusOrder.indexOf(a.values[0].category as Ref<StatusCategory>) -
+        listIssueKanbanStatusOrder.indexOf(b.values[0].category as Ref<StatusCategory>)
       if (res === 0) {
         return a.values[0].rank.localeCompare(b.values[0].rank)
       }
@@ -347,8 +345,8 @@ export async function issueStatusSort (
   } else {
     value.sort((a, b) => {
       const res =
-            listIssueStatusOrder.indexOf(a.values[0].category as Ref<StatusCategory>) -
-            listIssueStatusOrder.indexOf(b.values[0].category as Ref<StatusCategory>)
+        listIssueStatusOrder.indexOf(a.values[0].category as Ref<StatusCategory>) -
+        listIssueStatusOrder.indexOf(b.values[0].category as Ref<StatusCategory>)
       if (res === 0) {
         return a.values[0].rank.localeCompare(b.values[0].rank)
       }
@@ -378,107 +376,6 @@ export async function sprintSort (value: Array<Ref<Sprint>>): Promise<Array<Ref<
       query.unsubscribe()
     })
   })
-}
-
-export async function mapKanbanCategories (
-  groupBy: string,
-  categories: CategoryType[],
-  components: Component[],
-  sprints: Sprint[],
-  assignee: Employee[]
-): Promise<TypeState[]> {
-  if (groupBy === IssuesGrouping.NoGrouping) {
-    return [{ _id: undefined, color: UNSET_COLOR, title: await translate(tracker.string.NoGrouping, {}) }]
-  }
-  if (groupBy === IssuesGrouping.Priority) {
-    const res: TypeState[] = []
-    for (const priority of categories) {
-      if (typeof priority !== 'object' && priority !== undefined) {
-        const title = await translate((issuePriorities as any)[priority].label, {})
-        res.push({
-          _id: priority,
-          title,
-          color: UNSET_COLOR,
-          icon: (issuePriorities as any)[priority].icon
-        })
-      }
-    }
-    return res
-  }
-  if (groupBy === IssuesGrouping.Status) {
-    return (categories.filter(it => typeof it === 'object') as StatusValue[]).map((category: StatusValue) => {
-      const icon = category.values[0]?.$lookup?.category?.icon
-      return {
-        _id: category.name,
-        title: category.name,
-        icon,
-        color: category.color ?? UNSET_COLOR
-      }
-    })
-  }
-  if (groupBy === IssuesGrouping.Assignee) {
-    const noAssignee = await translate(tracker.string.NoAssignee, {})
-    const res: TypeState[] = assignee
-      .filter((p) => categories.includes(p._id))
-      .map((employee) => {
-        return {
-          _id: employee._id,
-          title: getName(employee),
-          color: UNSET_COLOR,
-          icon: undefined
-        }
-      })
-    if (categories.includes(undefined)) {
-      res.push({
-        _id: null,
-        title: noAssignee,
-        color: UNSET_COLOR,
-        icon: undefined
-      })
-    }
-    return res
-  }
-  if (groupBy === IssuesGrouping.Component) {
-    const noComponent = await translate(tracker.string.NoComponent, {})
-    const res: TypeState[] = components
-      .filter((p) => categories.includes(p._id))
-      .map((component) => ({
-        _id: component._id,
-        title: component.label,
-        color: UNSET_COLOR,
-        icon: undefined
-      }))
-    if (categories.includes(undefined)) {
-      res.push({
-        _id: null,
-        title: noComponent,
-        color: UNSET_COLOR,
-        icon: undefined
-      })
-    }
-    return res
-  }
-  if (groupBy === IssuesGrouping.Sprint) {
-    const noSprint = await translate(tracker.string.NoSprint, {})
-    const res: TypeState[] = sprints
-      .filter((p) => categories.includes(p._id))
-      .map((sprint) => ({
-        _id: sprint._id,
-        title: sprint.label,
-        color: UNSET_COLOR,
-        icon: undefined
-      }))
-    if (categories.includes(undefined)) {
-      res.push({
-        _id: null,
-        title: noSprint,
-        color: UNSET_COLOR,
-        icon: undefined
-      })
-    }
-    return res
-  }
-  return []
 }
 
 /**

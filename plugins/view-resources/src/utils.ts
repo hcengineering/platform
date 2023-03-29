@@ -25,9 +25,11 @@ import core, {
   getObjectValue,
   Hierarchy,
   Lookup,
-  Obj, Ref,
+  Obj,
+  Ref,
   RefTo,
-  ReverseLookup, ReverseLookups,
+  ReverseLookup,
+  ReverseLookups,
   Space,
   Status,
   StatusManager,
@@ -502,14 +504,18 @@ export type FixedWidthStore = Record<string, number>
 
 export const fixedWidthStore = writable<FixedWidthStore>({})
 
-export function groupBy<T extends Doc> (docs: T[], key: string, categories?: CategoryType[]): { [key: string | number]: T[] } {
+export function groupBy<T extends Doc> (
+  docs: T[],
+  key: string,
+  categories?: CategoryType[]
+): { [key: string | number]: T[] } {
   return docs.reduce((storage: { [key: string]: T[] }, item: T) => {
     let group = getObjectValue(key, item) ?? undefined
 
     if (categories !== undefined) {
       for (const c of categories) {
         if (typeof c === 'object') {
-          const st = c.values.find(it => it._id === group)
+          const st = c.values.find((it) => it._id === group)
           if (st !== undefined) {
             group = st.name
             break
@@ -525,6 +531,36 @@ export function groupBy<T extends Doc> (docs: T[], key: string, categories?: Cat
   }, {})
 }
 
+/**
+ * @public
+ */
+export function getGroupByValues<T extends Doc> (
+  groupByDocs: Record<string | number, T[]>,
+  category: CategoryType
+): T[] {
+  if (typeof category === 'object') {
+    return groupByDocs[category.name] ?? []
+  } else if (category !== undefined) {
+    return groupByDocs[category] ?? []
+  }
+  return []
+}
+
+/**
+ * @public
+ */
+export function setGroupByValues (
+  groupByDocs: Record<string | number, Doc[]>,
+  category: CategoryType,
+  docs: Doc[]
+): void {
+  if (typeof category === 'object') {
+    groupByDocs[category.name] = docs
+  } else if (category !== undefined) {
+    groupByDocs[category] = docs
+  }
+}
+
 export async function getCategories (
   client: TxOperations,
   _class: Ref<Class<Doc>>,
@@ -536,7 +572,8 @@ export async function getCategories (
   if (key === noCategory) return [undefined]
   const h = client.getHierarchy()
   const attr = h.getAttribute(_class, key)
-  const isStatusField = attr.type._class === core.class.RefTo && h.isDerived((attr.type as RefTo<Doc>).to, core.class.Status)
+  const isStatusField =
+    attr.type._class === core.class.RefTo && h.isDerived((attr.type as RefTo<Doc>).to, core.class.Status)
 
   const valueSet = new Set<any>()
   const existingCategories = []

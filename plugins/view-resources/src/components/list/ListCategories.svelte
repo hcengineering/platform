@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { CategoryType, Class, Doc, generateId, Lookup, Ref, Space, StatusValue } from '@hcengineering/core'
+  import { CategoryType, Class, Doc, generateId, Lookup, Ref, Space } from '@hcengineering/core'
   import { getResource, IntlString } from '@hcengineering/platform'
   import { getClient, statusStore } from '@hcengineering/presentation'
   import { AnyComponent } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, CategoryOption, ViewOptionModel, ViewOptions } from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import { buildModel, getAdditionalHeader, getCategories, getPresenter, groupBy } from '../../utils'
+  import { buildModel, getAdditionalHeader, getCategories, getGroupByValues, getPresenter, groupBy } from '../../utils'
   import { CategoryQuery, noCategory } from '../../viewOptions'
   import ListCategory from './ListCategory.svelte'
 
@@ -54,7 +54,7 @@
   let categories: CategoryType[] = []
   $: updateCategories(_class, docs, groupByKey, viewOptions, viewOptionsConfig)
 
-  $: groupedDocs = groupBy(docs, groupByKey, categories)
+  $: groupByDocs = groupBy(docs, groupByKey, categories)
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -117,7 +117,7 @@
     let res = initIndex
     for (let index = 0; index < i; index++) {
       const cat = categories[index]
-      res += groupedDocs[cat]?.length ?? 0
+      res += groupByDocs[cat]?.length ?? 0
     }
     return res
   }
@@ -125,18 +125,10 @@
   $: extraHeaders = getAdditionalHeader(client, _class)
 
   const dispatch = createEventDispatcher()
-
-  function getCategoryValues (groupedDocs: Record<string, Doc[]>, category: any | StatusValue): Doc[] {
-    if (typeof category === 'object') {
-      return groupedDocs[category.name] ?? []
-    } else {
-      return groupedDocs[category] ?? []
-    }
-  }
 </script>
 
 {#each categories as category, i (category)}
-  {@const items = getCategoryValues(groupedDocs, category)}
+  {@const items = groupByKey === noCategory ? docs : getGroupByValues(groupByDocs, category)}
   <ListCategory
     {elementByIndex}
     {indexById}

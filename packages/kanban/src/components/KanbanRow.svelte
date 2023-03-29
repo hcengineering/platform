@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref } from '@hcengineering/core'
+  import { CategoryType, Doc, Ref } from '@hcengineering/core'
   import { createEventDispatcher } from 'svelte'
   import { slide } from 'svelte/transition'
-  import { CardDragEvent, Item, TypeState } from '../types'
+  import { CardDragEvent, Item } from '../types'
 
   export let stateObjects: Item[]
   export let isDragging: boolean
@@ -24,11 +24,11 @@
   export let objects: Item[]
   export let selection: number | undefined = undefined
   export let checkedSet: Set<Ref<Doc>>
-  export let state: TypeState
+  export let state: CategoryType
 
   export let cardDragOver: (evt: CardDragEvent, object: Item) => void
   export let cardDrop: (evt: CardDragEvent, object: Item) => void
-  export let onDragStart: (object: Item, state: TypeState) => void
+  export let onDragStart: (object: Item, state: CategoryType) => void
   export let showMenu: (evt: MouseEvent, object: Item) => void
 
   const dispatch = createEventDispatcher()

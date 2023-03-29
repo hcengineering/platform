@@ -47,7 +47,7 @@
   $: targetClass = (filter.key.attribute.type as RefTo<Doc>).to
   $: clazz = hierarchy.getClass(targetClass)
 
-  $: isStatus = (client.getHierarchy().isDerived(targetClass, core.class.Status) ?? false)
+  $: isStatus = client.getHierarchy().isDerived(targetClass, core.class.Status) ?? false
   let statusesCount: number[] = []
   let statuses: Status[]
 

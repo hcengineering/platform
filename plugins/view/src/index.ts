@@ -238,7 +238,9 @@ export interface ListHeaderExtra extends Class<Doc> {
 /**
  * @public
  */
-export type SortFunc = Resource<(values: (PrimitiveType | StatusValue)[], viewletDescriptorId?: Ref<ViewletDescriptor>) => Promise<any[]>>
+export type SortFunc = Resource<
+(values: (PrimitiveType | StatusValue)[], viewletDescriptorId?: Ref<ViewletDescriptor>) => Promise<any[]>
+>
 
 /**
  * @public

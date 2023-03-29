@@ -131,7 +131,7 @@
     return props.length
   }
 
-  let dragItem : {
+  let dragItem: {
     doc?: Doc
     revert?: () => void
   } = {}

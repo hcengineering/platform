@@ -29,7 +29,6 @@ import core, {
   SortingOrder,
   Status,
   StatusManager,
-  StatusValue,
   Tx,
   TxResult
 } from '@hcengineering/core'
