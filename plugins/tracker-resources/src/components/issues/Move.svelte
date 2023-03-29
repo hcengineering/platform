@@ -16,11 +16,11 @@
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
-  import core, { Ref, SortingOrder } from '@hcengineering/core'
+  import { Ref } from '@hcengineering/core'
   import { SpaceSelect } from '@hcengineering/presentation'
-  import { calcRank } from '@hcengineering/task'
   import { createEventDispatcher } from 'svelte'
   import view from '@hcengineering/view'
+  import ui from '@hcengineering/ui'
   import tracker from '../../plugin'
   import { Issue, Project } from '@hcengineering/tracker'
   import { moveIssueToSpace } from '../../utils'
@@ -39,32 +39,16 @@
     const doc = docs[0]
     if (space === undefined) space = doc.space
   }
-  async function move (doc: Issue): Promise<void> {
+
+  const moveAll = async () => {
     const spaceObject = await client.findOne(tracker.class.Project, { _id: space })
     if (spaceObject === undefined) {
       throw new Error('Move: state not found')
     }
-    const lastOne = await client.findOne(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
-    const incResult = await client.updateDoc(
-      tracker.class.Project,
-      core.space.Space,
-      space,
-      {
-        $inc: { sequence: 1 }
-      },
-      true
-    )
-    await moveIssueToSpace(client, doc, space, {
-      status: spaceObject.defaultIssueStatus,
-      rank: calcRank(lastOne, undefined),
-      number: (incResult as any).object.sequence
+    await moveIssueToSpace(client, docs, space, {
+      status: spaceObject.defaultIssueStatus
     })
-
     dispatch('close')
-  }
-
-  const moveAll = async () => {
-    docs.forEach(async (doc) => await move(doc))
   }
 
   async function getSpace (): Promise<void> {
@@ -96,7 +80,7 @@
     />
     <Button
       size={'small'}
-      label={view.string.Cancel}
+      label={ui.string.Cancel}
       on:click={() => {
         dispatch('close')
       }}

@@ -15,6 +15,7 @@
 
 import { Employee, getName } from '@hcengineering/contact'
 import core, {
+  ApplyOperations,
   AttachedDoc,
   Class,
   Collection,
@@ -690,24 +691,22 @@ export interface StatusStore {
   version: number
 }
 
-/**
- * @public
- */
-export async function moveIssueToSpace (
+async function updateIssuesOnMove (
   client: TxOperations,
+  applyOps: ApplyOperations,
   doc: Doc,
   space: Ref<Project>,
   extra?: DocumentUpdate<any>
 ): Promise<void> {
   const hierarchy = client.getHierarchy()
   const attributes = hierarchy.getAllAttributes(doc._class)
-  for (const [name, attribute] of attributes) {
+  for (const attribute of attributes.values()) {
     if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) {
       const collection = attribute.type as Collection<AttachedDoc>
       const allAttached = await client.findAll(collection.of, { attachedTo: doc._id })
       for (const attached of allAttached) {
         // Do not use extra for childs.
-        if (name === 'subIssues') {
+        if (hierarchy.isDerived(collection.of, tracker.class.Issue)) {
           const lastOne = await client.findOne(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
           const incResult = await client.updateDoc(
             tracker.class.Project,
@@ -718,19 +717,49 @@ export async function moveIssueToSpace (
             },
             true
           )
-          await moveIssueToSpace(client, attached, space, {
+          await updateIssuesOnMove(client, applyOps, attached, space, {
             ...extra,
             rank: calcRank(lastOne, undefined),
             number: (incResult as any).object.sequence
-          }).catch((err) => console.log('failed to move', name, err))
-        } else await moveIssueToSpace(client, attached, space).catch((err) => console.log('failed to move', name, err))
+          })
+        } else await updateIssuesOnMove(client, applyOps, attached, space)
       }
     }
   }
-  await client.update(doc, {
+  await applyOps.update(doc, {
     space,
     ...extra
   })
+}
+
+/**
+ * @public
+ */
+export async function moveIssueToSpace (
+  client: TxOperations,
+  docs: Doc[],
+  space: Ref<Project>,
+  extra?: DocumentUpdate<any>
+): Promise<void> {
+  const applyOps = client.apply(docs[0]._id)
+  for (const doc of docs) {
+    const lastOne = await client.findOne(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
+    const incResult = await client.updateDoc(
+      tracker.class.Project,
+      core.space.Space,
+      space,
+      {
+        $inc: { sequence: 1 }
+      },
+      true
+    )
+    await updateIssuesOnMove(client, applyOps, doc, space, {
+      ...extra,
+      rank: calcRank(lastOne, undefined),
+      number: (incResult as any).object.sequence
+    })
+  }
+  await applyOps.commit()
 }
 
 // Issue status live query
