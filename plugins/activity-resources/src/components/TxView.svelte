@@ -28,8 +28,7 @@
     Label,
     ShowMore,
     showPopup,
-    TimeSince,
-    Like
+    TimeSince
   } from '@hcengineering/ui'
   import type { AttributeModel } from '@hcengineering/view'
   import { Menu, ObjectPresenter } from '@hcengineering/view-resources'
@@ -155,15 +154,9 @@
 </script>
 
 {#if (viewlet !== undefined && !((viewlet?.hideOnRemove ?? false) && tx.removed)) || model.length > 0}
-  <div
-    class="msgactivity-container"
-    class:showIcon
-    class:withAvatar={isComment || isMention}
-    class:isNew
-    class:isNextNew
-  >
+  <div class="msgactivity-container" class:showIcon class:withAvatar={isComment} class:isNew class:isNextNew>
     {#if showIcon}
-      {#if isComment || isMention}
+      {#if isComment}
         <div class="msgactivity-avatar">
           <Icon icon={IconProfile} size={'medium'} />
         </div>
@@ -192,15 +185,13 @@
           </span>
 
           {#if viewlet && viewlet?.editable}
-            <span class="buttons-group small-gap">
-              {#if viewlet.label}
-                <Label label={viewlet.label} params={viewlet.labelParams ?? {}} />
-              {/if}
-              {#if tx.updated}
-                <Label label={activity.string.Edited} />
-              {/if}
-              <span class="time"><TimeSince value={tx.tx.modifiedOn} /></span>
-            </span>
+            {#if viewlet.label}
+              <span class="lower"><Label label={viewlet.label} params={viewlet.labelParams ?? {}} /></span>
+            {/if}
+            {#if tx.updated}
+              <span class="lower"><Label label={activity.string.Edited} /></span>
+            {/if}
+            <span class="time"><TimeSince value={tx.tx.modifiedOn} /></span>
           {:else if viewlet && viewlet.label}
             <span class="lower">
               <Label label={viewlet.label} params={viewlet.labelParams ?? {}} />
@@ -290,7 +281,7 @@
         </div>
         {#if isComment}
           <div class="buttons-group">
-            <Like />
+            <!-- <Like /> -->
             {#if tx.tx.modifiedBy === getCurrentAccount()._id}
               <ActionIcon icon={IconMoreH} size={'small'} action={showMenu} />
             {/if}
@@ -305,7 +296,7 @@
       {/if}
 
       {#if viewlet && viewlet.display !== 'inline'}
-        <div class="activity-content {viewlet.display}" class:contentHidden>
+        <div class="activity-content content" class:contentHidden>
           <ShowMore ignore={edit}>
             {#if tx.collectionAttribute !== undefined && (tx.txDocIds?.size ?? 0) > 1}
               <div class="flex-row-center flex-grow flex-wrap clear-mins">
@@ -341,10 +332,6 @@
     display: flex;
     justify-content: space-between;
 
-    &:hover .time {
-      opacity: 1;
-    }
-
     .msgactivity-icon,
     .msgactivity-avatar {
       display: flex;
@@ -379,13 +366,23 @@
       }
       .msgactivity-content__title {
         display: inline-flex;
-        align-items: center;
+        align-items: baseline;
         flex-grow: 1;
       }
 
       &.content {
         flex-direction: column;
         padding-bottom: 0.25rem;
+      }
+      &.comment {
+        .activity-content {
+          margin-top: 0.25rem;
+        }
+      }
+      &:not(.comment) {
+        .msgactivity-content__header {
+          min-height: 1.75rem;
+        }
       }
       &:not(.content) {
         align-items: center;
@@ -450,13 +447,9 @@
   .time {
     font-size: 0.75rem;
     color: var(--trans-color);
-    opacity: 0.3;
 
     &.top {
       align-self: flex-start;
-    }
-    .comment & {
-      opacity: 1;
     }
   }
 
@@ -467,7 +460,7 @@
   .activity-content {
     overflow: hidden;
     visibility: visible;
-    margin-top: 0.25rem;
+    margin-top: 0.125rem;
     max-height: max-content;
     opacity: 1;
     transition-property: max-height, opacity;

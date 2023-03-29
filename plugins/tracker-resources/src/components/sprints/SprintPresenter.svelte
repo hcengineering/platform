@@ -22,6 +22,7 @@
   export let shouldShowAvatar: boolean = true
   export let onClick: () => void | undefined
   export let isInteractive = true
+  export let inline: boolean = false
 
   function navigateToSprint () {
     if (!isInteractive) {
@@ -42,7 +43,7 @@
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div class="flex" on:click={navigateToSprint}>
-    {#if shouldShowAvatar}
+    {#if !inline && shouldShowAvatar}
       <div class="mr-2" use:tooltip={{ label: tracker.string.Sprint }}>
         <Icon icon={tracker.icon.Sprint} size={'small'} />
       </div>

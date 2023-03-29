@@ -19,9 +19,10 @@
   import tracker from '../../plugin'
 
   export let value: WithLookup<IssueTemplate>
-  // export let inline: boolean = false
   export let disableClick = false
   export let noUnderline = false
+  export let shouldShowAvatar: boolean = true
+  export let inline: boolean = false
 
   function handleIssueEditorOpened () {
     if (disableClick) {
@@ -36,9 +37,11 @@
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <span class="issuePresenterRoot" class:noPointer={disableClick} class:noUnderline on:click={handleIssueEditorOpened}>
-    <div class="mr-2" use:tooltip={{ label: tracker.string.IssueTemplate }}>
-      <Icon icon={tracker.icon.Issues} size={'small'} />
-    </div>
+    {#if !inline && shouldShowAvatar}
+      <div class="mr-2" use:tooltip={{ label: tracker.string.IssueTemplate }}>
+        <Icon icon={tracker.icon.Issues} size={'small'} />
+      </div>
+    {/if}
     <span title={value?.title}>
       {title}
     </span>

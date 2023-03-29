@@ -18,7 +18,7 @@ import attachment, { attachmentId } from '@hcengineering/attachment'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(attachment.icon, {
-  Attachment: `${icons}#chunter`,
+  Attachment: `${icons}#attachment`,
   FileBrowser: `${icons}#fileBrowser`
 })
 
