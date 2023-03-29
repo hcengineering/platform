@@ -866,9 +866,9 @@ export function createModel (builder: Builder): void {
     titleProvider: tracker.function.IssueTitleProvider
   })
 
-  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ListHeaderExtra, {
-    presenters: [tracker.component.IssueStatistics]
-  })
+  // builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ListHeaderExtra, {
+  //   presenters: [tracker.component.IssueStatistics]
+  // })
 
   builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.SortFuncs, {
     func: tracker.function.IssueStatusSort
