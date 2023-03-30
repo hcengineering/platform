@@ -76,6 +76,9 @@
       const value = getObjectValue(filter.key.key, object) ?? undefined
       targets.set(value, (targets.get(value) ?? 0) + 1)
     }
+    for (const object of filter.value) {
+      if (!targets.has(object)) targets.set(object, 0)
+    }
 
     const resultQuery =
       search !== '' && clazz.sortingKey
