@@ -446,7 +446,10 @@ export function createModel (builder: Builder): void {
       attachTo: recruit.mixin.VacancyList,
       descriptor: view.viewlet.Table,
       config: [
-        '',
+        {
+          key: '',
+          label: recruit.string.Organizations
+        },
         {
           key: '@vacancies',
           label: recruit.string.Vacancies
