@@ -25,6 +25,7 @@
   export let editable: boolean = false
   export let holidays: Map<Ref<Department>, Date[]>
   export let employee: Staff
+  export let departments: Ref<Department>[]
 
   const client = getClient()
   export let noWeekendHolidayType: Ref<RequestType>[]
@@ -35,13 +36,14 @@
     })
   }
 
-  function getStyle (type: RequestType): string {
+  function getStyle (type: RequestType, request: Request): string {
     let res = `background-color: ${
       isWeekend(date) && noWeekendHolidayType.includes(type._id) ? getPlatformColor(16) : getPlatformColor(type.color)
     };`
     if (Math.abs(type.value % 1) === 0.5) {
       res += ' height: 50%;'
     }
+    if (!departments.includes(request.space)) res += ' opacity: 0.5;'
     return res
   }
 
@@ -63,7 +65,7 @@
         <div
           class="request flex-center"
           class:cursor-pointer={editable}
-          style={getStyle(type)}
+          style={getStyle(type, request)}
           on:click={(e) => {
             click(e, request)
           }}

@@ -95,8 +95,7 @@
       hr.class.Request,
       {
         'tzDueDate.year': { $gte: startDate.getFullYear() },
-        'tzDate.year': { $lte: endDate.getFullYear() },
-        space: { $in: departments }
+        'tzDate.year': { $lte: endDate.getFullYear() }
       },
       (res) => {
         reqests = res
@@ -294,6 +293,7 @@
           {timeReports}
           {holidays}
           {department}
+          {departments}
           {staffDepartmentMap}
         />
       {:else if display === 'stats'}

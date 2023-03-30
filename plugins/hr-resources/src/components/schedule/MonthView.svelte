@@ -49,6 +49,7 @@
 
   export let departmentStaff: Staff[]
   export let department: Ref<Department>
+  export let departments: Ref<Department>[]
 
   export let employeeRequests: Map<Ref<Staff>, Request[]>
   export let editableList: Ref<Employee>[]
@@ -237,6 +238,7 @@
                   <div class:worked={ww > 0} class="h-full w-full">
                     {#if requests.length}
                       <ScheduleRequests
+                        {departments}
                         {requests}
                         {editable}
                         date={day}
