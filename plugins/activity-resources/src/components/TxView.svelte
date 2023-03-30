@@ -37,7 +37,6 @@
   import { getValue, TxDisplayViewlet, updateViewlet } from '../utils'
   import TxViewTx from './TxViewTx.svelte'
   import Edit from './icons/Edit.svelte'
-  import IconProfile from './icons/Profile.svelte'
 
   export let tx: DisplayTx
   export let viewlets: Map<ActivityKey, TxViewlet>
@@ -158,7 +157,7 @@
     {#if showIcon}
       {#if isComment}
         <div class="msgactivity-avatar">
-          <Icon icon={IconProfile} size={'medium'} />
+          <Component is={contact.component.Avatar} props={{ avatar: employee.avatar, size: 'medium' }} />
         </div>
       {:else}
         <div class="msgactivity-icon">
