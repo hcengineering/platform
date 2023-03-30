@@ -447,7 +447,7 @@ export function createModel (builder: Builder): void {
       descriptor: view.viewlet.Table,
       config: [
         {
-          key: '@companies',
+          key: '',
           label: recruit.string.Organizations
         },
         {
