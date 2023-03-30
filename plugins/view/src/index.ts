@@ -16,6 +16,7 @@
 
 import type {
   AnyAttribute,
+  CategoryType,
   Class,
   Client,
   Doc,
@@ -29,6 +30,7 @@ import type {
   Ref,
   SortingOrder,
   Space,
+  StatusManager,
   StatusValue,
   Type,
   UXObject
@@ -38,10 +40,10 @@ import type { Preference } from '@hcengineering/preference'
 import type {
   AnyComponent,
   AnySvelteComponent,
-  PopupAlignment,
-  PopupPosAlignment,
+  Location,
   Location as PlatformLocation,
-  Location
+  PopupAlignment,
+  PopupPosAlignment
 } from '@hcengineering/ui'
 
 /**
@@ -252,8 +254,17 @@ export interface ClassSortFuncs extends Class<Doc> {
 /**
  * @public
  */
+export type AllValuesFuncGetter = (
+  space: Ref<Space> | undefined,
+  onUpdate: () => void,
+  queryId: Ref<Doc>
+) => Promise<any[] | undefined>
+
+/**
+ * @public
+ */
 export interface AllValuesFunc extends Class<Doc> {
-  func: Resource<(space: Ref<Space> | undefined, onUpdate: () => void, queryId: Ref<Doc>) => Promise<any[] | undefined>>
+  func: Resource<AllValuesFuncGetter>
 }
 
 /**
@@ -491,18 +502,19 @@ export interface ViewOption {
   action?: Resource<(value: any, ...params: any) => any>
 }
 
-/**
- * @public
- */
-export type ViewCategoryAction = Resource<
-(
+export type ViewCategoryActionFunc = (
   _class: Ref<Class<Doc>>,
   space: Ref<Space> | undefined,
   key: string,
   onUpdate: () => void,
-  queryId: Ref<Doc>
-) => Promise<any[] | undefined>
->
+  queryId: Ref<Doc>,
+  mgr: StatusManager,
+  viewletDescriptorId?: Ref<ViewletDescriptor>
+) => Promise<CategoryType[] | undefined>
+/**
+ * @public
+ */
+export type ViewCategoryAction = Resource<ViewCategoryActionFunc>
 
 /**
  * @public

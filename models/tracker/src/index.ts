@@ -924,10 +924,6 @@ export function createModel (builder: Builder): void {
     fields: ['assignee']
   })
 
-  builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.AllValuesFunc, {
-    func: tracker.function.GetAllStatuses
-  })
-
   builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AllValuesFunc, {
     func: tracker.function.GetAllPriority
   })

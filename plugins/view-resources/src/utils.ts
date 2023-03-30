@@ -561,15 +561,18 @@ export function setGroupByValues (
   }
 }
 
-export async function getCategories (
+/**
+ * Group category references into categories.
+ * @public
+ */
+export async function groupByCategory (
   client: TxOperations,
   _class: Ref<Class<Doc>>,
-  docs: Doc[],
   key: string,
+  categories: any[],
   mgr: StatusManager,
   viewletDescriptorId?: Ref<ViewletDescriptor>
 ): Promise<CategoryType[]> {
-  if (key === noCategory) return [undefined]
   const h = client.getHierarchy()
   const attr = h.getAttribute(_class, key)
   const isStatusField =
@@ -579,9 +582,7 @@ export async function getCategories (
   const existingCategories = []
   const statusMap = new Map<string, StatusValue>()
 
-  for (const d of docs) {
-    const v = getObjectValue(key, d) ?? undefined
-
+  for (const v of categories) {
     if (isStatusField) {
       const status = mgr.byId.get(v)
       if (status !== undefined) {
@@ -602,10 +603,27 @@ export async function getCategories (
       }
     }
   }
+  return await sortCategories(client, _class, existingCategories, key, viewletDescriptorId)
+}
 
-  const result = await sortCategories(client, _class, existingCategories, key, viewletDescriptorId)
+export async function getCategories (
+  client: TxOperations,
+  _class: Ref<Class<Doc>>,
+  docs: Doc[],
+  key: string,
+  mgr: StatusManager,
+  viewletDescriptorId?: Ref<ViewletDescriptor>
+): Promise<CategoryType[]> {
+  if (key === noCategory) return [undefined]
 
-  return result
+  return await groupByCategory(
+    client,
+    _class,
+    key,
+    docs.map((it) => getObjectValue(key, it) ?? undefined),
+    mgr,
+    viewletDescriptorId
+  )
 }
 
 export async function sortCategories (

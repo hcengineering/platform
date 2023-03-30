@@ -490,14 +490,6 @@ async function getAllSomething (
   return await promise
 }
 
-export async function getAllStatuses (
-  space: Ref<Space> | undefined,
-  onUpdate: () => void,
-  queryId: Ref<Doc>
-): Promise<any[] | undefined> {
-  return await getAllSomething(tracker.class.IssueStatus, space, onUpdate, queryId)
-}
-
 export async function getAllPriority (
   space: Ref<Space> | undefined,
   onUpdate: () => void,

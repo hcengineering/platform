@@ -115,7 +115,6 @@ import {
   getAllComponents,
   getAllPriority,
   getAllSprints,
-  getAllStatuses,
   issuePrioritySort,
   issueStatusSort,
   moveIssuesToAnotherSprint,
@@ -435,7 +434,6 @@ export default async (): Promise<Resources> => ({
     IssuePrioritySort: issuePrioritySort,
     SprintSort: sprintSort,
     SubIssueQuery: subIssueQuery,
-    GetAllStatuses: getAllStatuses,
     GetAllPriority: getAllPriority,
     GetAllComponents: getAllComponents,
     GetAllSprints: getAllSprints

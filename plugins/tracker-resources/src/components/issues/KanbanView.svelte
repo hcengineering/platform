@@ -63,8 +63,7 @@
     noCategory,
     SelectDirection,
     selectionStore,
-    setGroupByValues,
-    sortCategories
+    setGroupByValues
   } from '@hcengineering/view-resources'
   import view from '@hcengineering/view-resources/src/plugin'
   import { onMount } from 'svelte'
@@ -135,7 +134,8 @@
     component: tracker.class.Component,
     sprint: tracker.class.Sprint,
     _id: {
-      subIssues: tracker.class.Issue
+      subIssues: tracker.class.Issue,
+      labels: tags.class.TagReference
     }
   }
 
@@ -192,16 +192,10 @@
       if (viewOption.actionTarget !== 'category') continue
       const categoryFunc = viewOption as CategoryOption
       if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
-        const f = await getResource(categoryFunc.action)
-        const res = await f(_class, space, groupByKey, update, queryId)
+        const categoryAction = await getResource(categoryFunc.action)
+        const res = await categoryAction(_class, space, groupByKey, update, queryId, $statusStore, viewlet.descriptor)
         if (res !== undefined) {
-          for (const category of categories) {
-            if (!res.includes(category)) {
-              res.push(category)
-            }
-          }
-
-          categories = await sortCategories(client, _class, res, groupByKey, viewlet.descriptor)
+          categories = res
           break
         }
       }
@@ -349,7 +343,7 @@
             >
               <Component
                 is={tags.component.LabelsPresenter}
-                props={{ object: issue, ckeckFilled: fullFilled[issueId] }}
+                props={{ object: issue, ckeckFilled: fullFilled[issueId], lookupField: 'labels' }}
                 on:change={(res) => {
                   if (res.detail.full) fullFilled[issueId] = true
                 }}

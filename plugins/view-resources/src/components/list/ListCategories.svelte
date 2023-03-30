@@ -82,13 +82,8 @@
         const categoryFunc = viewOption as CategoryOption
         if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
           const f = await getResource(categoryFunc.action)
-          const res = hierarchy.clone(await f(_class, space, groupByKey, update, queryId))
+          const res = hierarchy.clone(await f(_class, space, groupByKey, update, queryId, $statusStore))
           if (res !== undefined) {
-            for (const category of categories) {
-              if (!res.includes(category)) {
-                res.push(category)
-              }
-            }
             categories = res
             return
           }
