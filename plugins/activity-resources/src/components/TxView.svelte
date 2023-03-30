@@ -157,7 +157,7 @@
     {#if showIcon}
       {#if isComment}
         <div class="msgactivity-avatar">
-          <Component is={contact.component.Avatar} props={{ avatar: employee.avatar, size: 'medium' }} />
+          <Component is={contact.component.Avatar} props={{ avatar: employee?.avatar, size: 'medium' }} />
         </div>
       {:else}
         <div class="msgactivity-icon">
