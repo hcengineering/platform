@@ -64,7 +64,8 @@
       task.class.KanbanTemplate,
       'statesC',
       {
-        title: 'New State',
+        ofAttribute: task.attribute.State,
+        name: 'New State',
         color: 9,
         rank: [...genRanks(1)][0]
       }
@@ -74,12 +75,12 @@
     const doneStates = [
       {
         class: task.class.WonStateTemplate,
-        title: 'Won',
+        name: 'Won',
         rank: ranks[0]
       },
       {
         class: task.class.LostStateTemplate,
-        title: 'Lost',
+        name: 'Lost',
         rank: ranks[1]
       }
     ]
@@ -93,7 +94,8 @@
           task.class.KanbanTemplate,
           'doneStatesC',
           {
-            title: ds.title,
+            ofAttribute: task.attribute.DoneState,
+            name: ds.name,
             rank: ds.rank
           }
         )

@@ -59,7 +59,7 @@
           <div class="mr-2" style="color: {getColor(state._class)}">
             <svelte:component this={state._class === task.class.WonState ? Won : Lost} size={'small'} />
           </div>
-          <span class="label">{state.title}</span>
+          <span class="label">{state.name}</span>
         </button>
       {/each}
       <button

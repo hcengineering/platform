@@ -1,6 +1,13 @@
 <script lang="ts">
   import { State } from '@hcengineering/task'
-  import { Button, getEventPositionElement, getPlatformColor, IconMoreV, showPopup } from '@hcengineering/ui'
+  import {
+    Button,
+    getEventPositionElement,
+    getPlatformColor,
+    getPlatformColorForText,
+    IconMoreV,
+    showPopup
+  } from '@hcengineering/ui'
   import { ContextMenu } from '@hcengineering/view-resources'
   export let state: State
 
@@ -11,9 +18,12 @@
 </script>
 
 <div class="flex-col h-16">
-  <div class="h-2 border-radius-1" style="background-color: {getPlatformColor(state.color)}" />
+  <div
+    class="h-2 border-radius-1"
+    style="background-color: {state.color ? getPlatformColor(state.color) : getPlatformColorForText(state.name)}"
+  />
   <div class="flex-between h-full font-medium pr-2 pl-4">
-    <span class="lines-limit-2">{state.title}</span>
+    <span class="lines-limit-2">{state.name}</span>
     <div class="flex">
       <Button icon={IconMoreV} kind="transparent" on:click={showMenu} />
     </div>

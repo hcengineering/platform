@@ -589,7 +589,7 @@ export async function groupByCategory (
         let fst = statusMap.get(status.name)
         if (fst === undefined) {
           const sttt = mgr.statuses
-            .filter((it) => it.ofAttribute === attr._id && it.name === status.name)
+            .filter((it) => it.ofAttribute === attr._id && it.name === status.name && categories.includes(it._id))
             .sort((a, b) => a.rank.localeCompare(b.rank))
           fst = new StatusValue(status.name, status.color, sttt)
           statusMap.set(status.name, fst)
@@ -640,7 +640,23 @@ export async function sortCategories (
   const attrClass = getAttributePresenterClass(hierarchy, attr).attrClass
   const clazz = hierarchy.getClass(attrClass)
   const sortFunc = hierarchy.as(clazz, view.mixin.SortFuncs)
-  if (sortFunc?.func === undefined) return existingCategories
+  if (sortFunc?.func === undefined) {
+    const h = client.getHierarchy()
+    const attr = h.getAttribute(_class, key)
+    const isStatusField =
+      attr.type._class === core.class.RefTo && h.isDerived((attr.type as RefTo<Doc>).to, core.class.Status)
+    if (isStatusField) {
+      existingCategories.sort((a, b) => {
+        return a.values[0].rank.localeCompare(b.values[0].rank)
+      })
+    } else {
+      existingCategories.sort((a, b) => {
+        return JSON.stringify(a).localeCompare(JSON.stringify(b))
+      })
+    }
+
+    return existingCategories
+  }
   const f = await getResource(sortFunc.func)
 
   return await f(existingCategories, viewletDescriptorId)

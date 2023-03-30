@@ -14,61 +14,94 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, FindOptions, Ref, SortingOrder } from '@hcengineering/core'
-  import { Kanban as KanbanUI } from '@hcengineering/kanban'
+  import contact from '@hcengineering/contact'
+  import {
+    CategoryType,
+    Class,
+    Doc,
+    DocumentQuery,
+    DocumentUpdate,
+    FindOptions,
+    generateId,
+    Ref
+  } from '@hcengineering/core'
+  import { Item, Kanban as KanbanUI } from '@hcengineering/kanban'
   import { getResource } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import type { Kanban, SpaceWithStates, State, Task } from '@hcengineering/task'
-  import task from '@hcengineering/task'
-  import { getEventPositionElement, showPopup } from '@hcengineering/ui'
+  import { createQuery, getClient, statusStore } from '@hcengineering/presentation'
+  import { Kanban, SpaceWithStates, Task, TaskGrouping, TaskOrdering } from '@hcengineering/task'
+  import { getEventPositionElement, Label, showPopup } from '@hcengineering/ui'
+  import {
+    AttributeModel,
+    CategoryOption,
+    Viewlet,
+    ViewOptionModel,
+    ViewOptions,
+    ViewQueryOption
+  } from '@hcengineering/view'
   import {
     ActionContext,
     focusStore,
+    getCategories,
+    getGroupByValues,
+    getPresenter,
+    groupBy,
     ListSelectionProvider,
     Menu,
+    noCategory,
     SelectDirection,
-    selectionStore
+    selectionStore,
+    setGroupByValues
   } from '@hcengineering/view-resources'
+  import view from '@hcengineering/view-resources/src/plugin'
   import { onMount } from 'svelte'
+  import task from '../../plugin'
   import KanbanDragDone from './KanbanDragDone.svelte'
 
   export let _class: Ref<Class<Task>>
-  export let space: Ref<SpaceWithStates>
-  export let query: DocumentQuery<Task>
-  export let options: FindOptions<Task> | undefined
+  export let space: Ref<SpaceWithStates> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
-  // export let config: string[]
+  export let query: DocumentQuery<Task> = {}
+  export let viewOptionsConfig: ViewOptionModel[] | undefined
+  export let viewOptions: ViewOptions
+  export let viewlet: Viewlet
 
-  let kanban: Kanban
-  let states: State[] = []
+  export let options: FindOptions<Task> | undefined
 
-  const client = getClient()
+  $: currentSpace = space
+  $: groupByKey = (viewOptions.groupBy[0] ?? noCategory) as TaskGrouping
+  $: orderBy = viewOptions.orderBy
+  $: sort = { [orderBy[0]]: orderBy[1] }
 
-  const kanbanQuery = createQuery()
-  $: kanbanQuery.query(task.class.Kanban, { attachedTo: space }, (result) => {
-    kanban = result[0]
+  $: dontUpdateRank = orderBy[0] !== TaskOrdering.Manual
+
+  const spaceQuery = createQuery()
+
+  let currentProject: SpaceWithStates | undefined
+  $: spaceQuery.query(task.class.SpaceWithStates, { _id: currentSpace }, (res) => {
+    currentProject = res.shift()
   })
 
-  const statesQuery = createQuery()
-  $: if (kanban !== undefined) {
-    statesQuery.query(
-      task.class.State,
-      { space: kanban.space },
-      (result) => {
-        states = result
-      },
-      {
-        sort: {
-          rank: SortingOrder.Ascending
-        }
-      }
-    )
-  }
+  let resultQuery: DocumentQuery<any> = { ...query, doneState: null }
+  $: getResultQuery(query, viewOptionsConfig, viewOptions).then((p) => (resultQuery = p))
 
-  $: clazz = client.getHierarchy().getClass(_class)
-  $: presenterMixin = client.getHierarchy().as(clazz, task.mixin.KanbanCard)
-  $: cardPresenter = getResource(presenterMixin.card)
-  /* eslint-disable no-undef */
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  async function getResultQuery (
+    query: DocumentQuery<Task>,
+    viewOptions: ViewOptionModel[] | undefined,
+    viewOptionsStore: ViewOptions
+  ): Promise<DocumentQuery<Task>> {
+    if (viewOptions === undefined) return query
+    let result = hierarchy.clone(query)
+    for (const viewOption of viewOptions) {
+      if (viewOption.actionTarget !== 'query') continue
+      const queryOption = viewOption as ViewQueryOption
+      const f = await getResource(queryOption.action)
+      result = f(viewOptionsStore[queryOption.key] ?? queryOption.defaultValue, query)
+    }
+    return result
+  }
 
   let kanbanUI: KanbanUI
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
@@ -84,18 +117,100 @@
       // selection = undefined
     })
   }
-  const onContent = (evt: any) => {
-    listProvider.update(evt.detail)
-  }
-  const onObjFocus = (evt: any) => {
-    listProvider.updateFocus(evt.detail)
-  }
-  const handleCheck = (evt: any) => {
-    listProvider.updateSelection(evt.detail.docs, evt.detail.value)
-  }
-  const onContextMenu = (evt: any) => showMenu(evt.detail.evt, evt.detail.objects)
+  const issuesQuery = createQuery()
+  let tasks: Task[] = []
 
-  $: resultQuery = { ...query, doneState: null }
+  $: groupByDocs = groupBy(tasks, groupByKey, categories)
+
+  $: issuesQuery.query<Task>(
+    _class,
+    resultQuery,
+    (result) => {
+      tasks = result
+    },
+    {
+      ...options,
+      lookup: {
+        ...options?.lookup,
+        assignee: contact.class.Employee,
+        space: task.class.SpaceWithStates,
+        state: task.class.State,
+        doneState: task.class.DoneState
+      },
+      sort: {
+        ...options?.sort,
+        ...sort
+      }
+    }
+  )
+
+  let categories: CategoryType[] = []
+
+  const queryId = generateId()
+
+  $: updateCategories(_class, tasks, groupByKey, viewOptions, viewOptionsConfig)
+
+  function update () {
+    updateCategories(_class, tasks, groupByKey, viewOptions, viewOptionsConfig)
+  }
+
+  async function updateCategories (
+    _class: Ref<Class<Doc>>,
+    docs: Doc[],
+    groupByKey: string,
+    viewOptions: ViewOptions,
+    viewOptionsModel: ViewOptionModel[] | undefined
+  ) {
+    categories = await getCategories(client, _class, docs, groupByKey, $statusStore, viewlet.descriptor)
+    for (const viewOption of viewOptionsModel ?? []) {
+      if (viewOption.actionTarget !== 'category') continue
+      const categoryFunc = viewOption as CategoryOption
+      if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
+        const categoryAction = await getResource(categoryFunc.action)
+        const res = await categoryAction(_class, space, groupByKey, update, queryId, $statusStore, viewlet.descriptor)
+        if (res !== undefined) {
+          categories = res
+          break
+        }
+      }
+    }
+  }
+
+  function getHeader (_class: Ref<Class<Doc>>, groupByKey: string): void {
+    if (groupByKey === noCategory) {
+      headerComponent = undefined
+    } else {
+      getPresenter(client, _class, { key: groupByKey }, { key: groupByKey }).then((p) => (headerComponent = p))
+    }
+  }
+
+  let headerComponent: AttributeModel | undefined
+  $: getHeader(_class, groupByKey)
+
+  const getUpdateProps = (doc: Doc, category: CategoryType): DocumentUpdate<Item> | undefined => {
+    const groupValue =
+      typeof category === 'object' ? category.values.find((it) => it.space === doc.space)?._id : category
+    if (groupValue === undefined) {
+      return undefined
+    }
+    return {
+      [groupByKey]: groupValue,
+      space: doc.space
+    }
+  }
+
+  $: clazz = client.getHierarchy().getClass(_class)
+  $: presenterMixin = client.getHierarchy().as(clazz, task.mixin.KanbanCard)
+  $: cardPresenter = getResource(presenterMixin.card)
+
+  let kanban: Kanban
+
+  const kanbanQuery = createQuery()
+  $: kanbanQuery.query(task.class.Kanban, { attachedTo: space }, (result) => {
+    kanban = result[0]
+  })
+
+  const getDoneUpdate = (e: any) => ({ doneState: e.detail._id } as DocumentUpdate<Doc>)
 </script>
 
 {#await cardPresenter then presenter}
@@ -106,18 +221,41 @@
   />
   <KanbanUI
     bind:this={kanbanUI}
-    {_class}
-    {options}
-    query={resultQuery}
-    {states}
-    fieldName={'state'}
-    on:content={onContent}
-    on:obj-focus={onObjFocus}
-    checked={$selectionStore ?? []}
-    on:check={handleCheck}
-    on:contextmenu={onContextMenu}
+    {categories}
+    {dontUpdateRank}
+    objects={tasks}
+    getGroupByValues={(groupByDocs, category) =>
+      groupByKey === noCategory ? tasks : getGroupByValues(groupByDocs, category)}
+    {setGroupByValues}
+    {getUpdateProps}
+    {groupByDocs}
+    on:content={(evt) => {
+      listProvider.update(evt.detail)
+    }}
+    on:obj-focus={(evt) => {
+      listProvider.updateFocus(evt.detail)
+    }}
     selection={listProvider.current($focusStore)}
+    checked={$selectionStore ?? []}
+    on:check={(evt) => {
+      listProvider.updateSelection(evt.detail.docs, evt.detail.value)
+    }}
+    on:contextmenu={(evt) => showMenu(evt.detail.evt, evt.detail.objects)}
   >
+    <svelte:fragment slot="header" let:state let:count>
+      <!-- {@const status = $statusStore.get(state._id)} -->
+      <div class="header flex-col">
+        <div class="flex-row-center flex-between">
+          {#if groupByKey === noCategory}
+            <span class="text-base fs-bold overflow-label content-accent-color pointer-events-none">
+              <Label label={view.string.NoGrouping} />
+            </span>
+          {:else if headerComponent}
+            <svelte:component this={headerComponent.presenter} value={state} {space} kind={'list-header'} />
+          {/if}
+        </div>
+      </div>
+    </svelte:fragment>
     <svelte:fragment slot="card" let:object let:dragged>
       <svelte:component this={presenter} {object} {dragged} />
     </svelte:fragment>
@@ -127,9 +265,40 @@
         {kanban}
         on:done={(e) => {
           // eslint-disable-next-line no-undef
-          onDone({ doneState: e.detail._id })
+          onDone(getDoneUpdate(e))
         }}
       />
     </svelte:fragment>
   </KanbanUI>
 {/await}
+
+<style lang="scss">
+  .names {
+    font-size: 0.8125rem;
+  }
+
+  .header {
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--divider-color);
+
+    .label {
+      color: var(--caption-color);
+      .counter {
+        color: rgba(var(--caption-color), 0.8);
+      }
+    }
+  }
+  .tracker-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    // padding: 0.5rem 1rem;
+    min-height: 6.5rem;
+  }
+  .states-bar {
+    flex-shrink: 10;
+    width: fit-content;
+    margin: 0.625rem 1rem 0;
+  }
+</style>

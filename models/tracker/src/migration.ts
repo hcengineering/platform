@@ -26,10 +26,11 @@ import core, {
   TxCreateDoc,
   TxOperations,
   TxResult,
-  TxUpdateDoc
+  TxUpdateDoc,
+  DOMAIN_STATUS
 } from '@hcengineering/core'
 import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
-import { DOMAIN_SPACE, DOMAIN_STATUS } from '@hcengineering/model-core'
+import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import tags from '@hcengineering/tags'
 import {
   calcRank,

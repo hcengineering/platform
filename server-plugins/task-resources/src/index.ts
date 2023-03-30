@@ -14,33 +14,11 @@
 //
 
 import { Employee } from '@hcengineering/contact'
-import { AttachedDoc, concatLink, Doc, Ref, Tx, TxCollectionCUD } from '@hcengineering/core'
-import { getMetadata } from '@hcengineering/platform'
-import serverCore, { TriggerControl } from '@hcengineering/server-core'
+import { AttachedDoc, Doc, Ref, Tx, TxCollectionCUD } from '@hcengineering/core'
+import { TriggerControl } from '@hcengineering/server-core'
 import { getEmployeeAccount, getEmployeeAccountById } from '@hcengineering/server-notification'
 import { createNotificationTxes } from '@hcengineering/server-notification-resources'
-import task, { Issue, taskId } from '@hcengineering/task'
-import view from '@hcengineering/view'
-import { workbenchId } from '@hcengineering/workbench'
-
-/**
- * @public
- */
-export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
-  const issue = doc as Issue
-  const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.name}/${taskId}/${issue.space}/#${view.component.EditDoc}|${issue._id}|${issue._class}|content`
-  const link = concatLink(front, path)
-  return `<a href="${link}">Task-${issue.number}</a>`
-}
-
-/**
- * @public
- */
-export async function issueTextPresenter (doc: Doc): Promise<string> {
-  const issue = doc as Issue
-  return `Task-${issue.number}`
-}
+import task from '@hcengineering/task'
 
 /**
  * @public
@@ -69,8 +47,5 @@ export async function addAssigneeNotification (
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
-  function: {
-    IssueHTMLPresenter: issueHTMLPresenter,
-    IssueTextPresenter: issueTextPresenter
-  }
+  function: {}
 })

@@ -232,14 +232,14 @@ async function createDefaults (tx: TxOperations): Promise<void> {
 async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<KanbanTemplate>> {
   const defaultKanban = {
     states: [
-      { color: 9, title: 'HR Interview' },
-      { color: 10, title: 'Technical Interview' },
-      { color: 1, title: 'Test task' },
-      { color: 0, title: 'Offer' }
+      { color: 9, name: 'HR Interview' },
+      { color: 10, name: 'Technical Interview' },
+      { color: 1, name: 'Test task' },
+      { color: 0, name: 'Offer' }
     ],
     doneStates: [
-      { isWon: true, title: 'Won' },
-      { isWon: false, title: 'Lost' }
+      { isWon: true, name: 'Won' },
+      { isWon: false, name: 'Lost' }
     ]
   }
 

@@ -13,13 +13,11 @@
 // limitations under the License.
 //
 
-import { Attribute, Domain, DOMAIN_MODEL, Ref, Status, StatusCategory } from '@hcengineering/core'
-import { Model, Prop, TypeRef, UX } from '@hcengineering/model'
+import { Attribute, DOMAIN_STATUS, DOMAIN_MODEL, Ref, Status, StatusCategory } from '@hcengineering/core'
+import { Model, Prop, TypeRef, TypeString, UX } from '@hcengineering/model'
 import { Asset, IntlString } from '@hcengineering/platform'
 import core from './component'
 import { TDoc } from './core'
-
-export const DOMAIN_STATUS = 'status' as Domain
 
 // S T A T U S
 
@@ -32,9 +30,16 @@ export class TStatus extends TDoc implements Status {
   @Prop(TypeRef(core.class.StatusCategory), core.string.StatusCategory)
     category!: Ref<StatusCategory>
 
-  name!: string
+  @Prop(TypeString(), core.string.Name)
+    name!: string
+
+  // @Prop(TypeNumber(), core.string.Color)
   color!: number
-  description!: string
+
+  @Prop(TypeString(), core.string.Description)
+    description!: string
+
+  // @Prop(TypeString(), core.string.Rank)
   rank!: string
 }
 

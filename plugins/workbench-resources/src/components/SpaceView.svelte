@@ -54,7 +54,7 @@
     if (attachTo) {
       viewlets = await client.findAll(
         view.class.Viewlet,
-        { attachTo },
+        { attachTo, variant: { $exists: false } },
         {
           lookup: {
             descriptor: view.class.ViewletDescriptor

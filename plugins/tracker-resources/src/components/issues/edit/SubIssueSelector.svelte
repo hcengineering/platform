@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import core, { Ref, SortingOrder, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus } from '@hcengineering/tracker'
   import {
@@ -101,7 +101,7 @@
         sort: { modifiedOn: SortingOrder.Descending },
         lookup: {
           space: tracker.class.Project,
-          status: [tracker.class.IssueStatus, { category: tracker.class.IssueStatusCategory }]
+          status: [tracker.class.IssueStatus, { category: core.class.StatusCategory }]
         }
       }
     )

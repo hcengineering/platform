@@ -14,7 +14,7 @@
 //
 
 import { Asset, IntlString } from '@hcengineering/platform'
-import { Attribute, Doc, Ref } from './classes'
+import { Attribute, Doc, Domain, Ref } from './classes'
 import { WithLookup } from './storage'
 import { IdMap, toIdMap } from './utils'
 
@@ -29,6 +29,10 @@ export interface StatusCategory extends Doc {
   defaultStatusName?: string
   order: number // category order
 }
+/**
+ * @public
+ */
+export const DOMAIN_STATUS = 'status' as Domain
 
 /**
  * @public

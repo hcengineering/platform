@@ -501,7 +501,9 @@ export interface ViewOption {
   actionTarget?: 'query' | 'category'
   action?: Resource<(value: any, ...params: any) => any>
 }
-
+/**
+ * @public
+ */
 export type ViewCategoryActionFunc = (
   _class: Ref<Class<Doc>>,
   space: Ref<Space> | undefined,

@@ -14,23 +14,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
-  import task, { State } from '@hcengineering/task'
+  import { Ref, StatusValue } from '@hcengineering/core'
+  import { statusStore } from '@hcengineering/presentation'
+  import { State } from '@hcengineering/task'
   import StateEditor from './StateEditor.svelte'
   import StatePresenter from './StatePresenter.svelte'
 
-  export let value: Ref<State>
+  export let value: Ref<State> | StatusValue
   export let onChange: ((value: Ref<State>) => void) | undefined = undefined
-
-  let state: State | undefined
-  const query = createQuery()
-  $: query.query(task.class.State, { _id: value }, (res) => ([state] = res), { limit: 1 })
 </script>
 
-{#if state}
-  {#if onChange !== undefined}
-    <StateEditor {value} space={state.space} {onChange} kind="link" size="medium" />
+{#if value}
+  {@const state = $statusStore.get(typeof value === 'string' ? value : value.values[0]._id)}
+  {#if onChange !== undefined && state !== undefined}
+    <StateEditor value={state._id} space={state.space} {onChange} kind="link" size="medium" />
   {:else}
     <StatePresenter value={state} />
   {/if}
