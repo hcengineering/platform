@@ -476,6 +476,17 @@
   }
 }
 
+.scroller-first-column {
+  th, td {
+    &:first-child {
+      position: sticky;
+      z-index: 1;
+      left: 0;
+      background-color: var(--body-color);
+    }
+  }
+}
+
 // THead background-color in Tooltip and Popups
 .popup-tooltip .antiTable .scroller-thead,
 .popup .antiTable .scroller-thead { background-color: var(--accent-bg-color); }
