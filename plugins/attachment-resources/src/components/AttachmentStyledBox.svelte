@@ -234,7 +234,9 @@
       promises.push(deleteAttachment(p))
     })
     await Promise.all(promises)
-    saveDraft()
+    removeDraft(false)
+    newAttachments.clear()
+    removedAttachments.clear()
   }
 
   $: if (attachments.size || newAttachments.size || removedAttachments.size) {

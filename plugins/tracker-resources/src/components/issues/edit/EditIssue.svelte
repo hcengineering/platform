@@ -112,15 +112,7 @@
     }
 
     if (Object.keys(updates).length > 0) {
-      await client.updateCollection(
-        issue._class,
-        issue.space,
-        issue._id,
-        issue.attachedTo,
-        issue.attachedToClass,
-        issue.collection,
-        updates
-      )
+      await client.update(issue, updates)
       saved = true
       setTimeout(() => {
         saved = false
@@ -190,7 +182,6 @@
         _class={tracker.class.Issue}
         space={issue.space}
         alwaysEdit
-        shouldSaveDraft={true}
         on:attached={save}
         on:detached={save}
         showButtons
