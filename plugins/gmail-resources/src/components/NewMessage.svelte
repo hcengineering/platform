@@ -36,7 +36,6 @@
   const notificationClient = NotificationClientImpl.getClient()
   let objectId = generateId()
 
-  let editor: StyledTextEditor
   let copy: string = ''
 
   const obj: Data<NewMessage> = {
@@ -216,7 +215,7 @@
       </div>
     {/if}
     <div class="input mt-4 clear-mins">
-      <StyledTextEditor bind:this={editor} full bind:content={obj.content} maxHeight="panel" on:blur={editor.submit} />
+      <StyledTextEditor full bind:content={obj.content} maxHeight="panel" />
     </div>
   </div>
 </Scroller>

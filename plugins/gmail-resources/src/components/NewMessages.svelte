@@ -62,7 +62,6 @@
 
   const attachmentParentId = generateId()
 
-  let editor: StyledTextEditor
   let subject: string = ''
   let content: string = ''
   let copy: string = ''
@@ -320,7 +319,7 @@
         </div>
       {/if}
       <div class="input mt-4 clear-mins">
-        <StyledTextEditor bind:this={editor} full bind:content on:blur={editor.submit} />
+        <StyledTextEditor full bind:content />
       </div>
     </div>
   </Scroller>
