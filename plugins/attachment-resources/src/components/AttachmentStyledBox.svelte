@@ -234,7 +234,9 @@
       promises.push(deleteAttachment(p))
     })
     await Promise.all(promises)
-    saveDraft()
+    removeDraft(false)
+    newAttachments.clear()
+    removedAttachments.clear()
   }
 
   $: if (attachments.size || newAttachments.size || removedAttachments.size) {
@@ -300,6 +302,8 @@
     else if (fakeAttach === 'normal') fileDrop(ev)
   }}
 >
+  {removedAttachments.size}
+  {newAttachments.size}
   <div class="expand-collapse">
     <StyledTextBox
       bind:this={refInput}
