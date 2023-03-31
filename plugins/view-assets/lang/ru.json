@@ -37,6 +37,8 @@
     "FilterIsNot": "не равен",
     "FilterIsEither": "{value, plural, =1 {равен} other {один из}}",
     "FilterStatesCount": "{value, plural, =1 {1 состоянию} other {# состояний}}",
+    "FilterUpdated": "Фильтр был обновлен",
+    "FilterRemoved": "Несуществующие значения были удалены из фильтра: {removed}",
     "Before": "До",
     "After": "После",
     "Apply": "Применить",
