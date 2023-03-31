@@ -302,8 +302,6 @@
     else if (fakeAttach === 'normal') fileDrop(ev)
   }}
 >
-  {removedAttachments.size}
-  {newAttachments.size}
   <div class="expand-collapse">
     <StyledTextBox
       bind:this={refInput}
