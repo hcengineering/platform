@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
-  import core, { Account, generateId, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
+  import core, { Account, DocumentUpdate, generateId, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
   import { AssigneeBox } from '@hcengineering/contact-resources'
@@ -29,17 +29,20 @@
 
   export let project: Project | undefined = undefined
 
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
   let name: string = project?.name ?? ''
   let description: string = project?.description ?? ''
   let isPrivate: boolean = project?.private ?? false
   let icon: Asset | undefined = project?.icon ?? undefined
   let selectedWorkDayType: TimeReportDayType | undefined =
     project?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay
-  let defaultAssignee: Ref<Employee> | null | undefined = null
-  let members: Ref<Account>[] = project?.members ?? [getCurrentAccount()._id]
+  let defaultAssignee: Ref<Employee> | null | undefined = project?.defaultAssignee ?? null
+  let members: Ref<Account>[] =
+    project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount()._id]
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
 
   $: isNew = !project
 
@@ -70,7 +73,38 @@
 
   async function updateProject () {
     const { sequence, issueStatuses, defaultIssueStatus, identifier, ...projectData } = getProjectData()
-    await client.update(project!, projectData)
+    const update: DocumentUpdate<Project> = {}
+    if (projectData.name !== project?.name) {
+      update.name = projectData.name
+    }
+    if (projectData.description !== project?.description) {
+      update.description = projectData.description
+    }
+    if (projectData.private !== project?.private) {
+      update.private = projectData.private
+    }
+    if (projectData.defaultAssignee !== project?.defaultAssignee) {
+      update.defaultAssignee = projectData.defaultAssignee
+    }
+    if (projectData.icon !== project?.icon) {
+      update.icon = projectData.icon
+    }
+    if (projectData.defaultTimeReportDay !== project?.defaultTimeReportDay) {
+      update.defaultTimeReportDay = projectData.defaultTimeReportDay
+    }
+    if (projectData.members.length !== project?.members.length) {
+      update.members = projectData.members
+    } else {
+      for (const member of projectData.members) {
+        if (project.members.findIndex((p) => p === member) === -1) {
+          update.members = projectData.members
+          break
+        }
+      }
+    }
+    if (Object.keys(update).length > 0) {
+      await client.update(project!, update)
+    }
   }
 
   async function createProject () {
