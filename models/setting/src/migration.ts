@@ -36,7 +36,7 @@ async function migrateIntegrationsSpace (client: MigrationClient): Promise<void>
     await client.update(
       DOMAIN_TX,
       {
-        objectID: object._id,
+        objectId: object._id,
         objectSpace: { $ne: setting.space.Setting }
       },
       {
