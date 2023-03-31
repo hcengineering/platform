@@ -146,7 +146,7 @@
 
 {#if departmentStaff.length}
   <Scroller {fade} horizontal>
-    <table>
+    <table class="scroller-first-column">
       <thead class="scroller-thead">
         <tr class="scroller-thead__tr">
           <th>
