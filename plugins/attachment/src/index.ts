@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { AttachedDoc, Class, Ref } from '@hcengineering/core'
+import type { AttachedDoc, Class, Doc, DocumentQuery, Ref, TxOperations } from '@hcengineering/core'
 import type { Asset, Plugin } from '@hcengineering/platform'
 import { IntlString, plugin, Resource } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
@@ -67,7 +67,15 @@ export default plugin(attachmentId, {
   },
   helper: {
     UploadFile: '' as Resource<(file: File) => Promise<string>>,
-    DeleteFile: '' as Resource<(id: string) => Promise<void>>
+    DeleteFile: '' as Resource<(id: string) => Promise<void>>,
+    CopyAttachments: '' as Resource<
+    (
+      client: TxOperations,
+      previousDoc: Doc,
+      currentDoc: Ref<Doc>,
+      attachmentsFilter: DocumentQuery<Attachment>
+    ) => Promise<void>
+    >
   },
   string: {
     Files: '' as IntlString,

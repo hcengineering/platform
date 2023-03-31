@@ -35,7 +35,7 @@ import AttachmentStyledBox from './components/AttachmentStyledBox.svelte'
 import AccordionEditor from './components/AccordionEditor.svelte'
 import IconUploadDuo from './components/icons/UploadDuo.svelte'
 import IconAttachment from './components/icons/Attachment.svelte'
-import { deleteFile, uploadFile } from './utils'
+import { copyAttachments, deleteFile, uploadFile } from './utils'
 import { DisplayTx } from '@hcengineering/activity'
 import AttachmentPreview from './components/AttachmentPreview.svelte'
 
@@ -251,7 +251,8 @@ export default async (): Promise<Resources> => ({
   },
   helper: {
     UploadFile: uploadFile,
-    DeleteFile: deleteFile
+    DeleteFile: deleteFile,
+    CopyAttachments: copyAttachments
   },
   actionImpl: {
     AddAttachmentToSaved,

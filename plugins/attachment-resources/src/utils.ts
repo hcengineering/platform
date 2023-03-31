@@ -15,7 +15,7 @@
 //
 
 import { Attachment } from '@hcengineering/attachment'
-import { Class, concatLink, Data, Doc, Ref, Space, TxOperations as Client } from '@hcengineering/core'
+import { Class, concatLink, Data, Doc, DocumentQuery, Ref, Space, TxOperations as Client } from '@hcengineering/core'
 import presentation from '@hcengineering/presentation'
 import { getMetadata, setPlatformStatus, unknownError } from '@hcengineering/platform'
 
@@ -87,6 +87,29 @@ export async function createAttachments (
     }
   } catch (err: any) {
     await setPlatformStatus(unknownError(err))
+  }
+}
+
+export async function copyAttachments (
+  client: Client,
+  previousDoc: Doc,
+  currentDoc: Ref<Doc>,
+  attachmentsFilter: DocumentQuery<Attachment>
+): Promise<void> {
+  const attachments = await client.findAll(attachment.class.Attachment, {
+    attachedTo: previousDoc._id,
+    ...attachmentsFilter
+  })
+
+  for (const attachment of attachments) {
+    await client.addCollection(
+      attachment._class,
+      previousDoc.space,
+      currentDoc,
+      previousDoc._class,
+      'attachments',
+      attachment
+    )
   }
 }
 
