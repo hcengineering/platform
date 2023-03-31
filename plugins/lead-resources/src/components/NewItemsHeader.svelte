@@ -29,6 +29,7 @@
       label={lead.string.CreateCustomerLabel}
       justify={'left'}
       width={'100%'}
+      kind={'primary'}
       on:click={newIssue}
     />
   </div>
