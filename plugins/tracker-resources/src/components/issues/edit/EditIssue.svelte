@@ -112,10 +112,7 @@
     }
 
     if (Object.keys(updates).length > 0) {
-      await client.update(
-        issue,
-        updates
-      )
+      await client.update(issue, updates)
       saved = true
       setTimeout(() => {
         saved = false
