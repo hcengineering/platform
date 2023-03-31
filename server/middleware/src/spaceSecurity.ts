@@ -148,17 +148,17 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     }
   }
 
-  private syncMembers (members: Ref<Account>[], space: Ref<Space>): void {
-    const oldMembers = new Set(members)
+  private syncMembers (members: Ref<Account>[], space: Space): void {
+    const oldMembers = new Set(space.members)
     const newMembers = new Set(members)
     for (const old of oldMembers) {
-      if (!oldMembers.has(old)) {
-        this.removeMemberSpace(old, space)
+      if (!newMembers.has(old)) {
+        this.removeMemberSpace(old, space._id)
       }
     }
     for (const newMem of newMembers) {
-      if (!newMembers.has(newMem)) {
-        this.addMemberSpace(newMem, space)
+      if (!oldMembers.has(newMem)) {
+        this.addMemberSpace(newMem, space._id)
       }
     }
   }
@@ -191,7 +191,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     let space = this.privateSpaces[updateDoc.objectId]
     if (space !== undefined) {
       if (updateDoc.operations.members !== undefined) {
-        this.syncMembers(updateDoc.operations.members, space._id)
+        this.syncMembers(updateDoc.operations.members, space)
       }
       if (updateDoc.operations.$push?.members !== undefined) {
         this.pushMembersHandle(updateDoc.operations.$push.members, space._id)
