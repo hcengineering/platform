@@ -203,8 +203,8 @@
   $: templateProvider && selectedIntegration && templateProvider.set(setting.class.Integration, selectedIntegration)
 
   settingsQuery.query(setting.class.Integration, { type: plugin.integrationType.Gmail, disabled: false }, (res) => {
-    integrations = res.filter((p) => (p.space as string) === me || p.shared?.includes(me))
-    selectedIntegration = integrations.find((p) => (p.space as string) === me) ?? integrations[0]
+    integrations = res.filter((p) => p.createdBy === me || p.shared?.includes(me))
+    selectedIntegration = integrations.find((p) => p.createdBy === me) ?? integrations[0]
   })
 </script>
 

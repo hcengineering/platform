@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { combineName, EmployeeAccount, getFirstName, getLastName, Person } from '@hcengineering/contact'
-  import { getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import { getCurrentAccount, Ref } from '@hcengineering/core'
   import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
   import setting, { IntegrationType } from '@hcengineering/setting'
   import { createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
@@ -57,13 +57,9 @@
 
   let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
   const settingsQuery = createQuery()
-  $: settingsQuery.query(
-    setting.class.Integration,
-    { space: account._id as string as Ref<Space>, disabled: false },
-    (res) => {
-      integrations = new Set(res.map((p) => p.type))
-    }
-  )
+  $: settingsQuery.query(setting.class.Integration, { createdBy: account._id, disabled: false }, (res) => {
+    integrations = new Set(res.map((p) => p.type))
+  })
 
   const sendOpen = () => dispatch('open', { ignoreKeys: ['comments', 'name', 'channels', 'city'] })
   onMount(sendOpen)

@@ -27,6 +27,6 @@
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.21",
-    "@hcengineering/calendar": "^0.6.3"
+    "@hcengineering/calendar": "^0.6.4"
   }
 }

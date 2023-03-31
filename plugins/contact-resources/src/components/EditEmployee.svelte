@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { Employee, EmployeeAccount, getFirstName, getLastName, Person } from '@hcengineering/contact'
-  import { AccountRole, getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import { AccountRole, getCurrentAccount, Ref } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
   import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
@@ -74,13 +74,9 @@
 
   let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
   const settingsQuery = createQuery()
-  $: settingsQuery.query(
-    setting.class.Integration,
-    { space: account._id as string as Ref<Space>, disabled: false },
-    (res) => {
-      integrations = new Set(res.map((p) => p.type))
-    }
-  )
+  $: settingsQuery.query(setting.class.Integration, { createdBy: account._id, disabled: false }, (res) => {
+    integrations = new Set(res.map((p) => p.type))
+  })
 
   const sendOpen = () => dispatch('open', { ignoreKeys: ['comments', 'name', 'channels', 'city', 'displayName'] })
   onMount(sendOpen)

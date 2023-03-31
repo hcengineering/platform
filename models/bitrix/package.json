@@ -35,11 +35,11 @@
     "@hcengineering/view": "^0.6.2",
     "@hcengineering/model-view": "^0.6.0",
     "@hcengineering/contact": "^0.6.11",
-    "@hcengineering/bitrix": "^0.6.0",
+    "@hcengineering/bitrix": "^0.6.27",
     "@hcengineering/bitrix-resources": "^0.6.0",
     "@hcengineering/preference": "^0.6.2",
     "@hcengineering/model-preference": "^0.6.0",
-    "@hcengineering/setting": "^0.6.2",
+    "@hcengineering/setting": "^0.6.3",
     "@hcengineering/ui": "^0.6.3"
   }
 }
