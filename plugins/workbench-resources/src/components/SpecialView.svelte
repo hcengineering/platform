@@ -45,6 +45,7 @@
   export let createLabel: IntlString | undefined
   export let createComponent: AnyComponent | undefined
   export let createComponentProps: Record<string, any> = {}
+  export let isCreationDisabled = false
   export let descriptor: Ref<ViewletDescriptor> | undefined = undefined
   export let baseQuery: DocumentQuery<Doc> = {}
 
@@ -116,7 +117,14 @@
   </div>
   <div class="ac-header-full" class:secondRow={twoRows}>
     {#if createLabel && createComponent}
-      <Button label={createLabel} icon={IconAdd} kind={'primary'} size={'small'} on:click={() => showCreateDialog()} />
+      <Button
+        label={createLabel}
+        icon={IconAdd}
+        kind={'primary'}
+        size={'small'}
+        disabled={isCreationDisabled}
+        on:click={() => showCreateDialog()}
+      />
     {/if}
     <ViewletSettingButton bind:viewOptions {viewlet} />
   </div>
