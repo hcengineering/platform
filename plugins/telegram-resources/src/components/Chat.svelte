@@ -17,7 +17,7 @@
   import attachment from '@hcengineering/attachment'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import contact, { Channel, Contact, EmployeeAccount, getName as getContactName } from '@hcengineering/contact'
-  import { Class, generateId, getCurrentAccount, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import { Class, generateId, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'

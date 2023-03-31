@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import { getCurrentAccount } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import type { Integration, IntegrationType } from '@hcengineering/setting'

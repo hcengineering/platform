@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import { getCurrentAccount } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import setting from '@hcengineering/setting'
   import type { Integration, IntegrationType } from '@hcengineering/setting'
-  import PluginCard from './PluginCard.svelte'
+  import setting from '@hcengineering/setting'
   import { Icon, Label } from '@hcengineering/ui'
+  import PluginCard from './PluginCard.svelte'
 
   const accountId = getCurrentAccount()._id
   const typeQuery = createQuery()
@@ -28,11 +28,7 @@
   let integrationTypes: IntegrationType[] = []
 
   typeQuery.query(setting.class.IntegrationType, {}, (res) => (integrationTypes = res))
-  integrationQuery.query(
-    setting.class.Integration,
-    { createdBy: accountId },
-    (res) => (integrations = res)
-  )
+  integrationQuery.query(setting.class.Integration, { createdBy: accountId }, (res) => (integrations = res))
 </script>
 
 <div class="antiComponent">

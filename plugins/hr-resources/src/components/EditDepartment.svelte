@@ -16,12 +16,12 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
 
-  import { createEventDispatcher, onMount } from 'svelte'
-  import { Department } from '@hcengineering/hr'
-  import core, { getCurrentAccount, Ref, Space } from '@hcengineering/core'
-  import hr from '../plugin'
   import { ChannelsEditor, EditableAvatar } from '@hcengineering/contact-resources'
+  import core, { getCurrentAccount, Ref } from '@hcengineering/core'
+  import { Department } from '@hcengineering/hr'
   import setting, { IntegrationType } from '@hcengineering/setting'
+  import { createEventDispatcher, onMount } from 'svelte'
+  import hr from '../plugin'
 
   export let object: Department
 
@@ -54,13 +54,9 @@
   let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
   const accountId = getCurrentAccount()._id
   const settingsQuery = createQuery()
-  $: settingsQuery.query(
-    setting.class.Integration,
-    { createdBy: accountId, disabled: false },
-    (res) => {
-      integrations = new Set(res.map((p) => p.type))
-    }
-  )
+  $: settingsQuery.query(setting.class.Integration, { createdBy: accountId, disabled: false }, (res) => {
+    integrations = new Set(res.map((p) => p.type))
+  })
 
   onMount(() => {
     dispatch('open', {

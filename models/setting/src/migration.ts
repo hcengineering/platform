@@ -24,17 +24,25 @@ async function migrateIntegrationsSpace (client: MigrationClient): Promise<void>
     space: { $ne: setting.space.Setting }
   })
   for (const object of settings) {
-    await client.update(DOMAIN_SETTING, {
-      _id: object._id
-    }, {
-      space: setting.space.Setting
-    })
-    await client.update(DOMAIN_TX, {
-      objectID: object._id,
-      objectSpace: { $ne: setting.space.Setting }
-    }, {
-      objectSpace: setting.space.Setting
-    })
+    await client.update(
+      DOMAIN_SETTING,
+      {
+        _id: object._id
+      },
+      {
+        space: setting.space.Setting
+      }
+    )
+    await client.update(
+      DOMAIN_TX,
+      {
+        objectID: object._id,
+        objectSpace: { $ne: setting.space.Setting }
+      },
+      {
+        objectSpace: setting.space.Setting
+      }
+    )
   }
 }
 

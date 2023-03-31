@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { concatLink, getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import { concatLink, getCurrentAccount } from '@hcengineering/core'
   import { getMetadata, serialize } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
@@ -127,7 +127,10 @@
   const client = getClient()
 
   async function getCurrent () {
-    const cuurent = await client.findOne(setting.class.Integration, { type: telegram.integrationType.Telegram, createdBy: getCurrentAccount()._id })
+    const cuurent = await client.findOne(setting.class.Integration, {
+      type: telegram.integrationType.Telegram,
+      createdBy: getCurrentAccount()._id
+    })
     if (cuurent !== undefined) {
       phone = cuurent.value
     }
