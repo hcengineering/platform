@@ -32,7 +32,6 @@
   export let integration: Integration | undefined
   const accountId = getCurrentAccount()._id
   const client = getClient()
-  const space = accountId as string as Ref<Space>
 
   async function close (res: any): Promise<void> {
     if (res?.value && integration !== undefined) {
@@ -46,7 +45,7 @@
   async function reconnect (res: any): Promise<void> {
     if (res?.value) {
       const current = await client.findOne(setting.class.Integration, {
-        space,
+        createdBy: accountId,
         type: integrationType._id
       })
       if (current === undefined) return
@@ -68,7 +67,7 @@
       return
     }
     if (integration === undefined) {
-      const id = await client.createDoc(setting.class.Integration, space, {
+      const id = await client.createDoc(setting.class.Integration, setting.space.Setting, {
         type: integrationType._id,
         value: '',
         disabled: false

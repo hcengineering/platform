@@ -119,7 +119,7 @@
 
   settingsQuery.query(
     setting.class.Integration,
-    { type: telegram.integrationType.Telegram, space: accountId as string as Ref<Space> },
+    { type: telegram.integrationType.Telegram, createdBy: accountId },
     (res) => {
       integration = res[0]
     }
@@ -186,7 +186,7 @@
 
   async function onConnectClose (res: any): Promise<void> {
     if (res?.value) {
-      await client.createDoc(setting.class.Integration, accountId as string as Ref<Space>, {
+      await client.createDoc(setting.class.Integration, setting.space.Setting, {
         type: telegram.integrationType.Telegram,
         value: res.value,
         disabled: false

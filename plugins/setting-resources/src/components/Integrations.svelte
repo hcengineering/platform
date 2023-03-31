@@ -30,7 +30,7 @@
   typeQuery.query(setting.class.IntegrationType, {}, (res) => (integrationTypes = res))
   integrationQuery.query(
     setting.class.Integration,
-    { space: accountId as string as Ref<Space> },
+    { createdBy: accountId },
     (res) => (integrations = res)
   )
 </script>

@@ -40,7 +40,7 @@
   const settingsQuery = createQuery()
   $: settingsQuery.query(
     setting.class.Integration,
-    { space: accountId as string as Ref<Space>, disabled: false },
+    { createdBy: accountId , disabled: false },
     (res) => {
       integrations = new Set(res.map((p) => p.type))
     }

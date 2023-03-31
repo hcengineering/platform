@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/panel",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -40,7 +40,7 @@
     "@hcengineering/chunter": "^0.6.2",
     "@hcengineering/presentation": "^0.6.2",
     "@hcengineering/activity": "^0.6.0",
-    "@hcengineering/calendar": "^0.6.3"
+    "@hcengineering/calendar": "^0.6.4"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {

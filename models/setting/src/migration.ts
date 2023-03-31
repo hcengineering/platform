@@ -13,9 +13,30 @@
 // limitations under the License.
 //
 
-import core, { TxOperations } from '@hcengineering/core'
+import core, { DOMAIN_TX, TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import setting from './plugin'
+import { DOMAIN_SETTING } from '.'
+
+async function migrateIntegrationsSpace (client: MigrationClient): Promise<void> {
+  const settings = await client.find(DOMAIN_SETTING, {
+    _class: setting.class.Integration,
+    space: { $ne: setting.space.Setting }
+  })
+  for (const object of settings) {
+    await client.update(DOMAIN_SETTING, {
+      _id: object._id
+    }, {
+      space: setting.space.Setting
+    })
+    await client.update(DOMAIN_TX, {
+      objectID: object._id,
+      objectSpace: { $ne: setting.space.Setting }
+    }, {
+      objectSpace: setting.space.Setting
+    })
+  }
+}
 
 async function createSpace (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(core.class.Space, {
@@ -38,7 +59,9 @@ async function createSpace (tx: TxOperations): Promise<void> {
 }
 
 export const settingOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (client: MigrationClient): Promise<void> {
+    await migrateIntegrationsSpace(client)
+  },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createSpace(tx)
