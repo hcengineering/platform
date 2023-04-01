@@ -39,8 +39,6 @@ export interface PresentationMiddleware {
     options: FindOptions<T> | undefined,
     refresh: () => void
   ) => () => void
-
-  initialize: () => Promise<void>
 }
 
 /**
@@ -75,14 +73,6 @@ export class PresentationPipelineImpl implements PresentationPipeline {
     const pipeline = new PresentationPipelineImpl(client)
     pipeline.head = pipeline.buildChain(constructors)
     return pipeline
-  }
-
-  async initialize (): Promise<void> {
-    let h = this.head
-    while (h !== undefined) {
-      await h.initialize()
-      h = h.next
-    }
   }
 
   private buildChain (constructors: PresentationMiddlewareCreator[]): PresentationMiddleware | undefined {

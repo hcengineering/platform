@@ -575,35 +575,62 @@ export async function groupByCategory (
 ): Promise<CategoryType[]> {
   const h = client.getHierarchy()
   const attr = h.getAttribute(_class, key)
-  const isStatusField =
-    attr.type._class === core.class.RefTo && h.isDerived((attr.type as RefTo<Doc>).to, core.class.Status)
+  if (attr === undefined) return categories
+  if (key === noCategory) return [undefined]
 
-  const valueSet = new Set<any>()
-  const existingCategories = []
-  const statusMap = new Map<string, StatusValue>()
+  const attrClass = getAttributePresenterClass(h, attr).attrClass
 
-  for (const v of categories) {
-    if (isStatusField) {
-      const status = mgr.byId.get(v)
-      if (status !== undefined) {
-        let fst = statusMap.get(status.name)
-        if (fst === undefined) {
-          const sttt = mgr.statuses
-            .filter((it) => it.ofAttribute === attr._id && it.name === status.name && categories.includes(it._id))
-            .sort((a, b) => a.rank.localeCompare(b.rank))
-          fst = new StatusValue(status.name, status.color, sttt)
-          statusMap.set(status.name, fst)
-          existingCategories.push(fst)
-        }
-      }
-    } else {
+  const isStatusField = h.isDerived(attrClass, core.class.Status)
+
+  let existingCategories: any[] = []
+
+  if (isStatusField) {
+    existingCategories = await groupByStatusCategories(h, attrClass, categories, mgr, viewletDescriptorId)
+  } else {
+    const valueSet = new Set<any>()
+    for (const v of categories) {
       if (!valueSet.has(v)) {
         valueSet.add(v)
         existingCategories.push(v)
       }
     }
   }
-  return await sortCategories(client, _class, existingCategories, key, viewletDescriptorId)
+  return await sortCategories(h, attrClass, existingCategories, viewletDescriptorId)
+}
+
+/**
+ * @public
+ */
+export async function groupByStatusCategories (
+  hierarchy: Hierarchy,
+  attrClass: Ref<Class<Doc>>,
+  categories: any[],
+  mgr: StatusManager,
+  viewletDescriptorId?: Ref<ViewletDescriptor>
+): Promise<StatusValue[]> {
+  const existingCategories: StatusValue[] = []
+  const statusMap = new Map<string, StatusValue>()
+
+  for (const v of categories) {
+    const status = mgr.byId.get(v)
+    if (status !== undefined) {
+      let fst = statusMap.get(status.name)
+      if (fst === undefined) {
+        const statuses = mgr.statuses
+          .filter(
+            (it) =>
+              it.ofAttribute === status.ofAttribute &&
+              it.name === status.name &&
+              (categories.includes(it._id) || it.space === status.space)
+          )
+          .sort((a, b) => a.rank.localeCompare(b.rank))
+        fst = new StatusValue(status.name, status.color, statuses)
+        statusMap.set(status.name, fst)
+        existingCategories.push(fst)
+      }
+    }
+  }
+  return await sortCategories(hierarchy, attrClass, existingCategories, viewletDescriptorId)
 }
 
 export async function getCategories (
@@ -626,25 +653,19 @@ export async function getCategories (
   )
 }
 
+/**
+ * @public
+ */
 export async function sortCategories (
-  client: TxOperations,
-  _class: Ref<Class<Doc>>,
+  hierarchy: Hierarchy,
+  attrClass: Ref<Class<Doc>>,
   existingCategories: any[],
-  key: string,
   viewletDescriptorId?: Ref<ViewletDescriptor>
 ): Promise<any[]> {
-  if (key === noCategory) return [undefined]
-  const hierarchy = client.getHierarchy()
-  const attr = hierarchy.getAttribute(_class, key)
-  if (attr === undefined) return existingCategories
-  const attrClass = getAttributePresenterClass(hierarchy, attr).attrClass
   const clazz = hierarchy.getClass(attrClass)
   const sortFunc = hierarchy.as(clazz, view.mixin.SortFuncs)
   if (sortFunc?.func === undefined) {
-    const h = client.getHierarchy()
-    const attr = h.getAttribute(_class, key)
-    const isStatusField =
-      attr.type._class === core.class.RefTo && h.isDerived((attr.type as RefTo<Doc>).to, core.class.Status)
+    const isStatusField = hierarchy.isDerived(attrClass, core.class.Status)
     if (isStatusField) {
       existingCategories.sort((a, b) => {
         return a.values[0].rank.localeCompare(b.values[0].rank)

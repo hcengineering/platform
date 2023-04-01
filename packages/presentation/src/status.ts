@@ -54,40 +54,50 @@ interface StatusSubscriber<T extends Doc = Doc> {
  * @public
  */
 export class StatusMiddleware extends BasePresentationMiddleware implements PresentationMiddleware {
-  initState: Promise<void> | undefined
-  mgr: StatusManager | undefined
+  mgr: StatusManager | Promise<StatusManager> | undefined
+  status: Status[] | undefined
 
   subscribers: Map<string, StatusSubscriber> = new Map()
   private constructor (client: Client, next?: PresentationMiddleware) {
     super(client, next)
   }
 
-  async initialize (): Promise<void> {
-    this.initState = new Promise((resolve) => {
-      if (statusQuery === undefined) {
-        statusQuery = createQuery(true)
-        statusQuery.query(
-          core.class.Status,
-          {},
-          (res) => {
-            this.mgr = new StatusManager(res)
-            statusStore.set(this.mgr)
-
-            this.refreshSubscribers()
-
-            resolve()
-          },
-          {
-            lookup: {
-              category: core.class.StatusCategory
-            },
-            sort: {
-              rank: SortingOrder.Ascending
-            }
-          }
-        )
+  async getManager (): Promise<StatusManager> {
+    if (this.mgr !== undefined) {
+      if (this.mgr instanceof Promise) {
+        this.mgr = await this.mgr
       }
-    })
+      return this.mgr
+    }
+    if (statusQuery === undefined) {
+      statusQuery = createQuery(true)
+    }
+    this.mgr = new Promise<StatusManager>((resolve) =>
+      statusQuery.query(
+        core.class.Status,
+        {},
+        (res) => {
+          const first = this.status === undefined
+          this.status = res
+          this.mgr = new StatusManager(res)
+          statusStore.set(this.mgr)
+          if (!first) {
+            this.refreshSubscribers()
+          }
+          resolve(this.mgr)
+        },
+        {
+          lookup: {
+            category: core.class.StatusCategory
+          },
+          sort: {
+            rank: SortingOrder.Ascending
+          }
+        }
+      )
+    )
+
+    return await this.mgr
   }
 
   private refreshSubscribers (): void {
@@ -114,12 +124,14 @@ export class StatusMiddleware extends BasePresentationMiddleware implements Pres
       options,
       attributes: []
     }
-    for (const [k] of Object.entries(query)) {
+    const allAttrs = h.getAllAttributes(_class)
+    for (const attr of allAttrs.values()) {
       try {
-        const attr = h.findAttribute(_class, k)
         if (attr?.type._class === core.class.RefTo && h.isDerived((attr.type as RefTo<Doc>).to, core.class.Status)) {
           // Ok we have status field for query.
-          s.attributes.push(attr._id)
+          if ((query as any)[attr.name] !== undefined || (options?.lookup as any)?.[attr.name] !== undefined) {
+            s.attributes.push(attr._id)
+          }
         }
       } catch (err: any) {
         console.error(err)
@@ -144,62 +156,60 @@ export class StatusMiddleware extends BasePresentationMiddleware implements Pres
     query: DocumentQuery<T>,
     options?: FindOptions<T> | undefined
   ): Promise<FindResult<T>> {
-    await this.initState
-    const mgr = this.mgr
-
     const statusFields: Array<Attribute<Status>> = []
-    if (mgr !== undefined) {
-      const h = this.client.getHierarchy()
-      const allAttrs = h.getAllAttributes(_class)
-      for (const attr of allAttrs.values()) {
-        try {
-          if (attr.type._class === core.class.RefTo && h.isDerived((attr.type as RefTo<Doc>).to, core.class.Status)) {
-            let target: Array<Ref<Status>> = []
-            statusFields.push(attr)
-            const v = (query as any)[attr.name]
+    const h = this.client.getHierarchy()
+    const allAttrs = h.getAllAttributes(_class)
+    for (const attr of allAttrs.values()) {
+      try {
+        if (attr.type._class === core.class.RefTo && h.isDerived((attr.type as RefTo<Doc>).to, core.class.Status)) {
+          const mgr = await this.getManager()
+          let target: Array<Ref<Status>> = []
+          statusFields.push(attr)
+          const v = (query as any)[attr.name]
 
-            if (v !== undefined) {
-              // Only add filter if we have filer inside.
-              if (v?.$in !== undefined) {
-                target.push(...v.$in)
-              } else {
-                target.push(v)
-              }
+          if (v !== undefined) {
+            // Only add filter if we have filer inside.
+            if (v?.$in !== undefined) {
+              target.push(...v.$in)
+            } else {
+              target.push(v)
+            }
 
-              // Find all similar name statues for same attribute name.
-              for (const sid of [...target]) {
-                const s = mgr.byId.get(sid)
-                if (s !== undefined) {
-                  const statuses = mgr.statuses.filter(
-                    (it) => it.ofAttribute === s.ofAttribute && it.name === s.name && it._id !== s._id
-                  )
+            // Find all similar name statues for same attribute name.
+            for (const sid of [...target]) {
+              const s = mgr.byId.get(sid)
+              if (s !== undefined) {
+                const statuses = mgr.statuses.filter(
+                  (it) => it.ofAttribute === s.ofAttribute && it.name === s.name && it._id !== s._id
+                )
+                if (statuses !== undefined) {
                   statuses.sort((a, b) => a.rank.localeCompare(b.rank))
                   target.push(...statuses.map((it) => it._id))
                 }
               }
-              target = target.filter((it, idx, arr) => arr.indexOf(it) === idx)
+            }
+            target = target.filter((it, idx, arr) => arr.indexOf(it) === idx)
 
-              // Update query
-              ;(query as any)[attr.name] = { $in: target }
+            // Update query
+            ;(query as any)[attr.name] = { $in: target }
 
-              if (options?.lookup !== undefined) {
-                // Remove lookups by status field
-                if ((options.lookup as any)[attr.name] !== undefined) {
-                  const { [attr.name]: _, ...newLookup } = options.lookup as any
-                  options.lookup = newLookup
-                }
+            if (options?.lookup !== undefined) {
+              // Remove lookups by status field
+              if ((options.lookup as any)[attr.name] !== undefined) {
+                const { [attr.name]: _, ...newLookup } = options.lookup as any
+                options.lookup = newLookup
               }
             }
           }
-        } catch (err: any) {
-          console.error(err)
         }
+      } catch (err: any) {
+        console.error(err)
       }
     }
 
     const result = await this.provideFindAll(_class, query, options)
     // We need to add $
-    if (statusFields.length > 0 && mgr !== undefined) {
+    if (statusFields.length > 0) {
       // We need to update $lookup for status fields and provide $status group fields.
       for (const attr of statusFields) {
         for (const r of result) {
@@ -210,7 +220,7 @@ export class StatusMiddleware extends BasePresentationMiddleware implements Pres
 
           // TODO: Check for mixin?
           const stateValue = (r as any)[attr.name]
-          const status = mgr?.byId.get(stateValue)
+          const status = (await this.getManager()).byId.get(stateValue)
           if (status !== undefined) {
             ;(resultDoc.$lookup as any)[attr.name] = status
           }

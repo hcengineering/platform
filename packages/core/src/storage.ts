@@ -126,12 +126,23 @@ export type FindOptions<T extends Doc> = {
 /**
  * @public
  */
+export interface SortingRules<T> {
+  order: SortingOrder
+  rules: {
+    selector: QuerySelector<T>
+    value: string | number
+  }[]
+}
+
+/**
+ * @public
+ */
 export type SortingQuery<T extends Doc> = {
-  [P in keyof T]?: SortingOrder
+  [P in keyof T]?: SortingOrder | SortingRules<T[P]>
 } & {
   // support nested queries e.g. 'user.friends.name'
   // this will mark all unrecognized properties as any (including nested queries)
-  [key: string]: SortingOrder
+  [key: string]: SortingOrder | SortingRules<any>
 }
 
 /**

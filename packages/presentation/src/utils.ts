@@ -107,9 +107,9 @@ export function getClient (): TxOperations {
 /**
  * @public
  */
-export function setClient (_client: Client): void {
+export async function setClient (_client: Client): Promise<void> {
   if (liveQuery !== undefined) {
-    void liveQuery.close()
+    await liveQuery.close()
   }
   pipeline = PresentationPipelineImpl.create(_client, [StatusMiddleware.create])
 
@@ -117,23 +117,21 @@ export function setClient (_client: Client): void {
   liveQuery = new LQ(pipeline)
   client = new UIClient(pipeline, liveQuery)
 
-  void pipeline.initialize()
-
   _client.notify = (tx: Tx) => {
     liveQuery.tx(tx).catch((err) => console.log(err))
 
     txListeners.forEach((it) => it(tx))
   }
   if (needRefresh) {
-    refreshClient()
+    await refreshClient()
   }
 }
 
 /**
  * @public
  */
-export function refreshClient (): void {
-  void liveQuery?.refreshConnect()
+export async function refreshClient (): Promise<void> {
+  await liveQuery?.refreshConnect()
   for (const q of globalQueries) {
     q.refreshClient()
   }
@@ -150,6 +148,7 @@ export class LiveQuery {
   private oldOptions: FindOptions<Doc> | undefined
   private oldCallback: ((result: FindResult<any>) => void) | undefined
   unsubscribe = () => {}
+  clientRecreated = false
 
   constructor (noDestroy: boolean = false) {
     if (!noDestroy) {
@@ -167,9 +166,11 @@ export class LiveQuery {
     callback: (result: FindResult<T>) => void,
     options?: FindOptions<T>
   ): boolean {
-    if (!this.needUpdate(_class, query, callback, options)) {
+    if (!this.needUpdate(_class, query, callback, options) && !this.clientRecreated) {
       return false
     }
+    // One time refresh in case of client recreation
+    this.clientRecreated = false
     return this.doQuery<T>(_class, query, callback, options)
   }
 
@@ -188,7 +189,7 @@ export class LiveQuery {
     const unsub = liveQuery.query(_class, query, callback, options)
     const removeQuery = pipeline.subscribe(_class, query, options, () => {
       // Refresh query if pipeline decide it is required.
-      refreshClient()
+      this.refreshClient()
     })
     this.unsubscribe = () => {
       unsub()
@@ -204,6 +205,7 @@ export class LiveQuery {
   }
 
   refreshClient (): void {
+    this.clientRecreated = true
     if (this.oldClass !== undefined && this.oldQuery !== undefined && this.oldCallback !== undefined) {
       const _class = this.oldClass
       const query = this.oldQuery
