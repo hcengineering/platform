@@ -29,7 +29,7 @@
     if (e.detail === null) {
       selected = undefined
     } else {
-      selected = integrations.find((p) => (p.createdBy) === e.detail)
+      selected = integrations.find((p) => p.createdBy === e.detail)
     }
   }
 </script>
