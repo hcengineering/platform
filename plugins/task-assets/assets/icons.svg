@@ -25,8 +25,8 @@
     <ellipse cx="12.1" cy="3.9" rx="2.5" ry="2.5"/>
   </symbol>
   <symbol id="task-state" viewBox="0 0 16 16">
-    <path d="M13.3,8.3c-0.1,2.8-2.5,5.1-5.4,5.1C5,13.4,2.6,11,2.6,8c0-2.9,2.3-5.2,5.1-5.4c0.1-0.4,0.2-0.7,0.4-1c0,0-0.1,0-0.1,0 C4.4,1.7,1.6,4.5,1.6,8c0,3.5,2.9,6.4,6.4,6.4s6.4-2.9,6.4-6.4c0,0,0-0.1,0-0.1C14,8.1,13.7,8.2,13.3,8.3z"/>
-    <ellipse cx="12.1" cy="3.9" rx="2.5" ry="2.5"/>
+    <path d="M12.2,8.2c-2.4,0-4.3-1.9-4.3-4.3c0-0.6,0.1-1.2,0.3-1.7c-0.1,0-0.1,0-0.2,0C4.7,2.2,2.1,4.8,2.1,8c0,3.2,2.6,5.9,5.9,5.9c3.2,0,5.9-2.6,5.9-5.9c0-0.1,0-0.1,0-0.2C13.3,8.1,12.7,8.2,12.2,8.2z" />
+    <circle class="st0" cx="12.1" cy="3.8" r="2.5" />
   </symbol>
   <symbol id="dashboard" viewBox="0 0 256 256">
     <g style="stroke:none;stroke-width:0;stroke-dasharray:none;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;">
