@@ -16,7 +16,7 @@
 <script lang="ts">
   import type { TxViewlet } from '@hcengineering/activity'
   import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
-  import core, { AnyAttribute, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+  import core, { AnyAttribute, Doc, getCurrentAccount, Ref, Class } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
@@ -31,6 +31,7 @@
     TimeSince
   } from '@hcengineering/ui'
   import type { AttributeModel } from '@hcengineering/view'
+  import attachment from '@hcengineering/attachment'
   import { Menu, ObjectPresenter } from '@hcengineering/view-resources'
   import { ActivityKey, DisplayTx } from '../activity'
   import activity from '../plugin'
@@ -130,6 +131,9 @@
   function isMessageType (attr?: AnyAttribute): boolean {
     return attr?.type._class === core.class.TypeMarkup
   }
+  function isAttachment (_class?: Ref<Class<Doc>>): boolean {
+    return _class === attachment.class.Attachment
+  }
 
   async function updateMessageType (model: AttributeModel[], tx: DisplayTx): Promise<boolean> {
     for (const m of model) {
@@ -148,14 +152,21 @@
     hasMessageType = res
   })
   $: isComment = viewlet && viewlet?.editable
+  $: isAttach = isAttachment(tx.tx.objectClass)
   $: isMention = viewlet?.display === 'emphasized' || isMessageType(model[0]?.attribute)
   $: isColumn = isComment || isMention || hasMessageType
 </script>
 
 {#if (viewlet !== undefined && !((viewlet?.hideOnRemove ?? false) && tx.removed)) || model.length > 0}
-  <div class="msgactivity-container" class:showIcon class:withAvatar={isComment} class:isNew class:isNextNew>
+  <div
+    class="msgactivity-container"
+    class:showIcon
+    class:withAvatar={isComment || isAttach}
+    class:isNew
+    class:isNextNew
+  >
     {#if showIcon}
-      {#if isComment}
+      {#if isComment || isAttach}
         <div class="msgactivity-avatar">
           <Component is={contact.component.Avatar} props={{ avatar: employee?.avatar, size: 'medium' }} />
         </div>
@@ -172,7 +183,7 @@
       {/if}
     {/if}
 
-    <div class="msgactivity-content" class:content={isColumn} class:comment={isComment}>
+    <div class="msgactivity-content" class:content={isColumn} class:comment={isComment || isAttach}>
       <div class="msgactivity-content__header">
         <div class="msgactivity-content__title labels-row">
           <span class="bold">
