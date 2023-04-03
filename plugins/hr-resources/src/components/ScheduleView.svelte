@@ -104,10 +104,34 @@
     )
   }
 
-  $: update(departments, startDate, endDate)
+  const tempQ = createQuery()
+  let otherRequests: Request[] = []
 
-  function updateRequest (reqests: Request[], startDate: Date, endDate: Date) {
-    const res = reqests.filter(
+  function updateOther (staff: Staff[], startDate: Date, endDate: Date) {
+    console.log(staff)
+    tempQ.query(
+      hr.class.Request,
+      {
+        'tzDueDate.year': { $gte: startDate.getFullYear() },
+        'tzDate.year': { $lte: endDate.getFullYear() },
+        attachedTo: { $in: staff.map((p) => p._id) }
+      },
+      (res) => {
+        otherRequests = res
+      }
+    )
+  }
+
+  $: update(departments, startDate, endDate)
+  $: updateOther(staff, startDate, endDate)
+
+  function updateRequest (requests: Request[], startDate: Date, endDate: Date) {
+    let res = requests
+    const requestIds = requests.map((p) => p._id)
+    for (const otherRequest of otherRequests) {
+      if (otherRequest !== undefined && !requestIds.includes(otherRequest._id)) res.push(otherRequest)
+    }
+    res = res.filter(
       (r) => fromTzDate(r.tzDueDate) >= startDate.getTime() && fromTzDate(r.tzDate) <= endDate.getTime()
     )
     employeeRequests.clear()
