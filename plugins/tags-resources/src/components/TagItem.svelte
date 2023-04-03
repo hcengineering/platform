@@ -110,7 +110,7 @@
       position: absolute;
       content: '';
       top: 50%;
-      left: 0;
+      left: 0.125rem;
       width: 0.25rem;
       height: 0.25rem;
       background-color: var(--tag-color);
