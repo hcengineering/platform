@@ -16,6 +16,7 @@
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
   import { Class, Data, Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
   import { Icon, Label, resizeObserver, Scroller, Spinner } from '@hcengineering/ui'
   import view, { BuildModelKey } from '@hcengineering/view'
   import { Table } from '@hcengineering/view-resources'
@@ -34,6 +35,7 @@
   export let extraConfig: (BuildModelKey | string)[] = []
   export let readonly = false
   export let showHeader = true
+  export let label: IntlString = attachment.string.Attachments
   export let attachments: number | undefined = undefined
 
   let inputFile: HTMLInputElement
@@ -51,7 +53,7 @@
     </div>
     <span class="antiSection-header__title">
       {#if showHeader}
-        <Label label={attachment.string.Attachments} />
+        <Label {label} />
       {/if}
     </span>
     <div class="buttons-group small-gap">
