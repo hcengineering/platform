@@ -303,9 +303,16 @@
         }
       }
     }
-    &.transparent:hover,
-    &.transparent.selected {
-      background-color: var(--button-bg-hover);
+    &.transparent {
+      &:hover {
+        background-color: var(--highlight-hover);
+      }
+      &.selected {
+        background-color: var(--highlight-select);
+      }
+      &.selected:hover {
+        background-color: var(--highlight-select-hover);
+      }
     }
     &.link {
       padding: 0 0.875rem;

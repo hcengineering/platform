@@ -376,7 +376,7 @@
 
     .formatPanelRef {
       padding: 0.5rem;
-      background-color: var(--body-accent);
+      background-color: var(--body-color);
       border: 1px solid var(--divider-color);
       border-radius: 0.5rem 0.5rem 0 0;
       border-bottom: 0;
@@ -395,7 +395,7 @@
       align-items: flex-end;
       min-height: 2.75rem;
       padding: 0.75rem 1rem;
-      background-color: var(--accent-bg-color);
+      background-color: var(--body-accent);
       border: 1px solid var(--divider-color);
       border-radius: 0.5rem;
 

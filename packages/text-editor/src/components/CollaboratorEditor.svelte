@@ -471,7 +471,7 @@
 {#if visible}
   <div class="ref-container" class:autoOverflow>
     {#if isFormatting && !readonly}
-      <div class="formatPanelRef formatPanel flex-between clear-mins" class:focused>
+      <div class="formatPanelRef formatPanel flex-between clear-mins">
         <div class="flex-row-center buttons-group xsmall-gap">
           <StyleButton
             icon={Header}
@@ -743,10 +743,9 @@
     border-radius: 0.5rem;
     box-shadow: var(--button-shadow);
     z-index: 1;
-
-    &.focused {
-      position: sticky;
-      top: 1.25rem;
-    }
+  }
+  .ref-container:focus-within .formatPanel {
+    position: sticky;
+    top: 1.25rem;
   }
 </style>
