@@ -54,7 +54,7 @@
   const currentEmployee = (getCurrentAccount() as EmployeeAccount).employee
 
   let staff: Staff[] = []
-  let reqests: Request[] = []
+  let requests: Request[] = []
   let types: Map<Ref<RequestType>, RequestType> = new Map<Ref<RequestType>, RequestType>()
 
   typeQuery.query(hr.class.RequestType, {}, (res) => {
@@ -95,10 +95,11 @@
       hr.class.Request,
       {
         'tzDueDate.year': { $gte: startDate.getFullYear() },
-        'tzDate.year': { $lte: endDate.getFullYear() }
+        'tzDate.year': { $lte: endDate.getFullYear() },
+        space: { $in: departments }
       },
       (res) => {
-        reqests = res
+        requests = res
       }
     )
   }
@@ -120,7 +121,7 @@
     employeeRequests = employeeRequests
   }
 
-  $: updateRequest(reqests, startDate, endDate)
+  $: updateRequest(requests, startDate, endDate)
 
   function pushChilds (
     department: Ref<Department>,
