@@ -162,6 +162,9 @@ export class TEmployee extends TPerson implements Employee {
 
   @Prop(TypeString(), contact.string.DisplayName)
     displayName?: string | null
+
+  @Prop(TypeString(), contact.string.Position)
+    position?: string | null
 }
 
 @Model(contact.class.EmployeeAccount, core.class.Account)

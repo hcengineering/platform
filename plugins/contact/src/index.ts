@@ -131,6 +131,7 @@ export interface Employee extends Person {
   mergedTo?: Ref<Employee>
   statuses?: number
   displayName?: string | null
+  position?: string | null
 }
 
 /**
@@ -244,7 +245,8 @@ export const contactPlugin = plugin(contactId, {
     UseColor: '' as IntlString,
     PersonFirstNamePlaceholder: '' as IntlString,
     PersonLastNamePlaceholder: '' as IntlString,
-    DisplayName: '' as IntlString
+    DisplayName: '' as IntlString,
+    Position: '' as IntlString
   },
   viewlet: {
     TableMember: '' as Ref<Viewlet>,
