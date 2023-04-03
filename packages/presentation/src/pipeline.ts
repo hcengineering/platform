@@ -21,6 +21,8 @@ export interface PresentationMiddleware {
 
   tx: (tx: Tx) => Promise<TxResult>
 
+  notifyTx: (tx: Tx) => Promise<void>
+
   findAll: <T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
@@ -38,7 +40,13 @@ export interface PresentationMiddleware {
     query: DocumentQuery<T>,
     options: FindOptions<T> | undefined,
     refresh: () => void
-  ) => () => void
+  ) => Promise<{
+    unsubscribe: () => void
+    query?: DocumentQuery<T>
+    options?: FindOptions<T>
+  }>
+
+  close: () => Promise<void>
 }
 
 /**
@@ -67,6 +75,10 @@ export class PresentationPipelineImpl implements PresentationPipeline {
 
   getModel (): ModelDb {
     return this.client.getModel()
+  }
+
+  async notifyTx (tx: Tx): Promise<void> {
+    await this.head?.notifyTx(tx)
   }
 
   static create (client: Client, constructors: PresentationMiddlewareCreator[]): PresentationPipeline {
@@ -104,13 +116,19 @@ export class PresentationPipelineImpl implements PresentationPipeline {
       : await this.client.findOne(_class, query, options)
   }
 
-  subscribe<T extends Doc>(
+  async subscribe<T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options: FindOptions<T> | undefined,
     refresh: () => void
-  ): () => void {
-    return this.head !== undefined ? this.head.subscribe(_class, query, options, refresh) : () => {}
+  ): Promise<{
+      unsubscribe: () => void
+      query?: DocumentQuery<T>
+      options?: FindOptions<T>
+    }> {
+    return this.head !== undefined
+      ? await this.head.subscribe(_class, query, options, refresh)
+      : { unsubscribe: () => {} }
   }
 
   async tx (tx: Tx): Promise<TxResult> {
@@ -122,7 +140,7 @@ export class PresentationPipelineImpl implements PresentationPipeline {
   }
 
   async close (): Promise<void> {
-    await this.client.close()
+    await this.head?.close()
   }
 }
 
@@ -131,6 +149,14 @@ export class PresentationPipelineImpl implements PresentationPipeline {
  */
 export abstract class BasePresentationMiddleware {
   constructor (protected readonly client: Client, readonly next?: PresentationMiddleware) {}
+
+  async provideNotifyTx (tx: Tx): Promise<void> {
+    await this.next?.notifyTx(tx)
+  }
+
+  async provideClose (): Promise<void> {
+    await this.next?.close()
+  }
 
   async findAll<T extends Doc>(
     _class: Ref<Class<T>>,
@@ -148,13 +174,17 @@ export abstract class BasePresentationMiddleware {
     return await this.provideFindOne(_class, query, options)
   }
 
-  subscribe<T extends Doc>(
+  async subscribe<T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options: FindOptions<T> | undefined,
     refresh: () => void
-  ): () => void {
-    return this.provideSubscribe(_class, query, options, refresh)
+  ): Promise<{
+      unsubscribe: () => void
+      query?: DocumentQuery<T>
+      options?: FindOptions<T>
+    }> {
+    return await this.provideSubscribe(_class, query, options, refresh)
   }
 
   protected async provideTx (tx: Tx): Promise<TxResult> {
@@ -186,15 +216,19 @@ export abstract class BasePresentationMiddleware {
     return await this.client.findOne(_class, query, options)
   }
 
-  protected provideSubscribe<T extends Doc>(
+  protected async provideSubscribe<T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options: FindOptions<T> | undefined,
     refresh: () => void
-  ): () => void {
+  ): Promise<{
+      unsubscribe: () => void
+      query?: DocumentQuery<T>
+      options?: FindOptions<T>
+    }> {
     if (this.next !== undefined) {
-      return this.next.subscribe(_class, query, options, refresh)
+      return await this.next.subscribe(_class, query, options, refresh)
     }
-    return () => {}
+    return { unsubscribe: () => {} }
   }
 }

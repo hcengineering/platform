@@ -106,7 +106,7 @@
               p._id,
               {
                 _id: p._id,
-                label: p.title,
+                label: p.name,
                 values: [
                   { color: 10, value: 0 },
                   { color: 0, value: 0 },

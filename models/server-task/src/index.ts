@@ -15,5 +15,4 @@
 
 import { Builder } from '@hcengineering/model'
 
-export function createModel (builder: Builder): void {
-}
+export function createModel (builder: Builder): void {}

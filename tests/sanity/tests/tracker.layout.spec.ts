@@ -20,14 +20,19 @@ test.use({
 
 const getIssueName = (postfix: string = generateId(5)): string => `issue-${postfix}`
 
-async function createIssues (page: Page, components?: string[], sprints?: string[]): Promise<IssueProps[]> {
+async function createIssues (
+  prefix: string,
+  page: Page,
+  components?: string[],
+  sprints?: string[]
+): Promise<IssueProps[]> {
   const issuesProps = []
   for (let index = 0; index < 5; index++) {
     const shiftedIndex = 4 - index
     const name =
       sprints !== undefined
-        ? getIssueName(`layout-${shiftedIndex}-${sprints[index % sprints.length]}`)
-        : getIssueName(`layout-${shiftedIndex}`)
+        ? getIssueName(`${prefix}-layout-${shiftedIndex}-${sprints[index % sprints.length]}`)
+        : getIssueName(`${prefix}-layout-${shiftedIndex}`)
     const issueProps = {
       name,
       status: DEFAULT_STATUSES[shiftedIndex],
@@ -70,20 +75,21 @@ async function createSprints (page: Page): Promise<string[]> {
   return sprints
 }
 
-async function initIssues (page: Page): Promise<IssueProps[]> {
+async function initIssues (prefix: string, page: Page): Promise<IssueProps[]> {
   const components = await createComponents(page)
   const sprints = await createSprints(page)
-  const issuesProps = await createIssues(page, components, sprints)
+  const issuesProps = await createIssues(prefix, page, components, sprints)
   await page.click('text="Issues"')
 
   return issuesProps
 }
 
 test.describe('tracker layout tests', () => {
+  const id = generateId(4)
   test.beforeEach(async ({ page }) => {
     test.setTimeout(60000)
     await navigate(page)
-    issuesProps = await initIssues(page)
+    issuesProps = await initIssues(id, page)
   })
 
   let issuesProps: IssueProps[] = []
@@ -166,6 +172,11 @@ test.describe('tracker layout tests', () => {
       await page.click(ViewletSelectors.Board)
       await setViewGroup(page, 'No grouping')
       await setViewOrder(page, order)
+
+      await page.waitForTimeout(1000)
+      const searchBox = page.locator('[placeholder="Search"]')
+      await searchBox.fill(id)
+      await searchBox.press('Enter')
       await expect(locator).toContainText(orderedIssueNames)
     })
   }

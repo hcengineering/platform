@@ -281,7 +281,7 @@ export function createModel (builder: Builder): void {
               label: recruit.string.Applications,
               createLabel: recruit.string.ApplicationCreateLabel,
               createComponent: recruit.component.CreateApplication,
-              descriptors: [view.viewlet.Table, task.viewlet.Kanban],
+              descriptors: [view.viewlet.Table, task.viewlet.Kanban, recruit.viewlet.ApplicantDashboard],
               baseQuery: {
                 doneState: null
               }

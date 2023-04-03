@@ -15,19 +15,32 @@
 -->
 <script lang="ts">
   import board, { Card } from '@hcengineering/board'
-  import { Class, Doc, DocumentQuery, FindOptions, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import {
+    CategoryType,
+    Class,
+    Doc,
+    DocumentQuery,
+    DocumentUpdate,
+    FindOptions,
+    Ref,
+    SortingOrder,
+    WithLookup
+  } from '@hcengineering/core'
   import { Kanban as KanbanUI } from '@hcengineering/kanban'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import type { Kanban, SpaceWithStates, State } from '@hcengineering/task'
+  import type { DocWithRank, Kanban, SpaceWithStates, State } from '@hcengineering/task'
   import task, { calcRank } from '@hcengineering/task'
   import { getEventPositionElement, showPopup } from '@hcengineering/ui'
   import {
     ActionContext,
     ContextMenu,
     focusStore,
+    getGroupByValues,
+    groupBy,
     ListSelectionProvider,
     SelectDirection,
-    selectionStore
+    selectionStore,
+    setGroupByValues
   } from '@hcengineering/view-resources'
   import { onMount } from 'svelte'
   import AddCard from './add-card/AddCard.svelte'
@@ -72,7 +85,8 @@
   async function addItem (title: any) {
     const lastOne = await client.findOne(task.class.State, {}, { sort: { rank: SortingOrder.Descending } })
     await client.createDoc(task.class.State, space, {
-      title,
+      name: title,
+      ofAttribute: task.attribute.State,
       color: 9,
       rank: calcRank(lastOne, undefined)
     })
@@ -97,6 +111,33 @@
   }
 
   $: resultQuery = { ...query, doneState: null, isArchived: { $nin: [true] }, space }
+
+  const cardQuery = createQuery()
+  let cards: DocWithRank[] = []
+
+  $: cardQuery.query<DocWithRank>(
+    _class,
+    resultQuery,
+    (result) => {
+      cards = result
+    },
+    {
+      ...options
+    }
+  )
+  $: groupByDocs = groupBy(cards, 'state')
+
+  const getUpdateProps = (doc: Doc, category: CategoryType): DocumentUpdate<DocWithRank> | undefined => {
+    const groupValue =
+      typeof category === 'object' ? category.values.find((it) => it.space === doc.space)?._id : category
+    if (groupValue === undefined) {
+      return undefined
+    }
+    return {
+      state: groupValue,
+      space: doc.space
+    } as any
+  }
 </script>
 
 <ActionContext
@@ -106,17 +147,18 @@
 />
 <KanbanUI
   bind:this={kanbanUI}
-  {_class}
-  {options}
-  query={resultQuery}
-  {states}
-  fieldName={'state'}
+  objects={cards}
+  getGroupByValues={(groupByDocs, category) => getGroupByValues(groupByDocs, category)}
+  {setGroupByValues}
+  categories={states.map((it) => it._id)}
   on:content={(evt) => {
     listProvider.update(evt.detail)
   }}
   on:obj-focus={(evt) => {
     listProvider.updateFocus(evt.detail)
   }}
+  {groupByDocs}
+  {getUpdateProps}
   checked={$selectionStore ?? []}
   on:check={(evt) => {
     listProvider.updateSelection(evt.detail.docs, evt.detail.value)
@@ -137,10 +179,16 @@
   </svelte:fragment>
 
   <svelte:fragment slot="header" let:state>
-    <ListHeader {state} />
+    {@const st = states.find((it) => it._id === state)}
+    {#if st}
+      <ListHeader state={st} />
+    {/if}
   </svelte:fragment>
 
   <svelte:fragment slot="afterCard" let:state={targetState}>
-    <AddCard {space} state={targetState} />
+    {@const st = states.find((it) => it._id === targetState)}
+    {#if st}
+      <AddCard {space} state={st} />
+    {/if}
   </svelte:fragment>
 </KanbanUI>

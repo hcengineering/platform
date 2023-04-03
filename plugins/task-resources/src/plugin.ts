@@ -20,7 +20,6 @@ import { AnyComponent } from '@hcengineering/ui'
 
 export default mergeIds(taskId, task, {
   string: {
-    CreateProject: '' as IntlString,
     Description: '' as IntlString,
     DescriptionPlaceholder: '' as IntlString,
     ShortDescription: '' as IntlString,

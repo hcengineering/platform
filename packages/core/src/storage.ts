@@ -126,11 +126,26 @@ export type FindOptions<T extends Doc> = {
 /**
  * @public
  */
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export type SortQuerySelector<T> = {
+  $in?: T[]
+  $nin?: T[]
+  $ne?: T
+}
+/**
+ * @public
+ */
+export type SortRuleQueryType<T> = (T extends Array<infer U> ? U | U[] : T) | SortQuerySelector<T>
+
+/**
+ * @public
+ */
 export interface SortingRules<T> {
   order: SortingOrder
-  rules: {
-    selector: QuerySelector<T>
-    value: string | number
+  default?: string | number
+  cases: {
+    query: SortRuleQueryType<T>
+    index: string | number
   }[]
 }
 

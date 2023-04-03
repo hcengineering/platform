@@ -15,7 +15,7 @@
 
 // To help typescript locate view plugin properly
 import type { Employee } from '@hcengineering/contact'
-import { Doc, FindOptions, IndexKind, Ref } from '@hcengineering/core'
+import { FindOptions, IndexKind, Ref, SortingOrder } from '@hcengineering/core'
 import { Customer, Funnel, Lead, leadId } from '@hcengineering/lead'
 import {
   Builder,
@@ -33,10 +33,11 @@ import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
 import contact, { TContact } from '@hcengineering/model-contact'
 import core from '@hcengineering/model-core'
-import task, { actionTemplates, TSpaceWithStates, TTask } from '@hcengineering/model-task'
-import view, { actionTemplates as viewTemplates, createAction } from '@hcengineering/model-view'
+import task, { TSpaceWithStates, TTask, actionTemplates } from '@hcengineering/model-task'
+import view, { createAction, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import setting from '@hcengineering/setting'
+import { ViewOptionsModel } from '@hcengineering/view'
 import lead from './plugin'
 
 @Model(lead.class.Funnel, task.class.SpaceWithStates)
@@ -256,6 +257,31 @@ export function createModel (builder: Builder): void {
     },
     lead.viewlet.ListLead
   )
+  const leadViewOptions: ViewOptionsModel = {
+    groupBy: ['state', 'assignee'],
+    orderBy: [
+      ['state', SortingOrder.Ascending],
+      ['modifiedOn', SortingOrder.Descending],
+      ['dueDate', SortingOrder.Descending],
+      ['rank', SortingOrder.Ascending]
+    ],
+    other: [
+      {
+        key: 'shouldShowAll',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'category',
+        action: view.function.ShowEmptyGroups,
+        label: view.string.ShowEmptyGroups
+      }
+    ]
+  }
+
+  const lookupLeadOptions: FindOptions<Lead> = {
+    lookup: {
+      attachedTo: lead.mixin.Customer
+    }
+  }
 
   builder.createDoc(
     view.class.Viewlet,
@@ -264,11 +290,11 @@ export function createModel (builder: Builder): void {
       attachTo: lead.class.Lead,
       descriptor: task.viewlet.Kanban,
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      options: {
-        lookup: {
-          attachedTo: lead.mixin.Customer
-        }
-      } as FindOptions<Doc>, // TODO: fix
+      viewOptions: {
+        ...leadViewOptions,
+        groupDepth: 1
+      },
+      options: lookupLeadOptions,
       config: []
     },
     lead.viewlet.KanbanLead

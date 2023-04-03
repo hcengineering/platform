@@ -137,7 +137,6 @@
             )
           }}
         />
-        {state.color}
         <div class="flex-grow caption-color">
           <AttributeEditor maxWidth={'20rem'} _class={state._class} object={state} key="name" />
         </div>

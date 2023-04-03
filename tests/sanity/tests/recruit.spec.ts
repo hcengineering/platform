@@ -85,6 +85,7 @@ test.describe('recruit tests', () => {
 
     await page.click('[id = "space.selector"]')
 
+    await page.waitForTimeout(1000)
     await page.fill('[placeholder="Search..."]', vacancyId)
     await page.click(`button:has-text("${vacancyId}")`)
 

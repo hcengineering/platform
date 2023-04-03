@@ -17,8 +17,11 @@
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
   import ui, {
-    addNotification, Button,
-    CheckBox, deviceOptionsStore, Label,
+    addNotification,
+    Button,
+    CheckBox,
+    deviceOptionsStore,
+    Label,
     Loading,
     resizeObserver
   } from '@hcengineering/ui'

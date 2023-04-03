@@ -18,7 +18,7 @@ import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClie
 import core from '@hcengineering/model-core'
 import tags from '@hcengineering/model-tags'
 import { createKanban, DoneStateTemplate, genRanks, KanbanTemplate, StateTemplate } from '@hcengineering/task'
-import { DOMAIN_TASK } from '.'
+import { DOMAIN_TASK, DOMAIN_KANBAN } from '.'
 import task from './plugin'
 
 /**
@@ -205,12 +205,11 @@ export const taskOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await Promise.all([migrateTodoItems(client)])
 
-    const stateClasses = client.hierarchy
-      .getDescendants(task.class.State)
-      .concat(client.hierarchy.getDescendants(task.class.StateTemplate))
-    const doneStateClasses = client.hierarchy
-      .getDescendants(task.class.DoneState)
-      .concat(client.hierarchy.getDescendants(task.class.DoneStateTemplate))
+    const stateClasses = client.hierarchy.getDescendants(task.class.State)
+    const doneStateClasses = client.hierarchy.getDescendants(task.class.DoneState)
+
+    const stateTemplateClasses = client.hierarchy.getDescendants(task.class.StateTemplate)
+    const doneStateTemplatesClasses = client.hierarchy.getDescendants(task.class.DoneStateTemplate)
 
     await client.move(DOMAIN_STATE, { _class: { $in: [...stateClasses, ...doneStateClasses] } }, DOMAIN_STATUS)
 
@@ -221,18 +220,19 @@ export const taskOperation: MigrateOperation = {
     )
     await client.update(
       DOMAIN_STATUS,
-      { _class: { $in: stateClasses }, title: { $exists: true } },
-      { $rename: { title: 'name' } }
+      { _class: { $in: doneStateClasses }, ofAttribute: { $exists: false } },
+      { ofAttribute: task.attribute.DoneState }
     )
 
     await client.update(
       DOMAIN_STATUS,
-      { _class: { $in: doneStateClasses }, ofAttribute: { $exists: false } },
-      { ofAttribute: task.attribute.DoneState }
+      { _class: { $in: [...stateClasses, ...doneStateClasses] }, title: { $exists: true } },
+      { $rename: { title: 'name' } }
     )
+
     await client.update(
-      DOMAIN_STATUS,
-      { _class: { $in: doneStateClasses }, title: { $exists: true } },
+      DOMAIN_KANBAN,
+      { _class: { $in: [...stateTemplateClasses, ...doneStateTemplatesClasses] }, title: { $exists: true } },
       { $rename: { title: 'name' } }
     )
   },

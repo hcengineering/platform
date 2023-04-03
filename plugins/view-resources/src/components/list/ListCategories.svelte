@@ -123,7 +123,7 @@
 </script>
 
 {#each categories as category, i (category)}
-  {@const items = groupByKey === noCategory ? docs : getGroupByValues(groupByDocs, category)}
+  {@const items = groupByKey === noCategory || category === undefined ? docs : getGroupByValues(groupByDocs, category)}
   <ListCategory
     {elementByIndex}
     {indexById}

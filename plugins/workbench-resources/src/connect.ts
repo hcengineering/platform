@@ -59,7 +59,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     () => {
       try {
         if (clientSet) {
-          refreshClient()
+          void refreshClient()
         }
       } catch (err) {
         console.error(err)

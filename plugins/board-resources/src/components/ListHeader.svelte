@@ -17,15 +17,17 @@
   }
 </script>
 
-<div class="flex-col h-16">
-  <div
-    class="h-2 border-radius-1"
-    style="background-color: {state.color ? getPlatformColor(state.color) : getPlatformColorForText(state.name)}"
-  />
-  <div class="flex-between h-full font-medium pr-2 pl-4">
-    <span class="lines-limit-2">{state.name}</span>
-    <div class="flex">
-      <Button icon={IconMoreV} kind="transparent" on:click={showMenu} />
+{#if state}
+  <div class="flex-col h-16">
+    <div
+      class="h-2 border-radius-1"
+      style="background-color: {state.color ? getPlatformColor(state.color) : getPlatformColorForText(state.name)}"
+    />
+    <div class="flex-between h-full font-medium pr-2 pl-4">
+      <span class="lines-limit-2">{state.name}</span>
+      <div class="flex">
+        <Button icon={IconMoreV} kind="transparent" on:click={showMenu} />
+      </div>
     </div>
   </div>
-</div>
+{/if}
