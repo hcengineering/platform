@@ -147,7 +147,7 @@ export function createModel (builder: Builder): void {
       hidden: false,
       textTemplate: '{sender} mentioned you in {doc} {data}',
       htmlTemplate: '<p><b>{sender}</b> mentioned you in {doc}</p> {data}',
-      subjectTemplate: 'You was mentioned in {doc}'
+      subjectTemplate: 'You were mentioned in {doc}'
     },
     notification.ids.MentionNotification
   )
