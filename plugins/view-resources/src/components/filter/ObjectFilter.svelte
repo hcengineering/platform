@@ -18,11 +18,20 @@
   import presentation, { getClient } from '@hcengineering/presentation'
   import type { State } from '@hcengineering/task'
   import task from '@hcengineering/task'
-  import ui, { Button, CheckBox, Label, Loading, resizeObserver, deviceOptionsStore } from '@hcengineering/ui'
+  import ui, {
+    Button,
+    CheckBox,
+    Label,
+    Loading,
+    resizeObserver,
+    deviceOptionsStore,
+    addNotification
+  } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { createEventDispatcher, onMount } from 'svelte'
   import view from '../../plugin'
   import { buildConfigLookup, getPresenter } from '../../utils'
+  import FilterRemovedNotification from './FilterRemovedNotification.svelte'
 
   export let filter: Filter
   export let space: Ref<Space> | undefined = undefined
@@ -92,6 +101,15 @@
     const options = clazz.sortingKey !== undefined ? { sort: { [clazz.sortingKey]: SortingOrder.Ascending } } : {}
     objectsPromise = client.findAll(targetClass, resultQuery, options)
     values = await objectsPromise
+    if (values.length !== targets.size) {
+      const notExisting = [...targets.keys()].filter((k) => !values.includes(k))
+      const oldSize = filter.value.length
+      filter.value = filter.value.filter((p) => !notExisting.includes(p))
+      onChange(filter)
+      addNotification(await translate(view.string.FilterUpdated), filter.key.label, FilterRemovedNotification, {
+        description: await translate(view.string.FilterRemoved, { count: oldSize - (filter.value.length ?? 0) })
+      })
+    }
     if (targets.has(undefined)) {
       values.unshift(undefined)
     }

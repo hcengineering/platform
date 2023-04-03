@@ -79,6 +79,9 @@
       values.set(value, (values.get(value) ?? 0) + 1)
       realValues.set(value, (realValues.get(value) ?? new Set()).add(realValue))
     }
+    for (const object of filter.value.map((p) => p[0])) {
+      if (!values.has(object)) values.set(object, 0)
+    }
     values = values
     objectsPromise = undefined
   }
