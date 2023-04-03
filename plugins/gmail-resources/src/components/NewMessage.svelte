@@ -16,7 +16,7 @@
   import attachmentP, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import contact, { Channel, Contact, getName } from '@hcengineering/contact'
-  import { Account, Data, generateId, Ref } from '@hcengineering/core'
+  import { Data, generateId } from '@hcengineering/core'
   import { NewMessage, SharedMessage } from '@hcengineering/gmail'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
@@ -65,7 +65,7 @@
       {
         ...obj,
         attachments: attachments.length,
-        from: selectedIntegration.space as string as Ref<Account>,
+        from: selectedIntegration.createdBy,
         copy: copy
           .split(',')
           .map((m) => m.trim())

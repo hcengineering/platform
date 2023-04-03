@@ -16,7 +16,7 @@
   import attachmentP, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import contact, { Channel, Contact, getName as getContactName } from '@hcengineering/contact'
-  import { Account, generateId, getCurrentAccount, Ref, toIdMap } from '@hcengineering/core'
+  import { generateId, getCurrentAccount, Ref, toIdMap } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -80,7 +80,7 @@
         content: message,
         to: channel.value,
         status: 'new',
-        from: selectedIntegration.space as string as Ref<Account>,
+        from: selectedIntegration.createdBy,
         copy: copy
           .split(',')
           .map((m) => m.trim())
