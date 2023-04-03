@@ -186,16 +186,17 @@ export class LiveQuery {
     callback: (result: FindResult<T>) => void,
     options: FindOptions<T> | undefined
   ): Promise<void> {
+    const piplineQuery = await pipeline.subscribe(_class, query, options, () => {
+      // Refresh query if pipeline decide it is required.
+      this.refreshClient()
+    })
+
     this.unsubscribe()
     this.oldCallback = callback
     this.oldClass = _class
     this.oldOptions = options
     this.oldQuery = query
 
-    const piplineQuery = await pipeline.subscribe(_class, query, options, () => {
-      // Refresh query if pipeline decide it is required.
-      this.refreshClient()
-    })
     const unsub = liveQuery.query(_class, piplineQuery.query ?? query, callback, piplineQuery.options ?? options)
     this.unsubscribe = () => {
       unsub()

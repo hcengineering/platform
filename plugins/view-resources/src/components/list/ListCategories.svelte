@@ -122,7 +122,7 @@
   const dispatch = createEventDispatcher()
 </script>
 
-{#each categories as category, i (category)}
+{#each categories as category, i (typeof category === 'object' ? category.name : category)}
   {@const items = groupByKey === noCategory || category === undefined ? docs : getGroupByValues(groupByDocs, category)}
   <ListCategory
     {elementByIndex}

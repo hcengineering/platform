@@ -83,7 +83,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     readonly hierarchy: Hierarchy,
     readonly workspace: WorkspaceId,
     readonly metrics: MeasureContext,
-    readonly model: ModelDb
+    readonly model: ModelDb,
+    readonly broadcastUpdate: (classes: Ref<Class<Doc>>[]) => void
   ) {
     this.readyStages = stages.map((it) => it.stageId)
     this.readyStages.sort()
@@ -261,18 +262,24 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       return
     }
     await this.initStates()
+    const classes = new Set<Ref<Class<Doc>>>()
     while (!this.cancelling) {
       await this.initializeStages()
       await this.processRemove()
 
       console.log('Indexing:', this.indexId, this.workspace)
-      await rateLimitter.exec(() => this.processIndex())
+      const _classes = await rateLimitter.exec(() => this.processIndex())
+      _classes.forEach((it) => classes.add(it))
 
       if (this.toIndex.size === 0 || this.stageChanged === 0) {
         if (this.toIndex.size === 0) {
           console.log(`${this.workspace.name} Indexing complete`, this.indexId)
         }
         if (!this.cancelling) {
+          // We need to send index update event
+          this.broadcastUpdate(Array.from(classes.values()))
+          classes.clear()
+
           await new Promise((resolve) => {
             this.triggerIndexing = () => {
               resolve(null)
@@ -291,14 +298,15 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     console.log('Exit indexer', this.indexId, this.workspace)
   }
 
-  private async processIndex (): Promise<void> {
+  private async processIndex (): Promise<Ref<Class<Doc>>[]> {
     let idx = 0
+    const _classUpdate = new Set<Ref<Class<Doc>>>()
     for (const st of this.stages) {
       idx++
       while (true) {
         try {
           if (this.cancelling) {
-            return
+            return Array.from(_classUpdate.values())
           }
           if (!st.enabled) {
             break
@@ -347,6 +355,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             // Do Indexing
             this.currentStage = st
             await st.collect(toIndex, this)
+            toIndex.forEach((it) => _classUpdate.add(it.objectClass))
 
             // go with next stages if they accept it
 
@@ -374,6 +383,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         }
       }
     }
+    return Array.from(_classUpdate.values())
   }
 
   private async processRemove (): Promise<void> {

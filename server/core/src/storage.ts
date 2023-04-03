@@ -29,7 +29,9 @@ import core, {
   DOMAIN_TX,
   FindOptions,
   FindResult,
+  generateId,
   Hierarchy,
+  IndexingUpdateEvent,
   MeasureContext,
   Mixin,
   ModelDb,
@@ -45,6 +47,8 @@ import core, {
   TxRemoveDoc,
   TxResult,
   TxUpdateDoc,
+  TxWorkspaceEvent,
+  WorkspaceEvent,
   WorkspaceId
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
@@ -818,7 +822,23 @@ export async function createServerStorage (
       hierarchy,
       conf.workspace,
       metrics.newChild('fulltext', {}),
-      modelDb
+      modelDb,
+      (classes: Ref<Class<Doc>>[]) => {
+        const evt: IndexingUpdateEvent = {
+          _class: classes
+        }
+        const tx: TxWorkspaceEvent = {
+          _class: core.class.TxWorkspaceEvent,
+          _id: generateId(),
+          event: WorkspaceEvent.IndexingUpdate,
+          modifiedBy: core.account.System,
+          modifiedOn: Date.now(),
+          objectSpace: core.space.DerivedTx,
+          space: core.space.DerivedTx,
+          params: evt
+        }
+        options.broadcast?.([tx])
+      }
     )
     return new FullTextIndex(
       hierarchy,
