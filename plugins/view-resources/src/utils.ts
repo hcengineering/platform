@@ -614,18 +614,18 @@ export async function groupByStatusCategories (
   for (const v of categories) {
     const status = mgr.byId.get(v)
     if (status !== undefined) {
-      let fst = statusMap.get(status.name)
+      let fst = statusMap.get(status.name.toLowerCase().trim())
       if (fst === undefined) {
         const statuses = mgr.statuses
           .filter(
             (it) =>
               it.ofAttribute === status.ofAttribute &&
-              it.name === status.name &&
+              it.name.toLowerCase().trim() === status.name.toLowerCase().trim() &&
               (categories.includes(it._id) || it.space === status.space)
           )
           .sort((a, b) => a.rank.localeCompare(b.rank))
         fst = new StatusValue(status.name, status.color, statuses)
-        statusMap.set(status.name, fst)
+        statusMap.set(status.name.toLowerCase().trim(), fst)
         existingCategories.push(fst)
       }
     }

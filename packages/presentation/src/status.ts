@@ -227,7 +227,10 @@ export class StatusMiddleware extends BasePresentationMiddleware implements Pres
               const s = mgr.byId.get(sid)
               if (s !== undefined) {
                 const statuses = mgr.statuses.filter(
-                  (it) => it.ofAttribute === attr._id && it.name === s.name && it._id !== s._id
+                  (it) =>
+                    it.ofAttribute === attr._id &&
+                    it.name.toLowerCase().trim() === s.name.toLowerCase().trim() &&
+                    it._id !== s._id
                 )
                 if (statuses !== undefined) {
                   target.push(...statuses.map((it) => it._id))
@@ -270,7 +273,7 @@ export class StatusMiddleware extends BasePresentationMiddleware implements Pres
           ret = (a.$lookup?.category?.order ?? 0) - (b.$lookup?.category?.order ?? 0)
         }
         if (ret === 0) {
-          if (a.name === b.name) {
+          if (a.name.toLowerCase().trim() === b.name.toLowerCase().trim()) {
             return 0
           }
           ret = a.rank.localeCompare(b.rank)
