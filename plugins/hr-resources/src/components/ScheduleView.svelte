@@ -47,6 +47,7 @@
       : getEndDate(currentDate.getFullYear(), currentDate.getMonth())
 
   $: departments = [department, ...getDescendants(department, descendants)]
+  $: departmentStaffIds = staff.filter((p) => departments.includes(p.department)).map((p) => p._id)
 
   const lq = createQuery()
   const typeQuery = createQuery()
@@ -90,13 +91,13 @@
   let departmentStaff: Staff[]
   let editableList: Ref<Employee>[] = []
 
-  function update (departments: Ref<Department>[], startDate: Date, endDate: Date) {
+  function update (departmentStaffIds: Ref<Staff>[], startDate: Date, endDate: Date) {
     lq.query(
       hr.class.Request,
       {
         'tzDueDate.year': { $gte: startDate.getFullYear() },
         'tzDate.year': { $lte: endDate.getFullYear() },
-        space: { $in: departments }
+        attachedTo: { $in: departmentStaffIds }
       },
       (res) => {
         requests = res
@@ -104,34 +105,10 @@
     )
   }
 
-  const tempQ = createQuery()
-  let otherRequests: Request[] = []
-
-  function updateOther (staff: Staff[], startDate: Date, endDate: Date) {
-    console.log(staff)
-    tempQ.query(
-      hr.class.Request,
-      {
-        'tzDueDate.year': { $gte: startDate.getFullYear() },
-        'tzDate.year': { $lte: endDate.getFullYear() },
-        attachedTo: { $in: staff.map((p) => p._id) }
-      },
-      (res) => {
-        otherRequests = res
-      }
-    )
-  }
-
-  $: update(departments, startDate, endDate)
-  $: updateOther(staff, startDate, endDate)
+  $: update(departmentStaffIds, startDate, endDate)
 
   function updateRequest (requests: Request[], startDate: Date, endDate: Date) {
-    let res = requests
-    const requestIds = requests.map((p) => p._id)
-    for (const otherRequest of otherRequests) {
-      if (otherRequest !== undefined && !requestIds.includes(otherRequest._id)) res.push(otherRequest)
-    }
-    res = res.filter(
+    const res = requests.filter(
       (r) => fromTzDate(r.tzDueDate) >= startDate.getTime() && fromTzDate(r.tzDate) <= endDate.getTime()
     )
     employeeRequests.clear()
