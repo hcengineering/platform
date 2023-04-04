@@ -258,7 +258,7 @@
         >
           {#if edits[0].value > -1}
             {edits[0].value.toString().padStart(2, '0')}
-          {:else}ДД{/if}
+          {:else}<Label label={ui.string.DD} />{/if}
         </span>
         <span class="separator">.</span>
         <span
@@ -271,7 +271,7 @@
         >
           {#if edits[1].value > -1}
             {edits[1].value.toString().padStart(2, '0')}
-          {:else}ММ{/if}
+          {:else}<Label label={ui.string.MM} />{/if}
         </span>
         <span class="separator">.</span>
         <span
@@ -284,7 +284,7 @@
         >
           {#if edits[2].value > -1}
             {edits[2].value.toString().padStart(4, '0')}
-          {:else}ГГГГ{/if}
+          {:else}<Label label={ui.string.YYYY} />{/if}
         </span>
         {#if withTime}
           <div class="time-divider" />
@@ -298,7 +298,7 @@
           >
             {#if edits[3].value > -1}
               {edits[3].value.toString().padStart(2, '0')}
-            {:else}ЧЧ{/if}
+            {:else}<Label label={ui.string.HH} />{/if}
           </span>
           <span class="separator">:</span>
           <span
@@ -311,7 +311,7 @@
           >
             {#if edits[4].value > -1}
               {edits[4].value.toString().padStart(2, '0')}
-            {:else}ММ{/if}
+            {:else}<Label label={ui.string.MM} />{/if}
           </span>
         {/if}
       </div>
@@ -352,7 +352,7 @@
     </div>
   </div>
   <div class="footer">
-    <Button kind={'primary'} label={ui.string.SaveDueDate} size={'x-large'} width={'100%'} on:click={closeDP} />
+    <Button kind={'primary'} label={ui.string.Save} size={'x-large'} width={'100%'} on:click={closeDP} />
   </div>
 </div>
 

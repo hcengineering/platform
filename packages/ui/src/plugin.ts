@@ -66,7 +66,11 @@ export const uis = plugin(uiId, {
     HoursLabel: '' as IntlString,
     Back: '' as IntlString,
     Next: '' as IntlString,
-    DropdownDefaultLabel: '' as IntlString
+    DropdownDefaultLabel: '' as IntlString,
+    DD: '' as IntlString,
+    MM: '' as IntlString,
+    YYYY: '' as IntlString,
+    HH: '' as IntlString
   },
   metadata: {
     DefaultApplication: '' as Metadata<AnyComponent>,
