@@ -441,6 +441,7 @@ export default plugin(trackerId, {
     DueDate: '' as Asset,
     Parent: '' as Asset,
     Sprint: '' as Asset,
+    IssueTemplates: '' as Asset,
     Scrum: '' as Asset,
     Start: '' as Asset,
     Stop: '' as Asset,

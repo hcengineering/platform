@@ -123,10 +123,15 @@
   }
 </script>
 
-<TreeNode label={model.label} parent actions={async () => getParentActions()} indent={'ml-2'}>
+<TreeNode
+  label={model.label}
+  parent
+  actions={async () => getParentActions()}
+  shortDropbox={model.specials !== undefined}
+>
   {#each spaces as space, i (space._id)}
     {#await getObjectPresenter(client, space._class, { key: '' }) then presenter}
-      {#if separate && i !== 0}<TreeSeparator line />{/if}
+      {#if separate && model.specials && i !== 0}<TreeSeparator line />{/if}
       {#if model.specials && presenter}
         <svelte:component
           this={presenter.presenter}
@@ -141,7 +146,7 @@
         <NavLink space={space._id}>
           {#await getSpaceName(client, space) then name}
             <TreeItem
-              indent={'ml-4'}
+              indent={'ml-2'}
               _id={space._id}
               title={name}
               icon={classIcon(client, space._class)}

@@ -998,13 +998,11 @@ export function createModel (builder: Builder): void {
               {
                 id: activeId,
                 label: tracker.string.Active,
-                icon: tracker.icon.CategoryStarted,
                 component: tracker.component.Active
               },
               {
                 id: backlogId,
                 label: tracker.string.Backlog,
-                icon: tracker.icon.CategoryBacklog,
                 component: tracker.component.Backlog
               },
               {
@@ -1028,7 +1026,7 @@ export function createModel (builder: Builder): void {
               {
                 id: templatesId,
                 label: tracker.string.IssueTemplates,
-                icon: tracker.icon.Issues,
+                icon: tracker.icon.IssueTemplates,
                 component: tracker.component.IssueTemplates
               }
             ]

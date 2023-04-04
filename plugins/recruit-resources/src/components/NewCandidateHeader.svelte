@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { draftsStore } from '@hcengineering/presentation'
-  import { Button, showPopup } from '@hcengineering/ui'
+  import { Button, showPopup, IconAdd } from '@hcengineering/ui'
   import recruit from '../plugin'
   import CreateCandidate from './CreateCandidate.svelte'
 
@@ -25,23 +25,22 @@
   }
 </script>
 
-<div class="antiNav-subheader gap-2">
-  <div class="flex-grow text-md">
-    <Button
-      icon={recruit.icon.CreateCandidate}
-      label={draftExists ? recruit.string.ResumeDraft : recruit.string.CreateTalent}
-      justify={'left'}
-      kind={'primary'}
-      width={'100%'}
-      on:click={newCandidate}
-    >
-      <div slot="content" class="draft-circle-container">
-        {#if draftExists}
-          <div class="draft-circle" />
-        {/if}
-      </div>
-    </Button>
-  </div>
+<div class="antiNav-subheader">
+  <Button
+    icon={IconAdd}
+    label={draftExists ? recruit.string.ResumeDraft : recruit.string.CreateTalent}
+    justify={'left'}
+    kind={'primary'}
+    width={'100%'}
+    size={'large'}
+    on:click={newCandidate}
+  >
+    <div slot="content" class="draft-circle-container">
+      {#if draftExists}
+        <div class="draft-circle" />
+      {/if}
+    </div>
+  </Button>
 </div>
 
 <style lang="scss">

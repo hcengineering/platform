@@ -26,7 +26,7 @@ loadMetadata(tracker.icon, {
   Inbox: `${icons}#inbox`,
   MyIssues: `${icons}#myissues`,
   Views: `${icons}#views`,
-  Issues: `${icons}#myissues`,
+  Issues: `${icons}#issues`,
   Components: `${icons}#components`,
   NewIssue: `${icons}#newissue`,
   Magnifier: `${icons}#magnifier`,
@@ -36,6 +36,7 @@ loadMetadata(tracker.icon, {
   DueDate: `${icons}#inbox`, // TODO: add icon
   Parent: `${icons}#myissues`, // TODO: add icon
   Sprint: `${icons}#sprint`,
+  IssueTemplates: `${icons}#issuetemplates`,
   Scrum: `${icons}#scrum`,
   Start: `${icons}#start`,
   Stop: `${icons}#stop`,

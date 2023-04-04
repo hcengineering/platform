@@ -83,12 +83,11 @@
 </script>
 
 {#if filteredViews && filteredViews.length > 0}
-  <TreeNode icon={view.icon.Filter} label={view.string.FilteredViews}>
+  <TreeNode label={view.string.FilteredViews} parent>
     {#each filteredViews as fv}
       <TreeItem
         _id={fv._id}
         title={fv.name}
-        indent={'ml-2'}
         selected={selectedId === fv._id}
         on:click={() => load(fv)}
         actions={() => removeAction(fv)}
