@@ -168,5 +168,7 @@ export async function checkIssueFromList (page: Page, issueName: string): Promis
 }
 
 export async function openIssue (page: Page, name: string): Promise<void> {
-  await page.click(`.antiList__row:has-text("${name}") .issuePresenterRoot`)
+  await page.click(`.antiList__row:has-text("${name}") .issuePresenterRoot`, {
+    timeout: 15000
+  })
 }

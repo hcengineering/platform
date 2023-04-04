@@ -173,11 +173,13 @@ test.describe('tracker layout tests', () => {
       await setViewGroup(page, 'No grouping')
       await setViewOrder(page, order)
 
-      await page.waitForTimeout(1000)
       const searchBox = page.locator('[placeholder="Search"]')
       await searchBox.fill(id)
       await searchBox.press('Enter')
-      await expect(locator).toContainText(orderedIssueNames)
+
+      await expect(locator).toContainText(orderedIssueNames, {
+        timeout: 15000
+      })
     })
   }
 })

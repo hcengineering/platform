@@ -32,7 +32,6 @@ test('create-issue-and-sub-issue', async ({ page }) => {
   await createIssue(page, props)
   await page.click('text="Issues"')
 
-  await page.waitForTimeout(1000)
   await page.locator('[placeholder="Search"]').click()
   await page.locator('[placeholder="Search"]').fill(props.name)
   await page.locator('[placeholder="Search"]').press('Enter')
@@ -168,12 +167,11 @@ test('report-time-from-main-view', async ({ page }) => {
   // await page.click('.close-button > .button')
 
   // We need to fait for indexer to complete indexing.
-  await page.waitForTimeout(1000)
   await page.locator('[placeholder="Search"]').click()
   await page.locator('[placeholder="Search"]').fill(name)
   await page.locator('[placeholder="Search"]').press('Enter')
 
-  await page.waitForSelector(`text="${name}"`)
+  await page.waitForSelector(`text="${name}"`, { timeout: 15000 })
 
   let count = 0
   for (let j = 0; j < 5; j++) {
@@ -309,7 +307,6 @@ test('sub-issue-draft', async ({ page }) => {
   await createIssue(page, props)
   await page.click('text="Issues"')
 
-  await page.waitForTimeout(1000)
   await page.locator('[placeholder="Search"]').click()
   await page.locator('[placeholder="Search"]').fill(props.name)
   await page.locator('[placeholder="Search"]').press('Enter')

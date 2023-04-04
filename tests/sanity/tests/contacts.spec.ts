@@ -55,8 +55,6 @@ test.describe('contact tests', () => {
     await expect(page.locator('text=M. Marina')).toBeVisible()
     expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThan(5)
 
-    await page.waitForTimeout(1000)
-
     const searchBox = page.locator('[placeholder="Search"]')
     await searchBox.fill('Marina')
     await searchBox.press('Enter')
