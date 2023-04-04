@@ -41,6 +41,9 @@
     "HoursLabel": "Часы",
     "Back": "Назад",
     "Next": "Вперед",
-    "DropdownDefaultLabel": "Выберите Элемент"
+    "DropdownDefaultLabel": "Выберите Элемент",
+    "DD": "ДД",
+    "MM": "ММ",
+    "YYYY": "ГГГГ"
   }
 }

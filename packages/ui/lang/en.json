@@ -41,6 +41,9 @@
     "HoursLabel": "Hours",
     "Back": "Back",
     "Next": "Next",
-    "DropdownDefaultLabel": "Select Item"
+    "DropdownDefaultLabel": "Select Item",
+    "DD": "DD",
+    "MM": "MM",
+    "YYYY": "YYYY"
   }
 }
