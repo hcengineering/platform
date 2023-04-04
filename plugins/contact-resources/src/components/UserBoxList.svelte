@@ -27,11 +27,11 @@
 
   export let items: Ref<Employee>[] = []
   export let _class: Ref<Class<Employee>> = contact.class.Employee
-  export let label: IntlString
   export let docQuery: DocumentQuery<Employee> | undefined = {
     active: true
   }
 
+  export let label: IntlString | undefined = undefined
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
@@ -77,7 +77,7 @@
   {kind}
   {size}
   {justify}
-  showTooltip={{ label, direction: labelDirection }}
+  showTooltip={label ? { label, direction: labelDirection } : undefined}
   on:click={addPerson}
 >
   <svelte:fragment slot="content">
