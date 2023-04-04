@@ -44,6 +44,7 @@
     "DropdownDefaultLabel": "Select Item",
     "DD": "DD",
     "MM": "MM",
-    "YYYY": "YYYY"
+    "YYYY": "YYYY",
+    "HH": "HH"
   }
 }

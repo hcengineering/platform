@@ -69,7 +69,8 @@ export const uis = plugin(uiId, {
     DropdownDefaultLabel: '' as IntlString,
     DD: '' as IntlString,
     MM: '' as IntlString,
-    YYYY: '' as IntlString
+    YYYY: '' as IntlString,
+    HH: '' as IntlString
   },
   metadata: {
     DefaultApplication: '' as Metadata<AnyComponent>,
