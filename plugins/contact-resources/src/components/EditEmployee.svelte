@@ -39,7 +39,6 @@
   let firstName = getFirstName(object.name)
   let lastName = getLastName(object.name)
   let displayName = object.displayName ?? ''
-  let position = object.position ?? ''
 
   $: setName(object)
 
@@ -70,12 +69,6 @@
   function changeDisplayName () {
     client.update(object, {
       displayName: displayName === '' ? null : displayName
-    })
-  }
-
-  function changePosition () {
-    client.update(object, {
-      position: position === '' ? null : position
     })
   }
 
@@ -157,18 +150,6 @@
             />
           {:else}
             {displayName}
-          {/if}
-        </div>
-        <div class="name">
-          {#if editable}
-            <EditBox
-              placeholder={contact.string.Position}
-              bind:value={position}
-              on:change={changePosition}
-              focusIndex={1}
-            />
-          {:else}
-            {position}
           {/if}
         </div>
         <div class="location">
