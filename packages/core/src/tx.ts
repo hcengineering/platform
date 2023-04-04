@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import justClone from 'just-clone'
 import type { KeysByType } from 'simplytyped'
 import type {
   Account,
@@ -34,7 +35,6 @@ import { _getOperator } from './operator'
 import { _toDoc } from './proxy'
 import type { DocumentQuery, TxResult } from './storage'
 import { generateId } from './utils'
-import justClone from 'just-clone'
 
 /**
  * @public
@@ -44,7 +44,31 @@ export interface Tx extends Doc {
 }
 
 /**
+ * @public
+ */
+export enum WorkspaceEvent {
+  UpgradeScheduled,
+  Upgrade,
+  IndexingUpdate
+}
+
+/**
  * Event to be send by server during model upgrade procedure.
+ * @public
+ */
+export interface TxWorkspaceEvent extends Tx {
+  event: WorkspaceEvent
+  params: any
+}
+
+/**
+ * @public
+ */
+export interface IndexingUpdateEvent {
+  _class: Ref<Class<Doc>>[]
+}
+
+/**
  * @public
  */
 export interface TxModelUpgrade extends Tx {}

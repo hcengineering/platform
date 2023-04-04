@@ -13,10 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Class, Doc, Ref, RefTo } from '@hcengineering/core'
+  import core, { Class, Doc, DOMAIN_STATUS, Ref, RefTo } from '@hcengineering/core'
   import { TypeRef } from '@hcengineering/model'
   import { getClient } from '@hcengineering/presentation'
-  import { DOMAIN_STATE } from '@hcengineering/task'
   import { DropdownLabelsIntl, Label } from '@hcengineering/ui'
   import view from '@hcengineering/view-resources/src/plugin'
   import { createEventDispatcher } from 'svelte'
@@ -35,7 +34,7 @@
       return (
         hierarchy.hasMixin(p, view.mixin.AttributeEditor) &&
         p.label !== undefined &&
-        hierarchy.getDomain(p._id) !== DOMAIN_STATE
+        hierarchy.getDomain(p._id) !== DOMAIN_STATUS
       )
     })
     .map((p) => {

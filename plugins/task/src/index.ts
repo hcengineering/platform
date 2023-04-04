@@ -16,28 +16,24 @@
 import type { Employee } from '@hcengineering/contact'
 import {
   AttachedDoc,
+  Attribute,
   Class,
   Doc,
-  Domain,
   Interface,
   Markup,
   Mixin,
   Ref,
   Space,
+  Status,
   Timestamp,
   TxOperations
 } from '@hcengineering/core'
+import { NotificationType } from '@hcengineering/notification'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 import { ViewletDescriptor } from '@hcengineering/view'
 import { genRanks } from './utils'
-import { NotificationType } from '@hcengineering/notification'
-
-/**
- * @public
- */
-export const DOMAIN_STATE = 'state' as Domain
 
 /**
  * @public
@@ -46,22 +42,25 @@ export interface DocWithRank extends Doc {
   rank: string
 }
 
+/**
+ * @public
+ */
+export interface SpaceWithStates extends Space {}
+
 // S T A T E
 
 /**
  * @public
  */
-export interface State extends DocWithRank {
-  title: string
-  color: number
+export interface State extends Status {
   isArchived?: boolean
 }
 
 /**
  * @public
  */
-export interface DoneState extends DocWithRank {
-  title: string
+export interface DoneState extends Status {
+  name: string
 }
 
 /**
@@ -97,27 +96,6 @@ export interface TodoItem extends AttachedDoc, DocWithRank {
   done: boolean
   dueTo: Timestamp | null
   items?: number
-}
-
-/**
- * @public
- */
-export interface SpaceWithStates extends Space {}
-
-/**
- * @public
- */
-export interface Project extends SpaceWithStates {}
-
-/**
- * @public
- */
-export interface Issue extends Task {
-  name: string
-  description: string
-
-  comments?: number
-  attachments?: number
 }
 
 /**
@@ -186,6 +164,26 @@ export interface KanbanTemplateSpace extends Space {
 /**
  * @public
  */
+export enum TaskGrouping {
+  State = 'state',
+  DoneStatus = 'doneState',
+  Assignee = 'assignee',
+  NoGrouping = '#no_category'
+}
+
+/**
+ * @public
+ */
+export enum TaskOrdering {
+  State = 'state',
+  LastUpdated = 'modifiedOn',
+  DueDate = 'dueDate',
+  Manual = 'rank'
+}
+
+/**
+ * @public
+ */
 export const taskId = 'task' as Plugin
 
 /**
@@ -200,6 +198,10 @@ const task = plugin(taskId, {
   },
   interface: {
     DocWithRank: '' as Ref<Interface<DocWithRank>>
+  },
+  attribute: {
+    State: '' as Ref<Attribute<State>>,
+    DoneState: '' as Ref<Attribute<DoneState>>
   },
   string: {
     StartDate: '' as IntlString,
@@ -230,8 +232,6 @@ const task = plugin(taskId, {
     Dashboard: '' as IntlString
   },
   class: {
-    Issue: '' as Ref<Class<Issue>>,
-    Project: '' as Ref<Class<Project>>,
     State: '' as Ref<Class<State>>,
     DoneState: '' as Ref<Class<DoneState>>,
     WonState: '' as Ref<Class<WonState>>,
@@ -264,7 +264,7 @@ const task = plugin(taskId, {
   },
   global: {
     // Global task root, if not attached to some other object.
-    Task: '' as Ref<Issue>
+    Task: '' as Ref<Task>
   },
   space: {
     ProjectTemplates: '' as Ref<KanbanTemplateSpace>,
@@ -293,7 +293,8 @@ export async function createKanban (
 ): Promise<Ref<Kanban>> {
   if (templateId === undefined) {
     await client.createDoc(task.class.State, attachedTo, {
-      title: 'New State',
+      ofAttribute: task.attribute.State,
+      name: 'New State',
       color: 9,
       rank: [...genRanks(1)][0]
     })
@@ -301,11 +302,13 @@ export async function createKanban (
     const ranks = [...genRanks(2)]
     await Promise.all([
       client.createDoc(task.class.WonState, attachedTo, {
-        title: 'Won',
+        ofAttribute: task.attribute.DoneState,
+        name: 'Won',
         rank: ranks[0]
       }),
       client.createDoc(task.class.LostState, attachedTo, {
-        title: 'Lost',
+        ofAttribute: task.attribute.DoneState,
+        name: 'Lost',
         rank: ranks[1]
       })
     ])
@@ -325,8 +328,10 @@ export async function createKanban (
     tmplStates.map(
       async (state) =>
         await client.createDoc(task.class.State, attachedTo, {
+          ofAttribute: task.attribute.State,
           color: state.color,
-          title: state.title,
+          description: state.description,
+          name: state.name,
           rank: state.rank
         })
     )
@@ -345,7 +350,12 @@ export async function createKanban (
         return
       }
 
-      return await client.createDoc(cl, attachedTo, { title: state.title, rank: state.rank })
+      return await client.createDoc(cl, attachedTo, {
+        ofAttribute: task.attribute.DoneState,
+        description: state.description,
+        name: state.name,
+        rank: state.rank
+      })
     })
   )
 

@@ -18,12 +18,9 @@ import { Resources } from '@hcengineering/platform'
 import { SpaceWithStates } from '@hcengineering/task'
 import { showPopup } from '@hcengineering/ui'
 import AssignedTasks from './components/AssignedTasks.svelte'
-import CreateProject from './components/CreateProject.svelte'
-import EditIssue from './components/EditIssue.svelte'
 import KanbanTemplateEditor from './components/kanban/KanbanTemplateEditor.svelte'
 import KanbanTemplateSelector from './components/kanban/KanbanTemplateSelector.svelte'
 import KanbanView from './components/kanban/KanbanView.svelte'
-import KanbanCard from './components/KanbanCard.svelte'
 import DoneStateEditor from './components/state/DoneStateEditor.svelte'
 import DoneStatePresenter from './components/state/DoneStatePresenter.svelte'
 import EditStatuses from './components/state/EditStatuses.svelte'
@@ -52,11 +49,8 @@ export type StatesBarPosition = 'start' | 'middle' | 'end' | undefined
 
 export default async (): Promise<Resources> => ({
   component: {
-    CreateProject,
     TaskPresenter,
     KanbanTemplatePresenter,
-    EditIssue,
-    KanbanCard,
     Dashboard,
     TemplatesIcon,
     KanbanView,

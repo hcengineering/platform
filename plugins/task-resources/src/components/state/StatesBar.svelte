@@ -14,36 +14,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, SortingOrder } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
+  import { Ref } from '@hcengineering/core'
+  import { statusStore } from '@hcengineering/presentation'
   import task, { SpaceWithStates, State } from '@hcengineering/task'
-  import { getPlatformColor, ScrollerBar } from '@hcengineering/ui'
+  import { getColorNumberByText, getPlatformColor, ScrollerBar } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import StatesBarElement from './StatesBarElement.svelte'
   import type { StatesBarPosition } from '../..'
+  import StatesBarElement from './StatesBarElement.svelte'
 
   export let space: Ref<SpaceWithStates>
   export let state: Ref<State> | undefined = undefined
   export let gap: 'none' | 'small' | 'big' = 'small'
 
-  let states: State[] = []
+  $: states = $statusStore.filter((it) => it.space === space && it.ofAttribute === task.attribute.State)
   let divScroll: HTMLElement
 
   const dispatch = createEventDispatcher()
-
-  const statesQuery = createQuery()
-  statesQuery.query(
-    task.class.State,
-    space != null ? { space } : {},
-    (res) => {
-      states = res
-    },
-    {
-      sort: {
-        rank: SortingOrder.Ascending
-      }
-    }
-  )
 
   const selectItem = (ev: Event, item: State): void => {
     const el: HTMLElement = ev.currentTarget as HTMLElement
@@ -72,10 +58,10 @@
 <ScrollerBar {gap} bind:scroller={divScroll}>
   {#each states as item, i (item._id)}
     <StatesBarElement
-      label={item.title}
+      label={item.name}
       position={getPosition(i)}
       selected={item._id === state}
-      color={getPlatformColor(item.color)}
+      color={getPlatformColor(item.color ?? getColorNumberByText(item.name))}
       on:click={(ev) => {
         if (item._id !== state) selectItem(ev, item)
       }}

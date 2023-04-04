@@ -14,17 +14,17 @@
 -->
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
-  import { AccountArrayEditor } from '@hcengineering/contact-resources'
+  import { AccountArrayEditor, AssigneeBox } from '@hcengineering/contact-resources'
   import core, { Account, DocumentUpdate, generateId, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
-  import { AssigneeBox } from '@hcengineering/contact-resources'
   import { StyledTextBox } from '@hcengineering/text-editor'
   import { genRanks, IssueStatus, Project, TimeReportDayType } from '@hcengineering/tracker'
-  import { Button, EditBox, eventToHTMLElement, Label, showPopup, ToggleWithLabel } from '@hcengineering/ui'
+  import { Button, EditBox, eventToHTMLElement, IconEdit, Label, showPopup, ToggleWithLabel } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import TimeReportDayDropdown from '../issues/timereport/TimeReportDayDropdown.svelte'
+  import ChangeIdentity from './ChangeIdentity.svelte'
   import ProjectIconChooser from './ProjectIconChooser.svelte'
 
   export let project: Project | undefined = undefined
@@ -50,7 +50,7 @@
     isNew ? createProject() : updateProject()
   }
 
-  let identifier: string = 'TSK'
+  let identifier: string = project?.identifier ?? 'TSK'
 
   const defaultStatusId: Ref<IssueStatus> = generateId()
 
@@ -72,7 +72,7 @@
   }
 
   async function updateProject () {
-    const { sequence, issueStatuses, defaultIssueStatus, identifier, ...projectData } = getProjectData()
+    const { sequence, issueStatuses, defaultIssueStatus, ...projectData } = getProjectData()
     const update: DocumentUpdate<Project> = {}
     if (projectData.name !== project?.name) {
       update.name = projectData.name
@@ -91,6 +91,9 @@
     }
     if (projectData.defaultTimeReportDay !== project?.defaultTimeReportDay) {
       update.defaultTimeReportDay = projectData.defaultTimeReportDay
+    }
+    if (projectData.identifier !== project?.identifier) {
+      update.identifier = projectData.identifier
     }
     if (projectData.members.length !== project?.members.length) {
       update.members = projectData.members
@@ -118,8 +121,8 @@
     defaultCategoryId = tracker.issueStatusCategory.Backlog
   ): Promise<void> {
     const categories = await client.findAll(
-      tracker.class.IssueStatusCategory,
-      {},
+      core.class.StatusCategory,
+      { ofAttribute: tracker.attribute.IssueStatus },
       { sort: { order: SortingOrder.Ascending } }
     )
     const issueStatusRanks = [...genRanks(categories.length)]
@@ -128,15 +131,19 @@
       const { _id: category, defaultStatusName } = statusCategory
       const rank = issueStatusRanks[i]
 
-      await client.addCollection(
-        tracker.class.IssueStatus,
-        projectId,
-        projectId,
-        tracker.class.Project,
-        'issueStatuses',
-        { name: defaultStatusName, category, rank },
-        category === defaultCategoryId ? defaultStatusId : undefined
-      )
+      if (defaultStatusName !== undefined) {
+        await client.createDoc(
+          tracker.class.IssueStatus,
+          projectId,
+          {
+            ofAttribute: tracker.attribute.IssueStatus,
+            name: defaultStatusName,
+            category,
+            rank
+          },
+          category === defaultCategoryId ? defaultStatusId : undefined
+        )
+      }
     }
   }
 
@@ -144,6 +151,13 @@
     showPopup(ProjectIconChooser, { icon }, eventToHTMLElement(ev), (result) => {
       if (result !== undefined && result !== null) {
         icon = result
+      }
+    })
+  }
+  function changeIdentity (ev: MouseEvent) {
+    showPopup(ChangeIdentity, { project }, eventToHTMLElement(ev), (result) => {
+      if (result != null) {
+        identifier = result
       }
     })
   }
@@ -170,12 +184,17 @@
         }
       }}
     />
-    <EditBox
-      bind:value={identifier}
-      disabled={!isNew}
-      placeholder={tracker.string.ProjectIdentifierPlaceholder}
-      kind={'large-style'}
-    />
+    <div class="flex-row-center">
+      <EditBox
+        bind:value={identifier}
+        disabled={!isNew}
+        placeholder={tracker.string.ProjectIdentifierPlaceholder}
+        kind={'large-style'}
+      />
+      {#if !isNew}
+        <Button size={'small'} icon={IconEdit} on:click={changeIdentity} />
+      {/if}
+    </div>
   </div>
   <StyledTextBox
     alwaysEdit

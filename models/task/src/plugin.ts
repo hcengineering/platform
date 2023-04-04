@@ -43,7 +43,6 @@ export default mergeIds(taskId, task, {
   },
   component: {
     ProjectView: '' as AnyComponent,
-    CreateProject: '' as AnyComponent,
     EditIssue: '' as AnyComponent,
     TaskPresenter: '' as AnyComponent,
     KanbanTemplatePresenter: '' as AnyComponent,

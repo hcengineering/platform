@@ -26,7 +26,8 @@
     getPlatformColor,
     eventToHTMLElement,
     Component,
-    IconCircles
+    IconCircles,
+    getColorNumberByText
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { ColorsPopup } from '@hcengineering/view-resources'
@@ -126,13 +127,18 @@
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="color"
-          style="background-color: {getPlatformColor(state.color)}"
+          style="background-color: {getPlatformColor(state.color ?? getColorNumberByText(state.name))}"
           on:click={() => {
-            showPopup(ColorsPopup, { selected: getPlatformColor(state.color) }, elements[i], onColorChange(state))
+            showPopup(
+              ColorsPopup,
+              { selected: getPlatformColor(state.color ?? getColorNumberByText(state.name)) },
+              elements[i],
+              onColorChange(state)
+            )
           }}
         />
         <div class="flex-grow caption-color">
-          <AttributeEditor maxWidth={'20rem'} _class={state._class} object={state} key="title" />
+          <AttributeEditor maxWidth={'20rem'} _class={state._class} object={state} key="name" />
         </div>
         {#if states.length > 1}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -174,7 +180,7 @@
             <Won size={'medium'} />
           </div>
           <div class="flex-grow caption-color">
-            <AttributeEditor maxWidth={'13rem'} _class={state._class} object={state} key="title" />
+            <AttributeEditor maxWidth={'13rem'} _class={state._class} object={state} key="name" />
           </div>
           {#if wonStates.length > 1}
             <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -217,7 +223,7 @@
             <Lost size={'medium'} />
           </div>
           <div class="flex-grow caption-color">
-            <AttributeEditor maxWidth={'13rem'} _class={state._class} object={state} key="title" />
+            <AttributeEditor maxWidth={'13rem'} _class={state._class} object={state} key="name" />
           </div>
           {#if lostStates.length > 1}
             <!-- svelte-ignore a11y-click-events-have-key-events -->

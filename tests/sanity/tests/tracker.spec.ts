@@ -1,17 +1,17 @@
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import {
+  DEFAULT_STATUSES,
+  DEFAULT_USER,
+  ViewletSelectors,
   checkIssue,
   createIssue,
   createLabel,
   createSubissue,
-  DEFAULT_STATUSES,
-  DEFAULT_USER,
   fillIssueForm,
   navigate,
-  openIssue,
-  ViewletSelectors
+  openIssue
 } from './tracker.utils'
-import { generateId, PlatformSetting } from './utils'
+import { PlatformSetting, generateId } from './utils'
 test.use({
   storageState: PlatformSetting
 })
@@ -32,18 +32,15 @@ test('create-issue-and-sub-issue', async ({ page }) => {
   await createIssue(page, props)
   await page.click('text="Issues"')
 
-  // Click [placeholder="Search"]
   await page.locator('[placeholder="Search"]').click()
-  // Fill [placeholder="Search"]
   await page.locator('[placeholder="Search"]').fill(props.name)
-  // Press Enter
   await page.locator('[placeholder="Search"]').press('Enter')
 
   await openIssue(page, props.name)
   await checkIssue(page, props)
   props.name = `sub${props.name}`
   await createSubissue(page, props)
-  await page.click(`span:has-text("${props.name}")`)
+  await page.click(`span[title=${props.name}]`)
   await checkIssue(page, props)
 })
 
@@ -169,14 +166,12 @@ test('report-time-from-main-view', async ({ page }) => {
 
   // await page.click('.close-button > .button')
 
-  // Click [placeholder="Search"]
+  // We need to fait for indexer to complete indexing.
   await page.locator('[placeholder="Search"]').click()
-  // Fill [placeholder="Search"]
   await page.locator('[placeholder="Search"]').fill(name)
-  // Press Enter
   await page.locator('[placeholder="Search"]').press('Enter')
 
-  await page.waitForSelector(`text="${name}"`)
+  await page.waitForSelector(`text="${name}"`, { timeout: 15000 })
 
   let count = 0
   for (let j = 0; j < 5; j++) {
@@ -312,11 +307,8 @@ test('sub-issue-draft', async ({ page }) => {
   await createIssue(page, props)
   await page.click('text="Issues"')
 
-  // Click [placeholder="Search"]
   await page.locator('[placeholder="Search"]').click()
-  // Fill [placeholder="Search"]
   await page.locator('[placeholder="Search"]').fill(props.name)
-  // Press Enter
   await page.locator('[placeholder="Search"]').press('Enter')
 
   await openIssue(page, props.name)

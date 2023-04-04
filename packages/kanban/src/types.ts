@@ -22,7 +22,7 @@ export interface TypeState {
 /**
  * @public
  */
-export type Item = DocWithRank & { state: StateType, doneState: StateType | null }
+export type Item = DocWithRank
 
 /**
  * @public

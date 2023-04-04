@@ -28,6 +28,8 @@
     "Hyperlink": "URL",
     "Object": "Object",
     "System": "System",
-    "CreatedBy": "Reporter"
+    "CreatedBy": "Reporter",
+    "Status": "Status",
+    "StatusCategory": "Status category"
   }
 }

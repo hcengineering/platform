@@ -1,11 +1,11 @@
 <script lang="ts">
+  import { StatusCategory } from '@hcengineering/core'
   import { IconSize } from '@hcengineering/ui'
-  import { IssueStatusCategory } from '@hcengineering/tracker'
   import tracker from '../../plugin'
 
   export let size: IconSize
   export let fill: string = 'currentColor'
-  export let category: IssueStatusCategory
+  export let category: StatusCategory
   export let statusIcon: {
     index: number | undefined
     count: number | undefined

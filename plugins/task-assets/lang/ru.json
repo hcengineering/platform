@@ -33,7 +33,6 @@
     "Kanban": "Канбан",    
     "ApplicationLabelTask": "Задачи",
     "Projects": "Проекты",
-    "CreateProject": "Новый проект",
     "ProjectNamePlaceholder": "Название проекта",
     "TaskNamePlaceholder": "Задача",
     "TodoDescriptionPlaceholder": "todo...",

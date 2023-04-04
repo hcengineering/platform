@@ -14,13 +14,17 @@
 -->
 <script lang="ts">
   import { Ref, Status, StatusValue } from '@hcengineering/core'
+  import { Asset } from '@hcengineering/platform'
+  import { AnySvelteComponent } from '@hcengineering/ui'
   import { statusStore } from '@hcengineering/presentation'
+
   import StatusPresenter from './StatusPresenter.svelte'
 
   export let value: Ref<Status> | StatusValue | undefined
   export let size: 'small' | 'medium' = 'medium'
+  export let icon: Asset | AnySvelteComponent | undefined = undefined
 </script>
 
 {#if value}
-  <StatusPresenter value={$statusStore.get(typeof value === 'string' ? value : value.values[0]?._id)} {size} />
+  <StatusPresenter value={$statusStore.get(typeof value === 'string' ? value : value.values[0]._id)} {size} {icon} />
 {/if}

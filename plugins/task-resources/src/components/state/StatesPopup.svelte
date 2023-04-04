@@ -17,7 +17,7 @@
   import { Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import task, { SpaceWithStates, State } from '@hcengineering/task'
-  import { getPlatformColor, resizeObserver } from '@hcengineering/ui'
+  import { getColorNumberByText, getPlatformColor, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let space: Ref<SpaceWithStates>
@@ -48,8 +48,11 @@
             dispatch('close', state)
           }}
         >
-          <div class="color" style="background-color: {getPlatformColor(state.color)}" />
-          <span class="label">{state.title}</span>
+          <div
+            class="color"
+            style="background-color: {getPlatformColor(state.color ?? getColorNumberByText(state.name))}"
+          />
+          <span class="label">{state.name}</span>
         </button>
       {/each}
     </div>

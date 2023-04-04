@@ -1,4 +1,4 @@
-import { Class, Doc, Ref, SortingOrder, Space } from '@hcengineering/core'
+import core, { Class, Doc, Ref, SortingOrder, Space, StatusManager } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { createQuery, getAttributePresenterClass, getClient, LiveQuery } from '@hcengineering/presentation'
 import { getCurrentLocation, locationToUrl } from '@hcengineering/ui'
@@ -6,12 +6,14 @@ import {
   DropdownViewOption,
   ToggleViewOption,
   Viewlet,
+  ViewletDescriptor,
   ViewOptionModel,
   ViewOptions,
   ViewOptionsModel
 } from '@hcengineering/view'
 import { get, writable } from 'svelte/store'
 import view from './plugin'
+import { groupByCategory } from './utils'
 
 export const noCategory = '#no_category'
 
@@ -105,7 +107,9 @@ export async function showEmptyGroups (
   space: Ref<Space> | undefined,
   key: string,
   onUpdate: () => void,
-  queryId: Ref<Doc>
+  queryId: Ref<Doc>,
+  mgr: StatusManager,
+  viewletDescriptorId?: Ref<ViewletDescriptor>
 ): Promise<any[] | undefined> {
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -114,16 +118,19 @@ export async function showEmptyGroups (
   if (attr === undefined) return
   const { attrClass } = getAttributePresenterClass(hierarchy, attr)
   const attributeClass = hierarchy.getClass(attrClass)
+
+  if (hierarchy.isDerived(attrClass, core.class.Status)) {
+    // We do not need extensions for all status categories.
+    const statuses = mgr.statuses.filter((it) => it.ofAttribute === attr._id).map((it) => it._id)
+    return await groupByCategory(client, _class, key, statuses, mgr)
+  }
+
   const mixin = hierarchy.as(attributeClass, view.mixin.AllValuesFunc)
   if (mixin.func !== undefined) {
     const f = await getResource(mixin.func)
     const res = await f(space, onUpdate, queryId)
     if (res !== undefined) {
-      const sortFunc = hierarchy.as(attributeClass, view.mixin.SortFuncs)
-      if (sortFunc?.func === undefined) return res
-      const f = await getResource(sortFunc.func)
-
-      return await f(res)
+      return await groupByCategory(client, _class, key, res, mgr, viewletDescriptorId)
     }
   }
 }

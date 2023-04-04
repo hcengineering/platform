@@ -13,19 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, FindResult, getObjectValue, RefTo, SortingOrder, Ref, Space } from '@hcengineering/core'
+  import core, { Doc, FindResult, getObjectValue, Ref, RefTo, SortingOrder, Space, Status } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import type { State } from '@hcengineering/task'
-  import task from '@hcengineering/task'
   import ui, {
+    addNotification,
     Button,
     CheckBox,
+    deviceOptionsStore,
     Label,
     Loading,
-    resizeObserver,
-    deviceOptionsStore,
-    addNotification
+    resizeObserver
   } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { createEventDispatcher, onMount } from 'svelte'
@@ -48,27 +46,28 @@
 
   let values: (Doc | undefined | null)[] = []
   let objectsPromise: Promise<FindResult<Doc>> | undefined
-  $: targetClass = (hierarchy.getAttribute(filter.key._class, filter.key.key).type as RefTo<Doc>).to
-  $: clazz = hierarchy.getClass(targetClass)
   const targets = new Map<any, number>()
-  $: isState = clazz._id === task.class.State ?? false
-  let statesCount: number[] = []
-  let states: State[]
+  $: targetClass = (filter.key.attribute.type as RefTo<Doc>).to
+  $: clazz = hierarchy.getClass(targetClass)
 
-  const groupValues = (val: State[]): (Doc | undefined | null)[] => {
-    states = val
+  $: isStatus = client.getHierarchy().isDerived(targetClass, core.class.Status) ?? false
+  let statusesCount: number[] = []
+  let statuses: Status[]
+
+  const groupValues = (val: Status[]): (Doc | undefined | null)[] => {
+    statuses = val
     const result: Doc[] = []
-    statesCount = []
-    const unique = [...new Set(val.map((v) => v.title))]
+    statusesCount = []
+    const unique = [...new Set(val.map((v) => v.name))]
     unique.forEach((label, i) => {
       let count = 0
-      states.forEach((state) => {
-        if (state.title === label) {
+      statuses.forEach((state) => {
+        if (state.name === label) {
           if (!count) result[i] = state
           count += targets.get(state._id) ?? 0
         }
       })
-      statesCount[i] = count
+      statusesCount[i] = count
     })
     return result
   }
@@ -106,14 +105,16 @@
       const oldSize = filter.value.length
       filter.value = filter.value.filter((p) => !notExisting.includes(p))
       onChange(filter)
-      addNotification(await translate(view.string.FilterUpdated), filter.key.label, FilterRemovedNotification, {
+      addNotification(await translate(view.string.FilterUpdated, {}), filter.key.label, FilterRemovedNotification, {
         description: await translate(view.string.FilterRemoved, { count: oldSize - (filter.value.length ?? 0) })
       })
     }
     if (targets.has(undefined)) {
       values.unshift(undefined)
     }
-    if (isState) values = groupValues(values as State[])
+    if (isStatus) {
+      values = groupValues(values as Status[])
+    }
     objectsPromise = undefined
   }
 
@@ -123,20 +124,10 @@
 
   function toggle (value: Doc | undefined | null): void {
     if (isSelected(value, filter.value)) {
-      if (isState) {
-        const ids = states.filter((state) => state.title === (value as State).title).map((s) => s._id)
-        filter.value = filter.value.filter((p) => !ids.includes(p))
-      } else filter.value = filter.value.filter((p) => (value ? p !== value._id : p != null))
+      filter.value = filter.value.filter((p) => (value ? p !== value._id : p != null))
     } else {
       if (value) {
-        if (isState) {
-          filter.value = [
-            ...filter.value,
-            ...states
-              .filter((state) => state.title === states.filter((s) => s._id === value._id)[0].title)
-              .map((state) => state._id)
-          ]
-        } else filter.value = [...filter.value, value._id]
+        filter.value = [...filter.value, value._id]
       } else {
         filter.value = [...filter.value, undefined]
       }
@@ -155,7 +146,7 @@
   })
 
   const dispatch = createEventDispatcher()
-  getValues(search)
+  $: if (targetClass) getValues(search)
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
@@ -197,7 +188,7 @@
                   {/if}
                 </div>
                 <div class="dark-color ml-2">
-                  {#if isState}{statesCount[i]}{:else}{targets.get(value?._id)}{/if}
+                  {#if isStatus}{statusesCount[i]}{:else}{targets.get(value?._id)}{/if}
                 </div>
               </div>
             </button>

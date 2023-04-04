@@ -14,7 +14,7 @@
 //
 
 import type { Employee, Organization } from '@hcengineering/contact'
-import { Doc, FindOptions, IndexKind, Lookup, Ref, Timestamp } from '@hcengineering/core'
+import { IndexKind, Lookup, Ref, SortingOrder, Timestamp } from '@hcengineering/core'
 import {
   Builder,
   Collection,
@@ -41,9 +41,9 @@ import presentation from '@hcengineering/model-presentation'
 import tags from '@hcengineering/model-tags'
 import task, { actionTemplates, DOMAIN_TASK, TSpaceWithStates, TTask } from '@hcengineering/model-task'
 import tracker from '@hcengineering/model-tracker'
-import notification from '@hcengineering/notification'
 import view, { actionTemplates as viewTemplates, createAction } from '@hcengineering/model-view'
 import workbench, { Application, createNavigateAction } from '@hcengineering/model-workbench'
+import notification from '@hcengineering/notification'
 import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
 import {
   Applicant,
@@ -55,7 +55,7 @@ import {
   VacancyList
 } from '@hcengineering/recruit'
 import setting from '@hcengineering/setting'
-import { KeyBinding } from '@hcengineering/view'
+import { KeyBinding, ViewOptionsModel } from '@hcengineering/view'
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
 import { TOpinion, TReview } from './review-model'
@@ -281,6 +281,7 @@ export function createModel (builder: Builder): void {
               label: recruit.string.Applications,
               createLabel: recruit.string.ApplicationCreateLabel,
               createComponent: recruit.component.CreateApplication,
+              descriptors: [view.viewlet.Table, task.viewlet.Kanban, recruit.viewlet.ApplicantDashboard],
               baseQuery: {
                 doneState: null
               }
@@ -408,7 +409,8 @@ export function createModel (builder: Builder): void {
     {
       attachTo: recruit.class.Applicant,
       descriptor: view.viewlet.Table,
-      config: ['', 'attachedTo', 'state', 'doneState', 'modifiedOn']
+      config: ['', 'attachedTo', 'state', 'doneState', 'modifiedOn'],
+      variant: 'short'
     },
     recruit.viewlet.VacancyApplicationsShort
   )
@@ -588,6 +590,27 @@ export function createModel (builder: Builder): void {
     }
   }
 
+  const applicantViewOptions: ViewOptionsModel = {
+    groupBy: ['state', 'doneState', 'assignee'],
+    orderBy: [
+      ['state', SortingOrder.Ascending],
+      ['doneState', SortingOrder.Ascending],
+      ['modifiedOn', SortingOrder.Descending],
+      ['dueDate', SortingOrder.Descending],
+      ['rank', SortingOrder.Ascending]
+    ],
+    other: [
+      {
+        key: 'shouldShowAll',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'category',
+        action: view.function.ShowEmptyGroups,
+        label: view.string.ShowEmptyGroups
+      }
+    ]
+  }
+
   builder.createDoc(
     view.class.Viewlet,
     core.space.Model,
@@ -595,9 +618,13 @@ export function createModel (builder: Builder): void {
       attachTo: recruit.class.Applicant,
       descriptor: task.viewlet.Kanban,
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      viewOptions: {
+        ...applicantViewOptions,
+        groupDepth: 1
+      },
       options: {
         lookup: applicantKanbanLookup
-      } as FindOptions<Doc>, // TODO: fix
+      },
       config: []
     },
     recruit.viewlet.ApplicantKanban

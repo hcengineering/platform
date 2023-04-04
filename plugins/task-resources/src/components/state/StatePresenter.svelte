@@ -15,15 +15,18 @@
 -->
 <script lang="ts">
   import type { State } from '@hcengineering/task'
-  import { getPlatformColor } from '@hcengineering/ui'
+  import { getColorNumberByText, getPlatformColor } from '@hcengineering/ui'
 
-  export let value: State
+  export let value: State | undefined
 </script>
 
 {#if value}
   <div class="flex-row-center">
-    <div class="state-container" style="background-color: {getPlatformColor(value.color)}" />
-    <span class="overflow-label">{value.title}</span>
+    <div
+      class="state-container"
+      style="background-color: {getPlatformColor(value.color ?? getColorNumberByText(value.name))}"
+    />
+    <span class="overflow-label">{value.name}</span>
   </div>
 {/if}
 

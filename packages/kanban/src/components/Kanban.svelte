@@ -13,69 +13,41 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, DocumentUpdate, FindOptions, Ref, SortingOrder } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { getPlatformColor, ScrollBox, Scroller } from '@hcengineering/ui'
+  import { CategoryType, Doc, DocumentUpdate, Ref } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { ScrollBox, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { CardDragEvent, Item, StateType, TypeState } from '../types'
+  import { CardDragEvent, Item } from '../types'
   import { calcRank } from '../utils'
   import KanbanRow from './KanbanRow.svelte'
 
-  export let _class: Ref<Class<Item>>
-  export let options: FindOptions<Item> | undefined = undefined
-  export let states: TypeState[] = []
-  export let query: DocumentQuery<Item> = {}
-  export let fieldName: string
+  export let categories: CategoryType[] = []
+  export let objects: Item[] = []
+  export let groupByDocs: Record<string | number, Item[]>
+  export let getGroupByValues: (groupByDocs: Record<string | number, Item[]>, category: CategoryType) => Item[]
+  export let setGroupByValues: (
+    groupByDocs: Record<string | number, Item[]>,
+    category: CategoryType,
+    docs: Item[]
+  ) => void
+
   export let selection: number | undefined = undefined
   export let checked: Doc[] = []
   export let dontUpdateRank: boolean = false
 
+  export let getUpdateProps: (doc: Doc, state: CategoryType) => DocumentUpdate<Item> | undefined
+
   const dispatch = createEventDispatcher()
 
-  let objects: Item[] = []
-
-  const objsQ = createQuery()
-  $: objsQ.query(
-    _class,
-    query,
-    (result) => {
-      objects = result
-      fillStateObjects(result, fieldName)
-      dispatch('content', objects)
-    },
-    {
-      sort: { rank: SortingOrder.Ascending },
-      ...options
-    }
-  )
-
-  function fieldNameChange (fieldName: string) {
-    fillStateObjects(objects, fieldName)
-  }
-
-  $: fieldNameChange(fieldName)
-
-  function fillStateObjects (objects: Item[], fieldName: string): void {
-    objectByState.clear()
-    for (const object of objects) {
-      const arr = objectByState.get((object as any)[fieldName]) ?? []
-      arr.push(object)
-      objectByState.set((object as any)[fieldName], arr)
-    }
-    objectByState = objectByState
-  }
-
-  async function move (state: StateType) {
+  async function move (state: CategoryType) {
     if (dragCard === undefined) {
       return
     }
-    let updates: DocumentUpdate<Item> = {}
+    let updates = getUpdateProps(dragCard, state)
 
-    if (dragCardInitialState !== state) {
-      updates = {
-        ...updates,
-        [fieldName]: state
-      }
+    if (updates === undefined) {
+      panelDragLeave(undefined, dragCardState)
+      return
     }
 
     if (!dontUpdateRank && dragCardInitialRank !== dragCard.rank) {
@@ -95,35 +67,61 @@
 
   let dragCard: Item | undefined
   let dragCardInitialRank: string | undefined
-  let dragCardInitialState: StateType
-
-  let objectByState: Map<StateType, Item[]> = new Map<StateType, Item[]>()
+  let dragCardInitialState: CategoryType
+  let dragCardInitialPosition: number | undefined
+  let dragCardState: CategoryType | undefined
 
   let isDragging = false
 
-  async function updateDone (query: DocumentUpdate<Item>): Promise<void> {
+  async function updateDone (updateValue: DocumentUpdate<Item>): Promise<void> {
     isDragging = false
     if (dragCard === undefined) {
       return
     }
-    await client.update(dragCard, query)
+    await client.update(dragCard, updateValue)
   }
 
-  function panelDragOver (event: Event, state: TypeState): void {
-    event.preventDefault()
-    const card = dragCard as any
-    if (card !== undefined && card[fieldName] !== state._id) {
-      const oldArr = objectByState.get(card[fieldName]) ?? []
-      const index = oldArr.findIndex((p) => p._id === card._id)
+  function panelDragOver (event: Event | undefined, state: CategoryType): void {
+    event?.preventDefault()
+    if (dragCard !== undefined && dragCardState !== state) {
+      const updates = getUpdateProps(dragCard, state)
+      if (updates === undefined) {
+        return
+      }
+
+      const oldArr = getGroupByValues(groupByDocs, dragCardState)
+      const index = oldArr.findIndex((p) => p._id === dragCard?._id)
       if (index !== -1) {
         oldArr.splice(index, 1)
-        objectByState.set(card[fieldName], oldArr)
+        setGroupByValues(groupByDocs, dragCardState, oldArr)
       }
-      card[fieldName] = state._id
-      const arr = objectByState.get(card[fieldName]) ?? []
-      arr.push(card)
-      objectByState.set(card[fieldName], arr)
-      objectByState = objectByState
+
+      dragCardState = state
+      const arr = getGroupByValues(groupByDocs, state) ?? []
+      arr.push(dragCard)
+      setGroupByValues(groupByDocs, state, arr)
+
+      groupByDocs = groupByDocs
+    }
+  }
+  function panelDragLeave (event: Event | undefined, state: CategoryType): void {
+    event?.preventDefault()
+    if (dragCard !== undefined && state !== dragCardInitialState) {
+      // We need to restore original position
+      const oldArr = getGroupByValues(groupByDocs, state)
+      const index = oldArr.findIndex((p) => p._id === dragCard?._id)
+      if (index !== -1) {
+        oldArr.splice(index, 1)
+        setGroupByValues(groupByDocs, state, oldArr)
+      }
+
+      if (dragCardInitialPosition !== undefined) {
+        const newArr = getGroupByValues(groupByDocs, dragCardInitialState)
+        newArr.splice(dragCardInitialPosition, 0, dragCard)
+        setGroupByValues(groupByDocs, dragCardInitialPosition, newArr)
+      }
+
+      groupByDocs = groupByDocs
     }
   }
 
@@ -137,10 +135,14 @@
     return false
   }
 
-  function cardDragOver (evt: CardDragEvent, object: Item): void {
+  function cardDragOver (evt: CardDragEvent, object: Item, state: CategoryType): void {
     if (dragCard !== undefined && !dontUpdateRank) {
+      const updates = getUpdateProps(dragCard, state)
+      if (updates === undefined) {
+        return
+      }
       if (object._id !== dragCard._id) {
-        let arr = objectByState.get((object as any)[fieldName]) ?? []
+        let arr = getGroupByValues(groupByDocs, state) ?? []
         const dragCardIndex = arr.findIndex((p) => p._id === dragCard?._id)
         const targetIndex = arr.findIndex((p) => p._id === object._id)
         if (
@@ -150,15 +152,15 @@
         ) {
           arr.splice(dragCardIndex, 1)
           arr = [...arr.slice(0, targetIndex), dragCard, ...arr.slice(targetIndex)]
-          objectByState.set((object as any)[fieldName], arr)
-          objectByState = objectByState
+          setGroupByValues(groupByDocs, state, arr)
+          groupByDocs = groupByDocs
         }
       }
     }
   }
-  function cardDrop (evt: CardDragEvent, object: Item): void {
+  function cardDrop (evt: CardDragEvent, object: Item, state: CategoryType): void {
     if (!dontUpdateRank && dragCard !== undefined) {
-      const arr = objectByState.get((object as any)[fieldName]) ?? []
+      const arr = getGroupByValues(groupByDocs, state) ?? []
       const s = arr.findIndex((p) => p._id === dragCard?._id)
       if (s !== -1) {
         const newRank = calcRank(arr[s - 1], arr[s + 1])
@@ -167,9 +169,12 @@
     }
     isDragging = false
   }
-  function onDragStart (object: Item, state: TypeState): void {
-    dragCardInitialState = state._id
+  function onDragStart (object: Item, state: CategoryType): void {
+    dragCardInitialState = state
+    dragCardState = state
     dragCardInitialRank = object.rank
+    const items = getGroupByValues(groupByDocs, state) ?? []
+    dragCardInitialPosition = items.findIndex((p) => p._id === object._id)
     dragCard = object
     isDragging = true
     dispatch('obj-focus', object)
@@ -184,19 +189,31 @@
   const stateRefs: HTMLElement[] = []
   const stateRows: KanbanRow[] = []
 
-  $: stateRefs.length = states.length
-  $: stateRows.length = states.length
+  $: stateRefs.length = categories.length
+  $: stateRows.length = categories.length
 
   function scrollInto (statePos: number, obj: Item): void {
     stateRefs[statePos]?.scrollIntoView({ behavior: 'auto', block: 'nearest' })
     stateRows[statePos]?.scroll(obj)
   }
 
+  function getState (doc: Item): number {
+    let pos = 0
+    for (const st of categories) {
+      const stateObjs = getGroupByValues(groupByDocs, st) ?? []
+      if (stateObjs.findIndex((it) => it._id === doc._id) !== -1) {
+        return pos
+      }
+      pos++
+    }
+    return -1
+  }
+
   export function select (offset: 1 | -1 | 0, of?: Doc, dir?: 'vertical' | 'horizontal'): void {
     let pos = (of !== undefined ? objects.findIndex((it) => it._id === of._id) : selection) ?? -1
     if (pos === -1) {
-      for (const st of states) {
-        const stateObjs = objectByState.get(st) ?? []
+      for (const st of categories) {
+        const stateObjs = getGroupByValues(groupByDocs, st) ?? []
         if (stateObjs.length > 0) {
           pos = objects.findIndex((it) => it._id === stateObjs[0]._id)
           break
@@ -215,12 +232,12 @@
     if (obj === undefined) {
       return
     }
-    const fState = (obj as any)[fieldName]
-    let objState = states.findIndex((it) => it._id === fState)
+
+    let objState = getState(obj)
     if (objState === -1) {
       return
     }
-    const stateObjs = objectByState.get(states[objState]) ?? []
+    const stateObjs = getGroupByValues(groupByDocs, categories.indexOf(objState)) ?? []
     const statePos = stateObjs.findIndex((it) => it._id === obj._id)
     if (statePos === undefined) {
       return
@@ -235,7 +252,7 @@
       } else {
         while (objState > 0) {
           objState--
-          const nstateObjs = objectByState.get(states[objState]) ?? []
+          const nstateObjs = getGroupByValues(groupByDocs, categories[objState]) ?? []
           if (nstateObjs.length > 0) {
             const obj = nstateObjs[statePos] ?? nstateObjs[nstateObjs.length - 1]
             scrollInto(objState, obj)
@@ -252,9 +269,9 @@
         dispatch('obj-focus', obj)
         return
       } else {
-        while (objState < states.length - 1) {
+        while (objState < categories.length - 1) {
           objState++
-          const nstateObjs = objectByState.get(states[objState]) ?? []
+          const nstateObjs = getGroupByValues(groupByDocs, categories[objState]) ?? []
           if (nstateObjs.length > 0) {
             const obj = nstateObjs[statePos] ?? nstateObjs[nstateObjs.length - 1]
             scrollInto(objState, obj)
@@ -265,7 +282,7 @@
       }
     }
     if (offset === 0) {
-      scrollInto(objState, obj)
+      // scrollInto(objState, obj)
       dispatch('obj-focus', obj)
     }
   }
@@ -288,29 +305,20 @@
 <div class="kanban-container top-divider">
   <ScrollBox>
     <div class="kanban-content">
-      {#each states as state, si (state._id)}
-        {@const stateObjects = objectByState.get(state._id) ?? []}
+      {#each categories as state, si (state)}
+        {@const stateObjects = getGroupByValues(groupByDocs, state)}
 
         <div
           class="panel-container step-lr75"
           bind:this={stateRefs[si]}
           on:dragover={(event) => panelDragOver(event, state)}
           on:drop={() => {
-            move(state._id)
+            move(state)
             isDragging = false
           }}
         >
           {#if $$slots.header !== undefined}
             <slot name="header" state={toAny(state)} count={stateObjects.length} />
-          {:else}
-            <div class="header">
-              <div class="bar" style="background-color: {getPlatformColor(state.color)}" />
-              <div class="flex-between label">
-                <div>
-                  <span class="lines-limit-2">{state.title}</span>
-                </div>
-              </div>
-            </div>
           {/if}
           <Scroller padding={'.5rem 0'} on:dragover on:drop>
             <slot name="beforeCard" {state} />
@@ -324,8 +332,8 @@
               {selection}
               {checkedSet}
               {state}
-              {cardDragOver}
-              {cardDrop}
+              cardDragOver={(evt, obj) => cardDragOver(evt, obj, state)}
+              cardDrop={(evt, obj) => cardDrop(evt, obj, state)}
               {onDragStart}
               {showMenu}
             >

@@ -32,7 +32,7 @@
       <svelte:component this={value._class === task.class.WonState ? Won : Lost} size={'small'} />
     </div>
     {#if showTitle}
-      {value.title}
+      {value.name}
     {/if}
   </div>
 {/if}

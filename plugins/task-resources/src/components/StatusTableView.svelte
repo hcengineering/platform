@@ -64,7 +64,7 @@
       itemsDS = doneStates.map((s) => {
         return {
           id: s._id,
-          label: s.title,
+          label: s.name,
           icon: s._class === task.class.WonState ? Won : Lost,
           color: s._class === task.class.WonState ? 'var(--won-color)' : 'var(--lost-color)'
         }

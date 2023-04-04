@@ -42,6 +42,8 @@
     "CreateProject": "Создать проект",
     "NewProject": "Новый проект",
     "ProjectTitlePlaceholder": "Название проекта",
+    "Identifier": "Идентификатор проекта",
+    "IdentifierExists": "Идентификатор уже существует проекта",
     "ProjectIdentifierPlaceholder": "Идентификатор проекта",
     "ChooseIcon": "Выбрать иконку",
     "AddIssue": "Добавить задачу",

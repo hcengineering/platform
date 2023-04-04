@@ -43,10 +43,14 @@ import view, { AttributeEditor } from '@hcengineering/view'
 import { deepEqual } from 'fast-equals'
 import { onDestroy } from 'svelte'
 import { KeyedAttribute } from '..'
+import { PresentationPipeline, PresentationPipelineImpl } from './pipeline'
 import plugin from './plugin'
+import { StatusMiddleware, statusStore } from './status'
+export { statusStore }
 
 let liveQuery: LQ
 let client: TxOperations
+let pipeline: PresentationPipeline
 
 const txListeners: Array<(tx: Tx) => void> = []
 
@@ -68,7 +72,7 @@ export function removeTxListener (l: (tx: Tx) => void): void {
 }
 
 class UIClient extends TxOperations implements Client {
-  constructor (client: Client, private readonly liveQuery: LQ) {
+  constructor (client: Client, private readonly liveQuery: Client) {
     super(client, getCurrentAccount()._id)
   }
 
@@ -89,7 +93,7 @@ class UIClient extends TxOperations implements Client {
   }
 
   override async tx (tx: Tx): Promise<TxResult> {
-    return await super.tx(tx)
+    return await this.client.tx(tx)
   }
 }
 
@@ -103,28 +107,36 @@ export function getClient (): TxOperations {
 /**
  * @public
  */
-export function setClient (_client: Client): void {
+export async function setClient (_client: Client): Promise<void> {
   if (liveQuery !== undefined) {
-    void liveQuery.close()
+    await liveQuery.close()
   }
+  if (pipeline !== undefined) {
+    await pipeline.close()
+  }
+  pipeline = PresentationPipelineImpl.create(_client, [StatusMiddleware.create])
+
   const needRefresh = liveQuery !== undefined
-  liveQuery = new LQ(_client)
-  client = new UIClient(_client, liveQuery)
+  liveQuery = new LQ(pipeline)
+  client = new UIClient(pipeline, liveQuery)
+
   _client.notify = (tx: Tx) => {
+    pipeline.notifyTx(tx).catch((err) => console.log(err))
+
     liveQuery.tx(tx).catch((err) => console.log(err))
 
     txListeners.forEach((it) => it(tx))
   }
   if (needRefresh) {
-    refreshClient()
+    await refreshClient()
   }
 }
 
 /**
  * @public
  */
-export function refreshClient (): void {
-  void liveQuery?.refreshConnect()
+export async function refreshClient (): Promise<void> {
+  await liveQuery?.refreshConnect()
   for (const q of globalQueries) {
     q.refreshClient()
   }
@@ -140,10 +152,12 @@ export class LiveQuery {
   private oldQuery: DocumentQuery<Doc> | undefined
   private oldOptions: FindOptions<Doc> | undefined
   private oldCallback: ((result: FindResult<any>) => void) | undefined
+  private reqId = 0
   unsubscribe = () => {}
+  clientRecreated = false
 
-  constructor (dontDestroy: boolean = false) {
-    if (!dontDestroy) {
+  constructor (noDestroy: boolean = false) {
+    if (!noDestroy) {
       onDestroy(() => {
         this.unsubscribe()
       })
@@ -158,43 +172,58 @@ export class LiveQuery {
     callback: (result: FindResult<T>) => void,
     options?: FindOptions<T>
   ): boolean {
-    if (!this.needUpdate(_class, query, callback, options)) {
+    if (!this.needUpdate(_class, query, callback, options) && !this.clientRecreated) {
       return false
     }
-    return this.doQuery<T>(_class, query, callback, options)
+    // One time refresh in case of client recreation
+    this.clientRecreated = false
+    void this.doQuery<T>(_class, query, callback, options)
+    return true
   }
 
-  private doQuery<T extends Doc>(
+  private async doQuery<T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     callback: (result: FindResult<T>) => void,
     options: FindOptions<T> | undefined
-  ): boolean {
+  ): Promise<void> {
+    const id = ++this.reqId
+    const piplineQuery = await pipeline.subscribe(_class, query, options, () => {
+      // Refresh query if pipeline decide it is required.
+      this.refreshClient()
+    })
+    if (id !== this.reqId) {
+      // If we have one more request after this one, no need to do something.
+      piplineQuery.unsubscribe()
+      return
+    }
+
     this.unsubscribe()
     this.oldCallback = callback
     this.oldClass = _class
     this.oldOptions = options
     this.oldQuery = query
 
-    const unsub = liveQuery.query(_class, query, callback, options)
+    const unsub = liveQuery.query(_class, piplineQuery.query ?? query, callback, piplineQuery.options ?? options)
     this.unsubscribe = () => {
       unsub()
+      piplineQuery.unsubscribe()
       this.oldCallback = undefined
       this.oldClass = undefined
       this.oldOptions = undefined
       this.oldQuery = undefined
       this.unsubscribe = () => {}
     }
-    return true
   }
 
   refreshClient (): void {
+    this.clientRecreated = true
     if (this.oldClass !== undefined && this.oldQuery !== undefined && this.oldCallback !== undefined) {
       const _class = this.oldClass
       const query = this.oldQuery
       const callback = this.oldCallback
       const options = this.oldOptions
-      this.doQuery(_class, query, callback, options)
+      void this.doQuery(_class, query, callback, options)
     }
   }
 

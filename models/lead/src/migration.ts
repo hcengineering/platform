@@ -62,16 +62,16 @@ async function createSpace (tx: TxOperations): Promise<void> {
 async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<KanbanTemplate>> {
   const defaultKanban = {
     states: [
-      { color: 9, title: 'Incoming' },
-      { color: 10, title: 'Negotation' },
-      { color: 1, title: 'Offer preparing' },
-      { color: 0, title: 'Make a decision' },
-      { color: 11, title: 'Contract conclusion' },
-      { color: 9, title: 'Done' }
+      { color: 9, name: 'Incoming' },
+      { color: 10, name: 'Negotation' },
+      { color: 1, name: 'Offer preparing' },
+      { color: 0, name: 'Make a decision' },
+      { color: 11, name: 'Contract conclusion' },
+      { color: 9, name: 'Done' }
     ],
     doneStates: [
-      { isWon: true, title: 'Won' },
-      { isWon: false, title: 'Lost' }
+      { isWon: true, name: 'Won' },
+      { isWon: false, name: 'Lost' }
     ]
   }
 

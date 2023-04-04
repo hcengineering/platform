@@ -59,7 +59,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     () => {
       try {
         if (clientSet) {
-          refreshClient()
+          void refreshClient()
         }
       } catch (err) {
         console.error(err)
@@ -81,7 +81,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     })
 
     // Update on connect, so it will be triggered
-    setClient(_client)
+    await setClient(_client)
     clientSet = true
     return
   }
@@ -112,7 +112,7 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   // Update window title
   document.title = [ws, title].filter((it) => it).join(' - ')
-  setClient(_client)
+  await setClient(_client)
 
   return _client
 }

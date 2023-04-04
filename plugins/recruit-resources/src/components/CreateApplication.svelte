@@ -17,13 +17,13 @@
   import chunter from '@hcengineering/chunter'
   import type { Contact, Employee, Person } from '@hcengineering/contact'
   import contact from '@hcengineering/contact'
-  import { ExpandRightDouble } from '@hcengineering/contact-resources'
+  import { EmployeeBox, ExpandRightDouble, UserBox } from '@hcengineering/contact-resources'
   import {
     Account,
     Class,
     Client,
-    fillDefaults,
     Doc,
+    fillDefaults,
     FindOptions,
     generateId,
     Markup,
@@ -39,7 +39,6 @@
     InlineAttributeBar,
     SpaceSelect
   } from '@hcengineering/presentation'
-  import { EmployeeBox, UserBox } from '@hcengineering/contact-resources'
   import type { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
   import task, { calcRank, State } from '@hcengineering/task'
   import ui, {
@@ -48,6 +47,7 @@
     createFocusManager,
     deviceOptionsStore as deviceInfo,
     FocusHandler,
+    getColorNumberByText,
     getPlatformColor,
     Label,
     showPopup,
@@ -245,7 +245,7 @@
   }
 
   $: states = rawStates.map((s) => {
-    return { id: s._id, label: s.title, color: s.color }
+    return { id: s._id, label: s.name, color: s.color ?? getColorNumberByText(s.name) }
   })
 
   const manager = createFocusManager()
@@ -414,8 +414,13 @@
         >
           <div slot="content" class="flex-row-center" class:empty={!selectedState}>
             {#if selectedState}
-              <div class="color" style="background-color: {getPlatformColor(selectedState.color)}" />
-              <span class="label overflow-label">{selectedState.title}</span>
+              <div
+                class="color"
+                style="background-color: {getPlatformColor(
+                  selectedState.color ?? getColorNumberByText(selectedState.name)
+                )}"
+              />
+              <span class="label overflow-label">{selectedState.name}</span>
             {:else}
               <div class="color" />
               <span class="label overflow-label"><Label label={presentation.string.NotSelected} /></span>

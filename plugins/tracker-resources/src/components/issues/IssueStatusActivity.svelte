@@ -4,7 +4,7 @@
   import { Issue, IssueStatus } from '@hcengineering/tracker'
   import { Label, ticker } from '@hcengineering/ui'
   import tracker from '../../plugin'
-  import { statusStore } from '../../utils'
+  import { statusStore } from '@hcengineering/presentation'
   import Duration from './Duration.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
 

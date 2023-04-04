@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,20 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IssueStatus } from '@hcengineering/tracker'
-  import IssueStatusIcon from './IssueStatusIcon.svelte'
+  import { Status, StatusValue, WithLookup } from '@hcengineering/core'
+  import { Asset } from '@hcengineering/platform'
+  import { AnySvelteComponent, Icon } from '@hcengineering/ui'
 
-  export let value: IssueStatus | undefined
+  export let icon: Asset | AnySvelteComponent | undefined = undefined
+
+  export let value: Status | WithLookup<Status> | StatusValue | undefined
   export let size: 'small' | 'medium' = 'small'
-  export let inline: boolean = false
 </script>
 
 {#if value}
   <div class="flex-presenter">
-    {#if !inline}
-      <IssueStatusIcon {value} {size} />
+    {#if icon && typeof icon === 'string'}
+      <Icon {icon} {size} />
+    {:else if icon !== undefined && typeof icon !== 'string'}
+      <svelte:component this={icon} {value} {size} />
     {/if}
-    <span class="overflow-label" class:ml-2={!inline}>
+    <span class="overflow-label" class:ml-2={icon !== undefined}>
       {value.name}
     </span>
   </div>

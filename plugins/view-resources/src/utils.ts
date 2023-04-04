@@ -16,11 +16,13 @@
 
 import core, {
   AttachedDoc,
+  CategoryType,
   Class,
   Client,
   Collection,
   Doc,
   DocumentUpdate,
+  getObjectValue,
   Hierarchy,
   Lookup,
   Obj,
@@ -29,11 +31,14 @@ import core, {
   ReverseLookup,
   ReverseLookups,
   Space,
+  Status,
+  StatusManager,
+  StatusValue,
   TxOperations
 } from '@hcengineering/core'
 import type { IntlString } from '@hcengineering/platform'
 import { getResource } from '@hcengineering/platform'
-import { AttributeCategory, getAttributePresenterClass, KeyedAttribute } from '@hcengineering/presentation'
+import { AttributeCategory, createQuery, getAttributePresenterClass, KeyedAttribute } from '@hcengineering/presentation'
 import {
   AnyComponent,
   ErrorPresenter,
@@ -499,16 +504,133 @@ export type FixedWidthStore = Record<string, number>
 
 export const fixedWidthStore = writable<FixedWidthStore>({})
 
-export function groupBy<T extends Doc> (docs: T[], key: string): { [key: string]: T[] } {
+export function groupBy<T extends Doc> (
+  docs: T[],
+  key: string,
+  categories?: CategoryType[]
+): { [key: string | number]: T[] } {
   return docs.reduce((storage: { [key: string]: T[] }, item: T) => {
-    const group = (item as any)[key] ?? undefined
+    let group = getObjectValue(key, item) ?? undefined
+
+    if (categories !== undefined) {
+      for (const c of categories) {
+        if (typeof c === 'object') {
+          const st = c.values.find((it) => it._id === group)
+          if (st !== undefined) {
+            group = st.name
+            break
+          }
+        }
+      }
+    }
 
     storage[group] = storage[group] ?? []
-
     storage[group].push(item)
 
     return storage
   }, {})
+}
+
+/**
+ * @public
+ */
+export function getGroupByValues<T extends Doc> (
+  groupByDocs: Record<string | number, T[]>,
+  category: CategoryType
+): T[] {
+  if (typeof category === 'object') {
+    return groupByDocs[category.name] ?? []
+  } else if (category !== undefined) {
+    return groupByDocs[category] ?? []
+  }
+  return []
+}
+
+/**
+ * @public
+ */
+export function setGroupByValues (
+  groupByDocs: Record<string | number, Doc[]>,
+  category: CategoryType,
+  docs: Doc[]
+): void {
+  if (typeof category === 'object') {
+    groupByDocs[category.name] = docs
+  } else if (category !== undefined) {
+    groupByDocs[category] = docs
+  }
+}
+
+/**
+ * Group category references into categories.
+ * @public
+ */
+export async function groupByCategory (
+  client: TxOperations,
+  _class: Ref<Class<Doc>>,
+  key: string,
+  categories: any[],
+  mgr: StatusManager,
+  viewletDescriptorId?: Ref<ViewletDescriptor>
+): Promise<CategoryType[]> {
+  const h = client.getHierarchy()
+  const attr = h.getAttribute(_class, key)
+  if (attr === undefined) return categories
+  if (key === noCategory) return [undefined]
+
+  const attrClass = getAttributePresenterClass(h, attr).attrClass
+
+  const isStatusField = h.isDerived(attrClass, core.class.Status)
+
+  let existingCategories: any[] = []
+
+  if (isStatusField) {
+    existingCategories = await groupByStatusCategories(h, attrClass, categories, mgr, viewletDescriptorId)
+  } else {
+    const valueSet = new Set<any>()
+    for (const v of categories) {
+      if (!valueSet.has(v)) {
+        valueSet.add(v)
+        existingCategories.push(v)
+      }
+    }
+  }
+  return await sortCategories(h, attrClass, existingCategories, viewletDescriptorId)
+}
+
+/**
+ * @public
+ */
+export async function groupByStatusCategories (
+  hierarchy: Hierarchy,
+  attrClass: Ref<Class<Doc>>,
+  categories: any[],
+  mgr: StatusManager,
+  viewletDescriptorId?: Ref<ViewletDescriptor>
+): Promise<StatusValue[]> {
+  const existingCategories: StatusValue[] = []
+  const statusMap = new Map<string, StatusValue>()
+
+  for (const v of categories) {
+    const status = mgr.byId.get(v)
+    if (status !== undefined) {
+      let fst = statusMap.get(status.name.toLowerCase().trim())
+      if (fst === undefined) {
+        const statuses = mgr.statuses
+          .filter(
+            (it) =>
+              it.ofAttribute === status.ofAttribute &&
+              it.name.toLowerCase().trim() === status.name.toLowerCase().trim() &&
+              (categories.includes(it._id) || it.space === status.space)
+          )
+          .sort((a, b) => a.rank.localeCompare(b.rank))
+        fst = new StatusValue(status.name, status.color, statuses)
+        statusMap.set(status.name.toLowerCase().trim(), fst)
+        existingCategories.push(fst)
+      }
+    }
+  }
+  return await sortCategories(hierarchy, attrClass, existingCategories, viewletDescriptorId)
 }
 
 export async function getCategories (
@@ -516,29 +638,46 @@ export async function getCategories (
   _class: Ref<Class<Doc>>,
   docs: Doc[],
   key: string,
+  mgr: StatusManager,
   viewletDescriptorId?: Ref<ViewletDescriptor>
-): Promise<any[]> {
+): Promise<CategoryType[]> {
   if (key === noCategory) return [undefined]
-  const existingCategories = Array.from(new Set(docs.map((x: any) => x[key] ?? undefined)))
 
-  return await sortCategories(client, _class, existingCategories, key, viewletDescriptorId)
+  return await groupByCategory(
+    client,
+    _class,
+    key,
+    docs.map((it) => getObjectValue(key, it) ?? undefined),
+    mgr,
+    viewletDescriptorId
+  )
 }
 
+/**
+ * @public
+ */
 export async function sortCategories (
-  client: TxOperations,
-  _class: Ref<Class<Doc>>,
+  hierarchy: Hierarchy,
+  attrClass: Ref<Class<Doc>>,
   existingCategories: any[],
-  key: string,
   viewletDescriptorId?: Ref<ViewletDescriptor>
 ): Promise<any[]> {
-  if (key === noCategory) return [undefined]
-  const hierarchy = client.getHierarchy()
-  const attr = hierarchy.getAttribute(_class, key)
-  if (attr === undefined) return existingCategories
-  const attrClass = getAttributePresenterClass(hierarchy, attr).attrClass
   const clazz = hierarchy.getClass(attrClass)
   const sortFunc = hierarchy.as(clazz, view.mixin.SortFuncs)
-  if (sortFunc?.func === undefined) return existingCategories
+  if (sortFunc?.func === undefined) {
+    const isStatusField = hierarchy.isDerived(attrClass, core.class.Status)
+    if (isStatusField) {
+      existingCategories.sort((a, b) => {
+        return a.values[0].rank.localeCompare(b.values[0].rank)
+      })
+    } else {
+      existingCategories.sort((a, b) => {
+        return JSON.stringify(a).localeCompare(JSON.stringify(b))
+      })
+    }
+
+    return existingCategories
+  }
   const f = await getResource(sortFunc.func)
 
   return await f(existingCategories, viewletDescriptorId)
@@ -665,4 +804,35 @@ export async function getObjectLinkFragment (
   const loc = getCurrentLocation()
   loc.fragment = getPanelURI(component, object._id, Hierarchy.mixinOrClass(object), 'content')
   return loc
+}
+
+export async function statusSort (
+  value: Array<Ref<Status>>,
+  viewletDescriptorId?: Ref<ViewletDescriptor>
+): Promise<Array<Ref<Status>>> {
+  return await new Promise((resolve) => {
+    // TODO: How we track category updates.
+    const query = createQuery(true)
+    query.query(
+      core.class.Status,
+      { _id: { $in: value } },
+      (res) => {
+        res.sort((a, b) => {
+          const res = (a.$lookup?.category?.order ?? 0) - (b.$lookup?.category?.order ?? 0)
+          if (res === 0) {
+            return a.rank.localeCompare(b.rank)
+          }
+          return res
+        })
+
+        resolve(res.map((p) => p._id))
+        query.unsubscribe()
+      },
+      {
+        sort: {
+          rank: 1
+        }
+      }
+    )
+  })
 }
