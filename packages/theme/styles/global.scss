@@ -130,3 +130,5 @@ body {
 // TSK-1026. Experiment, don't forget to delete.
 .theme-dark .p-activity .msgactivity-content.comment .msgactivity-content__title.labels-row > .bold,
 .theme-dark .p-activity .msgactivity-content.comment .activity-content.content .p-inline { color: rgba(255, 255, 255, .8); }
+.theme-light .p-activity .msgactivity-content.comment .msgactivity-content__title.labels-row > .bold,
+.theme-light .p-activity .msgactivity-content.comment .activity-content.content .p-inline { color: rgba(0, 0, 0, .8); }
