@@ -252,6 +252,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     }
   }
 
+  broadcastClasses = new Set<Ref<Class<Doc>>>()
+  updateBroadcast: any = undefined
+
   async doIndexing (): Promise<void> {
     // Check model is upgraded to support indexer.
 
@@ -262,14 +265,13 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       return
     }
     await this.initStates()
-    const classes = new Set<Ref<Class<Doc>>>()
     while (!this.cancelling) {
       await this.initializeStages()
       await this.processRemove()
 
       console.log('Indexing:', this.indexId, this.workspace)
       const _classes = await rateLimitter.exec(() => this.processIndex())
-      _classes.forEach((it) => classes.add(it))
+      _classes.forEach((it) => this.broadcastClasses.add(it))
 
       if (this.toIndex.size === 0 || this.stageChanged === 0) {
         if (this.toIndex.size === 0) {
@@ -277,8 +279,11 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         }
         if (!this.cancelling) {
           // We need to send index update event
-          this.broadcastUpdate(Array.from(classes.values()))
-          classes.clear()
+          clearTimeout(this.updateBroadcast)
+          this.updateBroadcast = setTimeout(() => {
+            this.broadcastUpdate(Array.from(this.broadcastClasses.values()))
+            this.broadcastClasses.clear()
+          }, 5000)
 
           await new Promise((resolve) => {
             this.triggerIndexing = () => {

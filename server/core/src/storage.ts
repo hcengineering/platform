@@ -816,6 +816,7 @@ export async function createServerStorage (
       throw new Error('No storage adapter')
     }
     const stages = conf.fulltextAdapter.stages(fulltextAdapter, storage, storageAdapter, contentAdapter)
+
     const indexer = new FullTextIndexPipeline(
       defaultAdapter,
       stages,

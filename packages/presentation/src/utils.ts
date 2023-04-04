@@ -152,6 +152,7 @@ export class LiveQuery {
   private oldQuery: DocumentQuery<Doc> | undefined
   private oldOptions: FindOptions<Doc> | undefined
   private oldCallback: ((result: FindResult<any>) => void) | undefined
+  private reqId = 0
   unsubscribe = () => {}
   clientRecreated = false
 
@@ -186,10 +187,16 @@ export class LiveQuery {
     callback: (result: FindResult<T>) => void,
     options: FindOptions<T> | undefined
   ): Promise<void> {
+    const id = ++this.reqId
     const piplineQuery = await pipeline.subscribe(_class, query, options, () => {
       // Refresh query if pipeline decide it is required.
       this.refreshClient()
     })
+    if (id !== this.reqId) {
+      // If we have one more request after this one, no need to do something.
+      piplineQuery.unsubscribe()
+      return
+    }
 
     this.unsubscribe()
     this.oldCallback = callback
