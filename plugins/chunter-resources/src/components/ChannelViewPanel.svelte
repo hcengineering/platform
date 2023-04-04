@@ -13,10 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Message } from '@hcengineering/chunter'
-  import { MessageViewer } from '@hcengineering/presentation'
+  import { Ref, Space } from '@hcengineering/core'
+  import ChannelView from './ChannelView.svelte'
 
-  export let value: Message
+  export let _id: Ref<Space>
 </script>
 
-<div><MessageViewer message={value.content} /></div>
+<div class="antiPanel-component">
+  <ChannelView space={_id} />
+</div>

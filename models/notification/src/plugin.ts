@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+import { Ref } from '@hcengineering/core'
+import { Application } from '@hcengineering/workbench'
 import notification, { notificationId } from '@hcengineering/notification'
 import { IntlString, mergeIds } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
@@ -28,6 +30,9 @@ export default mergeIds(notificationId, notification, {
     BrowserNotification: '' as IntlString,
     EmailNotification: '' as IntlString,
     Collaborators: '' as IntlString
+  },
+  app: {
+    Notification: '' as Ref<Application>
   },
   component: {
     NotificationSettings: '' as AnyComponent

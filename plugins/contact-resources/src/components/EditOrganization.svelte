@@ -61,7 +61,6 @@
           placeholder={contact.string.PersonFirstNamePlaceholder}
           bind:value={object.name}
           on:change={nameChange}
-          focus
           focusIndex={1}
         />
       </div>

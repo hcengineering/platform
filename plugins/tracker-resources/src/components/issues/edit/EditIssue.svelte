@@ -44,6 +44,7 @@
 
   export let _id: Ref<Issue>
   export let _class: Ref<Class<Issue>>
+  export let embedded = false
 
   let lastId: Ref<Doc> = _id
   let lastClass: Ref<Class<Doc>> = _class
@@ -145,6 +146,7 @@
     isAside={true}
     isSub={false}
     withoutActivity={false}
+    {embedded}
     withoutTitle
     bind:innerWidth
     on:close={() => dispatch('close')}

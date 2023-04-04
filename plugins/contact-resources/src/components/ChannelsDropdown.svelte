@@ -17,9 +17,8 @@
   import type { Channel, ChannelProvider } from '@hcengineering/contact'
   import contact from '@hcengineering/contact'
   import type { AttachedData, Doc, Ref } from '@hcengineering/core'
-  import { LastView } from '@hcengineering/notification'
-  import { NotificationClientImpl } from '@hcengineering/notification-resources'
-  import type { Asset, IntlString } from '@hcengineering/platform'
+  import notification, { LastView } from '@hcengineering/notification'
+  import { Asset, getResource, IntlString } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
   import {
     Action,
@@ -36,6 +35,7 @@
   import { ViewAction } from '@hcengineering/view'
   import { invokeAction } from '@hcengineering/view-resources'
   import { createEventDispatcher, tick } from 'svelte'
+  import { writable, Writable } from 'svelte/store'
   import { getChannelProviders } from '../utils'
   import ChannelEditor from './ChannelEditor.svelte'
 
@@ -50,8 +50,8 @@
   export let focusIndex = -1
   export let restricted: Ref<ChannelProvider>[] = []
 
-  const notificationClient = NotificationClientImpl.getClient()
-  const lastViews = notificationClient.getLastViews()
+  let lastViews: Writable<LastView> = writable()
+  getResource(notification.function.GetNotificationClient).then((res) => (lastViews = res().getLastViews()))
   const dispatch = createEventDispatcher()
 
   interface Item {

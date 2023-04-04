@@ -464,7 +464,10 @@ export abstract class TxProcessor implements WithTx {
  * @public
  */
 export class TxFactory {
-  constructor (readonly account: Ref<Account>) {}
+  private readonly txSpace: Ref<Space>
+  constructor (readonly account: Ref<Account>, readonly isDerived: boolean = false) {
+    this.txSpace = isDerived ? core.space.DerivedTx : core.space.Tx
+  }
 
   createTxCreateDoc<T extends Doc>(
     _class: Ref<Class<T>>,
@@ -477,7 +480,7 @@ export class TxFactory {
     return {
       _id: generateId(),
       _class: core.class.TxCreateDoc,
-      space: core.space.Tx,
+      space: this.txSpace,
       objectId: objectId ?? generateId(),
       objectClass: _class,
       objectSpace: space,
@@ -500,7 +503,7 @@ export class TxFactory {
     return {
       _id: generateId(),
       _class: core.class.TxCollectionCUD,
-      space: core.space.Tx,
+      space: this.txSpace,
       objectId,
       objectClass: _class,
       objectSpace: space,
@@ -523,7 +526,7 @@ export class TxFactory {
     return {
       _id: generateId(),
       _class: core.class.TxUpdateDoc,
-      space: core.space.Tx,
+      space: this.txSpace,
       modifiedBy: modifiedBy ?? this.account,
       modifiedOn: modifiedOn ?? Date.now(),
       objectId,
@@ -544,7 +547,7 @@ export class TxFactory {
     return {
       _id: generateId(),
       _class: core.class.TxRemoveDoc,
-      space: core.space.Tx,
+      space: this.txSpace,
       modifiedBy: modifiedBy ?? this.account,
       modifiedOn: modifiedOn ?? Date.now(),
       objectId,
@@ -565,7 +568,7 @@ export class TxFactory {
     return {
       _id: generateId(),
       _class: core.class.TxMixin,
-      space: core.space.Tx,
+      space: this.txSpace,
       modifiedBy: modifiedBy ?? this.account,
       modifiedOn: modifiedOn ?? Date.now(),
       objectId,
@@ -587,7 +590,7 @@ export class TxFactory {
     return {
       _id: generateId(),
       _class: core.class.TxApplyIf,
-      space: core.space.Tx,
+      space: this.txSpace,
       modifiedBy: modifiedBy ?? this.account,
       modifiedOn: modifiedOn ?? Date.now(),
       objectSpace: space,

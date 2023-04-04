@@ -827,6 +827,10 @@ export function createModel (builder: Builder): void {
     presenter: tracker.component.IssuePresenter
   })
 
+  builder.mixin(tracker.class.Issue, core.class.Class, notification.mixin.NotificationObjectPresenter, {
+    presenter: tracker.component.NotificationIssuePresenter
+  })
+
   builder.mixin(tracker.class.IssueTemplate, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: tracker.component.IssueTemplatePresenter
   })

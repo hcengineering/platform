@@ -35,18 +35,22 @@ import TxMessageCreate from './components/activity/TxMessageCreate.svelte'
 import ChannelHeader from './components/ChannelHeader.svelte'
 import ChannelPresenter from './components/ChannelPresenter.svelte'
 import ChannelView from './components/ChannelView.svelte'
+import ChannelViewPanel from './components/ChannelViewPanel.svelte'
 import ChunterBrowser from './components/ChunterBrowser.svelte'
 import CommentInput from './components/CommentInput.svelte'
 import CommentPopup from './components/CommentPopup.svelte'
 import CommentPresenter from './components/CommentPresenter.svelte'
 import CommentsPresenter from './components/CommentsPresenter.svelte'
+import MessagePresenter from './components/MessagePresenter.svelte'
+import ThreadParentPresenter from './components/ThreadParentPresenter.svelte'
+import ThreadViewPanel from './components/ThreadViewPanel.svelte'
 import ConvertDmToPrivateChannelModal from './components/ConvertDmToPrivateChannel.svelte'
 import CreateChannel from './components/CreateChannel.svelte'
 import CreateDirectMessage from './components/CreateDirectMessage.svelte'
 import DmHeader from './components/DmHeader.svelte'
 import DmPresenter from './components/DmPresenter.svelte'
 import EditChannel from './components/EditChannel.svelte'
-import MessagePresenter from './components/MessagePresenter.svelte'
+import DirectMessagePresenter from './components/DirectMessagePresenter.svelte'
 import SavedMessages from './components/SavedMessages.svelte'
 import Threads from './components/Threads.svelte'
 import ThreadView from './components/ThreadView.svelte'
@@ -260,11 +264,15 @@ export default async (): Promise<Resources> => ({
     CommentInput,
     CreateChannel,
     CreateDirectMessage,
+    ThreadParentPresenter,
+    ThreadViewPanel,
     ChannelHeader,
     ChannelView,
+    ChannelViewPanel,
     CommentPresenter,
     CommentsPresenter,
     ChannelPresenter,
+    DirectMessagePresenter,
     MessagePresenter,
     ChunterBrowser,
     DmHeader,

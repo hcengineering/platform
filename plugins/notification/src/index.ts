@@ -118,8 +118,27 @@ export interface TrackedDoc extends Class<Doc> {}
 /**
  * @public
  */
+export interface NotificationObjectPresenter extends Class<Doc> {
+  presenter: AnyComponent
+}
+
+/**
+ * @public
+ */
 export interface Collaborators extends Doc {
   collaborators: Ref<Account>[]
+}
+
+/**
+ * @public
+ */
+export interface DocUpdates extends Doc {
+  user: Ref<Account>
+  attachedTo: Ref<Doc>
+  attachedToClass: Ref<Class<Doc>>
+  lastTx?: Ref<TxCUD<Doc>>
+  lastTxTime?: Timestamp
+  txes: [Ref<TxCUD<Doc>>, Timestamp][]
 }
 
 /**
@@ -150,7 +169,8 @@ const notification = plugin(notificationId, {
     AnotherUserNotifications: '' as Ref<Mixin<AnotherUserNotifications>>,
     ClassCollaborators: '' as Ref<Mixin<ClassCollaborators>>,
     Collaborators: '' as Ref<Mixin<Collaborators>>,
-    TrackedDoc: '' as Ref<Mixin<TrackedDoc>>
+    TrackedDoc: '' as Ref<Mixin<TrackedDoc>>,
+    NotificationObjectPresenter: '' as Ref<Mixin<NotificationObjectPresenter>>
   },
   class: {
     LastView: '' as Ref<Class<LastView>>,
@@ -158,12 +178,12 @@ const notification = plugin(notificationId, {
     EmailNotification: '' as Ref<Class<EmailNotification>>,
     NotificationType: '' as Ref<Class<NotificationType>>,
     NotificationProvider: '' as Ref<Class<NotificationProvider>>,
-    NotificationSetting: '' as Ref<Class<NotificationSetting>>
+    NotificationSetting: '' as Ref<Class<NotificationSetting>>,
+    DocUpdates: '' as Ref<Class<DocUpdates>>
   },
   ids: {
     MentionNotification: '' as Ref<NotificationType>,
     DMNotification: '' as Ref<NotificationType>,
-    CollaboratorNotification: '' as Ref<NotificationType>,
     PlatformNotification: '' as Ref<NotificationProvider>,
     BrowserNotification: '' as Ref<NotificationProvider>,
     EmailNotification: '' as Ref<NotificationProvider>,
@@ -174,6 +194,7 @@ const notification = plugin(notificationId, {
   },
   component: {
     NotificationsPopup: '' as AnyComponent,
+    Inbox: '' as AnyComponent,
     NotificationPresenter: '' as AnyComponent
   },
   icon: {
@@ -186,7 +207,8 @@ const notification = plugin(notificationId, {
   },
   string: {
     Notification: '' as IntlString,
-    Notifications: '' as IntlString
+    Notifications: '' as IntlString,
+    Inbox: '' as IntlString
   },
   function: {
     GetNotificationClient: '' as Resource<NotificationClientFactoy>

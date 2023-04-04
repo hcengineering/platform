@@ -39,6 +39,7 @@
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
+  export let embedded = false
 
   let realObjectClass: Ref<Class<Doc>> = _class
   let lastId: Ref<Doc> = _id
@@ -277,6 +278,7 @@
     {icon}
     {title}
     {object}
+    {embedded}
     isHeader={mainEditor?.pinned ?? false}
     isAside={true}
     bind:panelWidth

@@ -57,6 +57,7 @@
 
   export let _id: Ref<Document>
   export let _class: Ref<Class<Document>>
+  export let embedded = false
 
   let lastId: Ref<Doc> = _id
   let lastClass: Ref<Class<Doc>> = _class
@@ -378,6 +379,7 @@
     isHeader
     isAside={true}
     isSub={false}
+    {embedded}
     bind:innerWidth
     floatAside={false}
     useMaxWidth={true}

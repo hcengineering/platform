@@ -23,38 +23,41 @@ import core, {
   AttachedDoc,
   Class,
   Doc,
-  generateId,
+  DocumentUpdate,
   Hierarchy,
-  IdMap,
+  MixinUpdate,
   Ref,
   RefTo,
   Space,
   Timestamp,
-  toIdMap,
   Tx,
+  TxCUD,
   TxCollectionCUD,
   TxCreateDoc,
-  TxCUD,
   TxMixin,
   TxProcessor,
-  TxUpdateDoc
+  TxRemoveDoc,
+  TxUpdateDoc,
+  generateId
 } from '@hcengineering/core'
 import notification, {
   ClassCollaborators,
   Collaborators,
+  DocUpdates,
   EmailNotification,
+  LastView,
   NotificationProvider,
   NotificationType
 } from '@hcengineering/notification'
 import { getResource } from '@hcengineering/platform'
 import type { TriggerControl } from '@hcengineering/server-core'
 import serverNotification, {
+  HTMLPresenter,
+  TextPresenter,
   createLastViewTx,
   getEmployeeAccount,
   getEmployeeAccountById,
-  getUpdateLastViewTx,
-  HTMLPresenter,
-  TextPresenter
+  getUpdateLastViewTx
 } from '@hcengineering/server-notification'
 import { Content } from './types'
 import { replaceAll } from './utils'
@@ -378,6 +381,29 @@ export async function UpdateLastView (tx: Tx, control: TriggerControl): Promise<
   return result
 }
 
+/**
+ * @public
+ */
+export async function OnUpdateLastView (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const actualTx = TxProcessor.extractTx(tx) as TxUpdateDoc<LastView>
+  if (actualTx._class !== core.class.TxUpdateDoc) return []
+  if (actualTx.objectClass !== notification.class.LastView) return []
+  const result: Tx[] = []
+  for (const key in actualTx.operations) {
+    const docs = await control.findAll(notification.class.DocUpdates, { attachedTo: key as Ref<Doc> })
+    for (const doc of docs) {
+      const txes = doc.txes.filter((p) => p[1] > actualTx.operations[key])
+      result.push(
+        control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
+          txes
+        })
+      )
+    }
+  }
+
+  return result
+}
+
 function getBacklink (ptx: TxCollectionCUD<Doc, Backlink>): Backlink {
   return TxProcessor.createDoc2Doc(ptx.tx as TxCreateDoc<Backlink>)
 }
@@ -394,20 +420,16 @@ async function getBacklinkDoc (backlink: Backlink, control: TriggerControl): Pro
   )[0]
 }
 
-async function getValueCollaborators (
-  value: any,
-  attr: AnyAttribute,
-  control: TriggerControl
-): Promise<EmployeeAccount[]> {
+async function getValueCollaborators (value: any, attr: AnyAttribute, control: TriggerControl): Promise<Ref<Account>[]> {
   const hierarchy = control.hierarchy
   if (attr.type._class === core.class.RefTo) {
     const to = (attr.type as RefTo<Doc>).to
     if (hierarchy.isDerived(to, contact.class.Employee)) {
       const acc = await getEmployeeAccount(value, control)
-      return acc !== undefined ? [acc] : []
+      return acc !== undefined ? [acc._id] : []
     } else if (hierarchy.isDerived(to, core.class.Account)) {
       const acc = await getEmployeeAccountById(value, control)
-      return acc !== undefined ? [acc] : []
+      return acc !== undefined ? [acc._id] : []
     }
   } else if (attr.type._class === core.class.ArrOf) {
     const arrOf = (attr.type as ArrOf<RefTo<Doc>>).of
@@ -417,12 +439,12 @@ async function getValueCollaborators (
         const employeeAccounts = await control.modelDb.findAll(contact.class.EmployeeAccount, {
           employee: { $in: Array.isArray(value) ? value : [value] }
         })
-        return employeeAccounts
+        return employeeAccounts.map((p) => p._id)
       } else if (hierarchy.isDerived(to, core.class.Account)) {
         const employeeAccounts = await control.modelDb.findAll(contact.class.EmployeeAccount, {
           _id: { $in: Array.isArray(value) ? value : [value] }
         })
-        return employeeAccounts
+        return employeeAccounts.map((p) => p._id)
       }
     }
   }
@@ -434,7 +456,7 @@ async function getKeyCollaborators (
   value: any,
   field: string,
   control: TriggerControl
-): Promise<EmployeeAccount[] | undefined> {
+): Promise<Ref<Account>[] | undefined> {
   if (value !== undefined && value !== null) {
     const attr = control.hierarchy.findAttribute(doc._class, field)
     if (attr !== undefined) {
@@ -447,84 +469,180 @@ async function getDocCollaborators (
   doc: Doc,
   mixin: ClassCollaborators,
   control: TriggerControl
-): Promise<EmployeeAccount[]> {
-  const collaborators: IdMap<EmployeeAccount> = new Map()
+): Promise<Ref<Account>[]> {
+  const collaborators: Set<Ref<Account>> = new Set()
   for (const field of mixin.fields) {
     const value = (doc as any)[field]
     const newCollaborators = await getKeyCollaborators(doc, value, field, control)
     if (newCollaborators !== undefined) {
       for (const newCollaborator of newCollaborators) {
-        collaborators.set(newCollaborator._id, newCollaborator)
+        collaborators.add(newCollaborator)
       }
     }
   }
   return Array.from(collaborators.values())
 }
 
+async function createCollabDocInfo (
+  collaborators: Ref<Account>[],
+  tx: TxCUD<Doc>,
+  objectId: Ref<Doc>,
+  objectClass: Ref<Class<Doc>>,
+  control: TriggerControl,
+  txId?: Ref<TxCUD<Doc>>
+): Promise<TxCUD<DocUpdates>[]> {
+  const res: TxCUD<DocUpdates>[] = []
+  const targets = new Set(collaborators)
+  const docs = await control.findAll(notification.class.DocUpdates, { attachedTo: objectId })
+  for (const doc of docs) {
+    if (tx.modifiedBy === doc.user || !targets.delete(doc.user)) continue
+    res.push(
+      control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
+        $push: {
+          txes: [txId ?? tx._id, tx.modifiedOn]
+        }
+      })
+    )
+    res.push(
+      control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
+        lastTx: txId ?? tx._id,
+        lastTxTime: tx.modifiedOn
+      })
+    )
+  }
+  for (const target of targets) {
+    if (tx.modifiedBy === target) continue
+    res.push(
+      control.txFactory.createTxCreateDoc(notification.class.DocUpdates, notification.space.Notifications, {
+        user: target,
+        attachedTo: objectId,
+        attachedToClass: objectClass,
+        lastTx: txId ?? tx._id,
+        lastTxTime: tx.modifiedOn,
+        txes: [[txId ?? tx._id, tx.modifiedOn]]
+      })
+    )
+  }
+  return res
+}
+
 function getMixinTx (
   actualTx: TxCUD<Doc>,
   control: TriggerControl,
-  collaborators: EmployeeAccount[]
+  collaborators: Ref<Account>[]
 ): TxMixin<Doc, Collaborators> {
-  return control.txFactory.createTxMixin(
+  const tx = control.txFactory.createTxMixin(
     actualTx.objectId,
     actualTx.objectClass,
     actualTx.objectSpace,
     notification.mixin.Collaborators,
     {
-      collaborators: collaborators.map((p) => p._id)
+      collaborators
     }
   )
+  return tx
 }
 
 /**
  * @public
  */
-export async function CreateCollaboratorDoc (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+export async function createCollaboratorDoc (
+  tx: TxCreateDoc<Doc>,
+  control: TriggerControl,
+  txId?: Ref<TxCUD<Doc>>
+): Promise<Tx[]> {
   const res: Tx[] = []
   const hierarchy = control.hierarchy
-  const actualTx = TxProcessor.extractTx(tx) as TxCreateDoc<Doc>
-
-  if (actualTx._class !== core.class.TxCreateDoc) return []
-  const mixin = hierarchy.classHierarchyMixin(actualTx.objectClass, notification.mixin.ClassCollaborators)
+  const mixin = hierarchy.classHierarchyMixin(tx.objectClass, notification.mixin.ClassCollaborators)
   if (mixin !== undefined) {
-    const doc = TxProcessor.createDoc2Doc(actualTx)
+    const doc = TxProcessor.createDoc2Doc(tx)
     const collaborators = await getDocCollaborators(doc, mixin, control)
 
-    const mixinTx = getMixinTx(actualTx, control, collaborators)
+    const mixinTx = getMixinTx(tx, control, collaborators)
+    const notificationTxes = await createCollabDocInfo(collaborators, tx, doc._id, doc._class, control, txId)
     res.push(mixinTx)
+    res.push(...notificationTxes)
+  }
+  return res
+}
+
+/**
+ * @public
+ */
+export async function collaboratorDocHandler (tx: Tx, control: TriggerControl, txId?: Ref<TxCUD<Doc>>): Promise<Tx[]> {
+  switch (tx._class) {
+    case core.class.TxCreateDoc:
+      if (tx.space === core.space.DerivedTx) return []
+      return await createCollaboratorDoc(tx as TxCreateDoc<Doc>, control, txId)
+    case core.class.TxUpdateDoc:
+    case core.class.TxMixin:
+      if (tx.space === core.space.DerivedTx) return []
+      return await updateCollaboratorDoc(tx as TxUpdateDoc<Doc>, control, txId)
+    case core.class.TxRemoveDoc:
+      return await removeCollaboratorDoc(tx as TxRemoveDoc<Doc>, control)
+    case core.class.TxCollectionCUD:
+      return await collectionCollabDoc(tx as TxCollectionCUD<Doc, AttachedDoc>, control)
+  }
+
+  return []
+}
+
+async function collectionCollabDoc (tx: TxCollectionCUD<Doc, AttachedDoc>, control: TriggerControl): Promise<Tx[]> {
+  const actualTx = TxProcessor.extractTx(tx)
+  let res = await collaboratorDocHandler(actualTx, control, tx._id)
+  const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
+  if (doc !== undefined) {
+    if (control.hierarchy.hasMixin(doc, notification.mixin.Collaborators)) {
+      const collabMixin = control.hierarchy.as(doc, notification.mixin.Collaborators)
+      res = res.concat(
+        await createCollabDocInfo(collabMixin.collaborators, tx, tx.objectId, tx.objectClass, control, tx._id)
+      )
+    }
+  }
+  return res
+}
+
+async function removeCollaboratorDoc (tx: TxRemoveDoc<Doc>, control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  const hierarchy = control.hierarchy
+  const mixin = hierarchy.classHierarchyMixin(tx.objectClass, notification.mixin.ClassCollaborators)
+  if (mixin !== undefined) {
+    const docUpdates = await control.findAll(notification.class.DocUpdates, { attachedTo: tx.objectId })
+    for (const doc of docUpdates) {
+      res.push(control.txFactory.createTxRemoveDoc(doc._class, doc.space, doc._id))
+    }
   }
   return res
 }
 
 async function getNewCollaborators (
-  actualTx: TxUpdateDoc<Doc>,
+  ops: DocumentUpdate<Doc> | MixinUpdate<Doc, Doc>,
   mixin: ClassCollaborators,
   doc: Doc,
   control: TriggerControl
-): Promise<EmployeeAccount[]> {
-  const newCollaborators: IdMap<EmployeeAccount> = new Map()
-  if (actualTx.operations.$push !== undefined) {
-    for (const key in actualTx.operations.$push) {
+): Promise<Ref<Account>[]> {
+  const newCollaborators: Set<Ref<Account>> = new Set()
+  if (ops.$push !== undefined) {
+    for (const key in ops.$push) {
       if (mixin.fields.includes(key)) {
-        const value = (actualTx.operations.$push as any)[key]
+        const value = (ops.$push as any)[key]
         const newCollabs = await getKeyCollaborators(doc, value, key, control)
         if (newCollabs !== undefined) {
           for (const newCollab of newCollabs) {
-            newCollaborators.set(newCollab._id, newCollab)
+            newCollaborators.add(newCollab)
           }
         }
       }
     }
   }
-  for (const key in actualTx.operations) {
+  for (const key in ops) {
     if (key.startsWith('$')) continue
     if (mixin.fields.includes(key)) {
-      const value = (actualTx.operations as any)[key]
+      const value = (ops as any)[key]
       const newCollabs = await getKeyCollaborators(doc, value, key, control)
       if (newCollabs !== undefined) {
         for (const newCollab of newCollabs) {
-          newCollaborators.set(newCollab._id, newCollab)
+          newCollaborators.add(newCollab)
         }
       }
     }
@@ -532,54 +650,57 @@ async function getNewCollaborators (
   return Array.from(newCollaborators.values())
 }
 
-/**
- * @public
- */
-export async function UpdateCollaboratorDoc (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const hierarchy = control.hierarchy
-  const actualTx = TxProcessor.extractTx(tx) as TxUpdateDoc<Doc>
+function isMixinTx (tx: TxUpdateDoc<Doc> | TxMixin<Doc, Doc>): tx is TxMixin<Doc, Doc> {
+  return tx._class === core.class.TxMixin
+}
 
-  if (actualTx._class !== core.class.TxUpdateDoc) return []
-  const clazz = hierarchy.getClass(actualTx.objectClass)
-  if (!hierarchy.hasMixin(clazz, notification.mixin.ClassCollaborators)) return []
-  const mixin = hierarchy.as(clazz, notification.mixin.ClassCollaborators)
-  const doc = (await control.findAll(actualTx.objectClass, { _id: actualTx.objectId }, { limit: 1 }))[0]
+async function updateCollaboratorDoc (
+  tx: TxUpdateDoc<Doc> | TxMixin<Doc, Doc>,
+  control: TriggerControl,
+  txId?: Ref<TxCUD<Doc>>
+): Promise<Tx[]> {
+  const hierarchy = control.hierarchy
+  let res: Tx[] = []
+  const mixin = hierarchy.classHierarchyMixin(tx.objectClass, notification.mixin.ClassCollaborators)
+  if (mixin === undefined) return []
+  const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
   if (doc === undefined) return []
-  let collaborators: EmployeeAccount[] = []
-  let mixinTx: TxMixin<Doc, Collaborators> | undefined
   if (hierarchy.hasMixin(doc, notification.mixin.Collaborators)) {
     // we should handle change field and subscribe new collaborators
     const collabMixin = hierarchy.as(doc, notification.mixin.Collaborators)
-    const oldCollaborators = await control.modelDb.findAll(contact.class.EmployeeAccount, {
-      _id: { $in: collabMixin.collaborators as Ref<EmployeeAccount>[] }
-    })
-    const collabs = toIdMap(oldCollaborators)
-    const newCollaborators = (await getNewCollaborators(actualTx, mixin, doc, control)).filter(
-      (p) => !collabs.has(p._id)
-    )
+    const collabs = new Set(collabMixin.collaborators)
+    const ops = isMixinTx(tx) ? tx.attributes : tx.operations
+    const newCollaborators = (await getNewCollaborators(ops, mixin, doc, control)).filter((p) => !collabs.has(p))
 
     if (newCollaborators.length > 0) {
-      mixinTx = control.txFactory.createTxMixin(
-        actualTx.objectId,
-        actualTx.objectClass,
-        actualTx.objectSpace,
-        notification.mixin.Collaborators,
-        {
+      res.push(
+        control.txFactory.createTxMixin(tx.objectId, tx.objectClass, tx.objectSpace, notification.mixin.Collaborators, {
           $push: {
             collaborators: {
-              $each: newCollaborators.map((p) => p._id),
+              $each: newCollaborators,
               $position: 0
             }
           }
-        }
+        })
       )
     }
+    res = res.concat(
+      await createCollabDocInfo(
+        [...collabMixin.collaborators, ...newCollaborators],
+        tx,
+        doc._id,
+        doc._class,
+        control,
+        txId
+      )
+    )
   } else {
-    collaborators = await getDocCollaborators(doc, mixin, control)
-    mixinTx = getMixinTx(actualTx, control, collaborators)
+    const collaborators = await getDocCollaborators(doc, mixin, control)
+    res.push(getMixinTx(tx, control, collaborators))
+    res = res.concat(await createCollabDocInfo(collaborators, tx, doc._id, doc._class, control, txId))
   }
 
-  return mixinTx !== undefined ? [mixinTx] : []
+  return res
 }
 
 /**
@@ -626,9 +747,9 @@ export * from './types'
 export default async () => ({
   trigger: {
     OnBacklinkCreate,
+    CollaboratorDocHandler: collaboratorDocHandler,
+    OnUpdateLastView,
     UpdateLastView,
-    CreateCollaboratorDoc,
-    UpdateCollaboratorDoc,
     OnAddCollborator
   }
 })

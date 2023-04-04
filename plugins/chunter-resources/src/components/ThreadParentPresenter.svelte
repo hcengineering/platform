@@ -13,10 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Message } from '@hcengineering/chunter'
-  import { MessageViewer } from '@hcengineering/presentation'
-
-  export let value: Message
+  import { Label } from '@hcengineering/ui'
+  import chunter from '../plugin'
 </script>
 
-<div><MessageViewer message={value.content} /></div>
+<Label label={chunter.string.Thread} />

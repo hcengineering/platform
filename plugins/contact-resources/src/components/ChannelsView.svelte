@@ -16,12 +16,12 @@
 <script lang="ts">
   import type { Channel, ChannelProvider } from '@hcengineering/contact'
   import type { AttachedData, Doc, Ref } from '@hcengineering/core'
-  import { LastView } from '@hcengineering/notification'
-  import type { Asset, IntlString } from '@hcengineering/platform'
+  import notification, { LastView } from '@hcengineering/notification'
+  import { Asset, getResource, IntlString } from '@hcengineering/platform'
   import type { AnyComponent } from '@hcengineering/ui'
-  import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { Button } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import { Writable, writable } from 'svelte/store'
   import { getChannelProviders } from '../utils'
   import ChannelsPopup from './ChannelsPopup.svelte'
 
@@ -30,8 +30,9 @@
   export let length: 'short' | 'full' = 'full'
   export let reverse: boolean = false
   export let integrations: Set<Ref<Doc>> = new Set<Ref<Doc>>()
-  const notificationClient = NotificationClientImpl.getClient()
-  const lastViews = notificationClient.getLastViews()
+
+  let lastViews: Writable<LastView> = writable()
+  getResource(notification.function.GetNotificationClient).then((res) => (lastViews = res().getLastViews()))
 
   interface Item {
     label: IntlString

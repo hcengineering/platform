@@ -28,6 +28,7 @@
   import VacancyApplications from './VacancyApplications.svelte'
 
   export let _id: Ref<Vacancy>
+  export let embedded = false
 
   let object: Required<Vacancy>
   let rawName: string = ''
@@ -82,6 +83,7 @@
     title={object.name}
     isHeader={true}
     isAside={true}
+    {embedded}
     {object}
     on:close={() => {
       dispatch('close')
@@ -100,15 +102,11 @@
     </svelte:fragment>
     <svelte:fragment slot="attributes" let:direction={dir}>
       {#if dir === 'column'}
-        <div class="ac-subtitle">
-          <div class="ac-subtitle-content">
-            <DocAttributeBar
-              {object}
-              {mixins}
-              ignoreKeys={['name', 'description', 'fullDescription', 'private', 'archived']}
-            />
-          </div>
-        </div>
+        <DocAttributeBar
+          {object}
+          {mixins}
+          ignoreKeys={['name', 'description', 'fullDescription', 'private', 'archived']}
+        />
       {/if}
     </svelte:fragment>
 

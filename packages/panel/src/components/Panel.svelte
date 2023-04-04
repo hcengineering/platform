@@ -45,6 +45,7 @@
   export let allowClose = true
   export let useMaxWidth: boolean | undefined = undefined
   export let isFullSize = false
+  export let embedded = false
 </script>
 
 <Panel
@@ -56,6 +57,7 @@
   on:close
   {allowClose}
   {floatAside}
+  {embedded}
   bind:useMaxWidth
   {isFullSize}
 >

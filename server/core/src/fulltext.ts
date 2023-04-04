@@ -44,7 +44,7 @@ import type { FullTextAdapter, IndexedDoc, WithFind } from './types'
  * @public
  */
 export class FullTextIndex implements WithFind {
-  txFactory = new TxFactory(core.account.System)
+  txFactory = new TxFactory(core.account.System, true)
 
   consistency: Promise<void> | undefined
 
