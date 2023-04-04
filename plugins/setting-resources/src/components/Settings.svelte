@@ -129,7 +129,7 @@
       <Component
         is={category.component}
         props={{
-          visibileNav,
+          visibileNav
         }}
       />
     {/if}
