@@ -285,7 +285,7 @@
 <style lang="scss">
   .root {
     padding: 0.75rem;
-    background-color: var(--accent-bg-color);
+    background-color: var(--body-accent);
     border: 1px solid var(--button-border-color);
     border-radius: 0.5rem;
     overflow: hidden;

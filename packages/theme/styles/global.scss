@@ -126,3 +126,7 @@ body {
   overflow: hidden;
   touch-action: none;
 }
+
+// TSK-1026. Experiment, don't forget to delete.
+.theme-dark .p-activity .msgactivity-content.comment .msgactivity-content__title.labels-row > .bold,
+.theme-dark .p-activity .msgactivity-content.comment .activity-content.content .p-inline { color: rgba(255, 255, 255, .8); }
