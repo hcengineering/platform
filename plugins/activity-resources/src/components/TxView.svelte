@@ -186,7 +186,7 @@
     <div class="msgactivity-content" class:content={isColumn} class:comment={isComment || isAttach}>
       <div class="msgactivity-content__header">
         <div class="msgactivity-content__title labels-row">
-          <span class="{isComment || isAttach ? 'bold' : 'strong'}">
+          <span class={isComment || isAttach ? 'bold' : 'strong'}>
             {#if employee}
               {getName(employee)}
             {:else}
@@ -201,7 +201,7 @@
             {#if tx.updated}
               <span class="lower"><Label label={activity.string.Edited} /></span>
             {/if}
-            <span class="time"><TimeSince value={tx.tx.modifiedOn} /></span>
+            <span class="time ml-1"><TimeSince value={tx.tx.modifiedOn} /></span>
           {:else if viewlet && viewlet.label}
             <span class="lower">
               <Label label={viewlet.label} params={viewlet.labelParams ?? {}} />
@@ -306,7 +306,7 @@
       {/if}
 
       {#if viewlet && viewlet.display !== 'inline'}
-        <div class="activity-content content" class:contentHidden>
+        <div class="activity-content content" class:indent={isAttach} class:contentHidden>
           <ShowMore ignore={edit}>
             {#if tx.collectionAttribute !== undefined && (tx.txDocIds?.size ?? 0) > 1}
               <div class="flex-row-center flex-grow flex-wrap clear-mins">
@@ -321,7 +321,7 @@
         </div>
       {:else if hasMessageType && model.length > 0 && (tx.updateTx || tx.mixinTx)}
         {#await getValue(client, model[0], tx) then value}
-          <div class="activity-content content" class:contentHidden>
+          <div class="activity-content content" class:indent={isAttach} class:contentHidden>
             <ShowMore ignore={edit}>
               {#if value.isObjectSet}
                 <ObjectPresenter value={value.set} inline />
@@ -383,11 +383,6 @@
       &.content {
         flex-direction: column;
         padding-bottom: 0.25rem;
-      }
-      &.comment {
-        .activity-content {
-          margin-top: 0.25rem;
-        }
       }
       &:not(.comment) {
         .msgactivity-content__header {
@@ -470,7 +465,6 @@
   .activity-content {
     overflow: hidden;
     visibility: visible;
-    margin-top: 0.125rem;
     max-height: max-content;
     opacity: 1;
     transition-property: max-height, opacity;
@@ -483,6 +477,9 @@
       margin-top: -0.5rem;
       max-height: 0;
       opacity: 0;
+    }
+    &.indent {
+      margin-top: 0.5rem;
     }
   }
 </style>
