@@ -186,7 +186,7 @@
     <div class="msgactivity-content" class:content={isColumn} class:comment={isComment || isAttach}>
       <div class="msgactivity-content__header">
         <div class="msgactivity-content__title labels-row">
-          <span class="bold">
+          <span class="{isComment || isAttach ? 'bold' : 'strong'}">
             {#if employee}
               {getName(employee)}
             {:else}
