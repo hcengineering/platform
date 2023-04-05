@@ -100,17 +100,19 @@
     const options = clazz.sortingKey !== undefined ? { sort: { [clazz.sortingKey]: SortingOrder.Ascending } } : {}
     objectsPromise = client.findAll(targetClass, resultQuery, options)
     values = await objectsPromise
+    if (targets.has(undefined)) {
+      values.unshift(undefined)
+    }
     if (values.length !== targets.size) {
-      const notExisting = [...targets.keys()].filter((k) => !values.includes(k))
+      for (const value of values) {
+        targets.delete(value?._id)
+      }
       const oldSize = filter.value.length
-      filter.value = filter.value.filter((p) => !notExisting.includes(p))
+      filter.value = filter.value.filter((p) => !targets.has(p._id))
       onChange(filter)
       addNotification(await translate(view.string.FilterUpdated, {}), filter.key.label, FilterRemovedNotification, {
         description: await translate(view.string.FilterRemoved, { count: oldSize - (filter.value.length ?? 0) })
       })
-    }
-    if (targets.has(undefined)) {
-      values.unshift(undefined)
     }
     if (isStatus) {
       values = groupValues(values as Status[])
