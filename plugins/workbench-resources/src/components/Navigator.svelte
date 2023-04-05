@@ -18,7 +18,7 @@
   import preference, { SpacePreference } from '@hcengineering/preference'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
-  import { Button, NavLink, Scroller, showPopup } from '@hcengineering/ui'
+  import { NavLink, Scroller, showPopup, Icon, Label } from '@hcengineering/ui'
   import type { Application, NavigatorModel, SpecialNavModel } from '@hcengineering/workbench'
   import workbench from '../plugin'
   import { getSpecialSpaceClass } from '../utils'
@@ -140,7 +140,7 @@
 </script>
 
 {#if model}
-  <Scroller>
+  <Scroller shrink>
     {#if model.specials}
       {#each specials as special, row}
         {#if row > 0 && specials[row].position !== specials[row - 1].position}
@@ -152,7 +152,6 @@
               label={special.label}
               icon={special.icon}
               selected={menuSelection ? false : special.id === currentSpecial}
-              indent={'ml-2'}
               {disabled}
             />
           </NavLink>
@@ -184,16 +183,19 @@
       />
     {/each}
     <div class="antiNav-space" />
-
-    <div class="antiNav-footer">
-      <Button
-        id="contact-us"
-        icon={setting.icon.Support}
-        kind={'transparent'}
-        size={'small'}
-        label={workbench.string.HelpAndSupport}
-        on:click={() => showPopup(HelpAndSupport, {}, 'help-center')}
-      />
-    </div>
   </Scroller>
 {/if}
+<div class="antiNav-footer-line" />
+<div class="antiNav-footer-grower" />
+<div class="antiNav-footer">
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <div class="antiNav-element" style:flex-grow={1} on:click={() => showPopup(HelpAndSupport, {}, 'help-center')}>
+    <div class="an-element__icon">
+      <Icon icon={setting.icon.Support} size={'small'} />
+    </div>
+    <span class="an-element__label content-color">
+      <Label label={workbench.string.HelpAndSupport} />
+    </span>
+  </div>
+  <slot />
+</div>

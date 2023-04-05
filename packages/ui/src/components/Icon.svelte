@@ -15,8 +15,9 @@
 <script lang="ts">
   import { Asset, getMetadata } from '@hcengineering/platform'
   import { AnySvelteComponent, IconSize } from '../types'
+  import { ComponentType } from 'svelte'
 
-  export let icon: Asset | AnySvelteComponent
+  export let icon: Asset | AnySvelteComponent | ComponentType
   export let size: IconSize
   export let fill = 'currentColor'
   export let iconProps: any | undefined = undefined

@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Ref, Space } from '@hcengineering/core'
   import { draftsStore, getClient } from '@hcengineering/presentation'
-  import { Button, showPopup } from '@hcengineering/ui'
+  import { Button, showPopup, IconAdd } from '@hcengineering/ui'
   import tracker from '../plugin'
   import CreateIssue from './CreateIssue.svelte'
 
@@ -49,24 +49,23 @@
   }
 </script>
 
-<div class="antiNav-subheader gap-2">
-  <div class="flex-grow text-md">
-    <Button
-      icon={tracker.icon.NewIssue}
-      label={draftExists ? tracker.string.ResumeDraft : tracker.string.NewIssue}
-      justify={'left'}
-      kind={'primary'}
-      width={'100%'}
-      on:click={newIssue}
-      id="new-issue"
-    >
-      <div slot="content" class="draft-circle-container">
-        {#if draftExists}
-          <div class="draft-circle" />
-        {/if}
-      </div>
-    </Button>
-  </div>
+<div class="antiNav-subheader">
+  <Button
+    icon={IconAdd}
+    label={draftExists ? tracker.string.ResumeDraft : tracker.string.NewIssue}
+    justify={'left'}
+    kind={'primary'}
+    width={'100%'}
+    size={'large'}
+    on:click={newIssue}
+    id="new-issue"
+  >
+    <div slot="content" class="draft-circle-container">
+      {#if draftExists}
+        <div class="draft-circle" />
+      {/if}
+    </div>
+  </Button>
 </div>
 
 <style lang="scss">

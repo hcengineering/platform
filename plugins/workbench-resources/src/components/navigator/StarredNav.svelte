@@ -91,12 +91,12 @@
   }
 </script>
 
-<TreeNode {label} parent actions={async () => [unStarAll]} indent={'ml-2'}>
+<TreeNode {label} parent actions={async () => [unStarAll]}>
   {#each spaces as space (space._id)}
     {#await getSpaceName(client, space) then name}
       <NavLink space={space._id}>
         <TreeItem
-          indent={'ml-4'}
+          indent={'ml-2'}
           _id={space._id}
           title={name}
           icon={classIcon(client, space._class)}

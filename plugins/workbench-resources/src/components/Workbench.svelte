@@ -617,16 +617,11 @@
               {/await}
             {/if}
           {/if}
-          <Navigator
-            {currentSpace}
-            {currentSpecial}
-            model={navigatorModel}
-            {currentApplication}
-            on:open={checkOnHide}
-          />
-          {#if currentApplication.navFooterComponent}
-            <Component is={currentApplication.navFooterComponent} props={{ currentSpace }} />
-          {/if}
+          <Navigator {currentSpace} {currentSpecial} model={navigatorModel} {currentApplication} on:open={checkOnHide}>
+            {#if currentApplication.navFooterComponent}
+              <Component is={currentApplication.navFooterComponent} props={{ currentSpace }} />
+            {/if}
+          </Navigator>
         </div>
       {/if}
       <div

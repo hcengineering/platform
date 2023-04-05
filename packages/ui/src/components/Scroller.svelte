@@ -31,6 +31,7 @@
   export let contentDirection: 'vertical' | 'vertical-reverse' | 'horizontal' = 'vertical'
   export let noStretch: boolean = autoscroll
   export let buttons: boolean = false
+  export let shrink: boolean = false
   export let divScroll: HTMLElement | undefined = undefined
 
   export function scroll (top: number, left?: number, behavior: 'auto' | 'smooth' = 'auto') {
@@ -342,6 +343,7 @@
   bind:this={divScrollContainer}
   class="scroller-container {orientir} {invertScroll ? 'invert' : 'normal'}"
   class:buttons
+  class:shrink
   style:--scroller-header-height={`${fade.multipler?.top ?? 0.125}rem`}
   style:--scroller-footer-height={`${fade.multipler?.bottom ?? 0.125}rem`}
 >
@@ -504,10 +506,13 @@
     display: flex;
     flex-direction: column;
     flex-shrink: 1;
-    flex-grow: 1;
-    height: 100%;
     min-width: 0;
     min-height: 0;
+
+    &:not(.shrink) {
+      flex-grow: 1;
+      height: 100%;
+    }
 
     &.buttons.vertical {
       margin: 1.5rem 0;

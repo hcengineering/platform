@@ -24,9 +24,10 @@
   export let notifications = 0
   export let parent = false
   export let collapsed = false
+  export let shortDropbox = false
   export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
 </script>
 
-<TreeElement {title} {label} {icon} {notifications} {collapsed} {actions} node {parent} {indent}>
+<TreeElement {title} {label} {icon} {notifications} {collapsed} {actions} node {parent} {indent} {shortDropbox}>
   <slot />
 </TreeElement>

@@ -28,15 +28,13 @@
 
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div
-  class="antiNav-element"
-  class:selected
-  class:disabled
-  class:ml-2={indent === 'ml-2'}
-  class:ml-4={indent === 'ml-4'}
-  class:ml-8={indent === 'ml-8'}
->
-  <div class="an-element__icon">
+<div class="antiNav-element" class:selected class:disabled>
+  <div
+    class="an-element__icon"
+    class:indent-2={indent === 'ml-2'}
+    class:indent-4={indent === 'ml-4'}
+    class:indent-8={indent === 'ml-8'}
+  >
     {#if icon}
       <Icon {icon} size={'small'} />
     {/if}
