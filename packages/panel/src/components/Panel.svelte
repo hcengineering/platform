@@ -136,6 +136,7 @@
       {:else if $$slots.attributes}<slot name="attributes" direction="column" />{/if}
       {#if $$slots.aside}<slot name="aside" />{/if}
     </Scroller>
+    <div class="h-2 min-h-2 max-h-2" />
   </svelte:fragment>
 
   {#if withoutActivity}
