@@ -14,16 +14,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Ref, Doc } from '@hcengineering/core'
-  import { Table } from '@hcengineering/view-resources'
+  import type { Doc, Ref } from '@hcengineering/core'
+  import { DocNavLink, ObjectPresenter, Table } from '@hcengineering/view-resources'
 
-  import attachment from '../plugin'
+  import { Label } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import attachment from '../plugin'
 
   export let objectId: Ref<Doc>
   export let attachments: number
+  export let object: Doc
 </script>
 
+<div class="flex flex-between flex-grow p-1 mb-4">
+  <div class="fs-title">
+    <Label label={attachment.string.Attachments} />
+  </div>
+  <DocNavLink {object}>
+    <ObjectPresenter _class={object._class} objectId={object._id} value={object} />
+  </DocNavLink>
+</div>
 <Table
   _class={attachment.class.Attachment}
   config={[

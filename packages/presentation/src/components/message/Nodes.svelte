@@ -29,7 +29,11 @@
     {:else if node.nodeName === 'STRONG'}
       <strong><svelte:self nodes={node.childNodes} /></strong>
     {:else if node.nodeName === 'P'}
-      <p class="p-inline"><svelte:self nodes={node.childNodes} /></p>
+      {#if node.childNodes.length > 0}
+        <p class="p-inline">
+          <svelte:self nodes={node.childNodes} />
+        </p>
+      {/if}
     {:else if node.nodeName === 'BLOCKQUOTE'}
       <blockquote><svelte:self nodes={node.childNodes} /></blockquote>
     {:else if node.nodeName === 'CODE'}

@@ -114,7 +114,7 @@
             <Label label={chunter.string.Comments} />:
           </div>
           <div class="ml-2">
-            <CommentPopup objectId={issue._id} />
+            <CommentPopup objectId={issue._id} object={issue} />
           </div>
         {/if}
       {/if}

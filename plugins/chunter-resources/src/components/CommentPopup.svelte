@@ -14,13 +14,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, Doc, SortingOrder } from '@hcengineering/core'
+  import { Doc, Ref, SortingOrder } from '@hcengineering/core'
 
   import chunter, { Comment } from '@hcengineering/chunter'
   import { createQuery } from '@hcengineering/presentation'
+  import { Label } from '@hcengineering/ui'
+  import { DocNavLink, ObjectPresenter } from '@hcengineering/view-resources'
   import CommentPresenter from './CommentPresenter.svelte'
 
   export let objectId: Ref<Doc>
+  export let object: Doc
 
   let comments: Comment[] = []
   const query = createQuery()
@@ -30,21 +33,34 @@
     (res) => {
       comments = res
     },
-    { limit: 3, sort: { modifiedOn: SortingOrder.Descending } }
+    { sort: { modifiedOn: SortingOrder.Descending } }
   )
 </script>
 
-{#each comments as comment}
-  <div class="item">
-    <CommentPresenter value={comment} />
+<div class="flex flex-between flex-grow p-1 mb-4">
+  <div class="fs-title">
+    <Label label={chunter.string.Comments} />
   </div>
-{/each}
+  <DocNavLink {object}>
+    <ObjectPresenter _class={object._class} objectId={object._id} value={object} />
+  </DocNavLink>
+</div>
+<div class="comments max-h-120 flex-row">
+  {#each comments as comment}
+    <div class="item">
+      <CommentPresenter value={comment} />
+    </div>
+  {/each}
+</div>
 
 <style lang="scss">
   .item {
     max-width: 30rem;
   }
   .item + .item {
-    margin-top: 1.25rem;
+    margin-top: 0.75rem;
+  }
+  .comments {
+    overflow: auto;
   }
 </style>

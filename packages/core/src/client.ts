@@ -198,7 +198,7 @@ export async function createClient (
     const atxes = await conn.findAll(
       core.class.Tx,
       { modifiedOn: { $gt: lastTx } },
-      { sort: { _id: SortingOrder.Ascending }, limit: transactionThreshold }
+      { sort: { modifiedOn: SortingOrder.Ascending, _id: SortingOrder.Ascending }, limit: transactionThreshold }
     )
     if (atxes.total < transactionThreshold) {
       console.log('applying input transactions', atxes.length)
@@ -226,7 +226,7 @@ async function loadModel (
   const atxes = await conn.findAll(
     core.class.Tx,
     { objectSpace: core.space.Model, _id: { $nin: Array.from(processedTx.values()) } },
-    { sort: { _id: SortingOrder.Ascending } }
+    { sort: { modifiedOn: SortingOrder.Ascending, _id: SortingOrder.Ascending } }
   )
 
   let systemTx: Tx[] = []

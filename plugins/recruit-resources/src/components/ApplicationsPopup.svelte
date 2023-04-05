@@ -15,12 +15,21 @@
 -->
 <script lang="ts">
   import type { Candidate } from '@hcengineering/recruit'
-  import recruit from '@hcengineering/recruit'
-  import { Table } from '@hcengineering/view-resources'
+  import { Label } from '@hcengineering/ui'
+  import { DocNavLink, ObjectPresenter, Table } from '@hcengineering/view-resources'
+  import recruit from '../plugin'
 
   export let value: Candidate
 </script>
 
+<div class="flex flex-between flex-grow p-1 mb-4">
+  <div class="fs-title">
+    <Label label={recruit.string.Applications} />
+  </div>
+  <DocNavLink object={value}>
+    <ObjectPresenter _class={value._class} objectId={value._id} {value} />
+  </DocNavLink>
+</div>
 <Table
   _class={recruit.class.Applicant}
   config={['', '$lookup.space.name', '$lookup.space.company', 'state', 'doneState']}
