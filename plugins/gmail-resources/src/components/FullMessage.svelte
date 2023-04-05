@@ -60,7 +60,9 @@
         }}
       />
       <div class="flex-grow flex-col clear-mins ml-2 mr-2">
-        <div class="overflow-label" use:tooltip={{ label: getEmbeddedLabel(currentMessage.subject)}}>{currentMessage.subject}</div>
+        <div class="overflow-label" use:tooltip={{ label: getEmbeddedLabel(currentMessage.subject) }}>
+          {currentMessage.subject}
+        </div>
         <span class="content-accent-color">
           <Label label={currentMessage.incoming ? gmail.string.From : gmail.string.To} />
           <b>{title}</b>
