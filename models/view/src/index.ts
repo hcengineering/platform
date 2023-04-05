@@ -63,9 +63,9 @@ import type {
   ViewOptionsModel,
   ViewOptions,
   AllValuesFunc,
+  GetAllValuesFunc,
   LinkProvider,
-  ObjectPanel,
-  AllValuesFuncGetter
+  ObjectPanel
 } from '@hcengineering/view'
 import view from './plugin'
 
@@ -221,7 +221,7 @@ export class TSortFuncs extends TClass implements ClassSortFuncs {
 
 @Mixin(view.mixin.AllValuesFunc, core.class.Class)
 export class TAllValuesFunc extends TClass implements AllValuesFunc {
-  func!: Resource<AllValuesFuncGetter>
+  func!: GetAllValuesFunc
 }
 
 @Model(view.class.ViewletPreference, preference.class.Preference)

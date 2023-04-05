@@ -254,17 +254,15 @@ export interface ClassSortFuncs extends Class<Doc> {
 /**
  * @public
  */
-export type AllValuesFuncGetter = (
-  space: Ref<Space> | undefined,
-  onUpdate: () => void,
-  queryId: Ref<Doc>
-) => Promise<any[] | undefined>
+export type GetAllValuesFunc = Resource<
+(query: DocumentQuery<Doc> | undefined, onUpdate: () => void, queryId: Ref<Doc>) => Promise<any[] | undefined>
+>
 
 /**
  * @public
  */
 export interface AllValuesFunc extends Class<Doc> {
-  func: Resource<AllValuesFuncGetter>
+  func: GetAllValuesFunc
 }
 
 /**
@@ -506,7 +504,7 @@ export interface ViewOption {
  */
 export type ViewCategoryActionFunc = (
   _class: Ref<Class<Doc>>,
-  space: Ref<Space> | undefined,
+  query: DocumentQuery<Doc> | undefined,
   key: string,
   onUpdate: () => void,
   queryId: Ref<Doc>,

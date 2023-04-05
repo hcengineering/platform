@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { CategoryType, Class, Doc, generateId, Lookup, Ref, Space } from '@hcengineering/core'
+  import { CategoryType, Class, Doc, DocumentQuery, generateId, Lookup, Ref, Space } from '@hcengineering/core'
   import { getResource, IntlString } from '@hcengineering/platform'
   import { getClient, statusStore } from '@hcengineering/presentation'
   import { AnyComponent } from '@hcengineering/ui'
@@ -28,6 +28,7 @@
   export let docs: Doc[]
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined
+  export let query: DocumentQuery<Doc> | undefined
   export let lookup: Lookup<Doc>
   export let loadingPropsLength: number | undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined
@@ -82,7 +83,7 @@
         const categoryFunc = viewOption as CategoryOption
         if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
           const f = await getResource(categoryFunc.action)
-          const res = hierarchy.clone(await f(_class, space, groupByKey, update, queryId, $statusStore))
+          const res = hierarchy.clone(await f(_class, query, groupByKey, update, queryId, $statusStore))
           if (res !== undefined) {
             categories = res
             return
