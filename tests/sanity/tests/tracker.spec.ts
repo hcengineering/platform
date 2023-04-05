@@ -235,7 +235,7 @@ test('create-issue-draft', async ({ page }) => {
   await page.locator('[placeholder="Type text\\.\\.\\."]').click()
   // Fill [placeholder="Type text\.\.\."]
   await page.locator('[placeholder="Type text\\.\\.\\."]').fill('1')
-  await page.locator('.p-1 > .button').click()
+  await page.locator('.ml-2 > .button').click()
 
   // Click button:nth-child(8)
   await page.locator('#more-actions').click()
@@ -271,7 +271,7 @@ test('create-issue-draft', async ({ page }) => {
   await page.locator('[placeholder="Type text\\.\\.\\."]').dblclick()
   // Fill [placeholder="Type text\.\.\."]
   await page.locator('[placeholder="Type text\\.\\.\\."]').fill('2')
-  await page.locator('.p-1 > .button').click()
+  await page.locator('.ml-2 > .button').click()
 
   await page.keyboard.press('Escape')
   await page.keyboard.press('Escape')
