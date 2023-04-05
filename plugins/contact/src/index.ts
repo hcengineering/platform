@@ -265,6 +265,7 @@ export const contactPlugin = plugin(contactId, {
   },
   templateField: {
     CurrentEmployeeName: '' as Ref<TemplateField>,
+    CurrentEmployeePosition: '' as Ref<TemplateField>,
     CurrentEmployeeEmail: '' as Ref<TemplateField>,
     ContactName: '' as Ref<TemplateField>
   }

@@ -59,6 +59,7 @@ export default mergeIds(settingId, setting, {
   },
   function: {
     GetValue: '' as Resource<TemplateFieldFunc>,
-    GetOwnerName: '' as Resource<TemplateFieldFunc>
+    GetOwnerName: '' as Resource<TemplateFieldFunc>,
+    GetOwnerPosition: '' as Resource<TemplateFieldFunc>
   }
 })

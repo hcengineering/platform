@@ -182,6 +182,7 @@ export default plugin(settingId, {
   },
   templateField: {
     OwnerName: '' as Ref<TemplateField>,
+    OwnerPosition: '' as Ref<TemplateField>,
     Value: '' as Ref<TemplateField>
   }
 })

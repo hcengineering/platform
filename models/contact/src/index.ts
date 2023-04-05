@@ -688,6 +688,17 @@ export function createModel (builder: Builder): void {
     },
     contact.templateField.ContactName
   )
+
+  builder.createDoc(
+    templates.class.TemplateField,
+    core.space.Model,
+    {
+      label: contact.string.Position,
+      category: contact.templateFieldCategory.CurrentEmployee,
+      func: contact.function.GetCurrentEmployeePosition
+    },
+    contact.templateField.CurrentEmployeePosition
+  )
 }
 
 export { contactOperation } from './migration'
