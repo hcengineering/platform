@@ -193,7 +193,6 @@ const notification = plugin(notificationId, {
     MobileApp: '' as Ref<IntegrationType>
   },
   component: {
-    NotificationsPopup: '' as AnyComponent,
     Inbox: '' as AnyComponent,
     NotificationPresenter: '' as AnyComponent
   },

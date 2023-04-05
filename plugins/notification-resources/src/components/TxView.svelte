@@ -281,10 +281,6 @@
     content: '';
   }
 
-  .message {
-    flex-basis: 100%;
-  }
-
   .activity-content {
     overflow: hidden;
     visibility: visible;
