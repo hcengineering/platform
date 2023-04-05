@@ -15,17 +15,21 @@
 <script lang="ts">
   import { flip } from 'svelte/animate'
 
-  import { Doc } from '@hcengineering/core'
+  import { Doc, DocData, Ref } from '@hcengineering/core'
 
   import { IconMoreV } from '@hcengineering/ui'
   import { getClient } from '../utils'
 
   type DocWithRank = Doc & { rank: string }
+  type DraftDoc = DocData<Doc> & { _id: Ref<Doc> }
+  type DraftDocWithRank = DocData<DocWithRank> & { _id: Ref<Doc> }
+  type ListType = Doc[] | DocWithRank[] | DraftDoc[] | DraftDocWithRank[]
 
-  export let objects: Doc[] | DocWithRank[]
+  export let objects: ListType
   export let handleMove: ((fromIndex: number, toIndex: number) => void) | undefined = undefined
   export let calcRank: (doc: DocWithRank, next: DocWithRank) => string
   export let showContextMenu: ((evt: MouseEvent, doc: Doc) => void) | undefined = undefined
+  export let isDraft = false
 
   const client = getClient()
 
@@ -47,8 +51,12 @@
     }
   }
 
-  function checkHasRank (objects: Doc[] | (Doc & { rank: string })[]): objects is (Doc & { rank: string })[] {
+  function checkHasRank (objects: ListType): objects is DocWithRank[] {
     return 'rank' in objects[0]
+  }
+
+  function checkIsNotDraft (object: Doc | DocWithRank | DraftDoc | DraftDocWithRank): object is Doc | DocWithRank {
+    return !('_class' in object) && !isDraft
   }
 
   async function handleDrop (ev: DragEvent, toIndex: number) {
@@ -59,7 +67,7 @@
         handleMove(draggingIndex, toIndex)
         return
       }
-      if (!checkHasRank(objects)) {
+      if (!checkHasRank(objects) || isDraft) {
         return
       }
       const [prev, next] = [
@@ -83,7 +91,7 @@
         class:is-dragged-over-down={draggingIndex !== null && index > draggingIndex && index === hoveringIndex}
         class:drag-over-highlight={index === dragOverIndex}
         draggable={true}
-        on:contextmenu|preventDefault={(ev) => showContextMenu?.(ev, object)}
+        on:contextmenu|preventDefault={(ev) => checkIsNotDraft(object) && showContextMenu?.(ev, object)}
         on:dragstart={(ev) => handleDragStart(ev, index)}
         on:dragover|preventDefault={() => {
           dragOverIndex = index
