@@ -75,6 +75,8 @@ import {
   employeeSort,
   filterChannelInResult,
   filterChannelNinResult,
+  getContactFirstName,
+  getContactLastName,
   getContactLink,
   getContactName,
   getCurrentEmployeeEmail,
@@ -281,6 +283,8 @@ export default async (): Promise<Resources> => ({
     GetCurrentEmployeeName: getCurrentEmployeeName,
     GetCurrentEmployeeEmail: getCurrentEmployeeEmail,
     GetContactName: getContactName,
+    GetContactFirstName: getContactFirstName,
+    GetContactLastName: getContactLastName,
     GetContactLink: getContactLink
   },
   resolver: {

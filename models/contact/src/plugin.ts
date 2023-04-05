@@ -103,6 +103,8 @@ export default mergeIds(contactId, contact, {
   function: {
     GetCurrentEmployeeName: '' as Resource<TemplateFieldFunc>,
     GetCurrentEmployeeEmail: '' as Resource<TemplateFieldFunc>,
-    GetContactName: '' as Resource<TemplateFieldFunc>
+    GetContactName: '' as Resource<TemplateFieldFunc>,
+    GetContactFirstName: '' as Resource<TemplateFieldFunc>,
+    GetContactLastName: '' as Resource<TemplateFieldFunc>
   }
 })
