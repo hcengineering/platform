@@ -23,6 +23,8 @@ import {
   Employee,
   EmployeeAccount,
   formatName,
+  getFirstName,
+  getLastName,
   getName
 } from '@hcengineering/contact'
 import { Doc, getCurrentAccount, IdMap, ObjQueryType, Ref, Timestamp, toIdMap } from '@hcengineering/core'
@@ -130,6 +132,30 @@ export async function getContactName (provider: TemplateDataProvider): Promise<s
   const hierarchy = client.getHierarchy()
   if (hierarchy.isDerived(value._class, contact.class.Person)) {
     return getName(value)
+  } else {
+    return value.name
+  }
+}
+
+export async function getContactLastName (provider: TemplateDataProvider): Promise<string | undefined> {
+  const value = provider.get(contact.class.Contact) as Contact
+  if (value === undefined) return
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  if (hierarchy.isDerived(value._class, contact.class.Person)) {
+    return getLastName(value.name)
+  } else {
+    return ''
+  }
+}
+
+export async function getContactFirstName (provider: TemplateDataProvider): Promise<string | undefined> {
+  const value = provider.get(contact.class.Contact) as Contact
+  if (value === undefined) return
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  if (hierarchy.isDerived(value._class, contact.class.Person)) {
+    return getFirstName(value.name)
   } else {
     return value.name
   }

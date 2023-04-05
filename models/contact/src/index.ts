@@ -689,6 +689,28 @@ export function createModel (builder: Builder): void {
     },
     contact.templateField.ContactName
   )
+
+  builder.createDoc(
+    templates.class.TemplateField,
+    core.space.Model,
+    {
+      label: contact.string.PersonFirstNamePlaceholder,
+      category: contact.templateFieldCategory.Contact,
+      func: contact.function.GetContactFirstName
+    },
+    contact.templateField.ContactFirstName
+  )
+
+  builder.createDoc(
+    templates.class.TemplateField,
+    core.space.Model,
+    {
+      label: contact.string.PersonLastNamePlaceholder,
+      category: contact.templateFieldCategory.Contact,
+      func: contact.function.GetContactLastName
+    },
+    contact.templateField.ContactLastName
+  )
 }
 
 export { contactOperation } from './migration'
