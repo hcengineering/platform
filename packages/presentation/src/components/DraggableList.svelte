@@ -67,7 +67,7 @@
         handleMove(draggingIndex, toIndex)
         return
       }
-      if (!checkHasRank(objects) || isDraft) {
+      if (!checkHasRank(objects)) {
         return
       }
       const [prev, next] = [
@@ -76,7 +76,12 @@
       ]
       const object = objects[draggingIndex]
 
-      await client.update(object, { rank: calcRank(prev, next) })
+      const newRank = calcRank(prev, next)
+      if (isDraft) {
+        object.rank = newRank
+      } else {
+        await client.update(object, { rank: newRank })
+      }
     }
     resetDrag()
   }
