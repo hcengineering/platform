@@ -16,6 +16,7 @@
 <script lang="ts">
   import type { Doc } from '@hcengineering/core'
   import { IconAttachment, tooltip } from '@hcengineering/ui'
+  import { DocNavLink } from '@hcengineering/view-resources'
   import attachment from '../plugin'
   import AttachmentPopup from './AttachmentPopup.svelte'
 
@@ -27,18 +28,19 @@
 
 {#if value && value > 0}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div
-    use:tooltip={{
-      label: attachment.string.Attachments,
-      component: AttachmentPopup,
-      props: { objectId: object._id, attachments: value }
-    }}
-    on:click|preventDefault|stopPropagation={() => {}}
-    class="sm-tool-icon ml-1 mr-1"
-  >
-    <span class="icon"><IconAttachment {size} /></span>
-    {#if showCounter}
-      &nbsp;{value}
-    {/if}
-  </div>
+  <DocNavLink {object} inline noUnderline={true}>
+    <div
+      use:tooltip={{
+        label: attachment.string.Attachments,
+        component: AttachmentPopup,
+        props: { objectId: object._id, attachments: value }
+      }}
+      class="sm-tool-icon ml-1 mr-1"
+    >
+      <span class="icon"><IconAttachment {size} /></span>
+      {#if showCounter}
+        &nbsp;{value}
+      {/if}
+    </div>
+  </DocNavLink>
 {/if}

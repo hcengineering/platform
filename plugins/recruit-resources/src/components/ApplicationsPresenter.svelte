@@ -16,6 +16,7 @@
 <script lang="ts">
   import type { Candidate } from '@hcengineering/recruit'
   import { Icon, tooltip } from '@hcengineering/ui'
+  import { DocNavLink } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import ApplicationsPopup from './ApplicationsPopup.svelte'
 
@@ -24,14 +25,16 @@
 </script>
 
 {#if value && value > 0}
-  <div
-    use:tooltip={{
-      label: recruit.string.Applications,
-      component: ApplicationsPopup,
-      props: { value: object }
-    }}
-    class="sm-tool-icon"
-  >
-    <span class="icon"><Icon icon={recruit.icon.Application} size={'small'} /></span>&nbsp;{value}
-  </div>
+  <DocNavLink {object} inline noUnderline={true}>
+    <div
+      use:tooltip={{
+        label: recruit.string.Applications,
+        component: ApplicationsPopup,
+        props: { value: object }
+      }}
+      class="sm-tool-icon"
+    >
+      <span class="icon"><Icon icon={recruit.icon.Application} size={'small'} /></span>&nbsp;{value}
+    </div>
+  </DocNavLink>
 {/if}

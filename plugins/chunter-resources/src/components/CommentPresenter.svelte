@@ -18,10 +18,9 @@
   import type { Comment } from '@hcengineering/chunter'
   import chunter from '@hcengineering/chunter'
   import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
-  import { employeeByIdStore } from '@hcengineering/contact-resources'
+  import { Avatar, employeeByIdStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { getClient, MessageViewer } from '@hcengineering/presentation'
-  import { Avatar } from '@hcengineering/contact-resources'
   import { Icon, ShowMore, TimeSince } from '@hcengineering/ui'
 
   export let value: Comment
@@ -64,7 +63,7 @@
           </div>
           <div class="dark-color ml-4"><TimeSince value={value.modifiedOn} /></div>
         </div>
-        <ShowMore limit={126} fixed>
+        <ShowMore fixed>
           <MessageViewer message={value.message} />
           <AttachmentDocList {value} />
         </ShowMore>

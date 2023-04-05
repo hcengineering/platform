@@ -141,10 +141,17 @@ export function createModel (builder: Builder): void {
         'tx._class',
         'tx.objectClass',
         'tx.operations.attachedTo',
+        'space',
         'objectSpace',
         {
+          _class: 1,
           objectSpace: 1,
-          _id: 1
+          _id: 1,
+          modifiedOn: 1
+        },
+        {
+          _class: 1,
+          modifiedOn: 1
         }
       ]
     }
