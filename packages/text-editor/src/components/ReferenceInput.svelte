@@ -165,6 +165,9 @@
   const editorHandler: TextEditorHandler = {
     insertText: (text) => {
       textEditor.insertText(text)
+    },
+    insertTemplate: (name, text) => {
+      textEditor.insertText(text)
     }
   }
   function handleAction (a: RefAction, evt?: Event): void {

@@ -49,7 +49,7 @@
   const provider = getTemplateDataProvider()
   async function dispatchItem (item: MessageTemplate): Promise<void> {
     const message = await provider.fillTemplate(item.message)
-    editor.insertText(message)
+    editor.insertTemplate(item.title, message)
     closePopup()
   }
 

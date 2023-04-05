@@ -148,6 +148,14 @@
       },
       (res) => (attachments = res)
     )
+
+  function onTemplate (e: CustomEvent<string>): void {
+    if (e.detail !== undefined) {
+      if (obj.subject.trim() === '') {
+        obj.subject = e.detail
+      }
+    }
+  }
 </script>
 
 <input
@@ -215,7 +223,7 @@
       </div>
     {/if}
     <div class="input mt-4 clear-mins">
-      <StyledTextEditor full bind:content={obj.content} maxHeight="panel" />
+      <StyledTextEditor full bind:content={obj.content} maxHeight="panel" on:template={onTemplate} />
     </div>
   </div>
 </Scroller>
