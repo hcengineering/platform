@@ -39,6 +39,7 @@ export async function addAssigneeNotification (
   if (receiver === undefined) {
     return
   }
+  if (sender._id === receiver._id) return
 
   const result = await createNotificationTxes(control, ptx, task.ids.AssigneedNotification, issue, sender, receiver)
 
