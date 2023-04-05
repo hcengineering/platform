@@ -30,6 +30,7 @@
     "@hcengineering/ui": "^0.6.3",
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/model-core": "^0.6.0",
+    "@hcengineering/workbench": "^0.6.2",
     "@hcengineering/notification": "^0.6.8",
     "@hcengineering/setting": "^0.6.3"
   }

@@ -52,7 +52,13 @@
       attachedTo: { $in: contacts.map((p) => p._id) }
     },
     (res) => {
-      channels = res
+      const map = new Map()
+      for (const channel of res) {
+        if (!map.has(channel.attachedTo)) {
+          map.set(channel.attachedTo, channel)
+        }
+      }
+      channels = Array.from(map.values())
     }
   )
   let channels: Channel[] = []
@@ -258,15 +264,15 @@
       <div class="buttons-group">
         <div class="flex-grow flex-col">
           <Label label={plugin.string.NewMessage} />
-          <span class="content-accent-color">
+          <div class="content-accent-color targets">
             <b>
               {#each channels as channel, i}
                 <div>
                   {getName(channel)}
                 </div>
               {/each}
-            </b></span
-          >
+            </b>
+          </div>
         </div>
       </div>
       <div class="buttons-group small-gap">
@@ -339,6 +345,11 @@
       padding-left: 1rem;
       border-left: 1px solid var(--divider-color);
     }
+  }
+
+  .targets {
+    max-height: 10rem;
+    overflow-x: auto;
   }
 
   .input {

@@ -15,7 +15,7 @@
 //
 
 import { Resources } from '@hcengineering/platform'
-import NotificationsPopup from './components/NotificationsPopup.svelte'
+import Inbox from './components/Inbox.svelte'
 import NotificationSettings from './components/NotificationSettings.svelte'
 import NotificationPresenter from './components/NotificationPresenter.svelte'
 import { NotificationClientImpl } from './utils'
@@ -26,7 +26,7 @@ export { default as BrowserNotificatator } from './components/BrowserNotificatat
 
 export default async (): Promise<Resources> => ({
   component: {
-    NotificationsPopup,
+    Inbox,
     NotificationPresenter,
     NotificationSettings
   },

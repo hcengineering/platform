@@ -28,6 +28,7 @@ export interface Application extends Doc {
   alias: string
   icon: Asset
   hidden: boolean
+  position?: 'top' | 'bottom'
   navigatorModel?: NavigatorModel
   locationResolver?: Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
 

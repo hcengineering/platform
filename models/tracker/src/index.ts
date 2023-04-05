@@ -827,6 +827,10 @@ export function createModel (builder: Builder): void {
     presenter: tracker.component.IssuePresenter
   })
 
+  builder.mixin(tracker.class.Issue, core.class.Class, notification.mixin.NotificationObjectPresenter, {
+    presenter: tracker.component.NotificationIssuePresenter
+  })
+
   builder.mixin(tracker.class.IssueTemplate, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: tracker.component.IssueTemplatePresenter
   })
@@ -998,13 +1002,11 @@ export function createModel (builder: Builder): void {
               {
                 id: activeId,
                 label: tracker.string.Active,
-                icon: tracker.icon.CategoryStarted,
                 component: tracker.component.Active
               },
               {
                 id: backlogId,
                 label: tracker.string.Backlog,
-                icon: tracker.icon.CategoryBacklog,
                 component: tracker.component.Backlog
               },
               {
@@ -1028,7 +1030,7 @@ export function createModel (builder: Builder): void {
               {
                 id: templatesId,
                 label: tracker.string.IssueTemplates,
-                icon: tracker.icon.Issues,
+                icon: tracker.icon.IssueTemplates,
                 component: tracker.component.IssueTemplates
               }
             ]

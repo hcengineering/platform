@@ -16,7 +16,7 @@
   import type { Ref, Space } from '@hcengineering/core'
   import type { Asset, IntlString } from '@hcengineering/platform'
   import type { Action } from '@hcengineering/ui'
-  import { ActionIcon, Icon, IconMoreV, Label, Menu, showPopup } from '@hcengineering/ui'
+  import { ActionIcon, Icon, IconMoreH, Label, Menu, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let _id: Ref<Space> | undefined = undefined
@@ -29,6 +29,7 @@
   export let collapsed = false
   export let selected = false
   export let bold = false
+  export let shortDropbox = false
   export let actions: () => Promise<Action[]> = async () => []
   export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
 
@@ -48,9 +49,6 @@
   class="antiNav-element"
   class:selected
   class:hovered
-  class:ml-2={indent === 'ml-2'}
-  class:ml-4={indent === 'ml-4'}
-  class:ml-8={indent === 'ml-8'}
   class:parent
   class:collapsed
   class:child={!node}
@@ -62,7 +60,12 @@
   <span class="an-element__label" class:bold class:title={node}>
     <div class="flex-row-center">
       {#if icon && !parent}
-        <div class="an-element__icon">
+        <div
+          class="an-element__icon"
+          class:indent-2={indent === 'ml-2'}
+          class:indent-4={indent === 'ml-4'}
+          class:indent-8={indent === 'ml-8'}
+        >
           <Icon {icon} size={'small'} />
         </div>
       {/if}
@@ -71,9 +74,9 @@
       </span>
 
       {#if node}
-        <div class="an-element__icon-arrow {parent ? 'small' : 'medium'}" class:collapsed>
-          <svg fill="var(--content-color)" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0,0L6,3L0,6Z" />
+        <div class="an-element__icon-arrow" class:collapsed>
+          <svg fill="currentColor" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="11.3,5.8 8,9.1 4.7,5.8 4,6.5 8,10.5 12,6.5 " />
           </svg>
         </div>
       {/if}
@@ -81,7 +84,7 @@
   </span>
   {#if node === false}
     <div class="an-element__tool" on:click|preventDefault|stopPropagation={onMenuClick}>
-      <IconMoreV size={'small'} />
+      <IconMoreH size={'small'} />
     </div>
   {:else}
     {#await actions() then actionItems}
@@ -98,7 +101,7 @@
         </div>
       {:else if actionItems.length > 1}
         <div class="an-element__tool" on:click|preventDefault|stopPropagation={onMenuClick}>
-          <IconMoreV size={'small'} />
+          <IconMoreH size={'small'} />
         </div>
       {/if}
     {/await}
@@ -108,5 +111,5 @@
   {/if}
 </div>
 {#if node && !collapsed}
-  <div class="antiNav-element__dropbox"><slot /></div>
+  <div class="antiNav-element__dropbox" class:short={shortDropbox}><slot /></div>
 {/if}

@@ -341,7 +341,6 @@ export async function getAttributeEditor (
   _class: Ref<Class<Obj>>,
   key: KeyedAttribute | string
 ): Promise<AnySvelteComponent | undefined> {
-  console.log('get attribute editor', _class, key)
   const hierarchy = client.getHierarchy()
   const attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
   const presenterClass = attribute !== undefined ? getAttributePresenterClass(hierarchy, attribute) : undefined

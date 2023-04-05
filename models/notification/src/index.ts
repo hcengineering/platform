@@ -14,14 +14,17 @@
 // limitations under the License.
 //
 
-import { Account, Doc, Domain, DOMAIN_MODEL, IndexKind, Ref, TxCUD } from '@hcengineering/core'
+import { Account, Class, Doc, Domain, DOMAIN_MODEL, IndexKind, Ref, Timestamp, TxCUD } from '@hcengineering/core'
 import { ArrOf, Builder, Index, Mixin, Model, Prop, TypeRef, TypeString, UX } from '@hcengineering/model'
 import core, { TAttachedDoc, TClass, TDoc } from '@hcengineering/model-core'
-import type {
+import {
   AnotherUserNotifications,
+  DocUpdates,
   EmailNotification,
   LastView,
   Notification,
+  notificationId,
+  NotificationObjectPresenter,
   NotificationProvider,
   NotificationSetting,
   NotificationStatus,
@@ -30,7 +33,9 @@ import type {
 } from '@hcengineering/notification'
 import type { IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
+import workbench from '@hcengineering/workbench'
 import notification from './plugin'
+import { AnyComponent } from '@hcengineering/ui'
 
 export const DOMAIN_NOTIFICATION = 'notification' as Domain
 
@@ -121,7 +126,27 @@ export class TTrackedDoc extends TClass {}
 @UX(notification.string.Collaborators)
 export class TCollaborators extends TDoc {
   @Prop(ArrOf(TypeRef(core.class.Account)), notification.string.Collaborators)
+  @Index(IndexKind.Indexed)
     collaborators!: Ref<Account>[]
+}
+
+@Mixin(notification.mixin.NotificationObjectPresenter, core.class.Class)
+export class TNotificationObjectPresenter extends TClass implements NotificationObjectPresenter {
+  presenter!: AnyComponent
+}
+
+@Model(notification.class.DocUpdates, core.class.Doc, DOMAIN_NOTIFICATION)
+export class TDocUpdates extends TDoc implements DocUpdates {
+  @Index(IndexKind.Indexed)
+    user!: Ref<Account>
+
+  @Index(IndexKind.Indexed)
+    attachedTo!: Ref<Doc>
+
+  attachedToClass!: Ref<Class<Doc>>
+  lastTx?: Ref<TxCUD<Doc>>
+  lastTxTime?: Timestamp
+  txes!: [Ref<TxCUD<Doc>>, Timestamp][]
 }
 
 export function createModel (builder: Builder): void {
@@ -136,7 +161,9 @@ export function createModel (builder: Builder): void {
     TAnotherUserNotifications,
     TClassCollaborators,
     TTrackedDoc,
-    TCollaborators
+    TCollaborators,
+    TDocUpdates,
+    TNotificationObjectPresenter
   )
 
   builder.createDoc(
@@ -163,19 +190,6 @@ export function createModel (builder: Builder): void {
       subjectTemplate: 'You have new DM message in {doc}'
     },
     notification.ids.DMNotification
-  )
-
-  builder.createDoc(
-    notification.class.NotificationType,
-    core.space.Model,
-    {
-      label: notification.string.Notification,
-      hidden: true,
-      textTemplate: '',
-      htmlTemplate: '',
-      subjectTemplate: ''
-    },
-    notification.ids.CollaboratorNotification
   )
 
   // Temporarily disabled, we should think about it
@@ -212,6 +226,20 @@ export function createModel (builder: Builder): void {
       order: 2500
     },
     notification.ids.NotificationSettings
+  )
+
+  builder.createDoc(
+    workbench.class.Application,
+    core.space.Model,
+    {
+      label: notification.string.Inbox,
+      icon: notification.icon.Notifications,
+      alias: notificationId,
+      position: 'bottom',
+      hidden: false,
+      component: notification.component.Inbox
+    },
+    notification.app.Notification
   )
 }
 

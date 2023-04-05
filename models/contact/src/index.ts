@@ -108,6 +108,7 @@ export class TContact extends TDoc implements Contact {
 @UX(contact.string.Channel, contact.icon.Person)
 export class TChannel extends TAttachedDoc implements Channel {
   @Prop(TypeRef(contact.class.ChannelProvider), contact.string.ChannelProvider)
+  @Index(IndexKind.Indexed)
     provider!: Ref<ChannelProvider>
 
   @Prop(TypeString(), contact.string.Value)
@@ -698,6 +699,28 @@ export function createModel (builder: Builder): void {
       func: contact.function.GetCurrentEmployeePosition
     },
     contact.templateField.CurrentEmployeePosition
+  )
+
+  builder.createDoc(
+    templates.class.TemplateField,
+    core.space.Model,
+    {
+      label: contact.string.PersonFirstNamePlaceholder,
+      category: contact.templateFieldCategory.Contact,
+      func: contact.function.GetContactFirstName
+    },
+    contact.templateField.ContactFirstName
+  )
+
+  builder.createDoc(
+    templates.class.TemplateField,
+    core.space.Model,
+    {
+      label: contact.string.PersonLastNamePlaceholder,
+      category: contact.templateFieldCategory.Contact,
+      func: contact.function.GetContactLastName
+    },
+    contact.templateField.ContactLastName
   )
 }
 

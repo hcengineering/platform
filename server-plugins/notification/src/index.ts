@@ -15,9 +15,9 @@
 //
 
 import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
-import core, { Account, Class, Doc, Mixin, Ref, TxCreateDoc, TxFactory, TxUpdateDoc } from '@hcengineering/core'
+import { Account, Class, Doc, Mixin, Ref, TxCreateDoc, TxFactory, TxUpdateDoc } from '@hcengineering/core'
 import notification, { LastView } from '@hcengineering/notification'
-import { Plugin, plugin, Resource } from '@hcengineering/platform'
+import { Plugin, Resource, plugin } from '@hcengineering/platform'
 import type { TriggerControl, TriggerFunc } from '@hcengineering/server-core'
 
 /**
@@ -43,7 +43,7 @@ export async function getUpdateLastViewTx (
       { limit: 1 }
     )
   )[0]
-  const factory = new TxFactory(user)
+  const factory = new TxFactory(user, true)
   if (current !== undefined) {
     if (current[attachedTo] === -1 || current[attachedTo] >= lastView) {
       return
@@ -51,14 +51,12 @@ export async function getUpdateLastViewTx (
     const u = factory.createTxUpdateDoc(current._class, current.space, current._id, {
       [attachedTo]: lastView
     })
-    u.space = core.space.DerivedTx
     return u
   } else {
     const u = factory.createTxCreateDoc(notification.class.LastView, notification.space.Notifications, {
       user,
       [attachedTo]: lastView
     })
-    u.space = core.space.DerivedTx
     return u
   }
 }
@@ -134,19 +132,17 @@ export async function createLastViewTx (
       { limit: 1 }
     )
   )[0]
-  const factory = new TxFactory(user)
+  const factory = new TxFactory(user, true)
   if (current === undefined) {
     const u = factory.createTxCreateDoc(notification.class.LastView, notification.space.Notifications, {
       user,
       [attachedTo]: 1
     })
-    u.space = core.space.DerivedTx
     return u
   } else if (current[attachedTo] === undefined) {
     const u = factory.createTxUpdateDoc(current._class, current.space, current._id, {
       [attachedTo]: 1
     })
-    u.space = core.space.DerivedTx
     return u
   }
 }
@@ -181,8 +177,8 @@ export default plugin(serverNotificationId, {
   trigger: {
     OnBacklinkCreate: '' as Resource<TriggerFunc>,
     UpdateLastView: '' as Resource<TriggerFunc>,
-    CreateCollaboratorDoc: '' as Resource<TriggerFunc>,
-    UpdateCollaboratorDoc: '' as Resource<TriggerFunc>,
+    OnUpdateLastView: '' as Resource<TriggerFunc>,
+    CollaboratorDocHandler: '' as Resource<TriggerFunc>,
     OnAddCollborator: '' as Resource<TriggerFunc>
   }
 })

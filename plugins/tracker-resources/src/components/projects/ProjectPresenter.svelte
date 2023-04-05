@@ -29,11 +29,11 @@
 </script>
 
 {#if model.specials}
-  <TreeNode icon={space?.icon ?? model.icon} title={space.name} indent={'ml-2'} actions={() => getActions(space)}>
+  <TreeNode icon={space?.icon ?? model.icon} title={space.name} actions={() => getActions(space)}>
     {#each model.specials as special}
       <NavLink space={space._id} special={special.id}>
         <SpecialElement
-          indent={'ml-4'}
+          indent={'ml-2'}
           label={special.label}
           icon={special.icon}
           selected={deselect ? false : currentSpace === space._id && special.id === currentSpecial}

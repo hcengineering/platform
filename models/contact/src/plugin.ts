@@ -104,6 +104,8 @@ export default mergeIds(contactId, contact, {
     GetCurrentEmployeeName: '' as Resource<TemplateFieldFunc>,
     GetCurrentEmployeeEmail: '' as Resource<TemplateFieldFunc>,
     GetCurrentEmployeePosition: '' as Resource<TemplateFieldFunc>,
-    GetContactName: '' as Resource<TemplateFieldFunc>
+    GetContactName: '' as Resource<TemplateFieldFunc>,
+    GetContactFirstName: '' as Resource<TemplateFieldFunc>,
+    GetContactLastName: '' as Resource<TemplateFieldFunc>
   }
 })

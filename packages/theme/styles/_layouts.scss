@@ -369,22 +369,15 @@ input.search {
   flex-wrap: wrap;
   min-width: 0;
 
-  & > * {
-    margin-right: 0.25rem;
-  }
-  & > *:last-child {
-    margin-right: 0;
-  }
+  & > * { margin-right: 0.25rem; }
+  & > *:last-child { margin-right: 0; }
+
   .bold {
     font-weight: 500;
     color: var(--caption-color);
   }
-  .strong {
-    color: var(--accent-color);
-  }
-  .lower {
-    text-transform: lowercase;
-  }
+  .strong { color: var(--accent-color); }
+  .lower { text-transform: lowercase; }
 }
 
 .gap-1, .gap-1-5 {

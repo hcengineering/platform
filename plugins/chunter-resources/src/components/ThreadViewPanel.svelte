@@ -14,9 +14,22 @@
 -->
 <script lang="ts">
   import { Message } from '@hcengineering/chunter'
-  import { MessageViewer } from '@hcengineering/presentation'
+  import ThreadView from './ThreadView.svelte'
+  import { Ref, Space } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import chunter from '../plugin'
 
-  export let value: Message
+  export let _id: Ref<Message>
+  let space: Ref<Space> | undefined = undefined
+
+  const query = createQuery()
+  $: query.query(chunter.class.Message, { _id }, (res) => {
+    space = res[0].space
+  })
 </script>
 
-<div><MessageViewer message={value.content} /></div>
+<div class="antiPanel-component">
+  {#if space}
+    <ThreadView {_id} currentSpace={space} />
+  {/if}
+</div>

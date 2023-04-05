@@ -23,6 +23,8 @@ import {
   Employee,
   EmployeeAccount,
   formatName,
+  getFirstName,
+  getLastName,
   getName
 } from '@hcengineering/contact'
 import { Doc, getCurrentAccount, IdMap, ObjQueryType, Ref, Timestamp, toIdMap } from '@hcengineering/core'
@@ -144,6 +146,30 @@ export async function getContactName (provider: TemplateDataProvider): Promise<s
   }
 }
 
+export async function getContactLastName (provider: TemplateDataProvider): Promise<string | undefined> {
+  const value = provider.get(contact.class.Contact) as Contact
+  if (value === undefined) return
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  if (hierarchy.isDerived(value._class, contact.class.Person)) {
+    return getLastName(value.name)
+  } else {
+    return ''
+  }
+}
+
+export async function getContactFirstName (provider: TemplateDataProvider): Promise<string | undefined> {
+  const value = provider.get(contact.class.Contact) as Contact
+  if (value === undefined) return
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  if (hierarchy.isDerived(value._class, contact.class.Person)) {
+    return getFirstName(value.name)
+  } else {
+    return value.name
+  }
+}
+
 export async function getContactLink (doc: Doc): Promise<Location> {
   const loc = getCurrentLocation()
   loc.path.length = 2
@@ -194,11 +220,21 @@ async function generateLocation (loc: Location, id: Ref<Contact>): Promise<Resol
 
 export const employeeByIdStore = writable<IdMap<Employee>>(new Map())
 export const employeesStore = writable<Employee[]>([])
-const query = createQuery(true)
-query.query(contact.class.Employee, {}, (res) => {
-  employeesStore.set(res)
-  employeeByIdStore.set(toIdMap(res))
-})
+
+function fillStore (): void {
+  const client = getClient()
+  if (client !== undefined) {
+    const query = createQuery(true)
+    query.query(contact.class.Employee, {}, (res) => {
+      employeesStore.set(res)
+      employeeByIdStore.set(toIdMap(res))
+    })
+  } else {
+    setTimeout(() => fillStore(), 500)
+  }
+}
+
+fillStore()
 
 export function getAvatarTypeDropdownItems (hasGravatar: boolean): DropdownIntlItem[] {
   return [

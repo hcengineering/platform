@@ -183,7 +183,7 @@ export async function loadIndexStageStage (
     const newIndex = ((attributes.index as number) ?? 0) + 1
     result = `${newIndex}`
 
-    const ops = new TxFactory(core.account.System)
+    const ops = new TxFactory(core.account.System, true)
     const data = {
       stageId,
       attributes: {
