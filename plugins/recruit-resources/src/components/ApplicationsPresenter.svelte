@@ -28,7 +28,6 @@
   <DocNavLink {object} inline noUnderline={true}>
     <div
       use:tooltip={{
-        label: recruit.string.Applications,
         component: ApplicationsPopup,
         props: { value: object }
       }}

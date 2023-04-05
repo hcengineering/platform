@@ -17,7 +17,6 @@
   import type { Doc } from '@hcengineering/core'
   import { IconAttachment, tooltip } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
-  import attachment from '../plugin'
   import AttachmentPopup from './AttachmentPopup.svelte'
 
   export let value: number | undefined
@@ -31,9 +30,8 @@
   <DocNavLink {object} inline noUnderline={true}>
     <div
       use:tooltip={{
-        label: attachment.string.Attachments,
         component: AttachmentPopup,
-        props: { objectId: object._id, attachments: value }
+        props: { objectId: object._id, attachments: value, object }
       }}
       class="sm-tool-icon ml-1 mr-1"
     >

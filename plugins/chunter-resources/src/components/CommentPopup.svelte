@@ -18,9 +18,9 @@
 
   import chunter, { Comment } from '@hcengineering/chunter'
   import { createQuery } from '@hcengineering/presentation'
-  import CommentPresenter from './CommentPresenter.svelte'
+  import { Label } from '@hcengineering/ui'
   import { DocNavLink, ObjectPresenter } from '@hcengineering/view-resources'
-  import { Button, IconOpen, Label } from '@hcengineering/ui'
+  import CommentPresenter from './CommentPresenter.svelte'
 
   export let objectId: Ref<Doc>
   export let object: Doc
