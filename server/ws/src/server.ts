@@ -321,7 +321,8 @@ async function handleRequest<S extends Session> (
   ctx: MeasureContext,
   service: S,
   ws: WebSocket,
-  msg: string
+  msg: string,
+  workspace: string
 ): Promise<void> {
   const request = readRequest(msg)
   if (request.id === -1 && request.method === 'hello') {
@@ -338,10 +339,36 @@ async function handleRequest<S extends Session> (
   const f = (service as any)[request.method]
   try {
     const params = [userCtx, ...request.params]
+
+    const st = Date.now()
+    const timeout = setTimeout(() => {
+      console.log('long request found', workspace, service.getUser(), request, params)
+    }, 4000)
+
+    const hangTimeout = setTimeout(() => {
+      console.log('request hang found, 30sec', workspace, service.getUser(), request, params)
+    }, 30000)
+
     const result = await f.apply(service, params)
+    clearTimeout(timeout)
+    clearTimeout(hangTimeout)
     const resp: Response<any> = { id: request.id, result }
+
+    const diff = Date.now() - st
+    if (diff > 5000) {
+      console.log(
+        'very long request found',
+        workspace,
+        service.getUser(),
+        request,
+        params,
+        Array.isArray(result) ? result.length : '0',
+        diff
+      )
+    }
     ws.send(serialize(resp))
   } catch (err: any) {
+    console.error(err)
     const resp: Response<any> = {
       id: request.id,
       error: unknownError(err)
@@ -400,7 +427,7 @@ export function start (
       } else if (Array.isArray(msg)) {
         msgStr = Buffer.concat(msg).toString()
       }
-      await handleRequest(ctx, session, ws, msgStr)
+      await handleRequest(ctx, session, ws, msgStr, token.workspace.name)
     })
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('close', (code: number, reason: Buffer) => {
@@ -422,7 +449,7 @@ export function start (
     const b = buffer
     buffer = undefined
     for (const msg of b) {
-      await handleRequest(ctx, session, ws, msg)
+      await handleRequest(ctx, session, ws, msg, token.workspace.name)
     }
   })
 

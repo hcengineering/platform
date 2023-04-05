@@ -14,23 +14,27 @@
 // limitations under the License.
 //
 
-import { ArrOf, Builder, Collection, Mixin, Model, Prop, TypeRef, TypeString } from '@hcengineering/model'
+import { ArrOf, Builder, Collection, Mixin, Model, Prop, ReadOnly, TypeRef, TypeString, UX } from '@hcengineering/model'
 import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import bitrix from './plugin'
 
 import { BitrixEntityMapping, BitrixFieldMapping, BitrixSyncDoc, Fields } from '@hcengineering/bitrix'
-import { AnyAttribute, Class, Doc, Domain, Mixin as CoreMixin, Ref } from '@hcengineering/core'
+import { AnyAttribute, Class, Mixin as CoreMixin, Doc, Domain, Ref } from '@hcengineering/core'
 
 import view, { createAction } from '@hcengineering/model-view'
 
+import { getEmbeddedLabel } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 
 const DOMAIN_BITRIX = 'bitrix' as Domain
 
 @Mixin(bitrix.mixin.BitrixSyncDoc, core.class.Doc)
+@UX(getEmbeddedLabel('Bitrix'))
 export class TBitrixSyncDoc extends TDoc implements BitrixSyncDoc {
   type!: string
-  bitrixId!: string
+  @Prop(TypeString(), getEmbeddedLabel('BitrixId'))
+  @ReadOnly()
+    bitrixId!: string
 }
 
 @Model(bitrix.class.EntityMapping, core.class.Doc, DOMAIN_BITRIX)

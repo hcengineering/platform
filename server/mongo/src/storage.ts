@@ -408,6 +408,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     })
     const domain = this.hierarchy.getDomain(clazz)
     const cursor = this.db.collection(domain).aggregate(pipeline)
+    cursor.maxTimeMS(30000)
     const res = (await cursor.toArray())[0]
     const result = res.results as WithLookup<T>[]
     const total = res.totalCount?.shift()?.count
@@ -529,6 +530,11 @@ abstract class MongoAdapterBase implements DbAdapter {
         cursor = cursor.limit(options.limit)
       }
     }
+
+    // Error in case of timeout
+    cursor.maxTimeMS(30000)
+    cursor.maxAwaitTimeMS(30000)
+
     const res = await cursor.toArray()
     return toFindResult(res, total)
   }

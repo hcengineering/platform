@@ -207,6 +207,7 @@ export class TIssue extends TAttachedDoc implements Issue {
     blockedBy!: RelatedDocument[]
 
   @Prop(ArrOf(TypeRef(core.class.TypeRelatedDocument)), tracker.string.RelatedTo)
+  @Index(IndexKind.Indexed)
     relations!: RelatedDocument[]
 
   parents!: IssueParentInfo[]
