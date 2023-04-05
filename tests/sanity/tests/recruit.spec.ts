@@ -53,9 +53,9 @@ test.describe('recruit tests', () => {
     await expect(page.locator(`text=${last}`).first()).toBeVisible()
     await expect(page.locator(`text=${loc}`).first()).toBeVisible()
 
-    const activity = page.locator('[id="activity\\:string\\:Activity"]')
-    await activity.locator('[id="gmail\\:string\\:Email"]').scrollIntoViewIfNeeded()
-    await activity.locator('[id="gmail\\:string\\:Email"]').hover()
+    const panel = page.locator('.popupPanel')
+    await panel.locator('[id="gmail\\:string\\:Email"]').scrollIntoViewIfNeeded()
+    await panel.locator('[id="gmail\\:string\\:Email"]').hover()
     await expect(page.locator(`text=${email}`).first()).toBeVisible()
   })
 
