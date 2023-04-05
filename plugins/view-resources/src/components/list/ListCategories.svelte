@@ -85,7 +85,7 @@
           const f = await getResource(categoryFunc.action)
           const res = hierarchy.clone(await f(_class, query, groupByKey, update, queryId, $statusStore))
           if (res !== undefined) {
-            categories = res
+            categories = Array.from(new Set([...categories, ...res]))
             return
           }
         }
