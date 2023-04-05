@@ -17,12 +17,13 @@
   import { SharedMessage } from '@hcengineering/gmail'
   import Button from '@hcengineering/ui/src/components/Button.svelte'
   import { createEventDispatcher } from 'svelte'
-  import { IconArrowLeft, Label, Scroller } from '@hcengineering/ui'
+  import { IconArrowLeft, Label, Scroller, tooltip } from '@hcengineering/ui'
   import gmail from '../plugin'
   import FullMessageContent from './FullMessageContent.svelte'
   import { createQuery } from '@hcengineering/presentation'
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
 
   export let currentMessage: SharedMessage
   export let newMessage: boolean
@@ -50,7 +51,7 @@
 
 <div class="popupPanel-body__main-header bottom-divider">
   <div class="flex-between p-2">
-    <div class="buttons-group">
+    <div class="flex-row-center clear-mins">
       <Button
         icon={IconArrowLeft}
         kind={'transparent'}
@@ -58,8 +59,8 @@
           dispatch('close')
         }}
       />
-      <div class="flex-grow flex-col">
-        <span>{currentMessage.subject}</span>
+      <div class="flex-grow flex-col clear-mins ml-2 mr-2">
+        <div class="overflow-label" use:tooltip={{ label: getEmbeddedLabel(currentMessage.subject)}}>{currentMessage.subject}</div>
         <span class="content-accent-color">
           <Label label={currentMessage.incoming ? gmail.string.From : gmail.string.To} />
           <b>{title}</b>
