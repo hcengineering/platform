@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, generateId, Lookup, Ref, Space } from '@hcengineering/core'
+  import { CategoryType, Class, Doc, generateId, Lookup, Ref, Space } from '@hcengineering/core'
   import { getResource, IntlString } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
+  import { getClient, statusStore } from '@hcengineering/presentation'
   import { AnyComponent } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, CategoryOption, ViewOptionModel, ViewOptions } from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import { buildModel, getAdditionalHeader, getCategories, getPresenter, groupBy } from '../../utils'
+  import { buildModel, getAdditionalHeader, getCategories, getGroupByValues, getPresenter, groupBy } from '../../utils'
   import { CategoryQuery, noCategory } from '../../viewOptions'
   import ListCategory from './ListCategory.svelte'
 
@@ -41,16 +41,20 @@
   export let props: Record<string, any> = {}
   export let level: number
   export let initIndex = 0
-  export let newObjectProps: Record<string, any>
+  export let newObjectProps: (doc: Doc) => Record<string, any> | undefined
   export let docByIndex: Map<number, Doc>
   export let viewOptionsConfig: ViewOptionModel[] | undefined
-  export let dragItem: Doc | undefined
+  export let dragItem: {
+    doc?: Doc
+    revert?: () => void
+  }
   export let listDiv: HTMLDivElement
 
   $: groupByKey = viewOptions.groupBy[level] ?? noCategory
-  $: groupedDocs = groupBy(docs, groupByKey)
-  let categories: any[] = []
+  let categories: CategoryType[] = []
   $: updateCategories(_class, docs, groupByKey, viewOptions, viewOptionsConfig)
+
+  $: groupByDocs = groupBy(docs, groupByKey, categories)
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -71,20 +75,15 @@
     viewOptions: ViewOptions,
     viewOptionsModel: ViewOptionModel[] | undefined
   ) {
-    categories = await getCategories(client, _class, docs, groupByKey)
+    categories = await getCategories(client, _class, docs, groupByKey, $statusStore)
     if (level === 0) {
       for (const viewOption of viewOptionsModel ?? []) {
         if (viewOption.actionTarget !== 'category') continue
         const categoryFunc = viewOption as CategoryOption
         if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
           const f = await getResource(categoryFunc.action)
-          const res = hierarchy.clone(await f(_class, space, groupByKey, update, queryId))
+          const res = hierarchy.clone(await f(_class, space, groupByKey, update, queryId, $statusStore))
           if (res !== undefined) {
-            for (const category of categories) {
-              if (!res.includes(category)) {
-                res.push(category)
-              }
-            }
             categories = res
             return
           }
@@ -113,7 +112,7 @@
     let res = initIndex
     for (let index = 0; index < i; index++) {
       const cat = categories[index]
-      res += groupedDocs[cat]?.length ?? 0
+      res += groupByDocs[cat]?.length ?? 0
     }
     return res
   }
@@ -123,8 +122,8 @@
   const dispatch = createEventDispatcher()
 </script>
 
-{#each categories as category, i (category)}
-  {@const items = groupedDocs[category] ?? []}
+{#each categories as category, i (typeof category === 'object' ? category.name : category)}
+  {@const items = groupByKey === noCategory || category === undefined ? docs : getGroupByValues(groupByDocs, category)}
   <ListCategory
     {elementByIndex}
     {indexById}

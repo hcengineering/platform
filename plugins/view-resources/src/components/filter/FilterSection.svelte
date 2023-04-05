@@ -47,7 +47,7 @@
       return 0
     }
     const selectStates = await client.findAll(targetClass, { _id: { $in: Array.from(ids) } }, {})
-    const unique = new Set(selectStates.map((s) => (s as State).title))
+    const unique = new Set(selectStates.map((s) => (s as State).name))
     return unique.size
   }
 

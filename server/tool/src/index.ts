@@ -249,7 +249,11 @@ async function createUpdateIndexes (connection: CoreClient, db: Db): Promise<voi
     const collection = db.collection(d)
     const bb: (string | FieldIndex<Doc>)[] = []
     for (const vv of v.values()) {
-      await collection.createIndex(vv)
+      try {
+        await collection.createIndex(vv)
+      } catch (err: any) {
+        console.error(err)
+      }
       bb.push(vv)
     }
     if (bb.length > 0) {

@@ -14,8 +14,7 @@
 -->
 <script lang="ts">
   import type { EmployeeAccount } from '@hcengineering/contact'
-  import { DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
-  import notification from '@hcengineering/notification'
+  import { Doc, DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import type { Issue } from '@hcengineering/tracker'
@@ -36,10 +35,10 @@
 
   const subscribedQuery = createQuery()
   $: subscribedQuery.query(
-    notification.class.LastView,
-    { user: getCurrentAccount()._id, attachedToClass: tracker.class.Issue, lastView: { $ne: -1 } },
+    tracker.class.Issue,
+    { 'notification:mixin:Collaborators.collaborators': getCurrentAccount()._id },
     (result) => {
-      const newSub = result.map(({ attachedTo }) => attachedTo as Ref<Issue>)
+      const newSub = result.map((p) => p._id as Ref<Doc> as Ref<Issue>)
       const curSub = subscribed._id.$in
       if (curSub.length !== newSub.length || curSub.some((id, i) => newSub[i] !== id)) {
         subscribed = { _id: { $in: newSub } }

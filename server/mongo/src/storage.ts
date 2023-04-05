@@ -38,6 +38,8 @@ import core, {
   ReverseLookups,
   SortingOrder,
   SortingQuery,
+  SortingRules,
+  SortQuerySelector,
   StorageIterator,
   toFindResult,
   Tx,
@@ -342,31 +344,26 @@ abstract class MongoAdapterBase implements DbAdapter {
       const sort = {} as any
       for (const _key in options.sort) {
         const key = this.translateKey(_key, clazz)
-        const enumOf = await this.isEnumSortKey(clazz, _key)
-        if (enumOf === undefined) {
-          sort[key] = options.sort[_key] === SortingOrder.Ascending ? 1 : -1
+
+        if (typeof options.sort[_key] === 'object') {
+          const rules = options.sort[_key] as SortingRules<T>
+          fillCustomSort(rules, key, pipeline, sort, options, _key)
         } else {
-          const branches = enumOf.enumValues.map((value, index) => {
-            return { case: { $eq: [`$${key}`, value] }, then: index }
-          })
-          pipeline.push({
-            $addFields: {
-              [`sort_${key}`]: {
-                $switch: {
-                  branches,
-                  default: enumOf.enumValues.length
-                }
-              }
-            }
-          })
-          sort[`sort_${key}`] = options.sort[_key] === SortingOrder.Ascending ? 1 : -1
+          // Sort enum if no special sorting is defined.
+          const enumOf = this.getEnumById(clazz, _key)
+          if (enumOf !== undefined) {
+            fillEnumSort(enumOf, key, pipeline, sort, options, _key)
+          } else {
+            // Ordinary sort field.
+            sort[key] = options.sort[_key] === SortingOrder.Ascending ? 1 : -1
+          }
         }
       }
       pipeline.push({ $sort: sort })
     }
   }
 
-  private async lookup<T extends Doc>(
+  private async findWithPipeline<T extends Doc>(
     clazz: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options: FindOptions<T>
@@ -411,11 +408,11 @@ abstract class MongoAdapterBase implements DbAdapter {
     })
     const domain = this.hierarchy.getDomain(clazz)
     const cursor = this.db.collection(domain).aggregate(pipeline)
+    cursor.maxTimeMS(30000)
     const res = (await cursor.toArray())[0]
     const result = res.results as WithLookup<T>[]
     const total = res.totalCount?.shift()?.count
     for (const row of result) {
-      row.$lookup = {}
       await this.fillLookupValue(clazz, options.lookup, row)
       this.clearExtraLookups(row)
     }
@@ -470,26 +467,27 @@ abstract class MongoAdapterBase implements DbAdapter {
     return key
   }
 
-  private async isEnumSortKey<T extends Doc>(_class: Ref<Class<T>>, key: string): Promise<Enum | undefined> {
+  private getEnumById<T extends Doc>(_class: Ref<Class<T>>, key: string): Enum | undefined {
     const attr = this.hierarchy.findAttribute(_class, key)
     if (attr !== undefined) {
       if (attr.type._class === core.class.EnumOf) {
         const ref = (attr.type as EnumOf).of
-        const res = await this.modelDb.findAll(core.class.Enum, { _id: ref })
-        return res[0]
+        return this.modelDb.getObject<Enum>(ref)
       }
     }
+    return undefined
   }
 
   private isEnumSort<T extends Doc>(_class: Ref<Class<T>>, options?: FindOptions<T>): boolean {
     if (options?.sort === undefined) return false
-    for (const key in options.sort) {
-      const attr = this.hierarchy.findAttribute(_class, key)
-      if (attr !== undefined) {
-        if (attr.type._class === core.class.EnumOf) {
-          return true
-        }
-      }
+    return Object.keys(options.sort).some(
+      (key) => this.hierarchy.findAttribute(_class, key)?.type?._class === core.class.EnumOf
+    )
+  }
+
+  private isRulesSort<T extends Doc>(options?: FindOptions<T>): boolean {
+    if (options?.sort !== undefined) {
+      return Object.values(options.sort).some((it) => typeof it === 'object')
     }
     return false
   }
@@ -500,10 +498,8 @@ abstract class MongoAdapterBase implements DbAdapter {
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     // TODO: rework this
-    if (options !== null && options !== undefined) {
-      if (options.lookup !== undefined || this.isEnumSort(_class, options)) {
-        return await this.lookup(_class, query, options)
-      }
+    if (options != null && (options?.lookup != null || this.isEnumSort(_class, options) || this.isRulesSort(options))) {
+      return await this.findWithPipeline(_class, query, options)
     }
     const domain = this.hierarchy.getDomain(_class)
     const coll = this.db.collection(domain)
@@ -534,6 +530,11 @@ abstract class MongoAdapterBase implements DbAdapter {
         cursor = cursor.limit(options.limit)
       }
     }
+
+    // Error in case of timeout
+    cursor.maxTimeMS(30000)
+    cursor.maxAwaitTimeMS(30000)
+
     const res = await cursor.toArray()
     return toFindResult(res, total)
   }
@@ -993,6 +994,71 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
 
     return systemTr.concat(userTx)
   }
+}
+
+function fillEnumSort (
+  enumOf: Enum,
+  key: string,
+  pipeline: any[],
+  sort: any,
+  options: FindOptions<Doc>,
+  _key: string
+): void {
+  const branches = enumOf.enumValues.map((value, index) => {
+    return { case: { $eq: [`$${key}`, value] }, then: index }
+  })
+  pipeline.push({
+    $addFields: {
+      [`sort_${key}`]: {
+        $switch: {
+          branches,
+          default: enumOf.enumValues.length
+        }
+      }
+    }
+  })
+  if (options.sort === undefined) {
+    options.sort = {}
+  }
+  sort[`sort_${key}`] = options.sort[_key] === SortingOrder.Ascending ? 1 : -1
+}
+function fillCustomSort<T extends Doc> (
+  rules: SortingRules<T>,
+  key: string,
+  pipeline: any[],
+  sort: any,
+  options: FindOptions<Doc>,
+  _key: string
+): void {
+  const branches = rules.cases.map((selector) => {
+    if (typeof selector.query === 'object') {
+      const q = selector.query as SortQuerySelector<T>
+      if (q.$in !== undefined) {
+        return { case: { $in: { [key]: q.$in } }, then: selector.index }
+      }
+      if (q.$nin !== undefined) {
+        return { case: { $nin: { [key]: q.$in } }, then: selector.index }
+      }
+      if (q.$ne !== undefined) {
+        return { case: { $ne: [`$${key}`, q.$ne] }, then: selector.index }
+      }
+    }
+    return { case: { $eq: [`$${key}`, selector.query] }, then: selector.index }
+  })
+  pipeline.push({
+    $addFields: {
+      [`sort_${key}`]: {
+        $switch: {
+          branches,
+          default: rules.default ?? branches.length
+        }
+      }
+    }
+  })
+  if (options.sort === undefined) {
+    options.sort = {}
+  }
+  sort[`sort_${key}`] = rules.order === SortingOrder.Ascending ? 1 : -1
 }
 
 function translateLikeQuery (pattern: string): { $regex: string, $options: string } {

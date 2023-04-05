@@ -38,6 +38,6 @@
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/core": "^0.6.21",
     "@hcengineering/presentation": "^0.6.2",
-    "@hcengineering/notification": "^0.6.7"
+    "@hcengineering/notification": "^0.6.8"
   }
 }

@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import contact, { Contact, getName } from '@hcengineering/contact'
-  import { Class, ClassifierKind, Doc, Mixin, Obj, Ref } from '@hcengineering/core'
+  import core, { Class, ClassifierKind, Doc, Mixin, Obj, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { Asset, getResource, translate } from '@hcengineering/platform'
@@ -39,12 +39,12 @@
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
+  export let embedded = false
 
   let realObjectClass: Ref<Class<Doc>> = _class
   let lastId: Ref<Doc> = _id
   let lastClass: Ref<Class<Doc>> = _class
   let object: Doc
-  let parentClass: Ref<Class<Doc>>
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -93,9 +93,9 @@
 
   const dispatch = createEventDispatcher()
 
-  function getMixins (parentClass: Ref<Class<Doc>>, object: Doc, showAllMixins: boolean): void {
-    if (object === undefined || parentClass === undefined) return
-    const descendants = hierarchy.getDescendants(parentClass).map((p) => hierarchy.getClass(p))
+  function getMixins (object: Doc, showAllMixins: boolean): void {
+    if (object === undefined) return
+    const descendants = hierarchy.getDescendants(core.class.Doc).map((p) => hierarchy.getClass(p))
 
     mixins = descendants.filter(
       (m) =>
@@ -106,7 +106,7 @@
     )
   }
 
-  $: getMixins(parentClass, object, showAllMixins)
+  $: getMixins(object, showAllMixins)
 
   let ignoreKeys: string[] = []
   let activityOptions = { enabled: true, showInput: true }
@@ -172,7 +172,6 @@
   $: getEditorOrDefault(realObjectClass, _id)
 
   async function getEditorOrDefault (_class: Ref<Class<Doc>>, _id: Ref<Doc>): Promise<void> {
-    parentClass = hierarchy.getParentClass(_class)
     await updateKeys()
     mainEditor = getEditor(_class)
   }
@@ -232,10 +231,8 @@
   }
 
   async function getHeaderEditor (_class: Ref<Class<Doc>>): Promise<AnyComponent | undefined> {
-    const clazz = hierarchy.getClass(_class)
-    const editorMixin = hierarchy.as(clazz, view.mixin.ObjectEditorHeader)
-    if (editorMixin.editor != null) return editorMixin.editor
-    if (clazz.extends != null) return getHeaderEditor(clazz.extends)
+    const editorMixin = hierarchy.classHierarchyMixin(_class, view.mixin.ObjectEditorHeader)
+    return editorMixin?.editor
   }
 
   let headerEditor: AnyComponent | undefined = undefined
@@ -265,7 +262,7 @@
     ignoreMixins = new Set(ev.detail.ignoreMixins)
     allowedCollections = ev.detail.allowedCollections ?? []
     collectionArrays = ev.detail.collectionArrays ?? []
-    getMixins(parentClass, object, showAllMixins)
+    getMixins(object, showAllMixins)
     updateKeys()
   }
 </script>
@@ -281,6 +278,7 @@
     {icon}
     {title}
     {object}
+    {embedded}
     isHeader={mainEditor?.pinned ?? false}
     isAside={true}
     bind:panelWidth

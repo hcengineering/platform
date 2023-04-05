@@ -4,7 +4,7 @@ import core from './component'
 import { Hierarchy } from './hierarchy'
 import { getObjectValue } from './objvalue'
 import { createPredicates, isPredicate } from './predicate'
-import { SortingOrder, SortingQuery, Storage } from './storage'
+import { SortQuerySelector, SortingOrder, SortingQuery, SortingRules, Storage } from './storage'
 
 /**
  * @public
@@ -70,7 +70,30 @@ export async function resultSort<T extends Doc> (
   result.sort(sortFunc)
 }
 
-function getSortingResult (aValue: any, bValue: any, order: SortingOrder): number {
+function mapSortingValue (order: SortingOrder | SortingRules<any>, val: any): any {
+  if (typeof order !== 'object') {
+    return val
+  }
+  for (const r of order.cases) {
+    if (typeof r.query === 'object') {
+      const q: SortQuerySelector<any> = r.query
+      if (q.$in?.includes(val) ?? false) {
+        return r.index
+      }
+      if (q.$nin !== undefined && !q.$nin.includes(val)) {
+        return r.index
+      }
+      if (q.$ne !== undefined && q.$ne !== val) {
+        return r.index
+      }
+    }
+    if (r.query === val) {
+      return r.index
+    }
+  }
+}
+
+function getSortingResult (aValue: any, bValue: any, order: SortingOrder | SortingRules<any>): number {
   let res = 0
   if (typeof aValue === 'undefined') {
     return typeof bValue === 'undefined' ? 0 : -1
@@ -78,12 +101,19 @@ function getSortingResult (aValue: any, bValue: any, order: SortingOrder): numbe
   if (typeof bValue === 'undefined') {
     return 1
   }
+
+  const orderOrder = typeof order === 'object' ? order.order : order
+
   if (Array.isArray(aValue) && Array.isArray(bValue)) {
-    res = (aValue.sort((a, b) => (a - b) * order)[0] ?? 0) - (bValue.sort((a, b) => (a - b) * order)[0] ?? 0)
+    res =
+      (aValue.map((it) => mapSortingValue(order, it)).sort((a, b) => (a - b) * orderOrder)[0] ?? 0) -
+      (bValue.map((it) => mapSortingValue(order, it)).sort((a, b) => (a - b) * orderOrder)[0] ?? 0)
   } else {
-    res = typeof aValue === 'string' ? aValue.localeCompare(bValue) : aValue - bValue
+    const aaValue = mapSortingValue(order, aValue)
+    const bbValue = mapSortingValue(order, bValue)
+    res = typeof aaValue === 'string' ? aaValue.localeCompare(bbValue) : aaValue - bbValue
   }
-  return res * order
+  return res * orderOrder
 }
 
 async function getEnums<T extends Doc> (

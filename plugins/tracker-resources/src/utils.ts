@@ -13,33 +13,35 @@
 // limitations under the License.
 //
 
-import { Employee, getName } from '@hcengineering/contact'
+import { Employee } from '@hcengineering/contact'
 import core, {
+  ApplyOperations,
+  AttachedDoc,
   Class,
+  Collection,
   Doc,
   DocumentQuery,
-  IdMap,
+  DocumentUpdate,
   Ref,
   SortingOrder,
   Space,
+  StatusCategory,
+  StatusValue,
   toIdMap,
   TxCollectionCUD,
   TxOperations,
-  TxUpdateDoc,
-  WithLookup
+  TxUpdateDoc
 } from '@hcengineering/core'
-import { TypeState } from '@hcengineering/kanban'
-import { Asset, IntlString, translate } from '@hcengineering/platform'
+import { Asset, IntlString } from '@hcengineering/platform'
 import { createQuery, getClient } from '@hcengineering/presentation'
+import { calcRank } from '@hcengineering/task'
 import {
-  Component,
   ComponentStatus,
   Issue,
   IssuePriority,
   IssuesDateModificationPeriod,
   IssuesGrouping,
   IssuesOrdering,
-  IssueStatus,
   Project,
   Sprint,
   SprintStatus,
@@ -54,10 +56,9 @@ import {
   MILLISECONDS_IN_WEEK
 } from '@hcengineering/ui'
 import { ViewletDescriptor } from '@hcengineering/view'
-import { CategoryQuery, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
-import { writable } from 'svelte/store'
+import { CategoryQuery, groupBy, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
 import tracker from './plugin'
-import { defaultComponentStatuses, defaultPriorities, defaultSprintStatuses, issuePriorities } from './types'
+import { defaultComponentStatuses, defaultPriorities, defaultSprintStatuses } from './types'
 
 export * from './types'
 
@@ -126,18 +127,6 @@ export const getIssuesModificationDatePeriodTime = (period: IssuesDateModificati
       return 0
     }
   }
-}
-
-export const groupBy = (data: any, key: any): { [key: string]: any[] } => {
-  return data.reduce((storage: { [key: string]: any[] }, item: any) => {
-    const group = item[key] ?? undefined
-
-    storage[group] = storage[group] ?? []
-
-    storage[group].push(item)
-
-    return storage
-  }, {})
 }
 
 export interface FilterAction {
@@ -339,28 +328,33 @@ const listIssueKanbanStatusOrder = [
 ] as const
 
 export async function issueStatusSort (
-  value: Array<Ref<IssueStatus>>,
+  value: StatusValue[],
   viewletDescriptorId?: Ref<ViewletDescriptor>
-): Promise<Array<Ref<IssueStatus>>> {
-  return await new Promise((resolve) => {
-    // TODO: How we track category updates.
-    const query = createQuery(true)
-    query.query(tracker.class.IssueStatus, { _id: { $in: value } }, (res) => {
-      if (viewletDescriptorId === tracker.viewlet.Kanban) {
-        res.sort((a, b) => {
-          const res = listIssueKanbanStatusOrder.indexOf(a.category) - listIssueKanbanStatusOrder.indexOf(b.category)
-          if (res === 0) {
-            return a.rank.localeCompare(b.rank)
-          }
-          return res
-        })
-      } else {
-        res.sort((a, b) => listIssueStatusOrder.indexOf(a.category) - listIssueStatusOrder.indexOf(b.category))
+): Promise<StatusValue[]> {
+  // TODO: How we track category updates.
+
+  if (viewletDescriptorId === tracker.viewlet.Kanban) {
+    value.sort((a, b) => {
+      const res =
+        listIssueKanbanStatusOrder.indexOf(a.values[0].category as Ref<StatusCategory>) -
+        listIssueKanbanStatusOrder.indexOf(b.values[0].category as Ref<StatusCategory>)
+      if (res === 0) {
+        return a.values[0].rank.localeCompare(b.values[0].rank)
       }
-      resolve(res.map((p) => p._id))
-      query.unsubscribe()
+      return res
     })
-  })
+  } else {
+    value.sort((a, b) => {
+      const res =
+        listIssueStatusOrder.indexOf(a.values[0].category as Ref<StatusCategory>) -
+        listIssueStatusOrder.indexOf(b.values[0].category as Ref<StatusCategory>)
+      if (res === 0) {
+        return a.values[0].rank.localeCompare(b.values[0].rank)
+      }
+      return res
+    })
+  }
+  return value
 }
 
 export async function issuePrioritySort (value: IssuePriority[]): Promise<IssuePriority[]> {
@@ -383,108 +377,6 @@ export async function sprintSort (value: Array<Ref<Sprint>>): Promise<Array<Ref<
       query.unsubscribe()
     })
   })
-}
-
-export async function mapKanbanCategories (
-  groupBy: string,
-  categories: any[],
-  statuses: Array<WithLookup<IssueStatus>>,
-  components: Component[],
-  sprints: Sprint[],
-  assignee: Employee[]
-): Promise<TypeState[]> {
-  if (groupBy === IssuesGrouping.NoGrouping) {
-    return [{ _id: undefined, color: UNSET_COLOR, title: await translate(tracker.string.NoGrouping, {}) }]
-  }
-  if (groupBy === IssuesGrouping.Priority) {
-    const res: TypeState[] = []
-    for (const priority of categories) {
-      const title = await translate((issuePriorities as any)[priority].label, {})
-      res.push({
-        _id: priority,
-        title,
-        color: UNSET_COLOR,
-        icon: (issuePriorities as any)[priority].icon
-      })
-    }
-    return res
-  }
-  if (groupBy === IssuesGrouping.Status) {
-    return statuses
-      .filter((p) => categories.includes(p._id))
-      .map((status) => {
-        const category = '$lookup' in status ? status.$lookup?.category : undefined
-        return {
-          _id: status._id,
-          title: status.name,
-          icon: category?.icon,
-          color: status.color ?? category?.color ?? UNSET_COLOR
-        }
-      })
-  }
-  if (groupBy === IssuesGrouping.Assignee) {
-    const noAssignee = await translate(tracker.string.NoAssignee, {})
-    const res: TypeState[] = assignee
-      .filter((p) => categories.includes(p._id))
-      .map((employee) => {
-        return {
-          _id: employee._id,
-          title: getName(employee),
-          color: UNSET_COLOR,
-          icon: undefined
-        }
-      })
-    if (categories.includes(undefined)) {
-      res.push({
-        _id: null,
-        title: noAssignee,
-        color: UNSET_COLOR,
-        icon: undefined
-      })
-    }
-    return res
-  }
-  if (groupBy === IssuesGrouping.Component) {
-    const noComponent = await translate(tracker.string.NoComponent, {})
-    const res: TypeState[] = components
-      .filter((p) => categories.includes(p._id))
-      .map((component) => ({
-        _id: component._id,
-        title: component.label,
-        color: UNSET_COLOR,
-        icon: undefined
-      }))
-    if (categories.includes(undefined)) {
-      res.push({
-        _id: null,
-        title: noComponent,
-        color: UNSET_COLOR,
-        icon: undefined
-      })
-    }
-    return res
-  }
-  if (groupBy === IssuesGrouping.Sprint) {
-    const noSprint = await translate(tracker.string.NoSprint, {})
-    const res: TypeState[] = sprints
-      .filter((p) => categories.includes(p._id))
-      .map((sprint) => ({
-        _id: sprint._id,
-        title: sprint.label,
-        color: UNSET_COLOR,
-        icon: undefined
-      }))
-    if (categories.includes(undefined)) {
-      res.push({
-        _id: null,
-        title: noSprint,
-        color: UNSET_COLOR,
-        icon: undefined
-      })
-    }
-    return res
-  }
-  return []
 }
 
 /**
@@ -599,14 +491,6 @@ async function getAllSomething (
   return await promise
 }
 
-export async function getAllStatuses (
-  space: Ref<Space> | undefined,
-  onUpdate: () => void,
-  queryId: Ref<Doc>
-): Promise<any[] | undefined> {
-  return await getAllSomething(tracker.class.IssueStatus, space, onUpdate, queryId)
-}
-
 export async function getAllPriority (
   space: Ref<Space> | undefined,
   onUpdate: () => void,
@@ -677,34 +561,73 @@ export async function removeProject (project: Project): Promise<void> {
   await client.removeDoc(tracker.class.Project, core.space.Space, project._id)
 }
 
+async function updateIssuesOnMove (
+  client: TxOperations,
+  applyOps: ApplyOperations,
+  doc: Doc,
+  space: Ref<Project>,
+  extra?: DocumentUpdate<any>
+): Promise<void> {
+  const hierarchy = client.getHierarchy()
+  const attributes = hierarchy.getAllAttributes(doc._class)
+  for (const attribute of attributes.values()) {
+    if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) {
+      const collection = attribute.type as Collection<AttachedDoc>
+      const allAttached = await client.findAll(collection.of, { attachedTo: doc._id })
+      for (const attached of allAttached) {
+        // Do not use extra for childs.
+        if (hierarchy.isDerived(collection.of, tracker.class.Issue)) {
+          const lastOne = await client.findOne(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
+          const incResult = await client.updateDoc(
+            tracker.class.Project,
+            core.space.Space,
+            space,
+            {
+              $inc: { sequence: 1 }
+            },
+            true
+          )
+          await updateIssuesOnMove(client, applyOps, attached, space, {
+            ...extra,
+            rank: calcRank(lastOne, undefined),
+            number: (incResult as any).object.sequence
+          })
+        } else await updateIssuesOnMove(client, applyOps, attached, space)
+      }
+    }
+  }
+  await applyOps.update(doc, {
+    space,
+    ...extra
+  })
+}
+
 /**
  * @public
  */
-export interface StatusStore {
-  statuses: Array<WithLookup<IssueStatus>>
-  byId: IdMap<WithLookup<IssueStatus>>
-  version: number
-}
-// Issue status live query
-export const statusStore = writable<StatusStore>({ statuses: [], byId: new Map(), version: 0 })
-
-const query = createQuery(true)
-query.query(
-  tracker.class.IssueStatus,
-  {},
-  (res) => {
-    statusStore.update((old) => ({
-      version: old.version + 1,
-      statuses: res,
-      byId: toIdMap(res)
-    }))
-  },
-  {
-    lookup: {
-      category: tracker.class.IssueStatusCategory
-    },
-    sort: {
-      rank: SortingOrder.Ascending
-    }
+export async function moveIssueToSpace (
+  client: TxOperations,
+  docs: Doc[],
+  space: Ref<Project>,
+  extra?: DocumentUpdate<any>
+): Promise<void> {
+  const applyOps = client.apply(docs[0]._id)
+  for (const doc of docs) {
+    const lastOne = await client.findOne(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
+    const incResult = await client.updateDoc(
+      tracker.class.Project,
+      core.space.Space,
+      space,
+      {
+        $inc: { sequence: 1 }
+      },
+      true
+    )
+    await updateIssuesOnMove(client, applyOps, doc, space, {
+      ...extra,
+      rank: calcRank(lastOne, undefined),
+      number: (incResult as any).object.sequence
+    })
   }
-)
+  await applyOps.commit()
+}

@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@hcengineering/core'
+  import core, { StatusCategory, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { IssueStatus, IssueStatusCategory } from '@hcengineering/tracker'
+  import { IssueStatus } from '@hcengineering/tracker'
   import { getPlatformColor, IconSize } from '@hcengineering/ui'
   import tracker from '../../plugin'
-  import { statusStore } from '../../utils'
+  import { statusStore } from '@hcengineering/presentation'
   import StatusIcon from '../icons/StatusIcon.svelte'
 
   export let value: WithLookup<IssueStatus>
@@ -29,7 +29,7 @@
 
   const client = getClient()
 
-  let category: IssueStatusCategory | undefined
+  let category: StatusCategory | undefined
   let statuses: IssueStatus[] = []
   const statusIcon: {
     index: number | undefined
@@ -40,8 +40,8 @@
 
   $: if (value.category === tracker.issueStatusCategory.Started) {
     const _s = [
-      ...$statusStore.statuses.filter(
-        (it) => it.attachedTo === value.attachedTo && it.category === tracker.issueStatusCategory.Started
+      ...$statusStore.filter(
+        (it) => it.ofAttribute === value.ofAttribute && it.category === tracker.issueStatusCategory.Started
       )
     ]
     _s.sort((a, b) => a.rank.localeCompare(b.rank))
@@ -54,9 +54,9 @@
       category = status.$lookup.category
     }
     if (category === undefined) {
-      category = await client.findOne(tracker.class.IssueStatusCategory, { _id: value.category })
+      category = await client.findOne(core.class.StatusCategory, { _id: value.category })
     }
-    if (dynamicFillCategories.includes(value.category)) {
+    if (value.category !== undefined && dynamicFillCategories.includes(value.category)) {
       const index = statuses.findIndex((p) => p._id === value._id)
       if (index !== -1) {
         statusIcon.index = index + 1

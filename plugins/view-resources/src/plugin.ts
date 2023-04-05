@@ -16,7 +16,7 @@
 
 import { IntlString, mergeIds } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
-import view, { viewId } from '@hcengineering/view'
+import view, { SortFunc, viewId } from '@hcengineering/view'
 
 export default mergeIds(viewId, view, {
   component: {
@@ -28,9 +28,6 @@ export default mergeIds(viewId, view, {
     ProxyPresenter: '' as AnyComponent
   },
   string: {
-    MoveClass: '' as IntlString,
-    SelectToMove: '' as IntlString,
-    Cancel: '' as IntlString,
     LabelYes: '' as IntlString,
     LabelNo: '' as IntlString,
     ChooseAColor: '' as IntlString,
@@ -45,6 +42,8 @@ export default mergeIds(viewId, view, {
     FilterIsNot: '' as IntlString,
     FilterIsEither: '' as IntlString,
     FilterStatesCount: '' as IntlString,
+    FilterRemoved: '' as IntlString,
+    FilterUpdated: '' as IntlString,
     Before: '' as IntlString,
     After: '' as IntlString,
     Apply: '' as IntlString,
@@ -65,5 +64,8 @@ export default mergeIds(viewId, view, {
     Shown: '' as IntlString,
     ShowEmptyGroups: '' as IntlString,
     Total: '' as IntlString
+  },
+  function: {
+    StatusSort: '' as SortFunc
   }
 })

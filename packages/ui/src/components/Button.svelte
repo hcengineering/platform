@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Asset, IntlString } from '@hcengineering/platform'
-  import { onMount } from 'svelte'
+  import { onMount, ComponentType } from 'svelte'
   import { registerFocus } from '../focus'
   import { tooltip } from '../tooltips'
   import type { AnySvelteComponent, ButtonKind, ButtonShape, ButtonSize, LabelAndProps } from '../types'
@@ -27,7 +27,7 @@
   export let kind: ButtonKind = 'secondary'
   export let size: ButtonSize = 'medium'
   export let shape: ButtonShape = undefined
-  export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
   export let iconProps: any | undefined = undefined
   export let justify: 'left' | 'center' = 'center'
   export let disabled: boolean = false
@@ -303,9 +303,16 @@
         }
       }
     }
-    &.transparent:hover,
-    &.transparent.selected {
-      background-color: var(--button-bg-hover);
+    &.transparent {
+      &:hover {
+        background-color: var(--highlight-hover);
+      }
+      &.selected {
+        background-color: var(--highlight-select);
+      }
+      &.selected:hover {
+        background-color: var(--highlight-select-hover);
+      }
     }
     &.link {
       padding: 0 0.875rem;

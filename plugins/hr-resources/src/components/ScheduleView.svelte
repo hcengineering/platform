@@ -15,18 +15,18 @@
 <script lang="ts">
   import { CalendarMode } from '@hcengineering/calendar-resources'
   import { Employee, EmployeeAccount } from '@hcengineering/contact'
+  import contact from '@hcengineering/contact-resources/src/plugin'
   import { DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
   import { Department, fromTzDate, Request, RequestType, Staff } from '@hcengineering/hr'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import tracker, { Issue } from '@hcengineering/tracker'
   import { Label } from '@hcengineering/ui'
+  import { groupBy } from '@hcengineering/view-resources'
   import hr from '../plugin'
   import { EmployeeReports, getEndDate, getStartDate } from '../utils'
   import MonthTableView from './schedule/MonthTableView.svelte'
   import MonthView from './schedule/MonthView.svelte'
   import YearView from './schedule/YearView.svelte'
-  import { groupBy } from '@hcengineering/view-resources'
-  import contact from '@hcengineering/contact-resources/src/plugin'
 
   export let department: Ref<Department>
   export let descendants: Map<Ref<Department>, Department[]>
@@ -54,7 +54,7 @@
   const currentEmployee = (getCurrentAccount() as EmployeeAccount).employee
 
   let staff: Staff[] = []
-  let reqests: Request[] = []
+  let requests: Request[] = []
   let types: Map<Ref<RequestType>, RequestType> = new Map<Ref<RequestType>, RequestType>()
 
   typeQuery.query(hr.class.RequestType, {}, (res) => {
@@ -99,7 +99,7 @@
         space: { $in: departments }
       },
       (res) => {
-        reqests = res
+        requests = res
       }
     )
   }
@@ -121,7 +121,7 @@
     employeeRequests = employeeRequests
   }
 
-  $: updateRequest(reqests, startDate, endDate)
+  $: updateRequest(requests, startDate, endDate)
 
   function pushChilds (
     department: Ref<Department>,
@@ -294,6 +294,7 @@
           {timeReports}
           {holidays}
           {department}
+          {departments}
           {staffDepartmentMap}
         />
       {:else if display === 'stats'}

@@ -29,6 +29,7 @@ async function hasArchiveSpaces (spaces: Space[]): Promise<boolean> {
 }
 export { default as SpaceBrowser } from './components/SpaceBrowser.svelte'
 export { default as SpecialElement } from './components/navigator/SpecialElement.svelte'
+export { default as TreeSeparator } from './components/navigator/TreeSeparator.svelte'
 export { SpecialView }
 export default async (): Promise<Resources> => ({
   component: {

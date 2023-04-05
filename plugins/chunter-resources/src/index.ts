@@ -22,7 +22,7 @@ import chunter, {
   Message,
   ThreadMessage
 } from '@hcengineering/chunter'
-import core, { Data, Doc, DocumentQuery, Ref, RelatedDocument, Space } from '@hcengineering/core'
+import core, { Data, Doc, DocumentQuery, getCurrentAccount, Ref, RelatedDocument, Space } from '@hcengineering/core'
 import { NotificationClientImpl } from '@hcengineering/notification-resources'
 import { IntlString, Resources, translate } from '@hcengineering/platform'
 import preference from '@hcengineering/preference'
@@ -35,18 +35,22 @@ import TxMessageCreate from './components/activity/TxMessageCreate.svelte'
 import ChannelHeader from './components/ChannelHeader.svelte'
 import ChannelPresenter from './components/ChannelPresenter.svelte'
 import ChannelView from './components/ChannelView.svelte'
+import ChannelViewPanel from './components/ChannelViewPanel.svelte'
 import ChunterBrowser from './components/ChunterBrowser.svelte'
 import CommentInput from './components/CommentInput.svelte'
 import CommentPopup from './components/CommentPopup.svelte'
 import CommentPresenter from './components/CommentPresenter.svelte'
 import CommentsPresenter from './components/CommentsPresenter.svelte'
+import MessagePresenter from './components/MessagePresenter.svelte'
+import ThreadParentPresenter from './components/ThreadParentPresenter.svelte'
+import ThreadViewPanel from './components/ThreadViewPanel.svelte'
 import ConvertDmToPrivateChannelModal from './components/ConvertDmToPrivateChannel.svelte'
 import CreateChannel from './components/CreateChannel.svelte'
 import CreateDirectMessage from './components/CreateDirectMessage.svelte'
 import DmHeader from './components/DmHeader.svelte'
 import DmPresenter from './components/DmPresenter.svelte'
 import EditChannel from './components/EditChannel.svelte'
-import MessagePresenter from './components/MessagePresenter.svelte'
+import DirectMessagePresenter from './components/DirectMessagePresenter.svelte'
 import SavedMessages from './components/SavedMessages.svelte'
 import Threads from './components/Threads.svelte'
 import ThreadView from './components/ThreadView.svelte'
@@ -55,6 +59,7 @@ import { get, writable } from 'svelte/store'
 import { DisplayTx } from '../../activity/lib'
 import { updateBacklinksList } from './backlinks'
 import { getDmName, getTitle, getLink, resolveLocation } from './utils'
+import notification from '@hcengineering/notification'
 
 export { default as Header } from './components/Header.svelte'
 export { classIcon } from './utils'
@@ -72,20 +77,53 @@ async function MarkCommentUnread (object: ThreadMessage): Promise<void> {
 
 async function SubscribeMessage (object: Message): Promise<void> {
   const client = getClient()
-  const notificationClient = NotificationClientImpl.getClient()
-  if (client.getHierarchy().isDerived(object._class, chunter.class.ThreadMessage)) {
-    await notificationClient.updateLastView(object.attachedTo, object.attachedToClass, undefined, true)
+  const acc = getCurrentAccount()
+  const hierarchy = client.getHierarchy()
+  if (hierarchy.isDerived(object._class, chunter.class.ThreadMessage)) {
+    await client.updateMixin(
+      object.attachedTo,
+      object.attachedToClass,
+      object.space,
+      notification.mixin.Collaborators,
+      {
+        $push: {
+          collaborators: acc._id
+        }
+      }
+    )
   } else {
-    await notificationClient.updateLastView(object._id, object._class, undefined, true)
+    await client.updateMixin(object._id, object._class, object.space, notification.mixin.Collaborators, {
+      $push: {
+        collaborators: acc._id
+      }
+    })
   }
 }
 
-async function UnsubscribeMessage (object: Message): Promise<void> {
+async function UnsubscribeMessage (object: ChunterMessage): Promise<void> {
   const client = getClient()
+  const acc = getCurrentAccount()
+  const hierarchy = client.getHierarchy()
   const notificationClient = NotificationClientImpl.getClient()
-  if (client.getHierarchy().isDerived(object._class, chunter.class.ThreadMessage)) {
+  if (hierarchy.isDerived(object._class, chunter.class.ThreadMessage)) {
+    await client.updateMixin(
+      object.attachedTo,
+      object.attachedToClass,
+      object.space,
+      notification.mixin.Collaborators,
+      {
+        $pull: {
+          collaborators: acc._id
+        }
+      }
+    )
     await notificationClient.unsubscribe(object.attachedTo)
   } else {
+    await client.updateMixin(object._id, object._class, object.space, notification.mixin.Collaborators, {
+      $pull: {
+        collaborators: acc._id
+      }
+    })
     await notificationClient.unsubscribe(object._id)
   }
 }
@@ -226,11 +264,15 @@ export default async (): Promise<Resources> => ({
     CommentInput,
     CreateChannel,
     CreateDirectMessage,
+    ThreadParentPresenter,
+    ThreadViewPanel,
     ChannelHeader,
     ChannelView,
+    ChannelViewPanel,
     CommentPresenter,
     CommentsPresenter,
     ChannelPresenter,
+    DirectMessagePresenter,
     MessagePresenter,
     ChunterBrowser,
     DmHeader,

@@ -1,25 +1,22 @@
+<!--
+// Copyright © 2023 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
 <script lang="ts">
-  import { chunterId, DirectMessage, Message } from '@hcengineering/chunter'
-  import { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
-  import { NavLink } from '@hcengineering/ui'
-  import chunter from '../plugin'
-  import { getDmName } from '../utils'
+  import { Message } from '@hcengineering/chunter'
+  import { MessageViewer } from '@hcengineering/presentation'
 
   export let value: Message
-  const client = getClient()
-  let dm: DirectMessage | undefined
-  const query = createQuery()
-
-  $: query.query(chunter.class.DirectMessage, { _id: value.space }, (result) => {
-    dm = result[0]
-  })
 </script>
 
-{#if dm}
-  {#await getDmName(client, dm) then name}
-    <NavLink app={chunterId} space={value.space}>
-      <span class="label">{name}</span>
-    </NavLink>
-    <div><MessageViewer message={value.content} /></div>
-  {/await}
-{/if}
+<div><MessageViewer message={value.content} /></div>

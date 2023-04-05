@@ -17,17 +17,15 @@
   import { getCurrentLocation, Label } from '@hcengineering/ui'
 
   export let label: IntlString
-  // export let action: () => Promise<void> | void
 
   const loc = getCurrentLocation()
 </script>
 
 <div class="antiNav-header">
-  <div class="flex-row">
-    <span class="fs-title overflow-label"><Label {label} /></span>
-    <div>
-      {loc.path[1]}
-    </div>
-  </div>
-  <!-- <ActionIcon label={workbench.string.More} icon={IconMoreH} size={'small'} {action}/> -->
+  <span class="top overflow-label">
+    <Label {label} />
+  </span>
+  <span class="bottom overflow-label">
+    {loc.path[1]}
+  </span>
 </div>

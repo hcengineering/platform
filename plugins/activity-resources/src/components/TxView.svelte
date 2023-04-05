@@ -16,7 +16,7 @@
 <script lang="ts">
   import type { TxViewlet } from '@hcengineering/activity'
   import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
-  import core, { AnyAttribute, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+  import core, { AnyAttribute, Doc, getCurrentAccount, Ref, Class } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
@@ -28,17 +28,16 @@
     Label,
     ShowMore,
     showPopup,
-    TimeSince,
-    Like
+    TimeSince
   } from '@hcengineering/ui'
   import type { AttributeModel } from '@hcengineering/view'
+  import attachment from '@hcengineering/attachment'
   import { Menu, ObjectPresenter } from '@hcengineering/view-resources'
   import { ActivityKey, DisplayTx } from '../activity'
   import activity from '../plugin'
   import { getValue, TxDisplayViewlet, updateViewlet } from '../utils'
   import TxViewTx from './TxViewTx.svelte'
   import Edit from './icons/Edit.svelte'
-  import IconProfile from './icons/Profile.svelte'
 
   export let tx: DisplayTx
   export let viewlets: Map<ActivityKey, TxViewlet>
@@ -132,6 +131,9 @@
   function isMessageType (attr?: AnyAttribute): boolean {
     return attr?.type._class === core.class.TypeMarkup
   }
+  function isAttachment (_class?: Ref<Class<Doc>>): boolean {
+    return _class === attachment.class.Attachment
+  }
 
   async function updateMessageType (model: AttributeModel[], tx: DisplayTx): Promise<boolean> {
     for (const m of model) {
@@ -150,6 +152,7 @@
     hasMessageType = res
   })
   $: isComment = viewlet && viewlet?.editable
+  $: isAttach = isAttachment(tx.tx.objectClass)
   $: isMention = viewlet?.display === 'emphasized' || isMessageType(model[0]?.attribute)
   $: isColumn = isComment || isMention || hasMessageType
 </script>
@@ -158,14 +161,14 @@
   <div
     class="msgactivity-container"
     class:showIcon
-    class:withAvatar={isComment || isMention}
+    class:withAvatar={isComment || isAttach}
     class:isNew
     class:isNextNew
   >
     {#if showIcon}
-      {#if isComment || isMention}
+      {#if isComment || isAttach}
         <div class="msgactivity-avatar">
-          <Icon icon={IconProfile} size={'medium'} />
+          <Component is={contact.component.Avatar} props={{ avatar: employee?.avatar, size: 'medium' }} />
         </div>
       {:else}
         <div class="msgactivity-icon">
@@ -180,10 +183,10 @@
       {/if}
     {/if}
 
-    <div class="msgactivity-content" class:content={isColumn} class:comment={isComment}>
+    <div class="msgactivity-content" class:content={isColumn} class:comment={isComment || isAttach}>
       <div class="msgactivity-content__header">
         <div class="msgactivity-content__title labels-row">
-          <span class="bold">
+          <span class={isComment || isAttach ? 'bold' : 'strong'}>
             {#if employee}
               {getName(employee)}
             {:else}
@@ -192,15 +195,13 @@
           </span>
 
           {#if viewlet && viewlet?.editable}
-            <span class="buttons-group small-gap">
-              {#if viewlet.label}
-                <Label label={viewlet.label} params={viewlet.labelParams ?? {}} />
-              {/if}
-              {#if tx.updated}
-                <Label label={activity.string.Edited} />
-              {/if}
-              <span class="time"><TimeSince value={tx.tx.modifiedOn} /></span>
-            </span>
+            {#if viewlet.label}
+              <span class="lower"><Label label={viewlet.label} params={viewlet.labelParams ?? {}} /></span>
+            {/if}
+            {#if tx.updated}
+              <span class="lower"><Label label={activity.string.Edited} /></span>
+            {/if}
+            <span class="time ml-1"><TimeSince value={tx.tx.modifiedOn} /></span>
           {:else if viewlet && viewlet.label}
             <span class="lower">
               <Label label={viewlet.label} params={viewlet.labelParams ?? {}} />
@@ -290,7 +291,7 @@
         </div>
         {#if isComment}
           <div class="buttons-group">
-            <Like />
+            <!-- <Like /> -->
             {#if tx.tx.modifiedBy === getCurrentAccount()._id}
               <ActionIcon icon={IconMoreH} size={'small'} action={showMenu} />
             {/if}
@@ -305,7 +306,7 @@
       {/if}
 
       {#if viewlet && viewlet.display !== 'inline'}
-        <div class="activity-content {viewlet.display}" class:contentHidden>
+        <div class="activity-content content" class:indent={isAttach} class:contentHidden>
           <ShowMore ignore={edit}>
             {#if tx.collectionAttribute !== undefined && (tx.txDocIds?.size ?? 0) > 1}
               <div class="flex-row-center flex-grow flex-wrap clear-mins">
@@ -320,7 +321,7 @@
         </div>
       {:else if hasMessageType && model.length > 0 && (tx.updateTx || tx.mixinTx)}
         {#await getValue(client, model[0], tx) then value}
-          <div class="activity-content content" class:contentHidden>
+          <div class="activity-content content" class:indent={isAttach} class:contentHidden>
             <ShowMore ignore={edit}>
               {#if value.isObjectSet}
                 <ObjectPresenter value={value.set} inline />
@@ -340,10 +341,6 @@
     position: relative;
     display: flex;
     justify-content: space-between;
-
-    &:hover .time {
-      opacity: 1;
-    }
 
     .msgactivity-icon,
     .msgactivity-avatar {
@@ -379,13 +376,18 @@
       }
       .msgactivity-content__title {
         display: inline-flex;
-        align-items: center;
+        align-items: baseline;
         flex-grow: 1;
       }
 
       &.content {
         flex-direction: column;
         padding-bottom: 0.25rem;
+      }
+      &:not(.comment) {
+        .msgactivity-content__header {
+          min-height: 1.75rem;
+        }
       }
       &:not(.content) {
         align-items: center;
@@ -450,13 +452,9 @@
   .time {
     font-size: 0.75rem;
     color: var(--trans-color);
-    opacity: 0.3;
 
     &.top {
       align-self: flex-start;
-    }
-    .comment & {
-      opacity: 1;
     }
   }
 
@@ -467,7 +465,6 @@
   .activity-content {
     overflow: hidden;
     visibility: visible;
-    margin-top: 0.25rem;
     max-height: max-content;
     opacity: 1;
     transition-property: max-height, opacity;
@@ -480,6 +477,9 @@
       margin-top: -0.5rem;
       max-height: 0;
       opacity: 0;
+    }
+    &.indent {
+      margin-top: 0.5rem;
     }
   }
 </style>

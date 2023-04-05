@@ -20,7 +20,7 @@
   import { Button, eventToHTMLElement, SelectPopup, showPopup, TooltipAlignment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
-  import { statusStore } from '../../utils'
+  import { statusStore } from '@hcengineering/presentation'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
 
@@ -65,7 +65,7 @@
     )
   }
 
-  $: statuses = $statusStore.statuses.filter((it) => it.attachedTo === value?.space)
+  $: statuses = $statusStore.statuses.filter((it) => it.space === value?.space)
 
   $: selectedStatus = statuses?.find((status) => status._id === value.status) ?? statuses?.[0]
   $: selectedStatusLabel = shouldShowLabel ? selectedStatus?.name : undefined

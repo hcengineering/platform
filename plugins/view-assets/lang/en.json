@@ -39,6 +39,8 @@
     "FilterIsNot": "is not",
     "FilterIsEither": "{value, plural, =1 {is} other {is either of}}",
     "FilterStatesCount": "{value, plural, =1 {1 state} other {# states}}",
+    "FilterUpdated": "Filter was updated",
+    "FilterRemoved": "{count, plural, =1 {# non-existing value was} other {# non-existing values were}} removed from the filter",
     "Before": "Before",
     "After": "After",
     "Apply": "Apply",

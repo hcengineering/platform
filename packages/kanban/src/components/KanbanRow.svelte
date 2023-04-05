@@ -13,10 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref } from '@hcengineering/core'
+  import { CategoryType, Doc, Ref } from '@hcengineering/core'
+  import ui, { Button, IconMoreH } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { slide } from 'svelte/transition'
-  import { CardDragEvent, Item, TypeState } from '../types'
+  import { CardDragEvent, Item } from '../types'
 
   export let stateObjects: Item[]
   export let isDragging: boolean
@@ -24,11 +25,11 @@
   export let objects: Item[]
   export let selection: number | undefined = undefined
   export let checkedSet: Set<Ref<Doc>>
-  export let state: TypeState
+  export let state: CategoryType
 
   export let cardDragOver: (evt: CardDragEvent, object: Item) => void
   export let cardDrop: (evt: CardDragEvent, object: Item) => void
-  export let onDragStart: (object: Item, state: TypeState) => void
+  export let onDragStart: (object: Item, state: CategoryType) => void
   export let showMenu: (evt: MouseEvent, object: Item) => void
 
   const dispatch = createEventDispatcher()
@@ -48,9 +49,13 @@
       stateRefs[pos]?.scrollIntoView({ behavior: 'auto', block: 'nearest' })
     }
   }
+
+  let limit = 50
+
+  $: limitedObjects = stateObjects.slice(0, limit)
 </script>
 
-{#each stateObjects as object, i}
+{#each limitedObjects as object, i (object._id)}
   {@const dragged = isDragging && object._id === dragCard?._id}
   <div
     bind:this={stateRefs[i]}
@@ -80,6 +85,23 @@
     </div>
   </div>
 {/each}
+{#if stateObjects.length > limitedObjects.length}
+  <div class="step-tb75">
+    <div class="card-container h-18 flex-row-center flex-between p-4">
+      <span class="p-1">
+        {limitedObjects.length}/{stateObjects.length}
+      </span>
+      <Button
+        size={'small'}
+        icon={IconMoreH}
+        label={ui.string.ShowMore}
+        on:click={() => {
+          limit = limit + 20
+        }}
+      />
+    </div>
+  </div>
+{/if}
 
 <style lang="scss">
   .card-container {

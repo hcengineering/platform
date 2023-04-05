@@ -29,7 +29,9 @@ import core, {
   Tx,
   TxApplyIf,
   TxHandler,
-  TxResult
+  TxResult,
+  TxWorkspaceEvent,
+  WorkspaceEvent
 } from '@hcengineering/core'
 import {
   getMetadata,
@@ -167,7 +169,10 @@ class Connection implements ClientConnection {
           }
         } else {
           const tx = resp.result as Tx
-          if (tx?._class === core.class.TxModelUpgrade) {
+          if (
+            (tx?._class === core.class.TxWorkspaceEvent && (tx as TxWorkspaceEvent).event === WorkspaceEvent.Upgrade) ||
+            tx?._class === core.class.TxModelUpgrade
+          ) {
             console.log('Processing upgrade')
             websocket.send(
               serialize({

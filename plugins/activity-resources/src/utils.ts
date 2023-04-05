@@ -41,11 +41,7 @@ async function createPseudoViewlet (
   label: IntlString,
   display: 'inline' | 'content' | 'emphasized' = 'inline'
 ): Promise<TxDisplayViewlet> {
-  const doc = dtx.doc
-  if (doc === undefined) {
-    return
-  }
-  const docClass: Class<Doc> = client.getModel().getObject(doc._class)
+  const docClass: Class<Doc> = client.getModel().getObject(dtx.tx.objectClass)
 
   let trLabel = docClass.label !== undefined ? await translate(docClass.label, {}) : undefined
   if (dtx.collectionAttribute !== undefined) {
@@ -56,7 +52,7 @@ async function createPseudoViewlet (
   }
 
   // Check if it is attached doc and collection have title override.
-  const presenter = await getObjectPresenter(client, doc._class, { key: 'doc-presenter' })
+  const presenter = await getObjectPresenter(client, dtx.tx.objectClass, { key: 'doc-presenter' })
   if (presenter !== undefined) {
     let collection = ''
     if (dtx.collectionAttribute?.label !== undefined) {

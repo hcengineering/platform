@@ -24,8 +24,10 @@ import core, {
   FindOptions,
   findProperty,
   FindResult,
+  generateId,
   getObjectValue,
   Hierarchy,
+  IndexingUpdateEvent,
   Lookup,
   LookupData,
   matchQuery,
@@ -43,7 +45,9 @@ import core, {
   TxRemoveDoc,
   TxResult,
   TxUpdateDoc,
-  WithLookup
+  TxWorkspaceEvent,
+  WithLookup,
+  WorkspaceEvent
 } from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
 
@@ -57,7 +61,7 @@ interface Query {
   result: Doc[] | Promise<Doc[]>
   options?: FindOptions<Doc>
   total: number
-  callbacks: Callback[]
+  callbacks: Map<string, Callback>
 }
 
 /**
@@ -138,12 +142,10 @@ export class LiveQuery extends TxProcessor implements Client {
     options?: FindOptions<T>
   ): Query {
     const callback: () => void = () => {}
-    const q = this.createQuery(_class, query, callback, options)
-    const index = q.callbacks.indexOf(callback as (result: Doc[]) => void)
-    if (index !== -1) {
-      q.callbacks.splice(index, 1)
-    }
-    if (q.callbacks.length === 0) {
+    const callbackId = generateId()
+    const q = this.createQuery(_class, query, { callback, callbackId }, options)
+    q.callbacks.delete(callbackId)
+    if (q.callbacks.size === 0) {
       this.queue.push(q)
     }
     return q
@@ -213,7 +215,7 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   private removeFromQueue (q: Query): boolean {
-    if (q.callbacks.length === 0) {
+    if (q.callbacks.size === 0) {
       const queueIndex = this.queue.indexOf(q)
       if (queueIndex !== -1) {
         this.queue.splice(queueIndex, 1)
@@ -223,8 +225,14 @@ export class LiveQuery extends TxProcessor implements Client {
     return false
   }
 
-  private pushCallback (q: Query, callback: (result: Doc[]) => void): void {
-    q.callbacks.push(callback)
+  private pushCallback (
+    q: Query,
+    callback: {
+      callback: (result: Doc[]) => void
+      callbackId: string
+    }
+  ): void {
+    q.callbacks.set(callback.callbackId, callback.callback)
     setTimeout(async () => {
       if (q !== undefined) {
         await this.callback(q)
@@ -235,7 +243,10 @@ export class LiveQuery extends TxProcessor implements Client {
   private getQuery<T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    callback: (result: Doc[]) => void,
+    callback: {
+      callback: (result: Doc[]) => void
+      callbackId: string
+    },
     options?: FindOptions<T>
   ): Query | undefined {
     const current = this.findQuery(_class, query, options)
@@ -250,7 +261,7 @@ export class LiveQuery extends TxProcessor implements Client {
   private createQuery<T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    callback: (result: FindResult<T>) => void,
+    callback: { callback: (result: FindResult<T>) => void, callbackId: string },
     options?: FindOptions<T>
   ): Query {
     const queries = this.queries.get(_class) ?? []
@@ -261,8 +272,9 @@ export class LiveQuery extends TxProcessor implements Client {
       result,
       total: 0,
       options: options as FindOptions<Doc>,
-      callbacks: [callback as (result: Doc[]) => void]
+      callbacks: new Map()
     }
+    q.callbacks.set(callback.callbackId, callback.callback as unknown as Callback)
     queries.push(q)
     result
       .then(async (result) => {
@@ -303,16 +315,14 @@ export class LiveQuery extends TxProcessor implements Client {
         modifiedOn: 1
       }
     }
+    const callbackId = generateId()
     const q =
-      this.getQuery(_class, query, callback as (result: Doc[]) => void, options) ??
-      this.createQuery(_class, query, callback, options)
+      this.getQuery(_class, query, { callback: callback as (result: Doc[]) => void, callbackId }, options) ??
+      this.createQuery(_class, query, { callback, callbackId }, options)
 
     return () => {
-      const index = q.callbacks.indexOf(callback as (result: Doc[]) => void)
-      if (index !== -1) {
-        q.callbacks.splice(index, 1)
-      }
-      if (q.callbacks.length === 0) {
+      q.callbacks.delete(callbackId)
+      if (q.callbacks.size === 0) {
         this.queue.push(q)
       }
     }
@@ -329,12 +339,16 @@ export class LiveQuery extends TxProcessor implements Client {
         return true
       } else {
         const pos = q.result.findIndex((p) => p._id === _id)
-        q.result.splice(pos, 1)
-        q.total--
+        if (pos !== -1) {
+          q.result.splice(pos, 1)
+          q.total--
+        }
       }
     } else {
       const pos = q.result.findIndex((p) => p._id === _id)
-      q.result[pos] = match
+      if (pos !== -1) {
+        q.result[pos] = match
+      }
     }
     return false
   }
@@ -772,7 +786,7 @@ export class LiveQuery extends TxProcessor implements Client {
       q.result = await q.result
     }
     const result = q.result
-    q.callbacks.forEach((callback) => {
+    Array.from(q.callbacks.values()).forEach((callback) => {
       callback(toFindResult(this.clone(result), q.total))
     })
   }
@@ -938,7 +952,40 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   async tx (tx: Tx): Promise<TxResult> {
+    if (tx._class === core.class.TxWorkspaceEvent) {
+      await this.checkUpdateFulltextQueries(tx)
+      return {}
+    }
     return await super.tx(tx)
+  }
+
+  private async checkUpdateFulltextQueries (tx: Tx): Promise<void> {
+    const evt = tx as TxWorkspaceEvent
+    if (evt.event === WorkspaceEvent.IndexingUpdate) {
+      const indexingParam = evt.params as IndexingUpdateEvent
+      for (const q of [...this.queue]) {
+        if (indexingParam._class.includes(q._class) && q.query.$search !== undefined) {
+          if (!(await this.removeFromQueue(q))) {
+            try {
+              await this.refresh(q)
+            } catch (err) {
+              console.error(err)
+            }
+          }
+        }
+      }
+      for (const v of this.queries.values()) {
+        for (const q of v) {
+          if (indexingParam._class.includes(q._class) && q.query.$search !== undefined) {
+            try {
+              await this.refresh(q)
+            } catch (err) {
+              console.error(err)
+            }
+          }
+        }
+      }
+    }
   }
 
   private async __updateLookup (q: Query, updatedDoc: WithLookup<Doc>, ops: any): Promise<void> {

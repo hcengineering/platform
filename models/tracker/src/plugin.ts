@@ -42,7 +42,8 @@ export default mergeIds(trackerId, tracker, {
     Nope: '' as AnyComponent,
     SprintSelector: '' as AnyComponent,
     IssueStatistics: '' as AnyComponent,
-    TimeSpendReportPopup: '' as AnyComponent
+    TimeSpendReportPopup: '' as AnyComponent,
+    NotificationIssuePresenter: '' as AnyComponent
   },
   app: {
     Tracker: '' as Ref<Application>
@@ -58,6 +59,7 @@ export default mergeIds(trackerId, tracker, {
     IssueCategory: '' as Ref<ObjectSearchCategory>
   },
   actionImpl: {
+    Move: '' as ViewAction,
     CopyToClipboard: '' as ViewAction,
     EditWorkflowStatuses: '' as ViewAction,
     EditProject: '' as ViewAction,

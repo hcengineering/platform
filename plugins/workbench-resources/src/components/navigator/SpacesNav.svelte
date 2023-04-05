@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { Doc, Ref, Space } from '@hcengineering/core'
   import core from '@hcengineering/core'
-  import notification from '@hcengineering/notification'
+  import notification, { LastView } from '@hcengineering/notification'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
   import preference from '@hcengineering/preference'
@@ -107,9 +107,9 @@
   $: clazz = hierarchy.getClass(model.spaceClass)
   $: lastEditMixin = hierarchy.as(clazz, notification.mixin.SpaceLastEdit)
 
-  function isChanged (space: Space, lastViews: Map<Ref<Doc>, number>): boolean {
+  function isChanged (space: Space, lastViews: LastView): boolean {
     const field = lastEditMixin?.lastEditField
-    const lastView = lastViews.get(space._id)
+    const lastView = lastViews[space._id]
     if (lastView === undefined || lastView === -1) return false
     if (field === undefined) return false
     const value = (space as any)[field]
@@ -123,10 +123,15 @@
   }
 </script>
 
-<TreeNode label={model.label} parent actions={async () => getParentActions()} indent={'ml-2'}>
+<TreeNode
+  label={model.label}
+  parent
+  actions={async () => getParentActions()}
+  shortDropbox={model.specials !== undefined}
+>
   {#each spaces as space, i (space._id)}
     {#await getObjectPresenter(client, space._class, { key: '' }) then presenter}
-      {#if separate && i !== 0}<TreeSeparator line />{/if}
+      {#if separate && model.specials && i !== 0}<TreeSeparator line />{/if}
       {#if model.specials && presenter}
         <svelte:component
           this={presenter.presenter}
@@ -141,7 +146,7 @@
         <NavLink space={space._id}>
           {#await getSpaceName(client, space) then name}
             <TreeItem
-              indent={'ml-4'}
+              indent={'ml-2'}
               _id={space._id}
               title={name}
               icon={classIcon(client, space._class)}

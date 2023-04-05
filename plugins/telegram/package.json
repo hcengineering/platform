@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/telegram",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -30,7 +30,7 @@
     "@hcengineering/core": "^0.6.21",
     "@hcengineering/ui": "^0.6.3",
     "@hcengineering/contact": "^0.6.11",
-    "@hcengineering/setting": "^0.6.2"
+    "@hcengineering/setting": "^0.6.3"
   },
   "repository": "https://github.com/hcengineering/anticrm",
   "publishConfig": {

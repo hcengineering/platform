@@ -129,10 +129,7 @@
       <Component
         is={category.component}
         props={{
-          visibileNav,
-          onFirstCategory: () => {
-            selectCategory(categories[0].name)
-          }
+          visibileNav
         }}
       />
     {/if}

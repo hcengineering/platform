@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachedData, Class, Ref, SortingOrder } from '@hcengineering/core'
+  import core, { Class, Data, Ref, SortingOrder, StatusCategory } from '@hcengineering/core'
   import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
-  import { calcRank, IssueStatus, IssueStatusCategory, Project } from '@hcengineering/tracker'
+  import { calcRank, IssueStatus, Project } from '@hcengineering/tracker'
   import {
     Button,
     closeTooltip,
@@ -28,10 +28,10 @@
     Scroller,
     showPopup
   } from '@hcengineering/ui'
+  import { statusStore } from '@hcengineering/presentation'
   import { createEventDispatcher } from 'svelte'
   import { flip } from 'svelte/animate'
   import tracker from '../../plugin'
-  import { statusStore } from '../../utils'
   import StatusEditor from './StatusEditor.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
 
@@ -43,9 +43,9 @@
   const projectQuery = createQuery()
 
   let project: Project | undefined
-  let statusCategories: IssueStatusCategory[] | undefined
+  let statusCategories: StatusCategory[] | undefined
 
-  let editingStatus: IssueStatus | Partial<AttachedData<IssueStatus>> | null = null
+  let editingStatus: IssueStatus | Partial<Data<IssueStatus>> | null = null
   let draggingStatus: IssueStatus | null = null
   let hoveringStatus: IssueStatus | null = null
 
@@ -53,8 +53,8 @@
 
   async function updateStatusCategories () {
     statusCategories = await client.findAll(
-      tracker.class.IssueStatusCategory,
-      {},
+      core.class.StatusCategory,
+      { ofAttribute: tracker.attribute.IssueStatus },
       { sort: { order: SortingOrder.Ascending } }
     )
   }
@@ -72,20 +72,14 @@
       const nextStatus = $statusStore.statuses[$statusStore.statuses.findIndex(({ _id }) => _id === prevStatus._id) + 1]
 
       isSaving = true
-      await client.addCollection(
-        tracker.class.IssueStatus,
-        projectId,
-        projectId,
-        tracker.class.Project,
-        'issueStatuses',
-        {
-          name: editingStatus.name,
-          description: editingStatus.description,
-          color: editingStatus.color,
-          category: editingStatus.category,
-          rank: calcRank(prevStatus, nextStatus)
-        }
-      )
+      await client.createDoc(tracker.class.IssueStatus, projectId, {
+        ofAttribute: tracker.attribute.IssueStatus,
+        name: editingStatus.name,
+        description: editingStatus.description,
+        color: editingStatus.color,
+        category: editingStatus.category,
+        rank: calcRank(prevStatus, nextStatus)
+      })
       isSaving = false
     }
 
@@ -101,7 +95,7 @@
         return
       }
 
-      const updates: Partial<AttachedData<IssueStatus>> = {}
+      const updates: Partial<Data<IssueStatus>> = {}
       if (status.name !== editingStatus.name) {
         updates.name = editingStatus.name
       }
@@ -198,7 +192,7 @@
   }
 
   async function handleDrop (toItem: IssueStatus) {
-    if (draggingStatus?._id !== toItem._id && draggingStatus?.category === toItem.category) {
+    if (draggingStatus != null && draggingStatus?._id !== toItem._id && draggingStatus?.category === toItem.category) {
       const fromIndex = getStatusIndex(draggingStatus)
       const toIndex = getStatusIndex(toItem)
       const [prev, next] = [
@@ -251,7 +245,7 @@
       <div class="popupPanel-body__main-content py-10 clear-mins">
         {#each statusCategories as category}
           {@const statuses =
-            $statusStore.statuses.filter((s) => s.attachedTo === projectId && s.category === category._id) ?? []}
+            $statusStore.statuses.filter((s) => s.space === projectId && s.category === category._id) ?? []}
           {@const isSingle = statuses.length === 1}
           <div class="flex-between category-name">
             <Label label={category.label} />

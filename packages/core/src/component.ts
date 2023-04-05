@@ -23,13 +23,17 @@ import type {
   BlobData,
   Class,
   Collection,
+  Configuration,
+  ConfigurationElement,
   Doc,
   DocIndexState,
-  FullTextSearchContext,
   Enum,
   EnumOf,
   FullTextData,
+  FullTextSearchContext,
   Hyperlink,
+  IndexingConfiguration,
+  IndexStageState,
   Interface,
   Obj,
   PluginConfiguration,
@@ -39,12 +43,9 @@ import type {
   Space,
   Timestamp,
   Type,
-  UserStatus,
-  Configuration,
-  ConfigurationElement,
-  IndexStageState,
-  IndexingConfiguration
+  UserStatus
 } from './classes'
+import { Status, StatusCategory } from './status'
 import type {
   Tx,
   TxApplyIf,
@@ -54,7 +55,8 @@ import type {
   TxMixin,
   TxModelUpgrade,
   TxRemoveDoc,
-  TxUpdateDoc
+  TxUpdateDoc,
+  TxWorkspaceEvent
 } from './tx'
 
 /**
@@ -78,6 +80,7 @@ export default plugin(coreId, {
     Attribute: '' as Ref<Class<AnyAttribute>>,
     Tx: '' as Ref<Class<Tx>>,
     TxModelUpgrade: '' as Ref<Class<TxModelUpgrade>>,
+    TxWorkspaceEvent: '' as Ref<Class<TxWorkspaceEvent>>,
     TxApplyIf: '' as Ref<Class<TxApplyIf>>,
     TxCUD: '' as Ref<Class<TxCUD<Doc>>>,
     TxCreateDoc: '' as Ref<Class<TxCreateDoc<Doc>>>,
@@ -111,7 +114,10 @@ export default plugin(coreId, {
     DocIndexState: '' as Ref<Class<DocIndexState>>,
     IndexStageState: '' as Ref<Class<IndexStageState>>,
 
-    Configuration: '' as Ref<Class<Configuration>>
+    Configuration: '' as Ref<Class<Configuration>>,
+
+    Status: '' as Ref<Class<Status>>,
+    StatusCategory: '' as Ref<Class<StatusCategory>>
   },
   mixin: {
     FullTextSearchContext: '' as Ref<Mixin<FullTextSearchContext>>,
@@ -161,6 +167,8 @@ export default plugin(coreId, {
     Private: '' as IntlString,
     Object: '' as IntlString,
     System: '' as IntlString,
-    CreatedBy: '' as IntlString
+    CreatedBy: '' as IntlString,
+    Status: '' as IntlString,
+    StatusCategory: '' as IntlString
   }
 })

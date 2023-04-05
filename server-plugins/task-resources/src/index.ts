@@ -14,43 +14,11 @@
 //
 
 import { Employee } from '@hcengineering/contact'
-import core, {
-  AttachedDoc,
-  concatLink,
-  Doc,
-  Ref,
-  Tx,
-  TxCollectionCUD,
-  TxProcessor,
-  TxUpdateDoc
-} from '@hcengineering/core'
-import { NotificationAction } from '@hcengineering/notification'
-import { getMetadata, Resource } from '@hcengineering/platform'
-import serverCore, { TriggerControl } from '@hcengineering/server-core'
-import { getEmployeeAccount, getEmployeeAccountById, getUpdateLastViewTx } from '@hcengineering/server-notification'
+import { AttachedDoc, Doc, Ref, Tx, TxCollectionCUD } from '@hcengineering/core'
+import { TriggerControl } from '@hcengineering/server-core'
+import { getEmployeeAccount, getEmployeeAccountById } from '@hcengineering/server-notification'
 import { createNotificationTxes } from '@hcengineering/server-notification-resources'
-import task, { Issue, Task, taskId } from '@hcengineering/task'
-import view from '@hcengineering/view'
-import { workbenchId } from '@hcengineering/workbench'
-
-/**
- * @public
- */
-export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
-  const issue = doc as Issue
-  const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.name}/${taskId}/${issue.space}/#${view.component.EditDoc}|${issue._id}|${issue._class}|content`
-  const link = concatLink(front, path)
-  return `<a href="${link}">Task-${issue.number}</a>`
-}
-
-/**
- * @public
- */
-export async function issueTextPresenter (doc: Doc): Promise<string> {
-  const issue = doc as Issue
-  return `Task-${issue.number}`
-}
+import task from '@hcengineering/task'
 
 /**
  * @public
@@ -60,8 +28,7 @@ export async function addAssigneeNotification (
   res: Tx[],
   issue: Doc,
   assignee: Ref<Employee>,
-  ptx: TxCollectionCUD<AttachedDoc, AttachedDoc>,
-  component?: Resource<string>
+  ptx: TxCollectionCUD<AttachedDoc, AttachedDoc>
 ): Promise<void> {
   const sender = await getEmployeeAccountById(ptx.modifiedBy, control)
   if (sender === undefined) {
@@ -72,79 +39,14 @@ export async function addAssigneeNotification (
   if (receiver === undefined) {
     return
   }
+  if (sender._id === receiver._id) return
 
-  // eslint-disable-next-line
-  const action: NotificationAction = {
-    component: component ?? view.component.EditDoc,
-    objectId: issue._id,
-    objectClass: issue._class
-  } as NotificationAction
-
-  const result = await createNotificationTxes(
-    control,
-    ptx,
-    task.ids.AssigneedNotification,
-    issue,
-    sender,
-    receiver,
-    undefined,
-    action
-  )
+  const result = await createNotificationTxes(control, ptx, task.ids.AssigneedNotification, issue, sender, receiver)
 
   res.push(...result)
 }
 
-/**
- * @public
- */
-export async function OnTaskUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx)
-  if (actualTx._class !== core.class.TxUpdateDoc) {
-    return []
-  }
-
-  const updateTx = actualTx as TxUpdateDoc<Task>
-
-  if (!control.hierarchy.isDerived(updateTx.objectClass, task.class.Task)) {
-    return []
-  }
-  const txes: Tx[] = []
-
-  const mainTx = await getUpdateLastViewTx(
-    control.findAll,
-    updateTx.objectId,
-    updateTx.objectClass,
-    updateTx.modifiedOn,
-    updateTx.modifiedBy
-  )
-  if (mainTx !== undefined) {
-    txes.push(mainTx)
-  }
-  if (updateTx.operations.assignee != null) {
-    const assignee = (
-      await control.modelDb.findAll(core.class.Account, { employee: updateTx.operations.assignee }, { limit: 1 })
-    )[0]
-    if (assignee !== undefined) {
-      const assigneeTx = await getUpdateLastViewTx(
-        control.findAll,
-        updateTx.objectId,
-        updateTx.objectClass,
-        updateTx.modifiedOn,
-        assignee._id
-      )
-      if (assigneeTx !== undefined) {
-        txes.push(assigneeTx)
-      }
-    }
-  }
-
-  return txes
-}
-
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
-  function: {
-    IssueHTMLPresenter: issueHTMLPresenter,
-    IssueTextPresenter: issueTextPresenter
-  }
+  function: {}
 })

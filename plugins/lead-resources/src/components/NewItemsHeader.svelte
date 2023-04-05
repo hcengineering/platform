@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, showPopup } from '@hcengineering/ui'
+  import { Button, showPopup, IconAdd } from '@hcengineering/ui'
   import lead from '../plugin'
   import CreateCustomer from './CreateCustomer.svelte'
 
@@ -22,15 +22,14 @@
   }
 </script>
 
-<div class="antiNav-subheader gap-2">
-  <div class="flex-grow text-md">
-    <Button
-      icon={lead.icon.CreateCustomer}
-      label={lead.string.CreateCustomerLabel}
-      justify={'left'}
-      width={'100%'}
-      on:click={newIssue}
-    />
-  </div>
-  <!-- <Button icon={lead.icon.Magnifier} on:click={async () => {}} /> -->
+<div class="antiNav-subheader">
+  <Button
+    icon={IconAdd}
+    label={lead.string.CreateCustomerLabel}
+    justify={'left'}
+    width={'100%'}
+    kind={'primary'}
+    size={'large'}
+    on:click={newIssue}
+  />
 </div>

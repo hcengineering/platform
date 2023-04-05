@@ -23,13 +23,13 @@
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'small'
 
-  $: ids = Array.from(new Set(integrations.map((p) => p.space as string as Ref<Account>)))
+  $: ids = Array.from(new Set(integrations.map((p) => p.createdBy as Ref<Account>)))
 
   function change (e: CustomEvent<Ref<Account> | null>) {
     if (e.detail === null) {
       selected = undefined
     } else {
-      selected = integrations.find((p) => (p.space as string as Ref<Account>) === e.detail)
+      selected = integrations.find((p) => p.createdBy === e.detail)
     }
   }
 </script>

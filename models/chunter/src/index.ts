@@ -194,8 +194,42 @@ export function createModel (builder: Builder, options = { addApplication: true 
     getName: chunter.function.GetDmName
   })
 
+  builder.mixin(chunter.class.Message, core.class.Class, notification.mixin.TrackedDoc, {})
+  builder.mixin(chunter.class.Message, core.class.Class, notification.mixin.ClassCollaborators, {
+    fields: ['createdBy', 'replies']
+  })
+
+  builder.mixin(chunter.class.ChunterSpace, core.class.Class, notification.mixin.TrackedDoc, {})
+  builder.mixin(chunter.class.DirectMessage, core.class.Class, notification.mixin.ClassCollaborators, {
+    fields: ['members']
+  })
+
+  builder.mixin(chunter.class.Channel, core.class.Class, notification.mixin.ClassCollaborators, {
+    fields: ['members']
+  })
+
+  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ObjectPanel, {
+    component: chunter.component.ChannelViewPanel
+  })
+
+  builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.ObjectPanel, {
+    component: chunter.component.ChannelViewPanel
+  })
+
   builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: chunter.component.DmPresenter
+  })
+
+  builder.mixin(chunter.class.Message, core.class.Class, notification.mixin.NotificationObjectPresenter, {
+    presenter: chunter.component.ThreadParentPresenter
+  })
+
+  builder.mixin(chunter.class.ThreadMessage, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: chunter.component.MessagePresenter
+  })
+
+  builder.mixin(chunter.class.Message, core.class.Class, view.mixin.ObjectPanel, {
+    component: chunter.component.ThreadViewPanel
   })
 
   builder.mixin(chunter.class.Message, core.class.Class, view.mixin.ObjectPresenter, {
@@ -429,7 +463,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
       icon: chunter.icon.Chunter,
       txClass: core.class.TxCreateDoc,
       component: chunter.activity.TxCommentCreate,
-      label: chunter.string.LeftComment,
+      // label: chunter.string.LeftComment,
       display: 'content',
       editable: true,
       hideOnRemove: true

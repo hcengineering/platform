@@ -33,9 +33,9 @@
     "@hcengineering/model-attachment": "^0.6.0",
     "@hcengineering/model-contact": "^0.6.1",
     "@hcengineering/contact": "^0.6.11",
-    "@hcengineering/telegram": "^0.6.2",
+    "@hcengineering/telegram": "^0.6.4",
     "@hcengineering/telegram-resources": "^0.6.0",
-    "@hcengineering/setting": "^0.6.2",
+    "@hcengineering/setting": "^0.6.3",
     "@hcengineering/ui": "^0.6.3"
   }
 }

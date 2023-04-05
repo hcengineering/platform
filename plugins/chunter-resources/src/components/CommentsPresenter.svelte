@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import chunter from '@hcengineering/chunter'
   import type { Doc } from '@hcengineering/core'
   import { IconThread, tooltip } from '@hcengineering/ui'
+  import { DocNavLink } from '@hcengineering/view-resources'
   import CommentPopup from './CommentPopup.svelte'
 
   export let value: number | undefined
@@ -27,18 +27,18 @@
 
 {#if value && value > 0}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div
-    use:tooltip={{
-      label: chunter.string.Comments,
-      component: CommentPopup,
-      props: { objectId: object._id }
-    }}
-    on:click|preventDefault|stopPropagation={() => {}}
-    class="sm-tool-icon ml-1 mr-1"
-  >
-    <span class="icon"><IconThread {size} /></span>
-    {#if showCounter}
-      &nbsp;{value}
-    {/if}
-  </div>
+  <DocNavLink {object} inline noUnderline={true}>
+    <div
+      use:tooltip={{
+        component: CommentPopup,
+        props: { objectId: object._id, object }
+      }}
+      class="sm-tool-icon ml-1 mr-1"
+    >
+      <span class="icon"><IconThread {size} /></span>
+      {#if showCounter}
+        &nbsp;{value}
+      {/if}
+    </div>
+  </DocNavLink>
 {/if}

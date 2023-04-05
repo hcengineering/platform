@@ -1,7 +1,7 @@
 {
   "string": {
     "MoveClass": "Переместить {class}",
-    "SelectToMove": "Выберите {classLabel} который вы хотите переместить в {class}.",
+    "SelectToMove": "Выберите {classLabel}, в который вы хотите переместить {class}.",
     "Delete": "Удалить",
     "Move": "Переместить",
     "Cancel": "Отменть",
@@ -37,6 +37,8 @@
     "FilterIsNot": "не равен",
     "FilterIsEither": "{value, plural, =1 {равен} other {один из}}",
     "FilterStatesCount": "{value, plural, =1 {1 состоянию} other {# состояний}}",
+    "FilterUpdated": "Фильтр был обновлен",
+    "FilterRemoved": "Несуществующие значения были удалены из фильтра: {count}",
     "Before": "До",
     "After": "После",
     "Apply": "Применить",

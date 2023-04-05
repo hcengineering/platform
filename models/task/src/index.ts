@@ -15,7 +15,7 @@
 
 import type { Employee } from '@hcengineering/contact'
 import contact from '@hcengineering/contact'
-import { Arr, Class, Doc, Domain, FindOptions, IndexKind, Ref, Space, Timestamp } from '@hcengineering/core'
+import { Arr, Attribute, Class, Doc, Domain, IndexKind, Ref, Space, Status, Timestamp } from '@hcengineering/core'
 import {
   Builder,
   Collection,
@@ -32,25 +32,20 @@ import {
   TypeString,
   UX
 } from '@hcengineering/model'
-import attachment from '@hcengineering/model-attachment'
-import chunter from '@hcengineering/model-chunter'
-import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@hcengineering/model-core'
+import core, { TAttachedDoc, TClass, TDoc, TSpace, TStatus } from '@hcengineering/model-core'
 import view, { actionTemplates as viewTemplates, createAction, template } from '@hcengineering/model-view'
 import notification from '@hcengineering/notification'
 import { IntlString } from '@hcengineering/platform'
 import tags from '@hcengineering/tags'
 import {
-  DOMAIN_STATE,
   DoneState,
   DoneStateTemplate,
-  Issue,
   Kanban,
   KanbanCard,
   KanbanTemplate,
   KanbanTemplateSpace,
   LostState,
   LostStateTemplate,
-  Project,
   Sequence,
   State,
   StateTemplate,
@@ -68,25 +63,15 @@ export { default } from './plugin'
 
 export const DOMAIN_TASK = 'task' as Domain
 export const DOMAIN_KANBAN = 'kanban' as Domain
-@Model(task.class.State, core.class.Doc, DOMAIN_STATE, [task.interface.DocWithRank])
+@Model(task.class.State, core.class.Status)
 @UX(task.string.TaskState, task.icon.TaskState, undefined, 'rank')
-export class TState extends TDoc implements State {
-  @Prop(TypeString(), task.string.TaskStateTitle)
-    title!: string
-
-  color!: number
-
-  declare rank: string
+export class TState extends TStatus implements State {
+  isArchived!: boolean
 }
 
-@Model(task.class.DoneState, core.class.Doc, DOMAIN_STATE, [task.interface.DocWithRank])
-@UX(task.string.TaskStateDone, task.icon.TaskState, undefined, 'title')
-export class TDoneState extends TDoc implements DoneState {
-  @Prop(TypeString(), task.string.TaskStateTitle)
-    title!: string
-
-  declare rank: string
-}
+@Model(task.class.DoneState, core.class.Status)
+@UX(task.string.TaskStateDone, task.icon.TaskState, undefined, 'name')
+export class TDoneState extends TStatus implements DoneState {}
 
 @Model(task.class.WonState, task.class.DoneState)
 export class TWonState extends TDoneState implements WonState {}
@@ -99,13 +84,13 @@ export class TLostState extends TDoneState implements LostState {}
  *
  * No domain is specified, since pure Tasks could not exists
  */
-@Model(task.class.Task, core.class.AttachedDoc, DOMAIN_TASK, [task.interface.DocWithRank])
+@Model(task.class.Task, core.class.AttachedDoc, DOMAIN_TASK)
 @UX(task.string.Task, task.icon.Task, task.string.Task)
 export class TTask extends TAttachedDoc implements Task {
-  @Prop(TypeRef(task.class.State), task.string.TaskState)
+  @Prop(TypeRef(task.class.State), task.string.TaskState, { _id: task.attribute.State })
     state!: Ref<State>
 
-  @Prop(TypeRef(task.class.DoneState), task.string.TaskStateDone)
+  @Prop(TypeRef(task.class.DoneState), task.string.TaskStateDone, { _id: task.attribute.DoneState })
     doneState!: Ref<DoneState> | null
 
   @Prop(TypeString(), task.string.TaskNumber)
@@ -124,14 +109,11 @@ export class TTask extends TAttachedDoc implements Task {
 
   declare rank: string
 
-  // @Prop(Collection(task.class.TodoItem), task.string.Todos)
-  //   todoItems!: number
-
   @Prop(Collection(tags.class.TagReference, task.string.TaskLabels), task.string.TaskLabels)
     labels!: number
 }
 
-@Model(task.class.TodoItem, core.class.AttachedDoc, DOMAIN_TASK, [task.interface.DocWithRank])
+@Model(task.class.TodoItem, core.class.AttachedDoc, DOMAIN_TASK)
 @UX(task.string.Todo)
 export class TTodoItem extends TAttachedDoc implements TodoItem {
   @Prop(TypeMarkup(), task.string.TodoName, task.icon.Task)
@@ -153,38 +135,6 @@ export class TTodoItem extends TAttachedDoc implements TodoItem {
   declare rank: string
 }
 
-@Model(task.class.SpaceWithStates, core.class.Space)
-export class TSpaceWithStates extends TSpace {}
-
-@Model(task.class.Project, task.class.SpaceWithStates)
-@UX(task.string.ProjectName, task.icon.Task)
-export class TProject extends TSpaceWithStates implements Project {}
-
-@Model(task.class.Issue, task.class.Task, DOMAIN_TASK)
-@UX(task.string.Task, task.icon.Task, task.string.Task, 'number')
-export class TIssue extends TTask implements Issue {
-  // We need to declare, to provide property with label
-  @Prop(TypeRef(core.class.Doc), task.string.TaskParent)
-  declare attachedTo: Ref<Doc>
-
-  @Prop(TypeString(), task.string.IssueName)
-  @Index(IndexKind.FullText)
-    name!: string
-
-  @Prop(TypeMarkup(), task.string.Description)
-  @Index(IndexKind.FullText)
-    description!: string
-
-  @Prop(Collection(chunter.class.Comment), task.string.TaskComments)
-    comments!: number
-
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
-    attachments!: number
-
-  @Prop(TypeRef(contact.class.Employee), task.string.TaskAssignee)
-  declare assignee: Ref<Employee> | null
-}
-
 @Mixin(task.mixin.KanbanCard, core.class.Class)
 export class TKanbanCard extends TClass implements KanbanCard {
   card!: AnyComponent
@@ -197,6 +147,9 @@ export class TKanban extends TDoc implements Kanban {
   attachedTo!: Ref<Space>
 }
 
+@Model(task.class.SpaceWithStates, core.class.Space)
+export class TSpaceWithStates extends TSpace {}
+
 @Model(task.class.KanbanTemplateSpace, core.class.Space)
 export class TKanbanTemplateSpace extends TSpace implements KanbanTemplateSpace {
   name!: IntlString
@@ -205,10 +158,13 @@ export class TKanbanTemplateSpace extends TSpace implements KanbanTemplateSpace 
   editor!: AnyComponent
 }
 
-@Model(task.class.StateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN, [task.interface.DocWithRank])
+@Model(task.class.StateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN)
 export class TStateTemplate extends TAttachedDoc implements StateTemplate {
+  // We attach to attribute, so we could distinguish between
+  ofAttribute!: Ref<Attribute<Status>>
+
   @Prop(TypeString(), task.string.StateTemplateTitle)
-    title!: string
+    name!: string
 
   @Prop(TypeString(), task.string.StateTemplateColor)
     color!: number
@@ -216,10 +172,13 @@ export class TStateTemplate extends TAttachedDoc implements StateTemplate {
   declare rank: string
 }
 
-@Model(task.class.DoneStateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN, [task.interface.DocWithRank])
+@Model(task.class.DoneStateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN)
 export class TDoneStateTemplate extends TAttachedDoc implements DoneStateTemplate {
+  // We attach to attribute, so we could distinguish between
+  ofAttribute!: Ref<Attribute<Status>>
+
   @Prop(TypeString(), task.string.StateTemplateTitle)
-    title!: string
+    name!: string
 
   declare rank: string
 }
@@ -334,10 +293,8 @@ export function createModel (builder: Builder): void {
     TKanbanTemplate,
     TSequence,
     TTask,
-    TSpaceWithStates,
-    TProject,
-    TIssue,
-    TTodoItem
+    TTodoItem,
+    TSpaceWithStates
   )
 
   builder.createDoc(
@@ -351,64 +308,21 @@ export function createModel (builder: Builder): void {
     task.viewlet.StatusTable
   )
 
-  builder.createDoc(
-    view.class.Viewlet,
-    core.space.Model,
-    {
-      attachTo: task.class.Issue,
-      descriptor: task.viewlet.StatusTable,
-      config: ['', 'name', 'assignee', 'state', 'doneState', 'attachments', 'comments', 'modifiedOn']
-    },
-    task.viewlet.TableIssue
-  )
-
   builder.mixin(task.class.Task, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: view.component.ObjectPresenter
-  })
-
-  builder.mixin(task.class.Issue, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: task.component.TaskPresenter
   })
 
   builder.mixin(task.class.KanbanTemplate, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: task.component.KanbanTemplatePresenter
   })
 
-  builder.mixin(task.class.Issue, core.class.Class, view.mixin.ObjectEditor, {
-    editor: task.component.EditIssue
-  })
-
   builder.mixin(task.class.Task, core.class.Class, view.mixin.ObjectEditorHeader, {
     editor: task.component.TaskHeader
   })
 
-  builder.mixin(task.class.Task, core.class.Class, notification.mixin.LastViewAttached, {})
+  builder.mixin(task.class.Task, core.class.Class, notification.mixin.TrackedDoc, {})
   builder.mixin(task.class.Task, core.class.Class, notification.mixin.AnotherUserNotifications, {
     fields: ['assignee']
-  })
-
-  builder.createDoc(
-    view.class.Viewlet,
-    core.space.Model,
-    {
-      attachTo: task.class.Issue,
-      descriptor: task.viewlet.Kanban,
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      options: {
-        lookup: {
-          assignee: contact.class.Employee,
-          _id: {
-            todoItems: task.class.TodoItem
-          }
-        }
-      } as FindOptions<Doc>,
-      config: []
-    },
-    task.viewlet.KanbanIssue
-  )
-
-  builder.mixin(task.class.Issue, core.class.Class, task.mixin.KanbanCard, {
-    card: task.component.KanbanCard
   })
 
   builder.createDoc(

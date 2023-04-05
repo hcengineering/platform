@@ -16,11 +16,13 @@
 
 import core, {
   AttachedDoc,
+  CategoryType,
   Class,
   Client,
   Collection,
   Doc,
   DocumentUpdate,
+  getObjectValue,
   Hierarchy,
   Lookup,
   Obj,
@@ -29,11 +31,14 @@ import core, {
   ReverseLookup,
   ReverseLookups,
   Space,
+  Status,
+  StatusManager,
+  StatusValue,
   TxOperations
 } from '@hcengineering/core'
 import type { IntlString } from '@hcengineering/platform'
 import { getResource } from '@hcengineering/platform'
-import { AttributeCategory, getAttributePresenterClass, KeyedAttribute } from '@hcengineering/presentation'
+import { AttributeCategory, createQuery, getAttributePresenterClass, KeyedAttribute } from '@hcengineering/presentation'
 import {
   AnyComponent,
   ErrorPresenter,
@@ -70,13 +75,8 @@ export async function getObjectPresenter (
   const hierarchy = client.getHierarchy()
   const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : view.mixin.ObjectPresenter
   const clazz = hierarchy.getClass(_class)
-  let mixinClazz = hierarchy.getClass(_class)
-  let presenterMixin = hierarchy.as(clazz, mixin)
-  while (presenterMixin.presenter === undefined && mixinClazz.extends !== undefined) {
-    presenterMixin = hierarchy.as(mixinClazz, mixin)
-    mixinClazz = hierarchy.getClass(mixinClazz.extends)
-  }
-  if (presenterMixin.presenter === undefined) {
+  const presenterMixin = hierarchy.classHierarchyMixin(_class, mixin)
+  if (presenterMixin?.presenter === undefined) {
     throw new Error(
       `object presenter not found for class=${_class}, mixin=${mixin}, preserve key ${JSON.stringify(preserveKey)}`
     )
@@ -120,13 +120,8 @@ export async function getListItemPresenter (client: Client, _class: Ref<Class<Ob
  * @public
  */
 export async function getObjectPreview (client: Client, _class: Ref<Class<Obj>>): Promise<AnyComponent | undefined> {
-  const clazz = client.getHierarchy().getClass(_class)
-  const presenterMixin = client.getHierarchy().as(clazz, view.mixin.PreviewPresenter)
-  if (presenterMixin.presenter === undefined) {
-    if (clazz.extends !== undefined) {
-      return await getObjectPreview(client, clazz.extends)
-    }
-  }
+  const hierarchy = client.getHierarchy()
+  const presenterMixin = hierarchy.classHierarchyMixin(_class, view.mixin.PreviewPresenter)
   return presenterMixin?.presenter
 }
 
@@ -141,16 +136,8 @@ async function getAttributePresenter (
   const presenterClass = getAttributePresenterClass(hierarchy, attribute)
   const isCollectionAttr = presenterClass.category === 'collection'
   const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : view.mixin.AttributePresenter
-  const clazz = hierarchy.getClass(presenterClass.attrClass)
-  let presenterMixin = hierarchy.as(clazz, mixin)
-  let parent = clazz.extends
-  while (presenterMixin.presenter === undefined && parent !== undefined) {
-    const pclazz = hierarchy.getClass(parent)
-    presenterClass.attrClass = parent
-    presenterMixin = hierarchy.as(pclazz, mixin)
-    parent = pclazz.extends
-  }
-  if (presenterMixin.presenter === undefined) {
+  const presenterMixin = hierarchy.classHierarchyMixin(presenterClass.attrClass, mixin)
+  if (presenterMixin?.presenter === undefined) {
     throw new Error('attribute presenter not found for ' + JSON.stringify(preserveKey))
   }
   const resultKey = preserveKey.sortingKey ?? preserveKey.key
@@ -512,16 +499,133 @@ export type FixedWidthStore = Record<string, number>
 
 export const fixedWidthStore = writable<FixedWidthStore>({})
 
-export function groupBy<T extends Doc> (docs: T[], key: string): { [key: string]: T[] } {
+export function groupBy<T extends Doc> (
+  docs: T[],
+  key: string,
+  categories?: CategoryType[]
+): { [key: string | number]: T[] } {
   return docs.reduce((storage: { [key: string]: T[] }, item: T) => {
-    const group = (item as any)[key] ?? undefined
+    let group = getObjectValue(key, item) ?? undefined
+
+    if (categories !== undefined) {
+      for (const c of categories) {
+        if (typeof c === 'object') {
+          const st = c.values.find((it) => it._id === group)
+          if (st !== undefined) {
+            group = st.name
+            break
+          }
+        }
+      }
+    }
 
     storage[group] = storage[group] ?? []
-
     storage[group].push(item)
 
     return storage
   }, {})
+}
+
+/**
+ * @public
+ */
+export function getGroupByValues<T extends Doc> (
+  groupByDocs: Record<string | number, T[]>,
+  category: CategoryType
+): T[] {
+  if (typeof category === 'object') {
+    return groupByDocs[category.name] ?? []
+  } else if (category !== undefined) {
+    return groupByDocs[category] ?? []
+  }
+  return []
+}
+
+/**
+ * @public
+ */
+export function setGroupByValues (
+  groupByDocs: Record<string | number, Doc[]>,
+  category: CategoryType,
+  docs: Doc[]
+): void {
+  if (typeof category === 'object') {
+    groupByDocs[category.name] = docs
+  } else if (category !== undefined) {
+    groupByDocs[category] = docs
+  }
+}
+
+/**
+ * Group category references into categories.
+ * @public
+ */
+export async function groupByCategory (
+  client: TxOperations,
+  _class: Ref<Class<Doc>>,
+  key: string,
+  categories: any[],
+  mgr: StatusManager,
+  viewletDescriptorId?: Ref<ViewletDescriptor>
+): Promise<CategoryType[]> {
+  const h = client.getHierarchy()
+  const attr = h.getAttribute(_class, key)
+  if (attr === undefined) return categories
+  if (key === noCategory) return [undefined]
+
+  const attrClass = getAttributePresenterClass(h, attr).attrClass
+
+  const isStatusField = h.isDerived(attrClass, core.class.Status)
+
+  let existingCategories: any[] = []
+
+  if (isStatusField) {
+    existingCategories = await groupByStatusCategories(h, attrClass, categories, mgr, viewletDescriptorId)
+  } else {
+    const valueSet = new Set<any>()
+    for (const v of categories) {
+      if (!valueSet.has(v)) {
+        valueSet.add(v)
+        existingCategories.push(v)
+      }
+    }
+  }
+  return await sortCategories(h, attrClass, existingCategories, viewletDescriptorId)
+}
+
+/**
+ * @public
+ */
+export async function groupByStatusCategories (
+  hierarchy: Hierarchy,
+  attrClass: Ref<Class<Doc>>,
+  categories: any[],
+  mgr: StatusManager,
+  viewletDescriptorId?: Ref<ViewletDescriptor>
+): Promise<StatusValue[]> {
+  const existingCategories: StatusValue[] = []
+  const statusMap = new Map<string, StatusValue>()
+
+  for (const v of categories) {
+    const status = mgr.byId.get(v)
+    if (status !== undefined) {
+      let fst = statusMap.get(status.name.toLowerCase().trim())
+      if (fst === undefined) {
+        const statuses = mgr.statuses
+          .filter(
+            (it) =>
+              it.ofAttribute === status.ofAttribute &&
+              it.name.toLowerCase().trim() === status.name.toLowerCase().trim() &&
+              (categories.includes(it._id) || it.space === status.space)
+          )
+          .sort((a, b) => a.rank.localeCompare(b.rank))
+        fst = new StatusValue(status.name, status.color, statuses)
+        statusMap.set(status.name.toLowerCase().trim(), fst)
+        existingCategories.push(fst)
+      }
+    }
+  }
+  return await sortCategories(hierarchy, attrClass, existingCategories, viewletDescriptorId)
 }
 
 export async function getCategories (
@@ -529,29 +633,46 @@ export async function getCategories (
   _class: Ref<Class<Doc>>,
   docs: Doc[],
   key: string,
+  mgr: StatusManager,
   viewletDescriptorId?: Ref<ViewletDescriptor>
-): Promise<any[]> {
+): Promise<CategoryType[]> {
   if (key === noCategory) return [undefined]
-  const existingCategories = Array.from(new Set(docs.map((x: any) => x[key] ?? undefined)))
 
-  return await sortCategories(client, _class, existingCategories, key, viewletDescriptorId)
+  return await groupByCategory(
+    client,
+    _class,
+    key,
+    docs.map((it) => getObjectValue(key, it) ?? undefined),
+    mgr,
+    viewletDescriptorId
+  )
 }
 
+/**
+ * @public
+ */
 export async function sortCategories (
-  client: TxOperations,
-  _class: Ref<Class<Doc>>,
+  hierarchy: Hierarchy,
+  attrClass: Ref<Class<Doc>>,
   existingCategories: any[],
-  key: string,
   viewletDescriptorId?: Ref<ViewletDescriptor>
 ): Promise<any[]> {
-  if (key === noCategory) return [undefined]
-  const hierarchy = client.getHierarchy()
-  const attr = hierarchy.getAttribute(_class, key)
-  if (attr === undefined) return existingCategories
-  const attrClass = getAttributePresenterClass(hierarchy, attr).attrClass
   const clazz = hierarchy.getClass(attrClass)
   const sortFunc = hierarchy.as(clazz, view.mixin.SortFuncs)
-  if (sortFunc?.func === undefined) return existingCategories
+  if (sortFunc?.func === undefined) {
+    const isStatusField = hierarchy.isDerived(attrClass, core.class.Status)
+    if (isStatusField) {
+      existingCategories.sort((a, b) => {
+        return a.values[0].rank.localeCompare(b.values[0].rank)
+      })
+    } else {
+      existingCategories.sort((a, b) => {
+        return JSON.stringify(a).localeCompare(JSON.stringify(b))
+      })
+    }
+
+    return existingCategories
+  }
   const f = await getResource(sortFunc.func)
 
   return await f(existingCategories, viewletDescriptorId)
@@ -657,14 +778,8 @@ export async function moveToSpace (
  */
 export function getAdditionalHeader (client: TxOperations, _class: Ref<Class<Doc>>): AnyComponent[] | undefined {
   const hierarchy = client.getHierarchy()
-  const clazz = hierarchy.getClass(_class)
-  let mixinClazz = hierarchy.getClass(_class)
-  let presenterMixin = hierarchy.as(clazz, view.mixin.ListHeaderExtra)
-  while (presenterMixin.presenters === undefined && mixinClazz.extends !== undefined) {
-    presenterMixin = hierarchy.as(mixinClazz, view.mixin.ListHeaderExtra)
-    mixinClazz = hierarchy.getClass(mixinClazz.extends)
-  }
-  return presenterMixin.presenters
+  const presenterMixin = hierarchy.classHierarchyMixin(_class, view.mixin.ListHeaderExtra)
+  return presenterMixin?.presenters
 }
 
 export async function getObjectLinkFragment (
@@ -673,12 +788,7 @@ export async function getObjectLinkFragment (
   props: Record<string, any> = {},
   component: AnyComponent = view.component.EditDoc
 ): Promise<Location> {
-  let clazz = hierarchy.getClass(object._class)
-  let provider = hierarchy.as(clazz, view.mixin.LinkProvider)
-  while (provider.encode === undefined && clazz.extends !== undefined) {
-    clazz = hierarchy.getClass(clazz.extends)
-    provider = hierarchy.as(clazz, view.mixin.LinkProvider)
-  }
+  const provider = hierarchy.classHierarchyMixin(object._class, view.mixin.LinkProvider)
   if (provider?.encode !== undefined) {
     const f = await getResource(provider.encode)
     const res = await f(object, props)
@@ -689,4 +799,35 @@ export async function getObjectLinkFragment (
   const loc = getCurrentLocation()
   loc.fragment = getPanelURI(component, object._id, Hierarchy.mixinOrClass(object), 'content')
   return loc
+}
+
+export async function statusSort (
+  value: Array<Ref<Status>>,
+  viewletDescriptorId?: Ref<ViewletDescriptor>
+): Promise<Array<Ref<Status>>> {
+  return await new Promise((resolve) => {
+    // TODO: How we track category updates.
+    const query = createQuery(true)
+    query.query(
+      core.class.Status,
+      { _id: { $in: value } },
+      (res) => {
+        res.sort((a, b) => {
+          const res = (a.$lookup?.category?.order ?? 0) - (b.$lookup?.category?.order ?? 0)
+          if (res === 0) {
+            return a.rank.localeCompare(b.rank)
+          }
+          return res
+        })
+
+        resolve(res.map((p) => p._id))
+        query.unsubscribe()
+      },
+      {
+        sort: {
+          rank: 1
+        }
+      }
+    )
+  })
 }

@@ -55,6 +55,7 @@ import workbench from '@hcengineering/model-workbench'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import { AnyComponent } from '@hcengineering/ui'
+import notification from '@hcengineering/notification'
 import templates from '@hcengineering/templates'
 import contact from './plugin'
 
@@ -107,6 +108,7 @@ export class TContact extends TDoc implements Contact {
 @UX(contact.string.Channel, contact.icon.Person)
 export class TChannel extends TAttachedDoc implements Channel {
   @Prop(TypeRef(contact.class.ChannelProvider), contact.string.ChannelProvider)
+  @Index(IndexKind.Indexed)
     provider!: Ref<ChannelProvider>
 
   @Prop(TypeString(), contact.string.Value)
@@ -161,6 +163,9 @@ export class TEmployee extends TPerson implements Employee {
 
   @Prop(TypeString(), contact.string.DisplayName)
     displayName?: string | null
+
+  @Prop(TypeString(), contact.string.Position)
+    position?: string | null
 }
 
 @Model(contact.class.EmployeeAccount, core.class.Account)
@@ -311,6 +316,14 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(contact.class.Contact, core.class.Class, view.mixin.ArrayEditor, {
     inlineEditor: contact.component.ContactArrayEditor
+  })
+
+  builder.mixin(contact.class.Contact, core.class.Class, notification.mixin.TrackedDoc, {})
+
+  builder.mixin(contact.class.Channel, core.class.Class, notification.mixin.TrackedDoc, {})
+
+  builder.mixin(contact.class.Contact, core.class.Class, notification.mixin.ClassCollaborators, {
+    fields: []
   })
 
   builder.mixin(contact.class.Member, core.class.Class, view.mixin.ObjectPresenter, {
@@ -675,6 +688,39 @@ export function createModel (builder: Builder): void {
       func: contact.function.GetContactName
     },
     contact.templateField.ContactName
+  )
+
+  builder.createDoc(
+    templates.class.TemplateField,
+    core.space.Model,
+    {
+      label: contact.string.Position,
+      category: contact.templateFieldCategory.CurrentEmployee,
+      func: contact.function.GetCurrentEmployeePosition
+    },
+    contact.templateField.CurrentEmployeePosition
+  )
+
+  builder.createDoc(
+    templates.class.TemplateField,
+    core.space.Model,
+    {
+      label: contact.string.PersonFirstNamePlaceholder,
+      category: contact.templateFieldCategory.Contact,
+      func: contact.function.GetContactFirstName
+    },
+    contact.templateField.ContactFirstName
+  )
+
+  builder.createDoc(
+    templates.class.TemplateField,
+    core.space.Model,
+    {
+      label: contact.string.PersonLastNamePlaceholder,
+      category: contact.templateFieldCategory.Contact,
+      func: contact.function.GetContactLastName
+    },
+    contact.templateField.ContactLastName
   )
 }
 

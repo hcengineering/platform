@@ -15,12 +15,12 @@
 -->
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import type { Issue } from '@hcengineering/task'
+  import type { Task } from '@hcengineering/task'
   import { Icon } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
   import task from '../plugin'
 
-  export let value: Issue
+  export let value: Task
   export let inline: boolean = false
 
   const client = getClient()

@@ -90,12 +90,15 @@ export class TDoc extends TObj implements Doc {
     space!: Ref<Space>
 
   @Prop(TypeTimestamp(), core.string.Modified)
+  @Index(IndexKind.Indexed)
     modifiedOn!: Timestamp
 
   @Prop(TypeRef(core.class.Account), core.string.ModifiedBy)
+  @Index(IndexKind.Indexed)
     modifiedBy!: Ref<Account>
 
   @Prop(TypeRef(core.class.Account), core.string.CreatedBy)
+  @Index(IndexKind.Indexed)
     createdBy!: Ref<Account>
 }
 

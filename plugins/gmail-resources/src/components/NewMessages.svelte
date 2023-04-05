@@ -16,7 +16,7 @@
   import attachmentP, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import contact, { Channel, Contact, getName as getContactName } from '@hcengineering/contact'
-  import { Account, generateId, getCurrentAccount, Ref, toIdMap } from '@hcengineering/core'
+  import { generateId, getCurrentAccount, Ref, toIdMap } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -52,7 +52,13 @@
       attachedTo: { $in: contacts.map((p) => p._id) }
     },
     (res) => {
-      channels = res
+      const map = new Map()
+      for (const channel of res) {
+        if (!map.has(channel.attachedTo)) {
+          map.set(channel.attachedTo, channel)
+        }
+      }
+      channels = Array.from(map.values())
     }
   )
   let channels: Channel[] = []
@@ -62,7 +68,6 @@
 
   const attachmentParentId = generateId()
 
-  let editor: StyledTextEditor
   let subject: string = ''
   let content: string = ''
   let copy: string = ''
@@ -81,7 +86,7 @@
         content: message,
         to: channel.value,
         status: 'new',
-        from: selectedIntegration.space as string as Ref<Account>,
+        from: selectedIntegration.createdBy,
         copy: copy
           .split(',')
           .map((m) => m.trim())
@@ -204,9 +209,17 @@
   $: templateProvider && selectedIntegration && templateProvider.set(setting.class.Integration, selectedIntegration)
 
   settingsQuery.query(setting.class.Integration, { type: plugin.integrationType.Gmail, disabled: false }, (res) => {
-    integrations = res.filter((p) => (p.space as string) === me || p.shared?.includes(me))
-    selectedIntegration = integrations.find((p) => (p.space as string) === me) ?? integrations[0]
+    integrations = res.filter((p) => p.createdBy === me || p.shared?.includes(me))
+    selectedIntegration = integrations.find((p) => p.createdBy === me) ?? integrations[0]
   })
+
+  function onTemplate (e: CustomEvent<string>): void {
+    if (e.detail !== undefined) {
+      if (subject.trim() === '') {
+        subject = e.detail
+      }
+    }
+  }
 </script>
 
 <Panel
@@ -259,15 +272,15 @@
       <div class="buttons-group">
         <div class="flex-grow flex-col">
           <Label label={plugin.string.NewMessage} />
-          <span class="content-accent-color">
+          <div class="content-accent-color targets">
             <b>
               {#each channels as channel, i}
                 <div>
                   {getName(channel)}
                 </div>
               {/each}
-            </b></span
-          >
+            </b>
+          </div>
         </div>
       </div>
       <div class="buttons-group small-gap">
@@ -320,7 +333,7 @@
         </div>
       {/if}
       <div class="input mt-4 clear-mins">
-        <StyledTextEditor bind:this={editor} full bind:content on:blur={editor.submit} />
+        <StyledTextEditor full bind:content on:template={onTemplate} />
       </div>
     </div>
   </Scroller>
@@ -340,6 +353,11 @@
       padding-left: 1rem;
       border-left: 1px solid var(--divider-color);
     }
+  }
+
+  .targets {
+    max-height: 10rem;
+    overflow-x: auto;
   }
 
   .input {

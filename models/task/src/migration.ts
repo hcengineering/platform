@@ -13,13 +13,18 @@
 // limitations under the License.
 //
 
-import { Class, Doc, Ref, Space, TxOperations } from '@hcengineering/core'
+import { Class, Doc, Domain, Ref, Space, TxOperations, DOMAIN_STATUS } from '@hcengineering/core'
 import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
-import { KanbanTemplate, StateTemplate, DoneStateTemplate, genRanks, createKanban } from '@hcengineering/task'
-import { DOMAIN_TASK } from '.'
-import task from './plugin'
 import tags from '@hcengineering/model-tags'
+import { createKanban, DoneStateTemplate, genRanks, KanbanTemplate, StateTemplate } from '@hcengineering/task'
+import { DOMAIN_TASK, DOMAIN_KANBAN } from '.'
+import task from './plugin'
+
+/**
+ * @public
+ */
+export const DOMAIN_STATE = 'state' as Domain
 
 /**
  * @public
@@ -30,8 +35,8 @@ export interface KanbanTemplateData {
   title: KanbanTemplate['title']
   description?: string
   shortDescription?: string
-  states: Pick<StateTemplate, 'title' | 'color'>[]
-  doneStates: (Pick<DoneStateTemplate, 'title'> & { isWon: boolean })[]
+  states: Pick<StateTemplate, 'name' | 'color'>[]
+  doneStates: (Pick<DoneStateTemplate, 'name'> & { isWon: boolean })[]
 }
 
 /**
@@ -79,8 +84,9 @@ export async function createKanbanTemplate (
         task.class.KanbanTemplate,
         'doneStatesC',
         {
+          ofAttribute: task.attribute.DoneState,
           rank: doneStateRanks[i],
-          title: st.title
+          name: st.name
         }
       )
     )
@@ -90,34 +96,15 @@ export async function createKanbanTemplate (
   await Promise.all(
     data.states.map((st, i) =>
       client.addCollection(task.class.StateTemplate, data.space, data.kanbanId, task.class.KanbanTemplate, 'statesC', {
+        ofAttribute: task.attribute.State,
         rank: stateRanks[i],
-        title: st.title,
+        name: st.name,
         color: st.color
       })
     )
   )
 
   return tmpl
-}
-
-async function createDefaultProject (tx: TxOperations): Promise<void> {
-  const createTx = await tx.findOne(core.class.TxCreateDoc, {
-    objectId: task.space.TasksPublic
-  })
-  if (createTx === undefined) {
-    await tx.createDoc(
-      task.class.Project,
-      core.space.Space,
-      {
-        name: 'public',
-        description: 'Public tasks',
-        private: false,
-        archived: false,
-        members: []
-      },
-      task.space.TasksPublic
-    )
-  }
 }
 
 async function createDefaultSequence (tx: TxOperations): Promise<void> {
@@ -143,15 +130,15 @@ async function createDefaultSequence (tx: TxOperations): Promise<void> {
 async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<KanbanTemplate>> {
   const defaultKanban = {
     states: [
-      { color: 9, title: 'Open' },
-      { color: 10, title: 'In Progress' },
-      { color: 1, title: 'Under review' },
-      { color: 0, title: 'Done' },
-      { color: 11, title: 'Invalid' }
+      { color: 9, name: 'Open' },
+      { color: 10, name: 'In Progress' },
+      { color: 1, name: 'Under review' },
+      { color: 0, name: 'Done' },
+      { color: 11, name: 'Invalid' }
     ],
     doneStates: [
-      { isWon: true, title: 'Won' },
-      { isWon: false, title: 'Lost' }
+      { isWon: true, name: 'Won' },
+      { isWon: false, name: 'Lost' }
     ]
   }
 
@@ -199,8 +186,6 @@ async function createSpace (tx: TxOperations): Promise<void> {
 async function createDefaults (tx: TxOperations): Promise<void> {
   await createSpace(tx)
   await createDefaultSequence(tx)
-  await createDefaultProject(tx)
-  await createSequence(tx, task.class.Issue)
   await createDefaultKanban(tx)
 }
 
@@ -219,6 +204,37 @@ async function migrateTodoItems (client: MigrationClient): Promise<void> {
 export const taskOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await Promise.all([migrateTodoItems(client)])
+
+    const stateClasses = client.hierarchy.getDescendants(task.class.State)
+    const doneStateClasses = client.hierarchy.getDescendants(task.class.DoneState)
+
+    const stateTemplateClasses = client.hierarchy.getDescendants(task.class.StateTemplate)
+    const doneStateTemplatesClasses = client.hierarchy.getDescendants(task.class.DoneStateTemplate)
+
+    await client.move(DOMAIN_STATE, { _class: { $in: [...stateClasses, ...doneStateClasses] } }, DOMAIN_STATUS)
+
+    await client.update(
+      DOMAIN_STATUS,
+      { _class: { $in: stateClasses }, ofAttribute: { $exists: false } },
+      { ofAttribute: task.attribute.State }
+    )
+    await client.update(
+      DOMAIN_STATUS,
+      { _class: { $in: doneStateClasses }, ofAttribute: { $exists: false } },
+      { ofAttribute: task.attribute.DoneState }
+    )
+
+    await client.update(
+      DOMAIN_STATUS,
+      { _class: { $in: [...stateClasses, ...doneStateClasses] }, title: { $exists: true } },
+      { $rename: { title: 'name' } }
+    )
+
+    await client.update(
+      DOMAIN_KANBAN,
+      { _class: { $in: [...stateTemplateClasses, ...doneStateTemplatesClasses] }, title: { $exists: true } },
+      { $rename: { title: 'name' } }
+    )
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)

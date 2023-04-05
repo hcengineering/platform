@@ -6,7 +6,7 @@
     "NoNotifications": "No notifications",
     "MentionNotification": "Mentioned",
     "DM": "Direct message",
-    "DMNotification": "Sent you as message",
+    "DMNotification": "Sent you a message",
     "EmailNotification": "by email",
     "PlatformNotification": "in platform",
     "Track": "Track",
@@ -15,6 +15,8 @@
     "Remove": "Delete notification",
     "RemoveAll": "Delete all notifications",
     "MarkAllAsRead": "Mark all notifications as read",
-    "MarkAsRead": "Mark as read"
+    "MarkAsRead": "Mark as read",
+    "Inbox": "Inbox",
+    "Collaborators": "Collaborators"
   }
 }

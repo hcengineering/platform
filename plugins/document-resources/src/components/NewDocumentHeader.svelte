@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, showPopup } from '@hcengineering/ui'
+  import { Button, showPopup, IconAdd } from '@hcengineering/ui'
   import document from '../plugin'
   import CreateDocument from './CreateDocument.svelte'
 
@@ -22,14 +22,14 @@
   }
 </script>
 
-<div class="antiNav-subheader gap-2">
-  <div class="flex-grow text-md">
-    <Button
-      icon={document.icon.NewDocument}
-      label={document.string.CreateDocument}
-      justify={'left'}
-      width={'100%'}
-      on:click={newDocument}
-    />
-  </div>
+<div class="antiNav-subheader">
+  <Button
+    icon={IconAdd}
+    label={document.string.CreateDocument}
+    justify={'left'}
+    width={'100%'}
+    kind={'primary'}
+    size={'large'}
+    on:click={newDocument}
+  />
 </div>

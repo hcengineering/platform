@@ -26,6 +26,7 @@
     createFocusManager,
     deviceOptionsStore as deviceInfo,
     FocusHandler,
+    getColorNumberByText,
     getPlatformColor,
     Label,
     ListView,
@@ -100,7 +101,7 @@
   }
 
   $: states = rawStates.map((s) => {
-    return { id: s._id, label: s.title, color: s.color }
+    return { id: s._id, label: s.name, color: s.color ?? getColorNumberByText(s.name) }
   })
 
   const manager = createFocusManager()

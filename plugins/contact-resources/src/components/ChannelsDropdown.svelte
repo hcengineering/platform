@@ -16,9 +16,9 @@
 <script lang="ts">
   import type { Channel, ChannelProvider } from '@hcengineering/contact'
   import contact from '@hcengineering/contact'
-  import type { AttachedData, Doc, Ref, Timestamp } from '@hcengineering/core'
-  import { NotificationClientImpl } from '@hcengineering/notification-resources'
-  import type { Asset, IntlString } from '@hcengineering/platform'
+  import type { AttachedData, Doc, Ref } from '@hcengineering/core'
+  import notification, { LastView } from '@hcengineering/notification'
+  import { Asset, getResource, IntlString } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
   import {
     Action,
@@ -35,6 +35,7 @@
   import { ViewAction } from '@hcengineering/view'
   import { invokeAction } from '@hcengineering/view-resources'
   import { createEventDispatcher, tick } from 'svelte'
+  import { writable, Writable } from 'svelte/store'
   import { getChannelProviders } from '../utils'
   import ChannelEditor from './ChannelEditor.svelte'
 
@@ -49,8 +50,8 @@
   export let focusIndex = -1
   export let restricted: Ref<ChannelProvider>[] = []
 
-  const notificationClient = NotificationClientImpl.getClient()
-  const lastViews = notificationClient.getLastViews()
+  let lastViews: Writable<LastView | undefined> = writable()
+  getResource(notification.function.GetNotificationClient).then((res) => (lastViews = res().getLastViews()))
   const dispatch = createEventDispatcher()
 
   interface Item {
@@ -69,7 +70,7 @@
   function getProvider (
     item: AttachedData<Channel>,
     map: Map<Ref<ChannelProvider>, ChannelProvider>,
-    lastViews: Map<Ref<Doc>, Timestamp>
+    lastViews: LastView | undefined
   ): Item | undefined {
     const provider = map.get(item.provider)
     if (provider) {
@@ -91,13 +92,14 @@
     }
   }
 
-  function isNew (item: Channel, lastViews: Map<Ref<Doc>, Timestamp>): boolean {
+  function isNew (item: Channel, lastViews: LastView | undefined): boolean {
     if (item.lastMessage === undefined) return false
-    const lastView = (item as Channel)._id !== undefined ? lastViews.get((item as Channel)._id) : undefined
+    const lastView =
+      (item as Channel)._id !== undefined && lastViews !== undefined ? lastViews[(item as Channel)._id] : undefined
     return lastView ? lastView < item.lastMessage : (item.items ?? 0) > 0
   }
 
-  async function update (value: AttachedData<Channel>[] | Channel | null, lastViews: Map<Ref<Doc>, Timestamp>) {
+  async function update (value: AttachedData<Channel>[] | Channel | null, lastViews: LastView | undefined) {
     if (value == null) {
       displayItems = []
       return

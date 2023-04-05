@@ -16,7 +16,7 @@
   import attachmentP, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import contact, { Channel, Contact, getName } from '@hcengineering/contact'
-  import { Account, Data, generateId, Ref } from '@hcengineering/core'
+  import { Data, generateId } from '@hcengineering/core'
   import { NewMessage, SharedMessage } from '@hcengineering/gmail'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
@@ -36,7 +36,6 @@
   const notificationClient = NotificationClientImpl.getClient()
   let objectId = generateId()
 
-  let editor: StyledTextEditor
   let copy: string = ''
 
   const obj: Data<NewMessage> = {
@@ -66,7 +65,7 @@
       {
         ...obj,
         attachments: attachments.length,
-        from: selectedIntegration.space as string as Ref<Account>,
+        from: selectedIntegration.createdBy,
         copy: copy
           .split(',')
           .map((m) => m.trim())
@@ -149,6 +148,14 @@
       },
       (res) => (attachments = res)
     )
+
+  function onTemplate (e: CustomEvent<string>): void {
+    if (e.detail !== undefined) {
+      if (obj.subject.trim() === '') {
+        obj.subject = e.detail
+      }
+    }
+  }
 </script>
 
 <input
@@ -216,7 +223,7 @@
       </div>
     {/if}
     <div class="input mt-4 clear-mins">
-      <StyledTextEditor bind:this={editor} full bind:content={obj.content} maxHeight="panel" on:blur={editor.submit} />
+      <StyledTextEditor full bind:content={obj.content} maxHeight="panel" on:template={onTemplate} />
     </div>
   </div>
 </Scroller>

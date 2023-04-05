@@ -25,8 +25,19 @@ import {
 } from '@hcengineering/core'
 import { Resources, translate } from '@hcengineering/platform'
 import { getClient, MessageBox, ObjectSearchResult } from '@hcengineering/presentation'
-import { Issue, Scrum, ScrumRecord, Sprint, Project } from '@hcengineering/tracker'
+import { Issue, Project, Scrum, ScrumRecord, Sprint } from '@hcengineering/tracker'
 import { showPopup } from '@hcengineering/ui'
+import ComponentEditor from './components/components/ComponentEditor.svelte'
+import ComponentPresenter from './components/components/ComponentPresenter.svelte'
+import Components from './components/components/Components.svelte'
+import ComponentStatusEditor from './components/components/ComponentStatusEditor.svelte'
+import ComponentStatusPresenter from './components/components/ComponentStatusPresenter.svelte'
+import ComponentTitlePresenter from './components/components/ComponentTitlePresenter.svelte'
+import EditComponent from './components/components/EditComponent.svelte'
+import IconPresenter from './components/components/IconComponent.svelte'
+import LeadPresenter from './components/components/LeadPresenter.svelte'
+import ProjectComponents from './components/components/ProjectComponents.svelte'
+import TargetDatePresenter from './components/components/TargetDatePresenter.svelte'
 import CreateIssue from './components/CreateIssue.svelte'
 import Inbox from './components/inbox/Inbox.svelte'
 import Active from './components/issues/Active.svelte'
@@ -52,26 +63,16 @@ import TitlePresenter from './components/issues/TitlePresenter.svelte'
 import MyIssues from './components/myissues/MyIssues.svelte'
 import NewIssueHeader from './components/NewIssueHeader.svelte'
 import NopeComponent from './components/NopeComponent.svelte'
-import EditComponent from './components/components/EditComponent.svelte'
-import IconPresenter from './components/components/IconComponent.svelte'
-import LeadPresenter from './components/components/LeadPresenter.svelte'
-import ComponentEditor from './components/components/ComponentEditor.svelte'
-import ComponentPresenter from './components/components/ComponentPresenter.svelte'
-import Components from './components/components/Components.svelte'
-import ComponentStatusEditor from './components/components/ComponentStatusEditor.svelte'
-import ComponentStatusPresenter from './components/components/ComponentStatusPresenter.svelte'
-import ComponentTitlePresenter from './components/components/ComponentTitlePresenter.svelte'
-import TargetDatePresenter from './components/components/TargetDatePresenter.svelte'
-import ProjectComponents from './components/components/ProjectComponents.svelte'
 import RelationsPopup from './components/RelationsPopup.svelte'
 import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
+import SprintComponentEditor from './components/sprints/SprintComponentEditor.svelte'
 import SprintDatePresenter from './components/sprints/SprintDatePresenter.svelte'
 import SprintLeadPresenter from './components/sprints/SprintLeadPresenter.svelte'
-import SprintComponentEditor from './components/sprints/SprintComponentEditor.svelte'
 import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
 import Views from './components/views/Views.svelte'
 import Statuses from './components/workflow/Statuses.svelte'
+import NotificationIssuePresenter from './components/issues/NotificationIssuePresenter.svelte'
 
 import {
   getIssueId,
@@ -107,15 +108,14 @@ import ComponentSelector from './components/ComponentSelector.svelte'
 import IssueTemplatePresenter from './components/templates/IssueTemplatePresenter.svelte'
 import IssueTemplates from './components/templates/IssueTemplates.svelte'
 
-import { deleteObject } from '@hcengineering/view-resources/src/utils'
+import { deleteObject } from '@hcengineering/view-resources'
 import MoveAndDeleteSprintPopup from './components/sprints/MoveAndDeleteSprintPopup.svelte'
 import EditIssueTemplate from './components/templates/EditIssueTemplate.svelte'
 import TemplateEstimationEditor from './components/templates/EstimationEditor.svelte'
 import {
-  getAllPriority,
   getAllComponents,
+  getAllPriority,
   getAllSprints,
-  getAllStatuses,
   issuePrioritySort,
   issueStatusSort,
   moveIssuesToAnotherSprint,
@@ -125,13 +125,14 @@ import {
 } from './utils'
 
 import { EmployeeAccount } from '@hcengineering/contact'
+import DeleteComponentPresenter from './components/components/DeleteComponentPresenter.svelte'
 import StatusRefPresenter from './components/issues/StatusRefPresenter.svelte'
 import TimeSpendReportPopup from './components/issues/timereport/TimeSpendReportPopup.svelte'
-import DeleteComponentPresenter from './components/components/DeleteComponentPresenter.svelte'
-import IssueStatistics from './components/sprints/IssueStatistics.svelte'
-import SprintRefPresenter from './components/sprints/SprintRefPresenter.svelte'
 import CreateProject from './components/projects/CreateProject.svelte'
 import ProjectPresenter from './components/projects/ProjectPresenter.svelte'
+import MoveIssues from './components/issues/Move.svelte'
+import IssueStatistics from './components/sprints/IssueStatistics.svelte'
+import SprintRefPresenter from './components/sprints/SprintRefPresenter.svelte'
 
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 
@@ -188,6 +189,10 @@ export async function queryIssue<D extends Issue> (
     icon: tracker.icon.TrackerApplication,
     component: IssueItem
   }))
+}
+
+async function move (issues: Issue | Issue[]): Promise<void> {
+  showPopup(MoveIssues, { selected: issues })
 }
 
 async function editWorkflowStatuses (project: Project | undefined): Promise<void> {
@@ -414,7 +419,8 @@ export default async (): Promise<Resources> => ({
     TimeSpendReportPopup,
     SprintComponentEditor,
     SprintDatePresenter,
-    SprintLeadPresenter
+    SprintLeadPresenter,
+    NotificationIssuePresenter
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>
@@ -430,12 +436,12 @@ export default async (): Promise<Resources> => ({
     IssuePrioritySort: issuePrioritySort,
     SprintSort: sprintSort,
     SubIssueQuery: subIssueQuery,
-    GetAllStatuses: getAllStatuses,
     GetAllPriority: getAllPriority,
     GetAllComponents: getAllComponents,
     GetAllSprints: getAllSprints
   },
   actionImpl: {
+    Move: move,
     EditWorkflowStatuses: editWorkflowStatuses,
     EditProject: editProject,
     DeleteSprint: deleteSprint,

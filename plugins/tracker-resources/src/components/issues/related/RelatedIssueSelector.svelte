@@ -29,7 +29,8 @@
   } from '@hcengineering/ui'
   import { getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
-  import { statusStore, subIssueListProvider } from '../../../utils'
+  import { subIssueListProvider } from '../../../utils'
+  import { statusStore } from '@hcengineering/presentation'
 
   export let object: WithLookup<Doc & { related: number }> | undefined
   export let value: WithLookup<Doc & { related: number }> | undefined

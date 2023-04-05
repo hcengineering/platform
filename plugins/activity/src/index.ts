@@ -113,7 +113,13 @@ export default plugin(activityId, {
     Delete: '' as IntlString,
     Edit: '' as IntlString,
     Edited: '' as IntlString,
-    Activity: '' as IntlString
+    Activity: '' as IntlString,
+    Changed: '' as IntlString,
+    To: '' as IntlString,
+    Unset: '' as IntlString,
+    Added: '' as IntlString,
+    From: '' as IntlString,
+    Removed: '' as IntlString
   },
   class: {
     TxViewlet: '' as Ref<Class<TxViewlet>>,

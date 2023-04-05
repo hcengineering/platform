@@ -60,6 +60,7 @@ import {
   TVersion
 } from './core'
 import { TAccount, TSpace } from './security'
+import { TStatus, TStatusCategory } from './status'
 import { TUserStatus } from './transient'
 import { TTx, TTxApplyIf, TTxCollectionCUD, TTxCreateDoc, TTxCUD, TTxMixin, TTxRemoveDoc, TTxUpdateDoc } from './tx'
 
@@ -67,6 +68,7 @@ export * from './core'
 export { coreOperation } from './migration'
 export * from './security'
 export * from './tx'
+export * from './status'
 export { core as default }
 
 export function createModel (builder: Builder): void {
@@ -114,7 +116,9 @@ export function createModel (builder: Builder): void {
     TFullTextSearchContext,
     TConfiguration,
     TConfigurationElement,
-    TIndexConfiguration
+    TIndexConfiguration,
+    TStatus,
+    TStatusCategory
   )
 
   builder.createDoc(
@@ -137,10 +141,18 @@ export function createModel (builder: Builder): void {
         'tx._class',
         'tx.objectClass',
         'tx.operations.attachedTo',
+        'space',
         'objectSpace',
         {
+          _class: 1,
           objectSpace: 1,
-          _id: 1
+          _id: 1,
+          modifiedOn: 1
+        },
+        {
+          _class: 1,
+          _id: 1,
+          modifiedOn: 1
         }
       ]
     }

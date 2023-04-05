@@ -28,7 +28,8 @@ export async function createUpdateSpaceKanban (
 
     await ctx.with('find-or-update', {}, (ctx) =>
       findOrUpdate(ctx, client, spaceId, task.class.State, sid, {
-        title: st.name,
+        ofAttribute: task.attribute.State,
+        name: st.name,
         color: st.color,
         rank
       })
@@ -37,8 +38,8 @@ export async function createUpdateSpaceKanban (
   }
 
   const doneStates = [
-    { class: task.class.WonState, title: 'Won' },
-    { class: task.class.LostState, title: 'Lost' }
+    { class: task.class.WonState, name: 'Won' },
+    { class: task.class.LostState, name: 'Lost' }
   ]
   const doneStateRanks = genRanks(doneStates.length)
   for (const st of doneStates) {
@@ -49,10 +50,11 @@ export async function createUpdateSpaceKanban (
       break
     }
 
-    const sid = ('generated-' + spaceId + '.done-state.' + st.title.toLowerCase().replace(' ', '_')) as Ref<DoneState>
+    const sid = `generated-${spaceId}.done-state.${st.name.toLowerCase().replace(' ', '_')}` as Ref<DoneState>
     await ctx.with('gen-done-state', {}, (ctx) =>
       findOrUpdate(ctx, client, spaceId, st.class, sid, {
-        title: st.title,
+        ofAttribute: task.attribute.DoneState,
+        name: st.name,
         rank
       })
     )

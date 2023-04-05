@@ -16,9 +16,8 @@
   import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
   import { Account, AccountRole, DocumentQuery, getCurrentAccount, Ref, SortingOrder, Space } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
+  import presentation, { getClient } from '@hcengineering/presentation'
   import { ActionIcon, IconAdd, IconClose, Label, SearchEdit, showPopup } from '@hcengineering/ui'
-  import presentation from '@hcengineering/presentation'
   import AddMembersPopup from './AddMembersPopup.svelte'
   import UserInfo from './UserInfo.svelte'
 

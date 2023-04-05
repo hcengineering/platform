@@ -13,29 +13,20 @@
 // limitations under the License.
 //
 
-import type { Account, AttachedDoc, Class, Doc, Mixin, Ref, Space, Timestamp, TxCUD } from '@hcengineering/core'
+import { Account, AttachedDoc, Class, Doc, Mixin, Ref, Space, Timestamp, TxCUD } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
+import { IntegrationType } from '@hcengineering/setting'
 import { AnyComponent } from '@hcengineering/ui'
 import { Writable } from './types'
-import { IntegrationType } from '@hcengineering/setting'
 export * from './types'
 
 /**
  * @public
  */
-export interface LastView extends AttachedDoc {
-  lastView: Timestamp
+export interface LastView extends Doc {
   user: Ref<Account>
-}
-
-/**
- * @public
- */
-export interface NotificationAction {
-  component: AnyComponent
-  objectId: Ref<Doc>
-  objectClass: Ref<Class<Doc>>
+  [key: string]: any
 }
 
 /**
@@ -46,9 +37,6 @@ export interface Notification extends AttachedDoc {
   status: NotificationStatus
   text: string
   type: Ref<NotificationType>
-
-  // Defined to open particular item if required.
-  action?: NotificationAction
 }
 
 /**
@@ -111,13 +99,46 @@ export interface SpaceLastEdit extends Class<Doc> {
 /**
  * @public
  */
-export interface LastViewAttached extends Class<AttachedDoc> {}
+export interface AnotherUserNotifications extends Class<Doc> {
+  fields: string[]
+}
 
 /**
  * @public
  */
-export interface AnotherUserNotifications extends Class<Doc> {
-  fields: string[]
+export interface ClassCollaborators extends Class<Doc> {
+  fields: string[] // Ref<Account> | Ref<Employee> | Ref<Account>[] | Ref<Employee>[]
+}
+
+/**
+ * @public
+ */
+export interface TrackedDoc extends Class<Doc> {}
+
+/**
+ * @public
+ */
+export interface NotificationObjectPresenter extends Class<Doc> {
+  presenter: AnyComponent
+}
+
+/**
+ * @public
+ */
+export interface Collaborators extends Doc {
+  collaborators: Ref<Account>[]
+}
+
+/**
+ * @public
+ */
+export interface DocUpdates extends Doc {
+  user: Ref<Account>
+  attachedTo: Ref<Doc>
+  attachedToClass: Ref<Class<Doc>>
+  lastTx?: Ref<TxCUD<Doc>>
+  lastTxTime?: Timestamp
+  txes: [Ref<TxCUD<Doc>>, Timestamp][]
 }
 
 /**
@@ -129,7 +150,7 @@ export const notificationId = 'notification' as Plugin
  * @public
  */
 export interface NotificationClient {
-  getLastViews: () => Writable<Map<Ref<Doc>, Timestamp>>
+  getLastViews: () => Writable<LastView>
   updateLastView: (_id: Ref<Doc>, _class: Ref<Class<Doc>>, time?: Timestamp, force?: boolean) => Promise<void>
   unsubscribe: (_id: Ref<Doc>) => Promise<void>
 }
@@ -146,7 +167,10 @@ const notification = plugin(notificationId, {
   mixin: {
     SpaceLastEdit: '' as Ref<Mixin<SpaceLastEdit>>,
     AnotherUserNotifications: '' as Ref<Mixin<AnotherUserNotifications>>,
-    LastViewAttached: '' as Ref<Mixin<LastViewAttached>>
+    ClassCollaborators: '' as Ref<Mixin<ClassCollaborators>>,
+    Collaborators: '' as Ref<Mixin<Collaborators>>,
+    TrackedDoc: '' as Ref<Mixin<TrackedDoc>>,
+    NotificationObjectPresenter: '' as Ref<Mixin<NotificationObjectPresenter>>
   },
   class: {
     LastView: '' as Ref<Class<LastView>>,
@@ -154,7 +178,8 @@ const notification = plugin(notificationId, {
     EmailNotification: '' as Ref<Class<EmailNotification>>,
     NotificationType: '' as Ref<Class<NotificationType>>,
     NotificationProvider: '' as Ref<Class<NotificationProvider>>,
-    NotificationSetting: '' as Ref<Class<NotificationSetting>>
+    NotificationSetting: '' as Ref<Class<NotificationSetting>>,
+    DocUpdates: '' as Ref<Class<DocUpdates>>
   },
   ids: {
     MentionNotification: '' as Ref<NotificationType>,
@@ -168,9 +193,8 @@ const notification = plugin(notificationId, {
     MobileApp: '' as Ref<IntegrationType>
   },
   component: {
-    NotificationsPopup: '' as AnyComponent,
-    NotificationPresenter: '' as AnyComponent,
-    LastViewEditor: '' as AnyComponent
+    Inbox: '' as AnyComponent,
+    NotificationPresenter: '' as AnyComponent
   },
   icon: {
     Notifications: '' as Asset,
@@ -182,7 +206,8 @@ const notification = plugin(notificationId, {
   },
   string: {
     Notification: '' as IntlString,
-    Notifications: '' as IntlString
+    Notifications: '' as IntlString,
+    Inbox: '' as IntlString
   },
   function: {
     GetNotificationClient: '' as Resource<NotificationClientFactoy>

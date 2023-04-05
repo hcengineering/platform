@@ -925,12 +925,12 @@ export async function sendInvite (db: Db, productId: string, token: string, emai
   const inviteId = await getInviteLink(db, productId, token, exp, email, 1)
   const link = concatLink(front, `/login/join?inviteId=${inviteId.toString()}`)
 
-  const text = `You was invited to ${workspace.workspace}. To join please paste the following link in your web browser's address bar: ${link}. Link valid for ${expHours} hours.`
+  const text = `You were invited to ${workspace.workspace}. To join please paste the following link in your web browser's address bar: ${link}. Link valid for ${expHours} hours.`
 
-  const html = `<p>You was invited to ${workspace.workspace}. To join, please click the link below: <a href=${link}>Join</a></p><p>
+  const html = `<p>You were invited to ${workspace.workspace}. To join, please click the link below: <a href=${link}>Join</a></p><p>
   If the invite link above does not work, paste the following link in your web browser's address bar: ${link}
 </p><p>Link valid for ${expHours} hours.</p>`
-  const subject = `Inivte to ${workspace.workspace}`
+  const subject = `Invite to ${workspace.workspace}`
   const to = email
   await fetch(concatLink(sesURL, '/send'), {
     method: 'post',

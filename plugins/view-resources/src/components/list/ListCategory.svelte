@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentUpdate, Lookup, Ref, Space } from '@hcengineering/core'
+  import { Class, Doc, DocumentUpdate, Lookup, PrimitiveType, Ref, Space, StatusValue } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { calcRank, DocWithRank } from '@hcengineering/task'
@@ -33,7 +33,7 @@
   import ListHeader from './ListHeader.svelte'
   import ListItem from './ListItem.svelte'
 
-  export let category: any
+  export let category: PrimitiveType | StatusValue
   export let headerComponent: AttributeModel | undefined
   export let singleCat: boolean
   export let groupByKey: string
@@ -57,10 +57,13 @@
   export let _class: Ref<Class<Doc>>
   export let config: (string | BuildModelKey)[]
   export let viewOptions: ViewOptions
-  export let newObjectProps: Record<string, any>
+  export let newObjectProps: (doc: Doc) => Record<string, any> | undefined
   export let docByIndex: Map<number, Doc>
   export let viewOptionsConfig: ViewOptionModel[] | undefined
-  export let dragItem: Doc | undefined
+  export let dragItem: {
+    doc?: Doc
+    revert?: () => void
+  }
   export let listDiv: HTMLDivElement
 
   $: lastLevel = level + 1 >= viewOptions.groupBy.length
@@ -108,7 +111,18 @@
   $: limited = limitGroup(items, limit)
   $: selectedObjectIdsSet = new Set<Ref<Doc>>(selectedObjectIds.map((it) => it._id))
 
-  $: newObjectProps = { [groupByKey]: category, ...newObjectProps }
+  $: _newObjectProps = (doc: Doc) => {
+    const groupValue =
+      typeof category === 'object' ? category.values.find((it) => it.space === doc.space)?._id : category
+    if (groupValue === undefined) {
+      return undefined
+    }
+    return {
+      ...newObjectProps(doc),
+      [groupByKey]: groupValue,
+      space: doc.space
+    }
+  }
 
   function isSelected (doc: Doc, focusStore: FocusSelection): boolean {
     return focusStore.focus?._id === doc._id
@@ -145,22 +159,25 @@
 
   function dragEnterCat (ev: MouseEvent) {
     ev.preventDefault()
-    if (dragItemIndex === undefined && dragItem !== undefined) {
-      const index = items.findIndex((p) => p._id === dragItem?._id)
+    if (dragItemIndex === undefined && dragItem.doc !== undefined) {
+      const index = items.findIndex((p) => p._id === dragItem.doc?._id)
       if (index !== -1) {
         dragItemIndex = index
         return
       }
-      if (isBorder(ev, 'top')) {
-        items.unshift(dragItem)
-        dragItemIndex = 0
-        items = items
-        dispatch('row-focus', dragItem)
-      } else if (isBorder(ev, 'bottom')) {
-        items.push(dragItem)
-        dragItemIndex = items.length - 1
-        items = items
-        dispatch('row-focus', dragItem)
+      const props = _newObjectProps(dragItem.doc)
+      if (props !== undefined) {
+        if (isBorder(ev, 'top')) {
+          items.unshift(dragItem.doc)
+          dragItemIndex = 0
+          items = items
+          dispatch('row-focus', dragItem)
+        } else if (isBorder(ev, 'bottom')) {
+          items.push(dragItem.doc)
+          dragItemIndex = items.length - 1
+          items = items
+          dispatch('row-focus', dragItem)
+        }
       }
     }
   }
@@ -220,18 +237,24 @@
   }
 
   async function drop (update: DocumentUpdate<Doc> = {}) {
-    if (dragItem !== undefined) {
-      for (const key in newObjectProps) {
-        const value = newObjectProps[key]
-        if ((dragItem as any)[key] !== value) {
-          ;(update as any)[key] = value
+    if (dragItem.doc !== undefined) {
+      const props = _newObjectProps(dragItem.doc)
+      if (props !== undefined) {
+        for (const key in props) {
+          const value = props[key]
+          if ((dragItem as any)[key] !== value) {
+            ;(update as any)[key] = value
+          }
         }
-      }
-      if (Object.keys(update).length > 0) {
-        await client.update(dragItem, update)
+        if (Object.keys(update).length > 0) {
+          await client.update(dragItem.doc, update)
+        }
+      } else {
+        dragItem.revert?.()
       }
     }
-    dragItem = undefined
+    dragItem.doc = undefined
+    dragItem.revert = undefined
     dragItemIndex = undefined
   }
 
@@ -240,11 +263,12 @@
     const rect = listDiv.getBoundingClientRect()
     const inRect = ev.clientY > rect.top && ev.clientY < rect.top + rect.height
     if (!inRect) {
-      if (items.findIndex((p) => p._id === dragItem?._id) === -1 && dragItem !== undefined) {
-        items = [...items.slice(0, initIndex), dragItem, ...items.slice(initIndex)]
+      if (items.findIndex((p) => p._id === dragItem.doc?._id) === -1 && dragItem.doc !== undefined) {
+        items = [...items.slice(0, initIndex), dragItem.doc, ...items.slice(initIndex)]
       }
       if (level === 0) {
-        dragItem = undefined
+        dragItem.doc = undefined
+        dragItem.revert = undefined
       }
     }
   }
@@ -261,7 +285,16 @@
       ev.dataTransfer.dropEffect = 'move'
     }
     ev.target?.addEventListener('dragend', (e) => dragEndListener(e, i))
-    dragItem = docObject
+    dragItem = {
+      doc: docObject,
+      revert: () => {
+        const d = items.find((it) => it._id === docObject._id)
+        if (d === undefined) {
+          items.splice(i, 0, docObject)
+          items = items
+        }
+      }
+    }
     dragItemIndex = i
     dispatch('dragstart', {
       target: ev.target,
@@ -289,7 +322,7 @@
       {createItemDialog}
       {createItemLabel}
       {extraHeaders}
-      {newObjectProps}
+      newObjectProps={_newObjectProps}
       flat={flatHeaders}
       {props}
       on:more={() => {
@@ -317,7 +350,7 @@
           {createItemDialog}
           {createItemLabel}
           {viewOptions}
-          {newObjectProps}
+          newObjectProps={_newObjectProps}
           {flatHeaders}
           {props}
           level={level + 1}

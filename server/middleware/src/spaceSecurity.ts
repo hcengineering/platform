@@ -148,17 +148,17 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     }
   }
 
-  private syncMembers (members: Ref<Account>[], space: Ref<Space>): void {
-    const oldMembers = new Set(members)
+  private syncMembers (members: Ref<Account>[], space: Space): void {
+    const oldMembers = new Set(space.members)
     const newMembers = new Set(members)
     for (const old of oldMembers) {
-      if (!oldMembers.has(old)) {
-        this.removeMemberSpace(old, space)
+      if (!newMembers.has(old)) {
+        this.removeMemberSpace(old, space._id)
       }
     }
     for (const newMem of newMembers) {
-      if (!newMembers.has(newMem)) {
-        this.addMemberSpace(newMem, space)
+      if (!oldMembers.has(newMem)) {
+        this.addMemberSpace(newMem, space._id)
       }
     }
   }
@@ -191,7 +191,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     let space = this.privateSpaces[updateDoc.objectId]
     if (space !== undefined) {
       if (updateDoc.operations.members !== undefined) {
-        this.syncMembers(updateDoc.operations.members, space._id)
+        this.syncMembers(updateDoc.operations.members, space)
       }
       if (updateDoc.operations.$push?.members !== undefined) {
         this.pushMembersHandle(updateDoc.operations.$push.members, space._id)
@@ -285,6 +285,10 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     return query
   }
 
+  private getKey<T extends Doc>(_class: Ref<Class<T>>): string {
+    return this.storage.hierarchy.isDerived(_class, core.class.Tx) ? 'objectSpace' : 'space'
+  }
+
   override async findAll<T extends Doc>(
     ctx: SessionContext,
     _class: Ref<Class<T>>,
@@ -293,12 +297,13 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
   ): Promise<FindResult<T>> {
     const newQuery = query
     const account = await getUser(this.storage, ctx)
+    const field = this.getKey(_class)
     if (!isOwner(account)) {
-      if (query.space !== undefined) {
-        newQuery.space = await this.mergeQuery(account, query.space)
+      if (query[field] !== undefined) {
+        ;(newQuery as any)[field] = await this.mergeQuery(account, query[field])
       } else {
         const spaces = await this.getAllAllowedSpaces(account)
-        newQuery.space = { $in: spaces }
+        ;(newQuery as any)[field] = { $in: spaces }
       }
     }
     const findResult = await this.provideFindAll(ctx, _class, newQuery, options)

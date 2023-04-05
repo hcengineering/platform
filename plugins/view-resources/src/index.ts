@@ -27,9 +27,12 @@ import ColorsPopup from './components/ColorsPopup.svelte'
 import DateEditor from './components/DateEditor.svelte'
 import DatePresenter from './components/DatePresenter.svelte'
 import DocAttributeBar from './components/DocAttributeBar.svelte'
+import DocNavLink from './components/DocNavLink.svelte'
 import EditBoxPopup from './components/EditBoxPopup.svelte'
 import EditDoc from './components/EditDoc.svelte'
+import EnumArrayEditor from './components/EnumArrayEditor.svelte'
 import EnumEditor from './components/EnumEditor.svelte'
+import EnumPresenter from './components/EnumPresenter.svelte'
 import FilterBar from './components/filter/FilterBar.svelte'
 import FilterTypePopup from './components/filter/FilterTypePopup.svelte'
 import ObjectFilter from './components/filter/ObjectFilter.svelte'
@@ -49,11 +52,14 @@ import MarkupEditor from './components/MarkupEditor.svelte'
 import MarkupEditorPopup from './components/MarkupEditorPopup.svelte'
 import MarkupPresenter from './components/MarkupPresenter.svelte'
 import Menu from './components/Menu.svelte'
+import TreeItem from './components/navigator/TreeItem.svelte'
+import TreeNode from './components/navigator/TreeNode.svelte'
 import NumberEditor from './components/NumberEditor.svelte'
 import NumberPresenter from './components/NumberPresenter.svelte'
 import ObjectPresenter from './components/ObjectPresenter.svelte'
 import RolePresenter from './components/RolePresenter.svelte'
 import SpacePresenter from './components/SpacePresenter.svelte'
+import SpaceRefPresenter from './components/SpaceRefPresenter.svelte'
 import StringEditor from './components/StringEditor.svelte'
 import StringPresenter from './components/StringPresenter.svelte'
 import Table from './components/Table.svelte'
@@ -62,12 +68,8 @@ import TimestampPresenter from './components/TimestampPresenter.svelte'
 import UpDownNavigator from './components/UpDownNavigator.svelte'
 import ValueSelector from './components/ValueSelector.svelte'
 import ViewletSettingButton from './components/ViewletSettingButton.svelte'
-import SpaceRefPresenter from './components/SpaceRefPresenter.svelte'
-import EnumArrayEditor from './components/EnumArrayEditor.svelte'
-import EnumPresenter from './components/EnumPresenter.svelte'
-import TreeNode from './components/navigator/TreeNode.svelte'
-import TreeItem from './components/navigator/TreeItem.svelte'
-import DocNavLink from './components/DocNavLink.svelte'
+import StatusPresenter from './components/status/StatusPresenter.svelte'
+import StatusRefPresenter from './components/status/StatusRefPresenter.svelte'
 
 import {
   afterResult,
@@ -82,11 +84,7 @@ import {
 
 import { IndexedDocumentPreview } from '@hcengineering/presentation'
 import { showEmptyGroups } from './viewOptions'
-
-function PositionElementAlignment (e?: Event): PopupAlignment | undefined {
-  return getEventPopupPositionElement(e)
-}
-
+import { statusSort } from './utils'
 export { getActions, invokeAction } from './actions'
 export { default as ActionContext } from './components/ActionContext.svelte'
 export { default as ActionHandler } from './components/ActionHandler.svelte'
@@ -95,30 +93,33 @@ export { default as FixedColumn } from './components/FixedColumn.svelte'
 export { default as SourcePresenter } from './components/inference/SourcePresenter.svelte'
 export { default as LinkPresenter } from './components/LinkPresenter.svelte'
 export { default as List } from './components/list/List.svelte'
+export { default as MarkupPresenter } from './components/MarkupPresenter.svelte'
+export { default as MarkupPreviewPopup } from './components/MarkupPreviewPopup.svelte'
 export { default as ContextMenu } from './components/Menu.svelte'
 export { default as ObjectBox } from './components/ObjectBox.svelte'
-export { default as ObjectSearchBox } from './components/ObjectSearchBox.svelte'
 export { default as ObjectPresenter } from './components/ObjectPresenter.svelte'
+export { default as ObjectSearchBox } from './components/ObjectSearchBox.svelte'
+export { default as StatusPresenter } from './components/status/StatusPresenter.svelte'
+export { default as StatusRefPresenter } from './components/status/StatusRefPresenter.svelte'
 export { default as TableBrowser } from './components/TableBrowser.svelte'
 export { default as ValueSelector } from './components/ValueSelector.svelte'
-export { default as MarkupPreviewPopup } from './components/MarkupPreviewPopup.svelte'
-export { default as MarkupPresenter } from './components/MarkupPresenter.svelte'
 export * from './context'
 export * from './filter'
 export * from './selection'
+export * from './utils'
 export {
   buildModel,
   getActiveViewletId,
+  getAdditionalHeader,
+  getCategories,
   getCollectionCounter,
   getFiltredKeys,
   getObjectPresenter,
   getObjectPreview,
+  groupBy,
   isCollectionAttr,
   LoadingProps,
-  setActiveViewletId,
-  getAdditionalHeader,
-  groupBy,
-  getCategories
+  setActiveViewletId
 } from './utils'
 export * from './viewOptions'
 export {
@@ -150,6 +151,10 @@ export {
   EnumEditor,
   StringPresenter,
   EditBoxPopup
+}
+
+function PositionElementAlignment (e?: Event): PopupAlignment | undefined {
+  return getEventPopupPositionElement(e)
 }
 
 export default async (): Promise<Resources> => ({
@@ -194,7 +199,9 @@ export default async (): Promise<Resources> => ({
     IndexedDocumentPreview,
     SpaceRefPresenter,
     EnumArrayEditor,
-    EnumPresenter
+    EnumPresenter,
+    StatusPresenter,
+    StatusRefPresenter
   },
   popup: {
     PositionElementAlignment
@@ -208,6 +215,7 @@ export default async (): Promise<Resources> => ({
     FilterAfterResult: afterResult,
     FilterNestedMatchResult: nestedMatchResult,
     FilterNestedDontMatchResult: nestedDontMatchResult,
-    ShowEmptyGroups: showEmptyGroups
+    ShowEmptyGroups: showEmptyGroups,
+    StatusSort: statusSort
   }
 })

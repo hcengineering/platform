@@ -13,15 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@hcengineering/core'
-  import { IssueStatus } from '@hcengineering/tracker'
-  import { statusStore } from '../../utils'
+  import { Ref, Status, StatusValue } from '@hcengineering/core'
+  import { statusStore } from '@hcengineering/presentation'
   import StatusPresenter from './StatusPresenter.svelte'
 
-  export let value: Ref<IssueStatus> | undefined
+  export let value: Ref<Status> | StatusValue | undefined
   export let size: 'small' | 'medium' = 'medium'
 </script>
 
 {#if value}
-  <StatusPresenter value={$statusStore.byId.get(value)} {size} />
+  <StatusPresenter value={$statusStore.get(typeof value === 'string' ? value : value.values[0]?._id)} {size} />
 {/if}

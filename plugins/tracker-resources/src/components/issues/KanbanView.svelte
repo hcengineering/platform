@@ -13,55 +13,66 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee } from '@hcengineering/contact'
-  import { employeeByIdStore, employeesStore } from '@hcengineering/contact-resources'
-  import { Class, Doc, DocumentQuery, generateId, IdMap, Lookup, Ref, toIdMap, WithLookup } from '@hcengineering/core'
-  import { Kanban, TypeState } from '@hcengineering/kanban'
+  import contact from '@hcengineering/contact'
+  import { employeeByIdStore } from '@hcengineering/contact-resources'
+  import {
+    CategoryType,
+    Class,
+    Doc,
+    DocumentQuery,
+    DocumentUpdate,
+    generateId,
+    Lookup,
+    Ref,
+    WithLookup
+  } from '@hcengineering/core'
+  import { Item, Kanban } from '@hcengineering/kanban'
   import notification from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient, statusStore } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
-  import {
-    Component as ComponentType,
-    Issue,
-    IssuesGrouping,
-    IssuesOrdering,
-    IssueStatus,
-    Project,
-    Sprint
-  } from '@hcengineering/tracker'
+  import { Issue, IssuesGrouping, IssuesOrdering, Project } from '@hcengineering/tracker'
   import {
     Button,
     Component,
     getEventPositionElement,
-    Icon,
     IconAdd,
+    Label,
     Loading,
     showPanel,
     showPopup,
     tooltip
   } from '@hcengineering/ui'
-  import { CategoryOption, Viewlet, ViewOptionModel, ViewOptions, ViewQueryOption } from '@hcengineering/view'
+  import {
+    AttributeModel,
+    CategoryOption,
+    Viewlet,
+    ViewOptionModel,
+    ViewOptions,
+    ViewQueryOption
+  } from '@hcengineering/view'
   import {
     ActionContext,
     focusStore,
     getCategories,
+    getGroupByValues,
+    getPresenter,
+    groupBy,
     ListSelectionProvider,
     Menu,
     noCategory,
     SelectDirection,
-    selectionStore
+    selectionStore,
+    setGroupByValues
   } from '@hcengineering/view-resources'
-  import { sortCategories } from '@hcengineering/view-resources/src/utils'
+  import view from '@hcengineering/view-resources/src/plugin'
   import { onMount } from 'svelte'
   import tracker from '../../plugin'
-  import { issuesGroupBySorting, mapKanbanCategories } from '../../utils'
   import ComponentEditor from '../components/ComponentEditor.svelte'
   import CreateIssue from '../CreateIssue.svelte'
   import AssigneePresenter from './AssigneePresenter.svelte'
   import SubIssuesSelector from './edit/SubIssuesSelector.svelte'
   import IssuePresenter from './IssuePresenter.svelte'
-  import IssueStatusIcon from './IssueStatusIcon.svelte'
   import ParentNamesPresenter from './ParentNamesPresenter.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
   import StatusEditor from './StatusEditor.svelte'
@@ -75,9 +86,12 @@
   export let viewlet: Viewlet
 
   $: currentSpace = space || tracker.project.DefaultProject
-  $: groupBy = (viewOptions.groupBy[0] ?? noCategory) as IssuesGrouping
+  $: groupByKey = (viewOptions.groupBy[0] ?? noCategory) as IssuesGrouping
   $: orderBy = viewOptions.orderBy
   $: sort = { [orderBy[0]]: orderBy[1] }
+
+  // issuesGroupBySorting[groupByKey]
+
   $: dontUpdateRank = orderBy[0] !== IssuesOrdering.Manual
 
   const spaceQuery = createQuery()
@@ -116,8 +130,12 @@
   const lookup: Lookup<Issue> = {
     assignee: contact.class.Employee,
     space: tracker.class.Project,
+    status: tracker.class.IssueStatus,
+    component: tracker.class.Component,
+    sprint: tracker.class.Sprint,
     _id: {
-      subIssues: tracker.class.Issue
+      subIssues: tracker.class.Issue,
+      labels: tags.class.TagReference
     }
   }
 
@@ -137,11 +155,9 @@
   }
   const issuesQuery = createQuery()
   let issues: Issue[] = []
-  const lookupIssue: Lookup<Issue> = {
-    status: tracker.class.IssueStatus,
-    component: tracker.class.Component,
-    sprint: tracker.class.Sprint
-  }
+
+  $: groupByDocs = groupBy(issues, groupByKey, categories)
+
   $: issuesQuery.query(
     tracker.class.Issue,
     resultQuery,
@@ -149,80 +165,19 @@
       issues = result
     },
     {
-      lookup: lookupIssue,
-      sort: issuesGroupBySorting[groupBy]
+      lookup,
+      sort
     }
   )
 
-  const statusesQuery = createQuery()
-  let statuses: WithLookup<IssueStatus>[] = []
-  let statusesMap: IdMap<IssueStatus> = new Map()
-  $: statusesQuery.query(
-    tracker.class.IssueStatus,
-    {
-      space: currentSpace
-    },
-    (result) => {
-      statuses = result
-      statusesMap = toIdMap(result)
-    },
-    {
-      lookup: { category: tracker.class.IssueStatusCategory }
-    }
-  )
-
-  const componentsQuery = createQuery()
-  let components: ComponentType[] = []
-  $: componentsQuery.query(
-    tracker.class.Component,
-    {
-      space: currentSpace
-    },
-    (result) => {
-      components = result
-    }
-  )
-
-  const sprintsQuery = createQuery()
-  let sprints: Sprint[] = []
-  $: sprintsQuery.query(
-    tracker.class.Sprint,
-    {
-      space: currentSpace
-    },
-    (result) => {
-      sprints = result
-    }
-  )
-
-  let states: TypeState[]
+  let categories: CategoryType[] = []
 
   const queryId = generateId()
 
-  $: updateCategories(
-    tracker.class.Issue,
-    issues,
-    groupBy,
-    viewOptions,
-    viewOptionsConfig,
-    statuses,
-    components,
-    sprints,
-    $employeesStore
-  )
+  $: updateCategories(tracker.class.Issue, issues, groupByKey, viewOptions, viewOptionsConfig)
 
   function update () {
-    updateCategories(
-      tracker.class.Issue,
-      issues,
-      groupBy,
-      viewOptions,
-      viewOptionsConfig,
-      statuses,
-      components,
-      sprints,
-      $employeesStore
-    )
+    updateCategories(tracker.class.Issue, issues, groupByKey, viewOptions, viewOptionsConfig)
   }
 
   async function updateCategories (
@@ -230,45 +185,50 @@
     docs: Doc[],
     groupByKey: string,
     viewOptions: ViewOptions,
-    viewOptionsModel: ViewOptionModel[] | undefined,
-    statuses: WithLookup<IssueStatus>[],
-    components: ComponentType[],
-    sprints: Sprint[],
-    assignee: Employee[]
+    viewOptionsModel: ViewOptionModel[] | undefined
   ) {
-    let categories = await getCategories(client, _class, docs, groupByKey, viewlet.descriptor)
+    categories = await getCategories(client, _class, docs, groupByKey, $statusStore, viewlet.descriptor)
     for (const viewOption of viewOptionsModel ?? []) {
       if (viewOption.actionTarget !== 'category') continue
       const categoryFunc = viewOption as CategoryOption
       if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
-        const f = await getResource(categoryFunc.action)
-        const res = await f(_class, space, groupByKey, update, queryId)
+        const categoryAction = await getResource(categoryFunc.action)
+        const res = await categoryAction(_class, space, groupByKey, update, queryId, $statusStore, viewlet.descriptor)
         if (res !== undefined) {
-          for (const category of categories) {
-            if (!res.includes(category)) {
-              res.push(category)
-            }
-          }
-
-          categories = await sortCategories(client, _class, res, groupByKey, viewlet.descriptor)
+          categories = res
           break
         }
       }
     }
-    const indexes = new Map(categories.map((p, i) => [p, i]))
-    const res = await mapKanbanCategories(groupByKey, categories, statuses, components, sprints, assignee)
-    res.sort((a, b) => {
-      const aIndex = indexes.get(a._id ?? undefined) ?? -1
-      const bIndex = indexes.get(b._id ?? undefined) ?? -1
-      return aIndex - bIndex
-    })
-    states = res
   }
 
   const fullFilled: { [key: string]: boolean } = {}
+
+  function getHeader (_class: Ref<Class<Doc>>, groupByKey: string): void {
+    if (groupByKey === noCategory) {
+      headerComponent = undefined
+    } else {
+      getPresenter(client, _class, { key: groupByKey }, { key: groupByKey }).then((p) => (headerComponent = p))
+    }
+  }
+
+  let headerComponent: AttributeModel | undefined
+  $: getHeader(tracker.class.Issue, groupByKey)
+
+  const getUpdateProps = (doc: Doc, category: CategoryType): DocumentUpdate<Item> | undefined => {
+    const groupValue =
+      typeof category === 'object' ? category.values.find((it) => it.space === doc.space)?._id : category
+    if (groupValue === undefined) {
+      return undefined
+    }
+    return {
+      [groupByKey]: groupValue,
+      space: doc.space
+    }
+  }
 </script>
 
-{#if !states?.length}
+{#if categories.length === 0}}
   <Loading />
 {:else}
   <ActionContext
@@ -279,12 +239,14 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <Kanban
     bind:this={kanbanUI}
-    _class={tracker.class.Issue}
-    {states}
+    {categories}
     {dontUpdateRank}
-    options={{ sort, lookup }}
-    query={resultQuery}
-    fieldName={groupBy}
+    objects={issues}
+    getGroupByValues={(groupByDocs, category) =>
+      groupByKey === noCategory ? issues : getGroupByValues(groupByDocs, category)}
+    {setGroupByValues}
+    {getUpdateProps}
+    {groupByDocs}
     on:content={(evt) => {
       listProvider.update(evt.detail)
     }}
@@ -299,27 +261,23 @@
     on:contextmenu={(evt) => showMenu(evt.detail.evt, evt.detail.objects)}
   >
     <svelte:fragment slot="header" let:state let:count>
-      {@const status = statusesMap.get(state._id)}
+      <!-- {@const status = $statusStore.get(state._id)} -->
       <div class="header flex-col">
-        <div class="flex-between label font-medium w-full h-full">
-          <div class="flex-row-center gap-2">
-            {#if state.icon}
-              {#if groupBy === 'status' && status}
-                <IssueStatusIcon value={status} size="small" />
-              {:else}
-                <Icon icon={state.icon} size="small" />
-              {/if}
-            {/if}
-            <span class="lines-limit-2 ml-2">{state.title}</span>
-            <span class="counter ml-2 text-md">{count}</span>
-          </div>
+        <div class="flex-row-center flex-between">
+          {#if groupByKey === noCategory}
+            <span class="text-base fs-bold overflow-label content-accent-color pointer-events-none">
+              <Label label={view.string.NoGrouping} />
+            </span>
+          {:else if headerComponent}
+            <svelte:component this={headerComponent.presenter} value={state} {space} kind={'list-header'} />
+          {/if}
           <div class="flex gap-1">
             <Button
               icon={IconAdd}
               kind={'transparent'}
               showTooltip={{ label: tracker.string.AddIssueTooltip, direction: 'left' }}
               on:click={() => {
-                showPopup(CreateIssue, { space: currentSpace, [groupBy]: state._id }, 'top')
+                showPopup(CreateIssue, { space: currentSpace, [groupByKey]: state._id }, 'top')
               }}
             />
           </div>
@@ -329,69 +287,71 @@
     <svelte:fragment slot="card" let:object>
       {@const issue = toIssue(object)}
       {@const issueId = object._id}
-      <div
-        class="tracker-card"
-        on:click={() => {
-          showPanel(tracker.component.EditIssue, object._id, object._class, 'content')
-        }}
-      >
-        <div class="flex-col ml-4 mr-8">
-          <div class="flex clear-mins names">
-            <IssuePresenter value={issue} />
-            <ParentNamesPresenter value={issue} />
+      {#key issueId}
+        <div
+          class="tracker-card"
+          on:click={() => {
+            showPanel(tracker.component.EditIssue, object._id, object._class, 'content')
+          }}
+        >
+          <div class="flex-col ml-4 mr-8">
+            <div class="flex clear-mins names">
+              <IssuePresenter value={issue} />
+              <ParentNamesPresenter value={issue} />
+            </div>
+            <div class="flex-row-center gap-1 mt-1">
+              {#if groupByKey !== 'status'}
+                <StatusEditor value={issue} kind="list" isEditable={false} />
+              {/if}
+              <span class="fs-bold caption-color lines-limit-2">
+                {object.title}
+              </span>
+            </div>
           </div>
-          <div class="flex-row-center gap-1 mt-1">
-            {#if groupBy !== 'status'}
-              <StatusEditor value={issue} kind="list" isEditable={false} />
-            {/if}
-            <span class="fs-bold caption-color lines-limit-2">
-              {object.title}
-            </span>
-          </div>
-        </div>
-        <div class="abs-rt-content">
-          <AssigneePresenter
-            value={issue.assignee ? $employeeByIdStore.get(issue.assignee) : null}
-            defaultClass={contact.class.Employee}
-            object={issue}
-            isEditable={true}
-          />
-          <div class="flex-center mt-2">
-            <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
-          </div>
-        </div>
-        <div class="buttons-group xsmall-gap states-bar">
-          {#if issue && issue.subIssues > 0}
-            <SubIssuesSelector value={issue} {currentProject} />
-          {/if}
-          <PriorityEditor value={issue} isEditable={true} kind={'link-bordered'} size={'inline'} justify={'center'} />
-          <ComponentEditor
-            value={issue}
-            isEditable={true}
-            kind={'link-bordered'}
-            size={'inline'}
-            justify={'center'}
-            width={''}
-            bind:onlyIcon={fullFilled[issueId]}
-          />
-          <EstimationEditor kind={'list'} size={'small'} value={issue} />
-          <div
-            class="clear-mins"
-            use:tooltip={{
-              component: fullFilled[issueId] ? tags.component.LabelsPresenter : undefined,
-              props: { object: issue, kind: 'full' }
-            }}
-          >
-            <Component
-              is={tags.component.LabelsPresenter}
-              props={{ object: issue, ckeckFilled: fullFilled[issueId] }}
-              on:change={(res) => {
-                if (res.detail.full) fullFilled[issueId] = true
-              }}
+          <div class="abs-rt-content">
+            <AssigneePresenter
+              value={issue.assignee ? $employeeByIdStore.get(issue.assignee) : null}
+              defaultClass={contact.class.Employee}
+              object={issue}
+              isEditable={true}
             />
+            <div class="flex-center mt-2">
+              <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
+            </div>
+          </div>
+          <div class="buttons-group xsmall-gap states-bar">
+            {#if issue && issue.subIssues > 0}
+              <SubIssuesSelector value={issue} {currentProject} />
+            {/if}
+            <PriorityEditor value={issue} isEditable={true} kind={'link-bordered'} size={'inline'} justify={'center'} />
+            <ComponentEditor
+              value={issue}
+              isEditable={true}
+              kind={'link-bordered'}
+              size={'inline'}
+              justify={'center'}
+              width={''}
+              bind:onlyIcon={fullFilled[issueId]}
+            />
+            <EstimationEditor kind={'list'} size={'small'} value={issue} />
+            <div
+              class="clear-mins"
+              use:tooltip={{
+                component: fullFilled[issueId] ? tags.component.LabelsPresenter : undefined,
+                props: { object: issue, kind: 'full' }
+              }}
+            >
+              <Component
+                is={tags.component.LabelsPresenter}
+                props={{ object: issue, ckeckFilled: fullFilled[issueId], lookupField: 'labels' }}
+                on:change={(res) => {
+                  if (res.detail.full) fullFilled[issueId] = true
+                }}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      {/key}
     </svelte:fragment>
   </Kanban>
 {/if}

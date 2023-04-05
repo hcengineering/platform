@@ -61,7 +61,7 @@
       on:drop={onDone(wonState)}
     >
       <div class="mr-2"><Won size={'small'} /></div>
-      {wonState.title}
+      {wonState.name}
     </div>
   {/each}
   {#each lostStates as lostState}
@@ -80,7 +80,7 @@
       on:drop={onDone(lostState)}
     >
       <div class="mr-2"><Lost size={'small'} /></div>
-      {lostState.title}
+      {lostState.name}
     </div>
   {/each}
 </div>

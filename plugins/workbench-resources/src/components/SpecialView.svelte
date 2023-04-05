@@ -26,16 +26,18 @@
     Label,
     Loading,
     SearchEdit,
-    showPopup
+    showPopup,
+    TabList
   } from '@hcengineering/ui'
   import view, { Viewlet, ViewletDescriptor, ViewletPreference } from '@hcengineering/view'
   import {
     FilterBar,
     FilterButton,
+    getActiveViewletId,
     getViewOptions,
     setActiveViewletId,
-    viewOptionStore,
-    ViewletSettingButton
+    ViewletSettingButton,
+    viewOptionStore
   } from '@hcengineering/view-resources'
 
   export let _class: Ref<Class<Doc>>
@@ -45,7 +47,8 @@
   export let createLabel: IntlString | undefined
   export let createComponent: AnyComponent | undefined
   export let createComponentProps: Record<string, any> = {}
-  export let descriptor: Ref<ViewletDescriptor> | undefined = undefined
+  export let isCreationDisabled = false
+  export let descriptors: Ref<ViewletDescriptor>[] | undefined = [view.viewlet.Table]
   export let baseQuery: DocumentQuery<Doc> = {}
 
   let search = ''
@@ -62,36 +65,45 @@
 
   const client = getClient()
   let loading = true
-  $: updateDescriptor(_class, descriptor)
 
-  function updateDescriptor (_class: Ref<Class<Doc>>, descriptor: Ref<ViewletDescriptor> = view.viewlet.Table) {
+  let viewlets: WithLookup<Viewlet>[] = []
+
+  $: update(_class, descriptors)
+
+  async function update (_class: Ref<Class<Doc>>, descriptors?: Ref<ViewletDescriptor>[]): Promise<void> {
     loading = true
-    client
-      .findOne<Viewlet>(
-        view.class.Viewlet,
-        {
-          attachTo: _class,
-          descriptor
-        },
-        { lookup: { descriptor: view.class.ViewletDescriptor } }
-      )
-      .then((res) => {
-        viewlet = res
-        if (res !== undefined) {
-          setActiveViewletId(res._id)
-          preferenceQuery.query(
-            view.class.ViewletPreference,
-            {
-              attachedTo: res._id
-            },
-            (res) => {
-              preference = res[0]
-              loading = false
-            },
-            { limit: 1 }
-          )
+    viewlets = await client.findAll(
+      view.class.Viewlet,
+      {
+        attachTo: _class,
+        variant: { $exists: false },
+        descriptor: { $in: descriptors ?? [view.viewlet.Table] }
+      },
+      {
+        lookup: {
+          descriptor: view.class.ViewletDescriptor
         }
-      })
+      }
+    )
+    const _id = getActiveViewletId()
+    preference = undefined
+    viewlet = viewlets.find((viewlet) => viewlet._id === _id) || viewlets[0]
+    loading = false
+  }
+
+  $: if (viewlet !== undefined) {
+    setActiveViewletId(viewlet._id)
+    preferenceQuery.query(
+      view.class.ViewletPreference,
+      {
+        attachedTo: viewlet._id
+      },
+      (res) => {
+        preference = res[0]
+        loading = false
+      },
+      { limit: 1 }
+    )
   }
 
   function showCreateDialog () {
@@ -102,6 +114,14 @@
   $: twoRows = $deviceInfo.twoRows
 
   $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
+
+  $: viewslist = viewlets.map((views) => {
+    return {
+      id: views._id,
+      icon: views.$lookup?.descriptor?.icon,
+      tooltip: views.$lookup?.descriptor?.label
+    }
+  })
 </script>
 
 <div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
@@ -115,8 +135,32 @@
     <SearchEdit bind:value={search} />
   </div>
   <div class="ac-header-full" class:secondRow={twoRows}>
+    {#if viewlets.length > 1}
+      <TabList
+        items={viewslist}
+        multiselect={false}
+        selected={viewlet?._id}
+        kind={'secondary'}
+        size={'small'}
+        on:select={(result) => {
+          if (result.detail !== undefined) {
+            if (viewlet?._id === result.detail.id) return
+            viewlet = viewlets.find((vl) => vl._id === result.detail.id)
+            if (viewlet) setActiveViewletId(viewlet._id)
+          }
+        }}
+      />
+    {/if}
+
     {#if createLabel && createComponent}
-      <Button label={createLabel} icon={IconAdd} kind={'primary'} size={'small'} on:click={() => showCreateDialog()} />
+      <Button
+        label={createLabel}
+        icon={IconAdd}
+        kind={'primary'}
+        size={'small'}
+        disabled={isCreationDisabled}
+        on:click={() => showCreateDialog()}
+      />
     {/if}
     <ViewletSettingButton bind:viewOptions {viewlet} />
   </div>

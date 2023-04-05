@@ -14,16 +14,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte'
-  import { getCurrentAccount, Ref, Space } from '@hcengineering/core'
-  import { EditBox, createFocusManager, FocusHandler } from '@hcengineering/ui'
-  import { getClient, createQuery } from '@hcengineering/presentation'
-  import setting from '@hcengineering/setting'
-  import { IntegrationType } from '@hcengineering/setting'
-  import contact from '../plugin'
   import { Organization } from '@hcengineering/contact'
-  import Company from './icons/Company.svelte'
+  import { getCurrentAccount, Ref } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import setting, { IntegrationType } from '@hcengineering/setting'
+  import { createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
+  import { createEventDispatcher, onMount } from 'svelte'
+  import contact from '../plugin'
   import ChannelsEditor from './ChannelsEditor.svelte'
+  import Company from './icons/Company.svelte'
 
   export let object: Organization
 
@@ -38,13 +37,9 @@
   const accountId = getCurrentAccount()._id
   let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
   const settingsQuery = createQuery()
-  $: settingsQuery.query(
-    setting.class.Integration,
-    { space: accountId as string as Ref<Space>, disabled: false },
-    (res) => {
-      integrations = new Set(res.map((p) => p.type))
-    }
-  )
+  $: settingsQuery.query(setting.class.Integration, { createdBy: accountId, disabled: false }, (res) => {
+    integrations = new Set(res.map((p) => p.type))
+  })
 
   onMount(() => {
     dispatch('open', { ignoreKeys: ['comments', 'name', 'channels'] })
@@ -66,7 +61,6 @@
           placeholder={contact.string.PersonFirstNamePlaceholder}
           bind:value={object.name}
           on:change={nameChange}
-          focus
           focusIndex={1}
         />
       </div>

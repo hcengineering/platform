@@ -61,8 +61,15 @@
   flex-direction: column;
   min-height: 0;
   height: 100%;
-  border-radius: .5rem;
-  box-shadow: var(--popup-panel-shadow);
+
+  &.embedded {
+    width: 100%;
+  }
+
+  &:not(.embedded) {
+    border-radius: .5rem;
+    box-shadow: var(--popup-panel-shadow);
+  }
 
   .popupPanel-title {
     display: flex;
@@ -109,7 +116,9 @@
     height: 100%;
     background-color: var(--body-color);
     border: 1px solid var(--divider-color);
-    border-radius: 0 0 .5rem .5rem;
+    &:not(.embedded) {
+      border-radius: 0 0 .5rem .5rem;
+    }
 
     &.main {
       justify-content: stretch;

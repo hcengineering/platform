@@ -29,7 +29,9 @@ import core, {
   DOMAIN_TX,
   FindOptions,
   FindResult,
+  generateId,
   Hierarchy,
+  IndexingUpdateEvent,
   MeasureContext,
   Mixin,
   ModelDb,
@@ -45,6 +47,8 @@ import core, {
   TxRemoveDoc,
   TxResult,
   TxUpdateDoc,
+  TxWorkspaceEvent,
+  WorkspaceEvent,
   WorkspaceId
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
@@ -205,7 +209,7 @@ class TServerStorage implements ServerStorage {
     attachedTo: D,
     update: DocumentUpdate<D>
   ): Promise<Tx> {
-    const txFactory = new TxFactory(modifiedBy)
+    const txFactory = new TxFactory(modifiedBy, true)
     const baseClass = this.hierarchy.getBaseClass(_class)
     if (baseClass !== _class) {
       // Mixin operation is required.
@@ -409,7 +413,7 @@ class TServerStorage implements ServerStorage {
 
   private deleteObject (ctx: MeasureContext, object: Doc, removedMap: Map<Ref<Doc>, Doc>): Tx[] {
     const result: Tx[] = []
-    const factory = new TxFactory(object.modifiedBy)
+    const factory = new TxFactory(object.modifiedBy, true)
     if (this.hierarchy.isDerived(object._class, core.class.AttachedDoc)) {
       const adoc = object as AttachedDoc
       const nestedTx = factory.createTxRemoveDoc(adoc._class, adoc.space, adoc._id)
@@ -464,7 +468,7 @@ class TServerStorage implements ServerStorage {
       if (rtx.operations.space === undefined || rtx.operations.space === rtx.objectSpace) {
         continue
       }
-      const factory = new TxFactory(tx.modifiedBy)
+      const factory = new TxFactory(tx.modifiedBy, true)
       for (const [, attribute] of this.hierarchy.getAllAttributes(rtx.objectClass)) {
         if (!this.hierarchy.isDerived(attribute.type._class, core.class.Collection)) {
           continue
@@ -812,13 +816,30 @@ export async function createServerStorage (
       throw new Error('No storage adapter')
     }
     const stages = conf.fulltextAdapter.stages(fulltextAdapter, storage, storageAdapter, contentAdapter)
+
     const indexer = new FullTextIndexPipeline(
       defaultAdapter,
       stages,
       hierarchy,
       conf.workspace,
       metrics.newChild('fulltext', {}),
-      modelDb
+      modelDb,
+      (classes: Ref<Class<Doc>>[]) => {
+        const evt: IndexingUpdateEvent = {
+          _class: classes
+        }
+        const tx: TxWorkspaceEvent = {
+          _class: core.class.TxWorkspaceEvent,
+          _id: generateId(),
+          event: WorkspaceEvent.IndexingUpdate,
+          modifiedBy: core.account.System,
+          modifiedOn: Date.now(),
+          objectSpace: core.space.DerivedTx,
+          space: core.space.DerivedTx,
+          params: evt
+        }
+        options.broadcast?.([tx])
+      }
     )
     return new FullTextIndex(
       hierarchy,

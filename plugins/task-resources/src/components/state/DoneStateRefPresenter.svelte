@@ -14,20 +14,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
+  import { Ref, StatusValue } from '@hcengineering/core'
+  import { statusStore } from '@hcengineering/presentation'
   import type { DoneState } from '@hcengineering/task'
-  import task from '@hcengineering/task'
   import DoneStatePresenter from './DoneStatePresenter.svelte'
 
-  export let value: Ref<DoneState> | null | undefined
+  export let value: Ref<DoneState> | StatusValue
   export let showTitle: boolean = true
-
-  let state: DoneState | undefined
-  const query = createQuery()
-  $: value && query.query(task.class.DoneState, { _id: value }, (res) => ([state] = res), { limit: 1 })
 </script>
 
-{#if state}
+{#if value}
+  {@const state = $statusStore.get(typeof value === 'string' ? value : value.values[0]._id)}
   <DoneStatePresenter value={state} {showTitle} />
 {/if}

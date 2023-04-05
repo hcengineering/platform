@@ -78,12 +78,14 @@
     const lastOne = await client.findOne(_class, {}, { sort: { rank: SortingOrder.Descending } })
     if (hierarchy.isDerived(_class, task.class.DoneState)) {
       await client.createDoc(_class, kanban.space, {
-        title: 'New Done State',
+        ofAttribute: task.attribute.State,
+        name: 'New Done State',
         rank: calcRank(lastOne, undefined)
       })
     } else {
       await client.createDoc(task.class.State, kanban.space, {
-        title: 'New State',
+        ofAttribute: task.attribute.State,
+        name: 'New State',
         color: 9,
         rank: calcRank(lastOne, undefined)
       })

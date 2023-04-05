@@ -18,10 +18,11 @@
   import { getBooleanLabel } from '../utils'
 
   export let value: any
+  export let inline: boolean = false
 </script>
 
-<div class="flex-row-center yesno-container">
-  <BooleanIcon {value} />
+<div class="{inline ? 'inline-presenter' : 'flex-presenter'} yesno-container">
+  <div class="icon small-gap"><BooleanIcon {value} /></div>
   <span><Label label={getBooleanLabel(value)} /></span>
 </div>
 
@@ -31,7 +32,6 @@
     user-select: none;
 
     span {
-      margin-left: 0.25rem;
       width: 1.6rem;
       white-space: nowrap;
       text-transform: capitalize;

@@ -32,6 +32,7 @@ import {
 import task from '@hcengineering/task'
 import setting from './plugin'
 import templates from '@hcengineering/templates'
+import contact from '@hcengineering/contact'
 
 import workbench from '@hcengineering/model-workbench'
 import { AnyComponent } from '@hcengineering/ui'
@@ -444,6 +445,17 @@ export function createModel (builder: Builder): void {
       func: setting.function.GetOwnerName
     },
     setting.templateField.OwnerName
+  )
+
+  builder.createDoc(
+    templates.class.TemplateField,
+    core.space.Model,
+    {
+      label: contact.string.Position,
+      category: setting.templateFieldCategory.Integration,
+      func: setting.function.GetOwnerPosition
+    },
+    setting.templateField.OwnerPosition
   )
 }
 

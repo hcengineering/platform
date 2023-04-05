@@ -14,20 +14,19 @@
 -->
 <script lang="ts">
   import { IssueStatus } from '@hcengineering/tracker'
-  import { statusStore } from '../../utils'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
 
   export let value: IssueStatus | undefined
   export let size: 'small' | 'medium' = 'small'
+  export let inline: boolean = false
 </script>
 
 {#if value}
-  {@const icon = $statusStore.byId.get(value._id)?.$lookup?.category?.icon}
   <div class="flex-presenter">
-    {#if icon}
+    {#if !inline}
       <IssueStatusIcon {value} {size} />
     {/if}
-    <span class="overflow-label" class:ml-2={icon !== undefined}>
+    <span class="overflow-label" class:ml-2={!inline}>
       {value.name}
     </span>
   </div>

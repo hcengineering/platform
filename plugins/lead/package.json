@@ -30,6 +30,6 @@
     "@hcengineering/core": "^0.6.21",
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/view": "^0.6.2",
-    "@hcengineering/task": "^0.6.2"
+    "@hcengineering/task": "^0.6.3"
   }
 }

@@ -67,7 +67,9 @@ export default mergeIds(viewId, view, {
     ListView: '' as AnyComponent,
     IndexedDocumentPreview: '' as AnyComponent,
     SpaceRefPresenter: '' as AnyComponent,
-    EnumPresenter: '' as AnyComponent
+    EnumPresenter: '' as AnyComponent,
+    StatusPresenter: '' as AnyComponent,
+    StatusRefPresenter: '' as AnyComponent
   },
   string: {
     Table: '' as IntlString,

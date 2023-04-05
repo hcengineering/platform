@@ -10,10 +10,11 @@ import type {
   PopupPositionElement,
   VerticalAlignment
 } from './types'
+import { ComponentType } from 'svelte'
 
 interface CompAndProps {
   id: string
-  is: AnySvelteComponent
+  is: AnySvelteComponent | ComponentType
   props: any
   element?: PopupAlignment
   onClose?: (result: any) => void
@@ -35,7 +36,7 @@ function addPopup (props: CompAndProps): void {
 }
 let popupId: number = 0
 export function showPopup (
-  component: AnySvelteComponent | AnyComponent,
+  component: AnySvelteComponent | AnyComponent | ComponentType,
   props: any,
   element?: PopupAlignment,
   onClose?: (result: any) => void,
@@ -80,7 +81,7 @@ export function closePopup (category?: string): void {
 }
 
 interface IDatePopup {
-  component: AnySvelteComponent | undefined
+  component: AnySvelteComponent | ComponentType | undefined
   currentDate: Date | undefined
   anchor: HTMLElement | undefined
   popup: HTMLElement | undefined
@@ -104,7 +105,7 @@ export const dpstore = writable<IDatePopup>({
 })
 
 export function showDatePopup (
-  component: AnySvelteComponent | undefined,
+  component: AnySvelteComponent | ComponentType | undefined,
   currentDate: Date,
   anchor?: HTMLElement,
   popup?: HTMLElement,

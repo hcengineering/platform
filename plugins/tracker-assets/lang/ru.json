@@ -42,6 +42,8 @@
     "CreateProject": "Создать проект",
     "NewProject": "Новый проект",
     "ProjectTitlePlaceholder": "Название проекта",
+    "Identifier": "Идентификатор проекта",
+    "IdentifierExists": "Идентификатор уже существует проекта",
     "ProjectIdentifierPlaceholder": "Идентификатор проекта",
     "ChooseIcon": "Выбрать иконку",
     "AddIssue": "Добавить задачу",
@@ -157,6 +159,8 @@
     "Assigned": "Назначенные",
     "Created": "{value, plural, =1 {Создана} other {Созданные}}",
     "Subscribed": "Отслеживаемые",
+    "MoveIssues": "Переместить задачи",
+    "MoveIssuesDescription": "Выберите проект, в который вы хотите переместить задачи.",
 
     "Relations": "Зависимости",
     "RemoveRelation": "Удалить зависимость...",
