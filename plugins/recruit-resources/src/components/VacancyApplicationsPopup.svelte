@@ -13,13 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Doc, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
-  import recruit, { Applicant } from '@hcengineering/recruit'
+  import core, { FindOptions, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Applicant } from '@hcengineering/recruit'
   import task from '@hcengineering/task'
+  import { Loading } from '@hcengineering/ui'
+  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
   import { Table } from '@hcengineering/view-resources'
+  import recruit from '../plugin'
 
   export let value: Ref<Space>
-  export let resultQuery: DocumentQuery<Doc>
 
   const options: FindOptions<Applicant> = {
     lookup: {
@@ -28,18 +31,49 @@
       doneState: task.class.DoneState,
       attachedTo: recruit.mixin.Candidate
     },
+    sort: {
+      modifiedOn: SortingOrder.Descending
+    },
     limit: 10
   }
+
+  let viewlet: Viewlet | undefined
+  let preference: ViewletPreference | undefined
+  let loading = true
+
+  const viewletQuery = createQuery()
+  $: viewletQuery.query(view.class.Viewlet, { _id: recruit.viewlet.VacancyApplicationsShort }, (res) => {
+    ;[viewlet] = res
+  })
+
+  const preferenceQuery = createQuery()
+
+  $: viewlet &&
+    preferenceQuery.query(
+      view.class.ViewletPreference,
+      {
+        attachedTo: viewlet._id
+      },
+      (res) => {
+        preference = res[0]
+        loading = false
+      },
+      { limit: 1 }
+    )
 </script>
 
 <div class="popup-table">
-  <Table
-    _class={recruit.class.Applicant}
-    config={['', 'attachedTo', 'state', 'doneState', 'modifiedOn']}
-    {options}
-    query={{ ...(resultQuery ?? {}), space: value }}
-    loadingProps={{ length: 0 }}
-  />
+  {#if viewlet && !loading}
+    <Table
+      _class={recruit.class.Applicant}
+      config={preference?.config ?? viewlet.config}
+      {options}
+      query={{ space: value }}
+      loadingProps={{ length: 0 }}
+    />
+  {:else}
+    <Loading />
+  {/if}
 </div>
 
 <style lang="scss">
