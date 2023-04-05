@@ -17,7 +17,7 @@
   import { AccountRole, getCurrentAccount } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import setting, { SettingsCategory } from '@hcengineering/setting'
-  import ui, { Button, Component, getCurrentLocation, IconBack, Label, location, navigate } from '@hcengineering/ui'
+  import { Component, getCurrentLocation, Label, location, navigate } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import CategoryElement from './CategoryElement.svelte'
 
@@ -28,7 +28,6 @@
   const account = getCurrentAccount() as EmployeeAccount
 
   export let visibileNav = true
-  export let onFirstCategory: () => void
 
   const settingsQuery = createQuery()
   settingsQuery.query(
@@ -64,18 +63,9 @@
   {#if visibileNav}
     <div class="antiPanel-navigator filled indent">
       <div class="antiNav-header">
-        <div class="flex-row-center gap-2">
-          <Button
-            kind={'link'}
-            icon={IconBack}
-            label={ui.string.Back}
-            on:click={() => onFirstCategory()}
-            size={'small'}
-          />
-          <span class="fs-title overflow-label">
-            <Label label={setting.string.WorkspaceSetting} />
-          </span>
-        </div>
+        <span class="fs-title overflow-label">
+          <Label label={setting.string.WorkspaceSetting} />
+        </span>
       </div>
       {#each categories as category}
         <CategoryElement
