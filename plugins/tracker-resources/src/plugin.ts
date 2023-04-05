@@ -17,7 +17,7 @@ import type { IntlString, Metadata, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { IssueDraft } from '@hcengineering/tracker'
 import { AnyComponent, Location } from '@hcengineering/ui'
-import { AllValuesFuncGetter, SortFunc, Viewlet, ViewletDescriptor, ViewQueryAction } from '@hcengineering/view'
+import { GetAllValuesFunc, SortFunc, Viewlet, ViewletDescriptor, ViewQueryAction } from '@hcengineering/view'
 import tracker, { trackerId } from '../../tracker/lib'
 
 export default mergeIds(trackerId, tracker, {
@@ -389,8 +389,8 @@ export default mergeIds(trackerId, tracker, {
     IssuePrioritySort: '' as SortFunc,
     SprintSort: '' as SortFunc,
     SubIssueQuery: '' as ViewQueryAction,
-    GetAllPriority: '' as Resource<AllValuesFuncGetter>,
-    GetAllComponents: '' as Resource<AllValuesFuncGetter>,
-    GetAllSprints: '' as Resource<AllValuesFuncGetter>
+    GetAllPriority: '' as GetAllValuesFunc,
+    GetAllComponents: '' as GetAllValuesFunc,
+    GetAllSprints: '' as GetAllValuesFunc
   }
 })

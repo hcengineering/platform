@@ -24,7 +24,6 @@ import core, {
   DocumentUpdate,
   Ref,
   SortingOrder,
-  Space,
   StatusCategory,
   StatusValue,
   toIdMap,
@@ -464,25 +463,19 @@ export function subIssueQuery (value: boolean, query: DocumentQuery<Issue>): Doc
 
 async function getAllSomething (
   _class: Ref<Class<Doc>>,
-  space: Ref<Space> | undefined,
+  query: DocumentQuery<Doc> | undefined,
   onUpdate: () => void,
   queryId: Ref<Doc>
 ): Promise<any[] | undefined> {
   const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
     let refresh: boolean = false
     const lq = CategoryQuery.getLiveQuery(queryId)
-    refresh = lq.query(
-      _class,
-      {
-        space
-      },
-      (res) => {
-        const result = res.map((p) => p._id)
-        CategoryQuery.results.set(queryId, result)
-        resolve(result)
-        onUpdate()
-      }
-    )
+    refresh = lq.query(_class, query ?? {}, (res) => {
+      const result = res.map((p) => p._id)
+      CategoryQuery.results.set(queryId, result)
+      resolve(result)
+      onUpdate()
+    })
 
     if (!refresh) {
       resolve(CategoryQuery.results.get(queryId) ?? [])
@@ -492,7 +485,7 @@ async function getAllSomething (
 }
 
 export async function getAllPriority (
-  space: Ref<Space> | undefined,
+  query: DocumentQuery<Doc> | undefined,
   onUpdate: () => void,
   queryId: Ref<Doc>
 ): Promise<any[] | undefined> {
@@ -500,19 +493,19 @@ export async function getAllPriority (
 }
 
 export async function getAllComponents (
-  space: Ref<Project> | undefined,
+  query: DocumentQuery<Doc> | undefined,
   onUpdate: () => void,
   queryId: Ref<Doc>
 ): Promise<any[] | undefined> {
-  return await getAllSomething(tracker.class.Component, space, onUpdate, queryId)
+  return await getAllSomething(tracker.class.Component, query, onUpdate, queryId)
 }
 
 export async function getAllSprints (
-  space: Ref<Project> | undefined,
+  query: DocumentQuery<Doc> | undefined,
   onUpdate: () => void,
   queryId: Ref<Doc>
 ): Promise<any[] | undefined> {
-  return await getAllSomething(tracker.class.Sprint, space, onUpdate, queryId)
+  return await getAllSomething(tracker.class.Sprint, query, onUpdate, queryId)
 }
 
 export function subIssueListProvider (subIssues: Issue[], target: Ref<Issue>): void {
