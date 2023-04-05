@@ -31,7 +31,7 @@
   export let reverse: boolean = false
   export let integrations: Set<Ref<Doc>> = new Set<Ref<Doc>>()
 
-  let lastViews: Writable<LastView> = writable()
+  let lastViews: Writable<LastView | undefined> = writable()
   getResource(notification.function.GetNotificationClient).then((res) => (lastViews = res().getLastViews()))
 
   interface Item {
@@ -48,7 +48,7 @@
   function getProvider (
     item: AttachedData<Channel>,
     map: Map<Ref<ChannelProvider>, ChannelProvider>,
-    lastViews: LastView
+    lastViews: LastView | undefined
   ): any | undefined {
     const provider = map.get(item.provider)
     if (provider) {
@@ -66,13 +66,14 @@
     }
   }
 
-  function isNew (item: Channel, lastViews: LastView): boolean {
+  function isNew (item: Channel, lastViews: LastView | undefined): boolean {
     if (item.lastMessage === undefined) return false
-    const lastView = (item as Channel)._id !== undefined ? lastViews[(item as Channel)._id] : undefined
+    const lastView =
+      (item as Channel)._id !== undefined && lastViews !== undefined ? lastViews[(item as Channel)._id] : undefined
     return lastView ? lastView < item.lastMessage : (item.items ?? 0) > 0
   }
 
-  async function update (value: AttachedData<Channel>[] | Channel | null, lastViews: LastView) {
+  async function update (value: AttachedData<Channel>[] | Channel | null, lastViews: LastView | undefined) {
     if (value === null) {
       displayItems = []
       return
