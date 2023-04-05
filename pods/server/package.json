@@ -14,7 +14,8 @@
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/transactor",
     "build:watch": "tsc",
     "lint": "eslint src",
-    "format": "prettier --write src && eslint --fix src"
+    "format": "prettier --write src && eslint --fix src",
+    "docker:tbuild": "docker build -t hardcoreeng/transactor . --platform=linux/amd64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/transactor"
   },
   "devDependencies": {
     "cross-env": "~7.0.3",
