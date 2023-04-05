@@ -185,11 +185,21 @@ async function generateLocation (loc: Location, id: Ref<Contact>): Promise<Resol
 
 export const employeeByIdStore = writable<IdMap<Employee>>(new Map())
 export const employeesStore = writable<Employee[]>([])
-const query = createQuery(true)
-query.query(contact.class.Employee, {}, (res) => {
-  employeesStore.set(res)
-  employeeByIdStore.set(toIdMap(res))
-})
+
+function fillStore (): void {
+  const client = getClient()
+  if (client !== undefined) {
+    const query = createQuery(true)
+    query.query(contact.class.Employee, {}, (res) => {
+      employeesStore.set(res)
+      employeeByIdStore.set(toIdMap(res))
+    })
+  } else {
+    setTimeout(() => fillStore(), 500)
+  }
+}
+
+fillStore()
 
 export function getAvatarTypeDropdownItems (hasGravatar: boolean): DropdownIntlItem[] {
   return [

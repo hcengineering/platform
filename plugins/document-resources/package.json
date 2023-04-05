@@ -41,7 +41,6 @@
     "@hcengineering/core": "^0.6.21",
     "@hcengineering/view": "^0.6.2",
     "@hcengineering/attachment-resources": "^0.6.0",
-    "@hcengineering/notification-resources": "^0.6.0",
     "@hcengineering/panel": "^0.6.2",
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/attachment": "^0.6.1",

@@ -34,6 +34,7 @@
     location,
     Location,
     navigate,
+    NavLink,
     openPanel,
     PanelInstance,
     Popup,
@@ -61,12 +62,12 @@
   import SpaceView from './SpaceView.svelte'
   import login from '@hcengineering/login'
   import { workspacesStore } from '../utils'
+  import App from './App.svelte'
 
   let contentPanel: HTMLElement
   let shownMenu: boolean = false
 
   const { setTheme } = getContext('theme') as any
-  NotificationClientImpl.createClient()
 
   let currentAppAlias: string | undefined
   let currentSpace: Ref<Space> | undefined
@@ -86,6 +87,7 @@
   const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
 
   const client = getClient()
+  NotificationClientImpl.createClient()
 
   let apps: Application[] | Promise<Application[]> = client
     .findAll(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
@@ -546,7 +548,7 @@
         </div>
       </div>
       <Applications
-        apps={getApps(apps)}
+        apps={getApps(apps).filter((p) => p.position !== 'bottom')}
         active={currentApplication?._id}
         direction={appsDirection}
         bind:shown={shownMenu}
@@ -570,15 +572,11 @@
           }}
           notify={false}
         />
-        <AppItem
-          icon={notification.icon.Notifications}
-          label={notification.string.Notifications}
-          selected={false}
-          action={async () => {
-            showPopup(notification.component.NotificationsPopup, {}, popupPosition)
-          }}
-          notify={hasNotification}
-        />
+        {#each getApps(apps).filter((p) => p.position === 'bottom') as app}
+          <NavLink app={app.alias}>
+            <App selected={app._id === currentApplication?._id} icon={app.icon} label={app.label} />
+          </NavLink>
+        {/each}
         <div class="flex-center" class:mt-2={appsDirection === 'vertical'} class:ml-2={appsDirection === 'horizontal'}>
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div

@@ -72,6 +72,7 @@ import SprintLeadPresenter from './components/sprints/SprintLeadPresenter.svelte
 import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
 import Views from './components/views/Views.svelte'
 import Statuses from './components/workflow/Statuses.svelte'
+import NotificationIssuePresenter from './components/issues/NotificationIssuePresenter.svelte'
 
 import {
   getIssueId,
@@ -418,7 +419,8 @@ export default async (): Promise<Resources> => ({
     TimeSpendReportPopup,
     SprintComponentEditor,
     SprintDatePresenter,
-    SprintLeadPresenter
+    SprintLeadPresenter,
+    NotificationIssuePresenter
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>

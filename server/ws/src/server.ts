@@ -175,18 +175,16 @@ class SessionManager {
       )[0]
       if (user === undefined) return
       const status = (await session.findAll(ctx, core.class.UserStatus, { modifiedBy: user._id }, { limit: 1 }))[0]
-      const txFactory = new TxFactory(user._id)
+      const txFactory = new TxFactory(user._id, true)
       if (status === undefined) {
         const tx = txFactory.createTxCreateDoc(core.class.UserStatus, user._id as string as Ref<Space>, {
           online
         })
-        tx.space = core.space.DerivedTx
         await session.tx(ctx, tx)
       } else if (status.online !== online) {
         const tx = txFactory.createTxUpdateDoc(status._class, status.space, status._id, {
           online
         })
-        tx.space = core.space.DerivedTx
         await session.tx(ctx, tx)
       }
     } catch {}

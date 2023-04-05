@@ -26,7 +26,7 @@ export class AsyncTriggerProcessor {
 
   classes: Ref<Class<Doc>>[] = []
 
-  factory = new TxFactory(core.account.System)
+  factory = new TxFactory(core.account.System, true)
 
   functions: AsyncTriggerFunc[] = []
 

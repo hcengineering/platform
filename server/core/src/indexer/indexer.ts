@@ -101,7 +101,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   }
 
   async markRemove (doc: DocIndexState): Promise<void> {
-    const ops = new TxFactory(core.account.System)
+    const ops = new TxFactory(core.account.System, true)
     await this.storage.tx(
       ops.createTxUpdateDoc(doc._class, doc.space, doc._id, {
         removed: true

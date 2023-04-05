@@ -108,6 +108,7 @@ export class TContact extends TDoc implements Contact {
 @UX(contact.string.Channel, contact.icon.Person)
 export class TChannel extends TAttachedDoc implements Channel {
   @Prop(TypeRef(contact.class.ChannelProvider), contact.string.ChannelProvider)
+  @Index(IndexKind.Indexed)
     provider!: Ref<ChannelProvider>
 
   @Prop(TypeString(), contact.string.Value)
