@@ -212,6 +212,14 @@
     integrations = res.filter((p) => p.createdBy === me || p.shared?.includes(me))
     selectedIntegration = integrations.find((p) => p.createdBy === me) ?? integrations[0]
   })
+
+  function onTemplate (e: CustomEvent<string>): void {
+    if (e.detail !== undefined) {
+      if (subject.trim() === '') {
+        subject = e.detail
+      }
+    }
+  }
 </script>
 
 <Panel
@@ -325,7 +333,7 @@
         </div>
       {/if}
       <div class="input mt-4 clear-mins">
-        <StyledTextEditor full bind:content />
+        <StyledTextEditor full bind:content on:template={onTemplate} />
       </div>
     </div>
   </Scroller>
