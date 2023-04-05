@@ -17,7 +17,7 @@
   import core, { Account, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { ButtonKind } from '@hcengineering/ui'
+  import { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import UserBoxList from './UserBoxList.svelte'
 
   export let label: IntlString
@@ -25,6 +25,7 @@
   export let onChange: (refs: Ref<Account>[]) => void
   export let readonly = false
   export let kind: ButtonKind = 'link'
+  export let size: ButtonSize = 'large'
   export let width: string | undefined = undefined
   export let excludeItems: Ref<Account>[] | undefined = undefined
 
@@ -79,7 +80,7 @@
   {readonly}
   {docQuery}
   on:update={onUpdate}
-  size={'medium'}
+  {size}
   justify={'left'}
   width={width ?? 'min-content'}
   {kind}

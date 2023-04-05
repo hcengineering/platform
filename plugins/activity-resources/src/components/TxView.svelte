@@ -245,7 +245,7 @@
                   <span class="lower"><Label label={activity.string.To} /></span>
 
                   {#if !hasMessageType}
-                    <span class="strong">
+                    <span class="strong overflow-label">
                       {#if value.isObjectSet}
                         <ObjectPresenter value={value.set} inline />
                       {:else}
@@ -268,7 +268,7 @@
                   <span class="lower"><Label label={activity.string.To} /></span>
 
                   {#if !hasMessageType}
-                    <div class="strong">
+                    <div class="strong overflow-label">
                       {#if value.isObjectSet}
                         <ObjectPresenter value={value.set} inline />
                       {:else}
@@ -341,6 +341,7 @@
     position: relative;
     display: flex;
     justify-content: space-between;
+    min-width: 0;
 
     .msgactivity-icon,
     .msgactivity-avatar {
@@ -366,6 +367,7 @@
       display: flex;
       flex-grow: 1;
       margin-right: 1rem;
+      min-width: 0;
       color: var(--content-color);
 
       .msgactivity-content__header {
@@ -373,11 +375,13 @@
         justify-content: space-between;
         align-items: center;
         flex-grow: 1;
+        min-width: 0;
       }
       .msgactivity-content__title {
         display: inline-flex;
         align-items: baseline;
         flex-grow: 1;
+        min-width: 0;
       }
 
       &.content {
@@ -465,6 +469,7 @@
   .activity-content {
     overflow: hidden;
     visibility: visible;
+    min-width: 0;
     max-height: max-content;
     opacity: 1;
     transition-property: max-height, opacity;

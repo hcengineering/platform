@@ -43,13 +43,13 @@
 
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="flex" on:click={navigateToComponent}>
+  <div class="flex-presenter" class:inline-presenter={inline} on:click={navigateToComponent}>
     {#if !inline && shouldShowAvatar}
-      <div class="mr-2" use:tooltip={{ label: tracker.string.Component }}>
+      <div class="icon" use:tooltip={{ label: tracker.string.Component }}>
         <Icon icon={tracker.icon.Component} size={'small'} />
       </div>
     {/if}
-    <span title={value.label} class="fs-bold cursor-pointer caption-color overflow-label clear-mins">
+    <span title={value.label} class="label nowrap">
       {value.label}
     </span>
   </div>

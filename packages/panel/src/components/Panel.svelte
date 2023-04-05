@@ -120,23 +120,21 @@
   </svelte:fragment>
 
   <svelte:fragment slot="aside">
-    <Scroller>
-      <div style="padding: .75rem 1.5rem">
-        {#if $$slots.actions}
-          <div class="flex-row-center pb-3 bottom-divider">
-            {#if $$slots['actions-label']}
-              <span class="fs-bold w-24 mr-6"><slot name="actions-label" /></span>
-            {/if}
-            <div class="buttons-group xsmall-gap flex flex-grow">
-              <slot name="actions" />
-            </div>
+    <Scroller padding={'.75rem 1.5rem'}>
+      {#if $$slots.actions}
+        <div class="flex-row-center pb-3 bottom-divider">
+          {#if $$slots['actions-label']}
+            <span class="fs-bold w-24 mr-6"><slot name="actions-label" /></span>
+          {/if}
+          <div class="buttons-group xsmall-gap flex flex-grow">
+            <slot name="actions" />
           </div>
-        {/if}
-        {#if $$slots['custom-attributes'] && isCustomAttr}
-          <slot name="custom-attributes" direction="column" />
-        {:else if $$slots.attributes}<slot name="attributes" direction="column" />{/if}
-        {#if $$slots.aside}<slot name="aside" />{/if}
-      </div>
+        </div>
+      {/if}
+      {#if $$slots['custom-attributes'] && isCustomAttr}
+        <slot name="custom-attributes" direction="column" />
+      {:else if $$slots.attributes}<slot name="attributes" direction="column" />{/if}
+      {#if $$slots.aside}<slot name="aside" />{/if}
     </Scroller>
   </svelte:fragment>
 
