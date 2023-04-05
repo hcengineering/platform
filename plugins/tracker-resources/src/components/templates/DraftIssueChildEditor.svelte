@@ -233,3 +233,9 @@
     </div>
   </div>
 </div>
+
+<style lang="scss">
+  .antiPopup {
+    max-width: 100%;
+  }
+</style>
