@@ -694,6 +694,17 @@ export function createModel (builder: Builder): void {
     templates.class.TemplateField,
     core.space.Model,
     {
+      label: contact.string.Position,
+      category: contact.templateFieldCategory.CurrentEmployee,
+      func: contact.function.GetCurrentEmployeePosition
+    },
+    contact.templateField.CurrentEmployeePosition
+  )
+
+  builder.createDoc(
+    templates.class.TemplateField,
+    core.space.Model,
+    {
       label: contact.string.PersonFirstNamePlaceholder,
       category: contact.templateFieldCategory.Contact,
       func: contact.function.GetContactFirstName

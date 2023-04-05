@@ -69,3 +69,16 @@ export async function getOwnerName (provider: TemplateDataProvider): Promise<str
     return employee != null ? getName(employee) : undefined
   }
 }
+
+export async function getOwnerPosition (provider: TemplateDataProvider): Promise<string | undefined> {
+  const value = provider.get(setting.class.Integration)
+  if (value === undefined) return
+  const client = getClient()
+  const employeeAccount = await client.findOne(contact.class.EmployeeAccount, {
+    _id: value.modifiedBy as Ref<EmployeeAccount>
+  })
+  if (employeeAccount !== undefined) {
+    const employee = get(employeeByIdStore).get(employeeAccount.employee)
+    return employee != null ? employee.position ?? '' : undefined
+  }
+}

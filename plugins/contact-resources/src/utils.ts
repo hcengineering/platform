@@ -125,6 +125,15 @@ export async function getCurrentEmployeeEmail (): Promise<string> {
   return me.email
 }
 
+export async function getCurrentEmployeePosition (): Promise<string | undefined> {
+  const me = getCurrentAccount() as EmployeeAccount
+  const client = getClient()
+  const employee = await client.findOne(contact.class.Employee, { _id: me.employee })
+  if (employee !== undefined) {
+    return employee.position ?? ''
+  }
+}
+
 export async function getContactName (provider: TemplateDataProvider): Promise<string | undefined> {
   const value = provider.get(contact.class.Contact) as Contact
   if (value === undefined) return
