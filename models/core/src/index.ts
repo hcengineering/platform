@@ -151,6 +151,7 @@ export function createModel (builder: Builder): void {
         },
         {
           _class: 1,
+          _id: 1,
           modifiedOn: 1
         }
       ]
