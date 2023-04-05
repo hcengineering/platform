@@ -42,9 +42,17 @@ export async function checkHasEmail (doc: Doc | Doc[] | undefined): Promise<bool
   if (doc === undefined) return false
   const client = getClient()
   const arr = Array.isArray(doc) ? doc.map((p) => p._id) : [doc._id]
-  const res = await client.findAll(contact.class.Channel, {
-    provider: contact.channelProvider.Email,
-    attachedTo: { $in: arr }
-  })
-  return res.length === arr.length
+  const res = await client.findAll(
+    contact.class.Channel,
+    {
+      provider: contact.channelProvider.Email,
+      attachedTo: { $in: arr }
+    },
+    { projection: { _id: 1, attachedTo: 1 } }
+  )
+  const set = new Set(res.map((p) => p.attachedTo))
+  for (const val of arr) {
+    if (!set.has(val)) return false
+  }
+  return true
 }
