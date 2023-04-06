@@ -30,7 +30,7 @@
       <strong><svelte:self nodes={node.childNodes} /></strong>
     {:else if node.nodeName === 'P'}
       {#if node.childNodes.length > 0}
-        <p class="p-inline">
+        <p class="p-inline contrast">
           <svelte:self nodes={node.childNodes} />
         </p>
       {/if}
@@ -137,5 +137,22 @@
 
   .checkboxContainer {
     padding-top: 0.125rem;
+  }
+
+  em,
+  strong,
+  blockquote,
+  pre,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  ol,
+  li,
+  .checkboxContainer,
+  s {
+    color: var(--theme-accent-color);
   }
 </style>

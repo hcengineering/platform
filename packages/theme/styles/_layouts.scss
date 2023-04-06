@@ -113,7 +113,9 @@ p:last-child { margin-block-end: 0; }
   word-wrap: break-word;
   hyphens: auto;
   line-height: 150%;
-  color: var(--content-color);
+
+  &.contrast { color: var(--theme-accent-color); }
+  &:not(.contrast) { color: var(--content-color); }
   
   a {
     word-break: break-all;
@@ -378,7 +380,7 @@ input.search {
 
   .bold {
     font-weight: 500;
-    color: var(--caption-color);
+    color: var(--theme-accent-color);
   }
   .strong { color: var(--accent-color); }
   .lower { text-transform: lowercase; }
