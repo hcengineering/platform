@@ -22,6 +22,8 @@
   import view from '@hcengineering/view'
   import NotificationView from './NotificationView.svelte'
 
+  export let visibileNav: boolean
+
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const query = createQuery()
@@ -73,25 +75,39 @@
 </script>
 
 <div class="flex h-full">
-  <div class="antiPanel-component border-right filled indent aside">
-    <div class="antiNav-header bottom-divider">
-      <span class="fs-title overflow-label">
-        <Label label={notification.string.Inbox} />
-      </span>
+  {#if visibileNav}
+    <div class="antiPanel-component border-right filled indent aside">
+      <div class="header">
+        <span class="fs-title overflow-label">
+          <Label label={notification.string.Inbox} />
+        </span>
+      </div>
+      <div class="top-divider">
+        <Scroller>
+          {#if loading}
+            <Loading />
+          {:else}
+            {#each docs as doc}
+              <NotificationView value={doc} selected={doc.attachedTo === _id} {viewlets} on:click={selectHandler} />
+            {/each}
+          {/if}
+        </Scroller>
+      </div>
     </div>
-    <Scroller>
-      {#if loading}
-        <Loading />
-      {:else}
-        {#each docs as doc}
-          <NotificationView value={doc} selected={doc.attachedTo === _id} {viewlets} on:click={selectHandler} />
-        {/each}
-      {/if}
-    </Scroller>
-  </div>
+  {/if}
   {#if loading}
     <Loading />
   {:else if component && _id && _class}
     <Component is={component} props={{ embedded: true, _id, _class }} />
   {/if}
 </div>
+
+<style lang="scss">
+  .header {
+    min-height: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 1.5rem;
+  }
+</style>
