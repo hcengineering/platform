@@ -84,9 +84,9 @@
     result: KeyFilter[],
     mixin: ClassFilters
   ): void {
-    const ignoreKeys = mixin.ignoreKeys
+    const ignoreKeys = new Set(mixin.ignoreKeys ?? [])
     for (const [key, attribute] of allAttributes) {
-      if (ignoreKeys && ignoreKeys.length > 0 && ignoreKeys.includes(key)) {
+      if (ignoreKeys.has(key)) {
         continue
       }
       buildFilterForAttr(_class, attribute, result)
