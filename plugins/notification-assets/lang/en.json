@@ -16,6 +16,8 @@
     "RemoveAll": "Delete all notifications",
     "MarkAllAsRead": "Mark all notifications as read",
     "MarkAsRead": "Mark as read",
+    "MarkAsUnread": "Mark as unread",
+    "Hide": "Hide",
     "Inbox": "Inbox",
     "Collaborators": "Collaborators"
   }

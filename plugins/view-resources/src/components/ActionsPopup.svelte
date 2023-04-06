@@ -52,7 +52,6 @@
     }
   )
 
-  let visibleActions: WithLookup<Action>[] = []
   let supportedActions: WithLookup<Action>[] = []
   let filteredActions: WithLookup<Action>[] = []
 
@@ -70,16 +69,15 @@
         }
       }
     }
-    visibleActions = resultActions
+    return resultActions
   }
-  $: filterVisibleActions(actions, getSelection($focusStore, $selectionStore))
 
   const client = getClient()
 
-  $: {
-    let fActions: WithLookup<Action>[] = visibleActions
-
+  async function getSupportedActions (actions: WithLookup<Action>[]) {
     const docs = getSelection($focusStore, $selectionStore)
+    let fActions: WithLookup<Action>[] = actions
+
     for (const d of docs) {
       fActions = filterActions(client, d, fActions)
     }
@@ -91,9 +89,12 @@
         (it.$lookup?.category?.visible ?? true) &&
         (it.context.application === viewContext.application || it.context.application === undefined)
     )
+    fActions = await filterVisibleActions(fActions, docs)
     // Sort by category.
     supportedActions = fActions.sort((a, b) => a.category.localeCompare(b.category))
   }
+
+  $: getSupportedActions(actions)
 
   async function filterSearchActions (actions: WithLookup<Action>[], search: string): Promise<void> {
     const res: WithLookup<Action>[] = []

@@ -514,7 +514,8 @@ async function createCollabDocInfo (
     res.push(
       control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
         lastTx: txId ?? tx._id,
-        lastTxTime: tx.modifiedOn
+        lastTxTime: tx.modifiedOn,
+        hidden: false
       })
     )
   }
@@ -525,6 +526,7 @@ async function createCollabDocInfo (
         user: target,
         attachedTo: objectId,
         attachedToClass: objectClass,
+        hidden: false,
         lastTx: txId ?? tx._id,
         lastTxTime: tx.modifiedOn,
         txes: [[txId ?? tx._id, tx.modifiedOn]]

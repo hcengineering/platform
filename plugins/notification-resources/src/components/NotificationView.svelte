@@ -21,8 +21,9 @@
   import notification, { DocUpdates } from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { AnySvelteComponent, Label, TimeSince } from '@hcengineering/ui'
+  import { AnySvelteComponent, Label, TimeSince, getEventPositionElement, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import { Menu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import TxView from './TxView.svelte'
 
@@ -65,6 +66,10 @@
   $: docQuery.query(value.attachedToClass, { _id: value.attachedTo }, (res) => ([doc] = res))
 
   $: newTxes = value.txes.length
+
+  function showMenu (e: MouseEvent) {
+    showPopup(Menu, { object: value, baseMenuClass: value._class }, getEventPositionElement(e))
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -72,6 +77,7 @@
   <div
     class="container cursor-pointer bottom-divider"
     class:selected
+    on:contextmenu|preventDefault={showMenu}
     on:click={() => dispatch('click', { _id: value.attachedTo, _class: value.attachedToClass })}
   >
     <div class="content">

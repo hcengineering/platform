@@ -18,7 +18,7 @@ import { Resources } from '@hcengineering/platform'
 import Inbox from './components/Inbox.svelte'
 import NotificationSettings from './components/NotificationSettings.svelte'
 import NotificationPresenter from './components/NotificationPresenter.svelte'
-import { NotificationClientImpl } from './utils'
+import { NotificationClientImpl, hasntNotifications, hide, markAsUnread, unsubscribe } from './utils'
 
 export * from './utils'
 
@@ -31,6 +31,12 @@ export default async (): Promise<Resources> => ({
     NotificationSettings
   },
   function: {
-    GetNotificationClient: NotificationClientImpl.getClient
+    GetNotificationClient: NotificationClientImpl.getClient,
+    HasntNotifications: hasntNotifications
+  },
+  actionImpl: {
+    Unsubscribe: unsubscribe,
+    Hide: hide,
+    MarkAsUnread: markAsUnread
   }
 })
