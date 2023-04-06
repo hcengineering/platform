@@ -1,6 +1,6 @@
 import client from '@hcengineering/client'
 import contact from '@hcengineering/contact'
-import core, { Client, setCurrentAccount, Version } from '@hcengineering/core'
+import core, { Client, setCurrentAccount, Version, versionToString } from '@hcengineering/core'
 import login, { loginId } from '@hcengineering/login'
 import { getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import presentation, { refreshClient, setClient } from '@hcengineering/presentation'
@@ -91,9 +91,9 @@ export async function connect (title: string): Promise<Client | undefined> {
     console.log('Model version', version)
 
     const requirdVersion = getMetadata(presentation.metadata.RequiredVersion)
-    if (requirdVersion !== undefined) {
+    if (requirdVersion !== undefined && version !== undefined) {
       console.log('checking min model version', requirdVersion)
-      const versionStr = `${version?.major as number}.${version?.minor as number}.${version?.patch as number}`
+      const versionStr = versionToString(version)
 
       if (version === undefined || requirdVersion !== versionStr) {
         versionError = `${versionStr} => ${requirdVersion}`
