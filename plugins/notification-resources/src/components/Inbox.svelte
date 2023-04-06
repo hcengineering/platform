@@ -34,7 +34,8 @@
   $: query.query(
     notification.class.DocUpdates,
     {
-      user: getCurrentAccount()._id
+      user: getCurrentAccount()._id,
+      hidden: false
     },
     (res) => {
       docs = res

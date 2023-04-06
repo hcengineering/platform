@@ -14,11 +14,12 @@
 // limitations under the License.
 //
 
-import { Ref } from '@hcengineering/core'
-import { Application } from '@hcengineering/workbench'
+import { Doc, Ref } from '@hcengineering/core'
 import notification, { notificationId } from '@hcengineering/notification'
-import { IntlString, mergeIds } from '@hcengineering/platform'
+import { IntlString, Resource, mergeIds } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
+import { Action, ActionCategory, ViewAction } from '@hcengineering/view'
+import { Application } from '@hcengineering/workbench'
 
 export default mergeIds(notificationId, notification, {
   string: {
@@ -29,12 +30,30 @@ export default mergeIds(notificationId, notification, {
     PlatformNotification: '' as IntlString,
     BrowserNotification: '' as IntlString,
     EmailNotification: '' as IntlString,
-    Collaborators: '' as IntlString
+    Collaborators: '' as IntlString,
+    Hide: '' as IntlString,
+    MarkAsUnread: '' as IntlString
   },
   app: {
     Notification: '' as Ref<Application>
   },
   component: {
     NotificationSettings: '' as AnyComponent
+  },
+  function: {
+    HasntNotifications: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
+  },
+  category: {
+    Notification: '' as Ref<ActionCategory>
+  },
+  action: {
+    Unsubscribe: '' as Ref<Action>,
+    Hide: '' as Ref<Action>,
+    MarkAsUnread: '' as Ref<Action>
+  },
+  actionImpl: {
+    Unsubscribe: '' as ViewAction,
+    Hide: '' as ViewAction,
+    MarkAsUnread: '' as ViewAction
   }
 })

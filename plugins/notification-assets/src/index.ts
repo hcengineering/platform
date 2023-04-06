@@ -20,6 +20,7 @@ const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(notification.icon, {
   Notifications: `${icons}#notification`,
   Track: `${icons}#track`,
+  Hide: `${icons}#hide`,
   DontTrack: `${icons}#donttrack`
 })
 

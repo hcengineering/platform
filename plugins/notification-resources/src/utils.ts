@@ -15,7 +15,7 @@
 //
 
 import core, { Account, Class, Doc, getCurrentAccount, Ref, Timestamp } from '@hcengineering/core'
-import notification, { LastView, NotificationClient } from '@hcengineering/notification'
+import notification, { DocUpdates, LastView, NotificationClient } from '@hcengineering/notification'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { get, writable, Writable } from 'svelte/store'
 
@@ -96,5 +96,58 @@ export class NotificationClientImpl implements NotificationClient {
       u.space = core.space.DerivedTx
       await client.tx(u)
     }
+  }
+}
+
+/**
+ * @public
+ */
+export async function hasntNotifications (object: DocUpdates): Promise<boolean> {
+  return object.txes.length === 0
+}
+
+/**
+ * @public
+ */
+export async function unsubscribe (object: DocUpdates): Promise<void> {
+  const me = getCurrentAccount()._id
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const target = await client.findOne(object.attachedToClass, { _id: object.attachedTo })
+  if (target !== undefined) {
+    if (hierarchy.hasMixin(target, notification.mixin.Collaborators)) {
+      const collab = hierarchy.as(target, notification.mixin.Collaborators)
+      if (collab.collaborators.includes(me)) {
+        await client.updateMixin(collab._id, collab._class, collab.space, notification.mixin.Collaborators, {
+          $pull: {
+            collaborators: me
+          }
+        })
+      }
+    }
+  }
+  await client.remove(object)
+}
+
+/**
+ * @public
+ */
+export async function hide (object: DocUpdates): Promise<void> {
+  const client = getClient()
+  await client.update(object, {
+    hidden: true
+  })
+}
+
+/**
+ * @public
+ */
+export async function markAsUnread (object: DocUpdates): Promise<void> {
+  const client = getClient()
+  if (object.txes.length > 0) return
+  if (object.lastTx !== undefined && object.lastTxTime !== undefined) {
+    await client.update(object, {
+      txes: [[object.lastTx, object.lastTxTime]]
+    })
   }
 }

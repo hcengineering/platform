@@ -136,8 +136,9 @@ export interface DocUpdates extends Doc {
   user: Ref<Account>
   attachedTo: Ref<Doc>
   attachedToClass: Ref<Class<Doc>>
-  lastTx?: Ref<TxCUD<Doc>>
-  lastTxTime?: Timestamp
+  hidden: boolean
+  lastTx: Ref<TxCUD<Doc>>
+  lastTxTime: Timestamp
   txes: [Ref<TxCUD<Doc>>, Timestamp][]
 }
 
@@ -199,7 +200,8 @@ const notification = plugin(notificationId, {
   icon: {
     Notifications: '' as Asset,
     Track: '' as Asset,
-    DontTrack: '' as Asset
+    DontTrack: '' as Asset,
+    Hide: '' as Asset
   },
   space: {
     Notifications: '' as Ref<Space>
@@ -207,6 +209,7 @@ const notification = plugin(notificationId, {
   string: {
     Notification: '' as IntlString,
     Notifications: '' as IntlString,
+    DontTrack: '' as IntlString,
     Inbox: '' as IntlString
   },
   function: {
