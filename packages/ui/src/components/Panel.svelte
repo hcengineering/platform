@@ -86,70 +86,73 @@
     checkPanel()
   }}
 >
-  {#if !embedded}
-    <div class="popupPanel-title__bordered {twoRows && !withoutTitle ? 'flex-col flex-no-shrink' : 'flex-row-center'}">
-      <div class="popupPanel-title {twoRows && !withoutTitle ? 'row-top' : 'row'}">
-        {#if allowClose}
+  <div
+    class="popupPanel-title__bordered {twoRows && !withoutTitle ? 'flex-col flex-no-shrink' : 'flex-row-center'}"
+    class:embedded
+  >
+    <div class="popupPanel-title {twoRows && !withoutTitle ? 'row-top' : 'row'}">
+      {#if allowClose && !embedded}
+        <Button
+          icon={IconClose}
+          kind={'transparent'}
+          size={'medium'}
+          on:click={() => {
+            dispatch('close')
+          }}
+        />
+      {/if}
+      {#if !embedded}
+        {#if $$slots.navigator}<slot name="navigator" />{/if}
+      {/if}
+      <div class="popupPanel-title__content">
+        {#if !twoRows && !withoutTitle}<slot name="title" />{/if}
+      </div>
+      <div class="buttons-group xsmall-gap">
+        <slot name="utils" />
+        {#if isFullSize || useMaxWidth !== undefined || ($$slots.aside && isAside)}
+          <div class="buttons-divider" />
+        {/if}
+        {#if $$slots.aside && isAside}
           <Button
-            icon={IconClose}
+            icon={IconDetails}
             kind={'transparent'}
             size={'medium'}
+            selected={asideShown}
             on:click={() => {
-              dispatch('close')
+              asideShown = !asideShown
             }}
           />
         {/if}
-        {#if $$slots.navigator}<slot name="navigator" />{/if}
-        <div class="popupPanel-title__content">
-          {#if !twoRows && !withoutTitle}<slot name="title" />{/if}
-        </div>
-        <div class="buttons-group xsmall-gap">
-          <slot name="utils" />
-          {#if isFullSize || useMaxWidth !== undefined || ($$slots.aside && isAside)}
-            <div class="buttons-divider" />
-          {/if}
-          {#if $$slots.aside && isAside}
-            <Button
-              icon={IconDetails}
-              kind={'transparent'}
-              size={'medium'}
-              selected={asideShown}
-              on:click={() => {
-                asideShown = !asideShown
-              }}
-            />
-          {/if}
-          {#if useMaxWidth !== undefined}
-            <Button
-              icon={useMaxWidth ? IconMaxWidth : IconMinWidth}
-              kind={'transparent'}
-              size={'medium'}
-              selected={useMaxWidth}
-              on:click={() => {
-                useMaxWidth = !useMaxWidth
-                dispatch('maxWidth', useMaxWidth)
-              }}
-            />
-          {/if}
-          {#if isFullSize}
-            <Button
-              icon={fullSize ? IconScale : IconScaleFull}
-              kind={'transparent'}
-              size={'medium'}
-              selected={fullSize}
-              on:click={() => {
-                fullSize = !fullSize
-                dispatch('fullsize')
-              }}
-            />
-          {/if}
-        </div>
+        {#if useMaxWidth !== undefined}
+          <Button
+            icon={useMaxWidth ? IconMaxWidth : IconMinWidth}
+            kind={'transparent'}
+            size={'medium'}
+            selected={useMaxWidth}
+            on:click={() => {
+              useMaxWidth = !useMaxWidth
+              dispatch('maxWidth', useMaxWidth)
+            }}
+          />
+        {/if}
+        {#if isFullSize}
+          <Button
+            icon={fullSize ? IconScale : IconScaleFull}
+            kind={'transparent'}
+            size={'medium'}
+            selected={fullSize}
+            on:click={() => {
+              fullSize = !fullSize
+              dispatch('fullsize')
+            }}
+          />
+        {/if}
       </div>
-      {#if twoRows && !withoutTitle}
-        <div class="popupPanel-title row-bottom"><slot name="title" /></div>
-      {/if}
     </div>
-  {/if}
+    {#if twoRows && !withoutTitle}
+      <div class="popupPanel-title row-bottom"><slot name="title" /></div>
+    {/if}
+  </div>
   <div class="popupPanel-body {$deviceInfo.isMobile ? 'mobile' : 'main'}" class:asideShown class:embedded>
     {#if $deviceInfo.isMobile}
       <Scroller horizontal padding={'.5rem .75rem'}>
