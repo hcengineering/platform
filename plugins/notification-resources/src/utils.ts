@@ -103,6 +103,7 @@ export class NotificationClientImpl implements NotificationClient {
  * @public
  */
 export async function hasntNotifications (object: DocUpdates): Promise<boolean> {
+  if (object._class !== notification.class.DocUpdates) return false
   return object.txes.length === 0
 }
 
