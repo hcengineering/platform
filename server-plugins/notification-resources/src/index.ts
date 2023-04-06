@@ -470,7 +470,10 @@ async function getKeyCollaborators (
   }
 }
 
-async function getDocCollaborators (
+/**
+ * @public
+ */
+export async function getDocCollaborators (
   doc: Doc,
   mixin: ClassCollaborators,
   control: TriggerControl
@@ -531,7 +534,10 @@ async function createCollabDocInfo (
   return res
 }
 
-function getMixinTx (
+/**
+ * @public
+ */
+export function getMixinTx (
   actualTx: TxCUD<Doc>,
   control: TriggerControl,
   collaborators: Ref<Account>[]
