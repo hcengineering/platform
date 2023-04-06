@@ -74,50 +74,48 @@
     class:selected
     on:click={() => dispatch('click', { _id: value.attachedTo, _class: value.attachedToClass })}
   >
-    <div class="content">
-      <div class="header flex">
-        <Avatar avatar={employee?.avatar} size="medium" />
-        <div class="ml-2 w-full clear-mins">
-          <div class="flex-between mb-1">
-            <div class="font-medium caption-color flex">
-              {#if employee}
-                {getName(employee)}
-              {:else}
-                <Label label={core.string.System} />
-              {/if}
-              {#if newTxes > 0}
-                <div class="counter ml-2">
-                  {newTxes}
-                </div>
-              {/if}
-            </div>
-            <div class="flex-center">
-              <div class="time ml-2"><TimeSince value={tx?.modifiedOn} /></div>
-            </div>
+    <div class="header flex">
+      <Avatar avatar={employee?.avatar} size="medium" />
+      <div class="ml-2 w-full clear-mins">
+        <div class="flex-between mb-1">
+          <div class="labels-row">
+            {#if employee}
+              <span class="bold">{getName(employee)}</span>
+            {:else}
+              <span class="strong"><Label label={core.string.System} /></span>
+            {/if}
+            {#if newTxes > 0}
+              <div class="counter">
+                {newTxes}
+              </div>
+            {/if}
           </div>
-          {#if presenter}
-            <svelte:component this={presenter} value={doc} />
-          {/if}
+          <div class="time ml-2"><TimeSince value={tx?.modifiedOn} /></div>
         </div>
+        {#if presenter}
+          <svelte:component this={presenter} value={doc} inline />
+        {/if}
       </div>
-      {#if tx}
-        <TxView {tx} {viewlets} />
-      {/if}
     </div>
+    {#if tx}
+      <TxView {tx} {viewlets} />
+    {/if}
   </div>
 {/if}
 
 <style lang="scss">
-  .content {
-    padding: 0.5rem;
-  }
-
   .container {
+    padding: 0.5rem;
+
     &:hover {
-      background-color: var(--board-card-bg-hover);
+      background-color: var(--highlight-hover);
     }
     &.selected {
-      background-color: var(--board-card-bg-hover);
+      background-color: var(--highlight-select);
+
+      &:hover {
+        background-color: var(--highlight-select-hover);
+      }
     }
   }
 
@@ -125,10 +123,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid;
-    border-color: var(--divider-color);
-    border-radius: 50%;
+    margin-left: 0.25rem;
     height: 1.25rem;
     width: 1.25rem;
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: var(--theme-accent-color);
+    border: 1px solid var(--divider-color);
+    border-radius: 50%;
   }
 </style>
