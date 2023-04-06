@@ -4,6 +4,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { Button, Icon, IconArrowLeft, IconClose, Label } from '@hcengineering/ui'
   import CopyMappingPresenter from './mappings/CopyMappingPresenter.svelte'
+  import CreateAttachedDocPresenter from './mappings/CreateHRApplicationPresenter.svelte'
   import CreateChannelMappingPresenter from './mappings/CreateChannelMappingPresenter.svelte'
   import CreateTagMappingPresenter from './mappings/CreateTagMappingPresenter.svelte'
   import DownloadAttachmentPresenter from './mappings/DownloadAttachmentPresenter.svelte'
@@ -40,6 +41,8 @@
       <DownloadAttachmentPresenter {mapping} {value} />
     {:else if kind === MappingOperation.FindReference}
       <FindReferencePresenter {mapping} {value} />
+    {:else if kind === MappingOperation.CreateHRApplication}
+      <CreateAttachedDocPresenter {mapping} {value} />
     {/if}
 
     <Button

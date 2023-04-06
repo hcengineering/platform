@@ -1,5 +1,5 @@
 import attachment, { Attachment } from '@hcengineering/attachment'
-import contact, { Channel, EmployeeAccount } from '@hcengineering/contact'
+import contact, { Channel, EmployeeAccount, Organization } from '@hcengineering/contact'
 import core, {
   AnyAttribute,
   AttachedDoc,
@@ -7,14 +7,18 @@ import core, {
   Client,
   Data,
   Doc,
-  generateId,
   Mixin,
   Ref,
+  RefTo,
   Space,
-  WithLookup
+  TxOperations,
+  WithLookup,
+  generateId
 } from '@hcengineering/core'
 import { Message } from '@hcengineering/gmail'
+import recruit, { Candidate, Vacancy } from '@hcengineering/recruit'
 import tags, { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
+import task from '@hcengineering/task'
 import bitrix, {
   BitrixEntityMapping,
   BitrixEntityType,
@@ -22,11 +26,13 @@ import bitrix, {
   BitrixSyncDoc,
   CopyValueOperation,
   CreateChannelOperation,
+  CreateHRApplication,
   CreateTagOperation,
   DownloadAttachmentOperation,
   FindReferenceOperation,
   MappingOperation
 } from '.'
+import { createApplication, createVacancy } from './hr'
 
 /**
  * @public
@@ -63,6 +69,11 @@ export interface BitrixSyncRequest {
 /**
  * @public
  */
+export type PostOperation = (doc: BitrixSyncDoc, existing?: Doc) => Promise<void>
+
+/**
+ * @public
+ */
 export interface ConvertResult {
   document: BitrixSyncDoc // Document we should sync
   mixins: Record<Ref<Mixin<Doc>>, Data<Doc>> // Mixins of document we will sync
@@ -71,6 +82,7 @@ export interface ConvertResult {
   gmailDocuments: (Message & BitrixSyncDoc)[]
   blobs: [Attachment & BitrixSyncDoc, () => Promise<File | undefined>, (file: File, attach: Attachment) => void][]
   syncRequests: BitrixSyncRequest[]
+  postOperations: PostOperation[]
 }
 
 /**
@@ -112,6 +124,8 @@ export async function convert (
     (file: File, attach: Attachment) => void
   ][] = []
   const mixins: Record<Ref<Mixin<Doc>>, Data<Doc>> = {}
+
+  const postOperations: PostOperation[] = []
 
   // Fill required mixins.
   for (const m of entity.mixins ?? []) {
@@ -383,6 +397,65 @@ export async function convert (
     }
   }
 
+  const getCreateAttachedValue = async (attr: AnyAttribute, operation: CreateHRApplication): Promise<void> => {
+    const vacancyName = extractValue(operation.vacancyField)
+    const statusName = extractValue(operation.stateField)
+
+    postOperations.push(async (doc, existingDoc) => {
+      const vacancies = await client.findAll(recruit.class.Vacancy, {})
+
+      let vacancyId: Ref<Vacancy> | undefined
+
+      if (vacancyName !== undefined) {
+        const tName = vacancyName.trim().toLowerCase()
+        const vacancy = vacancies.find((it) => it.name.toLowerCase().trim() === tName)
+
+        let refOrgField: Ref<Organization> | undefined
+        const allAttrs = hierarchy.getAllAttributes(recruit.mixin.Candidate)
+        for (const a of allAttrs.values()) {
+          if (a.type._class === core.class.RefTo && (a.type as RefTo<Doc>).to === contact.class.Organization) {
+            refOrgField = (mixins as any)[recruit.mixin.Candidate][a.name] as Ref<Organization>
+          }
+        }
+
+        if (vacancy !== undefined) {
+          vacancyId = vacancy?._id
+        } else {
+          vacancyId = await createVacancy(
+            client,
+            vacancyName.trim(),
+            operation.defaultTemplate,
+            document.modifiedBy,
+            refOrgField
+          )
+        }
+      } else {
+        return
+      }
+
+      // Check if candidate already have vacancy
+      const existing = await client.findOne(recruit.class.Applicant, {
+        attachedTo: (existingDoc?._id ?? doc._id) as unknown as Ref<Candidate>,
+        space: vacancyId
+      })
+
+      if (statusName != null && statusName !== '') {
+        // Find status for vacancy
+        const states = await client.findAll(task.class.State, { space: vacancyId })
+
+        const state = states.find((it) => it.name.toLowerCase().trim() === statusName.toLowerCase().trim())
+        const ops = new TxOperations(client, document.modifiedBy)
+        if (state !== undefined) {
+          if (existing !== undefined && existing.state !== state?._id) {
+            await ops.update(existing, { state: state._id })
+          } else {
+            await createApplication(ops, state, vacancyId, document)
+          }
+        }
+      }
+    })
+  }
+
   const setValue = (value: any, attr: AnyAttribute): void => {
     if (value !== undefined) {
       if (hierarchy.isMixin(attr.attributeOf)) {
@@ -479,6 +552,10 @@ export async function convert (
         }
         break
       }
+      case MappingOperation.CreateHRApplication: {
+        await getCreateAttachedValue(attr, f.operation)
+        break
+      }
     }
     setValue(value, attr)
   }
@@ -490,7 +567,8 @@ export async function convert (
     extraDocs: newExtraDocs,
     blobs,
     syncRequests,
-    gmailDocuments: []
+    gmailDocuments: [],
+    postOperations
   }
 }
 

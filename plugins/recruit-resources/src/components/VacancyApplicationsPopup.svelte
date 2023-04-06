@@ -13,16 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { FindOptions, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import core, { FindOptions, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Applicant } from '@hcengineering/recruit'
+  import { Applicant, Vacancy } from '@hcengineering/recruit'
   import task from '@hcengineering/task'
-  import { Loading } from '@hcengineering/ui'
+  import { Button, Label, Loading } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { Table } from '@hcengineering/view-resources'
+  import { DocNavLink, ObjectPresenter, Table } from '@hcengineering/view-resources'
   import recruit from '../plugin'
 
-  export let value: Ref<Space>
+  export let value: Vacancy
+  export let openList: () => void
 
   const options: FindOptions<Applicant> = {
     lookup: {
@@ -62,13 +63,27 @@
     )
 </script>
 
+<div class="flex flex-between flex-grow p-1 mb-4">
+  <div class="fs-title flex-row-center">
+    <Label label={recruit.string.Applications} />
+    <div class="ml-2">
+      <Button label={recruit.string.OpenVacancyList} on:click={openList} size={'small'} kind={'link-bordered'} />
+    </div>
+  </div>
+  <div class="flex-row-center">
+    <DocNavLink object={value}>
+      <ObjectPresenter _class={value._class} objectId={value._id} {value} />
+    </DocNavLink>
+  </div>
+</div>
+
 <div class="popup-table">
   {#if viewlet && !loading}
     <Table
       _class={recruit.class.Applicant}
       config={preference?.config ?? viewlet.config}
+      query={{ space: value._id }}
       {options}
-      query={{ space: value }}
       loadingProps={{ length: 0 }}
     />
   {:else}

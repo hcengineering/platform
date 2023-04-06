@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
-  import { Vacancy, recruitId } from '@hcengineering/recruit'
-  import { Icon, getCurrentLocation, navigate, tooltip } from '@hcengineering/ui'
+  import { recruitId, Vacancy } from '@hcengineering/recruit'
+  import { closeTooltip, getCurrentLocation, Icon, navigate, tooltip } from '@hcengineering/ui'
   import recruit from '../plugin'
   import VacancyApplicationsPopup from './VacancyApplicationsPopup.svelte'
 
@@ -23,24 +23,27 @@
   export let applications: Map<Ref<Vacancy>, { count: number; modifiedOn: number }> | undefined
 
   function click () {
+    closeTooltip()
     const loc = getCurrentLocation()
     loc.fragment = undefined
     loc.query = undefined
     loc.path[2] = recruitId
     loc.path[3] = value._id
+    loc.path.length = 4
     navigate(loc)
   }
 </script>
 
 {#if value}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     class="sm-tool-icon"
     use:tooltip={{
-      label: recruit.string.Applications,
+      // label: recruit.string.Applications,
       component: VacancyApplicationsPopup,
-      props: { value: value._id }
+      props: { value, openList: click }
     }}
-    on:click={click}
+    on:click|stopPropagation|preventDefault={click}
   >
     <div class="icon">
       <Icon icon={recruit.icon.Application} size={'small'} />

@@ -107,7 +107,9 @@
     "Organizations": "Companies",
 
     "TemplateReplace": "You you replace selected template?",
-    "TemplateReplaceConfirm": "All field changes will be override by template values"
+    "TemplateReplaceConfirm": "All field changes will be override by template values",
+
+    "OpenVacancyList": "Open list"
   },
   "status": {
     "TalentRequired": "Please select talent",

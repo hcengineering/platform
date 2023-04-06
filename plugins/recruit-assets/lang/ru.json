@@ -108,7 +108,8 @@
     "SearchVacancy": "Найти вакансию...",
     "Organizations": "Компании",
     "TemplateReplace": "Вы хотите заменить выбранный шаблон?",
-    "TemplateReplaceConfirm": "Все внесенные изменения в будут заменены значениями из шаблоном"
+    "TemplateReplaceConfirm": "Все внесенные изменения в будут заменены значениями из шаблоном",
+    "OpenVacancyList": "Открыть список"
   },
   "status": {
     "TalentRequired": "Пожалуйста выберите таланта",
