@@ -74,7 +74,7 @@
 
   const client = getClient()
 
-  async function getSupportedActions () {
+  async function getSupportedActions (actions: WithLookup<Action>[]) {
     const docs = getSelection($focusStore, $selectionStore)
     let fActions: WithLookup<Action>[] = actions
 
@@ -94,7 +94,7 @@
     supportedActions = fActions.sort((a, b) => a.category.localeCompare(b.category))
   }
 
-  $: getSupportedActions()
+  $: getSupportedActions(actions)
 
   async function filterSearchActions (actions: WithLookup<Action>[], search: string): Promise<void> {
     const res: WithLookup<Action>[] = []
