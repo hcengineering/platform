@@ -13,15 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, DocumentQuery, Ref } from '@hcengineering/core'
-  import { recruitId, Vacancy } from '@hcengineering/recruit'
-  import { getCurrentLocation, Icon, navigate, tooltip } from '@hcengineering/ui'
+  import { Ref } from '@hcengineering/core'
+  import { Vacancy, recruitId } from '@hcengineering/recruit'
+  import { Icon, getCurrentLocation, navigate, tooltip } from '@hcengineering/ui'
   import recruit from '../plugin'
   import VacancyApplicationsPopup from './VacancyApplicationsPopup.svelte'
 
   export let value: Vacancy
   export let applications: Map<Ref<Vacancy>, { count: number; modifiedOn: number }> | undefined
-  export let resultQuery: DocumentQuery<Doc>
 
   function click () {
     const loc = getCurrentLocation()
@@ -39,7 +38,7 @@
     use:tooltip={{
       label: recruit.string.Applications,
       component: VacancyApplicationsPopup,
-      props: { value: value._id, resultQuery }
+      props: { value: value._id }
     }}
     on:click={click}
   >
