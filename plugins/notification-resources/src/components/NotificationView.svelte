@@ -77,7 +77,7 @@
     <div class="content">
       <div class="header flex">
         <Avatar avatar={employee?.avatar} size="medium" />
-        <div class="ml-2 w-full">
+        <div class="ml-2 w-full clear-mins">
           <div class="flex-between mb-1">
             <div class="caption-color flex">
               {#if employee}
