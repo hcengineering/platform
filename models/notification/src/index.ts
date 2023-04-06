@@ -235,8 +235,7 @@ export function createModel (builder: Builder): void {
       label: notification.string.Inbox,
       icon: notification.icon.Notifications,
       alias: notificationId,
-      position: 'bottom',
-      hidden: false,
+      hidden: true,
       component: notification.component.Inbox
     },
     notification.app.Notification

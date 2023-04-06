@@ -19,20 +19,12 @@
 
   export let label: IntlString
   export let icon: Asset | AnySvelteComponent
-  export let action: () => Promise<void>
-  export let selected: boolean
+  export let selected: boolean = false
   export let mini: boolean = false
-  export let notify: boolean
+  export let notify: boolean = false
 </script>
 
-<button
-  class="app"
-  class:selected
-  class:mini
-  id={'app-' + label}
-  use:tooltip={{ label }}
-  on:click|stopPropagation={action}
->
+<button class="app" class:selected class:mini id={'app-' + label} use:tooltip={{ label }} on:click>
   <div class="flex-center icon-container" class:mini class:noty={notify}>
     <Icon {icon} size={mini ? 'small' : 'large'} />
   </div>

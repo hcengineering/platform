@@ -15,35 +15,36 @@
 <script lang="ts">
   import calendar from '@hcengineering/calendar'
   import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
-  import core, { Class, Doc, getCurrentAccount, Ref, setCurrentAccount, Space } from '@hcengineering/core'
-  import notification, { NotificationStatus } from '@hcengineering/notification'
+  import core, { Class, Doc, Ref, Space, getCurrentAccount, setCurrentAccount } from '@hcengineering/core'
+  import login from '@hcengineering/login'
+  import notification, { notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, NotificationClientImpl } from '@hcengineering/notification-resources'
-  import { getMetadata, getResource, IntlString } from '@hcengineering/platform'
+  import { IntlString, getMetadata, getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import request, { RequestStatus } from '@hcengineering/request'
   import {
     AnyComponent,
-    areLocationsEqual,
-    closePanel,
-    closePopup,
-    closeTooltip,
     Component,
     DatePickerPopup,
-    deviceOptionsStore as deviceInfo,
     Label,
-    location,
     Location,
-    navigate,
     NavLink,
-    openPanel,
     PanelInstance,
     Popup,
     PopupAlignment,
     PopupPosAlignment,
-    resizeObserver,
     ResolvedLocation,
-    showPopup,
-    TooltipInstance
+    TooltipInstance,
+    areLocationsEqual,
+    closePanel,
+    closePopup,
+    closeTooltip,
+    deviceOptionsStore as deviceInfo,
+    location,
+    navigate,
+    openPanel,
+    resizeObserver,
+    showPopup
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ActionContext, ActionHandler, migrateViewOpttions } from '@hcengineering/view-resources'
@@ -52,17 +53,15 @@
   import { get } from 'svelte/store'
   import { subscribeMobile } from '../mobile'
   import workbench from '../plugin'
+  import { workspacesStore } from '../utils'
   import AccountPopup from './AccountPopup.svelte'
   import AppItem from './AppItem.svelte'
   import Applications from './Applications.svelte'
-  import Settings from './icons/Settings.svelte'
-  import TopMenu from './icons/TopMenu.svelte'
   import NavHeader from './NavHeader.svelte'
   import Navigator from './Navigator.svelte'
   import SpaceView from './SpaceView.svelte'
-  import login from '@hcengineering/login'
-  import { workspacesStore } from '../utils'
-  import App from './App.svelte'
+  import Settings from './icons/Settings.svelte'
+  import TopMenu from './icons/TopMenu.svelte'
 
   let contentPanel: HTMLElement
   let shownMenu: boolean = false
@@ -143,14 +142,13 @@
   let hasNotification = false
   const notificationQuery = createQuery()
 
-  $: notificationQuery.query(
-    notification.class.Notification,
+  notificationQuery.query(
+    notification.class.DocUpdates,
     {
-      attachedTo: account.employee,
-      status: { $nin: [NotificationStatus.Read] }
+      user: account._id
     },
     (res) => {
-      hasNotification = res.length > 0
+      hasNotification = res.some((p) => p.txes.length > 0)
     }
   )
 
@@ -501,6 +499,8 @@
       return apps
     }
   }
+
+  let prevLoc: Location | undefined = undefined
 </script>
 
 {#if employee?.active === true}
@@ -538,9 +538,8 @@
           icon={TopMenu}
           label={visibileNav ? workbench.string.HideMenu : workbench.string.ShowMenu}
           selected={!visibileNav}
-          action={toggleNav}
+          on:click={toggleNav}
           mini={appsMini}
-          notify={false}
         />
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div class="thinButton" class:shownMenu on:click={() => (shownMenu = !shownMenu)}>
@@ -548,7 +547,7 @@
         </div>
       </div>
       <Applications
-        apps={getApps(apps).filter((p) => p.position !== 'bottom')}
+        apps={getApps(apps)}
         active={currentApplication?._id}
         direction={appsDirection}
         bind:shown={shownMenu}
@@ -557,26 +556,33 @@
         <AppItem
           icon={request.icon.Requests}
           label={request.string.Requests}
-          selected={false}
-          action={async () => {
-            showPopup(request.component.RequestsPopup, {}, popupPosition)
-          }}
+          on:click={() => showPopup(request.component.RequestsPopup, {}, popupPosition)}
           notify={hasRequests}
         />
         <AppItem
           icon={calendar.icon.Reminder}
           label={calendar.string.Reminders}
-          selected={false}
-          action={async () => {
-            showPopup(calendar.component.RemindersPopup, {}, popupPosition)
-          }}
-          notify={false}
+          on:click={() => showPopup(calendar.component.RemindersPopup, {}, popupPosition)}
         />
-        {#each getApps(apps).filter((p) => p.position === 'bottom') as app}
-          <NavLink app={app.alias}>
-            <App selected={app._id === currentApplication?._id} icon={app.icon} label={app.label} />
-          </NavLink>
-        {/each}
+        <NavLink app={notificationId}>
+          <AppItem
+            icon={notification.icon.Notifications}
+            label={notification.string.Inbox}
+            selected={currentAppAlias === notificationId}
+            on:click={(e) => {
+              if (currentAppAlias === notificationId) {
+                e.preventDefault()
+                e.stopPropagation()
+                if (prevLoc !== undefined) {
+                  navigate(prevLoc)
+                }
+              } else {
+                prevLoc = $location
+              }
+            }}
+            notify={hasNotification}
+          />
+        </NavLink>
         <div class="flex-center" class:mt-2={appsDirection === 'vertical'} class:ml-2={appsDirection === 'horizontal'}>
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
