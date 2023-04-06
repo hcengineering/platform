@@ -144,7 +144,7 @@ test('report-time-from-issue-card', async ({ page }) => {
     await page.click('button:has-text("Create")')
     await page.click('#card-close')
 
-    await expect(page.locator('#TimeSpendReportValue')).toContainText(`${time}d`)
+    await expect(page.locator('#ReportedTimeEditor')).toContainText(`${time}d`)
   }
 })
 
