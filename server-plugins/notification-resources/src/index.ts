@@ -389,8 +389,13 @@ export async function OnUpdateLastView (tx: Tx, control: TriggerControl): Promis
   if (actualTx._class !== core.class.TxUpdateDoc) return []
   if (actualTx.objectClass !== notification.class.LastView) return []
   const result: Tx[] = []
+  const lastView = (await control.findAll(notification.class.LastView, { _id: actualTx.objectId }))[0]
+  if (lastView === undefined) return result
   for (const key in actualTx.operations) {
-    const docs = await control.findAll(notification.class.DocUpdates, { attachedTo: key as Ref<Doc> })
+    const docs = await control.findAll(notification.class.DocUpdates, {
+      attachedTo: key as Ref<Doc>,
+      user: lastView.user
+    })
     for (const doc of docs) {
       const txes = doc.txes.filter((p) => p[1] > actualTx.operations[key])
       result.push(
