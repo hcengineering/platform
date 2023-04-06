@@ -34,6 +34,8 @@
     "@hcengineering/view": "^0.6.2",
     "@hcengineering/login": "^0.6.1",
     "@hcengineering/workbench": "^0.6.2",
-    "@hcengineering/notification": "^0.6.8"
+    "@hcengineering/notification": "^0.6.8",
+    "@hcengineering/server-notification": "^0.6.0",
+    "@hcengineering/server-notification-resources": "^0.6.0"
   }
 }
