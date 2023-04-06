@@ -103,6 +103,7 @@
         {onChange}
         {focus}
         {object}
+        {size}
       />
     </div>
   {/if}

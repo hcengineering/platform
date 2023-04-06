@@ -254,6 +254,7 @@ input.search {
 
 .flex-presenter, .inline-presenter {
   flex-wrap: nowrap;
+  min-width: 0;
   cursor: pointer;
 
   .icon {
@@ -275,16 +276,19 @@ input.search {
 
     overflow: hidden;
     visibility: visible;
-    display: -webkit-box;
-    /* autoprefixer: ignore next */
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;  
     user-select: none;
 
+    &:not(.nowrap) {
+      display: -webkit-box;
+      /* autoprefixer: ignore next */
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+    }
     &.nowrap {
       white-space: nowrap;
       text-overflow: ellipsis;
+      word-break: break-all;
     }
   }
   .action {
@@ -735,6 +739,7 @@ a.no-line {
 }
 .overflow-label {
   white-space: nowrap;
+  word-break: break-all;
   text-overflow: ellipsis;
   overflow: hidden;
   min-width: 0;

@@ -22,7 +22,7 @@
   export let value: string | number | undefined
   export let format: 'text' | 'password' | 'number'
   export let placeholder: IntlString
-  export let kind: EditStyle = 'search-style'
+  export let kind: EditStyle = 'editbox'
 
   const dispatch = createEventDispatcher()
 
@@ -32,11 +32,11 @@
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
-  <div class="header no-border flex-row-center">
-    <div class="flex-grow">
-      <EditBox bind:value {placeholder} {format} {kind} focus on:keypress={_onkeypress} />
+  <div class="flex-row-center justify-stretch p-2">
+    <div class="overflow-label flex-grow">
+      <EditBox bind:value {placeholder} {format} {kind} focus on:keypress={_onkeypress} maxWidth={'12rem'} />
     </div>
-    <div class="p-1">
+    <div class="ml-2">
       <Button icon={IconCheck} size={'small'} on:click={() => dispatch('close', value)} />
     </div>
   </div>

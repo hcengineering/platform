@@ -59,7 +59,9 @@
 <Button {kind} {size} {width} {justify} on:click={handleClick}>
   <svelte:fragment slot="content">
     {#if state}
-      <div class="pointer-events-none"><StatePresenter value={state} /></div>
+      <div class="pointer-events-none clear-mins">
+        <StatePresenter value={state} />
+      </div>
     {/if}
   </svelte:fragment>
 </Button>
