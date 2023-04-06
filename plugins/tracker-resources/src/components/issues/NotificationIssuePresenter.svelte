@@ -32,17 +32,17 @@
 
 {#if value}
   <div class="flex-between">
-    <div class="flex-center">
+    <div class="flex-presenter overflow-label mr-2">
       {#if currentProject}
-        {#if currentProject.icon}
-          <Icon icon={currentProject.icon ?? tracker.icon.Home} size="inline" />
-        {/if}
-        <div class="ml-1 mr-1">
+        <Icon icon={currentProject.icon ?? tracker.icon.Home} size="small" />
+        <div class="ml-1 mr-1 font-semi-bold">
           {currentProject.name}
         </div>
       {/if}
-      {title}
-      {value.title}
+      <span class="overflow-label">
+        {title}
+        {value.title}
+      </span>
     </div>
     <div>
       {#if status}
