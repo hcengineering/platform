@@ -21,8 +21,7 @@
 
 <style lang="scss">
   iframe {
-    max-width: calc(100vw - 4rem);
-    width: 700px;
+    width: 100%;
     overflow: auto;
     height: 100%;
     font-family: var(--font-family);
