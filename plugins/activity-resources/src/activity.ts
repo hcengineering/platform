@@ -81,6 +81,7 @@ export type DisplayTxListener = (txes: DisplayTx[]) => void
 
 // Use 5 minutes to combine similar transactions.
 const combineThreshold = 5 * 60 * 1000
+
 /**
  * Define activity.
  *
@@ -192,15 +193,14 @@ class ActivityImpl implements Activity {
   ): Promise<DisplayTx[]> {
     const parents = new Map<Ref<Doc>, DisplayTx>()
 
-    let ownResults: DisplayTx[] = []
-    let attachedResults: DisplayTx[] = []
+    let results: DisplayTx[] = []
 
     for (const tx of ownTxes) {
       if (!this.filterUpdateTx(tx)) continue
       const [result] = this.createDisplayTx(tx, parents)
       // Combine previous update transaction for same field and if same operation and time treshold is ok
-      ownResults = this.integrateTxWithResults(ownResults, result, editable)
-      this.updateRemovedState(result, ownResults)
+      results = this.integrateTxWithResults(results, result, editable)
+      this.updateRemovedState(result, results)
     }
 
     for (let tx of Array.from(attachedTxes)
@@ -215,12 +215,12 @@ class ActivityImpl implements Activity {
         const [result, isUpdated, isMixin] = this.createDisplayTx(tx, parents)
         if (!(isUpdated || isMixin)) {
           // Combine previous update transaction for same field and if same operation and time treshold is ok
-          attachedResults = this.integrateTxWithResults(attachedResults, result, editable)
-          this.updateRemovedState(result, attachedResults)
+          results = this.integrateTxWithResults(results, result, editable)
+          this.updateRemovedState(result, results)
         }
       }
     }
-    return Array.from(ownResults).concat(attachedResults)
+    return results
   }
 
   private async createFakeTx (
@@ -382,6 +382,11 @@ class ActivityImpl implements Activity {
     }
     const newResult = results.filter((prevTx) => {
       const prevUpdate: any = getCombineOpFromTx(prevTx)
+      if (this.isInitTx(prevTx, result)) {
+        result = prevTx
+        return false
+      }
+
       // If same tx or same collection
       if (this.isSameKindTx(prevTx, result) || prevUpdate === curUpdate) {
         if (result.tx.modifiedOn - prevTx.tx.modifiedOn < combineThreshold && isEqualOps(prevUpdate, curUpdate)) {
@@ -405,6 +410,19 @@ class ActivityImpl implements Activity {
     })
     newResult.push(result)
     return newResult
+  }
+
+  isInitTx (prevTx: DisplayTx, result: DisplayTx): boolean {
+    if (prevTx.createTx !== undefined) {
+      if (
+        prevTx.tx.modifiedBy === result.tx.modifiedBy &&
+        (result.tx.objectId === prevTx.createTx.objectId ||
+          (result.doc as AttachedDoc)?.attachedTo === prevTx.createTx.objectId)
+      ) {
+        return result.tx.modifiedOn - prevTx.createTx.modifiedOn < combineThreshold
+      }
+    }
+    return false
   }
 
   isSameKindTx (prevTx: DisplayTx, result: DisplayTx): boolean {
