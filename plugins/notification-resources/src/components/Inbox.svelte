@@ -105,7 +105,7 @@
 
 <style lang="scss">
   .header {
-    min-height: 3rem;
+    min-height: 3.1rem;
     display: flex;
     flex-direction: column;
     justify-content: center;

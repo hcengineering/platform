@@ -121,6 +121,7 @@
     &:not(.embedded) {
       border-radius: 0 0 .5rem .5rem;
     }
+    &.embedded { border-left: none; }
 
     &.main {
       justify-content: stretch;
