@@ -103,6 +103,7 @@ export interface FilteredView extends Preference {
  */
 export interface ClassFilters extends Class<Doc> {
   filters: (KeyFilter | string)[]
+  ignoreKeys?: string[]
 }
 
 /**
