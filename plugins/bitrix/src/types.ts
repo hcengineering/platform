@@ -1,6 +1,7 @@
 import { ChannelProvider } from '@hcengineering/contact'
 import { AttachedDoc, Class, Doc, Mixin, Ref } from '@hcengineering/core'
 import { ExpertKnowledge, InitialKnowledge, MeaningfullKnowledge } from '@hcengineering/tags'
+import { KanbanTemplate } from '@hcengineering/task'
 
 /**
  * @public
@@ -174,7 +175,8 @@ export enum MappingOperation {
   CreateTag, // Create tag
   CreateChannel, // Create channel
   DownloadAttachment,
-  FindReference
+  FindReference,
+  CreateHRApplication
 }
 /**
  * @public
@@ -255,6 +257,35 @@ export interface FindReferenceOperation {
 /**
  * @public
  */
+export interface CreateAttachedField {
+  match: boolean // We should match type and pass if exists.
+
+  // Original document field to use value from.
+  sourceField: string
+  valueField: string // final value should go into valueField, field name to match, like `space`
+
+  // If reference is defined, we should find for some existing document by matching field with sourceField value.
+  // Document we should match value against.
+  referenceClass: Ref<Class<Doc>>
+  // Field to check for matched value against.
+  referenceField?: string
+}
+
+/**
+ * @public
+ */
+export interface CreateHRApplication {
+  kind: MappingOperation.CreateHRApplication
+
+  vacancyField: string // Name of vacancy in bitrix.
+  stateField: string // Name of status in bitrix.
+
+  defaultTemplate: Ref<KanbanTemplate>
+}
+
+/**
+ * @public
+ */
 export interface BitrixFieldMapping extends AttachedDoc {
   ofClass: Ref<Class<Doc>> // Specify mixin if applicable
   attributeName: string
@@ -265,6 +296,7 @@ export interface BitrixFieldMapping extends AttachedDoc {
   | CreateChannelOperation
   | DownloadAttachmentOperation
   | FindReferenceOperation
+  | CreateHRApplication
 }
 
 /**

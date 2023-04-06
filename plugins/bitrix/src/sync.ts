@@ -123,20 +123,19 @@ export async function syncDocument (
 
     // Just create supplier documents, like TagElements.
     for (const ed of resultDoc.extraDocs) {
-      await applyOp.createDoc(
-        ed._class,
-        ed.space,
-        ed,
-        ed._id,
-        resultDoc.document.modifiedOn,
-        resultDoc.document.modifiedBy
-      )
+      const { _class, space, _id, ...data } = ed
+      await applyOp.createDoc(_class, space, data, _id, resultDoc.document.modifiedOn, resultDoc.document.modifiedBy)
     }
+
+    for (const op of resultDoc.postOperations) {
+      await op(resultDoc.document, existing)
+    }
+
+    const idMapping = new Map<Ref<Doc>, Ref<Doc>>()
 
     // Find all attachment documents to existing.
     const byClass = new Map<Ref<Class<Doc>>, (AttachedDoc & BitrixSyncDoc)[]>()
 
-    const idMapping = new Map<Ref<Doc>, Ref<Doc>>()
     for (const d of resultDoc.extraSync) {
       byClass.set(d._class, [...(byClass.get(d._class) ?? []), d])
     }

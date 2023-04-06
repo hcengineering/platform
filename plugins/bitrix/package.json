@@ -36,7 +36,9 @@
     "@hcengineering/attachment": "^0.6.1",
     "fast-equals": "^2.0.3",
     "qs": "~6.11.0",
-    "@hcengineering/gmail": "^0.6.4"
+    "@hcengineering/gmail": "^0.6.4",
+    "@hcengineering/recruit": "^0.6.8",
+    "@hcengineering/task": "^0.6.3"
   },
   "repository": "https://github.com/hcengineering/anticrm",
   "publishConfig": {
