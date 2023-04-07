@@ -15,14 +15,14 @@
 
 import { Plugin } from '@hcengineering/platform'
 import { BackupClient, DocChunk } from './backup'
-import { Class, DOMAIN_MODEL, Doc, Domain, PluginConfiguration, Ref, Version, versionToString } from './classes'
+import { Class, DOMAIN_MODEL, Doc, Domain, PluginConfiguration, Ref } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { ModelDb } from './memdb'
 import type { DocumentQuery, FindOptions, FindResult, Storage, TxResult, WithLookup } from './storage'
 import { SortingOrder } from './storage'
-import { Tx, TxCreateDoc, TxProcessor, TxUpdateDoc, TxWorkspaceEvent, WorkspaceEvent } from './tx'
-import { generateId, toFindResult } from './utils'
+import { Tx, TxCreateDoc, TxProcessor, TxUpdateDoc } from './tx'
+import { toFindResult } from './utils'
 
 const transactionThreshold = 3000
 
@@ -51,7 +51,7 @@ export interface Client extends Storage {
  */
 export interface ClientConnection extends Storage, BackupClient {
   close: () => Promise<void>
-  onConnect?: () => Promise<void>
+  onConnect?: (apply: boolean) => Promise<void>
 }
 
 class ClientImpl implements Client, BackupClient {
@@ -178,8 +178,6 @@ export async function createClient (
 
   await loadModel(conn, loadedTxIds, allowedPlugins, configs, hierarchy, model)
 
-  const [version] = await conn.findAll<Version>(core.class.Version, {})
-
   txBuffer = txBuffer.filter((tx) => !loadedTxIds.has(tx._id))
 
   client = new ClientImpl(hierarchy, model, conn)
@@ -190,24 +188,8 @@ export async function createClient (
   }
   txBuffer = undefined
 
-  const oldOnConnect: (() => void) | undefined = conn.onConnect
+  const oldOnConnect: ((apply: boolean) => void) | undefined = conn.onConnect
   conn.onConnect = async () => {
-    const [newVersion] = await conn.findAll<Version>(core.class.Version, {})
-
-    if (versionToString(version) !== versionToString(newVersion)) {
-      const event: TxWorkspaceEvent = {
-        _class: core.class.TxWorkspaceEvent,
-        event: WorkspaceEvent.Upgrade,
-        params: {},
-        _id: generateId(),
-        space: core.space.Tx,
-        objectSpace: core.space.Tx,
-        modifiedBy: core.account.System,
-        modifiedOn: Date.now()
-      }
-      txHandler(event)
-      return
-    }
     // Find all new transactions and apply
     await loadModel(conn, loadedTxIds, allowedPlugins, configs, hierarchy, model)
 
@@ -222,9 +204,10 @@ export async function createClient (
       for (const tx of atxes) {
         txHandler(tx)
       }
+      await oldOnConnect?.(true)
     } else {
       // We need to trigger full refresh on queries, etc.
-      await oldOnConnect?.()
+      await oldOnConnect?.(false)
     }
   }
 

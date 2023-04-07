@@ -29,7 +29,7 @@ export default async () => {
         endpoint: string,
         onUpgrade?: () => void,
         onUnauthorized?: () => void,
-        onConnect?: () => void
+        onConnect?: (apply: boolean) => void
       ): Promise<Client> => {
         const filterModel = getMetadata(clientPlugin.metadata.FilterModel) ?? false
 

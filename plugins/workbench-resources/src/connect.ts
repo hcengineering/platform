@@ -41,6 +41,8 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   let clientSet = false
 
+  let version: Version | undefined
+
   const clientFactory = await getResource(client.function.GetClient)
   _client = await clientFactory(
     token,
@@ -56,11 +58,24 @@ export async function connect (title: string): Promise<Client | undefined> {
       })
     },
     // We need to refresh all active live queries and clear old queries.
-    () => {
+    (apply: boolean) => {
       try {
-        if (clientSet) {
+        if (clientSet && !apply) {
           void refreshClient()
         }
+
+        void (async () => {
+          const newVersion = await _client?.findOne<Version>(core.class.Version, {})
+          console.log('Reconnect Model version', version)
+
+          const currentVersionStr = versionToString(version as Version)
+          const reconnectVersionStr = versionToString(newVersion as Version)
+
+          if (currentVersionStr !== reconnectVersionStr) {
+            // It seems upgrade happened
+            location.reload()
+          }
+        })()
       } catch (err) {
         console.error(err)
       }
@@ -87,7 +102,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
 
   try {
-    const version = await _client.findOne<Version>(core.class.Version, {})
+    version = await _client.findOne<Version>(core.class.Version, {})
     console.log('Model version', version)
 
     const requirdVersion = getMetadata(presentation.metadata.RequiredVersion)

@@ -175,7 +175,7 @@ class TServerStorage implements ServerStorage {
       const txCUD = TxProcessor.extractTx(tx) as TxCUD<Doc>
       if (!this.hierarchy.isDerived(txCUD._class, core.class.TxCUD)) {
         // Skip unsupported tx
-        console.error('Unsupported transacton', tx)
+        console.error('Unsupported transaction', tx)
         continue
       }
       const domain = this.hierarchy.getDomain(txCUD.objectClass)
@@ -640,7 +640,7 @@ class TServerStorage implements ServerStorage {
       }
 
       if (tx.objectSpace === core.space.Model) {
-        // maintain hiearachy and triggers
+        // maintain hierarchy and triggers
         this.hierarchy.tx(tx)
         await this.triggers.tx(tx)
         await this.modelDb.tx(tx)
