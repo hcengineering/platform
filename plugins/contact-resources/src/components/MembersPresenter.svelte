@@ -19,7 +19,6 @@
   import contact, { Employee } from '@hcengineering/contact'
   import { getClient } from '@hcengineering/presentation'
   import { IntlString, translate } from '@hcengineering/platform'
-  import tracker from '../../../tracker-resources/src/plugin'
   import UsersPopup from './UsersPopup.svelte'
 
   export let value: Doc
@@ -83,6 +82,6 @@
   {width}
   {justify}
   title={buttonTitle}
-  icon={tracker.icon.ComponentMembers}
+  icon={contact.icon.ComponentMembers}
   on:click={handleMembersEditorOpened}
 />

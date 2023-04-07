@@ -16,15 +16,32 @@
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import contact, { Channel, Contact, EmployeeAccount, getName as getContactName } from '@hcengineering/contact'
-  import { Class, generateId, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
+  import contact, {
+    Channel,
+    Contact,
+    Employee,
+    EmployeeAccount,
+    getName as getContactName
+  } from '@hcengineering/contact'
+  import { Class, generateId, getCurrentAccount, IdMap, Ref, SortingOrder } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
-  import { getResource } from '@hcengineering/platform'
+  import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { Integration } from '@hcengineering/setting'
   import type { NewTelegramMessage, SharedTelegramMessage, TelegramMessage } from '@hcengineering/telegram'
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
-  import { Button, eventToHTMLElement, Icon, IconShare, Label, Panel, Scroller, showPopup } from '@hcengineering/ui'
+  import {
+    Button,
+    eventToHTMLElement,
+    Icon,
+    IconShare,
+    Label,
+    Panel,
+    Scroller,
+    showPopup,
+    tooltip
+  } from '@hcengineering/ui'
+  import { Avatar, employeeByIdStore } from '@hcengineering/contact-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import telegram from '../plugin'
   import Connect from './Connect.svelte'
@@ -96,8 +113,6 @@
         if (channel !== undefined) {
           notificationClient.updateLastView(channel._id, channel._class, undefined, true)
         }
-        const accountsIds = new Set(messages.map((p) => p.modifiedBy as Ref<EmployeeAccount>))
-        updateAccountsQuery(accountsIds)
       },
       {
         sort: { sendOn: SortingOrder.Descending },
@@ -111,11 +126,9 @@
 
   $: channel && updateMessagesQuery(channel._id)
 
-  function updateAccountsQuery (accountsIds: Set<Ref<EmployeeAccount>>): void {
-    accauntsQuery.query(contact.class.EmployeeAccount, { _id: { $in: Array.from(accountsIds) } }, (result) => {
-      accounts = result
-    })
-  }
+  accauntsQuery.query(contact.class.EmployeeAccount, {}, (result) => {
+    accounts = result
+  })
 
   settingsQuery.query(
     setting.class.Integration,
@@ -202,6 +215,30 @@
     }
   }
   let loading = false
+
+  function getParticipants (
+    messages: TelegramMessage[],
+    accounts: EmployeeAccount[],
+    object: Contact | undefined,
+    employees: IdMap<Employee>
+  ): Contact[] {
+    if (object === undefined || accounts.length === 0) return []
+    const res: IdMap<Contact> = new Map()
+    res.set(object._id, object)
+    const accs = new Set(messages.map((p) => p.modifiedBy))
+    for (const acc of accs) {
+      const account = accounts.find((p) => p._id === acc)
+      if (account !== undefined) {
+        const emp = employees.get(account.employee)
+        if (emp !== undefined) {
+          res.set(emp._id, emp)
+        }
+      }
+    }
+    return Array.from(res.values())
+  }
+
+  $: participants = getParticipants(messages, accounts, object, $employeeByIdStore)
 </script>
 
 {#if object !== undefined}
@@ -218,11 +255,14 @@
       <div class="antiTitle icon-wrapper">
         <div class="wrapped-icon"><Icon icon={TelegramIcon} size={'medium'} /></div>
         <div class="title-wrapper">
-          <span class="wrapped-title">Telegram</span>
-          <span class="wrapped-subtitle">
-            <Label label={telegram.string.YouAnd} />
-            <b>{getContactName(object)}</b>
-          </span>
+          <div class="wrapped-title flex">
+            Telegram
+            {#each participants as participant}
+              <div class="ml-2" use:tooltip={{ label: getEmbeddedLabel(getContactName(participant)) }}>
+                <Avatar size="x-small" avatar={participant.avatar} />
+              </div>
+            {/each}
+          </div>
         </div>
       </div>
     </svelte:fragment>

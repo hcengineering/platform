@@ -226,6 +226,7 @@ export const contactPlugin = plugin(contactId, {
     SocialEdit: '' as Asset,
     Homepage: '' as Asset,
     Whatsapp: '' as Asset,
+    ComponentMembers: '' as Asset,
     Profile: '' as Asset
   },
   space: {
