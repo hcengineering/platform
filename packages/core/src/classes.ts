@@ -338,6 +338,13 @@ export interface Version extends Doc {
 }
 
 /**
+ * @public
+ */
+export function versionToString (version: Version): string {
+  return `${version?.major}.${version?.minor}.${version?.patch}`
+}
+
+/**
  * Blob data from s3 storage
  * @public
  */

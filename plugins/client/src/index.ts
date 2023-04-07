@@ -57,7 +57,7 @@ export type ClientFactory = (
   endpoint: string,
   onUpgrade?: () => void,
   onUnauthorized?: () => void,
-  onConnect?: () => void
+  onConnect?: (apply: boolean) => void
 ) => Promise<Client>
 
 export default plugin(clientId, {

@@ -15,8 +15,7 @@
 
 import { Plugin } from '@hcengineering/platform'
 import { BackupClient, DocChunk } from './backup'
-import type { Class, Doc, Domain, PluginConfiguration, Ref } from './classes'
-import { DOMAIN_MODEL } from './classes'
+import { Class, DOMAIN_MODEL, Doc, Domain, PluginConfiguration, Ref } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { ModelDb } from './memdb'
@@ -52,7 +51,7 @@ export interface Client extends Storage {
  */
 export interface ClientConnection extends Storage, BackupClient {
   close: () => Promise<void>
-  onConnect?: () => Promise<void>
+  onConnect?: (apply: boolean) => Promise<void>
 }
 
 class ClientImpl implements Client, BackupClient {
@@ -189,7 +188,7 @@ export async function createClient (
   }
   txBuffer = undefined
 
-  const oldOnConnect: (() => void) | undefined = conn.onConnect
+  const oldOnConnect: ((apply: boolean) => void) | undefined = conn.onConnect
   conn.onConnect = async () => {
     // Find all new transactions and apply
     await loadModel(conn, loadedTxIds, allowedPlugins, configs, hierarchy, model)
@@ -205,9 +204,10 @@ export async function createClient (
       for (const tx of atxes) {
         txHandler(tx)
       }
+      await oldOnConnect?.(true)
     } else {
       // We need to trigger full refresh on queries, etc.
-      await oldOnConnect?.()
+      await oldOnConnect?.(false)
     }
   }
 
