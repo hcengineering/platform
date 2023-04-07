@@ -245,7 +245,7 @@
     <svelte:fragment slot="header" let:state let:count>
       <!-- {@const status = $statusStore.get(state._id)} -->
       <div class="header flex-col">
-        <div class="flex-row-center flex-between">
+        <div class="flex-row-center">
           {#if groupByKey === noCategory}
             <span class="text-base fs-bold overflow-label content-accent-color pointer-events-none">
               <Label label={view.string.NoGrouping} />
@@ -253,6 +253,9 @@
           {:else if headerComponent}
             <svelte:component this={headerComponent.presenter} value={state} {space} kind={'list-header'} />
           {/if}
+          <span class="ml-1">
+            {count}
+          </span>
         </div>
       </div>
     </svelte:fragment>
