@@ -31,6 +31,7 @@ import {
   Status,
   ContactsTab
 } from '@hcengineering/contact'
+import activity from '@hcengineering/activity'
 import { Class, DateRangeMode, Domain, DOMAIN_MODEL, IndexKind, Ref, Timestamp } from '@hcengineering/core'
 import {
   Builder,
@@ -722,6 +723,10 @@ export function createModel (builder: Builder): void {
     },
     contact.templateField.ContactLastName
   )
+
+  builder.mixin(contact.class.Contact, core.class.Class, activity.mixin.ExtraActivityComponent, {
+    component: contact.component.ActivityChannelMessage
+  })
 }
 
 export { contactOperation } from './migration'

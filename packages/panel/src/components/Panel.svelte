@@ -139,28 +139,20 @@
     <div class="h-2 min-h-2 max-h-2" />
   </svelte:fragment>
 
-  {#if withoutActivity}
-    {#if $deviceInfo.isMobile}
-      <div class="popupPanel-body__mobile-content clear-mins">
-        <slot />
-      </div>
-    {:else}
-      <div class="popupPanel-body__main-content py-8 clear-mins" class:max={useMaxWidth}>
-        <slot />
-      </div>
-    {/if}
-  {:else if $deviceInfo.isMobile}
+  {#if $deviceInfo.isMobile}
     <div class="popupPanel-body__mobile-content clear-mins" class:max={useMaxWidth}>
-      <Component is={activity.component.Activity} props={{ object, integrate: true, showCommenInput: !withoutInput }}>
-        <slot />
-      </Component>
+      <slot />
+      {#if !withoutActivity}
+        <Component is={activity.component.Activity} props={{ object, showCommenInput: !withoutInput }} />
+      {/if}
     </div>
   {:else}
     <Scroller>
       <div class="popupPanel-body__main-content py-8 clear-mins" class:max={useMaxWidth}>
-        <Component is={activity.component.Activity} props={{ object, integrate: true, showCommenInput: !withoutInput }}>
-          <slot />
-        </Component>
+        <slot />
+        {#if !withoutActivity}
+          <Component is={activity.component.Activity} props={{ object, showCommenInput: !withoutInput }} />
+        {/if}
       </div>
     </Scroller>
   {/if}

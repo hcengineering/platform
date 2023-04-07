@@ -13,10 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { TxViewlet } from '@hcengineering/activity'
+  import { DisplayTx, TxViewlet } from '@hcengineering/activity'
   import {
     ActivityKey,
-    DisplayTx,
     getValue,
     newDisplayTx,
     TxDisplayViewlet,

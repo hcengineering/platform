@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import type { ActivityFilter, DisplayTx, TxViewlet } from '@hcengineering/activity'
+import type { ActivityFilter, DisplayTx, ExtraActivityComponent, TxViewlet } from '@hcengineering/activity'
 import activity from './plugin'
 import core, { Class, Doc, DocumentQuery, DOMAIN_MODEL, Ref, Tx } from '@hcengineering/core'
-import { Builder, Model } from '@hcengineering/model'
-import { TDoc } from '@hcengineering/model-core'
+import { Builder, Mixin, Model } from '@hcengineering/model'
+import { TClass, TDoc } from '@hcengineering/model-core'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 
@@ -42,8 +42,13 @@ export class TActivityFilter extends TDoc implements ActivityFilter {
   filter!: Resource<(tx: DisplayTx, _class?: Ref<Doc>) => boolean>
 }
 
+@Mixin(activity.mixin.ExtraActivityComponent, core.class.Class)
+export class TExtraActivityComponent extends TClass implements ExtraActivityComponent {
+  component!: AnyComponent
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TTxViewlet, TActivityFilter)
+  builder.createModel(TTxViewlet, TActivityFilter, TExtraActivityComponent)
 
   builder.createDoc(activity.class.ActivityFilter, core.space.Model, {
     label: activity.string.Attributes,

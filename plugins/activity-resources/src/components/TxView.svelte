@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { TxViewlet } from '@hcengineering/activity'
+  import type { DisplayTx, TxViewlet } from '@hcengineering/activity'
   import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
   import core, { AnyAttribute, Doc, getCurrentAccount, Ref, Class } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
@@ -34,7 +34,7 @@
   import attachment from '@hcengineering/attachment'
   import chunter from '@hcengineering/chunter'
   import { Menu, ObjectPresenter } from '@hcengineering/view-resources'
-  import { ActivityKey, DisplayTx } from '../activity'
+  import { ActivityKey } from '../activity'
   import activity from '../plugin'
   import { getValue, TxDisplayViewlet, updateViewlet } from '../utils'
   import TxViewTx from './TxViewTx.svelte'
@@ -206,9 +206,9 @@
             <span class="lower">
               <Label label={viewlet.label} params={viewlet.labelParams ?? {}} />
             </span>
-            {#if viewlet.labelComponent}
-              <Component is={viewlet.labelComponent} {props} />
-            {/if}
+          {/if}
+          {#if viewlet && viewlet.labelComponent}
+            <Component is={viewlet.labelComponent} {props} />
           {/if}
 
           {#if viewlet === undefined && model.length > 0 && tx.updateTx}

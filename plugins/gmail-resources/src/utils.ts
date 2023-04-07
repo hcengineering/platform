@@ -1,5 +1,6 @@
-import contact from '@hcengineering/contact'
-import { Doc } from '@hcengineering/core'
+import contact, { Channel, Contact, Employee, EmployeeAccount, getName as getContactName } from '@hcengineering/contact'
+import { Doc, IdMap, Ref, toIdMap } from '@hcengineering/core'
+import { Message, SharedMessage } from '@hcengineering/gmail'
 import { getClient } from '@hcengineering/presentation'
 
 export function getTime (time: number): string {
@@ -55,4 +56,60 @@ export async function checkHasEmail (doc: Doc | Doc[] | undefined): Promise<bool
     if (!set.has(val)) return false
   }
   return true
+}
+
+const EMAIL_REGEX =
+  /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/
+
+export function convertMessages (
+  object: Contact,
+  channel: Channel,
+  messages: Message[],
+  accounts: IdMap<EmployeeAccount>,
+  employees: IdMap<Employee>
+): SharedMessage[] {
+  return messages.map((m) => {
+    return {
+      ...m,
+      _id: m._id as string as Ref<SharedMessage>,
+      sender: getName(object, channel, m, accounts, employees, true),
+      receiver: getName(object, channel, m, accounts, employees, false)
+    }
+  })
+}
+
+export async function convertMessage (
+  object: Contact,
+  channel: Channel,
+  message: Message,
+  employees: IdMap<Employee>
+): Promise<SharedMessage> {
+  const client = getClient()
+  const accounts = toIdMap(await client.findAll(contact.class.EmployeeAccount, {}))
+  return {
+    ...message,
+    _id: message._id as string as Ref<SharedMessage>,
+    sender: getName(object, channel, message, accounts, employees, true),
+    receiver: getName(object, channel, message, accounts, employees, false)
+  }
+}
+
+export function getName (
+  object: Contact,
+  channel: Channel,
+  message: Message,
+  accounts: IdMap<EmployeeAccount>,
+  employees: IdMap<Employee>,
+  sender: boolean
+): string {
+  if (message.incoming === sender) {
+    return `${getContactName(object)} (${channel.value})`
+  } else {
+    const account = accounts.get(message.modifiedBy as Ref<EmployeeAccount>)
+    const emp = account != null ? employees.get(account?.employee) : undefined
+    const value = message.incoming ? message.to : message.from
+    const email = value.match(EMAIL_REGEX)
+    const emailVal = email?.[0] ?? value
+    return emp != null ? `${getContactName(emp)} (${emailVal})` : emailVal
+  }
 }
