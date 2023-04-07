@@ -43,6 +43,8 @@
     }
   )
 
+  let newTxes: DisplayTx[] = []
+
   const txQuery = createQuery()
   $: txQuery.query(
     core.class.TxCollectionCUD,
@@ -52,11 +54,16 @@
       'tx.attributes.incoming': false
     },
     (res) => {
-      const newTxes = createDisplayTxes(res)
-      const result = filtered.concat(newTxes).sort((a, b) => a.tx.modifiedOn - b.tx.modifiedOn)
-      dispatch('update', result)
+      newTxes = createDisplayTxes(res)
     }
   )
+
+  function update (filtered: DisplayTx[], newTxes: DisplayTx[]) {
+    const result = filtered.concat(newTxes).sort((a, b) => a.tx.modifiedOn - b.tx.modifiedOn)
+    dispatch('update', result)
+  }
+
+  $: update(filtered, newTxes)
 
   function createDisplayTxes (txes: TxCollectionCUD<Doc, AttachedDoc>[]): DisplayTx[] {
     return txes.map((p) => newDisplayTx(TxProcessor.extractTx(p) as TxCUD<Doc>, hierarchy))

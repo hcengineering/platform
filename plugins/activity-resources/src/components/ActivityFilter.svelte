@@ -83,9 +83,7 @@
   ): Promise<void> {
     if (selected === 'All') {
       filtered = txes
-      if (extraComponent === undefined) {
-        dispatch('update', filtered)
-      }
+      dispatch('update', filtered)
     } else {
       const selectedFilters = filters.filter((filter) => selected.includes(filter._id))
       const filterActions: ((tx: DisplayTx, _class?: Ref<Doc>) => boolean)[] = []
@@ -96,9 +94,7 @@
         filterActions.push(fltr)
       }
       filtered = txes.filter((it) => filterActions.some((f) => f(it, object._class)))
-      if (extraComponent === undefined) {
-        dispatch('update', filtered)
-      }
+      dispatch('update', filtered)
     }
   }
 
