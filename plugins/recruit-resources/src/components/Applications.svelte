@@ -14,9 +14,10 @@
 -->
 <script lang="ts">
   import type { Doc, Ref } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
   import { Button, Icon, IconAdd, Label, resizeObserver, Scroller, showPopup } from '@hcengineering/ui'
-  import { BuildModelKey } from '@hcengineering/view'
-  import { Table } from '@hcengineering/view-resources'
+  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { getViewOptions, Table, ViewletSettingButton, viewOptionStore } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import CreateApplication from './CreateApplication.svelte'
   import IconApplication from './icons/Application.svelte'
@@ -29,13 +30,33 @@
   const createApp = (ev: MouseEvent): void => {
     showPopup(CreateApplication, { candidate: objectId, preserveCandidate: true }, ev.target as HTMLElement)
   }
-  const config: (BuildModelKey | string)[] = [
-    '',
-    '$lookup.space.name',
-    '$lookup.space.$lookup.company',
-    'state',
-    'doneState'
-  ]
+
+  let viewlet: Viewlet | undefined
+  let preference: ViewletPreference | undefined
+  let loading = true
+
+  const viewletQuery = createQuery()
+  $: viewletQuery.query(view.class.Viewlet, { _id: recruit.viewlet.VacancyApplicationsEmbeddeed }, (res) => {
+    ;[viewlet] = res
+  })
+
+  $: viewOptions = viewlet !== undefined ? getViewOptions(viewlet, $viewOptionStore) : undefined
+
+  const preferenceQuery = createQuery()
+
+  $: viewlet &&
+    preferenceQuery.query(
+      view.class.ViewletPreference,
+      {
+        attachedTo: viewlet._id
+      },
+      (res) => {
+        preference = res[0]
+        loading = false
+      },
+      { limit: 1 }
+    )
+
   let wSection: number
 </script>
 
@@ -47,14 +68,17 @@
     <span class="antiSection-header__title">
       <Label label={recruit.string.Applications} />
     </span>
+    {#if viewlet && viewOptions}
+      <ViewletSettingButton bind:viewOptions {viewlet} kind={'transparent'} />
+    {/if}
     <Button id="appls.add" icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createApp} />
   </div>
-  {#if applications > 0}
+  {#if applications > 0 && viewlet && !loading}
     {#if wSection < 640}
       <Scroller horizontal>
         <Table
           _class={recruit.class.Applicant}
-          {config}
+          config={preference?.config ?? viewlet.config}
           query={{ attachedTo: objectId }}
           loadingProps={{ length: applications }}
         />
@@ -62,7 +86,7 @@
     {:else}
       <Table
         _class={recruit.class.Applicant}
-        {config}
+        config={preference?.config ?? viewlet.config}
         query={{ attachedTo: objectId }}
         loadingProps={{ length: applications }}
       />
@@ -75,6 +99,7 @@
       <span class="dark-color">
         <Label label={recruit.string.NoApplicationsForTalent} />
       </span>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <span class="over-underline content-accent-color" on:click={createApp}>
         <Label label={recruit.string.CreateAnApplication} />
       </span>

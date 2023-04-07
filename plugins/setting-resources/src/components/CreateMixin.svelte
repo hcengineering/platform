@@ -49,6 +49,7 @@
   on:close={() => {
     dispatch('close')
   }}
+  on:changeContent
 >
   <svelte:fragment slot="header">
     <div class="flex-row-center">

@@ -66,6 +66,7 @@
     dispatch('close')
   }}
   okLabel={recruit.string.OpinionSave}
+  on:changeContent
 >
   <EditBox
     label={recruit.string.OpinionValue}

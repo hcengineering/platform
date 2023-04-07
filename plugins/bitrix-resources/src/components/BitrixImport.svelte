@@ -51,6 +51,7 @@
   }}
   okLabel={getEmbeddedLabel('Close')}
   on:close
+  on:changeContent
 >
   {#if integration && bitrixClient}
     {#each mappings as mapping}

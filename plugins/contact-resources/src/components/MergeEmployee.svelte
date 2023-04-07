@@ -210,6 +210,7 @@
   okAction={merge}
   canSave={targetEmp !== undefined}
   onCancel={() => dispatch('close')}
+  on:changeContent
 >
   <div class="flex-row flex-between">
     <div class="flex-row-center">

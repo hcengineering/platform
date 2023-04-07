@@ -72,6 +72,7 @@
   on:close={() => {
     dispatch('close')
   }}
+  on:changeContent
 >
   <div class="mb-2">
     <EditBox bind:value={name} placeholder={setting.string.NewClassName} />

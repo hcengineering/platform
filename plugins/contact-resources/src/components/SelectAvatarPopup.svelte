@@ -159,6 +159,7 @@
   on:close={() => {
     dispatch('close')
   }}
+  on:changeContent
 >
   <div class="flex-row-center">
     <Label label={contact.string.AvatarProvider} />

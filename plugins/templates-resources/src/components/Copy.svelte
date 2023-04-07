@@ -41,6 +41,7 @@
   on:close={() => dispatch('close')}
   fullSize
   canSave={space !== undefined && value.space !== space}
+  on:changeContent
 >
   <SpaceSelector bind:space _class={templates.class.TemplateCategory} label={templates.string.Copy} />
 </Card>

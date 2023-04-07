@@ -150,6 +150,7 @@
   on:close
   okAction={() => {}}
   canSave={true}
+  on:changeContent
 >
   <Scroller horizontal>
     <div

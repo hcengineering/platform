@@ -19,9 +19,10 @@
   import { Avatar } from '@hcengineering/contact-resources'
   import { Hierarchy, WithLookup } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
+  import { getClient } from '@hcengineering/presentation'
   import type { Applicant, Candidate } from '@hcengineering/recruit'
   import recruit from '@hcengineering/recruit'
-  import { AssigneePresenter } from '@hcengineering/task-resources'
+  import { AssigneePresenter, StateRefPresenter } from '@hcengineering/task-resources'
   import tracker from '@hcengineering/tracker'
   import { Component, showPanel } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -30,6 +31,9 @@
 
   export let object: WithLookup<Applicant>
   export let dragged: boolean
+  export let groupByKey: string
+
+  const client = getClient()
 
   function showCandidate () {
     showPanel(view.component.EditDoc, object._id, Hierarchy.mixinOrClass(object), 'content')
@@ -109,4 +113,12 @@
       currentSpace={object.space}
     />
   </div>
+  {#if groupByKey !== 'state'}
+    <StateRefPresenter
+      value={object.state}
+      onChange={(state) => {
+        client.update(object, { state })
+      }}
+    />
+  {/if}
 </div>

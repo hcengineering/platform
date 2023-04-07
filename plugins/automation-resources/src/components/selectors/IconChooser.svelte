@@ -36,6 +36,7 @@
   okLabel={presentation.string.Save}
   okAction={save}
   canSave={icon !== undefined}
+  on:changeContent
   on:close={() => {
     dispatch('close')
   }}

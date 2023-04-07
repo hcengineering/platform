@@ -39,6 +39,7 @@
   on:close={() => {
     dispatch('close')
   }}
+  on:changeContent
 >
   <EditBox placeholder={linkPlaceholder} bind:value={link} focus />
 </Card>

@@ -38,6 +38,7 @@
   canSave={true}
   okLabel={presentation.string.Ok}
   on:close={() => dispatch('close')}
+  on:changeContent
 >
   <EditBox label={bitrix.string.BitrixTokenUrl} bind:value={url} />
   <svelte:fragment slot="pool" />

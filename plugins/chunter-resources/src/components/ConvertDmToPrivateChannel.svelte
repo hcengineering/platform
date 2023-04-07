@@ -59,6 +59,7 @@
   on:close={() => {
     dispatch('close')
   }}
+  on:changeContent
 >
   <EditBox
     label={chunter.string.ChannelName}

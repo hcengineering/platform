@@ -165,6 +165,7 @@
     dispatch('close')
   }}
   bind:createMore
+  on:changeContent
 >
   <svelte:fragment slot="header">
     <Button
