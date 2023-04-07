@@ -43,7 +43,8 @@ export function createModel (builder: Builder): void {
     trigger: serverContact.trigger.OnContactDelete
   })
 
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverContact.trigger.OnEmployeeUpdate
+  builder.createDoc(serverCore.class.AsyncTrigger, core.space.Model, {
+    trigger: serverContact.trigger.OnEmployeeUpdate,
+    classes: [contact.class.Employee]
   })
 }

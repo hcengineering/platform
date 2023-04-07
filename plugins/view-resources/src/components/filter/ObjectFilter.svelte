@@ -190,7 +190,11 @@
                   {/if}
                 </div>
                 <div class="dark-color ml-2">
-                  {#if isStatus}{statusesCount[i]}{:else}{targets.get(value?._id)}{/if}
+                  {#if isStatus}
+                    {statusesCount[i] ?? ''}
+                  {:else}
+                    {targets.get(value?._id) ?? ''}
+                  {/if}
                 </div>
               </div>
             </button>

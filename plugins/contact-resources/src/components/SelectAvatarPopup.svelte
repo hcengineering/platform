@@ -19,11 +19,11 @@
   import { Asset } from '@hcengineering/platform'
   import { AnySvelteComponent, DropdownLabelsIntl, Label, showPopup } from '@hcengineering/ui'
 
+  import presentation, { Card, getFileUrl } from '@hcengineering/presentation'
   import contact from '../plugin'
+  import { getAvatarTypeDropdownItems } from '../utils'
   import AvatarComponent from './Avatar.svelte'
   import EditAvatarPopup from './EditAvatarPopup.svelte'
-  import { getAvatarTypeDropdownItems } from '../utils'
-  import presentation, { Card, getFileUrl } from '@hcengineering/presentation'
 
   export let avatar: string | undefined
   export let email: string | undefined
@@ -160,12 +160,16 @@
     dispatch('close')
   }}
 >
-  <DropdownLabelsIntl
-    items={getAvatarTypeDropdownItems(hasGravatar)}
-    label={contact.string.SelectAvatar}
-    bind:selected={selectedAvatarType}
-    on:selected={handleDropdownSelection}
-  />
+  <div class="flex-row-center">
+    <Label label={contact.string.AvatarProvider} />
+    <DropdownLabelsIntl
+      kind={'link-bordered'}
+      items={getAvatarTypeDropdownItems(hasGravatar)}
+      label={contact.string.SelectAvatar}
+      bind:selected={selectedAvatarType}
+      on:selected={handleDropdownSelection}
+    />
+  </div>
   {#if selectedAvatarType === AvatarType.IMAGE}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="cursor-pointer" on:click|self={handleImageAvatarClick}>

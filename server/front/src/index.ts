@@ -277,7 +277,12 @@ export function start (
       const token = authHeader.split(' ')[1]
       const payload = decodeToken(token)
       const uuid = req.query.file as string
+      if (uuid === '') {
+        res.status(500).send()
+        return
+      }
 
+      // TODO: We need to allow delete only of user attached documents. (https://front.hc.engineering/workbench/platform/tracker/TSK-1081)
       await config.minio.remove(payload.workspace, [uuid])
 
       const extra = await config.minio.list(payload.workspace, uuid)

@@ -108,4 +108,5 @@
     onEmployeeEdit={handleAssigneeEditorOpened}
     tooltipLabels={{ personLabel: task.string.TaskAssignee, placeholderLabel: task.string.TaskUnAssign }}
   />
+  <!-- TODO: Change assignee -->
 {/if}

@@ -16,14 +16,16 @@
   import { AttachmentsPresenter } from '@hcengineering/attachment-resources'
   import { CommentsPresenter } from '@hcengineering/chunter-resources'
   import contact, { getName } from '@hcengineering/contact'
+  import { Avatar } from '@hcengineering/contact-resources'
   import { Hierarchy, WithLookup } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
-  import { Avatar } from '@hcengineering/contact-resources'
   import type { Applicant, Candidate } from '@hcengineering/recruit'
+  import recruit from '@hcengineering/recruit'
   import { AssigneePresenter } from '@hcengineering/task-resources'
   import tracker from '@hcengineering/tracker'
   import { Component, showPanel } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import { ObjectPresenter } from '@hcengineering/view-resources'
   import ApplicationPresenter from './ApplicationPresenter.svelte'
 
   export let object: WithLookup<Applicant>
@@ -34,10 +36,20 @@
   }
 
   $: channels = (object.$lookup?.attachedTo as WithLookup<Candidate>)?.$lookup?.channels
+
+  $: company = object?.$lookup?.space?.company
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="flex-col pt-2 pb-2 pr-4 pl-4 cursor-pointer" on:click={showCandidate}>
+  <div class="p-1 flex-between">
+    <ObjectPresenter _class={recruit.class.Vacancy} objectId={object.space} value={object.$lookup?.space} />
+    {#if company}
+      <div class="ml-2">
+        <ObjectPresenter _class={contact.class.Organization} objectId={company} />
+      </div>
+    {/if}
+  </div>
   <div class="flex-between mb-3">
     <div class="flex-row-center">
       <Avatar avatar={object.$lookup?.attachedTo?.avatar} size={'medium'} />
@@ -69,7 +81,9 @@
   <div class="flex-between">
     <div class="flex-row-center">
       <div class="sm-tool-icon step-lr75">
-        <ApplicationPresenter value={object} />
+        <div class="mr-2">
+          <ApplicationPresenter value={object} />
+        </div>
         <Component is={tracker.component.RelatedIssueSelector} props={{ object }} />
       </div>
       {#if (object.attachments ?? 0) > 0}
@@ -77,9 +91,14 @@
           <AttachmentsPresenter value={object.attachments} {object} />
         </div>
       {/if}
-      {#if (object.comments ?? 0) > 0}
+      {#if (object.comments ?? 0) > 0 || (object.$lookup?.attachedTo !== undefined && (object.$lookup.attachedTo.comments ?? 0) > 0)}
         <div class="step-lr75">
-          <CommentsPresenter value={object.comments} {object} />
+          {#if (object.comments ?? 0) > 0}
+            <CommentsPresenter value={object.comments} {object} />
+          {/if}
+          {#if object.$lookup?.attachedTo !== undefined && (object.$lookup.attachedTo.comments ?? 0) > 0}
+            <CommentsPresenter value={object.$lookup?.attachedTo?.comments} object={object.$lookup?.attachedTo} />
+          {/if}
         </div>
       {/if}
     </div>

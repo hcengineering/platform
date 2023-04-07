@@ -1,5 +1,17 @@
-import { DocumentUpdate, Hierarchy, MixinData, MixinUpdate, ModelDb } from '.'
-import type { Account, AttachedData, AttachedDoc, Class, Data, Doc, Mixin, Ref, Space, Timestamp } from './classes'
+import { DocumentUpdate, Hierarchy, MixinData, MixinUpdate, ModelDb, toFindResult } from '.'
+import type {
+  Account,
+  AnyAttribute,
+  AttachedData,
+  AttachedDoc,
+  Class,
+  Data,
+  Doc,
+  Mixin,
+  Ref,
+  Space,
+  Timestamp
+} from './classes'
 import { Client } from './client'
 import core from './component'
 import type { DocumentQuery, FindOptions, FindResult, TxResult, WithLookup } from './storage'
@@ -215,6 +227,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
   ): Promise<TxResult> {
     const hierarchy = this.client.getHierarchy()
     if (hierarchy.isMixin(doc._class)) {
+      // TODO: Rework it is wrong, we need to split values to mixin update and original document update if mixed.
       const baseClass = hierarchy.getBaseClass(doc._class)
       return this.updateMixin(doc._id, baseClass, doc.space, doc._class, update, modifiedOn, modifiedBy)
     }
@@ -291,8 +304,87 @@ export class ApplyOperations extends TxOperations {
   }
 
   async commit (): Promise<boolean> {
-    return await ((await this.ops.tx(
-      this.ops.txFactory.createTxApplyIf(core.space.Tx, this.scope, this.matches, this.txes)
-    )) as Promise<boolean>)
+    if (this.txes.length > 0) {
+      return await ((await this.ops.tx(
+        this.ops.txFactory.createTxApplyIf(core.space.Tx, this.scope, this.matches, this.txes)
+      )) as Promise<boolean>)
+    }
+    return true
+  }
+}
+
+/**
+ * @public
+ *
+ * Builder for TxOperations.
+ */
+export class TxBuilder extends TxOperations {
+  txes: TxCUD<Doc>[] = []
+  matches: DocumentClassQuery<Doc>[] = []
+  constructor (readonly hierarchy: Hierarchy, readonly modelDb: ModelDb, user: Ref<Account>) {
+    const txClient: Client = {
+      getHierarchy: () => this.hierarchy,
+      getModel: () => this.modelDb,
+      close: async () => {},
+      findOne: async (_class, query, options?) => undefined,
+      findAll: async (_class, query, options?) => toFindResult([]),
+      tx: async (tx): Promise<TxResult> => {
+        if (this.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
+          this.txes.push(tx as TxCUD<Doc>)
+        }
+        return {}
+      }
+    }
+    super(txClient, user)
+  }
+}
+
+/**
+ * @public
+ */
+export async function updateAttribute (
+  client: TxOperations,
+  object: Doc,
+  _class: Ref<Class<Doc>>,
+  attribute: { key: string, attr: AnyAttribute },
+  value: any,
+  modifyBy?: Ref<Account>
+): Promise<void> {
+  const doc = object
+  const attributeKey = attribute.key
+  if ((doc as any)[attributeKey] === value) return
+  const attr = attribute.attr
+  if (client.getHierarchy().isMixin(attr.attributeOf)) {
+    await client.updateMixin(
+      doc._id,
+      _class,
+      doc.space,
+      attr.attributeOf,
+      { [attributeKey]: value },
+      Date.now(),
+      modifyBy
+    )
+  } else {
+    if (client.getHierarchy().isDerived(attribute.attr.type._class, core.class.ArrOf)) {
+      const oldValue: any[] = (object as any)[attributeKey] ?? []
+      const val: any[] = value
+      const toPull = oldValue.filter((it: any) => !val.includes(it))
+
+      const toPush = val.filter((it) => !oldValue.includes(it))
+      if (toPull.length > 0) {
+        await client.update(object, { $pull: { [attributeKey]: { $in: toPull } } }, false, Date.now(), modifyBy)
+      }
+      if (toPush.length > 0) {
+        await client.update(
+          object,
+          { $push: { [attributeKey]: { $each: toPush, $position: 0 } } },
+          false,
+          Date.now(),
+          modifyBy
+        )
+      }
+    } else {
+      await client.update(object, { [attributeKey]: value }, false, Date.now(), modifyBy)
+    }
   }
 }
