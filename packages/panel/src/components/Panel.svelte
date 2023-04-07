@@ -41,6 +41,7 @@
   export let isAside: boolean = true
   export let isUtils: boolean = true
   export let isCustomAttr: boolean = true
+  export let isReminder: boolean = true
   export let floatAside = false
   export let allowClose = true
   export let useMaxWidth: boolean | undefined = undefined
@@ -95,7 +96,9 @@
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
-    <Component is={calendar.component.DocReminder} props={{ value: object, title }} />
+    {#if isReminder}
+      <Component is={calendar.component.DocReminder} props={{ value: object, title }} />
+    {/if}
     {#if isUtils && $$slots.utils}
       <div class="buttons-divider" />
       <slot name="utils" />
