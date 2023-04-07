@@ -244,7 +244,7 @@ export async function syncDocument (
           valValue.attachedTo = id
         } else {
           // Update document id, for existing document.
-          valValue.attachedTo = resultDoc.document._id
+          valValue.attachedTo = attachedTo
         }
         const existingIdx = existingByClass.findIndex((it) => {
           const bdoc = hierarchy.as<Doc, BitrixSyncDoc>(it, bitrix.mixin.BitrixSyncDoc)
