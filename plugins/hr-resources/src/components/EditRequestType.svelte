@@ -60,6 +60,7 @@
     on:close={() => {
       dispatch('close')
     }}
+    on:changeContent
   >
     <div class="mr-3">
       {#if typesToChange !== undefined}

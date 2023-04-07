@@ -303,6 +303,7 @@
   on:close={() => {
     dispatch('close')
   }}
+  on:changeContent
 >
   {#if loading}
     <Loading />

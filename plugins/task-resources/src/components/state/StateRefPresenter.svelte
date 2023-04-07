@@ -25,7 +25,7 @@
 </script>
 
 {#if value}
-  {@const state = $statusStore.get(typeof value === 'string' ? value : value.values[0]._id)}
+  {@const state = $statusStore.get(typeof value === 'string' ? value : value.values?.[0]?._id)}
   {#if onChange !== undefined && state !== undefined}
     <StateEditor value={state._id} space={state.space} {onChange} kind="link" size="medium" />
   {:else}

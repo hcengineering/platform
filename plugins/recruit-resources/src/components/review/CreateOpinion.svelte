@@ -86,6 +86,7 @@
   on:close={() => {
     dispatch('close')
   }}
+  on:changeContent
 >
   <StatusControl slot="error" {status} />
   <EditBox

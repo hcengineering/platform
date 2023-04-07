@@ -41,6 +41,7 @@
   on:close={() => {
     dispatch('close')
   }}
+  on:changeContent
 >
   <Grid column={1} rowGap={1}>
     <EditBox bind:value={statusName} />

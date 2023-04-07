@@ -91,6 +91,7 @@
   okAction={create}
   on:close
   okLabel={value === undefined ? presentation.string.Create : presentation.string.Save}
+  on:changeContent
 >
   <svelte:fragment slot="header">
     {#if issue}

@@ -67,6 +67,7 @@
   on:close={() => {
     dispatch('close')
   }}
+  on:changeContent
 >
   <EditBox bind:value={title} placeholder={calendar.string.Title} kind={'large-style'} focus />
   <svelte:fragment slot="pool">

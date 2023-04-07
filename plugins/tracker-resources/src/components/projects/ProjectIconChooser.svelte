@@ -23,6 +23,7 @@
   on:close={() => {
     dispatch('close')
   }}
+  on:changeContent
 >
   <div class="float-left-box">
     {#each icons as obj}

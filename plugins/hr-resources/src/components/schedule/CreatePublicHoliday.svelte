@@ -67,6 +67,7 @@
   okLabel={existingHoliday ? presentation.string.Save : presentation.string.Ok}
   okAction={() => saveHoliday()}
   canSave={true}
+  on:changeContent
 >
   <div class="flex-grow mt-4">
     <EditBox placeholder={hr.string.Title} bind:value={title} kind={'large-style'} focus focusIndex={1} />

@@ -141,6 +141,7 @@
   okLabel={presentation.string.Ok}
   on:close={() => dispatch('close')}
   fullSize={true}
+  on:changeContent
 >
   <svelte:fragment slot="header">
     {#if profile}

@@ -59,6 +59,7 @@
   on:close
   okAction={() => {}}
   okLabel={presentation.string.Ok}
+  on:changeContent
 >
   <svelte:fragment slot="header">
     <IssuePresenter value={issue} disableClick />

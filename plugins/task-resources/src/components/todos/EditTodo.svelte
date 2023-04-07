@@ -70,6 +70,7 @@
     dispatch('close')
   }}
   okLabel={plugin.string.TodoSave}
+  on:changeContent
 >
   <Grid column={1} rowGap={1.75}>
     <EditBox

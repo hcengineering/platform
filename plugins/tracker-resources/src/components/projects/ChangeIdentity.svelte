@@ -32,6 +32,7 @@
   on:close={() => {
     dispatch('close')
   }}
+  on:changeContent
 >
   <div class="float-left-box">
     <div class="float-left p-2">

@@ -122,6 +122,7 @@
   on:close={() => {
     dispatch('close')
   }}
+  on:changeContent
 >
   <svelte:fragment slot="error">
     {#if matches.length > 0}

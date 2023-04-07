@@ -77,6 +77,7 @@
   on:close={() => {
     dispatch('close')
   }}
+  on:changeContent
 >
   <svelte:fragment slot="header">
     <SpaceSelector _class={board.class.Board} label={board.string.BoardName} bind:space={_space} />

@@ -71,6 +71,7 @@
   on:close={() => {
     dispatch('close', null)
   }}
+  on:changeContent
 >
   <svelte:fragment slot="title">
     <div class="flex-row-center">

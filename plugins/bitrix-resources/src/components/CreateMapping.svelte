@@ -55,7 +55,7 @@
   )
 </script>
 
-<Card label={bitrix.string.AddMapping} canSave={type !== ''} okAction={save} on:close>
+<Card label={bitrix.string.AddMapping} canSave={type !== ''} okAction={save} on:close on:changeContent>
   <div class="flex">
     <DropdownLabels label={bitrix.string.BitrixEntityType} {items} bind:selected={type} />
     <ObjectBox

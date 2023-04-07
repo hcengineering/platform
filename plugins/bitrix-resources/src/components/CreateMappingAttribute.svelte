@@ -32,6 +32,7 @@
   okAction={save}
   okLabel={presentation.string.Save}
   on:close
+  on:changeContent
 >
   <svelte:fragment slot="header">
     <Label label={attribute.label} />

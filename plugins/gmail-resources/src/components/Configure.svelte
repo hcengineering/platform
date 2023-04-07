@@ -52,6 +52,7 @@
   fullSize
   okLabel={presentation.string.Ok}
   on:close={() => dispatch('close')}
+  on:changeContent
 >
   <div style="width: 25rem;">
     <Grid rowGap={1}>

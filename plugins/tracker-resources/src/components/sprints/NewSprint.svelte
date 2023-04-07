@@ -69,6 +69,7 @@
   canSave={object.label !== ''}
   okLabel={tracker.string.CreateSprint}
   on:close={() => dispatch('close')}
+  on:changeContent
 >
   <svelte:fragment slot="header">
     <SpaceSelector _class={tracker.class.Project} label={tracker.string.Project} bind:space />

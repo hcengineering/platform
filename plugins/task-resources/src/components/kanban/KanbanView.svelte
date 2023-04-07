@@ -257,7 +257,7 @@
       </div>
     </svelte:fragment>
     <svelte:fragment slot="card" let:object let:dragged>
-      <svelte:component this={presenter} {object} {dragged} />
+      <svelte:component this={presenter} {object} {dragged} {groupByKey} />
     </svelte:fragment>
     // eslint-disable-next-line no-undef
     <svelte:fragment slot="doneBar" let:onDone>

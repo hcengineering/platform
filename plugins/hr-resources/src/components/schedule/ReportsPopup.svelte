@@ -45,6 +45,7 @@
   on:changeContent
   okAction={() => {}}
   okLabel={presentation.string.Ok}
+  on:changeContent
 >
   <svelte:fragment slot="header">
     <EmployeePresenter value={employee} disableClick />

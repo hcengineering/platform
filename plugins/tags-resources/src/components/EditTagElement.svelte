@@ -98,6 +98,7 @@
     dispatch('close')
   }}
   okLabel={tags.string.SaveLabel}
+  on:changeContent
 >
   <div class="flex-row-center">
     <div class="flex-col">

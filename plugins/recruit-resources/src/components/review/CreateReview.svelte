@@ -152,6 +152,7 @@
   on:close={() => {
     dispatch('close')
   }}
+  on:changeContent
 >
   <StatusControl slot="error" {status} />
   <EditBox placeholder={recruit.string.Title} bind:value={title} kind={'large-style'} focus />
