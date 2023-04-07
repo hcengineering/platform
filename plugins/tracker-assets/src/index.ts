@@ -54,7 +54,6 @@ loadMetadata(tracker.icon, {
 
   ComponentsList: `${icons}#list`,
   ComponentsTimeline: `${icons}#timeline`,
-  ComponentMembers: `${icons}#componentMembers`,
 
   ComponentStatusBacklog: `${icons}#component-status-backlog`,
   ComponentStatusPlanned: `${icons}#component-status-planned`,

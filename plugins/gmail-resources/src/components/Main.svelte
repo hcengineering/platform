@@ -123,7 +123,6 @@
         <div class="title-wrapper">
           <span class="wrapped-title">Email</span>
           <span class="wrapped-subtitle">
-            <Label label={gmail.string.YouAnd} />
             <b>{getName(object)}</b>
           </span>
         </div>

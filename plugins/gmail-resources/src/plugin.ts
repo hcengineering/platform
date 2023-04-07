@@ -25,7 +25,6 @@ export default mergeIds(gmailId, gmail, {
     Copy: '' as IntlString,
     MessagesSelected: '' as IntlString,
     PublishSelected: '' as IntlString,
-    YouAnd: '' as IntlString,
     CreateMessage: '' as IntlString,
     ShareMessages: '' as IntlString,
     Connect: '' as IntlString,

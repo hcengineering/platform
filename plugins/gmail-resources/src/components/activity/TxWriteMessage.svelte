@@ -15,8 +15,7 @@
 <script lang="ts">
   import { Message } from '@hcengineering/gmail'
   import { getClient } from '@hcengineering/presentation'
-  import { Label, showPopup } from '@hcengineering/ui'
-  import gmail from '../../plugin'
+  import { showPopup } from '@hcengineering/ui'
   import Main from '../Main.svelte'
 
   export let value: Message
@@ -30,4 +29,4 @@
   }
 </script>
 
-<span class="over-underline" on:click={click}><Label label={gmail.string.Email} /></span>
+<span class="over-underline overflow-label max-w-80" on:click={click}>{value.subject}</span>

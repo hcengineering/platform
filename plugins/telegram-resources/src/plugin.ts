@@ -34,7 +34,6 @@ export default mergeIds(telegramId, telegram, {
     Cancel: '' as IntlString,
     Share: '' as IntlString,
     PublishSelected: '' as IntlString,
-    YouAnd: '' as IntlString,
     MessagesSelected: '' as IntlString
   }
 })

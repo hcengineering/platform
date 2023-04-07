@@ -9,7 +9,6 @@
     "Copy": "Copy",
     "MessagesSelected": "messages selected",
     "PublishSelected": "Publish selected",
-    "YouAnd": "You and",
     "CreateMessage": "Create message",
     "ShareMessages": "Share messages",
     "Connect": "Connect",
@@ -33,6 +32,6 @@
     "WriteEmail": "Write Email",
     "Shared": "Shared",
     "AvailableTo": "Available to",
-    "HaveWrittenEmail": "have written an"
+    "HaveWrittenEmail": "have written an email"
   }
 }
