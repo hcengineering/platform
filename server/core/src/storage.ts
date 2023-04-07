@@ -593,14 +593,26 @@ class TServerStorage implements ServerStorage {
     return { passed, onEnd }
   }
 
-  async apply (ctx: MeasureContext, tx: Tx[], broadcast: boolean): Promise<Tx[]> {
+  async apply (ctx: MeasureContext, tx: Tx[], broadcast: boolean, updateTx: boolean): Promise<Tx[]> {
     const triggerFx = new Effects()
     const cacheFind = createCacheFindAll(this)
 
     const txToStore = tx.filter(
       (it) => it.space !== core.space.DerivedTx && !this.hierarchy.isDerived(it._class, core.class.TxApplyIf)
     )
-    await ctx.with('domain-tx', {}, async () => await this.getAdapter(DOMAIN_TX).tx(...txToStore))
+    if (updateTx) {
+      const ops = new Map(
+        tx
+          .filter((it) => it._class === core.class.TxUpdateDoc)
+          .map((it) => [(it as TxUpdateDoc<Tx>).objectId, (it as TxUpdateDoc<Tx>).operations])
+      )
+
+      if (ops.size > 0) {
+        await ctx.with('domain-tx-update', {}, async () => await this.getAdapter(DOMAIN_TX).update(DOMAIN_TX, ops))
+      }
+    } else {
+      await ctx.with('domain-tx', {}, async () => await this.getAdapter(DOMAIN_TX).tx(...txToStore))
+    }
 
     const removedMap = new Map<Ref<Doc>, Doc>()
     await ctx.with('apply', {}, (ctx) => this.routeTx(ctx, removedMap, ...tx))
@@ -660,7 +672,7 @@ class TServerStorage implements ServerStorage {
           ;({ passed, onEnd } = await this.verifyApplyIf(ctx, applyIf, cacheFind))
           result = passed
           if (passed) {
-            // Store apply if transaction's
+            // Store apply if transaction's if required
             await ctx.with('domain-tx', { _class, objClass }, async () => {
               const atx = await this.getAdapter(DOMAIN_TX)
               await atx.tx(...applyIf.txes)

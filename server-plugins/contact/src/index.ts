@@ -16,7 +16,7 @@
 
 import type { Resource, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import type { TriggerFunc } from '@hcengineering/server-core'
+import type { AsyncTriggerFunc, TriggerFunc } from '@hcengineering/server-core'
 import { Presenter } from '@hcengineering/server-notification'
 
 /**
@@ -30,7 +30,7 @@ export const serverContactId = 'server-contact' as Plugin
 export default plugin(serverContactId, {
   trigger: {
     OnContactDelete: '' as Resource<TriggerFunc>,
-    OnEmployeeUpdate: '' as Resource<TriggerFunc>
+    OnEmployeeUpdate: '' as Resource<AsyncTriggerFunc>
   },
   function: {
     PersonHTMLPresenter: '' as Resource<Presenter>,

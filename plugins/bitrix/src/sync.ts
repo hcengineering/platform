@@ -840,14 +840,35 @@ async function synchronizeUsers (
   let totalUsers = 1
   let next = 0
 
-  const employees = new Map((await ops.client.findAll(contact.class.Employee, {})).map((it) => [it._id, it]))
+  const employeesList = await ops.client.findAll(
+    contact.class.Employee,
+    {},
+    {
+      lookup: {
+        _id: {
+          channels: contact.class.Channel
+        }
+      }
+    }
+  )
+  const employees = new Map(employeesList.map((it) => [it._id, it]))
 
   while (userList.size < totalUsers) {
     const users = await ops.bitrixClient.call('user.search', { start: next })
     next = users.next
     totalUsers = users.total
     for (const u of users.result) {
-      const account = allEmployee.find((it) => it.email === u.EMAIL)
+      let account = allEmployee.find((it) => it.email === u.EMAIL)
+
+      if (account === undefined) {
+        // Try to find from employee
+        employeesList.forEach((it) => {
+          if ((it.$lookup?.channels as Channel[])?.some((q) => q.value === u.EMAIL)) {
+            account = allEmployee.find((qit) => qit.employee === it._id)
+          }
+        })
+      }
+
       let accountId = account?._id
       if (accountId === undefined) {
         const employeeId = await ops.client.createDoc(contact.class.Employee, contact.space.Contacts, {

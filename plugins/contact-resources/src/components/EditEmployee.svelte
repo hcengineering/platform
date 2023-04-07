@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee, EmployeeAccount, getFirstName, getLastName, Person } from '@hcengineering/contact'
+  import { Channel, Employee, EmployeeAccount, getFirstName, getLastName, Person } from '@hcengineering/contact'
   import { AccountRole, getCurrentAccount, Ref } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
@@ -22,12 +22,17 @@
   import setting, { IntegrationType } from '@hcengineering/setting'
   import { createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
+  import { ChannelsDropdown } from '..'
   import contact from '../plugin'
   import Avatar from './Avatar.svelte'
   import ChannelsEditor from './ChannelsEditor.svelte'
   import EditableAvatar from './EditableAvatar.svelte'
 
   export let object: Employee
+  export let readonly = false
+
+  export let channels: Channel[] | undefined = undefined
+
   const client = getClient()
 
   const account = getCurrentAccount() as EmployeeAccount
@@ -35,7 +40,7 @@
   let avatarEditor: EditableAvatar
 
   $: owner = account.employee === object._id
-  $: editable = account.role >= AccountRole.Maintainer || owner
+  $: editable = !readonly && (account.role >= AccountRole.Maintainer || owner)
   let firstName = getFirstName(object.name)
   let lastName = getLastName(object.name)
   let displayName = object.displayName ?? ''
@@ -121,6 +126,7 @@
             <EditBox
               placeholder={contact.string.PersonFirstNamePlaceholder}
               bind:value={firstName}
+              disabled={!editable}
               on:change={firstNameChange}
               focusIndex={1}
             />
@@ -134,6 +140,7 @@
               placeholder={contact.string.PersonLastNamePlaceholder}
               bind:value={lastName}
               on:change={lastNameChange}
+              disabled={!editable}
               focusIndex={2}
             />
           {:else}
@@ -146,6 +153,7 @@
               placeholder={contact.string.DisplayName}
               bind:value={displayName}
               on:change={changeDisplayName}
+              disabled={!editable}
               focusIndex={1}
             />
           {:else}
@@ -166,14 +174,25 @@
 
       <div class="separator" />
       <div class="flex-row-center">
-        <ChannelsEditor
-          attachedTo={object._id}
-          attachedClass={object._class}
-          {editable}
-          bind:integrations
-          shape={'circle'}
-          focusIndex={10}
-        />
+        {#if channels === undefined}
+          <ChannelsEditor
+            attachedTo={object._id}
+            attachedClass={object._class}
+            {editable}
+            bind:integrations
+            shape={'circle'}
+            focusIndex={10}
+          />
+        {:else}
+          <ChannelsDropdown
+            value={channels}
+            editable={false}
+            kind={'link-bordered'}
+            size={'small'}
+            length={'full'}
+            shape={'circle'}
+          />
+        {/if}
       </div>
     </div>
   </div>

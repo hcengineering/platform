@@ -188,6 +188,22 @@ async function doContactQuery<T extends Contact> (
 async function kickEmployee (doc: Employee): Promise<void> {
   const client = getClient()
   const email = await client.findOne(contact.class.EmployeeAccount, { employee: doc._id })
+  if (!doc.active) {
+    showPopup(
+      MessageBox,
+      {
+        label: contact.string.DeleteEmployee,
+        message: contact.string.DeleteEmployee
+      },
+      undefined,
+      (res?: boolean) => {
+        if (res === true) {
+          void client.remove(doc)
+        }
+      }
+    )
+    return
+  }
   if (email === undefined) {
     await client.update(doc, { active: false })
   } else {

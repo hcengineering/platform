@@ -46,6 +46,9 @@ export class AsyncTriggerProcessor {
       txFactory: this.factory,
       findAll: async (_class, query, options) => {
         return await this.storage.findAll(this.metrics, _class, query, options)
+      },
+      apply: async (tx: Tx[], broadcast: boolean, updateTx: boolean): Promise<void> => {
+        await this.storage.apply(this.metrics, tx, broadcast, updateTx)
       }
     }
   }
@@ -91,7 +94,7 @@ export class AsyncTriggerProcessor {
       }
     }
     if (result.length > 0) {
-      await this.storage.apply(this.metrics, result, false)
+      await this.storage.apply(this.metrics, result, false, false)
       this.processing = this.doProcessing()
     }
   }
@@ -114,9 +117,14 @@ export class AsyncTriggerProcessor {
             result.push(...(await f(doc.tx, this.control)))
           }
         } catch (err: any) {}
-        await this.storage.apply(this.metrics, [this.factory.createTxRemoveDoc(doc._class, doc.space, doc._id)], false)
+        await this.storage.apply(
+          this.metrics,
+          [this.factory.createTxRemoveDoc(doc._class, doc.space, doc._id)],
+          false,
+          false
+        )
 
-        await this.storage.apply(this.metrics, result, true)
+        await this.storage.apply(this.metrics, result, true, false)
       }
     }
   }

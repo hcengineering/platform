@@ -266,4 +266,5 @@ export function getAvatarProviderId (avatar?: string | null): Ref<AvatarProvider
     case AvatarType.COLOR:
       return contact.avatarProvider.Color
   }
+  return contact.avatarProvider.Image
 }

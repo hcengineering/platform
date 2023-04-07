@@ -590,6 +590,25 @@ export function createModel (builder: Builder): void {
     },
     contact.action.KickEmployee
   )
+  createAction(
+    builder,
+    {
+      action: contact.actionImpl.KickEmployee,
+      label: contact.string.DeleteEmployee,
+      query: {
+        active: false
+      },
+      category: contact.category.Contact,
+      target: contact.class.Employee,
+      input: 'focus',
+      context: {
+        mode: ['context'],
+        group: 'other'
+      },
+      secured: true
+    },
+    contact.action.KickEmployee
+  )
 
   createAction(
     builder,
@@ -601,6 +620,9 @@ export function createModel (builder: Builder): void {
         fillProps: {
           _object: 'value'
         }
+      },
+      query: {
+        active: false
       },
       label: contact.string.MergeEmployee,
       category: contact.category.Contact,

@@ -252,6 +252,9 @@ export function createQuery (dontDestroy?: boolean): LiveQuery {
  * @public
  */
 export function getFileUrl (file: string, size: IconSize = 'full'): string {
+  if (file.includes('://')) {
+    return file
+  }
   const uploadUrl = getMetadata(plugin.metadata.UploadURL)
   const token = getMetadata(plugin.metadata.Token)
   const url = `${uploadUrl as string}?file=${file}&token=${token as string}&size=${size as string}`

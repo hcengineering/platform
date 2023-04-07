@@ -18,9 +18,10 @@
 
   import chunter, { Comment } from '@hcengineering/chunter'
   import { createQuery } from '@hcengineering/presentation'
-  import { Label } from '@hcengineering/ui'
+  import { Label, resizeObserver } from '@hcengineering/ui'
   import { DocNavLink, ObjectPresenter } from '@hcengineering/view-resources'
   import CommentPresenter from './CommentPresenter.svelte'
+  import { createEventDispatcher } from 'svelte'
 
   export let objectId: Ref<Doc>
   export let object: Doc
@@ -35,9 +36,15 @@
     },
     { sort: { modifiedOn: SortingOrder.Descending } }
   )
+  const dispatch = createEventDispatcher()
 </script>
 
-<div class="flex flex-between flex-grow p-1 mb-4">
+<div
+  class="flex flex-between flex-grow p-1 mb-4"
+  use:resizeObserver={() => {
+    dispatch('changeContent')
+  }}
+>
   <div class="fs-title">
     <Label label={chunter.string.Comments} />
   </div>

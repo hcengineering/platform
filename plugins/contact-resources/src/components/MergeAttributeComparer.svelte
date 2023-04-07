@@ -23,6 +23,7 @@
   export let targetEmp: Employee
   export let key: string
   export let onChange: (key: string, value: boolean) => void
+  export let selected = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -32,7 +33,14 @@
 
 {#await editor then instance}
   {#if instance}
-    <MergeComparer {value} {targetEmp} {key} {onChange} cast={hierarchy.isMixin(_class) ? _class : undefined}>
+    <MergeComparer
+      {value}
+      {targetEmp}
+      {key}
+      {onChange}
+      cast={hierarchy.isMixin(_class) ? _class : undefined}
+      {selected}
+    >
       <svelte:fragment slot="item" let:item>
         <svelte:component
           this={instance}
