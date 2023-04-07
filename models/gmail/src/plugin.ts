@@ -36,7 +36,6 @@ export default mergeIds(gmailId, gmail, {
     Message: '' as IntlString,
     Messages: '' as IntlString,
     Incoming: '' as IntlString,
-    Email: '' as IntlString,
     Status: '' as IntlString,
     EmailPlaceholder: '' as IntlString
   },
@@ -44,7 +43,8 @@ export default mergeIds(gmailId, gmail, {
     TxSharedCreate: '' as Ref<TxViewlet>
   },
   activity: {
-    TxSharedCreate: '' as AnyComponent
+    TxSharedCreate: '' as AnyComponent,
+    TxWriteMessage: '' as AnyComponent
   },
   function: {
     HasEmail: '' as Resource<(doc?: Doc | Doc[] | undefined) => Promise<boolean>>

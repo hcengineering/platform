@@ -1,3 +1,4 @@
+import { DisplayTx } from '@hcengineering/activity'
 import core, {
   AnyAttribute,
   AttachedDoc,
@@ -41,37 +42,6 @@ function isEqualOps (op1: any, op2: any): boolean {
   const o1 = Object.keys(op1).sort().join('-')
   const o2 = Object.keys(op2).sort().join('-')
   return o1 === o2
-}
-
-/**
- * Transaction being displayed.
- * @public
- */
-export interface DisplayTx {
-  // Source tx
-  tx: TxCUD<Doc>
-
-  // A set of collapsed transactions.
-  txes: DisplayTx[]
-  txDocIds?: Set<Ref<Doc>>
-
-  // type check for createTx
-  createTx?: TxCreateDoc<Doc>
-
-  // Type check for updateTx
-  updateTx?: TxUpdateDoc<Doc>
-
-  // Type check for updateTx
-  mixinTx?: TxMixin<Doc, Doc>
-
-  // Document in case it is required.
-  doc?: Doc
-
-  updated: boolean
-  mixin: boolean
-  removed: boolean
-
-  collectionAttribute?: Attribute<Collection<AttachedDoc>>
 }
 
 /**

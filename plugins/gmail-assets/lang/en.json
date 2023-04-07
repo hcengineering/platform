@@ -32,6 +32,7 @@
     "EmailPlaceholder": "john.appleseed@apple.com",
     "WriteEmail": "Write Email",
     "Shared": "Shared",
-    "AvailableTo": "Available to"
+    "AvailableTo": "Available to",
+    "HaveWrittenEmail": "have written an"
   }
 }

@@ -18,6 +18,7 @@ import { concatLink } from '@hcengineering/core'
 import { getMetadata, Resources } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 import TxSharedCreate from './components/activity/TxSharedCreate.svelte'
+import TxWriteMessage from './components/activity/TxWriteMessage.svelte'
 import Configure from './components/Configure.svelte'
 import Connect from './components/Connect.svelte'
 import IconGmail from './components/icons/GmailColor.svelte'
@@ -35,7 +36,8 @@ export default async (): Promise<Resources> => ({
     Configure
   },
   activity: {
-    TxSharedCreate
+    TxSharedCreate,
+    TxWriteMessage
   },
   function: {
     HasEmail: checkHasEmail

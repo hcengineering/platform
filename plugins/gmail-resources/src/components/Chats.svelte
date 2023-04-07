@@ -14,13 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, {
-    Channel,
-    Contact,
-    Employee,
-    EmployeeAccount,
-    getName as getContactName
-  } from '@hcengineering/contact'
+  import contact, { Channel, Contact, EmployeeAccount } from '@hcengineering/contact'
   import { employeeByIdStore } from '@hcengineering/contact-resources'
   import { IdMap, Ref, SortingOrder, toIdMap } from '@hcengineering/core'
   import { Message, SharedMessage } from '@hcengineering/gmail'
@@ -28,16 +22,14 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import plugin, { Button, Icon, IconShare, Label, Scroller } from '@hcengineering/ui'
   import gmail from '../plugin'
-  import IconInbox from './icons/Inbox.svelte'
+  import { convertMessages } from '../utils'
   import Messages from './Messages.svelte'
+  import IconInbox from './icons/Inbox.svelte'
 
   export let object: Contact
   export let channel: Channel
   export let newMessage: boolean
   export let enabled: boolean
-
-  const EMAIL_REGEX =
-    /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/
 
   let messages: Message[] = []
   let accounts: IdMap<EmployeeAccount> = new Map()
@@ -76,7 +68,7 @@
       object._class,
       'gmailSharedMessages',
       {
-        messages: convertMessages(selectedMessages, accounts, $employeeByIdStore)
+        messages: convertMessages(object, channel, selectedMessages, accounts, $employeeByIdStore)
       }
     )
     await notificationClient.updateLastView(channel._id, channel._class, undefined, true)
@@ -87,39 +79,6 @@
     selectable = false
     selected.clear()
     selected = selected
-  }
-
-  function convertMessages (
-    messages: Message[],
-    accounts: IdMap<EmployeeAccount>,
-    employees: IdMap<Employee>
-  ): SharedMessage[] {
-    return messages.map((m) => {
-      return {
-        ...m,
-        _id: m._id as string as Ref<SharedMessage>,
-        sender: getName(m, accounts, employees, true),
-        receiver: getName(m, accounts, employees, false)
-      }
-    })
-  }
-
-  function getName (
-    message: Message,
-    accounts: IdMap<EmployeeAccount>,
-    employees: IdMap<Employee>,
-    sender: boolean
-  ): string {
-    if (message.incoming === sender) {
-      return `${getContactName(object)} (${channel.value})`
-    } else {
-      const account = accounts.get(message.modifiedBy as Ref<EmployeeAccount>)
-      const emp = account ? employees.get(account?.employee) : undefined
-      const value = message.incoming ? message.to : message.from
-      const email = value.match(EMAIL_REGEX)
-      const emailVal = email?.[0] ?? value
-      return emp ? `${getContactName(emp)} (${emailVal})` : emailVal
-    }
   }
 </script>
 
@@ -167,7 +126,7 @@
   <div class="popupPanel-body__main-content py-4 clear-mins flex-no-shrink">
     {#if messages && messages.length > 0}
       <Messages
-        messages={convertMessages(messages, accounts, $employeeByIdStore)}
+        messages={convertMessages(object, channel, messages, accounts, $employeeByIdStore)}
         {selectable}
         bind:selected
         on:select

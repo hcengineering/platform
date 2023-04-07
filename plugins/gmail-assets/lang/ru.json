@@ -32,6 +32,7 @@
     "EmailPlaceholder": "john.appleseed@apple.com",
     "WriteEmail": "Написать Email",
     "Shared": "Публичный",
-    "AvailableTo": "Доступен для"
+    "AvailableTo": "Доступен для",
+    "HaveWrittenEmail": "написал(а)"
   }
 }

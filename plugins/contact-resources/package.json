@@ -37,6 +37,8 @@
     "@hcengineering/contact": "^0.6.11",
     "@hcengineering/ui": "^0.6.3",
     "@hcengineering/setting": "^0.6.3",
+    "@hcengineering/activity": "^0.6.0",
+    "@hcengineering/activity-resources": "^0.6.1",
     "@hcengineering/presentation": "^0.6.2",
     "@hcengineering/notification": "^0.6.8",
     "@hcengineering/core": "^0.6.21",

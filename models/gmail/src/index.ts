@@ -154,8 +154,22 @@ export function createModel (builder: Builder): void {
     activity.class.TxViewlet,
     core.space.Model,
     {
+      objectClass: gmail.class.Message,
+      icon: contact.icon.Email,
+      txClass: core.class.TxCreateDoc,
+      label: gmail.string.HaveWrittenEmail,
+      labelComponent: gmail.activity.TxWriteMessage,
+      display: 'inline'
+    },
+    gmail.ids.TxSharedCreate
+  )
+
+  builder.createDoc(
+    activity.class.TxViewlet,
+    core.space.Model,
+    {
       objectClass: gmail.class.SharedMessages,
-      icon: contact.icon.Telegram,
+      icon: contact.icon.Email,
       txClass: core.class.TxCreateDoc,
       component: gmail.activity.TxSharedCreate,
       label: gmail.string.SharedMessages,

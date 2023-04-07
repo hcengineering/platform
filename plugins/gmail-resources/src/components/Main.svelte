@@ -16,7 +16,7 @@
 <script lang="ts">
   import contact, { Channel, Contact, getName } from '@hcengineering/contact'
   import { Class, getCurrentAccount, Ref } from '@hcengineering/core'
-  import { SharedMessage } from '@hcengineering/gmail'
+  import { Message, SharedMessage } from '@hcengineering/gmail'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
@@ -30,14 +30,17 @@
   import FullMessage from './FullMessage.svelte'
   import IntegrationSelector from './IntegrationSelector.svelte'
   import NewMessage from './NewMessage.svelte'
+  import { convertMessage } from '../utils'
+  import { employeeByIdStore } from '@hcengineering/contact-resources'
 
   export let _id: Ref<Contact>
   export let _class: Ref<Class<Contact>>
+  export let message: Message | undefined = undefined
 
   let object: Contact
+  let currentMessage: SharedMessage | undefined = undefined
 
   let newMessage: boolean = false
-  let currentMessage: SharedMessage | undefined = undefined
   let channel: Channel | undefined = undefined
   const notificationClient = NotificationClientImpl.getClient()
   let integrations: Integration[] = []
@@ -97,6 +100,11 @@
     integrations = res.filter((p) => p.createdBy === me || p.shared?.includes(me))
     selectedIntegration = integrations.find((p) => p.createdBy === me) ?? integrations[0]
   })
+
+  $: message &&
+    channel &&
+    object &&
+    convertMessage(object, channel, message, $employeeByIdStore).then((p) => (currentMessage = p))
 </script>
 
 {#if channel && object}

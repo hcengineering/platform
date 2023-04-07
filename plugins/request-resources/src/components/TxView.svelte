@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { TxViewlet } from '@hcengineering/activity'
-  import { ActivityKey, DisplayTx, getValue, newDisplayTx, updateViewlet } from '@hcengineering/activity-resources'
+  import { DisplayTx, TxViewlet } from '@hcengineering/activity'
+  import { ActivityKey, getValue, newDisplayTx, updateViewlet } from '@hcengineering/activity-resources'
   import activity from '@hcengineering/activity-resources/src/plugin'
   import contact, { EmployeeAccount } from '@hcengineering/contact'
-  import core, { AnyAttribute, Ref, Tx } from '@hcengineering/core'
+  import core, { AnyAttribute, Doc, Ref, Tx, TxCUD } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
@@ -37,7 +37,7 @@
   let modelIcon: Asset | undefined = undefined
 
   $: if (tx._id !== ptx?.tx._id) {
-    ptx = newDisplayTx(tx, client.getHierarchy())
+    ptx = newDisplayTx(tx as TxCUD<Doc>, client.getHierarchy())
     if (tx.modifiedBy !== employee?._id) {
       employee = undefined
     }

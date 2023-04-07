@@ -41,6 +41,8 @@ export default mergeIds(gmailId, gmail, {
     CopyPlaceholder: '' as IntlString,
     WriteEmail: '' as IntlString,
     Shared: '' as IntlString,
-    AvailableTo: '' as IntlString
+    AvailableTo: '' as IntlString,
+    Email: '' as IntlString,
+    HaveWrittenEmail: '' as IntlString
   }
 })
