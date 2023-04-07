@@ -88,7 +88,7 @@
     if (lastView === undefined || lastView === -1) return -1
     for (let index = 0; index < txes.length; index++) {
       const tx = txes[index]
-      if (tx.tx.modifiedOn <= lastView) return index - 1
+      if (tx.tx.modifiedOn > lastView) return index - 1
     }
     return -1
   }
@@ -109,7 +109,7 @@
   {#if filtered}
     <Grid column={1} rowGap={0.75}>
       {#each filtered as tx, i}
-        <TxView {tx} {viewlets} isNew={newTxPos >= i && newTxPos !== -1} isNextNew={newTxPos > i && newTxPos !== -1} />
+        <TxView {tx} {viewlets} isNew={newTxPos < i && newTxPos !== -1} isNextNew={newTxPos <= i && newTxPos !== -1} />
       {/each}
     </Grid>
   {/if}

@@ -419,10 +419,10 @@
       .icon {
         border: 1px solid var(--highlight-red);
       }
-      &.isNextNew {
-        &:after {
-          background-color: var(--highlight-red);
-        }
+    }
+    &.isNextNew {
+      &::after {
+        background-color: var(--highlight-red);
       }
     }
     &::before {
