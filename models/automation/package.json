@@ -25,12 +25,12 @@
     "@rushstack/heft": "^0.47.9"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.21",
+    "@hcengineering/core": "^0.6.22",
     "@hcengineering/automation": "^0.6.0",
-    "@hcengineering/model": "^0.6.0",
+    "@hcengineering/model": "^0.6.1",
     "@hcengineering/model-core": "^0.6.0",
-    "@hcengineering/view": "^0.6.2",
-    "@hcengineering/setting": "^0.6.3",
+    "@hcengineering/view": "^0.6.3",
+    "@hcengineering/setting": "^0.6.4",
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/automation-resources": "^0.6.0"
   }

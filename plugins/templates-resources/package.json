@@ -34,12 +34,12 @@
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",
     "svelte": "^3.47",
-    "@hcengineering/templates": "^0.6.0",
-    "@hcengineering/ui": "^0.6.3",
+    "@hcengineering/templates": "^0.6.1",
+    "@hcengineering/ui": "^0.6.5",
     "@hcengineering/presentation": "^0.6.2",
     "@hcengineering/text-editor": "^0.6.0",
-    "@hcengineering/core": "^0.6.21",
-    "@hcengineering/view": "^0.6.2",
+    "@hcengineering/core": "^0.6.22",
+    "@hcengineering/view": "^0.6.3",
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/contact-resources": "^0.6.0"
   }

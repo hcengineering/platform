@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/contact",
-  "version": "0.6.11",
+  "version": "0.6.12",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -28,10 +28,10 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/ui": "^0.6.3",
-    "@hcengineering/core": "^0.6.21",
-    "@hcengineering/templates": "^0.6.0",
-    "@hcengineering/view": "^0.6.2",
+    "@hcengineering/ui": "^0.6.5",
+    "@hcengineering/core": "^0.6.22",
+    "@hcengineering/templates": "^0.6.1",
+    "@hcengineering/view": "^0.6.3",
     "crypto-js": "^4.1.1"
   },
   "repository": "https://github.com/hcengineering/anticrm",
