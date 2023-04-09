@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/telegram",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -27,10 +27,10 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/core": "^0.6.21",
-    "@hcengineering/ui": "^0.6.3",
-    "@hcengineering/contact": "^0.6.11",
-    "@hcengineering/setting": "^0.6.3"
+    "@hcengineering/core": "^0.6.22",
+    "@hcengineering/ui": "^0.6.5",
+    "@hcengineering/contact": "^0.6.12",
+    "@hcengineering/setting": "^0.6.4"
   },
   "repository": "https://github.com/hcengineering/anticrm",
   "publishConfig": {

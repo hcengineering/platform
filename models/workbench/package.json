@@ -25,13 +25,13 @@
     "@rushstack/heft": "^0.47.9"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.21",
-    "@hcengineering/model": "^0.6.0",
+    "@hcengineering/core": "^0.6.22",
+    "@hcengineering/model": "^0.6.1",
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/model-core": "^0.6.0",
-    "@hcengineering/workbench": "^0.6.2",
-    "@hcengineering/ui": "^0.6.3",
-    "@hcengineering/view": "^0.6.2",
+    "@hcengineering/workbench": "^0.6.3",
+    "@hcengineering/ui": "^0.6.5",
+    "@hcengineering/view": "^0.6.3",
     "@hcengineering/model-view": "^0.6.0",
     "@hcengineering/workbench-resources": "^0.6.1",
     "@hcengineering/model-preference": "^0.6.0"

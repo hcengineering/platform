@@ -28,7 +28,7 @@
     "@types/html-to-text": "^8.1.1"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.21",
+    "@hcengineering/core": "^0.6.22",
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/minio": "^0.6.0",
     "fast-equals": "^2.0.3",
