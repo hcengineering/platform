@@ -14,31 +14,32 @@
 // limitations under the License.
 //
 
-import {
-  Builder,
-  Model,
-  TypeString,
-  TypeBoolean,
-  Prop,
-  ArrOf,
-  Index,
-  Collection,
-  TypeTimestamp
-} from '@hcengineering/model'
-import core, { TAttachedDoc } from '@hcengineering/model-core'
-import contact from '@hcengineering/model-contact'
-import telegram from './plugin'
-import type {
-  TelegramMessage,
-  NewTelegramMessage,
-  SharedTelegramMessage,
-  SharedTelegramMessages
-} from '@hcengineering/telegram'
-import { Class, Domain, IndexKind, Ref, Timestamp, Type } from '@hcengineering/core'
-import setting from '@hcengineering/setting'
 import activity from '@hcengineering/activity'
 import { Channel } from '@hcengineering/contact'
+import { Class, Domain, IndexKind, Ref, Timestamp, Type } from '@hcengineering/core'
+import {
+  ArrOf,
+  Builder,
+  Collection,
+  Index,
+  Model,
+  Prop,
+  TypeBoolean,
+  TypeString,
+  TypeTimestamp
+} from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
+import contact from '@hcengineering/model-contact'
+import core, { TAttachedDoc } from '@hcengineering/model-core'
+import setting from '@hcengineering/setting'
+import type {
+  NewTelegramMessage,
+  SharedTelegramMessage,
+  SharedTelegramMessages,
+  TelegramMessage
+} from '@hcengineering/telegram'
+import telegram from './plugin'
+import view from '@hcengineering/view'
 
 export const DOMAIN_TELEGRAM = 'telegram' as Domain
 
@@ -86,6 +87,23 @@ export class TSharedTelegramMessages extends TAttachedDoc implements SharedTeleg
 
 export function createModel (builder: Builder): void {
   builder.createModel(TTelegramMessage, TSharedTelegramMessages, TNewTelegramMessage)
+
+  builder.mixin(telegram.class.Message, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: telegram.component.MessagePresenter
+  })
+
+  builder.createDoc(
+    activity.class.TxViewlet,
+    core.space.Model,
+    {
+      objectClass: telegram.class.Message,
+      icon: contact.icon.Telegram,
+      txClass: core.class.TxCreateDoc,
+      component: telegram.activity.TxMessage,
+      display: 'inline'
+    },
+    telegram.ids.TxMessage
+  )
 
   builder.createDoc(
     contact.class.ChannelProvider,

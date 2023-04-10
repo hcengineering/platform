@@ -35,6 +35,7 @@
 
   export let _id: Ref<Contact>
   export let _class: Ref<Class<Contact>>
+  export let embedded = false
   export let message: Message | undefined = undefined
 
   let object: Contact
@@ -112,6 +113,7 @@
     isHeader={true}
     isAside={false}
     isFullSize
+    {embedded}
     on:fullsize
     on:close={() => {
       dispatch('close')

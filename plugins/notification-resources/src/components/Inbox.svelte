@@ -83,7 +83,7 @@
           <Label label={notification.string.Inbox} />
         </span>
       </div>
-      <div class="top-divider">
+      <div class="top-divider clear-mins h-full">
         <Scroller>
           {#if loading}
             <Loading />

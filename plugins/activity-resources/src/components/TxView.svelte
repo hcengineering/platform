@@ -203,7 +203,7 @@
             {/if}
             <span class="time ml-1"><TimeSince value={tx.tx.modifiedOn} /></span>
           {:else if viewlet && viewlet.label}
-            <span class="lower">
+            <span class="lower whitespace-nowrap">
               <Label label={viewlet.label} params={viewlet.labelParams ?? {}} />
             </span>
           {/if}

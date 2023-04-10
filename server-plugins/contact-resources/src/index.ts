@@ -15,6 +15,7 @@
 //
 
 import contact, {
+  Channel,
   Contact,
   contactId,
   Employee,
@@ -38,6 +39,7 @@ import core, {
   TxUpdateDoc,
   updateAttribute
 } from '@hcengineering/core'
+import notification, { Collaborators } from '@hcengineering/notification'
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, { AsyncTriggerControl, TriggerControl } from '@hcengineering/server-core'
 import { workbenchId } from '@hcengineering/workbench'
@@ -278,6 +280,54 @@ export async function OnEmployeeUpdate (tx: Tx, control: AsyncTriggerControl): P
 /**
  * @public
  */
+export async function OnChannelUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  if (tx._class !== core.class.TxUpdateDoc) {
+    return []
+  }
+
+  const uTx = tx as TxUpdateDoc<Channel>
+
+  if (!control.hierarchy.isDerived(uTx.objectClass, contact.class.Channel)) {
+    return []
+  }
+
+  const result: Tx[] = []
+
+  if (uTx.operations.$inc?.items !== undefined) {
+    const doc = (await control.findAll(uTx.objectClass, { _id: uTx.objectId }, { limit: 1 }))[0]
+    if (doc !== undefined) {
+      if (control.hierarchy.hasMixin(doc, notification.mixin.Collaborators)) {
+        const collab = control.hierarchy.as(doc, notification.mixin.Collaborators) as Doc as Collaborators
+        if (collab.collaborators.includes(tx.modifiedBy)) {
+          result.push(
+            control.txFactory.createTxMixin(doc._id, doc._class, doc.space, notification.mixin.Collaborators, {
+              $push: {
+                collaborators: tx.modifiedBy
+              }
+            })
+          )
+        }
+      } else {
+        control.txFactory.createTxMixin<Doc, Collaborators>(
+          doc._id,
+          doc._class,
+          doc.space,
+          notification.mixin.Collaborators,
+          {
+            collaborators: [tx.modifiedBy]
+          }
+        )
+        result.push()
+      }
+    }
+  }
+
+  return result
+}
+
+/**
+ * @public
+ */
 export async function personHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const person = doc as Person
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
@@ -317,7 +367,8 @@ export function organizationTextPresenter (doc: Doc): string {
 export default async () => ({
   trigger: {
     OnContactDelete,
-    OnEmployeeUpdate
+    OnEmployeeUpdate,
+    OnChannelUpdate
   },
   function: {
     PersonHTMLPresenter: personHTMLPresenter,

@@ -23,11 +23,13 @@ import core, {
   Hierarchy,
   Ref,
   Tx,
+  TxCUD,
   TxCreateDoc,
   TxProcessor
 } from '@hcengineering/core'
 import { TriggerControl } from '@hcengineering/server-core'
 import telegram, { TelegramMessage } from '@hcengineering/telegram'
+import notification from '@hcengineering/notification'
 
 /**
  * @public
@@ -54,6 +56,7 @@ export async function FindMessages (
  * @public
  */
 export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
   const actualTx = TxProcessor.extractTx(tx)
   if (actualTx._class !== core.class.TxCreateDoc) {
     return []
@@ -67,16 +70,52 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
   const message = TxProcessor.createDoc2Doc<TelegramMessage>(createTx)
 
   const channel = (await control.findAll(contact.class.Channel, { _id: message.attachedTo }, { limit: 1 }))[0]
-  if (channel === undefined) {
-    return []
+  if (channel !== undefined) {
+    if (channel.lastMessage === undefined || channel.lastMessage < message.sendOn) {
+      const tx = control.txFactory.createTxUpdateDoc(channel._class, channel.space, channel._id, {
+        lastMessage: message.sendOn
+      })
+      res.push(tx)
+    }
+
+    if (message.incoming) {
+      const docs = await control.findAll(notification.class.DocUpdates, {
+        attachedTo: channel._id,
+        user: message.modifiedBy
+      })
+      for (const doc of docs) {
+        res.push(
+          control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
+            $push: {
+              txes: [tx._id as Ref<TxCUD<Doc>>, tx.modifiedOn]
+            }
+          })
+        )
+        res.push(
+          control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
+            lastTx: tx._id as Ref<TxCUD<Doc>>,
+            lastTxTime: tx.modifiedOn,
+            hidden: false
+          })
+        )
+      }
+      if (docs.length === 0) {
+        res.push(
+          control.txFactory.createTxCreateDoc(notification.class.DocUpdates, notification.space.Notifications, {
+            user: tx.modifiedBy,
+            attachedTo: channel._id,
+            attachedToClass: channel._class,
+            hidden: false,
+            lastTx: tx._id as Ref<TxCUD<Doc>>,
+            lastTxTime: tx.modifiedOn,
+            txes: [[tx._id as Ref<TxCUD<Doc>>, tx.modifiedOn]]
+          })
+        )
+      }
+    }
   }
-  if (channel.lastMessage === undefined || channel.lastMessage < message.sendOn) {
-    const tx = control.txFactory.createTxUpdateDoc(channel._class, channel.space, channel._id, {
-      lastMessage: message.sendOn
-    })
-    return [tx]
-  }
-  return []
+
+  return res
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

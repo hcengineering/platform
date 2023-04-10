@@ -51,6 +51,7 @@
 
   export let _id: Ref<Contact>
   export let _class: Ref<Class<Contact>>
+  export let embedded = false
 
   let object: Contact
   let channel: Channel | undefined = undefined
@@ -245,6 +246,7 @@
   <Panel
     isHeader={true}
     isAside={false}
+    {embedded}
     isFullSize
     on:fullsize
     on:close={() => {

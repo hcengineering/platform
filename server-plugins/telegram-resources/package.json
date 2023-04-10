@@ -30,6 +30,7 @@
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/contact": "^0.6.12",
+    "@hcengineering/notification": "^0.6.9",
     "@hcengineering/telegram": "^0.6.5"
   }
 }
