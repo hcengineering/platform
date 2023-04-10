@@ -242,7 +242,7 @@
     <Loading />
   {:else}
     <Scroller>
-      <div class="popupPanel-body__main-content py-10 clear-mins">
+      <div class="popupPanel-body__main-content py-10 clear-mins flex-no-shrink">
         {#each statusCategories as category}
           {@const statuses =
             $statusStore.statuses.filter((s) => s.space === projectId && s.category === category._id) ?? []}
