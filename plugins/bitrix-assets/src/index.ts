@@ -21,4 +21,4 @@ loadMetadata(bitrix.icon, {
   Bitrix: `${icons}#bitrix`
 })
 
-addStringsLoader(bitrixId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(bitrixId, async (lang: string) => require(`../lang/${lang}.json`))

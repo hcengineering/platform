@@ -16,7 +16,7 @@
 import { concatLink } from '@hcengineering/core'
 import { getMetadata, PlatformError, unknownError } from '@hcengineering/platform'
 import plugin from './plugin'
-import { ReconiDocument } from './types'
+import type { ReconiDocument } from './types'
 
 export { default } from './plugin'
 export * from './types'

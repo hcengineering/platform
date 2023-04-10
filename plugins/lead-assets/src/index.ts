@@ -26,4 +26,4 @@ loadMetadata(lead.icon, {
   CreateCustomer: `${icons}#new-customer`
 })
 
-addStringsLoader(leadId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(leadId, async (lang: string) => require(`../lang/${lang}.json`))

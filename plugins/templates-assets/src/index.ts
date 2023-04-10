@@ -24,4 +24,4 @@ loadMetadata(templates.icon, {
   Copy: `${icons}#copy`
 })
 
-addStringsLoader(templatesId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(templatesId, async (lang: string) => require(`../lang/${lang}.json`))

@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import { createApp } from '@hcengineering/ui'
 import { configurePlatform } from './platform'
 import { configurePlatformDevServer } from './platform-dev'
+import { createApp } from '@hcengineering/ui'
 
 configurePlatform().then(() => {
   if (process.env.CLIENT_TYPE === 'dev-server' || process.env.CLIENT_TYPE === 'dev-production') {

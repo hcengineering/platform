@@ -31,4 +31,4 @@ loadMetadata(setting.icon, {
   Enums: `${icons}#enums`
 })
 
-addStringsLoader(settingId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(settingId, async (lang: string) => require(`../lang/${lang}.json`))

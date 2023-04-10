@@ -21,4 +21,4 @@ loadMetadata(activity.icon, {
   Activity: `${icons}#activity`
 })
 
-addStringsLoader(activityId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(activityId, async (lang: string) => require(`../lang/${lang}.json`))

@@ -21,4 +21,4 @@ loadMetadata(preference.icon, {
   Star: `${icons}#star`
 })
 
-addStringsLoader(preferenceId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(preferenceId, async (lang: string) => require(`../lang/${lang}.json`))

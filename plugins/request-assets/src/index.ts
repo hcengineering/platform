@@ -21,4 +21,4 @@ loadMetadata(request.icon, {
   Requests: `${icons}#requests`
 })
 
-addStringsLoader(requestId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(requestId, async (lang: string) => require(`../lang/${lang}.json`))

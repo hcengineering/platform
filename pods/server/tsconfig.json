@@ -6,6 +6,6 @@
     "outDir": "./lib",
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "types": ["node"]
+    "types": ["node", "heft-jest"]
   }
 }

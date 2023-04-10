@@ -17,9 +17,7 @@
 import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
 import login, { loginId } from '@hcengineering/login'
 
-addStringsLoader(loginId, async (lang: string) => {
-  return await import(`../lang/${lang}.json`)
-})
+addStringsLoader(loginId, async (lang: string) => require(`../lang/${lang}.json`))
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(login.icon, {

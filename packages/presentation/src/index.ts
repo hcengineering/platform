@@ -14,35 +14,30 @@
 // limitations under the License.
 //
 
-import { addStringsLoader } from '@hcengineering/platform'
 import { presentationId } from './plugin'
 export * from './attributes'
 export { default as AttributeBarEditor } from './components/AttributeBarEditor.svelte'
 export { default as AttributeEditor } from './components/AttributeEditor.svelte'
-export { default as InlineAttributeBarEditor } from './components/InlineAttributeBarEditor.svelte'
-export { default as InlineAttributeBar } from './components/InlineAttributeBar.svelte'
 export { default as AttributesBar } from './components/AttributesBar.svelte'
 export { default as Card } from './components/Card.svelte'
+export { default as DraggableList } from './components/DraggableList.svelte'
+export { default as IndexedDocumentCompare } from './components/IndexedDocumentCompare.svelte'
+export { default as IndexedDocumentPreview } from './components/IndexedDocumentPreview.svelte'
+export { default as InlineAttributeBar } from './components/InlineAttributeBar.svelte'
+export { default as InlineAttributeBarEditor } from './components/InlineAttributeBarEditor.svelte'
 export { default as MessageBox } from './components/MessageBox.svelte'
 export { default as MessageViewer } from './components/MessageViewer.svelte'
+export { default as NavLink } from './components/NavLink.svelte'
 export { default as ObjectPopup } from './components/ObjectPopup.svelte'
+export { default as ObjectSearchPopup } from './components/ObjectSearchPopup.svelte'
 export { default as PDFViewer } from './components/PDFViewer.svelte'
 export { default as SpaceCreateCard } from './components/SpaceCreateCard.svelte'
 export { default as SpaceMultiBoxList } from './components/SpaceMultiBoxList.svelte'
 export { default as SpaceSelect } from './components/SpaceSelect.svelte'
 export { default as SpaceSelector } from './components/SpaceSelector.svelte'
 export { default as SpacesMultiPopup } from './components/SpacesMultiPopup.svelte'
-export { default as ObjectSearchPopup } from './components/ObjectSearchPopup.svelte'
-export { default as IndexedDocumentPreview } from './components/IndexedDocumentPreview.svelte'
-export { default as IndexedDocumentCompare } from './components/IndexedDocumentCompare.svelte'
-export { default as DraggableList } from './components/DraggableList.svelte'
-export { default as NavLink } from './components/NavLink.svelte'
+export * from './drafts'
 export { default } from './plugin'
 export * from './types'
 export * from './utils'
-export * from './drafts'
 export { presentationId }
-
-addStringsLoader(presentationId, async (lang: string) => {
-  return await import(`../lang/${lang}.json`)
-})

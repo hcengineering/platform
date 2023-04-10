@@ -17,4 +17,4 @@
 import { addStringsLoader } from '@hcengineering/platform'
 import { telegramId } from '@hcengineering/telegram'
 
-addStringsLoader(telegramId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(telegramId, async (lang: string) => require(`../lang/${lang}.json`))

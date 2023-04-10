@@ -40,4 +40,4 @@ loadMetadata(contact.icon, {
   Profile: `${icons}#profile`,
   ComponentMembers: `${icons}#componentMembers`
 })
-addStringsLoader(contactId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(contactId, async (lang: string) => require(`../lang/${lang}.json`))

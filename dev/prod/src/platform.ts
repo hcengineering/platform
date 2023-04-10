@@ -13,7 +13,14 @@
 // limitations under the License.
 //
 
+import '@hcengineering/platform'
+import '@hcengineering/core/src/loader'
+import '@hcengineering/presentation/src/loader'
+import '@hcengineering/ui/src/loader'
+import '@hcengineering/text-editor/src/loader'
+
 import { addLocation } from '@hcengineering/platform'
+
 
 import { activityId } from '@hcengineering/activity'
 import { attachmentId } from '@hcengineering/attachment'
@@ -75,6 +82,7 @@ import '@hcengineering/workbench-assets'
 
 import { coreId } from '@hcengineering/core'
 import presentation, { presentationId } from '@hcengineering/presentation'
+
 import { textEditorId } from '@hcengineering/text-editor'
 
 import { setMetadata } from '@hcengineering/platform'

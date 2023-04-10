@@ -28,4 +28,4 @@ loadMetadata(hr.icon, {
   Remote: `${icons}#remote`
 })
 
-addStringsLoader(hrId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(hrId, async (lang: string) => require(`../lang/${lang}.json`))

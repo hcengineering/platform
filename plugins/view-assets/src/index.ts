@@ -37,4 +37,4 @@ loadMetadata(view.icon, {
   Filter: `${icons}#filter`
 })
 
-addStringsLoader(viewId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(viewId, async (lang: string) => require(`../lang/${lang}.json`))

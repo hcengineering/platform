@@ -4,6 +4,7 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./lib",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "types": ["node", "heft-jest"]
   }
 }

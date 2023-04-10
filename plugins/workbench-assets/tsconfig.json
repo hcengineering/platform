@@ -9,6 +9,7 @@
     "outDir": "./lib",
     "strict": true,
     "skipLibCheck": true,
+    "resolveJsonModule": true,
     "esModuleInterop": true,
     "lib": [
       "esnext",

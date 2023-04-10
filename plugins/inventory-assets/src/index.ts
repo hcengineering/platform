@@ -24,4 +24,4 @@ loadMetadata(inventory.icon, {
   Variant: `${icons}#variant`,
   Products: `${icons}#products`
 })
-addStringsLoader(inventoryId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(inventoryId, async (lang: string) => require(`../lang/${lang}.json`))

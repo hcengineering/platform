@@ -135,6 +135,8 @@ import trackerEn from '@hcengineering/tracker-assets/lang/en.json'
 import viewEn from '@hcengineering/view-assets/lang/en.json'
 import workbenchEn from '@hcengineering/workbench-assets/lang/en.json'
 
+import '@hcengineering/core/src/loader'
+
 addStringsLoader(coreId, async (lang: string) => coreEng)
 addStringsLoader(loginId, async (lang: string) => loginEng)
 
@@ -163,6 +165,7 @@ addStringsLoader(hrId, async (lang: string) => hrEn)
 addStringsLoader(documentId, async (lang: string) => documentEn)
 addStringsLoader(bitrixId, async (lang: string) => bitrixEn)
 addStringsLoader(requestId, async (lang: string) => requestEn)
+
 /**
  * @public
  */

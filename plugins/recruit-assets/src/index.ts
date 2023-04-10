@@ -33,4 +33,4 @@ loadMetadata(recruit.icon, {
   Issue: `${icons}#issue`
 })
 
-addStringsLoader(recruitId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(recruitId, async (lang: string) => require(`../lang/${lang}.json`))

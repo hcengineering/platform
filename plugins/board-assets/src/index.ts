@@ -23,4 +23,4 @@ loadMetadata(board.icon, {
   Card: `${icons}#card`
 })
 
-addStringsLoader(boardId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(boardId, async (lang: string) => require(`../lang/${lang}.json`))

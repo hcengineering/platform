@@ -14,18 +14,18 @@
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",
-    "@typescript-eslint/eslint-plugin": "^5.41.0",
-    "@typescript-eslint/parser": "^5.41.0",
-    "eslint-config-standard-with-typescript": "^23.0.0",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-n": "^15.4.0",
+    "@typescript-eslint/eslint-plugin": "^5.57.1",
+    "@typescript-eslint/parser": "^5.57.1",
+    "eslint-config-standard-with-typescript": "^34.0.1",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.7.0",
     "eslint-plugin-promise": "^6.1.1",
-    "prettier-plugin-svelte": "^2.8.0",
-    "eslint": "^8.26.0",
-    "prettier": "^2.7.1",
-    "typescript": "^4.3.5",
+    "prettier-plugin-svelte": "^2.10.0",
+    "eslint": "^8.38.0",
+    "prettier": "^2.8.7",
+    "typescript": "^5.0.4",
     "@types/heft-jest": "^1.0.3",
-    "@rushstack/heft": "^0.47.9"
+    "@rushstack/heft": "^0.50.0"
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",

@@ -78,4 +78,4 @@ loadMetadata(tracker.icon, {
   Timeline: `${icons}#timeline`
 })
 
-addStringsLoader(trackerId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(trackerId, async (lang: string) => require(`../lang/${lang}.json`))

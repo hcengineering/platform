@@ -5,6 +5,7 @@
     "target": "ES6",
     "rootDir": "./src",
     "outDir": "./lib",
-    "lib": ["esnext", "esnext.intl", "dom"]
+    "lib": ["esnext", "esnext.intl", "dom"],
+    "types": ["node", "heft-jest"]
   }
 }

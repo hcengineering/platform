@@ -21,4 +21,4 @@ loadMetadata(workbench.icon, {
   Search: `${icons}#search`
 })
 
-addStringsLoader(workbenchId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(workbenchId, async (lang: string) => require(`../lang/${lang}.json`))

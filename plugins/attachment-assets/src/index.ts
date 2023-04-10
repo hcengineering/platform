@@ -22,4 +22,4 @@ loadMetadata(attachment.icon, {
   FileBrowser: `${icons}#fileBrowser`
 })
 
-addStringsLoader(attachmentId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(attachmentId, async (lang: string) => require(`../lang/${lang}.json`))

@@ -1,4 +1,4 @@
-import { Node, mergeAttributes } from '@tiptap/core'
+import { mergeAttributes, Node } from '@tiptap/core'
 import Suggestion, { SuggestionOptions } from '@tiptap/suggestion'
 
 export interface CompletionOptions {
@@ -152,7 +152,7 @@ export const Completion = Node.create<CompletionOptions>({
             return false
           }
 
-          state.doc.nodesBetween(anchor - 1, anchor, (node, pos) => {
+          state.doc.nodesBetween(anchor - 1, anchor, (node: any, pos: any) => {
             if (node.type.name === this.name) {
               isMention = true
 

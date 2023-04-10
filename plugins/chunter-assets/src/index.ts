@@ -26,4 +26,4 @@ loadMetadata(chunter.icon, {
   ChannelBrowser: `${icons}#channelbrowser`
 })
 
-addStringsLoader(chunterId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(chunterId, async (lang: string) => require(`../lang/${lang}.json`))

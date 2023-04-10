@@ -24,4 +24,4 @@ loadMetadata(notification.icon, {
   DontTrack: `${icons}#donttrack`
 })
 
-addStringsLoader(notificationId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(notificationId, async (lang: string) => require(`../lang/${lang}.json`))

@@ -17,4 +17,4 @@
 import { addStringsLoader } from '@hcengineering/platform'
 import { gmailId } from '@hcengineering/gmail'
 
-addStringsLoader(gmailId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(gmailId, async (lang: string) => require(`../lang/${lang}.json`))

@@ -27,4 +27,4 @@ loadMetadata(task.icon, {
   Dashboard: `${icons}#dashboard`
 })
 
-addStringsLoader(taskId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(taskId, async (lang: string) => require(`../lang/${lang}.json`))

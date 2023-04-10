@@ -25,4 +25,4 @@ loadMetadata(tags.icon, {
   Level3: `${icons}#level-3`
 })
 
-addStringsLoader(tagsId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(tagsId, async (lang: string) => require(`../lang/${lang}.json`))

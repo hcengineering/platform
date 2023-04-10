@@ -57,7 +57,8 @@ module.exports = {
       crypto: false 
     },
     extensions: ['.mjs', '.js', '.svelte', '.ts'],
-    mainFields: ['svelte', 'browser', 'module', 'main']
+    mainFields: ['svelte', 'browser', 'module', 'main'],
+    conditionNames: ['require', 'svelte'],
   },
   output: {
     path: __dirname + '/dist',
@@ -120,9 +121,15 @@ module.exports = {
               acceptNamedExports: true,
             }
           }         
+        },
+      },
+      {
+        // required to prevent errors from Svelte on Webpack 5+, omit on Webpack 4
+        test: /node_modules\/svelte\/.*\.mjs$/,
+        resolve: {
+          fullySpecified: false
         }
       },
-
       {
         test: /\.css$/,
         use: [
@@ -174,17 +181,18 @@ module.exports = {
               esModule: false
             }
           },
-          {
-            loader: 'svgo-loader',
-            options: {
-              plugins: [
-                { name: 'removeHiddenElems', active: false }
-                // { removeHiddenElems: { displayNone: false } },
-                // { cleanupIDs: false },
-                // { removeTitle: true }
-              ]
-            }
-          }
+          // {
+          //   loader: 'svgo-loader',
+          //   options: {
+          //     type: 'asset',
+          //     plugins: [
+          //       // { name: 'removeHiddenElems', active: false }
+          //       // { removeHiddenElems: { displayNone: false } },
+          //       // { cleanupIDs: false },
+          //       // { removeTitle: true }
+          //     ]
+          //   }
+          // }
         ]
       }
     ]

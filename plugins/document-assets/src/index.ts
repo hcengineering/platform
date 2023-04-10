@@ -23,4 +23,4 @@ loadMetadata(document.icon, {
   Document: `${icons}#document`,
   Library: `${icons}#library`
 })
-addStringsLoader(documentId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(documentId, async (lang: string) => require(`../lang/${lang}.json`))

@@ -21,4 +21,4 @@ loadMetadata(automation.icon, {
   Automation: `${icons}#automation`
 })
 
-addStringsLoader(automationId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(automationId, async (lang: string) => require(`../lang/${lang}.json`))

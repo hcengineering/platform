@@ -23,4 +23,4 @@ loadMetadata(calendar.icon, {
   Location: `${icons}#location`
 })
 
-addStringsLoader(calendarId, async (lang: string) => await import(`../lang/${lang}.json`))
+addStringsLoader(calendarId, async (lang: string) => require(`../lang/${lang}.json`))

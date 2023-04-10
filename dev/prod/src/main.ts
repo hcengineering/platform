@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import { createApp } from '@hcengineering/ui'
 import { configurePlatform } from './platform'
+import { createApp } from '@hcengineering/ui'
 
 configurePlatform().then(() => {
   createApp(document.body)
