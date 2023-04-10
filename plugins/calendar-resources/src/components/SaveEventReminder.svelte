@@ -59,6 +59,7 @@
   on:close={() => {
     dispatch('close')
   }}
+  on:changeContent
 >
   <Grid column={1} rowGap={1.75}>
     <div class="antiComponentBox">

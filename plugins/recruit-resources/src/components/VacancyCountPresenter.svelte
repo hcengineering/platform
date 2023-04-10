@@ -13,35 +13,37 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, DocumentQuery, Ref } from '@hcengineering/core'
+  import { Ref } from '@hcengineering/core'
   import { recruitId, Vacancy } from '@hcengineering/recruit'
-  import { getCurrentLocation, Icon, navigate, tooltip } from '@hcengineering/ui'
+  import { closeTooltip, getCurrentLocation, Icon, navigate, tooltip } from '@hcengineering/ui'
   import recruit from '../plugin'
   import VacancyApplicationsPopup from './VacancyApplicationsPopup.svelte'
 
   export let value: Vacancy
   export let applications: Map<Ref<Vacancy>, { count: number; modifiedOn: number }> | undefined
-  export let resultQuery: DocumentQuery<Doc>
 
   function click () {
+    closeTooltip()
     const loc = getCurrentLocation()
     loc.fragment = undefined
     loc.query = undefined
     loc.path[2] = recruitId
     loc.path[3] = value._id
+    loc.path.length = 4
     navigate(loc)
   }
 </script>
 
 {#if value}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     class="sm-tool-icon"
     use:tooltip={{
-      label: recruit.string.Applications,
+      // label: recruit.string.Applications,
       component: VacancyApplicationsPopup,
-      props: { value: value._id, resultQuery }
+      props: { value, openList: click }
     }}
-    on:click={click}
+    on:click|stopPropagation|preventDefault={click}
   >
     <div class="icon">
       <Icon icon={recruit.icon.Application} size={'small'} />

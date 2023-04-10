@@ -68,7 +68,7 @@
 </script>
 
 <div
-  class="flex flex-wrap"
+  class="flex flex-wrap clear-mins"
   class:minus-margin={kind === 'list-header'}
   class:compression
   style:flex-direction={twoRows ? 'column' : 'row'}

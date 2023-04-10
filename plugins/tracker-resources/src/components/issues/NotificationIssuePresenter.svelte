@@ -31,23 +31,23 @@
 </script>
 
 {#if value}
-  <div class="flex-between">
-    <div class="flex-center">
+  <div class="flex-between clear-mins">
+    <div class="flex-presenter inline-presenter mr-2">
       {#if currentProject}
-        {#if currentProject.icon}
-          <Icon icon={currentProject.icon ?? tracker.icon.Home} size="inline" />
-        {/if}
-        <div class="ml-1 mr-1">
-          {currentProject.name}
+        <div class="icon">
+          <Icon icon={currentProject.icon ?? tracker.icon.Home} size="small" />
         </div>
+        <span class="label no-underline nowrap">
+          {currentProject.name}
+        </span>
       {/if}
-      {title}
-      {value.title}
+      <span class="overflow-label ml-2">
+        <span class="content-accent-color">{title}</span>
+        {value.title}
+      </span>
     </div>
-    <div>
-      {#if status}
-        <IssueStatusIcon value={status} size="small" />
-      {/if}
-    </div>
+    {#if status}
+      <IssueStatusIcon value={status} size="small" />
+    {/if}
   </div>
 {/if}

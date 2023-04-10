@@ -73,7 +73,7 @@ class Connection implements ClientConnection {
     private readonly handler: TxHandler,
     private readonly onUpgrade?: () => void,
     private readonly onUnauthorized?: () => void,
-    readonly onConnect?: () => Promise<void>
+    readonly onConnect?: (apply: boolean) => Promise<void>
   ) {
     console.log('connection created')
     this.interval = setInterval(() => {
@@ -151,7 +151,7 @@ class Connection implements ClientConnection {
             v.reconnect?.()
           }
           resolve(websocket)
-          void this.onConnect?.()
+          void this.onConnect?.(false)
 
           return
         }
@@ -307,9 +307,9 @@ export async function connect (
   handler: TxHandler,
   onUpgrade?: () => void,
   onUnauthorized?: () => void,
-  onConnect?: () => void
+  onConnect?: (apply: boolean) => void
 ): Promise<ClientConnection> {
-  return new Connection(url, handler, onUpgrade, onUnauthorized, async () => {
-    onConnect?.()
+  return new Connection(url, handler, onUpgrade, onUnauthorized, async (apply) => {
+    onConnect?.(apply)
   })
 }

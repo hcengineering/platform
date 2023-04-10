@@ -18,24 +18,34 @@
   import { getColorNumberByText, getPlatformColor } from '@hcengineering/ui'
 
   export let value: State | undefined
+  export let shouldShowAvatar = true
+  export let inline: boolean = false
 </script>
 
 {#if value}
-  <div class="flex-row-center">
-    <div
-      class="state-container"
-      style="background-color: {getPlatformColor(value.color ?? getColorNumberByText(value.name))}"
-    />
-    <span class="overflow-label">{value.name}</span>
+  <div class="flex-presenter" class:inline-presenter={inline}>
+    {#if shouldShowAvatar}
+      <div
+        class="state-container"
+        class:inline
+        style="background-color: {getPlatformColor(value.color ?? getColorNumberByText(value.name))}"
+      />
+    {/if}
+    <span class="label nowrap">{value.name}</span>
   </div>
 {/if}
 
 <style lang="scss">
   .state-container {
+    flex-shrink: 0;
     margin-right: 0.5rem;
     width: 0.875rem;
     height: 0.875rem;
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 0.25rem;
+
+    &.inline {
+      transform: translateY(0.125rem);
+    }
   }
 </style>

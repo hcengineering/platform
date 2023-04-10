@@ -55,6 +55,7 @@
   on:close={() => {
     dispatch('close')
   }}
+  on:changeContent
 >
   <div class="flex-row-center clear-mins">
     <!-- <div class="mr-3">

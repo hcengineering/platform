@@ -129,6 +129,7 @@
     dispatch('close')
   }}
   createMore={false}
+  on:changeContent
 >
   <svelte:fragment slot="header">
     <SpaceSelector _class={tracker.class.Project} label={tracker.string.Project} bind:space={_space} />

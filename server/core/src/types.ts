@@ -117,6 +117,7 @@ export type TriggerFunc = (tx: Tx, ctrl: TriggerControl) => Promise<Tx[]>
 export interface AsyncTriggerControl {
   txFactory: TxFactory
   findAll: Storage['findAll']
+  apply: (tx: Tx[], broadcast: boolean, updateTx: boolean) => Promise<void>
   hierarchy: Hierarchy
   modelDb: ModelDb
 }

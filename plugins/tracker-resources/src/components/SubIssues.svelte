@@ -34,6 +34,7 @@
   export let component: Ref<Component> | null = null
   export let subIssues: IssueDraft[] = []
   export let shouldSaveDraft: boolean = false
+  let lastProject = project
 
   let isCollapsed = false
   let isCreating = $draftsStore[tracker.ids.IssueDraftChild] !== undefined
@@ -46,6 +47,18 @@
       const rightPart = subIssues.slice(toIndex)
       subIssues = [...leftPart, fromIssue, ...rightPart]
     }
+  }
+
+  $: onProjectChange(project)
+
+  function onProjectChange (project: Project | undefined) {
+    if (lastProject?._id === project?._id) return
+    lastProject = project
+    if (project === undefined) return
+    subIssues.forEach((p) => {
+      p.status = project.defaultIssueStatus
+      p.space = project._id
+    })
   }
 
   const client = getClient()

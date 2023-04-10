@@ -24,7 +24,8 @@ import { FilterFunction, FilterMode, Viewlet } from '@hcengineering/view'
 
 export default mergeIds(recruitId, recruit, {
   viewlet: {
-    VacancyApplicationsShort: '' as Ref<Viewlet>
+    VacancyApplicationsShort: '' as Ref<Viewlet>,
+    VacancyApplicationsEmbeddeed: '' as Ref<Viewlet>
   },
   status: {
     ApplicationExists: '' as StatusCode,
@@ -125,7 +126,8 @@ export default mergeIds(recruitId, recruit, {
     Application: '' as IntlString,
 
     TemplateReplace: '' as IntlString,
-    TemplateReplaceConfirm: '' as IntlString
+    TemplateReplaceConfirm: '' as IntlString,
+    OpenVacancyList: '' as IntlString
   },
   space: {
     CandidatesPublic: '' as Ref<Space>

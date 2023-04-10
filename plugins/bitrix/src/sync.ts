@@ -123,20 +123,19 @@ export async function syncDocument (
 
     // Just create supplier documents, like TagElements.
     for (const ed of resultDoc.extraDocs) {
-      await applyOp.createDoc(
-        ed._class,
-        ed.space,
-        ed,
-        ed._id,
-        resultDoc.document.modifiedOn,
-        resultDoc.document.modifiedBy
-      )
+      const { _class, space, _id, ...data } = ed
+      await applyOp.createDoc(_class, space, data, _id, resultDoc.document.modifiedOn, resultDoc.document.modifiedBy)
     }
+
+    for (const op of resultDoc.postOperations) {
+      await op(resultDoc.document, existing)
+    }
+
+    const idMapping = new Map<Ref<Doc>, Ref<Doc>>()
 
     // Find all attachment documents to existing.
     const byClass = new Map<Ref<Class<Doc>>, (AttachedDoc & BitrixSyncDoc)[]>()
 
-    const idMapping = new Map<Ref<Doc>, Ref<Doc>>()
     for (const d of resultDoc.extraSync) {
       byClass.set(d._class, [...(byClass.get(d._class) ?? []), d])
     }
@@ -245,7 +244,7 @@ export async function syncDocument (
           valValue.attachedTo = id
         } else {
           // Update document id, for existing document.
-          valValue.attachedTo = resultDoc.document._id
+          valValue.attachedTo = attachedTo
         }
         const existingIdx = existingByClass.findIndex((it) => {
           const bdoc = hierarchy.as<Doc, BitrixSyncDoc>(it, bitrix.mixin.BitrixSyncDoc)
@@ -841,14 +840,35 @@ async function synchronizeUsers (
   let totalUsers = 1
   let next = 0
 
-  const employees = new Map((await ops.client.findAll(contact.class.Employee, {})).map((it) => [it._id, it]))
+  const employeesList = await ops.client.findAll(
+    contact.class.Employee,
+    {},
+    {
+      lookup: {
+        _id: {
+          channels: contact.class.Channel
+        }
+      }
+    }
+  )
+  const employees = new Map(employeesList.map((it) => [it._id, it]))
 
   while (userList.size < totalUsers) {
     const users = await ops.bitrixClient.call('user.search', { start: next })
     next = users.next
     totalUsers = users.total
     for (const u of users.result) {
-      const account = allEmployee.find((it) => it.email === u.EMAIL)
+      let account = allEmployee.find((it) => it.email === u.EMAIL)
+
+      if (account === undefined) {
+        // Try to find from employee
+        employeesList.forEach((it) => {
+          if ((it.$lookup?.channels as Channel[])?.some((q) => q.value === u.EMAIL)) {
+            account = allEmployee.find((qit) => qit.employee === it._id)
+          }
+        })
+      }
+
       let accountId = account?._id
       if (accountId === undefined) {
         const employeeId = await ops.client.createDoc(contact.class.Employee, contact.space.Contacts, {

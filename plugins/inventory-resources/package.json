@@ -34,14 +34,14 @@
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",
     "svelte": "^3.47",
-    "@hcengineering/inventory": "^0.6.0",
-    "@hcengineering/ui": "^0.6.3",
-    "@hcengineering/panel": "^0.6.2",
+    "@hcengineering/inventory": "^0.6.1",
+    "@hcengineering/ui": "^0.6.5",
+    "@hcengineering/panel": "^0.6.3",
     "@hcengineering/presentation": "^0.6.2",
-    "@hcengineering/view": "^0.6.2",
+    "@hcengineering/view": "^0.6.3",
     "@hcengineering/view-resources": "^0.6.0",
-    "@hcengineering/core": "^0.6.21",
-    "@hcengineering/login": "^0.6.1",
-    "@hcengineering/workbench": "^0.6.2"
+    "@hcengineering/core": "^0.6.22",
+    "@hcengineering/login": "^0.6.2",
+    "@hcengineering/workbench": "^0.6.3"
   }
 }

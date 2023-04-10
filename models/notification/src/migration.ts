@@ -184,11 +184,25 @@ async function fillCollaborators (client: MigrationClient): Promise<void> {
   }
 }
 
+async function fillDocUpdatesHidder (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_NOTIFICATION,
+    {
+      _class: notification.class.DocUpdates,
+      hidden: { $exists: false }
+    },
+    {
+      hidden: false
+    }
+  )
+}
+
 export const notificationOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await fillNotificationText(client)
     await migrateLastView(client)
     await fillCollaborators(client)
+    await fillDocUpdatesHidder(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await createSpace(client)

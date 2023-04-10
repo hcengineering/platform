@@ -47,6 +47,7 @@
   on:close={() => {
     dispatch('close')
   }}
+  on:changeContent
 >
   <Grid rowGap={1}>
     <Label label={core.string.Name} />

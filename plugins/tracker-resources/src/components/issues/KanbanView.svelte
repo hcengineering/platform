@@ -264,14 +264,19 @@
       <!-- {@const status = $statusStore.get(state._id)} -->
       <div class="header flex-col">
         <div class="flex-row-center flex-between">
-          {#if groupByKey === noCategory}
-            <span class="text-base fs-bold overflow-label content-accent-color pointer-events-none">
-              <Label label={view.string.NoGrouping} />
+          <div class="flex-row-center gap-1">
+            {#if groupByKey === noCategory}
+              <span class="text-base fs-bold overflow-label content-accent-color pointer-events-none">
+                <Label label={view.string.NoGrouping} />
+              </span>
+            {:else if headerComponent}
+              <svelte:component this={headerComponent.presenter} value={state} {space} kind={'list-header'} />
+            {/if}
+            <span class="ml-1">
+              {count}
             </span>
-          {:else if headerComponent}
-            <svelte:component this={headerComponent.presenter} value={state} {space} kind={'list-header'} />
-          {/if}
-          <div class="flex gap-1">
+          </div>
+          <div class="flex-row-center gap-1">
             <Button
               icon={IconAdd}
               kind={'transparent'}

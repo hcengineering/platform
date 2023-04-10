@@ -119,14 +119,16 @@ async function loadDigest (
         console.log('loaded', snapshot, dataBlob.length)
 
         const addedCount = parseInt(dataBlob.shift() ?? '0')
-        const added = dataBlob.splice(0, addedCount).map((it) => it.split(';'))
-        for (const [k, v] of added) {
+        const added = dataBlob.splice(0, addedCount)
+        for (const it of added) {
+          const [k, v] = it.split(';')
           result.set(k as Ref<Doc>, v)
         }
 
         const updatedCount = parseInt(dataBlob.shift() ?? '0')
-        const updated = dataBlob.splice(0, updatedCount).map((it) => it.split(';'))
-        for (const [k, v] of updated) {
+        const updated = dataBlob.splice(0, updatedCount)
+        for (const it of updated) {
+          const [k, v] = it.split(';')
           result.set(k as Ref<Doc>, v)
         }
 

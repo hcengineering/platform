@@ -147,6 +147,7 @@
     {docs}
     {_class}
     {space}
+    query={resultQuery}
     {lookup}
     loadingPropsLength={getLoadingElementsLength(loadingProps, options)}
     {baseMenuClass}

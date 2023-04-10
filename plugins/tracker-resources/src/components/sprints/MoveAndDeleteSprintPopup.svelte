@@ -38,6 +38,7 @@
   okLabel={tracker.string.Delete}
   okAction={() => moveAndDeleteSprint(selectedSprint)}
   on:close
+  on:changeContent
 >
   <SprintPopup
     _class={tracker.class.Sprint}

@@ -14,7 +14,7 @@
 //
 
 import clientPlugin from '@hcengineering/client'
-import { Client, createClient, TxHandler } from '@hcengineering/core'
+import core, { Client, createClient, TxHandler, TxWorkspaceEvent, WorkspaceEvent } from '@hcengineering/core'
 import { getMetadata, getPlugins, getResource } from '@hcengineering/platform'
 import { connect } from './connection'
 
@@ -29,7 +29,7 @@ export default async () => {
         endpoint: string,
         onUpgrade?: () => void,
         onUnauthorized?: () => void,
-        onConnect?: () => void
+        onConnect?: (apply: boolean) => void
       ): Promise<Client> => {
         const filterModel = getMetadata(clientPlugin.metadata.FilterModel) ?? false
 
@@ -37,7 +37,16 @@ export default async () => {
           (handler: TxHandler) => {
             const url = new URL(`/${token}`, endpoint)
             console.log('connecting to', url.href)
-            return connect(url.href, handler, onUpgrade, onUnauthorized, onConnect)
+            const upgradeHandler: TxHandler = (tx) => {
+              if (tx._class === core.class.TxWorkspaceEvent) {
+                if ((tx as TxWorkspaceEvent).event === WorkspaceEvent.Upgrade) {
+                  onUpgrade?.()
+                }
+              }
+              handler(tx)
+            }
+
+            return connect(url.href, upgradeHandler, onUpgrade, onUnauthorized, onConnect)
           },
           filterModel ? getPlugins() : undefined
         )

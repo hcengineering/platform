@@ -103,6 +103,13 @@ export interface ActivityFilter extends Doc {
 /**
  * @public
  */
+export interface ExtraActivityComponent extends Class<Doc> {
+  component: AnyComponent
+}
+
+/**
+ * @public
+ */
 export const activityId = 'activity' as Plugin
 
 export default plugin(activityId, {
@@ -120,6 +127,9 @@ export default plugin(activityId, {
     Added: '' as IntlString,
     From: '' as IntlString,
     Removed: '' as IntlString
+  },
+  mixin: {
+    ExtraActivityComponent: '' as Ref<Class<ExtraActivityComponent>>
   },
   class: {
     TxViewlet: '' as Ref<Class<TxViewlet>>,

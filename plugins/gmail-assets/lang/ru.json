@@ -9,7 +9,6 @@
     "Copy": "Копия",
     "MessagesSelected": "сообщений выбрано",
     "PublishSelected": "Опубликовать выбранное",
-    "YouAnd": "Вы и",
     "CreateMessage": "Создать сообщение",
     "ShareMessages": "Поделиться сообщениями",
     "Connect": "Подключить",
@@ -32,6 +31,7 @@
     "EmailPlaceholder": "john.appleseed@apple.com",
     "WriteEmail": "Написать Email",
     "Shared": "Публичный",
-    "AvailableTo": "Доступен для"
+    "AvailableTo": "Доступен для",
+    "HaveWrittenEmail": "написал(а) сообщение"
   }
 }

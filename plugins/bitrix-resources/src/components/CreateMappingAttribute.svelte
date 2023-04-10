@@ -5,6 +5,7 @@
   import { Label } from '@hcengineering/ui'
   import bitrix from '../plugin'
   import CopyMapping from './mappings/CopyMapping.svelte'
+  import CreateAttachedDocMapping from './mappings/CreateHRApplicationMapping.svelte'
   import CreateChannelMapping from './mappings/CreateChannelMapping.svelte'
   import CreateTagMapping from './mappings/CreateTagMapping.svelte'
   import DownloadAttachmentMapping from './mappings/DownloadAttachmentMapping.svelte'
@@ -31,6 +32,7 @@
   okAction={save}
   okLabel={presentation.string.Save}
   on:close
+  on:changeContent
 >
   <svelte:fragment slot="header">
     <Label label={attribute.label} />
@@ -45,5 +47,7 @@
     <DownloadAttachmentMapping {mapping} {fields} {attribute} {field} bind:this={op} />
   {:else if _kind === MappingOperation.FindReference}
     <FindReferenceMapping {mapping} {fields} {attribute} {field} bind:this={op} />
+  {:else if _kind === MappingOperation.CreateHRApplication}
+    <CreateAttachedDocMapping {mapping} {fields} {attribute} {field} bind:this={op} />
   {/if}
 </Card>

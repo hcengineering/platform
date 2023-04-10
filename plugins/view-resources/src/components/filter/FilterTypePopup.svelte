@@ -25,7 +25,7 @@
     showPopup,
     Submenu
   } from '@hcengineering/ui'
-  import { Filter, KeyFilter } from '@hcengineering/view'
+  import { ClassFilters, Filter, KeyFilter } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { buildFilterKey, FilterQuery } from '../../filter'
   import view from '../../plugin'
@@ -40,9 +40,7 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  function getFilters (_class: Ref<Class<Doc>>): KeyFilter[] {
-    const clazz = hierarchy.getClass(_class)
-    const mixin = hierarchy.as(clazz, view.mixin.ClassFilters)
+  function getFilters (_class: Ref<Class<Doc>>, mixin: ClassFilters): KeyFilter[] {
     if (mixin.filters === undefined) return []
     const filters = mixin.filters.map((p) => {
       return typeof p === 'string' ? buildFilterFromKey(_class, p) : p
@@ -83,17 +81,24 @@
   function buildFilterFor (
     _class: Ref<Class<Doc>>,
     allAttributes: Map<string, AnyAttribute>,
-    result: KeyFilter[]
+    result: KeyFilter[],
+    mixin: ClassFilters
   ): void {
-    for (const [, attribute] of allAttributes) {
+    const ignoreKeys = new Set(mixin.ignoreKeys ?? [])
+    for (const [key, attribute] of allAttributes) {
+      if (ignoreKeys.has(key)) {
+        continue
+      }
       buildFilterForAttr(_class, attribute, result)
     }
   }
 
   function getTypes (_class: Ref<Class<Doc>>): KeyFilter[] {
-    const result = getFilters(_class)
+    const clazz = hierarchy.getClass(_class)
+    const mixin = hierarchy.as(clazz, view.mixin.ClassFilters)
+    const result = getFilters(_class, mixin)
     const allAttributes = hierarchy.getAllAttributes(_class)
-    buildFilterFor(_class, allAttributes, result)
+    buildFilterFor(_class, allAttributes, result, mixin)
 
     const desc = hierarchy.getDescendants(_class)
     for (const d of desc) {

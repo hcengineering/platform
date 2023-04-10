@@ -14,24 +14,32 @@
 // limitations under the License.
 //
 
-import contact, { Contact, contactId, Employee, getName, Organization, Person } from '@hcengineering/contact'
+import contact, {
+  Contact,
+  contactId,
+  Employee,
+  EmployeeAccount,
+  getName,
+  Organization,
+  Person
+} from '@hcengineering/contact'
 import core, {
-  AnyAttribute,
-  ArrOf,
+  Account,
   AttachedDoc,
-  Class,
   Collection,
   concatLink,
   Doc,
-  Obj,
   Ref,
   RefTo,
+  Timestamp,
   Tx,
+  TxBuilder,
   TxRemoveDoc,
-  TxUpdateDoc
+  TxUpdateDoc,
+  updateAttribute
 } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
-import serverCore, { TriggerControl } from '@hcengineering/server-core'
+import serverCore, { AsyncTriggerControl, TriggerControl } from '@hcengineering/server-core'
 import { workbenchId } from '@hcengineering/workbench'
 
 /**
@@ -65,6 +73,9 @@ export async function OnContactDelete (
   if (avatar?.includes('://') && !avatar?.startsWith('image://')) {
     return []
   }
+  if (avatar === '') {
+    return []
+  }
 
   storageFx(async (adapter, bucket) => {
     await adapter.remove(bucket, [avatar])
@@ -96,25 +107,126 @@ export async function OnContactDelete (
   return result
 }
 
-async function mergeCollectionAttributes<T extends Doc> (
-  control: TriggerControl,
-  attributes: Map<string, AnyAttribute>,
-  oldValue: Ref<T>,
-  newValue: Ref<T>
+async function updateAllRefs (
+  control: AsyncTriggerControl,
+  sourceAccount: EmployeeAccount,
+  targetAccount: EmployeeAccount,
+  modifiedOn: Timestamp,
+  modifiedBy: Ref<Account>
 ): Promise<Tx[]> {
   const res: Tx[] = []
+  // Move all possible references to Account and Employee and replace to target one.
+  const reftos = (await control.modelDb.findAll(core.class.Attribute, { 'type._class': core.class.RefTo })).filter(
+    (it) => {
+      const to = it.type as RefTo<Doc>
+      return to.to === contact.class.Employee || to.to === core.class.Account || to.to === contact.class.EmployeeAccount
+    }
+  )
+
+  for (const attr of reftos) {
+    if (attr.name === '_id') {
+      continue
+    }
+    const to = attr.type as RefTo<Doc>
+    if (to.to === contact.class.Employee) {
+      const descendants = control.hierarchy.getDescendants(attr.attributeOf)
+      for (const d of descendants) {
+        if (control.hierarchy.findDomain(d) !== undefined) {
+          const values = await control.findAll(d, { [attr.name]: sourceAccount.employee })
+
+          const builder = new TxBuilder(control.hierarchy, control.modelDb, modifiedBy)
+          for (const v of values) {
+            await updateAttribute(builder, v, d, { key: attr.name, attr }, targetAccount.employee, targetAccount._id)
+          }
+          await control.apply(builder.txes, true, true)
+        }
+      }
+    }
+    if (
+      (to.to === contact.class.EmployeeAccount || to.to === core.class.Account) &&
+      sourceAccount !== undefined &&
+      targetAccount !== undefined
+    ) {
+      const descendants = control.hierarchy.getDescendants(attr.attributeOf)
+      for (const d of descendants) {
+        if (control.hierarchy.findDomain(d) !== undefined) {
+          const values = await control.findAll(d, { [attr.name]: sourceAccount._id })
+          const builder = new TxBuilder(control.hierarchy, control.modelDb, modifiedBy)
+          for (const v of values) {
+            await updateAttribute(builder, v, d, { key: attr.name, attr }, targetAccount._id, targetAccount._id)
+          }
+          await control.apply(builder.txes, true, true)
+        }
+      }
+    }
+  }
+  const arrs = await control.findAll(core.class.Attribute, { 'type._class': core.class.ArrOf })
+  for (const attr of arrs) {
+    if (attr.name === '_id') {
+      continue
+    }
+    const to = attr.type as RefTo<Doc>
+    if (to.to === contact.class.Employee) {
+      const descendants = control.hierarchy.getDescendants(attr.attributeOf)
+      for (const d of descendants) {
+        if (control.hierarchy.findDomain(d) !== undefined) {
+          const values = await control.findAll(attr.attributeOf, { [attr.name]: sourceAccount.employee })
+          const builder = new TxBuilder(control.hierarchy, control.modelDb, modifiedBy)
+          for (const v of values) {
+            await updateAttribute(builder, v, d, { key: attr.name, attr }, targetAccount.employee, targetAccount._id)
+          }
+          await control.apply(builder.txes, true, true)
+        }
+      }
+    }
+    if (
+      (to.to === contact.class.EmployeeAccount || to.to === core.class.Account) &&
+      sourceAccount !== undefined &&
+      targetAccount !== undefined
+    ) {
+      const descendants = control.hierarchy.getDescendants(attr.attributeOf)
+      for (const d of descendants) {
+        if (control.hierarchy.findDomain(d) !== undefined) {
+          const values = await control.findAll(d, { [attr.name]: sourceAccount._id })
+          const builder = new TxBuilder(control.hierarchy, control.modelDb, modifiedBy)
+          for (const v of values) {
+            await updateAttribute(builder, v, d, { key: attr.name, attr }, targetAccount._id, targetAccount._id)
+          }
+          await control.apply(builder.txes, true, true)
+        }
+      }
+    }
+  }
+  const employee = (await control.findAll(contact.class.Employee, { _id: sourceAccount.employee })).shift()
+  const builder = new TxBuilder(control.hierarchy, control.modelDb, modifiedBy)
+  await builder.remove(sourceAccount)
+  if (employee !== undefined) {
+    await builder.remove(employee)
+  }
+  await control.apply(builder.txes, true, true)
+
+  return res
+}
+
+async function mergeEmployee (control: AsyncTriggerControl, uTx: TxUpdateDoc<Employee>): Promise<Tx[]> {
+  if (uTx.operations.mergedTo === undefined) return []
+  const target = uTx.operations.mergedTo
+  const res: Tx[] = []
+
+  const attributes = control.hierarchy.getAllAttributes(contact.class.Employee)
+
   for (const attribute of attributes) {
     if (control.hierarchy.isDerived(attribute[1].type._class, core.class.Collection)) {
       if (attribute[1]._id === contact.class.Contact + '_channels') continue
       const collection = attribute[1].type as Collection<AttachedDoc>
-      const allAttached = await control.findAll(collection.of, { attachedTo: oldValue })
+      const allAttached = await control.findAll(collection.of, { attachedTo: uTx.objectId })
       for (const attached of allAttached) {
         const tx = control.txFactory.createTxUpdateDoc(attached._class, attached.space, attached._id, {
-          attachedTo: newValue
+          attachedTo: target
         })
         const parent = control.txFactory.createTxCollectionCUD(
           attached.attachedToClass,
-          newValue,
+          target,
           attached.space,
           attached.collection,
           tx
@@ -123,125 +235,19 @@ async function mergeCollectionAttributes<T extends Doc> (
       }
     }
   }
-  return res
-}
 
-async function processRefAttribute<T extends Doc> (
-  control: TriggerControl,
-  clazz: Ref<Class<Obj>>,
-  attr: AnyAttribute,
-  key: string,
-  targetClasses: Ref<Class<Obj>>[],
-  oldValue: Ref<T>,
-  newValue: Ref<T>
-): Promise<Tx[]> {
-  const res: Tx[] = []
-  if (attr.type._class === core.class.RefTo) {
-    if (targetClasses.includes((attr.type as RefTo<Doc>).to)) {
-      const isMixin = control.hierarchy.isMixin(clazz)
-      const docs = await control.findAll(clazz, { [key]: oldValue })
-      for (const doc of docs) {
-        if (isMixin) {
-          const tx = control.txFactory.createTxMixin(doc._id, doc._class, doc.space, clazz, { [key]: newValue })
-          res.push(tx)
-        } else {
-          const tx = control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, { [key]: newValue })
-          res.push(tx)
-        }
-      }
-    }
-  }
-  return res
-}
+  const oldEmployeeAccount = (
+    await control.modelDb.findAll(contact.class.EmployeeAccount, { employee: uTx.objectId })
+  )[0]
+  const newEmployeeAccount = (await control.modelDb.findAll(contact.class.EmployeeAccount, { employee: target }))[0]
 
-async function processRefArrAttribute<T extends Doc> (
-  control: TriggerControl,
-  clazz: Ref<Class<Obj>>,
-  attr: AnyAttribute,
-  key: string,
-  targetClasses: Ref<Class<Obj>>[],
-  oldValue: Ref<T>,
-  newValue: Ref<T>
-): Promise<Tx[]> {
-  const res: Tx[] = []
-  if (attr.type._class === core.class.ArrOf) {
-    const arrOf = (attr.type as ArrOf<RefTo<Doc>>).of
-    if (arrOf._class === core.class.RefTo) {
-      if (targetClasses.includes((arrOf as RefTo<Doc>).to)) {
-        const docs = await control.findAll(clazz, { [key]: oldValue })
-        for (const doc of docs) {
-          const push = control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
-            $push: {
-              [key]: newValue
-            }
-          })
-          const pull = control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
-            $pull: {
-              [key]: oldValue
-            }
-          })
-          res.push(pull)
-          res.push(push)
-        }
-      }
-    }
-  }
-  return res
-}
-
-async function updateAllRefs<T extends Doc> (
-  control: TriggerControl,
-  _class: Ref<Class<T>>,
-  oldValue: Ref<T>,
-  newValue: Ref<T>
-): Promise<Tx[]> {
-  const res: Tx[] = []
-  const attributes = control.hierarchy.getAllAttributes(_class)
-  const parent = control.hierarchy.getParentClass(_class)
-  const mixins = control.hierarchy.getDescendants(parent).filter((p) => control.hierarchy.isMixin(p))
-  const colTxes = await mergeCollectionAttributes(control, attributes, oldValue, newValue)
-  res.push(...colTxes)
-  for (const mixin of mixins) {
-    const attributes = control.hierarchy.getOwnAttributes(mixin)
-    const txes = await mergeCollectionAttributes(control, attributes, oldValue, newValue)
-    res.push(...txes)
-  }
-
-  const skip: Ref<AnyAttribute>[] = []
-  const allClasses = control.hierarchy.getDescendants(core.class.Doc)
-  const targetClasses = control.hierarchy.getDescendants(parent)
-  for (const clazz of allClasses) {
-    const domain = control.hierarchy.findDomain(clazz)
-    if (domain === undefined) continue
-    const attributes = control.hierarchy.getOwnAttributes(clazz)
-    for (const attribute of attributes) {
-      const key = attribute[0]
-      const attr = attribute[1]
-      if (key === '_id') continue
-      if (skip.includes(attr._id)) continue
-      const refs = await processRefAttribute(control, clazz, attr, key, targetClasses, oldValue, newValue)
-      res.push(...refs)
-      const arrRef = await processRefArrAttribute(control, clazz, attr, key, targetClasses, oldValue, newValue)
-      res.push(...arrRef)
-    }
-  }
-  return res
-}
-
-async function mergeEmployee (control: TriggerControl, uTx: TxUpdateDoc<Employee>): Promise<Tx[]> {
-  if (uTx.operations.mergedTo === undefined) return []
-  const target = uTx.operations.mergedTo
-  const res: Tx[] = []
-  const employeeTxes = await updateAllRefs(control, contact.class.Employee, uTx.objectId, target)
-  res.push(...employeeTxes)
-  const oldEmployeeAccount = (await control.findAll(contact.class.EmployeeAccount, { employee: uTx.objectId }))[0]
-  const newEmployeeAccount = (await control.findAll(contact.class.EmployeeAccount, { employee: target }))[0]
   if (oldEmployeeAccount === undefined || newEmployeeAccount === undefined) return res
   const accountTxes = await updateAllRefs(
     control,
-    contact.class.EmployeeAccount,
-    oldEmployeeAccount._id,
-    newEmployeeAccount._id
+    oldEmployeeAccount,
+    newEmployeeAccount,
+    uTx.modifiedOn,
+    uTx.modifiedBy
   )
   res.push(...accountTxes)
   return res
@@ -250,7 +256,7 @@ async function mergeEmployee (control: TriggerControl, uTx: TxUpdateDoc<Employee
 /**
  * @public
  */
-export async function OnEmployeeUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+export async function OnEmployeeUpdate (tx: Tx, control: AsyncTriggerControl): Promise<Tx[]> {
   if (tx._class !== core.class.TxUpdateDoc) {
     return []
   }

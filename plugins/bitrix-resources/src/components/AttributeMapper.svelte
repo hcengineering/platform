@@ -70,6 +70,12 @@
       action: (_: any, evt: MouseEvent) => {
         addMapping(evt, MappingOperation.FindReference)
       }
+    },
+    {
+      label: getEmbeddedLabel('Create Vacancy and application'),
+      action: (_: any, evt: MouseEvent) => {
+        addMapping(evt, MappingOperation.CreateHRApplication)
+      }
     }
   ] as Action[]
 </script>

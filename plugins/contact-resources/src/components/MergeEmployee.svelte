@@ -13,18 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Channel, ChannelProvider, Employee, getName } from '@hcengineering/contact'
+  import { Channel, Employee, getName } from '@hcengineering/contact'
   import core, { Doc, DocumentUpdate, Mixin, Ref, TxProcessor } from '@hcengineering/core'
-  import login from '@hcengineering/login'
-  import { getResource } from '@hcengineering/platform'
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
-  import { DatePresenter, Grid, Toggle } from '@hcengineering/ui'
-  import { isCollectionAttr, StringEditor } from '@hcengineering/view-resources'
+  import { Toggle } from '@hcengineering/ui'
+  import { isCollectionAttr } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
   import Avatar from './Avatar.svelte'
   import ChannelPresenter from './ChannelPresenter.svelte'
   import ChannelsDropdown from './ChannelsDropdown.svelte'
+  import EditEmployee from './EditEmployee.svelte'
   import EmployeeBox from './EmployeeBox.svelte'
   import MergeAttributeComparer from './MergeAttributeComparer.svelte'
   import MergeComparer from './MergeComparer.svelte'
@@ -35,20 +34,28 @@
   const hierarchy = client.getHierarchy()
   const parent = hierarchy.getParentClass(contact.class.Employee)
   const mixins = hierarchy.getDescendants(parent).filter((p) => hierarchy.isMixin(p))
+
+  let sourceEmployee = value._id
+  let sourceEmp: Employee | undefined = undefined
+
   let targetEmployee: Ref<Employee> | undefined = undefined
   let targetEmp: Employee | undefined = undefined
 
   const targetQuery = createQuery()
   $: targetEmployee &&
-    targetQuery.query(contact.class.Employee, { _id: targetEmployee }, (res) => {
-      ;[targetEmp] = res
-      update = fillUpdate(value, targetEmp)
-      mixinUpdate = fillMixinUpdate(value, targetEmp)
-      result = hierarchy.clone(targetEmp)
-      applyUpdate(update)
+    sourceEmployee &&
+    targetQuery.query(contact.class.Employee, { _id: { $in: [sourceEmployee, targetEmployee] } }, (res) => {
+      // ;[targetEmp] = res
+      sourceEmp = res.find((it) => it._id === sourceEmployee)
+      targetEmp = res.find((it) => it._id === targetEmployee)
+      if (sourceEmp && targetEmp) {
+        update = fillUpdate(sourceEmp, targetEmp)
+        mixinUpdate = fillMixinUpdate(sourceEmp, targetEmp)
+        applyUpdate(update)
+      }
     })
 
-  function fillUpdate (value: Employee, target: Employee): DocumentUpdate<Employee> {
+  function fillUpdate (source: Employee, target: Employee): DocumentUpdate<Employee> {
     const res: DocumentUpdate<Employee> = {}
     const attributes = hierarchy.getOwnAttributes(contact.class.Employee)
     for (const attribute of attributes) {
@@ -56,20 +63,20 @@
       if (attribute[1].hidden) continue
       if (isCollectionAttr(hierarchy, { key, attr: attribute[1] })) continue
       if ((target as any)[key] === undefined) {
-        ;(res as any)[key] = (value as any)[key]
+        ;(res as any)[key] = (source as any)[key]
       }
     }
     return res
   }
 
-  function fillMixinUpdate (value: Employee, target: Employee): Record<Ref<Mixin<Doc>>, DocumentUpdate<Doc>> {
+  function fillMixinUpdate (source: Employee, target: Employee): Record<Ref<Mixin<Doc>>, DocumentUpdate<Doc>> {
     const res: Record<Ref<Mixin<Doc>>, DocumentUpdate<Doc>> = {}
     for (const mixin of mixins) {
-      if (!hierarchy.hasMixin(value, mixin)) continue
+      if (!hierarchy.hasMixin(source, mixin)) continue
       const attributes = hierarchy.getOwnAttributes(mixin)
       for (const attribute of attributes) {
         const key = attribute[0]
-        const from = hierarchy.as(value, mixin)
+        const from = hierarchy.as(source, mixin)
         const to = hierarchy.as(target, mixin)
         if ((from as any)[key] !== undefined && (to as any)[key] === undefined) {
           const obj: DocumentUpdate<Doc> = res[mixin] ?? {}
@@ -83,25 +90,32 @@
 
   let update: DocumentUpdate<Employee> = {}
   let mixinUpdate: Record<Ref<Mixin<Doc>>, DocumentUpdate<Doc>> = {}
-  let result: Employee = value
+
+  let result: Employee = { ...value }
 
   function applyUpdate (update: DocumentUpdate<Employee>): void {
-    result = hierarchy.clone(targetEmp)
-    TxProcessor.applyUpdate(result, update)
+    const r = hierarchy.clone(targetEmp)
+    TxProcessor.applyUpdate(r, update)
+    result = r
   }
 
   async function merge (): Promise<void> {
-    if (targetEmp === undefined) return
+    if (sourceEmp === undefined || targetEmp === undefined) return
     if (Object.keys(update).length > 0) {
+      if (update.avatar !== undefined || sourceEmp.avatar === targetEmp.avatar) {
+        // We replace avatar, we need to update source with target
+        await client.update(sourceEmp, { avatar: sourceEmp.avatar === targetEmp.avatar ? '' : targetEmp.avatar })
+      }
       await client.update(targetEmp, update)
     }
-    await client.update(value, { mergedTo: targetEmp._id, active: false })
+    await client.update(sourceEmp, { mergedTo: targetEmp._id, active: false })
     for (const channel of resultChannels.values()) {
-      if (channel.attachedTo === targetEmp._id) continue
+      if (channel.attachedTo !== targetEmp._id) continue
       await client.update(channel, { attachedTo: targetEmp._id })
-      const remove = targetConflict.get(channel.provider)
-      if (remove !== undefined) {
-        await client.remove(remove)
+    }
+    for (const old of oldChannels) {
+      if ((enabledChannels.get(old._id) ?? true) === false) {
+        await client.remove(old)
       }
     }
     for (const mixin in mixinUpdate) {
@@ -112,51 +126,48 @@
         await client.createMixin(targetEmp._id, targetEmp._class, targetEmp.space, mixin as Ref<Mixin<Doc>>, {})
       }
     }
-    const account = await client.findOne(contact.class.EmployeeAccount, { employee: value._id })
-    if (account !== undefined) {
-      const leaveWorkspace = await getResource(login.function.LeaveWorkspace)
-      await leaveWorkspace(account.email)
-    }
+
     dispatch('close')
   }
 
   function select (field: string, targetValue: boolean) {
     if (!targetValue) {
-      ;(update as any)[field] = (value as any)[field]
+      ;(update as any)[field] = (sourceEmp as any)[field]
     } else {
       delete (update as any)[field]
     }
+    update = update
     applyUpdate(update)
   }
 
-  function mergeChannels (oldChannels: Channel[], targetChannels: Channel[]): Map<Ref<ChannelProvider>, Channel> {
-    targetConflict.clear()
-    valueConflict.clear()
-    const res: Channel[] = [...targetChannels]
-    const map = new Map(targetChannels.map((p) => [p.provider, p]))
-    for (const channel of oldChannels) {
-      if (channel.provider === contact.channelProvider.Email) continue
-      const target = map.get(channel.provider)
-      if (target !== undefined) {
-        targetConflict.set(target.provider, target)
-        valueConflict.set(channel.provider, channel)
-      } else {
-        res.push(channel)
+  function mergeChannels (
+    oldChannels: Channel[],
+    targetChannels: Channel[],
+    enabledChannels: Map<Ref<Channel>, boolean>
+  ): Channel[] {
+    const res: Channel[] = []
+    for (const channel of [...targetChannels, ...oldChannels]) {
+      // if (channel.provider === contact.channelProvider.Email) continue
+      const target = enabledChannels.get(channel._id) ?? true
+
+      if (target) {
+        // Add if missing
+        if (!res.some((it) => it.provider === channel.provider && it.value === channel.value)) {
+          res.push(channel)
+        }
       }
     }
-    targetConflict = targetConflict
-    valueConflict = valueConflict
-    return new Map(res.map((p) => [p.provider, p]))
+    return res
   }
 
-  let resultChannels: Map<Ref<ChannelProvider>, Channel> = new Map()
+  let enabledChannels: Map<Ref<Channel>, boolean> = new Map()
+
+  let resultChannels: Channel[] = []
   let oldChannels: Channel[] = []
-  let valueConflict: Map<Ref<ChannelProvider>, Channel> = new Map()
-  let targetConflict: Map<Ref<ChannelProvider>, Channel> = new Map()
   const valueChannelsQuery = createQuery()
-  valueChannelsQuery.query(contact.class.Channel, { attachedTo: value._id }, (res) => {
+
+  $: valueChannelsQuery.query(contact.class.Channel, { attachedTo: sourceEmployee }, (res) => {
     oldChannels = res
-    resultChannels = mergeChannels(oldChannels, targetChannels)
   })
 
   let targetChannels: Channel[] = []
@@ -164,14 +175,9 @@
   $: targetEmployee &&
     targetChannelsQuery.query(contact.class.Channel, { attachedTo: targetEmployee }, (res) => {
       targetChannels = res
-      resultChannels = mergeChannels(oldChannels, targetChannels)
     })
 
-  function selectChannel (isTarget: boolean, targetChannel: Channel, value: Channel) {
-    const res = isTarget ? targetChannel : value
-    resultChannels.set(res.provider, res)
-    resultChannels = resultChannels
-  }
+  $: resultChannels = mergeChannels(oldChannels, targetChannels, enabledChannels)
 
   const attributes = hierarchy.getAllAttributes(contact.class.Employee, core.class.Doc)
   const ignoreKeys = ['name', 'avatar', 'createOn']
@@ -194,6 +200,7 @@
     }
     mixinUpdate[mixin] = upd
   }
+  const toAny = (a: any) => a
 </script>
 
 <Card
@@ -203,75 +210,18 @@
   okAction={merge}
   canSave={targetEmp !== undefined}
   onCancel={() => dispatch('close')}
+  on:changeContent
 >
-  <div class="flex-row-reverse">
-    <EmployeeBox
-      showNavigate={false}
-      label={contact.string.MergeEmployee}
-      docQuery={{ active: true, _id: { $ne: value._id } }}
-      bind:value={targetEmployee}
-    />
-  </div>
-  {#if targetEmp}
-    <Grid column={3} rowGap={0.5} columnGap={0.5}>
-      <MergeComparer key="avatar" {value} {targetEmp} onChange={select}>
-        <svelte:fragment slot="item" let:item>
-          <Avatar avatar={item.avatar} size={'medium'} icon={contact.icon.Person} />
-        </svelte:fragment>
-      </MergeComparer>
-      <MergeComparer key="name" {value} {targetEmp} onChange={select}>
-        <svelte:fragment slot="item" let:item>
-          {getName(item)}
-        </svelte:fragment>
-      </MergeComparer>
-      {#each objectAttributes as attribute}
-        <MergeAttributeComparer
-          key={attribute[0]}
-          {value}
-          {targetEmp}
-          onChange={select}
-          _class={contact.class.Employee}
-        />
-      {/each}
-      {#each mixins as mixin}
-        {@const attributes = getMixinAttributes(mixin)}
-        {#each attributes as attribute}
-          <MergeAttributeComparer
-            key={attribute}
-            {value}
-            {targetEmp}
-            onChange={(key, value) => selectMixin(mixin, key, value)}
-            _class={mixin}
-          />
-        {/each}
-      {/each}
-      {#each Array.from(targetConflict.values()) as conflict}
-        {@const val = valueConflict.get(conflict.provider)}
-        {#if val}
-          <div class="flex-center max-w-40">
-            <ChannelPresenter value={val} />
-          </div>
-          <div class="flex-center">
-            <Toggle
-              on={true}
-              on:change={(e) => {
-                selectChannel(e.detail, conflict, val)
-              }}
-            />
-          </div>
-          <div class="flex-center max-w-40">
-            <ChannelPresenter value={conflict} />
-          </div>
-        {/if}
-      {/each}
-    </Grid>
-    <div class="flex-col-center">
-      <Avatar avatar={result.avatar} size={'large'} icon={contact.icon.Person} />
-      {getName(result)}
-      <DatePresenter value={result.birthday} />
-      <StringEditor value={result.city} readonly placeholder={contact.string.Location} />
+  <div class="flex-row flex-between">
+    <div class="flex-row-center">
+      <EmployeeBox
+        showNavigate={false}
+        label={contact.string.MergeEmployeeFrom}
+        docQuery={{ active: { $in: [true, false] } }}
+        bind:value={sourceEmployee}
+      />
       <ChannelsDropdown
-        value={Array.from(resultChannels.values())}
+        value={oldChannels}
         editable={false}
         kind={'link-bordered'}
         size={'small'}
@@ -279,5 +229,85 @@
         shape={'circle'}
       />
     </div>
-  {/if}
+    >>
+    <div class="flex-row-center">
+      <EmployeeBox
+        showNavigate={false}
+        label={contact.string.MergeEmployeeTo}
+        docQuery={{ active: true }}
+        bind:value={targetEmployee}
+      />
+      <ChannelsDropdown
+        value={targetChannels}
+        editable={false}
+        kind={'link-bordered'}
+        size={'small'}
+        length={'full'}
+        shape={'circle'}
+      />
+    </div>
+  </div>
+  {#key [targetEmployee, sourceEmployee]}
+    {#if targetEmp && sourceEmp}
+      <div class="flex-col flex-grow">
+        <MergeComparer
+          key="avatar"
+          value={sourceEmp}
+          {targetEmp}
+          onChange={select}
+          selected={update.avatar !== undefined}
+        >
+          <svelte:fragment slot="item" let:item>
+            <Avatar avatar={item.avatar} size={'x-large'} icon={contact.icon.Person} />
+          </svelte:fragment>
+        </MergeComparer>
+        <MergeComparer key="name" value={sourceEmp} {targetEmp} onChange={select} selected={update.name !== undefined}>
+          <svelte:fragment slot="item" let:item>
+            {getName(item)}
+          </svelte:fragment>
+        </MergeComparer>
+        {#each objectAttributes as attribute}
+          <MergeAttributeComparer
+            key={attribute[0]}
+            value={sourceEmp}
+            {targetEmp}
+            onChange={select}
+            _class={contact.class.Employee}
+            selected={toAny(update)[attribute[0]] !== undefined}
+          />
+        {/each}
+        {#each mixins as mixin}
+          {@const attributes = getMixinAttributes(mixin)}
+          {#each attributes as attribute}
+            <MergeAttributeComparer
+              key={attribute}
+              value={sourceEmp}
+              {targetEmp}
+              onChange={(key, value) => selectMixin(mixin, key, value)}
+              _class={mixin}
+              selected={toAny(mixinUpdate)?.[mixin]?.[attribute] !== undefined}
+            />
+          {/each}
+        {/each}
+        {#each Array.from(oldChannels).concat(targetChannels) as channel}
+          {@const enabled = enabledChannels.get(channel._id) ?? true}
+          <div class="flex-row-center flex-between">
+            <ChannelPresenter value={channel} />
+            <div class="flex-center">
+              <Toggle
+                on={enabled}
+                on:change={(e) => {
+                  enabledChannels.set(channel._id, e.detail)
+                  enabledChannels = enabledChannels
+                }}
+              />
+            </div>
+          </div>
+        {/each}
+      </div>
+      <div class="flex-col-center antiPopup p-4">
+        <EditEmployee object={result} readonly channels={resultChannels} />
+      </div>
+    {/if}
+  {/key}
 </Card>

@@ -148,9 +148,9 @@
     }
   }
   .large {
-    height: 2rem;
+    height: 2.25rem;
     &.only-icon {
-      width: 2rem;
+      width: 2.25rem;
     }
   }
   .x-large {

@@ -460,7 +460,6 @@ export default plugin(trackerId, {
 
     ComponentsList: '' as Asset,
     ComponentsTimeline: '' as Asset,
-    ComponentMembers: '' as Asset,
 
     ComponentStatusBacklog: '' as Asset,
     ComponentStatusPlanned: '' as Asset,

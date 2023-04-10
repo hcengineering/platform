@@ -27,8 +27,8 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/core": "^0.6.21",
-    "@hcengineering/client": "^0.6.6",
+    "@hcengineering/core": "^0.6.22",
+    "@hcengineering/client": "^0.6.7",
     "@hcengineering/dev-storage": "^0.6.6",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/model-all": "^0.6.0",

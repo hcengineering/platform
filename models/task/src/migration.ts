@@ -211,7 +211,9 @@ export const taskOperation: MigrateOperation = {
     const stateTemplateClasses = client.hierarchy.getDescendants(task.class.StateTemplate)
     const doneStateTemplatesClasses = client.hierarchy.getDescendants(task.class.DoneStateTemplate)
 
-    await client.move(DOMAIN_STATE, { _class: { $in: [...stateClasses, ...doneStateClasses] } }, DOMAIN_STATUS)
+    try {
+      await client.move(DOMAIN_STATE, { _class: { $in: [...stateClasses, ...doneStateClasses] } }, DOMAIN_STATUS)
+    } catch (err) {}
 
     await client.update(
       DOMAIN_STATUS,

@@ -553,7 +553,7 @@
     &.link {
       padding: 0 0.875rem;
       width: 100%;
-      height: 2rem;
+      height: 2.25rem;
       color: var(--caption-color);
       &:hover {
         background-color: var(--body-color);

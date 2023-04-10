@@ -88,9 +88,11 @@
       min-width: 0;
       min-height: 3rem;
       background-color: var(--board-card-bg-color);
-      border: 1px solid var(--divider-color);
-      border-bottom: none;
-      border-radius: .5rem .5rem 0 0;
+      &:not(.embedded) {
+        border: 1px solid var(--divider-color);
+        border-bottom: none;
+        border-radius: .5rem .5rem 0 0;
+      }
     }
     &__content {
       flex-grow: 1;
@@ -119,6 +121,7 @@
     &:not(.embedded) {
       border-radius: 0 0 .5rem .5rem;
     }
+    &.embedded { border-left: none; }
 
     &.main {
       justify-content: stretch;
@@ -220,8 +223,9 @@
         top: 0;
         left: 100%;
         width: 320px;
-        height: 100%;
         min-width: 0;
+        max-width: 320px;
+        height: 100%;
         background-color: var(--board-card-bg-color);
         border-left: 1px solid var(--divider-color);
         border-bottom-right-radius: .45rem;

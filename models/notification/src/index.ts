@@ -36,6 +36,7 @@ import setting from '@hcengineering/setting'
 import workbench from '@hcengineering/workbench'
 import notification from './plugin'
 import { AnyComponent } from '@hcengineering/ui'
+import view, { createAction } from '@hcengineering/model-view'
 
 export const DOMAIN_NOTIFICATION = 'notification' as Domain
 
@@ -143,9 +144,12 @@ export class TDocUpdates extends TDoc implements DocUpdates {
   @Index(IndexKind.Indexed)
     attachedTo!: Ref<Doc>
 
+  @Index(IndexKind.Indexed)
+    hidden!: boolean
+
   attachedToClass!: Ref<Class<Doc>>
-  lastTx?: Ref<TxCUD<Doc>>
-  lastTxTime?: Timestamp
+  lastTx!: Ref<TxCUD<Doc>>
+  lastTxTime!: Timestamp
   txes!: [Ref<TxCUD<Doc>>, Timestamp][]
 }
 
@@ -235,11 +239,56 @@ export function createModel (builder: Builder): void {
       label: notification.string.Inbox,
       icon: notification.icon.Notifications,
       alias: notificationId,
-      position: 'bottom',
-      hidden: false,
+      hidden: true,
       component: notification.component.Inbox
     },
     notification.app.Notification
+  )
+
+  createAction(
+    builder,
+    {
+      action: notification.actionImpl.MarkAsUnread,
+      actionProps: {},
+      label: notification.string.MarkAsUnread,
+      icon: notification.icon.Track,
+      input: 'focus',
+      visibilityTester: notification.function.HasntNotifications,
+      category: notification.category.Notification,
+      target: notification.class.DocUpdates,
+      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
+    },
+    notification.action.MarkAsUnread
+  )
+
+  createAction(
+    builder,
+    {
+      action: notification.actionImpl.Hide,
+      actionProps: {},
+      label: notification.string.Hide,
+      icon: notification.icon.Hide,
+      input: 'focus',
+      category: notification.category.Notification,
+      target: notification.class.DocUpdates,
+      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
+    },
+    notification.action.Hide
+  )
+
+  createAction(
+    builder,
+    {
+      action: notification.actionImpl.Unsubscribe,
+      actionProps: {},
+      label: notification.string.DontTrack,
+      icon: view.icon.Delete,
+      input: 'focus',
+      category: notification.category.Notification,
+      target: notification.class.DocUpdates,
+      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
+    },
+    notification.action.Unsubscribe
   )
 }
 

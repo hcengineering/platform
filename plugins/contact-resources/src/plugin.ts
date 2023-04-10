@@ -63,8 +63,11 @@ export default mergeIds(contactId, contact, {
     Inactive: '' as IntlString,
     NotSpecified: '' as IntlString,
     MergeEmployee: '' as IntlString,
+    MergeEmployeeFrom: '' as IntlString,
+    MergeEmployeeTo: '' as IntlString,
     SelectAvatar: '' as IntlString,
     GravatarsManaged: '' as IntlString,
+    AvatarProvider: '' as IntlString,
 
     CategoryProjectMembers: '' as IntlString,
     AddMembersHeader: '' as IntlString,
@@ -73,7 +76,8 @@ export default mergeIds(contactId, contact, {
     CategoryCurrentUser: '' as IntlString,
     CategoryPreviousAssigned: '' as IntlString,
     CategoryProjectLead: '' as IntlString,
-    CategoryOther: '' as IntlString
+    CategoryOther: '' as IntlString,
+    DeleteEmployee: '' as IntlString
   },
   function: {
     GetContactLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,

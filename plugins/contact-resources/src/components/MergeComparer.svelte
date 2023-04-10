@@ -16,12 +16,13 @@
   import { Employee } from '@hcengineering/contact'
   import { Doc, Mixin, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Toggle } from '@hcengineering/ui'
+  import { CheckBox, Label } from '@hcengineering/ui'
 
   export let value: Employee
   export let targetEmp: Employee
   export let cast: Ref<Mixin<Doc>> | undefined = undefined
   export let key: string
+  export let selected = false
   export let onChange: (key: string, value: boolean) => void
 
   const client = getClient()
@@ -36,21 +37,64 @@
     if (!(targetEmp as any)[key]) return true
     return (value as any)[key] === (targetEmp as any)[key]
   }
+  $: attribute = hierarchy.findAttribute(cast ?? value._class, key)
 </script>
 
 {#if !isEqual(value, targetEmp, key)}
-  <div class="flex-center">
-    <slot name="item" item={value} />
-  </div>
-  <div class="flex-center">
-    <Toggle
-      on={true}
-      on:change={(e) => {
-        onChange(key, e.detail)
-      }}
-    />
-  </div>
-  <div class="flex-center">
-    <slot name="item" item={targetEmp} />
+  <div class="box flex-row-center flex-between">
+    <div class="ml-4">
+      {#if attribute?.label}
+        <Label label={attribute.label} />
+      {:else}
+        {key}
+      {/if}
+    </div>
+
+    <div class="flex-center">
+      <div class="mr-2">
+        <CheckBox
+          circle
+          checked={selected}
+          on:value={(e) => {
+            selected = false
+            onChange(key, false)
+          }}
+        />
+      </div>
+      <slot name="item" item={value} />
+    </div>
+    <div class="flex-row-center" />
+    <div class="flex-center">
+      <div class="mr-2">
+        <CheckBox
+          circle
+          checked={!selected}
+          on:value={(e) => {
+            selected = true
+            onChange(key, true)
+          }}
+        />
+      </div>
+      <slot name="item" item={targetEmp} />
+    </div>
   </div>
 {/if}
+
+<style lang="scss">
+  .box {
+    margin: 0.5rem;
+    padding: 0.5rem;
+    flex-shrink: 0;
+    border: 1px dashed var(--accent-color);
+    border-radius: 0.25rem;
+
+    font-weight: 500;
+    font-size: 0.75rem;
+
+    // text-transform: uppercase;
+    color: var(--accent-color);
+    &:hover {
+      color: var(--caption-color);
+    }
+  }
+</style>

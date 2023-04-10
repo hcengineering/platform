@@ -1,6 +1,6 @@
 import client from '@hcengineering/client'
 import contact from '@hcengineering/contact'
-import core, { Client, setCurrentAccount, Version } from '@hcengineering/core'
+import core, { Client, setCurrentAccount, Version, versionToString } from '@hcengineering/core'
 import login, { loginId } from '@hcengineering/login'
 import { getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import presentation, { refreshClient, setClient } from '@hcengineering/presentation'
@@ -41,6 +41,8 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   let clientSet = false
 
+  let version: Version | undefined
+
   const clientFactory = await getResource(client.function.GetClient)
   _client = await clientFactory(
     token,
@@ -56,11 +58,24 @@ export async function connect (title: string): Promise<Client | undefined> {
       })
     },
     // We need to refresh all active live queries and clear old queries.
-    () => {
+    (apply: boolean) => {
       try {
-        if (clientSet) {
+        if (clientSet && !apply) {
           void refreshClient()
         }
+
+        void (async () => {
+          const newVersion = await _client?.findOne<Version>(core.class.Version, {})
+          console.log('Reconnect Model version', version)
+
+          const currentVersionStr = versionToString(version as Version)
+          const reconnectVersionStr = versionToString(newVersion as Version)
+
+          if (currentVersionStr !== reconnectVersionStr) {
+            // It seems upgrade happened
+            location.reload()
+          }
+        })()
       } catch (err) {
         console.error(err)
       }
@@ -87,13 +102,13 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
 
   try {
-    const version = await _client.findOne<Version>(core.class.Version, {})
+    version = await _client.findOne<Version>(core.class.Version, {})
     console.log('Model version', version)
 
     const requirdVersion = getMetadata(presentation.metadata.RequiredVersion)
-    if (requirdVersion !== undefined) {
+    if (requirdVersion !== undefined && version !== undefined) {
       console.log('checking min model version', requirdVersion)
-      const versionStr = `${version?.major as number}.${version?.minor as number}.${version?.patch as number}`
+      const versionStr = versionToString(version)
 
       if (version === undefined || requirdVersion !== versionStr) {
         versionError = `${versionStr} => ${requirdVersion}`

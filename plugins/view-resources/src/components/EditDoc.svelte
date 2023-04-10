@@ -301,7 +301,7 @@
     </svelte:fragment>
 
     <svelte:fragment slot="attributes" let:direction={dir}>
-      <div class="flex flex-reverse flex-grow">
+      <div class="flex flex-reverse flex-no-shrink clear-mins">
         <Button
           kind={'transparent'}
           shape={'round'}

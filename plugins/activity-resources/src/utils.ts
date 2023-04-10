@@ -1,4 +1,4 @@
-import type { TxViewlet } from '@hcengineering/activity'
+import type { DisplayTx, TxViewlet } from '@hcengineering/activity'
 import core, {
   AttachedDoc,
   Class,
@@ -17,7 +17,7 @@ import { Asset, IntlString, translate } from '@hcengineering/platform'
 import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
 import { AttributeModel } from '@hcengineering/view'
 import { buildModel, getObjectPresenter } from '@hcengineering/view-resources'
-import { ActivityKey, activityKey, DisplayTx } from './activity'
+import { ActivityKey, activityKey } from './activity'
 import activity from './plugin'
 
 const valueTypes: ReadonlyArray<Ref<Class<Doc>>> = [

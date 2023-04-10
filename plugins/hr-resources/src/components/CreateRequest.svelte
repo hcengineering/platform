@@ -87,6 +87,7 @@
   on:close={() => {
     dispatch('close')
   }}
+  on:changeContent
 >
   <svelte:fragment slot="header">
     <EmployeeBox

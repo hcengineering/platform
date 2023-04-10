@@ -37,6 +37,7 @@ loadMetadata(contact.icon, {
   SocialEdit: `${icons}#social-edit`,
   Homepage: `${icons}#homepage`,
   Whatsapp: `${icons}#whatsapp`,
-  Profile: `${icons}#profile`
+  Profile: `${icons}#profile`,
+  ComponentMembers: `${icons}#componentMembers`
 })
 addStringsLoader(contactId, async (lang: string) => await import(`../lang/${lang}.json`))

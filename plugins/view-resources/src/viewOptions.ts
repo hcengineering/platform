@@ -1,4 +1,4 @@
-import core, { Class, Doc, Ref, SortingOrder, Space, StatusManager } from '@hcengineering/core'
+import core, { Class, Doc, DocumentQuery, Ref, SortingOrder, StatusManager } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { createQuery, getAttributePresenterClass, getClient, LiveQuery } from '@hcengineering/presentation'
 import { getCurrentLocation, locationToUrl } from '@hcengineering/ui'
@@ -104,7 +104,7 @@ export function migrateViewOpttions (): void {
 
 export async function showEmptyGroups (
   _class: Ref<Class<Doc>>,
-  space: Ref<Space> | undefined,
+  query: DocumentQuery<Doc> | undefined,
   key: string,
   onUpdate: () => void,
   queryId: Ref<Doc>,
@@ -128,7 +128,7 @@ export async function showEmptyGroups (
   const mixin = hierarchy.as(attributeClass, view.mixin.AllValuesFunc)
   if (mixin.func !== undefined) {
     const f = await getResource(mixin.func)
-    const res = await f(space, onUpdate, queryId)
+    const res = await f(query, onUpdate, queryId)
     if (res !== undefined) {
       return await groupByCategory(client, _class, key, res, mgr, viewletDescriptorId)
     }

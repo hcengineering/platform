@@ -13,13 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Doc, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
-  import recruit, { Applicant } from '@hcengineering/recruit'
+  import core, { FindOptions, SortingOrder } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Applicant, Vacancy } from '@hcengineering/recruit'
   import task from '@hcengineering/task'
-  import { Table } from '@hcengineering/view-resources'
+  import { Button, Label, Loading } from '@hcengineering/ui'
+  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { DocNavLink, ObjectPresenter, Table } from '@hcengineering/view-resources'
+  import recruit from '../plugin'
 
-  export let value: Ref<Space>
-  export let resultQuery: DocumentQuery<Doc>
+  export let value: Vacancy
+  export let openList: () => void
 
   const options: FindOptions<Applicant> = {
     lookup: {
@@ -28,18 +32,63 @@
       doneState: task.class.DoneState,
       attachedTo: recruit.mixin.Candidate
     },
+    sort: {
+      modifiedOn: SortingOrder.Descending
+    },
     limit: 10
   }
+
+  let viewlet: Viewlet | undefined
+  let preference: ViewletPreference | undefined
+  let loading = true
+
+  const viewletQuery = createQuery()
+  $: viewletQuery.query(view.class.Viewlet, { _id: recruit.viewlet.VacancyApplicationsShort }, (res) => {
+    ;[viewlet] = res
+  })
+
+  const preferenceQuery = createQuery()
+
+  $: viewlet &&
+    preferenceQuery.query(
+      view.class.ViewletPreference,
+      {
+        attachedTo: viewlet._id
+      },
+      (res) => {
+        preference = res[0]
+        loading = false
+      },
+      { limit: 1 }
+    )
 </script>
 
+<div class="flex flex-between flex-grow p-1 mb-4">
+  <div class="fs-title flex-row-center">
+    <Label label={recruit.string.Applications} />
+    <div class="ml-2">
+      <Button label={recruit.string.OpenVacancyList} on:click={openList} size={'small'} kind={'link-bordered'} />
+    </div>
+  </div>
+  <div class="flex-row-center">
+    <DocNavLink object={value}>
+      <ObjectPresenter _class={value._class} objectId={value._id} {value} />
+    </DocNavLink>
+  </div>
+</div>
+
 <div class="popup-table">
-  <Table
-    _class={recruit.class.Applicant}
-    config={['', 'attachedTo', 'state', 'doneState', 'modifiedOn']}
-    {options}
-    query={{ ...(resultQuery ?? {}), space: value }}
-    loadingProps={{ length: 0 }}
-  />
+  {#if viewlet && !loading}
+    <Table
+      _class={recruit.class.Applicant}
+      config={preference?.config ?? viewlet.config}
+      query={{ space: value._id }}
+      {options}
+      loadingProps={{ length: 0 }}
+    />
+  {:else}
+    <Loading />
+  {/if}
 </div>
 
 <style lang="scss">

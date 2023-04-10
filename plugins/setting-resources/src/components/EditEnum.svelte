@@ -171,6 +171,7 @@
   on:close={() => {
     dispatch('close')
   }}
+  on:changeContent
 >
   <div on:keydown={onKeydown}>
     <div class="mb-2">

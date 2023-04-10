@@ -63,6 +63,7 @@
   on:close={() => {
     dispatch('close')
   }}
+  on:changeContent
 >
   <Grid column={1} rowGap={1.75}>
     <EditBox label={inventory.string.Variant} bind:value={doc.name} placeholder={inventory.string.Variant} focus />

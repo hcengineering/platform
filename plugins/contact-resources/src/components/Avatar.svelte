@@ -55,7 +55,7 @@
 
       if (!avatarProvider || avatarProvider.type === AvatarType.COLOR) {
         url = undefined
-      } else if (avatarProvider.type === AvatarType.IMAGE) {
+      } else if (avatarProvider?.type === AvatarType.IMAGE) {
         url = (await getResource(avatarProvider.getUrl))(avatar, size)
       } else {
         const uri = avatar.split('://')[1]

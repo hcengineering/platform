@@ -181,19 +181,13 @@ export async function getContactLink (doc: Doc): Promise<Location> {
   return loc
 }
 
-function isId (id: Ref<Contact>): boolean {
-  return /^[0-9a-z]{24}$/.test(id)
-}
-
 export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
   if (loc.path[2] !== contactId) {
     return undefined
   }
 
   const id = loc.path[3] as Ref<Contact>
-  if (isId(id)) {
-    return await generateLocation(loc, id)
-  }
+  return await generateLocation(loc, id)
 }
 
 async function generateLocation (loc: Location, id: Ref<Contact>): Promise<ResolvedLocation | undefined> {
@@ -272,4 +266,5 @@ export function getAvatarProviderId (avatar?: string | null): Ref<AvatarProvider
     case AvatarType.COLOR:
       return contact.avatarProvider.Color
   }
+  return contact.avatarProvider.Image
 }

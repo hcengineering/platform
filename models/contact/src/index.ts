@@ -31,6 +31,7 @@ import {
   Status,
   ContactsTab
 } from '@hcengineering/contact'
+import activity from '@hcengineering/activity'
 import { Class, DateRangeMode, Domain, DOMAIN_MODEL, IndexKind, Ref, Timestamp } from '@hcengineering/core'
 import {
   Builder,
@@ -589,6 +590,25 @@ export function createModel (builder: Builder): void {
     },
     contact.action.KickEmployee
   )
+  createAction(
+    builder,
+    {
+      action: contact.actionImpl.KickEmployee,
+      label: contact.string.DeleteEmployee,
+      query: {
+        active: false
+      },
+      category: contact.category.Contact,
+      target: contact.class.Employee,
+      input: 'focus',
+      context: {
+        mode: ['context'],
+        group: 'other'
+      },
+      secured: true
+    },
+    contact.action.KickEmployee
+  )
 
   createAction(
     builder,
@@ -600,6 +620,9 @@ export function createModel (builder: Builder): void {
         fillProps: {
           _object: 'value'
         }
+      },
+      query: {
+        active: false
       },
       label: contact.string.MergeEmployee,
       category: contact.category.Contact,
@@ -722,6 +745,10 @@ export function createModel (builder: Builder): void {
     },
     contact.templateField.ContactLastName
   )
+
+  builder.mixin(contact.class.Contact, core.class.Class, activity.mixin.ExtraActivityComponent, {
+    component: contact.component.ActivityChannelMessage
+  })
 }
 
 export { contactOperation } from './migration'

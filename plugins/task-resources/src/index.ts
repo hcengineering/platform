@@ -40,6 +40,7 @@ import DoneStateRefPresenter from './components/state/DoneStateRefPresenter.svel
 import StateRefPresenter from './components/state/StateRefPresenter.svelte'
 
 export { default as AssigneePresenter } from './components/AssigneePresenter.svelte'
+export { StateRefPresenter }
 
 async function editStatuses (object: SpaceWithStates): Promise<void> {
   showPopup(EditStatuses, { _id: object._id, spaceClass: object._class }, 'float')

@@ -160,6 +160,7 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    flex-shrink: 0;
     max-height: 1000px;
     transition: max-height 0.2s var(--timing-main);
 

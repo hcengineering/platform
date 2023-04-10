@@ -30,9 +30,18 @@
     <ObjectPresenter _class={value._class} objectId={value._id} {value} />
   </DocNavLink>
 </div>
-<Table
-  _class={recruit.class.Applicant}
-  config={['', '$lookup.space.name', '$lookup.space.company', 'state', 'doneState']}
-  query={{ attachedTo: value._id }}
-  loadingProps={{ length: value.applications ?? 0 }}
-/>
+<div class="popup-table">
+  <Table
+    _class={recruit.class.Applicant}
+    config={['', '$lookup.space.name', '$lookup.space.company', 'state', 'doneState']}
+    query={{ attachedTo: value._id }}
+    loadingProps={{ length: value.applications ?? 0 }}
+  />
+</div>
+
+<style lang="scss">
+  .popup-table {
+    overflow: auto;
+    max-height: 30rem;
+  }
+</style>

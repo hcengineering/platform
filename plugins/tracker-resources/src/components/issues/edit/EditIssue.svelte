@@ -255,6 +255,7 @@
 
 <style lang="scss">
   .divider {
+    flex-shrink: 0;
     margin-top: 1rem;
     margin-bottom: 1rem;
     grid-column: 1 / 3;

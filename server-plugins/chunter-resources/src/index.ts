@@ -34,16 +34,17 @@ import core, {
   Tx,
   TxCollectionCUD,
   TxCreateDoc,
+  TxCUD,
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc
 } from '@hcengineering/core'
-import notification from '@hcengineering/notification'
+import notification, { Collaborators } from '@hcengineering/notification'
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
+import { getEmployeeAccountById } from '@hcengineering/server-notification'
+import { createNotificationTxes, getDocCollaborators, getMixinTx } from '@hcengineering/server-notification-resources'
 import { workbenchId } from '@hcengineering/workbench'
-import { getEmployeeAccountById } from '../../notification'
-import { createNotificationTxes } from '../../notification-resources'
 
 /**
  * @public
@@ -89,10 +90,7 @@ export async function CommentRemove (
   return result
 }
 
-/**
- * @public
- */
-export async function CommentCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+async function ThreadMessageCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
   const actualTx = TxProcessor.extractTx(tx)
   if (actualTx._class !== core.class.TxCreateDoc) return []
@@ -129,10 +127,49 @@ export async function CommentCreate (tx: Tx, control: TriggerControl): Promise<T
   return result
 }
 
-/**
- * @public
- */
-export async function CommentDelete (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+async function CommentCreate (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
+  const hierarchy = control.hierarchy
+  const actualTx = TxProcessor.extractTx(tx)
+  if (actualTx._class !== core.class.TxCreateDoc) return []
+  const doc = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<Comment>)
+  if (!hierarchy.isDerived(doc._class, chunter.class.Comment)) {
+    return []
+  }
+  const res: Tx[] = []
+  const mixin = hierarchy.classHierarchyMixin(doc.attachedToClass, notification.mixin.ClassCollaborators)
+  if (mixin !== undefined) {
+    const targetDoc = (await control.findAll(doc.attachedToClass, { _id: doc.attachedTo }, { limit: 1 }))[0]
+    if (targetDoc !== undefined) {
+      if (hierarchy.hasMixin(targetDoc, notification.mixin.Collaborators)) {
+        const collabMixin = hierarchy.as(targetDoc, notification.mixin.Collaborators) as Doc as Collaborators
+        if (!collabMixin.collaborators.includes(doc.modifiedBy)) {
+          res.push(
+            control.txFactory.createTxMixin(
+              targetDoc._id,
+              targetDoc._class,
+              targetDoc.space,
+              notification.mixin.Collaborators,
+              {
+                $push: {
+                  collaborators: doc.modifiedBy
+                }
+              }
+            )
+          )
+        }
+      } else {
+        const collaborators = await getDocCollaborators(targetDoc, mixin, control)
+        if (!collaborators.includes(doc.modifiedBy)) {
+          collaborators.push(doc.modifiedBy)
+        }
+        res.push(getMixinTx(tx, control, collaborators))
+      }
+    }
+  }
+  return res
+}
+
+async function ThreadMessageDelete (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
   const rmTx = TxProcessor.extractTx(tx) as TxRemoveDoc<ThreadMessage>
   if (!hierarchy.isDerived(rmTx.objectClass, chunter.class.ThreadMessage)) {
@@ -159,10 +196,7 @@ export async function CommentDelete (tx: Tx, control: TriggerControl): Promise<T
   return [updateTx]
 }
 
-/**
- * @public
- */
-export async function MessageCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+async function MessageCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
   const actualTx = TxProcessor.extractTx(tx)
   if (actualTx._class !== core.class.TxCreateDoc) return []
@@ -192,10 +226,7 @@ export async function MessageCreate (tx: Tx, control: TriggerControl): Promise<T
   return []
 }
 
-/**
- * @public
- */
-export async function MessageDelete (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+async function MessageDelete (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
 
   const rmTx = TxProcessor.extractTx(tx) as TxCollectionCUD<ChunterSpace, Message>
@@ -243,8 +274,9 @@ export async function ChunterTrigger (tx: Tx, control: TriggerControl): Promise<
   const promises = [
     MessageCreate(tx, control),
     MessageDelete(tx, control),
-    CommentCreate(tx, control),
-    CommentDelete(tx, control)
+    ThreadMessageCreate(tx, control),
+    ThreadMessageDelete(tx, control),
+    CommentCreate(tx as TxCUD<Doc>, control)
   ]
   const res = await Promise.all(promises)
   return res.flat()

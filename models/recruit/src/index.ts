@@ -419,6 +419,18 @@ export function createModel (builder: Builder): void {
     view.class.Viewlet,
     core.space.Model,
     {
+      attachTo: recruit.class.Applicant,
+      descriptor: view.viewlet.Table,
+      config: ['', '$lookup.space.name', '$lookup.space.$lookup.company', 'state', 'comments', 'doneState'],
+      variant: 'short'
+    },
+    recruit.viewlet.VacancyApplicationsEmbeddeed
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
       attachTo: recruit.class.Vacancy,
       descriptor: view.viewlet.Table,
       config: [
@@ -591,7 +603,7 @@ export function createModel (builder: Builder): void {
   }
 
   const applicantViewOptions: ViewOptionsModel = {
-    groupBy: ['state', 'doneState', 'assignee'],
+    groupBy: ['state', 'doneState', 'assignee', 'space'],
     orderBy: [
       ['state', SortingOrder.Ascending],
       ['doneState', SortingOrder.Ascending],

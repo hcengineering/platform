@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { TxViewlet } from '@hcengineering/activity'
+  import type { DisplayTx, TxViewlet } from '@hcengineering/activity'
   import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
   import core, { AnyAttribute, Doc, getCurrentAccount, Ref, Class } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
@@ -32,8 +32,9 @@
   } from '@hcengineering/ui'
   import type { AttributeModel } from '@hcengineering/view'
   import attachment from '@hcengineering/attachment'
+  import chunter from '@hcengineering/chunter'
   import { Menu, ObjectPresenter } from '@hcengineering/view-resources'
-  import { ActivityKey, DisplayTx } from '../activity'
+  import { ActivityKey } from '../activity'
   import activity from '../plugin'
   import { getValue, TxDisplayViewlet, updateViewlet } from '../utils'
   import TxViewTx from './TxViewTx.svelte'
@@ -134,6 +135,9 @@
   function isAttachment (_class?: Ref<Class<Doc>>): boolean {
     return _class === attachment.class.Attachment
   }
+  function isMention (_class?: Ref<Class<Doc>>): boolean {
+    return _class === chunter.class.Backlink
+  }
 
   async function updateMessageType (model: AttributeModel[], tx: DisplayTx): Promise<boolean> {
     for (const m of model) {
@@ -152,21 +156,17 @@
     hasMessageType = res
   })
   $: isComment = viewlet && viewlet?.editable
-  $: isAttach = isAttachment(tx.tx.objectClass)
-  $: isMention = viewlet?.display === 'emphasized' || isMessageType(model[0]?.attribute)
-  $: isColumn = isComment || isMention || hasMessageType
+  $: isAttached = isAttachment(tx.tx.objectClass)
+  $: isMentioned = isMention(tx.tx.objectClass)
+  $: withAvatar = isComment || isMentioned || isAttached
+  $: isEmphasized = viewlet?.display === 'emphasized' || model.every((m) => isMessageType(m.attribute))
+  $: isColumn = isComment || isEmphasized || hasMessageType
 </script>
 
 {#if (viewlet !== undefined && !((viewlet?.hideOnRemove ?? false) && tx.removed)) || model.length > 0}
-  <div
-    class="msgactivity-container"
-    class:showIcon
-    class:withAvatar={isComment || isAttach}
-    class:isNew
-    class:isNextNew
-  >
+  <div class="msgactivity-container" class:showIcon class:withAvatar class:isNew class:isNextNew>
     {#if showIcon}
-      {#if isComment || isAttach}
+      {#if withAvatar}
         <div class="msgactivity-avatar">
           <Component is={contact.component.Avatar} props={{ avatar: employee?.avatar, size: 'medium' }} />
         </div>
@@ -183,10 +183,10 @@
       {/if}
     {/if}
 
-    <div class="msgactivity-content" class:content={isColumn} class:comment={isComment || isAttach}>
+    <div class="msgactivity-content" class:content={isColumn} class:comment={withAvatar}>
       <div class="msgactivity-content__header">
         <div class="msgactivity-content__title labels-row">
-          <span class={isComment || isAttach ? 'bold' : 'strong'}>
+          <span class={withAvatar ? 'bold' : 'strong'}>
             {#if employee}
               {getName(employee)}
             {:else}
@@ -206,9 +206,9 @@
             <span class="lower">
               <Label label={viewlet.label} params={viewlet.labelParams ?? {}} />
             </span>
-            {#if viewlet.labelComponent}
-              <Component is={viewlet.labelComponent} {props} />
-            {/if}
+          {/if}
+          {#if viewlet && viewlet.labelComponent}
+            <Component is={viewlet.labelComponent} {props} />
           {/if}
 
           {#if viewlet === undefined && model.length > 0 && tx.updateTx}
@@ -245,7 +245,7 @@
                   <span class="lower"><Label label={activity.string.To} /></span>
 
                   {#if !hasMessageType}
-                    <span class="strong">
+                    <span class="strong overflow-label">
                       {#if value.isObjectSet}
                         <ObjectPresenter value={value.set} inline />
                       {:else}
@@ -268,7 +268,7 @@
                   <span class="lower"><Label label={activity.string.To} /></span>
 
                   {#if !hasMessageType}
-                    <div class="strong">
+                    <div class="strong overflow-label">
                       {#if value.isObjectSet}
                         <ObjectPresenter value={value.set} inline />
                       {:else}
@@ -306,7 +306,7 @@
       {/if}
 
       {#if viewlet && viewlet.display !== 'inline'}
-        <div class="activity-content content" class:indent={isAttach} class:contentHidden>
+        <div class="activity-content content" class:indent={isAttached} class:contentHidden>
           <ShowMore ignore={edit}>
             {#if tx.collectionAttribute !== undefined && (tx.txDocIds?.size ?? 0) > 1}
               <div class="flex-row-center flex-grow flex-wrap clear-mins">
@@ -321,7 +321,7 @@
         </div>
       {:else if hasMessageType && model.length > 0 && (tx.updateTx || tx.mixinTx)}
         {#await getValue(client, model[0], tx) then value}
-          <div class="activity-content content" class:indent={isAttach} class:contentHidden>
+          <div class="activity-content content" class:indent={isAttached} class:contentHidden>
             <ShowMore ignore={edit}>
               {#if value.isObjectSet}
                 <ObjectPresenter value={value.set} inline />
@@ -341,6 +341,7 @@
     position: relative;
     display: flex;
     justify-content: space-between;
+    min-width: 0;
 
     .msgactivity-icon,
     .msgactivity-avatar {
@@ -366,6 +367,7 @@
       display: flex;
       flex-grow: 1;
       margin-right: 1rem;
+      min-width: 0;
       color: var(--content-color);
 
       .msgactivity-content__header {
@@ -373,11 +375,13 @@
         justify-content: space-between;
         align-items: center;
         flex-grow: 1;
+        min-width: 0;
       }
       .msgactivity-content__title {
         display: inline-flex;
         align-items: baseline;
         flex-grow: 1;
+        min-width: 0;
       }
 
       &.content {
@@ -415,10 +419,10 @@
       .icon {
         border: 1px solid var(--highlight-red);
       }
-      &.isNextNew {
-        &:after {
-          background-color: var(--highlight-red);
-        }
+    }
+    &.isNextNew {
+      &::after {
+        background-color: var(--highlight-red);
       }
     }
     &::before {
@@ -465,6 +469,7 @@
   .activity-content {
     overflow: hidden;
     visibility: visible;
+    min-width: 0;
     max-height: max-content;
     opacity: 1;
     transition-property: max-height, opacity;
