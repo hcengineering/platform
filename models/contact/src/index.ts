@@ -13,13 +13,14 @@
 // limitations under the License.
 //
 
+import activity from '@hcengineering/activity'
 import {
   AvatarProvider,
   AvatarType,
   Channel,
   ChannelProvider,
   Contact,
-  contactId,
+  ContactsTab,
   Employee,
   EmployeeAccount,
   GetAvatarUrl,
@@ -29,10 +30,9 @@ import {
   Person,
   Persons,
   Status,
-  ContactsTab
+  contactId
 } from '@hcengineering/contact'
-import activity from '@hcengineering/activity'
-import { Class, DateRangeMode, Domain, DOMAIN_MODEL, IndexKind, Ref, Timestamp } from '@hcengineering/core'
+import { Class, DOMAIN_MODEL, DateRangeMode, Domain, IndexKind, Ref, Timestamp } from '@hcengineering/core'
 import {
   Builder,
   Collection,
@@ -51,13 +51,13 @@ import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
 import core, { TAccount, TAttachedDoc, TDoc, TSpace } from '@hcengineering/model-core'
 import presentation from '@hcengineering/model-presentation'
-import view, { createAction, ViewAction, Viewlet } from '@hcengineering/model-view'
+import view, { ViewAction, Viewlet, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
+import notification from '@hcengineering/notification'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
-import { AnyComponent } from '@hcengineering/ui'
-import notification from '@hcengineering/notification'
 import templates from '@hcengineering/templates'
+import { AnyComponent } from '@hcengineering/ui'
 import contact from './plugin'
 
 export const DOMAIN_CONTACT = 'contact' as Domain
@@ -325,6 +325,18 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(contact.class.Contact, core.class.Class, notification.mixin.ClassCollaborators, {
     fields: []
+  })
+
+  builder.mixin(contact.class.Channel, core.class.Class, view.mixin.ObjectPanel, {
+    component: contact.component.ChannelPanel
+  })
+
+  builder.mixin(contact.class.Channel, core.class.Class, notification.mixin.ClassCollaborators, {
+    fields: []
+  })
+
+  builder.mixin(contact.class.Channel, core.class.Class, notification.mixin.NotificationObjectPresenter, {
+    presenter: contact.component.ActivityChannelPresenter
   })
 
   builder.mixin(contact.class.Member, core.class.Class, view.mixin.ObjectPresenter, {

@@ -70,6 +70,9 @@ import UsersPopup from './components/UsersPopup.svelte'
 import ActivityChannelMessage from './components/activity/ActivityChannelMessage.svelte'
 import ExpandRightDouble from './components/icons/ExpandRightDouble.svelte'
 import IconMembers from './components/icons/Members.svelte'
+import ChannelPresenter from './components/ChannelPresenter.svelte'
+import ChannelPanel from './components/ChannelPanel.svelte'
+import ActivityChannelPresenter from './components/activity/ActivityChannelPresenter.svelte'
 
 import contact from './plugin'
 import {
@@ -276,7 +279,10 @@ export default async (): Promise<Resources> => ({
     MergeEmployee,
     Avatar,
     UserBoxList,
-    ActivityChannelMessage
+    ActivityChannelMessage,
+    ChannelPresenter,
+    ChannelPanel,
+    ActivityChannelPresenter
   },
   completion: {
     EmployeeQuery: async (

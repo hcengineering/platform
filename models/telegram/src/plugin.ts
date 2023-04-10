@@ -33,9 +33,11 @@ export default mergeIds(telegramId, telegram, {
     Status: '' as IntlString
   },
   ids: {
+    TxMessage: '' as Ref<TxViewlet>,
     TxSharedCreate: '' as Ref<TxViewlet>
   },
   activity: {
+    TxMessage: '' as AnyComponent,
     TxSharedCreate: '' as AnyComponent
   }
 })

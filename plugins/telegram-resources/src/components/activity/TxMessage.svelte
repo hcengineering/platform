@@ -13,20 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Message } from '@hcengineering/gmail'
-  import { getClient } from '@hcengineering/presentation'
-  import { showPopup } from '@hcengineering/ui'
-  import Main from '../Main.svelte'
-
-  export let value: Message
-
-  async function click () {
-    const client = getClient()
-    const channel = await client.findOne(value.attachedToClass, { _id: value.attachedTo })
-    if (channel !== undefined) {
-      showPopup(Main, { _id: channel.attachedTo, _class: channel.attachedToClass, message: value }, 'float')
-    }
-  }
+  import { MessageViewer } from '@hcengineering/presentation'
+  import { TelegramMessage } from '@hcengineering/telegram'
+  export let value: TelegramMessage
 </script>
 
-<span class="over-underline overflow-label" on:click={click}>{value.subject}</span>
+<div class="overflow-label content">
+  <MessageViewer message={value.content} />
+</div>
+
+<style lang="scss">
+  .content {
+    height: 1rem;
+  }
+</style>

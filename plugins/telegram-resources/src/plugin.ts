@@ -17,6 +17,7 @@
 import { IntlString, mergeIds } from '@hcengineering/platform'
 
 import telegram, { telegramId } from '@hcengineering/telegram'
+import { AnyComponent } from '@hcengineering/ui'
 
 export default mergeIds(telegramId, telegram, {
   string: {
@@ -35,5 +36,8 @@ export default mergeIds(telegramId, telegram, {
     Share: '' as IntlString,
     PublishSelected: '' as IntlString,
     MessagesSelected: '' as IntlString
+  },
+  component: {
+    MessagePresenter: '' as AnyComponent
   }
 })

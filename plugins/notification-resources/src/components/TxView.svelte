@@ -104,8 +104,8 @@
 
 {#if (viewlet !== undefined && !((viewlet?.hideOnRemove ?? false) && ptx?.removed)) || model.length > 0}
   <div class="msgactivity-container">
-    <div class="msgactivity-content" class:content={isColumn} class:comment={isComment}>
-      <div class="msgactivity-content__header">
+    <div class="msgactivity-content clear-mins" class:content={isColumn} class:comment={isComment}>
+      <div class="msgactivity-content__header clear-mins">
         <div class="msgactivity-content__title labels-row">
           {#if viewlet && viewlet?.editable}
             {#if viewlet.label}
@@ -115,12 +115,12 @@
               <span class="lower"><Label label={activity.string.Edited} /></span>
             {/if}
           {:else if viewlet && viewlet.label}
-            <span class="lower">
+            <span class="lower whitespace-nowrap">
               <Label label={viewlet.label} params={viewlet.labelParams ?? {}} />
             </span>
-            {#if viewlet.labelComponent}
-              <Component is={viewlet.labelComponent} {props} />
-            {/if}
+          {/if}
+          {#if viewlet && viewlet.labelComponent}
+            <Component is={viewlet.labelComponent} {props} />
           {/if}
 
           {#if viewlet === undefined && model.length > 0 && ptx?.updateTx}
@@ -248,6 +248,7 @@
       }
       .msgactivity-content__title {
         display: inline-flex;
+        flex-wrap: nowrap;
         align-items: baseline;
         flex-grow: 1;
       }

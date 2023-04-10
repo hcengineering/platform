@@ -31,9 +31,9 @@ import {
 import attachment from '@hcengineering/model-attachment'
 import contact from '@hcengineering/model-contact'
 import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
+import view, { createAction } from '@hcengineering/model-view'
 import setting from '@hcengineering/setting'
 import gmail from './plugin'
-import view, { createAction } from '@hcengineering/model-view'
 
 export const DOMAIN_GMAIL = 'gmail' as Domain
 
