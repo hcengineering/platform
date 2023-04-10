@@ -81,8 +81,8 @@
     currentProject = res.shift()
   })
 
-  let resultQuery: DocumentQuery<any> = { ...query, doneState: null }
-  $: getResultQuery(query, viewOptionsConfig, viewOptions).then((p) => (resultQuery = p))
+  let resultQuery: DocumentQuery<any> = { ...query }
+  $: getResultQuery(query, viewOptionsConfig, viewOptions).then((p) => (resultQuery = { ...p, ...query }))
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -167,7 +167,15 @@
       const categoryFunc = viewOption as CategoryOption
       if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
         const categoryAction = await getResource(categoryFunc.action)
-        const res = await categoryAction(_class, space, groupByKey, update, queryId, $statusStore, viewlet.descriptor)
+        const res = await categoryAction(
+          _class,
+          space ? { space } : {},
+          groupByKey,
+          update,
+          queryId,
+          $statusStore,
+          viewlet.descriptor
+        )
         if (res !== undefined) {
           categories = res
           break

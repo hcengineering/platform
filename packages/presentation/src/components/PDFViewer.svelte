@@ -80,7 +80,7 @@
     </div>
     <div class="space" />
   {:else if contentType && contentType.startsWith('application/msword')}
-    <IndexedDocumentPreview objectId={value._id} />
+    <IndexedDocumentPreview objectId={value._id} noPanel />
   {:else}
     <iframe
       class="pdfviewer-content"

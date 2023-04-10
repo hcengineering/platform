@@ -21,7 +21,7 @@
   export let resultQuery: DocumentQuery<Doc>
 
   const options: FindOptions<Vacancy> = {
-    limit: 10
+    limit: 200
   }
 </script>
 

@@ -19,7 +19,7 @@ import { configurePlatform } from './platform'
 import { configurePlatformDevServer } from './platform-dev'
 
 configurePlatform().then(() => {
-  if (process.env.CLIENT_TYPE === 'dev-server') {
+  if (process.env.CLIENT_TYPE === 'dev-server' || process.env.CLIENT_TYPE === 'dev-production') {
     configurePlatformDevServer()
   }
   

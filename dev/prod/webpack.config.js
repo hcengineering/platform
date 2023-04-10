@@ -26,7 +26,8 @@ const { Configuration } = require('webpack')
 const mode = process.env.NODE_ENV || 'development'
 const prod = mode === 'production'
 const devServer = (process.env.CLIENT_TYPE ?? '') === 'dev-server'
-const dev = (process.env.CLIENT_TYPE ?? '') === 'dev' || devServer
+const devProduction = (process.env.CLIENT_TYPE ?? '') === 'dev-production'
+const dev = (process.env.CLIENT_TYPE ?? '') === 'dev' || devServer || devProduction
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 /**
@@ -228,7 +229,7 @@ module.exports = {
       overlay: true,
       progress: false,
     },
-    proxy: devServer ? {
+    proxy: (devServer && !devProduction)  ? {
       '/account': {
         target: 'http://localhost:3000',
         changeOrigin: true,
@@ -247,15 +248,12 @@ module.exports = {
       },
     } : {
       '/account': {
-        // target: 'https://ftwm71rwag.execute-api.us-west-2.amazonaws.com/stage/',
         target: 'https://account.hc.engineering/',
         changeOrigin: true,
         pathRewrite: { '^/account': '' },
         logLevel: 'debug'
       },
       '/files': {
-        // target: 'https://anticrm-upload.herokuapp.com/',
-        // target: 'http://localhost:3000/',  
         target: 'https://front.hc.engineering/files',
         changeOrigin: true,
         pathRewrite: { '^/files': '' },

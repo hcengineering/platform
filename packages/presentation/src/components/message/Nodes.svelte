@@ -18,15 +18,26 @@
   import view from '@hcengineering/view'
 
   export let nodes: NodeListOf<any>
+
+  function prevName (pos: number, nodes: NodeListOf<any>): string | undefined {
+    while (true) {
+      if (nodes[pos - 1]?.nodeName === '#text' && (nodes[pos - 1]?.data ?? '').trim() === '') {
+        pos--
+        continue
+      }
+      break
+    }
+    return nodes[pos - 1]?.nodeName
+  }
 </script>
 
 {#if nodes}
-  {#each nodes as node}
+  {#each nodes as node, ni}
     {#if node.nodeType === Node.TEXT_NODE}
       {node.data}
     {:else if node.nodeName === 'EM'}
       <em><svelte:self nodes={node.childNodes} /></em>
-    {:else if node.nodeName === 'STRONG'}
+    {:else if node.nodeName === 'STRONG' || node.nodeName === 'B'}
       <strong><svelte:self nodes={node.childNodes} /></strong>
     {:else if node.nodeName === 'P'}
       {#if node.childNodes.length > 0}
@@ -41,7 +52,10 @@
     {:else if node.nodeName === 'PRE'}
       <pre><svelte:self nodes={node.childNodes} /></pre>
     {:else if node.nodeName === 'BR'}
-      <br />
+      {@const pName = prevName(ni, nodes)}
+      {#if pName !== 'P' && pName !== 'BR' && pName !== undefined}
+        <br />
+      {/if}
     {:else if node.nodeName === 'HR'}
       <hr />
     {:else if node.nodeName === 'IMG'}
@@ -58,9 +72,9 @@
       <h5><svelte:self nodes={node.childNodes} /></h5>
     {:else if node.nodeName === 'H6'}
       <h6><svelte:self nodes={node.childNodes} /></h6>
-    {:else if node.nodeName === 'UL'}
+    {:else if node.nodeName === 'UL' || node.nodeName === 'LIST'}
       <ul><svelte:self nodes={node.childNodes} /></ul>
-    {:else if node.nodeName === 'OL'}
+    {:else if node.nodeName === 'OL' || node.nodeName === 'LIST=1'}
       <ol><svelte:self nodes={node.childNodes} /></ol>
     {:else if node.nodeName === 'LI'}
       <li class={node.className}><svelte:self nodes={node.childNodes} /></li>
@@ -120,7 +134,7 @@
     {:else if node.nodeName === 'S'}
       <s><svelte:self nodes={node.childNodes} /></s>
     {:else}
-      unknown: {node.nodeName}
+      unknown: "{node.nodeName}"
       <svelte:self nodes={node.childNodes} />
     {/if}
   {/each}

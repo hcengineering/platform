@@ -33,7 +33,9 @@
   let preference: ViewletPreference | undefined
   let loading = true
 
-  $: searchQuery = search === '' ? { space } : { $search: search, space }
+  $: query = viewlet?.baseQuery ?? {}
+
+  $: searchQuery = search === '' ? { space, ...query } : { $search: search, space, ...query }
   $: resultQuery = searchQuery
 
   $: viewlet &&
@@ -56,7 +58,12 @@
       {#if loading}
         <Loading />
       {:else}
-        <FilterBar {_class} query={searchQuery} {viewOptions} on:change={(e) => (resultQuery = e.detail)} />
+        <FilterBar
+          {_class}
+          query={searchQuery}
+          {viewOptions}
+          on:change={(e) => (resultQuery = { ...e.detail, ...query })}
+        />
         <Component
           is={viewlet.$lookup?.descriptor?.component}
           props={{

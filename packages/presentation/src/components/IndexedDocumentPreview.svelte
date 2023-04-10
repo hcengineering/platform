@@ -1,13 +1,15 @@
 <script lang="ts">
   import core, { Doc, DocIndexState, Ref } from '@hcengineering/core'
 
-  import { EditBox, Panel } from '@hcengineering/ui'
+  import { EditBox, Label, Panel } from '@hcengineering/ui'
   import { createQuery } from '../utils'
   import IndexedDocumentContent from './IndexedDocumentContent.svelte'
+  import presentation from '../plugin'
 
   export let objectId: Ref<Doc> | undefined
   export let indexDoc: DocIndexState | undefined = undefined
   export let search: string = ''
+  export let noPanel = false
 
   const indexDocQuery = createQuery()
   $: if (objectId !== undefined) {
@@ -20,8 +22,11 @@
   }
 </script>
 
-<Panel on:changeContent on:close>
-  <EditBox focus bind:value={search} kind="search-style" />
+{#if noPanel}
+  <div class="p-1 flex-col">
+    <Label label={presentation.string.DocumentPreview} />
+    <EditBox focus bind:value={search} kind="search-style" />
+  </div>
   <div class="indexed-background">
     <div class="indexed-doc text-base max-h-125">
       {#if indexDoc}
@@ -29,7 +34,18 @@
       {/if}
     </div>
   </div>
-</Panel>
+{:else}
+  <Panel on:changeContent on:close>
+    <EditBox focus bind:value={search} kind="search-style" />
+    <div class="indexed-background">
+      <div class="indexed-doc text-base max-h-125">
+        {#if indexDoc}
+          <IndexedDocumentContent {indexDoc} {search} />
+        {/if}
+      </div>
+    </div>
+  </Panel>
+{/if}
 
 <style lang="scss">
   .indexed-doc {

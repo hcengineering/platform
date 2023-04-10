@@ -25,8 +25,8 @@
         if (bb._class === undefined) {
           return a
         }
-        const attr = client.getHierarchy().getAttribute(bb._class, bb.attr)
-        if (!isFullTextAttribute(attr)) {
+        const attr = client.getHierarchy().findAttribute(bb._class, bb.attr)
+        if (attr === undefined || !isFullTextAttribute(attr)) {
           return a
         }
         const pos = a.findIndex((it) => it[0] === attr)
