@@ -30,6 +30,7 @@
   export let calcRank: (doc: DocWithRank, next: DocWithRank) => string
   export let showContextMenu: ((evt: MouseEvent, doc: Doc) => void) | undefined = undefined
   export let isDraft = false
+  export let editable = true
 
   const client = getClient()
 
@@ -95,7 +96,7 @@
         class:is-dragged-over-up={draggingIndex !== null && index < draggingIndex && index === hoveringIndex}
         class:is-dragged-over-down={draggingIndex !== null && index > draggingIndex && index === hoveringIndex}
         class:drag-over-highlight={index === dragOverIndex}
-        draggable={true}
+        draggable={editable}
         on:contextmenu|preventDefault={(ev) => checkIsNotDraft(object) && showContextMenu?.(ev, object)}
         on:dragstart={(ev) => handleDragStart(ev, index)}
         on:dragover|preventDefault={() => {
