@@ -1,15 +1,25 @@
-import core, { Class, Doc, DocumentQuery, Ref, SortingOrder, StatusManager } from '@hcengineering/core'
+import core, {
+  Class,
+  Doc,
+  DocumentQuery,
+  Ref,
+  SortingOrder,
+  Status,
+  StatusManager,
+  WithLookup,
+  matchQuery
+} from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
-import { createQuery, getAttributePresenterClass, getClient, LiveQuery } from '@hcengineering/presentation'
+import { LiveQuery, createQuery, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
 import { getCurrentLocation, locationToUrl } from '@hcengineering/ui'
 import {
   DropdownViewOption,
   ToggleViewOption,
-  Viewlet,
-  ViewletDescriptor,
   ViewOptionModel,
   ViewOptions,
-  ViewOptionsModel
+  ViewOptionsModel,
+  Viewlet,
+  ViewletDescriptor
 } from '@hcengineering/view'
 import { get, writable } from 'svelte/store'
 import view from './plugin'
@@ -121,8 +131,19 @@ export async function showEmptyGroups (
 
   if (hierarchy.isDerived(attrClass, core.class.Status)) {
     // We do not need extensions for all status categories.
-    const statuses = mgr.statuses.filter((it) => it.ofAttribute === attr._id).map((it) => it._id)
-    return await groupByCategory(client, _class, key, statuses, mgr)
+    let statusList = mgr.statuses.filter((it) => {
+      return it.ofAttribute === attr._id
+    })
+    if (query !== undefined) {
+      statusList = matchQuery<Status>(
+        statusList,
+        query as DocumentQuery<Status>,
+        _class,
+        hierarchy
+      ) as unknown as Array<WithLookup<Status>>
+    }
+    const statuses = statusList.map((it) => it._id)
+    return await groupByCategory(client, _class, key, statuses, mgr, viewletDescriptorId)
   }
 
   const mixin = hierarchy.as(attributeClass, view.mixin.AllValuesFunc)

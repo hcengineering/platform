@@ -193,7 +193,15 @@
       const categoryFunc = viewOption as CategoryOption
       if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
         const categoryAction = await getResource(categoryFunc.action)
-        const res = await categoryAction(_class, space, groupByKey, update, queryId, $statusStore, viewlet.descriptor)
+        const res = await categoryAction(
+          _class,
+          space !== undefined ? { space } : {},
+          groupByKey,
+          update,
+          queryId,
+          $statusStore,
+          viewlet.descriptor
+        )
         if (res !== undefined) {
           categories = res
           break

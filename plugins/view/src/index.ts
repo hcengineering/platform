@@ -271,6 +271,7 @@ export interface AllValuesFunc extends Class<Doc> {
  */
 export interface Viewlet extends Doc {
   attachTo: Ref<Class<Doc>>
+  baseQuery?: DocumentQuery<Doc>
   descriptor: Ref<ViewletDescriptor>
   options?: FindOptions<Doc>
   config: (BuildModelKey | string)[]

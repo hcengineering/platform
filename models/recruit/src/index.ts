@@ -281,10 +281,7 @@ export function createModel (builder: Builder): void {
               label: recruit.string.Applications,
               createLabel: recruit.string.ApplicationCreateLabel,
               createComponent: recruit.component.CreateApplication,
-              descriptors: [view.viewlet.Table, task.viewlet.Kanban, recruit.viewlet.ApplicantDashboard],
-              baseQuery: {
-                doneState: null
-              }
+              descriptors: [view.viewlet.Table, task.viewlet.Kanban, recruit.viewlet.ApplicantDashboard]
             },
             position: 'vacancy'
           },
@@ -570,7 +567,10 @@ export function createModel (builder: Builder): void {
           }
         }
       },
-      hiddenKeys: ['name', 'attachedTo']
+      hiddenKeys: ['name', 'attachedTo'],
+      baseQuery: {
+        doneState: null
+      }
     },
     recruit.viewlet.ApplicantTable
   )
@@ -582,7 +582,10 @@ export function createModel (builder: Builder): void {
       attachTo: recruit.class.ApplicantMatch,
       descriptor: view.viewlet.Table,
       config: ['', 'response', 'attachedTo', 'space', 'modifiedOn'],
-      hiddenKeys: []
+      hiddenKeys: [],
+      baseQuery: {
+        doneState: null
+      }
     },
     recruit.viewlet.TableApplicantMatch
   )
@@ -630,6 +633,9 @@ export function createModel (builder: Builder): void {
       attachTo: recruit.class.Applicant,
       descriptor: task.viewlet.Kanban,
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      baseQuery: {
+        doneState: null
+      },
       viewOptions: {
         ...applicantViewOptions,
         groupDepth: 1

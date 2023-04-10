@@ -8,6 +8,7 @@
     "analyze": "cross-env NODE_ENV=production webpack --json > stats.json",
     "show": "webpack-bundle-analyzer stats.json dist",
     "dev-server": "cross-env CLIENT_TYPE=dev-server webpack serve",
+    "dev-production": "cross-env CLIENT_TYPE=dev-production webpack serve",
     "start": "cross-env NODE_ENV=production webpack serve",
     "preformat-svelte": "prettier -w src/**/*.svelte",
     "lint": "",

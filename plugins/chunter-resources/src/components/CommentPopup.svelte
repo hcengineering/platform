@@ -18,13 +18,15 @@
 
   import chunter, { Comment } from '@hcengineering/chunter'
   import { createQuery } from '@hcengineering/presentation'
-  import { Label, resizeObserver } from '@hcengineering/ui'
+  import { Label, resizeObserver, Spinner } from '@hcengineering/ui'
   import { DocNavLink, ObjectPresenter } from '@hcengineering/view-resources'
   import CommentPresenter from './CommentPresenter.svelte'
   import { createEventDispatcher } from 'svelte'
 
   export let objectId: Ref<Doc>
   export let object: Doc
+
+  let loading = true
 
   let comments: Comment[] = []
   const query = createQuery()
@@ -33,6 +35,7 @@
     { attachedTo: objectId },
     (res) => {
       comments = res
+      loading = false
     },
     { sort: { modifiedOn: SortingOrder.Descending } }
   )
@@ -45,7 +48,7 @@
     dispatch('changeContent')
   }}
 >
-  <div class="fs-title">
+  <div class="fs-title mr-2">
     <Label label={chunter.string.Comments} />
   </div>
   <DocNavLink {object}>
@@ -53,11 +56,17 @@
   </DocNavLink>
 </div>
 <div class="comments max-h-120 flex-row">
-  {#each comments as comment}
-    <div class="item">
-      <CommentPresenter value={comment} />
+  {#if loading}
+    <div class="flex-center">
+      <Spinner />
     </div>
-  {/each}
+  {:else}
+    {#each comments as comment}
+      <div class="item">
+        <CommentPresenter value={comment} />
+      </div>
+    {/each}
+  {/if}
 </div>
 
 <style lang="scss">

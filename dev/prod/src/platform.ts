@@ -89,8 +89,10 @@ interface Config {
   GMAIL_URL: string
 }
 
+const devConfig = process.env.CLIENT_TYPE === 'dev-production'
+
 export async function configurePlatform() {
-  const config: Config = await (await fetch('/config.json')).json()
+  const config: Config = await (await fetch(devConfig? '/config-dev.json' : '/config.json')).json()
   console.log('loading configuration', config)
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)

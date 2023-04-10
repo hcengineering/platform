@@ -79,7 +79,7 @@
         <Table
           _class={recruit.class.Applicant}
           config={preference?.config ?? viewlet.config}
-          query={{ attachedTo: objectId }}
+          query={{ attachedTo: objectId, ...(viewlet?.baseQuery ?? {}) }}
           loadingProps={{ length: applications }}
         />
       </Scroller>
@@ -87,7 +87,7 @@
       <Table
         _class={recruit.class.Applicant}
         config={preference?.config ?? viewlet.config}
-        query={{ attachedTo: objectId }}
+        query={{ attachedTo: objectId, ...(viewlet?.baseQuery ?? {}) }}
         loadingProps={{ length: applications }}
       />
     {/if}

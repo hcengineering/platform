@@ -35,7 +35,7 @@
     sort: {
       modifiedOn: SortingOrder.Descending
     },
-    limit: 10
+    limit: 200
   }
 
   let viewlet: Viewlet | undefined

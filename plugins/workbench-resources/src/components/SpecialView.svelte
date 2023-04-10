@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
+  import { Class, Doc, Ref, Space, WithLookup } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
@@ -49,12 +49,11 @@
   export let createComponentProps: Record<string, any> = {}
   export let isCreationDisabled = false
   export let descriptors: Ref<ViewletDescriptor>[] | undefined = [view.viewlet.Table]
-  export let baseQuery: DocumentQuery<Doc> = {}
 
   let search = ''
   let viewlet: WithLookup<Viewlet> | undefined
 
-  $: query = baseQuery || {}
+  $: query = viewlet?.baseQuery ?? {}
 
   $: searchQuery = search === '' ? query : { $search: search, ...query }
 
@@ -174,7 +173,7 @@
     query={searchQuery}
     {viewOptions}
     on:change={(e) => {
-      resultQuery = e.detail
+      resultQuery = { ...e.detail, ...query }
     }}
   />
   <Component

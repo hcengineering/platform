@@ -28,7 +28,7 @@
       doneState: task.class.DoneState,
       attachedTo: recruit.mixin.Candidate
     },
-    limit: 10
+    limit: 200
   }
 </script>
 
