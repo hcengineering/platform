@@ -1,6 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -24,10 +23,10 @@
   export let value: Channel
   let provider: ChannelProvider | undefined
   const providerQuery = createQuery()
-  providerQuery.query(contact.class.ChannelProvider, { _id: value.provider }, (res) => ([provider] = res))
+  $: providerQuery.query(contact.class.ChannelProvider, { _id: value.provider }, (res) => ([provider] = res))
   let target: Contact | undefined
   const query = createQuery()
-  query.query(contact.class.Contact, { _id: value.attachedTo as Ref<Contact> }, (res) => ([target] = res))
+  $: query.query(contact.class.Contact, { _id: value.attachedTo as Ref<Contact> }, (res) => ([target] = res))
 </script>
 
 <div class="flex-row-center" use:tooltip={{ label: getEmbeddedLabel(value.value) }}>
