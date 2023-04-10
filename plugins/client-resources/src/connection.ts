@@ -68,6 +68,8 @@ class Connection implements ClientConnection {
   private readonly sessionId = generateId() as string
   private closed = false
 
+  private pingResponse: number = Date.now()
+
   constructor (
     private readonly url: string,
     private readonly handler: TxHandler,
@@ -78,7 +80,25 @@ class Connection implements ClientConnection {
     console.log('connection created')
     this.interval = setInterval(() => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.sendRequest({ method: 'ping', params: [] })
+
+      if (this.pingResponse !== 0 && Date.now() - this.pingResponse > 3 * pingTimeout) {
+        // No ping response from server.
+        const s = this.websocket
+
+        if (!(s instanceof Promise)) {
+          console.log('no ping response from server. Closing socket.', s, (s as any).readyState)
+          // Trying to close connection and re-establish it.
+          s?.close()
+        } else {
+          console.log('no ping response from server. Closing socket.', s)
+          void s.then((s) => s.close())
+        }
+        this.websocket = null
+      }
+
+      void this.sendRequest({ method: 'ping', params: [] }).then(() => {
+        this.pingResponse = Date.now()
+      })
     }, pingTimeout)
   }
 
