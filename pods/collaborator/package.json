@@ -45,9 +45,9 @@
     "@hcengineering/server-core": "^0.6.1",
     "lib0": "~0.2.52",
     "lodash.debounce": "~4.0.8",
-    "y-protocols": "~1.0.5",
+    "y-protocols": "^1.0.5",
     "ws": "^8.10.0",
-    "yjs": "^13.5.44",
+    "yjs": "^13.5.52",
     "@hcengineering/minio": "^0.6.0"
   }
 }
