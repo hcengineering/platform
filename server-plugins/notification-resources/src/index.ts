@@ -603,13 +603,15 @@ export async function collaboratorDocHandler (tx: Tx, control: TriggerControl, t
 async function collectionCollabDoc (tx: TxCollectionCUD<Doc, AttachedDoc>, control: TriggerControl): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx)
   let res = await collaboratorDocHandler(actualTx, control, tx._id)
-  const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
-  if (doc !== undefined) {
-    if (control.hierarchy.hasMixin(doc, notification.mixin.Collaborators)) {
-      const collabMixin = control.hierarchy.as(doc, notification.mixin.Collaborators)
-      res = res.concat(
-        await createCollabDocInfo(collabMixin.collaborators, tx, tx.objectId, tx.objectClass, control, tx._id)
-      )
+  if ([core.class.TxCreateDoc, core.class.TxRemoveDoc].includes(actualTx._class)) {
+    const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
+    if (doc !== undefined) {
+      if (control.hierarchy.hasMixin(doc, notification.mixin.Collaborators)) {
+        const collabMixin = control.hierarchy.as(doc, notification.mixin.Collaborators)
+        res = res.concat(
+          await createCollabDocInfo(collabMixin.collaborators, tx, tx.objectId, tx.objectClass, control, tx._id)
+        )
+      }
     }
   }
   return res
