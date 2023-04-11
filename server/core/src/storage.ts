@@ -698,6 +698,7 @@ class TServerStorage implements ServerStorage {
         }
       } catch (err: any) {
         console.log(err)
+        throw err
       } finally {
         onEnd()
       }

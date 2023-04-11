@@ -15,11 +15,11 @@
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { deleteFile } from '@hcengineering/attachment-resources/src/utils'
-  import core, { AttachedData, Ref, SortingOrder } from '@hcengineering/core'
+  import core, { AttachedData, Doc, Ref, SortingOrder } from '@hcengineering/core'
   import { DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
-  import { calcRank, Component, Issue, IssueDraft, IssueParentInfo, Project, Sprint } from '@hcengineering/tracker'
-  import { Button, closeTooltip, ExpandCollapse, IconAdd, Scroller } from '@hcengineering/ui'
+  import { Component, Issue, IssueDraft, IssueParentInfo, Project, Sprint, calcRank } from '@hcengineering/tracker'
+  import { Button, ExpandCollapse, IconAdd, Scroller, closeTooltip } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import tracker from '../plugin'
   import Collapsed from './icons/Collapsed.svelte'
@@ -27,7 +27,6 @@
   import DraftIssueChildEditor from './templates/DraftIssueChildEditor.svelte'
   import DraftIssueChildList from './templates/DraftIssueChildList.svelte'
 
-  export let parent: Ref<Issue>
   export let projectId: Ref<Project>
   export let project: Project | undefined
   export let sprint: Ref<Sprint> | null = null
@@ -63,7 +62,7 @@
 
   const client = getClient()
 
-  export async function save (parents: IssueParentInfo[]) {
+  export async function save (parents: IssueParentInfo[], _id: Ref<Doc>) {
     if (project === undefined) return
     saved = true
 
@@ -104,7 +103,7 @@
       await client.addCollection(
         tracker.class.Issue,
         project._id,
-        parent,
+        _id,
         tracker.class.Issue,
         'subIssues',
         cvalue,
