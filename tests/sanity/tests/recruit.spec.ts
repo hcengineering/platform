@@ -56,7 +56,7 @@ test.describe('recruit tests', () => {
     const panel = page.locator('.popupPanel')
     await panel.locator('[id="gmail\\:string\\:Email"]').scrollIntoViewIfNeeded()
     await panel.locator('[id="gmail\\:string\\:Email"]').click()
-    expect(await page.locator(`.cover-channel >> input`).inputValue()).toEqual(email)
+    expect(await page.locator('.cover-channel >> input').inputValue()).toEqual(email)
   })
 
   test('create-application', async ({ page }) => {
