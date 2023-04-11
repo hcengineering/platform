@@ -137,8 +137,8 @@
       newAttachments.add(_id)
       attachments = attachments
       saved = false
-      dispatch('attached', _id)
       saveDraft()
+      dispatch('attached', _id)
     } catch (err: any) {
       setPlatformStatus(unknownError(err))
     }
@@ -146,6 +146,7 @@
 
   async function saveAttachment (doc: Attachment, objectId: Ref<Doc> | undefined): Promise<void> {
     if (space === undefined || objectId === undefined || _class === undefined) return
+    newAttachments.delete(doc._id)
     await client.addCollection(attachment.class.Attachment, space, objectId, _class, 'attachments', doc, doc._id)
   }
 
@@ -172,12 +173,13 @@
   async function removeAttachment (attachment: Attachment): Promise<void> {
     removedAttachments.add(attachment)
     attachments.delete(attachment._id)
-    dispatch('detached', attachment._id)
     attachments = attachments
     saveDraft()
+    dispatch('detached', attachment._id)
   }
 
   async function deleteAttachment (attachment: Attachment): Promise<void> {
+    removedAttachments.delete(attachment)
     if (originalAttachments.has(attachment._id)) {
       await client.removeCollection(
         attachment._class,
@@ -215,6 +217,20 @@
           await deleteFile(attachment.file)
         }
       })
+    }
+  }
+
+  export async function saveNewAttachment (_id: Ref<Attachment>): Promise<void> {
+    const attachment = attachments.get(_id)
+    if (attachment !== undefined) {
+      await saveAttachment(attachment, objectId)
+    }
+  }
+
+  export async function removeAttachmentById (_id: Ref<Attachment>): Promise<void> {
+    const attachment = attachments.get(_id)
+    if (attachment !== undefined) {
+      await removeAttachment(attachment)
     }
   }
 
