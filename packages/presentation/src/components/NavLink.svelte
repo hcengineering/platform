@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { navigate, parseLocation } from '@hcengineering/ui'
+  import { closePopup, closeTooltip, navigate, parseLocation } from '@hcengineering/ui'
 
   export let href: string | undefined
   export let disableClick = false
@@ -24,12 +24,17 @@
 
   function clickHandler (e: MouseEvent) {
     if (disableClick) return
+
     if (onClick) {
       e.preventDefault()
       e.stopPropagation()
       onClick(e)
     } else if (href !== undefined) {
       if (e.metaKey || e.ctrlKey) return
+
+      // we need to close popups and tooltips
+      closePopup()
+      closeTooltip()
       try {
         const url = new URL(href)
 

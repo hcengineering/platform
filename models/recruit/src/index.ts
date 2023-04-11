@@ -261,7 +261,10 @@ export function createModel (builder: Builder): void {
             icon: recruit.icon.Vacancy,
             label: recruit.string.Vacancies,
             createItemLabel: recruit.string.VacancyCreateLabel,
-            position: 'vacancy'
+            position: 'vacancy',
+            componentProps: {
+              archived: false
+            }
           },
           {
             id: organizationsId,
@@ -302,12 +305,15 @@ export function createModel (builder: Builder): void {
           },
           {
             id: archiveId,
-            component: workbench.component.Archive,
+            component: recruit.component.Vacancies,
             icon: view.icon.Archive,
             label: workbench.string.Archive,
             position: 'bottom',
             visibleIf: workbench.function.HasArchiveSpaces,
-            spaceClass: recruit.class.Vacancy
+            spaceClass: recruit.class.Vacancy,
+            componentProps: {
+              archived: true
+            }
           },
           {
             id: skillsId,
@@ -564,12 +570,14 @@ export function createModel (builder: Builder): void {
         lookup: {
           _id: {
             related: [tracker.class.Issue, 'relations._id']
-          }
+          },
+          space: recruit.class.Vacancy
         }
       },
       hiddenKeys: ['name', 'attachedTo'],
       baseQuery: {
-        doneState: null
+        doneState: null,
+        '$lookup.space.archived': false
       }
     },
     recruit.viewlet.ApplicantTable
@@ -583,8 +591,14 @@ export function createModel (builder: Builder): void {
       descriptor: view.viewlet.Table,
       config: ['', 'response', 'attachedTo', 'space', 'modifiedOn'],
       hiddenKeys: [],
+      options: {
+        lookup: {
+          space: recruit.class.Vacancy
+        }
+      },
       baseQuery: {
-        doneState: null
+        doneState: null,
+        '$lookup.space.archived': false
       }
     },
     recruit.viewlet.TableApplicantMatch
@@ -596,7 +610,8 @@ export function createModel (builder: Builder): void {
       {
         _id: {
           channels: contact.class.Channel
-        }
+        },
+        space: recruit.class.Vacancy
       }
     ],
     assignee: contact.class.Employee,
@@ -633,7 +648,8 @@ export function createModel (builder: Builder): void {
       descriptor: task.viewlet.Kanban,
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       baseQuery: {
-        doneState: null
+        doneState: null,
+        '$lookup.space.archived': false
       },
       viewOptions: {
         ...applicantViewOptions,
