@@ -52,19 +52,18 @@
 
   $: isStatus = client.getHierarchy().isDerived(targetClass, core.class.Status) ?? false
   let statusesCount: number[] = []
-  let statuses: Status[]
 
-  const groupValues = (val: Status[]): (Doc | undefined | null)[] => {
-    statuses = val
-    const result: Doc[] = []
+  const groupValues = (val: (Status | undefined)[]): (Doc | undefined)[] => {
+    const statuses = val
+    const result: (Doc | undefined)[] = []
     statusesCount = []
-    const unique = [...new Set(val.map((v) => v.name))]
+    const unique = [...new Set(val.map((v) => v?.name))]
     unique.forEach((label, i) => {
       let count = 0
       statuses.forEach((state) => {
-        if (state.name === label) {
+        if (state?.name === label) {
           if (!count) result[i] = state
-          count += targets.get(state._id) ?? 0
+          count += targets.get(state?._id) ?? 0
         }
       })
       statusesCount[i] = count
