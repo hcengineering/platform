@@ -129,7 +129,7 @@
     keys = attributes.map((it) => it.key)
 
     const editors: { key: KeyedAttribute; editor: AnyComponent; category: AttributeCategory }[] = []
-    const newInplaceAttributes = []
+    const newInplaceAttributes: string[] = []
     for (const k of collections) {
       if (allowedCollections.includes(k.key.key)) continue
       const editor = await getFieldEditor(k.key)
@@ -189,7 +189,7 @@
     const mixinRef = mix[attrClass.category]
     if (mixinRef) {
       const editorMixin = hierarchy.as(clazz, mixinRef)
-      return editorMixin.editor
+      return (editorMixin as any).editor
     } else {
       return undefined
     }

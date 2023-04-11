@@ -29,7 +29,6 @@
   import { createEventDispatcher } from 'svelte'
   import { FocusSelection, focusStore } from '../../selection'
   import Menu from '../Menu.svelte'
-  import ListCategories from './ListCategories.svelte'
   import ListHeader from './ListHeader.svelte'
   import ListItem from './ListItem.svelte'
 
@@ -336,7 +335,8 @@
   <ExpandCollapse isExpanded={!collapsed || dragItemIndex !== undefined}>
     {#if !lastLevel}
       <div class="p-2">
-        <ListCategories
+        <slot
+          name="category"
           {elementByIndex}
           {indexById}
           docs={items}
@@ -358,11 +358,8 @@
           {docByIndex}
           {viewOptionsConfig}
           {listDiv}
-          bind:dragItem
-          on:check
-          on:uncheckAll
-          on:row-focus
-          on:dragstart={dragStartHandler}
+          dragItem
+          dragstart={dragStartHandler}
         />
       </div>
     {:else if itemModels && (!collapsed || dragItemIndex !== undefined)}

@@ -43,9 +43,11 @@
     {#if label}<Label {label} />{:else}{label}{/if}
   </span>
   {#each actions as action}
-    <div class="an-element__tool">
-      <ActionIcon label={action.label} icon={action.icon} size={'small'} action={(evt) => action.action({}, evt)} />
-    </div>
+    {#if action.icon}
+      <div class="an-element__tool">
+        <ActionIcon label={action.label} icon={action.icon} size={'small'} action={(evt) => action.action({}, evt)} />
+      </div>
+    {/if}
   {/each}
   {#if notifications > 0}
     <div class="an-element__counter">{notifications}</div>

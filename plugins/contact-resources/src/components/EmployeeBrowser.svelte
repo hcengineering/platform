@@ -7,6 +7,7 @@
 
   export let search: string = ''
   const client = getClient()
+  export let withHeader: boolean = true
   $: searchQuery = search.length ? { $search: search } : {}
   $: resultQuery = { ...searchQuery }
   let employees: Employee[] = []

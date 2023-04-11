@@ -6,7 +6,6 @@
     "declaration": true,
     "outDir": "./lib",
     "strict": true,
-    "noImplicitAny": false,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "lib": [

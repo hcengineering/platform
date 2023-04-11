@@ -37,7 +37,7 @@
   export let label: IntlString | undefined = undefined
   export let relatedDocuments: RelatedDocument[] | undefined = undefined
   export let ignore: RelatedDocument[] | undefined = undefined
-  export let allowCategory: Ref<ObjectSearchCategory>[] | undefined
+  export let allowCategory: Ref<ObjectSearchCategory>[] | undefined = undefined
 
   let items: ObjectSearchResult[] = []
 

@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import TreeElement from './TreeElement.svelte'
+  import type { Doc, Ref } from '@hcengineering/core'
   import type { Asset } from '@hcengineering/platform'
-  import type { Ref, Space } from '@hcengineering/core'
   import type { Action } from '@hcengineering/ui'
+  import TreeElement from './TreeElement.svelte'
 
-  export let _id: Ref<Space>
+  export let _id: Ref<Doc>
   export let icon: Asset | undefined = undefined
   export let title: string
   export let notifications = 0

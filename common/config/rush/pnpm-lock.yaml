@@ -349,9 +349,9 @@ specifiers:
   smartcrop: ~2.0.5
   style-loader: ^3.3.1
   svelte: 3.58.0
-  svelte-check: ^2.8.0
+  svelte-check: 3.2.0
   svelte-loader: ^3.1.3
-  svelte-preprocess: ^4.10.7
+  svelte-preprocess: 5.0.3
   svgo-loader: ^3.0.0
   tar-stream: ^2.2.0
   toposort: ^2.0.2
@@ -719,9 +719,9 @@ dependencies:
   smartcrop: 2.0.5
   style-loader: 3.3.1_webpack@5.75.0
   svelte: 3.58.0
-  svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+  svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
   svelte-loader: 3.1.4_svelte@3.58.0
-  svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+  svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
   svgo-loader: 3.0.3
   tar-stream: 2.2.0
   toposort: 2.0.2
@@ -3535,12 +3535,6 @@ packages:
 
   /@types/retry/0.12.0:
     resolution: {integrity: sha512-wWKOClTTiizcZhXnPY4wikVAwmdYHp8q6DmC+EJUzAMsycb7HB32Kh9RN4+0gExjmPmZSAQjgURXIGATPegAvA==}
-    dev: false
-
-  /@types/sass/1.43.1:
-    resolution: {integrity: sha512-BPdoIt1lfJ6B7rw35ncdwBZrAssjcwzI5LByIrYs+tpXlj/CAkuVdRsgZDdP4lq5EjyWzwxZCqAoFyHKFwp32g==}
-    dependencies:
-      '@types/node': 16.11.68
     dev: false
 
   /@types/semver/7.3.13:
@@ -8442,10 +8436,11 @@ packages:
     dev: false
     optional: true
 
-  /magic-string/0.25.9:
-    resolution: {integrity: sha512-RmF0AsMzgt25qzqqLc1+MbHmhdx0ojF2Fvs4XnOqz2ZOBXzzkEwc/dJQZCYHAn7v1jbVOjAZfK8msRn4BxO4VQ==}
+  /magic-string/0.27.0:
+    resolution: {integrity: sha512-8UnnX2PeRAPZuN12svgR9j7M1uWMovg/CEnIwIG0LFkXSJJe4PdfUGiTGl8V9bsBHFUtfVINcSyYxd7q+kx9fA==}
+    engines: {node: '>=12'}
     dependencies:
-      sourcemap-codec: 1.4.8
+      '@jridgewell/sourcemap-codec': 1.4.14
     dev: false
 
   /make-dir/3.1.0:
@@ -10306,14 +10301,14 @@ packages:
       flatstr: 1.0.12
     dev: false
 
-  /sorcery/0.10.0:
-    resolution: {integrity: sha512-R5ocFmKZQFfSTstfOtHjJuAwbpGyf9qjQa1egyhvXSbM7emjrtLXtGdZsDJDABC85YBfVvrOiGWKSYXPKdvP1g==}
+  /sorcery/0.11.0:
+    resolution: {integrity: sha512-J69LQ22xrQB1cIFJhPfgtLuI6BpWRiWu1Y3vSsIwK/eAScqJxd/+CJlUuHQRdX2C9NGFamq+KqNywGgaThwfHw==}
     hasBin: true
     dependencies:
+      '@jridgewell/sourcemap-codec': 1.4.14
       buffer-crc32: 0.2.13
       minimist: 1.2.7
       sander: 0.5.1
-      sourcemap-codec: 1.4.8
     dev: false
 
   /source-map-js/1.0.2:
@@ -10336,10 +10331,6 @@ packages:
   /source-map/0.7.4:
     resolution: {integrity: sha512-l3BikUxvPOcn5E74dZiq5BGsTb5yEwhaTSzccU6t4sDOH8NWJCstKO5QT2CvtFoK6F0saL7p9xHAqHOlCPJygA==}
     engines: {node: '>= 8'}
-    dev: false
-
-  /sourcemap-codec/1.4.8:
-    resolution: {integrity: sha512-9NykojV5Uih4lgo5So5dtw+f0JgJX30KCNI8gwhz2J9A15wD0Ml6tjHKwf6fTSa6fAdVBdZeNOs9eJ71qCk8vA==}
     dev: false
 
   /sparse-bitfield/3.0.3:
@@ -10583,11 +10574,11 @@ packages:
     engines: {node: '>= 0.4'}
     dev: false
 
-  /svelte-check/2.9.2_4450129f3069b3d695073ee27be9ed19:
-    resolution: {integrity: sha512-DRi8HhnCiqiGR2YF9ervPGvtoYrheE09cXieCTEqeTPOTJzfoa54Py8rovIBv4bH4n5HgZYIyTQ3DDLHQLl2uQ==}
+  /svelte-check/3.2.0_4450129f3069b3d695073ee27be9ed19:
+    resolution: {integrity: sha512-6ZnscN8dHEN5Eq5LgIzjj07W9nc9myyBH+diXsUAuiY/3rt0l65/LCIQYlIuoFEjp2F1NhXqZiJwV9omPj9tMw==}
     hasBin: true
     peerDependencies:
-      svelte: ^3.24.0
+      svelte: ^3.55.0
     dependencies:
       '@jridgewell/trace-mapping': 0.3.17
       chokidar: 3.5.3
@@ -10596,13 +10587,12 @@ packages:
       picocolors: 1.0.0
       sade: 1.8.1
       svelte: 3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
-      typescript: 4.8.4
+      svelte-preprocess: 5.0.3_bfedd6eb5a6cfeaafaf6d459f8f7ee9e
+      typescript: 5.0.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -10635,31 +10625,28 @@ packages:
       svelte-hmr: 0.14.12_svelte@3.58.0
     dev: false
 
-  /svelte-preprocess/4.10.7_3db49c61dada63d5809feffd69b36f17:
-    resolution: {integrity: sha512-sNPBnqYD6FnmdBrUmBCaqS00RyCsCpj2BG58A1JBswNF7b0OKviwxqVrOL/CKyJrLSClrSeqQv5BXNg2RUbPOw==}
-    engines: {node: '>= 9.11.2'}
+  /svelte-preprocess/5.0.3_3db49c61dada63d5809feffd69b36f17:
+    resolution: {integrity: sha512-GrHF1rusdJVbOZOwgPWtpqmaexkydznKzy5qIC2FabgpFyKN57bjMUUUqPRfbBXK5igiEWn1uO/DXsa2vJ5VHA==}
+    engines: {node: '>= 14.10.0'}
     requiresBuild: true
     peerDependencies:
       '@babel/core': ^7.10.2
       coffeescript: ^2.5.1
       less: ^3.11.3 || ^4.0.0
-      node-sass: '*'
       postcss: ^7 || ^8
       postcss-load-config: ^2.1.0 || ^3.0.0 || ^4.0.0
       pug: ^3.0.0
       sass: ^1.26.8
       stylus: ^0.55.0
-      sugarss: ^2.0.0
+      sugarss: ^2.0.0 || ^3.0.0 || ^4.0.0
       svelte: ^3.23.0
-      typescript: ^3.9.5 || ^4.0.0
+      typescript: '>=3.9.5 || ^4.0.0 || ^5.0.0'
     peerDependenciesMeta:
       '@babel/core':
         optional: true
       coffeescript:
         optional: true
       less:
-        optional: true
-      node-sass:
         optional: true
       postcss:
         optional: true
@@ -10677,16 +10664,65 @@ packages:
         optional: true
     dependencies:
       '@types/pug': 2.0.6
-      '@types/sass': 1.43.1
       detect-indent: 6.1.0
-      magic-string: 0.25.9
+      magic-string: 0.27.0
       postcss: 8.4.20
       postcss-load-config: 4.0.1_postcss@8.4.20+ts-node@10.9.1
       sass: 1.56.1
-      sorcery: 0.10.0
+      sorcery: 0.11.0
       strip-indent: 3.0.0
       svelte: 3.58.0
       typescript: 4.8.4
+    dev: false
+
+  /svelte-preprocess/5.0.3_bfedd6eb5a6cfeaafaf6d459f8f7ee9e:
+    resolution: {integrity: sha512-GrHF1rusdJVbOZOwgPWtpqmaexkydznKzy5qIC2FabgpFyKN57bjMUUUqPRfbBXK5igiEWn1uO/DXsa2vJ5VHA==}
+    engines: {node: '>= 14.10.0'}
+    requiresBuild: true
+    peerDependencies:
+      '@babel/core': ^7.10.2
+      coffeescript: ^2.5.1
+      less: ^3.11.3 || ^4.0.0
+      postcss: ^7 || ^8
+      postcss-load-config: ^2.1.0 || ^3.0.0 || ^4.0.0
+      pug: ^3.0.0
+      sass: ^1.26.8
+      stylus: ^0.55.0
+      sugarss: ^2.0.0 || ^3.0.0 || ^4.0.0
+      svelte: ^3.23.0
+      typescript: '>=3.9.5 || ^4.0.0 || ^5.0.0'
+    peerDependenciesMeta:
+      '@babel/core':
+        optional: true
+      coffeescript:
+        optional: true
+      less:
+        optional: true
+      postcss:
+        optional: true
+      postcss-load-config:
+        optional: true
+      pug:
+        optional: true
+      sass:
+        optional: true
+      stylus:
+        optional: true
+      sugarss:
+        optional: true
+      typescript:
+        optional: true
+    dependencies:
+      '@types/pug': 2.0.6
+      detect-indent: 6.1.0
+      magic-string: 0.27.0
+      postcss: 8.4.20
+      postcss-load-config: 4.0.1_postcss@8.4.20+ts-node@10.9.1
+      sass: 1.56.1
+      sorcery: 0.11.0
+      strip-indent: 3.0.0
+      svelte: 3.58.0
+      typescript: 5.0.4
     dev: false
 
   /svelte/3.58.0:
@@ -11053,6 +11089,12 @@ packages:
   /typescript/4.8.4:
     resolution: {integrity: sha512-QCh+85mCy+h0IGff8r5XWzOVSbBO+KfeYrMQh7NJ58QujwcE22u+NUSmUxqF+un70P9GXKxa2HCNiTTMJknyjQ==}
     engines: {node: '>=4.2.0'}
+    hasBin: true
+    dev: false
+
+  /typescript/5.0.4:
+    resolution: {integrity: sha512-cW9T5W9xY37cc+jfEnaUvX91foxtHkza3Nw3wkoF4sSlKn0MONdkdEndig/qPBWXNkmplh3NzayQzCiHM4/hqw==}
+    engines: {node: '>=12.20'}
     hasBin: true
     dev: false
 
@@ -11765,7 +11807,7 @@ packages:
     dev: false
 
   file:projects/activity-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-24k3UQH0Dgp2jHK9Q89lU10YWWi5ulJapAVXB0BppYvEWF3rzSw0XD2OIssjnQzAD8gPnlioQKFVdgpBFoa0YQ==, tarball: file:projects/activity-resources.tgz}
+    resolution: {integrity: sha512-nyabhcmXzQilfOZ56ukJFFg8X/vela3yHXkgLjQ9Hn1fpJdtnol5LXkzWIydNvxr4BNaH3fxtErorLVZKWhTyw==, tarball: file:projects/activity-resources.tgz}
     id: file:projects/activity-resources.tgz
     name: '@rush-temp/activity-resources'
     version: 0.0.0
@@ -11782,15 +11824,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -11866,7 +11907,7 @@ packages:
     dev: false
 
   file:projects/attachment-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-CyDBVlS1L18dzcKl118J31DbZGIZtkS2FG7caEgTlIJ1G8C4w6fFKaTMt/pGlCEvu8X3eUpCOdRhHcK5TQgN2g==, tarball: file:projects/attachment-resources.tgz}
+    resolution: {integrity: sha512-2WLS0tHLp+QS/A83RwG84TdsCeRWDD4VYwnioa+BvPpfBii4KOj9306LQ+/y5s6UzoNna2aSimpM4r2ohc97aQ==, tarball: file:projects/attachment-resources.tgz}
     id: file:projects/attachment-resources.tgz
     name: '@rush-temp/attachment-resources'
     version: 0.0.0
@@ -11884,15 +11925,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -11944,7 +11984,7 @@ packages:
     dev: false
 
   file:projects/automation-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-gadQOFyfPPmuT/Sm/rSaJBhUKL0Z3TzcgEn518kdhdkICgeLjF+g7Fa0SH4dgtmsILu8SHs1k5VrJeB4inkOeA==, tarball: file:projects/automation-resources.tgz}
+    resolution: {integrity: sha512-fn2479XLNIvbqKkMWKUZhiIuPgssDbXhhoVcAQ9y4A1GyZ3IJWNU/xK/3WlCIURTR6VHeAfgVHivVNwZNfyoew==, tarball: file:projects/automation-resources.tgz}
     id: file:projects/automation-resources.tgz
     name: '@rush-temp/automation-resources'
     version: 0.0.0
@@ -11961,15 +12001,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -12022,7 +12061,7 @@ packages:
     dev: false
 
   file:projects/bitrix-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-HSIMHmWATwjX77SpU6ZnPkJmMrk+EUJjsAy7nzsHSJlcgrU/n6Isviz2fCNGeGw+wkDA1vzZJjnBaOiheyvFEg==, tarball: file:projects/bitrix-resources.tgz}
+    resolution: {integrity: sha512-Y5zCrlGpdHCxMMu1xxwZF/VjSzXDbNLJFv4Bx8xXll0ClOOazih1OD1fMm4t1yuTEPW3brFReAP9m2z+g1csFw==, tarball: file:projects/bitrix-resources.tgz}
     id: file:projects/bitrix-resources.tgz
     name: '@rush-temp/bitrix-resources'
     version: 0.0.0
@@ -12043,15 +12082,14 @@ packages:
       qs: 6.11.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -12107,7 +12145,7 @@ packages:
     dev: false
 
   file:projects/board-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-rwInZ5SK8ZoDqEM4YP8nVbmK8J1JawJWxyqf/ZlwCcU8Rx8BsOKssFwgOEn2lMRWkKDLKGTvlRFXCm5v9ilK5g==, tarball: file:projects/board-resources.tgz}
+    resolution: {integrity: sha512-OR4LXyViFzIH9mqQtaVpl7kd5iYVnNGkOT+4pw6iqm7yBu1NcW5ZY78kU0oLqN9tLyuWd6blL8N0vlNE4eC+iQ==, tarball: file:projects/board-resources.tgz}
     id: file:projects/board-resources.tgz
     name: '@rush-temp/board-resources'
     version: 0.0.0
@@ -12124,15 +12162,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -12184,7 +12221,7 @@ packages:
     dev: false
 
   file:projects/calendar-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-TES5oA5ojbajJQzb0y61tJIjPQjK93sGvZp1xWJ/PVm8KSS/OV4l2gQXbK5qvxBNYSyIncnFdyBgp2AT7nFdww==, tarball: file:projects/calendar-resources.tgz}
+    resolution: {integrity: sha512-e2SFoOkvREjx/o0kTWUSKG1ry05kF36ibVuZMGEvB9fn6Yvrcop4naJvql3TUmwBVz05G9tAcYdElHv/lZx+Zg==, tarball: file:projects/calendar-resources.tgz}
     id: file:projects/calendar-resources.tgz
     name: '@rush-temp/calendar-resources'
     version: 0.0.0
@@ -12201,15 +12238,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -12261,7 +12297,7 @@ packages:
     dev: false
 
   file:projects/chunter-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-ruXIPvnGn0z5s4XmIYYQgA398LZbDuv6N7Iu61iP1AyjI2FB/SqOuMM4H+7muSHWlF9UQTxHQ1aWssNU/hBb9Q==, tarball: file:projects/chunter-resources.tgz}
+    resolution: {integrity: sha512-QMVoWRF95888yXPjpPtcTYqYaS6s0lTvwL6VYICSZTXxPSpGP8AvaCWqfbMGJwa6GPxn7DJA92+58ACYzY7WGQ==, tarball: file:projects/chunter-resources.tgz}
     id: file:projects/chunter-resources.tgz
     name: '@rush-temp/chunter-resources'
     version: 0.0.0
@@ -12279,15 +12315,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -12379,7 +12414,7 @@ packages:
     dev: false
 
   file:projects/contact-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-oS8W0L5xZECInx03b30n9YhEDbB7c/fPo8ObTN+aD+HiMYo1M5ComB1by7PkEJHcnFa2iP3jgF2WFSvSyHFhQA==, tarball: file:projects/contact-resources.tgz}
+    resolution: {integrity: sha512-MtJMeEd4z8GJuO7gzzcsEg3l2SRcYtPc7DmrcKcfVcbo6daV/O+ZqUXh5wtVIbvjoOw+1PApRS5XoONH3BhILQ==, tarball: file:projects/contact-resources.tgz}
     id: file:projects/contact-resources.tgz
     name: '@rush-temp/contact-resources'
     version: 0.0.0
@@ -12396,15 +12431,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -12571,7 +12605,7 @@ packages:
     dev: false
 
   file:projects/devmodel-resources.tgz_ed2e4f4d904d50838e5f15c036f084b4:
-    resolution: {integrity: sha512-hF9oQe5fuT5KDFfdtCh1O7e24Cp2c+qkBp/fbReiyxU2IhJOdxPtETKkmlsgi0cBiJH0jibypBCVjxzyg0TfpA==, tarball: file:projects/devmodel-resources.tgz}
+    resolution: {integrity: sha512-hrf+q0nHVSP3V0SyG5HQE/aG2xMGfoSsYCAcbpWmHEzb0/awHcci1zWffo9LA+GVXSfnOk+PpcEj8xpvdqgWDA==, tarball: file:projects/devmodel-resources.tgz}
     id: file:projects/devmodel-resources.tgz
     name: '@rush-temp/devmodel-resources'
     version: 0.0.0
@@ -12588,14 +12622,13 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -12649,7 +12682,7 @@ packages:
     dev: false
 
   file:projects/document-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-4eVOJMM34WrzhhCt1DUAUNoQ/v9fSCnZSpIC5jRREoEuu9Fw4CPzg5rx09WN2vvyPOY782H/cKk8vUjrXfonGw==, tarball: file:projects/document-resources.tgz}
+    resolution: {integrity: sha512-7K10b6JpVJldSbNyi/d1zUfdqMoXVuVE881V99CG0cMnaM8YnooabvCAJ5WeYYGdFCajEJyUg4eq/mIHNFvDqg==, tarball: file:projects/document-resources.tgz}
     id: file:projects/document-resources.tgz
     name: '@rush-temp/document-resources'
     version: 0.0.0
@@ -12666,15 +12699,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -12829,7 +12861,7 @@ packages:
     dev: false
 
   file:projects/gmail-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-tPi7jX+K1ff/4cfaXw7fxMw/6Cy7BnxxDAUXPeAJiaFzanyOnpvnSfzNlSYEuZ9FXBLDEKUFnetk2phWIsnSPw==, tarball: file:projects/gmail-resources.tgz}
+    resolution: {integrity: sha512-y8ta4mkG8M9tk4TMXjYeO3bbrGaEHEvxwMYFrj/gC4zEk+7sAxwQDYfrTkB+O/zP8z+WavDtWych9D8c+sEKsw==, tarball: file:projects/gmail-resources.tgz}
     id: file:projects/gmail-resources.tgz
     name: '@rush-temp/gmail-resources'
     version: 0.0.0
@@ -12846,15 +12878,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -12906,7 +12937,7 @@ packages:
     dev: false
 
   file:projects/hr-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-dEniVQow/VIptQtGs8FYQ7U7nkBlky9A40Q8ALg5oEUvhTpxiDh4Zxmj5hTkPbi6Q6zgMgiFMyJNtHTLvI0qTQ==, tarball: file:projects/hr-resources.tgz}
+    resolution: {integrity: sha512-4Dc81yYnthERhIVJx+7ZZ6c6wA0CfMpNBFCedpiakqfOQKjfDD+/Aey0QLC+H4ipj/HLRq9iFA6s3EBDEq3Otg==, tarball: file:projects/hr-resources.tgz}
     id: file:projects/hr-resources.tgz
     name: '@rush-temp/hr-resources'
     version: 0.0.0
@@ -12923,15 +12954,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -12961,7 +12991,7 @@ packages:
     dev: false
 
   file:projects/image-cropper-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-hIaNLgbGTfQG9xue9xxm4IC/xem7nNezm2yELwp9lJZEOHflDP965j1wcgZKcnOEjUE7pHA7gM5zDuXdx7nytg==, tarball: file:projects/image-cropper-resources.tgz}
+    resolution: {integrity: sha512-eKR/NB6sgCNmlLicDsSrSVryqvLupo8gP/qxWDHjrDVL7sDTXvB3C4BAQmh0QMHFyDPrQHvSUeP7IiI+X8mGIw==, tarball: file:projects/image-cropper-resources.tgz}
     id: file:projects/image-cropper-resources.tgz
     name: '@rush-temp/image-cropper-resources'
     version: 0.0.0
@@ -12980,15 +13010,14 @@ packages:
       sass: 1.56.1
       smartcrop: 2.0.5
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -13039,7 +13068,7 @@ packages:
     dev: false
 
   file:projects/inventory-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-4lbudfNBK4VBNaS8d/S5nW5d63gOo5LFEYgQldDF7HasWuNlLUDsrkGCKdL88aalwVpfY2F/4koI81jaiTAOEA==, tarball: file:projects/inventory-resources.tgz}
+    resolution: {integrity: sha512-X55pyuA0FLnkROlTrkKnU69LTqQjiBzVVXCVRhZQU3vU6Omn6DROIx7JIVuwEXslMvl+z3Q24IO75GnY11pq8g==, tarball: file:projects/inventory-resources.tgz}
     id: file:projects/inventory-resources.tgz
     name: '@rush-temp/inventory-resources'
     version: 0.0.0
@@ -13056,15 +13085,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -13094,7 +13122,7 @@ packages:
     dev: false
 
   file:projects/kanban.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-/g+9n4hYvf04H0SgTQnHtenOsQNJNFGQmiSvQBnD/xtMrTpMt1uAOT8PCy7Z5ndOCALXQIfUYev7q6aPJ3dJfQ==, tarball: file:projects/kanban.tgz}
+    resolution: {integrity: sha512-dxCpNwbdJ5qLZZ8TOxbSBHH6Kv2lKLx8Usit60PPVAHodim+UbQpPNgNhxE2Aeeusf89dqqZDdMHRUkV5fDUmg==, tarball: file:projects/kanban.tgz}
     id: file:projects/kanban.tgz
     name: '@rush-temp/kanban'
     version: 0.0.0
@@ -13112,15 +13140,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -13152,7 +13179,7 @@ packages:
     dev: false
 
   file:projects/lead-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-fERvvmHnwtjIKIrhB8r2Y8hIkWmf7FLcQv0gq0Ns2rhrg8tcvpAPqBye+EWwNJx0VDJfrpxPkKHk+xN2JFJPRA==, tarball: file:projects/lead-resources.tgz}
+    resolution: {integrity: sha512-eem3NPixHizmpugFM8ItkWxPBf87Do4Py7jjbX0KIgfP/jqLsc+chmQzpBy3gBdlohTGq8ac+ydKXU1Vt4bqQQ==, tarball: file:projects/lead-resources.tgz}
     id: file:projects/lead-resources.tgz
     name: '@rush-temp/lead-resources'
     version: 0.0.0
@@ -13169,15 +13196,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -13229,7 +13255,7 @@ packages:
     dev: false
 
   file:projects/login-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-K/FoQzS5Gw+eLw3kJIXSkPDK8J5hlrQCPS5p51TtVOweKy/kYlrXnG7HlFnc/OpBJ2TOzBQSXteg5SQN82OIog==, tarball: file:projects/login-resources.tgz}
+    resolution: {integrity: sha512-j+Lzfm8MFOuQOi4njUBL2vILh4gTGUDByz8DP+mKEboq5rHM3RnKJmzvBhCqqN8aKryAKa69+MfIOW53/a1jEg==, tarball: file:projects/login-resources.tgz}
     id: file:projects/login-resources.tgz
     name: '@rush-temp/login-resources'
     version: 0.0.0
@@ -13246,15 +13272,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -14469,7 +14494,7 @@ packages:
     dev: false
 
   file:projects/notification-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-g+5CrZlwIRW9f3VO4OgYnY5uumRF20O5ZuHACoL0FUQeaRTXcT4mKb6yYD2ejWQbFXOsSS66NaIfb+hkqVcGKw==, tarball: file:projects/notification-resources.tgz}
+    resolution: {integrity: sha512-pYuVzm5fhDxJUo0YVERs0TCbjmmYZpPQ8tVtVOhoew9MbII4RmcT4zQjjvoCi3TUmupja69SQNyM/oc19et+iw==, tarball: file:projects/notification-resources.tgz}
     id: file:projects/notification-resources.tgz
     name: '@rush-temp/notification-resources'
     version: 0.0.0
@@ -14486,15 +14511,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -14504,7 +14528,7 @@ packages:
     dev: false
 
   file:projects/notification.tgz_4ddce9390f82697b17e251b77d46a36a:
-    resolution: {integrity: sha512-vffvOUc4Xg3FxQoTm57oNTa1V5KAolGjd1MWHtvSvhaGDNpnc13vZrBd/eS5rVS6uzyPNvF6SWh9zHitXK+C6w==, tarball: file:projects/notification.tgz}
+    resolution: {integrity: sha512-zkxjtZc+IP6V5lRrvRAsiEbq6u+I4X2FED5lPBEmJnoQu1IL4H6Qpy8b+dpy6MsPpUWtYZyhTqRNIWCmaXQrMA==, tarball: file:projects/notification.tgz}
     id: file:projects/notification.tgz
     name: '@rush-temp/notification'
     version: 0.0.0
@@ -14522,14 +14546,13 @@ packages:
       prettier: 2.7.1
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -14568,7 +14591,7 @@ packages:
     dev: false
 
   file:projects/panel.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-to6mzVJIbeVEH0TD+rlApWYXowIAuNyEKRlAndre3X5MpGvhB3p1WAp+iJaUuC8B3/a2lEfbsUCibLyFH8gt0w==, tarball: file:projects/panel.tgz}
+    resolution: {integrity: sha512-aTyjfz63cR2L9CoRQs2Epn8xj5DpVYxWquS+GfcPF2Ixkcgix+YmoyPUWHM5YZ4JF9RS/FgG/5b8y0LR9ADBvw==, tarball: file:projects/panel.tgz}
     id: file:projects/panel.tgz
     name: '@rush-temp/panel'
     version: 0.0.0
@@ -14585,15 +14608,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -14867,7 +14889,7 @@ packages:
     dev: false
 
   file:projects/presentation.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-/buUuPPgbp81eCdvnPOxK8rVVuTuYxnqPiCsqHey2Ss/I30RkhGz53AITkQmOP7QFbnVdma66m2RDMKuer47sw==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-gBpoMIc4vRlIrMUU8p61r49t+suxRuNoTMMRuYtvIpkxKR/o73WJArX6+08fstbDh2rfuzOxVrSauqdAqOjFgg==, tarball: file:projects/presentation.tgz}
     id: file:projects/presentation.tgz
     name: '@rush-temp/presentation'
     version: 0.0.0
@@ -14885,15 +14907,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -14994,7 +15015,7 @@ packages:
     dev: false
 
   file:projects/recruit-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-dqvPmxaapq+wVtqaSNwEpa/De6YB6ny0GhWY/LFSHn03K5w2DXrcH2LjHpVx+OTFZ4erjfvyQ+nGjJvtzYOtHw==, tarball: file:projects/recruit-resources.tgz}
+    resolution: {integrity: sha512-f26uIXoQB/PYYnIGhP7227npfK9zIrNe1BvBdqGSpM7If/nfi3X9jhT+cpb1IkpEwFSmtKWwel30J4/fQvRuTA==, tarball: file:projects/recruit-resources.tgz}
     id: file:projects/recruit-resources.tgz
     name: '@rush-temp/recruit-resources'
     version: 0.0.0
@@ -15013,15 +15034,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -15096,7 +15116,7 @@ packages:
     dev: false
 
   file:projects/request-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-pnWcdKlUnYUT8+ntH+Jc028aQleDE0YGtmeFKcrODXvtNe+qcdhXi6Y1dDyxGV+F0YzMaBSwAeaI73rfiVyobA==, tarball: file:projects/request-resources.tgz}
+    resolution: {integrity: sha512-eJVffLUBJBdIKPTDsBRJEPWzzQ4bzi34/sGAil4DEimuzeaMLUPm61w1x6g7F8qRwEo1d+CgDiVngzza910cLg==, tarball: file:projects/request-resources.tgz}
     id: file:projects/request-resources.tgz
     name: '@rush-temp/request-resources'
     version: 0.0.0
@@ -15114,15 +15134,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -16050,7 +16069,7 @@ packages:
     dev: false
 
   file:projects/setting-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-J8Ipj6twembjcjZqhfCasbm40BeUIFUQUXBlUn/dD4AgPjAmkOf2T6uwXdYzMi3seTlTyIIAWppDWGOB44iDmw==, tarball: file:projects/setting-resources.tgz}
+    resolution: {integrity: sha512-7d2/XZjFzDsijYhV0rpRzokhvuzWijmXLaN+Z0J58bF6WLKJYdOVC9NZauqCA92Gn05K2wOlnIhFt5z6VKxupw==, tarball: file:projects/setting-resources.tgz}
     id: file:projects/setting-resources.tgz
     name: '@rush-temp/setting-resources'
     version: 0.0.0
@@ -16067,15 +16086,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -16126,7 +16144,7 @@ packages:
     dev: false
 
   file:projects/tags-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-/tdMbQ/1TkiNIhpIMdyI2FQVyJTHCfusSm2Qg+VBCp1vQF601iu6tn/rhzrh1T0BJ/Sl12LXvq/xCjVzSeWMiw==, tarball: file:projects/tags-resources.tgz}
+    resolution: {integrity: sha512-mhELyEUbIrr7n31djTvPKNlathQY5FUoqVmHKLI+HEaLtot5kIZKh8hKcCob7uHS0Iv5IdxnvuNZ0tZ812frmw==, tarball: file:projects/tags-resources.tgz}
     id: file:projects/tags-resources.tgz
     name: '@rush-temp/tags-resources'
     version: 0.0.0
@@ -16143,15 +16161,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -16204,7 +16221,7 @@ packages:
     dev: false
 
   file:projects/task-resources.tgz_ed2e4f4d904d50838e5f15c036f084b4:
-    resolution: {integrity: sha512-800qXHVdQNSIc8KvA/WVlzVVTTQzybYFjsOtllg6crp9pcTzu84OdCjSyR+1kEnBOMzwbken/qFSnMprP2zB5g==, tarball: file:projects/task-resources.tgz}
+    resolution: {integrity: sha512-0IwpAN4RvS4iDZTXFnEqSQWDIlZzIfNK5va2XRJnYEitD1eMfk4U8mAmivkL3ADjVB1Z9wOTi7uMXy+U8GHMUg==, tarball: file:projects/task-resources.tgz}
     id: file:projects/task-resources.tgz
     name: '@rush-temp/task-resources'
     version: 0.0.0
@@ -16221,14 +16238,13 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -16281,7 +16297,7 @@ packages:
     dev: false
 
   file:projects/telegram-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-aUwqmXBExHvcYTwgGR/NWapDyxm5JLkj4nfOeL7GCY1h5tdYB9TborB2nuMdIXycI0MIQO57HMx6zFIT7nM8Qw==, tarball: file:projects/telegram-resources.tgz}
+    resolution: {integrity: sha512-ioVYjoKRa6/P2zRvx1SLm8NT0ODpFL6M0rKr8G+KmHNlORWFi5fMVtfJmROInditZqsek0e1pFBEv0DajwZPNw==, tarball: file:projects/telegram-resources.tgz}
     id: file:projects/telegram-resources.tgz
     name: '@rush-temp/telegram-resources'
     version: 0.0.0
@@ -16298,15 +16314,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -16357,7 +16372,7 @@ packages:
     dev: false
 
   file:projects/templates-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-Fx/IFSiPl42U7oeElVs3J0adc/WxybgoOyo7XEynwNHzpKx70BC9VJ+t4c25evgCtiMAS4ntw1L68zgOksBAgw==, tarball: file:projects/templates-resources.tgz}
+    resolution: {integrity: sha512-eoz9vxIsMLgUT/exOeKjz94wFWdAACVBqUBiVyY+BVA+g/bnWeJB6C4TOVZ6Ucyo/OAW61a8WevDY108Wqhlow==, tarball: file:projects/templates-resources.tgz}
     id: file:projects/templates-resources.tgz
     name: '@rush-temp/templates-resources'
     version: 0.0.0
@@ -16374,15 +16389,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -16435,7 +16449,7 @@ packages:
     dev: false
 
   file:projects/text-editor.tgz_1e646fd62a3adc9d0b41f256dafe3d38:
-    resolution: {integrity: sha512-QmOTiWi2YE79TiQ+divES1zwViQWY4VCn/vX+nv+LWqL+EN6/VqKJExQ7kh7SRtHRufMbGLrV/rIpfv9nyUMIQ==, tarball: file:projects/text-editor.tgz}
+    resolution: {integrity: sha512-pFAkI3bOLJ7f/Jk5lE9V1YSB3tpg56phQcIimDfz8Fj2xpVY29GdJXLI561TEMqp039s6Z/mPI1+q445MjQ5UA==, tarball: file:projects/text-editor.tgz}
     id: file:projects/text-editor.tgz
     name: '@rush-temp/text-editor'
     version: 0.0.0
@@ -16489,9 +16503,9 @@ packages:
       rfc6902: 5.0.1
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
       y-prosemirror: 1.2.1_31c6ffa6f5564aed248fbf425a5e0ce3
       y-websocket: 1.5.0_yjs@13.5.52
@@ -16500,7 +16514,6 @@ packages:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -16511,7 +16524,7 @@ packages:
     dev: false
 
   file:projects/theme.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-IGt//lJMuKrp8B6/L1Hz2ds1QVMVtpJwI/JyGonOVHJIpVkqko0FCj4G+p4o6N6aszNbKkJfWeqWBj1vTZwVWA==, tarball: file:projects/theme.tgz}
+    resolution: {integrity: sha512-kdD3WczXW+q9tvbzKecdoKaVWT74t5OncQRzyAr8g4RJFdUhEnmIyWwzt2T3/xRGh6W0XnAr3rBOJM4dby9inA==, tarball: file:projects/theme.tgz}
     id: file:projects/theme.tgz
     name: '@rush-temp/theme'
     version: 0.0.0
@@ -16528,15 +16541,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -16614,7 +16626,7 @@ packages:
     dev: false
 
   file:projects/tracker-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-v588PBJUU3deDQdkC/dDZeWt0UHMh076IYQyjfCY6PKKBS091cywcMJHznYn3SwRrs797j8U6tT2wLL+Q8BbCw==, tarball: file:projects/tracker-resources.tgz}
+    resolution: {integrity: sha512-PI5nxDSWZiP7kyBlhXGbAAHKaV3MeQZGa+Ms7HxojM0Eu8M2wGTWX/2CsHBuNuE/yAcTOhmCMo8WlWvy3V073A==, tarball: file:projects/tracker-resources.tgz}
     id: file:projects/tracker-resources.tgz
     name: '@rush-temp/tracker-resources'
     version: 0.0.0
@@ -16632,15 +16644,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -16694,7 +16705,7 @@ packages:
     dev: false
 
   file:projects/ui.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-bBF0MLDDgtkYKYqBFSDrmnIomfF67ScNJaaVanN8ZMpGguj2LsJ/hYghYYpq1DyKu24TytdpinUivMgz0eh8Pg==, tarball: file:projects/ui.tgz}
+    resolution: {integrity: sha512-FCxj0reaiocuERADgolHZLzFgMTH3HupTuWAek4MjbwY/hKtQ+HJtDRAtGXFpi4N/cc7dnBJUN+Hj284yGx0EQ==, tarball: file:projects/ui.tgz}
     id: file:projects/ui.tgz
     name: '@rush-temp/ui'
     version: 0.0.0
@@ -16713,15 +16724,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -16753,7 +16763,7 @@ packages:
     dev: false
 
   file:projects/view-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-+qg2sCJZ2Fyr2J3HlOStrSjujhTIViHSXhmrlmcS/RHsW35dimYjLoGyHZXfT8AzfmvlVZWnIWv5M4AA3TT7bA==, tarball: file:projects/view-resources.tgz}
+    resolution: {integrity: sha512-R5s7DBkkhNm9Ma6usUMoHnAT6qkTbdQiwXsMRV5jcbChiLfwdMG2J155msezT74iD716kpjtjOXsOldv37lC6g==, tarball: file:projects/view-resources.tgz}
     id: file:projects/view-resources.tgz
     name: '@rush-temp/view-resources'
     version: 0.0.0
@@ -16771,15 +16781,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug
@@ -16830,7 +16839,7 @@ packages:
     dev: false
 
   file:projects/workbench-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-DwtBkLN4MG8IzNxfQBUFOGZsEpqBGFjYX0z7UYsGIY17oVIyvTAWnC3s+9XC95ijJjRaVuQw/h9S1a7ajcHqQA==, tarball: file:projects/workbench-resources.tgz}
+    resolution: {integrity: sha512-ZYtwmHRKT7MULKAFxOVrSywPe3/hR6dUhp+wWRhcjo2edPHImx7vsZ0meSMeMfOeQQ5pdxqMJRqswxP1T1Le+g==, tarball: file:projects/workbench-resources.tgz}
     id: file:projects/workbench-resources.tgz
     name: '@rush-temp/workbench-resources'
     version: 0.0.0
@@ -16848,15 +16857,14 @@ packages:
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.58.0
       sass: 1.56.1
       svelte: 3.58.0
-      svelte-check: 2.9.2_4450129f3069b3d695073ee27be9ed19
+      svelte-check: 3.2.0_4450129f3069b3d695073ee27be9ed19
       svelte-loader: 3.1.4_svelte@3.58.0
-      svelte-preprocess: 4.10.7_3db49c61dada63d5809feffd69b36f17
+      svelte-preprocess: 5.0.3_3db49c61dada63d5809feffd69b36f17
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
       - less
-      - node-sass
       - postcss
       - postcss-load-config
       - pug

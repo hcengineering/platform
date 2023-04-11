@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Ref, Space } from '@hcengineering/core'
+  import type { Doc, Ref } from '@hcengineering/core'
   import type { Asset, IntlString } from '@hcengineering/platform'
   import type { Action } from '@hcengineering/ui'
   import { ActionIcon, Icon, IconMoreH, Label, Menu, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
-  export let _id: Ref<Space> | undefined = undefined
+  export let _id: Ref<Doc> | undefined = undefined
   export let icon: Asset | undefined = undefined
   export let label: IntlString | undefined = undefined
   export let title: string | undefined = undefined
@@ -88,7 +88,7 @@
     </div>
   {:else}
     {#await actions() then actionItems}
-      {#if actionItems.length === 1}
+      {#if actionItems.length === 1 && actionItems[0].icon}
         <div id={_id} class="an-element__tool">
           <ActionIcon
             label={actionItems[0].label}

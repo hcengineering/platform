@@ -29,6 +29,7 @@ import core, {
   toIdMap,
   TxCollectionCUD,
   TxOperations,
+  TxResult,
   TxUpdateDoc
 } from '@hcengineering/core'
 import { Asset, IntlString } from '@hcengineering/platform'
@@ -412,7 +413,7 @@ export async function moveIssuesToAnotherSprint (
     const movedIssues = await client.findAll(tracker.class.Issue, { sprint: oldSprint._id })
 
     // Update Issues by new Sprint
-    const awaitedUpdates = []
+    const awaitedUpdates: Array<Promise<TxResult>> = []
     for (const issue of movedIssues) {
       awaitedUpdates.push(client.update(issue, { sprint: newSprint?._id ?? null }))
     }
