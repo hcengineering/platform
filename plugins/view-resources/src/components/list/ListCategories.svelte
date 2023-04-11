@@ -85,7 +85,11 @@
           const f = await getResource(categoryFunc.action)
           const res = hierarchy.clone(await f(_class, query, groupByKey, update, queryId, $statusStore))
           if (res !== undefined) {
-            categories = Array.from(new Set([...categories, ...res]))
+            const set = new Set(categories.map((p) => JSON.stringify(p)))
+            for (const result of res) {
+              set.add(JSON.stringify(result))
+            }
+            categories = Array.from(set).map((p) => JSON.parse(p))
             return
           }
         }
