@@ -42,7 +42,7 @@
 
   export let _class: Ref<Class<Space>>
   export let label: IntlString
-  export let createItemDialog: AnyComponent | undefined
+  export let createItemDialog: AnyComponent | undefined = undefined
   export let createItemLabel: IntlString = presentation.string.Create
   export let withHeader: boolean = true
   export let withFilterButton: boolean = true

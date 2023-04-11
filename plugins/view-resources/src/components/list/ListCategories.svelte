@@ -149,6 +149,7 @@
     {createItemDialog}
     {createItemLabel}
     {loadingPropsLength}
+    {viewOptionsConfig}
     on:check
     on:uncheckAll
     on:row-focus
@@ -163,5 +164,60 @@
     {props}
     {listDiv}
     bind:dragItem
-  />
+  >
+    <svelte:fragment
+      slot="category"
+      let:elementByIndex
+      let:indexById
+      let:docs
+      let:_class
+      let:space
+      let:lookup
+      let:loadingPropsLength
+      let:baseMenuClass
+      let:config
+      let:selectedObjectIds
+      let:createItemDialog
+      let:createItemLabel
+      let:viewOptions
+      let:newObjectProps
+      let:flatHeaders
+      let:props
+      let:level
+      let:initIndex
+      let:docByIndex
+      let:viewOptionsConfig
+      let:listDiv
+      let:dragstart
+    >
+      <svelte:self
+        {elementByIndex}
+        {indexById}
+        {docs}
+        {_class}
+        {space}
+        {lookup}
+        {loadingPropsLength}
+        {baseMenuClass}
+        {config}
+        {selectedObjectIds}
+        {createItemDialog}
+        {createItemLabel}
+        {viewOptions}
+        {newObjectProps}
+        {flatHeaders}
+        {props}
+        {level}
+        {initIndex}
+        {docByIndex}
+        {viewOptionsConfig}
+        {listDiv}
+        on:dragItem
+        on:check
+        on:uncheckAll
+        on:row-focus
+        on:dragstart={dragstart}
+      />
+    </svelte:fragment>
+  </ListCategory>
 {/each}

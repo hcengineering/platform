@@ -183,7 +183,8 @@ export const contactPlugin = plugin(contactId, {
     MembersPresenter: '' as AnyComponent,
     Avatar: '' as AnyComponent,
     UserBoxList: '' as AnyComponent,
-    ChannelPresenter: '' as AnyComponent
+    ChannelPresenter: '' as AnyComponent,
+    SpaceMembers: '' as AnyComponent
   },
   channelProvider: {
     Email: '' as Ref<ChannelProvider>,

@@ -14,7 +14,7 @@
       {title}
     </div>
     <div class="row">
-      {params.description}
+      {params?.description}
     </div>
   </div>
   <div class="close-button">

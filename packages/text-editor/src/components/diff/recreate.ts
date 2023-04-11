@@ -156,7 +156,7 @@ export class StepTransform {
 
   recreateChangeContentSteps (): void {
     // First step: find content changing steps.
-    let ops = []
+    let ops: Operation[] = []
     while (this.ops.length > 0) {
       // get next
       let op = this.ops.shift() as Operation

@@ -70,3 +70,12 @@ export function addNotification (
 
   notificationsStore.addNotification(notification)
 }
+
+/**
+ * @public
+ */
+export function handler<T, EVT = MouseEvent> (target: T, op: (value: T, evt: EVT) => void): (evt: EVT) => void {
+  return (evt: EVT) => {
+    op(target, evt)
+  }
+}

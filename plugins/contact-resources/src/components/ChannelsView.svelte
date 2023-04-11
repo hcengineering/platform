@@ -78,7 +78,7 @@
       displayItems = []
       return
     }
-    const result = []
+    const result: any[] = []
     const map = await getChannelProviders()
     if (Array.isArray(value)) {
       for (const item of value) {

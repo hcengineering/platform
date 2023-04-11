@@ -25,9 +25,9 @@
     "prettier": "^2.7.1",
     "prettier-plugin-svelte": "^2.8.0",
     "sass": "^1.53.0",
-    "svelte-check": "^2.8.0",
+    "svelte-check": "3.2.0",
     "svelte-loader": "^3.1.3",
-    "svelte-preprocess": "^4.10.7",
+    "svelte-preprocess": "5.0.3",
     "typescript": "^4.3.5"
   },
   "dependencies": {
@@ -53,7 +53,7 @@
     "@hcengineering/view": "^0.6.3",
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/workbench": "^0.6.3",
-    "svelte": "^3.47",
+    "svelte": "3.58.0",
     "@hcengineering/kanban": "^0.6.0",
     "@hcengineering/preference": "^0.6.3",
     "@hcengineering/tags": "^0.6.6"

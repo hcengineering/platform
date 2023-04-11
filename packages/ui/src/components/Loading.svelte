@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-<script type="ts">
+<script lang="ts">
   import Spinner from './Spinner.svelte'
 
   export let shrink: boolean = false

@@ -159,7 +159,6 @@
     level={0}
     {createItemDialog}
     {createItemLabel}
-    {loadingProps}
     on:check
     on:uncheckAll={uncheckAll}
     on:row-focus

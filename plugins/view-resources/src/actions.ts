@@ -62,7 +62,7 @@ export async function getActions (
 
   const categories: Record<string, number> = { top: 1, filter: 50, tools: 100 }
 
-  let filteredActions = []
+  let filteredActions: Action[] = []
 
   for (const action of actions) {
     if (action.visibilityTester == null) {

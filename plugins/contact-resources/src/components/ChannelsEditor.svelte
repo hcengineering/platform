@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref } from '@hcengineering/core'
+  import type { Class, Doc, Ref, TxResult } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { ButtonKind, ButtonSize, closeTooltip } from '@hcengineering/ui'
 
@@ -61,7 +61,7 @@
 
   async function save (newValues: Channel[]): Promise<void> {
     const currentProviders = new Set(channels.map((p) => p.provider))
-    const promises = []
+    const promises: Array<Promise<TxResult>> = []
     for (const value of newValues) {
       const oldChannel = findValue(value.provider)
       if (oldChannel === undefined) {

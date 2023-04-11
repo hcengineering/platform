@@ -15,7 +15,7 @@
 <script lang="ts">
   import { getResource, IntlString, Asset } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { Button, Icon, showPopup, Spinner, tooltip } from '@hcengineering/ui'
+  import { Button, handler, Icon, showPopup, Spinner, tooltip } from '@hcengineering/ui'
   import type { AnySvelteComponent } from '@hcengineering/ui'
   import { AnyExtension } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
@@ -323,7 +323,11 @@
     <div class="buttons-group large-gap">
       {#each actions as a}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div class="icon-button" use:tooltip={{ label: a.label }} on:click={(evt) => handleAction(a, evt)}>
+        <div
+          class="icon-button"
+          use:tooltip={{ label: a.label }}
+          on:click={handler(a, (a, evt) => handleAction(a, evt))}
+        >
           <Icon icon={a.icon} size={'medium'} fill={a.fill} />
         </div>
       {/each}
@@ -336,11 +340,11 @@
             class="icon-button"
             class:disabled={a.disabled}
             use:tooltip={{ label: a.label }}
-            on:click={(evt) => {
+            on:click={handler(a, (a, evt) => {
               if (!a.disabled) {
                 handleAction(a, evt)
               }
-            }}
+            })}
           >
             <Icon icon={a.icon} size={'medium'} fill={a.fill} />
           </div>

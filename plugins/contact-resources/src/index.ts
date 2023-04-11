@@ -284,7 +284,8 @@ export default async (): Promise<Resources> => ({
     ActivityChannelMessage,
     ChannelPresenter,
     ChannelPanel,
-    ActivityChannelPresenter
+    ActivityChannelPresenter,
+    SpaceMembers
   },
   completion: {
     EmployeeQuery: async (

@@ -82,13 +82,14 @@
       <Scroller>
         {#each shiftValues as value}
           {#if typeof value === 'number'}
+            {@const numValue = value}
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div
               class="btn"
               on:click={() => {
-                const abs = Math.abs(value)
-                let shiftedDate = new Date(currentDate.getTime() + value * base)
-                if (abs < DAY && abs >= HOUR) shiftedDate = new Date(Date.now() + value * base)
+                const abs = Math.abs(numValue)
+                let shiftedDate = new Date(currentDate.getTime() + numValue * base)
+                if (abs < DAY && abs >= HOUR) shiftedDate = new Date(Date.now() + numValue * base)
                 dispatch('change', shiftedDate)
               }}
             >

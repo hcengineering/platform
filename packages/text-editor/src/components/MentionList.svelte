@@ -34,7 +34,7 @@
       undefined,
       () => close(),
       () => {},
-      { overlay: false }
+      { overlay: false, category: '' }
     )
   })
 

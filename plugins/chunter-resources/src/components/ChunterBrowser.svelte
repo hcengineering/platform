@@ -1,7 +1,7 @@
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
   import { FileBrowser } from '@hcengineering/attachment-resources'
-  import { Button } from '@hcengineering/ui'
+  import { AnySvelteComponent, Button } from '@hcengineering/ui'
   import workbench from '@hcengineering/workbench'
   import { SpaceBrowser } from '@hcengineering/workbench-resources'
   import Header from './Header.svelte'
@@ -12,13 +12,19 @@
   import { SearchType } from '../utils'
   import MessagesBrowser from './MessagesBrowser.svelte'
   import { FilterButton } from '@hcengineering/view-resources'
+  import { Class, Doc, Ref } from '@hcengineering/core'
 
   let userSearch_: string = ''
   userSearch.subscribe((v) => (userSearch_ = v))
 
   let searchType: SearchType = SearchType.Messages
 
-  const components = [
+  const components: {
+    component: AnySvelteComponent
+    searchType: SearchType
+    filterClass?: Ref<Class<Doc>>
+    props?: Record<string, any>
+  }[] = [
     { searchType: SearchType.Messages, component: MessagesBrowser, filterClass: plugin.class.ChunterMessage },
     {
       searchType: SearchType.Channels,

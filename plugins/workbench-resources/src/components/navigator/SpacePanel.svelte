@@ -16,10 +16,11 @@
 <script lang="ts">
   import type { Class, Ref, Space } from '@hcengineering/core'
   import core from '@hcengineering/core'
-  import { createQuery, getClient, Members } from '@hcengineering/presentation'
-  import { EditBox, Icon, Label, Scroller, Panel } from '@hcengineering/ui'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { EditBox, Icon, Label, Scroller, Panel, Component } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import workbench from '../../plugin'
+  import contact from '@hcengineering/contact'
 
   export let _id: Ref<Space>
   export let _class: Ref<Class<Space>>
@@ -85,7 +86,7 @@
         <!-- <ToggleWithLabel label={workbench.string.MakePrivate} description={workbench.string.MakePrivateDescription}/> -->
         <div class="flex-col mt-10">
           <span class="fs-title text-xl overflow-label mb-2"><Label label={workbench.string.Members} /></span>
-          <Members {space} />
+          <Component is={contact.component.SpaceMembers} props={{ space }} />
         </div>
       {/if}
     </div>
