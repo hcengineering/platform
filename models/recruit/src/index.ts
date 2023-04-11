@@ -606,10 +606,9 @@ export function createModel (builder: Builder): void {
   }
 
   const applicantViewOptions: ViewOptionsModel = {
-    groupBy: ['state', 'doneState', 'assignee', 'space'],
+    groupBy: ['state', 'assignee', 'space'],
     orderBy: [
       ['state', SortingOrder.Ascending],
-      ['doneState', SortingOrder.Ascending],
       ['modifiedOn', SortingOrder.Descending],
       ['dueDate', SortingOrder.Descending],
       ['rank', SortingOrder.Ascending]

@@ -6,4 +6,4 @@ WORKDIR /usr/src/app
 COPY bundle.js ./
 
 EXPOSE 3000
-CMD [ "node", "--enable-source-maps", "bundle.js" ]
+CMD [ "node", "bundle.js" ]

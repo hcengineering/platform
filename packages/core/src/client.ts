@@ -24,7 +24,7 @@ import { SortingOrder } from './storage'
 import { Tx, TxCreateDoc, TxProcessor, TxUpdateDoc } from './tx'
 import { toFindResult } from './utils'
 
-const transactionThreshold = 3000
+const transactionThreshold = 500
 
 /**
  * @public
@@ -193,7 +193,7 @@ export async function createClient (
     // Find all new transactions and apply
     await loadModel(conn, loadedTxIds, allowedPlugins, configs, hierarchy, model)
 
-    // We need to look for last 1000 transactions and if it is more since lastTx one we receive, we need to perform full refresh.
+    // We need to look for last {transactionThreshold} transactions and if it is more since lastTx one we receive, we need to perform full refresh.
     const atxes = await conn.findAll(
       core.class.Tx,
       { modifiedOn: { $gt: lastTx } },
