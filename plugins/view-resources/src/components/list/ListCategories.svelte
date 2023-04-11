@@ -93,7 +93,7 @@
           const f = await getResource(categoryFunc.action)
           const res = hierarchy.clone(await f(_class, query, groupByKey, update, queryId, $statusStore))
           if (res !== undefined) {
-            categories = concatCategories(categories, res)
+            categories = concatCategories(res, categories)
             return
           }
         }
