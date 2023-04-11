@@ -35,6 +35,10 @@ import view, { createAction } from '@hcengineering/model-view'
 import setting from '@hcengineering/setting'
 import gmail from './plugin'
 
+export { gmailId } from '@hcengineering/gmail'
+export { gmailOperation } from './migration'
+export { default } from './plugin'
+
 export const DOMAIN_GMAIL = 'gmail' as Domain
 
 function TypeSharedMessage (): Type<SharedMessage> {
@@ -213,5 +217,3 @@ export function createModel (builder: Builder): void {
     parentPropagate: false
   })
 }
-
-export { gmailOperation } from './migration'

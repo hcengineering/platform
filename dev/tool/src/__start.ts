@@ -16,29 +16,29 @@
 import { prepareTools as prepareToolsRaw } from '@hcengineering/server-tool'
 
 import { Data, Tx, Version } from '@hcengineering/core'
+import { MinioService } from '@hcengineering/minio'
 import { MigrateOperation } from '@hcengineering/model'
 import builder, { migrateOperations, version } from '@hcengineering/model-all'
-import { MinioService } from '@hcengineering/minio'
 import { devTool } from '.'
 
+import { addLocation } from '@hcengineering/platform'
 import { serverAttachmentId } from '@hcengineering/server-attachment'
 import { serverCalendarId } from '@hcengineering/server-calendar'
 import { serverChunterId } from '@hcengineering/server-chunter'
 import { serverContactId } from '@hcengineering/server-contact'
 import { serverGmailId } from '@hcengineering/server-gmail'
+import { serverHrId } from '@hcengineering/server-hr'
 import { serverInventoryId } from '@hcengineering/server-inventory'
 import { serverLeadId } from '@hcengineering/server-lead'
 import { serverNotificationId } from '@hcengineering/server-notification'
 import { serverRecruitId } from '@hcengineering/server-recruit'
+import { serverRequestId } from '@hcengineering/server-request'
 import { serverSettingId } from '@hcengineering/server-setting'
 import { serverTagsId } from '@hcengineering/server-tags'
 import { serverTaskId } from '@hcengineering/server-task'
-import { serverTrackerId } from '@hcengineering/server-tracker'
 import { serverTelegramId } from '@hcengineering/server-telegram'
-import { serverHrId } from '@hcengineering/server-hr'
-import { serverRequestId } from '@hcengineering/server-request'
+import { serverTrackerId } from '@hcengineering/server-tracker'
 import { serverViewId } from '@hcengineering/server-view'
-import { addLocation } from '@hcengineering/platform'
 
 addLocation(serverAttachmentId, () => import('@hcengineering/server-attachment-resources'))
 addLocation(serverContactId, () => import('@hcengineering/server-contact-resources'))
@@ -65,7 +65,9 @@ function prepareTools (): {
   version: Data<Version>
   migrateOperations: [string, MigrateOperation][]
 } {
-  return { ...prepareToolsRaw(builder.getTxes()), version, migrateOperations }
+  const enabled = (process.env.MODEL_ENABLED ?? '*').split(',').map((it) => it.trim())
+  const disabled = (process.env.MODEL_DISABLED ?? '').split(',').map((it) => it.trim())
+  return { ...prepareToolsRaw(builder(enabled, disabled).getTxes()), version, migrateOperations }
 }
 
 devTool(prepareTools, '')

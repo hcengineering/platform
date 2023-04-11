@@ -40,6 +40,10 @@ import setting from '@hcengineering/setting'
 import { ViewOptionsModel } from '@hcengineering/view'
 import lead from './plugin'
 
+export { leadId } from '@hcengineering/lead'
+export { leadOperation } from './migration'
+export { default } from './plugin'
+
 @Model(lead.class.Funnel, task.class.SpaceWithStates)
 @UX(lead.string.Funnel, lead.icon.Funnel)
 export class TFunnel extends TSpaceWithStates implements Funnel {
@@ -419,6 +423,3 @@ export function createModel (builder: Builder): void {
     lead.action.CreateGlobalLead
   )
 }
-
-export { leadOperation } from './migration'
-export { default } from './plugin'

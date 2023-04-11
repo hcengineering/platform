@@ -31,6 +31,8 @@ import core, {
 import type { ObjectDDParticipant, Trigger, TriggerFunc } from '@hcengineering/server-core'
 import serverCore from '@hcengineering/server-core'
 
+export { serverCoreId } from '@hcengineering/server-core'
+
 @Model(serverCore.class.Trigger, core.class.Doc, DOMAIN_MODEL)
 export class TTrigger extends TDoc implements Trigger {
   trigger!: Resource<TriggerFunc>

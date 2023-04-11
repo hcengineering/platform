@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-import type { Resource, Plugin } from './platform'
-import { Status, Severity, PlatformError } from './status'
-import { _parseId } from './ident'
 import { monitor } from './event'
+import { _parseId } from './ident'
+import type { Plugin, Resource } from './platform'
+import { PlatformError, Severity, Status } from './status'
 
 import platform from './platform'
 
@@ -104,4 +104,12 @@ export async function getResource<T> (resource: Resource<T>): Promise<T> {
   }
   cachedResource.set(resource, value)
   return value
+}
+
+/**
+ * @public
+ */
+export function getResourcePlugin<T> (resource: Resource<T>): Plugin {
+  const info = _parseId(resource)
+  return info.component
 }

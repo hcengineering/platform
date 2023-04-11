@@ -52,7 +52,7 @@ async function createPseudoViewlet (
   }
 
   // Check if it is attached doc and collection have title override.
-  const presenter = await getObjectPresenter(client, dtx.tx.objectClass, { key: 'doc-presenter' })
+  const presenter = await getObjectPresenter(client, dtx.tx.objectClass, { key: 'doc-presenter' }, false, false)
   if (presenter !== undefined) {
     let collection = ''
     if (dtx.collectionAttribute?.label !== undefined) {

@@ -14,9 +14,9 @@
 //
 
 import activity from '@hcengineering/activity'
-import { calendarId, Calendar, Event, Reminder } from '@hcengineering/calendar'
+import { Calendar, Event, Reminder, calendarId } from '@hcengineering/calendar'
 import { Employee } from '@hcengineering/contact'
-import { DateRangeMode, Domain, Markup, Ref, Timestamp, IndexKind } from '@hcengineering/core'
+import { DateRangeMode, Domain, IndexKind, Markup, Ref, Timestamp } from '@hcengineering/core'
 import {
   ArrOf,
   Builder,
@@ -43,6 +43,8 @@ import notification from '@hcengineering/notification'
 import calendar from './plugin'
 
 export * from '@hcengineering/calendar'
+export { calendarId } from '@hcengineering/calendar'
+export { calendarOperation } from './migration'
 
 export const DOMAIN_CALENDAR = 'calendar' as Domain
 
@@ -200,5 +202,4 @@ export function createModel (builder: Builder): void {
   })
 }
 
-export { calendarOperation } from './migration'
 export default calendar

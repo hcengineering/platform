@@ -14,7 +14,7 @@
 //
 
 import { Domain, IndexKind, Ref } from '@hcengineering/core'
-import { Category, inventoryId, Product, Variant } from '@hcengineering/inventory'
+import { Category, Product, Variant, inventoryId } from '@hcengineering/inventory'
 import { Builder, Collection, Index, Model, Prop, TypeRef, TypeString, UX } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import core, { TAttachedDoc } from '@hcengineering/model-core'
@@ -24,6 +24,10 @@ import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
 import view, { Viewlet } from '@hcengineering/view'
 import inventory from './plugin'
+
+export { inventoryId } from '@hcengineering/inventory'
+export { inventoryOperation } from './migration'
+export { default } from './plugin'
 
 export const DOMAIN_INVENTORY = 'inventory' as Domain
 @Model(inventory.class.Category, core.class.AttachedDoc, DOMAIN_INVENTORY)
@@ -175,6 +179,3 @@ export function createModel (builder: Builder): void {
     filters: ['attachedTo']
   })
 }
-
-export { inventoryOperation } from './migration'
-export { default } from './plugin'

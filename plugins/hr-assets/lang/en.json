@@ -50,6 +50,8 @@
     "Managers": "Managers",
     "Export": "Export",
     "Separator": "Separator",
-    "ChooseSeparator": "Choose separator"
+    "ChooseSeparator": "Choose separator",
+    "ConfigLabel": "Human resources",
+    "ConfigDescription": "Extension to manage organization structure and employee work calendar"
   }
 }

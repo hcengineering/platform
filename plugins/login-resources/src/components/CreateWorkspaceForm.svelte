@@ -53,7 +53,7 @@
         setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
         setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
         setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
-        navigate({ path: [workbenchId, object.workspace, 'setting', 'setting', 'invites'] })
+        navigate({ path: [workbenchId, object.workspace] })
       }
     }
   }

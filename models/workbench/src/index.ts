@@ -13,17 +13,18 @@
 // limitations under the License.
 //
 
-import type { IntlString, Asset } from '@hcengineering/platform'
 import { Class, DOMAIN_MODEL, Ref, Space } from '@hcengineering/core'
-import { Model, Mixin, Builder, UX, Prop, TypeRef } from '@hcengineering/model'
-import type { Application, SpaceView, ViewConfiguration, HiddenApplication } from '@hcengineering/workbench'
-import view, { KeyBinding } from '@hcengineering/view'
-import { createAction } from '@hcengineering/model-view'
+import { Builder, Mixin, Model, Prop, TypeRef, UX } from '@hcengineering/model'
 import preference, { TPreference } from '@hcengineering/model-preference'
+import { createAction } from '@hcengineering/model-view'
+import type { Asset, IntlString } from '@hcengineering/platform'
+import view, { KeyBinding } from '@hcengineering/view'
+import type { Application, HiddenApplication, SpaceView, ViewConfiguration } from '@hcengineering/workbench'
 
-import core, { TDoc, TClass } from '@hcengineering/model-core'
+import core, { TClass, TDoc } from '@hcengineering/model-core'
 import workbench from './plugin'
 
+export { workbenchId } from '@hcengineering/workbench'
 export { Application }
 
 @Model(workbench.class.Application, core.class.Doc, DOMAIN_MODEL)

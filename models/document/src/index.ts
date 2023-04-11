@@ -19,11 +19,11 @@ import { IndexKind } from '@hcengineering/core'
 import {
   CollaboratorDocument,
   Document,
-  documentId,
   DocumentRequest,
   DocumentRequestKind,
   DocumentVersion,
-  DocumentVersionState
+  DocumentVersionState,
+  documentId
 } from '@hcengineering/document'
 import {
   ArrOf,
@@ -45,9 +45,13 @@ import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import presentation from '@hcengineering/model-presentation'
 import view, { actionTemplates, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
-import tags from '@hcengineering/tags'
 import notification from '@hcengineering/notification'
+import tags from '@hcengineering/tags'
 import document from './plugin'
+
+export { documentId } from '@hcengineering/document'
+export { documentOperation } from './migration'
+export { document as default }
 
 export const DOMAIN_DOCUMENT = 'document' as Domain
 
@@ -266,6 +270,3 @@ export function createModel (builder: Builder): void {
     editor: document.component.DocumentVersions
   })
 }
-
-export { documentOperation } from './migration'
-export { document as default }

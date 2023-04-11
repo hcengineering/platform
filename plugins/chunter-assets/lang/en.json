@@ -65,6 +65,8 @@
     "NoResults": "No results",
     "CopyLink": "Copy link",
     "FilterComments": "Comments",
-    "FilterBacklinks": "Backlinks"
+    "FilterBacklinks": "Backlinks",
+    "ConfigLabel": "Chat",
+    "ConfigDescription": "Extension to perform text communications"
   }
 }

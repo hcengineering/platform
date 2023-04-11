@@ -21,6 +21,7 @@ import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { RefInputAction, RefInputActionItem } from '@hcengineering/text-editor/src/types'
 import textEditor from './plugin'
 
+export { textEditorId } from '@hcengineering/text-editor/src/plugin'
 export { default } from './plugin'
 export { RefInputAction, RefInputActionItem }
 

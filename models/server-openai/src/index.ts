@@ -25,6 +25,8 @@ import serverCore from '@hcengineering/server-core'
 import chunter from '@hcengineering/model-chunter'
 import recruit from '@hcengineering/model-recruit'
 
+export { openAIId } from '@hcengineering/openai/src/plugin'
+
 @Model(openai.class.OpenAIConfiguration, core.class.Configuration, DOMAIN_CONFIGURATION)
 @UX(getEmbeddedLabel('OpenAI'))
 export class TOpenAIConfiguration extends TConfiguration implements OpenAIConfiguration {

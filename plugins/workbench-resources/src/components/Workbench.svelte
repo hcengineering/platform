@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import calendar from '@hcengineering/calendar'
+  import calendar, { calendarId } from '@hcengineering/calendar'
   import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
   import core, { Class, Doc, Ref, Space, getCurrentAccount, setCurrentAccount } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import notification, { notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, NotificationClientImpl } from '@hcengineering/notification-resources'
   import { IntlString, getMetadata, getResource } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import request, { RequestStatus } from '@hcengineering/request'
+  import { createQuery, getClient, configurationStore } from '@hcengineering/presentation'
+  import request, { RequestStatus, requestId } from '@hcengineering/request'
   import {
     AnyComponent,
     CompAndProps,
@@ -160,19 +160,20 @@
   let hasRequests = false
   const requestQuery = createQuery()
 
-  $: requestQuery.query(
-    request.class.Request,
-    {
-      requested: account._id,
-      status: RequestStatus.Active
-    },
-    (res) =>
-      (hasRequests =
-        res.filter(
-          (p) =>
-            p.requested.filter((a) => a === account._id).length > p.approved.filter((a) => a === account._id).length
-        ).length > 0)
-  )
+  $: $configurationStore.has(requestId) ||
+    requestQuery.query(
+      request.class.Request,
+      {
+        requested: account._id,
+        status: RequestStatus.Active
+      },
+      (res) =>
+        (hasRequests =
+          res.filter(
+            (p) =>
+              p.requested.filter((a) => a === account._id).length > p.approved.filter((a) => a === account._id).length
+          ).length > 0)
+    )
 
   onDestroy(
     location.subscribe(async (loc) => {
@@ -572,17 +573,21 @@
         bind:shown={shownMenu}
       />
       <div class="info-box {appsDirection}" class:vertical-mobile={appsDirection === 'vertical' && appsMini}>
-        <AppItem
-          icon={request.icon.Requests}
-          label={request.string.Requests}
-          on:click={() => showPopup(request.component.RequestsPopup, {}, popupPosition)}
-          notify={hasRequests}
-        />
-        <AppItem
-          icon={calendar.icon.Reminder}
-          label={calendar.string.Reminders}
-          on:click={() => showPopup(calendar.component.RemindersPopup, {}, popupPosition)}
-        />
+        {#if $configurationStore.has(requestId)}
+          <AppItem
+            icon={request.icon.Requests}
+            label={request.string.Requests}
+            on:click={() => showPopup(request.component.RequestsPopup, {}, popupPosition)}
+            notify={hasRequests}
+          />
+        {/if}
+        {#if $configurationStore.has(calendarId)}
+          <AppItem
+            icon={calendar.icon.Reminder}
+            label={calendar.string.Reminders}
+            on:click={() => showPopup(calendar.component.RemindersPopup, {}, popupPosition)}
+          />
+        {/if}
         <NavLink app={notificationId}>
           <AppItem
             icon={notification.icon.Notifications}

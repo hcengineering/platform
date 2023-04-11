@@ -32,6 +32,8 @@
     "WriteEmail": "Написать Email",
     "Shared": "Публичный",
     "AvailableTo": "Доступен для",
-    "HaveWrittenEmail": "написал(а) сообщение"
+    "HaveWrittenEmail": "написал(а) сообщение",
+    "ConfigLabel": "Электронная почта",
+    "ConfigDescription": "Расширение по работе с Gmail электронной почтой"
   }
 }

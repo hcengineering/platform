@@ -93,6 +93,8 @@
     "CategoryProjectLead": "Руководитель проекта",
     "CategoryProjectMembers": "Участники проекта",
     "CategoryOther": "Прочие",
-    "Position": "Должность"
+    "Position": "Должность",
+    "ConfigLabel": "Контакты",
+    "ConfigDescription": "Расширение по работе с сотрудниками и другими контактами."
   }
 }

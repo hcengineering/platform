@@ -24,6 +24,7 @@ import type { AnyComponent, Location } from '@hcengineering/ui'
 import type {
   Action,
   ActionCategory,
+  AllValuesFunc,
   ArrayEditor,
   AttributeEditor,
   AttributeFilter,
@@ -34,19 +35,22 @@ import type {
   CollectionEditor,
   CollectionPresenter,
   Filter,
-  FilteredView,
   FilterMode,
+  FilteredView,
+  GetAllValuesFunc,
   IgnoreActions,
   InlineAttributEditor,
   KeyBinding,
   KeyFilter,
   LinkPresenter,
+  LinkProvider,
   ListHeaderExtra,
   ListItemPresenter,
   ObjectEditor,
-  ObjectEditorHeader,
   ObjectEditorFooter,
+  ObjectEditorHeader,
   ObjectFactory,
+  ObjectPanel,
   ObjectPresenter,
   ObjectTitle,
   ObjectValidator,
@@ -57,18 +61,15 @@ import type {
   ViewAction,
   ViewActionInput,
   ViewContext,
+  ViewOptions,
+  ViewOptionsModel,
   Viewlet,
   ViewletDescriptor,
-  ViewletPreference,
-  ViewOptionsModel,
-  ViewOptions,
-  AllValuesFunc,
-  GetAllValuesFunc,
-  LinkProvider,
-  ObjectPanel
+  ViewletPreference
 } from '@hcengineering/view'
 import view from './plugin'
 
+export { viewId } from '@hcengineering/view'
 export { viewOperation } from './migration'
 export { ViewAction, Viewlet }
 

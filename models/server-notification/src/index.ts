@@ -16,11 +16,13 @@
 
 import { Builder, Mixin } from '@hcengineering/model'
 
-import serverCore from '@hcengineering/server-core'
 import core from '@hcengineering/core'
-import serverNotification, { HTMLPresenter, TextPresenter, Presenter } from '@hcengineering/server-notification'
-import { Resource } from '@hcengineering/platform'
 import { TClass } from '@hcengineering/model-core'
+import { Resource } from '@hcengineering/platform'
+import serverCore from '@hcengineering/server-core'
+import serverNotification, { HTMLPresenter, Presenter, TextPresenter } from '@hcengineering/server-notification'
+
+export { serverNotificationId } from '@hcengineering/server-notification'
 
 @Mixin(serverNotification.mixin.HTMLPresenter, core.class.Class)
 export class THTMLPresenter extends TClass implements HTMLPresenter {

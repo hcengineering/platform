@@ -65,7 +65,7 @@ import {
   TypeTimestamp,
   UX
 } from '@hcengineering/model'
-import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
+import { getEmbeddedLabel, IntlString, Plugin } from '@hcengineering/platform'
 import core from './component'
 
 // C O R E
@@ -237,8 +237,12 @@ export class TVersion extends TDoc implements Version {
 
 @Model(core.class.PluginConfiguration, core.class.Doc, DOMAIN_MODEL)
 export class TPluginConfiguration extends TDoc implements PluginConfiguration {
-  pluginId!: string
+  pluginId!: Plugin
   transactions!: Ref<Doc>[]
+
+  label!: IntlString
+  enabled!: boolean
+  configurable!: boolean
 }
 
 @Model(core.class.BlobData, core.class.Doc, DOMAIN_BLOB)

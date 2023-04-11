@@ -15,11 +15,13 @@
 
 import { Builder } from '@hcengineering/model'
 
-import serverCore from '@hcengineering/server-core'
 import core from '@hcengineering/core'
+import hr from '@hcengineering/hr'
+import serverCore from '@hcengineering/server-core'
 import serverHr from '@hcengineering/server-hr'
 import serverNotification from '@hcengineering/server-notification'
-import hr from '@hcengineering/hr'
+
+export { serverHrId } from '@hcengineering/server-hr'
 
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {

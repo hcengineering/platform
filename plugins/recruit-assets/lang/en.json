@@ -110,7 +110,9 @@
     "TemplateReplaceConfirm": "All field changes will be override by template values",
 
     "OpenVacancyList": "Open list",
-    "Export": "Export"
+    "Export": "Export",
+    "ConfigLabel": "Recruiting",
+    "ConfigDescription": "Extension to manage Talents/Applicants and Vacancies."
   },
   "status": {
     "TalentRequired": "Please select talent",

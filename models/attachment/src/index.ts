@@ -33,6 +33,7 @@ import preference, { TPreference } from '@hcengineering/model-preference'
 import view, { createAction } from '@hcengineering/model-view'
 import attachment from './plugin'
 
+export { attachmentId } from '@hcengineering/attachment'
 export { attachmentOperation } from './migration'
 
 export const DOMAIN_ATTACHMENT = 'attachment' as Domain

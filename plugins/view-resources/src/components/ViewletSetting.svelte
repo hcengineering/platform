@@ -16,7 +16,13 @@
   import core, { AnyAttribute, ArrOf, Class, Doc, Ref, Type } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
   import preferencePlugin from '@hcengineering/preference'
-  import presentation, { Card, createQuery, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
+  import presentation, {
+    Card,
+    createQuery,
+    getAttributePresenterClass,
+    getClient,
+    hasResource
+  } from '@hcengineering/presentation'
   import {
     Button,
     getEventPositionElement,
@@ -135,7 +141,7 @@
         : category === 'collection'
           ? view.mixin.CollectionPresenter
           : view.mixin.AttributePresenter
-    const presenter = hierarchy.classHierarchyMixin(attrClass, mixin)?.presenter
+    const presenter = hierarchy.classHierarchyMixin(attrClass, mixin, (m) => hasResource(m.presenter))?.presenter
     if (presenter === undefined) return
     const clazz = hierarchy.getClass(attribute.attributeOf)
 

@@ -14,8 +14,7 @@
 // limitations under the License.
 //
 
-import type { Metadata, Plugin } from '@hcengineering/platform'
-import { plugin } from '@hcengineering/platform'
+import { Metadata, Plugin, plugin } from '@hcengineering/platform'
 
 import type { Class, Ref, Space } from '@hcengineering/core'
 import type { ObjectDDParticipant, Trigger } from './types'

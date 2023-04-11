@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, hasResource } from '@hcengineering/presentation'
   import { Label, Component } from '@hcengineering/ui'
   import task, { KanbanTemplateSpace } from '@hcengineering/task'
   import setting from '@hcengineering/setting'
@@ -41,23 +41,25 @@
 </div>
 <div class="flex-col overflow-y-auto">
   {#each folders as f (f._id)}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="flex-between item" class:selected={f._id === folder?._id} on:click={() => select(f)}>
-      <div class="icon flex-no-shrink mr-4">
-        <Component is={f.icon} />
-      </div>
-      <div class="flex-grow flex-col">
-        <div class="fs-title overflow-label">
-          <Label label={f.name} />
+    {#if hasResource(f.icon)}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <div class="flex-between item" class:selected={f._id === folder?._id} on:click={() => select(f)}>
+        <div class="icon flex-no-shrink mr-4">
+          <Component is={f.icon} />
         </div>
-        <div class="text-sm content-dark-color overflow-label">
-          <Label label={f.description} />
+        <div class="flex-grow flex-col">
+          <div class="fs-title overflow-label">
+            <Label label={f.name} />
+          </div>
+          <div class="text-sm content-dark-color overflow-label">
+            <Label label={f.description} />
+          </div>
         </div>
+        {#if f._id === folder?._id}
+          <div class="caption-color ml-4"><IconArrowRight size={'small'} /></div>
+        {/if}
       </div>
-      {#if f._id === folder?._id}
-        <div class="caption-color ml-4"><IconArrowRight size={'small'} /></div>
-      {/if}
-    </div>
+    {/if}
   {/each}
 </div>
 

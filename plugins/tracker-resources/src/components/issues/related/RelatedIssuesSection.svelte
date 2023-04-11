@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Doc, DocumentQuery } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient, configurationStore } from '@hcengineering/presentation'
   import { Button, Icon, IconAdd, Label, showPopup, Component } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
   import {
@@ -13,7 +13,7 @@
   import viewplg from '@hcengineering/view-resources/src/plugin'
   import tracker from '../../../plugin'
   import RelatedIssues from './RelatedIssues.svelte'
-  import type { Issue } from '@hcengineering/tracker'
+  import { Issue, trackerId } from '@hcengineering/tracker'
   import { fade } from 'svelte/transition'
 
   export let object: Doc
@@ -40,45 +40,47 @@
   $: extraHeaders = headerRemoval ? getAdditionalHeader(client, tracker.class.Issue) : undefined
 </script>
 
-<div class="antiSection">
-  <div class="antiSection-header">
-    <div class="antiSection-header__icon">
-      <Icon icon={tracker.icon.Issue} size={'small'} />
-    </div>
-    <span class="antiSection-header__title short">
-      <Label {label} />
-    </span>
-    {#if headerRemoval}
-      <div in:fade|local={{ duration: 150 }} class="antiSection-header__header flex-between">
-        <span class="dark-color"><Label label={viewplg.string.NoGrouping} /></span>
-        <div class="buttons-group font-normal text-normal">
-          {#if extraHeaders}
-            {#each extraHeaders as extra}
-              <Component is={extra} props={{ docs: subIssues }} />
-            {/each}
-          {/if}
-          <span class="antiSection-header__counter">{subIssues.length}</span>
-        </div>
+{#if $configurationStore.has(trackerId)}
+  <div class="antiSection">
+    <div class="antiSection-header">
+      <div class="antiSection-header__icon">
+        <Icon icon={tracker.icon.Issue} size={'small'} />
       </div>
-    {:else}
-      <span class="flex-grow" />
-    {/if}
-    <div class="buttons-group small-gap">
-      {#if viewlet && viewOptions}
-        <ViewletSettingButton bind:viewOptions {viewlet} kind={'transparent'} />
+      <span class="antiSection-header__title short">
+        <Label {label} />
+      </span>
+      {#if headerRemoval}
+        <div in:fade|local={{ duration: 150 }} class="antiSection-header__header flex-between">
+          <span class="dark-color"><Label label={viewplg.string.NoGrouping} /></span>
+          <div class="buttons-group font-normal text-normal">
+            {#if extraHeaders}
+              {#each extraHeaders as extra}
+                <Component is={extra} props={{ docs: subIssues }} />
+              {/each}
+            {/if}
+            <span class="antiSection-header__counter">{subIssues.length}</span>
+          </div>
+        </div>
+      {:else}
+        <span class="flex-grow" />
       {/if}
-      <Button
-        id="add-sub-issue"
-        icon={IconAdd}
-        label={undefined}
-        labelParams={{ subIssues: 0 }}
-        kind={'transparent'}
-        shape={'circle'}
-        on:click={createIssue}
-      />
+      <div class="buttons-group small-gap">
+        {#if viewlet && viewOptions}
+          <ViewletSettingButton bind:viewOptions {viewlet} kind={'transparent'} />
+        {/if}
+        <Button
+          id="add-sub-issue"
+          icon={IconAdd}
+          label={undefined}
+          labelParams={{ subIssues: 0 }}
+          kind={'transparent'}
+          shape={'circle'}
+          on:click={createIssue}
+        />
+      </div>
     </div>
+    {#if viewlet}
+      <RelatedIssues {object} {viewOptions} {viewlet} on:add-issue={createIssue} disableHeader={headerRemoval} />
+    {/if}
   </div>
-  {#if viewlet}
-    <RelatedIssues {object} {viewOptions} {viewlet} on:add-issue={createIssue} disableHeader={headerRemoval} />
-  {/if}
-</div>
+{/if}

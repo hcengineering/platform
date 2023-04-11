@@ -39,8 +39,12 @@ import type {
   TelegramMessage
 } from '@hcengineering/telegram'
 import templates from '@hcengineering/templates'
-import telegram from './plugin'
 import view from '@hcengineering/view'
+import telegram from './plugin'
+
+export { telegramId } from '@hcengineering/telegram'
+export { telegramOperation } from './migration'
+export { default } from './plugin'
 
 export const DOMAIN_TELEGRAM = 'telegram' as Domain
 
@@ -175,5 +179,3 @@ export function createModel (builder: Builder): void {
     parentPropagate: false
   })
 }
-
-export { telegramOperation } from './migration'

@@ -28,7 +28,7 @@
 
   $: query.query(setting.class.InviteSettings, {}, (set) => {
     existingInviteSettings = set
-    if (existingInviteSettings !== undefined) {
+    if (existingInviteSettings !== undefined && existingInviteSettings.length > 0) {
       expTime = existingInviteSettings[0].expirationTime
       mask = existingInviteSettings[0].emailMask
       limit = existingInviteSettings[0].limit

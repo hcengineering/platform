@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Asset, IntlString } from '@hcengineering/platform'
+import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 
 /**
  * @public
@@ -172,8 +172,19 @@ export interface Class<T extends Obj> extends Classifier {
  * Define a set of plugin to model document bindings.
  */
 export interface PluginConfiguration extends Doc {
-  pluginId: string
+  pluginId: Plugin
   transactions: Ref<Doc>[]
+
+  label?: IntlString
+  icon?: Asset
+  description?: IntlString
+  enabled: boolean
+
+  // If specified, will allow user to enable/disable item.
+  configurable: boolean
+
+  // If defined, will only remove classes in list.
+  classFilter?: Ref<Class<Obj>>[]
 }
 
 /**

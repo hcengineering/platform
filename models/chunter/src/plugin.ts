@@ -74,7 +74,9 @@ export default mergeIds(chunterId, chunter, {
     Reactions: '' as IntlString,
     Emoji: '' as IntlString,
     FilterComments: '' as IntlString,
-    FilterBacklinks: '' as IntlString
+    FilterBacklinks: '' as IntlString,
+    ConfigLabel: '' as IntlString,
+    ConfigDescription: '' as IntlString
   },
   viewlet: {
     Chat: '' as Ref<ViewletDescriptor>

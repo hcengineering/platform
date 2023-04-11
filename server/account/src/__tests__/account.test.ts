@@ -21,7 +21,7 @@ import { getAccount, getMethods, getWorkspace } from '..'
 
 const DB_NAME = 'test_accounts'
 
-const methods = getMethods(version, builder.getTxes(), migrateOperations)
+const methods = getMethods(version, builder().getTxes(), migrateOperations)
 
 describe('server', () => {
   const dbUri = process.env.MONGODB_URI ?? 'mongodb://localhost:27017'

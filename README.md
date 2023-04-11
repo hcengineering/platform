@@ -27,10 +27,12 @@ Before we could start we need to create workspace/account and associate it with 
 cd ./tool
 rushx run-local create-workspace ws1 -o DevWorkspace # Create workspace
 rushx run-local create-account user1 -p 1234 -f John -l Appleseed # Create account
-rushx run-local assign-workspace user1 ws1 # Assign worksapce to user
+rushx run-local configure sanity-ws --list --enable '*' # Enable all modules, then if they are not yet intended to be used by wide audience.
+rushx run-local assign-workspace user1 ws1 # Assign workspace to user
+
 ```
 
-Following URL http://localhost:8087/login:component:LoginApp will lead us to app in production mode.
+Following URL http://localhost:8087 will lead us to app in production mode.
 
 ## Run in development mode
 
@@ -39,7 +41,7 @@ cd dev/prod
 rushx dev-server
 ```
 
-Then go to http://localhost:8080/login:component:LoginApp
+Then go to http://localhost:8080
 
 ## Update project structure and database
 
@@ -51,6 +53,7 @@ rush build
 ```
 
 It also might be required to upgrade running database.
+
 ```bash
 cd ./dev/tool
 rushx upgrade
@@ -73,22 +76,12 @@ rush bundle
 rush docker:build
 ## creates test docker containers and setups test database
 ./prepare.sh
-## runs UI tests 
+## runs UI tests
 rushx uitest
 ```
 
-
 ## Package publishing
 
-```
-npm login --registry=https://npm.pkg.github.com --scope=@hcengineering/anticrm
-npm publish
-```
-
-
-### Libretranslate
-
 ```bash
-pip install libretranslate
-libretranslate --ssl --host 0.0.0.0 --port 4500 --load-only en,ru --update-models
+node ./common/scripts/bump.js packageName
 ```

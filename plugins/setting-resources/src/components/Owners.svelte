@@ -17,7 +17,7 @@
   import { employeeByIdStore, EmployeePresenter } from '@hcengineering/contact-resources'
   import { AccountRole, getCurrentAccount, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { DropdownIntlItem, DropdownLabelsIntl, Icon, Label } from '@hcengineering/ui'
+  import { DropdownIntlItem, DropdownLabelsIntl, Icon, Label, EditBox } from '@hcengineering/ui'
   import setting from '../plugin'
 
   const client = getClient()
@@ -51,35 +51,41 @@
       role: value
     })
   }
+  let search = ''
 </script>
 
 <div class="antiComponent">
   <div class="ac-header short divide">
     <div class="ac-header__icon"><Icon icon={setting.icon.Password} size={'medium'} /></div>
     <div class="ac-header__title"><Label label={setting.string.Owners} /></div>
+    <EditBox kind={'search-style'} focusIndex={1} bind:value={search} />
   </div>
   <div class="ac-body columns">
     <div class="ac-column max">
       {#each accounts as account (account._id)}
         {@const employee = $employeeByIdStore.get(account.employee)}
-        <div class="flex-between">
-          {#if employee}
-            <EmployeePresenter value={employee} isInteractive={false} />
-          {:else}
-            {formatName(account.name)}
-          {/if}
-          <DropdownLabelsIntl
-            label={setting.string.Role}
-            disabled={account.role > currentRole || (account.role === AccountRole.Owner && owners.length === 1)}
-            kind={'transparent'}
-            size={'medium'}
-            {items}
-            selected={account.role.toString()}
-            on:selected={(e) => {
-              change(account, Number(e.detail))
-            }}
-          />
-        </div>
+        {#if account.name.includes(search)}
+          <div class="flex-row-center p-2">
+            <div class="p-1 min-w-80">
+              {#if employee}
+                <EmployeePresenter value={employee} isInteractive={true} />
+              {:else}
+                {formatName(account.name)}
+              {/if}
+            </div>
+            <DropdownLabelsIntl
+              label={setting.string.Role}
+              disabled={account.role > currentRole || (account.role === AccountRole.Owner && owners.length === 1)}
+              kind={'primary'}
+              size={'medium'}
+              {items}
+              selected={account.role.toString()}
+              on:selected={(e) => {
+                change(account, Number(e.detail))
+              }}
+            />
+          </div>
+        {/if}
       {/each}
     </div>
   </div>

@@ -21,6 +21,7 @@ import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { ObjectSearchCategory, ObjectSearchFactory } from '@hcengineering/presentation/src/types'
 import presentation from './plugin'
 
+export { presentationId } from '@hcengineering/presentation/src/plugin'
 export { default } from './plugin'
 export { ObjectSearchCategory, ObjectSearchFactory }
 

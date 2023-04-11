@@ -17,6 +17,7 @@
 import { Account, Class, Doc, Domain, DOMAIN_MODEL, IndexKind, Ref, Timestamp, TxCUD } from '@hcengineering/core'
 import { ArrOf, Builder, Index, Mixin, Model, Prop, TypeRef, TypeString, UX } from '@hcengineering/model'
 import core, { TAttachedDoc, TClass, TDoc } from '@hcengineering/model-core'
+import view, { createAction } from '@hcengineering/model-view'
 import {
   AnotherUserNotifications,
   DocUpdates,
@@ -33,10 +34,13 @@ import {
 } from '@hcengineering/notification'
 import type { IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
+import { AnyComponent } from '@hcengineering/ui'
 import workbench from '@hcengineering/workbench'
 import notification from './plugin'
-import { AnyComponent } from '@hcengineering/ui'
-import view, { createAction } from '@hcengineering/model-view'
+
+export { notificationId } from '@hcengineering/notification'
+export { notificationOperation } from './migration'
+export { notification as default }
 
 export const DOMAIN_NOTIFICATION = 'notification' as Domain
 
@@ -296,6 +300,3 @@ export function createModel (builder: Builder): void {
     actions: [view.action.Delete, view.action.Open]
   })
 }
-
-export { notificationOperation } from './migration'
-export { notification as default }
