@@ -50,7 +50,7 @@ import {
 } from '@hcengineering/ui'
 import type { BuildModelOptions, Viewlet, ViewletDescriptor } from '@hcengineering/view'
 import view, { AttributeModel, BuildModelKey } from '@hcengineering/view'
-import { writable } from 'svelte/store'
+import { get, writable } from 'svelte/store'
 import plugin from './plugin'
 import { noCategory } from './viewOptions'
 
@@ -474,20 +474,27 @@ export function categorizeFields (
   return result
 }
 
-function makeViewletKey (loc?: Location): string {
+export function makeViewletKey (loc?: Location): string {
   loc = loc ?? getCurrentLocation()
   loc.fragment = undefined
   loc.query = undefined
   return 'viewlet' + locationToUrl(loc)
 }
 
+export const activeViewlet = writable<Record<string, Ref<Viewlet> | null>>({})
+
 export function setActiveViewletId (viewletId: Ref<Viewlet> | null, loc?: Location): void {
   const key = makeViewletKey(loc)
+  const current = get(activeViewlet) ?? {}
   if (viewletId !== null && viewletId !== undefined) {
     localStorage.setItem(key, viewletId)
+    current[key] = viewletId
   } else {
     localStorage.removeItem(key)
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+    delete current[key]
   }
+  activeViewlet.set(current)
 }
 
 export function getActiveViewletId (): Ref<Viewlet> | null {

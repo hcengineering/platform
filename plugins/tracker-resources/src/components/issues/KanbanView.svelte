@@ -236,7 +236,7 @@
   }
 </script>
 
-{#if categories.length === 0}}
+{#if categories.length === 0}
   <Loading />
 {:else}
   <ActionContext

@@ -40,8 +40,8 @@ export function isDropdownType (viewOption: ViewOptionModel): viewOption is Drop
   return viewOption.type === 'dropdown'
 }
 
-function makeViewOptionsKey (viewlet: Viewlet): string {
-  const prefix = viewlet?._id + (viewlet?.variant !== undefined ? `-${viewlet.variant}` : '')
+export function makeViewOptionsKey (viewlet: Ref<Viewlet>, variant?: string): string {
+  const prefix = viewlet + (variant !== undefined ? `-${variant}` : '')
   const loc = getCurrentLocation()
   loc.fragment = undefined
   loc.query = undefined
@@ -49,7 +49,7 @@ function makeViewOptionsKey (viewlet: Viewlet): string {
 }
 
 export function setViewOptions (viewlet: Viewlet, options: ViewOptions): void {
-  const key = makeViewOptionsKey(viewlet)
+  const key = makeViewOptionsKey(viewlet._id, viewlet.variant)
   localStorage.setItem(key, JSON.stringify(options))
   setStore(key, options)
 }
@@ -61,7 +61,7 @@ function setStore (key: string, options: ViewOptions): void {
 }
 
 function _getViewOptions (viewlet: Viewlet, viewOptionStore: Map<string, ViewOptions>): ViewOptions | null {
-  const key = makeViewOptionsKey(viewlet)
+  const key = makeViewOptionsKey(viewlet._id, viewlet.variant)
   const store = viewOptionStore.get(key)
   if (store !== undefined) {
     return store

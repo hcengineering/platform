@@ -1,18 +1,20 @@
 <script lang="ts">
   import { DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
+  import { createQuery } from '@hcengineering/presentation'
   import { Issue } from '@hcengineering/tracker'
-  import { Button, IconDetails, IconDetailsFilled } from '@hcengineering/ui'
+  import { Button, IconDetails, IconDetailsFilled, location } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
   import {
     FilterBar,
-    getActiveViewletId,
-    getViewOptions,
-    setActiveViewletId,
     ViewletSettingButton,
+    activeViewlet,
+    getViewOptions,
+    makeViewletKey,
+    setActiveViewletId,
     viewOptionStore
   } from '@hcengineering/view-resources'
+  import { onDestroy } from 'svelte'
   import tracker from '../../plugin'
   import IssuesContent from './IssuesContent.svelte'
   import IssuesHeader from './IssuesHeader.svelte'
@@ -33,26 +35,36 @@
   $: if (query) updateSearchQuery(search)
   let resultQuery: DocumentQuery<Issue> = { ...searchQuery }
 
-  const client = getClient()
-
   let viewlets: WithLookup<Viewlet>[] = []
 
-  $: update()
-
-  async function update (): Promise<void> {
-    viewlets = await client.findAll(
-      view.class.Viewlet,
-      { attachTo: tracker.class.Issue, variant: { $ne: 'subissue' } },
-      {
-        lookup: {
-          descriptor: view.class.ViewletDescriptor
-        }
+  $: update(viewlets, active)
+  const viewletQuery = createQuery()
+  viewletQuery.query(
+    view.class.Viewlet,
+    { attachTo: tracker.class.Issue, variant: { $ne: 'subissue' } },
+    (res) => (viewlets = res),
+    {
+      lookup: {
+        descriptor: view.class.ViewletDescriptor
       }
-    )
-    const _id = getActiveViewletId()
-    viewlet = viewlets.find((viewlet) => viewlet._id === _id) || viewlets[0]
+    }
+  )
+
+  let key = makeViewletKey()
+
+  onDestroy(
+    location.subscribe((loc) => {
+      key = makeViewletKey(loc)
+    })
+  )
+
+  $: active = $activeViewlet[key]
+
+  async function update (viewlets: WithLookup<Viewlet>[], active: Ref<Viewlet> | null): Promise<void> {
+    viewlet = viewlets.find((viewlet) => viewlet._id === active) ?? viewlets[0]
     setActiveViewletId(viewlet._id)
   }
+
   $: if (!label && title) {
     translate(title, {}).then((res) => {
       label = res

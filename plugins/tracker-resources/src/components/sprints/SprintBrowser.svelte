@@ -13,23 +13,25 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DocumentQuery, WithLookup } from '@hcengineering/core'
+  import { DocumentQuery, Ref, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
+  import { createQuery } from '@hcengineering/presentation'
   import { Sprint } from '@hcengineering/tracker'
-  import { Button, IconAdd, Label, SearchEdit, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, Label, SearchEdit, location, showPopup } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
   import {
     FilterBar,
     FilterButton,
-    getActiveViewletId,
+    ViewletSettingButton,
+    activeViewlet,
     getViewOptions,
-    viewOptionStore,
+    makeViewletKey,
     setActiveViewletId,
-    ViewletSettingButton
+    viewOptionStore
   } from '@hcengineering/view-resources'
+  import { onDestroy } from 'svelte'
   import tracker from '../../plugin'
-  import { getIncludedSprintStatuses, sprintTitleMap, SprintViewMode } from '../../utils'
+  import { SprintViewMode, getIncludedSprintStatuses, sprintTitleMap } from '../../utils'
   import NewSprint from './NewSprint.svelte'
   import SprintContent from './SprintContent.svelte'
 
@@ -57,25 +59,31 @@
   $: title = sprintTitleMap[mode]
   $: includedSprintsQuery = { status: { $in: includedSprintStatuses } }
 
-  const client = getClient()
   let resultQuery: DocumentQuery<Sprint> = { ...searchQuery }
 
   let viewlets: WithLookup<Viewlet>[] = []
 
-  $: update()
+  $: update(viewlets, active)
 
-  async function update (): Promise<void> {
-    viewlets = await client.findAll(
-      view.class.Viewlet,
-      { attachTo: tracker.class.Sprint },
-      {
-        lookup: {
-          descriptor: view.class.ViewletDescriptor
-        }
-      }
-    )
-    const _id = getActiveViewletId()
-    viewlet = viewlets.find((viewlet) => viewlet._id === _id) || viewlets[0]
+  const viewletQuery = createQuery()
+  viewletQuery.query(view.class.Viewlet, { attachTo: tracker.class.Sprint }, (res) => (viewlets = res), {
+    lookup: {
+      descriptor: view.class.ViewletDescriptor
+    }
+  })
+
+  let key = makeViewletKey()
+
+  onDestroy(
+    location.subscribe((loc) => {
+      key = makeViewletKey(loc)
+    })
+  )
+
+  $: active = $activeViewlet[key]
+
+  async function update (viewlets: WithLookup<Viewlet>[], active: Ref<Viewlet> | null): Promise<void> {
+    viewlet = viewlets.find((viewlet) => viewlet._id === active) ?? viewlets[0]
     setActiveViewletId(viewlet._id)
   }
 
