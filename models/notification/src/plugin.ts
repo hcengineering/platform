@@ -31,7 +31,7 @@ export default mergeIds(notificationId, notification, {
     BrowserNotification: '' as IntlString,
     EmailNotification: '' as IntlString,
     Collaborators: '' as IntlString,
-    Hide: '' as IntlString,
+    Archive: '' as IntlString,
     MarkAsUnread: '' as IntlString
   },
   app: {
