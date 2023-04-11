@@ -160,19 +160,19 @@ export async function upgradeModel (
     await client.connect()
     const db = getWorkspaceDB(client, workspaceId)
 
-    console.log('removing model...')
+    console.log(`${workspaceId.name}: removing model...`)
     // we're preserving accounts (created by core.account.System).
     const result = await db.collection(DOMAIN_TX).deleteMany({
       objectSpace: core.space.Model,
       modifiedBy: core.account.System,
       objectClass: { $ne: contact.class.EmployeeAccount }
     })
-    console.log(`${result.deletedCount} transactions deleted.`)
+    console.log(`${workspaceId.name}: ${result.deletedCount} transactions deleted.`)
 
-    console.log('creating model...')
+    console.log(`${workspaceId.name}: creating model...`)
     const model = txes
     const insert = await db.collection(DOMAIN_TX).insertMany(model as Document[])
-    console.log(`${insert.insertedCount} model transactions inserted.`)
+    console.log(`${workspaceId.name}: ${insert.insertedCount} model transactions inserted.`)
 
     const hierarchy = new Hierarchy()
     const modelDb = new ModelDb(hierarchy)
@@ -189,11 +189,11 @@ export async function upgradeModel (
 
     const migrateClient = new MigrateClientImpl(db, hierarchy, modelDb)
     for (const op of migrateOperations) {
-      console.log('migrate:', op[0])
+      console.log(`${workspaceId.name}: migrate:`, op[0])
       await op[1].migrate(migrateClient)
     }
 
-    console.log('Apply upgrade operations')
+    console.log(`${workspaceId.name}: Apply upgrade operations`)
 
     const connection = await connect(transactorUrl, workspaceId, undefined, { mode: 'backup', model: 'upgrade' })
 
@@ -201,7 +201,7 @@ export async function upgradeModel (
     await createUpdateIndexes(connection, db)
 
     for (const op of migrateOperations) {
-      console.log('upgrade:', op[0])
+      console.log(`${workspaceId.name}: upgrade:`, op[0])
       await op[1].upgrade(connection)
     }
 

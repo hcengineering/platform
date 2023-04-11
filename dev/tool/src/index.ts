@@ -206,13 +206,20 @@ export function devTool (
   program
     .command('upgrade')
     .description('upgrade')
-    .action(async (cmd) => {
+    .option('-p|--parallel', 'Parallel upgrade', false)
+    .action(async (cmd: { parallel: boolean }) => {
       const { mongodbUri, version, txes, migrateOperations } = prepareTools()
       return await withDatabase(mongodbUri, async (db) => {
         const workspaces = await listWorkspaces(db, productId)
-        for (const ws of workspaces) {
-          console.log('---UPGRADING----', ws.workspace)
-          await upgradeWorkspace(version, txes, migrateOperations, productId, db, ws.workspace)
+        if (cmd.parallel) {
+          await Promise.all(
+            workspaces.map((ws) => upgradeWorkspace(version, txes, migrateOperations, productId, db, ws.workspace))
+          )
+        } else {
+          for (const ws of workspaces) {
+            console.log('---UPGRADING----', ws.workspace)
+            await upgradeWorkspace(version, txes, migrateOperations, productId, db, ws.workspace)
+          }
         }
       })
     })
