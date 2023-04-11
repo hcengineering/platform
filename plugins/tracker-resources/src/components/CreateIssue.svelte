@@ -304,6 +304,7 @@
   }
 
   async function createIssue () {
+    const _id: Ref<Issue> = generateId()
     if (!canSave || object.status === undefined) {
       return
     }
@@ -350,19 +351,19 @@
       parentIssue?._class ?? tracker.class.Issue,
       'subIssues',
       value,
-      object._id
+      _id
     )
     for (const label of object.labels) {
-      await client.addCollection(label._class, label.space, object._id, tracker.class.Issue, 'labels', {
+      await client.addCollection(label._class, label.space, _id, tracker.class.Issue, 'labels', {
         title: label.title,
         color: label.color,
         tag: label.tag
       })
     }
-    await descriptionBox.createAttachments()
+    await descriptionBox.createAttachments(_id)
 
     if (relatedTo !== undefined) {
-      const doc = await client.findOne(tracker.class.Issue, { _id: object._id })
+      const doc = await client.findOne(tracker.class.Issue, { _id })
       if (doc !== undefined) {
         if (client.getHierarchy().isDerived(relatedTo._class, tracker.class.Issue)) {
           await updateIssueRelation(client, relatedTo as Issue, doc, 'relations', '$push')
@@ -374,14 +375,14 @@
     }
     const parents = parentIssue
       ? [
-          { parentId: object._id, parentTitle: value.title },
+          { parentId: _id, parentTitle: value.title },
           { parentId: parentIssue._id, parentTitle: parentIssue.title },
           ...parentIssue.parents
         ]
-      : [{ parentId: object._id, parentTitle: value.title }]
-    await subIssuesComponent.save(parents)
+      : [{ parentId: _id, parentTitle: value.title }]
+    await subIssuesComponent.save(parents, _id)
     addNotification(await translate(tracker.string.IssueCreated, {}), getTitle(object.title), IssueNotification, {
-      issueId: object._id,
+      issueId: _id,
       subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase(),
       issueUrl: currentProject && generateIssueShortLink(getIssueId(currentProject, value as Issue))
     })
@@ -598,7 +599,6 @@
   <SubIssues
     bind:this={subIssuesComponent}
     projectId={_space}
-    parent={object._id}
     project={currentProject}
     sprint={object.sprint}
     component={object.component}

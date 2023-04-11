@@ -170,6 +170,16 @@ export async function getContactFirstName (provider: TemplateDataProvider): Prom
   }
 }
 
+export async function getContactChannel (value: Contact, provider: Ref<ChannelProvider>): Promise<string | undefined> {
+  if (value === undefined) return
+  const client = getClient()
+  const res = await client.findOne(contact.class.Channel, {
+    attachedTo: value._id,
+    provider
+  })
+  return res?.value ?? ''
+}
+
 export async function getContactLink (doc: Doc): Promise<Location> {
   const loc = getCurrentLocation()
   loc.path.length = 2

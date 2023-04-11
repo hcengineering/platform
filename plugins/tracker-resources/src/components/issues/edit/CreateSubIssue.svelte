@@ -100,6 +100,7 @@
     if (!canSave) {
       return
     }
+    const _id: Ref<Issue> = generateId()
     loading = true
     try {
       const space = currentProject._id
@@ -135,13 +136,13 @@
         parentIssue._class,
         'subIssues',
         value,
-        object._id
+        _id
       )
 
-      await descriptionBox.createAttachments()
+      await descriptionBox.createAttachments(_id)
 
       for (const label of object.labels) {
-        await client.addCollection(label._class, label.space, object._id, tracker.class.Issue, 'labels', {
+        await client.addCollection(label._class, label.space, _id, tracker.class.Issue, 'labels', {
           title: label.title,
           color: label.color,
           tag: label.tag
@@ -149,7 +150,7 @@
       }
 
       addNotification(await translate(tracker.string.IssueCreated, {}), getTitle(object.title), IssueNotification, {
-        issueId: object._id,
+        issueId: _id,
         subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase()
       })
       draftController.remove()

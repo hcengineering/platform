@@ -1,16 +1,16 @@
 <script lang="ts">
+  import { AnyAttribute, Doc } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { AnyAttribute, Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import type { TagReference, TagElement } from '@hcengineering/tags'
+  import type { TagReference } from '@hcengineering/tags'
   import tags from '@hcengineering/tags'
-  import { getEventPopupPositionElement, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
+  import { Icon, IconAdd, Label, getEventPopupPositionElement, showPopup } from '@hcengineering/ui'
   import TagReferencePresenter from './TagReferencePresenter.svelte'
   import TagsEditorPopup from './TagsEditorPopup.svelte'
 
   export let object: Doc
   export let label: IntlString
-  export let isEditable: boolean = true
+  export let readonly: boolean = false
   export let attr: AnyAttribute | undefined = undefined
 
   let items: TagReference[] = []
@@ -21,12 +21,11 @@
     items = result
   })
   async function tagsHandler (evt: MouseEvent): Promise<void> {
-    if (!isEditable) return
+    if (readonly) return
     showPopup(TagsEditorPopup, { object }, getEventPopupPositionElement(evt))
   }
-  async function removeTag (tag: Ref<TagElement>): Promise<void> {
-    const tagRef = await client.findOne(tags.class.TagReference, { tag })
-    if (tagRef) await client.remove(tagRef)
+  async function removeTag (tag: TagReference): Promise<void> {
+    if (tag !== undefined) await client.remove(tag)
   }
 </script>
 
@@ -34,10 +33,16 @@
   <div class="flex-row-center flex-wrap">
     {#each items as value}
       <div class="step-container">
-        <TagReferencePresenter {attr} {value} {isEditable} kind={'labels'} on:remove={(res) => removeTag(res.detail)} />
+        <TagReferencePresenter
+          {attr}
+          {value}
+          isEditable={!readonly}
+          kind={'labels'}
+          on:remove={(res) => removeTag(res.detail)}
+        />
       </div>
     {/each}
-    {#if isEditable}
+    {#if !readonly}
       <div class="step-container">
         <button class="tag-button" on:click|stopPropagation={tagsHandler}>
           <div class="icon"><Icon icon={IconAdd} size={'full'} /></div>
@@ -46,7 +51,7 @@
       </div>
     {/if}
   </div>
-{:else if isEditable}
+{:else if !readonly}
   <button class="tag-button" style="width: min-content" on:click|stopPropagation={tagsHandler}>
     <div class="icon"><Icon icon={IconAdd} size={'full'} /></div>
     <span class="overflow-label label"><Label {label} /></span>

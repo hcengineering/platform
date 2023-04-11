@@ -144,7 +144,7 @@
     }
   }
 
-  async function saveAttachment (doc: Attachment): Promise<void> {
+  async function saveAttachment (doc: Attachment, objectId: Ref<Doc> | undefined): Promise<void> {
     if (space === undefined || objectId === undefined || _class === undefined) return
     await client.addCollection(attachment.class.Attachment, space, objectId, _class, 'attachments', doc, doc._id)
   }
@@ -218,7 +218,7 @@
     }
   }
 
-  export async function createAttachments (): Promise<void> {
+  export async function createAttachments (_id: Ref<Doc> | undefined = objectId): Promise<void> {
     if (saved) {
       return
     }
@@ -227,7 +227,7 @@
     newAttachments.forEach((p) => {
       const attachment = attachments.get(p)
       if (attachment !== undefined) {
-        promises.push(saveAttachment(attachment))
+        promises.push(saveAttachment(attachment, _id))
       }
     })
     removedAttachments.forEach((p) => {

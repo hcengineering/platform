@@ -10,7 +10,8 @@
     IconInfo,
     Notification,
     NotificationSeverity,
-    showPanel
+    navigate,
+    parseLocation
   } from '@hcengineering/ui'
   import { fade } from 'svelte/transition'
 
@@ -73,8 +74,12 @@
     }
   }
   const handleIssueOpened = () => {
-    if (issue) {
-      showPanel(tracker.component.EditIssue, issue._id, issue._class, 'content')
+    if (params?.issueUrl) {
+      const url = new URL(params?.issueUrl)
+
+      if (url.origin === window.location.origin) {
+        navigate(parseLocation(url))
+      }
     }
 
     onRemove()
@@ -102,7 +107,7 @@
           <IssueStatusIcon value={status} size="small" />
         {/if}
         {#if issue}
-          <IssuePresenter value={issue} onClick={onRemove} />
+          <IssuePresenter value={issue} />
         {/if}
         <div class="sub-title">
           {subTitle}

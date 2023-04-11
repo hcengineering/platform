@@ -157,6 +157,7 @@
   })
 
   async function createCandidate () {
+    const _id: Ref<Person> = generateId()
     const candidate: Data<Person> = {
       name: combineName(object.firstName ?? '', object.lastName ?? ''),
       city: object.city,
@@ -190,11 +191,11 @@
       }
     }
 
-    const applyOps = client.apply(object._id)
+    const applyOps = client.apply(_id)
 
-    await applyOps.createDoc(contact.class.Person, contact.space.Contacts, candidate, object._id)
+    await applyOps.createDoc(contact.class.Person, contact.space.Contacts, candidate, _id)
     await applyOps.createMixin(
-      object._id,
+      _id,
       contact.class.Person,
       contact.space.Contacts,
       recruit.mixin.Candidate,
@@ -206,7 +207,7 @@
       applyOps.addCollection(
         attachment.class.Attachment,
         contact.space.Contacts,
-        object._id,
+        _id,
         contact.class.Person,
         'attachments',
         {
@@ -222,7 +223,7 @@
       await applyOps.addCollection(
         contact.class.Channel,
         contact.space.Contacts,
-        object._id,
+        _id,
         contact.class.Person,
         'channels',
         {
@@ -248,7 +249,7 @@
           category: findTagCategory(skill.title, categories)
         })
       }
-      await applyOps.addCollection(skill._class, skill.space, object._id, recruit.mixin.Candidate, 'skills', {
+      await applyOps.addCollection(skill._class, skill.space, _id, recruit.mixin.Candidate, 'skills', {
         title: skill.title,
         color: skill.color,
         tag: skill.tag,

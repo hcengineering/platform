@@ -177,23 +177,25 @@
     {/if}
     <EditBox bind:value={title} placeholder={tracker.string.IssueTitlePlaceholder} kind="large-style" on:blur={save} />
     <div class="w-full mt-6">
-      <AttachmentStyledBox
-        bind:this={descriptionBox}
-        useAttachmentPreview={true}
-        objectId={_id}
-        _class={tracker.class.Issue}
-        space={issue.space}
-        alwaysEdit
-        on:attached={save}
-        on:detached={save}
-        showButtons
-        on:blur={save}
-        on:changeContent={triggerSave}
-        maxHeight={'card'}
-        focusable
-        bind:content={description}
-        placeholder={tracker.string.IssueDescriptionPlaceholder}
-      />
+      {#key _id}
+        <AttachmentStyledBox
+          bind:this={descriptionBox}
+          useAttachmentPreview={true}
+          objectId={_id}
+          _class={tracker.class.Issue}
+          space={issue.space}
+          alwaysEdit
+          on:attached={save}
+          on:detached={save}
+          showButtons
+          on:blur={save}
+          on:changeContent={triggerSave}
+          maxHeight={'card'}
+          focusable
+          bind:content={description}
+          placeholder={tracker.string.IssueDescriptionPlaceholder}
+        />
+      {/key}
     </div>
 
     <div class="mt-6">

@@ -241,6 +241,8 @@ export interface PersonLabelTooltip {
   props?: any
 }
 
+export * from './utils'
+
 export default async (): Promise<Resources> => ({
   actionImpl: {
     KickEmployee: kickEmployee,
