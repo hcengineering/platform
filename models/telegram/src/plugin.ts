@@ -15,11 +15,12 @@
 //
 
 import { Ref } from '@hcengineering/core'
-import { IntlString, mergeIds } from '@hcengineering/platform'
+import { IntlString, Resource, mergeIds } from '@hcengineering/platform'
 import { telegramId } from '@hcengineering/telegram'
 import telegram from '@hcengineering/telegram-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui'
 import type { TxViewlet } from '@hcengineering/activity'
+import { TemplateFieldFunc } from '@hcengineering/templates'
 
 export default mergeIds(telegramId, telegram, {
   string: {
@@ -35,6 +36,10 @@ export default mergeIds(telegramId, telegram, {
   ids: {
     TxMessage: '' as Ref<TxViewlet>,
     TxSharedCreate: '' as Ref<TxViewlet>
+  },
+  function: {
+    GetCurrentEmployeeTG: '' as Resource<TemplateFieldFunc>,
+    GetIntegrationOwnerTG: '' as Resource<TemplateFieldFunc>
   },
   activity: {
     TxMessage: '' as AnyComponent,

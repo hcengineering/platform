@@ -38,6 +38,7 @@ import type {
   SharedTelegramMessages,
   TelegramMessage
 } from '@hcengineering/telegram'
+import templates from '@hcengineering/templates'
 import telegram from './plugin'
 import view from '@hcengineering/view'
 
@@ -91,6 +92,28 @@ export function createModel (builder: Builder): void {
   builder.mixin(telegram.class.Message, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: telegram.component.MessagePresenter
   })
+
+  builder.createDoc(
+    templates.class.TemplateField,
+    core.space.Model,
+    {
+      label: telegram.string.Telegram,
+      category: contact.templateFieldCategory.CurrentEmployee,
+      func: telegram.function.GetCurrentEmployeeTG
+    },
+    telegram.templateField.CurrentEmployeeTelegram
+  )
+
+  builder.createDoc(
+    templates.class.TemplateField,
+    core.space.Model,
+    {
+      label: telegram.string.Telegram,
+      category: setting.templateFieldCategory.Integration,
+      func: telegram.function.GetIntegrationOwnerTG
+    },
+    telegram.templateField.IntegrationOwnerTG
+  )
 
   builder.createDoc(
     activity.class.TxViewlet,
