@@ -70,9 +70,9 @@ async function changeClass (client: MigrationClient): Promise<void> {
     },
     {
       objectClass: templates.class.TemplateCategory,
-      'attirbutes.private': false,
-      'attirbutes.name': 'Public templates',
-      'attirbutes.description': 'Space for public templates'
+      'attributes.private': false,
+      'attributes.name': 'Public templates',
+      'attributes.description': 'Space for public templates'
     }
   )
 }
