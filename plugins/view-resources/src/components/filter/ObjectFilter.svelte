@@ -109,10 +109,13 @@
       }
       const oldSize = filter.value.length
       filter.value = filter.value.filter((p) => !targets.has(p._id))
-      onChange(filter)
-      addNotification(await translate(view.string.FilterUpdated, {}), filter.key.label, FilterRemovedNotification, {
-        description: await translate(view.string.FilterRemoved, { count: oldSize - (filter.value.length ?? 0) })
-      })
+      const removed = oldSize - (filter.value.length ?? 0)
+      if (removed > 0) {
+        onChange(filter)
+        addNotification(await translate(view.string.FilterUpdated, {}), filter.key.label, FilterRemovedNotification, {
+          description: await translate(view.string.FilterRemoved, { count: removed })
+        })
+      }
     }
     if (isStatus) {
       values = groupValues(values as Status[])
