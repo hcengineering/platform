@@ -19,7 +19,15 @@
   import { AnyComponent } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, CategoryOption, ViewOptionModel, ViewOptions } from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import { buildModel, getAdditionalHeader, getCategories, getGroupByValues, getPresenter, groupBy } from '../../utils'
+  import {
+    buildModel,
+    concatCategories,
+    getAdditionalHeader,
+    getCategories,
+    getGroupByValues,
+    getPresenter,
+    groupBy
+  } from '../../utils'
   import { CategoryQuery, noCategory } from '../../viewOptions'
   import ListCategory from './ListCategory.svelte'
 
@@ -85,7 +93,7 @@
           const f = await getResource(categoryFunc.action)
           const res = hierarchy.clone(await f(_class, query, groupByKey, update, queryId, $statusStore))
           if (res !== undefined) {
-            categories = Array.from(new Set([...categories, ...res]))
+            categories = concatCategories(res, categories)
             return
           }
         }

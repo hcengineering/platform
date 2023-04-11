@@ -655,6 +655,33 @@ export async function getCategories (
   )
 }
 
+export function concatCategories (arr1: CategoryType[], arr2: CategoryType[]): CategoryType[] {
+  const uniqueValues: Set<string | number | undefined> = new Set()
+  const uniqueObjects: Map<string | number, StatusValue> = new Map()
+
+  for (const item of arr1) {
+    if (typeof item === 'object') {
+      const id = item.name
+      uniqueObjects.set(id, item)
+    } else {
+      uniqueValues.add(item)
+    }
+  }
+
+  for (const item of arr2) {
+    if (typeof item === 'object') {
+      const id = item.name
+      if (!uniqueObjects.has(id)) {
+        uniqueObjects.set(id, item)
+      }
+    } else {
+      uniqueValues.add(item)
+    }
+  }
+
+  return [...uniqueValues, ...uniqueObjects.values()]
+}
+
 /**
  * @public
  */

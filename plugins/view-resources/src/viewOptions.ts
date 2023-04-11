@@ -131,16 +131,18 @@ export async function showEmptyGroups (
 
   if (hierarchy.isDerived(attrClass, core.class.Status)) {
     // We do not need extensions for all status categories.
-    let statusList = mgr.statuses.filter((it) => {
+    let statusList = mgr.filter((it) => {
       return it.ofAttribute === attr._id
     })
     if (query !== undefined) {
-      statusList = matchQuery<Status>(
-        statusList,
-        query as DocumentQuery<Status>,
-        _class,
-        hierarchy
-      ) as unknown as Array<WithLookup<Status>>
+      const { [key]: st, space } = query
+      const resQuery: DocumentQuery<Status> = {
+        space
+      }
+      if (st !== undefined) {
+        resQuery._id = st
+      }
+      statusList = matchQuery<Status>(statusList, resQuery, _class, hierarchy) as unknown as Array<WithLookup<Status>>
     }
     const statuses = statusList.map((it) => it._id)
     return await groupByCategory(client, _class, key, statuses, mgr, viewletDescriptorId)
