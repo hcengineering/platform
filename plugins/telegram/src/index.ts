@@ -19,6 +19,7 @@ import type { Doc, Ref, Class, Space, AttachedDoc, Timestamp } from '@hcengineer
 import type { AnyComponent } from '@hcengineering/ui'
 import type { IntegrationType, Handler } from '@hcengineering/setting'
 import { Channel } from '@hcengineering/contact'
+import { TemplateField } from '@hcengineering/templates'
 
 /**
  * @public
@@ -89,6 +90,10 @@ export default plugin(telegramId, {
   },
   space: {
     Telegram: '' as Ref<Space>
+  },
+  templateField: {
+    CurrentEmployeeTelegram: '' as Ref<TemplateField>,
+    IntegrationOwnerTG: '' as Ref<TemplateField>
   },
   metadata: {
     TelegramURL: '' as Metadata<string>

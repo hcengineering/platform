@@ -30,6 +30,7 @@
     "@hcengineering/core": "^0.6.22",
     "@hcengineering/ui": "^0.6.5",
     "@hcengineering/contact": "^0.6.12",
+    "@hcengineering/templates": "^0.6.1",
     "@hcengineering/setting": "^0.6.4"
   },
   "repository": "https://github.com/hcengineering/anticrm",

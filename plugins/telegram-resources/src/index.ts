@@ -24,6 +24,7 @@ import TxMessage from './components/activity/TxMessage.svelte'
 import IconTelegram from './components/icons/TelegramColor.svelte'
 import TxSharedCreate from './components/activity/TxSharedCreate.svelte'
 import { concatLink } from '@hcengineering/core'
+import { getCurrentEmployeeTG, getIntegrationOwnerTG } from './utils'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -35,6 +36,10 @@ export default async (): Promise<Resources> => ({
   activity: {
     TxSharedCreate,
     TxMessage
+  },
+  function: {
+    GetCurrentEmployeeTG: getCurrentEmployeeTG,
+    GetIntegrationOwnerTG: getIntegrationOwnerTG
   },
   handler: {
     DisconnectHandler: async () => {
