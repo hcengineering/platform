@@ -20,25 +20,28 @@
     AnyComponent,
     Button,
     Component,
-    deviceOptionsStore as deviceInfo,
     Icon,
     IconAdd,
     Label,
     Loading,
     SearchEdit,
-    showPopup,
-    TabList
+    TabList,
+    deviceOptionsStore as deviceInfo,
+    location,
+    showPopup
   } from '@hcengineering/ui'
   import view, { Viewlet, ViewletDescriptor, ViewletPreference } from '@hcengineering/view'
   import {
     FilterBar,
     FilterButton,
-    getActiveViewletId,
-    getViewOptions,
-    setActiveViewletId,
     ViewletSettingButton,
+    activeViewlet,
+    getViewOptions,
+    makeViewletKey,
+    setActiveViewletId,
     viewOptionStore
   } from '@hcengineering/view-resources'
+  import { onDestroy } from 'svelte'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
@@ -67,9 +70,35 @@
 
   let viewlets: WithLookup<Viewlet>[] = []
 
-  $: update(_class, descriptors)
+  const viewletQuery = createQuery()
+  $: viewletQuery.query(
+    view.class.Viewlet,
+    { attachTo: _class, variant: { $exists: false } },
+    (res) => (viewlets = res),
+    {
+      lookup: {
+        descriptor: view.class.ViewletDescriptor
+      }
+    }
+  )
 
-  async function update (_class: Ref<Class<Doc>>, descriptors?: Ref<ViewletDescriptor>[]): Promise<void> {
+  let key = makeViewletKey()
+
+  onDestroy(
+    location.subscribe((loc) => {
+      key = makeViewletKey(loc)
+    })
+  )
+
+  $: active = $activeViewlet[key]
+
+  $: update(_class, active, descriptors)
+
+  async function update (
+    _class: Ref<Class<Doc>>,
+    active: Ref<Viewlet> | null,
+    descriptors?: Ref<ViewletDescriptor>[]
+  ): Promise<void> {
     loading = true
     viewlets = await client.findAll(
       view.class.Viewlet,
@@ -84,9 +113,9 @@
         }
       }
     )
-    const _id = getActiveViewletId()
     preference = undefined
-    viewlet = viewlets.find((viewlet) => viewlet._id === _id) || viewlets[0]
+    viewlet = viewlets.find((viewlet) => viewlet._id === active) ?? viewlets[0]
+    setActiveViewletId(viewlet._id)
     loading = false
   }
 

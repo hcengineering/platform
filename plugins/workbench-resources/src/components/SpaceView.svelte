@@ -16,10 +16,17 @@
   import core, { Class, Doc, Ref, Space, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { AnyComponent, Component } from '@hcengineering/ui'
+  import { AnyComponent, Component, location } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
-  import { getActiveViewletId, getViewOptions, viewOptionStore } from '@hcengineering/view-resources'
+  import {
+    activeViewlet,
+    getViewOptions,
+    makeViewletKey,
+    setActiveViewletId,
+    viewOptionStore
+  } from '@hcengineering/view-resources'
   import type { ViewConfiguration } from '@hcengineering/workbench'
+  import { onDestroy } from 'svelte'
   import SpaceContent from './SpaceContent.svelte'
   import SpaceHeader from './SpaceHeader.svelte'
 
@@ -38,9 +45,22 @@
 
   let viewlets: WithLookup<Viewlet>[] = []
 
-  $: update(currentSpace, currentView?.class)
+  let key = makeViewletKey()
+  onDestroy(
+    location.subscribe((loc) => {
+      key = makeViewletKey(loc)
+    })
+  )
 
-  async function update (currentSpace?: Ref<Space>, attachTo?: Ref<Class<Doc>>): Promise<void> {
+  $: active = $activeViewlet[key]
+
+  $: update(active, currentSpace, currentView?.class)
+
+  async function update (
+    active: Ref<Viewlet> | null,
+    currentSpace?: Ref<Space>,
+    attachTo?: Ref<Class<Doc>>
+  ): Promise<void> {
     if (currentSpace === undefined) {
       space = undefined
       return
@@ -62,8 +82,8 @@
         }
       )
       if (header !== undefined) {
-        const _id = getActiveViewletId()
-        viewlet = viewlets.find((viewlet) => viewlet._id === _id) || viewlets[0]
+        viewlet = viewlets.find((viewlet) => viewlet._id === active) ?? viewlets[0]
+        setActiveViewletId(viewlet._id)
       }
       _class = attachTo
     }

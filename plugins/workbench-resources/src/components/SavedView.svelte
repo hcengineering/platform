@@ -2,15 +2,19 @@
   import { Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
-  import { Action, navigate, getCurrentLocation, location } from '@hcengineering/ui'
-  import view, { FilteredView } from '@hcengineering/view'
+  import { Action, Location, location, navigate } from '@hcengineering/ui'
+  import view, { Filter, FilteredView } from '@hcengineering/view'
   import {
+    TreeItem,
+    TreeNode,
+    activeViewlet,
     filterStore,
     getFilterKey,
+    makeViewOptionsKey,
+    makeViewletKey,
     setActiveViewletId,
     setViewOptions,
-    TreeItem,
-    TreeNode
+    viewOptionStore
   } from '@hcengineering/view-resources'
   import { Application } from '@hcengineering/workbench'
   import { createEventDispatcher } from 'svelte'
@@ -61,24 +65,35 @@
     $filterStore = JSON.parse(fv.filters)
   }
 
-  let oldLocation: string = ''
-  $: loc = $location
   const clearSelection = () => {
     selectedId = selectedFW = undefined
-    oldLocation = getCurrentLocation().path.join()
     dispatch('select', false)
   }
 
-  $: fs = $filterStore
-  $: if (loc && Array.isArray(fs) && fs.length > 0 && Array.isArray(filteredViews)) {
+  function checkSelected (fs: Filter[], loc: Location, filteredViews: FilteredView[] | undefined) {
     const filters = JSON.stringify(fs)
-    selectedFW = filteredViews.filter((fv) => fv.filters === filters)
-    if (selectedFW.length > 0 && selectedFW[0].location.path.join() === loc.path.join()) {
-      selectedId = selectedFW[0]._id
-      oldLocation = selectedFW[0].location.path.join()
-      dispatch('select', true)
-    } else clearSelection()
-  } else clearSelection()
+    if (loc && Array.isArray(fs) && fs.length > 0 && Array.isArray(filteredViews)) {
+      for (const fv of filteredViews) {
+        if (fv.location.path.join() !== loc.path.join()) continue
+        if (fv.filters !== filters) continue
+        const key = makeViewletKey(loc)
+        if (fv.viewletId !== $activeViewlet[key]) continue
+        if (fv.viewletId !== null) {
+          const optionKey = makeViewOptionsKey(fv.viewletId)
+          const viewOptions = $viewOptionStore.get(optionKey)
+          if (JSON.stringify(fv.viewOptions) !== JSON.stringify(viewOptions)) continue
+        }
+        selectedId = fv._id
+        dispatch('select', true)
+        return
+      }
+      clearSelection()
+    } else {
+      clearSelection()
+    }
+  }
+
+  $: checkSelected($filterStore, $location, filteredViews)
   $: dispatch('shown', filteredViews !== undefined && filteredViews.length > 0)
 </script>
 

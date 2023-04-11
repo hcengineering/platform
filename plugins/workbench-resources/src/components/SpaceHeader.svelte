@@ -20,15 +20,21 @@
   import {
     AnyComponent,
     Button,
-    deviceOptionsStore as deviceInfo,
     IconAdd,
     SearchEdit,
-    showPopup,
-    TabList
+    TabList,
+    deviceOptionsStore as deviceInfo,
+    location,
+    showPopup
   } from '@hcengineering/ui'
-  import { Viewlet, ViewOptions } from '@hcengineering/view'
-  import { getActiveViewletId, setActiveViewletId, ViewletSettingButton } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
+  import { ViewOptions, Viewlet } from '@hcengineering/view'
+  import {
+    ViewletSettingButton,
+    activeViewlet,
+    makeViewletKey,
+    setActiveViewletId
+  } from '@hcengineering/view-resources'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import Header from './Header.svelte'
 
   export let spaceId: Ref<Space> | undefined
@@ -54,19 +60,28 @@
     showPopup(createItemDialog as AnyComponent, { space: spaceId }, 'top')
   }
 
-  $: updateViewlets(viewlets)
+  $: update(viewlets, active)
 
   $: if (prevSpaceId !== spaceId) {
     search = ''
     dispatch('search', '')
   }
 
-  function updateViewlets (viewlets: WithLookup<Viewlet>[]) {
-    const _id = getActiveViewletId()
-    const index = viewlets.findIndex((p) => p._id === (viewlet?._id ?? _id))
-    viewlet = index === -1 ? viewlets[0] : viewlets[index]
+  let key = makeViewletKey()
+
+  onDestroy(
+    location.subscribe((loc) => {
+      key = makeViewletKey(loc)
+    })
+  )
+
+  $: active = $activeViewlet[key]
+
+  async function update (viewlets: WithLookup<Viewlet>[], active: Ref<Viewlet> | null): Promise<void> {
+    viewlet = viewlets.find((viewlet) => viewlet._id === active) ?? viewlets[0]
     setActiveViewletId(viewlet._id)
   }
+
   $: viewslist = viewlets.map((views) => {
     return {
       id: views._id,
