@@ -575,13 +575,12 @@ abstract class MongoAdapterBase implements DbAdapter {
   async upload (domain: Domain, docs: Doc[]): Promise<void> {
     const coll = this.db.collection(domain)
 
-    const docMap = new Map(docs.map((it) => [it._id, it]))
+    const ops = Array.from(docs)
 
-    // remove old and insert new ones
-    const keys = Array.from(docMap.keys())
-    if (keys.length > 0) {
+    while (ops.length > 0) {
+      const part = ops.splice(0, 500)
       await coll.bulkWrite(
-        docs.map((it) => ({
+        part.map((it) => ({
           replaceOne: {
             filter: { _id: it._id },
             replacement: it,
@@ -597,9 +596,11 @@ abstract class MongoAdapterBase implements DbAdapter {
 
     try {
       // remove old and insert new ones
-      if (operations.size > 0) {
+      const ops = Array.from(operations.entries())
+      if (ops.length > 0) {
+        const part = ops.splice(0, 500)
         await coll.bulkWrite(
-          Array.from(operations.entries()).map((it) => ({
+          part.map((it) => ({
             updateOne: {
               filter: { _id: it[0] },
               update: {
@@ -752,7 +753,6 @@ class MongoAdapter extends MongoAdapterBase {
             }
           }
         ]
-        // return await this.db.collection(domain).bulkWrite(ops as any)
         return {
           raw: async () => await this.db.collection(domain).bulkWrite(ops),
           domain,

@@ -335,15 +335,17 @@ async function handleRequest<S extends Session> (
   const userCtx = ctx.newChild(service.getUser(), { userId: service.getUser() }) as SessionContext
   userCtx.sessionId = service.sessionInstanceId ?? ''
   const f = (service as any)[request.method]
+  let timeout: any
+  let hangTimeout: any
   try {
     const params = [userCtx, ...request.params]
 
     const st = Date.now()
-    const timeout = setTimeout(() => {
+    timeout = setTimeout(() => {
       console.log('long request found', workspace, service.getUser(), request, params)
     }, 4000)
 
-    const hangTimeout = setTimeout(() => {
+    hangTimeout = setTimeout(() => {
       console.log('request hang found, 30sec', workspace, service.getUser(), request, params)
     }, 30000)
 
@@ -367,6 +369,8 @@ async function handleRequest<S extends Session> (
     ws.send(serialize(resp))
   } catch (err: any) {
     console.error(err)
+    clearTimeout(timeout)
+    clearTimeout(hangTimeout)
     const resp: Response<any> = {
       id: request.id,
       error: unknownError(err)
