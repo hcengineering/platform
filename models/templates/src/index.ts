@@ -16,17 +16,17 @@
 
 import { Domain, DOMAIN_MODEL, IndexKind, Ref } from '@hcengineering/core'
 import { Builder, Index, Model, Prop, TypeString, UX } from '@hcengineering/model'
-import core, { DOMAIN_SPACE, TDoc, TSpace } from '@hcengineering/model-core'
+import core, { TDoc, TSpace } from '@hcengineering/model-core'
 import textEditor from '@hcengineering/model-text-editor'
 import view, { createAction } from '@hcengineering/model-view'
 import { IntlString, Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import type {
   MessageTemplate,
+  TemplateCategory,
   TemplateField,
   TemplateFieldCategory,
-  TemplateFieldFunc,
-  TemplateCategory
+  TemplateFieldFunc
 } from '@hcengineering/templates'
 import templates from './plugin'
 
@@ -43,7 +43,7 @@ export class TMessageTemplate extends TDoc implements MessageTemplate {
     message!: string
 }
 
-@Model(templates.class.TemplateCategory, core.class.Space, DOMAIN_SPACE)
+@Model(templates.class.TemplateCategory, core.class.Space)
 @UX(templates.string.TemplateCategory)
 export class TTemplateCategory extends TSpace implements TemplateCategory {}
 
