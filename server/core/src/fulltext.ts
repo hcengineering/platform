@@ -23,6 +23,7 @@ import core, {
   FindOptions,
   FindResult,
   Hierarchy,
+  IndexKind,
   MeasureContext,
   ObjQueryType,
   Ref,
@@ -128,8 +129,19 @@ export class FullTextIndex implements WithFind {
     let classes = this.hierarchy.getDescendants(baseClass)
 
     const attrs = this.hierarchy.getAllAttributes(_class)
+
+    // We need to filter all non indexed fields from query to make it work properly
+    const findQuery: DocumentQuery<Doc> = {
+      $search: query.$search
+    }
     try {
-      for (const attr of attrs.values()) {
+      for (const [k, attr] of attrs) {
+        if (attr.index === IndexKind.FullText) {
+          const vv = (query as any)[k]
+          if (vv != null) {
+            findQuery[k] = vv
+          }
+        }
         if (attr.type._class === core.class.Collection) {
           // we need attached documents to be in clases
           const dsc = this.hierarchy.getDescendants(attr.attributeOf)
@@ -143,7 +155,8 @@ export class FullTextIndex implements WithFind {
     classes = classes.filter((it, idx, arr) => arr.indexOf(it) === idx)
 
     const fullTextLimit = options?.limit ?? 200
-    let { docs, pass } = await this.indexer.search(classes, query, fullTextLimit)
+
+    let { docs, pass } = await this.indexer.search(classes, findQuery, fullTextLimit)
 
     if (docs.length === 0 && pass) {
       docs = [...docs, ...(await this.adapter.search(classes, query, fullTextLimit))]

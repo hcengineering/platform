@@ -212,7 +212,7 @@ export class IndexedFieldStage implements FullTextPipelineStage {
       if (pipeline.hierarchy.isMixin(d) && pipeline.hierarchy.hasMixin(doc, d)) {
         const mContext = getFullTextContext(pipeline.hierarchy, d)
         if (mContext.propogate !== undefined) {
-          propogate = [...mContext.propogate]
+          propogate = [...propogate, ...mContext.propogate]
         }
       }
     }
