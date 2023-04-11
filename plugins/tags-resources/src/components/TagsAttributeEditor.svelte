@@ -1,10 +1,10 @@
 <script lang="ts">
+  import { AnyAttribute, Doc } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { AnyAttribute, Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import type { TagReference, TagElement } from '@hcengineering/tags'
+  import type { TagReference } from '@hcengineering/tags'
   import tags from '@hcengineering/tags'
-  import { getEventPopupPositionElement, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
+  import { Icon, IconAdd, Label, getEventPopupPositionElement, showPopup } from '@hcengineering/ui'
   import TagReferencePresenter from './TagReferencePresenter.svelte'
   import TagsEditorPopup from './TagsEditorPopup.svelte'
 
@@ -24,9 +24,8 @@
     if (readonly) return
     showPopup(TagsEditorPopup, { object }, getEventPopupPositionElement(evt))
   }
-  async function removeTag (tag: Ref<TagElement>): Promise<void> {
-    const tagRef = await client.findOne(tags.class.TagReference, { tag })
-    if (tagRef) await client.remove(tagRef)
+  async function removeTag (tag: TagReference): Promise<void> {
+    if (tag !== undefined) await client.remove(tag)
   }
 </script>
 
