@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-<script type="ts">
+<script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import ui from '../../plugin'
   import Label from '../Label.svelte'

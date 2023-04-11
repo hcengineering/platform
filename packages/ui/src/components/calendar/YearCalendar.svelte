@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-<script type="ts">
+<script lang="ts">
   import MonthCalendar from './MonthCalendar.svelte'
 
   /**
