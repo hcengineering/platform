@@ -185,8 +185,8 @@
           _class={tracker.class.Issue}
           space={issue.space}
           alwaysEdit
-          on:attached={save}
-          on:detached={save}
+          on:attached={(e) => descriptionBox.saveNewAttachment(e.detail)}
+          on:detached={(e) => descriptionBox.removeAttachmentById(e.detail)}
           showButtons
           on:blur={save}
           on:changeContent={triggerSave}
