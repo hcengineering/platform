@@ -15,22 +15,21 @@
 
 import login, { LoginInfo, Workspace, WorkspaceLoginInfo } from '@hcengineering/login'
 import {
-  getMetadata,
   OK,
   PlatformError,
   Request,
   Response,
-  serialize,
-  setMetadata,
   Status,
+  getMetadata,
+  setMetadata,
   unknownError,
   unknownStatus
 } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 import {
+  Location,
   fetchMetadataLocalStorage,
   getCurrentLocation,
-  Location,
   navigate,
   setMetadataLocalStorage
 } from '@hcengineering/ui'
@@ -67,7 +66,7 @@ export async function doLogin (email: string, password: string): Promise<[Status
       headers: {
         'Content-Type': 'application/json'
       },
-      body: serialize(request)
+      body: JSON.stringify(request)
     })
     const result: Response<any> = await response.json()
     console.log('login result', result)
@@ -109,7 +108,7 @@ export async function signUp (
       headers: {
         'Content-Type': 'application/json'
       },
-      body: serialize(request)
+      body: JSON.stringify(request)
     })
     const result: Response<any> = await response.json()
     return [result.error ?? OK, result.result]
@@ -155,7 +154,7 @@ export async function createWorkspace (workspace: string): Promise<[Status, Logi
         Authorization: 'Bearer ' + token,
         'Content-Type': 'application/json'
       },
-      body: serialize(request)
+      body: JSON.stringify(request)
     })
     const result: Response<any> = await response.json()
     return [result.error ?? OK, result.result]
@@ -204,7 +203,7 @@ export async function getWorkspaces (): Promise<Workspace[]> {
         Authorization: 'Bearer ' + token,
         'Content-Type': 'application/json'
       },
-      body: serialize(request)
+      body: JSON.stringify(request)
     })
     const result: Response<any> = await response.json()
     if (result.error != null) {
@@ -253,7 +252,7 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Work
         Authorization: 'Bearer ' + token,
         'Content-Type': 'application/json'
       },
-      body: serialize(request)
+      body: JSON.stringify(request)
     })
     const result: Response<any> = await response.json()
     return [result.error ?? OK, result.result]
@@ -334,7 +333,7 @@ export async function checkJoined (inviteId: string): Promise<[Status, Workspace
         Authorization: 'Bearer ' + token,
         'Content-Type': 'application/json'
       },
-      body: serialize(request)
+      body: JSON.stringify(request)
     })
     const result: Response<any> = await response.json()
     return [result.error ?? OK, result.result]
@@ -372,7 +371,7 @@ export async function getInviteLink (expHours: number = 1, emailMask: string = '
       Authorization: 'Bearer ' + token,
       'Content-Type': 'application/json'
     },
-    body: serialize(request)
+    body: JSON.stringify(request)
   })
   const result: Response<any> = await response.json()
   return result.result
@@ -408,7 +407,7 @@ export async function join (
       headers: {
         'Content-Type': 'application/json'
       },
-      body: serialize(request)
+      body: JSON.stringify(request)
     })
     const result: Response<any> = await response.json()
     return [result.error ?? OK, result.result]
@@ -449,7 +448,7 @@ export async function signUpJoin (
       headers: {
         'Content-Type': 'application/json'
       },
-      body: serialize(request)
+      body: JSON.stringify(request)
     })
     const result: Response<any> = await response.json()
     return [result.error ?? OK, result.result]
@@ -485,7 +484,7 @@ export async function changeName (first: string, last: string): Promise<void> {
       Authorization: 'Bearer ' + token,
       'Content-Type': 'application/json'
     },
-    body: serialize(request)
+    body: JSON.stringify(request)
   })
 }
 
@@ -516,7 +515,7 @@ export async function changePassword (oldPassword: string, password: string): Pr
       Authorization: 'Bearer ' + token,
       'Content-Type': 'application/json'
     },
-    body: serialize(request)
+    body: JSON.stringify(request)
   })
   const resp = await response.json()
   if (resp.error !== undefined) {
@@ -551,7 +550,7 @@ export async function leaveWorkspace (email: string): Promise<void> {
       Authorization: 'Bearer ' + token,
       'Content-Type': 'application/json'
     },
-    body: serialize(request)
+    body: JSON.stringify(request)
   })
 }
 
@@ -582,7 +581,7 @@ export async function sendInvite (email: string): Promise<void> {
       Authorization: 'Bearer ' + token,
       'Content-Type': 'application/json'
     },
-    body: serialize(request)
+    body: JSON.stringify(request)
   })
 }
 
@@ -611,7 +610,7 @@ export async function requestPassword (email: string): Promise<Status> {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: serialize(request)
+      body: JSON.stringify(request)
     })
     const result: Response<any> = await response.json()
     return result.error ?? OK
@@ -639,7 +638,7 @@ export async function restorePassword (token: string, password: string): Promise
         Authorization: 'Bearer ' + token,
         'Content-Type': 'application/json'
       },
-      body: serialize(request)
+      body: JSON.stringify(request)
     })
     const result: Response<any> = await response.json()
     return [result.error ?? OK, result.result]

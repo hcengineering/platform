@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Packr } from 'msgpackr'
 import platform from './platform'
 import { PlatformError, Severity, Status } from './status'
 
@@ -42,13 +43,15 @@ export interface Response<R> {
   error?: Status
 }
 
+const packr = new Packr({ structuredClone: true })
+
 /**
  * @public
  * @param object -
  * @returns
  */
-export function protoSerialize (object: object): string {
-  return JSON.stringify(object, replacer)
+export function protoSerialize (object: object): any {
+  return new Uint8Array(packr.pack(object))
 }
 
 /**
@@ -56,8 +59,8 @@ export function protoSerialize (object: object): string {
  * @param data -
  * @returns
  */
-export function protoDeserialize (data: string): any {
-  return JSON.parse(data, receiver)
+export function protoDeserialize (data: any): any {
+  return packr.unpack(new Uint8Array(data))
 }
 
 /**
@@ -65,7 +68,7 @@ export function protoDeserialize (data: string): any {
  * @param object -
  * @returns
  */
-export function serialize (object: Request<any> | Response<any>): string {
+export function serialize (object: Request<any> | Response<any>): any {
   return protoSerialize(object)
 }
 
@@ -74,29 +77,8 @@ export function serialize (object: Request<any> | Response<any>): string {
  * @param response -
  * @returns
  */
-export function readResponse<D> (response: string): Response<D> {
+export function readResponse<D> (response: any): Response<D> {
   return protoDeserialize(response)
-}
-
-function replacer (key: string, value: any): any {
-  if (Array.isArray(value) && (value as any).total !== undefined) {
-    return {
-      dataType: 'TotalArray',
-      total: (value as any).total,
-      value: [...value]
-    }
-  } else {
-    return value ?? null
-  }
-}
-
-function receiver (key: string, value: any): any {
-  if (typeof value === 'object' && value !== null) {
-    if (value.dataType === 'TotalArray') {
-      return Object.assign(value.value, { total: value.total })
-    }
-  }
-  return value
 }
 
 /**
@@ -104,7 +86,7 @@ function receiver (key: string, value: any): any {
  * @param request -
  * @returns
  */
-export function readRequest<P extends any[]> (request: string): Request<P> {
+export function readRequest<P extends any[]> (request: any): Request<P> {
   const result: Request<P> = protoDeserialize(request)
   if (typeof result.method !== 'string') {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))

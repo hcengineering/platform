@@ -319,7 +319,7 @@ async function handleRequest<S extends Session> (
   ctx: MeasureContext,
   service: S,
   ws: WebSocket,
-  msg: string,
+  msg: Buffer,
   workspace: string
 ): Promise<void> {
   const request = readRequest(msg)
@@ -399,6 +399,7 @@ export function start (
 
   const wss = new WebSocketServer({
     noServer: true,
+    skipUTF8Validation: true,
     perMessageDeflate: {
       zlibDeflateOptions: {
         // See zlib defaults.
@@ -413,23 +414,25 @@ export function start (
   })
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   wss.on('connection', async (ws: WebSocket, request: any, token: Token, sessionId?: string) => {
-    let buffer: string[] | undefined = []
+    let buffer: Buffer[] | undefined = []
 
-    ws.on('message', (msg: string) => {
+    ws.on('message', (msg: Buffer) => {
       buffer?.push(msg)
     })
     const session = await sessions.addSession(ctx, ws, token, pipelineFactory, productId, sessionId)
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('message', async (msg: RawData) => {
-      let msgStr = ''
+      let buff: Buffer | undefined
       if (typeof msg === 'string') {
-        msgStr = msg
+        buff = Buffer.from(msg)
       } else if (msg instanceof Buffer) {
-        msgStr = msg.toString()
+        buff = msg
       } else if (Array.isArray(msg)) {
-        msgStr = Buffer.concat(msg).toString()
+        buff = Buffer.concat(msg)
       }
-      await handleRequest(ctx, session, ws, msgStr, token.workspace.name)
+      if (buff != null) {
+        await handleRequest(ctx, session, ws, buff, token.workspace.name)
+      }
     })
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('close', (code: number, reason: Buffer) => {

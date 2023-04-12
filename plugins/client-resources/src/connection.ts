@@ -147,7 +147,12 @@ class Connection implements ClientConnection {
     return new Promise((resolve, reject) => {
       // Use defined factory or browser default one.
       const clientSocketFactory =
-        getMetadata(client.metadata.ClientSocketFactory) ?? ((url: string) => new WebSocket(url) as ClientSocket)
+        getMetadata(client.metadata.ClientSocketFactory) ??
+        ((url: string) => {
+          const s = new WebSocket(url)
+          s.binaryType = 'arraybuffer'
+          return s as ClientSocket
+        })
 
       const websocket = clientSocketFactory(this.url + `?sessionId=${this.sessionId}`)
       const opened = false
