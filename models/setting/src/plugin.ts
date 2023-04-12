@@ -24,8 +24,7 @@ import { TemplateFieldFunc } from '@hcengineering/templates'
 
 export default mergeIds(settingId, setting, {
   activity: {
-    TxIntegrationDisable: '' as AnyComponent,
-    TxIntegrationDisableReconnect: '' as AnyComponent
+    TxIntegrationDisable: '' as AnyComponent
   },
   ids: {
     TxIntegrationDisable: '' as Ref<TxViewlet>,
@@ -43,7 +42,8 @@ export default mergeIds(settingId, setting, {
     Owners: '' as AnyComponent,
     CreateMixin: '' as AnyComponent,
     InviteSetting: '' as AnyComponent,
-    ArrayEditor: '' as AnyComponent
+    ArrayEditor: '' as AnyComponent,
+    IntegrationPanel: '' as AnyComponent
   },
   category: {
     Settings: '' as Ref<ActionCategory>

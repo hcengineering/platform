@@ -37,6 +37,7 @@
     "@hcengineering/model-view": "^0.6.0",
     "@hcengineering/model-workbench": "^0.6.1",
     "@hcengineering/task": "^0.6.4",
+    "@hcengineering/notification": "^0.6.9",
     "@hcengineering/templates": "^0.6.1",
     "@hcengineering/activity": "^0.6.0"
   }
