@@ -234,7 +234,7 @@
       <EmployeeBox
         showNavigate={false}
         label={contact.string.MergeEmployeeTo}
-        docQuery={{ active: true }}
+        docQuery={{ active: { $in: [true, false] } }}
         bind:value={targetEmployee}
       />
       <ChannelsDropdown

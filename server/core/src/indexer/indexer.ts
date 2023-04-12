@@ -520,7 +520,6 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         } catch (err: any) {
           console.error(err)
         }
-        console.log('Updated state for: ', c, newDocs.length)
       }
       const statesSet = new Set(states)
       const docIds = (await dbStorage.findAll<Doc>(this.metrics, c, { _class: c }, { projection: { _id: 1 } }))

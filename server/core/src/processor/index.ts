@@ -116,7 +116,9 @@ export class AsyncTriggerProcessor {
           for (const f of this.functions) {
             result.push(...(await f(doc.tx, this.control)))
           }
-        } catch (err: any) {}
+        } catch (err: any) {
+          console.error(err)
+        }
         await this.storage.apply(
           this.metrics,
           [this.factory.createTxRemoveDoc(doc._class, doc.space, doc._id)],
