@@ -15,6 +15,7 @@
 
 import { writable, derived } from 'svelte/store'
 import { Location as PlatformLocation } from './types'
+import { closePopup } from './popups'
 
 export function locationToUrl (location: PlatformLocation): string {
   let result = '/'
@@ -110,6 +111,7 @@ window.addEventListener('popstate', () => {
 export const location = derived(locationWritable, (loc) => loc)
 
 export function navigate (location: PlatformLocation, store = true): void {
+  closePopup()
   const url = locationToUrl(location)
   if (locationToUrl(getCurrentLocation()) !== url) {
     if (store) {

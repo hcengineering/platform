@@ -47,7 +47,6 @@
   }
 
   let selectedId: Ref<FilteredView> | undefined = undefined
-  let selectedFW: FilteredView[] | undefined = undefined
   async function load (fv: FilteredView): Promise<void> {
     if (fv.viewletId !== undefined && fv.viewletId !== null) {
       const viewlet = await client.findOne(view.class.Viewlet, { _id: fv.viewletId })
@@ -66,7 +65,7 @@
   }
 
   const clearSelection = () => {
-    selectedId = selectedFW = undefined
+    selectedId = undefined
     dispatch('select', false)
   }
 

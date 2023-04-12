@@ -15,6 +15,8 @@
 <script lang="ts">
   import { popupstore as modal } from '../popups'
   import PopupInstance from './PopupInstance.svelte'
+
+  export let contentPanel: HTMLElement
 </script>
 
 {#if $modal.length > 0}
@@ -31,6 +33,7 @@
       zIndex={(i + 1) * 500}
       top={$modal.length - 1 === i}
       close={popup.close}
+      {contentPanel}
       overlay={popup.options.overlay}
     />
   {/key}
