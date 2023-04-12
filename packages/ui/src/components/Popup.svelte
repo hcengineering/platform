@@ -17,6 +17,14 @@
   import PopupInstance from './PopupInstance.svelte'
 
   export let contentPanel: HTMLElement
+
+  const instances: PopupInstance[] = []
+
+  export function fitPopupInstance (): void {
+    instances.forEach((p) => p.fitPopupInstance())
+  }
+
+  $: instances.length = $modal.length
 </script>
 
 {#if $modal.length > 0}
@@ -25,6 +33,7 @@
 {#each $modal as popup, i}
   {#key popup.id}
     <PopupInstance
+      bind:this={instances[i]}
       is={popup.is}
       props={popup.props}
       element={popup.element}

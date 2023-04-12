@@ -115,6 +115,10 @@
     )
   }
 
+  export function fitPopupInstance (): void {
+    if (modalHTML) fitPopup(modalHTML, element, contentPanel)
+  }
+
   $: if ($deviceInfo.docWidth <= 900 && !docSize) docSize = true
   $: if ($deviceInfo.docWidth > 900 && docSize) docSize = false
 </script>
