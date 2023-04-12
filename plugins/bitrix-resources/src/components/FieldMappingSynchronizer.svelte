@@ -13,7 +13,7 @@
   import core, { Class, Doc, generateId, Ref, Space, WithLookup } from '@hcengineering/core'
   import { getEmbeddedLabel, getMetadata } from '@hcengineering/platform'
   import presentation, { getClient, SpaceSelect } from '@hcengineering/presentation'
-  import { Button, Expandable, Icon, IconAdd, IconClose, Label } from '@hcengineering/ui'
+  import { Button, CheckBox, Expandable, Icon, IconAdd, IconClose, Label } from '@hcengineering/ui'
   import { DropdownLabels } from '@hcengineering/ui'
   import { EditBox } from '@hcengineering/ui'
   import { NumberEditor } from '@hcengineering/view-resources'
@@ -22,6 +22,10 @@
 
   export let mapping: WithLookup<BitrixEntityMapping>
   export let bitrixClient: BitrixClient
+
+  let syncComments = true
+  let syncEmails = true
+  let syncAttachments = true
 
   const client = getClient()
 
@@ -69,7 +73,10 @@
           state = `processed: ${docsProcessed}/${total ?? 1}`
         },
         extraFilter: filterFields.length === 0 ? undefined : mappedFilter,
-        syncPeriod
+        syncPeriod,
+        syncComments,
+        syncEmails,
+        syncAttachments
       })
     } catch (err: any) {
       state = err.message
@@ -200,6 +207,20 @@
   </div>
 </Expandable>
 
+<div class="flex-row-center">
+  <div class="flex-row-center mr-4">
+    <div class="mr-2">Sync comments</div>
+    <CheckBox bind:checked={syncComments} />
+  </div>
+  <div class="flex-row-center mr-4">
+    <div class="mr-2">Sync email</div>
+    <CheckBox bind:checked={syncEmails} />
+  </div>
+  <div class="flex-row-center">
+    <div class="mr-2">Sync Attachments</div>
+    <CheckBox bind:checked={syncAttachments} />
+  </div>
+</div>
 <div class="flex-row-center">
   {#each filterFields as field, pos}
     {@const fValue = fields[field.field]}

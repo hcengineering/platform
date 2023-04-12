@@ -36,10 +36,9 @@ import { FilterQuery } from '@hcengineering/view-resources'
 import { get, writable } from 'svelte/store'
 import contact from './plugin'
 
-export async function getChannelProviders (): Promise<Map<Ref<ChannelProvider>, ChannelProvider>> {
-  const cp = await getClient().findAll(contact.class.ChannelProvider, {})
+export function getChannelProviders (providers: ChannelProvider[]): Map<Ref<ChannelProvider>, ChannelProvider> {
   const map = new Map<Ref<ChannelProvider>, ChannelProvider>()
-  for (const provider of cp) {
+  for (const provider of providers) {
     map.set(provider._id, provider)
   }
   return map
@@ -224,8 +223,9 @@ async function generateLocation (loc: Location, id: Ref<Contact>): Promise<Resol
 
 export const employeeByIdStore = writable<IdMap<Employee>>(new Map())
 export const employeesStore = writable<Employee[]>([])
+export const channelProviders = writable<ChannelProvider[]>([])
 
-function fillStore (): void {
+function fillStores (): void {
   const client = getClient()
   if (client !== undefined) {
     const query = createQuery(true)
@@ -233,12 +233,15 @@ function fillStore (): void {
       employeesStore.set(res)
       employeeByIdStore.set(toIdMap(res))
     })
+
+    const providerQuery = createQuery(true)
+    providerQuery.query(contact.class.ChannelProvider, {}, (res) => channelProviders.set(res))
   } else {
-    setTimeout(() => fillStore(), 500)
+    setTimeout(() => fillStores(), 50)
   }
 }
 
-fillStore()
+fillStores()
 
 export function getAvatarTypeDropdownItems (hasGravatar: boolean): DropdownIntlItem[] {
   return [

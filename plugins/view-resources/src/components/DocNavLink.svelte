@@ -31,7 +31,10 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  let href: string | undefined = '#' + getPanelURI(component, object._id, Hierarchy.mixinOrClass(object), 'content')
+  let href: string | undefined =
+    object !== undefined
+      ? '#' + getPanelURI(component, object._id, Hierarchy.mixinOrClass(object), 'content')
+      : undefined
 
   async function getHref (object: Doc): Promise<void> {
     if (disableClick) {
@@ -42,7 +45,7 @@
     href = `${window.location.origin}${locationToUrl(loc)}`
   }
 
-  $: getHref(object)
+  $: if (object !== undefined) getHref(object)
 </script>
 
 <NavLink {disableClick} {onClick} {noUnderline} {inline} {shrink} {href}><slot /></NavLink>

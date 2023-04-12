@@ -1,5 +1,5 @@
 import { ChannelProvider } from '@hcengineering/contact'
-import { AttachedDoc, Class, Doc, Mixin, Ref } from '@hcengineering/core'
+import { AnyAttribute, AttachedDoc, Class, Doc, Mixin, Ref } from '@hcengineering/core'
 import { ExpertKnowledge, InitialKnowledge, MeaningfullKnowledge } from '@hcengineering/tags'
 import { KanbanTemplate } from '@hcengineering/task'
 
@@ -281,6 +281,8 @@ export interface CreateHRApplication {
   stateField: string // Name of status in bitrix.
 
   defaultTemplate: Ref<KanbanTemplate>
+
+  copyTalentFields?: { candidate: Ref<AnyAttribute>, applicant: Ref<AnyAttribute> }[]
 }
 
 /**
