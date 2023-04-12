@@ -30,6 +30,7 @@
   import { ObjectPresenter } from '@hcengineering/view-resources'
 
   export let tx: TxCUD<Doc>
+  export let objectId: Ref<Doc>
   export let viewlets: Map<ActivityKey, TxViewlet>
   export let contentHidden: boolean = false
   const client = getClient()
@@ -42,7 +43,7 @@
   let model: AttributeModel[] = []
 
   $: if (tx._id !== ptx?.tx._id) {
-    ptx = newDisplayTx(tx, client.getHierarchy())
+    ptx = newDisplayTx(tx, client.getHierarchy(), objectId === tx.objectId)
     if (tx.modifiedBy !== employee?._id) {
       employee = undefined
     }

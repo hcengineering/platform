@@ -104,7 +104,7 @@
       </div>
     </div>
     {#if tx}
-      <TxView {tx} {viewlets} />
+      <TxView {tx} {viewlets} objectId={value.attachedTo} />
     {/if}
   </div>
 {/if}
