@@ -13,25 +13,25 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import core, { SortingOrder, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus } from '@hcengineering/tracker'
   import {
     Icon,
-    tooltip,
-    showPanel,
-    IconForward,
     IconDetails,
-    showPopup,
+    IconForward,
     SelectPopup,
-    closeTooltip,
     Spinner,
-    getPlatformColor
+    closeTooltip,
+    getPlatformColor,
+    navigate,
+    showPopup,
+    tooltip
   } from '@hcengineering/ui'
-  import tracker from '../../../plugin'
-  import { getIssueId } from '../../../issues'
-  import IssueStatusIcon from '../IssueStatusIcon.svelte'
   import { ListSelectionProvider } from '@hcengineering/view-resources'
+  import { getIssueId, issueLinkFragmentProvider } from '../../../issues'
+  import tracker from '../../../plugin'
+  import IssueStatusIcon from '../IssueStatusIcon.svelte'
 
   export let issue: WithLookup<Issue>
 
@@ -40,9 +40,10 @@
   let subIssues: WithLookup<Issue>[] | undefined
   let subIssuesElement: Element
 
-  function openIssue (target: Ref<Issue>) {
-    if (target !== issue._id) {
-      showPanel(tracker.component.EditIssue, target, issue._class, 'content')
+  async function openIssue (target: Issue) {
+    if (target._id !== issue._id) {
+      const loc = await issueLinkFragmentProvider(target)
+      navigate(loc)
     }
   }
 
@@ -50,7 +51,7 @@
     if (parentIssue) {
       closeTooltip()
       ListSelectionProvider.Pop()
-      openIssue(parentIssue._id)
+      openIssue(parentIssue)
     }
   }
 
@@ -85,7 +86,14 @@
             return DOMRect.fromRect({ width: 1, height: 1, x: rect.right + offsetX, y: rect.top + offsetY })
           }
         },
-        (selectedIssue) => selectedIssue !== undefined && openIssue(selectedIssue)
+        (selectedIssue) => {
+          if (selectedIssue !== undefined) {
+            const issue = subIssues?.find((p) => p._id === selectedIssue)
+            if (issue) {
+              openIssue(issue)
+            }
+          }
+        }
       )
     }
   }
