@@ -24,6 +24,7 @@
   import request, { RequestStatus } from '@hcengineering/request'
   import {
     AnyComponent,
+    CompAndProps,
     Component,
     DatePickerPopup,
     Label,
@@ -33,6 +34,7 @@
     Popup,
     PopupAlignment,
     PopupPosAlignment,
+    PopupResult,
     ResolvedLocation,
     TooltipInstance,
     areLocationsEqual,
@@ -43,6 +45,7 @@
     location,
     navigate,
     openPanel,
+    popupstore,
     resizeObserver,
     showPopup
   } from '@hcengineering/ui'
@@ -500,7 +503,18 @@
     }
   }
 
-  let prevLoc: Location | undefined = undefined
+  function checkInbox (popups: CompAndProps[]) {
+    if (inboxPopup !== undefined) {
+      const exists = popups.find((p) => p.id === inboxPopup?.id)
+      if (!exists) {
+        inboxPopup = undefined
+      }
+    }
+  }
+
+  $: checkInbox($popupstore)
+
+  let inboxPopup: PopupResult | undefined = undefined
 </script>
 
 {#if employee?.active === true}
@@ -568,17 +582,26 @@
           <AppItem
             icon={notification.icon.Notifications}
             label={notification.string.Inbox}
-            selected={currentAppAlias === notificationId}
+            selected={currentAppAlias === notificationId || inboxPopup !== undefined}
             on:click={(e) => {
-              if (currentAppAlias === notificationId) {
-                e.preventDefault()
-                e.stopPropagation()
-                if (prevLoc !== undefined) {
-                  navigate(prevLoc)
-                }
+              if (e.metaKey || e.ctrlKey) return
+              if (inboxPopup) {
+                inboxPopup.close()
               } else {
-                prevLoc = $location
+                inboxPopup = showPopup(
+                  notification.component.Inbox,
+                  { visibileNav: true },
+                  'content',
+                  undefined,
+                  undefined,
+                  {
+                    category: 'popup',
+                    overlay: false
+                  }
+                )
               }
+              e.preventDefault()
+              e.stopPropagation()
             }}
             notify={hasNotification}
           />
@@ -672,7 +695,7 @@
       <ActionContext context={{ mode: 'panel' }} />
     </svelte:fragment>
   </PanelInstance>
-  <Popup>
+  <Popup {contentPanel}>
     <svelte:fragment slot="popup-header">
       <ActionContext context={{ mode: 'popup' }} />
     </svelte:fragment>

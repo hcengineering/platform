@@ -83,6 +83,10 @@
       _class,
       { _id },
       async (result) => {
+        if (saveTrigger !== undefined) {
+          clearTimeout(saveTrigger)
+          await save()
+        }
         ;[issue] = result
         title = issue.title
         description = issue.description
@@ -177,7 +181,7 @@
     {/if}
     <EditBox bind:value={title} placeholder={tracker.string.IssueTitlePlaceholder} kind="large-style" on:blur={save} />
     <div class="w-full mt-6">
-      {#key _id}
+      {#key issue._id}
         <AttachmentStyledBox
           bind:this={descriptionBox}
           useAttachmentPreview={true}

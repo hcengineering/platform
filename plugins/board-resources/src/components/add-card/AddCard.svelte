@@ -71,21 +71,21 @@
     return new Promise<'single' | 'multiple' | 'close'>((resolve) => {
       const popupOpts = {
         onAddSingle: () => {
-          closePopup()
+          popup.close()
           resolve('single')
         },
         onAddMultiple: () => {
-          closePopup()
+          popup.close()
           resolve('multiple')
         },
         onClose: () => {
-          closePopup()
+          popup.close()
           resolve('close')
         },
         cardsNumber: splittedTitle.length
       }
 
-      const closePopup = showPopup(AddMultipleCardsPopup, popupOpts, anchorRef, () => resolve('close'))
+      const popup = showPopup(AddMultipleCardsPopup, popupOpts, anchorRef, () => resolve('close'))
     }).then((value) => {
       if (value === 'single' || value === 'close') {
         return addCard(title.replace('\n', ' ')).then((res) => {

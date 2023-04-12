@@ -27,6 +27,7 @@
   export let zIndex: number
   export let top: boolean
   export let close: () => void
+  export let contentPanel: HTMLElement
 
   let modalHTML: HTMLElement
   let componentInstance: any
@@ -67,13 +68,13 @@
     _close(undefined)
   }
 
-  const fitPopup = (modalHTML: HTMLElement, element: PopupAlignment | undefined): void => {
+  const fitPopup = (modalHTML: HTMLElement, element: PopupAlignment | undefined, contentPanel: HTMLElement): void => {
     if ((fullSize || docSize) && (element === 'float' || element === 'centered')) {
-      options = fitPopupElement(modalHTML, 'full')
+      options = fitPopupElement(modalHTML, 'full', contentPanel)
       options.props.maxHeight = '100vh'
       if (!modalHTML.classList.contains('fullsize')) modalHTML.classList.add('fullsize')
     } else {
-      options = fitPopupElement(modalHTML, element)
+      options = fitPopupElement(modalHTML, element, contentPanel)
       if (modalHTML.classList.contains('fullsize')) modalHTML.classList.remove('fullsize')
     }
     options.fullSize = fullSize
@@ -103,7 +104,7 @@
 
   $: if (modalHTML !== undefined && oldModalHTML !== modalHTML) {
     oldModalHTML = modalHTML
-    fitPopup(modalHTML, element)
+    fitPopup(modalHTML, element, contentPanel)
     showing = true
     modalHTML.addEventListener(
       'transitionend',
@@ -121,7 +122,7 @@
 <svelte:window
   on:resize={() => {
     if (modalHTML) {
-      fitPopup(modalHTML, element)
+      fitPopup(modalHTML, element, contentPanel)
     }
   }}
   on:keydown={handleKeydown}
@@ -155,10 +156,10 @@
     on:close={(ev) => _close(ev?.detail)}
     on:fullsize={() => {
       fullSize = !fullSize
-      fitPopup(modalHTML, element)
+      fitPopup(modalHTML, element, contentPanel)
     }}
     on:changeContent={() => {
-      fitPopup(modalHTML, element)
+      fitPopup(modalHTML, element, contentPanel)
     }}
   />
 </div>

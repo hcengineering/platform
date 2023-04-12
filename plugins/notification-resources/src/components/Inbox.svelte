@@ -96,10 +96,12 @@
       </div>
     </div>
   {/if}
-  {#if loading}
-    <Loading />
-  {:else if component && _id && _class}
+  {#if component && _id && _class}
     <Component is={component} props={{ embedded: true, _id, _class }} />
+  {:else}
+    <div class="antiPanel-component filled w-full">
+      <Loading />
+    </div>
   {/if}
 </div>
 

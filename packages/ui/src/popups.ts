@@ -12,7 +12,7 @@ import type {
 } from './types'
 import { ComponentType } from 'svelte'
 
-interface CompAndProps {
+export interface CompAndProps {
   id: string
   is: AnySvelteComponent | ComponentType
   props: any
@@ -24,6 +24,11 @@ interface CompAndProps {
     category: string
     overlay: boolean
   }
+}
+
+export interface PopupResult {
+  id: string
+  close: () => void
 }
 
 export const popupstore = writable<CompAndProps[]>([])
@@ -45,7 +50,7 @@ export function showPopup (
     category: string
     overlay: boolean
   } = { category: 'popup', overlay: true }
-): () => void {
+): PopupResult {
   const id = `${popupId++}`
   const closePopupOp = (): void => {
     popupstore.update((popups) => {
@@ -66,7 +71,10 @@ export function showPopup (
   } else {
     addPopup({ id, is: component, props, element: _element, onClose, onUpdate, close: closePopupOp, options })
   }
-  return closePopupOp
+  return {
+    id,
+    close: closePopupOp
+  }
 }
 
 export function closePopup (category?: string): void {

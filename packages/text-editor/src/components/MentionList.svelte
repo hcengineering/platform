@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { ObjectSearchPopup, ObjectSearchResult } from '@hcengineering/presentation'
-  import { showPopup, resizeObserver, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import { showPopup, resizeObserver, deviceOptionsStore as deviceInfo, PopupResult } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
   import DummyPopup from './DummyPopup.svelte'
 
@@ -25,10 +25,10 @@
   export let close: () => void
 
   let popup: HTMLDivElement
-  let popupClose: () => void
+  let dummyPopup: PopupResult
 
   onMount(() => {
-    popupClose = showPopup(
+    dummyPopup = showPopup(
       DummyPopup,
       {},
       undefined,
@@ -39,7 +39,7 @@
   })
 
   onDestroy(() => {
-    popupClose()
+    dummyPopup.close()
   })
 
   function dispatchItem (item: ObjectSearchResult): void {
