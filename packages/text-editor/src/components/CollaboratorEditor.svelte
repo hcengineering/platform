@@ -80,6 +80,7 @@
   export let field: string | undefined = undefined
 
   export let autoOverflow = false
+  export let initialContent: string | undefined = undefined
 
   const ydoc = (getContext(CollaborationIds.Doc) as Y.Doc | undefined) ?? new Y.Doc()
   const contextProvider = getContext(CollaborationIds.Provider) as WebsocketProvider | undefined
@@ -265,6 +266,10 @@
           updateFormattingState()
         }
       })
+
+      if (initialContent) {
+        insertText(initialContent)
+      }
     })
   })
 
