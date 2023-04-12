@@ -73,7 +73,7 @@ async function createPseudoViewlet (
 }
 
 export function getDTxProps (dtx: DisplayTx): any {
-  return { tx: dtx.tx, value: dtx.doc }
+  return { tx: dtx.tx, value: dtx.doc, isOwnTx: dtx.isOwnTx }
 }
 
 function getViewlet (viewlets: Map<ActivityKey, TxViewlet>, dtx: DisplayTx): TxDisplayViewlet | undefined {

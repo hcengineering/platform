@@ -88,6 +88,7 @@ export interface DisplayTx {
   updated: boolean
   mixin: boolean
   removed: boolean
+  isOwnTx: boolean
 
   collectionAttribute?: Attribute<Collection<AttachedDoc>>
 }

@@ -66,6 +66,6 @@
   $: update(filtered, newTxes)
 
   function createDisplayTxes (txes: TxCollectionCUD<Doc, AttachedDoc>[]): DisplayTx[] {
-    return txes.map((p) => newDisplayTx(TxProcessor.extractTx(p) as TxCUD<Doc>, hierarchy))
+    return txes.map((p) => newDisplayTx(TxProcessor.extractTx(p) as TxCUD<Doc>, hierarchy, false))
   }
 </script>

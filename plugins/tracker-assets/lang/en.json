@@ -289,7 +289,9 @@
     "EightHoursLength": "Eight Hours",
     "CreatedOn": "Created on",
     "HourLabel": "h",
-    "Saved": "Saved..."
+    "Saved": "Saved...",
+    "CreatedIssue": "Created issue",
+    "CreatedSubIssue": "Created sub-issue"
   },
   "status": {}
 }

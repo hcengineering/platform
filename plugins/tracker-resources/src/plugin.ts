@@ -310,7 +310,9 @@ export default mergeIds(trackerId, tracker, {
     SevenHoursLength: '' as IntlString,
     EightHoursLength: '' as IntlString,
     HourLabel: '' as IntlString,
-    Saved: '' as IntlString
+    Saved: '' as IntlString,
+    CreatedIssue: '' as IntlString,
+    CreatedSubIssue: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,

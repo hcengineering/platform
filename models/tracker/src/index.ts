@@ -46,6 +46,7 @@ import {
   UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
+import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/model-chunter'
 import core, { DOMAIN_SPACE, TAttachedDoc, TDoc, TSpace, TStatus, TType } from '@hcengineering/model-core'
 import view, { actionTemplates, classPresenter, createAction } from '@hcengineering/model-view'
@@ -952,6 +953,19 @@ export function createModel (builder: Builder): void {
   builder.mixin(tracker.class.IssueTemplate, core.class.Class, view.mixin.ObjectPanel, {
     component: tracker.component.EditIssueTemplate
   })
+
+  builder.createDoc(
+    activity.class.TxViewlet,
+    core.space.Model,
+    {
+      objectClass: tracker.class.Issue,
+      icon: tracker.icon.Issue,
+      txClass: core.class.TxCreateDoc,
+      labelComponent: tracker.activity.TxIssueCreated,
+      display: 'inline'
+    },
+    tracker.ids.TxIssueCreated
+  )
 
   builder.createDoc(
     workbench.class.Application,
