@@ -65,6 +65,9 @@
   })
 
   function computeSize (t: HTMLInputElement | EventTarget | null) {
+    if (t == null) {
+      return
+    }
     const target = t as HTMLInputElement
     const value = target.value
     text.innerHTML = (value === '' ? phTraslate : value)

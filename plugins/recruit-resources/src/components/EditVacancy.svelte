@@ -21,7 +21,7 @@
   import { Vacancy } from '@hcengineering/recruit'
   import { FullDescriptionBox } from '@hcengineering/text-editor'
   import tracker from '@hcengineering/tracker'
-  import { Button, Component, EditBox, Grid, IconMoreH, showPopup } from '@hcengineering/ui'
+  import { Button, Component, EditBox, Grid, IconMixin, IconMoreH, showPopup } from '@hcengineering/ui'
   import { ContextMenu, DocAttributeBar } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
@@ -33,6 +33,8 @@
   let object: Required<Vacancy>
   let rawName: string = ''
   let rawDesc: string = ''
+
+  let showAllMixins = false
 
   const dispatch = createEventDispatcher()
 
@@ -65,16 +67,20 @@
   const hierarchy = client.getHierarchy()
   let mixins: Mixin<Doc>[] = []
 
-  function getMixins (object: Doc): void {
+  function getMixins (object: Doc, showAllMixins: boolean): void {
     if (object === undefined) return
     const descendants = hierarchy.getDescendants(core.class.Doc).map((p) => hierarchy.getClass(p))
 
     mixins = descendants.filter(
-      (m) => m.kind === ClassifierKind.MIXIN && !ignoreMixins.has(m._id) && hierarchy.hasMixin(object, m._id)
+      (m) =>
+        m.kind === ClassifierKind.MIXIN &&
+        !ignoreMixins.has(m._id) &&
+        (hierarchy.hasMixin(object, m._id) ||
+          (showAllMixins && hierarchy.isDerived(object._class, hierarchy.getBaseClass(m._id))))
     )
   }
 
-  $: getMixins(object)
+  $: getMixins(object, showAllMixins)
 </script>
 
 {#if object}
@@ -101,6 +107,20 @@
       {/if}
     </svelte:fragment>
     <svelte:fragment slot="attributes" let:direction={dir}>
+      <div class="flex flex-reverse flex-no-shrink clear-mins">
+        <Button
+          kind={'transparent'}
+          shape={'round'}
+          selected={showAllMixins}
+          on:click={() => {
+            showAllMixins = !showAllMixins
+          }}
+        >
+          <svelte:fragment slot="content">
+            <IconMixin size={'small'} />
+          </svelte:fragment>
+        </Button>
+      </div>
       {#if dir === 'column'}
         <DocAttributeBar
           {object}
