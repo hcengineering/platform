@@ -13,17 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Channel, ChannelProvider, Contact, getName } from '@hcengineering/contact'
+  import contact, { Channel, Contact, getName } from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { CircleButton, tooltip } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
+  import { channelProviders } from '../../utils'
 
   export let value: Channel
-  let provider: ChannelProvider | undefined
-  const providerQuery = createQuery()
-  $: providerQuery.query(contact.class.ChannelProvider, { _id: value.provider }, (res) => ([provider] = res))
+  $: provider = $channelProviders.find((it) => it._id === value.provider)
+
   let target: Contact | undefined
   const query = createQuery()
   $: query.query(contact.class.Contact, { _id: value.attachedTo as Ref<Contact> }, (res) => ([target] = res))

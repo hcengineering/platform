@@ -18,7 +18,7 @@
   import contact from '@hcengineering/contact'
   import type { AttachedData, Doc, Ref } from '@hcengineering/core'
   import notification, { LastView } from '@hcengineering/notification'
-  import { Asset, getResource, IntlString } from '@hcengineering/platform'
+  import { Asset, IntlString, getResource } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
   import {
     Action,
@@ -26,17 +26,17 @@
     Button,
     ButtonKind,
     ButtonSize,
+    Menu,
     closeTooltip,
     eventToHTMLElement,
     getFocusManager,
-    Menu,
     showPopup
   } from '@hcengineering/ui'
   import { ViewAction } from '@hcengineering/view'
   import { invokeAction } from '@hcengineering/view-resources'
   import { createEventDispatcher, tick } from 'svelte'
-  import { writable, Writable } from 'svelte/store'
-  import { getChannelProviders } from '../utils'
+  import { Writable, writable } from 'svelte/store'
+  import { channelProviders, getChannelProviders } from '../utils'
   import ChannelEditor from './ChannelEditor.svelte'
 
   export let value: AttachedData<Channel>[] | Channel | null
@@ -99,13 +99,17 @@
     return lastView ? lastView < item.lastMessage : (item.items ?? 0) > 0
   }
 
-  async function update (value: AttachedData<Channel>[] | Channel | null, lastViews: LastView | undefined) {
+  async function update (
+    value: AttachedData<Channel>[] | Channel | null,
+    lastViews: LastView | undefined,
+    channelProviders: ChannelProvider[]
+  ) {
     if (value == null) {
       displayItems = []
       return
     }
     const result: Item[] = []
-    const map = await getChannelProviders()
+    const map = getChannelProviders(channelProviders)
     if (Array.isArray(value)) {
       for (const item of value) {
         const provider = getProvider(item, map, lastViews)
@@ -120,12 +124,11 @@
       }
     }
     displayItems = result
-    updateMenu(displayItems)
+    updateMenu(displayItems, channelProviders)
   }
 
-  $: if (value) update(value, $lastViews)
+  $: if (value) update(value, $lastViews, $channelProviders)
 
-  let providers: Map<Ref<ChannelProvider>, ChannelProvider>
   let displayItems: Item[] = []
   let actions: Action[] = []
   let addBtn: HTMLButtonElement
@@ -137,9 +140,7 @@
   }
   const focusManager = getFocusManager()
 
-  getChannelProviders().then((pr) => (providers = pr))
-
-  const updateMenu = (_displayItems: Item[]): void => {
+  const updateMenu = (_displayItems: Item[], providers: ChannelProvider[]): void => {
     actions = []
     providers.forEach((pr) => {
       if (_displayItems.filter((it) => it.provider === pr._id).length === 0) {
@@ -147,7 +148,7 @@
           icon: pr.icon ?? contact.icon.SocialEdit,
           label: pr.label,
           action: async () => {
-            const provider = getProvider({ provider: pr._id, value: '' }, providers, $lastViews)
+            const provider = getProvider({ provider: pr._id, value: '' }, getChannelProviders(providers), $lastViews)
             if (provider !== undefined) {
               if (_displayItems.filter((it) => it.provider === pr._id).length === 0) {
                 displayItems = [..._displayItems, provider]
@@ -164,7 +165,7 @@
       }
     })
   }
-  $: if (providers) updateMenu(displayItems)
+  $: updateMenu(displayItems, $channelProviders)
 
   const dropItem = (n: number): Item[] => {
     return displayItems.filter((it, i) => i !== n)
@@ -172,7 +173,7 @@
   const saveItems = (): void => {
     value = filterUndefined(displayItems)
     dispatch('change', value)
-    updateMenu(displayItems)
+    updateMenu(displayItems, $channelProviders)
   }
 
   const showMenu = (ev: MouseEvent): void => {

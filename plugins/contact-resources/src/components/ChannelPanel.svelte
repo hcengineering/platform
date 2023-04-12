@@ -17,6 +17,7 @@
   import { Class, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { AnyComponent, Component } from '@hcengineering/ui'
+  import { channelProviders } from '../utils'
 
   export let _id: Ref<Channel>
   export let _class: Ref<Class<Channel>>
@@ -33,7 +34,9 @@
 
   async function getPresenter (channel: Channel | undefined): Promise<AnyComponent | undefined> {
     if (channel === undefined) return
-    const provider = await client.findOne(contact.class.ChannelProvider, { _id: channel.provider })
+    const provider =
+      $channelProviders.find((it) => it._id === channel.provider) ??
+      (await client.findOne(contact.class.ChannelProvider, { _id: channel.provider }))
     return provider?.presenter
   }
 </script>

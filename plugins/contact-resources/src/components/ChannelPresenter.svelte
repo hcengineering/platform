@@ -14,16 +14,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Channel, ChannelProvider } from '@hcengineering/contact'
+  import { Channel } from '@hcengineering/contact'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
   import { ButtonSize, CircleButton, tooltip } from '@hcengineering/ui'
+  import { channelProviders } from '../utils'
 
   export let value: Channel
   export let size: ButtonSize = 'small'
-  let provider: ChannelProvider | undefined
-  const providerQuery = createQuery()
-  providerQuery.query(contact.class.ChannelProvider, { _id: value.provider }, (res) => ([provider] = res))
+  $: provider = $channelProviders.find((it) => it._id === value.provider)
 </script>
 
 <div class="flex-row-center" use:tooltip={{ label: getEmbeddedLabel(value.value) }}>

@@ -22,7 +22,7 @@
   import { Button } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { Writable, writable } from 'svelte/store'
-  import { getChannelProviders } from '../utils'
+  import { channelProviders, getChannelProviders } from '../utils'
   import ChannelsPopup from './ChannelsPopup.svelte'
 
   export let value: AttachedData<Channel>[] | Channel | null
@@ -73,13 +73,17 @@
     return lastView ? lastView < item.lastMessage : (item.items ?? 0) > 0
   }
 
-  async function update (value: AttachedData<Channel>[] | Channel | null, lastViews: LastView | undefined) {
+  async function update (
+    value: AttachedData<Channel>[] | Channel | null,
+    lastViews: LastView | undefined,
+    channels: ChannelProvider[]
+  ) {
     if (value === null) {
       displayItems = []
       return
     }
     const result: any[] = []
-    const map = await getChannelProviders()
+    const map = getChannelProviders(channels)
     if (Array.isArray(value)) {
       for (const item of value) {
         const provider = getProvider(item, map, lastViews)
@@ -96,7 +100,7 @@
     displayItems = result
   }
 
-  $: if (value) update(value, $lastViews)
+  $: if (value) update(value, $lastViews, $channelProviders)
 
   let displayItems: Item[] = []
   let divHTML: HTMLElement

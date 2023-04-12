@@ -7,6 +7,7 @@ import core, {
   Client,
   Data,
   Doc,
+  DocumentUpdate,
   Mixin,
   Ref,
   RefTo,
@@ -16,7 +17,7 @@ import core, {
   generateId
 } from '@hcengineering/core'
 import { Message } from '@hcengineering/gmail'
-import recruit, { Candidate, Vacancy } from '@hcengineering/recruit'
+import recruit, { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
 import tags, { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
 import task from '@hcengineering/task'
 import bitrix, {
@@ -69,7 +70,11 @@ export interface BitrixSyncRequest {
 /**
  * @public
  */
-export type PostOperation = (doc: BitrixSyncDoc, existing?: Doc) => Promise<void>
+export type PostOperation = (
+  doc: ConvertResult,
+  extraDocs: Map<Ref<Class<Doc>>, Doc[]>,
+  existing?: Doc
+) => Promise<void>
 
 /**
  * @public
@@ -401,10 +406,11 @@ export async function convert (
     const vacancyName = extractValue(operation.vacancyField)
     const statusName = extractValue(operation.stateField)
 
-    postOperations.push(async (doc, existingDoc) => {
-      const vacancies = await client.findAll(recruit.class.Vacancy, {})
-
+    postOperations.push(async (doc, extraDocs, existingDoc) => {
       let vacancyId: Ref<Vacancy> | undefined
+
+      const vacancies = (extraDocs.get(recruit.class.Vacancy) ?? []) as Vacancy[]
+      const applications = (extraDocs.get(recruit.class.Applicant) ?? []) as Applicant[]
 
       if (vacancyName !== undefined) {
         const tName = vacancyName.trim().toLowerCase()
@@ -428,28 +434,48 @@ export async function convert (
             document.modifiedBy,
             refOrgField
           )
+          const vacancy = await client.findOne(recruit.class.Vacancy, { _id: vacancyId })
+          if (vacancy != null) {
+            // We need to put new vacancy so it will be reused.
+            vacancies.push(vacancy)
+          }
         }
       } else {
         return
       }
 
       // Check if candidate already have vacancy
-      const existing = await client.findOne(recruit.class.Applicant, {
-        attachedTo: (existingDoc?._id ?? doc._id) as unknown as Ref<Candidate>,
-        space: vacancyId
-      })
+      const existing = applications.find(
+        (it) =>
+          it.attachedTo === ((existingDoc?._id ?? doc.document._id) as unknown as Ref<Candidate>) &&
+          it.space === vacancyId
+      )
+
+      const candidate = doc.mixins[recruit.mixin.Candidate] as Data<Candidate>
+      const ops = new TxOperations(client, document.modifiedBy)
 
       if (statusName != null && statusName !== '') {
         // Find status for vacancy
         const states = await client.findAll(task.class.State, { space: vacancyId })
 
+        const update: DocumentUpdate<Applicant> = {}
+        for (const k of operation.copyTalentFields ?? []) {
+          const val = (candidate as any)[k.candidate]
+          if ((existing as any)[k.applicant] !== val) {
+            ;(update as any)[k.applicant] = val
+          }
+        }
         const state = states.find((it) => it.name.toLowerCase().trim() === statusName.toLowerCase().trim())
-        const ops = new TxOperations(client, document.modifiedBy)
         if (state !== undefined) {
-          if (existing !== undefined && existing.state !== state?._id) {
-            await ops.update(existing, { state: state._id })
+          if (existing !== undefined) {
+            if (existing.state !== state?._id) {
+              update.state = state._id
+            }
+            if (Object.keys(update).length > 0) {
+              await ops.update(existing, update)
+            }
           } else {
-            await createApplication(ops, state, vacancyId, document)
+            await createApplication(ops, state, vacancyId, { ...document, ...update })
           }
         }
       }

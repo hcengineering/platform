@@ -38,7 +38,7 @@ export default async () => {
             const url = new URL(`/${token}`, endpoint)
             console.log('connecting to', url.href)
             const upgradeHandler: TxHandler = (tx) => {
-              if (tx._class === core.class.TxWorkspaceEvent) {
+              if (tx?._class === core.class.TxWorkspaceEvent) {
                 if ((tx as TxWorkspaceEvent).event === WorkspaceEvent.Upgrade) {
                   onUpgrade?.()
                 }

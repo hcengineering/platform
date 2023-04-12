@@ -40,6 +40,7 @@ import {
   LoginInfo
 } from './types'
 import { convert, ConvertResult } from './utils'
+import recruit from '@hcengineering/recruit'
 
 async function updateDoc (client: ApplyOperations, doc: Doc, raw: Doc | Data<Doc>, date: Timestamp): Promise<Doc> {
   // We need to update fields if they are different.
@@ -100,6 +101,8 @@ export async function syncDocument (
   resultDoc: ConvertResult,
   info: LoginInfo,
   frontUrl: string,
+  syncAttachments: boolean,
+  extraDocs: Map<Ref<Class<Doc>>, Doc[]>,
   monitor?: (doc: ConvertResult) => void
 ): Promise<void> {
   const hierarchy = client.getHierarchy()
@@ -128,9 +131,8 @@ export async function syncDocument (
     }
 
     for (const op of resultDoc.postOperations) {
-      await op(resultDoc.document, existing)
+      await op(resultDoc, extraDocs, existing)
     }
-
     const idMapping = new Map<Ref<Doc>, Ref<Doc>>()
 
     // Find all attachment documents to existing.
@@ -144,79 +146,81 @@ export async function syncDocument (
       await syncClass(applyOp, cl, vals, idMapping, resultDoc.document._id)
     }
 
-    // Sync gmail documents
-    const emailAccount = resultDoc.extraSync.find(
-      (it) =>
-        it._class === contact.class.Channel && (it as unknown as Channel).provider === contact.channelProvider.Email
-    )
-    if (resultDoc.gmailDocuments.length > 0 && emailAccount !== undefined) {
-      const emailReadId = idMapping.get(emailAccount._id) ?? emailAccount._id
-      await syncClass(applyOp, gmail.class.Message, resultDoc.gmailDocuments, idMapping, emailReadId)
-    }
+    if (syncAttachments) {
+      // Sync gmail documents
+      const emailAccount = resultDoc.extraSync.find(
+        (it) =>
+          it._class === contact.class.Channel && (it as unknown as Channel).provider === contact.channelProvider.Email
+      )
+      if (resultDoc.gmailDocuments.length > 0 && emailAccount !== undefined) {
+        const emailReadId = idMapping.get(emailAccount._id) ?? emailAccount._id
+        await syncClass(applyOp, gmail.class.Message, resultDoc.gmailDocuments, idMapping, emailReadId)
+      }
 
-    const attachIds = Array.from(
-      new Set(resultDoc.blobs.map((it) => idMapping.get(it[0].attachedTo) ?? it[0].attachedTo)).values()
-    )
+      const attachIds = Array.from(
+        new Set(resultDoc.blobs.map((it) => idMapping.get(it[0].attachedTo) ?? it[0].attachedTo)).values()
+      )
 
-    const existingBlobs = await client.findAll(attachment.class.Attachment, {
-      attachedTo: { $in: [resultDoc.document._id, ...attachIds] }
-    })
-    for (const [ed, op, upd] of resultDoc.blobs) {
-      const existing = existingBlobs.find((it) => {
-        const bdoc = hierarchy.as<Doc, BitrixSyncDoc>(it, bitrix.mixin.BitrixSyncDoc)
-        return bdoc.bitrixId === ed.bitrixId
+      const existingBlobs = await client.findAll(attachment.class.Attachment, {
+        attachedTo: { $in: [resultDoc.document._id, ...attachIds] }
       })
-      // For Attachments, just do it once per attachment and assume it is not changed.
-      if (existing === undefined) {
-        const attachmentId: Ref<Attachment> = generateId()
-        try {
-          const edData = await op()
-          if (edData === undefined) {
-            console.error('Failed to retrieve document data', ed.name)
-            continue
-          }
-          const data = new FormData()
-          data.append('file', edData)
+      for (const [ed, op, upd] of resultDoc.blobs) {
+        const existing = existingBlobs.find((it) => {
+          const bdoc = hierarchy.as<Doc, BitrixSyncDoc>(it, bitrix.mixin.BitrixSyncDoc)
+          return bdoc.bitrixId === ed.bitrixId
+        })
+        // For Attachments, just do it once per attachment and assume it is not changed.
+        if (existing === undefined) {
+          const attachmentId: Ref<Attachment> = generateId()
+          try {
+            const edData = await op()
+            if (edData === undefined) {
+              console.error('Failed to retrieve document data', ed.name)
+              continue
+            }
+            const data = new FormData()
+            data.append('file', edData)
 
-          upd(edData, ed)
+            upd(edData, ed)
 
-          ed.lastModified = edData.lastModified
-          ed.size = edData.size
-          ed.type = edData.type
+            ed.lastModified = edData.lastModified
+            ed.size = edData.size
+            ed.type = edData.type
 
-          let updated = false
-          for (const existingObj of existingBlobs) {
-            if (existingObj.name === ed.name && existingObj.size === ed.size && existingObj.type === ed.type) {
-              if (!updated) {
-                await updateAttachedDoc(existingObj, applyOp, ed)
-                updated = true
-              } else {
-                // Remove duplicate attachment
-                await applyOp.remove(existingObj)
+            let updated = false
+            for (const existingObj of existingBlobs) {
+              if (existingObj.name === ed.name && existingObj.size === ed.size && existingObj.type === ed.type) {
+                if (!updated) {
+                  await updateAttachedDoc(existingObj, applyOp, ed)
+                  updated = true
+                } else {
+                  // Remove duplicate attachment
+                  await applyOp.remove(existingObj)
+                }
               }
             }
-          }
 
-          if (!updated) {
-            // No attachment, send to server
-            const resp = await fetch(concatLink(frontUrl, '/files'), {
-              method: 'POST',
-              headers: {
-                Authorization: 'Bearer ' + info.token
-              },
-              body: data
-            })
-            if (resp.status === 200) {
-              const uuid = await resp.text()
+            if (!updated) {
+              // No attachment, send to server
+              const resp = await fetch(concatLink(frontUrl, '/files'), {
+                method: 'POST',
+                headers: {
+                  Authorization: 'Bearer ' + info.token
+                },
+                body: data
+              })
+              if (resp.status === 200) {
+                const uuid = await resp.text()
 
-              ed.file = uuid
-              ed._id = attachmentId as Ref<Attachment & BitrixSyncDoc>
+                ed.file = uuid
+                ed._id = attachmentId as Ref<Attachment & BitrixSyncDoc>
 
-              await updateAttachedDoc(undefined, applyOp, ed)
+                await updateAttachedDoc(undefined, applyOp, ed)
+              }
             }
+          } catch (err: any) {
+            console.error(err)
           }
-        } catch (err: any) {
-          console.error(err)
         }
       }
     }
@@ -440,6 +444,11 @@ export interface SyncOptions {
   blobProvider?: (blobRef: { file: string, id: string }) => Promise<Blob | undefined>
   extraFilter?: Record<string, any>
   syncPeriod?: number
+
+  // Override to skip synchronization for few areas
+  syncComments?: boolean
+  syncEmails?: boolean
+  syncAttachments?: boolean
 }
 interface SyncOptionsExtra {
   ownerTypeValues: BitrixOwnerType[]
@@ -505,6 +514,11 @@ async function doPerformSync (ops: SyncOptions & SyncOptionsExtra): Promise<Bitr
 
     const allTagElements = await ops.client.findAll<TagElement>(tags.class.TagElement, {})
 
+    const extraDocs: Map<Ref<Class<Doc>>, Doc[]> = new Map()
+
+    extraDocs.set(recruit.class.Vacancy, await ops.client.findAll(recruit.class.Vacancy, {}))
+    extraDocs.set(recruit.class.Applicant, await ops.client.findAll(recruit.class.Applicant, {}))
+
     while (added < ops.limit) {
       const q: Record<string, any> = {
         select: sel,
@@ -565,7 +579,7 @@ async function doPerformSync (ops: SyncOptions & SyncOptionsExtra): Promise<Bitr
             ops.blobProvider
           )
 
-          if (ops.mapping.comments) {
+          if (ops.mapping.comments && ((ops.syncComments ?? true) || (ops.syncEmails ?? true))) {
             await downloadComments(res, ops, ops.commentFieldKeys, ops.userList, ops.ownerTypeValues)
           }
 
@@ -591,9 +605,18 @@ async function doPerformSync (ops: SyncOptions & SyncOptionsExtra): Promise<Bitr
             }
           }
 
-          await syncDocument(ops.client, existingDoc, res, ops.loginInfo, ops.frontUrl, () => {
-            ops.monitor?.(total)
-          })
+          await syncDocument(
+            ops.client,
+            existingDoc,
+            res,
+            ops.loginInfo,
+            ops.frontUrl,
+            ops.mapping.attachments && (ops.syncAttachments ?? true),
+            extraDocs,
+            () => {
+              ops.monitor?.(total)
+            }
+          )
           if (existingDoc !== undefined) {
             res.document._id = existingDoc._id as Ref<BitrixSyncDoc>
           }
@@ -702,6 +725,8 @@ async function downloadComments (
     loginInfo: LoginInfo
     monitor: (total: number) => void
     blobProvider?: ((blobRef: { file: string, id: string }) => Promise<Blob | undefined>) | undefined
+    syncComments?: boolean
+    syncEmails?: boolean
   },
   commentFieldKeys: string[],
   userList: Map<string, Ref<EmployeeAccount>>,
@@ -712,110 +737,115 @@ async function downloadComments (
   if (ownerType === undefined) {
     throw new Error(`No owner type found for ${entityType}`)
   }
-  const commentsData = await ops.bitrixClient.call(BitrixEntityType.Comment + '.list', {
-    filter: {
-      ENTITY_ID: res.document.bitrixId,
-      ENTITY_TYPE: entityType
-    },
-    select: commentFieldKeys,
-    order: { ID: ops.direction }
-  })
-  for (const it of commentsData.result) {
-    const c: Comment & BitrixSyncDoc = {
-      _id: generateId(),
-      _class: chunter.class.Comment,
-      message: processComment(it.COMMENT as string),
-      bitrixId: `${it.ID as string}`,
-      type: it.ENTITY_TYPE,
-      attachedTo: res.document._id,
-      attachedToClass: res.document._class,
-      collection: 'comments',
-      space: res.document.space,
-      modifiedBy: userList.get(it.AUTHOR_ID) ?? core.account.System,
-      modifiedOn: new Date(it.CREATED ?? new Date().toString()).getTime(),
-      attachments: 0
-    }
-    if (Object.keys(it.FILES ?? {}).length > 0) {
-      for (const [, v] of Object.entries(it.FILES as BitrixFiles)) {
-        c.message += `</br> Attachment: <a href='${v.urlDownload}'>${v.name} by ${v.authorName}</a>`
-        // Direct link, we could download using fetch.
-        c.attachments = (c.attachments ?? 0) + 1
-        res.blobs.push([
-          {
-            _id: generateId(),
-            _class: attachment.class.Attachment,
-            attachedTo: c._id,
-            attachedToClass: c._class,
-            bitrixId: `attach-${v.id}`,
-            collection: 'attachments',
-            file: '',
-            lastModified: Date.now(),
-            modifiedBy: userList.get(it.AUTHOR_ID) ?? core.account.System,
-            modifiedOn: new Date(it.CREATED ?? new Date().toString()).getTime(),
-            name: v.name,
-            size: v.size,
-            space: c.space,
-            type: 'file'
-          },
-          async (): Promise<File | undefined> => {
-            const blob = await ops.blobProvider?.({ file: v.urlDownload, id: `${v.id}` })
-            if (blob !== undefined) {
-              return new File([blob], v.name)
-            }
-          },
-          (file: File, attach: Attachment) => {
-            attach.attachedTo = c._id
-            attach.type = file.type
-            attach.size = file.size
-            attach.name = file.name
-          }
-        ])
-      }
-    }
-    res.extraSync.push(c)
-  }
-
-  const emailAccount = res.extraSync.find(
-    (it) => it._class === contact.class.Channel && (it as unknown as Channel).provider === contact.channelProvider.Email
-  )
-  if (emailAccount !== undefined) {
-    const communications = await ops.bitrixClient.call('crm.activity.list', {
-      order: { ID: 'DESC' },
+  if (ops.syncComments ?? true) {
+    const commentsData = await ops.bitrixClient.call(BitrixEntityType.Comment + '.list', {
       filter: {
-        OWNER_ID: res.document.bitrixId,
-        OWNER_TYPE_ID: ownerType.ID
+        ENTITY_ID: res.document.bitrixId,
+        ENTITY_TYPE: entityType
       },
-      select: ['*', 'COMMUNICATIONS']
+      select: commentFieldKeys,
+      order: { ID: ops.direction }
     })
-    const cr = Array.isArray(communications.result)
-      ? (communications.result as BitrixActivity[])
-      : [communications.result as BitrixActivity]
-    for (const comm of cr) {
-      if (comm.PROVIDER_TYPE_ID === 'EMAIL') {
-        const parser = new DOMParser()
-
-        const c: Message & BitrixSyncDoc = {
-          _id: generateId(),
-          _class: gmail.class.Message,
-          content: comm.DESCRIPTION,
-          textContent:
-            parser.parseFromString(comm.DESCRIPTION, 'text/html').textContent?.split('\n').slice(0, 3).join('\n') ?? '',
-          incoming: comm.DIRECTION === '1',
-          sendOn: new Date(comm.CREATED ?? new Date().toString()).getTime(),
-          subject: comm.SUBJECT,
-          bitrixId: `${comm.ID}`,
-          from: comm.SETTINGS?.EMAIL_META?.from ?? '',
-          to: comm.SETTINGS?.EMAIL_META?.to ?? '',
-          replyTo: comm.SETTINGS?.EMAIL_META?.replyTo ?? comm.SETTINGS?.MESSAGE_HEADERS?.['Reply-To'] ?? '',
-          messageId: comm.SETTINGS?.MESSAGE_HEADERS?.['Message-Id'] ?? '',
-          attachedTo: emailAccount._id as unknown as Ref<Channel>,
-          attachedToClass: emailAccount._class,
-          collection: 'items',
-          space: res.document.space,
-          modifiedBy: userList.get(comm.AUTHOR_ID) ?? core.account.System,
-          modifiedOn: new Date(comm.CREATED ?? new Date().toString()).getTime()
+    for (const it of commentsData.result) {
+      const c: Comment & BitrixSyncDoc = {
+        _id: generateId(),
+        _class: chunter.class.Comment,
+        message: processComment(it.COMMENT as string),
+        bitrixId: `${it.ID as string}`,
+        type: it.ENTITY_TYPE,
+        attachedTo: res.document._id,
+        attachedToClass: res.document._class,
+        collection: 'comments',
+        space: res.document.space,
+        modifiedBy: userList.get(it.AUTHOR_ID) ?? core.account.System,
+        modifiedOn: new Date(it.CREATED ?? new Date().toString()).getTime(),
+        attachments: 0
+      }
+      if (Object.keys(it.FILES ?? {}).length > 0) {
+        for (const [, v] of Object.entries(it.FILES as BitrixFiles)) {
+          c.message += `</br> Attachment: <a href='${v.urlDownload}'>${v.name} by ${v.authorName}</a>`
+          // Direct link, we could download using fetch.
+          c.attachments = (c.attachments ?? 0) + 1
+          res.blobs.push([
+            {
+              _id: generateId(),
+              _class: attachment.class.Attachment,
+              attachedTo: c._id,
+              attachedToClass: c._class,
+              bitrixId: `attach-${v.id}`,
+              collection: 'attachments',
+              file: '',
+              lastModified: Date.now(),
+              modifiedBy: userList.get(it.AUTHOR_ID) ?? core.account.System,
+              modifiedOn: new Date(it.CREATED ?? new Date().toString()).getTime(),
+              name: v.name,
+              size: v.size,
+              space: c.space,
+              type: 'file'
+            },
+            async (): Promise<File | undefined> => {
+              const blob = await ops.blobProvider?.({ file: v.urlDownload, id: `${v.id}` })
+              if (blob !== undefined) {
+                return new File([blob], v.name)
+              }
+            },
+            (file: File, attach: Attachment) => {
+              attach.attachedTo = c._id
+              attach.type = file.type
+              attach.size = file.size
+              attach.name = file.name
+            }
+          ])
         }
-        res.gmailDocuments.push(c)
+      }
+      res.extraSync.push(c)
+    }
+  }
+  if (ops.syncEmails ?? true) {
+    const emailAccount = res.extraSync.find(
+      (it) =>
+        it._class === contact.class.Channel && (it as unknown as Channel).provider === contact.channelProvider.Email
+    )
+    if (emailAccount !== undefined) {
+      const communications = await ops.bitrixClient.call('crm.activity.list', {
+        order: { ID: 'DESC' },
+        filter: {
+          OWNER_ID: res.document.bitrixId,
+          OWNER_TYPE_ID: ownerType.ID
+        },
+        select: ['*', 'COMMUNICATIONS']
+      })
+      const cr = Array.isArray(communications.result)
+        ? (communications.result as BitrixActivity[])
+        : [communications.result as BitrixActivity]
+      for (const comm of cr) {
+        if (comm.PROVIDER_TYPE_ID === 'EMAIL') {
+          const parser = new DOMParser()
+
+          const c: Message & BitrixSyncDoc = {
+            _id: generateId(),
+            _class: gmail.class.Message,
+            content: comm.DESCRIPTION,
+            textContent:
+              parser.parseFromString(comm.DESCRIPTION, 'text/html').textContent?.split('\n').slice(0, 3).join('\n') ??
+              '',
+            incoming: comm.DIRECTION === '1',
+            sendOn: new Date(comm.CREATED ?? new Date().toString()).getTime(),
+            subject: comm.SUBJECT,
+            bitrixId: `${comm.ID}`,
+            from: comm.SETTINGS?.EMAIL_META?.from ?? '',
+            to: comm.SETTINGS?.EMAIL_META?.to ?? '',
+            replyTo: comm.SETTINGS?.EMAIL_META?.replyTo ?? comm.SETTINGS?.MESSAGE_HEADERS?.['Reply-To'] ?? '',
+            messageId: comm.SETTINGS?.MESSAGE_HEADERS?.['Message-Id'] ?? '',
+            attachedTo: emailAccount._id as unknown as Ref<Channel>,
+            attachedToClass: emailAccount._class,
+            collection: 'items',
+            space: res.document.space,
+            modifiedBy: userList.get(comm.AUTHOR_ID) ?? core.account.System,
+            modifiedOn: new Date(comm.CREATED ?? new Date().toString()).getTime()
+          }
+          res.gmailDocuments.push(c)
+        }
       }
     }
   }

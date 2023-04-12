@@ -412,7 +412,7 @@ export function createModel (builder: Builder): void {
     {
       attachTo: recruit.class.Applicant,
       descriptor: view.viewlet.Table,
-      config: ['', 'attachedTo', 'state', 'doneState', 'modifiedOn'],
+      config: ['', '$lookup.attachedTo', 'state', 'doneState', 'modifiedOn'],
       variant: 'short'
     },
     recruit.viewlet.VacancyApplicationsShort
@@ -425,7 +425,7 @@ export function createModel (builder: Builder): void {
       attachTo: recruit.class.Applicant,
       descriptor: view.viewlet.Table,
       config: ['', '$lookup.space.name', '$lookup.space.$lookup.company', 'state', 'comments', 'doneState'],
-      variant: 'short'
+      variant: 'embedded'
     },
     recruit.viewlet.VacancyApplicationsEmbeddeed
   )
@@ -496,9 +496,9 @@ export function createModel (builder: Builder): void {
       config: [
         '',
         {
-          key: 'attachedTo',
-          presenter: contact.component.PersonRefPresenter,
-          sortingKey: 'attachedTo',
+          key: '$lookup.attachedTo',
+          presenter: contact.component.PersonPresenter,
+          sortingKey: '$lookup.attachedTo.name',
           label: recruit.string.Talent,
           props: {
             _class: recruit.mixin.Candidate
@@ -541,10 +541,10 @@ export function createModel (builder: Builder): void {
       config: [
         '',
         {
-          key: 'attachedTo',
-          presenter: contact.component.PersonRefPresenter,
+          key: '$lookup.attachedTo',
+          presenter: contact.component.PersonPresenter,
           label: recruit.string.Talent,
-          sortingKey: 'attachedTo',
+          sortingKey: '$lookup.attachedTo.name',
           props: {
             _class: recruit.mixin.Candidate
           }

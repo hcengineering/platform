@@ -10,7 +10,14 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import task from '@hcengineering/task'
-  import { DropdownLabels, DropdownTextItem } from '@hcengineering/ui'
+  import {
+    Button,
+    DropdownIntlItem,
+    DropdownLabels,
+    DropdownLabelsIntl,
+    DropdownTextItem,
+    IconAdd
+  } from '@hcengineering/ui'
   import { ObjectBox } from '@hcengineering/view-resources'
   import bitrix from '../../plugin'
   import recruit from '@hcengineering/recruit'
@@ -23,6 +30,7 @@
   let stateField = (field?.operation as CreateHRApplication)?.stateField
   let vacancyField = (field?.operation as CreateHRApplication)?.vacancyField
   let defaultTemplate = (field?.operation as CreateHRApplication)?.defaultTemplate
+  let copyTalentFields = (field?.operation as CreateHRApplication)?.copyTalentFields ?? []
 
   const client = getClient()
 
@@ -33,7 +41,8 @@
           kind: MappingOperation.CreateHRApplication,
           stateField,
           vacancyField,
-          defaultTemplate
+          defaultTemplate,
+          copyTalentFields
         }
       })
     } else {
@@ -44,7 +53,8 @@
           kind: MappingOperation.CreateHRApplication,
           stateField,
           vacancyField,
-          defaultTemplate
+          defaultTemplate,
+          copyTalentFields
         }
       })
     }
@@ -57,6 +67,12 @@
     }))
   }
   $: items = getItems(fields)
+
+  $: allAttrs = Array.from(client.getHierarchy().getAllAttributes(recruit.mixin.Candidate).values())
+  $: attrs = allAttrs.map((it) => ({ id: it.name, label: it.label } as DropdownIntlItem))
+
+  $: applicantAllAttrs = Array.from(client.getHierarchy().getAllAttributes(recruit.class.Applicant).values())
+  $: applicantAttrs = applicantAllAttrs.map((it) => ({ id: it.name, label: it.label } as DropdownIntlItem))
 </script>
 
 <div class="flex-col flex-wrap">
@@ -70,6 +86,30 @@
         _class={task.class.KanbanTemplate}
         docQuery={{ space: recruit.space.VacancyTemplates }}
         bind:value={defaultTemplate}
+      />
+
+      {#each copyTalentFields as f, i}
+        <div class="flex-row-center pattern">
+          <DropdownLabelsIntl
+            minW0={false}
+            label={getEmbeddedLabel('Copy field')}
+            items={attrs}
+            bind:selected={f.candidate}
+          /> =>
+          <DropdownLabelsIntl
+            minW0={false}
+            label={getEmbeddedLabel('Copy field')}
+            items={applicantAttrs}
+            bind:selected={f.applicant}
+          />
+        </div>
+      {/each}
+      <Button
+        icon={IconAdd}
+        size={'small'}
+        on:click={() => {
+          copyTalentFields = [...copyTalentFields, { candidate: allAttrs[0]._id, applicant: applicantAllAttrs[0]._id }]
+        }}
       />
     </div>
   </div>
