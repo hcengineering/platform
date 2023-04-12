@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",
-    "svelte": "3.58.0",
+    "svelte": "3.55.1",
     "@hcengineering/lead": "^0.6.0",
     "@hcengineering/ui": "^0.6.5",
     "@hcengineering/presentation": "^0.6.2",
