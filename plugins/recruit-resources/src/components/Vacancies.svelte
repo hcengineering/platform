@@ -31,6 +31,8 @@
   import CreateVacancy from './CreateVacancy.svelte'
   import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
+  export let archived = false
+
   let search: string = ''
   let searchQuery: DocumentQuery<Doc> = {}
   let resultQuery: DocumentQuery<Doc> = {}
@@ -194,7 +196,7 @@
       options={descr.options}
       query={{
         ...resultQuery,
-        archived: false
+        archived
       }}
       showNotification
     />

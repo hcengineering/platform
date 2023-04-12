@@ -15,8 +15,8 @@ const emptyTooltip: LabelAndProps = {
 let storedValue: LabelAndProps = emptyTooltip
 export const tooltipstore = writable<LabelAndProps>(emptyTooltip)
 
+let toHandler: any
 export function tooltip (node: HTMLElement, options?: LabelAndProps): any {
-  let toHandler: any
   if (options === undefined) {
     return {}
   }
@@ -80,6 +80,7 @@ export function showTooltip (
 }
 
 export function closeTooltip (): void {
+  clearTimeout(toHandler)
   storedValue = emptyTooltip
   tooltipstore.set(emptyTooltip)
 }
