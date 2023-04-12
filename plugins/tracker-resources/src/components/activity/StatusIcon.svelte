@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,21 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IssueStatus } from '@hcengineering/tracker'
-  import IssueStatusIcon from './IssueStatusIcon.svelte'
+  import { TxUpdateDoc } from '@hcengineering/core'
+  import { statusStore } from '@hcengineering/presentation'
+  import { Issue } from '@hcengineering/tracker'
+  import IssueStatusIcon from '../issues/IssueStatusIcon.svelte'
 
-  export let value: IssueStatus | undefined
-  export let size: 'small' | 'medium' = 'small'
-  export let inline: boolean = false
+  export let tx: TxUpdateDoc<Issue>
+  $: value = tx.operations.status
+
+  $: status = value && $statusStore.byId.get(value)
 </script>
 
-{#if value}
-  <div class="flex-presenter cursor-default">
-    {#if !inline}
-      <IssueStatusIcon {value} {size} />
-    {/if}
-    <span class="overflow-label" class:ml-2={!inline}>
-      {value.name}
-    </span>
-  </div>
-{/if}
+<div class="icon">
+  {#if status}
+    <IssueStatusIcon value={status} size="small" />
+  {/if}
+</div>

@@ -99,17 +99,17 @@ export async function updateViewlet (
     model: AttributeModel[]
     props: any
     modelIcon: Asset | undefined
+    iconComponent: AnyComponent | undefined
   }> {
   let viewlet = getViewlet(viewlets, dtx)
 
-  let props = getDTxProps(dtx)
+  const props = getDTxProps(dtx)
   let model: AttributeModel[] = []
   let modelIcon: Asset | undefined
+  let iconComponent: AnyComponent | undefined
 
   if (viewlet === undefined) {
     ;({ viewlet, model } = await checkInlineViewlets(dtx, viewlet, client, model))
-    // Only value is necessary for inline viewlets
-    props = { value: dtx.doc }
     if (model !== undefined) {
       // Check for State attribute
       for (const a of model) {
@@ -118,9 +118,15 @@ export async function updateViewlet (
           break
         }
       }
+      for (const a of model) {
+        if (a.attribute?.iconComponent !== undefined) {
+          iconComponent = a.attribute?.iconComponent
+          break
+        }
+      }
     }
   }
-  return { viewlet, id: dtx.tx._id, model, props, modelIcon }
+  return { viewlet, id: dtx.tx._id, model, props, modelIcon, iconComponent }
 }
 
 async function checkInlineViewlets (

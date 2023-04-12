@@ -39,7 +39,9 @@ export default mergeIds(trackerId, tracker, {
     CreatedOn: '' as IntlString
   },
   activity: {
-    TxIssueCreated: '' as AnyComponent
+    TxIssueCreated: '' as AnyComponent,
+    StatusIcon: '' as AnyComponent,
+    PriorityIcon: '' as AnyComponent
   },
   component: {
     SprintSelector: '' as AnyComponent,

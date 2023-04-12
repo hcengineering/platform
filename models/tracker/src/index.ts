@@ -181,11 +181,16 @@ export class TIssue extends TAttachedDoc implements Issue {
   @Index(IndexKind.FullText)
     description!: Markup
 
-  @Prop(TypeRef(tracker.class.IssueStatus), tracker.string.Status, { _id: tracker.attribute.IssueStatus })
+  @Prop(TypeRef(tracker.class.IssueStatus), tracker.string.Status, {
+    _id: tracker.attribute.IssueStatus,
+    iconComponent: tracker.activity.StatusIcon
+  })
   @Index(IndexKind.Indexed)
     status!: Ref<IssueStatus>
 
-  @Prop(TypeIssuePriority(), tracker.string.Priority)
+  @Prop(TypeIssuePriority(), tracker.string.Priority, {
+    iconComponent: tracker.activity.PriorityIcon
+  })
   @Index(IndexKind.Indexed)
     priority!: IssuePriority
 
