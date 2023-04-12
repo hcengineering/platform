@@ -406,7 +406,7 @@
               btn,
               (result) => {
                 if (result && result.id) {
-                  selectedState = { ...result, _id: result.id, title: result.label }
+                  selectedState = { ...result, _id: result.id, name: result.label }
                 }
                 manager.setFocusPos(3)
               }

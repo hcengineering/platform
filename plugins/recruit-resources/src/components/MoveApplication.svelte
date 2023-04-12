@@ -186,7 +186,7 @@
             btn,
             (result) => {
               if (result && result.id) {
-                selectedState = { ...result, _id: result.id, title: result.label }
+                selectedState = { ...result, _id: result.id, name: result.label }
               }
               manager.setFocusPos(3)
             }
@@ -195,8 +195,13 @@
       >
         <div slot="content" class="flex-row-center" class:empty={!selectedState}>
           {#if selectedState}
-            <div class="color" style="background-color: {getPlatformColor(selectedState.color)}" />
-            <span class="label overflow-label">{selectedState.title}</span>
+            <div
+              class="color"
+              style="background-color: {getPlatformColor(
+                selectedState.color ?? getColorNumberByText(selectedState.name)
+              )}"
+            />
+            <span class="label overflow-label">{selectedState.name}</span>
           {:else}
             <div class="color" />
             <span class="label overflow-label"><Label label={presentation.string.NotSelected} /></span>
