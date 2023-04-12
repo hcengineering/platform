@@ -38,7 +38,7 @@
     "@hcengineering/presentation": "^0.6.2",
     "@hcengineering/chunter": "^0.6.3",
     "@hcengineering/login": "^0.6.2",
-    "svelte": "3.58.0",
+    "svelte": "3.55.1",
     "fast-equals": "^2.0.3",
     "@hcengineering/text-editor": "^0.6.0",
     "@hcengineering/contact": "^0.6.12",

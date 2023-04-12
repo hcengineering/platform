@@ -47,7 +47,7 @@
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/ui": "^0.6.3",
     "@hcengineering/theme": "^0.6.2",
-    "svelte": "3.58.0",
+    "svelte": "3.55.1",
     "@hcengineering/login": "^0.6.1",
     "@hcengineering/login-assets": "^0.6.0",
     "@hcengineering/login-resources": "^0.6.2",

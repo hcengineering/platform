@@ -53,7 +53,7 @@
     "@hcengineering/view": "^0.6.3",
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/workbench": "^0.6.3",
-    "svelte": "3.58.0",
+    "svelte": "3.55.1",
     "@hcengineering/kanban": "^0.6.0",
     "@hcengineering/preference": "^0.6.3",
     "@hcengineering/tags": "^0.6.6"
