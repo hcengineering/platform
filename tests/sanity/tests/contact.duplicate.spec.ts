@@ -22,15 +22,15 @@ test.describe('duplicate-org-test', () => {
     // Click button:has-text("Person")
     await page.click('button:has-text("Person")')
 
-    // Click button:has-text("Organization")
-    await page.click('button:has-text("Organization")')
+    // Click button:has-text("Company")
+    await page.click('button:has-text("Company")')
 
     // Click [placeholder="Apple"]
-    await page.click('[placeholder="Organization name"]')
+    await page.click('[placeholder="Company name"]')
 
     const genId = 'Asoft-' + generateId(4)
     // Fill [placeholder="Apple"]
-    await page.fill('[placeholder="Organization name"]', genId)
+    await page.fill('[placeholder="Company name"]', genId)
 
     // Click button:has-text("Create")
     await page.click('button:has-text("Create")')
@@ -43,14 +43,14 @@ test.describe('duplicate-org-test', () => {
     // Click button:has-text("Person")
     await page.click('button:has-text("Person")')
 
-    // Click button:has-text("Organization")
-    await page.click('button:has-text("Organization")')
+    // Click button:has-text("Company")
+    await page.click('button:has-text("Company")')
 
     // Click [placeholder="Apple"]
-    await page.click('[placeholder="Organization name"]')
+    await page.click('[placeholder="Company name"]')
 
     // Fill [placeholder="Apple"]
-    await page.fill('[placeholder="Organization name"]', genId)
+    await page.fill('[placeholder="Company name"]', genId)
 
     // Click text=Person already exists...
     await page.click('text=Contact already exists...')
