@@ -32,16 +32,16 @@ test.describe('contact tests', () => {
     await page.locator('.antiCard').locator('button:has-text("Create")').click()
     await page.waitForSelector('form.antiCard', { state: 'detached' })
   })
-  test('create-organization', async ({ page }) => {
+  test('create-company', async ({ page }) => {
     await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
 
     await page.click('button:has-text("Contact")')
 
-    await (await page.locator('.ap-menuItem')).locator('text=Organization').click()
+    await (await page.locator('.ap-menuItem')).locator('text=Company').click()
 
-    const orgName = 'Organization' + generateId(5)
+    const orgName = 'Company' + generateId(5)
 
-    const firstName = page.locator('[placeholder="Organization name"]')
+    const firstName = page.locator('[placeholder="Company name"]')
     await firstName.click()
     await firstName.fill(orgName)
 
