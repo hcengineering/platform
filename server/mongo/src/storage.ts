@@ -45,6 +45,7 @@ import core, {
   Tx,
   TxCollectionCUD,
   TxCreateDoc,
+  TxCUD,
   TxMixin,
   TxProcessor,
   TxRemoveDoc,
@@ -987,12 +988,24 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
       .sort({ _id: 1 })
       .toArray()
     // We need to put all core.account.System transactions first
-    const systemTr: Tx[] = []
+    const systemTx: Tx[] = []
     const userTx: Tx[] = []
 
-    model.forEach((tx) => (tx.modifiedBy === core.account.System ? systemTr : userTx).push(tx))
+    // Ignore Employee accounts.
+    function isEmployeeAccount (tx: Tx): boolean {
+      return (
+        (tx._class === core.class.TxCreateDoc ||
+          tx._class === core.class.TxUpdateDoc ||
+          tx._class === core.class.TxRemoveDoc) &&
+        (tx as TxCUD<Doc>).objectClass === 'contact:class:EmployeeAccount'
+      )
+    }
 
-    return systemTr.concat(userTx)
+    model.forEach((tx) =>
+      (tx.modifiedBy === core.account.System && !isEmployeeAccount(tx) ? systemTx : userTx).push(tx)
+    )
+
+    return systemTx.concat(userTx)
   }
 }
 
