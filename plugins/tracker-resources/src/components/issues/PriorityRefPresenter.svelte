@@ -14,61 +14,22 @@
 -->
 <script lang="ts">
   import { IssuePriority } from '@hcengineering/tracker'
-  import { Button, ButtonKind, ButtonSize, Icon, Label } from '@hcengineering/ui'
+  import { Icon, Label } from '@hcengineering/ui'
   import { issuePriorities } from '../../utils'
 
   export let value: IssuePriority
+  export let size: 'small' | 'medium' = 'small'
+  export let inline: boolean = false
 
-  export let kind: ButtonKind = 'link'
-  export let size: ButtonSize = 'large'
-  export let justify: 'left' | 'center' = 'left'
-  export let width: string | undefined = undefined
+  $: icon = issuePriorities[value]?.icon
+  $: label = issuePriorities[value]?.label
 </script>
 
-{#if kind === 'list' || kind === 'list-header'}
-  <div class="priority-container">
-    <div class="icon">
-      {#if issuePriorities[value]?.icon}<Icon icon={issuePriorities[value]?.icon} {size} />{/if}
-    </div>
-    <span
-      class="{kind === 'list' ? 'ml-2 text-md' : 'ml-3 text-base'} overflow-label disabled fs-bold content-accent-color"
-    >
-      <Label label={issuePriorities[value]?.label} />
-    </span>
-  </div>
-{:else}
-  <Button
-    label={issuePriorities[value]?.label}
-    icon={issuePriorities[value]?.icon}
-    {justify}
-    {width}
-    {size}
-    {kind}
-    disabled
-  />
-{/if}
-
-<style lang="scss">
-  .priority-container {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-    min-width: 0;
-    cursor: pointer;
-
-    .icon {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-shrink: 0;
-      width: 1rem;
-      height: 1rem;
-      color: var(--content-color);
-    }
-    &:hover {
-      .icon {
-        color: var(--caption-color) !important;
-      }
-    }
-  }
-</style>
+<div class="flex-presenter cursor-default">
+  {#if !inline && icon}
+    <Icon {icon} {size} />
+  {/if}
+  <span class="overflow-label" class:ml-2={!inline && icon}>
+    <Label {label} />
+  </span>
+</div>

@@ -21,6 +21,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     ActionIcon,
+    AnyComponent,
     Component,
     Icon,
     IconEdit,
@@ -56,6 +57,7 @@
   let employee: Employee | undefined
   let model: AttributeModel[] = []
   let modelIcon: Asset | undefined = undefined
+  let iconComponent: AnyComponent | undefined = undefined
 
   let edit = false
 
@@ -83,6 +85,7 @@
       viewlet = result.viewlet
       model = result.model
       modelIcon = result.modelIcon
+      iconComponent = result.iconComponent
       props = getProps(result.props, edit)
     }
   })
@@ -172,7 +175,9 @@
         </div>
       {:else}
         <div class="msgactivity-icon">
-          {#if viewlet}
+          {#if iconComponent}
+            <Component is={iconComponent} {props} />
+          {:else if viewlet}
             <Icon icon={viewlet.icon} size="small" />
           {:else if viewlet === undefined && model.length > 0}
             <Icon icon={modelIcon !== undefined ? modelIcon : Edit} size="small" />
