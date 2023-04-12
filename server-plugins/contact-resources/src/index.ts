@@ -134,13 +134,18 @@ async function updateAllRefs (
       const descendants = control.hierarchy.getDescendants(attr.attributeOf)
       for (const d of descendants) {
         if (control.hierarchy.findDomain(d) !== undefined) {
-          const values = await control.findAll(d, { [attr.name]: sourceAccount.employee })
+          while (true) {
+            const values = await control.findAll(d, { [attr.name]: sourceAccount.employee }, { limit: 100 })
+            if (values.length === 0) {
+              break
+            }
 
-          const builder = new TxBuilder(control.hierarchy, control.modelDb, modifiedBy)
-          for (const v of values) {
-            await updateAttribute(builder, v, d, { key: attr.name, attr }, targetAccount.employee, targetAccount._id)
+            const builder = new TxBuilder(control.hierarchy, control.modelDb, modifiedBy)
+            for (const v of values) {
+              await updateAttribute(builder, v, d, { key: attr.name, attr }, targetAccount.employee, targetAccount._id)
+            }
+            await control.apply(builder.txes, true, true)
           }
-          await control.apply(builder.txes, true, true)
         }
       }
     }
@@ -152,12 +157,17 @@ async function updateAllRefs (
       const descendants = control.hierarchy.getDescendants(attr.attributeOf)
       for (const d of descendants) {
         if (control.hierarchy.findDomain(d) !== undefined) {
-          const values = await control.findAll(d, { [attr.name]: sourceAccount._id })
-          const builder = new TxBuilder(control.hierarchy, control.modelDb, modifiedBy)
-          for (const v of values) {
-            await updateAttribute(builder, v, d, { key: attr.name, attr }, targetAccount._id, targetAccount._id)
+          while (true) {
+            const values = await control.findAll(d, { [attr.name]: sourceAccount._id }, { limit: 100 })
+            if (values.length === 0) {
+              break
+            }
+            const builder = new TxBuilder(control.hierarchy, control.modelDb, modifiedBy)
+            for (const v of values) {
+              await updateAttribute(builder, v, d, { key: attr.name, attr }, targetAccount._id, targetAccount._id)
+            }
+            await control.apply(builder.txes, true, true)
           }
-          await control.apply(builder.txes, true, true)
         }
       }
     }
@@ -172,12 +182,21 @@ async function updateAllRefs (
       const descendants = control.hierarchy.getDescendants(attr.attributeOf)
       for (const d of descendants) {
         if (control.hierarchy.findDomain(d) !== undefined) {
-          const values = await control.findAll(attr.attributeOf, { [attr.name]: sourceAccount.employee })
-          const builder = new TxBuilder(control.hierarchy, control.modelDb, modifiedBy)
-          for (const v of values) {
-            await updateAttribute(builder, v, d, { key: attr.name, attr }, targetAccount.employee, targetAccount._id)
+          while (true) {
+            const values = await control.findAll(
+              attr.attributeOf,
+              { [attr.name]: sourceAccount.employee },
+              { limit: 100 }
+            )
+            if (values.length === 0) {
+              break
+            }
+            const builder = new TxBuilder(control.hierarchy, control.modelDb, modifiedBy)
+            for (const v of values) {
+              await updateAttribute(builder, v, d, { key: attr.name, attr }, targetAccount.employee, targetAccount._id)
+            }
+            await control.apply(builder.txes, true, true)
           }
-          await control.apply(builder.txes, true, true)
         }
       }
     }
@@ -189,12 +208,17 @@ async function updateAllRefs (
       const descendants = control.hierarchy.getDescendants(attr.attributeOf)
       for (const d of descendants) {
         if (control.hierarchy.findDomain(d) !== undefined) {
-          const values = await control.findAll(d, { [attr.name]: sourceAccount._id })
-          const builder = new TxBuilder(control.hierarchy, control.modelDb, modifiedBy)
-          for (const v of values) {
-            await updateAttribute(builder, v, d, { key: attr.name, attr }, targetAccount._id, targetAccount._id)
+          while (true) {
+            const values = await control.findAll(d, { [attr.name]: sourceAccount._id }, { limit: 100 })
+            if (values.length === 0) {
+              break
+            }
+            const builder = new TxBuilder(control.hierarchy, control.modelDb, modifiedBy)
+            for (const v of values) {
+              await updateAttribute(builder, v, d, { key: attr.name, attr }, targetAccount._id, targetAccount._id)
+            }
+            await control.apply(builder.txes, true, true)
           }
-          await control.apply(builder.txes, true, true)
         }
       }
     }

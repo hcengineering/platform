@@ -21,7 +21,7 @@ import { Hierarchy } from './hierarchy'
 import { ModelDb } from './memdb'
 import type { DocumentQuery, FindOptions, FindResult, Storage, TxResult, WithLookup } from './storage'
 import { SortingOrder } from './storage'
-import { Tx, TxCreateDoc, TxProcessor, TxUpdateDoc } from './tx'
+import { Tx, TxCUD, TxCreateDoc, TxProcessor, TxUpdateDoc } from './tx'
 import { toFindResult } from './utils'
 
 const transactionThreshold = 500
@@ -233,7 +233,17 @@ async function loadModel (
   const userTx: Tx[] = []
   console.log('find' + (processedTx.size === 0 ? 'full model' : 'model diff'), atxes.length, Date.now() - t)
 
-  atxes.forEach((tx) => (tx.modifiedBy === core.account.System ? systemTx : userTx).push(tx))
+  // Ignore Employee accounts.
+  function isEmployeeAccount (tx: Tx): boolean {
+    return (
+      (tx._class === core.class.TxCreateDoc ||
+        tx._class === core.class.TxUpdateDoc ||
+        tx._class === core.class.TxRemoveDoc) &&
+      (tx as TxCUD<Doc>).objectClass === 'contact:class:EmployeeAccount'
+    )
+  }
+
+  atxes.forEach((tx) => (tx.modifiedBy === core.account.System && !isEmployeeAccount(tx) ? systemTx : userTx).push(tx))
 
   if (allowedPlugins !== undefined) {
     fillConfiguration(systemTx, configs)

@@ -154,6 +154,18 @@ export class FullTextIndex implements WithFind {
 
     classes = classes.filter((it, idx, arr) => arr.indexOf(it) === idx)
 
+    classes = classes.filter((it) => {
+      if (typeof query._class === 'object') {
+        if (query._class?.$in !== undefined) {
+          return query._class.$in.includes(it)
+        }
+        if (query._class?.$nin !== undefined) {
+          return !query._class.$nin.includes(it)
+        }
+      }
+      return true
+    })
+
     const fullTextLimit = options?.limit ?? 200
 
     let { docs, pass } = await this.indexer.search(classes, findQuery, fullTextLimit)
