@@ -133,6 +133,7 @@ import ProjectPresenter from './components/projects/ProjectPresenter.svelte'
 import MoveIssues from './components/issues/Move.svelte'
 import IssueStatistics from './components/sprints/IssueStatistics.svelte'
 import SprintRefPresenter from './components/sprints/SprintRefPresenter.svelte'
+import TxIssueCreated from './components/activity/TxIssueCreated.svelte'
 
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 
@@ -350,6 +351,9 @@ export async function handleRecordingScrum (
 }
 
 export default async (): Promise<Resources> => ({
+  activity: {
+    TxIssueCreated
+  },
   component: {
     NopeComponent,
     Issues,

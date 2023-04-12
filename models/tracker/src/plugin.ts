@@ -22,6 +22,7 @@ import tracker from '@hcengineering/tracker-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { Action, ViewAction, Viewlet } from '@hcengineering/view'
 import { Application } from '@hcengineering/workbench'
+import { TxViewlet } from '@hcengineering/activity'
 
 export default mergeIds(trackerId, tracker, {
   string: {
@@ -37,9 +38,10 @@ export default mergeIds(trackerId, tracker, {
     Parent: '' as IntlString,
     CreatedOn: '' as IntlString
   },
+  activity: {
+    TxIssueCreated: '' as AnyComponent
+  },
   component: {
-    // Required to pass build without errorsF
-    Nope: '' as AnyComponent,
     SprintSelector: '' as AnyComponent,
     IssueStatistics: '' as AnyComponent,
     TimeSpendReportPopup: '' as AnyComponent,
@@ -53,6 +55,9 @@ export default mergeIds(trackerId, tracker, {
     IssueTemplateList: '' as Ref<Viewlet>,
     IssueKanban: '' as Ref<Viewlet>,
     SprintList: '' as Ref<Viewlet>
+  },
+  ids: {
+    TxIssueCreated: '' as Ref<TxViewlet>
   },
   completion: {
     IssueQuery: '' as Resource<ObjectSearchFactory>,

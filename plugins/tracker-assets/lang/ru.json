@@ -289,7 +289,9 @@
     "EightHoursLength": "Восемь Часов",
     "CreatedOn": "Создана",
     "HourLabel": "ч",
-    "Saved": "Сохранено..."
+    "Saved": "Сохранено...",
+    "CreatedIssue": "Создал(а) задачу",
+    "CreatedSubIssue": "Создал(а) подзадачу"
   },
   "status": {}
 }

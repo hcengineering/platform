@@ -65,7 +65,6 @@
     activityQuery.update(
       object,
       (result) => {
-        console.log('query txes update')
         txes = filterCollectionTxes(result)
 
         if (txes.length > 0) {

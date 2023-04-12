@@ -167,7 +167,7 @@ class ActivityImpl implements Activity {
 
     for (const tx of ownTxes) {
       if (!this.filterUpdateTx(tx)) continue
-      const [result] = this.createDisplayTx(tx, parents)
+      const [result] = this.createDisplayTx(tx, parents, true)
       // Combine previous update transaction for same field and if same operation and time treshold is ok
       results = this.integrateTxWithResults(results, result, editable)
       this.updateRemovedState(result, results)
@@ -182,7 +182,7 @@ class ActivityImpl implements Activity {
         if (changeAttached) {
           tx = await this.createFakeTx(doc, tx)
         }
-        const [result, isUpdated, isMixin] = this.createDisplayTx(tx, parents)
+        const [result, isUpdated, isMixin] = this.createDisplayTx(tx, parents, false)
         if (!(isUpdated || isMixin)) {
           // Combine previous update transaction for same field and if same operation and time treshold is ok
           results = this.integrateTxWithResults(results, result, editable)
@@ -276,7 +276,7 @@ class ActivityImpl implements Activity {
     return !this.hiddenAttributes.has(ops[0])
   }
 
-  createDisplayTx (tx: TxCUD<Doc>, parents: Map<Ref<Doc>, DisplayTx>): [DisplayTx, boolean, boolean] {
+  createDisplayTx (tx: TxCUD<Doc>, parents: Map<Ref<Doc>, DisplayTx>, isOwnTx: boolean): [DisplayTx, boolean, boolean] {
     let collectionAttribute: Attribute<Collection<AttachedDoc>> | undefined
     if (this.hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)) {
       const cltx = tx as TxCollectionCUD<Doc, AttachedDoc>
@@ -295,7 +295,7 @@ class ActivityImpl implements Activity {
       }
     }
     let firstTx = parents.get(tx.objectId)
-    const result: DisplayTx = newDisplayTx(tx, this.hierarchy)
+    const result: DisplayTx = newDisplayTx(tx, this.hierarchy, isOwnTx)
 
     result.collectionAttribute = collectionAttribute
 
@@ -418,10 +418,11 @@ function getCombineOpFromTx (result: DisplayTx): any {
   return curUpdate
 }
 
-export function newDisplayTx (tx: TxCUD<Doc>, hierarchy: Hierarchy): DisplayTx {
+export function newDisplayTx (tx: TxCUD<Doc>, hierarchy: Hierarchy, isOwnTx: boolean): DisplayTx {
   const createTx = hierarchy.isDerived(tx._class, core.class.TxCreateDoc) ? (tx as TxCreateDoc<Doc>) : undefined
   return {
     tx,
+    isOwnTx,
     txes: [],
     createTx,
     updateTx: hierarchy.isDerived(tx._class, core.class.TxUpdateDoc) ? (tx as TxUpdateDoc<Doc>) : undefined,
