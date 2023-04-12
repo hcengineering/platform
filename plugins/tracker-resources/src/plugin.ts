@@ -99,6 +99,7 @@ export default mergeIds(trackerId, tracker, {
     EditProject: '' as IntlString,
     DeleteProject: '' as IntlString,
     DeleteProjectName: '' as IntlString,
+    DeleteProjectConfirm: '' as IntlString,
     ProjectHasIssues: '' as IntlString,
     ManageWorkflowStatuses: '' as IntlString,
     AddWorkflowStatus: '' as IntlString,

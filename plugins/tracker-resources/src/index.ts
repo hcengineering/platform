@@ -230,7 +230,20 @@ async function deleteProject (project: Project | undefined): Promise<void> {
         }
       )
     } else {
-      await removeProject(project)
+      showPopup(
+        MessageBox,
+        {
+          label: tracker.string.DeleteProjectName,
+          labelProps: { name: project.name },
+          message: tracker.string.DeleteProjectConfirm
+        },
+        undefined,
+        (result?: boolean) => {
+          if (result === true) {
+            void removeProject(project)
+          }
+        }
+      )
     }
   }
 }
@@ -260,22 +273,25 @@ async function moveAndDeleteSprints (client: TxOperations, oldSprints: Sprint[],
   )
 }
 
-async function deleteSprint (sprints: Sprint[]): Promise<void> {
+async function deleteSprint (sprints: Sprint | Sprint[]): Promise<void> {
   const client = getClient()
+  const sprintArray = Array.isArray(sprints) ? sprints : [sprints]
   // Check if available to move issues to another sprint
-  const firstSearchedSprint = await client.findOne(tracker.class.Sprint, { _id: { $nin: sprints.map((p) => p._id) } })
+  const firstSearchedSprint = await client.findOne(tracker.class.Sprint, {
+    _id: { $nin: sprintArray.map((p) => p._id) }
+  })
   if (firstSearchedSprint !== undefined) {
     showPopup(
       MoveAndDeleteSprintPopup,
       {
-        sprints,
+        sprintArray,
         moveAndDeleteSprint: async (selectedSprint?: Sprint) =>
-          await moveAndDeleteSprints(client, sprints, selectedSprint)
+          await moveAndDeleteSprints(client, sprintArray, selectedSprint)
       },
       'top'
     )
   } else {
-    await moveAndDeleteSprints(client, sprints)
+    await moveAndDeleteSprints(client, sprintArray)
   }
 }
 

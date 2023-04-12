@@ -15,6 +15,7 @@
 //
 
 import core, {
+  AccountRole,
   AttachedDoc,
   CategoryType,
   Class,
@@ -22,6 +23,7 @@ import core, {
   Collection,
   Doc,
   DocumentUpdate,
+  getCurrentAccount,
   getObjectValue,
   Hierarchy,
   Lookup,
@@ -298,6 +300,8 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
 }
 
 export async function deleteObject (client: TxOperations, object: Doc): Promise<void> {
+  const currentAcc = getCurrentAccount()
+  if (currentAcc.role !== AccountRole.Owner && object.createdBy !== currentAcc._id) return
   if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
     const adoc = object as AttachedDoc
     await client
@@ -309,6 +313,8 @@ export async function deleteObject (client: TxOperations, object: Doc): Promise<
 }
 
 export async function deleteObjects (client: TxOperations, objects: Doc[]): Promise<void> {
+  const currentAcc = getCurrentAccount()
+  if (currentAcc.role !== AccountRole.Owner && objects.some((p) => p.createdBy !== currentAcc._id)) return
   const ops = client.apply('delete')
   for (const object of objects) {
     if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
