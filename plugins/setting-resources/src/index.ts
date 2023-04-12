@@ -19,7 +19,6 @@ import { getClient, MessageBox } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
 import { deleteObject } from '@hcengineering/view-resources/src/utils'
 import TxIntegrationDisable from './components/activity/TxIntegrationDisable.svelte'
-import TxIntegrationDisableReconnect from './components/activity/TxIntegrationDisableReconnect.svelte'
 import ClassSetting from './components/ClassSetting.svelte'
 import CreateMixin from './components/CreateMixin.svelte'
 import EditEnum from './components/EditEnum.svelte'
@@ -44,6 +43,7 @@ import StringTypeEditor from './components/typeEditors/StringTypeEditor.svelte'
 import WorkspaceSettings from './components/WorkspaceSettings.svelte'
 import InviteSetting from './components/InviteSetting.svelte'
 import setting from './plugin'
+import IntegrationPanel from './components/IntegrationPanel.svelte'
 import { getOwnerName, getOwnerPosition, getValue } from './utils'
 
 export { ClassSetting }
@@ -72,8 +72,7 @@ async function DeleteMixin (object: Mixin<Class<Doc>>): Promise<void> {
 
 export default async (): Promise<Resources> => ({
   activity: {
-    TxIntegrationDisable,
-    TxIntegrationDisableReconnect
+    TxIntegrationDisable
   },
   component: {
     Settings,
@@ -98,7 +97,8 @@ export default async (): Promise<Resources> => ({
     EnumSetting,
     Owners,
     CreateMixin,
-    InviteSetting
+    InviteSetting,
+    IntegrationPanel
   },
   actionImpl: {
     DeleteMixin

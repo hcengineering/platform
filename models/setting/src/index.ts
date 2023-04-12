@@ -33,6 +33,7 @@ import task from '@hcengineering/task'
 import setting from './plugin'
 import templates from '@hcengineering/templates'
 import contact from '@hcengineering/contact'
+import notification from '@hcengineering/notification'
 
 import workbench from '@hcengineering/model-workbench'
 import { AnyComponent } from '@hcengineering/ui'
@@ -100,6 +101,14 @@ export function createModel (builder: Builder): void {
     TUserMixin,
     TInviteSettings
   )
+
+  builder.mixin(setting.class.Integration, core.class.Class, notification.mixin.ClassCollaborators, {
+    fields: ['modifiedBy']
+  })
+
+  builder.mixin(setting.class.Integration, core.class.Class, view.mixin.ObjectPanel, {
+    component: setting.component.IntegrationPanel
+  })
 
   builder.createDoc(
     setting.class.SettingsCategory,
@@ -293,8 +302,7 @@ export function createModel (builder: Builder): void {
       txClass: core.class.TxUpdateDoc,
       label: setting.string.IntegrationWith,
       labelComponent: setting.activity.TxIntegrationDisable,
-      component: setting.activity.TxIntegrationDisableReconnect,
-      display: 'emphasized',
+      display: 'inline',
       editable: false,
       hideOnRemove: true
     },
