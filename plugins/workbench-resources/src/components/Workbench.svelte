@@ -96,6 +96,7 @@
     .then((res) => (apps = res))
 
   let panelInstance: PanelInstance
+  let popupInstance: Popup
 
   let visibileNav: boolean = true
   async function toggleNav (): Promise<void> {
@@ -104,6 +105,7 @@
     if (currentApplication && navigatorModel && navigator) {
       await tick()
       panelInstance.fitPopupInstance()
+      popupInstance.fitPopupInstance()
     }
   }
 
@@ -695,7 +697,7 @@
       <ActionContext context={{ mode: 'panel' }} />
     </svelte:fragment>
   </PanelInstance>
-  <Popup {contentPanel}>
+  <Popup bind:this={popupInstance} {contentPanel}>
     <svelte:fragment slot="popup-header">
       <ActionContext context={{ mode: 'popup' }} />
     </svelte:fragment>
