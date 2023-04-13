@@ -167,7 +167,7 @@
               {:else}
                 {#if item.icon}
                   <div class="icon mr-2">
-                    <Icon icon={item.icon} fill={item.iconColor} {size} />
+                    <Icon icon={item.icon} fill={item.iconColor ?? 'currentColor'} {size} />
                   </div>
                 {/if}
                 <span class="label" class:text-base={huge}>
