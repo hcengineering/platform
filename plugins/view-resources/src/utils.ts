@@ -506,11 +506,7 @@ export type FixedWidthStore = Record<string, number>
 
 export const fixedWidthStore = writable<FixedWidthStore>({})
 
-export function groupBy<T extends Doc> (
-  docs: T[],
-  key: string,
-  categories?: CategoryType[]
-): { [key: string | number]: T[] } {
+export function groupBy<T extends Doc> (docs: T[], key: string, categories?: CategoryType[]): Record<any, T[]> {
   return docs.reduce((storage: { [key: string]: T[] }, item: T) => {
     let group = getObjectValue(key, item) ?? undefined
 
@@ -536,16 +532,12 @@ export function groupBy<T extends Doc> (
 /**
  * @public
  */
-export function getGroupByValues<T extends Doc> (
-  groupByDocs: Record<string | number, T[]>,
-  category: CategoryType
-): T[] {
+export function getGroupByValues<T extends Doc> (groupByDocs: Record<any, T[]>, category: CategoryType): T[] {
   if (typeof category === 'object') {
     return groupByDocs[category.name] ?? []
-  } else if (category !== undefined) {
-    return groupByDocs[category] ?? []
+  } else {
+    return groupByDocs[category as any] ?? []
   }
-  return []
 }
 
 /**

@@ -132,7 +132,7 @@
 </script>
 
 {#each categories as category, i (typeof category === 'object' ? category.name : category)}
-  {@const items = groupByKey === noCategory || category === undefined ? docs : getGroupByValues(groupByDocs, category)}
+  {@const items = groupByKey === noCategory ? docs : getGroupByValues(groupByDocs, category)}
   <ListCategory
     {elementByIndex}
     {indexById}
