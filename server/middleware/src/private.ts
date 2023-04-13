@@ -16,6 +16,7 @@
 import core, {
   AttachedDoc,
   Class,
+  DOMAIN_TX,
   Doc,
   DocumentQuery,
   FindOptions,
@@ -71,7 +72,8 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     let newQuery = query
-    const domain = this.storage.hierarchy.getDomain(_class)
+    const hierarchy = this.storage.hierarchy
+    const domain = hierarchy.getDomain(_class)
     if (this.targetDomains.includes(domain)) {
       const account = await getUser(this.storage, ctx)
       if (account._id !== core.account.System) {
@@ -82,6 +84,23 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
       }
     }
     const findResult = await this.provideFindAll(ctx, _class, newQuery, options)
+    if (domain === DOMAIN_TX) {
+      const account = await getUser(this.storage, ctx)
+      if (account._id !== core.account.System) {
+        const targetClasses = new Set(
+          hierarchy.getDescendants(core.class.Doc).filter((p) => {
+            const domain = hierarchy.findDomain(p)
+            return domain != null && this.targetDomains.includes(domain)
+          })
+        )
+        ;(findResult as FindResult<Doc> as FindResult<Tx>).filter(
+          (p) =>
+            !hierarchy.isDerived(p._class, core.class.TxCUD) ||
+            !targetClasses.has((p as TxCUD<Doc>).objectClass) ||
+            p.modifiedBy === account._id
+        )
+      }
+    }
     if (options?.lookup !== undefined) {
       for (const object of findResult) {
         if (object.$lookup !== undefined) {
