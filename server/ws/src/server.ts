@@ -80,7 +80,7 @@ class SessionManager {
     }
 
     if (token.extra?.model === 'upgrade') {
-      console.log('reloading workspace', JSON.stringify(token))
+      if (LOGGING_ENABLED) console.log('reloading workspace', JSON.stringify(token))
       this.upgradeId = sessionId
       // If upgrade client is used.
       // Drop all existing clients
@@ -156,7 +156,8 @@ class SessionManager {
       sessions: [],
       upgrade
     }
-    console.log('Creating Workspace:', workspace.id)
+    if (LOGGING_ENABLED) console.time(token.workspace.name)
+    if (LOGGING_ENABLED) console.timeLog(token.workspace.name, 'Creating Workspace:', workspace.id)
     this.workspaces.set(toWorkspaceString(token.workspace), workspace)
     return workspace
   }
@@ -201,7 +202,7 @@ class SessionManager {
     const wsid = toWorkspaceString(workspaceId)
     const workspace = this.workspaces.get(wsid)
     if (workspace === undefined) {
-      console.error(new Error('internal: cannot find sessions'))
+      if (LOGGING_ENABLED) console.error(new Error('internal: cannot find sessions'))
       return
     }
     const index = workspace.sessions.findIndex((p) => p[1] === ws)
@@ -215,8 +216,8 @@ class SessionManager {
         await this.setStatus(ctx, session[0], false)
       }
       if (workspace.sessions.length === 0) {
-        const workspaceId = workspace.id
-        if (LOGGING_ENABLED) console.log('no sessions for workspace', wsid, workspaceId)
+        const wsUID = workspace.id
+        if (LOGGING_ENABLED) console.log('no sessions for workspace', wsid, wsUID)
 
         const waitAndClose = async (workspace: Workspace): Promise<void> => {
           try {
@@ -224,13 +225,13 @@ class SessionManager {
             await Promise.race([pl, timeoutPromise(60000)])
             await Promise.race([pl.close(), timeoutPromise(60000)])
 
-            if (this.workspaces.get(wsid)?.id === workspaceId) {
+            if (this.workspaces.get(wsid)?.id === wsUID) {
               this.workspaces.delete(wsid)
             }
-            console.log('Closed workspace', workspaceId)
+            if (LOGGING_ENABLED) console.timeLog(workspaceId.name, 'Closed workspace', wsUID)
           } catch (err: any) {
             this.workspaces.delete(wsid)
-            console.error(err)
+            if (LOGGING_ENABLED) console.error(err)
           }
         }
         workspace.closing = waitAndClose(workspace)
@@ -246,7 +247,7 @@ class SessionManager {
     code: number,
     reason: 'upgrade' | 'shutdown'
   ): Promise<void> {
-    console.log(`closing workspace ${wsId} - ${workspace.id}, code: ${code}, reason: ${reason}`)
+    if (LOGGING_ENABLED) console.timeLog(wsId, `closing workspace ${workspace.id}, code: ${code}, reason: ${reason}`)
 
     const sessions = Array.from(workspace.sessions)
     workspace.sessions = []
@@ -275,18 +276,21 @@ class SessionManager {
       await this.setStatus(ctx, s, false)
     }
 
-    console.log(workspace.id, 'Clients disconnected. Closing Workspace...')
+    if (LOGGING_ENABLED) console.timeLog(wsId, workspace.id, 'Clients disconnected. Closing Workspace...')
     await Promise.all(sessions.map((s) => closeS(s[0], s[1])))
 
     const closePipeline = async (): Promise<void> => {
       try {
+        if (LOGGING_ENABLED) console.timeLog(wsId, 'closing pipeline')
         await (await workspace.pipeline).close()
+        if (LOGGING_ENABLED) console.timeLog(wsId, 'closing pipeline done')
       } catch (err: any) {
         console.error(err)
       }
     }
     await Promise.race([closePipeline(), timeoutPromise(15000)])
-    console.log(workspace.id, 'Workspace closed...')
+    if (LOGGING_ENABLED) console.timeLog(wsId, 'Workspace closed...')
+    console.timeEnd(wsId)
   }
 
   async closeWorkspaces (ctx: MeasureContext): Promise<void> {
@@ -324,7 +328,7 @@ async function handleRequest<S extends Session> (
 ): Promise<void> {
   const request = readRequest(msg)
   if (request.id === -1 && request.method === 'hello') {
-    console.log('hello happen', service.getUser())
+    if (LOGGING_ENABLED) console.timeLog(workspace, 'hello happen', service.getUser())
     ws.send(serialize({ id: -1, result: 'hello' }))
     return
   }
@@ -342,11 +346,13 @@ async function handleRequest<S extends Session> (
 
     const st = Date.now()
     timeout = setTimeout(() => {
-      console.log('long request found', workspace, service.getUser(), request, params)
+      if (LOGGING_ENABLED) console.timeLog(workspace, 'long request found', service.getUser(), request, params)
     }, 4000)
 
     hangTimeout = setTimeout(() => {
-      console.log('request hang found, 30sec', workspace, service.getUser(), request, params)
+      if (LOGGING_ENABLED) {
+        console.timeLog(workspace, 'request hang found, 30sec', workspace, service.getUser(), request, params)
+      }
     }, 30000)
 
     const result = await f.apply(service, params)
@@ -355,8 +361,9 @@ async function handleRequest<S extends Session> (
     const resp: Response<any> = { id: request.id, result }
 
     const diff = Date.now() - st
-    if (diff > 5000) {
-      console.log(
+    if (diff > 5000 && LOGGING_ENABLED) {
+      console.timeLog(
+        timeout,
         'very long request found',
         workspace,
         service.getUser(),
@@ -368,7 +375,7 @@ async function handleRequest<S extends Session> (
     }
     ws.send(serialize(resp))
   } catch (err: any) {
-    console.error(err)
+    if (LOGGING_ENABLED) console.error(err)
     clearTimeout(timeout)
     clearTimeout(hangTimeout)
     const resp: Response<any> = {
@@ -393,7 +400,7 @@ export function start (
   productId: string,
   host?: string
 ): () => Promise<void> {
-  console.log(`starting server on port ${port} ...`)
+  if (LOGGING_ENABLED) console.log(`starting server on port ${port} ...`)
 
   const sessions = new SessionManager(sessionFactory)
 
@@ -438,12 +445,14 @@ export function start (
       }
       // remove session after 1seconds, give a time to reconnect.
       if (code === 1000) {
-        console.log(`client "${token.email}" closed normally`)
+        if (LOGGING_ENABLED) console.log(`client "${token.email}" closed normally`)
         void sessions.close(ctx, ws, token.workspace, code, reason.toString())
       } else {
-        console.log(`client "${token.email}" closed abnormally, waiting reconnect`, code, reason.toString())
+        if (LOGGING_ENABLED) {
+          console.log(`client "${token.email}" closed abnormally, waiting reconnect`, code, reason.toString())
+        }
         session.closeTimeout = setTimeout(() => {
-          console.log(`client "${token.email}" force closed`)
+          if (LOGGING_ENABLED) console.log(`client "${token.email}" force closed`)
           void sessions.close(ctx, ws, token.workspace, code, reason.toString())
         }, 10000)
       }
@@ -463,7 +472,7 @@ export function start (
     try {
       const payload = decodeToken(token ?? '')
       const sessionId = url.searchParams.get('sessionId')
-      console.log('client connected with payload', payload, sessionId)
+      if (LOGGING_ENABLED) console.log('client connected with payload', payload, sessionId)
 
       if (payload.workspace.productId !== productId) {
         throw new Error('Invalid workspace product')
@@ -471,7 +480,7 @@ export function start (
 
       wss.handleUpgrade(request, socket, head, (ws) => wss.emit('connection', ws, request, payload, sessionId))
     } catch (err) {
-      console.error('invalid token', err)
+      if (LOGGING_ENABLED) console.error('invalid token', err)
       wss.handleUpgrade(request, socket, head, (ws) => {
         const resp: Response<any> = {
           id: -1,
