@@ -119,7 +119,6 @@ import {
   issuePrioritySort,
   issueStatusSort,
   moveIssuesToAnotherSprint,
-  removeProject,
   sprintSort,
   subIssueQuery
 } from './utils'
@@ -225,7 +224,7 @@ async function deleteProject (project: Project | undefined): Promise<void> {
         undefined,
         (result?: boolean) => {
           if (result === true) {
-            void removeProject(project)
+            void deleteObject(client, project)
           }
         }
       )
@@ -240,7 +239,7 @@ async function deleteProject (project: Project | undefined): Promise<void> {
         undefined,
         (result?: boolean) => {
           if (result === true) {
-            void removeProject(project)
+            void deleteObject(client, project)
           }
         }
       )

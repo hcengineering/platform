@@ -550,10 +550,6 @@ export async function getPreviousAssignees (issue: Issue): Promise<Array<Ref<Emp
   })
 }
 
-export async function removeProject (project: Project): Promise<void> {
-  const client = getClient()
-  await client.removeDoc(tracker.class.Project, core.space.Space, project._id)
-}
 
 async function updateIssuesOnMove (
   client: TxOperations,
