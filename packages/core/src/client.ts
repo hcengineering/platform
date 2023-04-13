@@ -15,13 +15,13 @@
 
 import { Plugin } from '@hcengineering/platform'
 import { BackupClient, DocChunk } from './backup'
-import { Class, DOMAIN_MODEL, Doc, Domain, PluginConfiguration, Ref } from './classes'
+import { AttachedDoc, Class, DOMAIN_MODEL, Doc, Domain, PluginConfiguration, Ref } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { ModelDb } from './memdb'
 import type { DocumentQuery, FindOptions, FindResult, Storage, TxResult, WithLookup } from './storage'
 import { SortingOrder } from './storage'
-import { Tx, TxCUD, TxCreateDoc, TxProcessor, TxUpdateDoc } from './tx'
+import { Tx, TxCUD, TxCollectionCUD, TxCreateDoc, TxProcessor, TxUpdateDoc } from './tx'
 import { toFindResult } from './utils'
 
 const transactionThreshold = 500
@@ -199,10 +199,24 @@ export async function createClient (
     // We need to look for last {transactionThreshold} transactions and if it is more since lastTx one we receive, we need to perform full refresh.
     const atxes = await conn.findAll(
       core.class.Tx,
-      { modifiedOn: { $gt: lastTx } },
+      { modifiedOn: { $gt: lastTx }, objectSpace: { $ne: core.space.Model } },
       { sort: { modifiedOn: SortingOrder.Ascending, _id: SortingOrder.Ascending }, limit: transactionThreshold }
     )
-    if (atxes.total < transactionThreshold) {
+
+    let needFullRefresh = false
+    // if we have attachment document create/delete we need to full refresh, since some derived data could be missing
+    for (const tx of atxes) {
+      if (
+        tx._class === core.class.TxCollectionCUD &&
+        ((tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxCreateDoc ||
+          (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxRemoveDoc)
+      ) {
+        needFullRefresh = true
+        break
+      }
+    }
+
+    if (atxes.total < transactionThreshold && !needFullRefresh) {
       console.log('applying input transactions', atxes.length)
       for (const tx of atxes) {
         txHandler(tx)
