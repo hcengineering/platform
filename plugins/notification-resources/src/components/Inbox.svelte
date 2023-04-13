@@ -20,6 +20,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { AnyComponent, Component, Label, Loading, Scroller } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import { ActionContext, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
   import NotificationView from './NotificationView.svelte'
 
   export let visibileNav: boolean
@@ -39,8 +40,11 @@
     },
     (res) => {
       docs = res
-      if (loading && docs.length > 0) {
-        select(docs[0].attachedTo, docs[0].attachedToClass)
+      listProvider.update(docs)
+      if (loading || _id === undefined) {
+        changeSelected(selected)
+      } else if (docs.find((p) => p.attachedTo === _id) === undefined) {
+        changeSelected(selected)
       }
       loading = false
     },
@@ -51,16 +55,32 @@
     }
   )
 
-  function select (objectId: Ref<Doc>, objectClass: Ref<Class<Doc>>) {
-    const targetClass = hierarchy.getClass(objectClass)
-    const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
-    component = panelComponent.component ?? view.component.EditDoc
-    _id = objectId
-    _class = objectClass
+  $: changeSelected(selected)
+
+  function changeSelected (index: number) {
+    if (docs[index] !== undefined) {
+      select(docs[index])
+    } else if (docs.length) {
+      if (index < docs.length - 1) {
+        selected++
+      } else {
+        selected--
+      }
+    } else {
+      selected = 0
+      component = undefined
+      _id = undefined
+      _class = undefined
+    }
   }
 
-  function selectHandler (e: CustomEvent) {
-    select(e.detail._id, e.detail._class)
+  function select (value: DocUpdates) {
+    listProvider.updateFocus(value)
+    const targetClass = hierarchy.getClass(value.attachedToClass)
+    const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
+    component = panelComponent.component ?? view.component.EditDoc
+    _id = value.attachedTo
+    _class = value.attachedToClass
   }
 
   let component: AnyComponent | undefined
@@ -69,12 +89,28 @@
 
   let viewlets: Map<ActivityKey, TxViewlet>
 
+  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
+    if (dir === 'vertical') {
+      const value = selected + offset
+      if (docs[value] !== undefined) {
+        selected = value
+      }
+    }
+  })
+
   const descriptors = createQuery()
   descriptors.query(activity.class.TxViewlet, {}, (result) => {
     viewlets = new Map(result.map((r) => [activityKey(r.objectClass, r.txClass), r]))
   })
+
+  let selected = 0
 </script>
 
+<ActionContext
+  context={{
+    mode: 'browser'
+  }}
+/>
 <div class="flex h-full">
   {#if visibileNav}
     <div class="antiPanel-component border-right filled indent aside">
@@ -88,8 +124,15 @@
           {#if loading}
             <Loading />
           {:else}
-            {#each docs as doc}
-              <NotificationView value={doc} selected={doc.attachedTo === _id} {viewlets} on:click={selectHandler} />
+            {#each docs as doc, i}
+              <NotificationView
+                value={doc}
+                selected={selected === i}
+                {viewlets}
+                on:click={() => {
+                  selected = i
+                }}
+              />
             {/each}
           {/if}
         </Scroller>
@@ -99,9 +142,7 @@
   {#if component && _id && _class}
     <Component is={component} props={{ embedded: true, _id, _class }} />
   {:else}
-    <div class="antiPanel-component filled w-full">
-      <Loading />
-    </div>
+    <div class="antiPanel-component filled w-full" />
   {/if}
 </div>
 

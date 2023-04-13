@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { Issue, Project } from '@hcengineering/tracker'
-  import { Viewlet, ViewOptions } from '@hcengineering/view'
+  import { ViewOptions, Viewlet } from '@hcengineering/view'
   import {
     ActionContext,
     List,
@@ -23,7 +23,6 @@
     SelectDirection,
     selectionStore
   } from '@hcengineering/view-resources'
-  import { onDestroy } from 'svelte'
   import tracker from '../../../plugin'
 
   export let query: DocumentQuery<Issue> | undefined = undefined
@@ -42,10 +41,6 @@
       // Select next
       list.select(offset, of)
     }
-  })
-
-  onDestroy(() => {
-    ListSelectionProvider.Pop()
   })
 </script>
 

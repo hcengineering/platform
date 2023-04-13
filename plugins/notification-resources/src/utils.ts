@@ -133,11 +133,19 @@ export async function unsubscribe (object: DocUpdates): Promise<void> {
 /**
  * @public
  */
-export async function hide (object: DocUpdates): Promise<void> {
+export async function hide (object: DocUpdates | DocUpdates[]): Promise<void> {
   const client = getClient()
-  await client.update(object, {
-    hidden: true
-  })
+  if (Array.isArray(object)) {
+    for (const value of object) {
+      await client.update(value, {
+        hidden: true
+      })
+    }
+  } else {
+    await client.update(object, {
+      hidden: true
+    })
+  }
 }
 
 /**

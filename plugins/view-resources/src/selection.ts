@@ -146,13 +146,15 @@ export class ListSelectionProvider implements SelectionFocusProvider {
     })
 
     if (this._docs.length > 0) {
-      if (this._current?.focus === undefined) {
+      if (this._current === undefined) {
         this.delegate(0, undefined, 'vertical')
       } else {
         // Check if we don't have object, we need to select first one.
         this.delegate(0, this._current?.focus, 'vertical')
       }
-      updateFocus({ focus: this._current?.focus, provider: this })
+      if (this._current?.focus === undefined) {
+        updateFocus({ focus: this._current?.focus, provider: this })
+      }
     }
   }
 

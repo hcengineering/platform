@@ -132,7 +132,10 @@ async function CommentCreate (tx: TxCUD<Doc>, control: TriggerControl): Promise<
   const actualTx = TxProcessor.extractTx(tx)
   if (actualTx._class !== core.class.TxCreateDoc) return []
   const doc = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<Comment>)
-  if (!hierarchy.isDerived(doc._class, chunter.class.Comment)) {
+  if (
+    !hierarchy.isDerived(doc._class, chunter.class.Comment) ||
+    hierarchy.isDerived(doc._class, chunter.class.Backlink)
+  ) {
     return []
   }
   const res: Tx[] = []
