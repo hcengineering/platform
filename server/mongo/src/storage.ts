@@ -985,7 +985,7 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
     const model = await this.db
       .collection(DOMAIN_TX)
       .find<Tx>({ objectSpace: core.space.Model })
-      .sort({ _id: 1 })
+      .sort({ _id: 1, modifiedOn: 1 })
       .toArray()
     // We need to put all core.account.System transactions first
     const systemTx: Tx[] = []
@@ -1004,7 +1004,6 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
     model.forEach((tx) =>
       (tx.modifiedBy === core.account.System && !isEmployeeAccount(tx) ? systemTx : userTx).push(tx)
     )
-
     return systemTx.concat(userTx)
   }
 }
@@ -1095,6 +1094,7 @@ export async function createMongoAdapter (
 ): Promise<DbAdapter> {
   const client = await getMongoClient(url)
   const db = getWorkspaceDB(client, workspaceId)
+
   return new MongoAdapter(db, hierarchy, modelDb, client)
 }
 

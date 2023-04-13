@@ -129,11 +129,15 @@ class TServerStorage implements ServerStorage {
   }
 
   async close (): Promise<void> {
+    console.timeLog(this.workspace.name, 'closing')
     await this.fulltext.close()
+    console.timeLog(this.workspace.name, 'closing triggers')
     await this.triggerProcessor.cancel()
+    console.timeLog(this.workspace.name, 'closing adapters')
     for (const o of this.adapters.values()) {
       await o.close()
     }
+    console.timeLog(this.workspace.name, 'closing fulltext')
     await this.fulltextAdapter.close()
   }
 
@@ -770,11 +774,14 @@ export async function createServerStorage (
   const triggers = new Triggers()
   const adapters = new Map<string, DbAdapter>()
   const modelDb = new ModelDb(hierarchy)
+
+  console.timeLog(conf.workspace.name, 'create server storage')
   const storageAdapter = conf.storageFactory?.()
 
   for (const key in conf.adapters) {
     const adapterConf = conf.adapters[key]
     adapters.set(key, await adapterConf.factory(hierarchy, adapterConf.url, conf.workspace, modelDb, storageAdapter))
+    console.timeLog(conf.workspace.name, 'adapter', key)
   }
 
   const txAdapter = adapters.get(conf.domains[DOMAIN_TX]) as TxAdapter
@@ -782,8 +789,9 @@ export async function createServerStorage (
     console.log('no txadapter found')
   }
 
+  console.timeLog(conf.workspace.name, 'begin get model')
   const model = await txAdapter.getModel()
-
+  console.timeLog(conf.workspace.name, 'get model')
   for (const tx of model) {
     try {
       hierarchy.tx(tx)
@@ -792,6 +800,7 @@ export async function createServerStorage (
       console.error('failed to apply model transaction, skipping', JSON.stringify(tx), err)
     }
   }
+  console.timeLog(conf.workspace.name, 'finish hierarchy')
 
   for (const tx of model) {
     try {
@@ -800,9 +809,11 @@ export async function createServerStorage (
       console.error('failed to apply model transaction, skipping', JSON.stringify(tx), err)
     }
   }
+  console.timeLog(conf.workspace.name, 'finish local model')
 
-  for (const [, adapter] of adapters) {
+  for (const [adn, adapter] of adapters) {
     await adapter.init(model)
+    console.timeLog(conf.workspace.name, 'finish init adapter', adn)
   }
 
   const fulltextAdapter = await conf.fulltextAdapter.factory(
@@ -810,6 +821,7 @@ export async function createServerStorage (
     conf.workspace,
     conf.metrics.newChild('fulltext', {})
   )
+  console.timeLog(conf.workspace.name, 'finish fulltext adapter')
 
   const metrics = conf.metrics.newChild('server-storage', {})
 
@@ -818,6 +830,8 @@ export async function createServerStorage (
     conf.workspace,
     metrics.newChild('content', {})
   )
+
+  console.timeLog(conf.workspace.name, 'finish content adapter')
 
   const defaultAdapter = adapters.get(conf.defaultAdapter)
   if (defaultAdapter === undefined) {
@@ -829,7 +843,7 @@ export async function createServerStorage (
       throw new Error('No storage adapter')
     }
     const stages = conf.fulltextAdapter.stages(fulltextAdapter, storage, storageAdapter, contentAdapter)
-
+    console.timeLog(conf.workspace.name, 'finish index pipeline stages')
     const indexer = new FullTextIndexPipeline(
       defaultAdapter,
       stages,
@@ -854,6 +868,7 @@ export async function createServerStorage (
         options.broadcast?.([tx])
       }
     )
+    console.timeLog(conf.workspace.name, 'finish create indexer')
     return new FullTextIndex(
       hierarchy,
       fulltextAdapter,
