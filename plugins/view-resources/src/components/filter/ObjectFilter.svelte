@@ -99,6 +99,9 @@
     const options = clazz.sortingKey !== undefined ? { sort: { [clazz.sortingKey]: SortingOrder.Ascending } } : {}
     objectsPromise = client.findAll(targetClass, resultQuery, options)
     values = await objectsPromise
+    if (isStatus) {
+      values = groupValues(values as Status[])
+    }
     if (targets.has(undefined)) {
       values.unshift(undefined)
     }
@@ -115,9 +118,6 @@
           description: await translate(view.string.FilterRemoved, { count: removed })
         })
       }
-    }
-    if (isStatus) {
-      values = groupValues(values as Status[])
     }
     objectsPromise = undefined
   }
