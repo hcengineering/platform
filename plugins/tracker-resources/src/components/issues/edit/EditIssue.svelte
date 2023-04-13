@@ -83,7 +83,7 @@
       _class,
       { _id },
       async (result) => {
-        if (saveTrigger !== undefined) {
+        if (saveTrigger !== undefined && lastId !== _id) {
           clearTimeout(saveTrigger)
           await save()
         }
@@ -101,6 +101,7 @@
 
   let saved = false
   async function save () {
+    clearTimeout(saveTrigger)
     if (!issue || !canSave) {
       return
     }
