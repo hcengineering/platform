@@ -109,7 +109,8 @@
     "Organizations": "Компании",
     "TemplateReplace": "Вы хотите заменить выбранный шаблон?",
     "TemplateReplaceConfirm": "Все внесенные изменения в будут заменены значениями из шаблоном",
-    "OpenVacancyList": "Открыть список"
+    "OpenVacancyList": "Открыть список",
+    "Export": "Экспорт"
   },
   "status": {
     "TalentRequired": "Пожалуйста выберите таланта",

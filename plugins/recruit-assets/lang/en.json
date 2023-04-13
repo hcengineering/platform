@@ -109,7 +109,8 @@
     "TemplateReplace": "You you replace selected template?",
     "TemplateReplaceConfirm": "All field changes will be override by template values",
 
-    "OpenVacancyList": "Open list"
+    "OpenVacancyList": "Open list",
+    "Export": "Export"
   },
   "status": {
     "TalentRequired": "Please select talent",

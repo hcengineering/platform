@@ -18,7 +18,7 @@
   import type { Request, RequestType, Staff } from '@hcengineering/hr'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Button, Label, Loading, Scroller, tableSP } from '@hcengineering/ui'
+  import { Button, Label, Loading, Scroller, tableSP, tableToCSV } from '@hcengineering/ui'
   import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
   import {
     getViewOptions,
@@ -37,7 +37,6 @@
     getRequests,
     getStartDate,
     getTotal,
-    tableToCSV,
     weekDays
   } from '../../utils'
   import StatPresenter from './StatPresenter.svelte'

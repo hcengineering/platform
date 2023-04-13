@@ -32,6 +32,7 @@
   export let config: (BuildModelKey | string)[]
   export let showFilterBar = true
   export let enableChecking = true
+  export let tableId: string | undefined = undefined
 
   // If defined, will show a number of dummy items before real data will appear.
   export let loadingProps: LoadingProps | undefined = undefined
@@ -97,6 +98,7 @@
     showFooter
     checked={$selectionStore ?? []}
     {prefferedSorting}
+    {tableId}
     selection={listProvider.current($focusStore)}
     on:row-focus={(evt) => {
       listProvider.updateFocus(evt.detail)

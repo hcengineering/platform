@@ -25,6 +25,7 @@ import core, {
   WithLookup
 } from '@hcengineering/core'
 import gmail, { Message } from '@hcengineering/gmail'
+import recruit from '@hcengineering/recruit'
 import tags, { TagElement } from '@hcengineering/tags'
 import { deepEqual } from 'fast-equals'
 import { BitrixClient } from './client'
@@ -40,7 +41,6 @@ import {
   LoginInfo
 } from './types'
 import { convert, ConvertResult } from './utils'
-import recruit from '@hcengineering/recruit'
 
 async function updateDoc (client: ApplyOperations, doc: Doc, raw: Doc | Data<Doc>, date: Timestamp): Promise<Doc> {
   // We need to update fields if they are different.
@@ -109,6 +109,17 @@ export async function syncDocument (
 
   try {
     const applyOp = client.apply('bitrix')
+
+    if (existing !== undefined) {
+      // We need update document id.
+      resultDoc.document._id = existing._id as Ref<BitrixSyncDoc>
+    }
+
+    // Operations could add more change instructions
+    for (const op of resultDoc.postOperations) {
+      await op(resultDoc, extraDocs, existing)
+    }
+
     // const newDoc = existing === undefined
     existing = await updateMainDoc(applyOp)
 
@@ -130,9 +141,6 @@ export async function syncDocument (
       await applyOp.createDoc(_class, space, data, _id, resultDoc.document.modifiedOn, resultDoc.document.modifiedBy)
     }
 
-    for (const op of resultDoc.postOperations) {
-      await op(resultDoc, extraDocs, existing)
-    }
     const idMapping = new Map<Ref<Doc>, Ref<Doc>>()
 
     // Find all attachment documents to existing.
@@ -322,8 +330,6 @@ export async function syncDocument (
 
   async function updateMainDoc (applyOp: ApplyOperations): Promise<BitrixSyncDoc> {
     if (existing !== undefined) {
-      // We need update doucment id.
-      resultDoc.document._id = existing._id as Ref<BitrixSyncDoc>
       // We need to update fields if they are different.
       return (await updateDoc(applyOp, existing, resultDoc.document, resultDoc.document.modifiedOn)) as BitrixSyncDoc
       // Go over extra documents.
