@@ -90,7 +90,7 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
         const targetClasses = new Set(
           hierarchy.getDescendants(core.class.Doc).filter((p) => {
             const domain = hierarchy.findDomain(p)
-            return (domain != null) && this.targetDomains.includes(domain)
+            return domain != null && this.targetDomains.includes(domain)
           })
         )
         ;(findResult as FindResult<Doc> as FindResult<Tx>).filter(
