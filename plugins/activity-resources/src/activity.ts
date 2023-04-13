@@ -346,7 +346,7 @@ class ActivityImpl implements Activity {
   ): DisplayTx[] {
     const curUpdate: any = getCombineOpFromTx(result)
 
-    if (curUpdate === undefined || (result.doc !== undefined && editable.has(result.doc._class))) {
+    if (curUpdate === undefined || (result.doc !== undefined && editable.get(result.doc._class) === true)) {
       results.push(result)
       return results
     }
