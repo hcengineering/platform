@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import client, { ClientSocket } from '@hcengineering/client'
+import client, { ClientSocket, ClientSocketReadyState } from '@hcengineering/client'
 import core, {
   Class,
   ClientConnection,
@@ -24,27 +24,28 @@ import core, {
   Domain,
   FindOptions,
   FindResult,
-  generateId,
   Ref,
   Tx,
   TxApplyIf,
   TxHandler,
   TxResult,
   TxWorkspaceEvent,
-  WorkspaceEvent
+  WorkspaceEvent,
+  generateId
 } from '@hcengineering/core'
 import {
-  getMetadata,
   PlatformError,
-  readResponse,
   ReqId,
-  serialize,
   UNAUTHORIZED,
+  getMetadata,
+  readResponse,
+  serialize,
   unknownError
 } from '@hcengineering/platform'
 
 const SECOND = 1000
 const pingTimeout = 10 * SECOND
+const hangTimeout = 5 * 60 * SECOND
 const dialTimeout = 20 * SECOND
 
 class RequestPromise {
@@ -81,7 +82,7 @@ class Connection implements ClientConnection {
     this.interval = setInterval(() => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
 
-      if (this.pingResponse !== 0 && Date.now() - this.pingResponse > 3 * pingTimeout) {
+      if (this.pingResponse !== 0 && Date.now() - this.pingResponse > hangTimeout) {
         // No ping response from server.
         const s = this.websocket
 
@@ -116,13 +117,21 @@ class Connection implements ClientConnection {
   }
 
   delay = 1
+  pending: Promise<ClientSocket> | undefined
+
   private async waitOpenConnection (): Promise<ClientSocket> {
     while (true) {
       try {
-        const conn = await this.openConnection()
+        const socket = await this.pending
+        if (socket != null && socket.readyState === ClientSocketReadyState.OPEN) {
+          return socket
+        }
+        this.pending = this.openConnection()
+        await this.pending
         this.delay = 5
-        return conn
+        return await this.pending
       } catch (err: any) {
+        this.pending = undefined
         console.log('failed to connect', err)
         if (err?.code === UNAUTHORIZED.code) {
           this.onUnauthorized?.()

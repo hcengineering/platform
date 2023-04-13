@@ -47,6 +47,18 @@ export interface ClientSocket {
   send: (data: string | ArrayBufferLike | Blob | ArrayBufferView) => void
 
   close: (code?: number) => void
+
+  readyState: ClientSocketReadyState
+}
+
+/**
+ * @public
+ */
+export enum ClientSocketReadyState {
+  CONNECTING = 0,
+  OPEN = 1,
+  CLOSING = 2,
+  CLOSED = 3
 }
 
 /**
