@@ -145,10 +145,10 @@
     {/if}
   </div>
 {:else}
-  <div class="buttons-group xsmall-gap">
+  <div class="flex-row-center gap-2">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <span
-      class="select-text cover-channel"
+      class="select-text cover-channel overflow-label"
       class:show
       class:copied={label === plugin.string.Copied}
       class:cursor-pointer={openable}
