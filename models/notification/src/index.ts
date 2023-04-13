@@ -269,9 +269,10 @@ export function createModel (builder: Builder): void {
       label: notification.string.Archive,
       icon: view.icon.Archive,
       input: 'focus',
+      keyBinding: ['Backspace'],
       category: notification.category.Notification,
       target: notification.class.DocUpdates,
-      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
+      context: { mode: ['context', 'browser'], group: 'edit' }
     },
     notification.action.Hide
   )

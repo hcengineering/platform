@@ -94,6 +94,16 @@ export async function OnBacklinkCreate (tx: Tx, control: TriggerControl): Promis
         }
       )
       res.push(collabTx)
+      res = res.concat(
+        await createCollabDocInfo(
+          [receiver._id],
+          tx as TxCUD<Doc>,
+          doc._id,
+          doc._class,
+          control,
+          tx._id as Ref<TxCUD<Doc>>
+        )
+      )
     }
   }
   const notifyTx = await createNotificationTxes(

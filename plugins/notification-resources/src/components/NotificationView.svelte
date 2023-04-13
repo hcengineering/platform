@@ -24,7 +24,6 @@
   import { AnySvelteComponent, Label, TimeSince, getEventPositionElement, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { Menu } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
   import TxView from './TxView.svelte'
 
   export let value: DocUpdates
@@ -60,10 +59,10 @@
     query.query(contact.class.EmployeeAccount, { _id: tx.modifiedBy as Ref<EmployeeAccount> }, (r) => ([account] = r))
   $: employee = account && $employeeByIdStore.get(account.employee)
 
-  const dispatch = createEventDispatcher()
-
   const docQuery = createQuery()
-  $: docQuery.query(value.attachedToClass, { _id: value.attachedTo }, (res) => ([doc] = res))
+  $: docQuery.query(value.attachedToClass, { _id: value.attachedTo }, (res) => {
+    ;[doc] = res
+  })
 
   $: newTxes = value.txes.length
 
@@ -74,12 +73,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 {#if doc}
-  <div
-    class="container cursor-pointer bottom-divider"
-    class:selected
-    on:contextmenu|preventDefault={showMenu}
-    on:click={() => dispatch('click', { _id: value.attachedTo, _class: value.attachedToClass })}
-  >
+  <div class="container cursor-pointer bottom-divider" class:selected on:contextmenu|preventDefault={showMenu} on:click>
     <div class="header flex">
       <Avatar avatar={employee?.avatar} size="medium" />
       <div class="ml-2 w-full clear-mins">
