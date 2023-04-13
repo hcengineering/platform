@@ -24,6 +24,7 @@ import bitrix, {
   BitrixEntityMapping,
   BitrixEntityType,
   BitrixFieldMapping,
+  BitrixStateMapping,
   BitrixSyncDoc,
   CopyValueOperation,
   CreateChannelOperation,
@@ -404,8 +405,7 @@ export async function convert (
 
   const getCreateAttachedValue = async (attr: AnyAttribute, operation: CreateHRApplication): Promise<void> => {
     const vacancyName = extractValue(operation.vacancyField)
-    const statusName = extractValue(operation.stateField)
-
+    const sourceStatusName = extractValue(operation.stateField)
     postOperations.push(async (doc, extraDocs, existingDoc) => {
       let vacancyId: Ref<Vacancy> | undefined
 
@@ -440,42 +440,77 @@ export async function convert (
             vacancies.push(vacancy)
           }
         }
-      } else {
-        return
       }
 
-      // Check if candidate already have vacancy
-      const existing = applications.find(
-        (it) =>
-          it.attachedTo === ((existingDoc?._id ?? doc.document._id) as unknown as Ref<Candidate>) &&
-          it.space === vacancyId
-      )
+      if (sourceStatusName != null && sourceStatusName !== '') {
+        // Check if candidate already have vacancy
+        const existing = applications.find(
+          (it) =>
+            it.attachedTo === ((existingDoc?._id ?? doc.document._id) as unknown as Ref<Candidate>) &&
+            it.space === vacancyId
+        )
 
-      const candidate = doc.mixins[recruit.mixin.Candidate] as Data<Candidate>
-      const ops = new TxOperations(client, document.modifiedBy)
+        const candidate = doc.mixins[recruit.mixin.Candidate] as Data<Candidate>
+        const ops = new TxOperations(client, document.modifiedBy)
+        let statusName = sourceStatusName
+        let mapping: BitrixStateMapping | undefined
+        for (const t of operation.stateMapping ?? []) {
+          if (t.sourceName === sourceStatusName) {
+            statusName = t.targetName
+            mapping = t
+            break
+          }
+        }
 
-      if (statusName != null && statusName !== '') {
+        const attrs = getAllAttributes(client, recruit.mixin.Candidate)
+
+        // Update candidate operations
+        for (const u of mapping?.updateCandidate ?? []) {
+          const attribute = attrs.get(u.attr)
+          if (attribute === undefined) {
+            console.error('failed to fill attribute', u.attr)
+            continue
+          }
+          if (client.getHierarchy().isMixin(attribute.attributeOf)) {
+            doc.mixins[attribute.attributeOf] = { ...(doc.mixins[attribute.attributeOf] ?? {}), [u.attr]: u.value }
+          } else {
+            ;(doc.document as any)[u.attr] = u.value
+          }
+        }
         // Find status for vacancy
-        const states = await client.findAll(task.class.State, { space: vacancyId })
-
         const update: DocumentUpdate<Applicant> = {}
         for (const k of operation.copyTalentFields ?? []) {
           const val = (candidate as any)[k.candidate]
-          if ((existing as any)[k.applicant] !== val) {
+          if ((existing as any)?.[k.applicant] !== val) {
             ;(update as any)[k.applicant] = val
           }
         }
-        const state = states.find((it) => it.name.toLowerCase().trim() === statusName.toLowerCase().trim())
-        if (state !== undefined) {
-          if (existing !== undefined) {
-            if (existing.state !== state?._id) {
-              update.state = state._id
+        if (vacancyId !== undefined) {
+          const states = await client.findAll(task.class.State, { space: vacancyId })
+          const state = states.find((it) => it.name.toLowerCase().trim() === statusName.toLowerCase().trim())
+          if (state !== undefined) {
+            if (mapping?.doneState !== '') {
+              const doneStates = await client.findAll(task.class.DoneState, { space: vacancyId })
+              const doneState = doneStates.find(
+                (it) => it.name.toLowerCase().trim() === mapping?.doneState.toLowerCase().trim()
+              )
+              if (doneState !== undefined) {
+                if (doneState !== undefined && existing?.doneState !== doneState._id) {
+                  update.doneState = doneState._id
+                }
+              }
             }
-            if (Object.keys(update).length > 0) {
-              await ops.update(existing, update)
+
+            if (existing !== undefined) {
+              if (existing.state !== state?._id) {
+                update.state = state._id
+              }
+              if (Object.keys(update).length > 0) {
+                await ops.update(existing, update)
+              }
+            } else {
+              await createApplication(ops, state, vacancyId, document, update as Data<Applicant>)
             }
-          } else {
-            await createApplication(ops, state, vacancyId, { ...document, ...update })
           }
         }
       }
@@ -603,4 +638,22 @@ export async function convert (
  */
 export function toClassRef (val: any): Ref<Class<Doc>> {
   return val as Ref<Class<Doc>>
+}
+
+/**
+ * @public
+ */
+export function getAllAttributes (client: Client, _class: Ref<Class<Doc>>): Map<string, AnyAttribute> {
+  const h = client.getHierarchy()
+  const _classAttrs = h.getAllAttributes(recruit.mixin.Candidate)
+
+  const ancestors = h.getAncestors(_class)
+  for (const a of ancestors) {
+    for (const m of h.getDescendants(a).filter((it) => h.isMixin(it))) {
+      for (const [k, v] of h.getOwnAttributes(m)) {
+        _classAttrs.set(k, v)
+      }
+    }
+  }
+  return _classAttrs
 }

@@ -16,20 +16,29 @@
   import core, { Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Vacancy } from '@hcengineering/recruit'
-  import { Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
+  import {
+    Button,
+    Icon,
+    IconAdd,
+    Label,
+    Loading,
+    SearchEdit,
+    deviceOptionsStore as deviceInfo,
+    showPopup,
+    tableToCSV
+  } from '@hcengineering/ui'
   import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
   import {
     FilterBar,
     FilterButton,
+    TableBrowser,
+    ViewletSettingButton,
     getViewOptions,
     setActiveViewletId,
-    TableBrowser,
-    viewOptionStore,
-    ViewletSettingButton
+    viewOptionStore
   } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import CreateVacancy from './CreateVacancy.svelte'
-  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   export let archived = false
 
@@ -176,6 +185,25 @@
       on:click={showCreateDialog}
     />
     <ViewletSettingButton bind:viewOptions viewlet={descr} />
+    <Button
+      label={recruit.string.Export}
+      size={'small'}
+      on:click={() => {
+        // Download it
+        const filename = 'vacancies' + new Date().toLocaleDateString() + '.csv'
+        const link = document.createElement('a')
+        link.style.display = 'none'
+        link.setAttribute('target', '_blank')
+        link.setAttribute(
+          'href',
+          'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(tableToCSV('vacanciesData'))
+        )
+        link.setAttribute('download', filename)
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+      }}
+    />
   </div>
 </div>
 
@@ -194,6 +222,7 @@
       _class={recruit.class.Vacancy}
       config={createConfig(descr, preference, applications)}
       options={descr.options}
+      tableId={'vacanciesData'}
       query={{
         ...resultQuery,
         archived

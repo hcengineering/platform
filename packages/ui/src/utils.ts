@@ -79,3 +79,23 @@ export function handler<T, EVT = MouseEvent> (target: T, op: (value: T, evt: EVT
     op(target, evt)
   }
 }
+
+/**
+ * @public
+ */
+export function tableToCSV (tableId: string, separator = ','): string {
+  const rows = document.querySelectorAll('table#' + tableId + ' tr')
+  // Construct csv
+  const csv: string[] = []
+  for (let i = 0; i < rows.length; i++) {
+    const row: string[] = []
+    const cols = rows[i].querySelectorAll('td, th')
+    for (let j = 0; j < cols.length; j++) {
+      let data = (cols[j] as HTMLElement).innerText.replace(/(\r\n|\n|\r)/gm, '').replace(/(\s\s)/gm, ' ')
+      data = data.replace(/"/g, '""')
+      row.push('"' + data + '"')
+    }
+    csv.push(row.join(separator))
+  }
+  return csv.join('\n')
+}

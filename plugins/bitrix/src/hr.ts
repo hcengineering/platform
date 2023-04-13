@@ -1,6 +1,6 @@
 import { Organization } from '@hcengineering/contact'
-import core, { Account, Client, Doc, Ref, SortingOrder, TxOperations } from '@hcengineering/core'
-import recruit, { Vacancy } from '@hcengineering/recruit'
+import core, { Account, Client, Data, Doc, Ref, SortingOrder, TxOperations } from '@hcengineering/core'
+import recruit, { Applicant, Vacancy } from '@hcengineering/recruit'
 import task, { KanbanTemplate, State, calcRank, createKanban } from '@hcengineering/task'
 
 export async function createVacancy (
@@ -42,7 +42,8 @@ export async function createApplication (
   client: TxOperations,
   selectedState: State,
   _space: Ref<Vacancy>,
-  doc: Doc
+  doc: Doc,
+  data: Data<Applicant>
 ): Promise<void> {
   if (selectedState === undefined) {
     throw new Error(`Please select initial state:${_space}`)
@@ -60,13 +61,10 @@ export async function createApplication (
   const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
   await client.addCollection(recruit.class.Applicant, _space, doc._id, recruit.mixin.Candidate, 'applications', {
+    ...data,
     state: state._id,
-    doneState: null,
     number: (incResult as any).object.sequence,
-    assignee: null,
     rank: calcRank(lastOne, undefined),
-    startDate: null,
-    dueDate: null,
     createOn: Date.now()
   })
 }

@@ -1,9 +1,9 @@
 import { Employee, getName } from '@hcengineering/contact'
 import { Ref, TxOperations } from '@hcengineering/core'
-import { Department, fromTzDate, Request, RequestType, Staff } from '@hcengineering/hr'
+import { Department, Request, RequestType, Staff, fromTzDate } from '@hcengineering/hr'
 import { MessageBox } from '@hcengineering/presentation'
 import { Issue, TimeSpendReport } from '@hcengineering/tracker'
-import { areDatesEqual, isWeekend, MILLISECONDS_IN_DAY, showPopup } from '@hcengineering/ui'
+import { MILLISECONDS_IN_DAY, areDatesEqual, isWeekend, showPopup } from '@hcengineering/ui'
 import hr from './plugin'
 
 const todayDate = new Date()
@@ -207,23 +207,6 @@ export function getTotal (
 export function isHoliday (holidays: Date[] | undefined, day: Date): boolean {
   if (holidays === undefined) return false
   return holidays.some((date) => areDatesEqual(day, date))
-}
-
-export function tableToCSV (tableId: string, separator = ','): string {
-  const rows = document.querySelectorAll('table#' + tableId + ' tr')
-  // Construct csv
-  const csv = []
-  for (let i = 0; i < rows.length; i++) {
-    const row = []
-    const cols = rows[i].querySelectorAll('td, th')
-    for (let j = 0; j < cols.length; j++) {
-      let data = (cols[j] as HTMLElement).innerText.replace(/(\r\n|\n|\r)/gm, '').replace(/(\s\s)/gm, ' ')
-      data = data.replace(/"/g, '""')
-      row.push('"' + data + '"')
-    }
-    csv.push(row.join(separator))
-  }
-  return csv.join('\n')
 }
 
 export function getHolidayDatesForEmployee (

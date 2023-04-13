@@ -274,6 +274,19 @@ export interface CreateAttachedField {
 /**
  * @public
  */
+export interface BitrixStateMapping {
+  sourceName: string
+  targetName: string // if empty will not create application
+
+  doneState: string // Alternative is to set doneState to value
+
+  // Allow to put some values, in case of some statues
+  updateCandidate: { attr: string, value: any }[]
+}
+
+/**
+ * @public
+ */
 export interface CreateHRApplication {
   kind: MappingOperation.CreateHRApplication
 
@@ -283,6 +296,9 @@ export interface CreateHRApplication {
   defaultTemplate: Ref<KanbanTemplate>
 
   copyTalentFields?: { candidate: Ref<AnyAttribute>, applicant: Ref<AnyAttribute> }[]
+
+  // We would like to map some of bitrix states to our states, name matching is used to hold values.
+  stateMapping?: BitrixStateMapping[]
 }
 
 /**
