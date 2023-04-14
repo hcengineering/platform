@@ -14,10 +14,10 @@
 -->
 <script lang="ts">
   import { DisplayTx } from '@hcengineering/activity'
-  import core, { AttachedDoc, Doc, TxCUD, TxCollectionCUD, TxProcessor } from '@hcengineering/core'
+  import core, { AttachedDoc, Doc, TxCUD, TxCollectionCUD, TxCreateDoc, TxProcessor } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import contact from '../../plugin'
-  import { Channel, Contact } from '@hcengineering/contact'
+  import { Channel, ChannelItem, Contact } from '@hcengineering/contact'
   import { newDisplayTx } from '@hcengineering/activity-resources'
   import { createEventDispatcher } from 'svelte'
 
@@ -46,7 +46,7 @@
   let newTxes: DisplayTx[] = []
 
   const txQuery = createQuery()
-  $: txQuery.query(
+  $: txQuery.query<TxCollectionCUD<Channel, ChannelItem>>(
     core.class.TxCollectionCUD,
     {
       objectId: { $in: channels.map((p) => p._id) },
@@ -54,7 +54,8 @@
       'tx.attributes.incoming': false
     },
     (res) => {
-      newTxes = createDisplayTxes(res)
+      const filtered = res.filter((p) => (p.tx as TxCreateDoc<ChannelItem>).attributes.sendOn >= object.createOn)
+      newTxes = createDisplayTxes(filtered)
     }
   )
 

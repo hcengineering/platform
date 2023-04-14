@@ -61,6 +61,17 @@ export interface Channel extends AttachedDoc {
 /**
  * @public
  */
+export interface ChannelItem extends AttachedDoc {
+  attachedTo: Ref<Channel>
+  attachedToClass: Ref<Class<Channel>>
+  incoming: boolean
+  sendOn: Timestamp
+  attachments?: number
+}
+
+/**
+ * @public
+ */
 export enum AvatarType {
   COLOR = 'color',
   IMAGE = 'image',
