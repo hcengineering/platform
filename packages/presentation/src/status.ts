@@ -231,7 +231,7 @@ export class StatusMiddleware extends BasePresentationMiddleware implements Pres
           statusFields.push(attr)
           const v = (query as any)[attr.name]
 
-          if (v !== undefined) {
+          if (v != null) {
             // Only add filter if we have filer inside.
             if (typeof v === 'string') {
               target.push(v as Ref<Status>)
