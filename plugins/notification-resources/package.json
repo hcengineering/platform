@@ -34,15 +34,15 @@
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",
     "svelte": "3.55.1",
-    "@hcengineering/notification": "^0.6.9",
-    "@hcengineering/ui": "^0.6.5",
+    "@hcengineering/notification": "^0.6.10",
+    "@hcengineering/ui": "^0.6.6",
     "@hcengineering/presentation": "^0.6.2",
     "@hcengineering/activity-resources": "^0.6.1",
     "@hcengineering/activity": "^0.6.0",
-    "@hcengineering/contact": "^0.6.12",
+    "@hcengineering/contact": "^0.6.13",
     "@hcengineering/contact-resources": "^0.6.0",
-    "@hcengineering/core": "^0.6.22",
-    "@hcengineering/view": "^0.6.3",
+    "@hcengineering/core": "^0.6.23",
+    "@hcengineering/view": "^0.6.4",
     "@hcengineering/view-resources": "^0.6.0"
   }
 }

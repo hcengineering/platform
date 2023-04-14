@@ -30,6 +30,6 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/bitrix": "^0.6.29"
+    "@hcengineering/bitrix": "^0.6.30"
   }
 }

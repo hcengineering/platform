@@ -30,20 +30,20 @@
     "svelte-check": "3.2.0"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.22",
+    "@hcengineering/core": "^0.6.23",
     "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/ui": "^0.6.5",
+    "@hcengineering/ui": "^0.6.6",
     "@hcengineering/presentation": "^0.6.2",
     "@hcengineering/activity": "^0.6.0",
     "svelte": "3.55.1",
-    "@hcengineering/chunter": "^0.6.3",
+    "@hcengineering/chunter": "^0.6.4",
     "@hcengineering/text-editor": "^0.6.0",
-    "@hcengineering/contact": "^0.6.12",
-    "@hcengineering/view": "^0.6.3",
+    "@hcengineering/contact": "^0.6.13",
+    "@hcengineering/view": "^0.6.4",
     "@hcengineering/view-resources": "^0.6.0",
-    "@hcengineering/client": "^0.6.7",
+    "@hcengineering/client": "^0.6.8",
     "@hcengineering/devmodel": "^0.6.0",
-    "@hcengineering/model": "^0.6.1",
-    "@hcengineering/workbench": "^0.6.3"
+    "@hcengineering/model": "^0.6.2",
+    "@hcengineering/workbench": "^0.6.4"
   }
 }

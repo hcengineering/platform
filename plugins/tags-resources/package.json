@@ -34,11 +34,11 @@
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",
     "svelte": "3.55.1",
-    "@hcengineering/tags": "^0.6.6",
-    "@hcengineering/ui": "^0.6.5",
+    "@hcengineering/tags": "^0.6.7",
+    "@hcengineering/ui": "^0.6.6",
     "@hcengineering/presentation": "^0.6.2",
-    "@hcengineering/core": "^0.6.22",
-    "@hcengineering/view": "^0.6.3",
+    "@hcengineering/core": "^0.6.23",
+    "@hcengineering/view": "^0.6.4",
     "@hcengineering/view-resources": "^0.6.0"
   }
 }

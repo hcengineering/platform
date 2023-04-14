@@ -27,6 +27,6 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/ui": "^0.6.5"
+    "@hcengineering/ui": "^0.6.6"
   }
 }
