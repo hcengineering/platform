@@ -23,7 +23,8 @@
     EmployeeAccount,
     getName as getContactName
   } from '@hcengineering/contact'
-  import { Class, generateId, getCurrentAccount, IdMap, Ref, SortingOrder } from '@hcengineering/core'
+  import { Avatar, employeeAccountByIdStore, employeeByIdStore } from '@hcengineering/contact-resources'
+  import { Class, IdMap, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -32,22 +33,21 @@
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
   import {
     Button,
-    eventToHTMLElement,
     Icon,
     IconShare,
     Label,
     Panel,
     Scroller,
+    eventToHTMLElement,
     showPopup,
     tooltip
   } from '@hcengineering/ui'
-  import { Avatar, employeeByIdStore } from '@hcengineering/contact-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import telegram from '../plugin'
   import Connect from './Connect.svelte'
-  import TelegramIcon from './icons/Telegram.svelte'
   import Messages from './Messages.svelte'
   import Reconnect from './Reconnect.svelte'
+  import TelegramIcon from './icons/Telegram.svelte'
 
   export let _id: Ref<Contact>
   export let _class: Ref<Class<Contact>>
@@ -95,13 +95,11 @@
     })
 
   let messages: TelegramMessage[] = []
-  let accounts: EmployeeAccount[] = []
   let integration: Integration | undefined
   let selected: Set<Ref<SharedTelegramMessage>> = new Set<Ref<SharedTelegramMessage>>()
   let selectable = false
 
   const messagesQuery = createQuery()
-  const accauntsQuery = createQuery()
   const settingsQuery = createQuery()
   const accountId = getCurrentAccount()._id
 
@@ -126,10 +124,6 @@
   }
 
   $: channel && updateMessagesQuery(channel._id)
-
-  accauntsQuery.query(contact.class.EmployeeAccount, {}, (result) => {
-    accounts = result
-  })
 
   settingsQuery.query(
     setting.class.Integration,
@@ -160,8 +154,8 @@
     loading = false
   }
 
-  function getName (message: TelegramMessage, accounts: EmployeeAccount[]): string {
-    return message.incoming ? object.name : accounts.find((p) => p._id === message.modifiedBy)?.name ?? ''
+  function getName (message: TelegramMessage, accounts: IdMap<EmployeeAccount>): string {
+    return message.incoming ? object.name : accounts.get(message.modifiedBy as Ref<EmployeeAccount>)?.name ?? ''
   }
 
   async function share (): Promise<void> {
@@ -173,7 +167,7 @@
       object._class,
       'sharedTelegramMessages',
       {
-        messages: convertMessages(selectedMessages, accounts)
+        messages: convertMessages(selectedMessages, $employeeAccountByIdStore)
       }
     )
     if (channel !== undefined) {
@@ -188,7 +182,7 @@
     selected = selected
   }
 
-  function convertMessages (messages: TelegramMessage[], accounts: EmployeeAccount[]): SharedTelegramMessage[] {
+  function convertMessages (messages: TelegramMessage[], accounts: IdMap<EmployeeAccount>): SharedTelegramMessage[] {
     return messages.map((m) => {
       return {
         ...m,
@@ -219,16 +213,16 @@
 
   function getParticipants (
     messages: TelegramMessage[],
-    accounts: EmployeeAccount[],
+    accounts: IdMap<EmployeeAccount>,
     object: Contact | undefined,
     employees: IdMap<Employee>
   ): Contact[] {
-    if (object === undefined || accounts.length === 0) return []
+    if (object === undefined || accounts.size === 0) return []
     const res: IdMap<Contact> = new Map()
     res.set(object._id, object)
     const accs = new Set(messages.map((p) => p.modifiedBy))
     for (const acc of accs) {
-      const account = accounts.find((p) => p._id === acc)
+      const account = accounts.get(acc as Ref<EmployeeAccount>)
       if (account !== undefined) {
         const emp = employees.get(account.employee)
         if (emp !== undefined) {
@@ -239,7 +233,7 @@
     return Array.from(res.values())
   }
 
-  $: participants = getParticipants(messages, accounts, object, $employeeByIdStore)
+  $: participants = getParticipants(messages, $employeeAccountByIdStore, object, $employeeByIdStore)
 </script>
 
 {#if object !== undefined}
@@ -298,8 +292,8 @@
     </svelte:fragment>
 
     <Scroller bottomStart autoscroll>
-      {#if messages && accounts}
-        <Messages messages={convertMessages(messages, accounts)} {selectable} bind:selected />
+      {#if messages}
+        <Messages messages={convertMessages(messages, $employeeAccountByIdStore)} {selectable} bind:selected />
       {/if}
     </Scroller>
 

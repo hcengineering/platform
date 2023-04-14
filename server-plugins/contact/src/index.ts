@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import type { Resource, Plugin } from '@hcengineering/platform'
+import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import type { AsyncTriggerFunc, TriggerFunc } from '@hcengineering/server-core'
+import type { TriggerFunc } from '@hcengineering/server-core'
 import { Presenter } from '@hcengineering/server-notification'
 
 /**
@@ -31,7 +31,7 @@ export default plugin(serverContactId, {
   trigger: {
     OnContactDelete: '' as Resource<TriggerFunc>,
     OnChannelUpdate: '' as Resource<TriggerFunc>,
-    OnEmployeeUpdate: '' as Resource<AsyncTriggerFunc>
+    OnEmployeeUpdate: '' as Resource<TriggerFunc>
   },
   function: {
     PersonHTMLPresenter: '' as Resource<Presenter>,

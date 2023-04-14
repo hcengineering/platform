@@ -355,7 +355,7 @@ async function handleRequest<S extends Session> (
       }
     }, 30000)
 
-    const result = await f.apply(service, params)
+    let result = await f.apply(service, params)
     clearTimeout(timeout)
     clearTimeout(hangTimeout)
     const resp: Response<any> = { id: request.id, result }
@@ -373,7 +373,11 @@ async function handleRequest<S extends Session> (
         diff
       )
     }
-    ws.send(serialize(resp))
+    const toSend = serialize(resp)
+    // Clear for gc to make work
+    resp.result = undefined
+    result = undefined
+    ws.send(toSend)
   } catch (err: any) {
     if (LOGGING_ENABLED) console.error(err)
     clearTimeout(timeout)
@@ -427,7 +431,7 @@ export function start (
     })
     const session = await sessions.addSession(ctx, ws, token, pipelineFactory, productId, sessionId)
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    ws.on('message', async (msg: RawData) => {
+    ws.on('message', (msg: RawData) => {
       let msgStr = ''
       if (typeof msg === 'string') {
         msgStr = msg
@@ -436,7 +440,7 @@ export function start (
       } else if (Array.isArray(msg)) {
         msgStr = Buffer.concat(msg).toString()
       }
-      await handleRequest(ctx, session, ws, msgStr, token.workspace.name)
+      void handleRequest(ctx, session, ws, msgStr, token.workspace.name)
     })
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('close', (code: number, reason: Buffer) => {

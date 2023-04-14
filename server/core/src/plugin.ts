@@ -18,7 +18,7 @@ import type { Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 
 import type { Class, Ref, Space } from '@hcengineering/core'
-import type { AsyncTrigger, AsyncTriggerState, ObjectDDParticipant, Trigger } from './types'
+import type { ObjectDDParticipant, Trigger } from './types'
 
 /**
  * @public
@@ -30,9 +30,7 @@ export const serverCoreId = 'server-core' as Plugin
  */
 const serverCore = plugin(serverCoreId, {
   class: {
-    Trigger: '' as Ref<Class<Trigger>>,
-    AsyncTrigger: '' as Ref<Class<AsyncTrigger>>,
-    AsyncTriggerState: '' as Ref<Class<AsyncTriggerState>>
+    Trigger: '' as Ref<Class<Trigger>>
   },
   mixin: {
     ObjectDDParticipant: '' as Ref<ObjectDDParticipant>

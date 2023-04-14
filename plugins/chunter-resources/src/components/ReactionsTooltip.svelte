@@ -1,16 +1,9 @@
 <script lang="ts">
-  import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
-  import { employeeByIdStore } from '@hcengineering/contact-resources'
-  import { Account, IdMap, Ref, toIdMap } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
+  import { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
+  import { employeeAccountByIdStore, employeeByIdStore } from '@hcengineering/contact-resources'
+  import { Account, IdMap, Ref } from '@hcengineering/core'
 
   export let reactionAccounts: Ref<Account>[]
-  let accounts: IdMap<EmployeeAccount> = new Map()
-
-  const query = createQuery()
-  $: query.query(contact.class.EmployeeAccount, {}, (res) => {
-    accounts = toIdMap(res)
-  })
 
   function getAccName (acc: Ref<Account>, accounts: IdMap<EmployeeAccount>, employees: IdMap<Employee>): string {
     const account = accounts.get(acc as Ref<EmployeeAccount>)
@@ -24,6 +17,6 @@
 
 {#each reactionAccounts as acc}
   <div>
-    {getAccName(acc, accounts, $employeeByIdStore)}
+    {getAccName(acc, $employeeAccountByIdStore, $employeeByIdStore)}
   </div>
 {/each}

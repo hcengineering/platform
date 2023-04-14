@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { EmployeeAccount } from '@hcengineering/contact'
-  import { employeeByIdStore, EmployeeBox } from '@hcengineering/contact-resources'
+  import { EmployeeAccount } from '@hcengineering/contact'
+  import { EmployeeBox, employeeAccountByIdStore, employeeByIdStore } from '@hcengineering/contact-resources'
   import core, { ClassifierKind, Doc, Mixin, Ref } from '@hcengineering/core'
-  import { AttributeBarEditor, createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
+  import { AttributeBarEditor, KeyedAttribute, createQuery, getClient } from '@hcengineering/presentation'
 
   import tags from '@hcengineering/tags'
   import type { Issue } from '@hcengineering/tracker'
   import { Component, Label } from '@hcengineering/ui'
-  import { getFiltredKeys, isCollectionAttr, ObjectBox } from '@hcengineering/view-resources'
+  import { ObjectBox, getFiltredKeys, isCollectionAttr } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
   import ComponentEditor from '../../components/ComponentEditor.svelte'
   import SprintEditor from '../../sprints/SprintEditor.svelte'
@@ -87,19 +87,10 @@
     'blockedBy'
   ])
 
-  const employeeAccountQuery = createQuery()
-
   let account: EmployeeAccount | undefined
   $: employee = account && $employeeByIdStore.get(account.employee)
 
-  $: employeeAccountQuery.query(
-    contact.class.EmployeeAccount,
-    { _id: issue.createdBy as Ref<EmployeeAccount> },
-    (res) => {
-      ;[account] = res
-    },
-    { limit: 1 }
-  )
+  $: account = $employeeAccountByIdStore.get(issue.createdBy as Ref<EmployeeAccount>)
 </script>
 
 <div class="content">

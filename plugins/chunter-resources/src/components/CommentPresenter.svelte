@@ -17,26 +17,28 @@
   import { AttachmentDocList } from '@hcengineering/attachment-resources'
   import type { Comment } from '@hcengineering/chunter'
   import chunter from '@hcengineering/chunter'
-  import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
-  import { Avatar, employeeByIdStore } from '@hcengineering/contact-resources'
-  import { Ref } from '@hcengineering/core'
-  import { getClient, MessageViewer } from '@hcengineering/presentation'
+  import { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
+  import { Avatar, employeeAccountByIdStore, employeeByIdStore } from '@hcengineering/contact-resources'
+  import { IdMap, Ref } from '@hcengineering/core'
+  import { MessageViewer } from '@hcengineering/presentation'
   import { Icon, ShowMore, TimeSince } from '@hcengineering/ui'
 
   export let value: Comment
   export let inline: boolean = false
   export let disableClick = false
 
-  const client = getClient()
-
   const cutId = (str: string): string => {
     return str.slice(0, 4) + '...' + str.slice(-4)
   }
 
-  async function getEmployee (value: Comment): Promise<Employee | undefined> {
-    const acc = await client.findOne(contact.class.EmployeeAccount, { _id: value.modifiedBy as Ref<EmployeeAccount> })
+  async function getEmployee (
+    value: Comment,
+    employees: IdMap<Employee>,
+    accounts: IdMap<EmployeeAccount>
+  ): Promise<Employee | undefined> {
+    const acc = accounts.get(value.modifiedBy as Ref<EmployeeAccount>)
     if (acc !== undefined) {
-      const emp = $employeeByIdStore.get(acc.employee)
+      const emp = employees.get(acc.employee)
       return emp
     }
   }
@@ -52,7 +54,7 @@
   &nbsp;<span class="dark-color">#{cutId(value._id.toString())}</span>
 {:else}
   <div class="flex-row-top">
-    {#await getEmployee(value) then employee}
+    {#await getEmployee(value, $employeeByIdStore, $employeeAccountByIdStore) then employee}
       <div class="avatar">
         <Avatar size={'medium'} avatar={employee?.avatar} />
       </div>

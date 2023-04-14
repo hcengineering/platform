@@ -32,7 +32,6 @@ import {
   Storage,
   Timestamp,
   Tx,
-  TxCUD,
   TxFactory,
   TxResult,
   WorkspaceId
@@ -104,6 +103,9 @@ export interface TriggerControl {
   // Later can be replaced with generic one with bucket encapsulated inside.
   storageFx: (f: (adapter: MinioService, workspaceId: WorkspaceId) => Promise<void>) => void
   fx: (f: () => Promise<void>) => void
+
+  // Bulk operations in case trigger require some
+  apply: (tx: Tx[], broadcast: boolean) => Promise<void>
 }
 
 /**
@@ -114,39 +116,11 @@ export type TriggerFunc = (tx: Tx, ctrl: TriggerControl) => Promise<Tx[]>
 /**
  * @public
  */
-export interface AsyncTriggerControl {
-  txFactory: TxFactory
-  findAll: Storage['findAll']
-  apply: (tx: Tx[], broadcast: boolean, updateTx: boolean) => Promise<void>
-  hierarchy: Hierarchy
-  modelDb: ModelDb
-}
-/**
- * @public
- */
-export type AsyncTriggerFunc = (tx: Tx, ctrl: AsyncTriggerControl) => Promise<Tx[]>
-
-/**
- * @public
- */
 export interface Trigger extends Doc {
   trigger: Resource<TriggerFunc>
-}
 
-/**
- * @public
- */
-export interface AsyncTrigger extends Doc {
-  trigger: Resource<AsyncTriggerFunc>
-  classes: Ref<Class<Doc>>[]
-}
-
-/**
- * @public
- */
-export interface AsyncTriggerState extends Doc {
-  tx: TxCUD<Doc>
-  message: string
+  // We should match transaction
+  txMatch?: DocumentQuery<Tx>
 }
 
 /**

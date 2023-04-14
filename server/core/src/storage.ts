@@ -58,7 +58,6 @@ import { FullTextIndex } from './fulltext'
 import { FullTextIndexPipeline } from './indexer'
 import { FullTextPipelineStage } from './indexer/types'
 import serverCore from './plugin'
-import { AsyncTriggerProcessor } from './processor'
 import { Triggers } from './triggers'
 import type {
   ContentAdapterFactory,
@@ -68,7 +67,7 @@ import type {
   ObjectDDParticipant,
   TriggerControl
 } from './types'
-import { createCacheFindAll } from './utils'
+import { createFindAll } from './utils'
 
 /**
  * @public
@@ -104,7 +103,6 @@ export interface DbConfiguration {
 class TServerStorage implements ServerStorage {
   private readonly fulltext: FullTextIndex
   hierarchy: Hierarchy
-  triggerProcessor: AsyncTriggerProcessor
 
   scopes = new Map<string, Promise<any>>()
 
@@ -124,15 +122,11 @@ class TServerStorage implements ServerStorage {
   ) {
     this.hierarchy = hierarchy
     this.fulltext = indexFactory(this)
-    this.triggerProcessor = new AsyncTriggerProcessor(modelDb, hierarchy, this, metrics.newChild('triggers', {}))
-    void this.triggerProcessor.start()
   }
 
   async close (): Promise<void> {
     console.timeLog(this.workspace.name, 'closing')
     await this.fulltext.close()
-    console.timeLog(this.workspace.name, 'closing triggers')
-    await this.triggerProcessor.cancel()
     console.timeLog(this.workspace.name, 'closing adapters')
     for (const o of this.adapters.values()) {
       await o.close()
@@ -525,13 +519,15 @@ class TServerStorage implements ServerStorage {
       },
       findAll: fAll(ctx),
       modelDb: this.modelDb,
-      hierarchy: this.hierarchy
+      hierarchy: this.hierarchy,
+      apply: async (tx, broadcast) => {
+        await this.apply(ctx, tx, broadcast)
+      }
     }
     const triggers = await ctx.with('process-triggers', {}, async (ctx) => {
       const result: Tx[] = []
       for (const tx of txes) {
         result.push(...(await this.triggers.apply(tx.modifiedBy, tx, triggerControl)))
-        await ctx.with('async-triggers', {}, (ctx) => this.triggerProcessor.tx([tx]))
       }
       return result
     })
@@ -597,26 +593,14 @@ class TServerStorage implements ServerStorage {
     return { passed, onEnd }
   }
 
-  async apply (ctx: MeasureContext, tx: Tx[], broadcast: boolean, updateTx: boolean): Promise<Tx[]> {
+  async apply (ctx: MeasureContext, tx: Tx[], broadcast: boolean): Promise<Tx[]> {
     const triggerFx = new Effects()
-    const cacheFind = createCacheFindAll(this)
+    const _findAll = createFindAll(this)
 
     const txToStore = tx.filter(
       (it) => it.space !== core.space.DerivedTx && !this.hierarchy.isDerived(it._class, core.class.TxApplyIf)
     )
-    if (updateTx) {
-      const ops = new Map(
-        tx
-          .filter((it) => it._class === core.class.TxUpdateDoc)
-          .map((it) => [(it as TxUpdateDoc<Tx>).objectId, (it as TxUpdateDoc<Tx>).operations])
-      )
-
-      if (ops.size > 0) {
-        await ctx.with('domain-tx-update', {}, async () => await this.getAdapter(DOMAIN_TX).update(DOMAIN_TX, ops))
-      }
-    } else {
-      await ctx.with('domain-tx', {}, async () => await this.getAdapter(DOMAIN_TX).tx(...txToStore))
-    }
+    await ctx.with('domain-tx', {}, async () => await this.getAdapter(DOMAIN_TX).tx(...txToStore))
 
     const removedMap = new Map<Ref<Doc>, Doc>()
     await ctx.with('apply', {}, (ctx) => this.routeTx(ctx, removedMap, ...tx))
@@ -626,7 +610,7 @@ class TServerStorage implements ServerStorage {
       this.options?.broadcast?.(tx)
     }
     // invoke triggers and store derived objects
-    const derived = await this.processDerived(ctx, tx, triggerFx, cacheFind, removedMap)
+    const derived = await this.processDerived(ctx, tx, triggerFx, _findAll, removedMap)
 
     // index object
     for (const _tx of tx) {
@@ -641,13 +625,16 @@ class TServerStorage implements ServerStorage {
     for (const fx of triggerFx.effects) {
       await fx()
     }
+    if (broadcast && derived.length > 0) {
+      this.options?.broadcast?.(derived)
+    }
     return [...tx, ...derived]
   }
 
   async tx (ctx: MeasureContext, tx: Tx): Promise<[TxResult, Tx[]]> {
     // store tx
     const _class = txClass(tx)
-    const cacheFind = createCacheFindAll(this)
+    const _findAll = createFindAll(this)
     const objClass = txObjectClass(tx)
     const removedDocs = new Map<Ref<Doc>, Doc>()
     return await ctx.with('tx', { _class, objClass }, async (ctx) => {
@@ -673,7 +660,7 @@ class TServerStorage implements ServerStorage {
           const applyIf = tx as TxApplyIf
           // Wait for scope promise if found
           let passed: boolean
-          ;({ passed, onEnd } = await this.verifyApplyIf(ctx, applyIf, cacheFind))
+          ;({ passed, onEnd } = await this.verifyApplyIf(ctx, applyIf, _findAll))
           result = passed
           if (passed) {
             // Store apply if transaction's if required
@@ -681,13 +668,13 @@ class TServerStorage implements ServerStorage {
               const atx = await this.getAdapter(DOMAIN_TX)
               await atx.tx(...applyIf.txes)
             })
-            derived = await this.processDerivedTxes(applyIf.txes, ctx, triggerFx, cacheFind, removedDocs)
+            derived = await this.processDerivedTxes(applyIf.txes, ctx, triggerFx, _findAll, removedDocs)
           }
         } else {
           // store object
           result = await ctx.with('route-tx', { _class, objClass }, (ctx) => this.routeTx(ctx, removedDocs, tx))
           // invoke triggers and store derived objects
-          derived = await this.processDerived(ctx, [tx], triggerFx, cacheFind, removedDocs)
+          derived = await this.processDerived(ctx, [tx], triggerFx, _findAll, removedDocs)
         }
 
         // index object

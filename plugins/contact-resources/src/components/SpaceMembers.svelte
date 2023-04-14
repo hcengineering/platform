@@ -39,7 +39,12 @@
     const query: DocumentQuery<EmployeeAccount> =
       isSearch > 0 ? { name: { $like: '%' + search + '%' } } : { _id: { $in: accounts as Ref<EmployeeAccount>[] } }
     const employess = await client.findAll(contact.class.EmployeeAccount, query)
-    members = new Set(employess.filter((p) => accounts.includes(p._id)).map((p) => p.employee))
+    members = new Set(
+      employess
+        .filter((it) => it.mergedTo == null)
+        .filter((p) => accounts.includes(p._id))
+        .map((p) => p.employee)
+    )
     return await client.findAll(
       contact.class.Employee,
       {

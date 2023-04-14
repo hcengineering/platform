@@ -500,18 +500,27 @@ export async function restore (
       let idx: number | undefined
       let loaded = 0
       let last = 0
+      let el = 0
+      let chunks = 0
       while (true) {
+        const st = Date.now()
         const it = await connection.loadChunk(c, idx)
+        chunks++
+
         idx = it.idx
+        el += Date.now() - st
 
         for (const [_id, hash] of Object.entries(it.docs)) {
           serverChangeset.set(_id as Ref<Doc>, hash)
           loaded++
         }
+
         const mr = Math.round(loaded / 10000)
         if (mr !== last) {
           last = mr
-          console.log(' loaded', loaded)
+          console.log(' loaded from server', loaded, el, chunks)
+          el = 0
+          chunks = 0
         }
         if (it.finished) {
           break
@@ -649,7 +658,10 @@ export async function restore (
       await sendChunk(undefined, 0)
       if (docsToRemove.length > 0 && merge !== true) {
         console.log('cleanup', docsToRemove.length)
-        await connection.clean(c, docsToRemove)
+        while (docsToRemove.length > 0) {
+          const part = docsToRemove.splice(0, 10000)
+          await connection.clean(c, part)
+        }
       }
     }
   } finally {

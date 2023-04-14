@@ -173,6 +173,7 @@ export class TEmployee extends TPerson implements Employee {
 export class TEmployeeAccount extends TAccount implements EmployeeAccount {
   employee!: Ref<Employee>
   name!: string
+  mergedTo!: Ref<EmployeeAccount>
 }
 
 @Model(contact.class.Organizations, core.class.Space)

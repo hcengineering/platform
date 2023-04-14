@@ -542,7 +542,7 @@ abstract class MongoAdapterBase implements DbAdapter {
 
   find (domain: Domain): StorageIterator {
     const coll = this.db.collection<Doc>(domain)
-    const iterator = coll.find({}, {})
+    const iterator = coll.find({}, {}).batchSize(100)
 
     return {
       next: async () => {

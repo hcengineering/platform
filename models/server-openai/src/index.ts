@@ -44,8 +44,11 @@ export class TOpenAIConfiguration extends TConfiguration implements OpenAIConfig
 export function createModel (builder: Builder): void {
   builder.createModel(TOpenAIConfiguration)
 
-  builder.createDoc(serverCore.class.AsyncTrigger, core.space.Model, {
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: openai.trigger.AsyncOnGPTRequest,
-    classes: [chunter.class.Comment, recruit.class.ApplicantMatch]
+    txMatch: {
+      objectClass: { $in: [chunter.class.Comment, recruit.class.ApplicantMatch] },
+      _class: core.class.TxCreateDoc
+    }
   })
 }

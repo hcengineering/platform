@@ -18,6 +18,7 @@
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
+  import { employeeAccountByIdStore } from '../utils'
   import UserBoxList from './UserBoxList.svelte'
 
   export let label: IntlString
@@ -40,14 +41,6 @@
     }, 500)
   }
 
-  const accountQuery = createQuery()
-
-  let accounts: Account[] = []
-
-  $: accountQuery.query(core.class.Account, { _id: { $in: value } }, (res) => {
-    accounts = res
-  })
-
   const excludedQuery = createQuery()
 
   let excluded: Account[] = []
@@ -61,7 +54,9 @@
     excluded = []
   }
 
-  $: employess = accounts.map((it) => (it as EmployeeAccount).employee)
+  $: employees = Array.from(
+    (value ?? []).map((it) => $employeeAccountByIdStore.get(it as Ref<EmployeeAccount>)?.employee)
+  ).filter((it) => it !== undefined) as Ref<Employee>[]
 
   $: docQuery =
     excluded.length > 0
@@ -75,7 +70,7 @@
 </script>
 
 <UserBoxList
-  items={employess}
+  items={employees}
   {label}
   {readonly}
   {docQuery}

@@ -14,8 +14,18 @@
 // limitations under the License.
 //
 
-import type { Tx, Doc, TxCreateDoc, Ref, Account, TxCollectionCUD, AttachedDoc } from '@hcengineering/core'
-import core, { TxFactory } from '@hcengineering/core'
+import core, {
+  Tx,
+  Doc,
+  TxCreateDoc,
+  Ref,
+  Account,
+  TxCollectionCUD,
+  AttachedDoc,
+  DocumentQuery,
+  matchQuery,
+  TxFactory
+} from '@hcengineering/core'
 
 import { getResource } from '@hcengineering/platform'
 import type { Trigger, TriggerFunc, TriggerControl } from './types'
@@ -26,7 +36,7 @@ import serverCore from './plugin'
  * @public
  */
 export class Triggers {
-  private readonly triggers: TriggerFunc[] = []
+  private readonly triggers: [DocumentQuery<Tx> | undefined, TriggerFunc][] = []
 
   async tx (tx: Tx): Promise<void> {
     if (tx._class === core.class.TxCollectionCUD) {
@@ -36,14 +46,18 @@ export class Triggers {
       const createTx = tx as TxCreateDoc<Doc>
       if (createTx.objectClass === serverCore.class.Trigger) {
         const trigger = (createTx as TxCreateDoc<Trigger>).attributes.trigger
+        const match = (createTx as TxCreateDoc<Trigger>).attributes.txMatch
         const func = await getResource(trigger)
-        this.triggers.push(func)
+        this.triggers.push([match, func])
       }
     }
   }
 
   async apply (account: Ref<Account>, tx: Tx, ctrl: Omit<TriggerControl, 'txFactory'>): Promise<Tx[]> {
-    const derived = this.triggers.map((trigger) => trigger(tx, { ...ctrl, txFactory: new TxFactory(account, true) }))
+    const control = { ...ctrl, txFactory: new TxFactory(account, true) }
+    const derived = this.triggers
+      .filter(([query]) => query === undefined || matchQuery([tx], query, core.class.Tx, control.hierarchy).length > 0)
+      .map(([, trigger]) => trigger(tx, control))
     const result = await Promise.all(derived)
     return result.flatMap((x) => x)
   }

@@ -2,30 +2,26 @@
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPreview } from '@hcengineering/attachment-resources'
   import { ChunterMessage } from '@hcengineering/chunter'
-  import contact, { EmployeeAccount, getName as getContactName } from '@hcengineering/contact'
-  import { employeeByIdStore } from '@hcengineering/contact-resources'
-  import core, { IdMap, Ref, toIdMap, WithLookup } from '@hcengineering/core'
+  import { EmployeeAccount, getName as getContactName } from '@hcengineering/contact'
+  import { employeeAccountByIdStore, employeeByIdStore } from '@hcengineering/contact-resources'
+  import core, { IdMap, Ref, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Label, Scroller } from '@hcengineering/ui'
   import chunter from '../plugin'
   import { getTime, openMessageFromSpecial } from '../utils'
-  import Bookmark from './icons/Bookmark.svelte'
   import Message from './Message.svelte'
+  import Bookmark from './icons/Bookmark.svelte'
 
   const client = getClient()
   let savedMessagesIds: Ref<ChunterMessage>[] = []
   let savedMessages: WithLookup<ChunterMessage>[] = []
   let savedAttachmentsIds: Ref<Attachment>[] = []
   let savedAttachments: WithLookup<Attachment>[] = []
-  let accounts: IdMap<EmployeeAccount> = new Map()
 
   const messagesQuery = createQuery()
   const attachmentsQuery = createQuery()
   const savedMessagesQuery = createQuery()
   const savedAttachmentsQuery = createQuery()
-  const accQ = createQuery()
-
-  accQ.query(contact.class.EmployeeAccount, {}, (res) => (accounts = toIdMap(res)))
 
   savedMessagesQuery.query(chunter.class.SavedMessages, {}, (res) => {
     savedMessagesIds = res.map((r) => r.attachedTo)
@@ -78,8 +74,8 @@
     })
   }
 
-  function getName (a: Attachment): string | undefined {
-    const acc = accounts.get(a.modifiedBy as Ref<EmployeeAccount>)
+  function getName (a: Attachment, employeeAccountByIdStore: IdMap<EmployeeAccount>): string | undefined {
+    const acc = employeeAccountByIdStore.get(a.modifiedBy as Ref<EmployeeAccount>)
     if (acc !== undefined) {
       const emp = $employeeByIdStore.get(acc?.employee)
       if (emp !== undefined) {
@@ -112,7 +108,10 @@
       <div class="attachmentContainer" on:click={() => openAttachment(att)}>
         <AttachmentPreview value={att} isSaved={true} />
         <div class="label">
-          <Label label={chunter.string.SharedBy} params={{ name: getName(att), time: getTime(att.modifiedOn) }} />
+          <Label
+            label={chunter.string.SharedBy}
+            params={{ name: getName(att, $employeeAccountByIdStore), time: getTime(att.modifiedOn) }}
+          />
         </div>
       </div>
     {/each}

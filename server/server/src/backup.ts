@@ -65,7 +65,7 @@ export class BackupClientSession extends ClientSession implements BackupSession 
         break
       }
 
-      size = size + doc.id.length + doc.hash.length + doc.size
+      size = size + doc.size
       docs[doc.id] = doc.hash
     }
 

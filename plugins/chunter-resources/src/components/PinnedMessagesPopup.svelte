@@ -1,10 +1,9 @@
 <script lang="ts">
   import chunter, { ChunterMessage } from '@hcengineering/chunter'
-  import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
-  import { employeeByIdStore } from '@hcengineering/contact-resources'
-  import { IdMap, Ref, Space, toIdMap } from '@hcengineering/core'
-  import { createQuery, MessageViewer } from '@hcengineering/presentation'
-  import { Avatar } from '@hcengineering/contact-resources'
+  import { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
+  import { Avatar, employeeAccountByIdStore, employeeByIdStore } from '@hcengineering/contact-resources'
+  import { IdMap, Ref, Space } from '@hcengineering/core'
+  import { MessageViewer, createQuery } from '@hcengineering/presentation'
   import { IconClose } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { UnpinMessage } from '../index'
@@ -31,19 +30,14 @@
       pinnedMessages = res
     })
 
-  const employeeAccoutsQuery = createQuery()
-  let employeeAcounts: IdMap<EmployeeAccount> = new Map()
-
-  employeeAccoutsQuery.query(contact.class.EmployeeAccount, {}, (res) => (employeeAcounts = toIdMap(res)))
-
   const dispatch = createEventDispatcher()
 
   function getEmployee (
     message: ChunterMessage,
-    employeeAcounts: IdMap<EmployeeAccount>,
+    employeeAccounts: IdMap<EmployeeAccount>,
     employees: IdMap<Employee>
   ): Employee | undefined {
-    const acc = employeeAcounts.get(message.createBy as Ref<EmployeeAccount>)
+    const acc = employeeAccounts.get(message.createBy as Ref<EmployeeAccount>)
     if (acc) {
       return employees.get(acc.employee)
     }
@@ -52,7 +46,7 @@
 
 <div class="antiPopup vScroll popup">
   {#each pinnedMessages as message}
-    {@const employee = getEmployee(message, employeeAcounts, $employeeByIdStore)}
+    {@const employee = getEmployee(message, $employeeAccountByIdStore, $employeeByIdStore)}
     <div class="message">
       <div class="header">
         <div class="avatar">
