@@ -266,6 +266,9 @@ export class StatusMiddleware extends BasePresentationMiddleware implements Pres
               }
             }
           }
+
+          // Update sorting if defined.
+          this.updateCustomSorting<T>(finalOptions, attr, mgr)
         }
       } catch (err: any) {
         console.error(err)
