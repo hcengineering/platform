@@ -70,7 +70,9 @@
   let viewlets: WithLookup<Viewlet>[] = []
 
   const viewletQuery = createQuery()
+  let vl = false
   $: {
+    vl = true
     viewletQuery.query(
       view.class.Viewlet,
       {
@@ -79,6 +81,7 @@
         descriptor: { $in: descriptors ?? [view.viewlet.Table] }
       },
       (res) => {
+        vl = false
         viewlets = res
       },
       {
@@ -104,9 +107,11 @@
     active: Ref<Viewlet> | null,
     viewlets: WithLookup<Viewlet>[]
   ): Promise<void> {
-    preference = undefined
-    viewlet = viewlets.find((viewlet) => viewlet._id === active) ?? viewlets[0]
-    setActiveViewletId(viewlet._id)
+    if (vl === false) {
+      preference = undefined
+      viewlet = viewlets.find((viewlet) => viewlet?._id === active) ?? viewlets[0]
+      setActiveViewletId(viewlet?._id)
+    }
   }
 
   $: if (viewlet !== undefined) {
