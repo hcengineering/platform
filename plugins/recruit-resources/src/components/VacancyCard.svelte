@@ -19,8 +19,9 @@
   import { ChannelsEditor } from '@hcengineering/contact-resources'
   import { Ref, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { recruitId, Vacancy } from '@hcengineering/recruit'
-  import { Component, Label, NavLink } from '@hcengineering/ui'
+  import { Vacancy, recruitId } from '@hcengineering/recruit'
+  import { Component, Label } from '@hcengineering/ui'
+  import { NavLink } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import VacancyIcon from './icons/Vacancy.svelte'
 

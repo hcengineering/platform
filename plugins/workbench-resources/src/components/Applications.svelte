@@ -15,7 +15,8 @@
 <script lang="ts">
   import type { Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { NavLink, Scroller } from '@hcengineering/ui'
+  import { Scroller } from '@hcengineering/ui'
+  import { NavLink } from '@hcengineering/view-resources'
   import type { Application } from '@hcengineering/workbench'
   import workbench from '@hcengineering/workbench'
   import { hideApplication, showApplication } from '../utils'

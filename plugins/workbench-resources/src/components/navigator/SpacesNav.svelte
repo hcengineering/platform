@@ -20,21 +20,13 @@
   import { getResource } from '@hcengineering/platform'
   import preference from '@hcengineering/preference'
   import { getClient } from '@hcengineering/presentation'
+  import { Action, IconAdd, IconEdit, IconSearch, getCurrentLocation, navigate, showPopup } from '@hcengineering/ui'
   import {
-    Action,
-    getCurrentLocation,
-    IconAdd,
-    IconEdit,
-    IconSearch,
-    navigate,
     NavLink,
-    showPopup
-  } from '@hcengineering/ui'
-  import {
-    getActions as getContributedActions,
-    getObjectPresenter,
     TreeItem,
-    TreeNode
+    TreeNode,
+    getActions as getContributedActions,
+    getObjectPresenter
   } from '@hcengineering/view-resources'
   import { SpacesNavModel } from '@hcengineering/workbench'
   import { createEventDispatcher } from 'svelte'

@@ -19,21 +19,21 @@
   import {
     Button,
     Chevron,
-    closeTooltip,
     ExpandCollapse,
-    getCurrentLocation,
     IconAdd,
     IconArrowRight,
     IconScaleFull,
     Label,
+    closeTooltip,
+    getCurrentLocation,
     navigate
   } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
   import {
-    createFilter,
-    filterStore,
-    getViewOptions,
     ViewletSettingButton,
+    createFilter,
+    getViewOptions,
+    setFilters,
     viewOptionStore
   } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
@@ -111,7 +111,7 @@
             loc.path[3] = issue.space
             loc.path[4] = 'issues'
             navigate(loc)
-            $filterStore = [filter]
+            setFilters([filter])
           }
         }}
       />

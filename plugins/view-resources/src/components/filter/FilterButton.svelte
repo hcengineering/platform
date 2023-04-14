@@ -15,9 +15,9 @@
 <script lang="ts">
   import { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Button, eventToHTMLElement, IconAdd, IconClose, Icon, showPopup, Label } from '@hcengineering/ui'
+  import { Button, Icon, IconAdd, IconClose, Label, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
-  import { filterStore } from '../../filter'
+  import { filterStore, setFilters } from '../../filter'
   import view from '../../plugin'
   import FilterTypePopup from './FilterTypePopup.svelte'
 
@@ -28,7 +28,7 @@
   const hierarchy = client.getHierarchy()
 
   function onChange (e: Filter | undefined) {
-    if (e !== undefined) $filterStore = [e]
+    if (e !== undefined) setFilters([e])
   }
 
   function add (e: MouseEvent) {
@@ -62,7 +62,7 @@
     borderStyle={'dashed'}
     on:click={(ev) => {
       if ($filterStore.length === 0) add(ev)
-      else $filterStore = []
+      else setFilters([])
     }}
   >
     <svelte:fragment slot="content">

@@ -13,10 +13,20 @@
 // limitations under the License.
 //
 
-import core, { AnyAttribute, DOMAIN_TX, Ref, TxCreateDoc, TxCUD, TxProcessor, TxRemoveDoc } from '@hcengineering/core'
+import core, {
+  AnyAttribute,
+  Class,
+  Doc,
+  DOMAIN_TX,
+  Ref,
+  TxCreateDoc,
+  TxCUD,
+  TxProcessor,
+  TxRemoveDoc
+} from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
-import { BuildModelKey, FilteredView, Viewlet, ViewletPreference } from '@hcengineering/view'
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
+import { BuildModelKey, FilteredView, Viewlet, ViewletPreference } from '@hcengineering/view'
 import view from './plugin'
 
 async function migrateViewletPreference (client: MigrationClient): Promise<void> {
@@ -73,6 +83,26 @@ async function migrateSavedFilters (client: MigrationClient): Promise<void> {
       },
       {
         viewOptions: pref.viewOptions
+      }
+    )
+  }
+}
+
+async function migrateSavedFiltersViewlets (client: MigrationClient): Promise<void> {
+  const preferences = await client.find<FilteredView>(DOMAIN_PREFERENCE, {
+    _class: view.class.FilteredView,
+    viewletId: /^\S{24}$/ as any,
+    attachedTo: 'tracker' as any
+  })
+  for (const pref of preferences) {
+    await client.update<FilteredView>(
+      DOMAIN_PREFERENCE,
+      {
+        _id: pref._id
+      },
+      {
+        viewletId: 'tracker:viewlet:IssueList' as Ref<Viewlet>,
+        filterClass: 'tracker:class:Issue' as Ref<Class<Doc>>
       }
     )
   }
@@ -148,6 +178,7 @@ export const viewOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await migrateViewletPreference(client)
     await migrateSavedFilters(client)
+    await migrateSavedFiltersViewlets(client)
     await fixViewletPreferenceRemovedAttributes(client)
     await fixPreferenceObjectKey(client)
   },

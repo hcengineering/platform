@@ -16,10 +16,10 @@
   import { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { Button, eventToHTMLElement, IconAdd, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { Filter, ViewOptions } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import { filterStore, getFilterKey } from '../../filter'
+  import { filterStore, removeFilter, updateFilter } from '../../filter'
   import view from '../../plugin'
   import FilterSave from './FilterSave.svelte'
   import FilterSection from './FilterSection.svelte'
@@ -37,14 +37,7 @@
 
   function onChange (e: Filter | undefined) {
     if (e === undefined) return
-    const index = $filterStore.findIndex((p) => p.index === e.index)
-    if (index === -1) {
-      $filterStore.push(e)
-    } else {
-      $filterStore[index].onRemove?.()
-      $filterStore[index] = e
-    }
-    $filterStore = $filterStore
+    updateFilter(e)
   }
 
   function add (e: MouseEvent) {
@@ -61,43 +54,8 @@
     )
   }
 
-  $: load(_class)
-
-  function remove (i: number) {
-    $filterStore[i]?.onRemove?.()
-    $filterStore.splice(i, 1)
-    $filterStore = $filterStore
-  }
-
-  $: saveFilters($filterStore)
-
-  function saveFilters (filters: Filter[]) {
-    const key = getFilterKey(_class)
-    if (filters.length > 0) {
-      localStorage.setItem(key, JSON.stringify(filters))
-    } else {
-      localStorage.removeItem(key)
-    }
-  }
-
   async function saveFilteredView () {
     showPopup(FilterSave, { viewOptions, _class })
-  }
-
-  let loading = false
-
-  function load (_class: Ref<Class<Doc>>) {
-    loading = true
-    const oldFilters = $filterStore
-    const key = getFilterKey(_class)
-    const saved = localStorage.getItem(key)
-    if (saved !== null) {
-      $filterStore = JSON.parse(saved)
-    } else {
-      $filterStore = []
-    }
-    loading = false
-    oldFilters.forEach((p) => p.onRemove?.())
   }
 
   async function makeQuery (query: DocumentQuery<Doc>, filters: Filter[]): Promise<void> {
@@ -172,20 +130,17 @@
 {#if visible && $filterStore && $filterStore.length > 0}
   <div class="filterbar-container">
     <div class="filters">
-      {#if !loading}
-        {#each $filterStore as filter, i}
-          <FilterSection
-            {filter}
-            on:change={() => {
-              makeQuery(query, $filterStore)
-              saveFilters($filterStore)
-            }}
-            on:remove={() => {
-              remove(i)
-            }}
-          />
-        {/each}
-      {/if}
+      {#each $filterStore as filter, i}
+        <FilterSection
+          {filter}
+          on:change={() => {
+            makeQuery(query, $filterStore)
+          }}
+          on:remove={() => {
+            removeFilter(i)
+          }}
+        />
+      {/each}
       <div class="add-filter">
         <Button size={'small'} icon={IconAdd} kind={'transparent'} on:click={add} />
       </div>

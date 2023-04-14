@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { location, locationToUrl, navigate } from '../location'
-  import { Location } from '../types'
+  import { Location, location, locationToUrl, navigate } from '@hcengineering/ui'
+  import { setFilters } from '../../filter'
 
   export let app: string | undefined = undefined
   export let space: string | undefined = undefined
@@ -52,6 +52,7 @@
   function clickHandler (e: MouseEvent) {
     if (e.metaKey || e.ctrlKey) return
     e.preventDefault()
+    setFilters([])
     navigate(loc)
   }
 </script>

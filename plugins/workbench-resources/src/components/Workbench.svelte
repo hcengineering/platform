@@ -29,7 +29,6 @@
     DatePickerPopup,
     Label,
     Location,
-    NavLink,
     PanelInstance,
     Popup,
     PopupAlignment,
@@ -50,7 +49,7 @@
     showPopup
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { ActionContext, ActionHandler, migrateViewOpttions } from '@hcengineering/view-resources'
+  import { ActionContext, ActionHandler, NavLink, migrateViewOpttions } from '@hcengineering/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { get } from 'svelte/store'

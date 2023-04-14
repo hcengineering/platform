@@ -1,7 +1,7 @@
 <script lang="ts">
   import { chunterId, DirectMessage, Message } from '@hcengineering/chunter'
   import { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
-  import { NavLink } from '@hcengineering/ui'
+  import { NavLink } from '@hcengineering/view-resources'
   import chunter from '../plugin'
   import { getDmName } from '../utils'
 
