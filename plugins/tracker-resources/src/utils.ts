@@ -33,7 +33,7 @@ import core, {
   TxUpdateDoc
 } from '@hcengineering/core'
 import { Asset, IntlString } from '@hcengineering/platform'
-import { createQuery, getClient } from '@hcengineering/presentation'
+import { createQuery } from '@hcengineering/presentation'
 import { calcRank } from '@hcengineering/task'
 import {
   ComponentStatus,
@@ -549,7 +549,6 @@ export async function getPreviousAssignees (issue: Issue): Promise<Array<Ref<Emp
     )
   })
 }
-
 
 async function updateIssuesOnMove (
   client: TxOperations,

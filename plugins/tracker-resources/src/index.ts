@@ -224,7 +224,7 @@ async function deleteProject (project: Project | undefined): Promise<void> {
         undefined,
         (result?: boolean) => {
           if (result === true) {
-            void deleteObject(client, project)
+            void client.update(project, { archived: true })
           }
         }
       )
@@ -239,7 +239,7 @@ async function deleteProject (project: Project | undefined): Promise<void> {
         undefined,
         (result?: boolean) => {
           if (result === true) {
-            void deleteObject(client, project)
+            void client.update(project, { archived: true })
           }
         }
       )
