@@ -216,29 +216,45 @@ export class StatusMiddleware extends BasePresentationMiddleware implements Pres
 
           if (v !== undefined) {
             // Only add filter if we have filer inside.
-            if (v?.$in !== undefined) {
-              target.push(...v.$in)
+            if (v.$nin !== undefined) {
+              const excluded = mgr
+                .filter((it) => it.ofAttribute === attr._id && v.$nin.includes(it._id))
+                .map((p) => p.name.toLowerCase().trim())
+              const statuses = mgr.filter(
+                (it) => it.ofAttribute === attr._id && !excluded.includes(it.name.toLowerCase().trim())
+              )
+              ;(query as any)[attr.name] = { $in: statuses.map((p) => p._id) }
+            } else if (v.$ne !== undefined) {
+              const excluded = mgr
+                .filter((it) => it.ofAttribute === attr._id && v.$ne === it._id)
+                .map((p) => p.name.toLowerCase().trim())
+              const statuses = mgr.filter(
+                (it) => it.ofAttribute === attr._id && !excluded.includes(it.name.toLowerCase().trim())
+              )
+              ;(query as any)[attr.name] = { $in: statuses.map((p) => p._id) }
             } else {
-              target.push(v)
-            }
+              if (v.$in !== undefined) {
+                target.push(...v.$in)
+              } else if (typeof v === 'string') {
+                target.push(v as Ref<Status>)
+              }
 
-            // Find all similar name statues for same attribute name.
-            for (const sid of [...target]) {
-              const s = mgr.byId.get(sid)
-              if (s !== undefined) {
-                const statuses = mgr.statuses.filter(
-                  (it) =>
-                    it.ofAttribute === attr._id &&
-                    it.name.toLowerCase().trim() === s.name.toLowerCase().trim() &&
-                    it._id !== s._id
-                )
-                if (statuses !== undefined) {
+              // Find all similar name statues for same attribute name.
+              for (const sid of [...target]) {
+                const s = mgr.get(sid)
+                if (s !== undefined) {
+                  const statuses = mgr.filter(
+                    (it) =>
+                      it.ofAttribute === attr._id &&
+                      it.name.toLowerCase().trim() === s.name.toLowerCase().trim() &&
+                      it._id !== s._id
+                  )
                   target.push(...statuses.map((it) => it._id))
                 }
               }
+              target = target.filter((it, idx, arr) => arr.indexOf(it) === idx)
+              ;(query as any)[attr.name] = { $in: target }
             }
-            target = target.filter((it, idx, arr) => arr.indexOf(it) === idx)
-            ;(query as any)[attr.name] = { $in: target }
 
             if (finalOptions.lookup !== undefined) {
               // Remove lookups by status field
