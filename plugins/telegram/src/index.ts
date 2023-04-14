@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-import { Metadata, plugin } from '@hcengineering/platform'
+import { ChannelItem } from '@hcengineering/contact'
+import type { AttachedDoc, Class, Doc, Ref, Space, Timestamp } from '@hcengineering/core'
 import type { Plugin } from '@hcengineering/platform'
-import type { Doc, Ref, Class, Space, AttachedDoc, Timestamp } from '@hcengineering/core'
-import type { AnyComponent } from '@hcengineering/ui'
-import type { IntegrationType, Handler } from '@hcengineering/setting'
-import { Channel } from '@hcengineering/contact'
+import { Metadata, plugin } from '@hcengineering/platform'
+import type { Handler, IntegrationType } from '@hcengineering/setting'
 import { TemplateField } from '@hcengineering/templates'
+import type { AnyComponent } from '@hcengineering/ui'
 
 /**
  * @public
@@ -32,14 +32,7 @@ export interface BaseTelegramMessage extends Doc {
 /**
  * @public
  */
-export interface TelegramMessage extends BaseTelegramMessage, AttachedDoc {
-  attachedTo: Ref<Channel>
-  attachedToClass: Ref<Class<Channel>>
-
-  incoming: boolean
-
-  sendOn: Timestamp
-}
+export interface TelegramMessage extends BaseTelegramMessage, ChannelItem {}
 
 /**
  * @public

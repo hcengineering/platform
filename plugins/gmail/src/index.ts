@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Channel } from '@hcengineering/contact'
+import { ChannelItem } from '@hcengineering/contact'
 import type { Account, AttachedDoc, Class, Doc, Ref, Space, Timestamp } from '@hcengineering/core'
 import type { Plugin } from '@hcengineering/platform'
 import { Metadata, plugin } from '@hcengineering/platform'
@@ -23,14 +23,10 @@ import type { AnyComponent } from '@hcengineering/ui'
 /**
  * @public
  */
-export interface Message extends BaseMessage, AttachedDoc {
-  attachedTo: Ref<Channel>
-  attachedToClass: Ref<Class<Channel>>
+export interface Message extends BaseMessage, ChannelItem {
   messageId: string
   from: string
   textContent: string
-  incoming: boolean
-  sendOn: Timestamp
 }
 
 /**
