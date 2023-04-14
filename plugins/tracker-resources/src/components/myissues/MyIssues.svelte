@@ -54,7 +54,7 @@
   }
 
   function getQuery (mode: string, queries: { [key: string]: DocumentQuery<Issue> }) {
-    return queries[mode]
+    return { ...queries[mode], '$lookup.space.archived': false }
   }
   $: query = getQuery(mode, { assigned, created, subscribed })
 </script>

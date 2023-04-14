@@ -594,7 +594,12 @@ export function createModel (builder: Builder): void {
           presenter: tracker.component.AssigneePresenter,
           props: { defaultClass: contact.class.Employee, shouldShowLabel: false }
         }
-      ]
+      ],
+      options: {
+        lookup: {
+          space: tracker.class.Project
+        }
+      }
     },
     tracker.viewlet.IssueList
   )
