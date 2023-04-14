@@ -35,13 +35,13 @@
   filter.modes = [contact.filter.FilterChannelIn, contact.filter.FilterChannelNin]
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
 
-  const isSelected = (element: ChannelProvider): boolean => {
+  const isSelected = (element: ChannelProvider, selected: Ref<ChannelProvider>[]): boolean => {
     if (selected.filter((p) => p === element._id).length > 0) return true
     return false
   }
 
   const checkSelected = (element: ChannelProvider): void => {
-    if (isSelected(element)) {
+    if (isSelected(element, selected)) {
       selected = selected.filter((p) => p !== element._id)
     } else {
       selected = [...selected, element._id]
@@ -64,7 +64,7 @@
           <div class="flex-between w-full">
             <div class="flex">
               <div class="check pointer-events-none">
-                <CheckBox checked={isSelected(element)} primary />
+                <CheckBox checked={isSelected(element, selected)} primary />
               </div>
               {#if element.icon}
                 <span class="mr-2"><Icon icon={element.icon} size="inline" /></span>
