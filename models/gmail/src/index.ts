@@ -145,6 +145,7 @@ export function createModel (builder: Builder): void {
       icon: gmail.component.IconGmail,
       createComponent: gmail.component.Connect,
       onDisconnect: gmail.handler.DisconnectHandler,
+      reconnectComponent: gmail.component.Connect,
       configureComponent: gmail.component.Configure
     },
     gmail.integrationType.Gmail
