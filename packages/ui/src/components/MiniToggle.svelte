@@ -30,7 +30,9 @@
     <span
       class="mini-toggle-label"
       on:click={() => {
-        on = !on
+        if (!disabled) {
+          on = !on
+        }
       }}
     >
       <Label {label} />
