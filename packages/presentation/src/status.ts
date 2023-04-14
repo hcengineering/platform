@@ -199,6 +199,22 @@ export class StatusMiddleware extends BasePresentationMiddleware implements Pres
     return result
   }
 
+  private categorizeStatus (mgr: StatusManager, attr: AnyAttribute, target: Array<Ref<Status>>): Array<Ref<Status>> {
+    for (const sid of [...target]) {
+      const s = mgr.byId.get(sid)
+      if (s !== undefined) {
+        const statuses = mgr.statuses.filter(
+          (it) =>
+            it.ofAttribute === attr._id &&
+            it.name.toLowerCase().trim() === s.name.toLowerCase().trim() &&
+            it._id !== s._id
+        )
+        target.push(...statuses.map((it) => it._id))
+      }
+    }
+    return target.filter((it, idx, arr) => arr.indexOf(it) === idx)
+  }
+
   private async updateQueryOptions<T extends Doc>(
     allAttrs: Map<string, AnyAttribute>,
     h: Hierarchy,
@@ -211,34 +227,36 @@ export class StatusMiddleware extends BasePresentationMiddleware implements Pres
         if (attr.type._class === core.class.RefTo && h.isDerived((attr.type as RefTo<Doc>).to, core.class.Status)) {
           const mgr = await this.getManager()
           let target: Array<Ref<Status>> = []
+          let targetNin: Array<Ref<Status>> = []
           statusFields.push(attr)
           const v = (query as any)[attr.name]
 
           if (v !== undefined) {
             // Only add filter if we have filer inside.
-            if (v?.$in !== undefined) {
-              target.push(...v.$in)
+            if (typeof v === 'string') {
+              target.push(v as Ref<Status>)
             } else {
-              target.push(v)
+              if (v.$in !== undefined) {
+                target.push(...v.$in)
+              } else if (v.$nin !== undefined) {
+                targetNin.push(...v.$nin)
+              } else if (v.$ne !== undefined) {
+                targetNin.push(v.$ne)
+              }
             }
 
             // Find all similar name statues for same attribute name.
-            for (const sid of [...target]) {
-              const s = mgr.byId.get(sid)
-              if (s !== undefined) {
-                const statuses = mgr.statuses.filter(
-                  (it) =>
-                    it.ofAttribute === attr._id &&
-                    it.name.toLowerCase().trim() === s.name.toLowerCase().trim() &&
-                    it._id !== s._id
-                )
-                if (statuses !== undefined) {
-                  target.push(...statuses.map((it) => it._id))
-                }
+            target = this.categorizeStatus(mgr, attr, target)
+            targetNin = this.categorizeStatus(mgr, attr, targetNin)
+            if (target.length > 0 || targetNin.length > 0) {
+              ;(query as any)[attr.name] = {}
+              if (target.length > 0) {
+                ;(query as any)[attr.name].$in = target
+              }
+              if (targetNin.length > 0) {
+                ;(query as any)[attr.name].$nin = targetNin
               }
             }
-            target = target.filter((it, idx, arr) => arr.indexOf(it) === idx)
-            ;(query as any)[attr.name] = { $in: target }
 
             if (finalOptions.lookup !== undefined) {
               // Remove lookups by status field
