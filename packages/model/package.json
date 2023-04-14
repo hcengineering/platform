@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/model",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -27,7 +27,7 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.22",
+    "@hcengineering/core": "^0.6.23",
     "@hcengineering/platform": "^0.6.8",
     "toposort": "^2.0.2",
     "fast-equals": "^2.0.3"

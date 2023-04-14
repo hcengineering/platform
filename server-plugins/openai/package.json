@@ -28,12 +28,12 @@
     "@types/html-to-text": "^8.1.1"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.22",
+    "@hcengineering/core": "^0.6.23",
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server": "^0.6.4",
-    "@hcengineering/chunter": "^0.6.3",
-    "@hcengineering/recruit": "^0.6.9",
+    "@hcengineering/chunter": "^0.6.4",
+    "@hcengineering/recruit": "^0.6.10",
     "got": "^11.8.3",
     "fast-equals": "^2.0.3",
     "html-to-text": "^9.0.3"

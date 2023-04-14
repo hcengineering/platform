@@ -37,11 +37,11 @@
     "@types/ws": "^8.5.3"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.22",
+    "@hcengineering/core": "^0.6.23",
     "@hcengineering/account": "^0.6.0",
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/server-tool": "^0.6.0",
-    "@hcengineering/server-token": "^0.6.1",
+    "@hcengineering/server-token": "^0.6.2",
     "@hcengineering/server-core": "^0.6.1",
     "lib0": "~0.2.52",
     "lodash.debounce": "~4.0.8",

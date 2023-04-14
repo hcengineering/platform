@@ -26,13 +26,13 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.22",
+    "@hcengineering/core": "^0.6.23",
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-request": "^0.6.0",
     "@hcengineering/request": "^0.6.0",
-    "@hcengineering/chunter": "^0.6.3",
-    "@hcengineering/view": "^0.6.3",
-    "@hcengineering/contact": "^0.6.12"
+    "@hcengineering/chunter": "^0.6.4",
+    "@hcengineering/view": "^0.6.4",
+    "@hcengineering/contact": "^0.6.13"
   }
 }

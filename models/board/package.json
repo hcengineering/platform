@@ -25,10 +25,10 @@
     "@rushstack/heft": "^0.47.9"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.22",
-    "@hcengineering/model": "^0.6.1",
-    "@hcengineering/ui": "^0.6.5",
-    "@hcengineering/contact": "^0.6.12",
+    "@hcengineering/core": "^0.6.23",
+    "@hcengineering/model": "^0.6.2",
+    "@hcengineering/ui": "^0.6.6",
+    "@hcengineering/contact": "^0.6.13",
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/model-core": "^0.6.0",
     "@hcengineering/model-view": "^0.6.0",
@@ -37,14 +37,14 @@
     "@hcengineering/model-chunter": "^0.6.0",
     "@hcengineering/model-attachment": "^0.6.0",
     "@hcengineering/automation": "^0.6.0",
-    "@hcengineering/board": "^0.6.3",
+    "@hcengineering/board": "^0.6.4",
     "@hcengineering/board-resources": "^0.6.0",
-    "@hcengineering/view": "^0.6.3",
-    "@hcengineering/task": "^0.6.4",
+    "@hcengineering/view": "^0.6.4",
+    "@hcengineering/task": "^0.6.5",
     "@hcengineering/model-task": "^0.6.0",
-    "@hcengineering/workbench": "^0.6.3",
+    "@hcengineering/workbench": "^0.6.4",
     "@hcengineering/model-preference": "^0.6.0",
-    "@hcengineering/tags": "^0.6.6",
+    "@hcengineering/tags": "^0.6.7",
     "@hcengineering/model-tags": "^0.6.0"
   }
 }

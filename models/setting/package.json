@@ -25,20 +25,20 @@
     "@rushstack/heft": "^0.47.9"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.22",
-    "@hcengineering/model": "^0.6.1",
-    "@hcengineering/ui": "^0.6.5",
-    "@hcengineering/view": "^0.6.3",
-    "@hcengineering/setting": "^0.6.4",
-    "@hcengineering/contact": "^0.6.12",
+    "@hcengineering/core": "^0.6.23",
+    "@hcengineering/model": "^0.6.2",
+    "@hcengineering/ui": "^0.6.6",
+    "@hcengineering/view": "^0.6.4",
+    "@hcengineering/setting": "^0.6.5",
+    "@hcengineering/contact": "^0.6.13",
     "@hcengineering/setting-resources": "^0.6.0",
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/model-core": "^0.6.0",
     "@hcengineering/model-view": "^0.6.0",
     "@hcengineering/model-workbench": "^0.6.1",
-    "@hcengineering/task": "^0.6.4",
-    "@hcengineering/notification": "^0.6.9",
-    "@hcengineering/templates": "^0.6.1",
+    "@hcengineering/task": "^0.6.5",
+    "@hcengineering/notification": "^0.6.10",
+    "@hcengineering/templates": "^0.6.2",
     "@hcengineering/activity": "^0.6.0"
   }
 }
