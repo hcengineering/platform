@@ -223,6 +223,9 @@ async function generateLocation (loc: Location, id: Ref<Contact>): Promise<Resol
 
 export const employeeByIdStore = writable<IdMap<Employee>>(new Map())
 export const employeesStore = writable<Employee[]>([])
+
+export const employeeAccountByIdStore = writable<IdMap<EmployeeAccount>>(new Map())
+
 export const channelProviders = writable<ChannelProvider[]>([])
 
 function fillStores (): void {
@@ -232,6 +235,22 @@ function fillStores (): void {
     query.query(contact.class.Employee, {}, (res) => {
       employeesStore.set(res)
       employeeByIdStore.set(toIdMap(res))
+    })
+
+    const accountQ = createQuery(true)
+    accountQ.query(contact.class.EmployeeAccount, {}, (res) => {
+      const mergedEmployees = res.filter((it) => it.mergedTo !== undefined)
+      const activeEmployees = res.filter((it) => it.mergedTo === undefined)
+      const ids = toIdMap(activeEmployees)
+      for (const e of mergedEmployees) {
+        if (e.mergedTo !== undefined) {
+          const mergeTo = ids.get(e.mergedTo)
+          if (mergeTo !== undefined) {
+            ids.set(e._id, mergeTo)
+          }
+        }
+      }
+      employeeAccountByIdStore.set(ids)
     })
 
     const providerQuery = createQuery(true)

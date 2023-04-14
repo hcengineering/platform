@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee, EmployeeAccount } from '@hcengineering/contact'
+  import { Employee } from '@hcengineering/contact'
   import { Account, DocumentQuery, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
+  import { employeeAccountByIdStore } from '../utils'
   import UserBox from './UserBox.svelte'
 
   export let label: IntlString = contact.string.Employee
@@ -29,16 +29,10 @@
   export let size: ButtonSize = 'small'
   export let readonly = false
 
-  const query = createQuery()
-
-  let accounts: EmployeeAccount[] = []
-
-  query.query<EmployeeAccount>(contact.class.EmployeeAccount, docQuery as DocumentQuery<EmployeeAccount>, (res) => {
-    accounts = res
-    map = new Map(res.map((p) => [p.employee, p._id]))
-  })
+  $: accounts = Array.from($employeeAccountByIdStore.values())
 
   let map: Map<Ref<Employee>, Ref<Account>> = new Map()
+  $: map = new Map(accounts.map((p) => [p.employee, p._id]))
 
   $: employees = accounts.map((p) => p.employee)
   $: selectedEmp = value && accounts.find((p) => p._id === value)?.employee

@@ -16,10 +16,11 @@
   import { DisplayTx, TxViewlet } from '@hcengineering/activity'
   import { ActivityKey, getValue, newDisplayTx, updateViewlet } from '@hcengineering/activity-resources'
   import activity from '@hcengineering/activity-resources/src/plugin'
-  import contact, { EmployeeAccount } from '@hcengineering/contact'
+  import { EmployeeAccount } from '@hcengineering/contact'
+  import { employeeAccountByIdStore } from '@hcengineering/contact-resources'
   import core, { AnyAttribute, Doc, Ref, Tx, TxCUD } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
   import type { AttributeModel } from '@hcengineering/view'
   import { ObjectPresenter } from '@hcengineering/view-resources'
@@ -37,15 +38,13 @@
   let modelIcon: Asset | undefined = undefined
 
   $: if (tx._id !== ptx?.tx._id) {
-    ptx = newDisplayTx(tx as TxCUD<Doc>, client.getHierarchy())
+    ptx = newDisplayTx(tx as TxCUD<Doc>, client.getHierarchy(), false)
     if (tx.modifiedBy !== employee?._id) {
       employee = undefined
     }
     props = undefined
     model = []
   }
-
-  const query = createQuery()
 
   $: ptx &&
     updateViewlet(client, viewlets, ptx).then((result) => {
@@ -56,14 +55,7 @@
       }
     })
 
-  $: query.query(
-    contact.class.EmployeeAccount,
-    { _id: tx.modifiedBy as Ref<EmployeeAccount> },
-    (account) => {
-      ;[employee] = account
-    },
-    { limit: 1 }
-  )
+  $: employee = $employeeAccountByIdStore.get(tx.modifiedBy as Ref<EmployeeAccount>)
 
   function isMessageType (attr?: AnyAttribute): boolean {
     return attr?.type._class === core.class.TypeMarkup

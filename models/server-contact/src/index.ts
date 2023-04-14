@@ -47,8 +47,11 @@ export function createModel (builder: Builder): void {
     trigger: serverContact.trigger.OnChannelUpdate
   })
 
-  builder.createDoc(serverCore.class.AsyncTrigger, core.space.Model, {
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverContact.trigger.OnEmployeeUpdate,
-    classes: [contact.class.Employee]
+    txMatch: {
+      objectClass: contact.class.Employee,
+      _class: core.class.TxUpdateDoc
+    }
   })
 }

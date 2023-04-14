@@ -66,7 +66,7 @@ export async function connect (title: string): Promise<Client | undefined> {
 
         void (async () => {
           const newVersion = await _client?.findOne<Version>(core.class.Version, {})
-          console.log('Reconnect Model version', version)
+          console.log('Reconnect Model version', newVersion)
 
           const currentVersionStr = versionToString(version as Version)
           const reconnectVersionStr = versionToString(newVersion as Version)

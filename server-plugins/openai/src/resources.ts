@@ -27,7 +27,7 @@ import core, {
   TxProcessor
 } from '@hcengineering/core'
 import recruit, { ApplicantMatch } from '@hcengineering/recruit'
-import type { AsyncTriggerControl } from '@hcengineering/server-core'
+import type { TriggerControl } from '@hcengineering/server-core'
 import got from 'got'
 import { convert } from 'html-to-text'
 import { chunks } from './encoder/encoder'
@@ -111,7 +111,7 @@ async function performCompletion (
 /**
  * @public
  */
-export async function AsyncOnGPTRequest (tx: Tx, tc: AsyncTriggerControl): Promise<Tx[]> {
+export async function AsyncOnGPTRequest (tx: Tx, tc: TriggerControl): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx)
 
   if (tc.hierarchy.isDerived(actualTx._class, core.class.TxCUD) && actualTx.modifiedBy !== openai.account.GPT) {
@@ -127,7 +127,7 @@ export async function AsyncOnGPTRequest (tx: Tx, tc: AsyncTriggerControl): Promi
   return []
 }
 
-async function handleComment (tx: Tx, tc: AsyncTriggerControl): Promise<Tx[]> {
+async function handleComment (tx: Tx, tc: TriggerControl): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx)
   const cud: TxCUD<Doc> = actualTx as TxCUD<Doc>
 
@@ -269,7 +269,7 @@ async function summarizeVacancy (config: OpenAIConfiguration, chunks: string[], 
   return getText(await performCompletion(candidateSummaryRequest, options, config, maxLen)) ?? chunks[0]
 }
 
-async function handleApplicantMatch (tx: Tx, tc: AsyncTriggerControl): Promise<Tx[]> {
+async function handleApplicantMatch (tx: Tx, tc: TriggerControl): Promise<Tx[]> {
   const [config] = await tc.findAll(openai.class.OpenAIConfiguration, {})
 
   if (!(config?.enabled ?? false)) {

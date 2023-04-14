@@ -16,18 +16,13 @@
 <script lang="ts">
   import { EmployeeAccount } from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
-  import contact from '../plugin'
+  import { employeeAccountByIdStore } from '../utils'
   import EmployeeAccountPresenter from './EmployeeAccountPresenter.svelte'
 
   export let value: Ref<EmployeeAccount>
   export let disabled = false
 
-  let account: EmployeeAccount | undefined
-
-  const query = createQuery()
-
-  $: query.query(contact.class.EmployeeAccount, { _id: value }, (r) => ([account] = r))
+  $: account = $employeeAccountByIdStore.get(value)
 </script>
 
 {#if account}

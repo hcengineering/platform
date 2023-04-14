@@ -33,7 +33,6 @@ import core, {
 } from '@hcengineering/core'
 import type { IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import server from '@hcengineering/server-core'
 
 export const txFactory = new TxFactory(core.account.System)
 
@@ -126,22 +125,7 @@ export function genMinModel (): TxCUD<Doc>[] {
       domain: DOMAIN_DOC_INDEX_STATE
     })
   )
-  txes.push(
-    createClass(server.class.AsyncTrigger, {
-      label: 'AsyncTrigger' as IntlString,
-      extends: core.class.Doc,
-      kind: ClassifierKind.CLASS,
-      domain: DOMAIN_MODEL
-    })
-  )
-  txes.push(
-    createClass(server.class.AsyncTriggerState, {
-      label: 'AsyncTriggerState' as IntlString,
-      extends: core.class.Doc,
-      kind: ClassifierKind.CLASS,
-      domain: DOMAIN_DOC_INDEX_STATE
-    })
-  )
+
   txes.push(
     createClass(core.class.Account, {
       label: 'Account' as IntlString,

@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Channel, Contact, EmployeeAccount } from '@hcengineering/contact'
-  import { employeeByIdStore } from '@hcengineering/contact-resources'
-  import { IdMap, Ref, SortingOrder, toIdMap } from '@hcengineering/core'
+  import { Channel, Contact } from '@hcengineering/contact'
+  import { employeeAccountByIdStore, employeeByIdStore } from '@hcengineering/contact-resources'
+  import { Ref, SortingOrder } from '@hcengineering/core'
   import { Message, SharedMessage } from '@hcengineering/gmail'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -32,14 +32,11 @@
   export let enabled: boolean
 
   let messages: Message[] = []
-  let accounts: IdMap<EmployeeAccount> = new Map()
+
   let selected: Set<Ref<SharedMessage>> = new Set<Ref<SharedMessage>>()
   let selectable = false
 
   const messagesQuery = createQuery()
-  const accountsQuery = createQuery()
-
-  accountsQuery.query(contact.class.EmployeeAccount, {}, (res) => (accounts = toIdMap(res)))
 
   const notificationClient = NotificationClientImpl.getClient()
 
@@ -68,7 +65,7 @@
       object._class,
       'gmailSharedMessages',
       {
-        messages: convertMessages(object, channel, selectedMessages, accounts, $employeeByIdStore)
+        messages: convertMessages(object, channel, selectedMessages, $employeeAccountByIdStore, $employeeByIdStore)
       }
     )
     await notificationClient.updateLastView(channel._id, channel._class, undefined, true)
@@ -126,7 +123,7 @@
   <div class="popupPanel-body__main-content py-4 clear-mins flex-no-shrink">
     {#if messages && messages.length > 0}
       <Messages
-        messages={convertMessages(object, channel, messages, accounts, $employeeByIdStore)}
+        messages={convertMessages(object, channel, messages, $employeeAccountByIdStore, $employeeByIdStore)}
         {selectable}
         bind:selected
         on:select

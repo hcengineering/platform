@@ -15,8 +15,8 @@
 <script lang="ts">
   import { TxViewlet } from '@hcengineering/activity'
   import { ActivityKey } from '@hcengineering/activity-resources'
-  import contact, { EmployeeAccount, getName } from '@hcengineering/contact'
-  import { Avatar, employeeByIdStore } from '@hcengineering/contact-resources'
+  import { EmployeeAccount, getName } from '@hcengineering/contact'
+  import { Avatar, employeeAccountByIdStore, employeeByIdStore } from '@hcengineering/contact-resources'
   import core, { Doc, Ref, TxCUD, TxProcessor } from '@hcengineering/core'
   import notification, { DocUpdates } from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
@@ -54,9 +54,8 @@
     getResource(presenterRes).then((res) => (presenter = res))
   }
 
-  const query = createQuery()
-  $: tx &&
-    query.query(contact.class.EmployeeAccount, { _id: tx.modifiedBy as Ref<EmployeeAccount> }, (r) => ([account] = r))
+  $: account = $employeeAccountByIdStore.get(tx?.modifiedBy as Ref<EmployeeAccount>)
+
   $: employee = account && $employeeByIdStore.get(account.employee)
 
   const docQuery = createQuery()
