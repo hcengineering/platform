@@ -3,13 +3,13 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import { Action, Location, location, navigate } from '@hcengineering/ui'
-  import view, { Filter, FilteredView } from '@hcengineering/view'
+  import view, { Filter, FilteredView, ViewOptions, Viewlet } from '@hcengineering/view'
   import {
     TreeItem,
     TreeNode,
     activeViewlet,
     filterStore,
-    makeViewOptionsKey,
+    getViewOptions,
     makeViewletKey,
     setActiveViewletId,
     setFilters,
@@ -47,7 +47,10 @@
   }
 
   let selectedId: Ref<FilteredView> | undefined = undefined
+
   async function load (fv: FilteredView): Promise<void> {
+    navigate(fv.location)
+    setFilters(JSON.parse(fv.filters))
     if (fv.viewletId !== undefined && fv.viewletId !== null) {
       const viewlet = await client.findOne(view.class.Viewlet, { _id: fv.viewletId })
       setActiveViewletId(fv.viewletId, fv.location)
@@ -55,8 +58,6 @@
         setViewOptions(viewlet, fv.viewOptions)
       }
     }
-    navigate(fv.location)
-    setFilters(JSON.parse(fv.filters))
   }
 
   const clearSelection = () => {
@@ -64,7 +65,12 @@
     dispatch('select', false)
   }
 
-  function checkSelected (fs: Filter[], loc: Location, filteredViews: FilteredView[] | undefined) {
+  function checkSelected (
+    fs: Filter[],
+    loc: Location,
+    filteredViews: FilteredView[] | undefined,
+    viewOptionStore: Map<string, ViewOptions>
+  ) {
     const filters = JSON.stringify(fs)
     if (loc && Array.isArray(fs) && fs.length > 0 && Array.isArray(filteredViews)) {
       for (const fv of filteredViews) {
@@ -73,8 +79,7 @@
         const key = makeViewletKey(loc)
         if (fv.viewletId !== $activeViewlet[key]) continue
         if (fv.viewletId !== null) {
-          const optionKey = makeViewOptionsKey(fv.viewletId)
-          const viewOptions = $viewOptionStore.get(optionKey)
+          const viewOptions = getViewOptions({ _id: fv.viewletId } as Viewlet, viewOptionStore)
           if (JSON.stringify(fv.viewOptions) !== JSON.stringify(viewOptions)) continue
         }
         selectedId = fv._id
@@ -87,7 +92,7 @@
     }
   }
 
-  $: checkSelected($filterStore, $location, filteredViews)
+  $: checkSelected($filterStore, $location, filteredViews, $viewOptionStore)
   $: dispatch('shown', filteredViews !== undefined && filteredViews.length > 0)
 </script>
 

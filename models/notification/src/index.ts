@@ -291,6 +291,10 @@ export function createModel (builder: Builder): void {
     },
     notification.action.Unsubscribe
   )
+
+  builder.mixin(notification.class.DocUpdates, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [view.action.Delete, view.action.Open]
+  })
 }
 
 export { notificationOperation } from './migration'
