@@ -42,6 +42,7 @@
     ActionContext,
     focusStore,
     getCategories,
+    getCategorySpaces,
     getGroupByValues,
     getPresenter,
     groupBy,
@@ -167,9 +168,15 @@
       const categoryFunc = viewOption as CategoryOption
       if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
         const categoryAction = await getResource(categoryFunc.action)
+
+        const spaces = getCategorySpaces(categories)
+        if (space !== undefined) {
+          spaces.push(space)
+        }
+
         const res = await categoryAction(
           _class,
-          space ? { space } : {},
+          spaces.length > 0 ? { space: { $in: Array.from(spaces.values()) } } : {},
           groupByKey,
           update,
           queryId,

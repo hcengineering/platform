@@ -647,6 +647,18 @@ export async function getCategories (
   )
 }
 
+/**
+ * @public
+ */
+export function getCategorySpaces (categories: CategoryType[]): Array<Ref<Space>> {
+  return Array.from(
+    (categories.filter((it) => typeof it === 'object') as StatusValue[]).reduce<Set<Ref<Space>>>((arr, val) => {
+      val.values.forEach((it) => arr.add(it.space))
+      return arr
+    }, new Set())
+  )
+}
+
 export function concatCategories (arr1: CategoryType[], arr2: CategoryType[]): CategoryType[] {
   const uniqueValues: Set<string | number | undefined> = new Set()
   const uniqueObjects: Map<string | number, StatusValue> = new Map()

@@ -139,14 +139,6 @@ export async function showEmptyGroups (
       const resQuery: DocumentQuery<Status> = {}
       if (space !== undefined) {
         resQuery.space = space
-      } else {
-        const spaceRefs = Array.from(new Set(statusList.map((p) => p.space)))
-        const spaces = await client.findAll(
-          core.class.Space,
-          { _id: { $in: spaceRefs }, archived: false },
-          { projection: { _id: 1 } }
-        )
-        resQuery.space = { $in: spaces.map((p) => p._id) }
       }
       if (st !== undefined) {
         resQuery._id = st
