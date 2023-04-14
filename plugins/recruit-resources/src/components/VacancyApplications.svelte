@@ -16,19 +16,9 @@
   import type { Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { recruitId, Vacancy } from '@hcengineering/recruit'
-  import {
-    Button,
-    Icon,
-    IconAdd,
-    Label,
-    Loading,
-    NavLink,
-    resizeObserver,
-    Scroller,
-    showPopup
-  } from '@hcengineering/ui'
+  import { Button, Icon, IconAdd, Label, Loading, resizeObserver, Scroller, showPopup } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { getViewOptions, Table, ViewletSettingButton, viewOptionStore } from '@hcengineering/view-resources'
+  import { getViewOptions, NavLink, Table, ViewletSettingButton, viewOptionStore } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import CreateApplication from './CreateApplication.svelte'
   import IconApplication from './icons/Application.svelte'

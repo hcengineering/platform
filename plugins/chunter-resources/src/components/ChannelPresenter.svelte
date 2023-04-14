@@ -15,7 +15,8 @@
 <script lang="ts">
   import { Channel, chunterId } from '@hcengineering/chunter'
   import { getClient } from '@hcengineering/presentation'
-  import { Icon, NavLink } from '@hcengineering/ui'
+  import { Icon } from '@hcengineering/ui'
+  import { NavLink } from '@hcengineering/view-resources'
 
   export let value: Channel
   export let inline: boolean = false

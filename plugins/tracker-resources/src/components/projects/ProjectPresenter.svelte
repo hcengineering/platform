@@ -15,10 +15,9 @@
 <script lang="ts">
   import { Ref, Space } from '@hcengineering/core'
   import { Project } from '@hcengineering/tracker'
-  import { NavLink } from '@hcengineering/ui'
+  import { TreeNode, NavLink } from '@hcengineering/view-resources'
   import { SpacesNavModel } from '@hcengineering/workbench'
   import { SpecialElement } from '@hcengineering/workbench-resources'
-  import { TreeNode } from '@hcengineering/view-resources'
 
   export let space: Project
   export let model: SpacesNavModel

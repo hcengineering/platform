@@ -10,16 +10,40 @@ import core, {
   Ref
 } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
-import { createQuery, getClient, LiveQuery } from '@hcengineering/presentation'
+import { LiveQuery, createQuery, getClient } from '@hcengineering/presentation'
 import { AnyComponent, getCurrentLocation, locationToUrl } from '@hcengineering/ui'
 import { Filter, FilterMode, KeyFilter } from '@hcengineering/view'
-import { writable } from 'svelte/store'
+import { get, writable } from 'svelte/store'
 import view from './plugin'
 
 /**
  * @public
  */
 export const filterStore = writable<Filter[]>([])
+
+export function setFilters (filters: Filter[]): void {
+  const old = get(filterStore)
+  old.forEach((p) => p.onRemove?.())
+  filterStore.set(filters)
+}
+
+export function removeFilter (i: number): void {
+  const old = get(filterStore)
+  old[i]?.onRemove?.()
+  old.splice(i, 1)
+  filterStore.set(old)
+}
+
+export function updateFilter (filter: Filter): void {
+  const old = get(filterStore)
+  const index = old.findIndex((p) => p.index === filter.index)
+  if (index === -1) {
+    old.push(filter)
+  } else {
+    old[index] = filter
+  }
+  filterStore.set(old)
+}
 
 export async function objectInResult (filter: Filter): Promise<ObjQueryType<any>> {
   return { $in: filter.value }

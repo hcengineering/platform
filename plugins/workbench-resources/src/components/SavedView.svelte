@@ -9,10 +9,10 @@
     TreeNode,
     activeViewlet,
     filterStore,
-    getFilterKey,
     makeViewOptionsKey,
     makeViewletKey,
     setActiveViewletId,
+    setFilters,
     setViewOptions,
     viewOptionStore
   } from '@hcengineering/view-resources'
@@ -55,13 +55,8 @@
         setViewOptions(viewlet, fv.viewOptions)
       }
     }
-    if (fv.filterClass !== undefined) {
-      const key = getFilterKey(fv.filterClass)
-      const filters = JSON.parse(fv.filters)
-      localStorage.setItem(key, JSON.stringify(filters))
-    }
     navigate(fv.location)
-    $filterStore = JSON.parse(fv.filters)
+    setFilters(JSON.parse(fv.filters))
   }
 
   const clearSelection = () => {

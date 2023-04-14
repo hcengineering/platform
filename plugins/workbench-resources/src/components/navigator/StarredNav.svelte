@@ -17,12 +17,12 @@
   import core from '@hcengineering/core'
   import notification, { LastView } from '@hcengineering/notification'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
-  import { getResource, IntlString } from '@hcengineering/platform'
+  import { IntlString, getResource } from '@hcengineering/platform'
   import preference from '@hcengineering/preference'
   import { getClient } from '@hcengineering/presentation'
-  import { Action, IconEdit, NavLink } from '@hcengineering/ui'
+  import { Action, IconEdit } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { getActions as getContributedActions, TreeItem, TreeNode } from '@hcengineering/view-resources'
+  import { NavLink, TreeItem, TreeNode, getActions as getContributedActions } from '@hcengineering/view-resources'
   import { classIcon, getSpaceName } from '../../utils'
 
   export let label: IntlString
