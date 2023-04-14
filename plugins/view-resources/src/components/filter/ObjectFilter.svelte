@@ -57,11 +57,11 @@
     const statuses = val
     const result: (Doc | undefined)[] = []
     statusesCount = []
-    const unique = [...new Set(val.map((v) => v?.name))]
+    const unique = [...new Set(val.map((v) => v?.name?.trim()?.toLocaleLowerCase()))]
     unique.forEach((label, i) => {
       let count = 0
       statuses.forEach((state) => {
-        if (state?.name === label) {
+        if (state?.name?.trim()?.toLocaleLowerCase() === label?.trim()?.toLowerCase()) {
           if (!count) result[i] = state
           count += targets.get(state?._id) ?? 0
         }
@@ -76,7 +76,12 @@
       await objectsPromise
     }
     targets.clear()
-    const baseObjects = await client.findAll(filter.key._class, space ? { space } : {}, {
+
+    const spaces = (
+      await client.findAll(core.class.Space, { archived: true }, { projection: { _id: 1, archived: 1, _class: 1 } })
+    ).map((it) => it._id)
+
+    const baseObjects = await client.findAll(filter.key._class, space ? { space } : { space: { $nin: spaces } }, {
       projection: { [filter.key.key]: 1, space: 1 }
     })
     for (const object of baseObjects) {

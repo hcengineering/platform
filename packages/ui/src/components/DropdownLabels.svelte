@@ -70,7 +70,7 @@
           { placeholder, items, multiselect, selected },
           container,
           (result) => {
-            if (result) {
+            if (result != null) {
               if (allowDeselect && selected === result) {
                 selected = undefined
                 dispatch('selected', undefined)
@@ -83,7 +83,7 @@
             mgr?.setFocusPos(focusIndex)
           },
           (result) => {
-            if (result) {
+            if (result != null) {
               selected = result
               dispatch('selected', result)
             }

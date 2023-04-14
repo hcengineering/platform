@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Class, Doc, Ref, Space, WithLookup } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery } from '@hcengineering/presentation'
   import {
     AnyComponent,
     Button,
@@ -58,29 +58,36 @@
 
   $: query = viewlet?.baseQuery ?? {}
 
-  $: searchQuery = search === '' ? query : { $search: search, ...query }
+  $: searchQuery = search === '' ? query : { ...query, $search: search }
 
   $: resultQuery = searchQuery
 
   const preferenceQuery = createQuery()
   let preference: ViewletPreference | undefined
 
-  const client = getClient()
   let loading = true
 
   let viewlets: WithLookup<Viewlet>[] = []
 
   const viewletQuery = createQuery()
-  $: viewletQuery.query(
-    view.class.Viewlet,
-    { attachTo: _class, variant: { $exists: false } },
-    (res) => (viewlets = res),
-    {
-      lookup: {
-        descriptor: view.class.ViewletDescriptor
+  $: {
+    viewletQuery.query(
+      view.class.Viewlet,
+      {
+        attachTo: _class,
+        variant: { $exists: false },
+        descriptor: { $in: descriptors ?? [view.viewlet.Table] }
+      },
+      (res) => {
+        viewlets = res
+      },
+      {
+        lookup: {
+          descriptor: view.class.ViewletDescriptor
+        }
       }
-    }
-  )
+    )
+  }
 
   let key = makeViewletKey()
 
@@ -90,33 +97,16 @@
     })
   )
 
-  $: active = $activeViewlet[key]
-
-  $: update(_class, active, descriptors)
+  $: update(_class, $activeViewlet[key], viewlets)
 
   async function update (
     _class: Ref<Class<Doc>>,
     active: Ref<Viewlet> | null,
-    descriptors?: Ref<ViewletDescriptor>[]
+    viewlets: WithLookup<Viewlet>[]
   ): Promise<void> {
-    loading = true
-    viewlets = await client.findAll(
-      view.class.Viewlet,
-      {
-        attachTo: _class,
-        variant: { $exists: false },
-        descriptor: { $in: descriptors ?? [view.viewlet.Table] }
-      },
-      {
-        lookup: {
-          descriptor: view.class.ViewletDescriptor
-        }
-      }
-    )
     preference = undefined
     viewlet = viewlets.find((viewlet) => viewlet._id === active) ?? viewlets[0]
     setActiveViewletId(viewlet._id)
-    loading = false
   }
 
   $: if (viewlet !== undefined) {
@@ -202,22 +192,24 @@
     query={searchQuery}
     {viewOptions}
     on:change={(e) => {
-      resultQuery = { ...e.detail, ...query }
+      resultQuery = { ...query, ...e.detail }
     }}
   />
-  <Component
-    is={viewlet.$lookup.descriptor.component}
-    props={{
-      _class,
-      space,
-      options: viewlet.options,
-      config: preference?.config ?? viewlet.config,
-      viewlet,
-      viewOptions,
-      viewOptionsConfig: viewlet.viewOptions?.other,
-      createItemDialog: createComponent,
-      createItemLabel: createLabel,
-      query: resultQuery
-    }}
-  />
+  {#key viewlet?._id}
+    <Component
+      is={viewlet.$lookup.descriptor.component}
+      props={{
+        _class,
+        space,
+        options: viewlet.options,
+        config: preference?.config ?? viewlet.config,
+        viewlet,
+        viewOptions,
+        viewOptionsConfig: viewlet.viewOptions?.other,
+        createItemDialog: createComponent,
+        createItemLabel: createLabel,
+        query: resultQuery
+      }}
+    />
+  {/key}
 {/if}
