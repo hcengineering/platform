@@ -23,6 +23,7 @@
   export let isDragging: boolean
   export let dragCard: Item | undefined
   export let objects: Item[]
+  export let groupByDocs: Record<string | number, Item[]>
   export let selection: number | undefined = undefined
   export let checkedSet: Set<Ref<Doc>>
   export let state: CategoryType

@@ -305,7 +305,7 @@
 <div class="kanban-container top-divider">
   <ScrollBox>
     <div class="kanban-content">
-      {#each categories as state, si (state)}
+      {#each categories as state, si (typeof state === 'object' ? state.name : state)}
         {@const stateObjects = getGroupByValues(groupByDocs, state)}
 
         <div
@@ -325,6 +325,7 @@
             <KanbanRow
               bind:this={stateRows[si]}
               on:obj-focus
+              {groupByDocs}
               {stateObjects}
               {isDragging}
               {dragCard}
