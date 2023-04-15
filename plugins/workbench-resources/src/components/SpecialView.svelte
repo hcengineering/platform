@@ -51,46 +51,34 @@
   export let createComponent: AnyComponent | undefined
   export let createComponentProps: Record<string, any> = {}
   export let isCreationDisabled = false
-  export let descriptors: Ref<ViewletDescriptor>[] | undefined = [view.viewlet.Table]
+  export let descriptors: Ref<ViewletDescriptor>[] | undefined = undefined
 
   let search = ''
   let viewlet: WithLookup<Viewlet> | undefined
 
-  $: query = viewlet?.baseQuery ?? {}
-
-  $: searchQuery = search === '' ? query : { ...query, $search: search }
-
-  $: resultQuery = searchQuery
-
   const preferenceQuery = createQuery()
   let preference: ViewletPreference | undefined
-
-  let loading = true
 
   let viewlets: WithLookup<Viewlet>[] = []
 
   const viewletQuery = createQuery()
-  let vl = false
-  $: {
-    vl = true
-    viewletQuery.query(
-      view.class.Viewlet,
-      {
-        attachTo: _class,
-        variant: { $exists: false },
-        descriptor: { $in: descriptors ?? [view.viewlet.Table] }
-      },
-      (res) => {
-        vl = false
-        viewlets = res
-      },
-      {
-        lookup: {
-          descriptor: view.class.ViewletDescriptor
-        }
+
+  $: viewletQuery.query(
+    view.class.Viewlet,
+    {
+      attachTo: _class,
+      variant: { $exists: false },
+      ...(descriptors !== undefined ? { descriptor: { $in: descriptors } } : {})
+    },
+    (res) => {
+      viewlets = res
+    },
+    {
+      lookup: {
+        descriptor: view.class.ViewletDescriptor
       }
-    )
-  }
+    }
+  )
 
   let key = makeViewletKey()
 
@@ -100,22 +88,15 @@
     })
   )
 
-  $: update(_class, $activeViewlet[key], viewlets)
-
-  async function update (
-    _class: Ref<Class<Doc>>,
-    active: Ref<Viewlet> | null,
-    viewlets: WithLookup<Viewlet>[]
-  ): Promise<void> {
-    if (vl === false) {
+  $: {
+    const newViewlet = viewlets.find((viewlet) => viewlet?._id === $activeViewlet[key]) ?? viewlets[0]
+    if (viewlet?._id !== newViewlet?._id) {
       preference = undefined
-      viewlet = viewlets.find((viewlet) => viewlet?._id === active) ?? viewlets[0]
-      setActiveViewletId(viewlet?._id)
     }
+    viewlet = newViewlet
   }
 
   $: if (viewlet !== undefined) {
-    setActiveViewletId(viewlet._id)
     preferenceQuery.query(
       view.class.ViewletPreference,
       {
@@ -123,11 +104,16 @@
       },
       (res) => {
         preference = res[0]
-        loading = false
       },
       { limit: 1 }
     )
+  } else {
+    preferenceQuery.unsubscribe()
   }
+
+  $: query = viewlet?.baseQuery ?? {}
+  $: searchQuery = search === '' ? query : { ...query, $search: search }
+  $: resultQuery = searchQuery
 
   function showCreateDialog () {
     if (createComponent === undefined) return
@@ -167,9 +153,13 @@
         size={'small'}
         on:select={(result) => {
           if (result.detail !== undefined) {
-            if (viewlet?._id === result.detail.id) return
+            if (viewlet?._id === result.detail.id) {
+              return
+            }
             viewlet = viewlets.find((vl) => vl._id === result.detail.id)
-            if (viewlet) setActiveViewletId(viewlet._id)
+            if (viewlet) {
+              setActiveViewletId(viewlet._id)
+            }
           }
         }}
       />
@@ -189,9 +179,9 @@
   </div>
 </div>
 
-{#if loading}
+{#if !viewlet?.$lookup?.descriptor?.component || viewlet?.attachTo !== _class || (preference !== undefined && viewlet?._id !== preference.attachedTo)}}
   <Loading />
-{:else if viewlet?.$lookup?.descriptor?.component}
+{:else}
   <FilterBar
     {_class}
     query={searchQuery}
@@ -200,21 +190,19 @@
       resultQuery = { ...query, ...e.detail }
     }}
   />
-  {#key viewlet?._id}
-    <Component
-      is={viewlet.$lookup.descriptor.component}
-      props={{
-        _class,
-        space,
-        options: viewlet.options,
-        config: preference?.config ?? viewlet.config,
-        viewlet,
-        viewOptions,
-        viewOptionsConfig: viewlet.viewOptions?.other,
-        createItemDialog: createComponent,
-        createItemLabel: createLabel,
-        query: resultQuery
-      }}
-    />
-  {/key}
+  <Component
+    is={viewlet.$lookup.descriptor.component}
+    props={{
+      _class,
+      space,
+      options: viewlet.options,
+      config: preference?.config ?? viewlet.config,
+      viewlet,
+      viewOptions,
+      viewOptionsConfig: viewlet.viewOptions?.other,
+      createItemDialog: createComponent,
+      createItemLabel: createLabel,
+      query: resultQuery
+    }}
+  />
 {/if}
