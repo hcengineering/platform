@@ -116,7 +116,7 @@ export class LiveQuery extends TxProcessor implements Client {
     }
   }
 
-  private match (q: Query, doc: Doc): boolean {
+  private match (q: Query, doc: Doc, skipLookup = false): boolean {
     if (!this.getHierarchy().isDerived(doc._class, q._class)) {
       // Check if it is not a mixin and not match class
       const mixinClass = Hierarchy.mixinClass(doc)
@@ -127,6 +127,7 @@ export class LiveQuery extends TxProcessor implements Client {
     const query = q.query
     for (const key in query) {
       if (key === '$search') continue
+      if (skipLookup && key.startsWith('$lookup')) continue
       const value = (query as any)[key]
       const result = findProperty([doc], key, value)
       if (result.length === 0) {
@@ -743,38 +744,45 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   private async handleDocAdd (q: Query, doc: Doc, handleLookup = true): Promise<void> {
-    if (this.match(q, doc)) {
+    if (this.match(q, doc, q.options?.lookup !== undefined)) {
+      let needPush = true
       if (q.result instanceof Promise) {
         q.result = await q.result
       }
       if (q.options?.lookup !== undefined && handleLookup) {
         await this.lookup(q._class, doc, q.options.lookup)
+        const matched = this.match(q, doc)
+        if (!matched) needPush = false
       }
-      // We could already have document inside results, if query is created during processing of document create transaction and not yet handled on client.
-      const pos = q.result.findIndex((p) => p._id === doc._id)
-      if (pos >= 0) {
-        // No need to update, document already in results.
-        return
+      if (needPush) {
+        // We could already have document inside results, if query is created during processing of document create transaction and not yet handled on client.
+        const pos = q.result.findIndex((p) => p._id === doc._id)
+        if (pos >= 0) {
+          // No need to update, document already in results.
+          needPush = false
+        }
       }
+      if (needPush) {
+        // If query contains search we must check use fulltext
+        if (q.query.$search != null && q.query.$search.length > 0) {
+          const match = await this.client.findOne(q._class, { $search: q.query.$search, _id: doc._id }, q.options)
+          if (match === undefined) return
+        }
 
-      // If query contains search we must check use fulltext
-      if (q.query.$search != null && q.query.$search.length > 0) {
-        const match = await this.client.findOne(q._class, { $search: q.query.$search, _id: doc._id }, q.options)
-        if (match === undefined) return
-      }
-      q.result.push(doc)
-      q.total++
+        q.result.push(doc)
+        q.total++
 
-      if (q.options?.sort !== undefined) {
-        await resultSort(q.result, q.options?.sort, q._class, this.getHierarchy(), this.client.getModel())
-      }
+        if (q.options?.sort !== undefined) {
+          await resultSort(q.result, q.options?.sort, q._class, this.getHierarchy(), this.client.getModel())
+        }
 
-      if (q.options?.limit !== undefined && q.result.length > q.options.limit) {
-        if (q.result.pop()?._id !== doc._id) {
+        if (q.options?.limit !== undefined && q.result.length > q.options.limit) {
+          if (q.result.pop()?._id !== doc._id) {
+            await this.callback(q)
+          }
+        } else {
           await this.callback(q)
         }
-      } else {
-        await this.callback(q)
       }
     }
 
