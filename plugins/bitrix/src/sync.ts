@@ -105,6 +105,7 @@ export async function syncDocument (
   extraDocs: Map<Ref<Class<Doc>>, Doc[]>,
   monitor?: (doc: ConvertResult) => void
 ): Promise<void> {
+  const st = Date.now()
   const hierarchy = client.getHierarchy()
 
   try {
@@ -197,7 +198,11 @@ export async function syncDocument (
 
             let updated = false
             for (const existingObj of existingBlobs) {
-              if (existingObj.name === ed.name && existingObj.size === ed.size && existingObj.type === ed.type) {
+              if (
+                existingObj.name === ed.name &&
+                existingObj.size === ed.size &&
+                (existingObj.type ?? null) === (ed.type ?? null)
+              ) {
                 if (!updated) {
                   await updateAttachedDoc(existingObj, applyOp, ed)
                   updated = true
@@ -232,7 +237,10 @@ export async function syncDocument (
         }
       }
     }
+    console.log('Syncronized before commit', resultDoc.document._class, resultDoc.document.bitrixId, Date.now() - st)
     await applyOp.commit()
+    const ed = Date.now()
+    console.log('Syncronized', resultDoc.document._class, resultDoc.document.bitrixId, ed - st)
   } catch (err: any) {
     console.error(err)
   }
@@ -260,7 +268,7 @@ export async function syncDocument (
         }
         const existingIdx = existingByClass.findIndex((it) => {
           const bdoc = hierarchy.as<Doc, BitrixSyncDoc>(it, bitrix.mixin.BitrixSyncDoc)
-          return bdoc.bitrixId === valValue.bitrixId && bdoc.type === valValue.type
+          return bdoc.bitrixId === valValue.bitrixId && (bdoc.type ?? null) === (valValue.type ?? null)
         })
         let existing: Doc | undefined
         if (existingIdx >= 0) {
@@ -594,7 +602,7 @@ async function doPerformSync (ops: SyncOptions & SyncOptionsExtra): Promise<Bitr
 
           if (res.syncRequests.length > 0) {
             for (const r of res.syncRequests) {
-              const m = ops.allMappings.find((it) => it.type === r.type)
+              const m = ops.allMappings.find((it) => (it.type ?? null) === (r.type ?? null))
               if (m !== undefined) {
                 const [d] = await doPerformSync({
                   ...ops,
