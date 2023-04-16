@@ -88,8 +88,15 @@
     })
   )
 
-  $: {
-    const newViewlet = viewlets.find((viewlet) => viewlet?._id === $activeViewlet[key]) ?? viewlets[0]
+  $: getActiveViewlet(viewlets, $activeViewlet, key)
+
+  function getActiveViewlet (
+    viewlets: WithLookup<Viewlet>[],
+    activeViewlet: Record<string, Ref<Viewlet> | null>,
+    key: string
+  ) {
+    if (viewlets.length === 0) return
+    const newViewlet = viewlets.find((viewlet) => viewlet?._id === activeViewlet[key]) ?? viewlets[0]
     if (viewlet?._id !== newViewlet?._id) {
       preference = undefined
     }

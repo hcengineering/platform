@@ -481,7 +481,18 @@ export function makeViewletKey (loc?: Location): string {
   return 'viewlet' + locationToUrl(loc)
 }
 
-export const activeViewlet = writable<Record<string, Ref<Viewlet> | null>>({})
+function getSavedViewlets (): Record<string, Ref<Viewlet> | null> {
+  const res: Record<string, Ref<Viewlet> | null> = {}
+  const keys = Object.keys(localStorage)
+  for (const key of keys) {
+    if (!key.startsWith('viewlet')) continue
+    const item = localStorage.getItem(key) as Ref<Viewlet> | null
+    res[key] = item
+  }
+  return res
+}
+
+export const activeViewlet = writable<Record<string, Ref<Viewlet> | null>>(getSavedViewlets())
 
 export function setActiveViewletId (viewletId: Ref<Viewlet> | null, loc?: Location): void {
   const key = makeViewletKey(loc)
