@@ -66,7 +66,6 @@ import NopeComponent from './components/NopeComponent.svelte'
 import RelationsPopup from './components/RelationsPopup.svelte'
 import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
-import SprintComponentEditor from './components/sprints/SprintComponentEditor.svelte'
 import SprintDatePresenter from './components/sprints/SprintDatePresenter.svelte'
 import SprintLeadPresenter from './components/sprints/SprintLeadPresenter.svelte'
 import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
@@ -440,7 +439,6 @@ export default async (): Promise<Resources> => ({
     RelatedIssueSelector,
     DeleteComponentPresenter,
     TimeSpendReportPopup,
-    SprintComponentEditor,
     SprintDatePresenter,
     SprintLeadPresenter,
     NotificationIssuePresenter

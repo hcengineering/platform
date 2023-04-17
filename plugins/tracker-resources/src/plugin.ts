@@ -361,7 +361,6 @@ export default mergeIds(trackerId, tracker, {
     SprintPresenter: '' as AnyComponent,
     SprintStatusPresenter: '' as AnyComponent,
     SprintTitlePresenter: '' as AnyComponent,
-    SprintComponentEditor: '' as AnyComponent,
     SprintDatePresenter: '' as AnyComponent,
     SprintLeadPresenter: '' as AnyComponent,
     ReportedTimeEditor: '' as AnyComponent,

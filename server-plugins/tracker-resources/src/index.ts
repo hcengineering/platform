@@ -325,23 +325,6 @@ async function doIssueUpdate (
     )
   }
 
-  if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'sprint')) {
-    if (updateTx.operations.sprint != null) {
-      const [sprint] = await control.findAll(tracker.class.Sprint, { _id: updateTx.operations.sprint }, { limit: 1 })
-      res.push(
-        control.txFactory.createTxUpdateDoc(updateTx.objectClass, updateTx.objectSpace, updateTx.objectId, {
-          component: sprint.component
-        })
-      )
-    } else {
-      res.push(
-        control.txFactory.createTxUpdateDoc(updateTx.objectClass, updateTx.objectSpace, updateTx.objectId, {
-          component: null
-        })
-      )
-    }
-  }
-
   if (
     Object.prototype.hasOwnProperty.call(updateTx.operations, 'estimation') ||
     Object.prototype.hasOwnProperty.call(updateTx.operations, 'reportedTime')

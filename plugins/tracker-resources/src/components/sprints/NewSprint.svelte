@@ -17,11 +17,10 @@
   import { IntlString } from '@hcengineering/platform'
   import { Card, getClient, SpaceSelector } from '@hcengineering/presentation'
   import { EmployeeBox, UserBoxList } from '@hcengineering/contact-resources'
-  import { Component, Sprint, SprintStatus, Project } from '@hcengineering/tracker'
+  import { Sprint, SprintStatus, Project } from '@hcengineering/tracker'
   import ui, { DatePresenter, EditBox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
-  import ComponentSelector from '../ComponentSelector.svelte'
   import SprintStatusSelector from './SprintStatusSelector.svelte'
   import { StyledTextArea } from '@hcengineering/text-editor'
 
@@ -53,14 +52,6 @@
 
     object.status = newSprintStatus
   }
-
-  const handleComponentIdChanged = async (componentId: Ref<Component> | null | undefined) => {
-    if (componentId === undefined) {
-      return
-    }
-
-    object.component = componentId ?? undefined
-  }
 </script>
 
 <Card
@@ -82,7 +73,6 @@
   />
   <svelte:fragment slot="pool">
     <SprintStatusSelector selectedSprintStatus={object.status} onSprintStatusChange={handleComponentStatusChanged} />
-    <ComponentSelector value={object.component} onChange={handleComponentIdChanged} isEditable={true} />
     <EmployeeBox
       label={tracker.string.SprintLead}
       placeholder={tracker.string.AssignTo}

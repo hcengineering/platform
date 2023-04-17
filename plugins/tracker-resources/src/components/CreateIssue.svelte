@@ -452,14 +452,8 @@
     if (sprintId === undefined) {
       return
     }
-    let componentSprintId: Ref<ComponentType> | null
-    if (sprintId != null) {
-      const sprint = await client.findOne(tracker.class.Sprint, { _id: sprintId })
-      componentSprintId = sprint && sprint.component ? sprint.component : null
-    } else componentSprintId = null
 
     object.sprint = sprintId
-    object.component = componentSprintId
   }
 
   function addTagRef (tag: TagElement): void {
