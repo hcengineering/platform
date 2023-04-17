@@ -222,12 +222,12 @@
     ev.stopPropagation()
     ev.preventDefault()
     const update: DocumentUpdate<Doc> = {}
-    if (dragItemIndex !== undefined) {
+    if (dragItemIndex !== undefined && viewOptions.orderBy[0] === 'rank') {
       const prev = limited[dragItemIndex - 1] as DocWithRank
       const next = limited[dragItemIndex + 1] as DocWithRank
       try {
         const newRank = calcRank(prev, next)
-        if ((dragItem as DocWithRank)?.rank !== newRank) {
+        if ((dragItem.doc as DocWithRank)?.rank !== newRank) {
           ;(update as any).rank = newRank
         }
       } catch {}
@@ -241,7 +241,7 @@
       if (props !== undefined) {
         for (const key in props) {
           const value = props[key]
-          if ((dragItem as any)[key] !== value) {
+          if ((dragItem.doc as any)[key] !== value) {
             ;(update as any)[key] = value
           }
         }
