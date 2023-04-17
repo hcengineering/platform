@@ -747,6 +747,10 @@ export function createModel (builder: Builder): void {
     encode: recruit.function.GetObjectLinkFragment
   })
 
+  builder.mixin(recruit.mixin.Candidate, core.class.Class, view.mixin.LinkProvider, {
+    encode: recruit.function.GetCandidateLinkFragment
+  })
+
   builder.createDoc(
     view.class.ActionCategory,
     core.space.Model,
