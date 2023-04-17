@@ -35,7 +35,7 @@
     "@hcengineering/view": "^0.6.4",
     "@hcengineering/model-view": "^0.6.0",
     "@hcengineering/contact": "^0.6.13",
-    "@hcengineering/bitrix": "^0.6.30",
+    "@hcengineering/bitrix": "^0.6.31",
     "@hcengineering/bitrix-resources": "^0.6.0",
     "@hcengineering/preference": "^0.6.4",
     "@hcengineering/model-preference": "^0.6.0",

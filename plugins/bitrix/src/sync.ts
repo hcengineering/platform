@@ -174,10 +174,30 @@ export async function syncDocument (
         attachedTo: { $in: [resultDoc.document._id, ...attachIds] }
       })
       for (const [ed, op, upd] of resultDoc.blobs) {
-        const existing = existingBlobs.find((it) => {
+        let existing = existingBlobs.find((it) => {
           const bdoc = hierarchy.as<Doc, BitrixSyncDoc>(it, bitrix.mixin.BitrixSyncDoc)
           return bdoc.bitrixId === ed.bitrixId
         })
+        // Check attachment document exists in our storage.
+
+        if (existing !== undefined) {
+          const ex = existing
+          try {
+            const resp = await fetch(concatLink(frontUrl, `/files?file=${existing?.file}&token=${info.token}`), {
+              method: 'GET'
+            })
+            if (!resp.ok) {
+              // Attachment is broken and need to be re-added.
+              await applyOp.remove(ex)
+              existing = undefined
+            }
+          } catch (err: any) {
+            console.error(err)
+            await applyOp.remove(ex)
+            existing = undefined
+          }
+        }
+
         // For Attachments, just do it once per attachment and assume it is not changed.
         if (existing === undefined) {
           const attachmentId: Ref<Attachment> = generateId()
@@ -963,6 +983,13 @@ async function synchronizeUsers (
             syncTime: Date.now()
           })
         }
+        // TODO: Commented to replace names
+        // if (emp !== undefined && emp.name !== combineName(u.NAME, u.LAST_NAME)) {
+        //   await ops.client.update(emp, { name: combineName(u.NAME, u.LAST_NAME) })
+        // }
+        // if (account.name !== combineName(u.NAME, u.LAST_NAME)) {
+        //   await ops.client.update(account, { name: combineName(u.NAME, u.LAST_NAME) })
+        // }
       }
       userList.set(u.ID, accountId)
     }

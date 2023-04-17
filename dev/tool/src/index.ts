@@ -49,9 +49,9 @@ import { Data, getWorkspaceId, Tx, Version } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { MigrateOperation } from '@hcengineering/model'
 import { openAIConfigDefaults } from '@hcengineering/openai'
+import { cleanArchivedSpaces, cleanRemovedTransactions, cleanWorkspace } from './clean'
 import { rebuildElastic } from './elastic'
 import { openAIConfig } from './openai'
-import { cleanRemovedTransactions, cleanWorkspace } from './clean'
 
 /**
  * @public
@@ -461,6 +461,13 @@ export function devTool (
     .description('set user role')
     .action(async (workspace: string, cmd: any) => {
       await cleanRemovedTransactions(getWorkspaceId(workspace, productId), transactorUrl)
+    })
+
+  program
+    .command('clean-archived-spaces <workspace>')
+    .description('clean archived spaces')
+    .action(async (workspace: string, cmd: any) => {
+      await cleanArchivedSpaces(getWorkspaceId(workspace, productId), transactorUrl)
     })
 
   program.parse(process.argv)
