@@ -33,8 +33,13 @@
   import hr from '../plugin'
   import ScheduleView from './ScheduleView.svelte'
   import { EmployeeAccount } from '@hcengineering/contact'
+  import { employeeByIdStore } from '@hcengineering/contact-resources'
 
-  let department = hr.ids.Head
+  const hierarchy = getClient().getHierarchy()
+  const accountEmployee = $employeeByIdStore.get((getCurrentAccount() as EmployeeAccount).employee)
+  const accountStaff = accountEmployee !== undefined ? hierarchy.as(accountEmployee, hr.mixin.Staff) : undefined
+
+  let department = accountStaff !== undefined ? accountStaff.department : hr.ids.Head
   let currentDate: Date = new Date()
 
   let search = ''
@@ -45,14 +50,6 @@
   }
 
   const query = createQuery()
-
-  const client = getClient()
-  const accountEmployeeId = (getCurrentAccount() as EmployeeAccount).employee
-  client.findOne(hr.mixin.Staff, { _id: accountEmployeeId }).then((res) => {
-    if (res?.department != null) {
-      department = res.department
-    }
-  })
 
   let descendants: Map<Ref<Department>, Department[]> = new Map<Ref<Department>, Department[]>()
   let departments: Map<Ref<Department>, Department> = new Map<Ref<Department>, Department>()
