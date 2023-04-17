@@ -999,7 +999,7 @@ export function createModel (builder: Builder): void {
       attribute: 'state',
       _class: task.class.State,
       query: {},
-      searchField: 'title',
+      searchField: 'name',
       // should match space
       fillQuery: { space: 'space' },
       // Only apply for same vacancy
