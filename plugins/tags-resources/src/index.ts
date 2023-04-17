@@ -31,6 +31,7 @@ import TagsAttributeEditor from './components/TagsAttributeEditor.svelte'
 import TagsEditorPopup from './components/TagsEditorPopup.svelte'
 import LabelsPresenter from './components/LabelsPresenter.svelte'
 import CreateTagElement from './components/CreateTagElement.svelte'
+import ObjectsTagsEditorPopup from './components/ObjectsTagsEditorPopup.svelte'
 import { ObjQueryType } from '@hcengineering/core'
 import { getRefs } from './utils'
 import { Filter } from '@hcengineering/view'
@@ -67,7 +68,8 @@ export default async (): Promise<Resources> => ({
     TagElementCountPresenter,
     TagsAttributeEditor,
     TagsEditorPopup,
-    LabelsPresenter
+    LabelsPresenter,
+    ObjectsTagsEditorPopup
   },
   actionImpl: {
     Open: (value: TagElement, evt: MouseEvent) => {

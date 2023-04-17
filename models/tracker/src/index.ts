@@ -1509,6 +1509,58 @@ export function createModel (builder: Builder): void {
     {
       action: view.actionImpl.ShowPopup,
       actionProps: {
+        component: tags.component.TagsEditorPopup,
+        element: 'top',
+        fillProps: {
+          _object: 'object'
+        }
+      },
+      label: tracker.string.Labels,
+      icon: tags.icon.Tags,
+      keyBinding: ['keyL'],
+      input: 'focus',
+      category: tracker.category.Tracker,
+      target: tracker.class.Issue,
+      context: {
+        mode: ['context', 'browser'],
+        application: tracker.app.Tracker,
+        group: 'edit'
+      }
+    },
+    tracker.action.SetLabels
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: tags.component.ObjectsTagsEditorPopup,
+        element: 'top',
+        fillProps: {
+          _objects: 'objects'
+        }
+      },
+      label: tracker.string.Labels,
+      icon: tags.icon.Tags,
+      keyBinding: ['keyL'],
+      input: 'selection',
+      category: tracker.category.Tracker,
+      target: tracker.class.Issue,
+      context: {
+        mode: ['context', 'browser'],
+        application: tracker.app.Tracker,
+        group: 'edit'
+      }
+    },
+    tracker.action.SetLabels
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
         component: tracker.component.SetDueDateActionPopup,
         props: { mondayStart: true, withTime: false },
         element: 'top',
