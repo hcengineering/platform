@@ -594,7 +594,12 @@ export function createModel (builder: Builder): void {
           presenter: tracker.component.AssigneePresenter,
           props: { defaultClass: contact.class.Employee, shouldShowLabel: false }
         }
-      ]
+      ],
+      options: {
+        lookup: {
+          space: tracker.class.Project
+        }
+      }
     },
     tracker.viewlet.IssueList
   )
@@ -1137,8 +1142,8 @@ export function createModel (builder: Builder): void {
     builder,
     {
       action: tracker.actionImpl.DeleteProject,
-      label: tracker.string.DeleteProject,
-      icon: view.icon.Delete,
+      label: workbench.string.Archive,
+      icon: view.icon.Archive,
       input: 'focus',
       category: tracker.category.Tracker,
       target: tracker.class.Project,

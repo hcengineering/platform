@@ -33,7 +33,7 @@ import core, {
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { addAssigneeNotification } from '@hcengineering/server-task-resources'
-import tracker, { Component, Issue, IssueParentInfo, Project, TimeSpendReport, trackerId } from '@hcengineering/tracker'
+import tracker, { Component, Issue, IssueParentInfo, TimeSpendReport, trackerId } from '@hcengineering/tracker'
 import { workbenchId } from '@hcengineering/workbench'
 
 async function updateSubIssues (
@@ -82,32 +82,6 @@ export async function addTrackerAssigneeNotification (
   ptx: TxCollectionCUD<Issue, AttachedDoc>
 ): Promise<void> {
   await addAssigneeNotification(control, res, issue, assignee, ptx)
-}
-
-/**
- * @public
- */
-export async function OnProjectDelete (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx)
-  if (actualTx._class !== core.class.TxRemoveDoc) {
-    return []
-  }
-
-  const ctx = actualTx as TxRemoveDoc<Project>
-
-  if (ctx.objectClass !== tracker.class.Project) {
-    return []
-  }
-  const issues = await control.findAll(tracker.class.Issue, {
-    space: ctx.objectId
-  })
-
-  const res: Tx[] = []
-  issues.forEach((issue) => {
-    res.push(control.txFactory.createTxRemoveDoc(issue._class, issue.space, issue._id))
-  })
-
-  return res
 }
 
 /**
@@ -216,8 +190,7 @@ export default async () => ({
   },
   trigger: {
     OnIssueUpdate,
-    OnComponentRemove,
-    OnProjectDelete
+    OnComponentRemove
   }
 })
 

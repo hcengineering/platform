@@ -33,7 +33,7 @@ import core, {
   TxUpdateDoc
 } from '@hcengineering/core'
 import { Asset, IntlString } from '@hcengineering/platform'
-import { createQuery, getClient } from '@hcengineering/presentation'
+import { createQuery } from '@hcengineering/presentation'
 import { calcRank } from '@hcengineering/task'
 import {
   ComponentStatus,
@@ -548,11 +548,6 @@ export async function getPreviousAssignees (issue: Issue): Promise<Array<Ref<Emp
       }
     )
   })
-}
-
-export async function removeProject (project: Project): Promise<void> {
-  const client = getClient()
-  await client.removeDoc(tracker.class.Project, core.space.Space, project._id)
 }
 
 async function updateIssuesOnMove (
