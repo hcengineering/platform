@@ -32,7 +32,8 @@ import bitrix, {
   CreateTagOperation,
   DownloadAttachmentOperation,
   FindReferenceOperation,
-  MappingOperation
+  MappingOperation,
+  SyncOptions
 } from '.'
 import { createApplication, createVacancy } from './hr'
 
@@ -74,6 +75,7 @@ export interface BitrixSyncRequest {
 export type PostOperation = (
   doc: ConvertResult,
   extraDocs: Map<Ref<Class<Doc>>, Doc[]>,
+  ops: SyncOptions,
   existing?: Doc
 ) => Promise<void>
 
@@ -406,8 +408,11 @@ export async function convert (
   const getCreateAttachedValue = async (attr: AnyAttribute, operation: CreateHRApplication): Promise<void> => {
     const vacancyName = extractValue(operation.vacancyField)
     const sourceStatusName = extractValue(operation.stateField)
-    postOperations.push(async (doc, extraDocs, existingDoc) => {
+    postOperations.push(async (doc, extraDocs, ops, existingDoc) => {
       let vacancyId: Ref<Vacancy> | undefined
+      if (ops.syncVacancy === false) {
+        return
+      }
 
       const vacancies = (extraDocs.get(recruit.class.Vacancy) ?? []) as Vacancy[]
       const applications = (extraDocs.get(recruit.class.Applicant) ?? []) as Applicant[]

@@ -101,7 +101,7 @@ export async function syncDocument (
   resultDoc: ConvertResult,
   info: LoginInfo,
   frontUrl: string,
-  syncAttachments: boolean,
+  ops: SyncOptions,
   extraDocs: Map<Ref<Class<Doc>>, Doc[]>,
   monitor?: (doc: ConvertResult) => void
 ): Promise<void> {
@@ -118,7 +118,7 @@ export async function syncDocument (
 
     // Operations could add more change instructions
     for (const op of resultDoc.postOperations) {
-      await op(resultDoc, extraDocs, existing)
+      await op(resultDoc, extraDocs, ops, existing)
     }
 
     // const newDoc = existing === undefined
@@ -155,7 +155,7 @@ export async function syncDocument (
       await syncClass(applyOp, cl, vals, idMapping, resultDoc.document._id)
     }
 
-    if (syncAttachments) {
+    if (ops.syncAttachments ?? true) {
       // Sync gmail documents
       const emailAccount = resultDoc.extraSync.find(
         (it) =>
@@ -451,6 +451,7 @@ export interface SyncOptions {
   space: Ref<Space> | undefined
   mapping: WithLookup<BitrixEntityMapping>
   limit: number
+  skip?: number
   direction: 'ASC' | 'DSC'
   frontUrl: string
   loginInfo: LoginInfo
@@ -463,6 +464,7 @@ export interface SyncOptions {
   syncComments?: boolean
   syncEmails?: boolean
   syncAttachments?: boolean
+  syncVacancy?: boolean
 }
 interface SyncOptionsExtra {
   ownerTypeValues: BitrixOwnerType[]
@@ -520,7 +522,7 @@ async function doPerformSync (ops: SyncOptions & SyncOptionsExtra): Promise<Bitr
     if (ops.space === undefined || ops.mapping.$lookup?.fields === undefined) {
       return []
     }
-    let processed = 0
+    let processed = ops.skip ?? 0
 
     let added = 0
 
@@ -625,7 +627,7 @@ async function doPerformSync (ops: SyncOptions & SyncOptionsExtra): Promise<Bitr
             res,
             ops.loginInfo,
             ops.frontUrl,
-            ops.mapping.attachments && (ops.syncAttachments ?? true),
+            { ...ops, syncAttachments: ops.mapping.attachments && (ops.syncAttachments ?? true) },
             extraDocs,
             () => {
               ops.monitor?.(total)

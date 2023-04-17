@@ -273,6 +273,7 @@ export async function backup (transactorUrl: string, workspaceId: WorkspaceId, s
       const needRetrieveChunks: Ref<Doc>[][] = []
 
       let processed = 0
+      let st = Date.now()
       // Load all digest from collection.
       while (true) {
         try {
@@ -284,7 +285,8 @@ export async function backup (transactorUrl: string, workspaceId: WorkspaceId, s
           for (const [k, v] of Object.entries(it.docs)) {
             processed++
             if (processed % 10000 === 0) {
-              console.log('processed', processed, digest.size)
+              console.log('processed', processed, digest.size, Date.now() - st)
+              st = Date.now()
             }
             const kHash = digest.get(k as Ref<Doc>)
             if (kHash !== undefined) {
@@ -314,6 +316,7 @@ export async function backup (transactorUrl: string, workspaceId: WorkspaceId, s
           }
           // Try again
           idx = undefined
+          processed = 0
         }
       }
       while (needRetrieveChunks.length > 0) {
