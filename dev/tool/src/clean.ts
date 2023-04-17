@@ -162,3 +162,45 @@ export async function cleanRemovedTransactions (workspaceId: WorkspaceId, transa
     await connection.close()
   }
 }
+export async function cleanArchivedSpaces (workspaceId: WorkspaceId, transactorUrl: string): Promise<void> {
+  const connection = (await connect(transactorUrl, workspaceId, undefined, {
+    mode: 'backup'
+  })) as unknown as CoreClient & BackupClient
+  try {
+    const count = 0
+    const ops = new TxOperations(connection, core.account.System)
+    while (true) {
+      const spaces = await connection.findAll(core.class.Space, { archived: true }, { limit: 1000 })
+      if (spaces.length === 0) {
+        break
+      }
+
+      const h = connection.getHierarchy()
+      const withDomain = h
+        .getDescendants(core.class.Doc)
+        .filter((it) => h.findDomain(it) !== undefined)
+        .filter((it) => !h.isMixin(it))
+      for (const c of withDomain) {
+        while (true) {
+          const docs = await connection.findAll(c, { space: { $in: spaces.map((it) => it._id) } })
+          if (docs.length === 0) {
+            break
+          }
+          console.log('removing:', c, docs.length)
+          for (const d of docs) {
+            await ops.remove(d)
+          }
+        }
+      }
+      for (const s of spaces) {
+        await ops.remove(s)
+      }
+    }
+
+    console.log('total docs with remove', count)
+  } catch (err: any) {
+    console.trace(err)
+  } finally {
+    await connection.close()
+  }
+}
