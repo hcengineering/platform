@@ -217,7 +217,7 @@ async function deleteProject (project: Project | undefined): Promise<void> {
       showPopup(
         MessageBox,
         {
-          label: tracker.string.DeleteProjectName,
+          label: tracker.string.ArchiveProjectName,
           labelProps: { name: project.name },
           message: tracker.string.ProjectHasIssues
         },
@@ -232,9 +232,9 @@ async function deleteProject (project: Project | undefined): Promise<void> {
       showPopup(
         MessageBox,
         {
-          label: tracker.string.DeleteProjectName,
+          label: tracker.string.ArchiveProjectName,
           labelProps: { name: project.name },
-          message: tracker.string.DeleteProjectConfirm
+          message: tracker.string.ArchiveProjectConfirm
         },
         undefined,
         (result?: boolean) => {
