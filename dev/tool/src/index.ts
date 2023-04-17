@@ -51,7 +51,7 @@ import { MigrateOperation } from '@hcengineering/model'
 import { openAIConfigDefaults } from '@hcengineering/openai'
 import { rebuildElastic } from './elastic'
 import { openAIConfig } from './openai'
-import { cleanWorkspace } from './clean'
+import { cleanRemovedTransactions, cleanWorkspace } from './clean'
 
 /**
  * @public
@@ -454,6 +454,13 @@ export function devTool (
           cmd
         )
       })
+    })
+
+  program
+    .command('clean-removed-transactions <workspace>')
+    .description('set user role')
+    .action(async (workspace: string, cmd: any) => {
+      await cleanRemovedTransactions(getWorkspaceId(workspace, productId), transactorUrl)
     })
 
   program.parse(process.argv)

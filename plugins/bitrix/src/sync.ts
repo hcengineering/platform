@@ -101,10 +101,11 @@ export async function syncDocument (
   resultDoc: ConvertResult,
   info: LoginInfo,
   frontUrl: string,
-  syncAttachments: boolean,
+  ops: SyncOptions,
   extraDocs: Map<Ref<Class<Doc>>, Doc[]>,
   monitor?: (doc: ConvertResult) => void
 ): Promise<void> {
+  const st = Date.now()
   const hierarchy = client.getHierarchy()
 
   try {
@@ -117,7 +118,7 @@ export async function syncDocument (
 
     // Operations could add more change instructions
     for (const op of resultDoc.postOperations) {
-      await op(resultDoc, extraDocs, existing)
+      await op(resultDoc, extraDocs, ops, existing)
     }
 
     // const newDoc = existing === undefined
@@ -154,7 +155,7 @@ export async function syncDocument (
       await syncClass(applyOp, cl, vals, idMapping, resultDoc.document._id)
     }
 
-    if (syncAttachments) {
+    if (ops.syncAttachments ?? true) {
       // Sync gmail documents
       const emailAccount = resultDoc.extraSync.find(
         (it) =>
@@ -197,7 +198,11 @@ export async function syncDocument (
 
             let updated = false
             for (const existingObj of existingBlobs) {
-              if (existingObj.name === ed.name && existingObj.size === ed.size && existingObj.type === ed.type) {
+              if (
+                existingObj.name === ed.name &&
+                existingObj.size === ed.size &&
+                (existingObj.type ?? null) === (ed.type ?? null)
+              ) {
                 if (!updated) {
                   await updateAttachedDoc(existingObj, applyOp, ed)
                   updated = true
@@ -232,7 +237,10 @@ export async function syncDocument (
         }
       }
     }
+    console.log('Syncronized before commit', resultDoc.document._class, resultDoc.document.bitrixId, Date.now() - st)
     await applyOp.commit()
+    const ed = Date.now()
+    console.log('Syncronized', resultDoc.document._class, resultDoc.document.bitrixId, ed - st)
   } catch (err: any) {
     console.error(err)
   }
@@ -260,7 +268,7 @@ export async function syncDocument (
         }
         const existingIdx = existingByClass.findIndex((it) => {
           const bdoc = hierarchy.as<Doc, BitrixSyncDoc>(it, bitrix.mixin.BitrixSyncDoc)
-          return bdoc.bitrixId === valValue.bitrixId && bdoc.type === valValue.type
+          return bdoc.bitrixId === valValue.bitrixId && (bdoc.type ?? null) === (valValue.type ?? null)
         })
         let existing: Doc | undefined
         if (existingIdx >= 0) {
@@ -443,6 +451,7 @@ export interface SyncOptions {
   space: Ref<Space> | undefined
   mapping: WithLookup<BitrixEntityMapping>
   limit: number
+  skip?: number
   direction: 'ASC' | 'DSC'
   frontUrl: string
   loginInfo: LoginInfo
@@ -455,6 +464,7 @@ export interface SyncOptions {
   syncComments?: boolean
   syncEmails?: boolean
   syncAttachments?: boolean
+  syncVacancy?: boolean
 }
 interface SyncOptionsExtra {
   ownerTypeValues: BitrixOwnerType[]
@@ -512,7 +522,7 @@ async function doPerformSync (ops: SyncOptions & SyncOptionsExtra): Promise<Bitr
     if (ops.space === undefined || ops.mapping.$lookup?.fields === undefined) {
       return []
     }
-    let processed = 0
+    let processed = ops.skip ?? 0
 
     let added = 0
 
@@ -594,7 +604,7 @@ async function doPerformSync (ops: SyncOptions & SyncOptionsExtra): Promise<Bitr
 
           if (res.syncRequests.length > 0) {
             for (const r of res.syncRequests) {
-              const m = ops.allMappings.find((it) => it.type === r.type)
+              const m = ops.allMappings.find((it) => (it.type ?? null) === (r.type ?? null))
               if (m !== undefined) {
                 const [d] = await doPerformSync({
                   ...ops,
@@ -617,7 +627,7 @@ async function doPerformSync (ops: SyncOptions & SyncOptionsExtra): Promise<Bitr
             res,
             ops.loginInfo,
             ops.frontUrl,
-            ops.mapping.attachments && (ops.syncAttachments ?? true),
+            { ...ops, syncAttachments: ops.mapping.attachments && (ops.syncAttachments ?? true) },
             extraDocs,
             () => {
               ops.monitor?.(total)

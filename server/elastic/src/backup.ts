@@ -69,9 +69,9 @@ class ElasticDataAdapter implements DbAdapter {
           const q = {
             index: toWorkspaceString(this.workspaceId),
             type: '_doc',
-            scroll: '1s',
+            scroll: '23h',
             // search_type: 'scan', //if I use search_type then it requires size otherwise it shows 0 result
-            size: 500,
+            size: 2500,
             body: {
               query: {
                 match_all: {}
@@ -92,9 +92,9 @@ class ElasticDataAdapter implements DbAdapter {
         if (pos === buffer.length && !finished) {
           const params = {
             scrollId: resp.body._scroll_id as string,
-            scroll: '1s'
+            scroll: '23h'
           }
-          resp = await this.client.scroll(params)
+          resp = await this.client.scroll(params, { maxRetries: 5 })
           if (resp.statusCode !== 200) {
             console.error('failed elastic query scroll', params, resp)
             throw new PlatformError(unknownStatus(`failed to elastic query ${JSON.stringify(resp)}`))

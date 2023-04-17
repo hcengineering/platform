@@ -125,3 +125,40 @@ export async function cleanWorkspace (
     await connection.close()
   }
 }
+
+export async function cleanRemovedTransactions (workspaceId: WorkspaceId, transactorUrl: string): Promise<void> {
+  const connection = (await connect(transactorUrl, workspaceId, undefined, {
+    mode: 'backup'
+  })) as unknown as CoreClient & BackupClient
+  try {
+    let count = 0
+    while (true) {
+      const removedDocs = await connection.findAll(
+        core.class.TxCollectionCUD,
+        { 'tx._class': core.class.TxRemoveDoc },
+        { limit: 1000 }
+      )
+      if (removedDocs.length === 0) {
+        break
+      }
+
+      const toRemove = await connection.findAll(core.class.TxCollectionCUD, {
+        'tx._class': { $in: [core.class.TxCreateDoc, core.class.TxRemoveDoc, core.class.TxUpdateDoc] },
+        'tx.objectId': { $in: removedDocs.map((it) => it.tx.objectId) }
+      })
+      await connection.clean(
+        DOMAIN_TX,
+        toRemove.map((it) => it._id)
+      )
+
+      count += toRemove.length
+      console.log('processed', count, removedDocs.total)
+    }
+
+    console.log('total docs with remove', count)
+  } catch (err: any) {
+    console.trace(err)
+  } finally {
+    await connection.close()
+  }
+}
