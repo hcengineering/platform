@@ -843,7 +843,7 @@ export async function getObjectLinkFragment (
   props: Record<string, any> = {},
   component: AnyComponent = view.component.EditDoc
 ): Promise<Location> {
-  const provider = hierarchy.classHierarchyMixin(object._class, view.mixin.LinkProvider)
+  const provider = hierarchy.classHierarchyMixin(Hierarchy.mixinOrClass(object), view.mixin.LinkProvider)
   if (provider?.encode !== undefined) {
     const f = await getResource(provider.encode)
     const res = await f(object, props)

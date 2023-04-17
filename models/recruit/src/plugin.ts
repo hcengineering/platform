@@ -40,6 +40,7 @@ export default mergeIds(recruitId, recruit, {
   },
   function: {
     GetObjectLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
+    GetCandidateLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     GetObjectLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>
   },
   string: {
