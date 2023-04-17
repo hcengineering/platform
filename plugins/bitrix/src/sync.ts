@@ -109,12 +109,11 @@ export async function syncDocument (
   const hierarchy = client.getHierarchy()
 
   try {
-    const applyOp = client.apply('bitrix')
-
     if (existing !== undefined) {
       // We need update document id.
       resultDoc.document._id = existing._id as Ref<BitrixSyncDoc>
     }
+    const applyOp = client.apply(resultDoc.document._id)
 
     // Operations could add more change instructions
     for (const op of resultDoc.postOperations) {

@@ -408,6 +408,7 @@ export async function convert (
   const getCreateAttachedValue = async (attr: AnyAttribute, operation: CreateHRApplication): Promise<void> => {
     const vacancyName = extractValue(operation.vacancyField)
     const sourceStatusName = extractValue(operation.stateField)
+
     postOperations.push(async (doc, extraDocs, ops, existingDoc) => {
       let vacancyId: Ref<Vacancy> | undefined
       if (ops.syncVacancy === false) {
@@ -419,7 +420,6 @@ export async function convert (
 
       if (vacancyName !== undefined) {
         const tName = vacancyName.trim().toLowerCase()
-        const vacancy = vacancies.find((it) => it.name.toLowerCase().trim() === tName)
 
         let refOrgField: Ref<Organization> | undefined
         const allAttrs = hierarchy.getAllAttributes(recruit.mixin.Candidate)
@@ -428,6 +428,8 @@ export async function convert (
             refOrgField = (mixins as any)[recruit.mixin.Candidate][a.name] as Ref<Organization>
           }
         }
+
+        const vacancy = vacancies.find((it) => it.name.toLowerCase().trim() === tName && it.company === refOrgField)
 
         if (vacancy !== undefined) {
           vacancyId = vacancy?._id
@@ -449,10 +451,8 @@ export async function convert (
 
       if (sourceStatusName != null && sourceStatusName !== '') {
         // Check if candidate already have vacancy
-        const existing = applications.find(
-          (it) =>
-            it.attachedTo === ((existingDoc?._id ?? doc.document._id) as unknown as Ref<Candidate>) &&
-            it.space === vacancyId
+        const existingApplicants = applications.filter(
+          (it) => it.attachedTo === ((existingDoc?._id ?? doc.document._id) as unknown as Ref<Candidate>)
         )
 
         const candidate = doc.mixins[recruit.mixin.Candidate] as Data<Candidate>
@@ -482,15 +482,25 @@ export async function convert (
             ;(doc.document as any)[u.attr] = u.value
           }
         }
-        // Find status for vacancy
-        const update: DocumentUpdate<Applicant> = {}
-        for (const k of operation.copyTalentFields ?? []) {
-          const val = (candidate as any)[k.candidate]
-          if ((existing as any)?.[k.applicant] !== val) {
-            ;(update as any)[k.applicant] = val
-          }
-        }
         if (vacancyId !== undefined) {
+          let existing: Applicant | undefined
+          for (const a of existingApplicants) {
+            if (a.space === vacancyId) {
+              existing = a
+            } else {
+              await ops.remove(a)
+            }
+          }
+
+          // Find status for vacancy
+          const update: DocumentUpdate<Applicant> = {}
+          for (const k of operation.copyTalentFields ?? []) {
+            const val = (candidate as any)[k.candidate]
+            if ((existing as any)?.[k.applicant] !== val) {
+              ;(update as any)[k.applicant] = val
+            }
+          }
+
           const states = await client.findAll(task.class.State, { space: vacancyId })
           const state = states.find((it) => it.name.toLowerCase().trim() === statusName.toLowerCase().trim())
           if (state !== undefined) {
