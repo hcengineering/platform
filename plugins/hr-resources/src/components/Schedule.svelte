@@ -15,9 +15,9 @@
 <script lang="ts">
   import { CalendarMode } from '@hcengineering/calendar-resources'
   import calendar from '@hcengineering/calendar-resources/src/plugin'
-  import { DocumentQuery, Ref } from '@hcengineering/core'
+  import { DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
   import { Department, Staff } from '@hcengineering/hr'
-  import { createQuery, SpaceSelector } from '@hcengineering/presentation'
+  import { createQuery, getClient, SpaceSelector } from '@hcengineering/presentation'
   import {
     Button,
     Icon,
@@ -32,6 +32,7 @@
   import view from '@hcengineering/view'
   import hr from '../plugin'
   import ScheduleView from './ScheduleView.svelte'
+  import { EmployeeAccount } from '@hcengineering/contact'
 
   let department = hr.ids.Head
   let currentDate: Date = new Date()
@@ -44,6 +45,14 @@
   }
 
   const query = createQuery()
+
+  const client = getClient()
+  const accountEmployeeId = (getCurrentAccount() as EmployeeAccount).employee
+  client.findOne(hr.mixin.Staff, { _id: accountEmployeeId }).then((res) => {
+    if (res?.department != null) {
+      department = res.department
+    }
+  })
 
   let descendants: Map<Ref<Department>, Department[]> = new Map<Ref<Department>, Department[]>()
   let departments: Map<Ref<Department>, Department> = new Map<Ref<Department>, Department>()
