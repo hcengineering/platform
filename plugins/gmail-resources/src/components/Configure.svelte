@@ -27,6 +27,7 @@
   const client = getClient()
 
   async function change (shared: Ref<Account>[]) {
+    integration.shared = shared
     await client.update(integration, {
       shared
     })
