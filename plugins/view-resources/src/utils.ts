@@ -481,7 +481,7 @@ export function categorizeFields (
 }
 
 export function makeViewletKey (loc?: Location): string {
-  loc = loc ? { path: loc.path } : getCurrentLocation()
+  loc = (loc != null) ? { path: loc.path } : getCurrentLocation()
   loc.fragment = undefined
   loc.query = undefined
   return 'viewlet' + locationToUrl(loc)
