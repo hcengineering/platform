@@ -51,22 +51,22 @@
   $: clazz = hierarchy.getClass(targetClass)
 
   $: isStatus = client.getHierarchy().isDerived(targetClass, core.class.Status) ?? false
-  let statusesCount: number[] = []
+  let statusesCount: Record<string, number> = {}
 
-  const groupValues = (val: (Status | undefined)[]): (Doc | undefined)[] => {
+  const groupValues = (val: Status[]): Doc[] => {
     const statuses = val
-    const result: (Doc | undefined)[] = []
-    statusesCount = []
-    const unique = [...new Set(val.map((v) => v?.name?.trim()?.toLocaleLowerCase()))]
+    const result: Doc[] = []
+    statusesCount = {}
+    const unique = [...new Set(val.map((v) => v.name.trim().toLocaleLowerCase()))]
     unique.forEach((label, i) => {
       let count = 0
       statuses.forEach((state) => {
-        if (state?.name?.trim()?.toLocaleLowerCase() === label?.trim()?.toLowerCase()) {
+        if (state.name.trim().toLocaleLowerCase() === label) {
           if (!count) result[i] = state
           count += targets.get(state?._id) ?? 0
         }
       })
-      statusesCount[i] = count
+      ;(statusesCount as any)[label] = count
     })
     return result
   }
@@ -111,9 +111,6 @@
       values.unshift(undefined)
     }
     if (values.length !== targets.size) {
-      for (const value of values) {
-        targets.delete(value?._id)
-      }
       const oldSize = filter.value.length
       filter.value = filter.value.filter((p) => !targets.has(p._id))
       const removed = oldSize - (filter.value.length ?? 0)
@@ -156,6 +153,11 @@
 
   const dispatch = createEventDispatcher()
   $: if (targetClass) getValues(search)
+
+  function getStatusCount (value: Doc): string {
+    const label = (value as Status).name.trim().toLowerCase()
+    return statusesCount[label]?.toString() ?? ''
+  }
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
@@ -197,8 +199,8 @@
                   {/if}
                 </div>
                 <div class="dark-color ml-2">
-                  {#if isStatus}
-                    {statusesCount[i] ?? ''}
+                  {#if isStatus && value}
+                    {getStatusCount(value)}
                   {:else}
                     {targets.get(value?._id) ?? ''}
                   {/if}
