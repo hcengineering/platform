@@ -504,7 +504,8 @@ export default plugin(trackerId, {
     NewSubIssue: '' as Ref<Action>,
     EditWorkflowStatuses: '' as Ref<Action>,
     EditProject: '' as Ref<Action>,
-    SetSprint: '' as Ref<Action>
+    SetSprint: '' as Ref<Action>,
+    SetLabels: '' as Ref<Action>
   },
   project: {
     DefaultProject: '' as Ref<Project>
