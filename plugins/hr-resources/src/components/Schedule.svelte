@@ -15,9 +15,9 @@
 <script lang="ts">
   import { CalendarMode } from '@hcengineering/calendar-resources'
   import calendar from '@hcengineering/calendar-resources/src/plugin'
-  import { DocumentQuery, Ref } from '@hcengineering/core'
+  import { DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
   import { Department, Staff } from '@hcengineering/hr'
-  import { createQuery, SpaceSelector } from '@hcengineering/presentation'
+  import { createQuery, getClient, SpaceSelector } from '@hcengineering/presentation'
   import {
     Button,
     Icon,
@@ -32,8 +32,14 @@
   import view from '@hcengineering/view'
   import hr from '../plugin'
   import ScheduleView from './ScheduleView.svelte'
+  import { EmployeeAccount } from '@hcengineering/contact'
+  import { employeeByIdStore } from '@hcengineering/contact-resources'
 
-  let department = hr.ids.Head
+  const hierarchy = getClient().getHierarchy()
+  const accountEmployee = $employeeByIdStore.get((getCurrentAccount() as EmployeeAccount).employee)
+  const accountStaff = accountEmployee !== undefined ? hierarchy.as(accountEmployee, hr.mixin.Staff) : undefined
+
+  let department = accountStaff !== undefined ? accountStaff.department : hr.ids.Head
   let currentDate: Date = new Date()
 
   let search = ''
