@@ -15,8 +15,8 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import tracker, { IssueTemplateChild, Component, Sprint, Project } from '@hcengineering/tracker'
-  import { eventToHTMLElement, IconCircles, showPopup } from '@hcengineering/ui'
+  import tracker, { Component, Issue, IssueTemplateChild, Project, Sprint } from '@hcengineering/tracker'
+  import { IconCircles, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { ActionContext, FixedColumn } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import { flip } from 'svelte/animate'
@@ -32,7 +32,8 @@
 
   const dispatch = createEventDispatcher()
 
-  let draggingIndex: number | null = null
+  let dragId: Ref<Issue> | null = null
+  let dragIndex: number | null = null
   let hoveringIndex: number | null = null
 
   function openIssue (evt: MouseEvent, target: IssueTemplateChild) {
@@ -58,23 +59,25 @@
   }
 
   function resetDrag () {
-    draggingIndex = null
+    dragId = null
+    dragIndex = null
     hoveringIndex = null
   }
 
-  function handleDragStart (ev: DragEvent, index: number) {
+  function handleDragStart (ev: DragEvent, index: number, item: IssueTemplateChild) {
     if (ev.dataTransfer) {
       ev.dataTransfer.effectAllowed = 'move'
       ev.dataTransfer.dropEffect = 'move'
-      draggingIndex = index
+      dragIndex = index
+      dragId = item.id
     }
   }
 
   function handleDrop (ev: DragEvent, toIndex: number) {
-    if (ev.dataTransfer && draggingIndex !== null && toIndex !== draggingIndex) {
+    if (ev.dataTransfer && dragIndex !== null && toIndex !== dragIndex) {
       ev.dataTransfer.dropEffect = 'move'
 
-      dispatch('move', { fromIndex: draggingIndex, toIndex })
+      dispatch('move', { id: dragId, toIndex })
     }
 
     resetDrag()
@@ -107,13 +110,13 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     class="flex-between row"
-    class:is-dragging={index === draggingIndex}
-    class:is-dragged-over-up={draggingIndex !== null && index < draggingIndex && index === hoveringIndex}
-    class:is-dragged-over-down={draggingIndex !== null && index > draggingIndex && index === hoveringIndex}
+    class:is-dragging={issue.id === dragId}
+    class:is-dragged-over-up={dragIndex !== null && index < dragIndex && index === hoveringIndex}
+    class:is-dragged-over-down={dragIndex !== null && index > dragIndex && index === hoveringIndex}
     animate:flip={{ duration: 400 }}
     draggable={true}
     on:click|self={(evt) => openIssue(evt, issue)}
-    on:dragstart={(ev) => handleDragStart(ev, index)}
+    on:dragstart={(ev) => handleDragStart(ev, index, issue)}
     on:dragover|preventDefault={() => false}
     on:dragenter={() => (hoveringIndex = index)}
     on:drop|preventDefault={(ev) => handleDrop(ev, index)}
