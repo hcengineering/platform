@@ -41,12 +41,12 @@
     "@hcengineering/presentation": "^0.6.2",
     "@hcengineering/login": "^0.6.3",
     "@hcengineering/setting": "^0.6.5",
-    "@hcengineering/calendar": "^0.6.6",
+    "@hcengineering/calendar": "^0.6.7",
     "@hcengineering/request": "^0.6.0",
     "@hcengineering/notification": "^0.6.10",
     "@hcengineering/notification-resources": "^0.6.0",
     "@hcengineering/preference": "^0.6.4",
-    "@hcengineering/contact": "^0.6.13",
+    "@hcengineering/contact": "^0.6.14",
     "@hcengineering/view-resources": "^0.6.0"
   }
 }

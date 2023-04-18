@@ -31,8 +31,8 @@
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-notification": "^0.6.0",
     "@hcengineering/notification": "^0.6.10",
-    "@hcengineering/chunter": "^0.6.4",
+    "@hcengineering/chunter": "^0.6.5",
     "@hcengineering/view": "^0.6.4",
-    "@hcengineering/contact": "^0.6.13"
+    "@hcengineering/contact": "^0.6.14"
   }
 }

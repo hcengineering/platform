@@ -31,7 +31,7 @@
     "@hcengineering/view": "^0.6.4",
     "@hcengineering/model-attachment": "^0.6.0",
     "@hcengineering/model-task": "^0.6.0",
-    "@hcengineering/calendar": "^0.6.6",
+    "@hcengineering/calendar": "^0.6.7",
     "@hcengineering/calendar-resources": "^0.6.0",
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/notification": "^0.6.10",
@@ -42,6 +42,6 @@
     "@hcengineering/workbench": "^0.6.4",
     "@hcengineering/model-chunter": "^0.6.0",
     "@hcengineering/model-contact": "^0.6.1",
-    "@hcengineering/contact": "^0.6.13"
+    "@hcengineering/contact": "^0.6.14"
   }
 }
