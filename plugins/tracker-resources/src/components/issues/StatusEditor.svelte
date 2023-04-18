@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachedData, Ref, WithLookup } from '@hcengineering/core'
+  import { AttachedData, Ref, StatusManager, WithLookup } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Issue, IssueDraft, IssueStatus, Project } from '@hcengineering/tracker'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
@@ -24,7 +24,9 @@
   import IssueStatusIcon from './IssueStatusIcon.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
 
-  export let value: Issue | (AttachedData<Issue> & { space: Ref<Project> }) | IssueDraft
+  type ValueType = Issue | (AttachedData<Issue> & { space: Ref<Project> }) | IssueDraft
+
+  export let value: ValueType
 
   let statuses: WithLookup<IssueStatus>[] | undefined = undefined
 
@@ -65,9 +67,23 @@
     )
   }
 
-  $: statuses = $statusStore.statuses.filter((it) => it.space === value?.space)
+  function getStatuses (statusStore: StatusManager, value: ValueType): WithLookup<IssueStatus>[] {
+    return statusStore.filter((it) => it.space === value?.space)
+  }
 
-  $: selectedStatus = statuses?.find((status) => status._id === value.status) ?? statuses?.[0]
+  $: statuses = getStatuses($statusStore, value)
+
+  function getSelectedStatus (
+    statuses: WithLookup<IssueStatus>[] | undefined,
+    value: ValueType
+  ): WithLookup<IssueStatus> | undefined {
+    const current = statuses?.find((status) => status._id === value.status)
+    if (current) return current
+    changeStatus(statuses?.[0]?._id)
+    return statuses?.[0]
+  }
+
+  $: selectedStatus = getSelectedStatus(statuses, value)
   $: selectedStatusLabel = shouldShowLabel ? selectedStatus?.name : undefined
   $: statusesInfo = statuses?.map((s) => {
     return {
