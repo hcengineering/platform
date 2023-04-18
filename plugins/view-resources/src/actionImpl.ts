@@ -6,6 +6,7 @@ import {
   AnySvelteComponent,
   closeTooltip,
   isPopupPosAlignment,
+  navigate,
   PopupAlignment,
   PopupPosAlignment,
   showPanel,
@@ -16,7 +17,7 @@ import MoveView from './components/Move.svelte'
 import { contextStore } from './context'
 import view from './plugin'
 import { FocusSelection, focusStore, previewDocument, SelectDirection, selectionStore } from './selection'
-import { deleteObjects } from './utils'
+import { deleteObjects, getObjectLinkFragment } from './utils'
 
 /**
  * Action to be used for copying text to clipboard.
@@ -144,7 +145,7 @@ function ShowPreview (doc: Doc | undefined, evt: Event): void {
   evt.preventDefault()
 }
 
-function Open (
+async function Open (
   doc: Doc,
   evt: Event,
   props:
@@ -152,9 +153,14 @@ function Open (
     component?: AnyComponent
   }
   | undefined
-): void {
+): Promise<void> {
   evt.preventDefault()
-  showPanel(props?.component ?? view.component.EditDoc, doc._id, Hierarchy.mixinOrClass(doc), 'content')
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const panelComponent = hierarchy.classHierarchyMixin(doc._class, view.mixin.ObjectPanel)
+  const component = props?.component ?? panelComponent?.component ?? view.component.EditDoc
+  const loc = await getObjectLinkFragment(hierarchy, doc, {}, component)
+  navigate(loc)
 }
 
 /**
