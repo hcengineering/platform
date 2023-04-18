@@ -65,7 +65,7 @@ import VacancyTemplateEditor from './components/VacancyTemplateEditor.svelte'
 import recruit from './plugin'
 import {
   getAppTitle,
-  getCandidateLink,
+  getObjectLink,
   getRevTitle,
   getSequenceId,
   getSequenceLink,
@@ -338,7 +338,7 @@ export default async (): Promise<Resources> => ({
     NoneApplications: noneApplicant,
     GetObjectLink: objectLinkProvider,
     GetObjectLinkFragment: getSequenceLink,
-    GetCandidateLinkFragment: getCandidateLink
+    GetIdObjectLinkFragment: getObjectLink
   },
   resolver: {
     Location: resolveLocation

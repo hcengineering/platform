@@ -232,7 +232,10 @@
       loc.path[2] = (currentAppAlias as string) ?? resolved.defaultLocation.path[2]
       loc.path[3] = currentSpace ?? (currentSpecial as string) ?? resolved.defaultLocation.path[3]
       if (loc.path[3] !== undefined) {
-        loc.path[4] = currentSpecial ?? (asideId as string) ?? resolved.defaultLocation.path[4]
+        loc.path[4] =
+          (currentSpace !== undefined ? currentSpecial : undefined) ??
+          (asideId as string) ??
+          resolved.defaultLocation.path[4]
       } else {
         loc.path.length = 4
       }
