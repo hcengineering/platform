@@ -235,6 +235,9 @@
     if (groupValue === undefined) {
       return undefined
     }
+    if ((doc as any)[groupByKey] === groupValue) {
+      return
+    }
     return {
       [groupByKey]: groupValue,
       space: doc.space
