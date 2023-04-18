@@ -1,6 +1,6 @@
-import { Class, Client, Doc, Ref } from '@hcengineering/core'
+import { Class, Client, Doc, Hierarchy, Ref } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
-import { Applicant, Candidate, recruitId, Review, Vacancy } from '@hcengineering/recruit'
+import { Applicant, Candidate, recruitId, Review, Vacancy, VacancyList } from '@hcengineering/recruit'
 import { getCurrentLocation, getPanelURI, Location, ResolvedLocation } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
@@ -31,18 +31,36 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
   // shortlink
   if (isShortId(shortLink)) {
     return await generateLocation(loc, shortLink)
-  } else {
-    return await generateCandidateLink(loc, shortLink)
+  } else if (shortLink !== undefined) {
+    return await generateIdLocation(loc, shortLink)
   }
 }
 
-async function generateCandidateLink (loc: Location, _id: string): Promise<ResolvedLocation | undefined> {
+async function generateIdLocation (loc: Location, shortLink: string): Promise<ResolvedLocation | undefined> {
+  const tokens = shortLink.split('-')
+  if (tokens.length < 2) {
+    return undefined
+  }
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  const doc = await client.findOne(recruit.mixin.Candidate, { _id: _id as Ref<Candidate> })
+  const classLabel = tokens[0]
+  const _id = tokens[1]
+  const classes = [recruit.mixin.VacancyList, recruit.mixin.Candidate]
+  let _class: Ref<Class<Doc>> | undefined
+  for (const clazz of classes) {
+    if (hierarchy.getClass(clazz).shortLabel === classLabel) {
+      _class = clazz
+      break
+    }
+  }
+  if (_class === undefined) {
+    console.error(`Not found class with short label ${classLabel}`)
+    return undefined
+  }
+  const doc = await client.findOne(_class, { _id: _id as Ref<Doc> })
   if (doc === undefined) {
-    console.error(`Could not find candidate with id ${_id}.`)
+    console.error(`Could not find ${_class} with id ${_id}.`)
     return undefined
   }
   const appComponent = loc.path[0] ?? ''
@@ -50,17 +68,18 @@ async function generateCandidateLink (loc: Location, _id: string): Promise<Resol
   const targetClass = hierarchy.getClass(recruit.mixin.Candidate)
   const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
   const component = panelComponent.component ?? view.component.EditDoc
-  const defaultPath = [appComponent, workspace, recruitId, 'talents']
+  const special = _class === recruit.mixin.Candidate ? 'talents' : 'organizations'
+  const defaultPath = [appComponent, workspace, recruitId, special]
 
   return {
     loc: {
       path: [appComponent, workspace],
-      fragment: getPanelURI(component, doc._id, recruit.mixin.Candidate, 'content')
+      fragment: getPanelURI(component, doc._id, _class, 'content')
     },
     shouldNavigate: false,
     defaultLocation: {
       path: defaultPath,
-      fragment: getPanelURI(component, doc._id, recruit.mixin.Candidate, 'content')
+      fragment: getPanelURI(component, doc._id, _class, 'content')
     }
   }
 }
@@ -126,13 +145,16 @@ export async function getSequenceLink (doc: RecruitDocument): Promise<Location> 
   return loc
 }
 
-export async function getCandidateLink (doc: Candidate): Promise<Location> {
+export async function getObjectLink (doc: Candidate | VacancyList): Promise<Location> {
+  const _class = Hierarchy.mixinOrClass(doc)
+  const client = getClient()
+  const clazz = client.getHierarchy().getClass(_class)
   const loc = getCurrentLocation()
   loc.path.length = 2
   loc.fragment = undefined
   loc.query = undefined
   loc.path[2] = recruitId
-  loc.path[3] = doc._id
+  loc.path[3] = clazz.shortLabel !== undefined ? `${clazz.shortLabel}-${doc._id}` : doc._id
 
   return loc
 }

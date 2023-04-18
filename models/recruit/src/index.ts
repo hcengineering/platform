@@ -97,7 +97,7 @@ export class TVacancy extends TSpaceWithStates implements Vacancy {
 export class TCandidates extends TSpace implements Candidates {}
 
 @Mixin(recruit.mixin.Candidate, contact.class.Person)
-@UX(recruit.string.Talent, recruit.icon.RecruitApplication, undefined, 'name')
+@UX(recruit.string.Talent, recruit.icon.RecruitApplication, 'TLNT', 'name')
 export class TCandidate extends TPerson implements Candidate {
   @Prop(TypeString(), recruit.string.Title)
   @Index(IndexKind.FullText)
@@ -135,7 +135,7 @@ export class TCandidate extends TPerson implements Candidate {
 }
 
 @Mixin(recruit.mixin.VacancyList, contact.class.Organization)
-@UX(recruit.string.VacancyList, recruit.icon.RecruitApplication, undefined, 'name')
+@UX(recruit.string.VacancyList, recruit.icon.RecruitApplication, 'CM', 'name')
 export class TVacancyList extends TOrganization implements VacancyList {
   @Prop(Collection(recruit.class.Vacancy), recruit.string.Vacancies)
     vacancies!: number
@@ -748,7 +748,11 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(recruit.mixin.Candidate, core.class.Class, view.mixin.LinkProvider, {
-    encode: recruit.function.GetCandidateLinkFragment
+    encode: recruit.function.GetIdObjectLinkFragment
+  })
+
+  builder.mixin(recruit.mixin.VacancyList, core.class.Class, view.mixin.LinkProvider, {
+    encode: recruit.function.GetIdObjectLinkFragment
   })
 
   builder.createDoc(
