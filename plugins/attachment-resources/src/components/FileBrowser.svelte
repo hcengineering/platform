@@ -78,9 +78,7 @@
         archived: false,
         _class: { $in: requestedSpaceClasses }
       })
-      const availableSpaces = allSpaces
-        .filter((sp) => !sp.private || sp.members.includes(currentUser._id))
-        .map((sp) => sp._id)
+      const availableSpaces = allSpaces.map((sp) => sp._id)
       spaceQuery = { space: { $in: availableSpaces } }
     }
 

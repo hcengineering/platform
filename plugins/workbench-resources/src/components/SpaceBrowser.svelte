@@ -73,7 +73,7 @@
         ...resultQuery
       },
       (res) => {
-        spaces = res.filter((p) => !p.private || p.members.includes(me))
+        spaces = res
       },
       options
     )

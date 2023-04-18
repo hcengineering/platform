@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import core, { Class, Ref, Space } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import { translate } from '@hcengineering/platform'
+  import { CheckBox, deviceOptionsStore, resizeObserver, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
-  import core, { Class, getCurrentAccount, Ref, Space } from '@hcengineering/core'
-  import { tooltip, CheckBox, resizeObserver, deviceOptionsStore } from '@hcengineering/ui'
-  import { createQuery } from '../utils'
   import presentation from '..'
+  import { createQuery } from '../utils'
   import SpaceInfo from './SpaceInfo.svelte'
 
   export let _classes: Ref<Class<Space>>[] = []
@@ -36,7 +36,6 @@
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
-  const myAccId = getCurrentAccount()._id
 
   $: query.query<Space>(
     core.class.Space,
@@ -54,11 +53,7 @@
   const update = (spaces_: Space[]) => {
     shownSpaces = spaces_.filter((sp) => {
       // don't show archived unless search is specified or this space is selected
-      // show private only if it includes the current user
-      return (
-        (!sp.archived || searchQuery || selectedSpaces.includes(sp._id)) &&
-        (!sp.private || sp.members.includes(myAccId))
-      )
+      return !sp.archived || searchQuery || selectedSpaces.includes(sp._id)
     })
   }
 
