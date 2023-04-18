@@ -49,7 +49,11 @@
   let selectedId: Ref<FilteredView> | undefined = undefined
 
   async function load (fv: FilteredView): Promise<void> {
-    navigate(fv.location)
+    navigate({
+      path: fv.location.path,
+      query: fv.location.query ?? undefined,
+      fragment: fv.location.fragment ?? undefined
+    })
     setFilters(JSON.parse(fv.filters))
     if (fv.viewletId !== undefined && fv.viewletId !== null) {
       const viewlet = await client.findOne(view.class.Viewlet, { _id: fv.viewletId })
