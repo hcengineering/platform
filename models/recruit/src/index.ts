@@ -923,15 +923,6 @@ export function createModel (builder: Builder): void {
 
   createAction(builder, {
     ...viewTemplates.open,
-    target: recruit.class.Applicant,
-    context: {
-      mode: ['browser', 'context'],
-      group: 'create'
-    }
-  })
-
-  createAction(builder, {
-    ...viewTemplates.open,
     target: recruit.class.ApplicantMatch,
     context: {
       mode: ['browser', 'context'],
