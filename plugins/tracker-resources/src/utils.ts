@@ -102,7 +102,7 @@ export const issuesSortOrderMap: Record<IssuesOrderByKeys, SortingOrder> = {
   status: SortingOrder.Ascending,
   priority: SortingOrder.Ascending,
   modifiedOn: SortingOrder.Descending,
-  dueDate: SortingOrder.Descending,
+  dueDate: SortingOrder.Ascending,
   rank: SortingOrder.Ascending
 }
 
