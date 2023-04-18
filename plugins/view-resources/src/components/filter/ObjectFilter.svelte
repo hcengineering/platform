@@ -112,7 +112,8 @@
     }
     if (values.length !== targets.size) {
       const oldSize = filter.value.length
-      filter.value = filter.value.filter((p) => !targets.has(p._id))
+      const set = new Set(values.map((p) => p?._id))
+      filter.value = filter.value.filter((p) => set.has(p))
       const removed = oldSize - (filter.value.length ?? 0)
       if (removed > 0) {
         onChange(filter)
