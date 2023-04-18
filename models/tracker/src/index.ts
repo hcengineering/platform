@@ -405,10 +405,6 @@ export class TSprint extends TDoc implements Sprint {
 
   @Prop(TypeNumber(), tracker.string.Capacity)
     capacity!: number
-
-  @Prop(TypeRef(tracker.class.Component), tracker.string.Component)
-  @Index(IndexKind.Indexed)
-    component!: Ref<Component>
 }
 
 /**
@@ -1745,7 +1741,7 @@ export function createModel (builder: Builder): void {
   )
 
   const sprintOptions: ViewOptionsModel = {
-    groupBy: ['component', 'lead'],
+    groupBy: ['lead'],
     orderBy: [
       ['startDate', SortingOrder.Descending],
       ['modifiedOn', SortingOrder.Descending],
@@ -1770,7 +1766,6 @@ export function createModel (builder: Builder): void {
         },
         { key: '', presenter: tracker.component.SprintPresenter, props: { shouldUseMargin: true } },
         { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
-        { key: '', presenter: tracker.component.SprintComponentEditor, props: { kind: 'list' } },
         {
           key: '',
           presenter: contact.component.MembersPresenter,
