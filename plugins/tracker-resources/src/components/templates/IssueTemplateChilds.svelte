@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
-  import { IssueTemplateChild, Component, Sprint, Project } from '@hcengineering/tracker'
-  import { Button, closeTooltip, ExpandCollapse, IconAdd, Scroller } from '@hcengineering/ui'
+  import { Component, Issue, IssueTemplateChild, Project, Sprint } from '@hcengineering/tracker'
+  import { Button, ExpandCollapse, IconAdd, Scroller, closeTooltip } from '@hcengineering/ui'
   import { afterUpdate, createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import Collapsed from '../icons/Collapsed.svelte'
@@ -35,14 +35,17 @@
   let isCollapsed = false
   let isCreating = false
 
-  async function handleIssueSwap (ev: CustomEvent<{ fromIndex: number; toIndex: number }>) {
+  function handleIssueSwap (ev: CustomEvent<{ id: Ref<Issue>; toIndex: number }>) {
     if (children) {
-      const { fromIndex, toIndex } = ev.detail
-      const [fromIssue] = children.splice(fromIndex, 1)
-      const leftPart = children.slice(0, toIndex)
-      const rightPart = children.slice(toIndex)
-      children = [...leftPart, fromIssue, ...rightPart]
-      dispatch('update-issues', children)
+      const { id, toIndex } = ev.detail
+      const index = children.findIndex((p) => p.id === id)
+      if (index !== -1 && index !== toIndex) {
+        const [fromIssue] = children.splice(index, 1)
+        const leftPart = children.slice(0, toIndex)
+        const rightPart = children.slice(toIndex)
+        children = [...leftPart, fromIssue, ...rightPart]
+        dispatch('update-issues', children)
+      }
     }
   }
 
@@ -113,7 +116,6 @@
         if (children === undefined) {
           children = []
         }
-        children = [...children, evt.detail]
         dispatch('create-issue', evt.detail)
       }}
       on:changeContent
