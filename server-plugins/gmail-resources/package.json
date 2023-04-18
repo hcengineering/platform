@@ -31,6 +31,6 @@
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/notification": "^0.6.10",
     "@hcengineering/contact": "^0.6.13",
-    "@hcengineering/gmail": "^0.6.6"
+    "@hcengineering/gmail": "^0.6.7"
   }
 }

@@ -105,7 +105,10 @@ export class TNewMessage extends TDoc implements NewMessage {
     content!: string
 
   @Prop(TypeString(), gmail.string.Status)
-    status!: 'new' | 'sent'
+    status!: 'new' | 'sent' | 'error'
+
+  @Prop(TypeString(), gmail.string.Status)
+    error?: string
 
   @Prop(ArrOf(TypeString()), gmail.string.Copy)
     copy?: string[]

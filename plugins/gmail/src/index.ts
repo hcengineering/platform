@@ -45,7 +45,8 @@ export interface BaseMessage extends Doc {
  * @public
  */
 export interface NewMessage extends BaseMessage {
-  status: 'new' | 'sent'
+  status: 'new' | 'sent' | 'error'
+  error?: string
   from?: Ref<Account>
 }
 

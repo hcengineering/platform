@@ -34,7 +34,7 @@
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",
     "svelte": "3.55.1",
-    "@hcengineering/gmail": "^0.6.6",
+    "@hcengineering/gmail": "^0.6.7",
     "@hcengineering/ui": "^0.6.6",
     "@hcengineering/presentation": "^0.6.2",
     "@hcengineering/text-editor": "^0.6.0",

@@ -32,7 +32,7 @@
     "@hcengineering/model-core": "^0.6.0",
     "@hcengineering/contact": "^0.6.13",
     "@hcengineering/model-contact": "^0.6.1",
-    "@hcengineering/gmail": "^0.6.6",
+    "@hcengineering/gmail": "^0.6.7",
     "@hcengineering/gmail-resources": "^0.6.0",
     "@hcengineering/model-attachment": "^0.6.0",
     "@hcengineering/model-view": "^0.6.0",
