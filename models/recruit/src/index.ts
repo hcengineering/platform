@@ -135,7 +135,7 @@ export class TCandidate extends TPerson implements Candidate {
 }
 
 @Mixin(recruit.mixin.VacancyList, contact.class.Organization)
-@UX(recruit.string.VacancyList, recruit.icon.RecruitApplication, 'ORG', 'name')
+@UX(recruit.string.VacancyList, recruit.icon.RecruitApplication, 'CM', 'name')
 export class TVacancyList extends TOrganization implements VacancyList {
   @Prop(Collection(recruit.class.Vacancy), recruit.string.Vacancies)
     vacancies!: number
