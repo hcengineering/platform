@@ -148,7 +148,7 @@
     <div class="ac-header__title"><Label label={templatesPlugin.string.Templates} /></div>
   </div>
 
-  <div class="ac-body columns">
+  <div class="ac-body columns clear-mins">
     <div class="ac-column">
       <div id="create-template" class="flex-between trans-title mb-3">
         <Button
