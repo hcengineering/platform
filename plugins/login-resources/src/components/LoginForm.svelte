@@ -108,4 +108,12 @@
   }
 </script>
 
-<Form caption={login.string.LogIn} {status} {fields} {object} {action} bottomActions={[recoveryAction, signUpAction]} />
+<Form
+  caption={login.string.LogIn}
+  {status}
+  {fields}
+  {object}
+  {action}
+  bottomActions={[recoveryAction, signUpAction]}
+  ignoreInitialValidation
+/>

@@ -21,6 +21,7 @@
   import { translate } from '@hcengineering/platform'
 
   import login from '../plugin'
+  import { onMount } from 'svelte'
 
   interface Field {
     id?: string
@@ -52,8 +53,10 @@
   export let secondaryButtonAction: (() => void) | undefined = undefined
   export let bottomActions: BottomAction[] = []
   export let object: any
+  export let ignoreInitialValidation: boolean = false
 
   async function validate () {
+    if (ignoreInitialValidation) return
     for (const field of fields) {
       const v = object[field.name]
       const f = field
@@ -99,6 +102,7 @@
       inAction = false
     })
   }
+  onMount(() => (ignoreInitialValidation = false))
 
   function trim (field: string): void {
     object[field] = (object[field] as string).trim()
