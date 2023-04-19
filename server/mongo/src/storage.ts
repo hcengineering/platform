@@ -349,6 +349,8 @@ abstract class MongoAdapterBase implements DbAdapter {
         if (typeof options.sort[_key] === 'object') {
           const rules = options.sort[_key] as SortingRules<T>
           fillCustomSort(rules, key, pipeline, sort, options, _key)
+        } else if (this.isDate(clazz, _key)) {
+          fillDateSort(key, pipeline, sort, options, _key)
         } else {
           // Sort enum if no special sorting is defined.
           const enumOf = this.getEnumById(clazz, _key)
@@ -484,6 +486,14 @@ abstract class MongoAdapterBase implements DbAdapter {
     return Object.keys(options.sort).some(
       (key) => this.hierarchy.findAttribute(_class, key)?.type?._class === core.class.EnumOf
     )
+  }
+
+  private isDate<T extends Doc>(_class: Ref<Class<T>>, key: string): boolean {
+    const attr = this.hierarchy.findAttribute(_class, key)
+    if (attr !== undefined) {
+      return attr.type._class === core.class.TypeDate
+    }
+    return false
   }
 
   private isRulesSort<T extends Doc>(options?: FindOptions<T>): boolean {
@@ -1033,6 +1043,18 @@ function fillEnumSort (
     options.sort = {}
   }
   sort[`sort_${key}`] = options.sort[_key] === SortingOrder.Ascending ? 1 : -1
+}
+function fillDateSort (key: string, pipeline: any[], sort: any, options: FindOptions<Doc>, _key: string): void {
+  if (options.sort === undefined) {
+    options.sort = {}
+  }
+  pipeline.push({
+    $addFields: {
+      [`sort_isNull_${key}`]: { $eq: [`$${key}`, null] }
+    }
+  })
+  sort[`sort_isNull_${key}`] = options.sort[_key] === SortingOrder.Ascending ? 1 : -1
+  sort[key] = options.sort[_key] === SortingOrder.Ascending ? 1 : -1
 }
 function fillCustomSort<T extends Doc> (
   rules: SortingRules<T>,
