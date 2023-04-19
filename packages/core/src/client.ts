@@ -216,7 +216,7 @@ export async function createClient (
       }
     }
 
-    if (atxes.total < transactionThreshold && !needFullRefresh) {
+    if (atxes.length < transactionThreshold && !needFullRefresh) {
       console.log('applying input transactions', atxes.length)
       for (const tx of atxes) {
         txHandler(tx)

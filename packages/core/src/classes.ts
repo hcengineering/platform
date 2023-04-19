@@ -405,7 +405,10 @@ export interface FullTextSearchContext extends Class<Doc> {
   forceIndex?: boolean
 
   // If defined, will propagate changes to child's with defined set of classes
-  propogate?: Ref<Class<Doc>>[]
+  propagate?: Ref<Class<Doc>>[]
+
+  // Do we need to propagate child value to parent one. Default(true)
+  parentPropagate?: boolean
 }
 
 /**

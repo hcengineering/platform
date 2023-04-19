@@ -6,7 +6,7 @@ const apmUrl = process.env.APM_SERVER_URL
 const metricsFile = process.env.METRICS_FILE
 const metricsConsole = (process.env.METRICS_CONSOLE ?? 'false') === 'true'
 
-const METRICS_UPDATE_INTERVAL = 60000
+const METRICS_UPDATE_INTERVAL = !metricsConsole ? 1000 : 60000
 
 /**
  * @public
@@ -31,7 +31,7 @@ export function getMetricsContext (): MeasureContext {
       let oldMetricsValue = ''
 
       const intTimer = setInterval(() => {
-        const val = metricsToString(metrics)
+        const val = metricsToString(metrics, 'System', 140)
         if (val !== oldMetricsValue) {
           oldMetricsValue = val
           if (metricsFile !== undefined) {

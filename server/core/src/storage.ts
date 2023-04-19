@@ -327,7 +327,11 @@ class TServerStorage implements ServerStorage {
       if (query?.$search !== undefined) {
         return ctx.with('full-text-find-all', {}, (ctx) => this.fulltext.findAll(ctx, clazz, query, options))
       }
-      return ctx.with('db-find-all', { _class: clazz, domain }, () =>
+      const q: Record<string, any> = { _class: clazz }
+      for (const [k] of Object.entries(query)) {
+        q[k] = '...'
+      }
+      return ctx.with('db-find-all', { q: JSON.stringify(q) }, () =>
         this.getAdapter(domain).findAll(clazz, query, options)
       )
     })
@@ -831,6 +835,7 @@ export async function createServerStorage (
     }
     const stages = conf.fulltextAdapter.stages(fulltextAdapter, storage, storageAdapter, contentAdapter)
     console.timeLog(conf.workspace.name, 'finish index pipeline stages')
+
     const indexer = new FullTextIndexPipeline(
       defaultAdapter,
       stages,

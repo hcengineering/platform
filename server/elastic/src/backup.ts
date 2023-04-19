@@ -24,6 +24,7 @@ import core, {
   FindResult,
   FullTextData,
   Hierarchy,
+  IndexingConfiguration,
   Ref,
   Space,
   StorageIterator,
@@ -52,6 +53,8 @@ class ElasticDataAdapter implements DbAdapter {
   }
 
   async init (model: Tx[]): Promise<void> {}
+
+  async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {}
 
   async close (): Promise<void> {
     await this.client.close()

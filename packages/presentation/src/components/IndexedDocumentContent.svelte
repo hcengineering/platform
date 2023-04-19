@@ -11,6 +11,9 @@
   const client = getClient()
 
   function getContent (extra: string[], value: string): string[] {
+    if (value == null || value === '') {
+      return []
+    }
     const result = extra.includes('base64') ? decodeURIComponent(escape(atob(value))) : value
 
     return `${result}`.split('\n')
@@ -43,8 +46,12 @@
 {#if summary}
   {#if search.length > 0}
     Result:
-    {#each summary.split('\n').filter((line) => line.toLowerCase().includes(search.toLowerCase())) as line}
-      <span class:highlight={true}>{line}</span>
+    {#each summary.split('\n').filter((line, idx, arr) => {
+      return line.toLowerCase().includes(search.toLowerCase()) || arr[idx - 1]
+          ?.toLowerCase()
+          .includes(search.toLowerCase())
+    }) as line}
+      <span class:highlight={line.toLowerCase().includes(search.toLowerCase())}>{line}</span>
     {/each}
     <br />
   {/if}

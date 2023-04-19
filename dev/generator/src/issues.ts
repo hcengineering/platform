@@ -66,7 +66,7 @@ export async function generateIssues (
   await connection.close()
   ctx.end()
 
-  console.info(metricsToString(ctx.metrics, 'Client'))
+  console.info(metricsToString(ctx.metrics, 'Client', 70))
 }
 
 async function genIssue (client: TxOperations, statuses: Ref<IssueStatus>[]): Promise<void> {

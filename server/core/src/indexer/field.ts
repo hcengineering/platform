@@ -24,19 +24,13 @@ import core, {
   MeasureContext,
   Ref,
   ServerStorage,
-  Storage,
-  WithLookup
+  Storage
 } from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
 import { IndexedDoc } from '../types'
+import { contentStageId, DocUpdateHandler, fieldStateId, FullTextPipeline, FullTextPipelineStage } from './types'
 import {
-  contentStageId,
-  DocUpdateHandler,
-  fieldStateId as fieldStageId,
-  FullTextPipeline,
-  FullTextPipelineStage
-} from './types'
-import {
+  collectPropagate,
   docKey,
   docUpdKey,
   getContent,
@@ -51,7 +45,7 @@ import {
  */
 export class IndexedFieldStage implements FullTextPipelineStage {
   require = []
-  stageId = fieldStageId
+  stageId = fieldStateId
   // Do not clear downloaded content
   clearExcept: string[] = [contentStageId]
 
@@ -65,11 +59,11 @@ export class IndexedFieldStage implements FullTextPipelineStage {
 
   indexState?: IndexStageState
 
-  constructor (private readonly dbStorage: ServerStorage, readonly metrics: MeasureContext) {}
+  constructor (private readonly dbStorage: ServerStorage) {}
 
   async initialize (storage: Storage, pipeline: FullTextPipeline): Promise<void> {
     const indexable = (
-      await pipeline.model.findAll(core.class.Class, { [core.mixin.FullTextSearchContext + '.propogate']: true })
+      await pipeline.model.findAll(core.class.Class, { [core.mixin.FullTextSearchContext + '.propagate']: true })
     ).map((it) => it._id)
 
     const forceIndexing = (
@@ -92,7 +86,7 @@ export class IndexedFieldStage implements FullTextPipelineStage {
     return { docs: [], pass: true }
   }
 
-  async collect (toIndex: DocIndexState[], pipeline: FullTextPipeline): Promise<void> {
+  async collect (toIndex: DocIndexState[], pipeline: FullTextPipeline, metrics: MeasureContext): Promise<void> {
     const byClass = toIndex.reduce<Record<Ref<Class<Doc>>, DocIndexState[]>>((p, c) => {
       p[c.objectClass] = [...(p[c.objectClass] ?? []), c]
       return p
@@ -104,14 +98,14 @@ export class IndexedFieldStage implements FullTextPipelineStage {
       // Obtain real documents
       const valueIds = new Map(values.map((it) => [it._id, it]))
       const objClass = v as Ref<Class<Doc>>
-      const docs = await this.dbStorage.findAll(this.metrics, objClass, {
+      const docs = await this.dbStorage.findAll(metrics, objClass, {
         _id: { $in: Array.from(valueIds.keys()) }
       })
       const attributes = getFullTextAttributes(pipeline.hierarchy, objClass)
 
       // Child docs.
 
-      let allChilds: DocIndexState[] | undefined
+      let allChildDocs: DocIndexState[] | undefined
 
       for (const doc of docs) {
         if (pipeline.cancelling) {
@@ -126,46 +120,53 @@ export class IndexedFieldStage implements FullTextPipelineStage {
 
           const docUpdate: DocumentUpdate<DocIndexState> = {}
 
-          const chainDocUpdate: DocumentUpdate<DocIndexState> = {}
-          const chainDocAllUpdate: DocumentUpdate<DocIndexState> = {}
           let changes = 0
+
+          // Convert previous child fields to just
+          for (const [k] of Object.entries(docState.attributes)) {
+            const { attr, docId, _class } = extractDocKey(k)
+            if (
+              (docId !== undefined && attr !== '') ||
+              (_class !== undefined && !pipeline.hierarchy.isDerived(docState.objectClass, _class))
+            ) {
+              // If it some previous indexed field.
+              // ;(docUpdate as any)[docUpdKey(k)] = null
+              ;(docUpdate as any).$unset = { ...((docUpdate as any).$unset ?? {}), [docUpdKey(k)]: '' }
+            }
+          }
 
           for (const [, v] of Object.entries(content)) {
             // Check for content changes and collect update
             const dKey = docKey(v.attr.name, { _class: v.attr.attributeOf })
             const dUKey = docUpdKey(v.attr.name, { _class: v.attr.attributeOf })
 
-            ;(chainDocAllUpdate as any)[dUKey] = v.value
-            // Full reindex in case stage value is changed
+            // Full re-index in case stage value is changed
             if (!deepEqual(docState.attributes[dKey], v.value)) {
               changes++
               ;(docUpdate as any)[dUKey] = v.value
-              ;(chainDocUpdate as any)[docUpdKey(v.attr.name, { _class: v.attr.attributeOf, docId: docState._id })] =
-                v.value
             }
           }
           if (docState.attachedTo != null && changes > 0) {
-            // We need to clear field stage from parent, so it will be re indexed.
-            await pipeline.update(docState.attachedTo as Ref<DocIndexState>, false, chainDocUpdate)
+            const ctx = getFullTextContext(pipeline.hierarchy, objClass)
+            if (ctx.parentPropagate ?? true) {
+              // We need to clear field stage from parent, so it will be re indexed.
+              await pipeline.update(docState.attachedTo as Ref<DocIndexState>, false, {})
+            }
           }
 
-          const propogate: Ref<Class<Doc>>[] = this.collectPropogate(pipeline, docState, doc)
-          if (propogate.length > 0) {
-            // We need to propagate all changes to all childs of following clasess.
-            if (allChilds === undefined) {
-              allChilds = await this.dbStorage.findAll(
-                this.metrics.newChild('propogate', {}),
-                core.class.DocIndexState,
-                { attachedTo: { $in: docs.map((it) => it._id) } }
-              )
+          const propagate: Ref<Class<Doc>>[] = collectPropagate(pipeline, docState.objectClass)
+          if (propagate.length > 0) {
+            // We need to propagate all changes to all child's of following classes.
+            if (allChildDocs === undefined) {
+              allChildDocs = await this.dbStorage.findAll(metrics.newChild('propagate', {}), core.class.DocIndexState, {
+                attachedTo: { $in: docs.map((it) => it._id) }
+              })
             }
-            const childs = allChilds.filter((it) => it.attachedTo === docState._id)
+            const childs = allChildDocs.filter((it) => it.attachedTo === docState._id)
             for (const u of childs) {
-              pipeline.add(u)
-              if (u.attributes.incremental === true) {
-                await pipeline.update(u._id, false, chainDocUpdate)
-              } else {
-                await pipeline.update(u._id, false, { ...chainDocAllUpdate, [docUpdKey('incremental')]: true })
+              if (propagate.some((it) => pipeline.hierarchy.isDerived(u.objectClass, it))) {
+                pipeline.add(u)
+                await pipeline.update(u._id, false, {})
               }
             }
           }
@@ -184,39 +185,6 @@ export class IndexedFieldStage implements FullTextPipelineStage {
         }
       }
     }
-  }
-
-  private collectPropogate (
-    pipeline: FullTextPipeline,
-    docState: DocIndexState,
-    doc: WithLookup<Doc>
-  ): Ref<Class<Doc>>[] {
-    const desc = new Set(pipeline.hierarchy.getDescendants(docState.objectClass))
-    let propogate: Ref<Class<Doc>>[] = []
-    const ftContext = getFullTextContext(pipeline.hierarchy, docState.objectClass)
-    if (ftContext.propogate !== undefined) {
-      propogate = [...ftContext.propogate]
-    }
-
-    // Add all parent mixins as well
-    for (const a of pipeline.hierarchy.getAncestors(docState.objectClass)) {
-      const dsca = pipeline.hierarchy.getDescendants(a)
-      for (const dd of dsca) {
-        if (pipeline.hierarchy.isMixin(dd)) {
-          desc.add(dd)
-        }
-      }
-    }
-
-    for (const d of desc) {
-      if (pipeline.hierarchy.isMixin(d) && pipeline.hierarchy.hasMixin(doc, d)) {
-        const mContext = getFullTextContext(pipeline.hierarchy, d)
-        if (mContext.propogate !== undefined) {
-          propogate = [...propogate, ...mContext.propogate]
-        }
-      }
-    }
-    return propogate
   }
 
   async remove (docs: DocIndexState[], pipeline: FullTextPipeline): Promise<void> {

@@ -59,12 +59,13 @@ import {
   Prop,
   TypeBoolean,
   TypeIntlString,
+  TypeRecord,
   TypeRef,
   TypeString,
   TypeTimestamp,
   UX
 } from '@hcengineering/model'
-import type { IntlString } from '@hcengineering/platform'
+import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
 import core from './component'
 
 // C O R E
@@ -256,14 +257,17 @@ export class TFulltextData extends TDoc implements FullTextData {
 
 @Model(core.class.DocIndexState, core.class.Doc, DOMAIN_DOC_INDEX_STATE)
 export class TDocIndexState extends TDoc implements DocIndexState {
-  objectClass!: Ref<Class<Doc>>
+  @Prop(TypeRef(core.class.Class), core.string.Class)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+    objectClass!: Ref<Class<Doc>>
 
   @Prop(TypeRef(core.class.Doc), core.string.AttachedTo)
   @Index(IndexKind.Indexed)
   @Hidden()
     attachedTo?: Ref<Doc>
 
-  @Prop(TypeRef(core.class.Doc), core.string.AttachedToClass)
+  @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
   @Index(IndexKind.Indexed)
   @Hidden()
     attachedToClass?: Ref<Class<Doc>>
@@ -271,10 +275,16 @@ export class TDocIndexState extends TDoc implements DocIndexState {
   // Indexable attributes of document.
   attributes!: Record<string, any>
 
-  removed!: boolean
+  @Prop(TypeBoolean(), getEmbeddedLabel('Removed'))
+  @Index(IndexKind.Indexed)
+  @Hidden()
+    removed!: boolean
 
   // States for different stages
-  stages!: Record<string, boolean | string>
+  @Prop(TypeRecord(), getEmbeddedLabel('Stages'))
+  @Index(IndexKind.Indexed)
+  @Hidden()
+    stages!: Record<string, boolean | string>
 }
 
 @Model(core.class.IndexStageState, core.class.Doc, DOMAIN_DOC_INDEX_STATE)

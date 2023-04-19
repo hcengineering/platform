@@ -117,7 +117,7 @@
         dispatch('content', objects)
         loading = loading === 1 ? 0 : -1
       },
-      { sort, limit, ...options, lookup }
+      { sort, limit, ...options, lookup, total: true }
     )
     if (update && ++loading > 0) {
       objects = []

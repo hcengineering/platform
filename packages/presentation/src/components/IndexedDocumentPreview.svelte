@@ -53,7 +53,7 @@
     display: grid;
     overflow: auto;
     min-width: 50rem;
-    max-width: 200rem;
+    max-width: 80rem;
   }
   .indexed-background {
     background-color: white;

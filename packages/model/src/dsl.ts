@@ -386,6 +386,13 @@ export function TypeMarkup (): Type<Markup> {
 /**
  * @public
  */
+export function TypeRecord (): Type<Markup> {
+  return { _class: core.class.TypeRecord, label: core.string.Record }
+}
+
+/**
+ * @public
+ */
 export function TypeIntlString (): Type<IntlString> {
   return { _class: core.class.TypeIntlString, label: core.string.IntlString }
 }

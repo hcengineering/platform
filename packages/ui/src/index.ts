@@ -194,6 +194,12 @@ export const ticker = readable(Date.now(), (set) => {
   }, 10000)
 })
 
+export const ticker100 = readable(Math.round((Date.now() / 100) % 2), (set) => {
+  setInterval(() => {
+    set(Math.round((Date.now() / 100) % 2))
+  }, 100)
+})
+
 addStringsLoader(uiId, async (lang: string) => {
   return await import(`../lang/${lang}.json`)
 })

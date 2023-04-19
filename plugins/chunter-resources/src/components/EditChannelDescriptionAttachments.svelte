@@ -67,7 +67,8 @@
       },
       {
         limit: ATTACHEMNTS_LIMIT,
-        sort
+        sort,
+        total: true
       }
     )
 </script>

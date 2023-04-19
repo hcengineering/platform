@@ -18,6 +18,7 @@ import {
   Class,
   Doc,
   DocumentQuery,
+  IndexingConfiguration,
   MeasureContext,
   Ref,
   toWorkspaceString,
@@ -27,12 +28,15 @@ import {
 import type { EmbeddingSearchOption, FullTextAdapter, IndexedDoc } from '@hcengineering/server-core'
 
 import { Client, errors as esErr } from '@elastic/elasticsearch'
+import { Domain } from 'node:domain'
 class ElasticAdapter implements FullTextAdapter {
   constructor (
     private readonly client: Client,
     private readonly workspaceId: WorkspaceId,
     private readonly _metrics: MeasureContext
   ) {}
+
+  async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {}
 
   async initMapping (field?: { key: string, dims: number }): Promise<Record<string, number>> {
     // const current = await this.client.indices.getMapping({})

@@ -301,7 +301,7 @@ export async function DMTrigger (tx: Tx, control: TriggerControl): Promise<Tx[]>
   }
   const doc = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<ChunterMessage>)
   const dms = await control.findAll(chunter.class.DirectMessage, { _id: doc.space })
-  if (dms.total === 0) {
+  if (dms.length === 0) {
     return []
   }
   const sender = await getEmployeeAccountById(ctx.tx.modifiedBy, control)

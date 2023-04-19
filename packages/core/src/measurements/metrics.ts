@@ -68,7 +68,10 @@ export function childMetrics (root: Metrics, path: string[]): Metrics {
   return oop
 }
 
-function aggregate (m: Metrics): Metrics {
+/**
+ * @public
+ */
+export function metricsAggregate (m: Metrics): Metrics {
   const ms = aggregateMetrics(m.measurements)
 
   // Use child overage, if there is no top level value specified.
@@ -105,34 +108,38 @@ function aggregate (m: Metrics): Metrics {
 function aggregateMetrics (m: Record<string, Metrics>): Record<string, Metrics> {
   const result: Record<string, Metrics> = {}
   for (const [k, v] of Object.entries(m).sort((a, b) => b[1].time - a[1].time)) {
-    result[k] = aggregate(v)
+    result[k] = metricsAggregate(v)
   }
   return result
 }
 
-function toLen (val: string, sep: string, len = 50): string {
+function toLen (val: string, sep: string, len: number): string {
   while (val.length < len) {
     val += sep
   }
   return val
 }
 
-function printMetricsChildren (params: Record<string, Metrics>, offset: number): string {
+function printMetricsChildren (params: Record<string, Metrics>, offset: number, length: number): string {
   let r = ''
   if (Object.keys(params).length > 0) {
     r += '\n' + toLen('', ' ', offset)
     r += Object.entries(params)
-      .map(([k, vv]) => toString(k, vv, offset))
+      .map(([k, vv]) => toString(k, vv, offset, length))
       .join('\n' + toLen('', ' ', offset))
   }
   return r
 }
 
-function printMetricsParams (params: Record<string, Record<string, MetricsData>>, offset: number): string {
+function printMetricsParams (
+  params: Record<string, Record<string, MetricsData>>,
+  offset: number,
+  length: number
+): string {
   let r = ''
   const joinP = (key: string, data: Record<string, MetricsData>): string[] => {
     return Object.entries(data).map(([k, vv]) =>
-      `${toLen('', ' ', offset)}${toLen(key + '=' + k, '-', 70 - offset)}: avg ${
+      `${toLen('', ' ', offset)}${toLen(key + '=' + k, '-', length - offset)}: avg ${
         vv.time / (vv.operations > 0 ? vv.operations : 1)
       } total: ${vv.time} ops: ${vv.operations}`.trim()
     )
@@ -145,18 +152,62 @@ function printMetricsParams (params: Record<string, Record<string, MetricsData>>
   return r
 }
 
-function toString (name: string, m: Metrics, offset: number): string {
-  let r = `${toLen('', ' ', offset)}${toLen(name, '-', 70 - offset)}: avg ${
+function toString (name: string, m: Metrics, offset: number, length: number): string {
+  let r = `${toLen('', ' ', offset)}${toLen(name, '-', length - offset)}: avg ${
     m.time / (m.operations > 0 ? m.operations : 1)
   } total: ${m.time} ops: ${m.operations}`.trim()
-  r += printMetricsParams(m.params, offset + 4)
-  r += printMetricsChildren(m.measurements, offset + 4)
+  r += printMetricsParams(m.params, offset + 4, length)
+  r += printMetricsChildren(m.measurements, offset + 4, length)
   return r
 }
 
 /**
  * @public
  */
-export function metricsToString (metrics: Metrics, name = 'System'): string {
-  return toString(name, aggregate(metrics), 0)
+export function metricsToString (metrics: Metrics, name = 'System', length: number): string {
+  return toString(name, metricsAggregate(metrics), 0, length)
+}
+
+function printMetricsParamsRows (
+  params: Record<string, Record<string, MetricsData>>,
+  offset: number
+): (string | number)[][] {
+  const r: (string | number)[][] = []
+  function joinP (key: string, data: Record<string, MetricsData>): (string | number)[][] {
+    return Object.entries(data).map(([k, vv]) => [
+      offset,
+      `${key}=${k}`,
+      vv.time / (vv.operations > 0 ? vv.operations : 1),
+      vv.time,
+      vv.operations
+    ])
+  }
+  for (const [k, v] of Object.entries(params)) {
+    r.push(...joinP(k, v))
+  }
+  return r
+}
+
+function printMetricsChildrenRows (params: Record<string, Metrics>, offset: number): (string | number)[][] {
+  const r: (string | number)[][] = []
+  if (Object.keys(params).length > 0) {
+    Object.entries(params).forEach(([k, vv]) => r.push(...toStringRows(k, vv, offset)))
+  }
+  return r
+}
+
+function toStringRows (name: string, m: Metrics, offset: number): (number | string)[][] {
+  const r: (number | string)[][] = [
+    [offset, name, m.time / (m.operations > 0 ? m.operations : 1), m.time, m.operations]
+  ]
+  r.push(...printMetricsParamsRows(m.params, offset + 1))
+  r.push(...printMetricsChildrenRows(m.measurements, offset + 1))
+  return r
+}
+
+/**
+ * @public
+ */
+export function metricsToRows (metrics: Metrics, name = 'System'): (number | string)[][] {
+  return toStringRows(name, metricsAggregate(metrics), 0)
 }

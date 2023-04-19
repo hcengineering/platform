@@ -20,6 +20,7 @@ import {
   DocumentQuery,
   DocumentUpdate,
   Hierarchy,
+  MeasureContext,
   ModelDb,
   Ref,
   Storage
@@ -70,7 +71,7 @@ export interface FullTextPipelineStage {
   // If specified, will clear all stages except specified + current
   clearExcept?: string[]
 
-  // Will propogate some changes for both mark values.
+  // Will propagate some changes for both mark values.
   updateFields: DocUpdateHandler[]
 
   enabled: boolean
@@ -80,7 +81,7 @@ export interface FullTextPipelineStage {
   initialize: (storage: Storage, pipeline: FullTextPipeline) => Promise<void>
 
   // Collect all changes related to bulk of document states
-  collect: (docs: DocIndexState[], pipeline: FullTextPipeline) => Promise<void>
+  collect: (docs: DocIndexState[], pipeline: FullTextPipeline, ctx: MeasureContext) => Promise<void>
 
   // Handle remove of items.
   remove: (docs: DocIndexState[], pipeline: FullTextPipeline) => Promise<void>
@@ -101,9 +102,9 @@ export const contentStageId = 'cnt-v2b'
 /**
  * @public
  */
-export const fieldStateId = 'fld-v3'
+export const fieldStateId = 'fld-v4'
 
 /**
  * @public
  */
-export const fullTextPushStageId = 'fts-v1'
+export const fullTextPushStageId = 'fts-v2'

@@ -54,7 +54,10 @@ export function removeEventListener (event: string, listener: EventListener): vo
   }
 }
 
-async function broadcastEvent (event: string, data: any): Promise<void> {
+/**
+ * @public
+ */
+export async function broadcastEvent (event: string, data: any): Promise<void> {
   const listeners = eventListeners.get(event)
   if (listeners !== undefined) {
     const promises = listeners.map(async (listener) => await listener(event, data))

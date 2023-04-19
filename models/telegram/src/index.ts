@@ -170,6 +170,10 @@ export function createModel (builder: Builder): void {
     },
     telegram.ids.TxSharedCreate
   )
+
+  builder.mixin(telegram.class.Message, core.class.Class, core.mixin.FullTextSearchContext, {
+    parentPropagate: false
+  })
 }
 
 export { telegramOperation } from './migration'

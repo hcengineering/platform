@@ -63,7 +63,7 @@ export class LibRetranslateStage implements TranslationStage {
 
   indexState?: IndexStageState
 
-  constructor (readonly metrics: MeasureContext, readonly workspaceId: WorkspaceId) {}
+  constructor (readonly workspaceId: WorkspaceId) {}
 
   async initialize (storage: Storage, pipeline: FullTextPipeline): Promise<void> {
     // Just do nothing
@@ -106,7 +106,7 @@ export class LibRetranslateStage implements TranslationStage {
     }
   }
 
-  async collect (toIndex: DocIndexState[], pipeline: FullTextPipeline): Promise<void> {
+  async collect (toIndex: DocIndexState[], pipeline: FullTextPipeline, metrics: MeasureContext): Promise<void> {
     if (!this.enabled) {
       return
     }

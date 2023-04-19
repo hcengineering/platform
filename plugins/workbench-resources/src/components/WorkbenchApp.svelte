@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { getMetadata } from '@hcengineering/platform'
-  import { Component, Loading, location, Notifications } from '@hcengineering/ui'
+  import { Component, Loading, Notifications, location } from '@hcengineering/ui'
   import { connect, versionError } from '../connect'
 
   import { workbenchId } from '@hcengineering/workbench'

@@ -102,7 +102,7 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
 
   async update (doc: DocIndexState, update: DocumentUpdate<DocIndexState>): Promise<void> {}
 
-  constructor (readonly adapter: FullTextAdapter, readonly metrics: MeasureContext, readonly workspaceId: WorkspaceId) {}
+  constructor (readonly adapter: FullTextAdapter, readonly workspaceId: WorkspaceId) {}
 
   updateSummary (summary: FullSummaryStage): void {
     summary.fieldFilter.push((attr, value) => {
@@ -249,7 +249,6 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
     const queryString = query.$search.replace('\n ', ' ')
     const embeddingData = await this.getEmbedding(queryString)
     const embedding = embeddingData.data[0].embedding
-    console.log('search embedding', embedding)
     const docs = await this.adapter.searchEmbedding(_classes, query, embedding, {
       size,
       from,
@@ -265,7 +264,7 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
     }
   }
 
-  async collect (toIndex: DocIndexState[], pipeline: FullTextPipeline): Promise<void> {
+  async collect (toIndex: DocIndexState[], pipeline: FullTextPipeline, metrics: MeasureContext): Promise<void> {
     if (!this.enabled) {
       return
     }
@@ -273,12 +272,12 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
       if (pipeline.cancelling) {
         return
       }
-      await this.limitter.add(() => this.collectDoc(doc, pipeline))
+      await this.limitter.add(() => this.collectDoc(doc, pipeline, metrics))
     }
     await this.limitter.waitProcessing()
   }
 
-  async collectDoc (doc: DocIndexState, pipeline: FullTextPipeline): Promise<void> {
+  async collectDoc (doc: DocIndexState, pipeline: FullTextPipeline, metrics: MeasureContext): Promise<void> {
     if (pipeline.cancelling) {
       return
     }
@@ -311,11 +310,7 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
         let embeddingData: OpenAIEmbeddingResponse | undefined
         while (true) {
           try {
-            embeddingData = await this.metrics.with(
-              'fetch-embeddings',
-              {},
-              async () => await this.getEmbedding(embeddText)
-            )
+            embeddingData = await metrics.with('fetch-embeddings', {}, async () => await this.getEmbedding(embeddText))
             break
           } catch (err: any) {
             if (((err.message as string) ?? '').includes('connect ECONNREFUSED')) {

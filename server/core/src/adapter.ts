@@ -22,6 +22,7 @@ import {
   FindOptions,
   FindResult,
   Hierarchy,
+  IndexingConfiguration,
   ModelDb,
   Ref,
   StorageIterator,
@@ -40,6 +41,9 @@ export interface DbAdapter {
    * Method called after hierarchy is ready to use.
    */
   init: (model: Tx[]) => Promise<void>
+
+  createIndexes: (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>) => Promise<void>
+
   close: () => Promise<void>
   findAll: <T extends Doc>(
     _class: Ref<Class<T>>,
@@ -96,6 +100,8 @@ export class DummyDbAdapter implements DbAdapter {
   ): Promise<FindResult<T>> {
     return toFindResult([])
   }
+
+  async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {}
 
   async tx (...tx: Tx[]): Promise<TxResult> {
     return {}
