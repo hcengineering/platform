@@ -185,9 +185,14 @@
   )
 
   async function updateWindowTitle (loc: Location) {
-    const title = (await getWindowTitle(loc)) ?? getMetadata(workbench.metadata.PlatformTitle) ?? 'Platform'
     const ws = loc.path[1]
-    document.title = ws == null ? title : `${ws} - ${title}`
+    const docTitle = await getWindowTitle(loc)
+    if (docTitle !== undefined && docTitle !== '') {
+      document.title = ws == null ? docTitle : `${docTitle} - ${ws}`
+    } else {
+      const title = getMetadata(workbench.metadata.PlatformTitle) ?? 'Platform'
+      document.title = ws == null ? title : `${ws} - ${title}`
+    }
   }
   async function getWindowTitle (loc: Location) {
     if (loc.fragment == null) return
