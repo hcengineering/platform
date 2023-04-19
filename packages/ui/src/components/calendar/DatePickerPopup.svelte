@@ -61,16 +61,24 @@
 
         const rect = anchor.getBoundingClientRect()
         const rectPopup = modalHTML.getBoundingClientRect()
+        let isMiddle = false
         // Vertical
         if (rect.bottom + rectPopup.height + 28 <= document.body.clientHeight) {
           modalHTML.style.top = `calc(${rect.bottom}px + 1px)`
         } else if (rectPopup.height + 28 < rect.top) {
           modalHTML.style.bottom = `calc(${document.body.clientHeight - rect.y}px + 1px)`
-        } else modalHTML.style.top = `calc(${rect.bottom}px + 1px)`
+        } else {
+          modalHTML.style.top = `calc(${rect.top}px - ${rectPopup.height / 2}px)`
+          isMiddle = true
+        }
 
         // Horizontal
         if (rect.left + rectPopup.width + 16 > document.body.clientWidth) {
           modalHTML.style.right = document.body.clientWidth - rect.right + 'px'
+        } else if (rect.left - rectPopup.width < 0) {
+          modalHTML.style.left = rect.left + rectPopup.width + 28 + 'px'
+        } else if (rect.left - rectPopup.width < document.body.clientWidth && isMiddle) {
+          modalHTML.style.left = rect.left - rectPopup.width + 'px'
         } else {
           modalHTML.style.left = rect.left + 'px'
         }
@@ -84,6 +92,7 @@
     }
   }
   afterUpdate(() => fitPopup())
+  $: component && fitPopup()
 
   const unfocus = (ev: FocusEvent): void => {
     const target = ev.relatedTarget as HTMLElement
