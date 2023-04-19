@@ -30,7 +30,7 @@
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/server-task": "^0.6.0",
     "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/task": "^0.6.5",
+    "@hcengineering/task": "^0.6.6",
     "@hcengineering/server-notification": "^0.6.0"
   }
 }

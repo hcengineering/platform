@@ -28,8 +28,8 @@
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/core": "^0.6.23",
-    "@hcengineering/chunter": "^0.6.4",
+    "@hcengineering/chunter": "^0.6.5",
     "@hcengineering/ui": "^0.6.6",
-    "@hcengineering/contact": "^0.6.13"
+    "@hcengineering/contact": "^0.6.14"
   }
 }
