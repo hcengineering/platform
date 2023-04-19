@@ -551,6 +551,10 @@ export function createModel (builder: Builder): void {
     value: true
   })
 
+  builder.mixin(contact.class.Contact, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: contact.function.ContactTitleProvider
+  })
+
   builder.createDoc(
     presentation.class.ObjectSearchCategory,
     core.space.Model,

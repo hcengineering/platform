@@ -3,6 +3,7 @@ import { getClient } from '@hcengineering/presentation'
 import { Applicant, Candidate, recruitId, Review, Vacancy, VacancyList } from '@hcengineering/recruit'
 import { getCurrentLocation, getPanelURI, Location, ResolvedLocation } from '@hcengineering/ui'
 import view from '@hcengineering/view'
+import contact, { getName } from '@hcengineering/contact'
 import { workbenchId } from '@hcengineering/workbench'
 import recruit from './plugin'
 
@@ -174,7 +175,11 @@ export async function getVacTitle (client: Client, ref: Ref<Vacancy>): Promise<s
 }
 
 export async function getAppTitle (client: Client, ref: Ref<Applicant>): Promise<string> {
-  return await getTitle(client, ref, recruit.class.Applicant)
+  const applicant = await client.findOne(recruit.class.Applicant, { _id: ref })
+  if (applicant === undefined) return ''
+  const candidate = await client.findOne(contact.class.Contact, { _id: applicant.attachedTo })
+  if (candidate === undefined) return ''
+  return getName(candidate)
 }
 
 export async function getRevTitle (client: Client, ref: Ref<Review>): Promise<string> {
