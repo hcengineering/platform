@@ -13,14 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee } from '@hcengineering/contact'
-  import { Account, DocumentQuery, Ref } from '@hcengineering/core'
+  import { Employee, EmployeeAccount } from '@hcengineering/contact'
+  import core, { Account, DocumentQuery, Ref, matchQuery } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
   import { employeeAccountByIdStore } from '../utils'
   import UserBox from './UserBox.svelte'
+  import { getClient } from '@hcengineering/presentation'
 
   export let label: IntlString = contact.string.Employee
   export let value: Ref<Account> | null | undefined
@@ -29,7 +30,14 @@
   export let size: ButtonSize = 'small'
   export let readonly = false
 
-  $: accounts = Array.from($employeeAccountByIdStore.values())
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  $: accounts = matchQuery<Account>(
+    Array.from($employeeAccountByIdStore.values()),
+    docQuery,
+    core.class.Account,
+    hierarchy
+  ) as EmployeeAccount[]
 
   let map: Map<Ref<Employee>, Ref<Account>> = new Map()
   $: map = new Map(accounts.map((p) => [p.employee, p._id]))
