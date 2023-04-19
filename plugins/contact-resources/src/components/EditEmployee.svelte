@@ -73,7 +73,7 @@
 
   function changeDisplayName () {
     client.update(object, {
-      displayName: displayName === '' ? null : displayName
+      displayName: displayName.trim() === '' ? null : displayName
     })
   }
 

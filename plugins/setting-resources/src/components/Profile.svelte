@@ -77,7 +77,7 @@
   function changeDisplayName () {
     if (employee) {
       client.update(employee, {
-        displayName: displayName === '' ? null : displayName
+        displayName: displayName.trim() === '' ? null : displayName
       })
     }
   }
