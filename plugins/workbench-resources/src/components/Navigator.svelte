@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Doc, getCurrentAccount, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import core, { Doc, Ref, SortingOrder, Space } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import preference, { SpacePreference } from '@hcengineering/preference'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -38,7 +38,6 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const query = createQuery()
-  const myAccId = getCurrentAccount()._id
 
   let spaces: Space[] = []
   let starred: Space[] = []
@@ -75,9 +74,7 @@
 
   let requestIndex = 0
   async function update (model: NavigatorModel, spaces: Space[], preferences: Map<Ref<Doc>, SpacePreference>) {
-    shownSpaces = spaces.filter(
-      (sp) => !sp.archived && !preferences.has(sp._id) && (!sp.private || sp.members.includes(myAccId))
-    )
+    shownSpaces = spaces.filter((sp) => !sp.archived && !preferences.has(sp._id))
     starred = spaces.filter((sp) => preferences.has(sp._id))
     if (model.specials !== undefined) {
       const [sp, resIndex] = await updateSpecials(model.specials, spaces, ++requestIndex)

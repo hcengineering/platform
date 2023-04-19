@@ -296,7 +296,11 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
   }
 
   private getKey<T extends Doc>(_class: Ref<Class<T>>): string {
-    return this.storage.hierarchy.isDerived(_class, core.class.Tx) ? 'objectSpace' : 'space'
+    return this.storage.hierarchy.isDerived(_class, core.class.Tx)
+      ? 'objectSpace'
+      : this.storage.hierarchy.isDerived(_class, core.class.Space)
+        ? '_id'
+        : 'space'
   }
 
   override async findAll<T extends Doc>(
