@@ -15,7 +15,7 @@
 
 import { contactId } from '@hcengineering/contact'
 import contact from '@hcengineering/contact-resources/src/plugin'
-import type { Ref } from '@hcengineering/core'
+import type { Client, Doc, Ref } from '@hcengineering/core'
 import {} from '@hcengineering/core'
 import { ObjectSearchCategory, ObjectSearchFactory } from '@hcengineering/model-presentation'
 import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
@@ -109,6 +109,7 @@ export default mergeIds(contactId, contact, {
     GetCurrentEmployeePosition: '' as Resource<TemplateFieldFunc>,
     GetContactName: '' as Resource<TemplateFieldFunc>,
     GetContactFirstName: '' as Resource<TemplateFieldFunc>,
-    GetContactLastName: '' as Resource<TemplateFieldFunc>
+    GetContactLastName: '' as Resource<TemplateFieldFunc>,
+    ContactTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>
   }
 })

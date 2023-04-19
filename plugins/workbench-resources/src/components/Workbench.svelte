@@ -185,9 +185,14 @@
   )
 
   async function updateWindowTitle (loc: Location) {
-    const title = (await getWindowTitle(loc)) ?? getMetadata(workbench.metadata.PlatformTitle) ?? 'Platform'
     const ws = loc.path[1]
-    document.title = ws == null ? title : `${ws} - ${title}`
+    const docTitle = await getWindowTitle(loc)
+    if (docTitle !== undefined && docTitle !== '') {
+      document.title = ws == null ? docTitle : `${docTitle} - ${ws}`
+    } else {
+      const title = getMetadata(workbench.metadata.PlatformTitle) ?? 'Platform'
+      document.title = ws == null ? title : `${ws} - ${title}`
+    }
   }
   async function getWindowTitle (loc: Location) {
     if (loc.fragment == null) return
@@ -195,10 +200,8 @@
     const [, _id, _class] = decodeURIComponent(loc.fragment).split('|')
     if (_class == null) return
 
-    const clazz = hierarchy.getClass(_class as Ref<Class<Doc>>)
-    if (!hierarchy.hasMixin(clazz, view.mixin.ObjectTitle)) return
-
-    const mixin = hierarchy.as(clazz, view.mixin.ObjectTitle)
+    const mixin = hierarchy.classHierarchyMixin(_class as Ref<Class<Doc>>, view.mixin.ObjectTitle)
+    if (mixin === undefined) return
     const titleProvider = await getResource(mixin.titleProvider)
     try {
       return await titleProvider(client, _id as Ref<Doc>)

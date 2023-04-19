@@ -27,7 +27,7 @@ import {
   getLastName,
   getName
 } from '@hcengineering/contact'
-import { Doc, getCurrentAccount, IdMap, ObjQueryType, Ref, Timestamp, toIdMap } from '@hcengineering/core'
+import { Client, Doc, getCurrentAccount, IdMap, ObjQueryType, Ref, Timestamp, toIdMap } from '@hcengineering/core'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { TemplateDataProvider } from '@hcengineering/templates'
 import { DropdownIntlItem, getCurrentLocation, getPanelURI, Location, ResolvedLocation } from '@hcengineering/ui'
@@ -299,4 +299,10 @@ export function getAvatarProviderId (avatar?: string | null): Ref<AvatarProvider
       return contact.avatarProvider.Color
   }
   return contact.avatarProvider.Image
+}
+
+export async function contactTitleProvider (client: Client, ref: Ref<Contact>): Promise<string> {
+  const object = await client.findOne(contact.class.Contact, { _id: ref })
+  if (object === undefined) return ''
+  return getName(object)
 }

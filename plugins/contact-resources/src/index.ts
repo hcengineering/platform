@@ -76,6 +76,7 @@ import ActivityChannelPresenter from './components/activity/ActivityChannelPrese
 
 import contact from './plugin'
 import {
+  contactTitleProvider,
   employeeSort,
   filterChannelInResult,
   filterChannelNinResult,
@@ -314,7 +315,8 @@ export default async (): Promise<Resources> => ({
     GetContactName: getContactName,
     GetContactFirstName: getContactFirstName,
     GetContactLastName: getContactLastName,
-    GetContactLink: getContactLink
+    GetContactLink: getContactLink,
+    ContactTitleProvider: contactTitleProvider
   },
   resolver: {
     Location: resolveLocation
