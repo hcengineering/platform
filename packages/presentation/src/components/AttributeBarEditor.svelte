@@ -42,9 +42,9 @@
 
   function onChange (value: any) {
     const doc = object as Doc
-    
+
     dispatch('update', { key, value })
-    
+
     if (draft) {
       ;(doc as any)[attributeKey] = value
     } else {
