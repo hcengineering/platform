@@ -33,6 +33,7 @@
     "@hcengineering/model-contact": "^0.6.1",
     "@hcengineering/view": "^0.6.4",
     "@hcengineering/model-view": "^0.6.0",
+    "@hcengineering/model-tracker": "^0.6.0",
     "@hcengineering/templates": "^0.6.2",
     "@hcengineering/templates-resources": "^0.6.0",
     "@hcengineering/setting": "^0.6.5",

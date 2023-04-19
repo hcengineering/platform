@@ -29,6 +29,7 @@ import type {
   TemplateFieldFunc
 } from '@hcengineering/templates'
 import templates from './plugin'
+import tracker from '@hcengineering/model-tracker'
 
 export const DOMAIN_TEMPLATES = 'templates' as Domain
 
@@ -159,6 +160,10 @@ export function createModel (builder: Builder): void {
     },
     templates.action.Move
   )
+
+  builder.mixin(templates.class.MessageTemplate, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [view.action.Open, tracker.action.NewRelatedIssue]
+  })
 }
 
 export { templatesOperation } from './migration'
