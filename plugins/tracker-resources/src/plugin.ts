@@ -106,7 +106,6 @@ export default mergeIds(trackerId, tracker, {
     EditWorkflowStatus: '' as IntlString,
     DeleteWorkflowStatus: '' as IntlString,
     DeleteWorkflowStatusConfirm: '' as IntlString,
-    DeleteWorkflowStatusError: '' as IntlString,
     DeleteWorkflowStatusErrorDescription: '' as IntlString,
     Name: '' as IntlString,
     StatusCategory: '' as IntlString,

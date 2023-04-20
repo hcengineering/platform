@@ -188,8 +188,7 @@
     "EditWorkflowStatus": "Edit issue status",
     "DeleteWorkflowStatus": "Delete issue status",
     "DeleteWorkflowStatusConfirm": "Do you want to delete the \"{status}\" status?",
-    "DeleteWorkflowStatusError": "Can't delete the issue status",
-    "DeleteWorkflowStatusErrorDescription": "The \"{status}\" status has {count, plural, =1 {1 issue} other {# issues}} assigned. Please archive or move {count, plural, =1 {it} other {them}} before deleting this status.",
+    "DeleteWorkflowStatusErrorDescription": "The \"{status}\" status has {count, plural, =1 {1 issue} other {# issues}} assigned. Please select a status to move",
 
     "Save": "Save",
     "IncludeItemsThatMatch": "Include items that match",
