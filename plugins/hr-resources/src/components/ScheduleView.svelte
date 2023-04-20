@@ -97,7 +97,7 @@
       {
         'tzDueDate.year': { $gte: startDate.getFullYear() },
         'tzDate.year': { $lte: endDate.getFullYear() },
-        attachedTo: { $in: staffIdsForOpenedDepartments },
+        attachedTo: { $in: staffIdsForOpenedDepartments }
       },
       (res) => {
         requests = res
