@@ -1,12 +1,12 @@
 <script lang="ts">
   import chunter from '@hcengineering/chunter'
   import { Class, Doc, Ref, RelatedDocument, WithLookup } from '@hcengineering/core'
-  import { getResource, IntlString } from '@hcengineering/platform'
+  import { IntlString, getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Issue } from '@hcengineering/tracker'
-  import { Component, Icon, IconClose, showPanel } from '@hcengineering/ui'
+  import { Component, Icon, IconClose, navigate } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { getIssueId, updateIssueRelation } from '../../issues'
+  import { getIssueId, issueLinkFragmentProvider, updateIssueRelation } from '../../issues'
   import tracker from '../../plugin'
 
   export let value: Issue
@@ -72,7 +72,8 @@
   }
 
   async function handleRedirect (issue: Issue) {
-    showPanel(tracker.component.EditIssue, issue._id, issue._class, 'content')
+    const loc = await issueLinkFragmentProvider(issue)
+    navigate(loc)
   }
 
   const asIssue = (x: Doc) => x as WithLookup<Issue>

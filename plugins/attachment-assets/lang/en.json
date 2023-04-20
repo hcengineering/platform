@@ -50,6 +50,7 @@
     "Pinned": "Important",
     "PinAttachment": "Mark important",
     "UnPinAttachment": "Mark less important",
-    "FilterAttachments": "Attachments"
+    "FilterAttachments": "Attachments",
+    "RemovedAttachment": "Removed attachment"
   }
 }
