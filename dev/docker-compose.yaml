@@ -143,7 +143,6 @@ services:
     restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service
-    restart: on-failure
     ports:
       - 4004:4004
     deploy:
