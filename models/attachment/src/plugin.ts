@@ -40,10 +40,12 @@ export default mergeIds(attachmentId, attachment, {
     Description: '' as IntlString,
     PinAttachment: '' as IntlString,
     UnPinAttachment: '' as IntlString,
-    FilterAttachments: '' as IntlString
+    FilterAttachments: '' as IntlString,
+    RemovedAttachment: '' as IntlString
   },
   ids: {
-    TxAttachmentCreate: '' as Ref<TxViewlet>
+    TxAttachmentCreate: '' as Ref<TxViewlet>,
+    TxAttachmentRemove: '' as Ref<TxViewlet>
   },
   activity: {
     TxAttachmentCreate: '' as AnyComponent

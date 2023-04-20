@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,18 +14,10 @@
 -->
 <script lang="ts">
   import type { Attachment } from '@hcengineering/attachment'
-  import core, { TxCUD, TxCreateDoc, TxProcessor } from '@hcengineering/core'
-  import AttachmentPresenter from '../AttachmentPresenter.svelte'
-  import RemovedAttachmentPresenter from '../RemovedAttachmentPresenter.svelte'
 
-  export let tx: TxCUD<Attachment>
-  export let value: any
-
-  const doc = tx._class === core.class.TxCreateDoc ? TxProcessor.createDoc2Doc(tx as TxCreateDoc<Attachment>) : value
+  export let value: Attachment
 </script>
 
-{#if tx._class === core.class.TxRemoveDoc}
-  <RemovedAttachmentPresenter value={doc} />
-{:else}
-  <AttachmentPresenter value={doc} />
-{/if}
+<div class="flex-row-center">
+  {value.name}
+</div>

@@ -50,6 +50,7 @@
     "Pinned": "Важное",
     "PinAttachment": "Пометить как важное",
     "UnPinAttachment": "Убрать пометку важное",
-    "FilterAttachments": "Вложения"
+    "FilterAttachments": "Вложения",
+    "RemovedAttachment": "Удалил(а) вложение"
   }
 }

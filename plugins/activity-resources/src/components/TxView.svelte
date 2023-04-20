@@ -16,7 +16,7 @@
 <script lang="ts">
   import type { DisplayTx, TxViewlet } from '@hcengineering/activity'
   import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
-  import core, { AnyAttribute, Doc, getCurrentAccount, Ref, Class } from '@hcengineering/core'
+  import core, { AnyAttribute, Doc, getCurrentAccount, Ref, Class, TxCUD } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
@@ -135,8 +135,8 @@
   function isMessageType (attr?: AnyAttribute): boolean {
     return attr?.type._class === core.class.TypeMarkup
   }
-  function isAttachment (_class?: Ref<Class<Doc>>): boolean {
-    return _class === attachment.class.Attachment
+  function isAttachment (tx: TxCUD<Doc>): boolean {
+    return tx.objectClass === attachment.class.Attachment && tx._class === core.class.TxCreateDoc
   }
   function isMention (_class?: Ref<Class<Doc>>): boolean {
     return _class === chunter.class.Backlink
@@ -159,7 +159,7 @@
     hasMessageType = res
   })
   $: isComment = viewlet && viewlet?.editable
-  $: isAttached = isAttachment(tx.tx.objectClass)
+  $: isAttached = isAttachment(tx.tx)
   $: isMentioned = isMention(tx.tx.objectClass)
   $: withAvatar = isComment || isMentioned || isAttached
   $: isEmphasized = viewlet?.display === 'emphasized' || model.every((m) => isMessageType(m.attribute))
