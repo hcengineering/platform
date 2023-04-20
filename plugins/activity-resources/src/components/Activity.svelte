@@ -15,20 +15,27 @@
 <script lang="ts">
   import activity, { DisplayTx, TxViewlet } from '@hcengineering/activity'
   import chunter from '@hcengineering/chunter'
-  import core, { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
-  import notification, { LastView } from '@hcengineering/notification'
-  import { getResource } from '@hcengineering/platform'
+  import core, { Class, Doc, Ref, SortingOrder, TxCUD } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Component, Grid, Label, Spinner } from '@hcengineering/ui'
-  import { Writable } from 'svelte/store'
   import { ActivityKey, activityKey, newActivity } from '../activity'
   import { filterCollectionTxes } from '../utils'
   import ActivityFilter from './ActivityFilter.svelte'
   import TxView from './TxView.svelte'
+  import notification, { DocUpdates, Writable } from '@hcengineering/notification'
+  import { getResource } from '@hcengineering/platform'
 
   export let object: Doc
   export let showCommenInput: boolean = true
   export let transparent: boolean = false
+
+  getResource(notification.function.GetNotificationClient).then((res) => {
+    updatesStore = res().docUpdatesStore
+  })
+  let updatesStore: Writable<Map<Ref<Doc>, DocUpdates>> | undefined
+
+  $: updates = $updatesStore?.get(object._id)
+  $: newTxes = updates?.txes ?? []
 
   let txes: DisplayTx[] = []
 
@@ -36,10 +43,6 @@
   const attrs = client.getHierarchy().getAllAttributes(object._class)
 
   const activityQuery = newActivity(client, attrs)
-  getResource(notification.function.GetNotificationClient).then((res) => {
-    lastViews = res().getLastViews()
-  })
-  let lastViews: Writable<LastView> | undefined
 
   let viewlets: Map<ActivityKey, TxViewlet>
 
@@ -80,16 +83,10 @@
 
   let filtered: DisplayTx[] = []
 
-  $: newTxPos = newTx(filtered, $lastViews)
-
-  function newTx (txes: DisplayTx[], lastViews: LastView | undefined): number {
-    const lastView = (lastViews as any)?.[object._id]
-    if (lastView === undefined || lastView === -1) return -1
-    for (let index = 0; index < txes.length; index++) {
-      const tx = txes[index]
-      if (tx.tx.modifiedOn > lastView) return index - 1
-    }
-    return -1
+  function isNew (tx: DisplayTx | undefined, newTxes: [Ref<TxCUD<Doc>>, number][]): boolean {
+    if (tx === undefined) return false
+    const index = newTxes.findIndex((p) => p[0] === tx.originTx._id)
+    return index !== -1
   }
 </script>
 
@@ -108,7 +105,7 @@
   {#if filtered}
     <Grid column={1} rowGap={0.75}>
       {#each filtered as tx, i}
-        <TxView {tx} {viewlets} isNew={newTxPos < i && newTxPos !== -1} isNextNew={newTxPos <= i && newTxPos !== -1} />
+        <TxView {tx} {viewlets} isNew={isNew(tx, newTxes)} isNextNew={isNew(filtered[i + 1], newTxes)} />
       {/each}
     </Grid>
   {/if}
