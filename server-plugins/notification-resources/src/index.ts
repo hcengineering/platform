@@ -29,7 +29,6 @@ import core, {
   Ref,
   RefTo,
   Space,
-  Timestamp,
   Tx,
   TxCUD,
   TxCollectionCUD,
@@ -56,8 +55,7 @@ import serverNotification, {
   TextPresenter,
   createLastViewTx,
   getEmployeeAccount,
-  getEmployeeAccountById,
-  getUpdateLastViewTx
+  getEmployeeAccountById
 } from '@hcengineering/server-notification'
 import { Content } from './types'
 import { replaceAll } from './utils'
@@ -274,52 +272,12 @@ async function getEmailNotificationTx (
   }
 }
 
-async function getUpdateLastViewTxes (
-  doc: Doc,
-  _id: Ref<Doc>,
-  _class: Ref<Class<Doc>>,
-  modifiedOn: Timestamp,
-  user: Ref<Account>,
-  control: TriggerControl
-): Promise<Tx[]> {
-  const updatedUsers: Set<Ref<Account>> = new Set<Ref<Account>>()
-  const result: Tx[] = []
-  const tx = await getUpdateLastViewTx(control.findAll, _id, modifiedOn, user)
-  if (tx !== undefined) {
-    updatedUsers.add(user)
-    result.push(tx)
-  }
-  const docClass = control.hierarchy.getClass(doc._class)
-  const anotherUserNotifications = control.hierarchy.as(docClass, notification.mixin.AnotherUserNotifications)
-  for (const field of anotherUserNotifications?.fields ?? []) {
-    const value = (doc as any)[field]
-    if (value != null) {
-      for (const employeeId of Array.isArray(value) ? value : [value]) {
-        const account = await getEmployeeAccount(employeeId, control)
-        if (account !== undefined) {
-          if (updatedUsers.has(account._id)) continue
-          const assigneeTx = await createLastViewTx(control.findAll, _id, account._id)
-          if (assigneeTx !== undefined) {
-            updatedUsers.add(account._id)
-            result.push(assigneeTx)
-          }
-        }
-      }
-    }
-  }
-  return result
-}
-
 /**
  * @public
  */
 export async function UpdateLastView (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx)
-  if (
-    ![core.class.TxUpdateDoc, core.class.TxCreateDoc, core.class.TxMixin, core.class.TxRemoveDoc].includes(
-      actualTx._class
-    )
-  ) {
+  if (actualTx._class !== core.class.TxRemoveDoc) {
     return []
   }
 
@@ -329,65 +287,16 @@ export async function UpdateLastView (tx: Tx, control: TriggerControl): Promise<
 
   const result: Tx[] = []
 
-  switch (actualTx._class) {
-    case core.class.TxCreateDoc: {
-      const createTx = actualTx as TxCreateDoc<Doc>
-      if (control.hierarchy.isDerived(createTx.objectClass, core.class.AttachedDoc)) {
-        const doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<AttachedDoc>)
-        if (control.hierarchy.classHierarchyMixin(doc.attachedToClass, notification.mixin.TrackedDoc) !== undefined) {
-          const attachedTxes = await getUpdateLastViewTxes(
-            doc,
-            doc.attachedTo,
-            doc.attachedToClass,
-            createTx.modifiedOn,
-            createTx.modifiedBy,
-            control
-          )
-          result.push(...attachedTxes)
-        }
+  const removeTx = actualTx as TxRemoveDoc<Doc>
+  const lastViews = await control.findAll(notification.class.LastView, { [removeTx.objectId]: { $exists: true } })
+  for (const lastView of lastViews) {
+    const clearTx = control.txFactory.createTxUpdateDoc(lastView._class, lastView.space, lastView._id, {
+      $unset: {
+        [removeTx.objectId]: ''
       }
-      if (control.hierarchy.classHierarchyMixin(createTx.objectClass, notification.mixin.TrackedDoc) !== undefined) {
-        const doc = TxProcessor.createDoc2Doc(createTx)
-        const parentTxes = await getUpdateLastViewTxes(
-          doc,
-          doc._id,
-          doc._class,
-          createTx.modifiedOn,
-          createTx.modifiedBy,
-          control
-        )
-        result.push(...parentTxes)
-      }
-      return result
-    }
-    case core.class.TxUpdateDoc:
-    case core.class.TxMixin: {
-      const tx = actualTx as TxCUD<Doc>
-      if (control.hierarchy.classHierarchyMixin(tx.objectClass, notification.mixin.TrackedDoc) !== undefined) {
-        const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
-        if (doc !== undefined) {
-          return await getUpdateLastViewTxes(doc, doc._id, doc._class, tx.modifiedOn, tx.modifiedBy, control)
-        }
-      }
-      break
-    }
-    case core.class.TxRemoveDoc: {
-      const tx = actualTx as TxCUD<Doc>
-      const lastViews = await control.findAll(notification.class.LastView, { [tx.objectId]: { $exists: true } })
-      for (const lastView of lastViews) {
-        const clearTx = control.txFactory.createTxUpdateDoc(lastView._class, lastView.space, lastView._id, {
-          $unset: {
-            [tx.objectId]: ''
-          }
-        })
-        result.push(clearTx)
-      }
-      return result
-    }
-    default:
-      break
+    })
+    result.push(clearTx)
   }
-
   return result
 }
 

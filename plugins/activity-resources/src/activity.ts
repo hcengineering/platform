@@ -278,6 +278,7 @@ class ActivityImpl implements Activity {
 
   createDisplayTx (tx: TxCUD<Doc>, parents: Map<Ref<Doc>, DisplayTx>, isOwnTx: boolean): [DisplayTx, boolean, boolean] {
     let collectionAttribute: Attribute<Collection<AttachedDoc>> | undefined
+    const originTx = tx
     if (this.hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)) {
       const cltx = tx as TxCollectionCUD<Doc, AttachedDoc>
       tx = TxProcessor.extractTx(cltx) as TxCUD<Doc>
@@ -295,7 +296,7 @@ class ActivityImpl implements Activity {
       }
     }
     let firstTx = parents.get(tx.objectId)
-    const result: DisplayTx = newDisplayTx(tx, this.hierarchy, isOwnTx)
+    const result: DisplayTx = newDisplayTx(tx, this.hierarchy, isOwnTx, originTx)
 
     result.collectionAttribute = collectionAttribute
 
@@ -418,7 +419,12 @@ function getCombineOpFromTx (result: DisplayTx): any {
   return curUpdate
 }
 
-export function newDisplayTx (tx: TxCUD<Doc>, hierarchy: Hierarchy, isOwnTx: boolean): DisplayTx {
+export function newDisplayTx (
+  tx: TxCUD<Doc>,
+  hierarchy: Hierarchy,
+  isOwnTx: boolean,
+  originTx: TxCUD<Doc> = tx
+): DisplayTx {
   const createTx = hierarchy.isDerived(tx._class, core.class.TxCreateDoc) ? (tx as TxCreateDoc<Doc>) : undefined
   return {
     tx,
@@ -430,7 +436,8 @@ export function newDisplayTx (tx: TxCUD<Doc>, hierarchy: Hierarchy, isOwnTx: boo
     removed: false,
     mixin: false,
     mixinTx: hierarchy.isDerived(tx._class, core.class.TxMixin) ? (tx as TxMixin<Doc, Doc>) : undefined,
-    doc: createTx !== undefined ? TxProcessor.createDoc2Doc(createTx) : undefined
+    doc: createTx !== undefined ? TxProcessor.createDoc2Doc(createTx) : undefined,
+    originTx
   }
 }
 

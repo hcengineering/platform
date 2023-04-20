@@ -91,6 +91,7 @@ export interface DisplayTx {
   isOwnTx: boolean
 
   collectionAttribute?: Attribute<Collection<AttachedDoc>>
+  originTx: TxCUD<Doc>
 }
 
 /**

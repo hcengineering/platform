@@ -25,6 +25,9 @@ import { get, writable, Writable } from 'svelte/store'
 export class NotificationClientImpl implements NotificationClient {
   protected static _instance: NotificationClientImpl | undefined = undefined
   private readonly lastViewsStore = writable<LastView>()
+  readonly docUpdatesStore = writable<Map<Ref<Doc>, DocUpdates>>(new Map())
+
+  private readonly docUpdatesQuery = createQuery(true)
 
   private readonly lastViewQuery = createQuery()
   private readonly user: Ref<Account>
@@ -42,6 +45,15 @@ export class NotificationClientImpl implements NotificationClient {
         void client.tx(u)
       }
     })
+    this.docUpdatesQuery.query(
+      notification.class.DocUpdates,
+      {
+        user: this.user
+      },
+      (result) => {
+        this.docUpdatesStore.set(new Map(result.map((p) => [p.attachedTo, p])))
+      }
+    )
   }
 
   static createClient (): void {

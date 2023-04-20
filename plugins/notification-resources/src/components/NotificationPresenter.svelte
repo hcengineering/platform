@@ -21,10 +21,10 @@
   export let kind: 'table' | 'block' = 'block'
 
   const notificationClient = NotificationClientImpl.getClient()
-  const lastViews = notificationClient.getLastViews()
+  const store = notificationClient.docUpdatesStore
+  $: docUpdate = $store.get(value._id)
 
-  $: lastView = (($lastViews as any) ?? {})[value._id]
-  $: hasNotification = lastView !== undefined && lastView !== -1 && lastView < value.modifiedOn
+  $: hasNotification = (docUpdate?.txes?.length ?? 0) > 0
 </script>
 
 {#if hasNotification}

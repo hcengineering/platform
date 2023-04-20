@@ -151,6 +151,7 @@ export const notificationId = 'notification' as Plugin
  * @public
  */
 export interface NotificationClient {
+  docUpdatesStore: Writable<Map<Ref<Doc>, DocUpdates>>
   getLastViews: () => Writable<LastView>
   updateLastView: (_id: Ref<Doc>, _class: Ref<Class<Doc>>, time?: Timestamp, force?: boolean) => Promise<void>
   unsubscribe: (_id: Ref<Doc>) => Promise<void>
