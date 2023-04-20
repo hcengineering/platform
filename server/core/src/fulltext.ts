@@ -46,7 +46,6 @@ import type { FullTextAdapter, IndexedDoc, WithFind } from './types'
  */
 export class FullTextIndex implements WithFind {
   txFactory = new TxFactory(core.account.System, true)
-
   consistency: Promise<void> | undefined
 
   constructor (
@@ -59,6 +58,7 @@ export class FullTextIndex implements WithFind {
     private readonly upgrade: boolean
   ) {
     if (!upgrade) {
+      // Schedule indexing after consistency check
       this.consistency = this.indexer.checkIndexConsistency(dbStorage)
 
       // Schedule indexing after consistency check
@@ -120,7 +120,6 @@ export class FullTextIndex implements WithFind {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    console.log('search', query)
     const { _id, $search, ...mainQuery } = query
     if ($search === undefined) return toFindResult([])
 
@@ -143,7 +142,7 @@ export class FullTextIndex implements WithFind {
           }
         }
         if (attr.type._class === core.class.Collection) {
-          // we need attached documents to be in clases
+          // we need attached documents to be in classes
           const dsc = this.hierarchy.getDescendants(attr.attributeOf)
           classes = classes.concat(dsc)
         }

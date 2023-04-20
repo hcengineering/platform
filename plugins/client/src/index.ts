@@ -80,5 +80,8 @@ export default plugin(clientId, {
   },
   function: {
     GetClient: '' as Resource<ClientFactory>
+  },
+  event: {
+    NetworkRequests: '' as Metadata<string>
   }
 })

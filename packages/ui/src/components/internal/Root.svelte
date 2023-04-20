@@ -1,7 +1,6 @@
 <script lang="ts">
+  import { addEventListener, getMetadata, OK, PlatformEvent } from '@hcengineering/platform'
   import { onDestroy } from 'svelte'
-  import { getMetadata, OK } from '@hcengineering/platform'
-  import { PlatformEvent, addEventListener } from '@hcengineering/platform'
   import type { AnyComponent } from '../../types'
   // import { applicationShortcutKey } from '../../utils'
   import { getCurrentLocation, location, navigate } from '../../location'
@@ -12,14 +11,14 @@
   import StatusComponent from '../Status.svelte'
   import Clock from './Clock.svelte'
   // import Mute from './icons/Mute.svelte'
-  import WiFi from './icons/WiFi.svelte'
+  import { checkMobile, deviceOptionsStore as deviceInfo, networkStatus } from '../../'
+  import uiPlugin from '../../plugin'
+  import FontSizeSelector from './FontSizeSelector.svelte'
   import Computer from './icons/Computer.svelte'
   import Phone from './icons/Phone.svelte'
-  import ThemeSelector from './ThemeSelector.svelte'
-  import FontSizeSelector from './FontSizeSelector.svelte'
+  import WiFi from './icons/WiFi.svelte'
   import LangSelector from './LangSelector.svelte'
-  import uiPlugin from '../../plugin'
-  import { checkMobile, deviceOptionsStore as deviceInfo } from '../../'
+  import ThemeSelector from './ThemeSelector.svelte'
 
   let application: AnyComponent | undefined
 
@@ -130,8 +129,17 @@
               size={'small'}
             />
           </div>
-          <div class="flex-center widget cursor-pointer mr-3">
-            <WiFi size={'small'} />
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <div
+            class="flex-center widget cursor-pointer mr-3"
+            on:click={(evt) => {
+              getMetadata(uiPlugin.metadata.ShowNetwork)?.(evt)
+            }}
+          >
+            <WiFi
+              size={'small'}
+              fill={$networkStatus === -1 ? 'red' : $networkStatus % 2 === 1 ? 'blue' : 'currentColor'}
+            />
           </div>
         </div>
       </div>

@@ -61,7 +61,7 @@ export function getDateIcon (item: TodoItem): 'normal' | 'warning' | 'overdue' {
 
 export const commonBoardPreference = readable<CommonBoardPreference>(undefined, (set) => {
   createQuery().query(board.class.CommonBoardPreference, { attachedTo: board.app.Board }, (result) => {
-    if (result.total > 0) return set(result[0])
+    if (result.length > 0) return set(result[0])
     void getClient().createDoc(board.class.CommonBoardPreference, preference.space.Preference, {
       attachedTo: board.app.Board
     })

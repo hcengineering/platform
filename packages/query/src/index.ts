@@ -342,7 +342,9 @@ export class LiveQuery extends TxProcessor implements Client {
         const pos = q.result.findIndex((p) => p._id === _id)
         if (pos !== -1) {
           q.result.splice(pos, 1)
-          q.total--
+          if (q.options?.total === true) {
+            q.total--
+          }
         }
       }
     } else {
@@ -369,7 +371,9 @@ export class LiveQuery extends TxProcessor implements Client {
         return true
       } else {
         q.result.splice(pos, 1)
-        q.total--
+        if (q.options?.total === true) {
+          q.total--
+        }
       }
     }
     return false
@@ -397,7 +401,9 @@ export class LiveQuery extends TxProcessor implements Client {
         return true
       } else {
         q.result.splice(pos, 1)
-        q.total--
+        if (q.options?.total === true) {
+          q.total--
+        }
       }
     } else {
       q.result[pos] = updatedDoc
@@ -664,7 +670,9 @@ export class LiveQuery extends TxProcessor implements Client {
           q.result[pos] = doc
         } else {
           q.result.push(doc)
-          q.total++
+          if (q.options?.total === true) {
+            q.total++
+          }
         }
         return true
       }
@@ -770,7 +778,9 @@ export class LiveQuery extends TxProcessor implements Client {
         }
 
         q.result.push(doc)
-        q.total++
+        if (q.options?.total === true) {
+          q.total++
+        }
 
         if (q.options?.sort !== undefined) {
           await resultSort(q.result, q.options?.sort, q._class, this.getHierarchy(), this.client.getModel())
@@ -874,7 +884,9 @@ export class LiveQuery extends TxProcessor implements Client {
     const index = q.result.findIndex((p) => p._id === tx.objectId)
     if (index > -1) {
       q.result.splice(index, 1)
-      q.total--
+      if (q.options?.total === true) {
+        q.total--
+      }
       await this.callback(q)
     }
     await this.handleDocRemoveLookup(q, tx)

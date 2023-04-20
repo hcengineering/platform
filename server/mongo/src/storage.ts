@@ -28,6 +28,7 @@ import core, {
   FindOptions,
   FindResult,
   Hierarchy,
+  IndexingConfiguration,
   isOperator,
   Lookup,
   Mixin,
@@ -96,6 +97,16 @@ abstract class MongoAdapterBase implements DbAdapter {
   ) {}
 
   async init (): Promise<void> {}
+
+  async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {
+    for (const vv of config.indexes) {
+      try {
+        await this.db.collection(domain).createIndex(vv)
+      } catch (err: any) {
+        console.error(err)
+      }
+    }
+  }
 
   async tx (...tx: Tx[]): Promise<TxResult> {
     return {}
@@ -338,10 +349,10 @@ abstract class MongoAdapterBase implements DbAdapter {
 
   private async fillSortPipeline<T extends Doc>(
     clazz: Ref<Class<T>>,
-    options: FindOptions<T>,
+    options: FindOptions<T> | undefined,
     pipeline: any[]
   ): Promise<void> {
-    if (options.sort !== undefined) {
+    if (options?.sort !== undefined) {
       const sort = {} as any
       for (const _key in options.sort) {
         const key = this.translateKey(_key, clazz)
@@ -369,12 +380,12 @@ abstract class MongoAdapterBase implements DbAdapter {
   private async findWithPipeline<T extends Doc>(
     clazz: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options: FindOptions<T>
+    options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     const pipeline = []
     const match = { $match: this.translateQuery(clazz, query) }
-    const slowPipeline = isLookupQuery(query) || isLookupSort(options.sort)
-    const steps = await this.getLookups(clazz, options.lookup)
+    const slowPipeline = isLookupQuery(query) || isLookupSort(options?.sort)
+    const steps = await this.getLookups(clazz, options?.lookup)
     if (slowPipeline) {
       for (const step of steps) {
         pipeline.push({ $lookup: step })
@@ -383,7 +394,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     pipeline.push(match)
     const resultPipeline: any[] = []
     await this.fillSortPipeline(clazz, options, pipeline)
-    if (options.limit !== undefined) {
+    if (options?.limit !== undefined) {
       resultPipeline.push({ $limit: options.limit })
     }
     if (!slowPipeline) {
@@ -402,11 +413,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     pipeline.push({
       $facet: {
         results: resultPipeline,
-        totalCount: [
-          {
-            $count: 'count'
-          }
-        ]
+        ...(options?.total === true ? { totalCount: [{ $count: 'count' }] } : {})
       }
     })
     const domain = this.hierarchy.getDomain(clazz)
@@ -414,9 +421,9 @@ abstract class MongoAdapterBase implements DbAdapter {
     cursor.maxTimeMS(30000)
     const res = (await cursor.toArray())[0]
     const result = res.results as WithLookup<T>[]
-    const total = res.totalCount?.shift()?.count
+    const total = res.totalCount?.shift()?.count ?? -1
     for (const row of result) {
-      await this.fillLookupValue(clazz, options.lookup, row)
+      await this.fillLookupValue(clazz, options?.lookup, row)
       this.clearExtraLookups(row)
     }
     return toFindResult(result, total)
@@ -525,7 +532,7 @@ abstract class MongoAdapterBase implements DbAdapter {
       }
       cursor = cursor.project(projection)
     }
-    let total: number | undefined
+    let total: number = -1
     if (options !== null && options !== undefined) {
       if (options.sort !== undefined) {
         const sort: Sort = {}
@@ -537,7 +544,9 @@ abstract class MongoAdapterBase implements DbAdapter {
         cursor = cursor.sort(sort)
       }
       if (options.limit !== undefined) {
-        total = await coll.countDocuments(mongoQuery)
+        if (options.total === true) {
+          total = await coll.countDocuments(mongoQuery)
+        }
         cursor = cursor.limit(options.limit)
       }
     }
@@ -611,14 +620,18 @@ abstract class MongoAdapterBase implements DbAdapter {
       if (ops.length > 0) {
         const part = ops.splice(0, 500)
         await coll.bulkWrite(
-          part.map((it) => ({
-            updateOne: {
-              filter: { _id: it[0] },
-              update: {
-                $set: it[1]
+          part.map((it) => {
+            const { $unset, ...set } = it[1] as any
+            return {
+              updateOne: {
+                filter: { _id: it[0] },
+                update: {
+                  $set: set,
+                  ...($unset !== undefined ? { $unset } : {})
+                }
               }
             }
-          }))
+          })
         )
       }
     } catch (err: any) {

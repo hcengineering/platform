@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Enum, EnumOf, Ref } from '@hcengineering/core'
+  import core, { Enum, EnumOf, IndexKind, Ref } from '@hcengineering/core'
   import { TypeEnum } from '@hcengineering/model'
   import presentation, { getClient } from '@hcengineering/presentation'
   import { Button, Label, showPopup } from '@hcengineering/ui'
@@ -40,7 +40,7 @@
 
   function changeEnum (value: Enum) {
     type = TypeEnum(value._id)
-    dispatch('change', { type, defaultValue })
+    dispatch('change', { type, defaultValue, index: IndexKind.FullText })
   }
 
   async function updateSelected (ref: Ref<Enum> | undefined) {

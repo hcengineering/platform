@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import {
+import core, {
   Class,
   Doc,
   DocIndexState,
@@ -22,6 +22,7 @@ import {
   extractDocKey,
   MeasureContext,
   Ref,
+  ServerStorage,
   Storage,
   WorkspaceId
 } from '@hcengineering/core'
@@ -35,7 +36,7 @@ import {
   FullTextPipelineStage,
   fullTextPushStageId
 } from './types'
-import { docKey } from './utils'
+import { collectPropagate, docKey, getFullTextContext } from './utils'
 
 /**
  * @public
@@ -57,9 +58,9 @@ export class FullTextPushStage implements FullTextPipelineStage {
   stageValue: boolean | string = true
 
   constructor (
+    private readonly dbStorage: ServerStorage,
     readonly fulltextAdapter: FullTextAdapter,
-    readonly workspace: WorkspaceId,
-    readonly metrics: MeasureContext
+    readonly workspace: WorkspaceId
   ) {}
 
   async initialize (storage: Storage, pipeline: FullTextPipeline): Promise<void> {
@@ -94,41 +95,78 @@ export class FullTextPushStage implements FullTextPipelineStage {
     return { docs: [], pass: true }
   }
 
-  async collect (toIndex: DocIndexState[], pipeline: FullTextPipeline): Promise<void> {
+  async collect (toIndex: DocIndexState[], pipeline: FullTextPipeline, metrics: MeasureContext): Promise<void> {
     const bulk: IndexedDoc[] = []
-    for (const doc of toIndex) {
-      if (pipeline.cancelling) {
-        return
-      }
-      if (pipeline.cancelling) {
-        return
-      }
 
-      try {
+    const part = [...toIndex]
+    while (part.length > 0) {
+      const toIndexPart = part.splice(0, 1000)
+
+      const allChildDocs = await this.dbStorage.findAll(metrics.newChild('find-child', {}), core.class.DocIndexState, {
+        attachedTo: { $in: toIndexPart.map((it) => it._id) }
+      })
+
+      for (const doc of toIndexPart) {
+        if (pipeline.cancelling) {
+          return
+        }
+        if (pipeline.cancelling) {
+          return
+        }
+
         const elasticDoc = createElasticDoc(doc)
-        updateDoc2Elastic(doc.attributes, elasticDoc)
-        this.checkIntegrity(elasticDoc)
-        bulk.push(elasticDoc)
-      } catch (err: any) {
-        const wasError = (doc as any).error !== undefined
+        try {
+          updateDoc2Elastic(doc.attributes, elasticDoc)
 
-        await pipeline.update(doc._id, false, { [docKey('error')]: JSON.stringify({ message: err.message, err }) })
-        if (wasError) {
+          // Include all child attributes
+          const childDocs = allChildDocs.filter((it) => it.attachedTo === doc._id)
+          if (childDocs.length > 0) {
+            for (const c of childDocs) {
+              const ctx = getFullTextContext(pipeline.hierarchy, c.objectClass)
+              if (ctx.parentPropagate ?? true) {
+                updateDoc2Elastic(c.attributes, elasticDoc, c._id)
+              }
+            }
+          }
+
+          if (doc.attachedToClass != null && doc.attachedTo != null) {
+            const propagate: Ref<Class<Doc>>[] = collectPropagate(pipeline, doc.attachedToClass)
+            if (propagate.some((it) => pipeline.hierarchy.isDerived(doc.objectClass, it))) {
+              // We need to include all parent content into this one.
+              const [parentDoc] = await this.dbStorage.findAll(
+                metrics.newChild('propagate', {}),
+                core.class.DocIndexState,
+                { _id: doc.attachedTo as Ref<DocIndexState> }
+              )
+              if (parentDoc !== undefined) {
+                updateDoc2Elastic(parentDoc.attributes, elasticDoc, parentDoc._id)
+              }
+            }
+          }
+
+          this.checkIntegrity(elasticDoc)
+          bulk.push(elasticDoc)
+        } catch (err: any) {
+          const wasError = (doc as any).error !== undefined
+
+          await pipeline.update(doc._id, false, { [docKey('error')]: JSON.stringify({ message: err.message, err }) })
+          if (wasError) {
+            continue
+          }
+          // Print error only first time, and update it in doc index
+          console.error(err)
           continue
         }
-        // Print error only first time, and update it in doc index
-        console.error(err)
-        continue
       }
-    }
-    // Perform bulk update to elastic
-    try {
-      await this.fulltextAdapter.updateMany(bulk)
-    } catch (err: any) {
-      console.error(err)
-    }
-    for (const doc of toIndex) {
-      await pipeline.update(doc._id, true, {})
+      // Perform bulk update to elastic
+      try {
+        await this.fulltextAdapter.updateMany(bulk)
+      } catch (err: any) {
+        console.error(err)
+      }
+      for (const doc of toIndex) {
+        await pipeline.update(doc._id, true, {})
+      }
     }
   }
 
@@ -156,14 +194,22 @@ export function createElasticDoc (upd: DocIndexState): IndexedDoc {
   }
   return doc
 }
-function updateDoc2Elastic (attributes: Record<string, any>, doc: IndexedDoc): IndexedDoc {
+function updateDoc2Elastic (attributes: Record<string, any>, doc: IndexedDoc, docIdOverride?: Ref<DocIndexState>): void {
   for (const [k, v] of Object.entries(attributes)) {
-    const { _class, attr, docId, extra } = extractDocKey(k)
+    if (v == null) {
+      continue
+    }
+    let { _class, attr, docId, extra } = extractDocKey(k)
+    if (attr.length === 0) {
+      continue
+    }
 
     let vv: any = v
-    if (extra.includes('base64')) {
+    if (vv != null && extra.includes('base64')) {
       vv = Buffer.from(v, 'base64').toString()
     }
+
+    docId = docIdOverride ?? docId
     if (docId === undefined) {
       doc[k] = vv
       continue
@@ -171,8 +217,10 @@ function updateDoc2Elastic (attributes: Record<string, any>, doc: IndexedDoc): I
     const docIdAttr = '|' + docKey(attr, { _class, extra: extra.filter((it) => it !== 'base64') })
     if (vv !== null) {
       // Since we replace array of values, we could ignore null
-      doc[docIdAttr] = [...(doc[docIdAttr] ?? []), vv]
+      doc[docIdAttr] = [...(doc[docIdAttr] ?? [])]
+      if (vv !== '') {
+        doc[docIdAttr].push(vv)
+      }
     }
   }
-  return doc
 }

@@ -9,6 +9,7 @@
     "skipLibCheck": true,
     "incremental": true,
     "esModuleInterop": true,
+    "declarationMap": true,
     "lib": [
       "esnext",
       "dom"

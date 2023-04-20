@@ -73,7 +73,7 @@
       />
     </div>
   </div>
-  <Scroller>
+  <Scroller horizontal>
     <div class="antiCard-content">
       <slot />
     </div>

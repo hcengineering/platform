@@ -80,3 +80,4 @@ tsdoc-metadata.json
 pods/front/dist
 *.cpuprofile
 *.pyc
+metrics.txt

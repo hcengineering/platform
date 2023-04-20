@@ -37,6 +37,7 @@ import {
   PlatformError,
   ReqId,
   UNAUTHORIZED,
+  broadcastEvent,
   getMetadata,
   readResponse,
   serialize,
@@ -152,6 +153,8 @@ class Connection implements ClientConnection {
 
   sockets = 0
 
+  incomingTimer: any
+
   private openConnection (): Promise<ClientSocket> {
     return new Promise((resolve, reject) => {
       // Use defined factory or browser default one.
@@ -196,6 +199,7 @@ class Connection implements ClientConnection {
           } else {
             promise.resolve(resp.result)
           }
+          void broadcastEvent(client.event.NetworkRequests, this.requests.size)
         } else {
           const tx = resp.result as Tx
           if (
@@ -214,6 +218,13 @@ class Connection implements ClientConnection {
             return
           }
           this.handler(tx)
+
+          clearTimeout(this.incomingTimer)
+          void broadcastEvent(client.event.NetworkRequests, this.requests.size + 1)
+
+          this.incomingTimer = setTimeout(() => {
+            void broadcastEvent(client.event.NetworkRequests, this.requests.size)
+          }, 500)
         }
       }
       websocket.onclose = (ev) => {
@@ -222,6 +233,7 @@ class Connection implements ClientConnection {
         if (!(this.websocket instanceof Promise)) {
           this.websocket = null
         }
+        void broadcastEvent(client.event.NetworkRequests, -1)
         reject(new Error('websocket error'))
       }
       websocket.onopen = () => {
@@ -237,6 +249,7 @@ class Connection implements ClientConnection {
       }
       websocket.onerror = (event: any) => {
         console.error('client websocket error:', socketId, event)
+        void broadcastEvent(client.event.NetworkRequests, -1)
         reject(new Error(`websocket error:${socketId}`))
       }
     })
@@ -251,6 +264,7 @@ class Connection implements ClientConnection {
     if (this.closed) {
       throw new PlatformError(unknownError('connection closed'))
     }
+
     const id = this.lastId++
     const promise = new RequestPromise(data.method, data.params)
 
@@ -280,6 +294,7 @@ class Connection implements ClientConnection {
       }, 500)
     }
     await sendData()
+    void broadcastEvent(client.event.NetworkRequests, this.requests.size)
     return await promise.promise
   }
 

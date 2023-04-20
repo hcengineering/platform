@@ -217,7 +217,7 @@ export function start (
     const stages: FullTextPipelineStage[] = []
 
     // Add regular stage to for indexable fields change tracking.
-    stages.push(new IndexedFieldStage(storage, fullText.newChild('fields', {})))
+    stages.push(new IndexedFieldStage(storage))
 
     // Obtain text content from storage(like minio) and use content adapter to convert files to text content.
     stages.push(new ContentRetrievalStage(storageAdapter, workspace, fullText.newChild('content', {}), contentAdapter))
@@ -232,16 +232,16 @@ export function start (
     // stages.push(retranslateStage)
 
     // Summary stage
-    const summaryStage = new FullSummaryStage()
+    const summaryStage = new FullSummaryStage(storage)
 
     stages.push(summaryStage)
 
     // Push all content to elastic search
-    const pushStage = new FullTextPushStage(adapter, workspace, fullText.newChild('push', {}))
+    const pushStage = new FullTextPushStage(storage, adapter, workspace)
     stages.push(pushStage)
 
     // OpenAI prepare stage
-    const openAIStage = new OpenAIEmbeddingsStage(adapter, fullText.newChild('embeddings', {}), workspace)
+    const openAIStage = new OpenAIEmbeddingsStage(adapter, workspace)
     // We depend on all available stages.
     openAIStage.require = stages.map((it) => it.stageId)
 

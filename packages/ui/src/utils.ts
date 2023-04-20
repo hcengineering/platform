@@ -16,6 +16,7 @@
 import { generateId } from '@hcengineering/core'
 import type { Metadata } from '@hcengineering/platform'
 import { setMetadata } from '@hcengineering/platform'
+import { writable } from 'svelte/store'
 import { Notification, NotificationPosition, NotificationSeverity, notificationsStore } from '.'
 import { AnyComponent, AnySvelteComponent } from './types'
 
@@ -99,3 +100,8 @@ export function tableToCSV (tableId: string, separator = ','): string {
   }
   return csv.join('\n')
 }
+
+/**
+ * @public
+ */
+export const networkStatus = writable<number>(0)

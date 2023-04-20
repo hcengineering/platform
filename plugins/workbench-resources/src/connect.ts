@@ -1,15 +1,27 @@
 import client from '@hcengineering/client'
 import contact from '@hcengineering/contact'
-import core, { Client, setCurrentAccount, Version, versionToString } from '@hcengineering/core'
+import core, { AccountRole, Client, setCurrentAccount, Version, versionToString } from '@hcengineering/core'
 import login, { loginId } from '@hcengineering/login'
-import { getMetadata, getResource, setMetadata } from '@hcengineering/platform'
+import { addEventListener, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import presentation, { refreshClient, setClient } from '@hcengineering/presentation'
-import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
+import ui, {
+  fetchMetadataLocalStorage,
+  getCurrentLocation,
+  navigate,
+  networkStatus,
+  setMetadataLocalStorage,
+  showPopup
+} from '@hcengineering/ui'
+import ServerStatistics from './components/ServerStatistics.svelte'
 
 export let versionError: string | undefined = ''
 
 let _token: string | undefined
 let _client: Client | undefined
+
+addEventListener(client.event.NetworkRequests, async (event: string, val: number) => {
+  networkStatus.set(val)
+})
 
 export async function connect (title: string): Promise<Client | undefined> {
   const loc = getCurrentLocation()
@@ -105,13 +117,13 @@ export async function connect (title: string): Promise<Client | undefined> {
     version = await _client.findOne<Version>(core.class.Version, {})
     console.log('Model version', version)
 
-    const requirdVersion = getMetadata(presentation.metadata.RequiredVersion)
-    if (requirdVersion !== undefined && version !== undefined) {
-      console.log('checking min model version', requirdVersion)
+    const requiredVersion = getMetadata(presentation.metadata.RequiredVersion)
+    if (requiredVersion !== undefined && version !== undefined) {
+      console.log('checking min model version', requiredVersion)
       const versionStr = versionToString(version)
 
-      if (version === undefined || requirdVersion !== versionStr) {
-        versionError = `${versionStr} => ${requirdVersion}`
+      if (version === undefined || requiredVersion !== versionStr) {
+        versionError = `${versionStr} => ${requiredVersion}`
         return undefined
       }
     }
@@ -128,6 +140,18 @@ export async function connect (title: string): Promise<Client | undefined> {
   // Update window title
   document.title = [ws, title].filter((it) => it).join(' - ')
   await setClient(_client)
+
+  if (me.role === AccountRole.Owner) {
+    setMetadata(ui.metadata.ShowNetwork, (evt: MouseEvent) => {
+      showPopup(
+        ServerStatistics,
+        {
+          endpoint: endpoint.replace(/^ws/g, 'http') + '/' + token
+        },
+        'top'
+      )
+    })
+  }
 
   return _client
 }

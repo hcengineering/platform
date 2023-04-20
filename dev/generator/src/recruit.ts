@@ -73,7 +73,7 @@ export async function generateContacts (
   await connection.close()
   ctx.end()
 
-  console.info(metricsToString(ctx.metrics, 'Client'))
+  console.info(metricsToString(ctx.metrics, 'Client', 70))
 }
 
 async function genVacansyApplicants (

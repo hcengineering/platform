@@ -208,6 +208,10 @@ export function createModel (builder: Builder): void {
     },
     gmail.action.WriteEmail
   )
+
+  builder.mixin(gmail.class.Message, core.class.Class, core.mixin.FullTextSearchContext, {
+    parentPropagate: false
+  })
 }
 
 export { gmailOperation } from './migration'

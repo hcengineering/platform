@@ -1117,19 +1117,19 @@ export function createModel (builder: Builder): void {
   // Allow to use fuzzy search for mixins
   builder.mixin(recruit.class.Vacancy, core.class.Class, core.mixin.FullTextSearchContext, {
     fullTextSummary: true,
-    propogate: []
+    propagate: []
   })
 
   builder.mixin(recruit.mixin.Candidate, core.class.Class, core.mixin.FullTextSearchContext, {
     fullTextSummary: true,
-    propogate: [recruit.class.Applicant]
+    propagate: [recruit.class.Applicant]
   })
 
   // Allow to use fuzzy search for mixins
   builder.mixin(recruit.class.Applicant, core.class.Class, core.mixin.FullTextSearchContext, {
     fullTextSummary: true,
     forceIndex: true,
-    propogate: []
+    propagate: []
   })
 
   createAction(builder, {

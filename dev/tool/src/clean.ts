@@ -152,7 +152,7 @@ export async function cleanRemovedTransactions (workspaceId: WorkspaceId, transa
       )
 
       count += toRemove.length
-      console.log('processed', count, removedDocs.total)
+      console.log('processed', count)
     }
 
     console.log('total docs with remove', count)

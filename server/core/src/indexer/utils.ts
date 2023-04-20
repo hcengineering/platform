@@ -41,6 +41,7 @@ import core, {
 } from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
 import plugin from '../plugin'
+import { FullTextPipeline } from './types'
 /**
  * @public
  */
@@ -234,6 +235,38 @@ export function getFullTextContext (
   return {
     fullTextSummary: false,
     forceIndex: false,
-    propogate: []
+    propagate: []
   }
+}
+
+/**
+ * @public
+ */
+export function collectPropagate (pipeline: FullTextPipeline, objectClass: Ref<Class<Doc>>): Ref<Class<Doc>>[] {
+  const desc = new Set(pipeline.hierarchy.getDescendants(objectClass))
+  const propagate = new Set<Ref<Class<Doc>>>()
+
+  const ftContext = getFullTextContext(pipeline.hierarchy, objectClass)
+  ftContext?.propagate?.forEach((it) => propagate.add(it))
+
+  // Add all parent mixins as well
+  for (const a of pipeline.hierarchy.getAncestors(objectClass)) {
+    const ftContext = getFullTextContext(pipeline.hierarchy, a)
+    ftContext?.propagate?.forEach((it) => propagate.add(it))
+
+    const dsca = pipeline.hierarchy.getDescendants(a)
+    for (const dd of dsca) {
+      if (pipeline.hierarchy.isMixin(dd)) {
+        desc.add(dd)
+      }
+    }
+  }
+
+  for (const d of desc) {
+    if (pipeline.hierarchy.isMixin(d)) {
+      const mContext = getFullTextContext(pipeline.hierarchy, d)
+      mContext?.propagate?.forEach((it) => propagate.add(it))
+    }
+  }
+  return Array.from(propagate.values())
 }

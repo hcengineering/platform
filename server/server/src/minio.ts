@@ -23,6 +23,7 @@ import core, {
   FindOptions,
   FindResult,
   Hierarchy,
+  IndexingConfiguration,
   ModelDb,
   Ref,
   Space,
@@ -50,6 +51,8 @@ class MinioBlobAdapter implements DbAdapter {
   }
 
   async init (model: Tx[]): Promise<void> {}
+
+  async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {}
 
   async close (): Promise<void> {}
 

@@ -330,47 +330,52 @@ export function start (
             }
           : {}
 
-      https.get(url, options, (response) => {
-        console.log('status', response.statusCode)
-        if (response.statusCode !== 200) {
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          res.status(500).send(`server returned ${response.statusCode}`)
-          return
-        }
-        const id = uuid()
-        const contentType = response.headers['content-type']
-        const meta = {
-          'Content-Type': contentType
-        }
-        const data: Buffer[] = []
-        response
-          .on('data', function (chunk) {
-            data.push(chunk)
-          })
-          .on('end', function () {
-            const buffer = Buffer.concat(data)
-            config.minio
-              .put(payload.workspace, id, buffer, 0, meta)
-              .then(async (objInfo) => {
-                console.log('uploaded uuid', id, objInfo.etag)
+      https
+        .get(url, options, (response) => {
+          console.log('status', response.statusCode)
+          if (response.statusCode !== 200) {
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            res.status(500).send(`server returned ${response.statusCode}`)
+            return
+          }
+          const id = uuid()
+          const contentType = response.headers['content-type']
+          const meta = {
+            'Content-Type': contentType
+          }
+          const data: Buffer[] = []
+          response
+            .on('data', function (chunk) {
+              data.push(chunk)
+            })
+            .on('end', function () {
+              const buffer = Buffer.concat(data)
+              config.minio
+                .put(payload.workspace, id, buffer, 0, meta)
+                .then(async (objInfo) => {
+                  console.log('uploaded uuid', id, objInfo.etag)
 
-                res.status(200).send({
-                  id,
-                  contentType,
-                  size: buffer.length
+                  res.status(200).send({
+                    id,
+                    contentType,
+                    size: buffer.length
+                  })
                 })
-              })
-              .catch((err) => {
-                if (err !== null) {
-                  console.log('minio putObject error', err)
-                  res.status(500).send(err)
-                }
-              })
-          })
-          .on('error', function (err) {
-            res.status(500).send(err)
-          })
-      })
+                .catch((err) => {
+                  if (err !== null) {
+                    console.log('minio putObject error', err)
+                    res.status(500).send(err)
+                  }
+                })
+            })
+            .on('error', function (err) {
+              res.status(500).send(err)
+            })
+        })
+        .on('error', (e) => {
+          console.error(e)
+          res.status(500).send(e)
+        })
     } catch (error) {
       console.log(error)
       res.status(500).send()

@@ -8,6 +8,7 @@
     "resolveJsonModule": true,
     "types": ["heft-jest"],
     "skipLibCheck": true,
-    "incremental": true
+    "incremental": true,
+    "declarationMap": true
   }
 }

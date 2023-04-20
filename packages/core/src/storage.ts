@@ -121,6 +121,9 @@ export type FindOptions<T extends Doc> = {
   sort?: SortingQuery<T>
   lookup?: Lookup<T>
   projection?: Projection<T>
+
+  // If specified total will be returned
+  total?: boolean
 }
 
 /**

@@ -16,20 +16,20 @@
 import core, {
   AttachedDoc,
   Class,
+  DOMAIN_DOC_INDEX_STATE,
   Doc,
   DocIndexState,
   DocumentQuery,
   DocumentUpdate,
-  DOMAIN_DOC_INDEX_STATE,
   Hierarchy,
   MeasureContext,
   ModelDb,
   Ref,
   ServerStorage,
-  setObjectValue,
   TxFactory,
   WorkspaceId,
-  _getOperator
+  _getOperator,
+  setObjectValue
 } from '@hcengineering/core'
 import { DbAdapter } from '../adapter'
 import type { IndexedDoc } from '../types'
@@ -91,13 +91,13 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   }
 
   async cancel (): Promise<void> {
-    console.log('Cancel indexing', this.indexId, this.workspace)
+    console.log(this.workspace.name, 'Cancel indexing', this.indexId)
     this.cancelling = true
     clearTimeout(this.skippedReiterationTimeout)
     this.triggerIndexing()
     await this.indexing
     await this.flush(true)
-    console.log('Indexing canceled', this.indexId, this.workspace)
+    console.log(this.workspace.name, 'Indexing canceled', this.indexId)
   }
 
   async markRemove (doc: DocIndexState): Promise<void> {
@@ -130,7 +130,15 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   async flush (force = false): Promise<void> {
     if (this.pending.size > 0 && (this.pending.size >= 50 || force)) {
       // Push all pending changes to storage.
-      await this.storage.update(DOMAIN_DOC_INDEX_STATE, this.pending)
+      try {
+        await this.storage.update(DOMAIN_DOC_INDEX_STATE, this.pending)
+      } catch (err: any) {
+        console.error(err)
+        // Go one by one.
+        for (const o of this.pending) {
+          await this.storage.update(DOMAIN_DOC_INDEX_STATE, new Map([o]))
+        }
+      }
       this.pending.clear()
     }
   }
@@ -204,7 +212,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     if (udoc !== undefined && this.currentStage !== undefined) {
       const stageId = this.currentStage.stageId
       // Update current stage, value
-      update.stages = { ...(udoc.stages ?? {}) }
+      update.stages = this.filterCurrentStages(udoc)
       update.stages[stageId] = mark
 
       if (this.currentStage.clearExcept !== undefined) {
@@ -218,7 +226,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       // Filter unsupported stages
       udoc.stages = update.stages
 
-      this.stats[stageId] = (this.stats[stageId] ?? 0) + 1
+      this.currentStages[stageId] = (this.currentStages[stageId] ?? 0) + 1
       this.stageChanged++
     }
 
@@ -234,7 +242,17 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
   triggerIndexing = (): void => {}
   skippedReiterationTimeout: any
-  stats: Record<string, number> = {}
+  currentStages: Record<string, number> = {}
+
+  private filterCurrentStages (udoc: DocIndexState): Record<string, string | boolean> {
+    const result: Record<string, string | boolean> = {}
+    for (const [k, v] of Object.entries(udoc.stages ?? {})) {
+      if (this.currentStages[k] !== undefined) {
+        result[k] = v
+      }
+    }
+    return result
+  }
 
   private async stageUpdate (udoc: DocIndexState, update: DocumentUpdate<DocIndexState>): Promise<void> {
     for (const u of this.currentStage?.updateFields ?? []) {
@@ -255,27 +273,56 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   broadcastClasses = new Set<Ref<Class<Doc>>>()
   updateBroadcast: any = undefined
 
+  indexesCreated = false
+
   async doIndexing (): Promise<void> {
     // Check model is upgraded to support indexer.
+
+    if (!this.indexesCreated) {
+      this.indexesCreated = true
+      // We need to be sure we have individual indexes per stage.
+      for (const st of this.stages) {
+        await this.storage.createIndexes(DOMAIN_DOC_INDEX_STATE, {
+          indexes: [
+            {
+              ['stages.' + st.stageId]: 1
+            },
+            {
+              _class: 1,
+              _id: 1,
+              ['stages.' + st.stageId]: 1,
+              removed: 1
+            }
+          ]
+        })
+      }
+    }
 
     try {
       this.hierarchy.getClass(core.class.DocIndexState)
     } catch (err: any) {
-      console.log('Models is not upgraded to support indexer', this.indexId, this.workspace)
+      console.log(this.workspace.name, 'Models is not upgraded to support indexer', this.indexId)
       return
     }
-    await this.initStates()
-    while (!this.cancelling) {
-      await this.initializeStages()
-      await this.processRemove()
+    await this.metrics.with('init-states', {}, async () => await this.initStates())
 
-      console.log('Indexing:', this.indexId, this.workspace)
-      const _classes = await rateLimitter.exec(() => this.processIndex())
+    while (!this.cancelling) {
+      await this.metrics.with('initialize-stages', {}, async () => await this.initializeStages())
+
+      await this.metrics.with('process-remove', {}, async () => await this.processRemove())
+
+      const _classes = await rateLimitter.exec(() => {
+        return this.metrics.with('init-stages', {}, async () => await this.processIndex())
+      })
+
+      // Also update doc index state queries.
+      _classes.push(core.class.DocIndexState)
+
       _classes.forEach((it) => this.broadcastClasses.add(it))
 
       if (this.toIndex.size === 0 || this.stageChanged === 0) {
         if (this.toIndex.size === 0) {
-          console.log(`${this.workspace.name} Indexing complete`, this.indexId)
+          console.log(this.workspace.name, 'Indexing complete', this.indexId)
         }
         if (!this.cancelling) {
           // We need to send index update event
@@ -300,7 +347,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         }
       }
     }
-    console.log('Exit indexer', this.indexId, this.workspace)
+    console.log(this.workspace.name, 'Exit indexer', this.indexId)
   }
 
   private async processIndex (): Promise<Ref<Class<Doc>>[]> {
@@ -316,30 +363,36 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           if (!st.enabled) {
             break
           }
-          await this.flush(true)
+          await this.metrics.with('flush', {}, async () => await this.flush(true))
           const toSkip = Array.from(this.skipped.entries())
             .filter((it) => it[1] > 3)
             .map((it) => it[0])
 
-          const result = await this.storage.findAll(
-            core.class.DocIndexState,
-            {
-              [`stages.${st.stageId}`]: { $nin: [st.stageValue] },
-              _id: { $nin: toSkip },
-              removed: false
-            },
-            {
-              limit: globalIndexer.processingSize,
-              sort: {
-                modifiedOn: 1
-              }
-            }
+          const result = await this.metrics.with(
+            'get-to-index',
+            {},
+            async () =>
+              await this.storage.findAll(
+                core.class.DocIndexState,
+                {
+                  [`stages.${st.stageId}`]: { $ne: st.stageValue },
+                  _id: { $nin: toSkip },
+                  removed: false
+                },
+                {
+                  limit: globalIndexer.processingSize,
+                  sort: {
+                    _id: 1
+                  }
+                }
+              )
           )
 
           if (result.length > 0) {
             console.log(
-              `Fulltext: Indexing ${this.indexId} ${this.workspace.name} ${st.stageId}`,
-              Object.entries(this.stats)
+              this.workspace.name,
+              `Full text: Indexing ${this.indexId} ${st.stageId}`,
+              Object.entries(this.currentStages)
                 .map((it) => `${it[0]}:${it[1]}`)
                 .join(' '),
               result.total
@@ -359,16 +412,25 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           if (toIndex.length > 0) {
             // Do Indexing
             this.currentStage = st
-            await st.collect(toIndex, this)
+
+            await this.metrics.with(
+              'collect',
+              { collector: st.stageId },
+              async (ctx) => await st.collect(toIndex, this, ctx)
+            )
+
             toIndex.forEach((it) => _classUpdate.add(it.objectClass))
 
             // go with next stages if they accept it
-
             for (const nst of this.stages.slice(idx)) {
               const toIndex2 = this.matchStates(nst)
               if (toIndex2.length > 0) {
                 this.currentStage = nst
-                await nst.collect(toIndex2, this)
+                await this.metrics.with(
+                  'collect',
+                  { collector: nst.stageId },
+                  async (ctx) => await nst.collect(toIndex2, this, ctx)
+                )
               }
             }
           } else {
@@ -443,19 +505,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   }
 
   private async initStates (): Promise<void> {
-    const statistics = await this.storage.findAll(core.class.DocIndexState, {}, { projection: { stages: 1 } })
-    this.stats = {}
-    const allStageIds = new Set(this.stages.map((it) => it.stageId))
-
+    this.currentStages = {}
     for (const st of this.stages) {
-      this.stats[st.stageId] = 0
-    }
-    for (const st of statistics) {
-      for (const [s, v] of Object.entries(st.stages ?? {})) {
-        if (v !== false && allStageIds.has(s)) {
-          this.stats[s] = (this.stats[s] ?? 0) + 1
-        }
-      }
+      this.currentStages[st.stageId] = 0
     }
   }
 
@@ -480,7 +532,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       }
 
       if (!isClassIndexable(this.hierarchy, c)) {
-        // No need, since no indixable fields or attachments.
+        // No need, since no indexable fields or attachments.
         continue
       }
 
@@ -490,6 +542,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       ).map((it) => it._id)
 
       while (true) {
+        if (this.cancelling) {
+          return
+        }
         const newDocs: DocIndexState[] = (
           await dbStorage.findAll<Doc>(
             this.metrics,
@@ -528,7 +583,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       await this.storage.clean(DOMAIN_DOC_INDEX_STATE, docIds)
     }
 
-    // Clean for non existing clases
+    // Clean for non existing classes
 
     const unknownClasses = (
       await this.storage.findAll(

@@ -14,6 +14,7 @@
 //
 
 import core, {
+  metricsAggregate,
   generateId,
   MeasureContext,
   Ref,
@@ -26,7 +27,7 @@ import core, {
 import { readRequest, Response, serialize, UNAUTHORIZED, unknownError } from '@hcengineering/platform'
 import type { Pipeline, SessionContext } from '@hcengineering/server-core'
 import { decodeToken, Token } from '@hcengineering/server-token'
-import { createServer, IncomingMessage } from 'http'
+import { createServer, IncomingMessage, ServerResponse } from 'http'
 import WebSocket, { RawData, WebSocketServer } from 'ws'
 import { BroadcastCall, PipelineFactory, Session } from './types'
 
@@ -51,7 +52,7 @@ interface Workspace {
 }
 
 class SessionManager {
-  private readonly workspaces = new Map<string, Workspace>()
+  readonly workspaces = new Map<string, Workspace>()
 
   constructor (readonly sessionFactory: (token: Token, pipeline: Pipeline, broadcast: BroadcastCall) => Session) {}
 
@@ -80,7 +81,7 @@ class SessionManager {
     }
 
     if (token.extra?.model === 'upgrade') {
-      if (LOGGING_ENABLED) console.log('reloading workspace', JSON.stringify(token))
+      if (LOGGING_ENABLED) console.log(token.workspace.name, 'reloading workspace', JSON.stringify(token))
       this.upgradeId = sessionId
       // If upgrade client is used.
       // Drop all existing clients
@@ -92,7 +93,7 @@ class SessionManager {
         workspace.sessions = []
         workspace.upgrade = token.extra?.model === 'upgrade'
       }
-      if (LOGGING_ENABLED) console.log('no sessions for workspace', wsString)
+      if (LOGGING_ENABLED) console.log(token.workspace.name, 'no sessions for workspace', wsString)
       // Re-create pipeline.
       workspace.pipeline = pipelineFactory(ctx, token.workspace, true, (tx) =>
         this.broadcastAll(workspace as Workspace, tx)
@@ -117,6 +118,7 @@ class SessionManager {
       if (existingSession !== undefined) {
         if (LOGGING_ENABLED) {
           console.log(
+            token.workspace.name,
             'found existing session',
             token.email,
             existingSession[0].sessionId,
@@ -198,7 +200,7 @@ class SessionManager {
     code: number,
     reason: string
   ): Promise<void> {
-    if (LOGGING_ENABLED) console.log(`closing websocket, code: ${code}, reason: ${reason}`)
+    if (LOGGING_ENABLED) console.log(workspaceId.name, `closing websocket, code: ${code}, reason: ${reason}`)
     const wsid = toWorkspaceString(workspaceId)
     const workspace = this.workspaces.get(wsid)
     if (workspace === undefined) {
@@ -217,7 +219,7 @@ class SessionManager {
       }
       if (workspace.sessions.length === 0) {
         const wsUID = workspace.id
-        if (LOGGING_ENABLED) console.log('no sessions for workspace', wsid, wsUID)
+        if (LOGGING_ENABLED) console.log(workspaceId.name, 'no sessions for workspace', wsid, wsUID)
 
         const waitAndClose = async (workspace: Workspace): Promise<void> => {
           try {
@@ -231,7 +233,7 @@ class SessionManager {
             if (LOGGING_ENABLED) console.timeLog(workspaceId.name, 'Closed workspace', wsUID)
           } catch (err: any) {
             this.workspaces.delete(wsid)
-            if (LOGGING_ENABLED) console.error(err)
+            if (LOGGING_ENABLED) console.error(workspaceId.name, err)
           }
         }
         workspace.closing = waitAndClose(workspace)
@@ -305,7 +307,7 @@ class SessionManager {
       console.error(new Error('internal: cannot find sessions'))
       return
     }
-    if (LOGGING_ENABLED) console.log(`server broadcasting to ${workspace.sessions.length} clients...`)
+    if (LOGGING_ENABLED) console.log(workspaceId.name, `server broadcasting to ${workspace.sessions.length} clients...`)
     const msg = serialize(resp)
     for (const session of workspace.sessions) {
       if (session[0] !== from) {
@@ -336,7 +338,7 @@ async function handleRequest<S extends Session> (
     ws.close(0, 'upgrade')
     return
   }
-  const userCtx = ctx.newChild(service.getUser(), { userId: service.getUser() }) as SessionContext
+  const userCtx = ctx.newChild('client', { workspace }) as SessionContext
   userCtx.sessionId = service.sessionInstanceId ?? ''
   const f = (service as any)[request.method]
   let timeout: any
@@ -449,14 +451,19 @@ export function start (
       }
       // remove session after 1seconds, give a time to reconnect.
       if (code === 1000) {
-        if (LOGGING_ENABLED) console.log(`client "${token.email}" closed normally`)
+        if (LOGGING_ENABLED) console.log(token.workspace.name, `client "${token.email}" closed normally`)
         void sessions.close(ctx, ws, token.workspace, code, reason.toString())
       } else {
         if (LOGGING_ENABLED) {
-          console.log(`client "${token.email}" closed abnormally, waiting reconnect`, code, reason.toString())
+          console.log(
+            token.workspace.name,
+            `client "${token.email}" closed abnormally, waiting reconnect`,
+            code,
+            reason.toString()
+          )
         }
         session.closeTimeout = setTimeout(() => {
-          if (LOGGING_ENABLED) console.log(`client "${token.email}" force closed`)
+          if (LOGGING_ENABLED) console.log(token.workspace.name, `client "${token.email}" force closed`)
           void sessions.close(ctx, ws, token.workspace, code, reason.toString())
         }, 10000)
       }
@@ -469,6 +476,36 @@ export function start (
   })
 
   const server = createServer()
+
+  server.on('request', (request: IncomingMessage, response: ServerResponse) => {
+    const url = new URL('http://localhost' + (request.url ?? ''))
+
+    const token = url.pathname.substring(1)
+    try {
+      const payload = decodeToken(token ?? '')
+      console.log(payload.workspace, 'statistics request')
+
+      response.writeHead(200, {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      })
+      const data = {
+        metrics: metricsAggregate((ctx as any).metrics),
+        activeSessions: {}
+      }
+      for (const [k, v] of sessions.workspaces) {
+        ;(data.activeSessions as any)[k] = v.sessions.length
+      }
+      const json = JSON.stringify(data)
+      response.end(json)
+    } catch (err) {
+      response.writeHead(404, {})
+      response.end()
+    }
+  })
+
   server.on('upgrade', (request: IncomingMessage, socket: any, head: Buffer) => {
     const url = new URL('http://localhost' + (request.url ?? ''))
     const token = url.pathname.substring(1)
@@ -476,7 +513,7 @@ export function start (
     try {
       const payload = decodeToken(token ?? '')
       const sessionId = url.searchParams.get('sessionId')
-      if (LOGGING_ENABLED) console.log('client connected with payload', payload, sessionId)
+      if (LOGGING_ENABLED) console.log(payload.workspace.name, 'client connected with payload', payload, sessionId)
 
       if (payload.workspace.productId !== productId) {
         throw new Error('Invalid workspace product')

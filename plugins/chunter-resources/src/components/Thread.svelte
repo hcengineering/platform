@@ -79,7 +79,8 @@
       lookup,
       sort: {
         createOn: SortingOrder.Descending
-      }
+      },
+      total: true
     }
     if (!showAll) {
       options.limit = 4

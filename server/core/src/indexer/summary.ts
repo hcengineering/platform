@@ -24,19 +24,21 @@ import core, {
   Hierarchy,
   IndexStageState,
   isFullTextAttribute,
+  MeasureContext,
   Ref,
+  ServerStorage,
   Storage
 } from '@hcengineering/core'
 import { translate } from '@hcengineering/platform'
 import { convert } from 'html-to-text'
 import { IndexedDoc } from '../types'
 import { contentStageId, DocUpdateHandler, fieldStateId, FullTextPipeline, FullTextPipelineStage } from './types'
-import { getFullTextContext, loadIndexStageStage } from './utils'
+import { collectPropagate, getFullTextContext, loadIndexStageStage } from './utils'
 
 /**
  * @public
  */
-export const summaryStageId = 'sum-v3a'
+export const summaryStageId = 'sum-v4'
 
 /**
  * @public
@@ -60,6 +62,11 @@ export class FullSummaryStage implements FullTextPipelineStage {
 
   indexState?: IndexStageState
 
+  // Summary should be not a bigger what 1mb of data.
+  summaryLimit = 1024 * 1024
+
+  constructor (private readonly dbStorage: ServerStorage) {}
+
   async initialize (storage: Storage, pipeline: FullTextPipeline): Promise<void> {
     const indexable = (
       await pipeline.model.findAll(core.class.Class, { [core.mixin.FullTextSearchContext + '.fullTextSummary']: true })
@@ -80,29 +87,79 @@ export class FullSummaryStage implements FullTextPipelineStage {
     return { docs: [], pass: true }
   }
 
-  async collect (toIndex: DocIndexState[], pipeline: FullTextPipeline): Promise<void> {
-    for (const doc of toIndex) {
-      if (pipeline.cancelling) {
-        return
+  async collect (toIndex: DocIndexState[], pipeline: FullTextPipeline, metrics: MeasureContext): Promise<void> {
+    const part = [...toIndex]
+    while (part.length > 0) {
+      const toIndexPart = part.splice(0, 1000)
+
+      const allChildDocs = await this.dbStorage.findAll(
+        metrics.newChild('fulltext-find-child', {}),
+        core.class.DocIndexState,
+        { attachedTo: { $in: toIndexPart.map((it) => it._id) } }
+      )
+
+      for (const doc of toIndexPart) {
+        if (pipeline.cancelling) {
+          return
+        }
+
+        const needIndex = isIndexingRequired(pipeline, doc)
+
+        // No need to index this class, mark embeddings as empty ones.
+        if (!needIndex) {
+          await pipeline.update(doc._id, this.stageValue, {})
+          continue
+        }
+
+        const update: DocumentUpdate<DocIndexState> = {}
+
+        let embeddingText = await extractIndexedValues(doc, pipeline.hierarchy, {
+          matchExtra: this.matchExtra,
+          fieldFilter: this.fieldFilter
+        })
+
+        // Include all child attributes
+        const childDocs = allChildDocs.filter((it) => it.attachedTo === doc._id)
+        if (childDocs.length > 0) {
+          for (const c of childDocs) {
+            const ctx = getFullTextContext(pipeline.hierarchy, c.objectClass)
+            if (ctx.parentPropagate ?? true) {
+              if (embeddingText.length > this.summaryLimit) {
+                break
+              }
+              embeddingText += await extractIndexedValues(c, pipeline.hierarchy, {
+                matchExtra: this.matchExtra,
+                fieldFilter: this.fieldFilter
+              })
+            }
+          }
+        }
+
+        if (doc.attachedToClass != null && doc.attachedTo != null) {
+          const propagate: Ref<Class<Doc>>[] = collectPropagate(pipeline, doc.attachedToClass)
+          if (propagate.some((it) => pipeline.hierarchy.isDerived(doc.objectClass, it))) {
+            // We need to include all parent content into this one.
+            const [parentDoc] = await this.dbStorage.findAll(
+              metrics.newChild('propagate', {}),
+              core.class.DocIndexState,
+              { _id: doc.attachedTo as Ref<DocIndexState> }
+            )
+            if (parentDoc !== undefined) {
+              if (embeddingText.length > this.summaryLimit) {
+                break
+              }
+              embeddingText += await extractIndexedValues(parentDoc, pipeline.hierarchy, {
+                matchExtra: this.matchExtra,
+                fieldFilter: this.fieldFilter
+              })
+            }
+          }
+        }
+
+        update.fullSummary = embeddingText
+
+        await pipeline.update(doc._id, this.stageValue, update)
       }
-
-      const needIndex = isIndexingRequired(pipeline, doc)
-
-      // No need to index this class, mark embeddings as empty ones.
-      if (!needIndex) {
-        await pipeline.update(doc._id, this.stageValue, {})
-        continue
-      }
-
-      const update: DocumentUpdate<DocIndexState> = {}
-
-      const embeddingText = await extractIndexedValues(doc, pipeline.hierarchy, {
-        matchExtra: this.matchExtra,
-        fieldFilter: this.fieldFilter
-      })
-      update.fullSummary = embeddingText
-
-      await pipeline.update(doc._id, this.stageValue, update)
     }
   }
 
@@ -137,8 +194,14 @@ export async function extractIndexedValues (
   const currentReplacement: Record<string, string> = {}
 
   for (const [k, v] of Object.entries(doc.attributes)) {
+    if (v == null) {
+      continue
+    }
     try {
       const { _class, attr, extra, docId } = extractDocKey(k)
+      if (docId !== undefined) {
+        continue
+      }
 
       let sourceContent = `${v as string}`.trim()
       if (extra.includes('base64')) {
@@ -181,7 +244,7 @@ export async function extractIndexedValues (
         continue
       }
       if (keyAttr.type._class === core.class.TypeAttachment && extra.length === 0) {
-        // Skipt attachment id values.
+        // Skip attachment id values.
         continue
       }
 

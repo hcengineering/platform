@@ -20,7 +20,8 @@ import {
   AttachedDoc,
   IndexingConfiguration,
   Class,
-  systemAccountEmail
+  systemAccountEmail,
+  DocIndexState
 } from '@hcengineering/core'
 import { Builder } from '@hcengineering/model'
 import core from './component'
@@ -153,6 +154,32 @@ export function createModel (builder: Builder): void {
           _class: 1,
           _id: 1,
           modifiedOn: 1
+        }
+      ]
+    }
+  )
+
+  builder.mixin<Class<DocIndexState>, IndexingConfiguration<TxCollectionCUD<Doc, AttachedDoc>>>(
+    core.class.DocIndexState,
+    core.class.Class,
+    core.mixin.IndexConfiguration,
+    {
+      indexes: [
+        {
+          _class: 1,
+          stages: 1,
+          _id: 1,
+          modifiedOn: 1
+        },
+        {
+          _class: 1,
+          _id: 1,
+          modifiedOn: 1
+        },
+        {
+          _class: 1,
+          _id: 1,
+          objectClass: 1
         }
       ]
     }

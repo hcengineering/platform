@@ -68,9 +68,6 @@
   $: selected = !Array.isArray(value) ? ('attachedTo' in value ? value.attachedTo : undefined) : undefined
   $: ignoreObjects = !Array.isArray(value) ? ('_id' in value ? [value._id] : []) : undefined
   $: docQuery = {
-    '$lookup.status.category': {
-      $nin: [tracker.issueStatusCategory.Completed, tracker.issueStatusCategory.Canceled]
-    },
     'parents.parentId': {
       $nin: [
         ...new Set(
