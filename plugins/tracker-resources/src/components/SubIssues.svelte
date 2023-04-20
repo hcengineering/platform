@@ -36,7 +36,9 @@
   let lastProject = project
 
   let isCollapsed = false
-  let isCreating = $draftsStore[tracker.ids.IssueDraftChild] !== undefined
+  $: isCreatingMode = $draftsStore[tracker.ids.IssueDraftChild] !== undefined
+  let isManualCreating = false
+  $: isCreating = isCreatingMode || isManualCreating
 
   async function handleIssueSwap (ev: CustomEvent<{ fromIndex: number; toIndex: number }>) {
     if (subIssues) {
@@ -170,7 +172,13 @@
     }
   }
 
+  export function removeChildDraft () {
+    draftChild?.removeDraft()
+  }
+
   $: hasSubIssues = subIssues.length > 0
+
+  let draftChild: DraftIssueChildEditor
 </script>
 
 <div class="flex-between clear-mins">
@@ -200,7 +208,7 @@
     showTooltip={{ label: tracker.string.AddSubIssues, props: { subIssues: 1 } }}
     on:click={() => {
       closeTooltip()
-      isCreating = true
+      isManualCreating = true
       isCollapsed = false
     }}
   />
@@ -224,12 +232,13 @@
 {#if isCreating && project}
   <ExpandCollapse isExpanded={!isCollapsed} on:changeContent>
     <DraftIssueChildEditor
+      bind:this={draftChild}
       {project}
       {component}
       {sprint}
       {shouldSaveDraft}
       on:close={() => {
-        isCreating = false
+        isManualCreating = false
       }}
       on:create={(evt) => {
         if (subIssues === undefined) {

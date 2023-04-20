@@ -68,7 +68,6 @@
   let refInput: StyledTextBox
 
   let inputFile: HTMLInputElement
-  let draftAttachments: Record<Ref<Attachment>, Attachment> | undefined = undefined
   let saved = false
 
   const client = getClient()
@@ -78,11 +77,14 @@
   const newAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
   const removedAttachments: Set<Attachment> = new Set<Attachment>()
 
-  $: objectId && draftKey && updateAttachments(objectId, draftKey)
+  $: draftKey && updateAttachments(objectId, $draftsStore[draftKey])
 
-  async function updateAttachments (objectId: Ref<Doc>, draftKey: string) {
-    draftAttachments = $draftsStore[draftKey]
+  async function updateAttachments (
+    objectId: Ref<Doc> | undefined,
+    draftAttachments: Record<Ref<Attachment>, Attachment> | undefined
+  ) {
     if (draftAttachments && shouldSaveDraft) {
+      query.unsubscribe()
       attachments.clear()
       newAttachments.clear()
       Object.entries(draftAttachments).map((file) => {
@@ -93,7 +95,8 @@
       })
       originalAttachments.clear()
       removedAttachments.clear()
-    } else {
+      attachments = attachments
+    } else if (objectId) {
       query.query(
         attachment.class.Attachment,
         {
@@ -102,6 +105,7 @@
         (res) => {
           originalAttachments = new Set(res.map((p) => p._id))
           attachments = toIdMap(res)
+          dispatch('attach', { action: 'saved', value: attachments.size })
         }
       )
     }
@@ -109,7 +113,7 @@
 
   async function saveDraft () {
     if (draftKey && shouldSaveDraft) {
-      draftAttachments = Object.fromEntries(attachments)
+      const draftAttachments = Object.fromEntries(attachments)
       DraftController.save(draftKey, draftAttachments)
     }
   }
@@ -138,6 +142,7 @@
       attachments = attachments
       saved = false
       saveDraft()
+      dispatch('attach', { action: 'saved', value: attachments.size })
       dispatch('attached', _id)
     } catch (err: any) {
       setPlatformStatus(unknownError(err))
@@ -253,10 +258,6 @@
     removeDraft(false)
     newAttachments.clear()
     removedAttachments.clear()
-  }
-
-  $: if (attachments.size || newAttachments.size || removedAttachments.size) {
-    dispatch('attach', { action: 'saved', value: attachments.size })
   }
 
   function isAllowedPaste (evt: ClipboardEvent) {
