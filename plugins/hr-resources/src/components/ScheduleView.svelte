@@ -47,6 +47,7 @@
       : getEndDate(currentDate.getFullYear(), currentDate.getMonth())
 
   $: departments = [department, ...getDescendants(department, descendants)]
+  $: staffIdsForOpenedDepartments = staff.filter((p) => departments.includes(p.department)).map((p) => p._id)
 
   const lq = createQuery()
   const typeQuery = createQuery()
@@ -90,13 +91,13 @@
   let departmentStaff: Staff[]
   let editableList: Ref<Employee>[] = []
 
-  function update (departments: Ref<Department>[], startDate: Date, endDate: Date) {
+  function update (staffIdsForOpenedDepartments: Ref<Staff>[], startDate: Date, endDate: Date) {
     lq.query(
       hr.class.Request,
       {
         'tzDueDate.year': { $gte: startDate.getFullYear() },
         'tzDate.year': { $lte: endDate.getFullYear() },
-        space: { $in: departments }
+        attachedTo: { $in: staffIdsForOpenedDepartments },
       },
       (res) => {
         requests = res
@@ -104,10 +105,10 @@
     )
   }
 
-  $: update(departments, startDate, endDate)
+  $: update(staffIdsForOpenedDepartments, startDate, endDate)
 
-  function updateRequest (reqests: Request[], startDate: Date, endDate: Date) {
-    const res = reqests.filter(
+  function updateRequest (requests: Request[], startDate: Date, endDate: Date) {
+    const res = requests.filter(
       (r) => fromTzDate(r.tzDueDate) >= startDate.getTime() && fromTzDate(r.tzDate) <= endDate.getTime()
     )
     employeeRequests.clear()
