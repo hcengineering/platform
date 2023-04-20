@@ -19,7 +19,6 @@
   import presentation from '..'
   import { getFileUrl } from '../utils'
   import Download from './icons/Download.svelte'
-  import IndexedDocumentPreview from './IndexedDocumentPreview.svelte'
 
   export let file: string
   export let name: string
@@ -79,8 +78,6 @@
       <img class="img-fit" src={getFileUrl(file)} alt="" />
     </div>
     <div class="space" />
-  {:else if contentType && contentType.startsWith('application/msword')}
-    <IndexedDocumentPreview objectId={value._id} noPanel />
   {:else}
     <iframe
       class="pdfviewer-content"

@@ -33,7 +33,7 @@ import { translate } from '@hcengineering/platform'
 import { convert } from 'html-to-text'
 import { IndexedDoc } from '../types'
 import { contentStageId, DocUpdateHandler, fieldStateId, FullTextPipeline, FullTextPipelineStage } from './types'
-import { getFullTextContext, loadIndexStageStage } from './utils'
+import { collectPropagate, getFullTextContext, loadIndexStageStage } from './utils'
 
 /**
  * @public
@@ -128,6 +128,27 @@ export class FullSummaryStage implements FullTextPipelineStage {
                 break
               }
               embeddingText += await extractIndexedValues(c, pipeline.hierarchy, {
+                matchExtra: this.matchExtra,
+                fieldFilter: this.fieldFilter
+              })
+            }
+          }
+        }
+
+        if (doc.attachedToClass != null && doc.attachedTo != null) {
+          const propagate: Ref<Class<Doc>>[] = collectPropagate(pipeline, doc.attachedToClass)
+          if (propagate.some((it) => pipeline.hierarchy.isDerived(doc.objectClass, it))) {
+            // We need to include all parent content into this one.
+            const [parentDoc] = await this.dbStorage.findAll(
+              metrics.newChild('propagate', {}),
+              core.class.DocIndexState,
+              { _id: doc.attachedTo as Ref<DocIndexState> }
+            )
+            if (parentDoc !== undefined) {
+              if (embeddingText.length > this.summaryLimit) {
+                break
+              }
+              embeddingText += await extractIndexedValues(parentDoc, pipeline.hierarchy, {
                 matchExtra: this.matchExtra,
                 fieldFilter: this.fieldFilter
               })

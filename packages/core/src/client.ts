@@ -25,6 +25,7 @@ import { Tx, TxCUD, TxCollectionCUD, TxCreateDoc, TxProcessor, TxUpdateDoc } fro
 import { toFindResult } from './utils'
 
 const transactionThreshold = 500
+const modelTransactionThreshold = 50
 
 /**
  * @public
@@ -194,7 +195,11 @@ export async function createClient (
   const oldOnConnect: ((apply: boolean) => void) | undefined = conn.onConnect
   conn.onConnect = async () => {
     // Find all new transactions and apply
-    await loadModel(conn, loadedTxIds, allowedPlugins, configs, hierarchy, model)
+    if (!(await loadModel(conn, loadedTxIds, allowedPlugins, configs, hierarchy, model, true))) {
+      // We need full refresh
+      await oldOnConnect?.(false)
+      return
+    }
 
     // We need to look for last {transactionThreshold} transactions and if it is more since lastTx one we receive, we need to perform full refresh.
     const atxes = await conn.findAll(
@@ -236,8 +241,9 @@ async function loadModel (
   allowedPlugins: Plugin[] | undefined,
   configs: Map<Ref<PluginConfiguration>, PluginConfiguration>,
   hierarchy: Hierarchy,
-  model: ModelDb
-): Promise<void> {
+  model: ModelDb,
+  reload = false
+): Promise<boolean> {
   const t = Date.now()
 
   const atxes = await conn.findAll(
@@ -245,6 +251,10 @@ async function loadModel (
     { objectSpace: core.space.Model, _id: { $nin: Array.from(processedTx.values()) } },
     { sort: { modifiedOn: SortingOrder.Ascending, _id: SortingOrder.Ascending } }
   )
+
+  if (reload && atxes.length > modelTransactionThreshold) {
+    return true
+  }
 
   let systemTx: Tx[] = []
   const userTx: Tx[] = []
@@ -289,6 +299,7 @@ async function loadModel (
       console.error('failed to apply model transaction, skipping', JSON.stringify(tx), err)
     }
   }
+  return false
 }
 
 function fillConfiguration (systemTx: Tx[], configs: Map<Ref<PluginConfiguration>, PluginConfiguration>): void {

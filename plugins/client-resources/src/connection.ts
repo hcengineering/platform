@@ -233,6 +233,7 @@ class Connection implements ClientConnection {
         if (!(this.websocket instanceof Promise)) {
           this.websocket = null
         }
+        void broadcastEvent(client.event.NetworkRequests, -1)
         reject(new Error('websocket error'))
       }
       websocket.onopen = () => {
@@ -248,6 +249,7 @@ class Connection implements ClientConnection {
       }
       websocket.onerror = (event: any) => {
         console.error('client websocket error:', socketId, event)
+        void broadcastEvent(client.event.NetworkRequests, -1)
         reject(new Error(`websocket error:${socketId}`))
       }
     })

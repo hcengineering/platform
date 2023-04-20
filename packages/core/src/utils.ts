@@ -172,7 +172,11 @@ export function extractDocKey (key: string): {
  * @public
  */
 export function isFullTextAttribute (attr: AnyAttribute): boolean {
-  return attr.index === IndexKind.FullText || attr.type._class === core.class.TypeAttachment
+  return (
+    attr.index === IndexKind.FullText ||
+    attr.type._class === core.class.TypeAttachment ||
+    attr.type._class === core.class.EnumOf
+  )
 }
 
 /**

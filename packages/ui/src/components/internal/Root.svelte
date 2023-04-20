@@ -11,7 +11,7 @@
   import StatusComponent from '../Status.svelte'
   import Clock from './Clock.svelte'
   // import Mute from './icons/Mute.svelte'
-  import { checkMobile, deviceOptionsStore as deviceInfo, networkStatus, ticker100 } from '../../'
+  import { checkMobile, deviceOptionsStore as deviceInfo, networkStatus } from '../../'
   import uiPlugin from '../../plugin'
   import FontSizeSelector from './FontSizeSelector.svelte'
   import Computer from './icons/Computer.svelte'
@@ -136,7 +136,10 @@
               getMetadata(uiPlugin.metadata.ShowNetwork)?.(evt)
             }}
           >
-            <WiFi size={'small'} fill={$networkStatus > 0 && $ticker100 === 0 ? 'blue' : 'currentColor'} />
+            <WiFi
+              size={'small'}
+              fill={$networkStatus === -1 ? 'red' : $networkStatus % 2 === 1 ? 'blue' : 'currentColor'}
+            />
           </div>
         </div>
       </div>
