@@ -36,7 +36,8 @@ import core, {
   Status,
   StatusManager,
   StatusValue,
-  TxOperations
+  TxOperations,
+  WithLookup
 } from '@hcengineering/core'
 import type { IntlString } from '@hcengineering/platform'
 import { getResource } from '@hcengineering/platform'
@@ -622,8 +623,17 @@ export async function groupByStatusCategories (
   const existingCategories: StatusValue[] = []
   const statusMap = new Map<string, StatusValue>()
 
+  const usedSpaces = new Set<Ref<Space>>()
+  const statusesList: Array<WithLookup<Status>> = []
   for (const v of categories) {
     const status = mgr.byId.get(v)
+    if (status !== undefined) {
+      statusesList.push(status)
+      usedSpaces.add(status.space)
+    }
+  }
+
+  for (const status of statusesList) {
     if (status !== undefined) {
       let fst = statusMap.get(status.name.toLowerCase().trim())
       if (fst === undefined) {
@@ -632,7 +642,7 @@ export async function groupByStatusCategories (
             (it) =>
               it.ofAttribute === status.ofAttribute &&
               it.name.toLowerCase().trim() === status.name.toLowerCase().trim() &&
-              (categories.includes(it._id) || it.space === status.space)
+              (categories.includes(it._id) || usedSpaces.has(it.space))
           )
           .sort((a, b) => a.rank.localeCompare(b.rank))
         fst = new StatusValue(status.name, status.color, statuses)

@@ -20,7 +20,7 @@ export function findProperty (objects: Doc[], propertyKey: string, value: any): 
   const result: Doc[] = []
   for (const object of objects) {
     const val = getObjectValue(propertyKey, object)
-    if (val === value || isArrayValueCheck(val, value)) {
+    if (val === value || (val == null && value == null) || isArrayValueCheck(val, value)) {
       result.push(object)
     }
   }
