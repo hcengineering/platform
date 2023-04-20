@@ -47,6 +47,9 @@
     "Description": "Description",
     "MarkAsPublicHoliday": "Mark as public holiday",
     "EditPublicHoliday": "Edit public holiday",
-    "Managers": "Managers"
+    "Managers": "Managers",
+    "Export": "Export",
+    "Separator": "Separator",
+    "ChooseSeparator": "Choose separator"
   }
 }
