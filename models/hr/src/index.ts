@@ -93,7 +93,7 @@ export class TDepartment extends TSpace implements Department {
 export class TDepartmentMember extends TEmployeeAccount implements DepartmentMember {}
 
 @Mixin(hr.mixin.Staff, contact.class.Employee)
-@UX(hr.string.Staff, hr.icon.HR)
+@UX(hr.string.Staff, hr.icon.HR, 'STFF', 'name')
 export class TStaff extends TEmployee implements Staff {
   @Prop(TypeRef(hr.class.Department), hr.string.Department)
     department!: Ref<Department>
