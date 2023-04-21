@@ -28,6 +28,7 @@
   export let object: Doc
   export let showCommenInput: boolean = true
   export let transparent: boolean = false
+  export let shouldScroll: boolean = false
 
   getResource(notification.function.GetNotificationClient).then((res) => {
     updatesStore = res().docUpdatesStore
@@ -83,13 +84,29 @@
 
   let filtered: DisplayTx[] = []
 
+  let newTxIndexes: number[] = []
+  $: newTxIndexes = getNewTxes(filtered, newTxes)
+
+  function getNewTxes (filtered: DisplayTx[], newTxes: [Ref<TxCUD<Doc>>, number][]): number[] {
+    const res: number[] = []
+    for (let i = 0; i < filtered.length; i++) {
+      if (isNew(filtered[i], newTxes)) {
+        res.push(i)
+      }
+    }
+    return res
+  }
+
   function isNew (tx: DisplayTx | undefined, newTxes: [Ref<TxCUD<Doc>>, number][]): boolean {
     if (tx === undefined) return false
     const index = newTxes.findIndex((p) => p[0] === tx.originTx._id)
     return index !== -1
   }
+
+  $: scrollIndex = shouldScroll ? newTxIndexes[0] ?? -1 : -1
 </script>
 
+{shouldScroll}
 <div class="antiSection-header high mt-9" class:invisible={transparent}>
   <span class="antiSection-header__title flex-row-center">
     <Label label={activity.string.Activity} />
@@ -105,7 +122,13 @@
   {#if filtered}
     <Grid column={1} rowGap={0.75}>
       {#each filtered as tx, i}
-        <TxView {tx} {viewlets} isNew={isNew(tx, newTxes)} isNextNew={isNew(filtered[i + 1], newTxes)} />
+        <TxView
+          {tx}
+          {viewlets}
+          isNew={newTxIndexes.includes(i)}
+          isNextNew={newTxIndexes.includes(i + 1)}
+          shouldScroll={i === scrollIndex}
+        />
       {/each}
     </Grid>
   {/if}

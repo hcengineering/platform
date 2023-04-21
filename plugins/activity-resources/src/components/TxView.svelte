@@ -40,6 +40,7 @@
   import { getValue, TxDisplayViewlet, updateViewlet } from '../utils'
   import TxViewTx from './TxViewTx.svelte'
   import Edit from './icons/Edit.svelte'
+  import { tick } from 'svelte'
 
   export let tx: DisplayTx
   export let viewlets: Map<ActivityKey, TxViewlet>
@@ -47,6 +48,7 @@
   export let isNew: boolean = false
   export let isNextNew: boolean = false
   export let contentHidden: boolean = false
+  export let shouldScroll: boolean = false
   // export let showDocument = false
 
   let ptx: DisplayTx | undefined
@@ -87,6 +89,9 @@
       modelIcon = result.modelIcon
       iconComponent = result.iconComponent
       props = getProps(result.props, edit)
+      if (shouldScroll) {
+        tick().then(scrollIntoView)
+      }
     }
   })
 
@@ -164,10 +169,24 @@
   $: withAvatar = isComment || isMentioned || isAttached
   $: isEmphasized = viewlet?.display === 'emphasized' || model.every((m) => isMessageType(m.attribute))
   $: isColumn = isComment || isEmphasized || hasMessageType
+
+  let htmlElement: HTMLDivElement
+
+  function scrollIntoView () {
+    htmlElement?.scrollIntoView({ behavior: 'auto', block: 'start' })
+    shouldScroll = false
+  }
 </script>
 
 {#if (viewlet !== undefined && !((viewlet?.hideOnRemove ?? false) && tx.removed)) || model.length > 0}
-  <div class="msgactivity-container" class:showIcon class:withAvatar class:isNew class:isNextNew>
+  <div
+    class="msgactivity-container"
+    bind:this={htmlElement}
+    class:showIcon
+    class:withAvatar
+    class:isNew
+    class:isNextNew
+  >
     {#if showIcon}
       {#if withAvatar}
         <div class="msgactivity-avatar">
