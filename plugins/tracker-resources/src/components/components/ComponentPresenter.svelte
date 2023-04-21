@@ -15,7 +15,7 @@
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
   import { Component } from '@hcengineering/tracker'
-  import { getCurrentLocation, Icon, navigate, tooltip } from '@hcengineering/ui'
+  import { Icon, getCurrentResolvedLocation, navigate, tooltip } from '@hcengineering/ui'
   import tracker from '../../plugin'
 
   export let value: WithLookup<Component>
@@ -32,7 +32,7 @@
       onClick()
     }
 
-    const loc = getCurrentLocation()
+    const loc = getCurrentResolvedLocation()
     loc.path[4] = 'components'
     loc.path[5] = value._id
     loc.path.length = 6

@@ -158,6 +158,7 @@
 
 <style lang="scss">
   .panel-instance {
+    opacity: 0.5;
     z-index: 401;
     position: fixed;
     background-color: transparent;

@@ -46,6 +46,7 @@
     openPanel,
     popupstore,
     resizeObserver,
+    setResolvedLocation,
     showPopup
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -266,14 +267,11 @@
   async function syncLoc (loc: Location): Promise<void> {
     const originalLoc = JSON.stringify(loc)
     // resolve short links
-    const resolvedLocation = await resolveShortLink(loc)
-    if (resolvedLocation && !areLocationsEqual(loc, resolvedLocation.loc)) {
-      loc = mergeLoc(loc, resolvedLocation)
-      if (resolvedLocation.shouldNavigate) {
-        navigate(loc)
-        return
-      }
+    const resolvedLoc = await resolveShortLink(loc)
+    if (resolvedLoc && !areLocationsEqual(loc, resolvedLoc.loc)) {
+      loc = mergeLoc(loc, resolvedLoc)
     }
+    setResolvedLocation(loc)
     const app = loc.path[2]
     let space = loc.path[3] as Ref<Space>
     let special = loc.path[4]

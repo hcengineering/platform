@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import type { Asset, IntlString } from '@hcengineering/platform'
 import { Timestamp } from '@hcengineering/core'
+import type { Asset, IntlString } from '@hcengineering/platform'
 import { /* Metadata, Plugin, plugin, */ Resource /*, Service */ } from '@hcengineering/platform'
 import { /* getContext, */ SvelteComponent } from 'svelte'
 
@@ -28,7 +28,6 @@ export interface Location {
 
 export interface ResolvedLocation {
   loc: Location
-  shouldNavigate: boolean
   defaultLocation: Location
 }
 

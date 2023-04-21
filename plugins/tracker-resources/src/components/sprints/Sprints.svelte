@@ -17,7 +17,13 @@
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Sprint, Project } from '@hcengineering/tracker'
-  import { closePopup, closeTooltip, getCurrentLocation, location, navigate } from '@hcengineering/ui'
+  import {
+    closePopup,
+    closeTooltip,
+    getCurrentResolvedLocation,
+    navigate,
+    resolvedLocationStore
+  } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import tracker from '../../plugin'
   import { SprintViewMode } from '../../utils'
@@ -33,7 +39,7 @@
   let sprint: Sprint | undefined
 
   onDestroy(
-    location.subscribe(async (loc) => {
+    resolvedLocationStore.subscribe(async (loc) => {
       closeTooltip()
       closePopup()
 
@@ -56,7 +62,7 @@
   <EditSprint
     {sprint}
     on:sprint={(evt) => {
-      const loc = getCurrentLocation()
+      const loc = getCurrentResolvedLocation()
       loc.path[5] = evt.detail
       navigate(loc)
     }}

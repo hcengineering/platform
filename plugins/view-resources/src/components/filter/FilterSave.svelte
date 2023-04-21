@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { Card, getClient } from '@hcengineering/presentation'
-  import view from '../../plugin'
-  import { EditBox, getCurrentLocation, Button } from '@hcengineering/ui'
+  import { Class, Doc, Ref } from '@hcengineering/core'
   import preference from '@hcengineering/preference'
+  import { Card, getClient } from '@hcengineering/presentation'
+  import { Button, EditBox, getCurrentResolvedLocation } from '@hcengineering/ui'
+  import { ViewOptions } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { filterStore } from '../../filter'
-  import { ViewOptions } from '@hcengineering/view'
-  import { Class, Doc, Ref } from '@hcengineering/core'
+  import view from '../../plugin'
   import { getActiveViewletId } from '../../utils'
 
   export let viewOptions: ViewOptions | undefined = undefined
@@ -16,7 +16,7 @@
   const client = getClient()
 
   async function saveFilter () {
-    const loc = getCurrentLocation()
+    const loc = getCurrentResolvedLocation()
     loc.fragment = undefined
     loc.query = undefined
     const filters = JSON.stringify($filterStore)

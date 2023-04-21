@@ -30,7 +30,13 @@ import {
 import { Client, Doc, getCurrentAccount, IdMap, ObjQueryType, Ref, Timestamp, toIdMap } from '@hcengineering/core'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { TemplateDataProvider } from '@hcengineering/templates'
-import { DropdownIntlItem, getCurrentLocation, getPanelURI, Location, ResolvedLocation } from '@hcengineering/ui'
+import {
+  DropdownIntlItem,
+  getCurrentResolvedLocation,
+  getPanelURI,
+  Location,
+  ResolvedLocation
+} from '@hcengineering/ui'
 import view, { Filter } from '@hcengineering/view'
 import { FilterQuery } from '@hcengineering/view-resources'
 import { get, writable } from 'svelte/store'
@@ -180,7 +186,7 @@ export async function getContactChannel (value: Contact, provider: Ref<ChannelPr
 }
 
 export async function getContactLink (doc: Doc): Promise<Location> {
-  const loc = getCurrentLocation()
+  const loc = getCurrentResolvedLocation()
   loc.path.length = 2
   loc.fragment = undefined
   loc.query = undefined
@@ -213,7 +219,6 @@ async function generateLocation (loc: Location, id: Ref<Contact>): Promise<Resol
       path: [appComponent, workspace],
       fragment: getPanelURI(view.component.EditDoc, doc._id, doc._class, 'content')
     },
-    shouldNavigate: false,
     defaultLocation: {
       path: [appComponent, workspace, contactId],
       fragment: getPanelURI(view.component.EditDoc, doc._id, doc._class, 'content')

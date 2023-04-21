@@ -23,10 +23,12 @@
     SortingQuery,
     Space
   } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
+  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import {
     AnyComponent,
     Button,
-    getCurrentLocation,
+    getCurrentResolvedLocation,
     Icon,
     Label,
     navigate,
@@ -34,10 +36,8 @@
     SearchEdit,
     showPopup
   } from '@hcengineering/ui'
-  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
-  import plugin from '../plugin'
   import { FilterBar, FilterButton, SpacePresenter } from '@hcengineering/view-resources'
-  import { IntlString } from '@hcengineering/platform'
+  import plugin from '../plugin'
   import { classIcon } from '../utils'
 
   export let _class: Ref<Class<Space>>
@@ -106,7 +106,7 @@
   }
 
   async function view (space: Space): Promise<void> {
-    const loc = getCurrentLocation()
+    const loc = getCurrentResolvedLocation()
     loc.path[3] = space._id
     navigate(loc)
   }

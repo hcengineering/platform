@@ -18,8 +18,8 @@
   import { AttachmentPresenter, FileDownload } from '@hcengineering/attachment-resources'
   import { ChunterSpace } from '@hcengineering/chunter'
   import { Doc, SortingOrder, getCurrentAccount } from '@hcengineering/core'
-  import { createQuery, getFileUrl, getClient } from '@hcengineering/presentation'
-  import { getCurrentLocation, showPopup, IconMoreV, Label, navigate, Icon, Menu } from '@hcengineering/ui'
+  import { createQuery, getClient, getFileUrl } from '@hcengineering/presentation'
+  import { Icon, IconMoreV, Label, Menu, getCurrentResolvedLocation, navigate, showPopup } from '@hcengineering/ui'
 
   export let channel: ChunterSpace | undefined
   const myAccId = getCurrentAccount()._id
@@ -98,7 +98,7 @@
         <div
           class="showMoreAttachmentsButton"
           on:click={() => {
-            const loc = getCurrentLocation()
+            const loc = getCurrentResolvedLocation()
             loc.path[3] = 'fileBrowser'
             loc.query = channel ? { spaceId: channel._id } : {}
             navigate(loc)

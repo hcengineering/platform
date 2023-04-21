@@ -4,7 +4,14 @@ import { employeeByIdStore } from '@hcengineering/contact-resources'
 import { Class, Client, Doc, getCurrentAccount, IdMap, Obj, Ref, Space, Timestamp } from '@hcengineering/core'
 import { Asset } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
-import { getCurrentLocation, getPanelURI, location, Location, navigate, ResolvedLocation } from '@hcengineering/ui'
+import {
+  getPanelURI,
+  location,
+  Location,
+  navigate,
+  ResolvedLocation,
+  getCurrentResolvedLocation
+} from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 import { get, Unsubscriber, writable } from 'svelte/store'
@@ -133,14 +140,14 @@ export function scrollAndHighLight (): void {
 
 export async function getLink (doc: Doc): Promise<string> {
   const fragment = await getTitle(doc)
-  const location = getCurrentLocation()
+  const location = getCurrentResolvedLocation()
   return await Promise.resolve(
     `${window.location.protocol}//${window.location.host}/${workbenchId}/${location.path[1]}/${chunterId}#${fragment}`
   )
 }
 
 export async function getFragment (doc: Doc): Promise<Location> {
-  const loc = getCurrentLocation()
+  const loc = getCurrentResolvedLocation()
   loc.path.length = 2
   loc.fragment = undefined
   loc.query = undefined
@@ -213,7 +220,6 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Reso
         path: [appComponent, workspace, chunterId, doc.space],
         fragment: doc._id
       },
-      shouldNavigate: true,
       defaultLocation: {
         path: [appComponent, workspace, chunterId, doc.space],
         fragment: doc._id
@@ -230,7 +236,6 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Reso
         path: [appComponent, workspace],
         fragment: getPanelURI(component, comment.attachedTo, comment.attachedToClass, 'content')
       },
-      shouldNavigate: false,
       defaultLocation: {
         path: [appComponent, workspace],
         fragment: getPanelURI(component, comment.attachedTo, comment.attachedToClass, 'content')
@@ -244,7 +249,6 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Reso
         path: [appComponent, workspace, chunterId, doc.space, msg.attachedTo],
         fragment: doc._id
       },
-      shouldNavigate: true,
       defaultLocation: {
         path: [appComponent, workspace, chunterId, doc.space],
         fragment: doc._id
