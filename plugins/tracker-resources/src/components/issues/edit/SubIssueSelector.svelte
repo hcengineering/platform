@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import core, { SortingOrder, WithLookup } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, statusStore } from '@hcengineering/presentation'
   import { Issue, IssueStatus } from '@hcengineering/tracker'
   import {
     Icon,
@@ -116,6 +116,8 @@
   } else {
     subIssuesQeury.unsubscribe()
   }
+
+  $: parentStatus = parentIssue ? $statusStore.byId.get(parentIssue.status) : undefined
 </script>
 
 {#if parentIssue}
@@ -127,9 +129,9 @@
         use:tooltip={{ label: tracker.string.OpenParent, direction: 'bottom' }}
         on:click={openParentIssue}
       >
-        {#if issue?.$lookup?.status}
+        {#if parentStatus}
           <div class="pr-2">
-            <IssueStatusIcon value={issue.$lookup.status} size="small" />
+            <IssueStatusIcon value={parentStatus} size="small" />
           </div>
         {/if}
         {#if issue.$lookup?.space}
