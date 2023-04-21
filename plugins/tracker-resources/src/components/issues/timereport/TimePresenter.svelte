@@ -19,6 +19,7 @@
   export let id: string | undefined = undefined
   export let kind: 'link' | undefined = undefined
   export let value: number
+  export let noSymbol: boolean = false
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -31,7 +32,11 @@
     props: { label: tracker.string.TimeSpendHours, params: { value: floorFractionDigits(value * 8, 2) } }
   }}
 >
-  <Label label={tracker.string.TimeSpendValue} params={{ value: floorFractionDigits(value, 3) }} />
+  {#if noSymbol}
+    {floorFractionDigits(value, 3)}
+  {:else}
+    <Label label={tracker.string.TimeSpendValue} params={{ value: floorFractionDigits(value, 3) }} />
+  {/if}
 </span>
 
 <style lang="scss">
@@ -39,15 +44,15 @@
     white-space: nowrap;
 
     font-size: 0.8125rem;
-    color: var(--content-color);
+    color: var(--theme-content-color);
     cursor: pointer;
 
     &:hover {
-      color: var(--caption-color);
+      color: var(--theme-caption-color);
       text-decoration: underline;
     }
     &:active {
-      color: var(--accent-color);
+      color: var(--theme-accent-color);
     }
   }
 </style>

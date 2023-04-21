@@ -33,7 +33,8 @@
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = 'min-content'
   export let onlyIcon: boolean = false
-  export let enlargedText = false
+  export let enlargedText: boolean = false
+  export let short: boolean = false
 
   export let useComponent: Ref<Component> | undefined = undefined
   export let showTooltip: LabelAndProps | undefined = undefined
@@ -105,6 +106,7 @@
     {showTooltip}
     icon={sprintIcon}
     disabled={!isEditable}
+    {short}
     on:click={handleSprintEditorOpened}
   />
 {:else}
@@ -117,6 +119,7 @@
     {showTooltip}
     icon={sprintIcon}
     disabled={!isEditable}
+    {short}
     on:click={handleSprintEditorOpened}
   >
     <svelte:fragment slot="content">

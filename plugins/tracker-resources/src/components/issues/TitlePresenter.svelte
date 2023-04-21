@@ -22,6 +22,7 @@
   export let value: WithLookup<Issue>
   export let shouldUseMargin: boolean = false
   export let showParent = true
+  export let kind: 'list' | undefined = undefined
   export let onClick: (() => void) | undefined = undefined
 </script>
 
@@ -29,10 +30,11 @@
   <span
     class="name overflow-label select-text"
     class:with-margin={shouldUseMargin}
+    class:list={kind === 'list'}
     style:max-width={showParent ? `${value.parents.length !== 0 ? 95 : 100}%` : '100%'}
     title={value.title}
   >
-    <DocNavLink object={value} {onClick} component={tracker.component.EditIssue} inline shrink={1}>
+    <DocNavLink object={value} {onClick} component={tracker.component.EditIssue} inline shrink={1} colorInherit>
       {value.title}
     </DocNavLink>
   </span>
@@ -45,12 +47,15 @@
   .name {
     flex-shrink: 1;
     min-width: 1rem;
+
+    &.list {
+      color: var(--theme-caption-color);
+    }
     &:hover {
       text-decoration: underline;
     }
-
     &:active {
-      color: var(--accent-color);
+      color: var(--theme-content-color);
     }
   }
 

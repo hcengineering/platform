@@ -151,6 +151,7 @@ export { default as IconMaxWidth } from './components/icons/MaxWidth.svelte'
 export { default as IconMixin } from './components/icons/Mixin.svelte'
 export { default as IconCircles } from './components/icons/Circles.svelte'
 export { default as IconLike } from './components/icons/Like.svelte'
+export { default as IconCollapseArrow } from './components/icons/CollapseArrow.svelte'
 
 export { default as PanelInstance } from './components/PanelInstance.svelte'
 export { default as Panel } from './components/Panel.svelte'

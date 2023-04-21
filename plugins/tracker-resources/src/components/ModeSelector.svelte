@@ -39,7 +39,8 @@
     display: flex;
     align-items: center;
     padding: 0.65rem 1.35rem 0.65rem 2.25rem;
-    border-top: 1px solid var(--divider-color);
+    background-color: var(--theme-comp-header-color);
+    border-bottom: 1px solid var(--theme-divider-color);
   }
   .buttonWrapper {
     margin-right: 1px;

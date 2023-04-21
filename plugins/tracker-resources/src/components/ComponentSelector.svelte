@@ -32,7 +32,8 @@
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = 'min-content'
   export let onlyIcon: boolean = false
-  export let enlargedText = false
+  export let enlargedText: boolean = false
+  export let short: boolean = false
 
   let selectedComponent: Component | undefined
   let defaultComponentLabel = ''
@@ -105,6 +106,7 @@
     icon={tracker.icon.Components}
     disabled={!isEditable}
     {loading}
+    {short}
     on:click={handleComponentEditorOpened}
   />
 {:else}
@@ -117,6 +119,7 @@
     icon={tracker.icon.Components}
     disabled={!isEditable}
     {loading}
+    {short}
     on:click={handleComponentEditorOpened}
     ><svelte:fragment slot="content">
       <span

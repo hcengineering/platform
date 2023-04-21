@@ -12,6 +12,8 @@
   export let kind: ButtonKind = 'link'
   export let tooltipLabels: PersonLabelTooltip | undefined = undefined
   export let onChange: ((value: Ref<Employee>) => void) | undefined = undefined
+  export let colorInherit: boolean = false
+  export let accent: boolean = false
   export let inline = false
 
   $: employee = value ? $employeeByIdStore.get(value) : undefined
@@ -47,7 +49,9 @@
     shouldShowPlaceholder
     defaultName={contact.string.NotSpecified}
     shouldShowName={kind !== 'list'}
-    avatarSize={kind === 'list-header' ? 'small' : 'x-small'}
+    avatarSize={kind === 'list-header' ? 'smaller' : 'x-small'}
     disableClick
+    {colorInherit}
+    {accent}
   />
 {/if}

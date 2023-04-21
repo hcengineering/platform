@@ -16,6 +16,7 @@
   import { Employee, getName, Person } from '@hcengineering/contact'
   import { IntlString } from '@hcengineering/platform'
   import { Label, LabelAndProps, tooltip } from '@hcengineering/ui'
+  import type { IconSize } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
   import Avatar from './Avatar.svelte'
 
@@ -27,11 +28,13 @@
   export let shouldShowPlaceholder = false
   export let defaultName: IntlString | undefined = undefined
   export let statusLabel: IntlString | undefined = undefined
-  export let avatarSize: 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' = 'x-small'
+  export let avatarSize: IconSize = 'x-small'
   export let onEdit: ((event: MouseEvent) => void) | undefined = undefined
   export let showTooltip: LabelAndProps | undefined = undefined
   export let enlargedText = false
   export let element: HTMLElement | undefined = undefined
+  export let colorInherit: boolean = false
+  export let accent: boolean = false
 
   const onEditClick = (evt: MouseEvent) => {
     if (isInteractive) {
@@ -41,7 +44,7 @@
 </script>
 
 {#if value}
-  <DocNavLink object={value} onClick={onEdit} disableClick={!isInteractive} {inline}>
+  <DocNavLink object={value} onClick={onEdit} disableClick={!isInteractive} {inline} {colorInherit}>
     <span
       use:tooltip={showTooltip}
       class="contentPresenter"
@@ -58,7 +61,7 @@
         </span>
       {/if}
       {#if shouldShowName}
-        <span class="eContentPresenterLabel">{getName(value)}</span>
+        <span class="eContentPresenterLabel" class:colorInherit>{getName(value)}</span>
       {/if}
     </span>
   </DocNavLink>
@@ -80,7 +83,7 @@
       </span>
     {/if}
     {#if shouldShowName && defaultName}
-      <span class="eContentPresenterLabel">
+      <span class="eContentPresenterLabel" class:colorInherit>
         <Label label={defaultName} />
       </span>
       {#if statusLabel}
@@ -109,7 +112,7 @@
       min-width: 0;
       font-weight: 500;
       text-align: left;
-      color: var(--accent-color);
+      color: var(--theme-caption-color);
 
       overflow: hidden;
       visibility: visible;
@@ -119,14 +122,18 @@
       -webkit-line-clamp: 2;
       line-clamp: 2;
       user-select: none;
+
+      &.colorInherit {
+        color: inherit;
+      }
     }
     &:hover {
       .eContentPresenterIcon {
-        color: var(--caption-color);
+        color: var(--theme-caption-color);
       }
       .eContentPresenterLabel {
         text-decoration: underline;
-        color: var(--caption-color);
+        color: var(--theme-caption-color);
       }
     }
   }

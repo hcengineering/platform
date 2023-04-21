@@ -35,6 +35,7 @@
   export let category: PrimitiveType | StatusValue
   export let headerComponent: AttributeModel | undefined
   export let singleCat: boolean
+  export let lastCat: boolean
   export let groupByKey: string
   export let space: Ref<Space> | undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined
@@ -300,10 +301,36 @@
       index: i
     })
   }
+
+  // let expCol: HTMLElement
+  // function collapseSection (element) {
+  //   const sectionHeight = element.scrollHeight
+  //   const elementTransition = element.style.transition
+  //   element.style.transition = ''
+
+  //   requestAnimationFrame(function() {
+  //     element.style.height = sectionHeight + 'px'
+  //     element.style.transition = elementTransition
+  //     requestAnimationFrame(function() {
+  //       element.style.height = 0 + 'px'
+  //     })
+  //   })
+  // }
+  // function expandSection (element) {
+  //   const sectionHeight = element.scrollHeight
+  //   element.style.height = sectionHeight + 'px'
+  //   element.addEventListener('transitionend', function(e) {
+  //     element.removeEventListener('transitionend', arguments.callee)
+  //     element.style.height = null
+  //   })
+  // }
+  // console.log('[???] categoryIndex: ', items[0]._id)
 </script>
 
 <div
   bind:this={div}
+  class="category-container"
+  class:zero-container={level === 0}
   on:drop|preventDefault={drop}
   on:dragover={dragOverCat}
   on:dragenter={dragEnterCat}
@@ -323,45 +350,48 @@
       {extraHeaders}
       newObjectProps={_newObjectProps}
       flat={flatHeaders}
+      {collapsed}
       {props}
+      {lastCat}
       on:more={() => {
         if (limit !== undefined) limit += 20
       }}
       on:collapse={() => {
         collapsed = !collapsed
+        // if (collapsed) collapseSection(expCol)
+        // else expandSection(expCol)
       }}
     />
   {/if}
-  <ExpandCollapse isExpanded={!collapsed || dragItemIndex !== undefined}>
+  <ExpandCollapse isExpanded={!collapsed || dragItemIndex !== undefined} duration={0}>
+    <!-- <div bind:this={expCol} class="expandCollapse" class:isExpanded={!collapsed || dragItemIndex !== undefined}> -->
     {#if !lastLevel}
-      <div class="p-2">
-        <slot
-          name="category"
-          {elementByIndex}
-          {indexById}
-          docs={items}
-          {_class}
-          {space}
-          {lookup}
-          {loadingPropsLength}
-          {baseMenuClass}
-          {config}
-          {selectedObjectIds}
-          {createItemDialog}
-          {createItemLabel}
-          {viewOptions}
-          newObjectProps={_newObjectProps}
-          {flatHeaders}
-          {props}
-          level={level + 1}
-          {initIndex}
-          {docByIndex}
-          {viewOptionsConfig}
-          {listDiv}
-          dragItem
-          dragstart={dragStartHandler}
-        />
-      </div>
+      <slot
+        name="category"
+        {elementByIndex}
+        {indexById}
+        docs={items}
+        {_class}
+        {space}
+        {lookup}
+        {loadingPropsLength}
+        {baseMenuClass}
+        {config}
+        {selectedObjectIds}
+        {createItemDialog}
+        {createItemLabel}
+        {viewOptions}
+        newObjectProps={_newObjectProps}
+        {flatHeaders}
+        {props}
+        level={level + 1}
+        {initIndex}
+        {docByIndex}
+        {viewOptionsConfig}
+        {listDiv}
+        dragItem
+        dragstart={dragStartHandler}
+      />
     {:else if itemModels && (!collapsed || dragItemIndex !== undefined)}
       {#if limited}
         {#each limited as docObject, i (docObject._id)}
@@ -375,6 +405,8 @@
             {groupByKey}
             selected={isSelected(docObject, $focusStore)}
             checked={selectedObjectIdsSet.has(docObject._id)}
+            last={i === limited.length - 1}
+            lastCat={i === limited.length - 1 && (singleCat || lastCat)}
             on:dragstart={(e) => dragStart(e, docObject, i)}
             on:dragenter={(e) => {
               if (dragItemIndex !== undefined) {
@@ -388,7 +420,9 @@
             on:check={(ev) => dispatch('check', { docs: ev.detail.docs, value: ev.detail.value })}
             on:contextmenu={(event) => handleMenuOpened(event, docObject, initIndex + i)}
             on:focus={() => {}}
-            on:mouseover={() => handleRowFocused(docObject)}
+            on:mouseover={() => {
+              if (!isSelected(docObject, $focusStore)) handleRowFocused(docObject)
+            }}
             {props}
           />
         {/each}
@@ -407,11 +441,33 @@
         </div>
       {/each}
     {/if}
+    <!-- </div> -->
   </ExpandCollapse>
 </div>
 
 <style lang="scss">
-  .row:not(:last-child) {
-    border-bottom: 1px solid var(--accent-bg-color);
+  .expandCollapse {
+    overflow: hidden;
+    transition: height 0.3s ease-out;
+    height: auto;
+  }
+  .zero-container {
+    // overflow: hidden;
+    // border: 1px solid transparent;
+    border-radius: 0.25rem;
+
+    // & > * {
+    //   border-left: 1px solid var(--theme-list-border-color);
+    //   border-right: 1px solid var(--theme-list-border-color);
+    // }
+    // & > *:not(:last-child) {
+    //   border-bottom: 1px solid var(--theme-divider-color);
+    // }
+    // & > *:last-child:not(:first-child) {
+    //   border-radius: 0 0 .25rem .25rem;
+    // }
+    &:not(:first-child) {
+      margin-top: 0.5rem;
+    }
   }
 </style>

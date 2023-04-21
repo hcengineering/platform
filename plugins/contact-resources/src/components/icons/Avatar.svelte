@@ -51,6 +51,10 @@
     width: 1rem;
     height: 1rem;
   }
+  .smaller {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
   .small {
     width: 1.25rem;
     height: 1.25rem;

@@ -26,6 +26,7 @@
   export let shouldShowAvatar: boolean = false
   export let noUnderline = false
   export let inline = false
+  export let kind: 'list' | undefined = undefined
 
   // Extra properties
   export let projects: Map<Ref<Project>, Project> | undefined = undefined
@@ -48,7 +49,7 @@
 
 {#if value}
   <DocNavLink object={value} {onClick} {disableClick} {noUnderline} {inline} component={tracker.component.EditIssue}>
-    <span class="issuePresenterRoot" class:inline>
+    <span class="issuePresenterRoot" class:inline class:list={kind === 'list'}>
       {#if !inline && shouldShowAvatar}
         <div class="icon" use:tooltip={{ label: tracker.string.Issue }}>
           <Icon icon={tracker.icon.Issues} size={'small'} />
@@ -67,12 +68,17 @@
     align-items: center;
     flex-shrink: 0;
     max-width: 5rem;
-    color: var(--content-color);
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     cursor: pointer;
 
+    &:not(.list) {
+      color: var(--theme-content-color);
+    }
+    &.list {
+      color: var(--theme-halfcontent-color);
+    }
     .icon {
       margin-right: 0.5rem;
       color: var(--dark-color);
