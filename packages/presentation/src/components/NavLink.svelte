@@ -20,6 +20,7 @@
   export let onClick: ((event: MouseEvent) => void) | undefined = undefined
   export let noUnderline = false
   export let inline = false
+  export let colorInherit: boolean = false
   export let shrink: number = 0
 
   function clickHandler (e: MouseEvent) {
@@ -53,13 +54,14 @@
     class:cursor-pointer={!disableClick}
     class:noUnderline
     class:inline
+    class:colorInherit
     style:flex-shrink={shrink}
     on:click={clickHandler}
   >
     <slot />
   </span>
 {:else}
-  <a {href} class:noUnderline class:inline style:flex-shrink={shrink} on:click={clickHandler}>
+  <a {href} class:noUnderline class:inline class:colorInherit style:flex-shrink={shrink} on:click={clickHandler}>
     <slot />
   </a>
 {/if}
@@ -70,32 +72,41 @@
     display: flex;
     align-items: center;
     min-width: 0;
-    color: var(--accent-color);
     // overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     cursor: pointer;
     font-weight: inherit;
 
+    &:not(.colorInherit) {
+      color: var(--theme-content-color);
+    }
+    &.colorInherit {
+      color: inherit;
+    }
     &.inline {
       display: inline-flex;
       align-items: center;
     }
 
     &.noUnderline {
-      color: var(--caption-color);
       font-weight: 500;
+      &:not(.colorInherit) {
+        color: var(--theme-caption-color);
+      }
     }
 
     &:not(.noUnderline) {
       &:hover {
-        color: var(--caption-color);
         text-decoration: underline;
+        &:not(.colorInherit) {
+          color: var(--theme-caption-color);
+        }
       }
     }
 
     &:active {
-      color: var(--accent-color);
+      color: var(--theme-content-color);
     }
   }
 </style>

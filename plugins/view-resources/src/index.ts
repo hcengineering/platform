@@ -45,6 +45,7 @@ import IntlStringPresenter from './components/IntlStringPresenter.svelte'
 import GithubPresenter from './components/linkPresenters/GithubPresenter.svelte'
 import YoutubePresenter from './components/linkPresenters/YoutubePresenter.svelte'
 import GrowPresenter from './components/list/GrowPresenter.svelte'
+import DividerPresenter from './components/list/DividerPresenter.svelte'
 import ListView from './components/list/ListView.svelte'
 import SortableList from './components/list/SortableList.svelte'
 import SortableListItem from './components/list/SortableListItem.svelte'
@@ -197,6 +198,7 @@ export default async (): Promise<Resources> => ({
     HTMLEditor,
     ListView,
     GrowPresenter,
+    DividerPresenter,
     IndexedDocumentPreview,
     SpaceRefPresenter,
     EnumArrayEditor,

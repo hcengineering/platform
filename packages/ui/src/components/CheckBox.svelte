@@ -17,6 +17,7 @@
 
   export let checked: boolean = false
   export let symbol: 'check' | 'minus' = 'check'
+  export let size: 'small' | 'medium' = 'small'
   export let circle: boolean = false
   export let primary: boolean = false
   export let readonly = false
@@ -34,7 +35,7 @@
   }
 </script>
 
-<label class="checkbox" class:circle class:primary class:readonly class:checked>
+<label class="checkbox {size}" class:circle class:primary class:readonly class:checked>
   <input class="chBox" disabled={readonly} type="checkbox" bind:checked on:change={handleValueChanged} />
   <svg class="checkSVG" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
     {#if checked}
@@ -53,27 +54,32 @@
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    width: 0.875rem;
-    height: 0.875rem;
-    border: 1px solid var(--dark-color);
+    background-color: var(--theme-button-hovered);
+    border: 1px solid var(--theme-checkbox-border);
     border-radius: 0.25rem;
 
+    &.small {
+      width: 0.875rem;
+      height: 0.875rem;
+    }
+    &.medium {
+      width: 1rem;
+      height: 1rem;
+    }
     &.circle {
       width: 1rem;
       height: 1rem;
       border-radius: 50%;
     }
     &.checked {
-      background-color: var(--primary-bg-color);
-      border-color: transparent;
+      background-color: var(--theme-checkbox-bg-color);
     }
     &.primary.checked {
-      background-color: var(--primary-bg-color);
+      background-color: var(--primary-button-enabled);
       border-color: transparent;
     }
     &.readonly.checked {
-      background-color: var(--dark-color);
-      border-color: transparent;
+      background-color: var(--theme-checkbox-disabled);
     }
 
     .chBox {
@@ -89,7 +95,7 @@
       &:checked + .checkSVG {
         & .check {
           visibility: visible;
-          fill: var(--white-color);
+          fill: var(--theme-checkbox-color);
           &.primary {
             fill: var(--primary-button-color);
           }
@@ -99,7 +105,7 @@
         cursor: pointer;
       }
       &:disabled + .checkSVG .check {
-        fill: var(--content-color);
+        fill: var(--theme-checkbox-disabled);
       }
     }
     .checkSVG {
@@ -108,7 +114,7 @@
 
       .check {
         visibility: hidden;
-        fill: var(--button-bg-color);
+        fill: var(--theme-checkbox-color);
       }
     }
   }

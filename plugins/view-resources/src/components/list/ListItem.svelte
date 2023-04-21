@@ -27,6 +27,8 @@
   export let groupByKey: string | undefined
   export let checked: boolean
   export let selected: boolean
+  export let last: boolean = false
+  export let lastCat: boolean = false
   export let props: Record<string, any> = {}
 
   export function scroll () {
@@ -87,6 +89,8 @@
   class="listGrid antiList__row row gap-2 flex-grow"
   class:checking={checked}
   class:mListGridSelected={selected}
+  class:last
+  class:lastCat
   draggable={true}
   on:contextmenu
   on:focus
@@ -99,13 +103,18 @@
   on:dragstart
 >
   <div class="draggable-container">
-    <div class="draggable-mark"><IconCircles /></div>
+    <div class="draggable-mark">
+      <IconCircles />
+      <div class="space" />
+      <IconCircles />
+    </div>
   </div>
-  <div class="flex-center relative" use:tooltip={{ label: view.string.Select, direction: 'bottom' }}>
+  <div class="flex-center relative mr-1" use:tooltip={{ label: view.string.Select, direction: 'bottom' }}>
     <div class="antiList-cells__notifyCell">
       <div class="antiList-cells__checkCell">
         <CheckBox
           {checked}
+          size={'medium'}
           on:value={(event) => {
             dispatch('check', { docs: [docObject], value: event.detail })
           }}
@@ -118,13 +127,32 @@
       />
     </div>
   </div>
-  {#each model as attributeModel, i}
+  {#each model.filter((m) => !m.props?.listProps?.optional) as attributeModel, i}
     {@const listProps = attributeModel.props?.listProps}
     {#if attributeModel.props?.type === 'grow'}
       <svelte:component this={attributeModel.presenter} />
-    {:else if (!groupByKey || listProps?.excludeByKey !== groupByKey) && !(listProps?.optional && compactMode)}
+
+      {#if !compactMode}
+        <div class="optional-bar">
+          {#each model.filter((m) => m.props?.listProps?.optional) as attrModel, j}
+            {@const lp = attrModel.props?.listProps}
+            {@const v = getObjectValue(attrModel.key, docObject)}
+            {#if lp?.excludeByKey !== groupByKey && v !== undefined}
+              <svelte:component
+                this={attrModel.presenter}
+                value={getObjectValue(attrModel.key, docObject) ?? ''}
+                onChange={getOnChange(docObject, attrModel)}
+                kind={'list'}
+                compression
+                {...joinProps(attrModel, docObject, props)}
+              />
+            {/if}
+          {/each}
+        </div>
+      {/if}
+    {:else if (!groupByKey || listProps?.excludeByKey !== groupByKey) && !listProps?.optional}
       {#if listProps?.fixed}
-        <FixedColumn key={`list_item_${attributeModel.key}`} justify={listProps.fixed}>
+        <FixedColumn key={`list_item_${attributeModel.props?.listProps.key}`} justify={listProps.fixed}>
           <svelte:component
             this={attributeModel.presenter}
             value={getObjectValue(attributeModel.key, docObject) ?? ''}
@@ -158,10 +186,10 @@
         <IconCircles />
       </div>
       <div class="scroll-box gap-2">
-        {#each model as attributeModel}
+        {#each model.filter((m) => m.props?.listProps?.optional) as attributeModel}
           {@const listProps = attributeModel.props?.listProps}
           {@const value = getObjectValue(attributeModel.key, docObject)}
-          {#if listProps?.optional && listProps?.excludeByKey !== groupByKey && value !== undefined}
+          {#if listProps?.excludeByKey !== groupByKey && value !== undefined}
             <svelte:component
               this={attributeModel.presenter}
               value={getObjectValue(attributeModel.key, docObject) ?? ''}
@@ -177,32 +205,45 @@
 </div>
 
 <style lang="scss">
-  .row:not(:last-child) {
-    border-bottom: 1px solid var(--accent-bg-color);
+  .row {
+    border-left: 1px solid var(--theme-list-border-color);
+    border-right: 1px solid var(--theme-list-border-color);
+  }
+  .row:not(.lastCat, .last) {
+    border-bottom: 1px solid var(--theme-divider-color);
+  }
+  .row.last {
+    border-bottom: 1px solid var(--theme-list-subheader-divider);
+  }
+  .row.lastCat {
+    border-radius: 0 0 0.25rem 0.25rem;
+    border-bottom: 1px solid var(--theme-list-border-color);
   }
 
+  /* Global styles in components.scss */
   .listGrid {
     position: relative;
     display: flex;
     align-items: center;
-    padding: 0 0.75rem 0 0.875rem;
+    padding: 0 2.5rem 0 0.25rem;
     width: 100%;
     height: 2.75rem;
     min-height: 2.75rem;
     color: var(--caption-color);
+    background-color: var(--theme-list-row-color);
 
     &.checking {
       background-color: var(--highlight-select);
-      border-bottom-color: var(--highlight-select);
+      // border-bottom-color: var(--highlight-select);
 
       &:hover {
         background-color: var(--highlight-select-hover);
-        border-bottom-color: var(--highlight-select-hover);
+        // border-bottom-color: var(--highlight-select-hover);
       }
     }
 
     &.mListGridSelected {
-      background-color: var(--highlight-hover);
+      background-color: var(--theme-list-row-hover);
     }
 
     .draggable-container {
@@ -211,20 +252,23 @@
       display: flex;
       align-items: center;
       height: 100%;
-      width: 1.5rem;
+      width: 1rem;
       cursor: grabbing;
 
       .draggable-mark {
-        opacity: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin-left: 0.125rem;
         width: 0.375rem;
-        height: 1rem;
-        margin-left: 0.75rem;
-        transition: opacity 0.1s;
+        height: 100%;
+        opacity: 0;
       }
     }
     &:hover {
       .draggable-mark {
-        opacity: 0.4;
+        opacity: 0.1;
       }
     }
 

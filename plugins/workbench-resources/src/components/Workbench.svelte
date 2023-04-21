@@ -635,10 +635,7 @@
       {#if currentApplication && navigatorModel && navigator && visibileNav}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         {#if visibileNav && navFloat}<div class="cover shown" on:click={() => (visibileNav = false)} />{/if}
-        <div
-          class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}"
-          style="box-shadow: -1px 0px 2px rgba(0, 0, 0, .1)"
-        >
+        <div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
           {#if currentApplication}
             <NavHeader label={currentApplication.label} />
             {#if currentApplication.navHeaderComponent}

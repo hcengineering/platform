@@ -22,6 +22,7 @@
 
   export let value: Issue | AttachedData<Issue>
   export let estimation: number | undefined = undefined
+  export let kind: 'normal' | 'list' = 'normal'
 
   $: _estimation = estimation ?? value.estimation
 
@@ -40,18 +41,24 @@
       max={childEstimationTime || _estimation}
     />
   </div>
-  <span class="overflow-label label flex-row-center flex-nowrap text-md">
+  <span class="overflow-label label flex-row-center flex-nowrap {kind}">
     {#if value.reportedTime > 0 || childReportTime > 0}
       {#if childReportTime}
         {@const rchildReportTime = childReportTime}
         {@const reportDiff = floorFractionDigits(rchildReportTime - value.reportedTime, 3)}
         {#if reportDiff !== 0 && value.reportedTime !== 0}
-          <div class="flex flex-nowrap mr-1" class:showError={reportDiff > 0}>
+          <div
+            class="flex flex-nowrap"
+            class:mr-1={kind !== 'list'}
+            class:showError={reportDiff > 0 && kind !== 'list'}
+          >
             <TimePresenter value={rchildReportTime} />
           </div>
-          <div class="romColor">
-            (<TimePresenter value={value.reportedTime} />)
-          </div>
+          {#if kind !== 'list'}
+            <div class="romColor">
+              (<TimePresenter value={value.reportedTime} />)
+            </div>
+          {/if}
         {:else if value.reportedTime === 0}
           <TimePresenter value={childReportTime} />
         {:else}
@@ -60,16 +67,20 @@
       {:else}
         <TimePresenter value={value.reportedTime} />
       {/if}
-      <div class="p-1">/</div>
+      <span>/</span>
     {/if}
     {#if childEstimationTime}
       {@const childEstTime = Math.round(childEstimationTime)}
       {@const estimationDiff = childEstTime - Math.round(_estimation)}
       {#if estimationDiff !== 0}
-        <div class="flex flex-nowrap mr-1" class:showWarning={estimationDiff !== 0}>
+        <div
+          class="flex flex-nowrap"
+          class:mr-1={kind !== 'list'}
+          class:showWarning={estimationDiff !== 0 && kind !== 'list'}
+        >
           <TimePresenter value={childEstTime} />
         </div>
-        {#if _estimation !== 0}
+        {#if _estimation !== 0 && kind !== 'list'}
           <div class="romColor">
             (<TimePresenter value={_estimation} />)
           </div>
@@ -98,17 +109,22 @@
       flex-shrink: 0;
       width: 1rem;
       height: 1rem;
-      color: var(--content-color);
+      color: var(--theme-dark-color);
     }
     .label {
-      margin-left: 0.5rem;
-      font-weight: 500;
       font-size: 0.8125rem;
-      color: var(--accent-color);
+      margin-left: 0.5rem;
+
+      &.normal {
+        color: var(--theme-content-color);
+      }
+      &.list {
+        color: var(--theme-halfcontent-color);
+      }
     }
     &:hover {
       .icon {
-        color: var(--caption-color) !important;
+        color: var(--theme-caption-color) !important;
       }
     }
 
@@ -119,7 +135,7 @@
       color: var(--warning-color) !important;
     }
     .romColor {
-      color: var(--content-color) !important;
+      color: var(--theme-content-color) !important;
     }
   }
 </style>

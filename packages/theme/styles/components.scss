@@ -20,7 +20,8 @@
   height: 100%;
 
   .ac-header {
-    padding: 0.5rem 1.5rem 0.5rem 2.5rem;
+    padding: 0.5rem 2.25rem;
+    background-color: var(--theme-comp-header-color);
     // height: 3.5rem;
     // min-height: 2.5rem;
 
@@ -31,21 +32,22 @@
     }
     &.full,
     &-full {
-      display: grid;
-      grid-template-columns: auto;
-      grid-auto-flow: column;
-      grid-auto-columns: max-content;
-      gap: .75rem;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
+      min-width: 0;
+
+      &:not(.small-gap) > *:not(:last-child) { margin-right: 1.25rem; }
+      &.small-gap > *:not(:last-child) { margin-right: .75rem; }
     }
-    &.withSettings { padding-right: .75rem; }
+    // &.withSettings { padding-right: .75rem; }
     &.mini {
       display: flex;
       flex-direction: column;
     }
     &.mirror {
       justify-content: space-between;
-      padding: 0 1rem;
+      // padding: 0 1rem;
 
       &-tool {
         justify-content: space-between;
@@ -53,7 +55,7 @@
       }
     }
     &.divide {
-      border-bottom: 1px solid var(--divider-color);
+      border-bottom: 1px solid var(--theme-divider-color);
     }
     .secondRow {
       align-self: flex-end;
@@ -77,23 +79,30 @@
 
   .ac-header__icon {
     margin-right: 0.5rem;
-    color: var(--content-color);
+    color: var(--theme-content-color);
   }
   .ac-header__title {
+    flex-shrink: 1;
     min-width: 0;
-    font-weight: 500;
     font-size: 1rem;
-    color: var(--caption-color);
+    color: var(--theme-caption-color);
 
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     user-select: none;
   }
+  .ac-header__counter {
+    flex-shrink: 0;
+    margin-left: .25rem;
+    min-width: 0;
+    font-size: 1rem;
+    color: var(--theme-darker-color);
+  }
   .ac-header__description {
     min-width: 0;
     font-size: 0.75rem;
-    color: var(--dark-color);
+    color: var(--theme-dark-color);
 
     overflow: hidden;
     visibility: visible;
@@ -647,5 +656,48 @@
     color: var(--dark-color);
 
     &.inter { font-size: 1em; }
+  }
+}
+
+/* ListView - global style */
+.list-container .category-container .categoryHeader.subLevel.closed {
+  border-bottom: 1px solid var(--theme-list-border-color);
+  border-radius: 0 0 0.25rem 0.25rem;
+}
+.list-container .category-container .categoryHeader.closed:not(.subLevel) {
+  border-radius: 0 0 .25rem .25rem;
+  
+  &::before {
+    border-bottom-color: var(--theme-list-border-color);
+    border-radius: 0.25rem;
+  }
+}
+.list-container .category-container .listGrid {
+  .fix-margin { margin-left: .875rem; }
+  .name { margin-left: .375rem; }
+
+  .optional-bar {
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    flex-shrink: 1;
+    min-width: 0;
+    
+    .label-wrapper {
+      display: flex;
+      align-items: center;
+      flex-shrink: 10;
+      width: auto;
+      min-width: 0;
+    }
+    & > *:not(:last-child) {
+      flex-shrink: 10;
+      width: min-content;
+    }
+    & > *:last-child {
+      flex-shrink: 0;
+      width: max-content;
+    }
+    & > * { margin-left: .375rem; }
   }
 }
