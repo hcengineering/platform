@@ -16,11 +16,11 @@
   import { WithLookup } from '@hcengineering/core'
   import { Issue } from '@hcengineering/tracker'
   import { getClient } from '@hcengineering/presentation'
-  import CommonTrackerDatePresenter from '../CommonTrackerDatePresenter.svelte'
   import tracker from '../../plugin'
+  import { ButtonKind, DueDatePresenter } from '@hcengineering/ui'
 
   export let value: WithLookup<Issue>
-  export let kind: 'transparent' | 'primary' | 'link' | 'list' = 'primary'
+  export let kind: ButtonKind = 'link'
   export let isEditable = true
 
   const client = getClient()
@@ -45,10 +45,10 @@
     value.$lookup?.status?.category !== tracker.issueStatusCategory.Canceled
 </script>
 
-<CommonTrackerDatePresenter
-  dateMs={dueDateMs}
+<DueDatePresenter
+  value={dueDateMs}
   shouldRender={shouldRenderPresenter}
-  onDateChange={handleDueDateChanged}
+  onChange={handleDueDateChanged}
   editable={isEditable}
   {kind}
 />

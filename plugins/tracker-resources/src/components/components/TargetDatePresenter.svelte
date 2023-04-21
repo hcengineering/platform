@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Component } from '@hcengineering/tracker'
   import { getClient } from '@hcengineering/presentation'
-  import CommonTrackerDatePresenter from '../CommonTrackerDatePresenter.svelte'
+  import { DueDatePresenter } from '@hcengineering/ui'
 
   export let value: Component
 
@@ -28,4 +28,4 @@
   }
 </script>
 
-<CommonTrackerDatePresenter dateMs={dueDateMs} shouldRender={true} onDateChange={handleDueDateChanged} />
+<DueDatePresenter value={dueDateMs} shouldRender={true} onChange={handleDueDateChanged} />

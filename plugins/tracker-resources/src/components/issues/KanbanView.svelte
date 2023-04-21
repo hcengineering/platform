@@ -78,6 +78,7 @@
   import PriorityEditor from './PriorityEditor.svelte'
   import StatusEditor from './StatusEditor.svelte'
   import EstimationEditor from './timereport/EstimationEditor.svelte'
+  import DueDatePresenter from './DueDatePresenter.svelte'
 
   export let space: Ref<Project> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
@@ -341,7 +342,7 @@
               <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
             </div>
           </div>
-          <div class="buttons-group xsmall-gap states-bar">
+          <div class="xsmall-gap states-bar">
             {#if issue && issue.subIssues > 0}
               <SubIssuesSelector value={issue} {currentProject} />
             {/if}
@@ -355,6 +356,7 @@
               width={''}
               bind:onlyIcon={fullFilled[issueId]}
             />
+            <DueDatePresenter value={issue} kind={'link-bordered'} />
             <EstimationEditor kind={'list'} size={'small'} value={issue} />
             <div
               class="clear-mins"
@@ -403,8 +405,9 @@
     min-height: 6.5rem;
   }
   .states-bar {
-    flex-shrink: 10;
-    width: fit-content;
-    margin: 0.625rem 1rem 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    margin: 0.625rem 1rem;
   }
 </style>
