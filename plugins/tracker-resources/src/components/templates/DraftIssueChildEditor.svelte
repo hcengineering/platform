@@ -15,11 +15,11 @@
 <script lang="ts">
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import { Account, Doc, generateId, Ref } from '@hcengineering/core'
-  import presentation, { DraftController, getClient, KeyedAttribute } from '@hcengineering/presentation'
+  import presentation, { DraftController, draftsStore, getClient, KeyedAttribute } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import { Component as ComponentType, IssueDraft, IssuePriority, Project, Sprint } from '@hcengineering/tracker'
   import { Button, Component, EditBox } from '@hcengineering/ui'
-  import { createEventDispatcher, onDestroy } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import AssigneeEditor from '../issues/AssigneeEditor.svelte'
   import PriorityEditor from '../issues/PriorityEditor.svelte'
@@ -36,16 +36,27 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
   const draftController = new DraftController<IssueDraft>(tracker.ids.IssueDraftChild)
-  const draft = shouldSaveDraft ? draftController.get() : undefined
+  const draft = shouldSaveDraft ? ($draftsStore[tracker.ids.IssueDraftChild] as IssueDraft) : undefined
   let object = childIssue !== undefined ? childIssue : draft ?? getIssueDefaults()
   let thisRef: HTMLDivElement
   let focusIssueTitle: () => void
-  onDestroy(() => draftController.unsubscribe())
 
   const key: KeyedAttribute = {
     key: 'labels',
     attr: client.getHierarchy().getAttribute(tracker.class.IssueTemplate, 'labels')
   }
+
+  let descriptionBox: AttachmentStyledBox
+
+  function draftChange (draft: IssueDraft | undefined) {
+    if (draft === undefined) {
+      object = childIssue !== undefined ? childIssue : getIssueDefaults()
+    } else {
+      object = draft
+      descriptionBox?.setContent(object.description)
+    }
+  }
+  $: shouldSaveDraft && draftChange($draftsStore[tracker.ids.IssueDraftChild])
 
   function getIssueDefaults (): IssueDraft {
     return {
@@ -75,9 +86,13 @@
     sprint
   }
 
-  if (shouldSaveDraft) {
-    draftController.watch(object, empty)
+  function objectChange (object: IssueDraft, empty: any) {
+    if (shouldSaveDraft) {
+      draftController.save(object, empty)
+    }
   }
+
+  $: objectChange(object, empty)
 
   function resetToDefaults () {
     object = getIssueDefaults()
@@ -88,8 +103,12 @@
     return value.trim()
   }
 
-  function close () {
+  export function removeDraft () {
     draftController.remove()
+  }
+
+  function close () {
+    removeDraft()
     dispatch('close')
   }
 
@@ -100,7 +119,7 @@
 
     dispatch(childIssue ? 'close' : 'create', object)
 
-    draftController.remove()
+    removeDraft()
     resetToDefaults()
   }
 
@@ -149,6 +168,7 @@
     <div class="mt-4 clear-mins" id="sub-issue-description">
       {#key objectId}
         <AttachmentStyledBox
+          bind:this={descriptionBox}
           objectId={object._id}
           space={project._id}
           _class={tracker.class.Issue}

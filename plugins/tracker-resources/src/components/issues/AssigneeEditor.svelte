@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
-  import { AssigneeBox } from '@hcengineering/contact-resources'
+  import { Employee, EmployeeAccount } from '@hcengineering/contact'
+  import { AssigneeBox, employeeAccountByIdStore } from '@hcengineering/contact-resources'
   import { AttachedData, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Issue, IssueDraft, IssueTemplateData } from '@hcengineering/tracker'
@@ -58,9 +58,9 @@
     if (hasSpace(issue)) {
       const project = await client.findOne(tracker.class.Project, { _id: issue.space })
       if (project !== undefined) {
-        const accounts = await client.findAll(contact.class.EmployeeAccount, {
-          _id: { $in: project.members as Ref<EmployeeAccount>[] }
-        })
+        const accounts = project.members
+          .map((p) => $employeeAccountByIdStore.get(p as Ref<EmployeeAccount>))
+          .filter((p) => p !== undefined) as EmployeeAccount[]
         members = accounts.map((p) => p.employee)
       } else {
         members = []

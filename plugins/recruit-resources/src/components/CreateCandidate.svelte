@@ -50,15 +50,15 @@
     Component,
     createFocusManager,
     EditBox,
+    IconFile as FileIcon,
     FocusHandler,
     getColorNumberByText,
-    IconFile as FileIcon,
     IconInfo,
     Label,
     showPopup,
     Spinner
   } from '@hcengineering/ui'
-  import { createEventDispatcher, onDestroy } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
   import FileUpload from './icons/FileUpload.svelte'
   import YesNo from './YesNo.svelte'
@@ -81,10 +81,29 @@
   const empty = {}
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const ignoreKeys = ['onsite', 'remote']
+  const ignoreKeys = ['onsite', 'remote', 'title']
 
-  const draft = shouldSaveDraft ? draftController.get() : undefined
+  let draft = shouldSaveDraft ? ($draftsStore[recruit.mixin.Candidate] as CandidateDraft) : undefined
+  $: draft = shouldSaveDraft ? ($draftsStore[recruit.mixin.Candidate] as CandidateDraft) : undefined
   let object = draft ?? getEmptyCandidate()
+
+  function draftChange (draft: CandidateDraft | undefined) {
+    if (draft === undefined) {
+      object = getEmptyCandidate()
+    } else {
+      object = draft
+    }
+  }
+
+  function objectChange (object: CandidateDraft, empty: any) {
+    if (shouldSaveDraft) {
+      draftController.save(object, empty)
+    }
+  }
+
+  $: objectChange(object, empty)
+  $: draftChange(draft)
+
   type resumeFile = {
     name: string
     uuid: string
@@ -112,12 +131,6 @@
       lastModified: object?.resumeLastModified
     }
   }
-
-  if (shouldSaveDraft) {
-    draftController.watch(object, empty)
-  }
-
-  onDestroy(() => draftController.unsubscribe())
 
   const dispatch = createEventDispatcher()
 
@@ -643,6 +656,9 @@
         toClass={contact.class.Contact}
         {ignoreKeys}
         extraProps={{ showNavigate: false }}
+        on:update={() => {
+          object = object
+        }}
       />
     </div>
   </svelte:fragment>

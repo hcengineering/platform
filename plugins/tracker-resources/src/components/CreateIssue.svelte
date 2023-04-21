@@ -55,7 +55,6 @@
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
-  import { onDestroy } from 'svelte'
   import { createEventDispatcher } from 'svelte'
   import { activeComponent, activeSprint, generateIssueShortLink, getIssueId, updateIssueRelation } from '../issues'
   import tracker from '../plugin'
@@ -84,13 +83,32 @@
 
   const draftController = new DraftController<any>(tracker.ids.IssueDraft)
 
-  const draft: IssueDraft | undefined = shouldSaveDraft ? draftController.get() : undefined
+  let draft = shouldSaveDraft ? ($draftsStore[tracker.ids.IssueDraft] as IssueDraft) : undefined
+  $: draft = shouldSaveDraft ? ($draftsStore[tracker.ids.IssueDraft] as IssueDraft) : undefined
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const parentQuery = createQuery()
   let _space = space
 
   let object = draft ?? getDefaultObject()
+
+  function draftChange (draft: IssueDraft | undefined) {
+    if (draft === undefined) {
+      object = getDefaultObject()
+    } else {
+      object = draft
+      descriptionBox?.setContent(object.description)
+    }
+  }
+
+  function objectChange (object: IssueDraft, empty: any) {
+    if (shouldSaveDraft) {
+      draftController.save(object, empty)
+    }
+  }
+
+  $: objectChange(object, empty)
+  $: draftChange(draft)
 
   $: if (object.parentIssue) {
     parentQuery.query(
@@ -297,12 +315,6 @@
     }
   }
 
-  $: watch(empty)
-  function watch (empty: Record<string, any>): void {
-    if (!shouldSaveDraft) return
-    draftController.watch(object, empty)
-  }
-
   async function createIssue () {
     const _id: Ref<Issue> = generateId()
     if (!canSave || object.status === undefined) {
@@ -390,6 +402,7 @@
     draftController.remove()
     resetObject()
     descriptionBox?.removeDraft(false)
+    subIssuesComponent.removeChildDraft()
   }
 
   async function showMoreActions (ev: Event) {
@@ -503,6 +516,7 @@
           if (result === true) {
             dispatch('close')
             resetObject()
+            subIssuesComponent.removeChildDraft()
             draftController.remove()
             descriptionBox?.removeDraft(true)
           }
@@ -510,8 +524,6 @@
       )
     }
   }
-
-  onDestroy(() => draftController.unsubscribe())
 
   $: objectId = object._id
 </script>
