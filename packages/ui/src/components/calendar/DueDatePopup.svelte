@@ -13,8 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Icon, Label, IconDPCalendarOver, IconDPCalendar } from '@hcengineering/ui'
-  import tracker from '../plugin'
+  import DPCalendar from './icons/DPCalendar.svelte'
+  import DPCalendarOver from './icons/DPCalendarOver.svelte'
+  import ui from '../../plugin'
+  import Icon from '../Icon.svelte'
+  import Label from '../Label.svelte'
 
   export let formattedDate: string = ''
   export let daysDifference: number = 0
@@ -29,18 +32,18 @@
       class:mIconContainerWarning={iconModifier === 'warning'}
       class:mIconContainerCritical={iconModifier === 'critical' || iconModifier === 'overdue'}
     >
-      <Icon icon={isOverdue ? IconDPCalendarOver : IconDPCalendar} size={'small'} />
+      <Icon icon={isOverdue ? DPCalendarOver : DPCalendar} size={'small'} />
     </div>
     <div class="messageContainer">
       <div class="title">
         <Label
-          label={isOverdue ? tracker.string.DueDatePopupOverdueTitle : tracker.string.DueDatePopupTitle}
+          label={isOverdue ? ui.string.DueDatePopupOverdueTitle : ui.string.DueDatePopupTitle}
           params={{ value: formattedDate }}
         />
       </div>
       <div class="description">
         <Label
-          label={isOverdue ? tracker.string.DueDatePopupOverdueDescription : tracker.string.DueDatePopupDescription}
+          label={isOverdue ? ui.string.DueDatePopupOverdueDescription : ui.string.DueDatePopupDescription}
           params={{ value: daysDifference }}
         />
       </div>

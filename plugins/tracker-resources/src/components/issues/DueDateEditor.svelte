@@ -15,14 +15,13 @@
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
   import { Issue } from '@hcengineering/tracker'
-  import { DatePresenter, getDaysDifference } from '@hcengineering/ui'
-  import { getDueDateIconModifier } from '../../utils'
+  import { DueDatePresenter } from '@hcengineering/ui'
 
   export let value: Issue
 
   const client = getClient()
 
-  const handleDueDateChanged = async (newDueDate: number | undefined) => {
+  const handleDueDateChanged = async (newDueDate: number | undefined | null) => {
     if (newDueDate === undefined || value.dueDate === newDueDate) {
       return
     }
@@ -37,21 +36,8 @@
       { dueDate: newDueDate }
     )
   }
-
-  $: today = new Date(new Date(Date.now()).setHours(0, 0, 0, 0))
-  $: isOverdue = value.dueDate !== null && value.dueDate < today.getTime()
-  $: dueDate = value.dueDate === null ? null : new Date(value.dueDate)
-  $: daysDifference = dueDate === null ? null : getDaysDifference(today, dueDate)
-  $: iconModifier = getDueDateIconModifier(isOverdue, daysDifference)
 </script>
 
 {#if value}
-  <!-- TODO: fix button style and alignment -->
-  <DatePresenter
-    kind={'link'}
-    value={value.dueDate}
-    icon={iconModifier}
-    editable
-    on:change={({ detail }) => handleDueDateChanged(detail)}
-  />
+  <DueDatePresenter kind={'link'} value={value.dueDate} editable onChange={(e) => handleDueDateChanged(e)} />
 {/if}

@@ -13,21 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { IntlString } from '@hcengineering/platform'
   import { afterUpdate, createEventDispatcher } from 'svelte'
   import ui from '../../plugin'
   import ActionIcon from '../ActionIcon.svelte'
   import Button from '../Button.svelte'
   import Icon from '../Icon.svelte'
-  import IconClose from '../icons/Close.svelte'
   import Label from '../Label.svelte'
-  import { daysInMonth } from './internal/DateUtils'
+  import IconClose from '../icons/Close.svelte'
   import MonthSquare from './MonthSquare.svelte'
+  import { daysInMonth } from './internal/DateUtils'
 
   export let currentDate: Date | null
   export let withTime: boolean = false
   export let mondayStart: boolean = true
   export let label = currentDate != null ? ui.string.EditDueDate : ui.string.AddDueDate
-  export let detail = ui.string.IssueNeedsToBeCompletedByThisDate
+  export let detail: IntlString | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -242,8 +243,10 @@
   <div class="content">
     <div class="label">
       <span class="bold"><Label {label} /></span>
-      <span class="divider">-</span>
-      <Label label={detail} />
+      {#if detail}
+        <span class="divider">-</span>
+        <Label label={detail} />
+      {/if}
     </div>
 
     <div class="datetime-input">

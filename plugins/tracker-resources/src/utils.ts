@@ -227,25 +227,6 @@ export const getArraysUnion = (a: any[], b: any[]): any[] => {
   return Array.from(union)
 }
 
-const WARNING_DAYS = 7
-
-export const getDueDateIconModifier = (
-  isOverdue: boolean,
-  daysDifference: number | null
-): 'overdue' | 'critical' | 'warning' | undefined => {
-  if (isOverdue) {
-    return 'overdue'
-  }
-
-  if (daysDifference === 0) {
-    return 'critical'
-  }
-
-  if (daysDifference !== null && daysDifference <= WARNING_DAYS) {
-    return 'warning'
-  }
-}
-
 export type ComponentsViewMode = 'all' | 'backlog' | 'active' | 'closed'
 
 export type SprintViewMode = 'all' | 'planned' | 'active' | 'closed'
