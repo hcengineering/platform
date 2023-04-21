@@ -83,6 +83,7 @@
             class="remove-btn"
             on:click={(ev) => {
               ev.stopPropagation()
+              ev.preventDefault()
               dispatch('remove')
             }}
           >
