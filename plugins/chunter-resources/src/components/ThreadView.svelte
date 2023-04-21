@@ -16,11 +16,11 @@
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import type { ChunterMessage, Message, ThreadMessage } from '@hcengineering/chunter'
-  import core, { generateId, getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import core, { Ref, Space, generateId, getCurrentAccount } from '@hcengineering/core'
   import { LastView } from '@hcengineering/notification'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { getCurrentLocation, IconClose, Label, navigate } from '@hcengineering/ui'
+  import { IconClose, Label, getCurrentResolvedLocation, navigate } from '@hcengineering/ui'
   import { afterUpdate, beforeUpdate, createEventDispatcher } from 'svelte'
   import { createBacklinks } from '../backlinks'
   import chunter from '../plugin'
@@ -81,7 +81,7 @@
         message = res[0]
 
         if (!message) {
-          const loc = getCurrentLocation()
+          const loc = getCurrentResolvedLocation()
           loc.path.length = 4
           navigate(loc)
         }

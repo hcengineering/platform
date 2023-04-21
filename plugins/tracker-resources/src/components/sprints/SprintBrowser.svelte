@@ -17,7 +17,7 @@
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Sprint } from '@hcengineering/tracker'
-  import { Button, IconAdd, Label, SearchEdit, location, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, Label, SearchEdit, resolvedLocationStore, showPopup } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
   import {
     FilterBar,
@@ -75,7 +75,7 @@
   let key = makeViewletKey()
 
   onDestroy(
-    location.subscribe((loc) => {
+    resolvedLocationStore.subscribe((loc) => {
       key = makeViewletKey(loc)
     })
   )

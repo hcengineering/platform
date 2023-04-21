@@ -13,24 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { EmployeeAccount } from '@hcengineering/contact'
+  import { AccountRole, getCurrentAccount } from '@hcengineering/core'
+  import login, { loginId } from '@hcengineering/login'
+  import { setMetadata } from '@hcengineering/platform'
   import presentation, { createQuery } from '@hcengineering/presentation'
   import setting, { SettingsCategory } from '@hcengineering/setting'
   import {
     Component,
-    fetchMetadataLocalStorage,
-    getCurrentLocation,
     Label,
-    location,
+    fetchMetadataLocalStorage,
+    getCurrentResolvedLocation,
     navigate,
+    resolvedLocationStore,
     setMetadataLocalStorage,
     showPopup
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import CategoryElement from './CategoryElement.svelte'
-  import login, { loginId } from '@hcengineering/login'
-  import { AccountRole, getCurrentAccount } from '@hcengineering/core'
-  import { EmployeeAccount } from '@hcengineering/contact'
-  import { setMetadata } from '@hcengineering/platform'
 
   export let visibileNav = true
   let category: SettingsCategory | undefined
@@ -51,7 +51,7 @@
   )
 
   onDestroy(
-    location.subscribe(async (loc) => {
+    resolvedLocationStore.subscribe(async (loc) => {
       categoryId = loc.path[3]
       category = findCategory(categoryId)
     })
@@ -61,7 +61,7 @@
     return categories.find((x) => x.name === name)
   }
   function selectCategory (id: string): void {
-    const loc = getCurrentLocation()
+    const loc = getCurrentResolvedLocation()
     loc.path[3] = id
     loc.path.length = 4
     navigate(loc)
@@ -69,7 +69,7 @@
   function signOut (): void {
     const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
     if (tokens !== null) {
-      const loc = getCurrentLocation()
+      const loc = getCurrentResolvedLocation()
       delete tokens[loc.path[1]]
       setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
     }

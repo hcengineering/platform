@@ -1,10 +1,10 @@
 <script lang="ts">
   import core, { Ref, Space, WithLookup } from '@hcengineering/core'
-  import { Button, getCurrentLocation, navigate, location, TabList, Icon } from '@hcengineering/ui'
   import { createQuery } from '@hcengineering/presentation'
-  import board from '../plugin'
+  import { Button, Icon, TabList, getCurrentResolvedLocation, location, navigate } from '@hcengineering/ui'
   import { Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
+  import board from '../plugin'
 
   export let spaceId: Ref<Space> | undefined
   export let viewlets: WithLookup<Viewlet>[]
@@ -19,7 +19,7 @@
   })
 
   function showMenu () {
-    const loc = getCurrentLocation()
+    const loc = getCurrentResolvedLocation()
     loc.path[4] = space._id
     navigate(loc)
   }

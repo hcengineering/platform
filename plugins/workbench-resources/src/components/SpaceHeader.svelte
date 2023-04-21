@@ -24,7 +24,7 @@
     SearchEdit,
     TabList,
     deviceOptionsStore as deviceInfo,
-    location,
+    resolvedLocationStore,
     showPopup
   } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
@@ -70,7 +70,7 @@
   let key = makeViewletKey()
 
   onDestroy(
-    location.subscribe((loc) => {
+    resolvedLocationStore.subscribe((loc) => {
       key = makeViewletKey(loc)
     })
   )

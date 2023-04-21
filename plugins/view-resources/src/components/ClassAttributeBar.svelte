@@ -15,9 +15,9 @@
 <script lang="ts">
   import core, { Class, Doc, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { AttributesBar, getAttribute, getClient, KeyedAttribute } from '@hcengineering/presentation'
+  import { AttributesBar, KeyedAttribute, getAttribute, getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
-  import { Button, getCurrentLocation, Label, navigate } from '@hcengineering/ui'
+  import { Button, Label, getCurrentResolvedLocation, navigate } from '@hcengineering/ui'
   import { getFiltredKeys, isCollectionAttr } from '../utils'
 
   export let object: Doc | Record<string, any>
@@ -80,7 +80,7 @@
         showTooltip={{ label: setting.string.ClassSetting }}
         on:click={(ev) => {
           ev.stopPropagation()
-          const loc = getCurrentLocation()
+          const loc = getCurrentResolvedLocation()
           loc.path[2] = settingId
           loc.path[3] = 'setting'
           loc.path[4] = 'classes'

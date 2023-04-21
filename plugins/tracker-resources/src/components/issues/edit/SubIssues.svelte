@@ -25,7 +25,7 @@
     IconScaleFull,
     Label,
     closeTooltip,
-    getCurrentLocation,
+    getCurrentResolvedLocation,
     navigate
   } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
@@ -104,7 +104,7 @@
           const filter = createFilter(tracker.class.Issue, 'attachedTo', [issue._id])
           if (filter !== undefined) {
             closeTooltip()
-            const loc = getCurrentLocation()
+            const loc = getCurrentResolvedLocation()
             loc.fragment = undefined
             loc.query = undefined
             loc.path[2] = trackerId
