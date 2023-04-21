@@ -26,6 +26,9 @@
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
   import VacancyApplications from './VacancyApplications.svelte'
+  import { getResource } from '@hcengineering/platform'
+  import notification from '@hcengineering/notification'
+  import { onDestroy } from 'svelte'
 
   export let _id: Ref<Vacancy>
   export let embedded = false
@@ -33,10 +36,16 @@
   let object: Required<Vacancy>
   let rawName: string = ''
   let rawDesc: string = ''
+  let lastId: Ref<Vacancy> | undefined = undefined
 
   let showAllMixins = false
 
   const dispatch = createEventDispatcher()
+  const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
+
+  onDestroy(async () => {
+    notificationClient.then((client) => client.updateLastView(_id, recruit.class.Vacancy))
+  })
 
   const client = getClient()
 
@@ -44,11 +53,18 @@
   const clazz = client.getHierarchy().getClass(recruit.class.Vacancy)
 
   function updateObject (_id: Ref<Vacancy>): void {
-    query.query(recruit.class.Vacancy, { _id }, (result) => {
-      object = result[0] as Required<Vacancy>
-      rawName = object.name
-      rawDesc = object.description
-    })
+    if (lastId !== _id) {
+      const prev = lastId
+      lastId = _id
+      if (prev) {
+        notificationClient.then((client) => client.updateLastView(prev, recruit.class.Vacancy))
+      }
+      query.query(recruit.class.Vacancy, { _id }, (result) => {
+        object = result[0] as Required<Vacancy>
+        rawName = object.name
+        rawDesc = object.description
+      })
+    }
   }
 
   $: updateObject(_id)
