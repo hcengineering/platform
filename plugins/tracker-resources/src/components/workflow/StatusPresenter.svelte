@@ -60,7 +60,7 @@
     >
       <Icon icon={IconEdit} size="small" />
     </div>
-    {#if !isSingle}
+    {#if !isDefault}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
         class="btn"

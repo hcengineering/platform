@@ -34,6 +34,7 @@
   import tracker from '../../plugin'
   import StatusEditor from './StatusEditor.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
+  import RemoveStatus from './RemoveStatus.svelte'
 
   export let projectId: Ref<Project>
   export let projectClass: Ref<Class<Project>>
@@ -128,18 +129,13 @@
     closeTooltip()
 
     const { detail: status } = event
-    const issuesWithDeletingStatus = await client.findAll(
-      tracker.class.Issue,
-      { status: status._id },
-      { projection: { _id: 1 } }
-    )
+    const issuesWithDeletingStatus = await client.findAll(tracker.class.Issue, { status: status._id })
 
     if (issuesWithDeletingStatus.length > 0) {
-      showPopup(MessageBox, {
-        label: tracker.string.DeleteWorkflowStatusError,
-        message: tracker.string.DeleteWorkflowStatusErrorDescription,
-        params: { status: status.name, count: issuesWithDeletingStatus.length },
-        canSubmit: false
+      showPopup(RemoveStatus, {
+        issues: issuesWithDeletingStatus,
+        projectId,
+        status
       })
     } else {
       showPopup(

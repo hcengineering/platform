@@ -188,8 +188,7 @@
     "EditWorkflowStatus": "Редактировать статус задачи",
     "DeleteWorkflowStatus": "Удалить статус задачи",
     "DeleteWorkflowStatusConfirm": "Вы действительно хотите удалить \"{status}\" статус?",
-    "DeleteWorkflowStatusError": "Невозможно удалить статус задачи",
-    "DeleteWorkflowStatusErrorDescription": "Статус \"{status}\" {count, plural, =1 {имеет 1 задача} other {имеют # задачи}}. Пожалуйста, архивируйте или переместите {count, plural, =1 {ее} other {их}} перед удалением этого статуса.",
+    "DeleteWorkflowStatusErrorDescription": "Статус \"{status}\" {count, plural, =1 {имеет 1 задача} other {имеют # задачи}}. Пожалуйста, выберите статус для перемещения.",
 
     "Save": "Сохранить",
     "IncludeItemsThatMatch": "Включить элементы, которые соответствуют",
