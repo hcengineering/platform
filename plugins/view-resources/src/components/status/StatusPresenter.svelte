@@ -30,7 +30,7 @@
     {:else if icon !== undefined && typeof icon !== 'string'}
       <svelte:component this={icon} {value} {size} />
     {/if}
-    <span class="overflow-label" class:ml-2={icon !== undefined}>
+    <span class="overflow-label" class:ml-1-5={icon !== undefined}>
       {value.name}
     </span>
   </div>

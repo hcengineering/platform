@@ -363,10 +363,11 @@ input.search {
   }
 }
 .buttons-divider {
-  min-width: 1px;
+  flex-shrink: 0;
   width: 1px;
   height: 1.5rem;
-  background-color: var(--divider-color);
+  max-height: 1.5rem;
+  background-color: var(--theme-list-divider-color);
 }
 
 .labels-row {
@@ -642,20 +643,20 @@ input.search {
   height: 1em;
 }
 .svg-x-small {
-  width: .857em;
-  height: .857em;
+  width: .75rem;
+  height: .75rem;
 }
 .svg-small {
-  width: 1.143em;
-  height: 1.143em;
+  width: 1rem;
+  height: 1rem;
 }
 .svg-medium {
-  width: 1.429em;
-  height: 1.429em;
+  width: 1.25rem;
+  height: 1.25rem;
 }
 .svg-large {
-  width: 1.715em;
-  height: 1.715em;
+  width: 1.5rem;
+  height: 1.5rem;
 }
 .svg-full {
   width: inherit;

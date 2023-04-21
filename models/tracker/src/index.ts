@@ -529,7 +529,7 @@ export function createModel (builder: Builder): void {
         {
           key: '',
           presenter: tracker.component.IssuePresenter,
-          props: { type: 'issue', listProps: { fixed: 'left' } }
+          props: { type: 'issue', listProps: { key: 'issue', fixed: 'left' } }
         },
         {
           key: '',
@@ -544,7 +544,11 @@ export function createModel (builder: Builder): void {
           presenter: tags.component.LabelsPresenter,
           props: { kind: 'list', full: false, lookupField: 'labels', listProps: { optional: true, compression: true } }
         },
-        { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
+        {
+          key: '',
+          presenter: tracker.component.DueDatePresenter,
+          props: { kind: 'list', listProps: { optional: true, compression: true } }
+        },
         {
           key: '',
           presenter: tracker.component.ComponentEditor,
@@ -575,15 +579,17 @@ export function createModel (builder: Builder): void {
             }
           }
         },
+        { key: '', presenter: view.component.DividerPresenter, props: { type: 'divider' } },
         {
           key: '',
           presenter: tracker.component.EstimationEditor,
-          props: { kind: 'list', size: 'small', listProps: { optional: true } }
+          props: { kind: 'list', size: 'small', listProps: { key: 'estimation', fixed: 'left' } }
         },
+        { key: '', presenter: view.component.DividerPresenter, props: { type: 'divider' } },
         {
           key: 'modifiedOn',
           presenter: tracker.component.ModificationDatePresenter,
-          props: { listProps: { fixed: 'right', optional: true } }
+          props: { listProps: { key: 'modified', fixed: 'left' } }
         },
         {
           key: '$lookup.assignee',

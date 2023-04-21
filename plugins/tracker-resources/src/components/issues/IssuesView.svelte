@@ -110,8 +110,8 @@
     {/if}
   </svelte:fragment>
 </IssuesHeader>
-<slot name="afterHeader" />
 <FilterBar _class={tracker.class.Issue} query={searchQuery} {viewOptions} on:change={(e) => (resultQuery = e.detail)} />
+<slot name="afterHeader" />
 <div class="flex w-full h-full clear-mins">
   {#if viewlet}
     <IssuesContent {viewlet} query={resultQuery} {space} {viewOptions} />

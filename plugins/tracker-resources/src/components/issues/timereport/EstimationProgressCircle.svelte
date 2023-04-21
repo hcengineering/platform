@@ -29,7 +29,7 @@
   $: procC = lenghtC / (max - min)
   $: dashOffset = (Math.min(value, max) - min) * procC
 
-  $: color = value > max ? overdueColor : value === min ? color : greenColor
+  $: color = value > max ? overdueColor : value < max ? color : greenColor
 </script>
 
 <svg class="svg-{size}" fill="none" viewBox="0 0 16 16">
@@ -38,8 +38,8 @@
     cy={8}
     r={7}
     class="progress-circle"
-    style:stroke={'var(--divider-color)'}
-    style:opacity={'.5'}
+    style:stroke={'var(--theme-caption-color)'}
+    style:opacity={'.15'}
     style:transform={`rotate(${-78 + ((dashOffset + 1) * 360) / (lenghtC + 1)}deg)`}
     style:stroke-dasharray={lenghtC}
     style:stroke-dashoffset={dashOffset === 0 ? 0 : dashOffset + 3}

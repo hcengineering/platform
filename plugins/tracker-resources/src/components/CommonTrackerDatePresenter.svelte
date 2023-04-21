@@ -46,6 +46,7 @@
   {#if formattedDate}
     <div
       class="clear-mins"
+      class:label-wrapper={kind === 'list'}
       use:tooltip={{
         direction: 'top',
         component: DueDatePopup,

@@ -24,6 +24,7 @@
   export let onClick: ((event: MouseEvent) => void) | undefined = undefined
   export let noUnderline = false
   export let inline = false
+  export let colorInherit: boolean = false
   export let component: AnyComponent = view.component.EditDoc
   export let props: Record<string, any> = {}
   export let shrink: number = 0
@@ -48,4 +49,4 @@
   $: if (object !== undefined) getHref(object)
 </script>
 
-<NavLink {disableClick} {onClick} {noUnderline} {inline} {shrink} {href}><slot /></NavLink>
+<NavLink {disableClick} {onClick} {noUnderline} {inline} {shrink} {href} {colorInherit}><slot /></NavLink>

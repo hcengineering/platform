@@ -307,7 +307,7 @@ export function fitPopupElement (
       newProps.top = `${rect.top}px`
       // newProps.bottom = `${Math.min(document.body.clientHeight - rect.bottom + 1, window.innerHeight - rect.top - 1)}px`
       newProps.height = `${Math.min(rect.height, window.innerHeight - rect.top)}px`
-      newProps.left = `${rect.left + 1}px`
+      newProps.left = `${rect.left}px`
       // newProps.right = `${Math.min(document.body.clientWidth - rect.right, window.innerWidth - rect.left - 5)}px`
       newProps.width = `${Math.min(rect.width, window.innerWidth - rect.left)}px`
     } else if (element === 'middle') {

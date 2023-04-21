@@ -17,7 +17,7 @@
   import { onMount, ComponentType } from 'svelte'
   import { registerFocus } from '../focus'
   import { tooltip } from '../tooltips'
-  import type { AnySvelteComponent, ButtonKind, ButtonShape, ButtonSize, LabelAndProps } from '../types'
+  import type { AnySvelteComponent, ButtonKind, ButtonShape, ButtonSize, LabelAndProps, IconSize } from '../types'
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
   import Spinner from './Spinner.svelte'
@@ -29,6 +29,8 @@
   export let shape: ButtonShape = undefined
   export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
   export let iconProps: any | undefined = undefined
+  export let iconRight: Asset | AnySvelteComponent | ComponentType | undefined = undefined
+  export let iconRightProps: any | undefined = undefined
   export let justify: 'left' | 'center' = 'center'
   export let disabled: boolean = false
   export let loading: boolean = false
@@ -45,10 +47,14 @@
   export let id: string | undefined = undefined
   export let input: HTMLButtonElement | undefined = undefined
   export let showTooltip: LabelAndProps | undefined = undefined
+  export let iconSize: IconSize = size === 'inline' ? 'inline' : 'small'
+  export let iconRightSize: IconSize = 'x-small'
+  export let short: boolean = false
 
-  let iconSize: ButtonSize
-  $: iconSize = size === 'inline' ? 'inline' : 'small'
-  $: iconOnly = label === undefined && ($$slots.content === undefined || $$slots.icon !== undefined)
+  // $: iconSize = size === 'inline' ? 'inline' : 'small'
+  $: iconOnly =
+    label === undefined &&
+    ($$slots.content === undefined || $$slots.icon !== undefined || $$slots.iconRight !== undefined)
 
   onMount(() => {
     if (focus && input) {
@@ -95,6 +101,7 @@
   class:selected
   class:notSelected
   disabled={disabled || loading}
+  class:short
   style:width
   style:height
   {title}
@@ -113,7 +120,7 @@
   {/if}
   {#if loading}
     <div class="btn-icon pointer-events-none caption-color spinner" class:resetIconSize>
-      <Spinner size={iconSize} />
+      <Spinner size={iconSize === 'inline' ? 'inline' : 'small'} />
     </div>
   {/if}
   {#if label}
@@ -121,8 +128,14 @@
       <Label {label} params={labelParams} />
     </span>
   {/if}
+  {#if iconRight}
+    <div class="btn-right-icon pointer-events-none" class:resetIconSize>
+      <Icon bind:icon={iconRight} size={iconRightSize} iconProps={iconRightProps} />
+    </div>
+  {/if}
   {#if $$slots.icon}<slot name="icon" />{/if}
   {#if $$slots.content}<slot name="content" />{/if}
+  {#if $$slots.iconRight}<slot name="iconRight" />{/if}
 </button>
 
 <style lang="scss">
@@ -142,9 +155,9 @@
     }
   }
   .medium {
-    height: 1.75rem;
+    height: 2rem;
     &.only-icon {
-      width: 1.75rem;
+      width: 2rem;
     }
   }
   .large {
@@ -168,19 +181,28 @@
     font-weight: 500;
     min-width: 1.375rem;
     white-space: nowrap;
-    color: var(--accent-color);
+    color: var(--theme-caption-color);
     background-color: transparent;
     border: 1px solid transparent;
     transition-property: border, background-color, color, box-shadow;
     transition-duration: 0.15s;
 
     .btn-icon {
-      color: var(--content-color);
+      color: var(--theme-content-color);
+      transition: color 0.15s;
+      pointer-events: none;
+    }
+    .btn-right-icon {
+      margin-left: 0.5rem;
+      color: var(--theme-halfcontent-color);
       transition: color 0.15s;
       pointer-events: none;
     }
     &:not(.only-icon) .btn-icon:not(.spinner) {
       margin-right: 0.5rem;
+    }
+    &:not(.only-icon) .btn-right-icon {
+      margin-left: 0.5rem;
     }
     &.no-border:not(.only-icon) .btn-icon,
     &.link-bordered:not(.only-icon) .btn-icon,
@@ -189,6 +211,9 @@
       margin-right: 0.25rem;
     }
 
+    &.short {
+      max-width: 7rem;
+    }
     &.sh-no-shape {
       border-radius: 0.25rem;
     }
@@ -217,25 +242,22 @@
     }
 
     &.highlight {
-      box-shadow: inset 0 0 1px 1px var(--primary-bg-color);
+      box-shadow: inset 0 0 1px 1px var(--primary-button-enabled);
 
       &:hover {
-        box-shadow: inset 0 0 1px 1px var(--primary-bg-hover);
+        box-shadow: inset 0 0 1px 1px var(--primary-button-hovered);
       }
     }
     &:hover {
-      color: var(--accent-color);
-      transition-duration: 0;
-
       .btn-icon {
-        color: var(--caption-color);
+        color: var(--theme-caption-color);
       }
     }
     &:focus {
-      border-color: var(--primary-edit-border-color) !important;
+      box-shadow: 0 0 0 2px var(--primary-button-focused-border);
     }
     &:disabled {
-      color: rgb(var(--caption-color) / 40%);
+      color: var(--theme-dark-color);
       cursor: not-allowed;
 
       .btn-icon {
@@ -254,26 +276,29 @@
     }
 
     &.secondary {
-      background-color: var(--button-bg-color);
-      border-color: var(--button-border-color);
-      box-shadow: var(--button-shadow);
+      background-color: var(--theme-button-enabled);
+      border-color: var(--theme-button-border);
 
+      &.medium:not(.only-icon) {
+        padding: 0 0.75rem;
+      }
       &:hover {
-        background-color: var(--button-bg-hover);
-        border-color: var(--button-border-hover);
+        background-color: var(--theme-button-hovered);
+      }
+      &:active {
+        background-color: var(--theme-button-pressed);
+      }
+      &:focus {
+        background-color: var(--theme-button-focused);
       }
       &:disabled {
-        background-color: var(--button-disabled-color);
-        border-color: transparent;
+        background-color: var(--theme-button-disabled);
       }
 
       &.selected {
-        background-color: var(--button-bg-hover);
-        border-color: var(--button-border-hover);
-        color: var(--caption-color);
-
+        background-color: var(--theme-button-hovered);
         .btn-icon {
-          color: var(--accent-color);
+          color: var(--theme-caption-color);
         }
       }
     }
@@ -305,7 +330,7 @@
     }
     &.transparent {
       &:hover {
-        background-color: var(--highlight-hover);
+        background-color: var(--theme-button-hovered);
       }
       &.selected {
         background-color: var(--highlight-select);
@@ -349,40 +374,47 @@
       }
     }
     &.list {
-      padding: 0 0.625em 0 0.5rem;
+      padding: 0 0.625em;
       min-height: 1.75rem;
-      color: var(--content-color);
-      background-color: var(--body-color);
-      border: 1px solid var(--divider-color);
-      border-radius: 3rem;
-      transition-property: border, color, background-color;
-      transition-duration: 0.15s;
+      color: var(--theme-halfcontent-color);
+      background-color: var(--theme-list-button-color);
+      border: 1px solid var(--theme-button-border);
+      border-radius: 1.5rem;
+      // transition-property: border, color, background-color;
+      // transition-duration: 0.15s;
 
+      .btn-icon {
+        color: var(--theme-dark-color);
+      }
       &:hover {
-        color: var(--caption-color);
-        background-color: var(--board-card-bg-color);
-        border-color: var(--button-border-color);
+        color: var(--theme-halfcontent-color);
+        background-color: var(--theme-list-button-color);
+        border-color: var(--theme-button-border);
+      }
+      &:focus {
+        box-shadow: none;
       }
     }
     &.primary {
       padding: 0 0.75rem;
-      color: var(--white-color);
-      background-color: var(--primary-bg-color);
-      border-color: var(--primary-bg-color);
-      box-shadow: var(--primary-shadow);
+      color: var(--primary-button-color);
+      background-color: var(--primary-button-enabled);
+      border-color: var(--primary-button-border);
 
       .btn-icon {
         color: var(--white-color);
       }
       &:hover {
-        background-color: var(--primary-bg-hover);
+        background-color: var(--primary-button-hovered);
+      }
+      &:active {
+        background-color: var(--primary-button-pressed);
       }
       &:focus {
-        border-color: var(--primary-edit-border-color);
+        background-color: var(--primary-button-focused);
       }
       &:disabled {
-        background-color: #5e6ad255;
-        border-color: #5e6ad255;
+        background-color: var(--primary-button-disabled);
       }
     }
 

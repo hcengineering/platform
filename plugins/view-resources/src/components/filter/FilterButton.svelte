@@ -15,11 +15,13 @@
 <script lang="ts">
   import { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Button, Icon, IconAdd, IconClose, Label, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { Button, IconClose, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { filterStore, setFilters } from '../../filter'
   import view from '../../plugin'
   import FilterTypePopup from './FilterTypePopup.svelte'
+  import IconFilter from '../icons/Filter.svelte'
+  import IconArrowDown from '../icons/ArrowDown.svelte'
 
   export let _class: Ref<Class<Doc>> | undefined
   export let space: Ref<Space> | undefined = undefined
@@ -57,24 +59,12 @@
 
 {#if visible}
   <Button
-    size="small"
-    kind={'link-bordered'}
-    borderStyle={'dashed'}
+    icon={IconFilter}
+    label={$filterStore.length === 0 ? view.string.Filter : view.string.ClearFilters}
+    iconRight={$filterStore.length === 0 ? IconArrowDown : IconClose}
     on:click={(ev) => {
       if ($filterStore.length === 0) add(ev)
       else setFilters([])
     }}
-  >
-    <svelte:fragment slot="content">
-      <div class="flex-row-center pointer-events-none">
-        {#if $filterStore.length === 0}
-          <Icon icon={IconAdd} size={'x-small'} />
-          <span class="overflow-label ml-1"><Label label={view.string.Filter} /></span>
-        {:else}
-          <span class="overflow-label mr-1"><Label label={view.string.ClearFilters} /></span>
-          <Icon icon={IconClose} size={'x-small'} />
-        {/if}
-      </div>
-    </svelte:fragment>
-  </Button>
+  />
 {/if}

@@ -168,7 +168,7 @@ export type TooltipAlignment = 'top' | 'bottom' | 'left' | 'right'
 export type VerticalAlignment = 'top' | 'bottom'
 export type HorizontalAlignment = 'left' | 'right'
 
-export type IconSize = 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' | 'full'
+export type IconSize = 'inline' | 'tiny' | 'x-small' | 'smaller' | 'small' | 'medium' | 'large' | 'x-large' | 'full'
 
 export interface DateOrShift {
   date?: number
@@ -237,7 +237,7 @@ export const defaultSP: FadeOptions = { multipler: { top: 0, bottom: 0 } }
 export const tableSP: FadeOptions = { multipler: { top: 2.5, bottom: 2.5 } }
 export const topSP: FadeOptions = { multipler: { top: 2.5, bottom: 0 } }
 export const tableHRscheduleY: FadeOptions = { multipler: { top: 5, bottom: 0 } }
-export const issueSP: FadeOptions = { multipler: { top: 3, bottom: 0 } }
+export const issueSP: FadeOptions = { multipler: { top: 2.75, bottom: 0 } }
 export const emojiSP: FadeOptions = { multipler: { top: 1.5, bottom: 0 } }
 
 export interface DeviceOptions {

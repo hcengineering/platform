@@ -385,12 +385,12 @@
 
   .header {
     padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--divider-color);
+    border-bottom: 1px solid var(--theme-divider-color);
 
     .label {
-      color: var(--caption-color);
+      color: var(--theme-caption-color);
       .counter {
-        color: rgba(var(--caption-color), 0.8);
+        color: rgba(var(--theme-caption-color), 0.8);
       }
     }
   }

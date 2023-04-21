@@ -15,7 +15,7 @@
 <script lang="ts">
   import { getName, Person } from '@hcengineering/contact'
   import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
-  import { LabelAndProps } from '@hcengineering/ui'
+  import type { LabelAndProps, IconSize } from '@hcengineering/ui'
   import { PersonLabelTooltip } from '..'
   import PersonContent from './PersonContent.svelte'
 
@@ -29,9 +29,11 @@
   export let defaultName: IntlString | undefined = undefined
   export let statusLabel: IntlString | undefined = undefined
   export let tooltipLabels: PersonLabelTooltip | undefined = undefined
-  export let avatarSize: 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' = 'x-small'
+  export let avatarSize: IconSize = 'x-small'
   export let onEdit: ((event: MouseEvent) => void) | undefined = undefined
   export let element: HTMLElement | undefined = undefined
+  export let colorInherit: boolean = false
+  export let accent: boolean = false
 
   function getTooltip (
     tooltipLabels: PersonLabelTooltip | undefined,
@@ -73,6 +75,8 @@
     {shouldShowPlaceholder}
     {enlargedText}
     {statusLabel}
+    {colorInherit}
+    {accent}
     bind:element
   />
 {/if}
