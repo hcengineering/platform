@@ -246,9 +246,7 @@
   }
 </script>
 
-<svelte:window on:paste={pasteAction} />
-
-<div bind:this={refContainer}>
+<div bind:this={refContainer} on:paste={pasteAction}>
   <input
     bind:this={inputFile}
     multiple
