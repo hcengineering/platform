@@ -128,7 +128,7 @@
     font-weight: 600;
     font-size: 0.75rem;
     color: var(--theme-accent-color);
-    border: 1px solid var(--divider-color);
+    border: 1px solid var(--highlight-red);
     border-radius: 50%;
   }
 </style>
