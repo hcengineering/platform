@@ -13,25 +13,25 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute, Doc, getObjectValue, Ref } from '@hcengineering/core'
+  import core, { AnyAttribute, Doc, getObjectValue } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { getClient, updateAttribute } from '@hcengineering/presentation'
-  import { CheckBox, Component, deviceOptionsStore as deviceInfo, tooltip, IconCircles } from '@hcengineering/ui'
+  import { CheckBox, Component, deviceOptionsStore as deviceInfo, IconCircles, tooltip } from '@hcengineering/ui'
   import { AttributeModel } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { FixedColumn } from '../..'
   import view from '../../plugin'
 
   export let docObject: Doc
-  export let index: number
   export let model: AttributeModel[]
   export let groupByKey: string | undefined
   export let checked: boolean
   export let selected: boolean
   export let props: Record<string, any> = {}
-  export let elementByIndex: Map<number, HTMLDivElement>
-  export let indexById: Map<Ref<Doc>, number>
-  export let docByIndex: Map<number, Doc>
+
+  export function scroll () {
+    elem?.scrollIntoView({ behavior: 'auto', block: 'nearest' })
+  }
 
   let elem: HTMLDivElement
 
@@ -46,10 +46,6 @@
   }
 
   $: compactMode = $deviceInfo.twoRows
-
-  $: elem && elementByIndex.set(index, elem)
-  $: indexById.set(docObject._id, index)
-  $: docByIndex.set(index, docObject)
 
   const client = getClient()
 
@@ -94,6 +90,7 @@
   draggable={true}
   on:contextmenu
   on:focus
+  on:mouseenter
   on:mouseover
   on:dragover
   on:dragenter
