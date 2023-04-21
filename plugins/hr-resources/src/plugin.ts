@@ -51,6 +51,9 @@ export default mergeIds(hrId, hr, {
     Description: '' as IntlString,
     MarkAsPublicHoliday: '' as IntlString,
     EditPublicHoliday: '' as IntlString,
-    Managers: '' as IntlString
+    Managers: '' as IntlString,
+    Export: '' as IntlString,
+    Separator: '' as IntlString,
+    ChooseSeparator: '' as IntlString
   }
 })

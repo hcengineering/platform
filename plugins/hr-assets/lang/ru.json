@@ -47,6 +47,9 @@
     "PublicHoliday": "Праздничный день",
     "MarkAsPublicHoliday": "Отметить как праздничный день",
     "EditPublicHoliday": "Редактировать праздничный день",
-    "Managers": "Менеджера"
+    "Managers": "Менеджера",
+    "Export": "Экспортировать",
+    "Separator": "Разделитель",
+    "ChooseSeparator": "Выберите разделитель"
   }
 }
