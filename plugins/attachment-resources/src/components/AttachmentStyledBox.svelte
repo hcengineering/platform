@@ -298,8 +298,6 @@
   }
 </script>
 
-<svelte:window on:paste={(ev) => (fakeAttach === 'normal' ? pasteAction(ev) : undefined)} />
-
 <input
   bind:this={inputFile}
   multiple
@@ -312,6 +310,7 @@
 
 <div
   class="flex-col clear-mins"
+  on:paste={(ev) => (fakeAttach === 'normal' ? pasteAction(ev) : undefined)}
   on:dragover|preventDefault={() => {}}
   on:dragleave={() => {}}
   on:drop|preventDefault|stopPropagation={(ev) => {
