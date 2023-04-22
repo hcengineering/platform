@@ -3,7 +3,7 @@
   import { IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { IssueTemplate } from '@hcengineering/tracker'
-  import { Button, IconAdd, IconDetails, IconDetailsFilled, resolvedLocationStore, showPopup } from '@hcengineering/ui'
+  import { Button, IconDetails, IconDetailsFilled, resolvedLocationStore, showPopup } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
   import {
     FilterBar,
@@ -92,21 +92,11 @@
   <svelte:fragment slot="label_selector">
     <slot name="label_selector" />
   </svelte:fragment>
+  <svelte:fragment slot="header-tools">
+    <Button label={tracker.string.IssueTemplate} kind={'primary'} on:click={showCreateDialog} />
+  </svelte:fragment>
   <svelte:fragment slot="extra">
-    <Button
-      size={'small'}
-      icon={IconAdd}
-      label={tracker.string.IssueTemplate}
-      kind={'primary'}
-      on:click={showCreateDialog}
-    />
-
-    {#if viewlet}
-      <ViewletSettingButton bind:viewOptions {viewlet} />
-    {/if}
-
     {#if asideFloat && $$slots.aside}
-      <div class="buttons-divider" />
       <Button
         icon={asideShown ? IconDetailsFilled : IconDetails}
         kind={'transparent'}
@@ -116,6 +106,10 @@
           asideShown = !asideShown
         }}
       />
+      <div class="buttons-divider" />
+    {/if}
+    {#if viewlet}
+      <ViewletSettingButton bind:viewOptions {viewlet} />
     {/if}
   </svelte:fragment>
 </IssuesHeader>

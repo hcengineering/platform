@@ -15,7 +15,7 @@
 
 /* Panels */
 * {
-  --app-panel-width: 4rem;
+  --app-panel-width: 4.25rem;
 }
 .antiPanel-application {
   flex-shrink: 0;
@@ -45,9 +45,9 @@
   height: 100%;
   overflow: hidden;
   
-  // &.filled { background-color: var(--body-accent); }
-  // &.border-left { border-left: 1px solid var(--divider-color); }
-  // &.border-right { border-right: 1px solid var(--divider-color); }
+  &.filled { background-color: var(--theme-bg-color); }
+  &.border-left { border-left: 1px solid var(--theme-divider-color); }
+  &.border-right { border-right: 1px solid var(--theme-divider-color); }
 }
 .antiPanel-navigator {
   position: relative;
