@@ -70,6 +70,8 @@
   --theme-button-disabled: rgba(255, 255, 255, .02);
   --theme-button-border: rgba(255, 255, 255, .06);
 
+  --theme-refinput-color: rgba(255, 255, 255, .03);
+
   --theme-bg-color: #1A1A28;
   --theme-statusbar-color: #2C2C35;
   --theme-navpanel-color: #14141F;
@@ -92,10 +94,13 @@
   --theme-list-header-color: #C88C65;
   --theme-list-subheader-color: #262634;
   --theme-list-row-color: #21212F;
-  --theme-list-row-hover: #232331;
   --theme-list-button-color: #262633;
   --theme-list-divider-color: rgba(255, 255, 255, .09);
   --theme-list-subheader-divider: transparent;
+
+  --theme-table-border-color: rgba(255, 255, 255, .1);
+  --theme-table-header-color: #1C1C29;
+  --theme-table-row-color: #21212F;
 
   --theme-kanban-card-bg-color: rgba(222, 222, 240, .04);
   --theme-kanban-card-border: transparent;
@@ -116,7 +121,7 @@
   --accent-bg-color: #27282b;
   --accent-shadow: rgb(0 0 0 / 10%) 0px 2px 4px;
 
-  --highlight-hover: #28292b;
+  --highlight-hover: #232331;
   --highlight-select: #252b3a;
   --highlight-select-border: #44506b;
   --highlight-select-hover: #2c3346;
@@ -207,6 +212,8 @@
   --theme-button-disabled: rgba(0, 0, 0, .02);
   --theme-button-border: rgba(0, 0, 0, .06);
 
+  --theme-refinput-color: rgba(0, 0, 0, .03);
+
   --theme-bg-color: #F1F1F4;
   --theme-statusbar-color: #DADADF;
   --theme-navpanel-color: #E8E8ED;
@@ -229,10 +236,13 @@
   --theme-list-header-color: #ECD4CA;
   --theme-list-subheader-color: #EEEEF0;
   --theme-list-row-color: #F7F7F8;
-  --theme-list-row-hover: #F2F2F3;
   --theme-list-button-color: #F2F2F4;
   --theme-list-divider-color: rgba(0, 0, 0, .07);
   --theme-list-subheader-divider: rgba(0, 0, 0, .06);
+
+  --theme-table-border-color: rgba(0, 0, 0, .1);
+  --theme-table-header-color: #EFEFF2;
+  --theme-table-row-color: #F4F4F6;
 
   --theme-kanban-card-bg-color: rgba(0, 0, 0, .03);
   --theme-kanban-card-border: rgba(0, 0, 0, .04);
@@ -253,7 +263,7 @@
   --accent-bg-color: #eff0f2;  // HZ
   --accent-shadow: rgb(0 0 0 / 10%) 0px 2px 4px;  // Dark
 
-  --highlight-hover: #f9f9f9;
+  --highlight-hover: #F2F2F3;
   --highlight-select: #f0f4ff;
   --highlight-select-border: #e6eaff;
   --highlight-select-hover: #e4ebff;

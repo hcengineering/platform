@@ -37,8 +37,8 @@
 
 <div class="year-erp-calendar">
   {#each [...Array(12).keys()] as m}
-    <div class="antiComponentBox flex-grow flex-wrap" style={`min-width: ${minWidth};`}>
-      {getMonthName(month(currentDate, m))}
+    <div class="antiComponentBox flex-col flex-grow flex-wrap" style={`min-width: ${minWidth};`}>
+      <span class="month-caption">{getMonthName(month(currentDate, m))}</span>
       <MonthCalendar
         {cellHeight}
         weekFormat="narrow"
@@ -62,5 +62,12 @@
     row-gap: 1rem;
     column-gap: 1rem;
     border-collapse: collapse;
+  }
+  .month-caption {
+    margin: 0.5rem 0.75rem 0.75rem;
+    font-weight: 500;
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    color: var(--theme-dark-color);
   }
 </style>

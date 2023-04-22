@@ -15,12 +15,12 @@
 -->
 <script lang="ts">
   import { DocumentQuery } from '@hcengineering/core'
-  import { Button, Icon, Label, Scroller, SearchEdit, showPopup, IconAdd } from '@hcengineering/ui'
+  import { Button, ActionIcon, Label, Scroller, SearchEdit, showPopup, IconMoreH } from '@hcengineering/ui'
   import type { Category } from '@hcengineering/inventory'
   import inventory from '../plugin'
   import CreateCategory from './CreateCategory.svelte'
   import HierarchyView from './HierarchyView.svelte'
-  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  // import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   let search = ''
   let resultQuery: DocumentQuery<Category> = {}
@@ -33,31 +33,23 @@
     showPopup(CreateCategory, { space: inventory.space.Category }, 'top')
   }
 
-  $: twoRows = $deviceInfo.twoRows
+  // $: twoRows = $deviceInfo.twoRows
 </script>
 
-<div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
-  <div class:ac-header-full={!twoRows} class:flex-between={twoRows}>
-    <div class="ac-header__wrap-title mr-3">
-      <div class="ac-header__icon"><Icon icon={inventory.icon.Categories} size={'small'} /></div>
-      <span class="ac-header__title"><Label label={inventory.string.Categories} /></span>
-    </div>
-
-    <SearchEdit
-      bind:value={search}
-      on:change={() => {
-        updateResultQuery(search)
-      }}
-    />
+<div class="ac-header full divide caption-height">
+  <div class="ac-header__wrap-title mr-3">
+    <span class="ac-header__title"><Label label={inventory.string.Categories} /></span>
   </div>
-  <div class="ac-header-full" class:secondRow={twoRows}>
-    <Button
-      label={inventory.string.CategoryCreateLabel}
-      icon={IconAdd}
-      kind={'primary'}
-      size={'small'}
-      on:click={showCreateDialog}
-    />
+
+  <div class="mb-1 clear-mins">
+    <Button label={inventory.string.CategoryCreateLabel} kind={'primary'} on:click={showCreateDialog} />
+  </div>
+</div>
+<div class="ac-header full divide search-start">
+  <div class="ac-header-full small-gap">
+    <SearchEdit bind:value={search} on:change={() => updateResultQuery(search)} />
+    <ActionIcon icon={IconMoreH} size={'small'} />
+    <div class="buttons-divider" />
   </div>
 </div>
 

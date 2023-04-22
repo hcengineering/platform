@@ -235,6 +235,10 @@
     color: var(--caption-color);
     background-color: var(--theme-list-row-color);
 
+    &.mListGridSelected {
+      background-color: var(--highlight-hover);
+    }
+
     &.checking {
       background-color: var(--highlight-select);
       // border-bottom-color: var(--highlight-select);
@@ -243,10 +247,6 @@
         background-color: var(--highlight-select-hover);
         // border-bottom-color: var(--highlight-select-hover);
       }
-    }
-
-    &.mListGridSelected {
-      background-color: var(--theme-list-row-hover);
     }
 
     .draggable-container {

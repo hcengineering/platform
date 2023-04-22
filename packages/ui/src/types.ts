@@ -233,7 +233,7 @@ export interface FadeOptions {
   multipler?: Sides<number>
 }
 export const defaultSP: FadeOptions = { multipler: { top: 0, bottom: 0 } }
-export const tableSP: FadeOptions = { multipler: { top: 2.5, bottom: 2.5 } }
+export const tableSP: FadeOptions = { multipler: { top: 3, bottom: 2.5 } }
 export const topSP: FadeOptions = { multipler: { top: 2.5, bottom: 0 } }
 export const tableHRscheduleY: FadeOptions = { multipler: { top: 5, bottom: 0 } }
 export const issueSP: FadeOptions = { multipler: { top: 2.75, bottom: 0 } }

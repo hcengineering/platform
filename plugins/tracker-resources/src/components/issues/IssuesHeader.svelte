@@ -5,7 +5,7 @@
   import { FilterButton, setActiveViewletId } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import { WithLookup } from '@hcengineering/core'
-  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  // import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   export let space: Ref<Space> | undefined = undefined
   export let viewlet: WithLookup<Viewlet> | undefined
@@ -22,7 +22,7 @@
     }
   })
 
-  $: twoRows = $deviceInfo.twoRows
+  // $: twoRows = $deviceInfo.twoRows
 </script>
 
 <div class="ac-header full divide">
@@ -52,14 +52,15 @@
     </div>
   {/if}
 </div>
-<div class="ac-header full divide">
+<div class="ac-header full divide search-start">
   <div class="ac-header-full small-gap">
     <SearchEdit bind:value={search} on:change={() => {}} />
     <ActionIcon icon={IconMoreH} size={'small'} />
     <div class="buttons-divider" />
     <FilterButton _class={tracker.class.Issue} {space} />
   </div>
-  <div class="ac-header-full small-gap">
+  <div class="ac-header-full medium-gap">
     <slot name="extra" />
+    <ActionIcon icon={IconMoreH} size={'small'} />
   </div>
 </div>

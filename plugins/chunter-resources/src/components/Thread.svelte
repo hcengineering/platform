@@ -163,7 +163,7 @@
   let loading = false
 </script>
 
-<div class="ml-8 mt-4">
+<div class="flex-col ml-8 mt-4 flex-no-shrink">
   {#if parent}
     {#await getChannel(parent.space) then channel}
       {#if channel?._class === chunter.class.Channel}
@@ -178,13 +178,13 @@
     {/await}
   {/if}
 </div>
-<div class="flex-col content">
+<div class="flex-col content flex-no-shrink">
   {#if parent}
     <MsgView message={parent} thread {savedAttachmentsIds} />
     {#if total > comments.length}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
-        class="label pb-2 pt-2 pl-8 over-underline"
+        class="label pb-2 pt-2 pl-8 over-underline clear-mins"
         on:click={() => {
           showAll = true
         }}
@@ -195,7 +195,7 @@
     {#each comments as comment (comment._id)}
       <MsgView message={comment} thread {savedAttachmentsIds} />
     {/each}
-    <div class="mr-4 ml-4 mb-4 mt-2">
+    <div class="mr-4 ml-4 pb-4 mt-2 clear-mins">
       <AttachmentRefInput
         space={parent.space}
         _class={chunter.class.ThreadMessage}
@@ -206,17 +206,19 @@
     </div>
   {/if}
 </div>
+<div class="min-h-4 max-h-4 h-4 flex-no-shrink" />
 
 <style lang="scss">
   .content {
     overflow: hidden;
-    margin: 1rem 1rem 0px;
-    background-color: var(--board-bg-color);
-    border: 1px solid var(--divider-color);
+    margin: 1rem 1rem 0;
+    padding-top: 0.5rem;
+    background-color: var(--theme-list-row-color);
+    border: 1px solid var(--theme-divider-color);
     border-radius: 0.75rem;
   }
 
   .label:hover {
-    background-color: var(--board-card-bg-hover);
+    background-color: var(--theme-button-hovered);
   }
 </style>

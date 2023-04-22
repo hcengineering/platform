@@ -85,7 +85,7 @@
   }
 </script>
 
-<div class="ac-header full divide">
+<div class="ac-header full divide caption-height">
   <div class="ac-header__wrap-title">
     <span class="ac-header__title"><Label label={chunter.string.SavedItems} /></span>
   </div>
@@ -93,7 +93,8 @@
 <Scroller>
   {#if savedMessages.length > 0 || savedAttachments.length > 0}
     {#each savedMessages as message}
-      <div on:click={() => openMessageFromSpecial(message)}>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <div class="clear-mins flex-no-shrink" on:click={() => openMessageFromSpecial(message)}>
         <Message
           {message}
           on:openThread
@@ -105,7 +106,8 @@
       </div>
     {/each}
     {#each savedAttachments as att}
-      <div class="attachmentContainer" on:click={() => openAttachment(att)}>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <div class="attachmentContainer flex-no-shrink clear-mins" on:click={() => openAttachment(att)}>
         <AttachmentPreview value={att} isSaved={true} />
         <div class="label">
           <Label

@@ -20,13 +20,12 @@
     AnyComponent,
     Button,
     Component,
-    Icon,
-    IconAdd,
+    ActionIcon,
+    IconMoreH,
     Label,
     Loading,
     SearchEdit,
     TabList,
-    deviceOptionsStore as deviceInfo,
     resolvedLocationStore,
     showPopup
   } from '@hcengineering/ui'
@@ -127,7 +126,7 @@
     showPopup(createComponent, createComponentProps, 'top')
   }
 
-  $: twoRows = $deviceInfo.twoRows
+  // $: twoRows = $deviceInfo.twoRows
 
   $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 
@@ -140,24 +139,17 @@
   })
 </script>
 
-<div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
-  <div class:ac-header-full={!twoRows} class:flex-between={twoRows}>
-    <div class="ac-header__wrap-title mr-3">
-      <span class="ac-header__icon"><Icon {icon} size={'small'} /></span>
-      <span class="ac-header__title"><Label {label} /></span>
-      <div class="ml-4"><FilterButton {_class} /></div>
-    </div>
-
-    <SearchEdit bind:value={search} />
+<div class="ac-header full divide caption-height">
+  <div class="ac-header__wrap-title mr-3">
+    <span class="ac-header__title"><Label {label} /></span>
   </div>
-  <div class="ac-header-full" class:secondRow={twoRows}>
+
+  <div class="ac-header-full medium-gap mb-1">
     {#if viewlets.length > 1}
       <TabList
         items={viewslist}
         multiselect={false}
         selected={viewlet?._id}
-        kind={'secondary'}
-        size={'small'}
         on:select={(result) => {
           if (result.detail !== undefined) {
             if (viewlet?._id === result.detail.id) {
@@ -171,18 +163,21 @@
         }}
       />
     {/if}
-
     {#if createLabel && createComponent}
-      <Button
-        label={createLabel}
-        icon={IconAdd}
-        kind={'primary'}
-        size={'small'}
-        disabled={isCreationDisabled}
-        on:click={() => showCreateDialog()}
-      />
+      <Button label={createLabel} kind={'primary'} disabled={isCreationDisabled} on:click={() => showCreateDialog()} />
     {/if}
+  </div>
+</div>
+<div class="ac-header full divide search-start">
+  <div class="ac-header-full small-gap">
+    <SearchEdit bind:value={search} />
+    <ActionIcon icon={IconMoreH} size={'small'} />
+    <div class="buttons-divider" />
+    <FilterButton {_class} />
+  </div>
+  <div class="ac-header-full medium-gap">
     <ViewletSettingButton bind:viewOptions {viewlet} />
+    <ActionIcon icon={IconMoreH} size={'small'} />
   </div>
 </div>
 
