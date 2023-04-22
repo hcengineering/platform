@@ -206,6 +206,7 @@ export const deviceOptionsStore = writable<DeviceOptions>({
   docHeight: 0,
   isPortrait: false,
   isMobile: false,
+  fontSize: 0,
   minWidth: false,
   twoRows: false
 })

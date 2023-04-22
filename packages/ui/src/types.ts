@@ -245,6 +245,7 @@ export interface DeviceOptions {
   docHeight: number
   isPortrait: boolean
   isMobile: boolean
+  fontSize: number
   minWidth: boolean
   twoRows: boolean
   theme?: any

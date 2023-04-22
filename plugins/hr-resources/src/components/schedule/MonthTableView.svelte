@@ -18,12 +18,12 @@
   import type { Request, RequestType, Staff } from '@hcengineering/hr'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Button, Label, Loading, Scroller, tableSP, tableToCSV } from '@hcengineering/ui'
+  import { Button, Label, Loading, tableToCSV } from '@hcengineering/ui'
   import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
   import {
     getViewOptions,
     setActiveViewletId,
-    Table,
+    TableBrowser,
     viewOptionStore,
     ViewletSettingButton
   } from '@hcengineering/view-resources'
@@ -360,49 +360,46 @@
 </script>
 
 {#if departmentStaff.length}
-  <Scroller fade={tableSP}>
-    <div class="p-2">
-      {#if descr}
-        {#if loading}
-          <Loading />
-        {:else}
-          <div class="flex-row-center flex-reverse">
-            <div class="ml-1">
-              <ViewletSettingButton bind:viewOptions viewlet={descr} />
-            </div>
-            <Button
-              label={getEmbeddedLabel('Export')}
-              size={'small'}
-              on:click={() => {
-                // Download it
-                const filename = 'exportStaff' + new Date().toLocaleDateString() + '.csv'
-                const link = document.createElement('a')
-                link.style.display = 'none'
-                link.setAttribute('target', '_blank')
-                link.setAttribute(
-                  'href',
-                  'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(tableToCSV('exportableData'))
-                )
-                link.setAttribute('download', filename)
-                document.body.appendChild(link)
-                link.click()
-                document.body.removeChild(link)
-              }}
-            />
-          </div>
-          {#await createConfig(descr, preference, month) then config}
-            <Table
-              tableId={'exportableData'}
-              _class={hr.mixin.Staff}
-              query={{ _id: { $in: departmentStaff.map((it) => it._id) } }}
-              {config}
-              options={descr.options}
-            />
-          {/await}
-        {/if}
-      {/if}
-    </div>
-  </Scroller>
+  {#if descr}
+    {#if loading}
+      <Loading />
+    {:else}
+      <div class="ac-header full divide search-start">
+        <div class="clear-mins" />
+        <div class="ac-header-full medium-gap">
+          <Button
+            label={getEmbeddedLabel('Export')}
+            kind={'transparent'}
+            on:click={() => {
+              // Download it
+              const filename = 'exportStaff' + new Date().toLocaleDateString() + '.csv'
+              const link = document.createElement('a')
+              link.style.display = 'none'
+              link.setAttribute('target', '_blank')
+              link.setAttribute(
+                'href',
+                'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(tableToCSV('exportableData'))
+              )
+              link.setAttribute('download', filename)
+              document.body.appendChild(link)
+              link.click()
+              document.body.removeChild(link)
+            }}
+          />
+          <ViewletSettingButton bind:viewOptions viewlet={descr} />
+        </div>
+      </div>
+      {#await createConfig(descr, preference, month) then config}
+        <TableBrowser
+          tableId={'exportableData'}
+          _class={hr.mixin.Staff}
+          query={{ _id: { $in: departmentStaff.map((it) => it._id) } }}
+          {config}
+          options={descr.options}
+        />
+      {/await}
+    {/if}
+  {/if}
 {:else}
   <div class="flex-center h-full w-full flex-grow fs-title">
     <Label label={hr.string.NoEmployeesInDepartment} />

@@ -18,7 +18,7 @@
   import { Doc, DocumentQuery } from '@hcengineering/core'
   import { Document } from '@hcengineering/document'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { deviceOptionsStore as deviceInfo, Icon, Label, Loading, SearchEdit } from '@hcengineering/ui'
+  import { ActionIcon, IconMoreH, Label, Loading, SearchEdit } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
   import {
     ActionContext,
@@ -70,8 +70,8 @@
       }
     })
 
-  let twoRows: boolean
-  $: twoRows = $deviceInfo.docWidth <= 680
+  // let twoRows: boolean
+  // $: twoRows = $deviceInfo.docWidth <= 680
 
   $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 </script>
@@ -82,23 +82,21 @@
   }}
 />
 <div class="antiPanel-component">
-  <div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
-    <div class:ac-header-full={!twoRows} class:flex-between={twoRows}>
-      <div class="ac-header__wrap-title mr-3">
-        <div class="ac-header__icon"><Icon icon={document.icon.Document} size={'small'} /></div>
-        <span class="ac-header__title"><Label label={document.string.Documents} /></span>
-        <div class="ml-4"><FilterButton _class={document.class.Document} /></div>
-      </div>
-
-      <SearchEdit
-        bind:value={search}
-        on:change={() => {
-          updateResultQuery(search, query)
-        }}
-      />
+  <div class="ac-header full divide caption-height">
+    <div class="ac-header__wrap-title mr-3">
+      <span class="ac-header__title"><Label label={document.string.Documents} /></span>
     </div>
-    <div class="ac-header-full" class:secondRow={twoRows}>
+  </div>
+  <div class="ac-header full divide search-start">
+    <div class="ac-header-full small-gap">
+      <SearchEdit bind:value={search} on:change={() => updateResultQuery(search, query)} />
+      <ActionIcon icon={IconMoreH} size={'small'} />
+      <div class="buttons-divider" />
+      <FilterButton _class={document.class.Document} />
+    </div>
+    <div class="ac-header-full medium-gap">
       <ViewletSettingButton bind:viewOptions {viewlet} />
+      <ActionIcon icon={IconMoreH} size={'small'} />
     </div>
   </div>
 

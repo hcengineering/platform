@@ -33,8 +33,8 @@
       <span class="ac-header__title">{label}</span>
     {/if}
   </div>
-  {#if viewlets.length > 1}
-    <div class="mb-1 clear-mins">
+  <div class="mb-1 clear-mins">
+    {#if viewlets.length > 1}
       <TabList
         items={viewslist}
         multiselect={false}
@@ -49,8 +49,9 @@
           }
         }}
       />
-    </div>
-  {/if}
+    {/if}
+    <slot name="header-tools" />
+  </div>
 </div>
 <div class="ac-header full divide search-start">
   <div class="ac-header-full small-gap">

@@ -20,7 +20,8 @@
   import { createQuery, getClient, SpaceSelector } from '@hcengineering/presentation'
   import {
     Button,
-    Icon,
+    ActionIcon,
+    IconMoreH,
     IconBack,
     IconForward,
     Label,
@@ -105,91 +106,80 @@
   ]
 </script>
 
-<div class="ac-header divide {twoRows ? 'flex-col-reverse' : 'full'} withSettings">
-  <div class="ac-header__wrap-title" class:mt-2={twoRows}>
-    {#if !twoRows}
-      <div class="ac-header__icon"><Icon icon={calendar.icon.Calendar} size={'small'} /></div>
-      <span class="ac-header__title"><Label label={hr.string.Schedule} /></span>
-    {:else}
-      <div class="fs-title mr-4 flex-row-center flex-grow firstLetter">
-        {#if mode === CalendarMode.Month}
-          <span class="mr-2 overflow-label">{getMonthName(currentDate)}</span>
-        {/if}
-        {currentDate.getFullYear()}
-      </div>
-    {/if}
-    <div class="flex-row-center gap-2 flex-no-shrink" class:ml-6={!twoRows}>
-      <TabList
-        items={[
-          { id: 'ModeMonth', labelIntl: calendar.string.ModeMonth },
-          { id: 'ModeYear', labelIntl: calendar.string.ModeYear }
-        ]}
-        multiselect={false}
-        on:select={handleSelect}
-      />
-      <div class="buttons-divider" />
-      <Button
-        icon={IconBack}
-        kind={'link-bordered'}
-        on:click={() => {
-          inc(-1)
-        }}
-      />
-      <Button
-        label={calendar.string.Today}
-        kind={'link-bordered'}
-        on:click={() => {
-          currentDate = new Date()
-        }}
-      />
-      <Button
-        icon={IconForward}
-        kind={'link-bordered'}
-        on:click={() => {
-          inc(1)
-        }}
-      />
-    </div>
-    {#if !twoRows}
-      <div class="fs-title ml-4 flex-row-center firstLetter">
-        {#if mode === CalendarMode.Month}
-          <span class="overflow-label mr-2">{getMonthName(currentDate)}</span>
-        {/if}
-        {currentDate.getFullYear()}
-      </div>
-    {/if}
+<div class="ac-header full divide caption-height">
+  <div class="ac-header__wrap-title mr-3">
+    <span class="ac-header__title"><Label label={hr.string.Schedule} /></span>
   </div>
 
-  <div class="ac-header__wrap-title {twoRows ? 'mt-1' : 'ml-4'}">
-    {#if twoRows}
-      <div class="ac-header__icon flex-center"><Icon icon={calendar.icon.Calendar} size={'small'} /></div>
-      <span class="ac-header__title" class:flex-grow={twoRows}><Label label={hr.string.Schedule} /></span>
-    {/if}
-    <div class="flex-row-center gap-2">
-      {#if mode === CalendarMode.Month}
-        <TabList
-          items={viewslist}
-          multiselect={false}
-          selected={display}
-          on:select={(result) => {
-            if (result.detail !== undefined) display = result.detail.id
-          }}
-        />
-      {/if}
-      <SearchEdit
-        bind:value={search}
-        on:change={() => {
-          updateResultQuery(search)
+  <div class="ac-header-full medium-gap mb-1">
+    {#if mode === CalendarMode.Month}
+      <TabList
+        items={viewslist}
+        multiselect={false}
+        selected={display}
+        on:select={(result) => {
+          if (result.detail !== undefined) display = result.detail.id
         }}
       />
-      <SpaceSelector
-        _class={hr.class.Department}
-        label={hr.string.Department}
-        bind:space={department}
-        kind={'secondary'}
-      />
+    {/if}
+    <SpaceSelector
+      _class={hr.class.Department}
+      label={hr.string.Department}
+      bind:space={department}
+      size={'medium'}
+      kind={'secondary'}
+    />
+  </div>
+</div>
+<div class="ac-header full divide search-start">
+  <div class="ac-header-full small-gap">
+    <SearchEdit bind:value={search} on:change={() => updateResultQuery(search)} />
+    <ActionIcon icon={IconMoreH} size={'small'} />
+  </div>
+  <div class="ac-header-full medium-gap">
+    <!-- <ViewletSettingButton bind:viewOptions {viewlet} /> -->
+    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
+  </div>
+</div>
+<div class="ac-header full divide">
+  <div class="ac-header-full small-gap">
+    <Button
+      icon={IconBack}
+      kind={'transparent'}
+      on:click={() => {
+        inc(-1)
+      }}
+    />
+    <Button
+      label={calendar.string.Today}
+      kind={'transparent'}
+      on:click={() => {
+        currentDate = new Date()
+      }}
+    />
+    <Button
+      icon={IconForward}
+      kind={'transparent'}
+      on:click={() => {
+        inc(1)
+      }}
+    />
+    <div class="buttons-divider" />
+    <div class="fs-title flex-row-center flex-grow firstLetter">
+      {#if mode === CalendarMode.Month}
+        <span class="mr-2 overflow-label">{getMonthName(currentDate)}</span>
+      {/if}
+      {currentDate.getFullYear()}
     </div>
   </div>
+  <TabList
+    items={[
+      { id: 'ModeMonth', labelIntl: calendar.string.ModeMonth },
+      { id: 'ModeYear', labelIntl: calendar.string.ModeYear }
+    ]}
+    multiselect={false}
+    on:select={handleSelect}
+  />
 </div>
 
 <ScheduleView
