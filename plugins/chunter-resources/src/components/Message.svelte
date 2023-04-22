@@ -221,10 +221,10 @@
   let loading = false
 </script>
 
-<div class="container" class:highlighted={isHighlighted} id={message._id}>
+<div class="container clear-mins" class:highlighted={isHighlighted} id={message._id}>
   <div class="avatar"><Avatar size={'medium'} avatar={employee?.avatar} /></div>
-  <div class="message">
-    <div class="header">
+  <div class="message clear-mins">
+    <div class="header clear-mins">
       {#if employee}
         <EmployeePresenter value={employee} shouldShowAvatar={false} inline />
       {/if}
@@ -270,7 +270,7 @@
       </div>
     {/if}
   </div>
-  <div class="buttons" class:menuShowed>
+  <div class="buttons clear-mins" class:menuShowed>
     <div class="tool">
       <ActionIcon
         icon={IconMoreH}
@@ -305,6 +305,7 @@
   .container {
     position: relative;
     display: flex;
+    flex-shrink: 0;
     padding: 0.5rem 2rem;
 
     &.highlighted {
@@ -327,7 +328,7 @@
         font-weight: 500;
         font-size: 1rem;
         line-height: 150%;
-        color: var(--caption-color);
+        color: var(--theme-caption-color);
         margin-bottom: 0.25rem;
 
         span {
@@ -379,7 +380,7 @@
     }
 
     &:hover {
-      background-color: var(--board-card-bg-hover);
+      background-color: var(--highlight-hover);
     }
   }
 </style>

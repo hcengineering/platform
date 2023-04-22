@@ -22,8 +22,6 @@
     CheckBox,
     Component,
     getEventPositionElement,
-    IconDown,
-    IconUp,
     Label,
     Loading,
     resizeObserver,
@@ -35,6 +33,7 @@
   import view from '../plugin'
   import { buildConfigLookup, buildModel, LoadingProps } from '../utils'
   import Menu from './Menu.svelte'
+  import IconUpDown from './icons/UpDown.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -261,11 +260,7 @@
                 {/if}
                 {#if attribute.sortingKey === _sortKey}
                   <div class="icon">
-                    {#if sortOrder === SortingOrder.Ascending}
-                      <IconUp size={'small'} />
-                    {:else}
-                      <IconDown size={'small'} />
-                    {/if}
+                    <IconUpDown size={'small'} descending={sortOrder === SortingOrder.Descending} />
                   </div>
                 {/if}
               </div>
@@ -391,14 +386,13 @@
 
   .footer {
     width: 100%;
-    background-color: var(--body-color);
+    background-color: var(--theme-comp-header-color);
     display: flex;
     align-items: flex-end;
     height: 2.5rem;
     z-index: 2;
     position: sticky;
     bottom: 0;
-    box-shadow: inset 0 1px 0 0 var(--divider-color);
 
     .content {
       display: flex;

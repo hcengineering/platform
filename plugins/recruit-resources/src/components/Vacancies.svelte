@@ -16,17 +16,7 @@
   import core, { Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Vacancy } from '@hcengineering/recruit'
-  import {
-    Button,
-    Icon,
-    IconAdd,
-    Label,
-    Loading,
-    SearchEdit,
-    deviceOptionsStore as deviceInfo,
-    showPopup,
-    tableToCSV
-  } from '@hcengineering/ui'
+  import { Button, ActionIcon, IconMoreH, Label, Loading, SearchEdit, showPopup, tableToCSV } from '@hcengineering/ui'
   import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
   import {
     FilterBar,
@@ -157,37 +147,18 @@
     return result
   }
 
-  $: twoRows = $deviceInfo.twoRows
+  // $: twoRows = $deviceInfo.twoRows
 
   $: viewOptions = getViewOptions(descr, $viewOptionStore)
 </script>
 
-<div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
-  <div class:ac-header-full={!twoRows} class:flex-between={twoRows}>
-    <div class="ac-header__wrap-title mr-3">
-      <div class="ac-header__icon"><Icon icon={recruit.icon.Vacancy} size={'small'} /></div>
-      <span class="ac-header__title"><Label label={recruit.string.Vacancies} /></span>
-      <div class="ml-4"><FilterButton _class={recruit.class.Vacancy} /></div>
-    </div>
-    <SearchEdit
-      bind:value={search}
-      on:change={(e) => {
-        search = e.detail
-      }}
-    />
+<div class="ac-header full divide">
+  <div class="ac-header__wrap-title mr-3">
+    <span class="ac-header__title"><Label label={recruit.string.Vacancies} /></span>
   </div>
-  <div class="ac-header-full" class:secondRow={twoRows}>
-    <Button
-      icon={IconAdd}
-      label={recruit.string.VacancyCreateLabel}
-      size={'small'}
-      kind={'primary'}
-      on:click={showCreateDialog}
-    />
-    <ViewletSettingButton bind:viewOptions viewlet={descr} />
+  <div class="ac-header-full medium-gap mb-1">
     <Button
       label={recruit.string.Export}
-      size={'small'}
       on:click={() => {
         // Download it
         const filename = 'vacancies' + new Date().toLocaleDateString() + '.csv'
@@ -204,6 +175,19 @@
         document.body.removeChild(link)
       }}
     />
+    <Button label={recruit.string.VacancyCreateLabel} kind={'primary'} on:click={showCreateDialog} />
+  </div>
+</div>
+<div class="ac-header full divide search-start">
+  <div class="ac-header-full small-gap">
+    <SearchEdit bind:value={search} on:change={(e) => (search = e.detail)} />
+    <ActionIcon icon={IconMoreH} size={'small'} />
+    <div class="buttons-divider" />
+    <FilterButton _class={recruit.class.Vacancy} />
+  </div>
+  <div class="ac-header-full medium-gap">
+    <ViewletSettingButton bind:viewOptions viewlet={descr} />
+    <ActionIcon icon={IconMoreH} size={'small'} />
   </div>
 </div>
 

@@ -125,20 +125,17 @@
           { id: 'ModeYear', labelIntl: calendar.string.ModeYear }
         ]}
         multiselect={false}
-        size={'small'}
         on:select={handleSelect}
       />
       <div class="buttons-divider" />
       <Button
         icon={IconBack}
-        size={'small'}
         kind={'link-bordered'}
         on:click={() => {
           inc(-1)
         }}
       />
       <Button
-        size={'small'}
         label={calendar.string.Today}
         kind={'link-bordered'}
         on:click={() => {
@@ -147,7 +144,6 @@
       />
       <Button
         icon={IconForward}
-        size={'small'}
         kind={'link-bordered'}
         on:click={() => {
           inc(1)
@@ -175,8 +171,6 @@
           items={viewslist}
           multiselect={false}
           selected={display}
-          kind={'secondary'}
-          size={'small'}
           on:select={(result) => {
             if (result.detail !== undefined) display = result.detail.id
           }}

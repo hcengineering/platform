@@ -38,7 +38,7 @@
   }
 </script>
 
-<div class="ac-header divide full">
+<div class="ac-header divide full caption-height">
   {#if channel}
     <Header
       icon={channel.private ? Lock : classIcon(client, channel._class)}

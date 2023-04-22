@@ -113,10 +113,11 @@
       }
       &::before {
         position: absolute;
-        top: 0.35rem;
+        top: 50%;
         left: -1.5px;
-        height: 0.8rem;
+        height: 70%;
         border-left: 1px solid var(--button-border-color);
+        transform: translateY(-50%);
       }
     }
     .button:not(.selected) + .button:not(.selected)::before {

@@ -54,10 +54,11 @@
   }
 </script>
 
-<div class="ac-header divide full">
+<div class="ac-header divide full caption-height">
   {#if dm}
     {#await getDmName(client, dm) then name}
       {#await getEmpolyeeIds() then empolyeeIds}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div class="ac-header__wrap-title" on:click={onSpaceEdit}>
           <div class="ac-header__icon">
             <CombineAvatars _class={contact.class.Employee} items={empolyeeIds} size={'x-small'} />

@@ -20,10 +20,10 @@
   import {
     AnyComponent,
     Button,
-    IconAdd,
+    IconMoreH,
+    ActionIcon,
     SearchEdit,
     TabList,
-    deviceOptionsStore as deviceInfo,
     location,
     showPopup
   } from '@hcengineering/ui'
@@ -32,7 +32,8 @@
     ViewletSettingButton,
     activeViewlet,
     makeViewletKey,
-    setActiveViewletId
+    setActiveViewletId,
+    FilterButton
   } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import Header from './Header.svelte'
@@ -90,37 +91,19 @@
     }
   })
 
-  $: twoRows = $deviceInfo.twoRows
+  // $: twoRows = $deviceInfo.twoRows
 </script>
 
-<div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
-  {#if space}
-    <div class:ac-header-full={!twoRows} class:flex-stretch={twoRows}>
-      <Header {space} {_class} />
-      <SearchEdit
-        bind:value={search}
-        on:change={() => {
-          dispatch('search', search)
-        }}
-      />
-    </div>
-    <div class="ac-header-full" class:secondRow={twoRows}>
-      {#if createItemDialog}
-        <Button
-          icon={IconAdd}
-          label={createItemLabel}
-          kind={'primary'}
-          size={'small'}
-          on:click={(ev) => showCreateDialog(ev)}
-        />
-      {/if}
+{#if space}
+  <div class="ac-header full divide caption-height">
+    <Header {space} {_class} />
+
+    <div class="ac-header-full medium-gap mb-1">
       {#if viewlets.length > 1}
         <TabList
           items={viewslist}
           multiselect={false}
           selected={viewlet?._id}
-          kind={'secondary'}
-          size={'small'}
           on:select={(result) => {
             if (result.detail !== undefined) {
               viewlet = viewlets.find((vl) => vl._id === result.detail.id)
@@ -129,7 +112,23 @@
           }}
         />
       {/if}
-      <ViewletSettingButton bind:viewOptions {viewlet} />
+      {#if createItemDialog}
+        <Button label={createItemLabel} kind={'primary'} on:click={(ev) => showCreateDialog(ev)} />
+      {/if}
     </div>
-  {/if}
-</div>
+  </div>
+  <div class="ac-header full divide search-start">
+    <div class="ac-header-full small-gap">
+      <SearchEdit bind:value={search} on:change={() => dispatch('search', search)} />
+      <ActionIcon icon={IconMoreH} size={'small'} />
+      <div class="buttons-divider" />
+      <FilterButton {_class} />
+    </div>
+    <div class="ac-header-full medium-gap">
+      <ViewletSettingButton bind:viewOptions {viewlet} />
+      <ActionIcon icon={IconMoreH} size={'small'} />
+    </div>
+  </div>
+{:else}
+  <div class="ac-header full divide caption-height" />
+{/if}
