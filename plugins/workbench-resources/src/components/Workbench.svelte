@@ -659,7 +659,6 @@
       {/if}
       <div
         class="antiPanel-component antiComponent"
-        class:border-left={!$deviceInfo.isPortrait}
         bind:this={contentPanel}
         use:resizeObserver={(element) => {
           componentWidth = element.clientWidth

@@ -18,7 +18,7 @@
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Component } from '@hcengineering/tracker'
-  import { Button, Label, showPopup, TabList } from '@hcengineering/ui'
+  import { Button, IconAdd, Label, showPopup, TabList } from '@hcengineering/ui'
   import type { TabItem } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import view from '@hcengineering/view'
@@ -106,7 +106,7 @@
         if (result.detail !== undefined && result.detail.id !== viewMode) viewMode = result.detail.id
       }}
     />
-    <Button label={tracker.string.Component} kind={'primary'} on:click={showCreateDialog} />
+    <Button icon={IconAdd} label={tracker.string.Component} kind={'primary'} on:click={showCreateDialog} />
   </div>
 </div>
 <div class="ac-header full divide search-start">

@@ -26,7 +26,8 @@
     location,
     showPopup,
     TabList,
-    TabItem
+    TabItem,
+    IconAdd
   } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
   import {
@@ -136,7 +137,7 @@
   </div>
 
   <div class="ac-header-full medium-gap mb-1">
-    <Button label={tracker.string.Sprint} kind={'primary'} on:click={showCreateDialog} />
+    <Button icon={IconAdd} label={tracker.string.Sprint} kind={'primary'} on:click={showCreateDialog} />
   </div>
 </div>
 <div class="ac-header full divide search-start">

@@ -17,7 +17,16 @@
   import { Asset, IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { TagCategory, TagElement } from '@hcengineering/tags'
-  import { AnySvelteComponent, Button, ActionIcon, IconMoreH, Label, SearchEdit, showPopup } from '@hcengineering/ui'
+  import {
+    AnySvelteComponent,
+    Button,
+    ActionIcon,
+    IconMoreH,
+    Label,
+    SearchEdit,
+    showPopup,
+    IconAdd
+  } from '@hcengineering/ui'
   import { TableBrowser } from '@hcengineering/view-resources'
   import tags from '../plugin'
   import CategoryBar from './CategoryBar.svelte'
@@ -95,7 +104,7 @@
   </div>
 
   <div class="clear-mins mb-1">
-    <Button label={сreateItemLabel} kind={'primary'} on:click={showCreateDialog} />
+    <Button icon={IconAdd} label={сreateItemLabel} kind={'primary'} on:click={showCreateDialog} />
   </div>
 </div>
 <div class="ac-header full divide search-start">

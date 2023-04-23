@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { DocumentQuery } from '@hcengineering/core'
-  import { Button, ActionIcon, Label, Scroller, SearchEdit, showPopup, IconMoreH } from '@hcengineering/ui'
+  import { Button, ActionIcon, Label, Scroller, SearchEdit, showPopup, IconMoreH, IconAdd } from '@hcengineering/ui'
   import type { Category } from '@hcengineering/inventory'
   import inventory from '../plugin'
   import CreateCategory from './CreateCategory.svelte'
@@ -42,7 +42,7 @@
   </div>
 
   <div class="mb-1 clear-mins">
-    <Button label={inventory.string.CategoryCreateLabel} kind={'primary'} on:click={showCreateDialog} />
+    <Button icon={IconAdd} label={inventory.string.CategoryCreateLabel} kind={'primary'} on:click={showCreateDialog} />
   </div>
 </div>
 <div class="ac-header full divide search-start">

@@ -27,7 +27,8 @@
     SearchEdit,
     TabList,
     location,
-    showPopup
+    showPopup,
+    IconAdd
   } from '@hcengineering/ui'
   import view, { Viewlet, ViewletDescriptor, ViewletPreference } from '@hcengineering/view'
   import {
@@ -164,7 +165,13 @@
       />
     {/if}
     {#if createLabel && createComponent}
-      <Button label={createLabel} kind={'primary'} disabled={isCreationDisabled} on:click={() => showCreateDialog()} />
+      <Button
+        icon={IconAdd}
+        label={createLabel}
+        kind={'primary'}
+        disabled={isCreationDisabled}
+        on:click={() => showCreateDialog()}
+      />
     {/if}
   </div>
 </div>

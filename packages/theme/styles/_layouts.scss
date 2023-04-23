@@ -774,26 +774,26 @@ a.no-line {
 }
 
 .focused-button {
-  background-color: var(--button-bg-color);
+  background-color: var(--theme-button-enabled);
   border: 1px solid transparent;
 
-  & > .icon { color: var(--accent-color); }
+  & > .icon { color: var(--theme-content-color); }
   &.selected {
-    background-color: var(--button-bg-hover);
-    border: 1px solid var(--button-border-hover);
+    background-color: var(--theme-button-pressed);
+    border: 1px solid var(--theme-button-border);
   }
   &:hover {
-    background-color: var(--button-bg-hover);
-    border: 1px solid var(--button-border-hover);
-    & > .icon { color: var(--caption-color); }
+    background-color: var(--theme-button-hovered);
+    border: 1px solid var(--theme-button-border);
+    & > .icon { color: var(--theme-caption-color); }
   }
   &:focus {
-    border: 1px solid var(--primary-button-focused-border);
-    box-shadow: 0 0 0 3px var(--primary-button-outline);
-    & > .icon { color: var(--caption-color); }
+    border: 1px solid var(--theme-button-border);
+    box-shadow: 0 0 0 2px var(--primary-button-focused-border);
+    & > .icon { color: var(--theme-caption-color); }
   }
 
-  &.bordered { border-color: var(--button-border-color); }
+  &.bordered { border-color: var(--theme-button-border); }
 }
 
 .overflow-x-auto { overflow-x: auto; }

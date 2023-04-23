@@ -304,26 +304,29 @@
     }
     &.no-border {
       font-weight: 400;
-      color: var(--accent-color);
-      background-color: var(--noborder-bg-color);
+      color: var(--theme-content-color);
+      background-color: var(--theme-list-row-color);
       box-shadow: var(--button-shadow);
 
       &:hover {
-        color: var(--caption-color);
-        background-color: var(--noborder-bg-hover);
+        color: var(--theme-caption-color);
+        background-color: var(--theme-list-button-color);
 
         .btn-icon {
-          color: var(--caption-color);
+          color: var(--theme-caption-color);
         }
       }
       &:disabled {
-        color: var(--content-color);
-        background-color: var(--button-disabled-color);
+        color: var(--theme-trans-color);
+        background-color: var(--theme-list-button-color);
         cursor: default;
+        .btn-icon {
+          color: var(--theme-trans-color);
+        }
         &:hover {
-          color: var(--content-color);
+          color: var(--theme-trans-color);
           .btn-icon {
-            color: var(--content-color);
+            color: var(--theme-trans-color);
           }
         }
       }
@@ -342,34 +345,34 @@
     &.link {
       padding: 0 0.875rem;
       &:hover {
-        color: var(--caption-color);
-        background-color: var(--body-color);
-        border-color: var(--divider-color);
+        color: var(--theme-caption-color);
+        background-color: var(--theme-bg-color);
+        border-color: var(--theme-divider-color);
         .btn-icon {
-          color: var(--content-color);
+          color: var(--theme-content-color);
         }
       }
       &:disabled {
-        color: var(--accent-color);
+        color: var(--theme-dark-color);
         background-color: transparent;
         border-color: transparent;
         cursor: auto;
 
         .btn-icon {
-          color: var(--content-color);
+          color: var(--theme-content-color);
         }
       }
     }
     &.link-bordered {
-      padding: 0 0.375rem;
-      color: var(--accent-color);
-      border-color: var(--divider-color);
+      padding: 0 0.5rem;
+      color: var(--theme-content-color);
+      border-color: var(--theme-divider-color);
       &:hover {
-        color: var(--accent-color);
-        background-color: var(--button-bg-hover);
-        border-color: var(--button-border-hover);
+        color: var(--theme-caption-color);
+        background-color: var(--theme-button-hovered);
+        border-color: var(--theme-list-divider-color);
         .btn-icon {
-          color: var(--accent-color);
+          color: var(--theme-caption-color);
         }
       }
     }
