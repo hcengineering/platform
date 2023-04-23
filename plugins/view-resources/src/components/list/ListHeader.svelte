@@ -102,9 +102,9 @@
         {/each}
       {/if} -->
       {#if limited < items.length}
-        <div class="antiSection-header__counter ml-1">
-          {limited}
-          <div class="text-xs mx-1">/</div>
+        <div class="antiSection-header__counter flex-row-center mx-2">
+          <span class="caption-color">{limited}</span>
+          <span class="text-xs mx-0-5">/</span>
           {items.length}
         </div>
         <ActionIcon
@@ -116,7 +116,7 @@
           }}
         />
       {:else}
-        <span class="antiSection-header__counter ml-1">{items.length}</span>
+        <span class="antiSection-header__counter ml-2">{items.length}</span>
       {/if}
     </div>
     <!-- {#if createItemDialog !== undefined && createItemLabel !== undefined}

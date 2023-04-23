@@ -17,7 +17,18 @@
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Sprint } from '@hcengineering/tracker'
-  import { ActionIcon, Button, IconAdd, IconMoreH, Label, SearchEdit, TabItem, TabList, resolvedLocationStore, showPopup } from '@hcengineering/ui'
+  import {
+    ActionIcon,
+    Button,
+    IconAdd,
+    IconMoreH,
+    Label,
+    SearchEdit,
+    TabItem,
+    TabList,
+    resolvedLocationStore,
+    showPopup
+  } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
   import {
     FilterBar,

@@ -305,12 +305,12 @@
     &.no-border {
       font-weight: 400;
       color: var(--theme-content-color);
-      background-color: var(--theme-list-row-color);
+      background-color: var(--theme-button-enabled);
       box-shadow: var(--button-shadow);
 
       &:hover {
         color: var(--theme-caption-color);
-        background-color: var(--theme-list-button-color);
+        background-color: var(--theme-button-hovered);
 
         .btn-icon {
           color: var(--theme-caption-color);

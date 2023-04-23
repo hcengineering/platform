@@ -357,30 +357,28 @@
   <ExpandCollapse isExpanded={!collapsed || dragItemIndex !== undefined} duration={0}>
     <!-- <div bind:this={expCol} class="expandCollapse" class:isExpanded={!collapsed || dragItemIndex !== undefined}> -->
     {#if !lastLevel}
-      <div class="p-2">
-        <slot
-          name="category"
-          docs={items}
-          {_class}
-          {space}
-          {lookup}
-          {loadingPropsLength}
-          {baseMenuClass}
-          {config}
-          {selectedObjectIds}
-          {createItemDialog}
-          {createItemLabel}
-          {viewOptions}
-          newObjectProps={_newObjectProps}
-          {flatHeaders}
-          {props}
-          level={level + 1}
-          {viewOptionsConfig}
-          {listDiv}
-          dragItem
-          dragstart={dragStartHandler}
-        />
-      </div>
+      <slot
+        name="category"
+        docs={items}
+        {_class}
+        {space}
+        {lookup}
+        {loadingPropsLength}
+        {baseMenuClass}
+        {config}
+        {selectedObjectIds}
+        {createItemDialog}
+        {createItemLabel}
+        {viewOptions}
+        newObjectProps={_newObjectProps}
+        {flatHeaders}
+        {props}
+        level={level + 1}
+        {viewOptionsConfig}
+        {listDiv}
+        dragItem
+        dragstart={dragStartHandler}
+      />
     {:else if itemModels && (!collapsed || dragItemIndex !== undefined)}
       {#if limited}
         {#each limited as docObject, i (docObject._id)}

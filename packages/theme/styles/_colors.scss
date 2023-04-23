@@ -106,12 +106,13 @@
   --theme-kanban-card-bg-color: rgba(222, 222, 240, .04);
   --theme-kanban-card-border: transparent;
   --theme-kanban-card-footer: #D9D9D9;
-
+  
   --theme-tablist-color: rgba(0, 0, 0, .02);
   --theme-checkbox-color: #000;
   --theme-checkbox-bg-color: #FFF;
   --theme-checkbox-border: rgba(0, 0, 0, .12);
   --theme-checkbox-disabled: #999;
+  --theme-progress-color: #FFFFFF;
 
   --body-color: #1f2023;
   --body-accent: #222326;
@@ -167,7 +168,7 @@
   --button-bg-hover: #37383b;
   --button-border-color: #3c3f44;
   --button-border-hover: #45484e;
-  --button-shadow: rgb(0 0 0 / 25%) 0px 1px 1px;
+  --button-shadow: rgb(0 0 0 / 15%) 0px 1px 1px 1px;
   --button-disabled-color: #313236;
   --noborder-bg-color: #313236;
   --noborder-bg-hover: #37383b;
@@ -255,6 +256,7 @@
   --theme-checkbox-bg-color: #FFF;
   --theme-checkbox-border: rgba(0, 0, 0, .12);
   --theme-checkbox-disabled: #999;
+  --theme-progress-color: rgba(0, 0, 0, .5);
 
   --body-color: #fff;
   --body-accent: #fafafa; // HZ
@@ -310,7 +312,7 @@
   --button-bg-hover: #f4f5f8;
   --button-border-color: #dfe1e4;
   --button-border-hover: #c9cbcd;
-  --button-shadow: rgb(0 0 0 / 7%) 0px 1px 1px;
+  --button-shadow: rgb(0 0 0 / 20%) 0px 1px 2px 1px;
   --button-disabled-color: #eff1f4;
   --noborder-bg-color: #eff1f4;
   --noborder-bg-hover: #f4f5f8;

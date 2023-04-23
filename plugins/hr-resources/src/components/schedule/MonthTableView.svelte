@@ -18,7 +18,7 @@
   import type { Request, RequestType, Staff } from '@hcengineering/hr'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Button, Label, Loading, Scroller, showPopup, tableSP, tableToCSV } from '@hcengineering/ui'
+  import { Button, Label, Loading, showPopup, tableToCSV } from '@hcengineering/ui'
   import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
   import {
     getViewOptions,
@@ -398,31 +398,28 @@
 </script>
 
 {#if departmentStaff.length}
-  <Scroller fade={tableSP}>
-    <div class="p-2">
-      {#if descr}
-        {#if loading}
-          <Loading />
-        {:else}
-          <div class="flex-row-center flex-reverse">
-            <div class="ml-1">
-              <ViewletSettingButton bind:viewOptions viewlet={descr} />
-            </div>
-            <Button label={getEmbeddedLabel('Export')} size={'small'} on:click={(evt) => exportTable(evt)} />
-          </div>
-          {#await createConfig(descr, preference, month) then config}
-            <Table
-              tableId={'exportableData'}
-              _class={hr.mixin.Staff}
-              query={{ _id: { $in: departmentStaff.map((it) => it._id) } }}
-              {config}
-              options={descr.options}
-            />
-          {/await}
-        {/if}
-      {/if}
-    </div>
-  </Scroller>
+  {#if descr}
+    {#if loading}
+      <Loading />
+    {:else}
+      <div class="ac-header full divide">
+        <div class="clear-mins" />
+        <div class="ac-header-full small-gap">
+          <Button label={getEmbeddedLabel('Export')} on:click={(evt) => exportTable(evt)} />
+          <ViewletSettingButton bind:viewOptions viewlet={descr} />
+        </div>
+      </div>
+      {#await createConfig(descr, preference, month) then config}
+        <TableBrowser
+          tableId={'exportableData'}
+          _class={hr.mixin.Staff}
+          query={{ _id: { $in: departmentStaff.map((it) => it._id) } }}
+          {config}
+          options={descr.options}
+        />
+      {/await}
+    {/if}
+  {/if}
 {:else}
   <div class="flex-center h-full w-full flex-grow fs-title">
     <Label label={hr.string.NoEmployeesInDepartment} />
