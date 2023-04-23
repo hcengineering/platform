@@ -60,7 +60,7 @@
 
   async function update (viewlets: WithLookup<Viewlet>[], active: Ref<Viewlet> | null): Promise<void> {
     viewlet = viewlets.find((viewlet) => viewlet._id === active) ?? viewlets[0]
-    setActiveViewletId(viewlet?._id)
+    if (viewlet !== undefined) setActiveViewletId(viewlet._id)
   }
 
   $: if (!label && title) {
