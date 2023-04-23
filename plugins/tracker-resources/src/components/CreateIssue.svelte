@@ -280,7 +280,7 @@
 
   $: spaceQuery.query(tracker.class.Project, { _id: _space }, (res) => {
     currentProject = res.shift()
-    defaultIssueStatus = currentProject.defaultIssueStatus
+    defaultIssueStatus = currentProject?.defaultIssueStatus
   })
 
   async function updateIssueStatusId (object: IssueDraft, currentProject: Project | undefined) {
