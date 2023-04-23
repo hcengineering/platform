@@ -16,17 +16,18 @@
   import { Class, Doc, DocumentUpdate, Lookup, PrimitiveType, Ref, Space, StatusValue } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { calcRank, DocWithRank } from '@hcengineering/task'
+  import { DocWithRank, calcRank } from '@hcengineering/task'
   import {
     AnyComponent,
     CheckBox,
     ExpandCollapse,
+    Spinner,
     getEventPositionElement,
-    showPopup,
-    Spinner
+    mouseAttractor,
+    showPopup
   } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, ViewOptionModel, ViewOptions } from '@hcengineering/view'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, tick } from 'svelte'
   import { FocusSelection, focusStore } from '../../selection'
   import Menu from '../Menu.svelte'
   import ListHeader from './ListHeader.svelte'
@@ -39,7 +40,6 @@
   export let space: Ref<Space> | undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined
   export let items: Doc[]
-  export let initIndex: number
   export let createItemDialog: AnyComponent | undefined
   export let createItemLabel: IntlString | undefined
   export let loadingPropsLength: number | undefined
@@ -50,14 +50,11 @@
   export let disableHeader = false
   export let props: Record<string, any> = {}
   export let level: number
-  export let elementByIndex: Map<number, HTMLDivElement>
-  export let indexById: Map<Ref<Doc>, number>
   export let lookup: Lookup<Doc>
   export let _class: Ref<Class<Doc>>
   export let config: (string | BuildModelKey)[]
   export let viewOptions: ViewOptions
   export let newObjectProps: (doc: Doc) => Record<string, any> | undefined
-  export let docByIndex: Map<number, Doc>
   export let viewOptionsConfig: ViewOptionModel[] | undefined
   export let dragItem: {
     doc?: Doc
@@ -92,7 +89,7 @@
     dispatch('row-focus', object)
   }
 
-  const handleMenuOpened = async (event: MouseEvent, object: Doc, rowIndex: number) => {
+  const handleMenuOpened = async (event: MouseEvent, object: Doc) => {
     event.preventDefault()
     handleRowFocused(object)
 
@@ -300,6 +297,24 @@
       index: i
     })
   }
+  export function scroll (item: Doc): void {
+    const pos = items.findIndex((it) => it._id === item._id)
+    if (pos >= 0) {
+      if (collapsed) {
+        collapsed = false
+        tick().then(() => scroll(item))
+        return
+      }
+      if (pos >= limited.length) {
+        limit = (limit ?? 0) + 20
+
+        tick().then(() => scroll(item))
+      } else {
+        listItems[pos]?.scroll()
+      }
+    }
+  }
+  const listItems: ListItem[] = []
 </script>
 
 <div
@@ -337,8 +352,6 @@
       <div class="p-2">
         <slot
           name="category"
-          {elementByIndex}
-          {indexById}
           docs={items}
           {_class}
           {space}
@@ -354,8 +367,6 @@
           {flatHeaders}
           {props}
           level={level + 1}
-          {initIndex}
-          {docByIndex}
           {viewOptionsConfig}
           {listDiv}
           dragItem
@@ -366,12 +377,9 @@
       {#if limited}
         {#each limited as docObject, i (docObject._id)}
           <ListItem
+            bind:this={listItems[i]}
             {docObject}
-            {elementByIndex}
-            {docByIndex}
-            {indexById}
             model={itemModels}
-            index={initIndex + i}
             {groupByKey}
             selected={isSelected(docObject, $focusStore)}
             checked={selectedObjectIdsSet.has(docObject._id)}
@@ -386,9 +394,9 @@
             on:dragover={(e) => dragover(e, i)}
             on:drop={dropItemHandle}
             on:check={(ev) => dispatch('check', { docs: ev.detail.docs, value: ev.detail.value })}
-            on:contextmenu={(event) => handleMenuOpened(event, docObject, initIndex + i)}
+            on:contextmenu={(event) => handleMenuOpened(event, docObject)}
             on:focus={() => {}}
-            on:mouseover={() => handleRowFocused(docObject)}
+            on:mouseover={mouseAttractor(() => handleRowFocused(docObject))}
             {props}
           />
         {/each}

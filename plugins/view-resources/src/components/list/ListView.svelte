@@ -4,7 +4,14 @@
   import { AnyComponent, issueSP, Scroller } from '@hcengineering/ui'
   import { BuildModelKey, Viewlet, ViewOptions } from '@hcengineering/view'
   import { onMount } from 'svelte'
-  import { ActionContext, ListSelectionProvider, LoadingProps, SelectDirection, selectionStore } from '../..'
+  import {
+    ActionContext,
+    ListSelectionProvider,
+    LoadingProps,
+    SelectDirection,
+    focusStore,
+    selectionStore
+  } from '../..'
 
   import List from './List.svelte'
 
@@ -56,6 +63,7 @@
       {props}
       viewOptionsConfig={viewlet.viewOptions?.other}
       selectedObjectIds={$selectionStore ?? []}
+      selection={listProvider.current($focusStore)}
       on:row-focus={(event) => {
         listProvider.updateFocus(event.detail ?? undefined)
       }}

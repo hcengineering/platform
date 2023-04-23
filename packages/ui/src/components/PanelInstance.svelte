@@ -50,14 +50,17 @@
     closePanel()
   }
 
-  $: props = $panelstore.panel
-
-  $: if (props !== undefined) {
-    component = undefined
-
-    getResource(props.component).then((r) => {
-      component = r
-    })
+  $: if ($panelstore.panel !== undefined) {
+    if ($panelstore.panel.component === undefined) {
+      props = $panelstore.panel
+    } else {
+      getResource($panelstore.panel.component).then((r) => {
+        component = r
+        props = $panelstore.panel
+      })
+    }
+  } else {
+    props = undefined
   }
 
   function escapeClose () {

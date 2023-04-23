@@ -282,7 +282,7 @@
             class:checking={checkedSet.has(object._id)}
             class:fixed={row === selection}
             class:selected={row === selection}
-            on:mouseover={() => onRow(object)}
+            on:mouseenter={() => onRow(object)}
             on:focus={() => {}}
             bind:this={refs[row]}
             on:contextmenu|preventDefault={(ev) => {

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { CategoryType, Doc, Ref } from '@hcengineering/core'
-  import ui, { Button, IconMoreH } from '@hcengineering/ui'
+  import ui, { Button, IconMoreH, mouseAttractor } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { slide } from 'svelte/transition'
   import { CardDragEvent, Item } from '../types'
@@ -69,7 +69,7 @@
       class="card-container"
       class:selection={selection !== undefined ? objects[selection]?._id === object._id : false}
       class:checked={checkedSet.has(object._id)}
-      on:mouseover={() => dispatch('obj-focus', object)}
+      on:mouseover={mouseAttractor(() => dispatch('obj-focus', object))}
       on:focus={() => {}}
       on:contextmenu={(evt) => showMenu(evt, object)}
       draggable={true}
