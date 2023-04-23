@@ -34,7 +34,9 @@
     navigate,
     Scroller,
     SearchEdit,
-    showPopup
+    showPopup,
+    IconMoreH,
+    ActionIcon
   } from '@hcengineering/ui'
   import { FilterBar, FilterButton, SpacePresenter } from '@hcengineering/view-resources'
   import plugin from '../plugin'
@@ -118,40 +120,50 @@
       <span class="ac-header__title"><Label {label} /></span>
     </div>
     {#if createItemDialog}
-      <Button label={createItemLabel} size={'small'} on:click={(ev) => showCreateDialog(ev)} />
+      <div class="mb-1 clear-mins">
+        <Button label={createItemLabel} kind={'primary'} size={'medium'} on:click={(ev) => showCreateDialog(ev)} />
+      </div>
     {/if}
   </div>
-  <div class="ml-8 mr-8 mt-4 mb-4">
-    <SearchEdit
-      bind:value={search}
-      on:change={(ev) => {
-        updateSearchQuery(search)
-        update(sort, resultQuery)
-      }}
-    />
+  <div class="ac-header full divide search-start">
+    <div class="ac-header-full small-gap">
+      <SearchEdit
+        bind:value={search}
+        on:change={() => {
+          updateSearchQuery(search)
+          update(sort, resultQuery)
+        }}
+      />
+      <ActionIcon icon={IconMoreH} size={'small'} />
+      <div class="buttons-divider" />
+      {#if withFilterButton}
+        <FilterButton {_class} />
+      {/if}
+    </div>
   </div>
-{/if}
-{#if withFilterButton}
-  <div class="ml-10 mt-4 mb-4">
-    <FilterButton {_class} />
+{:else if withFilterButton}
+  <div class="ac-header full divide">
+    <div class="ac-header-full small-gap">
+      <FilterButton {_class} />
+    </div>
   </div>
 {/if}
 <FilterBar {_class} query={searchQuery} on:change={(e) => (resultQuery = e.detail)} />
 <Scroller padding={'2.5rem'}>
-  <div class="flex-col">
+  <div class="spaces-container">
     {#each spaces as space (space._id)}
       {@const icon = classIcon(client, space._class)}
       {@const joined = space.members.includes(me)}
-      <div class="divider" />
-      <div class="item flex-between">
-        <div>
-          <div class="fs-title flex">
+      <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+      <div class="item flex-between" tabindex="0">
+        <div class="flex-col clear-mins">
+          <div class="fs-title flex-row-center">
             {#if icon}
-              <Icon {icon} size={'small'} />
+              <div class="icon"><Icon {icon} size={'small'} /></div>
             {/if}
             <SpacePresenter value={space} />
           </div>
-          <div>
+          <div class="flex-row-center">
             {#if joined}
               <Label label={plugin.string.Joined} />
               &#183
@@ -161,48 +173,58 @@
             {space.description}
           </div>
         </div>
-        <div class="tools flex">
+        <div class="tools flex-row-center gap-2">
           {#if joined}
             <Button size={'x-large'} label={plugin.string.Leave} on:click={() => leave(space)} />
           {:else}
-            <div class="mr-2">
-              <Button size={'x-large'} label={plugin.string.View} on:click={() => view(space)} />
-            </div>
+            <Button size={'x-large'} label={plugin.string.View} on:click={() => view(space)} />
             <Button size={'x-large'} kind={'primary'} label={plugin.string.Join} on:click={() => join(space)} />
           {/if}
         </div>
       </div>
     {/each}
-    {#if createItemDialog}
-      <div class="flex-center mt-10">
-        <Button size={'x-large'} kind={'primary'} label={createItemLabel} on:click={(ev) => showCreateDialog(ev)} />
-      </div>
-    {/if}
   </div>
+  {#if createItemDialog}
+    <div class="flex-center mt-10">
+      <Button size={'x-large'} kind={'primary'} label={createItemLabel} on:click={(ev) => showCreateDialog(ev)} />
+    </div>
+  {/if}
 </Scroller>
 
 <style lang="scss">
-  .divider {
-    background-color: var(--divider-color);
-    height: 1px;
-  }
+  .spaces-container {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--theme-list-border-color);
+    border-radius: 0.25rem;
 
-  .item {
-    color: var(--caption-color);
-    cursor: pointer;
-    padding: 1rem 0.75rem;
+    .item {
+      padding: 1rem 0.75rem;
+      color: var(--theme-caption-color);
+      cursor: pointer;
 
-    &:hover,
-    &:focus {
-      background-color: var(--popup-bg-hover);
-
-      .tools {
-        visibility: visible;
+      .icon {
+        margin-right: 0.375rem;
+        color: var(--theme-trans-color);
       }
-    }
-    .tools {
-      position: relative;
-      visibility: hidden;
+      &:not(:last-child) {
+        border-bottom: 1px solid var(--theme-divider-color);
+      }
+      &:hover,
+      &:focus {
+        background-color: var(--highlight-hover);
+
+        .icon {
+          color: var(--theme-caption-color);
+        }
+        .tools {
+          visibility: visible;
+        }
+      }
+      .tools {
+        position: relative;
+        visibility: hidden;
+      }
     }
   }
 </style>

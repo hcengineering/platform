@@ -198,6 +198,7 @@
 </script>
 
 <div class="flex-col vScroll" bind:this={div} on:scroll={handleScroll}>
+  <div class="grower" />
   {#if showFixed}
     <div class="ml-2 pr-2 fixed">
       <JumpToDateSelector {selectedDate} fixed on:jumpToDate={handleJumpToDate} />
@@ -224,6 +225,10 @@
 </div>
 
 <style lang="scss">
+  .grower {
+    flex-grow: 10;
+    flex-shrink: 5;
+  }
   .fixed {
     position: absolute;
     align-self: center;

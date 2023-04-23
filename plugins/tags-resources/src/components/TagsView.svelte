@@ -17,12 +17,21 @@
   import { Asset, IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { TagCategory, TagElement } from '@hcengineering/tags'
-  import { AnySvelteComponent, Button, Icon, IconAdd, Label, SearchEdit, showPopup } from '@hcengineering/ui'
+  import {
+    AnySvelteComponent,
+    Button,
+    ActionIcon,
+    IconMoreH,
+    Label,
+    SearchEdit,
+    showPopup,
+    IconAdd
+  } from '@hcengineering/ui'
   import { TableBrowser } from '@hcengineering/view-resources'
   import tags from '../plugin'
   import CategoryBar from './CategoryBar.svelte'
   import CreateTagElement from './CreateTagElement.svelte'
-  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  // import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   export let title: IntlString = tags.string.Tags
   export let icon: Asset | AnySvelteComponent = tags.icon.Tags
@@ -86,25 +95,22 @@
     (tagElements?.get(b._id as Ref<TagElement>)?.count ?? 0) -
       (tagElements?.get(a._id as Ref<TagElement>)?.count ?? 0) ?? 0
 
-  $: twoRows = $deviceInfo.twoRows
+  // $: twoRows = $deviceInfo.twoRows
 </script>
 
-<div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
-  <div class:ac-header-full={!twoRows} class:flex-between={twoRows}>
-    <div class="ac-header__wrap-title mr-3">
-      <div class="ac-header__icon"><Icon {icon} size={'small'} /></div>
-      <span class="ac-header__title"><Label label={title} /></span>
-    </div>
-
-    <SearchEdit
-      bind:value={search}
-      on:change={() => {
-        updateResultQuery(search, category)
-      }}
-    />
+<div class="ac-header full divide">
+  <div class="ac-header__wrap-title mr-3">
+    <span class="ac-header__title"><Label label={title} /></span>
   </div>
-  <div class="ac-header-full" class:secondRow={twoRows}>
-    <Button icon={IconAdd} label={сreateItemLabel} kind={'primary'} size={'small'} on:click={showCreateDialog} />
+
+  <div class="clear-mins mb-1">
+    <Button icon={IconAdd} label={сreateItemLabel} kind={'primary'} on:click={showCreateDialog} />
+  </div>
+</div>
+<div class="ac-header full divide search-start">
+  <div class="ac-header-full small-gap">
+    <SearchEdit bind:value={search} on:change={() => updateResultQuery(search, category)} />
+    <ActionIcon icon={IconMoreH} size={'small'} />
   </div>
 </div>
 

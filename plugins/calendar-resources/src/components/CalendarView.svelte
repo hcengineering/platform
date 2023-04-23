@@ -26,7 +26,8 @@
     Scroller,
     showPopup,
     WeekCalendar,
-    YearCalendar
+    YearCalendar,
+    defaultSP
   } from '@hcengineering/ui'
   import { BuildModelKey } from '@hcengineering/view'
   import { CalendarMode } from '../index'
@@ -166,173 +167,166 @@
   let indexes = new Map<Ref<Event>, number>()
 </script>
 
-<div class="fs-title ml-10 mb-2 flex-row-center">
+<div class="text-lg fs-bold px-10 my-4 flex-no-shrink clear-mins">
   {label(currentDate, mode)}
 </div>
-
-<div class="flex gap-2 mb-4 ml-10">
-  <Button
-    size={'small'}
-    label={calendar.string.ModeDay}
-    on:click={() => {
-      mode = CalendarMode.Day
-    }}
-  />
-  <Button
-    size={'small'}
-    label={calendar.string.ModeWeek}
-    on:click={() => {
-      mode = CalendarMode.Week
-    }}
-  />
-  <Button
-    size={'small'}
-    label={calendar.string.ModeMonth}
-    on:click={() => {
-      mode = CalendarMode.Month
-    }}
-  />
-  <Button
-    size={'small'}
-    label={calendar.string.ModeYear}
-    on:click={() => {
-      mode = CalendarMode.Year
-    }}
-  />
-  <div class="flex ml-4 gap-2">
+<div class="flex-between mb-4 px-10 flex-no-shrink clear-mins">
+  <div class="flex-row-center gap-2">
     <Button
       icon={IconBack}
-      size={'small'}
+      kind={'transparent'}
       on:click={() => {
         inc(-1)
       }}
     />
     <Button
-      size={'small'}
       label={calendar.string.Today}
+      kind={'transparent'}
       on:click={() => {
         inc(0)
       }}
     />
     <Button
       icon={IconForward}
-      size={'small'}
+      kind={'transparent'}
       on:click={() => {
         inc(1)
       }}
     />
   </div>
+  <div class="flex-row-center gap-2 clear-mins">
+    <Button
+      label={calendar.string.ModeDay}
+      on:click={() => {
+        mode = CalendarMode.Day
+      }}
+    />
+    <Button
+      label={calendar.string.ModeWeek}
+      on:click={() => {
+        mode = CalendarMode.Week
+      }}
+    />
+    <Button
+      label={calendar.string.ModeMonth}
+      on:click={() => {
+        mode = CalendarMode.Month
+      }}
+    />
+    <Button
+      label={calendar.string.ModeYear}
+      on:click={() => {
+        mode = CalendarMode.Year
+      }}
+    />
+  </div>
 </div>
 
-<div class="ml-10 mr-6 h-full clear-mins">
+<Scroller
+  padding={'0 2.25rem'}
+  fade={mode === CalendarMode.Week || mode === CalendarMode.Day ? { multipler: { top: 3, bottom: 0 } } : defaultSP}
+>
   {#if mode === CalendarMode.Year}
-    <Scroller>
-      <YearCalendar
-        {mondayStart}
-        cellHeight={'2.5rem'}
-        bind:selectedDate
-        bind:currentDate
-        on:change={(e) => {
-          currentDate = e.detail
-          if (areDatesEqual(selectedDate, currentDate)) {
-            mode = CalendarMode.Month
-          }
-          selectedDate = e.detail
-        }}
-      >
-        <svelte:fragment slot="cell" let:date let:today let:selected let:wrongMonth>
-          <Day
-            events={findEvents(objects, date)}
-            {date}
-            {_class}
-            {baseMenuClass}
-            {options}
-            {config}
-            {today}
-            {selected}
-            {wrongMonth}
-            {query}
-          />
-        </svelte:fragment>
-      </YearCalendar>
-    </Scroller>
+    <YearCalendar
+      {mondayStart}
+      cellHeight={'2.5rem'}
+      bind:selectedDate
+      bind:currentDate
+      on:change={(e) => {
+        currentDate = e.detail
+        if (areDatesEqual(selectedDate, currentDate)) {
+          mode = CalendarMode.Month
+        }
+        selectedDate = e.detail
+      }}
+    >
+      <svelte:fragment slot="cell" let:date let:today let:selected let:wrongMonth>
+        <Day
+          events={findEvents(objects, date)}
+          {date}
+          {_class}
+          {baseMenuClass}
+          {options}
+          {config}
+          {today}
+          {selected}
+          {wrongMonth}
+          {query}
+        />
+      </svelte:fragment>
+    </YearCalendar>
   {:else if mode === CalendarMode.Month}
-    <div class="flex flex-grow">
-      <MonthCalendar {mondayStart} cellHeight={'8.5rem'} bind:selectedDate bind:currentDate>
-        <svelte:fragment slot="cell" let:date let:today let:selected let:wrongMonth>
-          <Day
-            events={findEvents(objects, date)}
-            {date}
-            size={'huge'}
-            {_class}
-            {baseMenuClass}
-            {options}
-            {config}
-            {today}
-            {selected}
-            {wrongMonth}
-            {query}
-            on:select={(e) => {
-              currentDate = e.detail
-              if (areDatesEqual(selectedDate, currentDate)) {
-                mode = CalendarMode.Day
-              }
-              selectedDate = e.detail
-            }}
-            on:create={(e) => {
-              showCreateDialog(e.detail, false)
-            }}
-          />
-        </svelte:fragment>
-      </MonthCalendar>
-    </div>
+    <MonthCalendar {mondayStart} cellHeight={'8.5rem'} bind:selectedDate bind:currentDate>
+      <svelte:fragment slot="cell" let:date let:today let:selected let:wrongMonth>
+        <Day
+          events={findEvents(objects, date)}
+          {date}
+          size={'huge'}
+          {_class}
+          {baseMenuClass}
+          {options}
+          {config}
+          {today}
+          {selected}
+          {wrongMonth}
+          {query}
+          on:select={(e) => {
+            currentDate = e.detail
+            if (areDatesEqual(selectedDate, currentDate)) {
+              mode = CalendarMode.Day
+            }
+            selectedDate = e.detail
+          }}
+          on:create={(e) => {
+            showCreateDialog(e.detail, false)
+          }}
+        />
+      </svelte:fragment>
+    </MonthCalendar>
   {:else if mode === CalendarMode.Week}
-    <Scroller>
-      <WeekCalendar
-        {mondayStart}
-        cellHeight={'4.5rem'}
-        bind:selectedDate
-        bind:currentDate
-        on:select={(e) => {
-          currentDate = e.detail
-          selectedDate = e.detail
-          mode = CalendarMode.Day
-        }}
-      >
-        <svelte:fragment slot="cell" let:date>
-          <Hour
-            events={findEvents(objects, date, true)}
-            {date}
-            bind:indexes
-            on:create={(e) => {
-              showCreateDialog(e.detail, true)
-            }}
-          />
-        </svelte:fragment>
-      </WeekCalendar>
-    </Scroller>
+    <WeekCalendar
+      {mondayStart}
+      cellHeight={'4.5rem'}
+      bind:selectedDate
+      bind:currentDate
+      on:select={(e) => {
+        currentDate = e.detail
+        selectedDate = e.detail
+        mode = CalendarMode.Day
+      }}
+    >
+      <svelte:fragment slot="cell" let:date>
+        <Hour
+          events={findEvents(objects, date, true)}
+          {date}
+          bind:indexes
+          on:create={(e) => {
+            showCreateDialog(e.detail, true)
+          }}
+        />
+      </svelte:fragment>
+    </WeekCalendar>
   {:else if mode === CalendarMode.Day}
-    <Scroller>
-      <WeekCalendar
-        {mondayStart}
-        displayedDaysCount={1}
-        startFromWeekStart={false}
-        cellHeight={'4.5rem'}
-        bind:selectedDate
-        bind:currentDate
-      >
-        <svelte:fragment slot="cell" let:date>
-          <Hour
-            events={findEvents(objects, date, true)}
-            {date}
-            bind:indexes
-            wide
-            on:create={(e) => {
-              showCreateDialog(e.detail, true)
-            }}
-          />
-        </svelte:fragment>
-      </WeekCalendar>
-    </Scroller>
+    <WeekCalendar
+      {mondayStart}
+      displayedDaysCount={1}
+      startFromWeekStart={false}
+      cellHeight={'4.5rem'}
+      bind:selectedDate
+      bind:currentDate
+    >
+      <svelte:fragment slot="cell" let:date>
+        <Hour
+          events={findEvents(objects, date, true)}
+          {date}
+          bind:indexes
+          wide
+          on:create={(e) => {
+            showCreateDialog(e.detail, true)
+          }}
+        />
+      </svelte:fragment>
+    </WeekCalendar>
   {/if}
-</div>
+</Scroller>
+<div class="min-h-4 max-h-4 h-4 flex-no-shrink" />

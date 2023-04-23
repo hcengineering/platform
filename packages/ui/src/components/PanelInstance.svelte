@@ -166,7 +166,7 @@
     background-color: transparent;
 
     &.bg {
-      background-color: var(--body-color);
+      background-color: var(--theme-back-color);
     }
     .panel-container {
       padding: 0.5rem;

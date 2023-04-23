@@ -1,52 +1,29 @@
 <script lang="ts">
   import { IntlString } from '@hcengineering/platform'
-  import { Button } from '@hcengineering/ui'
+  import { TabList } from '@hcengineering/ui'
 
   export let mode: string
   export let config: [string, IntlString, object][]
   export let onChange: (_mode: string) => void
 
-  function getButtonShape (i: number) {
-    if (config.length === 1) return 'round'
-    switch (i) {
-      case 0:
-        return 'rectangle-right'
-      case config.length - 1:
-        return 'rectangle-left'
-      default:
-        return 'rectangle'
+  $: modeList = config.map((c) => {
+    return {
+      id: c[0],
+      labelIntl: c[1],
+      action: () => onChange(c[0])
     }
-  }
+  })
 </script>
 
-<div class="itemsContainer">
-  {#each config as [_mode, label, params], i}
-    <div class="buttonWrapper">
-      <Button
-        {label}
-        labelParams={params}
-        size="small"
-        on:click={() => onChange(_mode)}
-        selected={_mode === mode}
-        shape={getButtonShape(i)}
-      />
-    </div>
-  {/each}
+<div class="ac-header full divide search-start">
+  <div class="ac-header-full small-gap">
+    <TabList
+      items={modeList}
+      selected={mode}
+      kind={'normal'}
+      on:select={(result) => {
+        if (result.detail !== undefined && result.detail.action) result.detail.action()
+      }}
+    />
+  </div>
 </div>
-
-<style lang="scss">
-  .itemsContainer {
-    display: flex;
-    align-items: center;
-    padding: 0.65rem 1.35rem 0.65rem 2.25rem;
-    background-color: var(--theme-comp-header-color);
-    border-bottom: 1px solid var(--theme-divider-color);
-  }
-  .buttonWrapper {
-    margin-right: 1px;
-
-    &:last-child {
-      margin-right: 0;
-    }
-  }
-</style>

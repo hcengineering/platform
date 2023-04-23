@@ -72,14 +72,14 @@
     padding: 0;
     min-width: 3rem;
     height: 3.25rem;
-    background-color: var(--accent-bg-color);
-    border: 1px solid var(--button-border-color);
+    background-color: var(--theme-button-enabled);
+    border: 1px solid var(--theme-button-border);
     border-radius: 0.75rem;
     caret-color: var(--caret-color);
 
     &:focus-within {
-      background-color: var(--body-accent);
-      border-color: var(--button-border-hover);
+      background-color: var(--theme-button-focused);
+      border-color: var(--theme-list-divider-color);
     }
     input {
       height: 3.25rem;
@@ -98,7 +98,7 @@
       top: 1rem;
       left: 1.25rem;
       font-size: 0.75rem;
-      color: var(--caption-color);
+      color: var(--theme-caption-color);
       opacity: 0.3;
       transition: top 200ms;
       pointer-events: none;

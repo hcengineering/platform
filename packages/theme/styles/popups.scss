@@ -422,7 +422,8 @@
   flex-direction: column;
   padding: .5rem;
   min-height: 22rem;
-  background: var(--popup-bg-color);
+  background: var(--theme-bg-color);
+  border: 1px solid var(--theme-divider-color);
   border-radius: .5rem;
   box-shadow: var(--popup-shadow);
   

@@ -23,7 +23,7 @@
   import {
     getViewOptions,
     setActiveViewletId,
-    Table,
+    TableBrowser,
     viewOptionStore,
     ViewletSettingButton
   } from '@hcengineering/view-resources'

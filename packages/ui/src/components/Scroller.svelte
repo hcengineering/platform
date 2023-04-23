@@ -80,6 +80,8 @@
   $: fz = $themeOptions.fontSize
   $: shiftTop = fade.multipler?.top ? fade.multipler?.top * fz : 0
   $: shiftBottom = fade.multipler?.bottom ? fade.multipler?.bottom * fz : 0
+  $: shiftLeft = fade.multipler?.left ? fade.multipler?.left * fz : 0
+  $: shiftRight = fade.multipler?.right ? fade.multipler?.right * fz : 0
   $: orientir = contentDirection === 'horizontal' ? 'horizontal' : 'vertical'
 
   const checkBar = (): void => {
@@ -207,10 +209,12 @@
     if (divHScroll && horizontal) {
       const gradientH = `linear-gradient(
         90deg,
-        rgba(0, 0, 0, 0) 0,
-        rgba(0, 0, 0, 1) ${maskH === 'none' || maskH === 'left' ? '0px' : '2rem'},
-        rgba(0, 0, 0, 1) calc(100% - ${maskH === 'none' || maskH === 'right' ? '0px' : '2rem'}),
-        rgba(0, 0, 0, 0) 100%
+        rgba(0, 0, 0, 1) ${shiftLeft}px,
+        rgba(0, 0, 0, 0) ${shiftLeft}px,
+        rgba(0, 0, 0, 1) ${shiftLeft + (maskH === 'both' || maskH === 'right' ? 2 * fz : 0)}px,
+        rgba(0, 0, 0, 1) calc(100% - ${shiftRight + (maskH === 'both' || maskH === 'left' ? 2 * fz : 0)}px),
+        rgba(0, 0, 0, 0) calc(100% - ${shiftRight}px),
+        rgba(0, 0, 0, 1) calc(100% - ${shiftRight}px)
       )`
       divHScroll.style.webkitMaskImage = gradientH
     }
