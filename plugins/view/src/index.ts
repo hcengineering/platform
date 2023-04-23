@@ -662,7 +662,8 @@ const view = plugin(viewId, {
     SpacePresenter: '' as AnyComponent,
     BooleanTruePresenter: '' as AnyComponent,
     ValueSelector: '' as AnyComponent,
-    GrowPresenter: '' as AnyComponent
+    GrowPresenter: '' as AnyComponent,
+    DividerPresenter: '' as AnyComponent
   },
   string: {
     CustomizeView: '' as IntlString,

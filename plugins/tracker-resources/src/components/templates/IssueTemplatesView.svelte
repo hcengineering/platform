@@ -60,7 +60,7 @@
 
   async function update (viewlets: WithLookup<Viewlet>[], active: Ref<Viewlet> | null): Promise<void> {
     viewlet = viewlets.find((viewlet) => viewlet._id === active) ?? viewlets[0]
-    setActiveViewletId(viewlet._id)
+    if (viewlet !== undefined) setActiveViewletId(viewlet._id)
   }
 
   $: if (!label && title) {
@@ -92,21 +92,11 @@
   <svelte:fragment slot="label_selector">
     <slot name="label_selector" />
   </svelte:fragment>
+  <svelte:fragment slot="header-tools">
+    <Button icon={IconAdd} label={tracker.string.IssueTemplate} kind={'primary'} on:click={showCreateDialog} />
+  </svelte:fragment>
   <svelte:fragment slot="extra">
-    <Button
-      size={'small'}
-      icon={IconAdd}
-      label={tracker.string.IssueTemplate}
-      kind={'primary'}
-      on:click={showCreateDialog}
-    />
-
-    {#if viewlet}
-      <ViewletSettingButton bind:viewOptions {viewlet} />
-    {/if}
-
     {#if asideFloat && $$slots.aside}
-      <div class="buttons-divider" />
       <Button
         icon={asideShown ? IconDetailsFilled : IconDetails}
         kind={'transparent'}
@@ -116,6 +106,10 @@
           asideShown = !asideShown
         }}
       />
+      <div class="buttons-divider" />
+    {/if}
+    {#if viewlet}
+      <ViewletSettingButton bind:viewOptions {viewlet} />
     {/if}
   </svelte:fragment>
 </IssuesHeader>

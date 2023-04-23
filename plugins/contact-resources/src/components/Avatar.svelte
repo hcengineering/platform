@@ -126,6 +126,10 @@
     width: 1.5rem; // 24
     height: 1.5rem;
   }
+  .ava-smaller {
+    width: 1.75rem; // 32
+    height: 1.75rem;
+  }
   .ava-small {
     width: 2rem; // 32
     height: 2rem;
@@ -157,6 +161,8 @@
   .ava-inline.no-img,
   .ava-x-small .ava-mask,
   .ava-x-small.no-img,
+  .ava-smaller .ava-mask,
+  .ava-smaller.no-img,
   .ava-small .ava-mask,
   .ava-small.no-img,
   .ava-medium .ava-mask,

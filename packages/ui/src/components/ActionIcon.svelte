@@ -15,6 +15,7 @@
 <script lang="ts">
   import type { IntlString, Asset } from '@hcengineering/platform'
   import type { AnySvelteComponent, TooltipAlignment } from '../types'
+  import { ComponentType } from 'svelte'
 
   import Icon from './Icon.svelte'
   import { tooltip } from '../tooltips'
@@ -22,7 +23,7 @@
   export let label: IntlString = '' as IntlString
   export let labelProps: any = undefined
   export let direction: TooltipAlignment | undefined = undefined
-  export let icon: Asset | AnySvelteComponent
+  export let icon: Asset | AnySvelteComponent | ComponentType
   export let iconProps: any | undefined = undefined
   export let size: 'x-small' | 'small' | 'medium' | 'large'
   export let action: (ev: MouseEvent) => Promise<void> | void = async () => {}

@@ -302,7 +302,7 @@
   }
 </script>
 
-<div class="kanban-container top-divider">
+<div class="kanban-container">
   <ScrollBox>
     <div class="kanban-content">
       {#each categories as state, si (typeof state === 'object' ? state.name : state)}
@@ -360,7 +360,6 @@
     position: relative;
     width: 100%;
     height: 100%;
-    background: var(--board-bg-color);
   }
   .kanban-content {
     display: flex;

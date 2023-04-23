@@ -73,7 +73,7 @@
 
 {#if value}
   {#if kind === 'list' && '_class' in value}
-    <EstimationStatsPresenter {value} on:click={handleestimationEditorOpened} />
+    <EstimationStatsPresenter {value} {kind} on:click={handleestimationEditorOpened} />
   {:else}
     <Button
       showTooltip={isEditable ? { label: tracker.string.Estimation } : undefined}

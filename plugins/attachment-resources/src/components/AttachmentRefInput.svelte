@@ -300,17 +300,17 @@
 <style lang="scss">
   .list {
     padding: 0.5rem;
-    color: var(--caption-color);
+    color: var(--theme-caption-color);
     overflow-x: auto;
     overflow-y: hidden;
-    background-color: var(--accent-bg-color);
-    border: 1px solid var(--divider-color);
+    background-color: var(--theme-refinput-color);
+    border: 1px solid var(--theme-divider-color);
     border-radius: 0.5rem 0.5rem 0 0;
     border-bottom: none;
 
     .item + .item {
       padding-left: 1rem;
-      border-left: 1px solid var(--divider-color);
+      border-left: 1px solid var(--theme-divider-color);
     }
   }
 </style>

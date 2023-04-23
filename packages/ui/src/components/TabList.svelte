@@ -15,7 +15,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { tooltip } from '../tooltips'
-  import type { TabItem } from '../types'
+  import type { TabItem, IconSize } from '../types'
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
 
@@ -23,7 +23,7 @@
   export let multiselect: boolean = false
   export let items: TabItem[]
   export let kind: 'normal' | 'secondary' = 'normal'
-  export let short: boolean = false
+  export let onlyIcons: boolean = false
   export let size: 'small' | 'medium' = 'medium'
 
   const dispatch = createEventDispatcher()
@@ -38,6 +38,9 @@
     return res
   }
   const tabs: HTMLElement[] = []
+
+  let iconSize: IconSize
+  $: iconSize = onlyIcons ? (size === 'small' ? 'small' : 'medium') : size === 'small' ? 'x-small' : 'small'
 </script>
 
 {#if items.length > 0}
@@ -47,9 +50,10 @@
       <div
         bind:this={tabs[i]}
         class="button"
-        class:short
+        class:onlyIcons
         class:selected={getSelected(item.id)}
         data-view={item.tooltip}
+        data-id={`tab-${item.id}`}
         use:tooltip={{ label: item.tooltip ?? undefined, element: tabs[i] ?? undefined }}
         on:click={() => {
           if (multiselect) {
@@ -64,7 +68,7 @@
       >
         {#if item.icon}
           <div class="icon">
-            <Icon icon={item.icon} size={size === 'small' ? 'x-small' : 'small'} fill={item.color ?? 'currentColor'} />
+            <Icon icon={item.icon} size={iconSize} fill={item.color ?? 'currentColor'} />
           </div>
         {:else if item.color}
           <div class="color" style:background-color={item.color} />
@@ -110,10 +114,11 @@
       }
       &::before {
         position: absolute;
-        top: 0.35rem;
+        top: 50%;
         left: -1.5px;
-        height: 0.8rem;
+        height: 70%;
         border-left: 1px solid var(--button-border-color);
+        transform: translateY(-50%);
       }
     }
     .button:not(.selected) + .button:not(.selected)::before {
@@ -123,6 +128,10 @@
     &.small {
       .button {
         padding: 0 0.5rem;
+
+        &.onlyIcons {
+          padding: 0.375rem;
+        }
       }
       &.normal .button {
         height: 1.5rem;
@@ -132,29 +141,30 @@
       }
     }
     &.medium .button {
-      height: 1.75rem;
+      height: 2rem;
       padding: 0.25rem 0.75rem;
-      &.short {
-        padding: 0.5rem;
+
+      &.onlyIcons {
+        padding: 0.375rem;
       }
     }
     &.normal {
-      background-color: var(--accent-bg-color);
-      border-radius: 0.5rem;
+      background-color: var(--theme-tablist-color);
+      border-radius: 0.25rem;
 
       .button {
-        background-color: var(--accent-bg-color);
+        color: var(--theme-trans-color);
         border: 1px solid transparent;
-        border-radius: calc(0.5rem - 1px);
+        border-radius: 0.25rem;
 
-        &:hover {
-          background-color: var(--button-bg-hover);
-        }
         &.selected {
-          color: var(--caption-color);
-          background-color: var(--button-bg-color);
-          border-color: var(--button-border-color);
-          box-shadow: var(--accent-shadow);
+          color: var(--theme-caption-color);
+          background-color: var(--theme-button-enabled);
+          border-color: var(--theme-button-border);
+
+          &:hover {
+            background-color: var(--theme-button-hovered);
+          }
         }
       }
     }

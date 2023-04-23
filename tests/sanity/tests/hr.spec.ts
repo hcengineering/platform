@@ -6,7 +6,7 @@ test.use({
 })
 
 export async function createDepartment (page: Page, departmentName: string): Promise<void> {
-  await page.click('text=Structure Department Organization no employees >> button >> nth=1')
+  await page.click('text=Structure Department Organization no employees >> button >> nth=2')
   const departmentNameField = page.locator('[placeholder="Department"]')
   await departmentNameField.click()
   await departmentNameField.fill(departmentName)
@@ -29,7 +29,7 @@ test.describe('hr tests', () => {
     await createDepartment(page, department2)
 
     // Click .ml-8 > div > div > .flex-between >> nth=0
-    await page.locator('.ml-8 > div > div > .flex-between').first().click()
+    await page.locator('.flex-col > div > .flex-between >> nth=0').click()
 
     // Click [id="hr\:string\:AddEmployee"]
     await page.locator('[id="hr\\:string\\:AddEmployee"]').click()
@@ -57,7 +57,7 @@ test.describe('hr tests', () => {
     await page.locator('text=Structure').click()
 
     // Click div:nth-child(3) > div > .flex-between
-    await page.locator('div:nth-child(3) > div > .flex-between').click()
+    await page.locator('div:nth-child(2) > .flex-between').click()
 
     // Click [id="hr\:string\:AddEmployee"]
     await page.locator('[id="hr\\:string\\:AddEmployee"]').click()

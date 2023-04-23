@@ -21,12 +21,13 @@
     Button,
     deviceOptionsStore as deviceInfo,
     eventToHTMLElement,
-    Icon,
-    IconAdd,
+    ActionIcon,
+    IconMoreH,
     Label,
     Scroller,
     SearchEdit,
-    showPopup
+    showPopup,
+    IconAdd
   } from '@hcengineering/ui'
   import hr from '../plugin'
   import CreateDepartment from './CreateDepartment.svelte'
@@ -77,32 +78,23 @@
   $: twoRows = $deviceInfo.twoRows
 </script>
 
-<div class="ac-header withSettings divide" class:full={!twoRows} class:mini={twoRows}>
-  <div class:ac-header-full={!twoRows} class:flex-between={twoRows}>
-    <div class="ac-header__wrap-title mr-3">
-      <div class="ac-header__icon"><Icon icon={hr.icon.Structure} size={'small'} /></div>
-      <span class="ac-header__title"><Label label={hr.string.Structure} /></span>
-    </div>
-
-    <SearchEdit
-      bind:value={search}
-      on:change={() => {
-        updateResultQuery(search)
-      }}
-    />
+<div class="ac-header full divide caption-height">
+  <div class="ac-header__wrap-title mr-3">
+    <span class="ac-header__title"><Label label={hr.string.Structure} /></span>
   </div>
-  <div class="ac-header-full" class:secondRow={twoRows}>
-    <Button
-      label={hr.string.CreateDepartmentLabel}
-      icon={IconAdd}
-      kind={'primary'}
-      size={'small'}
-      on:click={showCreateDialog}
-    />
+
+  <div class="mb-1 clear-mins">
+    <Button icon={IconAdd} label={hr.string.CreateDepartmentLabel} kind={'primary'} on:click={showCreateDialog} />
+  </div>
+</div>
+<div class="ac-header full divide search-start">
+  <div class="ac-header-full small-gap">
+    <SearchEdit bind:value={search} on:change={() => updateResultQuery(search)} />
+    <ActionIcon icon={IconMoreH} size={'small'} />
   </div>
 </div>
 
-<Scroller>
+<Scroller padding={'1rem 2.5rem'}>
   {#if head}
     <DepartmentCard value={head} {descendants} {allEmployees} dragOver={undefined} dragPerson={undefined} />
   {/if}

@@ -17,7 +17,7 @@ test.describe('workbench tests', () => {
     await page.click('text=Applications')
     await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit/candidates`)
     // Click text=Applications Application >> span
-    await expect(page.locator('text=Applications Filter')).toBeVisible()
+    await expect(page.locator('text=Applications >> nth=1')).toBeVisible()
     await expect(page.locator('text="APP-1')).toBeDefined()
 
     // Click text=Talents

@@ -36,6 +36,8 @@
   export let category: PrimitiveType | StatusValue
   export let headerComponent: AttributeModel | undefined
   export let singleCat: boolean
+  export let oneCat: boolean
+  export let lastCat: boolean
   export let groupByKey: string
   export let space: Ref<Space> | undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined
@@ -319,6 +321,8 @@
 
 <div
   bind:this={div}
+  class="category-container"
+  class:zero-container={level === 0}
   on:drop|preventDefault={drop}
   on:dragover={dragOverCat}
   on:dragenter={dragEnterCat}
@@ -338,7 +342,9 @@
       {extraHeaders}
       newObjectProps={_newObjectProps}
       flat={flatHeaders}
+      {collapsed}
       {props}
+      {lastCat}
       on:more={() => {
         if (limit !== undefined) limit += 20
       }}
@@ -347,32 +353,30 @@
       }}
     />
   {/if}
-  <ExpandCollapse isExpanded={!collapsed || dragItemIndex !== undefined}>
+  <ExpandCollapse isExpanded={!collapsed || dragItemIndex !== undefined} duration={0}>
     {#if !lastLevel}
-      <div class="p-2">
-        <slot
-          name="category"
-          docs={items}
-          {_class}
-          {space}
-          {lookup}
-          {loadingPropsLength}
-          {baseMenuClass}
-          {config}
-          {selectedObjectIds}
-          {createItemDialog}
-          {createItemLabel}
-          {viewOptions}
-          newObjectProps={_newObjectProps}
-          {flatHeaders}
-          {props}
-          level={level + 1}
-          {viewOptionsConfig}
-          {listDiv}
-          dragItem
-          dragstart={dragStartHandler}
-        />
-      </div>
+      <slot
+        name="category"
+        docs={items}
+        {_class}
+        {space}
+        {lookup}
+        {loadingPropsLength}
+        {baseMenuClass}
+        {config}
+        {selectedObjectIds}
+        {createItemDialog}
+        {createItemLabel}
+        {viewOptions}
+        newObjectProps={_newObjectProps}
+        {flatHeaders}
+        {props}
+        level={level + 1}
+        {viewOptionsConfig}
+        {listDiv}
+        dragItem
+        dragstart={dragStartHandler}
+      />
     {:else if itemModels && (!collapsed || dragItemIndex !== undefined)}
       {#if limited}
         {#each limited as docObject, i (docObject._id)}
@@ -383,6 +387,8 @@
             {groupByKey}
             selected={isSelected(docObject, $focusStore)}
             checked={selectedObjectIdsSet.has(docObject._id)}
+            last={i === limited.length - 1}
+            lastCat={i === limited.length - 1 && (oneCat || lastCat)}
             on:dragstart={(e) => dragStart(e, docObject, i)}
             on:dragenter={(e) => {
               if (dragItemIndex !== undefined) {
@@ -419,7 +425,16 @@
 </div>
 
 <style lang="scss">
-  .row:not(:last-child) {
-    border-bottom: 1px solid var(--accent-bg-color);
+  .expandCollapse {
+    overflow: hidden;
+    transition: height 0.3s ease-out;
+    height: auto;
+  }
+  .zero-container {
+    border-radius: 0.25rem;
+
+    &:not(:first-child) {
+      margin-top: 0.5rem;
+    }
   }
 </style>

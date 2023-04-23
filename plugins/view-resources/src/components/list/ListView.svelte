@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { AnyComponent, issueSP, Scroller } from '@hcengineering/ui'
+  import { AnyComponent, Scroller } from '@hcengineering/ui'
   import { BuildModelKey, Viewlet, ViewOptions } from '@hcengineering/view'
   import { onMount } from 'svelte'
   import {
@@ -47,8 +47,8 @@
   }}
 />
 
-<div class="w-full h-full clear-mins">
-  <Scroller fade={issueSP}>
+<div class="w-full h-full py-4 clear-mins">
+  <Scroller fade={{ multipler: { top: 2.75 * viewOptions.groupBy.length, bottom: 0 } }} padding={'0 1rem'} noFade>
     <List
       bind:this={list}
       {_class}

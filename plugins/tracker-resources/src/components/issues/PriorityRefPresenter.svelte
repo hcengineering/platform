@@ -19,6 +19,8 @@
 
   export let value: IssuePriority
   export let size: 'small' | 'medium' = 'small'
+  export let colorInherit: boolean = false
+  export let accent: boolean = false
   export let inline: boolean = false
 
   $: icon = issuePriorities[value]?.icon
@@ -27,9 +29,14 @@
 
 <div class="flex-presenter cursor-default">
   {#if !inline && icon}
-    <Icon {icon} {size} />
+    <Icon {icon} {size} fill={'var(--theme-caption-color)'} />
   {/if}
-  <span class="overflow-label" class:ml-2={!inline && icon}>
+  <span
+    class="overflow-label"
+    class:ml-2={!inline && icon}
+    style:color={colorInherit ? 'inherit' : 'var(--theme-content-color)'}
+    class:fs-bold={accent}
+  >
     <Label {label} />
   </span>
 </div>

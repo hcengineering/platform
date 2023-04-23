@@ -1,11 +1,11 @@
 <script lang="ts">
   import { Ref, Space } from '@hcengineering/core'
-  import { Icon, TabList, SearchEdit } from '@hcengineering/ui'
+  import { ActionIcon, TabList, SearchEdit, IconMoreH } from '@hcengineering/ui'
   import { Viewlet } from '@hcengineering/view'
   import { FilterButton, setActiveViewletId } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import { WithLookup } from '@hcengineering/core'
-  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  // import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   export let space: Ref<Space> | undefined = undefined
   export let viewlet: WithLookup<Viewlet> | undefined
@@ -22,30 +22,24 @@
     }
   })
 
-  $: twoRows = $deviceInfo.twoRows
+  // $: twoRows = $deviceInfo.twoRows
 </script>
 
-<div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
-  <div class:ac-header-full={!twoRows} class:flex-between={twoRows}>
-    <div class="ac-header__wrap-title mr-3">
-      {#if showLabelSelector}
-        <slot name="label_selector" />
-      {:else}
-        <div class="ac-header__icon"><Icon icon={tracker.icon.Issues} size={'small'} /></div>
-        <span class="ac-header__title">{label}</span>
-      {/if}
-      <div class="ml-4"><FilterButton _class={tracker.class.Issue} {space} /></div>
-    </div>
-    <SearchEdit bind:value={search} on:change={() => {}} />
+<div class="ac-header full divide">
+  <div class="ac-header__wrap-title">
+    {#if showLabelSelector}
+      <slot name="label_selector" />
+    {:else}
+      <span class="ac-header__title">{label}</span>
+    {/if}
   </div>
-  <div class="ac-header-full" class:secondRow={twoRows}>
+  <div class="mb-1 clear-mins">
     {#if viewlets.length > 1}
       <TabList
         items={viewslist}
         multiselect={false}
         selected={viewlet?._id}
-        kind={'secondary'}
-        size={'small'}
+        onlyIcons
         on:select={(result) => {
           if (result.detail !== undefined) {
             if (viewlet?._id === result.detail.id) return
@@ -56,6 +50,18 @@
         }}
       />
     {/if}
+    <slot name="header-tools" />
+  </div>
+</div>
+<div class="ac-header full divide search-start">
+  <div class="ac-header-full small-gap">
+    <SearchEdit bind:value={search} on:change={() => {}} />
+    <ActionIcon icon={IconMoreH} size={'small'} />
+    <div class="buttons-divider" />
+    <FilterButton _class={tracker.class.Issue} {space} />
+  </div>
+  <div class="ac-header-full medium-gap">
     <slot name="extra" />
+    <ActionIcon icon={IconMoreH} size={'small'} />
   </div>
 </div>

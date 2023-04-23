@@ -241,7 +241,9 @@
     {config}
     {itemModels}
     {_class}
-    singleCat={level === 0 && categories.length === 1}
+    singleCat={level === 0 && viewOptions.groupBy.length === 1}
+    oneCat={viewOptions.groupBy.length === 1}
+    lastCat={i === categories.length - 1}
     {category}
     {items}
     {newObjectProps}

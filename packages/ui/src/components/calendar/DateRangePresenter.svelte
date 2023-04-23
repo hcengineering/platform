@@ -474,7 +474,7 @@
       pointer-events: none;
 
       &.normal {
-        color: var(--content-color);
+        color: var(--theme-content-color);
       }
       &.warning {
         color: var(--warning-color);
@@ -486,27 +486,31 @@
 
     &.no-border {
       font-weight: 400;
-      color: var(--accent-color);
-      background-color: var(--noborder-bg-color);
+      color: var(--theme-content-color);
+      background-color: var(--theme-button-enabled);
       box-shadow: var(--button-shadow);
 
       &:hover {
-        color: var(--caption-color);
-        background-color: var(--noborder-bg-hover);
+        color: var(--theme-caption-color);
+        background-color: var(--theme-button-hovered);
         transition-duration: 0;
 
         .btn-icon {
-          color: var(--caption-color);
+          color: var(--theme-caption-color);
         }
       }
       &:disabled {
-        color: var(--content-color);
-        background-color: var(--button-disabled-color);
+        color: var(--theme-trans-color);
+        background-color: var(--theme-button-disabled);
         cursor: default;
+
+        .btn-icon {
+          color: var(--theme-trans-color);
+        }
         &:hover {
-          color: var(--content-color);
+          color: var(--theme-trans-color);
           .btn-icon {
-            color: var(--content-color);
+            color: var(--theme-trans-color);
           }
         }
       }
@@ -515,7 +519,7 @@
         cursor: pointer;
 
         &:hover {
-          background-color: var(--noborder-bg-hover);
+          background-color: var(--theme-button-hovered);
           .btn-icon {
             &.normal {
               color: var(--caption-color);
@@ -528,14 +532,14 @@
             }
           }
           .time-divider {
-            background-color: var(--button-border-hover);
+            background-color: var(--theme-divider-color);
           }
         }
         &:focus-within {
-          background-color: var(--button-bg-color);
+          background-color: var(--theme-button-focused);
           border-color: var(--primary-edit-border-color);
           &:hover {
-            background-color: var(--button-bg-color);
+            background-color: var(--theme-button-hovered);
           }
         }
       }
@@ -554,12 +558,12 @@
       padding: 0 0.875rem;
       width: 100%;
       height: 2.25rem;
-      color: var(--caption-color);
+      color: var(--theme-caption-color);
       &:hover {
-        background-color: var(--body-color);
-        border-color: var(--divider-color);
+        background-color: var(--theme-bg-color);
+        border-color: var(--theme-divider-color);
         .btn-icon {
-          color: var(--content-color);
+          color: var(--theme-content-color);
         }
       }
       &.edit {
@@ -574,15 +578,15 @@
       margin: 0 0.25rem;
       width: 0.75rem;
       height: 0.75rem;
-      color: var(--content-color);
-      background-color: var(--button-bg-color);
+      color: var(--theme-content-color);
+      background-color: var(--theme-button-enabled);
       outline: none;
       border-radius: 50%;
       cursor: pointer;
 
       &:hover {
         color: var(--accent-color);
-        background-color: var(--button-bg-hover);
+        background-color: var(--theme-button-hovered);
       }
     }
 
@@ -614,7 +618,7 @@
       width: 1px;
       min-width: 1px;
       height: 0.75rem;
-      background-color: var(--button-border-color);
+      background-color: var(--theme-divider-color);
     }
     .separator {
       margin: 0 0.1rem;

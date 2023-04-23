@@ -36,7 +36,7 @@
     <Button
       focus
       label={presentation.string.Ok}
-      size={'small'}
+      size={'large'}
       kind={'primary'}
       loading={processing}
       on:click={() => {
@@ -55,7 +55,7 @@
     {#if canSubmit}
       <Button
         label={presentation.string.Cancel}
-        size={'small'}
+        size={'large'}
         on:click={() => {
           dispatch('close', false)
         }}
@@ -71,14 +71,14 @@
     padding: 2rem 1.75rem 1.75rem;
     width: 30rem;
     max-width: 40rem;
-    background: var(--popup-bg-color);
+    background: var(--theme-bg-color);
     border-radius: 1.25rem;
     user-select: none;
     box-shadow: var(--popup-shadow);
 
     .message {
       margin-bottom: 1.75rem;
-      color: var(--accent-color);
+      color: var(--theme-content-color);
     }
     .footer {
       flex-shrink: 0;

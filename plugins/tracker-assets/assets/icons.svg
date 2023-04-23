@@ -84,28 +84,26 @@
     <path style="fill-rule:evenodd;clip-rule:evenodd;" d="M7,14c3.9,0,7-3.1,7-7c0-3.9-3.1-7-7-7C3.1,0,0,3.1,0,7C0,10.9,3.1,14,7,14z M5,4C4.7,3.7,4.3,3.7,4,4S3.7,4.7,4,5l2,2L4,9C3.7,9.3,3.7,9.7,4,10c0.3,0.3,0.8,0.3,1.1,0l2-2l2,2c0.3,0.3,0.8,0.3,1.1,0c0.3-0.3,0.3-0.8,0-1.1l-2-2l2-2c0.3-0.3,0.3-0.8,0-1.1C9.7,3.7,9.3,3.7,9,4l-2,2L5,4z" />
   </symbol>
 
-  <symbol id="priority-nopriority" viewBox="0 0 14 14">
-    <rect width="2" height="2" rx="1" transform="matrix(-1 0 0 1 5 6)" />
-    <rect width="2" height="2" rx="1" transform="matrix(-1 0 0 1 8 6)" />
-    <rect width="2" height="2" rx="1" transform="matrix(-1 0 0 1 11 6)" />
+  <symbol id="priority-nopriority" viewBox="0 0 16 16">
+    <rect opacity="0.6" x="2" y="7.5" width="12" height="1" rx="0.5" />
   </symbol>
   <symbol id="priority-urgent" viewBox="-1 -1 16 16">
     <path fill="var(--warning-color)" d="M2 0a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V2a2 2 0 00-2-2H2zm3.914 3h1.738L7.5 8.602H6.07L5.914 3zm1.809 7.164a.95.95 0 01-.938.938.934.934 0 110-1.867c.5 0 .934.417.938.93z" />
   </symbol>
   <symbol id="priority-high" viewBox="0 0 16 16">
-    <rect x="1" y="8" width="3" height="6" rx="1" />
-    <rect x="6" y="5" width="3" height="9" rx="1" />
-    <rect x="11" y="2" width="3" height="12" rx="1" />
-  </symbol>
-  <symbol id="priority-medium" viewBox="0 0 16 16">
-    <rect x="1" y="8" width="3" height="6" rx="1" />
-    <rect x="6" y="5" width="3" height="9" rx="1" />
-    <rect x="11" y="2" width="3" height="12" rx="1" fill-opacity=".4" />
-  </symbol>
-  <symbol id="priority-low" viewBox="0 0 16 16">
-    <rect x="1" y="8" width="3" height="6" rx="1" />
+    <rect x="1" y="8" width="3" height="6" rx="1" fill-opacity=".4" />
     <rect x="6" y="5" width="3" height="9" rx="1" fill-opacity=".4" />
     <rect x="11" y="2" width="3" height="12" rx="1" fill-opacity=".4" />
+  </symbol>
+  <symbol id="priority-medium" viewBox="0 0 16 16">
+    <rect x="1" y="8" width="3" height="6" rx="1" fill-opacity=".4" />
+    <rect x="6" y="5" width="3" height="9" rx="1" fill-opacity=".4" />
+    <rect x="11" y="2" width="3" height="12" rx="1" fill-opacity=".15" />
+  </symbol>
+  <symbol id="priority-low" viewBox="0 0 16 16">
+    <rect x="1" y="8" width="3" height="6" rx="1" fill-opacity=".4" />
+    <rect x="6" y="5" width="3" height="9" rx="1" fill-opacity=".15" />
+    <rect x="11" y="2" width="3" height="12" rx="1" fill-opacity=".15" />
   </symbol>
 
   <symbol id="list" viewBox="0 0 16 16">
