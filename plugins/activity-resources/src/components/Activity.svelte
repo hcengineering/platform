@@ -106,7 +106,6 @@
   $: scrollIndex = shouldScroll ? newTxIndexes[0] ?? -1 : -1
 </script>
 
-{shouldScroll}
 <div class="antiSection-header high mt-9" class:invisible={transparent}>
   <span class="antiSection-header__title flex-row-center">
     <Label label={activity.string.Activity} />
