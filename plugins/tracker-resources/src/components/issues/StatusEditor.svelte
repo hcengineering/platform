@@ -38,7 +38,7 @@
   export let size: ButtonSize = 'large'
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = undefined
-  export let defaultStatus: Ref<IssueStatus> | undefined = undefined
+  export let defaultIssueStatus: Ref<IssueStatus> | undefined = undefined
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -80,6 +80,7 @@
     defaultStatus: Ref<IssueStatus> | undefined
   ): WithLookup<IssueStatus> | undefined {
     if (defaultStatus !== undefined) {
+      defaultIssueStatus = undefined
       changeStatus(defaultStatus)
       return statuses?.find((status) => status._id === defaultStatus)
     }
@@ -89,7 +90,7 @@
     return statuses?.[0]
   }
 
-  $: selectedStatus = getSelectedStatus(statuses, value, defaultStatus)
+  $: selectedStatus = getSelectedStatus(statuses, value, defaultIssueStatus)
   $: selectedStatusLabel = shouldShowLabel ? selectedStatus?.name : undefined
   $: statusesInfo = statuses?.map((s) => {
     return {

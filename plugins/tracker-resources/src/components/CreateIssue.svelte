@@ -276,8 +276,11 @@
     attr: client.getHierarchy().getAttribute(tracker.class.Issue, 'labels')
   }
 
+  let defaultIssueStatus: Ref<IssueStatus> | undefined = undefined
+
   $: spaceQuery.query(tracker.class.Project, { _id: _space }, (res) => {
     currentProject = res.shift()
+    defaultIssueStatus = currentProject.defaultIssueStatus
   })
 
   async function updateIssueStatusId (object: IssueDraft, currentProject: Project | undefined) {
