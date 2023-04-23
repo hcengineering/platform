@@ -17,7 +17,7 @@
   import core, { Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Applicant, Vacancy } from '@hcengineering/recruit'
-  import { Button, ActionIcon, IconMoreH, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
+  import { Button, ActionIcon, IconMoreH, Label, Loading, SearchEdit, showPopup, IconAdd } from '@hcengineering/ui'
   import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
   import {
     FilterBar,
@@ -231,7 +231,7 @@
     <span class="ac-header__title"><Label label={recruit.string.Organizations} /></span>
   </div>
   <div class="clear-mins mb-1">
-    <Button label={recruit.string.CompanyCreateLabel} kind={'primary'} on:click={showCreateDialog} />
+    <Button icon={IconAdd} label={recruit.string.CompanyCreateLabel} kind={'primary'} on:click={showCreateDialog} />
   </div>
 </div>
 <div class="ac-header full divide search-start">

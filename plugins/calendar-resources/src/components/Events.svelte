@@ -27,7 +27,8 @@
     SearchEdit,
     showPopup,
     TabList,
-    IconMoreH
+    IconMoreH,
+    IconAdd
   } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
   import {
@@ -128,7 +129,7 @@
         }}
       />
     {/if}
-    <Button label={createLabel} kind={'primary'} on:click={showCreateDialog} />
+    <Button icon={IconAdd} label={createLabel} kind={'primary'} on:click={showCreateDialog} />
   </div>
 </div>
 <div class="ac-header full divide search-start">

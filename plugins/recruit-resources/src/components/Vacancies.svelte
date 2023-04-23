@@ -16,7 +16,17 @@
   import core, { Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Vacancy } from '@hcengineering/recruit'
-  import { Button, ActionIcon, IconMoreH, Label, Loading, SearchEdit, showPopup, tableToCSV } from '@hcengineering/ui'
+  import {
+    Button,
+    ActionIcon,
+    IconMoreH,
+    Label,
+    Loading,
+    SearchEdit,
+    showPopup,
+    tableToCSV,
+    IconAdd
+  } from '@hcengineering/ui'
   import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
   import {
     FilterBar,
@@ -175,7 +185,7 @@
         document.body.removeChild(link)
       }}
     />
-    <Button label={recruit.string.VacancyCreateLabel} kind={'primary'} on:click={showCreateDialog} />
+    <Button icon={IconAdd} label={recruit.string.VacancyCreateLabel} kind={'primary'} on:click={showCreateDialog} />
   </div>
 </div>
 <div class="ac-header full divide search-start">

@@ -80,7 +80,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: var(--popup-bg-color);
+    background: var(--theme-list-row-color);
     box-shadow: var(--popup-aside-shadow);
 
     &.minHeight {

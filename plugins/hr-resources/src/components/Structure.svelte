@@ -26,7 +26,8 @@
     Label,
     Scroller,
     SearchEdit,
-    showPopup
+    showPopup,
+    IconAdd
   } from '@hcengineering/ui'
   import hr from '../plugin'
   import CreateDepartment from './CreateDepartment.svelte'
@@ -83,7 +84,7 @@
   </div>
 
   <div class="mb-1 clear-mins">
-    <Button label={hr.string.CreateDepartmentLabel} kind={'primary'} on:click={showCreateDialog} />
+    <Button icon={IconAdd} label={hr.string.CreateDepartmentLabel} kind={'primary'} on:click={showCreateDialog} />
   </div>
 </div>
 <div class="ac-header full divide search-start">

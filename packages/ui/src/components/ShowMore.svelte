@@ -78,9 +78,9 @@
 
     word-wrap: none;
     font-size: 0.75rem;
-    color: var(--caption-color);
-    background: var(--popup-bg-color);
-    border: 0.5px solid var(--popup-divider);
+    color: var(--theme-caption-color);
+    background: var(--theme-list-row-color);
+    border: 0.5px solid var(--theme-list-divider-color);
     box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
     border-radius: 2.5rem;
     // z-index: 1;
@@ -92,7 +92,7 @@
       transform: translateX(-50%);
     }
     &:hover {
-      background: var(--popup-bg-hover);
+      background: var(--theme-list-button-color);
     }
   }
 </style>

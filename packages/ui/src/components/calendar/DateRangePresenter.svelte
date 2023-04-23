@@ -474,7 +474,7 @@
       pointer-events: none;
 
       &.normal {
-        color: var(--content-color);
+        color: var(--theme-content-color);
       }
       &.warning {
         color: var(--warning-color);
@@ -554,12 +554,12 @@
       padding: 0 0.875rem;
       width: 100%;
       height: 2.25rem;
-      color: var(--caption-color);
+      color: var(--theme-caption-color);
       &:hover {
-        background-color: var(--body-color);
-        border-color: var(--divider-color);
+        background-color: var(--theme-bg-color);
+        border-color: var(--theme-divider-color);
         .btn-icon {
-          color: var(--content-color);
+          color: var(--theme-content-color);
         }
       }
       &.edit {
@@ -574,15 +574,15 @@
       margin: 0 0.25rem;
       width: 0.75rem;
       height: 0.75rem;
-      color: var(--content-color);
-      background-color: var(--button-bg-color);
+      color: var(--theme-content-color);
+      background-color: var(--theme-button-enabled);
       outline: none;
       border-radius: 50%;
       cursor: pointer;
 
       &:hover {
         color: var(--accent-color);
-        background-color: var(--button-bg-hover);
+        background-color: var(--theme-button-hovered);
       }
     }
 
@@ -614,7 +614,7 @@
       width: 1px;
       min-width: 1px;
       height: 0.75rem;
-      background-color: var(--button-border-color);
+      background-color: var(--theme-divider-color);
     }
     .separator {
       margin: 0 0.1rem;

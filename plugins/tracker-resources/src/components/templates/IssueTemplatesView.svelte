@@ -3,7 +3,7 @@
   import { IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { IssueTemplate } from '@hcengineering/tracker'
-  import { Button, IconDetails, IconDetailsFilled, resolvedLocationStore, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, IconDetails, IconDetailsFilled, resolvedLocationStore, showPopup } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
   import {
     FilterBar,
@@ -60,7 +60,7 @@
 
   async function update (viewlets: WithLookup<Viewlet>[], active: Ref<Viewlet> | null): Promise<void> {
     viewlet = viewlets.find((viewlet) => viewlet._id === active) ?? viewlets[0]
-    setActiveViewletId(viewlet._id)
+    setActiveViewletId(viewlet?._id)
   }
 
   $: if (!label && title) {
@@ -93,7 +93,7 @@
     <slot name="label_selector" />
   </svelte:fragment>
   <svelte:fragment slot="header-tools">
-    <Button label={tracker.string.IssueTemplate} kind={'primary'} on:click={showCreateDialog} />
+    <Button icon={IconAdd} label={tracker.string.IssueTemplate} kind={'primary'} on:click={showCreateDialog} />
   </svelte:fragment>
   <svelte:fragment slot="extra">
     {#if asideFloat && $$slots.aside}
