@@ -14,22 +14,21 @@
 -->
 <script lang="ts">
   import { EmployeeAccount, formatName } from '@hcengineering/contact'
-  import { employeeByIdStore } from '@hcengineering/contact-resources'
+  import { Avatar, employeeByIdStore } from '@hcengineering/contact-resources'
   import { getCurrentAccount } from '@hcengineering/core'
   import login, { loginId } from '@hcengineering/login'
   import { setMetadata } from '@hcengineering/platform'
-  import { Avatar } from '@hcengineering/contact-resources'
-  import setting, { settingId, SettingsCategory } from '@hcengineering/setting'
+  import presentation from '@hcengineering/presentation'
+  import setting, { SettingsCategory, settingId } from '@hcengineering/setting'
   import {
-    closePopup,
-    fetchMetadataLocalStorage,
-    getCurrentLocation,
     Icon,
     Label,
+    closePopup,
+    fetchMetadataLocalStorage,
+    getCurrentResolvedLocation,
     navigate,
     setMetadataLocalStorage
   } from '@hcengineering/ui'
-  import presentation from '@hcengineering/presentation'
 
   // const client = getClient()
   async function getItems (): Promise<SettingsCategory[]> {
@@ -41,7 +40,7 @@
 
   function selectCategory (sp: SettingsCategory): void {
     closePopup()
-    const loc = getCurrentLocation()
+    const loc = getCurrentResolvedLocation()
     loc.path[2] = settingId
     loc.path[3] = sp.name
     loc.path.length = 4
@@ -51,7 +50,7 @@
   function signOut (): void {
     const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
     if (tokens !== null) {
-      const loc = getCurrentLocation()
+      const loc = getCurrentResolvedLocation()
       delete tokens[loc.path[1]]
       setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
     }

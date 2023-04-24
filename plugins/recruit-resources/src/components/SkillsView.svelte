@@ -1,11 +1,11 @@
 <script lang="ts">
   import tags, { selectedTagElements, TagElement } from '@hcengineering/tags'
-  import { Component, getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { Component, getCurrentResolvedLocation, navigate } from '@hcengineering/ui'
   import recruit from '../plugin'
 
   function onTag (tag: TagElement): void {
     selectedTagElements.set([tag._id])
-    const loc = getCurrentLocation()
+    const loc = getCurrentResolvedLocation()
     loc.path[2] = 'recruit'
     loc.path[3] = 'candidates'
     loc.path.length = 4

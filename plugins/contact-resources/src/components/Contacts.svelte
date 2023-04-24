@@ -16,7 +16,7 @@
 <script lang="ts">
   import { Doc, DocumentQuery } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
+  import { Button, Label, Loading, SearchEdit, showPopup, IconMoreH, ActionIcon } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
   import {
     ActionContext,
@@ -30,7 +30,7 @@
   } from '@hcengineering/view-resources'
   import contact from '../plugin'
   import CreateContact from './CreateContact.svelte'
-  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  // import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   let search = ''
   let searchQuery: DocumentQuery<Doc> = {}
@@ -74,7 +74,7 @@
     showPopup(CreateContact, { space: contact.space.Contacts, targetElement: ev.target }, ev.target as HTMLElement)
   }
 
-  $: twoRows = $deviceInfo.twoRows
+  // $: twoRows = $deviceInfo.twoRows
 
   $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 </script>
@@ -85,30 +85,29 @@
   }}
 />
 <div class="antiPanel-component">
-  <div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
-    <div class:ac-header-full={!twoRows} class:flex-between={twoRows}>
-      <div class="ac-header__wrap-title mr-3">
-        <div class="ac-header__icon"><Icon icon={contact.icon.Person} size={'small'} /></div>
-        <span class="ac-header__title"><Label label={contact.string.Contacts} /></span>
-        <div class="ml-4"><FilterButton _class={contact.class.Contact} /></div>
-      </div>
-
-      <SearchEdit
-        bind:value={search}
-        on:change={() => {
-          updateResultQuery(search)
-        }}
-      />
+  <div class="ac-header full divide">
+    <div class="ac-header__wrap-title mr-3">
+      <span class="ac-header__title"><Label label={contact.string.Contacts} /></span>
     </div>
-    <div class="ac-header-full" class:secondRow={twoRows}>
+    <div class="mb-1 clear-mins">
       <Button
-        icon={IconAdd}
         label={contact.string.ContactCreateLabel}
         kind={'primary'}
-        size={'small'}
+        size={'medium'}
         on:click={(ev) => showCreateDialog(ev)}
       />
+    </div>
+  </div>
+  <div class="ac-header full divide search-start">
+    <div class="ac-header-full small-gap">
+      <SearchEdit bind:value={search} on:change={() => updateResultQuery(search)} />
+      <ActionIcon icon={IconMoreH} size={'small'} />
+      <div class="buttons-divider" />
+      <FilterButton _class={contact.class.Contact} />
+    </div>
+    <div class="ac-header-full medium-gap">
       <ViewletSettingButton bind:viewOptions {viewlet} />
+      <ActionIcon icon={IconMoreH} size={'small'} />
     </div>
   </div>
 

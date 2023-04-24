@@ -585,6 +585,8 @@
       focusIndex={10}
       bind:value={object.channels}
       highlighted={matchedChannels.map((it) => it.provider)}
+      kind={'link-bordered'}
+      size={'large'}
     />
     <YesNo
       disabled={loading}
@@ -592,6 +594,8 @@
       label={recruit.string.Onsite}
       tooltip={recruit.string.WorkLocationPreferences}
       bind:value={object.onsite}
+      kind={'link-bordered'}
+      size={'large'}
     />
     <YesNo
       disabled={loading}
@@ -599,6 +603,8 @@
       label={recruit.string.Remote}
       tooltip={recruit.string.WorkLocationPreferences}
       bind:value={object.remote}
+      kind={'link-bordered'}
+      size={'large'}
     />
     <Component
       is={tags.component.TagsDropdownEditor}
@@ -611,7 +617,9 @@
         showTitle: false,
         elements,
         newElements,
-        countLabel: recruit.string.NumberSkills
+        countLabel: recruit.string.NumberSkills,
+        kind: 'link-bordered',
+        size: 'large'
       }}
       on:open={(evt) => {
         addTagRef(evt.detail)
@@ -621,8 +629,7 @@
       }}
     />
     {#if object.skills.length > 0}
-      <div class="flex-break" />
-      <div class="antiComponent antiEmphasized flex-grow mt-2">
+      <div class="antiComponent antiEmphasized w-full flex-grow mt-2">
         <Component
           is={tags.component.TagsEditor}
           props={{
@@ -730,8 +737,8 @@
   .resume {
     margin: -0.375rem 0rem -0.375rem -0.375rem;
     padding: 0.375rem;
-    background: var(--accent-bg-color);
-    border: 1px dashed var(--divider-color);
+    background: var(--theme-comp-header-color);
+    border: 1px dashed var(--theme-divider-color);
     border-radius: 0.5rem;
 
     &.solid {
@@ -740,8 +747,8 @@
   }
   .skills-box {
     padding: 0.5rem 0.75rem;
-    background: var(--accent-bg-color);
-    border: 1px dashed var(--divider-color);
+    background: var(--theme-comp-header-color);
+    border: 1px dashed var(--theme-divider-color);
     border-radius: 0.5rem;
   }
 </style>

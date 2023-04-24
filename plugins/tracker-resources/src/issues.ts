@@ -1,7 +1,7 @@
 import { Doc, DocumentUpdate, Ref, RelatedDocument, TxOperations } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import { Component, Issue, Project, Sprint, trackerId } from '@hcengineering/tracker'
-import { getCurrentLocation, getPanelURI, Location, ResolvedLocation } from '@hcengineering/ui'
+import { Location, ResolvedLocation, getPanelURI, getCurrentResolvedLocation } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
 import { writable } from 'svelte/store'
 import tracker from './plugin'
@@ -44,7 +44,7 @@ export async function issueIdProvider (doc: Doc): Promise<string> {
 }
 
 export async function issueLinkFragmentProvider (doc: Doc): Promise<Location> {
-  const loc = getCurrentLocation()
+  const loc = getCurrentResolvedLocation()
   loc.path.length = 2
   loc.fragment = undefined
   loc.query = undefined
@@ -63,7 +63,7 @@ export async function issueLinkProvider (doc: Doc): Promise<string> {
 }
 
 export function generateIssueShortLink (issueId: string): string {
-  const location = getCurrentLocation()
+  const location = getCurrentResolvedLocation()
   return `${window.location.protocol}//${window.location.host}/${workbenchId}/${location.path[1]}/${trackerId}/${issueId}`
 }
 
@@ -94,7 +94,6 @@ export async function generateIssueLocation (loc: Location, issueId: string): Pr
       path: [appComponent, workspace],
       fragment: generateIssuePanelUri(issue)
     },
-    shouldNavigate: false,
     defaultLocation: {
       path: [appComponent, workspace, trackerId, project._id, 'issues'],
       fragment: generateIssuePanelUri(issue)

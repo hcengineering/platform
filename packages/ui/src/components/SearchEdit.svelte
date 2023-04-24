@@ -12,7 +12,6 @@
 
 <EditWithIcon
   icon={IconSearch}
-  size={'small'}
   width={'12rem'}
   placeholder={plugin.string.Search}
   bind:value={_search}

@@ -13,13 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, ButtonKind, eventToHTMLElement, IconDownOutline, Label, showPopup } from '@hcengineering/ui'
+  import { Button, ButtonKind, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { Viewlet, ViewOptions } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
   import { setViewOptions } from '../viewOptions'
   import ViewletSetting from './ViewletSetting.svelte'
   import ViewOptionsEditor from './ViewOptions.svelte'
+  import IconArrowDown from './icons/ArrowDown.svelte'
 
   export let viewlet: Viewlet | undefined
   export let kind: ButtonKind = 'secondary'
@@ -54,26 +55,11 @@
 {#if viewlet}
   <Button
     icon={view.icon.ViewButton}
+    label={view.string.View}
+    iconRight={IconArrowDown}
     {kind}
-    size={'small'}
     showTooltip={{ label: view.string.CustomizeView }}
     bind:input={btn}
     on:click={clickHandler}
-  >
-    <svelte:fragment slot="content">
-      <div class="flex-row-center clear-mins pointer-events-none">
-        <span class="text-sm font-medium"><Label label={view.string.View} /></span>
-        <div class="icon"><IconDownOutline size={'full'} /></div>
-      </div>
-    </svelte:fragment>
-  </Button>
+  />
 {/if}
-
-<style lang="scss">
-  .icon {
-    margin-left: 0.25rem;
-    width: 0.875rem;
-    height: 0.875rem;
-    color: var(--content-color);
-  }
-</style>

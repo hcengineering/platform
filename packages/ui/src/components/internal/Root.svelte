@@ -175,7 +175,7 @@
       // min-width: 600px;
       font-size: 12px;
       line-height: 150%;
-      background-color: var(--divider-color);
+      background-color: var(--theme-statusbar-color);
 
       .status-info {
         flex-grow: 1;

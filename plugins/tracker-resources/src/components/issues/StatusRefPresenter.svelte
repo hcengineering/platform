@@ -19,8 +19,17 @@
 
   export let value: Ref<Status> | StatusValue | undefined
   export let size: 'small' | 'medium' = 'medium'
+  export let kind: 'list-header' | undefined = undefined
+  export let colorInherit: boolean = false
+  export let accent: boolean = false
 </script>
 
 {#if value}
-  <StatusPresenter value={$statusStore.get(typeof value === 'string' ? value : value.values?.[0]?._id)} {size} />
+  <StatusPresenter
+    value={$statusStore.get(typeof value === 'string' ? value : value.values?.[0]?._id)}
+    {size}
+    {kind}
+    {colorInherit}
+    {accent}
+  />
 {/if}

@@ -1,14 +1,14 @@
 <!--
 // Copyright © 2022 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -27,6 +27,7 @@
   import { onMount } from 'svelte'
   import ComponentsList from './ComponentsList.svelte'
   import ComponentTimeline from './ComponentTimeline.svelte'
+  import { Scroller } from '@hcengineering/ui'
 
   export let _class: Ref<Class<Doc>>
   export let itemsConfig: (BuildModelKey | string)[]
@@ -60,21 +61,23 @@
 />
 
 {#if viewMode === 'list'}
-  <ComponentsList
-    bind:this={componentsList}
-    {_class}
-    {itemsConfig}
-    {loadingProps}
-    {components}
-    selectedObjectIds={$selectionStore ?? []}
-    selectedRowIndex={listProvider.current($focusStore)}
-    on:row-focus={(event) => {
-      listProvider.updateFocus(event.detail ?? undefined)
-    }}
-    on:check={(event) => {
-      listProvider.updateSelection(event.detail.docs, event.detail.value)
-    }}
-  />
+  <Scroller>
+    <ComponentsList
+      bind:this={componentsList}
+      {_class}
+      {itemsConfig}
+      {loadingProps}
+      {components}
+      selectedObjectIds={$selectionStore ?? []}
+      selectedRowIndex={listProvider.current($focusStore)}
+      on:row-focus={(event) => {
+        listProvider.updateFocus(event.detail ?? undefined)
+      }}
+      on:check={(event) => {
+        listProvider.updateSelection(event.detail.docs, event.detail.value)
+      }}
+    />
+  </Scroller>
 {:else}
   <ComponentTimeline
     bind:this={componentTimeline}

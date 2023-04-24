@@ -20,7 +20,15 @@
   import { getResource } from '@hcengineering/platform'
   import preference from '@hcengineering/preference'
   import { getClient } from '@hcengineering/presentation'
-  import { Action, IconAdd, IconEdit, IconSearch, getCurrentLocation, navigate, showPopup } from '@hcengineering/ui'
+  import {
+    Action,
+    IconAdd,
+    IconEdit,
+    IconSearch,
+    navigate,
+    getCurrentResolvedLocation,
+    showPopup
+  } from '@hcengineering/ui'
   import {
     NavLink,
     TreeItem,
@@ -58,7 +66,7 @@
     label: plugin.string.BrowseSpaces,
     icon: IconSearch,
     action: async (_id: Ref<Doc>): Promise<void> => {
-      const loc = getCurrentLocation()
+      const loc = getCurrentResolvedLocation()
       loc.path[3] = 'spaceBrowser'
       loc.path.length = 4
       dispatch('open')

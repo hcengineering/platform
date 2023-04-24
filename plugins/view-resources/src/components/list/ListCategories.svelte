@@ -18,7 +18,7 @@
   import { getClient, statusStore } from '@hcengineering/presentation'
   import { AnyComponent } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, CategoryOption, ViewOptionModel, ViewOptions } from '@hcengineering/view'
-  import { createEventDispatcher, onDestroy } from 'svelte'
+  import { createEventDispatcher, onDestroy, SvelteComponentTyped } from 'svelte'
   import {
     buildModel,
     concatCategories,
@@ -31,8 +31,6 @@
   import { CategoryQuery, noCategory } from '../../viewOptions'
   import ListCategory from './ListCategory.svelte'
 
-  export let elementByIndex: Map<number, HTMLDivElement>
-  export let indexById: Map<Ref<Doc>, number>
   export let docs: Doc[]
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined
@@ -51,13 +49,13 @@
   export let level: number
   export let initIndex = 0
   export let newObjectProps: (doc: Doc) => Record<string, any> | undefined
-  export let docByIndex: Map<number, Doc>
   export let viewOptionsConfig: ViewOptionModel[] | undefined
   export let dragItem: {
     doc?: Doc
     revert?: () => void
   }
   export let listDiv: HTMLDivElement
+  export let selection: number | undefined = undefined
 
   $: groupByKey = viewOptions.groupBy[level] ?? noCategory
   let categories: CategoryType[] = []
@@ -129,28 +127,123 @@
   $: extraHeaders = getAdditionalHeader(client, _class)
 
   const dispatch = createEventDispatcher()
+
+  function getState (doc: Doc): number {
+    let pos = 0
+    for (const st of categories) {
+      const stateObjs = getGroupByValues(groupByDocs, st) ?? []
+      if (stateObjs.findIndex((it) => it._id === doc._id) !== -1) {
+        return pos
+      }
+      pos++
+    }
+    return -1
+  }
+
+  export function select (offset: 1 | -1 | 0, of?: Doc, dir?: 'vertical' | 'horizontal'): void {
+    let pos = (of != null ? docs.findIndex((it) => it._id === of._id) : selection) ?? -1
+    if (pos === -1) {
+      for (const st of categories) {
+        const stateObjs = getGroupByValues(groupByDocs, st) ?? []
+        if (stateObjs.length > 0) {
+          pos = docs.findIndex((it) => it._id === stateObjs[0]._id)
+          break
+        }
+      }
+    }
+
+    if (pos < 0) {
+      pos = 0
+    }
+    if (pos >= docs.length) {
+      pos = docs.length - 1
+    }
+
+    const obj = docs[pos]
+    if (obj === undefined) {
+      return
+    }
+
+    // We found group
+    const objState = getState(obj)
+    if (objState === -1) {
+      return
+    }
+
+    if (level + 1 >= viewOptions.groupBy.length) {
+      const stateObjs = getGroupByValues(groupByDocs, categories[objState]) ?? []
+
+      const statePos = stateObjs.findIndex((it) => it._id === obj._id)
+      if (statePos === undefined) {
+        return
+      }
+
+      console.log(statePos, objState, offset)
+      if (offset === -1) {
+        if (dir === undefined || dir === 'vertical') {
+          if (statePos - 1 < 0 && objState > 0) {
+            const pstateObjs = getGroupByValues(groupByDocs, categories[objState - 1]) ?? []
+            dispatch('select', pstateObjs[pstateObjs.length - 1])
+          } else {
+            const obj = stateObjs[statePos - 1] ?? stateObjs[0]
+            scrollInto(objState, obj)
+            dispatch('row-focus', obj)
+          }
+          return
+        }
+      }
+      if (offset === 1) {
+        if (dir === undefined || dir === 'vertical') {
+          if (statePos + 1 >= stateObjs.length && objState < categories.length) {
+            const pstateObjs = getGroupByValues(groupByDocs, categories[objState + 1]) ?? []
+            if (pstateObjs[0] !== undefined) {
+              dispatch('select', pstateObjs[0])
+            }
+          } else {
+            const obj = stateObjs[statePos + 1] ?? stateObjs[stateObjs.length - 1]
+            scrollInto(objState, obj)
+            dispatch('row-focus', obj)
+          }
+          return
+        }
+      }
+      if (offset === 0) {
+        // scrollInto(objState, obj)
+        dispatch('row-focus', obj)
+      }
+    } else {
+      listCategory[objState]?.select(offset, of, dir)
+    }
+  }
+  function scrollInto (statePos: number, obj: Doc): void {
+    // listCategory[statePos]?.scrollIntoView({ behavior: 'auto', block: 'nearest' })
+    listListCategory[statePos]?.scroll(obj)
+    listCategory[statePos]?.scroll(obj)
+  }
+
+  const listCategory: SvelteComponentTyped[] = []
+  const listListCategory: ListCategory[] = []
 </script>
 
 {#each categories as category, i (typeof category === 'object' ? category.name : category)}
   {@const items = groupByKey === noCategory ? docs : getGroupByValues(groupByDocs, category)}
   <ListCategory
-    {elementByIndex}
-    {indexById}
+    bind:this={listListCategory[i]}
     {extraHeaders}
     {space}
     {selectedObjectIds}
     {headerComponent}
-    initIndex={getInitIndex(categories, i)}
     {baseMenuClass}
     {level}
     {viewOptions}
     {groupByKey}
     {lookup}
     {config}
-    {docByIndex}
     {itemModels}
     {_class}
     singleCat={level === 0 && categories.length === 1}
+    oneCat={viewOptions.groupBy.length === 1}
+    lastCat={i === categories.length - 1}
     {category}
     {items}
     {newObjectProps}
@@ -175,8 +268,6 @@
   >
     <svelte:fragment
       slot="category"
-      let:elementByIndex
-      let:indexById
       let:docs
       let:_class
       let:space
@@ -192,16 +283,13 @@
       let:flatHeaders
       let:props
       let:level
-      let:initIndex
-      let:docByIndex
       let:viewOptionsConfig
       let:listDiv
       let:dragstart
     >
       <svelte:self
-        {elementByIndex}
-        {indexById}
         {docs}
+        bind:this={listCategory[i]}
         {_class}
         {space}
         {lookup}
@@ -217,7 +305,6 @@
         {props}
         {level}
         {initIndex}
-        {docByIndex}
         {viewOptionsConfig}
         {listDiv}
         on:dragItem
@@ -225,6 +312,9 @@
         on:uncheckAll
         on:row-focus
         on:dragstart={dragstart}
+        on:select={(evt) => {
+          select(0, evt.detail)
+        }}
       />
     </svelte:fragment>
   </ListCategory>

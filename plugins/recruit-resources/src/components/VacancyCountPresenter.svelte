@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { recruitId, Vacancy } from '@hcengineering/recruit'
-  import { closeTooltip, getCurrentLocation, Icon, navigate, tooltip } from '@hcengineering/ui'
+  import { closeTooltip, getCurrentResolvedLocation, Icon, navigate, tooltip } from '@hcengineering/ui'
   import recruit from '../plugin'
   import VacancyApplicationsPopup from './VacancyApplicationsPopup.svelte'
 
@@ -24,7 +24,7 @@
 
   function click () {
     closeTooltip()
-    const loc = getCurrentLocation()
+    const loc = getCurrentResolvedLocation()
     loc.fragment = undefined
     loc.query = undefined
     loc.path[2] = recruitId

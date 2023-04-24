@@ -154,7 +154,7 @@
 </script>
 
 {#if visibleCategories.length > 0}
-  <div class="flex-between header">
+  <div class="ac-header full divide">
     <div class="buttons-group small-gap">
       <Button
         label={tags.string.AllCategories}

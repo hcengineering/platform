@@ -79,6 +79,7 @@
     <Scroller padding={'.125rem 0'}>
       <div class="form">
         {#each workspaces as workspace}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
             class="workspace flex-center fs-title cursor-pointer focused-button bordered form-row"
             on:click={() => select(workspace.workspace)}
@@ -120,7 +121,7 @@
     .title {
       font-weight: 600;
       font-size: 1.5rem;
-      color: var(--caption-color);
+      color: var(--theme-caption-color);
     }
     .status {
       min-height: 7.5rem;
@@ -150,13 +151,13 @@
     .footer {
       margin-top: 3.5rem;
       font-size: 0.8rem;
-      color: var(--caption-color);
+      color: var(--theme-caption-color);
       span {
         opacity: 0.3;
       }
       a {
         text-decoration: none;
-        color: var(--caption-color);
+        color: var(--theme-caption-color);
         opacity: 0.8;
         &:hover {
           opacity: 1;

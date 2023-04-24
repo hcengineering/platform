@@ -118,11 +118,11 @@
       flex-shrink: 0;
       width: 1rem;
       height: 1rem;
-      color: var(--content-color);
+      color: var(--theme-caption-color);
     }
     &:hover {
       .icon {
-        color: var(--caption-color) !important;
+        color: var(--theme-caption-color) !important;
       }
     }
   }

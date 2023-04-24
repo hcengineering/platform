@@ -24,13 +24,13 @@
   import {
     Button,
     EditBox,
-    getCurrentLocation,
     IconMixin,
     IconMoreH,
     Label,
+    Spinner,
+    getCurrentResolvedLocation,
     navigate,
-    showPopup,
-    Spinner
+    showPopup
   } from '@hcengineering/ui'
   import { ContextMenu, UpDownNavigator } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
@@ -39,8 +39,8 @@
   import IssueStatusActivity from '../IssueStatusActivity.svelte'
   import ControlPanel from './ControlPanel.svelte'
   import CopyToClipboard from './CopyToClipboard.svelte'
-  import SubIssues from './SubIssues.svelte'
   import SubIssueSelector from './SubIssueSelector.svelte'
+  import SubIssues from './SubIssues.svelte'
 
   export let _id: Ref<Issue>
   export let _class: Ref<Class<Issue>>
@@ -225,7 +225,7 @@
         showTooltip={{ label: setting.string.ClassSetting }}
         on:click={(ev) => {
           ev.stopPropagation()
-          const loc = getCurrentLocation()
+          const loc = getCurrentResolvedLocation()
           loc.path[2] = settingId
           loc.path[3] = 'setting'
           loc.path[4] = 'classes'

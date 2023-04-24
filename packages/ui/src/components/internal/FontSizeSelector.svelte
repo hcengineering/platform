@@ -16,6 +16,7 @@
   import { getContext } from 'svelte'
   import FontSize from './icons/FontSize.svelte'
   import { popupstore } from '../../popups'
+  import { deviceOptionsStore as deviceInfo } from '../..'
 
   const { currentFontSize, setFontSize } = getContext('fontsize') as {
     currentFontSize: string
@@ -31,6 +32,7 @@
     setFontSize(fontsizes[current % fontsizes.length])
     $popupstore = $popupstore
   }
+  $: $deviceInfo.fontSize = fontsizes[current % fontsizes.length] === 'normal-font' ? 16 : 14
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->

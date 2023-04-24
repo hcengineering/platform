@@ -143,7 +143,7 @@
 
   let kanbanUI: Kanban
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
-    kanbanUI.select(offset, of, dir)
+    kanbanUI?.select(offset, of, dir)
   })
   onMount(() => {
     ;(document.activeElement as HTMLElement)?.blur()
@@ -171,6 +171,8 @@
       sort
     }
   )
+
+  $: listProvider.update(issues)
 
   let categories: CategoryType[] = []
 
@@ -265,9 +267,6 @@
     {setGroupByValues}
     {getUpdateProps}
     {groupByDocs}
-    on:content={(evt) => {
-      listProvider.update(evt.detail)
-    }}
     on:obj-focus={(evt) => {
       listProvider.updateFocus(evt.detail)
     }}
@@ -387,12 +386,12 @@
 
   .header {
     padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--divider-color);
+    border-bottom: 1px solid var(--theme-divider-color);
 
     .label {
-      color: var(--caption-color);
+      color: var(--theme-caption-color);
       .counter {
-        color: rgba(var(--caption-color), 0.8);
+        color: rgba(var(--theme-caption-color), 0.8);
       }
     }
   }

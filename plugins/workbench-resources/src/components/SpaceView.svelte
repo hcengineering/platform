@@ -16,7 +16,7 @@
   import core, { Class, Doc, Ref, Space, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { AnyComponent, Component, location } from '@hcengineering/ui'
+  import { AnyComponent, Component, resolvedLocationStore } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
   import {
     activeViewlet,
@@ -47,7 +47,7 @@
 
   let key = makeViewletKey()
   onDestroy(
-    location.subscribe((loc) => {
+    resolvedLocationStore.subscribe((loc) => {
       key = makeViewletKey(loc)
     })
   )

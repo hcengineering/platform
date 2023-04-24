@@ -23,7 +23,6 @@
     day as getDay,
     daysInMonth,
     eventToHTMLElement,
-    FadeOptions,
     floorFractionDigits,
     getWeekDayName,
     isWeekend,
@@ -31,8 +30,8 @@
     LabelAndProps,
     Scroller,
     showPopup,
-    tableSP,
-    tooltip
+    tooltip,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import hr from '../../plugin'
   import { EmployeeReports, getHolidayDatesForEmployee, getRequests, getTotal, isHoliday } from '../../utils'
@@ -121,14 +120,6 @@
     )
   }
 
-  const fade: FadeOptions = {
-    ...tableSP,
-    multipler: {
-      ...tableSP.multipler,
-      bottom: 3.5
-    }
-  }
-
   function showReportInfo (employee: Staff, rTime: EmployeeReports | undefined): void {
     if (rTime === undefined) {
       return
@@ -142,15 +133,20 @@
 
   export let staffDepartmentMap: Map<Ref<Staff>, Department[]>
   export let holidays: Map<Ref<Department>, Date[]>
+
+  let colWidth: number
+  $: colWidthRem = colWidth / $deviceInfo.fontSize
 </script>
 
 {#if departmentStaff.length}
-  <Scroller {fade} horizontal>
+  <Scroller fade={{ multipler: { top: 3, bottom: 0, left: colWidthRem } }} horizontal>
     <table class="scroller-first-column">
       <thead class="scroller-thead">
         <tr class="scroller-thead__tr">
           <th>
-            <Label label={contact.string.Employee} />
+            <div class="fullfill center">
+              <Label label={contact.string.Employee} />
+            </div>
           </th>
           <th>#</th>
           <th>##</th>
@@ -180,8 +176,10 @@
           {@const requests = employeeRequests.get(employee._id) ?? []}
           {@const rTime = timeReports.get(employee._id)}
           <tr>
-            <td>
-              <EmployeePresenter value={employee} />
+            <td bind:clientWidth={colWidth}>
+              <div class="fullfill">
+                <EmployeePresenter value={employee} />
+              </div>
             </td>
             <td
               class="flex-center p-1 whitespace-nowrap text-center"
@@ -258,7 +256,9 @@
       <tfoot class="scroller-tfoot">
         <tr>
           <td class="summary">
-            <Label label={hr.string.Summary} />
+            <div class="fullfill">
+              <Label label={hr.string.Summary} />
+            </div>
           </td>
           <td class="flex-center p-1 whitespace-nowrap text-center summary">
             {getTotal(
@@ -316,7 +316,6 @@
       border: none;
       &:first-child {
         width: 15rem;
-        padding: 0.5rem;
       }
     }
     th {

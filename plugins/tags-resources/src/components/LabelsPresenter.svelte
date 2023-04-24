@@ -11,7 +11,7 @@
   export let object: WithLookup<Doc>
   export let full: boolean
   export let ckeckFilled: boolean = false
-  export let kind: 'short' | 'full' = 'short'
+  export let kind: 'short' | 'full' | 'list' = 'short'
   export let isEditable: boolean = false
   export let action: (evt: MouseEvent) => Promise<void> | void = async () => {}
   export let compression: boolean = false
@@ -46,27 +46,35 @@
   })
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<div
-  class="labels-container"
-  style:justify-content={kind === 'short' ? 'space-between' : 'flex-start'}
-  class:w-full={kind === 'full'}
-  style:flex-wrap={kind === 'short' || compression ? 'nowrap' : 'wrap'}
-  style:flex-shrink={compression ? 1 : 0}
-  use:resizeObserver={(element) => {
-    allWidth = element.clientWidth
-  }}
-  on:click|stopPropagation={(evt) => {
-    if (isEditable) tagsHandler(evt)
-    else action(evt)
-  }}
->
-  {#each items as value, i}
-    <div class="label-box wrap-{kind}" title={value.title}>
-      <TagReferencePresenter attr={undefined} {value} kind={'kanban-labels'} bind:realWidth={widths[i]} />
+{#if kind === 'list'}
+  {#each items as value}
+    <div class="label-box no-shrink" title={value.title}>
+      <TagReferencePresenter attr={undefined} {value} kind={'labels'} />
     </div>
   {/each}
-</div>
+{:else}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <div
+    class="labels-container"
+    style:justify-content={kind === 'short' ? 'space-between' : 'flex-start'}
+    class:w-full={kind === 'full'}
+    style:flex-wrap={kind === 'short' || compression ? 'nowrap' : 'wrap'}
+    style:flex-shrink={compression ? 1 : 0}
+    use:resizeObserver={(element) => {
+      allWidth = element.clientWidth
+    }}
+    on:click|stopPropagation={(evt) => {
+      if (isEditable) tagsHandler(evt)
+      else action(evt)
+    }}
+  >
+    {#each items as value, i}
+      <div class="label-box wrap-{kind}" title={value.title}>
+        <TagReferencePresenter attr={undefined} {value} kind={'kanban-labels'} bind:realWidth={widths[i]} />
+      </div>
+    {/each}
+  </div>
+{/if}
 
 <style lang="scss">
   .labels-container {
@@ -87,7 +95,7 @@
     border-radius: 0.25rem;
     transition: box-shadow 0.15s ease-in-out;
 
-    &:last-child {
+    &:not(.no-shrink):last-child {
       flex-shrink: 0;
     }
   }

@@ -26,6 +26,7 @@
   export let autoscroll: boolean = false
   export let bottomStart: boolean = false
   export let fade: FadeOptions = defaultSP
+  export let noFade: boolean = false
   export let invertScroll: boolean = false
   export let horizontal: boolean = false
   export let contentDirection: 'vertical' | 'vertical-reverse' | 'horizontal' = 'vertical'
@@ -74,10 +75,13 @@
   let timerH: number
 
   const inter = new Set<Element>()
+  let hasLastCategories: boolean = false
 
   $: fz = $themeOptions.fontSize
   $: shiftTop = fade.multipler?.top ? fade.multipler?.top * fz : 0
   $: shiftBottom = fade.multipler?.bottom ? fade.multipler?.bottom * fz : 0
+  $: shiftLeft = fade.multipler?.left ? fade.multipler?.left * fz : 0
+  $: shiftRight = fade.multipler?.right ? fade.multipler?.right * fz : 0
   $: orientir = contentDirection === 'horizontal' ? 'horizontal' : 'vertical'
 
   const checkBar = (): void => {
@@ -183,7 +187,7 @@
   }
 
   const renderFade = () => {
-    if (divScroll) {
+    if (divScroll && !noFade) {
       const th = shiftTop + (topCrop === 'top' ? 2 * fz - topCropValue : 0)
       const tf =
         topCrop === 'full'
@@ -205,10 +209,12 @@
     if (divHScroll && horizontal) {
       const gradientH = `linear-gradient(
         90deg,
-        rgba(0, 0, 0, 0) 0,
-        rgba(0, 0, 0, 1) ${maskH === 'none' || maskH === 'left' ? '0px' : '2rem'},
-        rgba(0, 0, 0, 1) calc(100% - ${maskH === 'none' || maskH === 'right' ? '0px' : '2rem'}),
-        rgba(0, 0, 0, 0) 100%
+        rgba(0, 0, 0, 1) ${shiftLeft}px,
+        rgba(0, 0, 0, 0) ${shiftLeft}px,
+        rgba(0, 0, 0, 1) ${shiftLeft + (maskH === 'both' || maskH === 'right' ? 2 * fz : 0)}px,
+        rgba(0, 0, 0, 1) calc(100% - ${shiftRight + (maskH === 'both' || maskH === 'left' ? 2 * fz : 0)}px),
+        rgba(0, 0, 0, 0) calc(100% - ${shiftRight}px),
+        rgba(0, 0, 0, 1) calc(100% - ${shiftRight}px)
       )`
       divHScroll.style.webkitMaskImage = gradientH
     }
@@ -252,16 +258,46 @@
 
   const checkIntersection = (entries: IntersectionObserverEntry[], observer: IntersectionObserver) => {
     const interArr: Element[] = []
+    const catEntries: IntersectionObserverEntry[] = []
+    const lastCatEntries: IntersectionObserverEntry[] = []
+
     entries.forEach((el) => {
-      if (el.isIntersecting) {
+      if (el.isIntersecting && el.target.classList.contains('categoryHeader')) {
         inter.add(el.target)
         interArr.push(el.target)
       } else inter.delete(el.target)
+      if (hasLastCategories) {
+        if (el.isIntersecting && el.target.classList.contains('categoryHeader')) catEntries.push(el)
+        if (el.isIntersecting && el.target.classList.contains('lastCat')) lastCatEntries.push(el)
+      }
     })
+
     if (interArr.length > 0) {
       dispatch('lastScrolledCategory', interArr[interArr.length - 1]?.getAttribute('id'))
+      dispatch('firstScrolledCategory', interArr[0]?.getAttribute('id'))
       const interCats: string[] = interArr.map((it) => it.getAttribute('id') as string)
       dispatch('scrolledCategories', interCats)
+    }
+    if (hasLastCategories) {
+      const targets = new Set<Element>()
+      const closed = new Set<Element>()
+      lastCatEntries.forEach((last) => {
+        catEntries.forEach((cat) => {
+          if (last.target !== cat.target) {
+            if (
+              last.boundingClientRect.top < cat.boundingClientRect.top + 8 &&
+              last.boundingClientRect.top >= cat.boundingClientRect.top
+            ) {
+              targets.add(cat.target)
+            }
+            if (cat.target.classList.contains('closed') && !closed.has(cat.target)) closed.add(cat.target)
+          }
+        })
+      })
+      closed.forEach((el) => {
+        if (!targets.has(el)) el.classList.remove('closed')
+      })
+      targets.forEach((el) => el.classList.add('closed'))
     }
   }
 
@@ -323,6 +359,11 @@
       const tempEls = divBox.querySelectorAll('.categoryHeader')
       observer = new IntersectionObserver(checkIntersection, { root: null, rootMargin: '0px', threshold: 0.1 })
       tempEls.forEach((el) => observer.observe(el))
+      const tempCats = divBox.querySelectorAll('.lastCat')
+      if (tempCats.length > 0) {
+        hasLastCategories = true
+        tempCats.forEach((el) => observer.observe(el))
+      } else hasLastCategories = false
     }
   })
 
@@ -549,6 +590,7 @@
     height: 100%;
   }
   .scroll {
+    will-change: opacity;
     flex-grow: 1;
     min-width: 0;
     min-height: 0;

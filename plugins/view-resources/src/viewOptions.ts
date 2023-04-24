@@ -11,7 +11,7 @@ import core, {
 } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { LiveQuery, createQuery, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
-import { getCurrentLocation, locationToUrl } from '@hcengineering/ui'
+import { locationToUrl, getCurrentResolvedLocation } from '@hcengineering/ui'
 import {
   DropdownViewOption,
   ToggleViewOption,
@@ -42,7 +42,7 @@ export function isDropdownType (viewOption: ViewOptionModel): viewOption is Drop
 
 export function makeViewOptionsKey (viewlet: Ref<Viewlet>, variant?: string): string {
   const prefix = viewlet + (variant !== undefined ? `-${variant}` : '')
-  const loc = getCurrentLocation()
+  const loc = getCurrentResolvedLocation()
   loc.fragment = undefined
   loc.query = undefined
   return `viewOptions:${prefix}:${locationToUrl(loc)}`

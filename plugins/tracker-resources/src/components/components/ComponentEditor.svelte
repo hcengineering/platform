@@ -52,7 +52,7 @@
   <div
     class="clear-mins"
     class:minus-margin={kind === 'list-header'}
-    class:compression
+    class:label-wrapper={compression}
     use:tooltip={{ label: value.component ? tracker.string.MoveToComponent : tracker.string.AddToComponent }}
   >
     <ComponentSelector
@@ -67,6 +67,7 @@
       {onlyIcon}
       {enlargedText}
       value={value.component}
+      short={compression}
       onChange={handleComponentIdChanged}
     />
   </div>
@@ -75,9 +76,5 @@
 <style lang="scss">
   .minus-margin {
     margin-left: -0.5rem;
-  }
-  .compression {
-    flex-shrink: 5;
-    min-width: 1rem;
   }
 </style>

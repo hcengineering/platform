@@ -45,7 +45,7 @@ import { AttributeCategory, createQuery, getAttributePresenterClass, KeyedAttrib
 import {
   AnyComponent,
   ErrorPresenter,
-  getCurrentLocation,
+  getCurrentResolvedLocation,
   getPanelURI,
   getPlatformColorForText,
   Location,
@@ -482,7 +482,7 @@ export function categorizeFields (
 }
 
 export function makeViewletKey (loc?: Location): string {
-  loc = loc != null ? { path: loc.path } : getCurrentLocation()
+  loc = loc != null ? { path: loc.path } : getCurrentResolvedLocation()
   loc.fragment = undefined
   loc.query = undefined
   return 'viewlet' + locationToUrl(loc)
@@ -890,7 +890,7 @@ export async function getObjectLinkFragment (
       return res
     }
   }
-  const loc = getCurrentLocation()
+  const loc = getCurrentResolvedLocation()
   loc.fragment = getPanelURI(component, object._id, Hierarchy.mixinOrClass(object), 'content')
   return loc
 }

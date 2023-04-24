@@ -97,82 +97,82 @@
   $: dragging = value._id === dragOver?._id && dragPersonId !== undefined
 </script>
 
-<div class="flex-center w-full px-4">
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<div
+  class="w-full mt-2 mb-2 container flex"
+  class:cursor-pointer={currentDescendants.length}
+  on:click|stopPropagation={edit}
+  on:contextmenu|preventDefault={showMenu}
+  class:dragging
+>
   <div
-    class="w-full mt-2 mb-2 container flex"
-    class:cursor-pointer={currentDescendants.length}
-    on:click|stopPropagation={edit}
-    on:contextmenu|preventDefault={showMenu}
-    class:dragging
-  >
-    <div
-      class="flex-between pt-4 pb-4 pr-4 pl-2 w-full"
-      on:dragover|preventDefault|stopPropagation={(evt) => {
-        dragOver = value
-      }}
-      on:dragend|preventDefault|stopPropagation={() => {
+    class="flex-between pt-4 pb-4 pr-4 pl-2 w-full"
+    on:dragover|preventDefault|stopPropagation={(evt) => {
+      dragOver = value
+    }}
+    on:dragend|preventDefault|stopPropagation={() => {
+      dragPerson = undefined
+      closeTooltip()
+    }}
+    on:drop|preventDefault={(itm) => {
+      closeTooltip()
+      addMember(client, dragPerson, value).then(() => {
         dragPerson = undefined
-        closeTooltip()
-      }}
-      on:drop|preventDefault={(itm) => {
-        closeTooltip()
-        addMember(client, dragPerson, value).then(() => {
-          dragPerson = undefined
-          dragOver = undefined
-        })
-      }}
-    >
-      <div class="flex-center">
-        <div class="mr-2">
-          <Button icon={IconAdd} kind={'list'} on:click={createChild} />
-        </div>
-        <Avatar size={'medium'} avatar={value.avatar} icon={hr.icon.Department} />
-        <div class="flex-row ml-2 mr-4">
-          <div class="fs-title">
-            {value.name}
-          </div>
-          <Label label={hr.string.MemberCount} params={{ count: value.members.length }} />
-        </div>
-        <PersonsPresenter value={values} bind:dragPerson showDragPerson={dragging} />
+        dragOver = undefined
+      })
+    }}
+  >
+    <div class="flex-center">
+      <div class="mr-2">
+        <Button icon={IconAdd} kind={'list'} on:click={createChild} />
       </div>
-      <div class="flex-center mr-2">
-        <div class="mr-2">
-          <EmployeePresenter
-            value={value.$lookup?.teamLead}
-            avatarSize={'small'}
-            shouldShowAvatar
-            shouldShowPlaceholder
-            shouldShowName={false}
-            tooltipLabels={{
-              personLabel: hr.string.TeamLeadTooltip,
-              placeholderLabel: hr.string.AssignLead
-            }}
-            onEmployeeEdit={openLeadEditor}
-          />
+      <Avatar size={'medium'} avatar={value.avatar} icon={hr.icon.Department} />
+      <div class="flex-row ml-2 mr-4">
+        <div class="fs-title">
+          {value.name}
         </div>
+        <Label label={hr.string.MemberCount} params={{ count: value.members.length }} />
+      </div>
+      <PersonsPresenter value={values} bind:dragPerson showDragPerson={dragging} />
+    </div>
+    <div class="flex-center mr-2">
+      <div class="mr-2">
+        <EmployeePresenter
+          value={value.$lookup?.teamLead}
+          avatarSize={'small'}
+          shouldShowAvatar
+          shouldShowPlaceholder
+          shouldShowName={false}
+          tooltipLabels={{
+            personLabel: hr.string.TeamLeadTooltip,
+            placeholderLabel: hr.string.AssignLead
+          }}
+          onEmployeeEdit={openLeadEditor}
+        />
       </div>
     </div>
   </div>
 </div>
-<div class="ml-8">
-  {#each currentDescendants as nested}
-    <DepartmentCard value={nested} {descendants} {allEmployees} bind:dragPerson bind:dragOver />
-  {/each}
-</div>
+{#if currentDescendants.length > 0}
+  <div class="flex-col ml-8">
+    {#each currentDescendants as nested}
+      <DepartmentCard value={nested} {descendants} {allEmployees} bind:dragPerson bind:dragOver />
+    {/each}
+  </div>
+{/if}
 
 <style lang="scss">
   .container {
-    background-color: var(--noborder-bg-color);
-    border: 1px solid transparent;
+    background-color: var(--theme-button-enabled);
+    border: 1px solid var(--theme-button-border);
     border-radius: 0.5rem;
 
     &:hover {
-      background-color: var(--noborder-bg-hover);
+      background-color: var(--theme-button-hovered);
       cursor: pointer;
     }
     &.dragging {
-      border-color: var(--divider-color);
+      border-color: var(--primary-button-focused-border);
     }
   }
 </style>

@@ -92,7 +92,7 @@
       </div>
       <DueDatePresenter
         value={object.dueDate}
-        shouldRender={object.dueDate !== null}
+        shouldRender={object.dueDate !== null && object.dueDate !== undefined}
         onChange={async (e) => {
           await client.update(object, { dueDate: e })
         }}

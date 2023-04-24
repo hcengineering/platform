@@ -29,54 +29,48 @@
   export let selectedFileTypeId: string
 </script>
 
-<div class="filterBlockContainer">
-  <div class="simpleFilterButton">
-    <Component
-      is={contact.component.UserBoxList}
-      props={{
-        items: selectedParticipants,
-        label: attachment.string.FileBrowserFilterFrom
-      }}
-      on:update={(evt) => {
-        selectedParticipants = evt.detail
-      }}
-    />
-  </div>
-  <div class="simpleFilterButton">
-    <SpaceMultiBoxList
-      _classes={requestedSpaceClasses}
-      label={attachment.string.FileBrowserFilterIn}
-      selectedItems={spaceId ? [spaceId] : []}
-      on:update={(evt) => {
-        selectedSpaces = evt.detail
-      }}
-    />
-  </div>
-  <div class="simpleFilterButton">
-    <DropdownLabelsIntl
-      items={dateFileBrowserFilters}
-      label={attachment.string.FileBrowserFilterDate}
-      bind:selected={selectedDateId}
-    />
-  </div>
-  <div class="simpleFilterButton">
-    <DropdownLabelsIntl
-      items={fileTypeFileBrowserFilters}
-      label={attachment.string.FileBrowserFilterFileType}
-      bind:selected={selectedFileTypeId}
-    />
-  </div>
+<div class="filterBlockContainer clear-mins gap-2">
+  <Component
+    is={contact.component.UserBoxList}
+    props={{
+      items: selectedParticipants,
+      label: attachment.string.FileBrowserFilterFrom,
+      kind: 'transparent',
+      size: 'medium'
+    }}
+    on:update={(evt) => {
+      selectedParticipants = evt.detail
+    }}
+  />
+  <SpaceMultiBoxList
+    _classes={requestedSpaceClasses}
+    label={attachment.string.FileBrowserFilterIn}
+    selectedItems={spaceId ? [spaceId] : []}
+    kind={'transparent'}
+    size={'medium'}
+    on:update={(evt) => {
+      selectedSpaces = evt.detail
+    }}
+  />
+  <DropdownLabelsIntl
+    items={dateFileBrowserFilters}
+    label={attachment.string.FileBrowserFilterDate}
+    bind:selected={selectedDateId}
+    kind={'transparent'}
+    size={'medium'}
+  />
+  <DropdownLabelsIntl
+    items={fileTypeFileBrowserFilters}
+    label={attachment.string.FileBrowserFilterFileType}
+    bind:selected={selectedFileTypeId}
+    kind={'transparent'}
+    size={'medium'}
+  />
 </div>
 
 <style lang="scss">
   .filterBlockContainer {
     display: flex;
     flex-flow: row wrap;
-    margin-top: 10px;
-    margin-bottom: 10px;
-  }
-  .simpleFilterButton {
-    max-width: 12rem;
-    margin: 0.125rem 0.5rem 0.125rem 0;
   }
 </style>

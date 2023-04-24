@@ -90,17 +90,27 @@
   const retrieveMembers = (p: Component) => p.members
 </script>
 
-<div class="fs-title flex-between header">
-  <div class="flex-center">
-    <Label {label} />
-    <div class="componentTitle">
+<div class="ac-header full divide caption-height">
+  <div class="ac-header__wrap-title mr-3">
+    <span class="ac-header__title"><Label {label} /></span>
+    <span class="componentTitle">
       › <Label label={title} />
-    </div>
+    </span>
   </div>
-  <Button size="small" icon={IconAdd} label={tracker.string.Component} kind={'primary'} on:click={showCreateDialog} />
+
+  <div class="ac-header-full medium-gap mb-1">
+    <TabList
+      items={viewList}
+      selected={viewMode}
+      on:select={(result) => {
+        if (result.detail !== undefined && result.detail.id !== viewMode) viewMode = result.detail.id
+      }}
+    />
+    <Button icon={IconAdd} label={tracker.string.Component} kind={'primary'} on:click={showCreateDialog} />
+  </div>
 </div>
-<div class="itemsContainer">
-  <div class="flex-row-center">
+<div class="ac-header full divide search-start">
+  <div class="ac-header-full small-gap">
     <TabList
       items={modeList}
       selected={mode}
@@ -109,26 +119,9 @@
         if (result.detail !== undefined && result.detail.action) result.detail.action()
       }}
     />
-    <!-- <div class="ml-3 filterButton">
-      <BuComponet      size="small"
-        icon={IconAdd}
-        kind={'link-bordered'}
-        borderStyle={'dashed'}
-        label={tracker.string.Filter}
-        on:click={() => {}}
-      />
-    </div> -->
   </div>
-  <TabList
-    items={viewList}
-    selected={viewMode}
-    kind={'secondary'}
-    size={'small'}
-    on:select={(result) => {
-      if (result.detail !== undefined && result.detail.id !== viewMode) viewMode = result.detail.id
-    }}
-  />
 </div>
+
 <ComponentsListBrowser
   _class={tracker.class.Component}
   itemsConfig={[

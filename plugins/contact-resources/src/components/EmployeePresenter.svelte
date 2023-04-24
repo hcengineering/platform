@@ -2,6 +2,7 @@
   import { Employee } from '@hcengineering/contact'
   import { WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
+  import { IconSize } from '@hcengineering/ui'
   import { PersonLabelTooltip } from '..'
   import PersonPresenter from '../components/PersonPresenter.svelte'
   import contact from '../plugin'
@@ -12,10 +13,12 @@
   export let shouldShowName: boolean = true
   export let shouldShowPlaceholder = false
   export let onEmployeeEdit: ((event: MouseEvent) => void) | undefined = undefined
-  export let avatarSize: 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' = 'x-small'
+  export let avatarSize: IconSize = 'x-small'
   export let isInteractive = true
   export let inline = false
   export let disableClick = false
+  export let colorInherit: boolean = false
+  export let accent: boolean = false
   export let defaultName: IntlString | undefined = undefined
   export let element: HTMLElement | undefined = undefined
 </script>
@@ -31,6 +34,8 @@
   {shouldShowPlaceholder}
   isInteractive={isInteractive && !disableClick}
   {inline}
+  {colorInherit}
+  {accent}
   {defaultName}
   statusLabel={value?.active === false && shouldShowName ? contact.string.Inactive : undefined}
 />

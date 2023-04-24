@@ -1,8 +1,10 @@
 <script lang="ts">
+  import { getClient } from '@hcengineering/presentation'
+  import setting, { settingId } from '@hcengineering/setting'
   import {
     Button,
     closePopup,
-    getCurrentLocation,
+    getCurrentResolvedLocation,
     Icon,
     IconArrowLeft,
     Label,
@@ -11,13 +13,11 @@
     Scroller,
     topSP
   } from '@hcengineering/ui'
-  import setting, { settingId } from '@hcengineering/setting'
   import view, { Action, ActionCategory } from '@hcengineering/view'
-  import { getClient } from '@hcengineering/presentation'
-  import RightArrowIcon from './icons/Collapsed.svelte'
-  import KeyboardIcon from './icons/Keyboard.svelte'
-  import DocumentationIcon from './icons/Documentation.svelte'
   import workbench from '../plugin'
+  import RightArrowIcon from './icons/Collapsed.svelte'
+  import DocumentationIcon from './icons/Documentation.svelte'
+  import KeyboardIcon from './icons/Keyboard.svelte'
 
   let shortcuts = false
   let actions: Action[] = []
@@ -27,7 +27,7 @@
 
   function navigateToSettings () {
     closePopup()
-    const loc = getCurrentLocation()
+    const loc = getCurrentResolvedLocation()
     loc.path[2] = loc.path[3] = settingId
     loc.path.length = 4
     navigate(loc)

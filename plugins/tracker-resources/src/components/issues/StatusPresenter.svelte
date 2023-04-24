@@ -18,16 +18,34 @@
 
   export let value: IssueStatus | undefined
   export let size: 'small' | 'medium' = 'small'
+  export let kind: 'list-header' | undefined = undefined
+  export let colorInherit: boolean = false
+  export let accent: boolean = false
   export let inline: boolean = false
 </script>
 
 {#if value}
-  <div class="flex-presenter cursor-default">
+  <div class="flex-presenter cursor-default" style:color={'inherit'}>
     {#if !inline}
       <IssueStatusIcon {value} {size} />
     {/if}
-    <span class="overflow-label" class:ml-2={!inline}>
+    <span
+      class="overflow-label"
+      class:ml-2={!inline}
+      class:list-header={kind === 'list-header'}
+      class:colorInherit
+      class:fs-bold={accent}
+    >
       {value.name}
     </span>
   </div>
 {/if}
+
+<style lang="scss">
+  .list-header:not(.colorInherit) {
+    color: var(--theme-content-color);
+  }
+  .list-header.colorInherit {
+    color: inherit;
+  }
+</style>

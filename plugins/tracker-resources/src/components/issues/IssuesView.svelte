@@ -3,7 +3,7 @@
   import { IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue } from '@hcengineering/tracker'
-  import { Button, IconDetails, IconDetailsFilled, location } from '@hcengineering/ui'
+  import { Button, IconDetails, IconDetailsFilled, resolvedLocationStore } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
   import {
     FilterBar,
@@ -53,7 +53,7 @@
   let key = makeViewletKey()
 
   onDestroy(
-    location.subscribe((loc) => {
+    resolvedLocationStore.subscribe((loc) => {
       key = makeViewletKey(loc)
     })
   )
@@ -103,8 +103,8 @@
     {/if}
   </svelte:fragment>
 </IssuesHeader>
-<slot name="afterHeader" />
 <FilterBar _class={tracker.class.Issue} query={searchQuery} {viewOptions} on:change={(e) => (resultQuery = e.detail)} />
+<slot name="afterHeader" />
 <div class="flex w-full h-full clear-mins">
   {#if viewlet}
     <IssuesContent {viewlet} query={resultQuery} {space} {viewOptions} />

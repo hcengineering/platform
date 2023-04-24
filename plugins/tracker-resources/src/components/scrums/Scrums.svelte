@@ -15,8 +15,8 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Scrum, ScrumRecord, Project } from '@hcengineering/tracker'
-  import { closePopup, closeTooltip, location } from '@hcengineering/ui'
+  import { Project, Scrum, ScrumRecord } from '@hcengineering/tracker'
+  import { closePopup, closeTooltip, resolvedLocationStore } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import tracker from '../../plugin'
   import ScrumRecordsView from './ScrumRecordsView.svelte'
@@ -32,7 +32,7 @@
   const scrumQuery = createQuery()
 
   onDestroy(
-    location.subscribe(async (loc) => {
+    resolvedLocationStore.subscribe(async (loc) => {
       closeTooltip()
       closePopup()
 

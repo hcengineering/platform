@@ -145,18 +145,17 @@
   }
 </script>
 
-<div class="header">
+<div class="ac-header full divide">
   <TabList
     items={[
       { id: 'AllStates', labelIntl: task.string.AllStates },
       { id: 'DoneStates', labelIntl: task.string.DoneStates }
     ]}
     multiselect={false}
-    size={'small'}
     on:select={handleSelect}
   />
   {#if doneStatusesView}
-    <TabList items={itemsDS} bind:selected={selectedDS} multiselect on:select={handleDoneSelect} size={'small'} />
+    <TabList items={itemsDS} bind:selected={selectedDS} multiselect on:select={handleDoneSelect} />
   {:else}
     <StatesBar bind:state {space} gap={'none'} on:change={() => updateQuery(query, selectedDoneStates)} />
   {/if}
@@ -170,21 +169,5 @@
     flex-grow: 1;
     min-height: 0;
     height: 100%;
-  }
-
-  .header {
-    display: grid;
-    grid-template-columns: auto auto;
-    justify-content: space-between;
-    align-items: center;
-    column-gap: 1rem;
-    padding: 0.75rem 0.75rem 0.75rem 2.5rem;
-    width: 100%;
-    min-height: 3.25rem;
-    min-width: 0;
-    background-color: var(--board-bg-color);
-
-    border-top: 1px solid var(--divider-color);
-    // border-bottom: 1px solid var(--divider-color);
   }
 </style>

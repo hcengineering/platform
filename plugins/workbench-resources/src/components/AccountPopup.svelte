@@ -18,22 +18,26 @@
   import login, { loginId } from '@hcengineering/login'
   import { setMetadata } from '@hcengineering/platform'
   import presentation, { createQuery } from '@hcengineering/presentation'
-  import setting, { settingId, SettingsCategory } from '@hcengineering/setting'
-  import { Action, Component, fetchMetadataLocalStorage } from '@hcengineering/ui'
+  import setting, { SettingsCategory, settingId } from '@hcengineering/setting'
   import {
+    Action,
+    Component,
+    Menu,
     closePanel,
     closePopup,
+    deviceOptionsStore as deviceInfo,
+    fetchMetadataLocalStorage,
     getCurrentLocation,
-    navigate,
-    setMetadataLocalStorage,
-    showPopup,
-    Menu,
+    getCurrentResolvedLocation,
     locationToUrl,
-    deviceOptionsStore as deviceInfo
+    navigate,
+    resolvedLocationStore,
+    setMetadataLocalStorage,
+    showPopup
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import HelpAndSupport from './HelpAndSupport.svelte'
   import workbench from '../plugin'
+  import HelpAndSupport from './HelpAndSupport.svelte'
   import SelectWorkspaceMenu from './SelectWorkspaceMenu.svelte'
 
   let items: SettingsCategory[] = []
@@ -66,7 +70,7 @@
   function selectCategory (sp: SettingsCategory): void {
     closePopup()
     closePanel()
-    const loc = getCurrentLocation()
+    const loc = getCurrentResolvedLocation()
     loc.path[2] = settingId
     loc.path[3] = sp.name
     loc.path.length = 4
@@ -107,7 +111,7 @@
   }
 
   function getURLCategory (sp: SettingsCategory): string {
-    const loc = getCurrentLocation()
+    const loc = getCurrentResolvedLocation()
     loc.path[2] = settingId
     loc.path[3] = sp.name
     loc.path.length = 4
@@ -175,7 +179,7 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <svelte:component this={Menu} bind:this={menu} {actions} {addClass} on:close>
   <svelte:fragment slot="header">
-    <div class="p-1 ml-2 overflow-label fs-bold caption-color">{getCurrentLocation().path[1]}</div>
+    <div class="p-1 ml-2 overflow-label fs-bold caption-color">{$resolvedLocationStore.path[1]}</div>
     <div
       class="ap-menuHeader mb-2"
       on:mousemove={() => {

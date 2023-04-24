@@ -16,17 +16,18 @@
   import { Class, Doc, DocumentUpdate, Lookup, PrimitiveType, Ref, Space, StatusValue } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { calcRank, DocWithRank } from '@hcengineering/task'
+  import { DocWithRank, calcRank } from '@hcengineering/task'
   import {
     AnyComponent,
     CheckBox,
     ExpandCollapse,
+    Spinner,
     getEventPositionElement,
-    showPopup,
-    Spinner
+    mouseAttractor,
+    showPopup
   } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, ViewOptionModel, ViewOptions } from '@hcengineering/view'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, tick } from 'svelte'
   import { FocusSelection, focusStore } from '../../selection'
   import Menu from '../Menu.svelte'
   import ListHeader from './ListHeader.svelte'
@@ -35,11 +36,12 @@
   export let category: PrimitiveType | StatusValue
   export let headerComponent: AttributeModel | undefined
   export let singleCat: boolean
+  export let oneCat: boolean
+  export let lastCat: boolean
   export let groupByKey: string
   export let space: Ref<Space> | undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined
   export let items: Doc[]
-  export let initIndex: number
   export let createItemDialog: AnyComponent | undefined
   export let createItemLabel: IntlString | undefined
   export let loadingPropsLength: number | undefined
@@ -50,14 +52,11 @@
   export let disableHeader = false
   export let props: Record<string, any> = {}
   export let level: number
-  export let elementByIndex: Map<number, HTMLDivElement>
-  export let indexById: Map<Ref<Doc>, number>
   export let lookup: Lookup<Doc>
   export let _class: Ref<Class<Doc>>
   export let config: (string | BuildModelKey)[]
   export let viewOptions: ViewOptions
   export let newObjectProps: (doc: Doc) => Record<string, any> | undefined
-  export let docByIndex: Map<number, Doc>
   export let viewOptionsConfig: ViewOptionModel[] | undefined
   export let dragItem: {
     doc?: Doc
@@ -92,7 +91,7 @@
     dispatch('row-focus', object)
   }
 
-  const handleMenuOpened = async (event: MouseEvent, object: Doc, rowIndex: number) => {
+  const handleMenuOpened = async (event: MouseEvent, object: Doc) => {
     event.preventDefault()
     handleRowFocused(object)
 
@@ -300,10 +299,30 @@
       index: i
     })
   }
+  export function scroll (item: Doc): void {
+    const pos = items.findIndex((it) => it._id === item._id)
+    if (pos >= 0) {
+      if (collapsed) {
+        collapsed = false
+        tick().then(() => scroll(item))
+        return
+      }
+      if (pos >= limited.length) {
+        limit = (limit ?? 0) + 20
+
+        tick().then(() => scroll(item))
+      } else {
+        listItems[pos]?.scroll()
+      }
+    }
+  }
+  const listItems: ListItem[] = []
 </script>
 
 <div
   bind:this={div}
+  class="category-container"
+  class:zero-container={level === 0}
   on:drop|preventDefault={drop}
   on:dragover={dragOverCat}
   on:dragenter={dragEnterCat}
@@ -323,7 +342,9 @@
       {extraHeaders}
       newObjectProps={_newObjectProps}
       flat={flatHeaders}
+      {collapsed}
       {props}
+      {lastCat}
       on:more={() => {
         if (limit !== undefined) limit += 20
       }}
@@ -332,49 +353,42 @@
       }}
     />
   {/if}
-  <ExpandCollapse isExpanded={!collapsed || dragItemIndex !== undefined}>
+  <ExpandCollapse isExpanded={!collapsed || dragItemIndex !== undefined} duration={0}>
     {#if !lastLevel}
-      <div class="p-2">
-        <slot
-          name="category"
-          {elementByIndex}
-          {indexById}
-          docs={items}
-          {_class}
-          {space}
-          {lookup}
-          {loadingPropsLength}
-          {baseMenuClass}
-          {config}
-          {selectedObjectIds}
-          {createItemDialog}
-          {createItemLabel}
-          {viewOptions}
-          newObjectProps={_newObjectProps}
-          {flatHeaders}
-          {props}
-          level={level + 1}
-          {initIndex}
-          {docByIndex}
-          {viewOptionsConfig}
-          {listDiv}
-          dragItem
-          dragstart={dragStartHandler}
-        />
-      </div>
+      <slot
+        name="category"
+        docs={items}
+        {_class}
+        {space}
+        {lookup}
+        {loadingPropsLength}
+        {baseMenuClass}
+        {config}
+        {selectedObjectIds}
+        {createItemDialog}
+        {createItemLabel}
+        {viewOptions}
+        newObjectProps={_newObjectProps}
+        {flatHeaders}
+        {props}
+        level={level + 1}
+        {viewOptionsConfig}
+        {listDiv}
+        dragItem
+        dragstart={dragStartHandler}
+      />
     {:else if itemModels && (!collapsed || dragItemIndex !== undefined)}
       {#if limited}
         {#each limited as docObject, i (docObject._id)}
           <ListItem
+            bind:this={listItems[i]}
             {docObject}
-            {elementByIndex}
-            {docByIndex}
-            {indexById}
             model={itemModels}
-            index={initIndex + i}
             {groupByKey}
             selected={isSelected(docObject, $focusStore)}
             checked={selectedObjectIdsSet.has(docObject._id)}
+            last={i === limited.length - 1}
+            lastCat={i === limited.length - 1 && (oneCat || lastCat)}
             on:dragstart={(e) => dragStart(e, docObject, i)}
             on:dragenter={(e) => {
               if (dragItemIndex !== undefined) {
@@ -386,9 +400,9 @@
             on:dragover={(e) => dragover(e, i)}
             on:drop={dropItemHandle}
             on:check={(ev) => dispatch('check', { docs: ev.detail.docs, value: ev.detail.value })}
-            on:contextmenu={(event) => handleMenuOpened(event, docObject, initIndex + i)}
+            on:contextmenu={(event) => handleMenuOpened(event, docObject)}
             on:focus={() => {}}
-            on:mouseover={() => handleRowFocused(docObject)}
+            on:mouseover={mouseAttractor(() => handleRowFocused(docObject))}
             {props}
           />
         {/each}
@@ -411,7 +425,16 @@
 </div>
 
 <style lang="scss">
-  .row:not(:last-child) {
-    border-bottom: 1px solid var(--accent-bg-color);
+  .expandCollapse {
+    overflow: hidden;
+    transition: height 0.3s ease-out;
+    height: auto;
+  }
+  .zero-container {
+    border-radius: 0.25rem;
+
+    &:not(:first-child) {
+      margin-top: 0.5rem;
+    }
   }
 </style>

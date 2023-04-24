@@ -17,12 +17,18 @@
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Component } from '@hcengineering/tracker'
-  import { closePopup, closeTooltip, getCurrentLocation, location, navigate } from '@hcengineering/ui'
+  import {
+    closePopup,
+    closeTooltip,
+    getCurrentResolvedLocation,
+    navigate,
+    resolvedLocationStore
+  } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import tracker from '../../plugin'
   import { ComponentsViewMode } from '../../utils'
-  import EditComponent from './EditComponent.svelte'
   import ComponentBrowser from './ComponentBrowser.svelte'
+  import EditComponent from './EditComponent.svelte'
 
   export let label: IntlString = tracker.string.Components
   export let query: DocumentQuery<Component> = {}
@@ -33,7 +39,7 @@
   let component: Component | undefined
 
   onDestroy(
-    location.subscribe(async (loc) => {
+    resolvedLocationStore.subscribe(async (loc) => {
       closeTooltip()
       closePopup()
 
@@ -56,7 +62,7 @@
   <EditComponent
     {component}
     on:component={(evt) => {
-      const loc = getCurrentLocation()
+      const loc = getCurrentResolvedLocation()
       loc.path[5] = evt.detail
       navigate(loc)
     }}

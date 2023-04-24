@@ -99,9 +99,14 @@
 {#if value && statuses}
   {#if kind === 'list' || kind === 'list-header'}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="flex-row-center flex-no-shrink" class:cursor-pointer={isEditable} on:click={handleStatusEditorOpened}>
+    <div
+      class="flex-row-center flex-no-shrink"
+      class:fix-margin={kind === 'list'}
+      class:cursor-pointer={isEditable}
+      on:click={handleStatusEditorOpened}
+    >
       <div class="flex-center flex-no-shrink square-4">
-        {#if selectedStatus}<IssueStatusIcon value={selectedStatus} size={kind === 'list' ? 'inline' : 'medium'} />{/if}
+        {#if selectedStatus}<IssueStatusIcon value={selectedStatus} size={kind === 'list' ? 'small' : 'medium'} />{/if}
       </div>
       {#if selectedStatusLabel}
         <span

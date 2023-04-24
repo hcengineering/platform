@@ -13,19 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { SortingOrder, WithLookup } from '@hcengineering/core'
+  import { Scrum } from '@hcengineering/tracker'
   import {
     Button,
-    deviceOptionsStore as deviceInfo,
-    getCurrentLocation,
     Icon,
+    deviceOptionsStore as deviceInfo,
+    getCurrentResolvedLocation,
     navigate,
     showPopup
   } from '@hcengineering/ui'
   import tracker from '../../plugin'
-  import ScrumPopup from './ScrumPopup.svelte'
   import Expanded from '../icons/Expanded.svelte'
-  import { SortingOrder, WithLookup } from '@hcengineering/core'
-  import { Scrum } from '@hcengineering/tracker'
+  import ScrumPopup from './ScrumPopup.svelte'
 
   export let scrum: WithLookup<Scrum>
 
@@ -44,7 +44,7 @@
       container,
       (value) => {
         if (value != null) {
-          const loc = getCurrentLocation()
+          const loc = getCurrentResolvedLocation()
           loc.path[5] = value._id
           navigate(loc)
         }

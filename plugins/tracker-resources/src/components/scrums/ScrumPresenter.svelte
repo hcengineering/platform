@@ -14,11 +14,11 @@
 -->
 <script lang="ts">
   import { Scrum } from '@hcengineering/tracker'
-  import { getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { getCurrentResolvedLocation, navigate } from '@hcengineering/ui'
 
   export let value: Scrum
   function navigateToScrum () {
-    const loc = getCurrentLocation()
+    const loc = getCurrentResolvedLocation()
     loc.path[5] = value._id
     loc.path.length = 6
     navigate(loc)
