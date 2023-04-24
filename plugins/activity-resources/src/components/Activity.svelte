@@ -19,7 +19,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Component, Grid, Label, Spinner } from '@hcengineering/ui'
   import { ActivityKey, activityKey, newActivity } from '../activity'
-  import { filterCollectionTxes } from '../utils'
+  import { filterCollectionTxes, getValue, updateViewlet } from '../utils'
   import ActivityFilter from './ActivityFilter.svelte'
   import TxView from './TxView.svelte'
   import notification, { DocUpdates, Writable } from '@hcengineering/notification'
@@ -104,6 +104,61 @@
   }
 
   $: scrollIndex = shouldScroll ? newTxIndexes[0] ?? filtered.length - 1 : -1
+
+  interface IDiffs {
+    id: string
+    value: string | undefined
+  }
+
+  let compares: IDiffs[] = []
+  let compareValues: IDiffs[] = []
+
+  function getCompareValue (id: number) {
+    if (id < 0) {
+      return undefined
+    }
+    return compareValues[id]?.value
+  }
+
+  function checkCompare (dtxes: DisplayTx[]): void {
+    compares = dtxes.map((tx) => {
+      return { id: tx.tx._id, value: undefined } as IDiffs
+    })
+    dtxes.forEach((tx) => {
+      updateViewlet(client, viewlets, tx).then((result) => {
+        if (result.id === tx.tx._id) {
+          result.model.forEach((m) => {
+            if (m._class === core.class.TypeMarkup) {
+              getValue(client, m, tx).then((value) => {
+                const id = compares.findIndex((f) => f.id === result.id)
+                if (id >= 0) compares[id] = { id: result.id, value: value.set }
+              })
+            }
+          })
+        }
+      })
+
+      compares = [...compares]
+    })
+  }
+
+  $: checkCompare(filtered)
+
+  $: if (compares) {
+    compareValues = []
+    if (compares.length > 0) {
+      let compareValue: string | undefined = undefined
+      for (let i = 0; i < compares.length; i++) {
+        if (compares[i].value !== undefined) {
+          compareValues.push({ id: compares[i].id, value: compareValue })
+          compareValue = compares[i].value
+        } else {
+          compareValues.push({ id: compares[i].id, value: undefined })
+        }
+      }
+    }
+    compareValues = [...compareValues]
+  }
 </script>
 
 <div class="antiSection-header high mt-9" class:invisible={transparent}>
@@ -119,17 +174,21 @@
 </div>
 <div class="p-activity select-text" id={activity.string.Activity}>
   {#if filtered}
-    <Grid column={1} rowGap={0.75}>
-      {#each filtered as tx, i}
-        <TxView
-          {tx}
-          {viewlets}
-          isNew={newTxIndexes.includes(i)}
-          isNextNew={newTxIndexes.includes(i + 1)}
-          shouldScroll={i === scrollIndex}
-        />
-      {/each}
-    </Grid>
+    {#key compareValues}
+      <Grid column={1} rowGap={0.75}>
+        {#each filtered as tx, i}
+          <TxView
+            {tx}
+            {viewlets}
+            isNew={newTxIndexes.includes(i)}
+            isNextNew={newTxIndexes.includes(i + 1)}
+            shouldScroll={i === scrollIndex}
+            compareValue={getCompareValue(i)}
+            ignoreShowMore={true}
+          />
+        {/each}
+      </Grid>
+    {/key}
   {/if}
 </div>
 {#if showCommenInput}

@@ -35,6 +35,7 @@
   import attachment from '@hcengineering/attachment'
   import chunter from '@hcengineering/chunter'
   import { Menu, ObjectPresenter } from '@hcengineering/view-resources'
+  import textEditorPlugin, { StyleButton, IconObjects } from '@hcengineering/text-editor'
   import { ActivityKey } from '../activity'
   import activity from '../plugin'
   import { getValue, TxDisplayViewlet, updateViewlet } from '../utils'
@@ -49,6 +50,8 @@
   export let isNextNew: boolean = false
   export let contentHidden: boolean = false
   export let shouldScroll: boolean = false
+  export let compareValue: string | undefined = undefined
+  export let ignoreShowMore: boolean = false
   // export let showDocument = false
 
   let ptx: DisplayTx | undefined
@@ -61,7 +64,8 @@
   let modelIcon: Asset | undefined = undefined
   let iconComponent: AnyComponent | undefined = undefined
 
-  let edit = false
+  let edit: boolean = false
+  let showDiff: boolean = false
 
   $: if (tx.tx._id !== ptx?.tx._id) {
     if (tx.tx.modifiedBy !== account?._id) {
@@ -276,6 +280,16 @@
                         <svelte:component this={m.presenter} value={value.set} inline />
                       {/if}
                     </span>
+                  {:else}
+                    <div class="pt-2">
+                      <StyleButton
+                        icon={IconObjects}
+                        size={'small'}
+                        selected={true}
+                        showTooltip={{ label: textEditorPlugin.string.EnableDiffMode }}
+                        on:click={() => (showDiff = !showDiff)}
+                      />
+                    </div>
                   {/if}
                 {/if}
               {/await}
@@ -346,11 +360,11 @@
       {:else if hasMessageType && model.length > 0 && (tx.updateTx || tx.mixinTx)}
         {#await getValue(client, model[0], tx) then value}
           <div class="activity-content content" class:indent={isAttached} class:contentHidden>
-            <ShowMore ignore={edit}>
+            <ShowMore ignore={edit || ignoreShowMore}>
               {#if value.isObjectSet}
                 <ObjectPresenter value={value.set} inline />
-              {:else}
-                <svelte:component this={model[0].presenter} value={value.set} inline />
+              {:else if showDiff}
+                <svelte:component this={model[0].presenter} value={value.set} inline {compareValue} showOnlyDiff />
               {/if}
             </ShowMore>
           </div>
