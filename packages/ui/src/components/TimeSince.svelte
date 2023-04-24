@@ -32,6 +32,17 @@
 
   let time: string = ''
 
+  function calculateMonthsPassed (now: number, value: number): number {
+    const startDate: Date = new Date(value)
+    const endDate: Date = new Date(now)
+    const startYear = startDate.getFullYear()
+    const startMonth = startDate.getMonth()
+    const endYear = endDate.getFullYear()
+    const endMonth = endDate.getMonth()
+
+    return (endYear - startYear) * 12 + (endMonth - startMonth)
+  }
+
   async function formatTime (now: number, value: number) {
     let passed = now - value
     if (passed < 0) passed = 0
@@ -42,7 +53,7 @@
     } else if (passed < MONTH) {
       time = await translate(ui.string.Days, { days: Math.floor(passed / DAY) })
     } else if (passed < YEAR) {
-      time = await translate(ui.string.Months, { months: Math.floor(passed / MONTH) })
+      time = await translate(ui.string.Months, { months: calculateMonthsPassed(now, value) })
     } else {
       time = await translate(ui.string.Years, { years: Math.floor(passed / YEAR) })
     }
