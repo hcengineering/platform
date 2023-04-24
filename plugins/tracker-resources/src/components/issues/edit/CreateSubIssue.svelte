@@ -27,6 +27,7 @@
   import PriorityEditor from '../PriorityEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
   import EstimationEditor from '../timereport/EstimationEditor.svelte'
+  import { generateIssueShortLink, getIssueId } from '../../../issues'
 
   export let parentIssue: Issue
   export let currentProject: Project
@@ -151,7 +152,8 @@
 
       addNotification(await translate(tracker.string.IssueCreated, {}), getTitle(object.title), IssueNotification, {
         issueId: _id,
-        subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase()
+        subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase(),
+        issueUrl: currentProject && generateIssueShortLink(getIssueId(currentProject, value as Issue))
       })
       draftController.remove()
     } finally {
