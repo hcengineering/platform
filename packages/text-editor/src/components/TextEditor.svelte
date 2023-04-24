@@ -162,7 +162,7 @@
   const Handle = Extension.create({
     addKeyboardShortcuts () {
       return {
-        'Shift-Enter': () => {
+        'Cmd-Enter': () => {
           const res = this.editor.commands.splitListItem('listItem')
           if (!res) {
             this.editor.commands.first(({ commands }) => [
@@ -172,6 +172,10 @@
               () => commands.splitBlock()
             ])
           }
+          return true
+        },
+        'Shift-Enter': () => {
+          this.editor.commands.setHardBreak()
           return true
         },
         Enter: () => {
