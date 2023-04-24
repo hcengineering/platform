@@ -22,7 +22,7 @@
     activeViewlet,
     getViewOptions,
     makeViewletKey,
-    setActiveViewletId,
+    updateActiveViewlet,
     viewOptionStore
   } from '@hcengineering/view-resources'
   import type { ViewConfiguration } from '@hcengineering/workbench'
@@ -82,8 +82,7 @@
         }
       )
       if (header !== undefined) {
-        viewlet = viewlets.find((viewlet) => viewlet._id === active) ?? viewlets[0]
-        setActiveViewletId(viewlet._id)
+        viewlet = updateActiveViewlet(viewlets, active)
       }
       _class = attachTo
     }

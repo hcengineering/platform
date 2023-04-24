@@ -34,7 +34,8 @@
     ViewletSettingButton,
     activeViewlet,
     makeViewletKey,
-    setActiveViewletId
+    setActiveViewletId,
+    updateActiveViewlet
   } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import Header from './Header.svelte'
@@ -62,7 +63,7 @@
     showPopup(createItemDialog as AnyComponent, { space: spaceId }, 'top')
   }
 
-  $: update(viewlets, active)
+  $: viewlet = updateActiveViewlet(viewlets, active)
 
   $: if (prevSpaceId !== spaceId) {
     search = ''
@@ -78,11 +79,6 @@
   )
 
   $: active = $activeViewlet[key]
-
-  async function update (viewlets: WithLookup<Viewlet>[], active: Ref<Viewlet> | null): Promise<void> {
-    viewlet = viewlets.find((viewlet) => viewlet._id === active) ?? viewlets[0]
-    setActiveViewletId(viewlet._id)
-  }
 
   $: viewslist = viewlets.map((views) => {
     return {

@@ -11,7 +11,7 @@
     activeViewlet,
     getViewOptions,
     makeViewletKey,
-    setActiveViewletId,
+    updateActiveViewlet,
     viewOptionStore
   } from '@hcengineering/view-resources'
   import { onDestroy } from 'svelte'
@@ -37,9 +37,9 @@
   $: if (query) updateSearchQuery(search)
   let resultQuery: DocumentQuery<IssueTemplate> = { ...searchQuery }
 
-  let viewlets: WithLookup<Viewlet>[] = []
+  let viewlets: WithLookup<Viewlet>[] | undefined
 
-  $: update(viewlets, active)
+  $: viewlet = viewlets && updateActiveViewlet(viewlets, active)
 
   const viewletQuery = createQuery()
   viewletQuery.query(view.class.Viewlet, { attachTo: tracker.class.IssueTemplate }, (res) => (viewlets = res), {
@@ -57,11 +57,6 @@
   )
 
   $: active = $activeViewlet[key]
-
-  async function update (viewlets: WithLookup<Viewlet>[], active: Ref<Viewlet> | null): Promise<void> {
-    viewlet = viewlets.find((viewlet) => viewlet._id === active) ?? viewlets[0]
-    if (viewlet !== undefined) setActiveViewletId(viewlet._id)
-  }
 
   $: if (!label && title) {
     translate(title, {}).then((res) => {
