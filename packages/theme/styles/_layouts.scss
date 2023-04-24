@@ -218,6 +218,7 @@ input.search {
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
+  min-width: 0;
   min-height: 0;
 }
 .flex-col-reverse {

@@ -25,7 +25,7 @@
 
   const dispatch = createEventDispatcher()
 
-  const maxLenght: number = 16
+  const maxLenght: number = 30
   const trimFilename = (fname: string): string =>
     fname.length > maxLenght ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2) : fname
 
