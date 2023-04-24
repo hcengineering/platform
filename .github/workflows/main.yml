@@ -202,7 +202,7 @@ jobs:
           mongodb-version: 5.0
 
       - name: Testing...
-        uses: paambaati/codeclimate-action@v3.2.0
+        uses: paambaati/codeclimate-action@v4.0.0
         env:
           CC_TEST_REPORTER_ID: 346a83855d7124e9da8e6ec36a4fd01dc432f5cdc755eb28da7d9c44da9d1142
         with:
