@@ -162,7 +162,7 @@
   const Handle = Extension.create({
     addKeyboardShortcuts () {
       return {
-        'Cmd-Enter': () => {
+        'Ctrl-Enter': () => {
           const res = this.editor.commands.splitListItem('listItem')
           if (!res) {
             this.editor.commands.first(({ commands }) => [
