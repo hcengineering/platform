@@ -69,6 +69,7 @@
         staff,
         date,
         readonly,
+        employeeRequests,
         docQuery: { active: true, $search: editableList.join(' | ') }
       },
       eventToHTMLElement(e)
@@ -236,6 +237,7 @@
                   <div class:worked={ww > 0} class="h-full w-full">
                     {#if requests.length}
                       <ScheduleRequests
+                        {employeeRequests}
                         {departments}
                         {requests}
                         {editable}
