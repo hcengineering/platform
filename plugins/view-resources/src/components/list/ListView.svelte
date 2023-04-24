@@ -48,7 +48,12 @@
 />
 
 <div class="w-full h-full py-4 clear-mins">
-  <Scroller fade={{ multipler: { top: 2.75 * viewOptions.groupBy.length, bottom: 0 } }} padding={'0 1rem'} noFade>
+  <Scroller
+    fade={{ multipler: { top: 2.75 * viewOptions.groupBy.length, bottom: 0 } }}
+    padding={'0 1rem'}
+    noFade
+    checkForHeaders
+  >
     <List
       bind:this={list}
       {_class}
