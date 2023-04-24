@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DocumentQuery, Ref, WithLookup } from '@hcengineering/core'
+  import { DocumentQuery, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Sprint } from '@hcengineering/tracker'
@@ -26,7 +26,7 @@
     activeViewlet,
     getViewOptions,
     makeViewletKey,
-    setActiveViewletId,
+    updateActiveViewlet,
     viewOptionStore
   } from '@hcengineering/view-resources'
   import { onDestroy } from 'svelte'
@@ -61,9 +61,9 @@
 
   let resultQuery: DocumentQuery<Sprint> = { ...searchQuery }
 
-  let viewlets: WithLookup<Viewlet>[] = []
+  let viewlets: WithLookup<Viewlet>[] | undefined
 
-  $: update(viewlets, active)
+  $: viewlet = viewlets && updateActiveViewlet(viewlets, active)
 
   const viewletQuery = createQuery()
   viewletQuery.query(view.class.Viewlet, { attachTo: tracker.class.Sprint }, (res) => (viewlets = res), {
@@ -81,14 +81,6 @@
   )
 
   $: active = $activeViewlet[key]
-
-  async function update (viewlets: WithLookup<Viewlet>[], active: Ref<Viewlet> | null): Promise<void> {
-    viewlet = viewlets.find((viewlet) => viewlet._id === active) ?? viewlets[0]
-
-    if (viewlet) {
-      setActiveViewletId(viewlet._id)
-    }
-  }
 
   let asideFloat: boolean = false
   let asideShown: boolean = true

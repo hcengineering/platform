@@ -520,6 +520,35 @@ export function getActiveViewletId (): Ref<Viewlet> | null {
   return localStorage.getItem(key) as Ref<Viewlet> | null
 }
 
+/**
+ * Updates the active viewlet, if one was found.
+ * Otherwise sets the default viewlet.
+ *
+ * @export
+ * @param {readonly Viewlet[]} viewlets
+ * @param {(Ref<Viewlet> | null | undefined)} activeViewletId
+ * @returns {(Viewlet | undefined)}
+ */
+export function updateActiveViewlet (
+  viewlets: readonly Viewlet[],
+  activeViewletId: Ref<Viewlet> | null | undefined
+): Viewlet | undefined {
+  if (viewlets.length === 0) {
+    return
+  }
+
+  let viewlet: Viewlet | undefined
+
+  if (activeViewletId !== null && activeViewletId !== undefined) {
+    viewlet = viewlets.find((viewlet) => viewlet._id === activeViewletId)
+  }
+  viewlet ??= viewlets[0]
+
+  setActiveViewletId(viewlet._id)
+
+  return viewlet
+}
+
 export type FixedWidthStore = Record<string, number>
 
 export const fixedWidthStore = writable<FixedWidthStore>({})
