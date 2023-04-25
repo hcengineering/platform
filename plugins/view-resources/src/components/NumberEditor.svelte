@@ -22,7 +22,7 @@
   // export let label: IntlString
   export let placeholder: IntlString
   export let value: number | undefined
-  export let focus: boolean
+  export let focus: boolean = false
   // export let maxWidth: string = '10rem'
   export let onChange: (value: number | undefined) => void
   export let kind: 'no-border' | 'link' | 'button' = 'no-border'

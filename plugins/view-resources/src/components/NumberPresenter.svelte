@@ -18,13 +18,13 @@
   import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
 
   export let value: number | undefined
-  export let onChange: ((value: number) => void) | undefined = undefined
+  export let onChange: ((value: number | undefined) => void) | undefined = undefined
   export let placeholder: IntlString = getEmbeddedLabel(' ')
   export let kind: 'no-border' | 'link' | 'button' = 'link'
 </script>
 
 {#if onChange !== undefined}
-  <NumberEditor {onChange} {value} {placeholder} {kind}/>
+  <NumberEditor {onChange} {value} {placeholder} {kind} />
 {:else}
   <span>{value || ''}</span>
 {/if}

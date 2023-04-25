@@ -25,7 +25,7 @@
 
 <div class="{inline ? 'inline-presenter' : 'flex-presenter'} yesno-container">
   {#if onChange !== undefined}
-    <BooleanEditor {onChange} {value}/>
+    <BooleanEditor {onChange} {value} />
   {:else}
     <div class="icon small-gap"><BooleanIcon {value} /></div>
     <span><Label label={getBooleanLabel(value)} /></span>

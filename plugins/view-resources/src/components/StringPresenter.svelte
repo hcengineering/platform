@@ -19,8 +19,8 @@
   import StringEditor from './StringEditor.svelte'
 
   export let value: string | string[] | undefined
-  export let onChange: ((value: string | string[] | undefined) => void) | undefined = undefined
-  export let placeholder: IntlString
+  export let onChange: ((value: string) => void) | undefined = undefined
+  export let placeholder: IntlString = getEmbeddedLabel('')
 
   $: tooltipParams = getTooltip(value)
 
@@ -39,15 +39,13 @@
 </script>
 
 <span class="lines-limit-2 select-text" use:tooltip={tooltipParams}>
-  {#if onChange === undefined}
-    {#if Array.isArray(value)}
-      {#each value as str, i}
-        <span class:ml-1={i !== 0}>{str}</span>
-      {/each}
-    {:else}
-      {value ?? ''}
-    {/if}
+  {#if Array.isArray(value)}
+    {#each value as str, i}
+      <span class:ml-1={i !== 0}>{str}</span>
+    {/each}
+  {:else if onChange === undefined}
+    {value ?? ''}
   {:else}
-    <StringEditor {onChange} {value} {placeholder}/>
+    <StringEditor {onChange} value={value ?? ''} {placeholder} />
   {/if}
 </span>
