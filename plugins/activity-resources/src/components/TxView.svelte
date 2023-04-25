@@ -280,6 +280,7 @@
                       {/if}
                     </span>
                   {:else}
+                    <!-- svelte-ignore a11y-click-events-have-key-events -->
                     <span class="show-diff" on:click={() => (showDiff = !showDiff)}>
                       <Label label={showDiff ? ui.string.ShowLess : ui.string.ShowMore} />
                     </span>
