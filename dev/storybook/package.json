@@ -6,6 +6,7 @@
   "license": "EPL-2.0",
   "scripts": {
     "build": "echo \"No build specified\" && exit 0",
+    "format": "echo \"No format specified\" && exit 0",
     "storybook": "storybook dev -p 6006",
     "test": "echo \"No test specified\" && exit 0"
   },
