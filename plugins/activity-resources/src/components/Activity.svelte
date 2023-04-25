@@ -103,7 +103,7 @@
     return index !== -1
   }
 
-  $: scrollIndex = shouldScroll ? newTxIndexes[0] ?? -1 : -1
+  $: scrollIndex = shouldScroll ? newTxIndexes[0] ?? filtered.length - 1 : -1
 </script>
 
 <div class="antiSection-header high mt-9" class:invisible={transparent}>
