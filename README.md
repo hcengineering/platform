@@ -59,6 +59,13 @@ cd ./dev/tool
 rushx upgrade
 ```
 
+In cases when project doesn't build for any logical reason try:
+
+```bash
+rush update 
+rush build --clean
+```
+
 ## Tests
 
 ### Unit tests
