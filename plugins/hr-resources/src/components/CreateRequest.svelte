@@ -21,14 +21,16 @@
   import { translate } from '@hcengineering/platform'
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
   import { EmployeeBox } from '@hcengineering/contact-resources'
-  import ui, { Button, DateRangePresenter, DropdownLabelsIntl, IconAttachment } from '@hcengineering/ui'
+  import ui, { Button, DateRangePresenter, DropdownLabelsIntl, IconAttachment, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import hr from '../plugin'
+  import { getRequests } from '../utils'
 
   export let staff: Staff
   export let date: Date
   export let readonly: boolean
   export let docQuery: DocumentQuery<Employee> | undefined
+  export let employeeRequests: Map<Ref<Staff>, Request[]>
 
   let description: string = ''
   let employee: Ref<Employee> = staff._id
@@ -77,13 +79,33 @@
   function typeSelected (_id: Ref<RequestType>): void {
     type = types.find((p) => p._id === _id)
   }
+
+  function moreThanLimit (
+    employeeRequests: Map<Ref<Staff>, Request[]>,
+    staff: Staff,
+    startDate: Date,
+    endDate: Date,
+    type: RequestType | undefined
+  ): boolean {
+    if (employeeRequests === undefined) return true
+    if (type === undefined) return true
+    const requests = getRequests(employeeRequests, startDate, endDate, staff._id)
+    return requests.length > 0
+  }
+  $: notLimit = moreThanLimit(
+    employeeRequests,
+    staff,
+    new Date(value),
+    new Date(new Date(dueDate).setHours(23, 59, 59, 999)),
+    type
+  )
 </script>
 
 <Card
   label={hr.string.CreateRequest}
   labelProps={{ type: typeLabel }}
   okAction={saveRequest}
-  canSave={value !== undefined}
+  canSave={value !== undefined && !notLimit}
   on:close={() => {
     dispatch('close')
   }}
@@ -137,5 +159,10 @@
         descriptionBox.attach()
       }}
     />
+  </svelte:fragment>
+  <svelte:fragment slot="error">
+    {#if notLimit}
+      <Label label={hr.string.ExistingRequests} />
+    {/if}
   </svelte:fragment>
 </Card>
