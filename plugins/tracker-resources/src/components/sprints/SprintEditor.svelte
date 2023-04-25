@@ -68,24 +68,26 @@
 </script>
 
 {#if kind === 'list'}
-  <div class="clear-mins" class:label-wrapper={compression}>
-    <SprintSelector
-      {kind}
-      {size}
-      {shape}
-      {width}
-      {justify}
-      {isEditable}
-      {shouldShowLabel}
-      {popupPlaceholder}
-      {onlyIcon}
-      {enlargedText}
-      short={compression}
-      showTooltip={{ label: value.sprint ? tracker.string.MoveToSprint : tracker.string.AddToSprint }}
-      value={value.sprint}
-      onChange={handleSprintIdChanged}
-    />
-  </div>
+  {#if value.sprint}
+    <div class="clear-mins" class:label-wrapper={compression}>
+      <SprintSelector
+        {kind}
+        {size}
+        {shape}
+        {width}
+        {justify}
+        {isEditable}
+        {shouldShowLabel}
+        {popupPlaceholder}
+        {onlyIcon}
+        {enlargedText}
+        short={compression}
+        showTooltip={{ label: value.sprint ? tracker.string.MoveToSprint : tracker.string.AddToSprint }}
+        value={value.sprint}
+        onChange={handleSprintIdChanged}
+      />
+    </div>
+  {/if}
 {:else}
   <div
     class="flex flex-wrap clear-mins"
