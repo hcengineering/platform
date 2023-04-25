@@ -31,5 +31,6 @@
     {kind}
     {colorInherit}
     {accent}
+    on:accent-color
   />
 {/if}

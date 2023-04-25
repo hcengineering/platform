@@ -27,7 +27,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="flex-row-center" on:click>
-  <Avatar avatar={value.avatar} {size} {icon} />
+  <Avatar avatar={value.avatar} {size} {icon} on:accent-color />
   <div class="flex-col min-w-0 {size === 'tiny' || size === 'inline' ? 'ml-1' : 'ml-2'}">
     {#if subtitle}<div class="content-dark-color text-sm">{subtitle}</div>{/if}
     <div class="content-accent-color overflow-label text-left">{getName(value)}</div>

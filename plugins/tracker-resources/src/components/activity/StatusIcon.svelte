@@ -26,6 +26,6 @@
 
 <div class="icon">
   {#if status}
-    <IssueStatusIcon value={status} size="small" />
+    <IssueStatusIcon value={status} size="small" on:accent-color />
   {/if}
 </div>

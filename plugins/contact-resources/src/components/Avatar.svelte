@@ -31,7 +31,8 @@
   import { Client, Ref } from '@hcengineering/core'
   import { Asset, getResource } from '@hcengineering/platform'
   import { getBlobURL, getClient } from '@hcengineering/presentation'
-  import { AnySvelteComponent, Icon, IconSize } from '@hcengineering/ui'
+  import { AnySvelteComponent, Icon, IconSize, hexToRgb, imageToColor, srcToColor } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
   import { getAvatarProviderId } from '../utils'
   import AvatarIcon from './icons/Avatar.svelte'
 
@@ -42,6 +43,8 @@
 
   let url: string | undefined
   let avatarProvider: AvatarProvider | undefined
+
+  const dispatch = createEventDispatcher()
 
   async function update (size: IconSize, avatar?: string | null, direct?: Blob) {
     if (direct !== undefined) {
@@ -78,17 +81,44 @@
 
       const color = (await getResource(avatarProvider.getUrl))(uri, size)
       style = `background-color: ${color}`
+      accentColor = hexToRgb(color)
+      dispatch('accent-color', accentColor)
     }
   }
   $: updateStyle(avatar, avatarProvider)
+
+  let imageElement: HTMLImageElement | undefined = undefined
+  let accentColor: any | undefined
 </script>
 
 <div class="ava-{size} flex-center avatar-container" class:no-img={!url} {style}>
   {#if url}
     {#if size === 'large' || size === 'x-large'}
-      <img class="ava-{size} ava-blur" src={url} alt={''} />
+      <img
+        class="ava-{size} ava-blur"
+        src={url}
+        alt={''}
+        bind:this={imageElement}
+        on:load={(data) => {
+          if (imageElement !== undefined) {
+            accentColor = imageToColor(imageElement)
+            dispatch('accent-color', accentColor)
+          }
+        }}
+      />
     {/if}
-    <img class="ava-{size} ava-mask" src={url} alt={''} />
+    <img
+      class="ava-{size} ava-mask"
+      src={url}
+      alt={''}
+      bind:this={imageElement}
+      on:load={(data) => {
+        if (imageElement !== undefined) {
+          accentColor = imageToColor(imageElement)
+          dispatch('accent-color', accentColor)
+        }
+      }}
+    />
   {:else}
     <Icon icon={icon ?? AvatarIcon} {size} />
   {/if}

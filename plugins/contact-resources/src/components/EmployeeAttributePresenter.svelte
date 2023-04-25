@@ -38,6 +38,7 @@
     showNavigate={false}
     justify={'left'}
     on:change={({ detail }) => onChange?.(detail)}
+    on:accent-color
   />
 {:else}
   <EmployeePresenter
@@ -53,5 +54,6 @@
     disableClick
     {colorInherit}
     {accent}
+    on:accent-color
   />
 {/if}

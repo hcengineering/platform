@@ -78,5 +78,6 @@
     {colorInherit}
     {accent}
     bind:element
+    on:accent-color
   />
 {/if}

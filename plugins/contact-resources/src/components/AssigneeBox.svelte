@@ -145,7 +145,7 @@
         >
           {#if selected}
             {#if hideIcon || selected}
-              <UserInfo value={selected} size={kind === 'link' ? 'x-small' : 'tiny'} {icon} />
+              <UserInfo value={selected} size={kind === 'link' ? 'x-small' : 'tiny'} {icon} on:accent-color />
             {:else}
               {getName(selected)}
             {/if}

@@ -17,11 +17,29 @@
 {#if Array.isArray(value)}
   <div class="inline-content">
     {#each value as employee}
-      <EmployeeAttributePresenter value={employee} {kind} {tooltipLabels} {onChange} {inline} {colorInherit} {accent} />
+      <EmployeeAttributePresenter
+        value={employee}
+        {kind}
+        {tooltipLabels}
+        {onChange}
+        {inline}
+        {colorInherit}
+        {accent}
+        on:accent-color
+      />
     {/each}
   </div>
 {:else}
-  <EmployeeAttributePresenter {value} {kind} {tooltipLabels} {onChange} {inline} {colorInherit} {accent} />
+  <EmployeeAttributePresenter
+    {value}
+    {kind}
+    {tooltipLabels}
+    {onChange}
+    {inline}
+    {colorInherit}
+    {accent}
+    on:accent-color
+  />
 {/if}
 
 <style lang="scss">

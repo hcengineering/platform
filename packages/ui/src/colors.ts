@@ -83,6 +83,36 @@ export function hexColorToNumber (hexColor: string): number {
 }
 
 /**
+ * @param color
+ * @returns
+ */
+export function textColorBW (color: { r: number, g: number, b: number }): boolean {
+  const sum = Math.round((color.r * 299 + color.b * 587 + color.g * 114) / 1000)
+  return sum > 128
+}
+
+/**
+ * @public
+ */
+export function hexToRgb (color: string): { r: number, g: number, b: number } {
+  if (!color.startsWith('#')) {
+    return { r: 128, g: 128, b: 128 }
+  }
+  color = color.replace('#', '')
+  if (color.length === 3) {
+    color = color
+      .split('')
+      .map((c) => c + c)
+      .join('')
+  }
+  return {
+    r: parseInt(color.slice(0, 2), 16),
+    g: parseInt(color.slice(2, 4), 16),
+    b: parseInt(color.slice(4, 6), 16)
+  }
+}
+
+/**
  * @public
  */
 export function numberToHexColor (color: number): string {
@@ -110,54 +140,106 @@ export function numberToRGB (color: number, alpha?: number): string {
 /**
  * @public
  */
-export function hsvToRGB (h: number, s: number, v: number): { r: number, g: number, b: number, rgb: string } {
+export function hslToRgb (h: number, s: number, l: number): { r: number, g: number, b: number } {
+  s /= 100
+  l /= 100
+  const k = (n: number): number => (n + h / 30) % 12
+  const a = s * Math.min(l, 1 - l)
+  const f = (n: number): number => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)))
+  return { r: 255 * f(0), g: 255 * f(8), b: 255 * f(4) }
+}
+
+/**
+ * @public
+ */
+export function rgbToHex (color: { r: number, g: number, b: number }): string {
+  function addZero (d: string): string {
+    if (d.length < 2) {
+      return '0' + d
+    }
+    return d
+  }
+  return (
+    '#' +
+    addZero((Math.round(color.r) % 255).toString(16)) +
+    addZero((Math.round(color.g) % 255).toString(16)) +
+    addZero((Math.round(color.b) % 255).toString(16))
+  )
+}
+
+export async function svgToColor (img: SVGSVGElement): Promise<{ r: number, g: number, b: number } | undefined> {
+  const outerHTML = img.outerHTML
+  const blob = new Blob([outerHTML], { type: 'image/svg+xml;charset=utf-8' })
+  const blobURL = URL.createObjectURL(blob)
+  const image = new Image()
+  return await new Promise((resolve) => {
+    image.setAttribute('crossOrigin', '')
+    image.src = blobURL
+    image.onload = () => {
+      resolve(imageToColor(image))
+    }
+  })
+}
+
+/**
+ * @public
+ */
+export function imageToColor (image: HTMLImageElement): { r: number, g: number, b: number } | undefined {
+  const canvas = document.createElement('canvas')
+
+  const height = (canvas.height = image.naturalHeight ?? image.offsetHeight ?? image.height)
+  const width = (canvas.width = image.naturalWidth ?? image.offsetWidth ?? image.width)
+  canvas.width = width
+  canvas.height = height
+
+  const blockSize = 5
+
   let r: number = 0
   let g: number = 0
   let b: number = 0
-  const i = Math.floor(h * 6)
-  const f = h * 6 - i
-  const p = v * (1 - s)
-  const q = v * (1 - f * s)
-  const t = v * (1 - (1 - f) * s)
-  switch (i % 6) {
-    case 0:
-      r = v
-      g = t
-      b = p
-      break
-    case 1:
-      r = q
-      g = v
-      b = p
-      break
-    case 2:
-      r = p
-      g = v
-      b = t
-      break
-    case 3:
-      r = p
-      g = q
-      b = v
-      break
-    case 4:
-      r = t
-      g = p
-      b = v
-      break
-    case 5:
-      r = v
-      g = p
-      b = q
-      break
+  let count = 0
+
+  const context = canvas.getContext('2d')
+
+  if (context != null) {
+    context.drawImage(image, 0, 0, width, height)
+    context.beginPath()
+    context.arc(0, 0, 60, 0, Math.PI * 2, true)
+    context.clip()
+    context.fillRect(0, 0, width, height)
+
+    const data = context?.getImageData(0, 0, width, height).data
+
+    const length = data.length
+
+    let i = 0
+    while (i < length) {
+      if (data[i] > 5 && data[i + 1] > 5 && data[i + 2] > 5 && data[i + 3] > 50) {
+        ++count
+        r += data[i]
+        g += data[i + 1]
+        b += data[i + 2]
+      }
+      i += blockSize * 4
+    }
+
+    r = Math.round(r / count)
+    g = Math.round(g / count)
+    b = Math.round(b / count)
+    return { r, g, b }
   }
-  r = Math.round(r * 255)
-  g = Math.round(g * 255)
-  b = Math.round(b * 255)
+}
+
+export function rgbToHsl (r: number, g: number, b: number): { h: number, s: number, l: number } {
+  r /= 255
+  g /= 255
+  b /= 255
+  const l = Math.max(r, g, b)
+  const s = l - Math.min(r, g, b)
+  const h = s > 0 ? (l === r ? (g - b) / s : l === g ? 2 + (b - r) / s : 4 + (r - g) / s) : 0
   return {
-    r,
-    g,
-    b,
-    rgb: '#' + r.toString(16) + g.toString(16) + b.toString(16)
+    h: 60 * h < 0 ? 60 * h + 360 : 60 * h,
+    s: 100 * (s > 0 ? (l <= 0.5 ? s / (2 * l - s) : s / (2 - (2 * l - s))) : 0),
+    l: (100 * (2 * l - s)) / 2
   }
 }
