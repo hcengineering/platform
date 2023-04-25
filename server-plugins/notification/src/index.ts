@@ -15,8 +15,8 @@
 //
 
 import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
-import { Account, Class, Doc, Mixin, Ref, TxCreateDoc, TxFactory, TxUpdateDoc } from '@hcengineering/core'
-import notification, { LastView } from '@hcengineering/notification'
+import { Account, Class, Doc, Mixin, Ref, Tx, TxCreateDoc, TxFactory, TxUpdateDoc } from '@hcengineering/core'
+import notification, { LastView, NotificationType } from '@hcengineering/notification'
 import { Plugin, Resource, plugin } from '@hcengineering/platform'
 import type { TriggerControl, TriggerFunc } from '@hcengineering/server-core'
 
@@ -169,16 +169,36 @@ export interface TextPresenter extends Class<Doc> {
 /**
  * @public
  */
+export type TypeMatchFunc = Resource<
+(tx: Tx, doc: Doc, user: Ref<Account>, type: NotificationType, control: TriggerControl) => Promise<boolean>
+>
+
+/**
+ * @public
+ */
+export interface TypeMatch extends NotificationType {
+  func: TypeMatchFunc
+}
+
+/**
+ * @public
+ */
 export default plugin(serverNotificationId, {
   mixin: {
     HTMLPresenter: '' as Ref<Mixin<HTMLPresenter>>,
-    TextPresenter: '' as Ref<Mixin<TextPresenter>>
+    TextPresenter: '' as Ref<Mixin<TextPresenter>>,
+    TypeMatch: '' as Ref<Mixin<TypeMatch>>
   },
   trigger: {
     OnBacklinkCreate: '' as Resource<TriggerFunc>,
     UpdateLastView: '' as Resource<TriggerFunc>,
     OnUpdateLastView: '' as Resource<TriggerFunc>,
     CollaboratorDocHandler: '' as Resource<TriggerFunc>,
-    OnAddCollborator: '' as Resource<TriggerFunc>
+    OnAddCollborator: '' as Resource<TriggerFunc>,
+    OnAttributeCreate: '' as Resource<TriggerFunc>,
+    OnAttributeUpdate: '' as Resource<TriggerFunc>
+  },
+  function: {
+    IsUserInFieldValue: '' as TypeMatchFunc
   }
 })

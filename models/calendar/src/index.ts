@@ -126,14 +126,34 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
+    notification.class.NotificationGroup,
+    core.space.Model,
+    {
+      label: calendar.string.Calendar,
+      icon: calendar.icon.Calendar
+    },
+    calendar.ids.CalendarNotificationGroup
+  )
+
+  builder.createDoc(
     notification.class.NotificationType,
     core.space.Model,
     {
       hidden: false,
+      generated: false,
       label: calendar.string.Reminder,
-      textTemplate: 'Reminder: {doc}',
-      htmlTemplate: 'Reminder: {doc}',
-      subjectTemplate: 'Reminder: {doc}'
+      group: calendar.ids.CalendarNotificationGroup,
+      txClasses: [],
+      objectClass: calendar.mixin.Reminder,
+      templates: {
+        textTemplate: 'Reminder: {doc}',
+        htmlTemplate: 'Reminder: {doc}',
+        subjectTemplate: 'Reminder: {doc}'
+      },
+      providers: {
+        [notification.providers.PlatformNotification]: true,
+        [notification.providers.EmailNotification]: false
+      }
     },
     calendar.ids.ReminderNotification
   )

@@ -14,13 +14,13 @@
 -->
 <script lang="ts">
   import contact, { EmployeeAccount } from '@hcengineering/contact'
-  import { Doc, getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import { Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import {
-    Notification as PlatformNotification,
     NotificationProvider,
     NotificationSetting,
     NotificationStatus,
-    NotificationType
+    NotificationType,
+    Notification as PlatformNotification
   } from '@hcengineering/notification'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { getCurrentLocation, showPanel } from '@hcengineering/ui'
@@ -31,8 +31,6 @@
   const query = createQuery()
   const settingQuery = createQuery()
   const providersQuery = createQuery()
-  const accountId = getCurrentAccount()._id
-  const space = accountId as string as Ref<Space>
   const notificationClient = NotificationClientImpl.getClient()
   const lastViews = notificationClient.getLastViews()
   const lastViewId: Ref<Doc> = ((getCurrentAccount() as EmployeeAccount).employee + 'notification') as Ref<Doc>
@@ -46,27 +44,21 @@
   $: enabled &&
     providersQuery.query(
       notification.class.NotificationProvider,
-      { _id: notification.ids.BrowserNotification },
+      { _id: notification.providers.BrowserNotification },
       (res) => {
         provider = res[0]
       }
     )
 
   $: enabled &&
-    settingQuery.query(
-      notification.class.NotificationSetting,
-      {
-        space
-      },
-      (res) => {
-        settings = new Map(
-          res.map((setting) => {
-            return [setting.type, setting]
-          })
-        )
-        settingsReceived = true
-      }
-    )
+    settingQuery.query(notification.class.NotificationSetting, {}, (res) => {
+      settings = new Map(
+        res.map((setting) => {
+          return [setting.type, setting]
+        })
+      )
+      settingsReceived = true
+    })
 
   const alreadyShown = new Set<Ref<PlatformNotification>>()
 
@@ -99,7 +91,7 @@
     const text = notification.text.replace(/<[^>]*>/g, '').trim()
     if (text === '') return
     const setting = settings.get(notification.type)
-    const enabled = setting?.enabled ?? provider?.default
+    const enabled = setting?.enabled
     if (!enabled) return
     if ((setting?.modifiedOn ?? notification.modifiedOn) < 0) return
 

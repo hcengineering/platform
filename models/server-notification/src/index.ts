@@ -16,11 +16,18 @@
 
 import { Builder, Mixin } from '@hcengineering/model'
 
-import core from '@hcengineering/core'
+import core, { Account, Doc, Ref, Tx } from '@hcengineering/core'
 import { TClass } from '@hcengineering/model-core'
+import { TNotificationType } from '@hcengineering/model-notification'
+import notification, { NotificationType } from '@hcengineering/notification'
 import { Resource } from '@hcengineering/platform'
-import serverCore from '@hcengineering/server-core'
-import serverNotification, { HTMLPresenter, Presenter, TextPresenter } from '@hcengineering/server-notification'
+import serverCore, { TriggerControl } from '@hcengineering/server-core'
+import serverNotification, {
+  HTMLPresenter,
+  Presenter,
+  TextPresenter,
+  TypeMatch
+} from '@hcengineering/server-notification'
 
 export { serverNotificationId } from '@hcengineering/server-notification'
 
@@ -34,8 +41,15 @@ export class TTextPresenter extends TClass implements TextPresenter {
   presenter!: Resource<Presenter>
 }
 
+@Mixin(serverNotification.mixin.TypeMatch, notification.class.NotificationType)
+export class TTypeMatch extends TNotificationType implements TypeMatch {
+  func!: Resource<
+  (tx: Tx, doc: Doc, user: Ref<Account>, type: NotificationType, control: TriggerControl) => Promise<boolean>
+  >
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(THTMLPresenter, TTextPresenter)
+  builder.createModel(THTMLPresenter, TTextPresenter, TTypeMatch)
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverNotification.trigger.OnBacklinkCreate
@@ -55,5 +69,13 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverNotification.trigger.OnAddCollborator
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverNotification.trigger.OnAttributeCreate
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverNotification.trigger.OnAttributeUpdate
   })
 }

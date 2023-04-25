@@ -51,6 +51,9 @@
     "Export": "Экспортировать",
     "Separator": "Разделитель",
     "ChooseSeparator": "Выберите разделитель",
+    "RequestCreated": "Запрос создан",
+    "RequestUpdated": "Запрос изменен",
+    "RequestRemoved": "Запрос удален",
     "ConfigLabel": "Производственный календарь",
     "ConfigDescription": "Расширение реализующее производственный календарь"
   }

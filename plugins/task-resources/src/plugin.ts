@@ -68,7 +68,6 @@ export default mergeIds(taskId, task, {
     RelatedIssues: '' as IntlString,
 
     Tasks: '' as IntlString,
-    Assigned: '' as IntlString,
     Task: '' as IntlString,
     AllTime: '' as IntlString
   },

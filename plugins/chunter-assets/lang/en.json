@@ -25,6 +25,7 @@
     "Reference": "Reference",
     "Chat": "Chat",
     "In": "In",
+    "MentionNotification": "Mentioned",
     "Replies": "Replies",
     "LastReply": "Last reply",
     "RepliesCount": "{replies, plural, =1 {# reply} other {# replies}}",
@@ -66,6 +67,8 @@
     "CopyLink": "Copy link",
     "FilterComments": "Comments",
     "FilterBacklinks": "Backlinks",
+    "DM": "Direct message",
+    "DMNotification": "Sent you a message",
     "ConfigLabel": "Chat",
     "ConfigDescription": "Extension to perform text communications"
   }

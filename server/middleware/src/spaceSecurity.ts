@@ -285,7 +285,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     }
     if (typeof query === 'string') {
       if (!spaces.includes(query)) {
-        throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+        return { $in: [] }
       }
     } else if (query.$in != null) {
       query.$in = query.$in.filter((p) => spaces.includes(p))

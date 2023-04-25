@@ -16,6 +16,7 @@
 import { Ref } from '@hcengineering/core'
 import { hrId } from '@hcengineering/hr'
 import hr from '@hcengineering/hr-resources/src/plugin'
+import { NotificationGroup } from '@hcengineering/notification'
 import { IntlString, mergeIds } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 import { Action, ActionCategory, ViewAction } from '@hcengineering/view'
@@ -34,6 +35,9 @@ export default mergeIds(hrId, hr, {
     Overtime2: '' as IntlString,
     Subscribers: '' as IntlString,
     PublicHoliday: '' as IntlString,
+    RequestCreated: '' as IntlString,
+    RequestUpdated: '' as IntlString,
+    RequestRemoved: '' as IntlString,
     ConfigLabel: '' as IntlString,
     ConfigDescription: '' as IntlString
   },
@@ -60,5 +64,8 @@ export default mergeIds(hrId, hr, {
   },
   actionImpl: {
     EditRequestType: '' as ViewAction
+  },
+  ids: {
+    HRNotificationGroup: '' as Ref<NotificationGroup>
   }
 })

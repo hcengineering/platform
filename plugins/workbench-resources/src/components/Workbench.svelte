@@ -150,7 +150,8 @@
   notificationQuery.query(
     notification.class.DocUpdates,
     {
-      user: account._id
+      user: account._id,
+      hidden: false
     },
     (res) => {
       hasNotification = res.some((p) => p.txes.length > 0)

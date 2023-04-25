@@ -15,11 +15,9 @@
 
 import contact from '@hcengineering/contact'
 import core, {
-  AttachedDoc,
   concatLink,
   Doc,
   Tx,
-  TxCollectionCUD,
   TxCreateDoc,
   TxCUD,
   TxProcessor,
@@ -29,7 +27,6 @@ import core, {
 import { getMetadata } from '@hcengineering/platform'
 import recruit, { Applicant, recruitId, Vacancy } from '@hcengineering/recruit'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
-import { addAssigneeNotification } from '@hcengineering/server-task-resources'
 import { workbenchId } from '@hcengineering/workbench'
 
 function getSequenceId (doc: Vacancy | Applicant, control: TriggerControl): string {
@@ -96,12 +93,10 @@ export async function OnRecruitUpdate (tx: Tx, control: TriggerControl): Promise
 
   if (actualTx._class === core.class.TxCreateDoc) {
     handleVacancyCreate(control, cud, actualTx, res)
-    await handleApplicantCreate(control, cud, res, tx)
   }
 
   if (actualTx._class === core.class.TxUpdateDoc) {
     await handleVacancyUpdate(control, cud, res)
-    await handleApplicantUpdate(control, cud, res, tx)
   }
   if (actualTx._class === core.class.TxRemoveDoc) {
     await handleVacancyRemove(control, cud, actualTx)
@@ -184,43 +179,6 @@ async function handleVacancyRemove (control: TriggerControl, cud: TxCUD<Doc>, ac
             $inc: { vacancies: -1 }
           }
         )
-      )
-    }
-  }
-}
-
-async function handleApplicantUpdate (control: TriggerControl, cud: TxCUD<Doc>, res: Tx[], tx: Tx): Promise<void> {
-  if (control.hierarchy.isDerived(cud.objectClass, recruit.class.Applicant)) {
-    const updateTx = cud as TxUpdateDoc<Applicant>
-    if (updateTx.operations.assignee != null) {
-      const applicant = (
-        await control.findAll(recruit.class.Applicant, { _id: updateTx.objectId }, { limit: 1 })
-      ).shift()
-
-      if (applicant?.assignee != null) {
-        await addAssigneeNotification(
-          control,
-          res,
-          applicant,
-          applicant.assignee,
-          tx as TxCollectionCUD<Applicant, AttachedDoc>
-        )
-      }
-    }
-  }
-}
-
-async function handleApplicantCreate (control: TriggerControl, cud: TxCUD<Doc>, res: Tx[], tx: Tx): Promise<void> {
-  if (control.hierarchy.isDerived(cud.objectClass, recruit.class.Applicant)) {
-    const createTx = cud as TxCreateDoc<Applicant>
-    const applicant = TxProcessor.createDoc2Doc(createTx)
-    if (applicant.assignee != null) {
-      await addAssigneeNotification(
-        control,
-        res,
-        applicant,
-        applicant.assignee,
-        tx as TxCollectionCUD<Applicant, AttachedDoc>
       )
     }
   }

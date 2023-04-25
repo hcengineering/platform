@@ -59,6 +59,7 @@ import { KeyBinding, ViewOptionsModel } from '@hcengineering/view'
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
 import { TOpinion, TReview } from './review-model'
+import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 
 export { recruitId } from '@hcengineering/recruit'
 export { recruitOperation } from './migration'
@@ -87,8 +88,7 @@ export class TVacancy extends TSpaceWithStates implements Vacancy {
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
     comments?: number
 
-  @Prop(Collection(chunter.class.Backlink), chunter.string.Comments)
-    relations!: number
+  relations!: number
 
   @Prop(TypeString(), recruit.string.Vacancy)
   @Index(IndexKind.FullText)
@@ -151,6 +151,7 @@ export class TApplicant extends TTask implements Applicant {
   // We need to declare, to provide property with label
   @Prop(TypeRef(recruit.mixin.Candidate), recruit.string.Talent)
   @Index(IndexKind.Indexed)
+  @ReadOnly()
   declare attachedTo: Ref<Candidate>
 
   // We need to declare, to provide property with label
@@ -329,7 +330,7 @@ export function createModel (builder: Builder): void {
           },
           {
             id: assignedId,
-            label: task.string.Assigned,
+            label: task.string.AssignedToMe,
             icon: recruit.icon.AssignedToMe,
             component: task.component.AssignedTasks,
             position: 'event',
@@ -1085,6 +1086,81 @@ export function createModel (builder: Builder): void {
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.AttributeFilter, {
     component: recruit.component.ApplicantFilter
   })
+
+  builder.createDoc(
+    notification.class.NotificationGroup,
+    core.space.Model,
+    {
+      label: recruit.string.Application,
+      icon: recruit.icon.Application,
+      objectClass: recruit.class.Applicant
+    },
+    recruit.ids.ApplicationNotificationGroup
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: false,
+      generated: false,
+      label: task.string.AssignedToMe,
+      group: recruit.ids.ApplicationNotificationGroup,
+      field: 'assignee',
+      txClasses: [core.class.TxCreateDoc, core.class.TxUpdateDoc],
+      objectClass: recruit.class.Applicant,
+      templates: {
+        textTemplate: '{doc} was assigned to you by {sender}',
+        htmlTemplate: '<p>{doc} was assigned to you by {sender}</p>',
+        subjectTemplate: '{doc} was assigned to you'
+      },
+      providers: {
+        [notification.providers.PlatformNotification]: true,
+        [notification.providers.EmailNotification]: true
+      }
+    },
+    recruit.ids.AssigneeNotification
+  )
+
+  generateClassNotificationTypes(
+    builder,
+    recruit.class.Applicant,
+    recruit.ids.ApplicationNotificationGroup,
+    [],
+    ['comments', 'state', 'doneState']
+  )
+
+  builder.createDoc(
+    notification.class.NotificationGroup,
+    core.space.Model,
+    {
+      label: recruit.string.Vacancy,
+      icon: recruit.icon.Vacancy,
+      objectClass: recruit.class.Vacancy
+    },
+    recruit.ids.VacancyNotificationGroup
+  )
+
+  generateClassNotificationTypes(builder, recruit.class.Vacancy, recruit.ids.VacancyNotificationGroup, [], ['comments'])
+
+  builder.createDoc(
+    notification.class.NotificationGroup,
+    core.space.Model,
+    {
+      label: recruit.string.Talent,
+      icon: recruit.icon.CreateCandidate,
+      objectClass: recruit.mixin.Candidate
+    },
+    recruit.ids.CandidateNotificationGroup
+  )
+
+  generateClassNotificationTypes(
+    builder,
+    recruit.mixin.Candidate,
+    recruit.ids.CandidateNotificationGroup,
+    ['vacancyMatch'],
+    ['comments']
+  )
 
   builder.createDoc(
     view.class.FilterMode,

@@ -37,6 +37,7 @@
     "@hcengineering/model-contact": "^0.6.1",
     "@hcengineering/model-attachment": "^0.6.0",
     "@hcengineering/notification": "^0.6.10",
+    "@hcengineering/model-notification": "^0.6.0",
     "@hcengineering/tracker": "^0.6.6",
     "@hcengineering/tracker-resources": "^0.6.0",
     "@hcengineering/model-chunter": "^0.6.0",

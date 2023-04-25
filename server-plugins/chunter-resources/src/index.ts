@@ -13,16 +13,10 @@
 // limitations under the License.
 //
 
-import chunter, {
-  chunterId,
-  ChunterMessage,
-  ChunterSpace,
-  Comment,
-  Message,
-  ThreadMessage
-} from '@hcengineering/chunter'
+import chunter, { chunterId, ChunterSpace, Comment, Message, ThreadMessage } from '@hcengineering/chunter'
 import { EmployeeAccount } from '@hcengineering/contact'
 import core, {
+  Account,
   Class,
   concatLink,
   Doc,
@@ -39,11 +33,10 @@ import core, {
   TxRemoveDoc,
   TxUpdateDoc
 } from '@hcengineering/core'
-import notification, { Collaborators } from '@hcengineering/notification'
+import notification, { Collaborators, NotificationType } from '@hcengineering/notification'
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
-import { getEmployeeAccountById } from '@hcengineering/server-notification'
-import { createNotificationTxes, getDocCollaborators, getMixinTx } from '@hcengineering/server-notification-resources'
+import { getDocCollaborators, getMixinTx } from '@hcengineering/server-notification-resources'
 import { workbenchId } from '@hcengineering/workbench'
 
 /**
@@ -288,52 +281,41 @@ export async function ChunterTrigger (tx: Tx, control: TriggerControl): Promise<
 /**
  * @public
  */
-export async function DMTrigger (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  if (tx._class !== core.class.TxCollectionCUD) return []
-  const hierarchy = control.hierarchy
-  const ctx = tx as TxCollectionCUD<ChunterSpace, Message>
-  if (!hierarchy.isDerived(ctx.tx.objectClass, chunter.class.Message)) {
-    return []
-  }
-  const actualTx = TxProcessor.extractTx(tx)
-  if (actualTx._class !== core.class.TxCreateDoc) {
-    return []
-  }
-  const doc = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<ChunterMessage>)
-  const dms = await control.findAll(chunter.class.DirectMessage, { _id: doc.space })
-  if (dms.length === 0) {
-    return []
-  }
-  const sender = await getEmployeeAccountById(ctx.tx.modifiedBy, control)
-  if (sender === undefined) return []
-  const res: Tx[] = []
-  for (const member of dms[0].members) {
-    const receiver = await getEmployeeAccountById(member, control)
-    if (receiver === undefined) continue
-    if (receiver._id === sender._id) continue
-    const createNotificationTx = await createNotificationTxes(
-      control,
-      ctx,
-      notification.ids.DMNotification,
-      doc,
-      sender,
-      receiver,
-      doc.content
-    )
-    res.push(...createNotificationTx)
-  }
-  return res
+export async function IsDirectMessagee (
+  tx: Tx,
+  doc: Doc,
+  user: Ref<Account>,
+  type: NotificationType,
+  control: TriggerControl
+): Promise<boolean> {
+  const space = (await control.findAll(chunter.class.DirectMessage, { _id: doc.space }))[0]
+  return space !== undefined
+}
+
+/**
+ * @public
+ */
+export async function IsChannelMessagee (
+  tx: Tx,
+  doc: Doc,
+  user: Ref<Account>,
+  type: NotificationType,
+  control: TriggerControl
+): Promise<boolean> {
+  const space = (await control.findAll(chunter.class.Channel, { _id: doc.space }))[0]
+  return space !== undefined
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    ChunterTrigger,
-    DMTrigger
+    ChunterTrigger
   },
   function: {
     CommentRemove,
     ChannelHTMLPresenter: channelHTMLPresenter,
-    ChannelTextPresenter: channelTextPresenter
+    ChannelTextPresenter: channelTextPresenter,
+    IsDirectMessagee,
+    IsChannelMessagee
   }
 })

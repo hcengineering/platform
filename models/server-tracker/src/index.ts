@@ -15,10 +15,11 @@
 
 import core from '@hcengineering/core'
 import { Builder } from '@hcengineering/model'
+import tracker from '@hcengineering/model-tracker'
+import notification from '@hcengineering/notification'
 import serverCore from '@hcengineering/server-core'
 import serverNotification from '@hcengineering/server-notification'
 import serverTracker from '@hcengineering/server-tracker'
-import tracker from '@hcengineering/tracker'
 
 export { serverTrackerId } from '@hcengineering/server-tracker'
 
@@ -38,4 +39,13 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTracker.trigger.OnComponentRemove
   })
+
+  builder.mixin(
+    tracker.ids.AssigneeNotification,
+    notification.class.NotificationType,
+    serverNotification.mixin.TypeMatch,
+    {
+      func: serverNotification.function.IsUserInFieldValue
+    }
+  )
 }

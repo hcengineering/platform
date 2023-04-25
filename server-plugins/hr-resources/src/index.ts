@@ -39,7 +39,7 @@ import notification, { NotificationType } from '@hcengineering/notification'
 import { translate } from '@hcengineering/platform'
 import { TriggerControl } from '@hcengineering/server-core'
 import { getEmployee, getEmployeeAccountById } from '@hcengineering/server-notification'
-import { getContent } from '@hcengineering/server-notification-resources'
+import { getContent, isAllowed } from '@hcengineering/server-notification-resources'
 
 async function getOldDepartment (
   currentTx: TxMixin<Employee, Staff> | TxUpdateDoc<Employee>,
@@ -206,6 +206,17 @@ async function getEmailNotification (
     if (department.subscribers === undefined) continue
     for (const subscriber of department.subscribers) {
       contacts.add(subscriber)
+    }
+  }
+
+  // should respect employee settings
+  const accounts = await control.modelDb.findAll(contact.class.EmployeeAccount, {
+    employee: { $in: Array.from(contacts.values()) as Ref<Employee>[] }
+  })
+  for (const account of accounts) {
+    const allowed = await isAllowed(control, account._id, type, notification.providers.EmailNotification)
+    if (!allowed) {
+      contacts.delete(account.employee)
     }
   }
 

@@ -17,7 +17,7 @@ import { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref } fr
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { TriggerFunc } from '@hcengineering/server-core'
-import { Presenter } from '@hcengineering/server-notification'
+import { Presenter, TypeMatchFunc } from '@hcengineering/server-notification'
 
 /**
  * @public
@@ -29,8 +29,7 @@ export const serverChunterId = 'server-chunter' as Plugin
  */
 export default plugin(serverChunterId, {
   trigger: {
-    ChunterTrigger: '' as Resource<TriggerFunc>,
-    DMTrigger: '' as Resource<TriggerFunc>
+    ChunterTrigger: '' as Resource<TriggerFunc>
   },
   function: {
     CommentRemove: '' as Resource<
@@ -45,6 +44,8 @@ export default plugin(serverChunterId, {
     ) => Promise<Doc[]>
     >,
     ChannelHTMLPresenter: '' as Resource<Presenter>,
-    ChannelTextPresenter: '' as Resource<Presenter>
+    ChannelTextPresenter: '' as Resource<Presenter>,
+    IsDirectMessagee: '' as TypeMatchFunc,
+    IsChannelMessagee: '' as TypeMatchFunc
   }
 })

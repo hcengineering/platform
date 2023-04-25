@@ -24,6 +24,7 @@ import {
   Mixin,
   Model,
   Prop,
+  ReadOnly,
   TypeMarkup,
   TypeRef,
   TypeString,
@@ -38,6 +39,8 @@ import view, { createAction, actionTemplates as viewTemplates } from '@hcenginee
 import workbench from '@hcengineering/model-workbench'
 import setting from '@hcengineering/setting'
 import { ViewOptionsModel } from '@hcengineering/view'
+import { generateClassNotificationTypes } from '@hcengineering/model-notification'
+import notification from '@hcengineering/notification'
 import lead from './plugin'
 
 export { leadId } from '@hcengineering/lead'
@@ -62,6 +65,7 @@ export class TFunnel extends TSpaceWithStates implements Funnel {
 @UX(lead.string.Lead, lead.icon.Lead, undefined, 'title')
 export class TLead extends TTask implements Lead {
   @Prop(TypeRef(contact.class.Contact), lead.string.Customer)
+  @ReadOnly()
   declare attachedTo: Ref<Customer>
 
   @Prop(TypeString(), lead.string.Title)
@@ -286,6 +290,49 @@ export function createModel (builder: Builder): void {
       attachedTo: lead.mixin.Customer
     }
   }
+
+  builder.createDoc(
+    notification.class.NotificationGroup,
+    core.space.Model,
+    {
+      label: lead.string.Lead,
+      icon: lead.icon.Lead,
+      objectClass: lead.class.Lead
+    },
+    lead.ids.LeadNotificationGroup
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: false,
+      generated: false,
+      label: task.string.AssignedToMe,
+      group: lead.ids.LeadNotificationGroup,
+      field: 'assignee',
+      txClasses: [core.class.TxCreateDoc, core.class.TxUpdateDoc],
+      objectClass: lead.class.Lead,
+      templates: {
+        textTemplate: '{doc} was assigned to you by {sender}',
+        htmlTemplate: '<p>{doc} was assigned to you by {sender}</p>',
+        subjectTemplate: '{doc} was assigned to you'
+      },
+      providers: {
+        [notification.providers.PlatformNotification]: true,
+        [notification.providers.EmailNotification]: true
+      }
+    },
+    lead.ids.AssigneeNotification
+  )
+
+  generateClassNotificationTypes(
+    builder,
+    lead.class.Lead,
+    lead.ids.LeadNotificationGroup,
+    [],
+    ['comments', 'state', 'doneState']
+  )
 
   builder.createDoc(
     view.class.Viewlet,

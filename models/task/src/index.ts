@@ -322,9 +322,6 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(task.class.Task, core.class.Class, notification.mixin.TrackedDoc, {})
-  builder.mixin(task.class.Task, core.class.Class, notification.mixin.AnotherUserNotifications, {
-    fields: ['assignee']
-  })
 
   builder.createDoc(
     view.class.ActionCategory,
@@ -487,16 +484,16 @@ export function createModel (builder: Builder): void {
     task.action.ArchiveState
   )
 
-  builder.createDoc(
-    notification.class.NotificationType,
-    core.space.Model,
-    {
-      label: task.string.Assigned,
-      hidden: false,
-      textTemplate: '{doc} was assigned to you by {sender}',
-      htmlTemplate: '<p>{doc} was assigned to you by {sender}</p>',
-      subjectTemplate: '{doc} was assigned to you'
-    },
-    task.ids.AssigneedNotification
-  )
+  // builder.createDoc(
+  //   notification.class.NotificationType,
+  //   core.space.Model,
+  //   {
+  //     label: task.string.Assigned,
+  //     hidden: false,
+  //     textTemplate: '{doc} was assigned to you by {sender}',
+  //     htmlTemplate: '<p>{doc} was assigned to you by {sender}</p>',
+  //     subjectTemplate: '{doc} was assigned to you'
+  //   },
+  //   task.ids.AssigneedNotification
+  // )
 }

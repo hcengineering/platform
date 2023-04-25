@@ -4,10 +4,7 @@
     "Notification": "Notification",
     "Notifications": "Notifications",
     "NoNotifications": "No notifications",
-    "MentionNotification": "Mentioned",
-    "DM": "Direct message",
-    "DMNotification": "Sent you a message",
-    "EmailNotification": "by email",
+    "EmailNotification": "Email",
     "PlatformNotification": "in platform",
     "Track": "Track",
     "DontTrack": "Don't track",
@@ -19,6 +16,8 @@
     "MarkAsUnread": "Mark as unread",
     "Archive": "Archive",
     "Inbox": "Inbox",
-    "Collaborators": "Collaborators"
+    "Collaborators": "Collaborators",
+    "Change": "Change",
+    "AddedRemoved": "Added/removed"
   }
 }

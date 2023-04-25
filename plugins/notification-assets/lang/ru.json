@@ -4,10 +4,7 @@
     "Notification": "Увдомление",
     "Notifications": "Уведомления",
     "NoNotifications": "Нет уведомлений",
-    "MentionNotification": "Упомянул",
-    "DM": "Личное сообщение",
-    "DMNotification": "Отправил сообщение",
-    "EmailNotification": "по email",
+    "EmailNotification": "Email",
     "PlatformNotification": "в системе",
     "Track": "Отслеживать",
     "DontTrack": "Не отслеживать",
@@ -19,6 +16,8 @@
     "MarkAsUnread": "Отметить непрочитанным",
     "Archive": "Архивировать",
     "Inbox": "Входящие",
-    "Collaborators": "Участники"
+    "Collaborators": "Участники",
+    "Change": "Изменено",
+    "AddedRemoved": "Добавлено/удалено"
   }
 }
