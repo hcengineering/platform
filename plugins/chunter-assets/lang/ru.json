@@ -22,6 +22,7 @@
     "Content": "Содержимое",
     "Comment": "Комментарий",
     "Message": "Сообщение",
+    "MentionNotification": "Упомянул",
     "Reference": "Ссылка",
     "Chat": "Чат",
     "In": "в",
@@ -65,6 +66,8 @@
     "NoResults": "Нет результатов",
     "CopyLink": "Копировать ссылку",
     "FilterComments": "Коментарии",
-    "FilterBacklinks": "Упоминания"
+    "FilterBacklinks": "Упоминания",
+    "DM": "Личное сообщение",
+    "DMNotification": "Отправил сообщение"
   }
 }

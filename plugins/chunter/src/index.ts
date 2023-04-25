@@ -13,8 +13,9 @@
 // limitations under the License.
 //
 
-import type { Account, AttachedDoc, Class, Doc, Ref, RelatedDocument, Space, Timestamp } from '@hcengineering/core'
 import type { Employee } from '@hcengineering/contact'
+import type { Account, AttachedDoc, Class, Doc, Ref, RelatedDocument, Space, Timestamp } from '@hcengineering/core'
+import { NotificationType } from '@hcengineering/notification'
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
@@ -159,6 +160,12 @@ export default plugin(chunterId, {
   },
   resolver: {
     Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
+  },
+  ids: {
+    DMNotification: '' as Ref<NotificationType>,
+    MentionNotification: '' as Ref<NotificationType>,
+    ThreadNotification: '' as Ref<NotificationType>,
+    ChannelNotification: '' as Ref<NotificationType>
   },
   app: {
     Chunter: '' as Ref<Doc>

@@ -287,7 +287,8 @@
     "HourLabel": "h",
     "Saved": "Saved...",
     "CreatedIssue": "Created issue",
-    "CreatedSubIssue": "Created sub-issue"
+    "CreatedSubIssue": "Created sub-issue",
+    "ChangeStatus": "Change status"
   },
   "status": {}
 }

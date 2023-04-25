@@ -50,6 +50,9 @@
     "Managers": "Менеджера",
     "Export": "Экспортировать",
     "Separator": "Разделитель",
-    "ChooseSeparator": "Выберите разделитель"
+    "ChooseSeparator": "Выберите разделитель",
+    "RequestCreated": "Запрос создан",
+    "RequestUpdated": "Запрос изменен",
+    "RequestRemoved": "Запрос удален"
   }
 }

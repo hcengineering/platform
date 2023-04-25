@@ -17,6 +17,7 @@ import { TxViewlet } from '@hcengineering/activity'
 import { calendarId } from '@hcengineering/calendar'
 import calendar from '@hcengineering/calendar-resources/src/plugin'
 import { Ref } from '@hcengineering/core'
+import { NotificationGroup } from '@hcengineering/notification'
 import type { IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
@@ -52,6 +53,7 @@ export default mergeIds(calendarId, calendar, {
     CalendarEvent: '' as Ref<Viewlet>
   },
   ids: {
-    ReminderViewlet: '' as Ref<TxViewlet>
+    ReminderViewlet: '' as Ref<TxViewlet>,
+    CalendarNotificationGroup: '' as Ref<NotificationGroup>
   }
 })

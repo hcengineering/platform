@@ -16,6 +16,7 @@
 
 import type { Ref, Space } from '@hcengineering/core'
 import { leadId } from '@hcengineering/lead'
+import { NotificationGroup, NotificationType } from '@hcengineering/notification'
 import lead from '@hcengineering/lead-resources/src/plugin'
 import type { IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
@@ -61,5 +62,9 @@ export default mergeIds(leadId, lead, {
   },
   action: {
     CreateGlobalLead: '' as Ref<Action>
+  },
+  ids: {
+    LeadNotificationGroup: '' as Ref<NotificationGroup>,
+    AssigneeNotification: '' as Ref<NotificationType>
   }
 })

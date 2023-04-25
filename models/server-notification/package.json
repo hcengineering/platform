@@ -29,6 +29,8 @@
     "@hcengineering/model": "^0.6.2",
     "@hcengineering/model-core": "^0.6.0",
     "@hcengineering/platform": "^0.6.8",
+    "@hcengineering/notification": "^0.6.10",
+    "@hcengineering/model-notification": "^0.6.0",
     "@hcengineering/server-notification": "^0.6.0",
     "@hcengineering/server-core": "^0.6.1"
   }

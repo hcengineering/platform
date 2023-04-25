@@ -229,6 +229,7 @@ const task = plugin(taskId, {
     Projects: '' as IntlString,
     ManageProjectStatues: '' as IntlString,
     TodoItems: '' as IntlString,
+    AssignedToMe: '' as IntlString,
     Dashboard: '' as IntlString
   },
   class: {

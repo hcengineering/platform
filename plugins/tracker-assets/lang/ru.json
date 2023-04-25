@@ -287,7 +287,8 @@
     "HourLabel": "ч",
     "Saved": "Сохранено...",
     "CreatedIssue": "Создал(а) задачу",
-    "CreatedSubIssue": "Создал(а) подзадачу"
+    "CreatedSubIssue": "Создал(а) подзадачу",
+    "ChangeStatus": "Изменение статуса"
   },
   "status": {}
 }

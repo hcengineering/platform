@@ -16,7 +16,8 @@
 import type { DisplayTx, TxViewlet } from '@hcengineering/activity'
 import { Channel, chunterId } from '@hcengineering/chunter'
 import chunter from '@hcengineering/chunter-resources/src/plugin'
-import type { Ref, Space, Doc } from '@hcengineering/core'
+import type { Doc, Ref, Space } from '@hcengineering/core'
+import { NotificationGroup } from '@hcengineering/notification'
 import type { IntlString, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import type { AnyComponent, Location } from '@hcengineering/ui'
@@ -68,13 +69,16 @@ export default mergeIds(chunterId, chunter, {
     Edit: '' as IntlString,
     MarkUnread: '' as IntlString,
     LastMessage: '' as IntlString,
+    MentionNotification: '' as IntlString,
     PinnedMessages: '' as IntlString,
     SavedMessages: '' as IntlString,
     ThreadMessage: '' as IntlString,
     Reactions: '' as IntlString,
     Emoji: '' as IntlString,
     FilterComments: '' as IntlString,
-    FilterBacklinks: '' as IntlString
+    FilterBacklinks: '' as IntlString,
+    DM: '' as IntlString,
+    DMNotification: '' as IntlString
   },
   viewlet: {
     Chat: '' as Ref<ViewletDescriptor>
@@ -84,7 +88,8 @@ export default mergeIds(chunterId, chunter, {
     TxBacklinkCreate: '' as Ref<TxViewlet>,
     TxCommentRemove: '' as Ref<TxViewlet>,
     TxBacklinkRemove: '' as Ref<TxViewlet>,
-    TxMessageCreate: '' as Ref<TxViewlet>
+    TxMessageCreate: '' as Ref<TxViewlet>,
+    ChunterNotificationGroup: '' as Ref<NotificationGroup>
   },
   activity: {
     TxCommentCreate: '' as AnyComponent,

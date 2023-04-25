@@ -17,17 +17,18 @@ import core, {
   Account,
   AttachedDoc,
   Class,
+  Collection,
+  Data,
   Doc,
   DOMAIN_TX,
   generateId,
   Ref,
   TxCollectionCUD,
-  TxCreateDoc,
   TxOperations,
   TxRemoveDoc
 } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
-import notification, { LastView, Notification, NotificationType } from '@hcengineering/notification'
+import notification, { LastView, NotificationType } from '@hcengineering/notification'
 import { DOMAIN_NOTIFICATION } from '.'
 
 async function fillNotificationText (client: MigrationClient): Promise<void> {
@@ -51,23 +52,11 @@ async function fillNotificationText (client: MigrationClient): Promise<void> {
   )
 }
 
-async function fillNotificationType (client: MigrationUpgradeClient): Promise<void> {
-  const notifications = await client.findAll(notification.class.Notification, { type: { $exists: false } })
-  const txOp = new TxOperations(client, core.account.System)
-  const promises = notifications.map(async (doc) => {
-    const tx = await client.findOne(core.class.TxCUD, { _id: doc.tx })
-    if (tx === undefined) return
-    const type =
-      tx._class === core.class.TxMixin
-        ? ('calendar:ids:ReminderNotification' as Ref<NotificationType>)
-        : notification.ids.MentionNotification
-    const objectTx = txOp.update(doc, { type })
-    const ctx = await client.findOne<TxCreateDoc<Notification>>(core.class.TxCreateDoc, { objectId: doc._id })
-    if (ctx === undefined) return await objectTx
-    const updateTx = txOp.update(ctx, { 'attributes.type': type } as any)
-    return await Promise.all([objectTx, updateTx])
-  })
-  await Promise.all(promises)
+async function removeSettings (client: MigrationClient): Promise<void> {
+  const outdatedSettings = await client.find(DOMAIN_NOTIFICATION, { _class: notification.class.NotificationSetting })
+  for (const setting of outdatedSettings) {
+    await client.delete(DOMAIN_NOTIFICATION, setting._id)
+  }
 }
 
 async function createSpace (client: MigrationUpgradeClient): Promise<void> {
@@ -197,15 +186,66 @@ async function fillDocUpdatesHidder (client: MigrationClient): Promise<void> {
   )
 }
 
+async function createCustomFieldTypes (client: MigrationUpgradeClient): Promise<void> {
+  const txop = new TxOperations(client, core.account.System)
+  const attributes = await client.findAll(core.class.Attribute, { isCustom: true })
+  const groups = new Map(
+    (await client.findAll(notification.class.NotificationGroup, {}))
+      .filter((p) => p.objectClass !== undefined)
+      .map((p) => [p.objectClass, p])
+  )
+  const types = new Set((await client.findAll(notification.class.NotificationType, {})).map((p) => p.attribute))
+  for (const attribute of attributes) {
+    if (attribute.hidden === true || attribute.readonly === true) continue
+    if (types.has(attribute._id)) continue
+    const group = groups.get(attribute.attributeOf)
+    if (group === undefined) continue
+    const isCollection: boolean = core.class.Collection === attribute.type._class
+    const _class = attribute.attributeOf
+    const objectClass = !isCollection ? _class : (attribute.type as Collection<AttachedDoc>).of
+    const txClasses = !isCollection
+      ? [client.getHierarchy().isMixin(_class) ? core.class.TxMixin : core.class.TxUpdateDoc]
+      : [core.class.TxCreateDoc, core.class.TxRemoveDoc]
+    const data: Data<NotificationType> = {
+      attribute: attribute._id,
+      group: group._id,
+      generated: true,
+      objectClass,
+      txClasses,
+      hidden: false,
+      providers: {
+        [notification.providers.PlatformNotification]: false
+      },
+      label: attribute.label
+    }
+    if (isCollection) {
+      data.attachedToClass = _class
+    }
+    const id = `${notification.class.NotificationType}_${_class}_${attribute.name}` as Ref<NotificationType>
+    await txop.createDoc(notification.class.NotificationType, core.space.Model, data, id)
+  }
+}
+
+async function cleanOutdatedSettings (client: MigrationClient): Promise<void> {
+  const res = await client.find(DOMAIN_NOTIFICATION, {
+    _class: notification.class.NotificationSetting
+  })
+  for (const value of res) {
+    await client.delete(DOMAIN_NOTIFICATION, value._id)
+  }
+}
+
 export const notificationOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
+    await removeSettings(client)
     await fillNotificationText(client)
     await migrateLastView(client)
     await fillCollaborators(client)
     await fillDocUpdatesHidder(client)
+    await cleanOutdatedSettings(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await createSpace(client)
-    await fillNotificationType(client)
+    await createCustomFieldTypes(client)
   }
 }

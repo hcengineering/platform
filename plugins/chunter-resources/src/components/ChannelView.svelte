@@ -40,7 +40,7 @@
       _class,
       space,
       space,
-      chunter.class.ChunterSpace,
+      chunterSpace?._class ?? chunter.class.ChunterSpace,
       'messages',
       {
         content: message,

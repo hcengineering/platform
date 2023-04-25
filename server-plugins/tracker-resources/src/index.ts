@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-import { Employee } from '@hcengineering/contact'
 import core, {
   AttachedDoc,
   concatLink,
@@ -32,7 +31,6 @@ import core, {
 } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
-import { addAssigneeNotification } from '@hcengineering/server-task-resources'
 import tracker, { Component, Issue, IssueParentInfo, TimeSpendReport, trackerId } from '@hcengineering/tracker'
 import { workbenchId } from '@hcengineering/workbench'
 
@@ -69,19 +67,6 @@ export async function issueTextPresenter (doc: Doc, control: TriggerControl): Pr
   const issueName = `${project?.identifier ?? '?'}-${issue.number}`
 
   return issueName
-}
-
-/**
- * @public
- */
-export async function addTrackerAssigneeNotification (
-  control: TriggerControl,
-  res: Tx[],
-  issue: Issue,
-  assignee: Ref<Employee>,
-  ptx: TxCollectionCUD<Issue, AttachedDoc>
-): Promise<void> {
-  await addAssigneeNotification(control, res, issue, assignee, ptx)
 }
 
 /**
@@ -137,15 +122,6 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
       const res: Tx[] = []
       updateIssueParentEstimations(issue, res, control, [], issue.parents)
 
-      if (issue.assignee != null) {
-        await addTrackerAssigneeNotification(
-          control,
-          res,
-          issue,
-          issue.assignee,
-          tx as TxCollectionCUD<Issue, AttachedDoc>
-        )
-      }
       return res
     }
   }
@@ -277,10 +253,6 @@ async function doIssueUpdate (
     // We need to remove estimation information from out parent issue
     ;[currentIssue] = await control.findAll(tracker.class.Issue, { _id: updateTx.objectId }, { limit: 1 })
     return currentIssue
-  }
-
-  if (updateTx.operations.assignee != null) {
-    await addTrackerAssigneeNotification(control, res, await getCurrentIssue(), updateTx.operations.assignee, tx)
   }
 
   if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'attachedTo')) {

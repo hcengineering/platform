@@ -80,6 +80,7 @@ import tracker from './plugin'
 
 import presentation from '@hcengineering/model-presentation'
 import { defaultPriorities, issuePriorities } from '@hcengineering/tracker-resources/src/types'
+import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 
 export { trackerOperation } from './migration'
 export { default } from './plugin'
@@ -196,6 +197,7 @@ export class TIssue extends TAttachedDoc implements Issue {
 
   @Prop(TypeNumber(), tracker.string.Number)
   @Index(IndexKind.FullText)
+  @ReadOnly()
     number!: number
 
   @Prop(TypeRef(contact.class.Employee), tracker.string.Assignee)
@@ -937,10 +939,6 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, notification.mixin.TrackedDoc, {})
-
-  builder.mixin(tracker.class.Issue, core.class.Class, notification.mixin.AnotherUserNotifications, {
-    fields: ['assignee']
-  })
 
   builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AllValuesFunc, {
     func: tracker.function.GetAllPriority
@@ -1796,6 +1794,49 @@ export function createModel (builder: Builder): void {
       ]
     },
     tracker.viewlet.SprintList
+  )
+
+  builder.createDoc(
+    notification.class.NotificationGroup,
+    core.space.Model,
+    {
+      label: tracker.string.Issues,
+      icon: tracker.icon.Issues,
+      objectClass: tracker.class.Issue
+    },
+    tracker.ids.TrackerNotificationGroup
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: false,
+      generated: false,
+      label: task.string.AssignedToMe,
+      group: tracker.ids.TrackerNotificationGroup,
+      field: 'assignee',
+      txClasses: [core.class.TxCreateDoc, core.class.TxUpdateDoc],
+      objectClass: tracker.class.Issue,
+      templates: {
+        textTemplate: '{doc} was assigned to you by {sender}',
+        htmlTemplate: '<p>{doc} was assigned to you by {sender}</p>',
+        subjectTemplate: '{doc} was assigned to you'
+      },
+      providers: {
+        [notification.providers.PlatformNotification]: true,
+        [notification.providers.EmailNotification]: true
+      }
+    },
+    tracker.ids.AssigneeNotification
+  )
+
+  generateClassNotificationTypes(
+    builder,
+    tracker.class.Issue,
+    tracker.ids.TrackerNotificationGroup,
+    [],
+    ['comments', 'status', 'priority']
   )
 
   createAction(

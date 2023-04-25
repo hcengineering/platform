@@ -431,14 +431,35 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(
+    notification.class.NotificationGroup,
+    core.space.Model,
+    {
+      label: hr.string.HRApplication,
+      icon: hr.icon.HR
+    },
+    hr.ids.HRNotificationGroup
+  )
+
+  builder.createDoc(
     notification.class.NotificationType,
     core.space.Model,
     {
-      hidden: true,
-      label: hr.string.Request,
-      textTemplate: 'New request: {doc}',
-      htmlTemplate: 'New request: {doc}',
-      subjectTemplate: 'New request'
+      hidden: false,
+      generated: false,
+      label: hr.string.RequestCreated,
+      group: hr.ids.HRNotificationGroup,
+      // will be created with different trigger
+      txClasses: [],
+      objectClass: hr.class.Request,
+      providers: {
+        [notification.providers.EmailNotification]: true,
+        [notification.providers.PlatformNotification]: true
+      },
+      templates: {
+        textTemplate: 'New request: {doc}',
+        htmlTemplate: 'New request: {doc}',
+        subjectTemplate: 'New request'
+      }
     },
     hr.ids.CreateRequestNotification
   )
@@ -447,11 +468,22 @@ export function createModel (builder: Builder): void {
     notification.class.NotificationType,
     core.space.Model,
     {
-      hidden: true,
-      label: hr.string.Request,
-      textTemplate: 'Request updated: {doc}',
-      htmlTemplate: 'Request updated: {doc}',
-      subjectTemplate: 'Request updated'
+      hidden: false,
+      generated: false,
+      group: hr.ids.HRNotificationGroup,
+      label: hr.string.RequestUpdated,
+      // will be created with different trigger
+      txClasses: [],
+      objectClass: hr.class.Request,
+      providers: {
+        [notification.providers.EmailNotification]: true,
+        [notification.providers.PlatformNotification]: true
+      },
+      templates: {
+        textTemplate: 'Request updated: {doc}',
+        htmlTemplate: 'Request updated: {doc}',
+        subjectTemplate: 'Request updated'
+      }
     },
     hr.ids.UpdateRequestNotification
   )
@@ -460,11 +492,22 @@ export function createModel (builder: Builder): void {
     notification.class.NotificationType,
     core.space.Model,
     {
-      hidden: true,
-      label: hr.string.Request,
-      textTemplate: 'Request removed: {doc}',
-      htmlTemplate: 'Request removed: {doc}',
-      subjectTemplate: 'Request removed'
+      hidden: false,
+      group: hr.ids.HRNotificationGroup,
+      generated: false,
+      label: hr.string.RequestRemoved,
+      // will be created with different trigger
+      txClasses: [],
+      objectClass: hr.class.Request,
+      providers: {
+        [notification.providers.EmailNotification]: true,
+        [notification.providers.PlatformNotification]: true
+      },
+      templates: {
+        textTemplate: 'Request removed: {doc}',
+        htmlTemplate: 'Request removed: {doc}',
+        subjectTemplate: 'Request removed'
+      }
     },
     hr.ids.RemoveRequestNotification
   )
@@ -473,11 +516,22 @@ export function createModel (builder: Builder): void {
     notification.class.NotificationType,
     core.space.Model,
     {
-      hidden: true,
+      hidden: false,
+      generated: false,
+      group: hr.ids.HRNotificationGroup,
       label: hr.string.PublicHoliday,
-      textTemplate: 'New public holiday: {doc}',
-      htmlTemplate: 'New public holiday: {doc}',
-      subjectTemplate: 'New public holiday'
+      // will be created with different trigger
+      txClasses: [],
+      objectClass: hr.class.PublicHoliday,
+      providers: {
+        [notification.providers.EmailNotification]: true,
+        [notification.providers.PlatformNotification]: true
+      },
+      templates: {
+        textTemplate: 'New public holiday: {doc}',
+        htmlTemplate: 'New public holiday: {doc}',
+        subjectTemplate: 'New public holiday'
+      }
     },
     hr.ids.CreatePublicHolidayNotification
   )

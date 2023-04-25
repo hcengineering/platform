@@ -14,6 +14,7 @@
 //
 
 import type { Client, Doc, Ref } from '@hcengineering/core'
+import { NotificationGroup, NotificationType } from '@hcengineering/notification'
 import type { IntlString, Resource, Status } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { recruitId } from '@hcengineering/recruit'
@@ -64,6 +65,12 @@ export default mergeIds(recruitId, recruit, {
   },
   validator: {
     ApplicantValidator: '' as Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
+  },
+  ids: {
+    VacancyNotificationGroup: '' as Ref<NotificationGroup>,
+    CandidateNotificationGroup: '' as Ref<NotificationGroup>,
+    ApplicationNotificationGroup: '' as Ref<NotificationGroup>,
+    AssigneeNotification: '' as Ref<NotificationType>
   },
   component: {
     CreateApplication: '' as AnyComponent,

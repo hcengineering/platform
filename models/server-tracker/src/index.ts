@@ -17,8 +17,9 @@ import { Builder } from '@hcengineering/model'
 import core from '@hcengineering/core'
 import serverCore from '@hcengineering/server-core'
 import serverTracker from '@hcengineering/server-tracker'
-import tracker from '@hcengineering/tracker'
 import serverNotification from '@hcengineering/server-notification'
+import notification from '@hcengineering/notification'
+import tracker from '@hcengineering/model-tracker'
 
 export function createModel (builder: Builder): void {
   builder.mixin(tracker.class.Issue, core.class.Class, serverNotification.mixin.HTMLPresenter, {
@@ -36,4 +37,13 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTracker.trigger.OnComponentRemove
   })
+
+  builder.mixin(
+    tracker.ids.AssigneeNotification,
+    notification.class.NotificationType,
+    serverNotification.mixin.TypeMatch,
+    {
+      func: serverNotification.function.IsUserInFieldValue
+    }
+  )
 }

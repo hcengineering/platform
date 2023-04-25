@@ -16,10 +16,11 @@
 import { Builder } from '@hcengineering/model'
 
 import core from '@hcengineering/core'
-import recruit from '@hcengineering/recruit'
+import recruit from '@hcengineering/model-recruit'
 import serverNotification from '@hcengineering/server-notification'
 import serverRecruit from '@hcengineering/server-recruit'
 import serverCore from '@hcengineering/server-core'
+import notification from '@hcengineering/notification'
 
 export function createModel (builder: Builder): void {
   builder.mixin(recruit.class.Applicant, core.class.Class, serverNotification.mixin.HTMLPresenter, {
@@ -41,4 +42,13 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverRecruit.trigger.OnRecruitUpdate
   })
+
+  builder.mixin(
+    recruit.ids.AssigneeNotification,
+    notification.class.NotificationType,
+    serverNotification.mixin.TypeMatch,
+    {
+      func: serverNotification.function.IsUserInFieldValue
+    }
+  )
 }

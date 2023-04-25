@@ -24,9 +24,6 @@ import { Application } from '@hcengineering/workbench'
 export default mergeIds(notificationId, notification, {
   string: {
     LastView: '' as IntlString,
-    DM: '' as IntlString,
-    DMNotification: '' as IntlString,
-    MentionNotification: '' as IntlString,
     PlatformNotification: '' as IntlString,
     BrowserNotification: '' as IntlString,
     EmailNotification: '' as IntlString,
@@ -46,6 +43,7 @@ export default mergeIds(notificationId, notification, {
   category: {
     Notification: '' as Ref<ActionCategory>
   },
+  groups: {},
   action: {
     Unsubscribe: '' as Ref<Action>,
     Hide: '' as Ref<Action>,

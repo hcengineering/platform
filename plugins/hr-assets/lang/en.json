@@ -50,6 +50,9 @@
     "Managers": "Managers",
     "Export": "Export",
     "Separator": "Separator",
-    "ChooseSeparator": "Choose separator"
+    "ChooseSeparator": "Choose separator",
+    "RequestCreated": "Request created",
+    "RequestUpdated": "Request updated",
+    "RequestRemoved": "Request removed"
   }
 }

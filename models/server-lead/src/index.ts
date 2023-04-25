@@ -16,10 +16,10 @@
 import { Builder } from '@hcengineering/model'
 
 import core from '@hcengineering/core'
-import lead from '@hcengineering/lead'
-import serverNotification from '@hcengineering/server-notification'
+import lead from '@hcengineering/model-lead'
 import serverLead from '@hcengineering/server-lead'
-import serverCore from '@hcengineering/server-core'
+import notification from '@hcengineering/notification'
+import serverNotification from '@hcengineering/server-notification'
 
 export function createModel (builder: Builder): void {
   builder.mixin(lead.class.Lead, core.class.Class, serverNotification.mixin.HTMLPresenter, {
@@ -30,7 +30,12 @@ export function createModel (builder: Builder): void {
     presenter: serverLead.function.LeadTextPresenter
   })
 
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverLead.trigger.OnLeadUpdate
-  })
+  builder.mixin(
+    lead.ids.AssigneeNotification,
+    notification.class.NotificationType,
+    serverNotification.mixin.TypeMatch,
+    {
+      func: serverNotification.function.IsUserInFieldValue
+    }
+  )
 }

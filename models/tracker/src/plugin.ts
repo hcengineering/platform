@@ -23,6 +23,7 @@ import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { Action, ViewAction, Viewlet } from '@hcengineering/view'
 import { Application } from '@hcengineering/workbench'
 import { TxViewlet } from '@hcengineering/activity'
+import { NotificationGroup, NotificationType } from '@hcengineering/notification'
 
 export default mergeIds(trackerId, tracker, {
   string: {
@@ -36,7 +37,8 @@ export default mergeIds(trackerId, tracker, {
     GotoTrackerApplication: '' as IntlString,
     SearchIssue: '' as IntlString,
     Parent: '' as IntlString,
-    CreatedOn: '' as IntlString
+    CreatedOn: '' as IntlString,
+    ChangeStatus: '' as IntlString
   },
   activity: {
     TxIssueCreated: '' as AnyComponent,
@@ -59,7 +61,9 @@ export default mergeIds(trackerId, tracker, {
     SprintList: '' as Ref<Viewlet>
   },
   ids: {
-    TxIssueCreated: '' as Ref<TxViewlet>
+    TxIssueCreated: '' as Ref<TxViewlet>,
+    TrackerNotificationGroup: '' as Ref<NotificationGroup>,
+    AssigneeNotification: '' as Ref<NotificationType>
   },
   completion: {
     IssueQuery: '' as Resource<ObjectSearchFactory>,

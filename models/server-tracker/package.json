@@ -29,7 +29,9 @@
     "@hcengineering/model": "^0.6.2",
     "@hcengineering/tracker": "^0.6.6",
     "@hcengineering/server-core": "^0.6.1",
+    "@hcengineering/notification": "^0.6.10",
     "@hcengineering/server-notification": "^0.6.0",
+    "@hcengineering/model-tracker": "^0.6.0",
     "@hcengineering/server-tracker": "^0.6.0"
   }
 }

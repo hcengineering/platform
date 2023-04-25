@@ -20,6 +20,7 @@ import chunter from '@hcengineering/chunter'
 import serverNotification from '@hcengineering/server-notification'
 import serverCore, { ObjectDDParticipant } from '@hcengineering/server-core'
 import serverChunter from '@hcengineering/server-chunter'
+import notification from '@hcengineering/notification'
 
 export function createModel (builder: Builder): void {
   builder.mixin(chunter.class.Channel, core.class.Class, serverNotification.mixin.HTMLPresenter, {
@@ -43,7 +44,16 @@ export function createModel (builder: Builder): void {
     trigger: serverChunter.trigger.ChunterTrigger
   })
 
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverChunter.trigger.DMTrigger
+  builder.mixin(chunter.ids.DMNotification, notification.class.NotificationType, serverNotification.mixin.TypeMatch, {
+    func: serverChunter.function.IsDirectMessagee
   })
+
+  builder.mixin(
+    chunter.ids.ChannelNotification,
+    notification.class.NotificationType,
+    serverNotification.mixin.TypeMatch,
+    {
+      func: serverChunter.function.IsChannelMessagee
+    }
+  )
 }

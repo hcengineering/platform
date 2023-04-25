@@ -13,39 +13,6 @@
 // limitations under the License.
 //
 
-import { Employee } from '@hcengineering/contact'
-import { AttachedDoc, Doc, Ref, Tx, TxCollectionCUD } from '@hcengineering/core'
-import { TriggerControl } from '@hcengineering/server-core'
-import { getEmployeeAccount, getEmployeeAccountById } from '@hcengineering/server-notification'
-import { createNotificationTxes } from '@hcengineering/server-notification-resources'
-import task from '@hcengineering/task'
-
-/**
- * @public
- */
-export async function addAssigneeNotification (
-  control: TriggerControl,
-  res: Tx[],
-  issue: Doc,
-  assignee: Ref<Employee>,
-  ptx: TxCollectionCUD<AttachedDoc, AttachedDoc>
-): Promise<void> {
-  const sender = await getEmployeeAccountById(ptx.modifiedBy, control)
-  if (sender === undefined) {
-    return
-  }
-
-  const receiver = await getEmployeeAccount(assignee, control)
-  if (receiver === undefined) {
-    return
-  }
-  if (sender._id === receiver._id) return
-
-  const result = await createNotificationTxes(control, ptx, task.ids.AssigneedNotification, issue, sender, receiver)
-
-  res.push(...result)
-}
-
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   function: {}

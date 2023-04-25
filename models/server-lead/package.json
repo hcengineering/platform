@@ -31,6 +31,8 @@
     "@hcengineering/server-lead": "^0.6.0",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/lead": "^0.6.0",
+    "@hcengineering/model-lead": "^0.6.0",
+    "@hcengineering/notification": "^0.6.10",
     "@hcengineering/server-notification": "^0.6.0"
   }
 }

@@ -25,6 +25,7 @@
     "Reference": "Reference",
     "Chat": "Chat",
     "In": "In",
+    "MentionNotification": "Mentioned",
     "Replies": "Replies",
     "LastReply": "Last reply",
     "RepliesCount": "{replies, plural, =1 {# reply} other {# replies}}",
@@ -65,6 +66,8 @@
     "NoResults": "No results",
     "CopyLink": "Copy link",
     "FilterComments": "Comments",
-    "FilterBacklinks": "Backlinks"
+    "FilterBacklinks": "Backlinks",
+    "DM": "Direct message",
+    "DMNotification": "Sent you a message"
   }
 }

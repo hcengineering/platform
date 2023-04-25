@@ -86,6 +86,7 @@ export class TChunterMessage extends TAttachedDoc implements ChunterMessage {
     attachments?: number
 
   @Prop(TypeRef(core.class.Account), chunter.string.CreateBy)
+  @ReadOnly()
     createBy!: Ref<Account>
 
   @Prop(TypeTimestamp(), chunter.string.Create)
@@ -582,7 +583,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
       icon: chunter.icon.Chunter,
       txClass: core.class.TxCreateDoc,
       component: chunter.activity.TxMessageCreate,
-      label: notification.string.DMNotification,
+      label: chunter.string.DMNotification,
       display: 'content',
       editable: true,
       hideOnRemove: true
@@ -638,6 +639,96 @@ export function createModel (builder: Builder, options = { addApplication: true 
   builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ClassFilters, {
     filters: []
   })
+
+  builder.createDoc(
+    notification.class.NotificationGroup,
+    core.space.Model,
+    {
+      label: chunter.string.ApplicationLabelChunter,
+      icon: chunter.icon.Chunter
+    },
+    chunter.ids.ChunterNotificationGroup
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      label: chunter.string.MentionNotification,
+      generated: false,
+      hidden: false,
+      txClasses: [core.class.TxCreateDoc],
+      objectClass: chunter.class.Backlink,
+      group: chunter.ids.ChunterNotificationGroup,
+      providers: {
+        [notification.providers.EmailNotification]: true,
+        [notification.providers.PlatformNotification]: true
+      },
+      templates: {
+        textTemplate: '{sender} mentioned you in {doc} {data}',
+        htmlTemplate: '<p><b>{sender}</b> mentioned you in {doc}</p> {data}',
+        subjectTemplate: 'You were mentioned in {doc}'
+      }
+    },
+    chunter.ids.MentionNotification
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      label: chunter.string.DM,
+      generated: false,
+      hidden: false,
+      txClasses: [core.class.TxCreateDoc],
+      objectClass: chunter.class.Message,
+      providers: {
+        [notification.providers.EmailNotification]: false,
+        [notification.providers.PlatformNotification]: true
+      },
+      group: chunter.ids.ChunterNotificationGroup,
+      templates: {
+        textTemplate: '{sender} has send you a message: {doc} {data}',
+        htmlTemplate: '<p><b>{sender}</b> has send you a message {doc}</p> {data}',
+        subjectTemplate: 'You have new direct message in {doc}'
+      }
+    },
+    chunter.ids.DMNotification
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      label: chunter.string.Message,
+      generated: false,
+      hidden: false,
+      txClasses: [core.class.TxCreateDoc],
+      objectClass: chunter.class.Message,
+      providers: {
+        [notification.providers.PlatformNotification]: true
+      },
+      group: chunter.ids.ChunterNotificationGroup
+    },
+    chunter.ids.ThreadNotification
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      label: chunter.string.ThreadMessage,
+      generated: false,
+      hidden: false,
+      txClasses: [core.class.TxCreateDoc],
+      objectClass: chunter.class.ThreadMessage,
+      providers: {
+        [notification.providers.PlatformNotification]: true
+      },
+      group: chunter.ids.ChunterNotificationGroup
+    },
+    chunter.ids.ChannelNotification
+  )
 
   createAction(builder, {
     ...viewTemplates.open,
