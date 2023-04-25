@@ -57,7 +57,7 @@
           class:mr-2={shouldShowName && !enlargedText}
           class:mr-3={shouldShowName && enlargedText}
         >
-          <Avatar size={avatarSize} avatar={value.avatar} />
+          <Avatar size={avatarSize} avatar={value.avatar} on:accent-color />
         </span>
       {/if}
       {#if shouldShowName}
@@ -79,7 +79,7 @@
         class:mr-2={shouldShowName && !enlargedText}
         class:mr-3={shouldShowName && enlargedText}
       >
-        <Avatar size={avatarSize} />
+        <Avatar size={avatarSize} on:accent-color />
       </span>
     {/if}
     {#if shouldShowName && defaultName}

@@ -1,18 +1,34 @@
 <script lang="ts">
   import { StatusCategory } from '@hcengineering/core'
-  import { IconSize } from '@hcengineering/ui'
+  import { IconSize, hexToRgb } from '@hcengineering/ui'
+  import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'
 
   export let size: IconSize
-  export let fill: string = 'currentColor'
+  const defaultFill = 'currentColor'
+  export let fill: string = defaultFill
   export let category: StatusCategory
   export let statusIcon: {
     index: number | undefined
     count: number | undefined
   } = { index: 0, count: 0 }
+
+  let element: SVGSVGElement
+
+  const dispatch = createEventDispatcher()
+
+  const dispatchAccentColor = (fill: string) =>
+    dispatch('accent-color', fill !== defaultFill ? hexToRgb(fill) : 'var(--theme-halfcontent-color)')
+
+  $: dispatchAccentColor(fill)
+
+  onMount(() => {
+    dispatchAccentColor(fill)
+  })
 </script>
 
 <svg
+  bind:this={element}
   class="svg-{size}"
   {fill}
   id={category._id}

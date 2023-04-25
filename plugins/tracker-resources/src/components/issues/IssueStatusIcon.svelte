@@ -14,11 +14,10 @@
 -->
 <script lang="ts">
   import core, { StatusCategory, WithLookup } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient, statusStore } from '@hcengineering/presentation'
   import { IssueStatus } from '@hcengineering/tracker'
-  import { getPlatformColor, IconSize } from '@hcengineering/ui'
+  import { IconSize, getPlatformColor } from '@hcengineering/ui'
   import tracker from '../../plugin'
-  import { statusStore } from '@hcengineering/presentation'
   import StatusIcon from '../icons/StatusIcon.svelte'
 
   export let value: WithLookup<IssueStatus>
@@ -78,5 +77,5 @@
 </script>
 
 {#if icon !== undefined && color !== undefined && category !== undefined}
-  <StatusIcon {category} {size} fill={color} {statusIcon} />
+  <StatusIcon on:accent-color {category} {size} fill={color} {statusIcon} />
 {/if}

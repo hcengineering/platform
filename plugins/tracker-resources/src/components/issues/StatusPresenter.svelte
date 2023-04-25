@@ -27,7 +27,7 @@
 {#if value}
   <div class="flex-presenter cursor-default" style:color={'inherit'}>
     {#if !inline}
-      <IssueStatusIcon {value} {size} />
+      <IssueStatusIcon {value} {size} on:accent-color />
     {/if}
     <span
       class="overflow-label"

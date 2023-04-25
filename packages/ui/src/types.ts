@@ -15,7 +15,7 @@
 import { Timestamp } from '@hcengineering/core'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import { /* Metadata, Plugin, plugin, */ Resource /*, Service */ } from '@hcengineering/platform'
-import { /* getContext, */ SvelteComponent } from 'svelte'
+import { /* getContext, */ ComponentType } from 'svelte'
 
 /**
  * Describe a browser URI location parsed to path, query and fragment.
@@ -55,7 +55,7 @@ export function areLocationsEqual (loc1: Location, loc2: Location): boolean {
   return keys1.findIndex((k) => loc1.query?.[k] !== loc2.query?.[k]) < 0
 }
 
-export type AnySvelteComponent = typeof SvelteComponent
+export type AnySvelteComponent = ComponentType
 export type Component<C extends AnySvelteComponent> = Resource<C>
 export type AnyComponent = Resource<AnySvelteComponent>
 
