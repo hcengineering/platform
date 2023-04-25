@@ -44,28 +44,48 @@
       contentType.startsWith('application/msword')
     )
   }
+
+  function clickHandler (e: MouseEvent) {
+    if (!openEmbedded(value.type)) return
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.metaKey || e.ctrlKey) {
+      window.open((e.target as HTMLAnchorElement).href, '_blank')
+      return
+    }
+    closeTooltip()
+    showPopup(
+      PDFViewer,
+      { file: value.file, name: value.name, contentType: value.type, value },
+      isImage(value.type) ? 'centered' : 'float'
+    )
+  }
+
+  function middleClickHandler (e: MouseEvent) {
+    if (e.button !== 1) return
+    e.preventDefault()
+    e.stopPropagation()
+    window.open((e.target as HTMLAnchorElement).href, '_blank')
+  }
 </script>
 
 <div class="flex-row-center attachment-container">
-  {#if openEmbedded(value.type)}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div
-      class="flex-center icon"
-      on:click={() => {
-        closeTooltip()
-        showPopup(
-          PDFViewer,
-          { file: value.file, name: value.name, contentType: value.type, value },
-          isImage(value.type) ? 'centered' : 'float'
-        )
-      }}
-    >
+  <a
+    class="no-line"
+    href={getFileUrl(value.file)}
+    download={value.name}
+    on:click={clickHandler}
+    on:mousedown={middleClickHandler}
+  >
+    <div class="flex-center icon">
       {iconLabel(value.name)}
       {#if removable}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="remove-btn"
-          on:click|preventDefault={(ev) => {
+          on:click={(ev) => {
             ev.stopPropagation()
+            ev.preventDefault()
             dispatch('remove')
           }}
         >
@@ -73,45 +93,13 @@
         </div>
       {/if}
     </div>
-  {:else}
-    <a class="no-line" href={getFileUrl(value.file)} download={value.name}>
-      <div class="flex-center icon">
-        {iconLabel(value.name)}
-        {#if removable}
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div
-            class="remove-btn"
-            on:click={(ev) => {
-              ev.stopPropagation()
-              ev.preventDefault()
-              dispatch('remove')
-            }}
-          >
-            <Icon icon={IconClose} size={'medium'} />
-          </div>
-        {/if}
-      </div>
-    </a>
-  {/if}
+  </a>
   <div class="flex-col info">
-    {#if openEmbedded(value.type)}
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <div
-        class="name"
-        on:click={() => {
-          closeTooltip()
-          showPopup(
-            PDFViewer,
-            { file: value.file, name: value.name, contentType: value.type, value },
-            isImage(value.type) ? 'centered' : 'float'
-          )
-        }}
-      >
+    <div class="name">
+      <a href={getFileUrl(value.file)} download={value.name} on:click={clickHandler} on:mousedown={middleClickHandler}>
         {trimFilename(value.name)}
-      </div>
-    {:else}
-      <div class="name"><a href={getFileUrl(value.file)} download={value.name}>{trimFilename(value.name)}</a></div>
-    {/if}
+      </a>
+    </div>
     <div class="type">{filesize(value.size)}</div>
   </div>
 </div>
