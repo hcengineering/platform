@@ -94,6 +94,8 @@
       handleAssigneeChanged
     )
   }
+
+  $: assigneeDisplayName = value ? value.displayName : task.string.TaskAssignee
 </script>
 
 {#if presenter}
@@ -106,7 +108,7 @@
     shouldShowPlaceholder={true}
     shouldShowName={shouldShowLabel}
     onEmployeeEdit={handleAssigneeEditorOpened}
-    tooltipLabels={{ personLabel: task.string.TaskAssignee, placeholderLabel: task.string.TaskUnAssign }}
+    tooltipLabels={{ personLabel: assigneeDisplayName, placeholderLabel: task.string.TaskUnAssign }}
   />
   <!-- TODO: Change assignee -->
 {/if}
