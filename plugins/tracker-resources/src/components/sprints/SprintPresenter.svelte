@@ -36,6 +36,7 @@
     loc.path[4] = 'sprints'
     loc.path[5] = value._id
     loc.path.length = 6
+    loc.fragment = undefined
     navigate(loc)
   }
 </script>

@@ -174,12 +174,10 @@
   </span>
   <ComponentEditor value={issue} />
 
-  {#if issue.sprint}
-    <span class="label">
-      <Label label={tracker.string.Sprint} />
-    </span>
-    <SprintEditor value={issue} />
-  {/if}
+  <span class="label">
+    <Label label={tracker.string.Sprint} />
+  </span>
+  <SprintEditor value={issue} />
 
   {#if issue.dueDate !== null}
     <div class="divider" />
