@@ -31,7 +31,7 @@
   import { Client, Ref } from '@hcengineering/core'
   import { Asset, getResource } from '@hcengineering/platform'
   import { getBlobURL, getClient } from '@hcengineering/presentation'
-  import { AnySvelteComponent, Icon, IconSize, hexToRgb, imageToColor, srcToColor } from '@hcengineering/ui'
+  import { AnySvelteComponent, Icon, IconSize, hexToRgb, imageToColor } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { getAvatarProviderId } from '../utils'
   import AvatarIcon from './icons/Avatar.svelte'

@@ -83,15 +83,6 @@ export function hexColorToNumber (hexColor: string): number {
 }
 
 /**
- * @param color
- * @returns
- */
-export function textColorBW (color: { r: number, g: number, b: number }): boolean {
-  const sum = Math.round((color.r * 299 + color.b * 587 + color.g * 114) / 1000)
-  return sum > 128
-}
-
-/**
  * @public
  */
 export function hexToRgb (color: string): { r: number, g: number, b: number } {

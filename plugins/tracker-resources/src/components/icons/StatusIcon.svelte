@@ -5,7 +5,8 @@
   import tracker from '../../plugin'
 
   export let size: IconSize
-  export let fill: string = 'currentColor'
+  const defaultFill = 'currentColor'
+  export let fill: string = defaultFill
   export let category: StatusCategory
   export let statusIcon: {
     index: number | undefined
@@ -16,10 +17,13 @@
 
   const dispatch = createEventDispatcher()
 
-  $: dispatch('accent-color', fill !== 'currentColor' ? hexToRgb(fill) : { r: 128, g: 128, b: 128 })
+  const dispatchAccentColor = (fill: string) =>
+    dispatch('accent-color', fill !== defaultFill ? hexToRgb(fill) : 'var(--theme-halfcontent-color)')
+
+  $: dispatchAccentColor(fill)
 
   onMount(() => {
-    dispatch('accent-color', fill !== 'currentColor' ? hexToRgb(fill) : { r: 128, g: 128, b: 128 })
+    dispatchAccentColor(fill)
   })
 </script>
 
