@@ -1,23 +1,26 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import { LabelAndProps, tooltip } from '@hcengineering/ui'
+  import StringEditor from './StringEditor.svelte'
 
   export let value: string | string[] | undefined
+  export let onChange: ((value: string) => void) | undefined = undefined
+  export let placeholder: IntlString = getEmbeddedLabel('')
 
   $: tooltipParams = getTooltip(value)
 
@@ -40,7 +43,9 @@
     {#each value as str, i}
       <span class:ml-1={i !== 0}>{str}</span>
     {/each}
-  {:else}
+  {:else if onChange === undefined}
     {value ?? ''}
+  {:else}
+    <StringEditor {onChange} value={value ?? ''} {placeholder} />
   {/if}
 </span>
