@@ -21,7 +21,7 @@ import serverCore from '@hcengineering/server-core'
 import serverNotification from '@hcengineering/server-notification'
 import serverTracker from '@hcengineering/server-tracker'
 
-export { serverTrackerId } from '@hcengineering/server-trackesr'
+export { serverTrackerId } from '@hcengineering/server-tracker'
 
 export function createModel (builder: Builder): void {
   builder.mixin(tracker.class.Issue, core.class.Class, serverNotification.mixin.HTMLPresenter, {

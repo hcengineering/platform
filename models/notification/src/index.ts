@@ -351,5 +351,3 @@ export function generateClassNotificationTypes (
     builder.createDoc(notification.class.NotificationType, core.space.Model, data, id)
   }
 }
-
-
