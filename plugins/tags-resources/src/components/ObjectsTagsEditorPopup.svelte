@@ -44,7 +44,8 @@
   async function addRef ({ title, color, _id: tag }: TagElement): Promise<void> {
     await Promise.all(
       objects.map(async (object) => {
-        if (tagRefs.findIndex((p) => p.attachedTo === object._id) !== -1) return
+        if (tagRefs.findIndex((p) => p.attachedTo === object._id && p.tag === tag) !== -1) return
+
         await client.addCollection(tags.class.TagReference, object.space, object._id, object._class, 'labels', {
           title,
           color,
