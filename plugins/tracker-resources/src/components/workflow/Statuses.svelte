@@ -129,7 +129,7 @@
     closeTooltip()
 
     const { detail: status } = event
-    const issuesWithDeletingStatus = await client.findAll(tracker.class.Issue, { status: status._id })
+    const issuesWithDeletingStatus = await client.findAll(tracker.class.Issue, { status: status._id, space: projectId })
 
     if (issuesWithDeletingStatus.length > 0) {
       showPopup(RemoveStatus, {
