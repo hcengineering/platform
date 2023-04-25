@@ -51,7 +51,9 @@
       ? tooltipLabels.personLabel
         ? tooltipLabels.personLabel
         : getEmbeddedLabel(getName(value))
-      : undefined
+      : tooltipLabels.placeholderLabel
+        ? tooltipLabels.placeholderLabel
+        : undefined
     const props = tooltipLabels.props ? tooltipLabels.props : value ? { value: getName(value) } : undefined
     return {
       component,

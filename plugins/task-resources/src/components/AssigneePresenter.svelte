@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee } from '@hcengineering/contact'
+  import contact, { Employee, getName } from '@hcengineering/contact'
   import { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { Task } from '@hcengineering/task'
   import { getClient } from '@hcengineering/presentation'
@@ -31,6 +31,7 @@
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
   export let defaultName: IntlString | undefined = undefined
+  export let placeholderLabel: IntlString | undefined = undefined
 
   const client = getClient()
 
@@ -94,8 +95,6 @@
       handleAssigneeChanged
     )
   }
-
-  $: assigneeDisplayName = value ? value.displayName : task.string.TaskAssignee
 </script>
 
 {#if presenter}
@@ -108,7 +107,10 @@
     shouldShowPlaceholder={true}
     shouldShowName={shouldShowLabel}
     onEmployeeEdit={handleAssigneeEditorOpened}
-    tooltipLabels={{ personLabel: assigneeDisplayName, placeholderLabel: task.string.TaskUnAssign }}
+    tooltipLabels={{
+      personLabel: value ? getName(value) : undefined,
+      placeholderLabel: placeholderLabel ?? presenter.label
+    }}
   />
   <!-- TODO: Change assignee -->
 {/if}
