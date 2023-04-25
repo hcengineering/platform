@@ -208,6 +208,7 @@ export const contactPlugin = plugin(contactId, {
     Facebook: '' as Ref<ChannelProvider>,
     Homepage: '' as Ref<ChannelProvider>,
     Whatsapp: '' as Ref<ChannelProvider>,
+    Skype: '' as Ref<ChannelProvider>,
     Profile: '' as Ref<ChannelProvider>
   },
   avatarProvider: {
@@ -232,6 +233,7 @@ export const contactPlugin = plugin(contactId, {
     Twitter: '' as Asset,
     VK: '' as Asset,
     WhatsApp: '' as Asset,
+    Skype: '' as Asset,
     Youtube: '' as Asset,
     GitHub: '' as Asset,
     Edit: '' as Asset,

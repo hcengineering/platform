@@ -29,6 +29,7 @@ loadMetadata(contact.icon, {
   Twitter: `${icons}#twitter`,
   VK: `${icons}#vk`,
   WhatsApp: `${icons}#whatsapp`,
+  Skype: `${icons}#skype`,
   Youtube: `${icons}#youtube`,
   GitHub: `${icons}#github`,
   Edit: `${icons}#edit`,
