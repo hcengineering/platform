@@ -19,7 +19,7 @@
   import core, { AnyAttribute, Doc, getCurrentAccount, Ref, Class, TxCUD } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import {
+  import ui, {
     ActionIcon,
     AnyComponent,
     Component,
@@ -35,7 +35,6 @@
   import attachment from '@hcengineering/attachment'
   import chunter from '@hcengineering/chunter'
   import { Menu, ObjectPresenter } from '@hcengineering/view-resources'
-  import textEditorPlugin, { StyleButton, IconObjects } from '@hcengineering/text-editor'
   import { ActivityKey } from '../activity'
   import activity from '../plugin'
   import { getValue, TxDisplayViewlet, updateViewlet } from '../utils'
@@ -270,9 +269,9 @@
                 {:else}
                   <span class="lower"><Label label={activity.string.Changed} /></span>
                   <span class="lower"><Label label={m.label} /></span>
-                  <span class="lower"><Label label={activity.string.To} /></span>
 
                   {#if !hasMessageType}
+                    <span class="lower"><Label label={activity.string.To} /></span>
                     <span class="strong overflow-label">
                       {#if value.isObjectSet}
                         <ObjectPresenter value={value.set} inline />
@@ -281,15 +280,9 @@
                       {/if}
                     </span>
                   {:else}
-                    <div class="pt-2">
-                      <StyleButton
-                        icon={IconObjects}
-                        size={'small'}
-                        selected={true}
-                        showTooltip={{ label: textEditorPlugin.string.EnableDiffMode }}
-                        on:click={() => (showDiff = !showDiff)}
-                      />
-                    </div>
+                    <span class="show-diff" on:click={() => (showDiff = !showDiff)}>
+                      <Label label={showDiff ? ui.string.ShowLess : ui.string.ShowMore} />
+                    </span>
                   {/if}
                 {/if}
               {/await}
@@ -523,6 +516,17 @@
     }
     &.indent {
       margin-top: 0.5rem;
+    }
+  }
+
+  .show-diff {
+    color: var(--accent-color);
+    cursor: pointer;
+    &:hover {
+      color: var(--caption-color);
+    }
+    &:active {
+      color: var(--accent-color);
     }
   }
 </style>
