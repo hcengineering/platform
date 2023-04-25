@@ -16,7 +16,7 @@
   import activity, { ActivityFilter, DisplayTx } from '@hcengineering/activity'
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { IntlString, getResource } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
+  import { getClient, hasResource } from '@hcengineering/presentation'
   import { ActionIcon, AnyComponent, Icon, Label, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import activityPlg from '../plugin'
@@ -51,7 +51,9 @@
 
   function getAdditionalComponent (_class: Ref<Class<Doc>>): AnyComponent | undefined {
     const hierarchy = client.getHierarchy()
-    const mixin = hierarchy.classHierarchyMixin(_class, activity.mixin.ExtraActivityComponent)
+    const mixin = hierarchy.classHierarchyMixin(_class, activity.mixin.ExtraActivityComponent, (m) =>
+      hasResource(m.component)
+    )
     if (mixin !== undefined) {
       return mixin.component
     }

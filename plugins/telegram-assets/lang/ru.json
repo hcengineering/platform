@@ -22,6 +22,8 @@
     "Telegram": "Telegram",
     "TelegramIntegrationDesc": "Подключить Telegram",
     "Status": "Статус",
-    "MessagesSelected": "сообщений выбрано"
+    "MessagesSelected": "сообщений выбрано",
+    "ConfigLabel": "Telegram",
+    "ConfigDescription": "Расширение по работе с Telegram"
   }
 }

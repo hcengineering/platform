@@ -29,6 +29,8 @@
     "FullDescription": "Full description",
     "FunnelPlaceholder": "The simple funnel",
     "Members": "Members",
-    "UnAssign": "Unassign"
+    "UnAssign": "Unassign",
+    "ConfigLabel": "CRM",
+    "ConfigDescription": "Extension for Customer relation management"
   }
 }

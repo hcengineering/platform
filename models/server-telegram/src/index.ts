@@ -15,10 +15,12 @@
 
 import { Builder } from '@hcengineering/model'
 
+import contact from '@hcengineering/contact'
 import core, { Class, Doc } from '@hcengineering/core'
 import serverCore, { ObjectDDParticipant } from '@hcengineering/server-core'
-import contact from '@hcengineering/contact'
 import serverTelegram from '@hcengineering/server-telegram'
+
+export { serverTelegramId } from '@hcengineering/server-telegram'
 
 export function createModel (builder: Builder): void {
   builder.mixin<Class<Doc>, ObjectDDParticipant>(

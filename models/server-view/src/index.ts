@@ -13,10 +13,12 @@
 // limitations under the License.
 //
 
-import { Builder } from '@hcengineering/model'
 import core from '@hcengineering/core'
+import { Builder } from '@hcengineering/model'
 import serverCore from '@hcengineering/server-core'
 import serverView from '@hcengineering/server-view'
+
+export { serverViewId } from '@hcengineering/server-view'
 
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {

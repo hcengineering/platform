@@ -29,7 +29,7 @@ export async function cleanWorkspace (
   minio: MinioService,
   elasticUrl: string,
   transactorUrl: string,
-  opt: { recruit: boolean, tracker: boolean, removeTx: boolean }
+  opt: { recruit: boolean, tracker: boolean, removedTx: boolean }
 ): Promise<void> {
   const connection = (await connect(transactorUrl, workspaceId, undefined, {
     mode: 'backup',
@@ -106,7 +106,7 @@ export async function cleanWorkspace (
       await client.connect()
       const db = getWorkspaceDB(client, workspaceId)
 
-      if (opt.removeTx) {
+      if (opt.removedTx) {
         const txes = await db.collection(DOMAIN_TX).find({}).toArray()
 
         for (const tx of txes) {

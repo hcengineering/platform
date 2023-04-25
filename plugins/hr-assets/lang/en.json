@@ -53,6 +53,8 @@
     "ChooseSeparator": "Choose separator",
     "RequestCreated": "Request created",
     "RequestUpdated": "Request updated",
-    "RequestRemoved": "Request removed"
+    "RequestRemoved": "Request removed",
+    "ConfigLabel": "Human resources",
+    "ConfigDescription": "Extension to manage organization structure and employee work calendar"
   }
 }

@@ -39,20 +39,20 @@ import contact, { TOrganization, TPerson } from '@hcengineering/model-contact'
 import core, { TAttachedDoc, TSpace } from '@hcengineering/model-core'
 import presentation from '@hcengineering/model-presentation'
 import tags from '@hcengineering/model-tags'
-import task, { actionTemplates, DOMAIN_TASK, TSpaceWithStates, TTask } from '@hcengineering/model-task'
+import task, { DOMAIN_TASK, TSpaceWithStates, TTask, actionTemplates } from '@hcengineering/model-task'
 import tracker from '@hcengineering/model-tracker'
-import view, { actionTemplates as viewTemplates, createAction } from '@hcengineering/model-view'
+import view, { createAction, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench, { Application, createNavigateAction } from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
-import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
+import { IntlString, getEmbeddedLabel } from '@hcengineering/platform'
 import {
   Applicant,
   ApplicantMatch,
   Candidate,
   Candidates,
-  recruitId,
   Vacancy,
-  VacancyList
+  VacancyList,
+  recruitId
 } from '@hcengineering/recruit'
 import setting from '@hcengineering/setting'
 import { KeyBinding, ViewOptionsModel } from '@hcengineering/view'
@@ -60,6 +60,10 @@ import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
 import { TOpinion, TReview } from './review-model'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
+
+export { recruitId } from '@hcengineering/recruit'
+export { recruitOperation } from './migration'
+export { default } from './plugin'
 
 @Model(recruit.class.Vacancy, task.class.SpaceWithStates)
 @UX(recruit.string.Vacancy, recruit.icon.Vacancy, 'VCN', 'name')
@@ -1266,6 +1270,3 @@ export function createModel (builder: Builder): void {
     recruit.action.MoveApplicant
   )
 }
-
-export { recruitOperation } from './migration'
-export { default } from './plugin'

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { addLocation } from '@hcengineering/platform'
+import { Plugin, addLocation } from '@hcengineering/platform'
 
 import { activityId } from '@hcengineering/activity'
 import { attachmentId } from '@hcengineering/attachment'
@@ -21,7 +21,7 @@ import { automationId } from '@hcengineering/automation'
 import { boardId } from '@hcengineering/board'
 import { calendarId } from '@hcengineering/calendar'
 import { chunterId } from '@hcengineering/chunter'
-import { clientId } from '@hcengineering/client'
+import client, { clientId } from '@hcengineering/client'
 import { contactId } from '@hcengineering/contact'
 import document, { documentId } from '@hcengineering/document'
 import gmail, { gmailId } from '@hcengineering/gmail'
@@ -153,6 +153,8 @@ export async function configurePlatform() {
   addLocation(bitrixId, () => import(/* webpackChunkName: "bitrix" */ '@hcengineering/bitrix-resources'))
   addLocation(requestId, () => import(/* webpackChunkName: "request" */ '@hcengineering/request-resources'))
 
+  setMetadata(client.metadata.FilterModel, true)
+  setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])
 
   setMetadata(workbench.metadata.PlatformTitle, 'Platform')
 }

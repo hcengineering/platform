@@ -48,7 +48,7 @@ export default async () => {
 
             return connect(url.href, upgradeHandler, onUpgrade, onUnauthorized, onConnect)
           },
-          filterModel ? getPlugins() : undefined
+          filterModel ? [...getPlugins(), ...(getMetadata(clientPlugin.metadata.ExtraPlugins) ?? [])] : undefined
         )
         // Check if we had dev hook for client.
         client = hookClient(client)

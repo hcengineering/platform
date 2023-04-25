@@ -26,6 +26,10 @@ import view, { createAction } from '@hcengineering/model-view'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 
+export { bitrixId } from '@hcengineering/bitrix'
+export { bitrixOperation } from './migration'
+export { default } from './plugin'
+
 const DOMAIN_BITRIX = 'bitrix' as Domain
 
 @Mixin(bitrix.mixin.BitrixSyncDoc, core.class.Doc)
@@ -103,5 +107,3 @@ export function createModel (builder: Builder): void {
     bitrix.action.BitrixImport
   )
 }
-
-export { bitrixOperation } from './migration'

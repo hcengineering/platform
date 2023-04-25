@@ -60,6 +60,10 @@ import templates from '@hcengineering/templates'
 import { AnyComponent } from '@hcengineering/ui'
 import contact from './plugin'
 
+export { contactId } from '@hcengineering/contact'
+export { contactOperation } from './migration'
+export { contact as default }
+
 export const DOMAIN_CONTACT = 'contact' as Domain
 export const DOMAIN_CHANNEL = 'channel' as Domain
 
@@ -767,6 +771,3 @@ export function createModel (builder: Builder): void {
     component: contact.component.ActivityChannelMessage
   })
 }
-
-export { contactOperation } from './migration'
-export { contact as default }

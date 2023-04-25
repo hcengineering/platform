@@ -17,7 +17,7 @@
 import type { Ref } from '@hcengineering/core'
 import { inventoryId } from '@hcengineering/inventory'
 import inventory from '@hcengineering/inventory-resources/src/plugin'
-import { mergeIds } from '@hcengineering/platform'
+import { IntlString, mergeIds } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 import { Action, ActionCategory, ViewAction, Viewlet } from '@hcengineering/view'
 
@@ -43,5 +43,9 @@ export default mergeIds(inventoryId, inventory, {
   },
   viewlet: {
     TableProduct: '' as Ref<Viewlet>
+  },
+  string: {
+    ConfigLabel: '' as IntlString,
+    ConfigDescription: '' as IntlString
   }
 })

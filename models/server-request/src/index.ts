@@ -19,6 +19,8 @@ import core from '@hcengineering/core'
 import serverCore from '@hcengineering/server-core'
 import serverRequest from '@hcengineering/server-request'
 
+export { serverRequestId } from '@hcengineering/server-request'
+
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverRequest.trigger.OnRequestUpdate

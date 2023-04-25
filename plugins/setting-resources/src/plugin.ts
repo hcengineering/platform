@@ -67,6 +67,11 @@ export default mergeIds(settingId, setting, {
     SelectAValue: '' as IntlString,
     DateOnly: '' as IntlString,
     OnlyTime: '' as IntlString,
-    DateAndTime: '' as IntlString
+    DateAndTime: '' as IntlString,
+    Configuration: '' as IntlString,
+    ConfigurationEnabled: '' as IntlString,
+    ConfigurationDisabled: '' as IntlString,
+    ConfigDisable: '' as IntlString,
+    ConfigEnable: '' as IntlString
   }
 })

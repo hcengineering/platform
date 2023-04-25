@@ -55,6 +55,10 @@ import { AnyComponent } from '@hcengineering/ui'
 import workbench from '@hcengineering/workbench'
 import notification from './plugin'
 
+export { notificationId } from '@hcengineering/notification'
+export { notificationOperation } from './migration'
+export { notification as default }
+
 export const DOMAIN_NOTIFICATION = 'notification' as Domain
 
 @Model(notification.class.LastView, core.class.Doc, DOMAIN_NOTIFICATION)
@@ -348,5 +352,4 @@ export function generateClassNotificationTypes (
   }
 }
 
-export { notificationOperation } from './migration'
-export { notification as default }
+

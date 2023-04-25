@@ -21,6 +21,7 @@ import serverNotification from '@hcengineering/server-notification'
 import serverCore, { ObjectDDParticipant } from '@hcengineering/server-core'
 import serverChunter from '@hcengineering/server-chunter'
 import notification from '@hcengineering/notification'
+export { serverChunterId } from '@hcengineering/server-chunter'
 
 export function createModel (builder: Builder): void {
   builder.mixin(chunter.class.Channel, core.class.Class, serverNotification.mixin.HTMLPresenter, {

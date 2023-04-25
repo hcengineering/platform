@@ -18,6 +18,7 @@ import { Domain, DOMAIN_MODEL, IndexKind, Ref } from '@hcengineering/core'
 import { Builder, Index, Model, Prop, TypeString, UX } from '@hcengineering/model'
 import core, { TDoc, TSpace } from '@hcengineering/model-core'
 import textEditor from '@hcengineering/model-text-editor'
+import tracker from '@hcengineering/model-tracker'
 import view, { createAction } from '@hcengineering/model-view'
 import { IntlString, Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
@@ -29,7 +30,9 @@ import type {
   TemplateFieldFunc
 } from '@hcengineering/templates'
 import templates from './plugin'
-import tracker from '@hcengineering/model-tracker'
+
+export { templatesId } from '@hcengineering/templates'
+export { templatesOperation } from './migration'
 
 export const DOMAIN_TEMPLATES = 'templates' as Domain
 
@@ -165,5 +168,3 @@ export function createModel (builder: Builder): void {
     actions: [view.action.Open, tracker.action.NewRelatedIssue]
   })
 }
-
-export { templatesOperation } from './migration'

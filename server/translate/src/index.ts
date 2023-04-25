@@ -1,3 +1,3 @@
-export { default } from './plugin'
+export { default, translateId } from './plugin'
 export * from './retranslate'
 export * from './types'

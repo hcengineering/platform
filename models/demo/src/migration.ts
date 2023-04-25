@@ -82,7 +82,7 @@ export const demoOperation: MigrateOperation = {
         email: 'rosamund@hc.engineering',
         employee,
         name: 'Chen,Rosamund',
-        role: AccountRole.Owner
+        role: AccountRole.User
       })
     }
 

@@ -16,18 +16,20 @@
 
 import { Builder, Mixin } from '@hcengineering/model'
 
-import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import core, { Account, Doc, Ref, Tx } from '@hcengineering/core'
+import { TClass } from '@hcengineering/model-core'
+import { TNotificationType } from '@hcengineering/model-notification'
+import notification, { NotificationType } from '@hcengineering/notification'
+import { Resource } from '@hcengineering/platform'
+import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import serverNotification, {
   HTMLPresenter,
-  TextPresenter,
   Presenter,
+  TextPresenter,
   TypeMatch
 } from '@hcengineering/server-notification'
-import { Resource } from '@hcengineering/platform'
-import { TClass } from '@hcengineering/model-core'
-import notification, { NotificationType } from '@hcengineering/notification'
-import { TNotificationType } from '@hcengineering/model-notification'
+
+export { serverNotificationId } from '@hcengineering/server-notification'
 
 @Mixin(serverNotification.mixin.HTMLPresenter, core.class.Class)
 export class THTMLPresenter extends TClass implements HTMLPresenter {

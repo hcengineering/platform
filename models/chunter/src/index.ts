@@ -48,9 +48,11 @@ import attachment from '@hcengineering/model-attachment'
 import core, { TAttachedDoc, TSpace } from '@hcengineering/model-core'
 import notification from '@hcengineering/model-notification'
 import preference, { TPreference } from '@hcengineering/model-preference'
-import view, { actionTemplates as viewTemplates, createAction } from '@hcengineering/model-view'
+import view, { createAction, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import chunter from './plugin'
+export { chunterId } from '@hcengineering/chunter'
+export { chunterOperation } from './migration'
 
 export const DOMAIN_CHUNTER = 'chunter' as Domain
 export const DOMAIN_COMMENT = 'comment' as Domain
@@ -743,7 +745,5 @@ export function createModel (builder: Builder, options = { addApplication: true 
     }
   })
 }
-
-export { chunterOperation } from './migration'
 
 export default chunter

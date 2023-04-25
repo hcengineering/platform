@@ -32,8 +32,8 @@ import type {
   FullTextData,
   FullTextSearchContext,
   Hyperlink,
-  IndexingConfiguration,
   IndexStageState,
+  IndexingConfiguration,
   Interface,
   Obj,
   PluginConfiguration,
@@ -49,9 +49,9 @@ import { Status, StatusCategory } from './status'
 import type {
   Tx,
   TxApplyIf,
+  TxCUD,
   TxCollectionCUD,
   TxCreateDoc,
-  TxCUD,
   TxMixin,
   TxModelUpgrade,
   TxRemoveDoc,
@@ -133,7 +133,8 @@ export default plugin(coreId, {
     Configuration: '' as Ref<Space>
   },
   account: {
-    System: '' as Ref<Account>
+    System: '' as Ref<Account>,
+    ConfigUser: '' as Ref<Account>
   },
   status: {
     ObjectNotFound: '' as StatusCode<{ _id: Ref<Doc> }>,

@@ -272,10 +272,12 @@ async function loadModel (
 
   atxes.forEach((tx) => (tx.modifiedBy === core.account.System && !isEmployeeAccount(tx) ? systemTx : userTx).push(tx))
 
-  if (allowedPlugins !== undefined) {
+  if (allowedPlugins != null) {
     fillConfiguration(systemTx, configs)
-    const excludedPlugins = Array.from(configs.values()).filter((it) => !allowedPlugins.includes(it.pluginId as Plugin))
-
+    fillConfiguration(userTx, configs)
+    const excludedPlugins = Array.from(configs.values()).filter(
+      (it) => !it.enabled || !allowedPlugins.includes(it.pluginId)
+    )
     systemTx = pluginFilterTx(excludedPlugins, configs, systemTx)
   }
 
@@ -331,7 +333,22 @@ function pluginFilterTx (
       if (a.pluginId === c.pluginId) {
         const excluded = new Set<Ref<Tx>>()
         for (const id of c.transactions) {
-          excluded.add(id as Ref<Tx>)
+          if (c.classFilter !== undefined) {
+            const filter = new Set(c.classFilter)
+            const tx = systemTx.find((it) => it._id === id)
+            if (
+              tx?._class === core.class.TxCreateDoc ||
+              tx?._class === core.class.TxUpdateDoc ||
+              tx?._class === core.class.TxRemoveDoc
+            ) {
+              const cud = tx as TxCUD<Doc>
+              if (filter.has(cud.objectClass)) {
+                excluded.add(id as Ref<Tx>)
+              }
+            }
+          } else {
+            excluded.add(id as Ref<Tx>)
+          }
         }
         const exclude = systemTx.filter((t) => excluded.has(t._id))
         console.log('exclude plugin', c.pluginId, exclude.length)

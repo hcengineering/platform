@@ -44,6 +44,10 @@ import { IntlString } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 import board from './plugin'
 
+export { boardId } from '@hcengineering/board'
+export { boardOperation } from './migration'
+export { default } from './plugin'
+
 @Model(board.class.Board, task.class.SpaceWithStates)
 @UX(board.string.Board, board.icon.Board)
 export class TBoard extends TSpaceWithStates implements Board {
@@ -542,6 +546,3 @@ export function createModel (builder: Builder): void {
     }
   })
 }
-
-export { boardOperation } from './migration'
-export { default } from './plugin'

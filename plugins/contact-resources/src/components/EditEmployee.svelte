@@ -121,7 +121,7 @@
     </div>
     <div class="flex-grow flex-col">
       <div class="flex-grow flex-col">
-        <div class="name">
+        <div class="name select-text">
           {#if owner}
             <EditBox
               placeholder={contact.string.PersonFirstNamePlaceholder}
@@ -134,7 +134,7 @@
             {firstName}
           {/if}
         </div>
-        <div class="name">
+        <div class="name select-text">
           {#if owner}
             <EditBox
               placeholder={contact.string.PersonLastNamePlaceholder}

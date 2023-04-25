@@ -288,7 +288,9 @@
     "Saved": "Saved...",
     "CreatedIssue": "Created issue",
     "CreatedSubIssue": "Created sub-issue",
-    "ChangeStatus": "Change status"
+    "ChangeStatus": "Change status",
+    "ConfigLabel": "Tracker",
+    "ConfigDescription": "Extension to manage work items and do all jobs done."
   },
   "status": {}
 }

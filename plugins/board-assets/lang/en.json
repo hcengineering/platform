@@ -101,6 +101,8 @@
     "RemoveCover": "Remove cover",
     "DeleteChecklist": "Delete checklist",
     "DeleteChecklistConfirm": "Deleting a checklist is permanent and there is no way to get it back.",
-    "ConvertToCard": "Convert to card"
+    "ConvertToCard": "Convert to card",
+    "ConfigLabel": "Board",
+    "ConfigDescription": "Extension to manage Kanban boards."
   }
 }

@@ -75,6 +75,11 @@
     "SelectAValue": "Выбрать значение",
     "DateOnly": "Только дата",
     "OnlyTime": "Только время",
-    "DateAndTime": "Дата и время"
+    "DateAndTime": "Дата и время",
+    "Configuration": "Конфигурация",
+    "ConfigurationEnabled": "Включено",
+    "ConfigurationDisabled": "Выключено",
+    "ConfigDisable": "Выключить",
+    "ConfigEnable": "Включить"
   }
 }

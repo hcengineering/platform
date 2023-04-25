@@ -17,9 +17,11 @@ import { Builder } from '@hcengineering/model'
 
 import core from '@hcengineering/core'
 import lead from '@hcengineering/model-lead'
-import serverLead from '@hcengineering/server-lead'
 import notification from '@hcengineering/notification'
+import serverLead from '@hcengineering/server-lead'
 import serverNotification from '@hcengineering/server-notification'
+
+export { serverLeadId } from '@hcengineering/server-lead'
 
 export function createModel (builder: Builder): void {
   builder.mixin(lead.class.Lead, core.class.Class, serverNotification.mixin.HTMLPresenter, {

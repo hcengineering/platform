@@ -68,6 +68,8 @@
     "FilterComments": "Коментарии",
     "FilterBacklinks": "Упоминания",
     "DM": "Личное сообщение",
-    "DMNotification": "Отправил сообщение"
+    "DMNotification": "Отправил сообщение",
+    "ConfigLabel": "Чат",
+    "ConfigDescription": "Расширение для текстовых переписок"
   }
 }

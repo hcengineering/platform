@@ -48,6 +48,9 @@
     "Approved": "Approved",
     "Rejected": "Rejected",
 
-    "CompareTo": "Compare to..."
+    "CompareTo": "Compare to...",
+
+    "ConfigLabel": "Documents",
+    "ConfigDescription": "Extension for collaborative document editing"
   }
 }

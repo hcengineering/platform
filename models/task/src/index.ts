@@ -33,7 +33,7 @@ import {
   UX
 } from '@hcengineering/model'
 import core, { TAttachedDoc, TClass, TDoc, TSpace, TStatus } from '@hcengineering/model-core'
-import view, { actionTemplates as viewTemplates, createAction, template } from '@hcengineering/model-view'
+import view, { createAction, template, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import notification from '@hcengineering/notification'
 import { IntlString } from '@hcengineering/platform'
 import tags from '@hcengineering/tags'
@@ -58,6 +58,7 @@ import { AnyComponent } from '@hcengineering/ui'
 import { ViewAction } from '@hcengineering/view'
 import task from './plugin'
 
+export { taskId } from '@hcengineering/task'
 export { createKanbanTemplate, createSequence, taskOperation } from './migration'
 export { default } from './plugin'
 

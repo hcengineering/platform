@@ -78,7 +78,9 @@ export default mergeIds(chunterId, chunter, {
     FilterComments: '' as IntlString,
     FilterBacklinks: '' as IntlString,
     DM: '' as IntlString,
-    DMNotification: '' as IntlString
+    DMNotification: '' as IntlString,
+    ConfigLabel: '' as IntlString,
+    ConfigDescription: '' as IntlString
   },
   viewlet: {
     Chat: '' as Ref<ViewletDescriptor>

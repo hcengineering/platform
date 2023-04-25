@@ -288,7 +288,9 @@
     "Saved": "Сохранено...",
     "CreatedIssue": "Создал(а) задачу",
     "CreatedSubIssue": "Создал(а) подзадачу",
-    "ChangeStatus": "Изменение статуса"
+    "ChangeStatus": "Изменение статуса",
+    "ConfigLabel": "Трекер",
+    "ConfigDescription": "Расширение по управлению задачами, чтобы все было в срок."
   },
   "status": {}
 }

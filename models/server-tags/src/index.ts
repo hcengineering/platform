@@ -19,6 +19,8 @@ import serverCore, { ObjectDDParticipant } from '@hcengineering/server-core'
 import serverTags from '@hcengineering/server-tags'
 import tags from '@hcengineering/tags'
 
+export { serverTagsId } from '@hcengineering/server-tags'
+
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTags.trigger.onTagReference

@@ -46,7 +46,9 @@ export default mergeIds(calendarId, calendar, {
     Reminder: '' as IntlString,
     Shift: '' as IntlString,
     State: '' as IntlString,
-    CreatedReminder: '' as IntlString
+    CreatedReminder: '' as IntlString,
+    ConfigLabel: '' as IntlString,
+    ConfigDescription: '' as IntlString
   },
   viewlet: {
     Calendar: '' as Ref<ViewletDescriptor>,

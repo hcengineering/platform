@@ -38,7 +38,9 @@ export default mergeIds(trackerId, tracker, {
     SearchIssue: '' as IntlString,
     Parent: '' as IntlString,
     CreatedOn: '' as IntlString,
-    ChangeStatus: '' as IntlString
+    ChangeStatus: '' as IntlString,
+    ConfigLabel: '' as IntlString,
+    ConfigDescription: '' as IntlString
   },
   activity: {
     TxIssueCreated: '' as AnyComponent,

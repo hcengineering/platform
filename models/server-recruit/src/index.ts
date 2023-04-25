@@ -17,10 +17,12 @@ import { Builder } from '@hcengineering/model'
 
 import core from '@hcengineering/core'
 import recruit from '@hcengineering/model-recruit'
+import notification from '@hcengineering/notification'
+import serverCore from '@hcengineering/server-core'
 import serverNotification from '@hcengineering/server-notification'
 import serverRecruit from '@hcengineering/server-recruit'
-import serverCore from '@hcengineering/server-core'
-import notification from '@hcengineering/notification'
+
+export { serverRecruitId } from '@hcengineering/server-recruit'
 
 export function createModel (builder: Builder): void {
   builder.mixin(recruit.class.Applicant, core.class.Class, serverNotification.mixin.HTMLPresenter, {

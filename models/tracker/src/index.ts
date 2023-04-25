@@ -13,12 +13,13 @@
 // limitations under the License.
 //
 
+import activity from '@hcengineering/activity'
 import type { Employee, EmployeeAccount } from '@hcengineering/contact'
 import contact from '@hcengineering/contact'
 import {
+  DOMAIN_MODEL,
   DateRangeMode,
   Domain,
-  DOMAIN_MODEL,
   FindOptions,
   IndexKind,
   Markup,
@@ -46,7 +47,6 @@ import {
   UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
-import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/model-chunter'
 import core, { DOMAIN_SPACE, TAttachedDoc, TDoc, TSpace, TStatus, TType } from '@hcengineering/model-core'
 import view, { actionTemplates, classPresenter, createAction } from '@hcengineering/model-view'
@@ -82,6 +82,7 @@ import presentation from '@hcengineering/model-presentation'
 import { defaultPriorities, issuePriorities } from '@hcengineering/tracker-resources/src/types'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 
+export { trackerId } from '@hcengineering/tracker'
 export { trackerOperation } from './migration'
 export { default } from './plugin'
 

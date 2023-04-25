@@ -37,6 +37,8 @@
     "AllDay": "All day",
     "AndMore": "And {count} more",
     "CreateEvent": "Create event",
-    "EventFor": "Event for: "
+    "EventFor": "Event for: ",
+    "ConfigLabel": "Calendar",
+    "ConfigDescription": "Extension to see calendar with Events"
   }
 }

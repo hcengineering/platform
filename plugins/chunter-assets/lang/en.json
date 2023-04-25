@@ -68,6 +68,8 @@
     "FilterComments": "Comments",
     "FilterBacklinks": "Backlinks",
     "DM": "Direct message",
-    "DMNotification": "Sent you a message"
+    "DMNotification": "Sent you a message",
+    "ConfigLabel": "Chat",
+    "ConfigDescription": "Extension to perform text communications"
   }
 }

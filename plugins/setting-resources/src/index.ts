@@ -42,6 +42,7 @@ import RefEditor from './components/typeEditors/RefEditor.svelte'
 import StringTypeEditor from './components/typeEditors/StringTypeEditor.svelte'
 import WorkspaceSettings from './components/WorkspaceSettings.svelte'
 import InviteSetting from './components/InviteSetting.svelte'
+import Configure from './components/Configure.svelte'
 import setting from './plugin'
 import IntegrationPanel from './components/IntegrationPanel.svelte'
 import { getOwnerName, getOwnerPosition, getValue } from './utils'
@@ -98,7 +99,8 @@ export default async (): Promise<Resources> => ({
     Owners,
     CreateMixin,
     InviteSetting,
-    IntegrationPanel
+    IntegrationPanel,
+    Configure
   },
   actionImpl: {
     DeleteMixin

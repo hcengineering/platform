@@ -15,10 +15,10 @@
 
 // To help typescript locate view plugin properly
 import automation, {
-  Automation,
-  AutomationSupport,
   AttributeAutomationSupport,
+  Automation,
   AutomationSortSupport,
+  AutomationSupport,
   AutomationTriggerSupport,
   Command,
   TriggerType
@@ -27,6 +27,9 @@ import { Class, Doc, Domain, Ref } from '@hcengineering/core'
 import { Builder, Mixin, Model, Prop, TypeString, UX } from '@hcengineering/model'
 import core, { TAttachedDoc, TClass } from '@hcengineering/model-core'
 import view from '@hcengineering/view'
+
+export { automationId } from '@hcengineering/automation'
+export { automationOperation } from './migration'
 
 export const DOMAIN_AUTOMATION = 'automation' as Domain
 
@@ -90,5 +93,3 @@ export function createModel (builder: Builder): void {
     actions: [view.action.Delete]
   })
 }
-
-export { automationOperation } from './migration'

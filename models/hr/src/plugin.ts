@@ -37,7 +37,9 @@ export default mergeIds(hrId, hr, {
     PublicHoliday: '' as IntlString,
     RequestCreated: '' as IntlString,
     RequestUpdated: '' as IntlString,
-    RequestRemoved: '' as IntlString
+    RequestRemoved: '' as IntlString,
+    ConfigLabel: '' as IntlString,
+    ConfigDescription: '' as IntlString
   },
   component: {
     Structure: '' as AnyComponent,
