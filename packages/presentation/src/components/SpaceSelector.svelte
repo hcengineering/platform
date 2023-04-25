@@ -18,6 +18,7 @@
   import { AnySvelteComponent, ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { ObjectCreate } from '../types'
   import SpaceSelect from './SpaceSelect.svelte'
+  import { createEventDispatcher } from 'svelte'
 
   export let space: Ref<Space> | undefined = undefined
   export let _class: Ref<Class<Space>>
@@ -33,6 +34,8 @@
   export let component: AnySvelteComponent | undefined = undefined
   export let componentProps: any | undefined = undefined
   export let autoSelect = true
+
+  const dispatch = createEventDispatcher()
 
   export let create: ObjectCreate | undefined = undefined
 </script>
@@ -56,6 +59,7 @@
   bind:value={space}
   on:change={(evt) => {
     space = evt.detail
+    dispatch('change', space)
   }}
   on:space
 />
