@@ -1,0 +1,34 @@
+{
+  "name": "@hcengineering/storybook",
+  "version": "0.1.0",
+  "main": ".storybook/main.js",
+  "author": "Anticrm Platform Contributors",
+  "license": "EPL-2.0",
+  "scripts": {
+    "build": "echo \"No build specified\" && exit 0",
+    "storybook": "storybook dev -p 6006",
+    "test": "echo \"No test specified\" && exit 0"
+  },
+  "devDependencies": {
+    "@hcengineering/platform": "^0.6.8",
+    "@hcengineering/theme": "^0.6.2",
+    "@hcengineering/ui": "^0.6.6",
+    "@storybook/addon-essentials": "^7.0.6",
+    "@storybook/addon-interactions": "^7.0.6",
+    "@storybook/addon-links": "^7.0.6",
+    "@storybook/addon-styling": "^1.0.1",
+    "@storybook/blocks": "^7.0.6",
+    "@storybook/svelte": "^7.0.6",
+    "@storybook/svelte-webpack5": "^7.0.6",
+    "@storybook/testing-library": "^0.0.14-next.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "resolve-url-loader": "^5.0.0",
+    "sass": "^1.53.0",
+    "sass-loader": "^13.2.0",
+    "storybook": "^7.0.6",
+    "storybook-addon-themes": "^6.1.0",
+    "svelte-preprocess": "5.0.3"
+  },
+  "repository": "https://github.com/hcenginneing/anticrm"
+}

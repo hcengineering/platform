@@ -927,6 +927,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/storybook",
+      "projectFolder": "dev/storybook",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/model-gmail",
       "projectFolder": "models/gmail",
       "shouldPublish": false
