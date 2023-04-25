@@ -21,7 +21,7 @@
   import { translate } from '@hcengineering/platform'
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
   import { EmployeeBox } from '@hcengineering/contact-resources'
-  import ui, { Button, DateRangePresenter, DropdownLabelsIntl, IconAttachment } from '@hcengineering/ui'
+  import ui, { Button, DateRangePresenter, DropdownLabelsIntl, IconAttachment, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import hr from '../plugin'
   import { getRequests } from '../utils'
@@ -151,5 +151,10 @@
         descriptionBox.attach()
       }}
     />
+  </svelte:fragment>
+  <svelte:fragment slot="error">
+    {#if notLimit}
+      <Label label={hr.string.ExistingRequests} />
+    {/if}
   </svelte:fragment>
 </Card>

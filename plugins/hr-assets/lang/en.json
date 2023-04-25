@@ -36,6 +36,7 @@
     "ChooseNewType": "Choose new type:",
     "UnchangeableType": "This type cannot be changed",
     "Request": "Request",
+    "ExistingRequests": "There are already existing requests for set dates",
     "Staff": "Worker",
     "Member": "Member",
     "Members": "Members",

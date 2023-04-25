@@ -36,6 +36,7 @@
     "ChooseNewType": "Выберите новый тип:",
     "UnchangeableType": "Этот тип нельзя поменять",
     "Request": "Запрос",
+    "ExistingRequests": "На данные даты уже существуют запросы",
     "Staff": "Работник",
     "Member": "Сотрудник",
     "Members": "Сотрудники",
