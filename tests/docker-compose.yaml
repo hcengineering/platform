@@ -52,6 +52,7 @@ services:
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
+      - MODEL_ENABLED=*
   collaborator:
     image: hardcoreeng/collaborator
     links:

@@ -58,7 +58,9 @@ export default mergeIds(boardId, board, {
   },
   string: {
     CommonBoardPreference: '' as IntlString,
-    ConvertToCard: '' as IntlString
+    ConvertToCard: '' as IntlString,
+    ConfigLabel: '' as IntlString,
+    ConfigDescription: '' as IntlString
   },
   action: {
     ConvertToCard: '' as Ref<Action>

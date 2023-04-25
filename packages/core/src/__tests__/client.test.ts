@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 import { Plugin, IntlString } from '@hcengineering/platform'
-import type { Class, Doc, Domain, Ref } from '../classes'
+import type { Class, Data, Doc, Domain, PluginConfiguration, Ref } from '../classes'
 import { Space, ClassifierKind, DOMAIN_MODEL } from '../classes'
 import { createClient, ClientConnection } from '../client'
 import core from '../component'
@@ -118,9 +118,11 @@ describe('client', () => {
     const spyCreate = jest.spyOn(TxProcessor, 'createDoc2Doc')
     const spyUpdate = jest.spyOn(TxProcessor, 'updateDoc2Doc')
 
-    const pluginData1 = {
-      pluginId: 'testPlugin1',
-      transactions: []
+    const pluginData1: Data<PluginConfiguration> = {
+      pluginId: 'testPlugin1' as Plugin,
+      transactions: [],
+      configurable: true,
+      enabled: true
     }
     const txCreateDoc1 = txFactory.createTxCreateDoc(core.class.PluginConfiguration, core.space.Model, pluginData1)
     txes.push(txCreateDoc1)
@@ -134,8 +136,10 @@ describe('client', () => {
     await client1.close()
 
     const pluginData2 = {
-      pluginId: 'testPlugin2',
-      transactions: []
+      pluginId: 'testPlugin2' as Plugin,
+      transactions: [],
+      configurable: true,
+      enabled: true
     }
     const txCreateDoc2 = txFactory.createTxCreateDoc(core.class.PluginConfiguration, core.space.Model, pluginData2)
     txes.push(txCreateDoc2)
@@ -150,8 +154,10 @@ describe('client', () => {
     await client2.close()
 
     const pluginData3 = {
-      pluginId: 'testPlugin3',
-      transactions: [txCreateDoc1._id]
+      pluginId: 'testPlugin3' as Plugin,
+      transactions: [txCreateDoc1._id],
+      configurable: true,
+      enabled: true
     }
     const txUpdateDoc = txFactory.createTxUpdateDoc(
       core.class.PluginConfiguration,

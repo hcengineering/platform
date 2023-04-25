@@ -13,12 +13,14 @@
 // limitations under the License.
 //
 
-import { Builder } from '@hcengineering/model'
 import core from '@hcengineering/core'
+import { Builder } from '@hcengineering/model'
 import serverCore from '@hcengineering/server-core'
+import serverNotification from '@hcengineering/server-notification'
 import serverTracker from '@hcengineering/server-tracker'
 import tracker from '@hcengineering/tracker'
-import serverNotification from '@hcengineering/server-notification'
+
+export { serverTrackerId } from '@hcengineering/server-tracker'
 
 export function createModel (builder: Builder): void {
   builder.mixin(tracker.class.Issue, core.class.Class, serverNotification.mixin.HTMLPresenter, {

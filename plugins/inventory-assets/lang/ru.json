@@ -18,6 +18,8 @@
     "SKU": "Артикул",
     "Variants": "Варианты",
     "NoVariantsForProduct": "Нет вариантов для этого продукта.",
-    "CreateVariant": "Создать вариант"
+    "CreateVariant": "Создать вариант",
+    "ConfigLabel": "Инвентарь",
+    "ConfigDescription": "Расширение по работе с инвентарем"
   }
 }

@@ -287,7 +287,9 @@
     "HourLabel": "h",
     "Saved": "Saved...",
     "CreatedIssue": "Created issue",
-    "CreatedSubIssue": "Created sub-issue"
+    "CreatedSubIssue": "Created sub-issue",
+    "ConfigLabel": "Tracker",
+    "ConfigDescription": "Extension to manage work items and do all jobs done."
   },
   "status": {}
 }

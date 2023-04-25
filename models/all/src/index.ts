@@ -17,132 +17,310 @@ import core, { coreId, Data, PluginConfiguration, Ref, Tx, Version } from '@hcen
 import jsonVersion from './version.json'
 
 import { Builder } from '@hcengineering/model'
-import { createModel as activityModel } from '@hcengineering/model-activity'
-import { createModel as attachmentModel } from '@hcengineering/model-attachment'
-import { createModel as automationModel } from '@hcengineering/model-automation'
-import { createModel as chunterModel } from '@hcengineering/model-chunter'
-import { createModel as contactModel } from '@hcengineering/model-contact'
+import { activityId, createModel as activityModel } from '@hcengineering/model-activity'
+import { attachmentId, createModel as attachmentModel } from '@hcengineering/model-attachment'
+import { automationId, createModel as automationModel } from '@hcengineering/model-automation'
+import bitrix, { bitrixId, createModel as bitrixModel } from '@hcengineering/model-bitrix'
+import board, { boardId, createModel as boardModel } from '@hcengineering/model-board'
+import calendar, { calendarId, createModel as calendarModel } from '@hcengineering/model-calendar'
+import chunter, { chunterId, createModel as chunterModel } from '@hcengineering/model-chunter'
+import contact, { contactId, createModel as contactModel } from '@hcengineering/model-contact'
 import { createModel as coreModel } from '@hcengineering/model-core'
-import { createModel as gmailModel } from '@hcengineering/model-gmail'
-import { createModel as inventoryModel } from '@hcengineering/model-inventory'
-import { createModel as leadModel } from '@hcengineering/model-lead'
-import { createModel as presentationModel } from '@hcengineering/model-presentation'
-import { createModel as recruitModel } from '@hcengineering/model-recruit'
-import { createModel as serverAttachmentModel } from '@hcengineering/model-server-attachment'
-import { createModel as serverContactModel } from '@hcengineering/model-server-contact'
-import { createModel as serverNotificationModel } from '@hcengineering/model-server-notification'
-import { createModel as serverChunterModel } from '@hcengineering/model-server-chunter'
-import { createModel as serverInventoryModel } from '@hcengineering/model-server-inventory'
-import { createModel as serverLeadModel } from '@hcengineering/model-server-lead'
-import { createModel as serverTaskModel } from '@hcengineering/model-server-task'
-import { createModel as serverTrackerModel } from '@hcengineering/model-server-tracker'
-import { createModel as serverTagsModel } from '@hcengineering/model-server-tags'
-import { createModel as serveSettingModel } from '@hcengineering/model-server-setting'
-import { createModel as serverRecruitModel } from '@hcengineering/model-server-recruit'
-import { createModel as serverCoreModel } from '@hcengineering/model-server-core'
-import { createModel as settingModel } from '@hcengineering/model-setting'
-import { createModel as taskModel } from '@hcengineering/model-task'
-import { createModel as telegramModel } from '@hcengineering/model-telegram'
-import { createModel as templatesModel } from '@hcengineering/model-templates'
-import { createModel as textEditorModel } from '@hcengineering/model-text-editor'
-import { createModel as viewModel } from '@hcengineering/model-view'
-import { createModel as workbenchModel } from '@hcengineering/model-workbench'
-import { createModel as notificationModel } from '@hcengineering/model-notification'
-import { createModel as tagsModel } from '@hcengineering/model-tags'
-import { createModel as calendarModel } from '@hcengineering/model-calendar'
-import { createModel as serverCalendarModel } from '@hcengineering/model-server-calendar'
-import { createModel as serverGmailModel } from '@hcengineering/model-server-gmail'
-import { createModel as serverTelegramModel } from '@hcengineering/model-server-telegram'
-import { createModel as trackerModel } from '@hcengineering/model-tracker'
-import { createModel as boardModel } from '@hcengineering/model-board'
-import { createModel as preferenceModel } from '@hcengineering/model-preference'
-import { createModel as hrModel } from '@hcengineering/model-hr'
-import { createModel as serverHrModel } from '@hcengineering/model-server-hr'
-import { createModel as documentModel } from '@hcengineering/model-document'
-import { createModel as bitrixModel } from '@hcengineering/model-bitrix'
-import { createModel as requestModel } from '@hcengineering/model-request'
-import { createModel as serverRequestModel } from '@hcengineering/model-server-request'
-import { createModel as serverViewModel } from '@hcengineering/model-server-view'
+import document, { documentId, createModel as documentModel } from '@hcengineering/model-document'
+import gmail, { gmailId, createModel as gmailModel } from '@hcengineering/model-gmail'
+import hr, { hrId, createModel as hrModel } from '@hcengineering/model-hr'
+import inventory, { inventoryId, createModel as inventoryModel } from '@hcengineering/model-inventory'
+import lead, { leadId, createModel as leadModel } from '@hcengineering/model-lead'
+import { notificationId, createModel as notificationModel } from '@hcengineering/model-notification'
+import { preferenceId, createModel as preferenceModel } from '@hcengineering/model-preference'
+import { presentationId, createModel as presentationModel } from '@hcengineering/model-presentation'
+import recruit, { recruitId, createModel as recruitModel } from '@hcengineering/model-recruit'
+import { requestId, createModel as requestModel } from '@hcengineering/model-request'
+import { serverAttachmentId, createModel as serverAttachmentModel } from '@hcengineering/model-server-attachment'
+import { serverCalendarId, createModel as serverCalendarModel } from '@hcengineering/model-server-calendar'
+import { serverChunterId, createModel as serverChunterModel } from '@hcengineering/model-server-chunter'
+import { serverContactId, createModel as serverContactModel } from '@hcengineering/model-server-contact'
+import { serverCoreId, createModel as serverCoreModel } from '@hcengineering/model-server-core'
+import { serverGmailId, createModel as serverGmailModel } from '@hcengineering/model-server-gmail'
+import { serverHrId, createModel as serverHrModel } from '@hcengineering/model-server-hr'
+import { serverInventoryId, createModel as serverInventoryModel } from '@hcengineering/model-server-inventory'
+import { serverLeadId, createModel as serverLeadModel } from '@hcengineering/model-server-lead'
+import { serverNotificationId, createModel as serverNotificationModel } from '@hcengineering/model-server-notification'
+import { serverRecruitId, createModel as serverRecruitModel } from '@hcengineering/model-server-recruit'
+import { serverRequestId, createModel as serverRequestModel } from '@hcengineering/model-server-request'
+import { serverSettingId, createModel as serveSettingModel } from '@hcengineering/model-server-setting'
+import { serverTagsId, createModel as serverTagsModel } from '@hcengineering/model-server-tags'
+import { serverTaskId, createModel as serverTaskModel } from '@hcengineering/model-server-task'
+import { serverTelegramId, createModel as serverTelegramModel } from '@hcengineering/model-server-telegram'
+import { serverTrackerId, createModel as serverTrackerModel } from '@hcengineering/model-server-tracker'
+import { serverViewId, createModel as serverViewModel } from '@hcengineering/model-server-view'
+import setting, { settingId, createModel as settingModel } from '@hcengineering/model-setting'
+import { tagsId, createModel as tagsModel } from '@hcengineering/model-tags'
+import { taskId, createModel as taskModel } from '@hcengineering/model-task'
+import telegram, { telegramId, createModel as telegramModel } from '@hcengineering/model-telegram'
+import { templatesId, createModel as templatesModel } from '@hcengineering/model-templates'
+import { textEditorId, createModel as textEditorModel } from '@hcengineering/model-text-editor'
+import tracker, { trackerId, createModel as trackerModel } from '@hcengineering/model-tracker'
+import view, { viewId, createModel as viewModel } from '@hcengineering/model-view'
+import workbench, { workbenchId, createModel as workbenchModel } from '@hcengineering/model-workbench'
 
-import { createModel as serverTranslate } from '@hcengineering/model-server-translate'
-import { createModel as serverOpenAI } from '@hcengineering/model-server-openai'
+import { openAIId, createModel as serverOpenAI } from '@hcengineering/model-server-openai'
+import { createModel as serverTranslate, translateId } from '@hcengineering/model-server-translate'
+
+import { Plugin } from '@hcengineering/platform'
 
 export const version: Data<Version> = jsonVersion as Data<Version>
 
-const builder = new Builder()
+interface ConfigurablePlugin extends Omit<Data<PluginConfiguration>, 'pluginId' | 'transactions'> {}
 
-const builders: [(b: Builder) => void, string][] = [
-  [coreModel, coreId],
-  [activityModel, 'activity'],
-  [attachmentModel, 'attachment'],
-  [tagsModel, 'tags'],
-  [viewModel, 'view'],
-  [workbenchModel, 'workbench'],
-  [contactModel, 'contact'],
-  [chunterModel, 'chunter'],
-  [taskModel, 'task'],
-  [recruitModel, 'recruit'],
-  [settingModel, 'setting'],
-  [telegramModel, 'telegram'],
-  [leadModel, 'lead'],
-  [gmailModel, 'gmail'],
-  [inventoryModel, 'inventory'],
-  [presentationModel, 'presentation'],
-  [templatesModel, 'templates'],
-  [textEditorModel, 'text-editor'],
-  [notificationModel, 'notification'],
-  [preferenceModel, 'preference'],
-  [hrModel, 'hr'],
-  [documentModel, 'document'],
-  [trackerModel, 'tracker'],
-  [boardModel, 'board'],
-  [calendarModel, 'calendar'],
-  [bitrixModel, 'bitrix'],
-  [requestModel, 'request'],
+type BuilderConfig = [(b: Builder) => void, Plugin] | [(b: Builder) => void, Plugin, ConfigurablePlugin | undefined]
 
-  [serverCoreModel, 'server-core'],
-  [serverAttachmentModel, 'server-attachment'],
-  [serverContactModel, 'server-contact'],
-  [serveSettingModel, 'server-setting'],
-  [serverChunterModel, 'server-chunter'],
-  [serverInventoryModel, 'server-inventory'],
-  [serverLeadModel, 'server-lead'],
-  [serverTagsModel, 'server-tags'],
-  [serverTaskModel, 'server-task'],
-  [serverTrackerModel, 'server-tracker'],
-  [serverRecruitModel, 'server-recruit'],
-  [serverCalendarModel, 'server-calendar'],
-  [serverGmailModel, 'server-gmail'],
-  [serverTelegramModel, 'server-telegram'],
-  [serverHrModel, 'server-hr'],
-  [serverNotificationModel, 'server-notification'],
-  [serverRequestModel, 'server-request'],
-  [serverViewModel, 'server-view'],
-  [automationModel, 'automation'],
-  [serverTranslate, 'translate'],
-  [serverOpenAI, 'openai']
-]
+/**
+ * @public
+ * @param enabled - a set of enabled plugins
+ * @param disabled  - a set of disabled plugins
+ * @returns
+ */
+export default function buildModel (enabled: string[] = ['*'], disabled: string[] = []): Builder {
+  const builder = new Builder()
 
-for (const [b, id] of builders) {
-  const txes: Tx[] = []
-  builder.onTx = (tx) => {
-    txes.push(tx)
+  const builders: BuilderConfig[] = [
+    [coreModel, coreId],
+    [activityModel, activityId],
+    [attachmentModel, attachmentId],
+    [tagsModel, tagsId],
+    [viewModel, viewId],
+    [workbenchModel, workbenchId],
+    [
+      contactModel,
+      contactId,
+      {
+        label: contact.string.ConfigLabel,
+        description: contact.string.ConfigDescription,
+        enabled: true,
+        configurable: false,
+        icon: contact.icon.ContactApplication,
+        classFilter: [workbench.class.Application]
+      }
+    ],
+    [
+      chunterModel,
+      chunterId,
+      {
+        label: chunter.string.ConfigLabel,
+        description: chunter.string.ConfigDescription,
+        enabled: false,
+        configurable: false,
+        icon: chunter.icon.Chunter,
+        classFilter: [workbench.class.Application]
+      }
+    ],
+    [taskModel, taskId],
+    [
+      recruitModel,
+      recruitId,
+      {
+        label: recruit.string.ConfigLabel,
+        description: recruit.string.ConfigDescription,
+        enabled: true,
+        icon: recruit.icon.RecruitApplication,
+        classFilter: [workbench.class.Application, view.class.Action],
+        configurable: true
+      }
+    ],
+    [settingModel, settingId],
+    [
+      telegramModel,
+      telegramId,
+      {
+        label: telegram.string.ConfigLabel,
+        description: telegram.string.ConfigDescription,
+        enabled: true,
+        classFilter: [
+          workbench.class.Application,
+          view.class.Action,
+          contact.class.ChannelProvider,
+          setting.class.IntegrationType
+        ],
+        configurable: true
+      }
+    ],
+    [
+      leadModel,
+      leadId,
+      {
+        label: lead.string.ConfigLabel,
+        description: lead.string.ConfigDescription,
+        enabled: true,
+        icon: lead.icon.LeadApplication,
+        configurable: false
+      }
+    ],
+    [
+      gmailModel,
+      gmailId,
+      {
+        label: gmail.string.ConfigLabel,
+        description: gmail.string.ConfigDescription,
+        enabled: true,
+        classFilter: [
+          workbench.class.Application,
+          view.class.Action,
+          contact.class.ChannelProvider,
+          setting.class.IntegrationType
+        ],
+        configurable: true
+      }
+    ],
+    [
+      inventoryModel,
+      inventoryId,
+      {
+        label: inventory.string.ConfigLabel,
+        description: inventory.string.ConfigDescription,
+        enabled: true,
+        icon: inventory.icon.InventoryApplication,
+        classFilter: [workbench.class.Application, view.class.Action],
+        configurable: false
+      }
+    ],
+    [presentationModel, presentationId],
+    [templatesModel, templatesId],
+    [textEditorModel, textEditorId],
+    [notificationModel, notificationId],
+    [preferenceModel, preferenceId],
+    [
+      hrModel,
+      hrId,
+      {
+        label: hr.string.ConfigLabel,
+        description: hr.string.ConfigDescription,
+        enabled: true,
+        icon: hr.icon.Structure,
+        classFilter: [workbench.class.Application, view.class.Action],
+        configurable: true
+      }
+    ],
+    [
+      documentModel,
+      documentId,
+      {
+        label: document.string.ConfigLabel,
+        description: document.string.ConfigDescription,
+        enabled: true,
+        icon: document.icon.DocumentApplication,
+        configurable: false
+      }
+    ],
+    [
+      trackerModel,
+      trackerId,
+      {
+        label: tracker.string.ConfigLabel,
+        description: tracker.string.ConfigDescription,
+        enabled: true,
+        icon: tracker.icon.TrackerApplication,
+        classFilter: [workbench.class.Application, view.class.Action],
+        configurable: true
+      }
+    ],
+    [
+      boardModel,
+      boardId,
+      {
+        label: board.string.ConfigLabel,
+        description: board.string.ConfigDescription,
+        enabled: true,
+        icon: board.icon.Board,
+        classFilter: [workbench.class.Application, view.class.Action],
+        configurable: false
+      }
+    ],
+    [
+      calendarModel,
+      calendarId,
+      {
+        label: calendar.string.ConfigLabel,
+        description: calendar.string.ConfigDescription,
+        enabled: true,
+        icon: calendar.icon.Calendar,
+        classFilter: [workbench.class.Application],
+        configurable: false
+      }
+    ],
+    [
+      bitrixModel,
+      bitrixId,
+      {
+        label: bitrix.string.ConfigLabel,
+        description: bitrix.string.ConfigDescription,
+        enabled: false,
+        icon: bitrix.icon.Bitrix,
+        configurable: false
+      }
+    ],
+    [
+      requestModel,
+      requestId,
+      {
+        // label: request.string.ConfigLabel,
+        // description: request.string.ConfigDescription,
+        enabled: false,
+        configurable: false,
+        classFilter: [workbench.class.Application, view.class.Action]
+      }
+    ],
+    [automationModel, automationId],
+
+    [serverCoreModel, serverCoreId],
+    [serverAttachmentModel, serverAttachmentId],
+    [serverContactModel, serverContactId],
+    [serveSettingModel, serverSettingId],
+    [serverChunterModel, serverChunterId],
+    [serverInventoryModel, serverInventoryId],
+    [serverLeadModel, serverLeadId],
+    [serverTagsModel, serverTagsId],
+    [serverTaskModel, serverTaskId],
+    [serverTrackerModel, serverTrackerId],
+    [serverRecruitModel, serverRecruitId],
+    [serverCalendarModel, serverCalendarId],
+    [serverGmailModel, serverGmailId],
+    [serverTelegramModel, serverTelegramId],
+    [serverHrModel, serverHrId],
+    [serverNotificationModel, serverNotificationId],
+    [serverRequestModel, serverRequestId],
+    [serverViewModel, serverViewId],
+
+    [serverTranslate, translateId],
+    [serverOpenAI, openAIId]
+  ]
+
+  for (const [b, id, config] of builders) {
+    const txes: Tx[] = []
+    builder.onTx = (tx) => {
+      txes.push(tx)
+    }
+    b(builder)
+    builder.createDoc(
+      core.class.PluginConfiguration,
+      core.space.Model,
+      {
+        pluginId: id,
+        transactions: txes.map((it) => it._id),
+        ...config,
+        enabled:
+          config?.label === undefined ||
+          ((config?.enabled ?? true) && (enabled.includes(id) || enabled.includes('*')) && !disabled.includes(id)),
+        configurable: config?.configurable ?? false
+      },
+      ('plugin-configuration-' + id) as Ref<PluginConfiguration>
+    )
+    builder.onTx = undefined
   }
-  b(builder)
-  builder.createDoc(
-    core.class.PluginConfiguration,
-    core.space.Model,
-    {
-      pluginId: id,
-      transactions: txes.map((it) => it._id)
-    },
-    ('plugin-configuration-' + id) as Ref<PluginConfiguration>
-  )
-  builder.onTx = undefined
-}
 
-builder.createDoc(core.class.Version, core.space.Model, version, core.version.Model)
-export default builder
+  builder.createDoc(core.class.Version, core.space.Model, version, core.version.Model)
+  return builder
+}
 
 // Export upgrade procedures
 export { migrateOperations } from './migration'

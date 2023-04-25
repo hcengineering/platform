@@ -37,6 +37,8 @@
     "AllDay": "Весь день",
     "AndMore": "И еще {count}",
     "CreateEvent": "Создать событие",
-    "EventFor": "Событие для: "
+    "EventFor": "Событие для: ",
+    "ConfigLabel": "Календаоь",
+    "ConfigDescription": "Расширение для календаря с событиями"
   }
 }

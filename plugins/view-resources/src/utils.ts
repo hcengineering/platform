@@ -41,7 +41,13 @@ import core, {
 } from '@hcengineering/core'
 import type { IntlString } from '@hcengineering/platform'
 import { getResource } from '@hcengineering/platform'
-import { AttributeCategory, createQuery, getAttributePresenterClass, KeyedAttribute } from '@hcengineering/presentation'
+import {
+  AttributeCategory,
+  createQuery,
+  getAttributePresenterClass,
+  hasResource,
+  KeyedAttribute
+} from '@hcengineering/presentation'
 import {
   AnyComponent,
   ErrorPresenter,
@@ -73,12 +79,14 @@ export async function getObjectPresenter (
   client: Client,
   _class: Ref<Class<Obj>>,
   preserveKey: BuildModelKey,
-  isCollectionAttr: boolean = false
+  isCollectionAttr: boolean = false,
+  checkResource = false
 ): Promise<AttributeModel> {
   const hierarchy = client.getHierarchy()
   const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : view.mixin.ObjectPresenter
   const clazz = hierarchy.getClass(_class)
-  const presenterMixin = hierarchy.classHierarchyMixin(_class, mixin)
+
+  const presenterMixin = hierarchy.classHierarchyMixin(_class, mixin, (m) => !checkResource || hasResource(m.presenter))
   if (presenterMixin?.presenter === undefined) {
     throw new Error(
       `object presenter not found for class=${_class}, mixin=${mixin}, preserve key ${JSON.stringify(preserveKey)}`
@@ -871,9 +879,16 @@ export async function moveToSpace (
  * @public
  */
 export function getAdditionalHeader (client: TxOperations, _class: Ref<Class<Doc>>): AnyComponent[] | undefined {
-  const hierarchy = client.getHierarchy()
-  const presenterMixin = hierarchy.classHierarchyMixin(_class, view.mixin.ListHeaderExtra)
-  return presenterMixin?.presenters
+  try {
+    const hierarchy = client.getHierarchy()
+    const presenterMixin = hierarchy.classHierarchyMixin(_class, view.mixin.ListHeaderExtra)
+    return presenterMixin?.presenters?.filter((it) => hasResource(it))
+  } catch (e: any) {
+    if (((e?.message as string) ?? '').includes('class not found')) {
+      return undefined
+    }
+    throw e
+  }
 }
 
 export async function getObjectLinkFragment (
@@ -882,7 +897,9 @@ export async function getObjectLinkFragment (
   props: Record<string, any> = {},
   component: AnyComponent = view.component.EditDoc
 ): Promise<Location> {
-  const provider = hierarchy.classHierarchyMixin(Hierarchy.mixinOrClass(object), view.mixin.LinkProvider)
+  const provider = hierarchy.classHierarchyMixin(Hierarchy.mixinOrClass(object), view.mixin.LinkProvider, (m) =>
+    hasResource(m.encode)
+  )
   if (provider?.encode !== undefined) {
     const f = await getResource(provider.encode)
     const res = await f(object, props)
@@ -891,7 +908,9 @@ export async function getObjectLinkFragment (
     }
   }
   const loc = getCurrentResolvedLocation()
-  loc.fragment = getPanelURI(component, object._id, Hierarchy.mixinOrClass(object), 'content')
+  if (hasResource(component)) {
+    loc.fragment = getPanelURI(component, object._id, Hierarchy.mixinOrClass(object), 'content')
+  }
   return loc
 }
 

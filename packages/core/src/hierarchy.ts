@@ -74,11 +74,18 @@ export class Hierarchy {
     return typeof (d as any)[mixin] === 'object'
   }
 
-  classHierarchyMixin<D extends Doc, M extends D>(_class: Ref<Class<D>>, mixin: Ref<Mixin<M>>): M | undefined {
+  classHierarchyMixin<D extends Doc, M extends D>(
+    _class: Ref<Class<D>>,
+    mixin: Ref<Mixin<M>>,
+    filter?: (value: M) => boolean
+  ): M | undefined {
     let clazz = this.getClass(_class)
     while (true) {
       if (this.hasMixin(clazz, mixin)) {
-        return this.as(clazz, mixin) as any as M
+        const m = this.as(clazz, mixin) as any as M
+        if (m !== undefined && (filter?.(m) ?? true)) {
+          return m
+        }
       }
       if (clazz.extends === undefined) return
       clazz = this.getClass(clazz.extends)

@@ -15,4 +15,6 @@
 
 import { Builder } from '@hcengineering/model'
 
+export { serverTaskId } from '@hcengineering/server-task'
+
 export function createModel (builder: Builder): void {}

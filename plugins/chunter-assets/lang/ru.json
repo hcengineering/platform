@@ -65,6 +65,8 @@
     "NoResults": "Нет результатов",
     "CopyLink": "Копировать ссылку",
     "FilterComments": "Коментарии",
-    "FilterBacklinks": "Упоминания"
+    "FilterBacklinks": "Упоминания",
+    "ConfigLabel": "Чат",
+    "ConfigDescription": "Расширение для текстовых переписок"
   }
 }

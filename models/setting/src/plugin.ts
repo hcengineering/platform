@@ -28,7 +28,8 @@ export default mergeIds(settingId, setting, {
   },
   ids: {
     TxIntegrationDisable: '' as Ref<TxViewlet>,
-    EnumSetting: '' as Ref<Doc>
+    EnumSetting: '' as Ref<Doc>,
+    Configure: '' as Ref<Doc>
   },
   component: {
     EnumSetting: '' as AnyComponent,
@@ -43,7 +44,8 @@ export default mergeIds(settingId, setting, {
     CreateMixin: '' as AnyComponent,
     InviteSetting: '' as AnyComponent,
     ArrayEditor: '' as AnyComponent,
-    IntegrationPanel: '' as AnyComponent
+    IntegrationPanel: '' as AnyComponent,
+    Configure: '' as AnyComponent
   },
   category: {
     Settings: '' as Ref<ActionCategory>

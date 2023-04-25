@@ -18,6 +18,10 @@ import { Builder, Model, Prop, TypeRef } from '@hcengineering/model'
 import core, { TDoc } from '@hcengineering/model-core'
 import preference, { DOMAIN_PREFERENCE, Preference, SpacePreference } from '@hcengineering/preference'
 
+export { preferenceId } from '@hcengineering/preference'
+export { preferenceOperation } from './migration'
+export { preference as default }
+
 @Model(preference.class.Preference, core.class.Doc, DOMAIN_PREFERENCE)
 export class TPreference extends TDoc implements Preference {
   @Prop(TypeRef(core.class.Doc), core.string.AttachedTo)
@@ -33,6 +37,3 @@ export class TSpacePreference extends TPreference implements SpacePreference {
 export function createModel (builder: Builder): void {
   builder.createModel(TPreference, TSpacePreference)
 }
-
-export { preference as default }
-export { preferenceOperation } from './migration'

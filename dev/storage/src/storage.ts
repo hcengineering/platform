@@ -65,7 +65,7 @@ class InMemoryTxAdapter extends DummyDbAdapter implements TxAdapter {
   }
 
   async getModel (): Promise<Tx[]> {
-    return builder.getTxes()
+    return builder().getTxes()
   }
 }
 

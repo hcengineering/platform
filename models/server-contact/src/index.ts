@@ -16,11 +16,12 @@
 
 import { Builder } from '@hcengineering/model'
 
-import serverCore from '@hcengineering/server-core'
-import core from '@hcengineering/core'
 import contact from '@hcengineering/contact'
-import serverNotification from '@hcengineering/server-notification'
+import core from '@hcengineering/core'
 import serverContact from '@hcengineering/server-contact'
+import serverCore from '@hcengineering/server-core'
+import serverNotification from '@hcengineering/server-notification'
+export { serverContactId } from '@hcengineering/server-contact'
 
 export function createModel (builder: Builder): void {
   builder.mixin(contact.class.Person, core.class.Class, serverNotification.mixin.HTMLPresenter, {

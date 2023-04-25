@@ -82,7 +82,11 @@ export default mergeIds(contactId, contact, {
     WhatsappPlaceholder: '' as IntlString,
     Profile: '' as IntlString,
     ProfilePlaceholder: '' as IntlString,
-    CurrentEmployee: '' as IntlString
+
+    CurrentEmployee: '' as IntlString,
+
+    ConfigLabel: '' as IntlString,
+    ConfigDescription: '' as IntlString
   },
   completion: {
     PersonQuery: '' as Resource<ObjectSearchFactory>,

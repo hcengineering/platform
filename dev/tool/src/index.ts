@@ -52,6 +52,7 @@ import { openAIConfigDefaults } from '@hcengineering/openai'
 import { cleanArchivedSpaces, cleanRemovedTransactions, cleanWorkspace } from './clean'
 import { rebuildElastic } from './elastic'
 import { openAIConfig } from './openai'
+import { changeConfiguration } from './configuration'
 
 /**
  * @public
@@ -442,7 +443,7 @@ export function devTool (
     .option('--recruit', 'Clean recruit', false)
     .option('--tracker', 'Clean tracker', false)
     .option('--removedTx', 'Clean removed transactions', false)
-    .action(async (workspace: string, cmd: { recruit: boolean, tracker: boolean, removeTx: boolean }) => {
+    .action(async (workspace: string, cmd: { recruit: boolean, tracker: boolean, removedTx: boolean }) => {
       const { mongodbUri, minio } = prepareTools()
       return await withDatabase(mongodbUri, async (db) => {
         await cleanWorkspace(
@@ -468,6 +469,17 @@ export function devTool (
     .description('clean archived spaces')
     .action(async (workspace: string, cmd: any) => {
       await cleanArchivedSpaces(getWorkspaceId(workspace, productId), transactorUrl)
+    })
+
+  program
+    .command('configure <workspace>')
+    .description('clean archived spaces')
+    .option('--enable <enable>', 'Enable plugin configuration', '')
+    .option('--disable <disable>', 'Disable plugin configuration', '')
+    .option('--list', 'List plugin states', false)
+    .action(async (workspace: string, cmd: { enable: string, disable: string, list: boolean }) => {
+      console.log(JSON.stringify(cmd))
+      await changeConfiguration(getWorkspaceId(workspace, productId), transactorUrl, cmd)
     })
 
   program.parse(process.argv)

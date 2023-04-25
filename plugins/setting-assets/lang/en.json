@@ -74,6 +74,11 @@
     "SelectAValue": "Select a value",
     "DateOnly": "Date only",
     "OnlyTime": "Only time",
-    "DateAndTime": "Date and time"
+    "DateAndTime": "Date and time",
+    "Configuration": "Configuration",
+    "ConfigurationEnabled": "Enabled",
+    "ConfigurationDisabled": "Disabled",
+    "ConfigDisable": "Disable",
+    "ConfigEnable": "Enable"
   }
 }

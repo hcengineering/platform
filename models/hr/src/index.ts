@@ -14,16 +14,16 @@
 //
 
 import { Contact, Employee } from '@hcengineering/contact'
-import { Arr, Class, Domain, DOMAIN_MODEL, IndexKind, Markup, Ref, Type } from '@hcengineering/core'
+import { Arr, Class, DOMAIN_MODEL, Domain, IndexKind, Markup, Ref, Type } from '@hcengineering/core'
 import {
   Department,
   DepartmentMember,
-  hrId,
   PublicHoliday,
   Request,
   RequestType,
   Staff,
-  TzDate
+  TzDate,
+  hrId
 } from '@hcengineering/hr'
 import {
   ArrOf,
@@ -47,9 +47,13 @@ import contact, { TEmployee, TEmployeeAccount } from '@hcengineering/model-conta
 import core, { TAttachedDoc, TDoc, TSpace, TType } from '@hcengineering/model-core'
 import view, { classPresenter, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
+import notification from '@hcengineering/notification'
 import { Asset, IntlString } from '@hcengineering/platform'
 import hr from './plugin'
-import notification from '@hcengineering/notification'
+
+export { hrId } from '@hcengineering/hr'
+export { hrOperation } from './migration'
+export { default } from './plugin'
 
 export const DOMAIN_HR = 'hr' as Domain
 
@@ -482,6 +486,3 @@ export function createModel (builder: Builder): void {
     hr.ids.CreatePublicHolidayNotification
   )
 }
-
-export { hrOperation } from './migration'
-export { default } from './plugin'

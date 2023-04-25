@@ -14,10 +14,12 @@
 //
 
 import activity from '@hcengineering/activity'
+import contact from '@hcengineering/contact'
 import { Account, Domain, DOMAIN_MODEL, Ref } from '@hcengineering/core'
 import { Builder, Mixin, Model } from '@hcengineering/model'
 import core, { TClass, TConfiguration, TDoc } from '@hcengineering/model-core'
 import view, { createAction } from '@hcengineering/model-view'
+import notification from '@hcengineering/notification'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import {
   Editable,
@@ -30,13 +32,15 @@ import {
   UserMixin
 } from '@hcengineering/setting'
 import task from '@hcengineering/task'
-import setting from './plugin'
 import templates from '@hcengineering/templates'
-import contact from '@hcengineering/contact'
-import notification from '@hcengineering/notification'
+import setting from './plugin'
 
 import workbench from '@hcengineering/model-workbench'
 import { AnyComponent } from '@hcengineering/ui'
+
+export { settingId } from '@hcengineering/setting'
+export { default } from './plugin'
+export { settingOperation } from './migration'
 
 export const DOMAIN_SETTING = 'setting' as Domain
 
@@ -179,6 +183,19 @@ export function createModel (builder: Builder): void {
       secured: true
     },
     setting.ids.Owners
+  )
+  builder.createDoc(
+    setting.class.WorkspaceSettingCategory,
+    core.space.Model,
+    {
+      name: 'configuration',
+      label: setting.string.Configure,
+      icon: setting.icon.Setting,
+      component: setting.component.Configure,
+      order: 1001,
+      secured: true
+    },
+    setting.ids.Configure
   )
   builder.createDoc(
     setting.class.WorkspaceSettingCategory,
@@ -466,5 +483,3 @@ export function createModel (builder: Builder): void {
     setting.templateField.OwnerPosition
   )
 }
-
-export { settingOperation } from './migration'

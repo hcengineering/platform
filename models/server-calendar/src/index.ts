@@ -16,8 +16,10 @@
 import { Builder } from '@hcengineering/model'
 
 import core, { Class, Doc } from '@hcengineering/core'
-import serverCore, { ObjectDDParticipant } from '@hcengineering/server-core'
 import serverCalendar from '@hcengineering/server-calendar'
+import serverCore, { ObjectDDParticipant } from '@hcengineering/server-core'
+
+export { serverCalendarId } from '@hcengineering/server-calendar'
 
 export function createModel (builder: Builder): void {
   builder.mixin<Class<Doc>, ObjectDDParticipant>(

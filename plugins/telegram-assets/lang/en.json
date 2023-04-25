@@ -22,6 +22,8 @@
     "Telegram": "Telegram",
     "TelegramIntegrationDesc": "Use telegram integration",
     "Status": "Status",
-    "MessagesSelected": "messages selected"
+    "MessagesSelected": "messages selected",
+    "ConfigLabel": "Telegram",
+    "ConfigDescription": "Extension to read and write Telegram messages"
   }
 }

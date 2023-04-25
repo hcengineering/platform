@@ -26,6 +26,7 @@
     createQuery,
     getAttributePresenterClass,
     getClient,
+    hasResource,
     KeyedAttribute
   } from '@hcengineering/presentation'
   import { AnyComponent, Button, Component, IconMixin, IconMoreH, showPopup } from '@hcengineering/ui'
@@ -231,7 +232,9 @@
   }
 
   async function getHeaderEditor (_class: Ref<Class<Doc>>): Promise<AnyComponent | undefined> {
-    const editorMixin = hierarchy.classHierarchyMixin(_class, view.mixin.ObjectEditorHeader)
+    const editorMixin = hierarchy.classHierarchyMixin(_class, view.mixin.ObjectEditorHeader, (m) =>
+      hasResource(m.editor)
+    )
     return editorMixin?.editor
   }
 

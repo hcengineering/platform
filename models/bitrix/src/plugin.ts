@@ -29,7 +29,9 @@ export default mergeIds(bitrixId, bitrix, {
     BitrixImport: '' as AnyComponent
   },
   string: {
-    BitrixImport: '' as IntlString
+    BitrixImport: '' as IntlString,
+    ConfigLabel: '' as IntlString,
+    ConfigDescription: '' as IntlString
   },
   action: {
     BitrixImport: '' as Ref<Action>

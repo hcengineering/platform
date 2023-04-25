@@ -18,7 +18,7 @@ import {} from '@hcengineering/core'
 import { documentId } from '@hcengineering/document'
 import document from '@hcengineering/document-resources/src/plugin'
 import { ObjectSearchCategory, ObjectSearchFactory } from '@hcengineering/model-presentation'
-import { mergeIds, Resource } from '@hcengineering/platform'
+import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
 import { TagCategory } from '@hcengineering/tags'
 import { AnyComponent } from '@hcengineering/ui'
 import { ActionCategory } from '@hcengineering/view'
@@ -40,5 +40,9 @@ export default mergeIds(documentId, document, {
   },
   viewlet: {
     TableDocument: '' as Ref<Doc>
+  },
+  string: {
+    ConfigLabel: '' as IntlString,
+    ConfigDescription: '' as IntlString
   }
 })

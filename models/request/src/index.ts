@@ -31,12 +31,15 @@ import {
   TypeString,
   UX
 } from '@hcengineering/model'
-import core, { TAttachedDoc, TClass } from '@hcengineering/model-core'
-import { Request, RequestDecisionComment, RequestStatus, RequestPresenter } from '@hcengineering/request'
-import request from './plugin'
-import view from '@hcengineering/model-view'
 import { TComment } from '@hcengineering/model-chunter'
+import core, { TAttachedDoc, TClass } from '@hcengineering/model-core'
+import view from '@hcengineering/model-view'
+import { Request, RequestDecisionComment, RequestPresenter, RequestStatus } from '@hcengineering/request'
 import { AnyComponent } from '@hcengineering/ui'
+import request from './plugin'
+
+export { requestId } from '@hcengineering/request'
+export { default } from './plugin'
 
 export const DOMAIN_REQUEST = 'request' as Domain
 
@@ -105,5 +108,3 @@ export function createModel (builder: Builder): void {
     request.ids.TxRequestCreate
   )
 }
-
-export { default } from './plugin'

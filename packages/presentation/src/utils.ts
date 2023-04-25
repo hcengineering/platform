@@ -127,7 +127,7 @@ export async function setClient (_client: Client): Promise<void> {
 
     txListeners.forEach((it) => it(tx))
   }
-  if (needRefresh) {
+  if (needRefresh || globalQueries.length > 0) {
     await refreshClient()
   }
 }
@@ -187,6 +187,15 @@ export class LiveQuery {
     callback: (result: FindResult<T>) => void,
     options: FindOptions<T> | undefined
   ): Promise<void> {
+    if (pipeline === undefined) {
+      // We need remember values to perform refresh.
+      this.oldCallback = callback
+      this.oldClass = _class
+      this.oldOptions = options
+      this.oldQuery = query
+
+      return
+    }
     const id = ++this.reqId
     const piplineQuery = await pipeline.subscribe(_class, query, options, () => {
       // Refresh query if pipeline decide it is required.

@@ -16,9 +16,11 @@
 
 import { Builder } from '@hcengineering/model'
 
-import serverCore from '@hcengineering/server-core'
 import core from '@hcengineering/core'
 import serverAttachment from '@hcengineering/server-attachment'
+import serverCore from '@hcengineering/server-core'
+
+export { serverAttachmentId } from '@hcengineering/server-attachment'
 
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {

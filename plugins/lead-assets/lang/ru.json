@@ -29,6 +29,8 @@
     "FullDescription": "Детальное описание",
     "FunnelPlaceholder": "Простая воронка",
     "Members": "Пользователи",
-    "UnAssign": "Отменить назначение"
+    "UnAssign": "Отменить назначение",
+    "ConfigLabel": "CRM",
+    "ConfigDescription": "Расширение по работе с клиентами"
   }
 }

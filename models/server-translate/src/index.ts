@@ -20,6 +20,8 @@ import { getEmbeddedLabel } from '@hcengineering/platform'
 import core, { DOMAIN_CONFIGURATION } from '@hcengineering/core'
 import translate, { TranslateConfiguration } from '@hcengineering/translate/src/plugin'
 
+export { translateId } from '@hcengineering/translate/src/plugin'
+
 @Model(translate.class.TranslateConfiguration, core.class.Configuration, DOMAIN_CONFIGURATION)
 @UX(getEmbeddedLabel('Retranslation'))
 export class TTranslateConfiguration extends TConfiguration implements TranslateConfiguration {

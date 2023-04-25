@@ -21,6 +21,8 @@ import { TClass, TDoc } from '@hcengineering/model-core'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 
+export { activityId } from '@hcengineering/activity'
+
 @Model(activity.class.TxViewlet, core.class.Doc, DOMAIN_MODEL)
 export class TTxViewlet extends TDoc implements TxViewlet {
   icon!: Asset

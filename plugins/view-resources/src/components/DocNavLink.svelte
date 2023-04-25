@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Doc, Hierarchy } from '@hcengineering/core'
-  import { getClient, NavLink } from '@hcengineering/presentation'
+  import { NavLink, getClient } from '@hcengineering/presentation'
   import { AnyComponent, getPanelURI, locationToUrl } from '@hcengineering/ui'
   import view from '../plugin'
   import { getObjectLinkFragment } from '../utils'

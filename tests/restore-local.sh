@@ -12,3 +12,6 @@ node ../dev/tool/bundle.js restore-workspace sanity-ws sanity-ws/
 
 # Re-assign user to workspace.
 node ../dev/tool/bundle.js assign-workspace user1 sanity-ws
+
+node ../dev/tool/bundle.js configure sanity-ws --enable=*
+node ../dev/tool/bundle.js configure sanity-ws --list
