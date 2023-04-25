@@ -72,6 +72,7 @@ export { default as TimePopup } from './components/calendar/TimePopup.svelte'
 export { default as DateRangePresenter } from './components/calendar/DateRangePresenter.svelte'
 export { default as DateTimeRangePresenter } from './components/calendar/DateTimeRangePresenter.svelte'
 export { default as DatePresenter } from './components/calendar/DatePresenter.svelte'
+export { default as DueDatePresenter } from './components/calendar/DueDatePresenter.svelte'
 export { default as DateTimePresenter } from './components/calendar/DateTimePresenter.svelte'
 export { default as StylishEdit } from './components/StylishEdit.svelte'
 export { default as Grid } from './components/Grid.svelte'
@@ -150,6 +151,7 @@ export { default as IconMaxWidth } from './components/icons/MaxWidth.svelte'
 export { default as IconMixin } from './components/icons/Mixin.svelte'
 export { default as IconCircles } from './components/icons/Circles.svelte'
 export { default as IconLike } from './components/icons/Like.svelte'
+export { default as IconCollapseArrow } from './components/icons/CollapseArrow.svelte'
 
 export { default as PanelInstance } from './components/PanelInstance.svelte'
 export { default as Panel } from './components/Panel.svelte'
@@ -205,6 +207,7 @@ export const deviceOptionsStore = writable<DeviceOptions>({
   docHeight: 0,
   isPortrait: false,
   isMobile: false,
+  fontSize: 0,
   minWidth: false,
   twoRows: false
 })

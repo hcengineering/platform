@@ -136,6 +136,8 @@
       <DropdownLabels
         icon={IconFolder}
         label={tags.string.CategoryLabel}
+        kind={'secondary'}
+        size={'large'}
         bind:selected={category}
         items={categoryItems}
         on:selected={() => {

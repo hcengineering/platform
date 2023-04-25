@@ -14,11 +14,9 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-  import { getCurrentLocation, Label } from '@hcengineering/ui'
+  import { Label, resolvedLocationStore } from '@hcengineering/ui'
 
   export let label: IntlString
-
-  const loc = getCurrentLocation()
 </script>
 
 <div class="antiNav-header">
@@ -26,6 +24,6 @@
     <Label {label} />
   </span>
   <span class="bottom overflow-label">
-    {loc.path[1]}
+    {$resolvedLocationStore.path[1]}
   </span>
 </div>

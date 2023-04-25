@@ -17,7 +17,7 @@
   import { AccountRole, getCurrentAccount } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import setting, { SettingsCategory } from '@hcengineering/setting'
-  import { Component, getCurrentLocation, Label, location, navigate } from '@hcengineering/ui'
+  import { Component, Label, getCurrentResolvedLocation, resolvedLocationStore, navigate } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import CategoryElement from './CategoryElement.svelte'
 
@@ -45,14 +45,14 @@
   }
 
   onDestroy(
-    location.subscribe(async (loc) => {
+    resolvedLocationStore.subscribe(async (loc) => {
       categoryId = loc.path[4]
       category = findCategory(categoryId)
     })
   )
 
   function selectCategory (id: string): void {
-    const loc = getCurrentLocation()
+    const loc = getCurrentResolvedLocation()
     loc.path[4] = id
     loc.path.length = 5
     navigate(loc)

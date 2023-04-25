@@ -25,13 +25,13 @@
     align-items: center;
     padding: 0.75rem 1.5rem;
     color: var(--dark-color);
-    background-color: var(--board-card-bg-color);
-    border: 1px dotted var(--divider-color);
+    background-color: var(--theme-kanban-card-bg-color);
+    border: 1px dotted var(--theme-kanban-card-border);
     border-radius: 0.75rem;
     cursor: pointer;
 
     &:hover {
-      color: var(--caption-color);
+      color: var(--theme-caption-color);
     }
   }
 </style>

@@ -17,7 +17,7 @@
   import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
   import core, { Class, getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import ui, { EditWithIcon, IconSearch, Label, Loading, location, navigate, TabList } from '@hcengineering/ui'
+  import { ActionIcon, IconMoreH, Label, Loading, location, navigate, TabList, SearchEdit } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { get } from 'svelte/store'
   import { dateFileBrowserFilters, FileBrowserSortMode, fileTypeFileBrowserFilters, sortModeToOptionObject } from '..'
@@ -101,14 +101,30 @@
 </script>
 
 {#if withHeader}
-  <div class="ac-header full divide">
+  <div class="ac-header full divide caption-height">
     <div class="ac-header__wrap-title">
       <span class="ac-header__title"><Label label={attachment.string.FileBrowser} /></span>
     </div>
-    <EditWithIcon icon={IconSearch} size={'small'} bind:value={search} placeholder={ui.string.SearchDots} />
+    <div class="mb-1 clear-mins">
+      <TabList
+        items={[
+          { id: 'table', icon: view.icon.Table, tooltip: attachment.string.FileBrowserListView },
+          { id: 'card', icon: view.icon.Card, tooltip: attachment.string.FileBrowserGridView }
+        ]}
+        selected={isListDisplayMode ? 'table' : 'card'}
+        on:select={(result) => {
+          if (result.detail !== undefined) isListDisplayMode = result.detail === 'table' ?? false
+        }}
+      />
+    </div>
   </div>
 {/if}
-<div class="ac-header full">
+<div class="ac-header full divide search-start">
+  <div class="ac-header-full small-gap">
+    <SearchEdit bind:value={search} on:change={() => {}} />
+    <ActionIcon icon={IconMoreH} size={'small'} />
+    <div class="buttons-divider" />
+  </div>
   <FileBrowserFilters
     {requestedSpaceClasses}
     {spaceId}
@@ -116,18 +132,6 @@
     bind:selectedSpaces
     bind:selectedDateId
     bind:selectedFileTypeId
-  />
-  <TabList
-    items={[
-      { id: 'table', icon: view.icon.Table, tooltip: attachment.string.FileBrowserListView },
-      { id: 'card', icon: view.icon.Card, tooltip: attachment.string.FileBrowserGridView }
-    ]}
-    kind={'secondary'}
-    size={'small'}
-    selected={isListDisplayMode ? 'table' : 'card'}
-    on:select={(result) => {
-      if (result.detail !== undefined) isListDisplayMode = result.detail === 'table' ?? false
-    }}
   />
 </div>
 <div class="group">

@@ -75,13 +75,21 @@
     </div>
   </div>
   <svelte:fragment slot="header">
-    <SpaceSelector _class={hr.class.Department} label={hr.string.ParentDepartmentLabel} bind:space />
+    <SpaceSelector
+      _class={hr.class.Department}
+      label={hr.string.ParentDepartmentLabel}
+      bind:space
+      kind={'secondary'}
+      size={'large'}
+    />
   </svelte:fragment>
   <svelte:fragment slot="pool">
     <EmployeeBox
       focusIndex={3}
       label={hr.string.TeamLead}
       placeholder={hr.string.TeamLead}
+      kind={'secondary'}
+      size={'large'}
       bind:value={lead}
       allowDeselect
       showNavigate={false}

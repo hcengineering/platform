@@ -3,7 +3,7 @@
   import { IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { IssueTemplate } from '@hcengineering/tracker'
-  import { Button, IconAdd, IconDetails, IconDetailsFilled, location, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, IconDetails, IconDetailsFilled, resolvedLocationStore, showPopup } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
   import {
     FilterBar,
@@ -11,7 +11,7 @@
     activeViewlet,
     getViewOptions,
     makeViewletKey,
-    setActiveViewletId,
+    updateActiveViewlet,
     viewOptionStore
   } from '@hcengineering/view-resources'
   import { onDestroy } from 'svelte'
@@ -37,9 +37,9 @@
   $: if (query) updateSearchQuery(search)
   let resultQuery: DocumentQuery<IssueTemplate> = { ...searchQuery }
 
-  let viewlets: WithLookup<Viewlet>[] = []
+  let viewlets: WithLookup<Viewlet>[] | undefined
 
-  $: update(viewlets, active)
+  $: viewlet = viewlets && updateActiveViewlet(viewlets, active)
 
   const viewletQuery = createQuery()
   viewletQuery.query(view.class.Viewlet, { attachTo: tracker.class.IssueTemplate }, (res) => (viewlets = res), {
@@ -51,17 +51,12 @@
   let key = makeViewletKey()
 
   onDestroy(
-    location.subscribe((loc) => {
+    resolvedLocationStore.subscribe((loc) => {
       key = makeViewletKey(loc)
     })
   )
 
   $: active = $activeViewlet[key]
-
-  async function update (viewlets: WithLookup<Viewlet>[], active: Ref<Viewlet> | null): Promise<void> {
-    viewlet = viewlets.find((viewlet) => viewlet._id === active) ?? viewlets[0]
-    setActiveViewletId(viewlet._id)
-  }
 
   $: if (!label && title) {
     translate(title, {}).then((res) => {
@@ -92,21 +87,11 @@
   <svelte:fragment slot="label_selector">
     <slot name="label_selector" />
   </svelte:fragment>
+  <svelte:fragment slot="header-tools">
+    <Button icon={IconAdd} label={tracker.string.IssueTemplate} kind={'primary'} on:click={showCreateDialog} />
+  </svelte:fragment>
   <svelte:fragment slot="extra">
-    <Button
-      size={'small'}
-      icon={IconAdd}
-      label={tracker.string.IssueTemplate}
-      kind={'primary'}
-      on:click={showCreateDialog}
-    />
-
-    {#if viewlet}
-      <ViewletSettingButton bind:viewOptions {viewlet} />
-    {/if}
-
     {#if asideFloat && $$slots.aside}
-      <div class="buttons-divider" />
       <Button
         icon={asideShown ? IconDetailsFilled : IconDetails}
         kind={'transparent'}
@@ -116,6 +101,10 @@
           asideShown = !asideShown
         }}
       />
+      <div class="buttons-divider" />
+    {/if}
+    {#if viewlet}
+      <ViewletSettingButton bind:viewOptions {viewlet} />
     {/if}
   </svelte:fragment>
 </IssuesHeader>

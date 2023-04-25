@@ -26,6 +26,7 @@
   export let autoscroll: boolean = false
   export let bottomStart: boolean = false
   export let fade: FadeOptions = defaultSP
+  export let noFade: boolean = false
   export let invertScroll: boolean = false
   export let horizontal: boolean = false
   export let contentDirection: 'vertical' | 'vertical-reverse' | 'horizontal' = 'vertical'
@@ -33,6 +34,7 @@
   export let buttons: boolean = false
   export let shrink: boolean = false
   export let divScroll: HTMLElement | undefined = undefined
+  export let checkForHeaders = false
 
   export function scroll (top: number, left?: number, behavior: 'auto' | 'smooth' = 'auto') {
     if (divScroll) {
@@ -74,10 +76,13 @@
   let timerH: number
 
   const inter = new Set<Element>()
+  let hasLastCategories: boolean = false
 
   $: fz = $themeOptions.fontSize
   $: shiftTop = fade.multipler?.top ? fade.multipler?.top * fz : 0
   $: shiftBottom = fade.multipler?.bottom ? fade.multipler?.bottom * fz : 0
+  $: shiftLeft = fade.multipler?.left ? fade.multipler?.left * fz : 0
+  $: shiftRight = fade.multipler?.right ? fade.multipler?.right * fz : 0
   $: orientir = contentDirection === 'horizontal' ? 'horizontal' : 'vertical'
 
   const checkBar = (): void => {
@@ -85,22 +90,42 @@
       const trackH = divScroll.clientHeight - shiftTop - shiftBottom - 4
       const scrollH = divScroll.scrollHeight
       const proc = scrollH / trackH
-      divBar.style.height = divScroll.clientHeight / proc + 'px'
-      divBar.style.top = divScroll.scrollTop / proc + shiftTop + 2 + 'px'
-      if (mask === 'none') divBar.style.visibility = 'hidden'
-      else {
-        divBar.style.visibility = 'visible'
+
+      const newHeight = divScroll.clientHeight / proc + 'px'
+      if (divBar.style.height !== 'newHeight') {
+        divBar.style.height = newHeight
+      }
+      const newTop = divScroll.scrollTop / proc + shiftTop + 2 + 'px'
+      if (divBar.style.top !== newTop) {
+        divBar.style.top = newTop
+      }
+      if (mask === 'none') {
+        if (divBar.style.visibility !== 'hidden') {
+          divBar.style.visibility = 'hidden'
+        }
+      } else {
+        if (divBar.style.visibility !== 'visible') {
+          divBar.style.visibility = 'visible'
+        }
         if (divBar) {
           if (timer) {
             clearTimeout(timer)
-            divBar.style.opacity = '1'
+            if (divBar.style.opacity !== '1') {
+              divBar.style.opacity = '1'
+            }
           }
           timer = setTimeout(() => {
-            if (divBar) divBar.style.opacity = '0'
+            if (divBar) {
+              divBar.style.opacity = '0'
+            }
           }, 1500)
         }
       }
-      if (divScroll.clientHeight >= divScroll.scrollHeight) divBar.style.visibility = 'hidden'
+      if (divScroll.clientHeight >= divScroll.scrollHeight) {
+        if (divBar.style.visibility !== 'hidden') {
+          divBar.style.visibility = 'hidden'
+        }
+      }
     }
   }
   const checkBarH = (): void => {
@@ -183,7 +208,7 @@
   }
 
   const renderFade = () => {
-    if (divScroll) {
+    if (divScroll && !noFade) {
       const th = shiftTop + (topCrop === 'top' ? 2 * fz - topCropValue : 0)
       const tf =
         topCrop === 'full'
@@ -205,13 +230,22 @@
     if (divHScroll && horizontal) {
       const gradientH = `linear-gradient(
         90deg,
-        rgba(0, 0, 0, 0) 0,
-        rgba(0, 0, 0, 1) ${maskH === 'none' || maskH === 'left' ? '0px' : '2rem'},
-        rgba(0, 0, 0, 1) calc(100% - ${maskH === 'none' || maskH === 'right' ? '0px' : '2rem'}),
-        rgba(0, 0, 0, 0) 100%
+        rgba(0, 0, 0, 1) ${shiftLeft}px,
+        rgba(0, 0, 0, 0) ${shiftLeft}px,
+        rgba(0, 0, 0, 1) ${shiftLeft + (maskH === 'both' || maskH === 'right' ? 2 * fz : 0)}px,
+        rgba(0, 0, 0, 1) calc(100% - ${shiftRight + (maskH === 'both' || maskH === 'left' ? 2 * fz : 0)}px),
+        rgba(0, 0, 0, 0) calc(100% - ${shiftRight}px),
+        rgba(0, 0, 0, 1) calc(100% - ${shiftRight}px)
       )`
       divHScroll.style.webkitMaskImage = gradientH
     }
+  }
+
+  let checkBarTimeout: any | undefined = undefined
+
+  const delayCall = (op: () => void) => {
+    clearTimeout(checkBarTimeout)
+    checkBarTimeout = setTimeout(op, 50)
   }
 
   const checkFade = (): void => {
@@ -234,8 +268,8 @@
       if (inter.size) checkIntersectionFade()
       renderFade()
     }
-    if (!isScrolling) checkBar()
-    if (!isScrolling && horizontal) checkBarH()
+    if (!isScrolling) delayCall(checkBar)
+    if (!isScrolling && horizontal) delayCall(checkBarH)
   }
 
   function checkAutoScroll () {
@@ -252,16 +286,46 @@
 
   const checkIntersection = (entries: IntersectionObserverEntry[], observer: IntersectionObserver) => {
     const interArr: Element[] = []
+    const catEntries: IntersectionObserverEntry[] = []
+    const lastCatEntries: IntersectionObserverEntry[] = []
+
     entries.forEach((el) => {
-      if (el.isIntersecting) {
+      if (el.isIntersecting && el.target.classList.contains('categoryHeader')) {
         inter.add(el.target)
         interArr.push(el.target)
       } else inter.delete(el.target)
+      if (hasLastCategories) {
+        if (el.isIntersecting && el.target.classList.contains('categoryHeader')) catEntries.push(el)
+        if (el.isIntersecting && el.target.classList.contains('lastCat')) lastCatEntries.push(el)
+      }
     })
+
     if (interArr.length > 0) {
       dispatch('lastScrolledCategory', interArr[interArr.length - 1]?.getAttribute('id'))
+      dispatch('firstScrolledCategory', interArr[0]?.getAttribute('id'))
       const interCats: string[] = interArr.map((it) => it.getAttribute('id') as string)
       dispatch('scrolledCategories', interCats)
+    }
+    if (hasLastCategories) {
+      const targets = new Set<Element>()
+      const closed = new Set<Element>()
+      lastCatEntries.forEach((last) => {
+        catEntries.forEach((cat) => {
+          if (last.target !== cat.target) {
+            if (
+              last.boundingClientRect.top < cat.boundingClientRect.top + 8 &&
+              last.boundingClientRect.top >= cat.boundingClientRect.top
+            ) {
+              targets.add(cat.target)
+            }
+            if (cat.target.classList.contains('closed') && !closed.has(cat.target)) closed.add(cat.target)
+          }
+        })
+      })
+      closed.forEach((el) => {
+        if (!targets.has(el)) el.classList.remove('closed')
+      })
+      targets.forEach((el) => el.classList.add('closed'))
     }
   }
 
@@ -300,8 +364,8 @@
     if (divScroll && divBox) {
       divScroll.addEventListener('wheel', wheelEvent)
       divScroll.addEventListener('scroll', checkFade)
-      checkBar()
-      if (horizontal) checkBarH()
+      delayCall(checkBar)
+      if (horizontal) delayCall(checkBarH)
     }
   })
   onDestroy(() => {
@@ -313,26 +377,46 @@
   })
 
   let oldTop: number
-  beforeUpdate(() => {
-    if (divBox && divScroll) oldTop = divScroll.scrollTop
-  })
-  afterUpdate(() => {
-    if (divBox && divScroll) {
-      if (oldTop !== divScroll.scrollTop) divScroll.scrollTop = oldTop
 
-      const tempEls = divBox.querySelectorAll('.categoryHeader')
-      observer = new IntersectionObserver(checkIntersection, { root: null, rootMargin: '0px', threshold: 0.1 })
-      tempEls.forEach((el) => observer.observe(el))
-    }
-  })
+  if (checkForHeaders) {
+    beforeUpdate(() => {
+      if (divBox && divScroll) {
+        oldTop = divScroll.scrollTop
+      }
+    })
+
+    afterUpdate(() => {
+      if (divBox && divScroll) {
+        if (oldTop !== divScroll.scrollTop) {
+          divScroll.scrollTop = oldTop
+        }
+
+        delayCall(() => {
+          const tempEls = divBox.querySelectorAll('.categoryHeader')
+          observer = new IntersectionObserver(checkIntersection, { root: null, rootMargin: '0px', threshold: 0.1 })
+          tempEls.forEach((el) => observer.observe(el))
+          const tempCats = divBox.querySelectorAll('.lastCat')
+          if (tempCats.length > 0) {
+            hasLastCategories = true
+            tempCats.forEach((el) => observer.observe(el))
+          } else {
+            hasLastCategories = false
+          }
+        })
+      }
+    })
+  }
 
   let divHeight: number
   const _resize = (): void => checkFade()
 
   const tapScroll = (n: number, dir: 'up' | 'down') => {
     if (divScroll) {
-      if (orientir === 'horizontal') divScroll.scrollBy({ top: 0, left: dir === 'up' ? -n : n, behavior: 'smooth' })
-      else divScroll.scrollBy({ top: dir === 'up' ? -n : n, left: 0, behavior: 'smooth' })
+      if (orientir === 'horizontal') {
+        divScroll.scrollBy({ top: 0, left: dir === 'up' ? -n : n, behavior: 'smooth' })
+      } else {
+        divScroll.scrollBy({ top: dir === 'up' ? -n : n, left: 0, behavior: 'smooth' })
+      }
     }
   }
 </script>
@@ -549,6 +633,7 @@
     height: 100%;
   }
   .scroll {
+    will-change: opacity;
     flex-grow: 1;
     min-width: 0;
     min-height: 0;

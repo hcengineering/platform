@@ -72,7 +72,7 @@
     <div
       class="{twoRows ? 'flex-col' : 'flex-between'} p-text-2"
       on:contextmenu|preventDefault={(ev) => showContextMenu(ev, report)}
-      on:mouseover={() => {
+      on:mouseenter={() => {
         listProvider.updateFocus(report)
       }}
       on:focus={() => {

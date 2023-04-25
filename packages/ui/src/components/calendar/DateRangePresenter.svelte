@@ -32,7 +32,8 @@
   export let icon: 'normal' | 'warning' | 'overdue' = 'normal'
   export let labelOver: IntlString | undefined = undefined // label instead of date
   export let labelNull: IntlString = ui.string.NoDate
-  export let kind: 'no-border' | 'link' = 'no-border'
+  export let kind: 'no-border' | 'link' | 'secondary' = 'no-border'
+  export let size: 'small' | 'medium' | 'large' = 'small'
   export let noShift: boolean = false
 
   const dispatch = createEventDispatcher()
@@ -315,7 +316,7 @@
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <button
   bind:this={datePresenter}
-  class="datetime-button {kind}"
+  class="datetime-button {kind} {size}"
   class:editable
   class:edit
   on:click={() => {
@@ -455,16 +456,25 @@
     padding: 0 0.5rem;
     font-weight: 400;
     min-width: 1.5rem;
-    width: auto;
-    height: 1.5rem;
+    width: min-content;
     white-space: nowrap;
     line-height: 1.5rem;
-    color: var(--accent-color);
+    color: var(--theme-content-color);
     border: 1px solid transparent;
     border-radius: 0.25rem;
     transition-property: border, background-color, color, box-shadow;
     transition-duration: 0.15s;
     cursor: pointer;
+
+    &.small {
+      height: 1.5rem;
+    }
+    &.medium {
+      height: 2rem;
+    }
+    &.large {
+      height: 2.25rem;
+    }
 
     .btn-icon {
       margin-right: 0.375rem;
@@ -474,7 +484,7 @@
       pointer-events: none;
 
       &.normal {
-        color: var(--content-color);
+        color: var(--theme-content-color);
       }
       &.warning {
         color: var(--warning-color);
@@ -486,27 +496,31 @@
 
     &.no-border {
       font-weight: 400;
-      color: var(--accent-color);
-      background-color: var(--noborder-bg-color);
+      color: var(--theme-content-color);
+      background-color: var(--theme-button-enabled);
       box-shadow: var(--button-shadow);
 
       &:hover {
-        color: var(--caption-color);
-        background-color: var(--noborder-bg-hover);
+        color: var(--theme-caption-color);
+        background-color: var(--theme-button-hovered);
         transition-duration: 0;
 
         .btn-icon {
-          color: var(--caption-color);
+          color: var(--theme-caption-color);
         }
       }
       &:disabled {
-        color: var(--content-color);
-        background-color: var(--button-disabled-color);
+        color: var(--theme-trans-color);
+        background-color: var(--theme-button-disabled);
         cursor: default;
+
+        .btn-icon {
+          color: var(--theme-trans-color);
+        }
         &:hover {
-          color: var(--content-color);
+          color: var(--theme-trans-color);
           .btn-icon {
-            color: var(--content-color);
+            color: var(--theme-trans-color);
           }
         }
       }
@@ -515,7 +529,7 @@
         cursor: pointer;
 
         &:hover {
-          background-color: var(--noborder-bg-hover);
+          background-color: var(--theme-button-hovered);
           .btn-icon {
             &.normal {
               color: var(--caption-color);
@@ -528,14 +542,14 @@
             }
           }
           .time-divider {
-            background-color: var(--button-border-hover);
+            background-color: var(--theme-divider-color);
           }
         }
         &:focus-within {
-          background-color: var(--button-bg-color);
+          background-color: var(--theme-button-focused);
           border-color: var(--primary-edit-border-color);
           &:hover {
-            background-color: var(--button-bg-color);
+            background-color: var(--theme-button-hovered);
           }
         }
       }
@@ -553,18 +567,38 @@
     &.link {
       padding: 0 0.875rem;
       width: 100%;
-      height: 2.25rem;
-      color: var(--caption-color);
+      color: var(--theme-caption-color);
       &:hover {
-        background-color: var(--body-color);
-        border-color: var(--divider-color);
+        background-color: var(--theme-bg-color);
+        border-color: var(--theme-divider-color);
         .btn-icon {
-          color: var(--content-color);
+          color: var(--theme-content-color);
         }
       }
       &.edit {
         padding: 0 0.5rem;
       }
+    }
+
+    &.secondary {
+      padding: 0 0.625rem;
+      color: var(--theme-caption-color);
+      background-color: var(--theme-button-enabled);
+      border-color: var(--theme-button-border);
+
+      .btn-icon {
+        color: var(--theme-content-color);
+      }
+      &:hover {
+        background-color: var(--theme-button-hovered);
+        border-color: var(--theme-divider-color);
+        .btn-icon {
+          color: var(--theme-content-color);
+        }
+      }
+      // &.edit {
+      //   padding: 0 0.5rem;
+      // }
     }
 
     .close-btn {
@@ -574,15 +608,15 @@
       margin: 0 0.25rem;
       width: 0.75rem;
       height: 0.75rem;
-      color: var(--content-color);
-      background-color: var(--button-bg-color);
+      color: var(--theme-content-color);
+      background-color: var(--theme-button-enabled);
       outline: none;
       border-radius: 50%;
       cursor: pointer;
 
       &:hover {
         color: var(--accent-color);
-        background-color: var(--button-bg-hover);
+        background-color: var(--theme-button-hovered);
       }
     }
 
@@ -614,7 +648,7 @@
       width: 1px;
       min-width: 1px;
       height: 0.75rem;
-      background-color: var(--button-border-color);
+      background-color: var(--theme-divider-color);
     }
     .separator {
       margin: 0 0.1rem;

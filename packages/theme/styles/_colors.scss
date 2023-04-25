@@ -15,16 +15,17 @@
 
 /* Common Colors */
 * {
-  --primary-button-color: #fff;
-  --primary-button-enabled: #4474F6;
-  --primary-button-hovered: #2A5FF6;
-  --primary-button-pressed: #194CD7;
-  --primary-button-focused: #194CD7;
-  --primary-button-disabled: #5771B9;
-  --primary-button-focused-border: #7393EB;
-  --primary-button-outline: rgba(87, 132, 255, .3);
-  --primary-button-border: rgba(255, 255, 255, .09);
+  // --primary-button-color: #fff;
+  // --primary-button-enabled: #4474F6;
+  // --primary-button-hovered: #2A5FF6;
+  // --primary-button-pressed: #194CD7;
+  // --primary-button-focused: #194CD7;
+  // --primary-button-disabled: #5771B9;
+  // --primary-button-focused-border: #7393EB;
+  // --primary-button-outline: rgba(87, 132, 255, .3);
+  // --primary-button-border: rgba(255, 255, 255, .09);
 
+  --white-color: #fff;
   --duotone-color: rgba(126, 134, 158, .25);
 
   --system-error-color: #EE7A7A;
@@ -52,6 +53,70 @@
 
 /* Dark Theme */
 .theme-dark {
+  --primary-button-color: #fff;
+  --primary-button-enabled: #205DC2;
+  --primary-button-hovered: #1A53AF;
+  --primary-button-pressed: #144CA8;
+  --primary-button-focused: #144CA8;
+  --primary-button-disabled: #6E9FED;
+  --primary-button-focused-border: #6E9FED;
+  --primary-button-border: rgba(255, 255, 255, .09);
+  --primary-button-outline: rgba(87, 132, 255, .3); // OLD
+
+  --theme-button-enabled: rgba(255, 255, 255, .02);
+  --theme-button-hovered: rgba(255, 255, 255, .04);
+  --theme-button-pressed: rgba(255, 255, 255, .08);
+  --theme-button-focused: rgba(255, 255, 255, .04);
+  --theme-button-disabled: rgba(255, 255, 255, .02);
+  --theme-button-border: rgba(255, 255, 255, .06);
+
+  --theme-refinput-color: rgba(255, 255, 255, .03);
+
+  --theme-bg-color: #1A1A28;
+  --theme-back-color: #0f0f18;
+  --theme-overlay-color: #0000007f;
+  --theme-statusbar-color: #2C2C35;
+  --theme-navpanel-color: #14141F;
+  --theme-navpanel-hovered: rgba(255, 255, 255, .04);
+  --theme-navpanel-selected: rgba(255, 255, 255, .07);
+  --theme-navpanel-divider: rgba(255, 255, 255, .1);
+  --theme-navpanel-border: transparent;
+  --theme-navpanel-icons-color: #7F7F7F;
+  --theme-comp-header-color: #1F1F2C;
+  --theme-divider-color: rgba(255, 255, 255, .06);
+
+  --theme-trans-color: rgba(255, 255, 255, .3);
+  --theme-darker-color: rgba(255, 255, 255, .4);
+  --theme-halfcontent-color: rgba(255, 255, 255, .5);
+  --theme-dark-color: rgba(255, 255, 255, .6);
+  --theme-content-color: rgba(255, 255, 255, .8);
+  --theme-caption-color: #FFF;
+
+  --theme-list-border-color: rgba(255, 255, 255, .05);
+  --theme-list-header-color: #C88C65;
+  --theme-list-subheader-color: #262634;
+  --theme-list-row-color: #21212F;
+  --theme-list-button-color: #262633;
+  --theme-list-divider-color: rgba(255, 255, 255, .09);
+  --theme-list-subheader-divider: transparent;
+
+  --theme-table-border-color: rgba(255, 255, 255, .1);
+  --theme-table-header-color: #1C1C29;
+  --theme-table-row-color: #21212F;
+
+  --theme-kanban-card-bg-color: rgba(222, 222, 240, .04);
+  --theme-kanban-card-border: transparent;
+  --theme-kanban-card-footer: #D9D9D9;
+  
+  --theme-tablist-color: rgba(0, 0, 0, .02);
+  --theme-checkbox-color: #000;
+  --theme-checkbox-bg-color: #FFF;
+  --theme-checkbox-border: rgba(0, 0, 0, .12);
+  --theme-checkbox-disabled: #999;
+  --theme-progress-color: #FFFFFF;
+  --theme-popup-color: #292938;
+  --theme-popup-divider: rgba(255, 255, 255, .1);
+
   --body-color: #1f2023;
   --body-accent: #222326;
   --board-bg-color: #1c1d1f;
@@ -61,7 +126,7 @@
   --accent-bg-color: #27282b;
   --accent-shadow: rgb(0 0 0 / 10%) 0px 2px 4px;
 
-  --highlight-hover: #28292b;
+  --highlight-hover: #282834;
   --highlight-select: #252b3a;
   --highlight-select-border: #44506b;
   --highlight-select-hover: #2c3346;
@@ -106,7 +171,7 @@
   --button-bg-hover: #37383b;
   --button-border-color: #3c3f44;
   --button-border-hover: #45484e;
-  --button-shadow: rgb(0 0 0 / 25%) 0px 1px 1px;
+  --button-shadow: rgb(0 0 0 / 15%) 0px 1px 1px 1px;
   --button-disabled-color: #313236;
   --noborder-bg-color: #313236;
   --noborder-bg-hover: #37383b;
@@ -135,6 +200,70 @@
 
 /* Light Theme */
 .theme-light {
+  --primary-button-color: #fff;
+  --primary-button-enabled: #2B5190;
+  --primary-button-hovered: #1A53AF; // DARK
+  --primary-button-pressed: #144CA8; // DARK
+  --primary-button-focused: #144CA8; // DARK
+  --primary-button-disabled: #6E9FED; // DARK
+  --primary-button-focused-border: #6E9FED; // DARK
+  --primary-button-border: rgba(255, 255, 255, .09);
+  --primary-button-outline: rgba(87, 132, 255, .3); // OLD
+  
+  --theme-button-enabled: rgba(0, 0, 0, .02);
+  --theme-button-hovered: rgba(0, 0, 0, .04);
+  --theme-button-pressed: rgba(0, 0, 0, .08);
+  --theme-button-focused: rgba(0, 0, 0, .04);
+  --theme-button-disabled: rgba(0, 0, 0, .02);
+  --theme-button-border: rgba(0, 0, 0, .06);
+
+  --theme-refinput-color: rgba(0, 0, 0, .03);
+
+  --theme-bg-color: #F1F1F4;
+  --theme-back-color: #D9D9DD;
+  --theme-overlay-color: #0000007f;
+  --theme-statusbar-color: #bfbfc6;
+  --theme-navpanel-color: #E8E8ED;
+  --theme-navpanel-hovered: rgba(218, 218, 231, .5);
+  --theme-navpanel-selected: #DADAE7;
+  --theme-navpanel-divider: rgba(0, 0, 0, .06);
+  --theme-navpanel-border: rgba(0, 0, 0, .06);
+  --theme-navpanel-icons-color: #7F7F7F;
+  --theme-comp-header-color: #FBFBFC;
+  --theme-divider-color: rgba(0, 0, 0, .06);
+
+  --theme-trans-color: rgba(0, 0, 0, .3);
+  --theme-darker-color: rgba(0, 0, 0, .4);
+  --theme-halfcontent-color: rgba(0, 0, 0, .5);
+  --theme-dark-color: rgba(0, 0, 0, .6);
+  --theme-content-color: rgba(0, 0, 0, .8);
+  --theme-caption-color: #000;
+
+  --theme-list-border-color: rgba(0, 0, 0, .09);
+  --theme-list-header-color: #ECD4CA;
+  --theme-list-subheader-color: #EEEEF0;
+  --theme-list-row-color: #F7F7F8;
+  --theme-list-button-color: #F2F2F4;
+  --theme-list-divider-color: rgba(0, 0, 0, .07);
+  --theme-list-subheader-divider: rgba(0, 0, 0, .06);
+
+  --theme-table-border-color: rgba(0, 0, 0, .1);
+  --theme-table-header-color: #EFEFF2;
+  --theme-table-row-color: #F4F4F6;
+
+  --theme-kanban-card-bg-color: rgba(0, 0, 0, .03);
+  --theme-kanban-card-border: rgba(0, 0, 0, .04);
+  --theme-kanban-card-footer: rgba(0, 0, 0, .04);
+  
+  --theme-tablist-color: rgba(0, 0, 0, .02);
+  --theme-checkbox-color: #000;
+  --theme-checkbox-bg-color: #FFF;
+  --theme-checkbox-border: rgba(0, 0, 0, .12);
+  --theme-checkbox-disabled: #999;
+  --theme-progress-color: rgba(0, 0, 0, .5);
+  --theme-popup-color: #F1F1F4;
+  --theme-popup-divider: rgba(0, 0, 0, .1);
+
   --body-color: #fff;
   --body-accent: #fafafa; // HZ
   --board-bg-color: #f4f5f8;
@@ -144,7 +273,7 @@
   --accent-bg-color: #eff0f2;  // HZ
   --accent-shadow: rgb(0 0 0 / 10%) 0px 2px 4px;  // Dark
 
-  --highlight-hover: #f9f9f9;
+  --highlight-hover: #E8E8E9;
   --highlight-select: #f0f4ff;
   --highlight-select-border: #e6eaff;
   --highlight-select-hover: #e4ebff;
@@ -189,7 +318,7 @@
   --button-bg-hover: #f4f5f8;
   --button-border-color: #dfe1e4;
   --button-border-hover: #c9cbcd;
-  --button-shadow: rgb(0 0 0 / 7%) 0px 1px 1px;
+  --button-shadow: rgb(0 0 0 / 20%) 0px 1px 2px 1px;
   --button-disabled-color: #eff1f4;
   --noborder-bg-color: #eff1f4;
   --noborder-bg-hover: #f4f5f8;

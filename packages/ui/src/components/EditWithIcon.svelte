@@ -15,13 +15,13 @@
 <script lang="ts">
   import type { Asset, IntlString } from '@hcengineering/platform'
   import { translate } from '@hcengineering/platform'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, ComponentType } from 'svelte'
   import plugin from '../plugin'
   import type { AnySvelteComponent } from '../types'
   import Icon from './Icon.svelte'
   import IconClose from './icons/Close.svelte'
 
-  export let icon: Asset | AnySvelteComponent
+  export let icon: Asset | AnySvelteComponent | ComponentType
   export let width: string | undefined = undefined
   export let value: string | undefined = undefined
   export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
@@ -65,9 +65,9 @@
   .editbox {
     padding: 0 0.5rem 0 0.5rem;
     min-width: 10rem;
-    color: var(--caption-color);
-    background-color: var(--body-color);
-    border: 1px solid var(--button-border-color);
+    color: var(--theme-caption-color);
+    // background-color: var(--body-color);
+    border: 1px solid transparent;
     border-radius: 0.25rem;
 
     &.small {
@@ -77,9 +77,11 @@
       height: 2rem;
     }
     &:focus-within {
-      border-color: var(--primary-edit-border-color);
+      border-color: var(--theme-button-border);
+      box-shadow: 0 0 0 2px var(--primary-button-focused-border);
+
       .icon {
-        color: var(--menu-icon-hover);
+        color: var(--theme-dark-color);
       }
     }
 
@@ -89,19 +91,19 @@
       border-radius: 0.25rem;
 
       &::placeholder {
-        color: var(--content-color);
+        color: var(--theme-halfcontent-color);
       }
     }
 
     .btn {
-      color: var(--content-color);
+      color: var(--theme-dark-color);
       cursor: pointer;
       &:hover {
-        color: var(--caption-color);
+        color: var(--theme-caption-color);
       }
     }
     .icon {
-      color: var(--content-color);
+      color: var(--theme-dark-color);
     }
   }
 </style>

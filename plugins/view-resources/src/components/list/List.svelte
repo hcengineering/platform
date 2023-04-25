@@ -37,12 +37,9 @@
   export let flatHeaders = false
   export let disableHeader = false
   export let props: Record<string, any> = {}
+  export let selection: number | undefined = undefined
 
   export let documents: Doc[] | undefined = undefined
-
-  const elementByIndex: Map<number, HTMLDivElement> = new Map()
-  const docByIndex: Map<number, Doc> = new Map()
-  const indexById: Map<Ref<Doc>, number> = new Map()
 
   let docs: Doc[] = []
 
@@ -63,15 +60,15 @@
       resultQuery,
       (res) => {
         docs = res
-        dispatch('content', docs)
       },
       resultOptions
     )
   } else {
     docsQuery.unsubscribe()
     docs = documents
-    dispatch('content', docs)
   }
+
+  $: dispatch('content', docs)
 
   const dispatch = createEventDispatcher()
 
@@ -100,26 +97,7 @@
   }
 
   export function select (offset: 1 | -1 | 0, of?: Doc): void {
-    let pos = (of !== undefined ? indexById.get(of._id) : -1) ?? -1
-    pos += offset
-    if (pos < 0) {
-      pos = 0
-    }
-    if (pos >= docs.length) {
-      pos = docs.length - 1
-    }
-    const target = docByIndex.get(pos)
-    if (target !== undefined) {
-      onRow(target)
-    }
-    const r = elementByIndex.get(pos)
-    if (r !== undefined) {
-      r.scrollIntoView({ behavior: 'auto', block: 'nearest' })
-    }
-  }
-
-  function onRow (object: Doc): void {
-    dispatch('row-focus', object)
+    listCategories?.select(offset, of)
   }
 
   const getLoadingElementsLength = (props: LoadingProps | undefined, options?: FindOptions<Doc>) => {
@@ -137,23 +115,23 @@
   } = {}
 
   let listDiv: HTMLDivElement
+  let listCategories: ListCategories
 </script>
 
 <div class="list-container" bind:this={listDiv}>
   <ListCategories
+    bind:this={listCategories}
     newObjectProps={() => (space ? { space } : {})}
-    {elementByIndex}
-    {indexById}
     {docs}
     {_class}
     {space}
+    {selection}
     query={resultQuery}
     {lookup}
     loadingPropsLength={getLoadingElementsLength(loadingProps, options)}
     {baseMenuClass}
     {config}
     {viewOptions}
-    {docByIndex}
     {viewOptionsConfig}
     {selectedObjectIds}
     level={0}
@@ -167,6 +145,9 @@
     {props}
     {listDiv}
     bind:dragItem
+    on:select={(evt) => {
+      select(0, evt.detail)
+    }}
   />
 </div>
 

@@ -49,19 +49,16 @@
   })
 </script>
 
-<div class="ac-header full divide">
+<div class="ac-header full divide caption-height">
   <div class="ac-header__wrap-title">
     <span class="ac-header__title"><Label label={chunter.string.Threads} /></span>
   </div>
 </div>
 <Scroller>
-  {#each threads as thread (thread)}
-    <div class="item"><Thread _id={thread} {savedAttachmentsIds} /></div>
+  {#each threads as thread, i (thread)}
+    <Thread _id={thread} {savedAttachmentsIds} />
+    {#if i < threads.length - 1}
+      <div class="antiDivider" />
+    {/if}
   {/each}
 </Scroller>
-
-<style lang="scss">
-  .item + .item {
-    margin-top: 3rem;
-  }
-</style>

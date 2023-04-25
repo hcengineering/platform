@@ -48,7 +48,7 @@
 </script>
 
 <div class="flex-col h-full">
-  <div class="ac-header divide full">
+  <div class="ac-header divide full caption-height">
     <Header icon={workbench.icon.Search} intlLabel={plugin.string.ChunterBrowser} />
   </div>
   <div class="h-full browser">

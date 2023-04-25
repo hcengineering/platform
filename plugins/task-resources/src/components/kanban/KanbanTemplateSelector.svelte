@@ -18,12 +18,14 @@
   import type { KanbanTemplate, KanbanTemplateSpace } from '@hcengineering/task'
   import task from '@hcengineering/task'
   import type { DropdownTextItem } from '@hcengineering/ui'
-  import { DropdownLabels } from '@hcengineering/ui'
+  import { DropdownLabels, ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
 
   export let folders: Ref<KanbanTemplateSpace>[]
   export let template: Ref<KanbanTemplate> | undefined = undefined
+  export let kind: ButtonKind = 'no-border'
+  export let size: ButtonSize = 'small'
   export let focusIndex = -1
 
   let templates: KanbanTemplate[] = []
@@ -51,6 +53,8 @@
 <DropdownLabels
   {focusIndex}
   {items}
+  {kind}
+  {size}
   icon={task.icon.ManageTemplates}
   bind:selected={selectedItem}
   label={plugin.string.States}

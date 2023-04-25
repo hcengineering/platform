@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { CategoryType, Doc, Ref } from '@hcengineering/core'
-  import ui, { Button, IconMoreH } from '@hcengineering/ui'
+  import ui, { Button, IconMoreH, mouseAttractor } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { slide } from 'svelte/transition'
   import { CardDragEvent, Item } from '../types'
@@ -69,7 +69,7 @@
       class="card-container"
       class:selection={selection !== undefined ? objects[selection]?._id === object._id : false}
       class:checked={checkedSet.has(object._id)}
-      on:mouseover={() => dispatch('obj-focus', object)}
+      on:mouseover={mouseAttractor(() => dispatch('obj-focus', object))}
       on:focus={() => {}}
       on:contextmenu={(evt) => showMenu(evt, object)}
       draggable={true}
@@ -106,13 +106,14 @@
 
 <style lang="scss">
   .card-container {
-    background-color: var(--board-card-bg-color);
+    background-color: var(--theme-kanban-card-bg-color);
+    border: 1px solid var(--theme-kanban-card-border);
     border-radius: 0.25rem;
     // transition: box-shadow .15s ease-in-out;
 
-    &:hover {
-      background-color: var(--board-card-bg-hover);
-    }
+    // &:hover {
+    //   background-color: var(--board-card-bg-hover);
+    // }
     &.checked {
       background-color: var(--highlight-select);
       box-shadow: inset 0 0 1px 1px var(--highlight-select-border);
@@ -123,7 +124,7 @@
     }
     &.selection,
     &.checked.selection {
-      box-shadow: inset 0 0 1px 1px var(--primary-bg-color);
+      box-shadow: inset 0 0 1px 1px var(--primary-button-enabled);
       animation: anim-border 1s ease-in-out;
 
       &:hover {

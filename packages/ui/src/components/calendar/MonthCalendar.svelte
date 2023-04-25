@@ -87,9 +87,6 @@
     grid-auto-columns: max-content;
     grid-template-columns: repeat(7, minmax(0, 1fr));
   }
-  .weekend {
-    background-color: var(--button-bg-color);
-  }
   .cell {
     height: calc(100% - 5px);
     width: calc(100% - 5px);
@@ -98,10 +95,16 @@
     cursor: pointer;
   }
   .cell:hover {
-    background-color: var(--toggle-bg-hover);
     color: var(--primary-button-color);
+    background-color: var(--highlight-hover);
+  }
+  .weekend {
+    background-color: var(--highlight-select);
+    &:hover {
+      background-color: var(--highlight-select-hover);
+    }
   }
   .wrongMonth {
-    color: var(--grayscale-grey-03);
+    color: var(--theme-trans-color);
   }
 </style>

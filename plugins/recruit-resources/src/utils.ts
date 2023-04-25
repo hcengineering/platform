@@ -1,16 +1,16 @@
+import contact, { getName } from '@hcengineering/contact'
 import { Class, Client, Doc, Hierarchy, Ref } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
-import { Applicant, Candidate, recruitId, Review, Vacancy, VacancyList } from '@hcengineering/recruit'
-import { getCurrentLocation, getPanelURI, Location, ResolvedLocation } from '@hcengineering/ui'
+import { Applicant, Candidate, Review, Vacancy, VacancyList, recruitId } from '@hcengineering/recruit'
+import { Location, ResolvedLocation, getCurrentResolvedLocation, getPanelURI } from '@hcengineering/ui'
 import view from '@hcengineering/view'
-import contact, { getName } from '@hcengineering/contact'
 import { workbenchId } from '@hcengineering/workbench'
 import recruit from './plugin'
 
 type RecruitDocument = Vacancy | Applicant | Review
 
 export async function objectLinkProvider (doc: RecruitDocument): Promise<string> {
-  const location = getCurrentLocation()
+  const location = getCurrentResolvedLocation()
   return await Promise.resolve(
     `${window.location.protocol}//${window.location.host}/${workbenchId}/${
       location.path[1]
@@ -77,7 +77,6 @@ async function generateIdLocation (loc: Location, shortLink: string): Promise<Re
       path: [appComponent, workspace],
       fragment: getPanelURI(component, doc._id, _class, 'content')
     },
-    shouldNavigate: false,
     defaultLocation: {
       path: defaultPath,
       fragment: getPanelURI(component, doc._id, _class, 'content')
@@ -127,7 +126,6 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Reso
       path: [appComponent, workspace],
       fragment: getPanelURI(component, doc._id, doc._class, 'content')
     },
-    shouldNavigate: false,
     defaultLocation: {
       path: defaultPath,
       fragment: getPanelURI(component, doc._id, doc._class, 'content')
@@ -136,7 +134,7 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Reso
 }
 
 export async function getSequenceLink (doc: RecruitDocument): Promise<Location> {
-  const loc = getCurrentLocation()
+  const loc = getCurrentResolvedLocation()
   loc.path.length = 2
   loc.fragment = undefined
   loc.query = undefined
@@ -150,7 +148,7 @@ export async function getObjectLink (doc: Candidate | VacancyList): Promise<Loca
   const _class = Hierarchy.mixinOrClass(doc)
   const client = getClient()
   const clazz = client.getHierarchy().getClass(_class)
-  const loc = getCurrentLocation()
+  const loc = getCurrentResolvedLocation()
   loc.path.length = 2
   loc.fragment = undefined
   loc.query = undefined

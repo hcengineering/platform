@@ -45,7 +45,7 @@ import { AttributeCategory, createQuery, getAttributePresenterClass, KeyedAttrib
 import {
   AnyComponent,
   ErrorPresenter,
-  getCurrentLocation,
+  getCurrentResolvedLocation,
   getPanelURI,
   getPlatformColorForText,
   Location,
@@ -482,7 +482,7 @@ export function categorizeFields (
 }
 
 export function makeViewletKey (loc?: Location): string {
-  loc = loc != null ? { path: loc.path } : getCurrentLocation()
+  loc = loc != null ? { path: loc.path } : getCurrentResolvedLocation()
   loc.fragment = undefined
   loc.query = undefined
   return 'viewlet' + locationToUrl(loc)
@@ -518,6 +518,35 @@ export function setActiveViewletId (viewletId: Ref<Viewlet> | null, loc?: Locati
 export function getActiveViewletId (): Ref<Viewlet> | null {
   const key = makeViewletKey()
   return localStorage.getItem(key) as Ref<Viewlet> | null
+}
+
+/**
+ * Updates the active viewlet, if one was found.
+ * Otherwise sets the default viewlet.
+ *
+ * @export
+ * @param {readonly Viewlet[]} viewlets
+ * @param {(Ref<Viewlet> | null | undefined)} activeViewletId
+ * @returns {(Viewlet | undefined)}
+ */
+export function updateActiveViewlet (
+  viewlets: readonly Viewlet[],
+  activeViewletId: Ref<Viewlet> | null | undefined
+): Viewlet | undefined {
+  if (viewlets.length === 0) {
+    return
+  }
+
+  let viewlet: Viewlet | undefined
+
+  if (activeViewletId !== null && activeViewletId !== undefined) {
+    viewlet = viewlets.find((viewlet) => viewlet._id === activeViewletId)
+  }
+  viewlet ??= viewlets[0]
+
+  setActiveViewletId(viewlet._id)
+
+  return viewlet
 }
 
 export type FixedWidthStore = Record<string, number>
@@ -861,7 +890,7 @@ export async function getObjectLinkFragment (
       return res
     }
   }
-  const loc = getCurrentLocation()
+  const loc = getCurrentResolvedLocation()
   loc.fragment = getPanelURI(component, object._id, Hierarchy.mixinOrClass(object), 'content')
   return loc
 }

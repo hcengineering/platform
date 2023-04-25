@@ -3,7 +3,7 @@
   import { IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue } from '@hcengineering/tracker'
-  import { Button, IconDetails, IconDetailsFilled, location } from '@hcengineering/ui'
+  import { Button, IconDetails, IconDetailsFilled, resolvedLocationStore } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
   import {
     FilterBar,
@@ -11,7 +11,7 @@
     activeViewlet,
     getViewOptions,
     makeViewletKey,
-    setActiveViewletId,
+    updateActiveViewlet,
     viewOptionStore
   } from '@hcengineering/view-resources'
   import { onDestroy } from 'svelte'
@@ -35,9 +35,9 @@
   $: if (query) updateSearchQuery(search)
   let resultQuery: DocumentQuery<Issue> = { ...searchQuery }
 
-  let viewlets: WithLookup<Viewlet>[] = []
+  let viewlets: WithLookup<Viewlet>[] | undefined
 
-  $: update(viewlets, active)
+  $: viewlet = viewlets && updateActiveViewlet(viewlets, active)
   const viewletQuery = createQuery()
   viewletQuery.query(
     view.class.Viewlet,
@@ -53,19 +53,12 @@
   let key = makeViewletKey()
 
   onDestroy(
-    location.subscribe((loc) => {
+    resolvedLocationStore.subscribe((loc) => {
       key = makeViewletKey(loc)
     })
   )
 
   $: active = $activeViewlet[key]
-
-  async function update (viewlets: WithLookup<Viewlet>[], active: Ref<Viewlet> | null): Promise<void> {
-    viewlet = viewlets.find((viewlet) => viewlet._id === active) ?? viewlets[0]
-    if (viewlet !== undefined) {
-      setActiveViewletId(viewlet._id)
-    }
-  }
 
   $: if (!label && title) {
     translate(title, {}).then((res) => {
@@ -110,8 +103,8 @@
     {/if}
   </svelte:fragment>
 </IssuesHeader>
-<slot name="afterHeader" />
 <FilterBar _class={tracker.class.Issue} query={searchQuery} {viewOptions} on:change={(e) => (resultQuery = e.detail)} />
+<slot name="afterHeader" />
 <div class="flex w-full h-full clear-mins">
   {#if viewlet}
     <IssuesContent {viewlet} query={resultQuery} {space} {viewOptions} />

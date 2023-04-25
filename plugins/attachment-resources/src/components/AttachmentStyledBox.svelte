@@ -298,8 +298,6 @@
   }
 </script>
 
-<svelte:window on:paste={(ev) => (fakeAttach === 'normal' ? pasteAction(ev) : undefined)} />
-
 <input
   bind:this={inputFile}
   multiple
@@ -312,6 +310,7 @@
 
 <div
   class="flex-col clear-mins"
+  on:paste={(ev) => (fakeAttach === 'normal' ? pasteAction(ev) : undefined)}
   on:dragover|preventDefault={() => {}}
   on:dragleave={() => {}}
   on:drop|preventDefault|stopPropagation={(ev) => {
@@ -367,16 +366,16 @@
     margin-top: 0.5rem;
     padding: 0.5rem;
     min-width: 0;
-    color: var(--caption-color);
+    color: var(--theme-caption-color);
     overflow-x: auto;
     overflow-y: hidden;
-    background-color: var(--accent-bg-color);
-    border: 1px solid var(--divider-color);
-    border-radius: 0.5rem;
+    background-color: var(--theme-button-enabled);
+    border: 1px solid var(--theme-button-border);
+    border-radius: 0.25rem;
 
     .item + .item {
       padding-left: 1rem;
-      border-left: 1px solid var(--divider-color);
+      border-left: 1px solid var(--theme-divider-color);
     }
   }
 </style>

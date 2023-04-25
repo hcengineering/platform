@@ -78,6 +78,7 @@
   import PriorityEditor from './PriorityEditor.svelte'
   import StatusEditor from './StatusEditor.svelte'
   import EstimationEditor from './timereport/EstimationEditor.svelte'
+  import DueDatePresenter from './DueDatePresenter.svelte'
 
   export let space: Ref<Project> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
@@ -142,7 +143,7 @@
 
   let kanbanUI: Kanban
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
-    kanbanUI.select(offset, of, dir)
+    kanbanUI?.select(offset, of, dir)
   })
   onMount(() => {
     ;(document.activeElement as HTMLElement)?.blur()
@@ -170,6 +171,8 @@
       sort
     }
   )
+
+  $: listProvider.update(issues)
 
   let categories: CategoryType[] = []
 
@@ -264,9 +267,6 @@
     {setGroupByValues}
     {getUpdateProps}
     {groupByDocs}
-    on:content={(evt) => {
-      listProvider.update(evt.detail)
-    }}
     on:obj-focus={(evt) => {
       listProvider.updateFocus(evt.detail)
     }}
@@ -341,7 +341,7 @@
               <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
             </div>
           </div>
-          <div class="buttons-group xsmall-gap states-bar">
+          <div class="xsmall-gap states-bar">
             {#if issue && issue.subIssues > 0}
               <SubIssuesSelector value={issue} {currentProject} />
             {/if}
@@ -355,6 +355,7 @@
               width={''}
               bind:onlyIcon={fullFilled[issueId]}
             />
+            <DueDatePresenter value={issue} kind={'link-bordered'} />
             <EstimationEditor kind={'list'} size={'small'} value={issue} />
             <div
               class="clear-mins"
@@ -385,12 +386,12 @@
 
   .header {
     padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--divider-color);
+    border-bottom: 1px solid var(--theme-divider-color);
 
     .label {
-      color: var(--caption-color);
+      color: var(--theme-caption-color);
       .counter {
-        color: rgba(var(--caption-color), 0.8);
+        color: rgba(var(--theme-caption-color), 0.8);
       }
     }
   }
@@ -403,8 +404,9 @@
     min-height: 6.5rem;
   }
   .states-bar {
-    flex-shrink: 10;
-    width: fit-content;
-    margin: 0.625rem 1rem 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    margin: 0.625rem 1rem;
   }
 </style>

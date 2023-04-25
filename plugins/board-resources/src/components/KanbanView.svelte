@@ -95,7 +95,7 @@
 
   let kanbanUI: KanbanUI
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
-    kanbanUI.select(offset, of, dir)
+    kanbanUI?.select(offset, of, dir)
   })
   onMount(() => {
     ;(document.activeElement as HTMLElement)?.blur()
@@ -125,6 +125,7 @@
       ...options
     }
   )
+  $: listProvider.update(cards)
   $: groupByDocs = groupBy(cards, 'state')
 
   const getUpdateProps = (doc: Doc, category: CategoryType): DocumentUpdate<DocWithRank> | undefined => {
@@ -151,11 +152,8 @@
   getGroupByValues={(groupByDocs, category) => getGroupByValues(groupByDocs, category)}
   {setGroupByValues}
   categories={states.map((it) => it._id)}
-  on:content={(evt) => {
-    listProvider.update(evt.detail)
-  }}
   on:obj-focus={(evt) => {
-    listProvider.updateFocus(evt.detail)
+    listProvider.updateFocus(evt.detail.object)
   }}
   {groupByDocs}
   {getUpdateProps}

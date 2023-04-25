@@ -71,8 +71,8 @@
     position: relative;
     width: 100%;
     height: 1.5rem;
-    background-color: var(--board-bg-color);
-    border: 1px solid var(--accent-bg-color);
+    background-color: var(--theme-list-row-color);
+    border: 1px solid var(--theme-list-divider-color);
     border-radius: 0.25rem;
 
     .bar {

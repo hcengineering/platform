@@ -143,8 +143,9 @@
   $: updateDocs(_class, states, resultQuery)
 </script>
 
+<div class="min-h-4 max-h-4 h-4 flex-no-shrink" />
 <CreateFilter bind:value={modified} />
 
-<div class="ml-10 mt-4">
+<div class="mx-10 mt-4">
   <BarDashboard {items} />
 </div>

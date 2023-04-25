@@ -210,7 +210,7 @@
   }
 
   export function select (offset: 1 | -1 | 0, of?: Doc, dir?: 'vertical' | 'horizontal'): void {
-    let pos = (of !== undefined ? objects.findIndex((it) => it._id === of._id) : selection) ?? -1
+    let pos = (of != null ? objects.findIndex((it) => it._id === of._id) : selection) ?? -1
     if (pos === -1) {
       for (const st of categories) {
         const stateObjs = getGroupByValues(groupByDocs, st) ?? []
@@ -237,7 +237,7 @@
     if (objState === -1) {
       return
     }
-    const stateObjs = getGroupByValues(groupByDocs, categories.indexOf(objState)) ?? []
+    const stateObjs = getGroupByValues(groupByDocs, categories[objState]) ?? []
     const statePos = stateObjs.findIndex((it) => it._id === obj._id)
     if (statePos === undefined) {
       return
@@ -302,7 +302,7 @@
   }
 </script>
 
-<div class="kanban-container top-divider">
+<div class="kanban-container">
   <ScrollBox>
     <div class="kanban-content">
       {#each categories as state, si (typeof state === 'object' ? state.name : state)}
@@ -360,7 +360,6 @@
     position: relative;
     width: 100%;
     height: 100%;
-    background: var(--board-bg-color);
   }
   .kanban-content {
     display: flex;

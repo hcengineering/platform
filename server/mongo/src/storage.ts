@@ -1063,7 +1063,7 @@ function fillDateSort (key: string, pipeline: any[], sort: any, options: FindOpt
   }
   pipeline.push({
     $addFields: {
-      [`sort_isNull_${key}`]: { $eq: [`$${key}`, null] }
+      [`sort_isNull_${key}`]: { $or: [{ $eq: [`$${key}`, null] }, { $eq: [{ $type: `$${key}` }, 'missing'] }] }
     }
   })
   sort[`sort_isNull_${key}`] = options.sort[_key] === SortingOrder.Ascending ? 1 : -1

@@ -18,20 +18,20 @@
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
-  import presentation, { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
+  import presentation, { MessageViewer, createQuery, getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
   import tags from '@hcengineering/tags'
   import type { IssueTemplate, IssueTemplateChild, Project } from '@hcengineering/tracker'
   import {
     Button,
     EditBox,
-    getCurrentLocation,
     IconAttachment,
     IconEdit,
     IconMoreH,
     Label,
-    navigate,
     Scroller,
+    getCurrentResolvedLocation,
+    navigate,
     showPopup
   } from '@hcengineering/ui'
   import { ContextMenu, UpDownNavigator } from '@hcengineering/view-resources'
@@ -279,7 +279,7 @@
         showTooltip={{ label: setting.string.ClassSetting }}
         on:click={(ev) => {
           ev.stopPropagation()
-          const loc = getCurrentLocation()
+          const loc = getCurrentResolvedLocation()
           loc.path[2] = settingId
           loc.path[3] = 'setting'
           loc.path[4] = 'classes'

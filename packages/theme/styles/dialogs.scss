@@ -20,7 +20,7 @@
   left: 0;
   width: 100%;
   height: 100vh;
-  background-color: var(--card-overlay-color);
+  background-color: var(--theme-overlay-color);
   pointer-events: all;
 }
 
@@ -29,7 +29,7 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  background: var(--popup-bg-color);
+  background: var(--theme-popup-color);
   border-radius: .5rem;
   box-shadow: var(--card-shadow);
 
@@ -39,18 +39,26 @@
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
-    padding: 1rem 1rem 1.5rem;
+    padding: 1.5rem 1.5rem .5rem 1.75rem;
+    font-size: .8125rem;
 
+    &__title-wrap {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+
+      & > *:not(:last-child) { margin-right: .5rem; }
+    }
     &__title {
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
       user-select: none;
       min-width: 0;
-      font-weight: 500;
-      font-size: 1rem;
-      color: var(--accent-color);
+      line-height: 150%;
+      color: var(--theme-caption-color);
     }
+    &__divider { color: var(--theme-content-color); }
     &__error {
       min-width: 0;
       flex-grow: 1;
@@ -71,8 +79,9 @@
     flex-direction: column;
     flex-grow: 1;
     flex-shrink: 1;
-    margin: 0 1rem;
+    padding: 1rem 1.75rem;
     height: fit-content;
+    min-width: 0;
     min-height: 0;
 
     & > *:not(:last-child) { margin-bottom: 1rem; }
@@ -81,36 +90,50 @@
   .antiCard-pool {
     flex-shrink: 0;
     display: flex;
-    flex-direction: column;
-    margin: 0 1rem .75rem;
-    color: var(--caption-color);
+    align-items: center;
     flex-wrap: wrap;
+    margin: .5rem 1.25rem 0 1.75rem;
+    min-width: 0;
+    font-size: .8125rem;
+    color: var(--theme-caption-color);
 
     &__separator {
-      margin: 1rem 0;
+      flex-shrink: 0;
+      margin-top: 1.25rem;
       height: 1px;
-      background-color: var(--divider-color);
+      background-color: var(--theme-popup-divider);
     }
+    & > * { margin: .5rem .5rem 0 0; }
   }
 
   .antiCard-footer {
     overflow: hidden;
     flex-shrink: 0;
-    display: grid;
-    grid-auto-flow: column;
-    direction: rtl;
-    justify-content: flex-start;
+    direction: ltr;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    column-gap: .75rem;
-    padding: 1.5rem 1rem 1rem;
-    height: 4.5rem;
+    padding: 1rem 1.75rem;
+    height: 4.25rem;
     border-radius: 0 0 .5rem .5rem;
+
+    &.reverse { flex-direction: row-reverse; }
+    &__error {
+      flex-grow: 1;
+      display: flex;
+      margin-left: .375rem;
+      min-width: 0;
+      font-weight: 500;
+      font-size: .75rem;
+      color: var(--system-error-color);
+      &:empty { visibility: hidden; }
+    }
   }
 
   .antiCard-group {
     padding: .5rem 1rem;
 
-    &:not(:last-child) { border-bottom: 1px solid var(--popup-divider); }
+    &:not(:last-child) { border-bottom: 1px solid var(--theme-divider-color); }
     &.grid {
       display: grid;
       grid-template-columns: 5rem auto;
@@ -124,7 +147,7 @@
         font-weight: 500;
         font-size: .75rem;
         line-height: .75rem;
-        color: var(--content-color);
+        color: var(--theme-content-color);
       }    
       .value {
         display: flex;
@@ -148,26 +171,14 @@
     width: 90vw;
     max-width: 90vw;
     max-height: 90vh;
-  }
-  &.dialog,
-  &.mobile {
+
     .antiCard-header {
       padding: .75rem .75rem .375rem;
-
-      &__title-wrap {
-        display: flex;
-        align-items: center;
-        min-width: 0;
-
-        & > *:not(:first-child) { margin-left: .375rem; }
-      }
 
       &__divider, &__title {
         font-weight: 400;
         font-size: .8125rem;
       }
-      &__divider { color: var(--content-color); }
-      &__title { color: var(--accent-color); }
     }
     .antiCard-content { margin: .5rem 1.125rem 1rem; }
     .antiCard-pool {
@@ -175,29 +186,10 @@
       align-items: center;
       margin: 0 .5rem .25rem;
       font-size: .75rem;
-
-      & > * { margin: 0 .25rem .5rem; }
     }
     .antiCard-footer {
-      direction: ltr;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
       padding: .75rem;
       height: auto;
-      border-top: 1px solid var(--divider-color);
-
-      &.reverse { flex-direction: row-reverse; }
-      &__error {
-        flex-grow: 1;
-        display: flex;
-        margin-left: .375rem;
-        min-width: 0;
-        font-weight: 500;
-        font-size: .75rem;
-        color: var(--system-error-color);
-        &:empty { visibility: hidden; }
-      }
     }
   }
 }

@@ -43,6 +43,7 @@
       {#each [...Array(displayedDaysCount).keys()] as dayOfWeek}
         {@const day = getDay(weekMonday, dayOfWeek)}
         <th>
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
             class="antiTable-cells cursor-pointer uppercase flex-col-center"
             class:today={areDatesEqual(todayDate, day)}
@@ -88,7 +89,7 @@
     width: 5rem;
   }
   .today {
-    color: var(--caption-color);
+    color: var(--theme-caption-color);
   }
   .calendar-td {
     padding: 0;
@@ -99,7 +100,7 @@
     width: calc(calc(100% - 50px) / 7);
   }
   .cell:hover:not(.wrongMonth) {
-    background-color: var(--toggle-bg-hover);
     color: var(--primary-button-color);
+    background-color: var(--highlight-hover);
   }
 </style>

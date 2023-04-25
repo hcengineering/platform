@@ -187,14 +187,14 @@
     height: 1.5rem;
     min-width: 1.5rem;
     white-space: nowrap;
-    color: var(--accent-color);
-    background-color: var(--noborder-bg-color);
+    color: var(--theme-content-color);
+    background-color: var(--theme-button-enabled);
     border: 1px solid transparent;
     transition-property: border, background-color, color, box-shadow;
     transition-duration: 0.15s;
 
     .btn-icon {
-      color: var(--content-color);
+      color: var(--theme-dark-color);
       transition: color 0.15s;
       pointer-events: none;
     }
@@ -205,11 +205,11 @@
       max-width: 10rem;
     }
     &:hover {
-      color: var(--caption-color);
-      background-color: var(--noborder-bg-hover);
+      color: var(--theme-caption-color);
+      background-color: var(--theme-button-hovered);
 
       .btn-icon {
-        color: var(--caption-color);
+        color: var(--theme-caption-color);
       }
     }
 

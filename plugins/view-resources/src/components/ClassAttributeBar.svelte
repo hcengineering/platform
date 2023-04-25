@@ -15,9 +15,9 @@
 <script lang="ts">
   import core, { Class, Doc, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { AttributesBar, getAttribute, getClient, KeyedAttribute } from '@hcengineering/presentation'
+  import { AttributesBar, KeyedAttribute, getAttribute, getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
-  import { Button, getCurrentLocation, Label, navigate } from '@hcengineering/ui'
+  import { Button, Label, getCurrentResolvedLocation, navigate } from '@hcengineering/ui'
   import { getFiltredKeys, isCollectionAttr } from '../utils'
 
   export let object: Doc | Record<string, any>
@@ -80,7 +80,7 @@
         showTooltip={{ label: setting.string.ClassSetting }}
         on:click={(ev) => {
           ev.stopPropagation()
-          const loc = getCurrentLocation()
+          const loc = getCurrentResolvedLocation()
           loc.path[2] = settingId
           loc.path[3] = 'setting'
           loc.path[4] = 'classes'
@@ -107,8 +107,8 @@
     margin: 0.25rem -0.5rem 0.75rem;
     padding: 0 0 0 0.5rem;
     font-weight: 600;
-    color: var(--dark-color);
-    border: 1px solid var(--divider-color);
+    color: var(--theme-dark-color);
+    border: 1px solid var(--theme-divider-color);
     border-radius: 0.25rem;
     cursor: pointer;
     transition-property: color, background-color, border-color;
@@ -135,7 +135,7 @@
       transition: opacity 0.15s var(--timing-main);
     }
     &.collapsed {
-      background-color: var(--divider-color);
+      background-color: var(--theme-divider-color);
       border-color: transparent;
 
       .icon-arrow {
@@ -144,8 +144,8 @@
       }
     }
     &:hover {
-      color: var(--caption-color);
-      background-color: var(--menu-bg-select);
+      color: var(--theme-caption-color);
+      background-color: var(--theme-navpanel-hovered);
       border-color: transparent;
 
       .icon-arrow {

@@ -390,14 +390,15 @@
         bind:value={doc.assignee}
         allowDeselect
         showNavigate={false}
+        kind={'secondary'}
+        size={'large'}
         titleDeselect={recruit.string.UnAssignRecruiter}
       />
       {#if states.length > 0}
         <Button
           focusIndex={3}
           width="min-content"
-          size="small"
-          kind="no-border"
+          size="large"
           bind:input={btn}
           on:click={() => {
             showPopup(

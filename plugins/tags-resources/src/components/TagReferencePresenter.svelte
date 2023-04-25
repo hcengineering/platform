@@ -74,11 +74,12 @@
     align-items: center;
     flex-shrink: 0;
     padding-left: 0.5rem;
-    height: 1.5rem;
+    height: 1.75rem;
     min-width: 0;
     min-height: 0;
-    border: 1px solid var(--divider-color);
-    border-radius: 0.75rem;
+    background-color: var(--theme-list-button-color);
+    border: 1px solid var(--theme-button-border);
+    border-radius: 1.5rem;
 
     .btn-close {
       flex-shrink: 0;

@@ -105,3 +105,21 @@ export function tableToCSV (tableId: string, separator = ','): string {
  * @public
  */
 export const networkStatus = writable<number>(0)
+
+let attractorMx = 0
+let attractorMy = 0
+/**
+ * perform mouse movement checks and call method if they was
+ */
+export function mouseAttractor (op: () => void, diff = 5): (evt: MouseEvent) => void {
+  return (evt: MouseEvent) => {
+    const dx = evt.clientX - attractorMx
+    const dy = evt.clientY - attractorMy
+    attractorMx = evt.clientX
+    attractorMy = evt.clientY
+
+    if (Math.sqrt(dx * dx + dy * dy) > diff) {
+      op()
+    }
+  }
+}

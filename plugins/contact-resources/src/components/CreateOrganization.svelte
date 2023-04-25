@@ -103,6 +103,8 @@
       <ChannelsDropdown
         bind:value={channels}
         focusIndex={10}
+        kind={'secondary'}
+        size={'large'}
         editable
         highlighted={matchedChannels.map((it) => it.provider)}
       />

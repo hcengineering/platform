@@ -18,7 +18,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import tags, { selectedTagElements, TagCategory, TagElement } from '@hcengineering/tags'
   import { DoneState, Task } from '@hcengineering/task'
-  import { Component, Icon, Label, SearchEdit } from '@hcengineering/ui'
+  import { Component, Label, SearchEdit } from '@hcengineering/ui'
   import { TableBrowser } from '@hcengineering/view-resources'
   import task from '../plugin'
 
@@ -70,9 +70,8 @@
   const handleChange = (evt: any) => updateCategory(evt.detail)
 </script>
 
-<div class="ac-header full">
+<div class="ac-header full divide caption-height">
   <div class="ac-header__wrap-title">
-    <div class="ac-header__icon"><Icon icon={task.icon.Task} size={'small'} /></div>
     <span class="ac-header__title"><Label label={labelTasks} /></span>
   </div>
 

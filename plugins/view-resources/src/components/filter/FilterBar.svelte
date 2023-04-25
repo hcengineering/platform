@@ -146,13 +146,7 @@
       </div>
     </div>
 
-    <Button
-      icon={view.icon.Views}
-      label={view.string.Save}
-      size={'small'}
-      width={'fit-content'}
-      on:click={() => saveFilteredView()}
-    />
+    <Button icon={view.icon.Views} label={view.string.Save} width={'fit-content'} on:click={() => saveFilteredView()} />
   </div>
 {/if}
 
@@ -162,12 +156,11 @@
     grid-template-columns: auto auto;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem 1.5rem 0.75rem 2.5rem;
+    padding: 0.5rem 2.25rem;
     width: 100%;
     min-width: 0;
-    border: 1px solid var(--divider-color);
-    border-left: none;
-    border-right: none;
+    background-color: var(--theme-comp-header-color);
+    border-bottom: 1px solid var(--theme-divider-color);
 
     .filters {
       display: flex;

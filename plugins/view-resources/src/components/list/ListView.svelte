@@ -1,10 +1,17 @@
 <script lang="ts">
   import { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { AnyComponent, issueSP, Scroller } from '@hcengineering/ui'
+  import { AnyComponent, Scroller } from '@hcengineering/ui'
   import { BuildModelKey, Viewlet, ViewOptions } from '@hcengineering/view'
   import { onMount } from 'svelte'
-  import { ActionContext, ListSelectionProvider, LoadingProps, SelectDirection, selectionStore } from '../..'
+  import {
+    ActionContext,
+    ListSelectionProvider,
+    LoadingProps,
+    SelectDirection,
+    focusStore,
+    selectionStore
+  } from '../..'
 
   import List from './List.svelte'
 
@@ -40,8 +47,13 @@
   }}
 />
 
-<div class="w-full h-full clear-mins">
-  <Scroller fade={issueSP}>
+<div class="w-full h-full py-4 clear-mins">
+  <Scroller
+    fade={{ multipler: { top: 2.75 * viewOptions.groupBy.length, bottom: 0 } }}
+    padding={'0 1rem'}
+    noFade
+    checkForHeaders
+  >
     <List
       bind:this={list}
       {_class}
@@ -56,6 +68,7 @@
       {props}
       viewOptionsConfig={viewlet.viewOptions?.other}
       selectedObjectIds={$selectionStore ?? []}
+      selection={listProvider.current($focusStore)}
       on:row-focus={(event) => {
         listProvider.updateFocus(event.detail ?? undefined)
       }}

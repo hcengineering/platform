@@ -16,13 +16,13 @@
   import core, { Class, Doc, Ref, Space, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { AnyComponent, Component, location } from '@hcengineering/ui'
+  import { AnyComponent, Component, resolvedLocationStore } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
   import {
     activeViewlet,
     getViewOptions,
     makeViewletKey,
-    setActiveViewletId,
+    updateActiveViewlet,
     viewOptionStore
   } from '@hcengineering/view-resources'
   import type { ViewConfiguration } from '@hcengineering/workbench'
@@ -47,7 +47,7 @@
 
   let key = makeViewletKey()
   onDestroy(
-    location.subscribe((loc) => {
+    resolvedLocationStore.subscribe((loc) => {
       key = makeViewletKey(loc)
     })
   )
@@ -82,8 +82,7 @@
         }
       )
       if (header !== undefined) {
-        viewlet = viewlets.find((viewlet) => viewlet._id === active) ?? viewlets[0]
-        setActiveViewletId(viewlet._id)
+        viewlet = updateActiveViewlet(viewlets, active)
       }
       _class = attachTo
     }

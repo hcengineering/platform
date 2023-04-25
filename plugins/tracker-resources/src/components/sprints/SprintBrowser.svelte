@@ -13,11 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DocumentQuery, Ref, WithLookup } from '@hcengineering/core'
+  import { DocumentQuery, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Sprint } from '@hcengineering/tracker'
-  import { Button, IconAdd, Label, SearchEdit, location, showPopup } from '@hcengineering/ui'
+  import {
+    ActionIcon,
+    Button,
+    IconAdd,
+    IconMoreH,
+    Label,
+    SearchEdit,
+    TabItem,
+    TabList,
+    resolvedLocationStore,
+    showPopup
+  } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
   import {
     FilterBar,
@@ -26,7 +37,7 @@
     activeViewlet,
     getViewOptions,
     makeViewletKey,
-    setActiveViewletId,
+    updateActiveViewlet,
     viewOptionStore
   } from '@hcengineering/view-resources'
   import { onDestroy } from 'svelte'
@@ -61,9 +72,9 @@
 
   let resultQuery: DocumentQuery<Sprint> = { ...searchQuery }
 
-  let viewlets: WithLookup<Viewlet>[] = []
+  let viewlets: WithLookup<Viewlet>[] | undefined
 
-  $: update(viewlets, active)
+  $: viewlet = viewlets && updateActiveViewlet(viewlets, active)
 
   const viewletQuery = createQuery()
   viewletQuery.query(view.class.Viewlet, { attachTo: tracker.class.Sprint }, (res) => (viewlets = res), {
@@ -75,17 +86,12 @@
   let key = makeViewletKey()
 
   onDestroy(
-    location.subscribe((loc) => {
+    resolvedLocationStore.subscribe((loc) => {
       key = makeViewletKey(loc)
     })
   )
 
   $: active = $activeViewlet[key]
-
-  async function update (viewlets: WithLookup<Viewlet>[], active: Ref<Viewlet> | null): Promise<void> {
-    viewlet = viewlets.find((viewlet) => viewlet._id === active) ?? viewlets[0]
-    setActiveViewletId(viewlet._id)
-  }
 
   let asideFloat: boolean = false
   let asideShown: boolean = true
@@ -108,74 +114,61 @@
 
     mode = newMode
   }
+
+  const modeList: TabItem[] = [
+    { id: 'all', labelIntl: tracker.string.AllSprints, action: () => handleViewModeChanged('all') },
+    { id: 'planned', labelIntl: tracker.string.PlannedSprints, action: () => handleViewModeChanged('planned') },
+    { id: 'active', labelIntl: tracker.string.ActiveSprints, action: () => handleViewModeChanged('active') },
+    { id: 'closed', labelIntl: tracker.string.ClosedSprints, action: () => handleViewModeChanged('closed') }
+  ]
 </script>
 
-<div class="fs-title flex-between header">
-  <div class="flex-row-center">
-    <Label {label} />
-    <div class="title">
+<div class="ac-header full divide caption-height">
+  <div class="ac-header__wrap-title mr-3">
+    <span class="ac-header__title"><Label {label} /></span>
+    <span class="componentTitle">
       › <Label label={title} />
-    </div>
-    <div class="ml-4">
-      <FilterButton _class={tracker.class.Issue} {space} />
-    </div>
+    </span>
   </div>
-  <div class="flex-row-center gap-2">
+
+  <div class="ac-header-full medium-gap mb-1">
+    <Button icon={IconAdd} label={tracker.string.Sprint} kind={'primary'} on:click={showCreateDialog} />
+  </div>
+</div>
+<div class="ac-header full divide search-start">
+  <div class="ac-header-full small-gap">
     <SearchEdit bind:value={search} on:change={() => {}} />
-    <Button size="small" icon={IconAdd} label={tracker.string.Sprint} kind={'primary'} on:click={showCreateDialog} />
+    <ActionIcon icon={IconMoreH} size={'small'} />
+    <div class="buttons-divider" />
+    <FilterButton _class={tracker.class.Issue} {space} />
+  </div>
+  <div class="ac-header-full medium-gap">
     {#if viewlet}
       <ViewletSettingButton bind:viewOptions {viewlet} />
+      <ActionIcon icon={IconMoreH} size={'small'} />
     {/if}
   </div>
 </div>
-<div class="itemsContainer">
-  <div class="flex-center">
-    <div class="flex-center">
-      <div class="buttonWrapper">
-        <Button
-          size="small"
-          shape="rectangle-right"
-          selected={mode === 'all'}
-          label={tracker.string.AllSprints}
-          on:click={() => handleViewModeChanged('all')}
-        />
-      </div>
-      <div class="buttonWrapper">
-        <Button
-          size="small"
-          shape="rectangle"
-          selected={mode === 'planned'}
-          label={tracker.string.PlannedSprints}
-          on:click={() => handleViewModeChanged('planned')}
-        />
-      </div>
-      <div class="buttonWrapper">
-        <Button
-          size="small"
-          shape="rectangle"
-          selected={mode === 'active'}
-          label={tracker.string.ActiveSprints}
-          on:click={() => handleViewModeChanged('active')}
-        />
-      </div>
-      <div class="buttonWrapper">
-        <Button
-          size="small"
-          shape="rectangle-left"
-          selected={mode === 'closed'}
-          label={tracker.string.ClosedSprints}
-          on:click={() => handleViewModeChanged('closed')}
-        />
-      </div>
-    </div>
+<div class="ac-header full divide search-start">
+  <div class="ac-header-full small-gap">
+    <TabList
+      items={modeList}
+      selected={mode}
+      kind={'normal'}
+      on:select={(result) => {
+        if (result.detail !== undefined && result.detail.action) result.detail.action()
+      }}
+    />
   </div>
 </div>
+
 <FilterBar
   _class={tracker.class.Sprint}
   query={searchQuery}
   {viewOptions}
   on:change={(e) => (resultQuery = e.detail)}
 />
+
 <div class="flex w-full h-full clear-mins">
   {#if viewlet}
     <SprintContent {viewlet} query={{ ...resultQuery, ...includedSprintsQuery }} {space} {viewOptions} />

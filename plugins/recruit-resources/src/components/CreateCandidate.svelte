@@ -56,11 +56,11 @@
     IconInfo,
     Label,
     showPopup,
-    Spinner
+    Spinner,
+    IconAttachment
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
-  import FileUpload from './icons/FileUpload.svelte'
   import YesNo from './YesNo.svelte'
 
   export let shouldSaveDraft: boolean = false
@@ -521,14 +521,7 @@
   on:changeContent
 >
   <svelte:fragment slot="header">
-    <Button
-      icon={contact.icon.Person}
-      label={contact.string.Person}
-      size={'small'}
-      kind={'no-border'}
-      disabled
-      on:click={() => {}}
-    />
+    <Button icon={contact.icon.Person} label={contact.string.Person} size={'large'} disabled on:click={() => {}} />
   </svelte:fragment>
   <div class="flex-between">
     <div class="flex-col">
@@ -585,6 +578,8 @@
       focusIndex={10}
       bind:value={object.channels}
       highlighted={matchedChannels.map((it) => it.provider)}
+      kind={'secondary'}
+      size={'large'}
     />
     <YesNo
       disabled={loading}
@@ -592,6 +587,8 @@
       label={recruit.string.Onsite}
       tooltip={recruit.string.WorkLocationPreferences}
       bind:value={object.onsite}
+      kind={'secondary'}
+      size={'large'}
     />
     <YesNo
       disabled={loading}
@@ -599,6 +596,8 @@
       label={recruit.string.Remote}
       tooltip={recruit.string.WorkLocationPreferences}
       bind:value={object.remote}
+      kind={'secondary'}
+      size={'large'}
     />
     <Component
       is={tags.component.TagsDropdownEditor}
@@ -611,7 +610,9 @@
         showTitle: false,
         elements,
         newElements,
-        countLabel: recruit.string.NumberSkills
+        countLabel: recruit.string.NumberSkills,
+        kind: 'secondary',
+        size: 'large'
       }}
       on:open={(evt) => {
         addTagRef(evt.detail)
@@ -621,8 +622,7 @@
       }}
     />
     {#if object.skills.length > 0}
-      <div class="flex-break" />
-      <div class="antiComponent antiEmphasized flex-grow mt-2">
+      <div class="antiComponent antiEmphasized w-full flex-grow mt-2">
         <Component
           is={tags.component.TagsEditor}
           props={{
@@ -648,19 +648,19 @@
           }}
         />
       </div>
+    {:else}
+      <div class="flex-grow w-full" style="margin: 0" />
     {/if}
-    <div class="flex flex-grow flex-wrap">
-      <InlineAttributeBar
-        _class={recruit.mixin.Candidate}
-        {object}
-        toClass={contact.class.Contact}
-        {ignoreKeys}
-        extraProps={{ showNavigate: false }}
-        on:update={() => {
-          object = object
-        }}
-      />
-    </div>
+    <InlineAttributeBar
+      _class={recruit.mixin.Candidate}
+      {object}
+      toClass={contact.class.Contact}
+      {ignoreKeys}
+      extraProps={{ showNavigate: false }}
+      on:update={() => {
+        object = object
+      }}
+    />
   </svelte:fragment>
 
   <svelte:fragment slot="footer">
@@ -676,14 +676,13 @@
       on:drop|preventDefault|stopPropagation={drop}
     >
       {#if loading && object.resumeUuid}
-        <Button label={recruit.string.Parsing} kind="link" icon={Spinner} disabled />
+        <Button label={recruit.string.Parsing} icon={Spinner} disabled />
       {:else}
         {#if loading}
-          <Button label={recruit.string.Uploading} kind="link" icon={Spinner} disabled />
+          <Button label={recruit.string.Uploading} icon={Spinner} disabled />
         {:else if object.resumeUuid}
           <Button
             disabled={loading}
-            kind={'transparent'}
             focusIndex={103}
             icon={FileIcon}
             on:click={() => {
@@ -700,10 +699,9 @@
           </Button>
         {:else}
           <Button
-            kind={'transparent'}
             focusIndex={103}
             label={recruit.string.AddDropHere}
-            icon={FileUpload}
+            icon={IconAttachment}
             on:click={() => {
               inputFile.click()
             }}
@@ -728,20 +726,18 @@
 
 <style lang="scss">
   .resume {
-    margin: -0.375rem 0rem -0.375rem -0.375rem;
-    padding: 0.375rem;
-    background: var(--accent-bg-color);
-    border: 1px dashed var(--divider-color);
+    box-shadow: 0 0 0 0 var(--primary-button-focused-border);
     border-radius: 0.5rem;
+    transition: box-shadow 0.15s ease-in-out;
 
     &.solid {
-      border-style: solid;
+      box-shadow: 0 0 0 2px var(--primary-button-focused-border);
     }
   }
   .skills-box {
     padding: 0.5rem 0.75rem;
-    background: var(--accent-bg-color);
-    border: 1px dashed var(--divider-color);
+    background: var(--theme-comp-header-color);
+    border: 1px dashed var(--theme-divider-color);
     border-radius: 0.5rem;
   }
 </style>

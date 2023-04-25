@@ -21,13 +21,14 @@
     AnyComponent,
     Button,
     Component,
-    Icon,
-    IconAdd,
+    ActionIcon,
     Label,
     Loading,
     SearchEdit,
     showPopup,
-    TabList
+    TabList,
+    IconMoreH,
+    IconAdd
   } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
   import {
@@ -38,7 +39,7 @@
     viewOptionStore
   } from '@hcengineering/view-resources'
   import calendar from '../plugin'
-  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  // import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   export let _class: Ref<Class<Event>> = calendar.class.Event
   export let space: Ref<Space> | undefined = undefined
@@ -107,45 +108,42 @@
     }
   })
 
-  $: twoRows = $deviceInfo.twoRows
+  // $: twoRows = $deviceInfo.twoRows
 
   $: viewOptions = getViewOptions(selectedViewlet, $viewOptionStore)
 </script>
 
-<div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
-  <div class:ac-header-full={!twoRows} class:flex-between={twoRows}>
-    <div class="ac-header__wrap-title mr-3">
-      <div class="ac-header__icon"><Icon icon={viewIcon} size={'small'} /></div>
-      <span class="ac-header__title"><Label label={viewLabel} /></span>
-      <div class="ml-4"><FilterButton {_class} /></div>
-    </div>
-
-    <SearchEdit
-      bind:value={search}
-      on:change={() => {
-        updateResultQuery(search)
-      }}
-    />
+<div class="ac-header full divide">
+  <div class="ac-header__wrap-title mr-3">
+    <span class="ac-header__title"><Label label={viewLabel} /></span>
   </div>
-  <div class="ac-header-full" class:secondRow={twoRows}>
-    <Button icon={IconAdd} label={createLabel} kind={'primary'} size={'small'} on:click={showCreateDialog} />
 
+  <div class="ac-header-full medium-gap mb-1">
     {#if viewlets.length > 1}
       <TabList
         items={viewslist}
         multiselect={false}
         selected={selectedViewlet?._id}
-        kind={'secondary'}
-        size={'small'}
         on:select={(result) => {
           if (result.detail !== undefined) selectedViewlet = viewlets.find((vl) => vl._id === result.detail.id)
         }}
       />
     {/if}
-    <ViewletSettingButton bind:viewOptions viewlet={selectedViewlet} />
+    <Button icon={IconAdd} label={createLabel} kind={'primary'} on:click={showCreateDialog} />
   </div>
 </div>
-
+<div class="ac-header full divide search-start">
+  <div class="ac-header-full small-gap">
+    <SearchEdit bind:value={search} on:change={() => updateResultQuery(search)} />
+    <ActionIcon icon={IconMoreH} size={'small'} />
+    <div class="buttons-divider" />
+    <FilterButton {_class} />
+  </div>
+  <div class="ac-header-full medium-gap">
+    <ViewletSettingButton bind:viewOptions viewlet={selectedViewlet} />
+    <ActionIcon icon={IconMoreH} size={'small'} />
+  </div>
+</div>
 {#if selectedViewlet?.$lookup?.descriptor?.component}
   {#if loading}
     <Loading />

@@ -13,9 +13,10 @@
 // limitations under the License.
 //
 
-import { writable, derived } from 'svelte/store'
-import { Location as PlatformLocation } from './types'
+import { derived, writable } from 'svelte/store'
 import { closePopup } from './popups'
+import justClone from 'just-clone'
+import { Location as PlatformLocation } from './types'
 
 export function locationToUrl (location: PlatformLocation): string {
   let result = '/'
@@ -103,12 +104,23 @@ export function getCurrentLocation (): PlatformLocation {
   return parseLocation(window.location)
 }
 
+export function getCurrentResolvedLocation (): PlatformLocation {
+  return justClone(resolvedLocation)
+}
+
 const locationWritable = writable(getCurrentLocation())
 window.addEventListener('popstate', () => {
   locationWritable.set(getCurrentLocation())
 })
 
 export const location = derived(locationWritable, (loc) => loc)
+export const resolvedLocationStore = writable(getCurrentLocation())
+let resolvedLocation = getCurrentLocation()
+
+export function setResolvedLocation (location: PlatformLocation): void {
+  resolvedLocation = location
+  resolvedLocationStore.set(justClone(location))
+}
 
 export function navigate (location: PlatformLocation, store = true): void {
   closePopup()

@@ -153,7 +153,7 @@
             <div class="flex-presenter">
               {#if icon}
                 <div class="icon" class:small-gap={size === 'inline' || size === 'small'}>
-                  <Icon {icon} size={kind === 'link' ? 'small' : size} />
+                  <Icon {icon} size={kind === 'link' || kind === 'secondary' ? 'small' : size} />
                 </div>
               {/if}
               <div class="label no-underline">

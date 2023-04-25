@@ -67,55 +67,78 @@
   $: twoRows = $deviceInfo.twoRows
 </script>
 
-<div
-  class="flex flex-wrap clear-mins"
-  class:minus-margin={kind === 'list-header'}
-  class:compression
-  style:flex-direction={twoRows ? 'column' : 'row'}
->
-  {#if (value.sprint && value.sprint !== $activeSprint && groupBy !== 'sprint') || shouldShowPlaceholder}
-    <div class="flex-row-center" class:minus-margin-vSpace={kind === 'list-header'} class:compression style:width>
+{#if value.sprint || sprint}
+  {#if kind === 'list'}
+    <div class="clear-mins" class:label-wrapper={compression}>
       <SprintSelector
         {kind}
         {size}
         {shape}
-        width={compression ? 'min-content' : width}
+        {width}
         {justify}
         {isEditable}
         {shouldShowLabel}
         {popupPlaceholder}
         {onlyIcon}
         {enlargedText}
+        short={compression}
         showTooltip={{ label: value.sprint ? tracker.string.MoveToSprint : tracker.string.AddToSprint }}
         value={value.sprint}
         onChange={handleSprintIdChanged}
       />
     </div>
-  {/if}
+  {:else}
+    <div
+      class="flex flex-wrap clear-mins"
+      class:minus-margin={kind === 'list-header'}
+      class:label-wrapper={compression}
+      style:flex-direction={twoRows ? 'column' : 'row'}
+    >
+      {#if (value.sprint && value.sprint !== $activeSprint && groupBy !== 'sprint') || shouldShowPlaceholder}
+        <div class="flex-row-center" class:minus-margin-vSpace={kind === 'list-header'} class:compression style:width>
+          <SprintSelector
+            {kind}
+            {size}
+            {shape}
+            {width}
+            {justify}
+            {isEditable}
+            {shouldShowLabel}
+            {popupPlaceholder}
+            {onlyIcon}
+            {enlargedText}
+            showTooltip={{ label: value.sprint ? tracker.string.MoveToSprint : tracker.string.AddToSprint }}
+            value={value.sprint}
+            onChange={handleSprintIdChanged}
+          />
+        </div>
+      {/if}
 
-  {#if sprint && kind === 'list-header'}
-    <div class="flex-row-center" class:minus-margin-space={kind === 'list-header'} class:text-sm={twoRows}>
-      {#if sprint}
-        {@const now = Date.now()}
-        {@const sprintDaysFrom =
-          now < sprint.startDate
-            ? 0
-            : now > sprint.targetDate
-            ? getDayOfSprint(sprint.startDate, sprint.targetDate)
-            : getDayOfSprint(sprint.startDate, now)}
-        {@const sprintDaysTo = getDayOfSprint(sprint.startDate, sprint.targetDate)}
-        <DatePresenter value={sprint.startDate} kind={'transparent'} />
-        <span class="p-1"> / </span>
-        <DatePresenter value={sprint.targetDate} kind={'transparent'} />
-        <div class="w-2 min-w-2" />
-        <!-- Active sprint in time -->
-        <TimePresenter value={sprintDaysFrom} />
-        /
-        <TimePresenter value={sprintDaysTo} />
+      {#if sprint && kind === 'list-header'}
+        <div class="flex-row-center" class:minus-margin-space={kind === 'list-header'} class:text-sm={twoRows}>
+          {#if sprint}
+            {@const now = Date.now()}
+            {@const sprintDaysFrom =
+              now < sprint.startDate
+                ? 0
+                : now > sprint.targetDate
+                ? getDayOfSprint(sprint.startDate, sprint.targetDate)
+                : getDayOfSprint(sprint.startDate, now)}
+            {@const sprintDaysTo = getDayOfSprint(sprint.startDate, sprint.targetDate)}
+            <DatePresenter value={sprint.startDate} kind={'transparent'} />
+            <span class="p-1"> / </span>
+            <DatePresenter value={sprint.targetDate} kind={'transparent'} />
+            <div class="w-2 min-w-2" />
+            <!-- Active sprint in time -->
+            <TimePresenter value={sprintDaysFrom} />
+            /
+            <TimePresenter value={sprintDaysTo} />
+          {/if}
+        </div>
       {/if}
     </div>
   {/if}
-</div>
+{/if}
 
 <style lang="scss">
   .minus-margin {
@@ -126,9 +149,5 @@
     &-space {
       margin: -0.25rem 0 -0.25rem 0.5rem;
     }
-  }
-  .compression {
-    flex-shrink: 5;
-    min-width: 1rem;
   }
 </style>

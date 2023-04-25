@@ -361,7 +361,7 @@
     align-items: center;
     width: 1rem;
     height: 1rem;
-    color: var(--caption-color);
+    color: var(--theme-caption-color);
     opacity: 0.6;
     cursor: pointer;
 
@@ -383,8 +383,8 @@
 
     .formatPanelRef {
       padding: 0.5rem;
-      background-color: var(--body-color);
-      border: 1px solid var(--divider-color);
+      background-color: var(--theme-comp-header-color);
+      border: 1px solid var(--theme-divider-color);
       border-radius: 0.5rem 0.5rem 0 0;
       border-bottom: 0;
 
@@ -402,8 +402,8 @@
       align-items: flex-end;
       min-height: 2.75rem;
       padding: 0.75rem 1rem;
-      background-color: var(--body-accent);
-      border: 1px solid var(--divider-color);
+      background-color: var(--theme-refinput-color);
+      border: 1px solid var(--theme-divider-color);
       border-radius: 0.5rem;
 
       &.withoutTopBorder {
@@ -417,7 +417,7 @@
         align-items: center;
         width: calc(100% - 1.75rem);
         height: 100%;
-        color: var(--content-color);
+        color: var(--theme-content-color);
         background-color: transparent;
         border: none;
         outline: none;
@@ -468,19 +468,18 @@
         .icon {
           width: 1.25rem;
           height: 1.25rem;
-          color: var(--dark-color);
+          color: var(--theme-dark-color);
           cursor: pointer;
 
           &:hover {
-            color: var(--caption-color);
+            color: var(--theme-caption-color);
           }
         }
         &:focus {
-          border: 1px solid var(--primary-button-focused-border);
-          box-shadow: 0 0 0 3px var(--primary-button-outline);
+          box-shadow: 0 0 0 2px var(--primary-button-focused-border);
 
           & > .icon {
-            color: var(--caption-color);
+            color: var(--theme-caption-color);
           }
         }
 

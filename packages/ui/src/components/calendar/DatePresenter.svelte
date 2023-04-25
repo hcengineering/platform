@@ -16,15 +16,16 @@
   import type { IntlString } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
 
+  import { DateRangeMode } from '@hcengineering/core'
   import ui from '../../plugin'
   import { showPopup } from '../../popups'
+  import { ButtonKind, ButtonSize } from '../../types'
   import Icon from '../Icon.svelte'
   import Label from '../Label.svelte'
+  import DatePopup from './DatePopup.svelte'
   import DPCalendar from './icons/DPCalendar.svelte'
   import DPCalendarOver from './icons/DPCalendarOver.svelte'
   import { getMonthName } from './internal/DateUtils'
-  import DatePopup from './DatePopup.svelte'
-  import { DateRangeMode } from '@hcengineering/core'
 
   export let value: number | null | undefined
   export let mode: DateRangeMode = DateRangeMode.DATE
@@ -35,10 +36,10 @@
   export let labelNull: IntlString = ui.string.NoDate
   export let showIcon = true
   export let shouldShowLabel: boolean = true
-  export let size: 'x-small' | 'small' = 'small'
-  export let kind: 'transparent' | 'primary' | 'link' | 'list' = 'primary'
+  export let size: ButtonSize | 'x-small' = 'small'
+  export let kind: ButtonKind = 'link'
   export let label = ui.string.DueDate
-  export let detail = ui.string.IssueNeedsToBeCompletedByThisDate
+  export let detail = ui.string.NeedsToBeCompletedByThisDate
 
   const dispatch = createEventDispatcher()
 
@@ -64,14 +65,14 @@
 </script>
 
 <button
-  class="datetime-button {kind}"
+  class="datetime-button {kind} {size}"
   class:editable
   class:dateTimeButtonNoLabel={!shouldShowLabel}
-  class:h-6={size === 'small'}
-  class:h-3={size === 'x-small'}
   class:text-xs={size === 'x-small'}
-  on:click={() => {
+  on:click={(e) => {
     if (editable && !opened) {
+      e.stopPropagation()
+      e.preventDefault()
       opened = true
       showPopup(
         DatePopup,
@@ -122,9 +123,21 @@
     font-weight: 400;
     width: auto;
     white-space: nowrap;
-    color: var(--accent-color);
-
+    color: var(--theme-content-color);
     cursor: default;
+
+    &.x-small {
+      height: 0.75rem;
+    }
+    &.small {
+      height: 1.5rem;
+    }
+    &.medium {
+      height: 2rem;
+    }
+    &.large {
+      height: 2.25rem;
+    }
 
     &.primary {
       padding: 0 0.5rem;
@@ -250,6 +263,40 @@
         background-color: var(--board-card-bg-color);
         border-color: var(--button-border-color);
       }
+    }
+    &.link-bordered {
+      padding: 0 0.375rem;
+      color: var(--accent-color);
+      border-color: var(--divider-color);
+      &:hover {
+        color: var(--accent-color);
+        background-color: var(--button-bg-hover);
+        border-color: var(--button-border-hover);
+        .btn-icon {
+          color: var(--accent-color);
+        }
+      }
+    }
+    &.secondary {
+      padding: 0 0.625rem;
+      color: var(--theme-caption-color);
+      background-color: var(--theme-button-enabled);
+      border-color: var(--theme-button-border);
+      border-radius: 0.25rem;
+
+      .btn-icon {
+        color: var(--theme-content-color);
+      }
+      &:hover {
+        background-color: var(--theme-button-hovered);
+        border-color: var(--theme-divider-color);
+        .btn-icon {
+          color: var(--theme-content-color);
+        }
+      }
+      // &.edit {
+      //   padding: 0 0.5rem;
+      // }
     }
 
     .time-divider {

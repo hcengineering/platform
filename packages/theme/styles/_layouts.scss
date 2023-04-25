@@ -218,6 +218,7 @@ input.search {
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
+  min-width: 0;
   min-height: 0;
 }
 .flex-col-reverse {
@@ -363,10 +364,11 @@ input.search {
   }
 }
 .buttons-divider {
-  min-width: 1px;
+  flex-shrink: 0;
   width: 1px;
   height: 1.5rem;
-  background-color: var(--divider-color);
+  max-height: 1.5rem;
+  background-color: var(--theme-list-divider-color);
 }
 
 .labels-row {
@@ -399,8 +401,8 @@ input.search {
   &.reverse > :last-child { margin-right: .375rem; }
 }
 .gap-2 {
-  & > *:not(:first-child) { margin-left: .5rem; }
-  &.reverse > :last-child { margin-right: .5rem; }
+  &:not(.reverse) > *:not(:first-child) { margin-left: .5rem; }
+  &.reverse > *:not(:last-child) { margin-right: .5rem; }
 }
 
 /* --------- */
@@ -467,6 +469,7 @@ input.search {
 .mb-8 { margin-bottom: 2rem; }
 .mb-9 { margin-bottom: 2.25rem; }
 .mb-10 { margin-bottom: 2.5rem; }
+.mx-0-5 { margin: 0 .125rem; }
 .mx-1 { margin: 0 .25rem; }
 .mx-2 { margin: 0 .5rem; }
 .mx-3 { margin: 0 .75rem; }
@@ -475,6 +478,7 @@ input.search {
 .mx-auto { margin: 0 auto; }
 .my-2 { margin: .5rem 0; }
 .my-4 { margin: 1rem 0; }
+.my-5 { margin: 1.25rem 0; }
 
 .m-0-5 { margin: .125rem; }
 .m-1 { margin: .25rem; }
@@ -484,6 +488,7 @@ input.search {
 .pl-3 { padding-left: .75rem; }
 .pl-4 { padding-left: 1rem; }
 .pl-8 { padding-left: 2rem; }
+.pl-10 { padding-left: 2.5rem; }
 .pr-1 { padding-right: .25rem; }
 .pr-2 { padding-right: .5rem; }
 .pr-3 { padding-right: .75rem; }
@@ -504,6 +509,7 @@ input.search {
 .px-2 { padding: 0 .5rem; }
 .px-3 { padding: 0 .75rem; }
 .px-4 { padding: 0 1rem; }
+.px-10 { padding: 0 2.5rem; }
 .py-1 { padding: 0.25rem 0; }
 .py-4 { padding: 1rem 0; }
 .py-8 { padding: 2rem 0; }
@@ -612,6 +618,7 @@ input.search {
 .min-w-min { min-width: min-content; }
 .min-h-0 { min-height: 0; }
 .min-h-2 { min-height: .5rem; }
+.min-h-4 { min-height: 1rem; }
 .min-h-7 { min-height: 1.75rem; }
 .min-h-30 { min-height: 7.5rem; }
 .min-h-60 { min-height: 15rem; }
@@ -623,7 +630,9 @@ input.search {
 .max-w-60 { max-width: 15rem; }
 .max-w-80 { max-width: 20rem; }
 .max-w-240 { max-width: 60rem; }
+.max-h-0 { max-height: 0; }
 .max-h-2 { max-height: .5rem; }
+.max-h-4 { max-height: 1rem; }
 .max-h-30 { max-height: 7.5rem; }
 .max-h-50 { max-height: 12.5rem; }
 .max-h-60 { max-height: 15rem; }
@@ -642,20 +651,20 @@ input.search {
   height: 1em;
 }
 .svg-x-small {
-  width: .857em;
-  height: .857em;
+  width: .75rem;
+  height: .75rem;
 }
 .svg-small {
-  width: 1.143em;
-  height: 1.143em;
+  width: 1rem;
+  height: 1rem;
 }
 .svg-medium {
-  width: 1.429em;
-  height: 1.429em;
+  width: 1.25rem;
+  height: 1.25rem;
 }
 .svg-large {
-  width: 1.715em;
-  height: 1.715em;
+  width: 1.5rem;
+  height: 1.5rem;
 }
 .svg-full {
   width: inherit;
@@ -767,26 +776,26 @@ a.no-line {
 }
 
 .focused-button {
-  background-color: var(--button-bg-color);
+  background-color: var(--theme-button-enabled);
   border: 1px solid transparent;
 
-  & > .icon { color: var(--accent-color); }
+  & > .icon { color: var(--theme-content-color); }
   &.selected {
-    background-color: var(--button-bg-hover);
-    border: 1px solid var(--button-border-hover);
+    background-color: var(--theme-button-pressed);
+    border: 1px solid var(--theme-button-border);
   }
   &:hover {
-    background-color: var(--button-bg-hover);
-    border: 1px solid var(--button-border-hover);
-    & > .icon { color: var(--caption-color); }
+    background-color: var(--theme-button-hovered);
+    border: 1px solid var(--theme-button-border);
+    & > .icon { color: var(--theme-caption-color); }
   }
   &:focus {
-    border: 1px solid var(--primary-button-focused-border);
-    box-shadow: 0 0 0 3px var(--primary-button-outline);
-    & > .icon { color: var(--caption-color); }
+    border: 1px solid var(--theme-button-border);
+    box-shadow: 0 0 0 2px var(--primary-button-focused-border);
+    & > .icon { color: var(--theme-caption-color); }
   }
 
-  &.bordered { border-color: var(--button-border-color); }
+  &.bordered { border-color: var(--theme-button-border); }
 }
 
 .overflow-x-auto { overflow-x: auto; }
@@ -816,6 +825,8 @@ a.no-line {
 .background-button-noborder-bg-hover { background-color: var(--noborder-bg-hover); }
 .background-primary-color { background-color: var(--primary-button-enabled); }
 .background-content-accent-color { background-color: var(--accent-color); }
+
+.content-trans-color { color: var(--theme-trans-color); }
 
 .dark-color,
 .content-dark-color { color: var(--dark-color); }

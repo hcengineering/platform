@@ -52,7 +52,7 @@ export const uis = plugin(uiId, {
     AddDueDate: '' as IntlString,
     EditDueDate: '' as IntlString,
     SaveDueDate: '' as IntlString,
-    IssueNeedsToBeCompletedByThisDate: '' as IntlString,
+    NeedsToBeCompletedByThisDate: '' as IntlString,
     English: '' as IntlString,
     Russian: '' as IntlString,
     MinutesBefore: '' as IntlString,
@@ -70,7 +70,11 @@ export const uis = plugin(uiId, {
     DD: '' as IntlString,
     MM: '' as IntlString,
     YYYY: '' as IntlString,
-    HH: '' as IntlString
+    HH: '' as IntlString,
+    DueDatePopupTitle: '' as IntlString,
+    DueDatePopupOverdueTitle: '' as IntlString,
+    DueDatePopupDescription: '' as IntlString,
+    DueDatePopupOverdueDescription: '' as IntlString
   },
   metadata: {
     DefaultApplication: '' as Metadata<AnyComponent>,

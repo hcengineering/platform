@@ -24,7 +24,7 @@
   import recruit from '@hcengineering/recruit'
   import { AssigneePresenter, StateRefPresenter } from '@hcengineering/task-resources'
   import tracker from '@hcengineering/tracker'
-  import { Component, showPanel } from '@hcengineering/ui'
+  import { Component, DueDatePresenter, showPanel } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ObjectPresenter } from '@hcengineering/view-resources'
   import ApplicationPresenter from './ApplicationPresenter.svelte'
@@ -90,6 +90,13 @@
         </div>
         <Component is={tracker.component.RelatedIssueSelector} props={{ object }} />
       </div>
+      <DueDatePresenter
+        value={object.dueDate}
+        shouldRender={object.dueDate !== null && object.dueDate !== undefined}
+        onChange={async (e) => {
+          await client.update(object, { dueDate: e })
+        }}
+      />
       {#if (object.attachments ?? 0) > 0}
         <div class="step-lr75">
           <AttachmentsPresenter value={object.attachments} {object} />
