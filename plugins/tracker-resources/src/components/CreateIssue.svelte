@@ -540,7 +540,13 @@
 >
   <svelte:fragment slot="header">
     <div class="flex-row-center">
-      <SpaceSelector _class={tracker.class.Project} label={tracker.string.Project} bind:space={_space} />
+      <SpaceSelector
+        _class={tracker.class.Project}
+        label={tracker.string.Project}
+        bind:space={_space}
+        kind={'secondary'}
+        size={'large'}
+      />
     </div>
     <ObjectBox
       _class={tracker.class.IssueTemplate}
@@ -549,7 +555,8 @@
         space: _space
       }}
       on:change={handleTemplateChange}
-      size={'small'}
+      kind={'secondary'}
+      size={'large'}
       label={tracker.string.NoIssueTemplate}
       icon={tracker.icon.Issues}
       searchField={'title'}
@@ -615,8 +622,8 @@
     <div id="status-editor">
       <StatusEditor
         value={object}
-        kind="no-border"
-        size="small"
+        kind={'secondary'}
+        size={'large'}
         shouldShowLabel={true}
         on:change={({ detail }) => (object.status = detail)}
       />
@@ -626,8 +633,8 @@
         value={object}
         shouldShowLabel
         isEditable
-        kind="no-border"
-        size="small"
+        kind={'secondary'}
+        size={'large'}
         justify="center"
         on:change={({ detail }) => (object.priority = detail)}
       />
@@ -635,8 +642,8 @@
     <div id="assignee-editor">
       <AssigneeEditor
         value={object}
-        size="small"
-        kind="no-border"
+        kind={'secondary'}
+        size={'large'}
         width={'min-content'}
         on:change={({ detail }) => (object.assignee = detail)}
       />
@@ -647,7 +654,9 @@
         items: object.labels,
         key,
         targetClass: tracker.class.Issue,
-        countLabel: tracker.string.NumberLabels
+        countLabel: tracker.string.NumberLabels,
+        kind: 'secondary',
+        size: 'large'
       }}
       on:open={(evt) => {
         addTagRef(evt.detail)
@@ -657,23 +666,31 @@
       }}
     />
     <div id="estimation-editor">
-      <EstimationEditor kind={'no-border'} size={'small'} value={object} />
+      <EstimationEditor kind={'secondary'} size={'large'} value={object} />
     </div>
-    <ComponentSelector value={object.component} onChange={handleComponentIdChanged} isEditable={true} />
+    <ComponentSelector
+      value={object.component}
+      onChange={handleComponentIdChanged}
+      isEditable={true}
+      kind={'secondary'}
+      size={'large'}
+    />
     <SprintSelector
       value={object.sprint}
       onChange={handleSprintIdChanged}
       useComponent={(!originalIssue && object.component) || undefined}
+      kind={'secondary'}
+      size={'large'}
     />
     {#if object.dueDate !== null}
-      <DatePresenter bind:value={object.dueDate} editable />
+      <DatePresenter bind:value={object.dueDate} kind={'secondary'} size={'large'} editable />
     {/if}
     <div id="more-actions"><ActionIcon icon={IconMoreH} size={'medium'} action={showMoreActions} /></div>
   </svelte:fragment>
   <svelte:fragment slot="footer">
     <Button
       icon={IconAttachment}
-      kind={'transparent'}
+      size={'large'}
       on:click={() => {
         descriptionBox.attach()
       }}

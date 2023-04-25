@@ -137,7 +137,7 @@
           {:else}
             <div class="flex-row-center">
               {#if icon}
-                <Icon {icon} size={kind === 'link' ? 'small' : size} />
+                <Icon {icon} size={kind === 'link' || kind === 'secondary' ? 'small' : size} />
               {/if}
               <div class="ml-2">
                 <Label {label} />

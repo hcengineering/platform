@@ -85,6 +85,8 @@
   <svelte:fragment slot="pool">
     <DropdownLabels
       items={categories}
+      kind={'secondary'}
+      size={'large'}
       bind:selected={doc.attachedTo}
       placeholder={inventory.string.Categories}
       label={inventory.string.Category}

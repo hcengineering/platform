@@ -62,7 +62,13 @@
   on:changeContent
 >
   <svelte:fragment slot="header">
-    <SpaceSelector _class={tracker.class.Project} label={tracker.string.Project} bind:space />
+    <SpaceSelector
+      _class={tracker.class.Project}
+      label={tracker.string.Project}
+      bind:space
+      kind={'secondary'}
+      size={'large'}
+    />
   </svelte:fragment>
   <EditBox bind:value={object.label} placeholder={tracker.string.ComponentNamePlaceholder} kind={'large-style'} focus />
   <StyledTextArea
@@ -74,6 +80,8 @@
     <ComponentStatusSelector
       selectedComponentStatus={object.status}
       onComponentStatusChange={handleComponentStatusChanged}
+      kind={'secondary'}
+      size={'large'}
     />
     <EmployeeBox
       label={tracker.string.ComponentLead}
@@ -82,10 +90,29 @@
       allowDeselect
       titleDeselect={tracker.string.Unassigned}
       showNavigate={false}
+      kind={'secondary'}
+      size={'large'}
     />
-    <UserBoxList bind:items={object.members} label={tracker.string.ComponentMembersSearchPlaceholder} />
+    <UserBoxList
+      bind:items={object.members}
+      label={tracker.string.ComponentMembersSearchPlaceholder}
+      kind={'secondary'}
+      size={'large'}
+    />
     <!-- TODO: add labels after customize IssueNeedsToBeCompletedByThisDate -->
-    <DatePresenter bind:value={object.startDate} labelNull={tracker.string.StartDate} editable />
-    <DatePresenter bind:value={object.targetDate} labelNull={tracker.string.TargetDate} editable />
+    <DatePresenter
+      bind:value={object.startDate}
+      labelNull={tracker.string.StartDate}
+      kind={'secondary'}
+      size={'large'}
+      editable
+    />
+    <DatePresenter
+      bind:value={object.targetDate}
+      labelNull={tracker.string.TargetDate}
+      kind={'secondary'}
+      size={'large'}
+      editable
+    />
   </svelte:fragment>
 </Card>

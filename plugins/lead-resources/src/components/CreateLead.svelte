@@ -114,6 +114,8 @@
     <SpaceSelector
       _class={lead.class.Funnel}
       label={lead.string.FunnelName}
+      kind={'secondary'}
+      size={'large'}
       bind:space={_space}
       create={{
         component: lead.component.CreateFunnel,
@@ -132,8 +134,8 @@
           label={lead.string.Leads}
           placeholder={lead.string.Leads}
           bind:value={customer}
-          kind={'no-border'}
-          size={'small'}
+          kind={'secondary'}
+          size={'large'}
         />
       {/if}
       <Label label={lead.string.CreateLead} />
@@ -152,6 +154,8 @@
     <EmployeeBox
       focusIndex={2}
       label={lead.string.Assignee}
+      kind={'secondary'}
+      size={'large'}
       bind:value={assignee}
       allowDeselect
       showNavigate={false}
@@ -164,8 +168,8 @@
         label={lead.string.Customer}
         placeholder={lead.string.SelectCustomer}
         bind:value={customer}
-        kind={'no-border'}
-        size={'small'}
+        kind={'secondary'}
+        size={'large'}
         create={{ component: lead.component.CreateCustomer, label: lead.string.CreateCustomer }}
       />
     {/if}

@@ -422,8 +422,8 @@
 .antiEmphasized {
   padding: .75rem;
   background-color: var(--theme-comp-header-color);
-  border: 1px solid var(--theme-divider-color);
-  border-radius: .5rem;
+  border: 1px solid var(--theme-popup-divider);
+  border-radius: .25rem;
   transition-property: border, background-color;
   transition-duration: .15s;
   transition-timing-function: var(--timing-main);

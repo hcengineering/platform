@@ -63,7 +63,13 @@
   on:changeContent
 >
   <svelte:fragment slot="header">
-    <SpaceSelector _class={tracker.class.Project} label={tracker.string.Project} bind:space />
+    <SpaceSelector
+      _class={tracker.class.Project}
+      label={tracker.string.Project}
+      kind={'secondary'}
+      size={'large'}
+      bind:space
+    />
   </svelte:fragment>
   <EditBox bind:value={object.label} placeholder={tracker.string.SprintNamePlaceholder} kind={'large-style'} focus />
   <StyledTextArea
@@ -72,27 +78,43 @@
     emphasized
   />
   <svelte:fragment slot="pool">
-    <SprintStatusSelector selectedSprintStatus={object.status} onSprintStatusChange={handleComponentStatusChanged} />
+    <SprintStatusSelector
+      selectedSprintStatus={object.status}
+      onSprintStatusChange={handleComponentStatusChanged}
+      kind={'secondary'}
+      size={'large'}
+    />
     <EmployeeBox
       label={tracker.string.SprintLead}
       placeholder={tracker.string.AssignTo}
+      kind={'secondary'}
+      size={'large'}
       bind:value={object.lead}
       allowDeselect
       titleDeselect={tracker.string.Unassigned}
       showNavigate={false}
     />
-    <UserBoxList bind:items={object.members} label={tracker.string.SprintMembersSearchPlaceholder} />
+    <UserBoxList
+      bind:items={object.members}
+      label={tracker.string.SprintMembersSearchPlaceholder}
+      kind={'secondary'}
+      size={'large'}
+    />
     <DatePresenter
       bind:value={object.startDate}
       editable
       label={tracker.string.StartDate}
       detail={ui.string.SelectDate}
+      kind={'secondary'}
+      size={'large'}
     />
     <DatePresenter
       bind:value={object.targetDate}
       editable
       label={tracker.string.TargetDate}
       detail={ui.string.SelectDate}
+      kind={'secondary'}
+      size={'large'}
     />
   </svelte:fragment>
 </Card>

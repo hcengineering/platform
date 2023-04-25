@@ -19,6 +19,7 @@
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
   import { deviceOptionsStore as deviceInfo, resizeObserver } from '@hcengineering/ui'
+  import IconForward from './icons/Forward.svelte'
 
   export let label: IntlString
   export let labelProps: any | undefined = undefined
@@ -47,7 +48,7 @@
     <div class="antiCard-header__title-wrap">
       {#if $$slots.header}
         <slot name="header" />
-        <span class="antiCard-header__divider">›</span>
+        <span class="antiCard-header__divider"><IconForward size={'small'} /></span>
       {/if}
       <span class="antiCard-header__title">
         {#if $$slots.title}
@@ -83,6 +84,7 @@
       <slot name="pool" />
     </div>
   {/if}
+  <div class="antiCard-pool__separator" />
   <div class="antiCard-footer reverse">
     <div class="buttons-group text-sm flex-no-shrink">
       {#if $$slots.buttons}
@@ -97,6 +99,7 @@
         disabled={!canSave}
         label={okLabel}
         kind={'primary'}
+        size={'large'}
         on:click={() => {
           if (okProcessing) {
             return

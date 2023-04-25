@@ -21,7 +21,8 @@
   export let type: TypeDate | undefined
   export let label: IntlString | undefined = undefined
   export let onChange: (value: any) => void
-  export let kind: 'no-border' | 'link' = 'no-border'
+  export let kind: 'no-border' | 'link' | 'secondary' = 'no-border'
+  export let size: 'small' | 'medium' | 'large' = 'small'
 </script>
 
 <DateRangePresenter
@@ -31,6 +32,7 @@
   noShift={!type?.withShift}
   editable
   {kind}
+  {size}
   on:change={(res) => {
     if (res.detail !== undefined) onChange(res.detail)
   }}

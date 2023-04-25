@@ -169,7 +169,8 @@
     <ChannelsDropdown
       bind:value={channels}
       focusIndex={10}
-      kind={'no-border'}
+      kind={'secondary'}
+      size={'large'}
       editable
       restricted={[contact.channelProvider.Email]}
     />

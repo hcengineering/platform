@@ -86,8 +86,8 @@
 <style lang="scss">
   .card-container {
     padding: 1rem 1.5rem 1.25rem;
-    background-color: var(--board-card-bg-color);
-    border: 1px solid var(--divider-color);
+    background-color: var(--theme-button-enabled);
+    border: 1px solid var(--theme-button-border);
     border-radius: 0.5rem;
     transition-property: box-shadow, background-color, border-color;
     transition-timing-function: var(--timing-shadow);
@@ -97,8 +97,7 @@
     min-height: 15rem;
 
     &:hover {
-      background-color: var(--board-card-bg-hover);
-      border-color: var(--button-border-color);
+      background-color: var(--theme-button-hovered);
       box-shadow: var(--accent-shadow);
     }
 
@@ -106,17 +105,17 @@
       margin-bottom: 1.75rem;
       font-weight: 500;
       font-size: 0.625rem;
-      color: var(--dark-color);
+      color: var(--theme-dark-color);
     }
     .name {
       margin: 1rem 0 0.25rem;
       font-weight: 500;
       font-size: 1rem;
-      color: var(--caption-color);
+      color: var(--theme-caption-color);
     }
     .description {
       font-size: 0.75rem;
-      color: var(--dark-color);
+      color: var(--theme-dark-color);
     }
     .footer {
       margin-top: 1.5rem;
