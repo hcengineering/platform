@@ -80,6 +80,8 @@ export default mergeIds(contactId, contact, {
     CreatedOn: '' as IntlString,
     Whatsapp: '' as IntlString,
     WhatsappPlaceholder: '' as IntlString,
+    Skype: '' as IntlString,
+    SkypePlaceholder: '' as IntlString,
     Profile: '' as IntlString,
     ProfilePlaceholder: '' as IntlString,
 
