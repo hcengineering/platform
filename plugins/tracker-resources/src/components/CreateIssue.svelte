@@ -624,6 +624,7 @@
         value={object}
         kind={'secondary'}
         size={'large'}
+        defaultIssueStatus={draft ? undefined : currentProject?.defaultIssueStatus}
         shouldShowLabel={true}
         on:change={({ detail }) => (object.status = detail)}
       />
