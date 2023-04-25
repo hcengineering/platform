@@ -17,7 +17,8 @@
   import ui, { Button, IconMoreH, mouseAttractor } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { slide } from 'svelte/transition'
-  import { CardDragEvent, Item } from '../types'
+  import { CardDragEvent, DocWithRank, Item } from '../types'
+  import Spinner from '@hcengineering/ui/src/components/Spinner.svelte'
 
   export let stateObjects: Item[]
   export let isDragging: boolean
@@ -27,6 +28,7 @@
   export let selection: number | undefined = undefined
   export let checkedSet: Set<Ref<Doc>>
   export let state: CategoryType
+  export let index: number
 
   export let cardDragOver: (evt: CardDragEvent, object: Item) => void
   export let cardDrop: (evt: CardDragEvent, object: Item) => void
@@ -53,7 +55,20 @@
 
   let limit = 50
 
-  $: limitedObjects = stateObjects.slice(0, limit)
+  let limitedObjects: DocWithRank[] = []
+  let loading = false
+
+  function nop (op: () => void, timeout: number) {
+    op()
+  }
+
+  $: {
+    loading = true
+    ;(limitedObjects.length > 0 ? nop : setTimeout)(() => {
+      limitedObjects = stateObjects.slice(0, limit)
+      loading = false
+    }, index * 2)
+  }
 </script>
 
 {#each limitedObjects as object, i (object._id)}
@@ -88,19 +103,23 @@
 {/each}
 {#if stateObjects.length > limitedObjects.length}
   <div class="step-tb75">
-    <div class="card-container h-18 flex-row-center flex-between p-4">
-      <span class="p-1">
-        {limitedObjects.length}/{stateObjects.length}
-      </span>
-      <Button
-        size={'small'}
-        icon={IconMoreH}
-        label={ui.string.ShowMore}
-        on:click={() => {
-          limit = limit + 20
-        }}
-      />
-    </div>
+    {#if loading}
+      <Spinner />
+    {:else}
+      <div class="card-container h-18 flex-row-center flex-between p-4">
+        <span class="p-1">
+          {limitedObjects.length}/{stateObjects.length}
+        </span>
+        <Button
+          size={'small'}
+          icon={IconMoreH}
+          label={ui.string.ShowMore}
+          on:click={() => {
+            limit = limit + 20
+          }}
+        />
+      </div>
+    {/if}
   </div>
 {/if}
 

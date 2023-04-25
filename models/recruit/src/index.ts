@@ -619,7 +619,6 @@ export function createModel (builder: Builder): void {
         space: recruit.class.Vacancy
       }
     ],
-    assignee: contact.class.Employee,
     _id: {
       related: [tracker.class.Issue, 'relations._id']
     }

@@ -17,14 +17,14 @@
   import { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { Task } from '@hcengineering/task'
   import { getClient } from '@hcengineering/presentation'
-  import { UsersPopup } from '@hcengineering/contact-resources'
+  import { UsersPopup, employeeByIdStore } from '@hcengineering/contact-resources'
   import { AttributeModel } from '@hcengineering/view'
   import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { getObjectPresenter } from '@hcengineering/view-resources'
-  import { IntlString } from '@hcengineering/platform'
+  import { IntlString, getEmbeddedLabel } from '@hcengineering/platform'
   import task from '../plugin'
 
-  export let value: Employee | null | undefined
+  export let value: Ref<Employee> | Employee | null | undefined
   export let issueId: Ref<Task>
   export let defaultClass: Ref<Class<Doc>> | undefined = undefined
   export let currentSpace: Ref<Space> | undefined = undefined
@@ -33,13 +33,15 @@
   export let defaultName: IntlString | undefined = undefined
   export let placeholderLabel: IntlString | undefined = undefined
 
+  $: employeeValue = typeof value === 'string' ? $employeeByIdStore.get(value) : value
+
   const client = getClient()
 
   let presenter: AttributeModel | undefined
 
-  $: if (value || defaultClass) {
-    if (value) {
-      getObjectPresenter(client, value._class, { key: '' }).then((p) => {
+  $: if (employeeValue || defaultClass) {
+    if (employeeValue) {
+      getObjectPresenter(client, employeeValue._class, { key: '' }).then((p) => {
         presenter = p
       })
     } else if (defaultClass) {
@@ -84,12 +86,12 @@
       UsersPopup,
       {
         _class: contact.class.Employee,
-        selected: value?._id,
+        selected: employeeValue?._id,
         docQuery: {
           active: true
         },
         allowDeselect: true,
-        placeholder: task.string.AssignThisTask
+        placeholder: placeholderLabel ?? presenter?.label ?? task.string.AssignThisTask
       },
       eventToHTMLElement(event),
       handleAssigneeChanged
@@ -108,7 +110,7 @@
     shouldShowName={shouldShowLabel}
     onEmployeeEdit={handleAssigneeEditorOpened}
     tooltipLabels={{
-      personLabel: value ? getName(value) : undefined,
+      personLabel: employeeValue ? getEmbeddedLabel(getName(employeeValue)) : undefined,
       placeholderLabel: placeholderLabel ?? presenter.label
     }}
   />

@@ -13,10 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@hcengineering/contact'
   import { Class, Doc, FindOptions, getObjectValue, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Issue, Component } from '@hcengineering/tracker'
+  import { Component, Issue } from '@hcengineering/tracker'
   import { CheckBox, Spinner, tooltip } from '@hcengineering/ui'
   import { BuildModelKey } from '@hcengineering/view'
   import { buildModel, LoadingProps } from '@hcengineering/view-resources'
@@ -37,7 +36,6 @@
 
   const baseOptions: FindOptions<Issue> = {
     lookup: {
-      assignee: contact.class.Employee,
       status: tracker.class.IssueStatus
     }
   }

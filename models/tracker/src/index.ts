@@ -595,7 +595,7 @@ export function createModel (builder: Builder): void {
           props: { listProps: { key: 'modified', fixed: 'left' } }
         },
         {
-          key: '$lookup.assignee',
+          key: 'assignee',
           presenter: tracker.component.AssigneePresenter,
           props: { defaultClass: contact.class.Employee, shouldShowLabel: false }
         }
@@ -675,7 +675,7 @@ export function createModel (builder: Builder): void {
           props: { listProps: { fixed: 'right', optional: true } }
         },
         {
-          key: '$lookup.assignee',
+          key: 'assignee',
           presenter: tracker.component.AssigneePresenter,
           props: { defaultClass: contact.class.Employee, shouldShowLabel: false }
         }
@@ -726,7 +726,7 @@ export function createModel (builder: Builder): void {
           props: { listProps: { fixed: 'right' } }
         },
         {
-          key: '$lookup.assignee',
+          key: 'assignee',
           presenter: tracker.component.AssigneePresenter,
           props: { defaultClass: contact.class.Employee, shouldShowLabel: false }
         }
@@ -1783,7 +1783,7 @@ export function createModel (builder: Builder): void {
         { key: '', presenter: tracker.component.SprintDatePresenter, props: { field: 'startDate' } },
         { key: '', presenter: tracker.component.SprintDatePresenter, props: { field: 'targetDate' } },
         {
-          key: '$lookup.lead',
+          key: 'lead',
           presenter: tracker.component.SprintLeadPresenter,
           props: {
             _class: tracker.class.Sprint,

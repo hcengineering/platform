@@ -14,17 +14,17 @@
 -->
 <script lang="ts">
   import contact, { Employee } from '@hcengineering/contact'
+  import { UsersPopup } from '@hcengineering/contact-resources'
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { UsersPopup } from '@hcengineering/contact-resources'
   import { Issue, IssueTemplate } from '@hcengineering/tracker'
   import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { AttributeModel } from '@hcengineering/view'
   import { getObjectPresenter } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
 
-  export let value: Employee | null | undefined
+  export let value: Employee | Ref<Employee> | null | undefined
   export let object: Issue | IssueTemplate
   export let defaultClass: Ref<Class<Doc>> | undefined = undefined
   export let isEditable: boolean = true
@@ -37,9 +37,11 @@
 
   $: if (value || defaultClass) {
     if (value) {
-      getObjectPresenter(client, value._class, { key: '' }).then((p) => {
-        presenter = p
-      })
+      getObjectPresenter(client, typeof value === 'string' ? contact.class.Employee : value._class, { key: '' }).then(
+        (p) => {
+          presenter = p
+        }
+      )
     } else if (defaultClass) {
       getObjectPresenter(client, defaultClass, { key: '' }).then((p) => {
         presenter = p
@@ -68,7 +70,7 @@
       UsersPopup,
       {
         _class: contact.class.Employee,
-        selected: value?._id,
+        selected: typeof value === 'string' ? value : value?._id,
         docQuery: {
           active: true
         },
