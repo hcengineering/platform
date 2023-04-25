@@ -178,7 +178,6 @@
         return
       }
 
-      console.log(statePos, objState, offset)
       if (offset === -1) {
         if (dir === undefined || dir === 'vertical') {
           if (statePos - 1 < 0 && objState > 0) {
