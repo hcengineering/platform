@@ -20,8 +20,7 @@
   import { Hierarchy, WithLookup } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
-  import type { Applicant, Candidate } from '@hcengineering/recruit'
-  import recruit from '@hcengineering/recruit'
+  import recruit, { Applicant, Candidate } from '@hcengineering/recruit'
   import { AssigneePresenter, StateRefPresenter } from '@hcengineering/task-resources'
   import tracker from '@hcengineering/tracker'
   import { Component, DueDatePresenter, showPanel } from '@hcengineering/ui'
@@ -34,6 +33,8 @@
   export let groupByKey: string
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const assigneeAttribute = hierarchy.getAttribute(recruit.class.Applicant, 'assignee')
 
   function showCandidate () {
     showPanel(view.component.EditDoc, object._id, Hierarchy.mixinOrClass(object), 'content')
@@ -118,6 +119,7 @@
       issueId={object._id}
       defaultClass={contact.class.Employee}
       currentSpace={object.space}
+      placeholderLabel={assigneeAttribute.label}
     />
   </div>
   {#if groupByKey !== 'state'}
