@@ -49,6 +49,7 @@ export const Completion = Node.create<CompletionOptions>({
             .run()
         },
         allow: ({ editor, range }) => {
+          if (range.from > editor.state.doc.content.size) return false
           const $from = editor.state.doc.resolve(range.from)
           const type = editor.schema.nodes[this.name]
           // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
