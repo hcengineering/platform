@@ -281,8 +281,8 @@
       bind:value={company}
       allowDeselect
       titleDeselect={recruit.string.UnAssignCompany}
-      kind={'no-border'}
-      size={'small'}
+      kind={'secondary'}
+      size={'large'}
       icon={Company}
       readonly={preserveCompany}
       showNavigate={false}
@@ -293,7 +293,9 @@
       props={{
         folders: [recruit.space.VacancyTemplates],
         template: templateId,
-        focusIndex: 4
+        focusIndex: 4,
+        kind: 'secondary',
+        size: 'large'
       }}
       on:change={handleTemplateChange}
     />
@@ -311,7 +313,7 @@
   <svelte:fragment slot="footer">
     <Button
       icon={IconAttachment}
-      kind={'transparent'}
+      size={'large'}
       on:click={() => {
         descriptionBox.attach()
       }}

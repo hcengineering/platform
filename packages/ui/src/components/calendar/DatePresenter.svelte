@@ -19,7 +19,7 @@
   import { DateRangeMode } from '@hcengineering/core'
   import ui from '../../plugin'
   import { showPopup } from '../../popups'
-  import { ButtonKind } from '../../types'
+  import { ButtonKind, ButtonSize } from '../../types'
   import Icon from '../Icon.svelte'
   import Label from '../Label.svelte'
   import DatePopup from './DatePopup.svelte'
@@ -36,7 +36,7 @@
   export let labelNull: IntlString = ui.string.NoDate
   export let showIcon = true
   export let shouldShowLabel: boolean = true
-  export let size: 'x-small' | 'small' = 'small'
+  export let size: ButtonSize | 'x-small' = 'small'
   export let kind: ButtonKind = 'link'
   export let label = ui.string.DueDate
   export let detail = ui.string.NeedsToBeCompletedByThisDate
@@ -65,11 +65,9 @@
 </script>
 
 <button
-  class="datetime-button {kind}"
+  class="datetime-button {kind} {size}"
   class:editable
   class:dateTimeButtonNoLabel={!shouldShowLabel}
-  class:h-6={size === 'small'}
-  class:h-3={size === 'x-small'}
   class:text-xs={size === 'x-small'}
   on:click={(e) => {
     if (editable && !opened) {
@@ -125,9 +123,21 @@
     font-weight: 400;
     width: auto;
     white-space: nowrap;
-    color: var(--accent-color);
-
+    color: var(--theme-content-color);
     cursor: default;
+
+    &.x-small {
+      height: 0.75rem;
+    }
+    &.small {
+      height: 1.5rem;
+    }
+    &.medium {
+      height: 2rem;
+    }
+    &.large {
+      height: 2.25rem;
+    }
 
     &.primary {
       padding: 0 0.5rem;
@@ -266,6 +276,27 @@
           color: var(--accent-color);
         }
       }
+    }
+    &.secondary {
+      padding: 0 0.625rem;
+      color: var(--theme-caption-color);
+      background-color: var(--theme-button-enabled);
+      border-color: var(--theme-button-border);
+      border-radius: 0.25rem;
+
+      .btn-icon {
+        color: var(--theme-content-color);
+      }
+      &:hover {
+        background-color: var(--theme-button-hovered);
+        border-color: var(--theme-divider-color);
+        .btn-icon {
+          color: var(--theme-content-color);
+        }
+      }
+      // &.edit {
+      //   padding: 0 0.5rem;
+      // }
     }
 
     .time-divider {

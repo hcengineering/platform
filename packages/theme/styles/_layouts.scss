@@ -401,8 +401,8 @@ input.search {
   &.reverse > :last-child { margin-right: .375rem; }
 }
 .gap-2 {
-  & > *:not(:first-child) { margin-left: .5rem; }
-  &.reverse > :last-child { margin-right: .5rem; }
+  &:not(.reverse) > *:not(:first-child) { margin-left: .5rem; }
+  &.reverse > *:not(:last-child) { margin-right: .5rem; }
 }
 
 /* --------- */

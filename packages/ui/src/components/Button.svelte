@@ -177,7 +177,7 @@
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    padding: 0 0.5rem;
+    padding: 0 0.625rem;
     font-weight: 500;
     min-width: 1.375rem;
     white-space: nowrap;
@@ -279,9 +279,9 @@
       background-color: var(--theme-button-enabled);
       border-color: var(--theme-button-border);
 
-      &.medium:not(.only-icon) {
-        padding: 0 0.75rem;
-      }
+      // &.medium:not(.only-icon) {
+      //   padding: 0 0.75rem;
+      // }
       &:hover {
         background-color: var(--theme-button-hovered);
       }

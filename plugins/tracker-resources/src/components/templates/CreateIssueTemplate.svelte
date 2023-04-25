@@ -132,7 +132,13 @@
   on:changeContent
 >
   <svelte:fragment slot="header">
-    <SpaceSelector _class={tracker.class.Project} label={tracker.string.Project} bind:space={_space} />
+    <SpaceSelector
+      _class={tracker.class.Project}
+      label={tracker.string.Project}
+      bind:space={_space}
+      kind={'secondary'}
+      size={'large'}
+    />
   </svelte:fragment>
   <svelte:fragment slot="title" let:label>
     <Label {label} />
@@ -158,15 +164,15 @@
       value={object}
       shouldShowLabel
       isEditable
-      kind="no-border"
-      size="small"
+      kind={'secondary'}
+      size={'large'}
       justify="center"
       on:change={({ detail }) => (object.priority = detail)}
     />
     <AssigneeEditor
       value={object}
-      size="small"
-      kind="no-border"
+      kind={'secondary'}
+      size={'large'}
       width={'min-content'}
       on:change={({ detail }) => (object.assignee = detail)}
     />
@@ -176,7 +182,9 @@
         items: labels,
         key,
         targetClass: tracker.class.Issue,
-        countLabel: tracker.string.NumberLabels
+        countLabel: tracker.string.NumberLabels,
+        kind: 'secondary',
+        size: 'large'
       }}
       on:open={(evt) => {
         addTagRef(evt.detail)
@@ -185,12 +193,20 @@
         labels = labels.filter((it) => it._id !== evt.detail)
       }}
     />
-    <EstimationEditor kind={'no-border'} size={'small'} value={object} />
-    <ComponentSelector value={object.component} onChange={handleComponentIdChanged} isEditable={true} />
+    <EstimationEditor kind={'secondary'} size={'large'} value={object} />
+    <ComponentSelector
+      value={object.component}
+      onChange={handleComponentIdChanged}
+      isEditable={true}
+      kind={'secondary'}
+      size={'large'}
+    />
     <SprintSelector
       value={object.sprint}
       onChange={handleSprintIdChanged}
       useComponent={object.component ?? undefined}
+      kind={'secondary'}
+      size={'large'}
     />
   </svelte:fragment>
 </Card>

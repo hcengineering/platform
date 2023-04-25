@@ -32,7 +32,8 @@
   export let icon: 'normal' | 'warning' | 'overdue' = 'normal'
   export let labelOver: IntlString | undefined = undefined // label instead of date
   export let labelNull: IntlString = ui.string.NoDate
-  export let kind: 'no-border' | 'link' = 'no-border'
+  export let kind: 'no-border' | 'link' | 'secondary' = 'no-border'
+  export let size: 'small' | 'medium' | 'large' = 'small'
   export let noShift: boolean = false
 
   const dispatch = createEventDispatcher()
@@ -315,7 +316,7 @@
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <button
   bind:this={datePresenter}
-  class="datetime-button {kind}"
+  class="datetime-button {kind} {size}"
   class:editable
   class:edit
   on:click={() => {
@@ -455,16 +456,25 @@
     padding: 0 0.5rem;
     font-weight: 400;
     min-width: 1.5rem;
-    width: auto;
-    height: 1.5rem;
+    width: min-content;
     white-space: nowrap;
     line-height: 1.5rem;
-    color: var(--accent-color);
+    color: var(--theme-content-color);
     border: 1px solid transparent;
     border-radius: 0.25rem;
     transition-property: border, background-color, color, box-shadow;
     transition-duration: 0.15s;
     cursor: pointer;
+
+    &.small {
+      height: 1.5rem;
+    }
+    &.medium {
+      height: 2rem;
+    }
+    &.large {
+      height: 2.25rem;
+    }
 
     .btn-icon {
       margin-right: 0.375rem;
@@ -557,7 +567,6 @@
     &.link {
       padding: 0 0.875rem;
       width: 100%;
-      height: 2.25rem;
       color: var(--theme-caption-color);
       &:hover {
         background-color: var(--theme-bg-color);
@@ -569,6 +578,27 @@
       &.edit {
         padding: 0 0.5rem;
       }
+    }
+
+    &.secondary {
+      padding: 0 0.625rem;
+      color: var(--theme-caption-color);
+      background-color: var(--theme-button-enabled);
+      border-color: var(--theme-button-border);
+
+      .btn-icon {
+        color: var(--theme-content-color);
+      }
+      &:hover {
+        background-color: var(--theme-button-hovered);
+        border-color: var(--theme-divider-color);
+        .btn-icon {
+          color: var(--theme-content-color);
+        }
+      }
+      // &.edit {
+      //   padding: 0 0.5rem;
+      // }
     }
 
     .close-btn {

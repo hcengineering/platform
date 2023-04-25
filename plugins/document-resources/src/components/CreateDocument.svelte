@@ -121,28 +121,28 @@
   <svelte:fragment slot="pool">
     <UserBoxList
       items={object.authors}
-      size="small"
       label={document.string.Authors}
       emptyLabel={document.string.Authors}
-      kind="no-border"
+      kind={'secondary'}
+      size={'large'}
       width={'min-content'}
       on:update={({ detail }) => (object.authors = detail)}
     />
     <UserBoxList
       items={object.approvers}
-      size="small"
       label={document.string.Approvers}
       emptyLabel={document.string.Approvers}
-      kind="no-border"
+      kind={'secondary'}
+      size={'large'}
       width={'min-content'}
       on:update={({ detail }) => (object.approvers = detail)}
     />
     <UserBoxList
       items={object.reviewers}
-      size="small"
       label={document.string.Reviewers}
       emptyLabel={document.string.Reviewers}
-      kind="no-border"
+      kind={'secondary'}
+      size={'large'}
       width={'min-content'}
       on:update={({ detail }) => (object.reviewers = detail)}
     />

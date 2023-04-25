@@ -168,14 +168,7 @@
   on:changeContent
 >
   <svelte:fragment slot="header">
-    <Button
-      icon={targetClass.icon}
-      label={targetClass.label}
-      size={'small'}
-      kind={'no-border'}
-      on:click={selectTarget}
-      focusIndex={100}
-    />
+    <Button icon={targetClass.icon} label={targetClass.label} size={'large'} on:click={selectTarget} focusIndex={100} />
   </svelte:fragment>
   {#if targetClass._id === contact.class.Person}
     <div class="flex-between flex-row-top">
@@ -236,6 +229,8 @@
     <ChannelsDropdown
       bind:value={channels}
       focusIndex={10}
+      kind={'secondary'}
+      size={'large'}
       editable
       highlighted={matchedChannels.map((it) => it.provider)}
     />

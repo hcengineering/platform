@@ -124,8 +124,8 @@
 <style lang="scss">
   .card-container {
     padding: 1rem 1.5rem 1.25rem;
-    background-color: var(--board-card-bg-color);
-    border: 1px solid var(--divider-color);
+    background-color: var(--theme-button-enabled);
+    border: 1px solid var(--theme-button-border);
     border-radius: 0.5rem;
     transition-property: box-shadow, background-color, border-color;
     transition-timing-function: var(--timing-shadow);
@@ -135,8 +135,7 @@
     min-height: 15rem;
 
     &:hover {
-      background-color: var(--board-card-bg-hover);
-      border-color: var(--button-border-color);
+      background-color: var(--theme-button-hovered);
       box-shadow: var(--accent-shadow);
     }
 

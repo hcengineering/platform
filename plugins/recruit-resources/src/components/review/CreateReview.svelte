@@ -165,8 +165,8 @@
         bind:value={doc.attachedTo}
         label={recruit.string.Talent}
         placeholder={recruit.string.Talents}
-        kind={'no-border'}
-        size={'small'}
+        kind={'secondary'}
+        size={'large'}
         create={{ component: recruit.component.CreateCandidate, label: recruit.string.CreateTalent }}
       />
     {/if}
@@ -174,8 +174,8 @@
       _class={contact.class.Organization}
       bind:value={company}
       label={recruit.string.Company}
-      kind={'no-border'}
-      size={'small'}
+      kind={'secondary'}
+      size={'large'}
       showNavigate={false}
       create={{ component: contact.component.CreateOrganization, label: contact.string.CreateOrganization }}
     />
@@ -184,9 +184,9 @@
       bind:value={application}
       label={recruit.string.Application}
       placeholder={recruit.string.ApplicationCreateLabel}
-      kind={'no-border'}
+      kind={'secondary'}
+      size={'large'}
       searchField={'number'}
-      size={'small'}
       showNavigate={false}
       allowCategory={[recruit.completion.ApplicationCategory]}
     />
@@ -195,6 +195,8 @@
       labelNull={recruit.string.StartDate}
       mode={DateRangeMode.DATETIME}
       editable
+      kind={'secondary'}
+      size={'large'}
       on:change={updateStart}
     />
     <DateRangePresenter
@@ -202,7 +204,9 @@
       labelNull={recruit.string.DueDate}
       mode={DateRangeMode.DATETIME}
       editable
+      kind={'secondary'}
+      size={'large'}
     />
-    <UserBoxList bind:items={doc.participants} label={calendar.string.Participants} />
+    <UserBoxList bind:items={doc.participants} label={calendar.string.Participants} kind={'secondary'} size={'large'} />
   </svelte:fragment>
 </Card>
