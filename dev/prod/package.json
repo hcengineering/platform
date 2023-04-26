@@ -32,13 +32,15 @@
     "@types/node": "~16.11.12",
     "webpack-bundle-analyzer": "^4.7.0",
     "svgo-loader": "^3.0.0",
-    "autoprefixer": "^10.4.13",
+    "autoprefixer": "^10.4.14",
     "postcss": "^8.4.20",
     "postcss-loader": "^7.0.2",
     "postcss-load-config": "^4.0.1",
     "compression-webpack-plugin": "^10.0.0",
     "html-webpack-plugin": "^5.5.0",
-    "fork-ts-checker-webpack-plugin": "~7.3.0"
+    "fork-ts-checker-webpack-plugin": "~7.3.0",
+    "update-browserslist-db": "~1.0.11",
+    "browserslist": "4.21.5"
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",

@@ -392,7 +392,7 @@
         }
 
         delayCall(() => {
-          if (divBox === undefined) {
+          if (divBox == null) {
             return
           }
           const tempEls = divBox.querySelectorAll('.categoryHeader')

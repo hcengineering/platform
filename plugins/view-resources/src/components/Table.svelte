@@ -24,6 +24,7 @@
     getEventPositionElement,
     Label,
     Loading,
+    mouseAttractor,
     resizeObserver,
     showPopup,
     Spinner
@@ -277,7 +278,7 @@
             class:checking={checkedSet.has(object._id)}
             class:fixed={row === selection}
             class:selected={row === selection}
-            on:mouseenter={() => onRow(object)}
+            on:mouseenter={mouseAttractor(() => onRow(object))}
             on:focus={() => {}}
             bind:this={refs[row]}
             on:contextmenu|preventDefault={(ev) => {
