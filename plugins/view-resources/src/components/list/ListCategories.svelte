@@ -36,7 +36,6 @@
   export let space: Ref<Space> | undefined
   export let query: DocumentQuery<Doc> | undefined
   export let lookup: Lookup<Doc>
-  export let loadingPropsLength: number | undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined
   export let config: (string | BuildModelKey)[]
   export let selectedObjectIds: Doc[] = []
@@ -237,6 +236,7 @@
     {viewOptions}
     {groupByKey}
     {lookup}
+    index={i}
     {config}
     {itemModels}
     {_class}
@@ -248,7 +248,6 @@
     {newObjectProps}
     {createItemDialog}
     {createItemLabel}
-    {loadingPropsLength}
     {viewOptionsConfig}
     on:check
     on:uncheckAll
@@ -271,7 +270,6 @@
       let:_class
       let:space
       let:lookup
-      let:loadingPropsLength
       let:baseMenuClass
       let:config
       let:selectedObjectIds
@@ -292,7 +290,6 @@
         {_class}
         {space}
         {lookup}
-        {loadingPropsLength}
         {baseMenuClass}
         {config}
         {selectedObjectIds}
