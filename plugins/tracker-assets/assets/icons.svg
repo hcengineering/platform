@@ -88,7 +88,7 @@
     <rect opacity="0.6" x="2" y="7.5" width="12" height="1" rx="0.5" />
   </symbol>
   <symbol id="priority-urgent" viewBox="-1 -1 16 16">
-    <path fill="var(--warning-color)" d="M2 0a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V2a2 2 0 00-2-2H2zm3.914 3h1.738L7.5 8.602H6.07L5.914 3zm1.809 7.164a.95.95 0 01-.938.938.934.934 0 110-1.867c.5 0 .934.417.938.93z" />
+    <path fill="var(--primary-color-orange-02)" d="M2 0a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V2a2 2 0 00-2-2H2zm3.914 3h1.738L7.5 8.602H6.07L5.914 3zm1.809 7.164a.95.95 0 01-.938.938.934.934 0 110-1.867c.5 0 .934.417.938.93z" />
   </symbol>
   <symbol id="priority-high" viewBox="0 0 16 16">
     <rect x="1" y="8" width="3" height="6" rx="1" fill-opacity=".4" />

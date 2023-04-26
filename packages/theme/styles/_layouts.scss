@@ -406,6 +406,7 @@ input.search {
   &:not(.reverse) > *:not(:first-child) { margin-left: .5rem; }
   &.reverse > *:not(:last-child) { margin-right: .5rem; }
 }
+.gap-around-2 > * { margin: .25rem; }
 
 /* --------- */
 .sm-tool-icon {

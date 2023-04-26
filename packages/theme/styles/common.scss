@@ -37,6 +37,7 @@
     width: 100%;
     border-top: 1px solid var(--theme-navpanel-divider);
   }
+  &.lastDivider { border-color: var(--theme-navpanel-border); }
 }
 .antiPanel-navigator,
 .antiPanel-component {

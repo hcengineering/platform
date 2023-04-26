@@ -74,7 +74,7 @@
 
   --theme-bg-color: #1A1A28;
   --theme-back-color: #0f0f18;
-  --theme-overlay-color: #0000007f;
+  --theme-overlay-color: rgba(0, 0, 0, .3);
   --theme-statusbar-color: #2C2C35;
   --theme-navpanel-color: #14141F;
   --theme-navpanel-hovered: rgba(255, 255, 255, .04);
@@ -117,6 +117,8 @@
   --theme-progress-color: #FFFFFF;
   --theme-popup-color: #292938;
   --theme-popup-divider: rgba(255, 255, 255, .1);
+  --theme-popup-shadow: 0px 4px 4px rgba(0, 0, 0, 0.1); // Light
+  --theme-panel-color: #1F1F2C;
 
   --body-color: #1f2023;
   --body-accent: #222326;
@@ -222,7 +224,7 @@
 
   --theme-bg-color: #F1F1F4;
   --theme-back-color: #D9D9DD;
-  --theme-overlay-color: #0000007f;
+  --theme-overlay-color: rgba(0, 0, 0, .2);
   --theme-statusbar-color: #bfbfc6;
   --theme-navpanel-color: #E8E8ED;
   --theme-navpanel-hovered: rgba(218, 218, 231, .5);
@@ -265,6 +267,8 @@
   --theme-progress-color: rgba(0, 0, 0, .5);
   --theme-popup-color: #F1F1F4;
   --theme-popup-divider: rgba(0, 0, 0, .1);
+  --theme-popup-shadow: 0px 4px 4px rgba(0, 0, 0, 0.1);
+  --theme-panel-color: #FFFFFF;
 
   --body-color: #fff;
   --body-accent: #fafafa; // HZ

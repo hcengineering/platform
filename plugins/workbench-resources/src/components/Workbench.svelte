@@ -65,6 +65,7 @@
   import SpaceView from './SpaceView.svelte'
   import Settings from './icons/Settings.svelte'
   import Logo from './Logo.svelte'
+  import TopMenu from './icons/TopMenu.svelte'
 
   let contentPanel: HTMLElement
   let shownMenu: boolean = false
@@ -551,17 +552,21 @@
     </clipPath>
   </svg>
   <div class="workbench-container" style:flex-direction={appsDirection === 'horizontal' ? 'column-reverse' : 'row'}>
-    <div class="antiPanel-application {appsDirection}">
+    <div class="antiPanel-application {appsDirection}" class:lastDivider={!visibileNav}>
       <div
         class="hamburger-container clear-mins"
         class:portrait={appsDirection === 'horizontal'}
         class:landscape={appsDirection === 'vertical'}
       >
         <div class="logo-container clear-mins">
-          <Logo
-            bundle={'platform'}
+          <Logo bundle={'platform'} />
+        </div>
+        <div class="topmenu-container clear-mins" class:mini={appsMini}>
+          <AppItem
+            icon={TopMenu}
             label={visibileNav ? workbench.string.HideMenu : workbench.string.ShowMenu}
             selected={!visibileNav}
+            mini={appsMini}
             on:click={toggleNav}
           />
         </div>
@@ -742,6 +747,9 @@
       .logo-container {
         margin-right: 0.5rem;
       }
+      .topmenu-container {
+        margin-right: 0.5rem;
+      }
       .divider {
         margin-left: 0.5rem;
         width: 1px;
@@ -753,7 +761,10 @@
       margin-top: 1.25rem;
 
       .logo-container {
-        margin-bottom: 1.75rem;
+        margin-bottom: 0.75rem;
+      }
+      .topmenu-container {
+        margin-bottom: 1.5rem;
       }
       .divider {
         margin-top: 1.5rem;
@@ -761,14 +772,16 @@
         height: 1px;
       }
     }
-    // &.mini {
-    //   position: fixed;
-    //   top: 4px;
-    //   left: 4px;
-    // }
 
-    .logo-container {
+    .logo-container,
+    .topmenu-container,
+    .divider {
       flex-shrink: 0;
+    }
+    .topmenu-container.mini {
+      position: fixed;
+      top: 4px;
+      left: 4px;
     }
     .divider {
       flex-shrink: 0;
