@@ -1,9 +1,8 @@
 <script lang="ts">
-  export let size: 'small' | 'medium' | 'large'
   const fill: string = 'currentColor'
 </script>
 
-<svg class="svg-{size}" {fill} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<svg class="svg-16px" {fill} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
   <g>
     <path d="M5.1,4.6L0,19.4h2.1l1.5-4.2h5.7l1.5,4.2h2.1L7.7,4.6H5.1z M3.9,13.4l2.3-6.9h0.2l2.4,6.9H3.9z" />
     <path

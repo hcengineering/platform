@@ -23,18 +23,19 @@
   justify-content: space-between;
   align-items: center;
   background-color: var(--theme-navpanel-color);
-  border-right: 1px solid var(--theme-navpanel-divider);
   
   &.vertical {
     flex-direction: column;
     min-width: var(--app-panel-width);
     width: var(--app-panel-width);
     height: 100%;
+    border-right: 1px solid var(--theme-navpanel-divider);
   }
   &.horizonatl {
     min-height: var(--app-panel-width);
     height: var(--app-panel-width);
     width: 100%;
+    border-top: 1px solid var(--theme-navpanel-divider);
   }
 }
 .antiPanel-navigator,

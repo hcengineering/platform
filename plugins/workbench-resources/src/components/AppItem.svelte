@@ -34,12 +34,13 @@
 <style lang="scss">
   .app {
     position: relative;
+    flex-shrink: 0;
     padding: 0;
-    width: 3.25rem;
-    height: 3.25rem;
+    width: 2.25rem;
+    height: 2.25rem;
     background-color: transparent;
     border: 1px solid transparent;
-    border-radius: 0.5rem;
+    border-radius: 0.25rem;
     cursor: pointer;
     outline: none;
 
@@ -50,13 +51,13 @@
       border-radius: 0.25rem;
     }
     &.mini.selected {
-      background-color: var(--button-border-hover);
+      background-color: var(--theme-button-pressed);
     }
 
     .icon-container {
-      width: 3.25rem;
-      height: 3.25rem;
-      color: var(--dark-color);
+      width: 1.5rem;
+      height: 1.5rem;
+      color: var(--theme-navpanel-icons-color);
 
       .normal-font &.noty {
         clip-path: url(#notify-normal);
@@ -67,30 +68,30 @@
     }
 
     &:hover .icon-container {
-      color: var(--caption-color);
+      color: var(--theme-caption-color);
     }
     &:focus {
-      border: 1px solid var(--primary-button-focused-border);
-      box-shadow: 0 0 0 3px var(--primary-button-outline);
+      box-shadow: 0 0 0 2px var(--primary-button-focused-border);
       .icon-container {
-        color: var(--caption-color);
+        color: var(--theme-caption-color);
       }
     }
 
     &.selected {
-      background-color: var(--menu-bg-select);
+      background-color: var(--theme-button-enabled);
+      border: 1px solid var(--theme-button-border);
       .icon-container {
-        color: var(--caption-color);
+        color: var(--theme-caption-color);
       }
     }
   }
 
   .marker {
     position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
-    width: 0.5rem;
-    height: 0.5rem;
+    top: 1.125rem;
+    right: 0.375rem;
+    width: 0.425rem;
+    height: 0.425rem;
     border-radius: 50%;
     background-color: var(--highlight-red);
   }

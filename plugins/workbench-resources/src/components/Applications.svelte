@@ -36,16 +36,15 @@
   })
 </script>
 
-<div class="flex-{direction === 'horizontal' ? 'row-center' : 'col'} clear-mins apps-{direction} relative">
+<div class="flex-{direction === 'horizontal' ? 'row-center' : 'col-center'} clear-mins apps-{direction} relative">
   {#if loaded}
     <Scroller
       invertScroll
-      padding={direction === 'horizontal' ? '.25rem 0' : '0 .5rem'}
+      padding={direction === 'horizontal' ? '.75rem .5rem' : '.5rem .75rem'}
       horizontal={direction === 'horizontal'}
       contentDirection={direction}
-      buttons
+      buttons={'union'}
     >
-      <div class="apps-space-{direction}" />
       {#each apps.filter((it) => (shown ? true : !hiddenAppsIds.includes(it._id))) as app}
         <NavLink app={app.alias}>
           <App
@@ -53,7 +52,7 @@
             icon={app.icon}
             label={app.label}
             hidden={hiddenAppsIds.includes(app._id)}
-            editable={shown}
+            editable={shown ? direction : false}
             on:visible={(res) => {
               if (res.detail === undefined) return
               if (res.detail) showApplication(app)
@@ -70,23 +69,21 @@
 <style lang="scss">
   .apps-horizontal {
     justify-content: center;
-    margin: 0 1rem;
-    padding: 0 0.25rem;
+    margin: 0 0.5rem 0 0.25rem;
     min-height: 4rem;
   }
   .apps-vertical {
     margin: 1rem 0;
-    padding: 0.25rem 0;
     min-width: 4rem;
   }
   .apps-space {
     &-vertical {
-      min-height: 0.25rem;
-      height: 0.25rem;
+      min-height: 0.5rem;
+      height: 0.5rem;
     }
     &-horizontal {
-      min-width: 0.25rem;
-      width: 0.25rem;
+      min-width: 0.5rem;
+      width: 0.5rem;
     }
   }
 </style>

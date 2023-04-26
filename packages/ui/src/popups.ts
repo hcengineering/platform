@@ -287,6 +287,18 @@ export function fitPopupElement (
       newProps.maxWidth = 'calc(100vw - var(--app-panel-width) - 1rem)'
       newProps.maxHeight = 'calc(100vh - 1rem)'
       show = true
+    } else if (element === 'notify') {
+      newProps.top = '2.5rem'
+      newProps.left = '4.75rem'
+      newProps.maxWidth = '42rem'
+      newProps.maxHeight = 'calc(100vh - 5rem)'
+      show = true
+    } else if (element === 'notify-mobile') {
+      newProps.bottom = 'calc(var(--app-panel-width) + .75rem)'
+      newProps.left = '.5rem'
+      newProps.maxWidth = 'calc(100vw - 1rem)'
+      newProps.maxHeight = 'calc(100vh - var(--app-panel-width) - 1.5rem)'
+      show = true
     } else if (element === 'full' && contentPanel === undefined) {
       newProps.top = '0'
       newProps.bottom = '0'

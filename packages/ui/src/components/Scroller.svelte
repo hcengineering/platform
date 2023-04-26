@@ -21,6 +21,7 @@
   import { defaultSP } from '../types'
   import IconUpOutline from './icons/UpOutline.svelte'
   import IconDownOutline from './icons/DownOutline.svelte'
+  import HalfUpDown from './icons/HalfUpDown.svelte'
 
   export let padding: string | undefined = undefined
   export let autoscroll: boolean = false
@@ -31,7 +32,7 @@
   export let horizontal: boolean = false
   export let contentDirection: 'vertical' | 'vertical-reverse' | 'horizontal' = 'vertical'
   export let noStretch: boolean = autoscroll
-  export let buttons: boolean = false
+  export let buttons: 'normal' | 'union' | false = false
   export let shrink: boolean = false
   export let divScroll: HTMLElement | undefined = undefined
   export let checkForHeaders = false
@@ -422,6 +423,17 @@
       }
     }
   }
+
+  $: topButton =
+    (orientir === 'vertical' && (mask === 'top' || mask === 'both')) ||
+    (orientir === 'horizontal' && (maskH === 'right' || maskH === 'both'))
+      ? 'visible'
+      : 'hidden'
+  $: bottomButton =
+    (orientir === 'vertical' && (mask === 'bottom' || mask === 'both')) ||
+    (orientir === 'horizontal' && (maskH === 'left' || maskH === 'both'))
+      ? 'visible'
+      : 'hidden'
 </script>
 
 <svelte:window on:resize={_resize} />
@@ -429,7 +441,8 @@
 <div
   bind:this={divScrollContainer}
   class="scroller-container {orientir} {invertScroll ? 'invert' : 'normal'}"
-  class:buttons
+  class:buttons={buttons === 'normal'}
+  class:union={buttons === 'union'}
   class:shrink
   style:--scroller-header-height={`${fade.multipler?.top ?? 0.125}rem`}
   style:--scroller-footer-height={`${fade.multipler?.bottom ?? 0.125}rem`}
@@ -471,13 +484,10 @@
       </div>
     </div>
   </div>
-  {#if buttons}
+  {#if buttons === 'normal'}
     <button
       class="scrollButton top {orientir}"
-      style:visibility={(orientir === 'vertical' && (mask === 'top' || mask === 'both')) ||
-      (orientir === 'horizontal' && (maskH === 'right' || maskH === 'both'))
-        ? 'visible'
-        : 'hidden'}
+      style:visibility={topButton}
       on:click|preventDefault|stopPropagation={() => tapScroll(stepScroll, 'up')}
     >
       <div style:transform={orientir === 'horizontal' ? 'rotate(-90deg)' : ''}>
@@ -486,16 +496,30 @@
     </button>
     <button
       class="scrollButton bottom {orientir}"
-      style:visibility={(orientir === 'vertical' && (mask === 'bottom' || mask === 'both')) ||
-      (orientir === 'horizontal' && (maskH === 'left' || maskH === 'both'))
-        ? 'visible'
-        : 'hidden'}
+      style:visibility={bottomButton}
       on:click|preventDefault|stopPropagation={() => tapScroll(stepScroll, 'down')}
     >
       <div style:transform={orientir === 'horizontal' ? 'rotate(-90deg)' : ''}>
         <IconDownOutline size={'medium'} />
       </div>
     </button>
+  {:else if buttons === 'union'}
+    <div class="updown-container {orientir}">
+      <button
+        class="updown-up"
+        style:visibility={topButton}
+        on:click|preventDefault|stopPropagation={() => tapScroll(stepScroll, 'up')}
+      >
+        <HalfUpDown />
+      </button>
+      <button
+        class="updown-down"
+        style:visibility={bottomButton}
+        on:click|preventDefault|stopPropagation={() => tapScroll(stepScroll, 'down')}
+      >
+        <HalfUpDown />
+      </button>
+    </div>
   {/if}
   <div
     class="bar"
@@ -527,9 +551,49 @@
 </div>
 
 <style lang="scss">
+  .updown-container {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 1rem;
+    height: 1rem;
+    transform-origin: center;
+    transform: rotate(0deg);
+    transition: transform 0.15s var(--timing-main);
+
+    button {
+      width: 1rem;
+      height: 0.5rem;
+      color: var(--theme-trans-color);
+      border-radius: 0.25rem;
+      border: none;
+      outline: none;
+
+      &:hover,
+      &:focus {
+        color: var(--theme-caption-color);
+        background-color: ver(--theme-button-hovered);
+      }
+    }
+    .updown-down {
+      transform-origin: center;
+      transform: rotate(180deg);
+    }
+    &.vertical {
+      left: 50%;
+      bottom: -2.25rem;
+      transform: translate(-50%, 0) rotate(0deg);
+    }
+    &.horizontal {
+      top: 50%;
+      right: -1.5rem;
+      transform: translate(0, -50%) rotate(90deg);
+    }
+  }
   .scrollButton {
     position: absolute;
-    color: var(--caption-color);
+    color: var(--theme-caption-color);
     background-color: transparent;
     border: 1px solid transparent;
     border-radius: 0.25rem;
@@ -548,10 +612,10 @@
       opacity: 0.8;
     }
     &:hover {
-      background-color: var(--button-bg-color);
+      background-color: var(--theme-button-hovered);
     }
     &:focus {
-      border-color: var(--primary-edit-border-color);
+      box-shadow: 0 0 0 2px var(--primary-button-focused-border);
     }
     &.vertical {
       width: 2rem;
@@ -592,6 +656,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    align-items: center;
     flex-shrink: 1;
     min-width: 0;
     min-height: 0;
@@ -601,11 +666,23 @@
       height: 100%;
     }
 
+    &.vertical {
+      min-width: 1.5rem 0;
+    }
+    &.horizontal {
+      margin-right: 2rem;
+    }
     &.buttons.vertical {
       margin: 1.5rem 0;
     }
     &.buttons.horizontal {
-      margin: 0 1.5rem;
+      margin-right: 2rem;
+    }
+    &.union.vertical {
+      margin-bottom: 2.75rem;
+    }
+    &.union.horizontal {
+      margin-right: 1.5rem;
     }
     &.normal {
       .track,
@@ -693,7 +770,7 @@
     background-color: var(--scrollbar-bar-color);
     border-radius: 0.125rem;
     opacity: 0;
-    box-shadow: 0 0 1px 1px var(--board-bg-color);
+    box-shadow: 0 0 1px 1px var(--theme-overlay-color);
     cursor: pointer;
     z-index: 1;
     transition: all 0.15s;
