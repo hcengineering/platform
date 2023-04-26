@@ -19,7 +19,7 @@
   import presentation, { DraftController, getClient, KeyedAttribute } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import { calcRank, Issue, IssueDraft, IssuePriority, Project } from '@hcengineering/tracker'
-  import { addNotification, Button, Component, EditBox } from '@hcengineering/ui'
+  import { addNotification, Button, Component, EditBox, deviceOptionsStore, ButtonSize } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import tracker from '../../../plugin'
   import AssigneeEditor from '../AssigneeEditor.svelte'
@@ -188,10 +188,12 @@
   $: if (!object.status && currentProject?.defaultIssueStatus) {
     object.status = currentProject.defaultIssueStatus
   }
+  let buttonSize: ButtonSize
+  $: buttonSize = $deviceOptionsStore.twoRows ? 'small' : 'large'
 </script>
 
-<div id="sub-issue-child-editor" bind:this={thisRef} class="flex-col root">
-  <div class="flex-row-top">
+<div id="sub-issue-child-editor" bind:this={thisRef} class="flex-col subissue-container">
+  <div class="flex-row-top subissue-content">
     <div id="status-editor" class="mr-1">
       <StatusEditor
         value={object}
@@ -231,15 +233,15 @@
       </div>
     </div>
   </div>
-  <div class="mt-4 flex-between">
-    <div class="buttons-group xsmall-gap">
+  <div class="subissue-footer flex-between">
+    <div class="flex-row-center gap-around-2 flex-wrap">
       <div id="sub-issue-priority">
         <PriorityEditor
           value={object}
           shouldShowLabel
           isEditable
-          kind="no-border"
-          size="small"
+          kind={'secondary'}
+          size={buttonSize}
           justify="center"
           on:change={({ detail }) => (object.priority = detail)}
         />
@@ -248,8 +250,8 @@
         {#key object.assignee}
           <AssigneeEditor
             value={object}
-            size="small"
-            kind="no-border"
+            kind={'secondary'}
+            size={buttonSize}
             on:change={({ detail }) => (object.assignee = detail)}
           />
         {/key}
@@ -260,7 +262,9 @@
           items: object.labels,
           key,
           targetClass: tracker.class.Issue,
-          countLabel: tracker.string.NumberLabels
+          countLabel: tracker.string.NumberLabels,
+          kind: 'secondary',
+          size: buttonSize
         }}
         on:open={(evt) => {
           addTagRef(evt.detail)
@@ -269,16 +273,16 @@
           object.labels = object.labels.filter((it) => it._id !== evt.detail)
         }}
       />
-      <EstimationEditor kind={'no-border'} size={'small'} value={object} />
+      <EstimationEditor kind={'secondary'} size={buttonSize} value={object} />
     </div>
-    <div class="buttons-group small-gap">
-      <Button label={presentation.string.Cancel} size="small" kind="transparent" on:click={close} />
+    <div class="flex-row-center gap-around-2 self-end flex-no-shrink">
+      <Button label={presentation.string.Cancel} kind={'secondary'} size={buttonSize} on:click={close} />
       <Button
         {loading}
         disabled={!canSave}
         label={presentation.string.Save}
-        size="small"
-        kind="no-border"
+        kind={'primary'}
+        size={buttonSize}
         on:click={createIssue}
       />
     </div>
@@ -286,15 +290,20 @@
 </div>
 
 <style lang="scss">
-  .root {
-    padding: 0.75rem;
-    background-color: var(--body-accent);
-    border: 1px solid var(--button-border-color);
-    border-radius: 0.5rem;
+  .subissue-container {
+    background-color: var(--theme-button-enabled);
+    border: 1px solid var(--theme-button-border);
+    border-radius: 0.25rem;
     overflow: hidden;
 
-    .content {
-      padding-top: 0.3rem;
+    .subissue-content {
+      padding: 0.75rem;
+      .content {
+        padding-top: 0.3rem;
+      }
+    }
+    .subissue-footer {
+      padding: 0.25rem 0.5rem 0.5rem;
     }
   }
 </style>
