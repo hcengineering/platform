@@ -12,11 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-<script lang="ts">
-  let bundle: 'platform' | 'ezthera' = 'platform'
-</script>
-
-<div class="antiLogo {bundle}">
+<div class="antiLogo red">
   P
 </div>
 
@@ -33,10 +29,10 @@
     border-radius: 0.25rem;
     outline: none;
 
-    &.platform {
+    &.red {
       background-color: #c93030;
     }
-    &.ezthera {
+    &.blue {
       background-color: #2b5190;
     }
   }
