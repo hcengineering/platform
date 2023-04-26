@@ -787,7 +787,9 @@ export async function OnAttributeCreate (tx: Tx, control: TriggerControl): Promi
   const ctx = tx as TxCreateDoc<AnyAttribute>
   if (ctx.objectClass !== core.class.Attribute) return []
   const attribute = TxProcessor.createDoc2Doc(ctx)
-  const group = (await control.findAll(notification.class.NotificationGroup, { objectClass: attribute.attributeOf }))[0]
+  const group = (
+    await control.modelDb.findAll(notification.class.NotificationGroup, { objectClass: attribute.attributeOf })
+  )[0]
   if (group === undefined) return []
   const isCollection: boolean = core.class.Collection === attribute.type._class
   const objectClass = !isCollection ? attribute.attributeOf : (attribute.type as Collection<AttachedDoc>).of

@@ -21,7 +21,7 @@
     NotificationType
   } from '@hcengineering/notification'
   import { IntlString } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { Grid, Label, ToggleWithLabel } from '@hcengineering/ui'
   import notification from '../plugin'
 
@@ -34,11 +34,15 @@
   let providers: NotificationProvider[] = []
   let providersMap: IdMap<NotificationProvider> = new Map()
 
-  $: load(group)
+  load()
 
-  async function load (group: Ref<NotificationGroup>) {
-    types = await client.findAll(notification.class.NotificationType, { group })
+  const query = createQuery()
+  $: query.query(notification.class.NotificationType, { group }, (res) => {
+    types = res
     typesMap = toIdMap(types)
+  })
+
+  async function load () {
     providers = await client.findAll(notification.class.NotificationProvider, {})
     providersMap = toIdMap(providers)
   }
@@ -100,30 +104,32 @@
   }
 </script>
 
-<div class="flex-grow container">
-  <Grid {column} columnGap={5} rowGap={1.5}>
-    {#each types as type}
-      <div class="flex">
-        {#if type.generated}
-          <Label label={getLabel(type)} />:
-        {/if}
-        <Label label={type.label} />
-      </div>
-      {#each providers as provider (provider._id)}
-        {#if type.providers[provider._id] !== undefined}
-          <div class="toggle">
-            <ToggleWithLabel
-              label={provider.label}
-              on={getStatus(settings, type._id, provider._id)}
-              on:change={createHandler(type._id, provider._id)}
-            />
-          </div>
-        {:else}
-          <div />
-        {/if}
+<div class="flex-grow vScroll w-full">
+  <div class="container">
+    <Grid {column} columnGap={5} rowGap={1.5}>
+      {#each types as type}
+        <div class="flex">
+          {#if type.generated}
+            <Label label={getLabel(type)} />:
+          {/if}
+          <Label label={type.label} />
+        </div>
+        {#each providers as provider (provider._id)}
+          {#if type.providers[provider._id] !== undefined}
+            <div class="toggle">
+              <ToggleWithLabel
+                label={provider.label}
+                on={getStatus(settings, type._id, provider._id)}
+                on:change={createHandler(type._id, provider._id)}
+              />
+            </div>
+          {:else}
+            <div />
+          {/if}
+        {/each}
       {/each}
-    {/each}
-  </Grid>
+    </Grid>
+  </div>
 </div>
 
 <style lang="scss">
