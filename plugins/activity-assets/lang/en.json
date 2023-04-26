@@ -4,6 +4,7 @@
     "Edit": "Edit",
     "Edited": "edited",
     "DocCreated": "created {_class}",
+    "DocAdded": "added {_class}",
     "DocDeleted": "deleted {_class}",
     "Activity": "Activity",
     "Changed": "changed",

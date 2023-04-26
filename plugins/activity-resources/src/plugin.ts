@@ -20,6 +20,7 @@ import { mergeIds } from '@hcengineering/platform'
 export default mergeIds(activityId, activity, {
   string: {
     DocCreated: '' as IntlString,
+    DocAdded: '' as IntlString,
     DocDeleted: '' as IntlString,
     CollectionUpdated: '' as IntlString,
     All: '' as IntlString
