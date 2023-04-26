@@ -1,7 +1,7 @@
 import { Doc } from '@hcengineering/core'
 import { panelstore } from '@hcengineering/ui'
 import { onDestroy } from 'svelte'
-import { Unsubscriber, writable } from 'svelte/store'
+import { Unsubscriber, derived, writable } from 'svelte/store'
 
 /**
  * @public
@@ -50,7 +50,16 @@ export interface FocusSelection {
  * @public
  */
 export const focusStore = writable<FocusSelection>({})
+
+/**
+ * @public
+ */
 export const selectionStore = writable<Doc[]>([])
+
+/**
+ * @public
+ */
+export const selectionStoreMap = derived(selectionStore, (it) => new Set(it.map((it) => it._id)))
 
 export const previewDocument = writable<Doc | undefined>()
 
@@ -61,6 +70,10 @@ panelstore.subscribe((val) => {
  * @public
  */
 export function updateFocus (selection?: FocusSelection): void {
+  if (!window.document.hasFocus()) {
+    window.focus()
+  }
+
   focusStore.update((cur) => {
     const now = Date.now()
 

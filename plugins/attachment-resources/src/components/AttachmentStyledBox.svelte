@@ -40,6 +40,7 @@
   export let refContainer: HTMLElement | undefined = undefined
   export let shouldSaveDraft: boolean = false
   export let useAttachmentPreview = false
+  export let focusIndex: number | undefined = undefined
 
   let draftKey = objectId ? `${objectId}_attachments` : undefined
   $: draftKey = objectId ? `${objectId}_attachments` : undefined
@@ -320,6 +321,7 @@
 >
   <div class="expand-collapse">
     <StyledTextBox
+      {focusIndex}
       bind:this={refInput}
       bind:content
       {placeholder}

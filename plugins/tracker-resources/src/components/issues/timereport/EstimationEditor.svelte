@@ -31,6 +31,7 @@
   export let size: ButtonSize = 'large'
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = undefined
+  export let focusIndex: number | undefined = undefined
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -76,6 +77,7 @@
     <EstimationStatsPresenter {value} {kind} on:click={handleestimationEditorOpened} />
   {:else}
     <Button
+      {focusIndex}
       showTooltip={isEditable ? { label: tracker.string.Estimation } : undefined}
       label={tracker.string.TimeSpendValue}
       notSelected={value.estimation === 0}

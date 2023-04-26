@@ -34,6 +34,7 @@
   export let onlyIcon: boolean = false
   export let enlargedText: boolean = false
   export let short: boolean = false
+  export let focusIndex: number | undefined = undefined
 
   let selectedComponent: Component | undefined
   let defaultComponentLabel = ''
@@ -98,6 +99,7 @@
 
 {#if onlyIcon || componentText === undefined}
   <Button
+    {focusIndex}
     {kind}
     {size}
     {shape}
@@ -111,6 +113,7 @@
   />
 {:else}
   <Button
+    {focusIndex}
     {kind}
     {size}
     {shape}

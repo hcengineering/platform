@@ -20,6 +20,8 @@
     AnyComponent,
     Button,
     IconAdd,
+    IconBack,
+    IconCheck,
     IconCollapseArrow,
     IconMoreH,
     Label,
@@ -32,6 +34,7 @@
   import { AttributeModel } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../../plugin'
+  import { selectionStore, selectionStoreMap } from '../../selection'
   import { noCategory } from '../../viewOptions'
 
   export let groupByKey: string
@@ -55,17 +58,19 @@
 
   $: lth = $deviceInfo.theme === 'theme-light'
 
-  let accentColor = { h: 0, s: 50, l: 50 }
+  let accentColor = lth ? { h: 0, s: 0, l: 1 } : { h: 0, s: 0, l: 0.3 }
 
-  $: headerBGColor = !lth ? hslToRgb(accentColor.h, 20, 30) : hslToRgb(accentColor.h, 30, 85)
+  $: headerBGColor = !lth ? hslToRgb(accentColor.h, accentColor.s, 0.35) : hslToRgb(accentColor.h, accentColor.s, 0.9)
 
-  $: headerTextColor = !lth ? { r: 255, g: 255, b: 255 } : hslToRgb(accentColor.h, 60, 30)
+  $: headerTextColor = !lth ? { r: 255, g: 255, b: 255 } : hslToRgb(accentColor.h, accentColor.s, 0.3)
 
   const handleCreateItem = (event: MouseEvent) => {
     if (createItemDialog === undefined) return
     showPopup(createItemDialog, newObjectProps(items[0]), eventToHTMLElement(event))
   }
   let mouseOver = false
+
+  $: selected = items.filter((it) => $selectionStoreMap.has(it._id))
 </script>
 
 {#if headerComponent || groupByKey === noCategory}
@@ -122,6 +127,14 @@
           />
         </span>
       {/if}
+
+      {#if selected.length > 0}
+        <span class="antiSection-header__counter ml-2">
+          <span class="caption-color">
+            ({selected.length})
+          </span>
+        </span>
+      {/if}
       {#if limited < items.length}
         <div class="antiSection-header__counter flex-row-center mx-2">
           <span class="caption-color">{limited}</span>
@@ -141,12 +154,31 @@
       {/if}
     </div>
     {#if createItemDialog !== undefined && createItemLabel !== undefined}
-      <div class:on-hover={!mouseOver}>
+      <div class:on-hover={!mouseOver} class="flex-row-center">
         <Button
           icon={IconAdd}
           kind={'transparent'}
           showTooltip={{ label: createItemLabel }}
           on:click={handleCreateItem}
+        />
+        <Button
+          icon={selected.length > 0 ? IconBack : IconCheck}
+          kind={'transparent'}
+          showTooltip={{ label: view.string.Select }}
+          on:click={() => {
+            let newSelection = [...$selectionStore]
+            if (selected.length > 0) {
+              const smap = new Map(selected.map((it) => [it._id, it]))
+              newSelection = newSelection.filter((it) => !smap.has(it._id))
+            } else {
+              for (const s of items) {
+                if (!$selectionStoreMap.has(s._id)) {
+                  newSelection.push(s)
+                }
+              }
+            }
+            selectionStore.set(newSelection)
+          }}
         />
       </div>
     {/if}
@@ -183,9 +215,8 @@
     &.gradient::before {
       background: linear-gradient(
         90deg,
-        rgba(var(--list-header-rgb-color), 0.5),
-        rgba(var(--list-header-rgb-color), 0.3),
-        rgba(var(--list-header-rgb-color), 0.1)
+        rgba(var(--list-header-rgb-color), 0.15),
+        rgba(var(--list-header-rgb-color), 0.05)
       );
     }
     &::before,

@@ -14,12 +14,13 @@
 -->
 <script lang="ts">
   import { Button, ButtonKind, eventToHTMLElement, showPopup } from '@hcengineering/ui'
-  import { Viewlet, ViewOptions } from '@hcengineering/view'
+  import { ViewOptions, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
+  import { focusStore } from '../selection'
   import { setViewOptions } from '../viewOptions'
-  import ViewletSetting from './ViewletSetting.svelte'
   import ViewOptionsEditor from './ViewOptions.svelte'
+  import ViewletSetting from './ViewletSetting.svelte'
   import IconArrowDown from './icons/ArrowDown.svelte'
 
   export let viewlet: Viewlet | undefined
@@ -41,6 +42,10 @@
           if (result?.key === undefined) return
           if (viewlet) {
             viewOptions = { ...viewOptions, [result.key]: result.value }
+
+            // Clear selection on view settings change.
+            focusStore.set({})
+
             dispatch('viewOptions', viewOptions)
             setViewOptions(viewlet, viewOptions)
           }

@@ -28,6 +28,7 @@
   export let kind: ButtonKind = 'link'
   export let tooltipAlignment: TooltipAlignment | undefined = undefined
   export let width: string = '100%'
+  export let focusIndex: number | undefined = undefined
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -85,6 +86,7 @@
 
 {#if value}
   <AssigneeBox
+    {focusIndex}
     label={tracker.string.Assignee}
     placeholder={tracker.string.Assignee}
     value={value.assignee}

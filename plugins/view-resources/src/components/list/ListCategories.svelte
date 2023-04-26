@@ -139,7 +139,7 @@
     return -1
   }
 
-  export function select (offset: 1 | -1 | 0, of?: Doc, dir?: 'vertical' | 'horizontal'): void {
+  export function select (offset: 2 | 1 | -2 | -1 | 0, of?: Doc, dir?: 'vertical' | 'horizontal'): void {
     let pos = (of != null ? docs.findIndex((it) => it._id === of._id) : selection) ?? -1
     if (pos === -1) {
       for (const st of categories) {
@@ -149,6 +149,44 @@
           break
         }
       }
+    }
+    if (offset === -2 || offset === 2) {
+      if (level + 1 >= viewOptions.groupBy.length) {
+        if (offset === -2) {
+          const obj = listListCategory[0].getLimited()[0]
+          listListCategory[0].expand()
+          select(0, obj)
+          return
+        } else {
+          const g = listListCategory[categories.length - 1].getLimited()
+          listListCategory[categories.length - 1].expand()
+          const obj = g[g.length - 1]
+          select(0, obj)
+          return
+        }
+      } else {
+        if (level === 0) {
+          let ci = 0
+          for (const c of categories) {
+            const docs = getGroupByValues(groupByDocs, c)
+            if (docs.findIndex((it) => it._id === of?._id) !== -1) {
+              // We need to  take next
+              listListCategory[ci + offset / 2]?.expand()
+              listCategory[ci + offset / 2]?.select(offset)
+            }
+            ci++
+          }
+        } else {
+          if (offset === 2) {
+            listListCategory[0].expand()
+            listCategory[0]?.select(offset, of, dir)
+          } else {
+            listListCategory[listCategory.length - 1].expand()
+            listCategory[listCategory.length - 1]?.select(offset, of, dir)
+          }
+        }
+      }
+      return
     }
 
     if (pos < 0) {
@@ -170,7 +208,7 @@
     }
 
     if (level + 1 >= viewOptions.groupBy.length) {
-      const stateObjs = getGroupByValues(groupByDocs, categories[objState]) ?? []
+      const stateObjs: Doc[] = getGroupByValues(groupByDocs, categories[objState]) ?? []
 
       const statePos = stateObjs.findIndex((it) => it._id === obj._id)
       if (statePos === undefined) {
@@ -179,34 +217,45 @@
 
       if (offset === -1) {
         if (dir === undefined || dir === 'vertical') {
-          if (statePos - 1 < 0 && objState > 0) {
-            const pstateObjs = getGroupByValues(groupByDocs, categories[objState - 1]) ?? []
-            dispatch('select', pstateObjs[pstateObjs.length - 1])
+          if (statePos - 1 < 0 && objState >= 0) {
+            if (objState !== 0) {
+              const pstateObjs = listListCategory[objState - 1].getLimited()
+              dispatch('select', pstateObjs[pstateObjs.length - 1])
+            } else {
+              dispatch('select-prev', stateObjs[statePos])
+            }
           } else {
-            const obj = stateObjs[statePos - 1] ?? stateObjs[0]
-            scrollInto(objState, obj)
-            dispatch('row-focus', obj)
+            const obj = stateObjs[statePos - 1]
+            if (obj !== undefined) {
+              scrollInto(objState, obj)
+              dispatch('row-focus', obj)
+            }
           }
           return
         }
       }
       if (offset === 1) {
         if (dir === undefined || dir === 'vertical') {
-          if (statePos + 1 >= stateObjs.length && objState < categories.length) {
-            const pstateObjs = getGroupByValues(groupByDocs, categories[objState + 1]) ?? []
-            if (pstateObjs[0] !== undefined) {
+          const limited = listListCategory[objState].getLimited()
+          if (statePos + 1 >= limited.length && objState < categories.length) {
+            if (objState + 1 !== categories.length) {
+              const pstateObjs = getGroupByValues(groupByDocs, categories[objState + 1])
               dispatch('select', pstateObjs[0])
+            } else {
+              dispatch('select-next', stateObjs[statePos])
             }
           } else {
-            const obj = stateObjs[statePos + 1] ?? stateObjs[stateObjs.length - 1]
-            scrollInto(objState, obj)
-            dispatch('row-focus', obj)
+            const obj = stateObjs[statePos + 1]
+            if (obj !== undefined) {
+              scrollInto(objState, obj)
+              dispatch('row-focus', obj)
+            }
           }
           return
         }
       }
       if (offset === 0) {
-        // scrollInto(objState, obj)
+        scrollInto(objState, obj)
         dispatch('row-focus', obj)
       }
     } else {
@@ -214,7 +263,6 @@
     }
   }
   function scrollInto (statePos: number, obj: Doc): void {
-    // listCategory[statePos]?.scrollIntoView({ behavior: 'auto', block: 'nearest' })
     listListCategory[statePos]?.scroll(obj)
     listCategory[statePos]?.scroll(obj)
   }
@@ -310,6 +358,20 @@
         on:dragstart={dragstart}
         on:select={(evt) => {
           select(0, evt.detail)
+        }}
+        on:select-next={(evt) => {
+          if (level !== 0) {
+            dispatch('select-next', evt.detail)
+          } else {
+            select(2, evt.detail)
+          }
+        }}
+        on:select-prev={(evt) => {
+          if (level !== 0) {
+            dispatch('select-prev', evt.detail)
+          } else {
+            select(-2, evt.detail)
+          }
         }}
       />
     </svelte:fragment>

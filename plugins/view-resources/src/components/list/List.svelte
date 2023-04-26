@@ -95,7 +95,7 @@
     selectedObjectIds = []
   }
 
-  export function select (offset: 1 | -1 | 0, of?: Doc): void {
+  export function select (offset: 2 | -2 | 1 | -1 | 0, of?: Doc): void {
     listCategories?.select(offset, of)
   }
 
@@ -136,6 +136,12 @@
     bind:dragItem
     on:select={(evt) => {
       select(0, evt.detail)
+    }}
+    on:select-next={(evt) => {
+      select(2, evt.detail)
+    }}
+    on:select-prev={(evt) => {
+      select(-2, evt.detail)
     }}
   />
 </div>

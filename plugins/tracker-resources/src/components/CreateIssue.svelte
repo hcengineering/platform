@@ -45,8 +45,10 @@
     addNotification,
     Button,
     Component,
+    createFocusManager,
     DatePresenter,
     EditBox,
+    FocusHandler,
     IconAttachment,
     IconMoreH,
     Label,
@@ -526,7 +528,10 @@
   }
 
   $: objectId = object._id
+  const manager = createFocusManager()
 </script>
+
+<FocusHandler {manager} />
 
 <Card
   label={tracker.string.NewIssue}
@@ -563,6 +568,7 @@
       allowDeselect={true}
       showNavigate={false}
       docProps={{ disableClick: true }}
+      focusIndex={20000}
     />
   </svelte:fragment>
   <svelte:fragment slot="title" let:label>
@@ -585,12 +591,19 @@
     <ParentIssue issue={parentIssue} on:close={clearParentIssue} />
   {/if}
   <div id="issue-name">
-    <EditBox bind:value={object.title} placeholder={tracker.string.IssueTitlePlaceholder} kind={'large-style'} focus />
+    <EditBox
+      focusIndex={1}
+      bind:value={object.title}
+      placeholder={tracker.string.IssueTitlePlaceholder}
+      kind={'large-style'}
+      focus
+    />
   </div>
   <div id="issue-description">
     {#key [objectId, appliedTemplateId]}
       <AttachmentStyledBox
         bind:this={descriptionBox}
+        focusIndex={2}
         objectId={object._id}
         {shouldSaveDraft}
         _class={tracker.class.Issue}
@@ -621,37 +634,53 @@
   <svelte:fragment slot="pool">
     <div id="status-editor">
       <StatusEditor
+        focusIndex={3}
         value={object}
         kind={'secondary'}
         size={'large'}
         defaultIssueStatus={draft ? undefined : currentProject?.defaultIssueStatus}
         shouldShowLabel={true}
-        on:change={({ detail }) => (object.status = detail)}
+        on:refocus={() => {
+          manager.setFocusPos(3)
+        }}
+        on:change={({ detail }) => {
+          if (object.status !== detail) {
+            object.status = detail
+          }
+        }}
       />
     </div>
     <div id="priority-editor">
       <PriorityEditor
+        focusIndex={4}
         value={object}
         shouldShowLabel
         isEditable
         kind={'secondary'}
         size={'large'}
         justify="center"
-        on:change={({ detail }) => (object.priority = detail)}
+        on:change={({ detail }) => {
+          object.priority = detail
+          manager.setFocusPos(4)
+        }}
       />
     </div>
     <div id="assignee-editor">
       <AssigneeEditor
+        focusIndex={5}
         value={object}
         kind={'secondary'}
         size={'large'}
         width={'min-content'}
-        on:change={({ detail }) => (object.assignee = detail)}
+        on:change={({ detail }) => {
+          object.assignee = detail
+        }}
       />
     </div>
     <Component
       is={tags.component.TagsDropdownEditor}
       props={{
+        focusIndex: 6,
         items: object.labels,
         key,
         targetClass: tracker.class.Issue,
@@ -667,9 +696,10 @@
       }}
     />
     <div id="estimation-editor">
-      <EstimationEditor kind={'secondary'} size={'large'} value={object} />
+      <EstimationEditor focusIndex={7} kind={'secondary'} size={'large'} value={object} />
     </div>
     <ComponentSelector
+      focusIndex={8}
       value={object.component}
       onChange={handleComponentIdChanged}
       isEditable={true}
@@ -677,6 +707,7 @@
       size={'large'}
     />
     <SprintSelector
+      focusIndex={9}
       value={object.sprint}
       onChange={handleSprintIdChanged}
       useComponent={(!originalIssue && object.component) || undefined}
@@ -690,6 +721,7 @@
   </svelte:fragment>
   <svelte:fragment slot="footer">
     <Button
+      focusIndex={10}
       icon={IconAttachment}
       size={'large'}
       on:click={() => {

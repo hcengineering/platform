@@ -57,18 +57,22 @@
 
   let limitedObjects: DocWithRank[] = []
   let loading = false
+  let loadingTimeout: any | undefined = undefined
 
-  function nop (op: () => void, timeout: number) {
-    op()
-  }
-
-  $: {
-    loading = true
-    ;(limitedObjects.length > 0 ? nop : setTimeout)(() => {
+  function update (stateObjects: Item[], limit: number | undefined, index: number): void {
+    clearTimeout(loadingTimeout)
+    if (limitedObjects.length > 0 || index * 2 === 0) {
       limitedObjects = stateObjects.slice(0, limit)
-      loading = false
-    }, index * 2)
+    } else {
+      loading = true
+      loadingTimeout = setTimeout(() => {
+        limitedObjects = stateObjects.slice(0, limit)
+        loading = false
+      }, index * 2)
+    }
   }
+
+  $: update(stateObjects, limit, index)
 </script>
 
 {#each limitedObjects as object, i (object._id)}

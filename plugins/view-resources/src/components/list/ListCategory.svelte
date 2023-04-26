@@ -26,7 +26,7 @@
     showPopup
   } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, ViewOptionModel, ViewOptions } from '@hcengineering/view'
-  import { createEventDispatcher, tick } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import { fade } from 'svelte/transition'
   import { FocusSelection, focusStore } from '../../selection'
   import Menu from '../Menu.svelte'
@@ -110,18 +110,22 @@
   let limited: Doc[] = []
 
   let loading = false
+  let loadingTimeout: any | undefined = undefined
 
-  function nop (op: () => void, timeout: number) {
-    op()
-  }
-
-  $: {
-    loading = true
-    ;(limited.length > 0 ? nop : setTimeout)(() => {
+  function update (items: Doc[], limit: number | undefined, index: number): void {
+    clearTimeout(loadingTimeout)
+    if (limited.length > 0 || index * 2 === 0) {
       limited = limitGroup(items, limit)
-      loading = false
-    }, index * 2)
+    } else {
+      loading = true
+      loadingTimeout = setTimeout(() => {
+        limited = limitGroup(items, limit)
+        loading = false
+      }, index * 2)
+    }
   }
+
+  $: update(items, limit, index)
 
   $: selectedObjectIdsSet = new Set<Ref<Doc>>(selectedObjectIds.map((it) => it._id))
 
@@ -315,23 +319,25 @@
       index: i
     })
   }
+  export function expand (): void {
+    collapsed = false
+  }
   export function scroll (item: Doc): void {
-    const pos = items.findIndex((it) => it._id === item._id)
+    const pos = limited.findIndex((it) => it._id === item._id)
     if (pos >= 0) {
       if (collapsed) {
         collapsed = false
-        tick().then(() => scroll(item))
-        return
-      }
-      if (pos >= limited.length) {
-        limit = (limit ?? 0) + 20
-
-        tick().then(() => scroll(item))
+        setTimeout(() => scroll(item), 50)
       } else {
         listItems[pos]?.scroll()
       }
     }
   }
+
+  export function getLimited (): Doc[] {
+    return limited
+  }
+
   const listItems: ListItem[] = []
 </script>
 
