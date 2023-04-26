@@ -44,8 +44,8 @@
         ''
   }
 
-  const fitTooltip = (): void => {
-    if (($tooltip.label || $tooltip.component) && tooltipHTML) {
+  const fitTooltip = (tooltipHTMLToCheck: HTMLElement): void => {
+    if (($tooltip.label || $tooltip.component) && tooltipHTML && tooltipHTMLToCheck) {
       if ($tooltip.element) {
         rect = $tooltip.element.getBoundingClientRect()
         rectAnchor = $tooltip.anchor
@@ -54,7 +54,7 @@
 
         if ($tooltip.component) {
           clearStyles()
-          if (rect.bottom + tooltipHTML.clientHeight + 28 < docHeight) {
+          if (rect.bottom + tooltipHTMLToCheck.clientHeight + 28 < docHeight) {
             tooltipHTML.style.top = `calc(${rect.bottom}px + 5px + .25rem)`
             dir = 'bottom'
           } else if (rect.top > docHeight - rect.bottom) {
@@ -66,7 +66,7 @@
             dir = 'top'
           } else {
             tooltipHTML.style.top = `calc(${rect.bottom}px + 5px + .25rem)`
-            if (tooltipHTML.clientHeight > docHeight - rect.bottom - 28) {
+            if (tooltipHTMLToCheck.clientHeight > docHeight - rect.bottom - 28) {
               tooltipHTML.style.bottom = '1rem'
               tooltipHTML.style.height = `calc(${docHeight - rect.bottom}px - 5px - 1.25rem)`
             }
@@ -89,7 +89,7 @@
           if (!$tooltip.direction) {
             if (rectAnchor.right < docWidth / 5) dir = 'right'
             else if (rectAnchor.left > docWidth - docWidth / 5) dir = 'left'
-            else if (rectAnchor.top < tooltipHTML.clientHeight) dir = 'bottom'
+            else if (rectAnchor.top < tooltipHTMLToCheck.clientHeight) dir = 'bottom'
             else dir = 'top'
           } else dir = $tooltip.direction
 
@@ -165,7 +165,8 @@
     }
   }
 
-  afterUpdate(() => (kind === 'submenu' ? fitSubmenu() : fitTooltip()))
+  $: fitTooltip(tooltipHTML)
+  afterUpdate(() => (kind === 'submenu' ? fitSubmenu() : fitTooltip(tooltipHTML)))
   onDestroy(() => hideTooltip())
 </script>
 
