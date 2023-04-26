@@ -13,12 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@hcengineering/contact'
   import { Doc, DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue, Project } from '@hcengineering/tracker'
   import { Label, Spinner } from '@hcengineering/ui'
-  import { Viewlet, ViewOptions } from '@hcengineering/view'
+  import { ViewOptions, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../../plugin'
   import AddIssueDuo from '../../icons/AddIssueDuo.svelte'
@@ -41,10 +40,7 @@
   let projects: Map<Ref<Project>, Project> | undefined
 
   $: subIssuesQuery.query(tracker.class.Issue, query, async (result) => (subIssues = result), {
-    sort: { rank: SortingOrder.Ascending },
-    lookup: {
-      assignee: contact.class.Employee
-    }
+    sort: { rank: SortingOrder.Ascending }
   })
 
   const projectsQuery = createQuery()

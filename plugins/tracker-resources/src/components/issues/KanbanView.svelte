@@ -130,7 +130,6 @@
   }
 
   const lookup: Lookup<Issue> = {
-    assignee: contact.class.Employee,
     space: tracker.class.Project,
     status: tracker.class.IssueStatus,
     component: tracker.class.Component,

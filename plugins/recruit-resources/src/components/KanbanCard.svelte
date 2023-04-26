@@ -68,7 +68,7 @@
     <div class="tool mr-1 flex-row-center">
       {#if !dragged}
         <div class="mr-2">
-          <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
+          <Component showLoading={false} is={notification.component.NotificationPresenter} props={{ value: object }} />
         </div>
       {/if}
     </div>
@@ -76,6 +76,7 @@
       <div class="tool mr-1 flex-row-center">
         <div class="step-lr75">
           <Component
+            showLoading={false}
             is={contact.component.ChannelsPresenter}
             props={{ value: channels, object: object.$lookup?.attachedTo, length: 'tiny' }}
           />
@@ -89,7 +90,7 @@
         <div class="mr-2">
           <ApplicationPresenter value={object} />
         </div>
-        <Component is={tracker.component.RelatedIssueSelector} props={{ object }} />
+        <Component showLoading={false} is={tracker.component.RelatedIssueSelector} props={{ object }} />
       </div>
       <DueDatePresenter
         value={object.dueDate}
@@ -115,7 +116,7 @@
       {/if}
     </div>
     <AssigneePresenter
-      value={object.$lookup?.assignee}
+      value={object.assignee}
       issueId={object._id}
       defaultClass={contact.class.Employee}
       currentSpace={object.space}

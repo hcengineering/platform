@@ -1,13 +1,13 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
-  import { WithLookup } from '@hcengineering/core'
+  import { Ref, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { IconSize } from '@hcengineering/ui'
-  import { PersonLabelTooltip } from '..'
+  import { PersonLabelTooltip, employeeByIdStore } from '..'
   import PersonPresenter from '../components/PersonPresenter.svelte'
   import contact from '../plugin'
 
-  export let value: WithLookup<Employee> | null | undefined
+  export let value: Ref<Employee> | WithLookup<Employee> | null | undefined
   export let tooltipLabels: PersonLabelTooltip | undefined = undefined
   export let shouldShowAvatar: boolean = true
   export let shouldShowName: boolean = true
@@ -21,11 +21,13 @@
   export let accent: boolean = false
   export let defaultName: IntlString | undefined = undefined
   export let element: HTMLElement | undefined = undefined
+
+  $: employeeValue = typeof value === 'string' ? $employeeByIdStore.get(value) : value
 </script>
 
 <PersonPresenter
   bind:element
-  {value}
+  value={employeeValue}
   {tooltipLabels}
   onEdit={onEmployeeEdit}
   {shouldShowAvatar}
@@ -37,6 +39,6 @@
   {colorInherit}
   {accent}
   {defaultName}
-  statusLabel={value?.active === false && shouldShowName ? contact.string.Inactive : undefined}
+  statusLabel={employeeValue?.active === false && shouldShowName ? contact.string.Inactive : undefined}
   on:accent-color
 />

@@ -325,6 +325,7 @@
             <KanbanRow
               bind:this={stateRows[si]}
               on:obj-focus
+              index={si}
               {groupByDocs}
               {stateObjects}
               {isDragging}

@@ -392,6 +392,9 @@
         }
 
         delayCall(() => {
+          if (divBox === undefined) {
+            return
+          }
           const tempEls = divBox.querySelectorAll('.categoryHeader')
           observer = new IntersectionObserver(checkIntersection, { root: null, rootMargin: '0px', threshold: 0.1 })
           tempEls.forEach((el) => observer.observe(el))

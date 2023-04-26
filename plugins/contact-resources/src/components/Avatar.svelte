@@ -101,8 +101,12 @@
         bind:this={imageElement}
         on:load={(data) => {
           if (imageElement !== undefined) {
-            accentColor = imageToColor(imageElement)
-            dispatch('accent-color', accentColor)
+            try {
+              accentColor = imageToColor(imageElement)
+              dispatch('accent-color', accentColor)
+            } catch (err) {
+              // Ignore
+            }
           }
         }}
       />
@@ -114,8 +118,12 @@
       bind:this={imageElement}
       on:load={(data) => {
         if (imageElement !== undefined) {
-          accentColor = imageToColor(imageElement)
-          dispatch('accent-color', accentColor)
+          try {
+            accentColor = imageToColor(imageElement)
+            dispatch('accent-color', accentColor)
+          } catch (err) {
+            // ignore
+          }
         }
       }}
     />

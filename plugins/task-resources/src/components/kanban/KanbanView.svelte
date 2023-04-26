@@ -14,7 +14,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@hcengineering/contact'
   import {
     CategoryType,
     Class,
@@ -133,7 +132,6 @@
       ...options,
       lookup: {
         ...options?.lookup,
-        assignee: contact.class.Employee,
         space: task.class.SpaceWithStates,
         state: task.class.State,
         doneState: task.class.DoneState
