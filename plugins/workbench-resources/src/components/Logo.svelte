@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  export let bundle: 'platform' | 'ezthera' = 'platform'
+  let bundle: 'platform' | 'ezthera' = 'platform'
 </script>
 
 <div class="antiLogo {bundle}">
-  {bundle === 'ezthera' ? 'E' : 'P'}
+  P
 </div>
 
 <style lang="scss">

@@ -559,7 +559,7 @@
         class:landscape={appsDirection === 'vertical'}
       >
         <div class="logo-container clear-mins">
-          <Logo bundle={'platform'} />
+          <Logo />
         </div>
         <div class="topmenu-container clear-mins" class:mini={appsMini}>
           <AppItem
