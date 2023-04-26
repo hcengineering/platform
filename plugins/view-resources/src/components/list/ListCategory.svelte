@@ -19,7 +19,6 @@
   import { DocWithRank, calcRank } from '@hcengineering/task'
   import {
     AnyComponent,
-    CheckBox,
     ExpandCollapse,
     Spinner,
     getEventPositionElement,
@@ -28,6 +27,7 @@
   } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, ViewOptionModel, ViewOptions } from '@hcengineering/view'
   import { createEventDispatcher, tick } from 'svelte'
+  import { fade } from 'svelte/transition'
   import { FocusSelection, focusStore } from '../../selection'
   import Menu from '../Menu.svelte'
   import ListHeader from './ListHeader.svelte'
@@ -44,7 +44,6 @@
   export let items: Doc[]
   export let createItemDialog: AnyComponent | undefined
   export let createItemLabel: IntlString | undefined
-  export let loadingPropsLength: number | undefined
   export let selectedObjectIds: Doc[]
   export let itemModels: AttributeModel[]
   export let extraHeaders: AnyComponent[] | undefined
@@ -63,16 +62,18 @@
     revert?: () => void
   }
   export let listDiv: HTMLDivElement
+  export let index: number
 
   $: lastLevel = level + 1 >= viewOptions.groupBy.length
 
   const autoFoldLimit = 20
   const defaultLimit = 20
-  const singleCategoryLimit = 200
+  const singleCategoryLimit = 50
   $: initialLimit = !lastLevel ? undefined : singleCat ? singleCategoryLimit : defaultLimit
   $: limit = initialLimit
 
   let collapsed = true
+  let wasLoaded = false
 
   const dispatch = createEventDispatcher()
 
@@ -106,7 +107,22 @@
     })
   }
 
-  $: limited = limitGroup(items, limit)
+  let limited: Doc[] = []
+
+  let loading = false
+
+  function nop (op: () => void, timeout: number) {
+    op()
+  }
+
+  $: {
+    loading = true
+    ;(limited.length > 0 ? nop : setTimeout)(() => {
+      limited = limitGroup(items, limit)
+      loading = false
+    }, index * 2)
+  }
+
   $: selectedObjectIdsSet = new Set<Ref<Doc>>(selectedObjectIds.map((it) => it._id))
 
   $: _newObjectProps = (doc: Doc) => {
@@ -320,6 +336,7 @@
 </script>
 
 <div
+  in:fade|local={{ duration: 50 }}
   bind:this={div}
   class="category-container"
   class:zero-container={level === 0}
@@ -361,7 +378,6 @@
         {_class}
         {space}
         {lookup}
-        {loadingPropsLength}
         {baseMenuClass}
         {config}
         {selectedObjectIds}
@@ -377,8 +393,8 @@
         dragItem
         dragstart={dragStartHandler}
       />
-    {:else if itemModels && (!collapsed || dragItemIndex !== undefined)}
-      {#if limited}
+    {:else if itemModels && (!collapsed || wasLoaded || dragItemIndex !== undefined)}
+      {#if limited && !loading}
         {#each limited as docObject, i (docObject._id)}
           <ListItem
             bind:this={listItems[i]}
@@ -404,22 +420,14 @@
             on:focus={() => {}}
             on:mouseover={mouseAttractor(() => handleRowFocused(docObject))}
             {props}
+            on:on-mount={() => {
+              wasLoaded = true
+            }}
           />
         {/each}
       {/if}
-    {:else if loadingPropsLength !== undefined}
-      {#each Array(Math.max(loadingPropsLength, limit ?? 0)) as _, rowIndex}
-        <div class="listGrid row">
-          <div class="flex-center clear-mins h-full">
-            <div class="gridElement">
-              <CheckBox checked={false} />
-              <div class="ml-4">
-                <Spinner size="small" />
-              </div>
-            </div>
-          </div>
-        </div>
-      {/each}
+    {:else if loading}
+      <Spinner size="small" />
     {/if}
   </ExpandCollapse>
 </div>

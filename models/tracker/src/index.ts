@@ -78,9 +78,9 @@ import {
 import { KeyBinding, ViewOptionsModel } from '@hcengineering/view'
 import tracker from './plugin'
 
+import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import presentation from '@hcengineering/model-presentation'
 import { defaultPriorities, issuePriorities } from '@hcengineering/tracker-resources/src/types'
-import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 
 export { trackerId } from '@hcengineering/tracker'
 export { trackerOperation } from './migration'
@@ -230,6 +230,9 @@ export class TIssue extends TAttachedDoc implements Issue {
   @Prop(Collection(tags.class.TagReference), tracker.string.Labels)
     labels?: number
 
+  @Prop(TypeRef(core.class.Space), tracker.string.Project)
+  @Index(IndexKind.Indexed)
+  @ReadOnly()
   declare space: Ref<Project>
 
   @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.DueDate)
@@ -900,6 +903,10 @@ export function createModel (builder: Builder): void {
     component: view.component.ValueFilter
   })
 
+  builder.mixin(tracker.class.Project, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.ValueFilter
+  })
+
   builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AttributePresenter, {
     presenter: tracker.component.PriorityRefPresenter
   })
@@ -1002,7 +1009,19 @@ export function createModel (builder: Builder): void {
             label: tracker.string.MyIssues,
             icon: tracker.icon.MyIssues,
             component: tracker.component.MyIssues
-          }
+          } //,
+          // {
+          //   id: 'all-issues',
+          //   position: 'top',
+          //   label: tracker.string.AllIssues,
+          //   icon: tracker.icon.Issues,
+          //   component: tracker.component.IssuesView,
+          //   componentProps: {
+          //     query: { '$lookup.space.archived': false },
+          //     space: undefined,
+          //     title: tracker.string.AllIssues
+          //   }
+          // }
           // {
           //   id: 'views',
           //   position: 'top',
@@ -1319,7 +1338,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ClassFilters, {
-    filters: []
+    filters: ['space']
   })
 
   builder.mixin(tracker.class.IssueTemplate, core.class.Class, view.mixin.ClassFilters, {

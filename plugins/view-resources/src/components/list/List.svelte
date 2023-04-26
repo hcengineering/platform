@@ -14,12 +14,12 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
-  import { getResource, IntlString } from '@hcengineering/platform'
+  import { IntlString, getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { AnyComponent } from '@hcengineering/ui'
   import { BuildModelKey, ViewOptionModel, ViewOptions, ViewQueryOption } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import { buildConfigLookup, LoadingProps } from '../../utils'
+  import { buildConfigLookup } from '../../utils'
   import ListCategories from './ListCategories.svelte'
 
   export let _class: Ref<Class<Doc>>
@@ -29,7 +29,6 @@
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let config: (string | BuildModelKey)[]
   export let selectedObjectIds: Doc[] = []
-  export let loadingProps: LoadingProps | undefined = undefined
   export let createItemDialog: AnyComponent | undefined = undefined
   export let createItemLabel: IntlString | undefined = undefined
   export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
@@ -100,15 +99,6 @@
     listCategories?.select(offset, of)
   }
 
-  const getLoadingElementsLength = (props: LoadingProps | undefined, options?: FindOptions<Doc>) => {
-    if (!props) return undefined
-    if (options?.limit && options.limit > 0) {
-      return Math.min(options.limit, props.length)
-    }
-
-    return props.length
-  }
-
   let dragItem: {
     doc?: Doc
     revert?: () => void
@@ -128,7 +118,6 @@
     {selection}
     query={resultQuery}
     {lookup}
-    loadingPropsLength={getLoadingElementsLength(loadingProps, options)}
     {baseMenuClass}
     {config}
     {viewOptions}

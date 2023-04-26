@@ -2,16 +2,9 @@
   import { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { AnyComponent, Scroller } from '@hcengineering/ui'
-  import { BuildModelKey, Viewlet, ViewOptions } from '@hcengineering/view'
+  import { BuildModelKey, ViewOptions, Viewlet } from '@hcengineering/view'
   import { onMount } from 'svelte'
-  import {
-    ActionContext,
-    ListSelectionProvider,
-    LoadingProps,
-    SelectDirection,
-    focusStore,
-    selectionStore
-  } from '../..'
+  import { ActionContext, ListSelectionProvider, SelectDirection, focusStore, selectionStore } from '../..'
 
   import List from './List.svelte'
 
@@ -21,7 +14,6 @@
   export let options: FindOptions<Doc> | undefined = undefined
   export let viewlet: Viewlet
   export let config: (string | BuildModelKey)[]
-  export let loadingProps: LoadingProps | undefined = undefined
   export let createItemDialog: AnyComponent | undefined
   export let createItemLabel: IntlString | undefined
   export let viewOptions: ViewOptions
@@ -61,7 +53,6 @@
       {query}
       {config}
       {options}
-      {loadingProps}
       {createItemDialog}
       {createItemLabel}
       {viewOptions}
