@@ -1126,7 +1126,7 @@ export function createModel (builder: Builder): void {
     recruit.class.Applicant,
     recruit.ids.ApplicationNotificationGroup,
     [],
-    ['comments', 'state', 'doneState']
+    ['comments', 'state', 'doneState', 'dueDate']
   )
 
   builder.createDoc(

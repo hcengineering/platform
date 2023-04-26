@@ -1856,7 +1856,7 @@ export function createModel (builder: Builder): void {
     tracker.class.Issue,
     tracker.ids.TrackerNotificationGroup,
     [],
-    ['comments', 'status', 'priority']
+    ['comments', 'status', 'priority', 'assignee', 'subIssues', 'blockedBy', 'sprint', 'dueDate']
   )
 
   createAction(
