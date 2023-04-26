@@ -19,5 +19,5 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="flex-center" on:click={changeTheme}>
-  <Mute size={'small'} />
+  <Mute />
 </div>

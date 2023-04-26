@@ -140,6 +140,8 @@ export type PopupPosAlignment =
   | 'account'
   | 'account-portrait'
   | 'account-mobile'
+  | 'notify'
+  | 'notify-mobile'
   | 'full'
   | 'content'
   | 'middle'

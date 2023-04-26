@@ -3,7 +3,7 @@
   export let fill: string = 'currentColor'
 </script>
 
-<svg class="svg-{size}" {fill} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<svg class="svg-16px" {fill} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
   <g stroke={fill}>
     <path
       stroke-width={fill !== 'currentColor' ? 2 : 1}

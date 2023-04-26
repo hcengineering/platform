@@ -46,7 +46,7 @@
 {#if selected}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div bind:this={trigger} class="flex-center cursor-pointer" on:click={selectLanguage}>
-    <svg class="svg-small">
+    <svg class="svg-16px">
       <use href="#{selected.id}-flag" />
     </svg>
   </div>

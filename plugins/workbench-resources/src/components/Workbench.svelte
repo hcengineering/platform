@@ -64,7 +64,7 @@
   import Navigator from './Navigator.svelte'
   import SpaceView from './SpaceView.svelte'
   import Settings from './icons/Settings.svelte'
-  import TopMenu from './icons/TopMenu.svelte'
+  import Logo from './Logo.svelte'
 
   let contentPanel: HTMLElement
   let shownMenu: boolean = false
@@ -484,6 +484,8 @@
       : appsDirection === 'vertical' && $deviceInfo.isMobile
         ? 'account-mobile'
         : 'account'
+  let notifyPosition: PopupPosAlignment
+  $: notifyPosition = appsDirection === 'horizontal' ? 'notify-mobile' : 'notify'
 
   onMount(() => subscribeMobile(setTheme))
 
@@ -529,11 +531,13 @@
   <svg class="svg-mask">
     <clipPath id="notify-normal">
       <path
-        d="M0,0v52.5h52.5V0H0z M34,23.2c-3.2,0-5.8-2.6-5.8-5.8c0-3.2,2.6-5.8,5.8-5.8c3.2,0,5.8,2.6,5.8,5.8 C39.8,20.7,37.2,23.2,34,23.2z"
+        d="M19.4,21.8c-3,0-5.4-2.4-5.4-5.4s2.4-5.4,5.4-5.4c1.9,0,3.6,1,4.6,2.6V0H0v24h24v-4.8C23.1,20.7,21.4,21.8,19.4,21.8z"
       />
     </clipPath>
     <clipPath id="notify-small">
-      <path d="M0,0v45h45V0H0z M29.5,20c-2.8,0-5-2.2-5-5s2.2-5,5-5s5,2.2,5,5S32.3,20,29.5,20z" />
+      <path
+        d="M17,19.1c-2.6,0-4.7-2.1-4.7-4.7s2.1-4.7,4.7-4.7c1.7,0,3.2,0.9,4,2.3V0H0v21h21v-4.2C20.2,18.2,18.7,19.1,17,19.1z"
+      />
     </clipPath>
     <clipPath id="nub-bg">
       <path
@@ -549,46 +553,19 @@
   <div class="workbench-container" style:flex-direction={appsDirection === 'horizontal' ? 'column-reverse' : 'row'}>
     <div class="antiPanel-application {appsDirection}">
       <div
-        class="hamburger-container"
-        class:portrait={appsDirection === 'horizontal' && !appsMini}
-        class:landscape={appsDirection === 'vertical' && !appsMini}
-        class:mini={appsMini}
+        class="hamburger-container clear-mins"
+        class:portrait={appsDirection === 'horizontal'}
+        class:landscape={appsDirection === 'vertical'}
       >
-        <!-- <ActivityStatus status="active" /> -->
-        <AppItem
-          icon={TopMenu}
-          label={visibileNav ? workbench.string.HideMenu : workbench.string.ShowMenu}
-          selected={!visibileNav}
-          on:click={toggleNav}
-          mini={appsMini}
-        />
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div class="thinButton" class:shownMenu on:click={() => (shownMenu = !shownMenu)}>
-          <Settings size={'small'} />
+        <div class="logo-container clear-mins">
+          <Logo
+            bundle={'platform'}
+            label={visibileNav ? workbench.string.HideMenu : workbench.string.ShowMenu}
+            selected={!visibileNav}
+            on:click={toggleNav}
+          />
         </div>
-      </div>
-      <Applications
-        apps={getApps(apps)}
-        active={currentApplication?._id}
-        direction={appsDirection}
-        bind:shown={shownMenu}
-      />
-      <div class="info-box {appsDirection}" class:vertical-mobile={appsDirection === 'vertical' && appsMini}>
-        {#if $configurationStore.has(requestId)}
-          <AppItem
-            icon={request.icon.Requests}
-            label={request.string.Requests}
-            on:click={() => showPopup(request.component.RequestsPopup, {}, popupPosition)}
-            notify={hasRequests}
-          />
-        {/if}
-        {#if $configurationStore.has(calendarId)}
-          <AppItem
-            icon={calendar.icon.Reminder}
-            label={calendar.string.Reminders}
-            on:click={() => showPopup(calendar.component.RemindersPopup, {}, popupPosition)}
-          />
-        {/if}
+        <!-- <ActivityStatus status="active" /> -->
         <NavLink app={notificationId}>
           <AppItem
             icon={notification.icon.Notifications}
@@ -617,6 +594,35 @@
             notify={hasNotification}
           />
         </NavLink>
+        {#if $configurationStore.has(calendarId)}
+          <AppItem
+            icon={calendar.icon.Reminder}
+            label={calendar.string.Reminders}
+            on:click={() => showPopup(calendar.component.RemindersPopup, {}, notifyPosition)}
+          />
+        {/if}
+        {#if $configurationStore.has(requestId)}
+          <AppItem
+            icon={request.icon.Requests}
+            label={request.string.Requests}
+            on:click={() => showPopup(request.component.RequestsPopup, {}, notifyPosition)}
+            notify={hasRequests}
+          />
+        {/if}
+        <div class="divider" />
+        <Applications
+          apps={getApps(apps)}
+          active={currentApplication?._id}
+          direction={appsDirection}
+          bind:shown={shownMenu}
+        />
+      </div>
+      <div class="info-box {appsDirection}" class:vertical-mobile={appsDirection === 'vertical'} class:mini={appsMini}>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+        <div class="thinButton" class:shownMenu on:click={() => (shownMenu = !shownMenu)} tabindex="0">
+          <Settings size={appsMini ? 'small' : 'large'} />
+        </div>
         <div class="flex-center" class:mt-2={appsDirection === 'vertical'} class:ml-2={appsDirection === 'horizontal'}>
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
@@ -626,7 +632,7 @@
               showPopup(AccountPopup, {}, popupPosition)
             }}
           >
-            <Component is={contact.component.Avatar} props={{ avatar: employee.avatar, size: 'medium' }} />
+            <Component is={contact.component.Avatar} props={{ avatar: employee.avatar, size: 'small' }} />
           </div>
         </div>
       </div>
@@ -729,71 +735,44 @@
   .hamburger-container {
     display: flex;
     align-items: center;
-    flex-shrink: 0;
 
     &.portrait {
-      margin-left: 0.375rem;
+      margin-left: 1rem;
 
-      .thinButton {
+      .logo-container {
+        margin-right: 0.5rem;
+      }
+      .divider {
         margin-left: 0.5rem;
-        padding: 0.25rem;
-        height: 2.5rem;
+        width: 1px;
+        height: 2.25rem;
       }
     }
     &.landscape {
       flex-direction: column;
-      margin-top: 0.25rem;
+      margin-top: 1.25rem;
 
-      .thinButton {
-        margin-top: 0.5rem;
-        padding: 0.25rem;
-        width: 2.5rem;
+      .logo-container {
+        margin-bottom: 1.75rem;
+      }
+      .divider {
+        margin-top: 1.5rem;
+        width: 2.25rem;
+        height: 1px;
       }
     }
-    &.mini {
-      position: fixed;
-      top: 4px;
-      left: 4px;
+    // &.mini {
+    //   position: fixed;
+    //   top: 4px;
+    //   left: 4px;
+    // }
 
-      .thinButton {
-        margin-left: 0.25rem;
-        padding: 0;
-        width: 1.5rem;
-        height: 1.5rem;
-      }
-    }
-
-    .thinButton {
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .logo-container {
       flex-shrink: 0;
-      background-color: transparent;
-      border-radius: 0.25rem;
-      opacity: 0.2;
-      cursor: pointer;
-
-      transition-property: opacity, color, background-color;
-      transition-timing-function: var(--timing-main);
-      transition-duration: 0.1s;
-
-      &:hover {
-        color: var(--accent-color);
-        background-color: var(--accent-bg-color);
-        opacity: 0.9;
-      }
-
-      &.shownMenu {
-        color: var(--accent-color);
-        background-color: var(--button-bg-color);
-        opacity: 0.8;
-
-        &:hover {
-          color: var(--caption-color);
-          background-color: var(--button-bg-hover);
-          opacity: 1;
-        }
-      }
+    }
+    .divider {
+      flex-shrink: 0;
+      background-color: var(--theme-navpanel-icons-divider);
     }
   }
 
@@ -801,16 +780,51 @@
     display: flex;
     align-items: center;
 
+    .thinButton {
+      flex-shrink: 0;
+      padding: 0.25rem;
+      color: var(--theme-navpanel-icons-color);
+      border: 1px solid transparent;
+      border-radius: 0.25rem;
+      cursor: pointer;
+
+      &.shownMenu {
+        color: var(--theme-caption-color);
+        border-color: var(--theme-button-border);
+      }
+      &.shownMenu {
+        background-color: var(--theme-button-enabled);
+      }
+      &:hover {
+        color: var(--theme-caption-color);
+      }
+      &:focus {
+        box-shadow: 0 0 0 2px var(--primary-button-focused-border);
+      }
+    }
     &.vertical {
       flex-direction: column;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
 
       &-mobile {
         margin-bottom: 1rem;
       }
+      &:not(.mini) > *:not(:last-child) {
+        margin-bottom: 0.75rem;
+      }
+      &.mini > *:not(:last-child) {
+        margin-bottom: 0.25rem;
+      }
     }
     &.horizontal {
       margin-right: 1rem;
+
+      &:not(.mini) > *:not(:last-child) {
+        margin-right: 0.75rem;
+      }
+      &.mini > *:not(:last-child) {
+        margin-right: 0.25rem;
+      }
     }
   }
 

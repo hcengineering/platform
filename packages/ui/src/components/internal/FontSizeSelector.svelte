@@ -37,5 +37,5 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="flex-center" on:click={changeFontSize}>
-  <FontSize size={'small'} />
+  <FontSize />
 </div>

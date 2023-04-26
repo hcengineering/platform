@@ -3,7 +3,7 @@
   export let fill: string = 'currentColor'
 </script>
 
-<svg class="svg-{size}" {fill} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<svg class="svg-16px" {fill} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
   <g>
     <path
       d="M17,1.2H7c-1.2,0-2.2,1-2.2,2.2v17c0,1.2,1,2.2,2.2,2.2h10c1.2,0,2.2-1,2.2-2.2v-17C19.2,2.3,18.2,1.2,17,1.2z M17.8,20.5c0,0.4-0.3,0.8-0.8,0.8H7c-0.4,0-0.8-0.3-0.8-0.8v-17c0-0.4,0.3-0.8,0.8-0.8h10c0.4,0,0.8,0.3,0.8,0.8V20.5z"

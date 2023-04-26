@@ -25,12 +25,18 @@
   export let selected: boolean
   export let notify: boolean = false
   export let hidden: boolean = false
-  export let editable: boolean = false
+  export let editable: 'vertical' | 'horizontal' | false = false
 
   const dispatch = createEventDispatcher()
 </script>
 
-<button class="app" class:selected class:hidden class:editable id={'app-' + label} use:tooltip={{ label }}>
+<button
+  class="app{editable ? ' ' + editable : ''}"
+  class:selected
+  class:hidden
+  id={'app-' + label}
+  use:tooltip={{ label }}
+>
   <div class="flex-center icon-container" class:noty={notify}>
     <Icon {icon} size={'large'} />
   </div>
@@ -58,21 +64,24 @@
   .app {
     position: relative;
     padding: 0;
-    width: 3.25rem;
-    height: 3.25rem;
+    width: 2.5rem;
+    height: 2.5rem;
     background-color: transparent;
     border: 1px solid transparent;
-    border-radius: 0.5rem;
+    border-radius: 0.25rem;
     cursor: pointer;
     outline: none;
 
-    &.editable {
-      margin: 0.125rem;
+    &.horizontal {
+      margin: 0 0.125rem;
+    }
+    &.vertical {
+      margin: 0.125rem 0;
     }
     .icon-container {
-      width: 3.25rem;
-      height: 3.25rem;
-      color: var(--dark-color);
+      width: 1.5rem;
+      height: 1.5rem;
+      color: var(--theme-navpanel-icons-color);
 
       .normal-font &.noty {
         clip-path: url(#notify-normal);
@@ -83,40 +92,40 @@
     }
 
     &:hover .icon-container {
-      color: var(--caption-color);
+      color: var(--theme-caption-color);
     }
     &:focus {
-      border: 1px solid var(--primary-button-focused-border);
-      box-shadow: 0 0 0 3px var(--primary-button-outline);
+      box-shadow: 0 0 0 2px var(--primary-button-focused-border);
       .icon-container {
-        color: var(--caption-color);
+        color: var(--theme-caption-color);
       }
     }
 
     &.selected {
-      background-color: var(--menu-bg-select);
+      background-color: var(--theme-button-enabled);
+      border: 1px solid var(--theme-button-border);
       .icon-container {
-        color: var(--caption-color);
+        color: var(--theme-caption-color);
       }
     }
 
     &.hidden {
-      border: 1px dashed var(--dark-color);
+      border: 1px dashed var(--theme-dark-color);
       .icon-container {
-        color: var(--dark-color);
+        color: var(--theme-dark-color);
       }
       &:hover .icon-container {
-        color: var(--content-color);
+        color: var(--theme-content-color);
       }
     }
   }
 
   .marker {
     position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
-    width: 0.5rem;
-    height: 0.5rem;
+    top: 1.25rem;
+    right: 0.5rem;
+    width: 0.425rem;
+    height: 0.425rem;
     border-radius: 50%;
     background-color: var(--highlight-red);
   }
@@ -132,6 +141,7 @@
     transform: scale(1);
     opacity: 0.8;
     z-index: 10000;
+    filter: drop-shadow(0 0 1px #000);
     cursor: pointer;
 
     &:hover {

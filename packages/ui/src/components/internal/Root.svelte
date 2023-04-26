@@ -93,7 +93,7 @@
 
 <Theme>
   <div id="ui-root">
-    <div class="status-bar">
+    <div class="antiStatusBar">
       <div class="flex-row-center h-full content-color">
         <div
           class="status-info"
@@ -108,15 +108,15 @@
           <div class="flex-center widget cursor-pointer">
             <LangSelector />
           </div>
-          <div class="flex-center widget cursor-pointer mr-3">
+          <div class="flex-center widget cursor-pointer">
             <ThemeSelector />
           </div>
-          <div class="flex-center widget cursor-pointer mr-3">
+          <div class="flex-center widget cursor-pointer">
             <FontSizeSelector />
           </div>
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
-            class="flex-center widget mr-3"
+            class="flex-center widget"
             class:rotated={!isPortrait && isMobile}
             on:click={() => {
               alwaysMobile = !alwaysMobile
@@ -131,7 +131,7 @@
           </div>
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
-            class="flex-center widget cursor-pointer mr-3"
+            class="flex-center widget cursor-pointer"
             on:click={(evt) => {
               getMetadata(uiPlugin.metadata.ShowNetwork)?.(evt)
             }}
@@ -169,7 +169,7 @@
     height: 100%;
     // height: var(--app-height);
 
-    .status-bar {
+    .antiStatusBar {
       min-height: var(--status-bar-height);
       height: var(--status-bar-height);
       // min-width: 600px;
@@ -182,7 +182,7 @@
         text-align: center;
       }
       .clock {
-        margin: 0 1rem 0 24px;
+        margin: 0 16px 0 24px;
         font-weight: 500;
         user-select: none;
       }
@@ -197,6 +197,9 @@
           transform-origin: center center;
           transform: rotate(90deg);
         }
+      }
+      .widget + .widget {
+        margin-right: 12px;
       }
     }
 
