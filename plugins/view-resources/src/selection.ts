@@ -63,16 +63,16 @@ panelstore.subscribe((val) => {
 export function updateFocus (selection?: FocusSelection): void {
   focusStore.update((cur) => {
     const now = Date.now()
-    if (selection === undefined || now - ((cur as any).now ?? 0) >= 50) {
-      cur.focus = selection?.focus
-      cur.provider = selection?.provider
-      ;(cur as any).now = now
-      previewDocument.update((old) => {
-        if (old !== undefined) {
-          return selection?.focus
-        }
-      })
-    }
+
+    cur.focus = selection?.focus
+    cur.provider = selection?.provider
+    ;(cur as any).now = now
+    previewDocument.update((old) => {
+      if (old !== undefined) {
+        return selection?.focus
+      }
+    })
+
     return cur
   })
 

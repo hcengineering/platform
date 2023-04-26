@@ -44,7 +44,7 @@
           if (result.detail !== undefined) {
             if (viewlet?._id === result.detail.id) return
             viewlet = viewlets.find((vl) => vl._id === result.detail.id)
-            console.log('set viewlet by issue headed')
+
             if (viewlet) setActiveViewletId(viewlet._id)
           }
         }}

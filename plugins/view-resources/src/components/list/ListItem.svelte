@@ -18,7 +18,7 @@
   import { getClient, updateAttribute } from '@hcengineering/presentation'
   import { CheckBox, Component, deviceOptionsStore as deviceInfo, IconCircles, tooltip } from '@hcengineering/ui'
   import { AttributeModel } from '@hcengineering/view'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import { FixedColumn } from '../..'
   import view from '../../plugin'
 
@@ -82,6 +82,9 @@
       if (m.props?.listProps?.compression) noCompressed = i
     })
   }
+  onMount(() => {
+    dispatch('on-mount')
+  })
 </script>
 
 <div

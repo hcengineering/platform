@@ -78,7 +78,7 @@ export interface SpecialNavModel {
   label: IntlString
   icon?: Asset
   component: AnyComponent
-  componentProps?: Record<string, string>
+  componentProps?: Record<string, any>
   // If not top and bottom, position will be sorted alphabetically.
   position?: 'top' | 'bottom' | string // undefined == 'top
   visibleIf?: Resource<(spaces: Space[]) => Promise<boolean>>

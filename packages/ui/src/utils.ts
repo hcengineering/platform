@@ -106,20 +106,30 @@ export function tableToCSV (tableId: string, separator = ','): string {
  */
 export const networkStatus = writable<number>(0)
 
-let attractorMx = 0
-let attractorMy = 0
+let attractorMx: number | undefined
+let attractorMy: number | undefined
+
+let mousePos: { x: number, y: number } | undefined
+
+window.addEventListener('mousemove', (event) => {
+  mousePos = { x: event.clientX, y: event.clientY }
+})
 /**
  * perform mouse movement checks and call method if they was
  */
 export function mouseAttractor (op: () => void, diff = 5): (evt: MouseEvent) => void {
   return (evt: MouseEvent) => {
-    const dx = evt.clientX - attractorMx
-    const dy = evt.clientY - attractorMy
-    attractorMx = evt.clientX
-    attractorMy = evt.clientY
-
-    if (Math.sqrt(dx * dx + dy * dy) > diff) {
-      op()
+    if (mousePos !== undefined && attractorMy !== undefined && attractorMx !== undefined) {
+      const dx = mousePos.x - attractorMx
+      const dy = mousePos.y - attractorMy
+      if (Math.sqrt(dx * dx + dy * dy) > diff) {
+        attractorMx = evt.clientX
+        attractorMy = evt.clientY
+        op()
+      }
+    } else {
+      attractorMx = evt.clientX
+      attractorMy = evt.clientY
     }
   }
 }
