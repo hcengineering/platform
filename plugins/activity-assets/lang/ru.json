@@ -4,6 +4,7 @@
     "Edit": "Редактировать",
     "Edited": "отредактировал(а)",
     "DocCreated": "создал(а) {_class}",
+    "DocAdded": "добавил(а) {_class}",
     "DocDeleted": "удалил(а) {_class}",
     "Activity": "Активность",
     "Changed": "изменил(а)",

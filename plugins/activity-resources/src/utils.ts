@@ -109,7 +109,7 @@ export async function updateViewlet (
   let iconComponent: AnyComponent | undefined
 
   if (viewlet === undefined) {
-    ;({ viewlet, model } = await checkInlineViewlets(dtx, viewlet, client, model))
+    ;({ viewlet, model } = await checkInlineViewlets(dtx, viewlet, client, model, dtx.isOwnTx))
     if (model !== undefined) {
       // Check for State attribute
       for (const a of model) {
@@ -133,14 +133,15 @@ async function checkInlineViewlets (
   dtx: DisplayTx,
   viewlet: TxDisplayViewlet,
   client: TxOperations,
-  model: AttributeModel[]
+  model: AttributeModel[],
+  isOwn: boolean
 ): Promise<{ viewlet: TxDisplayViewlet, model: AttributeModel[] }> {
   if (dtx.collectionAttribute !== undefined && (dtx.txDocIds?.size ?? 0) > 1) {
     // Check if we have a class presenter we could have a pseudo viewlet based on class presenter.
     viewlet = await createPseudoViewlet(client, dtx, activity.string.CollectionUpdated, 'inline')
   } else if (dtx.tx._class === core.class.TxCreateDoc) {
     // Check if we have a class presenter we could have a pseudo viewlet based on class presenter.
-    viewlet = await createPseudoViewlet(client, dtx, activity.string.DocCreated)
+    viewlet = await createPseudoViewlet(client, dtx, isOwn ? activity.string.DocCreated : activity.string.DocAdded)
   } else if (dtx.tx._class === core.class.TxRemoveDoc) {
     viewlet = await createPseudoViewlet(client, dtx, activity.string.DocDeleted)
   } else if (dtx.tx._class === core.class.TxUpdateDoc || dtx.tx._class === core.class.TxMixin) {
