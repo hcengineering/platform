@@ -21,6 +21,7 @@ import setting from '@hcengineering/setting-resources/src/plugin'
 import { AnyComponent } from '@hcengineering/ui'
 import { Action, ActionCategory, ViewAction } from '@hcengineering/view'
 import { TemplateFieldFunc } from '@hcengineering/templates'
+import { NotificationGroup, NotificationType } from '@hcengineering/notification'
 
 export default mergeIds(settingId, setting, {
   activity: {
@@ -29,7 +30,9 @@ export default mergeIds(settingId, setting, {
   ids: {
     TxIntegrationDisable: '' as Ref<TxViewlet>,
     EnumSetting: '' as Ref<Doc>,
-    Configure: '' as Ref<Doc>
+    Configure: '' as Ref<Doc>,
+    SettingNotificationGroup: '' as Ref<NotificationGroup>,
+    IntegrationDisabledNotification: '' as Ref<NotificationType>
   },
   component: {
     EnumSetting: '' as AnyComponent,

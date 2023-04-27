@@ -17,13 +17,18 @@
 import { Builder } from '@hcengineering/model'
 
 import core from '@hcengineering/core'
-import serverCore from '@hcengineering/server-core'
+import serverNotification from '@hcengineering/server-notification'
 import serverSetting from '@hcengineering/server-setting'
+import setting from '@hcengineering/setting'
 
 export { serverSettingId } from '@hcengineering/server-setting'
 
 export function createModel (builder: Builder): void {
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverSetting.trigger.OnIntegrationDisable
+  builder.mixin(setting.class.Integration, core.class.Class, serverNotification.mixin.HTMLPresenter, {
+    presenter: serverSetting.function.IntegrationHTMLPresenter
+  })
+
+  builder.mixin(setting.class.Integration, core.class.Class, serverNotification.mixin.TextPresenter, {
+    presenter: serverSetting.function.IntegrationTextPresenter
   })
 }

@@ -13,10 +13,11 @@
 // limitations under the License.
 //
 
-import core, { DOMAIN_TX, TxOperations } from '@hcengineering/core'
+import core, { DOMAIN_TX, Doc, TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import setting from './plugin'
 import { DOMAIN_SETTING } from '.'
+import notification, { Collaborators } from '@hcengineering/notification'
 
 async function migrateIntegrationsSpace (client: MigrationClient): Promise<void> {
   const settings = await client.find(DOMAIN_SETTING, {
@@ -66,6 +67,37 @@ async function createSpace (tx: TxOperations): Promise<void> {
   }
 }
 
+async function fillMigrationCollaborator (tx: TxOperations): Promise<void> {
+  const h = tx.getHierarchy()
+  const settings = await tx.findAll(setting.class.Integration, {})
+  for (const value of settings) {
+    if (h.hasMixin(value, notification.mixin.Collaborators)) {
+      const collabs = h.as<Doc, Collaborators>(value, notification.mixin.Collaborators)
+      if (collabs.collaborators === undefined || !collabs.collaborators.includes(collabs.modifiedBy)) {
+        await tx.updateMixin<Doc, Collaborators>(
+          value._id,
+          value._class,
+          value.space,
+          notification.mixin.Collaborators,
+          {
+            collaborators: [collabs.createdBy ?? collabs.modifiedBy]
+          }
+        )
+      }
+    } else {
+      await tx.createMixin<Doc, Collaborators>(
+        value._id,
+        setting.class.Integration,
+        value.space,
+        notification.mixin.Collaborators,
+        {
+          collaborators: [value.createdBy ?? value.modifiedBy]
+        }
+      )
+    }
+  }
+}
+
 export const settingOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await migrateIntegrationsSpace(client)
@@ -73,5 +105,6 @@ export const settingOperation: MigrateOperation = {
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createSpace(tx)
+    await fillMigrationCollaborator(tx)
   }
 }
