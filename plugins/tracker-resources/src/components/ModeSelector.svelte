@@ -10,6 +10,7 @@
     return {
       id: c[0],
       labelIntl: c[1],
+      labelParams: c[2],
       action: () => onChange(c[0])
     }
   })
