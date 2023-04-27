@@ -14,13 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import { Comment } from '@hcengineering/chunter'
   import { AttachedData, Doc, generateId, Ref } from '@hcengineering/core'
   import { DraftController, draftsStore, getClient } from '@hcengineering/presentation'
-  import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import { createBacklinks } from '../backlinks'
   import chunter from '../plugin'
-  import { onDestroy } from 'svelte'
 
   export let object: Doc
   export let shouldSaveDraft: boolean = true
@@ -44,11 +43,13 @@
   let _id: Ref<Comment> = comment._id
   let inputContent: string = comment.message
 
-  if (shouldSaveDraft) {
-    draftController.watch(comment, empty)
+  function objectChange (object: CommentDraft, empty: any) {
+    if (shouldSaveDraft) {
+      draftController.save(object, empty)
+    }
   }
 
-  onDestroy(draftController.unsubscribe)
+  $: objectChange(comment, empty)
 
   function getDefault (): CommentDraft {
     return {

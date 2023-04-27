@@ -22,10 +22,10 @@
     Card,
     createQuery,
     DraftController,
-    draftsStore,
     getClient,
     KeyedAttribute,
     MessageBox,
+    MultipleDraftController,
     SpaceSelector
   } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
@@ -57,7 +57,7 @@
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import { activeComponent, activeSprint, generateIssueShortLink, getIssueId, updateIssueRelation } from '../issues'
   import tracker from '../plugin'
   import ComponentSelector from './ComponentSelector.svelte'
@@ -83,25 +83,26 @@
   export let parentIssue: Issue | undefined
   export let originalIssue: Issue | undefined
 
-  const draftController = new DraftController<any>(tracker.ids.IssueDraft)
+  const mDraftController = new MultipleDraftController(tracker.ids.IssueDraft)
+  const id: Ref<Issue> = generateId()
+  const draftController = new DraftController<IssueDraft>(
+    shouldSaveDraft ? mDraftController.getNext() ?? id : undefined,
+    tracker.ids.IssueDraft
+  )
 
-  let draft = shouldSaveDraft ? ($draftsStore[tracker.ids.IssueDraft] as IssueDraft) : undefined
-  $: draft = shouldSaveDraft ? ($draftsStore[tracker.ids.IssueDraft] as IssueDraft) : undefined
+  let draft = shouldSaveDraft ? draftController.get() : undefined
+
+  onDestroy(
+    draftController.subscribe((val) => {
+      draft = shouldSaveDraft ? val : undefined
+    })
+  )
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const parentQuery = createQuery()
   let _space = space
 
-  let object = draft ?? getDefaultObject()
-
-  function draftChange (draft: IssueDraft | undefined) {
-    if (draft === undefined) {
-      object = getDefaultObject()
-    } else {
-      object = draft
-      descriptionBox?.setContent(object.description)
-    }
-  }
+  let object = draft ?? getDefaultObject(id)
 
   function objectChange (object: IssueDraft, empty: any) {
     if (shouldSaveDraft) {
@@ -110,7 +111,6 @@
   }
 
   $: objectChange(object, empty)
-  $: draftChange(draft)
 
   $: if (object.parentIssue) {
     parentQuery.query(
@@ -127,9 +127,9 @@
     parentIssue = undefined
   }
 
-  function getDefaultObject (ignoreOriginal = false): IssueDraft {
+  function getDefaultObject (id: Ref<Issue> | undefined = undefined, ignoreOriginal = false): IssueDraft {
     const base: IssueDraft = {
-      _id: generateId(),
+      _id: id ?? generateId(),
       title: '',
       description: '',
       priority,
@@ -199,7 +199,7 @@
   function resetObject (): void {
     templateId = undefined
     template = undefined
-    object = getDefaultObject(true)
+    object = getDefaultObject(undefined, true)
     fillDefaults(hierarchy, object, tracker.class.Issue)
   }
 
@@ -502,7 +502,7 @@
 
   async function showConfirmationDialog () {
     draftController.save(object, empty)
-    const isFormEmpty = $draftsStore[tracker.ids.IssueDraft] === undefined
+    const isFormEmpty = draft === undefined
 
     if (isFormEmpty) {
       dispatch('close')
@@ -625,6 +625,7 @@
   <SubIssues
     bind:this={subIssuesComponent}
     projectId={_space}
+    parendIssueId={object._id}
     project={currentProject}
     sprint={object.sprint}
     component={object.component}
@@ -638,7 +639,7 @@
         value={object}
         kind={'secondary'}
         size={'large'}
-        defaultIssueStatus={draft ? undefined : currentProject?.defaultIssueStatus}
+        defaultIssueStatus={currentProject?.defaultIssueStatus}
         shouldShowLabel={true}
         on:refocus={() => {
           manager.setFocusPos(3)

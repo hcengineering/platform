@@ -13,12 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { draftsStore } from '@hcengineering/presentation'
-  import { Button, showPopup, IconAdd } from '@hcengineering/ui'
+  import { MultipleDraftController } from '@hcengineering/presentation'
+  import { Button, IconAdd, showPopup } from '@hcengineering/ui'
+  import { onDestroy } from 'svelte'
   import recruit from '../plugin'
   import CreateCandidate from './CreateCandidate.svelte'
 
-  $: draftExists = $draftsStore[recruit.mixin.Candidate]
+  let draftExists = false
+
+  const draftController = new MultipleDraftController(recruit.mixin.Candidate)
+  onDestroy(
+    draftController.hasNext((res) => {
+      draftExists = res
+    })
+  )
 
   async function newCandidate (): Promise<void> {
     showPopup(CreateCandidate, { shouldSaveDraft: true }, 'top')

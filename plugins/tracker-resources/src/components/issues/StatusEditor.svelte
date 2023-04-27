@@ -83,15 +83,15 @@
     value: ValueType,
     defaultStatus: Ref<IssueStatus> | undefined
   ): WithLookup<IssueStatus> | undefined {
-    if (defaultStatus !== undefined) {
-      defaultIssueStatus = undefined
-      changeStatus(defaultStatus, false)
-      return statuses?.find((status) => status._id === defaultStatus)
+    if (value.status !== undefined) {
+      const current = statuses?.find((status) => status._id === value.status)
+      if (current) return current
     }
-    const current = statuses?.find((status) => status._id === value.status)
-    if (current) return current
-    changeStatus(statuses?.[0]?._id, false)
-    return statuses?.[0]
+    if (defaultIssueStatus !== undefined) {
+      const res = statuses?.find((status) => status._id === defaultStatus)
+      changeStatus(res?._id, false)
+      return res
+    }
   }
 
   $: selectedStatus = getSelectedStatus(statuses, value, defaultIssueStatus)
