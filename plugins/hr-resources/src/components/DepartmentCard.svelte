@@ -99,7 +99,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
-  class="w-full mt-2 mb-2 container flex"
+  class="w-full mt-2 mb-4 container flex clear-mins flex-no-shrink"
   class:cursor-pointer={currentDescendants.length}
   on:click|stopPropagation={edit}
   on:contextmenu|preventDefault={showMenu}
@@ -154,7 +154,7 @@
   </div>
 </div>
 {#if currentDescendants.length > 0}
-  <div class="flex-col ml-8">
+  <div class="flex-col ml-8 clear-mins flex-no-shrink">
     {#each currentDescendants as nested}
       <DepartmentCard value={nested} {descendants} {allEmployees} bind:dragPerson bind:dragOver />
     {/each}
