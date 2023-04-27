@@ -199,6 +199,7 @@ export default plugin(serverNotificationId, {
     OnAttributeUpdate: '' as Resource<TriggerFunc>
   },
   function: {
-    IsUserInFieldValue: '' as TypeMatchFunc
+    IsUserInFieldValue: '' as TypeMatchFunc,
+    IsUserEmployeeInFieldValue: '' as TypeMatchFunc
   }
 })

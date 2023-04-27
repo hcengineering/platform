@@ -407,11 +407,12 @@ function isTypeMatched (
   tx: TxCUD<Doc>,
   extractedTx: TxCUD<Doc>
 ): boolean {
-  const targetClass = control.hierarchy.getBaseClass(type.objectClass)
+  const h = control.hierarchy
+  const targetClass = h.getBaseClass(type.objectClass)
   if (!type.txClasses.includes(extractedTx._class)) return false
-  if (!control.hierarchy.isDerived(extractedTx.objectClass, targetClass)) return false
+  if (!control.hierarchy.isDerived(h.getBaseClass(extractedTx.objectClass), targetClass)) return false
   if (tx._class === core.class.TxCollectionCUD && type.attachedToClass !== undefined) {
-    if (!control.hierarchy.isDerived(tx.objectClass, type.attachedToClass)) return false
+    if (!control.hierarchy.isDerived(h.getBaseClass(tx.objectClass), h.getBaseClass(type.attachedToClass))) return false
   }
   if (type.field !== undefined) {
     if (extractedTx._class === core.class.TxUpdateDoc) {
@@ -782,6 +783,30 @@ export async function isUserInFieldValue (
 /**
  * @public
  */
+export async function isUserEmployeeInFieldValue (
+  tx: Tx,
+  doc: Doc,
+  user: Ref<Account>,
+  type: NotificationType,
+  control: TriggerControl
+): Promise<boolean> {
+  if (type.field === undefined) return false
+  const value = (doc as any)[type.field]
+  if (value === undefined) return false
+  const employee = (
+    await control.modelDb.findAll(contact.class.EmployeeAccount, { _id: user as Ref<EmployeeAccount> })
+  )[0]
+  if (employee === undefined) return false
+  if (Array.isArray(value)) {
+    return value.includes(employee.employee)
+  } else {
+    return value === employee.employee
+  }
+}
+
+/**
+ * @public
+ */
 export async function OnAttributeCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   if (tx._class !== core.class.TxCreateDoc) return []
   const ctx = tx as TxCreateDoc<AnyAttribute>
@@ -797,7 +822,9 @@ export async function OnAttributeCreate (tx: Tx, control: TriggerControl): Promi
     ? [control.hierarchy.isMixin(attribute.attributeOf) ? core.class.TxMixin : core.class.TxUpdateDoc]
     : [core.class.TxCreateDoc, core.class.TxRemoveDoc]
   const data: Data<NotificationType> = {
+    attribute: attribute._id,
     group: group._id,
+    field: attribute.name,
     generated: true,
     objectClass,
     txClasses,
@@ -846,6 +873,7 @@ export default async () => ({
     OnAttributeUpdate
   },
   function: {
-    IsUserInFieldValue: isUserInFieldValue
+    IsUserInFieldValue: isUserInFieldValue,
+    IsUserEmployeeInFieldValue: isUserEmployeeInFieldValue
   }
 })

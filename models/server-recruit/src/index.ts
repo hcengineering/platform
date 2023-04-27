@@ -50,7 +50,7 @@ export function createModel (builder: Builder): void {
     notification.class.NotificationType,
     serverNotification.mixin.TypeMatch,
     {
-      func: serverNotification.function.IsUserInFieldValue
+      func: serverNotification.function.IsUserEmployeeInFieldValue
     }
   )
 }
