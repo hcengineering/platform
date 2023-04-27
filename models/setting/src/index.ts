@@ -482,4 +482,38 @@ export function createModel (builder: Builder): void {
     },
     setting.templateField.OwnerPosition
   )
+
+  builder.createDoc(
+    notification.class.NotificationGroup,
+    core.space.Model,
+    {
+      label: setting.string.Setting,
+      icon: setting.icon.Setting
+    },
+    setting.ids.SettingNotificationGroup
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: false,
+      generated: false,
+      label: setting.string.IntegrationDisabled,
+      group: setting.ids.SettingNotificationGroup,
+      field: 'disabled',
+      txClasses: [core.class.TxUpdateDoc],
+      objectClass: setting.class.Integration,
+      templates: {
+        textTemplate: 'Integration with {doc} was disabled',
+        htmlTemplate: '<p>Integration with {doc} was disabled</p>',
+        subjectTemplate: 'Integration with {doc} was disabled'
+      },
+      providers: {
+        [notification.providers.PlatformNotification]: true,
+        [notification.providers.EmailNotification]: true
+      }
+    },
+    setting.ids.IntegrationDisabledNotification
+  )
 }

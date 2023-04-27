@@ -15,7 +15,7 @@
 
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import type { TriggerFunc } from '@hcengineering/server-core'
+import { Presenter } from '@hcengineering/server-notification'
 
 /**
  * @public
@@ -26,7 +26,8 @@ export const serverSettingId = 'server-setting' as Plugin
  * @public
  */
 export default plugin(serverSettingId, {
-  trigger: {
-    OnIntegrationDisable: '' as Resource<TriggerFunc>
+  function: {
+    IntegrationHTMLPresenter: '' as Resource<Presenter>,
+    IntegrationTextPresenter: '' as Resource<Presenter>
   }
 })
