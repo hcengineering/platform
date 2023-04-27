@@ -250,9 +250,9 @@
 <style lang="scss">
   .states {
     padding: 0.5rem 1rem;
-    color: var(--caption-color);
-    background-color: var(--button-bg-color);
-    border: 1px solid var(--button-border-color);
+    color: var(--theme-caption-color);
+    background-color: var(--theme-button-enabled);
+    border: 1px solid var(--theme-button-border);
     border-radius: 0.5rem;
     user-select: none;
 

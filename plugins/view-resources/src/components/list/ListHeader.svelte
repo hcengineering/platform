@@ -55,11 +55,11 @@
 
   $: lth = $deviceInfo.theme === 'theme-light'
 
-  let accentColor = { h: 0, s: 0, l: 65 }
+  let accentColor = { h: 0, s: 50, l: 50 }
 
-  $: headerBGColor = !lth
-    ? hslToRgb(accentColor.h, accentColor.s, accentColor.l / 1.5 + (mouseOver ? -20 : 0))
-    : hslToRgb(accentColor.h, accentColor.s, accentColor.l * 1.5 + (mouseOver ? -20 : 0))
+  $: headerBGColor = !lth ? hslToRgb(accentColor.h, 20, 30) : hslToRgb(accentColor.h, 30, 85)
+
+  $: headerTextColor = !lth ? { r: 255, g: 255, b: 255 } : hslToRgb(accentColor.h, 60, 30)
 
   const handleCreateItem = (event: MouseEvent) => {
     if (createItemDialog === undefined) return
@@ -102,7 +102,12 @@
           <Label label={view.string.NoGrouping} />
         </span>
       {:else if headerComponent}
-        <span class="clear-mins">
+        <span
+          class="clear-mins"
+          style:color={lth
+            ? `rgb(${headerTextColor.r}, ${headerTextColor.g}, ${headerTextColor.b})`
+            : 'var(--theme-caption-color)'}
+        >
           <svelte:component
             this={headerComponent.presenter}
             value={category}
@@ -173,37 +178,48 @@
       transition: transform 0.15s ease-in-out;
     }
     &:not(.gradient)::before {
-      background: rgba(var(--list-header-rgb-color), 0.15);
+      background: rgba(var(--list-header-rgb-color), 1);
     }
     &.gradient::before {
       background: linear-gradient(
         90deg,
-        rgba(var(--list-header-rgb-color), 0.15),
-        rgba(var(--list-header-rgb-color), 0.05)
+        rgba(var(--list-header-rgb-color), 0.5),
+        rgba(var(--list-header-rgb-color), 0.3),
+        rgba(var(--list-header-rgb-color), 0.1)
       );
     }
-    &::before {
-      box-sizing: border-box;
+    &::before,
+    &::after {
       position: absolute;
       content: '';
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
+      border-radius: 0.25rem 0.25rem 0 0;
+      pointer-events: none;
+    }
+    &::after {
       border: 1px solid var(--theme-list-border-color);
       border-bottom-color: transparent;
-      border-radius: 0.25rem 0.25rem 0 0;
+    }
+    &::before {
       z-index: -1;
     }
 
     /* Global styles in components.scss and there is an influence from the Scroller component */
     &.collapsed {
+      border-radius: 0 0 0.25rem 0.25rem;
+
       .chevron {
         transform: rotate(0deg);
       }
-      &::before {
-        border-bottom-color: var(--theme-list-border-color);
+      &::before,
+      &::after {
         border-radius: 0.25rem;
+      }
+      &::after {
+        border-bottom-color: var(--theme-list-border-color);
       }
     }
     &.subLevel {
@@ -215,7 +231,8 @@
       border-bottom: 1px solid var(--theme-list-subheader-divider);
       // here should be top 3rem for sticky, but with ExpandCollapse it gives strange behavior
 
-      &::before {
+      &::before,
+      &::after {
         content: none;
       }
       &.collapsed.lastCat {

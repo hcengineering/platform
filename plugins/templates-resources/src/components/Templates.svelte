@@ -187,7 +187,7 @@
       </div>
     </div>
 
-    <div class="ac-column max background-accent-bg-color template-container">
+    <div class="ac-column max template-container">
       {#if newTemplate}
         <div class="flex-between mr-4">
           <span class="trans-title mb-3">
@@ -266,12 +266,13 @@
 <style lang="scss">
   .template-container {
     padding: 2.25rem 2.5rem 1.75rem;
+    background-color: var(--theme-panel-color);
   }
   .separator {
     flex-shrink: 0;
     margin: 1.5rem 0;
     height: 1px;
-    background-color: var(--divider-color);
+    background-color: var(--theme-divider-color);
   }
   .text {
     flex-grow: 1;

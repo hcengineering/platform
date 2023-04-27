@@ -48,6 +48,7 @@
   overflow: hidden;
   
   &.filled { background-color: var(--theme-bg-color); }
+  &.filledNav { background-color: var(--theme-navpanel-color); }
   &.border-left { border-left: 1px solid var(--theme-divider-color); }
   &.border-right { border-right: 1px solid var(--theme-divider-color); }
 }

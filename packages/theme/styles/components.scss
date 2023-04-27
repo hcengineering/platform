@@ -18,6 +18,8 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
+  min-width: 0;
 
   .ac-header {
     padding: 0.5rem 2.25rem;
@@ -216,7 +218,7 @@
     flex-direction: column;
     align-items: flex-start;
     height: 100%;
-    background-color: var(--body-color);
+    background-color: var(--theme-bg-color);
 
     &.columns {
       flex-direction: row;
@@ -242,7 +244,7 @@
       min-width: 17rem;
       max-width: 30rem;
       height: 100%;
-      border-right: 1px solid var(--divider-color);
+      border-right: 1px solid var(--theme-divider-color);
 
       &.max {
         flex-grow: 1;
@@ -262,11 +264,11 @@
         cursor: pointer;
 
         &:hover {
-          background-color: var(--button-bg-color);
+          background-color: var(--theme-button-hovered);
         }
         &.selected {
-          background-color: var(--button-bg-hover);
-          border-color: var(--button-border-color);
+          background-color: var(--theme-button-enabled);
+          border-color: var(--theme-button-border);
           cursor: auto;
         }
       }
@@ -687,15 +689,18 @@
 
 /* ListView - global style */
 .list-container .category-container .categoryHeader.subLevel.closed {
-  border-bottom: 1px solid var(--theme-list-border-color);
   border-radius: 0 0 0.25rem 0.25rem;
+  border-bottom: 1px solid var(--theme-list-border-color);
 }
 .list-container .category-container .categoryHeader.closed:not(.subLevel) {
-  border-radius: 0 0 .25rem .25rem;
+  border-radius: 0 0 0.25rem 0.25rem;
   
-  &::before {
-    border-bottom-color: var(--theme-list-border-color);
+  &::before,
+  &::after {
     border-radius: 0.25rem;
+  }
+  &::after {
+    border-bottom-color: var(--theme-list-border-color);
   }
 }
 .list-container .category-container .listGrid {

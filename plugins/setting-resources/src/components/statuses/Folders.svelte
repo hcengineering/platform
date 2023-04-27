@@ -69,17 +69,16 @@
   }
   .item {
     padding: 1.25rem 1rem 1.25rem 1.25rem;
-    background-color: var(--board-card-bg-color);
-    border: 1px solid var(--button-border-color);
+    background-color: var(--theme-button-enabled);
+    border: 1px solid var(--theme-button-border);
     border-radius: 0.75rem;
     cursor: pointer;
 
     &:hover {
-      background-color: var(--board-card-bg-hover);
+      background-color: var(--theme-button-hovered);
     }
     &.selected {
-      background-color: var(--button-bg-hover);
-      border-color: var(--button-border-hover);
+      background-color: var(--theme-button-pressed);
       cursor: auto;
     }
   }
