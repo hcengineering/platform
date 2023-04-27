@@ -674,6 +674,7 @@
         width={'min-content'}
         on:change={({ detail }) => {
           object.assignee = detail
+          manager.setFocusPos(5)
         }}
       />
     </div>

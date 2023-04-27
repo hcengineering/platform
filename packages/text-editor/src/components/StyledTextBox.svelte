@@ -107,7 +107,9 @@
     isFocus: () => focused
   })
   const updateFocus = () => {
-    focusManager?.setFocus(idx)
+    if (focusIndex !== -1) {
+      focusManager?.setFocus(idx)
+    }
   }
 </script>
 
