@@ -301,6 +301,7 @@ class ActivityImpl implements Activity {
     result.collectionAttribute = collectionAttribute
 
     result.doc = firstTx?.doc ?? result.doc
+    result.prevDoc = this.hierarchy.clone(result.doc)
 
     firstTx = firstTx ?? result
     parents.set(tx.objectId, firstTx)
@@ -351,7 +352,7 @@ class ActivityImpl implements Activity {
       results.push(result)
       return results
     }
-    const newResult = results.filter((prevTx) => {
+    const newResults = results.filter((prevTx) => {
       const prevUpdate: any = getCombineOpFromTx(prevTx)
       if (this.isInitTx(prevTx, result)) {
         result = prevTx
@@ -379,8 +380,9 @@ class ActivityImpl implements Activity {
 
       return true
     })
-    newResult.push(result)
-    return newResult
+
+    newResults.push(result)
+    return newResults
   }
 
   isInitTx (prevTx: DisplayTx, result: DisplayTx): boolean {

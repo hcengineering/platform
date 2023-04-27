@@ -84,6 +84,8 @@ export interface DisplayTx {
 
   // Document in case it is required.
   doc?: Doc
+  // Previous document in case it is required.
+  prevDoc?: Doc
 
   updated: boolean
   mixin: boolean

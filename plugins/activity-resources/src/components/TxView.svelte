@@ -37,7 +37,7 @@
   import { Menu, ObjectPresenter } from '@hcengineering/view-resources'
   import { ActivityKey } from '../activity'
   import activity from '../plugin'
-  import { getValue, TxDisplayViewlet, updateViewlet } from '../utils'
+  import { getPrevValue, getValue, TxDisplayViewlet, updateViewlet } from '../utils'
   import TxViewTx from './TxViewTx.svelte'
   import Edit from './icons/Edit.svelte'
   import { tick } from 'svelte'
@@ -49,8 +49,6 @@
   export let isNextNew: boolean = false
   export let contentHidden: boolean = false
   export let shouldScroll: boolean = false
-  export let compareValue: string | undefined = undefined
-  export let ignoreShowMore: boolean = false
   // export let showDocument = false
 
   let ptx: DisplayTx | undefined
@@ -354,11 +352,18 @@
       {:else if hasMessageType && model.length > 0 && (tx.updateTx || tx.mixinTx)}
         {#await getValue(client, model[0], tx) then value}
           <div class="activity-content content" class:indent={isAttached} class:contentHidden>
-            <ShowMore ignore={edit || ignoreShowMore}>
+            <ShowMore ignore={true}>
               {#if value.isObjectSet}
                 <ObjectPresenter value={value.set} inline />
               {:else if showDiff}
-                <svelte:component this={model[0].presenter} value={value.set} inline {compareValue} showOnlyDiff />
+                <svelte:component
+                  this={model[0].presenter}
+                  value={value.set}
+                  inline
+                  prevValue
+                  compareValue={getPrevValue(client, model[0], tx)}
+                  showOnlyDiff
+                />
               {/if}
             </ShowMore>
           </div>

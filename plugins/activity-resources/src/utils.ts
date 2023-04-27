@@ -2,8 +2,11 @@ import type { DisplayTx, TxViewlet } from '@hcengineering/activity'
 import core, {
   AttachedDoc,
   Class,
+  Client,
   Collection,
   Doc,
+  getObjectValue,
+  Obj,
   Ref,
   TxCollectionCUD,
   TxCreateDoc,
@@ -13,12 +16,13 @@ import core, {
   TxProcessor,
   TxUpdateDoc
 } from '@hcengineering/core'
-import { Asset, IntlString, translate } from '@hcengineering/platform'
-import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
-import { AttributeModel } from '@hcengineering/view'
-import { buildModel, getObjectPresenter } from '@hcengineering/view-resources'
+import { Asset, IntlString, getResource, translate } from '@hcengineering/platform'
+import { AnyComponent, AnySvelteComponent, ErrorPresenter } from '@hcengineering/ui'
+import view, { AttributeModel, BuildModelKey, BuildModelOptions } from '@hcengineering/view'
+import { getObjectPresenter } from '@hcengineering/view-resources'
 import { ActivityKey, activityKey } from './activity'
 import activity from './plugin'
+import { getAttributePresenterClass } from '@hcengineering/presentation'
 
 const valueTypes: ReadonlyArray<Ref<Class<Doc>>> = [
   core.class.TypeString,
@@ -148,6 +152,77 @@ async function checkInlineViewlets (
     model = await createUpdateModel(dtx, client, model)
   }
   return { viewlet, model }
+}
+
+async function getAttributePresenter (
+  client: Client,
+  _class: Ref<Class<Obj>>,
+  key: string,
+  preserveKey: BuildModelKey
+): Promise<AttributeModel> {
+  const hierarchy = client.getHierarchy()
+  const attribute = hierarchy.getAttribute(_class, key)
+  const presenterClass = getAttributePresenterClass(hierarchy, attribute)
+  const isCollectionAttr = presenterClass.category === 'collection'
+  const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : view.mixin.ActivityAttributePresenter
+  let presenterMixin = hierarchy.classHierarchyMixin(presenterClass.attrClass, mixin)
+  if (presenterMixin?.presenter === undefined && mixin === view.mixin.ActivityAttributePresenter) {
+    presenterMixin = hierarchy.classHierarchyMixin(presenterClass.attrClass, view.mixin.AttributePresenter)
+    if (presenterMixin?.presenter === undefined) {
+      throw new Error('attribute presenter not found for ' + JSON.stringify(preserveKey))
+    }
+  } else if (presenterMixin?.presenter === undefined) {
+    throw new Error('attribute presenter not found for ' + JSON.stringify(preserveKey))
+  }
+  const resultKey = preserveKey.sortingKey ?? preserveKey.key
+  const sortingKey = Array.isArray(resultKey)
+    ? resultKey
+    : attribute.type._class === core.class.ArrOf
+      ? resultKey + '.length'
+      : resultKey
+  const presenter = await getResource(presenterMixin.presenter)
+
+  return {
+    key: preserveKey.key,
+    sortingKey,
+    _class: presenterClass.attrClass,
+    label: preserveKey.label ?? attribute.shortLabel ?? attribute.label,
+    presenter,
+    props: preserveKey.props,
+    icon: presenterMixin.icon,
+    attribute,
+    collectionAttr: isCollectionAttr,
+    isLookup: false
+  }
+}
+
+async function buildModel (options: BuildModelOptions): Promise<AttributeModel[]> {
+  // eslint-disable-next-line array-callback-return
+  const model = options.keys
+    .map((key) => (typeof key === 'string' ? { key } : key))
+    .map(async (key) => {
+      try {
+        return await getAttributePresenter(options.client, options._class, key.key, key)
+      } catch (err: any) {
+        if (options.ignoreMissing ?? false) {
+          return undefined
+        }
+        const stringKey = key.label ?? key.key
+        console.error('Failed to find presenter for', key, err)
+        const errorPresenter: AttributeModel = {
+          key: '',
+          sortingKey: '',
+          presenter: ErrorPresenter,
+          label: stringKey as IntlString,
+          _class: core.class.TypeString,
+          props: { error: err },
+          collectionAttr: false,
+          isLookup: false
+        }
+        return errorPresenter
+      }
+    })
+  return (await Promise.all(model)).filter((a) => a !== undefined) as AttributeModel[]
 }
 
 async function createUpdateModel (
@@ -299,6 +374,13 @@ export async function getValue (client: TxOperations, m: AttributeModel, tx: Dis
     value.isObjectSet = res[1]
   }
   return value
+}
+
+export function getPrevValue (client: TxOperations, m: AttributeModel, tx: DisplayTx): any {
+  if (tx.prevDoc !== undefined) {
+    return getObjectValue(m.key, tx.prevDoc)
+  }
+  return undefined
 }
 
 export function filterCollectionTxes (txes: DisplayTx[]): DisplayTx[] {
