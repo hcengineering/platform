@@ -17,6 +17,7 @@ import { generateId } from '@hcengineering/core'
 import type { Metadata } from '@hcengineering/platform'
 import { setMetadata } from '@hcengineering/platform'
 import { writable } from 'svelte/store'
+import autolinker from 'autolinker'
 import { Notification, NotificationPosition, NotificationSeverity, notificationsStore } from '.'
 import { AnyComponent, AnySvelteComponent } from './types'
 
@@ -127,4 +128,25 @@ export function mouseAttractor (op: () => void, diff = 2): (evt: MouseEvent) => 
       attractorMy = evt.screenY
     }
   }
+}
+
+/**
+ * Replaces URLs with Links in a given block of text/HTML
+ *
+ * @example
+ * replaceURLs("Check out google.com")
+ * returns: "Check out <a href='http://google.com' target='_blank' rel='noopener noreferrer'>google.com</a>"
+ *
+ * @export
+ * @param {string} text
+ * @returns {string} string with replaced URLs
+ */
+export function replaceURLs (text: string): string {
+  return autolinker.link(text, {
+    urls: true,
+    phone: false,
+    email: false,
+    sanitizeHtml: true,
+    stripPrefix: false
+  })
 }

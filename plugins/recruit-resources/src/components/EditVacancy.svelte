@@ -21,7 +21,7 @@
   import { Vacancy } from '@hcengineering/recruit'
   import { FullDescriptionBox } from '@hcengineering/text-editor'
   import tracker from '@hcengineering/tracker'
-  import { Button, Component, EditBox, Grid, IconMixin, IconMoreH, showPopup } from '@hcengineering/ui'
+  import { Button, Component, EditBox, Grid, IconMixin, IconMoreH, LinkWrapper, showPopup } from '@hcengineering/ui'
   import { ContextMenu, DocAttributeBar } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
@@ -113,13 +113,11 @@
   >
     <svelte:fragment slot="subtitle">
       {#if object.description}
-        {#if object.description.trim().startsWith('http://') || object.description.trim().startsWith('https://')}
-          <a href={object.description} class="whitespace-nowrap" target="_blank" rel="noreferrer noopener">
-            {object.description}
-          </a>
-        {:else}
-          {object.description}
-        {/if}
+        <div class="flex">
+          <span class="overflow-label" title={object.description}>
+            <LinkWrapper text={object.description} />
+          </span>
+        </div>
       {/if}
     </svelte:fragment>
     <svelte:fragment slot="attributes" let:direction={dir}>

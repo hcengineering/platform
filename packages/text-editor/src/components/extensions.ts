@@ -56,7 +56,10 @@ export const defaultExtensions = [
   Heading.configure({
     levels: headingLevels
   }),
-  Link.configure({ openOnClick: false }),
+  Link.configure({
+    openOnClick: true,
+    HTMLAttributes: { class: 'cursor-pointer', rel: 'noopener noreferrer', target: '_blank' }
+  }),
   ...tableExtensions,
   ...taskListExtensions
 ]
