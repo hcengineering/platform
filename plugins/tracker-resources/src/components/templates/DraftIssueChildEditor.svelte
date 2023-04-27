@@ -15,9 +15,9 @@
 <script lang="ts">
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import { Account, Doc, generateId, Ref } from '@hcengineering/core'
-  import presentation, { DraftController, draftsStore, getClient, KeyedAttribute } from '@hcengineering/presentation'
+  import presentation, { DraftController, getClient, KeyedAttribute } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
-  import { Component as ComponentType, IssueDraft, IssuePriority, Project, Sprint } from '@hcengineering/tracker'
+  import { Component as ComponentType, Issue, IssueDraft, IssuePriority, Project, Sprint } from '@hcengineering/tracker'
   import { Button, Component, EditBox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
@@ -25,7 +25,9 @@
   import PriorityEditor from '../issues/PriorityEditor.svelte'
   import StatusEditor from '../issues/StatusEditor.svelte'
   import EstimationEditor from './EstimationEditor.svelte'
+  import { onDestroy } from 'svelte'
 
+  export let parendIssueId: Ref<Issue>
   export let project: Project
   export let sprint: Ref<Sprint> | null = null
   export let component: Ref<ComponentType> | null = null
@@ -35,11 +37,13 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const draftController = new DraftController<IssueDraft>(tracker.ids.IssueDraftChild)
-  const draft = shouldSaveDraft ? ($draftsStore[tracker.ids.IssueDraftChild] as IssueDraft) : undefined
+  const draftController = new DraftController<IssueDraft>(`${parendIssueId}_subIssue`)
+  const draft = shouldSaveDraft ? draftController.get() : undefined
   let object = childIssue !== undefined ? childIssue : draft ?? getIssueDefaults()
   let thisRef: HTMLDivElement
   let focusIssueTitle: () => void
+
+  onDestroy(() => draftController.destroy())
 
   const key: KeyedAttribute = {
     key: 'labels',
@@ -47,16 +51,6 @@
   }
 
   let descriptionBox: AttachmentStyledBox
-
-  function draftChange (draft: IssueDraft | undefined) {
-    if (draft === undefined) {
-      object = childIssue !== undefined ? childIssue : getIssueDefaults()
-    } else {
-      object = draft
-      descriptionBox?.setContent(object.description)
-    }
-  }
-  $: shouldSaveDraft && draftChange($draftsStore[tracker.ids.IssueDraftChild])
 
   function getIssueDefaults (): IssueDraft {
     return {

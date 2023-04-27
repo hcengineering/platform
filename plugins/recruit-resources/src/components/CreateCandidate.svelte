@@ -35,11 +35,11 @@
     Card,
     createQuery,
     DraftController,
-    draftsStore,
     getClient,
     InlineAttributeBar,
     KeyedAttribute,
     MessageBox,
+    MultipleDraftController,
     PDFViewer
   } from '@hcengineering/presentation'
   import type { Candidate, CandidateDraft } from '@hcengineering/recruit'
@@ -53,23 +53,28 @@
     IconFile as FileIcon,
     FocusHandler,
     getColorNumberByText,
+    IconAttachment,
     IconInfo,
     Label,
     showPopup,
-    Spinner,
-    IconAttachment
+    Spinner
   } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import recruit from '../plugin'
   import YesNo from './YesNo.svelte'
 
   export let shouldSaveDraft: boolean = false
 
-  const draftController = new DraftController<CandidateDraft>(recruit.mixin.Candidate)
+  const mDraftController = new MultipleDraftController(recruit.mixin.Candidate)
+  const id: Ref<Candidate> = generateId()
+  const draftController = new DraftController<CandidateDraft>(
+    shouldSaveDraft ? mDraftController.getNext() ?? id : undefined,
+    recruit.mixin.Candidate
+  )
 
-  function getEmptyCandidate (): CandidateDraft {
+  function getEmptyCandidate (id: Ref<Candidate> | undefined = undefined): CandidateDraft {
     return {
-      _id: generateId(),
+      _id: id ?? generateId(),
       firstName: '',
       lastName: '',
       title: '',
@@ -83,17 +88,13 @@
   const hierarchy = client.getHierarchy()
   const ignoreKeys = ['onsite', 'remote', 'title']
 
-  let draft = shouldSaveDraft ? ($draftsStore[recruit.mixin.Candidate] as CandidateDraft) : undefined
-  $: draft = shouldSaveDraft ? ($draftsStore[recruit.mixin.Candidate] as CandidateDraft) : undefined
-  let object = draft ?? getEmptyCandidate()
-
-  function draftChange (draft: CandidateDraft | undefined) {
-    if (draft === undefined) {
-      object = getEmptyCandidate()
-    } else {
-      object = draft
-    }
-  }
+  let draft = shouldSaveDraft ? draftController.get() : undefined
+  let object = draft ?? getEmptyCandidate(id)
+  onDestroy(
+    draftController.subscribe((val) => {
+      draft = shouldSaveDraft ? val : undefined
+    })
+  )
 
   function objectChange (object: CandidateDraft, empty: any) {
     if (shouldSaveDraft) {
@@ -102,7 +103,6 @@
   }
 
   $: objectChange(object, empty)
-  $: draftChange(draft)
 
   type resumeFile = {
     name: string
@@ -481,7 +481,7 @@
 
   async function showConfirmationDialog () {
     draftController.save(object, empty)
-    const isFormEmpty = $draftsStore[recruit.mixin.Candidate] === undefined
+    const isFormEmpty = draft === undefined
 
     if (isFormEmpty) {
       dispatch('close')

@@ -19,25 +19,26 @@
   import presentation, { DraftController, getClient, KeyedAttribute } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import { calcRank, Issue, IssueDraft, IssuePriority, Project } from '@hcengineering/tracker'
-  import { addNotification, Button, Component, EditBox, deviceOptionsStore, ButtonSize } from '@hcengineering/ui'
-  import { createEventDispatcher, onDestroy } from 'svelte'
+  import { addNotification, Button, ButtonSize, Component, deviceOptionsStore, EditBox } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
+  import { generateIssueShortLink, getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import IssueNotification from '../IssueNotification.svelte'
   import PriorityEditor from '../PriorityEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
   import EstimationEditor from '../timereport/EstimationEditor.svelte'
-  import { generateIssueShortLink, getIssueId } from '../../../issues'
+  import { onDestroy } from 'svelte'
 
   export let parentIssue: Issue
   export let currentProject: Project
   export let shouldSaveDraft: boolean = false
 
-  const draftController = new DraftController<IssueDraft>(parentIssue._id)
+  const draftController = new DraftController<IssueDraft>(`${parentIssue._id}_subIssue`)
   const draft = shouldSaveDraft ? draftController.get() : undefined
   const dispatch = createEventDispatcher()
   const client = getClient()
-  onDestroy(() => draftController.unsubscribe())
+  onDestroy(() => draftController.destroy())
 
   let object = draft ?? getIssueDefaults()
 
@@ -77,9 +78,13 @@
     sprint: parentIssue.sprint
   }
 
-  if (shouldSaveDraft) {
-    draftController.watch(object, empty)
+  function objectChange (object: IssueDraft, empty: any) {
+    if (shouldSaveDraft) {
+      draftController.save(object, empty)
+    }
   }
+
+  $: objectChange(object, empty)
 
   function resetToDefaults () {
     object = getIssueDefaults()

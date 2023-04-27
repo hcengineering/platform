@@ -27,6 +27,7 @@
   import DraftIssueChildEditor from './templates/DraftIssueChildEditor.svelte'
   import DraftIssueChildList from './templates/DraftIssueChildList.svelte'
 
+  export let parendIssueId: Ref<Issue>
   export let projectId: Ref<Project>
   export let project: Project | undefined
   export let sprint: Ref<Sprint> | null = null
@@ -36,7 +37,7 @@
   let lastProject = project
 
   let isCollapsed = false
-  $: isCreatingMode = $draftsStore[tracker.ids.IssueDraftChild] !== undefined
+  $: isCreatingMode = $draftsStore[`${parendIssueId}_subIssue`] !== undefined
   let isManualCreating = false
   $: isCreating = isCreatingMode || isManualCreating
 
@@ -233,6 +234,7 @@
   <ExpandCollapse isExpanded={!isCollapsed} on:changeContent>
     <DraftIssueChildEditor
       bind:this={draftChild}
+      {parendIssueId}
       {project}
       {component}
       {sprint}

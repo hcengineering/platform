@@ -14,8 +14,9 @@
 -->
 <script lang="ts">
   import { Ref, Space } from '@hcengineering/core'
-  import { draftsStore, getClient } from '@hcengineering/presentation'
-  import { Button, showPopup, IconAdd } from '@hcengineering/ui'
+  import { MultipleDraftController, getClient } from '@hcengineering/presentation'
+  import { Button, IconAdd, showPopup } from '@hcengineering/ui'
+  import { onDestroy } from 'svelte'
   import tracker from '../plugin'
   import CreateIssue from './CreateIssue.svelte'
 
@@ -24,10 +25,17 @@
   const client = getClient()
 
   let space: Ref<Space> | undefined
+  let closed = true
   $: updateSpace(currentSpace)
 
-  $: draftExists =
-    $draftsStore[tracker.ids.IssueDraft] !== undefined || $draftsStore[tracker.ids.IssueDraftChild] !== undefined
+  let draftExists = false
+
+  const draftController = new MultipleDraftController(tracker.ids.IssueDraft)
+  onDestroy(
+    draftController.hasNext((res) => {
+      draftExists = res
+    })
+  )
 
   async function updateSpace (spaceId: Ref<Space> | undefined): Promise<void> {
     if (spaceId !== undefined) {
@@ -44,15 +52,15 @@
       const project = await client.findOne(tracker.class.Project, {})
       space = project?._id
     }
-
-    showPopup(CreateIssue, { space, shouldSaveDraft: true }, 'top')
+    closed = false
+    showPopup(CreateIssue, { space, shouldSaveDraft: true }, 'top', () => (closed = true))
   }
 </script>
 
 <div class="antiNav-subheader">
   <Button
     icon={IconAdd}
-    label={draftExists ? tracker.string.ResumeDraft : tracker.string.NewIssue}
+    label={draftExists || !closed ? tracker.string.ResumeDraft : tracker.string.NewIssue}
     justify={'left'}
     kind={'primary'}
     width={'100%'}
