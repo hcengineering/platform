@@ -14,11 +14,9 @@
 -->
 <script lang="ts">
   import { Class, Doc, FindResult, getObjectValue, Ref, SortingOrder, Space } from '@hcengineering/core'
-  import { translate } from '@hcengineering/platform'
-  import presentation, { getClient } from '@hcengineering/presentation'
-  import ui, { Button, CheckBox, Label, Loading, resizeObserver, deviceOptionsStore } from '@hcengineering/ui'
+  import { getClient } from '@hcengineering/presentation'
+  import ui, { Button, CheckBox, Label, Loading, resizeObserver } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
-  import { onMount } from 'svelte'
   import { getPresenter } from '../../utils'
   import view from '../../plugin'
   import { createEventDispatcher } from 'svelte'
@@ -41,18 +39,12 @@
 
   let objectsPromise: Promise<FindResult<Doc>> | undefined
 
-  async function getValues (search: string): Promise<void> {
+  async function getValues (): Promise<void> {
     if (objectsPromise) {
       await objectsPromise
     }
     values.clear()
     realValues.clear()
-    const resultQuery =
-      search !== ''
-        ? {
-            [filter.key.key]: { $like: '%' + search + '%' }
-          }
-        : {}
     let prefix = ''
     const hieararchy = client.getHierarchy()
     const attr = hieararchy.getAttribute(filter.key._class, filter.key.key)
@@ -61,7 +53,7 @@
     }
     objectsPromise = client.findAll(
       _class,
-      { ...resultQuery, ...(space ? { space } : {}) },
+      { ...(space ? { space } : {}) },
       {
         sort: { [filter.key.key]: SortingOrder.Ascending },
         projection: { [prefix + filter.key.key]: 1, space: 1 }
@@ -99,33 +91,12 @@
     selectedValues = selectedValues
   }
 
-  let search: string = ''
-  let phTraslate: string = ''
-  let searchInput: HTMLInputElement
-  $: translate(presentation.string.Search, {}).then((res) => {
-    phTraslate = res
-  })
-
   const dispatch = createEventDispatcher()
 
-  onMount(() => {
-    if (searchInput && !$deviceOptionsStore.isMobile) searchInput.focus()
-  })
-  getValues(search)
+  getValues()
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
-  <div class="header">
-    <input
-      bind:this={searchInput}
-      type="text"
-      bind:value={search}
-      on:change={() => {
-        getValues(search)
-      }}
-      placeholder={phTraslate}
-    />
-  </div>
   <div class="scroll">
     <div class="box">
       {#await promise then attribute}
