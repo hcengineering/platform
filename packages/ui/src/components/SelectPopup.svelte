@@ -27,7 +27,8 @@
 
   interface ValueType {
     id: number | string | null
-    icon?: Asset
+    icon?: Asset | AnySvelteComponent
+    iconProps?: Record<string, any>
     iconColor?: string
     label?: IntlString
     text?: string
@@ -167,7 +168,7 @@
               {:else}
                 {#if item.icon}
                   <div class="icon mr-2">
-                    <Icon icon={item.icon} fill={item.iconColor ?? 'currentColor'} {size} />
+                    <Icon icon={item.icon} iconProps={item.iconProps} fill={item.iconColor ?? 'currentColor'} {size} />
                   </div>
                 {/if}
                 <span class="label" class:text-base={huge}>
