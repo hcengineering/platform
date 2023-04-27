@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { AnyComponent } from '@hcengineering/ui'
+  import { AnyComponent, LinkWrapper } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { DocNavLink } from '@hcengineering/view-resources'
   import plugin from '../plugin'
@@ -52,13 +52,11 @@
   </div>
   {#if description}
     <span class="ac-header__description">
-      {#if description.trim().startsWith('http://') || description.trim().startsWith('https://')}
-        <a href={description} class="whitespace-nowrap" target="_blank" rel="noreferrer noopener">
-          {description}
-        </a>
-      {:else}
-        {description}
-      {/if}
+      <div class="flex">
+        <span class="overflow-label" title={description}>
+          <LinkWrapper text={description} />
+        </span>
+      </div>
     </span>{/if}
 </div>
 

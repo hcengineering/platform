@@ -269,6 +269,7 @@ specifiers:
   '@types/xml2js': ~0.4.9
   '@typescript-eslint/eslint-plugin': ^5.41.0
   '@typescript-eslint/parser': ^5.41.0
+  autolinker: 4.0.0
   autoprefixer: ^10.4.14
   body-parser: ~1.19.1
   browserslist: 4.21.5
@@ -641,6 +642,7 @@ dependencies:
   '@types/xml2js': 0.4.11
   '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
   '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
+  autolinker: 4.0.0
   autoprefixer: 10.4.14_postcss@8.4.20
   body-parser: 1.19.2
   browserslist: 4.21.5
@@ -4265,6 +4267,12 @@ packages:
   /atomic-sleep/1.0.0:
     resolution: {integrity: sha512-kNOjDqAh7px0XWNI+4QbzoiR/nTkHAWNud2uvnJquD1/x5a7EQZMJT0AczqK0Qn67oY/TTQ1LbUKajZpp3I9tQ==}
     engines: {node: '>=8.0.0'}
+    dev: false
+
+  /autolinker/4.0.0:
+    resolution: {integrity: sha512-fl5Kh6BmEEZx+IWBfEirnRUU5+cOiV0OK7PEt0RBKvJMJ8GaRseIOeDU3FKf4j3CE5HVefcjHmhYPOcaVt0bZw==}
+    dependencies:
+      tslib: 2.4.1
     dev: false
 
   /autoprefixer/10.4.14_postcss@8.4.20:
@@ -16711,7 +16719,7 @@ packages:
     dev: false
 
   file:projects/ui.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-hn+I2VojXSb6t3PYHND/JyhwX8tZ8Jr7D+rzs1XjmVxhNMHnO+HA8QHzXyqZBjggTsBc8kUqWlnm44W5tt3m8Q==, tarball: file:projects/ui.tgz}
+    resolution: {integrity: sha512-TvtqATO5uYXW+jS7m2OEAikTIUwJ5JSDwTdxk0OqD62FO4nkED8FA63goDvEoBPUZtoFn7yTzy2cWiXepZNiXA==, tarball: file:projects/ui.tgz}
     id: file:projects/ui.tgz
     name: '@rush-temp/ui'
     version: 0.0.0
@@ -16719,6 +16727,7 @@ packages:
       '@types/jest': 28.1.8
       '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
       '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
+      autolinker: 4.0.0
       eslint: 8.27.0
       eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
       eslint-plugin-import: 2.26.0_eslint@8.27.0
