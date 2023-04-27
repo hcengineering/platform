@@ -39,11 +39,11 @@
     )
   }
 
-  $: shouldRenderPresenter =
-    dueDateMs !== null &&
-    dueDateMs !== undefined &&
-    value.$lookup?.status?.category !== tracker.issueStatusCategory.Completed &&
-    value.$lookup?.status?.category !== tracker.issueStatusCategory.Canceled
+  $: shouldRenderPresenter = dueDateMs !== null && dueDateMs !== undefined
+
+  $: ignoreOverDue =
+    value.$lookup?.status?.category === tracker.issueStatusCategory.Completed ||
+    value.$lookup?.status?.category === tracker.issueStatusCategory.Canceled
 </script>
 
 <DueDatePresenter
@@ -52,4 +52,5 @@
   onChange={handleDueDateChanged}
   editable={isEditable}
   {kind}
+  shouldIgnoreOverdue={ignoreOverDue}
 />

@@ -25,6 +25,7 @@
   export let onChange: (newDate: number | null) => void
   export let kind: ButtonKind = 'link'
   export let editable: boolean = true
+  export let shouldIgnoreOverdue: boolean = false
 
   const today = new Date(new Date(Date.now()).setHours(0, 0, 0, 0))
   $: isOverdue = value !== null && value < today.getTime()
@@ -54,6 +55,10 @@
     isOverdue: boolean,
     daysDifference: number | null
   ): 'overdue' | 'critical' | 'warning' | undefined => {
+    if (shouldIgnoreOverdue) {
+      return
+    }
+
     if (isOverdue) {
       return 'overdue'
     }
