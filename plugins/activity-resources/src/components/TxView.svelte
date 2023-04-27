@@ -352,7 +352,7 @@
       {:else if hasMessageType && model.length > 0 && (tx.updateTx || tx.mixinTx)}
         {#await getValue(client, model[0], tx) then value}
           <div class="activity-content content" class:indent={isAttached} class:contentHidden>
-            <ShowMore ignore={true}>
+            <ShowMore ignore={edit || showDiff}>
               {#if value.isObjectSet}
                 <ObjectPresenter value={value.set} inline />
               {:else if showDiff}
