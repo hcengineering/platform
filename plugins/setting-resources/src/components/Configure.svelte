@@ -15,7 +15,7 @@
 <script lang="ts">
   import { PluginConfiguration } from '@hcengineering/core'
   import { configurationStore, getClient } from '@hcengineering/presentation'
-  import { Button, Icon, IconInfo, Label } from '@hcengineering/ui'
+  import { Button, Icon, IconInfo, Label, Scroller } from '@hcengineering/ui'
   import setting from '../plugin'
 
   const client = getClient()
@@ -32,50 +32,51 @@
     <div class="ac-header__icon"><Icon icon={setting.icon.Setting} size={'medium'} /></div>
     <div class="ac-header__title"><Label label={setting.string.Configuration} /></div>
   </div>
-  <div class="flex flex-wrap p-3">
-    {#each $configurationStore.list as config}
-      {#if config.label}
-        <div class="cardBox flex-col" class:enabled={config.enabled ?? true}>
-          <div class="flex-row-center">
-            <div class="p-1">
-              <Icon icon={config.icon ?? IconInfo} size={'large'} />
+  <Scroller>
+    <div class="flex-row-center flex-wrap p-1 gap-around-4">
+      {#each $configurationStore.list as config}
+        {#if config.label}
+          <div class="cardBox flex-col clear-mins" class:enabled={config.enabled ?? true}>
+            <div class="flex-row-center">
+              <span class="mr-2">
+                <Icon icon={config.icon ?? IconInfo} size={'medium'} />
+              </span>
+              <span class="fs-title">
+                <Label label={config.label} />
+              </span>
             </div>
-            <div class="fs-title">
-              <Label label={config.label} />
-            </div>
+            {#if config.description}
+              <div class="my-3 flex-grow clear-mins">
+                <Label label={config.description} />
+              </div>
+            {/if}
+            {#if config.configurable}
+              <div class="flex-row-center flex-reverse flex-grow max-h-9">
+                <Button
+                  label={config.enabled ?? true ? setting.string.ConfigDisable : setting.string.ConfigEnable}
+                  size={'large'}
+                  on:click={() => change(config, !(config.enabled ?? true))}
+                />
+              </div>
+            {/if}
           </div>
-          {#if config.description}
-            <div class="p-3">
-              <Label label={config.description} />
-            </div>
-          {/if}
-          {#if config.configurable}
-            <div class="flex-grow flex-reverse">
-              <Button
-                label={config.enabled ?? true ? setting.string.ConfigDisable : setting.string.ConfigEnable}
-                size={'small'}
-                kind={'link'}
-                on:click={() => change(config, !(config.enabled ?? true))}
-              />
-            </div>
-          {/if}
-        </div>
-      {/if}
-    {/each}
-  </div>
+        {/if}
+      {/each}
+    </div>
+  </Scroller>
 </div>
 
 <style lang="scss">
   .cardBox {
-    background-color: var(--accent-bg-color);
-    border: 1px solid var(--divider-color);
-    border-radius: 0.75rem;
+    flex-shrink: 0;
+    padding: 1rem;
     width: 24rem;
-    height: 8rem;
-    margin: 0.25rem;
-    padding: 0.25rem;
+    height: 10rem;
+    background-color: var(--theme-button-enabled);
+    border: 1px solid var(--theme-button-border);
+    border-radius: 0.5rem;
     &.enabled {
-      background-color: var(--button-bg-color);
+      background-color: var(--theme-button-pressed);
     }
   }
 </style>

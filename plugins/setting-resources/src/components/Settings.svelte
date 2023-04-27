@@ -88,7 +88,7 @@
 
 <div class="flex h-full">
   {#if visibileNav}
-    <div class="antiPanel-navigator filled indent">
+    <div class="antiPanel-navigator filledNav indent">
       <div class="antiNav-header">
         <span class="fs-title overflow-label">
           <Label label={setting.string.Settings} />
@@ -124,7 +124,7 @@
     </div>
   {/if}
 
-  <div class="antiPanel-component border-left filled">
+  <div class="antiPanel-component filled">
     {#if category}
       <Component
         is={category.component}
