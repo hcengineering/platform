@@ -46,7 +46,7 @@
 
   let subIssueEditorRef: HTMLDivElement
   let isCollapsed = false
-  let isCreating = $draftsStore[issue._id] !== undefined
+  let isCreating = $draftsStore[`${issue._id}_subIssue`] !== undefined
 
   $: hasSubIssues = issue.subIssues > 0
 
