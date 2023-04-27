@@ -57,6 +57,7 @@ import type {
   ObjectValidator,
   PreviewPresenter,
   SortFunc,
+  SpacePresenter,
   SpaceHeader,
   SpaceName,
   ViewAction,
@@ -167,6 +168,11 @@ export class TAttributePresenter extends TClass implements AttributePresenter {
 
 @Mixin(view.mixin.ActivityAttributePresenter, core.class.Class)
 export class TActivityAttributePresenter extends TClass implements ActivityAttributePresenter {
+  presenter!: AnyComponent
+}
+
+@Mixin(view.mixin.SpacePresenter, core.class.Class)
+export class TSpacePresenter extends TClass implements SpacePresenter {
   presenter!: AnyComponent
 }
 
@@ -369,6 +375,7 @@ export function createModel (builder: Builder): void {
     TObjectEditorFooter,
     TSpaceHeader,
     TSpaceName,
+    TSpacePresenter,
     TIgnoreActions,
     TPreviewPresenter,
     TLinkPresenter,

@@ -923,6 +923,10 @@ export function createModel (builder: Builder): void {
     presenter: tracker.component.ProjectPresenter
   })
 
+  builder.mixin(tracker.class.Project, core.class.Class, view.mixin.SpacePresenter, {
+    presenter: tracker.component.ProjectSpacePresenter
+  })
+
   classPresenter(
     builder,
     tracker.class.Component,

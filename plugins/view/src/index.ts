@@ -169,6 +169,13 @@ export interface ActivityAttributePresenter extends Class<Doc> {
 /**
  * @public
  */
+export interface SpacePresenter extends Class<Doc> {
+  presenter: AnyComponent
+}
+
+/**
+ * @public
+ */
 export interface ObjectPresenter extends Class<Doc> {
   presenter: AnyComponent
 }
@@ -627,7 +634,8 @@ const view = plugin(viewId, {
     SortFuncs: '' as Ref<Mixin<ClassSortFuncs>>,
     AllValuesFunc: '' as Ref<Mixin<AllValuesFunc>>,
     ObjectPanel: '' as Ref<Mixin<ObjectPanel>>,
-    LinkProvider: '' as Ref<Mixin<LinkProvider>>
+    LinkProvider: '' as Ref<Mixin<LinkProvider>>,
+    SpacePresenter: '' as Ref<Mixin<SpacePresenter>>
   },
   class: {
     ViewletPreference: '' as Ref<Class<ViewletPreference>>,

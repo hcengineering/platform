@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,31 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, Space } from '@hcengineering/core'
-  import { Project } from '@hcengineering/tracker'
-  import { TreeNode, NavLink } from '@hcengineering/view-resources'
-  import { SpacesNavModel } from '@hcengineering/workbench'
-  import { SpecialElement } from '@hcengineering/workbench-resources'
+  import tracker, { Project } from '@hcengineering/tracker'
+  import { Icon } from '@hcengineering/ui'
 
-  export let space: Project
-  export let model: SpacesNavModel
-  export let currentSpace: Ref<Space> | undefined
-  export let currentSpecial: string | undefined
-  export let getActions: Function
-  export let deselect: boolean = false
+  export let value: Project
 </script>
 
-{#if model?.specials}
-  <TreeNode icon={space?.icon ?? model.icon} title={space.name} actions={() => getActions(space)}>
-    {#each model.specials as special}
-      <NavLink space={space._id} special={special.id}>
-        <SpecialElement
-          indent={'ml-2'}
-          label={special.label}
-          icon={special.icon}
-          selected={deselect ? false : currentSpace === space._id && special.id === currentSpecial}
-        />
-      </NavLink>
-    {/each}
-  </TreeNode>
-{/if}
+<div class="flex-presenter cursor-default inline-presenter">
+  <div class="icon">
+    <Icon icon={value.icon ?? tracker.icon.Home} size="small" />
+  </div>
+  <span class="label no-underline nowrap">
+    {value.name}
+  </span>
+</div>
