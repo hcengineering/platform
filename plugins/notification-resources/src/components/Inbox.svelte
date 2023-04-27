@@ -113,7 +113,7 @@
 />
 <div class="flex h-full">
   {#if visibileNav}
-    <div class="antiPanel-component border-right filled indent aside">
+    <div class="antiPanel-component border-right filled indent aside inbox">
       <div class="header">
         <span class="fs-title overflow-label">
           <Label label={notification.string.Inbox} />
@@ -153,5 +153,8 @@
     flex-direction: column;
     justify-content: center;
     padding: 0 1.5rem;
+  }
+  .inbox {
+    min-width: 20rem;
   }
 </style>

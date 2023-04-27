@@ -32,7 +32,7 @@
     navigate,
     showPopup
   } from '@hcengineering/ui'
-  import { ContextMenu, UpDownNavigator } from '@hcengineering/view-resources'
+  import { ContextMenu, DocNavLink, UpDownNavigator } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import { generateIssueShortLink, getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
@@ -161,7 +161,11 @@
     </svelte:fragment>
     <svelte:fragment slot="header">
       <span class="fs-title select-text-i">
-        {#if issueId}{issueId}{/if}
+        {#if embedded}
+          <DocNavLink object={issue}>
+            {#if issueId}{issueId}{/if}
+          </DocNavLink>
+        {:else if issueId}{issueId}{/if}
       </span>
     </svelte:fragment>
     <svelte:fragment slot="tools">

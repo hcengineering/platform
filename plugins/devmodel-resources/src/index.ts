@@ -58,7 +58,7 @@ class ModelClient implements Client {
     client.notify = (tx) => {
       this.notify?.(tx)
       if (this.notifyEnabled) {
-        console.info('devmodel# notify=>', tx, this.client.getModel(), getMetadata(devmodel.metadata.DevModel))
+        console.debug('devmodel# notify=>', tx, this.client.getModel(), getMetadata(devmodel.metadata.DevModel))
       }
     }
   }
@@ -80,7 +80,7 @@ class ModelClient implements Client {
   ): Promise<WithLookup<T> | undefined> {
     const result = await this.client.findOne(_class, query, options)
     if (this.notifyEnabled) {
-      console.info(
+      console.debug(
         'devmodel# findOne=>',
         _class,
         query,
@@ -102,7 +102,7 @@ class ModelClient implements Client {
   ): Promise<FindResult<T>> {
     const result = await this.client.findAll(_class, query, options)
     if (this.notifyEnabled) {
-      console.info(
+      console.debug(
         'devmodel# findAll=>',
         _class,
         query,
@@ -120,7 +120,7 @@ class ModelClient implements Client {
   async tx (tx: Tx): Promise<TxResult> {
     const result = await this.client.tx(tx)
     if (this.notifyEnabled) {
-      console.info('devmodel# tx=>', tx, result, getMetadata(devmodel.metadata.DevModel))
+      console.debug('devmodel# tx=>', tx, result, getMetadata(devmodel.metadata.DevModel))
     }
     transactions.push({ tx, result })
     if (transactions.length > 100) {
@@ -134,7 +134,7 @@ class ModelClient implements Client {
   }
 }
 export async function Hook (client: Client): Promise<Client> {
-  console.info('devmodel# Client HOOKED by DevModel')
+  console.debug('devmodel# Client HOOKED by DevModel')
 
   // Client is alive here, we could hook with some model extensions special for DevModel plugin.
   const builder = new Builder()
