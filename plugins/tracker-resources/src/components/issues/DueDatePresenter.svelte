@@ -39,7 +39,7 @@
     )
   }
 
-  $: shouldRenderPresenter = dueDateMs !== null && dueDateMs !== undefined
+  $: shouldRenderPresenter = dueDateMs != null
 
   $: ignoreOverDue =
     value.$lookup?.status?.category === tracker.issueStatusCategory.Completed ||
