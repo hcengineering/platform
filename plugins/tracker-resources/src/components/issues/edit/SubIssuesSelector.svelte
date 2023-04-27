@@ -14,23 +14,22 @@
 -->
 <script lang="ts">
   import { Ref, SortingOrder, WithLookup } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
-  import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
+  import { createQuery, statusStore } from '@hcengineering/presentation'
+  import { Issue, Project } from '@hcengineering/tracker'
   import {
     Button,
     ButtonKind,
     ButtonSize,
-    closeTooltip,
-    getPlatformColor,
     ProgressCircle,
     SelectPopup,
+    closeTooltip,
     showPanel,
     showPopup
   } from '@hcengineering/ui'
   import { getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
   import { subIssueListProvider } from '../../../utils'
-  import { statusStore } from '@hcengineering/presentation'
+  import IssueStatusIcon from '../IssueStatusIcon.svelte'
 
   export let value: WithLookup<Issue>
   export let currentProject: Project | undefined = undefined
@@ -85,17 +84,6 @@
   }
   $: hasSubIssues = (subIssues?.length ?? 0) > 0
 
-  function getIssueStatusIcon (issue: Issue, statuses: Map<Ref<WithLookup<IssueStatus>>, WithLookup<IssueStatus>>) {
-    const status = statuses.get(issue.status)
-    const category = status?.$lookup?.category
-    const color = status?.color ?? category?.color
-
-    return {
-      ...(category?.icon !== undefined ? { icon: category.icon } : {}),
-      ...(color !== undefined ? { iconColor: getPlatformColor(color) } : {})
-    }
-  }
-
   function openIssue (target: Ref<Issue>) {
     if (target !== value._id) {
       subIssueListProvider(subIssues, target)
@@ -111,12 +99,16 @@
         {
           value: subIssues.map((iss) => {
             const text = project ? `${getIssueId(project, iss)} ${iss.title}` : iss.title
-
             return {
               id: iss._id,
               text,
               isSelected: iss._id === value._id,
-              ...getIssueStatusIcon(iss, $statusStore.byId)
+              icon: IssueStatusIcon,
+              iconProps: {
+                value: $statusStore.get(iss.status),
+                size: 'small',
+                fill: undefined
+              }
             }
           }),
           width: 'large'
