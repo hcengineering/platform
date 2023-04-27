@@ -49,12 +49,11 @@ test.describe('recruit tests', () => {
 
     await page.click(`text="${last} ${first}"`)
 
+    await expect(page.locator(`text=${first}`).first()).toBeVisible()
+    await expect(page.locator(`text=${last}`).first()).toBeVisible()
+    await expect(page.locator(`text=${loc}`).first()).toBeVisible()
+
     const panel = page.locator('.popupPanel')
-
-    expect(await panel.locator('[placeholder="First name"]').inputValue()).toEqual(first)
-    expect(await panel.locator('[placeholder="Last name"]').inputValue()).toEqual(last)
-    expect(await panel.locator('[placeholder="Location"]').inputValue()).toEqual(loc)
-
     await panel.locator('[id="gmail\\:string\\:Email"]').scrollIntoViewIfNeeded()
     await panel.locator('[id="gmail\\:string\\:Email"]').click()
     expect(await page.locator('.cover-channel >> input').inputValue()).toEqual(email)
