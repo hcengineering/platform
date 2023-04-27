@@ -30,6 +30,8 @@ export { default as CollaborationDiffViewer } from './components/CollaborationDi
 export { default } from './plugin'
 export * from './types'
 export { default as Collaboration } from './components/Collaboration.svelte'
+export { default as IconObjects } from './components/icons/Objects.svelte'
+export { default as StyleButton } from './components/StyleButton.svelte'
 
 addStringsLoader(textEditorId, async (lang: string) => {
   return await import(`../lang/${lang}.json`)

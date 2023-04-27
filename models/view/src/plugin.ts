@@ -47,6 +47,7 @@ export default mergeIds(viewId, view, {
     IntlStringPresenter: '' as AnyComponent,
     NumberEditor: '' as AnyComponent,
     NumberPresenter: '' as AnyComponent,
+    MarkupDiffPresenter: '' as AnyComponent,
     MarkupPresenter: '' as AnyComponent,
     BooleanPresenter: '' as AnyComponent,
     BooleanEditor: '' as AnyComponent,

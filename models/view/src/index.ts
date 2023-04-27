@@ -29,6 +29,7 @@ import type {
   AttributeEditor,
   AttributeFilter,
   AttributePresenter,
+  ActivityAttributePresenter,
   BuildModelKey,
   ClassFilters,
   ClassSortFuncs,
@@ -87,7 +88,8 @@ export function classPresenter (
   _class: Ref<Class<Doc>>,
   presenter: AnyComponent,
   editor?: AnyComponent,
-  popup?: AnyComponent
+  popup?: AnyComponent,
+  activity?: AnyComponent
 ): void {
   builder.mixin(_class, core.class.Class, view.mixin.AttributePresenter, {
     presenter
@@ -96,6 +98,11 @@ export function classPresenter (
     builder.mixin(_class, core.class.Class, view.mixin.AttributeEditor, {
       inlineEditor: editor,
       popup
+    })
+  }
+  if (activity !== undefined) {
+    builder.mixin(_class, core.class.Class, view.mixin.ActivityAttributePresenter, {
+      presenter: activity
     })
   }
 }
@@ -155,6 +162,11 @@ export class TArrayEditor extends TClass implements ArrayEditor {
 
 @Mixin(view.mixin.AttributePresenter, core.class.Class)
 export class TAttributePresenter extends TClass implements AttributePresenter {
+  presenter!: AnyComponent
+}
+
+@Mixin(view.mixin.ActivityAttributePresenter, core.class.Class)
+export class TActivityAttributePresenter extends TClass implements ActivityAttributePresenter {
   presenter!: AnyComponent
 }
 
@@ -337,6 +349,7 @@ export function createModel (builder: Builder): void {
     TAttributeFilter,
     TAttributeEditor,
     TAttributePresenter,
+    TActivityAttributePresenter,
     TListItemPresenter,
     TCollectionEditor,
     TCollectionPresenter,
@@ -387,7 +400,8 @@ export function createModel (builder: Builder): void {
     core.class.TypeMarkup,
     view.component.MarkupPresenter,
     view.component.MarkupEditor,
-    view.component.MarkupEditorPopup
+    view.component.MarkupEditorPopup,
+    view.component.MarkupDiffPresenter
   )
 
   builder.mixin(core.class.TypeMarkup, core.class.Class, view.mixin.InlineAttributEditor, {

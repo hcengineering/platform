@@ -19,7 +19,7 @@
   import core, { AnyAttribute, Doc, getCurrentAccount, Ref, Class, TxCUD } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import {
+  import ui, {
     ActionIcon,
     AnyComponent,
     Component,
@@ -37,7 +37,7 @@
   import { Menu, ObjectPresenter } from '@hcengineering/view-resources'
   import { ActivityKey } from '../activity'
   import activity from '../plugin'
-  import { getValue, TxDisplayViewlet, updateViewlet } from '../utils'
+  import { getPrevValue, getValue, TxDisplayViewlet, updateViewlet } from '../utils'
   import TxViewTx from './TxViewTx.svelte'
   import Edit from './icons/Edit.svelte'
   import { tick } from 'svelte'
@@ -61,7 +61,8 @@
   let modelIcon: Asset | undefined = undefined
   let iconComponent: AnyComponent | undefined = undefined
 
-  let edit = false
+  let edit: boolean = false
+  let showDiff: boolean = false
 
   $: if (tx.tx._id !== ptx?.tx._id) {
     if (tx.tx.modifiedBy !== account?._id) {
@@ -266,15 +267,20 @@
                 {:else}
                   <span class="lower"><Label label={activity.string.Changed} /></span>
                   <span class="lower"><Label label={m.label} /></span>
-                  <span class="lower"><Label label={activity.string.To} /></span>
 
                   {#if !hasMessageType}
+                    <span class="lower"><Label label={activity.string.To} /></span>
                     <span class="strong overflow-label">
                       {#if value.isObjectSet}
                         <ObjectPresenter value={value.set} inline />
                       {:else}
                         <svelte:component this={m.presenter} value={value.set} inline />
                       {/if}
+                    </span>
+                  {:else}
+                    <!-- svelte-ignore a11y-click-events-have-key-events -->
+                    <span class="show-diff" on:click={() => (showDiff = !showDiff)}>
+                      <Label label={showDiff ? ui.string.ShowLess : ui.string.ShowMore} />
                     </span>
                   {/if}
                 {/if}
@@ -346,11 +352,18 @@
       {:else if hasMessageType && model.length > 0 && (tx.updateTx || tx.mixinTx)}
         {#await getValue(client, model[0], tx) then value}
           <div class="activity-content content" class:indent={isAttached} class:contentHidden>
-            <ShowMore ignore={edit}>
+            <ShowMore ignore={edit || showDiff}>
               {#if value.isObjectSet}
                 <ObjectPresenter value={value.set} inline />
-              {:else}
-                <svelte:component this={model[0].presenter} value={value.set} inline />
+              {:else if showDiff}
+                <svelte:component
+                  this={model[0].presenter}
+                  value={value.set}
+                  inline
+                  prevValue
+                  compareValue={getPrevValue(client, model[0], tx)}
+                  showOnlyDiff
+                />
               {/if}
             </ShowMore>
           </div>
@@ -509,6 +522,17 @@
     }
     &.indent {
       margin-top: 0.5rem;
+    }
+  }
+
+  .show-diff {
+    color: var(--accent-color);
+    cursor: pointer;
+    &:hover {
+      color: var(--caption-color);
+    }
+    &:active {
+      color: var(--accent-color);
     }
   }
 </style>

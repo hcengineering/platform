@@ -49,6 +49,7 @@ import DividerPresenter from './components/list/DividerPresenter.svelte'
 import ListView from './components/list/ListView.svelte'
 import SortableList from './components/list/SortableList.svelte'
 import SortableListItem from './components/list/SortableListItem.svelte'
+import MarkupDiffPresenter from './components/MarkupDiffPresenter.svelte'
 import MarkupEditor from './components/MarkupEditor.svelte'
 import MarkupEditorPopup from './components/MarkupEditorPopup.svelte'
 import MarkupPresenter from './components/MarkupPresenter.svelte'
@@ -94,6 +95,7 @@ export { default as FixedColumn } from './components/FixedColumn.svelte'
 export { default as SourcePresenter } from './components/inference/SourcePresenter.svelte'
 export { default as LinkPresenter } from './components/LinkPresenter.svelte'
 export { default as List } from './components/list/List.svelte'
+export { default as MarkupDiffPresenter } from './components/MarkupDiffPresenter.svelte'
 export { default as MarkupPresenter } from './components/MarkupPresenter.svelte'
 export { default as MarkupPreviewPopup } from './components/MarkupPreviewPopup.svelte'
 export { default as ContextMenu } from './components/Menu.svelte'
@@ -189,6 +191,7 @@ export default async (): Promise<Resources> => ({
     ActionsPopup,
     StringEditorPopup: EditBoxPopup,
     MarkupPresenter,
+    MarkupDiffPresenter,
     MarkupEditor,
     MarkupEditorPopup,
     BooleanTruePresenter,
