@@ -135,12 +135,13 @@ function ShowActions (doc: Doc | Doc[] | undefined, evt: Event): void {
   showPopup(view.component.ActionsPopup, { viewContext: $contextStore[$contextStore.length - 1] }, 'top')
 }
 
-function ShowPreview (doc: Doc | undefined, evt: Event): void {
+function ShowPreview (doc: Doc | Doc[] | undefined, evt: Event): void {
   previewDocument.update((old) => {
-    if (old?._id === doc?._id) {
+    const d = Array.isArray(doc) ? doc[0] : doc
+    if (old?._id === d?._id) {
       return undefined
     }
-    return doc
+    return d
   })
   evt.preventDefault()
 }

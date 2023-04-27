@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Doc, Ref, TxRemoveDoc } from '@hcengineering/core'
+  import core, { Doc, Hierarchy, Ref, TxRemoveDoc } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { addTxListener, getClient } from '@hcengineering/presentation'
   import { AnyComponent, Component } from '@hcengineering/ui'
@@ -217,7 +217,7 @@
 
   let presenter: AnyComponent | undefined
   async function updatePreviewPresenter (doc?: Doc): Promise<void> {
-    presenter = doc !== undefined ? await getObjectPreview(client, doc._class) : undefined
+    presenter = doc !== undefined ? await getObjectPreview(client, Hierarchy.mixinOrClass(doc)) : undefined
   }
 
   $: updatePreviewPresenter($previewDocument)
