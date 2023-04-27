@@ -334,6 +334,7 @@ export function generateClassNotificationTypes (
       : [core.class.TxCreateDoc, core.class.TxRemoveDoc]
     const data: Data<NotificationType> = {
       attribute: attribute._id,
+      field: attribute.name,
       group,
       generated: true,
       objectClass,
