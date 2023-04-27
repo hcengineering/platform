@@ -78,7 +78,7 @@
             {#if item.label}
               {item.label}
             {:else if item.labelIntl}
-              <Label label={item.labelIntl} />
+              <Label label={item.labelIntl} params={item.labelParams} />
             {/if}
           </span>
         {/if}

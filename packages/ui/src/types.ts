@@ -105,6 +105,7 @@ export interface TabItem {
   id: string
   label?: string
   labelIntl?: IntlString
+  labelParams?: Record<string, any>
   icon?: Asset | AnySvelteComponent
   color?: string
   tooltip?: IntlString
