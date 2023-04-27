@@ -26,7 +26,7 @@
   import { Level } from '@tiptap/extension-heading'
   import { createEventDispatcher } from 'svelte'
   import textEditorPlugin from '../plugin'
-  import { FormatMode, FORMAT_MODES, RefInputAction, RefInputActionItem, TextEditorHandler } from '../types'
+  import { FORMAT_MODES, FormatMode, RefInputAction, RefInputActionItem, TextEditorHandler } from '../types'
   import EmojiPopup from './EmojiPopup.svelte'
   import { headingLevels, mInsertTable } from './extensions'
   import Attach from './icons/Attach.svelte'

@@ -4,7 +4,7 @@
   export let manager: FocusManager
 
   function handleKey (evt: KeyboardEvent): void {
-    if (evt.code === 'Tab' && manager.hasFocus()) {
+    if (evt.code === 'Tab') {
       evt.preventDefault()
       evt.stopPropagation()
       manager.next(evt.shiftKey ? -1 : 1)

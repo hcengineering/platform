@@ -109,7 +109,7 @@
             value = result._id
             dispatch('change', value)
           }
-          mgr?.setFocusPos(focusIndex)
+          mgr?.setFocus(focusIndex)
         }
       )
     }

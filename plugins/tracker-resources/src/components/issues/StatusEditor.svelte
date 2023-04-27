@@ -39,16 +39,20 @@
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = undefined
   export let defaultIssueStatus: Ref<IssueStatus> | undefined = undefined
+  export let focusIndex: number | undefined = undefined
 
   const client = getClient()
   const dispatch = createEventDispatcher()
 
-  const changeStatus = async (newStatus: Ref<IssueStatus> | undefined) => {
+  const changeStatus = async (newStatus: Ref<IssueStatus> | undefined, refocus: boolean = true) => {
     if (!isEditable || newStatus === undefined || value.status === newStatus) {
       return
     }
 
     dispatch('change', newStatus)
+    if (refocus) {
+      dispatch('refocus')
+    }
 
     if ('_class' in value) {
       await client.update(value, { status: newStatus })
@@ -81,12 +85,12 @@
   ): WithLookup<IssueStatus> | undefined {
     if (defaultStatus !== undefined) {
       defaultIssueStatus = undefined
-      changeStatus(defaultStatus)
+      changeStatus(defaultStatus, false)
       return statuses?.find((status) => status._id === defaultStatus)
     }
     const current = statuses?.find((status) => status._id === value.status)
     if (current) return current
-    changeStatus(statuses?.[0]?._id)
+    changeStatus(statuses?.[0]?._id, false)
     return statuses?.[0]
   }
 
@@ -133,6 +137,7 @@
       {size}
       {kind}
       {width}
+      {focusIndex}
       on:click={handleStatusEditorOpened}
     >
       <span slot="content" class="flex-row-center pointer-events-none">

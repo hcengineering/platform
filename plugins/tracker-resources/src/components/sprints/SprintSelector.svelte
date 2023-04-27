@@ -35,6 +35,7 @@
   export let onlyIcon: boolean = false
   export let enlargedText: boolean = false
   export let short: boolean = false
+  export let focusIndex: number | undefined = undefined
 
   export let useComponent: Ref<Component> | undefined = undefined
   export let showTooltip: LabelAndProps | undefined = undefined
@@ -98,6 +99,7 @@
 
 {#if onlyIcon || sprintText === undefined}
   <Button
+    {focusIndex}
     {kind}
     {size}
     {shape}
@@ -111,6 +113,7 @@
   />
 {:else}
   <Button
+    {focusIndex}
     {kind}
     {size}
     {shape}

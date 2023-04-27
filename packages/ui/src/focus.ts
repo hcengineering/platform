@@ -52,6 +52,9 @@ class FocusManagerImpl implements FocusManager {
   }
 
   setFocus (idx: number): void {
+    if (idx === -1) {
+      return
+    }
     this.current = this.elements.findIndex((it) => it.id === idx) ?? 0
     this.elements[Math.abs(this.current) % this.elements.length].focus()
   }

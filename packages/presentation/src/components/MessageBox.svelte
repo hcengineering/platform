@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
+  import { Button, FocusHandler, Label, createFocusManager } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { Label, Button } from '@hcengineering/ui'
   import presentation from '..'
 
   export let label: IntlString
@@ -27,7 +27,11 @@
 
   const dispatch = createEventDispatcher()
   let processing = false
+
+  const manager = createFocusManager()
 </script>
+
+<FocusHandler {manager} />
 
 <div class="msgbox-container">
   <div class="overflow-label fs-title mb-4"><Label {label} params={labelProps ?? {}} /></div>
@@ -35,6 +39,7 @@
   <div class="footer">
     <Button
       focus
+      focusIndex={1}
       label={presentation.string.Ok}
       size={'large'}
       kind={'primary'}
@@ -54,6 +59,7 @@
     />
     {#if canSubmit}
       <Button
+        focusIndex={2}
         label={presentation.string.Cancel}
         size={'large'}
         on:click={() => {

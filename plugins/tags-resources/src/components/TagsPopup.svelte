@@ -81,8 +81,10 @@
   }
   const checkSelected = (_selected: Ref<TagElement>[], element: TagElement): void => {
     if (isSelected(_selected, element)) {
+      selected = _selected.filter((p) => p !== element._id)
       dispatch('update', { action: 'remove', tag: element })
     } else {
+      selected = [..._selected, element._id]
       dispatch('update', { action: 'add', tag: element })
     }
     dispatch('update', { action: 'selected', selected })

@@ -109,27 +109,22 @@ export const networkStatus = writable<number>(0)
 let attractorMx: number | undefined
 let attractorMy: number | undefined
 
-let mousePos: { x: number, y: number } | undefined
-
-window.addEventListener('mousemove', (event) => {
-  mousePos = { x: event.clientX, y: event.clientY }
-})
 /**
  * perform mouse movement checks and call method if they was
  */
-export function mouseAttractor (op: () => void, diff = 5): (evt: MouseEvent) => void {
+export function mouseAttractor (op: () => void, diff = 2): (evt: MouseEvent) => void {
   return (evt: MouseEvent) => {
-    if (mousePos !== undefined && attractorMy !== undefined && attractorMx !== undefined) {
-      const dx = mousePos.x - attractorMx
-      const dy = mousePos.y - attractorMy
+    if (attractorMy !== undefined && attractorMx !== undefined) {
+      const dx = evt.screenX - attractorMx
+      const dy = evt.screenY - attractorMy
       if (Math.sqrt(dx * dx + dy * dy) > diff) {
-        attractorMx = evt.clientX
-        attractorMy = evt.clientY
         op()
+        attractorMx = undefined
+        attractorMy = undefined
       }
     } else {
-      attractorMx = evt.clientX
-      attractorMy = evt.clientY
+      attractorMx = evt.screenX
+      attractorMy = evt.screenY
     }
   }
 }

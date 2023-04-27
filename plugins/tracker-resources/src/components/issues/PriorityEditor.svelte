@@ -38,6 +38,7 @@
   export let size: ButtonSize = 'large'
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = undefined
+  export let focusIndex: number | undefined = undefined
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -94,6 +95,7 @@
       label={shouldShowLabel ? issuePriorities[value.priority]?.label : undefined}
       icon={issuePriorities[value.priority]?.icon}
       {justify}
+      {focusIndex}
       {width}
       {size}
       {kind}

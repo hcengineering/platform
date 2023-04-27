@@ -9,6 +9,7 @@
     IconSize,
     Label,
     ShowMore,
+    registerFocus,
     resizeObserver
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -95,6 +96,21 @@
   export function isEmptyContent (): boolean {
     return textEditor.isEmptyContent()
   }
+
+  // Focusable control with index
+  export let focusIndex = -1
+  const { idx, focusManager } = registerFocus(focusIndex, {
+    focus: () => {
+      focus()
+      return false
+    },
+    isFocus: () => focused
+  })
+  const updateFocus = () => {
+    if (focusIndex !== -1) {
+      focusManager?.setFocus(idx)
+    }
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -129,6 +145,7 @@
       on:attach
       on:focus={() => {
         focused = true
+        updateFocus()
         dispatch('focus')
       }}
       on:blur={() => {
