@@ -21,6 +21,7 @@ import view, { SortFunc, viewId } from '@hcengineering/view'
 export default mergeIds(viewId, view, {
   component: {
     ObjectFilter: '' as AnyComponent,
+    DateFilter: '' as AnyComponent,
     ValueFilter: '' as AnyComponent,
     TimestampFilter: '' as AnyComponent,
     FilterTypePopup: '' as AnyComponent,
