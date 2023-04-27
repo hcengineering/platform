@@ -16,20 +16,14 @@
 <script lang="ts">
   import { BooleanIcon, Label } from '@hcengineering/ui'
   import { getBooleanLabel } from '../utils'
-  import BooleanEditor from './BooleanEditor.svelte'
 
   export let value: any
   export let inline: boolean = false
-  export let onChange: ((value: any) => void) | undefined = undefined
 </script>
 
 <div class="{inline ? 'inline-presenter' : 'flex-presenter'} yesno-container">
-  {#if onChange !== undefined}
-    <BooleanEditor {onChange} {value} />
-  {:else}
-    <div class="icon small-gap"><BooleanIcon {value} /></div>
-    <span><Label label={getBooleanLabel(value)} /></span>
-  {/if}
+  <div class="icon small-gap"><BooleanIcon {value} /></div>
+  <span><Label label={getBooleanLabel(value)} /></span>
 </div>
 
 <style lang="scss">
