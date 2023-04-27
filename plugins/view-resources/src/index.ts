@@ -37,6 +37,7 @@ import FilterBar from './components/filter/FilterBar.svelte'
 import FilterTypePopup from './components/filter/FilterTypePopup.svelte'
 import ObjectFilter from './components/filter/ObjectFilter.svelte'
 import TimestampFilter from './components/filter/TimestampFilter.svelte'
+import DateFilter from './components/filter/DateFilter.svelte'
 import ValueFilter from './components/filter/ValueFilter.svelte'
 import HTMLEditor from './components/HTMLEditor.svelte'
 import HTMLPresenter from './components/HTMLPresenter.svelte'
@@ -167,6 +168,7 @@ export default async (): Promise<Resources> => ({
     ClassPresenter,
     ClassRefPresenter,
     ObjectFilter,
+    DateFilter,
     ValueFilter,
     TimestampFilter,
     TableBrowser,
