@@ -31,7 +31,7 @@
   if (multiselect && selected === '') selected = []
   if (selected === '') selected = items[0].id
 
-  const getSelected = (id: string): boolean => {
+  const getSelected = (id: string, selected: string | string[]): boolean => {
     let res: boolean = false
     if (multiselect && Array.isArray(selected)) res = selected.filter((it) => it === id).length > 0
     else if (selected === id) res = true
@@ -51,7 +51,7 @@
         bind:this={tabs[i]}
         class="button"
         class:onlyIcons
-        class:selected={getSelected(item.id)}
+        class:selected={getSelected(item.id, selected)}
         data-view={item.tooltip}
         data-id={`tab-${item.id}`}
         use:tooltip={{ label: item.tooltip ?? undefined, element: tabs[i] ?? undefined }}
