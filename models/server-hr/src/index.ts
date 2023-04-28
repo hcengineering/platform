@@ -25,23 +25,48 @@ export { serverHrId } from '@hcengineering/server-hr'
 
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverHr.trigger.OnDepartmentStaff
+    trigger: serverHr.trigger.OnDepartmentStaff,
+    txMatch: {
+      _class: core.class.TxCollectionCUD,
+      'tx.objectClass': hr.mixin.Staff,
+      'tx._class': core.class.TxMixin
+    }
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverHr.trigger.OnRequestCreate
+    trigger: serverHr.trigger.OnRequestCreate,
+    txMatch: {
+      _class: core.class.TxCollectionCUD,
+      'tx.objectClass': hr.class.Request,
+      'tx._class': core.class.TxCreateDoc
+    }
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverHr.trigger.OnRequestUpdate
+    trigger: serverHr.trigger.OnRequestUpdate,
+    txMatch: {
+      _class: core.class.TxCollectionCUD,
+      'tx.objectClass': hr.class.Request,
+      'tx._class': core.class.TxUpdateDoc
+    }
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverHr.trigger.OnRequestRemove
+    trigger: serverHr.trigger.OnRequestRemove,
+    txMatch: {
+      _class: core.class.TxCollectionCUD,
+      'tx.objectClass': hr.class.Request,
+      'tx._class': core.class.TxRemoveDoc
+    }
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverHr.trigger.OnPublicHolidayCreate
+    trigger: serverHr.trigger.OnPublicHolidayCreate,
+    txMatch: {
+      _class: core.class.TxCollectionCUD,
+      'tx.objectClass': hr.class.PublicHoliday,
+      'tx._class': core.class.TxCreateDoc
+    }
   })
 
   builder.mixin(hr.class.Request, core.class.Class, serverNotification.mixin.HTMLPresenter, {

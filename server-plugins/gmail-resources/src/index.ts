@@ -14,7 +14,7 @@
 //
 
 import contact, { Channel } from '@hcengineering/contact'
-import core, {
+import {
   Class,
   Doc,
   DocumentQuery,
@@ -57,16 +57,9 @@ export async function FindMessages (
  */
 export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
-  const actualTx = TxProcessor.extractTx(tx)
-  if (actualTx._class !== core.class.TxCreateDoc) {
-    return []
-  }
 
   const createTx = tx as TxCreateDoc<Message>
 
-  if (!control.hierarchy.isDerived(createTx.objectClass, gmail.class.Message)) {
-    return []
-  }
   const message = TxProcessor.createDoc2Doc<Message>(createTx)
 
   const channel = (await control.findAll(contact.class.Channel, { _id: message.attachedTo }, { limit: 1 }))[0]

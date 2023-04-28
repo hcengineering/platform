@@ -16,6 +16,7 @@
 
 import { Builder } from '@hcengineering/model'
 
+import attachment from '@hcengineering/attachment'
 import core from '@hcengineering/core'
 import serverAttachment from '@hcengineering/server-attachment'
 import serverCore from '@hcengineering/server-core'
@@ -24,6 +25,11 @@ export { serverAttachmentId } from '@hcengineering/server-attachment'
 
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverAttachment.trigger.OnAttachmentDelete
+    trigger: serverAttachment.trigger.OnAttachmentDelete,
+    txMatch: {
+      _class: core.class.TxCollectionCUD,
+      'tx.objectClass': attachment.class.Attachment,
+      'tx._class': core.class.TxRemoveDoc
+    }
   })
 }

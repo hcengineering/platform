@@ -756,10 +756,7 @@ export async function isUserEmployeeInFieldValue (
  * @public
  */
 export async function OnAttributeCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  if (tx._class !== core.class.TxCreateDoc) return []
-  const ctx = tx as TxCreateDoc<AnyAttribute>
-  if (ctx.objectClass !== core.class.Attribute) return []
-  const attribute = TxProcessor.createDoc2Doc(ctx)
+  const attribute = TxProcessor.createDoc2Doc(tx as TxCreateDoc<AnyAttribute>)
   const group = (
     await control.modelDb.findAll(notification.class.NotificationGroup, { objectClass: attribute.attributeOf })
   )[0]
@@ -795,9 +792,7 @@ export async function OnAttributeCreate (tx: Tx, control: TriggerControl): Promi
  * @public
  */
 export async function OnAttributeUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  if (tx._class !== core.class.TxUpdateDoc) return []
   const ctx = tx as TxUpdateDoc<AnyAttribute>
-  if (ctx.objectClass !== core.class.Attribute) return []
   if (ctx.operations.hidden === undefined) return []
   const type = (await control.findAll(notification.class.NotificationType, { attribute: ctx.objectId }))[0]
   if (type === undefined) return []

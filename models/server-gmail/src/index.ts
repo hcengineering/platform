@@ -17,6 +17,7 @@ import { Builder } from '@hcengineering/model'
 
 import contact from '@hcengineering/contact'
 import core, { Class, Doc } from '@hcengineering/core'
+import gmail from '@hcengineering/gmail'
 import serverCore, { ObjectDDParticipant } from '@hcengineering/server-core'
 import serverGmail from '@hcengineering/server-gmail'
 export { serverGmailId } from '@hcengineering/server-gmail'
@@ -32,6 +33,11 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverGmail.trigger.OnMessageCreate
+    trigger: serverGmail.trigger.OnMessageCreate,
+    txMatch: {
+      _class: core.class.TxCollectionCUD,
+      'tx.objectClass': gmail.class.Message,
+      'tx._class': core.class.TxCreateDoc
+    }
   })
 }
