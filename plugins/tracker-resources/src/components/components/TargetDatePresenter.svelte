@@ -15,9 +15,10 @@
 <script lang="ts">
   import { Component } from '@hcengineering/tracker'
   import { getClient } from '@hcengineering/presentation'
-  import { DueDatePresenter } from '@hcengineering/ui'
+  import { ButtonKind, DueDatePresenter } from '@hcengineering/ui'
 
   export let value: Component
+  export let kind: ButtonKind = 'list'
 
   const client = getClient()
 
@@ -28,4 +29,4 @@
   }
 </script>
 
-<DueDatePresenter value={dueDateMs} shouldRender={true} onChange={handleDueDateChanged} />
+<DueDatePresenter value={dueDateMs} {kind} shouldRender onChange={handleDueDateChanged} />

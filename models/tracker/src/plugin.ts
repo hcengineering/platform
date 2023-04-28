@@ -60,7 +60,9 @@ export default mergeIds(trackerId, tracker, {
     IssueList: '' as Ref<Viewlet>,
     IssueTemplateList: '' as Ref<Viewlet>,
     IssueKanban: '' as Ref<Viewlet>,
-    SprintList: '' as Ref<Viewlet>
+    SprintList: '' as Ref<Viewlet>,
+    ComponentList: '' as Ref<Viewlet>,
+    ComponentsTimeline: '' as Ref<Viewlet>
   },
   ids: {
     TxIssueCreated: '' as Ref<TxViewlet>,

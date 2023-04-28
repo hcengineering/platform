@@ -26,14 +26,14 @@
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import tracker from '../../plugin'
-  import { ComponentsViewMode } from '../../utils'
+  import { ComponentsFilterMode } from '../../utils'
   import ComponentBrowser from './ComponentBrowser.svelte'
   import EditComponent from './EditComponent.svelte'
 
   export let label: IntlString = tracker.string.Components
   export let query: DocumentQuery<Component> = {}
   export let search: string = ''
-  export let mode: ComponentsViewMode = 'all'
+  export let filterMode: ComponentsFilterMode = 'all'
 
   let componentId: Ref<Component> | undefined
   let component: Component | undefined
@@ -68,5 +68,5 @@
     }}
   />
 {:else}
-  <ComponentBrowser {label} {query} {search} {mode} />
+  <ComponentBrowser {label} {query} {search} {filterMode} />
 {/if}

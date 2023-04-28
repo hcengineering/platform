@@ -342,7 +342,7 @@ export class TTimeSpendReport extends TAttachedDoc implements TimeSpendReport {
 @UX(tracker.string.Component, tracker.icon.Component, 'COMPONENT')
 export class TComponent extends TDoc implements Component {
   @Prop(TypeString(), tracker.string.Title)
-  // @Index(IndexKind.FullText)
+  @Index(IndexKind.FullText)
     label!: string
 
   @Prop(TypeMarkup(), tracker.string.Description)
@@ -1357,6 +1357,10 @@ export function createModel (builder: Builder): void {
     filters: []
   })
 
+  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.ClassFilters, {
+    filters: []
+  })
+
   builder.createDoc(
     presentation.class.ObjectSearchCategory,
     core.space.Model,
@@ -1891,5 +1895,108 @@ export function createModel (builder: Builder): void {
       }
     },
     tracker.action.SetSprintLead
+  )
+
+  const componentListViewOptions: ViewOptionsModel = {
+    groupBy: ['lead'],
+    orderBy: [
+      ['startDate', SortingOrder.Descending],
+      ['modifiedOn', SortingOrder.Descending]
+    ],
+    other: []
+  }
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: tracker.class.Component,
+      descriptor: view.viewlet.List,
+      viewOptions: componentListViewOptions,
+      config: [
+        { key: '', presenter: tracker.component.IconPresenter },
+        {
+          key: '',
+          presenter: tracker.component.ComponentPresenter,
+          props: { kind: 'list', shouldShowAvatar: false }
+        },
+        { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
+        {
+          key: '$lookup.lead',
+          presenter: tracker.component.LeadPresenter,
+          props: { _class: tracker.class.Component, defaultClass: contact.class.Employee, shouldShowLabel: false }
+        },
+        {
+          key: '',
+          presenter: contact.component.MembersPresenter,
+          props: {
+            kind: 'link',
+            intlTitle: tracker.string.ComponentMembersTitle,
+            intlSearchPh: tracker.string.ComponentMembersSearchPlaceholder
+          }
+        },
+        { key: '', presenter: tracker.component.TargetDatePresenter },
+        { key: '', presenter: tracker.component.ComponentStatusPresenter, props: { width: 'min-content' } },
+        { key: '', presenter: tracker.component.DeleteComponentPresenter }
+      ]
+    },
+    tracker.viewlet.ComponentList
+  )
+
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: view.string.Timeline,
+      icon: view.icon.Timeline,
+      component: tracker.component.ComponentsTimeline
+    },
+    tracker.viewlet.Timeline
+  )
+
+  const componentTimelineViewOptions: ViewOptionsModel = {
+    groupBy: [],
+    orderBy: [
+      ['startDate', SortingOrder.Descending],
+      ['modifiedOn', SortingOrder.Descending]
+    ],
+    other: [],
+    groupDepth: 1
+  }
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: tracker.class.Component,
+      descriptor: tracker.viewlet.Timeline,
+      viewOptions: componentTimelineViewOptions,
+      config: [
+        { key: '', presenter: tracker.component.IconPresenter },
+        {
+          key: '',
+          presenter: tracker.component.ComponentPresenter,
+          props: { kind: 'list', shouldShowAvatar: false }
+        },
+        {
+          key: '$lookup.lead',
+          presenter: tracker.component.LeadPresenter,
+          props: { _class: tracker.class.Component, defaultClass: contact.class.Employee, shouldShowLabel: false }
+        },
+        {
+          key: '',
+          presenter: contact.component.MembersPresenter,
+          props: {
+            kind: 'link',
+            intlTitle: tracker.string.ComponentMembersTitle,
+            intlSearchPh: tracker.string.ComponentMembersSearchPlaceholder
+          }
+        },
+        { key: '', presenter: tracker.component.TargetDatePresenter },
+        { key: '', presenter: tracker.component.ComponentStatusPresenter, props: { width: 'min-content' } },
+        { key: '', presenter: tracker.component.DeleteComponentPresenter }
+      ]
+    },
+    tracker.viewlet.ComponentsTimeline
   )
 }

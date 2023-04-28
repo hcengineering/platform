@@ -17,11 +17,9 @@
   import { Button, ButtonSize, LabelAndProps, showPopup } from '@hcengineering/ui'
   import { getClient, MessageBox } from '@hcengineering/presentation'
   import type { Component } from '@hcengineering/tracker'
-  import tracker from '../../plugin'
-  import { Ref, Space } from '@hcengineering/core'
   import { createEventDispatcher } from 'svelte'
+  import tracker from '../../plugin'
 
-  export let space: Ref<Space>
   export let value: Component
   export let size: ButtonSize = 'medium'
   export let justify: 'left' | 'center' = 'center'
@@ -49,7 +47,7 @@
   }
 
   async function removeComponent () {
-    await client.removeDoc(tracker.class.Component, space, value._id)
+    await client.remove(value)
   }
 </script>
 

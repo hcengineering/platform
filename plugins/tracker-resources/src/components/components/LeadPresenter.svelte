@@ -15,7 +15,7 @@
 <script lang="ts">
   import contact, { Employee } from '@hcengineering/contact'
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { Component, Sprint } from '@hcengineering/tracker'
+  import { Component } from '@hcengineering/tracker'
   import { getClient } from '@hcengineering/presentation'
   import { UsersPopup } from '@hcengineering/contact-resources'
   import { AttributeModel } from '@hcengineering/view'
@@ -26,9 +26,8 @@
   import LeadPopup from './LeadPopup.svelte'
 
   export let value: Employee | null
-  export let _class: Ref<Class<Component | Sprint>>
+  export let object: Component
   export let size: IconSize = 'x-small'
-  export let parentId: Ref<Doc>
   export let defaultClass: Ref<Class<Doc>> | undefined = undefined
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
@@ -55,15 +54,8 @@
       return
     }
 
-    const currentParent = await client.findOne(_class, { _id: parentId as Ref<Component> })
-
-    if (currentParent === undefined) {
-      return
-    }
-
     const newLead = result === null ? null : result._id
-
-    await client.update(currentParent, { lead: newLead })
+    await client.update(object, { lead: newLead })
   }
 
   const handleLeadEditorOpened = async (event: MouseEvent) => {

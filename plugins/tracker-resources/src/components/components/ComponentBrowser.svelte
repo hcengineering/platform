@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,81 +13,104 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@hcengineering/contact'
-  import { DocumentQuery, FindOptions, SortingOrder } from '@hcengineering/core'
+  import { DocumentQuery, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
   import { Component } from '@hcengineering/tracker'
-  import { Button, IconAdd, Label, showPopup, TabList } from '@hcengineering/ui'
-  import type { TabItem } from '@hcengineering/ui'
+  import { createQuery } from '@hcengineering/presentation'
+  import view, { Viewlet } from '@hcengineering/view'
+  import {
+    makeViewletKey,
+    updateActiveViewlet,
+    activeViewlet,
+    getViewOptions,
+    viewOptionStore,
+    FilterButton,
+    ViewletSettingButton,
+    FilterBar
+  } from '@hcengineering/view-resources'
+  import {
+    ActionIcon,
+    Button,
+    IconAdd,
+    IconMoreH,
+    Label,
+    SearchEdit,
+    TabItem,
+    TabList,
+    resolvedLocationStore,
+    showPopup
+  } from '@hcengineering/ui'
+  import { onDestroy } from 'svelte'
+  import { ComponentsFilterMode, componentsTitleMap, getIncludedComponentStatuses } from '../../utils'
   import tracker from '../../plugin'
-  import view from '@hcengineering/view'
-  import { getIncludedComponentStatuses, componentsTitleMap, ComponentsViewMode } from '../../utils'
+  import ComponentsContent from './ComponentsContent.svelte'
   import NewComponent from './NewComponent.svelte'
-  import ComponentsListBrowser from './ComponentsListBrowser.svelte'
 
   export let label: IntlString
   export let query: DocumentQuery<Component> = {}
-  export let search: string = ''
-  export let mode: ComponentsViewMode = 'all'
-  export let viewMode: 'list' | 'timeline' = 'list'
+  export let search = ''
+  export let filterMode: ComponentsFilterMode = 'all'
+  export let panelWidth: number = 0
 
-  const ENTRIES_LIMIT = 200
-  const resultComponentsQuery = createQuery()
-
-  const componentOptions: FindOptions<Component> = {
-    sort: { modifiedOn: SortingOrder.Descending },
-    limit: ENTRIES_LIMIT,
-    lookup: { lead: contact.class.Employee, members: contact.class.Employee }
-  }
-
-  let resultComponents: Component[] = []
-
-  $: includedComponentStatuses = getIncludedComponentStatuses(mode)
-  $: title = componentsTitleMap[mode]
-  $: includedComponentsQuery = { status: { $in: includedComponentStatuses } }
-
-  $: baseQuery = {
-    ...includedComponentsQuery,
-    ...query
-  }
-
-  $: resultQuery = search === '' ? baseQuery : { $search: search, ...baseQuery }
-
-  $: resultComponentsQuery.query<Component>(
-    tracker.class.Component,
-    { ...resultQuery },
-    (result) => {
-      resultComponents = result
-    },
-    componentOptions
-  )
-
+  const viewletQuery = createQuery()
   const space = typeof query.space === 'string' ? query.space : tracker.project.DefaultProject
-  const showCreateDialog = async () => {
+
+  const filterModeList: TabItem[] = [
+    { id: 'all', labelIntl: tracker.string.AllComponents, action: () => handleFilterModeChanged('all') },
+    { id: 'backlog', labelIntl: tracker.string.BacklogComponents, action: () => handleFilterModeChanged('backlog') },
+    { id: 'active', labelIntl: tracker.string.ActiveComponents, action: () => handleFilterModeChanged('active') },
+    { id: 'closed', labelIntl: tracker.string.ClosedComponents, action: () => handleFilterModeChanged('closed') }
+  ]
+
+  let viewlet: WithLookup<Viewlet> | undefined
+  let viewlets: WithLookup<Viewlet>[] | undefined
+  let viewletKey = makeViewletKey()
+
+  let searchQuery: DocumentQuery<Component> = { ...query }
+  let resultQuery: DocumentQuery<Component> = { ...searchQuery }
+  let includedComponentsQuery: DocumentQuery<Component>
+
+  let asideFloat = false
+  let asideShown = true
+
+  let docWidth: number
+  let docSize = false
+
+  function handleFilterModeChanged (newMode: ComponentsFilterMode) {
+    if (newMode !== filterMode) {
+      filterMode = newMode
+    }
+  }
+
+  function showCreateDialog () {
     showPopup(NewComponent, { space, targetElement: null }, 'top')
   }
 
-  const handleViewModeChanged = (newMode: ComponentsViewMode) => {
-    if (newMode === undefined || newMode === mode) {
-      return
-    }
+  $: title = componentsTitleMap[filterMode]
+  $: includedComponentStatuses = getIncludedComponentStatuses(filterMode)
+  $: includedComponentsQuery = { status: { $in: includedComponentStatuses } }
+  $: searchQuery = search === '' ? { ...query } : { ...query, $search: search }
+  $: resultQuery = { ...searchQuery }
 
-    mode = newMode
+  $: viewletQuery.query(view.class.Viewlet, { attachTo: tracker.class.Component }, (res) => (viewlets = res), {
+    lookup: { descriptor: view.class.ViewletDescriptor }
+  })
+  $: viewlet = viewlets && updateActiveViewlet(viewlets, $activeViewlet[viewletKey])
+  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
+  $: views =
+    viewlets?.map((v) => ({ id: v._id, icon: v.$lookup?.descriptor?.icon, tooltip: v.$lookup?.descriptor?.label })) ??
+    []
+
+  $: if (panelWidth < 900 && !asideFloat) asideFloat = true
+  $: if (panelWidth >= 900 && asideFloat) {
+    asideFloat = false
+    asideShown = false
   }
 
-  const modeList: TabItem[] = [
-    { id: 'all', labelIntl: tracker.string.AllComponents, action: () => handleViewModeChanged('all') },
-    { id: 'backlog', labelIntl: tracker.string.BacklogComponents, action: () => handleViewModeChanged('backlog') },
-    { id: 'active', labelIntl: tracker.string.ActiveComponents, action: () => handleViewModeChanged('active') },
-    { id: 'closed', labelIntl: tracker.string.ClosedComponents, action: () => handleViewModeChanged('closed') }
-  ]
-  const viewList: TabItem[] = [
-    { id: 'list', icon: view.icon.List, tooltip: view.string.List },
-    { id: 'timeline', icon: view.icon.Timeline, tooltip: view.string.Timeline }
-  ]
+  $: if (docWidth <= 900 && !docSize) docSize = true
+  $: if (docWidth > 900 && docSize) docSize = false
 
-  const retrieveMembers = (p: Component) => p.members
+  onDestroy(resolvedLocationStore.subscribe((loc) => (viewletKey = makeViewletKey(loc))))
 </script>
 
 <div class="ac-header full divide caption-height">
@@ -99,77 +122,57 @@
   </div>
 
   <div class="ac-header-full medium-gap mb-1">
-    <TabList
-      items={viewList}
-      selected={viewMode}
-      on:select={(result) => {
-        if (result.detail !== undefined && result.detail.id !== viewMode) viewMode = result.detail.id
-      }}
-    />
-    <Button icon={IconAdd} label={tracker.string.Component} kind={'primary'} on:click={showCreateDialog} />
+    {#if viewlets && viewlets.length > 1}
+      <TabList
+        items={views}
+        selected={viewlet?._id}
+        kind="normal"
+        on:select={({ detail }) =>
+          (viewlet = viewlets && detail?.id ? updateActiveViewlet(viewlets, detail.id) : viewlet)}
+      />
+    {/if}
+    <Button icon={IconAdd} label={tracker.string.Component} kind="primary" on:click={showCreateDialog} />
+  </div>
+</div>
+<div class="ac-header full divide search-start">
+  <div class="ac-header-full small-gap">
+    <SearchEdit bind:value={search} />
+    <ActionIcon icon={IconMoreH} size="small" />
+    <div class="buttons-divider" />
+    <FilterButton _class={tracker.class.Component} {space} />
+  </div>
+  <div class="ac-header-full medium-gap">
+    {#if viewlet}
+      <ViewletSettingButton bind:viewOptions {viewlet} />
+      <ActionIcon icon={IconMoreH} size="small" />
+    {/if}
   </div>
 </div>
 <div class="ac-header full divide search-start">
   <div class="ac-header-full small-gap">
     <TabList
-      items={modeList}
-      selected={mode}
-      kind={'normal'}
-      on:select={(result) => {
-        if (result.detail !== undefined && result.detail.action) result.detail.action()
-      }}
+      items={filterModeList}
+      selected={filterMode}
+      kind="normal"
+      on:select={({ detail }) => detail?.action?.()}
     />
   </div>
 </div>
 
-<ComponentsListBrowser
+<FilterBar
   _class={tracker.class.Component}
-  itemsConfig={[
-    { key: '', presenter: tracker.component.IconPresenter },
-    { key: '', presenter: tracker.component.ComponentPresenter, props: { kind: 'list', shouldShowAvatar: false } },
-    {
-      key: '$lookup.lead',
-      presenter: tracker.component.LeadPresenter,
-      props: { _class: tracker.class.Component, defaultClass: contact.class.Employee, shouldShowLabel: false }
-    },
-    {
-      key: '',
-      presenter: contact.component.MembersPresenter,
-      props: {
-        kind: 'link',
-        intlTitle: tracker.string.ComponentMembersTitle,
-        intlSearchPh: tracker.string.ComponentMembersSearchPlaceholder,
-        retrieveMembers
-      }
-    },
-    { key: '', presenter: tracker.component.TargetDatePresenter },
-    { key: '', presenter: tracker.component.ComponentStatusPresenter },
-    { key: '', presenter: tracker.component.DeleteComponentPresenter, props: { space } }
-  ]}
-  components={resultComponents}
-  {viewMode}
+  query={searchQuery}
+  {viewOptions}
+  on:change={({ detail }) => (resultQuery = detail)}
 />
 
-<style lang="scss">
-  .header {
-    padding: 0.5rem 0.75rem 0.5rem 2.25rem;
-  }
-
-  .componentTitle {
-    display: flex;
-    margin-left: 0.25rem;
-    color: var(--content-color);
-    font-size: 0.8125rem;
-    font-weight: 500;
-  }
-
-  .itemsContainer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.65rem 0.75rem 0.65rem 2.25rem;
-    background-color: var(--board-bg-color);
-    border-top: 1px solid var(--divider-color);
-    border-bottom: 1px solid var(--divider-color);
-  }
-</style>
+<div class="flex w-full h-full clear-mins">
+  {#if viewlet}
+    <ComponentsContent {viewlet} query={{ ...resultQuery, ...includedComponentsQuery }} {space} {viewOptions} />
+  {/if}
+  {#if $$slots.aside !== undefined && asideShown}
+    <div class="popupPanel-body__aside flex" class:float={asideFloat} class:shown={asideShown}>
+      <slot name="aside" />
+    </div>
+  {/if}
+</div>
