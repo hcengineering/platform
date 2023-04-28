@@ -37,14 +37,6 @@ export * from './types'
 /**
  * @public
  */
-export interface LastView extends Doc {
-  user: Ref<Account>
-  [key: string]: any
-}
-
-/**
- * @public
- */
 export interface Notification extends AttachedDoc {
   tx: Ref<TxCUD<Doc>>
   status: NotificationStatus
@@ -138,28 +130,9 @@ export interface NotificationSetting extends Preference {
 /**
  * @public
  */
-export interface SpaceLastEdit extends Class<Doc> {
-  lastEditField: string
-}
-
-/**
- * @public
- */
-export interface AnotherUserNotifications extends Class<Doc> {
-  fields: string[]
-}
-
-/**
- * @public
- */
 export interface ClassCollaborators extends Class<Doc> {
   fields: string[] // Ref<Account> | Ref<Employee> | Ref<Account>[] | Ref<Employee>[]
 }
-
-/**
- * @public
- */
-export interface TrackedDoc extends Class<Doc> {}
 
 /**
  * @public
@@ -183,8 +156,8 @@ export interface DocUpdates extends Doc {
   attachedTo: Ref<Doc>
   attachedToClass: Ref<Class<Doc>>
   hidden: boolean
-  lastTx: Ref<TxCUD<Doc>>
-  lastTxTime: Timestamp
+  lastTx?: Ref<TxCUD<Doc>>
+  lastTxTime?: Timestamp
   txes: [Ref<TxCUD<Doc>>, Timestamp][]
 }
 
@@ -198,9 +171,9 @@ export const notificationId = 'notification' as Plugin
  */
 export interface NotificationClient {
   docUpdatesStore: Writable<Map<Ref<Doc>, DocUpdates>>
-  getLastViews: () => Writable<LastView>
-  updateLastView: (_id: Ref<Doc>, _class: Ref<Class<Doc>>, time?: Timestamp, force?: boolean) => Promise<void>
-  unsubscribe: (_id: Ref<Doc>) => Promise<void>
+  docUpdates: Writable<DocUpdates[]>
+  read: (_id: Ref<Doc>) => Promise<void>
+  forceRead: (_id: Ref<Doc>, _class: Ref<Class<Doc>>, space: Ref<Space>) => Promise<void>
 }
 
 /**
@@ -213,15 +186,11 @@ export type NotificationClientFactoy = () => NotificationClient
  */
 const notification = plugin(notificationId, {
   mixin: {
-    SpaceLastEdit: '' as Ref<Mixin<SpaceLastEdit>>,
-    AnotherUserNotifications: '' as Ref<Mixin<AnotherUserNotifications>>,
     ClassCollaborators: '' as Ref<Mixin<ClassCollaborators>>,
     Collaborators: '' as Ref<Mixin<Collaborators>>,
-    TrackedDoc: '' as Ref<Mixin<TrackedDoc>>,
     NotificationObjectPresenter: '' as Ref<Mixin<NotificationObjectPresenter>>
   },
   class: {
-    LastView: '' as Ref<Class<LastView>>,
     Notification: '' as Ref<Class<Notification>>,
     EmailNotification: '' as Ref<Class<EmailNotification>>,
     NotificationType: '' as Ref<Class<NotificationType>>,

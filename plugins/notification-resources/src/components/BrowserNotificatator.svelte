@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { EmployeeAccount } from '@hcengineering/contact'
-  import { Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { EmployeeAccount } from '@hcengineering/contact'
+  import { getCurrentAccount, Ref } from '@hcengineering/core'
   import {
     NotificationProvider,
     NotificationSetting,
@@ -26,14 +26,10 @@
   import { getCurrentLocation, showPanel } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import notification from '../plugin'
-  import { NotificationClientImpl } from '../utils'
 
   const query = createQuery()
   const settingQuery = createQuery()
   const providersQuery = createQuery()
-  const notificationClient = NotificationClientImpl.getClient()
-  const lastViews = notificationClient.getLastViews()
-  const lastViewId: Ref<Doc> = ((getCurrentAccount() as EmployeeAccount).employee + 'notification') as Ref<Doc>
 
   let settingsReceived = false
   let settings: Map<Ref<NotificationType>, NotificationSetting> = new Map<Ref<NotificationType>, NotificationSetting>()
@@ -128,16 +124,6 @@
     clearTimer = setTimeout(() => {
       alreadyShown.clear()
     }, 5000)
-
-    const lastView = ($lastViews as any)[lastViewId]
-    if ((lastView ?? notifyInstance.modifiedOn) > 0) {
-      await notificationClient.updateLastView(
-        lastViewId,
-        contact.class.Employee,
-        notifyInstance.modifiedOn,
-        lastView === undefined
-      )
-    }
 
     // eslint-disable-next-line
     const notification = new Notification(getCurrentLocation().path[1], {

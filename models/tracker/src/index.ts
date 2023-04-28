@@ -954,8 +954,6 @@ export function createModel (builder: Builder): void {
     inlineEditor: tracker.component.ComponentStatusEditor
   })
 
-  builder.mixin(tracker.class.Issue, core.class.Class, notification.mixin.TrackedDoc, {})
-
   builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AllValuesFunc, {
     func: tracker.function.GetAllPriority
   })

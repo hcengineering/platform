@@ -14,44 +14,35 @@
 // limitations under the License.
 //
 
-import core, { Account, Class, Doc, getCurrentAccount, Ref, Timestamp } from '@hcengineering/core'
-import notification, { DocUpdates, LastView, NotificationClient } from '@hcengineering/notification'
+import { Account, Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+import notification, { Collaborators, DocUpdates, NotificationClient } from '@hcengineering/notification'
 import { createQuery, getClient } from '@hcengineering/presentation'
-import { get, writable, Writable } from 'svelte/store'
+import { writable } from 'svelte/store'
 
 /**
  * @public
  */
 export class NotificationClientImpl implements NotificationClient {
   protected static _instance: NotificationClientImpl | undefined = undefined
-  private readonly lastViewsStore = writable<LastView>()
   readonly docUpdatesStore = writable<Map<Ref<Doc>, DocUpdates>>(new Map())
+  docUpdatesMap: Map<Ref<Doc>, DocUpdates> = new Map()
+  readonly docUpdates = writable<DocUpdates[]>([])
 
   private readonly docUpdatesQuery = createQuery(true)
 
-  private readonly lastViewQuery = createQuery()
   private readonly user: Ref<Account>
 
   private constructor () {
     this.user = getCurrentAccount()._id
-    this.lastViewQuery.query(notification.class.LastView, { user: this.user }, (result) => {
-      this.lastViewsStore.set(result[0])
-      if (result[0] === undefined) {
-        const client = getClient()
-        const u = client.txFactory.createTxCreateDoc(notification.class.LastView, notification.space.Notifications, {
-          user: this.user
-        })
-        u.space = core.space.DerivedTx
-        void client.tx(u)
-      }
-    })
     this.docUpdatesQuery.query(
       notification.class.DocUpdates,
       {
         user: this.user
       },
       (result) => {
-        this.docUpdatesStore.set(new Map(result.map((p) => [p.attachedTo, p])))
+        this.docUpdates.set(result)
+        this.docUpdatesMap = new Map(result.map((p) => [p.attachedTo, p]))
+        this.docUpdatesStore.set(this.docUpdatesMap)
       }
     )
   }
@@ -67,46 +58,49 @@ export class NotificationClientImpl implements NotificationClient {
     return NotificationClientImpl._instance
   }
 
-  getLastViews (): Writable<LastView> {
-    return this.lastViewsStore
-  }
-
-  async updateLastView (
-    _id: Ref<Doc>,
-    _class: Ref<Class<Doc>>,
-    time?: Timestamp,
-    force: boolean = false
-  ): Promise<void> {
+  async read (_id: Ref<Doc>): Promise<void> {
     const client = getClient()
-    const hierarchy = client.getHierarchy()
-    const mixin = hierarchy.classHierarchyMixin(_class, notification.mixin.TrackedDoc)
-    if (mixin === undefined) return
-    const lastView = time ?? new Date().getTime()
-    const obj = get(this.lastViewsStore)
-    if (obj !== undefined) {
-      const current = obj[_id] as Timestamp | undefined
-      if (current !== undefined || force) {
-        if (current === -1 && !force) return
-        if (force || (current ?? 0) < lastView) {
-          const u = client.txFactory.createTxUpdateDoc(obj._class, obj.space, obj._id, {
-            [_id]: lastView
-          })
-          u.space = core.space.DerivedTx
-          await client.tx(u)
-        }
-      }
+    const docUpdate = this.docUpdatesMap.get(_id)
+    if (docUpdate !== undefined) {
+      await client.update(docUpdate, { txes: [] })
     }
   }
 
-  async unsubscribe (_id: Ref<Doc>): Promise<void> {
+  async forceRead (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {
     const client = getClient()
-    const obj = get(this.lastViewsStore)
-    if (obj !== undefined) {
-      const u = client.txFactory.createTxUpdateDoc(obj._class, obj.space, obj._id, {
-        [_id]: -1
-      })
-      u.space = core.space.DerivedTx
-      await client.tx(u)
+    const docUpdate = this.docUpdatesMap.get(_id)
+    if (docUpdate !== undefined) {
+      await client.update(docUpdate, { txes: [] })
+    } else {
+      const doc = await client.findOne(_class, { _id })
+      if (doc !== undefined) {
+        const hiearachy = client.getHierarchy()
+        const collab = hiearachy.as<Doc, Collaborators>(doc, notification.mixin.Collaborators)
+        if (collab.collaborators === undefined) {
+          await client.createMixin<Doc, Collaborators>(
+            collab._id,
+            collab._class,
+            collab.space,
+            notification.mixin.Collaborators,
+            {
+              collaborators: [this.user]
+            }
+          )
+        } else if (!collab.collaborators.includes(this.user)) {
+          await client.updateMixin(collab._id, collab._class, collab.space, notification.mixin.Collaborators, {
+            $push: {
+              collaborators: this.user
+            }
+          })
+        }
+        await client.createDoc(notification.class.DocUpdates, doc.space, {
+          attachedTo: _id,
+          attachedToClass: _class,
+          user: this.user,
+          hidden: true,
+          txes: []
+        })
+      }
     }
   }
 }

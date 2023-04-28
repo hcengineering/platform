@@ -67,12 +67,12 @@ export { CommentPopup, CommentsPresenter }
 
 async function MarkUnread (object: Message): Promise<void> {
   const client = NotificationClientImpl.getClient()
-  await client.updateLastView(object.space, chunter.class.ChunterSpace, object.createOn - 1, true)
+  await client.forceRead(object.space, chunter.class.ChunterSpace)
 }
 
 async function MarkCommentUnread (object: ThreadMessage): Promise<void> {
   const client = NotificationClientImpl.getClient()
-  await client.updateLastView(object.attachedTo, object.attachedToClass, object.createOn - 1, true)
+  await client.forceRead(object.attachedTo, object.attachedToClass)
 }
 
 async function SubscribeMessage (object: Message): Promise<void> {
@@ -117,14 +117,20 @@ async function UnsubscribeMessage (object: ChunterMessage): Promise<void> {
         }
       }
     )
-    await notificationClient.unsubscribe(object.attachedTo)
+    const docUpdate = notificationClient.docUpdatesMap.get(object.attachedTo)
+    if (docUpdate !== undefined) {
+      await client.remove(docUpdate)
+    }
   } else {
     await client.updateMixin(object._id, object._class, object.space, notification.mixin.Collaborators, {
       $pull: {
         collaborators: acc._id
       }
     })
-    await notificationClient.unsubscribe(object._id)
+    const docUpdate = notificationClient.docUpdatesMap.get(object._id)
+    if (docUpdate !== undefined) {
+      await client.remove(docUpdate)
+    }
   }
 }
 

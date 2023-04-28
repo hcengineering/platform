@@ -13,22 +13,9 @@
 // limitations under the License.
 //
 
-import core, {
-  Account,
-  AttachedDoc,
-  Class,
-  Collection,
-  Data,
-  Doc,
-  DOMAIN_TX,
-  generateId,
-  Ref,
-  TxCollectionCUD,
-  TxOperations,
-  TxRemoveDoc
-} from '@hcengineering/core'
+import core, { AttachedDoc, Class, Collection, Data, Doc, DOMAIN_TX, Ref, TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
-import notification, { LastView, NotificationType } from '@hcengineering/notification'
+import notification, { DocUpdates, NotificationType } from '@hcengineering/notification'
 import { DOMAIN_NOTIFICATION } from '.'
 
 async function fillNotificationText (client: MigrationClient): Promise<void> {
@@ -77,79 +64,6 @@ async function createSpace (client: MigrationUpgradeClient): Promise<void> {
       },
       notification.space.Notifications
     )
-  }
-}
-
-async function migrateLastView (client: MigrationClient): Promise<void> {
-  // lets clear last view txes (it should be derived and shouldn't store in tx collection)
-  const txes = await client.find(DOMAIN_TX, {
-    objectClass: notification.class.LastView
-  })
-  for (const tx of txes) {
-    await client.delete(DOMAIN_TX, tx._id)
-  }
-
-  const h = client.hierarchy
-  const docClasses = h.getDescendants(core.class.Doc)
-  const trackedClasses = docClasses.filter((p) => h.hasMixin(h.getClass(p), notification.mixin.TrackedDoc))
-  const allowedClasses = new Set<Ref<Class<Doc>>>()
-  trackedClasses.forEach((p) => h.getDescendants(p).forEach((a) => allowedClasses.add(a)))
-
-  const removeTxes = await client.find<TxRemoveDoc<Doc>>(
-    DOMAIN_TX,
-    {
-      _class: core.class.TxRemoveDoc
-    },
-    { projection: { objectId: 1 } }
-  )
-
-  const removedDocs: Set<Ref<Doc>> = new Set(removeTxes.map((p) => p.objectId))
-  const removedCollectionTxes = await client.find<TxCollectionCUD<Doc, AttachedDoc>>(
-    DOMAIN_TX,
-    {
-      _class: core.class.TxCollectionCUD,
-      'tx._class': core.class.TxRemoveDoc
-    },
-    { projection: { tx: 1 } }
-  )
-  removedCollectionTxes.forEach((p) => p.tx.objectId)
-
-  const newLastView: Map<Ref<Account>, LastView> = new Map()
-  let total = 0
-  while (true) {
-    const lastViews = await client.find<LastView>(
-      DOMAIN_NOTIFICATION,
-      {
-        _class: notification.class.LastView,
-        attachedTo: { $exists: true }
-      },
-      { limit: 10000 }
-    )
-    total += lastViews.length
-    console.log(`migrate ${total} notifications`)
-    if (lastViews.length === 0) break
-    for (const lastView of lastViews) {
-      if (
-        lastView.user !== core.account.System &&
-        allowedClasses.has(lastView.attachedToClass) &&
-        !removedDocs.has(lastView.attachedTo)
-      ) {
-        const obj: LastView = newLastView.get(lastView.user) ?? {
-          user: lastView.user,
-          modifiedBy: lastView.user,
-          modifiedOn: Date.now(),
-          _id: generateId(),
-          space: notification.space.Notifications,
-          _class: notification.class.LastView
-        }
-        obj[lastView.attachedTo] = lastView.lastView
-        newLastView.set(lastView.user, obj)
-      }
-    }
-    await Promise.all(lastViews.map((p) => client.delete(DOMAIN_NOTIFICATION, p._id)))
-  }
-  for (const [, lastView] of newLastView) {
-    await client.create(DOMAIN_NOTIFICATION, lastView)
   }
 }
 
@@ -227,6 +141,28 @@ async function createCustomFieldTypes (client: MigrationUpgradeClient): Promise<
   }
 }
 
+async function changeDocUpdatesSpaces (client: MigrationUpgradeClient): Promise<void> {
+  const txop = new TxOperations(client, core.account.System)
+  const docUpdates = await client.findAll(notification.class.DocUpdates, { space: notification.space.Notifications })
+  const map = new Map<Ref<Class<Doc>>, Map<Ref<Doc>, DocUpdates[]>>()
+  for (const docUpdate of docUpdates) {
+    const _class = map.get(docUpdate.attachedToClass) ?? new Map()
+    const arr = _class.get(docUpdate.attachedTo) ?? []
+    arr.push(docUpdate)
+    _class.set(docUpdate.attachedTo, arr)
+    map.set(docUpdate.attachedToClass, _class)
+  }
+  for (const [_class, arr] of map) {
+    const ids = Array.from(arr.keys())
+    const docs = await client.findAll(_class, { _id: { $in: ids } })
+    for (const doc of docs) {
+      const updateDocs = arr.get(doc._id)
+      if (updateDocs === undefined) continue
+      await Promise.all(updateDocs.map(async (p) => await txop.update(p, { space: doc.space })))
+    }
+  }
+}
+
 async function cleanOutdatedSettings (client: MigrationClient): Promise<void> {
   const res = await client.find(DOMAIN_NOTIFICATION, {
     _class: notification.class.NotificationSetting
@@ -240,7 +176,6 @@ export const notificationOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await removeSettings(client)
     await fillNotificationText(client)
-    await migrateLastView(client)
     await fillCollaborators(client)
     await fillDocUpdatesHidder(client)
     await cleanOutdatedSettings(client)
@@ -248,5 +183,6 @@ export const notificationOperation: MigrateOperation = {
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await createSpace(client)
     await createCustomFieldTypes(client)
+    await changeDocUpdatesSpaces(client)
   }
 }

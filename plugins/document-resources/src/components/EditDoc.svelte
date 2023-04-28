@@ -60,7 +60,6 @@
   export let embedded = false
 
   let lastId: Ref<Doc> = _id
-  let lastClass: Ref<Class<Doc>> = _class
 
   const query = createQuery()
 
@@ -79,17 +78,15 @@
   function read (_id: Ref<Doc>) {
     if (lastId !== _id) {
       const prev = lastId
-      const prevClass = lastClass
       lastId = _id
-      lastClass = _class
-      notificationClient.then((client) => client.updateLastView(prev, prevClass))
+      notificationClient.then((client) => client.read(prev))
     }
   }
 
   const currentUser = getCurrentAccount() as EmployeeAccount
 
   onDestroy(async () => {
-    notificationClient.then((client) => client.updateLastView(_id, _class))
+    notificationClient.then((client) => client.read(_id))
   })
 
   let requests: DocumentRequest[] = []

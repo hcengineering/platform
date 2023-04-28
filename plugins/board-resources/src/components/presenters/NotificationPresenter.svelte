@@ -22,9 +22,8 @@
   export let size: IconSize = 'small'
 
   const notificationClient = NotificationClientImpl.getClient()
-  const lastViews = notificationClient.getLastViews()
-  $: lastView = $lastViews[object._id]
-  $: subscribed = lastView !== undefined && lastView !== -1
+  const store = notificationClient.docUpdatesStore
+  $: subscribed = $store.get(object._id) !== undefined
 </script>
 
 {#if subscribed}

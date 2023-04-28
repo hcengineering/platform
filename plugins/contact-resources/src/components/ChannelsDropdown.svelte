@@ -17,7 +17,7 @@
   import type { Channel, ChannelProvider } from '@hcengineering/contact'
   import contact from '@hcengineering/contact'
   import type { AttachedData, Doc, Ref } from '@hcengineering/core'
-  import notification, { LastView } from '@hcengineering/notification'
+  import notification, { DocUpdates } from '@hcengineering/notification'
   import { Asset, IntlString, getResource } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
   import {
@@ -50,8 +50,8 @@
   export let focusIndex = -1
   export let restricted: Ref<ChannelProvider>[] = []
 
-  let lastViews: Writable<LastView | undefined> = writable()
-  getResource(notification.function.GetNotificationClient).then((res) => (lastViews = res().getLastViews()))
+  let docUpdates: Writable<Map<Ref<Doc>, DocUpdates>> = writable(new Map())
+  getResource(notification.function.GetNotificationClient).then((res) => (docUpdates = res().docUpdatesStore))
   const dispatch = createEventDispatcher()
 
   interface Item {
@@ -70,11 +70,11 @@
   function getProvider (
     item: AttachedData<Channel>,
     map: Map<Ref<ChannelProvider>, ChannelProvider>,
-    lastViews: LastView | undefined
+    docUpdates: Map<Ref<Doc>, DocUpdates>
   ): Item | undefined {
     const provider = map.get(item.provider)
     if (provider) {
-      const notification = (item as Channel)._id !== undefined ? isNew(item as Channel, lastViews) : false
+      const notification = (item as Channel)._id !== undefined ? isNew(item as Channel, docUpdates) : false
       return {
         label: provider.label,
         icon: provider.icon as Asset,
@@ -92,16 +92,14 @@
     }
   }
 
-  function isNew (item: Channel, lastViews: LastView | undefined): boolean {
-    if (item.lastMessage === undefined) return false
-    const lastView =
-      (item as Channel)._id !== undefined && lastViews !== undefined ? lastViews[(item as Channel)._id] : undefined
-    return lastView ? lastView < item.lastMessage : (item.items ?? 0) > 0
+  function isNew (item: Channel, docUpdates: Map<Ref<Doc>, DocUpdates>): boolean {
+    const docUpdate = docUpdates.get(item._id)
+    return docUpdate ? docUpdate.txes.length > 0 : (item.items ?? 0) > 0
   }
 
   async function update (
     value: AttachedData<Channel>[] | Channel | null,
-    lastViews: LastView | undefined,
+    docUpdates: Map<Ref<Doc>, DocUpdates>,
     channelProviders: ChannelProvider[]
   ) {
     if (value == null) {
@@ -112,13 +110,13 @@
     const map = getChannelProviders(channelProviders)
     if (Array.isArray(value)) {
       for (const item of value) {
-        const provider = getProvider(item, map, lastViews)
+        const provider = getProvider(item, map, docUpdates)
         if (provider !== undefined) {
           result.push(provider)
         }
       }
     } else {
-      const provider = getProvider(value, map, lastViews)
+      const provider = getProvider(value, map, docUpdates)
       if (provider !== undefined) {
         result.push(provider)
       }
@@ -127,7 +125,7 @@
     updateMenu(displayItems, channelProviders)
   }
 
-  $: if (value) update(value, $lastViews, $channelProviders)
+  $: if (value) update(value, $docUpdates, $channelProviders)
 
   let displayItems: Item[] = []
   let actions: Action[] = []
@@ -148,7 +146,7 @@
           icon: pr.icon ?? contact.icon.SocialEdit,
           label: pr.label,
           action: async () => {
-            const provider = getProvider({ provider: pr._id, value: '' }, getChannelProviders(providers), $lastViews)
+            const provider = getProvider({ provider: pr._id, value: '' }, getChannelProviders(providers), $docUpdates)
             if (provider !== undefined) {
               if (_displayItems.filter((it) => it.provider === pr._id).length === 0) {
                 displayItems = [..._displayItems, provider]

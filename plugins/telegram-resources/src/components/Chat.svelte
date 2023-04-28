@@ -110,7 +110,7 @@
       (res) => {
         messages = res.reverse()
         if (channel !== undefined) {
-          notificationClient.updateLastView(channel._id, channel._class, undefined, true)
+          notificationClient.read(channel._id)
         }
       },
       {
@@ -171,7 +171,7 @@
       }
     )
     if (channel !== undefined) {
-      await notificationClient.updateLastView(channel._id, channel._class, channel.modifiedOn, true)
+      await notificationClient.read(channel._id)
     }
     clear()
   }

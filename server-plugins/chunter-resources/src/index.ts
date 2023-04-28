@@ -26,7 +26,6 @@ import core, {
   Hierarchy,
   Ref,
   Tx,
-  TxCollectionCUD,
   TxCreateDoc,
   TxCUD,
   TxProcessor,
@@ -192,84 +191,11 @@ async function ThreadMessageDelete (tx: Tx, control: TriggerControl): Promise<Tx
   return [updateTx]
 }
 
-async function MessageCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const hierarchy = control.hierarchy
-  const actualTx = TxProcessor.extractTx(tx)
-  if (actualTx._class !== core.class.TxCreateDoc) return []
-  const doc = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<Doc>)
-  if (!hierarchy.isDerived(doc._class, chunter.class.Message)) {
-    return []
-  }
-
-  const message = doc as Message
-
-  const channel = (
-    await control.findAll(
-      chunter.class.ChunterSpace,
-      {
-        _id: message.space
-      },
-      { limit: 1 }
-    )
-  )[0]
-
-  if (channel?.lastMessage === undefined || channel.lastMessage < message.createOn) {
-    const res = control.txFactory.createTxUpdateDoc<ChunterSpace>(channel._class, channel.space, channel._id, {
-      lastMessage: message.createOn
-    })
-    return [res]
-  }
-  return []
-}
-
-async function MessageDelete (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const hierarchy = control.hierarchy
-
-  const rmTx = TxProcessor.extractTx(tx) as TxCollectionCUD<ChunterSpace, Message>
-  if (rmTx._class !== core.class.TxRemoveDoc) return []
-  if (!hierarchy.isDerived(rmTx.objectClass, chunter.class.Message)) {
-    return []
-  }
-
-  const message = control.removedMap.get(rmTx.objectId) as Message
-
-  if (message === undefined) {
-    return []
-  }
-
-  const channel = (
-    await control.findAll(
-      chunter.class.ChunterSpace,
-      {
-        _id: message.space
-      },
-      { limit: 1 }
-    )
-  )[0]
-
-  if (channel?.lastMessage === message.createOn) {
-    const messages = await control.findAll(chunter.class.Message, {
-      attachedTo: channel._id
-    })
-    const lastMessageDate = messages.reduce((maxDate, mess) => (mess.createOn > maxDate ? mess.createOn : maxDate), 0)
-
-    const updateTx = control.txFactory.createTxUpdateDoc<ChunterSpace>(channel._class, channel.space, channel._id, {
-      lastMessage: lastMessageDate > 0 ? lastMessageDate : undefined
-    })
-
-    return [updateTx]
-  }
-
-  return []
-}
-
 /**
  * @public
  */
 export async function ChunterTrigger (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const promises = [
-    MessageCreate(tx, control),
-    MessageDelete(tx, control),
     ThreadMessageCreate(tx, control),
     ThreadMessageDelete(tx, control),
     CommentCreate(tx as TxCUD<Doc>, control)

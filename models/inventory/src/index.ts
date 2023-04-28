@@ -20,7 +20,6 @@ import attachment from '@hcengineering/model-attachment'
 import core, { TAttachedDoc } from '@hcengineering/model-core'
 import { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
-import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
 import view, { Viewlet } from '@hcengineering/view'
 import inventory from './plugin'
@@ -159,8 +158,6 @@ export function createModel (builder: Builder): void {
     { label: inventory.string.Inventory, visible: true },
     inventory.category.Inventory
   )
-
-  builder.mixin(inventory.class.Product, core.class.Class, notification.mixin.TrackedDoc, {})
 
   createAction(builder, {
     label: inventory.string.CreateSubcategory,

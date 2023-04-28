@@ -45,7 +45,6 @@ import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import presentation from '@hcengineering/model-presentation'
 import view, { actionTemplates, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
-import notification from '@hcengineering/notification'
 import tags from '@hcengineering/tags'
 import document from './plugin'
 
@@ -186,8 +185,6 @@ export function createModel (builder: Builder): void {
   builder.mixin(document.class.Document, core.class.Class, view.mixin.ObjectFactory, {
     component: document.component.CreateDocument
   })
-
-  builder.mixin(document.class.Document, core.class.Class, notification.mixin.TrackedDoc, {})
 
   builder.mixin(document.class.Document, core.class.Class, view.mixin.ObjectPanel, {
     component: document.component.EditDoc
