@@ -121,7 +121,7 @@ describe('client', () => {
     const pluginData1: Data<PluginConfiguration> = {
       pluginId: 'testPlugin1' as Plugin,
       transactions: [],
-      configurable: true,
+      beta: true,
       enabled: true
     }
     const txCreateDoc1 = txFactory.createTxCreateDoc(core.class.PluginConfiguration, core.space.Model, pluginData1)

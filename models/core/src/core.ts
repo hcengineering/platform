@@ -242,7 +242,7 @@ export class TPluginConfiguration extends TDoc implements PluginConfiguration {
 
   label!: IntlString
   enabled!: boolean
-  configurable!: boolean
+  beta!: boolean
 }
 
 @Model(core.class.BlobData, core.class.Doc, DOMAIN_BLOB)

@@ -38,7 +38,7 @@ export class TTxViewlet extends TDoc implements TxViewlet {
   hideOnRemove!: boolean
 }
 
-@Model(activity.class.ActivityFilter, core.class.Class, DOMAIN_MODEL)
+@Model(activity.class.ActivityFilter, core.class.Doc, DOMAIN_MODEL)
 export class TActivityFilter extends TDoc implements ActivityFilter {
   label!: IntlString
   filter!: Resource<(tx: DisplayTx, _class?: Ref<Doc>) => boolean>

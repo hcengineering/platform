@@ -80,6 +80,7 @@
     "ConfigurationEnabled": "Включено",
     "ConfigurationDisabled": "Выключено",
     "ConfigDisable": "Выключить",
-    "ConfigEnable": "Включить"
+    "ConfigEnable": "Включить",
+    "ConfigBeta": "Ознакомительная версия"
   }
 }

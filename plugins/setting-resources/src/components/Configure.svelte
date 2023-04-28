@@ -50,7 +50,10 @@
                 <Label label={config.description} />
               </div>
             {/if}
-            {#if config.configurable}
+            <div class="flex-between flex-row-center">
+              {#if config.beta}
+                <Label label={setting.string.ConfigBeta} />
+              {/if}
               <div class="flex-row-center flex-reverse flex-grow max-h-9">
                 <Button
                   label={config.enabled ?? true ? setting.string.ConfigDisable : setting.string.ConfigEnable}
@@ -58,7 +61,7 @@
                   on:click={() => change(config, !(config.enabled ?? true))}
                 />
               </div>
-            {/if}
+            </div>
           </div>
         {/if}
       {/each}

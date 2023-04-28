@@ -98,7 +98,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         label: contact.string.ConfigLabel,
         description: contact.string.ConfigDescription,
         enabled: true,
-        configurable: false,
+        beta: false,
         icon: contact.icon.ContactApplication,
         classFilter: [workbench.class.Application]
       }
@@ -110,7 +110,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         label: chunter.string.ConfigLabel,
         description: chunter.string.ConfigDescription,
         enabled: false,
-        configurable: false,
+        beta: true,
         icon: chunter.icon.Chunter,
         classFilter: [workbench.class.Application]
       }
@@ -123,9 +123,9 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         label: recruit.string.ConfigLabel,
         description: recruit.string.ConfigDescription,
         enabled: true,
+        beta: false,
         icon: recruit.icon.RecruitApplication,
-        classFilter: [workbench.class.Application, view.class.Action],
-        configurable: true
+        classFilter: [workbench.class.Application, view.class.Action]
       }
     ],
     [settingModel, settingId],
@@ -136,13 +136,13 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         label: telegram.string.ConfigLabel,
         description: telegram.string.ConfigDescription,
         enabled: true,
+        beta: false,
         classFilter: [
           workbench.class.Application,
           view.class.Action,
           contact.class.ChannelProvider,
           setting.class.IntegrationType
-        ],
-        configurable: true
+        ]
       }
     ],
     [
@@ -151,9 +151,9 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       {
         label: lead.string.ConfigLabel,
         description: lead.string.ConfigDescription,
-        enabled: true,
-        icon: lead.icon.LeadApplication,
-        configurable: false
+        enabled: false,
+        beta: true,
+        icon: lead.icon.LeadApplication
       }
     ],
     [
@@ -163,13 +163,13 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         label: gmail.string.ConfigLabel,
         description: gmail.string.ConfigDescription,
         enabled: true,
+        beta: false,
         classFilter: [
           workbench.class.Application,
           view.class.Action,
           contact.class.ChannelProvider,
           setting.class.IntegrationType
-        ],
-        configurable: true
+        ]
       }
     ],
     [
@@ -178,10 +178,10 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       {
         label: inventory.string.ConfigLabel,
         description: inventory.string.ConfigDescription,
-        enabled: true,
+        enabled: false,
+        beta: true,
         icon: inventory.icon.InventoryApplication,
-        classFilter: [workbench.class.Application, view.class.Action],
-        configurable: false
+        classFilter: [workbench.class.Application, view.class.Action]
       }
     ],
     [presentationModel, presentationId],
@@ -195,10 +195,10 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       {
         label: hr.string.ConfigLabel,
         description: hr.string.ConfigDescription,
-        enabled: true,
+        enabled: false,
+        beta: true,
         icon: hr.icon.Structure,
-        classFilter: [workbench.class.Application, view.class.Action],
-        configurable: true
+        classFilter: [workbench.class.Application, view.class.Action]
       }
     ],
     [
@@ -207,9 +207,9 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       {
         label: document.string.ConfigLabel,
         description: document.string.ConfigDescription,
-        enabled: true,
-        icon: document.icon.DocumentApplication,
-        configurable: false
+        enabled: false,
+        beta: true,
+        icon: document.icon.DocumentApplication
       }
     ],
     [
@@ -219,9 +219,9 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         label: tracker.string.ConfigLabel,
         description: tracker.string.ConfigDescription,
         enabled: true,
+        beta: false,
         icon: tracker.icon.TrackerApplication,
-        classFilter: [workbench.class.Application, view.class.Action],
-        configurable: true
+        classFilter: [workbench.class.Application, view.class.Action]
       }
     ],
     [
@@ -230,10 +230,10 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       {
         label: board.string.ConfigLabel,
         description: board.string.ConfigDescription,
-        enabled: true,
+        enabled: false,
+        beta: true,
         icon: board.icon.Board,
-        classFilter: [workbench.class.Application, view.class.Action],
-        configurable: false
+        classFilter: [workbench.class.Application, view.class.Action]
       }
     ],
     [
@@ -242,10 +242,10 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       {
         label: calendar.string.ConfigLabel,
         description: calendar.string.ConfigDescription,
-        enabled: true,
+        enabled: false,
+        beta: true,
         icon: calendar.icon.Calendar,
-        classFilter: [workbench.class.Application],
-        configurable: false
+        classFilter: [workbench.class.Application]
       }
     ],
     [
@@ -255,8 +255,8 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         label: bitrix.string.ConfigLabel,
         description: bitrix.string.ConfigDescription,
         enabled: false,
-        icon: bitrix.icon.Bitrix,
-        configurable: false
+        beta: true,
+        icon: bitrix.icon.Bitrix
       }
     ],
     [
@@ -266,7 +266,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         // label: request.string.ConfigLabel,
         // description: request.string.ConfigDescription,
         enabled: false,
-        configurable: false,
+        beta: true,
         classFilter: [workbench.class.Application, view.class.Action]
       }
     ],
@@ -311,7 +311,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         enabled:
           config?.label === undefined ||
           ((config?.enabled ?? true) && (enabled.includes(id) || enabled.includes('*')) && !disabled.includes(id)),
-        configurable: config?.configurable ?? false
+        beta: config?.beta ?? false
       },
       ('plugin-configuration-' + id) as Ref<PluginConfiguration>
     )
