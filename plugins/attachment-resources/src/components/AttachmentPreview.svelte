@@ -56,7 +56,7 @@
 {:else if type === 'video'}
   <div class="content buttonContainer flex-center">
     <video controls>
-      <source src={getFileUrl(value.file)} type={value.type} />
+      <source src={getFileUrl(value.file)} />
       <track kind="captions" label={value.name} />
       <div class="container">
         <AttachmentPresenter {value} />
