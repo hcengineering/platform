@@ -102,9 +102,7 @@
 
     const items = selectedObjectIds.length > 0 ? selectedObjectIds : object
 
-    showPopup(Menu, { object: items, baseMenuClass }, getEventPositionElement(event), () => {
-      dispatch('row-focus')
-    })
+    showPopup(Menu, { object: items, baseMenuClass }, getEventPositionElement(event))
   }
 
   let limited: Doc[] = []

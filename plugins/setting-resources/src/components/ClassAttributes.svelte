@@ -150,7 +150,7 @@
         }
       }))
     )
-    showPopup(Menu, { actions }, getEventPositionElement(ev), () => {})
+    showPopup(Menu, { actions }, getEventPositionElement(ev))
   }
 
   function getAttrType (type: Type<any>): IntlString | undefined {
@@ -172,7 +172,7 @@
     return res?.name
   }
   function editLabel (evt: MouseEvent): void {
-    showPopup(EditClassLabel, { clazz }, getEventPositionElement(evt), () => {})
+    showPopup(EditClassLabel, { clazz }, getEventPositionElement(evt))
   }
 </script>
 

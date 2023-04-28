@@ -113,9 +113,7 @@
 
   const showMenu = async (ev: MouseEvent, items: Doc[]): Promise<void> => {
     ev.preventDefault()
-    showPopup(Menu, { object: items, baseMenuClass }, getEventPositionElement(ev), () => {
-      // selection = undefined
-    })
+    showPopup(Menu, { object: items, baseMenuClass }, getEventPositionElement(ev))
   }
   const issuesQuery = createQuery()
   let tasks: Task[] = []
