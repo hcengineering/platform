@@ -36,6 +36,7 @@
   export let enlargedText: boolean = false
   export let short: boolean = false
   export let focusIndex: number | undefined = undefined
+  export let isAction: boolean = false
 
   export let useComponent: Ref<Component> | undefined = undefined
   export let showTooltip: LabelAndProps | undefined = undefined
@@ -72,13 +73,8 @@
     selectedSprint = sprints.find((it) => it._id === newSprintId)
   }
 
-  const handleSprintEditorOpened = async (event: MouseEvent): Promise<void> => {
-    event.stopPropagation()
-    if (!isEditable) {
-      return
-    }
-
-    const sprintInfo = [
+  const getSprintInfo = (rawSprints: Sprint[]) => {
+    return [
       { id: null, icon: tracker.icon.Sprint, label: tracker.string.NoSprint },
       ...rawSprints.map((p) => ({
         id: p._id,
@@ -87,6 +83,17 @@
         category: sprintStatusAssets[p.status]
       }))
     ]
+  }
+
+  $: sprints = getSprintInfo(rawSprints)
+
+  const handleSprintEditorOpened = async (event: MouseEvent): Promise<void> => {
+    event.stopPropagation()
+    if (!isEditable) {
+      return
+    }
+
+    const sprintInfo = sprints
 
     showPopup(
       SelectPopup,
@@ -97,7 +104,16 @@
   }
 </script>
 
-{#if onlyIcon || sprintText === undefined}
+{#if isAction}
+  <SelectPopup
+    value={sprints}
+    placeholder={popupPlaceholder}
+    searchable
+    on:close={(evt) => {
+      if (onChange !== undefined) onChange(evt.detail)
+    }}
+  />
+{:else if onlyIcon || sprintText === undefined}
   <Button
     {focusIndex}
     {kind}
