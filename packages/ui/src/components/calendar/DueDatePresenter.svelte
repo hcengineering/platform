@@ -84,7 +84,8 @@
             formattedDate,
             daysDifference,
             isOverdue,
-            iconModifier
+            iconModifier,
+            shouldIgnoreOverdue
           }
         }
       : undefined}

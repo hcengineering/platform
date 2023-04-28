@@ -23,6 +23,7 @@
   export let daysDifference: number = 0
   export let isOverdue: boolean = false
   export let iconModifier: 'warning' | 'critical' | 'overdue' | undefined = undefined
+  export let shouldIgnoreOverdue: boolean = false
 </script>
 
 {#if formattedDate}
@@ -32,7 +33,7 @@
       class:mIconContainerWarning={iconModifier === 'warning'}
       class:mIconContainerCritical={iconModifier === 'critical' || iconModifier === 'overdue'}
     >
-      <Icon icon={isOverdue ? DPCalendarOver : DPCalendar} size={'small'} />
+      <Icon icon={isOverdue && !shouldIgnoreOverdue ? DPCalendarOver : DPCalendar} size={'small'} />
     </div>
     <div class="messageContainer">
       <div class="title">
@@ -42,10 +43,12 @@
         />
       </div>
       <div class="description">
-        <Label
-          label={isOverdue ? ui.string.DueDatePopupOverdueDescription : ui.string.DueDatePopupDescription}
-          params={{ value: daysDifference }}
-        />
+        {#if !shouldIgnoreOverdue}
+          <Label
+            label={isOverdue ? ui.string.DueDatePopupOverdueDescription : ui.string.DueDatePopupDescription}
+            params={{ value: daysDifference }}
+          />
+        {/if}
       </div>
     </div>
   </div>
@@ -54,7 +57,7 @@
 <style lang="scss">
   .root {
     display: flex;
-    width: 15rem;
+    width: 10rem;
   }
 
   .iconContainer {
