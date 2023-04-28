@@ -423,8 +423,14 @@ function isTypeMatched (
   return true
 }
 
-async function getMatchedTypes (control: TriggerControl, tx: TxCUD<Doc>): Promise<NotificationType[]> {
-  const allTypes = await control.modelDb.findAll(notification.class.NotificationType, {})
+async function getMatchedTypes (
+  control: TriggerControl,
+  tx: TxCUD<Doc>,
+  isSpace: boolean = false
+): Promise<NotificationType[]> {
+  const allTypes = (await control.modelDb.findAll(notification.class.NotificationType, {})).filter((p) =>
+    isSpace ? p.spaceSubscribe === true : p.spaceSubscribe !== true
+  )
   const extractedTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
   const filtered: NotificationType[] = []
   for (const type of allTypes) {
@@ -444,11 +450,12 @@ async function isShouldNotify (
   control: TriggerControl,
   tx: TxCUD<Doc>,
   object: Doc,
-  user: Ref<Account>
+  user: Ref<Account>,
+  isSpace: boolean
 ): Promise<NotifyResult> {
   let allowed = false
   const emailTypes: NotificationType[] = []
-  const types = await getMatchedTypes(control, tx)
+  const types = await getMatchedTypes(control, tx, isSpace)
   for (const type of types) {
     if (control.hierarchy.hasMixin(type, serverNotification.mixin.TypeMatch)) {
       const mixin = control.hierarchy.as(type, serverNotification.mixin.TypeMatch)
@@ -476,11 +483,12 @@ async function getNotificationTxes (
   object: Doc,
   originTx: TxCUD<Doc>,
   target: Ref<Account>,
-  docUpdates: DocUpdates[]
+  docUpdates: DocUpdates[],
+  isSpace: boolean
 ): Promise<Tx[]> {
   if (originTx.modifiedBy === target) return []
   const res: Tx[] = []
-  const allowed = await isShouldNotify(control, originTx, object, target)
+  const allowed = await isShouldNotify(control, originTx, object, target, isSpace)
   if (allowed.allowed) {
     const current = docUpdates.find((p) => p.user === target)
     if (current === undefined) {
@@ -532,13 +540,14 @@ async function createCollabDocInfo (
   collaborators: Ref<Account>[],
   control: TriggerControl,
   originTx: TxCUD<Doc>,
-  object: Doc
+  object: Doc,
+  isSpace: boolean = false
 ): Promise<Tx[]> {
   let res: Tx[] = []
   const targets = new Set(collaborators)
   const docUpdates = await control.findAll(notification.class.DocUpdates, { attachedTo: object._id })
   for (const target of targets) {
-    res = res.concat(await getNotificationTxes(control, object, originTx, target, docUpdates))
+    res = res.concat(await getNotificationTxes(control, object, originTx, target, docUpdates, isSpace))
   }
   return res
 }
@@ -563,6 +572,27 @@ export function getMixinTx (
   return tx
 }
 
+async function getSpaceCollabTxes (
+  control: TriggerControl,
+  doc: Doc,
+  tx: TxCUD<Doc>,
+  originTx: TxCUD<Doc>
+): Promise<Tx[]> {
+  const space = (await control.findAll(core.class.Space, { _id: doc.space }))[0]
+  if (space === undefined) return []
+  const mixin = control.hierarchy.classHierarchyMixin<Doc, ClassCollaborators>(
+    space._class,
+    notification.mixin.ClassCollaborators
+  )
+  if (mixin !== undefined) {
+    const collabs = control.hierarchy.as<Doc, Collaborators>(space, notification.mixin.Collaborators)
+    if (collabs.collaborators !== undefined) {
+      return await createCollabDocInfo(collabs.collaborators, control, originTx, doc, true)
+    }
+  }
+  return []
+}
+
 /**
  * @public
  */
@@ -574,8 +604,8 @@ export async function createCollaboratorDoc (
   const res: Tx[] = []
   const hierarchy = control.hierarchy
   const mixin = hierarchy.classHierarchyMixin(tx.objectClass, notification.mixin.ClassCollaborators)
+  const doc = TxProcessor.createDoc2Doc(tx)
   if (mixin !== undefined) {
-    const doc = TxProcessor.createDoc2Doc(tx)
     const collaborators = await getDocCollaborators(doc, mixin, control)
 
     const mixinTx = getMixinTx(tx, control, collaborators)
@@ -583,6 +613,7 @@ export async function createCollaboratorDoc (
     res.push(mixinTx)
     res.push(...notificationTxes)
   }
+  res.push(...(await getSpaceCollabTxes(control, doc, tx, originTx)))
   return res
 }
 
@@ -716,6 +747,8 @@ async function updateCollaboratorDoc (
     res.push(getMixinTx(tx, control, collaborators))
     res = res.concat(await createCollabDocInfo(collaborators, control, originTx, doc))
   }
+
+  res = res.concat(await getSpaceCollabTxes(control, doc, tx, originTx))
 
   return res
 }

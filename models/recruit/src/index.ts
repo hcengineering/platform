@@ -1140,6 +1140,25 @@ export function createModel (builder: Builder): void {
     recruit.ids.VacancyNotificationGroup
   )
 
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: false,
+      generated: false,
+      label: recruit.string.CreateApplication,
+      group: recruit.ids.VacancyNotificationGroup,
+      field: 'space',
+      txClasses: [core.class.TxCreateDoc, core.class.TxUpdateDoc],
+      objectClass: recruit.class.Applicant,
+      spaceSubscribe: true,
+      providers: {
+        [notification.providers.PlatformNotification]: false
+      }
+    },
+    recruit.ids.ApplicationCreateNotification
+  )
+
   generateClassNotificationTypes(builder, recruit.class.Vacancy, recruit.ids.VacancyNotificationGroup, [], ['comments'])
 
   builder.createDoc(
