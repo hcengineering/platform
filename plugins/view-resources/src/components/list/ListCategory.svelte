@@ -425,6 +425,7 @@
             on:contextmenu={(event) => handleMenuOpened(event, docObject)}
             on:focus={() => {}}
             on:mouseover={mouseAttractor(() => handleRowFocused(docObject))}
+            on:mouseenter={mouseAttractor(() => handleRowFocused(docObject))}
             {props}
             on:on-mount={() => {
               wasLoaded = true

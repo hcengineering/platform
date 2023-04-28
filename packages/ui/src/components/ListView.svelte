@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { resizeObserver } from '..'
+  import { mouseAttractor, resizeObserver } from '..'
 
   export let selection: number = 0
   export let count: number
@@ -72,7 +72,8 @@
       <div
         class="list-item{addClass ? ` ${addClass}` : ''}"
         class:selection={row === selection}
-        on:mouseover={() => onRow(row)}
+        on:mouseover={mouseAttractor(() => onRow(row))}
+        on:mouseenter={mouseAttractor(() => onRow(row))}
         on:focus={() => {}}
         bind:this={refs[row]}
         on:click={() => dispatch('click', row)}

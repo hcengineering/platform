@@ -34,8 +34,6 @@
   id={category._id}
   style:transform={category._id === tracker.issueStatusCategory.Started ? 'rotate(-90deg)' : ''}
   viewBox="0 0 16 16"
-  stroke-width={0.75}
-  stroke={fill}
   xmlns="http://www.w3.org/2000/svg"
 >
   {#if category._id === tracker.issueStatusCategory.Backlog}

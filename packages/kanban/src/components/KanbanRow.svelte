@@ -89,6 +89,7 @@
       class:selection={selection !== undefined ? objects[selection]?._id === object._id : false}
       class:checked={checkedSet.has(object._id)}
       on:mouseover={mouseAttractor(() => dispatch('obj-focus', object))}
+      on:mouseenter={mouseAttractor(() => dispatch('obj-focus', object))}
       on:focus={() => {}}
       on:contextmenu={(evt) => showMenu(evt, object)}
       draggable={true}

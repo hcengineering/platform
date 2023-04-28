@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { Asset, IntlString } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
-  import { deviceOptionsStore, resizeObserver } from '..'
+  import { deviceOptionsStore, mouseAttractor, resizeObserver } from '..'
   import { createFocusManager } from '../focus'
   import type { AnySvelteComponent } from '../types'
   import EditBox from './EditBox.svelte'
@@ -151,7 +151,8 @@
             class="menu-item w-full"
             on:click={() => dispatch('close', item.id)}
             on:focus={() => dispatch('update', item)}
-            on:mouseover={() => dispatch('update', item)}
+            on:mouseover={mouseAttractor(() => dispatch('update', item))}
+            on:mouseenter={mouseAttractor(() => dispatch('update', item))}
           >
             <div class="flex-row-center" class:mt-2={huge} class:mb-2={huge}>
               {#if hasSelected}
