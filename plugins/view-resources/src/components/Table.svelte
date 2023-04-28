@@ -279,6 +279,7 @@
             class:fixed={row === selection}
             class:selected={row === selection}
             on:mouseover={mouseAttractor(() => onRow(object))}
+            on:mouseenter={mouseAttractor(() => onRow(object))}
             on:focus={() => {}}
             bind:this={refs[row]}
             on:contextmenu|preventDefault={(ev) => {
