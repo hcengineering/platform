@@ -67,7 +67,7 @@
         asDoc = hieararchy.as(object, filter.key._class)
       }
       const realValue = getObjectValue(filter.key.key, asDoc)
-      const d = new Date(realValue as number).setHours(0, 0, 0, 0)
+      const d = realValue ? new Date(realValue as number).setHours(0, 0, 0, 0) : undefined
       values.set(d, (values.get(d) ?? 0) + 1)
       realValues.set(d, (realValues.get(d) ?? new Set()).add(realValue))
     }
