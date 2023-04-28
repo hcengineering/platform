@@ -138,7 +138,7 @@ describe('client', () => {
     const pluginData2 = {
       pluginId: 'testPlugin2' as Plugin,
       transactions: [],
-      configurable: true,
+      beta: true,
       enabled: true
     }
     const txCreateDoc2 = txFactory.createTxCreateDoc(core.class.PluginConfiguration, core.space.Model, pluginData2)
@@ -156,7 +156,7 @@ describe('client', () => {
     const pluginData3 = {
       pluginId: 'testPlugin3' as Plugin,
       transactions: [txCreateDoc1._id],
-      configurable: true,
+      beta: true,
       enabled: true
     }
     const txUpdateDoc = txFactory.createTxUpdateDoc(
