@@ -227,13 +227,13 @@ export const getArraysUnion = (a: any[], b: any[]): any[] => {
   return Array.from(union)
 }
 
-export type ComponentsViewMode = 'all' | 'backlog' | 'active' | 'closed'
+export type ComponentsFilterMode = 'all' | 'backlog' | 'active' | 'closed'
 
 export type SprintViewMode = 'all' | 'planned' | 'active' | 'closed'
 
 export type ScrumRecordViewMode = 'timeReports' | 'objects'
 
-export const getIncludedComponentStatuses = (mode: ComponentsViewMode): ComponentStatus[] => {
+export const getIncludedComponentStatuses = (mode: ComponentsFilterMode): ComponentStatus[] => {
   switch (mode) {
     case 'all': {
       return defaultComponentStatuses
@@ -273,7 +273,7 @@ export const getIncludedSprintStatuses = (mode: SprintViewMode): SprintStatus[] 
   }
 }
 
-export const componentsTitleMap: Record<ComponentsViewMode, IntlString> = Object.freeze({
+export const componentsTitleMap: Record<ComponentsFilterMode, IntlString> = Object.freeze({
   all: tracker.string.AllComponents,
   backlog: tracker.string.BacklogComponents,
   active: tracker.string.ActiveComponents,

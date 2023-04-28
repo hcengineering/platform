@@ -15,12 +15,11 @@
 <script lang="ts">
   import { Class, Doc, FindOptions, getObjectValue, Ref, Timestamp } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Component, Issue } from '@hcengineering/tracker'
+  import { Component } from '@hcengineering/tracker'
   import { CheckBox, Spinner, Timeline, TimelineRow } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey } from '@hcengineering/view'
   import { buildModel, LoadingProps } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import tracker from '../../plugin'
   import ComponentPresenter from './ComponentPresenter.svelte'
 
   export let _class: Ref<Class<Doc>>
@@ -29,18 +28,12 @@
   export let selectedRowIndex: number | undefined = undefined
   export let components: Component[] | undefined = undefined
   export let loadingProps: LoadingProps | undefined = undefined
+  export let options: FindOptions<Component> | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
   const client = getClient()
 
-  const baseOptions: FindOptions<Issue> = {
-    lookup: {
-      status: tracker.class.IssueStatus
-    }
-  }
-
-  $: options = { ...baseOptions } as FindOptions<Component>
   $: selectedObjectIdsSet = new Set<Ref<Doc>>(selectedObjectIds.map((it) => it._id))
   let selectedRows: number[] = []
   $: if (selectedObjectIdsSet.size > 0 && components !== undefined) {
@@ -86,7 +79,7 @@
   }
 
   let itemModels: AttributeModel[] | undefined = undefined
-  $: buildModel({ client, _class, keys: itemsConfig, lookup: options.lookup }).then((res) => (itemModels = res))
+  $: buildModel({ client, _class, keys: itemsConfig, lookup: options?.lookup }).then((res) => (itemModels = res))
 
   let lines: TimelineRow[] | undefined
   $: lines = components?.map((proj) => {
@@ -125,6 +118,7 @@
               <svelte:component
                 this={attributeModel.presenter}
                 value={getObjectValue(attributeModel.key, components[row]) ?? ''}
+                object={components[row]}
                 {...attributeModel.props}
               />
             </div>
@@ -134,6 +128,7 @@
             <svelte:component
               this={attributeModel.presenter}
               value={getObjectValue(attributeModel.key, components[row]) ?? ''}
+              object={components[row]}
               {...attributeModel.props}
             />
           </div>
@@ -143,7 +138,7 @@
             <svelte:component
               this={attributeModel.presenter}
               value={getObjectValue(attributeModel.key, components[row]) ?? ''}
-              parentId={components[row]._id}
+              object={components[row]}
               {...attributeModel.props}
             />
           </div>

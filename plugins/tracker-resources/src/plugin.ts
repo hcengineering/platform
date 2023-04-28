@@ -24,7 +24,8 @@ export default mergeIds(trackerId, tracker, {
   viewlet: {
     SubIssues: '' as Ref<Viewlet>,
     List: '' as Ref<ViewletDescriptor>,
-    Kanban: '' as Ref<ViewletDescriptor>
+    Kanban: '' as Ref<ViewletDescriptor>,
+    Timeline: '' as Ref<ViewletDescriptor>
   },
   string: {
     More: '' as IntlString,
@@ -319,6 +320,7 @@ export default mergeIds(trackerId, tracker, {
     Active: '' as AnyComponent,
     Backlog: '' as AnyComponent,
     Components: '' as AnyComponent,
+    ComponentsTimeline: '' as AnyComponent,
     IssuePresenter: '' as AnyComponent,
     ComponentTitlePresenter: '' as AnyComponent,
     ComponentPresenter: '' as AnyComponent,

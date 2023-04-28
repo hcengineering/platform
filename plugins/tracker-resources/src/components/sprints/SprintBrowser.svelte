@@ -179,35 +179,3 @@
     </div>
   {/if}
 </div>
-
-<style lang="scss">
-  .header {
-    padding: 0.5rem 0.75rem 0.5rem 2.25rem;
-  }
-
-  .title {
-    display: flex;
-    margin-left: 0.25rem;
-    color: var(--content-color);
-    font-size: 0.8125rem;
-    font-weight: 500;
-  }
-
-  .itemsContainer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.65rem 0.75rem 0.65rem 2.25rem;
-    background-color: var(--board-bg-color);
-    border-top: 1px solid var(--divider-color);
-    border-bottom: 1px solid var(--divider-color);
-  }
-
-  .buttonWrapper {
-    margin-right: 1px;
-
-    &:last-child {
-      margin-right: 0;
-    }
-  }
-</style>
