@@ -132,9 +132,7 @@
       checked = []
     }
     const items = checked.length > 0 ? checked : object
-    showPopup(Menu, { object: items, baseMenuClass }, getEventPositionElement(ev), () => {
-      selection = undefined
-    })
+    showPopup(Menu, { object: items, baseMenuClass }, getEventPositionElement(ev))
   }
 
   function changeSorting (key: string | string[]): void {
