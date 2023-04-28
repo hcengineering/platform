@@ -179,16 +179,12 @@
   }
 
   function handleDragOver (ev: DragEvent, status: IssueStatus) {
-    if (draggingStatus?.category === status.category) {
-      hoveringStatus = status
-      ev.preventDefault()
-    } else {
-      hoveringStatus = null
-    }
+    hoveringStatus = status
+    ev.preventDefault()
   }
 
   async function handleDrop (toItem: IssueStatus) {
-    if (draggingStatus != null && draggingStatus?._id !== toItem._id && draggingStatus?.category === toItem.category) {
+    if (draggingStatus != null && draggingStatus?._id !== toItem._id) {
       const fromIndex = getStatusIndex(draggingStatus)
       const toIndex = getStatusIndex(toItem)
       const [prev, next] = [
@@ -197,7 +193,9 @@
       ]
 
       isSaving = true
-      await client.update(draggingStatus, { rank: calcRank(prev, next) })
+      let newCategory = {}
+      if (draggingStatus?.category !== toItem.category) newCategory = { category: toItem.category }
+      await client.update(draggingStatus, { rank: calcRank(prev, next), ...newCategory })
       isSaving = false
     }
 
