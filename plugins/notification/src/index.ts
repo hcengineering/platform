@@ -111,6 +111,8 @@ export interface NotificationType extends Doc {
   attachedToClass?: Ref<Class<Doc>>
   // use for update/mixin txes
   field?: string
+  // use for space collaborators, not object
+  spaceSubscribe?: boolean
   // allowed providers and default value for it
   providers: Record<Ref<NotificationProvider>, boolean>
   // templates for email (and browser/push?)
