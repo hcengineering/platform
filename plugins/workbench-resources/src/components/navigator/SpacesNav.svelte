@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Doc, Ref, Space } from '@hcengineering/core'
+  import type { Class, Doc, Ref, Space } from '@hcengineering/core'
   import core from '@hcengineering/core'
   import notification, { LastView } from '@hcengineering/notification'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
@@ -22,20 +22,16 @@
   import { getClient } from '@hcengineering/presentation'
   import {
     Action,
+    AnySvelteComponent,
     IconAdd,
     IconEdit,
     IconSearch,
-    navigate,
     getCurrentResolvedLocation,
+    navigate,
     showPopup
   } from '@hcengineering/ui'
-  import {
-    NavLink,
-    TreeItem,
-    TreeNode,
-    getActions as getContributedActions,
-    getObjectPresenter
-  } from '@hcengineering/view-resources'
+  import view from '@hcengineering/view'
+  import { NavLink, TreeItem, TreeNode, getActions as getContributedActions } from '@hcengineering/view-resources'
   import { SpacesNavModel } from '@hcengineering/workbench'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
@@ -121,6 +117,13 @@
   function getParentActions (): Action[] {
     return hasSpaceBrowser ? [browseSpaces, addSpace] : [addSpace]
   }
+
+  async function getPresenter (_class: Ref<Class<Doc>>): Promise<AnySvelteComponent | undefined> {
+    const value = hierarchy.classHierarchyMixin(_class, view.mixin.SpacePresenter)
+    if (value?.presenter !== undefined) {
+      return await getResource(value.presenter)
+    }
+  }
 </script>
 
 <TreeNode
@@ -130,18 +133,10 @@
   shortDropbox={model.specials !== undefined}
 >
   {#each spaces as space, i (space._id)}
-    {#await getObjectPresenter(client, space._class, { key: '' }) then presenter}
+    {#await getPresenter(space._class) then presenter}
       {#if separate && model.specials && i !== 0}<TreeSeparator line />{/if}
       {#if model.specials && presenter}
-        <svelte:component
-          this={presenter.presenter}
-          {space}
-          {model}
-          {currentSpace}
-          {currentSpecial}
-          {getActions}
-          {deselect}
-        />
+        <svelte:component this={presenter} {space} {model} {currentSpace} {currentSpecial} {getActions} {deselect} />
       {:else}
         <NavLink space={space._id}>
           {#await getSpaceName(client, space) then name}

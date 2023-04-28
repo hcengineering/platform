@@ -128,6 +128,7 @@ import StatusRefPresenter from './components/issues/StatusRefPresenter.svelte'
 import TimeSpendReportPopup from './components/issues/timereport/TimeSpendReportPopup.svelte'
 import CreateProject from './components/projects/CreateProject.svelte'
 import ProjectPresenter from './components/projects/ProjectPresenter.svelte'
+import ProjectSpacePresenter from './components/projects/ProjectSpacePresenter.svelte'
 import MoveIssues from './components/issues/Move.svelte'
 import IssueStatistics from './components/sprints/IssueStatistics.svelte'
 import SprintRefPresenter from './components/sprints/SprintRefPresenter.svelte'
@@ -433,6 +434,7 @@ export default async (): Promise<Resources> => ({
     TemplateEstimationEditor,
     CreateProject,
     ProjectPresenter,
+    ProjectSpacePresenter,
     IssueStatistics,
     StatusRefPresenter,
     RelatedIssuesSection,
