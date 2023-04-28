@@ -180,8 +180,8 @@ export interface PluginConfiguration extends Doc {
   description?: IntlString
   enabled: boolean
 
-  // If specified, will allow user to enable/disable item.
-  configurable: boolean
+  // If specified, will show beta/testing label in UI.
+  beta: boolean
 
   // If defined, will only remove classes in list.
   classFilter?: Ref<Class<Obj>>[]

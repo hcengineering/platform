@@ -79,6 +79,7 @@
     "ConfigurationEnabled": "Enabled",
     "ConfigurationDisabled": "Disabled",
     "ConfigDisable": "Disable",
-    "ConfigEnable": "Enable"
+    "ConfigEnable": "Enable",
+    "ConfigBeta": "Beta version"
   }
 }

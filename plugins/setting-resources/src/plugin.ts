@@ -72,6 +72,7 @@ export default mergeIds(settingId, setting, {
     ConfigurationEnabled: '' as IntlString,
     ConfigurationDisabled: '' as IntlString,
     ConfigDisable: '' as IntlString,
-    ConfigEnable: '' as IntlString
+    ConfigEnable: '' as IntlString,
+    ConfigBeta: '' as IntlString
   }
 })
