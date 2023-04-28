@@ -257,13 +257,12 @@ export class StatusMiddleware extends BasePresentationMiddleware implements Pres
                 ;(query as any)[attr.name].$nin = targetNin
               }
             }
-
-            if (finalOptions.lookup !== undefined) {
-              // Remove lookups by status field
-              if ((finalOptions.lookup as any)[attr.name] !== undefined) {
-                const { [attr.name]: _, ...newLookup } = finalOptions.lookup as any
-                finalOptions.lookup = newLookup
-              }
+          }
+          if (finalOptions.lookup !== undefined) {
+            // Remove lookups by status field
+            if ((finalOptions.lookup as any)[attr.name] !== undefined) {
+              const { [attr.name]: _, ...newLookup } = finalOptions.lookup as any
+              finalOptions.lookup = newLookup
             }
           }
 
