@@ -79,7 +79,7 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
       if (account._id !== core.account.System) {
         newQuery = {
           ...query,
-          modifiedBy: account._id
+          createdBy: account._id
         }
       }
     }
@@ -97,7 +97,7 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
           (p) =>
             !hierarchy.isDerived(p._class, core.class.TxCUD) ||
             !targetClasses.has((p as TxCUD<Doc>).objectClass) ||
-            p.modifiedBy === account._id
+            p.createdBy === account._id
         )
       }
     }
@@ -115,7 +115,7 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
     const domain = this.storage.hierarchy.getDomain(doc._class)
     if (!this.targetDomains.includes(domain)) return true
     const account = (await getUser(this.storage, ctx))._id
-    return doc.modifiedBy === account || account === core.account.System
+    return doc.createdBy === account || account === core.account.System
   }
 
   async filterLookup<T extends Doc>(ctx: SessionContext, lookup: LookupData<T>): Promise<void> {
