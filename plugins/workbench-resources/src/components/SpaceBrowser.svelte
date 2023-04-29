@@ -34,9 +34,7 @@
     navigate,
     Scroller,
     SearchEdit,
-    showPopup,
-    IconMoreH,
-    ActionIcon
+    showPopup
   } from '@hcengineering/ui'
   import { FilterBar, FilterButton, SpacePresenter } from '@hcengineering/view-resources'
   import plugin from '../plugin'
@@ -134,7 +132,7 @@
           update(sort, resultQuery)
         }}
       />
-      <ActionIcon icon={IconMoreH} size={'small'} />
+      <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
       <div class="buttons-divider" />
       {#if withFilterButton}
         <FilterButton {_class} />

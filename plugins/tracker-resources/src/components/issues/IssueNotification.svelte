@@ -92,114 +92,58 @@
   $: icon = getIcon()
 </script>
 
-<div class="root" in:fade out:fade>
-  {#if icon}
-    <Icon {icon} size="medium" fill={getIconColor()} />
-  {/if}
-
-  <div class="content">
-    <div class="title">
-      {title}
+<div class="notify-container" in:fade out:fade>
+  <div class="flex-between">
+    <div class="flex-row-center">
+      {#if icon}
+        <div class="mr-2"><Icon {icon} size="medium" fill={getIconColor()} /></div>
+      {/if}
+      <span class="overflow-label fs-bold caption-color">{title}</span>
     </div>
-    <div class="row">
-      <div class="issue">
-        {#if status}
-          <IssueStatusIcon value={status} size="small" />
-        {/if}
-        {#if issue}
-          <IssuePresenter value={issue} />
-        {/if}
-        <div class="sub-title">
-          {subTitle}
-        </div>
-        <div class="postfix">
-          {params?.subTitlePostfix}
-        </div>
-      </div>
-    </div>
-    <div class="row">
-      <div class="view-issue-button">
-        <Button label={tracker.string.ViewIssue} kind="link" size="medium" on:click={handleIssueOpened} />
-      </div>
-      <div class="copy-link-button">
-        <Button
-          icon={tracker.icon.CopyURL}
-          kind={'link'}
-          label={tracker.string.CopyIssueUrl}
-          on:click={handleCopyUrl}
-        />
-      </div>
-    </div>
+    <Button icon={IconClose} kind="transparent" size="small" on:click={onRemove} />
   </div>
 
-  <div class="close-button">
-    <Button icon={IconClose} kind="transparent" size="small" on:click={onRemove} />
+  <div class="content flex-row-center flex-wrap gap-2 reverse">
+    {#if status}
+      <IssueStatusIcon value={status} size="small" />
+    {/if}
+    {#if issue}
+      <IssuePresenter value={issue} />
+    {/if}
+    <span class="overflow-label">
+      {subTitle}
+    </span>
+    <span class="content-dark-color">
+      {params?.subTitlePostfix}
+    </span>
+  </div>
+  <div class="flex-between">
+    <Button label={tracker.string.ViewIssue} on:click={handleIssueOpened} />
+    <Button icon={tracker.icon.CopyURL} label={tracker.string.CopyIssueUrl} on:click={handleCopyUrl} />
   </div>
 </div>
 
 <style lang="scss">
-  .root {
-    position: relative;
-    display: flex;
-    margin: 10px;
-    box-shadow: 0 4px 10px var(--divider-color);
-    height: 100px;
-    width: 400px;
+  .notify-container {
     overflow: hidden;
-    color: var(--caption-color);
-    background-color: var(--body-color);
-    border: 1px solid var(--divider-color);
-    border-radius: 6px;
-    padding: 10px;
-  }
-
-  .sub-title {
-    max-width: 210px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .content {
-    margin-left: 10px;
-  }
-
-  .issue {
     display: flex;
-    align-items: center;
-    gap: 5px;
-  }
+    flex-direction: column;
+    margin: 0.75rem;
+    padding: 0.5rem;
+    min-width: 25rem;
+    min-height: 7rem;
+    color: var(--theme-caption-color);
+    background-color: var(--theme-popup-color);
+    border: 1px solid var(--theme-popup-divider);
+    border-radius: 0.5rem;
+    box-shadow: var(--theme-popup-shadow);
 
-  .view-issue-button {
-    margin-top: 10px;
-    margin-left: -5px;
-  }
-
-  .copy-link-button {
-    margin-top: 10px;
-    margin-left: 5px;
-  }
-
-  .title {
-    display: flex;
-    align-items: center;
-    color: var(--caption-color);
-    font-weight: 500;
-    margin-bottom: 10px;
-  }
-
-  .close-button {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-  }
-
-  .row {
-    display: flex;
-    align-items: center;
-  }
-
-  .postfix {
-    color: var(--dark-color);
+    .content {
+      flex-grow: 1;
+      margin: 1rem 0 1.25rem;
+      padding: 0 1rem;
+      // border: 1px solid var(--theme-divider-color);
+      border-radius: 0.5rem;
+    }
   }
 </style>

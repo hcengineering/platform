@@ -17,7 +17,7 @@
   import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
   import core, { Class, getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { ActionIcon, IconMoreH, Label, Loading, location, navigate, TabList, SearchEdit } from '@hcengineering/ui'
+  import { Label, Loading, location, navigate, TabList, SearchEdit } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { get } from 'svelte/store'
   import { dateFileBrowserFilters, FileBrowserSortMode, fileTypeFileBrowserFilters, sortModeToOptionObject } from '..'
@@ -122,7 +122,7 @@
 <div class="ac-header full divide search-start">
   <div class="ac-header-full small-gap">
     <SearchEdit bind:value={search} on:change={() => {}} />
-    <ActionIcon icon={IconMoreH} size={'small'} />
+    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
     <div class="buttons-divider" />
   </div>
   <FileBrowserFilters

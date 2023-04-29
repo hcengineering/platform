@@ -18,11 +18,9 @@
   import { IntlString } from '@hcengineering/platform'
   import presentation, { createQuery } from '@hcengineering/presentation'
   import {
-    ActionIcon,
     AnyComponent,
     Button,
     IconAdd,
-    IconMoreH,
     SearchEdit,
     TabList,
     resolvedLocationStore,
@@ -117,13 +115,13 @@
   <div class="ac-header full divide search-start">
     <div class="ac-header-full small-gap">
       <SearchEdit bind:value={search} on:change={() => dispatch('search', search)} />
-      <ActionIcon icon={IconMoreH} size={'small'} />
+      <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
       <div class="buttons-divider" />
       <FilterButton {_class} />
     </div>
     <div class="ac-header-full medium-gap">
       <ViewletSettingButton bind:viewOptions {viewlet} />
-      <ActionIcon icon={IconMoreH} size={'small'} />
+      <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
     </div>
   </div>
 {:else}
