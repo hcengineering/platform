@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { Doc, Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Button, Icon, IconAdd, Label, resizeObserver, Scroller, showPopup } from '@hcengineering/ui'
+  import { Button, Icon, IconAdd, Label, Scroller, showPopup } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
   import { getViewOptions, Table, ViewletSettingButton, viewOptionStore } from '@hcengineering/view-resources'
   import recruit from '../plugin'
@@ -56,11 +56,9 @@
       },
       { limit: 1 }
     )
-
-  let wSection: number
 </script>
 
-<div class="antiSection" use:resizeObserver={(element) => (wSection = element.clientWidth)}>
+<div class="antiSection">
   <div class="antiSection-header">
     <div class="antiSection-header__icon">
       <Icon icon={IconApplication} size={'small'} />
@@ -74,23 +72,14 @@
     <Button id="appls.add" icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createApp} />
   </div>
   {#if applications > 0 && viewlet && !loading}
-    {#if wSection < 640}
-      <Scroller horizontal>
-        <Table
-          _class={recruit.class.Applicant}
-          config={preference?.config ?? viewlet.config}
-          query={{ attachedTo: objectId, ...(viewlet?.baseQuery ?? {}) }}
-          loadingProps={{ length: applications }}
-        />
-      </Scroller>
-    {:else}
+    <Scroller horizontal>
       <Table
         _class={recruit.class.Applicant}
         config={preference?.config ?? viewlet.config}
         query={{ attachedTo: objectId, ...(viewlet?.baseQuery ?? {}) }}
         loadingProps={{ length: applications }}
       />
-    {/if}
+    </Scroller>
   {:else}
     <div class="antiSection-empty solid flex-col-center mt-3">
       <div class="caption-color">

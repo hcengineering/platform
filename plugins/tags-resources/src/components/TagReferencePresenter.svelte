@@ -44,7 +44,7 @@
       }}
     >
       <div class="color" style:background-color={getPlatformColor(value.color ?? 0)} />
-      <span class="overflow-label ml-1 text-sm caption-color">{value.title}</span>
+      <span class="overflow-label ml-1 text-sm caption-color max-w-40">{value.title}</span>
     </button>
   {:else if kind === 'labels'}
     <div
@@ -55,7 +55,7 @@
       }}
     >
       <div class="color" style:background-color={getPlatformColor(value.color ?? 0)} />
-      <span class="overflow-label ml-1-5 caption-color">
+      <span class="overflow-label ml-1-5 caption-color max-w-40">
         {value.title}
       </span>
       {#if isEditable}

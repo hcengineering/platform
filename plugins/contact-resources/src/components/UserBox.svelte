@@ -159,7 +159,7 @@
             <div class="flex-presenter not-selected">
               {#if icon}
                 <div class="icon" class:small-gap={size === 'inline' || size === 'small'}>
-                  <Icon {icon} size={kind === 'link' ? 'small' : size} />
+                  <Icon {icon} size={'small'} />
                 </div>
               {/if}
               <div class="label no-underline">

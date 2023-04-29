@@ -444,6 +444,7 @@
   class:buttons={buttons === 'normal'}
   class:union={buttons === 'union'}
   class:shrink
+  style:user-select={isScrolling ? 'none' : 'inherit'}
   style:--scroller-header-height={`${fade.multipler?.top ?? 0.125}rem`}
   style:--scroller-footer-height={`${fade.multipler?.bottom ?? 0.125}rem`}
 >

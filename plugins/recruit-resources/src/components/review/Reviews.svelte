@@ -58,38 +58,7 @@
     <Button icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createApp} />
   </div>
   {#if reviews > 0}
-    {#if wSection < 640}
-      <Scroller horizontal>
-        <Table
-          _class={recruit.class.Review}
-          config={[
-            '',
-            '$lookup.application',
-            'company',
-            'verdict',
-            {
-              key: '',
-              presenter: recruit.component.OpinionsPresenter,
-              label: recruit.string.Opinions,
-              sortingKey: 'opinions'
-            },
-            {
-              key: 'date',
-              presenter: DatePresenter,
-              label: calendar.string.Date,
-              sortingKey: 'date',
-              props: {
-                editable: false,
-                mode: DateRangeMode.DATE
-              }
-            }
-          ]}
-          {options}
-          query={{ attachedTo: objectId }}
-          loadingProps={{ length: reviews }}
-        />
-      </Scroller>
-    {:else}
+    <Scroller horizontal>
       <Table
         _class={recruit.class.Review}
         config={[
@@ -118,7 +87,7 @@
         query={{ attachedTo: objectId }}
         loadingProps={{ length: reviews }}
       />
-    {/if}
+    </Scroller>
   {:else}
     <div class="antiSection-empty solid flex-col-center mt-3">
       <div class="caption-color">

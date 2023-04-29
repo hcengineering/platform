@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { DocumentQuery } from '@hcengineering/core'
-  import { Button, ActionIcon, Label, Scroller, SearchEdit, showPopup, IconMoreH, IconAdd } from '@hcengineering/ui'
+  import { Button, Label, Scroller, SearchEdit, showPopup, IconAdd } from '@hcengineering/ui'
   import type { Category } from '@hcengineering/inventory'
   import inventory from '../plugin'
   import CreateCategory from './CreateCategory.svelte'
@@ -48,7 +48,7 @@
 <div class="ac-header full divide search-start">
   <div class="ac-header-full small-gap">
     <SearchEdit bind:value={search} on:change={() => updateResultQuery(search)} />
-    <ActionIcon icon={IconMoreH} size={'small'} />
+    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
     <div class="buttons-divider" />
   </div>
 </div>
