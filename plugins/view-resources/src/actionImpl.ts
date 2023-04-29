@@ -359,6 +359,33 @@ function ValueSelector (
   showPopup(view.component.ValueSelector, { ...props, value: doc, width: 'large' }, 'top')
 }
 
+function AttributeSelector (
+  doc: Doc | Doc[],
+  evt: Event,
+  props: {
+    actionPopup: AnyComponent
+
+    attribute: string
+
+    values?: Array<{ icon?: Asset, label: IntlString, id: number | string }>
+
+    isAction?: boolean
+  }
+): void {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const docArray = Array.isArray(doc) ? doc : [doc]
+  const attribute = hierarchy.getAttribute(docArray[0]._class, props.attribute)
+  showPopup(props.actionPopup, { ...props, value: docArray, width: 'large' }, 'top', (result) => {
+    console.log(result)
+    if (result != null) {
+      for (const docEl of docArray) {
+        void updateAttribute(client, docEl, docEl._class, { key: props.attribute, attr: attribute }, result)
+      }
+    }
+  })
+}
+
 async function getPopupAlignment (
   element?: PopupPosAlignment | Resource<(e?: Event) => PopupAlignment | undefined>,
   evt?: Event
@@ -398,5 +425,6 @@ export const actionImpl = {
   ShowPanel,
   ShowPopup,
   ShowEditor,
-  ValueSelector
+  ValueSelector,
+  AttributeSelector
 }

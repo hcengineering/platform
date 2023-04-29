@@ -64,7 +64,11 @@
     dispatch('close', newStatus)
   }
 
-  $: current = (value as any)[attribute]
+  $: current = Array.isArray(value)
+    ? value.every((v) => (v as any)[attribute] === (value as Array<any>)[0][attribute])
+      ? (value as Array<any>)[0][attribute]
+      : value
+    : (value as any)[attribute]
 
   let finalQuery: DocumentQuery<Doc> = {}
 

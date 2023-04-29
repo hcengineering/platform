@@ -29,6 +29,7 @@
   import { getDayOfSprint } from '../../utils'
   import TimePresenter from '../issues/timereport/TimePresenter.svelte'
   import SprintSelector from './SprintSelector.svelte'
+  import { createEventDispatcher } from 'svelte'
 
   export let value: Issue | IssueTemplate
   export let isEditable: boolean = true
@@ -41,19 +42,29 @@
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = '100%'
   export let onlyIcon: boolean = false
+  export let isAction: boolean = false
 
   export let groupBy: string | undefined = undefined
   export let enlargedText: boolean = false
   export let compression: boolean = false
 
   const client = getClient()
+  const dispatch = createEventDispatcher()
 
   const handleSprintIdChanged = async (newSprintId: Ref<Sprint> | null | undefined) => {
     if (!isEditable || newSprintId === undefined || value.sprint === newSprintId) {
       return
     }
-
-    await client.update(value, { sprint: newSprintId })
+    if (Array.isArray(value)) {
+      await Promise.all(
+        value.map(async (p) => {
+          await client.update(p, { sprint: newSprintId })
+        })
+      )
+    } else {
+      await client.update(value, { sprint: newSprintId })
+    }
+    if (isAction) dispatch('close')
   }
 
   const sprintQuery = createQuery()
@@ -85,6 +96,7 @@
         showTooltip={{ label: value.sprint ? tracker.string.MoveToSprint : tracker.string.AddToSprint }}
         value={value.sprint}
         onChange={handleSprintIdChanged}
+        {isAction}
       />
     </div>
   {/if}
@@ -111,6 +123,7 @@
           showTooltip={{ label: value.sprint ? tracker.string.MoveToSprint : tracker.string.AddToSprint }}
           value={value.sprint}
           onChange={handleSprintIdChanged}
+          {isAction}
         />
       </div>
     {/if}

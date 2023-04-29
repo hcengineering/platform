@@ -1511,20 +1511,11 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: view.actionImpl.ValueSelector,
-      actionPopup: view.component.ValueSelector,
+      action: view.actionImpl.AttributeSelector,
+      actionPopup: tracker.component.SprintEditor,
       actionProps: {
         attribute: 'sprint',
-        _class: tracker.class.Sprint,
-        queryOptions: {
-          sort: {
-            startDate: -1,
-            targetDate: -1
-          }
-        },
-        query: {},
-        searchField: 'label',
-        placeholder: tracker.string.Sprint
+        isAction: true
       },
       label: tracker.string.Sprint,
       icon: tracker.icon.Sprint,

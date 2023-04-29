@@ -790,6 +790,13 @@ const view = plugin(viewId, {
       values?: { icon?: Asset, label: IntlString, id: number | string }[]
 
       placeholder?: IntlString
+    }>,
+    AttributeSelector: '' as ViewAction<{
+      attribute: string
+      isAction?: boolean
+
+      // Or list of values to select from
+      values?: { icon?: Asset, label: IntlString, id: number | string }[]
     }>
   }
 })
