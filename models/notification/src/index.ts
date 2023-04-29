@@ -37,7 +37,6 @@ import view, { createAction } from '@hcengineering/model-view'
 import {
   DocUpdates,
   EmailNotification,
-  LastView,
   Notification,
   NotificationGroup,
   notificationId,
@@ -46,8 +45,7 @@ import {
   NotificationSetting,
   NotificationStatus,
   NotificationTemplate,
-  NotificationType,
-  SpaceLastEdit
+  NotificationType
 } from '@hcengineering/notification'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
@@ -60,13 +58,6 @@ export { notificationOperation } from './migration'
 export { notification as default }
 
 export const DOMAIN_NOTIFICATION = 'notification' as Domain
-
-@Model(notification.class.LastView, core.class.Doc, DOMAIN_NOTIFICATION)
-export class TLastView extends TDoc implements LastView {
-  @Prop(TypeRef(core.class.Account), core.string.ModifiedBy)
-  @Index(IndexKind.Indexed)
-    user!: Ref<Account>
-}
 
 @Model(notification.class.Notification, core.class.AttachedDoc, DOMAIN_NOTIFICATION)
 export class TNotification extends TAttachedDoc implements Notification {
@@ -137,18 +128,10 @@ export class TNotificationSetting extends TPreference implements NotificationSet
   enabled!: boolean
 }
 
-@Mixin(notification.mixin.SpaceLastEdit, core.class.Class)
-export class TSpaceLastEdit extends TClass implements SpaceLastEdit {
-  lastEditField!: string
-}
-
 @Mixin(notification.mixin.ClassCollaborators, core.class.Class)
 export class TClassCollaborators extends TClass {
   fields!: string[]
 }
-
-@Mixin(notification.mixin.TrackedDoc, core.class.Class)
-export class TTrackedDoc extends TClass {}
 
 @Mixin(notification.mixin.Collaborators, core.class.Doc)
 @UX(notification.string.Collaborators)
@@ -175,23 +158,20 @@ export class TDocUpdates extends TDoc implements DocUpdates {
     hidden!: boolean
 
   attachedToClass!: Ref<Class<Doc>>
-  lastTx!: Ref<TxCUD<Doc>>
-  lastTxTime!: Timestamp
+  lastTx?: Ref<TxCUD<Doc>>
+  lastTxTime?: Timestamp
   txes!: [Ref<TxCUD<Doc>>, Timestamp][]
 }
 
 export function createModel (builder: Builder): void {
   builder.createModel(
-    TLastView,
     TNotification,
     TEmaiNotification,
     TNotificationType,
     TNotificationProvider,
     TNotificationSetting,
     TNotificationGroup,
-    TSpaceLastEdit,
     TClassCollaborators,
-    TTrackedDoc,
     TCollaborators,
     TDocUpdates,
     TNotificationObjectPresenter

@@ -23,7 +23,6 @@ import { Application } from '@hcengineering/workbench'
 
 export default mergeIds(notificationId, notification, {
   string: {
-    LastView: '' as IntlString,
     PlatformNotification: '' as IntlString,
     BrowserNotification: '' as IntlString,
     EmailNotification: '' as IntlString,

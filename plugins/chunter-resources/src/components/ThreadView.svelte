@@ -16,8 +16,8 @@
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import type { ChunterMessage, Message, ThreadMessage } from '@hcengineering/chunter'
-  import core, { Ref, Space, generateId, getCurrentAccount } from '@hcengineering/core'
-  import { LastView } from '@hcengineering/notification'
+  import core, { Doc, Ref, Space, generateId, getCurrentAccount } from '@hcengineering/core'
+  import { DocUpdates } from '@hcengineering/notification'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { IconClose, Label, getCurrentResolvedLocation, navigate } from '@hcengineering/ui'
@@ -59,7 +59,7 @@
   })
 
   const notificationClient = NotificationClientImpl.getClient()
-  const lastViews = notificationClient.getLastViews()
+  const docUpdates = notificationClient.docUpdatesStore
 
   const lookup = {
     _id: { attachments: attachment.class.Attachment, reactions: chunter.class.Reaction },
@@ -101,8 +101,8 @@
       },
       (res) => {
         comments = res
-        newMessagesPos = newMessagesStart(comments, $lastViews)
-        notificationClient.updateLastView(id, chunter.class.Message)
+        newMessagesPos = newMessagesStart(comments, $docUpdates)
+        notificationClient.read(id)
       },
       {
         lookup
@@ -159,23 +159,25 @@
   }
   let comments: ThreadMessage[] = []
 
-  function newMessagesStart (comments: ThreadMessage[], lastViews: LastView): number {
-    const lastView = (lastViews as any)[_id]
-    if (lastView === undefined || lastView === -1) return -1
+  function newMessagesStart (comments: ThreadMessage[], docUpdates: Map<Ref<Doc>, DocUpdates>): number {
+    const docUpdate = docUpdates.get(_id)
+    const lastView = docUpdate?.txes?.[0]?.[1]
+    if (docUpdate === undefined || lastView === undefined) return -1
     for (let index = 0; index < comments.length; index++) {
       const comment = comments[index]
-      if (comment.createOn > lastView) return index
+      if (comment.createOn >= lastView) return index
     }
     return -1
   }
 
-  $: markUnread($lastViews)
-  function markUnread (lastViews: LastView) {
-    const newPos = newMessagesStart(comments, lastViews)
-    if (newPos !== -1 || newMessagesPos === -1) {
+  $: markUnread(comments, $docUpdates)
+  function markUnread (comments: ThreadMessage[], docUpdates: Map<Ref<Doc>, DocUpdates>) {
+    const newPos = newMessagesStart(comments, docUpdates)
+    if (newPos !== -1) {
       newMessagesPos = newPos
     }
   }
+
   let newMessagesPos: number = -1
   let loading = false
 </script>

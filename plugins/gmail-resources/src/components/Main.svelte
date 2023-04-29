@@ -78,7 +78,7 @@
   async function selectHandler (e: CustomEvent): Promise<void> {
     currentMessage = e.detail
     if (channel !== undefined) {
-      await notificationClient.updateLastView(channel._id, channel._class, undefined, true)
+      await notificationClient.read(channel._id)
     }
   }
 

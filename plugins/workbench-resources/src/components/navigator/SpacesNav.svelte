@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { Class, Doc, Ref, Space } from '@hcengineering/core'
   import core from '@hcengineering/core'
-  import notification, { LastView } from '@hcengineering/notification'
+  import { DocUpdates } from '@hcengineering/notification'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
   import preference from '@hcengineering/preference'
@@ -98,20 +98,13 @@
   }
 
   const notificationClient = NotificationClientImpl.getClient()
-  const lastViews = notificationClient.getLastViews()
+  const docUpdates = notificationClient.docUpdatesStore
   const hierarchy = client.getHierarchy()
-  $: clazz = hierarchy.getClass(model.spaceClass)
-  $: lastEditMixin = hierarchy.as(clazz, notification.mixin.SpaceLastEdit)
 
-  function isChanged (space: Space, lastViews: LastView): boolean {
-    const field = lastEditMixin?.lastEditField
-    const lastView = lastViews[space._id]
-    if (lastView === undefined || lastView === -1) return false
-    if (field === undefined) return false
-    const value = (space as any)[field]
-    if (isNaN(value)) return false
-
-    return lastView < value
+  function isChanged (space: Space, docUpdates: Map<Ref<Doc>, DocUpdates>): boolean {
+    const update = docUpdates.get(space._id)
+    if (update === undefined) return false
+    return update.txes.length > 0 && update.hidden !== true
   }
 
   function getParentActions (): Action[] {
@@ -147,7 +140,7 @@
               icon={classIcon(client, space._class)}
               selected={deselect ? false : currentSpace === space._id}
               actions={() => getActions(space)}
-              bold={isChanged(space, $lastViews)}
+              bold={isChanged(space, $docUpdates)}
             />
           {/await}
         </NavLink>

@@ -184,10 +184,6 @@ export function createModel (builder: Builder, options = { addApplication: true 
       }
     })
 
-    builder.mixin(spaceClass, core.class.Class, notification.mixin.SpaceLastEdit, {
-      lastEditField: 'lastMessage'
-    })
-
     builder.mixin(spaceClass, core.class.Class, view.mixin.ObjectEditor, {
       editor: chunter.component.EditChannel
     })
@@ -197,12 +193,10 @@ export function createModel (builder: Builder, options = { addApplication: true 
     getName: chunter.function.GetDmName
   })
 
-  builder.mixin(chunter.class.Message, core.class.Class, notification.mixin.TrackedDoc, {})
   builder.mixin(chunter.class.Message, core.class.Class, notification.mixin.ClassCollaborators, {
     fields: ['createdBy', 'replies']
   })
 
-  builder.mixin(chunter.class.ChunterSpace, core.class.Class, notification.mixin.TrackedDoc, {})
   builder.mixin(chunter.class.DirectMessage, core.class.Class, notification.mixin.ClassCollaborators, {
     fields: ['members']
   })

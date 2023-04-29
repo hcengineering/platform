@@ -73,7 +73,7 @@
       },
       objectId
     )
-    await notificationClient.updateLastView(channel._id, channel._class, undefined, true)
+    await notificationClient.read(channel._id)
     objectId = generateId()
     dispatch('close')
   }

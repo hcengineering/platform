@@ -15,8 +15,8 @@
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
   import type { ChunterMessage, Message } from '@hcengineering/chunter'
-  import core, { Ref, Space, Timestamp, WithLookup } from '@hcengineering/core'
-  import { LastView } from '@hcengineering/notification'
+  import core, { Doc, Ref, Space, Timestamp, WithLookup } from '@hcengineering/core'
+  import { DocUpdates } from '@hcengineering/notification'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { createQuery } from '@hcengineering/presentation'
   import { location as locationStore } from '@hcengineering/ui'
@@ -69,11 +69,11 @@
     }
   })
 
-  let messages: WithLookup<Message>[] | undefined
+  let messages: WithLookup<Message>[] = []
   const query = createQuery()
 
   const notificationClient = NotificationClientImpl.getClient()
-  const lastViews = notificationClient.getLastViews()
+  const docUpdates = notificationClient.docUpdatesStore
 
   $: updateQuery(space)
 
@@ -90,8 +90,8 @@
       },
       (res) => {
         messages = res
-        newMessagesPos = newMessagesStart(messages)
-        notificationClient.updateLastView(space, chunter.class.ChunterSpace)
+        newMessagesPos = newMessagesStart(messages, $docUpdates)
+        notificationClient.read(space)
       },
       {
         lookup: {
@@ -102,22 +102,22 @@
     )
   }
 
-  function newMessagesStart (messages: Message[]): number {
+  function newMessagesStart (messages: Message[], docUpdates: Map<Ref<Doc>, DocUpdates>): number {
     if (space === undefined) return -1
-    const lastView = ($lastViews as any)[space]
-    if (lastView === undefined || lastView === -1) return -1
+    const docUpdate = docUpdates.get(space)
+    const lastView = docUpdate?.txes?.[0]?.[1]
+    if (docUpdate === undefined || lastView === undefined) return -1
     for (let index = 0; index < messages.length; index++) {
       const message = messages[index]
-      if (message.createOn > lastView) return index
+      if (message.createOn >= lastView) return index
     }
     return -1
   }
 
-  $: markUnread($lastViews)
-  function markUnread (lastViews: LastView) {
-    if (messages === undefined) return
-    const newPos = newMessagesStart(messages)
-    if (newPos !== -1 || newMessagesPos === -1) {
+  $: markUnread(messages, $docUpdates)
+  function markUnread (messages: Message[], docUpdates: Map<Ref<Doc>, DocUpdates>) {
+    const newPos = newMessagesStart(messages, docUpdates)
+    if (newPos !== -1) {
       newMessagesPos = newPos
     }
   }
@@ -165,7 +165,7 @@
   }
 
   let showFixed: boolean | undefined
-  let selectedDate: Timestamp | undefined = messages ? getDay(messages[0].createOn) : undefined
+  let selectedDate: Timestamp | undefined = undefined
   function handleScroll () {
     const upperVisible = getFirstVisible()
     if (upperVisible) {

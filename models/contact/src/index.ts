@@ -324,10 +324,6 @@ export function createModel (builder: Builder): void {
     inlineEditor: contact.component.ContactArrayEditor
   })
 
-  builder.mixin(contact.class.Contact, core.class.Class, notification.mixin.TrackedDoc, {})
-
-  builder.mixin(contact.class.Channel, core.class.Class, notification.mixin.TrackedDoc, {})
-
   builder.mixin(contact.class.Contact, core.class.Class, notification.mixin.ClassCollaborators, {
     fields: []
   })

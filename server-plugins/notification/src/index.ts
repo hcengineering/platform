@@ -15,8 +15,8 @@
 //
 
 import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
-import { Account, Class, Doc, Mixin, Ref, Tx, TxCreateDoc, TxFactory, TxUpdateDoc } from '@hcengineering/core'
-import notification, { LastView, NotificationType } from '@hcengineering/notification'
+import { Account, Class, Doc, Mixin, Ref, Tx } from '@hcengineering/core'
+import { NotificationType } from '@hcengineering/notification'
 import { Plugin, Resource, plugin } from '@hcengineering/platform'
 import type { TriggerControl, TriggerFunc } from '@hcengineering/server-core'
 
@@ -24,42 +24,6 @@ import type { TriggerControl, TriggerFunc } from '@hcengineering/server-core'
  * @public
  */
 export const serverNotificationId = 'server-notification' as Plugin
-
-/**
- * @public
- */
-export async function getUpdateLastViewTx (
-  findAll: TriggerControl['findAll'],
-  attachedTo: Ref<Doc>,
-  lastView: number,
-  user: Ref<Account>
-): Promise<TxUpdateDoc<LastView> | TxCreateDoc<LastView> | undefined> {
-  const current = (
-    await findAll(
-      notification.class.LastView,
-      {
-        user
-      },
-      { limit: 1 }
-    )
-  )[0]
-  const factory = new TxFactory(user, true)
-  if (current !== undefined) {
-    if (current[attachedTo] === -1 || current[attachedTo] >= lastView) {
-      return
-    }
-    const u = factory.createTxUpdateDoc(current._class, current.space, current._id, {
-      [attachedTo]: lastView
-    })
-    return u
-  } else {
-    const u = factory.createTxCreateDoc(notification.class.LastView, notification.space.Notifications, {
-      user,
-      [attachedTo]: lastView
-    })
-    return u
-  }
-}
 
 /**
  * @public
@@ -118,38 +82,6 @@ export async function getEmployee (employee: Ref<Employee>, control: TriggerCont
 /**
  * @public
  */
-export async function createLastViewTx (
-  findAll: TriggerControl['findAll'],
-  attachedTo: Ref<Doc>,
-  user: Ref<Account>
-): Promise<TxCreateDoc<LastView> | TxUpdateDoc<LastView> | undefined> {
-  const current = (
-    await findAll(
-      notification.class.LastView,
-      {
-        user
-      },
-      { limit: 1 }
-    )
-  )[0]
-  const factory = new TxFactory(user, true)
-  if (current === undefined) {
-    const u = factory.createTxCreateDoc(notification.class.LastView, notification.space.Notifications, {
-      user,
-      [attachedTo]: 1
-    })
-    return u
-  } else if (current[attachedTo] === undefined) {
-    const u = factory.createTxUpdateDoc(current._class, current.space, current._id, {
-      [attachedTo]: 1
-    })
-    return u
-  }
-}
-
-/**
- * @public
- */
 export type Presenter = (doc: Doc, control: TriggerControl) => Promise<string>
 
 /**
@@ -191,10 +123,7 @@ export default plugin(serverNotificationId, {
   },
   trigger: {
     OnBacklinkCreate: '' as Resource<TriggerFunc>,
-    UpdateLastView: '' as Resource<TriggerFunc>,
-    OnUpdateLastView: '' as Resource<TriggerFunc>,
     CollaboratorDocHandler: '' as Resource<TriggerFunc>,
-    OnAddCollborator: '' as Resource<TriggerFunc>,
     OnAttributeCreate: '' as Resource<TriggerFunc>,
     OnAttributeUpdate: '' as Resource<TriggerFunc>
   },

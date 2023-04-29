@@ -44,7 +44,7 @@
   const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
 
   onDestroy(async () => {
-    notificationClient.then((client) => client.updateLastView(_id, recruit.class.Vacancy))
+    notificationClient.then((client) => client.read(_id))
   })
 
   const client = getClient()
@@ -57,7 +57,7 @@
       const prev = lastId
       lastId = _id
       if (prev) {
-        notificationClient.then((client) => client.updateLastView(prev, recruit.class.Vacancy))
+        notificationClient.then((client) => client.read(prev))
       }
       query.query(recruit.class.Vacancy, { _id }, (result) => {
         object = result[0] as Required<Vacancy>

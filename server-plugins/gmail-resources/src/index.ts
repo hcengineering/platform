@@ -100,7 +100,7 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
       }
       if (docs.length === 0) {
         res.push(
-          control.txFactory.createTxCreateDoc(notification.class.DocUpdates, notification.space.Notifications, {
+          control.txFactory.createTxCreateDoc(notification.class.DocUpdates, channel.space, {
             user: tx.modifiedBy,
             attachedTo: channel._id,
             attachedToClass: channel._class,

@@ -679,10 +679,6 @@ export function createModel (builder: Builder): void {
     recruit.viewlet.ApplicantDashboard
   )
 
-  builder.mixin(recruit.class.Applicant, core.class.Class, notification.mixin.TrackedDoc, {})
-
-  builder.mixin(recruit.class.Vacancy, core.class.Class, notification.mixin.TrackedDoc, {})
-
   builder.mixin(recruit.class.Applicant, core.class.Class, task.mixin.KanbanCard, {
     card: recruit.component.KanbanCard
   })

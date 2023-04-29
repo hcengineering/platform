@@ -46,7 +46,7 @@
       { attachedTo: channelId },
       (res) => {
         messages = res
-        notificationClient.updateLastView(channelId, channel._class, undefined, true)
+        notificationClient.read(channelId)
       },
       { sort: { sendOn: SortingOrder.Descending } }
     )
@@ -68,7 +68,7 @@
         messages: convertMessages(object, channel, selectedMessages, $employeeAccountByIdStore, $employeeByIdStore)
       }
     )
-    await notificationClient.updateLastView(channel._id, channel._class, undefined, true)
+    await notificationClient.read(channel._id)
     clear()
   }
 

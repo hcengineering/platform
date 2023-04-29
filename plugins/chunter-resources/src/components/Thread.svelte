@@ -18,15 +18,7 @@
   import type { ChunterSpace, Message, ThreadMessage } from '@hcengineering/chunter'
   import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
   import { employeeByIdStore } from '@hcengineering/contact-resources'
-  import core, {
-    FindOptions,
-    generateId,
-    getCurrentAccount,
-    IdMap,
-    Ref,
-    SortingOrder,
-    TxFactory
-  } from '@hcengineering/core'
+  import core, { FindOptions, IdMap, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
@@ -97,7 +89,7 @@
         } else {
           comments = res.reverse()
         }
-        notificationClient.updateLastView(id, chunter.class.Message)
+        notificationClient.read(id)
       },
       options
     )
@@ -130,8 +122,7 @@
     if (parent === undefined) return
     const { message, attachments } = event.detail
     const me = getCurrentAccount()._id
-    const txFactory = new TxFactory(me)
-    const tx = txFactory.createTxCreateDoc<ThreadMessage>(
+    await client.createDoc(
       chunter.class.ThreadMessage,
       parent.space,
       {
@@ -145,9 +136,6 @@
       },
       commentId
     )
-    tx.attributes.createOn = tx.modifiedOn
-    await notificationClient.updateLastView(_id, chunter.class.Message, tx.modifiedOn, true)
-    await client.tx(tx)
 
     // Create an backlink to document
     await createBacklinks(client, parent._id, parent._class, commentId, message)

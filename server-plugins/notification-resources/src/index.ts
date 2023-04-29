@@ -45,7 +45,6 @@ import notification, {
   Collaborators,
   DocUpdates,
   EmailNotification,
-  LastView,
   NotificationProvider,
   NotificationType
 } from '@hcengineering/notification'
@@ -54,7 +53,6 @@ import type { TriggerControl } from '@hcengineering/server-core'
 import serverNotification, {
   HTMLPresenter,
   TextPresenter,
-  createLastViewTx,
   getEmployeeAccount,
   getEmployeeAccountById
 } from '@hcengineering/server-notification'
@@ -254,62 +252,6 @@ async function getEmailNotificationTx (
   }
 }
 
-/**
- * @public
- */
-export async function UpdateLastView (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx)
-  if (actualTx._class !== core.class.TxRemoveDoc) {
-    return []
-  }
-
-  if ((actualTx as TxCUD<Doc>).objectClass === notification.class.LastView) {
-    return []
-  }
-
-  const result: Tx[] = []
-
-  const removeTx = actualTx as TxRemoveDoc<Doc>
-  const lastViews = await control.findAll(notification.class.LastView, { [removeTx.objectId]: { $exists: true } })
-  for (const lastView of lastViews) {
-    const clearTx = control.txFactory.createTxUpdateDoc(lastView._class, lastView.space, lastView._id, {
-      $unset: {
-        [removeTx.objectId]: ''
-      }
-    })
-    result.push(clearTx)
-  }
-  return result
-}
-
-/**
- * @public
- */
-export async function OnUpdateLastView (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx) as TxUpdateDoc<LastView>
-  if (actualTx._class !== core.class.TxUpdateDoc) return []
-  if (actualTx.objectClass !== notification.class.LastView) return []
-  const result: Tx[] = []
-  const lastView = (await control.findAll(notification.class.LastView, { _id: actualTx.objectId }))[0]
-  if (lastView === undefined) return result
-  for (const key in actualTx.operations) {
-    const docs = await control.findAll(notification.class.DocUpdates, {
-      attachedTo: key as Ref<Doc>,
-      user: lastView.user
-    })
-    for (const doc of docs) {
-      const txes = doc.txes.filter((p) => p[1] > actualTx.operations[key])
-      result.push(
-        control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
-          txes
-        })
-      )
-    }
-  }
-
-  return result
-}
-
 function getBacklink (ptx: TxCollectionCUD<Doc, Backlink>): Backlink {
   return TxProcessor.createDoc2Doc(ptx.tx as TxCreateDoc<Backlink>)
 }
@@ -493,7 +435,7 @@ async function getNotificationTxes (
     const current = docUpdates.find((p) => p.user === target)
     if (current === undefined) {
       res.push(
-        control.txFactory.createTxCreateDoc(notification.class.DocUpdates, notification.space.Notifications, {
+        control.txFactory.createTxCreateDoc(notification.class.DocUpdates, object.space, {
           user: target,
           attachedTo: object._id,
           attachedToClass: object._class,
@@ -709,6 +651,17 @@ function isMixinTx (tx: TxUpdateDoc<Doc> | TxMixin<Doc, Doc>): tx is TxMixin<Doc
   return tx._class === core.class.TxMixin
 }
 
+async function changeSpaceTxes (control: TriggerControl, tx: TxUpdateDoc<Doc> | TxMixin<Doc, Doc>): Promise<Tx[]> {
+  if (tx._class !== core.class.TxUpdateDoc) return []
+  const ctx = tx as TxUpdateDoc<Doc>
+  if (ctx.operations.space === undefined) return []
+  const docUpdates = await control.findAll(notification.class.DocUpdates, { attachedTo: tx.objectId })
+
+  return docUpdates.map((value) =>
+    control.txFactory.createTxUpdateDoc(value._class, value.space, value._id, { space: ctx.operations.space })
+  )
+}
+
 async function updateCollaboratorDoc (
   tx: TxUpdateDoc<Doc> | TxMixin<Doc, Doc>,
   control: TriggerControl,
@@ -750,45 +703,9 @@ async function updateCollaboratorDoc (
 
   res = res.concat(await getSpaceCollabTxes(control, doc, tx, originTx))
 
+  res = res.concat(await changeSpaceTxes(control, tx))
+
   return res
-}
-
-/**
- * @public
- */
-export async function OnAddCollborator (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const result: Tx[] = []
-  const actualTx = TxProcessor.extractTx(tx) as TxMixin<Doc, Collaborators>
-
-  if (actualTx._class !== core.class.TxMixin) return []
-  if (actualTx.mixin !== notification.mixin.Collaborators) return []
-  if (actualTx.attributes.collaborators !== undefined) {
-    for (const collab of actualTx.attributes.collaborators) {
-      const resTx = await createLastViewTx(control.findAll, actualTx.objectId, collab)
-      if (resTx !== undefined) {
-        result.push(resTx)
-      }
-    }
-  }
-  if (actualTx.attributes.$push?.collaborators !== undefined) {
-    const collab = actualTx.attributes.$push?.collaborators
-    if (typeof collab === 'object') {
-      if ('$each' in collab) {
-        for (const collaborator of collab.$each) {
-          const resTx = await createLastViewTx(control.findAll, actualTx.objectId, collaborator)
-          if (resTx !== undefined) {
-            result.push(resTx)
-          }
-        }
-      }
-    } else {
-      const resTx = await createLastViewTx(control.findAll, actualTx.objectId, collab)
-      if (resTx !== undefined) {
-        result.push(resTx)
-      }
-    }
-  }
-  return result
 }
 
 /**
@@ -897,9 +814,6 @@ export default async () => ({
   trigger: {
     OnBacklinkCreate,
     CollaboratorDocHandler: collaboratorDocHandler,
-    OnUpdateLastView,
-    UpdateLastView,
-    OnAddCollborator,
     OnAttributeCreate,
     OnAttributeUpdate
   },

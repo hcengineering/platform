@@ -92,7 +92,7 @@
           .map((m) => m.trim())
           .filter((m) => m.length)
       })
-      await notificationClient.updateLastView(channel._id, channel._class, undefined, true)
+      await notificationClient.read(channel._id)
       for (const attachment of attachments) {
         await client.addCollection(
           attachmentP.class.Attachment,

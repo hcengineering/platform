@@ -34,7 +34,7 @@ import {
 } from '@hcengineering/model'
 import core, { TAttachedDoc, TClass, TDoc, TSpace, TStatus } from '@hcengineering/model-core'
 import view, { createAction, template, actionTemplates as viewTemplates } from '@hcengineering/model-view'
-import notification from '@hcengineering/notification'
+import {} from '@hcengineering/notification'
 import { IntlString } from '@hcengineering/platform'
 import tags from '@hcengineering/tags'
 import {
@@ -320,8 +320,6 @@ export function createModel (builder: Builder): void {
   builder.mixin(task.class.Task, core.class.Class, view.mixin.ObjectEditorHeader, {
     editor: task.component.TaskHeader
   })
-
-  builder.mixin(task.class.Task, core.class.Class, notification.mixin.TrackedDoc, {})
 
   builder.createDoc(
     view.class.ActionCategory,
