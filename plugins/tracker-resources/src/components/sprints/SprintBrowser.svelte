@@ -18,8 +18,10 @@
   import { createQuery } from '@hcengineering/presentation'
   import { Sprint } from '@hcengineering/tracker'
   import {
+    ActionIcon,
     Button,
     IconAdd,
+    IconMoreH,
     Label,
     SearchEdit,
     TabItem,
@@ -136,14 +138,14 @@
 <div class="ac-header full divide search-start">
   <div class="ac-header-full small-gap">
     <SearchEdit bind:value={search} on:change={() => {}} />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
+    <ActionIcon icon={IconMoreH} size={'small'} />
     <div class="buttons-divider" />
     <FilterButton _class={tracker.class.Issue} {space} />
   </div>
   <div class="ac-header-full medium-gap">
     {#if viewlet}
       <ViewletSettingButton bind:viewOptions {viewlet} />
-      <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
+      <ActionIcon icon={IconMoreH} size={'small'} />
     {/if}
   </div>
 </div>

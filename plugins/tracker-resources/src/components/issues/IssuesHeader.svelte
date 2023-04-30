@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Ref, Space } from '@hcengineering/core'
-  import { TabList, SearchEdit } from '@hcengineering/ui'
+  import { ActionIcon, TabList, SearchEdit, IconMoreH } from '@hcengineering/ui'
   import { Viewlet } from '@hcengineering/view'
   import { FilterButton, setActiveViewletId } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
@@ -56,12 +56,12 @@
 <div class="ac-header full divide search-start">
   <div class="ac-header-full small-gap">
     <SearchEdit bind:value={search} on:change={() => {}} />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
+    <ActionIcon icon={IconMoreH} size={'small'} />
     <div class="buttons-divider" />
     <FilterButton _class={tracker.class.Issue} {space} />
   </div>
   <div class="ac-header-full medium-gap">
     <slot name="extra" />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
+    <ActionIcon icon={IconMoreH} size={'small'} />
   </div>
 </div>

@@ -165,7 +165,7 @@
         margin-right: 0;
       }
       &.normal {
-        color: var(--theme-content-color);
+        color: var(--content-color);
       }
       &.warning {
         color: var(--warning-color);
@@ -178,15 +178,15 @@
       }
     }
     .not-selected {
-      color: var(--theme-dark-color);
+      color: var(--content-color);
     }
 
     &:hover {
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
       transition-duration: 0;
 
       .not-selected {
-        color: var(--theme-content-color);
+        color: var(--accent-color);
       }
     }
     &.editable {
@@ -224,9 +224,9 @@
       cursor: default;
 
       &:hover {
-        color: var(--theme-dark-color);
+        color: var(--content-color);
         .btn-icon {
-          color: var(--theme-dark-color);
+          color: var(--content-color);
         }
       }
     }
@@ -240,9 +240,9 @@
         margin-right: 0.5rem;
       }
       &:hover {
-        color: var(--theme-caption-color);
-        background-color: var(--theme-button-hovered);
-        border-color: var(--theme-divider-color);
+        color: var(--caption-color);
+        background-color: var(--body-color);
+        border-color: var(--divider-color);
         .btn-icon {
           color: var(--content-color);
         }
@@ -251,27 +251,29 @@
     &.list {
       padding: 0 0.625em 0 0.5rem;
       min-height: 1.75rem;
-      background-color: var(--theme-list-button-color);
-      border: 1px solid var(--theme-button-border);
+      color: var(--content-color);
+      background-color: var(--body-color);
+      border: 1px solid var(--divider-color);
       border-radius: 3rem;
       transition-property: border, color, background-color;
       transition-duration: 0.15s;
 
       &:hover {
-        color: var(--theme-caption-color);
-        background-color: var(--theme-list-button-color);
-        border-color: var(--theme-button-border);
+        color: var(--caption-color);
+        background-color: var(--board-card-bg-color);
+        border-color: var(--button-border-color);
       }
     }
     &.link-bordered {
       padding: 0 0.375rem;
-      color: var(--theme-content-color);
-      border-color: var(--theme-button-border);
+      color: var(--accent-color);
+      border-color: var(--divider-color);
       &:hover {
-        color: var(--theme-caption-color);
-        background-color: var(--theme-button-hovered);
+        color: var(--accent-color);
+        background-color: var(--button-bg-hover);
+        border-color: var(--button-border-hover);
         .btn-icon {
-          color: var(--theme-caption-color);
+          color: var(--accent-color);
         }
       }
     }
@@ -303,7 +305,7 @@
       width: 1px;
       min-width: 1px;
       height: 0.75rem;
-      background-color: var(--theme-divider-color);
+      background-color: var(--button-border-color);
     }
     .separator {
       margin: 0 0.1rem;

@@ -17,10 +17,12 @@
   import { Asset, IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import {
+    ActionIcon,
     AnyComponent,
     Button,
     Component,
     IconAdd,
+    IconMoreH,
     Label,
     Loading,
     SearchEdit,
@@ -176,13 +178,13 @@
 <div class="ac-header full divide search-start">
   <div class="ac-header-full small-gap">
     <SearchEdit bind:value={search} />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
+    <ActionIcon icon={IconMoreH} size={'small'} />
     <div class="buttons-divider" />
     <FilterButton {_class} />
   </div>
   <div class="ac-header-full medium-gap">
     <ViewletSettingButton bind:viewOptions {viewlet} />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
+    <ActionIcon icon={IconMoreH} size={'small'} />
   </div>
 </div>
 
