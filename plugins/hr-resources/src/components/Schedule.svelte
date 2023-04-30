@@ -20,8 +20,6 @@
   import { createQuery, getClient, SpaceSelector } from '@hcengineering/presentation'
   import {
     Button,
-    ActionIcon,
-    IconMoreH,
     IconBack,
     IconForward,
     Label,
@@ -134,7 +132,7 @@
 <div class="ac-header full divide search-start">
   <div class="ac-header-full small-gap">
     <SearchEdit bind:value={search} on:change={() => updateResultQuery(search)} />
-    <ActionIcon icon={IconMoreH} size={'small'} />
+    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
   </div>
   <div class="ac-header-full medium-gap">
     <!-- <ViewletSettingButton bind:viewOptions {viewlet} /> -->

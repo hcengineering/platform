@@ -21,8 +21,6 @@
     Button,
     deviceOptionsStore as deviceInfo,
     eventToHTMLElement,
-    ActionIcon,
-    IconMoreH,
     Label,
     Scroller,
     SearchEdit,
@@ -90,7 +88,7 @@
 <div class="ac-header full divide search-start">
   <div class="ac-header-full small-gap">
     <SearchEdit bind:value={search} on:change={() => updateResultQuery(search)} />
-    <ActionIcon icon={IconMoreH} size={'small'} />
+    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
   </div>
 </div>
 

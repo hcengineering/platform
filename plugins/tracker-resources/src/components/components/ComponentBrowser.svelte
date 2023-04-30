@@ -29,10 +29,8 @@
     FilterBar
   } from '@hcengineering/view-resources'
   import {
-    ActionIcon,
     Button,
     IconAdd,
-    IconMoreH,
     Label,
     SearchEdit,
     TabItem,
@@ -137,14 +135,14 @@
 <div class="ac-header full divide search-start">
   <div class="ac-header-full small-gap">
     <SearchEdit bind:value={search} />
-    <ActionIcon icon={IconMoreH} size="small" />
+    <!-- <ActionIcon icon={IconMoreH} size="small" /> -->
     <div class="buttons-divider" />
     <FilterButton _class={tracker.class.Component} {space} />
   </div>
   <div class="ac-header-full medium-gap">
     {#if viewlet}
       <ViewletSettingButton bind:viewOptions {viewlet} />
-      <ActionIcon icon={IconMoreH} size="small" />
+      <!-- <ActionIcon icon={IconMoreH} size="small" /> -->
     {/if}
   </div>
 </div>

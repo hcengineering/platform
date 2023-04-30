@@ -21,13 +21,11 @@
     AnyComponent,
     Button,
     Component,
-    ActionIcon,
     Label,
     Loading,
     SearchEdit,
     showPopup,
     TabList,
-    IconMoreH,
     IconAdd
   } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
@@ -135,13 +133,13 @@
 <div class="ac-header full divide search-start">
   <div class="ac-header-full small-gap">
     <SearchEdit bind:value={search} on:change={() => updateResultQuery(search)} />
-    <ActionIcon icon={IconMoreH} size={'small'} />
+    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
     <div class="buttons-divider" />
     <FilterButton {_class} />
   </div>
   <div class="ac-header-full medium-gap">
     <ViewletSettingButton bind:viewOptions viewlet={selectedViewlet} />
-    <ActionIcon icon={IconMoreH} size={'small'} />
+    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
   </div>
 </div>
 {#if selectedViewlet?.$lookup?.descriptor?.component}

@@ -25,9 +25,14 @@
   let element: HTMLDivElement | undefined
 
   let cWidth: number | undefined = undefined
+  let elWidth: number
+  const checkWidth = (w: number) => {
+    if (w > ($fixedWidthStore[key] ?? 0)) $fixedWidthStore[key] = w
+  }
 
   afterUpdate(() => {
     if (cWidth !== undefined) {
+      if (elWidth) checkWidth(elWidth)
       if (prevKey !== key) {
         $fixedWidthStore[prevKey] = 0
         $fixedWidthStore[key] = 0
@@ -39,9 +44,7 @@
 
   function resize (element: Element) {
     cWidth = element.clientWidth
-    if (cWidth > ($fixedWidthStore[key] ?? 0)) {
-      $fixedWidthStore[key] = cWidth
-    }
+    checkWidth(cWidth)
   }
 
   onDestroy(() => {
@@ -54,6 +57,7 @@
 
 <div
   bind:this={element}
+  bind:clientWidth={elWidth}
   class="flex-no-shrink{addClass ? ` ${addClass}` : ''}"
   style:text-align={justify !== '' ? justify : ''}
   style:min-width={`${$fixedWidthStore[key] ?? 0}px`}

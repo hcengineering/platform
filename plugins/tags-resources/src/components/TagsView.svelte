@@ -17,16 +17,7 @@
   import { Asset, IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { TagCategory, TagElement } from '@hcengineering/tags'
-  import {
-    AnySvelteComponent,
-    Button,
-    ActionIcon,
-    IconMoreH,
-    Label,
-    SearchEdit,
-    showPopup,
-    IconAdd
-  } from '@hcengineering/ui'
+  import { AnySvelteComponent, Button, Label, SearchEdit, showPopup, IconAdd } from '@hcengineering/ui'
   import { TableBrowser } from '@hcengineering/view-resources'
   import tags from '../plugin'
   import CategoryBar from './CategoryBar.svelte'
@@ -110,7 +101,7 @@
 <div class="ac-header full divide search-start">
   <div class="ac-header-full small-gap">
     <SearchEdit bind:value={search} on:change={() => updateResultQuery(search, category)} />
-    <ActionIcon icon={IconMoreH} size={'small'} />
+    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
   </div>
 </div>
 
