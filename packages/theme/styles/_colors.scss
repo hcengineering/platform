@@ -119,6 +119,12 @@
   --theme-popup-divider: rgba(255, 255, 255, .1);
   --theme-popup-shadow: 0px 4px 4px rgba(0, 0, 0, 0.1); // Light
   --theme-panel-color: #1A1A28;
+  --theme-calendar-today-color: #fff;
+  --theme-calendar-holiday-color: #eb5757;
+  --theme-calendar-weekend-color: rgba(242, 153, 74, 1);
+  --theme-calendar-today-bgcolor: rgba(32, 93, 194, .1);
+  --theme-calendar-holiday-bgcolor: rgba(235, 87, 87, .1);
+  --theme-calendar-weekend-bgcolor: rgba(242, 153, 74, .05);
 
   --body-color: #1f2023;
   --body-accent: #222326;
@@ -269,6 +275,12 @@
   --theme-popup-divider: rgba(0, 0, 0, .1);
   --theme-popup-shadow: 0px 4px 4px rgba(0, 0, 0, 0.1);
   --theme-panel-color: #FFFFFF;
+  --theme-calendar-today-color: #000;
+  --theme-calendar-holiday-color: #eb5757;
+  --theme-calendar-weekend-color: rgba(242, 153, 74, 1);
+  --theme-calendar-today-bgcolor: rgba(43, 81, 144, .1);
+  --theme-calendar-holiday-bgcolor: rgba(235, 87, 87, .1);
+  --theme-calendar-weekend-bgcolor: rgba(242, 153, 74, .1);
 
   --body-color: #fff;
   --body-accent: #fafafa; // HZ
