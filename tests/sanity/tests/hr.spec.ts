@@ -6,7 +6,7 @@ test.use({
 })
 
 export async function createDepartment (page: Page, departmentName: string): Promise<void> {
-  await page.click('text=Structure Department Organization no employees >> button >> nth=2')
+  await page.click('button:has-text("Department")')
   const departmentNameField = page.locator('[placeholder="Department"]')
   await departmentNameField.click()
   await departmentNameField.fill(departmentName)
