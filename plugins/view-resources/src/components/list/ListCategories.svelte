@@ -26,7 +26,8 @@
     getCategories,
     getGroupByValues,
     getPresenter,
-    groupBy
+    groupBy,
+    fixedWidthStore
   } from '../../utils'
   import { CategoryQuery, noCategory } from '../../viewOptions'
   import ListCategory from './ListCategory.svelte'
@@ -112,6 +113,10 @@
   $: getHeader(_class, groupByKey)
   $: buildModel({ client, _class, keys: config, lookup }).then((res) => {
     itemModels = res
+    res.forEach((m) => {
+      const key = `list_item_${m.props?.listProps.key}`
+      if (m.props?.listProps?.fixed) $fixedWidthStore[key] = 0
+    })
   })
 
   function getInitIndex (categories: any, i: number): number {

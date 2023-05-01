@@ -330,8 +330,8 @@
       font-weight: 500;
       font-size: 0.75rem;
       line-height: 105%;
-      color: var(--dark-color);
-      box-shadow: inset 0 -1px 0 0 var(--divider-color);
+      color: var(--theme-halfcontent-color);
+      box-shadow: inset 0 -1px 0 0 var(--theme-divider-color);
       user-select: none;
       cursor: pointer;
 
@@ -341,16 +341,16 @@
         font-size: 1rem;
       }
       &.today {
-        color: var(--caption-color);
+        color: var(--theme-calendar-today-color);
       }
       &.holiday:not(.today) {
-        color: var(--error-color);
+        color: var(--theme-calendar-holiday-color);
       }
       &.weekend:not(.today) {
-        color: var(--warning-color);
+        color: var(--theme-calendar-weekend-color);
       }
       &.hoveredCell {
-        background-color: var(--highlight-select);
+        background-color: var(--theme-button-pressed);
       }
     }
     td {
@@ -358,31 +358,31 @@
       border: none;
       color: var(--caption-color);
       &.today {
-        background-color: var(--primary-button-disabled);
+        background-color: var(--theme-calendar-today-bgcolor);
       }
       &.summary {
         font-weight: 600;
       }
       &.weekend:not(.today) {
-        background-color: var(--accent-bg-color);
+        background-color: var(--theme-calendar-weekend-bgcolor);
       }
       &.holiday:not(.today) {
-        background-color: var(--system-error-60-color);
+        background-color: var(--theme-calendar-holiday-bgcolor);
       }
     }
     td:not(:last-child) {
-      border-right: 1px solid var(--divider-color);
+      border-right: 1px solid var(--theme-divider-color);
     }
 
     tbody,
     tfoot {
       tr {
-        border-bottom: 1px solid var(--divider-color);
+        border-bottom: 1px solid var(--theme-divider-color);
       }
     }
 
     tr.scroller-thead__tr:not(:last-child) {
-      border-right: 1px solid var(--divider-color);
+      border-right: 1px solid var(--theme-divider-color);
     }
 
     .hovered {
@@ -395,7 +395,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: var(--caption-color);
+        background-color: var(--theme-caption-color);
         opacity: 0.15;
       }
     }

@@ -16,7 +16,7 @@
 <script lang="ts">
   import { Doc, DocumentQuery } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Button, Label, Loading, SearchEdit, showPopup, IconMoreH, ActionIcon } from '@hcengineering/ui'
+  import { Button, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
   import {
     ActionContext,
@@ -101,13 +101,13 @@
   <div class="ac-header full divide search-start">
     <div class="ac-header-full small-gap">
       <SearchEdit bind:value={search} on:change={() => updateResultQuery(search)} />
-      <ActionIcon icon={IconMoreH} size={'small'} />
+      <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
       <div class="buttons-divider" />
       <FilterButton _class={contact.class.Contact} />
     </div>
     <div class="ac-header-full medium-gap">
       <ViewletSettingButton bind:viewOptions {viewlet} />
-      <ActionIcon icon={IconMoreH} size={'small'} />
+      <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
     </div>
   </div>
 

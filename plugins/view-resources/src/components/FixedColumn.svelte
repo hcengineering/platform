@@ -15,16 +15,15 @@
 -->
 <script lang="ts">
   import { resizeObserver } from '@hcengineering/ui'
-  import { afterUpdate, onDestroy } from 'svelte'
+  import { afterUpdate } from 'svelte'
   import { fixedWidthStore } from '../utils'
 
   export let key: string
   export let justify: string = ''
   export let addClass: string | undefined = undefined
-  let prevKey = key
-  let element: HTMLDivElement | undefined
 
   let cWidth: number | undefined = undefined
+  let prevKey = key
 
   afterUpdate(() => {
     if (cWidth !== undefined) {
@@ -39,21 +38,11 @@
 
   function resize (element: Element) {
     cWidth = element.clientWidth
-    if (cWidth > ($fixedWidthStore[key] ?? 0)) {
-      $fixedWidthStore[key] = cWidth
-    }
+    if (cWidth > ($fixedWidthStore[key] ?? 0)) $fixedWidthStore[key] = cWidth
   }
-
-  onDestroy(() => {
-    if (cWidth === $fixedWidthStore[key]) {
-      // If we are longest element
-      $fixedWidthStore[key] = 0
-    }
-  })
 </script>
 
 <div
-  bind:this={element}
   class="flex-no-shrink{addClass ? ` ${addClass}` : ''}"
   style:text-align={justify !== '' ? justify : ''}
   style:min-width={`${$fixedWidthStore[key] ?? 0}px`}

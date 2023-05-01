@@ -165,7 +165,7 @@
         margin-right: 0;
       }
       &.normal {
-        color: var(--content-color);
+        color: var(--theme-content-color);
       }
       &.warning {
         color: var(--warning-color);
@@ -178,15 +178,15 @@
       }
     }
     .not-selected {
-      color: var(--content-color);
+      color: var(--theme-dark-color);
     }
 
     &:hover {
-      color: var(--caption-color);
+      color: var(--theme-caption-color);
       transition-duration: 0;
 
       .not-selected {
-        color: var(--accent-color);
+        color: var(--theme-caption-color);
       }
     }
     &.editable {
@@ -224,9 +224,9 @@
       cursor: default;
 
       &:hover {
-        color: var(--content-color);
+        color: var(--theme-dark-color);
         .btn-icon {
-          color: var(--content-color);
+          color: var(--theme-dark-color);
         }
       }
     }
@@ -240,40 +240,38 @@
         margin-right: 0.5rem;
       }
       &:hover {
-        color: var(--caption-color);
-        background-color: var(--body-color);
-        border-color: var(--divider-color);
+        color: var(--theme-caption-color);
+        background-color: var(--theme-button-hovered);
+        border-color: var(--theme-divider-color);
         .btn-icon {
-          color: var(--content-color);
+          color: var(--theme-caption-color);
         }
       }
     }
     &.list {
       padding: 0 0.625em 0 0.5rem;
       min-height: 1.75rem;
-      color: var(--content-color);
-      background-color: var(--body-color);
-      border: 1px solid var(--divider-color);
+      background-color: var(--theme-list-button-color);
+      border: 1px solid var(--theme-divider-color);
       border-radius: 3rem;
       transition-property: border, color, background-color;
       transition-duration: 0.15s;
 
       &:hover {
-        color: var(--caption-color);
-        background-color: var(--board-card-bg-color);
-        border-color: var(--button-border-color);
+        color: var(--theme-caption-color);
+        background-color: var(--theme-list-button-color);
+        border-color: var(--theme-divider-color);
       }
     }
     &.link-bordered {
       padding: 0 0.375rem;
-      color: var(--accent-color);
-      border-color: var(--divider-color);
+      color: var(--theme-content-color);
+      border-color: var(--theme-button-border);
       &:hover {
-        color: var(--accent-color);
-        background-color: var(--button-bg-hover);
-        border-color: var(--button-border-hover);
+        color: var(--theme-caption-color);
+        background-color: var(--theme-button-hovered);
         .btn-icon {
-          color: var(--accent-color);
+          color: var(--theme-caption-color);
         }
       }
     }
@@ -305,7 +303,7 @@
       width: 1px;
       min-width: 1px;
       height: 0.75rem;
-      background-color: var(--button-border-color);
+      background-color: var(--theme-divider-color);
     }
     .separator {
       margin: 0 0.1rem;

@@ -47,7 +47,7 @@ export const FORMAT_MODES = [
 /**
  * @public
  */
-export type FormatMode = typeof FORMAT_MODES[number]
+export type FormatMode = (typeof FORMAT_MODES)[number]
 
 /**
  * @public
