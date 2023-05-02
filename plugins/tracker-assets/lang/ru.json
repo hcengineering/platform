@@ -144,6 +144,7 @@
     "GotoBacklog": "Перейти к пулу задач",
     "GotoBoard": "Перейти к канбану",
     "GotoComponents": "Перейти к компоненту",
+    "GotoMyIssues": "Перейи к моим задачам",
     "GotoTrackerApplication": "Перейти к приложению Трекер",
 
     "Filter": "Фильтр",
