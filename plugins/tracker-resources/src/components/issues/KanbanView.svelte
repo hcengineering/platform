@@ -305,14 +305,14 @@
       <!-- {@const status = $statusStore.get(state._id)} -->
       {#key lth}
         <div
-          style:--kanban-header-rgb-color={accentColors[index].backgroundColor ?? '175, 175, 175'}
+          style:--kanban-header-rgb-color={accentColors[index]?.backgroundColor ?? '175, 175, 175'}
           class="header flex-between"
           class:gradient={!lth}
         >
           <div class="flex-row-center gap-1">
             <span
               class="clear-mins fs-bold overflow-label pointer-events-none"
-              style:color={accentColors[index].textColor ?? 'var(--theme-caption-color)'}
+              style:color={accentColors[index]?.textColor ?? 'var(--theme-caption-color)'}
             >
               {#if groupByKey === noCategory}
                 <Label label={view.string.NoGrouping} />
