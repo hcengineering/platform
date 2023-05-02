@@ -18,7 +18,7 @@
   const dispatch = createEventDispatcher()
 
   const dispatchAccentColor = (fill: string) =>
-    dispatch('accent-color', fill !== defaultFill ? hexToRgb(fill) : 'var(--theme-halfcontent-color)')
+    dispatch('accent-color', fill !== defaultFill ? hexToRgb(fill) : { r: 127, g: 127, b: 127 })
 
   $: dispatchAccentColor(fill)
 

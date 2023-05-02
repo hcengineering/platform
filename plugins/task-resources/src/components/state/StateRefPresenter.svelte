@@ -22,6 +22,8 @@
 
   export let value: Ref<State> | StatusValue
   export let onChange: ((value: Ref<State>) => void) | undefined = undefined
+  export let colorInherit: boolean = false
+  export let accent: boolean = false
 </script>
 
 {#if value}
@@ -29,6 +31,6 @@
   {#if onChange !== undefined && state !== undefined}
     <StateEditor value={state._id} space={state.space} {onChange} kind="link" size="medium" />
   {:else}
-    <StatePresenter value={state} />
+    <StatePresenter value={state} {colorInherit} {accent} on:accent-color />
   {/if}
 {/if}

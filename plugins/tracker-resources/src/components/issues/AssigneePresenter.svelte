@@ -19,7 +19,7 @@
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Issue, IssueTemplate } from '@hcengineering/tracker'
-  import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { eventToHTMLElement, showPopup, IconSize } from '@hcengineering/ui'
   import { AttributeModel } from '@hcengineering/view'
   import { getObjectPresenter } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
@@ -30,6 +30,7 @@
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
   export let defaultName: IntlString | undefined = undefined
+  export let avatarSize: IconSize = 'x-small'
 
   const client = getClient()
 
@@ -88,7 +89,7 @@
     this={presenter.presenter}
     {value}
     {defaultName}
-    avatarSize={'x-small'}
+    {avatarSize}
     isInteractive={true}
     shouldShowPlaceholder={true}
     shouldShowName={shouldShowLabel}

@@ -32,7 +32,7 @@
 {#if items.length}
   <div class="flex-row-center flex-wrap">
     {#each items as value}
-      <div class="step-container">
+      <div class="step-container clear-mins">
         <TagReferencePresenter
           {attr}
           {value}
@@ -43,7 +43,7 @@
       </div>
     {/each}
     {#if !readonly}
-      <div class="step-container">
+      <div class="step-container clear-mins">
         <button class="tag-button" on:click|stopPropagation={tagsHandler}>
           <div class="icon"><Icon icon={IconAdd} size={'full'} /></div>
           <span class="overflow-label label"><Label {label} /></span>

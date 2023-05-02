@@ -11,7 +11,7 @@
   export let object: WithLookup<Doc>
   export let full: boolean
   export let ckeckFilled: boolean = false
-  export let kind: 'short' | 'full' | 'list' = 'short'
+  export let kind: 'short' | 'full' | 'list' | 'kanban' = 'short'
   export let isEditable: boolean = false
   export let action: (evt: MouseEvent) => Promise<void> | void = async () => {}
   export let compression: boolean = false
@@ -46,10 +46,10 @@
   })
 </script>
 
-{#if kind === 'list'}
+{#if kind === 'list' || kind === 'kanban'}
   {#each items as value}
     <div class="label-box no-shrink" title={value.title}>
-      <TagReferencePresenter attr={undefined} {value} kind={'labels'} />
+      <TagReferencePresenter attr={undefined} {value} kind={kind === 'kanban' ? 'kanban-labels' : 'labels'} />
     </div>
   {/each}
 {:else}

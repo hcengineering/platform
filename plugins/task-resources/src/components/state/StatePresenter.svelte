@@ -14,22 +14,33 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher, onMount } from 'svelte'
   import type { State } from '@hcengineering/task'
-  import { getColorNumberByText, getPlatformColor } from '@hcengineering/ui'
+  import { getColorNumberByText, getPlatformColor, hexToRgb } from '@hcengineering/ui'
 
   export let value: State | undefined
   export let shouldShowAvatar = true
   export let inline: boolean = false
+  export let colorInherit: boolean = false
+  export let accent: boolean = false
+
+  const dispatch = createEventDispatcher()
+
+  const defaultFill = 'currentColor'
+  $: fill = value ? getPlatformColor(value.color ?? getColorNumberByText(value.name)) : defaultFill
+  const dispatchAccentColor = (fill: string) =>
+    dispatch('accent-color', fill !== defaultFill ? hexToRgb(fill) : { r: 127, g: 127, b: 127 })
+  $: dispatchAccentColor(fill)
+
+  onMount(() => {
+    dispatchAccentColor(fill)
+  })
 </script>
 
 {#if value}
   <div class="flex-presenter" class:inline-presenter={inline}>
     {#if shouldShowAvatar}
-      <div
-        class="state-container"
-        class:inline
-        style="background-color: {getPlatformColor(value.color ?? getColorNumberByText(value.name))}"
-      />
+      <div class="state-container" class:inline style="background-color: {fill}" />
     {/if}
     <span class="label nowrap">{value.name}</span>
   </div>

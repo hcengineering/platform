@@ -80,7 +80,7 @@
   <div
     bind:this={stateRefs[i]}
     transition:slideD|local={{ isDragging }}
-    class="step-tb75"
+    class="p-1 flex-no-shrink clear-mins"
     on:dragover|preventDefault={(evt) => cardDragOver(evt, object)}
     on:drop|preventDefault={(evt) => cardDrop(evt, object)}
   >
@@ -107,14 +107,12 @@
   </div>
 {/each}
 {#if stateObjects.length > limitedObjects.length}
-  <div class="step-tb75">
+  <div class="p-1 flex-no-shrink clear-mins">
     {#if loading}
       <Spinner />
     {:else}
-      <div class="card-container h-18 flex-row-center flex-between p-4">
-        <span class="p-1">
-          {limitedObjects.length}/{stateObjects.length}
-        </span>
+      <div class="card-container flex-between p-4">
+        <span class="caption-color">{limitedObjects.length}</span> / {stateObjects.length}
         <Button
           size={'small'}
           icon={IconMoreH}
@@ -140,7 +138,7 @@
     // }
     &.checked {
       background-color: var(--highlight-select);
-      box-shadow: inset 0 0 1px 1px var(--highlight-select-border);
+      box-shadow: 0 0 1px 1px var(--highlight-select-border);
 
       &:hover {
         background-color: var(--highlight-select-hover);
@@ -148,7 +146,7 @@
     }
     &.selection,
     &.checked.selection {
-      box-shadow: inset 0 0 1px 1px var(--primary-button-enabled);
+      box-shadow: 0 0 1px 1px var(--primary-button-enabled);
       animation: anim-border 1s ease-in-out;
 
       &:hover {
@@ -168,10 +166,10 @@
   }
   @keyframes anim-border {
     from {
-      box-shadow: inset 0 0 1px 1px var(--primary-edit-border-color);
+      box-shadow: 0 0 1px 1px var(--primary-edit-border-color);
     }
     to {
-      box-shadow: inset 0 0 1px 1px var(--primary-bg-color);
+      box-shadow: 0 0 1px 1px var(--primary-bg-color);
     }
   }
 </style>
