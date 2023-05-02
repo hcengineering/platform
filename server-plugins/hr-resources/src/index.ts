@@ -24,6 +24,7 @@ import core, {
   TxFactory,
   TxMixin,
   TxProcessor,
+  TxRemoveDoc,
   TxUpdateDoc
 } from '@hcengineering/core'
 import hr, {
@@ -153,6 +154,47 @@ export async function OnDepartmentStaff (tx: Tx, control: TriggerControl): Promi
   }
 
   return []
+}
+
+/**
+ * @public
+ */
+export async function OnDepartmentRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const actualTx = TxProcessor.extractTx(tx)
+  if (core.class.TxRemoveDoc !== actualTx._class) {
+    return []
+  }
+  const ctx = actualTx as TxRemoveDoc<Department>
+  if (ctx.objectClass !== hr.class.Department) {
+    return []
+  }
+
+  const department = (await control.findAll(hr.class.Department, { _id: ctx.objectSpace as Ref<Department> }))[0]
+
+  const targetAccounts = await control.modelDb.findAll(contact.class.EmployeeAccount, {
+    _id: { $in: department.members }
+  })
+  const employeeIds = targetAccounts.map((acc) => acc.employee as Ref<Staff>)
+
+  const employee = await control.findAll(contact.class.Employee, {
+    _id: { $in: employeeIds }
+  })
+  const removed = await buildHierarchy(department._id, control)
+  const res: Tx[] = []
+  employee.forEach((em) => {
+    res.push(control.txFactory.createTxMixin(em._id, em._class, em.space, hr.mixin.Staff, { department: undefined }))
+  })
+  targetAccounts.forEach((acc) => {
+    res.push(
+      ...getTxes(
+        control.txFactory,
+        acc._id,
+        [],
+        removed.map((p) => p._id)
+      )
+    )
+  })
+  return res
 }
 
 /**
@@ -399,6 +441,7 @@ export default async () => ({
     OnRequestUpdate,
     OnRequestRemove,
     OnDepartmentStaff,
+    OnDepartmentRemove,
     OnEmployeeDeactivate,
     OnPublicHolidayCreate
   },

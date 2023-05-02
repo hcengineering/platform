@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { Employee } from '@hcengineering/contact'
-import { DOMAIN_TX, TxCollectionCUD, TxCreateDoc, TxOperations, TxUpdateDoc } from '@hcengineering/core'
+import contact, { Employee } from '@hcengineering/contact'
+import { DOMAIN_TX, Ref, TxCollectionCUD, TxCreateDoc, TxOperations, TxUpdateDoc } from '@hcengineering/core'
 import { Department, Request, TzDate } from '@hcengineering/hr'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
@@ -42,6 +42,43 @@ async function createSpace (tx: TxOperations): Promise<void> {
   }
 }
 
+async function fixDuplicatesInDepartments (tx: TxOperations): Promise<void> {
+  const departments = await tx.findAll(hr.class.Department, {})
+  const departmentUpdate = departments.map((department) => {
+    const uniqueMembers = [...new Set(department.members)]
+    return tx.update(department, { members: uniqueMembers })
+  })
+  await Promise.all(departmentUpdate)
+}
+
+async function fixDepartmentsFromStaff (tx: TxOperations): Promise<void> {
+  const ancestors: Map<Ref<Department>, Department[]> = new Map()
+  const departments = await tx.findAll(hr.class.Department, {})
+  for (const department of departments) {
+    const current = ancestors.get(department.space) ?? []
+    current.push(department)
+    ancestors.set(department._id, current)
+  }
+  const staff = await tx.findAll(hr.mixin.Staff, {})
+  const promises = []
+  const employeeAccountByEmployeeMap = new Map(
+    (await tx.findAll(contact.class.EmployeeAccount, {})).map((ea) => [ea.employee, ea])
+  )
+  for (const st of staff) {
+    if (st.department == null) continue
+    const correctDepartments: Department[] = ancestors.get(st.department) ?? []
+    promises.push(
+      ...departments
+        .filter((department) => !correctDepartments.includes(department))
+        .map((dep) => {
+          const employeeAccount = employeeAccountByEmployeeMap.get(st._id)
+          if (employeeAccount == null) return []
+          return tx.update(dep, { $pull: { members: employeeAccount._id } })
+        })
+    )
+  }
+  await Promise.all(promises)
+}
 function toTzDate (date: number): TzDate {
   const res = new Date(date)
   return {
@@ -181,5 +218,7 @@ export const hrOperation: MigrateOperation = {
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createSpace(tx)
+    await fixDuplicatesInDepartments(tx)
+    await fixDepartmentsFromStaff(tx)
   }
 }
