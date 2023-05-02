@@ -114,8 +114,12 @@
   $: buildModel({ client, _class, keys: config, lookup }).then((res) => {
     itemModels = res
     res.forEach((m) => {
-      const key = `list_item_${m.props?.listProps.key}`
-      if (m.props?.listProps?.fixed) $fixedWidthStore[key] = 0
+      if (m.props?.listProps?.key !== undefined) {
+        const key = `list_item_${m.props.listProps.key}`
+        if (m.props.listProps.fixed) {
+          $fixedWidthStore[key] = 0
+        }
+      }
     })
   })
 
