@@ -841,6 +841,7 @@ export function createModel (builder: Builder): void {
   const componentsId = 'components'
   const sprintsId = 'sprints'
   const templatesId = 'templates'
+  const myIssuesId = 'my-issues'
   // const scrumsId = 'scrums'
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ObjectPresenter, {
@@ -1010,7 +1011,7 @@ export function createModel (builder: Builder): void {
           //   component: tracker.component.Inbox
           // },
           {
-            id: 'my-issues',
+            id: myIssuesId,
             position: 'top',
             label: tracker.string.MyIssues,
             icon: tracker.icon.MyIssues,
@@ -1107,6 +1108,7 @@ export function createModel (builder: Builder): void {
   createGotoSpecialAction(builder, backlogId, 'g->b', tracker.string.GotoBacklog)
   createGotoSpecialAction(builder, boardId, 'g->d', tracker.string.GotoBoard)
   createGotoSpecialAction(builder, componentsId, 'g->c', tracker.string.GotoComponents)
+  createGotoSpecialAction(builder, myIssuesId, 'g->m', tracker.string.GotoMyIssues)
 
   createAction(builder, {
     action: workbench.actionImpl.Navigate,
