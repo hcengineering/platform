@@ -17,10 +17,11 @@
   import { Issue } from '@hcengineering/tracker'
   import { getClient } from '@hcengineering/presentation'
   import tracker from '../../plugin'
-  import { ButtonKind, DueDatePresenter } from '@hcengineering/ui'
+  import { ButtonKind, ButtonSize, DueDatePresenter } from '@hcengineering/ui'
 
   export let value: WithLookup<Issue>
   export let kind: ButtonKind = 'link'
+  export let size: ButtonSize = 'medium'
   export let isEditable = true
 
   const client = getClient()
@@ -51,6 +52,7 @@
   shouldRender={shouldRenderPresenter}
   onChange={handleDueDateChanged}
   editable={isEditable}
+  {size}
   {kind}
   shouldIgnoreOverdue={ignoreOverDue}
 />

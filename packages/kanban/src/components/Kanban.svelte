@@ -309,7 +309,7 @@
         {@const stateObjects = getGroupByValues(groupByDocs, state)}
 
         <div
-          class="panel-container step-lr75"
+          class="panel-container"
           bind:this={stateRefs[si]}
           on:dragover={(event) => panelDragOver(event, state)}
           on:drop={() => {
@@ -318,9 +318,9 @@
           }}
         >
           {#if $$slots.header !== undefined}
-            <slot name="header" state={toAny(state)} count={stateObjects.length} />
+            <slot name="header" state={toAny(state)} count={stateObjects.length} index={si} />
           {/if}
-          <Scroller padding={'.5rem 0'} on:dragover on:drop>
+          <Scroller padding={'.25rem .5rem'} on:dragover on:drop>
             <slot name="beforeCard" {state} />
             <KanbanRow
               bind:this={stateRows[si]}
@@ -361,10 +361,13 @@
     position: relative;
     width: 100%;
     height: 100%;
+    min-width: 0;
+    min-height: 0;
   }
   .kanban-content {
     display: flex;
-    padding: 1.5rem 2rem 0;
+    padding: 1.5rem;
+    min-width: 0;
   }
 
   @keyframes anim-border {
@@ -384,23 +387,5 @@
     background-color: transparent;
     border: 1px solid transparent;
     border-radius: 0.25rem;
-
-    .header {
-      display: flex;
-      flex-direction: column;
-      height: 4rem;
-      min-height: 4rem;
-
-      .bar {
-        height: 0.375rem;
-        border-radius: 0.25rem;
-      }
-      .label {
-        padding: 0 0.5rem 0 1rem;
-        height: 100%;
-        font-weight: 500;
-        color: var(--caption-color);
-      }
-    }
   }
 </style>

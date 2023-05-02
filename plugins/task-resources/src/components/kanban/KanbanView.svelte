@@ -28,7 +28,15 @@
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient, statusStore } from '@hcengineering/presentation'
   import { Kanban, SpaceWithStates, Task, TaskGrouping, TaskOrdering } from '@hcengineering/task'
-  import { getEventPositionElement, Label, showPopup } from '@hcengineering/ui'
+  import {
+    getEventPositionElement,
+    Label,
+    showPopup,
+    deviceOptionsStore as deviceInfo,
+    hslToRgb,
+    rgbToHsl,
+    AccentColor
+  } from '@hcengineering/ui'
   import {
     AttributeModel,
     CategoryOption,
@@ -160,6 +168,14 @@
     viewOptionsModel: ViewOptionModel[] | undefined
   ) {
     categories = await getCategories(client, _class, docs, groupByKey, $statusStore, viewlet.descriptor)
+    categories.forEach((_, i) => {
+      if (accentColors[i] === undefined) {
+        accentColors[i] = {
+          textColor: 'var(--theme-caption-color)',
+          backgroundColor: '175, 175, 175'
+        }
+      }
+    })
     for (const viewOption of viewOptionsModel ?? []) {
       if (viewOption.actionTarget !== 'category') continue
       const categoryFunc = viewOption as CategoryOption
@@ -226,6 +242,19 @@
   })
 
   const getDoneUpdate = (e: any) => ({ doneState: e.detail._id } as DocumentUpdate<Doc>)
+
+  $: lth = $deviceInfo.theme === 'theme-light'
+  const accentColors: AccentColor[] = []
+
+  const setAccentColor = (n: number, ev: CustomEvent) => {
+    const accColor = rgbToHsl(ev.detail.r, ev.detail.g, ev.detail.b)
+    const textColor = !lth ? { r: 255, g: 255, b: 255 } : hslToRgb(accColor.h, accColor.s, 0.3)
+    const bgColor = !lth ? hslToRgb(accColor.h, accColor.s, 0.55) : hslToRgb(accColor.h, accColor.s, 0.9)
+    accentColors[n] = {
+      textColor: !lth ? 'var(--theme-caption-color)' : `rgb(${textColor.r}, ${textColor.g}, ${textColor.b})`,
+      backgroundColor: `${bgColor.r}, ${bgColor.g}, ${bgColor.b}`
+    }
+  }
 </script>
 
 {#await cardPresenter then presenter}
@@ -254,27 +283,43 @@
     }}
     on:contextmenu={(evt) => showMenu(evt.detail.evt, evt.detail.objects)}
   >
-    <svelte:fragment slot="header" let:state let:count>
+    <svelte:fragment slot="header" let:state let:count let:index>
       <!-- {@const status = $statusStore.get(state._id)} -->
-      <div class="header flex-col">
-        <div class="flex-row-center">
-          {#if groupByKey === noCategory}
-            <span class="text-base fs-bold overflow-label content-accent-color pointer-events-none">
+      {#key lth}
+        <div
+          style:--kanban-header-rgb-color={accentColors[index].backgroundColor ?? '175, 175, 175'}
+          class="header flex-row-center"
+          class:gradient={!lth}
+        >
+          <span
+            class="clear-mins fs-bold overflow-label pointer-events-none"
+            style:color={accentColors[index].textColor ?? 'var(--theme-caption-color)'}
+          >
+            {#if groupByKey === noCategory}
               <Label label={view.string.NoGrouping} />
-            </span>
-          {:else if headerComponent}
-            <svelte:component this={headerComponent.presenter} value={state} {space} kind={'list-header'} />
-          {/if}
-          <span class="ml-1">
+            {:else if headerComponent}
+              <svelte:component
+                this={headerComponent.presenter}
+                value={state}
+                {space}
+                size={'small'}
+                kind={'list-header'}
+                colorInherit={lth}
+                accent
+                on:accent-color={(ev) => setAccentColor(index, ev)}
+              />
+            {/if}
+          </span>
+          <span class="counter ml-1">
             {count}
           </span>
         </div>
-      </div>
+      {/key}
     </svelte:fragment>
     <svelte:fragment slot="card" let:object let:dragged>
       <svelte:component this={presenter} {object} {dragged} {groupByKey} />
     </svelte:fragment>
-    // eslint-disable-next-line no-undef
+    <!-- eslint-disable-next-line no-undef -->
     <svelte:fragment slot="doneBar" let:onDone>
       <KanbanDragDone
         {kanban}
@@ -288,32 +333,27 @@
 {/await}
 
 <style lang="scss">
-  .names {
-    font-size: 0.8125rem;
-  }
-
   .header {
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--divider-color);
+    margin: 0 0.75rem 0.5rem;
+    padding: 0 0.5rem 0 1.25rem;
+    height: 2.5rem;
+    min-height: 2.5rem;
+    border: 1px solid var(--theme-divider-color);
+    border-radius: 0.25rem;
 
-    .label {
-      color: var(--caption-color);
-      .counter {
-        color: rgba(var(--caption-color), 0.8);
-      }
+    &:not(.gradient) {
+      background: rgba(var(--kanban-header-rgb-color), 1);
     }
-  }
-  .tracker-card {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    // padding: 0.5rem 1rem;
-    min-height: 6.5rem;
-  }
-  .states-bar {
-    flex-shrink: 10;
-    width: fit-content;
-    margin: 0.625rem 1rem 0;
+    &.gradient {
+      background: linear-gradient(
+        90deg,
+        rgba(var(--kanban-header-rgb-color), 0.15),
+        rgba(var(--kanban-header-rgb-color), 0.05)
+      );
+    }
+
+    .counter {
+      color: var(--theme-dark-color);
+    }
   }
 </style>

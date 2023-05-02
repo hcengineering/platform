@@ -96,20 +96,20 @@
     align-items: center;
     justify-content: stretch;
     padding: 0.5rem 2.5rem;
-    background-color: var(--board-bg-color);
-    border-top: 1px solid var(--divider-color);
+    background-color: var(--theme-comp-header-color);
+    border-top: 1px solid var(--theme-divider-color);
   }
 
   .done-item {
     height: 3rem;
-    color: var(--caption-color);
+    color: var(--theme-caption-color);
     border: 1px dashed transparent;
     border-radius: 0.75rem;
     padding: 0.5rem;
 
     &.hovered {
-      background-color: var(--body-color);
-      border-color: var(--divider-color);
+      background-color: var(--theme-bg-color);
+      border-color: var(--theme-divider-color);
     }
   }
 </style>

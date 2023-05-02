@@ -266,10 +266,13 @@
     &.link-bordered {
       padding: 0 0.375rem;
       color: var(--theme-content-color);
+      background-color: var(--theme-kanban-button-color);
       border-color: var(--theme-button-border);
+      border-radius: 0.25rem;
       &:hover {
         color: var(--theme-caption-color);
-        background-color: var(--theme-button-hovered);
+        background-color: var(--theme-kanban-button-hover);
+        border-color: var(--theme-list-divider-color);
         .btn-icon {
           color: var(--theme-caption-color);
         }

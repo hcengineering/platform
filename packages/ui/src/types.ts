@@ -170,7 +170,17 @@ export type TooltipAlignment = 'top' | 'bottom' | 'left' | 'right'
 export type VerticalAlignment = 'top' | 'bottom'
 export type HorizontalAlignment = 'left' | 'right'
 
-export type IconSize = 'inline' | 'tiny' | 'x-small' | 'smaller' | 'small' | 'medium' | 'large' | 'x-large' | 'full'
+export type IconSize =
+  | 'inline'
+  | 'tiny'
+  | 'card'
+  | 'x-small'
+  | 'smaller'
+  | 'small'
+  | 'medium'
+  | 'large'
+  | 'x-large'
+  | 'full'
 
 export interface DateOrShift {
   date?: number
@@ -310,4 +320,9 @@ export interface DialogStep {
   readonly additionalInfo?: string
   readonly component: AnyComponent | AnySvelteComponent
   props?: Record<string, any>
+}
+
+export interface AccentColor {
+  textColor: string
+  backgroundColor: string
 }

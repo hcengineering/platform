@@ -733,3 +733,10 @@
     & > * { margin-left: .375rem; }
   }
 }
+
+/* Kanban - global style */
+.kanban-container .card-container .card-labels > * { margin: .25rem .25rem 0 0; }
+.kanban-container .card-container .card-labels.labels > *:last-child {
+  flex-shrink: 0;
+  margin-right: 0;
+}

@@ -407,6 +407,10 @@ input.search {
   &:not(.reverse) > *:not(:first-child) { margin-left: .5rem; }
   &.reverse > *:not(:last-child) { margin-right: .5rem; }
 }
+.gap-3 {
+  &:not(.reverse) > *:not(:first-child) { margin-left: .75rem; }
+  &.reverse > *:not(:last-child) { margin-right: .75rem; }
+}
 .gap-around-2 > * { margin: .25rem; }
 .gap-around-4 > * { margin: .5rem; }
 
@@ -417,17 +421,19 @@ input.search {
   flex-wrap: nowrap;
   white-space: nowrap;
   width: fit-content;
-  color: var(--caption-color);
+  font-size: .75rem;
+  color: var(--theme-darker-color);
   cursor: pointer;
+
   .icon {
     margin-right: .25rem;
-    color: var(--dark-color);
+    color: var(--theme-content-color);
     &.small-size {
       width: 1.5rem;
       height: 1.5rem;
     }
   }
-  &:hover .icon { color: var(--caption-color); }
+  &:hover .icon { color: var(--theme-caption-color); }
 }
 
 /* Margins & Paddings */

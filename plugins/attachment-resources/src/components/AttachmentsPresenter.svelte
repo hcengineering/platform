@@ -33,11 +33,11 @@
         component: AttachmentPopup,
         props: { objectId: object._id, attachments: value, object }
       }}
-      class="sm-tool-icon ml-1 mr-1"
+      class="sm-tool-icon"
     >
       <span class="icon"><IconAttachment {size} /></span>
       {#if showCounter}
-        &nbsp;{value}
+        {value}
       {/if}
     </div>
   </DocNavLink>

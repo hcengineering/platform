@@ -38,7 +38,7 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <span
     style={`--tag-color:${getPlatformColor(tag?.color ?? element?.color ?? 0)}`}
-    class="tag-item-inline"
+    class="tag-item-inline overflow-label max-w-40"
     on:click
     use:tooltip={{
       label: element?.description ? tags.string.TagTooltip : undefined,
@@ -60,7 +60,7 @@
       direction: 'right'
     }}
   >
-    {name}
+    <span class="overflow-label max-w-40">{name}</span>
     <span class="ml-1">
       {#if tag && tagIcon && schema !== '0'}
         <Icon icon={tagIcon} size={'small'} />

@@ -18,7 +18,7 @@
   import { tooltip } from '../../tooltips'
   import DatePresenter from './DatePresenter.svelte'
   import { getDaysDifference } from './internal/DateUtils'
-  import { ButtonKind } from '../../types'
+  import { ButtonKind, ButtonSize } from '../../types'
 
   export let value: number | null = null
   export let shouldRender: boolean = true
@@ -26,6 +26,7 @@
   export let kind: ButtonKind = 'link'
   export let editable: boolean = true
   export let shouldIgnoreOverdue: boolean = false
+  export let size: ButtonSize = 'medium'
 
   const today = new Date(new Date(Date.now()).setHours(0, 0, 0, 0))
   $: isOverdue = value !== null && value < today.getTime()
@@ -90,6 +91,6 @@
         }
       : undefined}
   >
-    <DatePresenter {value} {editable} icon={iconModifier} {kind} on:change={handleDueDateChanged} />
+    <DatePresenter {value} {editable} icon={iconModifier} {kind} {size} on:change={handleDueDateChanged} />
   </div>
 {/if}

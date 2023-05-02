@@ -366,14 +366,18 @@
     &.link-bordered {
       padding: 0 0.5rem;
       color: var(--theme-content-color);
-      border-color: var(--theme-divider-color);
+      background-color: var(--theme-kanban-button-color);
+      border-color: var(--theme-button-border);
       &:hover {
         color: var(--theme-caption-color);
-        background-color: var(--theme-button-hovered);
+        background-color: var(--theme-kanban-button-hover);
         border-color: var(--theme-list-divider-color);
         .btn-icon {
           color: var(--theme-caption-color);
         }
+      }
+      &.small {
+        padding: 0 0.25rem;
       }
     }
     &.list {

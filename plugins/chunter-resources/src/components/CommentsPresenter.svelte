@@ -33,7 +33,7 @@
         component: CommentPopup,
         props: { objectId: object._id, object }
       }}
-      class="sm-tool-icon ml-1 mr-1"
+      class="sm-tool-icon"
     >
       <span class="icon"><IconThread {size} /></span>
       {#if showCounter}

@@ -128,7 +128,7 @@
       }}
     />
   {:else}
-    <Icon icon={icon ?? AvatarIcon} {size} />
+    <Icon icon={icon ?? AvatarIcon} size={size === 'card' ? 'x-small' : size} />
   {/if}
 </div>
 
@@ -160,6 +160,10 @@
     height: 1.13rem;
   }
 
+  .ava-card {
+    width: 1.25rem; // 20
+    height: 1.25rem;
+  }
   .ava-x-small {
     width: 1.5rem; // 24
     height: 1.5rem;
@@ -197,6 +201,8 @@
 
   .ava-inline .ava-mask,
   .ava-inline.no-img,
+  .ava-card .ava-mask,
+  .ava-card.no-img,
   .ava-x-small .ava-mask,
   .ava-x-small.no-img,
   .ava-smaller .ava-mask,

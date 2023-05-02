@@ -41,7 +41,11 @@
     Loading,
     showPanel,
     showPopup,
-    tooltip
+    tooltip,
+    deviceOptionsStore as deviceInfo,
+    hslToRgb,
+    rgbToHsl,
+    AccentColor
   } from '@hcengineering/ui'
   import {
     AttributeModel,
@@ -67,6 +71,8 @@
     setGroupByValues
   } from '@hcengineering/view-resources'
   import view from '@hcengineering/view-resources/src/plugin'
+  import { AttachmentsPresenter } from '@hcengineering/attachment-resources'
+  import { CommentsPresenter } from '@hcengineering/chunter-resources'
   import { onMount } from 'svelte'
   import tracker from '../../plugin'
   import ComponentEditor from '../components/ComponentEditor.svelte'
@@ -189,6 +195,14 @@
     viewOptionsModel: ViewOptionModel[] | undefined
   ) {
     categories = await getCategories(client, _class, docs, groupByKey, $statusStore, viewlet.descriptor)
+    categories.forEach((_, i) => {
+      if (accentColors[i] === undefined) {
+        accentColors[i] = {
+          textColor: 'var(--theme-caption-color)',
+          backgroundColor: '175, 175, 175'
+        }
+      }
+    })
     for (const viewOption of viewOptionsModel ?? []) {
       if (viewOption.actionTarget !== 'category') continue
       const categoryFunc = viewOption as CategoryOption
@@ -243,6 +257,19 @@
       space: doc.space
     }
   }
+
+  $: lth = $deviceInfo.theme === 'theme-light'
+  const accentColors: AccentColor[] = []
+
+  const setAccentColor = (n: number, ev: CustomEvent) => {
+    const accColor = rgbToHsl(ev.detail.r, ev.detail.g, ev.detail.b)
+    const textColor = !lth ? { r: 255, g: 255, b: 255 } : hslToRgb(accColor.h, accColor.s, 0.3)
+    const bgColor = !lth ? hslToRgb(accColor.h, accColor.s, 0.55) : hslToRgb(accColor.h, accColor.s, 0.9)
+    accentColors[n] = {
+      textColor: !lth ? 'var(--theme-caption-color)' : `rgb(${textColor.r}, ${textColor.g}, ${textColor.b})`,
+      backgroundColor: `${bgColor.r}, ${bgColor.g}, ${bgColor.b}`
+    }
+  }
 </script>
 
 {#if categories.length === 0}
@@ -274,23 +301,39 @@
     }}
     on:contextmenu={(evt) => showMenu(evt.detail.evt, evt.detail.objects)}
   >
-    <svelte:fragment slot="header" let:state let:count>
+    <svelte:fragment slot="header" let:state let:count let:index>
       <!-- {@const status = $statusStore.get(state._id)} -->
-      <div class="header flex-col">
-        <div class="flex-row-center flex-between">
+      {#key lth}
+        <div
+          style:--kanban-header-rgb-color={accentColors[index].backgroundColor ?? '175, 175, 175'}
+          class="header flex-between"
+          class:gradient={!lth}
+        >
           <div class="flex-row-center gap-1">
-            {#if groupByKey === noCategory}
-              <span class="text-base fs-bold overflow-label content-accent-color pointer-events-none">
+            <span
+              class="clear-mins fs-bold overflow-label pointer-events-none"
+              style:color={accentColors[index].textColor ?? 'var(--theme-caption-color)'}
+            >
+              {#if groupByKey === noCategory}
                 <Label label={view.string.NoGrouping} />
-              </span>
-            {:else if headerComponent}
-              <svelte:component this={headerComponent.presenter} value={state} {space} kind={'list-header'} />
-            {/if}
-            <span class="ml-1">
+              {:else if headerComponent}
+                <svelte:component
+                  this={headerComponent.presenter}
+                  value={state}
+                  {space}
+                  size={'small'}
+                  kind={'list-header'}
+                  colorInherit={lth}
+                  accent
+                  on:accent-color={(ev) => setAccentColor(index, ev)}
+                />
+              {/if}
+            </span>
+            <span class="counter">
               {count}
             </span>
           </div>
-          <div class="flex-row-center gap-1">
+          <div class="tools gap-1">
             <Button
               icon={IconAdd}
               kind={'transparent'}
@@ -301,7 +344,7 @@
             />
           </div>
         </div>
-      </div>
+      {/key}
     </svelte:fragment>
     <svelte:fragment slot="card" let:object>
       {@const issue = toIssue(object)}
@@ -313,61 +356,75 @@
             showPanel(tracker.component.EditIssue, object._id, object._class, 'content')
           }}
         >
-          <div class="flex-col ml-4 mr-8">
-            <div class="flex clear-mins names">
+          <div class="card-header flex-between">
+            <div class="flex-row-center text-sm">
+              <!-- {#if groupByKey !== 'status'} -->
+              <div class="mr-1">
+                <StatusEditor value={issue} kind="list" isEditable={false} />
+              </div>
+              <!-- {/if} -->
               <IssuePresenter value={issue} />
               <ParentNamesPresenter value={issue} />
             </div>
-            <div class="flex-row-center gap-1 mt-1">
-              {#if groupByKey !== 'status'}
-                <StatusEditor value={issue} kind="list" isEditable={false} />
-              {/if}
-              <span class="fs-bold caption-color lines-limit-2">
-                {object.title}
-              </span>
-            </div>
-          </div>
-          <div class="abs-rt-content">
-            <AssigneePresenter
-              value={issue.assignee ? $employeeByIdStore.get(issue.assignee) : null}
-              defaultClass={contact.class.Employee}
-              object={issue}
-              isEditable={true}
-            />
-            <div class="flex-center mt-2">
+            <div class="flex-row-center gap-2 reverse flex-no-shrink">
               <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
+              <AssigneePresenter
+                value={issue.assignee ? $employeeByIdStore.get(issue.assignee) : null}
+                defaultClass={contact.class.Employee}
+                object={issue}
+                isEditable={true}
+                avatarSize={'card'}
+              />
             </div>
           </div>
-          <div class="xsmall-gap states-bar">
+          <div class="card-content text-md caption-color lines-limit-2">
+            {object.title}
+          </div>
+          <div class="card-labels">
             {#if issue && issue.subIssues > 0}
-              <SubIssuesSelector value={issue} {currentProject} />
+              <SubIssuesSelector value={issue} {currentProject} size={'small'} />
             {/if}
-            <PriorityEditor value={issue} isEditable={true} kind={'link-bordered'} size={'inline'} justify={'center'} />
+            <PriorityEditor value={issue} isEditable={true} kind={'link-bordered'} size={'small'} justify={'center'} />
             <ComponentEditor
               value={issue}
               isEditable={true}
               kind={'link-bordered'}
-              size={'inline'}
+              size={'small'}
               justify={'center'}
               width={''}
               bind:onlyIcon={fullFilled[issueId]}
             />
-            <DueDatePresenter value={issue} kind={'link-bordered'} />
-            <EstimationEditor kind={'list'} size={'small'} value={issue} />
-            <div
-              class="clear-mins"
-              use:tooltip={{
-                component: fullFilled[issueId] ? tags.component.LabelsPresenter : undefined,
-                props: { object: issue, kind: 'full' }
+            <DueDatePresenter value={issue} size={'small'} kind={'link-bordered'} />
+          </div>
+          <div
+            class="card-labels labels"
+            use:tooltip={{
+              component: fullFilled[issueId] ? tags.component.LabelsPresenter : undefined,
+              props: { object: issue, kind: 'full' }
+            }}
+          >
+            <Component
+              is={tags.component.LabelsPresenter}
+              props={{ object: issue, ckeckFilled: fullFilled[issueId], lookupField: 'labels', kind: 'kanban' }}
+              on:change={(res) => {
+                if (res.detail.full) fullFilled[issueId] = true
               }}
-            >
-              <Component
-                is={tags.component.LabelsPresenter}
-                props={{ object: issue, ckeckFilled: fullFilled[issueId], lookupField: 'labels' }}
-                on:change={(res) => {
-                  if (res.detail.full) fullFilled[issueId] = true
-                }}
-              />
+            />
+          </div>
+          <div class="card-footer flex-between">
+            <EstimationEditor kind={'list'} size={'small'} value={issue} />
+            <div class="flex-row-center gap-3 reverse">
+              {#if (object.attachments ?? 0) > 0}
+                <AttachmentsPresenter value={object.attachments} {object} />
+              {/if}
+              {#if (object.comments ?? 0) > 0 || (object.$lookup?.attachedTo !== undefined && (object.$lookup.attachedTo.comments ?? 0) > 0)}
+                {#if (object.comments ?? 0) > 0}
+                  <CommentsPresenter value={object.comments} {object} />
+                {/if}
+                {#if object.$lookup?.attachedTo !== undefined && (object.$lookup.attachedTo.comments ?? 0) > 0}
+                  <CommentsPresenter value={object.$lookup?.attachedTo?.comments} object={object.$lookup?.attachedTo} />
+                {/if}
+              {/if}
             </div>
           </div>
         </div>
@@ -377,33 +434,66 @@
 {/if}
 
 <style lang="scss">
-  .names {
-    font-size: 0.8125rem;
-  }
-
   .header {
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--theme-divider-color);
+    margin: 0 0.75rem 0.5rem;
+    padding: 0 0.5rem 0 1.25rem;
+    height: 2.5rem;
+    min-height: 2.5rem;
+    border: 1px solid var(--theme-divider-color);
+    border-radius: 0.25rem;
 
-    .label {
-      color: var(--theme-caption-color);
-      .counter {
-        color: rgba(var(--theme-caption-color), 0.8);
-      }
+    &:not(.gradient) {
+      background: rgba(var(--kanban-header-rgb-color), 1);
+    }
+    &.gradient {
+      background: linear-gradient(
+        90deg,
+        rgba(var(--kanban-header-rgb-color), 0.15),
+        rgba(var(--kanban-header-rgb-color), 0.05)
+      );
+    }
+
+    .counter {
+      color: var(--theme-dark-color);
+    }
+    .tools {
+      opacity: 0;
+    }
+    &:hover .tools {
+      opacity: 1;
     }
   }
   .tracker-card {
     position: relative;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    // padding: 0.5rem 1rem;
     min-height: 6.5rem;
-  }
-  .states-bar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.375rem;
-    margin: 0.625rem 1rem;
+
+    .card-header {
+      padding: 0.75rem 1rem 0;
+    }
+    .card-content {
+      margin: 0.5rem 1rem;
+    }
+    /* Global styles in components.scss */
+    .card-labels {
+      display: flex;
+      flex-wrap: nowrap;
+      margin: 0 0.75rem 0 1rem;
+      min-width: 0;
+
+      &.labels {
+        overflow: hidden;
+        margin: 0 1rem;
+        width: calc(100% - 2rem);
+        border-radius: 0 0.24rem 0.24rem 0;
+      }
+    }
+    .card-footer {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      background-color: var(--theme-kanban-card-footer);
+      border-radius: 0 0 0.25rem 0.25rem;
+    }
   }
 </style>

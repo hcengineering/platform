@@ -37,7 +37,7 @@
     cy={8}
     r={7}
     class="progress-circle"
-    style:stroke={'var(--divider-color)'}
+    style:stroke={'var(--theme-divider-color)'}
     style:opacity={'.5'}
     style:transform={`rotate(${-78 + ((dashOffset + 1) * 360) / (lenghtC + 1)}deg)`}
     style:stroke-dasharray={lenghtC}
