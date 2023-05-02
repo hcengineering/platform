@@ -182,6 +182,7 @@
             .replaceAll('ArrowLeft', '←')
             .replaceAll('ArrowRight', '→')
             .replaceAll('Backspace', '⌫')
+            .toLocaleLowerCase()
         )
       )
     }
