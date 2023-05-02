@@ -16,11 +16,16 @@
 
 // Add this to the VERY top of the first file loaded in your app
 import { setMetadata } from '@hcengineering/platform'
-import serverToken from '@hcengineering/server-token'
 import serverCore from '@hcengineering/server-core'
+import serverToken from '@hcengineering/server-token'
+import { serverFactories } from '@hcengineering/server-ws'
 import { start } from '.'
 
 const serverPort = parseInt(process.env.SERVER_PORT ?? '3333')
+
+const serverFactory = serverFactories[(process.env.SERVER_PROVIDER as string) ?? 'ws'] ?? serverFactories.ws
+
+const serverChinking = parseInt(process.env.CHUNKING ?? '101')
 
 const url = process.env.MONGO_URL
 if (url === undefined) {
@@ -81,7 +86,17 @@ setMetadata(serverToken.metadata.Secret, serverSecret)
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 console.log(`starting server on ${serverPort}`)
-const shutdown = start(url, elasticUrl, minioConf, rekoniUrl, serverPort, '')
+const shutdown = start(url, {
+  fullTextUrl: elasticUrl,
+  minioConf,
+  rekoniUrl,
+  port: serverPort,
+  serverFactory,
+  chunking: serverChinking,
+  indexParallel: 2,
+  indexProcessing: 500,
+  productId: ''
+})
 
 const close = (): void => {
   console.trace('Exiting from server')

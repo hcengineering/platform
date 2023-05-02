@@ -33,7 +33,7 @@ import core, {
 } from '@hcengineering/core'
 import { DbAdapter } from '../adapter'
 import type { IndexedDoc } from '../types'
-import { RateLimitter } from './limitter'
+import { RateLimitter } from '../limitter'
 import { FullTextPipeline, FullTextPipelineStage } from './types'
 import { createStateDoc, isClassIndexable } from './utils'
 

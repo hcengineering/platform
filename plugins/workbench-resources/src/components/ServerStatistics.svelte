@@ -24,7 +24,20 @@
 
 <Card on:close fullSize label={getEmbeddedLabel('Statistics')} okAction={() => {}} okLabel={getEmbeddedLabel('Ok')}>
   {#if data}
-    {JSON.stringify(data.activeSessions, null, 2)}
+    {#each Object.entries(data.statistics?.activeSessions) as act}
+      {act[0]}: {act[1]}
+    {/each}
+
+    <span class="fs-title flex-row-center">
+      Memory usage: {data.statistics.memoryUsed} / {data.statistics.memoryTotal}
+    </span>
+    <span class="fs-title flex-row-center">
+      CPU: {data.statistics.cpuUsage}
+    </span>
+    <span class="fs-title flex-row-center">
+      Mem: {data.statistics.freeMem} / {data.statistics.totalMem}
+    </span>
+
     <table class="antiTable" class:highlightRows={true}>
       <thead class="scroller-thead">
         <tr>

@@ -49,10 +49,11 @@ import { Data, getWorkspaceId, Tx, Version } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { MigrateOperation } from '@hcengineering/model'
 import { openAIConfigDefaults } from '@hcengineering/openai'
+import { benchmark } from './benchmark'
 import { cleanArchivedSpaces, cleanRemovedTransactions, cleanWorkspace } from './clean'
+import { changeConfiguration } from './configuration'
 import { rebuildElastic } from './elastic'
 import { openAIConfig } from './openai'
-import { changeConfiguration } from './configuration'
 
 /**
  * @public
@@ -480,6 +481,26 @@ export function devTool (
     .action(async (workspace: string, cmd: { enable: string, disable: string, list: boolean }) => {
       console.log(JSON.stringify(cmd))
       await changeConfiguration(getWorkspaceId(workspace, productId), transactorUrl, cmd)
+    })
+
+  program
+    .command('benchmark')
+    .description('clean archived spaces')
+    .option('--from <from>', 'Min client count', '10')
+    .option('--steps <steps>', 'Step with client count', '10')
+    .option('--sleep <sleep>', 'Random Delay max between operations', '0')
+    .option('--workspaces <workspaces>', 'Workspaces to test on, comma separated', '')
+    .action(async (cmd: { from: string, steps: string, sleep: string, workspaces: string }) => {
+      console.log(JSON.stringify(cmd))
+      await benchmark(
+        cmd.workspaces.split(',').map((it) => getWorkspaceId(it, productId)),
+        transactorUrl,
+        {
+          steps: parseInt(cmd.steps),
+          from: parseInt(cmd.from),
+          sleep: parseInt(cmd.sleep)
+        }
+      )
     })
 
   program.parse(process.argv)

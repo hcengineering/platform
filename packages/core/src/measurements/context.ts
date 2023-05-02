@@ -11,7 +11,7 @@ export class MeasureMetricsContext implements MeasureContext {
   private readonly params: Record<string, ParamType>
   logger: MeasureLogger
   metrics: Metrics
-  private readonly done: () => void
+  private readonly done: (value?: number) => void
 
   constructor (name: string, params: Record<string, ParamType>, metrics: Metrics = newMetrics()) {
     this.name = name
@@ -27,6 +27,11 @@ export class MeasureMetricsContext implements MeasureContext {
         console.error(msg, ...args)
       }
     }
+  }
+
+  measure (name: string, value: number): void {
+    const c = new MeasureMetricsContext('#' + name, {}, childMetrics(this.metrics, ['#' + name]))
+    c.done(value)
   }
 
   newChild (name: string, params: Record<string, ParamType>): MeasureContext {

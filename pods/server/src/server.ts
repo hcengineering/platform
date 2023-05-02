@@ -29,6 +29,7 @@ import {
   ConfigurationMiddleware,
   ModifiedMiddleware,
   PrivateMiddleware,
+  QueryJoinMiddleware,
   SpaceSecurityMiddleware
 } from '@hcengineering/middleware'
 import { MinioService } from '@hcengineering/minio'
@@ -76,7 +77,14 @@ import { serverTelegramId } from '@hcengineering/server-telegram'
 import { Token } from '@hcengineering/server-token'
 import { serverTrackerId } from '@hcengineering/server-tracker'
 import { serverViewId } from '@hcengineering/server-view'
-import { BroadcastCall, ClientSession, start as startJsonRpc } from '@hcengineering/server-ws'
+import {
+  BroadcastCall,
+  ClientSession,
+  PipelineFactory,
+  ServerFactory,
+  Session,
+  start as startJsonRpc
+} from '@hcengineering/server-ws'
 
 import { activityId } from '@hcengineering/activity'
 import { attachmentId } from '@hcengineering/attachment'
@@ -168,12 +176,18 @@ addStringsLoader(requestId, async (lang: string) => requestEn)
  */
 export function start (
   dbUrl: string,
-  fullTextUrl: string,
-  minioConf: MinioConfig,
-  rekoniUrl: string,
-  port: number,
-  productId: string,
-  host?: string
+  opt: {
+    fullTextUrl: string
+    minioConf: MinioConfig
+    rekoniUrl: string
+    port: number
+    productId: string
+    serverFactory: ServerFactory
+    chunking: number // 25
+
+    indexProcessing: number // 1000
+    indexParallel: number // 2
+  }
 ): () => Promise<void> {
   addLocation(serverAttachmentId, () => import('@hcengineering/server-attachment-resources'))
   addLocation(serverContactId, () => import('@hcengineering/server-contact-resources'))
@@ -198,7 +212,8 @@ export function start (
     ModifiedMiddleware.create,
     PrivateMiddleware.create,
     SpaceSecurityMiddleware.create,
-    ConfigurationMiddleware.create
+    ConfigurationMiddleware.create,
+    QueryJoinMiddleware.create // Should be last one
   ]
 
   const metrics = getMetricsContext().newChild('indexing', {})
@@ -211,8 +226,8 @@ export function start (
     contentAdapter: ContentTextAdapter
   ): FullTextPipelineStage[] {
     // Allow 2 workspaces to be indexed in parallel
-    globalIndexer.allowParallel = 2
-    globalIndexer.processingSize = 1000
+    globalIndexer.allowParallel = opt.indexParallel
+    globalIndexer.processingSize = opt.indexProcessing
 
     const stages: FullTextPipelineStage[] = []
 
@@ -252,80 +267,77 @@ export function start (
     return stages
   }
 
-  return startJsonRpc(
-    getMetricsContext(),
-    (ctx, workspace, upgrade, broadcast) => {
-      const conf: DbConfiguration = {
-        domains: {
-          [DOMAIN_TX]: 'MongoTx',
-          [DOMAIN_TRANSIENT]: 'InMemory',
-          [DOMAIN_BLOB]: 'MinioData',
-          [DOMAIN_FULLTEXT_BLOB]: 'FullTextBlob',
-          [DOMAIN_MODEL]: 'Null'
+  const pipelineFactory: PipelineFactory = (ctx, workspace, upgrade, broadcast) => {
+    const conf: DbConfiguration = {
+      domains: {
+        [DOMAIN_TX]: 'MongoTx',
+        [DOMAIN_TRANSIENT]: 'InMemory',
+        [DOMAIN_BLOB]: 'MinioData',
+        [DOMAIN_FULLTEXT_BLOB]: 'FullTextBlob',
+        [DOMAIN_MODEL]: 'Null'
+      },
+      metrics,
+      defaultAdapter: 'Mongo',
+      adapters: {
+        MongoTx: {
+          factory: createMongoTxAdapter,
+          url: dbUrl
         },
-        metrics,
-        defaultAdapter: 'Mongo',
-        adapters: {
-          MongoTx: {
-            factory: createMongoTxAdapter,
-            url: dbUrl
-          },
-          Mongo: {
-            factory: createMongoAdapter,
-            url: dbUrl
-          },
-          Null: {
-            factory: createNullAdapter,
-            url: ''
-          },
-          InMemory: {
-            factory: createInMemoryAdapter,
-            url: ''
-          },
-          MinioData: {
-            factory: createMinioDataAdapter,
-            url: ''
-          },
-          FullTextBlob: {
-            factory: createElasticBackupDataAdapter,
-            url: fullTextUrl
-          }
+        Mongo: {
+          factory: createMongoAdapter,
+          url: dbUrl
         },
-        fulltextAdapter: {
-          factory: createElasticAdapter,
-          url: fullTextUrl,
-          stages: (adapter, storage, storageAdapter, contentAdapter) =>
-            createIndexStages(
-              metrics.newChild('stages', {}),
-              workspace,
-              adapter,
-              storage,
-              storageAdapter,
-              contentAdapter
-            )
+        Null: {
+          factory: createNullAdapter,
+          url: ''
         },
-        contentAdapter: {
-          factory: createRekoniAdapter,
-          url: rekoniUrl
+        InMemory: {
+          factory: createInMemoryAdapter,
+          url: ''
         },
-        storageFactory: () =>
-          new MinioService({
-            ...minioConf,
-            port: 9000,
-            useSSL: false
-          }),
-        workspace
-      }
-      return createPipeline(ctx, conf, middlewares, upgrade, broadcast)
-    },
-    (token: Token, pipeline: Pipeline, broadcast: BroadcastCall) => {
-      if (token.extra?.mode === 'backup') {
-        return new BackupClientSession(broadcast, token, pipeline)
-      }
-      return new ClientSession(broadcast, token, pipeline)
-    },
-    port,
-    productId,
-    host
-  )
+        MinioData: {
+          factory: createMinioDataAdapter,
+          url: ''
+        },
+        FullTextBlob: {
+          factory: createElasticBackupDataAdapter,
+          url: opt.fullTextUrl
+        }
+      },
+      fulltextAdapter: {
+        factory: createElasticAdapter,
+        url: opt.fullTextUrl,
+        stages: (adapter, storage, storageAdapter, contentAdapter) =>
+          createIndexStages(metrics.newChild('stages', {}), workspace, adapter, storage, storageAdapter, contentAdapter)
+      },
+      contentAdapter: {
+        factory: createRekoniAdapter,
+        url: opt.rekoniUrl
+      },
+      storageFactory: () =>
+        new MinioService({
+          ...opt.minioConf,
+          port: 9000,
+          useSSL: false
+        }),
+      workspace
+    }
+    return createPipeline(ctx, conf, middlewares, upgrade, broadcast)
+  }
+
+  const sessionFactory = (token: Token, pipeline: Pipeline, broadcast: BroadcastCall): Session => {
+    if (token.extra?.mode === 'backup') {
+      return new BackupClientSession(broadcast, token, pipeline)
+    }
+    return new ClientSession(broadcast, token, pipeline)
+  }
+
+  return startJsonRpc(getMetricsContext(), {
+    pipelineFactory,
+    sessionFactory,
+    port: opt.port,
+    productId: opt.productId,
+    chunking: opt.chunking,
+    serverFactory: opt.serverFactory
+  })
 }

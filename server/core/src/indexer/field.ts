@@ -158,9 +158,11 @@ export class IndexedFieldStage implements FullTextPipelineStage {
           if (propagate.length > 0) {
             // We need to propagate all changes to all child's of following classes.
             if (allChildDocs === undefined) {
-              allChildDocs = await this.dbStorage.findAll(metrics.newChild('propagate', {}), core.class.DocIndexState, {
+              const pc = metrics.newChild('propagate', {})
+              allChildDocs = await this.dbStorage.findAll(pc, core.class.DocIndexState, {
                 attachedTo: { $in: docs.map((it) => it._id) }
               })
+              pc.end()
             }
             const childs = allChildDocs.filter((it) => it.attachedTo === docState._id)
             for (const u of childs) {

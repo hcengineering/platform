@@ -102,9 +102,14 @@ export class FullTextPushStage implements FullTextPipelineStage {
     while (part.length > 0) {
       const toIndexPart = part.splice(0, 1000)
 
-      const allChildDocs = await this.dbStorage.findAll(metrics.newChild('find-child', {}), core.class.DocIndexState, {
-        attachedTo: { $in: toIndexPart.map((it) => it._id) }
-      })
+      const allChildDocs = await metrics.with(
+        'find-child',
+        {},
+        async (ctx) =>
+          await this.dbStorage.findAll(ctx, core.class.DocIndexState, {
+            attachedTo: { $in: toIndexPart.map((it) => it._id) }
+          })
+      )
 
       for (const doc of toIndexPart) {
         if (pipeline.cancelling) {
@@ -133,10 +138,13 @@ export class FullTextPushStage implements FullTextPipelineStage {
             const propagate: Ref<Class<Doc>>[] = collectPropagate(pipeline, doc.attachedToClass)
             if (propagate.some((it) => pipeline.hierarchy.isDerived(doc.objectClass, it))) {
               // We need to include all parent content into this one.
-              const [parentDoc] = await this.dbStorage.findAll(
-                metrics.newChild('propagate', {}),
-                core.class.DocIndexState,
-                { _id: doc.attachedTo as Ref<DocIndexState> }
+              const [parentDoc] = await metrics.with(
+                'find-parent',
+                {},
+                async (ctx) =>
+                  await this.dbStorage.findAll(ctx, core.class.DocIndexState, {
+                    _id: doc.attachedTo as Ref<DocIndexState>
+                  })
               )
               if (parentDoc !== undefined) {
                 updateDoc2Elastic(parentDoc.attributes, elasticDoc, parentDoc._id)

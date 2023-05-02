@@ -92,10 +92,13 @@ export class FullSummaryStage implements FullTextPipelineStage {
     while (part.length > 0) {
       const toIndexPart = part.splice(0, 1000)
 
-      const allChildDocs = await this.dbStorage.findAll(
-        metrics.newChild('fulltext-find-child', {}),
-        core.class.DocIndexState,
-        { attachedTo: { $in: toIndexPart.map((it) => it._id) } }
+      const allChildDocs = await metrics.with(
+        'find-child',
+        {},
+        async (ctx) =>
+          await this.dbStorage.findAll(ctx, core.class.DocIndexState, {
+            attachedTo: { $in: toIndexPart.map((it) => it._id) }
+          })
       )
 
       for (const doc of toIndexPart) {

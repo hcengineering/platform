@@ -34,5 +34,8 @@
     "@hcengineering/core": "^0.6.23",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-token": "^0.6.2"
+  },
+  "optionalDependencies": {
+    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.23.0"
   }
 }

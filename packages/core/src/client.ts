@@ -246,11 +246,13 @@ async function loadModel (
 ): Promise<boolean> {
   const t = Date.now()
 
-  const atxes = await conn.findAll(
-    core.class.Tx,
-    { objectSpace: core.space.Model, _id: { $nin: Array.from(processedTx.values()) } },
-    { sort: { modifiedOn: SortingOrder.Ascending, _id: SortingOrder.Ascending } }
-  )
+  const mq: DocumentQuery<Tx> = { objectSpace: core.space.Model }
+  if (processedTx.size > 0) {
+    mq._id = { $nin: Array.from(processedTx.values()) }
+  }
+  const atxes = await conn.findAll(core.class.Tx, mq, {
+    sort: { modifiedOn: SortingOrder.Ascending, _id: SortingOrder.Ascending }
+  })
 
   if (reload && atxes.length > modelTransactionThreshold) {
     return true

@@ -81,3 +81,4 @@ pods/front/dist
 *.cpuprofile
 *.pyc
 metrics.txt
+dev/tool/report.csv

@@ -17,7 +17,7 @@
 import { readResponse, serialize, UNAUTHORIZED } from '@hcengineering/platform'
 import { generateToken } from '@hcengineering/server-token'
 import WebSocket from 'ws'
-import { disableLogging, start } from '../server'
+import { start } from '../server'
 
 import {
   Account,
@@ -40,6 +40,8 @@ import {
 } from '@hcengineering/core'
 import { SessionContext } from '@hcengineering/server-core'
 import { ClientSession } from '../client'
+import { startHttpServer } from '../server_http'
+import { disableLogging } from '../types'
 import { genMinModel } from './minmodel'
 
 describe('server', () => {
@@ -58,9 +60,8 @@ describe('server', () => {
     return modelDb
   }
 
-  const cancelOp = start(
-    new MeasureMetricsContext('test', {}),
-    async () => ({
+  const cancelOp = start(new MeasureMetricsContext('test', {}), {
+    pipelineFactory: async () => ({
       modelDb: await getModelDb(),
       findAll: async <T extends Doc>(
         ctx: SessionContext,
@@ -80,10 +81,12 @@ describe('server', () => {
       upload: async (domain: Domain, docs: Doc[]) => {},
       clean: async (domain: Domain, docs: Ref<Doc>[]) => {}
     }),
-    (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
-    3335,
-    ''
-  )
+    sessionFactory: (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
+    port: 3335,
+    productId: '',
+    serverFactory: startHttpServer,
+    chunking: -1
+  })
 
   function connect (): WebSocket {
     const token: string = generateToken('', getWorkspaceId('latest', ''))
@@ -143,9 +146,8 @@ describe('server', () => {
   })
 
   it('reconnect', async () => {
-    const cancelOp = start(
-      new MeasureMetricsContext('test', {}),
-      async () => ({
+    const cancelOp = start(new MeasureMetricsContext('test', {}), {
+      pipelineFactory: async () => ({
         modelDb: await getModelDb(),
         findAll: async <T extends Doc>(
           ctx: SessionContext,
@@ -175,10 +177,12 @@ describe('server', () => {
         upload: async (domain: Domain, docs: Doc[]) => {},
         clean: async (domain: Domain, docs: Ref<Doc>[]) => {}
       }),
-      (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
-      3336,
-      ''
-    )
+      sessionFactory: (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
+      port: 3336,
+      productId: '',
+      serverFactory: startHttpServer,
+      chunking: -1
+    })
 
     async function findClose (token: string, timeoutPromise: Promise<void>, code: number): Promise<string> {
       const newConn = new WebSocket(`ws://localhost:3336/${token}?sessionId=s1`)
