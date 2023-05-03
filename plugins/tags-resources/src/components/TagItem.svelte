@@ -31,7 +31,7 @@
 
   $: name = element?.title ?? tag?.title ?? 'New item'
 
-  $: tagIcon = schema === '3' ? undefined : tagLevel[(((tag?.weight ?? 0) % 3) + 1) as 1 | 2 | 3]
+  $: tagIcon = schema !== '9' ? undefined : tagLevel[(((tag?.weight ?? 0) % 3) + 1) as 1 | 2 | 3]
 </script>
 
 {#if inline}
