@@ -81,7 +81,7 @@
       on:click={(evt) => editSpendReport(evt, report, currentProject?.defaultTimeReportDay)}
     >
       <div class="flex-row-center clear-mins gap-2 flex-grow mr-4" class:p-text={twoRows}>
-        <FixedColumn key={'tmiespend_issue'} justify={'left'} addClass={'fs-bold'}>
+        <FixedColumn key={'timespend_issue'} justify={'left'} addClass={'fs-bold'}>
           {#if currentProject && report.$lookup?.attachedTo}
             {getIssueId(currentProject, report.$lookup?.attachedTo)}
           {/if}
