@@ -366,11 +366,11 @@
     &.link-bordered {
       padding: 0 0.5rem;
       color: var(--theme-content-color);
-      background-color: var(--theme-kanban-button-color);
+      background-color: var(--theme-link-button-color);
       border-color: var(--theme-button-border);
       &:hover {
         color: var(--theme-caption-color);
-        background-color: var(--theme-kanban-button-hover);
+        background-color: var(--theme-link-button-hover);
         border-color: var(--theme-list-divider-color);
         .btn-icon {
           color: var(--theme-caption-color);

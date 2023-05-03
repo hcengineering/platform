@@ -22,7 +22,6 @@
   import Icon from '../Icon.svelte'
   import IconClose from '../icons/Close.svelte'
   import DPCalendar from './icons/DPCalendar.svelte'
-  import DPCalendarOver from './icons/DPCalendarOver.svelte'
   import DateRangePopup from './DateRangePopup.svelte'
   import { DateRangeMode } from '@hcengineering/core'
 
@@ -416,7 +415,7 @@
     {/if}
   {:else}
     <div class="btn-icon {icon}">
-      <Icon icon={icon === 'overdue' ? DPCalendarOver : DPCalendar} size={'full'} />
+      <Icon icon={DPCalendar} size={'full'} />
     </div>
     {#if value !== undefined && value !== null && value.toString() !== ''}
       {#if labelOver !== undefined}

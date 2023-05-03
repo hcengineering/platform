@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Scroller, tableSP } from '@hcengineering/ui'
+  import { Scroller, tableSP, FadeOptions } from '@hcengineering/ui'
   import { BuildModelKey } from '@hcengineering/view'
   import { onMount } from 'svelte'
   import { ActionContext } from '..'
@@ -33,6 +33,7 @@
   export let showFilterBar = true
   export let enableChecking = true
   export let tableId: string | undefined = undefined
+  export let fade: FadeOptions = tableSP
 
   // If defined, will show a number of dummy items before real data will appear.
   export let loadingProps: LoadingProps | undefined = undefined
@@ -83,7 +84,7 @@
     mode: 'browser'
   }}
 />
-<Scroller fade={tableSP} horizontal={true}>
+<Scroller {fade} horizontal={true}>
   <Table
     bind:this={table}
     {_class}

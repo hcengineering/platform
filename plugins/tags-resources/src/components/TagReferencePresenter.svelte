@@ -22,7 +22,7 @@
 
   export let value: TagReference
   export let isEditable: boolean = false
-  export let kind: 'labels' | 'kanban-labels' | 'skills' = 'skills'
+  export let kind: 'list' | 'link' | 'skills' = 'skills'
   export let realWidth: number | undefined = undefined
   export let attr: AnyAttribute | undefined
   export let inline: boolean = false
@@ -36,9 +36,9 @@
     <TagItem tag={value} schema={attr?.schema ?? '0'} inline />
   {:else if kind === 'skills'}
     <TagItem tag={value} schema={attr?.schema ?? '0'} />
-  {:else if kind === 'kanban-labels'}
+  {:else if kind === 'link'}
     <button
-      class="label-container"
+      class="link-container"
       use:resizeObserver={(element) => {
         realWidth = element.clientWidth
       }}
@@ -46,9 +46,9 @@
       <div class="color" style:background-color={getPlatformColor(value.color ?? 0)} />
       <span class="overflow-label ml-1 text-sm caption-color max-w-40">{value.title}</span>
     </button>
-  {:else if kind === 'labels'}
+  {:else if kind === 'list'}
     <div
-      class="tag-container"
+      class="list-container"
       style:padding-right={isEditable ? '0' : '0.5rem'}
       use:resizeObserver={(element) => {
         realWidth = element.clientWidth
@@ -68,7 +68,7 @@
 {/if}
 
 <style lang="scss">
-  .tag-container {
+  .list-container {
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -96,7 +96,7 @@
     }
   }
 
-  .label-container {
+  .link-container {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -109,7 +109,7 @@
     line-height: 0.75rem;
     white-space: nowrap;
     color: var(--theme-content-color);
-    background-color: var(--theme-kanban-button-color);
+    background-color: var(--theme-link-button-color);
     border: 1px solid var(--theme-button-border);
     border-radius: 0.25rem;
     transition-property: border, background-color, color, box-shadow;
@@ -117,7 +117,7 @@
 
     &:hover {
       color: var(--theme-caption-color);
-      background-color: var(--theme-kanban-button-hover);
+      background-color: var(--theme-link-button-hover);
       border-color: var(--theme-list-divider-color);
       transition-duration: 0;
     }

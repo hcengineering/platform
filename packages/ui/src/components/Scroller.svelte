@@ -73,8 +73,8 @@
   let firstScroll: boolean = autoscroll
   let orientir: 'vertical' | 'horizontal' = 'vertical'
 
-  let timer: number
-  let timerH: number
+  let timer: any | undefined = undefined
+  let timerH: any | undefined = undefined
 
   const inter = new Set<Element>()
   let hasLastCategories: boolean = false
@@ -92,7 +92,7 @@
       const scrollH = divScroll.scrollHeight
       const proc = scrollH / trackH
 
-      const newHeight = divScroll.clientHeight / proc + 'px'
+      const newHeight = (divScroll.clientHeight - 4) / proc + 'px'
       if (divBar.style.height !== 'newHeight') {
         divBar.style.height = newHeight
       }
@@ -111,6 +111,7 @@
         if (divBar) {
           if (timer) {
             clearTimeout(timer)
+            timer = undefined
             if (divBar.style.opacity !== '1') {
               divBar.style.opacity = '1'
             }
@@ -131,17 +132,18 @@
   }
   const checkBarH = (): void => {
     if (divBarH && divScroll) {
-      const trackW = divScroll.clientWidth - (mask !== 'none' ? 14 : 4)
+      const trackW = divScroll.clientWidth - (mask !== 'none' ? 14 : 4) - shiftLeft - shiftRight
       const scrollW = divScroll.scrollWidth
       const proc = scrollW / trackW
       divBarH.style.width = divScroll.clientWidth / proc + 'px'
-      divBarH.style.left = divScroll.scrollLeft / proc + 2 + 'px'
+      divBarH.style.left = divScroll.scrollLeft / proc + 2 + shiftLeft + 'px'
       if (maskH === 'none') divBarH.style.visibility = 'hidden'
       else {
         divBarH.style.visibility = 'visible'
         if (divBarH) {
           if (timerH) {
             clearTimeout(timerH)
+            timerH = undefined
             divBarH.style.opacity = '1'
           }
           timerH = setTimeout(() => {
@@ -170,14 +172,15 @@
         divScroll.scrollTop = (divScroll.scrollHeight - divScroll.clientHeight) * procBar
       } else {
         let X = event.clientX - dXY
-        if (X < rectScroll.left + 2) X = rectScroll.left + 2
-        if (X > rectScroll.right - divBarH.clientWidth - (mask !== 'none' ? 12 : 2)) {
-          X = rectScroll.right - divBarH.clientWidth - (mask !== 'none' ? 12 : 2)
+        if (X < rectScroll.left + 2 + shiftLeft) X = rectScroll.left + 2 + shiftLeft
+        if (X > rectScroll.right - divBarH.clientWidth - (mask !== 'none' ? 12 : 2) - shiftRight) {
+          X = rectScroll.right - divBarH.clientWidth - (mask !== 'none' ? 12 : 2) - shiftRight
         }
         divBarH.style.left = X - rectScroll.x + 'px'
-        const topBar = X - rectScroll.x - (mask !== 'none' ? 12 : 2)
-        const widthScroll = rectScroll.width - 2 - divBarH.clientWidth - (mask !== 'none' ? 12 : 2)
-        const procBar = topBar / widthScroll
+        const leftBar = X - rectScroll.x - shiftLeft - 2
+        const widthScroll =
+          rectScroll.width - 2 - (mask !== 'none' ? 12 : 2) - divBarH.clientWidth - shiftLeft - shiftRight
+        const procBar = leftBar / widthScroll
         divScroll.scrollLeft = (divScroll.scrollWidth - divScroll.clientWidth) * procBar
       }
     }
@@ -243,10 +246,16 @@
   }
 
   let checkBarTimeout: any | undefined = undefined
+  let checkHBarTimeout: any | undefined = undefined
 
-  const delayCall = (op: () => void) => {
-    clearTimeout(checkBarTimeout)
-    checkBarTimeout = setTimeout(op, 50)
+  const delayCall = (op: () => void, h?: boolean) => {
+    if (h) {
+      clearTimeout(checkHBarTimeout)
+      checkHBarTimeout = setTimeout(op, 50)
+    } else {
+      clearTimeout(checkBarTimeout)
+      checkBarTimeout = setTimeout(op, 50)
+    }
   }
 
   const checkFade = (): void => {
@@ -270,7 +279,7 @@
       renderFade()
     }
     if (!isScrolling) delayCall(checkBar)
-    if (!isScrolling && horizontal) delayCall(checkBarH)
+    if (!isScrolling && horizontal) delayCall(checkBarH, true)
   }
 
   function checkAutoScroll () {
@@ -366,7 +375,7 @@
       divScroll.addEventListener('wheel', wheelEvent)
       divScroll.addEventListener('scroll', checkFade)
       delayCall(checkBar)
-      if (horizontal) delayCall(checkBarH)
+      if (horizontal) delayCall(checkBarH, true)
     }
   })
   onDestroy(() => {
@@ -445,8 +454,10 @@
   class:union={buttons === 'union'}
   class:shrink
   style:user-select={isScrolling ? 'none' : 'inherit'}
-  style:--scroller-header-height={`${fade.multipler?.top ?? 0.125}rem`}
-  style:--scroller-footer-height={`${fade.multipler?.bottom ?? 0.125}rem`}
+  style:--scroller-header-height={`${(fade.multipler?.top ?? 0) * fz + 2}px`}
+  style:--scroller-footer-height={`${(fade.multipler?.bottom ?? 0) * fz + 2}px`}
+  style:--scroller-left-offset={`${(fade.multipler?.left ?? 0) * fz + 2}px`}
+  style:--scroller-right-offset={`${(fade.multipler?.right ?? 0) * fz + (mask !== 'none' ? 12 : 2)}px`}
 >
   <div bind:this={divHScroll} class="horizontalBox flex-col flex-shrink">
     <div
@@ -455,8 +466,7 @@
         divHeight = element.clientHeight
       }}
       class="scroll relative flex-shrink"
-      class:overflowXauto={horizontal}
-      class:overflowXhidden={!horizontal}
+      class:overflow-x={horizontal ? 'auto' : 'hidden'}
       on:scroll={() => {
         if ($tooltipstore.label !== undefined) closeTooltip()
       }}
@@ -472,7 +482,7 @@
           ? 'column-reverse'
           : 'row'}
         style:height={contentDirection === 'vertical-reverse' ? 'max-content' : noStretch ? 'auto' : '100%'}
-        use:resizeObserver={(element) => {
+        use:resizeObserver={() => {
           checkAutoScroll()
           checkFade()
         }}
@@ -529,12 +539,7 @@
     on:mousedown={(ev) => onScrollStart(ev, 'vertical')}
     on:mouseleave={checkFade}
   />
-  <div
-    class="track"
-    class:hovered={isScrolling === 'vertical'}
-    class:fadeTopOffset={fade.multipler?.top}
-    class:fadeBottomOffset={fade.multipler?.bottom}
-  />
+  <div class="track" class:hovered={isScrolling === 'vertical'} />
   {#if horizontal}
     <div
       class="bar-horizontal"
@@ -543,11 +548,7 @@
       on:mousedown={(ev) => onScrollStart(ev, 'horizontal')}
       on:mouseleave={checkFade}
     />
-    <div
-      class="track-horizontal"
-      class:hovered={isScrolling === 'horizontal'}
-      style:right={mask !== 'none' ? '12px' : '2px'}
-    />
+    <div class="track-horizontal" class:hovered={isScrolling === 'horizontal'} />
   {/if}
 </div>
 
@@ -647,12 +648,6 @@
       transform: translateY(50%);
     }
   }
-  .overflowXauto {
-    overflow-x: auto;
-  }
-  .overflowXhidden {
-    overflow-x: hidden;
-  }
   .scroller-container {
     position: relative;
     display: flex;
@@ -746,21 +741,14 @@
     border-radius: 0.5rem;
   }
   .track {
-    top: 2px;
-    bottom: 2px;
+    top: var(--scroller-header-height, 2px);
+    bottom: var(--scroller-footer-height, 2px);
     width: 8px;
-
-    &.fadeTopOffset {
-      top: var(--scroller-header-height);
-    }
-    &.fadeBottomOffset {
-      bottom: var(--scroller-footer-height);
-    }
   }
   .track-horizontal {
-    bottom: var(--scroller-footer-height);
-    left: 2px;
-    right: 2px;
+    bottom: var(--scroller-footer-height, 2px);
+    left: var(--scroller-left-offset, 2px);
+    right: var(--scroller-right-offset, 2px);
     height: 8px;
   }
   .bar,
@@ -807,7 +795,7 @@
   }
   .bar-horizontal {
     left: 2px;
-    bottom: var(--scroller-footer-height);
+    bottom: var(--scroller-footer-height, 2px);
     height: 8px;
     min-width: 2rem;
     max-width: calc(100% - 12px);

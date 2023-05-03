@@ -486,6 +486,8 @@
   top: 0;
   height: 3rem;
   background-color: var(--theme-table-header-color);
+
+  &__tr { height: 3rem; }
 }
 
 .scroller-tfoot {
@@ -494,8 +496,9 @@
   bottom: 0;
   height: 2.5rem;
   background-color: var(--theme-table-header-color);
-
+  
   tr {
+    height: 2.5rem;
     box-shadow: inset 0 1px 0 0 var(--theme-divider-color);
   }
 }

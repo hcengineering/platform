@@ -16,7 +16,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
   import type { State } from '@hcengineering/task'
-  import { getColorNumberByText, getPlatformColor, hexToRgb } from '@hcengineering/ui'
+  import { getColorNumberByText, getPlatformColor, hexToRgb, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   export let value: State | undefined
   export let shouldShowAvatar = true
@@ -28,8 +28,12 @@
 
   const defaultFill = 'currentColor'
   $: fill = value ? getPlatformColor(value.color ?? getColorNumberByText(value.name)) : defaultFill
+  $: lth = $deviceInfo.theme === 'theme-light'
   const dispatchAccentColor = (fill: string) =>
-    dispatch('accent-color', fill !== defaultFill ? hexToRgb(fill) : { r: 127, g: 127, b: 127 })
+    dispatch(
+      'accent-color',
+      fill !== defaultFill ? hexToRgb(fill) : lth ? { r: 220, g: 220, b: 220 } : { r: 100, g: 100, b: 108 }
+    )
   $: dispatchAccentColor(fill)
 
   onMount(() => {
