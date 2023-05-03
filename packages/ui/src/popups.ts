@@ -1,5 +1,5 @@
-import { DateRangeMode } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
+import { ComponentType } from 'svelte'
 import { writable } from 'svelte/store'
 import type {
   AnyComponent,
@@ -10,7 +10,6 @@ import type {
   PopupPositionElement,
   VerticalAlignment
 } from './types'
-import { ComponentType } from 'svelte'
 
 export interface CompAndProps {
   id: string
@@ -85,65 +84,6 @@ export function closePopup (category?: string): void {
       popups.pop()
     }
     return popups
-  })
-}
-
-interface IDatePopup {
-  component: AnySvelteComponent | ComponentType | undefined
-  currentDate: Date | undefined
-  anchor: HTMLElement | undefined
-  popup: HTMLElement | undefined
-  frendlyFocus: HTMLElement[] | undefined
-  mode?: DateRangeMode
-  onClose?: (result: any) => void
-  onChange?: (result: any) => void
-  shift?: boolean
-}
-
-export const dpstore = writable<IDatePopup>({
-  component: undefined,
-  currentDate: undefined,
-  anchor: undefined,
-  popup: undefined,
-  frendlyFocus: undefined,
-  onClose: undefined,
-  onChange: undefined,
-  shift: undefined,
-  mode: undefined
-})
-
-export function showDatePopup (
-  component: AnySvelteComponent | ComponentType | undefined,
-  currentDate: Date,
-  anchor?: HTMLElement,
-  popup?: HTMLElement,
-  frendlyFocus?: HTMLElement[] | undefined,
-  onClose?: (result: any) => void,
-  onChange?: (result: any) => void,
-  shift?: boolean
-): void {
-  dpstore.set({
-    component,
-    currentDate,
-    anchor,
-    popup,
-    frendlyFocus,
-    onClose,
-    onChange,
-    shift
-  })
-}
-
-export function closeDatePopup (): void {
-  dpstore.set({
-    component: undefined,
-    currentDate: undefined,
-    anchor: undefined,
-    popup: undefined,
-    frendlyFocus: undefined,
-    onClose: undefined,
-    onChange: undefined,
-    shift: undefined
   })
 }
 

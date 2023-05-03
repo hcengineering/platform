@@ -13,23 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@hcengineering/platform'
-  import { createEventDispatcher, afterUpdate } from 'svelte'
-  import { daysInMonth, getMonthName } from './internal/DateUtils'
-  import ui from '../../plugin'
-  import { dpstore, closeDatePopup } from '../../popups'
-  import Label from '../Label.svelte'
-  import Icon from '../Icon.svelte'
-  import IconClose from '../icons/Close.svelte'
-  import DPCalendar from './icons/DPCalendar.svelte'
-  import DateRangePopup from './DateRangePopup.svelte'
   import { DateRangeMode } from '@hcengineering/core'
+  import type { IntlString } from '@hcengineering/platform'
+  import { afterUpdate, createEventDispatcher } from 'svelte'
+  import ui from '../../plugin'
+  import { showPopup } from '../../popups'
+  import Icon from '../Icon.svelte'
+  import Label from '../Label.svelte'
+  import IconClose from '../icons/Close.svelte'
+  import DatePopup from './DatePopup.svelte'
+  import DPCalendar from './icons/DPCalendar.svelte'
+  import { daysInMonth, getMonthName } from './internal/DateUtils'
 
   export let value: number | null | undefined = null
   export let mode: DateRangeMode = DateRangeMode.DATE
   export let editable: boolean = false
   export let icon: 'normal' | 'warning' | 'overdue' = 'normal'
-  export let labelOver: IntlString | undefined = undefined // label instead of date
   export let labelNull: IntlString = ui.string.NoDate
   export let kind: 'no-border' | 'link' | 'secondary' = 'no-border'
   export let size: 'small' | 'medium' | 'large' = 'small'
@@ -45,7 +44,7 @@
   }
   const editsType: TEdits[] = ['day', 'month', 'year', 'hour', 'min']
   const getIndex = (id: TEdits): number => editsType.indexOf(id)
-  const today = new Date(Date.now())
+  const today = new Date()
   const startDate = new Date(0)
   const defaultSelected: TEdits = mode === DateRangeMode.TIME ? 'hour' : 'day'
 
@@ -124,7 +123,6 @@
     currentDate.setSeconds(0, 0)
     value = currentDate.getTime()
     dateToEdits()
-    $dpstore.currentDate = currentDate
     dispatch('change', value)
   }
 
@@ -149,7 +147,6 @@
       value = null
       dispatch('change', null)
     }
-    closeDatePopup()
     edit = opened = false
   }
 
@@ -170,7 +167,6 @@
       if (!isNull() && edits[2].value > 999) {
         fixEdits()
         setCurrentDate(setValue(edits[index].value, currentDate, ed))
-        $dpstore.currentDate = currentDate
         dateToEdits()
       }
       edits = edits
@@ -191,7 +187,6 @@
         const val = ev.code === 'ArrowUp' ? edits[index].value + 1 : edits[index].value - 1
         if (currentDate) {
           setCurrentDate(setValue(val, currentDate, ed))
-          $dpstore.currentDate = currentDate
           dateToEdits()
         }
       }
@@ -229,7 +224,7 @@
     edits.forEach((edit) => {
       if (edit.el === target) kl = true
     })
-    if (target === popupComp || target === closeBtn) kl = true
+    if (target === closeBtn) kl = true
     if (!kl || target === null) closeDP()
   }
 
@@ -262,41 +257,23 @@
     }
   }
 
-  const _change = (result: any): void => {
-    if (result !== undefined) {
-      setCurrentDate(result)
-      saveDate()
-    }
-  }
-  const _close = (result: any): void => {
-    if (result !== undefined) {
-      if (result !== null) {
-        setCurrentDate(result)
-        saveDate()
-      }
-      closeDP()
-    }
-  }
-
   const openPopup = (): void => {
-    opened = edit = true
-    $dpstore.currentDate = currentDate
-    $dpstore.anchor = datePresenter
-    $dpstore.onChange = _change
-    $dpstore.onClose = _close
-    $dpstore.component = DateRangePopup
-    $dpstore.shift = !noShift
-    $dpstore.mode = mode
-  }
-  let popupComp: HTMLElement
-  $: if (opened && $dpstore.popup) popupComp = $dpstore.popup
-  $: if (opened && edits[0].el && $dpstore.frendlyFocus === undefined) {
-    const frendlyFocus: HTMLElement[] = []
-    edits.forEach((edit, i) => {
-      if (edit.el) frendlyFocus[i] = edit.el
-    })
-    frendlyFocus.push(closeBtn)
-    $dpstore.frendlyFocus = frendlyFocus
+    showPopup(
+      DatePopup,
+      {
+        currentDate,
+        withTime,
+        noShift,
+        label: labelNull
+      },
+      undefined,
+      saveDate,
+      (result) => {
+        if (result !== undefined) {
+          currentDate = result
+        }
+      }
+    )
   }
 
   export const adaptValue = () => {
@@ -335,7 +312,7 @@
       >
         {#if edits[0].value > -1}
           {edits[0].value.toString().padStart(2, '0')}
-        {:else}DD{/if}
+        {:else}<Label label={ui.string.DD} />{/if}
       </span>
       <span class="separator">.</span>
       <span
@@ -348,7 +325,7 @@
       >
         {#if edits[1].value > -1}
           {edits[1].value.toString().padStart(2, '0')}
-        {:else}MM{/if}
+        {:else}<Label label={ui.string.MM} />{/if}
       </span>
       <span class="separator">.</span>
       <span
@@ -361,7 +338,7 @@
       >
         {#if edits[2].value > -1}
           {edits[2].value.toString().padStart(4, '0')}
-        {:else}YYYY{/if}
+        {:else}<Label label={ui.string.YYYY} />{/if}
       </span>
     {/if}
     {#if withTime}
@@ -378,7 +355,7 @@
       >
         {#if edits[3].value > -1}
           {edits[3].value.toString().padStart(2, '0')}
-        {:else}HH{/if}
+        {:else}<Label label={ui.string.HH} />{/if}
       </span>
       <span class="separator">:</span>
       <span
@@ -391,7 +368,7 @@
       >
         {#if edits[4].value > -1}
           {edits[4].value.toString().padStart(2, '0')}
-        {:else}MM{/if}
+        {:else}<Label label={ui.string.MM} />{/if}
       </span>
     {/if}
     {#if value}
@@ -418,24 +395,20 @@
       <Icon icon={DPCalendar} size={'full'} />
     </div>
     {#if value !== undefined && value !== null && value.toString() !== ''}
-      {#if labelOver !== undefined}
-        <Label label={labelOver} />
-      {:else}
+      {#if withDate}
+        {new Date(value).getDate()}
+        {getMonthName(new Date(value), 'short')}
+        {#if new Date(value).getFullYear() !== today.getFullYear()}
+          {new Date(value).getFullYear()}
+        {/if}
+      {/if}
+      {#if withTime}
         {#if withDate}
-          {new Date(value).getDate()}
-          {getMonthName(new Date(value), 'short')}
-          {#if new Date(value).getFullYear() !== today.getFullYear()}
-            {new Date(value).getFullYear()}
-          {/if}
+          <div class="time-divider" />
         {/if}
-        {#if withTime}
-          {#if withDate}
-            <div class="time-divider" />
-          {/if}
-          {new Date(value).getHours().toString().padStart(2, '0')}
-          <span class="separator">:</span>
-          {new Date(value).getMinutes().toString().padStart(2, '0')}
-        {/if}
+        {new Date(value).getHours().toString().padStart(2, '0')}
+        <span class="separator">:</span>
+        {new Date(value).getMinutes().toString().padStart(2, '0')}
       {/if}
     {:else}
       <div class="content-color">

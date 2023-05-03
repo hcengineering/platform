@@ -31,7 +31,6 @@
   export let mondayStart: boolean = true
   export let editable: boolean = false
   export let icon: 'normal' | 'warning' | 'critical' | 'overdue' = 'normal'
-  export let labelOver: IntlString | undefined = undefined // label instead of date
   export let labelNull: IntlString = ui.string.NoDate
   export let showIcon = true
   export let shouldShowLabel: boolean = true
@@ -93,9 +92,7 @@
     </div>
   {/if}
   {#if value !== null && value !== undefined}
-    {#if shouldShowLabel && labelOver !== undefined}
-      <Label label={labelOver} />
-    {:else if shouldShowLabel}
+    {#if shouldShowLabel}
       {new Date(value).getDate()}
       {getMonthName(new Date(value), 'short')}
       {#if new Date(value).getFullYear() !== today.getFullYear()}
