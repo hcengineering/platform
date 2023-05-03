@@ -65,3 +65,16 @@ export interface RefAction {
   fill?: string
   disabled?: boolean
 }
+
+export function isLinkElement (element: any): element is HTMLLinkElement {
+  if (typeof element !== 'object') {
+    return false
+  }
+
+  const htmlElement = (element as HTMLElement)
+  if (!('tagName' in htmlElement)) {
+    return false
+  }
+
+  return htmlElement.tagName === 'A'
+}

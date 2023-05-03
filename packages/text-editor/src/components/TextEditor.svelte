@@ -20,11 +20,12 @@
   import type { FocusPosition } from '@tiptap/core'
   // import Typography from '@tiptap/extension-typography'
   import Placeholder from '@tiptap/extension-placeholder'
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
-  import textEditorPlugin from '../plugin'
-  import { FormatMode } from '../types'
-  import { defaultExtensions } from './extensions'
   import { Level } from '@tiptap/extension-heading'
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import { DirectEditorProps } from 'prosemirror-view'
+  import textEditorPlugin from '../plugin'
+  import { FormatMode, isLinkElement } from '../types'
+  import { defaultExtensions } from './extensions'
 
   export let content: string = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
@@ -36,6 +37,8 @@
   let editor: Editor
 
   let placeHolderStr: string = ''
+  
+  let readonly = false
 
   $: ph = translate(placeholder, {}).then((r) => {
     placeHolderStr = r
@@ -43,11 +46,35 @@
 
   const dispatch = createEventDispatcher()
 
+  const viewProps: Partial<DirectEditorProps> = {
+    handleClick(view, pos, event) {
+      if (isLinkElement(event.target)) {
+        return
+      }
+
+      startEditing()
+    }
+  } as const
+
+  function startEditing () {
+    if (editor && !readonly) {
+      editor.setEditable(true)
+    }
+  }
+
+  function stopEditing () {
+    if (editor) {
+      editor.setEditable(false)
+    }
+  }
+
+  $: editor && readonly && stopEditing()
+
   export function isEditable (): boolean {
-    return editor.isEditable
+    return !readonly
   }
   export function setEditable (editable: boolean): void {
-    if (editor) editor.setEditable(editable)
+    readonly = !editable
   }
   export function submit (): void {
     content = editor.getHTML()
@@ -197,6 +224,7 @@
       editor = new Editor({
         element,
         content,
+        editable: false,
         extensions: [
           ...defaultExtensions,
           ...(supportSubmit ? [Handle] : []), // order important
@@ -212,10 +240,12 @@
         },
         onBlur: ({ event }) => {
           focused = false
+          stopEditing()
           dispatch('blur', event)
         },
         onFocus: () => {
           focused = true
+          startEditing()
           dispatch('focus', editor.getHTML())
         },
         onUpdate: () => {
@@ -226,6 +256,7 @@
         },
         onCreate: () => {
           isEmpty = editor.isEmpty
+          editor.view.setProps(viewProps)
         },
         onSelectionUpdate: () => dispatch('selection-update')
       })
