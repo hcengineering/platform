@@ -65,38 +65,48 @@ export class Triggers {
         if (query === undefined) {
           return true
         }
-        if (query['tx.objectClass'] !== undefined) {
-          if (query['tx.objectClass'].$in !== undefined) {
-            const oldIn = query['tx.objectClass'].$in
-            const newIn = new Set(oldIn)
-            query['tx.objectClass'].$in.forEach((element: Ref<Class<Obj>>) => {
-              const descendants = this.hierarchy.getDescendants(element)
-              newIn.add(descendants)
-            })
-            query['tx.objectClass'].$in = Array.from(newIn.values())
-          } else if (query['tx.objectClass'].$nin !== undefined) {
-            const oldNin = query['tx.objectClass'].$nin
-            const newNin = new Set(oldNin)
-            query['tx.objectClass'].$nin.forEach((element: Ref<Class<Obj>>) => {
-              const descendants = this.hierarchy.getDescendants(element)
-              newNin.add(descendants)
-            })
-            query['tx.objectClass'].$nin = Array.from(newNin.values())
-          } else if (query['tx.objectClass'].$ne !== undefined) {
-            const descendants = this.hierarchy.getDescendants(query['tx.objectClass'].$ne)
-            delete query['tx.objectClass'].$ne
-            query['tx.objectClass'].$nin = [...(query['tx.objectClass'].$nin ?? []), ...descendants]
-          } else {
-            const descendants = this.hierarchy.getDescendants(query['tx.objectClass'])
-            query['tx.objectClass'] = {
-              $in: [...(query['tx.objectClass'].$in ?? []), ...descendants]
-            }
-          }
-        }
+        this.addDerived(query, 'objectClass')
+        this.addDerived(query, 'tx.objectClass')
         return matchQuery([tx], query, core.class.Tx, control.hierarchy).length > 0
       })
       .map(([, trigger]) => trigger(tx, control))
     const result = await Promise.all(derived)
     return result.flatMap((x) => x)
+  }
+
+  private addDerived (q: DocumentQuery<Tx>, key: string): void {
+    if (q[key] === undefined) {
+      return
+    }
+    if (typeof q[key] === 'string') {
+      const descendants = this.hierarchy.getDescendants(q[key])
+      q[key] = {
+        $in: [...(q[key].$in ?? []), ...descendants]
+      }
+    } else {
+      if (Array.isArray(q[key].$in)) {
+        const oldIn = q[key].$in
+        const newIn = new Set(oldIn)
+        q[key].$in.forEach((element: Ref<Class<Obj>>) => {
+          const descendants = this.hierarchy.getDescendants(element)
+          descendants.forEach((d) => newIn.add(d))
+        })
+        q[key].$in = Array.from(newIn.values())
+      }
+      if (Array.isArray(q[key].$nin)) {
+        const oldNin = q[key].$nin
+        const newNin = new Set(oldNin)
+        q[key].$nin.forEach((element: Ref<Class<Obj>>) => {
+          const descendants = this.hierarchy.getDescendants(element)
+          descendants.forEach((d) => newNin.add(d))
+        })
+        q[key].$nin = Array.from(newNin.values())
+      }
+      if (q[key].$ne !== undefined) {
+        const descendants = this.hierarchy.getDescendants(q[key].$ne)
+        delete q[key].$ne
+        q[key].$nin = [...(q[key].$nin ?? []), ...descendants]
+      }
+    }
   }
 }
