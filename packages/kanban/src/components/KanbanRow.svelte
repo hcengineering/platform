@@ -80,7 +80,7 @@
   <div
     bind:this={stateRefs[i]}
     transition:slideD|local={{ isDragging }}
-    class="p-1 flex-no-shrink clear-mins"
+    class="p-1 flex-no-shrink border-radius-1 clear-mins"
     on:dragover|preventDefault={(evt) => cardDragOver(evt, object)}
     on:drop|preventDefault={(evt) => cardDrop(evt, object)}
   >

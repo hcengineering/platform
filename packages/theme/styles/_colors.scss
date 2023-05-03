@@ -85,6 +85,7 @@
   --theme-navpanel-icons-divider: rgba(255, 255, 255, .11);
   --theme-comp-header-color: #1F1F2C;
   --theme-divider-color: rgba(255, 255, 255, .06);
+  --theme-bg-divider-color: #282834;
 
   --theme-trans-color: rgba(255, 255, 255, .3);
   --theme-darker-color: rgba(255, 255, 255, .4);
@@ -97,10 +98,13 @@
   --theme-list-header-color: #C88C65;
   --theme-list-subheader-color: #262634;
   --theme-list-row-color: #21212F;
-  --theme-list-button-color: #262633;
-  --theme-list-button-hover: #2F2F3A;
   --theme-list-divider-color: rgba(255, 255, 255, .09);
   --theme-list-subheader-divider: transparent;
+  
+  --theme-list-button-color: #262633;
+  --theme-list-button-hover: #2F2F3A;
+  --theme-link-button-color: #262634;
+  --theme-link-button-hover: #2F2F3B;
 
   --theme-table-border-color: rgba(255, 255, 255, .1);
   --theme-table-header-color: #1C1C29;
@@ -109,8 +113,6 @@
   --theme-kanban-card-bg-color: rgba(222, 222, 240, .04);
   --theme-kanban-card-border: transparent;
   --theme-kanban-card-footer: rgba(217, 217, 217, .07);
-  --theme-kanban-button-color: #262634;
-  --theme-kanban-button-hover: #2F2F3B;
 
   --theme-tablist-color: rgba(0, 0, 0, .02);
   --theme-checkbox-color: #000;
@@ -244,6 +246,7 @@
   --theme-navpanel-icons-divider: rgba(0, 0, 0, .1);
   --theme-comp-header-color: #FBFBFC;
   --theme-divider-color: rgba(0, 0, 0, .06);
+  --theme-bg-divider-color: #E3E3E5;
 
   --theme-trans-color: rgba(0, 0, 0, .3);
   --theme-darker-color: rgba(0, 0, 0, .4);
@@ -256,10 +259,13 @@
   --theme-list-header-color: red; //#ECD4CA;
   --theme-list-subheader-color: #EEEEF0;
   --theme-list-row-color: #F7F7F8;
-  --theme-list-button-color: #F2F2F4;
-  --theme-list-button-hover: #E8E8EA;
   --theme-list-divider-color: rgba(0, 0, 0, .07);
   --theme-list-subheader-divider: rgba(0, 0, 0, .06);
+  
+  --theme-list-button-color: #F2F2F4;
+  --theme-list-button-hover: #E8E8EA;
+  --theme-link-button-color: #E5E5E7;
+  --theme-link-button-hover: #DCDCDE;
 
   --theme-table-border-color: rgba(0, 0, 0, .1);
   --theme-table-header-color: #EFEFF2;
@@ -268,8 +274,6 @@
   --theme-kanban-card-bg-color: rgba(0, 0, 0, .03);
   --theme-kanban-card-border: rgba(0, 0, 0, .04);
   --theme-kanban-card-footer: rgba(0, 0, 0, .04);
-  --theme-kanban-button-color: #E5E5E7;
-  --theme-kanban-button-hover: #DCDCDE;
 
   --theme-tablist-color: rgba(0, 0, 0, .02);
   --theme-checkbox-color: #000;

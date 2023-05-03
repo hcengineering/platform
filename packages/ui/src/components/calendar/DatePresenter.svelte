@@ -24,7 +24,6 @@
   import Label from '../Label.svelte'
   import DatePopup from './DatePopup.svelte'
   import DPCalendar from './icons/DPCalendar.svelte'
-  import DPCalendarOver from './icons/DPCalendarOver.svelte'
   import { getMonthName } from './internal/DateUtils'
 
   export let value: number | null | undefined
@@ -90,7 +89,7 @@
 >
   {#if showIcon}
     <div class="btn-icon {icon}" class:buttonIconNoLabel={!shouldShowLabel}>
-      <Icon icon={icon === 'overdue' ? DPCalendarOver : DPCalendar} size="full" />
+      <Icon icon={DPCalendar} size="full" />
     </div>
   {/if}
   {#if value !== null && value !== undefined}
@@ -262,20 +261,26 @@
         background-color: var(--theme-list-button-color);
         border-color: var(--theme-divider-color);
       }
+      &.medium {
+        height: 1.75rem;
+      }
     }
     &.link-bordered {
       padding: 0 0.375rem;
       color: var(--theme-content-color);
-      background-color: var(--theme-kanban-button-color);
+      background-color: var(--theme-link-button-color);
       border-color: var(--theme-button-border);
       border-radius: 0.25rem;
       &:hover {
         color: var(--theme-caption-color);
-        background-color: var(--theme-kanban-button-hover);
+        background-color: var(--theme-link-button-hover);
         border-color: var(--theme-list-divider-color);
         .btn-icon {
           color: var(--theme-caption-color);
         }
+      }
+      &.small .btn-icon {
+        margin-right: 0.25rem;
       }
     }
     &.secondary {

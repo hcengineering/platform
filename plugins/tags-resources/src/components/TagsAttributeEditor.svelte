@@ -37,7 +37,7 @@
           {attr}
           {value}
           isEditable={!readonly}
-          kind={'labels'}
+          kind={'list'}
           on:remove={(res) => removeTag(res.detail)}
         />
       </div>

@@ -140,7 +140,7 @@
 </script>
 
 {#if departmentStaff.length}
-  <Scroller fade={{ multipler: { top: 3, bottom: 0, left: colWidthRem } }} horizontal>
+  <Scroller fade={{ multipler: { top: 3, bottom: 3, left: colWidthRem } }} horizontal>
     <table class="scroller-first-column">
       <thead class="scroller-thead">
         <tr class="scroller-thead__tr">
@@ -284,6 +284,10 @@
             <td
               class="p-1 text-center summary"
               class:hovered={i === hoveredIndex}
+              class:holiday={isHoliday(
+                getHolidayDatesForEmployee(staffDepartmentMap, departmentStaff[0]._id, holidays),
+                day
+              )}
               class:weekend={isWeekend(day)}
               class:today={areDatesEqual(todayDate, day)}
               on:mousemove={() => {
@@ -323,9 +327,9 @@
     th {
       flex-shrink: 0;
       padding: 0;
-      height: 2.5rem;
-      min-height: 2.5rem;
-      max-height: 2.5rem;
+      height: 3rem;
+      min-height: 3rem;
+      max-height: 3rem;
       text-transform: uppercase;
       font-weight: 500;
       font-size: 0.75rem;
@@ -371,18 +375,24 @@
       }
     }
     td:not(:last-child) {
-      border-right: 1px solid var(--theme-divider-color);
+      border-right: 1px solid var(--theme-bg-divider-color);
     }
 
-    tbody,
-    tfoot {
-      tr {
-        border-bottom: 1px solid var(--theme-divider-color);
-      }
+    tbody tr:not(:last-child),
+    thead th:first-child .fullfill {
+      border-bottom: 1px solid var(--theme-bg-divider-color);
+    }
+    tfoot tr,
+    tfoot tr td:first-child .fullfill {
+      box-shadow: inset 0 1px 0 0 var(--theme-divider-color);
+    }
+    tfoot tr,
+    tfoot tr td {
+      height: 3rem;
     }
 
     tr.scroller-thead__tr:not(:last-child) {
-      border-right: 1px solid var(--theme-divider-color);
+      border-right: 1px solid var(--theme-bg-divider-color);
     }
 
     .hovered {

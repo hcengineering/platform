@@ -82,6 +82,9 @@
 
   $: dontUpdateRank = orderBy[0] !== TaskOrdering.Manual
 
+  $: lth = $deviceInfo.theme === 'theme-light'
+  const accentColors: AccentColor[] = []
+
   const spaceQuery = createQuery()
 
   let currentProject: SpaceWithStates | undefined
@@ -172,7 +175,7 @@
       if (accentColors[i] === undefined) {
         accentColors[i] = {
           textColor: 'var(--theme-caption-color)',
-          backgroundColor: '175, 175, 175'
+          backgroundColor: lth ? '230, 230, 230' : '100, 100, 108'
         }
       }
     })
@@ -243,9 +246,6 @@
 
   const getDoneUpdate = (e: any) => ({ doneState: e.detail._id } as DocumentUpdate<Doc>)
 
-  $: lth = $deviceInfo.theme === 'theme-light'
-  const accentColors: AccentColor[] = []
-
   const setAccentColor = (n: number, ev: CustomEvent) => {
     const accColor = rgbToHsl(ev.detail.r, ev.detail.g, ev.detail.b)
     const textColor = !lth ? { r: 255, g: 255, b: 255 } : hslToRgb(accColor.h, accColor.s, 0.3)
@@ -287,13 +287,13 @@
       <!-- {@const status = $statusStore.get(state._id)} -->
       {#key lth}
         <div
-          style:--kanban-header-rgb-color={accentColors[index]?.backgroundColor ?? '175, 175, 175'}
+          style:--kanban-header-rgb-color={accentColors[index].backgroundColor}
           class="header flex-row-center"
           class:gradient={!lth}
         >
           <span
             class="clear-mins fs-bold overflow-label pointer-events-none"
-            style:color={accentColors[index]?.textColor ?? 'var(--theme-caption-color)'}
+            style:color={accentColors[index].textColor}
           >
             {#if groupByKey === noCategory}
               <Label label={view.string.NoGrouping} />

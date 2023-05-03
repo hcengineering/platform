@@ -98,6 +98,9 @@
   $: orderBy = viewOptions.orderBy
   $: sort = { [orderBy[0]]: orderBy[1] }
 
+  $: lth = $deviceInfo.theme === 'theme-light'
+  const accentColors: AccentColor[] = []
+
   // issuesGroupBySorting[groupByKey]
 
   $: dontUpdateRank = orderBy[0] !== IssuesOrdering.Manual
@@ -199,7 +202,7 @@
       if (accentColors[i] === undefined) {
         accentColors[i] = {
           textColor: 'var(--theme-caption-color)',
-          backgroundColor: '175, 175, 175'
+          backgroundColor: lth ? '230, 230, 230' : '100, 100, 108'
         }
       }
     })
@@ -258,9 +261,6 @@
     }
   }
 
-  $: lth = $deviceInfo.theme === 'theme-light'
-  const accentColors: AccentColor[] = []
-
   const setAccentColor = (n: number, ev: CustomEvent) => {
     const accColor = rgbToHsl(ev.detail.r, ev.detail.g, ev.detail.b)
     const textColor = !lth ? { r: 255, g: 255, b: 255 } : hslToRgb(accColor.h, accColor.s, 0.3)
@@ -305,14 +305,14 @@
       <!-- {@const status = $statusStore.get(state._id)} -->
       {#key lth}
         <div
-          style:--kanban-header-rgb-color={accentColors[index]?.backgroundColor ?? '175, 175, 175'}
+          style:--kanban-header-rgb-color={accentColors[index].backgroundColor}
           class="header flex-between"
           class:gradient={!lth}
         >
           <div class="flex-row-center gap-1">
             <span
               class="clear-mins fs-bold overflow-label pointer-events-none"
-              style:color={accentColors[index]?.textColor ?? 'var(--theme-caption-color)'}
+              style:color={accentColors[index].textColor}
             >
               {#if groupByKey === noCategory}
                 <Label label={view.string.NoGrouping} />
@@ -349,6 +349,9 @@
     <svelte:fragment slot="card" let:object>
       {@const issue = toIssue(object)}
       {@const issueId = object._id}
+      {@const reports =
+        issue.reportedTime + (issue.childInfo ?? []).map((it) => it.reportedTime).reduce((a, b) => a + b, 0)}
+      {@const estimations = (issue.childInfo ?? []).map((it) => it.estimation).reduce((a, b) => a + b, 0)}
       {#key issueId}
         <div
           class="tracker-card"
@@ -411,22 +414,25 @@
               }}
             />
           </div>
-          <div class="card-footer flex-between">
-            <EstimationEditor kind={'list'} size={'small'} value={issue} />
-            <div class="flex-row-center gap-3 reverse">
-              {#if (object.attachments ?? 0) > 0}
-                <AttachmentsPresenter value={object.attachments} {object} />
-              {/if}
-              {#if (object.comments ?? 0) > 0 || (object.$lookup?.attachedTo !== undefined && (object.$lookup.attachedTo.comments ?? 0) > 0)}
+          {#if reports > 0 || estimations > 0 || (object.comments ?? 0) > 0 || (object.$lookup?.attachedTo !== undefined && (object.$lookup.attachedTo.comments ?? 0) > 0)}
+            <div class="card-footer flex-between">
+              <EstimationEditor kind={'list'} size={'small'} value={issue} />
+              <!-- {@debug issue} -->
+              <div class="flex-row-center gap-3 reverse">
+                {#if (object.attachments ?? 0) > 0}
+                  <AttachmentsPresenter value={object.attachments} {object} />
+                {/if}
                 {#if (object.comments ?? 0) > 0}
                   <CommentsPresenter value={object.comments} {object} />
                 {/if}
                 {#if object.$lookup?.attachedTo !== undefined && (object.$lookup.attachedTo.comments ?? 0) > 0}
                   <CommentsPresenter value={object.$lookup?.attachedTo?.comments} object={object.$lookup?.attachedTo} />
                 {/if}
-              {/if}
+              </div>
             </div>
-          </div>
+          {:else}
+            <div class="min-h-4 max-h-4 h-4" />
+          {/if}
         </div>
       {/key}
     </svelte:fragment>
@@ -468,6 +474,7 @@
     display: flex;
     flex-direction: column;
     min-height: 6.5rem;
+    border-radius: 0.25rem;
 
     .card-header {
       padding: 0.75rem 1rem 0;
