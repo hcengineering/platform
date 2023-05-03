@@ -14,7 +14,8 @@
 //
 
 export * from './base'
+export * from './configuration'
 export * from './modified'
 export * from './private'
-export * from './configuration'
+export * from './queryJoin'
 export * from './spaceSecurity'

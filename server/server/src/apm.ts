@@ -59,6 +59,8 @@ export class APMMeasureContext implements MeasureContext {
     return new APMMeasureContext(this.agent, name, params, this.transaction)
   }
 
+  measure (name: string, value: number): void {}
+
   async with<T>(
     name: string,
     params: Record<string, ParamType>,

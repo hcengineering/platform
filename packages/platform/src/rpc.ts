@@ -40,6 +40,10 @@ export interface Response<R> {
   result?: R
   id?: ReqId
   error?: Status
+  chunk?: {
+    index: number
+    final: boolean
+  }
 }
 
 /**

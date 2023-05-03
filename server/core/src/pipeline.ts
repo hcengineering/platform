@@ -28,7 +28,7 @@ import {
   Tx,
   TxResult
 } from '@hcengineering/core'
-import { createServerStorage, DbConfiguration } from './storage'
+import { DbConfiguration, createServerStorage } from './storage'
 import { Middleware, MiddlewareCreator, Pipeline, SessionContext } from './types'
 
 /**

@@ -24,14 +24,16 @@ import {
   Tx,
   TxResult
 } from '@hcengineering/core'
-import type { Pipeline, SessionContext } from '@hcengineering/server-core'
+import { Pipeline, SessionContext } from '@hcengineering/server-core'
 import { Token } from '@hcengineering/server-token'
-import { BroadcastCall, Session } from './types'
+import { BroadcastCall, Session, SessionRequest } from './types'
 
 /**
  * @public
  */
 export class ClientSession implements Session {
+  requests: Map<string, SessionRequest> = new Map()
+
   constructor (
     protected readonly broadcast: BroadcastCall,
     protected readonly token: Token,

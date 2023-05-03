@@ -8,7 +8,7 @@ export type ParamType = string | number | boolean | undefined
  */
 export interface MetricsData {
   operations: number
-  time: number
+  value: number
 }
 
 /**
@@ -37,9 +37,12 @@ export interface MeasureContext {
 
   logger: MeasureLogger
 
+  measure: (name: string, value: number) => void
+
   // Capture error
   error: (err: Error | string | any) => Promise<void>
 
   // Mark current context as complete
-  end: () => void
+  // If no value is passed, time difference will be used.
+  end: (value?: number) => void
 }

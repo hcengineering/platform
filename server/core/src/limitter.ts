@@ -5,15 +5,17 @@
 export class RateLimitter {
   idCounter: number = 0
   processingQueue = new Map<string, Promise<void>>()
+  last: number = 0
 
   queue: (() => Promise<void>)[] = []
 
-  constructor (readonly config: () => { rate: number }) {}
+  constructor (readonly config: () => { rate: number, perSecond?: number }) {}
 
   async exec<T, B extends Record<string, any> = {}>(op: (args?: B) => Promise<T>, args?: B): Promise<T> {
     const processingId = `${this.idCounter++}`
+    const cfg = this.config()
 
-    if (this.processingQueue.size > this.config().rate) {
+    if (this.processingQueue.size > cfg.rate) {
       await Promise.race(this.processingQueue.values())
     }
     try {
@@ -26,7 +28,9 @@ export class RateLimitter {
   }
 
   async add<T, B extends Record<string, any> = {}>(op: (args?: B) => Promise<T>, args?: B): Promise<void> {
-    if (this.processingQueue.size < this.config().rate) {
+    const cfg = this.config()
+
+    if (this.processingQueue.size < cfg.rate) {
       void this.exec(op, args)
     } else {
       await this.exec(op, args)

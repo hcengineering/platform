@@ -5,10 +5,11 @@
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
-    "start": "cross-env MONGO_URL=mongodb://localhost:27017 ELASTIC_URL=http://localhost:9200 MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin METRICS_CONSOLE=true SERVER_SECRET=secret REKONI_URL=http://localhost:4004 FRONT_URL=http://localhost:8080 ts-node src/__start.ts",
+    "start": "cross-env MONGO_URL=mongodb://localhost:27017 ELASTIC_URL=http://localhost:9200 MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin METRICS_CONSOLE=false SERVER_SECRET=secret REKONI_URL=http://localhost:4004 FRONT_URL=http://localhost:8080 node --nolazy -r ts-node/register src/__start.ts",
     "build": "heft build",
     "lint:fix": "eslint --fix src",
     "bundle": "esbuild src/__start.ts --bundle --sourcemap=inline --minify --platform=node > bundle.js",
+    "bundle:u": "esbuild src/__start.ts --bundle --sourcemap=inline --minify --platform=node > bundle.js && mkdir -p ./dist && cp -r ./node_modules/uWebSockets.js/*.node ./dist",
     "docker:build": "docker build -t hardcoreeng/transactor .",
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/transactor staging",
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/transactor",
@@ -34,7 +35,7 @@
     "eslint-config-standard-with-typescript": "^23.0.0",
     "prettier": "^2.7.1",
     "@rushstack/heft": "^0.47.9",
-    "typescript": "^4.3.5"
+    "typescript": "^4.3.5"    
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.23",
@@ -137,5 +138,8 @@
     "@hcengineering/document": "^0.6.0",
     "@hcengineering/bitrix": "^0.6.34",
     "@hcengineering/request": "^0.6.0"
+  },
+  "optionalDependencies": {
+    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.23.0"  
   }
 }

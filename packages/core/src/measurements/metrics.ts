@@ -15,7 +15,7 @@ export const globals: Metrics = newMetrics()
 export function newMetrics (): Metrics {
   return {
     operations: 0,
-    time: 0,
+    value: 0,
     measurements: {},
     params: {}
   }
@@ -27,7 +27,7 @@ export function newMetrics (): Metrics {
  */
 export function measure (metrics: Metrics, params: Record<string, ParamType>): () => void {
   const st = Date.now()
-  return () => {
+  return (value?: number) => {
     const ed = Date.now()
     // Update params if required
     for (const [k, v] of Object.entries(params)) {
@@ -41,15 +41,15 @@ export function measure (metrics: Metrics, params: Record<string, ParamType>): (
       if (param === undefined) {
         param = {
           operations: 0,
-          time: 0
+          value: 0
         }
         params[vKey] = param
       }
-      param.time += ed - st
+      param.value += value ?? ed - st
       param.operations++
     }
     // Update leaf data
-    metrics.time += ed - st
+    metrics.value += value ?? ed - st
     metrics.operations++
   }
 }
@@ -61,7 +61,7 @@ export function childMetrics (root: Metrics, path: string[]): Metrics {
   const segments = path
   let oop = root
   for (const p of segments) {
-    const v = oop.measurements[p] ?? { operations: 0, time: 0, measurements: {}, params: {} }
+    const v = oop.measurements[p] ?? { operations: 0, value: 0, measurements: {}, params: {} }
     oop.measurements[p] = v
     oop = v
   }
@@ -76,21 +76,24 @@ export function metricsAggregate (m: Metrics): Metrics {
 
   // Use child overage, if there is no top level value specified.
   const keysLen = Object.keys(ms).length
-  const childAverage = m.time === 0 && keysLen > 0
+  const childAverage = m.value === 0 && keysLen > 0
   const sumVal: Metrics | undefined = childAverage
-    ? Object.values(ms).reduce(
-      (p, v) => {
-        p.operations += v.operations
-        p.time += v.time
-        return p
-      },
-      {
-        operations: 0,
-        time: 0,
-        measurements: ms,
-        params: {}
-      }
-    )
+    ? Object.entries(ms)
+      .filter((it) => !it[0].startsWith('#'))
+      .map((it) => it[1])
+      .reduce(
+        (p, v) => {
+          p.operations += v.operations
+          p.value += v.value
+          return p
+        },
+        {
+          operations: 0,
+          value: 0,
+          measurements: ms,
+          params: {}
+        }
+      )
     : undefined
   if (sumVal !== undefined) {
     return {
@@ -107,7 +110,7 @@ export function metricsAggregate (m: Metrics): Metrics {
 
 function aggregateMetrics (m: Record<string, Metrics>): Record<string, Metrics> {
   const result: Record<string, Metrics> = {}
-  for (const [k, v] of Object.entries(m).sort((a, b) => b[1].time - a[1].time)) {
+  for (const [k, v] of Object.entries(m).sort((a, b) => b[1].value - a[1].value)) {
     result[k] = metricsAggregate(v)
   }
   return result
@@ -140,8 +143,8 @@ function printMetricsParams (
   const joinP = (key: string, data: Record<string, MetricsData>): string[] => {
     return Object.entries(data).map(([k, vv]) =>
       `${toLen('', ' ', offset)}${toLen(key + '=' + k, '-', length - offset)}: avg ${
-        vv.time / (vv.operations > 0 ? vv.operations : 1)
-      } total: ${vv.time} ops: ${vv.operations}`.trim()
+        vv.value / (vv.operations > 0 ? vv.operations : 1)
+      } total: ${vv.value} ops: ${vv.operations}`.trim()
     )
   }
   const joinParams = Object.entries(params).reduce<string[]>((p, c) => [...p, ...joinP(c[0], c[1])], [])
@@ -154,8 +157,8 @@ function printMetricsParams (
 
 function toString (name: string, m: Metrics, offset: number, length: number): string {
   let r = `${toLen('', ' ', offset)}${toLen(name, '-', length - offset)}: avg ${
-    m.time / (m.operations > 0 ? m.operations : 1)
-  } total: ${m.time} ops: ${m.operations}`.trim()
+    m.value / (m.operations > 0 ? m.operations : 1)
+  } total: ${m.value} ops: ${m.operations}`.trim()
   r += printMetricsParams(m.params, offset + 4, length)
   r += printMetricsChildren(m.measurements, offset + 4, length)
   return r
@@ -177,8 +180,8 @@ function printMetricsParamsRows (
     return Object.entries(data).map(([k, vv]) => [
       offset,
       `${key}=${k}`,
-      vv.time / (vv.operations > 0 ? vv.operations : 1),
-      vv.time,
+      vv.value / (vv.operations > 0 ? vv.operations : 1),
+      vv.value,
       vv.operations
     ])
   }
@@ -198,7 +201,7 @@ function printMetricsChildrenRows (params: Record<string, Metrics>, offset: numb
 
 function toStringRows (name: string, m: Metrics, offset: number): (number | string)[][] {
   const r: (number | string)[][] = [
-    [offset, name, m.time / (m.operations > 0 ? m.operations : 1), m.time, m.operations]
+    [offset, name, m.value / (m.operations > 0 ? m.operations : 1), m.value, m.operations]
   ]
   r.push(...printMetricsParamsRows(m.params, offset + 1))
   r.push(...printMetricsChildrenRows(m.measurements, offset + 1))

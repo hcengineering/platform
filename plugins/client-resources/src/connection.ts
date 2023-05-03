@@ -47,7 +47,7 @@ import {
 const SECOND = 1000
 const pingTimeout = 10 * SECOND
 const hangTimeout = 5 * 60 * SECOND
-const dialTimeout = 20 * SECOND
+const dialTimeout = 60 * SECOND
 
 class RequestPromise {
   readonly promise: Promise<any>
@@ -60,6 +60,8 @@ class RequestPromise {
       this.reject = reject
     })
   }
+
+  chunks?: { index: number, data: any[] }[]
 }
 
 class Connection implements ClientConnection {
@@ -192,6 +194,30 @@ class Connection implements ClientConnection {
           if (promise === undefined) {
             throw new Error(`unknown response id: ${resp.id}`)
           }
+
+          if (resp.chunk !== undefined) {
+            promise.chunks = [
+              ...(promise.chunks ?? []),
+              {
+                index: resp.chunk.index,
+                data: resp.result as []
+              }
+            ]
+            // console.log(socketId, 'chunk', promise.chunks.length, resp.chunk.total)
+            if (resp.chunk.final) {
+              promise.chunks.sort((a, b) => a.index - b.index)
+              let result: any[] = []
+              for (const c of promise.chunks) {
+                result = result.concat(c.data)
+              }
+              resp.result = result
+              resp.chunk = undefined
+            } else {
+              // Not all chunks are available yet.
+              return
+            }
+          }
+
           this.requests.delete(resp.id)
           if (resp.error !== undefined) {
             console.log('ERROR', promise, resp.id)
@@ -228,7 +254,7 @@ class Connection implements ClientConnection {
         }
       }
       websocket.onclose = (ev) => {
-        console.log('client websocket closed', socketId, ev?.reason)
+        // console.log('client websocket closed', socketId, ev?.reason)
 
         if (!(this.websocket instanceof Promise)) {
           this.websocket = null
@@ -237,7 +263,7 @@ class Connection implements ClientConnection {
         reject(new Error('websocket error'))
       }
       websocket.onopen = () => {
-        console.log('connection opened...', socketId)
+        // console.log('connection opened...', socketId)
         clearTimeout(dialTimer)
         websocket.send(
           serialize({

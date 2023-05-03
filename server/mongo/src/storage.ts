@@ -522,7 +522,10 @@ abstract class MongoAdapterBase implements DbAdapter {
     const domain = this.hierarchy.getDomain(_class)
     const coll = this.db.collection(domain)
     const mongoQuery = this.translateQuery(_class, query)
-    let cursor = coll.find<T>(mongoQuery)
+    let cursor = coll.find<T>(mongoQuery, {
+      checkKeys: false,
+      enableUtf8Validation: false
+    })
 
     if (options?.projection !== undefined) {
       const projection: Projection<T> = {}

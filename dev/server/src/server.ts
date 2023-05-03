@@ -24,7 +24,7 @@ import {
   DummyFullTextAdapter,
   FullTextAdapter
 } from '@hcengineering/server-core'
-import { ClientSession, start as startJsonRpc } from '@hcengineering/server-ws'
+import { ClientSession, startHttpServer, start as startJsonRpc } from '@hcengineering/server-ws'
 
 async function createNullFullTextAdapter (): Promise<FullTextAdapter> {
   return new DummyFullTextAdapter()
@@ -43,9 +43,8 @@ async function createNullContentTextAdapter (): Promise<ContentTextAdapter> {
  */
 export async function start (port: number, host?: string): Promise<void> {
   const ctx = new MeasureMetricsContext('server', {})
-  startJsonRpc(
-    ctx,
-    (ctx) => {
+  startJsonRpc(ctx, {
+    pipelineFactory: (ctx) => {
       const conf: DbConfiguration = {
         domains: {
           [DOMAIN_TX]: 'InMemoryTx'
@@ -75,9 +74,10 @@ export async function start (port: number, host?: string): Promise<void> {
       }
       return createPipeline(ctx, conf, [], false, () => {})
     },
-    (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
+    sessionFactory: (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
     port,
-    '',
-    host
-  )
+    productId: '',
+    serverFactory: startHttpServer,
+    chunking: -1
+  })
 }
