@@ -151,6 +151,7 @@
               icon={special.icon}
               selected={menuSelection ? false : special.id === currentSpecial}
               {disabled}
+              indent={special.nestingLevel === 1 ? 'ml-2' : (special.nestingLevel === 2 && 'ml-4') || undefined}
             />
           </NavLink>
         {/await}
