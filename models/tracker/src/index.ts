@@ -585,11 +585,15 @@ export function createModel (builder: Builder): void {
             }
           }
         },
-        { key: '', presenter: view.component.DividerPresenter, props: { type: 'divider' } },
+        {
+          key: '',
+          presenter: view.component.DividerPresenter,
+          props: { type: 'divider', listProps: { optional: true } }
+        },
         {
           key: '',
           presenter: tracker.component.EstimationEditor,
-          props: { kind: 'list', size: 'small', listProps: { key: 'estimation', fixed: 'left' } }
+          props: { kind: 'list', size: 'small', listProps: { key: 'estimation', fixed: 'left', optional: true } }
         },
         { key: '', presenter: view.component.DividerPresenter, props: { type: 'divider' } },
         {
