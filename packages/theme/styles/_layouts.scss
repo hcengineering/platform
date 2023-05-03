@@ -46,6 +46,7 @@ button {
   align-items: center;
   margin: 0;
   padding: 0;
+  font-family: inherit;
   font-size: inherit;
   background-color: transparent;
   border: 1px solid transparent;
@@ -492,6 +493,7 @@ input.search {
 .my-4 { margin: 1rem 0; }
 .my-5 { margin: 1.25rem 0; }
 
+.m--1 { margin: -.25rem; }
 .m-0-5 { margin: .125rem; }
 .m-1 { margin: .25rem; }
 
@@ -853,7 +855,7 @@ a.no-line {
 .caption-color { color: var(--caption-color); }
 
 .red-color { color: var(--highlight-red); }
-.error-color { color: var(--error-color); }
+.error-color { color: var(--theme-error-color); }
 
 .border-radius-4 { border-radius: 1rem; }
 .border-radius-3 { border-radius: 0.75rem; }

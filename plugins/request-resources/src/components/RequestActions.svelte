@@ -98,7 +98,7 @@
       icon: DocSuccess,
       action: () => approve(),
       order: 1000,
-      fill: 'var(--won-color)',
+      fill: 'var(--theme-won-color)',
       disabled
     },
     {
@@ -106,7 +106,7 @@
       icon: DocFail,
       action: () => reject(),
       order: 2000,
-      fill: 'var(--lost-color)',
+      fill: 'var(--theme-lost-color)',
       disabled
     }
   ]

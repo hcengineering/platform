@@ -65,7 +65,7 @@
         transform="translate(3.5,3.5)"
       />
     {:else}
-      <circle cx="8" cy="8" r="4" fill="var(--error-color)" opacity=".15" />
+      <circle cx="8" cy="8" r="4" fill="var(--theme-error-color)" opacity=".15" />
     {/if}
   {:else if category._id === tracker.issueStatusCategory.Completed}
     <path
