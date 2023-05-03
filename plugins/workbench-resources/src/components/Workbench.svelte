@@ -20,8 +20,7 @@
   import notification, { notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, NotificationClientImpl } from '@hcengineering/notification-resources'
   import { IntlString, getMetadata, getResource } from '@hcengineering/platform'
-  import { createQuery, getClient, configurationStore } from '@hcengineering/presentation'
-  import request, { RequestStatus, requestId } from '@hcengineering/request'
+  import { configurationStore, createQuery, getClient } from '@hcengineering/presentation'
   import {
     AnyComponent,
     CompAndProps,
@@ -60,11 +59,11 @@
   import AccountPopup from './AccountPopup.svelte'
   import AppItem from './AppItem.svelte'
   import Applications from './Applications.svelte'
+  import Logo from './Logo.svelte'
   import NavHeader from './NavHeader.svelte'
   import Navigator from './Navigator.svelte'
   import SpaceView from './SpaceView.svelte'
   import Settings from './icons/Settings.svelte'
-  import Logo from './Logo.svelte'
   import TopMenu from './icons/TopMenu.svelte'
 
   let contentPanel: HTMLElement
@@ -158,24 +157,6 @@
       hasNotification = res.some((p) => p.txes.length > 0)
     }
   )
-
-  let hasRequests = false
-  const requestQuery = createQuery()
-
-  $: $configurationStore.has(requestId) ||
-    requestQuery.query(
-      request.class.Request,
-      {
-        requested: account._id,
-        status: RequestStatus.Active
-      },
-      (res) =>
-        (hasRequests =
-          res.filter(
-            (p) =>
-              p.requested.filter((a) => a === account._id).length > p.approved.filter((a) => a === account._id).length
-          ).length > 0)
-    )
 
   onDestroy(
     location.subscribe(async (loc) => {
@@ -604,14 +585,6 @@
             icon={calendar.icon.Reminder}
             label={calendar.string.Reminders}
             on:click={() => showPopup(calendar.component.RemindersPopup, {}, notifyPosition)}
-          />
-        {/if}
-        {#if $configurationStore.has(requestId)}
-          <AppItem
-            icon={request.icon.Requests}
-            label={request.string.Requests}
-            on:click={() => showPopup(request.component.RequestsPopup, {}, notifyPosition)}
-            notify={hasRequests}
           />
         {/if}
         <div class="divider" />

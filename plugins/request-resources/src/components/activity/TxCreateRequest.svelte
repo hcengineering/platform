@@ -17,6 +17,9 @@
   import RequestPresenter from '../RequestPresenter.svelte'
 
   export let value: Request
+  export let isOwnTx: boolean
 </script>
 
-<RequestPresenter {value} />
+{#if !isOwnTx}
+  <RequestPresenter {value} />
+{/if}

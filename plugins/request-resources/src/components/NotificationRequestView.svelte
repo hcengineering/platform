@@ -13,18 +13,37 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Doc } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Request } from '@hcengineering/request'
-  import RequestLabel from '../RequestLabel.svelte'
+  import { Label } from '@hcengineering/ui'
+  import { DocNavLink, ObjectPresenter } from '@hcengineering/view-resources'
+  import requests from '../plugin'
+  import RequestLabel from './RequestLabel.svelte'
 
   export let value: Request
-  export let isOwnTx: boolean
-  let request: Request | undefined = undefined
+  let doc: Doc | undefined = undefined
 
   const query = createQuery()
-  query.query(value._class, { _id: value._id }, (res) => ([request] = res))
+  query.query(value.attachedToClass, { _id: value.attachedTo }, (res) => {
+    ;[doc] = res
+  })
 </script>
 
-{#if request}
-  <RequestLabel value={request} {isOwnTx} />
-{/if}
+<div class="inline-presenter">
+  <RequestLabel {value} size={'inline'} />
+  <span class="lower mx-1">
+    <Label label={requests.string.For} />
+  </span>
+  {#if doc}
+    <DocNavLink object={doc}>
+      <ObjectPresenter value={doc} />
+    </DocNavLink>
+  {/if}
+</div>
+
+<style lang="scss">
+  .lower {
+    text-transform: lowercase;
+  }
+</style>

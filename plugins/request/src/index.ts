@@ -44,7 +44,8 @@ export interface RequestDecisionComment extends Comment {}
 export enum RequestStatus {
   Active = 'Active',
   Completed = 'Completed',
-  Rejected = 'Rejected'
+  Rejected = 'Rejected',
+  Cancelled = 'Cancelled'
 }
 
 /**
@@ -71,7 +72,6 @@ const request = plugin(requestId, {
     RequestPresenter: '' as Ref<Mixin<RequestPresenter>>
   },
   component: {
-    RequestsPopup: '' as AnyComponent,
     RequestPresenter: '' as AnyComponent,
     RequestView: '' as AnyComponent
   },

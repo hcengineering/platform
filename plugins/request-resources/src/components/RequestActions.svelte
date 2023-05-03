@@ -21,6 +21,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { Request, RequestStatus } from '@hcengineering/request'
   import type { RefAction } from '@hcengineering/text-editor'
+  import { Button } from '@hcengineering/ui'
   import request from '../plugin'
   import Comments from './icons/Comments.svelte'
   import DocFail from './icons/DocFail.svelte'
@@ -70,7 +71,18 @@
 
     // We need to update backlinks before and after.
     await updateBacklinks(client, value.attachedTo, value.attachedToClass, value._id, message)
-    refInput.submit()
+    refInput.createAttachments()
+    loading = false
+  }
+
+  async function comment (): Promise<void> {
+    await client.addCollection(chunter.class.Comment, value.space, value._id, value._class, 'comments', {
+      message,
+      attachments
+    })
+
+    // We need to update backlinks before and after.
+    await updateBacklinks(client, value.attachedTo, value.attachedToClass, value._id, message)
     loading = false
   }
 
@@ -99,9 +111,20 @@
     }
   ]
   let loading = false
+
+  async function cancel () {
+    await client.update(value, {
+      status: RequestStatus.Cancelled
+    })
+  }
 </script>
 
 {#if value.status === RequestStatus.Active}
+  {#if value.createdBy === me}
+    <div class="mt-2">
+      <Button label={request.string.Cancel} on:click={cancel} />
+    </div>
+  {/if}
   <div class="mt-2">
     <AttachmentRefInput
       bind:this={refInput}
@@ -110,6 +133,7 @@
       objectId={value._id}
       iconSend={Comments}
       labelSend={request.string.Comment}
+      on:message={comment}
       on:update={onUpdate}
       placeholder={request.string.PleaseTypeMessage}
       extraActions={approvable ? extraActions : undefined}

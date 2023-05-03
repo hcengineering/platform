@@ -20,6 +20,7 @@ import { requestId } from '@hcengineering/request'
 import request from '@hcengineering/request-resources/src/plugin'
 import { AnyComponent } from '@hcengineering/ui'
 import type { TxViewlet } from '@hcengineering/activity'
+import type { NotificationGroup, NotificationType } from '@hcengineering/notification'
 
 export default mergeIds(requestId, request, {
   activity: {
@@ -27,10 +28,13 @@ export default mergeIds(requestId, request, {
     RequestLabel: '' as AnyComponent
   },
   component: {
-    EditRequest: '' as AnyComponent
+    EditRequest: '' as AnyComponent,
+    NotificationRequestView: '' as AnyComponent
   },
   ids: {
-    TxRequestCreate: '' as Ref<TxViewlet>
+    TxRequestCreate: '' as Ref<TxViewlet>,
+    RequestNotificationGroup: '' as Ref<NotificationGroup>,
+    CreateRequestNotification: '' as Ref<NotificationType>
   },
   string: {
     Status: '' as IntlString,

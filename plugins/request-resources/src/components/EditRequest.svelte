@@ -15,12 +15,14 @@
 <script lang="ts">
   import { Request } from '@hcengineering/request'
   import { Label } from '@hcengineering/ui'
-  import { ObjectPresenter } from '@hcengineering/view-resources'
+  import { DocNavLink, ObjectPresenter } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import request from '../plugin'
   import RequestActions from './RequestActions.svelte'
   import RequestDetail from './RequestDetail.svelte'
   import TxView from './TxView.svelte'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Doc } from '@hcengineering/core'
 
   export let object: Request
 
@@ -28,16 +30,28 @@
 
   onMount(() => {
     dispatch('open', {
-      ignoreKeys: ['comments', 'status', 'rejected', 'approved', 'requested'],
+      ignoreKeys: ['status'],
       activityOptions: { enabled: true, showInput: false }
     })
+  })
+  let doc: Doc | undefined = undefined
+
+  const query = createQuery()
+  query.query(object.attachedToClass, { _id: object.attachedTo }, (res) => {
+    ;[doc] = res
   })
 </script>
 
 {#if object !== undefined}
   <div class="flex-row-center gap-1 mb-2">
     <span class="mr-1"><Label label={request.string.For} /></span>
-    <span class="mr-1"><ObjectPresenter objectId={object.tx.objectId} _class={object.tx.objectClass} /></span>
+    {#if doc}
+      <span class="mr-1">
+        <DocNavLink object={doc}>
+          <ObjectPresenter value={doc} />
+        </DocNavLink>
+      </span>
+    {/if}
     <TxView tx={object.tx} />
   </div>
   <RequestDetail value={object} />

@@ -37,6 +37,8 @@ import view from '@hcengineering/model-view'
 import { Request, RequestDecisionComment, RequestPresenter, RequestStatus } from '@hcengineering/request'
 import { AnyComponent } from '@hcengineering/ui'
 import request from './plugin'
+import notification from '@hcengineering/notification'
+import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 
 export { requestId } from '@hcengineering/request'
 export { default } from './plugin'
@@ -89,9 +91,53 @@ export function createModel (builder: Builder): void {
     presenter: request.component.RequestPresenter
   })
 
+  builder.mixin(request.class.Request, core.class.Class, notification.mixin.NotificationObjectPresenter, {
+    presenter: request.component.NotificationRequestView
+  })
+
   builder.mixin(request.class.Request, core.class.Class, request.mixin.RequestPresenter, {
     presenter: request.component.RequestView
   })
+
+  builder.mixin(request.class.Request, core.class.Class, notification.mixin.ClassCollaborators, {
+    fields: ['requested', 'createdBy']
+  })
+
+  builder.createDoc(
+    notification.class.NotificationGroup,
+    core.space.Model,
+    {
+      label: request.string.Requests,
+      icon: request.icon.Requests,
+      objectClass: request.class.Request
+    },
+    request.ids.RequestNotificationGroup
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: false,
+      objectClass: request.class.Request,
+      txClasses: [core.class.TxCreateDoc],
+      generated: false,
+      group: request.ids.RequestNotificationGroup,
+      label: request.string.Requested,
+      providers: {
+        [notification.providers.PlatformNotification]: true
+      }
+    },
+    request.ids.CreateRequestNotification
+  )
+
+  generateClassNotificationTypes(
+    builder,
+    request.class.Request,
+    request.ids.RequestNotificationGroup,
+    [],
+    ['comments', 'approved', 'rejected', 'status']
+  )
 
   builder.createDoc(
     activity.class.TxViewlet,

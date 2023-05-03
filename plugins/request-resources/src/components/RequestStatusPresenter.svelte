@@ -16,22 +16,19 @@
   import { IntlString } from '@hcengineering/platform'
   import { BooleanIcon, Label } from '@hcengineering/ui'
   import request from '../plugin'
+  import { RequestStatus } from '@hcengineering/request'
 
-  export let value: boolean
+  export let value: RequestStatus
 
-  function getBooleanLabel (value: boolean): IntlString {
-    if (value) return request.string.Completed
-    return request.string.Rejected
+  function getBooleanLabel (value: RequestStatus): IntlString {
+    if (value === RequestStatus.Completed) return request.string.Completed
+    if (value === RequestStatus.Rejected) return request.string.Rejected
+    return request.string.Cancelled
   }
 </script>
 
-<div
-  class="flex-row-center yesno-container"
-  class:yes={value === true}
-  class:no={value === false}
-  class:unknown={value === undefined}
->
-  <BooleanIcon {value} />
+<div class="flex-row-center yesno-container">
+  <BooleanIcon value={value === RequestStatus.Completed} />
   <span><Label label={getBooleanLabel(value)} /></span>
 </div>
 

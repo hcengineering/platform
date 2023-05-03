@@ -4,7 +4,7 @@
     "Request": "Запрос",
     "Approve": "Одобрить",
     "Approved": "Одобрено",
-    "CreatedRequest": "Создал запрос",
+    "CreatedRequest": "Создал(а)",
     "For": "Для",
     "Change": "Изменить",
     "Add": "Добавить",
@@ -16,6 +16,8 @@
     "Rejected": "Отклонен",
     "Comment": "Комментировать",
     "PleaseTypeMessage": "Пожалуйста оставьте коментарий чтобы продолжить...",
-    "NoRequests": "Нет запросов"
+    "NoRequests": "Нет запросов",
+    "Cancel": "Отменить",
+    "Cancelled": "Отменен"
   }
 }

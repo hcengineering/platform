@@ -202,7 +202,9 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
   }
 
   const id = loc.path[3] as Ref<Contact>
-  return await generateLocation(loc, id)
+  if (id !== undefined) {
+    return await generateLocation(loc, id)
+  }
 }
 
 async function generateLocation (loc: Location, id: Ref<Contact>): Promise<ResolvedLocation | undefined> {
