@@ -157,7 +157,6 @@
     }
   }
   .collapsed-container {
-    overflow: hidden;
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
@@ -165,6 +164,7 @@
     transition: max-height 0.2s var(--timing-main);
 
     &.collapsed {
+      overflow: hidden;
       max-height: 0;
     }
   }
