@@ -14,31 +14,49 @@
 -->
 <script lang="ts">
   import { Request, RequestStatus } from '@hcengineering/request'
-  import { Button, eventToHTMLElement, ProgressCircle, showPopup } from '@hcengineering/ui'
-  import RequestStatusPresenter from './RequestStatusPresenter.svelte'
+  import { Button, ButtonSize, Label, ProgressCircle, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { DocNavLink } from '@hcengineering/view-resources'
+  import request from '../plugin'
   import RequestDetailPopup from './RequestDetailPopup.svelte'
+  import RequestStatusPresenter from './RequestStatusPresenter.svelte'
 
   export let value: Request
+  export let isOwnTx: boolean = false
+  export let size: ButtonSize = 'inline'
+  export let inline: boolean = true
 </script>
 
-<div class="flex gap-2">
-  <Button
-    on:click={(ev) => {
-      ev.stopPropagation()
-      showPopup(RequestDetailPopup, { value }, eventToHTMLElement(ev))
-    }}
-  >
-    <svelte:fragment slot="content">
-      {#if value.status !== RequestStatus.Active}
-        <RequestStatusPresenter value={value.status === RequestStatus.Completed} />
-      {:else}
-        <div class="flex-row-center content-color text-sm pointer-events-none">
-          <div class="mr-1">
-            <ProgressCircle max={value.requiredApprovesCount} value={value.approved.length} size={'inline'} primary />
+<div class="flex">
+  {#if isOwnTx}
+    <div class="lower" class:inline-presenter={inline}>
+      <Label label={request.string.Request} />
+    </div>
+  {:else}
+    <DocNavLink {inline} object={value}>
+      <div class="flex-presenter lower" class:inline-presenter={inline}>
+        <Label label={request.string.Request} />
+      </div>
+    </DocNavLink>
+    <Button
+      {size}
+      kind="link"
+      on:click={(ev) => {
+        ev.stopPropagation()
+        showPopup(RequestDetailPopup, { value }, eventToHTMLElement(ev))
+      }}
+    >
+      <svelte:fragment slot="content">
+        {#if value.status !== RequestStatus.Active}
+          <RequestStatusPresenter value={value.status} />
+        {:else}
+          <div class="flex-row-center content-color text-sm pointer-events-none">
+            <div class="mr-1">
+              <ProgressCircle max={value.requiredApprovesCount} value={value.approved.length} size={'inline'} primary />
+            </div>
+            {value.approved.length}/{value.requiredApprovesCount}
           </div>
-          {value.approved.length}/{value.requiredApprovesCount}
-        </div>
-      {/if}
-    </svelte:fragment>
-  </Button>
+        {/if}
+      </svelte:fragment>
+    </Button>
+  {/if}
 </div>

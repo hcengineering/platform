@@ -31,6 +31,7 @@ export async function OnRequestUpdate (tx: Tx, control: TriggerControl): Promise
     const collectionTx = control.txFactory.createTxUpdateDoc(ctx.objectClass, ctx.objectSpace, ctx.objectId, {
       status: RequestStatus.Completed
     })
+    collectionTx.space = core.space.Tx
     const resTx = control.txFactory.createTxCollectionCUD(
       ptx.objectClass,
       ptx.objectId,
@@ -38,13 +39,9 @@ export async function OnRequestUpdate (tx: Tx, control: TriggerControl): Promise
       'requests',
       collectionTx
     )
-    return [
-      {
-        ...request.tx,
-        modifiedOn: resTx.modifiedOn
-      },
-      resTx
-    ]
+    resTx.space = core.space.Tx
+
+    await control.apply([resTx], true)
   }
   return []
 }

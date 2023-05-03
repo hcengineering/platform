@@ -22,6 +22,7 @@ export default mergeIds(requestId, request, {
     Approve: '' as IntlString,
     Approved: '' as IntlString,
     CreatedRequest: '' as IntlString,
+    Cancel: '' as IntlString,
     For: '' as IntlString,
     Change: '' as IntlString,
     Add: '' as IntlString,
@@ -32,6 +33,7 @@ export default mergeIds(requestId, request, {
     Rejected: '' as IntlString,
     Comment: '' as IntlString,
     PleaseTypeMessage: '' as IntlString,
-    NoRequests: '' as IntlString
+    NoRequests: '' as IntlString,
+    Cancelled: '' as IntlString
   }
 })

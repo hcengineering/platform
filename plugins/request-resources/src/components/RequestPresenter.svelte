@@ -13,33 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Request, RequestStatus } from '@hcengineering/request'
-  import { Icon, IconCheck, IconClose, IconInfo } from '@hcengineering/ui'
-  import { DocNavLink } from '@hcengineering/view-resources'
+  import { Request } from '@hcengineering/request'
   import TxView from './TxView.svelte'
 
   export let value: Request
   export let inline: boolean = false
-
-  $: dte = new Date(value.tx.modifiedOn)
 </script>
 
 <div class="flex">
-  <DocNavLink {inline} object={value}>
-    <div class="flex-presenter mr-1" class:inline-presenter={inline}>
-      <div class="flex flex-row-center">
-        <div class="mr-2">
-          {#if value.status === RequestStatus.Completed || value.status === RequestStatus.Rejected}
-            <Icon icon={value.status === RequestStatus.Completed ? IconCheck : IconClose} size={'small'} />
-          {:else}
-            <Icon icon={IconInfo} size={'small'} />
-          {/if}
-        </div>
-        <span class="label nowrap">
-          {dte.getMonth() + 1}/{dte.getDay() + 1}-{(dte.getHours() * 60 + dte.getMinutes()).toString(7)}
-        </span>
-      </div>
-    </div>
-  </DocNavLink>
   <TxView tx={value.tx} />
 </div>
