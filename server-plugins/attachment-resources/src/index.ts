@@ -15,9 +15,8 @@
 //
 
 import type { Attachment } from '@hcengineering/attachment'
-import attachment from '@hcengineering/attachment'
 import type { Doc, Ref, Tx, TxRemoveDoc } from '@hcengineering/core'
-import core, { TxProcessor } from '@hcengineering/core'
+import { TxProcessor } from '@hcengineering/core'
 import type { TriggerControl } from '@hcengineering/server-core'
 
 /**
@@ -27,16 +26,7 @@ export async function OnAttachmentDelete (
   tx: Tx,
   { findAll, hierarchy, fulltextFx, storageFx, removedMap }: TriggerControl
 ): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx)
-  if (actualTx._class !== core.class.TxRemoveDoc) {
-    return []
-  }
-
-  const rmTx = actualTx as TxRemoveDoc<Attachment>
-
-  if (!hierarchy.isDerived(rmTx.objectClass, attachment.class.Attachment)) {
-    return []
-  }
+  const rmTx = TxProcessor.extractTx(tx) as TxRemoveDoc<Attachment>
 
   // Obtain document being deleted.
   const attach = removedMap.get(rmTx.objectId) as Attachment

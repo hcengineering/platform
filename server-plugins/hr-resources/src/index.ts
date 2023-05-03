@@ -116,14 +116,7 @@ function getTxes (
  * @public
  */
 export async function OnDepartmentStaff (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx)
-  if (core.class.TxMixin !== actualTx._class) {
-    return []
-  }
-  const ctx = actualTx as TxMixin<Employee, Staff>
-  if (ctx.mixin !== hr.mixin.Staff) {
-    return []
-  }
+  const ctx = TxProcessor.extractTx(tx) as TxMixin<Employee, Staff>
 
   const targetAccount = (
     await control.modelDb.findAll(contact.class.EmployeeAccount, {
@@ -252,14 +245,7 @@ async function getEmailNotification (
  * @public
  */
 export async function OnRequestCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx)
-  if (core.class.TxCreateDoc !== actualTx._class) {
-    return []
-  }
-  const ctx = actualTx as TxCreateDoc<Request>
-  if (ctx.objectClass !== hr.class.Request) {
-    return []
-  }
+  const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<Request>
 
   const sender = await getEmployeeAccountById(ctx.modifiedBy, control)
   if (sender === undefined) return []
@@ -279,14 +265,7 @@ export async function OnRequestCreate (tx: Tx, control: TriggerControl): Promise
  * @public
  */
 export async function OnRequestUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx)
-  if (core.class.TxUpdateDoc !== actualTx._class) {
-    return []
-  }
-  const ctx = actualTx as TxUpdateDoc<Request>
-  if (ctx.objectClass !== hr.class.Request) {
-    return []
-  }
+  const ctx = TxProcessor.extractTx(tx) as TxUpdateDoc<Request>
 
   const sender = await getEmployeeAccountById(ctx.modifiedBy, control)
   if (sender === undefined) return []
@@ -307,14 +286,7 @@ export async function OnRequestUpdate (tx: Tx, control: TriggerControl): Promise
  * @public
  */
 export async function OnRequestRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx)
-  if (core.class.TxRemoveDoc !== actualTx._class) {
-    return []
-  }
-  const ctx = actualTx as TxCreateDoc<Request>
-  if (ctx.objectClass !== hr.class.Request) {
-    return []
-  }
+  const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<Request>
 
   const sender = await getEmployeeAccountById(ctx.modifiedBy, control)
   if (sender === undefined) return []
@@ -371,14 +343,7 @@ export async function RequestTextPresenter (doc: Doc, control: TriggerControl): 
  * @public
  */
 export async function OnPublicHolidayCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx)
-  if (core.class.TxCreateDoc !== actualTx._class) {
-    return []
-  }
-  const ctx = actualTx as TxCreateDoc<PublicHoliday>
-  if (ctx.objectClass !== hr.class.PublicHoliday) {
-    return []
-  }
+  const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<PublicHoliday>
 
   const sender = await getEmployeeAccountById(ctx.modifiedBy, control)
   if (sender === undefined) return []

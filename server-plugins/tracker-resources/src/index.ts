@@ -73,12 +73,7 @@ export async function issueTextPresenter (doc: Doc, control: TriggerControl): Pr
  * @public
  */
 export async function OnComponentRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx)
-  if (actualTx._class !== core.class.TxRemoveDoc) {
-    return []
-  }
-
-  const ctx = actualTx as TxUpdateDoc<Component>
+  const ctx = TxProcessor.extractTx(tx) as TxUpdateDoc<Component>
 
   const issues = await control.findAll(tracker.class.Issue, {
     component: ctx.objectId

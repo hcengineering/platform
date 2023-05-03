@@ -60,10 +60,18 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverNotification.trigger.OnAttributeCreate
+    trigger: serverNotification.trigger.OnAttributeCreate,
+    txMatch: {
+      objectClass: core.class.Attribute,
+      _class: core.class.TxCreateDoc
+    }
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverNotification.trigger.OnAttributeUpdate
+    trigger: serverNotification.trigger.OnAttributeUpdate,
+    txMatch: {
+      objectClass: core.class.Attribute,
+      _class: core.class.TxUpdateDoc
+    }
   })
 }

@@ -41,11 +41,19 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverContact.trigger.OnContactDelete
+    trigger: serverContact.trigger.OnContactDelete,
+    txMatch: {
+      objectClass: contact.class.Contact,
+      _class: core.class.TxRemoveDoc
+    }
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverContact.trigger.OnChannelUpdate
+    trigger: serverContact.trigger.OnChannelUpdate,
+    txMatch: {
+      objectClass: contact.class.Channel,
+      _class: core.class.TxUpdateDoc
+    }
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {

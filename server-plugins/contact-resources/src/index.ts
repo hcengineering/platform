@@ -51,15 +51,7 @@ export async function OnContactDelete (
   tx: Tx,
   { findAll, hierarchy, storageFx, removedMap, txFactory }: TriggerControl
 ): Promise<Tx[]> {
-  if (tx._class !== core.class.TxRemoveDoc) {
-    return []
-  }
-
   const rmTx = tx as TxRemoveDoc<Contact>
-
-  if (!hierarchy.isDerived(rmTx.objectClass, contact.class.Contact)) {
-    return []
-  }
 
   const removeContact = removedMap.get(rmTx.objectId) as Contact
   if (removeContact === undefined) {
@@ -322,15 +314,7 @@ export async function OnEmployeeUpdate (tx: Tx, control: TriggerControl): Promis
  * @public
  */
 export async function OnChannelUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  if (tx._class !== core.class.TxUpdateDoc) {
-    return []
-  }
-
   const uTx = tx as TxUpdateDoc<Channel>
-
-  if (!control.hierarchy.isDerived(uTx.objectClass, contact.class.Channel)) {
-    return []
-  }
 
   const result: Tx[] = []
 

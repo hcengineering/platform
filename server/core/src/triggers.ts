@@ -24,7 +24,10 @@ import core, {
   AttachedDoc,
   DocumentQuery,
   matchQuery,
-  TxFactory
+  TxFactory,
+  Hierarchy,
+  Class,
+  Obj
 } from '@hcengineering/core'
 
 import { getResource } from '@hcengineering/platform'
@@ -37,6 +40,8 @@ import serverCore from './plugin'
  */
 export class Triggers {
   private readonly triggers: [DocumentQuery<Tx> | undefined, TriggerFunc][] = []
+
+  constructor (protected readonly hierarchy: Hierarchy) {}
 
   async tx (tx: Tx): Promise<void> {
     if (tx._class === core.class.TxCollectionCUD) {
@@ -56,9 +61,52 @@ export class Triggers {
   async apply (account: Ref<Account>, tx: Tx, ctrl: Omit<TriggerControl, 'txFactory'>): Promise<Tx[]> {
     const control = { ...ctrl, txFactory: new TxFactory(account, true) }
     const derived = this.triggers
-      .filter(([query]) => query === undefined || matchQuery([tx], query, core.class.Tx, control.hierarchy).length > 0)
+      .filter(([query]) => {
+        if (query === undefined) {
+          return true
+        }
+        this.addDerived(query, 'objectClass')
+        this.addDerived(query, 'tx.objectClass')
+        return matchQuery([tx], query, core.class.Tx, control.hierarchy).length > 0
+      })
       .map(([, trigger]) => trigger(tx, control))
     const result = await Promise.all(derived)
     return result.flatMap((x) => x)
+  }
+
+  private addDerived (q: DocumentQuery<Tx>, key: string): void {
+    if (q[key] === undefined) {
+      return
+    }
+    if (typeof q[key] === 'string') {
+      const descendants = this.hierarchy.getDescendants(q[key])
+      q[key] = {
+        $in: [...(q[key].$in ?? []), ...descendants]
+      }
+    } else {
+      if (Array.isArray(q[key].$in)) {
+        const oldIn = q[key].$in
+        const newIn = new Set(oldIn)
+        q[key].$in.forEach((element: Ref<Class<Obj>>) => {
+          const descendants = this.hierarchy.getDescendants(element)
+          descendants.forEach((d) => newIn.add(d))
+        })
+        q[key].$in = Array.from(newIn.values())
+      }
+      if (Array.isArray(q[key].$nin)) {
+        const oldNin = q[key].$nin
+        const newNin = new Set(oldNin)
+        q[key].$nin.forEach((element: Ref<Class<Obj>>) => {
+          const descendants = this.hierarchy.getDescendants(element)
+          descendants.forEach((d) => newNin.add(d))
+        })
+        q[key].$nin = Array.from(newNin.values())
+      }
+      if (q[key].$ne !== undefined) {
+        const descendants = this.hierarchy.getDescendants(q[key].$ne)
+        delete q[key].$ne
+        q[key].$nin = [...(q[key].$nin ?? []), ...descendants]
+      }
+    }
   }
 }

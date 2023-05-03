@@ -19,6 +19,7 @@ import contact from '@hcengineering/contact'
 import core, { Class, Doc } from '@hcengineering/core'
 import serverCore, { ObjectDDParticipant } from '@hcengineering/server-core'
 import serverTelegram from '@hcengineering/server-telegram'
+import telegram from '@hcengineering/telegram'
 
 export { serverTelegramId } from '@hcengineering/server-telegram'
 
@@ -33,6 +34,11 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverTelegram.trigger.OnMessageCreate
+    trigger: serverTelegram.trigger.OnMessageCreate,
+    txMatch: {
+      _class: core.class.TxCollectionCUD,
+      'tx.objectClass': telegram.class.Message,
+      'tx._class': core.class.TxCreateDoc
+    }
   })
 }
