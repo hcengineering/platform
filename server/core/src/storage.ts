@@ -762,7 +762,7 @@ export async function createServerStorage (
   options: ServerStorageOptions
 ): Promise<ServerStorage> {
   const hierarchy = new Hierarchy()
-  const triggers = new Triggers()
+  const triggers = new Triggers(hierarchy)
   const adapters = new Map<string, DbAdapter>()
   const modelDb = new ModelDb(hierarchy)
 
