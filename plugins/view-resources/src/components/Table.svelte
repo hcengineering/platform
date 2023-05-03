@@ -108,7 +108,7 @@
       query,
       (result) => {
         objects = result
-        total = result.total
+        total = result.total === -1 ? 0 : result.total
         objectsRecieved = true
         if (sortingFunction !== undefined) {
           const sf = sortingFunction
@@ -358,7 +358,7 @@
   </table>
   {#if loading > 0}<Loading />{/if}
 {/await}
-{#if showFooter && total}
+{#if showFooter}
   <div class="space" />
   <div class="footer" style="width: {width}px;">
     <div class="content" class:padding={showNotification || enableChecking}>
