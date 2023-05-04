@@ -3,6 +3,7 @@
     "Id": "Id",
     "Space": "Space",
     "Modified": "Modified",
+    "ModifiedDate": "Modified date",
     "ModifiedBy": "Modified by",
     "Class": "Class",
     "AttachedTo": "Attached to",

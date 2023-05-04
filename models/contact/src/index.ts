@@ -104,7 +104,7 @@ export class TContact extends TDoc implements Contact {
   @Index(IndexKind.FullText)
     city!: string
 
-  @Prop(TypeTimestamp(), contact.string.CreatedOn)
+  @Prop(TypeTimestamp(), contact.string.CreatedDate)
   @ReadOnly()
     createOn!: Timestamp
 }

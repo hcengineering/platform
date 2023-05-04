@@ -91,7 +91,7 @@
       {
         key: '',
         presenter: recruit.component.VacancyModifiedPresenter,
-        label: core.string.Modified,
+        label: core.string.ModifiedDate,
         props: { applications },
         sortingKey: 'modifiedOn',
         sortingFunction: modifiedSorting

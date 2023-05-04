@@ -77,7 +77,7 @@ export default mergeIds(contactId, contact, {
     TypeLabel: '' as IntlString,
     Homepage: '' as IntlString,
     Birthday: '' as IntlString,
-    CreatedOn: '' as IntlString,
+    CreatedDate: '' as IntlString,
     Whatsapp: '' as IntlString,
     WhatsappPlaceholder: '' as IntlString,
     Skype: '' as IntlString,
