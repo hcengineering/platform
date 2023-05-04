@@ -23,11 +23,11 @@
 
   export let value: Vacancy
   export let inline: boolean = false
-  export let disableClick = false
+  export let disabled = false
 </script>
 
 {#if value}
-  <DocNavLink {disableClick} object={value} {inline} component={recruit.component.EditVacancy}>
+  <DocNavLink {disabled} object={value} {inline} component={recruit.component.EditVacancy}>
     <div class="flex-presenter" class:inline-presenter={inline} use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
       {#if !inline}
         <div class="icon"><Icon icon={recruit.icon.Vacancy} size={'small'} /></div>

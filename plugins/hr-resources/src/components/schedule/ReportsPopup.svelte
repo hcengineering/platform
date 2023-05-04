@@ -48,7 +48,7 @@
   on:changeContent
 >
   <svelte:fragment slot="header">
-    <EmployeePresenter value={employee} disableClick />
+    <EmployeePresenter value={employee} disabled />
   </svelte:fragment>
   <TableBrowser
     showFilterBar={false}

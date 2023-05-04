@@ -107,7 +107,7 @@
   </svelte:fragment>
 
   <svelte:fragment slot="header">
-    <IssuePresenter value={object} disableClick />
+    <IssuePresenter value={object} disabled />
   </svelte:fragment>
 
   {#if currentProject}

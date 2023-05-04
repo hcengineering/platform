@@ -319,6 +319,7 @@ export interface Space extends Doc {
  * @public
  */
 export interface Account extends Doc {
+  name: string
   email: string
   role: AccountRole
 }

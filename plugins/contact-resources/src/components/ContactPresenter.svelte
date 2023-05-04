@@ -24,7 +24,7 @@
 
   export let value: Contact
   export let inline: boolean = false
-  export let isInteractive = true
+  export let disabled = false
 
   function isPerson (value: Contact): boolean {
     const client = getClient()
@@ -41,9 +41,9 @@
 </script>
 
 {#if isEmployee(value)}
-  <EmployeePresenter {isInteractive} value={toEmployee(value)} {inline} />
+  <EmployeePresenter {disabled} value={toEmployee(value)} {inline} />
 {:else if isPerson(value)}
-  <PersonPresenter {isInteractive} {value} {inline} />
+  <PersonPresenter {disabled} {value} {inline} />
 {:else}
   <OrganizationPresenter value={toOrg(value)} {inline} />
 {/if}

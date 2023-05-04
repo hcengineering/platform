@@ -28,7 +28,7 @@
 <DocNavLink object={value} {inline}>
   {#await contactRef then ct}
     {#if ct}
-      <ContactPresenter isInteractive={false} value={ct} {inline} />
+      <ContactPresenter disabled={true} value={ct} {inline} />
     {/if}
   {/await}
 </DocNavLink>

@@ -172,6 +172,7 @@ export default plugin(coreId, {
     System: '' as IntlString,
     CreatedBy: '' as IntlString,
     Status: '' as IntlString,
+    Account: '' as IntlString,
     StatusCategory: '' as IntlString
   }
 })

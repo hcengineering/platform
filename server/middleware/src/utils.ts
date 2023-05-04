@@ -42,6 +42,7 @@ export async function getUser (storage: ServerStorage, ctx: SessionContext): Pro
         role: AccountRole.Owner,
         email: systemAccountEmail,
         space: core.space.Model,
+        name: core.string.System,
         modifiedBy: core.account.System,
         modifiedOn: 0
       }

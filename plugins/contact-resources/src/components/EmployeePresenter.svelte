@@ -14,9 +14,8 @@
   export let shouldShowPlaceholder = false
   export let onEmployeeEdit: ((event: MouseEvent) => void) | undefined = undefined
   export let avatarSize: IconSize = 'x-small'
-  export let isInteractive = true
+  export let disabled = false
   export let inline = false
-  export let disableClick = false
   export let colorInherit: boolean = false
   export let accent: boolean = false
   export let defaultName: IntlString | undefined = undefined
@@ -34,7 +33,7 @@
   {shouldShowName}
   {avatarSize}
   {shouldShowPlaceholder}
-  isInteractive={isInteractive && !disableClick}
+  {disabled}
   {inline}
   {colorInherit}
   {accent}

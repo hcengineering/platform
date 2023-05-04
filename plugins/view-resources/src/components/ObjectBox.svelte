@@ -132,7 +132,7 @@
               objectId={selected._id}
               _class={selected._class}
               value={selected}
-              props={{ ...docProps, isInteractive: false, inline: true, size: 'x-small' }}
+              props={{ ...docProps, disabled: true, inline: true, size: 'x-small' }}
             />
           {:else}
             <div class="flex-row-center">

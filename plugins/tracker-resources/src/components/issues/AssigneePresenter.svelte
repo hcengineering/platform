@@ -90,7 +90,7 @@
     {value}
     {defaultName}
     {avatarSize}
-    isInteractive={true}
+    disabled={false}
     shouldShowPlaceholder={true}
     shouldShowName={shouldShowLabel}
     onEmployeeEdit={handleAssigneeEditorOpened}

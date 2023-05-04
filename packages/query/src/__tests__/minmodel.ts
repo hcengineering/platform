@@ -194,8 +194,8 @@ export function genMinModel (): TxCUD<Doc>[] {
   const u1 = 'User1' as Ref<Account>
   const u2 = 'User2' as Ref<Account>
   txes.push(
-    createDoc(core.class.Account, { email: 'user1@site.com', role: 0 }, u1),
-    createDoc(core.class.Account, { email: 'user2@site.com', role: 0 }, u2),
+    createDoc(core.class.Account, { email: 'user1@site.com', name: 'user1', role: 0 }, u1),
+    createDoc(core.class.Account, { email: 'user2@site.com', name: 'user2', role: 0 }, u2),
     createDoc(core.class.Space, {
       name: 'Sp1',
       description: '',

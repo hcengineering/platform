@@ -105,7 +105,7 @@
     {value}
     {defaultName}
     avatarSize={'x-small'}
-    isInteractive={true}
+    disabled={false}
     shouldShowPlaceholder={true}
     shouldShowName={shouldShowLabel}
     onEmployeeEdit={handleAssigneeEditorOpened}

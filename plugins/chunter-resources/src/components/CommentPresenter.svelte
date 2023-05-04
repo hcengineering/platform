@@ -25,7 +25,7 @@
 
   export let value: Comment
   export let inline: boolean = false
-  export let disableClick = false
+  export let disabled = false
 
   const cutId = (str: string): string => {
     return str.slice(0, 4) + '...' + str.slice(-4)
@@ -45,7 +45,7 @@
 </script>
 
 {#if inline}
-  <a class="flex-presenter inline-presenter" href="#{disableClick ? null : ''}">
+  <a class="flex-presenter inline-presenter" href="#{disabled ? null : ''}">
     <div class="icon">
       <Icon icon={chunter.icon.Thread} size={'small'} />
     </div>
