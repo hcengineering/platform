@@ -137,7 +137,7 @@ export class TTypeSprintStatus extends TType {}
  * @public
  */
 @Model(tracker.class.Project, core.class.Space, DOMAIN_SPACE)
-@UX(tracker.string.Project, tracker.icon.Project, 'Project')
+@UX(tracker.string.Project, tracker.icon.Project, 'Project', 'name')
 export class TProject extends TSpace implements Project {
   @Prop(TypeString(), tracker.string.Identifier)
   @Index(IndexKind.FullText)
@@ -1020,19 +1020,19 @@ export function createModel (builder: Builder): void {
             label: tracker.string.MyIssues,
             icon: tracker.icon.MyIssues,
             component: tracker.component.MyIssues
-          } //,
-          // {
-          //   id: 'all-issues',
-          //   position: 'top',
-          //   label: tracker.string.AllIssues,
-          //   icon: tracker.icon.Issues,
-          //   component: tracker.component.IssuesView,
-          //   componentProps: {
-          //     query: { '$lookup.space.archived': false },
-          //     space: undefined,
-          //     title: tracker.string.AllIssues
-          //   }
-          // }
+          },
+          {
+            id: 'all-issues',
+            position: 'top',
+            label: tracker.string.AllIssues,
+            icon: tracker.icon.Issues,
+            component: tracker.component.IssuesView,
+            componentProps: {
+              query: { '$lookup.space.archived': false },
+              space: undefined,
+              title: tracker.string.AllIssues
+            }
+          }
           // {
           //   id: 'views',
           //   position: 'top',
