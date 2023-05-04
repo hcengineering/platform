@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/client-resources",
-  "version": "0.6.16",
+  "version": "0.6.19",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -32,9 +32,9 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/core": "^0.6.23",
-    "@hcengineering/client": "^0.6.8"
+    "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/core": "^0.6.25",
+    "@hcengineering/client": "^0.6.11"
   },
   "repository": "https://github.com/hcengineering/anticrm",
   "publishConfig": {

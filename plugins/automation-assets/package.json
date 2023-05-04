@@ -29,7 +29,7 @@
     "@hcengineering/platform-rig": "^0.6.0"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.8",
+    "@hcengineering/platform": "^0.6.9",
     "@hcengineering/automation": "^0.6.0"
   }
 }
