@@ -408,7 +408,7 @@
           >
             <Component
               is={tags.component.LabelsPresenter}
-              props={{ object: issue, ckeckFilled: fullFilled[issueId], lookupField: 'labels', kind: 'kanban' }}
+              props={{ value: issue.labels, object: issue, ckeckFilled: fullFilled[issueId], kind: 'kanban' }}
               on:change={(res) => {
                 if (res.detail.full) fullFilled[issueId] = true
               }}

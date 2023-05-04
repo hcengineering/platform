@@ -3,11 +3,12 @@
   import { createQuery } from '@hcengineering/presentation'
   import type { TagReference } from '@hcengineering/tags'
   import tags from '@hcengineering/tags'
-  import { getEventPopupPositionElement, showPopup, resizeObserver } from '@hcengineering/ui'
+  import { getEventPopupPositionElement, resizeObserver, showPopup } from '@hcengineering/ui'
+  import { afterUpdate, createEventDispatcher } from 'svelte'
   import TagReferencePresenter from './TagReferencePresenter.svelte'
   import TagsEditorPopup from './TagsEditorPopup.svelte'
-  import { createEventDispatcher, afterUpdate } from 'svelte'
 
+  export let value: number
   export let object: WithLookup<Doc>
   export let full: boolean
   export let ckeckFilled: boolean = false
@@ -16,21 +17,24 @@
   export let action: (evt: MouseEvent) => Promise<void> | void = async () => {}
   export let compression: boolean = false
 
-  export let lookupField: string | undefined
-
   const dispatch = createEventDispatcher()
 
   let items: TagReference[] = []
   const query = createQuery()
 
-  $: if (lookupField === undefined) {
-    query.query(tags.class.TagReference, { attachedTo: object._id }, (result) => {
-      items = result
-    })
-  } else {
-    query.unsubscribe()
-    items = (object.$lookup as any)[lookupField]
+  $: update(object, value)
+
+  function update (object: WithLookup<Doc>, value: number) {
+    if (value > 0) {
+      query.query(tags.class.TagReference, { attachedTo: object._id }, (result) => {
+        items = result
+      })
+    } else {
+      query.unsubscribe()
+      items = []
+    }
   }
+
   async function tagsHandler (evt: MouseEvent): Promise<void> {
     showPopup(TagsEditorPopup, { object }, getEventPopupPositionElement(evt))
   }

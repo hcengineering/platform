@@ -546,9 +546,9 @@ export function createModel (builder: Builder): void {
         { key: '', presenter: tracker.component.SubIssuesSelector, props: {} },
         { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
         {
-          key: '$lookup.labels',
+          key: 'labels',
           presenter: tags.component.LabelsPresenter,
-          props: { kind: 'list', full: false, lookupField: 'labels', listProps: { optional: true, compression: true } }
+          props: { kind: 'list', full: false, listProps: { optional: true, compression: true } }
         },
         {
           key: '',
