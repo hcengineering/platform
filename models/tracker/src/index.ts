@@ -496,6 +496,7 @@ export function createModel (builder: Builder): void {
       ['status', SortingOrder.Ascending],
       ['priority', SortingOrder.Ascending],
       ['modifiedOn', SortingOrder.Descending],
+      ['createOn', SortingOrder.Descending],
       ['dueDate', SortingOrder.Ascending],
       ['rank', SortingOrder.Ascending]
     ],
@@ -623,6 +624,7 @@ export function createModel (builder: Builder): void {
       ['status', SortingOrder.Ascending],
       ['priority', SortingOrder.Ascending],
       ['modifiedOn', SortingOrder.Descending],
+      ['createOn', SortingOrder.Descending],
       ['dueDate', SortingOrder.Ascending]
     ],
     groupDepth: 1,
