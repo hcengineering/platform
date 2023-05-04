@@ -160,14 +160,7 @@ export async function OnDepartmentStaff (tx: Tx, control: TriggerControl): Promi
  * @public
  */
 export async function OnDepartmentRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx)
-  if (core.class.TxRemoveDoc !== actualTx._class) {
-    return []
-  }
-  const ctx = actualTx as TxRemoveDoc<Department>
-  if (ctx.objectClass !== hr.class.Department) {
-    return []
-  }
+  const ctx = TxProcessor.extractTx(tx) as TxRemoveDoc<Department>
 
   const department = (await control.findAll(hr.class.Department, { _id: ctx.objectSpace as Ref<Department> }))[0]
 
