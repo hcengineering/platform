@@ -40,7 +40,7 @@
   export let refContainer: HTMLElement | undefined = undefined
   export let shouldSaveDraft: boolean = false
   export let useAttachmentPreview = false
-  export let focusIndex: number | undefined = undefined
+  export let focusIndex: number | undefined = -1
 
   let draftKey = objectId ? `${objectId}_attachments` : undefined
   $: draftKey = objectId ? `${objectId}_attachments` : undefined
@@ -49,6 +49,9 @@
 
   export function focus (): void {
     refInput.focus()
+  }
+  export function isFocused (): boolean {
+    return refInput.isFocused()
   }
   export function isEditable (): boolean {
     return refInput.isEditable()

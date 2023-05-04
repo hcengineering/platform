@@ -39,9 +39,22 @@
   $: select(undefined, 0, element, 'vertical')
 </script>
 
-<Button icon={IconDownOutline} kind={'secondary'} size={'medium'} on:click={(evt) => next(evt, true)} />
-<Button icon={IconUpOutline} kind={'secondary'} size={'medium'} on:click={(evt) => next(evt, false)} />
 <Button
+  focusIndex={10005}
+  icon={IconDownOutline}
+  kind={'secondary'}
+  size={'medium'}
+  on:click={(evt) => next(evt, true)}
+/>
+<Button
+  focusIndex={10006}
+  icon={IconUpOutline}
+  kind={'secondary'}
+  size={'medium'}
+  on:click={(evt) => next(evt, false)}
+/>
+<Button
+  focusIndex={10007}
   showTooltip={{ label: ui.string.Back, direction: 'bottom' }}
   icon={IconNavPrev}
   kind={'secondary'}

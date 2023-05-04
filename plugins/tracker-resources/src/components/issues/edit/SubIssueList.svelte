@@ -15,6 +15,7 @@
 <script lang="ts">
   import { Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { Issue, Project } from '@hcengineering/tracker'
+  import { registerFocus } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
   import {
     ActionContext,
@@ -41,6 +42,25 @@
       // Select next
       list?.select(offset, of)
     }
+  })
+  let docs: Doc[] = []
+  function select () {
+    listProvider.update(docs)
+    listProvider.updateFocus(docs[0])
+    list?.select(0, undefined)
+  }
+
+  // Focusable control with index
+  let focused = false
+  export let focusIndex = -1
+  registerFocus(focusIndex, {
+    focus: () => {
+      ;(window.document.activeElement as HTMLElement).blur()
+      focused = true
+      select()
+      return true
+    },
+    isFocus: () => focused
   })
 </script>
 
@@ -70,6 +90,7 @@
       listProvider.updateSelection(event.detail.docs, event.detail.value)
     }}
     on:content={(evt) => {
+      docs = evt.detail
       listProvider.update(evt.detail)
     }}
   />
