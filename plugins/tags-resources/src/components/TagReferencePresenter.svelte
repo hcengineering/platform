@@ -17,7 +17,6 @@
   import type { TagReference } from '@hcengineering/tags'
   import { getPlatformColor, Icon, IconClose, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { tagLevel } from '../utils'
   import TagItem from './TagItem.svelte'
 
   export let value: TagReference
@@ -28,7 +27,6 @@
   export let inline: boolean = false
 
   const dispatch = createEventDispatcher()
-  $: tagIcon = tagLevel[(((value?.weight ?? 0) % 3) + 1) as 1 | 2 | 3]
 </script>
 
 {#if value}
