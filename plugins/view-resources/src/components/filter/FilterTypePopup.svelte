@@ -87,8 +87,8 @@
     const ignoreKeys = new Set(mixin.ignoreKeys ?? [])
 
     if (mixin.strict) {
-      const resultKeys = new Set(result.map(r => r.key))
-      
+      const resultKeys = new Set(result.map((r) => r.key))
+
       for (const [key] of allAttributes) {
         // Ignore attributes not specified in the "mixin.filters"
         if (!resultKeys.has(key)) {
