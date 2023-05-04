@@ -69,7 +69,7 @@
       return
     }
     const value = getValue(attribute.name, attribute.type)
-    if (result.findIndex((p) => p.key === value) !== -1) {
+    if (result.findIndex((p) => p.attribute.name === value) !== -1) {
       return
     }
     const filter = buildFilterKey(hierarchy, _class, value, attribute)
