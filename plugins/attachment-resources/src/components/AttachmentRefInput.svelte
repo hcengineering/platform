@@ -35,6 +35,7 @@
   export let shouldSaveDraft: boolean = false
   export let attachments: IdMap<Attachment> = new Map()
   export let loading = false
+  export let focusIndex: number = -1
   export function submit (): void {
     refInput.submit()
   }
@@ -278,6 +279,7 @@
       </div>
     {/if}
     <ReferenceInput
+      {focusIndex}
       bind:this={refInput}
       {content}
       {iconSend}

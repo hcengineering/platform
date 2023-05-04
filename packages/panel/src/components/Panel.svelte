@@ -95,7 +95,7 @@
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
-    <Component is={calendar.component.DocReminder} props={{ value: object, title }} />
+    <Component is={calendar.component.DocReminder} props={{ value: object, title, focusIndex: 9000 }} />
     {#if isUtils && $$slots.utils}
       <div class="buttons-divider" />
       <slot name="utils" />
@@ -145,7 +145,7 @@
       {#if !withoutActivity}
         <Component
           is={activity.component.Activity}
-          props={{ object, showCommenInput: !withoutInput, shouldScroll: embedded }}
+          props={{ object, showCommenInput: !withoutInput, shouldScroll: embedded, focusIndex: 1000 }}
         />
       {/if}
     </div>
@@ -156,7 +156,7 @@
         {#if !withoutActivity}
           <Component
             is={activity.component.Activity}
-            props={{ object, showCommenInput: !withoutInput, shouldScroll: embedded }}
+            props={{ object, showCommenInput: !withoutInput, shouldScroll: embedded, focusIndex: 1000 }}
           />
         {/if}
       </div>

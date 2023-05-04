@@ -15,8 +15,18 @@
 <script lang="ts">
   import { Asset, IntlString, getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { AnySvelteComponent, IconEmoji } from '@hcengineering/ui'
-  import { Button, EmojiPopup, Icon, Spinner, handler, showPopup, tooltip } from '@hcengineering/ui'
+  import {
+    AnySvelteComponent,
+    Button,
+    EmojiPopup,
+    Icon,
+    IconEmoji,
+    Spinner,
+    handler,
+    registerFocus,
+    showPopup,
+    tooltip
+  } from '@hcengineering/ui'
   import { AnyExtension } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
   import { Completion } from '../Completion'
@@ -50,6 +60,7 @@
   export let placeholder: IntlString | undefined = undefined
   export let extraActions: RefAction[] | undefined = undefined
   export let loading: boolean = false
+
   const client = getClient()
 
   let textEditor: TextEditor
@@ -196,6 +207,24 @@
       }
     })
   }
+
+  // Focusable control with index
+  let focused = false
+  export let focusIndex = -1
+  const { idx, focusManager } = registerFocus(focusIndex, {
+    focus: () => {
+      focused = true
+      textEditor.focus()
+      return textEditor.isEditable()
+    },
+    isFocus: () => focused
+  })
+  const updateFocus = () => {
+    if (focusIndex !== -1) {
+      console.trace('focuse')
+      focusManager?.setFocus(idx)
+    }
+  }
 </script>
 
 <div class="ref-container">
@@ -291,6 +320,13 @@
             content = ''
             textEditor.clear()
           }
+        }}
+        on:on:blur={() => {
+          focused = false
+        }}
+        on:focus={() => {
+          focused = true
+          updateFocus()
         }}
         extensions={editorExtensions}
         on:selection-update={updateFormattingState}

@@ -23,6 +23,7 @@
 
   export let object: Doc
   export let shouldSaveDraft: boolean = true
+  export let focusIndex: number = -1
 
   const client = getClient()
   const _class = chunter.class.Comment
@@ -108,6 +109,7 @@
 </script>
 
 <AttachmentRefInput
+  {focusIndex}
   bind:this={commentInputBox}
   bind:content={inputContent}
   {_class}
