@@ -56,15 +56,15 @@
   let lastScrollHeight: number = -1
   let count: number = 0
 
-  const waitCount = 20
+  const waitCount = 10
   const PanelScrollTop: Writable<Record<string, number>> = writable<Record<string, number>>({})
 
   const startScrollHeightCheck = () => {
     clearTimeout(timer)
     timer = setTimeout(() => {
       if (lastScrollHeight <= scroll.scrollHeight && count <= waitCount) {
+        count = lastScrollHeight < scroll.scrollHeight ? 0 : count + 1
         lastScrollHeight = scroll.scrollHeight
-        count += 1
 
         startScrollHeightCheck()
       } else {
