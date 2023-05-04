@@ -22,7 +22,7 @@
   export let value: Person | null | undefined
   export let inline = false
   export let enlargedText = false
-  export let isInteractive = true
+  export let disabled = false
   export let shouldShowAvatar = true
   export let shouldShowName = true
   export let shouldShowPlaceholder = false
@@ -71,7 +71,7 @@
     {onEdit}
     {avatarSize}
     {defaultName}
-    {isInteractive}
+    {disabled}
     {shouldShowAvatar}
     {shouldShowName}
     {shouldShowPlaceholder}

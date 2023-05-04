@@ -150,7 +150,6 @@ export interface Employee extends Person {
  */
 export interface EmployeeAccount extends Account {
   employee: Ref<Employee>
-  name: string
   mergedTo?: Ref<EmployeeAccount>
 }
 

@@ -158,7 +158,7 @@
             _class={item._class}
             value={item}
             inline={false}
-            props={{ isInteractive: false, inline: false, size }}
+            props={{ disabled: true, inline: false, size }}
           />
         </div>
       </svelte:fragment>

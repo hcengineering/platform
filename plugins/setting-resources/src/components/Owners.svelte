@@ -68,7 +68,7 @@
           <div class="flex-row-center p-2">
             <div class="p-1 min-w-80">
               {#if employee}
-                <EmployeePresenter value={employee} isInteractive={true} />
+                <EmployeePresenter value={employee} disabled={false} />
               {:else}
                 {formatName(account.name)}
               {/if}

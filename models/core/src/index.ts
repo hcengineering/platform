@@ -128,6 +128,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       email: systemAccountEmail,
+      name: systemAccountEmail,
       role: AccountRole.Owner
     },
     core.account.System

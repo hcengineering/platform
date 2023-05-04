@@ -21,7 +21,7 @@
   import tracker from '../../plugin'
 
   export let value: WithLookup<Issue>
-  export let disableClick = false
+  export let disabled = false
   export let onClick: (() => void) | undefined = undefined
   export let shouldShowAvatar: boolean = false
   export let noUnderline = false
@@ -48,7 +48,7 @@
 </script>
 
 {#if value}
-  <DocNavLink object={value} {onClick} {disableClick} {noUnderline} {inline} component={tracker.component.EditIssue}>
+  <DocNavLink object={value} {onClick} {disabled} {noUnderline} {inline} component={tracker.component.EditIssue}>
     <span class="issuePresenterRoot" class:inline class:list={kind === 'list'}>
       {#if !inline && shouldShowAvatar}
         <div class="icon" use:tooltip={{ label: tracker.string.Issue }}>

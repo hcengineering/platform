@@ -45,7 +45,7 @@
   </div>
   {#if organization}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <DocNavLink object={organization} disableClick={disabled}>
+    <DocNavLink object={organization} {disabled}>
       <div class="name lines-limit-2">
         {organization.name}
       </div>

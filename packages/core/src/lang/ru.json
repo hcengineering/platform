@@ -30,6 +30,7 @@
     "System": "Система",
     "CreatedBy": "Создан",
     "Status": "Статус",
-    "StatusCategory": "Категория статуса"
+    "StatusCategory": "Категория статуса",
+    "Account": "Аккаунт"
   }
 }

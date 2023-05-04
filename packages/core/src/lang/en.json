@@ -30,6 +30,7 @@
     "System": "System",
     "CreatedBy": "Created by",
     "Status": "Status",
-    "StatusCategory": "Status category"
+    "StatusCategory": "Status category",
+    "Account": "Account"
   }
 }

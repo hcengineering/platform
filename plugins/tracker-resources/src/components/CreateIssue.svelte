@@ -567,7 +567,7 @@
       searchField={'title'}
       allowDeselect={true}
       showNavigate={false}
-      docProps={{ disableClick: true }}
+      docProps={{ disabled: true }}
       focusIndex={20000}
     />
   </svelte:fragment>
