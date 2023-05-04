@@ -24,7 +24,6 @@
   export let value: number | null | undefined = null
   export let withTime: boolean = false
   export let icon: 'normal' | 'warning' | 'overdue' = 'normal'
-  export let labelOver: IntlString | undefined = undefined
   export let labelNull: IntlString = ui.string.NoDate
 
   const dispatch = createEventDispatcher()
@@ -42,6 +41,6 @@
 <div class="antiSelect antiWrapper cursor-default">
   <div class="flex-col">
     <span class="label mb-1"><Label label={title} /></span>
-    <DatePresenter {value} {mode} {icon} {labelOver} {labelNull} editable on:change={changeValue} />
+    <DatePresenter {value} {mode} {icon} {labelNull} editable on:change={changeValue} />
   </div>
 </div>

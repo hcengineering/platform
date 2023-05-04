@@ -23,12 +23,15 @@
   import IconClose from '../icons/Close.svelte'
   import MonthSquare from './MonthSquare.svelte'
   import { daysInMonth } from './internal/DateUtils'
+  import Shifts from './Shifts.svelte'
+  import { DateRangeMode } from '@hcengineering/core'
 
   export let currentDate: Date | null
   export let withTime: boolean = false
   export let mondayStart: boolean = true
   export let label = currentDate != null ? ui.string.EditDueDate : ui.string.AddDueDate
   export let detail: IntlString | undefined = undefined
+  export let noShift: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -125,18 +128,20 @@
     return result
   }
 
-  const saveDate = (): void => {
+  const saveDate = (withTime: boolean = false): void => {
     if (currentDate) {
-      currentDate.setHours(edits[3].value > 0 ? edits[3].value : 0)
-      currentDate.setMinutes(edits[4].value > 0 ? edits[4].value : 0)
+      if (!withTime) {
+        currentDate.setHours(edits[3].value > 0 ? edits[3].value : 0)
+        currentDate.setMinutes(edits[4].value > 0 ? edits[4].value : 0)
+      }
       currentDate.setSeconds(0, 0)
       viewDate = currentDate = currentDate
       dateToEdits()
       dispatch('update', currentDate)
     }
   }
-  const closeDP = (): void => {
-    if (!isNull()) saveDate()
+  const closeDP = (withTime: boolean = false): void => {
+    if (!isNull()) saveDate(withTime)
     else {
       currentDate = null
       dispatch('update', null)
@@ -355,9 +360,24 @@
     </div>
   </div>
   <div class="footer">
-    <Button kind={'primary'} label={ui.string.Save} size={'x-large'} width={'100%'} on:click={closeDP} />
+    <Button
+      kind={'primary'}
+      label={ui.string.Save}
+      size={'x-large'}
+      width={'100%'}
+      on:click={() => closeDP(withTime)}
+    />
   </div>
 </div>
+<Shifts
+  {currentDate}
+  on:change={(evt) => {
+    currentDate = evt.detail
+    closeDP(withTime)
+  }}
+  shift={!noShift}
+  mode={withTime ? DateRangeMode.DATETIME : DateRangeMode.DATE}
+/>
 
 <style lang="scss">
   .date-popup-container {
