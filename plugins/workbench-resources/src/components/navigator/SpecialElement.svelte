@@ -18,6 +18,7 @@
   import { ActionIcon, Icon, Label } from '@hcengineering/ui'
 
   export let icon: Asset | undefined = undefined
+  export let iconProps: Record<string, any> | undefined = undefined
   export let label: IntlString | undefined = undefined
   export let notifications = 0
   export let actions: Action[] = []
@@ -36,7 +37,7 @@
     class:indent-8={indent === 'ml-8'}
   >
     {#if icon}
-      <Icon {icon} size={'small'} />
+      <Icon {icon} size={'small'} {iconProps} />
     {/if}
   </div>
   <span class="an-element__label title">

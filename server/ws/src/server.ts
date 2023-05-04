@@ -290,7 +290,7 @@ class TSessionManager implements SessionManager {
       s.workspaceClosed = true
       if (reason === 'upgrade') {
         // Override message handler, to wait for upgrading response from clients.
-        void webSocket.send(ctx, {
+        await webSocket.send(ctx, {
           result: {
             _class: core.class.TxModelUpgrade
           }

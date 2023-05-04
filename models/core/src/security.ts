@@ -23,7 +23,7 @@ export const DOMAIN_SPACE = 'space' as Domain
 // S P A C E
 
 @Model(core.class.Space, core.class.Doc, DOMAIN_SPACE)
-@UX(core.string.Space)
+@UX(core.string.Space, undefined, undefined, 'name')
 export class TSpace extends TDoc implements Space {
   @Prop(TypeString(), core.string.Name)
   @Index(IndexKind.FullText)

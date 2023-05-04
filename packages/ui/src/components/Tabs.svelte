@@ -14,75 +14,22 @@
 -->
 <script lang="ts">
   import type { TabModel } from '../types'
-  import Label from './Label.svelte'
   import Component from './Component.svelte'
-  import { Icon } from '..'
+  import TabsControl from './TabsControl.svelte'
 
   export let model: TabModel
   export let selected = 0
 </script>
 
-<div class="flex-stretch container">
-  {#each model as tab, i}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div
-      class="flex-row-center tab"
-      class:selected={i === selected}
-      on:click={() => {
-        selected = i
-      }}
-    >
-      {#if tab.icon !== undefined}
-        <div class="mr-2">
-          <Icon icon={tab.icon} size={'small'} />
-        </div>
+<TabsControl {model} bind:selected>
+  <svelte:fragment slot="content" let:selected>
+    {@const tab = model[selected]}
+    {#if tab}
+      {#if typeof tab.component === 'string'}
+        <Component is={tab.component} props={tab.props} on:change />
+      {:else}
+        <svelte:component this={tab.component} {...tab.props} on:change />
       {/if}
-      <Label label={tab.label} />
-    </div>
-  {/each}
-  <div class="grow" />
-</div>
-{#each model as tab, i}
-  {#if selected === i}
-    {#if typeof tab.component === 'string'}
-      <Component is={tab.component} props={tab.props} on:change />
-    {:else}
-      <svelte:component this={tab.component} {...tab.props} on:change />
     {/if}
-  {/if}
-{/each}
-
-<style lang="scss">
-  .container {
-    flex-shrink: 0;
-    flex-wrap: nowrap;
-    margin-bottom: 0.5rem;
-    width: 100%;
-    height: 4.5rem;
-    border-bottom: 1px solid var(--divider-color);
-
-    .tab {
-      height: 4.5rem;
-      color: var(--dark-color);
-      cursor: pointer;
-      user-select: none;
-
-      &.selected {
-        border-top: 0.125rem solid transparent;
-        border-bottom: 0.125rem solid var(--caption-color);
-        color: var(--caption-color);
-        cursor: default;
-      }
-      &:not(.selected):hover {
-        color: var(--accent-color);
-      }
-    }
-    .tab + .tab {
-      margin-left: 2.5rem;
-    }
-    .grow {
-      min-width: 2.5rem;
-      flex-grow: 1;
-    }
-  }
-</style>
+  </svelte:fragment>
+</TabsControl>

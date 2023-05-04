@@ -50,6 +50,7 @@ export interface Project extends Space {
   defaultIssueStatus: Ref<IssueStatus>
   defaultAssignee?: Ref<Employee>
   icon?: Asset
+  color?: number
   defaultTimeReportDay: TimeReportDayType
 }
 
@@ -433,8 +434,6 @@ export default plugin(trackerId, {
     Components: '' as Asset,
     NewIssue: '' as Asset,
     Magnifier: '' as Asset,
-    Home: '' as Asset,
-    RedCircle: '' as Asset,
     Labels: '' as Asset,
     DueDate: '' as Asset,
     Parent: '' as Asset,
@@ -480,7 +479,11 @@ export default plugin(trackerId, {
     TimeReport: '' as Asset,
     Estimation: '' as Asset,
 
-    Timeline: '' as Asset
+    Timeline: '' as Asset,
+
+    // Project icons
+    Home: '' as Asset,
+    RedCircle: '' as Asset
   },
   category: {
     Other: '' as Ref<TagCategory>,

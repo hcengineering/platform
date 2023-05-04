@@ -21,7 +21,7 @@
   import { onDestroy, onMount } from 'svelte'
 
   import { Markup } from '@hcengineering/core'
-  import { IconSize } from '@hcengineering/ui'
+  import { IconObjects, IconSize } from '@hcengineering/ui'
   import StyleButton from './StyleButton.svelte'
 
   import { DecorationSet } from 'prosemirror-view'
@@ -29,7 +29,6 @@
 
   import { calculateDecorations } from './diff/decorations'
   import { defaultExtensions } from './extensions'
-  import Objects from './icons/Objects.svelte'
 
   export let content: Markup
   export let buttonSize: IconSize = 'small'
@@ -106,7 +105,7 @@
       <div class="flex-grow" />
       <div class="formatPanel buttons-group xsmall-gap mb-4">
         <StyleButton
-          icon={Objects}
+          icon={IconObjects}
           size={buttonSize}
           selected={showDiff}
           showTooltip={{ label: textEditorPlugin.string.EnableDiffMode }}

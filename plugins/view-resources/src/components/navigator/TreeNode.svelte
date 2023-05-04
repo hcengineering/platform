@@ -14,12 +14,13 @@
 -->
 <script lang="ts">
   import type { Asset, IntlString } from '@hcengineering/platform'
-  import type { Action } from '@hcengineering/ui'
+  import type { Action, AnySvelteComponent } from '@hcengineering/ui'
   import TreeElement from './TreeElement.svelte'
 
   export let title: string | undefined = undefined
   export let label: IntlString | undefined = undefined
-  export let icon: Asset | undefined = undefined
+  export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let iconProps: Record<string, any> | undefined = undefined
   export let actions: () => Promise<Action[]> = async () => []
   export let notifications = 0
   export let parent = false
@@ -28,6 +29,18 @@
   export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
 </script>
 
-<TreeElement {title} {label} {icon} {notifications} {collapsed} {actions} node {parent} {indent} {shortDropbox}>
+<TreeElement
+  {title}
+  {label}
+  {iconProps}
+  {icon}
+  {notifications}
+  {collapsed}
+  {actions}
+  node
+  {parent}
+  {indent}
+  {shortDropbox}
+>
   <slot />
 </TreeElement>

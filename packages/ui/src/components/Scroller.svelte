@@ -251,10 +251,10 @@
   const delayCall = (op: () => void, h?: boolean) => {
     if (h) {
       clearTimeout(checkHBarTimeout)
-      checkHBarTimeout = setTimeout(op, 50)
+      checkHBarTimeout = setTimeout(op, 5)
     } else {
       clearTimeout(checkBarTimeout)
-      checkBarTimeout = setTimeout(op, 50)
+      checkBarTimeout = setTimeout(op, 5)
     }
   }
 

@@ -165,7 +165,7 @@
     }
   }
 
-  $: fitTooltip(tooltipHTML)
+  $: kind === 'submenu' ? fitSubmenu() : fitTooltip(tooltipHTML)
   afterUpdate(() => (kind === 'submenu' ? fitSubmenu() : fitTooltip(tooltipHTML)))
   onDestroy(() => hideTooltip())
 </script>

@@ -92,9 +92,12 @@ export interface IPopupItem {
   action?: Function
 }
 
-export interface Tab {
+export interface TabBase {
   label: IntlString
   icon?: Asset
+}
+
+export interface Tab extends TabBase {
   component: AnyComponent | AnySvelteComponent
   props: any
 }

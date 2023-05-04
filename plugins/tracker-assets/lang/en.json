@@ -291,7 +291,10 @@
     "CreatedSubIssue": "Created sub-issue",
     "ChangeStatus": "Change status",
     "ConfigLabel": "Tracker",
-    "ConfigDescription": "Extension to manage work items and do all jobs done."
+    "ConfigDescription": "Extension to manage work items and do all jobs done.",
+    "ProjectColor": "Choose project icon color",
+    "ProjectIconCategory": "Icon",
+    "ProjectEmojiiCategory": "Emojii"
   },
   "status": {}
 }

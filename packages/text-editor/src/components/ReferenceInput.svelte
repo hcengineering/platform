@@ -13,21 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getResource, IntlString, Asset } from '@hcengineering/platform'
+  import { Asset, IntlString, getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { Button, handler, Icon, showPopup, Spinner, tooltip } from '@hcengineering/ui'
-  import type { AnySvelteComponent } from '@hcengineering/ui'
+  import { AnySvelteComponent, IconEmoji } from '@hcengineering/ui'
+  import { Button, EmojiPopup, Icon, Spinner, handler, showPopup, tooltip } from '@hcengineering/ui'
   import { AnyExtension } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
   import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
-  import { FormatMode, FORMAT_MODES, RefAction, RefInputActionItem, TextEditorHandler } from '../types'
-  import EmojiPopup from './EmojiPopup.svelte'
+  import { FORMAT_MODES, FormatMode, RefAction, RefInputActionItem, TextEditorHandler } from '../types'
+  import LinkPopup from './LinkPopup.svelte'
+  import MentionList from './MentionList.svelte'
+  import { SvelteRenderer } from './SvelteRenderer'
+  import TextEditor from './TextEditor.svelte'
   import Attach from './icons/Attach.svelte'
   import Bold from './icons/Bold.svelte'
   import Code from './icons/Code.svelte'
   import CodeBlock from './icons/CodeBlock.svelte'
-  import Emoji from './icons/Emoji.svelte'
   import GIF from './icons/GIF.svelte'
   import Italic from './icons/Italic.svelte'
   import Link from './icons/Link.svelte'
@@ -37,10 +39,6 @@
   import Send from './icons/Send.svelte'
   import Strikethrough from './icons/Strikethrough.svelte'
   import TextStyle from './icons/TextStyle.svelte'
-  import LinkPopup from './LinkPopup.svelte'
-  import MentionList from './MentionList.svelte'
-  import { SvelteRenderer } from './SvelteRenderer'
-  import TextEditor from './TextEditor.svelte'
 
   const dispatch = createEventDispatcher()
   export let content: string = ''
@@ -85,7 +83,7 @@
     },
     {
       label: textEditorPlugin.string.Emoji,
-      icon: Emoji,
+      icon: IconEmoji,
       action: (element) => {
         showPopup(
           EmojiPopup,
