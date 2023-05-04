@@ -67,7 +67,7 @@
     </div>
   </div>
 {:else}
-  <div class="flex container buttonContainer extraWidth">
+  <div class="flex buttonContainer extraWidth">
     <AttachmentPresenter {value} />
     <div class="actions conner">
       <AttachmentActions attachment={value} {isSaved} />
@@ -76,13 +76,6 @@
 {/if}
 
 <style lang="scss">
-  .container {
-    background-color: var(--board-card-bg-color);
-    border: 1px solid var(--button-border-color);
-    border-radius: 0.5rem;
-    padding: 0.5rem;
-  }
-
   .buttonContainer {
     position: relative;
     width: fit-content;

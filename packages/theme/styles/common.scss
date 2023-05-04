@@ -365,21 +365,21 @@
       padding: .3125rem .5rem;
       min-width: 0;
       font-size: .875rem;
-      background-color: var(--accent-bg-color);
-      color: var(--dark-color);
-      border: 1px solid var(--divider-color);
+      background-color: var(--theme-button-enabled);
+      color: var(--theme-halfcontent-color);
+      border: 1px solid var(--theme-button-border);
       border-radius: .25rem;
 
       .tag-icon {
         margin-left: .5rem;
         width: 1rem;
         height: 1rem;
-        color: var(--accent-color);
+        color: var(--theme-content-color);
 
-        &:hover { color: var(--caption-color); }
+        &:hover { color: var(--theme-caption-color); }
       }
 
-      &.highlight { color: var(--content-color); }
+      &.highlight { color: var(--theme-content-color); }
     }
     &__tag + &__tag { margin-left: .375rem; }
   }

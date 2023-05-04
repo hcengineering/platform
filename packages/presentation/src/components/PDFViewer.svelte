@@ -96,8 +96,8 @@
     height: 2rem;
     font-weight: 500;
     font-size: 0.625rem;
-    color: var(--white-color);
-    background-color: var(--primary-bg-color);
+    color: var(--primary-button-color);
+    background-color: var(--primary-button-enabled);
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 0.5rem;
     cursor: pointer;
@@ -107,7 +107,7 @@
     overflow: auto;
     border-style: none;
     border-radius: 0.5rem;
-    background-color: var(--board-bg-color);
+    background-color: var(--theme-bg-color);
 
     &.img {
       display: flex;

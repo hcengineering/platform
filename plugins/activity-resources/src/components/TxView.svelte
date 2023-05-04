@@ -339,8 +339,8 @@
         <div class="activity-content content" class:indent={isAttached} class:contentHidden>
           <ShowMore ignore={edit}>
             {#if tx.collectionAttribute !== undefined && (tx.txDocIds?.size ?? 0) > 1}
-              <div class="flex-row-center flex-grow flex-wrap clear-mins">
-                <TxViewTx {tx} {onCancelEdit} {edit} {viewlet} />
+              <div class="flex-row-center flex-grow flex-wrap m--1 gap-around-2 clear-mins">
+                <TxViewTx {tx} {onCancelEdit} {edit} {viewlet} presentersOnly={isAttached} />
               </div>
             {:else if typeof viewlet.component === 'string'}
               <Component is={viewlet.component} {props} on:close={onCancelEdit} />

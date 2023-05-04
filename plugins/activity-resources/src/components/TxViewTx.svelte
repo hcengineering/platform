@@ -7,6 +7,7 @@
   export let tx: DisplayTx
   export let viewlet: TxDisplayViewlet
   export let edit: boolean
+  export let presentersOnly: boolean = false
   export let onCancelEdit: () => void
 
   function filterTx (dtx: DisplayTx[], _class: Ref<Class<Doc>>): DisplayTx[] {
@@ -22,7 +23,7 @@
 </script>
 
 {#each filterTx([...tx.txes, tx], core.class.TxCreateDoc) as ctx, i}
-  {#if i === 0}
+  {#if i === 0 && !presentersOnly}
     <IconAdd size={'x-small'} fill={'var(--trans-color)'} />
   {/if}
   {#if typeof viewlet?.component === 'string'}
@@ -32,7 +33,7 @@
   {/if}
 {/each}
 {#each filterTx([...tx.txes, tx], core.class.TxRemoveDoc) as ctx, i}
-  {#if i === 0}
+  {#if i === 0 && !presentersOnly}
     <IconDelete size={'x-small'} fill={'var(--trans-color)'} />
   {/if}
   {#if typeof viewlet?.component === 'string'}

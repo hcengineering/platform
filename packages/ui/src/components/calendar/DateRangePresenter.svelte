@@ -462,7 +462,7 @@
         color: var(--warning-color);
       }
       &.overdue {
-        color: var(--error-color);
+        color: var(--theme-error-color);
       }
     }
 
@@ -510,7 +510,7 @@
               color: var(--warning-color);
             }
             &.overdue {
-              color: var(--error-color);
+              color: var(--theme-error-color);
             }
           }
           .time-divider {

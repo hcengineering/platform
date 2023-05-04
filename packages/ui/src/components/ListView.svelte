@@ -93,7 +93,7 @@
       border-radius: 0.25rem;
     }
     .selection {
-      background-color: var(--menu-bg-select);
+      background-color: var(--theme-button-focused);
     }
   }
 </style>

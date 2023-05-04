@@ -167,10 +167,10 @@
         color: var(--warning-color);
       }
       &.critical {
-        color: var(--error-color);
+        color: var(--theme-error-color);
       }
       &.overdue {
-        color: var(--error-color);
+        color: var(--theme-error-color);
       }
     }
     .not-selected {
@@ -198,10 +198,10 @@
             color: var(--warning-color);
           }
           &.critical {
-            color: var(--error-color);
+            color: var(--theme-error-color);
           }
           &.overdue {
-            color: var(--error-color);
+            color: var(--theme-error-color);
           }
         }
         .time-divider {
