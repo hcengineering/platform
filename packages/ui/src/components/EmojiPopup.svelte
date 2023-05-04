@@ -1,10 +1,12 @@
 <script lang="ts">
-  import emojiRegex from 'emoji-regex'
-  import { getContext } from 'svelte'
-  import { createEventDispatcher } from 'svelte'
   import { IntlString } from '@hcengineering/platform'
-  import { Label, tooltip, Scroller, emojiSP } from '@hcengineering/ui'
-  import type { AnySvelteComponent } from '@hcengineering/ui'
+  import emojiRegex from 'emoji-regex'
+  import { createEventDispatcher, getContext } from 'svelte'
+  import plugin from '../../../text-editor/src/plugin'
+  import { tooltip } from '../tooltips'
+  import { AnySvelteComponent, emojiSP } from '../types'
+  import Label from './Label.svelte'
+  import Scroller from './Scroller.svelte'
   import Emoji from './icons/Emoji.svelte'
   import Food from './icons/Food.svelte'
   import Nature from './icons/Nature.svelte'
@@ -12,7 +14,8 @@
   import Places from './icons/Places.svelte'
   import Symbols from './icons/Symbols.svelte'
   import Work from './icons/Work.svelte'
-  import plugin from '../plugin'
+
+  export let embedded = false
 
   let div: HTMLDivElement
   const regex = emojiRegex()
@@ -122,7 +125,7 @@
   }
 </script>
 
-<div class="antiPopup antiPopup-withHeader popup">
+<div class={!embedded ? 'antiPopup antiPopup-withHeader popup' : ''}>
   <div class="flex-row-center popup-header">
     {#each categories as category}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -132,7 +135,7 @@
         class:selected={currentCategory === category}
         on:click={() => handleScrollToCategory(category.id)}
       >
-        <svelte:component this={category.icon} size={'large'} opacity={currentCategory === category ? '1' : '0.3'} />
+        <svelte:component this={category.icon} size={'medium'} opacity={currentCategory === category ? '1' : '0.3'} />
       </div>
     {/each}
   </div>
@@ -186,15 +189,15 @@
   .palette {
     display: flex;
     flex-wrap: wrap;
-    width: 19.25rem;
-    font-size: 1.75rem;
+    // width: 19.25rem;
+    font-size: 1.25rem;
   }
   .element {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 1.5rem;
+    height: 1.5rem;
     border-radius: 0.25rem;
     color: var(--caption-color);
     cursor: pointer;

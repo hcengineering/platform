@@ -39,7 +39,8 @@
     "just-clone": "~6.2.0",
     "svelte": "3.55.1",
     "fast-equals": "^2.0.3",
-    "autolinker": "4.0.0"
+    "autolinker": "4.0.0",
+    "emoji-regex": "^10.1.0"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {

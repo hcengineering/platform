@@ -13,15 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import tracker, { Project } from '@hcengineering/tracker'
-  import { Icon } from '@hcengineering/ui'
+  import { Project } from '@hcengineering/tracker'
+  import { Icon, IconWithEmojii, getPlatformColor, getPlatformColorForText } from '@hcengineering/ui'
+  import tracker from '../../plugin'
 
   export let value: Project
 </script>
 
-<div class="flex-presenter cursor-default inline-presenter">
+<div class="flex-presenter cursor-default">
   <div class="icon">
-    <Icon icon={value.icon ?? tracker.icon.Home} size="small" />
+    <Icon
+      icon={value.icon === tracker.component.IconWithEmojii ? IconWithEmojii : value.icon ?? tracker.icon.Home}
+      iconProps={value.icon === tracker.component.IconWithEmojii
+        ? { icon: value.color }
+        : { fill: value.color !== undefined ? getPlatformColor(value.color) : getPlatformColorForText(value.name) }}
+      size="small"
+    />
   </div>
   <span class="label no-underline nowrap">
     {value.name}

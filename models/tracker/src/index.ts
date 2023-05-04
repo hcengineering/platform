@@ -137,7 +137,7 @@ export class TTypeSprintStatus extends TType {}
  * @public
  */
 @Model(tracker.class.Project, core.class.Space, DOMAIN_SPACE)
-@UX(tracker.string.Project, tracker.icon.Project, 'Project', 'name')
+@UX(tracker.string.Project, tracker.icon.Issues, 'Project', 'name')
 export class TProject extends TSpace implements Project {
   @Prop(TypeString(), tracker.string.Identifier)
   @Index(IndexKind.FullText)
@@ -205,7 +205,7 @@ export class TIssue extends TAttachedDoc implements Issue {
   @Index(IndexKind.Indexed)
     assignee!: Ref<Employee> | null
 
-  @Prop(TypeRef(tracker.class.Component), tracker.string.Component)
+  @Prop(TypeRef(tracker.class.Component), tracker.string.Component, { icon: tracker.icon.Component })
   @Index(IndexKind.Indexed)
     component!: Ref<Component> | null
 
@@ -221,16 +221,16 @@ export class TIssue extends TAttachedDoc implements Issue {
 
   parents!: IssueParentInfo[]
 
-  @Prop(Collection(chunter.class.Comment), tracker.string.Comments)
+  @Prop(Collection(chunter.class.Comment), tracker.string.Comments, { icon: chunter.icon.Chunter })
     comments!: number
 
-  @Prop(Collection(attachment.class.Attachment), tracker.string.Attachments)
+  @Prop(Collection(attachment.class.Attachment), tracker.string.Attachments, { icon: attachment.icon.Attachment })
     attachments!: number
 
   @Prop(Collection(tags.class.TagReference), tracker.string.Labels)
     labels?: number
 
-  @Prop(TypeRef(core.class.Space), tracker.string.Project)
+  @Prop(TypeRef(tracker.class.Project), tracker.string.Project, { icon: tracker.icon.Issues })
   @Index(IndexKind.Indexed)
   @ReadOnly()
   declare space: Ref<Project>
@@ -242,7 +242,7 @@ export class TIssue extends TAttachedDoc implements Issue {
   @Hidden()
     rank!: string
 
-  @Prop(TypeRef(tracker.class.Sprint), tracker.string.Sprint)
+  @Prop(TypeRef(tracker.class.Sprint), tracker.string.Sprint, { icon: tracker.icon.Sprint })
   @Index(IndexKind.Indexed)
     sprint!: Ref<Sprint> | null
 

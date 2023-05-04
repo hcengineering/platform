@@ -15,12 +15,24 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { AccountArrayEditor, AssigneeBox } from '@hcengineering/contact-resources'
-  import core, { Account, DocumentUpdate, generateId, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
+  import core, { Account, DocumentUpdate, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
-  import { genRanks, IssueStatus, Project, TimeReportDayType } from '@hcengineering/tracker'
-  import { Button, EditBox, eventToHTMLElement, IconEdit, Label, showPopup, ToggleWithLabel } from '@hcengineering/ui'
+  import { IssueStatus, Project, TimeReportDayType, genRanks } from '@hcengineering/tracker'
+  import {
+    Button,
+    EditBox,
+    IconEdit,
+    IconWithEmojii,
+    Label,
+    ToggleWithLabel,
+    eventToHTMLElement,
+    getColorNumberByText,
+    getPlatformColor,
+    getPlatformColorForText,
+    showPopup
+  } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import TimeReportDayDropdown from '../issues/timereport/TimeReportDayDropdown.svelte'
@@ -36,6 +48,7 @@
   let description: string = project?.description ?? ''
   let isPrivate: boolean = project?.private ?? false
   let icon: Asset | undefined = project?.icon ?? undefined
+  let color: number | undefined = project?.color ?? undefined
   let selectedWorkDayType: TimeReportDayType | undefined =
     project?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay
   let defaultAssignee: Ref<Employee> | null | undefined = project?.defaultAssignee ?? null
@@ -67,6 +80,7 @@
       defaultIssueStatus: defaultStatusId,
       defaultAssignee: defaultAssignee ?? undefined,
       icon,
+      color,
       defaultTimeReportDay: selectedWorkDayType ?? TimeReportDayType.PreviousWorkDay
     }
   }
@@ -88,6 +102,9 @@
     }
     if (projectData.icon !== project?.icon) {
       update.icon = projectData.icon
+    }
+    if (projectData.color !== project?.color) {
+      update.color = projectData.color
     }
     if (projectData.defaultTimeReportDay !== project?.defaultTimeReportDay) {
       update.defaultTimeReportDay = projectData.defaultTimeReportDay
@@ -148,9 +165,10 @@
   }
 
   function chooseIcon (ev: MouseEvent) {
-    showPopup(ProjectIconChooser, { icon }, eventToHTMLElement(ev), (result) => {
+    showPopup(ProjectIconChooser, { icon, color: color ?? getColorNumberByText(name) }, 'top', (result) => {
       if (result !== undefined && result !== null) {
-        icon = result
+        icon = result.icon
+        color = result.color
       }
     })
   }
@@ -213,7 +231,15 @@
     <div class="caption">
       <Label label={tracker.string.ChooseIcon} />
     </div>
-    <Button icon={icon ?? tracker.icon.Home} kind="no-border" size="medium" on:click={chooseIcon} />
+    <Button
+      icon={icon === tracker.component.IconWithEmojii ? IconWithEmojii : icon ?? tracker.icon.Home}
+      iconProps={icon === tracker.component.IconWithEmojii
+        ? { icon: color }
+        : { fill: color !== undefined ? getPlatformColor(color) : getPlatformColorForText(name) }}
+      kind="no-border"
+      size="medium"
+      on:click={chooseIcon}
+    />
   </div>
 
   <div class="flex-between">
