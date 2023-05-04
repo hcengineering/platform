@@ -2,7 +2,6 @@
   import { IntlString } from '@hcengineering/platform'
   import emojiRegex from 'emoji-regex'
   import { createEventDispatcher, getContext } from 'svelte'
-  import plugin from '../../../text-editor/src/plugin'
   import { tooltip } from '../tooltips'
   import { AnySvelteComponent, emojiSP } from '../types'
   import Label from './Label.svelte'
@@ -14,6 +13,7 @@
   import Places from './icons/Places.svelte'
   import Symbols from './icons/Symbols.svelte'
   import Work from './icons/Work.svelte'
+  import plugin from '../plugin'
 
   export let embedded = false
 

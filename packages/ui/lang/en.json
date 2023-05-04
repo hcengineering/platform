@@ -49,6 +49,13 @@
     "DD": "DD",
     "MM": "MM",
     "YYYY": "YYYY",
-    "HH": "HH"
+    "HH": "HH",
+    "GettingWorkDone": "Getting work done",
+    "Smileys": "Smileys",
+    "Nature": "Nature",
+    "Symbols": "Symbols",
+    "TravelAndPlaces": "Travel & Places",
+    "Objects": "Objects",
+    "Food": "Food"
   }
 }

@@ -74,7 +74,15 @@ export const uis = plugin(uiId, {
     DueDatePopupTitle: '' as IntlString,
     DueDatePopupOverdueTitle: '' as IntlString,
     DueDatePopupDescription: '' as IntlString,
-    DueDatePopupOverdueDescription: '' as IntlString
+    DueDatePopupOverdueDescription: '' as IntlString,
+    
+    GettingWorkDone: '' as IntlString,
+    Smileys: '' as IntlString,
+    Nature: '' as IntlString,
+    Symbols: '' as IntlString,
+    TravelAndPlaces: '' as IntlString,
+    Food: '' as IntlString,
+    Objects: '' as IntlString,
   },
   metadata: {
     DefaultApplication: '' as Metadata<AnyComponent>,
