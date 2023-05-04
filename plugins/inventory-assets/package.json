@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/inventory-assets",
-  "version": "0.6.2",
+  "version": "0.6.4",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "template": "@hcengineering/assets-package",
@@ -30,8 +30,8 @@
     "@types/node": "~16.11.12"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/inventory": "^0.6.2"
+    "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/inventory": "^0.6.4"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {

@@ -33,9 +33,9 @@
   },
   "dependencies": {
     "@hcengineering/presentation": "^0.6.2",
-    "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/core": "^0.6.23",
-    "@hcengineering/ui": "^0.6.6",
+    "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/core": "^0.6.25",
+    "@hcengineering/ui": "^0.6.8",
     "svelte": "3.55.1",
     "@tiptap/core": "^2.0.2",
     "@tiptap/pm": "^2.0.2",

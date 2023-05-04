@@ -25,10 +25,10 @@
     "@rushstack/heft": "^0.47.9"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.23",
-    "@hcengineering/model": "^0.6.2",
-    "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/hr": "^0.6.5",
+    "@hcengineering/core": "^0.6.25",
+    "@hcengineering/model": "^0.6.4",
+    "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/hr": "^0.6.7",
     "@hcengineering/server-notification": "^0.6.0",
     "@hcengineering/server-hr": "^0.6.0",
     "@hcengineering/server-core": "^0.6.1"

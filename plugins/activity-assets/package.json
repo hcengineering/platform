@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/activity-assets",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
   "template": "@hcengineering/assets-package",
@@ -30,7 +30,7 @@
     "@types/node": "~16.11.12"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.8",
+    "@hcengineering/platform": "^0.6.9",
     "@hcengineering/activity": "^0.6.0"
   },
   "repository": "https://github.com/hcenginneing/anticrm",

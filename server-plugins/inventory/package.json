@@ -27,7 +27,7 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.8",
+    "@hcengineering/platform": "^0.6.9",
     "@hcengineering/server-notification": "^0.6.0"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/calendar-assets",
-  "version": "0.6.5",
+  "version": "0.6.7",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "template": "@hcengineering/assets-package",
@@ -29,8 +29,8 @@
     "@types/node": "~16.11.12"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/calendar": "^0.6.7"
+    "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/calendar": "^0.6.9"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {

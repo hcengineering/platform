@@ -29,7 +29,7 @@
     "@types/node": "~16.11.12"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.8",
+    "@hcengineering/platform": "^0.6.9",
     "@hcengineering/request": "^0.6.0"
   }
 }
