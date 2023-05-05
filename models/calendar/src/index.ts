@@ -145,6 +145,7 @@ export function createModel (builder: Builder): void {
       group: calendar.ids.CalendarNotificationGroup,
       txClasses: [],
       objectClass: calendar.mixin.Reminder,
+      allowedForAuthor: true,
       templates: {
         textTemplate: 'Reminder: {doc}',
         htmlTemplate: 'Reminder: {doc}',
