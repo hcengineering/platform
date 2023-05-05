@@ -27,9 +27,8 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverHr.trigger.OnDepartmentStaff,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx.objectClass': hr.mixin.Staff,
-      'tx._class': core.class.TxMixin
+      _class: core.class.TxMixin,
+      mixin: hr.mixin.Staff
     }
   })
 
