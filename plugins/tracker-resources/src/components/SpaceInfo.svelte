@@ -26,7 +26,7 @@
   <div class="flex-center {size} caption-color flex-no-shrink"><IconFolder size={'small'} /></div>
   <div class="flex-col ml-2 min-w-0">
     {#if subtitle}<div class="content-dark-color text-sm">{subtitle}</div>{/if}
-    <div class="content-accent-color overflow-label">{value.name}</div>
+    <div class="content-color overflow-label">{value.name}</div>
   </div>
 </div>
 

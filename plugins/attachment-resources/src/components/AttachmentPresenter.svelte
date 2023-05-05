@@ -16,8 +16,8 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Attachment } from '@hcengineering/attachment'
-  import { showPopup, closeTooltip, Icon, IconClose } from '@hcengineering/ui'
-  import { PDFViewer, getFileUrl } from '@hcengineering/presentation'
+  import { showPopup, closeTooltip, Label } from '@hcengineering/ui'
+  import presentation, { PDFViewer, getFileUrl } from '@hcengineering/presentation'
   import filesize from 'filesize'
 
   export let value: Attachment
@@ -67,6 +67,8 @@
     e.stopPropagation()
     window.open((e.target as HTMLAnchorElement).href, '_blank')
   }
+
+  let download: HTMLAnchorElement
 </script>
 
 <div class="flex-row-center attachment-container">
@@ -77,100 +79,112 @@
     on:click={clickHandler}
     on:mousedown={middleClickHandler}
   >
-    <div class="flex-center icon">
-      {iconLabel(value.name)}
+    <div
+      class="flex-center icon"
+      class:image={isImage(value.type)}
+      style:background-image={isImage(value.type) ? `url(${getFileUrl(value.file)})` : 'none'}
+    >
+      {#if !isImage(value.type)}{iconLabel(value.name)}{/if}
+    </div>
+  </a>
+  <div class="flex-col info-container">
+    <div class="name">
+      <a href={getFileUrl(value.file)} download={value.name} on:click={clickHandler} on:mousedown={middleClickHandler}>
+        {trimFilename(value.name)}
+      </a>
+    </div>
+    <div class="info-content">
+      {filesize(value.size, { spacer: '' })} •
+      <a class="no-line colorInherit" href={getFileUrl(value.file)} download={value.name} bind:this={download}>
+        <Label label={presentation.string.Download} />
+      </a>
       {#if removable}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div
-          class="remove-btn"
+        •
+        <span
+          class="remove-link"
           on:click={(ev) => {
             ev.stopPropagation()
             ev.preventDefault()
             dispatch('remove')
           }}
         >
-          <Icon icon={IconClose} size={'medium'} />
-        </div>
+          <Label label={presentation.string.Delete} />
+        </span>
       {/if}
     </div>
-  </a>
-  <div class="flex-col info">
-    <div class="name">
-      <a href={getFileUrl(value.file)} download={value.name} on:click={clickHandler} on:mousedown={middleClickHandler}>
-        {trimFilename(value.name)}
-      </a>
-    </div>
-    <div class="type">{filesize(value.size)}</div>
   </div>
 </div>
 
 <style lang="scss">
-  .icon {
-    position: relative;
-    flex-shrink: 0;
-    margin-right: 1rem;
-    width: 2rem;
-    height: 2rem;
-    font-weight: 500;
-    font-size: 0.625rem;
-    color: var(--white-color);
-    background-color: var(--primary-bg-color);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 0.25rem;
-    cursor: pointer;
-
-    .remove-btn {
-      position: absolute;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: var(--primary-bg-hover);
-      border-radius: 0.25rem;
-      opacity: 0;
-    }
-  }
   .attachment-container {
-    margin-right: 0.5rem;
-    // padding: .375rem;
-    // width: 14rem;
-    // min-width: 14rem;
-    // max-width: 14rem;
-    // background-color: var(--accent-bg-color);
-    // border: 1px solid var(--divider-color);
-    // border-radius: .25rem;
+    padding: 0.375rem 0.75rem 0.375rem 0.375rem;
+    width: auto;
+    min-width: 14rem;
+    max-width: 19rem;
+    background-color: var(--theme-button-enabled);
+    border: 1px solid var(--theme-button-border);
+    border-radius: 0.25rem;
 
-    &:hover .remove-btn {
-      opacity: 1;
+    .icon {
+      flex-shrink: 0;
+      margin-right: 0.75rem;
+      width: 3.25rem;
+      height: 3.25rem;
+      border: 1px solid var(--primary-button-border);
+      border-radius: 0.25rem;
+      cursor: pointer;
+
+      &:not(.image) {
+        color: var(--primary-button-color);
+        background-color: var(--primary-button-enabled);
+      }
+      &.image {
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+      }
     }
-  }
+    .name {
+      white-space: nowrap;
+      font-size: 0.8125rem;
+      color: var(--theme-caption-color);
+      cursor: pointer;
+    }
+    .info-content {
+      margin-top: 0.125rem;
+      white-space: nowrap;
+      font-size: 0.6875rem;
+      color: var(--theme-darker-color);
+    }
+    .remove-link {
+      color: var(--theme-error-color);
+      cursor: pointer;
 
-  .name {
-    white-space: nowrap;
-    font-weight: 500;
-    color: var(--accent-color);
-    cursor: pointer;
-  }
+      &:hover {
+        text-decoration-line: underline;
+      }
+    }
+    a.colorInherit {
+      color: inherit;
 
-  .type {
-    white-space: nowrap;
-    font-size: 0.75rem;
-    color: var(--dark-color);
-  }
+      &:hover {
+        text-decoration: underline;
+        color: var(--theme-dark-color);
+      }
+    }
 
-  .name:hover,
-  .icon:hover + .info > .name,
-  .no-line:hover + .info > .name a {
-    text-decoration: underline;
-    color: var(--caption-color);
-  }
-  .name:active,
-  .icon:active + .info > .name,
-  .no-line:active + .info > .name a {
-    text-decoration: underline;
-    color: var(--accent-color);
+    .name:hover,
+    .icon:hover + .info-container > .name,
+    .no-line:hover + .info-container > .name a {
+      text-decoration: underline;
+      color: var(--theme-caption-color);
+    }
+    .name:active,
+    .icon:active + .info-container > .name,
+    .no-line:active + .info-container > .name a {
+      text-decoration: underline;
+      color: var(--theme-caption-color);
+    }
   }
 </style>

@@ -137,7 +137,7 @@ export class TTypeSprintStatus extends TType {}
  * @public
  */
 @Model(tracker.class.Project, core.class.Space, DOMAIN_SPACE)
-@UX(tracker.string.Project, tracker.icon.Project, 'Project')
+@UX(tracker.string.Project, tracker.icon.Issues, 'Project', 'name')
 export class TProject extends TSpace implements Project {
   @Prop(TypeString(), tracker.string.Identifier)
   @Index(IndexKind.FullText)
@@ -205,7 +205,7 @@ export class TIssue extends TAttachedDoc implements Issue {
   @Index(IndexKind.Indexed)
     assignee!: Ref<Employee> | null
 
-  @Prop(TypeRef(tracker.class.Component), tracker.string.Component)
+  @Prop(TypeRef(tracker.class.Component), tracker.string.Component, { icon: tracker.icon.Component })
   @Index(IndexKind.Indexed)
     component!: Ref<Component> | null
 
@@ -221,16 +221,16 @@ export class TIssue extends TAttachedDoc implements Issue {
 
   parents!: IssueParentInfo[]
 
-  @Prop(Collection(chunter.class.Comment), tracker.string.Comments)
+  @Prop(Collection(chunter.class.Comment), tracker.string.Comments, { icon: chunter.icon.Chunter })
     comments!: number
 
-  @Prop(Collection(attachment.class.Attachment), tracker.string.Attachments)
+  @Prop(Collection(attachment.class.Attachment), tracker.string.Attachments, { icon: attachment.icon.Attachment })
     attachments!: number
 
   @Prop(Collection(tags.class.TagReference), tracker.string.Labels)
     labels?: number
 
-  @Prop(TypeRef(core.class.Space), tracker.string.Project)
+  @Prop(TypeRef(tracker.class.Project), tracker.string.Project, { icon: tracker.icon.Issues })
   @Index(IndexKind.Indexed)
   @ReadOnly()
   declare space: Ref<Project>
@@ -242,7 +242,7 @@ export class TIssue extends TAttachedDoc implements Issue {
   @Hidden()
     rank!: string
 
-  @Prop(TypeRef(tracker.class.Sprint), tracker.string.Sprint)
+  @Prop(TypeRef(tracker.class.Sprint), tracker.string.Sprint, { icon: tracker.icon.Sprint })
   @Index(IndexKind.Indexed)
     sprint!: Ref<Sprint> | null
 
@@ -256,7 +256,7 @@ export class TIssue extends TAttachedDoc implements Issue {
   @Prop(Collection(tracker.class.TimeSpendReport), tracker.string.TimeSpendReports)
     reports!: number
 
-  @Prop(TypeTimestamp(), tracker.string.CreatedOn)
+  @Prop(TypeTimestamp(), tracker.string.CreatedDate)
   @ReadOnly()
     createOn!: Timestamp
 
@@ -496,6 +496,7 @@ export function createModel (builder: Builder): void {
       ['status', SortingOrder.Ascending],
       ['priority', SortingOrder.Ascending],
       ['modifiedOn', SortingOrder.Descending],
+      ['createOn', SortingOrder.Descending],
       ['dueDate', SortingOrder.Ascending],
       ['rank', SortingOrder.Ascending]
     ],
@@ -546,9 +547,9 @@ export function createModel (builder: Builder): void {
         { key: '', presenter: tracker.component.SubIssuesSelector, props: {} },
         { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
         {
-          key: '$lookup.labels',
+          key: 'labels',
           presenter: tags.component.LabelsPresenter,
-          props: { kind: 'list', full: false, lookupField: 'labels', listProps: { optional: true, compression: true } }
+          props: { kind: 'list', full: false, listProps: { optional: true, compression: true } }
         },
         {
           key: '',
@@ -585,11 +586,15 @@ export function createModel (builder: Builder): void {
             }
           }
         },
-        { key: '', presenter: view.component.DividerPresenter, props: { type: 'divider' } },
+        {
+          key: '',
+          presenter: view.component.DividerPresenter,
+          props: { type: 'divider', listProps: { compression: true } }
+        },
         {
           key: '',
           presenter: tracker.component.EstimationEditor,
-          props: { kind: 'list', size: 'small', listProps: { key: 'estimation', fixed: 'left' } }
+          props: { kind: 'list', size: 'small', listProps: { key: 'estimation', fixed: 'left', compression: true } }
         },
         { key: '', presenter: view.component.DividerPresenter, props: { type: 'divider' } },
         {
@@ -619,6 +624,7 @@ export function createModel (builder: Builder): void {
       ['status', SortingOrder.Ascending],
       ['priority', SortingOrder.Ascending],
       ['modifiedOn', SortingOrder.Descending],
+      ['createOn', SortingOrder.Descending],
       ['dueDate', SortingOrder.Ascending]
     ],
     groupDepth: 1,
@@ -1016,19 +1022,19 @@ export function createModel (builder: Builder): void {
             label: tracker.string.MyIssues,
             icon: tracker.icon.MyIssues,
             component: tracker.component.MyIssues
-          } //,
-          // {
-          //   id: 'all-issues',
-          //   position: 'top',
-          //   label: tracker.string.AllIssues,
-          //   icon: tracker.icon.Issues,
-          //   component: tracker.component.IssuesView,
-          //   componentProps: {
-          //     query: { '$lookup.space.archived': false },
-          //     space: undefined,
-          //     title: tracker.string.AllIssues
-          //   }
-          // }
+          },
+          {
+            id: 'all-issues',
+            position: 'top',
+            label: tracker.string.AllIssues,
+            icon: tracker.icon.Issues,
+            component: tracker.component.IssuesView,
+            componentProps: {
+              query: { '$lookup.space.archived': false },
+              space: undefined,
+              title: tracker.string.AllIssues
+            }
+          }
           // {
           //   id: 'views',
           //   position: 'top',
@@ -1346,7 +1352,22 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['space']
+    filters: [
+      'status',
+      'assignee',
+      'createdBy',
+      'priority',
+      'labels',
+      'title',
+      'sprint',
+      'component',
+      'dueDate',
+      'createOn',
+      'modifiedOn',
+      'modifiedBy',
+      'space'
+    ],
+    ignoreKeys: ['number', 'estimation', 'attachedTo']
   })
 
   builder.mixin(tracker.class.IssueTemplate, core.class.Class, view.mixin.ClassFilters, {

@@ -40,7 +40,7 @@
     {@const issue = issues[item]}
     {@const currentProject = projects.get(issue.space)}
     <div
-      class="{twoRows ? 'flex-col' : 'flex-between'} p-text-2"
+      class="{twoRows ? 'flex-col' : 'flex-between'} p-text-2 clear-mins"
       on:contextmenu|preventDefault={(ev) => showContextMenu(ev, issue)}
       on:mouseover={() => {
         listProvider.updateFocus(issue)
@@ -60,19 +60,22 @@
         </span>
       </div>
 
-      <FixedColumn key={'estimation_issue_assignee'} justify={'right'}>
-        <AssigneeBox
-          width={'100%'}
-          label={tracker.string.Assignee}
-          _class={contact.class.Employee}
-          value={issue.assignee}
-          readonly
-          showNavigate={false}
-        />
-      </FixedColumn>
-      <FixedColumn key={'estimation'} justify={'left'}>
-        <EstimationEditor value={issue} kind={'list'} />
-      </FixedColumn>
+      <div class="flex-row-center clear-mins gap-2 self-end flex-no-shrink" class:p-text={twoRows}>
+        <FixedColumn key={'estimation_issue_assignee'} justify={'right'}>
+          <AssigneeBox
+            width={'100%'}
+            kind={'transparent'}
+            label={tracker.string.Assignee}
+            _class={contact.class.Employee}
+            value={issue.assignee}
+            readonly
+            showNavigate={false}
+          />
+        </FixedColumn>
+        <FixedColumn key={'estimation'} justify={'left'}>
+          <EstimationEditor value={issue} kind={'list'} />
+        </FixedColumn>
+      </div>
     </div>
   </svelte:fragment>
 </ListView>

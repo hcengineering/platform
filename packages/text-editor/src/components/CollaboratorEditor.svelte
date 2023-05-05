@@ -27,7 +27,14 @@
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 
   import { getCurrentAccount, Markup } from '@hcengineering/core'
-  import { getEventPositionElement, getPlatformColorForText, IconSize, SelectPopup, showPopup } from '@hcengineering/ui'
+  import {
+    getEventPositionElement,
+    getPlatformColorForText,
+    IconObjects,
+    IconSize,
+    SelectPopup,
+    showPopup
+  } from '@hcengineering/ui'
   import { WebsocketProvider } from 'y-websocket'
   import * as Y from 'yjs'
   import StyleButton from './StyleButton.svelte'
@@ -36,7 +43,7 @@
 
   import { DecorationSet } from 'prosemirror-view'
   import textEditorPlugin from '../plugin'
-  import { CollaborationIds, FormatMode, FORMAT_MODES } from '../types'
+  import { CollaborationIds, FORMAT_MODES, FormatMode } from '../types'
   import Bold from './icons/Bold.svelte'
   import Code from './icons/Code.svelte'
   import CodeBlock from './icons/CodeBlock.svelte'
@@ -50,7 +57,6 @@
   import LinkEl from './icons/Link.svelte'
   import ListBullet from './icons/ListBullet.svelte'
   import ListNumber from './icons/ListNumber.svelte'
-  import Objects from './icons/Objects.svelte'
   import Quote from './icons/Quote.svelte'
   import Strikethrough from './icons/Strikethrough.svelte'
   import AddColAfter from './icons/table/AddColAfter.svelte'
@@ -576,7 +582,7 @@
         {#if comparedVersion !== undefined}
           <div class="flex-row-center buttons-group xsmall-gap">
             <StyleButton
-              icon={Objects}
+              icon={IconObjects}
               size={buttonSize}
               selected={showDiff}
               showTooltip={{ label: textEditorPlugin.string.EnableDiffMode }}
@@ -596,7 +602,7 @@
     {:else if comparedVersion !== undefined}
       <div class="formatPanelRef formatPanel flex flex-grow flex-reverse">
         <StyleButton
-          icon={Objects}
+          icon={IconObjects}
           size={buttonSize}
           selected={showDiff}
           showTooltip={{ label: textEditorPlugin.string.EnableDiffMode }}

@@ -16,11 +16,11 @@
 <script lang="ts">
   import { IntlString, translate } from '@hcengineering/platform'
 
-  import { AnyExtension, Editor, Extension, HTMLContent } from '@tiptap/core'
   import type { FocusPosition } from '@tiptap/core'
+  import { AnyExtension, Editor, Extension, HTMLContent } from '@tiptap/core'
   // import Typography from '@tiptap/extension-typography'
-  import Placeholder from '@tiptap/extension-placeholder'
   import { Level } from '@tiptap/extension-heading'
+  import Placeholder from '@tiptap/extension-placeholder'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import { DirectEditorProps } from 'prosemirror-view'
   import textEditorPlugin from '../plugin'

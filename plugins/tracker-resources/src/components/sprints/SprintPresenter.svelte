@@ -21,11 +21,11 @@
   export let value: WithLookup<Sprint>
   export let shouldShowAvatar: boolean = true
   export let onClick: () => void | undefined
-  export let isInteractive = true
+  export let disabled = false
   export let inline: boolean = false
 
   function navigateToSprint () {
-    if (!isInteractive) {
+    if (disabled) {
       return
     }
     if (onClick) {

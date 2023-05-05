@@ -168,7 +168,7 @@ export class TApplicant extends TTask implements Applicant {
   @Prop(TypeRef(contact.class.Employee), recruit.string.AssignedRecruiter)
   declare assignee: Ref<Employee> | null
 
-  @Prop(TypeTimestamp(), contact.string.CreatedOn)
+  @Prop(TypeTimestamp(), contact.string.CreatedDate)
   @ReadOnly()
     createOn!: Timestamp
 }
@@ -454,7 +454,7 @@ export function createModel (builder: Builder): void {
         'description',
         {
           key: '@applications.modifiedOn',
-          label: core.string.Modified
+          label: core.string.ModifiedDate
         }
       ],
       hiddenKeys: ['name', 'space', 'modifiedOn']
@@ -484,7 +484,7 @@ export function createModel (builder: Builder): void {
         '$lookup.channels',
         {
           key: '@applications.modifiedOn',
-          label: core.string.Modified
+          label: core.string.ModifiedDate
         }
       ],
       hiddenKeys: ['name', 'space', 'modifiedOn']

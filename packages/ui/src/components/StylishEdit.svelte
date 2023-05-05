@@ -75,7 +75,7 @@
     background-color: var(--theme-button-enabled);
     border: 1px solid var(--theme-button-border);
     border-radius: 0.75rem;
-    caret-color: var(--caret-color);
+    caret-color: var(--theme-caret-color);
 
     &:focus-within {
       background-color: var(--theme-button-focused);

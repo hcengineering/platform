@@ -45,13 +45,13 @@
     />
   {:else}
     <div class="antiSection-empty solid flex-col-center mt-3">
-      <div class="content-accent-color">
+      <div class="content-color">
         <Icon size={'large'} icon={inventory.icon.Variant} />
       </div>
-      <span class="text-sm dark-color mt-2">
+      <span class="text-sm content-dark-color mt-2">
         <Label label={inventory.string.NoVariantsForProduct} />
       </span>
-      <span class="text-sm content-accent-color over-underline" on:click={create}>
+      <span class="text-sm content-color over-underline" on:click={create}>
         <Label label={inventory.string.CreateVariant} />
       </span>
     </div>

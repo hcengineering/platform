@@ -129,7 +129,7 @@
     }
 
     .showError {
-      color: var(--error-color) !important;
+      color: var(--theme-error-color) !important;
     }
     .showWarning {
       color: var(--warning-color) !important;

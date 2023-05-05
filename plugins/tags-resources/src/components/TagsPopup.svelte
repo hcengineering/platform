@@ -161,7 +161,7 @@
               <div class="flex-row-center">
                 <span class="mr-1-5">{cat.label}</span>
                 <div class="icon">
-                  <svg fill="var(--content-color)" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
+                  <svg fill="var(--theme-content-color)" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
                     <path d="M0,0L6,3L0,6Z" />
                   </svg>
                 </div>
@@ -189,7 +189,7 @@
                     <CheckBox checked={isSelected(selected, element)} primary />
                   </div>
                   <div class="tag" style="background-color: {getPlatformColor(element.color)};" />
-                  {element.title}
+                  <span class="lines-limit-2">{element.title}</span>
                   <span class="ml-2 text-xs">
                     ({element.refCount ?? 0})
                   </span>

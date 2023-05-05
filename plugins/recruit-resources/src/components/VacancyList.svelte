@@ -68,10 +68,10 @@
       <div class="caption-color">
         <FileDuo size={'large'} />
       </div>
-      <span class="dark-color">
+      <span class="content-dark-color">
         <Label label={getEmbeddedLabel('No Vacancies')} />
       </span>
-      <span class="over-underline content-accent-color" on:click={createApp}>
+      <span class="over-underline content-color" on:click={createApp}>
         <Label label={recruit.string.CreateVacancy} />
       </span>
     </div>

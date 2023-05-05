@@ -26,11 +26,11 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.23",
-    "@hcengineering/platform": "^0.6.8",
+    "@hcengineering/core": "^0.6.25",
+    "@hcengineering/platform": "^0.6.9",
     "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/contact": "^0.6.14",
-    "@hcengineering/notification": "^0.6.10",
-    "@hcengineering/telegram": "^0.6.7"
+    "@hcengineering/contact": "^0.6.16",
+    "@hcengineering/notification": "^0.6.12",
+    "@hcengineering/telegram": "^0.6.9"
   }
 }

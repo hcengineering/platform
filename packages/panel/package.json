@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/panel",
-  "version": "0.6.5",
+  "version": "0.6.7",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -32,15 +32,15 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@hcengineering/ui": "^0.6.6",
+    "@hcengineering/ui": "^0.6.8",
     "@hcengineering/text-editor": "^0.6.0",
     "svelte": "3.55.1",
-    "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/core": "^0.6.23",
-    "@hcengineering/chunter": "^0.6.5",
+    "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/core": "^0.6.25",
+    "@hcengineering/chunter": "^0.6.7",
     "@hcengineering/presentation": "^0.6.2",
     "@hcengineering/activity": "^0.6.0",
-    "@hcengineering/calendar": "^0.6.7"
+    "@hcengineering/calendar": "^0.6.9"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {

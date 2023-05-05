@@ -34,6 +34,7 @@ export default plugin(presentationId, {
     Ok: '' as IntlString,
     Save: '' as IntlString,
     Download: '' as IntlString,
+    Delete: '' as IntlString,
     Close: '' as IntlString,
     NotSelected: '' as IntlString,
     Deselect: '' as IntlString,

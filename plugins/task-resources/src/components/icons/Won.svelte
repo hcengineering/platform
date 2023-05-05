@@ -16,7 +16,7 @@
 <script lang="ts">
   export let size: 'small' | 'medium' | 'large'
   export let style: 'normal' | 'circle' = 'normal'
-  export let fill: string = 'var(--won-color)'
+  export let fill: string = 'var(--theme-won-color)'
 </script>
 
 <svg class="svg-{size}" {fill} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

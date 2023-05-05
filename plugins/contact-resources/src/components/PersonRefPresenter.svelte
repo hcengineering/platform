@@ -24,7 +24,7 @@
   export let _class: Ref<Class<Person>> = contact.class.Person
   export let inline = false
   export let enlargedText = false
-  export let isInteractive = true
+  export let disabled = false
   export let shouldShowAvatar = true
   export let shouldShowName = true
   export let shouldShowPlaceholder = false
@@ -55,6 +55,6 @@
   {shouldShowName}
   {shouldShowPlaceholder}
   {enlargedText}
-  {isInteractive}
+  {disabled}
   {inline}
 />

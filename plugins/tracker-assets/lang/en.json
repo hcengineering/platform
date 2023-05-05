@@ -284,14 +284,17 @@
 
     "SevenHoursLength": "Seven Hours",
     "EightHoursLength": "Eight Hours",
-    "CreatedOn": "Created on",
+    "CreatedDate": "Created date",
     "HourLabel": "h",
     "Saved": "Saved...",
     "CreatedIssue": "Created issue",
     "CreatedSubIssue": "Created sub-issue",
     "ChangeStatus": "Change status",
     "ConfigLabel": "Tracker",
-    "ConfigDescription": "Extension to manage work items and do all jobs done."
+    "ConfigDescription": "Extension to manage work items and do all jobs done.",
+    "ProjectColor": "Choose project icon color",
+    "ProjectIconCategory": "Icon",
+    "ProjectEmojiiCategory": "Emojii"
   },
   "status": {}
 }

@@ -109,6 +109,8 @@ export interface NotificationType extends Doc {
   providers: Record<Ref<NotificationProvider>, boolean>
   // templates for email (and browser/push?)
   templates?: NotificationTemplate
+  // when true notification will be created for user which trigger it (default - false)
+  allowedForAuthor?: boolean
 }
 
 /**

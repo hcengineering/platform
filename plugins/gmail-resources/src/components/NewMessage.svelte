@@ -179,7 +179,7 @@
       />
       <div class="flex-grow flex-col">
         <Label label={plugin.string.NewMessage} />
-        <span class="content-accent-color"><b>{getName(object)} ({channel.value})</b></span>
+        <span class="content-color"><b>{getName(object)} ({channel.value})</b></span>
       </div>
     </div>
     <div class="buttons-group small-gap">
@@ -249,7 +249,7 @@
     padding: 1rem;
     background-color: var(--outcoming-msg);
     color: #d6d6d6;
-    caret-color: var(--caret-color);
+    caret-color: var(--theme-caret-color);
     min-height: 0;
     margin-bottom: 2rem;
     height: 100%;

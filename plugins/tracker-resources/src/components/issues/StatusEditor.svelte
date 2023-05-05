@@ -121,9 +121,7 @@
       </div>
       {#if selectedStatusLabel}
         <span
-          class="{kind === 'list'
-            ? 'ml-1 text-md'
-            : 'ml-2 text-base'} overflow-label disabled fs-bold content-accent-color"
+          class="{kind === 'list' ? 'ml-1 text-md' : 'ml-2 text-base'} overflow-label disabled fs-bold content-color"
         >
           {selectedStatusLabel}
         </span>

@@ -31,7 +31,6 @@
   export let mondayStart: boolean = true
   export let editable: boolean = false
   export let icon: 'normal' | 'warning' | 'critical' | 'overdue' = 'normal'
-  export let labelOver: IntlString | undefined = undefined // label instead of date
   export let labelNull: IntlString = ui.string.NoDate
   export let showIcon = true
   export let shouldShowLabel: boolean = true
@@ -76,7 +75,7 @@
       showPopup(
         DatePopup,
         { currentDate, mondayStart, withTime, label, detail },
-        undefined,
+        'top',
         () => {
           opened = false
         },
@@ -93,9 +92,7 @@
     </div>
   {/if}
   {#if value !== null && value !== undefined}
-    {#if shouldShowLabel && labelOver !== undefined}
-      <Label label={labelOver} />
-    {:else if shouldShowLabel}
+    {#if shouldShowLabel}
       {new Date(value).getDate()}
       {getMonthName(new Date(value), 'short')}
       {#if new Date(value).getFullYear() !== today.getFullYear()}
@@ -121,6 +118,7 @@
     flex-shrink: 0;
     font-weight: 400;
     width: auto;
+    min-width: 0;
     white-space: nowrap;
     color: var(--theme-content-color);
     cursor: default;
@@ -170,10 +168,10 @@
         color: var(--warning-color);
       }
       &.critical {
-        color: var(--error-color);
+        color: var(--theme-error-color);
       }
       &.overdue {
-        color: var(--error-color);
+        color: var(--theme-error-color);
       }
     }
     .not-selected {
@@ -201,10 +199,10 @@
             color: var(--warning-color);
           }
           &.critical {
-            color: var(--error-color);
+            color: var(--theme-error-color);
           }
           &.overdue {
-            color: var(--error-color);
+            color: var(--theme-error-color);
           }
         }
         .time-divider {
@@ -303,6 +301,20 @@
       // &.edit {
       //   padding: 0 0.5rem;
       // }
+    }
+    &.transparent {
+      padding: 0 0.625rem;
+      border-radius: 0.25rem;
+
+      &:hover {
+        background-color: var(--theme-button-hovered);
+      }
+      &.selected {
+        background-color: var(--highlight-select);
+      }
+      &.selected:hover {
+        background-color: var(--highlight-select-hover);
+      }
     }
 
     .time-divider {

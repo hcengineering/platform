@@ -45,13 +45,12 @@
     value={getValue(employee, value)}
     {inline}
     {tooltipLabels}
-    isInteractive={false}
+    disabled
     shouldShowAvatar
     shouldShowPlaceholder
     defaultName={contact.string.NotSpecified}
     shouldShowName={kind !== 'list'}
     avatarSize={kind === 'list-header' ? 'smaller' : 'x-small'}
-    disableClick
     {colorInherit}
     {accent}
     on:accent-color

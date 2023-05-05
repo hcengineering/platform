@@ -21,11 +21,11 @@
   export let value: WithLookup<Component>
   export let shouldShowAvatar = true
   export let onClick: () => void | undefined
-  export let isInteractive = true
+  export let disabled = false
   export let inline: boolean = false
 
   function navigateToComponent () {
-    if (!isInteractive) {
+    if (disabled) {
       return
     }
     if (onClick) {

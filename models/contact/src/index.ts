@@ -104,7 +104,7 @@ export class TContact extends TDoc implements Contact {
   @Index(IndexKind.FullText)
     city!: string
 
-  @Prop(TypeTimestamp(), contact.string.CreatedOn)
+  @Prop(TypeTimestamp(), contact.string.CreatedDate)
   @ReadOnly()
     createOn!: Timestamp
 }
@@ -176,7 +176,6 @@ export class TEmployee extends TPerson implements Employee {
 @Model(contact.class.EmployeeAccount, core.class.Account)
 export class TEmployeeAccount extends TAccount implements EmployeeAccount {
   employee!: Ref<Employee>
-  name!: string
   mergedTo!: Ref<EmployeeAccount>
 }
 

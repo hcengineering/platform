@@ -399,6 +399,7 @@ async function isShouldNotify (
   const emailTypes: NotificationType[] = []
   const types = await getMatchedTypes(control, tx, isSpace)
   for (const type of types) {
+    if (type.allowedForAuthor !== true && tx.modifiedBy === user) continue
     if (control.hierarchy.hasMixin(type, serverNotification.mixin.TypeMatch)) {
       const mixin = control.hierarchy.as(type, serverNotification.mixin.TypeMatch)
       if (mixin.func !== undefined) {
@@ -428,7 +429,6 @@ async function getNotificationTxes (
   docUpdates: DocUpdates[],
   isSpace: boolean
 ): Promise<Tx[]> {
-  if (originTx.modifiedBy === target) return []
   const res: Tx[] = []
   const allowed = await isShouldNotify(control, originTx, object, target, isSpace)
   if (allowed.allowed) {

@@ -89,7 +89,7 @@
     {#if contacts.length > 0}
       <div class="flex-row-center flex-nowrap pointer-events-none">
         {#if contacts.length === 1}
-          <ContactPresenter value={contacts[0]} isInteractive={false} />
+          <ContactPresenter value={contacts[0]} disabled />
         {:else}
           <CombineAvatars {_class} bind:items size={'inline'} />
           <span class="overflow-label ml-1-5">

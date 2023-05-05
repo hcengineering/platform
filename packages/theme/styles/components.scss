@@ -529,7 +529,7 @@
 
 // THead background-color in Tooltip and Popups
 .popup-tooltip .antiTable .scroller-thead,
-.popup .antiTable .scroller-thead { background-color: var(--accent-bg-color); }
+.popup .antiTable .scroller-thead { background-color: var(--theme-table-header-color); }
 
 // Hide row menu in Tooltip
 .popup-tooltip .antiTable .antiTable-body__row:hover .antiTable-cells__firstCell .antiTable-cells__firstCell-menuRow { visibility: hidden; }

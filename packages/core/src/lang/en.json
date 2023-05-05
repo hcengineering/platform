@@ -3,6 +3,7 @@
     "Id": "Id",
     "Space": "Space",
     "Modified": "Modified",
+    "ModifiedDate": "Modified date",
     "ModifiedBy": "Modified by",
     "Class": "Class",
     "AttachedTo": "Attached to",
@@ -30,6 +31,7 @@
     "System": "System",
     "CreatedBy": "Created by",
     "Status": "Status",
-    "StatusCategory": "Status category"
+    "StatusCategory": "Status category",
+    "Account": "Account"
   }
 }

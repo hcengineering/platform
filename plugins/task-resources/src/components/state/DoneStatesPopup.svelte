@@ -68,7 +68,7 @@
           dispatch('close', null)
         }}
       >
-        <div class="dark-color mr-2"><Unknown size={'small'} /></div>
+        <div class="content-dark-color mr-2"><Unknown size={'small'} /></div>
         <span class="overflow-label"><Label label={task.string.NoDoneState} /></span>
       </button>
     </div>

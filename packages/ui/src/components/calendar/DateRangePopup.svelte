@@ -13,12 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import { dpstore } from '../../popups'
-  import Month from './Month.svelte'
-  import Scroller from '../Scroller.svelte'
-  import TimeShiftPresenter from '../TimeShiftPresenter.svelte'
   import { DateRangeMode } from '@hcengineering/core'
+  import { createEventDispatcher } from 'svelte'
+  import Month from './Month.svelte'
+  import Shifts from './Shifts.svelte'
 
   export let direction: 'before' | 'after' = 'after'
   export let minutes: number[] = [5, 15, 30]
@@ -26,9 +24,6 @@
   export let days: number[] = [1, 3, 7, 30]
   export let shift: boolean = false
   export let mode: DateRangeMode = DateRangeMode.DATE
-
-  $: withTime = mode !== DateRangeMode.DATE
-  $: withDate = mode !== DateRangeMode.TIME
 
   const dispatch = createEventDispatcher()
 
@@ -45,24 +40,8 @@
         today.getMinutes()
       )
       : today
-  $: currentDate = $dpstore.currentDate ?? defaultDate
+  $: currentDate = defaultDate
   const mondayStart: boolean = true
-
-  $: base = direction === 'before' ? -1 : 1
-  const MINUTE = 60 * 1000
-  const HOUR = 60 * MINUTE
-  const DAY = 24 * HOUR
-
-  const shiftValues: (number | string)[] = []
-
-  $: {
-    if (withTime) {
-      shiftValues.push(...minutes.map((m) => m * MINUTE), 'divider', ...hours.map((m) => m * HOUR))
-    }
-    if (withDate) {
-      shiftValues.push('divider', ...days.map((m) => m * DAY))
-    }
-  }
 </script>
 
 <div class="month-popup-container">
@@ -77,31 +56,16 @@
       }}
     />
   {/if}
-  {#if shift}
-    <div class="shift-container">
-      <Scroller>
-        {#each shiftValues as value}
-          {#if typeof value === 'number'}
-            {@const numValue = value}
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <div
-              class="btn"
-              on:click={() => {
-                const abs = Math.abs(numValue)
-                let shiftedDate = new Date(currentDate.getTime() + numValue * base)
-                if (abs < DAY && abs >= HOUR) shiftedDate = new Date(Date.now() + numValue * base)
-                dispatch('change', shiftedDate)
-              }}
-            >
-              <TimeShiftPresenter value={value * base} />
-            </div>
-          {:else if value === 'divider'}
-            <div class="divider" />
-          {/if}
-        {/each}
-      </Scroller>
-    </div>
-  {/if}
+  <Shifts
+    {currentDate}
+    on:change={(evt) => (currentDate = evt.detail)}
+    {direction}
+    {days}
+    {minutes}
+    {hours}
+    {shift}
+    {mode}
+  />
 </div>
 
 <style lang="scss">
@@ -110,45 +74,5 @@
     background: var(--popup-bg-color);
     border-radius: 0.5rem;
     box-shadow: var(--popup-shadow);
-
-    .shift-container {
-      position: absolute;
-      display: flex;
-      flex-direction: column;
-      padding: 0.5rem;
-      top: 1rem;
-      right: calc(100% - 0.5rem);
-      bottom: 1rem;
-      // height: fit-content;
-      width: fit-content;
-      width: 12rem;
-      min-width: 12rem;
-      background: var(--popup-bg-color);
-      border: 1px solid var(--divider-color);
-      border-radius: 0.5rem;
-      box-shadow: var(--popup-shadow);
-      z-index: -1;
-
-      .btn {
-        flex-shrink: 0;
-        margin-right: 0.75rem;
-        padding: 0.25rem 0.5rem;
-        background-color: transparent;
-        border-radius: 0.25rem;
-        cursor: pointer;
-
-        &:hover {
-          color: var(--caption-color);
-          background-color: var(--button-bg-hover);
-        }
-      }
-
-      .divider {
-        margin: 0.25rem 0.75rem 0.25rem 0;
-        height: 1px;
-        min-height: 1px;
-        background-color: var(--divider-color);
-      }
-    }
   }
 </style>

@@ -16,15 +16,15 @@
   import { closePopup, closeTooltip, navigate, parseLocation } from '@hcengineering/ui'
 
   export let href: string | undefined
-  export let disableClick = false
+  export let disabled = false
   export let onClick: ((event: MouseEvent) => void) | undefined = undefined
-  export let noUnderline = false
+  export let noUnderline = disabled
   export let inline = false
   export let colorInherit: boolean = false
   export let shrink: number = 0
 
   function clickHandler (e: MouseEvent) {
-    if (disableClick) return
+    if (disabled) return
 
     if (onClick) {
       e.preventDefault()
@@ -48,10 +48,10 @@
   }
 </script>
 
-{#if disableClick || href === undefined}
+{#if disabled || href === undefined}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <span
-    class:cursor-pointer={!disableClick}
+    class:cursor-pointer={!disabled}
     class:noUnderline
     class:inline
     class:colorInherit
@@ -75,7 +75,6 @@
     // overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    cursor: pointer;
     font-weight: inherit;
 
     &:not(.colorInherit) {

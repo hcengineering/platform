@@ -25,7 +25,6 @@
     ButtonSize,
     getEventPositionElement,
     getFocusManager,
-    Icon,
     IconOpen,
     Label,
     LabelAndProps,
@@ -115,11 +114,23 @@
 
 <div {id} bind:this={container} class="min-w-0" class:w-full={width === '100%'} class:h-full={$$slots.content}>
   {#if $$slots.content}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="w-full h-full flex-streatch" on:click={_click}>
       <slot name="content" />
     </div>
   {:else}
-    <Button {focusIndex} width={width ?? 'min-content'} {size} {kind} {justify} {showTooltip} on:click={_click}>
+    <Button
+      {focusIndex}
+      width={width ?? 'min-content'}
+      {icon}
+      iconProps={{ size: kind === 'link' || kind === 'secondary' ? 'small' : size }}
+      {size}
+      {kind}
+      {justify}
+      {showTooltip}
+      on:click={_click}
+      notSelected={!selected}
+    >
       <span slot="content" class="overflow-label flex-grow" class:flex-between={showNavigate && selected}>
         <div
           class="disabled flex-row-center"
@@ -132,17 +143,10 @@
               objectId={selected._id}
               _class={selected._class}
               value={selected}
-              props={{ ...docProps, isInteractive: false, inline: true, size: 'x-small' }}
+              props={{ ...docProps, disabled: true, noUnderline: true, size: 'x-small' }}
             />
           {:else}
-            <div class="flex-row-center">
-              {#if icon}
-                <Icon {icon} size={kind === 'link' || kind === 'secondary' ? 'small' : size} />
-              {/if}
-              <div class="ml-2">
-                <Label {label} />
-              </div>
-            </div>
+            <Label {label} />
           {/if}
         </div>
         {#if selected && showNavigate}

@@ -92,11 +92,11 @@
       <div class="caption-color">
         <FileDuo size={'large'} />
       </div>
-      <span class="dark-color mt-2">
+      <span class="content-dark-color mt-2">
         <Label label={recruit.string.NoReviewForCandidate} />
       </span>
       <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <span class="over-underline content-accent-color" on:click={createApp}>
+      <span class="over-underline content-color" on:click={createApp}>
         <Label label={recruit.string.CreateAnReview} />
       </span>
     </div>

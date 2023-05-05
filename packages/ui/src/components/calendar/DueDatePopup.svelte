@@ -69,7 +69,7 @@
     }
 
     &.mIconContainerCritical {
-      color: var(--error-color);
+      color: var(--theme-error-color);
     }
   }
 

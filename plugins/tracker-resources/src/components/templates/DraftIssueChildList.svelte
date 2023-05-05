@@ -241,13 +241,13 @@
       position: absolute;
       content: '';
       inset: 0;
-      border-top: 1px solid var(--caret-color);
+      border-top: 1px solid var(--theme-caret-color);
     }
     &.is-dragged-over-down::before {
       position: absolute;
       content: '';
       inset: 0;
-      border-bottom: 1px solid var(--caret-color);
+      border-bottom: 1px solid var(--theme-caret-color);
     }
   }
 </style>

@@ -66,7 +66,7 @@
           id: s._id,
           label: s.name,
           icon: s._class === task.class.WonState ? Won : Lost,
-          color: s._class === task.class.WonState ? 'var(--won-color)' : 'var(--lost-color)'
+          color: s._class === task.class.WonState ? 'var(--theme-won-color)' : 'var(--theme-lost-color)'
         }
       })
       itemsDS.unshift({ id: 'NoDoneState', labelIntl: task.string.NoDoneState })

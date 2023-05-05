@@ -25,7 +25,7 @@
   export let spaceQuery: DocumentQuery<Space> | undefined = {}
   export let spaceOptions: FindOptions<Space> | undefined = {}
   export let create: ObjectCreate | undefined = undefined
-  export let size: ButtonSize = 'large'
+  export let size: ButtonSize = 'small'
   export let allowDeselect = false
   export let component: AnySvelteComponent | undefined = undefined
   export let componentProps: any | undefined = undefined

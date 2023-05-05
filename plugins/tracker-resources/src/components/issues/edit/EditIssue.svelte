@@ -24,15 +24,17 @@
   import {
     Button,
     EditBox,
+    FocusHandler,
     IconMixin,
     IconMoreH,
     Label,
     Spinner,
+    createFocusManager,
     getCurrentResolvedLocation,
     navigate,
     showPopup
   } from '@hcengineering/ui'
-  import { ContextMenu, DocNavLink, UpDownNavigator } from '@hcengineering/view-resources'
+  import { ActionContext, ContextMenu, DocNavLink, UpDownNavigator } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import { generateIssueShortLink, getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
@@ -139,7 +141,22 @@
   onMount(() => {
     dispatch('open', { ignoreKeys: ['comments', 'name', 'description', 'number'] })
   })
+
+  const manager = createFocusManager()
+  export function canClose (): boolean {
+    if (descriptionBox.isFocused()) {
+      return false
+    }
+    return true
+  }
 </script>
+
+<FocusHandler {manager} />
+<ActionContext
+  context={{
+    mode: 'editor'
+  }}
+/>
 
 {#if issue !== undefined}
   <Panel
@@ -181,10 +198,17 @@
         {/if}
       </div>
     {/if}
-    <EditBox bind:value={title} placeholder={tracker.string.IssueTitlePlaceholder} kind="large-style" on:blur={save} />
+    <EditBox
+      focusIndex={1}
+      bind:value={title}
+      placeholder={tracker.string.IssueTitlePlaceholder}
+      kind="large-style"
+      on:blur={save}
+    />
     <div class="w-full mt-6">
       {#key issue._id}
         <AttachmentStyledBox
+          focusIndex={30}
           bind:this={descriptionBox}
           useAttachmentPreview={true}
           objectId={_id}
@@ -207,7 +231,12 @@
     <div class="mt-6">
       {#key issue._id && currentProject !== undefined}
         {#if currentProject !== undefined}
-          <SubIssues {issue} shouldSaveDraft projects={new Map([[currentProject?._id, currentProject]])} />
+          <SubIssues
+            focusIndex={50}
+            {issue}
+            shouldSaveDraft
+            projects={new Map([[currentProject?._id, currentProject]])}
+          />
         {/if}
       {/key}
     </div>

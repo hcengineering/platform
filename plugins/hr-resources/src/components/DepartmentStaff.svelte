@@ -125,10 +125,10 @@
     </Scroller>
   {:else}
     <div class="antiSection-empty solid flex-col-center mt-3">
-      <span class="text-sm dark-color">
+      <span class="text-sm content-dark-color">
         <Label label={hr.string.NoMembers} />
       </span>
-      <span class="text-sm content-accent-color over-underline" on:click={add}>
+      <span class="text-sm content-color over-underline" on:click={add}>
         <Label label={hr.string.AddMember} />
       </span>
     </div>

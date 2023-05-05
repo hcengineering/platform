@@ -17,7 +17,9 @@
   import presentation, { getClient } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,
+    EmojiPopup,
     getEventPositionElement,
+    IconEmoji,
     IconSize,
     Scroller,
     SelectPopup,
@@ -27,13 +29,11 @@
   import { createEventDispatcher } from 'svelte'
   import textEditorPlugin from '../plugin'
   import { FORMAT_MODES, FormatMode, RefInputAction, RefInputActionItem, TextEditorHandler } from '../types'
-  import EmojiPopup from './EmojiPopup.svelte'
   import { headingLevels, mInsertTable } from './extensions'
   import Attach from './icons/Attach.svelte'
   import Bold from './icons/Bold.svelte'
   import Code from './icons/Code.svelte'
   import CodeBlock from './icons/CodeBlock.svelte'
-  import Emoji from './icons/Emoji.svelte'
   import Header from './icons/Header.svelte'
   import IconTable from './icons/IconTable.svelte'
   import Italic from './icons/Italic.svelte'
@@ -138,7 +138,7 @@
     },
     {
       label: textEditorPlugin.string.Emoji,
-      icon: Emoji,
+      icon: IconEmoji,
       action: (element) => {
         showPopup(
           EmojiPopup,

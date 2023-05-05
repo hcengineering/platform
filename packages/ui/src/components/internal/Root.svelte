@@ -125,7 +125,7 @@
           >
             <svelte:component
               this={isMobile ? Phone : Computer}
-              fill={alwaysMobile ? 'var(--won-color)' : 'var(--content-color)'}
+              fill={alwaysMobile ? 'var(--theme-won-color)' : 'var(--content-color)'}
               size={'small'}
             />
           </div>

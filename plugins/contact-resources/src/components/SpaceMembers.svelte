@@ -106,7 +106,7 @@
       <div class="item fs-title">
         <div class="flex-row-center" on:click={openAddMembersPopup}>
           <div class="flex-center ml-1 mr-1"><IconAdd size={'large'} /></div>
-          <div class="flex-col ml-2 min-w-0 content-accent-color">
+          <div class="flex-col ml-2 min-w-0 content-color">
             <Label label={presentation.string.Add} />
           </div>
         </div>

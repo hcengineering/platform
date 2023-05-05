@@ -80,7 +80,7 @@
       <div class="pointer-events-none"><DoneStatePresenter value={state} showTitle /></div>
     {:else}
       <div class="flex-row-center pointer-events-none">
-        <div class="dark-color mr-2"><Unknown size={'small'} /></div>
+        <div class="content-dark-color mr-2"><Unknown size={'small'} /></div>
         <span class="overflow-label"><Label label={task.string.NoDoneState} /></span>
       </div>
     {/if}

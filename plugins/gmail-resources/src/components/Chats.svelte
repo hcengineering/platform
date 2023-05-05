@@ -132,7 +132,7 @@
     {:else}
       <div class="flex-col-center justify-center h-full">
         <Icon icon={IconInbox} size={'full'} />
-        <div class="mt-4 fs-bold dark-color"><Label label={plugin.string.Incoming} /></div>
+        <div class="mt-4 fs-bold content-dark-color"><Label label={plugin.string.Incoming} /></div>
       </div>
     {/if}
   </div>

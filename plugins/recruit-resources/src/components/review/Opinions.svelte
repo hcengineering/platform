@@ -45,13 +45,13 @@
     />
   {:else}
     <div class="antiSection-empty solid flex-col-center mt-3">
-      <div class="content-accent-color">
+      <div class="content-color">
         <FileDuo size={'large'} />
       </div>
-      <div class="text-sm dark-color mt-2">
+      <div class="text-sm content-dark-color mt-2">
         <Label label={recruit.string.NoReviewForCandidate} />
       </div>
-      <span class="text-sm content-accent-color over-underline" on:click={createApp}>
+      <span class="text-sm content-color over-underline" on:click={createApp}>
         <Label label={recruit.string.CreateAnReview} />
       </span>
     </div>

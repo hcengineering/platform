@@ -90,6 +90,7 @@
 <div
   bind:this={elem}
   class="listGrid antiList__row row gap-2 flex-grow"
+  class:compactMode
   class:checking={checked}
   class:mListGridSelected={selected}
   class:last
@@ -154,25 +155,27 @@
         </div>
       {/if}
     {:else if (!groupByKey || listProps?.excludeByKey !== groupByKey) && !listProps?.optional}
-      {#if listProps?.fixed}
-        <FixedColumn key={`list_item_${attributeModel.props?.listProps.key}`} justify={listProps.fixed}>
+      {#if !(compactMode && listProps?.compression)}
+        {#if listProps?.fixed}
+          <FixedColumn key={`list_item_${attributeModel.props?.listProps.key}`} justify={listProps.fixed}>
+            <svelte:component
+              this={attributeModel.presenter}
+              value={getObjectValue(attributeModel.key, docObject) ?? ''}
+              kind={'list'}
+              onChange={getOnChange(docObject, attributeModel)}
+              {...joinProps(attributeModel, docObject, props)}
+            />
+          </FixedColumn>
+        {:else}
           <svelte:component
             this={attributeModel.presenter}
             value={getObjectValue(attributeModel.key, docObject) ?? ''}
-            kind={'list'}
             onChange={getOnChange(docObject, attributeModel)}
+            kind={'list'}
+            compression={listProps?.compression && i !== noCompressed}
             {...joinProps(attributeModel, docObject, props)}
           />
-        </FixedColumn>
-      {:else}
-        <svelte:component
-          this={attributeModel.presenter}
-          value={getObjectValue(attributeModel.key, docObject) ?? ''}
-          onChange={getOnChange(docObject, attributeModel)}
-          kind={'list'}
-          compression={listProps?.compression && i !== noCompressed}
-          {...joinProps(attributeModel, docObject, props)}
-        />
+        {/if}
       {/if}
     {/if}
   {/each}
@@ -183,13 +186,14 @@
       <IconCircles />
     </div>
     <div class="hidden-panel" tabindex="-1">
-      <div class="header">
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <div class="header" on:click={(ev) => ev.currentTarget.blur()}>
         <IconCircles />
         <div class="space" />
         <IconCircles />
       </div>
       <div class="scroll-box gap-2">
-        {#each model.filter((m) => m.props?.listProps?.optional) as attributeModel}
+        {#each model.filter((m) => m.props?.listProps?.optional || m.props?.listProps?.compression) as attributeModel}
           {@const listProps = attributeModel.props?.listProps}
           {@const value = getObjectValue(attributeModel.key, docObject)}
           {#if listProps?.excludeByKey !== groupByKey && value !== undefined}
@@ -232,9 +236,12 @@
     width: 100%;
     height: 2.75rem;
     min-height: 2.75rem;
-    color: var(--caption-color);
+    color: var(--theme-caption-color);
     background-color: var(--theme-list-row-color);
 
+    &.compactMode {
+      padding: 0 1.125rem 0 0.25rem;
+    }
     &.mListGridSelected {
       background-color: var(--highlight-hover);
     }
@@ -288,7 +295,7 @@
       overflow: hidden;
       right: 0;
       width: 80%;
-      background-color: var(--accent-bg-color);
+      background-color: var(--theme-comp-header-color);
       opacity: 0;
       pointer-events: none;
       z-index: 2;
@@ -307,7 +314,8 @@
         opacity: 0.25;
       }
       .scroll-box {
-        overflow: auto visible;
+        overflow-x: auto;
+        overflow-y: visible;
         display: flex;
         align-items: center;
         margin: 0.125rem 0.25rem 0;
@@ -323,7 +331,7 @@
       flex-direction: column;
       justify-content: center;
       padding: 0 0.125rem;
-      right: 2.5rem;
+      right: 0.125rem;
       width: 0.75rem;
       border: 1px solid transparent;
       border-radius: 0.25rem;

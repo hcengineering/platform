@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 import { Client, Doc, Ref } from '@hcengineering/core'
-import type { IntlString, Metadata, Resource } from '@hcengineering/platform'
+import type { Asset, IntlString, Metadata, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { IssueDraft } from '@hcengineering/tracker'
 import { AnyComponent, Location } from '@hcengineering/ui'
@@ -309,7 +309,12 @@ export default mergeIds(trackerId, tracker, {
     HourLabel: '' as IntlString,
     Saved: '' as IntlString,
     CreatedIssue: '' as IntlString,
-    CreatedSubIssue: '' as IntlString
+    CreatedSubIssue: '' as IntlString,
+
+    ProjectColor: '' as IntlString,
+
+    ProjectIconCategory: '' as IntlString,
+    ProjectEmojiiCategory: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,
@@ -374,7 +379,8 @@ export default mergeIds(trackerId, tracker, {
 
     IssueTemplates: '' as AnyComponent,
     IssueTemplatePresenter: '' as AnyComponent,
-    SubIssuesSelector: '' as AnyComponent
+    SubIssuesSelector: '' as AnyComponent,
+    IconWithEmojii: '' as Asset
   },
   metadata: {
     CreateIssueDraft: '' as Metadata<IssueDraft>

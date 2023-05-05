@@ -51,7 +51,7 @@
       </span>
       {#if headerRemoval}
         <div in:fade|local={{ duration: 150 }} class="antiSection-header__header flex-between">
-          <span class="dark-color"><Label label={viewplg.string.NoGrouping} /></span>
+          <span class="content-dark-color"><Label label={viewplg.string.NoGrouping} /></span>
           <div class="buttons-group font-normal text-normal">
             {#if extraHeaders}
               {#each extraHeaders as extra}

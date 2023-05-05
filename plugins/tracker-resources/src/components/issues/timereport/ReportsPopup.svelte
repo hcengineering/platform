@@ -62,7 +62,7 @@
   on:changeContent
 >
   <svelte:fragment slot="header">
-    <IssuePresenter value={issue} disableClick />
+    <IssuePresenter value={issue} disabled />
   </svelte:fragment>
   <div class="h-50">
     <Scroller fade={tableSP}>

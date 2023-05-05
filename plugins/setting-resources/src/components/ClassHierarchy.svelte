@@ -71,11 +71,11 @@
         <div class="mr-2 flex">
           <Icon icon={clazz.icon} size={'medium'} />
           {#if clazz.kind === ClassifierKind.MIXIN && hierarchy.hasMixin(clazz, settings.mixin.UserMixin)}
-            <Icon icon={IconAdd} size={'x-small'} />
+            <Icon icon={IconAdd} size={'x-small'} fill={'var(--theme-dark-color)'} />
           {/if}
         </div>
       {/if}
-      <span class="overflow-label content-accent-color"><Label label={clazz.label} /></span>
+      <span class="overflow-label caption-color"><Label label={clazz.label} /></span>
     </div>
   </div>
   {#if desc.length}

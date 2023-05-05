@@ -14,16 +14,16 @@
 -->
 <script lang="ts">
   import { afterUpdate, createEventDispatcher } from 'svelte'
+  import { deviceOptionsStore as deviceInfo } from '../../'
   import { resizeObserver } from '../resize'
   import Button from './Button.svelte'
+  import Scroller from './Scroller.svelte'
   import IconClose from './icons/Close.svelte'
   import IconDetails from './icons/Details.svelte'
+  import IconMaxWidth from './icons/MaxWidth.svelte'
+  import IconMinWidth from './icons/MinWidth.svelte'
   import IconScale from './icons/Scale.svelte'
   import IconScaleFull from './icons/ScaleFull.svelte'
-  import IconMinWidth from './icons/MinWidth.svelte'
-  import IconMaxWidth from './icons/MaxWidth.svelte'
-  import Scroller from './Scroller.svelte'
-  import { deviceOptionsStore as deviceInfo } from '../../'
 
   export let innerWidth: number = 0
   export let panelWidth: number = 0
@@ -93,6 +93,7 @@
     <div class="popupPanel-title {twoRows && !withoutTitle ? 'row-top' : 'row'}">
       {#if allowClose && !embedded}
         <Button
+          focusIndex={10000}
           icon={IconClose}
           kind={'transparent'}
           size={'medium'}
@@ -114,6 +115,7 @@
         {/if}
         {#if $$slots.aside && isAside}
           <Button
+            focusIndex={10008}
             icon={IconDetails}
             kind={'transparent'}
             size={'medium'}
@@ -125,6 +127,7 @@
         {/if}
         {#if useMaxWidth !== undefined}
           <Button
+            focusIndex={10009}
             icon={useMaxWidth ? IconMaxWidth : IconMinWidth}
             kind={'transparent'}
             size={'medium'}
@@ -137,6 +140,7 @@
         {/if}
         {#if isFullSize}
           <Button
+            focusIndex={100010}
             icon={fullSize ? IconScale : IconScaleFull}
             kind={'transparent'}
             size={'medium'}

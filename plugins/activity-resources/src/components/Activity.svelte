@@ -29,6 +29,7 @@
   export let showCommenInput: boolean = true
   export let transparent: boolean = false
   export let shouldScroll: boolean = false
+  export let focusIndex: number = -1
 
   getResource(notification.function.GetNotificationClient).then((res) => {
     updatesStore = res().docUpdatesStore
@@ -134,7 +135,7 @@
 </div>
 {#if showCommenInput}
   <div class="ref-input">
-    <Component is={chunter.component.CommentInput} props={{ object }} />
+    <Component is={chunter.component.CommentInput} props={{ object, focusIndex }} />
   </div>
 {/if}
 

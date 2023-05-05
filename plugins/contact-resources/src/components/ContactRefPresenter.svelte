@@ -21,7 +21,7 @@
   import ContactPresenter from './ContactPresenter.svelte'
 
   export let value: Ref<Contact>
-  export let isInteractive = true
+  export let disabled = false
 
   let doc: Contact | undefined
   const query = createQuery()
@@ -29,5 +29,5 @@
 </script>
 
 {#if doc}
-  <ContactPresenter value={doc} {isInteractive} />
+  <ContactPresenter value={doc} {disabled} />
 {/if}

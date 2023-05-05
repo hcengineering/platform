@@ -49,6 +49,13 @@
     "DD": "ДД",
     "MM": "ММ",
     "YYYY": "ГГГГ",
-    "HH": "ЧЧ"
+    "HH": "ЧЧ",
+    "GettingWorkDone": "Для работы",
+    "Smileys": "Смайлики",
+    "Nature": "Природа",
+    "Symbols": "Символы",
+    "TravelAndPlaces": "Путешествия & Места",
+    "Objects": "Объекты",
+    "Food": "Еда"
   }
 }

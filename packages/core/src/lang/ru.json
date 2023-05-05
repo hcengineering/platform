@@ -3,6 +3,7 @@
     "Id": "Id",
     "Space": "Пространство",
     "Modified": "Изменено",
+    "ModifiedDate": "Дата изменения",
     "ModifiedBy": "Изменен",
     "Class": "Класс",
     "AttachedTo": "Прикреплен к",
@@ -30,6 +31,7 @@
     "System": "Система",
     "CreatedBy": "Создан",
     "Status": "Статус",
-    "StatusCategory": "Категория статуса"
+    "StatusCategory": "Категория статуса",
+    "Account": "Аккаунт"
   }
 }

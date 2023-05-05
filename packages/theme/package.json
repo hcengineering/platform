@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/theme",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "main": "src/index.ts",
   "svelte": "3.55.1",
   "author": "Anticrm Platform Contributors",
@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "svelte": "3.55.1",
-    "@hcengineering/platform": "^0.6.8"
+    "@hcengineering/platform": "^0.6.9"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {

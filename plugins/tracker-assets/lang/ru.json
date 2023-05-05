@@ -284,14 +284,17 @@
 
     "SevenHoursLength": "Семь Часов",
     "EightHoursLength": "Восемь Часов",
-    "CreatedOn": "Создана",
+    "CreatedDate": "Дата создания",
     "HourLabel": "ч",
     "Saved": "Сохранено...",
     "CreatedIssue": "Создал(а) задачу",
     "CreatedSubIssue": "Создал(а) подзадачу",
     "ChangeStatus": "Изменение статуса",
     "ConfigLabel": "Трекер",
-    "ConfigDescription": "Расширение по управлению задачами, чтобы все было в срок."
+    "ConfigDescription": "Расширение по управлению задачами, чтобы все было в срок.",
+    "ProjectColor": "Выберете цвет проекта",
+    "ProjectIconCategory": "Иконка",
+    "ProjectEmojiiCategory": "Эмодзи"
   },
   "status": {}
 }

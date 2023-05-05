@@ -15,12 +15,13 @@
 <script lang="ts">
   import type { Doc, Ref } from '@hcengineering/core'
   import type { Asset, IntlString } from '@hcengineering/platform'
-  import type { Action } from '@hcengineering/ui'
+  import type { Action, AnySvelteComponent } from '@hcengineering/ui'
   import { ActionIcon, Icon, IconMoreH, Label, Menu, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let _id: Ref<Doc> | undefined = undefined
-  export let icon: Asset | undefined = undefined
+  export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let iconProps: Record<string, any> | undefined = undefined
   export let label: IntlString | undefined = undefined
   export let title: string | undefined = undefined
   export let notifications = 0
@@ -66,7 +67,7 @@
           class:indent-4={indent === 'ml-4'}
           class:indent-8={indent === 'ml-8'}
         >
-          <Icon {icon} size={'small'} />
+          <Icon {icon} {iconProps} size={'small'} />
         </div>
       {/if}
       <span class="overflow-label">

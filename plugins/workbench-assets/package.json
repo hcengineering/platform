@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/workbench-assets",
-  "version": "0.6.2",
+  "version": "0.6.4",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "template": "@hcengineering/assets-package",
@@ -30,8 +30,8 @@
     "@types/node": "~16.11.12"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/workbench": "^0.6.4"
+    "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/workbench": "^0.6.6"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {

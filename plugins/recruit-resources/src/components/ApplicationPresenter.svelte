@@ -22,14 +22,14 @@
 
   export let value: Applicant
   export let inline: boolean = false
-  export let disableClick = false
+  export let disabled = false
 
   const client = getClient()
   const shortLabel = value && client.getHierarchy().getClass(value._class).shortLabel
 </script>
 
 {#if value && shortLabel}
-  <DocNavLink object={value} {inline} {disableClick}>
+  <DocNavLink object={value} {inline} {disabled}>
     <div class="flex-presenter" class:inline-presenter={inline}>
       {#if !inline}
         <div class="icon">

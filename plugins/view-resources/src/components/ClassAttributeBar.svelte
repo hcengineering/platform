@@ -67,7 +67,7 @@
         <Label {label} />
       </span>
       <div class="icon-arrow">
-        <svg fill="var(--dark-color)" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
+        <svg fill="var(--theme-dark-color)" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
           <path d="M0,0L6,3L0,6Z" />
         </svg>
       </div>
@@ -157,7 +157,6 @@
     }
   }
   .collapsed-container {
-    overflow: hidden;
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
@@ -165,6 +164,7 @@
     transition: max-height 0.2s var(--timing-main);
 
     &.collapsed {
+      overflow: hidden;
       max-height: 0;
     }
   }

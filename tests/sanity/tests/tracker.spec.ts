@@ -154,7 +154,7 @@ test('report-time-from-main-view', async ({ page }) => {
   await page.click('text="Issues"')
   await page.click('button:has-text("View")')
   await page.click('.ordering >> nth=0')
-  await page.click('text="Modified"')
+  await page.click('text="Modified date"')
   await page.keyboard.press('Escape')
 
   const values = [0.25, 0.5, 0.75, 1]
@@ -201,7 +201,7 @@ test('create-issue-draft', async ({ page }) => {
   const subIssueName = 'Sub issue draft'
 
   // Click text=Issues >> nth=1
-  await page.locator('text=Issues').nth(1).click()
+  await page.locator('text=Issues').nth(2).click()
   await expect(page).toHaveURL(/.*\/workbench\/sanity-ws\/tracker\/tracker%3Aproject%3ADefaultProject\/issues/)
   await expect(page.locator('#new-issue')).toHaveText('New issue')
   // Click button:has-text("New issue")

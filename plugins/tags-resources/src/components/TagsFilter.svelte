@@ -88,7 +88,7 @@
     const el: HTMLElement = ev.currentTarget as HTMLElement
     el.classList.toggle('show')
   }
-  const show: boolean = false
+  $: show = categories.length <= 1
 
   const getCount = (cat: TagCategory): string => {
     const count = objects.filter((el) => el.category === cat._id).filter((it) => selected.includes(it._id)).length
@@ -111,7 +111,7 @@
     categories = categories
   }
 
-  $: schema = filter.key.attribute.schema ?? '9'
+  $: schema = filter.key.attribute.schema ?? '0'
 
   const dispatch = createEventDispatcher()
   getValues(search)
@@ -131,22 +131,24 @@
       }}
       placeholder={phTraslate}
     />
-    <div class="flex-row-center flex-between flex-grow p-1">
-      <Label label={tags.string.Weight} />
-      <Button
-        label={tagLevelLabel}
-        icon={tagLevelIcon}
-        on:click={(evt) => {
-          showPopup(WeightPopup, { value: level, schema }, getEventPopupPositionElement(evt), (res) => {
-            if (Number.isFinite(res) && res >= 0 && res <= 8) {
-              if (res != null) {
-                level = res
+    {#if schema !== '0'}
+      <div class="flex-row-center flex-between flex-grow p-1">
+        <Label label={tags.string.Weight} />
+        <Button
+          label={tagLevelLabel}
+          icon={tagLevelIcon}
+          on:click={(evt) => {
+            showPopup(WeightPopup, { value: level, schema }, getEventPopupPositionElement(evt), (res) => {
+              if (Number.isFinite(res) && res >= 0 && res <= 8) {
+                if (res != null) {
+                  level = res
+                }
               }
-            }
-          })
-        }}
-      />
-    </div>
+            })
+          }}
+        />
+      </div>
+    {/if}
   </div>
   <div class="scroll">
     <div class="box">
@@ -154,24 +156,32 @@
         <Loading />
       {:else}
         {#each categories as cat}
-          {#if objects.filter((el) => el.category === cat._id).length > 0}
+          {@const values = objects.filter((el) => el.category === cat._id)}
+          {#if values.length > 0}
             <div class="sticky-wrapper">
-              <button class="menu-group__header" class:show={search !== '' || show} on:click={toggleGroup}>
-                <div class="flex-row-center">
-                  <span class="mr-1-5">{cat.label}</span>
-                  <div class="icon">
-                    <svg fill="var(--content-color)" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M0,0L6,3L0,6Z" />
-                    </svg>
+              <button
+                class="menu-group__header"
+                class:show={search !== '' || show}
+                class:hidden={show}
+                on:click={toggleGroup}
+              >
+                {#if categories.length > 1}
+                  <div class="flex-row-center">
+                    <span class="mr-1-5">{cat.label}</span>
+                    <div class="icon">
+                      <svg fill="var(--content-color)" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M0,0L6,3L0,6Z" />
+                      </svg>
+                    </div>
                   </div>
-                </div>
-                <div class="flex-row-center text-xs">
-                  <span class="content-color mr-1">({objects.filter((el) => el.category === cat._id).length})</span>
-                  <span class="counter">{getCount(cat)}</span>
-                </div>
+                  <div class="flex-row-center text-xs">
+                    <span class="content-color mr-1">({values.length})</span>
+                    <span class="counter">{getCount(cat)}</span>
+                  </div>
+                {/if}
               </button>
               <div class="menu-group">
-                {#each objects.filter((el) => el.category === cat._id) as element}
+                {#each values as element}
                   <button
                     class="menu-item"
                     on:click={() => {
@@ -186,7 +196,7 @@
                         <div class="tag" style="background-color: {getPlatformColor(element.color)};" />
                         {element.title}
                       </div>
-                      <div class="dark-color ml-2">
+                      <div class="content-dark-color ml-2">
                         {element.refCount ?? 0}
                       </div>
                     </div>
@@ -216,5 +226,9 @@
   .flex {
     display: flex;
     align-items: center;
+  }
+
+  .hidden {
+    display: none;
   }
 </style>

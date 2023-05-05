@@ -40,7 +40,7 @@
   export let refContainer: HTMLElement | undefined = undefined
   export let shouldSaveDraft: boolean = false
   export let useAttachmentPreview = false
-  export let focusIndex: number | undefined = undefined
+  export let focusIndex: number | undefined = -1
 
   let draftKey = objectId ? `${objectId}_attachments` : undefined
   $: draftKey = objectId ? `${objectId}_attachments` : undefined
@@ -49,6 +49,9 @@
 
   export function focus (): void {
     refInput.focus()
+  }
+  export function isFocused (): boolean {
+    return refInput.isFocused()
   }
   export function isEditable (): boolean {
     return refInput.isEditable()
@@ -345,7 +348,7 @@
   {#if attachments.size && fakeAttach === 'normal'}
     <div class="flex-row-center list scroll-divider-color">
       {#each Array.from(attachments.values()) as attachment}
-        <div class="item flex">
+        <div class="item flex-center flex-no-shrink clear-mins">
           {#if useAttachmentPreview}
             <AttachmentPreview value={attachment} />
           {:else}
@@ -365,6 +368,7 @@
 
 <style lang="scss">
   .list {
+    align-items: stretch;
     margin-top: 0.5rem;
     padding: 0.5rem;
     min-width: 0;
@@ -375,7 +379,11 @@
     border: 1px solid var(--theme-button-border);
     border-radius: 0.25rem;
 
+    .item {
+      min-height: 100%;
+    }
     .item + .item {
+      margin-left: 1rem;
       padding-left: 1rem;
       border-left: 1px solid var(--theme-divider-color);
     }

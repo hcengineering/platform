@@ -25,7 +25,6 @@
     AnyComponent,
     CompAndProps,
     Component,
-    DatePickerPopup,
     Label,
     Location,
     PanelInstance,
@@ -691,7 +690,6 @@
       <ActionContext context={{ mode: 'popup' }} />
     </svelte:fragment>
   </Popup>
-  <DatePickerPopup />
   <BrowserNotificatator />
 {:else if employee}
   <div class="flex-col-center justify-center h-full flex-grow">

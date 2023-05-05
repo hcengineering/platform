@@ -42,7 +42,7 @@
         </span>
       {/if}
       <span class="overflow-label ml-2">
-        <span class="content-accent-color">{title}</span>
+        <span class="caption-color">{title}</span>
         {value.title}
       </span>
     </div>

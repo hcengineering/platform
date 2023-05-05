@@ -27,7 +27,7 @@
   <div class="flex-center caption-color flex-no-shrink"><IconFolder {size} /></div>
   <div class="flex-col ml-2 min-w-0">
     {#if subtitle}<div class="content-dark-color text-sm">{subtitle}</div>{/if}
-    <div class="content-accent-color overflow-label">
+    <div class="caption-color overflow-label">
       {value.name}
       {#if value.archived}
         <Label label={presentation.string.Archived} />
