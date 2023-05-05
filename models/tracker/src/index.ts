@@ -1362,9 +1362,10 @@ export function createModel (builder: Builder): void {
       'dueDate',
       'createOn',
       'modifiedOn',
-      'modifiedBy'
+      'modifiedBy',
+      'space'
     ],
-    ignoreKeys: ['number', 'estimation', 'attachedTo', 'space']
+    ignoreKeys: ['number', 'estimation', 'attachedTo']
   })
 
   builder.mixin(tracker.class.IssueTemplate, core.class.Class, view.mixin.ClassFilters, {
