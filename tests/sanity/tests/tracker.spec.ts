@@ -120,6 +120,18 @@ test('my-issues', async ({ page }) => {
   await expect(page.locator('.antiPanel-component')).not.toContainText(name)
 })
 
+function floorFractionDigits (n: number | string, amount: number): number {
+  return Number(Number(n).toFixed(amount))
+}
+
+function toTime (value: number): string {
+  if (value > 0 && value < 1) {
+    return `${floorFractionDigits(value * 8, 1)}h`
+  } else {
+    return `${floorFractionDigits(value, 1)}d`
+  }
+}
+
 test('report-time-from-issue-card', async ({ page }) => {
   await navigate(page)
   const assignee = 'Chen Rosamund'
@@ -144,7 +156,7 @@ test('report-time-from-issue-card', async ({ page }) => {
     await page.click('button:has-text("Create")')
     await page.click('#card-close')
 
-    await expect(page.locator('#ReportedTimeEditor')).toContainText(`${time}d`)
+    await expect(page.locator('#ReportedTimeEditor')).toContainText(toTime(time))
   }
 })
 
@@ -190,7 +202,7 @@ test('report-time-from-main-view', async ({ page }) => {
     await page.click('button:has-text("Create")')
     await page.click('#card-close')
 
-    await expect(page.locator('.estimation-container >> span').first()).toContainText(`${Number(count.toFixed(2))}d`)
+    await expect(page.locator('.estimation-container >> span').first()).toContainText(toTime(count))
   }
 })
 

@@ -20,8 +20,10 @@
   import { statusStore } from '@hcengineering/presentation'
   import EstimationProgressCircle from '../issues/timereport/EstimationProgressCircle.svelte'
   import TimePresenter from '../issues/timereport/TimePresenter.svelte'
+  import { FixedColumn } from '@hcengineering/view-resources'
   export let docs: Issue[] | undefined = undefined
   export let capacity: number | undefined = undefined
+  export let category: string | undefined = undefined
 
   $: ids = new Set(docs?.map((it) => it._id) ?? [])
 
@@ -60,7 +62,7 @@
       .reduce((it, cur) => {
         return it + cur
       }, 0),
-    3
+    1
   )
   $: totalReported = floorFractionDigits(
     (noParents ?? [{ reportedTime: 0, childInfo: [] } as unknown as Issue])
@@ -76,22 +78,24 @@
       .reduce((it, cur) => {
         return it + cur
       }, 0),
-    3
+    1
   )
 </script>
 
-{#if docs}
-  <!-- <Label label={tracker.string.SprintDay} value={}/> -->
-  <div class="flex-row-center flex-no-shrink h-6" class:showWarning={totalEstimation > (capacity ?? 0)}>
-    <EstimationProgressCircle value={totalReported} max={totalEstimation} />
-    <div class="w-2 min-w-2" />
-    {#if totalReported > 0}
-      <TimePresenter value={totalReported} />
-      /
-    {/if}
-    <TimePresenter value={totalEstimation} />
-    {#if capacity}
-      <Label label={tracker.string.CapacityValue} params={{ value: capacity }} />
-    {/if}
-  </div>
+{#if docs && (category === 'sprint' || category === 'assignee')}
+  <FixedColumn key="estimation-editor">
+    <!-- <Label label={tracker.string.SprintDay} value={}/> -->
+    <div class="flex-row-center flex-no-shrink h-6" class:showWarning={totalEstimation > (capacity ?? 0)}>
+      <EstimationProgressCircle value={totalReported} max={totalEstimation} />
+      <div class="w-2 min-w-2" />
+      {#if totalReported > 0}
+        <TimePresenter value={totalReported} />
+        /
+      {/if}
+      <TimePresenter value={totalEstimation} />
+      {#if capacity}
+        <Label label={tracker.string.CapacityValue} params={{ value: capacity }} />
+      {/if}
+    </div>
+  </FixedColumn>
 {/if}
