@@ -67,6 +67,14 @@
     "ShowPreviewOnClick": "Please click to show document index preview...",
     "Shown": "Shown",
     "Total": "Total",
-    "ShowEmptyGroups": "Show empty groups"
+    "ShowEmptyGroups": "Show empty groups",
+    "Overdue": "Overdue",
+    "Today": "Today",
+    "ThisWeek": "This week",
+    "NextWeek": "Next week",
+    "ThisMonth": "This month",
+    "NextMonth": "Next month",
+    "NotSpecified": "Not specified",
+    "CustomDate": "Custom date"
   }
 }

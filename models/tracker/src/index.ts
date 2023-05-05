@@ -914,10 +914,6 @@ export function createModel (builder: Builder): void {
     component: view.component.ValueFilter
   })
 
-  builder.mixin(core.class.TypeDate, core.class.Class, view.mixin.AttributeFilter, {
-    component: view.component.DateFilter
-  })
-
   builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AttributePresenter, {
     presenter: tracker.component.PriorityRefPresenter
   })

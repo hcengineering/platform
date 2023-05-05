@@ -13,7 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DateRangeMode } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
   import ui from '../../plugin'
@@ -23,60 +22,100 @@
   import IconClose from '../icons/Close.svelte'
   import DateInputBox from './DateInputBox.svelte'
   import MonthSquare from './MonthSquare.svelte'
-  import Shifts from './Shifts.svelte'
 
-  export let currentDate: Date | null
-  export let withTime: boolean = false
+  export let startDate: Date | null
+  export let endDate: Date | null
+  export let label: IntlString
   export let mondayStart: boolean = true
-  export let label = currentDate != null ? ui.string.EditDueDate : ui.string.AddDueDate
-  export let detail: IntlString | undefined = undefined
-  export let noShift: boolean = false
 
   const dispatch = createEventDispatcher()
 
   const today: Date = new Date(Date.now())
 
-  let viewDate: Date = currentDate ?? today
-  let viewDateSec: Date
+  let viewDate: Date = startDate ?? today
   let dateInput: DateInputBox
+  let endDateInput: DateInputBox
 
-  const saveDate = (withTime: boolean = false): void => {
-    if (currentDate) {
-      if (!withTime) {
-        currentDate.setHours(0)
-        currentDate.setMinutes(0)
+  const saveDate = (): void => {
+    if (startDate) {
+      startDate.setHours(0, 0, 0, 0)
+      if (endDate) {
+        endDate.setHours(0, 0, 0, 0)
+        if (endDate < startDate) {
+          const swap = endDate
+          endDate = startDate
+          startDate = swap
+        }
       }
-      currentDate.setSeconds(0, 0)
-      viewDate = currentDate = currentDate
-      dispatch('update', currentDate)
+      viewDate = startDate
+      dispatch('update', {
+        startDate,
+        endDate
+      })
+    } else if (endDate) {
+      startDate = endDate
+      startDate.setHours(0, 0, 0, 0)
+      endDate = null
+      viewDate = startDate
+      dispatch('update', {
+        startDate,
+        endDate
+      })
     }
+    viewDateSec = changeMonth(startDate, endDate)
   }
-  const closeDP = (withTime: boolean = false): void => {
-    if (!dateInput.isNull(withTime)) saveDate(withTime)
+  const closeDP = (): void => {
+    if (!dateInput.isNull(false)) saveDate()
     else {
-      currentDate = null
-      dispatch('update', null)
+      startDate = null
+      endDate = null
+      dispatch('update', {
+        startDate,
+        endDate
+      })
     }
-    dispatch('close', currentDate)
+    dispatch('close', {
+      startDate,
+      endDate
+    })
   }
 
   const updateDate = (date: Date | null): void => {
     if (date) {
-      currentDate = date
-      closeDP()
+      if (startDate == null) {
+        startDate = date
+      } else if (endDate == null) {
+        if (date < startDate) {
+          endDate = startDate
+          startDate = date
+        } else {
+          endDate = date
+        }
+      } else {
+        startDate = date
+        endDate = null
+      }
     }
   }
   const navigateMonth = (result: any): void => {
     if (result) {
       viewDate.setMonth(viewDate.getMonth() + result)
       viewDate = viewDate
+      viewDateSec.setMonth(viewDateSec.getMonth() + result)
+      viewDateSec = viewDateSec
     }
   }
-  const changeMonth = (date: Date): Date => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 1)
+  const changeMonth = (date: Date | null, endDate: Date | null): Date => {
+    if (date == null) {
+      date = new Date()
+    }
+    if (endDate == null || (date.getMonth() === endDate.getMonth() && date.getFullYear() === endDate.getFullYear())) {
+      return new Date(date.getFullYear(), date.getMonth() + 1, 1)
+    }
+    return new Date(endDate)
   }
 
-  $: if (viewDate) viewDateSec = changeMonth(viewDate)
+  let viewDateSec: Date = changeMonth(startDate, endDate)
 </script>
 
 <div class="date-popup-container">
@@ -86,30 +125,24 @@
       icon={IconClose}
       size={'small'}
       action={() => {
-        dispatch('close')
+        dispatch('close', {})
       }}
     />
   </div>
   <div class="content">
-    <div class="label">
-      <span class="bold"><Label {label} /></span>
-      {#if detail}
-        <span class="divider">-</span>
-        <Label label={detail} />
-      {/if}
+    <div class="flex-between">
+      <div class="w-60">
+        <DateInputBox bind:this={dateInput} bind:currentDate={startDate} on:close={closeDP} on:save={saveDate} />
+      </div>
+      <div class="w-60">
+        <DateInputBox bind:this={endDateInput} bind:currentDate={endDate} on:close={closeDP} on:save={saveDate} />
+      </div>
     </div>
-
-    <DateInputBox
-      bind:this={dateInput}
-      bind:currentDate
-      {withTime}
-      on:close={() => closeDP(withTime)}
-      on:save={() => saveDate(withTime)}
-    />
 
     <div class="month-group">
       <MonthSquare
-        bind:currentDate
+        bind:currentDate={startDate}
+        selectedTo={endDate}
         {viewDate}
         {mondayStart}
         viewUpdate={false}
@@ -117,7 +150,8 @@
         on:update={(result) => updateDate(result.detail)}
       />
       <MonthSquare
-        bind:currentDate
+        bind:currentDate={endDate}
+        selectedTo={startDate}
         viewDate={viewDateSec}
         {mondayStart}
         viewUpdate={false}
@@ -127,24 +161,9 @@
     </div>
   </div>
   <div class="footer">
-    <Button
-      kind={'primary'}
-      label={ui.string.Save}
-      size={'x-large'}
-      width={'100%'}
-      on:click={() => closeDP(withTime)}
-    />
+    <Button kind={'primary'} label={ui.string.Save} size={'x-large'} width={'100%'} on:click={() => closeDP()} />
   </div>
 </div>
-<Shifts
-  {currentDate}
-  on:change={(evt) => {
-    currentDate = evt.detail
-    closeDP(withTime)
-  }}
-  shift={!noShift}
-  mode={withTime ? DateRangeMode.DATETIME : DateRangeMode.DATE}
-/>
 
 <style lang="scss">
   .date-popup-container {
@@ -174,23 +193,6 @@
       flex-direction: column;
       padding: 1.5rem 2rem;
       min-height: 0;
-
-      .label {
-        padding-left: 2px;
-        margin-bottom: 0.25rem;
-        font-size: 0.8125rem;
-        color: var(--theme-content-color);
-
-        .bold {
-          font-weight: 500;
-          color: var(--theme-caption-color);
-        }
-        .divider {
-          margin: 0 0.25rem;
-          line-height: 1.4375rem;
-          color: var(--theme-darker-color);
-        }
-      }
 
       .month-group {
         display: flex;

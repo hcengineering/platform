@@ -22,6 +22,7 @@
   import { Filter, FilterMode } from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import view from '../../plugin'
+  import ModeSelector from './ModeSelector.svelte'
 
   export let filter: Filter
 
@@ -89,6 +90,22 @@
 
   $: modeValuePromise = getMode(filter.mode)
   $: nestedModeValuePromise = filter.nested ? getMode(filter.nested.mode) : undefined
+
+  function clickHandler (e: MouseEvent, nested: boolean) {
+    const curr = nested && filter.nested ? filter.nested : filter
+    if (curr.modes.length <= 2) {
+      toggle()
+    } else {
+      showPopup(ModeSelector, { filter: curr }, eventToHTMLElement(e), (res) => {
+        if (nested && filter.nested) {
+          filter.nested.mode = res
+        } else {
+          filter.mode = res
+        }
+        dispatch('change')
+      })
+    }
+  }
 </script>
 
 <div class="filter-section">
@@ -102,8 +119,8 @@
   </button>
   <button
     class="filter-button"
-    on:click={() => {
-      toggle()
+    on:click={(e) => {
+      clickHandler(e, false)
     }}
   >
     {#await modeValuePromise then mode}
