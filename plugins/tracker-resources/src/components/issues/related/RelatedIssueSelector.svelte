@@ -15,22 +15,21 @@
 <script lang="ts">
   import { Doc, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
+  import { Issue, Project } from '@hcengineering/tracker'
   import {
     Button,
     ButtonKind,
     ButtonSize,
     closeTooltip,
-    getPlatformColor,
     ProgressCircle,
     SelectPopup,
     showPanel,
     showPopup
   } from '@hcengineering/ui'
-  import { getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
   import { subIssueListProvider } from '../../../utils'
   import { statusStore } from '@hcengineering/presentation'
+  import RelatedIssuePresenter from './RelatedIssuePresenter.svelte'
 
   export let object: WithLookup<Doc & { related: number }> | undefined
   export let value: WithLookup<Doc & { related: number }> | undefined
@@ -77,17 +76,6 @@
   }
   $: hasSubIssues = (subIssues?.length ?? 0) > 0
 
-  function getIssueStatusIcon (issue: Issue, statuses: Map<Ref<WithLookup<IssueStatus>>, WithLookup<IssueStatus>>) {
-    const status = statuses?.get(issue.status)
-    const category = status?.$lookup?.category
-    const color = status?.color ?? category?.color
-
-    return {
-      ...(category?.icon !== undefined ? { icon: category.icon } : {}),
-      ...(color !== undefined ? { iconColor: getPlatformColor(color) } : {})
-    }
-  }
-
   function openIssue (target: Ref<Issue>) {
     subIssueListProvider(subIssues, target)
     showPanel(tracker.component.EditIssue, target, tracker.class.Issue, 'content')
@@ -100,9 +88,12 @@
         SelectPopup,
         {
           value: subIssues.map((iss) => {
-            const text = currentProject ? `${getIssueId(currentProject, iss)} ${iss.title}` : iss.title
-
-            return { id: iss._id, text, isSelected: false, ...getIssueStatusIcon(iss, $statusStore.byId) }
+            return {
+              id: iss._id,
+              isSelected: false,
+              component: RelatedIssuePresenter,
+              props: { project: currentProject, issue: iss }
+            }
           }),
           width: 'large'
         },
