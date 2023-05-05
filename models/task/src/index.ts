@@ -252,7 +252,8 @@ export const actionTemplates = template({
     context: {
       mode: ['context', 'browser'],
       group: 'tools'
-    }
+    },
+    override: [view.action.Archive, view.action.Delete]
   },
   unarchiveSpace: {
     label: task.string.Unarchive,

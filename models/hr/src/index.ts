@@ -328,9 +328,9 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: view.actionImpl.Delete,
-      label: view.string.Delete,
-      icon: view.icon.Delete,
+      action: view.actionImpl.Archive,
+      label: view.string.Archive,
+      icon: view.icon.Archive,
       input: 'any',
       category: hr.category.HR,
       keyBinding: ['Meta + Backspace', 'Ctrl + Backspace'],
@@ -339,9 +339,10 @@ export function createModel (builder: Builder): void {
         _id: { $nin: [hr.ids.Head] }
       },
       target: hr.class.Department,
-      context: { mode: 'context', application: hr.app.HR, group: 'create' }
+      context: { mode: ['context', 'browser'], group: 'tools' },
+      override: [view.action.Archive, view.action.Delete]
     },
-    hr.action.DeleteDepartment
+    hr.action.ArchiveDepartment
   )
 
   createAction(

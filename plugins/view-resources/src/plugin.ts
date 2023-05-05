@@ -34,6 +34,8 @@ export default mergeIds(viewId, view, {
     ChooseAColor: '' as IntlString,
     DeleteObject: '' as IntlString,
     DeleteObjectConfirm: '' as IntlString,
+    Archive: '' as IntlString,
+    ArchiveConfirm: '' as IntlString,
     Assignees: '' as IntlString,
     Labels: '' as IntlString,
     ActionPlaceholder: '' as IntlString,
