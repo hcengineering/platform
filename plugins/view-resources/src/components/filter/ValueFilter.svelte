@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, FindResult, getObjectValue, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import core, { Class, Doc, FindResult, getObjectValue, Ref, SortingOrder, Space } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
   import ui, { Button, CheckBox, Label, Loading, resizeObserver, deviceOptionsStore } from '@hcengineering/ui'
@@ -30,6 +30,10 @@
 
   filter.modes = [view.filter.FilterValueIn, view.filter.FilterValueNin]
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
+
+  // TODO: remove "TypeString" from search types after
+  // a separate filter for strings is implemented
+  $: isSearchable = [core.class.TypeNumber, core.class.TypeString].includes(filter.key.attribute.type._class)
 
   const client = getClient()
   const key = { key: filter.key.key }
@@ -48,7 +52,7 @@
     values.clear()
     realValues.clear()
     const resultQuery =
-      search !== ''
+      isSearchable && search !== ''
         ? {
             [filter.key.key]: { $like: '%' + search + '%' }
           }
@@ -124,17 +128,19 @@
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
-  <div class="header">
-    <input
-      bind:this={searchInput}
-      type="text"
-      bind:value={search}
-      on:change={() => {
-        getValues(search)
-      }}
-      placeholder={phTraslate}
-    />
-  </div>
+  {#if isSearchable}
+    <div class="header">
+      <input
+        bind:this={searchInput}
+        type="text"
+        bind:value={search}
+        on:change={() => {
+          getValues(search)
+        }}
+        placeholder={phTraslate}
+      />
+    </div>
+  {/if}
   <div class="scroll">
     <div class="box">
       {#await promise then attribute}
