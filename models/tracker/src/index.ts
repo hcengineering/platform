@@ -256,7 +256,7 @@ export class TIssue extends TAttachedDoc implements Issue {
   @Prop(Collection(tracker.class.TimeSpendReport), tracker.string.TimeSpendReports)
     reports!: number
 
-  @Prop(TypeTimestamp(), tracker.string.CreatedOn)
+  @Prop(TypeTimestamp(), tracker.string.CreatedDate)
   @ReadOnly()
     createOn!: Timestamp
 
@@ -1352,7 +1352,22 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['space']
+    filters: [
+      'status',
+      'assignee',
+      'createdBy',
+      'priority',
+      'labels',
+      'title',
+      'sprint',
+      'component',
+      'dueDate',
+      'createOn',
+      'modifiedOn',
+      'modifiedBy',
+      'space'
+    ],
+    ignoreKeys: ['number', 'estimation', 'attachedTo']
   })
 
   builder.mixin(tracker.class.IssueTemplate, core.class.Class, view.mixin.ClassFilters, {

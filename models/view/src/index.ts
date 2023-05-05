@@ -127,6 +127,8 @@ export class TFilterMode extends TDoc implements FilterMode {
 @Mixin(view.mixin.ClassFilters, core.class.Class)
 export class TClassFilters extends TClass implements ClassFilters {
   filters!: (string | KeyFilter)[]
+  ignoreKeys?: string[] | undefined
+  strict?: boolean | undefined
 }
 
 @Mixin(view.mixin.AttributeFilter, core.class.Class)

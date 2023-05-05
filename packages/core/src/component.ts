@@ -148,6 +148,7 @@ export default plugin(coreId, {
     Id: '' as IntlString,
     Space: '' as IntlString,
     Modified: '' as IntlString,
+    ModifiedDate: '' as IntlString,
     ModifiedBy: '' as IntlString,
     Class: '' as IntlString,
     AttachedTo: '' as IntlString,

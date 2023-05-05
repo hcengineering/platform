@@ -154,7 +154,7 @@ test('report-time-from-main-view', async ({ page }) => {
   await page.click('text="Issues"')
   await page.click('button:has-text("View")')
   await page.click('.ordering >> nth=0')
-  await page.click('text="Modified"')
+  await page.click('text="Modified date"')
   await page.keyboard.press('Escape')
 
   const values = [0.25, 0.5, 0.75, 1]
