@@ -77,10 +77,10 @@
     padding: 2rem 1.75rem 1.75rem;
     width: 30rem;
     max-width: 40rem;
-    background: var(--theme-bg-color);
-    border-radius: 1.25rem;
+    background: var(--theme-popup-color);
+    border-radius: 0.5rem;
     user-select: none;
-    box-shadow: var(--popup-shadow);
+    box-shadow: var(--theme-popup-shadow);
 
     .message {
       margin-bottom: 1.75rem;

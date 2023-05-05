@@ -46,6 +46,7 @@
   export let labelDirection: TooltipAlignment | undefined = undefined
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'large'
+  export let itemSize: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
   export let allowDeselect = false
@@ -84,7 +85,7 @@
       {
         _class,
         label,
-        size,
+        size: itemSize,
         allowDeselect,
         spaceOptions: { ...(spaceOptions ?? {}), sort: { ...(spaceOptions?.sort ?? {}), modifiedOn: -1 } },
         selected: selected?._id,
@@ -121,10 +122,11 @@
     {kind}
     {justify}
     {width}
+    notSelected={value == null}
     showTooltip={{ label, direction: labelDirection }}
     on:click={showSpacesPopup}
   >
-    <span slot="content" class="overflow-label disabled text" class:dark-color={value == null}>
+    <span slot="content" class="overflow-label disabled text">
       {#if selected}{selected.name}{:else}<Label {label} />{/if}
     </span>
   </Button>

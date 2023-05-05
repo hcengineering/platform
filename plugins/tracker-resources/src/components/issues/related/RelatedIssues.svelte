@@ -55,14 +55,14 @@
     <SubIssueList bind:viewOptions {viewlet} issues={subIssues} {projects} {disableHeader} />
   {:else}
     <div class="antiSection-empty solid flex-col mt-3">
-      <div class="flex-center content-accent-color">
+      <div class="flex-center content-color">
         <AddIssueDuo size={'large'} />
       </div>
-      <div class="text-sm dark-color" style:pointer-events="none">
+      <div class="text-sm content-dark-color" style:pointer-events="none">
         <Label label={tracker.string.RelatedIssuesNotFound} />
       </div>
       <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <div class="over-underline text-sm content-accent-color" on:click={() => dispatch('add-issue')}>
+      <div class="over-underline text-sm content-color" on:click={() => dispatch('add-issue')}>
         <Label label={tracker.string.NewRelatedIssue} />
       </div>
     </div>

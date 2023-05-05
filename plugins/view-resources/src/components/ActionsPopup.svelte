@@ -271,11 +271,11 @@
           </svelte:fragment>
           <svelte:fragment slot="item" let:item>
             {@const action = filteredActions[item]}
-            <div class="flex-row-center flex-between flex-grow ml-2 p-3 text-base">
-              <div class="mr-4">
+            <div class="flex-row-center flex-between flex-grow ml-2 p-3 text-base cursor-pointer">
+              <div class="mr-4 {selection === item ? 'caption-color' : 'content-dark-color'}">
                 <Icon icon={action.icon ?? IconArrowLeft} size={'small'} />
               </div>
-              <div class="flex-grow">
+              <div class="flex-grow {selection === item ? 'caption-color' : 'content-color'}">
                 <Label label={action.label} />
               </div>
               <div class="mr-2 text-md flex-row-center">
@@ -309,11 +309,11 @@
 
 <style lang="scss">
   .key-box {
-    background-color: var(--button-bg-color);
-    color: var(--caption-color);
-    min-width: 1.5rem;
     padding: 0 0.5rem;
-    border: 1px solid var(--button-border-color);
+    min-width: 1.5rem;
+    color: var(--theme-caption-color);
+    background-color: var(--theme-button-enabled);
+    border: 1px solid var(--theme-divider-color);
     border-radius: 0.25rem;
   }
   .key-box + .key-box {
@@ -321,15 +321,15 @@
   }
   .item-box {
     display: inline-block;
-    background-color: var(--divider-color);
-    color: var(--caption-color);
-    border-radius: 0.5rem;
-    padding: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    color: var(--theme-caption-color);
+    background-color: var(--theme-divider-color);
+    border-radius: 0.25rem;
   }
   .category-box {
     display: inline-block;
-    background-color: var(--divider-color);
-    color: var(--caption-color);
+    color: var(--theme-caption-color);
+    background-color: var(--theme-comp-header-color);
     padding: 0.5rem;
   }
 </style>

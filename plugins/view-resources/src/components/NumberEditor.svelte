@@ -63,7 +63,7 @@
       {#if value !== undefined}
         <span class="overflow-label">{value}</span>
       {:else}
-        <span class="dark-color"><Label label={placeholder} /></span>
+        <span class="content-dark-color"><Label label={placeholder} /></span>
       {/if}
     </svelte:fragment>
   </Button>
@@ -71,7 +71,7 @@
   {#if value !== undefined}
     <span class="overflow-label">{value}</span>
   {:else}
-    <span class="dark-color"><Label label={placeholder} /></span>
+    <span class="content-dark-color"><Label label={placeholder} /></span>
   {/if}
 {:else}
   <EditBox {placeholder} bind:value format={'number'} {focus} on:change={_onchange} />

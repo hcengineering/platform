@@ -36,18 +36,18 @@
 >
   <div class="flex-col message" class:selected>
     <div class="flex-between text-sm mb-1">
-      <div class="dark-color overflow-label mr-4">
+      <div class="content-dark-color overflow-label mr-4">
         <Label label={gmail.string.From} />
-        <span class="content-accent-color">{message.sender}</span>
+        <span class="content-color">{message.sender}</span>
       </div>
-      <div class="dark-color flex">
+      <div class="content-dark-color flex">
         <AttachmentsPresenter value={message.attachments} object={message} />
-        <span class="content-accent-color">{getTime(message.sendOn)}</span>
+        <span class="content-color">{getTime(message.sendOn)}</span>
       </div>
     </div>
-    <div class="dark-color text-sm overflow-label mr-4 mb-4">
+    <div class="content-dark-color text-sm overflow-label mr-4 mb-4">
       <Label label={gmail.string.To} />
-      <span class="content-accent-color">{message.receiver}</span>
+      <span class="content-color">{message.receiver}</span>
     </div>
     <div class="fs-title overflow-label mb-1">
       {message.subject}

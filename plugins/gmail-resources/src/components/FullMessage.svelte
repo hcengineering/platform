@@ -63,7 +63,7 @@
         <div class="overflow-label" use:tooltip={{ label: getEmbeddedLabel(currentMessage.subject) }}>
           {currentMessage.subject}
         </div>
-        <span class="content-accent-color">
+        <span class="content-color">
           <Label label={currentMessage.incoming ? gmail.string.From : gmail.string.To} />
           <b>{title}</b>
         </span>

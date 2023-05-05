@@ -199,7 +199,7 @@
                     <Label label={ui.string.NotSelected} />
                   {/if}
                 </div>
-                <div class="dark-color ml-2">
+                <div class="content-dark-color ml-2">
                   {#if isStatus && value}
                     {getStatusCount(value)}
                   {:else}

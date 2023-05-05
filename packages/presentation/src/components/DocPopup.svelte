@@ -17,7 +17,6 @@
   import type { IntlString } from '@hcengineering/platform'
   import {
     Button,
-    CheckBox,
     EditBox,
     FocusHandler,
     Icon,
@@ -28,7 +27,8 @@
     deviceOptionsStore,
     resizeObserver,
     showPopup,
-    tooltip
+    tooltip,
+    closeTooltip
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
@@ -140,6 +140,7 @@
   let selectedDiv: HTMLElement | undefined
   let scrollDiv: HTMLElement | undefined
   let cHeight = 0
+  let timer: any = null
 
   const updateLocation = (scrollDiv?: HTMLElement, selectedDiv?: HTMLElement, objects?: Doc[], selected?: Ref<Doc>) => {
     const objIt = objects?.find((it) => it._id === selected)
@@ -161,6 +162,13 @@
           }
         }
       }
+    }
+    if (!timer) {
+      timer = setTimeout(() => {
+        closeTooltip()
+        clearTimeout(timer)
+        timer = null
+      }, 50)
     }
   }
 
@@ -206,7 +214,7 @@
     {/if}
   </div>
   {#if cHeight === 1}
-    <div class="background-content-accent-color" style:height={'2px'} />
+    <div class="whereSelected" />
   {/if}
   <div class="scroll" on:scroll={() => updateLocation(scrollDiv, selectedDiv, objects, selected)} bind:this={scrollDiv}>
     <div class="box">
@@ -226,17 +234,15 @@
           {@const obj = objects[item]}
           {@const isDeselectDisabled = selectedElements.has(obj._id) && forbiddenDeselectItemIds.has(obj._id)}
           <button
-            class="menu-item w-full flex-row-center"
-            class:background-button-bg-color={!allowDeselect && obj._id === selected}
-            class:border-radius-1={!allowDeselect && obj._id === selected}
+            class="menu-item withList w-full flex-row-center"
             disabled={readonly || isDeselectDisabled}
             on:click={() => {
               handleSelection(undefined, objects, item)
             }}
           >
-            {#if allowDeselect && selected}
+            {#if (allowDeselect && selected) || multiSelect || selected}
               <div class="icon" class:disabled={readonly}>
-                {#if obj._id === selected}
+                {#if obj._id === selected || selectedElements.has(obj._id)}
                   <div bind:this={selectedDiv}>
                     {#if titleDeselect}
                       <div class="clear-mins" use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
@@ -259,18 +265,13 @@
                 <slot name="item" item={obj} />
               {/if}
             </span>
-            {#if multiSelect}
-              <div class="check-right pointer-events-none">
-                <CheckBox checked={selectedElements.has(obj._id)} primary readonly={readonly || isDeselectDisabled} />
-              </div>
-            {/if}
           </button>
         </svelte:fragment>
       </ListView>
     </div>
   </div>
   {#if cHeight === -1}
-    <div class="background-content-accent-color" style:height={'2px'} />
+    <div class="whereSelected" />
   {/if}
 </div>
 
@@ -281,5 +282,9 @@
     border: 1px solid var(--button-border-color);
     border-radius: 0.25rem;
     box-shadow: none;
+  }
+  .whereSelected {
+    height: 2px;
+    background-color: var(--theme-caret-color);
   }
 </style>

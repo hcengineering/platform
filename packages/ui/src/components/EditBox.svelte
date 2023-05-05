@@ -136,7 +136,7 @@
   <!-- {focusIndex} -->
   <div class="hidden-text {kind}" bind:this={text} />
   {#if label}
-    <div class="mb-1 text-sm font-medium content-accent-color select-text">
+    <div class="mb-1 text-sm font-medium caption-color select-text">
       <Label {label} />
       {#if required}<span class="error-color">&ast</span>{/if}
     </div>

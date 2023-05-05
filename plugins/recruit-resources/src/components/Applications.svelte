@@ -85,11 +85,11 @@
       <div class="caption-color">
         <FileDuo size={'large'} />
       </div>
-      <span class="dark-color">
+      <span class="content-dark-color">
         <Label label={recruit.string.NoApplicationsForTalent} />
       </span>
       <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <span class="over-underline content-accent-color" on:click={createApp}>
+      <span class="over-underline content-color" on:click={createApp}>
         <Label label={recruit.string.CreateAnApplication} />
       </span>
     </div>

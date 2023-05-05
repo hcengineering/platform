@@ -124,7 +124,7 @@
   <svelte:fragment slot="buttons">
     <Button
       icon={IconAdd}
-      size={'small'}
+      size={'large'}
       on:click={() => {
         showPopup(
           TimeSpendReportPopup,

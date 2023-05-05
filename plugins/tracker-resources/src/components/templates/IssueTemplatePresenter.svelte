@@ -60,10 +60,9 @@
     max-width: 15rem;
     font-size: 0.8125rem;
     color: var(--content-color);
-    cursor: pointer;
 
-    &.noPointer {
-      cursor: default;
+    &:not(.noPointer) {
+      cursor: pointer;
     }
 
     &.noUnderline {

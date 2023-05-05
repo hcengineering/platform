@@ -70,7 +70,7 @@
     {@const report = reports[item]}
     {@const currentProject = projects.get(toProjectId(report.space))}
     <div
-      class="{twoRows ? 'flex-col' : 'flex-between'} p-text-2"
+      class="{twoRows ? 'flex-col' : 'flex-between'} p-text-2 clear-mins"
       on:contextmenu|preventDefault={(ev) => showContextMenu(ev, report)}
       on:mouseenter={() => {
         listProvider.updateFocus(report)
@@ -92,10 +92,11 @@
           </span>
         {/if}
       </div>
-      <div class="flex-row-center clear-mins gap-2 self-end" class:p-text={twoRows}>
+      <div class="flex-row-center clear-mins gap-2 self-end flex-no-shrink" class:p-text={twoRows}>
         <FixedColumn key={'timespend_assignee'} justify={'left'}>
           <UserBox
             width={'100%'}
+            kind={'transparent'}
             label={tracker.string.Assignee}
             _class={contact.class.Employee}
             value={report.employee}
@@ -107,7 +108,7 @@
           <TimePresenter value={report.value} />
         </FixedColumn>
         <FixedColumn key={'timespend_date'} justify={'left'}>
-          <DatePresenter value={report.date} />
+          <DatePresenter value={report.date} kind={'transparent'} size={'small'} />
         </FixedColumn>
       </div>
     </div></svelte:fragment

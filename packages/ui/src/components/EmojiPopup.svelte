@@ -173,9 +173,11 @@
   }
   .scroll-header {
     position: sticky;
-    top: 0;
+    flex-shrink: 0;
     margin: 0.75rem 0.75rem 0.25rem;
     padding: 0.25rem 0.75rem;
+    top: 0;
+    height: 1.5rem;
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;

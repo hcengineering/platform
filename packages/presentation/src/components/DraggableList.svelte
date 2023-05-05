@@ -109,8 +109,10 @@
       >
         <div class="draggable-container">
           <div class="caption mb-0 flex flex-grow flex-row-center">
-            <div class="draggable-mark fs-title dark-color whitespace-nowrap mr-2"><IconMoreV size={'small'} /></div>
-            <div class="fs-title dark-color whitespace-nowrap mr-2">
+            <div class="draggable-mark fs-title content-dark-color whitespace-nowrap mr-2">
+              <IconMoreV size={'small'} />
+            </div>
+            <div class="fs-title content-dark-color whitespace-nowrap mr-2">
               {`${index + 1}.`}
             </div>
             <slot name="object" {index} />

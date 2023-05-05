@@ -104,7 +104,7 @@
     <Label label={view.string.MoveClass} params={{ class: label }} />
   </div>
   <StatusControl {status} />
-  <div class="content-accent-color mt-4 mb-4">
+  <div class="caption-color mt-4 mb-4">
     <Label label={view.string.SelectToMove} params={{ class: label, classLabel }} />
   </div>
   <div class="spaceSelect">
