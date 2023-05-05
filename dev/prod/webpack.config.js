@@ -192,6 +192,7 @@ module.exports = {
   mode,
   plugins: [
     new HtmlWebpackPlugin({
+      favicon: './public/favicon.ico',
       meta: {
         viewport: 'width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=1'
       }
