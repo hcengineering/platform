@@ -124,6 +124,7 @@ export function createModel (builder: Builder): void {
       generated: false,
       group: request.ids.RequestNotificationGroup,
       label: request.string.Requested,
+      allowedForAuthor: true,
       providers: {
         [notification.providers.PlatformNotification]: true
       }
