@@ -194,12 +194,12 @@
                     <CheckBox checked={isSelected(value, filter.value)} primary />
                   </div>
                   {#if value}
-                    <svelte:component this={attribute.presenter} {value} {...attribute.props} isInteractive={false} />
+                    <svelte:component this={attribute.presenter} {value} {...attribute.props} disabled />
                   {:else}
                     <Label label={ui.string.NotSelected} />
                   {/if}
                 </div>
-                <div class="dark-color ml-2">
+                <div class="content-dark-color ml-2">
                   {#if isStatus && value}
                     {getStatusCount(value)}
                   {:else}

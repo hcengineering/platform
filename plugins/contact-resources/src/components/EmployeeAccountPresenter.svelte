@@ -34,7 +34,7 @@
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   {#if employee}
-    <EmployeePresenter value={employee} disableClick={disabled} {inline} />
+    <EmployeePresenter value={employee} {disabled} {inline} />
   {:else}
     <div class="flex-row-center">
       <Avatar size="x-small" />

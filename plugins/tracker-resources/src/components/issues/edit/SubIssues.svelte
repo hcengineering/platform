@@ -70,6 +70,8 @@
   }
 
   $: viewOptions = viewlet !== undefined ? getViewOptions(viewlet, $viewOptionStore) : undefined
+
+  export let focusIndex = -1
 </script>
 
 <div class="flex-between">
@@ -139,7 +141,13 @@
     {#if !isCollapsed}
       <ExpandCollapse isExpanded={!isCollapsed}>
         <div class="list" class:collapsed={isCollapsed}>
-          <SubIssueList projects={_projects} {viewlet} {viewOptions} query={{ attachedTo: issue._id }} />
+          <SubIssueList
+            focusIndex={focusIndex === -1 ? -1 : focusIndex + 1}
+            projects={_projects}
+            {viewlet}
+            {viewOptions}
+            query={{ attachedTo: issue._id }}
+          />
         </div>
       </ExpandCollapse>
     {/if}

@@ -544,15 +544,13 @@
   on:changeContent
 >
   <svelte:fragment slot="header">
-    <div class="flex-row-center">
-      <SpaceSelector
-        _class={tracker.class.Project}
-        label={tracker.string.Project}
-        bind:space={_space}
-        kind={'secondary'}
-        size={'large'}
-      />
-    </div>
+    <SpaceSelector
+      _class={tracker.class.Project}
+      label={tracker.string.Project}
+      bind:space={_space}
+      kind={'secondary'}
+      size={'large'}
+    />
     <ObjectBox
       _class={tracker.class.IssueTemplate}
       value={templateId}
@@ -567,7 +565,7 @@
       searchField={'title'}
       allowDeselect={true}
       showNavigate={false}
-      docProps={{ disableClick: true }}
+      docProps={{ disabled: true }}
       focusIndex={20000}
     />
   </svelte:fragment>

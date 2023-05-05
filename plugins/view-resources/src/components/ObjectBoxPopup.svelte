@@ -61,7 +61,7 @@
         objectId={doc._id}
         _class={doc._class}
         value={doc}
-        props={{ ...docProps, isInteractive: false, inline: true, size: 'x-small' }}
+        props={{ ...docProps, disabled: true, noUnderline: true, size: 'x-small' }}
       />
     </div>
   </svelte:fragment>

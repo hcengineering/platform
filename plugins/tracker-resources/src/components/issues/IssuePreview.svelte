@@ -97,7 +97,7 @@
             <MessageViewer message={issue.description} />
           </div>
         {:else}
-          <div class="ml-2 dark-color">
+          <div class="ml-2 content-dark-color">
             <Label label={tracker.string.NoDescription} />
           </div>
         {/if}

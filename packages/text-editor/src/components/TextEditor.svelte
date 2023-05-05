@@ -16,15 +16,15 @@
 <script lang="ts">
   import { IntlString, translate } from '@hcengineering/platform'
 
-  import { AnyExtension, Editor, Extension, HTMLContent } from '@tiptap/core'
   import type { FocusPosition } from '@tiptap/core'
+  import { AnyExtension, Editor, Extension, HTMLContent } from '@tiptap/core'
   // import Typography from '@tiptap/extension-typography'
+  import { Level } from '@tiptap/extension-heading'
   import Placeholder from '@tiptap/extension-placeholder'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import textEditorPlugin from '../plugin'
   import { FormatMode } from '../types'
   import { defaultExtensions } from './extensions'
-  import { Level } from '@tiptap/extension-heading'
 
   export let content: string = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder

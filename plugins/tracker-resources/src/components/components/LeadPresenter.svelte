@@ -85,7 +85,7 @@
     {value}
     {defaultName}
     avatarSize={size}
-    isInteractive={true}
+    disabled={false}
     shouldShowPlaceholder={true}
     shouldShowName={shouldShowLabel}
     onEmployeeEdit={handleLeadEditorOpened}
@@ -97,7 +97,7 @@
     {value}
     {defaultName}
     avatarSize={size}
-    isInteractive={true}
+    disabled={false}
     shouldShowPlaceholder={true}
     shouldShowName={shouldShowLabel}
     onEmployeeEdit={handleLeadEditorOpened}

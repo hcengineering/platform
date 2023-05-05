@@ -426,11 +426,14 @@
     }
 
     &.notSelected {
-      color: var(--content-color);
+      color: var(--theme-dark-color);
 
+      .btn-icon {
+        color: var(--theme-darker-color);
+      }
       &:hover,
       &:hover .btn-icon {
-        color: var(--accent-color);
+        color: var(--theme-content-color);
       }
     }
 

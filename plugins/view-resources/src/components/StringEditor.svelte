@@ -57,9 +57,9 @@
   >
     <svelte:fragment slot="content">
       {#if value}
-        <span class="overflow-label">{value}</span>
+        <span class="overflow-label pointer-events-none">{value}</span>
       {:else}
-        <span class="dark-color"><Label label={placeholder} /></span>
+        <span class="content-dark-color pointer-events-none"><Label label={placeholder} /></span>
       {/if}
     </svelte:fragment>
   </Button>
@@ -67,7 +67,7 @@
   {#if value}
     <span class="overflow-label">{value}</span>
   {:else}
-    <span class="dark-color"><Label label={placeholder} /></span>
+    <span class="content-dark-color"><Label label={placeholder} /></span>
   {/if}
 {:else}
   <EditBox {placeholder} bind:value {focus} on:change={_onchange} />

@@ -159,7 +159,7 @@
           {/each}
         </ol>
         {#if stepsDescription}
-          <span class="dark-color"><Label label={stepsDescription} /></span>
+          <span class="content-dark-color"><Label label={stepsDescription} /></span>
         {/if}
       </div>
     </Scroller>

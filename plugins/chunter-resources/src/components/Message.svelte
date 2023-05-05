@@ -21,7 +21,7 @@
   import { getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { getClient, MessageViewer } from '@hcengineering/presentation'
-  import { EmojiPopup } from '@hcengineering/text-editor'
+  import { EmojiPopup } from '@hcengineering/ui'
   import ui, { ActionIcon, Button, IconMoreH, Label, showPopup, tooltip } from '@hcengineering/ui'
   import { Action } from '@hcengineering/view'
   import { LinkPresenter, Menu } from '@hcengineering/view-resources'

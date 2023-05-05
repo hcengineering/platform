@@ -38,7 +38,7 @@
     <div class="flex-no-shrink ml-2">
       <IssueStatusIcon {value} size="small" />
     </div>
-    <span class="content-accent-color ml-2">{value.name}</span>
+    <span class="caption-color ml-2">{value.name}</span>
     {#if value.description}
       <span>&nbsp;·&nbsp;{value.description}</span>
     {/if}

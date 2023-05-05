@@ -25,7 +25,7 @@
 
   export let value: Comment
   export let inline: boolean = false
-  export let disableClick = false
+  export let disabled = false
 
   const cutId = (str: string): string => {
     return str.slice(0, 4) + '...' + str.slice(-4)
@@ -45,13 +45,13 @@
 </script>
 
 {#if inline}
-  <a class="flex-presenter inline-presenter" href="#{disableClick ? null : ''}">
+  <a class="flex-presenter inline-presenter" href="#{disabled ? null : ''}">
     <div class="icon">
       <Icon icon={chunter.icon.Thread} size={'small'} />
     </div>
     <span class="label nowrap">Message</span>
   </a>
-  &nbsp;<span class="dark-color">#{cutId(value._id.toString())}</span>
+  &nbsp;<span class="content-dark-color">#{cutId(value._id.toString())}</span>
 {:else}
   <div class="flex-row-top">
     {#await getEmployee(value, $employeeByIdStore, $employeeAccountByIdStore) then employee}
@@ -63,7 +63,7 @@
           <div class="fs-title">
             {#if employee}{getName(employee)}{/if}
           </div>
-          <div class="dark-color ml-4"><TimeSince value={value.modifiedOn} /></div>
+          <div class="content-dark-color ml-4"><TimeSince value={value.modifiedOn} /></div>
         </div>
         <ShowMore fixed>
           <MessageViewer message={value.message} />

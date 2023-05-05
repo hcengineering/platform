@@ -201,7 +201,7 @@ test('create-issue-draft', async ({ page }) => {
   const subIssueName = 'Sub issue draft'
 
   // Click text=Issues >> nth=1
-  await page.locator('text=Issues').nth(1).click()
+  await page.locator('text=Issues').nth(2).click()
   await expect(page).toHaveURL(/.*\/workbench\/sanity-ws\/tracker\/tracker%3Aproject%3ADefaultProject\/issues/)
   await expect(page.locator('#new-issue')).toHaveText('New issue')
   // Click button:has-text("New issue")

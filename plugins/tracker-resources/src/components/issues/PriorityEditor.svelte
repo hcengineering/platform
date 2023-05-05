@@ -81,9 +81,7 @@
       </div>
       {#if shouldShowLabel}
         <span
-          class="{kind === 'list'
-            ? 'ml-2 text-md'
-            : 'ml-3 text-base'} overflow-label disabled fs-bold content-accent-color"
+          class="{kind === 'list' ? 'ml-2 text-md' : 'ml-3 text-base'} overflow-label disabled fs-bold content-color"
         >
           <Label label={issuePriorities[value.priority]?.label} />
         </span>

@@ -116,7 +116,7 @@
       <div class="flex flex-grow flex-col" class:tag-items-scroll={!showTitle}>
         {#if items.length === 0}
           {#if keyLabel}
-            <div class="text-sm dark-color w-full flex-center">
+            <div class="text-sm content-dark-color w-full flex-center">
               <Label label={tags.string.NoItems} params={{ word: keyLabel }} />
             </div>
           {/if}

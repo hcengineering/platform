@@ -57,10 +57,10 @@
     {/if}
   {:else}
     <div class="antiSection-empty solid flex-col-center mt-3">
-      <span class="text-sm dark-color">
+      <span class="text-sm content-dark-color">
         <Label label={lead.string.NoLeadsForDocument} />
       </span>
-      <span class="text-sm content-accent-color over-underline" on:click={createLead}>
+      <span class="text-sm content-color over-underline" on:click={createLead}>
         <Label label={lead.string.CreateLead} />
       </span>
     </div>

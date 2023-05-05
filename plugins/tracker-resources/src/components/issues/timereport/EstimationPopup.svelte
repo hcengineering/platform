@@ -107,7 +107,7 @@
   </svelte:fragment>
 
   <svelte:fragment slot="header">
-    <IssuePresenter value={object} disableClick />
+    <IssuePresenter value={object} disabled />
   </svelte:fragment>
 
   {#if currentProject}
@@ -124,7 +124,7 @@
   <svelte:fragment slot="buttons">
     <Button
       icon={IconAdd}
-      size={'small'}
+      size={'large'}
       on:click={() => {
         showPopup(
           TimeSpendReportPopup,

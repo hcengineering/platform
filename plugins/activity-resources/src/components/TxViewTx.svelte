@@ -24,7 +24,7 @@
 
 {#each filterTx([...tx.txes, tx], core.class.TxCreateDoc) as ctx, i}
   {#if i === 0 && !presentersOnly}
-    <IconAdd size={'x-small'} fill={'var(--trans-color)'} />
+    <IconAdd size={'x-small'} fill={'var(--theme-trans-color)'} />
   {/if}
   {#if typeof viewlet?.component === 'string'}
     <Component is={viewlet?.component} props={getProps(ctx, edit)} inline on:close={onCancelEdit} />
@@ -34,7 +34,7 @@
 {/each}
 {#each filterTx([...tx.txes, tx], core.class.TxRemoveDoc) as ctx, i}
   {#if i === 0 && !presentersOnly}
-    <IconDelete size={'x-small'} fill={'var(--trans-color)'} />
+    <IconDelete size={'x-small'} fill={'var(--theme-trans-color)'} />
   {/if}
   {#if typeof viewlet?.component === 'string'}
     <Component is={viewlet?.component} props={getProps(ctx, edit)} inline on:close={onCancelEdit} />

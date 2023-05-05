@@ -53,11 +53,11 @@
     }}
   >
     <svelte:fragment slot="content">
-      <div class="lines-limit-4" style:text-align={'left'} class:dark-color={readonly}>
+      <div class="lines-limit-4" style:text-align={'left'} class:content-dark-color={readonly}>
         {#if value}
           <MessageViewer message={value} />
         {:else}
-          <span class="dark-color"><Label label={placeholder} /></span>
+          <span class="content-dark-color"><Label label={placeholder} /></span>
         {/if}
       </div>
     </svelte:fragment>
@@ -66,6 +66,6 @@
   {#if value}
     <span class="overflow-label">{value}</span>
   {:else}
-    <span class="dark-color"><Label label={placeholder} /></span>
+    <span class="content-dark-color"><Label label={placeholder} /></span>
   {/if}
 {/if}

@@ -1,23 +1,26 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
-// 
-// Licensed under the Eclipse Public License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License. You may
-// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
-// See the License for the specific language governing permissions and
-// limitations under the License.
--->
+    // Copyright © 2020, 2021 Anticrm Platform Contributors.
+    // Copyright © 2021 Hardcore Engineering Inc.
+    // 
+    // Licensed under the Eclipse Public License, Version 2.0 (the "License");
+    // you may not use this file except in compliance with the License. You may
+    // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+    // 
+    // Unless required by applicable law or agreed to in writing, software
+    // distributed under the License is distributed on an "AS IS" BASIS,
+    // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    // 
+    // See the License for the specific language governing permissions and
+    // limitations under the License.
+    -->
 <script lang="ts">
+  import { afterUpdate } from 'svelte'
+  import { Writable, writable } from 'svelte/store'
+
   import activity from '@hcengineering/activity'
   import calendar from '@hcengineering/calendar'
-  import type { Doc } from '@hcengineering/core'
-  import type { Asset } from '@hcengineering/platform'
+  import { Doc } from '@hcengineering/core'
+  import { Asset } from '@hcengineering/platform'
   import {
     AnySvelteComponent,
     Component,
@@ -46,6 +49,40 @@
   export let useMaxWidth: boolean | undefined = undefined
   export let isFullSize = false
   export let embedded = false
+
+  let lastHref: string
+  let scroll: HTMLDivElement
+  let timer: number
+  let lastScrollHeight: number = -1
+  let count: number = 0
+
+  const waitCount = 10
+  const PanelScrollTop: Writable<Record<string, number>> = writable<Record<string, number>>({})
+
+  const startScrollHeightCheck = () => {
+    clearTimeout(timer)
+    timer = setTimeout(() => {
+      if (lastScrollHeight <= scroll.scrollHeight && count <= waitCount) {
+        count = lastScrollHeight < scroll.scrollHeight ? 0 : count + 1
+        lastScrollHeight = scroll.scrollHeight
+
+        startScrollHeightCheck()
+      } else {
+        lastScrollHeight = -1
+        count = 0
+
+        scroll.scrollTop = $PanelScrollTop[window.location.href]
+        $PanelScrollTop[window.location.href] = 0
+        lastHref = window.location.href
+      }
+    }, 1)
+  }
+
+  afterUpdate(() => {
+    if (lastHref !== window.location.href) {
+      startScrollHeightCheck()
+    }
+  })
 </script>
 
 <Panel
@@ -95,7 +132,7 @@
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
-    <Component is={calendar.component.DocReminder} props={{ value: object, title }} />
+    <Component is={calendar.component.DocReminder} props={{ value: object, title, focusIndex: 9000 }} />
     {#if isUtils && $$slots.utils}
       <div class="buttons-divider" />
       <slot name="utils" />
@@ -145,18 +182,25 @@
       {#if !withoutActivity}
         <Component
           is={activity.component.Activity}
-          props={{ object, showCommenInput: !withoutInput, shouldScroll: embedded }}
+          props={{ object, showCommenInput: !withoutInput, shouldScroll: embedded, focusIndex: 1000 }}
         />
       {/if}
     </div>
   {:else}
-    <Scroller>
+    <Scroller
+      bind:divScroll={scroll}
+      on:divScrollTop={(event) => {
+        if (lastHref === window.location.href && event && event.detail !== $PanelScrollTop[lastHref]) {
+          $PanelScrollTop[lastHref] = event.detail
+        }
+      }}
+    >
       <div class="popupPanel-body__main-content py-8 clear-mins" class:max={useMaxWidth}>
         <slot />
         {#if !withoutActivity}
           <Component
             is={activity.component.Activity}
-            props={{ object, showCommenInput: !withoutInput, shouldScroll: embedded }}
+            props={{ object, showCommenInput: !withoutInput, shouldScroll: embedded, focusIndex: 1000 }}
           />
         {/if}
       </div>

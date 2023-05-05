@@ -145,7 +145,7 @@
       <span
         class="{enlargedText ? 'text-base' : 'text-md'} fs-bold overflow-label {!value
           ? 'content-color'
-          : 'content-accent-color'} pointer-events-none"
+          : 'caption-color'} pointer-events-none"
       >
         <Label label={getEmbeddedLabel(sprintText)} />
       </span>

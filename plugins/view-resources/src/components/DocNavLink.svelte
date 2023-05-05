@@ -20,7 +20,7 @@
   import { getObjectLinkFragment } from '../utils'
 
   export let object: Doc
-  export let disableClick = false
+  export let disabled = false
   export let onClick: ((event: MouseEvent) => void) | undefined = undefined
   export let noUnderline = false
   export let inline = false
@@ -38,7 +38,7 @@
       : undefined
 
   async function getHref (object: Doc): Promise<void> {
-    if (disableClick) {
+    if (disabled) {
       href = undefined
       return
     }
@@ -49,4 +49,4 @@
   $: if (object !== undefined) getHref(object)
 </script>
 
-<NavLink {disableClick} {onClick} {noUnderline} {inline} {shrink} {href} {colorInherit}><slot /></NavLink>
+<NavLink {disabled} {onClick} {noUnderline} {inline} {shrink} {href} {colorInherit}><slot /></NavLink>

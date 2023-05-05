@@ -14,12 +14,12 @@
 // limitations under the License.
 //
 
-import { SvelteComponent } from 'svelte'
+import { ComponentType, SvelteComponent } from 'svelte'
 
 export class SvelteRenderer {
   private readonly component: SvelteComponent
 
-  constructor (comp: typeof SvelteComponent, props: any) {
+  constructor (comp: typeof SvelteComponent | ComponentType, props: any) {
     const options = { target: document.body, props }
     this.component = new (comp as any)(options)
   }

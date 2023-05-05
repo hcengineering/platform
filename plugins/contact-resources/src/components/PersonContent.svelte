@@ -22,7 +22,7 @@
 
   export let value: Person | Employee | undefined | null
   export let inline: boolean = false
-  export let isInteractive = true
+  export let disabled = false
   export let shouldShowAvatar: boolean = true
   export let shouldShowName = true
   export let shouldShowPlaceholder = false
@@ -37,14 +37,14 @@
   export let accent: boolean = false
 
   const onEditClick = (evt: MouseEvent) => {
-    if (isInteractive) {
+    if (!disabled) {
       onEdit?.(evt)
     }
   }
 </script>
 
 {#if value}
-  <DocNavLink object={value} onClick={onEdit} disableClick={!isInteractive} {inline} {colorInherit}>
+  <DocNavLink object={value} onClick={onEdit} {disabled} noUnderline={disabled} {inline} {colorInherit}>
     <span
       use:tooltip={showTooltip}
       class="contentPresenter"
@@ -132,7 +132,6 @@
         color: var(--theme-caption-color);
       }
       .eContentPresenterLabel {
-        text-decoration: underline;
         color: var(--theme-caption-color);
       }
     }

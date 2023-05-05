@@ -272,7 +272,7 @@
       <div class="buttons-group">
         <div class="flex-grow flex-col">
           <Label label={plugin.string.NewMessage} />
-          <div class="content-accent-color targets">
+          <div class="caption-color targets">
             <b>
               {#each channels as channel, i}
                 <div>
@@ -365,7 +365,7 @@
     padding: 1rem;
     background-color: var(--outcoming-msg);
     color: #d6d6d6;
-    caret-color: var(--caret-color);
+    caret-color: var(--theme-caret-color);
     min-height: 0;
     height: 100%;
     margin-bottom: 2rem;

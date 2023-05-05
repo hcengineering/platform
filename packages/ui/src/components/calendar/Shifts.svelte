@@ -85,10 +85,10 @@
     width: fit-content;
     width: 12rem;
     min-width: 12rem;
-    background: var(--popup-bg-color);
-    border: 1px solid var(--divider-color);
+    background: var(--theme-navpanel-color);
+    border: 1px solid var(--theme-divider-color);
     border-radius: 0.5rem;
-    box-shadow: var(--popup-shadow);
+    box-shadow: var(--theme-popup-shadow);
     z-index: -1;
 
     .btn {
@@ -100,8 +100,8 @@
       cursor: pointer;
 
       &:hover {
-        color: var(--caption-color);
-        background-color: var(--button-bg-hover);
+        color: var(--theme-caption-color);
+        background-color: var(--theme-navpanel-hovered);
       }
     }
 
@@ -109,7 +109,7 @@
       margin: 0.25rem 0.75rem 0.25rem 0;
       height: 1px;
       min-height: 1px;
-      background-color: var(--divider-color);
+      background-color: var(--theme-divider-color);
     }
   }
 </style>

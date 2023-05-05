@@ -156,11 +156,12 @@ async function Open (
   | undefined
 ): Promise<void> {
   evt.preventDefault()
+  const d = Array.isArray(doc) ? doc[0] : doc
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const panelComponent = hierarchy.classHierarchyMixin(doc._class, view.mixin.ObjectPanel)
+  const panelComponent = hierarchy.classHierarchyMixin(d._class, view.mixin.ObjectPanel)
   const component = props?.component ?? panelComponent?.component ?? view.component.EditDoc
-  const loc = await getObjectLinkFragment(hierarchy, doc, {}, component)
+  const loc = await getObjectLinkFragment(hierarchy, d, {}, component)
   navigate(loc)
 }
 
@@ -180,15 +181,12 @@ function ShowPanel (
     rightSection?: AnyComponent
   }
 ): void {
-  if (Array.isArray(doc)) {
-    console.error('Wrong show Panel parameters')
-    return
-  }
+  const d = Array.isArray(doc) ? doc[0] : doc
   evt.preventDefault()
   showPanel(
     props.component ?? view.component.EditDoc,
-    doc._id,
-    Hierarchy.mixinOrClass(doc),
+    d._id,
+    Hierarchy.mixinOrClass(d),
     props.element ?? 'content',
     props.rightSection
   )

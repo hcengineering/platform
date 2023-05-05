@@ -22,6 +22,7 @@
   let shortcuts = false
   let actions: Action[] = []
   let categories: ActionCategory[] = []
+  let selection: number = 0
 
   const client = getClient()
 
@@ -136,7 +137,7 @@
   {:else}
     <!-- Keyboard shortcuts -->
     <Scroller padding={'0 .5rem'} fade={topSP}>
-      <ListView count={actions.length} noScroll>
+      <ListView count={actions.length} noScroll addClass={'rounded'} bind:selection>
         <svelte:fragment slot="category" let:item>
           {@const action = actions[item]}
           {#if item === 0 || (item > 0 && actions[item - 1].category !== action.category)}
@@ -153,10 +154,10 @@
         <svelte:fragment slot="item" let:item>
           {@const action = actions[item]}
           <div class="flex-row-center flex-between flex-grow ml-2 p-3 text-base clear-mins">
-            <div class="mr-4">
+            <div class="mr-4 {selection === item ? 'caption-color' : 'dark-color'}">
               <Icon icon={action.icon ?? IconArrowLeft} size={'small'} />
             </div>
-            <div class="flex-grow">
+            <div class="flex-grow {selection === item ? 'caption-color' : 'content-color'}">
               <Label label={action.label} />
             </div>
             <div class="mr-2 text-md flex-row-center">
@@ -198,9 +199,9 @@
 
 <style lang="scss">
   .card {
-    border: 1px solid var(--button-border-color);
+    margin: 1rem 1rem 0 1rem;
+    border: 1px solid var(--theme-button-border);
     border-radius: 0.75rem;
-    margin: 16px 1rem 0 1rem;
   }
   .container {
     display: flex;
@@ -216,19 +217,18 @@
     align-self: center;
   }
   .footer {
-    align-items: flex-end;
     display: flex;
-    flex: 1;
     justify-content: flex-end;
-    margin: 0 16px;
-    padding-top: 10px;
+    align-items: flex-end;
+    margin: 0 1rem;
+    padding-top: 0.625rem;
   }
   .key-box {
-    background-color: var(--button-bg-color);
-    color: var(--caption-color);
-    min-width: 1.5rem;
     padding: 0 0.5rem;
-    border: 1px solid var(--button-border-color);
+    min-width: 1.5rem;
+    color: var(--theme-caption-color);
+    background-color: var(--theme-button-enabled);
+    border: 1px solid var(--theme-divider-color);
     border-radius: 0.25rem;
   }
   .key-box + .key-box {
@@ -239,8 +239,8 @@
     padding: 0.5rem 1rem;
     top: 0;
     min-height: 2.5rem;
-    background-color: var(--divider-color);
-    color: var(--caption-color);
+    color: var(--theme-caption-color);
+    background-color: var(--theme-comp-header-color);
     border-radius: 0.25rem;
   }
 </style>

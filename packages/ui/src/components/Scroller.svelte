@@ -62,7 +62,6 @@
   let divBox: HTMLElement
   let divBar: HTMLElement
   let divBarH: HTMLElement
-  let divScrollContainer: HTMLElement
   let isScrolling: 'vertical' | 'horizontal' | false = false
   let dXY: number
   let belowContent: number | undefined = undefined
@@ -88,6 +87,8 @@
 
   const checkBar = (): void => {
     if (divBar && divScroll) {
+      dispatch('divScrollTop', divScroll.scrollTop)
+
       const trackH = divScroll.clientHeight - shiftTop - shiftBottom - 4
       const scrollH = divScroll.scrollHeight
       const proc = scrollH / trackH
@@ -251,10 +252,10 @@
   const delayCall = (op: () => void, h?: boolean) => {
     if (h) {
       clearTimeout(checkHBarTimeout)
-      checkHBarTimeout = setTimeout(op, 50)
+      checkHBarTimeout = setTimeout(op, 5)
     } else {
       clearTimeout(checkBarTimeout)
-      checkBarTimeout = setTimeout(op, 50)
+      checkBarTimeout = setTimeout(op, 5)
     }
   }
 
@@ -448,7 +449,6 @@
 <svelte:window on:resize={_resize} />
 
 <div
-  bind:this={divScrollContainer}
   class="scroller-container {orientir} {invertScroll ? 'invert' : 'normal'}"
   class:buttons={buttons === 'normal'}
   class:union={buttons === 'union'}

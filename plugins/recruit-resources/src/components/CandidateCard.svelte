@@ -48,7 +48,7 @@
   <div class="label uppercase"><Label label={recruit.string.Talent} /></div>
   <Avatar avatar={candidate?.avatar} size={'large'} />
   {#if candidate}
-    <DocNavLink object={candidate} disableClick={disabled}>
+    <DocNavLink object={candidate} {disabled}>
       <div class="name lines-limit-2">
         {getName(candidate)}
       </div>

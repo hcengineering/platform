@@ -125,11 +125,11 @@
     />
   {:else}
     <div class="antiSection-empty solid flex-col mt-3">
-      <span class="dark-color">
+      <span class="content-dark-color">
         <Label label={contact.string.NoMembers} />
       </span>
       <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <span class="over-underline content-accent-color" on:click={createApp}>
+      <span class="over-underline content-color" on:click={createApp}>
         <Label label={contact.string.AddMember} />
       </span>
     </div>

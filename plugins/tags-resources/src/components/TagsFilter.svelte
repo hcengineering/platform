@@ -196,7 +196,7 @@
                         <div class="tag" style="background-color: {getPlatformColor(element.color)};" />
                         {element.title}
                       </div>
-                      <div class="dark-color ml-2">
+                      <div class="content-dark-color ml-2">
                         {element.refCount ?? 0}
                       </div>
                     </div>

@@ -59,7 +59,7 @@
   let loading = false
 </script>
 
-<div class:editing class="content-accent-color">
+<div class:editing class="content-color">
   {#if edit}
     <AttachmentRefInput
       bind:loading

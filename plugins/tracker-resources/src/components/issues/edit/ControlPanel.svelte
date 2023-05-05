@@ -110,7 +110,7 @@
       allowDeselect={true}
       showNavigate={false}
       readonly
-      docProps={{ disableClick: true }}
+      docProps={{ disabled: true }}
     />
   {/if}
 

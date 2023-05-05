@@ -86,6 +86,9 @@
   const dispatch = createEventDispatcher()
   let focused = false
 
+  export function isFocused (): boolean {
+    return focused
+  }
   let needFocus = false
 
   $: if (textEditor && needFocus) {
@@ -101,8 +104,9 @@
   export let focusIndex = -1
   const { idx, focusManager } = registerFocus(focusIndex, {
     focus: () => {
+      focused = true
       focus()
-      return false
+      return textEditor.isEditable()
     },
     isFocus: () => focused
   })

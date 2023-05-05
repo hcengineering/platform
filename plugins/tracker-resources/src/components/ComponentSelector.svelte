@@ -128,7 +128,7 @@
       <span
         class="{enlargedText ? 'ml-1 text-base fs-bold' : 'text-md'} overflow-label {!value
           ? 'content-color'
-          : 'content-accent-color'} pointer-events-none"
+          : 'caption-color'} pointer-events-none"
       >
         <Label label={getEmbeddedLabel(componentText)} />
       </span>
