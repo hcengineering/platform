@@ -30,7 +30,7 @@
   export let editable: boolean = false
   export let icon: 'normal' | 'warning' | 'overdue' = 'normal'
   export let labelNull: IntlString = ui.string.NoDate
-  export let kind: 'no-border' | 'link' | 'secondary' = 'no-border'
+  export let kind: 'default' | 'no-border' | 'link' | 'secondary' = 'default'
   export let size: 'small' | 'medium' | 'large' = 'small'
   export let noShift: boolean = false
 
@@ -466,6 +466,14 @@
       }
     }
 
+    &.default {
+      padding: 0;
+      color: var(--theme-content-color);
+
+      &:hover {
+        color: var(--theme-caption-color);
+      }
+    }
     &.no-border {
       font-weight: 400;
       color: var(--theme-content-color);

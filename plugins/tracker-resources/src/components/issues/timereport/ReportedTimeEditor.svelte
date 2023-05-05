@@ -75,7 +75,7 @@
         {/if}
       </span>
     {:else}
-      <span class="dark-color"><Label label={placeholder} /></span>
+      <span class="content-dark-color"><Label label={placeholder} /></span>
     {/if}
     <div class="add-action">
       <ActionIcon icon={IconAdd} size={'small'} action={addTimeReport} />
@@ -89,7 +89,7 @@
     {/if}
   </span>
 {:else}
-  <span class="dark-color"><Label label={placeholder} /></span>
+  <span class="content-dark-color"><Label label={placeholder} /></span>
 {/if}
 
 <style lang="scss">
@@ -98,7 +98,8 @@
     align-items: center;
     padding: 0 0.875rem;
     width: 100%;
-    height: 2rem;
+    height: 2.25rem;
+    color: var(--theme-caption-color);
     border: 1px solid transparent;
     border-radius: 0.25rem;
     cursor: pointer;
@@ -108,9 +109,9 @@
     }
 
     &:hover {
-      color: var(--caption-color);
-      background-color: var(--body-color);
-      border-color: var(--divider-color);
+      background-color: var(--theme-bg-color);
+      border-color: var(--theme-divider-color);
+
       .add-action {
         visibility: visible;
       }

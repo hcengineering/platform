@@ -81,7 +81,7 @@
     }
     .icon {
       margin-right: 0.5rem;
-      color: var(--dark-color);
+      color: var(--theme-dark-color);
     }
 
     &.inline {
@@ -93,7 +93,7 @@
       }
       .select-text {
         font-weight: 500;
-        color: var(--accent-color);
+        color: var(--theme-caption-color);
       }
     }
   }

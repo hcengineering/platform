@@ -382,14 +382,14 @@
       margin-right: 1rem;
       width: 2.25rem;
       min-width: 2.25rem;
-      color: var(--darker-color);
+      color: var(--theme-darker-color);
     }
     .msgactivity-icon {
       height: 1.75rem;
     }
     .msgactivity-avatar {
       height: 2.25rem;
-      // background-color: var(--darker-color);
+      // background-color: var(--theme-darker-color);
       border: 1px dashed var(--divider-trans-color);
       border-radius: 50%;
     }
@@ -486,7 +486,7 @@
 
   .time {
     font-size: 0.75rem;
-    color: var(--trans-color);
+    color: var(--theme-trans-color);
 
     &.top {
       align-self: flex-start;

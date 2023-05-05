@@ -71,6 +71,9 @@
   --timing-main: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --timing-rotate: cubic-bezier(.28,1.92,.39,.56);
   // transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  
+  &::after,
+  &::before { box-sizing: border-box; }
 }
 :root {
   --app-height: 100%;

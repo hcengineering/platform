@@ -84,15 +84,15 @@
       {attachmentClassOptions}
     >
       <div class="antiSection-empty attachments flex-col mt-3" class:solid={dragover}>
-        <div class="flex-center content-accent-color">
+        <div class="flex-center caption-color">
           <UploadDuo size={'large'} />
         </div>
-        <div class="text-sm dark-color" style:pointer-events="none">
+        <div class="text-sm content-dark-color" style:pointer-events="none">
           <Label label={attachment.string.NoAttachments} />
         </div>
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
-          class="over-underline text-sm content-accent-color"
+          class="over-underline text-sm caption-color"
           style:pointer-events={dragover ? 'none' : 'all'}
           on:click={() => inputFile.click()}
         >

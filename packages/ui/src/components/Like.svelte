@@ -45,14 +45,14 @@
     }
     .icon {
       margin-left: 0.25rem;
-      color: var(--trans-color);
+      color: var(--theme-trans-color);
       cursor: pointer;
 
       &:hover {
         color: var(--dark-color);
       }
       &:active {
-        color: var(--darker-color);
+        color: var(--theme-darker-color);
       }
     }
 

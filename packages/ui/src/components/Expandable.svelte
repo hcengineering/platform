@@ -70,8 +70,8 @@
     }
     &.bordered {
       padding: 0.25rem 0.5rem;
-      background-color: var(--body-accent);
-      border: 1px solid var(--divider-color);
+      background-color: var(--theme-comp-header-color);
+      border: 1px solid var(--theme-divider-color);
       border-radius: 0.25rem;
     }
   }

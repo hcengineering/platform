@@ -86,14 +86,15 @@
 
 <style lang="scss">
   .list-container {
+    min-width: 0;
     // border-radius: 0.25rem;
     user-select: none;
 
     .list-item {
-      border-radius: 0.25rem;
+      min-width: 0;
     }
     .selection {
-      background-color: var(--theme-button-focused);
+      background-color: var(--theme-popup-hover);
     }
   }
 </style>

@@ -161,10 +161,13 @@ input.search {
   margin: 0;
   color: var(--accent-color);
   border: none;
-  caret-color: var(--caret-color);
+  caret-color: var(--theme-caret-color);
 
   &.padding { padding: .625rem .75rem; }
 }
+
+.rounded { border-radius: 0.25rem; }
+.rounded-lg { border-radius: 0.5rem; }
 
 /* Flex */
 .flex { display: flex; }
@@ -661,6 +664,10 @@ input.search {
 .square-36 { width: 2.25rem; height: 2.25rem; }
 
 /* --------- */
+.svg-tiny {
+  width: .75rem;
+  height: .75rem;
+}
 .svg-16px {
   width: 16px;
   height: 16px;
@@ -847,12 +854,10 @@ a.no-line {
 .background-content-accent-color { background-color: var(--accent-color); }
 
 .content-trans-color { color: var(--theme-trans-color); }
-
-.dark-color,
-.content-dark-color { color: var(--dark-color); }
-.content-color { color: var(--content-color); }
-.content-accent-color { color: var(--accent-color); }
-.caption-color { color: var(--caption-color); }
+.content-darker-color { color: var(--theme-darker-color); }
+.content-dark-color { color: var(--theme-dark-color); }
+.content-color { color: var(--theme-content-color); }
+.caption-color { color: var(--theme-caption-color); }
 
 .red-color { color: var(--highlight-red); }
 .error-color { color: var(--theme-error-color); }

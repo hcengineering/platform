@@ -60,7 +60,7 @@
   <div class="overflow-label fs-title">
     <Label label={tracker.string.MoveIssues} />
   </div>
-  <div class="content-accent-color mt-4 mb-4">
+  <div class="caption-color mt-4 mb-4">
     <Label label={tracker.string.MoveIssuesDescription} />
   </div>
   <div class="spaceSelect">

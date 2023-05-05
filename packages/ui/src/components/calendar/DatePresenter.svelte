@@ -75,7 +75,7 @@
       showPopup(
         DatePopup,
         { currentDate, mondayStart, withTime, label, detail },
-        undefined,
+        'top',
         () => {
           opened = false
         },
@@ -118,6 +118,7 @@
     flex-shrink: 0;
     font-weight: 400;
     width: auto;
+    min-width: 0;
     white-space: nowrap;
     color: var(--theme-content-color);
     cursor: default;
@@ -300,6 +301,20 @@
       // &.edit {
       //   padding: 0 0.5rem;
       // }
+    }
+    &.transparent {
+      padding: 0 0.625rem;
+      border-radius: 0.25rem;
+
+      &:hover {
+        background-color: var(--theme-button-hovered);
+      }
+      &.selected {
+        background-color: var(--highlight-select);
+      }
+      &.selected:hover {
+        background-color: var(--highlight-select-hover);
+      }
     }
 
     .time-divider {

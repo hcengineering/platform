@@ -205,6 +205,11 @@ export function fitPopupElement (
       newProps.left = '60%'
       newProps.right = '4px'
       show = true
+    } else if (element === 'center') {
+      newProps.top = '50%'
+      newProps.left = '50%'
+      newProps.transform = 'translate(-50%, -50%)'
+      show = true
     } else if (element === 'centered') {
       newProps.top = newProps.bottom = '15%'
       newProps.left = newProps.right = '25%'

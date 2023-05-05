@@ -72,6 +72,6 @@
     : undefined
 </script>
 
-<span use:tooltip={{ label: ui.string.TimeTooltip, props: { value: tooltipValue } }} style="white-space: nowrap;">
+<span use:tooltip={{ label: ui.string.TimeTooltip, props: { value: tooltipValue } }} class="overflow-label">
   {time}
 </span>

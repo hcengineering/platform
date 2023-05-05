@@ -174,7 +174,7 @@
       {/if}
       {#if label}
         <div class="title-wrapper">
-          <span class="wrapped-title text-base content-accent-color">
+          <span class="wrapped-title text-base caption-color">
             <Label {label} />
           </span>
         </div>
@@ -243,16 +243,16 @@
     }
 
     &.column.is-dragged-over-before::before {
-      border-top: 1px solid var(--caret-color);
+      border-top: 1px solid var(--theme-caret-color);
     }
     &.column.is-dragged-over-after::before {
-      border-bottom: 1px solid var(--caret-color);
+      border-bottom: 1px solid var(--theme-caret-color);
     }
     &.row.is-dragged-over-before::before {
-      border-left: 1px solid var(--caret-color);
+      border-left: 1px solid var(--theme-caret-color);
     }
     &.row.is-dragged-over-after::before {
-      border-right: 1px solid var(--caret-color);
+      border-right: 1px solid var(--theme-caret-color);
     }
   }
 </style>

@@ -184,6 +184,8 @@
     display: flex;
     flex-direction: column;
     // justify-content: center;
+    min-width: 0;
+    min-height: 0;
     max-height: calc(100vh - 32px);
     background-color: transparent;
     transform-origin: center;
