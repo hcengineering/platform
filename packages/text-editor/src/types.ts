@@ -71,7 +71,7 @@ export function isLinkElement (element: any): element is HTMLLinkElement {
     return false
   }
 
-  const htmlElement = (element as HTMLElement)
+  const htmlElement = element as HTMLElement
   if (!('tagName' in htmlElement)) {
     return false
   }

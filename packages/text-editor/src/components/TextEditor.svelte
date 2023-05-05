@@ -37,7 +37,7 @@
   let editor: Editor
 
   let placeHolderStr: string = ''
-  
+
   let readonly = false
 
   $: ph = translate(placeholder, {}).then((r) => {
@@ -47,7 +47,7 @@
   const dispatch = createEventDispatcher()
 
   const viewProps: Partial<DirectEditorProps> = {
-    handleClick(view, pos, event) {
+    handleClick (view, pos, event) {
       if (isLinkElement(event.target)) {
         return
       }
