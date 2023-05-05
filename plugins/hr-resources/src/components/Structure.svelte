@@ -51,7 +51,10 @@
 
   query.query(
     hr.class.Department,
-    resultQuery,
+    {
+      ...resultQuery,
+      archived: false
+    },
     (res) => {
       head = res.find((p) => p._id === hr.ids.Head)
       descendants.clear()
