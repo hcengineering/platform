@@ -85,18 +85,6 @@
     mixin: ClassFilters
   ): void {
     const ignoreKeys = new Set(mixin.ignoreKeys ?? [])
-
-    if (mixin.strict) {
-      const resultKeys = new Set(result.map((r) => r.key))
-
-      for (const [key] of allAttributes) {
-        // Ignore attributes not specified in the "mixin.filters"
-        if (!resultKeys.has(key)) {
-          ignoreKeys.add(key)
-        }
-      }
-    }
-
     for (const [key, attribute] of allAttributes) {
       if (ignoreKeys.has(key)) {
         continue
@@ -109,6 +97,12 @@
     const clazz = hierarchy.getClass(_class)
     const mixin = hierarchy.as(clazz, view.mixin.ClassFilters)
     const result = getFilters(_class, mixin)
+
+    if (mixin.strict) {
+      // Attributes not specified in "mixing.filters" are ignored
+      return result
+    }
+
     const allAttributes = hierarchy.getAllAttributes(_class)
     buildFilterFor(_class, allAttributes, result, mixin)
 
