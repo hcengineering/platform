@@ -33,7 +33,9 @@
 
   // TODO: remove "TypeString" from search types after
   // a separate filter for strings is implemented
-  $: isSearchable = [core.class.TypeNumber, core.class.TypeString].includes(filter.key.attribute.type._class)
+  $: isSearchable = [core.class.TypeNumber, core.class.TypeString, core.class.EnumOf].includes(
+    filter.key.attribute.type._class
+  )
 
   const client = getClient()
   const key = { key: filter.key.key }
