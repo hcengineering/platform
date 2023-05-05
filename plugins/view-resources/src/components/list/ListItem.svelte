@@ -155,25 +155,27 @@
         </div>
       {/if}
     {:else if (!groupByKey || listProps?.excludeByKey !== groupByKey) && !listProps?.optional}
-      {#if listProps?.fixed}
-        <FixedColumn key={`list_item_${attributeModel.props?.listProps.key}`} justify={listProps.fixed}>
+      {#if !(compactMode && listProps?.compression)}
+        {#if listProps?.fixed}
+          <FixedColumn key={`list_item_${attributeModel.props?.listProps.key}`} justify={listProps.fixed}>
+            <svelte:component
+              this={attributeModel.presenter}
+              value={getObjectValue(attributeModel.key, docObject) ?? ''}
+              kind={'list'}
+              onChange={getOnChange(docObject, attributeModel)}
+              {...joinProps(attributeModel, docObject, props)}
+            />
+          </FixedColumn>
+        {:else}
           <svelte:component
             this={attributeModel.presenter}
             value={getObjectValue(attributeModel.key, docObject) ?? ''}
-            kind={'list'}
             onChange={getOnChange(docObject, attributeModel)}
+            kind={'list'}
+            compression={listProps?.compression && i !== noCompressed}
             {...joinProps(attributeModel, docObject, props)}
           />
-        </FixedColumn>
-      {:else}
-        <svelte:component
-          this={attributeModel.presenter}
-          value={getObjectValue(attributeModel.key, docObject) ?? ''}
-          onChange={getOnChange(docObject, attributeModel)}
-          kind={'list'}
-          compression={listProps?.compression && i !== noCompressed}
-          {...joinProps(attributeModel, docObject, props)}
-        />
+        {/if}
       {/if}
     {/if}
   {/each}
@@ -191,7 +193,7 @@
         <IconCircles />
       </div>
       <div class="scroll-box gap-2">
-        {#each model.filter((m) => m.props?.listProps?.optional) as attributeModel}
+        {#each model.filter((m) => m.props?.listProps?.optional || m.props?.listProps?.compression) as attributeModel}
           {@const listProps = attributeModel.props?.listProps}
           {@const value = getObjectValue(attributeModel.key, docObject)}
           {#if listProps?.excludeByKey !== groupByKey && value !== undefined}
