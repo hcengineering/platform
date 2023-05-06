@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getMetadata, serialize } from '@hcengineering/platform'
+  import { getMetadata } from '@hcengineering/platform'
   import { Button, EditBox, IconClose, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '@hcengineering/presentation'
@@ -67,7 +67,7 @@
         Authorization: 'Bearer ' + getMetadata(presentation.metadata.Token),
         'Content-Type': 'application/json'
       },
-      body: serialize(data)
+      body: JSON.stringify(data)
     })
     const res = await response.json()
     connecting = false

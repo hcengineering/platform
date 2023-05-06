@@ -77,7 +77,9 @@ export default plugin(clientId, {
     ClientHook: '' as Metadata<Resource<ClientHook>>,
     ClientSocketFactory: '' as Metadata<ClientSocketFactory>,
     FilterModel: '' as Metadata<boolean>,
-    ExtraPlugins: '' as Metadata<Plugin[]>
+    ExtraPlugins: '' as Metadata<Plugin[]>,
+    UseBinaryProtocol: '' as Metadata<boolean>,
+    UseProtocolCompression: '' as Metadata<boolean>
   },
   function: {
     GetClient: '' as Resource<ClientFactory>

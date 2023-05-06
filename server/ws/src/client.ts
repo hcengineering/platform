@@ -21,6 +21,7 @@ import {
   FindResult,
   MeasureContext,
   Ref,
+  Timestamp,
   Tx,
   TxResult
 } from '@hcengineering/core'
@@ -33,7 +34,9 @@ import { BroadcastCall, Session, SessionRequest } from './types'
  */
 export class ClientSession implements Session {
   requests: Map<string, SessionRequest> = new Map()
-
+  binaryResponseMode: boolean = false
+  useCompression: boolean = true
+  sessionId = ''
   constructor (
     protected readonly broadcast: BroadcastCall,
     protected readonly token: Token,
@@ -51,6 +54,10 @@ export class ClientSession implements Session {
   async ping (): Promise<string> {
     // console.log('ping')
     return 'pong!'
+  }
+
+  async loadModel (ctx: MeasureContext, lastModelTx: Timestamp): Promise<Tx[]> {
+    return await this._pipeline.storage.loadModel(lastModelTx)
   }
 
   async findAll<T extends Doc>(

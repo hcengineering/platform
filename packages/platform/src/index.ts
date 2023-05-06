@@ -24,7 +24,6 @@ export * from './event'
 export * from './resource'
 export * from './i18n'
 export * from './metadata'
-export * from './rpc'
 export * from './testUtils'
 
 addStringsLoader(platformId, async (lang: string) => {

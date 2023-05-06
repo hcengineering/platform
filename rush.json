@@ -767,8 +767,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/contrib",
-      "projectFolder": "server/contrib",
+      "packageName": "@hcengineering/rpc",
+      "projectFolder": "server/rpc",
       "shouldPublish": false
     },
     {

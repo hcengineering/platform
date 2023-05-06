@@ -34,7 +34,6 @@ specifiers:
   '@rush-temp/contact': file:./projects/contact.tgz
   '@rush-temp/contact-assets': file:./projects/contact-assets.tgz
   '@rush-temp/contact-resources': file:./projects/contact-resources.tgz
-  '@rush-temp/contrib': file:./projects/contrib.tgz
   '@rush-temp/core': file:./projects/core.tgz
   '@rush-temp/dev-account': file:./projects/dev-account.tgz
   '@rush-temp/dev-client-resources': file:./projects/dev-client-resources.tgz
@@ -145,6 +144,7 @@ specifiers:
   '@rush-temp/request': file:./projects/request.tgz
   '@rush-temp/request-assets': file:./projects/request-assets.tgz
   '@rush-temp/request-resources': file:./projects/request-resources.tgz
+  '@rush-temp/rpc': file:./projects/rpc.tgz
   '@rush-temp/server': file:./projects/server.tgz
   '@rush-temp/server-attachment': file:./projects/server-attachment.tgz
   '@rush-temp/server-attachment-resources': file:./projects/server-attachment-resources.tgz
@@ -331,6 +331,7 @@ specifiers:
   mini-css-extract-plugin: ^2.2.0
   minio: ^7.0.26
   mongodb: ^4.11.0
+  msgpackr: ^1.8.5
   node-fetch: ^2.6.6
   p-queue: ~7.3.0
   pdfkit: ~0.13.0
@@ -422,7 +423,6 @@ dependencies:
   '@rush-temp/contact': file:projects/contact.tgz
   '@rush-temp/contact-assets': file:projects/contact-assets.tgz_typescript@4.8.4
   '@rush-temp/contact-resources': file:projects/contact-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
-  '@rush-temp/contrib': file:projects/contrib.tgz
   '@rush-temp/core': file:projects/core.tgz
   '@rush-temp/dev-account': file:projects/dev-account.tgz
   '@rush-temp/dev-client-resources': file:projects/dev-client-resources.tgz
@@ -533,6 +533,7 @@ dependencies:
   '@rush-temp/request': file:projects/request.tgz
   '@rush-temp/request-assets': file:projects/request-assets.tgz_typescript@4.8.4
   '@rush-temp/request-resources': file:projects/request-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
+  '@rush-temp/rpc': file:projects/rpc.tgz
   '@rush-temp/server': file:projects/server.tgz
   '@rush-temp/server-attachment': file:projects/server-attachment.tgz
   '@rush-temp/server-attachment-resources': file:projects/server-attachment-resources.tgz
@@ -719,6 +720,7 @@ dependencies:
   mini-css-extract-plugin: 2.6.1_webpack@5.75.0
   minio: 7.0.32
   mongodb: 4.11.0
+  msgpackr: 1.9.1
   node-fetch: 2.6.7
   p-queue: 7.3.0
   pdfkit: 0.13.0
@@ -4838,6 +4840,54 @@ packages:
     resolution: {integrity: sha512-9b8mPpKrfeGRuhFH5iO1iwCLeIIsV6+H1sRfxbkoGXIyQE2BTsPd9zqSqQJ+pv5sJ/hT5M1zvOFL02MnEezFug==}
     dev: false
 
+  /@msgpackr-extract/msgpackr-extract-darwin-arm64/3.0.2:
+    resolution: {integrity: sha512-9bfjwDxIDWmmOKusUcqdS4Rw+SETlp9Dy39Xui9BEGEk19dDwH0jhipwFzEff/pFg95NKymc6TOTbRKcWeRqyQ==}
+    cpu: [arm64]
+    os: [darwin]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@msgpackr-extract/msgpackr-extract-darwin-x64/3.0.2:
+    resolution: {integrity: sha512-lwriRAHm1Yg4iDf23Oxm9n/t5Zpw1lVnxYU3HnJPTi2lJRkKTrps1KVgvL6m7WvmhYVt/FIsssWay+k45QHeuw==}
+    cpu: [x64]
+    os: [darwin]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@msgpackr-extract/msgpackr-extract-linux-arm/3.0.2:
+    resolution: {integrity: sha512-MOI9Dlfrpi2Cuc7i5dXdxPbFIgbDBGgKR5F2yWEa6FVEtSWncfVNKW5AKjImAQ6CZlBK9tympdsZJ2xThBiWWA==}
+    cpu: [arm]
+    os: [linux]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@msgpackr-extract/msgpackr-extract-linux-arm64/3.0.2:
+    resolution: {integrity: sha512-FU20Bo66/f7He9Fp9sP2zaJ1Q8L9uLPZQDub/WlUip78JlPeMbVL8546HbZfcW9LNciEXc8d+tThSJjSC+tmsg==}
+    cpu: [arm64]
+    os: [linux]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@msgpackr-extract/msgpackr-extract-linux-x64/3.0.2:
+    resolution: {integrity: sha512-gsWNDCklNy7Ajk0vBBf9jEx04RUxuDQfBse918Ww+Qb9HCPoGzS+XJTLe96iN3BVK7grnLiYghP/M4L8VsaHeA==}
+    cpu: [x64]
+    os: [linux]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@msgpackr-extract/msgpackr-extract-win32-x64/3.0.2:
+    resolution: {integrity: sha512-O+6Gs8UeDbyFpbSh2CPEz/UOrrdWPTBYNblZK5CxxLisYt4kGX3Sc+czffFonyjiGSq3jWLwJS/CCJc7tBr4sQ==}
+    cpu: [x64]
+    os: [win32]
+    requiresBuild: true
+    dev: false
+    optional: true
+
   /@ndelangen/get-tarball/3.0.7:
     resolution: {integrity: sha512-NqGfTZIZpRFef1GoVaShSSRwDC3vde3ThtTeqFdcYd6ipKqnfEVhjK2hUeHjCQUcptyZr2TONqcloFXM+5QBrQ==}
     dependencies:
@@ -8376,6 +8426,14 @@ packages:
     dependencies:
       base64-js: 1.5.1
       ieee754: 1.2.1
+    dev: false
+
+  /bufferutil/4.0.7:
+    resolution: {integrity: sha512-kukuqc39WOHtdxtw4UScxF/WVnMFVSQVKhtx3AjZJzhd0RGZZldcrfSEbVsWWe6KNH253574cq5F+wpv0G9pJw==}
+    engines: {node: '>=6.14.2'}
+    requiresBuild: true
+    dependencies:
+      node-gyp-build: 4.6.0
     dev: false
 
   /builtins/5.0.1:
@@ -13338,6 +13396,28 @@ packages:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
     dev: false
 
+  /msgpackr-extract/3.0.2:
+    resolution: {integrity: sha512-SdzXp4kD/Qf8agZ9+iTu6eql0m3kWm1A2y1hkpTeVNENutaB0BwHlSvAIaMxwntmRUAUjon2V4L8Z/njd0Ct8A==}
+    hasBin: true
+    requiresBuild: true
+    dependencies:
+      node-gyp-build-optional-packages: 5.0.7
+    optionalDependencies:
+      '@msgpackr-extract/msgpackr-extract-darwin-arm64': 3.0.2
+      '@msgpackr-extract/msgpackr-extract-darwin-x64': 3.0.2
+      '@msgpackr-extract/msgpackr-extract-linux-arm': 3.0.2
+      '@msgpackr-extract/msgpackr-extract-linux-arm64': 3.0.2
+      '@msgpackr-extract/msgpackr-extract-linux-x64': 3.0.2
+      '@msgpackr-extract/msgpackr-extract-win32-x64': 3.0.2
+    dev: false
+    optional: true
+
+  /msgpackr/1.9.1:
+    resolution: {integrity: sha512-jJdrNH8tzfCtT0rjPFryBXjRDQE7rqfLkah4/8B4gYa7NNZYFBcGxqWBtfQpGC+oYyBwlkj3fARk4aooKNPHxg==}
+    optionalDependencies:
+      msgpackr-extract: 3.0.2
+    dev: false
+
   /multicast-dns/7.2.5:
     resolution: {integrity: sha512-2eznPJP8z2BFLX50tf0LuODrpINqP1RVIm/CObbTcBRITQgmC/TjcREF1NeTBzIcR5XO/ukWo+YHOjBbFwIupg==}
     hasBin: true
@@ -13432,11 +13512,22 @@ packages:
     engines: {node: '>= 6.13.0'}
     dev: false
 
+  /node-gyp-build-optional-packages/5.0.7:
+    resolution: {integrity: sha512-YlCCc6Wffkx0kHkmam79GKvDQ6x+QZkMjFGrIMxgFNILFvGSbCp2fCBC55pGTT9gVaz8Na5CLmxt/urtzRv36w==}
+    hasBin: true
+    dev: false
+    optional: true
+
   /node-gyp-build/4.1.1:
     resolution: {integrity: sha512-dSq1xmcPDKPZ2EED2S6zw/b9NKsqzXRE6dVr8TVQnI3FJOTteUMuqF3Qqs6LZg+mLGYJWqQzMbIjMtJqTv87nQ==}
     hasBin: true
     dev: false
     optional: true
+
+  /node-gyp-build/4.6.0:
+    resolution: {integrity: sha512-NTZVKn9IylLwUzaKjkas1e4u2DLNcV4rdYagA4PWdPwW87Bi7z+BznyKSRwS/761tV/lzCGXplWsiaMjLqP2zQ==}
+    hasBin: true
+    dev: false
 
   /node-html-parser/6.1.4:
     resolution: {integrity: sha512-3muP9Uy/Pz7bQa9TNYVQzWJhNZMqyCx7xJle8kz2/y1UgzAUyXXShc1IcPaJy6u07CE3K5rQcRwlvHzmlySRjg==}
@@ -16981,6 +17072,21 @@ packages:
         optional: true
     dev: false
 
+  /ws/8.11.0_bufferutil@4.0.7:
+    resolution: {integrity: sha512-HPG3wQd9sNQoT9xHyNCXoDUa+Xw/VevmY9FoHyQ+g+rrMn4j6FB4np7Z0OhdTgjx6MgQLK7jwSy1YecU1+4Asg==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: ^5.0.2
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+    dependencies:
+      bufferutil: 4.0.7
+    dev: false
+
   /xml-name-validator/3.0.0:
     resolution: {integrity: sha512-A5CUptxDsvxKJEU3yO6DuWBSJz/qizqzJKOMIfUJHETbBw/sFaDxgd6fxm1ewUaM0jZ444Fc5vC5ROYurg/4Pw==}
     dev: false
@@ -17722,7 +17828,7 @@ packages:
     dev: false
 
   file:projects/client-resources.tgz:
-    resolution: {integrity: sha512-GB8C92dzfoNCK/xXPRSeIH2KuzFAqAc6oK5ScO6wzh/t/mWhJp4RgaTvo0y7LMhfN6i1WWVBzvHBHj0OBo6IUw==, tarball: file:projects/client-resources.tgz}
+    resolution: {integrity: sha512-MNhh9n/QWYYgY4VhlPSK3aYSuEBICNtdimAaLPLRgYLc1cG5F1/n+sKx7XAGqF/LdWBEZxKmteycjNo2ktNIMA==, tarball: file:projects/client-resources.tgz}
     name: '@rush-temp/client-resources'
     version: 0.0.0
     dependencies:
@@ -17839,31 +17945,6 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/contrib.tgz:
-    resolution: {integrity: sha512-yiE90iXW1Lm0m7zmelvWLrRgED3vdi+LIaMgvlkuQhNR7lZavYR0Ct0eocBZZ3eL/vJ3TgWtpzXoHSJ4ORABbw==, tarball: file:projects/contrib.tgz}
-    name: '@rush-temp/contrib'
-    version: 0.0.0
-    dependencies:
-      '@rushstack/heft': 0.47.11
-      '@types/heft-jest': 1.0.3
-      '@types/node': 16.11.68
-      '@types/ws': 8.5.3
-      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
-      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
-      eslint: 8.27.0
-      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
-      eslint-plugin-import: 2.26.0_eslint@8.27.0
-      eslint-plugin-n: 15.5.1_eslint@8.27.0
-      eslint-plugin-promise: 6.1.1_eslint@8.27.0
-      prettier: 2.8.8
-      typescript: 4.8.4
-      ws: 8.11.0
-    transitivePeerDependencies:
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-    dev: false
-
   file:projects/core.tgz:
     resolution: {integrity: sha512-bdImE9s65q9V1xYNCtMIeB38i28WNea28JEga8bTQcORTNeuSXkilZulgh0RaDJowm6IcOeJapmhZ+T2bFhB7Q==, tarball: file:projects/core.tgz}
     name: '@rush-temp/core'
@@ -17909,7 +17990,7 @@ packages:
     dev: false
 
   file:projects/dev-client-resources.tgz:
-    resolution: {integrity: sha512-peT5kLKFVEXT2HIFt1CACTGGxbF9AqKDLWr+QBqqOl4lRhO6mu+emazD8wK0/VwEIv5iElZt0l4AM7Ia9ecWCg==, tarball: file:projects/dev-client-resources.tgz}
+    resolution: {integrity: sha512-i0KtR3aGiSVzKnK3PhosGymYZ23YyiBLK1SakxNjCsfoO1/bLE1HVninYj0S33Jvh0mQlGjGckQpTRfe94SUoA==, tarball: file:projects/dev-client-resources.tgz}
     name: '@rush-temp/dev-client-resources'
     version: 0.0.0
     dependencies:
@@ -18132,7 +18213,7 @@ packages:
     dev: false
 
   file:projects/front.tgz:
-    resolution: {integrity: sha512-f42UPiEe6x+hDPZVoPtjYdNCL66iES6F4Z6nCp6FFncFM0ZmhlFDkVLSHamnNy9THnDCOw6lNYqHlRyrPVAKUg==, tarball: file:projects/front.tgz}
+    resolution: {integrity: sha512-9Zp4x9WVhbLEuxFrDaydkJ0V5oY+7qw7pSkSNvHLrqWkClGALmMmC/ZPyU/RNu5XXgF56XOXbXLS1wYu6Ge4+g==, tarball: file:projects/front.tgz}
     name: '@rush-temp/front'
     version: 0.0.0
     dependencies:
@@ -20036,6 +20117,7 @@ packages:
       eslint-plugin-n: 15.5.1_eslint@8.27.0
       eslint-plugin-promise: 6.1.1_eslint@8.27.0
       intl-messageformat: 9.13.0
+      msgpackr: 1.9.1
       prettier: 2.8.8
       typescript: 4.8.4
     transitivePeerDependencies:
@@ -20147,7 +20229,7 @@ packages:
     dev: false
 
   file:projects/pod-front.tgz:
-    resolution: {integrity: sha512-1e6T769RTe6Q9VGdX9LMTDtrUDqNE4Xi9KS6tauRwFb/iumyd7u3B7CBO1WLVRfolpuRbjW8HmzA5WqrItPyQg==, tarball: file:projects/pod-front.tgz}
+    resolution: {integrity: sha512-qOPghvKIfC326rsUwsZwS348r9jf/YPwAlydpPo0MtEgpAuNnQsguOywd+IzRpjWIHXIKYUKnXc+JknHkHY1cA==, tarball: file:projects/pod-front.tgz}
     name: '@rush-temp/pod-front'
     version: 0.0.0
     dependencies:
@@ -20539,6 +20621,29 @@ packages:
       eslint-plugin-import: 2.26.0_eslint@8.27.0
       eslint-plugin-n: 15.5.1_eslint@8.27.0
       eslint-plugin-promise: 6.1.1_eslint@8.27.0
+      prettier: 2.8.8
+      typescript: 4.8.4
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  file:projects/rpc.tgz:
+    resolution: {integrity: sha512-juKEcg5BpdXb9i2ShTTpBiRHjNiUw8ghEufkEBrQdSdav3cSliNWzpEwZNfL2TrdVAJQRWRaU364y4UBZEoyAA==, tarball: file:projects/rpc.tgz}
+    name: '@rush-temp/rpc'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.47.11
+      '@types/heft-jest': 1.0.3
+      '@types/node': 16.11.68
+      '@types/ws': 8.5.3
+      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
+      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
+      eslint: 8.27.0
+      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
+      eslint-plugin-import: 2.26.0_eslint@8.27.0
+      eslint-plugin-n: 15.5.1_eslint@8.27.0
+      eslint-plugin-promise: 6.1.1_eslint@8.27.0
+      msgpackr: 1.9.1
       prettier: 2.8.8
       typescript: 4.8.4
     transitivePeerDependencies:
@@ -21367,7 +21472,7 @@ packages:
     dev: false
 
   file:projects/server-ws.tgz:
-    resolution: {integrity: sha512-Q5o+NfH7iWkyG9LDJjAsdVlR/d/6R4+uRLZ+0th+Br9a0cT/RQqpya1vurtueQNUsQXMdkx1+XrKz/LjR38fLg==, tarball: file:projects/server-ws.tgz}
+    resolution: {integrity: sha512-m3265u9EFFm+nZJ1fa8ZkHGIN69/Lwl6xavk4irSWIjc3gUz6H+ydSovljTHbAXjrgUOcbgZRBBmxwTIy/DAOw==, tarball: file:projects/server-ws.tgz}
     name: '@rush-temp/server-ws'
     version: 0.0.0
     dependencies:
@@ -21377,6 +21482,7 @@ packages:
       '@types/ws': 8.5.3
       '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
       '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
+      bufferutil: 4.0.7
       eslint: 8.27.0
       eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
       eslint-plugin-import: 2.26.0_eslint@8.27.0
@@ -21384,11 +21490,10 @@ packages:
       eslint-plugin-promise: 6.1.1_eslint@8.27.0
       prettier: 2.8.8
       typescript: 4.8.4
-      ws: 8.11.0
+      ws: 8.11.0_bufferutil@4.0.7
     optionalDependencies:
       uWebSockets.js: github.com/uNetworking/uWebSockets.js/49f8f1eb54435e4c3e3e436571e93d1f06aaabbb
     transitivePeerDependencies:
-      - bufferutil
       - supports-color
       - utf-8-validate
     dev: false

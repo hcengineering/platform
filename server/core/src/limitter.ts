@@ -15,7 +15,7 @@ export class RateLimitter {
     const processingId = `${this.idCounter++}`
     const cfg = this.config()
 
-    if (this.processingQueue.size > cfg.rate) {
+    while (this.processingQueue.size > cfg.rate) {
       await Promise.race(this.processingQueue.values())
     }
     try {

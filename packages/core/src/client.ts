@@ -15,7 +15,7 @@
 
 import { Plugin } from '@hcengineering/platform'
 import { BackupClient, DocChunk } from './backup'
-import { AttachedDoc, Class, DOMAIN_MODEL, Doc, Domain, PluginConfiguration, Ref } from './classes'
+import { AttachedDoc, Class, DOMAIN_MODEL, Doc, Domain, PluginConfiguration, Ref, Timestamp } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { ModelDb } from './memdb'
@@ -53,6 +53,7 @@ export interface Client extends Storage {
 export interface ClientConnection extends Storage, BackupClient {
   close: () => Promise<void>
   onConnect?: (apply: boolean) => Promise<void>
+  loadModel: (last: Timestamp) => Promise<Tx[]>
 }
 
 class ClientImpl implements Client, BackupClient {
@@ -157,7 +158,7 @@ export async function createClient (
 
   // Temporal buffer, while we apply model
   let txBuffer: Tx[] | undefined = []
-  const loadedTxIds = new Set<Ref<Tx>>()
+  let lastTxTime: Timestamp = 0
 
   const hierarchy = new Hierarchy()
   const model = new ModelDb(hierarchy)
@@ -180,22 +181,22 @@ export async function createClient (
 
   const conn = await connect(txHandler)
 
-  await loadModel(conn, loadedTxIds, allowedPlugins, configs, hierarchy, model)
+  lastTxTime = await loadModel(conn, lastTxTime, allowedPlugins, configs, hierarchy, model)
 
-  txBuffer = txBuffer.filter((tx) => !loadedTxIds.has(tx._id))
+  txBuffer = txBuffer.filter((tx) => tx.space !== core.space.Model || tx.modifiedOn > lastTxTime)
 
   client = new ClientImpl(hierarchy, model, conn)
 
   for (const tx of txBuffer) {
     txHandler(tx)
-    loadedTxIds.add(tx._id)
   }
   txBuffer = undefined
 
   const oldOnConnect: ((apply: boolean) => void) | undefined = conn.onConnect
   conn.onConnect = async () => {
     // Find all new transactions and apply
-    if (!(await loadModel(conn, loadedTxIds, allowedPlugins, configs, hierarchy, model, true))) {
+    lastTxTime = await loadModel(conn, lastTxTime, allowedPlugins, configs, hierarchy, model, true)
+    if (lastTxTime === -1) {
       // We need full refresh
       await oldOnConnect?.(false)
       return
@@ -237,30 +238,24 @@ export async function createClient (
 }
 async function loadModel (
   conn: ClientConnection,
-  processedTx: Set<Ref<Tx>>,
+  lastTxTime: Timestamp,
   allowedPlugins: Plugin[] | undefined,
   configs: Map<Ref<PluginConfiguration>, PluginConfiguration>,
   hierarchy: Hierarchy,
   model: ModelDb,
   reload = false
-): Promise<boolean> {
+): Promise<Timestamp> {
   const t = Date.now()
 
-  const mq: DocumentQuery<Tx> = { objectSpace: core.space.Model }
-  if (processedTx.size > 0) {
-    mq._id = { $nin: Array.from(processedTx.values()) }
-  }
-  const atxes = await conn.findAll(core.class.Tx, mq, {
-    sort: { modifiedOn: SortingOrder.Ascending, _id: SortingOrder.Ascending }
-  })
+  const atxes = await conn.loadModel(lastTxTime)
 
   if (reload && atxes.length > modelTransactionThreshold) {
-    return true
+    return -1
   }
 
   let systemTx: Tx[] = []
   const userTx: Tx[] = []
-  console.log('find' + (processedTx.size === 0 ? 'full model' : 'model diff'), atxes.length, Date.now() - t)
+  console.log('find' + (lastTxTime >= 0 ? 'full model' : 'model diff'), atxes.length, Date.now() - t)
 
   // Ignore Employee accounts.
   function isEmployeeAccount (tx: Tx): boolean {
@@ -286,7 +281,9 @@ async function loadModel (
   const txes = systemTx.concat(userTx)
 
   for (const tx of txes) {
-    processedTx.add(tx._id)
+    if (tx.modifiedOn > lastTxTime) {
+      lastTxTime = tx.modifiedOn
+    }
   }
 
   for (const tx of txes) {
@@ -303,7 +300,7 @@ async function loadModel (
       console.error('failed to apply model transaction, skipping', JSON.stringify(tx), err)
     }
   }
-  return false
+  return lastTxTime
 }
 
 function fillConfiguration (systemTx: Tx[], configs: Map<Ref<PluginConfiguration>, PluginConfiguration>): void {

@@ -77,7 +77,6 @@ export async function start (port: number, host?: string): Promise<void> {
     sessionFactory: (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
     port,
     productId: '',
-    serverFactory: startHttpServer,
-    chunking: -1
+    serverFactory: startHttpServer
   })
 }

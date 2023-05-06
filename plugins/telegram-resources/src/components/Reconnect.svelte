@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { concatLink, getCurrentAccount } from '@hcengineering/core'
-  import { getMetadata, serialize } from '@hcengineering/platform'
+  import { getMetadata } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import { Button, EditBox, IconClose, Label } from '@hcengineering/ui'
@@ -68,7 +68,7 @@
         Authorization: 'Bearer ' + getMetadata(presentation.metadata.Token),
         'Content-Type': 'application/json'
       },
-      body: serialize(data)
+      body: JSON.stringify(data)
     })
     const res = await response.json()
     connecting = false

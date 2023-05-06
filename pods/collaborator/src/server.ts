@@ -1,7 +1,7 @@
 import { MeasureContext } from '@hcengineering/core'
-import { Response, serialize, UNAUTHORIZED } from '@hcengineering/platform'
-import { decodeToken, Token } from '@hcengineering/server-token'
-import { createServer, IncomingMessage } from 'http'
+import { UNAUTHORIZED } from '@hcengineering/platform'
+import { Token, decodeToken } from '@hcengineering/server-token'
+import { IncomingMessage, createServer } from 'http'
 import WebSocket, { WebSocketServer } from 'ws'
 import { setupWSConnection } from './yserver'
 
@@ -57,17 +57,17 @@ export function start (ctx: MeasureContext, port: number, minio: MinioService, h
       )
     } catch (err) {
       wss.handleUpgrade(request, socket, head, (ws) => {
-        const resp: Response<any> = {
+        const resp = {
           id: -1,
           error: UNAUTHORIZED,
           result: 'hello'
         }
-        ws.send(serialize(resp))
+        ws.send(JSON.stringify(resp))
         ws.onmessage = (msg) => {
-          const resp: Response<any> = {
+          const resp = {
             error: UNAUTHORIZED
           }
-          ws.send(serialize(resp))
+          ws.send(JSON.stringify(resp))
         }
       })
     }

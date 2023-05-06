@@ -14,7 +14,8 @@
 // limitations under the License.
 //
 
-import { readResponse, serialize, UNAUTHORIZED } from '@hcengineering/platform'
+import { UNAUTHORIZED } from '@hcengineering/platform'
+import { readResponse, serialize } from '@hcengineering/rpc'
 import { generateToken } from '@hcengineering/server-token'
 import WebSocket from 'ws'
 import { start } from '../server'
@@ -84,8 +85,7 @@ describe('server', () => {
     sessionFactory: (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
     port: 3335,
     productId: '',
-    serverFactory: startHttpServer,
-    chunking: -1
+    serverFactory: startHttpServer
   })
 
   function connect (): WebSocket {
@@ -113,7 +113,7 @@ describe('server', () => {
       conn.close(1000)
     })
     conn.on('message', (msg: string) => {
-      const resp = readResponse(msg)
+      const resp = readResponse(msg, false)
       expect(resp.result === 'hello')
       expect(resp.error?.code).toBe(UNAUTHORIZED.code)
       conn.close(1000)
@@ -129,12 +129,12 @@ describe('server', () => {
     // const start = Date.now()
     conn.on('open', () => {
       for (let i = 0; i < total; i++) {
-        conn.send(serialize({ method: 'tx', params: [], id: i }))
+        conn.send(serialize({ method: 'tx', params: [], id: i }, false))
       }
     })
     let received = 0
     conn.on('message', (msg: string) => {
-      readResponse(msg)
+      readResponse(msg, false)
       if (++received === total) {
         // console.log('resp:', resp, ' Time: ', Date.now() - start)
         conn.close(1000)
@@ -180,8 +180,7 @@ describe('server', () => {
       sessionFactory: (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
       port: 3336,
       productId: '',
-      serverFactory: startHttpServer,
-      chunking: -1
+      serverFactory: startHttpServer
     })
 
     async function findClose (token: string, timeoutPromise: Promise<void>, code: number): Promise<string> {
@@ -191,8 +190,8 @@ describe('server', () => {
         timeoutPromise,
         new Promise((resolve) => {
           newConn.on('open', () => {
-            newConn.send(serialize({ method: 'hello', params: [], id: -1 }))
-            newConn.send(serialize({ method: 'findAll', params: [], id: -1 }))
+            newConn.send(serialize({ method: 'hello', params: [], id: -1 }, false))
+            newConn.send(serialize({ method: 'findAll', params: [], id: -1 }, false))
             resolve(null)
           })
         })
@@ -208,13 +207,13 @@ describe('server', () => {
           newConn.on('message', (msg: Buffer) => {
             try {
               console.log('resp:', msg.toString())
-              const parsedMsg = readResponse(msg.toString()) // Hello
+              const parsedMsg = readResponse(msg.toString(), false) // Hello
               if (!helloReceived) {
                 expect(parsedMsg.result === 'hello')
                 helloReceived = true
                 return
               }
-              responseMsg = readResponse(msg.toString()) // our message
+              responseMsg = readResponse(msg.toString(), false) // our message
               resolve(null)
             } catch (err: any) {
               console.error(err)

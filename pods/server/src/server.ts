@@ -183,7 +183,6 @@ export function start (
     port: number
     productId: string
     serverFactory: ServerFactory
-    chunking: number // 25
 
     indexProcessing: number // 1000
     indexParallel: number // 2
@@ -337,7 +336,6 @@ export function start (
     sessionFactory,
     port: opt.port,
     productId: opt.productId,
-    chunking: opt.chunking,
     serverFactory: opt.serverFactory
   })
 }

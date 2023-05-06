@@ -40,8 +40,6 @@ import platform, {
   PlatformError,
   Plugin,
   plugin,
-  Request,
-  Response,
   Severity,
   Status,
   StatusCode
@@ -969,15 +967,10 @@ async function deactivateEmployeeAccount (email: string, workspace: string, prod
 /**
  * @public
  */
-export type AccountMethod = (
-  db: Db,
-  productId: string,
-  request: Request<any[]>,
-  token?: string
-) => Promise<Response<any>>
+export type AccountMethod = (db: Db, productId: string, request: any, token?: string) => Promise<any>
 
 function wrap (f: (db: Db, productId: string, ...args: any[]) => Promise<any>): AccountMethod {
-  return async function (db: Db, productId: string, request: Request<any[]>, token?: string): Promise<Response<any>> {
+  return async function (db: Db, productId: string, request: any, token?: string): Promise<any> {
     if (token !== undefined) request.params.unshift(token)
     return await f(db, productId, ...request.params)
       .then((result) => ({ id: request.id, result }))

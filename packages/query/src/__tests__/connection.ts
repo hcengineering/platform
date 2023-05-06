@@ -23,13 +23,19 @@ import type {
   FindOptions,
   FindResult,
   Ref,
+  Timestamp,
   Tx,
   TxResult
 } from '@hcengineering/core'
 import core, { DOMAIN_TX, Hierarchy, ModelDb, TxDb } from '@hcengineering/core'
 import { genMinModel } from './minmodel'
 
-export async function connect (handler: (tx: Tx) => void): Promise<Client & BackupClient> {
+export async function connect (handler: (tx: Tx) => void): Promise<
+Client &
+BackupClient & {
+  loadModel: (lastTxTime: Timestamp) => Promise<Tx[]>
+}
+> {
   const txes = genMinModel()
 
   const hierarchy = new Hierarchy()
@@ -74,6 +80,7 @@ export async function connect (handler: (tx: Tx) => void): Promise<Client & Back
       finished: true,
       digest: ''
     }),
+    loadModel: async (lastTxTime) => txes,
     closeChunk: async (idx: number) => {},
     loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => [],
     upload: async (domain: Domain, docs: Doc[]) => {},

@@ -167,7 +167,8 @@ describe('mongo operations', () => {
         closeChunk: async (idx) => {},
         loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => [],
         upload: async (domain: Domain, docs: Doc[]) => {},
-        clean: async (domain: Domain, docs: Ref<Doc>[]) => {}
+        clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
+        loadModel: async () => []
       }
       return st
     })

@@ -13,8 +13,10 @@
 // limitations under the License.
 //
 
-import platform from './platform'
-import { PlatformError, Severity, Status } from './status'
+import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
+import { Packr } from 'msgpackr'
+
+const packr = new Packr({ structuredClone: true, bundleStrings: true })
 
 /**
  * @public
@@ -28,6 +30,20 @@ export interface Request<P extends any[]> {
   id?: ReqId
   method: string
   params: P
+}
+
+/**
+ * @public
+ */
+export interface HelloRequest extends Request<any[]> {
+  binary?: boolean
+  compression?: boolean
+}
+/**
+ * @public
+ */
+export interface HelloResponse extends Response<any> {
+  binary: boolean
 }
 
 /**
@@ -51,8 +67,11 @@ export interface Response<R> {
  * @param object -
  * @returns
  */
-export function protoSerialize (object: object): string {
-  return JSON.stringify(object, replacer)
+export function protoSerialize (object: object, binary: boolean): any {
+  if (!binary) {
+    return JSON.stringify(object, replacer)
+  }
+  return new Uint8Array(packr.pack(object))
 }
 
 /**
@@ -60,8 +79,11 @@ export function protoSerialize (object: object): string {
  * @param data -
  * @returns
  */
-export function protoDeserialize (data: string): any {
-  return JSON.parse(data, receiver)
+export function protoDeserialize (data: any, binary: boolean): any {
+  if (!binary) {
+    return JSON.parse(data, receiver)
+  }
+  return packr.unpack(new Uint8Array(data))
 }
 
 /**
@@ -69,8 +91,8 @@ export function protoDeserialize (data: string): any {
  * @param object -
  * @returns
  */
-export function serialize (object: Request<any> | Response<any>): string {
-  return protoSerialize(object)
+export function serialize (object: Request<any> | Response<any>, binary: boolean): any {
+  return protoSerialize(object, binary)
 }
 
 /**
@@ -78,8 +100,8 @@ export function serialize (object: Request<any> | Response<any>): string {
  * @param response -
  * @returns
  */
-export function readResponse<D> (response: string): Response<D> {
-  return protoDeserialize(response)
+export function readResponse<D> (response: any, binary: boolean): Response<D> {
+  return protoDeserialize(response, binary)
 }
 
 function replacer (key: string, value: any): any {
@@ -108,8 +130,8 @@ function receiver (key: string, value: any): any {
  * @param request -
  * @returns
  */
-export function readRequest<P extends any[]> (request: string): Request<P> {
-  const result: Request<P> = protoDeserialize(request)
+export function readRequest<P extends any[]> (request: any, binary: boolean): Request<P> {
+  const result: Request<P> = protoDeserialize(request, binary)
   if (typeof result.method !== 'string') {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }

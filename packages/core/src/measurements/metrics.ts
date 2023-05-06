@@ -75,36 +75,20 @@ export function metricsAggregate (m: Metrics): Metrics {
   const ms = aggregateMetrics(m.measurements)
 
   // Use child overage, if there is no top level value specified.
-  const keysLen = Object.keys(ms).length
-  const childAverage = m.value === 0 && keysLen > 0
-  const sumVal: Metrics | undefined = childAverage
-    ? Object.entries(ms)
+  const me = Object.entries(ms)
+  const sumVal: number =
+    (me.length === 0 ? m.value : 0) +
+    me
       .filter((it) => !it[0].startsWith('#'))
       .map((it) => it[1])
-      .reduce(
-        (p, v) => {
-          p.operations += v.operations
-          p.value += v.value
-          return p
-        },
-        {
-          operations: 0,
-          value: 0,
-          measurements: ms,
-          params: {}
-        }
-      )
-    : undefined
-  if (sumVal !== undefined) {
-    return {
-      ...sumVal,
-      measurements: ms,
-      params: m.params
-    }
-  }
+      .reduce((p, v) => {
+        return p + v.value
+      }, 0)
   return {
-    ...m,
-    measurements: ms
+    operations: m.operations,
+    measurements: ms,
+    params: m.params,
+    value: sumVal
   }
 }
 
@@ -180,8 +164,8 @@ function printMetricsParamsRows (
     return Object.entries(data).map(([k, vv]) => [
       offset,
       `${key}=${k}`,
-      vv.value / (vv.operations > 0 ? vv.operations : 1),
-      vv.value,
+      Math.round((vv.value / (vv.operations > 0 ? vv.operations : 1)) * 100) / 100,
+      Math.round(vv.value * 100) / 100,
       vv.operations
     ])
   }
@@ -201,7 +185,13 @@ function printMetricsChildrenRows (params: Record<string, Metrics>, offset: numb
 
 function toStringRows (name: string, m: Metrics, offset: number): (number | string)[][] {
   const r: (number | string)[][] = [
-    [offset, name, m.value / (m.operations > 0 ? m.operations : 1), m.value, m.operations]
+    [
+      offset,
+      name,
+      Math.round((m.value / (m.operations > 0 ? m.operations : 1)) * 100) / 100,
+      Math.round(m.value * 100) / 100,
+      m.operations
+    ]
   ]
   r.push(...printMetricsParamsRows(m.params, offset + 1))
   r.push(...printMetricsChildrenRows(m.measurements, offset + 1))

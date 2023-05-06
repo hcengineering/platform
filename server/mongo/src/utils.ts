@@ -37,7 +37,11 @@ export async function shutdown (): Promise<void> {
  * @public
  */
 export async function getMongoClient (uri: string, options?: MongoClientOptions): Promise<MongoClient> {
-  const client = await MongoClient.connect(uri, { ...options })
+  const client = await MongoClient.connect(uri, {
+    ...options,
+    enableUtf8Validation: false,
+    maxConnecting: 1024
+  })
   connections.push(client)
   return client
 }

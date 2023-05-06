@@ -17,8 +17,6 @@ import login, { LoginInfo, Workspace, WorkspaceLoginInfo } from '@hcengineering/
 import {
   OK,
   PlatformError,
-  Request,
-  Response,
   Status,
   getMetadata,
   setMetadata,
@@ -55,7 +53,7 @@ export async function doLogin (email: string, password: string): Promise<[Status
     }
   }
 
-  const request: Request<[string, string]> = {
+  const request = {
     method: 'login',
     params: [email, password]
   }
@@ -68,7 +66,7 @@ export async function doLogin (email: string, password: string): Promise<[Status
       },
       body: JSON.stringify(request)
     })
-    const result: Response<any> = await response.json()
+    const result = await response.json()
     console.log('login result', result)
     return [result.error ?? OK, result.result]
   } catch (err) {
@@ -97,7 +95,7 @@ export async function signUp (
     }
   }
 
-  const request: Request<[string, string, string, string]> = {
+  const request = {
     method: 'createAccount',
     params: [email, password, first, last]
   }
@@ -110,7 +108,7 @@ export async function signUp (
       },
       body: JSON.stringify(request)
     })
-    const result: Response<any> = await response.json()
+    const result = await response.json()
     return [result.error ?? OK, result.result]
   } catch (err) {
     return [unknownError(err), undefined]
@@ -142,7 +140,7 @@ export async function createWorkspace (workspace: string): Promise<[Status, Logi
     return [unknownStatus('Please login'), undefined]
   }
 
-  const request: Request<[string]> = {
+  const request = {
     method: 'createWorkspace',
     params: [workspace]
   }
@@ -156,7 +154,7 @@ export async function createWorkspace (workspace: string): Promise<[Status, Logi
       },
       body: JSON.stringify(request)
     })
-    const result: Response<any> = await response.json()
+    const result = await response.json()
     return [result.error ?? OK, result.result]
   } catch (err) {
     return [unknownError(err), undefined]
@@ -191,9 +189,9 @@ export async function getWorkspaces (): Promise<Workspace[]> {
     return []
   }
 
-  const request: Request<[]> = {
+  const request = {
     method: 'getUserWorkspaces',
-    params: []
+    params: [] as any[]
   }
 
   try {
@@ -205,7 +203,7 @@ export async function getWorkspaces (): Promise<Workspace[]> {
       },
       body: JSON.stringify(request)
     })
-    const result: Response<any> = await response.json()
+    const result = await response.json()
     if (result.error != null) {
       throw new PlatformError(result.error)
     }
@@ -240,7 +238,7 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Work
     return [unknownStatus('Please login'), undefined]
   }
 
-  const request: Request<[string]> = {
+  const request = {
     method: 'selectWorkspace',
     params: [workspace]
   }
@@ -254,7 +252,7 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Work
       },
       body: JSON.stringify(request)
     })
-    const result: Response<any> = await response.json()
+    const result = await response.json()
     return [result.error ?? OK, result.result]
   } catch (err) {
     return [unknownError(err), undefined]
@@ -321,7 +319,7 @@ export async function checkJoined (inviteId: string): Promise<[Status, Workspace
     }
   }
 
-  const request: Request<[string]> = {
+  const request = {
     method: 'checkJoin',
     params: [inviteId]
   }
@@ -335,7 +333,7 @@ export async function checkJoined (inviteId: string): Promise<[Status, Workspace
       },
       body: JSON.stringify(request)
     })
-    const result: Response<any> = await response.json()
+    const result = await response.json()
     return [result.error ?? OK, result.result]
   } catch (err) {
     return [unknownError(err), undefined]
@@ -360,7 +358,7 @@ export async function getInviteLink (expHours: number = 1, emailMask: string = '
     return ''
   }
 
-  const request: Request<[number, string, number]> = {
+  const request = {
     method: 'getInviteLink',
     params: [exp, emailMask, limit]
   }
@@ -373,7 +371,7 @@ export async function getInviteLink (expHours: number = 1, emailMask: string = '
     },
     body: JSON.stringify(request)
   })
-  const result: Response<any> = await response.json()
+  const result = await response.json()
   return result.result
 }
 
@@ -396,7 +394,7 @@ export async function join (
     }
   }
 
-  const request: Request<[string, string, string]> = {
+  const request = {
     method: 'join',
     params: [email, password, inviteId]
   }
@@ -409,7 +407,7 @@ export async function join (
       },
       body: JSON.stringify(request)
     })
-    const result: Response<any> = await response.json()
+    const result = await response.json()
     return [result.error ?? OK, result.result]
   } catch (err) {
     return [unknownError(err), undefined]
@@ -437,7 +435,7 @@ export async function signUpJoin (
     }
   }
 
-  const request: Request<[string, string, string, string, string]> = {
+  const request = {
     method: 'signUpJoin',
     params: [email, password, first, last, inviteId]
   }
@@ -450,7 +448,7 @@ export async function signUpJoin (
       },
       body: JSON.stringify(request)
     })
-    const result: Response<any> = await response.json()
+    const result = await response.json()
     return [result.error ?? OK, result.result]
   } catch (err) {
     return [unknownError(err), undefined]
@@ -473,7 +471,7 @@ export async function changeName (first: string, last: string): Promise<void> {
   }
   const token = getMetadata(presentation.metadata.Token) as string
 
-  const request: Request<[string, string]> = {
+  const request = {
     method: 'changeName',
     params: [first, last]
   }
@@ -504,7 +502,7 @@ export async function changePassword (oldPassword: string, password: string): Pr
   }
   const token = getMetadata(presentation.metadata.Token) as string
 
-  const request: Request<[string, string]> = {
+  const request = {
     method: 'changePassword',
     params: [oldPassword, password]
   }
@@ -539,7 +537,7 @@ export async function leaveWorkspace (email: string): Promise<void> {
   }
   const token = getMetadata(presentation.metadata.Token) as string
 
-  const request: Request<[string]> = {
+  const request = {
     method: 'leaveWorkspace',
     params: [email]
   }
@@ -570,7 +568,7 @@ export async function sendInvite (email: string): Promise<void> {
   }
   const token = getMetadata(presentation.metadata.Token) as string
 
-  const request: Request<[string]> = {
+  const request = {
     method: 'sendInvite',
     params: [email]
   }
@@ -599,7 +597,7 @@ export async function requestPassword (email: string): Promise<Status> {
       return OK
     }
   }
-  const request: Request<[string]> = {
+  const request = {
     method: 'requestPassword',
     params: [email]
   }
@@ -612,7 +610,7 @@ export async function requestPassword (email: string): Promise<Status> {
       },
       body: JSON.stringify(request)
     })
-    const result: Response<any> = await response.json()
+    const result = await response.json()
     return result.error ?? OK
   } catch (err) {
     return unknownError(err)
@@ -626,7 +624,7 @@ export async function restorePassword (token: string, password: string): Promise
     throw new Error('accounts url not specified')
   }
 
-  const request: Request<[string]> = {
+  const request = {
     method: 'restorePassword',
     params: [password]
   }
@@ -640,7 +638,7 @@ export async function restorePassword (token: string, password: string): Promise
       },
       body: JSON.stringify(request)
     })
-    const result: Response<any> = await response.json()
+    const result = await response.json()
     return [result.error ?? OK, result.result]
   } catch (err) {
     return [unknownError(err), undefined]

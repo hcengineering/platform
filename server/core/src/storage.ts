@@ -38,6 +38,7 @@ import core, {
   Ref,
   ServerStorage,
   StorageIterator,
+  Timestamp,
   Tx,
   TxApplyIf,
   TxCollectionCUD,
@@ -118,7 +119,8 @@ class TServerStorage implements ServerStorage {
     private readonly workspace: WorkspaceId,
     readonly indexFactory: (storage: ServerStorage) => FullTextIndex,
     readonly options: ServerStorageOptions,
-    metrics: MeasureContext
+    metrics: MeasureContext,
+    readonly model: Tx[]
   ) {
     this.hierarchy = hierarchy
     this.fulltext = indexFactory(this)
@@ -316,6 +318,10 @@ class TServerStorage implements ServerStorage {
     return result
   }
 
+  async loadModel (lastModelTx: Timestamp): Promise<Tx[]> {
+    return this.model.filter((it) => it.modifiedOn > lastModelTx)
+  }
+
   async findAll<T extends Doc>(
     ctx: MeasureContext,
     clazz: Ref<Class<T>>,
@@ -327,13 +333,7 @@ class TServerStorage implements ServerStorage {
       if (query?.$search !== undefined) {
         return ctx.with('full-text-find-all', {}, (ctx) => this.fulltext.findAll(ctx, clazz, query, options))
       }
-      const q: Record<string, any> = { _class: clazz }
-      for (const [k] of Object.entries(query)) {
-        q[k] = '...'
-      }
-      return ctx.with('db-find-all', { q: JSON.stringify(q) }, () =>
-        this.getAdapter(domain).findAll(clazz, query, options)
-      )
+      return ctx.with('db-find-all', { d: domain }, () => this.getAdapter(domain).findAll(clazz, query, options))
     })
   }
 
@@ -651,6 +651,7 @@ class TServerStorage implements ServerStorage {
         this.hierarchy.tx(tx)
         await this.triggers.tx(tx)
         await this.modelDb.tx(tx)
+        this.model.push(tx)
       }
 
       const triggerFx = new Effects()
@@ -883,7 +884,8 @@ export async function createServerStorage (
     conf.workspace,
     indexFactory,
     options,
-    metrics
+    metrics,
+    model
   )
 }
 

@@ -14,7 +14,7 @@
 //
 
 import { MeasureContext } from './measurements'
-import type { Doc, Class, Ref, Domain } from './classes'
+import type { Doc, Class, Ref, Domain, Timestamp } from './classes'
 import { Hierarchy } from './hierarchy'
 import { ModelDb } from './memdb'
 import type { DocumentQuery, FindOptions, FindResult, TxResult } from './storage'
@@ -68,4 +68,5 @@ export interface ServerStorage extends LowLevelStorage {
   tx: (ctx: MeasureContext, tx: Tx) => Promise<[TxResult, Tx[]]>
   apply: (ctx: MeasureContext, tx: Tx[], broadcast: boolean) => Promise<Tx[]>
   close: () => Promise<void>
+  loadModel: (lastModelTx: Timestamp) => Promise<Tx[]>
 }
