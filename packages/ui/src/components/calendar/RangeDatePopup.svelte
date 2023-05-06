@@ -65,7 +65,7 @@
     viewDateSec = changeMonth(startDate, endDate)
   }
   const closeDP = (): void => {
-    if (!dateInput.isNull(false)) saveDate()
+    if (!dateInput.isNull(startDate, false)) saveDate()
     else {
       startDate = null
       endDate = null

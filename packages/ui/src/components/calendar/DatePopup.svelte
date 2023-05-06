@@ -52,7 +52,7 @@
     }
   }
   const closeDP = (withTime: boolean = false): void => {
-    if (!dateInput.isNull(withTime)) saveDate(withTime)
+    if (!dateInput.isNull(currentDate, withTime)) saveDate(withTime)
     else {
       currentDate = null
       dispatch('update', null)
