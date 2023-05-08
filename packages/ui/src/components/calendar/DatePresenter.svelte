@@ -165,7 +165,7 @@
         color: var(--theme-content-color);
       }
       &.warning {
-        color: var(--warning-color);
+        color: var(--theme-warning-color);
       }
       &.critical {
         color: var(--theme-error-color);
@@ -196,7 +196,7 @@
             color: var(--caption-color);
           }
           &.warning {
-            color: var(--warning-color);
+            color: var(--theme-warning-color);
           }
           &.critical {
             color: var(--theme-error-color);

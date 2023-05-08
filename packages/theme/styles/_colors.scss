@@ -134,6 +134,7 @@
   --theme-calendar-weekend-bgcolor: rgba(242, 153, 74, .05);
 
   --theme-error-color: #eb5757;
+  --theme-warning-color: #f2994a;
   --theme-lost-color: #eb5757;
   --theme-won-color: #34DB80;
   --theme-caret-color: #6e5ed2;
@@ -162,7 +163,6 @@
   --accent-color: #d7d8db;
   --caption-color: #f7f8f8;
   --white-color: #fff;
-  --warning-color: #f2994a;
 
   --divider-color: #303236;
   --divider-trans-color: rgba(255, 255, 255, .12);
@@ -296,6 +296,7 @@
   --theme-calendar-weekend-bgcolor: rgba(242, 153, 74, .1);
 
   --theme-error-color: #eb5757;  // Dark
+  --theme-warning-color: #f2994a;  // Dark
   --theme-lost-color: #eb5757;  // Dark
   --theme-won-color: #34DB80;  // Dark
   --theme-caret-color: #6e5ed2;
@@ -324,7 +325,6 @@
   --theme-accent-color: rgba(0, 0, 0, .8);
   --caption-color: #131416;
   --white-color: #fff;
-  --warning-color: #f2994a;  // Dark
 
   --divider-color: #e0e0e0;
   --divider-trans-color: rgba(0, 0, 0, .12);
