@@ -117,7 +117,7 @@
       {params?.subTitlePostfix}
     </span>
   </div>
-  <div class="flex-between">
+  <div class="flex-between gap-2">
     <Button label={tracker.string.ViewIssue} on:click={handleIssueOpened} />
     <Button icon={tracker.icon.CopyURL} label={tracker.string.CopyIssueUrl} on:click={handleCopyUrl} />
   </div>

@@ -122,16 +122,14 @@
     icon={tracker.icon.Components}
     disabled={!isEditable}
     {loading}
+    notSelected={!value}
     {short}
     on:click={handleComponentEditorOpened}
-    ><svelte:fragment slot="content">
-      <span
-        class="{enlargedText ? 'ml-1 text-base fs-bold' : 'text-md'} overflow-label {!value
-          ? 'content-color'
-          : 'caption-color'} pointer-events-none"
-      >
+  >
+    <svelte:fragment slot="content">
+      <span class="label {enlargedText ? 'ml-1 text-base fs-bold' : 'text-md'} overflow-label pointer-events-none">
         <Label label={getEmbeddedLabel(componentText)} />
       </span>
-    </svelte:fragment></Button
-  >
+    </svelte:fragment>
+  </Button>
 {/if}

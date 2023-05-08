@@ -20,7 +20,7 @@
   import { TagCategory, TagElement } from '@hcengineering/tags'
   import {
     Button,
-    CheckBox,
+    IconCheck,
     getPlatformColor,
     Icon,
     IconAdd,
@@ -174,19 +174,26 @@
                     ({catObjects.length})
                   {/if}
                 </span>
-                <span class="counter">{getCount(cat)}</span>
+                <span class="counter">
+                  {#key selected}
+                    {getCount(cat)}
+                  {/key}
+                </span>
               </div>
             </button>
             <div class="menu-group">
               {#each catObjects.slice(0, 50) as element}
                 <button
-                  class="menu-item"
+                  class="menu-item no-focus"
+                  class:selected={isSelected(selected, element)}
                   on:click={() => {
                     checkSelected(selected, element)
                   }}
                 >
-                  <div class="check pointer-events-none">
-                    <CheckBox checked={isSelected(selected, element)} primary />
+                  <div class="check">
+                    {#if isSelected(selected, element)}
+                      <Icon icon={IconCheck} size={'small'} />
+                    {/if}
                   </div>
                   <div class="tag" style="background-color: {getPlatformColor(element.color)};" />
                   <span class="lines-limit-2">{element.title}</span>
@@ -210,11 +217,12 @@
 
 <style lang="scss">
   .counter {
+    margin-top: -0.125rem;
     padding-right: 0.125rem;
     min-width: 1.5rem;
     text-align: right;
     font-size: 0.8125rem;
-    color: var(--caption-color);
+    color: var(--theme-caption-color);
   }
   .empty {
     display: flex;
@@ -222,7 +230,7 @@
     align-items: center;
     height: 100%;
     font-size: 0.75rem;
-    color: var(--dark-color);
-    border-top: 1px solid var(--popup-divider);
+    color: var(--theme-dark-color);
+    border-top: 1px solid var(--theme-popup-divider);
   }
 </style>

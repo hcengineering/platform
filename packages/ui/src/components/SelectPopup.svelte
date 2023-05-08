@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { Asset, IntlString } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
-  import { deviceOptionsStore, mouseAttractor, resizeObserver } from '..'
+  import { deviceOptionsStore, resizeObserver } from '..'
   import { createFocusManager } from '../focus'
   import type { AnySvelteComponent } from '../types'
   import EditBox from './EditBox.svelte'
@@ -136,7 +136,9 @@
       />
     </div>
   {/if}
-  <div class:background-accent-bg-color={cHeight === 1} style:height={'2px'} />
+  {#if cHeight === 1}
+    <div class="whereSelected" />
+  {/if}
   <div class="scroll" on:scroll={() => updateLocation(scrollDiv, selectedDiv, filteredObjects)} bind:this={scrollDiv}>
     <div class="box">
       <ListView
@@ -148,15 +150,13 @@
         <svelte:fragment slot="item" let:item={itemId}>
           {@const item = filteredObjects[itemId]}
           <button
-            class="menu-item w-full"
+            class="menu-item withList w-full"
+            class:selected={item.isSelected}
             on:click={() => dispatch('close', item.id)}
-            on:focus={() => dispatch('update', item)}
-            on:mouseover={mouseAttractor(() => dispatch('update', item))}
-            on:mouseenter={mouseAttractor(() => dispatch('update', item))}
           >
-            <div class="flex-row-center" class:mt-2={huge} class:mb-2={huge}>
+            <div class="flex-row-center pointer-events-none" class:mt-2={huge} class:mb-2={huge}>
               {#if hasSelected}
-                <div class="icon">
+                <div class="check">
                   {#if item.isSelected}
                     <div bind:this={selectedDiv}>
                       <Icon icon={IconCheck} {size} />
@@ -186,18 +186,24 @@
         <svelte:fragment slot="category" let:item={row}>
           {@const obj = filteredObjects[row]}
           {#if obj.category && ((row === 0 && obj.category.label !== undefined) || obj.category.label !== filteredObjects[row - 1]?.category?.label)}
-            <div class="flex p-1">
-              <div class="icon mr-2">
+            <div class="menu-group__header">
+              <div class="flex-row-center pl-1">
                 {#if obj.category.icon}
-                  <Icon icon={obj.category.icon} size={'small'} />
+                  <div class="clear-mins flex-no-shrink mr-2">
+                    <Icon icon={obj.category.icon} size={'small'} />
+                  </div>
                 {/if}
+                <span class="overflow-label">
+                  <Label label={obj.category.label} />
+                </span>
               </div>
-              <Label label={obj.category.label} />
             </div>
           {/if}
         </svelte:fragment>
       </ListView>
     </div>
   </div>
-  <div class:background-accent-bg-color={cHeight === -1} style:height={'2px'} />
+  {#if cHeight === -1}
+    <div class="whereSelected" />
+  {/if}
 </div>

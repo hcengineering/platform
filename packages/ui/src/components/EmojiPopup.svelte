@@ -131,7 +131,7 @@
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
         use:tooltip={{ label: category.label }}
-        class="element m-0-5"
+        class="element"
         class:selected={currentCategory === category}
         on:click={() => handleScrollToCategory(category.id)}
       >
@@ -140,7 +140,7 @@
     {/each}
   </div>
   <div class="scrolling">
-    <Scroller bind:divScroll={div} on:scrolledCategories={handleScrolled} fade={emojiSP} noStretch>
+    <Scroller bind:divScroll={div} on:scrolledCategories={handleScrolled} fade={emojiSP} noStretch checkForHeaders>
       {#each categories as category}
         <div id={category.id} class="scroll-header categoryHeader">
           <Label label={category.label} />
@@ -149,7 +149,7 @@
           {#each category.emojis as emoji}
             {#if emoji !== undefined}
               <!-- svelte-ignore a11y-click-events-have-key-events -->
-              <div class="element m-0-5" on:click={() => dispatch('close', emoji)}>{emoji}</div>
+              <div class="element" on:click={() => dispatch('close', emoji)}>{emoji}</div>
             {/if}
           {/each}
         </div>
@@ -181,8 +181,8 @@
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
-    color: var(--dark-color);
-    background-color: var(--board-bg-color);
+    color: var(--theme-caption-color);
+    background-color: var(--theme-popup-header);
     border-radius: 0.25rem;
     &:first-child {
       margin-top: 0;
@@ -198,18 +198,22 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 1.5rem;
-    height: 1.5rem;
+    flex-shrink: 0;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin: 0.125rem;
+    padding: 0.25rem;
     border-radius: 0.25rem;
-    color: var(--caption-color);
+    color: var(--theme-content-color);
     cursor: pointer;
 
     &:hover {
-      background-color: var(--popup-bg-hover);
+      color: var(--theme-caption-color);
+      background-color: var(--theme-popup-hover);
     }
 
     &.selected {
-      background-color: var(--popup-bg-hover);
+      background-color: var(--theme-popup-header);
     }
   }
 </style>

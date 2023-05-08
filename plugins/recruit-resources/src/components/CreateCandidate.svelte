@@ -702,6 +702,7 @@
             focusIndex={103}
             label={recruit.string.AddDropHere}
             icon={IconAttachment}
+            notSelected
             on:click={() => {
               inputFile.click()
             }}
@@ -727,7 +728,7 @@
 <style lang="scss">
   .resume {
     box-shadow: 0 0 0 0 var(--primary-button-focused-border);
-    border-radius: 0.5rem;
+    border-radius: 0.25rem;
     transition: box-shadow 0.15s ease-in-out;
 
     &.solid {

@@ -134,9 +134,10 @@
         </div>
       </div>
     {/each}
+    <div class="flex-grow" />
   {:else}
     <!-- Keyboard shortcuts -->
-    <Scroller padding={'0 .5rem'} fade={topSP}>
+    <Scroller padding={'0 .5rem'} fade={topSP} noStretch checkForHeaders>
       <ListView count={actions.length} noScroll addClass={'rounded'} bind:selection>
         <svelte:fragment slot="category" let:item>
           {@const action = actions[item]}
@@ -220,7 +221,7 @@
     display: flex;
     justify-content: flex-end;
     align-items: flex-end;
-    margin: 0 1rem;
+    margin: 0 0.5rem 0.5rem;
     padding-top: 0.625rem;
   }
   .key-box {

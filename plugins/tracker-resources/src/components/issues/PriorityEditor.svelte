@@ -42,7 +42,7 @@
 
   const client = getClient()
   const dispatch = createEventDispatcher()
-  const prioritiesInfo = defaultPriorities.map((p) => ({ id: p, ...issuePriorities[p] }))
+  let selectedPriority: IssuePriority | undefined = value.priority
 
   const handlePriorityEditorOpened = (event: MouseEvent) => {
     event.stopPropagation()
@@ -64,12 +64,21 @@
       return
     }
 
+    selectedPriority = newPriority
     dispatch('change', newPriority)
 
     if ('_class' in value) {
       await client.update(value, { priority: newPriority })
     }
   }
+
+  $: prioritiesInfo = defaultPriorities.map((p) => {
+    return {
+      id: p,
+      isSelected: selectedPriority === p,
+      ...issuePriorities[p]
+    }
+  })
 </script>
 
 {#if value}

@@ -73,19 +73,25 @@
     selectedSprint = sprints.find((it) => it._id === newSprintId)
   }
 
-  const getSprintInfo = (rawSprints: Sprint[]) => {
+  const getSprintInfo = (rawSprints: Sprint[], sp: Sprint | undefined) => {
     return [
-      { id: null, icon: tracker.icon.Sprint, label: tracker.string.NoSprint },
+      {
+        id: null,
+        icon: tracker.icon.Sprint,
+        label: tracker.string.NoSprint,
+        isSelected: sp === undefined
+      },
       ...rawSprints.map((p) => ({
         id: p._id,
         icon: tracker.icon.Sprint,
         text: p.label,
+        isSelected: sp ? p._id === sp._id : false,
         category: sprintStatusAssets[p.status]
       }))
     ]
   }
 
-  $: sprints = getSprintInfo(rawSprints)
+  $: sprints = getSprintInfo(rawSprints, selectedSprint)
 
   const handleSprintEditorOpened = async (event: MouseEvent): Promise<void> => {
     event.stopPropagation()
@@ -138,15 +144,12 @@
     {showTooltip}
     icon={sprintIcon}
     disabled={!isEditable}
+    notSelected={!value}
     {short}
     on:click={handleSprintEditorOpened}
   >
     <svelte:fragment slot="content">
-      <span
-        class="{enlargedText ? 'text-base' : 'text-md'} fs-bold overflow-label {!value
-          ? 'content-color'
-          : 'caption-color'} pointer-events-none"
-      >
+      <span class="label {enlargedText ? 'text-base' : 'text-md'} fs-bold overflow-label pointer-events-none">
         <Label label={getEmbeddedLabel(sprintText)} />
       </span>
     </svelte:fragment>

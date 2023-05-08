@@ -211,6 +211,8 @@
       }
     }
   }
+
+  const elements: HTMLElement[] = []
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
@@ -218,8 +220,12 @@
     {#each getTypes(_class) as type, i}
       {#if filter === undefined && type.component === view.component.ObjectFilter && hasNested(type)}
         <Submenu
+          bind:element={elements[i]}
           on:keydown={(event) => keyDown(event, i)}
-          on:click={(event) => {
+          on:mouseover={() => {
+            elements[i].focus()
+          }}
+          on:click={() => {
             click(type)
           }}
           icon={type.icon}
@@ -236,7 +242,7 @@
           on:mouseover={(event) => {
             event.currentTarget.focus()
           }}
-          on:click={(event) => {
+          on:click={() => {
             click(type)
           }}
         >
@@ -245,7 +251,7 @@
               <Icon icon={type.icon} size={'small'} />
             {/if}
           </div>
-          <div class="pr-1"><Label label={type.label} /></div>
+          <div class="overflow-label pr-1"><Label label={type.label} /></div>
         </button>
       {/if}
     {/each}

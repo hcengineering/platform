@@ -117,7 +117,7 @@
     .icon {
       width: 1rem;
       height: 1rem;
-      color: var(--theme-caret-color);
+      color: var(--theme-dark-color);
     }
     .color {
       width: .875rem;
@@ -138,20 +138,25 @@
       overflow: hidden;
     }
     .check {
-      display: flex;
-      align-items: center;
-      margin-right: .75rem;
+      flex-shrink: 0;
+      width: 1rem;
+      height: 1rem;
+      margin-right: .375rem;
+      color: var(--theme-caret-color);
     }
     .check-right { margin: 0 0 0 2rem; }
-    &:not(.withList):focus,
+    &:not(.withList, .no-focus):focus,
     &:not(.withList):hover {
-      color: var(--theme-caption-color);
       background-color: var(--theme-popup-hover);
+    }
+    &:not(.withList, .no-focus):focus,
+    &:not(.withList):hover,
+    &.selected,
+    &:hover {
+      color: var(--theme-caption-color);
 
       .icon { color: var(--theme-content-color); }
     }
-    &.no-focus:not(.withList):focus { background-color: var(--theme-popup-hover); }
-    &.no-focus:not(.withList):hover { background-color: var(--theme-popup-hover); }
   }
   .sticky-wrapper {
     display: flex;
@@ -173,13 +178,13 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: .125rem .25rem;
+      padding: .375rem .25rem;
       min-height: 1.5rem;
       font-weight: 500;
       font-size: .75rem;
       text-align: left;
       color: var(--theme-content-color);
-      background-color: var(--theme-comp-header-color);
+      background-color: var(--theme-popup-header);
       cursor: pointer;
 
       .icon {
@@ -192,6 +197,10 @@
       &:hover { color: var(--theme-caption-color); }
       &.show + .menu-group { height: auto; }
     }
+  }
+  .whereSelected {
+    height: 2px;
+    background-color: var(--theme-caret-color);
   }
 }
 
@@ -386,14 +395,18 @@
   align-items: center;
   flex-shrink: 0;
   justify-content: flex-start;
-  padding: .25rem .75rem;
+  padding: .25rem .5rem;
   min-width: 0;
   min-height: 2rem;
   text-align: left;
   color: var(--theme-content-color);
+  outline: none;
   cursor: pointer;
 
-  .icon { color: var(--theme-dark-color); }
+  .icon {
+    margin-right: .375rem;
+    color: var(--theme-dark-color);
+  }
   &:focus .icon,
   &.withHover:hover .icon,
   &.withIconHover:hover .icon { color: var(--theme-caption-color); }
@@ -450,6 +463,7 @@
 .notifyPopup .content .mention { margin-top: 0 !important; }
 
 .helpAndSupportPopup {
+  height: 100%;
   min-height: 100%;
   min-width: 20rem;
 }

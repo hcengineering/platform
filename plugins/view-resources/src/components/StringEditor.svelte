@@ -43,6 +43,7 @@
     {size}
     {justify}
     {width}
+    notSelected={!value}
     on:click={(ev) => {
       if (!shown && !readonly) {
         showPopup(EditBoxPopup, { value }, eventToHTMLElement(ev), (res) => {
@@ -57,9 +58,9 @@
   >
     <svelte:fragment slot="content">
       {#if value}
-        <span class="overflow-label pointer-events-none">{value}</span>
+        <span class="label overflow-label pointer-events-none">{value}</span>
       {:else}
-        <span class="content-dark-color pointer-events-none"><Label label={placeholder} /></span>
+        <span class="label pointer-events-none"><Label label={placeholder} /></span>
       {/if}
     </svelte:fragment>
   </Button>
