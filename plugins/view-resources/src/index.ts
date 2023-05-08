@@ -77,6 +77,14 @@ import ViewletSettingButton from './components/ViewletSettingButton.svelte'
 import {
   afterResult,
   beforeResult,
+  dateCustom,
+  dateMonth,
+  dateNextMonth,
+  dateNextWeek,
+  dateNotSpecified,
+  dateOutdated,
+  dateToday,
+  dateWeek,
   nestedDontMatchResult,
   nestedMatchResult,
   objectInResult,
@@ -224,6 +232,14 @@ export default async (): Promise<Resources> => ({
     FilterNestedMatchResult: nestedMatchResult,
     FilterNestedDontMatchResult: nestedDontMatchResult,
     ShowEmptyGroups: showEmptyGroups,
-    StatusSort: statusSort
+    StatusSort: statusSort,
+    FilterDateOutdated: dateOutdated,
+    FilterDateToday: dateToday,
+    FilterDateWeek: dateWeek,
+    FilterDateNextWeek: dateNextWeek,
+    FilterDateMonth: dateMonth,
+    FilterDateNextMonth: dateNextMonth,
+    FilterDateNotSpecified: dateNotSpecified,
+    FilterDateCustom: dateCustom
   }
 })

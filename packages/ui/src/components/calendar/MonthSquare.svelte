@@ -25,6 +25,7 @@
   export let hideNavigator: boolean = false
   export let viewUpdate: boolean = true
   export let displayedWeeksCount = 6
+  export let selectedTo: Date | null | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -33,14 +34,24 @@
   const today: Date = new Date(Date.now())
   const capitalizeFirstLetter = (str: string): string => str.charAt(0).toUpperCase() + str.slice(1)
 
-  if (viewDate === undefined) viewDate = currentDate ?? today
   afterUpdate(() => {
-    if (currentDate && viewUpdate) viewDate = currentDate
-    if (viewDate) {
-      monthYear = capitalizeFirstLetter(getMonthName(viewDate)) + ' ' + viewDate.getFullYear()
-      firstDayOfCurrentMonth = firstDay(viewDate, mondayStart)
-    }
+    monthYear = capitalizeFirstLetter(getMonthName(viewDate)) + ' ' + viewDate.getFullYear()
+    firstDayOfCurrentMonth = firstDay(viewDate, mondayStart)
   })
+
+  function inRange (currentDate: Date | null, selectedTo: Date | null | undefined, target: Date): boolean {
+    if (currentDate == null || selectedTo == null) return false
+    if (areDatesEqual(currentDate, selectedTo)) return false
+    const startDate = currentDate < selectedTo ? currentDate : selectedTo
+    const endDate = currentDate > selectedTo ? currentDate : selectedTo
+    return target > startDate && target < endDate
+  }
+
+  function isSelected (currentDate: Date | null, selectedTo: Date | null | undefined, target: Date): boolean {
+    if (currentDate != null && areDatesEqual(currentDate, target)) return true
+    if (selectedTo != null && areDatesEqual(selectedTo, target)) return true
+    return false
+  }
 </script>
 
 <div class="month-container">
@@ -52,7 +63,7 @@
           class="btn"
           on:click={() => {
             if (viewUpdate) viewDate.setMonth(viewDate.getMonth() - 1)
-            dispatch('navigation', '-m')
+            dispatch('navigation', -1)
           }}
         >
           <div class="icon-btn"><Icon icon={IconNavPrev} size={'full'} /></div>
@@ -61,7 +72,7 @@
           class="btn"
           on:click={() => {
             if (viewUpdate) viewDate.setMonth(viewDate.getMonth() + 1)
-            dispatch('navigation', '+m')
+            dispatch('navigation', 1)
           }}
         >
           <div class="icon-btn"><Icon icon={IconNavNext} size={'full'} /></div>
@@ -80,14 +91,14 @@
 
       {#each [...Array(displayedWeeksCount).keys()] as weekIndex}
         {#each [...Array(7).keys()] as dayOfWeek}
-          {@const wrongM = weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek).getMonth() !== viewDate.getMonth()}
+          {@const date = weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek)}
+          {@const wrongM = date.getMonth() !== viewDate.getMonth()}
           <div
             class="day"
-            class:weekend={isWeekend(weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek))}
-            class:today={areDatesEqual(today, weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek))}
-            class:selected={currentDate &&
-              weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek).getMonth() === currentDate.getMonth() &&
-              areDatesEqual(currentDate, weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek))}
+            class:weekend={isWeekend(date)}
+            class:today={areDatesEqual(today, date)}
+            class:selected={isSelected(currentDate, selectedTo, date)}
+            class:range={inRange(currentDate, selectedTo, date)}
             class:wrongMonth={wrongM}
             style={`grid-column-start: ${dayOfWeek + 1}; grid-row-start: ${weekIndex + 2};`}
             on:click|stopPropagation={(ev) => {
@@ -95,7 +106,7 @@
                 ev.preventDefault()
                 return
               }
-              viewDate = weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek)
+              viewDate = new Date(date)
               if (currentDate) {
                 viewDate.setHours(currentDate.getHours())
                 viewDate.setMinutes(currentDate.getMinutes())
@@ -103,7 +114,7 @@
               dispatch('update', viewDate)
             }}
           >
-            {weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek).getDate()}
+            {date.getDate()}
           </div>
         {/each}
       {/each}
@@ -211,6 +222,11 @@
       &:not(.wrongMonth):hover {
         color: var(--caption-color);
         background-color: var(--primary-bg-color);
+      }
+
+      &.range:not(.wrongMonth) {
+        color: var(--caption-color);
+        background-color: var(--primary-button-disabled);
       }
 
       &:before {

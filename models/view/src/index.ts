@@ -669,7 +669,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(core.class.TypeDate, core.class.Class, view.mixin.AttributeFilter, {
-    component: view.component.ValueFilter
+    component: view.component.DateFilter
   })
 
   builder.mixin(core.class.EnumOf, core.class.Class, view.mixin.AttributeFilter, {
@@ -681,7 +681,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(core.class.TypeTimestamp, core.class.Class, view.mixin.AttributeFilter, {
-    component: view.component.TimestampFilter
+    component: view.component.DateFilter
   })
 
   builder.createDoc(
@@ -762,6 +762,93 @@ export function createModel (builder: Builder): void {
       result: view.function.FilterNestedDontMatchResult
     },
     view.filter.FilterNestedDontMatch
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.Overdue,
+      result: view.function.FilterDateOutdated,
+      disableValueSelector: true
+    },
+    view.filter.FilterDateOutdated
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.Today,
+      result: view.function.FilterDateToday,
+      disableValueSelector: true
+    },
+    view.filter.FilterDateToday
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.ThisWeek,
+      result: view.function.FilterDateWeek,
+      disableValueSelector: true
+    },
+    view.filter.FilterDateWeek
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.NextWeek,
+      result: view.function.FilterDateNextWeek,
+      disableValueSelector: true
+    },
+    view.filter.FilterDateNextW
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.ThisMonth,
+      result: view.function.FilterDateMonth,
+      disableValueSelector: true
+    },
+    view.filter.FilterDateM
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.NextMonth,
+      result: view.function.FilterDateNextMonth,
+      disableValueSelector: true
+    },
+    view.filter.FilterDateNextM
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.CustomDate,
+      result: view.function.FilterDateCustom
+    },
+    view.filter.FilterDateCustom
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.NotSpecified,
+      result: view.function.FilterDateNotSpecified,
+      disableValueSelector: true
+    },
+    view.filter.FilterDateNotSpecified
   )
 
   classPresenter(builder, core.class.EnumOf, view.component.EnumPresenter, view.component.EnumEditor)
