@@ -19,8 +19,9 @@
   import { deviceOptionsStore, resizeObserver } from '..'
   import plugin from '../plugin'
   import type { DropdownTextItem } from '../types'
-  import CheckBox from './CheckBox.svelte'
+  import IconCheck from './icons/Check.svelte'
   import ListView from './ListView.svelte'
+  import Icon from './Icon.svelte'
 
   export let placeholder: IntlString = plugin.string.SearchDots
   export let items: DropdownTextItem[]
@@ -130,10 +131,12 @@
               }
             }}
           >
-            <div class="flex-grow caption-color lines-limit-2">{item.label}</div>
-            {#if isSelected(selected, item)}
-              <div class="check-right"><CheckBox checked primary /></div>
-            {/if}
+            <div class="check">
+              {#if isSelected(selected, item)}
+                <Icon icon={IconCheck} size={'small'} />
+              {/if}
+            </div>
+            <div class="labels overflow-label">{item.label}</div>
           </button>
         </svelte:fragment>
       </ListView>
