@@ -21,7 +21,7 @@
   export let compareValue: string | undefined = undefined
   export let showOnlyDiff: boolean = false
 
-  function removeSimilarLines(str1: string | undefined, str2: string | undefined) {
+  function removeSimilarLines (str1: string | undefined, str2: string | undefined) {
     str1 = str1 ?? ''
     str2 = str2 ?? ''
     const lines1 = str1.split('</p>')
@@ -43,11 +43,6 @@
 
 <ShowMore>
   {#key [value, compareValue]}
-    <CollaborationDiffViewer
-      content={value ?? ''}
-      comparedVersion={compareValue ?? ''}
-      noButton
-      readonly
-    />
+    <CollaborationDiffViewer content={value ?? ''} comparedVersion={compareValue ?? ''} noButton readonly />
   {/key}
 </ShowMore>
