@@ -57,6 +57,8 @@
     "User": "Пользователь",
     "Maintainer": "Maintainer",
     "Owner": "Владелец",
+    "OwnerFirstName": "Имя владельца",
+    "OwnerLastName": "Фамилия владельца",
     "Role": "Роль",
     "FailedToSave": "Не удалось обновить пароль",
     "ImportEnum": "Загрузить значения справочника",

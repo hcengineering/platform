@@ -465,11 +465,22 @@ export function createModel (builder: Builder): void {
     templates.class.TemplateField,
     core.space.Model,
     {
-      label: setting.string.Owner,
+      label: setting.string.OwnerFirstName,
       category: setting.templateFieldCategory.Integration,
-      func: setting.function.GetOwnerName
+      func: setting.function.GetOwnerFirstName
     },
-    setting.templateField.OwnerName
+    setting.templateField.OwnerFirstName
+  )
+
+  builder.createDoc(
+    templates.class.TemplateField,
+    core.space.Model,
+    {
+      label: setting.string.OwnerLastName,
+      category: setting.templateFieldCategory.Integration,
+      func: setting.function.GetOwnerLastName
+    },
+    setting.templateField.OwnerLastName
   )
 
   builder.createDoc(
