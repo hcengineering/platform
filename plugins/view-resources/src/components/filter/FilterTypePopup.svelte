@@ -223,7 +223,7 @@
           bind:element={elements[i]}
           on:keydown={(event) => keyDown(event, i)}
           on:mouseover={() => {
-            elements[i].focus()
+            elements[i]?.focus()
           }}
           on:click={() => {
             click(type)
