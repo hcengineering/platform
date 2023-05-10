@@ -22,7 +22,7 @@
   export let selected: string | string[] = ''
   export let multiselect: boolean = false
   export let items: TabItem[]
-  export let kind: 'normal' | 'secondary' = 'normal'
+  export let kind: 'normal' | 'secondary' | 'plain' | 'separated' = 'normal'
   export let onlyIcons: boolean = false
   export let size: 'small' | 'medium' = 'medium'
 
@@ -49,7 +49,8 @@
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
         bind:this={tabs[i]}
-        class="button"
+        class={kind === 'normal' || kind === 'secondary' ? 'button' : 'plain'}
+        class:separated={kind === 'separated'}
         class:onlyIcons
         class:selected={getSelected(item.id, selected)}
         data-view={item.tooltip}
@@ -101,12 +102,13 @@
       width: fit-content;
       min-height: 1.375rem;
       max-width: 12.5rem;
-      font-weight: 500;
       font-size: 0.8125rem;
-      cursor: pointer;
       transition-property: background-color, color;
       transition-duration: 0.15s;
 
+      &:not(.selected) {
+        cursor: pointer;
+      }
       .color {
         width: 0.5rem;
         height: 0.5rem;
@@ -169,24 +171,67 @@
       }
     }
     &.secondary {
-      background-color: var(--button-bg-color);
-      border: 1px solid var(--button-border-color);
+      background-color: var(--theme-button-enabled);
+      border: 1px solid var(--theme-button-border);
       border-radius: 0.25rem;
-      box-shadow: var(--button-shadow);
 
       .button {
         background-color: transparent;
         border-radius: calc(0.25rem - 1px);
 
         &:hover {
-          color: var(--caption-color);
+          color: var(--theme-caption-color);
         }
         &.selected {
-          color: var(--caption-color);
-          background-color: var(--button-bg-hover);
+          color: var(--theme-caption-color);
+          background-color: var(--theme-button-pressed);
         }
         &:not(:first-child) {
           margin-left: 0.125rem;
+        }
+      }
+    }
+
+    &.plain,
+    &.separated {
+      margin-bottom: -1px;
+    }
+    .plain {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+      width: fit-content;
+      height: 100%;
+      max-width: 12.5rem;
+      min-height: 3.25rem;
+      color: var(--theme-dark-color);
+      border-top: 2px solid transparent;
+      border-bottom: 2px solid transparent;
+
+      &:not(.selected) {
+        cursor: pointer;
+      }
+      &.selected {
+        color: var(--theme-caption-color);
+        border-bottom-color: var(--theme-tablist-plain-color);
+      }
+      &:not(:first-child, .separated) {
+        margin-left: 2rem;
+      }
+      &.separated {
+        position: relative;
+        margin: 0 1.25rem;
+
+        &::before {
+          position: absolute;
+          content: '';
+          top: 50%;
+          left: -1.25rem;
+          width: 1px;
+          height: 2rem;
+          background-color: var(--theme-tablist-plain-divider);
+          transform: translateY(-50%);
         }
       }
     }
