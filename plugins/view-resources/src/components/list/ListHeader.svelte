@@ -19,6 +19,7 @@
     ActionIcon,
     AnyComponent,
     Button,
+    Component,
     IconAdd,
     IconBack,
     IconCheck,
@@ -98,7 +99,7 @@
     }}
     on:click={() => dispatch('collapse')}
   >
-    <div class="flex-row-center clear-mins">
+    <div class="flex-row-center clear-mins flex-grow">
       {#if level === 0}
         <div class="chevron"><IconCollapseArrow size={'small'} /></div>
       {/if}
@@ -152,6 +153,11 @@
       {:else}
         <span class="antiSection-header__counter ml-2">{items.length}</span>
       {/if}
+      <div class="flex-row-center flex-reverse flex-grow">
+        {#each extraHeaders ?? [] as extra}
+          <Component is={extra} props={{ ...props, value: category, category: groupByKey, docs: items }} />
+        {/each}
+      </div>
     </div>
     {#if createItemDialog !== undefined && createItemLabel !== undefined}
       <div class:on-hover={!mouseOver} class="flex-row-center">
@@ -190,7 +196,7 @@
     position: relative;
     position: sticky;
     top: 0;
-    padding: 0 0.75rem 0 0.75rem;
+    padding: 0 2.5rem 0 0.75rem;
     height: 2.75rem;
     min-height: 2.75rem;
     min-width: 0;

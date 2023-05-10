@@ -18,7 +18,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { Issue, IssueDraft } from '@hcengineering/tracker'
   import { Button, ButtonKind, ButtonSize, eventToHTMLElement, showPopup } from '@hcengineering/ui'
-  import { EditBoxPopup } from '@hcengineering/view-resources'
+  import { EditBoxPopup, FixedColumn } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../../plugin'
   import EstimationPopup from './EstimationPopup.svelte'
@@ -74,7 +74,9 @@
 
 {#if value}
   {#if kind === 'list' && '_class' in value}
-    <EstimationStatsPresenter {value} {kind} on:click={handleestimationEditorOpened} />
+    <FixedColumn key="estimation-editor-total">
+      <EstimationStatsPresenter {value} {kind} on:click={handleestimationEditorOpened} />
+    </FixedColumn>
   {:else}
     <Button
       {focusIndex}
