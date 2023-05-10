@@ -13,7 +13,7 @@ import {
   setViewOrder,
   ViewletSelectors
 } from './tracker.utils'
-import { generateId, PlatformSetting } from './utils'
+import { fillSearch, generateId, PlatformSetting } from './utils'
 test.use({
   storageState: PlatformSetting
 })
@@ -173,9 +173,7 @@ test.describe('tracker layout tests', () => {
       await setViewGroup(page, 'No grouping')
       await setViewOrder(page, order)
 
-      const searchBox = page.locator('[placeholder="Search"]')
-      await searchBox.fill(id)
-      await searchBox.press('Enter')
+      await fillSearch(page, id)
 
       await expect(locator).toContainText(orderedIssueNames, {
         timeout: 15000

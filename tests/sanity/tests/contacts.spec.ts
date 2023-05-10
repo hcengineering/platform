@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI } from './utils'
+import { fillSearch, generateId, PlatformSetting, PlatformURI } from './utils'
 
 test.use({
   storageState: PlatformSetting
@@ -55,16 +55,13 @@ test.describe('contact tests', () => {
     await expect(page.locator('text=M. Marina')).toBeVisible()
     expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThan(5)
 
-    const searchBox = page.locator('[placeholder="Search"]')
-    await searchBox.fill('Marina')
-    await searchBox.press('Enter')
+    await fillSearch(page, 'Marina')
 
     await expect(page.locator('.antiTable-body__row')).toHaveCount(1, {
       timeout: 15000
     })
 
-    await searchBox.fill('')
-    await searchBox.press('Enter')
+    await fillSearch(page, '')
 
     await expect(page.locator('text=Chen Rosamund')).toBeVisible()
     expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThan(5)

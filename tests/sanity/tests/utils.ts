@@ -1,3 +1,5 @@
+import { Locator, Page } from '@playwright/test'
+
 export const PlatformURI = process.env.PLATFORM_URI as string
 export const PlatformTransactor = process.env.PLATFORM_TRANSACTOR as string
 export const PlatformUser = process.env.PLATFORM_USER as string
@@ -37,4 +39,22 @@ export function generateId (len = 100): string {
   }
   const r = v.slice(s, v.length) + count()
   return r
+}
+
+/**
+ * Finds a search field on the page, fills it with
+ * the provided string, and returns a locator
+ *
+ * @export
+ * @param {Page} page
+ * @param {string} search
+ * @returns {Promise<Locator>}
+ */
+export async function fillSearch (page: Page, search: string): Promise<Locator> {
+  const searchBox = page.locator('input[placeholder="Search"]')
+
+  await searchBox.fill(search)
+  await searchBox.press('Enter')
+
+  return searchBox
 }
