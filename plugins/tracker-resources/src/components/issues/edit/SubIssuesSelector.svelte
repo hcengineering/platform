@@ -78,7 +78,7 @@
 
   $: if (subIssues) {
     const doneStatuses = $statusStore.statuses
-      .filter((s) => s.category === tracker.issueStatusCategory.Completed)
+      .filter((s) => s.category === tracker.issueStatusCategory.Completed || s.category === tracker.issueStatusCategory.Canceled)
       .map((p) => p._id)
     countComplete = subIssues.filter((si) => doneStatuses.includes(si.status)).length
   }
