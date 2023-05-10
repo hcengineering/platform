@@ -168,7 +168,7 @@ describe('mongo operations', () => {
         loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => [],
         upload: async (domain: Domain, docs: Doc[]) => {},
         clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
-        loadModel: async () => []
+        loadModel: async () => txes
       }
       return st
     })

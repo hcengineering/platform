@@ -115,7 +115,7 @@ class TSessionManager implements SessionManager {
       }
 
       const session = this.createSession(token, pipeline)
-      session.sessionId = sessionId !== undefined && sessionId.trim().length > 0 ? sessionId : generateId()
+      session.sessionId = sessionId !== undefined && (sessionId ?? '').trim().length > 0 ? sessionId : generateId()
       session.sessionInstanceId = generateId()
       this.sessions.set(ws.id, { session, socket: ws })
       // We need to delete previous session with Id if found.

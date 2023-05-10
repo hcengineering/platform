@@ -113,7 +113,7 @@ describe('client', () => {
         loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => [],
         upload: async (domain: Domain, docs: Doc[]) => {},
         clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
-        loadModel: async (last: Timestamp) => []
+        loadModel: async (last: Timestamp) => txes
       }
     }
     const spyCreate = jest.spyOn(TxProcessor, 'createDoc2Doc')

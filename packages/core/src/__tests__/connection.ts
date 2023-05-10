@@ -65,6 +65,6 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
     loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => [],
     upload: async (domain: Domain, docs: Doc[]) => {},
     clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
-    loadModel: async (last: Timestamp) => []
+    loadModel: async (last: Timestamp) => txes
   }
 }
