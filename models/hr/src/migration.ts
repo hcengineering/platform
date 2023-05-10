@@ -60,9 +60,9 @@ async function fixDepartmentsFromStaff (tx: TxOperations): Promise<void> {
     if (department._id === hr.ids.Head) continue
     ancestors.set(department._id, department.space)
   }
-  for (const departmentTest of departments) {
-    const parents: Department[] = parentsWithDepartmentMap.get(departmentTest._id) ?? []
-    let _id = departmentTest._id
+  for (const departmentItem of departments) {
+    const parents: Department[] = parentsWithDepartmentMap.get(departmentItem._id) ?? []
+    let _id = departmentItem._id
     while (true) {
       const department = departmentsMap.get(_id)
       if (department === undefined) break
@@ -71,7 +71,7 @@ async function fixDepartmentsFromStaff (tx: TxOperations): Promise<void> {
       if (next === undefined) break
       _id = next
     }
-    parentsWithDepartmentMap.set(departmentTest._id, parents)
+    parentsWithDepartmentMap.set(departmentItem._id, parents)
   }
   const staff = await tx.findAll(hr.mixin.Staff, {})
   const promises = []
@@ -93,6 +93,24 @@ async function fixDepartmentsFromStaff (tx: TxOperations): Promise<void> {
   }
   await Promise.all(promises)
 }
+
+async function fixInvalidRequests (tx: TxOperations): Promise<void> {
+  const departments = await tx.findAll(hr.class.Department, {})
+  const staff = await tx.findAll(hr.mixin.Staff, {})
+  const staffDepartmentMap = new Map(staff.map((s) => [s._id, s.department]))
+  const requests = await tx.findAll(hr.class.Request, { space: { $nin: departments.map((d) => d._id) } })
+  const res = []
+  for (const request of requests) {
+    const currentStaffDepartment = staffDepartmentMap.get(request.attachedTo)
+    if (currentStaffDepartment !== null) {
+      res.push(tx.update(request, { space: currentStaffDepartment }))
+    } else {
+      res.push(tx.update(request, { space: hr.ids.Head }))
+    }
+  }
+  await Promise.all(res)
+}
+
 function toTzDate (date: number): TzDate {
   const res = new Date(date)
   return {
@@ -234,5 +252,6 @@ export const hrOperation: MigrateOperation = {
     await createSpace(tx)
     await fixDuplicatesInDepartments(tx)
     await fixDepartmentsFromStaff(tx)
+    await fixInvalidRequests(tx)
   }
 }

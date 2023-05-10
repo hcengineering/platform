@@ -508,6 +508,24 @@ export function createModel (builder: Builder): void {
     view.action.Delete
   )
 
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.Archive,
+      label: view.string.Archive,
+      icon: view.icon.Archive,
+      category: view.category.General,
+      input: 'any',
+      query: {
+        archived: false
+      },
+      target: core.class.Space,
+      context: { mode: ['context', 'browser'], group: 'tools' },
+      override: [view.action.Delete]
+    },
+    view.action.Archive
+  )
+
   // Keyboard actions.
   createAction(
     builder,

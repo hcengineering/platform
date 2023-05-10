@@ -1,4 +1,4 @@
-import { Class, Doc, DocumentQuery, Hierarchy, Ref } from '@hcengineering/core'
+import { Class, Doc, DocumentQuery, Hierarchy, Ref, Space, TxResult } from '@hcengineering/core'
 import { Asset, getResource, IntlString, Resource } from '@hcengineering/platform'
 import { getClient, MessageBox, updateAttribute } from '@hcengineering/presentation'
 import {
@@ -64,6 +64,27 @@ function Delete (object: Doc | Doc[]): void {
       action: async () => {
         const objs = Array.isArray(object) ? object : [object]
         await deleteObjects(getClient(), objs).catch((err) => console.error(err))
+      }
+    },
+    undefined
+  )
+}
+
+function Archive (object: Space | Space[]): void {
+  showPopup(
+    MessageBox,
+    {
+      label: view.string.Archive,
+      message: view.string.ArchiveConfirm,
+      params: { count: Array.isArray(object) ? object.length : 1 },
+      action: async () => {
+        const objs = Array.isArray(object) ? object : [object]
+        const client = getClient()
+        const promises: Array<Promise<TxResult>> = []
+        for (const obj of objs) {
+          promises.push(client.update(obj, { archived: true }))
+        }
+        await Promise.all(promises)
       }
     },
     undefined
@@ -408,6 +429,7 @@ async function getPopupAlignment (
 export const actionImpl = {
   CopyTextToClipboard,
   Delete,
+  Archive,
   Move,
   MoveUp,
   MoveDown,
