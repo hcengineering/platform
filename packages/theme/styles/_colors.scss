@@ -115,6 +115,8 @@
   --theme-kanban-card-footer: rgba(217, 217, 217, .07);
 
   --theme-tablist-color: rgba(0, 0, 0, .02);
+  --theme-tablist-plain-color: #2A64C4; // Light
+  --theme-tablist-plain-divider: rgba(255, 255, 255, .07); // Light invert
   --theme-checkbox-color: #000;
   --theme-checkbox-bg-color: #FFF;
   --theme-checkbox-border: rgba(0, 0, 0, .12);
@@ -277,6 +279,8 @@
   --theme-kanban-card-footer: rgba(0, 0, 0, .04);
 
   --theme-tablist-color: rgba(0, 0, 0, .02);
+  --theme-tablist-plain-color: #2A64C4;
+  --theme-tablist-plain-divider: rgba(0, 0, 0, .07);
   --theme-checkbox-color: #000;
   --theme-checkbox-bg-color: #FFF;
   --theme-checkbox-border: rgba(0, 0, 0, .12);
