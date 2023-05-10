@@ -149,7 +149,7 @@
       opacity: 1;
     }
     &.hidden {
-      color: var(--warning-color);
+      color: var(--theme-warning-color);
       transform: scale(0.7);
       opacity: 0.5;
 

@@ -23,11 +23,11 @@
   export let size: IconSize
 </script>
 
-<div class="flex-row-center">
-  <div class="flex-center caption-color flex-no-shrink"><IconFolder {size} /></div>
-  <div class="flex-col ml-2 min-w-0">
+<div class="flex-presenter">
+  <div class="icon medium-gap"><IconFolder {size} /></div>
+  <div class="flex-col">
     {#if subtitle}<div class="content-dark-color text-sm">{subtitle}</div>{/if}
-    <div class="caption-color overflow-label">
+    <div class="label no-underline nowrap">
       {value.name}
       {#if value.archived}
         <Label label={presentation.string.Archived} />
@@ -35,14 +35,3 @@
     </div>
   </div>
 </div>
-
-<style lang="scss">
-  .medium {
-    width: 1.75rem;
-    height: 1.75rem;
-  }
-  .large {
-    width: 2.25rem;
-    height: 2.25rem;
-  }
-</style>

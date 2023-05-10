@@ -143,7 +143,7 @@
 
     img {
       object-fit: cover;
-      border: 2px solid var(--avatar-border-color);
+      border: 1px solid var(--avatar-border-color);
     }
     &.no-img {
       border-color: transparent;
@@ -195,7 +195,7 @@
   }
   .ava-mask {
     position: absolute;
-    border: 2px solid var(--avatar-border-color);
+    border: 1px solid var(--avatar-border-color);
     border-radius: 50%;
   }
 

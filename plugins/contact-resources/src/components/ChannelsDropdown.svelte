@@ -293,6 +293,7 @@
       bind:input={addBtn}
       icon={contact.icon.SocialEdit}
       label={displayItems.length === 0 ? presentation.string.AddSocialLinks : undefined}
+      notSelected={displayItems.length === 0}
       {kind}
       {size}
       {shape}

@@ -561,7 +561,7 @@
       kind={'secondary'}
       size={'large'}
       label={tracker.string.NoIssueTemplate}
-      icon={tracker.icon.Issues}
+      icon={tracker.icon.IssueTemplates}
       searchField={'title'}
       allowDeselect={true}
       showNavigate={false}

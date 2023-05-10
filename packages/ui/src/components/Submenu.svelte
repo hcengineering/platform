@@ -37,9 +37,12 @@
   $: optionsMod = { component: options.component ?? Menu, props, element, kind: 'submenu' }
 </script>
 
+<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+<!-- svelte-ignore a11y-mouse-events-have-key-events -->
 <div
   bind:this={element}
   on:keydown
+  on:mouseover
   on:click
   use:tooltip={optionsMod}
   class="antiPopup-submenu"
@@ -54,7 +57,7 @@
     {/if}
   {:else}
     {#if icon}
-      <div class="icon mr-3"><Icon {icon} size={'small'} /></div>
+      <div class="icon"><Icon {icon} size={'small'} /></div>
     {/if}
     <span class="overflow-label pr-1">
       {#if label}<Label {label} params={labelProps} />

@@ -132,7 +132,7 @@
       color: var(--theme-error-color) !important;
     }
     .showWarning {
-      color: var(--warning-color) !important;
+      color: var(--theme-warning-color) !important;
     }
     .romColor {
       color: var(--theme-content-color) !important;

@@ -193,7 +193,7 @@
     <EditBox kind={'search-style'} focusIndex={1} focus bind:value={search} {placeholder} />
   </div>
   {#if cHeight === 1}
-    <div class="background-content-accent-color" style:height={'1px'} />
+    <div class="whereSelected" />
   {/if}
   <div
     class="scroll"
@@ -209,15 +209,13 @@
             {@const cl = hierarchy.getClass(contacts[item]._class)}
             {#if item === 0 || (item > 0 && categorizedPersons.get(toAny(contacts[item - 1])._id) !== categorizedPersons.get(obj._id))}
               <!--Category for first item-->
-              <div class="category-box">
-                <div class="flex flex-grow overflow-label">
-                  <span class="fs-medium flex-center mt-2 mb-2 ml-2">
-                    {#if cl.icon}
-                      <Icon icon={cl.icon} size={'small'} />
-                    {/if}
-                    <div class="ml-1">
-                      <Label label={getCategoryTitle(category)} />
-                    </div>
+              <div class="menu-group__header category-box">
+                <div class="flex-row-center pl-1">
+                  {#if cl.icon}
+                    <div class="clear-mins mr-2"><Icon icon={cl.icon} size={'small'} /></div>
+                  {/if}
+                  <span class="overflow-label">
+                    <Label label={getCategoryTitle(category)} />
                   </span>
                 </div>
               </div>
@@ -227,49 +225,29 @@
         <svelte:fragment slot="item" let:item>
           {@const obj = contacts[item]}
           <button
-            class="menu-item w-full"
-            class:background-button-bg-color={obj._id === selected}
-            class:border-radius-1={obj._id === selected}
+            class="menu-item withList no-focus w-full"
+            class:selected={obj._id === selected}
             on:click={() => {
               handleSelection(undefined, item)
             }}
           >
             {#if allowDeselect && selected}
-              <div class="icon">
+              <div class="check">
                 {#if obj._id === selected}
-                  <div bind:this={selectedDiv}>
-                    {#if titleDeselect}
-                      <div class="clear-mins" use:tooltip={{ label: titleDeselect }}>
-                        <Icon icon={IconCheck} {size} />
-                      </div>
-                    {:else}
-                      <Icon icon={IconCheck} {size} />
-                    {/if}
+                  <div bind:this={selectedDiv} use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
+                    <Icon icon={IconCheck} {size} />
                   </div>
                 {/if}
               </div>
             {/if}
-
-            <span class="label">
-              {#if obj._id === selected}
-                <div bind:this={selectedDiv}>
-                  <div class="flex flex-grow overflow-label">
-                    <UserInfo size={'x-small'} value={obj} {icon} />
-                  </div>
-                </div>
-              {:else}
-                <div class="flex flex-grow overflow-label">
-                  <UserInfo size={'x-small'} value={obj} {icon} />
-                </div>
-              {/if}
-            </span>
+            <UserInfo size={'x-small'} value={obj} {icon} />
           </button>
         </svelte:fragment>
       </ListView>
     </div>
   </div>
   {#if cHeight === -1}
-    <div class="background-content-accent-color" style:height={'3px'} />
+    <div class="whereSelected" />
   {/if}
 </div>
 

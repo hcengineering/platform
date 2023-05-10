@@ -65,6 +65,7 @@
     label={tracker.string.TimeSpendValue}
     labelParams={{ value: value.estimation }}
     icon={tracker.icon.Estimation}
+    notSelected={value.estimation === 0}
     {justify}
     {width}
     {size}

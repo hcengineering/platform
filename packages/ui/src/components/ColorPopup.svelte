@@ -19,10 +19,13 @@
   import { deviceOptionsStore, resizeObserver } from '..'
   import { getPlatformColor } from '../colors'
   import ListView from './ListView.svelte'
+  import Icon from './Icon.svelte'
+  import IconCheck from './icons/Check.svelte'
 
   export let placeholder: IntlString | undefined = undefined
   export let placeholderParam: any | undefined = undefined
   export let searchable: boolean = false
+  export let selected: number | string | undefined = undefined
   export let value: Array<{ id: number | string; color: number; label: string }>
 
   let search: string = ''
@@ -92,11 +95,16 @@
         <svelte:fragment slot="item" let:item>
           {@const itemValue = objects[item]}
           <button
-            class="menu-item w-full"
+            class="menu-item withList w-full"
             on:click={() => {
               dispatch('close', itemValue)
             }}
           >
+            <div class="check">
+              {#if itemValue.id === selected}
+                <Icon icon={IconCheck} size={'small'} />
+              {/if}
+            </div>
             <div class="color" style="background-color: {getPlatformColor(itemValue.color)}" />
             <span class="label">{itemValue.label}</span>
           </button>

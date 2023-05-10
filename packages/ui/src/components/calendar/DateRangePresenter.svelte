@@ -293,6 +293,7 @@
 <button
   bind:this={datePresenter}
   class="datetime-button {kind} {size}"
+  class:notSelected={!value}
   class:editable
   class:edit
   on:click={() => {
@@ -411,7 +412,7 @@
         {new Date(value).getMinutes().toString().padStart(2, '0')}
       {/if}
     {:else}
-      <div class="content-color">
+      <div class="overflow-label">
         <Label label={labelNull} />
       </div>
     {/if}
@@ -459,7 +460,7 @@
         color: var(--theme-content-color);
       }
       &.warning {
-        color: var(--warning-color);
+        color: var(--theme-warning-color);
       }
       &.overdue {
         color: var(--theme-error-color);
@@ -515,7 +516,7 @@
               color: var(--caption-color);
             }
             &.warning {
-              color: var(--warning-color);
+              color: var(--theme-warning-color);
             }
             &.overdue {
               color: var(--theme-error-color);
@@ -562,6 +563,7 @@
 
     &.secondary {
       padding: 0 0.625rem;
+      font-weight: 500;
       color: var(--theme-caption-color);
       background-color: var(--theme-button-enabled);
       border-color: var(--theme-button-border);
@@ -632,6 +634,17 @@
     }
     .separator {
       margin: 0 0.1rem;
+    }
+    &.notSelected {
+      color: var(--theme-dark-color);
+
+      .btn-icon {
+        color: var(--theme-darker-color);
+      }
+      &:hover,
+      &:hover .btn-icon {
+        color: var(--theme-content-color);
+      }
     }
   }
 </style>

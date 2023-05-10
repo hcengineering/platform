@@ -150,7 +150,7 @@
               {getName(selected)}
             {/if}
           {:else}
-            <div class="flex-presenter">
+            <div class="flex-presenter not-selected">
               {#if icon}
                 <div class="icon" class:small-gap={size === 'inline' || size === 'small'}>
                   <Icon {icon} size={kind === 'link' || kind === 'secondary' ? 'small' : size} />

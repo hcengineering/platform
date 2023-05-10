@@ -41,7 +41,11 @@
       : tracker.string.Backlog
     : undefined
 
-  $: statusesInfo = defaultComponentStatuses.map((s) => ({ id: s, ...componentStatusAssets[s] }))
+  $: statusesInfo = defaultComponentStatuses.map((s) => ({
+    id: s,
+    isSelected: componentStatusAssets[s].label === selectedStatusLabel,
+    ...componentStatusAssets[s]
+  }))
 
   const handleComponentStatusEditorOpened = (event: MouseEvent) => {
     if (!isEditable) {

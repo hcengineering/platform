@@ -138,7 +138,11 @@
           >
             <WiFi
               size={'small'}
-              fill={$networkStatus === -1 ? 'red' : $networkStatus % 2 === 1 ? 'blue' : 'currentColor'}
+              fill={$networkStatus === -1
+                ? 'var(--theme-error-color)'
+                : $networkStatus % 2 === 1
+                ? 'var(--theme-warning-color)'
+                : 'currentColor'}
             />
           </div>
         </div>
