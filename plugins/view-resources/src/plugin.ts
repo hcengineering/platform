@@ -64,7 +64,15 @@ export default mergeIds(viewId, view, {
     ShowPreviewOnClick: '' as IntlString,
     Shown: '' as IntlString,
     ShowEmptyGroups: '' as IntlString,
-    Total: '' as IntlString
+    Total: '' as IntlString,
+    Overdue: '' as IntlString,
+    Today: '' as IntlString,
+    ThisWeek: '' as IntlString,
+    NextWeek: '' as IntlString,
+    ThisMonth: '' as IntlString,
+    NextMonth: '' as IntlString,
+    NotSpecified: '' as IntlString,
+    CustomDate: '' as IntlString
   },
   function: {
     StatusSort: '' as SortFunc

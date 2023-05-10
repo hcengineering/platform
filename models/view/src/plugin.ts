@@ -104,6 +104,14 @@ export default mergeIds(viewId, view, {
     FilterAfterResult: '' as FilterFunction,
     FilterNestedMatchResult: '' as FilterFunction,
     FilterNestedDontMatchResult: '' as FilterFunction,
+    FilterDateOutdated: '' as FilterFunction,
+    FilterDateToday: '' as FilterFunction,
+    FilterDateWeek: '' as FilterFunction,
+    FilterDateNextWeek: '' as FilterFunction,
+    FilterDateMonth: '' as FilterFunction,
+    FilterDateNextMonth: '' as FilterFunction,
+    FilterDateNotSpecified: '' as FilterFunction,
+    FilterDateCustom: '' as FilterFunction,
     ShowEmptyGroups: '' as ViewCategoryAction
   }
 })

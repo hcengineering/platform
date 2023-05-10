@@ -104,6 +104,9 @@ export interface FilteredView extends Preference {
 export interface ClassFilters extends Class<Doc> {
   filters: (KeyFilter | string)[]
   ignoreKeys?: string[]
+
+  // Ignore attributes not specified in the "filters" array
+  strict?: boolean
 }
 
 /**
@@ -729,7 +732,15 @@ const view = plugin(viewId, {
     FilterBefore: '' as Ref<FilterMode>,
     FilterAfter: '' as Ref<FilterMode>,
     FilterNestedMatch: '' as Ref<FilterMode>,
-    FilterNestedDontMatch: '' as Ref<FilterMode>
+    FilterNestedDontMatch: '' as Ref<FilterMode>,
+    FilterDateOutdated: '' as Ref<FilterMode>,
+    FilterDateToday: '' as Ref<FilterMode>,
+    FilterDateWeek: '' as Ref<FilterMode>,
+    FilterDateNextW: '' as Ref<FilterMode>,
+    FilterDateM: '' as Ref<FilterMode>,
+    FilterDateNextM: '' as Ref<FilterMode>,
+    FilterDateNotSpecified: '' as Ref<FilterMode>,
+    FilterDateCustom: '' as Ref<FilterMode>
   },
   popup: {
     PositionElementAlignment: '' as Resource<(e?: Event) => PopupAlignment | undefined>

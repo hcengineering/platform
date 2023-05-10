@@ -64,6 +64,14 @@
     "ShowPreviewOnClick": "Пожалуйста нажмите чтобы увидеть предпросмотр...",
     "Shown": "Показано",
     "Total": "Всего",
-    "ShowEmptyGroups": "Показывать пустые группы"
+    "ShowEmptyGroups": "Показывать пустые группы",
+    "Overdue": "Overdue",
+    "Today": "Сегодня",
+    "ThisWeek": "Эта неделя",
+    "NextWeek": "Следующая неделя",
+    "ThisMonth": "Этот месяц",
+    "NextMonth": "Следующий месяц",
+    "NotSpecified": "Не указана",
+    "CustomDate": "Выбранная дата"
   }
 }

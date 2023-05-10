@@ -23,6 +23,7 @@
   export let object: Doc
   export let size: 'small' | 'medium' | 'large' = 'small'
   export let showCounter = true
+  export let withInput: boolean = true
 </script>
 
 {#if value && value > 0}
@@ -31,7 +32,7 @@
     <div
       use:tooltip={{
         component: CommentPopup,
-        props: { objectId: object._id, object }
+        props: { objectId: object._id, object, withInput }
       }}
       class="sm-tool-icon"
     >

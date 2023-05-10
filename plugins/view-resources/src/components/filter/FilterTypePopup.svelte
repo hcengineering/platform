@@ -69,7 +69,7 @@
       return
     }
     const value = getValue(attribute.name, attribute.type)
-    if (result.findIndex((p) => p.key === value) !== -1) {
+    if (result.findIndex((p) => p.attribute.name === value) !== -1) {
       return
     }
     const filter = buildFilterKey(hierarchy, _class, value, attribute)
@@ -97,6 +97,12 @@
     const clazz = hierarchy.getClass(_class)
     const mixin = hierarchy.as(clazz, view.mixin.ClassFilters)
     const result = getFilters(_class, mixin)
+
+    if (mixin.strict) {
+      // Attributes not specified in "mixing.filters" are ignored
+      return result
+    }
+
     const allAttributes = hierarchy.getAllAttributes(_class)
     buildFilterFor(_class, allAttributes, result, mixin)
 

@@ -38,7 +38,7 @@ export default mergeIds(trackerId, tracker, {
     GotoMyIssues: '' as IntlString,
     SearchIssue: '' as IntlString,
     Parent: '' as IntlString,
-    CreatedOn: '' as IntlString,
+    CreatedDate: '' as IntlString,
     ChangeStatus: '' as IntlString,
     ConfigLabel: '' as IntlString,
     ConfigDescription: '' as IntlString

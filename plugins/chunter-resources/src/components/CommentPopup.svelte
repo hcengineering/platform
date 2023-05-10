@@ -20,11 +20,13 @@
   import { createQuery } from '@hcengineering/presentation'
   import { Label, resizeObserver, Spinner } from '@hcengineering/ui'
   import { DocNavLink, ObjectPresenter } from '@hcengineering/view-resources'
-  import CommentPresenter from './CommentPresenter.svelte'
   import { createEventDispatcher } from 'svelte'
+  import CommentInput from './CommentInput.svelte'
+  import CommentPresenter from './CommentPresenter.svelte'
 
   export let objectId: Ref<Doc>
   export let object: Doc
+  export let withInput: boolean = true
 
   let loading = true
 
@@ -68,6 +70,11 @@
     {/each}
   {/if}
 </div>
+{#if withInput}
+  <div class="mt-2">
+    <CommentInput {object} />
+  </div>
+{/if}
 
 <style lang="scss">
   .item {
