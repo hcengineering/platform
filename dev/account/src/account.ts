@@ -14,18 +14,12 @@
 // limitations under the License.
 //
 
-import type { Request, Response } from '@hcengineering/platform'
 import platform, { Severity, Status } from '@hcengineering/platform'
 
 import { getWorkspaceId } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 
-interface LoginInfo {
-  token: string
-  endpoint: string
-}
-
-function login (endpoint: string, email: string, password: string, workspace: string): Response<LoginInfo> {
+function login (endpoint: string, email: string, password: string, workspace: string): any {
   if (email !== 'rosamund@hc.engineering' && email !== 'elon@hc.engineering') {
     return { error: new Status(Severity.ERROR, platform.status.Unauthorized, {}) }
   }
@@ -42,9 +36,9 @@ function login (endpoint: string, email: string, password: string, workspace: st
   return { result: { token, endpoint } }
 }
 
-export function handleRequest (req: Request<any[]>, serverEndpoint: string): Response<any> {
+export function handleRequest (req: any, serverEndpoint: string): any {
   if (req.method === 'login') {
-    return login(serverEndpoint, ...(req as Request<[string, string, string]>).params)
+    return login(serverEndpoint, req.params[0], req.params[1], req.params[2])
   }
 
   return { error: new Status(Severity.ERROR, platform.status.BadRequest, {}) }

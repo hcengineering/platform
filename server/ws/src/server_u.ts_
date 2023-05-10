@@ -19,7 +19,7 @@
 import { MeasureContext, generateId } from '@hcengineering/core'
 import { Token, decodeToken } from '@hcengineering/server-token'
 
-import { serialize } from '@hcengineering/platform'
+import { serialize } from '@hcengineering/rpc'
 import uWebSockets, { SHARED_COMPRESSOR, WebSocket } from 'uWebSockets.js'
 import { getStatistics } from './stats'
 import {

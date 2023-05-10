@@ -489,19 +489,35 @@ export function devTool (
     .option('--from <from>', 'Min client count', '10')
     .option('--steps <steps>', 'Step with client count', '10')
     .option('--sleep <sleep>', 'Random Delay max between operations', '0')
+    .option('--binary <binary>', 'Use binary data transfer', false)
+    .option('--compression <compression>', 'Use protocol compression', false)
+    .option('--write <write>', 'Perform write operations', false)
     .option('--workspaces <workspaces>', 'Workspaces to test on, comma separated', '')
-    .action(async (cmd: { from: string, steps: string, sleep: string, workspaces: string }) => {
-      console.log(JSON.stringify(cmd))
-      await benchmark(
-        cmd.workspaces.split(',').map((it) => getWorkspaceId(it, productId)),
-        transactorUrl,
-        {
-          steps: parseInt(cmd.steps),
-          from: parseInt(cmd.from),
-          sleep: parseInt(cmd.sleep)
-        }
-      )
-    })
+    .action(
+      async (cmd: {
+        from: string
+        steps: string
+        sleep: string
+        workspaces: string
+        binary: string
+        compression: string
+        write: string
+      }) => {
+        console.log(JSON.stringify(cmd))
+        await benchmark(
+          cmd.workspaces.split(',').map((it) => getWorkspaceId(it, productId)),
+          transactorUrl,
+          {
+            steps: parseInt(cmd.steps),
+            from: parseInt(cmd.from),
+            sleep: parseInt(cmd.sleep),
+            binary: cmd.binary === 'true',
+            compression: cmd.compression === 'true',
+            write: cmd.write === 'true'
+          }
+        )
+      }
+    )
 
   program.parse(process.argv)
 }

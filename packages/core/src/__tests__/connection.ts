@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Domain, Ref } from '../classes'
+import type { Class, Doc, Domain, Ref, Timestamp } from '../classes'
 import { ClientConnection } from '../client'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
@@ -64,6 +64,7 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
     closeChunk: async (idx: number) => {},
     loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => [],
     upload: async (domain: Domain, docs: Doc[]) => {},
-    clean: async (domain: Domain, docs: Ref<Doc>[]) => {}
+    clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
+    loadModel: async (last: Timestamp) => txes
   }
 }

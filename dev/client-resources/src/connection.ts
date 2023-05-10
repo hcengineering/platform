@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import {
+import core, {
   Class,
   ClientConnection,
   Doc,
@@ -27,13 +27,15 @@ import {
   MeasureMetricsContext,
   Ref,
   ServerStorage,
+  Timestamp,
   Tx,
   TxHandler,
   TxResult
 } from '@hcengineering/core'
 import { createInMemoryTxAdapter } from '@hcengineering/dev-storage'
 import devmodel from '@hcengineering/devmodel'
-import { protoDeserialize, protoSerialize, setMetadata } from '@hcengineering/platform'
+import { setMetadata } from '@hcengineering/platform'
+import { protoDeserialize, protoSerialize } from '@hcengineering/rpc'
 import {
   ContentTextAdapter,
   createInMemoryAdapter,
@@ -52,12 +54,19 @@ class ServerStorageWrapper implements ClientConnection {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    const [c, q, o] = protoDeserialize(protoSerialize([_class, query, options]))
+    const [c, q, o] = protoDeserialize(protoSerialize([_class, query, options], false), false)
     return this.storage.findAll(this.measureCtx, c, q, o)
   }
 
+  async loadModel (lastModelTx: Timestamp): Promise<Tx[]> {
+    return await this.storage.findAll(this.measureCtx, core.class.Tx, {
+      space: core.space.Model,
+      modifiedOn: { $gt: lastModelTx }
+    })
+  }
+
   async tx (tx: Tx): Promise<TxResult> {
-    const _tx = protoDeserialize(protoSerialize(tx))
+    const _tx = protoDeserialize(protoSerialize(tx, false), false)
     const [result, derived] = await this.storage.tx(this.measureCtx, _tx)
     for (const tx of derived) {
       this.handler(tx)

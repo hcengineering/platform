@@ -1,5 +1,5 @@
 {
-  "name": "@hcengineering/contrib",
+  "name": "@hcengineering/rpc",
   "version": "0.6.0",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
@@ -30,6 +30,6 @@
   "dependencies": {
     "@hcengineering/core": "^0.6.25",
     "@hcengineering/platform": "^0.6.9",
-    "ws": "^8.10.0"
+    "msgpackr": "^1.8.5"
   }
 }

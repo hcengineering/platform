@@ -15,19 +15,27 @@
 
 import contact from '@hcengineering/contact'
 import core, {
+  Account,
+  BackupClient,
   ClassifierKind,
   Client,
+  DOMAIN_TX,
+  Doc,
+  DocumentUpdate,
   MeasureMetricsContext,
+  Ref,
+  TxOperations,
   WorkspaceId,
   generateId,
   metricsToString,
   newMetrics,
   systemAccountEmail
 } from '@hcengineering/core'
-import { RateLimitter } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
 
+import client from '@hcengineering/client'
+import { setMetadata } from '@hcengineering/platform'
 import os from 'os'
 import { Worker, isMainThread, parentPort } from 'worker_threads'
 import { CSVWriter } from './csv'
@@ -45,8 +53,12 @@ interface StartMessage {
       min: number
       rand: number
     }
+    // If enabled, will perform write tx for same values and Derived format.
+    write: boolean
     sleep: number
   }
+  binary: boolean
+  compression: boolean
 }
 interface Msg {
   type: 'complete' | 'operate'
@@ -62,15 +74,20 @@ interface CompleteMsg extends Msg {
 //   workId: string
 // }
 
+const benchAccount = (core.account.System + '_benchmark') as Ref<Account>
+
 export async function benchmark (
   workspaceId: WorkspaceId[],
   transactorUrl: string,
-  cmd: { from: number, steps: number, sleep: number }
+  cmd: { from: number, steps: number, sleep: number, binary: boolean, write: boolean, compression: boolean }
 ): Promise<void> {
   let operating = 0
   const workers: Worker[] = []
 
   const works = new Map<string, () => void>()
+
+  setMetadata(client.metadata.UseBinaryProtocol, cmd.binary)
+  setMetadata(client.metadata.UseProtocolCompression, cmd.compression)
 
   os.cpus().forEach(() => {
     /* Spawn a new thread running this source file */
@@ -134,8 +151,23 @@ export async function benchmark (
   const token = generateToken(systemAccountEmail, workspaceId[0])
 
   const monitorConnection = isMainThread
-    ? await ctx.with('connect', {}, async () => await connect(transactorUrl, workspaceId[0], undefined))
+    ? ((await ctx.with(
+        'connect',
+        {},
+        async () => await connect(transactorUrl, workspaceId[0], undefined, { mode: 'backup' })
+      )) as BackupClient & Client)
     : undefined
+
+  if (monitorConnection !== undefined) {
+    // We need to cleanup all transactions from our benchmark account.
+    const txes = await monitorConnection.findAll(
+      core.class.Tx,
+      { modifiedBy: benchAccount },
+      { projection: { _id: 1 } }
+    )
+    await monitorConnection.clean(DOMAIN_TX, Array.from(txes.map((it) => it._id)))
+  }
+
   let running = false
 
   let timer: any
@@ -143,20 +175,31 @@ export async function benchmark (
     timer = setInterval(() => {
       const st = Date.now()
 
-      void fetch(transactorUrl.replace('ws:/', 'http:/') + '/' + token).then((res) => {
-        void res.json().then((json) => {
-          memUsed = json.statistics.memoryUsed
-          memTotal = json.statistics.memoryTotal
-          cpu = json.statistics.cpuUsage
-          const r = json.metrics?.measurements?.client?.measurements?.handleRequest?.measurements?.call
-          operations = r?.operations ?? 0
-          requestTime = (r?.value ?? 0) / (((r?.operations as number) ?? 0) + 1)
-          transfer =
-            json.metrics?.measurements?.client?.measurements?.handleRequest?.measurements?.send?.measurements?.[
-              '#send-data'
-            ]?.value ?? 0
-        })
-      })
+      try {
+        void fetch(transactorUrl.replace('ws:/', 'http:/') + '/' + token)
+          .then((res) => {
+            void res
+              .json()
+              .then((json) => {
+                memUsed = json.statistics.memoryUsed
+                memTotal = json.statistics.memoryTotal
+                cpu = json.statistics.cpuUsage
+                const r =
+                  json.metrics?.measurements?.client?.measurements?.handleRequest?.measurements?.call?.measurements?.[
+                    'find-all'
+                  ]
+                operations = r?.operations ?? 0
+                requestTime = (r?.value ?? 0) / (((r?.operations as number) ?? 0) + 1)
+                transfer =
+                  json.metrics?.measurements?.client?.measurements?.handleRequest?.measurements?.['#send-data']
+                    ?.value ?? 0
+              })
+              .catch((err) => console.log(err))
+          })
+          .catch((err) => console.log(err))
+      } catch (err) {
+        console.log(err)
+      }
 
       if (!running) {
         running = true
@@ -189,7 +232,7 @@ export async function benchmark (
         },
         true
       )
-      void csvWriter.write('report.csv')
+      void csvWriter.write(`report${cmd.binary ? '-bin' : ''}${cmd.write ? '-wr' : ''}.csv`)
     }, 1000)
   }
   for (let i = cmd.from; i < cmd.from + cmd.steps; i++) {
@@ -213,8 +256,11 @@ export async function benchmark (
                   min: 10,
                   rand: 1000
                 },
-                sleep: cmd.sleep
-              }
+                sleep: cmd.sleep,
+                write: cmd.write
+              },
+              binary: cmd.binary,
+              compression: cmd.compression
             }
             workers[i % workers.length].postMessage(msg)
 
@@ -247,15 +293,15 @@ if (!isMainThread) {
   })
 }
 
-const connectLimitter = new RateLimitter(() => ({ rate: 50 }))
-
 async function perform (msg: StartMessage): Promise<void> {
   let connection: Client | undefined
   try {
+    setMetadata(client.metadata.UseBinaryProtocol, msg.binary)
+    setMetadata(client.metadata.UseProtocolCompression, msg.compression)
     console.log('connecting to', msg.workspaceId)
 
-    connection = await connectLimitter.exec(async () => await connect(msg.transactorUrl, msg.workspaceId, undefined))
-
+    connection = await connect(msg.transactorUrl, msg.workspaceId, undefined)
+    const opt = new TxOperations(connection, (core.account.System + '_benchmark') as Ref<Account>)
     parentPort?.postMessage({
       type: 'operate',
       workId: msg.workId
@@ -269,10 +315,11 @@ async function perform (msg: StartMessage): Promise<void> {
         await connection?.findAll(core.class.Tx, {}, { sort: { _id: -1 } })
         msg.options.modelRequests--
       }
+      let doc: Doc | undefined
       if (msg.options.readRequests > 0) {
         const cl = classes[randNum(classes.length - 1)]
         if (cl !== undefined) {
-          await connection?.findAll(
+          const docs = await connection?.findAll(
             cl._id,
             {},
             {
@@ -280,7 +327,33 @@ async function perform (msg: StartMessage): Promise<void> {
               limit: msg.options.limit.min + randNum(msg.options.limit.rand)
             }
           )
+          if (docs.length > 0) {
+            doc = docs[randNum(docs.length - 1)]
+          }
           msg.options.readRequests--
+        }
+        if (msg.options.write && doc !== undefined) {
+          const attrs = connection.getHierarchy().getAllAttributes(doc._class)
+          const upd: DocumentUpdate<Doc> = {}
+          for (const [key, value] of attrs.entries()) {
+            if (value.type._class === core.class.TypeString || value.type._class === core.class.TypeBoolean) {
+              if (
+                key !== '_id' &&
+                key !== '_class' &&
+                key !== 'space' &&
+                key !== 'attachedTo' &&
+                key !== 'attachedToClass'
+              ) {
+                const v = (doc as any)[key]
+                if (v != null) {
+                  ;(upd as any)[key] = v
+                }
+              }
+            }
+          }
+          if (Object.keys(upd).length > 0) {
+            await opt.update(doc, upd)
+          }
         }
       }
       if (msg.options.sleep > 0) {

@@ -67,12 +67,7 @@ export class QueryJoinMiddleware extends BaseMiddleware implements Middleware {
       q.result = this.provideFindAll(ctx, _class, query, options)
     }
     if (q.result instanceof Promise) {
-      const st = Date.now()
       q.result = await q.result
-      const ed = Date.now()
-      if (q.callbacks > 1) {
-        console.log('QUERY Wait', _class, JSON.stringify(query), ed - st, q.callbacks, q.max)
-      }
       q.callbacks--
     }
     this.removeFromQueue(q)

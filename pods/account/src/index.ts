@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import account, { AccountMethod, ACCOUNT_DB } from '@hcengineering/account'
-import platform, { Response, serialize, setMetadata, Severity, Status } from '@hcengineering/platform'
+import account, { ACCOUNT_DB, AccountMethod } from '@hcengineering/account'
+import platform, { Severity, Status, setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
 import toolPlugin from '@hcengineering/server-tool'
 import cors from '@koa/cors'
@@ -79,12 +79,12 @@ export function serveAccount (methods: Record<string, AccountMethod>, productId 
     const request = ctx.request.body as any
     const method = (methods as { [key: string]: AccountMethod })[request.method]
     if (method === undefined) {
-      const response: Response<void> = {
+      const response = {
         id: request.id,
         error: new Status(Severity.ERROR, platform.status.UnknownMethod, { method: request.method })
       }
 
-      ctx.body = serialize(response)
+      ctx.body = JSON.stringify(response)
     }
 
     if (client === undefined) {

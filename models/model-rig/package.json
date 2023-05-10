@@ -10,7 +10,8 @@
     "eslint-config-standard-with-typescript": "^23.0.0"
   },
   "peerDependencies": {
-    "@typescript-eslint/parser": "^4.0.0"
+    "@typescript-eslint/parser": "^5.41.0",
+    "eslint": "^8.26.0"
   },
   "dependencies": {
     "typescript": "^4.3.5"

@@ -1,6 +1,6 @@
 import { MeasureContext, metricsAggregate } from '@hcengineering/core'
-import { SessionManager } from './types'
 import os from 'os'
+import { SessionManager } from './types'
 
 /**
  * @public
@@ -12,8 +12,9 @@ export function getStatistics (ctx: MeasureContext, sessions: SessionManager): a
       activeSessions: {}
     }
   }
+  data.statistics.totalClients = sessions.sessions.size
   for (const [k, v] of sessions.workspaces) {
-    data.statistics.activeSessions[k] = v.sessions.length
+    data.statistics.activeSessions[k] = v.sessions.size
   }
 
   data.statistics.memoryUsed = Math.round((process.memoryUsage().heapUsed / 1024 / 1024) * 100) / 100

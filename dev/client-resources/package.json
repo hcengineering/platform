@@ -32,6 +32,7 @@
     "@hcengineering/dev-storage": "^0.6.6",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/model-all": "^0.6.0",
-    "@hcengineering/devmodel": "^0.6.0"
+    "@hcengineering/devmodel": "^0.6.0",
+    "@hcengineering/rpc": "^0.6.0"
   }
 }

@@ -14,7 +14,8 @@
 //
 
 import { MeasureContext, generateId } from '@hcengineering/core'
-import { Response, UNAUTHORIZED, serialize } from '@hcengineering/platform'
+import { UNAUTHORIZED } from '@hcengineering/platform'
+import { Response, serialize } from '@hcengineering/rpc'
 import { Token, decodeToken } from '@hcengineering/server-token'
 import { IncomingMessage, ServerResponse, createServer } from 'http'
 import { RawData, WebSocket, WebSocketServer } from 'ws'
@@ -38,32 +39,33 @@ export function startHttpServer (
 
   const wss = new WebSocketServer({
     noServer: true,
-    perMessageDeflate: {
-      zlibDeflateOptions: {
-        // See zlib defaults.
-        chunkSize: 16 * 1024,
-        level: 6
-      },
-      zlibInflateOptions: {
-        chunkSize: 16 * 1024,
-        level: 6
-      },
-      threshold: 1024 // Size (in bytes) below which messages, should not be compressed if context takeover is disabled.
-    },
+    perMessageDeflate: false,
+    // perMessageDeflate: {
+    //   zlibDeflateOptions: {
+    //     // See zlib defaults.
+    //     chunkSize: 16 * 1024,
+    //     level: 6
+    //   },
+    //   zlibInflateOptions: {
+    //     chunkSize: 16 * 1024,
+    //     level: 6
+    //   },
+    //   threshold: 1024 // Size (in bytes) below which messages, should not be compressed if context takeover is disabled.
+    // },
     skipUTF8Validation: true
   })
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   wss.on('connection', async (ws: WebSocket, request: any, token: Token, sessionId?: string) => {
-    let buffer: string[] | undefined = []
+    let buffer: Buffer[] | undefined = []
 
     const cs: ConnectionSocket = {
       id: generateId(),
       close: () => ws.close(),
-      send: async (ctx: MeasureContext, msg) => {
+      send: async (ctx: MeasureContext, msg, binary, compression) => {
         if (ws.readyState !== ws.OPEN) {
           return
         }
-        const smsg = await ctx.with('serialize', {}, async () => serialize(msg))
+        const smsg = await ctx.with('serialize', {}, async () => serialize(msg, binary))
 
         ctx.measure('send-data', smsg.length)
 
@@ -72,7 +74,7 @@ export function startHttpServer (
           {},
           async (ctx) =>
             await new Promise((resolve, reject) => {
-              ws.send(smsg, (err) => {
+              ws.send(smsg, { binary, compress: compression }, (err) => {
                 if (err != null) {
                   reject(err)
                 } else {
@@ -84,21 +86,21 @@ export function startHttpServer (
       }
     }
 
-    ws.on('message', (msg: string) => {
+    ws.on('message', (msg: Buffer) => {
       buffer?.push(msg)
     })
     const session = await sessions.addSession(ctx, cs, token, pipelineFactory, productId, sessionId)
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('message', (msg: RawData) => {
-      let msgStr = ''
-      if (typeof msg === 'string') {
-        msgStr = msg
-      } else if (msg instanceof Buffer) {
-        msgStr = msg.toString()
+      let buff: any | undefined
+      if (msg instanceof Buffer) {
+        buff = msg?.toString()
       } else if (Array.isArray(msg)) {
-        msgStr = Buffer.concat(msg).toString()
+        buff = Buffer.concat(msg).toString()
       }
-      void handleRequest(ctx, session, cs, msgStr, token.workspace.name)
+      if (buff !== undefined) {
+        void handleRequest(ctx, session, cs, buff, token.workspace.name)
+      }
     })
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('close', (code: number, reason: Buffer) => {
@@ -135,6 +137,7 @@ export function startHttpServer (
       const json = JSON.stringify(getStatistics(ctx, sessions))
       response.end(json)
     } catch (err) {
+      console.error(err)
       response.writeHead(404, {})
       response.end()
     }
@@ -162,18 +165,18 @@ export function startHttpServer (
           error: UNAUTHORIZED,
           result: 'hello'
         }
-        ws.send(serialize(resp))
+        ws.send(serialize(resp, false), { binary: false })
         ws.onmessage = (msg) => {
           const resp: Response<any> = {
             error: UNAUTHORIZED
           }
-          ws.send(serialize(resp))
+          ws.send(serialize(resp, false), { binary: false })
         }
       })
     }
   })
-  server.on('error', () => {
-    if (LOGGING_ENABLED) console.error('server error')
+  server.on('error', (err) => {
+    if (LOGGING_ENABLED) console.error('server error', err)
   })
 
   server.listen(port)

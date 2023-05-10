@@ -10,7 +10,7 @@ import {
   TxResult,
   WorkspaceId
 } from '@hcengineering/core'
-import { Response } from '@hcengineering/platform'
+import { Response } from '@hcengineering/rpc'
 import { Pipeline } from '@hcengineering/server-core'
 import { Token } from '@hcengineering/server-token'
 
@@ -39,12 +39,15 @@ export interface Session {
   tx: (ctx: MeasureContext, tx: Tx) => Promise<TxResult>
 
   // Session restore information
-  sessionId?: string
+  sessionId: string
   sessionInstanceId?: string
   closeTimeout?: any
   workspaceClosed?: boolean
 
   requests: Map<string, SessionRequest>
+
+  binaryResponseMode: boolean
+  useCompression: boolean
 }
 
 /**
@@ -73,7 +76,7 @@ export type PipelineFactory = (
 export interface ConnectionSocket {
   id: string
   close: () => void
-  send: (ctx: MeasureContext, msg: Response<any>) => Promise<void>
+  send: (ctx: MeasureContext, msg: Response<any>, binary: boolean, compression: boolean) => Promise<void>
 }
 
 /**
@@ -94,7 +97,7 @@ export function disableLogging (): void {
 export interface Workspace {
   id: string
   pipeline: Promise<Pipeline>
-  sessions: [Session, ConnectionSocket][]
+  sessions: Map<string, { session: Session, socket: ConnectionSocket }>
   upgrade: boolean
   closing?: Promise<void>
 }
@@ -104,6 +107,7 @@ export interface Workspace {
  */
 export interface SessionManager {
   workspaces: Map<string, Workspace>
+  sessions: Map<string, { session: Session, socket: ConnectionSocket }>
 
   createSession: (token: Token, pipeline: Pipeline) => Session
 
@@ -146,7 +150,7 @@ export type HandleRequestFunction = <S extends Session>(
   rctx: MeasureContext,
   service: S,
   ws: ConnectionSocket,
-  msg: string,
+  msg: Buffer,
   workspace: string
 ) => Promise<void>
 

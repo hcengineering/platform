@@ -25,6 +25,7 @@ import core, {
   FindOptions,
   FindResult,
   Ref,
+  Timestamp,
   Tx,
   TxApplyIf,
   TxHandler,
@@ -33,16 +34,9 @@ import core, {
   WorkspaceEvent,
   generateId
 } from '@hcengineering/core'
-import {
-  PlatformError,
-  ReqId,
-  UNAUTHORIZED,
-  broadcastEvent,
-  getMetadata,
-  readResponse,
-  serialize,
-  unknownError
-} from '@hcengineering/platform'
+import { PlatformError, UNAUTHORIZED, broadcastEvent, getMetadata, unknownError } from '@hcengineering/platform'
+
+import { HelloRequest, HelloResponse, ReqId, readResponse, serialize } from '@hcengineering/rpc'
 
 const SECOND = 1000
 const pingTimeout = 10 * SECOND
@@ -161,11 +155,17 @@ class Connection implements ClientConnection {
     return new Promise((resolve, reject) => {
       // Use defined factory or browser default one.
       const clientSocketFactory =
-        getMetadata(client.metadata.ClientSocketFactory) ?? ((url: string) => new WebSocket(url) as ClientSocket)
+        getMetadata(client.metadata.ClientSocketFactory) ??
+        ((url: string) => {
+          const s = new WebSocket(url)
+          s.binaryType = 'arraybuffer'
+          return s as ClientSocket
+        })
 
       const websocket = clientSocketFactory(this.url + `?sessionId=${this.sessionId}`)
       const opened = false
       const socketId = this.sockets++
+      let binaryResponse = false
 
       const dialTimer = setTimeout(() => {
         if (!opened) {
@@ -175,8 +175,11 @@ class Connection implements ClientConnection {
       }, dialTimeout)
 
       websocket.onmessage = (event: MessageEvent) => {
-        const resp = readResponse(event.data)
+        const resp = readResponse<any>(event.data, binaryResponse)
         if (resp.id === -1 && resp.result === 'hello') {
+          if ((resp as HelloResponse).binary) {
+            binaryResponse = true
+          }
           if (resp.error !== undefined) {
             reject(resp.error)
             return
@@ -192,7 +195,7 @@ class Connection implements ClientConnection {
         if (resp.id !== undefined) {
           const promise = this.requests.get(resp.id)
           if (promise === undefined) {
-            throw new Error(`unknown response id: ${resp.id}`)
+            throw new Error(`unknown response id: ${resp.id as string}`)
           }
 
           if (resp.chunk !== undefined) {
@@ -234,11 +237,14 @@ class Connection implements ClientConnection {
           ) {
             console.log('Processing upgrade')
             websocket.send(
-              serialize({
-                method: '#upgrading',
-                params: [],
-                id: -1
-              })
+              serialize(
+                {
+                  method: '#upgrading',
+                  params: [],
+                  id: -1
+                },
+                false
+              )
             )
             this.onUpgrade?.()
             return
@@ -263,15 +269,18 @@ class Connection implements ClientConnection {
         reject(new Error('websocket error'))
       }
       websocket.onopen = () => {
-        // console.log('connection opened...', socketId)
+        const useBinary = getMetadata(client.metadata.UseBinaryProtocol) ?? true
+        const useCompression = getMetadata(client.metadata.UseProtocolCompression) ?? false
+        console.log('connection opened...', socketId, useBinary, useCompression)
         clearTimeout(dialTimer)
-        websocket.send(
-          serialize({
-            method: 'hello',
-            params: [],
-            id: -1
-          })
-        )
+        const helloRequest: HelloRequest = {
+          method: 'hello',
+          params: [],
+          id: -1,
+          binary: useBinary,
+          compression: useCompression
+        }
+        websocket.send(serialize(helloRequest, false))
       }
       websocket.onerror = (event: any) => {
         console.error('client websocket error:', socketId, event)
@@ -304,11 +313,14 @@ class Connection implements ClientConnection {
       }
       this.requests.set(id, promise)
       this.websocket.send(
-        serialize({
-          method: data.method,
-          params: data.params,
-          id
-        })
+        serialize(
+          {
+            method: data.method,
+            params: data.params,
+            id
+          },
+          false
+        )
       )
     }
     promise.reconnect = () => {
@@ -322,6 +334,10 @@ class Connection implements ClientConnection {
     await sendData()
     void broadcastEvent(client.event.NetworkRequests, this.requests.size)
     return await promise.promise
+  }
+
+  async loadModel (lastTxTime: Timestamp): Promise<Tx[]> {
+    return await this.sendRequest({ method: 'loadModel', params: [lastTxTime] })
   }
 
   findAll<T extends Doc>(

@@ -156,5 +156,10 @@ export async function configurePlatform() {
   setMetadata(client.metadata.FilterModel, true)
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])
 
+  // Use binary response transfer for faster performance and small transfer sizes.
+  setMetadata(client.metadata.UseBinaryProtocol, true)
+  // Disable for now, since it causes performance issues on linux/docker/kubernetes boxes for now.
+  setMetadata(client.metadata.UseProtocolCompression, false)
+
   setMetadata(workbench.metadata.PlatformTitle, 'Platform')
 }
