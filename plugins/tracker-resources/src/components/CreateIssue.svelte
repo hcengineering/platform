@@ -140,7 +140,7 @@
       estimation: 0,
       sprint,
       status,
-      assignee: undefined,
+      assignee,
       labels: [],
       parentIssue: parentIssue?._id,
       subIssues: []
@@ -289,7 +289,7 @@
   }
 
   function updateAssigneeId (object: IssueDraft, currentProject: Project | undefined) {
-    if (object.assignee === undefined && currentProject !== undefined) {
+    if (object.assignee == null && currentProject !== undefined) {
       if (currentProject.defaultAssignee !== undefined) {
         object.assignee = currentProject.defaultAssignee
       } else {
