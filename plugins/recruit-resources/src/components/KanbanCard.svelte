@@ -110,7 +110,11 @@
             <CommentsPresenter value={object.comments} {object} />
           {/if}
           {#if object.$lookup?.attachedTo !== undefined && (object.$lookup.attachedTo.comments ?? 0) > 0}
-            <CommentsPresenter value={object.$lookup?.attachedTo?.comments} object={object.$lookup?.attachedTo} />
+            <CommentsPresenter
+              value={object.$lookup?.attachedTo?.comments}
+              object={object.$lookup?.attachedTo}
+              withInput={false}
+            />
           {/if}
         </div>
       {/if}
