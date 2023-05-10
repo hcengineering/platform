@@ -299,7 +299,7 @@
 <style lang="scss">
   @keyframes highlight {
     50% {
-      background-color: var(--warning-color);
+      background-color: var(--theme-warning-color);
     }
   }
   .container {

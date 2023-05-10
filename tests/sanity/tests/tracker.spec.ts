@@ -11,7 +11,7 @@ import {
   navigate,
   openIssue
 } from './tracker.utils'
-import { PlatformSetting, generateId } from './utils'
+import { PlatformSetting, fillSearch, generateId } from './utils'
 test.use({
   storageState: PlatformSetting
 })
@@ -32,9 +32,7 @@ test('create-issue-and-sub-issue', async ({ page }) => {
   await createIssue(page, props)
   await page.click('text="Issues"')
 
-  await page.locator('[placeholder="Search"]').click()
-  await page.locator('[placeholder="Search"]').fill(props.name)
-  await page.locator('[placeholder="Search"]').press('Enter')
+  await fillSearch(page, props.name)
 
   await openIssue(page, props.name)
   await checkIssue(page, props)
@@ -167,9 +165,7 @@ test('report-time-from-main-view', async ({ page }) => {
   // await page.click('.close-button > .button')
 
   // We need to fait for indexer to complete indexing.
-  await page.locator('[placeholder="Search"]').click()
-  await page.locator('[placeholder="Search"]').fill(name)
-  await page.locator('[placeholder="Search"]').press('Enter')
+  await fillSearch(page, name)
 
   await page.waitForSelector(`text="${name}"`, { timeout: 15000 })
 
@@ -307,9 +303,7 @@ test('sub-issue-draft', async ({ page }) => {
   await createIssue(page, props)
   await page.click('text="Issues"')
 
-  await page.locator('[placeholder="Search"]').click()
-  await page.locator('[placeholder="Search"]').fill(props.name)
-  await page.locator('[placeholder="Search"]').press('Enter')
+  await fillSearch(page, props.name)
 
   await openIssue(page, props.name)
   await checkIssue(page, props)

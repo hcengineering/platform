@@ -38,6 +38,7 @@
   {justify}
   {width}
   {disabled}
+  notSelected={value === undefined}
   showTooltip={{ label: tooltip, direction: labelDirection }}
   on:click={() => {
     if (value === true) value = false
@@ -47,7 +48,7 @@
 >
   <svelte:fragment slot="content">
     <div class="flex-row-center flex-no-wrap pointer-events-none">
-      <span class="overflow-label">
+      <span class="label overflow-label">
         <Label {label} />
       </span>
       <div class="btn-icon ml-1">
@@ -74,14 +75,14 @@
 
 <style lang="scss">
   .btn-icon {
-    color: var(--content-color);
+    color: var(--theme-content-color);
     transition: color 0.15s;
     pointer-events: none;
     &:hover {
-      color: var(--caption-color);
+      color: var(--theme-caption-color);
     }
     &:disabled:hover {
-      color: var(--content-color);
+      color: var(--theme-content-color);
     }
   }
 

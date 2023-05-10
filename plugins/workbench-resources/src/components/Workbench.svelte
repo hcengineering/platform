@@ -505,6 +505,7 @@
   $: checkInbox($popupstore)
 
   let inboxPopup: PopupResult | undefined = undefined
+  let lastLoc: Location | undefined = undefined
 </script>
 
 {#if employee?.active === true}
@@ -558,23 +559,29 @@
             selected={currentAppAlias === notificationId || inboxPopup !== undefined}
             on:click={(e) => {
               if (e.metaKey || e.ctrlKey) return
-              if (inboxPopup) {
-                inboxPopup.close()
+              // if (inboxPopup) {
+              //   inboxPopup.close()
+              // } else {
+              //   inboxPopup = showPopup(
+              //     notification.component.Inbox,
+              //     { visibileNav: true },
+              //     'content',
+              //     undefined,
+              //     undefined,
+              //     {
+              //       category: 'popup',
+              //       overlay: false
+              //     }
+              //   )
+              // }
+              if (currentAppAlias === notificationId && lastLoc !== undefined) {
+                e.preventDefault()
+                e.stopPropagation()
+                navigate(lastLoc)
+                lastLoc = undefined
               } else {
-                inboxPopup = showPopup(
-                  notification.component.Inbox,
-                  { visibileNav: true },
-                  'content',
-                  undefined,
-                  undefined,
-                  {
-                    category: 'popup',
-                    overlay: false
-                  }
-                )
+                lastLoc = $location
               }
-              e.preventDefault()
-              e.stopPropagation()
             }}
             notify={hasNotification}
           />

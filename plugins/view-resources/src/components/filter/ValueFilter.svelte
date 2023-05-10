@@ -16,7 +16,7 @@
   import core, { Class, Doc, FindResult, getObjectValue, Ref, SortingOrder, Space } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import ui, { Button, CheckBox, Label, Loading, resizeObserver, deviceOptionsStore } from '@hcengineering/ui'
+  import ui, { Button, Icon, IconCheck, Label, Loading, resizeObserver, deviceOptionsStore } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { onMount } from 'svelte'
   import { getPresenter } from '../../utils'
@@ -152,21 +152,24 @@
           {#each Array.from(values.keys()) as value}
             {@const realValue = [...(realValues.get(value) ?? [])][0]}
             <button
-              class="menu-item"
+              class="menu-item no-focus"
               on:click={() => {
                 toggle(value)
               }}
             >
               <div class="flex-between w-full">
-                <div class="flex clear-mins">
+                <div class="flex-row-center">
                   <div class="check pointer-events-none">
-                    <CheckBox checked={isSelected(value, selectedValues)} primary />
+                    {#if isSelected(value, selectedValues)}
+                      <Icon icon={IconCheck} size={'small'} />
+                    {/if}
                   </div>
                   {#if value !== undefined}
                     <svelte:component
                       this={attribute.presenter}
                       value={typeof value === 'string' ? realValue : value}
                       {...attribute.props}
+                      oneLine
                     />
                   {:else}
                     <Label label={ui.string.NotSelected} />
@@ -183,7 +186,7 @@
     </div>
   </div>
   <Button
-    shape={'round'}
+    shape={'filter'}
     label={view.string.Apply}
     on:click={() => {
       filter.value = Array.from(selectedValues.values()).map((p) => {

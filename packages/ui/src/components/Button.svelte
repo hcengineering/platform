@@ -234,6 +234,9 @@
       border-top-right-radius: 0.25rem;
       border-bottom-right-radius: 0.25rem;
     }
+    &.sh-filter {
+      border-radius: 0 0 0.5rem 0.5rem;
+    }
     &.bs-solid {
       border-style: solid;
     }
@@ -254,7 +257,12 @@
       }
     }
     &:focus {
-      box-shadow: 0 0 0 2px var(--primary-button-focused-border);
+      &:not(.sh-filter) {
+        box-shadow: 0 0 0 2px var(--primary-button-focused-border);
+      }
+      &.sh-filter {
+        border-color: var(--primary-button-focused-border);
+      }
     }
     &:disabled {
       color: var(--theme-dark-color);

@@ -241,29 +241,17 @@
             }}
           >
             {#if (allowDeselect && selected) || multiSelect || selected}
-              <div class="icon" class:disabled={readonly}>
+              <div class="check" class:disabled={readonly}>
                 {#if obj._id === selected || selectedElements.has(obj._id)}
-                  <div bind:this={selectedDiv}>
-                    {#if titleDeselect}
-                      <div class="clear-mins" use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
-                        <Icon icon={IconCheck} {size} />
-                      </div>
-                    {:else}
-                      <Icon icon={IconCheck} {size} />
-                    {/if}
+                  <div bind:this={selectedDiv} use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
+                    <Icon icon={IconCheck} {size} />
                   </div>
                 {/if}
               </div>
             {/if}
 
             <span class="label" class:disabled={readonly || isDeselectDisabled}>
-              {#if obj._id === selected}
-                <div bind:this={selectedDiv}>
-                  <slot name="item" item={obj} />
-                </div>
-              {:else}
-                <slot name="item" item={obj} />
-              {/if}
+              <slot name="item" item={obj} />
             </span>
           </button>
         </svelte:fragment>
@@ -282,9 +270,5 @@
     border: 1px solid var(--button-border-color);
     border-radius: 0.25rem;
     box-shadow: none;
-  }
-  .whereSelected {
-    height: 2px;
-    background-color: var(--theme-caret-color);
   }
 </style>

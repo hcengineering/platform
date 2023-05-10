@@ -30,6 +30,6 @@
   <Avatar avatar={value.avatar} {size} {icon} on:accent-color />
   <div class="flex-col min-w-0 {size === 'tiny' || size === 'inline' ? 'ml-1' : 'ml-2'}">
     {#if subtitle}<div class="content-dark-color text-sm">{subtitle}</div>{/if}
-    <div class="content-color overflow-label text-left">{getName(value)}</div>
+    <div class="label overflow-label text-left">{getName(value)}</div>
   </div>
 </div>

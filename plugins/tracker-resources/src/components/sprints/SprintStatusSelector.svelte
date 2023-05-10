@@ -40,7 +40,11 @@
       : tracker.string.Planned
     : undefined
 
-  $: statusesInfo = defaultSprintStatuses.map((s) => ({ id: s, ...sprintStatusAssets[s] }))
+  $: statusesInfo = defaultSprintStatuses.map((s) => ({
+    id: s,
+    isSelected: sprintStatusAssets[s].label === selectedStatusLabel,
+    ...sprintStatusAssets[s]
+  }))
 
   const handleSprintStatusEditorOpened = (event: MouseEvent) => {
     if (!isEditable) {

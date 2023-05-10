@@ -1183,7 +1183,8 @@ export function createModel (builder: Builder): void {
       context: {
         mode: ['context', 'browser'],
         group: 'edit'
-      }
+      },
+      override: [view.action.Archive, view.action.Delete]
     },
     tracker.action.DeleteProject
   )

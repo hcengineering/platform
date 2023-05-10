@@ -57,7 +57,7 @@ export default mergeIds(hrId, hr, {
   },
   action: {
     EditDepartment: '' as Ref<Action>,
-    DeleteDepartment: '' as Ref<Action>,
+    ArchiveDepartment: '' as Ref<Action>,
     EditRequest: '' as Ref<Action>,
     EditRequestType: '' as Ref<Action>,
     DeleteRequest: '' as Ref<Action>

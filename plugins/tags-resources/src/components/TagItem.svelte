@@ -50,7 +50,7 @@
   </span>
 {:else}
   <div
-    class="text-sm flex flex-between tag-item"
+    class="tag-item"
     style={`${getTagStyle(getPlatformColor(tag?.color ?? element?.color ?? 0), selected)}`}
     on:click
     on:keydown
@@ -61,16 +61,16 @@
     }}
   >
     <span class="overflow-label max-w-40">{name}</span>
-    <span class="ml-1">
-      {#if tag && tagIcon && schema !== '0'}
+    {#if tag && tagIcon && schema !== '0'}
+      <span class="ml-1">
         <Icon icon={tagIcon} size={'small'} />
-      {/if}
-    </span>
+      </span>
+    {/if}
     {#if action}
-      <div class="ml-1">
+      <div class="flex-center ml-1">
         <ActionIcon
           icon={action}
-          size={'medium'}
+          size={'small'}
           action={() => {
             dispatch('action')
           }}
@@ -82,29 +82,28 @@
 
 <style lang="scss">
   .tag-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin: 0.125rem;
-    padding: 0.125rem 0.25rem;
-
-    border-radius: 0.25rem;
-
+    padding: 0 0.25rem;
+    min-width: 0;
+    min-height: 1.5rem;
+    text-transform: uppercase;
     font-weight: 500;
     font-size: 0.75rem;
+    color: var(--theme-content-color);
+    border-radius: 0.25rem;
 
-    text-transform: uppercase;
-    color: var(--accent-color);
     &:hover {
-      color: var(--caption-color);
+      color: var(--theme-caption-color);
     }
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
   .tag-item-inline {
     position: relative;
     padding-left: 0.75rem;
     font-weight: 500;
-    color: var(--accent-color);
+    color: var(--theme-content-color);
 
     &::before {
       position: absolute;

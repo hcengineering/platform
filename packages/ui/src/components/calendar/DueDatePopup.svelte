@@ -65,7 +65,7 @@
     margin-right: 1rem;
 
     &.mIconContainerWarning {
-      color: var(--warning-color);
+      color: var(--theme-warning-color);
     }
 
     &.mIconContainerCritical {

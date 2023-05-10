@@ -403,7 +403,7 @@
           on:click={() => {
             showPopup(
               ColorPopup,
-              { value: states, searchable: true, placeholder: ui.string.SearchDots },
+              { value: states, searchable: true, placeholder: ui.string.SearchDots, selected: selectedState?._id },
               btn,
               (result) => {
                 if (result && result.id) {

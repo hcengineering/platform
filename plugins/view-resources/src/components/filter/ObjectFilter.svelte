@@ -19,7 +19,8 @@
   import ui, {
     addNotification,
     Button,
-    CheckBox,
+    Icon,
+    IconCheck,
     deviceOptionsStore,
     Label,
     Loading,
@@ -189,12 +190,14 @@
               }}
             >
               <div class="flex-between w-full">
-                <div class="flex clear-mins overflow-label">
+                <div class="flex-row-center">
                   <div class="check pointer-events-none">
-                    <CheckBox checked={isSelected(value, filter.value)} primary />
+                    {#if isSelected(value, filter.value)}
+                      <Icon icon={IconCheck} size={'small'} />
+                    {/if}
                   </div>
                   {#if value}
-                    <svelte:component this={attribute.presenter} {value} {...attribute.props} disabled />
+                    <svelte:component this={attribute.presenter} {value} {...attribute.props} disabled oneLine />
                   {:else}
                     <Label label={ui.string.NotSelected} />
                   {/if}
@@ -214,7 +217,7 @@
     </div>
   </div>
   <Button
-    shape={'round'}
+    shape={'filter'}
     label={view.string.Apply}
     on:click={() => {
       onChange(filter)
