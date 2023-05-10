@@ -138,8 +138,5 @@
     "@hcengineering/document": "^0.6.0",
     "@hcengineering/bitrix": "^0.6.36",
     "@hcengineering/request": "^0.6.0"
-  },
-  "optionalDependencies": {
-    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.23.0"
   }
 }

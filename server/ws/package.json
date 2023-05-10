@@ -36,8 +36,5 @@
     "@hcengineering/server-token": "^0.6.4",
     "@hcengineering/rpc": "^0.6.0",
     "bufferutil": "^4.0.7"
-  },
-  "optionalDependencies": {
-    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.23.0"
-  }
+  }  
 }
