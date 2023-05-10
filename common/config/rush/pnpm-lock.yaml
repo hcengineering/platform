@@ -282,6 +282,7 @@ specifiers:
   autoprefixer: ^10.4.14
   body-parser: ~1.19.1
   browserslist: 4.21.5
+  bufferutil: ^4.0.7
   commander: ^8.1.0
   comment-json: ^4.2.2
   compression: ~1.7.4
@@ -375,7 +376,6 @@ specifiers:
   ts-loader: ^9.2.5
   ts-node: ^10.8.0
   typescript: ^4.3.5
-  uWebSockets.js: github:uNetworking/uWebSockets.js#v20.23.0
   update-browserslist-db: ~1.0.11
   uuid: ^8.3.2
   webpack: ^5.75.0
@@ -395,7 +395,7 @@ dependencies:
   '@koa/cors': 3.4.3
   '@microsoft/api-extractor': 7.33.6
   '@playwright/test': 1.23.4
-  '@rush-temp/account': file:projects/account.tgz
+  '@rush-temp/account': file:projects/account.tgz_bufferutil@4.0.7
   '@rush-temp/activity': file:projects/activity.tgz
   '@rush-temp/activity-assets': file:projects/activity-assets.tgz
   '@rush-temp/activity-resources': file:projects/activity-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
@@ -435,7 +435,7 @@ dependencies:
   '@rush-temp/document-resources': file:projects/document-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
   '@rush-temp/elastic': file:projects/elastic.tgz_@types+node@16.11.68
   '@rush-temp/front': file:projects/front.tgz
-  '@rush-temp/generator': file:projects/generator.tgz
+  '@rush-temp/generator': file:projects/generator.tgz_bufferutil@4.0.7
   '@rush-temp/gmail': file:projects/gmail.tgz
   '@rush-temp/gmail-assets': file:projects/gmail-assets.tgz
   '@rush-temp/gmail-resources': file:projects/gmail-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
@@ -478,7 +478,7 @@ dependencies:
   '@rush-temp/model-presentation': file:projects/model-presentation.tgz_typescript@4.8.4
   '@rush-temp/model-recruit': file:projects/model-recruit.tgz_typescript@4.8.4
   '@rush-temp/model-request': file:projects/model-request.tgz_typescript@4.8.4
-  '@rush-temp/model-rig': file:projects/model-rig.tgz_d0c406d687f2989aaac2d60d2a9fee8c
+  '@rush-temp/model-rig': file:projects/model-rig.tgz_bfa6bf808eb865a9dc2715cde9486872
   '@rush-temp/model-server-attachment': file:projects/model-server-attachment.tgz_typescript@4.8.4
   '@rush-temp/model-server-calendar': file:projects/model-server-calendar.tgz_typescript@4.8.4
   '@rush-temp/model-server-chunter': file:projects/model-server-chunter.tgz_typescript@4.8.4
@@ -515,16 +515,16 @@ dependencies:
   '@rush-temp/openai': file:projects/openai.tgz
   '@rush-temp/panel': file:projects/panel.tgz_a1d864769aaf53d09b76fe134ab55e60
   '@rush-temp/platform': file:projects/platform.tgz
-  '@rush-temp/platform-rig': file:projects/platform-rig.tgz_c0f29c9dc491498b9dd983e9a66f1fd2
+  '@rush-temp/platform-rig': file:projects/platform-rig.tgz_c5e43dc15df4ac7868d10b0872442df4
   '@rush-temp/pod-account': file:projects/pod-account.tgz
   '@rush-temp/pod-backup': file:projects/pod-backup.tgz
-  '@rush-temp/pod-collaborator': file:projects/pod-collaborator.tgz
+  '@rush-temp/pod-collaborator': file:projects/pod-collaborator.tgz_bufferutil@4.0.7
   '@rush-temp/pod-front': file:projects/pod-front.tgz
   '@rush-temp/pod-server': file:projects/pod-server.tgz
   '@rush-temp/preference': file:projects/preference.tgz
   '@rush-temp/preference-assets': file:projects/preference-assets.tgz
   '@rush-temp/presentation': file:projects/presentation.tgz_a1d864769aaf53d09b76fe134ab55e60
-  '@rush-temp/prod': file:projects/prod.tgz_a9366fc5abe1de81e350f3e9b2acb628
+  '@rush-temp/prod': file:projects/prod.tgz_91152849c259b1b3925f7bb3d415bc80
   '@rush-temp/query': file:projects/query.tgz
   '@rush-temp/recruit': file:projects/recruit.tgz
   '@rush-temp/recruit-assets': file:projects/recruit-assets.tgz_typescript@4.8.4
@@ -569,7 +569,7 @@ dependencies:
   '@rush-temp/server-telegram': file:projects/server-telegram.tgz
   '@rush-temp/server-telegram-resources': file:projects/server-telegram-resources.tgz
   '@rush-temp/server-token': file:projects/server-token.tgz
-  '@rush-temp/server-tool': file:projects/server-tool.tgz
+  '@rush-temp/server-tool': file:projects/server-tool.tgz_bufferutil@4.0.7
   '@rush-temp/server-tracker': file:projects/server-tracker.tgz
   '@rush-temp/server-tracker-resources': file:projects/server-tracker-resources.tgz
   '@rush-temp/server-view': file:projects/server-view.tgz
@@ -578,7 +578,7 @@ dependencies:
   '@rush-temp/setting': file:projects/setting.tgz
   '@rush-temp/setting-assets': file:projects/setting-assets.tgz_typescript@4.8.4
   '@rush-temp/setting-resources': file:projects/setting-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
-  '@rush-temp/storybook': file:projects/storybook.tgz_aa3b25c6fa1e42b17bda734051c11f49
+  '@rush-temp/storybook': file:projects/storybook.tgz_6bc661cab26bb0f62d6cb98e8e1d7eba
   '@rush-temp/tags': file:projects/tags.tgz
   '@rush-temp/tags-assets': file:projects/tags-assets.tgz
   '@rush-temp/tags-resources': file:projects/tags-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
@@ -594,7 +594,7 @@ dependencies:
   '@rush-temp/tests-sanity': file:projects/tests-sanity.tgz
   '@rush-temp/text-editor': file:projects/text-editor.tgz_1e646fd62a3adc9d0b41f256dafe3d38
   '@rush-temp/theme': file:projects/theme.tgz_a1d864769aaf53d09b76fe134ab55e60
-  '@rush-temp/tool': file:projects/tool.tgz
+  '@rush-temp/tool': file:projects/tool.tgz_bufferutil@4.0.7
   '@rush-temp/tracker': file:projects/tracker.tgz
   '@rush-temp/tracker-assets': file:projects/tracker-assets.tgz_typescript@4.8.4
   '@rush-temp/tracker-resources': file:projects/tracker-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
@@ -607,7 +607,7 @@ dependencies:
   '@rush-temp/workbench-assets': file:projects/workbench-assets.tgz
   '@rush-temp/workbench-resources': file:projects/workbench-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
   '@rushstack/heft': 0.47.11
-  '@rushstack/heft-jest-plugin': 0.3.45_7eeb8b1818f07ae442ef926a07e2b55f
+  '@rushstack/heft-jest-plugin': 0.3.45_57d201cc6f82284c890051c4b57bc6e7
   '@storybook/addon-essentials': 7.0.7_react-dom@18.2.0+react@18.2.0
   '@storybook/addon-interactions': 7.0.7_react-dom@18.2.0+react@18.2.0
   '@storybook/addon-links': 7.0.7_react-dom@18.2.0+react@18.2.0
@@ -671,6 +671,7 @@ dependencies:
   autoprefixer: 10.4.14_postcss@8.4.20
   body-parser: 1.19.2
   browserslist: 4.21.5
+  bufferutil: 4.0.7
   commander: 8.3.0
   comment-json: 4.2.3
   compression: 1.7.4
@@ -751,7 +752,7 @@ dependencies:
   sharp: 0.30.7
   simplytyped: 3.3.0_typescript@4.8.4
   smartcrop: 2.0.5
-  storybook: 7.0.7
+  storybook: 7.0.7_bufferutil@4.0.7
   storybook-addon-themes: 6.1.0_643b5f35e3a80cb9618c25877fc11b05
   style-loader: 3.3.1_webpack@5.75.0
   svelte: 3.55.1
@@ -764,14 +765,13 @@ dependencies:
   ts-loader: 9.4.1_typescript@4.8.4+webpack@5.75.0
   ts-node: 10.9.1_867af3484524ae72fe2b1aa24b40f5ee
   typescript: 4.8.4
-  uWebSockets.js: github.com/uNetworking/uWebSockets.js/49f8f1eb54435e4c3e3e436571e93d1f06aaabbb
   update-browserslist-db: 1.0.11_browserslist@4.21.5
   uuid: 8.3.2
   webpack: 5.75.0_c5a9b74f1e48ccd7ef01359287c5ad78
-  webpack-bundle-analyzer: 4.7.0
+  webpack-bundle-analyzer: 4.7.0_bufferutil@4.0.7
   webpack-cli: 5.0.1_c7e737ad13629c71bcca5ad52285d7b0
-  webpack-dev-server: 4.11.1_webpack-cli@5.0.1+webpack@5.75.0
-  ws: 8.11.0
+  webpack-dev-server: 4.11.1_5f7427e5f586f1bfc73e23d8c6331293
+  ws: 8.11.0_bufferutil@4.0.7
   xml2js: 0.4.23
   y-prosemirror: 1.2.1_31c6ffa6f5564aed248fbf425a5e0ce3
   y-protocols: 1.0.5
@@ -4450,7 +4450,7 @@ packages:
       slash: 3.0.0
     dev: false
 
-  /@jest/core/27.4.7_ts-node@10.9.1:
+  /@jest/core/27.4.7_bufferutil@4.0.7+ts-node@10.9.1:
     resolution: {integrity: sha512-n181PurSJkVMS+kClIFSX/LLvw9ExSb+4IMtD6YnfxZVerw9ANYtW0bPrm0MJu2pfe9SY9FJ9FtQ+MdZkrZwjg==}
     engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     peerDependencies:
@@ -4471,13 +4471,13 @@ packages:
       exit: 0.1.2
       graceful-fs: 4.2.10
       jest-changed-files: 27.5.1
-      jest-config: 27.4.7_ts-node@10.9.1
+      jest-config: 27.4.7_bufferutil@4.0.7+ts-node@10.9.1
       jest-haste-map: 27.5.1
       jest-message-util: 27.5.1
       jest-regex-util: 27.5.1
       jest-resolve: 27.4.6
       jest-resolve-dependencies: 27.5.1
-      jest-runner: 27.5.1
+      jest-runner: 27.5.1_bufferutil@4.0.7
       jest-runtime: 27.5.1
       jest-snapshot: 27.4.6
       jest-util: 27.5.1
@@ -4980,19 +4980,19 @@ packages:
       jsonpath-plus: 4.0.0
     dev: false
 
-  /@rushstack/heft-jest-plugin/0.3.45_7eeb8b1818f07ae442ef926a07e2b55f:
+  /@rushstack/heft-jest-plugin/0.3.45_57d201cc6f82284c890051c4b57bc6e7:
     resolution: {integrity: sha512-8mPtcP8YShrLRmBJyzpRiCO7KClbjM3agydfDJMCsBcjycETV0J98unrg+8A+Rm6Uftmcrk+SDq7Xd5ugt0IBw==}
     requiresBuild: true
     peerDependencies:
       '@rushstack/heft': ^0.48.8
     dependencies:
-      '@jest/core': 27.4.7_ts-node@10.9.1
+      '@jest/core': 27.4.7_bufferutil@4.0.7+ts-node@10.9.1
       '@jest/reporters': 27.4.6
       '@jest/transform': 27.4.6
       '@rushstack/heft': 0.47.11
       '@rushstack/heft-config-file': 0.11.3
       '@rushstack/node-core-library': 3.53.2
-      jest-config: 27.4.7_ts-node@10.9.1
+      jest-config: 27.4.7_bufferutil@4.0.7+ts-node@10.9.1
       jest-resolve: 27.4.6
       jest-snapshot: 27.4.6
       lodash: 4.17.21
@@ -5683,7 +5683,7 @@ packages:
     resolution: {integrity: sha512-Om4ovBLNw8pVrBu83MpOKgAuGO9Dpr1Coh2qp8t64WRPkejX1mxOY9IgH723//zH3igx8LCkf9rvBvcrsyaScQ==}
     dev: false
 
-  /@storybook/cli/7.0.7:
+  /@storybook/cli/7.0.7_bufferutil@4.0.7:
     resolution: {integrity: sha512-koTkWr7wlaHF14T5moRP/tYM44+Jf4GEzQ/rqx/Jfn7EbNlVUOibdLJj4JnseMGRc7ZP6tKYku2n+B8g7hJX4w==}
     hasBin: true
     dependencies:
@@ -5692,7 +5692,7 @@ packages:
       '@ndelangen/get-tarball': 3.0.7
       '@storybook/codemod': 7.0.7
       '@storybook/core-common': 7.0.7
-      '@storybook/core-server': 7.0.7
+      '@storybook/core-server': 7.0.7_bufferutil@4.0.7
       '@storybook/csf-tools': 7.0.7
       '@storybook/node-logger': 7.0.7
       '@storybook/telemetry': 7.0.7
@@ -5851,7 +5851,7 @@ packages:
     resolution: {integrity: sha512-XNsR2RgaL2vBwuqsu+KA1DzGmB1UFfrAhpxhmyWTKDCniwtTLlaXgfKbqwcrOrPu/o1YswgIup/9UHepRHaf4A==}
     dev: false
 
-  /@storybook/core-server/7.0.7:
+  /@storybook/core-server/7.0.7_bufferutil@4.0.7:
     resolution: {integrity: sha512-PB4zoClH7aKG4XeJhxx43iK9n/C9gctXubNN5DSN6thPm4UITOas+/q4N7AHbCPyRbcMyoW7M31KtpzZu4Fjew==}
     dependencies:
       '@aw-web-design/x-default-browser': 1.4.88
@@ -5895,7 +5895,7 @@ packages:
       ts-dedent: 2.2.0
       util-deprecate: 1.0.2
       watchpack: 2.4.0
-      ws: 8.11.0
+      ws: 8.11.0_bufferutil@4.0.7
     transitivePeerDependencies:
       - bufferutil
       - encoding
@@ -7249,26 +7249,6 @@ packages:
       - supports-color
     dev: false
 
-  /@typescript-eslint/parser/4.33.0_eslint@8.27.0+typescript@4.8.4:
-    resolution: {integrity: sha512-ZohdsbXadjGBSK0/r+d87X0SBmKzOq4/S5nzK6SBgJspFo9/CUDJ7hjayuze+JK7CZQLDMroqytp7pOcFKTxZA==}
-    engines: {node: ^10.12.0 || >=12.0.0}
-    peerDependencies:
-      eslint: ^5.0.0 || ^6.0.0 || ^7.0.0
-      typescript: '*'
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-    dependencies:
-      '@typescript-eslint/scope-manager': 4.33.0
-      '@typescript-eslint/types': 4.33.0
-      '@typescript-eslint/typescript-estree': 4.33.0_typescript@4.8.4
-      debug: 4.3.4
-      eslint: 8.27.0
-      typescript: 4.8.4
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
-
   /@typescript-eslint/parser/5.42.1_eslint@8.27.0+typescript@4.8.4:
     resolution: {integrity: sha512-kAV+NiNBWVQDY9gDJDToTE/NO8BHi4f6b7zTsVAJoTkmB/zlfOpiEVBzHOKtlgTndCKe8vj9F/PuolemZSh50Q==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
@@ -7287,14 +7267,6 @@ packages:
       typescript: 4.8.4
     transitivePeerDependencies:
       - supports-color
-    dev: false
-
-  /@typescript-eslint/scope-manager/4.33.0:
-    resolution: {integrity: sha512-5IfJHpgTsTZuONKbODctL4kKuQje/bzBRkwHE8UOZ4f89Zeddg+EGZs8PD8NcN4LdM3ygHWYB3ukPAYjvl/qbQ==}
-    engines: {node: ^8.10.0 || ^10.13.0 || >=11.10.1}
-    dependencies:
-      '@typescript-eslint/types': 4.33.0
-      '@typescript-eslint/visitor-keys': 4.33.0
     dev: false
 
   /@typescript-eslint/scope-manager/5.42.1:
@@ -7325,35 +7297,9 @@ packages:
       - supports-color
     dev: false
 
-  /@typescript-eslint/types/4.33.0:
-    resolution: {integrity: sha512-zKp7CjQzLQImXEpLt2BUw1tvOMPfNoTAfb8l51evhYbOEEzdWyQNmHWWGPR6hwKJDAi+1VXSBmnhL9kyVTTOuQ==}
-    engines: {node: ^8.10.0 || ^10.13.0 || >=11.10.1}
-    dev: false
-
   /@typescript-eslint/types/5.42.1:
     resolution: {integrity: sha512-Qrco9dsFF5lhalz+lLFtxs3ui1/YfC6NdXu+RAGBa8uSfn01cjO7ssCsjIsUs484vny9Xm699FSKwpkCcqwWwA==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
-    dev: false
-
-  /@typescript-eslint/typescript-estree/4.33.0_typescript@4.8.4:
-    resolution: {integrity: sha512-rkWRY1MPFzjwnEVHsxGemDzqqddw2QbTJlICPD9p9I9LfsO8fdmfQPOX3uKfUaGRDFJbfrtm/sXhVXN4E+bzCA==}
-    engines: {node: ^10.12.0 || >=12.0.0}
-    peerDependencies:
-      typescript: '*'
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-    dependencies:
-      '@typescript-eslint/types': 4.33.0
-      '@typescript-eslint/visitor-keys': 4.33.0
-      debug: 4.3.4
-      globby: 11.1.0
-      is-glob: 4.0.3
-      semver: 7.3.8
-      tsutils: 3.21.0_typescript@4.8.4
-      typescript: 4.8.4
-    transitivePeerDependencies:
-      - supports-color
     dev: false
 
   /@typescript-eslint/typescript-estree/5.42.1_typescript@4.8.4:
@@ -7395,14 +7341,6 @@ packages:
     transitivePeerDependencies:
       - supports-color
       - typescript
-    dev: false
-
-  /@typescript-eslint/visitor-keys/4.33.0:
-    resolution: {integrity: sha512-uqi/2aSz9g2ftcHWf8uLPJA70rUv6yuMW5Bohw+bwcuzaxQIHaKFZCKGoGXIrc9vkTJ3+0txM73K0Hq3d5wgIg==}
-    engines: {node: ^8.10.0 || ^10.13.0 || >=11.10.1}
-    dependencies:
-      '@typescript-eslint/types': 4.33.0
-      eslint-visitor-keys: 2.1.0
     dev: false
 
   /@typescript-eslint/visitor-keys/5.42.1:
@@ -7554,7 +7492,7 @@ packages:
     dependencies:
       webpack: 5.75.0_c5a9b74f1e48ccd7ef01359287c5ad78
       webpack-cli: 5.0.1_c7e737ad13629c71bcca5ad52285d7b0
-      webpack-dev-server: 4.11.1_webpack-cli@5.0.1+webpack@5.75.0
+      webpack-dev-server: 4.11.1_5f7427e5f586f1bfc73e23d8c6331293
     dev: false
 
   /@xtuc/ieee754/1.2.0:
@@ -11909,7 +11847,7 @@ packages:
       - supports-color
     dev: false
 
-  /jest-config/27.4.7_ts-node@10.9.1:
+  /jest-config/27.4.7_bufferutil@4.0.7+ts-node@10.9.1:
     resolution: {integrity: sha512-xz/o/KJJEedHMrIY9v2ParIoYSrSVY6IVeE4z5Z3i101GoA5XgfbJz+1C8EYPsv7u7f39dS8F9v46BHDhn0vlw==}
     engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     peerDependencies:
@@ -11928,13 +11866,13 @@ packages:
       glob: 7.2.3
       graceful-fs: 4.2.10
       jest-circus: 27.5.1
-      jest-environment-jsdom: 27.5.1
+      jest-environment-jsdom: 27.5.1_bufferutil@4.0.7
       jest-environment-node: 27.5.1
       jest-get-type: 27.5.1
       jest-jasmine2: 27.5.1
       jest-regex-util: 27.5.1
       jest-resolve: 27.4.6
-      jest-runner: 27.5.1
+      jest-runner: 27.5.1_bufferutil@4.0.7
       jest-util: 27.5.1
       jest-validate: 27.5.1
       micromatch: 4.0.5
@@ -11986,7 +11924,7 @@ packages:
       pretty-format: 27.5.1
     dev: false
 
-  /jest-environment-jsdom/27.5.1:
+  /jest-environment-jsdom/27.5.1_bufferutil@4.0.7:
     resolution: {integrity: sha512-TFBvkTC1Hnnnrka/fUb56atfDtJ9VMZ94JkjTbggl1PEpwrYtUBKMezB3inLmWqQsXYLcMwNoDQwoBTAvFfsfw==}
     engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
@@ -11996,7 +11934,7 @@ packages:
       '@types/node': 16.11.68
       jest-mock: 27.5.1
       jest-util: 27.5.1
-      jsdom: 16.7.0
+      jsdom: 16.7.0_bufferutil@4.0.7
     transitivePeerDependencies:
       - bufferutil
       - canvas
@@ -12233,7 +12171,7 @@ packages:
       slash: 3.0.0
     dev: false
 
-  /jest-runner/27.5.1:
+  /jest-runner/27.5.1_bufferutil@4.0.7:
     resolution: {integrity: sha512-g4NPsM4mFCOwFKXO4p/H/kWGdJp9V8kURY2lX8Me2drgXqG7rrZAx5kv+5H7wtt/cdFIjhqYx1HrlqWHaOvDaQ==}
     engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
@@ -12247,7 +12185,7 @@ packages:
       emittery: 0.8.1
       graceful-fs: 4.2.10
       jest-docblock: 27.5.1
-      jest-environment-jsdom: 27.5.1
+      jest-environment-jsdom: 27.5.1_bufferutil@4.0.7
       jest-environment-node: 27.5.1
       jest-haste-map: 27.5.1
       jest-leak-detector: 27.5.1
@@ -12504,7 +12442,7 @@ packages:
       - supports-color
     dev: false
 
-  /jsdom/16.7.0:
+  /jsdom/16.7.0_bufferutil@4.0.7:
     resolution: {integrity: sha512-u9Smc2G1USStM+s/x1ru5Sxrl6mPYCbByG1U/hUmqaVsm4tbNyS7CicOSRyuGQYZhTu0h84qkZZQ/I+dzizSVw==}
     engines: {node: '>=10'}
     peerDependencies:
@@ -12538,7 +12476,7 @@ packages:
       whatwg-encoding: 1.0.5
       whatwg-mimetype: 2.3.0
       whatwg-url: 8.7.0
-      ws: 7.5.9
+      ws: 7.5.9_bufferutil@4.0.7
       xml-name-validator: 3.0.0
     transitivePeerDependencies:
       - bufferutil
@@ -15606,11 +15544,11 @@ packages:
       - react-dom
     dev: false
 
-  /storybook/7.0.7:
+  /storybook/7.0.7_bufferutil@4.0.7:
     resolution: {integrity: sha512-MaFAhpPm/KsaoIQfGzapnRyXNh1VbS8l38BNZR5ZD97ejGkLukJ7TO4fFS87Hyy6whAXo6tTdtqeCByMQ9gRFA==}
     hasBin: true
     dependencies:
-      '@storybook/cli': 7.0.7
+      '@storybook/cli': 7.0.7_bufferutil@4.0.7
     transitivePeerDependencies:
       - bufferutil
       - encoding
@@ -16705,7 +16643,7 @@ packages:
     engines: {node: '>=12'}
     dev: false
 
-  /webpack-bundle-analyzer/4.7.0:
+  /webpack-bundle-analyzer/4.7.0_bufferutil@4.0.7:
     resolution: {integrity: sha512-j9b8ynpJS4K+zfO5GGwsAcQX4ZHpWV+yRiHDiL+bE0XHJ8NiPYLTNVQdlFYWxtpg9lfAQNlwJg16J9AJtFSXRg==}
     engines: {node: '>= 10.13.0'}
     hasBin: true
@@ -16718,7 +16656,7 @@ packages:
       lodash: 4.17.21
       opener: 1.5.2
       sirv: 1.0.19
-      ws: 7.5.9
+      ws: 7.5.9_bufferutil@4.0.7
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -16754,8 +16692,8 @@ packages:
       interpret: 3.1.1
       rechoir: 0.8.0
       webpack: 5.75.0_c5a9b74f1e48ccd7ef01359287c5ad78
-      webpack-bundle-analyzer: 4.7.0
-      webpack-dev-server: 4.11.1_webpack-cli@5.0.1+webpack@5.75.0
+      webpack-bundle-analyzer: 4.7.0_bufferutil@4.0.7
+      webpack-dev-server: 4.11.1_5f7427e5f586f1bfc73e23d8c6331293
       webpack-merge: 5.8.0
     dev: false
 
@@ -16773,7 +16711,7 @@ packages:
       webpack: 5.75.0_c5a9b74f1e48ccd7ef01359287c5ad78
     dev: false
 
-  /webpack-dev-server/4.11.1_webpack-cli@5.0.1+webpack@5.75.0:
+  /webpack-dev-server/4.11.1_5f7427e5f586f1bfc73e23d8c6331293:
     resolution: {integrity: sha512-lILVz9tAUy1zGFwieuaQtYiadImb5M3d+H+L1zDYalYoDl0cksAB1UNyuE5MMWJrG6zR1tXkCP2fitl7yoUJiw==}
     engines: {node: '>= 12.13.0'}
     hasBin: true
@@ -16814,7 +16752,7 @@ packages:
       webpack: 5.75.0_c5a9b74f1e48ccd7ef01359287c5ad78
       webpack-cli: 5.0.1_c7e737ad13629c71bcca5ad52285d7b0
       webpack-dev-middleware: 5.3.3_webpack@5.75.0
-      ws: 8.11.0
+      ws: 8.11.0_bufferutil@4.0.7
     transitivePeerDependencies:
       - bufferutil
       - debug
@@ -17046,7 +16984,7 @@ packages:
       async-limiter: 1.0.1
     dev: false
 
-  /ws/7.5.9:
+  /ws/7.5.9_bufferutil@4.0.7:
     resolution: {integrity: sha512-F+P9Jil7UiSKSkppIiD94dN07AwvFixvLIj1Og1Rl9GGMuNipJnV9JzjD6XuqmAeiswGvUmNLjr5cFuXwNS77Q==}
     engines: {node: '>=8.3.0'}
     peerDependencies:
@@ -17057,19 +16995,8 @@ packages:
         optional: true
       utf-8-validate:
         optional: true
-    dev: false
-
-  /ws/8.11.0:
-    resolution: {integrity: sha512-HPG3wQd9sNQoT9xHyNCXoDUa+Xw/VevmY9FoHyQ+g+rrMn4j6FB4np7Z0OhdTgjx6MgQLK7jwSy1YecU1+4Asg==}
-    engines: {node: '>=10.0.0'}
-    peerDependencies:
-      bufferutil: ^4.0.1
-      utf-8-validate: ^5.0.2
-    peerDependenciesMeta:
-      bufferutil:
-        optional: true
-      utf-8-validate:
-        optional: true
+    dependencies:
+      bufferutil: 4.0.7
     dev: false
 
   /ws/8.11.0_bufferutil@4.0.7:
@@ -17230,14 +17157,14 @@ packages:
       commander: 2.20.3
     dev: false
 
-  file:projects/account.tgz:
+  file:projects/account.tgz_bufferutil@4.0.7:
     resolution: {integrity: sha512-baPWYIMSu02ZqsK1UY9gUO2dsdHSRgwPr8zxLOtl0PW9uzlFiW3QBF3mccPOg5KRbn9lMu09cEv1m0IVXbJ+ug==, tarball: file:projects/account.tgz}
+    id: file:projects/account.tgz
     name: '@rush-temp/account'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.47.11
       '@types/heft-jest': 1.0.3
-      '@types/minio': 7.0.14
       '@types/node-fetch': 2.6.2
       '@types/ws': 8.5.3
       '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
@@ -17247,12 +17174,11 @@ packages:
       eslint-plugin-import: 2.26.0_eslint@8.27.0
       eslint-plugin-n: 15.5.1_eslint@8.27.0
       eslint-plugin-promise: 6.1.1_eslint@8.27.0
-      minio: 7.0.32
       mongodb: 4.11.0
       node-fetch: 2.6.7
       prettier: 2.8.8
       typescript: 4.8.4
-      ws: 8.11.0
+      ws: 8.11.0_bufferutil@4.0.7
     transitivePeerDependencies:
       - aws-crt
       - bufferutil
@@ -18253,15 +18179,15 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/generator.tgz:
+  file:projects/generator.tgz_bufferutil@4.0.7:
     resolution: {integrity: sha512-WawJtkxzXzXtleN7iHvRi6AHtqu1B91aVMSUSBiNz5mOueTLmasnDujco+jJ0K1JLt8Ow1V5PdN4cdzlAReCYw==, tarball: file:projects/generator.tgz}
+    id: file:projects/generator.tgz
     name: '@rush-temp/generator'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.47.11
       '@types/faker': 5.5.9
       '@types/heft-jest': 1.0.3
-      '@types/minio': 7.0.14
       '@types/node': 16.11.68
       '@types/pdfkit': 0.12.8
       '@types/ws': 8.5.3
@@ -18276,12 +18202,11 @@ packages:
       eslint-plugin-promise: 6.1.1_eslint@8.27.0
       faker: 5.5.3
       jpeg-js: 0.4.4
-      minio: 7.0.32
       pdfkit: 0.13.0
       prettier: 2.8.8
       ts-node: 10.9.1_867af3484524ae72fe2b1aa24b40f5ee
       typescript: 4.8.4
-      ws: 8.11.0
+      ws: 8.11.0_bufferutil@4.0.7
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
@@ -19250,19 +19175,19 @@ packages:
       - typescript
     dev: false
 
-  file:projects/model-rig.tgz_d0c406d687f2989aaac2d60d2a9fee8c:
-    resolution: {integrity: sha512-ZX1eKz9luTRYqbHYtHOLDtlSRzxkUytKqTko7niAPE/xHbKxvoxyJmfpHlW4hogCknARPxNluGb7hpc75HPTiQ==, tarball: file:projects/model-rig.tgz}
+  file:projects/model-rig.tgz_bfa6bf808eb865a9dc2715cde9486872:
+    resolution: {integrity: sha512-95AHJBWNtsknIlOPt16SkU8Hg6dq9/JkWA5ckLPdhowpUB++rrSPQjb3cy12ps4wxM1sYKfBDb/jLDUnzStC/g==, tarball: file:projects/model-rig.tgz}
     id: file:projects/model-rig.tgz
     name: '@rush-temp/model-rig'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.47.11
-      '@typescript-eslint/parser': 4.33.0_eslint@8.27.0+typescript@4.8.4
+      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
+      eslint: 8.27.0
       eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@typescript-eslint/eslint-plugin'
-      - eslint
       - eslint-plugin-import
       - eslint-plugin-n
       - eslint-plugin-promise
@@ -20076,23 +20001,23 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/platform-rig.tgz_c0f29c9dc491498b9dd983e9a66f1fd2:
-    resolution: {integrity: sha512-q83gQWKN9SRUynJvFHfptF1ptJUxti0CwtLeoRa02k8/8JhJZNPtRjTnrDmcWM3KjWIAex668FHy2vHrXeOXYg==, tarball: file:projects/platform-rig.tgz}
+  file:projects/platform-rig.tgz_c5e43dc15df4ac7868d10b0872442df4:
+    resolution: {integrity: sha512-s2M35u+FIJM5VZ1aB+g4zaD4ie56IEqy0pkl9SO46EVaZPRI6xWrhwVB4UN3Q/Us6zMqskhpWVFil8EVpMotHA==, tarball: file:projects/platform-rig.tgz}
     id: file:projects/platform-rig.tgz
     name: '@rush-temp/platform-rig'
     version: 0.0.0
     dependencies:
       '@microsoft/api-extractor': 7.33.6
       '@rushstack/heft': 0.47.11
-      '@rushstack/heft-jest-plugin': 0.3.45_7eeb8b1818f07ae442ef926a07e2b55f
-      '@typescript-eslint/parser': 4.33.0_eslint@8.27.0+typescript@4.8.4
+      '@rushstack/heft-jest-plugin': 0.3.45_57d201cc6f82284c890051c4b57bc6e7
+      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
+      eslint: 8.27.0
       eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
       typescript: 4.8.4
     transitivePeerDependencies:
       - '@typescript-eslint/eslint-plugin'
       - bufferutil
       - canvas
-      - eslint
       - eslint-plugin-import
       - eslint-plugin-n
       - eslint-plugin-promise
@@ -20192,14 +20117,14 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/pod-collaborator.tgz:
+  file:projects/pod-collaborator.tgz_bufferutil@4.0.7:
     resolution: {integrity: sha512-4EwuJc74XPA1LMocihMIFQmZr/hC1XTu+RhsePPTO4AUJO88V77tXVt9YlE2m/6V8m5iYqiWOW6Q1PVOylidjw==, tarball: file:projects/pod-collaborator.tgz}
+    id: file:projects/pod-collaborator.tgz
     name: '@rush-temp/pod-collaborator'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.47.11
       '@types/heft-jest': 1.0.3
-      '@types/minio': 7.0.14
       '@types/node': 16.11.68
       '@types/ws': 8.5.3
       '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
@@ -20213,11 +20138,10 @@ packages:
       eslint-plugin-promise: 6.1.1_eslint@8.27.0
       lib0: 0.2.73
       lodash.debounce: 4.0.8
-      minio: 7.0.32
       prettier: 2.8.8
       ts-node: 10.9.1_867af3484524ae72fe2b1aa24b40f5ee
       typescript: 4.8.4
-      ws: 8.11.0
+      ws: 8.11.0_bufferutil@4.0.7
       y-protocols: 1.0.5
       yjs: 13.5.52
     transitivePeerDependencies:
@@ -20271,7 +20195,7 @@ packages:
     dev: false
 
   file:projects/pod-server.tgz:
-    resolution: {integrity: sha512-q9agEfptuwRfR5mALv+R1elZUoaiLLRUaWbYoDtZGr+ASitG1fbXSo/Jr5+8hX/xAubtGsgwOwoIcNnEpjAbug==, tarball: file:projects/pod-server.tgz}
+    resolution: {integrity: sha512-PNG8kq9pAYo4KoGYtBBjx/z6rfu3SM6xL2lCdhEuneYuYYGFmrqeFarxPK4IrkTfMa5SyGu/9qyk5M3SN2sV4g==, tarball: file:projects/pod-server.tgz}
     name: '@rush-temp/pod-server'
     version: 0.0.0
     dependencies:
@@ -20378,7 +20302,7 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/prod.tgz_a9366fc5abe1de81e350f3e9b2acb628:
+  file:projects/prod.tgz_91152849c259b1b3925f7bb3d415bc80:
     resolution: {integrity: sha512-xqyqb65DulXyewrc7UaJ6JPEl4iktj1w/6zNw3fOLfqnwUKnCcjX7xBLbzIlQktbR8a7tGuWYtBukMTz99H5uA==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
@@ -20406,9 +20330,9 @@ packages:
       ts-loader: 9.4.1_typescript@4.8.4+webpack@5.75.0
       update-browserslist-db: 1.0.11_browserslist@4.21.5
       webpack: 5.75.0_c5a9b74f1e48ccd7ef01359287c5ad78
-      webpack-bundle-analyzer: 4.7.0
+      webpack-bundle-analyzer: 4.7.0_bufferutil@4.0.7
       webpack-cli: 5.0.1_c7e737ad13629c71bcca5ad52285d7b0
-      webpack-dev-server: 4.11.1_webpack-cli@5.0.1+webpack@5.75.0
+      webpack-dev-server: 4.11.1_5f7427e5f586f1bfc73e23d8c6331293
     transitivePeerDependencies:
       - '@swc/core'
       - '@webpack-cli/generators'
@@ -21361,14 +21285,14 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/server-tool.tgz:
+  file:projects/server-tool.tgz_bufferutil@4.0.7:
     resolution: {integrity: sha512-mKKeJVVx6ulxva0WVOBu9I7+mirrdrDDKl/wUBc994F307nNlXXbuzxSpUBJVhYmnA7ZitwOyooVQHhw7Re6Lw==, tarball: file:projects/server-tool.tgz}
+    id: file:projects/server-tool.tgz
     name: '@rush-temp/server-tool'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.47.11
       '@types/heft-jest': 1.0.3
-      '@types/minio': 7.0.14
       '@types/ws': 8.5.3
       '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
       '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
@@ -21377,11 +21301,10 @@ packages:
       eslint-plugin-import: 2.26.0_eslint@8.27.0
       eslint-plugin-n: 15.5.1_eslint@8.27.0
       eslint-plugin-promise: 6.1.1_eslint@8.27.0
-      minio: 7.0.32
       mongodb: 4.11.0
       prettier: 2.8.8
       typescript: 4.8.4
-      ws: 8.11.0
+      ws: 8.11.0_bufferutil@4.0.7
     transitivePeerDependencies:
       - aws-crt
       - bufferutil
@@ -21472,7 +21395,7 @@ packages:
     dev: false
 
   file:projects/server-ws.tgz:
-    resolution: {integrity: sha512-m3265u9EFFm+nZJ1fa8ZkHGIN69/Lwl6xavk4irSWIjc3gUz6H+ydSovljTHbAXjrgUOcbgZRBBmxwTIy/DAOw==, tarball: file:projects/server-ws.tgz}
+    resolution: {integrity: sha512-RtEpUiRRZIRNoECGLQzD/fb9VLJNKh9eZ33oSBnMPcxe9bAxbpQxJ1WqV1EkQKQmCvD1W5bwEIMTjNatV4Ab+Q==, tarball: file:projects/server-ws.tgz}
     name: '@rush-temp/server-ws'
     version: 0.0.0
     dependencies:
@@ -21604,7 +21527,7 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/storybook.tgz_aa3b25c6fa1e42b17bda734051c11f49:
+  file:projects/storybook.tgz_6bc661cab26bb0f62d6cb98e8e1d7eba:
     resolution: {integrity: sha512-YX0mhsBuht955+9X4Rh0rlCPLx4IdoaP078lZFge5CzO/p3u4faam9gRx/nikAQshAH13VYRGKmAS9sn5X+dLg==, tarball: file:projects/storybook.tgz}
     id: file:projects/storybook.tgz
     name: '@rush-temp/storybook'
@@ -21623,7 +21546,7 @@ packages:
       resolve-url-loader: 5.0.0
       sass: 1.56.1
       sass-loader: 13.2.2_sass@1.56.1+webpack@5.75.0
-      storybook: 7.0.7
+      storybook: 7.0.7_bufferutil@4.0.7
       storybook-addon-themes: 6.1.0_643b5f35e3a80cb9618c25877fc11b05
       svelte-preprocess: 5.0.3_6420a3eba9d5580d9c2f627c17e61722
     transitivePeerDependencies:
@@ -22091,8 +22014,9 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/tool.tgz:
+  file:projects/tool.tgz_bufferutil@4.0.7:
     resolution: {integrity: sha512-GrBG2qERhwN4xGdi08ZuI43jq2LYXl+KY+B+coTWQnx3gjxNGGwj48rNyu7//53GN9qJNsI88bFRsJQ2W1ToFQ==, tarball: file:projects/tool.tgz}
+    id: file:projects/tool.tgz
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:
@@ -22121,12 +22045,11 @@ packages:
       got: 11.8.5
       libphonenumber-js: 1.10.14
       mime-types: 2.1.35
-      minio: 7.0.32
       mongodb: 4.11.0
       prettier: 2.8.8
       ts-node: 10.9.1_867af3484524ae72fe2b1aa24b40f5ee
       typescript: 4.8.4
-      ws: 8.11.0
+      ws: 8.11.0_bufferutil@4.0.7
       xml2js: 0.4.23
     transitivePeerDependencies:
       - '@swc/core'
@@ -22435,3 +22358,4 @@ packages:
     name: uWebSockets.js
     version: 20.23.0
     dev: false
+    optional: true
