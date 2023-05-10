@@ -131,6 +131,7 @@
     margin: 0.75rem;
     padding: 0.5rem;
     min-width: 25rem;
+    max-width: 35rem;
     min-height: 7rem;
     color: var(--theme-caption-color);
     background-color: var(--theme-popup-color);
