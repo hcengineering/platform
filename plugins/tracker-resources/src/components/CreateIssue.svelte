@@ -140,7 +140,7 @@
       estimation: 0,
       sprint,
       status,
-      assignee,
+      assignee: undefined,
       labels: [],
       parentIssue: parentIssue?._id,
       subIssues: []
