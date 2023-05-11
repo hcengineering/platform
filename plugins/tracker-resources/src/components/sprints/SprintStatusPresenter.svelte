@@ -13,42 +13,29 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient } from '@hcengineering/presentation'
-  import { Sprint, SprintStatus } from '@hcengineering/tracker'
+  import { SprintStatus } from '@hcengineering/tracker'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import tracker from '../../plugin'
 
   import SprintStatusSelector from './SprintStatusSelector.svelte'
 
-  export let value: Sprint
-  export let isEditable: boolean = true
-  export let shouldShowLabel: boolean = false
+  export let value: SprintStatus
+  export let onChange: ((value: SprintStatus | undefined) => void) | undefined = undefined
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = '100%'
 
-  const client = getClient()
-
-  const handleComponentStatusChanged = async (newStatus: SprintStatus | undefined) => {
-    if (!isEditable || newStatus === undefined || value.status === newStatus) {
-      return
-    }
-
-    await client.update(value, { status: newStatus })
-  }
+  $: isEditable = onChange !== undefined
 </script>
 
-{#if value}
-  <SprintStatusSelector
-    {kind}
-    {size}
-    {width}
-    {justify}
-    {isEditable}
-    {shouldShowLabel}
-    showTooltip={isEditable ? { label: tracker.string.SetStatus } : undefined}
-    selectedSprintStatus={value.status}
-    onSprintStatusChange={handleComponentStatusChanged}
-  />
-{/if}
+<SprintStatusSelector
+  {kind}
+  {size}
+  {width}
+  {justify}
+  {isEditable}
+  showTooltip={isEditable ? { label: tracker.string.SetStatus } : undefined}
+  selectedSprintStatus={value}
+  onSprintStatusChange={onChange}
+/>

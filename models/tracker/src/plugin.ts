@@ -52,7 +52,8 @@ export default mergeIds(trackerId, tracker, {
     SprintSelector: '' as AnyComponent,
     IssueStatistics: '' as AnyComponent,
     TimeSpendReportPopup: '' as AnyComponent,
-    NotificationIssuePresenter: '' as AnyComponent
+    NotificationIssuePresenter: '' as AnyComponent,
+    SprintFilter: '' as AnyComponent
   },
   app: {
     Tracker: '' as Ref<Application>

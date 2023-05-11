@@ -1374,6 +1374,22 @@ export function createModel (builder: Builder): void {
   builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.ClassFilters, {
     filters: []
   })
+  builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.ClassFilters, {
+    filters: ['status'],
+    strict: true
+  })
+
+  builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.AttributeFilter, {
+    component: tracker.component.SprintFilter
+  })
+
+  builder.mixin(tracker.class.TypeSprintStatus, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: tracker.component.SprintStatusPresenter
+  })
+
+  builder.mixin(tracker.class.TypeSprintStatus, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.ValueFilter
+  })
 
   builder.mixin(tracker.class.Component, core.class.Class, view.mixin.ClassFilters, {
     filters: []
@@ -1805,8 +1821,7 @@ export function createModel (builder: Builder): void {
       viewOptions: sprintOptions,
       config: [
         {
-          key: '',
-          presenter: tracker.component.SprintStatusPresenter,
+          key: 'status',
           props: { width: '1rem', kind: 'list', size: 'small', justify: 'center' }
         },
         { key: '', presenter: tracker.component.SprintPresenter, props: { shouldUseMargin: true } },

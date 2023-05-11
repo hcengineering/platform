@@ -25,7 +25,7 @@
     showPopup,
     Submenu
   } from '@hcengineering/ui'
-  import { ClassFilters, Filter, KeyFilter } from '@hcengineering/view'
+  import { ClassFilters, Filter, KeyFilter, KeyFilterPreset } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { buildFilterKey, FilterQuery } from '../../filter'
   import view from '../../plugin'
@@ -36,6 +36,7 @@
   export let filter: Filter | undefined
   export let index: number
   export let onChange: (e: Filter) => void
+  export let nestedFrom: KeyFilter | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -43,13 +44,26 @@
   function getFilters (_class: Ref<Class<Doc>>, mixin: ClassFilters): KeyFilter[] {
     if (mixin.filters === undefined) return []
     const filters = mixin.filters.map((p) => {
-      return typeof p === 'string' ? buildFilterFromKey(_class, p) : p
+      return typeof p === 'string' ? buildFilterFromKey(_class, p) : buildFilterFromPreset(p)
     })
     const result: KeyFilter[] = []
     for (const filter of filters) {
       if (filter !== undefined) result.push(filter)
     }
     return result
+  }
+
+  function buildFilterFromPreset (p: KeyFilterPreset): KeyFilter | undefined {
+    if (p.key !== '') {
+      const attribute = hierarchy.getAttribute(p._class, p.key)
+      const clazz = hierarchy.getClass(p._class)
+      return {
+        ...p,
+        attribute,
+        label: p.label ?? attribute.label,
+        icon: p.icon ?? attribute.icon ?? clazz.icon ?? view.icon.Setting
+      }
+    }
   }
 
   function buildFilterFromKey (_class: Ref<Class<Doc>>, key: string): KeyFilter | undefined {
@@ -69,7 +83,7 @@
       return
     }
     const value = getValue(attribute.name, attribute.type)
-    if (result.findIndex((p) => p.attribute.name === value) !== -1) {
+    if (result.findIndex((p) => p.attribute?.name === value) !== -1) {
       return
     }
     const filter = buildFilterKey(hierarchy, _class, value, attribute)
@@ -93,7 +107,20 @@
     }
   }
 
-  function getTypes (_class: Ref<Class<Doc>>): KeyFilter[] {
+  function getTypes (_class: Ref<Class<Doc>>, nestedFrom: KeyFilter | undefined): KeyFilter[] {
+    if (nestedFrom !== undefined) {
+      return getNestedTypes(nestedFrom)
+    } else {
+      return getOwnTypes(_class)
+    }
+  }
+
+  function getNestedTypes (type: KeyFilter): KeyFilter[] {
+    const targetClass = (hierarchy.getAttribute(type._class, type.key).type as RefTo<Doc>).to
+    return getOwnTypes(targetClass)
+  }
+
+  function getOwnTypes (_class: Ref<Class<Doc>>): KeyFilter[] {
     const clazz = hierarchy.getClass(_class)
     const mixin = hierarchy.as(clazz, view.mixin.ClassFilters)
     const result = getFilters(_class, mixin)
@@ -159,24 +186,48 @@
     closePopup()
     closeTooltip()
 
-    showPopup(
-      type.component,
-      {
-        _class,
-        space,
-        filter: filter || {
-          key: type,
-          value: [],
-          index
+    if (nestedFrom !== undefined && type !== nestedFrom) {
+      const change = (e: Filter | undefined) => {
+        if (nestedFrom) {
+          setNestedFilter(nestedFrom, e)
+        }
+      }
+      const targetClass = (hierarchy.getAttribute(nestedFrom._class, nestedFrom.key).type as RefTo<Doc>).to
+      showPopup(
+        type.component,
+        {
+          _class: targetClass,
+          space,
+          filter: filter || {
+            key: type,
+            value: [],
+            index
+          },
+          onChange: change
         },
-        onChange
-      },
-      target
-    )
+        target
+      )
+    } else {
+      showPopup(
+        type.component,
+        {
+          _class,
+          space,
+          filter: filter || {
+            key: type,
+            value: [],
+            index
+          },
+          onChange
+        },
+        target
+      )
+    }
   }
 
   function hasNested (type: KeyFilter): boolean {
     const targetClass = (hierarchy.getAttribute(type._class, type.key).type as RefTo<Doc>).to
+    if (targetClass === undefined) return false
     const clazz = hierarchy.getClass(targetClass)
     return hierarchy.hasMixin(clazz, view.mixin.ClassFilters)
   }
@@ -199,38 +250,51 @@
     dispatch('close')
   }
 
-  function getNestedProps (type: KeyFilter): any {
-    const targetClass = (hierarchy.getAttribute(type._class, type.key).type as RefTo<Doc>).to
-    return {
-      _class: targetClass,
-      space,
-      index,
-      target,
-      onChange: (e: Filter | undefined) => {
-        setNestedFilter(type, e)
-      }
-    }
-  }
-
   const elements: HTMLElement[] = []
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <Scroller>
-    {#each getTypes(_class) as type, i}
-      {#if filter === undefined && type.component === view.component.ObjectFilter && hasNested(type)}
+    {#if nestedFrom}
+      <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+      <button
+        class="menu-item withIcon"
+        on:keydown={(event) => keyDown(event, -1)}
+        on:mouseover={(event) => {
+          event.currentTarget.focus()
+        }}
+        on:click={() => {
+          if (nestedFrom) {
+            click(nestedFrom)
+          }
+        }}
+      >
+        <div class="icon mr-3">
+          {#if nestedFrom.icon}
+            <Icon icon={nestedFrom.icon} size={'small'} />
+          {/if}
+        </div>
+        <div class="overflow-label pr-1"><Label label={nestedFrom.label} /></div>
+      </button>
+    {/if}
+    {#each getTypes(_class, nestedFrom) as type, i}
+      {#if filter === undefined && hasNested(type)}
         <Submenu
           bind:element={elements[i]}
           on:keydown={(event) => keyDown(event, i)}
           on:mouseover={() => {
             elements[i]?.focus()
           }}
-          on:click={() => {
-            click(type)
-          }}
           icon={type.icon}
           label={type.label}
-          props={getNestedProps(type)}
+          props={{
+            _class,
+            space,
+            index,
+            target,
+            onChange,
+            nestedFrom: type
+          }}
           options={{ component: view.component.FilterTypePopup }}
           withHover
         />
