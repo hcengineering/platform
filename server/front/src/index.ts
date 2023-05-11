@@ -216,8 +216,7 @@ export function start (
     }
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.get('/files', async (req, res: Response) => {
+  const filesHandler = async (req: any, res: Response): Promise<void> => {
     try {
       const token = req.query.token as string
       const payload = decodeToken(token)
@@ -236,7 +235,13 @@ export function start (
       console.log(error)
       res.status(500).send()
     }
-  })
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.get('/files/', filesHandler)
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.get('/files/*', filesHandler)
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.post('/files', async (req, res) => {
