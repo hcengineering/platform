@@ -34,7 +34,7 @@
     navigate,
     showPopup
   } from '@hcengineering/ui'
-  import { ActionContext, ContextMenu, DocNavLink, UpDownNavigator } from '@hcengineering/view-resources'
+  import { ActionContext, ContextMenu, DocNavLink, UpDownNavigator, contextStore } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import { generateIssueShortLink, getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
@@ -149,14 +149,20 @@
     }
     return true
   }
+
+  // If it is embedded
+  $: lastCtx = $contextStore.getLastContext()
+  $: isContextEnabled = lastCtx?.mode === 'editor' || lastCtx?.mode === 'browser'
 </script>
 
-<FocusHandler {manager} />
-<ActionContext
-  context={{
-    mode: 'editor'
-  }}
-/>
+{#if !embedded}
+  <FocusHandler {manager} isEnabled={isContextEnabled} />
+  <ActionContext
+    context={{
+      mode: 'editor'
+    }}
+  />
+{/if}
 
 {#if issue !== undefined}
   <Panel
@@ -204,6 +210,7 @@
       placeholder={tracker.string.IssueTitlePlaceholder}
       kind="large-style"
       on:blur={save}
+      focus={!embedded}
     />
     <div class="w-full mt-6">
       {#key issue._id}

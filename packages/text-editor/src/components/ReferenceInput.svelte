@@ -213,15 +213,17 @@
   export let focusIndex = -1
   const { idx, focusManager } = registerFocus(focusIndex, {
     focus: () => {
-      focused = true
-      textEditor.focus()
-      return textEditor.isEditable()
+      const editable = textEditor.isEditable()
+      if (editable) {
+        focused = true
+        textEditor.focus()
+      }
+      return editable
     },
     isFocus: () => focused
   })
   const updateFocus = () => {
     if (focusIndex !== -1) {
-      console.trace('focuse')
       focusManager?.setFocus(idx)
     }
   }

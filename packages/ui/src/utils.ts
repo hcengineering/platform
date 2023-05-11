@@ -16,11 +16,14 @@
 import { generateId } from '@hcengineering/core'
 import type { Metadata } from '@hcengineering/platform'
 import { setMetadata } from '@hcengineering/platform'
-import { writable } from 'svelte/store'
 import autolinker from 'autolinker'
+import { writable } from 'svelte/store'
 import { Notification, NotificationPosition, NotificationSeverity, notificationsStore } from '.'
 import { AnyComponent, AnySvelteComponent } from './types'
 
+/**
+ * @public
+ */
 export function setMetadataLocalStorage<T> (id: Metadata<T>, value: T | null): void {
   if (value != null) {
     localStorage.setItem(id, typeof value === 'string' ? value : JSON.stringify(value))
@@ -30,6 +33,9 @@ export function setMetadataLocalStorage<T> (id: Metadata<T>, value: T | null): v
   setMetadata(id, value)
 }
 
+/**
+ * @public
+ */
 export function fetchMetadataLocalStorage<T> (id: Metadata<T>): T | null {
   const data = localStorage.getItem(id)
   if (data === null) {
@@ -45,14 +51,27 @@ export function fetchMetadataLocalStorage<T> (id: Metadata<T>): T | null {
   }
 }
 
+/**
+ * @public
+ */
 export function checkMobile (): boolean {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|Mobile|Opera Mini/i.test(navigator.userAgent)
+}
+
+/**
+ * @public
+ */
+export function isSafari (): boolean {
+  return navigator.userAgent.toLowerCase().includes('safari/')
 }
 
 export function floorFractionDigits (n: number | string, amount: number): number {
   return Number(Number(n).toFixed(amount))
 }
 
+/**
+ * @public
+ */
 export function addNotification (
   title: string,
   subTitle: string,

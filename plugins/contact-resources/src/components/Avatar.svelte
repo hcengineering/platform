@@ -79,10 +79,12 @@
     } else {
       const uri = avatar.split('://')[1]
 
-      const color = (await getResource(avatarProvider.getUrl))(uri, size)
-      style = `background-color: ${color}`
-      accentColor = hexToRgb(color)
-      dispatch('accent-color', accentColor)
+      const color: string | undefined = (await getResource(avatarProvider.getUrl))(uri, size)
+      if (color != null) {
+        style = `background-color: ${color}`
+        accentColor = hexToRgb(color)
+        dispatch('accent-color', accentColor)
+      }
     }
   }
   $: updateStyle(avatar, avatarProvider)

@@ -1,22 +1,21 @@
 import { Class, Doc, DocumentQuery, Hierarchy, Ref, Space, TxResult } from '@hcengineering/core'
-import { Asset, getResource, IntlString, Resource } from '@hcengineering/platform'
-import { getClient, MessageBox, updateAttribute } from '@hcengineering/presentation'
+import { Asset, IntlString, Resource, getResource } from '@hcengineering/platform'
+import { MessageBox, getClient, updateAttribute } from '@hcengineering/presentation'
 import {
   AnyComponent,
   AnySvelteComponent,
+  PopupAlignment,
+  PopupPosAlignment,
   closeTooltip,
   isPopupPosAlignment,
   navigate,
-  PopupAlignment,
-  PopupPosAlignment,
   showPanel,
   showPopup
 } from '@hcengineering/ui'
-import { ViewContext } from '@hcengineering/view'
 import MoveView from './components/Move.svelte'
-import { contextStore } from './context'
+import { ContextStore, contextStore } from './context'
 import view from './plugin'
-import { FocusSelection, focusStore, previewDocument, SelectDirection, selectionStore } from './selection'
+import { FocusSelection, SelectDirection, focusStore, previewDocument, selectionStore } from './selection'
 import { deleteObjects, getObjectLinkFragment } from './utils'
 
 /**
@@ -100,7 +99,7 @@ focusStore.subscribe((it) => {
   $focusStore = it
 })
 
-let $contextStore: ViewContext[]
+let $contextStore: ContextStore
 contextStore.subscribe((it) => {
   $contextStore = it
 })
@@ -153,7 +152,7 @@ const MoveRight = (doc: Doc | undefined, evt: Event): void => select(evt, 1, $fo
 function ShowActions (doc: Doc | Doc[] | undefined, evt: Event): void {
   evt.preventDefault()
 
-  showPopup(view.component.ActionsPopup, { viewContext: $contextStore[$contextStore.length - 1] }, 'top')
+  showPopup(view.component.ActionsPopup, { viewContext: $contextStore.getLastContext() }, 'top')
 }
 
 function ShowPreview (doc: Doc | Doc[] | undefined, evt: Event): void {
