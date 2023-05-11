@@ -1,6 +1,6 @@
 {
   "string": {
-    "Contains": "Содержит",
+    "Contains": "содержит",
     "MoveClass": "Переместить {class}",
     "SelectToMove": "Выберите {classLabel}, в который вы хотите переместить {class}.",
     "Delete": "Удалить",
