@@ -30,9 +30,7 @@
   filter.modes = [view.filter.FilterValueIn, view.filter.FilterValueNin]
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
 
-  // TODO: remove "TypeString" from search types after
-  // a separate filter for strings is implemented
-  $: isSearchable = [core.class.TypeNumber, core.class.TypeString, core.class.EnumOf].includes(
+  $: isSearchable = [core.class.TypeNumber, core.class.EnumOf].includes(
     filter.key.attribute.type._class
   )
 
