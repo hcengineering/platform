@@ -30,7 +30,6 @@
   } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { FilterQuery } from '@hcengineering/view-resources'
-  import view from '@hcengineering/view-resources/src/plugin'
   import { createEventDispatcher, onMount } from 'svelte'
   import tags from '../plugin'
   import { tagLevel } from '../utils'
@@ -109,6 +108,11 @@
     }
     objects = objects
     categories = categories
+
+    filter.value = [...selected]
+    // Replace last one with value with level
+    filter.props = { level }
+    onChange(filter)
   }
 
   $: schema = filter.key.attribute.schema ?? '0'
@@ -209,17 +213,6 @@
       {/if}
     </div>
   </div>
-  <Button
-    shape={'round'}
-    label={view.string.Apply}
-    on:click={async () => {
-      filter.value = [...selected]
-      // Replace last one with value with level
-      filter.props = { level }
-      onChange(filter)
-      dispatch('close')
-    }}
-  />
 </div>
 
 <style>
