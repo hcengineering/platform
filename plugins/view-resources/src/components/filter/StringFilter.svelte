@@ -14,7 +14,6 @@
 -->
 <script lang="ts">
   import { translate } from '@hcengineering/platform'
-  import presentation from '@hcengineering/presentation'
   import { Button, resizeObserver, deviceOptionsStore } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { onMount, createEventDispatcher } from 'svelte'

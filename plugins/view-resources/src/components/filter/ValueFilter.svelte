@@ -30,9 +30,7 @@
   filter.modes = [view.filter.FilterValueIn, view.filter.FilterValueNin]
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
 
-  $: isSearchable = [core.class.TypeNumber, core.class.EnumOf].includes(
-    filter.key.attribute.type._class
-  )
+  $: isSearchable = [core.class.TypeNumber, core.class.EnumOf].includes(filter.key.attribute.type._class)
 
   const client = getClient()
   const key = { key: filter.key.key }
