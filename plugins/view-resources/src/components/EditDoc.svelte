@@ -340,7 +340,7 @@
 
     <svelte:fragment slot="subheader">
       {#if mainEditor && mainEditor.pinned}
-        <div class="flex-col flex-grow step-tb-6">
+        <div class="flex-col flex-grow my-4 step-tb-6">
           <Component is={mainEditor.editor} props={{ object }} on:open={handleOpen} />
         </div>
       {/if}
