@@ -23,12 +23,14 @@ export default mergeIds(viewId, view, {
     ObjectFilter: '' as AnyComponent,
     DateFilter: '' as AnyComponent,
     ValueFilter: '' as AnyComponent,
+    StringFilter: '' as AnyComponent,
     TimestampFilter: '' as AnyComponent,
     FilterTypePopup: '' as AnyComponent,
     ActionsPopup: '' as AnyComponent,
     ProxyPresenter: '' as AnyComponent
   },
   string: {
+    Contains: '' as IntlString,
     LabelYes: '' as IntlString,
     LabelNo: '' as IntlString,
     ChooseAColor: '' as IntlString,

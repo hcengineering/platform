@@ -18,10 +18,9 @@
   import presentation, { getClient } from '@hcengineering/presentation'
   import ui, { Button, Icon, IconCheck, Label, Loading, resizeObserver, deviceOptionsStore } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
-  import { onMount } from 'svelte'
+  import { onMount, createEventDispatcher } from 'svelte'
   import { getPresenter } from '../../utils'
   import view from '../../plugin'
-  import { createEventDispatcher } from 'svelte'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined

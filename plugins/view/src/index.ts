@@ -742,6 +742,7 @@ const view = plugin(viewId, {
     FilterValueNin: '' as Ref<FilterMode>,
     FilterBefore: '' as Ref<FilterMode>,
     FilterAfter: '' as Ref<FilterMode>,
+    FilterContains: '' as Ref<FilterMode>,
     FilterNestedMatch: '' as Ref<FilterMode>,
     FilterNestedDontMatch: '' as Ref<FilterMode>,
     FilterDateOutdated: '' as Ref<FilterMode>,
