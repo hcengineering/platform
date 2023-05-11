@@ -49,9 +49,19 @@ import type {
 /**
  * @public
  */
-export interface KeyFilter {
+export interface KeyFilterPreset {
   _class: Ref<Class<Doc>>
   key: string
+  attribute?: AnyAttribute
+  component: AnyComponent
+  label?: IntlString
+  icon?: Asset | AnySvelteComponent | undefined
+}
+
+/**
+ * @public
+ */
+export interface KeyFilter extends KeyFilterPreset {
   attribute: AnyAttribute
   component: AnyComponent
   label: IntlString
@@ -102,7 +112,7 @@ export interface FilteredView extends Preference {
  * @public
  */
 export interface ClassFilters extends Class<Doc> {
-  filters: (KeyFilter | string)[]
+  filters: (KeyFilterPreset | string)[]
   ignoreKeys?: string[]
 
   // Ignore attributes not specified in the "filters" array

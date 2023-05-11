@@ -10,6 +10,7 @@
     "lint": "svelte-check && eslint",
     "lint:fix": "eslint --fix src",
     "format": "prettier --write --plugin-search-dir=. src && eslint --fix src",
+    "svelte-check": "svelte-check --output human",
     "build:watch": "tsc --incremental --noEmit --outDir ./dist_cache"
   },
   "devDependencies": {

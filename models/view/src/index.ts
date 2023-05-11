@@ -42,7 +42,7 @@ import type {
   IgnoreActions,
   InlineAttributEditor,
   KeyBinding,
-  KeyFilter,
+  KeyFilterPreset,
   LinkPresenter,
   LinkProvider,
   ListHeaderExtra,
@@ -126,7 +126,7 @@ export class TFilterMode extends TDoc implements FilterMode {
 
 @Mixin(view.mixin.ClassFilters, core.class.Class)
 export class TClassFilters extends TClass implements ClassFilters {
-  filters!: (string | KeyFilter)[]
+  filters!: (string | KeyFilterPreset)[]
   ignoreKeys?: string[] | undefined
   strict?: boolean | undefined
 }

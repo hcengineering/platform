@@ -136,6 +136,7 @@ import ProjectPresenter from './components/projects/ProjectPresenter.svelte'
 import ProjectSpacePresenter from './components/projects/ProjectSpacePresenter.svelte'
 import IssueStatistics from './components/sprints/IssueStatistics.svelte'
 import SprintRefPresenter from './components/sprints/SprintRefPresenter.svelte'
+import SprintFilter from './components/sprints/SprintFilter.svelte'
 
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 
@@ -445,7 +446,8 @@ export default async (): Promise<Resources> => ({
     TimeSpendReportPopup,
     SprintDatePresenter,
     SprintLeadPresenter,
-    NotificationIssuePresenter
+    NotificationIssuePresenter,
+    SprintFilter
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>
