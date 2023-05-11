@@ -76,6 +76,7 @@ export default mergeIds(taskId, task, {
   },
   component: {
     TodoStatePresenter: '' as AnyComponent,
-    AssignedTasks: '' as AnyComponent
+    AssignedTasks: '' as AnyComponent,
+    DueDateEditor: '' as AnyComponent
   }
 })

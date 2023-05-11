@@ -14,13 +14,17 @@
 -->
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { Issue } from '@hcengineering/tracker'
+  import tracker, { Issue } from '@hcengineering/tracker'
   import { DueDatePresenter } from '@hcengineering/ui'
+  import { WithLookup } from '@hcengineering/core'
 
-  export let value: Issue
+  export let value: WithLookup<Issue>
   export let width: string | undefined = undefined
 
   const client = getClient()
+  $: shouldIgnoreOverdue =
+    value.$lookup?.status?.category === tracker.issueStatusCategory.Completed ||
+    value.$lookup?.status?.category === tracker.issueStatusCategory.Canceled
 
   const handleDueDateChanged = async (newDueDate: number | undefined | null) => {
     if (newDueDate === undefined || value.dueDate === newDueDate) {
@@ -40,5 +44,12 @@
 </script>
 
 {#if value}
-  <DueDatePresenter kind={'link'} value={value.dueDate} {width} editable onChange={(e) => handleDueDateChanged(e)} />
+  <DueDatePresenter
+    kind={'link'}
+    value={value.dueDate}
+    {width}
+    editable
+    onChange={(e) => handleDueDateChanged(e)}
+    {shouldIgnoreOverdue}
+  />
 {/if}

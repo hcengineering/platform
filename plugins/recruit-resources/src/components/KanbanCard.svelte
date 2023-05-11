@@ -95,6 +95,7 @@
       <DueDatePresenter
         value={object.dueDate}
         shouldRender={object.dueDate !== null && object.dueDate !== undefined}
+        shouldIgnoreOverdue={object.doneState !== null}
         onChange={async (e) => {
           await client.update(object, { dueDate: e })
         }}
