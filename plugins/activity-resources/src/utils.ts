@@ -377,7 +377,9 @@ export async function getValue (client: TxOperations, m: AttributeModel, tx: Dis
 }
 
 export function getPrevValue (client: TxOperations, m: AttributeModel, tx: DisplayTx): any {
-  if (tx.prevDoc !== undefined) {
+  if (tx.txes.length > 0 && tx.txes[0].prevDoc !== undefined) {
+    return getObjectValue(m.key, tx.txes[0].prevDoc)
+  } else if (tx.prevDoc !== undefined) {
     return getObjectValue(m.key, tx.prevDoc)
   }
   return undefined

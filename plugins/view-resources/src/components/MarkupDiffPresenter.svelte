@@ -22,17 +22,16 @@
   export let showOnlyDiff: boolean = false
 
   function removeSimilarLines (str1: string | undefined, str2: string | undefined) {
-    if (str1 === undefined || str2 === undefined) {
-      return
-    }
+    str1 = str1 ?? ''
+    str2 = str2 ?? ''
     const lines1 = str1.split('</p>')
     const lines2 = str2.split('</p>')
     let result1 = ''
     let result2 = ''
-    for (let i = 0; i < lines1.length; i++) {
+    for (let i = 0; i < Math.max(lines1.length, lines2.length); i++) {
       if (lines1[i] !== lines2[i]) {
-        result1 += lines1[i] ?? '' + '</p>'
-        result2 += lines2[i] ?? '' + '</p>'
+        if (lines1[i]) result1 += lines1[i] + '</p>'
+        if (lines2[i]) result2 += lines2[i] + '</p>'
       }
     }
     value = result1
@@ -44,6 +43,6 @@
 
 <ShowMore>
   {#key [value, compareValue]}
-    <CollaborationDiffViewer content={value ?? ''} comparedVersion={compareValue} noButton readonly />
+    <CollaborationDiffViewer content={value ?? ''} comparedVersion={compareValue ?? ''} noButton readonly />
   {/key}
 </ShowMore>

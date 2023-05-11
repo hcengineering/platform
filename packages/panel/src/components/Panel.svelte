@@ -157,23 +157,28 @@
   </svelte:fragment>
 
   <svelte:fragment slot="aside">
-    <Scroller padding={'.75rem 1.5rem'}>
-      {#if $$slots.actions}
-        <div class="flex-row-center pb-3 bottom-divider">
-          {#if $$slots['actions-label']}
-            <span class="fs-bold w-24 mr-6"><slot name="actions-label" /></span>
-          {/if}
-          <div class="buttons-group xsmall-gap flex flex-grow">
-            <slot name="actions" />
-          </div>
+    {#if $$slots['aside-tabs']}
+      <div class="popupPanel-body__aside-tabsheader">
+        <slot name="aside-tabs" />
+      </div>
+    {/if}
+    {#if $$slots.actions}
+      <div class="popupPanel-body__aside-header">
+        {#if $$slots['actions-label']}
+          <span class="fs-bold w-27 mr-6"><slot name="actions-label" /></span>
+        {/if}
+        <div class="buttons-group xsmall-gap flex flex-grow">
+          <slot name="actions" />
         </div>
-      {/if}
+      </div>
+    {/if}
+    <Scroller>
       {#if $$slots['custom-attributes'] && isCustomAttr}
         <slot name="custom-attributes" direction="column" />
       {:else if $$slots.attributes}<slot name="attributes" direction="column" />{/if}
       {#if $$slots.aside}<slot name="aside" />{/if}
+      <div class="h-2 min-h-2 max-h-2" />
     </Scroller>
-    <div class="h-2 min-h-2 max-h-2" />
   </svelte:fragment>
 
   {#if $deviceInfo.isMobile}

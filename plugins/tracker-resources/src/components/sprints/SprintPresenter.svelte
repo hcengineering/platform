@@ -20,7 +20,7 @@
 
   export let value: WithLookup<Sprint>
   export let shouldShowAvatar: boolean = true
-  export let onClick: () => void | undefined
+  export let onClick: (() => void) | undefined = undefined
   export let disabled = false
   export let inline: boolean = false
 

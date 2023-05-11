@@ -300,8 +300,8 @@
       </div>
     </svelte:fragment>
 
-    <svelte:fragment slot="attributes" let:direction={dir}>
-      <div class="flex flex-reverse flex-no-shrink clear-mins">
+    <svelte:fragment slot="aside-tabs">
+      <div class="flex-row-center flex-reverse flex-grow">
         <Button
           kind={'transparent'}
           shape={'round'}
@@ -310,11 +310,13 @@
             showAllMixins = !showAllMixins
           }}
         >
-          <svelte:fragment slot="content">
+          <svelte:fragment slot="icon">
             <IconMixin size={'small'} />
           </svelte:fragment>
         </Button>
       </div>
+    </svelte:fragment>
+    <svelte:fragment slot="attributes" let:direction={dir}>
       {#if !headerLoading}
         {#if headerEditor !== undefined}
           <Component
@@ -338,7 +340,7 @@
 
     <svelte:fragment slot="subheader">
       {#if mainEditor && mainEditor.pinned}
-        <div class="flex-col flex-grow step-tb-6">
+        <div class="flex-col flex-grow my-4 step-tb-6">
           <Component is={mainEditor.editor} props={{ object }} on:open={handleOpen} />
         </div>
       {/if}

@@ -64,16 +64,16 @@
   }
 </script>
 
-<div class="content">
+<div class="popupPanel-body__aside-grid">
   <span class="label">
     <Label label={tracker.string.Priority} />
   </span>
-  <PriorityEditor value={issue} shouldShowLabel />
+  <PriorityEditor value={issue} size={'medium'} shouldShowLabel />
 
   <span class="label">
     <Label label={tracker.string.Assignee} />
   </span>
-  <AssigneeEditor value={issue} />
+  <AssigneeEditor value={issue} size={'medium'} />
 
   <span class="labelTop">
     <Label label={tracker.string.Labels} />
@@ -82,7 +82,10 @@
   <Component
     is={tags.component.TagsDropdownEditor}
     props={{
-      kind: 'no-border',
+      kind: 'link',
+      size: 'medium',
+      width: '100%',
+      justify: 'left',
       items: labelRefs,
       key,
       targetClass: tracker.class.Issue,
@@ -99,43 +102,19 @@
   <span class="label">
     <Label label={tracker.string.Component} />
   </span>
-  <ComponentEditor value={issue} />
+  <ComponentEditor value={issue} size={'medium'} />
 
   {#if issue.sprint}
     <span class="label">
       <Label label={tracker.string.Sprint} />
     </span>
-    <SprintEditor value={issue} />
+    <SprintEditor value={issue} size={'medium'} />
   {/if}
 
   {#if keys.length > 0}
     <div class="divider" />
     {#each keys as key (typeof key === 'string' ? key : key.key)}
-      <AttributeBarEditor {key} _class={issue._class} object={issue} showHeader={true} />
+      <AttributeBarEditor {key} _class={issue._class} object={issue} size={'medium'} showHeader={true} />
     {/each}
   {/if}
 </div>
-
-<style lang="scss">
-  .content {
-    display: grid;
-    grid-template-columns: 1fr 1.5fr;
-    grid-auto-flow: row;
-    justify-content: start;
-    align-items: center;
-    gap: 1rem;
-    margin-top: 1rem;
-    width: 100%;
-    height: min-content;
-  }
-
-  .divider {
-    grid-column: 1 / 3;
-    height: 1px;
-    background-color: var(--divider-color);
-  }
-  .labelTop {
-    align-self: start;
-    margin-top: 0.385rem;
-  }
-</style>

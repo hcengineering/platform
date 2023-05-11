@@ -7,7 +7,8 @@ import core, {
   FindResult,
   Hierarchy,
   ObjQueryType,
-  Ref
+  Ref,
+  RefTo
 } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { LiveQuery, createQuery, getClient } from '@hcengineering/presentation'
@@ -198,12 +199,28 @@ export function buildFilterKey (
   key: string,
   attribute: AnyAttribute
 ): KeyFilter | undefined {
+  const attrOf = hierarchy.getClass(attribute.attributeOf)
+  const isRef = hierarchy.isDerived(attribute.type._class, core.class.RefTo)
+  if (isRef) {
+    const targetClass = (attribute.type as RefTo<Doc>).to
+    const filter = hierarchy.classHierarchyMixin(targetClass, view.mixin.AttributeFilter)
+    if (filter?.component !== undefined) {
+      return {
+        _class,
+        key,
+        attribute,
+        label: attribute.label,
+        icon: attribute.icon ?? filter.icon ?? attrOf.icon ?? view.icon.Setting,
+        component: filter.component
+      }
+    }
+  }
+
   const isCollection = hierarchy.isDerived(attribute.type._class, core.class.Collection)
   const targetClass = isCollection ? (attribute.type as Collection<AttachedDoc>).of : attribute.type._class
   const clazz = hierarchy.getClass(targetClass)
   const filter = hierarchy.as(clazz, view.mixin.AttributeFilter)
 
-  const attrOf = hierarchy.getClass(attribute.attributeOf)
   if (filter.component === undefined) return undefined
   return {
     _class,

@@ -60,32 +60,32 @@
 
 <style lang="scss">
   .step-container {
-    margin: 0.125rem 0.125rem 0 0;
+    margin: 0.375rem 0.375rem 0 0;
   }
   .tag-button {
     overflow: hidden;
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    padding: 0 0.5rem;
-    height: 1.5rem;
+    padding: 0 0.625rem 0 0.5rem;
+    height: 2rem;
     min-width: 0;
     min-height: 0;
-    color: var(--content-color);
+    color: var(--theme-content-color);
     border: 1px solid transparent;
-    border-radius: 0.75rem;
+    border-radius: 1rem;
 
     .icon {
       flex-shrink: 0;
-      width: 0.625rem;
-      height: 0.625rem;
+      width: 1rem;
+      height: 1rem;
     }
     .label {
-      margin-left: 0.125rem;
+      margin-left: 0.25rem;
     }
     &:hover {
-      color: var(--caption-color);
-      border-color: var(--divider-color);
+      color: var(--theme-caption-color);
+      border-color: var(--theme-divider-color);
     }
   }
 </style>

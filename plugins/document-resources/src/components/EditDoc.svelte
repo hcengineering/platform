@@ -525,8 +525,8 @@
         {readonly}
       />
 
-      <div class="tab-content">
-        <div class="divider" />
+      <div class="doc-divider" />
+      <div class="popupPanel-body__aside-grid">
         <span class="label labelTop">
           <Label label={document.string.Labels} />
         </span>
@@ -552,28 +552,12 @@
     line-height: 150%;
     // overflow: auto;
   }
-
-  .tab-content {
-    display: grid;
-    grid-template-columns: 1fr 1.5fr;
-    grid-auto-flow: row;
-    justify-content: start;
-    align-items: center;
-    gap: 1rem;
-    margin-top: 1rem;
-    width: 100%;
-    height: min-content;
-
-    .divider {
-      grid-column: 1 / 3;
-      height: 1px;
-      background-color: var(--divider-color);
-    }
-    .labelTop {
-      align-self: start;
-    }
+  .doc-divider {
+    flex-shrink: 0;
+    margin: 0 0 0.5rem;
+    height: 1px;
+    background-color: var(--theme-divider-color);
   }
-
   .emphasized {
     padding: 1rem;
     background-color: var(--body-color);

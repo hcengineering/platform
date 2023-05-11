@@ -165,12 +165,24 @@
 
     .popupPanel-body__header {
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      min-height: 0;
 
+      &-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        min-width: 0;
+        min-height: 3.5rem;
+        border-bottom: 1px solid var(--theme-divider-color);
+      }
       &.main {
-        margin: 0 auto;
         padding: .75rem 1.25rem;
         width: calc(100% - 5rem);
+        height: 100%;
+        min-width: 0;
         max-width: 900px;
 
         &.max {
@@ -203,38 +215,26 @@
     }
 
     &__aside {
-      position: relative;
       width: 25%;
-      min-width: 320px;
-
-      &::before {
-        position: absolute;
-        content: '';
-        top: 1rem;
-        bottom: 1rem;
-        left: 0;
-        width: 0;
-        border-left: 1px solid var(--theme-divider-color);
-      }
+      min-width: var(--panel-aside-width);
+      border-left: 1px solid var(--theme-divider-color);
 
       &.float {
         position: absolute;
         flex-shrink: 0;
         top: 0;
         left: 100%;
-        width: 320px;
+        width: var(--panel-aside-width);
         min-width: 0;
-        max-width: 320px;
+        max-width: var(--panel-aside-width);
         height: 100%;
         background-color: var(--theme-panel-color);
-        border-left: 1px solid var(--theme-divider-color);
         border-bottom-right-radius: .45rem;
         box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
         transition: box-shadow 150ms ease 0s, transform 150ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
         transform: translateX(0);
         visibility: hidden;
 
-        &::before { content: none; }
         &.shown {
           box-shadow: var(--popup-aside-shadow);
           transform: translateX(-100%);
@@ -252,6 +252,46 @@
           }
         }
       }
+
+      &-header,
+      &-tabsheader {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        padding: .75rem 2rem;
+        height: 3.5rem;
+        min-height: 3.5rem;
+        border-bottom: 1px solid var(--theme-divider-color);
+      }
+      &-tabsheader {
+        padding: 0 2rem;
+      }
+
+      &-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr;
+        grid-auto-flow: row;
+        justify-content: start;
+        align-items: center;
+        row-gap: .25rem;
+        column-gap: 1rem;
+        margin: .5rem 2rem;
+        width: calc(100% - 4rem);
+        height: min-content;
+
+        .divider {
+          grid-column: 1 / 3;
+          margin: .75rem -2rem;
+          height: 1px;
+          background-color: var(--theme-divider-color);
+        }
+        .label,
+        .labelTop { color: var(--theme-dark-color); }
+        .labelTop {
+          align-self: start;
+          margin-top: 0.385rem;
+        }      
+      }    
     }
 
     // &.asideShown .popupPanel-body__main {

@@ -106,11 +106,10 @@
       align-items: baseline;
     }
     .eContentPresenterIcon {
-      color: var(--dark-color);
+      color: var(--theme-dark-color);
     }
     .eContentPresenterLabel {
       min-width: 0;
-      font-weight: 500;
       text-align: left;
       color: var(--theme-caption-color);
 
@@ -139,10 +138,9 @@
   .status {
     margin-left: 0.25rem;
     padding: 0.125rem 0.25rem;
-    font-weight: 500;
     font-size: 0.75rem;
-    color: var(--content-color);
-    background-color: var(--noborder-bg-color);
+    color: var(--theme-content-color);
+    background-color: var(--theme-button-enabled);
     border-radius: 0.25rem;
   }
 </style>

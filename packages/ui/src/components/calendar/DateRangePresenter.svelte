@@ -563,7 +563,6 @@
 
     &.secondary {
       padding: 0 0.625rem;
-      font-weight: 500;
       color: var(--theme-caption-color);
       background-color: var(--theme-button-enabled);
       border-color: var(--theme-button-border);

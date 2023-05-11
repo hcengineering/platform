@@ -176,27 +176,26 @@
 <style lang="scss">
   .row {
     position: relative;
-    border-bottom: 1px solid var(--divider-color);
+    border-bottom: 1px solid var(--theme-divider-color);
 
     .text {
       font-weight: 500;
-      color: var(--caption-color);
+      color: var(--theme-caption-color);
     }
 
     .issuePresenter {
       flex-shrink: 0;
       min-width: 0;
       min-height: 0;
-      font-weight: 500;
-      color: var(--content-color);
+      color: var(--theme-content-color);
       cursor: pointer;
 
       &:hover {
-        color: var(--caption-color);
+        color: var(--theme-caption-color);
         text-decoration: underline;
       }
       &:active {
-        color: var(--accent-color);
+        color: var(--theme-caption-color);
       }
     }
 
@@ -232,7 +231,7 @@
     &.is-dragging::before {
       position: absolute;
       content: '';
-      background-color: var(--divider-color);
+      background-color: var(--theme-divider-color);
       inset: 0;
       z-index: -1;
     }

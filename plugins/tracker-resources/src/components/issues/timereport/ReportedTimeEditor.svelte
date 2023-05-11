@@ -27,6 +27,7 @@
   export let object: Issue
   export let value: number
   export let kind: 'no-border' | 'link' = 'no-border'
+  export let size: 'small' | 'medium' | 'large' = 'large'
   export let currentProject: Project | undefined
 
   const spaceQuery = createQuery()
@@ -66,7 +67,7 @@
 
 {#if kind === 'link'}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div id="ReportedTimeEditor" class="link-container flex-between" on:click={showReports}>
+  <div id="ReportedTimeEditor" class="link-container {size} flex-between" on:click={showReports}>
     {#if value !== undefined}
       <span class="overflow-label">
         <TimePresenter {value} />
@@ -98,12 +99,20 @@
     align-items: center;
     padding: 0 0.875rem;
     width: 100%;
-    height: 2.25rem;
     color: var(--theme-caption-color);
     border: 1px solid transparent;
     border-radius: 0.25rem;
     cursor: pointer;
 
+    &.small {
+      height: 1.5rem;
+    }
+    &.medium {
+      height: 2rem;
+    }
+    &.large {
+      height: 2.25rem;
+    }
     .add-action {
       visibility: hidden;
     }

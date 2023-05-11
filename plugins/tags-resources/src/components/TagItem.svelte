@@ -90,7 +90,6 @@
     min-width: 0;
     min-height: 1.5rem;
     text-transform: uppercase;
-    font-weight: 500;
     font-size: 0.75rem;
     color: var(--theme-content-color);
     border-radius: 0.25rem;
@@ -102,7 +101,6 @@
   .tag-item-inline {
     position: relative;
     padding-left: 0.75rem;
-    font-weight: 500;
     color: var(--theme-content-color);
 
     &::before {

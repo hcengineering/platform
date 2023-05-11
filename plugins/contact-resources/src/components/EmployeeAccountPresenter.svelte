@@ -45,9 +45,8 @@
 
 <style lang="scss">
   .user {
-    color: var(--accent-color);
+    color: var(--theme-caption-color);
     margin-left: 0.5rem;
-    font-weight: 500;
     text-align: left;
   }
 </style>

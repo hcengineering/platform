@@ -87,7 +87,7 @@
 </script>
 
 <div class="flex-row mt-4 mb-4">
-  <Label label={tracker.string.StatusHistory} />:
+  <span class="content-dark-color"><Label label={tracker.string.StatusHistory} />:</span>
   <table class="ml-2">
     {#each displaySt as st}
       <tr>
@@ -95,7 +95,7 @@
           <StatusPresenter value={st.status} />
         </td>
         <td>
-          <div class="ml-2 mr-2">
+          <div class="ml-8 mr-2">
             <Duration value={st.duration} />
           </div>
         </td>
