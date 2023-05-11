@@ -59,26 +59,25 @@
     flex-shrink: 0;
     max-width: 15rem;
     font-size: 0.8125rem;
-    color: var(--content-color);
+    color: var(--theme-content-color);
 
     &:not(.noPointer) {
       cursor: pointer;
     }
 
     &.noUnderline {
-      font-weight: 500;
-      color: var(--caption-color);
+      color: var(--theme-caption-color);
     }
 
     &:not(.noUnderline) {
       &:hover {
-        color: var(--caption-color);
+        color: var(--theme-caption-color);
         text-decoration: underline;
       }
     }
 
     &:active {
-      color: var(--accent-color);
+      color: var(--theme-caption-color);
     }
   }
 </style>

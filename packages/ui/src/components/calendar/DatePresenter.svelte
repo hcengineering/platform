@@ -36,6 +36,7 @@
   export let shouldShowLabel: boolean = true
   export let size: ButtonSize | 'x-small' = 'small'
   export let kind: ButtonKind = 'link'
+  export let width: string | undefined = undefined
   export let label = ui.string.DueDate
   export let detail = ui.string.NeedsToBeCompletedByThisDate
 
@@ -67,6 +68,7 @@
   class:editable
   class:dateTimeButtonNoLabel={!shouldShowLabel}
   class:text-xs={size === 'x-small'}
+  style:width
   on:click={(e) => {
     if (editable && !opened) {
       e.stopPropagation()
@@ -248,6 +250,7 @@
     &.list {
       padding: 0 0.625em 0 0.5rem;
       min-height: 1.75rem;
+      color: var(--theme-halfcontent-color);
       background-color: var(--theme-list-button-color);
       border: 1px solid var(--theme-divider-color);
       border-radius: 3rem;
@@ -255,9 +258,13 @@
       transition-duration: 0.15s;
 
       &:hover {
-        color: var(--theme-caption-color);
-        background-color: var(--theme-list-button-color);
+        color: var(--theme-halfcontent-color);
+        background-color: var(--theme-list-button-hover);
         border-color: var(--theme-divider-color);
+      }
+      .btn-icon,
+      &:hover .btn-icon {
+        color: var(--theme-halfcontent-color) !important;
       }
       &.medium {
         height: 1.75rem;

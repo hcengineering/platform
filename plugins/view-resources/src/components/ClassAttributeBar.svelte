@@ -76,7 +76,7 @@
       <Button
         icon={setting.icon.Setting}
         kind={'link'}
-        size={'large'}
+        size={'medium'}
         showTooltip={{ label: setting.string.ClassSetting }}
         on:click={(ev) => {
           ev.stopPropagation()
@@ -104,17 +104,19 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 0.25rem -0.5rem 0.75rem;
-    padding: 0 0 0 0.5rem;
+    padding: 0 0.75rem;
     font-weight: 600;
     color: var(--theme-dark-color);
-    border: 1px solid var(--theme-divider-color);
-    border-radius: 0.25rem;
+    border-top: 1px solid var(--theme-divider-color);
+    border-bottom: 1px solid var(--theme-divider-color);
     cursor: pointer;
     transition-property: color, background-color, border-color;
     transition-duration: 0.15s;
     transition-timing-function: var(--timing-main);
 
+    &:first-child {
+      border-top-color: transparent;
+    }
     .icon-arrow {
       margin-left: 0.5rem;
       width: 0.325rem;

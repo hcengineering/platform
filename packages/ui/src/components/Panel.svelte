@@ -182,8 +182,10 @@
         }}
       >
         {#if $$slots.header && isHeader}
-          <div class="popupPanel-body__header main bottom-divider" class:max={useMaxWidth}>
-            <slot name="header" />
+          <div class="popupPanel-body__header-wrapper">
+            <div class="popupPanel-body__header main" class:max={useMaxWidth}>
+              <slot name="header" />
+            </div>
           </div>
         {/if}
         <slot />

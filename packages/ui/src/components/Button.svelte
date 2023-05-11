@@ -50,6 +50,7 @@
   export let iconSize: IconSize = size === 'inline' ? 'inline' : 'small'
   export let iconRightSize: IconSize = 'x-small'
   export let short: boolean = false
+  export let accent: boolean = false
 
   // $: iconSize = size === 'inline' ? 'inline' : 'small'
   $: iconOnly =
@@ -97,6 +98,7 @@
   bind:this={input}
   class="button {kind} {size} jf-{justify} sh-{shape ?? 'no-shape'} bs-{borderStyle}"
   class:only-icon={iconOnly}
+  class:accent
   class:highlight
   class:selected
   class:notSelected
@@ -178,7 +180,6 @@
     align-items: center;
     flex-shrink: 0;
     padding: 0 0.625rem;
-    font-weight: 500;
     min-width: 1.375rem;
     white-space: nowrap;
     color: var(--theme-caption-color);
@@ -187,6 +188,9 @@
     transition-property: border, background-color, color, box-shadow;
     transition-duration: 0.15s;
 
+    &.accent {
+      font-weight: 500;
+    }
     .btn-icon {
       color: var(--theme-content-color);
       transition: color 0.15s;
@@ -391,8 +395,8 @@
     &.list {
       padding: 0 0.625em;
       min-height: 1.75rem;
-      color: var(--theme-halfcontent-color);
-      background-color: var(--theme-list-button-color);
+      color: var(--theme-content-color);
+      background-color: var(--theme-button-enabled);
       border: 1px solid var(--theme-button-border);
       border-radius: 1.5rem;
       // transition-property: border, color, background-color;
@@ -402,8 +406,8 @@
         color: var(--theme-dark-color);
       }
       &:hover {
-        color: var(--theme-halfcontent-color);
-        background-color: var(--theme-list-button-color);
+        color: var(--theme-caption-color);
+        background-color: var(--theme-button-hovered);
         border-color: var(--theme-button-border);
       }
       &:focus {
@@ -412,6 +416,7 @@
     }
     &.primary {
       padding: 0 0.75rem;
+      font-weight: 500;
       color: var(--primary-button-color);
       background-color: var(--primary-button-enabled);
       border-color: var(--primary-button-border);

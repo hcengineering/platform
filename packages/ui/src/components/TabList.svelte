@@ -195,6 +195,7 @@
     &.plain,
     &.separated {
       margin-bottom: -1px;
+      height: 100%;
     }
     .plain {
       display: inline-flex;

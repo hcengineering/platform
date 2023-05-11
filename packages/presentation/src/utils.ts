@@ -153,7 +153,7 @@ export class LiveQuery {
   private oldOptions: FindOptions<Doc> | undefined
   private oldCallback: ((result: FindResult<any>) => void) | undefined
   private reqId = 0
-  unsubscribe = () => {}
+  unsubscribe: () => void = () => {}
   clientRecreated = false
 
   constructor (noDestroy: boolean = false) {

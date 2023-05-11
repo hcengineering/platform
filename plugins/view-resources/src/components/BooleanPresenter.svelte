@@ -35,8 +35,7 @@
       width: 1.6rem;
       white-space: nowrap;
       text-transform: capitalize;
-      font-weight: 500;
-      color: var(--caption-color);
+      color: var(--theme-caption-color);
     }
   }
 </style>

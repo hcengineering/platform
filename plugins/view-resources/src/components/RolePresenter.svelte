@@ -82,11 +82,10 @@
 
       border-radius: 8px;
 
-      font-weight: 500;
       font-size: 10px;
 
       text-transform: uppercase;
-      color: #ffffff;
+      color: var(--theme-caption-color);
 
       display: flex;
       align-items: center;

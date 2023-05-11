@@ -42,18 +42,18 @@
       }}
     >
       <div class="color" style:background-color={getPlatformColor(value.color ?? 0)} />
-      <span class="overflow-label ml-1 text-sm caption-color max-w-40">{value.title}</span>
+      <span class="label overflow-label ml-1 text-sm caption-color max-w-40">{value.title}</span>
     </button>
   {:else if kind === 'list'}
     <div
-      class="list-container"
+      class="listitems-container"
       style:padding-right={isEditable ? '0' : '0.5rem'}
       use:resizeObserver={(element) => {
         realWidth = element.clientWidth
       }}
     >
       <div class="color" style:background-color={getPlatformColor(value.color ?? 0)} />
-      <span class="overflow-label ml-1-5 caption-color max-w-40">
+      <span class="label overflow-label ml-1-5 max-w-40">
         {value.title}
       </span>
       {#if isEditable}
@@ -66,7 +66,7 @@
 {/if}
 
 <style lang="scss">
-  .list-container {
+  .listitems-container {
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -75,21 +75,28 @@
     height: 1.75rem;
     min-width: 0;
     min-height: 0;
-    background-color: var(--theme-list-button-color);
+    background-color: var(--theme-button-enabled);
     border: 1px solid var(--theme-button-border);
     border-radius: 1.5rem;
+    user-select: none;
 
+    &:hover {
+      background-color: var(--theme-button-hovered);
+    }
+    .label {
+      color: var(--theme-caption-color);
+    }
     .btn-close {
       flex-shrink: 0;
       margin-left: 0.125rem;
       padding: 0 0.25rem 0 0.125rem;
       height: 1.75rem;
-      color: var(--content-color);
+      color: var(--theme-content-color);
       border-left: 1px solid transparent;
 
       &:hover {
-        color: var(--caption-color);
-        border-left-color: var(--divider-color);
+        color: var(--theme-caption-color);
+        border-left-color: var(--theme-divider-color);
       }
     }
   }
@@ -102,7 +109,6 @@
     padding: 0 0.375rem;
     height: 1.5rem;
     min-width: 1.5rem;
-    font-weight: 500;
     font-size: 0.75rem;
     line-height: 0.75rem;
     white-space: nowrap;

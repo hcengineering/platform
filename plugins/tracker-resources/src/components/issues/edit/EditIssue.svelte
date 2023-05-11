@@ -267,13 +267,12 @@
       />
       <Button
         kind={'transparent'}
-        shape={'round'}
         selected={showAllMixins}
         on:click={() => {
           showAllMixins = !showAllMixins
         }}
       >
-        <svelte:fragment slot="content">
+        <svelte:fragment slot="icon">
           <IconMixin size={'small'} />
         </svelte:fragment>
       </Button>
@@ -285,7 +284,9 @@
       {/if}
 
       <div class="divider" />
-      <IssueStatusActivity {issue} />
+      <div class="issue-stats">
+        <IssueStatusActivity {issue} />
+      </div>
     </svelte:fragment>
   </Panel>
 {/if}
@@ -293,10 +294,14 @@
 <style lang="scss">
   .divider {
     flex-shrink: 0;
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-    grid-column: 1 / 3;
+    margin: 0.5rem 0;
     height: 1px;
-    background-color: var(--divider-color);
+    background-color: var(--theme-divider-color);
+  }
+  .issue-stats {
+    flex-shrink: 0;
+    margin: 0 2rem;
+    min-width: 0;
+    min-height: 0;
   }
 </style>
