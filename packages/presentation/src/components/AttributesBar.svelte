@@ -32,21 +32,8 @@
   export let justify: 'left' | 'center' = 'left'
 </script>
 
-<div class="attributes-bar-container vertical">
+<div class="popupPanel-body__aside-grid">
   {#each keys as key (typeof key === 'string' ? key : key.key)}
     <AttributeBarEditor {key} {_class} {object} {showHeader} {readonly} {draft} on:update />
   {/each}
 </div>
-
-<style lang="scss">
-  .attributes-bar-container {
-    display: grid;
-    grid-template-columns: 1fr 1.5fr;
-    grid-auto-flow: row;
-    justify-content: start;
-    align-items: center;
-    gap: 1rem;
-    width: 100%;
-    height: min-content;
-  }
-</style>

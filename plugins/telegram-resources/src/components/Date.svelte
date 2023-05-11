@@ -42,8 +42,8 @@
     padding: 0.25rem 0.75rem;
     width: fit-content;
     font-weight: 500;
-    color: var(--caption-color);
-    background-color: var(--divider-color);
+    color: var(--theme-caption-color);
+    background-color: var(--theme-button-enabled);
     border-radius: 1.25rem;
     user-select: text;
   }

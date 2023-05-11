@@ -24,6 +24,7 @@
     Button,
     ButtonKind,
     ButtonSize,
+    IconSize,
     getEventPositionElement,
     getFocusManager,
     Icon,
@@ -54,6 +55,7 @@
   export let readonly = false
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
+  export let avatarSize: IconSize = kind === 'link' ? 'x-small' : 'tiny'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
   export let focusIndex = -1
@@ -151,7 +153,7 @@
         >
           {#if selected}
             {#if hideIcon || selected}
-              <UserInfo value={selected} size={kind === 'link' ? 'x-small' : 'tiny'} {icon} />
+              <UserInfo value={selected} size={avatarSize} {icon} />
             {:else}
               {getName(selected)}
             {/if}
@@ -159,7 +161,7 @@
             <div class="flex-presenter not-selected">
               {#if icon}
                 <div class="icon" class:small-gap={size === 'inline' || size === 'small'}>
-                  <Icon {icon} size={'small'} />
+                  <Icon {icon} size={avatarSize} />
                 </div>
               {/if}
               <div class="label no-underline">

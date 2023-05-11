@@ -27,6 +27,7 @@
   export let editable: boolean = true
   export let shouldIgnoreOverdue: boolean = false
   export let size: ButtonSize = 'medium'
+  export let width: string | undefined = undefined
 
   const today = new Date(new Date(Date.now()).setHours(0, 0, 0, 0))
   $: isOverdue = value !== null && value < today.getTime()
@@ -77,6 +78,7 @@
 {#if shouldRender}
   <div
     class="clear-mins"
+    style:width
     use:tooltip={formattedDate
       ? {
           direction: 'top',
@@ -91,6 +93,6 @@
         }
       : undefined}
   >
-    <DatePresenter {value} {editable} icon={iconModifier} {kind} {size} on:change={handleDueDateChanged} />
+    <DatePresenter {value} {editable} icon={iconModifier} {kind} {size} {width} on:change={handleDueDateChanged} />
   </div>
 {/if}

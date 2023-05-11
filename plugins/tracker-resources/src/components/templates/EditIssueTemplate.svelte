@@ -292,9 +292,6 @@
       {#if template && currentProject}
         <TemplateControlPanel issue={template} />
       {/if}
-
-      <div class="divider" />
-      <!-- <IssueStatusActivity issue={template} /> -->
     </svelte:fragment>
   </Panel>
 {/if}
@@ -317,13 +314,6 @@
     .placeholder {
       color: var(--dark-color);
     }
-  }
-  .divider {
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-    grid-column: 1 / 3;
-    height: 1px;
-    background-color: var(--divider-color);
   }
 
   .tool {

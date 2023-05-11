@@ -18,6 +18,7 @@
   import { DueDatePresenter } from '@hcengineering/ui'
 
   export let value: Issue
+  export let width: string | undefined = undefined
 
   const client = getClient()
 
@@ -39,5 +40,5 @@
 </script>
 
 {#if value}
-  <DueDatePresenter kind={'link'} value={value.dueDate} editable onChange={(e) => handleDueDateChanged(e)} />
+  <DueDatePresenter kind={'link'} value={value.dueDate} {width} editable onChange={(e) => handleDueDateChanged(e)} />
 {/if}

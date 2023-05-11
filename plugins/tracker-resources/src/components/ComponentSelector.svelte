@@ -127,7 +127,7 @@
     on:click={handleComponentEditorOpened}
   >
     <svelte:fragment slot="content">
-      <span class="label {enlargedText ? 'ml-1 text-base fs-bold' : 'text-md'} overflow-label pointer-events-none">
+      <span class="label {enlargedText ? 'ml-1 text-base' : 'text-md'} overflow-label pointer-events-none">
         <Label label={getEmbeddedLabel(componentText)} />
       </span>
     </svelte:fragment>

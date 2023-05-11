@@ -120,9 +120,7 @@
         {#if selectedStatus}<IssueStatusIcon value={selectedStatus} size={kind === 'list' ? 'small' : 'medium'} />{/if}
       </div>
       {#if selectedStatusLabel}
-        <span
-          class="{kind === 'list' ? 'ml-1 text-md' : 'ml-2 text-base'} overflow-label disabled fs-bold content-color"
-        >
+        <span class="{kind === 'list' ? 'ml-1 text-md' : 'ml-2 text-base'} overflow-label disabled content-color">
           {selectedStatusLabel}
         </span>
       {/if}

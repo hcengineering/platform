@@ -17,7 +17,7 @@
   import contact, { Employee } from '@hcengineering/contact'
   import type { Class, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
-  import { ButtonKind, ButtonSize, LabelAndProps } from '@hcengineering/ui'
+  import { ButtonKind, ButtonSize, IconSize, LabelAndProps } from '@hcengineering/ui'
   import presentation from '@hcengineering/presentation'
   import IconPerson from './icons/Person.svelte'
   import UserBox from './UserBox.svelte'
@@ -34,6 +34,7 @@
   export let titleDeselect: IntlString | undefined = undefined
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
+  export let avatarSize: IconSize = 'card'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
   export let focusIndex = -1
@@ -54,6 +55,7 @@
   {titleDeselect}
   {kind}
   {size}
+  {avatarSize}
   {justify}
   {width}
   {focusIndex}

@@ -33,9 +33,8 @@
   .scrumRecordLabel {
     display: block;
     min-width: 0;
-    font-weight: 500;
     text-align: left;
-    color: var(--caption-color);
+    color: var(--theme-caption-color);
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;

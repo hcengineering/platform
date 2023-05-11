@@ -93,7 +93,7 @@
   $: account = $employeeAccountByIdStore.get(issue.createdBy as Ref<EmployeeAccount>)
 </script>
 
-<div class="content">
+<div class="popupPanel-body__aside-grid">
   {#if issue.template?.template}
     <span class="label">
       <Label label={tracker.string.IssueTemplate} />
@@ -118,7 +118,7 @@
     <Label label={tracker.string.Status} />
   </span>
 
-  <StatusEditor value={issue} shouldShowLabel />
+  <StatusEditor value={issue} size={'medium'} shouldShowLabel />
 
   {#if issue.blockedBy?.length}
     <span class="labelTop">
@@ -142,7 +142,7 @@
   <span class="label">
     <Label label={tracker.string.Priority} />
   </span>
-  <PriorityEditor value={issue} shouldShowLabel />
+  <PriorityEditor value={issue} size={'medium'} shouldShowLabel />
 
   <span class="label">
     <Label label={core.string.CreatedBy} />
@@ -151,7 +151,8 @@
     value={employee?._id}
     label={core.string.CreatedBy}
     kind={'link'}
-    size={'large'}
+    size={'medium'}
+    avatarSize={'card'}
     width={'100%'}
     showNavigate={false}
     readonly
@@ -160,7 +161,7 @@
   <span class="label">
     <Label label={tracker.string.Assignee} />
   </span>
-  <AssigneeEditor value={issue} />
+  <AssigneeEditor value={issue} size={'medium'} avatarSize={'card'} />
 
   <span class="labelTop">
     <Label label={tracker.string.Labels} />
@@ -172,12 +173,12 @@
   <span class="label">
     <Label label={tracker.string.Component} />
   </span>
-  <ComponentEditor value={issue} />
+  <ComponentEditor value={issue} size={'medium'} />
 
   <span class="label">
     <Label label={tracker.string.Sprint} />
   </span>
-  <SprintEditor value={issue} />
+  <SprintEditor value={issue} size={'medium'} />
 
   {#if issue.dueDate !== null}
     <div class="divider" />
@@ -185,13 +186,13 @@
     <span class="label">
       <Label label={tracker.string.DueDate} />
     </span>
-    <DueDateEditor value={issue} />
+    <DueDateEditor value={issue} width={'100%'} />
   {/if}
 
   {#if keys.length > 0}
     <div class="divider" />
     {#each keys as key (typeof key === 'string' ? key : key.key)}
-      <AttributeBarEditor {key} _class={issue._class} object={issue} showHeader={true} size={'large'} />
+      <AttributeBarEditor {key} _class={issue._class} object={issue} showHeader={true} size={'medium'} />
     {/each}
   {/if}
 
@@ -203,32 +204,8 @@
         _class={mixin._id}
         object={hierarchy.as(issue, mixin._id)}
         showHeader={true}
-        size={'large'}
+        size={'medium'}
       />
     {/each}
   {/each}
 </div>
-
-<style lang="scss">
-  .content {
-    display: grid;
-    grid-template-columns: 1fr 1.5fr;
-    grid-auto-flow: row;
-    justify-content: start;
-    align-items: center;
-    gap: 1rem;
-    margin-top: 1rem;
-    width: 100%;
-    height: min-content;
-  }
-
-  .divider {
-    grid-column: 1 / 3;
-    height: 1px;
-    background-color: var(--divider-color);
-  }
-  .labelTop {
-    align-self: start;
-    margin-top: 0.385rem;
-  }
-</style>

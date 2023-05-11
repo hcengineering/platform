@@ -737,6 +737,15 @@
     & > * { margin-left: .375rem; }
   }
 }
+// Labels on the ListView
+.list-container .listitems-container,
+.list-container .listitems-container:hover,
+.list-container .button,
+.list-container .button:hover {
+  background-color: var(--theme-list-button-color) !important;
+  .icon { color: var(--theme-halfcontent-color) !important; }
+  .label { color: var(--theme-halfcontent-color) !important; }
+}
 
 /* Kanban - global style */
 .kanban-container .card-container .card-labels > * { margin: .25rem .25rem 0 0; }

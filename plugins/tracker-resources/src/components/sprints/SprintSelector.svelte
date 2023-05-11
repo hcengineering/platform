@@ -149,7 +149,7 @@
     on:click={handleSprintEditorOpened}
   >
     <svelte:fragment slot="content">
-      <span class="label {enlargedText ? 'text-base' : 'text-md'} fs-bold overflow-label pointer-events-none">
+      <span class="label {enlargedText ? 'text-base' : 'text-md'} overflow-label pointer-events-none">
         <Label label={getEmbeddedLabel(sprintText)} />
       </span>
     </svelte:fragment>

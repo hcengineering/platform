@@ -89,9 +89,7 @@
         {#if issuePriorities[value.priority]?.icon}<Icon icon={issuePriorities[value.priority]?.icon} {size} />{/if}
       </div>
       {#if shouldShowLabel}
-        <span
-          class="{kind === 'list' ? 'ml-2 text-md' : 'ml-3 text-base'} overflow-label disabled fs-bold content-color"
-        >
+        <span class="{kind === 'list' ? 'ml-2 text-md' : 'ml-3 text-base'} overflow-label disabled content-color">
           <Label label={issuePriorities[value.priority]?.label} />
         </span>
       {/if}

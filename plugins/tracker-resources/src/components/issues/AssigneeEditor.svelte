@@ -18,14 +18,15 @@
   import { AttachedData, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Issue, IssueDraft, IssueTemplateData } from '@hcengineering/tracker'
-  import { ButtonKind, ButtonSize, TooltipAlignment } from '@hcengineering/ui'
+  import { ButtonKind, ButtonSize, IconSize, TooltipAlignment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import { getPreviousAssignees } from '../../utils'
 
   export let value: Issue | AttachedData<Issue> | IssueTemplateData | IssueDraft
-  export let size: ButtonSize = 'large'
   export let kind: ButtonKind = 'link'
+  export let size: ButtonSize = 'large'
+  export let avatarSize: IconSize = 'card'
   export let tooltipAlignment: TooltipAlignment | undefined = undefined
   export let width: string = '100%'
   export let focusIndex: number | undefined = undefined
@@ -97,6 +98,7 @@
     titleDeselect={tracker.string.Unassigned}
     {size}
     {kind}
+    {avatarSize}
     {width}
     showNavigate={false}
     justify={'left'}

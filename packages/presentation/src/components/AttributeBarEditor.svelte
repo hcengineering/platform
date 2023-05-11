@@ -66,7 +66,7 @@
 {#if editor}
   {#if showHeader}
     <span
-      class="overflow-label"
+      class="label"
       use:tooltip={{
         component: Label,
         props: { label: attribute.label }

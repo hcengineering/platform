@@ -16,7 +16,7 @@
   import { Doc, Ref } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
-  import { Button, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
+  import { Button, Icon, IconAdd, Label, showPopup, Scroller } from '@hcengineering/ui'
   import view, { BuildModelKey } from '@hcengineering/view'
   import { Table } from '@hcengineering/view-resources'
   import recruit from '../plugin'
@@ -57,12 +57,14 @@
     <Button id="appls.add" icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createApp} />
   </div>
   {#if (vacancies ?? 0) > 0}
-    <Table
-      _class={recruit.class.Vacancy}
-      {config}
-      query={{ company: objectId }}
-      loadingProps={{ length: vacancies ?? 0 }}
-    />
+    <Scroller horizontal>
+      <Table
+        _class={recruit.class.Vacancy}
+        {config}
+        query={{ company: objectId }}
+        loadingProps={{ length: vacancies ?? 0 }}
+      />
+    </Scroller>
   {:else}
     <div class="antiSection-empty solid flex-col-center mt-3">
       <div class="caption-color">
