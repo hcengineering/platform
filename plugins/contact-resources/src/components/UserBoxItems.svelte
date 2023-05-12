@@ -63,14 +63,23 @@
       }
     )
   }
+
+  const removePerson = (removed: Employee) => {
+    const newItems = items.filter((it) => it !== removed._id)
+    dispatch('update', newItems)
+  }
 </script>
 
 <div class="flex-col" style:width={width ?? 'auto'}>
   <div class="flex-row-center flex-wrap">
-    {#each persons as person, i}
+    {#each persons as person}
       <div class="usertag-container gap-1-5">
         <UserInfo value={person} {size} />
-        <ActionIcon icon={IconClose} size={size === 'inline' ? 'x-small' : 'small'} action={() => {}} />
+        <ActionIcon
+          icon={IconClose}
+          size={size === 'inline' ? 'x-small' : 'small'}
+          action={() => removePerson(person)}
+        />
       </div>
     {/each}
   </div>
