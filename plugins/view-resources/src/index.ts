@@ -39,6 +39,7 @@ import ObjectFilter from './components/filter/ObjectFilter.svelte'
 import TimestampFilter from './components/filter/TimestampFilter.svelte'
 import DateFilter from './components/filter/DateFilter.svelte'
 import ValueFilter from './components/filter/ValueFilter.svelte'
+import StringFilter from './components/filter/StringFilter.svelte'
 import HTMLEditor from './components/HTMLEditor.svelte'
 import HTMLPresenter from './components/HTMLPresenter.svelte'
 import HyperlinkPresenter from './components/HyperlinkPresenter.svelte'
@@ -77,6 +78,7 @@ import ViewletSettingButton from './components/ViewletSettingButton.svelte'
 import {
   afterResult,
   beforeResult,
+  containsResult,
   dateCustom,
   dateMonth,
   dateNextMonth,
@@ -178,6 +180,7 @@ export default async (): Promise<Resources> => ({
     ObjectFilter,
     DateFilter,
     ValueFilter,
+    StringFilter,
     TimestampFilter,
     TableBrowser,
     SpacePresenter,
@@ -229,6 +232,7 @@ export default async (): Promise<Resources> => ({
     FilterValueNinResult: valueNinResult,
     FilterBeforeResult: beforeResult,
     FilterAfterResult: afterResult,
+    FilterContainsResult: containsResult,
     FilterNestedMatchResult: nestedMatchResult,
     FilterNestedDontMatchResult: nestedDontMatchResult,
     ShowEmptyGroups: showEmptyGroups,

@@ -18,10 +18,9 @@
   import presentation, { getClient } from '@hcengineering/presentation'
   import ui, { Icon, IconCheck, Label, Loading, resizeObserver, deviceOptionsStore } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
-  import { onMount } from 'svelte'
+  import { onMount, createEventDispatcher } from 'svelte'
   import { getPresenter } from '../../utils'
   import view from '../../plugin'
-  import { createEventDispatcher } from 'svelte'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
@@ -31,11 +30,7 @@
   filter.modes = [view.filter.FilterValueIn, view.filter.FilterValueNin]
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
 
-  // TODO: remove "TypeString" from search types after
-  // a separate filter for strings is implemented
-  $: isSearchable = [core.class.TypeNumber, core.class.TypeString, core.class.EnumOf].includes(
-    filter.key.attribute.type._class
-  )
+  $: isSearchable = [core.class.TypeNumber, core.class.EnumOf].includes(filter.key.attribute.type._class)
 
   const client = getClient()
   const key = { key: filter.key.key }

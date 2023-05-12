@@ -57,6 +57,7 @@
   <div class="scroll">
     <div class="box">
       {#each values as value, i}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="menu-item"
           on:click={() => {

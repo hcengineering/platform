@@ -103,6 +103,7 @@ export default mergeIds(viewId, view, {
     FilterValueNinResult: '' as FilterFunction,
     FilterBeforeResult: '' as FilterFunction,
     FilterAfterResult: '' as FilterFunction,
+    FilterContainsResult: '' as FilterFunction,
     FilterNestedMatchResult: '' as FilterFunction,
     FilterNestedDontMatchResult: '' as FilterFunction,
     FilterDateOutdated: '' as FilterFunction,

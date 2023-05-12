@@ -671,7 +671,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(core.class.TypeString, core.class.Class, view.mixin.AttributeFilter, {
-    component: view.component.ValueFilter
+    component: view.component.StringFilter
   })
 
   builder.mixin(core.class.TypeHyperlink, core.class.Class, view.mixin.AttributeFilter, {
@@ -760,6 +760,16 @@ export function createModel (builder: Builder): void {
       result: view.function.FilterAfterResult
     },
     view.filter.FilterAfter
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.Contains,
+      result: view.function.FilterContainsResult
+    },
+    view.filter.FilterContains
   )
 
   builder.createDoc(

@@ -70,6 +70,12 @@ export async function afterResult (filter: Filter): Promise<ObjQueryType<any>> {
   return { $gt: filter.value[0] }
 }
 
+export async function containsResult (filter: Filter): Promise<ObjQueryType<any>> {
+  const [value] = filter.value
+
+  return typeof value === 'string' ? { $like: `%${value}%` } : {}
+}
+
 export async function nestedMatchResult (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
   if (filter.nested === undefined) return {}
   const result = await getRefs(filter.nested, onUpdate)
@@ -254,6 +260,12 @@ function getFilterModes (component: AnyComponent): FilterModes | undefined {
     return {
       modes: [view.filter.FilterBefore, view.filter.FilterAfter],
       mode: view.filter.FilterBefore
+    }
+  }
+  if (component === view.component.StringFilter) {
+    return {
+      modes: [view.filter.FilterContains],
+      mode: view.filter.FilterContains
     }
   }
 }
