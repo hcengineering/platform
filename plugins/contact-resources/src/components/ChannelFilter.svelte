@@ -14,16 +14,14 @@
 -->
 <script lang="ts">
   import { ChannelProvider } from '@hcengineering/contact'
-  import { Class, Doc, Ref } from '@hcengineering/core'
-  import { Button, CheckBox, Icon, Label, resizeObserver } from '@hcengineering/ui'
+  import { Ref } from '@hcengineering/core'
+  import { CheckBox, Icon, Label, resizeObserver } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { FilterQuery } from '@hcengineering/view-resources'
-  import view from '@hcengineering/view-resources/src/plugin'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
   import { channelProviders } from '../utils'
 
-  export let _class: Ref<Class<Doc>>
   export let filter: Filter
   export let onChange: (e: Filter) => void
   filter.onRemove = () => {
@@ -46,6 +44,11 @@
     } else {
       selected = [...selected, element._id]
     }
+
+    filter.value = [...selected]
+    // Replace last one with value with level
+    filter.props = { level }
+    onChange(filter)
   }
 
   const dispatch = createEventDispatcher()
@@ -76,15 +79,4 @@
       {/each}
     </div>
   </div>
-  <Button
-    shape={'round'}
-    label={view.string.Apply}
-    on:click={async () => {
-      filter.value = [...selected]
-      // Replace last one with value with level
-      filter.props = { level }
-      onChange(filter)
-      dispatch('close')
-    }}
-  />
 </div>
