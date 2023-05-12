@@ -16,14 +16,12 @@
   import contact, { Employee } from '@hcengineering/contact'
   import type { Class, DocumentQuery, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
-  import { Button, Label, showPopup } from '@hcengineering/ui'
-  import type { ButtonKind, ButtonSize, TooltipAlignment } from '@hcengineering/ui'
+  import { showPopup } from '@hcengineering/ui'
+  import type { IconSize } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import plugin from '../plugin'
   import { employeeByIdStore } from '../utils'
   import CombineAvatars from './CombineAvatars.svelte'
-  import Members from './icons/Members.svelte'
-  import UserInfo from './UserInfo.svelte'
+  import AddAvatar from './icons/AddAvatar.svelte'
   import UsersPopup from './UsersPopup.svelte'
 
   export let items: Ref<Employee>[] = []
@@ -33,13 +31,11 @@
   }
 
   export let label: IntlString | undefined = undefined
-  export let kind: ButtonKind = 'no-border'
-  export let size: ButtonSize = 'small'
-  export let justify: 'left' | 'center' = 'center'
+  export let size: IconSize = 'small'
   export let width: string | undefined = undefined
-  export let labelDirection: TooltipAlignment | undefined = undefined
-  export let emptyLabel = plugin.string.Members
   export let readonly: boolean = false
+  export let limit: number = 6
+  export let hideLimit: boolean = false
 
   let persons: Employee[] = items.map((p) => $employeeByIdStore.get(p)).filter((p) => p !== undefined) as Employee[]
   $: persons = items.map((p) => $employeeByIdStore.get(p)).filter((p) => p !== undefined) as Employee[]
@@ -70,29 +66,16 @@
   }
 </script>
 
-<Button
-  icon={persons.length === 0 ? Members : undefined}
-  label={persons.length === 0 ? emptyLabel : undefined}
-  notSelected={persons.length === 0}
-  width={width ?? 'min-content'}
-  {kind}
-  {size}
-  {justify}
-  showTooltip={label ? { label, direction: labelDirection } : undefined}
-  on:click={addPerson}
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<div
+  class="flex-row-center flex-nowrap content-pointer-events-none"
+  class:cursor-pointer={!readonly}
+  style:width={width ?? 'auto'}
+  on:click={readonly ? () => {} : addPerson}
 >
-  <svelte:fragment slot="content">
-    {#if persons.length > 0}
-      <div class="flex-row-center flex-nowrap pointer-events-none">
-        {#if persons.length === 1}
-          <UserInfo value={persons[0]} size={'inline'} />
-        {:else}
-          <CombineAvatars {_class} bind:items size={'inline'} hideLimit />
-          <span class="overflow-label ml-1-5">
-            <Label label={plugin.string.NumberMembers} params={{ count: persons.length }} />
-          </span>
-        {/if}
-      </div>
-    {/if}
-  </svelte:fragment>
-</Button>
+  {#if persons.length > 0}
+    <CombineAvatars {_class} bind:items {size} {limit} {hideLimit} />
+  {:else}
+    <AddAvatar {size} />
+  {/if}
+</div>

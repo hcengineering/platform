@@ -210,6 +210,8 @@ input.search {
 .flex-row-top {
   display: flex;
   align-items: flex-start;
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 .flex-row-reverse {
   display: flex;
@@ -394,8 +396,8 @@ input.search {
   }
 }
 .gap-1-5 {
-  & > * { margin-right: .375rem; }
-  &.reverse > :last-child { margin-right: .375rem; }
+  &:not(.reverse) > *:not(:last-child) { margin-right: .375rem; }
+  &.reverse > *:not(:first-child) { margin-left: .375rem; }
 }
 .gap-2 {
   &:not(.reverse) > *:not(:first-child) { margin-left: .5rem; }
@@ -688,7 +690,7 @@ input.search {
   width: inherit;
   height: inherit;
 }
-.svg-x-small, .svg-small, .svg-medium, .svg-large { flex-shrink: 0; }
+.svg-card, .svg-x-small, .svg-small, .svg-medium, .svg-large { flex-shrink: 0; }
 
 .svg-mask {
   position: absolute;
@@ -716,6 +718,7 @@ a.no-line {
 .cursor-inherit { cursor: inherit; }
 
 .pointer-events-none { pointer-events: none; }
+.content-pointer-events-none > * { pointer-events: none; }
 .select-text { user-select: text; }
 .select-text-i { user-select: text !important; }
 

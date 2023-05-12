@@ -91,7 +91,7 @@
         {#if contacts.length === 1}
           <ContactPresenter value={contacts[0]} disabled />
         {:else}
-          <CombineAvatars {_class} bind:items size={'inline'} />
+          <CombineAvatars {_class} bind:items size={'inline'} hideLimit />
           <span class="overflow-label ml-1-5">
             <Label label={contact.string.NumberMembers} params={{ count: contacts.length }} />
           </span>
