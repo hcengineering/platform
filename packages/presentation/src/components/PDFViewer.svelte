@@ -61,7 +61,7 @@
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
-    <a class="no-line" href={getFileUrl(file)} download={name} bind:this={download}>
+    <a class="no-line" href={getFileUrl(file, 'full', name)} download={name} bind:this={download}>
       <Button
         icon={Download}
         kind={'transparent'}
@@ -75,14 +75,14 @@
 
   {#if contentType && contentType.startsWith('image/')}
     <div class="pdfviewer-content img" style:margin={$deviceInfo.minWidth ? '.5rem' : '1.5rem'}>
-      <img class="img-fit" src={getFileUrl(file)} alt="" />
+      <img class="img-fit" src={getFileUrl(file, 'full', name)} alt="" />
     </div>
     <div class="space" />
   {:else}
     <iframe
       class="pdfviewer-content"
       style:margin={$deviceInfo.minWidth ? '.5rem' : '1.5rem'}
-      src={getFileUrl(file) + '#view=FitH&navpanes=0'}
+      src={getFileUrl(file, 'full', name) + '#view=FitH&navpanes=0'}
       title=""
     />
   {/if}
