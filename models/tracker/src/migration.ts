@@ -40,6 +40,8 @@ import {
   IssueTemplate,
   IssueTemplateChild,
   Project,
+  Sprint,
+  SprintStatus,
   TimeReportDayType
 } from '@hcengineering/tracker'
 import { DOMAIN_TRACKER } from '.'
@@ -730,6 +732,14 @@ async function setCreate (client: MigrationClient): Promise<void> {
   }
 }
 
+async function fixSprintEmptyStatuses (client: MigrationClient): Promise<void> {
+  await client.update<Sprint>(
+    DOMAIN_TRACKER,
+    { _class: tracker.class.Sprint, $or: [{ status: null }, { status: undefined }] },
+    { status: SprintStatus.Planned }
+  )
+}
+
 export const trackerOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await client.update(
@@ -762,6 +772,8 @@ export const trackerOperation: MigrateOperation = {
         ofAttribute: tracker.attribute.IssueStatus
       }
     )
+
+    await fixSprintEmptyStatuses(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
