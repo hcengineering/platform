@@ -142,11 +142,15 @@ export async function connect (title: string): Promise<Client | undefined> {
   await setClient(_client)
 
   if (me.role === AccountRole.Owner) {
+    let ep = endpoint.replace(/^ws/g, 'http')
+    if (!ep.endsWith('/')) {
+      ep += '/'
+    }
     setMetadata(ui.metadata.ShowNetwork, (evt: MouseEvent) => {
       showPopup(
         ServerStatistics,
         {
-          endpoint: endpoint.replace(/^ws/g, 'http') + '/' + token
+          endpoint: ep + token
         },
         'top'
       )

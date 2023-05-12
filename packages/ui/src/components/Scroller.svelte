@@ -369,8 +369,12 @@
   const wheelEvent = (e: WheelEvent) => {
     e = e || window.event
     const deltaY = e.deltaY
-    if (deltaY < 0 && autoscroll && scrolling && beforeContent && beforeContent > 0) scrolling = false
-    else if (deltaY > 0 && autoscroll && !scrolling && belowContent && belowContent <= 10) scrolling = true
+    if (deltaY < 0 && autoscroll && scrolling && beforeContent && beforeContent > 0) {
+      scrolling = false
+    } else if (deltaY > 0 && autoscroll && !scrolling && belowContent && belowContent <= 10) {
+      scrolling = true
+    }
+    scrollY += deltaY
   }
 
   let observer: IntersectionObserver
@@ -478,7 +482,14 @@
         // TODO: Workaround: https://front.hc.engineering/workbench/platform/tracker/TSK-760
         // In Safari scroll could jump on click, with no particular reason.
 
-        if (scrollY !== 0 && Math.abs(newPos - scrollY) > 100 && divScroll !== undefined && isSafari()) {
+        if (
+          !scrolling &&
+          !isScrolling &&
+          scrollY !== 0 &&
+          Math.abs(newPos - scrollY) > 100 &&
+          divScroll !== undefined &&
+          isSafari()
+        ) {
           divScroll.scrollTop = scrollY
         }
         scrollY = divScroll?.scrollTop ?? 0

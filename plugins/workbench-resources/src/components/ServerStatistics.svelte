@@ -24,9 +24,13 @@
 
 <Card on:close fullSize label={getEmbeddedLabel('Statistics')} okAction={() => {}} okLabel={getEmbeddedLabel('Ok')}>
   {#if data}
-    {#each Object.entries(data.statistics?.activeSessions) as act}
-      {act[0]}: {act[1]}
-    {/each}
+    <div class="flex-column">
+      {#each Object.entries(data.statistics?.activeSessions) as act}
+        <span class="flex-row-center">
+          {act[0]}: {act[1]}
+        </span>
+      {/each}
+    </div>
 
     <span class="fs-title flex-row-center">
       Memory usage: {data.statistics.memoryUsed} / {data.statistics.memoryTotal}
