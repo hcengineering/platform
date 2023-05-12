@@ -411,9 +411,14 @@ class TSessionManager implements SessionManager {
               workspace,
               'hello happen',
               service.getUser(),
+              'binary:',
               service.binaryResponseMode,
+              'compression:',
               service.useCompression,
-              this.workspaces.get(workspace)?.sessions?.size
+              'workspace users:',
+              this.workspaces.get(workspace)?.sessions?.size,
+              'total users:',
+              this.sessions.size
             )
           }
           const helloResponse: HelloResponse = { id: -1, result: 'hello', binary: service.binaryResponseMode }
@@ -441,7 +446,7 @@ class TSessionManager implements SessionManager {
             ctx,
             ws,
             resp,
-            this.sessions.size < 100 ? 10000 : 101,
+            this.sessions.size < 100 ? 10000 : 1001,
             service.binaryResponseMode,
             service.useCompression
           )
