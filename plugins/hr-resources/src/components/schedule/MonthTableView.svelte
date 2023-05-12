@@ -376,7 +376,7 @@
       },
       evt.target as HTMLElement,
       (res) => {
-        if (res !== undefined) {
+        if (res != null) {
           const filename = 'exportStaff' + new Date().toLocaleDateString() + '.csv'
           const link = document.createElement('a')
           link.style.display = 'none'
