@@ -155,7 +155,8 @@ export function start (
 
         // fallback to standard filter function
         return compression.filter(req, res)
-      }
+      },
+      level: 6
     })
   )
   app.use(cors())

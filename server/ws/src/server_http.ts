@@ -33,25 +33,28 @@ export function startHttpServer (
   ctx: MeasureContext,
   pipelineFactory: PipelineFactory,
   port: number,
-  productId: string
+  productId: string,
+  enableCompression: boolean
 ): () => Promise<void> {
   if (LOGGING_ENABLED) console.log(`starting server on port ${port} ...`)
 
   const wss = new WebSocketServer({
     noServer: true,
-    perMessageDeflate: false,
-    // perMessageDeflate: {
-    //   zlibDeflateOptions: {
-    //     // See zlib defaults.
-    //     chunkSize: 16 * 1024,
-    //     level: 6
-    //   },
-    //   zlibInflateOptions: {
-    //     chunkSize: 16 * 1024,
-    //     level: 6
-    //   },
-    //   threshold: 1024 // Size (in bytes) below which messages, should not be compressed if context takeover is disabled.
-    // },
+    perMessageDeflate: enableCompression
+      ? {
+          zlibDeflateOptions: {
+            // See zlib defaults.
+            chunkSize: 16 * 1024,
+            level: 6
+          },
+          zlibInflateOptions: {
+            chunkSize: 16 * 1024,
+            level: 6
+          },
+          threshold: 1024, // Size (in bytes) below which messages, should not be compressed if context takeover is disabled.
+          concurrencyLimit: 100
+        }
+      : false,
     skipUTF8Validation: true
   })
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
