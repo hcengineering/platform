@@ -377,6 +377,13 @@ export async function getAttributeEditor (
     }
   }
 
+  if (attribute.editor != null) {
+    try {
+      return await getResource(attribute.editor)
+    } catch (ex) {
+      console.error(getAttributeEditorNotFoundError(_class, key, ex))
+    }
+  }
   const editorMixin = hierarchy.classHierarchyMixin(presenterClass.attrClass, mixin)
 
   if (editorMixin?.inlineEditor === undefined) {

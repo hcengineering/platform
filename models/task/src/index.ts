@@ -102,7 +102,7 @@ export class TTask extends TAttachedDoc implements Task {
   // @Prop(TypeRef(contact.class.Employee), task.string.TaskAssignee)
   assignee!: Ref<Employee> | null
 
-  @Prop(TypeDate(), task.string.DueDate)
+  @Prop(TypeDate(), task.string.DueDate, { editor: task.component.DueDateEditor })
     dueDate!: Timestamp | null
 
   @Prop(TypeDate(), task.string.StartDate)
