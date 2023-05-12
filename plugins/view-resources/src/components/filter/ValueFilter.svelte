@@ -20,6 +20,7 @@
   import { Filter } from '@hcengineering/view'
   import { onMount, createEventDispatcher } from 'svelte'
   import { getPresenter } from '../../utils'
+  import { sortFilterValues } from '../../filter'
   import view from '../../plugin'
 
   export let _class: Ref<Class<Doc>>
@@ -149,7 +150,7 @@
         {#if objectsPromise}
           <Loading />
         {:else}
-          {#each Array.from(values.keys()) as value}
+          {#each sortFilterValues([...values.keys()], (v) => isSelected(v, selectedValues)) as value}
             {@const realValue = [...(realValues.get(value) ?? [])][0]}
             <button
               class="menu-item no-focus"

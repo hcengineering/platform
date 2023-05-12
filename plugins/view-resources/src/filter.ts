@@ -294,3 +294,18 @@ export function getFilterKey (_class: Ref<Class<Doc>>): string {
   loc.query = undefined
   return 'filter' + locationToUrl(loc) + _class
 }
+
+/**
+ * Returns a new array where the selected values have been moved to the beginning
+ *
+ * @export
+ * @template T
+ * @param {T[]} values
+ * @param {(value: T) => boolean} checkIsSelected
+ * @returns {readonly T[]}
+ */
+export function sortFilterValues<T> (values: T[], checkIsSelected: (value: T) => boolean): readonly T[] {
+  const checkIsNotSelected = (value: T): boolean => !checkIsSelected(value)
+
+  return [...values.filter(checkIsSelected), ...values.filter(checkIsNotSelected)]
+}

@@ -29,7 +29,7 @@
     showPopup
   } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
-  import { FilterQuery } from '@hcengineering/view-resources'
+  import { FilterQuery, sortFilterValues } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import tags from '../plugin'
   import { tagLevel } from '../utils'
@@ -185,7 +185,7 @@
                 {/if}
               </button>
               <div class="menu-group">
-                {#each values as element}
+                {#each sortFilterValues(values, isSelected) as element}
                   <button
                     class="menu-item"
                     on:click={() => {

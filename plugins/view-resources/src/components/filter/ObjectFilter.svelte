@@ -28,6 +28,7 @@
   import { Filter } from '@hcengineering/view'
   import { createEventDispatcher, onMount } from 'svelte'
   import view from '../../plugin'
+  import { sortFilterValues } from '../../filter'
   import { buildConfigLookup, getPresenter } from '../../utils'
   import FilterRemovedNotification from './FilterRemovedNotification.svelte'
 
@@ -183,7 +184,7 @@
         {#if objectsPromise}
           <Loading />
         {:else}
-          {#each values as value, i}
+          {#each sortFilterValues(values, (v) => isSelected(v, filter.value)) as value}
             <button
               class="menu-item no-focus"
               on:click={() => {
@@ -198,7 +199,9 @@
                     {/if}
                   </div>
                   {#if value}
-                    <svelte:component this={attribute.presenter} {value} {...attribute.props} disabled oneLine />
+                    {#key value._id}
+                      <svelte:component this={attribute.presenter} {value} {...attribute.props} disabled oneLine />
+                    {/key}
                   {:else}
                     <Label label={ui.string.NotSelected} />
                   {/if}

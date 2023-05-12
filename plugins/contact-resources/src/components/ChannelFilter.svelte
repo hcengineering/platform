@@ -17,10 +17,10 @@
   import { Ref } from '@hcengineering/core'
   import { CheckBox, Icon, Label, resizeObserver } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
-  import { FilterQuery } from '@hcengineering/view-resources'
+  import { FilterQuery, sortFilterValues } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import contact from '../plugin'
   import { channelProviders } from '../utils'
+  import contact from '../plugin'
 
   export let filter: Filter
   export let onChange: (e: Filter) => void
@@ -57,7 +57,7 @@
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="scroll">
     <div class="box">
-      {#each $channelProviders as element}
+      {#each sortFilterValues($channelProviders, (v) => isSelected(v, selected)) as element}
         <button
           class="menu-item"
           on:click={() => {

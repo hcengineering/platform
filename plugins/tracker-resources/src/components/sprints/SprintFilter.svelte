@@ -13,18 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, FindResult, Ref, SortingOrder } from '@hcengineering/core'
+  import { DocumentQuery, FindResult, Ref, SortingOrder } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
   import { Project, Sprint, SprintStatus } from '@hcengineering/tracker'
   import ui, { deviceOptionsStore, Icon, Label, CheckBox, Loading, resizeObserver } from '@hcengineering/ui'
+  import { sortFilterValues } from '@hcengineering/view-resources'
   import view, { Filter } from '@hcengineering/view'
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'
   import { sprintStatusAssets } from '../../types'
   import SprintTitlePresenter from './SprintTitlePresenter.svelte'
 
-  export let _class: Ref<Class<Doc>>
   export let space: Ref<Project> | undefined = undefined
   export let filter: Filter
   export let onChange: (e: Filter) => void
@@ -145,7 +145,7 @@
                 <Label label={status.label} />
               </div>
             </div>
-            {#each items as doc}
+            {#each sortFilterValues(items, (v) => isSelected(v._id, selectedValues)) as doc}
               <button
                 class="menu-item"
                 on:click={() => {
