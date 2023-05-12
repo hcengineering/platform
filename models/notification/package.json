@@ -34,6 +34,7 @@
     "@hcengineering/model-view": "^0.6.0",
     "@hcengineering/view": "^0.6.6",
     "@hcengineering/workbench": "^0.6.6",
+    "@hcengineering/model-workbench": "^0.6.1",
     "@hcengineering/notification": "^0.6.12",
     "@hcengineering/setting": "^0.6.7"
   }

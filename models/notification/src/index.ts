@@ -34,6 +34,7 @@ import { ArrOf, Builder, Index, Mixin, Model, Prop, TypeRef, TypeString, UX } fr
 import core, { TAttachedDoc, TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import view, { createAction } from '@hcengineering/model-view'
+import workbench from '@hcengineering/model-workbench'
 import {
   DocUpdates,
   EmailNotification,
@@ -50,7 +51,6 @@ import {
 import type { Asset, IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import { AnyComponent } from '@hcengineering/ui'
-import workbench from '@hcengineering/workbench'
 import notification from './plugin'
 
 export { notificationId } from '@hcengineering/notification'
@@ -283,6 +283,23 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(notification.class.DocUpdates, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Delete, view.action.Open]
+  })
+
+  createAction(builder, {
+    action: workbench.actionImpl.Navigate,
+    actionProps: {
+      mode: 'app',
+      application: notificationId,
+      special: notificationId
+    },
+    label: notification.string.Inbox,
+    icon: view.icon.ArrowRight,
+    input: 'none',
+    category: view.category.Navigation,
+    target: core.class.Doc,
+    context: {
+      mode: ['workbench', 'browser', 'editor', 'panel', 'popup']
+    }
   })
 }
 

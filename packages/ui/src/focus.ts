@@ -60,6 +60,9 @@ class FocusManagerImpl implements FocusManager {
   }
 
   setFocusPos (order: number): void {
+    if (order === -1) {
+      return
+    }
     const idx = this.elements.findIndex((it) => it.order === order)
     if (idx !== undefined) {
       this.current = idx

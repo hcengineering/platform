@@ -60,9 +60,9 @@
     return await getContextActions(client, docs, context)
   }
 
-  $: ctx = $contextStore[$contextStore.length - 1]
-  $: mode = $contextStore[$contextStore.length - 1]?.mode
-  $: application = $contextStore[$contextStore.length - 1]?.application
+  $: ctx = $contextStore.getLastContext()
+  $: mode = $contextStore.getLastContext()?.mode
+  $: application = $contextStore.getLastContext()?.application
 
   function keyPrefix (key: KeyboardEvent): string {
     return (
@@ -158,7 +158,7 @@
     }
 
     // For none we ignore all actions.
-    if (ctx.mode === 'none') {
+    if (ctx?.mode === 'none') {
       return
     }
     clearTimeout(timer)

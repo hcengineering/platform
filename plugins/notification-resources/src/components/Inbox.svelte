@@ -18,7 +18,7 @@
   import { Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocUpdates } from '@hcengineering/notification'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { AnyComponent, Component, Label, Loading, Scroller } from '@hcengineering/ui'
+  import { AnyComponent, Component, Label, ListView, Loading, Scroller } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ActionContext, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
   import NotificationView from './NotificationView.svelte'
@@ -94,6 +94,7 @@
       const value = selected + offset
       if (docs[value] !== undefined) {
         selected = value
+        listView?.select(selected)
       }
     }
   })
@@ -104,6 +105,7 @@
   })
 
   let selected = 0
+  let listView: ListView
 </script>
 
 <ActionContext
@@ -124,16 +126,18 @@
           {#if loading}
             <Loading />
           {:else}
-            {#each docs as doc, i}
-              <NotificationView
-                value={doc}
-                selected={selected === i}
-                {viewlets}
-                on:click={() => {
-                  selected = i
-                }}
-              />
-            {/each}
+            <ListView bind:this={listView} count={docs.length} selection={selected}>
+              <svelte:fragment slot="item" let:item>
+                <NotificationView
+                  value={docs[item]}
+                  selected={selected === item}
+                  {viewlets}
+                  on:click={() => {
+                    selected = item
+                  }}
+                />
+              </svelte:fragment>
+            </ListView>
           {/if}
         </Scroller>
       </div>
