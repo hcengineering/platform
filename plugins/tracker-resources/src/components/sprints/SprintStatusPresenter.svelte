@@ -20,11 +20,19 @@
   import SprintStatusSelector from './SprintStatusSelector.svelte'
 
   export let value: SprintStatus
-  export let onChange: ((value: SprintStatus | undefined) => void) | undefined = undefined
+  export let onChange: ((value: SprintStatus) => void) | undefined = undefined
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = '100%'
+
+  function handleComponentStatusChange (newSprintStatus: SprintStatus | undefined) {
+    if (newSprintStatus === undefined || onChange === undefined) {
+      return
+    }
+
+    onChange(newSprintStatus)
+  }
 
   $: isEditable = onChange !== undefined
 </script>
@@ -37,5 +45,5 @@
   {isEditable}
   showTooltip={isEditable ? { label: tracker.string.SetStatus } : undefined}
   selectedSprintStatus={value}
-  onSprintStatusChange={onChange}
+  onSprintStatusChange={handleComponentStatusChange}
 />
