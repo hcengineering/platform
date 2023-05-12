@@ -36,7 +36,7 @@
       const newCur = {
         id,
         mode: context.mode,
-        application: context.application ?? cur[(pos !== -1 ? pos : cur.contexts.length) - 1]?.application
+        application: context.application ?? cur.contexts[(pos !== -1 ? pos : cur.contexts.length) - 1]?.application
       }
       if (pos === -1) {
         len = cur.contexts.length

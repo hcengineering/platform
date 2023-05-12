@@ -158,7 +158,7 @@
     }
 
     // For none we ignore all actions.
-    if (ctx.mode === 'none') {
+    if (ctx?.mode === 'none') {
       return
     }
     clearTimeout(timer)
