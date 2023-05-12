@@ -16,7 +16,7 @@
   import core, { Class, Doc, FindResult, getObjectValue, Ref, SortingOrder, Space } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import ui, { Button, Icon, IconCheck, Label, Loading, resizeObserver, deviceOptionsStore } from '@hcengineering/ui'
+  import ui, { Icon, IconCheck, Label, Loading, resizeObserver, deviceOptionsStore } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { onMount } from 'svelte'
   import { getPresenter } from '../../utils'
@@ -112,6 +112,11 @@
       selectedValues.add(value)
     }
     selectedValues = selectedValues
+    filter.value = [...selectedValues.values()].map((v) => {
+      return [v, [...(realValues.get(v) ?? [])]]
+    })
+
+    onChange(filter)
   }
 
   let search: string = ''
@@ -185,15 +190,4 @@
       {/await}
     </div>
   </div>
-  <Button
-    shape={'filter'}
-    label={view.string.Apply}
-    on:click={() => {
-      filter.value = Array.from(selectedValues.values()).map((p) => {
-        return [p, Array.from(realValues.get(p) ?? [])]
-      })
-      onChange(filter)
-      dispatch('close')
-    }}
-  />
 </div>

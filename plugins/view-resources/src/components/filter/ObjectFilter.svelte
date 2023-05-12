@@ -18,7 +18,6 @@
   import presentation, { getClient } from '@hcengineering/presentation'
   import ui, {
     addNotification,
-    Button,
     Icon,
     IconCheck,
     deviceOptionsStore,
@@ -140,6 +139,8 @@
         filter.value = [...filter.value, undefined]
       }
     }
+
+    onChange(filter)
   }
 
   let search: string = ''
@@ -216,12 +217,4 @@
       {/await}
     </div>
   </div>
-  <Button
-    shape={'filter'}
-    label={view.string.Apply}
-    on:click={() => {
-      onChange(filter)
-      dispatch('close')
-    }}
-  />
 </div>
