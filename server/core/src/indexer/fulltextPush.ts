@@ -115,10 +115,6 @@ export class FullTextPushStage implements FullTextPipelineStage {
         if (pipeline.cancelling) {
           return
         }
-        if (pipeline.cancelling) {
-          return
-        }
-
         const elasticDoc = createElasticDoc(doc)
         try {
           updateDoc2Elastic(doc.attributes, elasticDoc)
@@ -169,11 +165,11 @@ export class FullTextPushStage implements FullTextPipelineStage {
       // Perform bulk update to elastic
       try {
         await this.fulltextAdapter.updateMany(bulk)
+        for (const doc of toIndex) {
+          await pipeline.update(doc._id, true, {})
+        }
       } catch (err: any) {
         console.error(err)
-      }
-      for (const doc of toIndex) {
-        await pipeline.update(doc._id, true, {})
       }
     }
   }
