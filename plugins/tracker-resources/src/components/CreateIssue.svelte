@@ -289,7 +289,7 @@
   }
 
   function updateAssigneeId (object: IssueDraft, currentProject: Project | undefined) {
-    if (object.assignee === undefined && currentProject !== undefined) {
+    if (object.assignee == null && currentProject !== undefined) {
       if (currentProject.defaultAssignee !== undefined) {
         object.assignee = currentProject.defaultAssignee
       } else {
