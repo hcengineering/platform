@@ -16,17 +16,15 @@
   import contact from '@hcengineering/contact'
   import { FindOptions } from '@hcengineering/core'
   import presentation, { Card } from '@hcengineering/presentation'
-  import { Issue, Project, TimeSpendReport } from '@hcengineering/tracker'
+  import { Issue, TimeSpendReport } from '@hcengineering/tracker'
   import { Button, eventToHTMLElement, IconAdd, Scroller, showPopup, tableSP } from '@hcengineering/ui'
   import { TableBrowser } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
   import IssuePresenter from '../IssuePresenter.svelte'
   import ParentNamesPresenter from '../ParentNamesPresenter.svelte'
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
-  export let issue: Issue
-  export let currentProject: Project | undefined
 
-  $: defaultTimeReportDay = currentProject?.defaultTimeReportDay
+  export let issue: Issue
 
   export function canClose (): boolean {
     return true
@@ -45,8 +43,7 @@
         issueId: issue._id,
         issueClass: issue._class,
         space: issue.space,
-        assignee: issue.assignee,
-        defaultTimeReportDay
+        assignee: issue.assignee
       },
       eventToHTMLElement(event)
     )

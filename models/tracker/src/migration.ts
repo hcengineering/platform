@@ -41,8 +41,7 @@ import {
   IssueTemplateChild,
   Project,
   Sprint,
-  SprintStatus,
-  TimeReportDayType
+  SprintStatus
 } from '@hcengineering/tracker'
 import { DOMAIN_TRACKER } from '.'
 import tracker from './plugin'
@@ -122,7 +121,6 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
         sequence: 0,
         issueStatuses: 0,
         defaultIssueStatus: defaultStatusId,
-        defaultTimeReportDay: TimeReportDayType.PreviousWorkDay,
         defaultAssignee: undefined
       },
       tracker.project.DefaultProject
@@ -151,16 +149,13 @@ async function fixProjectsIssueStatusesOrder (tx: TxOperations): Promise<void> {
   await Promise.all(projects.map((project) => fixProjectIssueStatusesOrder(tx, project)))
 }
 
-async function upgradeProjectSettings (tx: TxOperations): Promise<void> {
-  const projects = await tx.findAll(tracker.class.Project, {
-    defaultTimeReportDay: { $exists: false }
-  })
-  await Promise.all(
-    projects.map((project) =>
-      tx.update(project, {
-        defaultTimeReportDay: TimeReportDayType.PreviousWorkDay
-      })
-    )
+async function removeProjectDefaultTimeReportDay (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_TRACKER,
+    { _class: tracker.class.Project, defaultTimeReportDay: { $exists: true } },
+    {
+      $unset: { defaultTimeReportDay: '' }
+    }
   )
 }
 
@@ -359,7 +354,6 @@ async function fillRank (client: MigrationClient): Promise<void> {
 async function upgradeProjects (tx: TxOperations): Promise<void> {
   await upgradeProjectIssueStatuses(tx)
   await fixProjectsIssueStatusesOrder(tx)
-  await upgradeProjectSettings(tx)
 }
 
 async function upgradeIssues (tx: TxOperations): Promise<void> {
@@ -774,6 +768,7 @@ export const trackerOperation: MigrateOperation = {
     )
 
     await fixSprintEmptyStatuses(client)
+    await removeProjectDefaultTimeReportDay(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)

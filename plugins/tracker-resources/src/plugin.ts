@@ -301,7 +301,6 @@ export default mergeIds(trackerId, tracker, {
     CurrentWorkDay: '' as IntlString,
     PreviousWorkDay: '' as IntlString,
     TimeReportDayTypeLabel: '' as IntlString,
-    DefaultTimeReportDay: '' as IntlString,
     DefaultAssignee: '' as IntlString,
 
     SevenHoursLength: '' as IntlString,

@@ -279,7 +279,6 @@
     "CurrentWorkDay": "Current Working Day",
     "PreviousWorkDay": "Previous Working Day",
     "TimeReportDayTypeLabel": "Select time report day type",
-    "DefaultTimeReportDay": "Select default day for time report",
     "DefaultAssignee": "Select default assignee for issues",
 
     "SevenHoursLength": "Seven Hours",

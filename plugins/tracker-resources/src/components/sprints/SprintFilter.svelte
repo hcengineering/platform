@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, FindResult, Ref, SortingOrder } from '@hcengineering/core'
+  import { DocumentQuery, FindResult, Ref, SortingOrder } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
   import { Project, Sprint, SprintStatus } from '@hcengineering/tracker'
@@ -24,7 +24,6 @@
   import { sprintStatusAssets } from '../../types'
   import SprintTitlePresenter from './SprintTitlePresenter.svelte'
 
-  export let _class: Ref<Class<Doc>>
   export let space: Ref<Project> | undefined = undefined
   export let filter: Filter
   export let onChange: (e: Filter) => void

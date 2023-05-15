@@ -57,7 +57,6 @@
       }
     }
   )
-  $: defaultTimeReportDay = currentProject?.defaultTimeReportDay
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -133,8 +132,7 @@
             issueId: object._id,
             issueClass: object._class,
             space: object.space,
-            assignee: object.assignee,
-            defaultTimeReportDay
+            assignee: object.assignee
           },
           'top'
         )
