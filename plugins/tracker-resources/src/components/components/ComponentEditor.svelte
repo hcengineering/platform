@@ -13,16 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@hcengineering/core'
+  import { AttachedData, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { Component, Issue, IssueTemplate } from '@hcengineering/tracker'
+  import { Component, Issue, IssueTemplate, Project } from '@hcengineering/tracker'
   import { ButtonKind, ButtonShape, ButtonSize, tooltip } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
   import { activeComponent } from '../../issues'
   import tracker from '../../plugin'
   import ComponentSelector from '../ComponentSelector.svelte'
 
-  export let value: Issue | IssueTemplate
+  export let value: Issue | IssueTemplate | AttachedData<Issue>
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = true
   export let popupPlaceholder: IntlString = tracker.string.MoveToComponent
@@ -36,15 +37,20 @@
   export let groupBy: string | undefined = undefined
   export let enlargedText = false
   export let compression: boolean = false
+  export let space: Ref<Project> | undefined = undefined
 
   const client = getClient()
+
+  const dispatch = createEventDispatcher()
 
   const handleComponentIdChanged = async (newComponentId: Ref<Component> | null | undefined) => {
     if (!isEditable || newComponentId === undefined || value.component === newComponentId) {
       return
     }
-
-    await client.update(value, { component: newComponentId })
+    dispatch('change', newComponentId)
+    if ('_class' in value) {
+      await client.update(value, { component: newComponentId })
+    }
   }
 </script>
 
@@ -61,6 +67,7 @@
       {shape}
       width={compression ? 'min-content' : width}
       {justify}
+      {space}
       {isEditable}
       {shouldShowLabel}
       {popupPlaceholder}

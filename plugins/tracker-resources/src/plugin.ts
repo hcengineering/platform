@@ -314,7 +314,11 @@ export default mergeIds(trackerId, tracker, {
     ProjectColor: '' as IntlString,
 
     ProjectIconCategory: '' as IntlString,
-    ProjectEmojiiCategory: '' as IntlString
+    ProjectEmojiiCategory: '' as IntlString,
+
+    NoStatusFound: '' as IntlString,
+    CreateMissingStatus: '' as IntlString,
+    UnsetParent: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,

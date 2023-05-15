@@ -24,6 +24,7 @@
   export let showParent = true
   export let kind: 'list' | undefined = undefined
   export let onClick: (() => void) | undefined = undefined
+  export let disabled = false
 </script>
 
 {#if value}
@@ -34,7 +35,15 @@
     style:max-width={showParent ? `${value.parents.length !== 0 ? 95 : 100}%` : '100%'}
     title={value.title}
   >
-    <DocNavLink object={value} {onClick} component={tracker.component.EditIssue} inline shrink={1} colorInherit>
+    <DocNavLink
+      object={value}
+      {disabled}
+      {onClick}
+      component={tracker.component.EditIssue}
+      inline
+      shrink={1}
+      colorInherit
+    >
       {value.title}
     </DocNavLink>
   </span>

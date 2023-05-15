@@ -16,6 +16,7 @@
 import { Employee } from '@hcengineering/contact'
 import core, {
   ApplyOperations,
+  AttachedData,
   AttachedDoc,
   Class,
   Collection,
@@ -24,7 +25,9 @@ import core, {
   DocumentUpdate,
   Ref,
   SortingOrder,
+  Status,
   StatusCategory,
+  StatusManager,
   StatusValue,
   toIdMap,
   TxCollectionCUD,
@@ -535,8 +538,9 @@ async function updateIssuesOnMove (
   client: TxOperations,
   applyOps: ApplyOperations,
   doc: Doc,
-  space: Ref<Project>,
-  extra?: DocumentUpdate<any>
+  space: Project,
+  extra: DocumentUpdate<any>,
+  updates: Map<Ref<Issue>, DocumentUpdate<Issue>>
 ): Promise<void> {
   const hierarchy = client.getHierarchy()
   const attributes = hierarchy.getAllAttributes(doc._class)
@@ -545,29 +549,37 @@ async function updateIssuesOnMove (
       const collection = attribute.type as Collection<AttachedDoc>
       const allAttached = await client.findAll(collection.of, { attachedTo: doc._id })
       for (const attached of allAttached) {
-        // Do not use extra for childs.
         if (hierarchy.isDerived(collection.of, tracker.class.Issue)) {
           const lastOne = await client.findOne(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
           const incResult = await client.updateDoc(
             tracker.class.Project,
             core.space.Space,
-            space,
+            space._id,
             {
               $inc: { sequence: 1 }
             },
             true
           )
-          await updateIssuesOnMove(client, applyOps, attached, space, {
-            ...extra,
-            rank: calcRank(lastOne, undefined),
-            number: (incResult as any).object.sequence
-          })
-        } else await updateIssuesOnMove(client, applyOps, attached, space)
+          await updateIssuesOnMove(
+            client,
+            applyOps,
+            attached,
+            space,
+            {
+              ...updates.get(attached._id as Ref<Issue>),
+              rank: calcRank(lastOne, undefined),
+              number: (incResult as any).object.sequence
+            },
+            updates
+          )
+        } else {
+          await updateIssuesOnMove(client, applyOps, attached, space, {}, updates)
+        }
       }
     }
   }
   await applyOps.update(doc, {
-    space,
+    space: space._id,
     ...extra
   })
 }
@@ -577,9 +589,9 @@ async function updateIssuesOnMove (
  */
 export async function moveIssueToSpace (
   client: TxOperations,
-  docs: Doc[],
-  space: Ref<Project>,
-  extra?: DocumentUpdate<any>
+  docs: Issue[],
+  space: Project,
+  updates: Map<Ref<Issue>, DocumentUpdate<Issue>>
 ): Promise<void> {
   const applyOps = client.apply(docs[0]._id)
   for (const doc of docs) {
@@ -587,17 +599,98 @@ export async function moveIssueToSpace (
     const incResult = await client.updateDoc(
       tracker.class.Project,
       core.space.Space,
-      space,
+      space._id,
       {
         $inc: { sequence: 1 }
       },
       true
     )
-    await updateIssuesOnMove(client, applyOps, doc, space, {
-      ...extra,
-      rank: calcRank(lastOne, undefined),
-      number: (incResult as any).object.sequence
-    })
+    await updateIssuesOnMove(
+      client,
+      applyOps,
+      doc,
+      space,
+      {
+        ...updates.get(doc._id),
+        rank: calcRank(lastOne, undefined),
+        number: (incResult as any).object.sequence
+      },
+      updates
+    )
   }
   await applyOps.commit()
+}
+
+/**
+ * @public
+ *
+ * Will collect all issues to be moved.
+ */
+export async function collectIssues (client: TxOperations, docs: Doc[]): Promise<Issue[]> {
+  const result: Issue[] = []
+  const hierarchy = client.getHierarchy()
+  for (const doc of docs) {
+    if (hierarchy.isDerived(doc._class, tracker.class.Issue)) {
+      result.push(doc as Issue)
+    }
+
+    const attributes = hierarchy.getAllAttributes(doc._class)
+    for (const attribute of attributes.values()) {
+      if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) {
+        const collection = attribute.type as Collection<AttachedDoc>
+        const allAttached = await client.findAll(collection.of, { attachedTo: doc._id })
+        for (const attached of allAttached) {
+          if (hierarchy.isDerived(collection.of, tracker.class.Issue)) {
+            if (result.find((it) => it._id === attached._id) === undefined) {
+              result.push(attached as Issue)
+            }
+          }
+
+          const subIssues = await collectIssues(client, [attached])
+          if (subIssues.length > 0) {
+            for (const s of subIssues) {
+              if (result.find((it) => it._id === s._id) === undefined) {
+                result.push(s)
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return result
+}
+
+/**
+ * @public
+ */
+export function findTargetStatus (
+  mgr: StatusManager,
+  status: Ref<Status>,
+  targetProject: Ref<Project>,
+  useCategory = false
+): Ref<Status> | undefined {
+  const s = mgr.get(status)
+  let targetStatus = mgr
+    .filter(
+      (it) =>
+        it.space === targetProject &&
+        it.ofAttribute === s?.ofAttribute &&
+        (it.name ?? '').trim().toLowerCase() === (s?.name ?? '').trim().toLowerCase()
+    )
+    .shift()
+  if (targetStatus === undefined && useCategory) {
+    targetStatus = mgr
+      .filter((it) => it.space === targetProject && it.ofAttribute === s?.ofAttribute && s?.category === it.category)
+      .shift()
+  }
+  return targetStatus?._id
+}
+
+/**
+ * @public
+ */
+export function issueToAttachedData (issue: Issue): AttachedData<Issue> {
+  const { _id, _class, space, ...data } = issue
+  return { ...data }
 }
