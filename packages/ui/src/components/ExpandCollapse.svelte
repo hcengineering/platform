@@ -13,30 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, afterUpdate } from 'svelte'
-  import { quintOut } from 'svelte/easing'
-  import { tweened } from 'svelte/motion'
+  import { afterUpdate, createEventDispatcher } from 'svelte'
 
   export let isExpanded = false
-  export let duration = 150
-  export let easing: (t: number) => number = quintOut
 
   const dispatch = createEventDispatcher()
   afterUpdate(() => dispatch('changeContent'))
-
-  const tweenedHeight = tweened(0, { duration, easing })
-
-  let height = 0
-
-  $: tweenedHeight.set(isExpanded ? height : 0, { duration, easing })
 </script>
 
-<div
-  class="root"
-  style="height: {$tweenedHeight}px;"
-  style:overflow={$tweenedHeight < height ? 'auto' : $tweenedHeight === 0 ? 'hidden' : 'visible'}
->
-  <div bind:offsetHeight={height} class="flex-no-shrink clear-mins">
+<div class="root" hidden={!isExpanded}>
+  <div class="flex-no-shrink clear-mins">
     <slot />
   </div>
 </div>

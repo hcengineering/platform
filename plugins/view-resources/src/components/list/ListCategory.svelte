@@ -72,7 +72,12 @@
   $: initialLimit = !lastLevel ? undefined : singleCat ? singleCategoryLimit : defaultLimit
   $: limit = initialLimit
 
-  let collapsed = true
+  $: categoryCollapseKey = `list_collapsing_${location.pathname}_${
+    typeof category === 'object' ? category.name : category
+  }`
+  $: storedCollapseState = localStorage.getItem(categoryCollapseKey)
+
+  $: collapsed = storedCollapseState === 'true' || storedCollapseState === null
   let wasLoaded = false
 
   const dispatch = createEventDispatcher()
@@ -83,7 +88,9 @@
   }
 
   function initCollapsed (singleCat: boolean, lastLevel: boolean): void {
-    collapsed = !disableHeader && !singleCat && items.length > (lastLevel ? autoFoldLimit : singleCategoryLimit)
+    if (localStorage.getItem(categoryCollapseKey) === null) {
+      collapsed = !disableHeader && !singleCat && items.length > (lastLevel ? autoFoldLimit : singleCategoryLimit)
+    }
   }
 
   $: initCollapsed(singleCat, lastLevel)
@@ -319,12 +326,14 @@
   }
   export function expand (): void {
     collapsed = false
+    localStorage.setItem(categoryCollapseKey, 'false')
   }
   export function scroll (item: Doc): void {
     const pos = limited.findIndex((it) => it._id === item._id)
     if (pos >= 0) {
       if (collapsed) {
         collapsed = false
+        localStorage.setItem(categoryCollapseKey, 'false')
         setTimeout(() => scroll(item), 50)
       } else {
         listItems[pos]?.scroll()
@@ -371,10 +380,11 @@
       }}
       on:collapse={() => {
         collapsed = !collapsed
+        localStorage.setItem(categoryCollapseKey, collapsed ? 'true' : 'false')
       }}
     />
   {/if}
-  <ExpandCollapse isExpanded={!collapsed || dragItemIndex !== undefined} duration={0}>
+  <ExpandCollapse isExpanded={!collapsed || dragItemIndex !== undefined}>
     {#if !lastLevel}
       <slot
         name="category"
