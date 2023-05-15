@@ -76,7 +76,8 @@ export default mergeIds(viewId, view, {
     ThisMonth: '' as IntlString,
     NextMonth: '' as IntlString,
     NotSpecified: '' as IntlString,
-    CustomDate: '' as IntlString
+    CustomDate: '' as IntlString,
+    SaveAs: '' as IntlString
   },
   function: {
     StatusSort: '' as SortFunc

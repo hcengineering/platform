@@ -78,6 +78,10 @@
     "ThisMonth": "This month",
     "NextMonth": "Next month",
     "NotSpecified": "Not specified",
-    "CustomDate": "Custom date"
+    "CustomDate": "Custom date",
+    "AddSavedView": "Add saved view",
+    "Public": "Public",
+    "Hide": "Hide",
+    "SaveAs": "Save as"
   }
 }
