@@ -305,7 +305,16 @@ export function getFilterKey (_class: Ref<Class<Doc>>): string {
  * @returns {readonly T[]}
  */
 export function sortFilterValues<T> (values: T[], checkIsSelected: (value: T) => boolean): readonly T[] {
-  const checkIsNotSelected = (value: T): boolean => !checkIsSelected(value)
+  const selectedValues: T[] = []
+  const notSelectedValues: T[] = []
 
-  return [...values.filter(checkIsSelected), ...values.filter(checkIsNotSelected)]
+  for (const value of values) {
+    if (checkIsSelected(value)) {
+      selectedValues.push(value)
+    } else {
+      notSelectedValues.push(value)
+    }
+  }
+
+  return [...selectedValues, ...notSelectedValues]
 }
