@@ -13,17 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, Ref, getCurrentAccount } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { Button, IconAdd, eventToHTMLElement, showPopup } from '@hcengineering/ui'
-  import { Filter, ViewOptions } from '@hcengineering/view'
+  import { Button, IconAdd, eventToHTMLElement, getCurrentLocation, showPopup } from '@hcengineering/ui'
+  import { Filter, FilteredView, ViewOptions, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import { filterStore, removeFilter, updateFilter } from '../../filter'
+  import { filterStore, removeFilter, updateFilter, selectedFilterStore } from '../../filter'
   import view from '../../plugin'
   import FilterSave from './FilterSave.svelte'
   import FilterSection from './FilterSection.svelte'
   import FilterTypePopup from './FilterTypePopup.svelte'
+  import { activeViewlet, getActiveViewletId, makeViewletKey } from '../../utils'
+  import { getViewOptions, viewOptionStore } from '../../viewOptions'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -56,6 +58,23 @@
 
   async function saveFilteredView () {
     showPopup(FilterSave, { viewOptions, _class })
+  }
+
+  async function saveCurrentFilteredView (filter: FilteredView | undefined) {
+    if (filter !== undefined) {
+      const filters = JSON.stringify($filterStore)
+      await client.update(filter, {
+        filters,
+        viewOptions,
+        viewletId: getActiveViewletId()
+      })
+      selectedFilterStore.set({
+        ...filter,
+        filters,
+        viewOptions,
+        viewletId: getActiveViewletId()
+      })
+    }
   }
 
   async function makeQuery (query: DocumentQuery<Doc>, filters: Filter[]): Promise<void> {
@@ -125,6 +144,27 @@
 
   $: clazz = hierarchy.getClass(_class)
   $: visible = hierarchy.hasMixin(clazz, view.mixin.ClassFilters)
+
+  const me = getCurrentAccount()._id
+
+  function selectedFilterChanged (
+    selectedFilter: FilteredView | undefined,
+    filters: Filter[],
+    activeViewlet: Record<string, Ref<Viewlet> | null>,
+    viewOptionStore: Map<string, ViewOptions>
+  ): boolean {
+    if (selectedFilter === undefined) return false
+    if (selectedFilter.createdBy !== me) return false
+    const loc = getCurrentLocation()
+    const key = makeViewletKey(loc)
+    if (selectedFilter.viewletId !== activeViewlet[key]) return true
+    if (selectedFilter.filters !== JSON.stringify(filters)) return true
+    if (selectedFilter.viewletId !== null) {
+      const viewOptions = getViewOptions({ _id: selectedFilter.viewletId } as Viewlet, viewOptionStore)
+      if (JSON.stringify(selectedFilter.viewOptions) !== JSON.stringify(viewOptions)) return true
+    }
+    return false
+  }
 </script>
 
 {#if visible && $filterStore && $filterStore.length > 0}
@@ -135,6 +175,7 @@
           {filter}
           on:change={() => {
             makeQuery(query, $filterStore)
+            updateFilter(filter)
           }}
           on:remove={() => {
             removeFilter(i)
@@ -146,7 +187,22 @@
       </div>
     </div>
 
-    <Button icon={view.icon.Views} label={view.string.Save} width={'fit-content'} on:click={() => saveFilteredView()} />
+    <div class="flex gap-1-5">
+      <Button
+        icon={view.icon.Views}
+        label={view.string.SaveAs}
+        width={'fit-content'}
+        on:click={() => saveFilteredView()}
+      />
+      {#if selectedFilterChanged($selectedFilterStore, $filterStore, $activeViewlet, $viewOptionStore)}
+        <Button
+          icon={view.icon.Views}
+          label={view.string.Save}
+          width={'fit-content'}
+          on:click={() => saveCurrentFilteredView($selectedFilterStore)}
+        />
+      {/if}
+    </div>
   </div>
 {/if}
 
