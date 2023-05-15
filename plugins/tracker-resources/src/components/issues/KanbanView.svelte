@@ -29,7 +29,7 @@
   import { Item, Kanban } from '@hcengineering/kanban'
   import notification from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
-  import { createQuery, getClient, statusStore } from '@hcengineering/presentation'
+  import { createQuery, getClient, statusStore, ActionContext } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import { Issue, IssuesGrouping, IssuesOrdering, Project } from '@hcengineering/tracker'
   import {
@@ -56,7 +56,6 @@
     ViewQueryOption
   } from '@hcengineering/view'
   import {
-    ActionContext,
     focusStore,
     getCategories,
     getCategorySpaces,

@@ -14,10 +14,10 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, ActionContext } from '@hcengineering/presentation'
   import tracker, { Component, Issue, IssueTemplateChild, Project, Milestone } from '@hcengineering/tracker'
   import { IconCircles, eventToHTMLElement, showPopup } from '@hcengineering/ui'
-  import { ActionContext, FixedColumn } from '@hcengineering/view-resources'
+  import { FixedColumn } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import { flip } from 'svelte/animate'
   import AssigneeEditor from '../issues/AssigneeEditor.svelte'

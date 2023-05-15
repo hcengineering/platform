@@ -15,12 +15,11 @@
 <script lang="ts">
   import core, { Doc, Hierarchy, Ref, TxRemoveDoc } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
-  import { addTxListener, getClient } from '@hcengineering/presentation'
+  import { addTxListener, getClient, contextStore } from '@hcengineering/presentation'
   import { AnyComponent, Component } from '@hcengineering/ui'
   import { Action, ViewContextType } from '@hcengineering/view'
   import { fly } from 'svelte/transition'
   import { getContextActions, getSelection } from '../actions'
-  import { contextStore } from '../context'
   import { focusStore, previewDocument, selectionStore } from '../selection'
   import { getObjectPreview } from '../utils'
 

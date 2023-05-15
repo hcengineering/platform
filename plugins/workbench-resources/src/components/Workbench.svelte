@@ -20,7 +20,7 @@
   import notification, { notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, NotificationClientImpl } from '@hcengineering/notification-resources'
   import { IntlString, getMetadata, getResource } from '@hcengineering/platform'
-  import { configurationStore, createQuery, getClient } from '@hcengineering/presentation'
+  import { configurationStore, createQuery, getClient, ActionContext } from '@hcengineering/presentation'
   import {
     AnyComponent,
     CompAndProps,
@@ -51,7 +51,6 @@
   import view from '@hcengineering/view'
   import setting from '@hcengineering/setting'
   import {
-    ActionContext,
     ActionHandler,
     ListSelectionProvider,
     NavLink,

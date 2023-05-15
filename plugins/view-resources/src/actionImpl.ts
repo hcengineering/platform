@@ -1,6 +1,6 @@
 import { Class, Doc, DocumentQuery, Hierarchy, Ref, Space, TxResult } from '@hcengineering/core'
 import { Asset, IntlString, Resource, getResource } from '@hcengineering/platform'
-import { MessageBox, getClient, updateAttribute } from '@hcengineering/presentation'
+import { MessageBox, getClient, updateAttribute, ContextStore, contextStore } from '@hcengineering/presentation'
 import {
   AnyComponent,
   AnySvelteComponent,
@@ -13,7 +13,6 @@ import {
   showPopup
 } from '@hcengineering/ui'
 import MoveView from './components/Move.svelte'
-import { ContextStore, contextStore } from './context'
 import view from './plugin'
 import { FocusSelection, SelectDirection, focusStore, previewDocument, selectionStore } from './selection'
 import { deleteObjects, getObjectLinkFragment } from './utils'
