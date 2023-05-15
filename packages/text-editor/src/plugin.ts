@@ -34,6 +34,8 @@ export default plugin(textEditorId, {
     TextStyle: '' as IntlString,
     Emoji: '' as IntlString,
     GIF: '' as IntlString,
+    Mention: '' as IntlString,
+    Underlined: '' as IntlString,
     EditorPlaceholder: '' as IntlString,
     Edit: '' as IntlString,
     Bold: '' as IntlString,
