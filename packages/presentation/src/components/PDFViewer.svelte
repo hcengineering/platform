@@ -19,6 +19,7 @@
   import presentation from '..'
   import { getFileUrl } from '../utils'
   import Download from './icons/Download.svelte'
+  import ActionContext from './ActionContext.svelte'
 
   export let file: string
   export let name: string
@@ -40,6 +41,7 @@
   let download: HTMLAnchorElement
 </script>
 
+<ActionContext context={{ mode: 'browser' }} />
 <Panel
   isHeader={false}
   isAside={popupOptions && popupOptions.fullSize}

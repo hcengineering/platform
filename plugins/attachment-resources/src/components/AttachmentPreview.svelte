@@ -21,9 +21,13 @@
   import AttachmentPresenter from './AttachmentPresenter.svelte'
   import AttachmentActions from './AttachmentActions.svelte'
   import AudioPlayer from './AudioPlayer.svelte'
+  import { ListSelectionProvider } from '@hcengineering/view-resources'
+  import { createEventDispatcher } from 'svelte'
 
   export let value: Attachment
   export let isSaved: boolean = false
+  export let listProvider: ListSelectionProvider | undefined = undefined
+  const dispatch = createEventDispatcher()
 
   $: type = getType(value.type)
 </script>
@@ -34,11 +38,13 @@
     class="content flex-center buttonContainer cursor-pointer"
     on:click={() => {
       closeTooltip()
-      showPopup(
+      if (listProvider !== undefined) listProvider.updateFocus(value)
+      const popupInfo = showPopup(
         PDFViewer,
         { file: value.file, name: value.name, contentType: value.type },
         value.type.startsWith('image/') ? 'centered' : 'float'
       )
+      dispatch('popupOpened', popupInfo.id)
     }}
   >
     <img src={getFileUrl(value.file)} alt={value.name} />
