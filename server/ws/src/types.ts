@@ -164,5 +164,6 @@ export type ServerFactory = (
   ctx: MeasureContext,
   pipelineFactory: PipelineFactory,
   port: number,
-  productId: string
+  productId: string,
+  enableCompression: boolean
 ) => () => Promise<void>

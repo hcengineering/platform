@@ -186,6 +186,8 @@ export function start (
 
     indexProcessing: number // 1000
     indexParallel: number // 2
+
+    enableCompression?: boolean
   }
 ): () => Promise<void> {
   addLocation(serverAttachmentId, () => import('@hcengineering/server-attachment-resources'))
@@ -336,6 +338,7 @@ export function start (
     sessionFactory,
     port: opt.port,
     productId: opt.productId,
-    serverFactory: opt.serverFactory
+    serverFactory: opt.serverFactory,
+    enableCompression: opt.enableCompression
   })
 }
