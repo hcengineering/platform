@@ -1,4 +1,4 @@
-import contact, { EmployeeAccount, getName } from '@hcengineering/contact'
+import contact, { EmployeeAccount, getFirstName, getLastName } from '@hcengineering/contact'
 import { employeeByIdStore } from '@hcengineering/contact-resources'
 import { Class, Doc, Hierarchy, Ref } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
@@ -57,7 +57,7 @@ export async function getValue (provider: TemplateDataProvider): Promise<string 
   return value.value
 }
 
-export async function getOwnerName (provider: TemplateDataProvider): Promise<string | undefined> {
+export async function getOwnerFirstName (provider: TemplateDataProvider): Promise<string | undefined> {
   const value = provider.get(setting.class.Integration)
   if (value === undefined) return
   const client = getClient()
@@ -66,7 +66,20 @@ export async function getOwnerName (provider: TemplateDataProvider): Promise<str
   })
   if (employeeAccount !== undefined) {
     const employee = get(employeeByIdStore).get(employeeAccount.employee)
-    return employee != null ? getName(employee) : undefined
+    return employee != null ? getFirstName(employee.name) : undefined
+  }
+}
+
+export async function getOwnerLastName (provider: TemplateDataProvider): Promise<string | undefined> {
+  const value = provider.get(setting.class.Integration)
+  if (value === undefined) return
+  const client = getClient()
+  const employeeAccount = await client.findOne(contact.class.EmployeeAccount, {
+    _id: value.modifiedBy as Ref<EmployeeAccount>
+  })
+  if (employeeAccount !== undefined) {
+    const employee = get(employeeByIdStore).get(employeeAccount.employee)
+    return employee != null ? getLastName(employee.name) : undefined
   }
 }
 

@@ -57,6 +57,8 @@
     "User": "User",
     "Maintainer": "Maintainer",
     "Owner": "Owner",
+    "OwnerFirstName": "Owner's First name",
+    "OwnerLastName": "Owner's Last name",
     "Role": "Role",
     "FailedToSave": "Failed to update password",
     "ImportEnum": "Import enum values",

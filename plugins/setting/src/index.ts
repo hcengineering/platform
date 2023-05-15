@@ -181,7 +181,8 @@ export default plugin(settingId, {
     Integration: '' as Ref<TemplateFieldCategory>
   },
   templateField: {
-    OwnerName: '' as Ref<TemplateField>,
+    OwnerFirstName: '' as Ref<TemplateField>,
+    OwnerLastName: '' as Ref<TemplateField>,
     OwnerPosition: '' as Ref<TemplateField>,
     Value: '' as Ref<TemplateField>
   }
