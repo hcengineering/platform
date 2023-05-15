@@ -157,6 +157,7 @@
         kind={'large-style'}
         placeholder={tracker.string.SubIssueTitlePlaceholder}
         focus
+        fullSize
       />
     </div>
     <div class="mt-4 clear-mins" id="sub-issue-description">

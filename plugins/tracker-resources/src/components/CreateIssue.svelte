@@ -595,6 +595,7 @@
       placeholder={tracker.string.IssueTitlePlaceholder}
       kind={'large-style'}
       focus
+      fullSize
     />
   </div>
   <div id="issue-description">

@@ -216,6 +216,7 @@
           bind:focusInput={focusIssueTitle}
           placeholder={tracker.string.IssueTitlePlaceholder}
           focus
+          fullSize
         />
       </div>
       <div class="mt-4" id="sub-issue-description">
