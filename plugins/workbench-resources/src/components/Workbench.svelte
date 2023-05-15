@@ -48,7 +48,14 @@
     showPopup
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { ActionContext, ActionHandler, NavLink, migrateViewOpttions } from '@hcengineering/view-resources'
+  import {
+    ActionContext,
+    ActionHandler,
+    ListSelectionProvider,
+    NavLink,
+    migrateViewOpttions,
+    updateFocus
+  } from '@hcengineering/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { get } from 'svelte/store'
@@ -314,22 +321,36 @@
     if (fragment !== currentFragment) {
       currentFragment = fragment
       if (fragment !== undefined && fragment.trim().length > 0) {
-        const props = decodeURIComponent(fragment).split('|')
-
-        if (props.length >= 3) {
-          openPanel(
-            props[0] as AnyComponent,
-            props[1],
-            props[2],
-            (props[3] ?? undefined) as PopupAlignment,
-            (props[4] ?? undefined) as AnyComponent
-          )
-        } else {
-          closePanel(false)
-        }
+        setOpenPanelFocus(fragment)
       } else {
         closePanel()
       }
+    }
+  }
+
+  async function setOpenPanelFocus (fragment: string): Promise<void> {
+    const props = decodeURIComponent(fragment).split('|')
+
+    if (props.length >= 3) {
+      const doc = await client.findOne(props[2] as Ref<Class<Doc>>, { _id: props[1] as Ref<Doc> })
+      if (doc !== undefined) {
+        const provider = ListSelectionProvider.Find(doc._id)
+        updateFocus({
+          provider,
+          focus: doc
+        })
+        openPanel(
+          props[0] as AnyComponent,
+          props[1],
+          props[2],
+          (props[3] ?? undefined) as PopupAlignment,
+          (props[4] ?? undefined) as AnyComponent
+        )
+      } else {
+        closePanel(false)
+      }
+    } else {
+      closePanel(false)
     }
   }
 
