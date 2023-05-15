@@ -263,6 +263,7 @@ specifiers:
   '@types/koa-bodyparser': ^4.3.3
   '@types/koa-router': ^7.4.4
   '@types/koa__cors': ^3.0.3
+  '@types/lodash.debounce': ~4.0.7
   '@types/mime-types': ~2.1.1
   '@types/minio': ~7.0.11
   '@types/node': ~16.11.12
@@ -652,6 +653,7 @@ dependencies:
   '@types/koa-bodyparser': 4.3.10
   '@types/koa-router': 7.4.4
   '@types/koa__cors': 3.3.0
+  '@types/lodash.debounce': 4.0.7
   '@types/mime-types': 2.1.1
   '@types/minio': 7.0.14
   '@types/node': 16.11.68
@@ -6978,6 +6980,12 @@ packages:
 
   /@types/lodash.chunk/4.2.7:
     resolution: {integrity: sha512-//tmaWHiANgToom/YYYKKqiCtlNz11fwYtMUUbaemNSbWTI+2zHtYW5nt1PHNCRWHPAJHHhn4UVFD9LKUFvatA==}
+    dependencies:
+      '@types/lodash': 4.14.191
+    dev: false
+
+  /@types/lodash.debounce/4.0.7:
+    resolution: {integrity: sha512-X1T4wMZ+gT000M2/91SYj0d/7JfeNZ9PeeOldSNoE/lunLeQXKvkmIumI29IaKMotU/ln/McOIvgzZcQ/3TrSA==}
     dependencies:
       '@types/lodash': 4.14.191
     dev: false
@@ -19070,7 +19078,7 @@ packages:
     dev: false
 
   file:projects/model-notification.tgz_typescript@4.8.4:
-    resolution: {integrity: sha512-czp+Fb3hiQDqWgNIiEBZeEThWoi62Q/rTszn832gf8ZtwX7A7WAlPfe98hoVrREiyJa7t8J+T31DPvuzo8jX1w==, tarball: file:projects/model-notification.tgz}
+    resolution: {integrity: sha512-g/s7nizzAreKl35Vr6nXUfWFL+IZQjWV7vjhNp6nKMQNgSTmV6UujyQjG3v9FPyPfIMg3ZUjCpQTsGERWpw+TQ==, tarball: file:projects/model-notification.tgz}
     id: file:projects/model-notification.tgz
     name: '@rush-temp/model-notification'
     version: 0.0.0
@@ -22223,11 +22231,12 @@ packages:
     dev: false
 
   file:projects/view-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-jeJXZ80aZypm/6JrOsW+XJ6z8mzAUf7CJpVfPP8qTYIV2FsTqYBY4aHK0roPkaUVEAd/Ox9oAwKDksoR8EgB/w==, tarball: file:projects/view-resources.tgz}
+    resolution: {integrity: sha512-AJkJ8HxO1Nby+MfzK83OI0tPQ2y6g/s5evWXODjENGCUrZ5NoLZFIjzUfdCUa4H+pLpjg09WrJ0S0Ej4QwpNKg==, tarball: file:projects/view-resources.tgz}
     id: file:projects/view-resources.tgz
     name: '@rush-temp/view-resources'
     version: 0.0.0
     dependencies:
+      '@types/lodash.debounce': 4.0.7
       '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
       '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
       eslint: 8.27.0
@@ -22237,6 +22246,7 @@ packages:
       eslint-plugin-promise: 6.1.1_eslint@8.27.0
       eslint-plugin-svelte3: 4.0.0_eslint@8.27.0+svelte@3.55.1
       fast-equals: 2.0.4
+      lodash.debounce: 4.0.8
       prettier: 2.8.8
       prettier-plugin-svelte: 2.8.0_prettier@2.8.8+svelte@3.55.1
       sass: 1.56.1

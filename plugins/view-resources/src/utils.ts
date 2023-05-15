@@ -63,6 +63,7 @@ import { get, writable } from 'svelte/store'
 import plugin from './plugin'
 import { noCategory } from './viewOptions'
 
+export { default as debounce } from 'lodash.debounce'
 export { getFiltredKeys, isCollectionAttr } from '@hcengineering/presentation'
 
 /**
