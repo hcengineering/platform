@@ -73,6 +73,8 @@ import IconMembers from './components/icons/Members.svelte'
 import ChannelPresenter from './components/ChannelPresenter.svelte'
 import ChannelPanel from './components/ChannelPanel.svelte'
 import ActivityChannelPresenter from './components/activity/ActivityChannelPresenter.svelte'
+import SelectAvatars from './components/SelectAvatars.svelte'
+import UserBoxItems from './components/UserBoxItems.svelte'
 
 import contact from './plugin'
 import {
@@ -122,7 +124,9 @@ export {
   SpaceMembers,
   CombineAvatars,
   UserInfo,
-  IconMembers
+  IconMembers,
+  SelectAvatars,
+  UserBoxItems
 }
 
 const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({
@@ -286,7 +290,9 @@ export default async (): Promise<Resources> => ({
     ChannelPresenter,
     ChannelPanel,
     ActivityChannelPresenter,
-    SpaceMembers
+    SpaceMembers,
+    SelectAvatars,
+    UserBoxItems
   },
   completion: {
     EmployeeQuery: async (
