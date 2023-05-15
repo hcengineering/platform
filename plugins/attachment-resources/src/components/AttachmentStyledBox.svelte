@@ -128,7 +128,6 @@
         }
       )
     }
-    console.log(attachments)
   }
 
   async function saveDraft () {
@@ -373,7 +372,7 @@
             <AttachmentPreview
               value={attachment}
               {listProvider}
-              on:popupOpened={(res) => (attachmentPopupId = res.detail)}
+              on:open={(res) => (attachmentPopupId = res.detail)}
             />
           {:else}
             <AttachmentPresenter

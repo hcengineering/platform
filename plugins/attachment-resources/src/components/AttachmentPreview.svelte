@@ -44,7 +44,7 @@
         { file: value.file, name: value.name, contentType: value.type },
         value.type.startsWith('image/') ? 'centered' : 'float'
       )
-      dispatch('popupOpened', popupInfo.id)
+      dispatch('open', popupInfo.id)
     }}
   >
     <img src={getFileUrl(value.file)} alt={value.name} />
