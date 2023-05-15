@@ -29,8 +29,14 @@
     showPopup
   } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
-  import { FilterQuery, sortFilterValues } from '@hcengineering/view-resources'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import {
+    FILTER_DEBOUNCE_MS,
+    FilterQuery,
+    debounce,
+    filterDebounceOptions,
+    sortFilterValues
+  } from '@hcengineering/view-resources'
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import tags from '../plugin'
   import { tagLevel } from '../utils'
   import WeightPopup from './WeightPopup.svelte'
@@ -100,7 +106,7 @@
     return false
   }
 
-  const checkSelected = (element: TagElement): void => {
+  function handleFilterToggle (element: TagElement): void {
     if (isSelected(element)) {
       selected = selected.filter((p) => p !== element._id)
     } else {
@@ -109,11 +115,19 @@
     objects = objects
     categories = categories
 
-    filter.value = [...selected]
-    // Replace last one with value with level
-    filter.props = { level }
-    onChange(filter)
+    updateFilter(filter, selected, level, onChange)
   }
+
+  const updateFilter = debounce(
+    (filter, newValues: Ref<TagElement>[], level: number, onChange: (e: Filter) => void) => {
+      filter.value = [...newValues]
+      // Replace last one with value with level
+      filter.props = { level }
+      onChange(filter)
+    },
+    FILTER_DEBOUNCE_MS,
+    filterDebounceOptions
+  )
 
   $: schema = filter.key.attribute.schema ?? '0'
 
@@ -122,6 +136,8 @@
 
   $: tagLevelIcon = schema === '3' ? undefined : tagLevel[((level % 3) + 1) as 1 | 2 | 3]
   $: tagLevelLabel = [tags.string.Initial, tags.string.Meaningfull, tags.string.Expert][Math.floor(level / 3)]
+
+  onDestroy(() => updateFilter.flush())
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
@@ -189,7 +205,7 @@
                   <button
                     class="menu-item"
                     on:click={() => {
-                      checkSelected(element)
+                      handleFilterToggle(element)
                     }}
                   >
                     <div class="flex-between w-full">

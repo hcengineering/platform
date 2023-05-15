@@ -18,9 +18,9 @@
   import presentation, { getClient } from '@hcengineering/presentation'
   import { Project, Sprint, SprintStatus } from '@hcengineering/tracker'
   import ui, { deviceOptionsStore, Icon, Label, CheckBox, Loading, resizeObserver } from '@hcengineering/ui'
-  import { sortFilterValues } from '@hcengineering/view-resources'
+  import { FILTER_DEBOUNCE_MS, debounce, filterDebounceOptions, sortFilterValues } from '@hcengineering/view-resources'
   import view, { Filter } from '@hcengineering/view'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher, onMount, onDestroy } from 'svelte'
   import tracker from '../../plugin'
   import { sprintStatusAssets } from '../../types'
   import SprintTitlePresenter from './SprintTitlePresenter.svelte'
@@ -79,16 +79,25 @@
     return values.has(value)
   }
 
-  function toggle (value: Ref<Sprint> | undefined): void {
+  function handleFilterToggle (value: Ref<Sprint> | undefined): void {
     if (isSelected(value, selectedValues)) {
       selectedValues.delete(value)
     } else {
       selectedValues.add(value)
     }
     selectedValues = selectedValues
-    filter.value = Array.from(selectedValues)
-    onChange(filter)
+
+    updateFilter(filter, selectedValues, onChange)
   }
+
+  const updateFilter = debounce(
+    (filter: Filter, newValues: Set<Ref<Sprint> | null | undefined>, onChange: (e: Filter) => void) => {
+      filter.value = Array.from(newValues)
+      onChange(filter)
+    },
+    FILTER_DEBOUNCE_MS,
+    filterDebounceOptions
+  )
 
   function getStatusItem (status: SprintStatus, docs: Sprint[]): Sprint[] {
     return docs.filter((p) => p.status === status)
@@ -102,6 +111,8 @@
   onMount(() => {
     if (searchInput && !$deviceOptionsStore.isMobile) searchInput.focus()
   })
+  onDestroy(() => updateFilter.flush())
+
   getValues(search)
 </script>
 
@@ -125,7 +136,7 @@
         <button
           class="menu-item"
           on:click={() => {
-            toggle(undefined)
+            handleFilterToggle(undefined)
           }}
         >
           <div class="flex clear-mins">
@@ -149,7 +160,7 @@
               <button
                 class="menu-item"
                 on:click={() => {
-                  toggle(doc._id)
+                  handleFilterToggle(doc._id)
                 }}
               >
                 <div class="flex clear-mins">

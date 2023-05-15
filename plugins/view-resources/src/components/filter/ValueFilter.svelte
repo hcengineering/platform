@@ -18,9 +18,9 @@
   import presentation, { getClient } from '@hcengineering/presentation'
   import ui, { Icon, IconCheck, Label, Loading, resizeObserver, deviceOptionsStore } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
-  import { onMount, createEventDispatcher } from 'svelte'
-  import { getPresenter } from '../../utils'
-  import { sortFilterValues } from '../../filter'
+  import { onMount, createEventDispatcher, onDestroy } from 'svelte'
+  import { debounce, getPresenter } from '../../utils'
+  import { FILTER_DEBOUNCE_MS, filterDebounceOptions, sortFilterValues } from '../../filter'
   import view from '../../plugin'
 
   export let _class: Ref<Class<Doc>>
@@ -101,19 +101,28 @@
     return values.has(value)
   }
 
-  function toggle (value: any): void {
+  function handleFilterToggle (value: any): void {
     if (isSelected(value, selectedValues)) {
       selectedValues.delete(value)
     } else {
       selectedValues.add(value)
     }
     selectedValues = selectedValues
-    filter.value = [...selectedValues.values()].map((v) => {
-      return [v, [...(realValues.get(v) ?? [])]]
-    })
 
-    onChange(filter)
+    updateFilter(filter, selectedValues, realValues, onChange)
   }
+
+  const updateFilter = debounce(
+    (filter: Filter, newValues: Set<any>, realValues: Map<any, Set<any>>, onChange: (e: Filter) => void) => {
+      filter.value = [...newValues.values()].map((v) => {
+        return [v, [...(realValues.get(v) ?? [])]]
+      })
+
+      onChange(filter)
+    },
+    FILTER_DEBOUNCE_MS,
+    filterDebounceOptions
+  )
 
   let search: string = ''
   let phTraslate: string = ''
@@ -127,6 +136,8 @@
   onMount(() => {
     if (searchInput && !$deviceOptionsStore.isMobile) searchInput.focus()
   })
+  onDestroy(() => updateFilter.flush())
+
   getValues(search)
 </script>
 
@@ -155,7 +166,7 @@
             <button
               class="menu-item no-focus"
               on:click={() => {
-                toggle(value)
+                handleFilterToggle(value)
               }}
             >
               <div class="flex-between w-full">

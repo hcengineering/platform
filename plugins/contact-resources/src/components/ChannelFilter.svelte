@@ -17,8 +17,14 @@
   import { Ref } from '@hcengineering/core'
   import { CheckBox, Icon, Label, resizeObserver } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
-  import { FilterQuery, sortFilterValues } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
+  import {
+    FILTER_DEBOUNCE_MS,
+    FilterQuery,
+    debounce,
+    filterDebounceOptions,
+    sortFilterValues
+  } from '@hcengineering/view-resources'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import { channelProviders } from '../utils'
   import contact from '../plugin'
 
@@ -38,20 +44,30 @@
     return false
   }
 
-  const checkSelected = (element: ChannelProvider): void => {
+  function handleFilterToggle (element: ChannelProvider) {
     if (isSelected(element, selected)) {
       selected = selected.filter((p) => p !== element._id)
     } else {
       selected = [...selected, element._id]
     }
 
-    filter.value = [...selected]
-    // Replace last one with value with level
-    filter.props = { level }
-    onChange(filter)
+    updateFilter(filter, selected, level, onChange)
   }
 
+  const updateFilter = debounce(
+    (filter: Filter, newValues: Ref<ChannelProvider>[], level: number, onChange: (e: Filter) => void) => {
+      filter.value = [...newValues]
+      // Replace last one with value with level
+      filter.props = { level }
+      onChange(filter)
+    },
+    FILTER_DEBOUNCE_MS,
+    filterDebounceOptions
+  )
+
   const dispatch = createEventDispatcher()
+
+  onDestroy(() => updateFilter.flush())
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
@@ -61,7 +77,7 @@
         <button
           class="menu-item"
           on:click={() => {
-            checkSelected(element)
+            handleFilterToggle(element)
           }}
         >
           <div class="flex-between w-full">

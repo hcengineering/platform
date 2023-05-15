@@ -26,10 +26,10 @@
     resizeObserver
   } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import view from '../../plugin'
-  import { sortFilterValues } from '../../filter'
-  import { buildConfigLookup, getPresenter } from '../../utils'
+  import { FILTER_DEBOUNCE_MS, filterDebounceOptions, sortFilterValues } from '../../filter'
+  import { buildConfigLookup, debounce, getPresenter } from '../../utils'
   import FilterRemovedNotification from './FilterRemovedNotification.svelte'
 
   export let filter: Filter
@@ -130,7 +130,7 @@
     return values.includes(value?._id ?? value)
   }
 
-  function toggle (value: Doc | undefined | null): void {
+  function handleFilterToggle (value: any): void {
     if (isSelected(value, filter.value)) {
       filter.value = filter.value.filter((p) => (value ? p !== value._id : p != null))
     } else {
@@ -141,8 +141,14 @@
       }
     }
 
-    onChange(filter)
+    updateFilter(filter, onChange)
   }
+
+  const updateFilter = debounce(
+    (filter: Filter, onChange: (e: Filter) => void) => onChange(filter),
+    FILTER_DEBOUNCE_MS,
+    filterDebounceOptions
+  )
 
   let search: string = ''
   let phTraslate: string = ''
@@ -154,6 +160,7 @@
   onMount(() => {
     if (searchInput && !$deviceOptionsStore.isMobile) searchInput.focus()
   })
+  onDestroy(() => updateFilter.flush())
 
   const dispatch = createEventDispatcher()
   $: if (targetClass) getValues(search)
@@ -188,7 +195,7 @@
             <button
               class="menu-item no-focus"
               on:click={() => {
-                toggle(value)
+                handleFilterToggle(value)
               }}
             >
               <div class="flex-between w-full">
