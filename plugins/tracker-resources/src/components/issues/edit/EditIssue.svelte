@@ -87,9 +87,11 @@
           await save()
         }
         ;[issue] = result
-        title = issue.title
-        description = issue.description
-        currentProject = issue.$lookup?.space
+        if (issue) {
+          title = issue.title
+          description = issue.description
+          currentProject = issue.$lookup?.space
+        }
       },
       { lookup: { attachedTo: tracker.class.Issue, space: tracker.class.Project } }
     )
