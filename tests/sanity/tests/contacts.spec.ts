@@ -56,7 +56,7 @@ test.describe('contact tests', () => {
     expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThan(5)
 
     await fillSearch(page, 'Marina')
-
+    await page.waitForSelector('.antiTable-body__row', { timeout: 15000 })
     await expect(page.locator('.antiTable-body__row')).toHaveCount(1, {
       timeout: 15000
     })

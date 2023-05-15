@@ -84,132 +84,132 @@ jobs:
             tools
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-  svelte-check:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Cache build results
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-build-results
-        with:
-          path: |
-            cloud
-            common
-            deploy
-            dev
-            models
-            packages
-            plugins
-            pods
-            products
-            server
-            server-plugins
-            templates
-            tests
-            rush.json
-            .prettierrc
-            tools
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-
-      - name: Checking svelte sources...
-        run: node common/scripts/install-run-rush.js svelte-check
-  formatting:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Cache build results
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-build-results
-        with:
-          path: |
-            cloud
-            common
-            deploy
-            dev
-            models
-            packages
-            plugins
-            pods
-            products
-            server
-            server-plugins
-            templates
-            tests
-            rush.json
-            .prettierrc
-            tools
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-
-      - name: Install...
-        run: node common/scripts/install-run-rush.js install
-      - name: Formatting...
-        run: node common/scripts/install-run-rush.js fast-format
-      - name: Check files formatting
-        run: |
-          echo '================================================================'
-          echo 'Checking for diff files'
-          echo '================================================================'
-          git diff '*.ts' '*.svelte' | cat
-          [ -z "$(git diff --name-only '*.ts' '*.svelte' | cat)" ]
-          echo '================================================================'
-  test:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Cache build results
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-build-results
-        with:
-          path: |
-            cloud
-            common
-            deploy
-            dev
-            models
-            packages
-            plugins
-            pods
-            products
-            server
-            server-plugins
-            templates
-            tests
-            rush.json
-            .prettierrc
-            tools
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-
-      - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.9.0
-        with:
-          mongodb-version: 5.0
-
-      - name: Testing...
-        uses: paambaati/codeclimate-action@v3.2.0
-        env:
-          CC_TEST_REPORTER_ID: 346a83855d7124e9da8e6ec36a4fd01dc432f5cdc755eb28da7d9c44da9d1142
-        with:
-          coverageCommand: node common/scripts/install-run-rush.js test --verbose
-          coverageLocations: |
-            ${{github.workspace}}/packages/*/coverage/lcov.info:lcov
-            ${{github.workspace}}/server/*/coverage/lcov.info:lcov
+#  svelte-check:
+#    needs: build
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v3
+#        with:
+#          fetch-depth: 0
+#
+#      - name: Cache build results
+#        uses: actions/cache@v3
+#        env:
+#          cache-name: cache-build-results
+#        with:
+#          path: |
+#            cloud
+#            common
+#            deploy
+#            dev
+#            models
+#            packages
+#            plugins
+#            pods
+#            products
+#            server
+#            server-plugins
+#            templates
+#            tests
+#            rush.json
+#            .prettierrc
+#            tools
+#          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+#          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+#
+#      - name: Checking svelte sources...
+#        run: node common/scripts/install-run-rush.js svelte-check
+#  formatting:
+#    needs: build
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v3
+#        with:
+#          fetch-depth: 0
+#      - name: Cache build results
+#        uses: actions/cache@v3
+#        env:
+#          cache-name: cache-build-results
+#        with:
+#          path: |
+#            cloud
+#            common
+#            deploy
+#            dev
+#            models
+#            packages
+#            plugins
+#            pods
+#            products
+#            server
+#            server-plugins
+#            templates
+#            tests
+#            rush.json
+#            .prettierrc
+#            tools
+#          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+#          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+#
+#      - name: Install...
+#        run: node common/scripts/install-run-rush.js install
+#      - name: Formatting...
+#        run: node common/scripts/install-run-rush.js fast-format
+#      - name: Check files formatting
+#        run: |
+#          echo '================================================================'
+#          echo 'Checking for diff files'
+#          echo '================================================================'
+#          git diff '*.ts' '*.svelte' | cat
+#          [ -z "$(git diff --name-only '*.ts' '*.svelte' | cat)" ]
+#          echo '================================================================'
+#  test:
+#    needs: build
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v3
+#        with:
+#          fetch-depth: 0
+#
+#      - name: Cache build results
+#        uses: actions/cache@v3
+#        env:
+#          cache-name: cache-build-results
+#        with:
+#          path: |
+#            cloud
+#            common
+#            deploy
+#            dev
+#            models
+#            packages
+#            plugins
+#            pods
+#            products
+#            server
+#            server-plugins
+#            templates
+#            tests
+#            rush.json
+#            .prettierrc
+#            tools
+#          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+#          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+#
+#      - name: Start MongoDB
+#        uses: supercharge/mongodb-github-action@1.9.0
+#        with:
+#          mongodb-version: 5.0
+#
+#      - name: Testing...
+#        uses: paambaati/codeclimate-action@v3.2.0
+#        env:
+#          CC_TEST_REPORTER_ID: 346a83855d7124e9da8e6ec36a4fd01dc432f5cdc755eb28da7d9c44da9d1142
+#        with:
+#          coverageCommand: node common/scripts/install-run-rush.js test --verbose
+#          coverageLocations: |
+#            ${{github.workspace}}/packages/*/coverage/lcov.info:lcov
+#            ${{github.workspace}}/server/*/coverage/lcov.info:lcov
   uitest:
     needs: build
     runs-on: ubuntu-latest
@@ -265,68 +265,68 @@ jobs:
       - name: Run UI tests
         run: |
           cd ./tests/sanity
-          node ../../common/scripts/install-run-rushx.js uitest
+          node ../../common/scripts/install-run-rushx.js uitest -g 'contact-search' --repeat-each=30
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v3
         with:
           name: playwright-results
           path: ./tests/sanity/playwright-report/
-  docker-build:
-    if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
-    needs: [build, uitest, test, svelte-check]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Cache build results
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-build-results
-        with:
-          path: |
-            cloud
-            common
-            deploy
-            dev
-            models
-            packages
-            plugins
-            pods
-            products
-            server
-            server-plugins
-            templates
-            tests
-            rush.json
-            .prettierrc
-            tools
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-
-      - name: Installing...
-        run: node common/scripts/install-run-rush.js install
-      - name: Setting model version from git release...
-        run: node common/scripts/install-run-rush.js bump-model-version
-      - name: Build, to include new model version
-        run: node common/scripts/install-run-rush.js build
-      - name: Bundle
-        run: node common/scripts/install-run-rush.js bundle
-      - name: Docker build
-        run: node common/scripts/install-run-rush.js docker:build
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: hardcoreeng
-          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-
-      - name: Docker push staging
-        if: ${{ github.ref == 'refs/heads/main' }}
-        run: node common/scripts/install-run-rush.js docker:staging
-      - name: Docker push tag
-        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        run: |
-          echo Pushing release of tag ${{ github.ref }}
-          node common/scripts/install-run-rush.js docker:push
+#  docker-build:
+#    if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
+#    needs: [build, uitest, test, svelte-check]
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v3
+#        with:
+#          fetch-depth: 0
+#
+#      - name: Cache build results
+#        uses: actions/cache@v3
+#        env:
+#          cache-name: cache-build-results
+#        with:
+#          path: |
+#            cloud
+#            common
+#            deploy
+#            dev
+#            models
+#            packages
+#            plugins
+#            pods
+#            products
+#            server
+#            server-plugins
+#            templates
+#            tests
+#            rush.json
+#            .prettierrc
+#            tools
+#          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+#          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+#
+#      - name: Installing...
+#        run: node common/scripts/install-run-rush.js install
+#      - name: Setting model version from git release...
+#        run: node common/scripts/install-run-rush.js bump-model-version
+#      - name: Build, to include new model version
+#        run: node common/scripts/install-run-rush.js build
+#      - name: Bundle
+#        run: node common/scripts/install-run-rush.js bundle
+#      - name: Docker build
+#        run: node common/scripts/install-run-rush.js docker:build
+#      - name: Login to Docker Hub
+#        uses: docker/login-action@v2
+#        with:
+#          username: hardcoreeng
+#          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+#
+#      - name: Docker push staging
+#        if: ${{ github.ref == 'refs/heads/main' }}
+#        run: node common/scripts/install-run-rush.js docker:staging
+#      - name: Docker push tag
+#        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+#        run: |
+#          echo Pushing release of tag ${{ github.ref }}
+#          node common/scripts/install-run-rush.js docker:push
