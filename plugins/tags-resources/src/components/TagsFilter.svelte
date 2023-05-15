@@ -29,14 +29,8 @@
     showPopup
   } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
-  import {
-    FILTER_DEBOUNCE_MS,
-    FilterQuery,
-    debounce,
-    filterDebounceOptions,
-    sortFilterValues
-  } from '@hcengineering/view-resources'
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import { FILTER_DEBOUNCE_MS, FilterQuery, sortFilterValues } from '@hcengineering/view-resources'
+  import { createEventDispatcher, onMount } from 'svelte'
   import tags from '../plugin'
   import { tagLevel } from '../utils'
   import WeightPopup from './WeightPopup.svelte'
@@ -53,6 +47,8 @@
 
   filter.modes = [tags.filter.FilterTagsIn, tags.filter.FilterTagsNin]
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
+
+  let filterUpdateTimeout: number | undefined
 
   let categories: TagCategory[] = []
   let objects: TagElement[] = []
@@ -115,19 +111,19 @@
     objects = objects
     categories = categories
 
-    updateFilter(filter, selected, level, onChange)
+    updateFilter(selected)
   }
 
-  const updateFilter = debounce(
-    (filter, newValues: Ref<TagElement>[], level: number, onChange: (e: Filter) => void) => {
+  function updateFilter (newValues: Ref<TagElement>[]) {
+    clearTimeout(filterUpdateTimeout)
+
+    filterUpdateTimeout = setTimeout(() => {
       filter.value = [...newValues]
       // Replace last one with value with level
       filter.props = { level }
       onChange(filter)
-    },
-    FILTER_DEBOUNCE_MS,
-    filterDebounceOptions
-  )
+    }, FILTER_DEBOUNCE_MS)
+  }
 
   $: schema = filter.key.attribute.schema ?? '0'
 
@@ -136,8 +132,6 @@
 
   $: tagLevelIcon = schema === '3' ? undefined : tagLevel[((level % 3) + 1) as 1 | 2 | 3]
   $: tagLevelLabel = [tags.string.Initial, tags.string.Meaningfull, tags.string.Expert][Math.floor(level / 3)]
-
-  onDestroy(() => updateFilter.flush())
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>

@@ -17,14 +17,8 @@
   import { Ref } from '@hcengineering/core'
   import { CheckBox, Icon, Label, resizeObserver } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
-  import {
-    FILTER_DEBOUNCE_MS,
-    FilterQuery,
-    debounce,
-    filterDebounceOptions,
-    sortFilterValues
-  } from '@hcengineering/view-resources'
-  import { createEventDispatcher, onDestroy } from 'svelte'
+  import { FILTER_DEBOUNCE_MS, FilterQuery, sortFilterValues } from '@hcengineering/view-resources'
+  import { createEventDispatcher } from 'svelte'
   import { channelProviders } from '../utils'
   import contact from '../plugin'
 
@@ -35,6 +29,8 @@
   }
   let selected: Ref<ChannelProvider>[] = filter.value
   const level: number = filter.props?.level ?? 0
+
+  let filterUpdateTimeout: number | undefined
 
   filter.modes = [contact.filter.FilterChannelIn, contact.filter.FilterChannelNin]
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
@@ -51,23 +47,21 @@
       selected = [...selected, element._id]
     }
 
-    updateFilter(filter, selected, level, onChange)
+    updateFilter(selected)
   }
 
-  const updateFilter = debounce(
-    (filter: Filter, newValues: Ref<ChannelProvider>[], level: number, onChange: (e: Filter) => void) => {
+  function updateFilter (newValues: Ref<ChannelProvider>[]) {
+    clearTimeout(filterUpdateTimeout)
+
+    filterUpdateTimeout = setTimeout(() => {
       filter.value = [...newValues]
       // Replace last one with value with level
       filter.props = { level }
       onChange(filter)
-    },
-    FILTER_DEBOUNCE_MS,
-    filterDebounceOptions
-  )
+    }, FILTER_DEBOUNCE_MS)
+  }
 
   const dispatch = createEventDispatcher()
-
-  onDestroy(() => updateFilter.flush())
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>

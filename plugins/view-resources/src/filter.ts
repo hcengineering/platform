@@ -325,12 +325,3 @@ export function sortFilterValues<T> (values: T[], checkIsSelected: (value: T) =>
  * @type {200}
  */
 export const FILTER_DEBOUNCE_MS: 200 = 200
-
-/**
- * Options object to indicate that function should be invoked
- * on the leading and/or trailing edge of the wait timeout
- *
- * @param options.leading — Specify invoking on the leading edge of the timeout.
- * @param options.trailing — Specify invoking on the trailing edge of the timeout.
- */
-export const filterDebounceOptions = { leading: true, trailing: true } as const

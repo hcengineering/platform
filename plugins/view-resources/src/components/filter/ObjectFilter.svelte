@@ -26,10 +26,10 @@
     resizeObserver
   } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import view from '../../plugin'
-  import { FILTER_DEBOUNCE_MS, filterDebounceOptions, sortFilterValues } from '../../filter'
-  import { buildConfigLookup, debounce, getPresenter } from '../../utils'
+  import { FILTER_DEBOUNCE_MS, sortFilterValues } from '../../filter'
+  import { buildConfigLookup, getPresenter } from '../../utils'
   import FilterRemovedNotification from './FilterRemovedNotification.svelte'
 
   export let filter: Filter
@@ -53,6 +53,8 @@
 
   $: isStatus = client.getHierarchy().isDerived(targetClass, core.class.Status) ?? false
   let statusesCount: Record<string, number> = {}
+
+  let filterUpdateTimeout: number | undefined
 
   const groupValues = (val: Status[]): Doc[] => {
     const statuses = val
@@ -141,14 +143,14 @@
       }
     }
 
-    updateFilter(filter, onChange)
+    updateFilter()
   }
 
-  const updateFilter = debounce(
-    (filter: Filter, onChange: (e: Filter) => void) => onChange(filter),
-    FILTER_DEBOUNCE_MS,
-    filterDebounceOptions
-  )
+  function updateFilter () {
+    clearTimeout(filterUpdateTimeout)
+
+    filterUpdateTimeout = setTimeout(() => onChange(filter), FILTER_DEBOUNCE_MS)
+  }
 
   let search: string = ''
   let phTraslate: string = ''
@@ -160,7 +162,6 @@
   onMount(() => {
     if (searchInput && !$deviceOptionsStore.isMobile) searchInput.focus()
   })
-  onDestroy(() => updateFilter.flush())
 
   const dispatch = createEventDispatcher()
   $: if (targetClass) getValues(search)

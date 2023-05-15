@@ -18,9 +18,9 @@
   import presentation, { getClient } from '@hcengineering/presentation'
   import { Project, Sprint, SprintStatus } from '@hcengineering/tracker'
   import ui, { deviceOptionsStore, Icon, Label, CheckBox, Loading, resizeObserver } from '@hcengineering/ui'
-  import { FILTER_DEBOUNCE_MS, debounce, filterDebounceOptions, sortFilterValues } from '@hcengineering/view-resources'
+  import { FILTER_DEBOUNCE_MS, sortFilterValues } from '@hcengineering/view-resources'
   import view, { Filter } from '@hcengineering/view'
-  import { createEventDispatcher, onMount, onDestroy } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'
   import { sprintStatusAssets } from '../../types'
   import SprintTitlePresenter from './SprintTitlePresenter.svelte'
@@ -43,6 +43,8 @@
   let values: Sprint[] = []
   let objectsPromise: Promise<FindResult<Sprint>> | undefined = undefined
   let selectedValues: Set<Ref<Sprint> | undefined | null> = new Set()
+
+  let filterUpdateTimeout: number | undefined
 
   const client = getClient()
   async function getValues (search: string): Promise<void> {
@@ -87,17 +89,17 @@
     }
     selectedValues = selectedValues
 
-    updateFilter(filter, selectedValues, onChange)
+    updateFilter(selectedValues)
   }
 
-  const updateFilter = debounce(
-    (filter: Filter, newValues: Set<Ref<Sprint> | null | undefined>, onChange: (e: Filter) => void) => {
+  function updateFilter (newValues: Set<Ref<Sprint> | null | undefined>) {
+    clearTimeout(filterUpdateTimeout)
+
+    filterUpdateTimeout = setTimeout(() => {
       filter.value = Array.from(newValues)
       onChange(filter)
-    },
-    FILTER_DEBOUNCE_MS,
-    filterDebounceOptions
-  )
+    }, FILTER_DEBOUNCE_MS)
+  }
 
   function getStatusItem (status: SprintStatus, docs: Sprint[]): Sprint[] {
     return docs.filter((p) => p.status === status)
@@ -111,7 +113,6 @@
   onMount(() => {
     if (searchInput && !$deviceOptionsStore.isMobile) searchInput.focus()
   })
-  onDestroy(() => updateFilter.flush())
 
   getValues(search)
 </script>

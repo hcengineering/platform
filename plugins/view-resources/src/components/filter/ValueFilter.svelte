@@ -18,9 +18,9 @@
   import presentation, { getClient } from '@hcengineering/presentation'
   import ui, { Icon, IconCheck, Label, Loading, resizeObserver, deviceOptionsStore } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
-  import { onMount, createEventDispatcher, onDestroy } from 'svelte'
-  import { debounce, getPresenter } from '../../utils'
-  import { FILTER_DEBOUNCE_MS, filterDebounceOptions, sortFilterValues } from '../../filter'
+  import { onMount, createEventDispatcher } from 'svelte'
+  import { getPresenter } from '../../utils'
+  import { FILTER_DEBOUNCE_MS, sortFilterValues } from '../../filter'
   import view from '../../plugin'
 
   export let _class: Ref<Class<Doc>>
@@ -42,6 +42,8 @@
   const realValues = new Map<any, Set<any>>()
 
   let objectsPromise: Promise<FindResult<Doc>> | undefined
+
+  let filterUpdateTimeout: number | undefined
 
   async function getValues (search: string): Promise<void> {
     if (objectsPromise) {
@@ -109,20 +111,20 @@
     }
     selectedValues = selectedValues
 
-    updateFilter(filter, selectedValues, realValues, onChange)
+    updateFilter(selectedValues)
   }
 
-  const updateFilter = debounce(
-    (filter: Filter, newValues: Set<any>, realValues: Map<any, Set<any>>, onChange: (e: Filter) => void) => {
+  function updateFilter (newValues: Set<any>) {
+    clearTimeout(filterUpdateTimeout)
+
+    filterUpdateTimeout = setTimeout(() => {
       filter.value = [...newValues.values()].map((v) => {
         return [v, [...(realValues.get(v) ?? [])]]
       })
 
       onChange(filter)
-    },
-    FILTER_DEBOUNCE_MS,
-    filterDebounceOptions
-  )
+    }, FILTER_DEBOUNCE_MS)
+  }
 
   let search: string = ''
   let phTraslate: string = ''
@@ -136,7 +138,6 @@
   onMount(() => {
     if (searchInput && !$deviceOptionsStore.isMobile) searchInput.focus()
   })
-  onDestroy(() => updateFilter.flush())
 
   getValues(search)
 </script>
