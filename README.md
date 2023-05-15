@@ -62,7 +62,7 @@ rushx upgrade
 In cases when project doesn't build for any logical reason try:
 
 ```bash
-rush update 
+rush update
 rush build --clean
 ```
 
@@ -92,3 +92,7 @@ rushx uitest
 ```bash
 node ./common/scripts/bump.js packageName
 ```
+
+## Additional testing
+
+This project is tested with BrowserStack.
