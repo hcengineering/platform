@@ -19,7 +19,7 @@
   import { Asset } from '@hcengineering/platform'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
-  import { IssueStatus, Project, genRanks } from '@hcengineering/tracker'
+  import { IssueStatus, Project, TimeReportDayType, genRanks } from '@hcengineering/tracker'
   import {
     Button,
     EditBox,
@@ -35,6 +35,7 @@
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
+  import TimeReportDayDropdown from '../issues/timereport/TimeReportDayDropdown.svelte'
   import ChangeIdentity from './ChangeIdentity.svelte'
   import ProjectIconChooser from './ProjectIconChooser.svelte'
 
@@ -77,7 +78,8 @@
       defaultIssueStatus: defaultStatusId,
       defaultAssignee: defaultAssignee ?? undefined,
       icon,
-      color
+      color,
+      defaultTimeReportDay: project?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay
     }
   }
 
@@ -101,6 +103,9 @@
     }
     if (projectData.color !== project?.color) {
       update.color = projectData.color
+    }
+    if (projectData.defaultTimeReportDay !== project?.defaultTimeReportDay) {
+      update.defaultTimeReportDay = projectData.defaultTimeReportDay
     }
     if (projectData.identifier !== project?.identifier) {
       update.identifier = projectData.identifier

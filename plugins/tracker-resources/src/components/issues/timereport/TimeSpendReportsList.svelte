@@ -16,7 +16,7 @@
   import contact from '@hcengineering/contact'
   import { Ref, Space, WithLookup } from '@hcengineering/core'
   import { UserBox } from '@hcengineering/contact-resources'
-  import { Project, TimeSpendReport } from '@hcengineering/tracker'
+  import { Project, TimeReportDayType, TimeSpendReport } from '@hcengineering/tracker'
   import {
     deviceOptionsStore as deviceInfo,
     eventToHTMLElement,
@@ -43,7 +43,11 @@
 
   const toProjectId = (ref: Ref<Space>) => ref as Ref<Project>
 
-  function editSpendReport (event: MouseEvent, value: TimeSpendReport): void {
+  function editSpendReport (
+    event: MouseEvent,
+    value: TimeSpendReport,
+    defaultTimeReportDay: TimeReportDayType | undefined
+  ): void {
     showPopup(
       TimeSpendReportPopup,
       {
@@ -51,7 +55,8 @@
         issueClass: value.attachedToClass,
         space: value.space,
         value,
-        assignee: value.employee
+        assignee: value.employee,
+        defaultTimeReportDay
       },
       $deviceInfo.isMobile ? 'top' : eventToHTMLElement(event)
     )
@@ -73,7 +78,7 @@
       on:focus={() => {
         listProvider.updateFocus(report)
       }}
-      on:click={(evt) => editSpendReport(evt, report)}
+      on:click={(evt) => editSpendReport(evt, report, currentProject?.defaultTimeReportDay)}
     >
       <div class="flex-row-center clear-mins gap-2 flex-grow mr-4" class:p-text={twoRows}>
         <FixedColumn key={'timespend_issue'} justify={'left'} addClass={'fs-bold'}>

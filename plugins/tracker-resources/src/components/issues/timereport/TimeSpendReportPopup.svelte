@@ -33,9 +33,10 @@
 
   export let value: TimeSpendReport | undefined
   export let placeholder: IntlString = tracker.string.TimeSpendReportValue
+  export let defaultTimeReportDay: TimeReportDayType = TimeReportDayType.PreviousWorkDay
 
   const data = {
-    date: value?.date ?? getTimeReportDate(TimeReportDayType.PreviousWorkDay),
+    date: value?.date ?? getTimeReportDate(defaultTimeReportDay),
     description: value?.description ?? '',
     value: value?.value,
     employee: value?.employee ?? assignee ?? null

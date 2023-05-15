@@ -71,6 +71,7 @@ import {
   ScrumRecord,
   Sprint,
   SprintStatus,
+  TimeReportDayType,
   TimeSpendReport,
   trackerId
 } from '@hcengineering/tracker'
@@ -155,6 +156,8 @@ export class TProject extends TSpace implements Project {
 
   @Prop(TypeRef(contact.class.Employee), tracker.string.DefaultAssignee)
     defaultAssignee!: Ref<Employee>
+
+  declare defaultTimeReportDay: TimeReportDayType
 }
 
 /**

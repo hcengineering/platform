@@ -51,6 +51,7 @@ export interface Project extends Space {
   defaultAssignee?: Ref<Employee>
   icon?: Asset
   color?: number
+  defaultTimeReportDay: TimeReportDayType
 }
 
 /**

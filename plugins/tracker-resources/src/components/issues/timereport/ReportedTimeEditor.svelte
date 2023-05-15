@@ -39,12 +39,15 @@
     spaceQuery.unsubscribe()
   }
 
+  $: defaultTimeReportDay = currentProject?.defaultTimeReportDay
+
   function addTimeReport (event: MouseEvent): void {
     showPopup(
       TimeSpendReportPopup,
       {
         issue: object,
         issueId: object._id,
+        defaultTimeReportDay,
         issueClass: object._class,
         space: object.space,
         assignee: object.assignee,
