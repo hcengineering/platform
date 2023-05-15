@@ -74,10 +74,10 @@
 
   export let focusIndex = -1
 
-  let lastHref: string
+  let lastIssueId: Ref<Issue>
   afterUpdate(() => {
-    if (lastHref !== window.location.href) {
-      lastHref = window.location.href
+    if (lastIssueId !== issue._id) {
+      lastIssueId = issue._id
       isCreating = $draftsStore[`${issue._id}_subIssue`] !== undefined
     }
   })
