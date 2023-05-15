@@ -20,7 +20,7 @@
 
   export let value: WithLookup<Component>
   export let shouldShowAvatar = true
-  export let onClick: () => void | undefined
+  export let onClick: (() => void) | undefined = undefined
   export let disabled = false
   export let inline: boolean = false
 

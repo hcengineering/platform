@@ -17,7 +17,7 @@
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
   import { Project, Sprint, SprintStatus } from '@hcengineering/tracker'
-  import ui, { deviceOptionsStore, Icon, Label, CheckBox, Loading, resizeObserver } from '@hcengineering/ui'
+  import ui, { CheckBox, Icon, Label, Loading, deviceOptionsStore, resizeObserver } from '@hcengineering/ui'
   import view, { Filter } from '@hcengineering/view'
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'

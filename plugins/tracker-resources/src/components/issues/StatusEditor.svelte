@@ -14,13 +14,12 @@
 -->
 <script lang="ts">
   import { AttachedData, Ref, StatusManager, WithLookup } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
+  import { getClient, statusStore } from '@hcengineering/presentation'
   import { Issue, IssueDraft, IssueStatus, Project } from '@hcengineering/tracker'
-  import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
-  import { Button, eventToHTMLElement, SelectPopup, showPopup, TooltipAlignment } from '@hcengineering/ui'
+  import type { ButtonKind, ButtonSize, IconSize } from '@hcengineering/ui'
+  import { Button, SelectPopup, TooltipAlignment, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
-  import { statusStore } from '@hcengineering/presentation'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
 
@@ -36,6 +35,7 @@
 
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
+  export let iconSize: IconSize = 'inline'
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = undefined
   export let defaultIssueStatus: Ref<IssueStatus> | undefined = undefined
@@ -138,7 +138,7 @@
     >
       <span slot="content" class="flex-row-center pointer-events-none">
         {#if selectedStatus}
-          <IssueStatusIcon value={selectedStatus} size="inline" />
+          <IssueStatusIcon value={selectedStatus} size={iconSize} />
         {/if}
         {#if selectedStatusLabel}
           <span
