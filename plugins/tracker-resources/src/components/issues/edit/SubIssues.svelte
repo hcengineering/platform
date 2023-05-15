@@ -39,6 +39,7 @@
   import tracker from '../../../plugin'
   import CreateSubIssue from './CreateSubIssue.svelte'
   import SubIssueList from './SubIssueList.svelte'
+  import { afterUpdate } from 'svelte'
 
   export let issue: Issue
   export let projects: Map<Ref<Project>, Project>
@@ -72,6 +73,14 @@
   $: viewOptions = viewlet !== undefined ? getViewOptions(viewlet, $viewOptionStore) : undefined
 
   export let focusIndex = -1
+
+  let lastHref: string
+  afterUpdate(() => {
+    if (lastHref !== window.location.href) {
+      lastHref = window.location.href
+      isCreating = $draftsStore[`${issue._id}_subIssue`] !== undefined
+    }
+  })
 </script>
 
 <div class="flex-between">
