@@ -25,6 +25,8 @@ const serverPort = parseInt(process.env.SERVER_PORT ?? '3333')
 
 const serverFactory = serverFactories[(process.env.SERVER_PROVIDER as string) ?? 'ws'] ?? serverFactories.ws
 
+const enableCompression = (process.env.ENABLE_COMPRESSION ?? 'true') === 'true'
+
 const url = process.env.MONGO_URL
 if (url === undefined) {
   console.error('please provide mongodb url')
@@ -92,7 +94,8 @@ const shutdown = start(url, {
   serverFactory,
   indexParallel: 2,
   indexProcessing: 500,
-  productId: ''
+  productId: '',
+  enableCompression
 })
 
 const close = (): void => {

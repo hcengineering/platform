@@ -508,6 +508,7 @@ export function start (
     sessionFactory: (token: Token, pipeline: Pipeline, broadcast: BroadcastCall) => Session
     productId: string
     serverFactory: ServerFactory
+    enableCompression?: boolean
   }
 ): () => Promise<void> {
   const sessions = new TSessionManager(ctx, opt.sessionFactory)
@@ -517,6 +518,7 @@ export function start (
     ctx,
     opt.pipelineFactory,
     opt.port,
-    opt.productId
+    opt.productId,
+    opt.enableCompression ?? true
   )
 }
