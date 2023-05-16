@@ -56,6 +56,7 @@
   }
   export let listDiv: HTMLDivElement
   export let selection: number | undefined = undefined
+  export let groupPersistKey: string
 
   $: groupByKey = viewOptions.groupBy[level] ?? noCategory
   let categories: CategoryType[] = []
@@ -297,6 +298,7 @@
     {config}
     {itemModels}
     {_class}
+    groupPersistKey={`${groupPersistKey}_${level}_${typeof category === 'object' ? category.name : category}`}
     singleCat={level === 0 && categories.length === 1}
     oneCat={viewOptions.groupBy.length === 1}
     lastCat={i === categories.length - 1}
@@ -357,6 +359,7 @@
         {flatHeaders}
         {props}
         {level}
+        groupPersistKey={`${groupPersistKey}_${level}_${typeof category === 'object' ? category.name : category}`}
         {initIndex}
         {viewOptionsConfig}
         {listDiv}
