@@ -1,26 +1,24 @@
 <script lang="ts">
-  import { IntlString } from '@hcengineering/platform'
   import { TabList } from '@hcengineering/ui'
+  import { IModeSelector } from '../utils'
 
-  export let mode: string
-  export let config: [string, IntlString, object][]
-  export let onChange: (_mode: string) => void
+  export let props: IModeSelector
 
-  $: modeList = config.map((c) => {
+  $: modeList = props.config.map((c) => {
     return {
       id: c[0],
       labelIntl: c[1],
       labelParams: c[2],
-      action: () => onChange(c[0])
+      action: () => props.onChange(c[0])
     }
   })
 </script>
 
-<div class="ac-header tabs-start full divide">
+<div class="ac-header tabs-start full">
   <TabList
     items={modeList}
-    selected={mode}
-    kind={'plain'}
+    selected={props.mode}
+    kind={'separated'}
     on:select={(result) => {
       if (result.detail !== undefined && result.detail.action) result.detail.action()
     }}

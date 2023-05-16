@@ -18,13 +18,14 @@
   import tracker from '../../plugin'
   import IssuesContent from './IssuesContent.svelte'
   import IssuesHeader from './IssuesHeader.svelte'
+  import { IModeSelector } from '../../utils'
 
   export let space: Ref<Space> | undefined = undefined
   export let query: DocumentQuery<Issue> = {}
   export let title: IntlString | undefined = undefined
   export let label: string = ''
-
   export let panelWidth: number = 0
+  export let modeSelectorProps: IModeSelector | undefined = undefined
 
   let viewlet: WithLookup<Viewlet> | undefined = undefined
   let search = ''
@@ -81,7 +82,15 @@
   $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 </script>
 
-<IssuesHeader {viewlets} {label} {space} bind:viewlet bind:search showLabelSelector={$$slots.label_selector}>
+<IssuesHeader
+  bind:viewlet
+  bind:search
+  showLabelSelector={$$slots.label_selector}
+  {viewlets}
+  {label}
+  {space}
+  {modeSelectorProps}
+>
   <svelte:fragment slot="label_selector">
     <slot name="label_selector" />
   </svelte:fragment>
