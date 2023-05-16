@@ -124,6 +124,7 @@
     {viewOptionsConfig}
     {selectedObjectIds}
     level={0}
+    groupPersistKey={''}
     {createItemDialog}
     {createItemLabel}
     on:check

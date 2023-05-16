@@ -63,6 +63,7 @@
   }
   export let listDiv: HTMLDivElement
   export let index: number
+  export let groupPersistKey: string
 
   $: lastLevel = level + 1 >= viewOptions.groupBy.length
 
@@ -72,9 +73,7 @@
   $: initialLimit = !lastLevel ? undefined : singleCat ? singleCategoryLimit : defaultLimit
   $: limit = initialLimit
 
-  $: categoryCollapseKey = `list_collapsing_${location.pathname}_${
-    typeof category === 'object' ? category.name : category
-  }`
+  $: categoryCollapseKey = `list_collapsing_${location.pathname}_${groupPersistKey}`
   $: storedCollapseState = localStorage.getItem(categoryCollapseKey)
 
   $: collapsed = storedCollapseState === 'true' || storedCollapseState === null
@@ -402,6 +401,7 @@
         {flatHeaders}
         {props}
         level={level + 1}
+        {groupPersistKey}
         {viewOptionsConfig}
         {listDiv}
         dragItem
