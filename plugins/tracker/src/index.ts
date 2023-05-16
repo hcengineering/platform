@@ -132,7 +132,6 @@ export interface Milestone extends Doc {
   comments: number
   attachments?: number
 
-  startDate: Timestamp
   targetDate: Timestamp
 
   // Capacity in man days.

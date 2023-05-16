@@ -354,35 +354,11 @@ export async function milestoneSort (value: Array<Ref<Milestone>>): Promise<Arra
     const query = createQuery(true)
     query.query(tracker.class.Milestone, { _id: { $in: value } }, (res) => {
       const milestones = toIdMap(res)
-      value.sort((a, b) => (milestones.get(b)?.startDate ?? 0) - (milestones.get(a)?.startDate ?? 0))
+      value.sort((a, b) => (milestones.get(b)?.targetDate ?? 0) - (milestones.get(a)?.targetDate ?? 0))
       resolve(value)
       query.unsubscribe()
     })
   })
-}
-
-/**
- * @public
- */
-export function getMilestoneDays (value: Milestone): string {
-  const st = new Date(value.startDate).getDate()
-  const days = Math.floor(Math.abs((1 + value.targetDate - value.startDate) / 1000 / 60 / 60 / 24)) + 1
-  const stDate = new Date(value.startDate)
-  const stTime = stDate.getTime()
-  let ds = Array.from(Array(days).keys()).map((it) => st + it)
-  ds = ds.filter((it) => ![0, 6].includes(new Date(new Date(stTime).setDate(it)).getDay()))
-  return ds.join(' ')
-}
-
-export function getDayOfMilestone (startDate: number, now: number): number {
-  startDate = new Date(startDate).setHours(0, 0)
-  now = new Date(now).setHours(0, 0)
-  const days = Math.floor(Math.abs((1 + now - startDate) / 1000 / 60 / 60 / 24))
-  const stDate = new Date(startDate)
-  const stDateDate = stDate.getDate()
-  const stTime = stDate.getTime()
-  const ds = Array.from(Array(days).keys()).map((it) => stDateDate + it)
-  return ds.filter((it) => !isWeekend(new Date(new Date(stTime).setDate(it)))).length
 }
 
 export async function moveIssuesToAnotherMilestone (

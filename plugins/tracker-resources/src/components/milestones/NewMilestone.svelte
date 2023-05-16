@@ -37,7 +37,6 @@
     comments: 0,
     attachments: 0,
     capacity: 0,
-    startDate: Date.now(),
     targetDate: Date.now() + 14 * 24 * 60 * 60 * 1000
   }
 
@@ -97,14 +96,6 @@
     <UserBoxList
       bind:items={object.members}
       label={tracker.string.MilestoneMembersSearchPlaceholder}
-      kind={'secondary'}
-      size={'large'}
-    />
-    <DatePresenter
-      bind:value={object.startDate}
-      editable
-      label={tracker.string.StartDate}
-      detail={ui.string.SelectDate}
       kind={'secondary'}
       size={'large'}
     />

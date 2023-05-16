@@ -256,7 +256,6 @@
     "TimeSpendReportDescription": "Description",
     "TimeSpendValue": "{value}d",
     "TimeSpendHours": "{value}h",
-    "MilestonePassed": "{from}d/{to}d",
     "ChildEstimation": "Subissues Estimation",
     "ChildReportedTime": "Subissues Time",
     "Capacity": "Capacity",

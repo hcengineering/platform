@@ -8,7 +8,6 @@
   import { onDestroy } from 'svelte'
   import { activeMilestone } from '../../issues'
   import tracker from '../../plugin'
-  import { getDayOfMilestone } from '../../utils'
   import Expanded from '../icons/Expanded.svelte'
   import IssuesView from '../issues/IssuesView.svelte'
   import MilestonePopup from './MilestonePopup.svelte'
@@ -62,26 +61,11 @@
     </div>
   </svelte:fragment>
   <svelte:fragment slot="afterHeader">
-    {@const now = Date.now()}
     <div class="p-1 ml-6 flex-row-center">
       <div class="flex-row-center">
-        <DatePresenter value={milestone.startDate} kind={'transparent'} />
-        <span class="p-1"> / </span><DatePresenter value={milestone.targetDate} kind={'transparent'} />
+        <DatePresenter value={milestone.targetDate} kind={'transparent'} />
       </div>
       <div class="flex-row-center ml-2">
-        <!-- Active milestone in time -->
-        <Label
-          label={tracker.string.MilestonePassed}
-          params={{
-            from:
-              now < milestone.startDate
-                ? 0
-                : now > milestone.targetDate
-                ? getDayOfMilestone(milestone.startDate, milestone.targetDate)
-                : getDayOfMilestone(milestone.startDate, now),
-            to: getDayOfMilestone(milestone.startDate, milestone.targetDate)
-          }}
-        />
         {#if milestone?.capacity}
           <Label label={tracker.string.CapacityValue} params={{ value: milestone?.capacity }} />
         {/if}

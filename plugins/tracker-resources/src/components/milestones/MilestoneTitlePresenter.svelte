@@ -26,9 +26,6 @@
       {value.label}
     </div>
     <span class="flex flex-grow justify-end">
-      {new Date(value.startDate).getDate()}
-      {getMonthName(new Date(value.startDate), 'short')}
-      -
       {new Date(value.targetDate).getDate()}
       {getMonthName(new Date(value.targetDate), 'short')}
     </span>

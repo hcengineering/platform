@@ -402,9 +402,6 @@ export class TMilestone extends TDoc implements Milestone {
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
-  @Prop(TypeDate(), tracker.string.StartDate)
-    startDate!: Timestamp
-
   @Prop(TypeDate(), tracker.string.TargetDate)
     targetDate!: Timestamp
 
@@ -1805,7 +1802,6 @@ export function createModel (builder: Builder): void {
   const milestoneOptions: ViewOptionsModel = {
     groupBy: ['lead'],
     orderBy: [
-      ['startDate', SortingOrder.Descending],
       ['modifiedOn', SortingOrder.Descending],
       ['targetDate', SortingOrder.Descending],
       ['capacity', SortingOrder.Ascending]
@@ -1836,7 +1832,6 @@ export function createModel (builder: Builder): void {
             intlSearchPh: tracker.string.MilestoneMembersSearchPlaceholder
           }
         },
-        { key: '', presenter: tracker.component.MilestoneDatePresenter, props: { field: 'startDate' } },
         { key: '', presenter: tracker.component.MilestoneDatePresenter, props: { field: 'targetDate' } },
         {
           key: 'lead',

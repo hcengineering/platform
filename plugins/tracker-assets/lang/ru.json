@@ -256,7 +256,6 @@
     "TimeSpendReportDescription": "Описание",
     "TimeSpendValue": "{value}d",
     "TimeSpendHours": "{value}h",
-    "MilestonePassed": "{from}d/{to}d",
     "ChildEstimation": "Оценка подзадач",
     "ChildReportedTime": "Время водзадач",
     "Capacity": "Вместимость",

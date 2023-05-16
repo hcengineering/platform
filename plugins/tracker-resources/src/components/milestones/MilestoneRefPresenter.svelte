@@ -18,8 +18,6 @@
   import { Milestone } from '@hcengineering/tracker'
   import { ButtonKind, DatePresenter, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import tracker from '../../plugin'
-  import { getDayOfMilestone } from '../../utils'
-  import TimePresenter from '../issues/timereport/TimePresenter.svelte'
   import MilestoneSelector from './MilestoneSelector.svelte'
 
   export let value: Ref<Milestone>
@@ -46,22 +44,7 @@
   {#if milestone && kind === 'list-header'}
     <div class="flex-row-center" class:minus-margin-space={kind === 'list-header'} class:text-sm={twoRows}>
       {#if milestone}
-        {@const now = Date.now()}
-        {@const milestoneDaysFrom =
-          now < milestone.startDate
-            ? 0
-            : now > milestone.targetDate
-            ? getDayOfMilestone(milestone.startDate, milestone.targetDate)
-            : getDayOfMilestone(milestone.startDate, now)}
-        {@const milestoneDaysTo = getDayOfMilestone(milestone.startDate, milestone.targetDate)}
-        <DatePresenter value={milestone.startDate} kind={'transparent'} />
-        <span class="p-1"> / </span>
         <DatePresenter value={milestone.targetDate} kind={'transparent'} />
-        <div class="w-2 min-w-2" />
-        <!-- Active milestone in time -->
-        <TimePresenter value={milestoneDaysFrom} />
-        /
-        <TimePresenter value={milestoneDaysTo} />
       {/if}
     </div>
   {/if}
