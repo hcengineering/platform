@@ -41,6 +41,7 @@
   {parent}
   {indent}
   {shortDropbox}
+  on:click
 >
   <slot />
 </TreeElement>
