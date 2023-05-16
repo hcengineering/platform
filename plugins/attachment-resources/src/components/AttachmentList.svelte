@@ -15,6 +15,7 @@
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
   import { Ref } from '@hcengineering/core'
+  import { Scroller } from '@hcengineering/ui'
   import AttachmentPreview from './AttachmentPreview.svelte'
 
   export let attachments: Attachment[] = []
@@ -22,11 +23,9 @@
 </script>
 
 {#if attachments.length}
-  <div class="flex flex-wrap">
+  <Scroller contentDirection={'horizontal'} horizontal gap={'gap-3'}>
     {#each attachments as attachment}
-      <div class="p-2">
-        <AttachmentPreview value={attachment} isSaved={savedAttachmentsIds?.includes(attachment._id) ?? false} />
-      </div>
+      <AttachmentPreview value={attachment} isSaved={savedAttachmentsIds?.includes(attachment._id) ?? false} />
     {/each}
-  </div>
+  </Scroller>
 {/if}

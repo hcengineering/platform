@@ -289,28 +289,14 @@
 
     <svelte:fragment slot="custom-attributes">
       {#if issue && currentProject}
+        <div class="space-divider" />
         <ControlPanel {issue} {showAllMixins} />
       {/if}
 
-      <div class="divider" />
-      <div class="issue-stats">
+      <div class="popupPanel-body__aside-grid">
+        <div class="divider" />
         <IssueStatusActivity {issue} />
       </div>
     </svelte:fragment>
   </Panel>
 {/if}
-
-<style lang="scss">
-  .divider {
-    flex-shrink: 0;
-    margin: 0.5rem 0;
-    height: 1px;
-    background-color: var(--theme-divider-color);
-  }
-  .issue-stats {
-    flex-shrink: 0;
-    margin: 0 2rem;
-    min-width: 0;
-    min-height: 0;
-  }
-</style>

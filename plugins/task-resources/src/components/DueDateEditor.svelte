@@ -1,10 +1,14 @@
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { DueDatePresenter } from '@hcengineering/ui'
+  import { DueDatePresenter, ButtonSize, ButtonKind } from '@hcengineering/ui'
   import { WithLookup } from '@hcengineering/core'
   import { Task } from '@hcengineering/task'
 
   export let object: WithLookup<Task>
+  export let width: string | undefined = undefined
+  export let size: ButtonSize = 'medium'
+  export let kind: ButtonKind = 'link'
+  export let editable: boolean = true
 
   const client = getClient()
   $: shouldIgnoreOverdue = object.doneState != null
@@ -28,9 +32,11 @@
 
 {#if object}
   <DueDatePresenter
-    kind={'link'}
+    {kind}
+    {width}
+    {size}
     value={object.dueDate}
-    editable
+    {editable}
     onChange={(e) => handleDueDateChanged(e)}
     {shouldIgnoreOverdue}
   />

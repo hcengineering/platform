@@ -104,7 +104,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 0.75rem;
+    padding: 0 0.125rem 0 0.75rem;
     font-weight: 600;
     color: var(--theme-dark-color);
     border-top: 1px solid var(--theme-divider-color);

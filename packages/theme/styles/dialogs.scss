@@ -31,7 +31,7 @@
   min-height: 0;
   background: var(--theme-popup-color);
   border-radius: .5rem;
-  box-shadow: var(--card-shadow);
+  box-shadow: var(--theme-popup-shadow);
 
   .antiCard-header {
     position: relative;

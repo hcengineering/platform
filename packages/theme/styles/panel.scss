@@ -18,18 +18,38 @@
   overflow: hidden;
   min-width: 400px;
 
-  background: var(--body-accent);
-  border: 1px solid var(--divider-color);
+  background-color: var(--theme-popup-color);
+  border: 1px solid var(--theme-popup-divider);
   border-radius: .5rem;
   flex-direction: row;
-  box-shadow: var(--popup-shadow);
+  box-shadow: var(--theme-popup-shadow);
   // left: 1rem;
+
+  &.float {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    top: 5rem;
+    right: .5rem;
+    width: 42rem;
+    height: fit-content;
+    min-height: 0;
+    max-height: 32rem;
+    z-index: 500;
+
+    .ap-header {
+      flex-shrink: 0;
+      padding: 1.5rem 1.75rem .5rem;
+      width: 100%;
+      min-width: 0;
+      min-height: 0;
+    }
+  }
 
   .ac-header {
     &.highlight { background-color: var(--accent-bg-color); }
     &.divide { border-bottom: 1px solid var(--divider-color); }
   }
-
   .ad-section-50 {
     display: flex;
     flex-direction: column;
@@ -39,7 +59,6 @@
 
     &.divide { border-right: 1px solid var(--divider-color); }
   }
-
   .ad-tools {
     position: absolute;
     display: flex;
@@ -258,27 +277,29 @@
         display: flex;
         align-items: center;
         flex-shrink: 0;
-        padding: .75rem 2rem;
         height: 3.5rem;
         min-height: 3.5rem;
         border-bottom: 1px solid var(--theme-divider-color);
       }
-      &-tabsheader {
-        padding: 0 2rem;
+      &-tabsheader { padding: 0 2rem; }
+      &-header {
+        justify-content: space-between;
+        padding: .75rem .75rem .75rem 2rem;
       }
 
       &-grid {
         display: grid;
         grid-template-columns: 1fr 1.5fr;
-        grid-auto-flow: row;
+        grid-auto-rows: minmax(2rem, max-content);
         justify-content: start;
         align-items: center;
         row-gap: .25rem;
         column-gap: 1rem;
-        margin: .5rem 2rem;
+        margin: .25rem 2rem 0;
         width: calc(100% - 4rem);
         height: min-content;
 
+        &.inCollapsed { margin: 1rem 2rem; }
         .divider {
           grid-column: 1 / 3;
           margin: .75rem -2rem;
@@ -289,9 +310,16 @@
         .labelTop { color: var(--theme-dark-color); }
         .labelTop {
           align-self: start;
-          margin-top: 0.385rem;
-        }      
-      }    
+          margin-top: 0.625rem;
+        }
+        .textPadding { margin-left: .875rem; }
+      }
+      .space-divider {
+        flex-shrink: 0;
+        height: .75rem;
+
+        &.bottom { height: 1.25rem; }
+      }
     }
 
     // &.asideShown .popupPanel-body__main {

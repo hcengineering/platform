@@ -300,21 +300,16 @@
       </div>
     </svelte:fragment>
 
-    <svelte:fragment slot="aside-tabs">
-      <div class="flex-row-center flex-reverse flex-grow">
-        <Button
-          kind={'transparent'}
-          shape={'round'}
-          selected={showAllMixins}
-          on:click={() => {
-            showAllMixins = !showAllMixins
-          }}
-        >
-          <svelte:fragment slot="icon">
-            <IconMixin size={'small'} />
-          </svelte:fragment>
-        </Button>
-      </div>
+    <svelte:fragment slot="actions">
+      <Button
+        icon={IconMixin}
+        kind={'transparent'}
+        shape={'round'}
+        selected={showAllMixins}
+        on:click={() => {
+          showAllMixins = !showAllMixins
+        }}
+      />
     </svelte:fragment>
     <svelte:fragment slot="attributes" let:direction={dir}>
       {#if !headerLoading}

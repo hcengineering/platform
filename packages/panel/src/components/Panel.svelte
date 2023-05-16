@@ -165,9 +165,11 @@
     {#if $$slots.actions}
       <div class="popupPanel-body__aside-header">
         {#if $$slots['actions-label']}
-          <span class="fs-bold w-27 mr-6"><slot name="actions-label" /></span>
+          <span class="fs-bold w-27 mr-4"><slot name="actions-label" /></span>
+        {:else if $$slots.actions}
+          <span class="fs-bold w-27 mr-4" />
         {/if}
-        <div class="buttons-group xsmall-gap flex flex-grow">
+        <div class="buttons-group xsmall-gap">
           <slot name="actions" />
         </div>
       </div>
@@ -177,7 +179,7 @@
         <slot name="custom-attributes" direction="column" />
       {:else if $$slots.attributes}<slot name="attributes" direction="column" />{/if}
       {#if $$slots.aside}<slot name="aside" />{/if}
-      <div class="h-2 min-h-2 max-h-2" />
+      <div class="space-divider bottom" />
     </Scroller>
   </svelte:fragment>
 
