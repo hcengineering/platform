@@ -97,7 +97,7 @@ export class LiveQuery extends TxProcessor implements Client {
   // Perform refresh of content since connection established.
   async refreshConnect (): Promise<void> {
     for (const q of [...this.queue]) {
-      if (!(await this.removeFromQueue(q))) {
+      if (!this.removeFromQueue(q)) {
         try {
           await this.refresh(q)
         } catch (err) {
@@ -622,9 +622,11 @@ export class LiveQuery extends TxProcessor implements Client {
 
   private async refresh (q: Query): Promise<void> {
     const res = await this.client.findAll(q._class, q.query, q.options)
-    q.result = res
-    q.total = res.total
-    await this.callback(q)
+    if (!deepEqual(res, q.result)) {
+      q.result = res
+      q.total = res.total
+      await this.callback(q)
+    }
   }
 
   // Check if query is partially matched.
@@ -974,6 +976,7 @@ export class LiveQuery extends TxProcessor implements Client {
   async tx (tx: Tx): Promise<TxResult> {
     if (tx._class === core.class.TxWorkspaceEvent) {
       await this.checkUpdateFulltextQueries(tx)
+      await this.changePrivateHandler(tx)
       return {}
     }
     return await super.tx(tx)
@@ -985,7 +988,7 @@ export class LiveQuery extends TxProcessor implements Client {
       const indexingParam = evt.params as IndexingUpdateEvent
       for (const q of [...this.queue]) {
         if (indexingParam._class.includes(q._class) && q.query.$search !== undefined) {
-          if (!(await this.removeFromQueue(q))) {
+          if (!this.removeFromQueue(q)) {
             try {
               await this.refresh(q)
             } catch (err) {
@@ -997,6 +1000,34 @@ export class LiveQuery extends TxProcessor implements Client {
       for (const v of this.queries.values()) {
         for (const q of v) {
           if (indexingParam._class.includes(q._class) && q.query.$search !== undefined) {
+            try {
+              await this.refresh(q)
+            } catch (err) {
+              console.error(err)
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private async changePrivateHandler (tx: Tx): Promise<void> {
+    const evt = tx as TxWorkspaceEvent
+    if (evt.event === WorkspaceEvent.SecurityChange) {
+      for (const q of [...this.queue]) {
+        if (typeof q.query.space !== 'string') {
+          if (!this.removeFromQueue(q)) {
+            try {
+              await this.refresh(q)
+            } catch (err) {
+              console.error(err)
+            }
+          }
+        }
+      }
+      for (const v of this.queries.values()) {
+        for (const q of v) {
+          if (typeof q.query.space !== 'string') {
             try {
               await this.refresh(q)
             } catch (err) {

@@ -29,7 +29,7 @@ import core, {
   TxCUD
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
+import { BroadcastFunc, Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
 import { DOMAIN_PREFERENCE } from '@hcengineering/server-preference'
 import { BaseMiddleware } from './base'
 import { getUser, mergeTargets } from './utils'
@@ -44,7 +44,12 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
     super(storage, next)
   }
 
-  static async create (ctx: MeasureContext, storage: ServerStorage, next?: Middleware): Promise<PrivateMiddleware> {
+  static async create (
+    ctx: MeasureContext,
+    broadcast: BroadcastFunc,
+    storage: ServerStorage,
+    next?: Middleware
+  ): Promise<PrivateMiddleware> {
     return new PrivateMiddleware(storage, next)
   }
 

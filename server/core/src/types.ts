@@ -64,7 +64,17 @@ export interface Middleware {
 /**
  * @public
  */
-export type MiddlewareCreator = (ctx: MeasureContext, storage: ServerStorage, next?: Middleware) => Promise<Middleware>
+export type BroadcastFunc = (tx: Tx[], targets?: string[]) => void
+
+/**
+ * @public
+ */
+export type MiddlewareCreator = (
+  ctx: MeasureContext,
+  broadcast: BroadcastFunc,
+  storage: ServerStorage,
+  next?: Middleware
+) => Promise<Middleware>
 
 /**
  * @public

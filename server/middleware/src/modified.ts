@@ -23,7 +23,7 @@ import core, {
   TxCollectionCUD,
   TxCreateDoc
 } from '@hcengineering/core'
-import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
+import { BroadcastFunc, Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
 import { BaseMiddleware } from './base'
 
 /**
@@ -34,7 +34,12 @@ export class ModifiedMiddleware extends BaseMiddleware implements Middleware {
     super(storage, next)
   }
 
-  static async create (ctx: MeasureContext, storage: ServerStorage, next?: Middleware): Promise<ModifiedMiddleware> {
+  static async create (
+    ctx: MeasureContext,
+    broadcast: BroadcastFunc,
+    storage: ServerStorage,
+    next?: Middleware
+  ): Promise<ModifiedMiddleware> {
     return new ModifiedMiddleware(storage, next)
   }
 

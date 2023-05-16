@@ -24,7 +24,7 @@ import {
   ServerStorage,
   Tx
 } from '@hcengineering/core'
-import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
+import { BroadcastFunc, Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
 import { BaseMiddleware } from './base'
 
 import { deepEqual } from 'fast-equals'
@@ -47,7 +47,12 @@ export class QueryJoinMiddleware extends BaseMiddleware implements Middleware {
     super(storage, next)
   }
 
-  static async create (ctx: MeasureContext, storage: ServerStorage, next?: Middleware): Promise<QueryJoinMiddleware> {
+  static async create (
+    ctx: MeasureContext,
+    broadcast: BroadcastFunc,
+    storage: ServerStorage,
+    next?: Middleware
+  ): Promise<QueryJoinMiddleware> {
     return new QueryJoinMiddleware(storage, next)
   }
 
