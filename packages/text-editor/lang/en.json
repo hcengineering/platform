@@ -1,5 +1,5 @@
 {
-  "string": {    
+  "string": {
     "Suggested": "SUGGESTED",
     "NoItems": "No items",
     "EditorPlaceholder": "Start typing...",
@@ -18,7 +18,9 @@
     "Attach": "Attach",
     "TextStyle": "Text style",
     "Emoji": "Emoji",
-    "GIF": "GIF",    
+    "GIF": "GIF",
+    "Mention": "Mention",
+    "Underlined": "Underlined",
     "FullDescription": "Full description",
     "NoFullDescription": "There are no detailed description",
     "EnableDiffMode": "Diff mode",

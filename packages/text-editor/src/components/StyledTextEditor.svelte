@@ -32,16 +32,22 @@
   import { headingLevels, mInsertTable } from './extensions'
   import Attach from './icons/Attach.svelte'
   import Bold from './icons/Bold.svelte'
+  import RIBold from './icons/RIBold.svelte'
   import Code from './icons/Code.svelte'
+  import RICode from './icons/RICode.svelte'
   import CodeBlock from './icons/CodeBlock.svelte'
   import Header from './icons/Header.svelte'
   import IconTable from './icons/IconTable.svelte'
   import Italic from './icons/Italic.svelte'
+  import RIItalic from './icons/RIItalic.svelte'
   import Link from './icons/Link.svelte'
+  import RILink from './icons/RILink.svelte'
   import ListBullet from './icons/ListBullet.svelte'
   import ListNumber from './icons/ListNumber.svelte'
   import Quote from './icons/Quote.svelte'
   import Strikethrough from './icons/Strikethrough.svelte'
+  import RIStrikethrough from './icons/RIStrikethrough.svelte'
+  // import RIMention from './icons/RIMention.svelte'
   import AddColAfter from './icons/table/AddColAfter.svelte'
   import AddColBefore from './icons/table/AddColBefore.svelte'
   import AddRowAfter from './icons/table/AddRowAfter.svelte'
@@ -60,7 +66,8 @@
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let showButtons: boolean = true
   export let hideAttachments: boolean = false
-  export let buttonSize: IconSize = 'large'
+  export let buttonSize: IconSize = 'medium'
+  export let formatButtonSize: IconSize = 'small'
   export let isScrollable: boolean = true
   export let focusable: boolean = false
   export let maxHeight: 'max' | 'card' | 'limited' | string | undefined = undefined
@@ -124,18 +131,22 @@
       action: () => {
         dispatch('attach')
       },
-      order: 1000,
-      hidden: hideAttachments
+      order: 1001
     },
     {
-      label: textEditorPlugin.string.TextStyle,
-      icon: TextStyle,
+      label: textEditorPlugin.string.Link,
+      icon: RILink,
       action: () => {
-        isFormatting = !isFormatting
-        textEditor.focus()
+        if (!(isSelectionEmpty && !activeModes.has('link'))) formatLink()
       },
       order: 2000
     },
+    // {
+    //   label: textEditorPlugin.string.Mention,
+    //   icon: RIMention,
+    //   action: () => textEditor.insertText('@'),
+    //   order: 3000
+    // },
     {
       label: textEditorPlugin.string.Emoji,
       icon: IconEmoji,
@@ -152,14 +163,53 @@
           () => {}
         )
       },
-      order: 3000
+      order: 4001
+    },
+    {
+      label: textEditorPlugin.string.TextStyle,
+      icon: TextStyle,
+      action: () => {
+        isFormatting = !isFormatting
+        textEditor.focus()
+      },
+      order: 6000
+    },
+    {
+      label: textEditorPlugin.string.Bold,
+      icon: RIBold,
+      action: () => {
+        textEditor.toggleBold()
+        textEditor.focus()
+      },
+      order: 6010
+    },
+    {
+      label: textEditorPlugin.string.Italic,
+      icon: RIItalic,
+      action: () => {
+        textEditor.toggleItalic()
+        textEditor.focus()
+      },
+      order: 6020
+    },
+    {
+      label: textEditorPlugin.string.Strikethrough,
+      icon: RIStrikethrough,
+      action: () => {
+        textEditor.toggleStrike()
+        textEditor.focus()
+      },
+      order: 6030
+    },
+    {
+      label: textEditorPlugin.string.Code,
+      icon: RICode,
+      action: () => {
+        textEditor.toggleCode()
+        textEditor.focus()
+      },
+      order: 6040
     }
-    // {
-    //   label: textEditorPlugin.string.GIF,
-    //   icon: GIF,
-    //   action: () => {},
-    //   order: 4000
-    // }
   ]
 
   const client = getClient()
@@ -380,6 +430,20 @@
       }
     )
   }
+  $: buttonsGap =
+    buttonSize === 'large' || buttonSize === 'x-large' || buttonSize === 'full'
+      ? 'large-gap'
+      : buttonSize === 'medium'
+        ? 'medium-gap'
+        : buttonSize === 'small'
+          ? 'small-gap'
+          : 'xsmall-gap'
+  $: buttonsHeight =
+    buttonSize === 'large' || buttonSize === 'x-large' || buttonSize === 'full'
+      ? 'h-6 max-h-6'
+      : buttonSize === 'medium'
+        ? 'h-5 max-h-5'
+        : 'h-4 max-h-4'
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -393,35 +457,35 @@
     <div class="formatPanel buttons-group xsmall-gap mb-4" class:withoutTopBorder>
       <StyleButton
         icon={Header}
-        size={buttonSize}
+        size={formatButtonSize}
         selected={activeModes.has('heading')}
         showTooltip={{ label: getEmbeddedLabel(`H${headingLevel}`) }}
         on:click={toggleHeader}
       />
       <StyleButton
         icon={Bold}
-        size={buttonSize}
+        size={formatButtonSize}
         selected={activeModes.has('bold')}
         showTooltip={{ label: textEditorPlugin.string.Bold }}
         on:click={getToggler(textEditor.toggleBold)}
       />
       <StyleButton
         icon={Italic}
-        size={buttonSize}
+        size={formatButtonSize}
         selected={activeModes.has('italic')}
         showTooltip={{ label: textEditorPlugin.string.Italic }}
         on:click={getToggler(textEditor.toggleItalic)}
       />
       <StyleButton
         icon={Strikethrough}
-        size={buttonSize}
+        size={formatButtonSize}
         selected={activeModes.has('strike')}
         showTooltip={{ label: textEditorPlugin.string.Strikethrough }}
         on:click={getToggler(textEditor.toggleStrike)}
       />
       <StyleButton
         icon={Link}
-        size={buttonSize}
+        size={formatButtonSize}
         selected={activeModes.has('link')}
         disabled={isSelectionEmpty && !activeModes.has('link')}
         showTooltip={{ label: textEditorPlugin.string.Link }}
@@ -430,14 +494,14 @@
       <div class="buttons-divider" />
       <StyleButton
         icon={ListNumber}
-        size={buttonSize}
+        size={formatButtonSize}
         selected={activeModes.has('orderedList')}
         showTooltip={{ label: textEditorPlugin.string.OrderedList }}
         on:click={getToggler(textEditor.toggleOrderedList)}
       />
       <StyleButton
         icon={ListBullet}
-        size={buttonSize}
+        size={formatButtonSize}
         selected={activeModes.has('bulletList')}
         showTooltip={{ label: textEditorPlugin.string.BulletedList }}
         on:click={getToggler(textEditor.toggleBulletList)}
@@ -445,7 +509,7 @@
       <div class="buttons-divider" />
       <StyleButton
         icon={Quote}
-        size={buttonSize}
+        size={formatButtonSize}
         selected={activeModes.has('blockquote')}
         showTooltip={{ label: textEditorPlugin.string.Blockquote }}
         on:click={getToggler(textEditor.toggleBlockquote)}
@@ -453,14 +517,14 @@
       <div class="buttons-divider" />
       <StyleButton
         icon={Code}
-        size={buttonSize}
+        size={formatButtonSize}
         selected={activeModes.has('code')}
         showTooltip={{ label: textEditorPlugin.string.Code }}
         on:click={getToggler(textEditor.toggleCode)}
       />
       <StyleButton
         icon={CodeBlock}
-        size={buttonSize}
+        size={formatButtonSize}
         selected={activeModes.has('codeBlock')}
         showTooltip={{ label: textEditorPlugin.string.CodeBlock }}
         on:click={getToggler(textEditor.toggleCodeBlock)}
@@ -468,7 +532,7 @@
       <StyleButton
         icon={IconTable}
         iconProps={{ style: 'table' }}
-        size={buttonSize}
+        size={formatButtonSize}
         selected={activeModes.has('table')}
         on:click={insertTable}
         showTooltip={{ label: textEditorPlugin.string.InsertTable }}
@@ -477,7 +541,7 @@
         <StyleButton
           icon={IconTable}
           iconProps={{ style: 'tableProps' }}
-          size={buttonSize}
+          size={formatButtonSize}
           on:click={tableOptions}
           showTooltip={{ label: textEditorPlugin.string.TableOptions }}
         />
@@ -527,14 +591,17 @@
   </div>
   {#if showButtons}
     <div class="flex-between">
-      <div class="buttons-group xsmall-gap mt-4">
+      <div class="buttons-group {buttonsGap} mt-3">
         {#each actions.filter((it) => it.hidden !== true) as a}
           <StyleButton icon={a.icon} size={buttonSize} on:click={(evt) => handleAction(a, evt)} />
+          {#if a.order % 10 === 1}
+            <div class="buttons-divider {buttonsHeight}" />
+          {/if}
         {/each}
         <slot />
       </div>
       {#if $$slots.right}
-        <div class="buttons-group xsmall-gap mt-4">
+        <div class="buttons-group {buttonsGap} mt-3">
           <slot name="right" />
         </div>
       {/if}
@@ -594,9 +661,9 @@
     .formatPanel {
       margin: -0.5rem -0.25rem 0.5rem;
       padding: 0.375rem;
-      background-color: var(--body-accent);
+      background-color: var(--theme-comp-header-color);
       border-radius: 0.5rem;
-      box-shadow: var(--button-shadow);
+      box-shadow: var(--theme-popup-shadow);
       z-index: 1;
     }
   }

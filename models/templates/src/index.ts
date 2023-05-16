@@ -88,7 +88,7 @@ export function createModel (builder: Builder): void {
       label: templates.string.Templates,
       icon: templates.icon.Template,
       action: templates.action.ShowTemplates,
-      order: 1500
+      order: 5000
     },
     templates.ids.TemplatePopupAction
   )

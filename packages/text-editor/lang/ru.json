@@ -1,5 +1,5 @@
 {
-  "string": {    
+  "string": {
     "Suggested": "РЕКОМЕНДУЕМЫЕ",
     "NoItems": "Нет содержимого",
     "EditorPlaceholder": "Начните печатать...",
@@ -19,6 +19,8 @@
     "TextStyle": "Стиль текста",
     "Emoji": "Эмодзи",
     "GIF": "GIF",
+    "Mention": "Упомянуть",
+    "Underlined": "Подчеркнутый",
     "FullDescription": "Детальное описание",
     "NoFullDescription": "Нет детального описания",
     "EnableDiffMode": "Режим сравнения",
