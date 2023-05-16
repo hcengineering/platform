@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Ref, Space } from '@hcengineering/core'
   import { Project } from '@hcengineering/tracker'
-  import { IconWithEmojii, getPlatformColor, getPlatformColorForText } from '@hcengineering/ui'
+  import { IconWithEmojii, getPlatformColor, getPlatformColorForText, getCurrentLocation } from '@hcengineering/ui'
   import { NavLink, TreeNode } from '@hcengineering/view-resources'
   import { SpacesNavModel } from '@hcengineering/workbench'
   import { SpecialElement } from '@hcengineering/workbench-resources'
@@ -29,7 +29,7 @@
   export let deselect: boolean = false
 
   const COLLAPSED = 'COLLAPSED'
-  const getSpaceCollapsedKey = () => `${space._id}_collapsed`
+  const getSpaceCollapsedKey = () => `${getCurrentLocation().path[1]}_${space._id}_collapsed`
 
   $: collapsed = localStorage.getItem(getSpaceCollapsedKey()) === COLLAPSED
 </script>
