@@ -8,6 +8,15 @@
 
   $: _search = value
   const dispatch = createEventDispatcher()
+  let timer: any
+
+  function restartTimer () {
+    clearTimeout(timer)
+    timer = setTimeout(() => {
+      value = _search
+      dispatch('change', _search)
+    }, 1500)
+  }
 </script>
 
 <EditWithIcon
@@ -22,6 +31,7 @@
     }
   }}
   on:input={() => {
+    restartTimer()
     if (_search === '') {
       value = ''
       dispatch('change', '')
