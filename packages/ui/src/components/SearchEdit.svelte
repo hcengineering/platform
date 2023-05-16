@@ -15,7 +15,7 @@
     timer = setTimeout(() => {
       value = _search
       dispatch('change', _search)
-    }, 1500)
+    }, 500)
   }
 </script>
 
