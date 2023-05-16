@@ -55,7 +55,10 @@
     </DocNavLink>
     {#if client.getHierarchy().hasMixin(candidate, recruit.mixin.Candidate)}
       {@const cand = client.getHierarchy().as(candidate, recruit.mixin.Candidate)}
-      <div class="description lines-limit-2">{cand.title ?? ''}</div>
+      {@const titleAttribute = client.getHierarchy().getAttribute(recruit.mixin.Candidate, 'title')}
+      {#if !titleAttribute.hidden}
+        <div class="description lines-limit-2">{cand.title ?? ''}</div>
+      {/if}
     {/if}
     <div class="description overflow-label">{candidate.city ?? ''}</div>
     <div class="footer flex flex-reverse flex-grow">
@@ -95,6 +98,7 @@
     user-select: text;
     min-width: 15rem;
     min-height: 15rem;
+    max-width: 25rem;
 
     &:hover {
       background-color: var(--theme-button-hovered);
