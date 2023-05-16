@@ -16,14 +16,14 @@
   import { DocumentQuery, FindResult, Ref, SortingOrder } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import { Project, Sprint, SprintStatus } from '@hcengineering/tracker'
+  import { Project, Milestone, MilestoneStatus } from '@hcengineering/tracker'
   import ui, { CheckBox, Icon, Label, Loading, deviceOptionsStore, resizeObserver } from '@hcengineering/ui'
   import { FILTER_DEBOUNCE_MS, sortFilterValues } from '@hcengineering/view-resources'
   import view, { Filter } from '@hcengineering/view'
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'
-  import { sprintStatusAssets } from '../../types'
-  import SprintTitlePresenter from './SprintTitlePresenter.svelte'
+  import { milestoneStatusAssets } from '../../types'
+  import MilestoneTitlePresenter from './MilestoneTitlePresenter.svelte'
 
   export let space: Ref<Project> | undefined = undefined
   export let filter: Filter
@@ -40,9 +40,9 @@
     phTraslate = res
   })
 
-  let values: Sprint[] = []
-  let objectsPromise: Promise<FindResult<Sprint>> | undefined = undefined
-  let selectedValues: Set<Ref<Sprint> | undefined | null> = new Set()
+  let values: Milestone[] = []
+  let objectsPromise: Promise<FindResult<Milestone>> | undefined = undefined
+  let selectedValues: Set<Ref<Milestone> | undefined | null> = new Set()
 
   let filterUpdateTimeout: number | undefined
 
@@ -53,15 +53,15 @@
     }
     values = []
     selectedValues.clear()
-    const spaceQuery: DocumentQuery<Sprint> = space ? { space } : {}
-    const resultQuery: DocumentQuery<Sprint> =
+    const spaceQuery: DocumentQuery<Milestone> = space ? { space } : {}
+    const resultQuery: DocumentQuery<Milestone> =
       search !== ''
         ? {
             label: { $like: '%' + search + '%' }
           }
         : {}
     objectsPromise = client.findAll(
-      tracker.class.Sprint,
+      tracker.class.Milestone,
       { ...resultQuery, ...spaceQuery },
       {
         sort: { label: SortingOrder.Ascending }
@@ -77,11 +77,11 @@
     objectsPromise = undefined
   }
 
-  function isSelected (value: Ref<Sprint> | undefined, values: Set<Ref<Sprint> | undefined | null>): boolean {
+  function isSelected (value: Ref<Milestone> | undefined, values: Set<Ref<Milestone> | undefined | null>): boolean {
     return values.has(value)
   }
 
-  function handleFilterToggle (value: Ref<Sprint> | undefined): void {
+  function handleFilterToggle (value: Ref<Milestone> | undefined): void {
     if (isSelected(value, selectedValues)) {
       selectedValues.delete(value)
     } else {
@@ -92,7 +92,7 @@
     updateFilter(selectedValues)
   }
 
-  function updateFilter (newValues: Set<Ref<Sprint> | null | undefined>) {
+  function updateFilter (newValues: Set<Ref<Milestone> | null | undefined>) {
     clearTimeout(filterUpdateTimeout)
 
     filterUpdateTimeout = setTimeout(() => {
@@ -101,12 +101,12 @@
     }, FILTER_DEBOUNCE_MS)
   }
 
-  function getStatusItem (status: SprintStatus, docs: Sprint[]): Sprint[] {
+  function getStatusItem (status: MilestoneStatus, docs: Milestone[]): Milestone[] {
     return docs.filter((p) => p.status === status)
   }
 
-  function getStatuses (): SprintStatus[] {
-    const res = Array.from(Object.values(SprintStatus).filter((v) => !isNaN(Number(v)))) as SprintStatus[]
+  function getStatuses (): MilestoneStatus[] {
+    const res = Array.from(Object.values(MilestoneStatus).filter((v) => !isNaN(Number(v)))) as MilestoneStatus[]
     return res
   }
 
@@ -148,7 +148,7 @@
           </div>
         </button>
         {#each getStatuses() as group}
-          {@const status = sprintStatusAssets[group]}
+          {@const status = milestoneStatusAssets[group]}
           {@const items = getStatusItem(group, values)}
           {#if items.length > 0}
             <div class="flex-row-center p-1">
@@ -168,7 +168,7 @@
                   <div class="check pointer-events-none">
                     <CheckBox checked={isSelected(doc._id, selectedValues)} primary />
                   </div>
-                  <SprintTitlePresenter value={doc} />
+                  <MilestoneTitlePresenter value={doc} />
                 </div>
               </button>
             {/each}

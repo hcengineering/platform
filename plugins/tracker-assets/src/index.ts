@@ -35,7 +35,7 @@ loadMetadata(tracker.icon, {
   Labels: `${icons}#priority-nopriority`, // TODO: add icon
   DueDate: `${icons}#inbox`, // TODO: add icon
   Parent: `${icons}#myissues`, // TODO: add icon
-  Sprint: `${icons}#sprint`,
+  Milestone: `${icons}#milestone`,
   IssueTemplates: `${icons}#issuetemplates`,
   Scrum: `${icons}#scrum`,
   Start: `${icons}#start`,
@@ -62,11 +62,11 @@ loadMetadata(tracker.icon, {
   ComponentStatusCompleted: `${icons}#component-status-completed`,
   ComponentStatusCanceled: `${icons}#component-status-canceled`,
 
-  SprintStatusPlanned: `${icons}#component-status-planned`,
-  SprintStatusInProgress: `${icons}#component-status-in-progress`,
-  SprintStatusPaused: `${icons}#component-status-paused`,
-  SprintStatusCompleted: `${icons}#component-status-completed`,
-  SprintStatusCanceled: `${icons}#component-status-canceled`,
+  MilestoneStatusPlanned: `${icons}#component-status-planned`,
+  MilestoneStatusInProgress: `${icons}#component-status-in-progress`,
+  MilestoneStatusPaused: `${icons}#component-status-paused`,
+  MilestoneStatusCompleted: `${icons}#component-status-completed`,
+  MilestoneStatusCanceled: `${icons}#component-status-canceled`,
 
   CopyID: `${icons}#copyID`,
   CopyURL: `${icons}#copyURL`,

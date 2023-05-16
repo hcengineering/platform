@@ -24,7 +24,7 @@
   import { ObjectBox, getFiltredKeys, isCollectionAttr } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
   import ComponentEditor from '../../components/ComponentEditor.svelte'
-  import SprintEditor from '../../sprints/SprintEditor.svelte'
+  import MilestoneEditor from '../../milestones/MilestoneEditor.svelte'
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import DueDateEditor from '../DueDateEditor.svelte'
   import PriorityEditor from '../PriorityEditor.svelte'
@@ -82,7 +82,7 @@
     'assignee',
     'component',
     'dueDate',
-    'sprint',
+    'milestone',
     'relations',
     'blockedBy'
   ])
@@ -176,9 +176,9 @@
   <ComponentEditor value={issue} size={'medium'} />
 
   <span class="label">
-    <Label label={tracker.string.Sprint} />
+    <Label label={tracker.string.Milestone} />
   </span>
-  <SprintEditor value={issue} size={'medium'} />
+  <MilestoneEditor value={issue} size={'medium'} />
 
   {#if issue.dueDate !== null}
     <div class="divider" />

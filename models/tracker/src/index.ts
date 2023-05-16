@@ -69,8 +69,8 @@ import {
   Project,
   Scrum,
   ScrumRecord,
-  Sprint,
-  SprintStatus,
+  Milestone,
+  MilestoneStatus,
   TimeReportDayType,
   TimeSpendReport,
   trackerId
@@ -118,8 +118,8 @@ export function TypeComponentStatus (): Type<ComponentStatus> {
 /**
  * @public
  */
-export function TypeSprintStatus (): Type<SprintStatus> {
-  return { _class: tracker.class.TypeSprintStatus, label: 'TypeSprintStatus' as IntlString }
+export function TypeMilestoneStatus (): Type<MilestoneStatus> {
+  return { _class: tracker.class.TypeMilestoneStatus, label: 'TypeMilestoneStatus' as IntlString }
 }
 
 /**
@@ -131,8 +131,8 @@ export class TTypeComponentStatus extends TType {}
 /**
  * @public
  */
-@Model(tracker.class.TypeSprintStatus, core.class.Type, DOMAIN_MODEL)
-export class TTypeSprintStatus extends TType {}
+@Model(tracker.class.TypeMilestoneStatus, core.class.Type, DOMAIN_MODEL)
+export class TTypeMilestoneStatus extends TType {}
 
 /**
  * @public
@@ -243,9 +243,9 @@ export class TIssue extends TAttachedDoc implements Issue {
   @Hidden()
     rank!: string
 
-  @Prop(TypeRef(tracker.class.Sprint), tracker.string.Sprint, { icon: tracker.icon.Sprint })
+  @Prop(TypeRef(tracker.class.Milestone), tracker.string.Milestone, { icon: tracker.icon.Milestone })
   @Index(IndexKind.Indexed)
-    sprint!: Ref<Sprint> | null
+    milestone!: Ref<Milestone> | null
 
   @Prop(TypeNumber(), tracker.string.Estimation)
     estimation!: number
@@ -295,8 +295,8 @@ export class TIssueTemplate extends TDoc implements IssueTemplate {
   @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.DueDate)
     dueDate!: Timestamp | null
 
-  @Prop(TypeRef(tracker.class.Sprint), tracker.string.Sprint)
-    sprint!: Ref<Sprint> | null
+  @Prop(TypeRef(tracker.class.Milestone), tracker.string.Milestone)
+    milestone!: Ref<Milestone> | null
 
   @Prop(TypeNumber(), tracker.string.Estimation)
     estimation!: number
@@ -376,9 +376,9 @@ export class TComponent extends TDoc implements Component {
 /**
  * @public
  */
-@Model(tracker.class.Sprint, core.class.Doc, DOMAIN_TRACKER)
-@UX(tracker.string.Sprint, tracker.icon.Sprint)
-export class TSprint extends TDoc implements Sprint {
+@Model(tracker.class.Milestone, core.class.Doc, DOMAIN_TRACKER)
+@UX(tracker.string.Milestone, tracker.icon.Milestone)
+export class TMilestone extends TDoc implements Milestone {
   @Prop(TypeString(), tracker.string.Title)
   // @Index(IndexKind.FullText)
     label!: string
@@ -386,9 +386,9 @@ export class TSprint extends TDoc implements Sprint {
   @Prop(TypeMarkup(), tracker.string.Description)
     description?: Markup
 
-  @Prop(TypeSprintStatus(), tracker.string.Status)
+  @Prop(TypeMilestoneStatus(), tracker.string.Status)
   @Index(IndexKind.Indexed)
-    status!: SprintStatus
+    status!: MilestoneStatus
 
   @Prop(TypeRef(contact.class.Employee), tracker.string.ComponentLead)
     lead!: Ref<Employee> | null
@@ -401,9 +401,6 @@ export class TSprint extends TDoc implements Sprint {
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
-
-  @Prop(TypeDate(), tracker.string.StartDate)
-    startDate!: Timestamp
 
   @Prop(TypeDate(), tracker.string.TargetDate)
     targetDate!: Timestamp
@@ -483,16 +480,16 @@ export function createModel (builder: Builder): void {
     TIssueStatus,
     TTypeIssuePriority,
     TTypeComponentStatus,
-    TSprint,
+    TMilestone,
     TScrum,
     TScrumRecord,
-    TTypeSprintStatus,
+    TTypeMilestoneStatus,
     TTimeSpendReport,
     TTypeReportedTime
   )
 
   const issuesOptions: ViewOptionsModel = {
-    groupBy: ['status', 'assignee', 'priority', 'component', 'sprint'],
+    groupBy: ['status', 'assignee', 'priority', 'component', 'milestone'],
     orderBy: [
       ['status', SortingOrder.Ascending],
       ['priority', SortingOrder.Ascending],
@@ -574,14 +571,14 @@ export function createModel (builder: Builder): void {
         },
         {
           key: '',
-          presenter: tracker.component.SprintEditor,
+          presenter: tracker.component.MilestoneEditor,
           props: {
             kind: 'list',
             size: 'small',
             shape: 'round',
             shouldShowPlaceholder: false,
             listProps: {
-              excludeByKey: 'sprint',
+              excludeByKey: 'milestone',
               compression: true,
               optional: true
             }
@@ -619,7 +616,7 @@ export function createModel (builder: Builder): void {
   )
 
   const subIssuesOptions: ViewOptionsModel = {
-    groupBy: ['status', 'assignee', 'priority', 'sprint'],
+    groupBy: ['status', 'assignee', 'priority', 'milestone'],
     orderBy: [
       ['rank', SortingOrder.Ascending],
       ['status', SortingOrder.Ascending],
@@ -662,14 +659,14 @@ export function createModel (builder: Builder): void {
         { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
         {
           key: '',
-          presenter: tracker.component.SprintEditor,
+          presenter: tracker.component.MilestoneEditor,
           props: {
             kind: 'list',
             size: 'small',
             shape: 'round',
             shouldShowPlaceholder: false,
             listProps: {
-              excludeByKey: 'sprint',
+              excludeByKey: 'milestone',
               optional: true
             }
           }
@@ -701,7 +698,7 @@ export function createModel (builder: Builder): void {
       attachTo: tracker.class.IssueTemplate,
       descriptor: view.viewlet.List,
       viewOptions: {
-        groupBy: ['assignee', 'priority', 'component', 'sprint'],
+        groupBy: ['assignee', 'priority', 'component', 'milestone'],
         orderBy: [
           ['priority', SortingOrder.Ascending],
           ['modifiedOn', SortingOrder.Descending],
@@ -726,7 +723,7 @@ export function createModel (builder: Builder): void {
         },
         {
           key: '',
-          presenter: tracker.component.SprintEditor,
+          presenter: tracker.component.MilestoneEditor,
           props: { kind: 'list', size: 'small', shape: 'round', shouldShowPlaceholder: false }
         },
         { key: '', presenter: tracker.component.TemplateEstimationEditor, props: { kind: 'list', size: 'small' } },
@@ -846,7 +843,7 @@ export function createModel (builder: Builder): void {
   const backlogId = 'backlog'
   const boardId = 'board'
   const componentsId = 'components'
-  const sprintsId = 'sprints'
+  const milestonesId = 'milestones'
   const templatesId = 'templates'
   const myIssuesId = 'my-issues'
   // const scrumsId = 'scrums'
@@ -895,8 +892,8 @@ export function createModel (builder: Builder): void {
     func: tracker.function.IssuePrioritySort
   })
 
-  builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.SortFuncs, {
-    func: tracker.function.SprintSort
+  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.SortFuncs, {
+    func: tracker.function.MilestoneSort
   })
 
   builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.ObjectPresenter, {
@@ -942,12 +939,12 @@ export function createModel (builder: Builder): void {
     inlineEditor: tracker.component.ComponentSelector
   })
 
-  builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: tracker.component.SprintPresenter
+  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: tracker.component.MilestonePresenter
   })
 
-  builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: tracker.component.SprintRefPresenter
+  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: tracker.component.MilestoneRefPresenter
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, setting.mixin.Editable, {
@@ -966,8 +963,8 @@ export function createModel (builder: Builder): void {
     func: tracker.function.GetAllComponents
   })
 
-  builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.AllValuesFunc, {
-    func: tracker.function.GetAllSprints
+  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.AllValuesFunc, {
+    func: tracker.function.GetAllMilestones
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.LinkProvider, {
@@ -1071,10 +1068,10 @@ export function createModel (builder: Builder): void {
                 component: tracker.component.ProjectComponents
               },
               {
-                id: sprintsId,
-                label: tracker.string.Sprints,
-                icon: tracker.icon.Sprint,
-                component: tracker.component.Sprints
+                id: milestonesId,
+                label: tracker.string.Milestones,
+                icon: tracker.icon.Milestone,
+                component: tracker.component.Milestones
               },
               // {
               //   id: scrumsId,
@@ -1357,7 +1354,7 @@ export function createModel (builder: Builder): void {
       'priority',
       'labels',
       'title',
-      'sprint',
+      'milestone',
       'component',
       'dueDate',
       'createOn',
@@ -1372,23 +1369,23 @@ export function createModel (builder: Builder): void {
     filters: []
   })
 
-  builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.ClassFilters, {
+  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.ClassFilters, {
     filters: []
   })
-  builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.ClassFilters, {
+  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.ClassFilters, {
     filters: ['status'],
     strict: true
   })
 
-  builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.AttributeFilter, {
-    component: tracker.component.SprintFilter
+  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.AttributeFilter, {
+    component: tracker.component.MilestoneFilter
   })
 
-  builder.mixin(tracker.class.TypeSprintStatus, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: tracker.component.SprintStatusPresenter
+  builder.mixin(tracker.class.TypeMilestoneStatus, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: tracker.component.MilestoneStatusPresenter
   })
 
-  builder.mixin(tracker.class.TypeSprintStatus, core.class.Class, view.mixin.AttributeFilter, {
+  builder.mixin(tracker.class.TypeMilestoneStatus, core.class.Class, view.mixin.AttributeFilter, {
     component: view.component.ValueFilter
   })
 
@@ -1547,13 +1544,13 @@ export function createModel (builder: Builder): void {
     builder,
     {
       action: view.actionImpl.AttributeSelector,
-      actionPopup: tracker.component.SprintEditor,
+      actionPopup: tracker.component.MilestoneEditor,
       actionProps: {
-        attribute: 'sprint',
+        attribute: 'milestone',
         isAction: true
       },
-      label: tracker.string.Sprint,
-      icon: tracker.icon.Sprint,
+      label: tracker.string.Milestone,
+      icon: tracker.icon.Milestone,
       keyBinding: ['keyS->keyP'],
       input: 'any',
       category: tracker.category.Tracker,
@@ -1564,7 +1561,7 @@ export function createModel (builder: Builder): void {
         group: 'edit'
       }
     },
-    tracker.action.SetSprint
+    tracker.action.SetMilestone
   )
 
   createAction(
@@ -1779,19 +1776,19 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: tracker.actionImpl.DeleteSprint,
+      action: tracker.actionImpl.DeleteMilestone,
       label: view.string.Delete,
       icon: view.icon.Delete,
       keyBinding: ['Meta + Backspace', 'Ctrl + Backspace'],
       category: tracker.category.Tracker,
       input: 'any',
-      target: tracker.class.Sprint,
+      target: tracker.class.Milestone,
       context: { mode: ['context', 'browser'], group: 'tools' }
     },
-    tracker.action.DeleteSprint
+    tracker.action.DeleteMilestone
   )
 
-  builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.IgnoreActions, {
+  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Delete]
   })
 
@@ -1802,10 +1799,9 @@ export function createModel (builder: Builder): void {
     tracker.component.ReportedTimeEditor
   )
 
-  const sprintOptions: ViewOptionsModel = {
+  const milestoneOptions: ViewOptionsModel = {
     groupBy: ['lead'],
     orderBy: [
-      ['startDate', SortingOrder.Descending],
       ['modifiedOn', SortingOrder.Descending],
       ['targetDate', SortingOrder.Descending],
       ['capacity', SortingOrder.Ascending]
@@ -1817,32 +1813,31 @@ export function createModel (builder: Builder): void {
     view.class.Viewlet,
     core.space.Model,
     {
-      attachTo: tracker.class.Sprint,
+      attachTo: tracker.class.Milestone,
       descriptor: view.viewlet.List,
-      viewOptions: sprintOptions,
+      viewOptions: milestoneOptions,
       config: [
         {
           key: 'status',
           props: { width: '1rem', kind: 'list', size: 'small', justify: 'center' }
         },
-        { key: '', presenter: tracker.component.SprintPresenter, props: { shouldUseMargin: true } },
+        { key: '', presenter: tracker.component.MilestonePresenter, props: { shouldUseMargin: true } },
         { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
         {
           key: '',
           presenter: contact.component.MembersPresenter,
           props: {
             kind: 'link',
-            intlTitle: tracker.string.SprintMembersTitle,
-            intlSearchPh: tracker.string.SprintMembersSearchPlaceholder
+            intlTitle: tracker.string.MilestoneMembersTitle,
+            intlSearchPh: tracker.string.MilestoneMembersSearchPlaceholder
           }
         },
-        { key: '', presenter: tracker.component.SprintDatePresenter, props: { field: 'startDate' } },
-        { key: '', presenter: tracker.component.SprintDatePresenter, props: { field: 'targetDate' } },
+        { key: '', presenter: tracker.component.MilestoneDatePresenter, props: { field: 'targetDate' } },
         {
           key: 'lead',
-          presenter: tracker.component.SprintLeadPresenter,
+          presenter: tracker.component.MilestoneLeadPresenter,
           props: {
-            _class: tracker.class.Sprint,
+            _class: tracker.class.Milestone,
             defaultClass: contact.class.Employee,
             shouldShowLabel: false,
             size: 'x-small'
@@ -1850,7 +1845,7 @@ export function createModel (builder: Builder): void {
         }
       ]
     },
-    tracker.viewlet.SprintList
+    tracker.viewlet.MilestoneList
   )
 
   builder.createDoc(
@@ -1893,7 +1888,7 @@ export function createModel (builder: Builder): void {
     tracker.class.Issue,
     tracker.ids.TrackerNotificationGroup,
     [],
-    ['comments', 'status', 'priority', 'assignee', 'subIssues', 'blockedBy', 'sprint', 'dueDate']
+    ['comments', 'status', 'priority', 'assignee', 'subIssues', 'blockedBy', 'milestone', 'dueDate']
   )
 
   createAction(
@@ -1905,21 +1900,21 @@ export function createModel (builder: Builder): void {
         attribute: 'lead',
         _class: contact.class.Employee,
         query: {},
-        placeholder: tracker.string.SprintLead
+        placeholder: tracker.string.MilestoneLead
       },
-      label: tracker.string.SprintLead,
+      label: tracker.string.MilestoneLead,
       icon: contact.icon.Person,
       keyBinding: [],
       input: 'none',
       category: tracker.category.Tracker,
-      target: tracker.class.Sprint,
+      target: tracker.class.Milestone,
       context: {
         mode: ['context'],
         application: tracker.app.Tracker,
         group: 'edit'
       }
     },
-    tracker.action.SetSprintLead
+    tracker.action.SetMilestoneLead
   )
 
   const componentListViewOptions: ViewOptionsModel = {

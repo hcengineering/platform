@@ -46,8 +46,8 @@ import {
   IssuesGrouping,
   IssuesOrdering,
   Project,
-  Sprint,
-  SprintStatus,
+  Milestone,
+  MilestoneStatus,
   TimeReportDayType
 } from '@hcengineering/tracker'
 import {
@@ -61,7 +61,7 @@ import {
 import { ViewletDescriptor } from '@hcengineering/view'
 import { CategoryQuery, groupBy, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
 import tracker from './plugin'
-import { defaultComponentStatuses, defaultPriorities, defaultSprintStatuses } from './types'
+import { defaultComponentStatuses, defaultPriorities, defaultMilestoneStatuses } from './types'
 
 export * from './types'
 
@@ -81,7 +81,7 @@ export interface Selection {
   currentSpecial?: string
 }
 
-export type IssuesGroupByKeys = keyof Pick<Issue, 'status' | 'priority' | 'assignee' | 'component' | 'sprint'>
+export type IssuesGroupByKeys = keyof Pick<Issue, 'status' | 'priority' | 'assignee' | 'component' | 'milestone'>
 export type IssuesOrderByKeys = keyof Pick<Issue, 'status' | 'priority' | 'modifiedOn' | 'dueDate' | 'rank'>
 
 export const issuesGroupKeyMap: Record<IssuesGrouping, IssuesGroupByKeys | undefined> = {
@@ -89,7 +89,7 @@ export const issuesGroupKeyMap: Record<IssuesGrouping, IssuesGroupByKeys | undef
   [IssuesGrouping.Priority]: 'priority',
   [IssuesGrouping.Assignee]: 'assignee',
   [IssuesGrouping.Component]: 'component',
-  [IssuesGrouping.Sprint]: 'sprint',
+  [IssuesGrouping.Milestone]: 'milestone',
   [IssuesGrouping.NoGrouping]: undefined
 }
 
@@ -109,12 +109,13 @@ export const issuesSortOrderMap: Record<IssuesOrderByKeys, SortingOrder> = {
   rank: SortingOrder.Ascending
 }
 
-export const issuesGroupEditorMap: Record<'status' | 'priority' | 'component' | 'sprint', AnyComponent | undefined> = {
-  status: tracker.component.StatusEditor,
-  priority: tracker.component.PriorityEditor,
-  component: tracker.component.ComponentEditor,
-  sprint: tracker.component.SprintEditor
-}
+export const issuesGroupEditorMap: Record<'status' | 'priority' | 'component' | 'milestone', AnyComponent | undefined> =
+  {
+    status: tracker.component.StatusEditor,
+    priority: tracker.component.PriorityEditor,
+    component: tracker.component.ComponentEditor,
+    milestone: tracker.component.MilestoneEditor
+  }
 
 export const getIssuesModificationDatePeriodTime = (period: IssuesDateModificationPeriod | null): number => {
   const today = new Date(Date.now())
@@ -200,10 +201,10 @@ export const getIssueFilterAssetsByType = (type: string): { icon: Asset, label: 
         label: tracker.string.Component
       }
     }
-    case 'sprint': {
+    case 'milestone': {
       return {
-        icon: tracker.icon.Sprint,
-        label: tracker.string.Sprint
+        icon: tracker.icon.Milestone,
+        label: tracker.string.Milestone
       }
     }
     default: {
@@ -232,7 +233,7 @@ export const getArraysUnion = (a: any[], b: any[]): any[] => {
 
 export type ComponentsFilterMode = 'all' | 'backlog' | 'active' | 'closed'
 
-export type SprintViewMode = 'all' | 'planned' | 'active' | 'closed'
+export type MilestoneViewMode = 'all' | 'planned' | 'active' | 'closed'
 
 export type ScrumRecordViewMode = 'timeReports' | 'objects'
 
@@ -256,19 +257,19 @@ export const getIncludedComponentStatuses = (mode: ComponentsFilterMode): Compon
   }
 }
 
-export const getIncludedSprintStatuses = (mode: SprintViewMode): SprintStatus[] => {
+export const getIncludedMilestoneStatuses = (mode: MilestoneViewMode): MilestoneStatus[] => {
   switch (mode) {
     case 'all': {
-      return defaultSprintStatuses
+      return defaultMilestoneStatuses
     }
     case 'active': {
-      return [SprintStatus.InProgress]
+      return [MilestoneStatus.InProgress]
     }
     case 'planned': {
-      return [SprintStatus.Planned]
+      return [MilestoneStatus.Planned]
     }
     case 'closed': {
-      return [SprintStatus.Completed, SprintStatus.Canceled]
+      return [MilestoneStatus.Completed, MilestoneStatus.Canceled]
     }
     default: {
       return []
@@ -283,11 +284,11 @@ export const componentsTitleMap: Record<ComponentsFilterMode, IntlString> = Obje
   closed: tracker.string.ClosedComponents
 })
 
-export const sprintTitleMap: Record<SprintViewMode, IntlString> = Object.freeze({
-  all: tracker.string.AllSprints,
-  planned: tracker.string.PlannedSprints,
-  active: tracker.string.ActiveSprints,
-  closed: tracker.string.ClosedSprints
+export const milestoneTitleMap: Record<MilestoneViewMode, IntlString> = Object.freeze({
+  all: tracker.string.AllMilestones,
+  planned: tracker.string.PlannedMilestones,
+  active: tracker.string.ActiveMilestones,
+  closed: tracker.string.ClosedMilestones
 })
 
 export const scrumRecordTitleMap: Record<ScrumRecordViewMode, IntlString> = Object.freeze({
@@ -351,63 +352,39 @@ export async function issuePrioritySort (value: IssuePriority[]): Promise<IssueP
   return value
 }
 
-export async function sprintSort (value: Array<Ref<Sprint>>): Promise<Array<Ref<Sprint>>> {
+export async function milestoneSort (value: Array<Ref<Milestone>>): Promise<Array<Ref<Milestone>>> {
   return await new Promise((resolve) => {
     const query = createQuery(true)
-    query.query(tracker.class.Sprint, { _id: { $in: value } }, (res) => {
-      const sprints = toIdMap(res)
-      value.sort((a, b) => (sprints.get(b)?.startDate ?? 0) - (sprints.get(a)?.startDate ?? 0))
+    query.query(tracker.class.Milestone, { _id: { $in: value } }, (res) => {
+      const milestones = toIdMap(res)
+      value.sort((a, b) => (milestones.get(b)?.targetDate ?? 0) - (milestones.get(a)?.targetDate ?? 0))
       resolve(value)
       query.unsubscribe()
     })
   })
 }
 
-/**
- * @public
- */
-export function getSprintDays (value: Sprint): string {
-  const st = new Date(value.startDate).getDate()
-  const days = Math.floor(Math.abs((1 + value.targetDate - value.startDate) / 1000 / 60 / 60 / 24)) + 1
-  const stDate = new Date(value.startDate)
-  const stTime = stDate.getTime()
-  let ds = Array.from(Array(days).keys()).map((it) => st + it)
-  ds = ds.filter((it) => ![0, 6].includes(new Date(new Date(stTime).setDate(it)).getDay()))
-  return ds.join(' ')
-}
-
-export function getDayOfSprint (startDate: number, now: number): number {
-  startDate = new Date(startDate).setHours(0, 0)
-  now = new Date(now).setHours(0, 0)
-  const days = Math.floor(Math.abs((1 + now - startDate) / 1000 / 60 / 60 / 24))
-  const stDate = new Date(startDate)
-  const stDateDate = stDate.getDate()
-  const stTime = stDate.getTime()
-  const ds = Array.from(Array(days).keys()).map((it) => stDateDate + it)
-  return ds.filter((it) => !isWeekend(new Date(new Date(stTime).setDate(it)))).length
-}
-
-export async function moveIssuesToAnotherSprint (
+export async function moveIssuesToAnotherMilestone (
   client: TxOperations,
-  oldSprint: Sprint,
-  newSprint: Sprint | undefined
+  oldMilestone: Milestone,
+  newMilestone: Milestone | undefined
 ): Promise<boolean> {
   try {
-    // Find all Issues by Sprint
-    const movedIssues = await client.findAll(tracker.class.Issue, { sprint: oldSprint._id })
+    // Find all Issues by Milestone
+    const movedIssues = await client.findAll(tracker.class.Issue, { milestone: oldMilestone._id })
 
-    // Update Issues by new Sprint
+    // Update Issues by new Milestone
     const awaitedUpdates: Array<Promise<TxResult>> = []
     for (const issue of movedIssues) {
-      awaitedUpdates.push(client.update(issue, { sprint: newSprint?._id ?? null }))
+      awaitedUpdates.push(client.update(issue, { milestone: newMilestone?._id ?? null }))
     }
     await Promise.all(awaitedUpdates)
 
     return true
   } catch (error) {
     console.error(
-      `Error happened while moving issues between sprints from ${oldSprint.label} to ${
-        newSprint?.label ?? 'No Sprint'
+      `Error happened while moving issues between milestones from ${oldMilestone.label} to ${
+        newMilestone?.label ?? 'No Milestone'
       }: `,
       error
     )
@@ -485,12 +462,12 @@ export async function getAllComponents (
   return await getAllSomething(tracker.class.Component, query, onUpdate, queryId)
 }
 
-export async function getAllSprints (
+export async function getAllMilestones (
   query: DocumentQuery<Doc> | undefined,
   onUpdate: () => void,
   queryId: Ref<Doc>
 ): Promise<any[] | undefined> {
-  return await getAllSomething(tracker.class.Sprint, query, onUpdate, queryId)
+  return await getAllSomething(tracker.class.Milestone, query, onUpdate, queryId)
 }
 
 export function subIssueListProvider (subIssues: Issue[], target: Ref<Issue>): void {

@@ -18,7 +18,7 @@
   import core, { AttachedData, Doc, Ref, SortingOrder } from '@hcengineering/core'
   import { DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
-  import { Component, Issue, IssueDraft, IssueParentInfo, Project, Sprint, calcRank } from '@hcengineering/tracker'
+  import { Component, Issue, IssueDraft, IssueParentInfo, Project, Milestone, calcRank } from '@hcengineering/tracker'
   import { Button, ExpandCollapse, IconAdd, Scroller, closeTooltip } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import tracker from '../plugin'
@@ -30,7 +30,7 @@
   export let parendIssueId: Ref<Issue>
   export let projectId: Ref<Project>
   export let project: Project | undefined
-  export let sprint: Ref<Sprint> | null = null
+  export let milestone: Ref<Milestone> | null = null
   export let component: Ref<Component> | null = null
   export let subIssues: IssueDraft[] = []
   export let shouldSaveDraft: boolean = false
@@ -86,7 +86,7 @@
         description: subIssue.description,
         assignee: subIssue.assignee,
         component: subIssue.component,
-        sprint: subIssue.sprint,
+        milestone: subIssue.milestone,
         number: (incResult as any).object.sequence,
         status: subIssue.status ?? project.defaultIssueStatus,
         priority: subIssue.priority,
@@ -220,7 +220,7 @@
       <Scroller>
         <DraftIssueChildList
           {component}
-          {sprint}
+          {milestone}
           bind:issues={subIssues}
           project={projectId}
           on:move={handleIssueSwap}
@@ -237,7 +237,7 @@
       {parendIssueId}
       {project}
       {component}
-      {sprint}
+      {milestone}
       {shouldSaveDraft}
       on:close={() => {
         isManualCreating = false

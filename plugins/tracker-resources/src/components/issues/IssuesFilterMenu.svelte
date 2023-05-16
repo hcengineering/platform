@@ -26,7 +26,7 @@
   import FilterMenu from '../FilterMenu.svelte'
   import PriorityFilterMenuSection from './PriorityFilterMenuSection.svelte'
   import ComponentFilterMenuSection from './ComponentFilterMenuSection.svelte'
-  import SprintFilterMenuSection from './SprintFilterMenuSection.svelte'
+  import MilestoneFilterMenuSection from './MilestoneFilterMenuSection.svelte'
   import StatusFilterMenuSection from './StatusFilterMenuSection.svelte'
 
   export let targetHtml: HTMLElement
@@ -43,7 +43,7 @@
   $: groupedByStatus = getGroupedIssues('status', issues, defaultStatusIds)
   $: groupedByPriority = getGroupedIssues('priority', issues, defaultPriorities)
   $: groupedByComponent = getGroupedIssues('component', issues)
-  $: groupedBySprint = getGroupedIssues('sprint', issues)
+  $: groupedByMilestone = getGroupedIssues('milestone', issues)
 
   const handleStatusFilterMenuSectionOpened = () => {
     const statusGroups: { [key: string]: number } = {}
@@ -105,17 +105,17 @@
     )
   }
 
-  const handleSprintFilterMenuSectionOpened = () => {
-    const sprintGroups: { [key: string]: number } = {}
+  const handleMilestoneFilterMenuSectionOpened = () => {
+    const milestoneGroups: { [key: string]: number } = {}
 
-    for (const [sprint, value] of Object.entries(groupedBySprint)) {
-      sprintGroups[sprint] = value?.length ?? 0
+    for (const [milestone, value] of Object.entries(groupedByMilestone)) {
+      milestoneGroups[milestone] = value?.length ?? 0
     }
     showPopup(
-      SprintFilterMenuSection,
+      MilestoneFilterMenuSection,
       {
-        groups: sprintGroups,
-        selectedElements: currentFilterQuery?.sprint?.[currentFilterMode] ?? [],
+        groups: milestoneGroups,
+        selectedElements: currentFilterQuery?.milestone?.[currentFilterMode] ?? [],
         index,
         onUpdate,
         onBack
@@ -138,8 +138,8 @@
       onSelect: handleComponentFilterMenuSectionOpened
     },
     {
-      ...getIssueFilterAssetsByType('sprint'),
-      onSelect: handleSprintFilterMenuSectionOpened
+      ...getIssueFilterAssetsByType('milestone'),
+      onSelect: handleMilestoneFilterMenuSectionOpened
     }
   ]
 </script>

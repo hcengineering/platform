@@ -16,10 +16,10 @@
   import { Timestamp } from '@hcengineering/core'
 
   import { getClient } from '@hcengineering/presentation'
-  import { Sprint } from '@hcengineering/tracker'
+  import { Milestone } from '@hcengineering/tracker'
   import { DatePresenter } from '@hcengineering/ui'
 
-  export let value: Sprint
+  export let value: Milestone
   export let field = 'targetDate'
   export let kind: 'transparent' | 'primary' | 'link' | 'list' = 'primary'
 

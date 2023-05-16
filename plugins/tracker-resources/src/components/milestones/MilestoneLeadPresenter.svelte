@@ -18,7 +18,7 @@
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { UsersPopup } from '@hcengineering/contact-resources'
-  import { Sprint } from '@hcengineering/tracker'
+  import { Milestone } from '@hcengineering/tracker'
   import { eventToHTMLElement, IconSize, showPopup } from '@hcengineering/ui'
   import { AttributeModel } from '@hcengineering/view'
   import { getObjectPresenter } from '@hcengineering/view-resources'
@@ -27,7 +27,7 @@
 
   export let value: Employee | null
   export let size: IconSize = 'x-small'
-  export let object: Sprint
+  export let object: Milestone
   export let defaultClass: Ref<Class<Doc>> | undefined = undefined
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false

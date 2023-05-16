@@ -13,15 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { SprintStatus } from '@hcengineering/tracker'
+  import { MilestoneStatus } from '@hcengineering/tracker'
   import { Button, showPopup, SelectPopup, eventToHTMLElement } from '@hcengineering/ui'
   import type { ButtonKind, ButtonSize, LabelAndProps } from '@hcengineering/ui'
   import tracker from '../../plugin'
-  import { defaultSprintStatuses, sprintStatusAssets } from '../../utils'
+  import { defaultMilestoneStatuses, milestoneStatusAssets } from '../../utils'
 
-  export let selectedSprintStatus: SprintStatus | undefined
+  export let selectedMilestoneStatus: MilestoneStatus | undefined
   export let shouldShowLabel: boolean = true
-  export let onSprintStatusChange: ((newSprintStatus: SprintStatus | undefined) => void) | undefined = undefined
+  export let onMilestoneStatusChange: ((newMilestoneStatus: MilestoneStatus | undefined) => void) | undefined =
+    undefined
   export let isEditable: boolean = true
 
   export let kind: ButtonKind = 'no-border'
@@ -30,23 +31,23 @@
   export let width: string | undefined = 'min-content'
   export let showTooltip: LabelAndProps | undefined = undefined
 
-  $: selectedStatusIcon = selectedSprintStatus
-    ? sprintStatusAssets[selectedSprintStatus].icon
-    : tracker.icon.SprintStatusPlanned
+  $: selectedStatusIcon = selectedMilestoneStatus
+    ? milestoneStatusAssets[selectedMilestoneStatus].icon
+    : tracker.icon.MilestoneStatusPlanned
 
   $: selectedStatusLabel = shouldShowLabel
-    ? selectedSprintStatus
-      ? sprintStatusAssets[selectedSprintStatus].label
+    ? selectedMilestoneStatus
+      ? milestoneStatusAssets[selectedMilestoneStatus].label
       : tracker.string.Planned
     : undefined
 
-  $: statusesInfo = defaultSprintStatuses.map((s) => ({
+  $: statusesInfo = defaultMilestoneStatuses.map((s) => ({
     id: s,
-    isSelected: sprintStatusAssets[s].label === selectedStatusLabel,
-    ...sprintStatusAssets[s]
+    isSelected: milestoneStatusAssets[s].label === selectedStatusLabel,
+    ...milestoneStatusAssets[s]
   }))
 
-  const handleSprintStatusEditorOpened = (event: MouseEvent) => {
+  const handleMilestoneStatusEditorOpened = (event: MouseEvent) => {
     if (!isEditable) {
       return
     }
@@ -54,7 +55,7 @@
       SelectPopup,
       { value: statusesInfo, placeholder: tracker.string.SetStatus, searchable: true },
       eventToHTMLElement(event),
-      onSprintStatusChange
+      onMilestoneStatusChange
     )
   }
 </script>
@@ -68,5 +69,5 @@
   icon={selectedStatusIcon}
   label={selectedStatusLabel}
   {showTooltip}
-  on:click={handleSprintStatusEditorOpened}
+  on:click={handleMilestoneStatusEditorOpened}
 />

@@ -40,8 +40,8 @@ import {
   IssueTemplate,
   IssueTemplateChild,
   Project,
-  Sprint,
-  SprintStatus,
+  Milestone,
+  MilestoneStatus,
   TimeReportDayType
 } from '@hcengineering/tracker'
 import { DOMAIN_TRACKER } from '.'
@@ -387,11 +387,183 @@ async function upgradeIssues (tx: TxOperations): Promise<void> {
   }
 }
 
+async function renameSprintToMilestone (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_TRACKER,
+    {
+      _class: tracker.class.Issue,
+      sprint: { $exists: true }
+    },
+    {
+      $rename: { sprint: 'milestone' }
+    }
+  )
+  await client.update(
+    DOMAIN_TRACKER,
+    {
+      _class: 'tracker:class:Sprint' as Ref<Class<Doc>>
+    },
+    {
+      _class: tracker.class.Milestone
+    }
+  )
+  const milestones = await client.find(DOMAIN_TRACKER, { _class: tracker.class.Milestone })
+  for (const milestone of milestones) {
+    await client.update(
+      DOMAIN_TX,
+      {
+        objectId: milestone._id,
+        objectClass: 'tracker:class:Sprint' as Ref<Class<Doc>>
+      },
+      {
+        objectClass: tracker.class.Milestone
+      }
+    )
+  }
+
+  await client.update(
+    DOMAIN_TX,
+    {
+      _class: core.class.TxCollectionCUD,
+      'tx._class': core.class.TxCreateDoc,
+      'tx.objectClass': tracker.class.Issue,
+      'tx.attributes.sprint': { $exists: true }
+    },
+    {
+      $rename: { 'tx.attributes.sprint': 'tx.attributes.milestone' }
+    }
+  )
+  await client.update(
+    DOMAIN_TX,
+    {
+      _class: core.class.TxCollectionCUD,
+      'tx._class': core.class.TxUpdateDoc,
+      'tx.objectClass': tracker.class.Issue,
+      'tx.operations.sprint': { $exists: true }
+    },
+    {
+      $rename: { 'tx.operations.sprint': 'tx.operations.milestone' }
+    }
+  )
+  await client.update(
+    DOMAIN_TX,
+    {
+      objectClass: tracker.class.Issue,
+      _class: core.class.TxUpdateDoc,
+      'operations.sprint': { $exists: true }
+    },
+    {
+      $rename: { 'operations.sprint': 'operations.milestone' }
+    }
+  )
+
+  const templates = await client.find<IssueTemplate>(DOMAIN_TRACKER, {
+    _class: tracker.class.IssueTemplate,
+    sprint: { $exists: true }
+  })
+  for (const template of templates) {
+    const children: IssueTemplateChild[] = template.children.map((p) => {
+      const res = {
+        ...p,
+        milestone: p.milestone
+      }
+      delete (res as any).sprint
+      return res
+    })
+    await client.update<IssueTemplate>(
+      DOMAIN_TRACKER,
+      {
+        _id: template._id
+      },
+      {
+        children
+      }
+    )
+    await client.update(
+      DOMAIN_TRACKER,
+      {
+        _id: template._id
+      },
+      {
+        $rename: { sprint: 'milestone' }
+      }
+    )
+    const createTxes = await client.find<TxCreateDoc<IssueTemplate>>(DOMAIN_TX, {
+      objectId: template._id,
+      _class: core.class.TxCreateDoc
+    })
+    for (const createTx of createTxes) {
+      const children: IssueTemplateChild[] = createTx.attributes.children.map((p) => {
+        const res = {
+          ...p,
+          milestone: p.milestone
+        }
+        delete (res as any).sprint
+        return res
+      })
+      await client.update<TxCreateDoc<IssueTemplate>>(
+        DOMAIN_TX,
+        {
+          _id: createTx._id
+        },
+        {
+          children
+        }
+      )
+      await client.update(
+        DOMAIN_TX,
+        {
+          _id: createTx._id
+        },
+        {
+          $rename: { 'attributes.sprint': 'attributes.milestone' }
+        }
+      )
+    }
+    const updateTxes = await client.find<TxUpdateDoc<IssueTemplate>>(DOMAIN_TX, {
+      objectId: template._id,
+      _class: core.class.TxUpdateDoc
+    })
+    for (const updateTx of updateTxes) {
+      if ((updateTx.operations as any).sprint !== undefined) {
+        await client.update(
+          DOMAIN_TX,
+          {
+            _id: updateTx._id
+          },
+          {
+            $rename: { 'operations.sprint': 'operations.milestone' }
+          }
+        )
+      }
+      if (updateTx.operations.children !== undefined) {
+        const children: IssueTemplateChild[] = updateTx.operations.children.map((p) => {
+          const res = {
+            ...p,
+            milestone: p.milestone
+          }
+          delete (res as any).sprint
+          return res
+        })
+        await client.update(
+          DOMAIN_TX,
+          {
+            _id: updateTx._id
+          },
+          {
+            children
+          }
+        )
+      }
+    }
+  }
+}
+
 async function renameProject (client: MigrationClient): Promise<void> {
   await client.update(
     DOMAIN_TRACKER,
     {
-      _class: { $in: [tracker.class.Issue, tracker.class.Sprint] },
+      _class: { $in: [tracker.class.Issue, tracker.class.Milestone] },
       project: { $exists: true }
     },
     {
@@ -448,7 +620,7 @@ async function renameProject (client: MigrationClient): Promise<void> {
   await client.update(
     DOMAIN_TX,
     {
-      objectClass: tracker.class.Sprint,
+      objectClass: tracker.class.Milestone,
       _class: core.class.TxCreateDoc,
       'attributes.project': { $exists: true }
     },
@@ -459,7 +631,7 @@ async function renameProject (client: MigrationClient): Promise<void> {
   await client.update(
     DOMAIN_TX,
     {
-      objectClass: { $in: [tracker.class.Issue, tracker.class.Sprint] },
+      objectClass: { $in: [tracker.class.Issue, tracker.class.Milestone] },
       _class: core.class.TxUpdateDoc,
       'operations.project': { $exists: true }
     },
@@ -732,11 +904,11 @@ async function setCreate (client: MigrationClient): Promise<void> {
   }
 }
 
-async function fixSprintEmptyStatuses (client: MigrationClient): Promise<void> {
-  await client.update<Sprint>(
+async function fixMilestoneEmptyStatuses (client: MigrationClient): Promise<void> {
+  await client.update<Milestone>(
     DOMAIN_TRACKER,
-    { _class: tracker.class.Sprint, $or: [{ status: null }, { status: undefined }] },
-    { status: SprintStatus.Planned }
+    { _class: tracker.class.Milestone, $or: [{ status: null }, { status: undefined }] },
+    { status: MilestoneStatus.Planned }
   )
 }
 
@@ -754,6 +926,7 @@ export const trackerOperation: MigrateOperation = {
     await Promise.all([migrateIssueComponents(client), migrateParentIssues(client)])
     await migrateIssueParentInfo(client)
     await fillRank(client)
+    await renameSprintToMilestone(client)
     await renameProject(client)
     await setCreate(client)
 
@@ -773,7 +946,7 @@ export const trackerOperation: MigrateOperation = {
       }
     )
 
-    await fixSprintEmptyStatuses(client)
+    await fixMilestoneEmptyStatuses(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)

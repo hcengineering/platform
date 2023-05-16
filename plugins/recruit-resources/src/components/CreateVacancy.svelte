@@ -129,7 +129,7 @@
       description: template.description,
       assignee: template.assignee,
       component: template.component,
-      sprint: template.sprint,
+      milestone: template.milestone,
       number: (incResult as any).object.sequence,
       status: project?.defaultIssueStatus as Ref<IssueStatus>,
       priority: template.priority,
