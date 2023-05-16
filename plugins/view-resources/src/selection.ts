@@ -1,4 +1,4 @@
-import { Doc } from '@hcengineering/core'
+import { Doc, Ref } from '@hcengineering/core'
 import { panelstore } from '@hcengineering/ui'
 import { onDestroy } from 'svelte'
 import { Unsubscriber, derived, writable } from 'svelte/store'
@@ -121,6 +121,14 @@ export class ListSelectionProvider implements SelectionFocusProvider {
       onDestroy(() => {
         this.destroy()
       })
+    }
+  }
+
+  static Find (_id: Ref<Doc>): ListSelectionProvider | undefined {
+    for (const provider of providers) {
+      if (provider.docs().findIndex((p) => p._id === _id) !== -1) {
+        return provider
+      }
     }
   }
 

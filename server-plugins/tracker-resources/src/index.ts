@@ -257,7 +257,6 @@ async function doIssueUpdate (
       { limit: 1 }
     )
 
-    const updatedComponent = newParent !== undefined ? newParent.component : null
     const updatedParents =
       newParent !== undefined ? [{ parentId: newParent._id, parentTitle: newParent.title }, ...newParent.parents] : []
 
@@ -268,13 +267,12 @@ async function doIssueUpdate (
           ? {}
           : { parents: [...issue.parents].slice(0, parentInfoIndex + 1).concat(updatedParents) }
 
-      return { ...parentsUpdate, component: updatedComponent }
+      return { ...parentsUpdate }
     }
 
     res.push(
       control.txFactory.createTxUpdateDoc(updateTx.objectClass, updateTx.objectSpace, updateTx.objectId, {
-        parents: updatedParents,
-        component: updatedComponent
+        parents: updatedParents
       }),
       ...(await updateSubIssues(updateTx, control, update))
     )
@@ -282,14 +280,6 @@ async function doIssueUpdate (
     // Remove from parent estimation list.
     const issue = await getCurrentIssue()
     updateIssueParentEstimations(issue, res, control, issue.parents, updatedParents)
-  }
-
-  if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'component')) {
-    res.push(
-      ...(await updateSubIssues(updateTx, control, {
-        component: updateTx.operations.component
-      }))
-    )
   }
 
   if (

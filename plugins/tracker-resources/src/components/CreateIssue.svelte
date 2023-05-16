@@ -289,7 +289,7 @@
   }
 
   function updateAssigneeId (object: IssueDraft, currentProject: Project | undefined) {
-    if (object.assignee === undefined && currentProject !== undefined) {
+    if (object.assignee == null && currentProject !== undefined) {
       if (currentProject.defaultAssignee !== undefined) {
         object.assignee = currentProject.defaultAssignee
       } else {
@@ -595,6 +595,7 @@
       placeholder={tracker.string.IssueTitlePlaceholder}
       kind={'large-style'}
       focus
+      fullSize
     />
   </div>
   <div id="issue-description">

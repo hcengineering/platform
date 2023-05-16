@@ -13,7 +13,7 @@ import core, {
 import { getResource } from '@hcengineering/platform'
 import { LiveQuery, createQuery, getClient } from '@hcengineering/presentation'
 import { AnyComponent, locationToUrl, getCurrentResolvedLocation } from '@hcengineering/ui'
-import { Filter, FilterMode, KeyFilter } from '@hcengineering/view'
+import { Filter, FilterMode, FilteredView, KeyFilter } from '@hcengineering/view'
 import { get, writable } from 'svelte/store'
 import view from './plugin'
 
@@ -21,6 +21,11 @@ import view from './plugin'
  * @public
  */
 export const filterStore = writable<Filter[]>([])
+
+/**
+ * @public
+ */
+export const selectedFilterStore = writable<FilteredView | undefined>()
 
 export function setFilters (filters: Filter[]): void {
   const old = get(filterStore)
@@ -288,11 +293,16 @@ export function createFilter (_class: Ref<Class<Doc>>, key: string, value: any[]
   }
 }
 
-export function getFilterKey (_class: Ref<Class<Doc>>): string {
+export function getFilterKey (_class: Ref<Class<Doc>> | undefined): string {
   const loc = getCurrentResolvedLocation()
+  loc.path.length = 3
   loc.fragment = undefined
   loc.query = undefined
-  return 'filter' + locationToUrl(loc) + _class
+  let res = 'filter' + locationToUrl(loc)
+  if (_class !== undefined) {
+    res = res + _class
+  }
+  return res
 }
 
 /**

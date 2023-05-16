@@ -45,7 +45,7 @@ import InviteSetting from './components/InviteSetting.svelte'
 import Configure from './components/Configure.svelte'
 import setting from './plugin'
 import IntegrationPanel from './components/IntegrationPanel.svelte'
-import { getOwnerName, getOwnerPosition, getValue } from './utils'
+import { getOwnerFirstName, getOwnerLastName, getOwnerPosition, getValue } from './utils'
 
 export { ClassSetting }
 
@@ -106,7 +106,8 @@ export default async (): Promise<Resources> => ({
     DeleteMixin
   },
   function: {
-    GetOwnerName: getOwnerName,
+    GetOwnerFirstName: getOwnerFirstName,
+    GetOwnerLastName: getOwnerLastName,
     GetOwnerPosition: getOwnerPosition,
     GetValue: getValue
   }
