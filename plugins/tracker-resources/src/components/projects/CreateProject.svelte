@@ -35,7 +35,6 @@
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
-  import TimeReportDayDropdown from '../issues/timereport/TimeReportDayDropdown.svelte'
   import ChangeIdentity from './ChangeIdentity.svelte'
   import ProjectIconChooser from './ProjectIconChooser.svelte'
 
