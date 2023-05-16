@@ -21,6 +21,7 @@ import core, {
   DocumentQuery,
   FindOptions,
   FindResult,
+  generateId,
   LookupData,
   MeasureContext,
   ObjQueryType,
@@ -34,10 +35,12 @@ import core, {
   TxCUD,
   TxProcessor,
   TxRemoveDoc,
-  TxUpdateDoc
+  TxUpdateDoc,
+  TxWorkspaceEvent,
+  WorkspaceEvent
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
+import { BroadcastFunc, Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
 import { BaseMiddleware } from './base'
 import { getUser, isOwner, mergeTargets } from './utils'
 
@@ -56,16 +59,17 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     core.space.Tx
   ]
 
-  private constructor (storage: ServerStorage, next?: Middleware) {
+  private constructor (private readonly broadcast: BroadcastFunc, storage: ServerStorage, next?: Middleware) {
     super(storage, next)
   }
 
   static async create (
     ctx: MeasureContext,
+    broadcast: BroadcastFunc,
     storage: ServerStorage,
     next?: Middleware
   ): Promise<SpaceSecurityMiddleware> {
-    const res = new SpaceSecurityMiddleware(storage, next)
+    const res = new SpaceSecurityMiddleware(broadcast, storage, next)
     await res.init(ctx)
     return res
   }
@@ -125,41 +129,57 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     }
   }
 
-  private pushMembersHandle (addedMembers: Ref<Account> | Position<Ref<Account>>, space: Ref<Space>): void {
+  private async pushMembersHandle (
+    addedMembers: Ref<Account> | Position<Ref<Account>>,
+    space: Ref<Space>
+  ): Promise<void> {
     if (typeof addedMembers === 'object') {
       for (const member of addedMembers.$each) {
         this.addMemberSpace(member, space)
       }
+      await this.brodcastEvent(addedMembers.$each)
     } else {
       this.addMemberSpace(addedMembers, space)
+      await this.brodcastEvent([addedMembers])
     }
   }
 
-  private pullMembersHandle (removedMembers: Partial<Ref<Account>> | PullArray<Ref<Account>>, space: Ref<Space>): void {
+  private async pullMembersHandle (
+    removedMembers: Partial<Ref<Account>> | PullArray<Ref<Account>>,
+    space: Ref<Space>
+  ): Promise<void> {
     if (typeof removedMembers === 'object') {
       const { $in } = removedMembers as PullArray<Ref<Account>>
       if ($in !== undefined) {
         for (const member of $in) {
           this.removeMemberSpace(member, space)
         }
+        await this.brodcastEvent($in)
       }
     } else {
       this.removeMemberSpace(removedMembers, space)
+      await this.brodcastEvent([removedMembers])
     }
   }
 
-  private syncMembers (members: Ref<Account>[], space: Space): void {
+  private async syncMembers (members: Ref<Account>[], space: Space): Promise<void> {
     const oldMembers = new Set(space.members)
     const newMembers = new Set(members)
+    const changed: Ref<Account>[] = []
     for (const old of oldMembers) {
       if (!newMembers.has(old)) {
         this.removeMemberSpace(old, space._id)
+        changed.push(old)
       }
     }
     for (const newMem of newMembers) {
       if (!oldMembers.has(newMem)) {
         this.addMemberSpace(newMem, space._id)
+        changed.push(newMem)
       }
+    }
+    if (changed.length > 0) {
+      await this.brodcastEvent(changed)
     }
   }
 
@@ -168,6 +188,26 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     if (publicIndex !== -1) {
       this.publicSpaces.splice(publicIndex, 1)
     }
+  }
+
+  private async brodcastEvent (users: Ref<Account>[]): Promise<void> {
+    const targets = await this.getTargets(users)
+    const tx: TxWorkspaceEvent = {
+      _class: core.class.TxWorkspaceEvent,
+      _id: generateId(),
+      event: WorkspaceEvent.SecurityChange,
+      modifiedBy: core.account.System,
+      modifiedOn: Date.now(),
+      objectSpace: core.space.DerivedTx,
+      space: core.space.DerivedTx,
+      params: null
+    }
+    this.broadcast([tx], targets)
+  }
+
+  private async broadcastNonMembers (space: Space | undefined): Promise<void> {
+    const users = await this.storage.modelDb.findAll(core.class.Account, { _id: { $nin: space?.members } })
+    await this.brodcastEvent(users.map((p) => p._id))
   }
 
   private async handleUpdate (ctx: SessionContext, tx: TxCUD<Space>): Promise<void> {
@@ -181,24 +221,27 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
           res.private = true
           this.addSpace(res)
           this.removePublicSpace(res._id)
+          await this.broadcastNonMembers(res)
         }
       } else if (!updateDoc.operations.private) {
+        const space = this.privateSpaces[updateDoc.objectId]
         this.removeSpace(updateDoc.objectId)
         this.publicSpaces.push(updateDoc.objectId)
+        await this.broadcastNonMembers(space)
       }
     }
 
     let space = this.privateSpaces[updateDoc.objectId]
     if (space !== undefined) {
       if (updateDoc.operations.members !== undefined) {
-        this.syncMembers(updateDoc.operations.members, space)
+        await this.syncMembers(updateDoc.operations.members, space)
       }
       if (updateDoc.operations.$push?.members !== undefined) {
-        this.pushMembersHandle(updateDoc.operations.$push.members, space._id)
+        await this.pushMembersHandle(updateDoc.operations.$push.members, space._id)
       }
 
       if (updateDoc.operations.$pull?.members !== undefined) {
-        this.pullMembersHandle(updateDoc.operations.$pull.members, space._id)
+        await this.pullMembersHandle(updateDoc.operations.$pull.members, space._id)
       }
       space = TxProcessor.updateDoc2Doc(space, updateDoc)
     }
@@ -257,6 +300,12 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
               targets.push(account.email)
             }
           }
+        }
+      }
+      if (h.isDerived(cudTx.objectClass, core.class.Account) && cudTx._class === core.class.TxUpdateDoc) {
+        const ctx = cudTx as TxUpdateDoc<Account>
+        if (ctx.operations.role !== undefined) {
+          await this.brodcastEvent([ctx.objectId])
         }
       }
     }

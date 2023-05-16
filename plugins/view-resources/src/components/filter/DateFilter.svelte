@@ -31,6 +31,7 @@
     ? [
         view.filter.FilterDateOutdated,
         view.filter.FilterDateToday,
+        view.filter.FilterDateYesterday,
         view.filter.FilterDateWeek,
         view.filter.FilterDateNextW,
         view.filter.FilterDateM,
@@ -38,7 +39,13 @@
         view.filter.FilterDateCustom,
         view.filter.FilterDateNotSpecified
       ]
-    : [view.filter.FilterDateToday, view.filter.FilterDateWeek, view.filter.FilterDateM, view.filter.FilterDateCustom]
+    : [
+        view.filter.FilterDateToday,
+        view.filter.FilterDateYesterday,
+        view.filter.FilterDateWeek,
+        view.filter.FilterDateM,
+        view.filter.FilterDateCustom
+      ]
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
 
   const client = getClient()

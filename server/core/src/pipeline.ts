@@ -29,7 +29,7 @@ import {
   TxResult
 } from '@hcengineering/core'
 import { DbConfiguration, createServerStorage } from './storage'
-import { Middleware, MiddlewareCreator, Pipeline, SessionContext } from './types'
+import { BroadcastFunc, Middleware, MiddlewareCreator, Pipeline, SessionContext } from './types'
 
 /**
  * @public
@@ -39,13 +39,13 @@ export async function createPipeline (
   conf: DbConfiguration,
   constructors: MiddlewareCreator[],
   upgrade: boolean,
-  broadcast: (tx: Tx[]) => void
+  broadcast: BroadcastFunc
 ): Promise<Pipeline> {
   const storage = await createServerStorage(conf, {
     upgrade,
     broadcast
   })
-  const pipeline = PipelineImpl.create(ctx, storage, constructors)
+  const pipeline = PipelineImpl.create(ctx, storage, constructors, broadcast)
   return await pipeline
 }
 
@@ -59,18 +59,23 @@ class PipelineImpl implements Pipeline {
   static async create (
     ctx: MeasureContext,
     storage: ServerStorage,
-    constructors: MiddlewareCreator[]
+    constructors: MiddlewareCreator[],
+    broadcast: BroadcastFunc
   ): Promise<PipelineImpl> {
     const pipeline = new PipelineImpl(storage)
-    pipeline.head = await pipeline.buildChain(ctx, constructors)
+    pipeline.head = await pipeline.buildChain(ctx, constructors, broadcast)
     return pipeline
   }
 
-  private async buildChain (ctx: MeasureContext, constructors: MiddlewareCreator[]): Promise<Middleware | undefined> {
+  private async buildChain (
+    ctx: MeasureContext,
+    constructors: MiddlewareCreator[],
+    broadcast: BroadcastFunc
+  ): Promise<Middleware | undefined> {
     let current: Middleware | undefined
     for (let index = constructors.length - 1; index >= 0; index--) {
       const element = constructors[index]
-      current = await element(ctx, this.storage, current)
+      current = await element(ctx, broadcast, this.storage, current)
     }
     return current
   }

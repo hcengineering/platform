@@ -755,6 +755,7 @@ const view = plugin(viewId, {
     FilterNestedDontMatch: '' as Ref<FilterMode>,
     FilterDateOutdated: '' as Ref<FilterMode>,
     FilterDateToday: '' as Ref<FilterMode>,
+    FilterDateYesterday: '' as Ref<FilterMode>,
     FilterDateWeek: '' as Ref<FilterMode>,
     FilterDateNextW: '' as Ref<FilterMode>,
     FilterDateM: '' as Ref<FilterMode>,

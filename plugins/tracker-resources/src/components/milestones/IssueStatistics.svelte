@@ -62,7 +62,7 @@
       .reduce((it, cur) => {
         return it + cur
       }, 0),
-    1
+    3
   )
   $: totalReported = floorFractionDigits(
     (noParents ?? [{ reportedTime: 0, childInfo: [] } as unknown as Issue])
@@ -78,7 +78,7 @@
       .reduce((it, cur) => {
         return it + cur
       }, 0),
-    1
+    3
   )
 </script>
 
