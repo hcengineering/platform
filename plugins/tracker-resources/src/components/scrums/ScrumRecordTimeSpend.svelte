@@ -169,14 +169,14 @@
     { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list', isEditable: false } },
     {
       key: '',
-      presenter: tracker.component.SprintEditor,
+      presenter: tracker.component.MilestoneEditor,
       props: {
         kind: 'list',
         size: 'small',
         shape: 'round',
         shouldShowPlaceholder: false,
         listProps: {
-          excludeByKey: 'sprint'
+          excludeByKey: 'milestone'
         },
         isEditable: false
       }

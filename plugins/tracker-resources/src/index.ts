@@ -25,7 +25,7 @@ import {
 } from '@hcengineering/core'
 import { Resources, translate } from '@hcengineering/platform'
 import { getClient, MessageBox, ObjectSearchResult } from '@hcengineering/presentation'
-import { Issue, Project, Scrum, ScrumRecord, Sprint } from '@hcengineering/tracker'
+import { Issue, Project, Scrum, ScrumRecord, Milestone } from '@hcengineering/tracker'
 import { showPopup } from '@hcengineering/ui'
 import ComponentEditor from './components/components/ComponentEditor.svelte'
 import ComponentPresenter from './components/components/ComponentPresenter.svelte'
@@ -68,8 +68,8 @@ import NopeComponent from './components/NopeComponent.svelte'
 import RelationsPopup from './components/RelationsPopup.svelte'
 import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
-import SprintDatePresenter from './components/sprints/SprintDatePresenter.svelte'
-import SprintLeadPresenter from './components/sprints/SprintLeadPresenter.svelte'
+import MilestoneDatePresenter from './components/milestones/MilestoneDatePresenter.svelte'
+import MilestoneLeadPresenter from './components/milestones/MilestoneLeadPresenter.svelte'
 import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
 import Views from './components/views/Views.svelte'
 import Statuses from './components/workflow/Statuses.svelte'
@@ -85,12 +85,12 @@ import {
 } from './issues'
 import tracker from './plugin'
 
-import SprintEditor from './components/sprints/SprintEditor.svelte'
-import SprintPresenter from './components/sprints/SprintPresenter.svelte'
-import Sprints from './components/sprints/Sprints.svelte'
-import SprintSelector from './components/sprints/SprintSelector.svelte'
-import SprintStatusPresenter from './components/sprints/SprintStatusPresenter.svelte'
-import SprintTitlePresenter from './components/sprints/SprintTitlePresenter.svelte'
+import MilestoneEditor from './components/milestones/MilestoneEditor.svelte'
+import MilestonePresenter from './components/milestones/MilestonePresenter.svelte'
+import Milestones from './components/milestones/Milestones.svelte'
+import MilestoneSelector from './components/milestones/MilestoneSelector.svelte'
+import MilestoneStatusPresenter from './components/milestones/MilestoneStatusPresenter.svelte'
+import MilestoneTitlePresenter from './components/milestones/MilestoneTitlePresenter.svelte'
 
 import ScrumRecordPanel from './components/scrums/ScrumRecordPanel.svelte'
 import Scrums from './components/scrums/Scrums.svelte'
@@ -109,17 +109,17 @@ import IssueTemplatePresenter from './components/templates/IssueTemplatePresente
 import IssueTemplates from './components/templates/IssueTemplates.svelte'
 
 import { deleteObject } from '@hcengineering/view-resources'
-import MoveAndDeleteSprintPopup from './components/sprints/MoveAndDeleteSprintPopup.svelte'
+import MoveAndDeleteMilestonePopup from './components/milestones/MoveAndDeleteMilestonePopup.svelte'
 import EditIssueTemplate from './components/templates/EditIssueTemplate.svelte'
 import TemplateEstimationEditor from './components/templates/EstimationEditor.svelte'
 import {
   getAllComponents,
   getAllPriority,
-  getAllSprints,
+  getAllMilestones,
   issuePrioritySort,
   issueStatusSort,
-  moveIssuesToAnotherSprint,
-  sprintSort,
+  moveIssuesToAnotherMilestone,
+  milestoneSort,
   subIssueQuery
 } from './utils'
 
@@ -134,9 +134,9 @@ import TimeSpendReportPopup from './components/issues/timereport/TimeSpendReport
 import CreateProject from './components/projects/CreateProject.svelte'
 import ProjectPresenter from './components/projects/ProjectPresenter.svelte'
 import ProjectSpacePresenter from './components/projects/ProjectSpacePresenter.svelte'
-import IssueStatistics from './components/sprints/IssueStatistics.svelte'
-import SprintRefPresenter from './components/sprints/SprintRefPresenter.svelte'
-import SprintFilter from './components/sprints/SprintFilter.svelte'
+import IssueStatistics from './components/milestones/IssueStatistics.svelte'
+import MilestoneRefPresenter from './components/milestones/MilestoneRefPresenter.svelte'
+import MilestoneFilter from './components/milestones/MilestoneFilter.svelte'
 
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 
@@ -249,23 +249,30 @@ async function deleteProject (project: Project | undefined): Promise<void> {
   }
 }
 
-async function moveAndDeleteSprints (client: TxOperations, oldSprints: Sprint[], newSprint?: Sprint): Promise<void> {
-  const noSprintLabel = await translate(tracker.string.NoSprint, {})
+async function moveAndDeleteMilestones (
+  client: TxOperations,
+  oldMilestones: Milestone[],
+  newMilestone?: Milestone
+): Promise<void> {
+  const noMilestoneLabel = await translate(tracker.string.NoMilestone, {})
 
   showPopup(
     MessageBox,
     {
-      label: tracker.string.MoveAndDeleteSprint,
-      message: tracker.string.MoveAndDeleteSprintConfirm,
-      labelProps: { newSprint: newSprint?.label ?? noSprintLabel, deleteSprint: oldSprints.map((p) => p.label) }
+      label: tracker.string.MoveAndDeleteMilestone,
+      message: tracker.string.MoveAndDeleteMilestoneConfirm,
+      labelProps: {
+        newMilestone: newMilestone?.label ?? noMilestoneLabel,
+        deleteMilestone: oldMilestones.map((p) => p.label)
+      }
     },
     undefined,
     (result?: boolean) => {
       if (result === true) {
-        for (const oldSprint of oldSprints) {
-          void moveIssuesToAnotherSprint(client, oldSprint, newSprint).then((succes) => {
+        for (const oldMilestone of oldMilestones) {
+          void moveIssuesToAnotherMilestone(client, oldMilestone, newMilestone).then((succes) => {
             if (succes) {
-              void deleteObject(client, oldSprint)
+              void deleteObject(client, oldMilestone)
             }
           })
         }
@@ -274,25 +281,25 @@ async function moveAndDeleteSprints (client: TxOperations, oldSprints: Sprint[],
   )
 }
 
-async function deleteSprint (sprints: Sprint | Sprint[]): Promise<void> {
+async function deleteMilestone (milestones: Milestone | Milestone[]): Promise<void> {
   const client = getClient()
-  const sprintArray = Array.isArray(sprints) ? sprints : [sprints]
-  // Check if available to move issues to another sprint
-  const firstSearchedSprint = await client.findOne(tracker.class.Sprint, {
-    _id: { $nin: sprintArray.map((p) => p._id) }
+  const milestoneArray = Array.isArray(milestones) ? milestones : [milestones]
+  // Check if available to move issues to another milestone
+  const firstSearchedMilestone = await client.findOne(tracker.class.Milestone, {
+    _id: { $nin: milestoneArray.map((p) => p._id) }
   })
-  if (firstSearchedSprint !== undefined) {
+  if (firstSearchedMilestone !== undefined) {
     showPopup(
-      MoveAndDeleteSprintPopup,
+      MoveAndDeleteMilestonePopup,
       {
-        sprintArray,
-        moveAndDeleteSprint: async (selectedSprint?: Sprint) =>
-          await moveAndDeleteSprints(client, sprintArray, selectedSprint)
+        milestoneArray,
+        moveAndDeleteMilestone: async (selectedMilestone?: Milestone) =>
+          await moveAndDeleteMilestones(client, milestoneArray, selectedMilestone)
       },
       'top'
     )
   } else {
-    await moveAndDeleteSprints(client, sprintArray)
+    await moveAndDeleteMilestones(client, milestoneArray)
   }
 }
 
@@ -393,7 +400,7 @@ export default async (): Promise<Resources> => ({
     PriorityPresenter,
     PriorityEditor,
     PriorityRefPresenter,
-    SprintRefPresenter,
+    MilestoneRefPresenter,
     ComponentEditor,
     StatusPresenter,
     StatusEditor,
@@ -416,14 +423,14 @@ export default async (): Promise<Resources> => ({
     RelationsPopup,
     CreateIssue,
     CreateIssueTemplate,
-    Sprints,
-    SprintPresenter,
+    Milestones,
+    MilestonePresenter,
     Scrums,
     ScrumRecordPanel,
-    SprintStatusPresenter,
-    SprintTitlePresenter,
-    SprintSelector,
-    SprintEditor,
+    MilestoneStatusPresenter,
+    MilestoneTitlePresenter,
+    MilestoneSelector,
+    MilestoneEditor,
     ReportedTimeEditor,
     TimeSpendReport,
     EstimationEditor,
@@ -444,10 +451,10 @@ export default async (): Promise<Resources> => ({
     RelatedIssueSelector,
     DeleteComponentPresenter,
     TimeSpendReportPopup,
-    SprintDatePresenter,
-    SprintLeadPresenter,
+    MilestoneDatePresenter,
+    MilestoneLeadPresenter,
     NotificationIssuePresenter,
-    SprintFilter
+    MilestoneFilter
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>
@@ -461,17 +468,17 @@ export default async (): Promise<Resources> => ({
     GetIssueTitle: issueTitleProvider,
     IssueStatusSort: issueStatusSort,
     IssuePrioritySort: issuePrioritySort,
-    SprintSort: sprintSort,
+    MilestoneSort: milestoneSort,
     SubIssueQuery: subIssueQuery,
     GetAllPriority: getAllPriority,
     GetAllComponents: getAllComponents,
-    GetAllSprints: getAllSprints
+    GetAllMilestones: getAllMilestones
   },
   actionImpl: {
     Move: move,
     EditWorkflowStatuses: editWorkflowStatuses,
     EditProject: editProject,
-    DeleteSprint: deleteSprint,
+    DeleteMilestone: deleteMilestone,
     DeleteProject: deleteProject
   },
   resolver: {

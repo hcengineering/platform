@@ -16,7 +16,7 @@
   import { Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Issue, IssueTemplate, Sprint } from '@hcengineering/tracker'
+  import { Issue, IssueTemplate, Milestone } from '@hcengineering/tracker'
   import {
     ButtonKind,
     ButtonShape,
@@ -24,17 +24,17 @@
     DatePresenter,
     deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
-  import { activeSprint } from '../../issues'
+  import { activeMilestone } from '../../issues'
   import tracker from '../../plugin'
-  import { getDayOfSprint } from '../../utils'
+  import { getDayOfMilestone } from '../../utils'
   import TimePresenter from '../issues/timereport/TimePresenter.svelte'
-  import SprintSelector from './SprintSelector.svelte'
+  import MilestoneSelector from './MilestoneSelector.svelte'
   import { createEventDispatcher } from 'svelte'
 
   export let value: Issue | IssueTemplate
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = true
-  export let popupPlaceholder: IntlString = tracker.string.MoveToSprint
+  export let popupPlaceholder: IntlString = tracker.string.MoveToMilestone
   export let shouldShowPlaceholder = true
   export let size: ButtonSize = 'large'
   export let kind: ButtonKind = 'link'
@@ -51,27 +51,27 @@
   const client = getClient()
   const dispatch = createEventDispatcher()
 
-  const handleSprintIdChanged = async (newSprintId: Ref<Sprint> | null | undefined) => {
-    if (!isEditable || newSprintId === undefined || value.sprint === newSprintId) {
+  const handleMilestoneIdChanged = async (newMilestoneId: Ref<Milestone> | null | undefined) => {
+    if (!isEditable || newMilestoneId === undefined || value.milestone === newMilestoneId) {
       return
     }
     if (Array.isArray(value)) {
       await Promise.all(
         value.map(async (p) => {
-          await client.update(p, { sprint: newSprintId })
+          await client.update(p, { milestone: newMilestoneId })
         })
       )
     } else {
-      await client.update(value, { sprint: newSprintId })
+      await client.update(value, { milestone: newMilestoneId })
     }
     if (isAction) dispatch('close')
   }
 
-  const sprintQuery = createQuery()
-  let sprint: Sprint | undefined
-  $: if (value.sprint) {
-    sprintQuery.query(tracker.class.Sprint, { _id: value.sprint }, (res) => {
-      sprint = res.shift()
+  const milestoneQuery = createQuery()
+  let milestone: Milestone | undefined
+  $: if (value.milestone) {
+    milestoneQuery.query(tracker.class.Milestone, { _id: value.milestone }, (res) => {
+      milestone = res.shift()
     })
   }
 
@@ -79,9 +79,9 @@
 </script>
 
 {#if kind === 'list'}
-  {#if value.sprint}
+  {#if value.milestone}
     <div class="clear-mins" class:label-wrapper={compression}>
-      <SprintSelector
+      <MilestoneSelector
         {kind}
         {size}
         {shape}
@@ -93,9 +93,9 @@
         {onlyIcon}
         {enlargedText}
         short={compression}
-        showTooltip={{ label: value.sprint ? tracker.string.MoveToSprint : tracker.string.AddToSprint }}
-        value={value.sprint}
-        onChange={handleSprintIdChanged}
+        showTooltip={{ label: value.milestone ? tracker.string.MoveToMilestone : tracker.string.AddToMilestone }}
+        value={value.milestone}
+        onChange={handleMilestoneIdChanged}
         {isAction}
       />
     </div>
@@ -107,9 +107,9 @@
     class:label-wrapper={compression}
     style:flex-direction={twoRows ? 'column' : 'row'}
   >
-    {#if (value.sprint && value.sprint !== $activeSprint && groupBy !== 'sprint') || shouldShowPlaceholder}
+    {#if (value.milestone && value.milestone !== $activeMilestone && groupBy !== 'milestone') || shouldShowPlaceholder}
       <div class="flex-row-center" class:minus-margin-vSpace={kind === 'list-header'} class:compression style:width>
-        <SprintSelector
+        <MilestoneSelector
           {kind}
           {size}
           {shape}
@@ -120,33 +120,33 @@
           {popupPlaceholder}
           {onlyIcon}
           {enlargedText}
-          showTooltip={{ label: value.sprint ? tracker.string.MoveToSprint : tracker.string.AddToSprint }}
-          value={value.sprint}
-          onChange={handleSprintIdChanged}
+          showTooltip={{ label: value.milestone ? tracker.string.MoveToMilestone : tracker.string.AddToMilestone }}
+          value={value.milestone}
+          onChange={handleMilestoneIdChanged}
           {isAction}
         />
       </div>
     {/if}
 
-    {#if sprint && kind === 'list-header'}
+    {#if milestone && kind === 'list-header'}
       <div class="flex-row-center" class:minus-margin-space={kind === 'list-header'} class:text-sm={twoRows}>
-        {#if sprint}
+        {#if milestone}
           {@const now = Date.now()}
-          {@const sprintDaysFrom =
-            now < sprint.startDate
+          {@const milestoneDaysFrom =
+            now < milestone.startDate
               ? 0
-              : now > sprint.targetDate
-              ? getDayOfSprint(sprint.startDate, sprint.targetDate)
-              : getDayOfSprint(sprint.startDate, now)}
-          {@const sprintDaysTo = getDayOfSprint(sprint.startDate, sprint.targetDate)}
-          <DatePresenter value={sprint.startDate} kind={'transparent'} />
+              : now > milestone.targetDate
+              ? getDayOfMilestone(milestone.startDate, milestone.targetDate)
+              : getDayOfMilestone(milestone.startDate, now)}
+          {@const milestoneDaysTo = getDayOfMilestone(milestone.startDate, milestone.targetDate)}
+          <DatePresenter value={milestone.startDate} kind={'transparent'} />
           <span class="p-1"> / </span>
-          <DatePresenter value={sprint.targetDate} kind={'transparent'} />
+          <DatePresenter value={milestone.targetDate} kind={'transparent'} />
           <div class="w-2 min-w-2" />
-          <!-- Active sprint in time -->
-          <TimePresenter value={sprintDaysFrom} />
+          <!-- Active milestone in time -->
+          <TimePresenter value={milestoneDaysFrom} />
           /
-          <TimePresenter value={sprintDaysTo} />
+          <TimePresenter value={milestoneDaysTo} />
         {/if}
       </div>
     {/if}

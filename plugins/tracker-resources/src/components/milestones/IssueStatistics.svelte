@@ -82,9 +82,9 @@
   )
 </script>
 
-{#if docs && (category === 'sprint' || category === 'assignee')}
+{#if docs && (category === 'milestone' || category === 'assignee')}
   <FixedColumn key="estimation-editor">
-    <!-- <Label label={tracker.string.SprintDay} value={}/> -->
+    <!-- <Label label={tracker.string.MilestoneDay} value={}/> -->
     <div class="flex-row-center flex-no-shrink h-6" class:showWarning={totalEstimation > (capacity ?? 0)}>
       <EstimationProgressCircle value={totalReported} max={totalEstimation} />
       <div class="w-2 min-w-2" />

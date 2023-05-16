@@ -16,17 +16,17 @@
   import { Ref, SortingOrder } from '@hcengineering/core'
   import { getEmbeddedLabel, IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import { Component, Sprint } from '@hcengineering/tracker'
+  import { Component, Milestone } from '@hcengineering/tracker'
   import type { ButtonKind, ButtonSize, LabelAndProps } from '@hcengineering/ui'
   import { Button, ButtonShape, eventToHTMLElement, SelectPopup, showPopup, Label } from '@hcengineering/ui'
   import tracker from '../../plugin'
-  import { sprintStatusAssets } from '../../types'
+  import { milestoneStatusAssets } from '../../types'
 
-  export let value: Ref<Sprint> | null | undefined
+  export let value: Ref<Milestone> | null | undefined
   export let shouldShowLabel: boolean = true
   export let isEditable: boolean = true
-  export let onChange: ((newSprintId: Ref<Sprint> | undefined) => void) | undefined = undefined
-  export let popupPlaceholder: IntlString = tracker.string.AddToSprint
+  export let onChange: ((newMilestoneId: Ref<Milestone> | undefined) => void) | undefined = undefined
+  export let popupPlaceholder: IntlString = tracker.string.AddToMilestone
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
   export let shape: ButtonShape = undefined
@@ -41,69 +41,72 @@
   export let useComponent: Ref<Component> | undefined = undefined
   export let showTooltip: LabelAndProps | undefined = undefined
 
-  let selectedSprint: Sprint | undefined
-  let defaultSprintLabel = ''
+  let selectedMilestone: Milestone | undefined
+  let defaultMilestoneLabel = ''
 
   const query = createQuery()
-  let rawSprints: Sprint[] = []
+  let rawMilestones: Milestone[] = []
   query.query(
-    tracker.class.Sprint,
+    tracker.class.Milestone,
     useComponent ? { component: useComponent } : {},
     (res) => {
-      rawSprints = res
+      rawMilestones = res
     },
     {
       sort: { startDate: SortingOrder.Descending }
     }
   )
 
-  $: handleSelectedSprintIdUpdated(value, rawSprints)
+  $: handleSelectedMilestoneIdUpdated(value, rawMilestones)
 
-  $: translate(tracker.string.NoSprint, {}).then((result) => (defaultSprintLabel = result))
-  const sprintIcon = tracker.icon.Sprint
-  $: sprintText = shouldShowLabel ? selectedSprint?.label ?? defaultSprintLabel : undefined
+  $: translate(tracker.string.NoMilestone, {}).then((result) => (defaultMilestoneLabel = result))
+  const milestoneIcon = tracker.icon.Milestone
+  $: milestoneText = shouldShowLabel ? selectedMilestone?.label ?? defaultMilestoneLabel : undefined
 
-  const handleSelectedSprintIdUpdated = async (newSprintId: Ref<Sprint> | null | undefined, sprints: Sprint[]) => {
-    if (newSprintId === null || newSprintId === undefined) {
-      selectedSprint = undefined
+  const handleSelectedMilestoneIdUpdated = async (
+    newMilestoneId: Ref<Milestone> | null | undefined,
+    milestones: Milestone[]
+  ) => {
+    if (newMilestoneId === null || newMilestoneId === undefined) {
+      selectedMilestone = undefined
 
       return
     }
 
-    selectedSprint = sprints.find((it) => it._id === newSprintId)
+    selectedMilestone = milestones.find((it) => it._id === newMilestoneId)
   }
 
-  const getSprintInfo = (rawSprints: Sprint[], sp: Sprint | undefined) => {
+  const getMilestoneInfo = (rawMilestones: Milestone[], sp: Milestone | undefined) => {
     return [
       {
         id: null,
-        icon: tracker.icon.Sprint,
-        label: tracker.string.NoSprint,
+        icon: tracker.icon.Milestone,
+        label: tracker.string.NoMilestone,
         isSelected: sp === undefined
       },
-      ...rawSprints.map((p) => ({
+      ...rawMilestones.map((p) => ({
         id: p._id,
-        icon: tracker.icon.Sprint,
+        icon: tracker.icon.Milestone,
         text: p.label,
         isSelected: sp ? p._id === sp._id : false,
-        category: sprintStatusAssets[p.status]
+        category: milestoneStatusAssets[p.status]
       }))
     ]
   }
 
-  $: sprints = getSprintInfo(rawSprints, selectedSprint)
+  $: milestones = getMilestoneInfo(rawMilestones, selectedMilestone)
 
-  const handleSprintEditorOpened = async (event: MouseEvent): Promise<void> => {
+  const handleMilestoneEditorOpened = async (event: MouseEvent): Promise<void> => {
     event.stopPropagation()
     if (!isEditable) {
       return
     }
 
-    const sprintInfo = sprints
+    const milestoneInfo = milestones
 
     showPopup(
       SelectPopup,
-      { value: sprintInfo, placeholder: popupPlaceholder, searchable: true },
+      { value: milestoneInfo, placeholder: popupPlaceholder, searchable: true },
       eventToHTMLElement(event),
       onChange
     )
@@ -112,14 +115,14 @@
 
 {#if isAction}
   <SelectPopup
-    value={sprints}
+    value={milestones}
     placeholder={popupPlaceholder}
     searchable
     on:close={(evt) => {
       if (onChange !== undefined) onChange(evt.detail)
     }}
   />
-{:else if onlyIcon || sprintText === undefined}
+{:else if onlyIcon || milestoneText === undefined}
   <Button
     {focusIndex}
     {kind}
@@ -128,10 +131,10 @@
     {width}
     {justify}
     {showTooltip}
-    icon={sprintIcon}
+    icon={milestoneIcon}
     disabled={!isEditable}
     {short}
-    on:click={handleSprintEditorOpened}
+    on:click={handleMilestoneEditorOpened}
   />
 {:else}
   <Button
@@ -142,15 +145,15 @@
     {width}
     {justify}
     {showTooltip}
-    icon={sprintIcon}
+    icon={milestoneIcon}
     disabled={!isEditable}
     notSelected={!value}
     {short}
-    on:click={handleSprintEditorOpened}
+    on:click={handleMilestoneEditorOpened}
   >
     <svelte:fragment slot="content">
       <span class="label {enlargedText ? 'text-base' : 'text-md'} overflow-label pointer-events-none">
-        <Label label={getEmbeddedLabel(sprintText)} />
+        <Label label={getEmbeddedLabel(milestoneText)} />
       </span>
     </svelte:fragment>
   </Button>

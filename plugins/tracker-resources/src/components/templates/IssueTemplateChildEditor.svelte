@@ -17,7 +17,7 @@
   import presentation, { createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import { StyledTextArea } from '@hcengineering/text-editor'
-  import { IssuePriority, IssueTemplateChild, Component as ComponentType, Sprint } from '@hcengineering/tracker'
+  import { IssuePriority, IssueTemplateChild, Component as ComponentType, Milestone } from '@hcengineering/tracker'
   import { Button, Component, EditBox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
@@ -25,7 +25,7 @@
   import PriorityEditor from '../issues/PriorityEditor.svelte'
   import EstimationEditor from './EstimationEditor.svelte'
 
-  export let sprint: Ref<Sprint> | null = null
+  export let milestone: Ref<Milestone> | null = null
   export let component: Ref<ComponentType> | null = null
   export let childIssue: IssueTemplateChild | undefined = undefined
   export let showBorder = false
@@ -59,7 +59,7 @@
       assignee: null,
       component: null,
       priority: IssuePriority.NoPriority,
-      sprint,
+      milestone,
       estimation: 0
     }
   }

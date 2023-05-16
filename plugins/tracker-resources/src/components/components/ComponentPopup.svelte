@@ -20,7 +20,7 @@
 
   export let _class: Ref<Class<Component>>
   export let selected: Ref<Component> | undefined
-  export let sprintQuery: DocumentQuery<Component> = {}
+  export let milestoneQuery: DocumentQuery<Component> = {}
   export let create: ObjectCreate | undefined = undefined
   export let allowDeselect = false
 
@@ -36,7 +36,7 @@
 <ObjectPopup
   {_class}
   {selected}
-  bind:docQuery={sprintQuery}
+  bind:docQuery={milestoneQuery}
   searchField={'label'}
   multiSelect={false}
   {allowDeselect}
@@ -45,7 +45,7 @@
   on:update
   on:close
 >
-  <svelte:fragment slot="item" let:item={sprint}>
-    <ComponentTitlePresenter value={sprint} />
+  <svelte:fragment slot="item" let:item={milestone}>
+    <ComponentTitlePresenter value={milestone} />
   </svelte:fragment>
 </ObjectPopup>

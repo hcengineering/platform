@@ -38,7 +38,7 @@
     IssueStatus,
     IssueTemplate,
     Project,
-    Sprint
+    Milestone
   } from '@hcengineering/tracker'
   import {
     ActionIcon,
@@ -58,7 +58,7 @@
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import { activeComponent, activeSprint, generateIssueShortLink, getIssueId, updateIssueRelation } from '../issues'
+  import { activeComponent, activeMilestone, generateIssueShortLink, getIssueId, updateIssueRelation } from '../issues'
   import tracker from '../plugin'
   import ComponentSelector from './ComponentSelector.svelte'
   import AssigneeEditor from './issues/AssigneeEditor.svelte'
@@ -69,7 +69,7 @@
   import EstimationEditor from './issues/timereport/EstimationEditor.svelte'
   import SetDueDateActionPopup from './SetDueDateActionPopup.svelte'
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
-  import SprintSelector from './sprints/SprintSelector.svelte'
+  import MilestoneSelector from './milestones/MilestoneSelector.svelte'
   import SubIssues from './SubIssues.svelte'
 
   export let space: Ref<Project>
@@ -77,7 +77,7 @@
   export let priority: IssuePriority = IssuePriority.NoPriority
   export let assignee: Ref<Employee> | null = null
   export let component: Ref<ComponentType> | null = $activeComponent ?? null
-  export let sprint: Ref<Sprint> | null = $activeSprint ?? null
+  export let milestone: Ref<Milestone> | null = $activeMilestone ?? null
   export let relatedTo: Doc | undefined
   export let shouldSaveDraft: boolean = false
   export let parentIssue: Issue | undefined
@@ -138,7 +138,7 @@
       dueDate: null,
       attachments: 0,
       estimation: 0,
-      sprint,
+      milestone,
       status,
       assignee,
       labels: [],
@@ -187,7 +187,7 @@
     parentIssue: parentIssue?._id,
     description: '<p></p>',
     component,
-    sprint,
+    milestone,
     priority,
     space
   }
@@ -339,7 +339,7 @@
       description: object.description,
       assignee: object.assignee,
       component: object.component,
-      sprint: object.sprint,
+      milestone: object.milestone,
       number: (incResult as any).object.sequence,
       status: object.status,
       priority: object.priority,
@@ -463,12 +463,12 @@
     object.component = componentId
   }
 
-  const handleSprintIdChanged = async (sprintId: Ref<Sprint> | null | undefined) => {
-    if (sprintId === undefined) {
+  const handleMilestoneIdChanged = async (milestoneId: Ref<Milestone> | null | undefined) => {
+    if (milestoneId === undefined) {
       return
     }
 
-    object.sprint = sprintId
+    object.milestone = milestoneId
   }
 
   function addTagRef (tag: TagElement): void {
@@ -625,7 +625,7 @@
     projectId={_space}
     parendIssueId={object._id}
     project={currentProject}
-    sprint={object.sprint}
+    milestone={object.milestone}
     component={object.component}
     {shouldSaveDraft}
     bind:subIssues={object.subIssues}
@@ -706,10 +706,10 @@
       kind={'secondary'}
       size={'large'}
     />
-    <SprintSelector
+    <MilestoneSelector
       focusIndex={9}
-      value={object.sprint}
-      onChange={handleSprintIdChanged}
+      value={object.milestone}
+      onChange={handleMilestoneIdChanged}
       useComponent={(!originalIssue && object.component) || undefined}
       kind={'secondary'}
       size={'large'}

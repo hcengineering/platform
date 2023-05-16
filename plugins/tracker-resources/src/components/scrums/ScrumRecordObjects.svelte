@@ -27,7 +27,7 @@
     tracker.class.Issue,
     tracker.class.IssueTemplate,
     tracker.class.Component,
-    tracker.class.Sprint
+    tracker.class.Milestone
   ] as const
 
   let changedObjectTxes: TxCUD<Doc>[] = []

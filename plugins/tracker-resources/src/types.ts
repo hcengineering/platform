@@ -22,7 +22,7 @@ import {
   IssuesGrouping,
   IssuesOrdering,
   ComponentStatus,
-  SprintStatus
+  MilestoneStatus
 } from '@hcengineering/tracker'
 import tracker from './plugin'
 
@@ -39,7 +39,7 @@ export const issuesGroupByOptions: Record<IssuesGrouping, IntlString> = {
   [IssuesGrouping.Assignee]: tracker.string.Assignee,
   [IssuesGrouping.Priority]: tracker.string.Priority,
   [IssuesGrouping.Component]: tracker.string.Component,
-  [IssuesGrouping.Sprint]: tracker.string.Sprint,
+  [IssuesGrouping.Milestone]: tracker.string.Milestone,
   [IssuesGrouping.NoGrouping]: tracker.string.NoGrouping
 }
 
@@ -65,11 +65,11 @@ export const defaultComponentStatuses = [
   ComponentStatus.Canceled
 ]
 
-export const defaultSprintStatuses = [
-  SprintStatus.Planned,
-  SprintStatus.InProgress,
-  SprintStatus.Completed,
-  SprintStatus.Canceled
+export const defaultMilestoneStatuses = [
+  MilestoneStatus.Planned,
+  MilestoneStatus.InProgress,
+  MilestoneStatus.Completed,
+  MilestoneStatus.Canceled
 ]
 
 export const componentStatusAssets: Record<ComponentStatus, { icon: Asset, label: IntlString }> = {
@@ -81,11 +81,11 @@ export const componentStatusAssets: Record<ComponentStatus, { icon: Asset, label
   [ComponentStatus.Canceled]: { icon: tracker.icon.ComponentStatusCanceled, label: tracker.string.Canceled }
 }
 
-export const sprintStatusAssets: Record<SprintStatus, { icon: Asset, label: IntlString }> = {
-  [SprintStatus.Planned]: { icon: tracker.icon.SprintStatusPlanned, label: tracker.string.Planned },
-  [SprintStatus.InProgress]: { icon: tracker.icon.SprintStatusInProgress, label: tracker.string.InProgress },
-  [SprintStatus.Completed]: { icon: tracker.icon.SprintStatusCompleted, label: tracker.string.Completed },
-  [SprintStatus.Canceled]: { icon: tracker.icon.SprintStatusCanceled, label: tracker.string.Canceled }
+export const milestoneStatusAssets: Record<MilestoneStatus, { icon: Asset, label: IntlString }> = {
+  [MilestoneStatus.Planned]: { icon: tracker.icon.MilestoneStatusPlanned, label: tracker.string.Planned },
+  [MilestoneStatus.InProgress]: { icon: tracker.icon.MilestoneStatusInProgress, label: tracker.string.InProgress },
+  [MilestoneStatus.Completed]: { icon: tracker.icon.MilestoneStatusCompleted, label: tracker.string.Completed },
+  [MilestoneStatus.Canceled]: { icon: tracker.icon.MilestoneStatusCanceled, label: tracker.string.Canceled }
 }
 
 export const defaultPriorities = [
@@ -101,6 +101,6 @@ export const issuesGroupBySorting: Record<IssuesGrouping, SortingQuery<Issue>> =
   [IssuesGrouping.Assignee]: { assignee: SortingOrder.Ascending },
   [IssuesGrouping.Priority]: { priority: SortingOrder.Ascending },
   [IssuesGrouping.Component]: { '$lookup.component.label': SortingOrder.Ascending },
-  [IssuesGrouping.Sprint]: { '$lookup.sprint.label': SortingOrder.Ascending },
+  [IssuesGrouping.Milestone]: { '$lookup.milestone.label': SortingOrder.Ascending },
   [IssuesGrouping.NoGrouping]: { rank: SortingOrder.Ascending }
 }

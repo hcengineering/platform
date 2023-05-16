@@ -64,7 +64,7 @@
       component: parentIssue.component,
       priority: IssuePriority.NoPriority,
       dueDate: null,
-      sprint: parentIssue.sprint,
+      milestone: parentIssue.milestone,
       estimation: 0
     }
   }
@@ -75,7 +75,7 @@
     assignee: currentProject.defaultAssignee ?? null,
     component: parentIssue.component,
     priority: IssuePriority.NoPriority,
-    sprint: parentIssue.sprint
+    milestone: parentIssue.milestone
   }
 
   function objectChange (object: IssueDraft, empty: any) {

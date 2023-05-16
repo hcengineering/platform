@@ -142,7 +142,7 @@
     space: tracker.class.Project,
     status: tracker.class.IssueStatus,
     component: tracker.class.Component,
-    sprint: tracker.class.Sprint,
+    milestone: tracker.class.Milestone,
     _id: {
       subIssues: tracker.class.Issue,
       labels: tags.class.TagReference

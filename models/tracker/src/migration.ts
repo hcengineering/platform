@@ -40,8 +40,8 @@ import {
   IssueTemplate,
   IssueTemplateChild,
   Project,
-  Sprint,
-  SprintStatus,
+  Milestone,
+  MilestoneStatus,
   TimeReportDayType
 } from '@hcengineering/tracker'
 import { DOMAIN_TRACKER } from '.'
@@ -391,7 +391,7 @@ async function renameProject (client: MigrationClient): Promise<void> {
   await client.update(
     DOMAIN_TRACKER,
     {
-      _class: { $in: [tracker.class.Issue, tracker.class.Sprint] },
+      _class: { $in: [tracker.class.Issue, tracker.class.Milestone] },
       project: { $exists: true }
     },
     {
@@ -448,7 +448,7 @@ async function renameProject (client: MigrationClient): Promise<void> {
   await client.update(
     DOMAIN_TX,
     {
-      objectClass: tracker.class.Sprint,
+      objectClass: tracker.class.Milestone,
       _class: core.class.TxCreateDoc,
       'attributes.project': { $exists: true }
     },
@@ -459,7 +459,7 @@ async function renameProject (client: MigrationClient): Promise<void> {
   await client.update(
     DOMAIN_TX,
     {
-      objectClass: { $in: [tracker.class.Issue, tracker.class.Sprint] },
+      objectClass: { $in: [tracker.class.Issue, tracker.class.Milestone] },
       _class: core.class.TxUpdateDoc,
       'operations.project': { $exists: true }
     },
@@ -732,11 +732,11 @@ async function setCreate (client: MigrationClient): Promise<void> {
   }
 }
 
-async function fixSprintEmptyStatuses (client: MigrationClient): Promise<void> {
-  await client.update<Sprint>(
+async function fixMilestoneEmptyStatuses (client: MigrationClient): Promise<void> {
+  await client.update<Milestone>(
     DOMAIN_TRACKER,
-    { _class: tracker.class.Sprint, $or: [{ status: null }, { status: undefined }] },
-    { status: SprintStatus.Planned }
+    { _class: tracker.class.Milestone, $or: [{ status: null }, { status: undefined }] },
+    { status: MilestoneStatus.Planned }
   )
 }
 
@@ -773,7 +773,7 @@ export const trackerOperation: MigrateOperation = {
       }
     )
 
-    await fixSprintEmptyStatuses(client)
+    await fixMilestoneEmptyStatuses(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)

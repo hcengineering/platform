@@ -16,7 +16,7 @@
   import { DocumentQuery, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import { Sprint } from '@hcengineering/tracker'
+  import { Milestone } from '@hcengineering/tracker'
   import {
     Button,
     IconAdd,
@@ -40,42 +40,42 @@
   } from '@hcengineering/view-resources'
   import { onDestroy } from 'svelte'
   import tracker from '../../plugin'
-  import { SprintViewMode, getIncludedSprintStatuses, sprintTitleMap } from '../../utils'
-  import NewSprint from './NewSprint.svelte'
-  import SprintContent from './SprintContent.svelte'
+  import { MilestoneViewMode, getIncludedMilestoneStatuses, milestoneTitleMap } from '../../utils'
+  import NewMilestone from './NewMilestone.svelte'
+  import MilestoneContent from './MilestoneContent.svelte'
 
   export let label: IntlString
-  export let query: DocumentQuery<Sprint> = {}
+  export let query: DocumentQuery<Milestone> = {}
   export let search: string = ''
-  export let mode: SprintViewMode = 'all'
+  export let mode: MilestoneViewMode = 'all'
 
   const space = typeof query.space === 'string' ? query.space : tracker.project.DefaultProject
   const showCreateDialog = async () => {
-    showPopup(NewSprint, { space, targetElement: null }, 'top')
+    showPopup(NewMilestone, { space, targetElement: null }, 'top')
   }
 
   export let panelWidth: number = 0
 
   let viewlet: WithLookup<Viewlet> | undefined = undefined
 
-  let searchQuery: DocumentQuery<Sprint> = { ...query }
+  let searchQuery: DocumentQuery<Milestone> = { ...query }
   function updateSearchQuery (search: string): void {
     searchQuery = search === '' ? { ...query } : { ...query, $search: search }
   }
   $: if (query) updateSearchQuery(search)
 
-  $: includedSprintStatuses = getIncludedSprintStatuses(mode)
-  $: title = sprintTitleMap[mode]
-  $: includedSprintsQuery = { status: { $in: includedSprintStatuses } }
+  $: includedMilestoneStatuses = getIncludedMilestoneStatuses(mode)
+  $: title = milestoneTitleMap[mode]
+  $: includedMilestonesQuery = { status: { $in: includedMilestoneStatuses } }
 
-  let resultQuery: DocumentQuery<Sprint> = { ...searchQuery }
+  let resultQuery: DocumentQuery<Milestone> = { ...searchQuery }
 
   let viewlets: WithLookup<Viewlet>[] | undefined
 
   $: viewlet = viewlets && updateActiveViewlet(viewlets, active)
 
   const viewletQuery = createQuery()
-  viewletQuery.query(view.class.Viewlet, { attachTo: tracker.class.Sprint }, (res) => (viewlets = res), {
+  viewletQuery.query(view.class.Viewlet, { attachTo: tracker.class.Milestone }, (res) => (viewlets = res), {
     lookup: {
       descriptor: view.class.ViewletDescriptor
     }
@@ -105,7 +105,7 @@
 
   $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 
-  const handleViewModeChanged = (newMode: SprintViewMode) => {
+  const handleViewModeChanged = (newMode: MilestoneViewMode) => {
     if (newMode === undefined || newMode === mode) {
       return
     }
@@ -114,10 +114,10 @@
   }
 
   const modeList: TabItem[] = [
-    { id: 'all', labelIntl: tracker.string.AllSprints, action: () => handleViewModeChanged('all') },
-    { id: 'planned', labelIntl: tracker.string.PlannedSprints, action: () => handleViewModeChanged('planned') },
-    { id: 'active', labelIntl: tracker.string.ActiveSprints, action: () => handleViewModeChanged('active') },
-    { id: 'closed', labelIntl: tracker.string.ClosedSprints, action: () => handleViewModeChanged('closed') }
+    { id: 'all', labelIntl: tracker.string.AllMilestones, action: () => handleViewModeChanged('all') },
+    { id: 'planned', labelIntl: tracker.string.PlannedMilestones, action: () => handleViewModeChanged('planned') },
+    { id: 'active', labelIntl: tracker.string.ActiveMilestones, action: () => handleViewModeChanged('active') },
+    { id: 'closed', labelIntl: tracker.string.ClosedMilestones, action: () => handleViewModeChanged('closed') }
   ]
 </script>
 
@@ -130,7 +130,7 @@
   </div>
 
   <div class="ac-header-full medium-gap mb-1">
-    <Button icon={IconAdd} label={tracker.string.Sprint} kind={'primary'} on:click={showCreateDialog} />
+    <Button icon={IconAdd} label={tracker.string.Milestone} kind={'primary'} on:click={showCreateDialog} />
   </div>
 </div>
 <div class="ac-header full divide search-start">
@@ -161,7 +161,7 @@
 </div>
 
 <FilterBar
-  _class={tracker.class.Sprint}
+  _class={tracker.class.Milestone}
   query={searchQuery}
   {viewOptions}
   on:change={(e) => (resultQuery = e.detail)}
@@ -169,7 +169,7 @@
 
 <div class="flex w-full h-full clear-mins">
   {#if viewlet}
-    <SprintContent {viewlet} query={{ ...resultQuery, ...includedSprintsQuery }} {space} {viewOptions} />
+    <MilestoneContent {viewlet} query={{ ...resultQuery, ...includedMilestonesQuery }} {space} {viewOptions} />
   {/if}
   {#if $$slots.aside !== undefined && asideShown}
     <div class="popupPanel-body__aside flex" class:float={asideFloat} class:shown={asideShown}>

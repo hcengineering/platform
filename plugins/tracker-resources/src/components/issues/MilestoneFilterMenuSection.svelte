@@ -30,22 +30,22 @@
     const elements: FilterSectionElement[] = []
 
     const client = getClient()
-    const sprints = await client.findAll(tracker.class.Sprint, {})
+    const milestones = await client.findAll(tracker.class.Milestone, {})
     for (const [key, value] of Object.entries(groups)) {
-      const sprint = key === 'null' ? null : key
-      const label = sprint
-        ? sprints.find(({ _id }) => _id === sprint)?.label
-        : await translate(tracker.string.NoSprint, {})
+      const milestone = key === 'null' ? null : key
+      const label = milestone
+        ? milestones.find(({ _id }) => _id === milestone)?.label
+        : await translate(tracker.string.NoMilestone, {})
 
       if (!label) {
         continue
       }
-      elements.splice(sprint ? 1 : 0, 0, {
-        icon: tracker.icon.Sprint,
+      elements.splice(milestone ? 1 : 0, 0, {
+        icon: tracker.icon.Milestone,
         title: label,
         count: value,
-        isSelected: selected.includes(sprint),
-        onSelect: () => onUpdate({ sprint }, index)
+        isSelected: selected.includes(milestone),
+        onSelect: () => onUpdate({ milestone }, index)
       })
     }
     return onBack

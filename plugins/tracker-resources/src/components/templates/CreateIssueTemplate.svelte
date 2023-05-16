@@ -18,15 +18,15 @@
   import { Card, getClient, KeyedAttribute, SpaceSelector } from '@hcengineering/presentation'
   import tags, { TagElement } from '@hcengineering/tags'
   import { StyledTextBox } from '@hcengineering/text-editor'
-  import { Component as ComponentType, IssuePriority, IssueTemplate, Project, Sprint } from '@hcengineering/tracker'
+  import { Component as ComponentType, IssuePriority, IssueTemplate, Project, Milestone } from '@hcengineering/tracker'
   import { Component, EditBox, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { activeComponent, activeSprint } from '../../issues'
+  import { activeComponent, activeMilestone } from '../../issues'
   import tracker from '../../plugin'
   import ComponentSelector from '../ComponentSelector.svelte'
   import AssigneeEditor from '../issues/AssigneeEditor.svelte'
   import PriorityEditor from '../issues/PriorityEditor.svelte'
-  import SprintSelector from '../sprints/SprintSelector.svelte'
+  import MilestoneSelector from '../milestones/MilestoneSelector.svelte'
   import EstimationEditor from './EstimationEditor.svelte'
   import SubIssueTemplates from './IssueTemplateChilds.svelte'
 
@@ -34,7 +34,7 @@
   export let priority: IssuePriority = IssuePriority.NoPriority
   export let assignee: Ref<Employee> | null = null
   export let component: Ref<ComponentType> | null = $activeComponent ?? null
-  export let sprint: Ref<Sprint> | null = $activeSprint ?? null
+  export let milestone: Ref<Milestone> | null = $activeMilestone ?? null
   export let relatedTo: Doc | undefined
 
   let labels: TagElement[] = []
@@ -45,7 +45,7 @@
     description: '',
     assignee,
     component,
-    sprint,
+    milestone,
     priority,
     estimation: 0,
     children: [],
@@ -85,7 +85,7 @@
       description: object.description,
       assignee: object.assignee,
       component: object.component,
-      sprint: object.sprint,
+      milestone: object.milestone,
       priority: object.priority,
       estimation: object.estimation,
       children: object.children,
@@ -107,12 +107,12 @@
     object = { ...object, component: componentId }
   }
 
-  const handleSprintIdChanged = (sprintId: Ref<Sprint> | null | undefined) => {
-    if (sprintId === undefined) {
+  const handleMilestoneIdChanged = (milestoneId: Ref<Milestone> | null | undefined) => {
+    if (milestoneId === undefined) {
       return
     }
 
-    object = { ...object, sprint: sprintId }
+    object = { ...object, milestone: milestoneId }
   }
 
   function addTagRef (tag: TagElement): void {
@@ -155,7 +155,7 @@
   <SubIssueTemplates
     bind:children={object.children}
     component={object.component}
-    sprint={object.sprint}
+    milestone={object.milestone}
     project={_space}
     maxHeight="limited"
   />
@@ -201,9 +201,9 @@
       kind={'secondary'}
       size={'large'}
     />
-    <SprintSelector
-      value={object.sprint}
-      onChange={handleSprintIdChanged}
+    <MilestoneSelector
+      value={object.milestone}
+      onChange={handleMilestoneIdChanged}
       useComponent={object.component ?? undefined}
       kind={'secondary'}
       size={'large'}

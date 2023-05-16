@@ -1,13 +1,13 @@
 import { Doc, DocumentUpdate, Ref, RelatedDocument, TxOperations } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
-import { Component, Issue, Project, Sprint, trackerId } from '@hcengineering/tracker'
+import { Component, Issue, Project, Milestone, trackerId } from '@hcengineering/tracker'
 import { Location, ResolvedLocation, getPanelURI, getCurrentResolvedLocation } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
 import { writable } from 'svelte/store'
 import tracker from './plugin'
 
 export const activeComponent = writable<Ref<Component> | undefined>(undefined)
-export const activeSprint = writable<Ref<Sprint> | undefined>(undefined)
+export const activeMilestone = writable<Ref<Milestone> | undefined>(undefined)
 
 export function getIssueId (project: Project, issue: Issue): string {
   return `${project.identifier}-${issue.number}`

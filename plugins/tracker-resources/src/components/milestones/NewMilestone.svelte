@@ -17,21 +17,21 @@
   import { IntlString } from '@hcengineering/platform'
   import { Card, getClient, SpaceSelector } from '@hcengineering/presentation'
   import { EmployeeBox, UserBoxList } from '@hcengineering/contact-resources'
-  import { Sprint, SprintStatus, Project } from '@hcengineering/tracker'
+  import { Milestone, MilestoneStatus, Project } from '@hcengineering/tracker'
   import ui, { DatePresenter, EditBox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
-  import SprintStatusSelector from './SprintStatusSelector.svelte'
+  import MilestoneStatusSelector from './MilestoneStatusSelector.svelte'
   import { StyledTextArea } from '@hcengineering/text-editor'
 
   export let space: Ref<Project>
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  const object: Data<Sprint> = {
+  const object: Data<Milestone> = {
     label: '' as IntlString,
     description: '',
-    status: SprintStatus.Planned,
+    status: MilestoneStatus.Planned,
     lead: null,
     members: [],
     comments: 0,
@@ -42,23 +42,23 @@
   }
 
   async function onSave () {
-    await client.createDoc(tracker.class.Sprint, space, object)
+    await client.createDoc(tracker.class.Milestone, space, object)
   }
 
-  const handleComponentStatusChanged = (newSprintStatus: SprintStatus | undefined) => {
-    if (newSprintStatus === undefined) {
+  const handleComponentStatusChanged = (newMilestoneStatus: MilestoneStatus | undefined) => {
+    if (newMilestoneStatus === undefined) {
       return
     }
 
-    object.status = newSprintStatus
+    object.status = newMilestoneStatus
   }
 </script>
 
 <Card
-  label={tracker.string.NewSprint}
+  label={tracker.string.NewMilestone}
   okAction={onSave}
   canSave={object.label !== ''}
-  okLabel={tracker.string.CreateSprint}
+  okLabel={tracker.string.CreateMilestone}
   on:close={() => dispatch('close')}
   on:changeContent
 >
@@ -71,21 +71,21 @@
       bind:space
     />
   </svelte:fragment>
-  <EditBox bind:value={object.label} placeholder={tracker.string.SprintNamePlaceholder} kind={'large-style'} focus />
+  <EditBox bind:value={object.label} placeholder={tracker.string.MilestoneNamePlaceholder} kind={'large-style'} focus />
   <StyledTextArea
     bind:content={object.description}
     placeholder={tracker.string.ComponentDescriptionPlaceholder}
     emphasized
   />
   <svelte:fragment slot="pool">
-    <SprintStatusSelector
-      selectedSprintStatus={object.status}
-      onSprintStatusChange={handleComponentStatusChanged}
+    <MilestoneStatusSelector
+      selectedMilestoneStatus={object.status}
+      onMilestoneStatusChange={handleComponentStatusChanged}
       kind={'secondary'}
       size={'large'}
     />
     <EmployeeBox
-      label={tracker.string.SprintLead}
+      label={tracker.string.MilestoneLead}
       placeholder={tracker.string.AssignTo}
       kind={'secondary'}
       size={'large'}
@@ -96,7 +96,7 @@
     />
     <UserBoxList
       bind:items={object.members}
-      label={tracker.string.SprintMembersSearchPlaceholder}
+      label={tracker.string.MilestoneMembersSearchPlaceholder}
       kind={'secondary'}
       size={'large'}
     />

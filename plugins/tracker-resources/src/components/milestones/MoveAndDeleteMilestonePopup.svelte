@@ -18,35 +18,35 @@
   import tracker from '../../plugin'
   import { Card } from '@hcengineering/presentation'
   import { translate } from '@hcengineering/platform'
-  import SprintPopup from './SprintPopup.svelte'
-  import { Sprint } from '@hcengineering/tracker'
+  import MilestonePopup from './MilestonePopup.svelte'
+  import { Milestone } from '@hcengineering/tracker'
 
-  export let sprints: Sprint[]
-  export let moveAndDeleteSprint: (selectedSprint?: Sprint) => Promise<void>
+  export let milestones: Milestone[]
+  export let moveAndDeleteMilestone: (selectedMilestone?: Milestone) => Promise<void>
 
-  let selectedSprint: Sprint | undefined
-  let noSprintLabel: string
+  let selectedMilestone: Milestone | undefined
+  let noMilestoneLabel: string
 
-  $: translate(tracker.string.NoSprint, {}).then((label) => (noSprintLabel = label))
-  $: selectedSprintLabel = selectedSprint?.label ?? noSprintLabel
+  $: translate(tracker.string.NoMilestone, {}).then((label) => (noMilestoneLabel = label))
+  $: selectedMilestoneLabel = selectedMilestone?.label ?? noMilestoneLabel
 </script>
 
 <Card
   canSave
-  label={tracker.string.MoveAndDeleteSprint}
-  labelProps={{ newSprint: selectedSprintLabel, deleteSprint: sprints.map((p) => p.label) }}
+  label={tracker.string.MoveAndDeleteMilestone}
+  labelProps={{ newMilestone: selectedMilestoneLabel, deleteMilestone: milestones.map((p) => p.label) }}
   okLabel={tracker.string.Delete}
-  okAction={() => moveAndDeleteSprint(selectedSprint)}
+  okAction={() => moveAndDeleteMilestone(selectedMilestone)}
   on:close
   on:changeContent
 >
-  <SprintPopup
-    _class={tracker.class.Sprint}
-    ignoreSprints={sprints}
+  <MilestonePopup
+    _class={tracker.class.Milestone}
+    ignoreMilestones={milestones}
     allowDeselect
     closeAfterSelect={false}
     shadows={false}
     width="full"
-    on:update={({ detail }) => (selectedSprint = detail)}
+    on:update={({ detail }) => (selectedMilestone = detail)}
   />
 </Card>

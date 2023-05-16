@@ -16,7 +16,7 @@
   import { Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import { Sprint, Project } from '@hcengineering/tracker'
+  import { Milestone, Project } from '@hcengineering/tracker'
   import {
     closePopup,
     closeTooltip,
@@ -26,47 +26,47 @@
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import tracker from '../../plugin'
-  import { SprintViewMode } from '../../utils'
-  import EditSprint from './EditSprint.svelte'
-  import SprintBrowser from './SprintBrowser.svelte'
+  import { MilestoneViewMode } from '../../utils'
+  import EditMilestone from './EditMilestone.svelte'
+  import MilestoneBrowser from './MilestoneBrowser.svelte'
 
   export let currentSpace: Ref<Project>
-  export let label: IntlString = tracker.string.Sprints
+  export let label: IntlString = tracker.string.Milestones
   export let search: string = ''
-  export let mode: SprintViewMode = 'all'
+  export let mode: MilestoneViewMode = 'all'
 
-  let sprintId: Ref<Sprint> | undefined
-  let sprint: Sprint | undefined
+  let milestoneId: Ref<Milestone> | undefined
+  let milestone: Milestone | undefined
 
   onDestroy(
     resolvedLocationStore.subscribe(async (loc) => {
       closeTooltip()
       closePopup()
 
-      sprintId = loc.path[5] as Ref<Sprint>
+      milestoneId = loc.path[5] as Ref<Milestone>
     })
   )
 
-  const sprintQuery = createQuery()
-  $: if (sprintId !== undefined) {
-    sprintQuery.query(tracker.class.Sprint, { _id: sprintId }, (result) => {
-      sprint = result.shift()
+  const milestoneQuery = createQuery()
+  $: if (milestoneId !== undefined) {
+    milestoneQuery.query(tracker.class.Milestone, { _id: milestoneId }, (result) => {
+      milestone = result.shift()
     })
   } else {
-    sprintQuery.unsubscribe()
-    sprint = undefined
+    milestoneQuery.unsubscribe()
+    milestone = undefined
   }
 </script>
 
-{#if sprint}
-  <EditSprint
-    {sprint}
-    on:sprint={(evt) => {
+{#if milestone}
+  <EditMilestone
+    {milestone}
+    on:milestone={(evt) => {
       const loc = getCurrentResolvedLocation()
       loc.path[5] = evt.detail
       navigate(loc)
     }}
   />
 {:else}
-  <SprintBrowser {label} query={{ space: currentSpace }} {search} {mode} />
+  <MilestoneBrowser {label} query={{ space: currentSpace }} {search} {mode} />
 {/if}
