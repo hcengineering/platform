@@ -13,18 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, FindResult, Ref, SortingOrder } from '@hcengineering/core'
+  import { DocumentQuery, FindResult, Ref, SortingOrder } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
   import { Project, Sprint, SprintStatus } from '@hcengineering/tracker'
   import ui, { CheckBox, Icon, Label, Loading, deviceOptionsStore, resizeObserver } from '@hcengineering/ui'
+  import { FILTER_DEBOUNCE_MS, sortFilterValues } from '@hcengineering/view-resources'
   import view, { Filter } from '@hcengineering/view'
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'
   import { sprintStatusAssets } from '../../types'
   import SprintTitlePresenter from './SprintTitlePresenter.svelte'
 
-  export let _class: Ref<Class<Doc>>
   export let space: Ref<Project> | undefined = undefined
   export let filter: Filter
   export let onChange: (e: Filter) => void
@@ -43,6 +43,8 @@
   let values: Sprint[] = []
   let objectsPromise: Promise<FindResult<Sprint>> | undefined = undefined
   let selectedValues: Set<Ref<Sprint> | undefined | null> = new Set()
+
+  let filterUpdateTimeout: number | undefined
 
   const client = getClient()
   async function getValues (search: string): Promise<void> {
@@ -79,15 +81,24 @@
     return values.has(value)
   }
 
-  function toggle (value: Ref<Sprint> | undefined): void {
+  function handleFilterToggle (value: Ref<Sprint> | undefined): void {
     if (isSelected(value, selectedValues)) {
       selectedValues.delete(value)
     } else {
       selectedValues.add(value)
     }
     selectedValues = selectedValues
-    filter.value = Array.from(selectedValues)
-    onChange(filter)
+
+    updateFilter(selectedValues)
+  }
+
+  function updateFilter (newValues: Set<Ref<Sprint> | null | undefined>) {
+    clearTimeout(filterUpdateTimeout)
+
+    filterUpdateTimeout = setTimeout(() => {
+      filter.value = Array.from(newValues)
+      onChange(filter)
+    }, FILTER_DEBOUNCE_MS)
   }
 
   function getStatusItem (status: SprintStatus, docs: Sprint[]): Sprint[] {
@@ -102,6 +113,7 @@
   onMount(() => {
     if (searchInput && !$deviceOptionsStore.isMobile) searchInput.focus()
   })
+
   getValues(search)
 </script>
 
@@ -125,7 +137,7 @@
         <button
           class="menu-item"
           on:click={() => {
-            toggle(undefined)
+            handleFilterToggle(undefined)
           }}
         >
           <div class="flex clear-mins">
@@ -145,11 +157,11 @@
                 <Label label={status.label} />
               </div>
             </div>
-            {#each items as doc}
+            {#each sortFilterValues(items, (v) => isSelected(v._id, selectedValues)) as doc}
               <button
                 class="menu-item"
                 on:click={() => {
-                  toggle(doc._id)
+                  handleFilterToggle(doc._id)
                 }}
               >
                 <div class="flex clear-mins">

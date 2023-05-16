@@ -29,7 +29,7 @@
     showPopup
   } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
-  import { FilterQuery } from '@hcengineering/view-resources'
+  import { FILTER_DEBOUNCE_MS, FilterQuery, sortFilterValues } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import tags from '../plugin'
   import { tagLevel } from '../utils'
@@ -47,6 +47,8 @@
 
   filter.modes = [tags.filter.FilterTagsIn, tags.filter.FilterTagsNin]
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
+
+  let filterUpdateTimeout: number | undefined
 
   let categories: TagCategory[] = []
   let objects: TagElement[] = []
@@ -100,7 +102,7 @@
     return false
   }
 
-  const checkSelected = (element: TagElement): void => {
+  function handleFilterToggle (element: TagElement): void {
     if (isSelected(element)) {
       selected = selected.filter((p) => p !== element._id)
     } else {
@@ -109,10 +111,18 @@
     objects = objects
     categories = categories
 
-    filter.value = [...selected]
-    // Replace last one with value with level
-    filter.props = { level }
-    onChange(filter)
+    updateFilter(selected)
+  }
+
+  function updateFilter (newValues: Ref<TagElement>[]) {
+    clearTimeout(filterUpdateTimeout)
+
+    filterUpdateTimeout = setTimeout(() => {
+      filter.value = [...newValues]
+      // Replace last one with value with level
+      filter.props = { level }
+      onChange(filter)
+    }, FILTER_DEBOUNCE_MS)
   }
 
   $: schema = filter.key.attribute.schema ?? '0'
@@ -185,11 +195,11 @@
                 {/if}
               </button>
               <div class="menu-group">
-                {#each values as element}
+                {#each sortFilterValues(values, isSelected) as element}
                   <button
                     class="menu-item"
                     on:click={() => {
-                      checkSelected(element)
+                      handleFilterToggle(element)
                     }}
                   >
                     <div class="flex-between w-full">
