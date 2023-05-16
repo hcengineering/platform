@@ -26,7 +26,7 @@
     if (value === undefined) return
     let str = ''
     if (Array.isArray(value)) {
-      str = value.reduce((acc, curr, i) => (acc += i === 0 ? curr : ` ${curr}`))
+      str = value.reduce((acc, curr, i) => (acc += i === 0 ? curr : ` ${curr}`), '')
     } else {
       str = value
     }
