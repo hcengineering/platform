@@ -24,7 +24,8 @@
   export let alwaysEdit: boolean = false
   export let showButtons: boolean = true
   export let hideAttachments: boolean = false
-  export let buttonSize: IconSize = 'small'
+  export let buttonSize: IconSize = 'medium'
+  export let formatButtonSize: IconSize = 'small'
   export let hideExtraButtons: boolean = false
   export let maxHeight: 'max' | 'card' | 'limited' | string = 'max'
   export let previewLimit: number = 240
@@ -143,6 +144,7 @@
       {showButtons}
       {hideAttachments}
       {buttonSize}
+      {formatButtonSize}
       {maxHeight}
       {focusable}
       {enableFormatting}

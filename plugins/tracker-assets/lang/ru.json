@@ -278,7 +278,6 @@
     "CurrentWorkDay": "Текущий Рабочий День",
     "PreviousWorkDay": "Предыдущий Рабочий День",
     "TimeReportDayTypeLabel": "Выберите тип дня для временного отчета",
-    "DefaultTimeReportDay": "Выберите день для временного отчета по умолчанию",
     "DefaultAssignee": "Выберите исполнителя по умолчанию",
 
     "SevenHoursLength": "Семь Часов",
@@ -293,7 +292,10 @@
     "ConfigDescription": "Расширение по управлению задачами, чтобы все было в срок.",
     "ProjectColor": "Выберете цвет проекта",
     "ProjectIconCategory": "Иконка",
-    "ProjectEmojiiCategory": "Эмодзи"
+    "ProjectEmojiiCategory": "Эмодзи",
+    "NoStatusFound": "Статус не найдет",
+    "CreateMissingStatus": "Создать отсутствущий статус",
+    "UnsetParent": "Родительская задача будет убрана"
   },
   "status": {}
 }

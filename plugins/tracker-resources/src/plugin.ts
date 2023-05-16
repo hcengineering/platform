@@ -300,7 +300,6 @@ export default mergeIds(trackerId, tracker, {
     CurrentWorkDay: '' as IntlString,
     PreviousWorkDay: '' as IntlString,
     TimeReportDayTypeLabel: '' as IntlString,
-    DefaultTimeReportDay: '' as IntlString,
     DefaultAssignee: '' as IntlString,
 
     SevenHoursLength: '' as IntlString,
@@ -313,7 +312,11 @@ export default mergeIds(trackerId, tracker, {
     ProjectColor: '' as IntlString,
 
     ProjectIconCategory: '' as IntlString,
-    ProjectEmojiiCategory: '' as IntlString
+    ProjectEmojiiCategory: '' as IntlString,
+
+    NoStatusFound: '' as IntlString,
+    CreateMissingStatus: '' as IntlString,
+    UnsetParent: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,

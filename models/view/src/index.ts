@@ -13,23 +13,22 @@
 // limitations under the License.
 //
 
-import type { Class, Client, Data, Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
+import type { Account, Class, Client, Data, Doc, DocumentQuery, Domain, Ref, Space } from '@hcengineering/core'
 import { DOMAIN_MODEL } from '@hcengineering/core'
 import { Builder, Mixin, Model } from '@hcengineering/model'
 import core, { TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import type { Asset, IntlString, Resource, Status } from '@hcengineering/platform'
-import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
 import type { AnyComponent, Location } from '@hcengineering/ui'
 import type {
   Action,
   ActionCategory,
+  ActivityAttributePresenter,
   AllValuesFunc,
   ArrayEditor,
   AttributeEditor,
   AttributeFilter,
   AttributePresenter,
-  ActivityAttributePresenter,
   BuildModelKey,
   ClassFilters,
   ClassSortFuncs,
@@ -57,9 +56,9 @@ import type {
   ObjectValidator,
   PreviewPresenter,
   SortFunc,
-  SpacePresenter,
   SpaceHeader,
   SpaceName,
+  SpacePresenter,
   ViewAction,
   ViewActionInput,
   ViewContext,
@@ -74,6 +73,8 @@ import view from './plugin'
 export { viewId } from '@hcengineering/view'
 export { viewOperation } from './migration'
 export { ViewAction, Viewlet }
+
+export const DOMAIN_VIEW = 'view' as Domain
 
 export function createAction<T extends Doc = Doc, P = Record<string, any>> (
   builder: Builder,
@@ -108,14 +109,18 @@ export function classPresenter (
   }
 }
 
-@Model(view.class.FilteredView, core.class.Doc, DOMAIN_PREFERENCE)
-export class TFilteredView extends TPreference implements FilteredView {
+@Model(view.class.FilteredView, core.class.Doc, DOMAIN_VIEW)
+export class TFilteredView extends TDoc implements FilteredView {
   name!: string
   location!: Location
   filters!: string
   viewOptions?: ViewOptions
   filterClass?: Ref<Class<Doc>>
   viewletId?: Ref<Viewlet> | null
+  users!: Ref<Account>[]
+  createdBy!: Ref<Account>
+  attachedTo!: string
+  sharable?: boolean
 }
 
 @Model(view.class.FilterMode, core.class.Doc, DOMAIN_MODEL)

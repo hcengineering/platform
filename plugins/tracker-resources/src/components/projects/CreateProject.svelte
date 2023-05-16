@@ -35,7 +35,6 @@
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
-  import TimeReportDayDropdown from '../issues/timereport/TimeReportDayDropdown.svelte'
   import ChangeIdentity from './ChangeIdentity.svelte'
   import ProjectIconChooser from './ProjectIconChooser.svelte'
 
@@ -49,8 +48,6 @@
   let isPrivate: boolean = project?.private ?? false
   let icon: Asset | undefined = project?.icon ?? undefined
   let color: number | undefined = project?.color ?? undefined
-  let selectedWorkDayType: TimeReportDayType | undefined =
-    project?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay
   let defaultAssignee: Ref<Employee> | null | undefined = project?.defaultAssignee ?? null
   let members: Ref<Account>[] =
     project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount()._id]
@@ -81,7 +78,7 @@
       defaultAssignee: defaultAssignee ?? undefined,
       icon,
       color,
-      defaultTimeReportDay: selectedWorkDayType ?? TimeReportDayType.PreviousWorkDay
+      defaultTimeReportDay: project?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay
     }
   }
 
@@ -185,7 +182,7 @@
   label={isNew ? tracker.string.NewProject : tracker.string.EditProject}
   okLabel={isNew ? presentation.string.Create : presentation.string.Save}
   okAction={handleSave}
-  canSave={name.length > 0 && !!selectedWorkDayType && !(members.length === 0 && isPrivate)}
+  canSave={name.length > 0 && !(members.length === 0 && isPrivate)}
   on:close={() => {
     dispatch('close')
   }}
@@ -240,13 +237,6 @@
       size="medium"
       on:click={chooseIcon}
     />
-  </div>
-
-  <div class="flex-between">
-    <div class="caption">
-      <Label label={tracker.string.DefaultTimeReportDay} />
-    </div>
-    <TimeReportDayDropdown bind:selected={selectedWorkDayType} label={tracker.string.DefaultTimeReportDay} />
   </div>
 
   <div class="flex-between">

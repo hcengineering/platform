@@ -14,16 +14,14 @@
 -->
 <script lang="ts">
   import { ChannelProvider } from '@hcengineering/contact'
-  import { Class, Doc, Ref } from '@hcengineering/core'
-  import { Button, CheckBox, Icon, Label, resizeObserver } from '@hcengineering/ui'
+  import { Ref } from '@hcengineering/core'
+  import { CheckBox, Icon, Label, resizeObserver } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
-  import { FilterQuery } from '@hcengineering/view-resources'
-  import view from '@hcengineering/view-resources/src/plugin'
+  import { FILTER_DEBOUNCE_MS, FilterQuery, sortFilterValues } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import contact from '../plugin'
   import { channelProviders } from '../utils'
+  import contact from '../plugin'
 
-  export let _class: Ref<Class<Doc>>
   export let filter: Filter
   export let onChange: (e: Filter) => void
   filter.onRemove = () => {
@@ -31,6 +29,8 @@
   }
   let selected: Ref<ChannelProvider>[] = filter.value
   const level: number = filter.props?.level ?? 0
+
+  let filterUpdateTimeout: number | undefined
 
   filter.modes = [contact.filter.FilterChannelIn, contact.filter.FilterChannelNin]
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
@@ -40,12 +40,25 @@
     return false
   }
 
-  const checkSelected = (element: ChannelProvider): void => {
+  function handleFilterToggle (element: ChannelProvider) {
     if (isSelected(element, selected)) {
       selected = selected.filter((p) => p !== element._id)
     } else {
       selected = [...selected, element._id]
     }
+
+    updateFilter(selected)
+  }
+
+  function updateFilter (newValues: Ref<ChannelProvider>[]) {
+    clearTimeout(filterUpdateTimeout)
+
+    filterUpdateTimeout = setTimeout(() => {
+      filter.value = [...newValues]
+      // Replace last one with value with level
+      filter.props = { level }
+      onChange(filter)
+    }, FILTER_DEBOUNCE_MS)
   }
 
   const dispatch = createEventDispatcher()
@@ -54,11 +67,11 @@
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="scroll">
     <div class="box">
-      {#each $channelProviders as element}
+      {#each sortFilterValues($channelProviders, (v) => isSelected(v, selected)) as element}
         <button
           class="menu-item"
           on:click={() => {
-            checkSelected(element)
+            handleFilterToggle(element)
           }}
         >
           <div class="flex-between w-full">
@@ -76,15 +89,4 @@
       {/each}
     </div>
   </div>
-  <Button
-    shape={'round'}
-    label={view.string.Apply}
-    on:click={async () => {
-      filter.value = [...selected]
-      // Replace last one with value with level
-      filter.props = { level }
-      onChange(filter)
-      dispatch('close')
-    }}
-  />
 </div>

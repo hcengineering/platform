@@ -14,11 +14,11 @@
 -->
 <script lang="ts">
   import { Ref, SortingOrder } from '@hcengineering/core'
-  import { getEmbeddedLabel, IntlString, translate } from '@hcengineering/platform'
+  import { IntlString, getEmbeddedLabel, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import { Component } from '@hcengineering/tracker'
+  import { Component, Project } from '@hcengineering/tracker'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
-  import { Button, ButtonShape, eventToHTMLElement, SelectPopup, showPopup, Label } from '@hcengineering/ui'
+  import { Button, ButtonShape, Label, SelectPopup, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import tracker from '../plugin'
 
   export let value: Ref<Component> | null | undefined
@@ -35,6 +35,7 @@
   export let enlargedText: boolean = false
   export let short: boolean = false
   export let focusIndex: number | undefined = undefined
+  export let space: Ref<Project> | undefined = undefined
 
   let selectedComponent: Component | undefined
   let defaultComponentLabel = ''
@@ -42,9 +43,9 @@
   const query = createQuery()
   let rawComponents: Component[] = []
   let loading = true
-  query.query(
+  $: query.query(
     tracker.class.Component,
-    {},
+    space !== undefined ? { space } : {},
     (res) => {
       rawComponents = res
       loading = false

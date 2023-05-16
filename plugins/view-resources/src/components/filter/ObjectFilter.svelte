@@ -28,6 +28,7 @@
   import { Filter } from '@hcengineering/view'
   import { createEventDispatcher, onMount } from 'svelte'
   import view from '../../plugin'
+  import { FILTER_DEBOUNCE_MS, sortFilterValues } from '../../filter'
   import { buildConfigLookup, getPresenter } from '../../utils'
   import FilterRemovedNotification from './FilterRemovedNotification.svelte'
 
@@ -52,6 +53,8 @@
 
   $: isStatus = client.getHierarchy().isDerived(targetClass, core.class.Status) ?? false
   let statusesCount: Record<string, number> = {}
+
+  let filterUpdateTimeout: number | undefined
 
   const groupValues = (val: Status[]): Doc[] => {
     const statuses = val
@@ -129,7 +132,7 @@
     return values.includes(value?._id ?? value)
   }
 
-  function toggle (value: Doc | undefined | null): void {
+  function handleFilterToggle (value: any): void {
     if (isSelected(value, filter.value)) {
       filter.value = filter.value.filter((p) => (value ? p !== value._id : p != null))
     } else {
@@ -140,7 +143,13 @@
       }
     }
 
-    onChange(filter)
+    updateFilter()
+  }
+
+  function updateFilter () {
+    clearTimeout(filterUpdateTimeout)
+
+    filterUpdateTimeout = setTimeout(() => onChange(filter), FILTER_DEBOUNCE_MS)
   }
 
   let search: string = ''
@@ -183,11 +192,11 @@
         {#if objectsPromise}
           <Loading />
         {:else}
-          {#each values as value, i}
+          {#each sortFilterValues(values, (v) => isSelected(v, filter.value)) as value}
             <button
               class="menu-item no-focus"
               on:click={() => {
-                toggle(value)
+                handleFilterToggle(value)
               }}
             >
               <div class="flex-between w-full">
@@ -198,7 +207,9 @@
                     {/if}
                   </div>
                   {#if value}
-                    <svelte:component this={attribute.presenter} {value} {...attribute.props} disabled oneLine />
+                    {#key value._id}
+                      <svelte:component this={attribute.presenter} {value} {...attribute.props} disabled oneLine />
+                    {/key}
                   {:else}
                     <Label label={ui.string.NotSelected} />
                   {/if}

@@ -41,34 +41,33 @@
     justify-content: center;
     align-items: center;
     padding: 0.75rem;
-    color: var(--dark-color);
+    color: var(--theme-darker-color);
     border-radius: 0.25rem;
     cursor: pointer;
 
     &:hover {
-      color: var(--accent-color);
+      color: var(--theme-content-color);
     }
     &:focus {
-      color: var(--caption-color);
-      border: 1px solid var(--primary-button-focused-border);
-      box-shadow: 0 0 0 3px var(--primary-button-outline);
+      color: var(--theme-caption-color);
+      box-shadow: 0 0 0 2px var(--primary-button-focused-border);
     }
     &.selected {
-      background-color: var(--button-bg-color);
-      border-color: var(--button-border-color);
-      color: var(--accent-color);
+      background-color: var(--theme-button-pressed);
+      border-color: var(--theme-button-border);
+      color: var(--theme-caption-color);
     }
     &.small {
-      width: 1.143em;
-      height: 1.143em;
+      width: 1rem;
+      height: 1rem;
     }
     &.medium {
-      width: 1.429em;
-      height: 1.429em;
+      width: 1.25rem;
+      height: 1.25rem;
     }
     &.large {
-      width: 1.715em;
-      height: 1.715em;
+      width: 1.5rem;
+      height: 1.5rem;
     }
   }
 </style>

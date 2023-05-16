@@ -15,6 +15,7 @@
 //
 
 import type {
+  Account,
   AnyAttribute,
   CategoryType,
   Class,
@@ -35,7 +36,7 @@ import type {
   Type,
   UXObject
 } from '@hcengineering/core'
-import { Asset, IntlString, Plugin, plugin, Resource, Status } from '@hcengineering/platform'
+import { Asset, IntlString, Plugin, Resource, Status, plugin } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
 import type {
   AnyComponent,
@@ -99,13 +100,17 @@ export interface Filter {
 /**
  * @public
  */
-export interface FilteredView extends Preference {
+export interface FilteredView extends Doc {
   name: string
   location: PlatformLocation
   filters: string
   viewOptions?: ViewOptions
   filterClass?: Ref<Class<Doc>>
   viewletId?: Ref<Viewlet> | null
+  sharable?: boolean
+  users: Ref<Account>[]
+  createdBy: Ref<Account>
+  attachedTo: string
 }
 
 /**
@@ -707,7 +712,10 @@ const view = plugin(viewId, {
     SelectToMove: '' as IntlString,
     Cancel: '' as IntlString,
     List: '' as IntlString,
-    Timeline: '' as IntlString
+    AddSavedView: '' as IntlString,
+    Timeline: '' as IntlString,
+    Public: '' as IntlString,
+    Hide: '' as IntlString
   },
   icon: {
     Table: '' as Asset,

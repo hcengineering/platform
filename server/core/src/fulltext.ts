@@ -170,7 +170,7 @@ export class FullTextIndex implements WithFind {
     let { docs, pass } = await this.indexer.search(classes, findQuery, fullTextLimit)
 
     if (docs.length === 0 && pass) {
-      docs = [...docs, ...(await this.adapter.search(classes, query, fullTextLimit))]
+      docs = await this.adapter.search(classes, query, fullTextLimit)
     }
     const indexedDocMap = new Map<Ref<Doc>, IndexedDoc>()
 

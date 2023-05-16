@@ -38,16 +38,21 @@
   import TextEditor from './TextEditor.svelte'
   import Attach from './icons/Attach.svelte'
   import Bold from './icons/Bold.svelte'
+  import RIBold from './icons/RIBold.svelte'
   import Code from './icons/Code.svelte'
+  import RICode from './icons/RICode.svelte'
   import CodeBlock from './icons/CodeBlock.svelte'
-  import GIF from './icons/GIF.svelte'
+  import RILink from './icons/RILink.svelte'
+  import RIMention from './icons/RIMention.svelte'
   import Italic from './icons/Italic.svelte'
+  import RIItalic from './icons/RIItalic.svelte'
   import Link from './icons/Link.svelte'
   import ListBullet from './icons/ListBullet.svelte'
   import ListNumber from './icons/ListNumber.svelte'
   import Quote from './icons/Quote.svelte'
   import Send from './icons/Send.svelte'
   import Strikethrough from './icons/Strikethrough.svelte'
+  import RIStrikethrough from './icons/RIStrikethrough.svelte'
   import TextStyle from './icons/TextStyle.svelte'
 
   const dispatch = createEventDispatcher()
@@ -81,16 +86,21 @@
       action: () => {
         dispatch('attach')
       },
-      order: 1000
+      order: 1001
     },
     {
-      label: textEditorPlugin.string.TextStyle,
-      icon: TextStyle,
+      label: textEditorPlugin.string.Link,
+      icon: RILink,
       action: () => {
-        isFormatting = !isFormatting
-        textEditor.focus()
+        if (!(isSelectionEmpty && !activeModes.has('link'))) formatLink()
       },
       order: 2000
+    },
+    {
+      label: textEditorPlugin.string.Mention,
+      icon: RIMention,
+      action: () => textEditor.insertText('@'),
+      order: 3000
     },
     {
       label: textEditorPlugin.string.Emoji,
@@ -103,17 +113,57 @@
           (emoji) => {
             if (!emoji) return
             textEditor.insertText(emoji)
+            textEditor.focus()
           },
           () => {}
         )
       },
-      order: 3000
+      order: 4001
     },
     {
-      label: textEditorPlugin.string.GIF,
-      icon: GIF,
-      action: () => {},
-      order: 4000
+      label: textEditorPlugin.string.TextStyle,
+      icon: TextStyle,
+      action: () => {
+        isFormatting = !isFormatting
+        textEditor.focus()
+      },
+      order: 6000
+    },
+    {
+      label: textEditorPlugin.string.Bold,
+      icon: RIBold,
+      action: () => {
+        textEditor.toggleBold()
+        textEditor.focus()
+      },
+      order: 6010
+    },
+    {
+      label: textEditorPlugin.string.Italic,
+      icon: RIItalic,
+      action: () => {
+        textEditor.toggleItalic()
+        textEditor.focus()
+      },
+      order: 6020
+    },
+    {
+      label: textEditorPlugin.string.Strikethrough,
+      icon: RIStrikethrough,
+      action: () => {
+        textEditor.toggleStrike()
+        textEditor.focus()
+      },
+      order: 6030
+    },
+    {
+      label: textEditorPlugin.string.Code,
+      icon: RICode,
+      action: () => {
+        textEditor.toggleCode()
+        textEditor.focus()
+      },
+      order: 6040
     }
   ]
 
@@ -355,7 +405,7 @@
       </button>
     {/if}
   </div>
-  <div class="flex-between clear-mins" style:margin={'.5rem 1rem 0'}>
+  <div class="flex-between clear-mins" style:margin={'.75rem .75rem 0'}>
     <div class="buttons-group large-gap">
       {#each actions as a}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -364,8 +414,11 @@
           use:tooltip={{ label: a.label }}
           on:click={handler(a, (a, evt) => handleAction(a, evt))}
         >
-          <Icon icon={a.icon} size={'medium'} fill={a.fill} />
+          <Icon icon={a.icon} size={'medium'} />
         </div>
+        {#if a.order % 10 === 1}
+          <div class="buttons-divider" />
+        {/if}
       {/each}
     </div>
     {#if extraActions && extraActions.length > 0}
@@ -391,23 +444,26 @@
 </div>
 
 <style lang="scss">
+  .buttons-divider {
+    height: 1rem;
+    max-height: 1rem;
+  }
   .icon-button {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 1rem;
-    height: 1rem;
-    color: var(--theme-caption-color);
-    opacity: 0.6;
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--theme-darker-color);
     cursor: pointer;
 
     &:hover {
-      opacity: 1;
+      color: var(--theme-content-color);
     }
     &.disabled {
-      opacity: 0.3;
+      color: var(--theme-trans-color);
       &:hover {
-        opacity: 0.4;
+        color: var(--theme-trans-color);
         cursor: not-allowed;
       }
     }
@@ -420,7 +476,7 @@
     .formatPanelRef {
       padding: 0.5rem;
       background-color: var(--theme-comp-header-color);
-      border: 1px solid var(--theme-divider-color);
+      border: 1px solid var(--theme-refinput-divider);
       border-radius: 0.5rem 0.5rem 0 0;
       border-bottom: 0;
 
@@ -435,12 +491,12 @@
     .textInput {
       display: flex;
       justify-content: space-between;
-      align-items: flex-end;
+      align-items: flex-start;
       min-height: 2.75rem;
       padding: 0.75rem 1rem;
       background-color: var(--theme-refinput-color);
-      border: 1px solid var(--theme-divider-color);
-      border-radius: 0.5rem;
+      border: 1px solid var(--theme-refinput-border);
+      border-radius: 0.25rem;
 
       &.withoutTopBorder {
         border-top-left-radius: 0;
@@ -457,34 +513,6 @@
         background-color: transparent;
         border: none;
         outline: none;
-        // &.thread {
-        //   width: auto;
-        // }
-
-        // .flex-column {
-        //   display: flex;
-        //   flex-direction: column;
-        //   align-items: center;
-        // }
-
-        // .flex-row {
-        //   display: flex;
-        //   flex-direction: row;
-        //   align-items: flex-end;
-        // }
-
-        // .edit-box-horizontal {
-        //   width: 100%;
-        //   height: 100%;
-        //   margin-top: 7px;
-        //   align-self: center;
-        // }
-
-        // .edit-box-vertical {
-        //   width: 100%;
-        //   height: 100%;
-        //   margin: 4px;
-        // }
       }
       .sendButton {
         display: flex;
@@ -504,7 +532,7 @@
         .icon {
           width: 1.25rem;
           height: 1.25rem;
-          color: var(--theme-dark-color);
+          color: var(--theme-content-color);
           cursor: pointer;
 
           &:hover {
@@ -523,7 +551,7 @@
           pointer-events: none;
 
           .icon {
-            opacity: 0.5;
+            color: var(--theme-trans-color);
             cursor: not-allowed;
           }
         }

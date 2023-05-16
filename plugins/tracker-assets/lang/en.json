@@ -278,7 +278,6 @@
     "CurrentWorkDay": "Current Working Day",
     "PreviousWorkDay": "Previous Working Day",
     "TimeReportDayTypeLabel": "Select time report day type",
-    "DefaultTimeReportDay": "Select default day for time report",
     "DefaultAssignee": "Select default assignee for issues",
 
     "SevenHoursLength": "Seven Hours",
@@ -293,7 +292,11 @@
     "ConfigDescription": "Extension to manage work items and do all jobs done.",
     "ProjectColor": "Choose project icon color",
     "ProjectIconCategory": "Icon",
-    "ProjectEmojiiCategory": "Emojii"
+    "ProjectEmojiiCategory": "Emojii",
+
+    "NoStatusFound": "No matching status found",
+    "CreateMissingStatus": "Create missing status",
+    "UnsetParent": "Parent issue will be unset"
   },
   "status": {}
 }

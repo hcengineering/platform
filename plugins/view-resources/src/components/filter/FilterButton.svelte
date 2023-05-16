@@ -15,9 +15,9 @@
 <script lang="ts">
   import { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Button, IconClose, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { Button, IconClose, eventToHTMLElement, resolvedLocationStore, showPopup } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
-  import { filterStore, setFilters } from '../../filter'
+  import { filterStore, getFilterKey, setFilters } from '../../filter'
   import view from '../../plugin'
   import FilterTypePopup from './FilterTypePopup.svelte'
   import IconFilter from '../icons/Filter.svelte'
@@ -28,6 +28,25 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+
+  resolvedLocationStore.subscribe(() => {
+    load(_class)
+  })
+
+  function load (_class: Ref<Class<Doc>> | undefined) {
+    const key = getFilterKey(_class)
+    const items = localStorage.getItem(key)
+    if (items !== null) {
+      filterStore.set(JSON.parse(items))
+    }
+  }
+
+  function save (_class: Ref<Class<Doc>> | undefined, p: Filter[]) {
+    const key = getFilterKey(_class)
+    localStorage.setItem(key, JSON.stringify(p))
+  }
+
+  filterStore.subscribe((p) => save(_class, p))
 
   function onChange (e: Filter | undefined) {
     if (e !== undefined) setFilters([e])

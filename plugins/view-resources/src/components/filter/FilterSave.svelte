@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { Class, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
   import preference from '@hcengineering/preference'
   import { Card, getClient } from '@hcengineering/presentation'
-  import { Button, EditBox, getCurrentResolvedLocation } from '@hcengineering/ui'
+  import { Button, EditBox, ToggleWithLabel, getCurrentResolvedLocation } from '@hcengineering/ui'
   import { ViewOptions } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { filterStore } from '../../filter'
@@ -11,6 +11,9 @@
 
   export let viewOptions: ViewOptions | undefined = undefined
   export let _class: Ref<Class<Doc>>
+
+  const me = getCurrentAccount()._id
+  let sharable = true
 
   let filterName = ''
   const client = getClient()
@@ -27,7 +30,9 @@
       filters,
       attachedTo: loc.path[2] as Ref<Doc>,
       viewOptions,
-      viewletId: getActiveViewletId()
+      viewletId: getActiveViewletId(),
+      sharable,
+      users: [me]
     })
   }
 
@@ -57,4 +62,5 @@
       />
     </div>
   </div>
+  <ToggleWithLabel bind:on={sharable} label={view.string.Public} />
 </Card>

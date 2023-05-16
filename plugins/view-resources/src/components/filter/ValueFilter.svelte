@@ -20,6 +20,7 @@
   import { Filter } from '@hcengineering/view'
   import { onMount, createEventDispatcher } from 'svelte'
   import { getPresenter } from '../../utils'
+  import { FILTER_DEBOUNCE_MS, sortFilterValues } from '../../filter'
   import view from '../../plugin'
 
   export let _class: Ref<Class<Doc>>
@@ -41,6 +42,8 @@
   const realValues = new Map<any, Set<any>>()
 
   let objectsPromise: Promise<FindResult<Doc>> | undefined
+
+  let filterUpdateTimeout: number | undefined
 
   async function getValues (search: string): Promise<void> {
     if (objectsPromise) {
@@ -100,18 +103,27 @@
     return values.has(value)
   }
 
-  function toggle (value: any): void {
+  function handleFilterToggle (value: any): void {
     if (isSelected(value, selectedValues)) {
       selectedValues.delete(value)
     } else {
       selectedValues.add(value)
     }
     selectedValues = selectedValues
-    filter.value = [...selectedValues.values()].map((v) => {
-      return [v, [...(realValues.get(v) ?? [])]]
-    })
 
-    onChange(filter)
+    updateFilter(selectedValues)
+  }
+
+  function updateFilter (newValues: Set<any>) {
+    clearTimeout(filterUpdateTimeout)
+
+    filterUpdateTimeout = setTimeout(() => {
+      filter.value = [...newValues.values()].map((v) => {
+        return [v, [...(realValues.get(v) ?? [])]]
+      })
+
+      onChange(filter)
+    }, FILTER_DEBOUNCE_MS)
   }
 
   let search: string = ''
@@ -126,6 +138,7 @@
   onMount(() => {
     if (searchInput && !$deviceOptionsStore.isMobile) searchInput.focus()
   })
+
   getValues(search)
 </script>
 
@@ -149,12 +162,12 @@
         {#if objectsPromise}
           <Loading />
         {:else}
-          {#each Array.from(values.keys()) as value}
+          {#each sortFilterValues([...values.keys()], (v) => isSelected(v, selectedValues)) as value}
             {@const realValue = [...(realValues.get(value) ?? [])][0]}
             <button
               class="menu-item no-focus"
               on:click={() => {
-                toggle(value)
+                handleFilterToggle(value)
               }}
             >
               <div class="flex-between w-full">

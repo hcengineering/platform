@@ -418,6 +418,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               { collector: st.stageId },
               async (ctx) => await st.collect(toIndex, this, ctx)
             )
+            if (this.cancelling) {
+              break
+            }
 
             toIndex.forEach((it) => _classUpdate.add(it.objectClass))
 
@@ -431,6 +434,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
                   { collector: nst.stageId },
                   async (ctx) => await nst.collect(toIndex2, this, ctx)
                 )
+              }
+              if (this.cancelling) {
+                break
               }
             }
           } else {

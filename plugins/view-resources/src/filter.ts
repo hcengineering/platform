@@ -13,7 +13,7 @@ import core, {
 import { getResource } from '@hcengineering/platform'
 import { LiveQuery, createQuery, getClient } from '@hcengineering/presentation'
 import { AnyComponent, locationToUrl, getCurrentResolvedLocation } from '@hcengineering/ui'
-import { Filter, FilterMode, KeyFilter } from '@hcengineering/view'
+import { Filter, FilterMode, FilteredView, KeyFilter } from '@hcengineering/view'
 import { get, writable } from 'svelte/store'
 import view from './plugin'
 
@@ -21,6 +21,11 @@ import view from './plugin'
  * @public
  */
 export const filterStore = writable<Filter[]>([])
+
+/**
+ * @public
+ */
+export const selectedFilterStore = writable<FilteredView | undefined>()
 
 export function setFilters (filters: Filter[]): void {
   const old = get(filterStore)
@@ -288,9 +293,45 @@ export function createFilter (_class: Ref<Class<Doc>>, key: string, value: any[]
   }
 }
 
-export function getFilterKey (_class: Ref<Class<Doc>>): string {
+export function getFilterKey (_class: Ref<Class<Doc>> | undefined): string {
   const loc = getCurrentResolvedLocation()
+  loc.path.length = 3
   loc.fragment = undefined
   loc.query = undefined
-  return 'filter' + locationToUrl(loc) + _class
+  let res = 'filter' + locationToUrl(loc)
+  if (_class !== undefined) {
+    res = res + _class
+  }
+  return res
 }
+
+/**
+ * Returns a new array where the selected values have been moved to the beginning
+ *
+ * @export
+ * @template T
+ * @param {T[]} values
+ * @param {(value: T) => boolean} checkIsSelected
+ * @returns {readonly T[]}
+ */
+export function sortFilterValues<T> (values: T[], checkIsSelected: (value: T) => boolean): readonly T[] {
+  const selectedValues: T[] = []
+  const notSelectedValues: T[] = []
+
+  for (const value of values) {
+    if (checkIsSelected(value)) {
+      selectedValues.push(value)
+    } else {
+      notSelectedValues.push(value)
+    }
+  }
+
+  return [...selectedValues, ...notSelectedValues]
+}
+
+/**
+ * The number of milliseconds of delay before changing the filter value
+ *
+ * @type {200}
+ */
+export const FILTER_DEBOUNCE_MS: 200 = 200

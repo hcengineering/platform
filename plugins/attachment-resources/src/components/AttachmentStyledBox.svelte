@@ -33,7 +33,8 @@
   export let alwaysEdit = false
   export let showButtons = false
   export let emphasized: boolean = false
-  export let buttonSize: IconSize = 'small'
+  export let buttonSize: IconSize = 'medium'
+  export let formatButtonSize: IconSize = 'small'
   export let maxHeight: 'max' | 'card' | 'limited' | string = 'max'
   export let focusable: boolean = false
   export let fakeAttach: 'fake' | 'hidden' | 'normal' = 'normal'
@@ -332,6 +333,7 @@
       {showButtons}
       hideAttachments={fakeAttach === 'hidden'}
       {buttonSize}
+      {formatButtonSize}
       {maxHeight}
       {focusable}
       {emphasized}
