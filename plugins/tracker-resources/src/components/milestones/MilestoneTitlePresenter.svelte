@@ -13,22 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Sprint } from '@hcengineering/tracker'
+  import { Milestone } from '@hcengineering/tracker'
   import { getMonthName, Icon } from '@hcengineering/ui'
   import tracker from '../../plugin'
-  export let value: Sprint | undefined
+  export let value: Milestone | undefined
 </script>
 
 {#if value}
   <span class="overflow-label flex-row-center flex-grow">
-    <Icon icon={tracker.icon.Sprint} size={'small'} />
+    <Icon icon={tracker.icon.Milestone} size={'small'} />
     <div class="ml-2 mr-2">
       {value.label}
     </div>
     <span class="flex flex-grow justify-end">
-      {new Date(value.startDate).getDate()}
-      {getMonthName(new Date(value.startDate), 'short')}
-      -
       {new Date(value.targetDate).getDate()}
       {getMonthName(new Date(value.targetDate), 'short')}
     </span>

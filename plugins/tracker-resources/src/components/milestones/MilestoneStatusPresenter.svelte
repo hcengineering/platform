@@ -13,37 +13,37 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { SprintStatus } from '@hcengineering/tracker'
+  import { MilestoneStatus } from '@hcengineering/tracker'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import tracker from '../../plugin'
 
-  import SprintStatusSelector from './SprintStatusSelector.svelte'
+  import MilestoneStatusSelector from './MilestoneStatusSelector.svelte'
 
-  export let value: SprintStatus
-  export let onChange: ((value: SprintStatus) => void) | undefined = undefined
+  export let value: MilestoneStatus
+  export let onChange: ((value: MilestoneStatus) => void) | undefined = undefined
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = '100%'
 
-  function handleComponentStatusChange (newSprintStatus: SprintStatus | undefined) {
-    if (newSprintStatus === undefined || onChange === undefined) {
+  function handleComponentStatusChange (newMilestoneStatus: MilestoneStatus | undefined) {
+    if (newMilestoneStatus === undefined || onChange === undefined) {
       return
     }
 
-    onChange(newSprintStatus)
+    onChange(newMilestoneStatus)
   }
 
   $: isEditable = onChange !== undefined
 </script>
 
-<SprintStatusSelector
+<MilestoneStatusSelector
   {kind}
   {size}
   {width}
   {justify}
   {isEditable}
   showTooltip={isEditable ? { label: tracker.string.SetStatus } : undefined}
-  selectedSprintStatus={value}
-  onSprintStatusChange={handleComponentStatusChange}
+  selectedMilestoneStatus={value}
+  onMilestoneStatusChange={handleComponentStatusChange}
 />

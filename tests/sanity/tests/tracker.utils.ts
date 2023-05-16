@@ -9,7 +9,7 @@ export interface IssueProps {
   priority?: string
   assignee?: string
   component?: string
-  sprint?: string
+  milestone?: string
 }
 
 export enum ViewletSelectors {
@@ -46,7 +46,7 @@ export async function setViewOrder (page: Page, orderName: string): Promise<void
 }
 
 export async function fillIssueForm (page: Page, props: IssueProps, issue: boolean): Promise<void> {
-  const { name, description, status, assignee, labels, priority, component, sprint } = props
+  const { name, description, status, assignee, labels, priority, component, milestone } = props
   const af = issue ? 'form ' : '[id="sub-issue-child-editor"] '
   const issueTitle = page.locator(af + '[placeholder="Issue\\ title"]')
   await issueTitle.fill(name)
@@ -80,9 +80,9 @@ export async function fillIssueForm (page: Page, props: IssueProps, issue: boole
     await page.click(af + 'button:has-text("Component")')
     await page.click(`.selectPopup button:has-text("${component}")`)
   }
-  if (sprint !== undefined) {
-    await page.click(af + '.button:has-text("No Sprint")')
-    await page.click(`.selectPopup button:has-text("${sprint}")`)
+  if (milestone !== undefined) {
+    await page.click(af + '.button:has-text("No Milestone")')
+    await page.click(`.selectPopup button:has-text("${milestone}")`)
   }
 }
 
@@ -105,12 +105,14 @@ export async function createComponent (page: Page, componentName: string): Promi
   await page.click('button:has-text("Create component")')
 }
 
-export async function createSprint (page: Page, sprintName: string): Promise<void> {
-  await page.click('text=Sprints')
-  await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Aproject%3ADefaultProject/sprints`)
-  await page.click('button:has-text("Sprint")')
-  await page.click('[placeholder="Sprint\\ name"]')
-  await page.fill('[placeholder="Sprint\\ name"]', sprintName)
+export async function createMilestone (page: Page, milestoneName: string): Promise<void> {
+  await page.click('text=Milestones')
+  await expect(page).toHaveURL(
+    `${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Aproject%3ADefaultProject/milestones`
+  )
+  await page.click('button:has-text("Milestone")')
+  await page.click('[placeholder="Milestone\\ name"]')
+  await page.fill('[placeholder="Milestone\\ name"]', milestoneName)
   await page.click('button:has-text("Create")')
 }
 
@@ -133,7 +135,7 @@ export async function createLabel (page: Page, label: string): Promise<void> {
 }
 
 export async function checkIssue (page: Page, props: IssueProps): Promise<void> {
-  const { name, description, status, assignee, labels, priority, component, sprint } = props
+  const { name, description, status, assignee, labels, priority, component, milestone } = props
 
   if (name !== undefined) {
     await expect(page.locator('.popupPanel')).toContainText(name)
@@ -157,8 +159,8 @@ export async function checkIssue (page: Page, props: IssueProps): Promise<void> 
   if (component !== undefined) {
     await expect(asideLocator).toContainText(component)
   }
-  if (sprint !== undefined) {
-    await expect(asideLocator).toContainText(sprint)
+  if (milestone !== undefined) {
+    await expect(asideLocator).toContainText(milestone)
   }
 }
 

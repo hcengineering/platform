@@ -35,6 +35,7 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const assigneeAttribute = hierarchy.getAttribute(recruit.class.Applicant, 'assignee')
+  const isTitleHidden = client.getHierarchy().getAttribute(recruit.mixin.Candidate, 'title').hidden
 
   function showCandidate () {
     showPanel(view.component.EditDoc, object._id, Hierarchy.mixinOrClass(object), 'content')
@@ -62,7 +63,9 @@
         <div class="fs-title over-underline lines-limit-2">
           {object.$lookup?.attachedTo ? getName(object.$lookup.attachedTo) : ''}
         </div>
-        <div class="text-sm lines-limit-2">{object.$lookup?.attachedTo?.title ?? ''}</div>
+        {#if !isTitleHidden}
+          <div class="text-sm lines-limit-2">{object.$lookup?.attachedTo?.title ?? ''}</div>
+        {/if}
       </div>
     </div>
     <div class="tool mr-1 flex-row-center">

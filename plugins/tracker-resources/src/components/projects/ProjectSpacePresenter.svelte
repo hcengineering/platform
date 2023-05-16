@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Ref, Space } from '@hcengineering/core'
   import { Project } from '@hcengineering/tracker'
-  import { IconWithEmojii, getPlatformColor, getPlatformColorForText } from '@hcengineering/ui'
+  import { IconWithEmojii, getPlatformColor, getPlatformColorForText, getCurrentLocation } from '@hcengineering/ui'
   import { NavLink, TreeNode } from '@hcengineering/view-resources'
   import { SpacesNavModel } from '@hcengineering/workbench'
   import { SpecialElement } from '@hcengineering/workbench-resources'
@@ -27,16 +27,23 @@
   export let currentSpecial: string | undefined
   export let getActions: Function
   export let deselect: boolean = false
+
+  const COLLAPSED = 'COLLAPSED'
+  const getSpaceCollapsedKey = () => `${getCurrentLocation().path[1]}_${space._id}_collapsed`
+
+  $: collapsed = localStorage.getItem(getSpaceCollapsedKey()) === COLLAPSED
 </script>
 
 {#if model.specials}
   <TreeNode
+    {collapsed}
     icon={space?.icon === tracker.component.IconWithEmojii ? IconWithEmojii : space?.icon ?? model.icon}
     iconProps={space?.icon === tracker.component.IconWithEmojii
       ? { icon: space.color }
       : { fill: space.color !== undefined ? getPlatformColor(space.color) : getPlatformColorForText(space.name) }}
     title={space.name}
     actions={() => getActions(space)}
+    on:click={() => localStorage.setItem(getSpaceCollapsedKey(), collapsed ? '' : COLLAPSED)}
   >
     {#each model.specials as special}
       <NavLink space={space._id} special={special.id}>

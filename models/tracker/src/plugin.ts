@@ -49,11 +49,11 @@ export default mergeIds(trackerId, tracker, {
     PriorityIcon: '' as AnyComponent
   },
   component: {
-    SprintSelector: '' as AnyComponent,
+    MilestoneSelector: '' as AnyComponent,
     IssueStatistics: '' as AnyComponent,
     TimeSpendReportPopup: '' as AnyComponent,
     NotificationIssuePresenter: '' as AnyComponent,
-    SprintFilter: '' as AnyComponent
+    MilestoneFilter: '' as AnyComponent
   },
   app: {
     Tracker: '' as Ref<Application>
@@ -62,7 +62,7 @@ export default mergeIds(trackerId, tracker, {
     IssueList: '' as Ref<Viewlet>,
     IssueTemplateList: '' as Ref<Viewlet>,
     IssueKanban: '' as Ref<Viewlet>,
-    SprintList: '' as Ref<Viewlet>,
+    MilestoneList: '' as Ref<Viewlet>,
     ComponentList: '' as Ref<Viewlet>,
     ComponentsTimeline: '' as Ref<Viewlet>
   },
@@ -81,12 +81,12 @@ export default mergeIds(trackerId, tracker, {
     EditWorkflowStatuses: '' as ViewAction,
     EditProject: '' as ViewAction,
     DeleteProject: '' as ViewAction,
-    DeleteSprint: '' as ViewAction
+    DeleteMilestone: '' as ViewAction
   },
   action: {
     NewRelatedIssue: '' as Ref<Action<Doc, Record<string, any>>>,
-    DeleteSprint: '' as Ref<Action<Doc, Record<string, any>>>,
+    DeleteMilestone: '' as Ref<Action<Doc, Record<string, any>>>,
     DeleteProject: '' as Ref<Action<Doc, Record<string, any>>>,
-    SetSprintLead: '' as Ref<Action<Doc, Record<string, any>>>
+    SetMilestoneLead: '' as Ref<Action<Doc, Record<string, any>>>
   }
 })

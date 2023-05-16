@@ -17,7 +17,14 @@
   import { Account, Doc, generateId, Ref } from '@hcengineering/core'
   import presentation, { DraftController, getClient, KeyedAttribute } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
-  import { Component as ComponentType, Issue, IssueDraft, IssuePriority, Project, Sprint } from '@hcengineering/tracker'
+  import {
+    Component as ComponentType,
+    Issue,
+    IssueDraft,
+    IssuePriority,
+    Project,
+    Milestone
+  } from '@hcengineering/tracker'
   import { Button, Component, EditBox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
@@ -29,7 +36,7 @@
 
   export let parendIssueId: Ref<Issue>
   export let project: Project
-  export let sprint: Ref<Sprint> | null = null
+  export let milestone: Ref<Milestone> | null = null
   export let component: Ref<ComponentType> | null = null
   export let childIssue: IssueDraft | undefined = undefined
   export let showBorder = false
@@ -66,7 +73,7 @@
       labels: [],
       component,
       priority: IssuePriority.NoPriority,
-      sprint,
+      milestone,
       estimation: 0
     }
   }
@@ -77,7 +84,7 @@
     assignee: project.defaultAssignee ?? null,
     component,
     priority: IssuePriority.NoPriority,
-    sprint
+    milestone
   }
 
   function objectChange (object: IssueDraft, empty: any) {

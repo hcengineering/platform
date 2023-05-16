@@ -15,36 +15,36 @@
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { ObjectCreate, ObjectPopup } from '@hcengineering/presentation'
-  import { Sprint, SprintStatus } from '@hcengineering/tracker'
+  import { Milestone, MilestoneStatus } from '@hcengineering/tracker'
   import { Icon, Label } from '@hcengineering/ui'
-  import { sprintStatusAssets } from '../../utils'
-  import SprintTitlePresenter from './SprintTitlePresenter.svelte'
-  export let _class: Ref<Class<Sprint>>
-  export let selected: Ref<Sprint> | undefined = undefined
-  export let sprintQuery: DocumentQuery<Sprint> = {}
+  import { milestoneStatusAssets } from '../../utils'
+  import MilestoneTitlePresenter from './MilestoneTitlePresenter.svelte'
+  export let _class: Ref<Class<Milestone>>
+  export let selected: Ref<Milestone> | undefined = undefined
+  export let milestoneQuery: DocumentQuery<Milestone> = {}
   export let create: ObjectCreate | undefined = undefined
   export let allowDeselect = false
   export let closeAfterSelect: boolean = true
   export let shadows = true
   export let width: 'medium' | 'large' | 'full' = 'medium'
-  export let ignoreSprints: Sprint[] | undefined = undefined
+  export let ignoreMilestones: Milestone[] | undefined = undefined
 
-  $: ignoreObjects = ignoreSprints?.filter((s) => '_id' in s).map((s) => s._id)
+  $: ignoreObjects = ignoreMilestones?.filter((s) => '_id' in s).map((s) => s._id)
   $: _create =
     create !== undefined
       ? {
           ...create,
-          update: (doc: Doc) => (doc as Sprint).label
+          update: (doc: Doc) => (doc as Milestone).label
         }
       : undefined
-  const getStatus = (sprint: Sprint): SprintStatus => sprint.status
+  const getStatus = (milestone: Milestone): MilestoneStatus => milestone.status
 </script>
 
 <ObjectPopup
   {_class}
   {selected}
   {ignoreObjects}
-  bind:docQuery={sprintQuery}
+  bind:docQuery={milestoneQuery}
   searchField={'label'}
   multiSelect={false}
   {allowDeselect}
@@ -56,12 +56,12 @@
   on:close
   groupBy={'status'}
 >
-  <svelte:fragment slot="item" let:item={sprint}>
-    <SprintTitlePresenter value={sprint} />
+  <svelte:fragment slot="item" let:item={milestone}>
+    <MilestoneTitlePresenter value={milestone} />
   </svelte:fragment>
 
-  <svelte:fragment slot="category" let:item={sprint}>
-    {@const status = sprintStatusAssets[getStatus(sprint)]}
+  <svelte:fragment slot="category" let:item={milestone}>
+    {@const status = milestoneStatusAssets[getStatus(milestone)]}
     {#if status}
       <div class="flex-row-center p-1">
         <Icon icon={status.icon} size={'small'} />

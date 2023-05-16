@@ -81,7 +81,7 @@ export enum IssuesGrouping {
   Assignee = 'assignee',
   Priority = 'priority',
   Component = 'component',
-  Sprint = 'sprint',
+  Milestone = 'milestone',
   NoGrouping = '#no_category'
 }
 
@@ -108,7 +108,7 @@ export enum IssuesDateModificationPeriod {
 /**
  * @public
  */
-export enum SprintStatus {
+export enum MilestoneStatus {
   Planned,
   InProgress,
   Completed,
@@ -118,11 +118,11 @@ export enum SprintStatus {
 /**
  * @public
  */
-export interface Sprint extends Doc {
+export interface Milestone extends Doc {
   label: string
   description?: Markup
 
-  status: SprintStatus
+  status: MilestoneStatus
 
   lead: Ref<Employee> | null
   members: Ref<Employee>[]
@@ -132,7 +132,6 @@ export interface Sprint extends Doc {
   comments: number
   attachments?: number
 
-  startDate: Timestamp
   targetDate: Timestamp
 
   // Capacity in man days.
@@ -168,7 +167,7 @@ export interface Issue extends AttachedDoc {
 
   rank: string
 
-  sprint?: Ref<Sprint> | null
+  milestone?: Ref<Milestone> | null
 
   // Estimation in man days
   estimation: number
@@ -203,7 +202,7 @@ export interface IssueDraft {
   component: Ref<Component> | null
   space: Ref<Project>
   dueDate: Timestamp | null
-  sprint?: Ref<Sprint> | null
+  milestone?: Ref<Milestone> | null
 
   // Estimation in man days
   estimation: number
@@ -230,7 +229,7 @@ export interface IssueTemplateData {
   assignee: Ref<Employee> | null
   component: Ref<Component> | null
 
-  sprint?: Ref<Sprint> | null
+  milestone?: Ref<Milestone> | null
 
   // Estimation in man days
   estimation: number
@@ -388,10 +387,10 @@ export default plugin(trackerId, {
     IssueStatus: '' as Ref<Class<IssueStatus>>,
     TypeIssuePriority: '' as Ref<Class<Type<IssuePriority>>>,
     TypeComponentStatus: '' as Ref<Class<Type<ComponentStatus>>>,
-    Sprint: '' as Ref<Class<Sprint>>,
+    Milestone: '' as Ref<Class<Milestone>>,
     Scrum: '' as Ref<Class<Scrum>>,
     ScrumRecord: '' as Ref<Class<ScrumRecord>>,
-    TypeSprintStatus: '' as Ref<Class<Type<SprintStatus>>>,
+    TypeMilestoneStatus: '' as Ref<Class<Type<MilestoneStatus>>>,
     TimeSpendReport: '' as Ref<Class<TimeSpendReport>>,
     TypeReportedTime: '' as Ref<Class<Type<number>>>
   },
@@ -437,7 +436,7 @@ export default plugin(trackerId, {
     Labels: '' as Asset,
     DueDate: '' as Asset,
     Parent: '' as Asset,
-    Sprint: '' as Asset,
+    Milestone: '' as Asset,
     IssueTemplates: '' as Asset,
     Scrum: '' as Asset,
     Start: '' as Asset,
@@ -465,11 +464,11 @@ export default plugin(trackerId, {
     ComponentStatusCompleted: '' as Asset,
     ComponentStatusCanceled: '' as Asset,
 
-    SprintStatusPlanned: '' as Asset,
-    SprintStatusInProgress: '' as Asset,
-    SprintStatusPaused: '' as Asset,
-    SprintStatusCompleted: '' as Asset,
-    SprintStatusCanceled: '' as Asset,
+    MilestoneStatusPlanned: '' as Asset,
+    MilestoneStatusInProgress: '' as Asset,
+    MilestoneStatusPaused: '' as Asset,
+    MilestoneStatusCompleted: '' as Asset,
+    MilestoneStatusCanceled: '' as Asset,
 
     CopyID: '' as Asset,
     CopyURL: '' as Asset,
@@ -505,7 +504,7 @@ export default plugin(trackerId, {
     NewSubIssue: '' as Ref<Action>,
     EditWorkflowStatuses: '' as Ref<Action>,
     EditProject: '' as Ref<Action>,
-    SetSprint: '' as Ref<Action>,
+    SetMilestone: '' as Ref<Action>,
     SetLabels: '' as Ref<Action>
   },
   project: {

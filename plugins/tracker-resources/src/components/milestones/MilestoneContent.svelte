@@ -1,23 +1,23 @@
 <script lang="ts">
   import contact from '@hcengineering/contact'
   import { DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
-  import { Sprint } from '@hcengineering/tracker'
+  import { Milestone } from '@hcengineering/tracker'
   import { Component } from '@hcengineering/ui'
   import { BuildModelKey, Viewlet, ViewOptions } from '@hcengineering/view'
   import tracker from '../../plugin'
-  import NewSprint from './NewSprint.svelte'
+  import NewMilestone from './NewMilestone.svelte'
 
   export let viewlet: WithLookup<Viewlet>
-  export let query: DocumentQuery<Sprint> = {}
+  export let query: DocumentQuery<Milestone> = {}
   export let space: Ref<Space> | undefined
 
   // Extra properties
   export let viewOptions: ViewOptions
 
-  const createItemDialog = NewSprint
-  const createItemLabel = tracker.string.CreateSprint
+  const createItemDialog = NewMilestone
+  const createItemLabel = tracker.string.CreateMilestone
 
-  const retrieveMembers = (s: Sprint) => s.members
+  const retrieveMembers = (s: Milestone) => s.members
 
   function updateConfig (config: (string | BuildModelKey)[]): (string | BuildModelKey)[] {
     return config.map((it) => {
@@ -35,7 +35,7 @@
   <Component
     is={viewlet.$lookup.descriptor.component}
     props={{
-      _class: tracker.class.Sprint,
+      _class: tracker.class.Milestone,
       config: updateConfig(viewlet.config),
       options: viewlet.options,
       createItemDialog,

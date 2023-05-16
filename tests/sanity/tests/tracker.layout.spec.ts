@@ -3,7 +3,7 @@ import {
   checkIssueFromList,
   createIssue,
   createComponent,
-  createSprint,
+  createMilestone,
   DEFAULT_STATUSES,
   DEFAULT_USER,
   IssueProps,
@@ -24,14 +24,14 @@ async function createIssues (
   prefix: string,
   page: Page,
   components?: string[],
-  sprints?: string[]
+  milestones?: string[]
 ): Promise<IssueProps[]> {
   const issuesProps = []
   for (let index = 0; index < 5; index++) {
     const shiftedIndex = 4 - index
     const name =
-      sprints !== undefined
-        ? getIssueName(`${prefix}-layout-${shiftedIndex}-${sprints[index % sprints.length]}`)
+      milestones !== undefined
+        ? getIssueName(`${prefix}-layout-${shiftedIndex}-${milestones[index % milestones.length]}`)
         : getIssueName(`${prefix}-layout-${shiftedIndex}`)
     const issueProps = {
       name,
@@ -39,7 +39,7 @@ async function createIssues (
       assignee: shiftedIndex % 2 === 0 ? DEFAULT_USER : 'Chen Rosamund',
       priority: PRIORITIES[shiftedIndex],
       component: components !== undefined ? components[index % components.length] : undefined,
-      sprint: sprints !== undefined ? sprints[index % sprints.length] : undefined
+      milestone: milestones !== undefined ? milestones[index % milestones.length] : undefined
     }
     issuesProps.push(issueProps)
 
@@ -62,23 +62,23 @@ async function createComponents (page: Page): Promise<string[]> {
   return components
 }
 
-async function createSprints (page: Page): Promise<string[]> {
-  const sprints = []
+async function createMilestones (page: Page): Promise<string[]> {
+  const milestones = []
 
   for (let index = 0; index < 5; index++) {
-    const sprintId = `sprint-${generateId()}-${index}`
-    sprints.push(sprintId)
+    const milestoneId = `milestone-${generateId()}-${index}`
+    milestones.push(milestoneId)
 
-    await createSprint(page, sprintId)
+    await createMilestone(page, milestoneId)
   }
 
-  return sprints
+  return milestones
 }
 
 async function initIssues (prefix: string, page: Page): Promise<IssueProps[]> {
   const components = await createComponents(page)
-  const sprints = await createSprints(page)
-  const issuesProps = await createIssues(prefix, page, components, sprints)
+  const milestones = await createMilestones(page)
+  const issuesProps = await createIssues(prefix, page, components, milestones)
   await page.click('text="Issues"')
 
   return issuesProps
@@ -94,7 +94,7 @@ test.describe('tracker layout tests', () => {
 
   let issuesProps: IssueProps[] = []
   const orders = ['Status', 'Modified', 'Priority'] as const
-  const groups = ['Status', 'Assignee', 'Priority', 'Component', 'Sprint', 'No grouping'] as const
+  const groups = ['Status', 'Assignee', 'Priority', 'Component', 'Milestone', 'No grouping'] as const
   const groupsLabels: { [key in (typeof groups)[number]]?: string[] } = {
     Status: DEFAULT_STATUSES,
     Assignee: [DEFAULT_USER, 'Chen Rosamund'],
@@ -108,8 +108,8 @@ test.describe('tracker layout tests', () => {
       await setViewGroup(page, group)
 
       let groupLabels: any[]
-      if (group === 'Sprint') {
-        groupLabels = issuesProps.map((props) => props.sprint)
+      if (group === 'Milestone') {
+        groupLabels = issuesProps.map((props) => props.milestone)
       } else {
         groupLabels = groupsLabels[group] ?? []
       }

@@ -14,17 +14,17 @@
 -->
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
-  import { Sprint } from '@hcengineering/tracker'
+  import { Milestone } from '@hcengineering/tracker'
   import { Icon, getCurrentResolvedLocation, navigate, tooltip } from '@hcengineering/ui'
   import tracker from '../../plugin'
 
-  export let value: WithLookup<Sprint>
+  export let value: WithLookup<Milestone>
   export let shouldShowAvatar: boolean = true
   export let onClick: (() => void) | undefined = undefined
   export let disabled = false
   export let inline: boolean = false
 
-  function navigateToSprint () {
+  function navigateToMilestone () {
     if (disabled) {
       return
     }
@@ -33,7 +33,7 @@
     }
 
     const loc = getCurrentResolvedLocation()
-    loc.path[4] = 'sprints'
+    loc.path[4] = 'milestones'
     loc.path[5] = value._id
     loc.path.length = 6
     loc.fragment = undefined
@@ -43,10 +43,10 @@
 
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="flex-presenter" class:inline-presenter={inline} on:click={navigateToSprint}>
+  <div class="flex-presenter" class:inline-presenter={inline} on:click={navigateToMilestone}>
     {#if !inline && shouldShowAvatar}
-      <div class="icon" use:tooltip={{ label: tracker.string.Sprint }}>
-        <Icon icon={tracker.icon.Sprint} size={'small'} />
+      <div class="icon" use:tooltip={{ label: tracker.string.Milestone }}>
+        <Icon icon={tracker.icon.Milestone} size={'small'} />
       </div>
     {/if}
     <span title={value.label} class="label nowrap">

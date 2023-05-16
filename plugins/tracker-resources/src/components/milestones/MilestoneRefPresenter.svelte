@@ -15,20 +15,18 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Sprint } from '@hcengineering/tracker'
+  import { Milestone } from '@hcengineering/tracker'
   import { ButtonKind, DatePresenter, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import tracker from '../../plugin'
-  import { getDayOfSprint } from '../../utils'
-  import TimePresenter from '../issues/timereport/TimePresenter.svelte'
-  import SprintSelector from './SprintSelector.svelte'
+  import MilestoneSelector from './MilestoneSelector.svelte'
 
-  export let value: Ref<Sprint>
+  export let value: Ref<Milestone>
   export let kind: ButtonKind = 'link'
 
-  const sprintQuery = createQuery()
-  let sprint: Sprint | undefined
-  $: sprintQuery.query(tracker.class.Sprint, { _id: value }, (res) => {
-    ;[sprint] = res
+  const milestoneQuery = createQuery()
+  let milestone: Milestone | undefined
+  $: milestoneQuery.query(tracker.class.Milestone, { _id: value }, (res) => {
+    ;[milestone] = res
   })
 
   $: twoRows = $deviceInfo.twoRows
@@ -40,28 +38,13 @@
   style:flex-direction={twoRows ? 'column' : 'row'}
 >
   <div class="flex-row-center" class:minus-margin-vSpace={kind === 'list-header'}>
-    <SprintSelector {kind} isEditable={false} enlargedText {value} />
+    <MilestoneSelector {kind} isEditable={false} enlargedText {value} />
   </div>
 
-  {#if sprint && kind === 'list-header'}
+  {#if milestone && kind === 'list-header'}
     <div class="flex-row-center" class:minus-margin-space={kind === 'list-header'} class:text-sm={twoRows}>
-      {#if sprint}
-        {@const now = Date.now()}
-        {@const sprintDaysFrom =
-          now < sprint.startDate
-            ? 0
-            : now > sprint.targetDate
-            ? getDayOfSprint(sprint.startDate, sprint.targetDate)
-            : getDayOfSprint(sprint.startDate, now)}
-        {@const sprintDaysTo = getDayOfSprint(sprint.startDate, sprint.targetDate)}
-        <DatePresenter value={sprint.startDate} kind={'transparent'} />
-        <span class="p-1"> / </span>
-        <DatePresenter value={sprint.targetDate} kind={'transparent'} />
-        <div class="w-2 min-w-2" />
-        <!-- Active sprint in time -->
-        <TimePresenter value={sprintDaysFrom} />
-        /
-        <TimePresenter value={sprintDaysTo} />
+      {#if milestone}
+        <DatePresenter value={milestone.targetDate} kind={'transparent'} />
       {/if}
     </div>
   {/if}
