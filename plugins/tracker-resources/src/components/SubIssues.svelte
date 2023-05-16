@@ -19,7 +19,7 @@
   import { DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import { Component, Issue, IssueDraft, IssueParentInfo, Project, Milestone, calcRank } from '@hcengineering/tracker'
-  import { Button, ExpandCollapse, IconAdd, Scroller, closeTooltip } from '@hcengineering/ui'
+  import { Button, ExpandCollapse, Scroller } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import tracker from '../plugin'
   import Collapsed from './icons/Collapsed.svelte'
