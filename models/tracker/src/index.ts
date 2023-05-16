@@ -1052,16 +1052,6 @@ export function createModel (builder: Builder): void {
                 component: tracker.component.Issues
               },
               {
-                id: activeId,
-                label: tracker.string.Active,
-                component: tracker.component.Active
-              },
-              {
-                id: backlogId,
-                label: tracker.string.Backlog,
-                component: tracker.component.Backlog
-              },
-              {
                 id: componentsId,
                 label: tracker.string.Components,
                 icon: tracker.icon.Components,

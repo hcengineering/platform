@@ -7,7 +7,6 @@
   import { WithLookup } from '@hcengineering/core'
   import ModeSelector from '../ModeSelector.svelte'
   import { IModeSelector } from '../../utils'
-  // import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   export let space: Ref<Space> | undefined = undefined
   export let viewlet: WithLookup<Viewlet> | undefined
@@ -24,16 +23,20 @@
       tooltip: views.$lookup?.descriptor?.label
     }
   })
-
-  // $: twoRows = $deviceInfo.twoRows
 </script>
 
-<div class="ac-header full divide" class:header-with-mode-selector={modeSelectorProps !== undefined}>
+<div
+  class="ac-header full divide"
+  class:header-with-mode-selector={modeSelectorProps !== undefined}
+  class:header-without-label={!label}
+>
   <div class="ac-header__wrap-title">
     {#if showLabelSelector}
       <slot name="label_selector" />
     {:else}
-      <span class="ac-header__title">{label}</span>
+      {#if label}
+        <span class="ac-header__title">{label}</span>
+      {/if}
       {#if modeSelectorProps !== undefined}
         <ModeSelector props={modeSelectorProps} />
       {/if}
@@ -76,5 +79,8 @@
   .header-with-mode-selector {
     padding-top: 0;
     padding-bottom: 0;
+  }
+  .header-without-label {
+    padding-left: 0;
   }
 </style>
