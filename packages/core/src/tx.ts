@@ -49,7 +49,8 @@ export interface Tx extends Doc {
 export enum WorkspaceEvent {
   UpgradeScheduled,
   Upgrade,
-  IndexingUpdate
+  IndexingUpdate,
+  SecurityChange
 }
 
 /**

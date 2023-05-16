@@ -11,7 +11,7 @@ import {
   WorkspaceId
 } from '@hcengineering/core'
 import { Response } from '@hcengineering/rpc'
-import { Pipeline } from '@hcengineering/server-core'
+import { BroadcastFunc, Pipeline } from '@hcengineering/server-core'
 import { Token } from '@hcengineering/server-token'
 
 /**
@@ -67,7 +67,7 @@ export type PipelineFactory = (
   ctx: MeasureContext,
   ws: WorkspaceId,
   upgrade: boolean,
-  broadcast: (tx: Tx[]) => void
+  broadcast: BroadcastFunc
 ) => Promise<Pipeline>
 
 /**
@@ -120,7 +120,7 @@ export interface SessionManager {
     sessionId?: string
   ) => Promise<Session>
 
-  broadcastAll: (workspace: Workspace, tx: Tx[]) => void
+  broadcastAll: (workspace: Workspace, tx: Tx[], targets?: string[]) => void
 
   close: (
     ctx: MeasureContext,

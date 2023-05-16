@@ -151,11 +151,13 @@ class TSessionManager implements SessionManager {
       console.log(token.workspace.name, 'no sessions for workspace', wsString)
     }
     // Re-create pipeline.
-    workspace.pipeline = pipelineFactory(ctx, token.workspace, true, (tx) => this.broadcastAll(workspace, tx))
+    workspace.pipeline = pipelineFactory(ctx, token.workspace, true, (tx, targets) =>
+      this.broadcastAll(workspace, tx, targets)
+    )
     return await workspace.pipeline
   }
 
-  broadcastAll (workspace: Workspace, tx: Tx[]): void {
+  broadcastAll (workspace: Workspace, tx: Tx[], targets?: string[]): void {
     if (workspace?.upgrade ?? false) {
       return
     }
@@ -163,6 +165,7 @@ class TSessionManager implements SessionManager {
     const sessions = [...workspace.sessions.values()]
     function send (): void {
       for (const session of sessions.splice(0, 1)) {
+        if (targets !== undefined && !targets.includes(session.session.getUser())) continue
         for (const _tx of tx) {
           void session.socket.send(ctx, { result: _tx }, session.session.binaryResponseMode, false)
         }
@@ -180,7 +183,9 @@ class TSessionManager implements SessionManager {
     const upgrade = token.extra?.model === 'upgrade'
     const workspace: Workspace = {
       id: generateId(),
-      pipeline: pipelineFactory(ctx, token.workspace, upgrade, (tx) => this.broadcastAll(workspace, tx)),
+      pipeline: pipelineFactory(ctx, token.workspace, upgrade, (tx, targets) =>
+        this.broadcastAll(workspace, tx, targets)
+      ),
       sessions: new Map(),
       upgrade
     }

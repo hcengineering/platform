@@ -29,7 +29,7 @@ import core, {
   TxCUD
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
+import { BroadcastFunc, Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
 import { BaseMiddleware } from './base'
 
 const configurationAccountEmail = '#configurator@hc.engineering'
@@ -45,6 +45,7 @@ export class ConfigurationMiddleware extends BaseMiddleware implements Middlewar
 
   static async create (
     ctx: MeasureContext,
+    broadcast: BroadcastFunc,
     storage: ServerStorage,
     next?: Middleware
   ): Promise<ConfigurationMiddleware> {

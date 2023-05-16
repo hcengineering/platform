@@ -40,7 +40,10 @@
   $: if (value.category === tracker.issueStatusCategory.Started) {
     const _s = [
       ...$statusStore.filter(
-        (it) => it.ofAttribute === value.ofAttribute && it.category === tracker.issueStatusCategory.Started
+        (it) =>
+          it.ofAttribute === value.ofAttribute &&
+          it.category === tracker.issueStatusCategory.Started &&
+          it.space === value.space
       )
     ]
     _s.sort((a, b) => a.rank.localeCompare(b.rank))
