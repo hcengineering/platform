@@ -27,16 +27,23 @@
   export let currentSpecial: string | undefined
   export let getActions: Function
   export let deselect: boolean = false
+
+  const COLLAPSED = 'COLLAPSED'
+  const getSpaceCollapsedKey = () => `${space._id}_collapsed`
+
+  $: collapsed = localStorage.getItem(getSpaceCollapsedKey()) === COLLAPSED
 </script>
 
 {#if model.specials}
   <TreeNode
+    {collapsed}
     icon={space?.icon === tracker.component.IconWithEmojii ? IconWithEmojii : space?.icon ?? model.icon}
     iconProps={space?.icon === tracker.component.IconWithEmojii
       ? { icon: space.color }
       : { fill: space.color !== undefined ? getPlatformColor(space.color) : getPlatformColorForText(space.name) }}
     title={space.name}
     actions={() => getActions(space)}
+    on:click={() => localStorage.setItem(getSpaceCollapsedKey(), collapsed ? '' : COLLAPSED)}
   >
     {#each model.specials as special}
       <NavLink space={space._id} special={special.id}>
