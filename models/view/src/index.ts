@@ -823,6 +823,17 @@ export function createModel (builder: Builder): void {
     view.class.FilterMode,
     core.space.Model,
     {
+      label: view.string.Today,
+      result: view.function.FilterDateYesterday,
+      disableValueSelector: true
+    },
+    view.filter.FilterDateYesterday
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
       label: view.string.ThisWeek,
       result: view.function.FilterDateWeek,
       disableValueSelector: true

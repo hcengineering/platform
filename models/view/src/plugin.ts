@@ -108,6 +108,7 @@ export default mergeIds(viewId, view, {
     FilterNestedDontMatchResult: '' as FilterFunction,
     FilterDateOutdated: '' as FilterFunction,
     FilterDateToday: '' as FilterFunction,
+    FilterDateYesterday: '' as FilterFunction,
     FilterDateWeek: '' as FilterFunction,
     FilterDateNextWeek: '' as FilterFunction,
     FilterDateMonth: '' as FilterFunction,

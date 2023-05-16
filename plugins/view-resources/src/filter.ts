@@ -98,17 +98,24 @@ export async function dateOutdated (filter: Filter): Promise<ObjQueryType<any>> 
 }
 
 export async function dateToday (filter: Filter): Promise<ObjQueryType<any>> {
-  const todayStart = new Date().setUTCHours(0, 0, 0, 0)
-  const todayEnd = new Date().setUTCHours(23, 59, 59, 999)
+  const todayStart = new Date().setHours(0, 0, 0, 0)
+  const todayEnd = new Date().setHours(23, 59, 59, 999)
   return { $gte: todayStart, $lte: todayEnd }
+}
+
+export async function dateYesterday (filter: Filter): Promise<ObjQueryType<any>> {
+  const yesterday = new Date(new Date().setDate(new Date().getDate() - 1))
+  const yesterdayStart = new Date(yesterday).setHours(0, 0, 0, 0)
+  const yesterdayEnd = new Date(yesterday).setHours(23, 59, 59, 999)
+  return { $gte: yesterdayStart, $lte: yesterdayEnd }
 }
 
 export async function dateWeek (filter: Filter): Promise<ObjQueryType<any>> {
   const day = new Date().getDay()
   const startDayDiff = day === 0 ? 6 : day - 1
   const endDayDiff = 7 - startDayDiff
-  const weekStart = new Date(new Date().setUTCDate(new Date().getUTCDate() - startDayDiff)).setUTCHours(0, 0, 0, 0)
-  const weekEnd = new Date(new Date().setUTCDate(new Date().getUTCDate() + endDayDiff)).setUTCHours(23, 59, 59, 999)
+  const weekStart = new Date(new Date().setDate(new Date().getDate() - startDayDiff)).setHours(0, 0, 0, 0)
+  const weekEnd = new Date(new Date().setDate(new Date().getDate() + endDayDiff)).setHours(23, 59, 59, 999)
   return { $gte: weekStart, $lte: weekEnd }
 }
 
@@ -116,24 +123,24 @@ export async function dateNextWeek (filter: Filter): Promise<ObjQueryType<any>> 
   const day = new Date().getDay()
   const startDayDiff = day === 0 ? 6 : day - 1
   const endDayDiff = 7 - startDayDiff
-  const weekStart = new Date(new Date().setUTCDate(new Date().getUTCDate() - startDayDiff + 7)).setUTCHours(0, 0, 0, 0)
-  const weekEnd = new Date(new Date().setUTCDate(new Date().getUTCDate() + endDayDiff + 7)).setUTCHours(23, 59, 59, 999)
+  const weekStart = new Date(new Date().setDate(new Date().getDate() - startDayDiff + 7)).setHours(0, 0, 0, 0)
+  const weekEnd = new Date(new Date().setDate(new Date().getDate() + endDayDiff + 7)).setHours(23, 59, 59, 999)
   return { $gte: weekStart, $lte: weekEnd }
 }
 
 export async function dateMonth (filter: Filter): Promise<ObjQueryType<any>> {
   const today = new Date()
   const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
-  const monthStart = new Date(new Date().setUTCDate(1)).setUTCHours(0, 0, 0, 0)
-  const monthEnd = lastDayOfMonth.setUTCHours(23, 59, 59, 999)
+  const monthStart = new Date(new Date().setDate(1)).setHours(0, 0, 0, 0)
+  const monthEnd = lastDayOfMonth.setHours(23, 59, 59, 999)
   return { $gte: monthStart, $lte: monthEnd }
 }
 
 export async function dateNextMonth (filter: Filter): Promise<ObjQueryType<any>> {
   const today = new Date()
   const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 2, 0)
-  const monthStart = new Date(new Date().setUTCMonth(new Date().getUTCMonth() + 1, 1)).setUTCHours(0, 0, 0, 0)
-  const monthEnd = lastDayOfMonth.setUTCHours(23, 59, 59, 999)
+  const monthStart = new Date(new Date().setMonth(new Date().getMonth() + 1, 1)).setHours(0, 0, 0, 0)
+  const monthEnd = lastDayOfMonth.setHours(23, 59, 59, 999)
   return { $gte: monthStart, $lte: monthEnd }
 }
 
@@ -143,13 +150,13 @@ export async function dateNotSpecified (filter: Filter): Promise<ObjQueryType<an
 
 export async function dateCustom (filter: Filter): Promise<ObjQueryType<any>> {
   if (filter.value.length === 1) {
-    const todayStart = new Date(filter.value[0]).setUTCHours(0, 0, 0, 0)
-    const todayEnd = new Date(filter.value[0]).setUTCHours(23, 59, 59, 999)
+    const todayStart = new Date(filter.value[0]).setHours(0, 0, 0, 0)
+    const todayEnd = new Date(filter.value[0]).setHours(23, 59, 59, 999)
     return { $gte: todayStart, $lte: todayEnd }
   }
   if (filter.value.length === 2) {
-    const todayStart = new Date(filter.value[0]).setUTCHours(0, 0, 0, 0)
-    const todayEnd = new Date(filter.value[1]).setUTCHours(23, 59, 59, 999)
+    const todayStart = new Date(filter.value[0]).setHours(0, 0, 0, 0)
+    const todayEnd = new Date(filter.value[1]).setHours(23, 59, 59, 999)
     return { $gte: todayStart, $lte: todayEnd }
   }
   return await dateNotSpecified(filter)
