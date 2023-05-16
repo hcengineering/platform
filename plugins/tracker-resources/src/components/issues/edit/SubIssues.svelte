@@ -14,19 +14,19 @@
 -->
 <script lang="ts">
   import { Ref, toIdMap } from '@hcengineering/core'
-  import { createQuery, draftsStore } from '@hcengineering/presentation'
+  import { createQuery } from '@hcengineering/presentation'
   import { Issue, Project, trackerId } from '@hcengineering/tracker'
   import {
     Button,
     Chevron,
     ExpandCollapse,
     IconAdd,
-    IconArrowRight,
     IconScaleFull,
     Label,
     closeTooltip,
     getCurrentResolvedLocation,
-    navigate
+    navigate,
+    showPopup
   } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
   import {
@@ -37,7 +37,6 @@
     viewOptionStore
   } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
-  import CreateSubIssue from './CreateSubIssue.svelte'
   import SubIssueList from './SubIssueList.svelte'
   import { afterUpdate } from 'svelte'
 
@@ -45,9 +44,7 @@
   export let projects: Map<Ref<Project>, Project>
   export let shouldSaveDraft: boolean = false
 
-  let subIssueEditorRef: HTMLDivElement
   let isCollapsed = false
-  let isCreating = $draftsStore[`${issue._id}_subIssue`] !== undefined
 
   $: hasSubIssues = issue.subIssues > 0
 
@@ -61,6 +58,10 @@
   let _projects = projects
 
   const projectsQuery = createQuery()
+
+  function openNewIssueDialog (): void {
+    showPopup(tracker.component.CreateIssue, { space: issue.space, parentIssue: issue, shouldSaveDraft }, 'top')
+  }
 
   $: if (projects === undefined) {
     projectsQuery.query(tracker.class.Project, {}, async (result) => {
@@ -78,7 +79,6 @@
   afterUpdate(() => {
     if (lastIssueId !== issue._id) {
       lastIssueId = issue._id
-      isCreating = $draftsStore[`${issue._id}_subIssue`] !== undefined
     }
   })
 </script>
@@ -91,7 +91,6 @@
       kind="transparent"
       on:click={() => {
         isCollapsed = !isCollapsed
-        isCreating = false
       }}
     >
       <svelte:fragment slot="content">
@@ -130,17 +129,16 @@
     <Button
       id="add-sub-issue"
       width="min-content"
-      icon={hasSubIssues ? (isCreating ? IconArrowRight : IconAdd) : undefined}
+      icon={hasSubIssues ? IconAdd : undefined}
       label={hasSubIssues ? undefined : tracker.string.AddSubIssues}
       labelParams={{ subIssues: 0 }}
       kind={'transparent'}
       size={'small'}
       showTooltip={{ label: tracker.string.AddSubIssues, props: { subIssues: 1 }, direction: 'bottom' }}
       on:click={() => {
-        closeTooltip()
-        isCreating && subIssueEditorRef && subIssueEditorRef.scrollIntoView({ behavior: 'smooth' })
-        isCreating = true
         isCollapsed = false
+        closeTooltip()
+        openNewIssueDialog()
       }}
     />
   </div>
@@ -161,21 +159,6 @@
       </ExpandCollapse>
     {/if}
   {/if}
-  <ExpandCollapse isExpanded={!isCollapsed}>
-    {#if isCreating}
-      {@const project = projects.get(issue.space)}
-      {#if project !== undefined}
-        <div class="pt-4" bind:this={subIssueEditorRef}>
-          <CreateSubIssue
-            parentIssue={issue}
-            {shouldSaveDraft}
-            currentProject={project}
-            on:close={() => (isCreating = false)}
-          />
-        </div>
-      {/if}
-    {/if}
-  </ExpandCollapse>
 </div>
 
 <style lang="scss">
