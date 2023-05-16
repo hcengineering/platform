@@ -29,8 +29,7 @@
     "eslint": "^8.26.0",
     "prettier": "^2.7.1",
     "svelte-check": "3.2.0",
-    "typescript": "^4.3.5",
-    "@types/lodash.debounce": "~4.0.7"
+    "typescript": "^4.3.5"
   },
   "dependencies": {
     "svelte": "3.55.1",
@@ -47,7 +46,6 @@
     "@hcengineering/presentation": "^0.6.2",
     "@hcengineering/setting": "^0.6.7",
     "@hcengineering/text-editor": "^0.6.0",
-    "fast-equals": "^2.0.3",
-    "lodash.debounce": "~4.0.8"
+    "fast-equals": "^2.0.3"
   }
 }
