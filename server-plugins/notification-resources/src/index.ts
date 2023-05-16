@@ -421,6 +421,45 @@ async function isShouldNotify (
   }
 }
 
+function pushNotification (
+  control: TriggerControl,
+  res: Tx[],
+  target: Ref<Account>,
+  object: Doc,
+  originTx: TxCUD<Doc>,
+  docUpdates: DocUpdates[]
+): void {
+  const current = docUpdates.find((p) => p.user === target)
+  if (current === undefined) {
+    res.push(
+      control.txFactory.createTxCreateDoc(notification.class.DocUpdates, object.space, {
+        user: target,
+        attachedTo: object._id,
+        attachedToClass: object._class,
+        hidden: false,
+        lastTx: originTx._id,
+        lastTxTime: originTx.modifiedOn,
+        txes: [[originTx._id, originTx.modifiedOn]]
+      })
+    )
+  } else {
+    res.push(
+      control.txFactory.createTxUpdateDoc(current._class, current.space, current._id, {
+        $push: {
+          txes: [originTx._id, originTx.modifiedOn]
+        }
+      })
+    )
+    res.push(
+      control.txFactory.createTxUpdateDoc(current._class, current.space, current._id, {
+        lastTx: originTx._id,
+        lastTxTime: originTx.modifiedOn,
+        hidden: false
+      })
+    )
+  }
+}
+
 async function getNotificationTxes (
   control: TriggerControl,
   object: Doc,
@@ -432,35 +471,7 @@ async function getNotificationTxes (
   const res: Tx[] = []
   const allowed = await isShouldNotify(control, originTx, object, target, isSpace)
   if (allowed.allowed) {
-    const current = docUpdates.find((p) => p.user === target)
-    if (current === undefined) {
-      res.push(
-        control.txFactory.createTxCreateDoc(notification.class.DocUpdates, object.space, {
-          user: target,
-          attachedTo: object._id,
-          attachedToClass: object._class,
-          hidden: false,
-          lastTx: originTx._id,
-          lastTxTime: originTx.modifiedOn,
-          txes: [[originTx._id, originTx.modifiedOn]]
-        })
-      )
-    } else {
-      res.push(
-        control.txFactory.createTxUpdateDoc(current._class, current.space, current._id, {
-          $push: {
-            txes: [originTx._id, originTx.modifiedOn]
-          }
-        })
-      )
-      res.push(
-        control.txFactory.createTxUpdateDoc(current._class, current.space, current._id, {
-          lastTx: originTx._id,
-          lastTxTime: originTx.modifiedOn,
-          hidden: false
-        })
-      )
-    }
+    pushNotification(control, res, target, object, originTx, docUpdates)
   }
   for (const type of allowed.emails) {
     const emailTx = await createEmailNotificationTxes(
@@ -572,9 +583,12 @@ export async function collaboratorDocHandler (
       if (tx.space === core.space.DerivedTx) return []
       return await createCollaboratorDoc(tx as TxCreateDoc<Doc>, control, originTx ?? tx)
     case core.class.TxUpdateDoc:
-    case core.class.TxMixin:
+    case core.class.TxMixin: {
       if (tx.space === core.space.DerivedTx) return []
-      return await updateCollaboratorDoc(tx as TxUpdateDoc<Doc>, control, originTx ?? tx)
+      let res = await updateCollaboratorDoc(tx as TxUpdateDoc<Doc>, control, originTx ?? tx)
+      res = res.concat(await updateCollaboratorsMixin(tx as TxMixin<Doc, Collaborators>, control, originTx ?? tx))
+      return res
+    }
     case core.class.TxRemoveDoc:
       return await removeCollaboratorDoc(tx as TxRemoveDoc<Doc>, control)
     case core.class.TxCollectionCUD:
@@ -582,6 +596,60 @@ export async function collaboratorDocHandler (
   }
 
   return []
+}
+
+async function updateCollaboratorsMixin (
+  tx: TxMixin<Doc, Collaborators>,
+  control: TriggerControl,
+  originTx: TxCUD<Doc>
+): Promise<Tx[]> {
+  if (tx._class !== core.class.TxMixin) return []
+  if (!control.hierarchy.isDerived(tx.mixin, notification.mixin.Collaborators)) return []
+  const res: Tx[] = []
+  if (tx.attributes.collaborators !== undefined) {
+    const createTx = control.hierarchy.isDerived(tx.objectClass, core.class.AttachedDoc)
+      ? (
+          await control.findAll(core.class.TxCollectionCUD, {
+            'tx.objectId': tx.objectId,
+            'tx._class': core.class.TxCreateDoc
+          })
+        )[0]
+      : (
+          await control.findAll(core.class.TxCreateDoc, {
+            objectId: tx.objectId
+          })
+        )[0]
+    const mixinTxes = await control.findAll(core.class.TxMixin, {
+      objectId: tx.objectId
+    })
+    const prevDoc = TxProcessor.buildDoc2Doc([createTx, ...mixinTxes]) as Collaborators
+    const set = new Set(prevDoc?.collaborators ?? [])
+    const newCollabs: Ref<Account>[] = []
+    for (const collab of tx.attributes.collaborators) {
+      if (!set.has(collab)) {
+        if (
+          await isAllowed(
+            control,
+            collab as Ref<EmployeeAccount>,
+            notification.ids.CollaboratoAddNotification,
+            notification.providers.PlatformNotification
+          )
+        ) {
+          newCollabs.push(collab)
+        }
+      }
+    }
+    if (newCollabs.length > 0) {
+      const docUpdates = await control.findAll(notification.class.DocUpdates, {
+        user: { $in: newCollabs },
+        attachedTo: tx.objectId
+      })
+      for (const collab of newCollabs) {
+        pushNotification(control, res, collab, prevDoc, originTx, docUpdates)
+      }
+    }
+  }
+  return res
 }
 
 async function collectionCollabDoc (tx: TxCollectionCUD<Doc, AttachedDoc>, control: TriggerControl): Promise<Tx[]> {
