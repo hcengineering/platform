@@ -99,7 +99,6 @@
     />
   </div>
   <svelte:fragment slot="pool">
-    <div class="flex-row-center flex-wrap">
       <ChannelsDropdown
         bind:value={channels}
         focusIndex={10}
@@ -116,7 +115,6 @@
         on:update
         extraProps={{ showNavigate: false }}
       />
-    </div>
   </svelte:fragment>
   <svelte:fragment slot="footer">
     {#if matches.length > 0}
