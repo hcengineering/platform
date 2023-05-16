@@ -19,27 +19,21 @@
   import { DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import { Component, Issue, IssueDraft, IssueParentInfo, Project, Sprint, calcRank } from '@hcengineering/tracker'
-  import { Button, ExpandCollapse, IconAdd, Scroller, closeTooltip } from '@hcengineering/ui'
+  import { Button, ExpandCollapse, Scroller } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import tracker from '../plugin'
   import Collapsed from './icons/Collapsed.svelte'
   import Expanded from './icons/Expanded.svelte'
-  import DraftIssueChildEditor from './templates/DraftIssueChildEditor.svelte'
   import DraftIssueChildList from './templates/DraftIssueChildList.svelte'
 
-  export let parendIssueId: Ref<Issue>
   export let projectId: Ref<Project>
   export let project: Project | undefined
   export let sprint: Ref<Sprint> | null = null
   export let component: Ref<Component> | null = null
   export let subIssues: IssueDraft[] = []
-  export let shouldSaveDraft: boolean = false
-  let lastProject = project
 
+  let lastProject = project
   let isCollapsed = false
-  $: isCreatingMode = $draftsStore[`${parendIssueId}_subIssue`] !== undefined
-  let isManualCreating = false
-  $: isCreating = isCreatingMode || isManualCreating
 
   async function handleIssueSwap (ev: CustomEvent<{ fromIndex: number; toIndex: number }>) {
     if (subIssues) {
@@ -65,6 +59,7 @@
 
   const client = getClient()
 
+  // TODO: move to utils
   export async function save (parents: IssueParentInfo[], _id: Ref<Doc>) {
     if (project === undefined) return
     saved = true
@@ -162,6 +157,7 @@
     }
   })
 
+  // TODO: move to utils
   export async function removeDraft (_id: string, removeFiles: boolean = false): Promise<void> {
     const draftAttachments = $draftsStore[`${_id}_attachments`]
     DraftController.remove(`${_id}_attachments`)
@@ -172,18 +168,11 @@
       }
     }
   }
-
-  export function removeChildDraft () {
-    draftChild?.removeDraft()
-  }
-
-  $: hasSubIssues = subIssues.length > 0
-
-  let draftChild: DraftIssueChildEditor
 </script>
 
-<div class="flex-between clear-mins">
-  {#if hasSubIssues}
+<!-- TODO: check if sub issues list is empty in a parent component -->
+{#if subIssues.length > 0}
+  <div class="flex-between clear-mins">
     <Button
       width="min-content"
       icon={isCollapsed ? Collapsed : Expanded}
@@ -191,30 +180,10 @@
       kind="transparent"
       label={tracker.string.SubIssuesList}
       labelParams={{ subIssues: subIssues.length }}
-      on:click={() => {
-        isCollapsed = !isCollapsed
-        isCreating = false
-      }}
+      on:click={() => (isCollapsed = !isCollapsed)}
     />
-  {/if}
+  </div>
 
-  <Button
-    id="add-sub-issue"
-    width="min-content"
-    icon={hasSubIssues ? IconAdd : undefined}
-    label={hasSubIssues ? undefined : tracker.string.AddSubIssues}
-    labelParams={{ subIssues: 0 }}
-    kind={'transparent'}
-    size={'small'}
-    showTooltip={{ label: tracker.string.AddSubIssues, props: { subIssues: 1 } }}
-    on:click={() => {
-      closeTooltip()
-      isManualCreating = true
-      isCollapsed = false
-    }}
-  />
-</div>
-{#if hasSubIssues}
   <ExpandCollapse isExpanded={!isCollapsed} on:changeContent>
     <div class="flex-col flex-no-shrink max-h-30 list clear-mins" class:collapsed={isCollapsed}>
       <Scroller>
@@ -228,28 +197,6 @@
         />
       </Scroller>
     </div>
-  </ExpandCollapse>
-{/if}
-{#if isCreating && project}
-  <ExpandCollapse isExpanded={!isCollapsed} on:changeContent>
-    <DraftIssueChildEditor
-      bind:this={draftChild}
-      {parendIssueId}
-      {project}
-      {component}
-      {sprint}
-      {shouldSaveDraft}
-      on:close={() => {
-        isManualCreating = false
-      }}
-      on:create={(evt) => {
-        if (subIssues === undefined) {
-          subIssues = []
-        }
-        subIssues = [...subIssues, evt.detail]
-      }}
-      on:changeContent
-    />
   </ExpandCollapse>
 {/if}
 
