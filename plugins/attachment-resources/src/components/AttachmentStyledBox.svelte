@@ -57,7 +57,7 @@
     const sel = listProvider.docs()[selected] as Attachment
     if (sel !== undefined && attachmentPopupId !== '') {
       listProvider.updateFocus(sel)
-      updatePopup(attachmentPopupId, { file: sel.file, name: sel.name, contentType: sel.type })
+      updatePopup(attachmentPopupId, { props: { file: sel.file, name: sel.name, contentType: sel.type } })
     }
   })
   $: listProvider.update(Array.from(attachments.values()).filter((attachment) => attachment.type.startsWith('image/')))
@@ -369,11 +369,7 @@
       {#each Array.from(attachments.values()) as attachment, index}
         <div class="item flex-center flex-no-shrink clear-mins">
           {#if useAttachmentPreview}
-            <AttachmentPreview
-              value={attachment}
-              {listProvider}
-              on:open={(res) => (attachmentPopupId = res.detail)}
-            />
+            <AttachmentPreview value={attachment} {listProvider} on:open={(res) => (attachmentPopupId = res.detail)} />
           {:else}
             <AttachmentPresenter
               value={attachment}
