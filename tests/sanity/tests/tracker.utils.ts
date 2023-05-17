@@ -10,6 +10,8 @@ export interface IssueProps {
   assignee?: string
   component?: string
   milestone?: string
+  estimation?: string
+  dueDate?: string
 }
 
 export enum ViewletSelectors {
@@ -45,15 +47,15 @@ export async function setViewOrder (page: Page, orderName: string): Promise<void
   await page.keyboard.press('Escape')
 }
 
-export async function fillIssueForm (page: Page, props: IssueProps, issue: boolean): Promise<void> {
+export async function fillIssueForm (page: Page, props: IssueProps): Promise<void> {
   const { name, description, status, assignee, labels, priority, component, milestone } = props
-  const af = issue ? 'form ' : '[id="sub-issue-child-editor"] '
+  const af = 'form '
   const issueTitle = page.locator(af + '[placeholder="Issue\\ title"]')
   await issueTitle.fill(name)
   await issueTitle.evaluate((e) => e.blur())
 
   if (description !== undefined) {
-    const pm = await page.locator(af + '.ProseMirror')
+    const pm = page.locator(af + '.ProseMirror')
     await pm.fill(description)
     await pm.evaluate((e) => e.blur())
   }
@@ -89,7 +91,7 @@ export async function fillIssueForm (page: Page, props: IssueProps, issue: boole
 export async function createIssue (page: Page, props: IssueProps): Promise<void> {
   await page.waitForSelector('span:has-text("Default")')
   await page.click('button:has-text("New issue")')
-  await fillIssueForm(page, props, true)
+  await fillIssueForm(page, props)
   await page.click('form button:has-text("Create issue")')
   await page.waitForSelector('form.antiCard', { state: 'detached' })
 }
@@ -118,8 +120,8 @@ export async function createMilestone (page: Page, milestoneName: string): Promi
 
 export async function createSubissue (page: Page, props: IssueProps): Promise<void> {
   await page.click('button:has-text("Add sub-issue")')
-  await fillIssueForm(page, props, false)
-  await page.click('button:has-text("Save")')
+  await fillIssueForm(page, props)
+  await page.click('button:has-text("Create issue")')
 }
 
 export async function createLabel (page: Page, label: string): Promise<void> {
@@ -161,6 +163,34 @@ export async function checkIssue (page: Page, props: IssueProps): Promise<void> 
   }
   if (milestone !== undefined) {
     await expect(asideLocator).toContainText(milestone)
+  }
+}
+
+export async function checkIssueDraft (page: Page, props: IssueProps): Promise<void> {
+  await expect(page.locator('#issue-name')).toHaveText(props.name)
+
+  if (props.description !== undefined) {
+    await expect(page.locator('#issue-description')).toHaveText(props.description)
+  }
+
+  if (props.status !== undefined) {
+    await expect(page.locator('#status-editor')).toHaveText(props.status)
+  }
+
+  if (props.priority !== undefined) {
+    await expect(page.locator('#priority-editor')).toHaveText(props.priority)
+  }
+
+  if (props.assignee !== undefined) {
+    await expect(page.locator('#assignee-editor')).toHaveText(props.assignee)
+  }
+
+  if (props.estimation !== undefined) {
+    await expect(page.locator('#estimation-editor')).toHaveText(props.estimation)
+  }
+
+  if (props.dueDate !== undefined) {
+    await expect(page.locator('.antiCard >> .datetime-button')).toContainText(props.dueDate)
   }
 }
 

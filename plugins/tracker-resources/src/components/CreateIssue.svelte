@@ -404,7 +404,6 @@
     draftController.remove()
     resetObject()
     descriptionBox?.removeDraft(false)
-    subIssuesComponent.removeChildDraft()
   }
 
   async function showMoreActions (ev: Event) {
@@ -518,7 +517,6 @@
           if (result === true) {
             dispatch('close')
             resetObject()
-            subIssuesComponent.removeChildDraft()
             draftController.remove()
             descriptionBox?.removeDraft(true)
           }
@@ -624,11 +622,9 @@
   <SubIssues
     bind:this={subIssuesComponent}
     projectId={_space}
-    parendIssueId={object._id}
     project={currentProject}
     milestone={object.milestone}
     component={object.component}
-    {shouldSaveDraft}
     bind:subIssues={object.subIssues}
   />
   <svelte:fragment slot="pool">
