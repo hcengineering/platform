@@ -14,7 +14,19 @@
 // limitations under the License.
 //
 
-import { ArrOf, Builder, Collection, Mixin, Model, Prop, ReadOnly, TypeRef, TypeString, UX } from '@hcengineering/model'
+import {
+  ArrOf,
+  Builder,
+  Collection,
+  Hidden,
+  Mixin,
+  Model,
+  Prop,
+  ReadOnly,
+  TypeRef,
+  TypeString,
+  UX
+} from '@hcengineering/model'
 import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import bitrix from './plugin'
 
@@ -36,8 +48,10 @@ const DOMAIN_BITRIX = 'bitrix' as Domain
 @UX(getEmbeddedLabel('Bitrix'))
 export class TBitrixSyncDoc extends TDoc implements BitrixSyncDoc {
   type!: string
+
   @Prop(TypeString(), getEmbeddedLabel('BitrixId'))
   @ReadOnly()
+  @Hidden()
     bitrixId!: string
 }
 
