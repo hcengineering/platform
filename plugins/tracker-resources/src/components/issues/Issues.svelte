@@ -13,14 +13,62 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@hcengineering/core'
-  import { Project } from '@hcengineering/tracker'
+  import { DocumentQuery, Ref } from '@hcengineering/core'
+  import { Issue, Project } from '@hcengineering/tracker'
   import tracker from '../../plugin'
   import IssuesView from './IssuesView.svelte'
+  import { IntlString } from '@hcengineering/platform'
+  import { createQuery } from '@hcengineering/presentation'
+  import { IModeSelector } from '../../utils'
 
   export let currentSpace: Ref<Project>
 
-  $: query = { space: currentSpace }
+  const config: [string, IntlString, object][] = [
+    ['all', tracker.string.All, {}],
+    ['active', tracker.string.Active, {}],
+    ['backlog', tracker.string.Backlog, {}]
+  ]
+
+  $: all = { space: currentSpace }
+
+  const activeStatusQuery = createQuery()
+  let active: DocumentQuery<Issue>
+  $: activeStatusQuery.query(
+    tracker.class.IssueStatus,
+    {
+      category: { $in: [tracker.issueStatusCategory.Unstarted, tracker.issueStatusCategory.Started] },
+      space: currentSpace
+    },
+    (result) => {
+      active = { status: { $in: result.map(({ _id }) => _id) }, space: currentSpace }
+    }
+  )
+
+  const backlogStatusQuery = createQuery()
+  let backlog: DocumentQuery<Issue> = {}
+  $: backlogStatusQuery.query(
+    tracker.class.IssueStatus,
+    { category: tracker.issueStatusCategory.Backlog, space: currentSpace },
+    (result) => {
+      backlog = { status: { $in: result.map(({ _id }) => _id) }, space: currentSpace }
+    }
+  )
+
+  let [[mode]] = config
+  function handleChangeMode (newMode: string) {
+    if (newMode === mode) return
+    mode = newMode
+  }
+
+  function getQuery (mode: string, queries: { [key: string]: DocumentQuery<Issue> }) {
+    return { ...queries[mode], '$lookup.space.archived': false }
+  }
+  $: query = getQuery(mode, { all, active, backlog })
+  $: modeSelectorProps = {
+    config,
+    mode,
+    onChange: handleChangeMode
+  } as IModeSelector
 </script>
 
-<IssuesView {query} space={currentSpace} title={tracker.string.Issues} />
+<IssuesView {query} space={currentSpace} title={tracker.string.Issues} {modeSelectorProps} />
