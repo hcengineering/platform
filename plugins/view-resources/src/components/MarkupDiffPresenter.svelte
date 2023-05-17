@@ -18,7 +18,7 @@
   import { ShowMore } from '@hcengineering/ui'
 
   export let value: string | undefined
-  export let compareValue: string | undefined = undefined
+  export let prevValue: string | undefined = undefined
   export let showOnlyDiff: boolean = false
 
   function removeSimilarLines (str1: string | undefined, str2: string | undefined) {
@@ -35,14 +35,14 @@
       }
     }
     value = result1
-    compareValue = result2
+    prevValue = result2
   }
 
-  $: showOnlyDiff && removeSimilarLines(value, compareValue)
+  $: showOnlyDiff && removeSimilarLines(value, prevValue)
 </script>
 
 <ShowMore>
-  {#key [value, compareValue]}
-    <CollaborationDiffViewer content={value ?? ''} comparedVersion={compareValue ?? ''} noButton readonly />
+  {#key [value, prevValue]}
+    <CollaborationDiffViewer content={value ?? ''} comparedVersion={prevValue ?? ''} noButton readonly />
   {/key}
 </ShowMore>
