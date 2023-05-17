@@ -79,7 +79,7 @@
 </script>
 
 <div
-  class="popupPanel"
+  class="popupPanel panel"
   class:embedded
   use:resizeObserver={(element) => {
     panelWidth = element.clientWidth
