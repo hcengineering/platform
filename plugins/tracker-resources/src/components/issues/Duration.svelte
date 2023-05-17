@@ -47,6 +47,6 @@
   $: formatTime(value)
 </script>
 
-<span style="white-space: nowrap;">
+<span class="textPadding" style="white-space: nowrap;">
   {time}
 </span>

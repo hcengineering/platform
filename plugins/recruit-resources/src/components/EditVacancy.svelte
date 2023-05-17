@@ -120,21 +120,19 @@
         </div>
       {/if}
     </svelte:fragment>
+
+    <svelte:fragment slot="actions">
+      <Button
+        icon={IconMixin}
+        kind={'transparent'}
+        shape={'round'}
+        selected={showAllMixins}
+        on:click={() => {
+          showAllMixins = !showAllMixins
+        }}
+      />
+    </svelte:fragment>
     <svelte:fragment slot="attributes" let:direction={dir}>
-      <div class="flex flex-reverse flex-no-shrink clear-mins">
-        <Button
-          kind={'transparent'}
-          shape={'round'}
-          selected={showAllMixins}
-          on:click={() => {
-            showAllMixins = !showAllMixins
-          }}
-        >
-          <svelte:fragment slot="content">
-            <IconMixin size={'small'} />
-          </svelte:fragment>
-        </Button>
-      </div>
       {#if dir === 'column'}
         <DocAttributeBar
           {object}

@@ -2,13 +2,14 @@
   import core, { Ref, Timestamp, Tx, TxCollectionCUD, TxCreateDoc, TxUpdateDoc, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus } from '@hcengineering/tracker'
-  import { Label, ticker } from '@hcengineering/ui'
+  import { Label, ticker, Row } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import { statusStore } from '@hcengineering/presentation'
   import Duration from './Duration.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
 
   export let issue: Issue
+  export let accentHeader: boolean = false
 
   const query = createQuery()
 
@@ -86,20 +87,12 @@
   $: updateStatus(txes, $statusStore.byId, $ticker)
 </script>
 
-<div class="flex-row mt-4 mb-4">
-  <span class="content-dark-color"><Label label={tracker.string.StatusHistory} />:</span>
-  <table class="ml-2">
-    {#each displaySt as st}
-      <tr>
-        <td class="flex-row-center mt-2 mb-2">
-          <StatusPresenter value={st.status} />
-        </td>
-        <td>
-          <div class="ml-8 mr-2">
-            <Duration value={st.duration} />
-          </div>
-        </td>
-      </tr>
-    {/each}
-  </table>
-</div>
+<Row>
+  <span class="label" class:fs-bold={accentHeader} class:content-dark-color={accentHeader}>
+    <Label label={tracker.string.StatusHistory} />:
+  </span>
+</Row>
+{#each displaySt as st}
+  <StatusPresenter value={st.status} />
+  <Duration value={st.duration} />
+{/each}

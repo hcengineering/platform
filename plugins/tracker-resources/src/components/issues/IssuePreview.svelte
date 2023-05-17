@@ -18,9 +18,9 @@
   import chunter from '@hcengineering/chunter'
   import { CommentPopup } from '@hcengineering/chunter-resources'
   import { Ref } from '@hcengineering/core'
-  import { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
+  import { createQuery, getClient, MessageViewer, IconForward } from '@hcengineering/presentation'
   import { Issue, Project } from '@hcengineering/tracker'
-  import { Label, resizeObserver, Scroller } from '@hcengineering/ui'
+  import { Label, Scroller, resizeObserver } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import AssigneeEditor from './AssigneeEditor.svelte'
   import IssueStatusActivity from './IssueStatusActivity.svelte'
@@ -50,8 +50,7 @@
   $: issueName = currentProject && issue && `${currentProject.identifier}-${issue.number}`
 
   const limit: number = 350
-
-  let cHeight: number
+  let cHeight: number = 0
 
   let parent: Issue | undefined
 
@@ -66,73 +65,87 @@
   $: getParent(issue?.attachedTo as Ref<Issue>)
 </script>
 
-<div class="flex">
-  <Scroller>
-    <div class="w-165 scrollerContent">
-      {#if parent}
-        <div class="mb-4 ml-2">{parent.title}</div>
-      {/if}
-      {#if issue}
-        <div class="fs-title text-xl ml-2">{issueName} {issue.title}</div>
-        <div class="flex mt-2">
-          <StatusEditor value={issue} shouldShowLabel kind={'transparent'} />
-          <PriorityEditor value={issue} shouldShowLabel />
-          {#if issue.assignee}
-            <AssigneeEditor value={issue} width={'min-content'} />
-          {/if}
-        </div>
-        <IssueStatusActivity {issue} />
-
-        <div class="mb-2">
-          <Label label={tracker.string.Description} />:
-        </div>
-        {#if issue.description}
-          <div
-            class="descr ml-2"
-            class:mask={cHeight >= limit}
-            use:resizeObserver={(element) => {
-              cHeight = element.clientHeight
-            }}
-          >
-            <MessageViewer message={issue.description} />
-          </div>
-        {:else}
-          <div class="ml-2 content-dark-color">
-            <Label label={tracker.string.NoDescription} />
-          </div>
+{#if issue}
+  <div class="ap-header flex-between">
+    <div class="flex-col">
+      <div class="flex-row-center gap-1">
+        {#if parent}
+          <span class="overflow-label content-color">{parent.title}</span>
+          <IconForward size={'x-small'} />
         {/if}
-        {#if issue.attachments}
-          <div class="mt-2 mb-2">
-            <Label label={attachment.string.Attachments} />:
-          </div>
-          <div>
-            <AttachmentDocList value={issue} />
-          </div>
-        {/if}
-        {#if issue.comments}
-          <div class="mt-2 mb-2">
-            <Label label={chunter.string.Comments} />:
-          </div>
-          <div class="ml-2">
-            <CommentPopup objectId={issue._id} object={issue} />
-          </div>
-        {/if}
+        <span class="content-dark-color">{issueName}</span>
+      </div>
+      <span class="overflow-label text-xl caption-color">{issue.title}</span>
+    </div>
+  </div>
+  <Scroller padding={'0.75rem 1.75rem 0'}>
+    <div class="flex-row-center gap-2 mb-2">
+      <StatusEditor value={issue} shouldShowLabel kind={'secondary'} />
+      <PriorityEditor value={issue} shouldShowLabel kind={'secondary'} />
+      {#if issue.assignee}
+        <AssigneeEditor value={issue} width={'min-content'} kind={'secondary'} />
       {/if}
     </div>
+
+    <div class="grid-preview">
+      <IssueStatusActivity {issue} accentHeader />
+    </div>
+
+    <div class="mt-6 mb-2 overflow-label fs-bold content-dark-color">
+      <Label label={tracker.string.Description} />:
+    </div>
+    {#if issue.description}
+      <div class="description-container" class:masked={cHeight > limit} style:max-height={`${limit}px`}>
+        <div class="description-content" use:resizeObserver={(element) => (cHeight = element.clientHeight)}>
+          <MessageViewer message={issue.description} />
+        </div>
+      </div>
+    {:else}
+      <div class="overflow-label content-darker-color">
+        <Label label={tracker.string.NoDescription} />
+      </div>
+    {/if}
+    {#if issue.attachments}
+      <div class="mt-6 mb-2 overflow-label fs-bold content-dark-color">
+        <Label label={attachment.string.Attachments} />:
+      </div>
+      <AttachmentDocList value={issue} />
+    {/if}
+    {#if issue.comments}
+      <div class="mt-6 mb-2 overflow-label fs-bold content-dark-color">
+        <Label label={chunter.string.Comments} />:
+      </div>
+      <CommentPopup objectId={issue._id} object={issue} />
+    {/if}
+    <div class="h-3 flex-no-shrink" />
   </Scroller>
-</div>
+  <div class="h-3 flex-no-shrink" />
+{/if}
 
 <style lang="scss">
-  .descr {
+  .description-container {
     overflow: hidden;
+    height: auto;
+    min-height: 0;
 
-    &.mask {
-      mask: linear-gradient(to top, rgba(0, 0, 0, 0) 0, black 5rem);
+    &.masked {
+      mask-image: linear-gradient(0deg, #0000 0, #000f 4rem);
+    }
+    .description-content {
+      width: 100%;
+      min-width: 0;
+      height: max-content;
+      min-height: 0;
     }
   }
-
-  .scrollerContent {
-    height: fit-content;
-    max-height: 32rem;
+  .grid-preview {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    grid-auto-rows: minmax(2rem, max-content);
+    justify-content: start;
+    align-items: center;
+    row-gap: 0.25rem;
+    column-gap: 1rem;
+    margin-top: 0.5rem;
   }
 </style>

@@ -61,10 +61,8 @@
     </div>
   </svelte:fragment>
   <svelte:fragment slot="afterHeader">
-    <div class="p-1 ml-6 flex-row-center">
-      <div class="flex-row-center">
-        <DatePresenter value={milestone.targetDate} kind={'transparent'} />
-      </div>
+    <div class="ac-header search-start full divide">
+      <DatePresenter value={milestone.targetDate} kind={'transparent'} size={'medium'} />
       <div class="flex-row-center ml-2">
         {#if milestone?.capacity}
           <Label label={tracker.string.CapacityValue} params={{ value: milestone?.capacity }} />
@@ -74,10 +72,8 @@
     </div>
   </svelte:fragment>
   <svelte:fragment slot="aside">
-    <div class="flex-grow p-4 w-60 left-divider">
-      <div class="fs-title text-xl">
-        <EditBox bind:value={milestone.label} on:change={() => change('label', milestone.label)} />
-      </div>
+    <div class="popupPanel-body__aside-content">
+      <EditBox kind={'large-style'} bind:value={milestone.label} on:change={() => change('label', milestone.label)} />
       <div class="mt-2">
         <StyledTextBox
           alwaysEdit={true}
@@ -87,7 +83,7 @@
           on:value={(evt) => change('description', evt.detail)}
         />
       </div>
-      <DocAttributeBar object={milestone} mixins={[]} ignoreKeys={['icon', 'label', 'description']} />
     </div>
+    <DocAttributeBar object={milestone} mixins={[]} ignoreKeys={['icon', 'label', 'description']} />
   </svelte:fragment>
 </IssuesView>

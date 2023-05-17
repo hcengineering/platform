@@ -32,6 +32,7 @@
   export let invertScroll: boolean = false
   export let horizontal: boolean = false
   export let contentDirection: 'vertical' | 'vertical-reverse' | 'horizontal' = 'vertical'
+  export let gap: 'gap-1' | 'gap-1-5' | 'gap-2' | 'gap-3' | 'gap-around-2' | 'gap-around-4' | undefined = undefined
   export let noStretch: boolean = autoscroll
   export let buttons: 'normal' | 'union' | false = false
   export let shrink: boolean = false
@@ -497,7 +498,7 @@
     >
       <div
         bind:this={divBox}
-        class="box"
+        class="box{gap ? ` ${gap}` : ''}"
         class:align-center={contentDirection === 'horizontal'}
         style:padding
         style:flex-direction={contentDirection === 'vertical'
@@ -689,9 +690,9 @@
     &.vertical {
       min-width: 1.5rem 0;
     }
-    &.horizontal {
-      margin-right: 2rem;
-    }
+    // &.horizontal {
+    //   margin-right: 2rem;
+    // }
     &.buttons.vertical {
       margin: 1.5rem 0;
     }

@@ -147,17 +147,15 @@
     {/if}
   </div>
 </div>
-<div class="ac-header full divide search-start">
-  <div class="ac-header-full small-gap">
-    <TabList
-      items={modeList}
-      selected={mode}
-      kind={'normal'}
-      on:select={(result) => {
-        if (result.detail !== undefined && result.detail.action) result.detail.action()
-      }}
-    />
-  </div>
+<div class="ac-header tabs-start full divide">
+  <TabList
+    items={modeList}
+    selected={mode}
+    kind={'plain'}
+    on:select={(result) => {
+      if (result.detail !== undefined && result.detail.action) result.detail.action()
+    }}
+  />
 </div>
 
 <FilterBar

@@ -226,9 +226,7 @@
 <svelte:window on:keydown={handleKeys} />
 
 {#if $previewDocument !== undefined && presenter}
-  <div transition:fly|local style:position="fixed" style:right={'0'} style:top={'10rem'} style:z-index={'500'}>
-    <div class="antiPanel p-6">
-      <Component is={presenter} props={{ object: $previewDocument }} />
-    </div>
+  <div class="antiPanel float" transition:fly|local>
+    <Component is={presenter} props={{ object: $previewDocument }} />
   </div>
 {/if}

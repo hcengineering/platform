@@ -138,10 +138,10 @@ export async function checkIssue (page: Page, props: IssueProps): Promise<void> 
   const { name, description, status, assignee, labels, priority, component, milestone } = props
 
   if (name !== undefined) {
-    await expect(page.locator('.popupPanel')).toContainText(name)
+    await expect(page.locator('.popupPanel.panel')).toContainText(name)
   }
   if (description !== undefined) {
-    await expect(page.locator('.popupPanel')).toContainText(description)
+    await expect(page.locator('.popupPanel.panel')).toContainText(description)
   }
   const asideLocator = page.locator('.popupPanel-body__aside')
   if (status !== undefined) {
@@ -170,7 +170,7 @@ export async function checkIssueFromList (page: Page, issueName: string): Promis
 }
 
 export async function openIssue (page: Page, name: string): Promise<void> {
-  await page.click(`.antiList__row:has-text("${name}") .issuePresenterRoot`, {
+  await page.click(`.antiList__row:has-text("${name}") .name a`, {
     timeout: 15000
   })
 }

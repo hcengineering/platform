@@ -114,12 +114,12 @@
 </IssuesHeader>
 <FilterBar _class={tracker.class.Issue} query={searchQuery} {viewOptions} on:change={(e) => (resultQuery = e.detail)} />
 <slot name="afterHeader" />
-<div class="flex w-full h-full clear-mins">
+<div class="popupPanel rowContent">
   {#if viewlet}
     <IssuesContent {viewlet} query={resultQuery} {space} {viewOptions} />
   {/if}
   {#if $$slots.aside !== undefined && asideShown}
-    <div class="popupPanel-body__aside flex" class:float={asideFloat} class:shown={asideShown}>
+    <div class="popupPanel-body__aside" class:shown={asideShown}>
       <slot name="aside" />
     </div>
   {/if}
