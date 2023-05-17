@@ -77,18 +77,16 @@
 .popupPanel {
   overflow: hidden;
   display: flex;
-  flex-direction: column;
   min-height: 0;
   height: 100%;
-
-  &.embedded {
+  
+  &.rowContent {
     width: 100%;
+    min-width: 0;
   }
-
-  &:not(.embedded) {
-    border-radius: .5rem;
-    // box-shadow: var(--popup-panel-shadow);
-  }
+  &:not(.rowContent) { flex-direction: column; }
+  &.embedded { width: 100%; }
+  &:not(.embedded) { border-radius: .5rem; }
 
   .popupPanel-title {
     display: flex;
@@ -313,6 +311,14 @@
           margin-top: 0.625rem;
         }
         .textPadding { margin-left: .875rem; }
+      }
+      &-content {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        min-width: 0;
+        min-height: 0;
+        padding: 1.25rem 2rem;
       }
       .space-divider {
         flex-shrink: 0;
