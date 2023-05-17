@@ -158,6 +158,7 @@
     milestone={object.milestone}
     project={_space}
     maxHeight="limited"
+    on:create-issue={({ detail }) => (object.children = [...object.children, detail])}
   />
   <svelte:fragment slot="pool">
     <PriorityEditor
