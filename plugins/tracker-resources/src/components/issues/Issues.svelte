@@ -21,7 +21,9 @@
   import { createQuery } from '@hcengineering/presentation'
   import { IModeSelector } from '../../utils'
 
-  export let currentSpace: Ref<Project>
+  export let currentSpace: Ref<Project> | undefined = undefined
+  export let baseQuery: DocumentQuery<Issue> = {}
+  export let title: IntlString
 
   const config: [string, IntlString, object][] = [
     ['all', tracker.string.All, {}],
@@ -29,7 +31,9 @@
     ['backlog', tracker.string.Backlog, {}]
   ]
 
-  $: all = { space: currentSpace }
+  $: spaceQuery = currentSpace ? { space: currentSpace } : {}
+
+  $: all = { ...baseQuery, ...spaceQuery }
 
   const activeStatusQuery = createQuery()
   let active: DocumentQuery<Issue>
@@ -37,10 +41,10 @@
     tracker.class.IssueStatus,
     {
       category: { $in: [tracker.issueStatusCategory.Unstarted, tracker.issueStatusCategory.Started] },
-      space: currentSpace
+      ...spaceQuery
     },
     (result) => {
-      active = { status: { $in: result.map(({ _id }) => _id) }, space: currentSpace }
+      active = { status: { $in: result.map(({ _id }) => _id) }, ...spaceQuery }
     }
   )
 
@@ -48,9 +52,9 @@
   let backlog: DocumentQuery<Issue> = {}
   $: backlogStatusQuery.query(
     tracker.class.IssueStatus,
-    { category: tracker.issueStatusCategory.Backlog, space: currentSpace },
+    { category: tracker.issueStatusCategory.Backlog, ...spaceQuery },
     (result) => {
-      backlog = { status: { $in: result.map(({ _id }) => _id) }, space: currentSpace }
+      backlog = { status: { $in: result.map(({ _id }) => _id) }, ...spaceQuery }
     }
   )
 
@@ -71,4 +75,6 @@
   } as IModeSelector
 </script>
 
-<IssuesView {query} space={currentSpace} title={tracker.string.Issues} {modeSelectorProps} />
+{#key query && currentSpace}
+  <IssuesView {query} space={currentSpace} {title} {modeSelectorProps} />
+{/key}
