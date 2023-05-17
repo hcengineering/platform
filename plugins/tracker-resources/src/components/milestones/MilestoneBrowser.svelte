@@ -138,7 +138,7 @@
     <SearchEdit bind:value={search} on:change={() => {}} />
     <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
     <div class="buttons-divider" />
-    <FilterButton _class={tracker.class.Issue} {space} />
+    <FilterButton _class={tracker.class.Milestone} {space} />
   </div>
   <div class="ac-header-full medium-gap">
     {#if viewlet}

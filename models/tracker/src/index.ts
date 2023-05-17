@@ -1360,9 +1360,6 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.ClassFilters, {
-    filters: []
-  })
-  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.ClassFilters, {
     filters: ['status'],
     strict: true
   })
