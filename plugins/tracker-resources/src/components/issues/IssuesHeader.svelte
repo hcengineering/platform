@@ -14,7 +14,7 @@
   export let label: string
   export let search: string
   export let showLabelSelector = false
-  export let modeSelectorProps: IModeSelector | undefined
+  export let modeSelectorProps: IModeSelector | undefined = undefined
 
   $: viewslist = viewlets.map((views) => {
     return {
