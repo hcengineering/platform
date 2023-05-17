@@ -1003,13 +1003,6 @@ export function createModel (builder: Builder): void {
       locationResolver: tracker.resolver.Location,
       navigatorModel: {
         specials: [
-          // {
-          //   id: 'inbox',
-          //   position: 'top',
-          //   label: tracker.string.Inbox,
-          //   icon: tracker.icon.Inbox,
-          //   component: tracker.component.Inbox
-          // },
           {
             id: myIssuesId,
             position: 'top',
@@ -1022,20 +1015,13 @@ export function createModel (builder: Builder): void {
             position: 'top',
             label: tracker.string.AllIssues,
             icon: tracker.icon.Issues,
-            component: tracker.component.IssuesView,
+            component: tracker.component.Issues,
             componentProps: {
-              query: { '$lookup.space.archived': false },
+              baseQuery: { '$lookup.space.archived': false },
               space: undefined,
               title: tracker.string.AllIssues
             }
           }
-          // {
-          //   id: 'views',
-          //   position: 'top',
-          //   label: tracker.string.Views,
-          //   icon: tracker.icon.Views,
-          //   component: tracker.component.Views
-          // },
         ],
         spaces: [
           {
@@ -1049,7 +1035,10 @@ export function createModel (builder: Builder): void {
                 id: issuesId,
                 label: tracker.string.Issues,
                 icon: tracker.icon.Issues,
-                component: tracker.component.Issues
+                component: tracker.component.Issues,
+                componentProps: {
+                  title: tracker.string.Issues
+                }
               },
               {
                 id: componentsId,
@@ -1063,12 +1052,6 @@ export function createModel (builder: Builder): void {
                 icon: tracker.icon.Milestone,
                 component: tracker.component.Milestones
               },
-              // {
-              //   id: scrumsId,
-              //   label: tracker.string.Scrums,
-              //   icon: tracker.icon.Scrum,
-              //   component: tracker.component.Scrums
-              // },
               {
                 id: templatesId,
                 label: tracker.string.IssueTemplates,
