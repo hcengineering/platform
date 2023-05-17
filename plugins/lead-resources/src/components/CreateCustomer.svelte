@@ -71,7 +71,7 @@
       description: object.description
     }
 
-    const id = await client.createDoc(targetClass._id, contact.space.Contacts, candidate, customerId)
+    const id = await client.createDoc(targetClass._id, contact.space.Contacts, { ...candidate, ...object }, customerId)
     await client.createMixin(
       id as Ref<Contact>,
       targetClass._id,
