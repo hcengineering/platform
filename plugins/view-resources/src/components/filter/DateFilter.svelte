@@ -64,15 +64,17 @@
       { label: filter.key.attribute.label, startDate: filter.value[0], endDate: filter.value[1] },
       undefined,
       (res) => {
-        const value: Date[] = []
-        if (res.startDate) {
-          value.push(res.startDate)
+        if (res) {
+          const value: Date[] = []
+          if (res.startDate) {
+            value.push(res.startDate)
+          }
+          if (res.endDate && res.startDate !== res.endDate) {
+            value.push(res.endDate)
+          }
+          filter.value = value
+          onChange(filter)
         }
-        if (res.endDate && res.startDate !== res.endDate) {
-          value.push(res.endDate)
-        }
-        filter.value = value
-        onChange(filter)
         dispatch('close')
       }
     )
