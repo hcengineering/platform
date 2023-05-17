@@ -202,7 +202,9 @@ const notification = plugin(notificationId, {
     NotificationGroup: '' as Ref<Class<NotificationGroup>>
   },
   ids: {
-    NotificationSettings: '' as Ref<Doc>
+    NotificationSettings: '' as Ref<Doc>,
+    NotificationGroup: '' as Ref<NotificationGroup>,
+    CollaboratoAddNotification: '' as Ref<NotificationType>
   },
   providers: {
     PlatformNotification: '' as Ref<NotificationProvider>,

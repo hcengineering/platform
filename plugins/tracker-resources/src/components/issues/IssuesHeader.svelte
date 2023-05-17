@@ -2,10 +2,11 @@
   import { Ref, Space } from '@hcengineering/core'
   import { TabList, SearchEdit } from '@hcengineering/ui'
   import { Viewlet } from '@hcengineering/view'
-  import { FilterButton, setActiveViewletId } from '@hcengineering/view-resources'
+  import { focusStore, FilterButton, setActiveViewletId } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import { WithLookup } from '@hcengineering/core'
-  // import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import ModeSelector from '../ModeSelector.svelte'
+  import { IModeSelector } from '../../utils'
 
   export let space: Ref<Space> | undefined = undefined
   export let viewlet: WithLookup<Viewlet> | undefined
@@ -13,6 +14,7 @@
   export let label: string
   export let search: string
   export let showLabelSelector = false
+  export let modeSelectorProps: IModeSelector | undefined = undefined
 
   $: viewslist = viewlets.map((views) => {
     return {
@@ -21,16 +23,25 @@
       tooltip: views.$lookup?.descriptor?.label
     }
   })
-
-  // $: twoRows = $deviceInfo.twoRows
+  $: count = $focusStore.provider?.docs().length
+  $: headerTitle = count === undefined ? label : `${label} (${count})`
 </script>
 
-<div class="ac-header full divide">
+<div
+  class="ac-header full divide"
+  class:header-with-mode-selector={modeSelectorProps !== undefined}
+  class:header-without-label={!label}
+>
   <div class="ac-header__wrap-title">
     {#if showLabelSelector}
       <slot name="label_selector" />
     {:else}
-      <span class="ac-header__title">{label}</span>
+      {#if label}
+        <span class="ac-header__title">{headerTitle}</span>
+      {/if}
+      {#if modeSelectorProps !== undefined}
+        <ModeSelector props={modeSelectorProps} />
+      {/if}
     {/if}
   </div>
   <div class="mb-1 clear-mins">
@@ -65,3 +76,13 @@
     <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
   </div>
 </div>
+
+<style lang="scss">
+  .header-with-mode-selector {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  .header-without-label {
+    padding-left: 0;
+  }
+</style>

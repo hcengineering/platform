@@ -38,6 +38,7 @@ export { default as IndexedDocumentPreview } from './components/IndexedDocumentP
 export { default as IndexedDocumentCompare } from './components/IndexedDocumentCompare.svelte'
 export { default as DraggableList } from './components/DraggableList.svelte'
 export { default as NavLink } from './components/NavLink.svelte'
+export { default as IconForward } from './components/icons/Forward.svelte'
 export { default } from './plugin'
 export * from './types'
 export * from './utils'

@@ -379,7 +379,8 @@
     }
 
     tbody tr:not(:last-child),
-    thead th:first-child .fullfill {
+    thead th:first-child .fullfill,
+    tfoot tr {
       border-bottom: 1px solid var(--theme-bg-divider-color);
     }
     tfoot tr,

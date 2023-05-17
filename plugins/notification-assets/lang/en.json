@@ -17,6 +17,8 @@
     "Inbox": "Inbox",
     "Collaborators": "Collaborators",
     "Change": "Change",
-    "AddedRemoved": "Added/removed"
+    "AddedRemoved": "Added/removed",
+    "YouAddedCollaborators": "You was added to collaborators",
+    "ChangeCollaborators": "changed collaborators"
   }
 }

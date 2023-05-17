@@ -351,13 +351,13 @@
         </div>
       {:else if hasMessageType && model.length > 0 && (tx.updateTx || tx.mixinTx)}
         {#await getValue(client, model[0], tx) then value}
-          {@const compareValue = getPrevValue(client, model[0], tx)}
+          {@const prevValue = getPrevValue(client, model[0], tx)}
           <div class="activity-content content" class:indent={isAttached} class:contentHidden>
-            <ShowMore ignore={edit || compareValue !== undefined}>
+            <ShowMore ignore={edit || prevValue !== undefined}>
               {#if value.isObjectSet}
                 <ObjectPresenter value={value.set} inline />
               {:else if showDiff}
-                <svelte:component this={model[0].presenter} value={value.set} inline {compareValue} showOnlyDiff />
+                <svelte:component this={model[0].presenter} value={value.set} inline {prevValue} showOnlyDiff />
               {/if}
             </ShowMore>
           </div>

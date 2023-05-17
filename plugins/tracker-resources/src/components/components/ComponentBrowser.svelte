@@ -114,7 +114,7 @@
 <div class="ac-header full divide caption-height">
   <div class="ac-header__wrap-title mr-3">
     <span class="ac-header__title"><Label {label} /></span>
-    <span class="componentTitle">
+    <span class="componentTitle ml-1">
       › <Label label={title} />
     </span>
   </div>
@@ -146,15 +146,8 @@
     {/if}
   </div>
 </div>
-<div class="ac-header full divide search-start">
-  <div class="ac-header-full small-gap">
-    <TabList
-      items={filterModeList}
-      selected={filterMode}
-      kind="normal"
-      on:select={({ detail }) => detail?.action?.()}
-    />
-  </div>
+<div class="ac-header tabs-start full divide">
+  <TabList items={filterModeList} selected={filterMode} kind={'plain'} on:select={({ detail }) => detail?.action?.()} />
 </div>
 
 <FilterBar

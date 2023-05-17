@@ -17,6 +17,8 @@
     "Inbox": "Входящие",
     "Collaborators": "Участники",
     "Change": "Изменено",
-    "AddedRemoved": "Добавлено/удалено"
+    "AddedRemoved": "Добавлено/удалено",
+    "YouAddedCollaborators": "Вы были добавлены как участник",
+    "ChangeCollaborators": "изменил(а) участники"
   }
 }

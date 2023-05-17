@@ -32,7 +32,7 @@
   export let justify: 'left' | 'center' = 'left'
 </script>
 
-<div class="popupPanel-body__aside-grid">
+<div class="popupPanel-body__aside-grid inCollapsed">
   {#each keys as key (typeof key === 'string' ? key : key.key)}
     <AttributeBarEditor {key} {_class} {object} {showHeader} {readonly} {draft} on:update />
   {/each}

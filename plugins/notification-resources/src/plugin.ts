@@ -28,6 +28,8 @@ export default mergeIds(notificationId, notification, {
     MarkAsRead: '' as IntlString,
     MarkAllAsRead: '' as IntlString,
     Change: '' as IntlString,
-    AddedRemoved: '' as IntlString
+    AddedRemoved: '' as IntlString,
+    YouAddedCollaborators: '' as IntlString,
+    ChangeCollaborators: '' as IntlString
   }
 })

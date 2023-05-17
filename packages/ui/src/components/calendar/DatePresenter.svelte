@@ -232,18 +232,18 @@
     &.link {
       justify-content: flex-start;
       padding: 0 0.875rem;
-      height: 2rem;
+      color: var(--theme-dark-color);
       border-radius: 0.25rem;
 
       .btn-icon {
-        margin-right: 0.5rem;
+        color: var(--theme-darker-color);
       }
       &:hover {
-        color: var(--theme-caption-color);
-        background-color: var(--theme-button-hovered);
+        color: var(--theme-content-color);
+        background-color: var(--theme-bg-color);
         border-color: var(--theme-divider-color);
         .btn-icon {
-          color: var(--theme-caption-color);
+          color: var(--theme-content-color);
         }
       }
     }

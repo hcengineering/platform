@@ -21,11 +21,11 @@
 
   import tracker from '../../plugin'
   import IssuesView from '../issues/IssuesView.svelte'
-  import ModeSelector from '../ModeSelector.svelte'
+  import { IModeSelector } from '../../utils'
 
   const config: [string, IntlString, object][] = [
     ['assigned', tracker.string.Assigned, {}],
-    ['created', tracker.string.Created, { value: 0 }],
+    ['created', tracker.string.Created, {}],
     ['subscribed', tracker.string.Subscribed, {}]
   ]
   const currentUser = getCurrentAccount() as EmployeeAccount
@@ -57,10 +57,11 @@
     return { ...queries[mode], '$lookup.space.archived': false }
   }
   $: query = getQuery(mode, { assigned, created, subscribed })
+  $: modeSelectorProps = {
+    config,
+    mode,
+    onChange: handleChangeMode
+  } as IModeSelector
 </script>
 
-<IssuesView {query} space={undefined} title={tracker.string.MyIssues}>
-  <svelte:fragment slot="afterHeader">
-    <ModeSelector {config} {mode} onChange={handleChangeMode} />
-  </svelte:fragment>
-</IssuesView>
+<IssuesView {query} space={undefined} title={tracker.string.MyIssues} {modeSelectorProps} />

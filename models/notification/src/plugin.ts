@@ -20,6 +20,7 @@ import { IntlString, Resource, mergeIds } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 import { Action, ActionCategory, ViewAction } from '@hcengineering/view'
 import { Application } from '@hcengineering/workbench'
+import { TxViewlet } from '@hcengineering/activity'
 
 export default mergeIds(notificationId, notification, {
   string: {
@@ -32,6 +33,12 @@ export default mergeIds(notificationId, notification, {
   },
   app: {
     Notification: '' as Ref<Application>
+  },
+  activity: {
+    TxCollaboratorsChange: '' as AnyComponent
+  },
+  ids: {
+    TxCollaboratorsChange: '' as Ref<TxViewlet>
   },
   component: {
     NotificationSettings: '' as AnyComponent

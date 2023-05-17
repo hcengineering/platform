@@ -52,6 +52,7 @@ import type { Asset, IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import { AnyComponent } from '@hcengineering/ui'
 import notification from './plugin'
+import activity from '@hcengineering/activity'
 
 export { notificationId } from '@hcengineering/notification'
 export { notificationOperation } from './migration'
@@ -301,6 +302,48 @@ export function createModel (builder: Builder): void {
       mode: ['workbench', 'browser', 'editor', 'panel', 'popup']
     }
   })
+
+  builder.createDoc(
+    notification.class.NotificationGroup,
+    core.space.Model,
+    {
+      label: notification.string.Notifications,
+      icon: notification.icon.Notifications
+    },
+    notification.ids.NotificationGroup
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: false,
+      generated: false,
+      label: notification.string.Collaborators,
+      group: notification.ids.NotificationGroup,
+      txClasses: [],
+      objectClass: notification.mixin.Collaborators,
+      providers: {
+        [notification.providers.PlatformNotification]: true
+      }
+    },
+    notification.ids.CollaboratoAddNotification
+  )
+
+  builder.createDoc(
+    activity.class.TxViewlet,
+    core.space.Model,
+    {
+      objectClass: notification.mixin.Collaborators,
+      icon: notification.icon.Notifications,
+      txClass: core.class.TxMixin,
+      component: notification.activity.TxCollaboratorsChange,
+      display: 'inline',
+      editable: false,
+      hideOnRemove: true
+    },
+    notification.ids.TxCollaboratorsChange
+  )
 }
 
 export function generateClassNotificationTypes (
