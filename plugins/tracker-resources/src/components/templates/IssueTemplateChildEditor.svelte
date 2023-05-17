@@ -129,8 +129,8 @@
       {/key}
     </div>
   </div>
-  <div class="mt-4 flex-between">
-    <div class="buttons-group xsmall-gap">
+  <div class="mt-4 flex-between items-end">
+    <div class="inline-flex flex-wrap xsmall-gap">
       <PriorityEditor
         value={newIssue}
         shouldShowLabel
@@ -145,6 +145,7 @@
           value={newIssue}
           size="small"
           kind="no-border"
+          width="auto"
           on:change={({ detail }) => (newIssue.assignee = detail)}
         />
       {/key}
@@ -172,7 +173,7 @@
         }}
       />
     </div>
-    <div class="buttons-group small-gap">
+    <div class="ml-2 buttons-group small-gap">
       <Button label={presentation.string.Cancel} size="small" kind="transparent" on:click={close} />
       <Button
         disabled={!canSave}
@@ -184,3 +185,13 @@
     </div>
   </div>
 </div>
+
+<style lang="scss">
+  .xsmall-gap {
+    gap: 0.375rem;
+  }
+
+  .items-end {
+    align-items: flex-end;
+  }
+</style>
