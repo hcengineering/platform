@@ -2,7 +2,7 @@
   import { Ref, Space } from '@hcengineering/core'
   import { TabList, SearchEdit } from '@hcengineering/ui'
   import { Viewlet } from '@hcengineering/view'
-  import { FilterButton, setActiveViewletId } from '@hcengineering/view-resources'
+  import { focusStore, FilterButton, setActiveViewletId } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import { WithLookup } from '@hcengineering/core'
   import ModeSelector from '../ModeSelector.svelte'
@@ -23,6 +23,8 @@
       tooltip: views.$lookup?.descriptor?.label
     }
   })
+  $: count = $focusStore.provider?.docs().length
+  $: headerTitle = count === undefined ? label : `${label} (${count})`
 </script>
 
 <div
@@ -35,7 +37,7 @@
       <slot name="label_selector" />
     {:else}
       {#if label}
-        <span class="ac-header__title">{label}</span>
+        <span class="ac-header__title">{headerTitle}</span>
       {/if}
       {#if modeSelectorProps !== undefined}
         <ModeSelector props={modeSelectorProps} />
