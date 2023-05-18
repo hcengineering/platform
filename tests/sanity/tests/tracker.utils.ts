@@ -127,7 +127,7 @@ export async function createSubissue (page: Page, props: IssueProps): Promise<vo
 export async function createLabel (page: Page, label: string): Promise<void> {
   await page.click('button:has-text("New issue")')
   await page.click('button:has-text("Labels")')
-  await page.click('.buttons-group >> button >> nth=-1')
+  await page.click('button:nth-child(3)')
   await page.fill('[id="tags:string:AddTag"] >> input >> nth=0', label)
   await page.click('[id="tags:string:AddTag"] >> button:has-text("Create")')
   await page.waitForSelector('form.antiCard[id="tags:string:AddTag"]', { state: 'detached' })
