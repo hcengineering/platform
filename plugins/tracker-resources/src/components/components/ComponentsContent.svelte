@@ -16,8 +16,7 @@
   import { DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
   import { Component } from '@hcengineering/tracker'
   import { Component as ViewComponent } from '@hcengineering/ui'
-  import { BuildModelKey, Viewlet, ViewOptions } from '@hcengineering/view'
-  import contact from '@hcengineering/contact'
+  import { Viewlet, ViewOptions } from '@hcengineering/view'
   import tracker from '../../plugin'
   import CreateComponent from './NewComponent.svelte'
 
@@ -28,18 +27,6 @@
 
   const createItemDialog = CreateComponent
   const createItemLabel = tracker.string.Component
-  const retrieveMembers = (s: Component) => s.members
-
-  function updateConfig (config: (string | BuildModelKey)[]): (string | BuildModelKey)[] {
-    return config.map((it) => {
-      if (typeof it === 'string') {
-        return it
-      }
-      return it.presenter === contact.component.MembersPresenter
-        ? { ...it, props: { ...it.props, retrieveMembers } }
-        : it
-    })
-  }
 </script>
 
 {#if viewlet?.$lookup?.descriptor?.component}
@@ -47,7 +34,7 @@
     is={viewlet.$lookup.descriptor.component}
     props={{
       _class: tracker.class.Component,
-      config: updateConfig(viewlet.config),
+      config: viewlet.config,
       options: viewlet.options,
       createItemDialog,
       createItemLabel,

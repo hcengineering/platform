@@ -34,10 +34,10 @@
     <span class="flex-presenter" class:inline class:list={kind === 'list'}>
       {#if !inline && shouldShowAvatar}
         <div class="icon" use:tooltip={{ label: tracker.string.Component }}>
-          <Icon icon={tracker.icon.Issues} size={'small'} />
+          <Icon icon={tracker.icon.Component} size={'small'} />
         </div>
       {/if}
-      <span title={value.label} class="overflow-label label" class:no-underline={disabled}>
+      <span title={value.label} class="label nowrap">
         {value.label}
       </span>
     </span>

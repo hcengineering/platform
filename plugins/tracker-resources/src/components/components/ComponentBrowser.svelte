@@ -28,18 +28,9 @@
     ViewletSettingButton,
     FilterBar
   } from '@hcengineering/view-resources'
-  import {
-    Button,
-    IconAdd,
-    Label,
-    SearchEdit,
-    TabItem,
-    TabList,
-    resolvedLocationStore,
-    showPopup
-  } from '@hcengineering/ui'
+  import { Button, IconAdd, Label, SearchEdit, TabList, resolvedLocationStore, showPopup } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
-  import { ComponentsFilterMode, componentsTitleMap, getIncludedComponentStatuses } from '../../utils'
+  import { ComponentsFilterMode, componentsTitleMap } from '../../utils'
   import tracker from '../../plugin'
   import ComponentsContent from './ComponentsContent.svelte'
   import NewComponent from './NewComponent.svelte'
@@ -53,20 +44,12 @@
   const viewletQuery = createQuery()
   const space = typeof query.space === 'string' ? query.space : tracker.project.DefaultProject
 
-  const filterModeList: TabItem[] = [
-    { id: 'all', labelIntl: tracker.string.AllComponents, action: () => handleFilterModeChanged('all') },
-    { id: 'backlog', labelIntl: tracker.string.BacklogComponents, action: () => handleFilterModeChanged('backlog') },
-    { id: 'active', labelIntl: tracker.string.ActiveComponents, action: () => handleFilterModeChanged('active') },
-    { id: 'closed', labelIntl: tracker.string.ClosedComponents, action: () => handleFilterModeChanged('closed') }
-  ]
-
   let viewlet: WithLookup<Viewlet> | undefined
   let viewlets: WithLookup<Viewlet>[] | undefined
   let viewletKey = makeViewletKey()
 
   let searchQuery: DocumentQuery<Component> = { ...query }
   let resultQuery: DocumentQuery<Component> = { ...searchQuery }
-  let includedComponentsQuery: DocumentQuery<Component>
 
   let asideFloat = false
   let asideShown = true
@@ -74,19 +57,11 @@
   let docWidth: number
   let docSize = false
 
-  function handleFilterModeChanged (newMode: ComponentsFilterMode) {
-    if (newMode !== filterMode) {
-      filterMode = newMode
-    }
-  }
-
   function showCreateDialog () {
     showPopup(NewComponent, { space, targetElement: null }, 'top')
   }
 
   $: title = componentsTitleMap[filterMode]
-  $: includedComponentStatuses = getIncludedComponentStatuses(filterMode)
-  $: includedComponentsQuery = { status: { $in: includedComponentStatuses } }
   $: searchQuery = search === '' ? { ...query } : { ...query, $search: search }
   $: resultQuery = { ...searchQuery }
 
@@ -146,9 +121,6 @@
     {/if}
   </div>
 </div>
-<div class="ac-header tabs-start full divide">
-  <TabList items={filterModeList} selected={filterMode} kind={'plain'} on:select={({ detail }) => detail?.action?.()} />
-</div>
 
 <FilterBar
   _class={tracker.class.Component}
@@ -159,7 +131,7 @@
 
 <div class="flex w-full h-full clear-mins">
   {#if viewlet}
-    <ComponentsContent {viewlet} query={{ ...resultQuery, ...includedComponentsQuery }} {space} {viewOptions} />
+    <ComponentsContent {viewlet} query={{ ...resultQuery }} {space} {viewOptions} />
   {/if}
   {#if $$slots.aside !== undefined && asideShown}
     <div class="popupPanel-body__aside flex" class:float={asideFloat} class:shown={asideShown}>

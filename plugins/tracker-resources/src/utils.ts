@@ -39,7 +39,6 @@ import { Asset, IntlString } from '@hcengineering/platform'
 import { createQuery } from '@hcengineering/presentation'
 import { calcRank } from '@hcengineering/task'
 import {
-  ComponentStatus,
   Issue,
   IssuePriority,
   IssuesDateModificationPeriod,
@@ -61,7 +60,7 @@ import {
 import { ViewletDescriptor } from '@hcengineering/view'
 import { CategoryQuery, groupBy, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
 import tracker from './plugin'
-import { defaultComponentStatuses, defaultPriorities, defaultMilestoneStatuses } from './types'
+import { defaultPriorities, defaultMilestoneStatuses } from './types'
 
 export * from './types'
 
@@ -236,26 +235,6 @@ export type ComponentsFilterMode = 'all' | 'backlog' | 'active' | 'closed'
 export type MilestoneViewMode = 'all' | 'planned' | 'active' | 'closed'
 
 export type ScrumRecordViewMode = 'timeReports' | 'objects'
-
-export const getIncludedComponentStatuses = (mode: ComponentsFilterMode): ComponentStatus[] => {
-  switch (mode) {
-    case 'all': {
-      return defaultComponentStatuses
-    }
-    case 'active': {
-      return [ComponentStatus.Planned, ComponentStatus.InProgress, ComponentStatus.Paused]
-    }
-    case 'backlog': {
-      return [ComponentStatus.Backlog]
-    }
-    case 'closed': {
-      return [ComponentStatus.Completed, ComponentStatus.Canceled]
-    }
-    default: {
-      return []
-    }
-  }
-}
 
 export const getIncludedMilestoneStatuses = (mode: MilestoneViewMode): MilestoneStatus[] => {
   switch (mode) {

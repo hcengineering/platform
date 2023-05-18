@@ -13,60 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DocumentQuery, Ref } from '@hcengineering/core'
+  import { DocumentQuery } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
   import { Component } from '@hcengineering/tracker'
-  import {
-    closePopup,
-    closeTooltip,
-    getCurrentResolvedLocation,
-    navigate,
-    resolvedLocationStore
-  } from '@hcengineering/ui'
-  import { onDestroy } from 'svelte'
   import tracker from '../../plugin'
   import { ComponentsFilterMode } from '../../utils'
   import ComponentBrowser from './ComponentBrowser.svelte'
-  import EditComponent from './EditComponent.svelte'
 
   export let label: IntlString = tracker.string.Components
   export let query: DocumentQuery<Component> = {}
   export let search: string = ''
   export let filterMode: ComponentsFilterMode = 'all'
-
-  let componentId: Ref<Component> | undefined
-  let component: Component | undefined
-
-  onDestroy(
-    resolvedLocationStore.subscribe(async (loc) => {
-      closeTooltip()
-      closePopup()
-
-      componentId = loc.path[5] as Ref<Component>
-    })
-  )
-
-  const componentQuery = createQuery()
-  $: if (componentId !== undefined) {
-    componentQuery.query(tracker.class.Component, { _id: componentId }, (result) => {
-      component = result.shift()
-    })
-  } else {
-    componentQuery.unsubscribe()
-    component = undefined
-  }
 </script>
 
-{#if component}
-  <EditComponent
-    {component}
-    on:component={(evt) => {
-      const loc = getCurrentResolvedLocation()
-      loc.path[5] = evt.detail
-      navigate(loc)
-    }}
-  />
-{:else}
-  <ComponentBrowser {label} {query} {search} {filterMode} />
-{/if}
+<ComponentBrowser {label} {query} {search} {filterMode} />

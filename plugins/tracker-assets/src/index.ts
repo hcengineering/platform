@@ -56,13 +56,6 @@ loadMetadata(tracker.icon, {
   ComponentsList: `${icons}#list`,
   ComponentsTimeline: `${icons}#timeline`,
 
-  ComponentStatusBacklog: `${icons}#component-status-backlog`,
-  ComponentStatusPlanned: `${icons}#component-status-planned`,
-  ComponentStatusInProgress: `${icons}#component-status-in-progress`,
-  ComponentStatusPaused: `${icons}#component-status-paused`,
-  ComponentStatusCompleted: `${icons}#component-status-completed`,
-  ComponentStatusCanceled: `${icons}#component-status-canceled`,
-
   MilestoneStatusPlanned: `${icons}#component-status-planned`,
   MilestoneStatusInProgress: `${icons}#component-status-in-progress`,
   MilestoneStatusPaused: `${icons}#component-status-paused`,

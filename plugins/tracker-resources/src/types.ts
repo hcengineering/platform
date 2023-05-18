@@ -21,7 +21,6 @@ import {
   IssuesDateModificationPeriod,
   IssuesGrouping,
   IssuesOrdering,
-  ComponentStatus,
   MilestoneStatus
 } from '@hcengineering/tracker'
 import tracker from './plugin'
@@ -56,14 +55,6 @@ export const issuesDateModificationPeriodOptions: Record<IssuesDateModificationP
   [IssuesDateModificationPeriod.PastWeek]: tracker.string.PastWeek,
   [IssuesDateModificationPeriod.PastMonth]: tracker.string.PastMonth
 }
-export const defaultComponentStatuses = [
-  ComponentStatus.Backlog,
-  ComponentStatus.Planned,
-  ComponentStatus.InProgress,
-  ComponentStatus.Paused,
-  ComponentStatus.Completed,
-  ComponentStatus.Canceled
-]
 
 export const defaultMilestoneStatuses = [
   MilestoneStatus.Planned,
@@ -71,15 +62,6 @@ export const defaultMilestoneStatuses = [
   MilestoneStatus.Completed,
   MilestoneStatus.Canceled
 ]
-
-export const componentStatusAssets: Record<ComponentStatus, { icon: Asset, label: IntlString }> = {
-  [ComponentStatus.Backlog]: { icon: tracker.icon.ComponentStatusBacklog, label: tracker.string.Backlog },
-  [ComponentStatus.Planned]: { icon: tracker.icon.ComponentStatusPlanned, label: tracker.string.Planned },
-  [ComponentStatus.InProgress]: { icon: tracker.icon.ComponentStatusInProgress, label: tracker.string.InProgress },
-  [ComponentStatus.Paused]: { icon: tracker.icon.ComponentStatusPaused, label: tracker.string.Paused },
-  [ComponentStatus.Completed]: { icon: tracker.icon.ComponentStatusCompleted, label: tracker.string.Completed },
-  [ComponentStatus.Canceled]: { icon: tracker.icon.ComponentStatusCanceled, label: tracker.string.Canceled }
-}
 
 export const milestoneStatusAssets: Record<MilestoneStatus, { icon: Asset, label: IntlString }> = {
   [MilestoneStatus.Planned]: { icon: tracker.icon.MilestoneStatusPlanned, label: tracker.string.Planned },

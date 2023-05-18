@@ -30,8 +30,6 @@ import { showPopup } from '@hcengineering/ui'
 import ComponentEditor from './components/components/ComponentEditor.svelte'
 import ComponentPresenter from './components/components/ComponentPresenter.svelte'
 import Components from './components/components/Components.svelte'
-import ComponentStatusEditor from './components/components/ComponentStatusEditor.svelte'
-import ComponentStatusPresenter from './components/components/ComponentStatusPresenter.svelte'
 import ComponentsTimeline from './components/components/ComponentsTimeline.svelte'
 import ComponentTitlePresenter from './components/components/ComponentTitlePresenter.svelte'
 import EditComponent from './components/components/EditComponent.svelte'
@@ -409,8 +407,6 @@ export default async (): Promise<Resources> => ({
     IconPresenter,
     LeadPresenter,
     TargetDatePresenter,
-    ComponentStatusPresenter,
-    ComponentStatusEditor,
     SetDueDateActionPopup,
     SetParentIssueActionPopup,
     EditComponent,
