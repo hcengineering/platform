@@ -14,31 +14,24 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-  import { translate } from '@hcengineering/platform'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import { deviceOptionsStore, resizeObserver } from '..'
   import plugin from '../plugin'
   import type { DropdownTextItem } from '../types'
   import IconCheck from './icons/Check.svelte'
+  import IconSearch from './icons/Search.svelte'
   import ListView from './ListView.svelte'
   import Icon from './Icon.svelte'
+  import EditWithIcon from './EditWithIcon.svelte'
 
   export let placeholder: IntlString = plugin.string.SearchDots
+  export let placeholderParam: any | undefined = undefined
   export let items: DropdownTextItem[]
   export let selected: DropdownTextItem['id'] | DropdownTextItem['id'][] | undefined = undefined
   export let multiselect: boolean = false
 
   let search: string = ''
-  let phTraslate: string = ''
-  $: translate(placeholder, {}).then((res) => {
-    phTraslate = res
-  })
   const dispatch = createEventDispatcher()
-  let searchInput: HTMLInputElement
-
-  onMount(() => {
-    if (searchInput && !$deviceOptionsStore.isMobile) searchInput.focus()
-  })
 
   let selection = 0
   let list: ListView
@@ -99,12 +92,14 @@
   }}
 >
   <div class="header">
-    <input
-      bind:this={searchInput}
-      type="text"
+    <EditWithIcon
+      icon={IconSearch}
+      size={'large'}
+      width={'100%'}
+      focus={!$deviceOptionsStore.isMobile}
       bind:value={search}
-      placeholder={phTraslate}
-      on:input={(ev) => {}}
+      {placeholder}
+      {placeholderParam}
       on:change
     />
   </div>
@@ -115,7 +110,7 @@
           {@const item = objects[idx]}
 
           <button
-            class="menu-item flex-between w-full"
+            class="menu-item withList w-full"
             on:click={() => {
               if (multiselect && Array.isArray(selected)) {
                 const index = selected.indexOf(item.id)
@@ -131,15 +126,16 @@
               }
             }}
           >
+            <div class="label overflow-label flex-grow">{item.label}</div>
             <div class="check">
               {#if isSelected(selected, item)}
                 <Icon icon={IconCheck} size={'small'} />
               {/if}
             </div>
-            <div class="labels overflow-label">{item.label}</div>
           </button>
         </svelte:fragment>
       </ListView>
     </div>
   </div>
+  <div class="menu-space" />
 </div>

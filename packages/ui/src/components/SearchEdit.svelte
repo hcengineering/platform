@@ -5,6 +5,7 @@
   import plugin from '../plugin'
 
   export let value: string = ''
+  export let width: string = '12rem'
 
   $: _search = value
   const dispatch = createEventDispatcher()
@@ -21,7 +22,7 @@
 
 <EditWithIcon
   icon={IconSearch}
-  width={'12rem'}
+  {width}
   placeholder={plugin.string.Search}
   bind:value={_search}
   on:change={() => {

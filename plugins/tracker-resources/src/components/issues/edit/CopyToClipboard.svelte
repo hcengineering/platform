@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import view from '@hcengineering/view'
   import tracker from '../../../plugin'
   import CopyToClipboardButton from './CopyToClipboardButton.svelte'
 
@@ -22,11 +23,11 @@
 </script>
 
 {#if issueUrl}
-  <CopyToClipboardButton icon={tracker.icon.CopyURL} title={tracker.string.CopyIssueUrl} text={issueUrl} />
+  <CopyToClipboardButton icon={view.icon.CopyLink} title={tracker.string.CopyIssueUrl} text={issueUrl} />
 {/if}
 
 {#if issueId}
-  <CopyToClipboardButton icon={tracker.icon.CopyID} title={tracker.string.CopyIssueId} text={issueId} />
+  <CopyToClipboardButton icon={view.icon.CopyId} title={tracker.string.CopyIssueId} text={issueId} />
 {/if}
 
 {#if issueBranch}

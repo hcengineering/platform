@@ -35,7 +35,7 @@
   export let ignoreObjects: Ref<Doc>[] = []
   export let shadows: boolean = true
   export let width: 'medium' | 'large' | 'full' = 'medium'
-  export let size: 'small' | 'medium' | 'large' = 'small'
+  export let size: 'small' | 'medium' | 'large' = 'large'
 
   export let searchField: string = 'name'
   export let noSearchField: boolean = false

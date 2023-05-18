@@ -79,7 +79,7 @@
           {#if inline}
             <div class="flex-row-center">
               <VacancyIcon size={'small'} />
-              <span class="ml-1">
+              <span class="ml-2">
                 {vacancy.name}
               </span>
             </div>

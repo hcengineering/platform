@@ -17,11 +17,12 @@
   import type { IntlString } from '@hcengineering/platform'
   import {
     Button,
-    EditBox,
+    EditWithIcon,
     FocusHandler,
     Icon,
     IconAdd,
     IconCheck,
+    IconSearch,
     ListView,
     createFocusManager,
     deviceOptionsStore,
@@ -48,7 +49,7 @@
   export let ignoreObjects: Ref<Doc>[] = []
   export let shadows: boolean = true
   export let width: 'medium' | 'large' | 'full' = 'medium'
-  export let size: 'small' | 'medium' | 'large' = 'small'
+  export let size: 'small' | 'medium' | 'large' = 'large'
 
   export let searchField: string = 'name'
   export let noSearchField: boolean = false
@@ -190,9 +191,10 @@
   }}
 >
   <div class="header flex-between">
-    <EditBox
-      kind={'search-style'}
-      focusIndex={1}
+    <EditWithIcon
+      icon={IconSearch}
+      size={'large'}
+      width={'100%'}
       focus={!$deviceOptionsStore.isMobile}
       bind:value={search}
       on:change={() => dispatch('search', search)}
@@ -200,7 +202,7 @@
       {placeholder}
     />
     {#if create !== undefined}
-      <div class="mx-2">
+      <div class="ml-2">
         <Button
           focusIndex={2}
           kind={'transparent'}
@@ -224,6 +226,7 @@
             {@const obj = toAny(objects[item])}
             {#if item === 0 || (item > 0 && toAny(objects[item - 1])[groupBy] !== obj[groupBy])}
               <!--Category for first item-->
+              {#if item > 0}<div class="menu-separator" />{/if}
               <div class="category-box">
                 <slot name="category" item={obj} />
               </div>
@@ -240,19 +243,18 @@
               handleSelection(undefined, objects, item)
             }}
           >
+            <span class="label" class:disabled={readonly || isDeselectDisabled}>
+              <slot name="item" item={obj} />
+            </span>
             {#if (allowDeselect && selected) || multiSelect || selected}
               <div class="check" class:disabled={readonly}>
                 {#if obj._id === selected || selectedElements.has(obj._id)}
                   <div bind:this={selectedDiv} use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
-                    <Icon icon={IconCheck} {size} />
+                    <Icon icon={IconCheck} size={'small'} />
                   </div>
                 {/if}
               </div>
             {/if}
-
-            <span class="label" class:disabled={readonly || isDeselectDisabled}>
-              <slot name="item" item={obj} />
-            </span>
           </button>
         </svelte:fragment>
       </ListView>
@@ -261,6 +263,7 @@
   {#if cHeight === -1}
     <div class="whereSelected" />
   {/if}
+  <div class="menu-space" />
 </div>
 
 <style lang="scss">

@@ -242,7 +242,8 @@ export const contactPlugin = plugin(contactId, {
     Homepage: '' as Asset,
     Whatsapp: '' as Asset,
     ComponentMembers: '' as Asset,
-    Profile: '' as Asset
+    Profile: '' as Asset,
+    KickUser: '' as Asset
   },
   space: {
     Employee: '' as Ref<Space>,

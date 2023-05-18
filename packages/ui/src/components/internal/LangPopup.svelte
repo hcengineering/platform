@@ -22,10 +22,11 @@
 </script>
 
 <div class="antiPopup">
-  <div class="ap-space" />
+  <div class="ap-space x2" />
   {#each langs as lang}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
-      class="ap-menuItem ap-woScroll flex-row-center"
+      class="ap-menuItem hoverable flex-row-center"
       on:click={() => {
         dispatch('close', lang.id)
       }}
@@ -33,8 +34,8 @@
       <svg class="svg-small">
         <use href="#{lang.id}-flag" />
       </svg>
-      <div class="ml-3"><Label label={lang.label} /></div>
+      <div class="ml-2"><Label label={lang.label} /></div>
     </div>
   {/each}
-  <div class="ap-space" />
+  <div class="ap-space x2" />
 </div>

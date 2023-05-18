@@ -121,7 +121,7 @@
   on:keydown={keyDown}
 >
   <MouseSpeedTracker bind:focusSpeed />
-  <div class="ap-space" />
+  <div class="ap-space x2" />
   <slot name="header" />
   <div class="ap-scroll">
     <div class="ap-box" bind:this={popup}>
@@ -149,8 +149,8 @@
                 action.action(ctx, evt)
               }}
             >
-              {#if action.icon}<div class="icon mr-3"><Icon icon={action.icon} size={'small'} /></div>{/if}
-              <span class="overflow-label pr-1 flex-grow"><Label label={action.label} /></span>
+              {#if action.icon}<div class="icon mr-2"><Icon icon={action.icon} size={'small'} /></div>{/if}
+              <span class="overflow-label pr-4 flex-grow"><Label label={action.label} /></span>
             </button>
           </a>
         {:else if action.component !== undefined && !action.isSubmenuRightClicking}
@@ -165,9 +165,9 @@
             on:click={() => focusTarget(action, btns[i])}
           >
             {#if action.icon}
-              <div class="icon mr-3"><Icon icon={action.icon} size={'small'} /></div>
+              <div class="icon mr-2"><Icon icon={action.icon} size={'small'} /></div>
             {/if}
-            <span class="overflow-label pr-1 flex-grow"><Label label={action.label} /></span>
+            <span class="overflow-label pr-4 flex-grow"><Label label={action.label} /></span>
           </button>
         {:else}
           <!-- svelte-ignore a11y-mouse-events-have-key-events -->
@@ -190,13 +190,13 @@
             }}
           >
             {#if action.icon}
-              <div class="icon mr-3"><Icon icon={action.icon} size={'small'} /></div>
+              <div class="icon mr-2"><Icon icon={action.icon} size={'small'} /></div>
             {/if}
-            <span class="overflow-label pr-1 flex-grow"><Label label={action.label} /></span>
+            <span class="overflow-label pr-4 flex-grow"><Label label={action.label} /></span>
           </button>
         {/if}
       {/each}
     </div>
   </div>
-  <div class="ap-space" />
+  <div class="ap-space x2" />
 </div>

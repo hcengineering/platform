@@ -154,7 +154,7 @@
           {:else}
             <div class="flex-presenter not-selected">
               {#if icon}
-                <div class="icon" class:small-gap={size === 'inline' || size === 'small'}>
+                <div class="icon w-4 flex-no-shrink" class:small-gap={size === 'inline' || size === 'small'}>
                   <Icon {icon} size={avatarSize} />
                 </div>
               {/if}

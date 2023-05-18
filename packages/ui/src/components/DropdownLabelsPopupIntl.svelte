@@ -37,6 +37,7 @@
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
+  <div class="menu-space" />
   <div class="scroll">
     <div class="box">
       {#each items as item, i}
@@ -51,10 +52,11 @@
         >
           <div class="flex-grow caption-color lines-limit-2"><Label label={item.label} /></div>
           {#if item.id === selected}
-            <div class="check-right"><CheckBox checked primary /></div>
+            <div class="check"><CheckBox checked primary /></div>
           {/if}
         </button>
       {/each}
     </div>
   </div>
+  <div class="menu-space" />
 </div>

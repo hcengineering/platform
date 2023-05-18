@@ -296,7 +296,7 @@ export function createModel (builder: Builder): void {
           {
             id: talentsId,
             component: workbench.component.SpecialView,
-            icon: contact.icon.Person,
+            icon: recruit.icon.Talents,
             label: recruit.string.Talents,
             componentProps: {
               _class: recruit.mixin.Candidate,
@@ -873,7 +873,7 @@ export function createModel (builder: Builder): void {
 
   createAction(builder, {
     label: recruit.string.EditVacancy,
-    icon: recruit.icon.Vacancy,
+    icon: view.icon.Edit,
     action: view.actionImpl.ShowPanel,
     actionProps: {
       component: recruit.component.EditVacancy,
@@ -1013,7 +1013,6 @@ export function createModel (builder: Builder): void {
       group: 'edit'
     }
   })
-  // TODO: fix icons
   createAction(
     builder,
     {
@@ -1022,7 +1021,7 @@ export function createModel (builder: Builder): void {
         textProvider: recruit.function.IdProvider
       },
       label: recruit.string.CopyId,
-      icon: recruit.icon.Application,
+      icon: view.icon.CopyId,
       keyBinding: [],
       input: 'none',
       category: recruit.category.Recruit,
@@ -1043,7 +1042,7 @@ export function createModel (builder: Builder): void {
         textProvider: recruit.function.GetObjectLink
       },
       label: recruit.string.CopyLink,
-      icon: recruit.icon.Application,
+      icon: view.icon.CopyLink,
       keyBinding: [],
       input: 'none',
       category: recruit.category.Recruit,
@@ -1064,7 +1063,7 @@ export function createModel (builder: Builder): void {
         textProvider: recruit.function.GetObjectLink
       },
       label: recruit.string.CopyLink,
-      icon: recruit.icon.Application,
+      icon: view.icon.CopyLink,
       keyBinding: [],
       input: 'none',
       category: recruit.category.Recruit,

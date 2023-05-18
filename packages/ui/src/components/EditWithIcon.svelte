@@ -25,14 +25,15 @@
   export let width: string | undefined = undefined
   export let value: string | undefined = undefined
   export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
+  export let placeholderParam: any | undefined = undefined
   export let focus: boolean = false
-  export let size: 'small' | 'medium' = 'medium'
+  export let size: 'small' | 'medium' | 'large' = 'medium'
 
   const dispatch = createEventDispatcher()
   let textHTML: HTMLInputElement
   let phTraslate: string = ''
 
-  $: translate(placeholder, {}).then((res) => {
+  $: translate(placeholder, placeholderParam ?? {}).then((res) => {
     phTraslate = res
   })
   $: if (textHTML !== undefined) {
@@ -66,8 +67,6 @@
     padding: 0 0.5rem 0 0.5rem;
     min-width: 10rem;
     color: var(--theme-caption-color);
-    // background-color: var(--body-color);
-    border: 1px solid transparent;
     border-radius: 0.25rem;
 
     &.small {
@@ -76,22 +75,22 @@
     &.medium {
       height: 2rem;
     }
+    &.large {
+      height: 2.25rem;
+    }
     &:focus-within {
-      border-color: var(--theme-button-border);
-      box-shadow: 0 0 0 2px var(--primary-button-focused-border);
-
-      .icon {
-        color: var(--theme-dark-color);
-      }
+      background-color: var(--theme-editbox-focus-color);
+      box-shadow: 0 0 0 1px var(--theme-editbox-focus-border);
     }
 
     input {
       width: 100%;
+      caret-color: var(--theme-caret-color);
       border: none;
       border-radius: 0.25rem;
 
       &::placeholder {
-        color: var(--theme-halfcontent-color);
+        color: var(--theme-dark-color);
       }
     }
 

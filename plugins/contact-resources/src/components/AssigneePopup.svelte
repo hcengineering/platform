@@ -18,17 +18,19 @@
   import type { Asset, IntlString } from '@hcengineering/platform'
   import {
     createFocusManager,
-    EditBox,
+    EditWithIcon,
     FocusHandler,
     Icon,
     IconCheck,
+    IconSearch,
+    deviceOptionsStore,
     ListView,
     resizeObserver,
     AnySvelteComponent,
     Label,
     tooltip
   } from '@hcengineering/ui'
-  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+  import presentation, { createQuery } from '@hcengineering/presentation'
   import { createEventDispatcher } from 'svelte'
   import { AssigneeCategory, assigneeCategoryOrder, getCategoryTitle } from '../assignee'
   import UserInfo from './UserInfo.svelte'
@@ -43,6 +45,7 @@
   export let allowDeselect = true
   export let titleDeselect: IntlString | undefined
   export let placeholder: IntlString = presentation.string.Search
+  export let placeholderParam: any | undefined = undefined
   export let ignoreUsers: Ref<Person>[] = []
   export let shadows: boolean = true
   export let width: 'medium' | 'large' | 'full' = 'medium'
@@ -51,8 +54,8 @@
   export let showCategories: boolean = true
   export let icon: Asset | AnySvelteComponent | undefined = undefined
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
+  // const client = getClient()
+  // const hierarchy = client.getHierarchy()
   const currentEmployee = (getCurrentAccount() as EmployeeAccount).employee
 
   let search: string = ''
@@ -189,8 +192,17 @@
     dispatch('changeContent')
   }}
 >
-  <div class="header flex-between">
-    <EditBox kind={'search-style'} focusIndex={1} focus bind:value={search} {placeholder} />
+  <div class="header">
+    <EditWithIcon
+      icon={IconSearch}
+      size={'large'}
+      width={'100%'}
+      focus={!$deviceOptionsStore.isMobile}
+      bind:value={search}
+      {placeholder}
+      {placeholderParam}
+      on:change
+    />
   </div>
   {#if cHeight === 1}
     <div class="whereSelected" />
@@ -206,18 +218,17 @@
           {#if showCategories}
             {@const obj = toAny(contacts[item])}
             {@const category = categorizedPersons.get(obj._id)}
-            {@const cl = hierarchy.getClass(contacts[item]._class)}
+            <!-- {@const cl = hierarchy.getClass(contacts[item]._class)} -->
             {#if item === 0 || (item > 0 && categorizedPersons.get(toAny(contacts[item - 1])._id) !== categorizedPersons.get(obj._id))}
               <!--Category for first item-->
-              <div class="menu-group__header category-box">
-                <div class="flex-row-center pl-1">
-                  {#if cl.icon}
-                    <div class="clear-mins mr-2"><Icon icon={cl.icon} size={'small'} /></div>
-                  {/if}
-                  <span class="overflow-label">
-                    <Label label={getCategoryTitle(category)} />
-                  </span>
-                </div>
+              {#if item > 0}<div class="menu-separator" />{/if}
+              <div class="menu-group__header flex-row-center category-box">
+                <!-- {#if cl.icon}
+                  <div class="clear-mins mr-2"><Icon icon={cl.icon} size={'small'} /></div>
+                {/if} -->
+                <span class="overflow-label">
+                  <Label label={getCategoryTitle(category)} />
+                </span>
               </div>
             {/if}
           {/if}
@@ -231,16 +242,18 @@
               handleSelection(undefined, item)
             }}
           >
+            <div class="flex-grow clear-mins">
+              <UserInfo size={'smaller'} value={obj} {icon} />
+            </div>
             {#if allowDeselect && selected}
               <div class="check">
                 {#if obj._id === selected}
                   <div bind:this={selectedDiv} use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
-                    <Icon icon={IconCheck} {size} />
+                    <Icon icon={IconCheck} size={'small'} />
                   </div>
                 {/if}
               </div>
             {/if}
-            <UserInfo size={'x-small'} value={obj} {icon} />
           </button>
         </svelte:fragment>
       </ListView>
@@ -249,6 +262,7 @@
   {#if cHeight === -1}
     <div class="whereSelected" />
   {/if}
+  <div class="menu-space" />
 </div>
 
 <style lang="scss">

@@ -17,7 +17,7 @@
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
   import type { Asset, IntlString } from '@hcengineering/platform'
   import presentation, { getClient, ObjectCreate, ObjectPopup } from '@hcengineering/presentation'
-  import { AnySvelteComponent, Icon, Label } from '@hcengineering/ui'
+  import { AnySvelteComponent, Label } from '@hcengineering/ui'
   import UserInfo from './UserInfo.svelte'
 
   export let _class: Ref<Class<Contact>>
@@ -71,17 +71,17 @@
 >
   <svelte:fragment slot="item" let:item={person}>
     <div class="flex flex-grow overflow-label">
-      <UserInfo size={'x-small'} value={person} {icon} />
+      <UserInfo size={'smaller'} value={person} {icon} />
     </div>
   </svelte:fragment>
 
   <svelte:fragment slot="category" let:item={person}>
     {@const cl = hierarchy.getClass(person._class)}
-    <div class="flex flex-grow overflow-label">
-      <span class="fs-medium flex-center gap-2 mt-2 mb-2 ml-2">
-        {#if cl.icon}
+    <div class="menu-group__header">
+      <span class="overflow-label">
+        <!-- {#if cl.icon}
           <Icon icon={cl.icon} size={'small'} />
-        {/if}
+        {/if} -->
         <Label label={cl.label} />
       </span>
     </div>
