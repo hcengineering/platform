@@ -18,7 +18,7 @@
   import { Icon } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
-  
+
   export let value: WithLookup<Milestone>
   export let shouldShowAvatar = true
   export let disabled = false

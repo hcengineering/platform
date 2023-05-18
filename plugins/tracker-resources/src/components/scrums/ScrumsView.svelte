@@ -15,7 +15,7 @@
 <script lang="ts">
   import contact from '@hcengineering/contact'
   import { Ref, SortingOrder } from '@hcengineering/core'
-  import { ScrumRecord, Milestone, Project } from '@hcengineering/tracker'
+  import { ScrumRecord, Project, Scrum } from '@hcengineering/tracker'
   import { Button, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import { ActionContext, List } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
@@ -31,7 +31,7 @@
     showPopup(NewScrum, { space: currentSpace, targetElement: null }, null)
   }
 
-  const retrieveMembers = (s: Milestone) => s.members
+  const retrieveMembers = (s: Scrum) => s.members
 </script>
 
 <ActionContext
