@@ -40,7 +40,7 @@
     "Filter": "Filter",
     "ClearFilters": "Clear filters",
     "FilterIsNot": "is not",
-    "FilterIsEither": "{value, plural, =1 {is} other {is either of}}",
+    "FilterIsEither": "is",
     "FilterStatesCount": "{value, plural, =1 {1 state} other {# states}}",
     "FilterUpdated": "Filter was updated",
     "FilterRemoved": "{count, plural, =1 {# non-existing value was} other {# non-existing values were}} removed from the filter",
@@ -73,15 +73,21 @@
     "ShowEmptyGroups": "Show empty groups",
     "Overdue": "Overdue",
     "Today": "Today",
+    "Yesterday": "Yesterday",
     "ThisWeek": "This week",
     "NextWeek": "Next week",
     "ThisMonth": "This month",
     "NextMonth": "Next month",
     "NotSpecified": "Not specified",
-    "CustomDate": "Custom date",
+    "ExactDate": "Exact date",
+    "BeforeDate": "Before date",
+    "AfterDate": "After date",
+    "BetweenDates": "Between dates",
     "AddSavedView": "Add saved view",
     "Public": "Public",
     "Hide": "Hide",
-    "SaveAs": "Save as"
+    "SaveAs": "Save as",
+    "And": "and",
+    "Between": "is between"
   }
 }

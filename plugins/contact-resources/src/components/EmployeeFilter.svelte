@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,65 +13,30 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Doc, FindResult, getObjectValue, Ref, RefTo, SortingOrder, Space, Status } from '@hcengineering/core'
+  import contact, { Employee } from '@hcengineering/contact'
+  import core, { Doc, FindResult, getObjectValue, Ref, SortingOrder, Space } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import ui, {
-    addNotification,
-    Icon,
-    IconCheck,
-    deviceOptionsStore,
-    Label,
-    Loading,
-    resizeObserver
-  } from '@hcengineering/ui'
+  import ui, { addNotification, deviceOptionsStore, Icon, IconCheck, Loading, resizeObserver } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
+  import { FILTER_DEBOUNCE_MS, FilterRemovedNotification, sortFilterValues } from '@hcengineering/view-resources'
+  import view from '@hcengineering/view-resources/src/plugin'
   import { createEventDispatcher, onMount } from 'svelte'
-  import view from '../../plugin'
-  import { FILTER_DEBOUNCE_MS, sortFilterValues } from '../../filter'
-  import { buildConfigLookup, getPresenter } from '../../utils'
-  import FilterRemovedNotification from './FilterRemovedNotification.svelte'
+  import EmployeePresenter from './EmployeePresenter.svelte'
 
   export let filter: Filter
   export let space: Ref<Space> | undefined = undefined
   export let onChange: (e: Filter) => void
 
   const client = getClient()
-  const hierarchy = client.getHierarchy()
-  const tkey = '$lookup.' + filter.key.key
-  const key = { key: tkey }
-  const lookup = buildConfigLookup(hierarchy, filter.key._class, [tkey])
-  const promise = getPresenter(client, filter.key._class, key, key, lookup)
   filter.modes = filter.modes === undefined ? [view.filter.FilterObjectIn, view.filter.FilterObjectNin] : filter.modes
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
 
-  let values: (Doc | undefined | null)[] = []
-  let objectsPromise: Promise<FindResult<Doc>> | undefined
+  let values: (Employee | undefined | null)[] = []
+  let objectsPromise: Promise<FindResult<Employee>> | undefined
   const targets = new Set<any>()
-  $: targetClass = (filter.key.attribute.type as RefTo<Doc>).to
-  $: clazz = hierarchy.getClass(targetClass)
-
-  $: isStatus = client.getHierarchy().isDerived(targetClass, core.class.Status) ?? false
 
   let filterUpdateTimeout: number | undefined
-
-  const groupValues = (val: Status[]): Doc[] => {
-    const statuses = val
-    const result: Doc[] = []
-    const unique = [...new Set(val.map((v) => v.name.trim().toLocaleLowerCase()))]
-    unique.forEach((label, i) => {
-      let exists = false
-      statuses.forEach((state) => {
-        if (state.name.trim().toLocaleLowerCase() === label) {
-          if (!exists) {
-            result[i] = state
-            exists = targets.has(state?._id)
-          }
-        }
-      })
-    })
-    return result
-  }
 
   async function getValues (search: string): Promise<void> {
     if (objectsPromise) {
@@ -95,20 +60,16 @@
     }
 
     const resultQuery =
-      search !== '' && clazz.sortingKey
+      search !== ''
         ? {
-            [clazz.sortingKey]: { $like: '%' + search + '%' },
+            name: { $like: '%' + search + '%' },
             _id: { $in: Array.from(targets.keys()) }
           }
         : {
             _id: { $in: Array.from(targets.keys()) }
           }
-    const options = clazz.sortingKey !== undefined ? { sort: { [clazz.sortingKey]: SortingOrder.Ascending } } : {}
-    objectsPromise = client.findAll(targetClass, resultQuery, options)
+    objectsPromise = client.findAll(contact.class.Employee, resultQuery, { sort: { name: SortingOrder.Ascending } })
     values = await objectsPromise
-    if (isStatus) {
-      values = groupValues(values as Status[])
-    }
     if (targets.has(undefined)) {
       values.unshift(undefined)
     }
@@ -163,56 +124,46 @@
   })
 
   const dispatch = createEventDispatcher()
-  $: if (targetClass) getValues(search)
+  $: getValues(search)
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
-  {#if clazz.sortingKey}
-    <div class="header">
-      <input
-        bind:this={searchInput}
-        type="text"
-        bind:value={search}
-        on:change={() => {
-          getValues(search)
-        }}
-        placeholder={phTraslate}
-      />
-    </div>
-  {/if}
+  <div class="header">
+    <input
+      bind:this={searchInput}
+      type="text"
+      bind:value={search}
+      on:change={() => {
+        getValues(search)
+      }}
+      placeholder={phTraslate}
+    />
+  </div>
   <div class="scroll">
     <div class="box">
-      {#await promise then attribute}
-        {#if objectsPromise}
-          <Loading />
-        {:else}
-          {#each sortFilterValues(values, (v) => isSelected(v, filter.value)) as value}
-            <button
-              class="menu-item no-focus"
-              on:click={() => {
-                handleFilterToggle(value)
-              }}
-            >
-              <div class="flex-between w-full">
-                <div class="flex-row-center">
-                  {#if value}
-                    {#key value._id}
-                      <svelte:component this={attribute.presenter} {value} {...attribute.props} disabled oneLine />
-                    {/key}
-                  {:else}
-                    <Label label={ui.string.NotSelected} />
-                  {/if}
-                </div>
-                <div class="pointer-events-none">
-                  {#if isSelected(value, filter.value)}
-                    <Icon icon={IconCheck} size={'small'} />
-                  {/if}
-                </div>
+      {#if objectsPromise}
+        <Loading />
+      {:else}
+        {#each sortFilterValues(values, (v) => isSelected(v, filter.value)) as value}
+          <button
+            class="menu-item no-focus"
+            on:click={() => {
+              handleFilterToggle(value)
+            }}
+          >
+            <div class="flex-between w-full">
+              <div class="flex-row-center">
+                <EmployeePresenter {value} shouldShowPlaceholder defaultName={ui.string.NotSelected} disabled />
               </div>
-            </button>
-          {/each}
-        {/if}
-      {/await}
+              <div class="pointer-events-none">
+                {#if isSelected(value, filter.value)}
+                  <Icon icon={IconCheck} size={'small'} />
+                {/if}
+              </div>
+            </div>
+          </button>
+        {/each}
+      {/if}
     </div>
   </div>
 </div>

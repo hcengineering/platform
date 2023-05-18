@@ -2,7 +2,7 @@
   import { Employee } from '@hcengineering/contact'
   import { Ref, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { IconSize } from '@hcengineering/ui'
+  import ui, { IconSize } from '@hcengineering/ui'
   import { PersonLabelTooltip, employeeByIdStore } from '..'
   import PersonPresenter from '../components/PersonPresenter.svelte'
   import contact from '../plugin'
@@ -18,7 +18,7 @@
   export let inline = false
   export let colorInherit: boolean = false
   export let accent: boolean = false
-  export let defaultName: IntlString | undefined = undefined
+  export let defaultName: IntlString | undefined = ui.string.NotSelected
   export let element: HTMLElement | undefined = undefined
 
   $: employeeValue = typeof value === 'string' ? $employeeByIdStore.get(value) : value

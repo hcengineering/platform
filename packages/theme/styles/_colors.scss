@@ -38,8 +38,8 @@
 
   --grayscale-grey-03: #77818E;
   
-  --primary-color-purple-01: #4B38BD;
-  --primary-color-purple-02: #6552DB;
+  --primary-color-purple-01: #4c38bd;
+  --primary-color-purple-02: #6452db;
   --primary-color-purple-03: #9D92C4;
   --primary-color-orange-01: #CC4726;
   --primary-color-orange-02: #F47758;
@@ -54,7 +54,8 @@
 /* Dark Theme */
 .theme-dark {
   --primary-button-color: #fff;
-  --primary-button-enabled: #205DC2;
+  --primary-button-enabled: #205dc2;
+  --primary-button-transparent: rgba(32, 93, 194, 0.2);
   --primary-button-hovered: #1A53AF;
   --primary-button-pressed: #144CA8;
   --primary-button-focused: #144CA8;
@@ -220,7 +221,8 @@
 /* Light Theme */
 .theme-light {
   --primary-button-color: #fff;
-  --primary-button-enabled: #2B5190;
+  --primary-button-enabled: rgb(43, 82, 144);
+  --primary-button-transparent: rgba(43, 82, 144, 0.2);
   --primary-button-hovered: #1A53AF; // DARK
   --primary-button-pressed: #144CA8; // DARK
   --primary-button-focused: #144CA8; // DARK

@@ -28,6 +28,7 @@ import type {
   ArrayEditor,
   AttributeEditor,
   AttributeFilter,
+  AttributeFilterPresenter,
   AttributePresenter,
   BuildModelKey,
   ClassFilters,
@@ -126,6 +127,8 @@ export class TFilteredView extends TDoc implements FilteredView {
 @Model(view.class.FilterMode, core.class.Doc, DOMAIN_MODEL)
 export class TFilterMode extends TDoc implements FilterMode {
   label!: IntlString
+  selectedLabel?: IntlString
+  disableValueSelector?: boolean
   result!: Resource<(filter: Filter, onUpdate: () => void) => Promise<any>>
 }
 
@@ -139,6 +142,7 @@ export class TClassFilters extends TClass implements ClassFilters {
 @Mixin(view.mixin.AttributeFilter, core.class.Class)
 export class TAttributeFilter extends TClass implements AttributeFilter {
   component!: AnyComponent
+  group?: 'top' | 'bottom'
 }
 
 @Mixin(view.mixin.AttributeEditor, core.class.Class)
@@ -170,6 +174,11 @@ export class TArrayEditor extends TClass implements ArrayEditor {
 
 @Mixin(view.mixin.AttributePresenter, core.class.Class)
 export class TAttributePresenter extends TClass implements AttributePresenter {
+  presenter!: AnyComponent
+}
+
+@Mixin(view.mixin.AttributeFilterPresenter, core.class.Class)
+export class TAttributeFilterPresenter extends TClass implements AttributeFilterPresenter {
   presenter!: AnyComponent
 }
 
@@ -362,6 +371,7 @@ export function createModel (builder: Builder): void {
     TAttributeFilter,
     TAttributeEditor,
     TAttributePresenter,
+    TAttributeFilterPresenter,
     TActivityAttributePresenter,
     TListItemPresenter,
     TCollectionEditor,
@@ -692,7 +702,8 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(core.class.TypeDate, core.class.Class, view.mixin.AttributeFilter, {
-    component: view.component.DateFilter
+    component: view.component.DateFilter,
+    group: 'bottom'
   })
 
   builder.mixin(core.class.EnumOf, core.class.Class, view.mixin.AttributeFilter, {
@@ -704,7 +715,8 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(core.class.TypeTimestamp, core.class.Class, view.mixin.AttributeFilter, {
-    component: view.component.DateFilter
+    component: view.component.DateFilter,
+    group: 'bottom'
   })
 
   builder.createDoc(
@@ -745,26 +757,6 @@ export function createModel (builder: Builder): void {
       result: view.function.FilterObjectNinResult
     },
     view.filter.FilterObjectNin
-  )
-
-  builder.createDoc(
-    view.class.FilterMode,
-    core.space.Model,
-    {
-      label: view.string.Before,
-      result: view.function.FilterBeforeResult
-    },
-    view.filter.FilterBefore
-  )
-
-  builder.createDoc(
-    view.class.FilterMode,
-    core.space.Model,
-    {
-      label: view.string.After,
-      result: view.function.FilterAfterResult
-    },
-    view.filter.FilterAfter
   )
 
   builder.createDoc(
@@ -823,7 +815,7 @@ export function createModel (builder: Builder): void {
     view.class.FilterMode,
     core.space.Model,
     {
-      label: view.string.Today,
+      label: view.string.Yesterday,
       result: view.function.FilterDateYesterday,
       disableValueSelector: true
     },
@@ -878,10 +870,44 @@ export function createModel (builder: Builder): void {
     view.class.FilterMode,
     core.space.Model,
     {
-      label: view.string.CustomDate,
+      label: view.string.ExactDate,
+      selectedLabel: view.string.FilterIsEither,
       result: view.function.FilterDateCustom
     },
     view.filter.FilterDateCustom
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.BeforeDate,
+      selectedLabel: view.string.Before,
+      result: view.function.FilterBeforeResult
+    },
+    view.filter.FilterBefore
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.AfterDate,
+      selectedLabel: view.string.After,
+      result: view.function.FilterAfterResult
+    },
+    view.filter.FilterAfter
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.BetweenDates,
+      selectedLabel: view.string.Between,
+      result: view.function.FilterDateCustom
+    },
+    view.filter.FilterDateBetween
   )
 
   builder.createDoc(
@@ -894,6 +920,18 @@ export function createModel (builder: Builder): void {
     },
     view.filter.FilterDateNotSpecified
   )
+
+  builder.mixin(core.class.TypeDate, core.class.Class, view.mixin.AttributeFilterPresenter, {
+    presenter: view.component.DateFilterPresenter
+  })
+
+  builder.mixin(core.class.TypeTimestamp, core.class.Class, view.mixin.AttributeFilterPresenter, {
+    presenter: view.component.DateFilterPresenter
+  })
+
+  builder.mixin(core.class.TypeString, core.class.Class, view.mixin.AttributeFilterPresenter, {
+    presenter: view.component.StringFilterPresenter
+  })
 
   classPresenter(builder, core.class.EnumOf, view.component.EnumPresenter, view.component.EnumEditor)
 

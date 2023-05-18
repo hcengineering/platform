@@ -113,7 +113,7 @@
         {viewDate}
         {mondayStart}
         viewUpdate={false}
-        hideNavigator
+        hideNavigator="all"
         on:update={(result) => updateDate(result.detail)}
       />
       <MonthSquare

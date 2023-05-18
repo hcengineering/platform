@@ -75,6 +75,9 @@ import ChannelPanel from './components/ChannelPanel.svelte'
 import ActivityChannelPresenter from './components/activity/ActivityChannelPresenter.svelte'
 import SelectAvatars from './components/SelectAvatars.svelte'
 import UserBoxItems from './components/UserBoxItems.svelte'
+import EmployeeFilter from './components/EmployeeFilter.svelte'
+import EmployeeFilterValuePresenter from './components/EmployeeFilterValuePresenter.svelte'
+import EmployeeAccountFilterValuePresenter from './components/EmployeeAccountFilterValuePresenter.svelte'
 
 import contact from './plugin'
 import {
@@ -292,7 +295,10 @@ export default async (): Promise<Resources> => ({
     ActivityChannelPresenter,
     SpaceMembers,
     SelectAvatars,
-    UserBoxItems
+    UserBoxItems,
+    EmployeeFilter,
+    EmployeeFilterValuePresenter,
+    EmployeeAccountFilterValuePresenter
   },
   completion: {
     EmployeeQuery: async (

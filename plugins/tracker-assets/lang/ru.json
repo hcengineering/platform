@@ -147,12 +147,6 @@
     "GotoMyIssues": "Перейи к моим задачам",
     "GotoTrackerApplication": "Перейти к приложению Трекер",
 
-    "Filter": "Фильтр",
-    "ClearFilters": "Очистить фильтр",
-    "FilterIs": "является",
-    "FilterIsNot": "не является",
-    "FilterIsEither": "является ли любой из",
-    "FilterStatesCount": "{value, plural, =1 {1 state} other {# states}}",
     "Assigned": "Назначенные",
     "Created": "{value, plural, =1 {Создана} other {Созданные}}",
     "Subscribed": "Отслеживаемые",

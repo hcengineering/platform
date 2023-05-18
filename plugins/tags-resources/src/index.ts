@@ -36,6 +36,7 @@ import { ObjQueryType } from '@hcengineering/core'
 import { getRefs } from './utils'
 import { Filter } from '@hcengineering/view'
 import WeightPopup from './components/WeightPopup.svelte'
+import TagsFilterPresenter from './components/TagsFilterPresenter.svelte'
 
 export { WeightPopup }
 export async function tagsInResult (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
@@ -69,7 +70,8 @@ export default async (): Promise<Resources> => ({
     TagsAttributeEditor,
     TagsEditorPopup,
     LabelsPresenter,
-    ObjectsTagsEditorPopup
+    ObjectsTagsEditorPopup,
+    TagsFilterPresenter
   },
   actionImpl: {
     Open: (value: TagElement, evt: MouseEvent) => {

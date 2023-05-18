@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { RangeDatePopup, SelectPopup, showPopup } from '@hcengineering/ui'
+  import { RangeDatePopup, SelectPopup, SimpleDatePopup, showPopup } from '@hcengineering/ui'
   import { Filter, FilterMode } from '@hcengineering/view'
   import { createEventDispatcher, onMount } from 'svelte'
   import view from '../../plugin'
@@ -37,6 +37,9 @@
         view.filter.FilterDateM,
         view.filter.FilterDateNextM,
         view.filter.FilterDateCustom,
+        view.filter.FilterBefore,
+        view.filter.FilterAfter,
+        view.filter.FilterDateBetween,
         view.filter.FilterDateNotSpecified
       ]
     : [
@@ -44,7 +47,10 @@
         view.filter.FilterDateYesterday,
         view.filter.FilterDateWeek,
         view.filter.FilterDateM,
-        view.filter.FilterDateCustom
+        view.filter.FilterDateCustom,
+        view.filter.FilterBefore,
+        view.filter.FilterAfter,
+        view.filter.FilterDateBetween
       ]
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
 
@@ -59,44 +65,69 @@
   })
 
   function showPicker () {
-    showPopup(
-      RangeDatePopup,
-      { label: filter.key.attribute.label, startDate: filter.value[0], endDate: filter.value[1] },
-      undefined,
-      (res) => {
-        if (res) {
-          const value: Date[] = []
-          if (res.startDate) {
-            value.push(res.startDate)
+    if (filter.mode === view.filter.FilterDateBetween) {
+      showPopup(
+        RangeDatePopup,
+        {
+          label: filter.key.attribute.label,
+          startDate: filter.value[0] ? new Date(filter.value[0]) : null,
+          endDate: filter.value[1] ? new Date(filter.value[1]) : null
+        },
+        undefined,
+        (res) => {
+          if (res?.startDate) {
+            const value: Date[] = [res.startDate]
+            if (res.endDate && res.startDate !== res.endDate) {
+              value.push(res.endDate)
+            }
+            filter.value = value
+            onChange(filter)
+            dispatch('close')
           }
-          if (res.endDate && res.startDate !== res.endDate) {
-            value.push(res.endDate)
-          }
-          filter.value = value
-          onChange(filter)
         }
-        dispatch('close')
-      }
-    )
+      )
+    } else {
+      showPopup(
+        SimpleDatePopup,
+        { currentDate: filter.value[0] ? new Date(filter.value[0]) : null },
+        undefined,
+        (res) => {
+          if (res) {
+            filter.value = [res]
+            onChange(filter)
+            dispatch('close')
+          }
+        }
+      )
+    }
   }
 
   onMount(() => {
-    if (filter.mode === view.filter.FilterDateCustom) {
+    if (pickerFilters.includes(filter.mode)) {
       showPicker()
     }
   })
+
+  const pickerFilters = [
+    view.filter.FilterDateCustom,
+    view.filter.FilterBefore,
+    view.filter.FilterAfter,
+    view.filter.FilterDateBetween
+  ]
 </script>
 
-{#if filter.mode !== view.filter.FilterDateCustom}
+{#if !pickerFilters.includes(filter.mode)}
   <SelectPopup
     value={modes.map((it) => ({ ...it, id: it._id }))}
     on:close={(evt) => {
-      filter.mode = evt.detail
-      if (filter.mode === view.filter.FilterDateCustom) {
-        showPicker()
-      } else {
-        onChange(filter)
-        dispatch('close')
+      if (evt.detail) {
+        filter.mode = evt.detail
+        if (pickerFilters.includes(filter.mode)) {
+          showPicker()
+        } else {
+          onChange(filter)
+          dispatch('close')
+        }
       }
     }}
   />

@@ -131,23 +131,24 @@
   </div>
   <div class="content">
     <div class="flex-between">
-      <div class="w-60">
+      <div class="input">
         <DateInputBox bind:this={dateInput} bind:currentDate={startDate} on:close={closeDP} on:save={saveDate} />
       </div>
-      <div class="w-60">
+      <div class="input">
         <DateInputBox bind:this={endDateInput} bind:currentDate={endDate} on:close={closeDP} on:save={saveDate} />
       </div>
     </div>
 
-    <div class="month-group">
+    <div class="month-group flex-between">
       <MonthSquare
         bind:currentDate={startDate}
         selectedTo={endDate}
         {viewDate}
         {mondayStart}
         viewUpdate={false}
-        hideNavigator
+        hideNavigator="right"
         on:update={(result) => updateDate(result.detail)}
+        on:navigation={(result) => navigateMonth(result.detail)}
       />
       <MonthSquare
         bind:currentDate={endDate}
@@ -155,13 +156,14 @@
         viewDate={viewDateSec}
         {mondayStart}
         viewUpdate={false}
+        hideNavigator="left"
         on:update={(result) => updateDate(result.detail)}
         on:navigation={(result) => navigateMonth(result.detail)}
       />
     </div>
   </div>
   <div class="footer">
-    <Button kind={'primary'} label={ui.string.Save} size={'x-large'} width={'100%'} on:click={() => closeDP()} />
+    <Button kind={'primary'} label={ui.string.Save} size={'x-large'} on:click={() => closeDP()} />
   </div>
 </div>
 
@@ -172,7 +174,7 @@
     min-height: 0;
     max-width: calc(100vw - 2rem);
     max-height: calc(100vh - 2rem);
-    width: max-content;
+    width: 40rem;
     height: max-content;
     color: var(--caption-color);
     background: var(--theme-popup-color);
@@ -191,8 +193,12 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      padding: 1.5rem 2rem;
+      padding: 1.5rem 1.75rem;
       min-height: 0;
+
+      .input {
+        width: 16.25rem;
+      }
 
       .month-group {
         display: flex;
@@ -202,7 +208,9 @@
     }
 
     .footer {
-      padding: 1rem 2rem;
+      padding: 1rem 1.75rem;
+      display: flex;
+      flex-direction: row-reverse;
       border-top: 1px solid var(--theme-popup-divider);
     }
   }

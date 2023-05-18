@@ -208,10 +208,6 @@
     padding: 0.75rem 1rem;
   }
 
-  .lower {
-    text-transform: lowercase;
-  }
-
   .label {
     display: flex;
     align-items: center;

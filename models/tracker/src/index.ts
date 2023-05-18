@@ -900,6 +900,14 @@ export function createModel (builder: Builder): void {
     presenter: tracker.component.PriorityPresenter
   })
 
+  builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.AttributeFilterPresenter, {
+    presenter: tracker.component.StatusFilterValuePresenter
+  })
+
+  builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AttributeFilterPresenter, {
+    presenter: tracker.component.PriorityFilterValuePresenter
+  })
+
   builder.mixin(tracker.class.Issue, core.class.Class, notification.mixin.ClassCollaborators, {
     fields: ['createdBy', 'assignee']
   })
@@ -1320,21 +1328,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ClassFilters, {
-    filters: [
-      'status',
-      'assignee',
-      'createdBy',
-      'priority',
-      'labels',
-      'title',
-      'milestone',
-      'component',
-      'dueDate',
-      'createOn',
-      'modifiedOn',
-      'modifiedBy',
-      'space'
-    ],
+    filters: ['status', 'priority', 'space', 'createdBy', 'assignee'],
     ignoreKeys: ['number', 'estimation', 'attachedTo']
   })
 
