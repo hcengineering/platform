@@ -15,58 +15,15 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
-  import { Milestone, Project } from '@hcengineering/tracker'
-  import {
-    closePopup,
-    closeTooltip,
-    getCurrentResolvedLocation,
-    navigate,
-    resolvedLocationStore
-  } from '@hcengineering/ui'
-  import { onDestroy } from 'svelte'
+  import { Project } from '@hcengineering/tracker'
   import tracker from '../../plugin'
   import { MilestoneViewMode } from '../../utils'
-  import EditMilestone from './EditMilestone.svelte'
   import MilestoneBrowser from './MilestoneBrowser.svelte'
 
   export let currentSpace: Ref<Project>
   export let label: IntlString = tracker.string.Milestones
   export let search: string = ''
   export let mode: MilestoneViewMode = 'all'
-
-  let milestoneId: Ref<Milestone> | undefined
-  let milestone: Milestone | undefined
-
-  onDestroy(
-    resolvedLocationStore.subscribe(async (loc) => {
-      closeTooltip()
-      closePopup()
-
-      milestoneId = loc.path[5] as Ref<Milestone>
-    })
-  )
-
-  const milestoneQuery = createQuery()
-  $: if (milestoneId !== undefined) {
-    milestoneQuery.query(tracker.class.Milestone, { _id: milestoneId }, (result) => {
-      milestone = result.shift()
-    })
-  } else {
-    milestoneQuery.unsubscribe()
-    milestone = undefined
-  }
 </script>
 
-{#if milestone}
-  <EditMilestone
-    {milestone}
-    on:milestone={(evt) => {
-      const loc = getCurrentResolvedLocation()
-      loc.path[5] = evt.detail
-      navigate(loc)
-    }}
-  />
-{:else}
-  <MilestoneBrowser {label} query={{ space: currentSpace }} {search} {mode} />
-{/if}
+<MilestoneBrowser {label} query={{ space: currentSpace }} {search} {mode} />
