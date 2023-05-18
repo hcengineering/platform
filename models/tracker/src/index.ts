@@ -938,6 +938,10 @@ export function createModel (builder: Builder): void {
     presenter: tracker.component.MilestoneRefPresenter
   })
 
+  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.ObjectEditor, {
+    editor: tracker.component.EditMilestone
+  })
+
   builder.mixin(tracker.class.Issue, core.class.Class, setting.mixin.Editable, {
     value: true
   })

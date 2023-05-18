@@ -67,6 +67,7 @@ import RelationsPopup from './components/RelationsPopup.svelte'
 import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
 import MilestoneDatePresenter from './components/milestones/MilestoneDatePresenter.svelte'
+import EditMilestone from './components/milestones/EditMilestone.svelte'
 import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
 import Views from './components/views/Views.svelte'
 import Statuses from './components/workflow/Statuses.svelte'
@@ -420,6 +421,7 @@ export default async (): Promise<Resources> => ({
     CreateIssueTemplate,
     Milestones,
     MilestonePresenter,
+    EditMilestone,
     Scrums,
     ScrumRecordPanel,
     MilestoneStatusPresenter,
