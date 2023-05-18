@@ -15,10 +15,10 @@
 <script lang="ts">
   import { Class, Doc, Ref, RefTo } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
+  import { getAttributePresenterClass, getClient } from '@hcengineering/presentation'
   import type { State } from '@hcengineering/task'
   import task from '@hcengineering/task'
-  import { eventToHTMLElement, Icon, IconClose, Label, showPopup } from '@hcengineering/ui'
+  import { AnyComponent, Component, eventToHTMLElement, Icon, IconClose, Label, showPopup } from '@hcengineering/ui'
   import { Filter, FilterMode } from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import view from '../../plugin'
@@ -57,17 +57,15 @@
     const count = isState ? await getCountStates(currentFilter.value) : currentFilter.value.length
     countLabel = await translate(view.string.FilterStatesCount, { value: count })
   }
-  $: if (filter) getLabel()
 
-  async function toggle (nested: boolean = false) {
-    if (nested && filter.nested !== undefined) {
-      const index = filter.nested.modes.findIndex((p) => p === filter.nested?.mode)
-      filter.nested.mode = filter.nested.modes[(index + 1) % filter.nested.modes.length]
-    } else {
-      const index = filter.modes.findIndex((p) => p === filter.mode)
-      filter.mode = filter.modes[(index + 1) % filter.modes.length]
-    }
-    dispatch('change')
+  let valueComponent: AnyComponent | undefined
+  $: if (filter) getLabel()
+  $: getValueComponent(currentFilter)
+
+  async function getValueComponent (filter: Filter): Promise<void> {
+    const presenterClass = getAttributePresenterClass(hierarchy, filter.key.attribute)
+    const presenterMixin = hierarchy.classHierarchyMixin(presenterClass.attrClass, view.mixin.AttributeFilterPresenter)
+    valueComponent = presenterMixin?.presenter
   }
 
   async function getMode (mode: Ref<FilterMode>): Promise<FilterMode | undefined> {
@@ -93,61 +91,49 @@
 
   function clickHandler (e: MouseEvent, nested: boolean) {
     const curr = nested && filter.nested ? filter.nested : filter
-    if (curr.modes.length <= 2) {
-      toggle()
-    } else {
-      showPopup(ModeSelector, { filter: curr }, eventToHTMLElement(e), (res) => {
+    showPopup(ModeSelector, { filter: curr }, eventToHTMLElement(e), (res) => {
+      if (res) {
         if (nested && filter.nested) {
           filter.nested.mode = res
         } else {
           filter.mode = res
         }
         dispatch('change')
-      })
-    }
+      }
+    })
   }
 </script>
 
 <div class="filter-section">
   <button class="filter-button left-round">
-    {#if filter.key.icon}
-      <div class="btn-icon mr-1-5">
-        <Icon icon={filter.key.icon} size={'x-small'} />
-      </div>
-    {/if}
     <span><Label label={filter.key.label} /></span>
   </button>
   <button
-    class="filter-button"
+    class="filter-button hoverable lower"
     on:click={(e) => {
       clickHandler(e, false)
     }}
   >
     {#await modeValuePromise then mode}
       {#if mode?.label}
-        <span><Label label={mode.label} params={{ value: filter.value.length }} /></span>
+        <span><Label label={mode.selectedLabel ?? mode.label} params={{ value: filter.value.length }} /></span>
       {/if}
     {/await}
   </button>
   {#if filter.nested}
-    <button class="filter-button">
-      {#if filter.nested.key.icon}
-        <div class="btn-icon mr-1-5">
-          <Icon icon={filter.nested.key.icon} size={'x-small'} />
-        </div>
-      {/if}
+    <button class="filter-button hoverable">
       <span><Label label={filter.nested.key.label} /></span>
     </button>
     <button
-      class="filter-button"
-      on:click={() => {
-        toggle(true)
+      class="filter-button hoverable lower"
+      on:click={(e) => {
+        clickHandler(e, true)
       }}
     >
       {#if nestedModeValuePromise}
         {#await nestedModeValuePromise then mode}
           {#if mode?.label}
-            <span><Label label={mode.label} params={{ value: filter.value.length }} /></span>
+            <span><Label label={mode.selectedLabel ?? mode.label} params={{ value: filter.value.length }} /></span>
           {/if}
         {/await}
       {/if}
@@ -156,7 +142,7 @@
   {#await modeValuePromise then mode}
     {#if !(mode?.disableValueSelector ?? false)}
       <button
-        class="filter-button"
+        class="filter-button hoverable"
         on:click={(e) => {
           showPopup(
             currentFilter.key.component,
@@ -169,12 +155,17 @@
           )
         }}
       >
-        <span>{countLabel}</span>
+        {#if valueComponent}
+          <Component is={valueComponent} props={{ value: currentFilter.value, onChange, filter: currentFilter }} />
+        {:else}
+          <span>{countLabel}</span>
+        {/if}
       </button>
     {/if}
   {/await}
+  <div class="divider" />
   <button
-    class="filter-button right-round"
+    class="filter-button hoverable"
     on:click={() => {
       dispatch('remove')
     }}
@@ -188,9 +179,18 @@
     display: flex;
     align-items: center;
     margin-bottom: 0.375rem;
+    background-color: var(--theme-button-enabled);
+    padding: 0.125rem;
+    border-radius: 0.25rem;
 
     &:not(:last-child) {
       margin-right: 0.375rem;
+    }
+
+    &:hover {
+      .divider {
+        visibility: hidden;
+      }
     }
   }
 
@@ -198,15 +198,14 @@
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    margin-right: 1px;
     padding: 0 0.375rem;
     font-size: 0.75rem;
     height: 1.5rem;
     min-width: 1.5rem;
     white-space: nowrap;
     color: var(--theme-content-color);
-    background-color: var(--theme-button-enabled);
     border: 1px solid transparent;
+    border-radius: 0.25rem;
     transition-property: border, background-color, color, box-shadow;
     transition-duration: 0.15s;
 
@@ -221,7 +220,7 @@
       text-overflow: ellipsis;
       max-width: 10rem;
     }
-    &:hover {
+    &.hoverable:hover {
       color: var(--theme-caption-color);
       background-color: var(--theme-button-hovered);
 
@@ -230,14 +229,13 @@
       }
     }
 
-    &.left-round {
-      border-radius: 0.25rem 0 0 0.25rem;
-    }
-    &.right-round {
-      border-radius: 0 0.25rem 0.25rem 0;
-    }
     &:last-child {
       margin-right: 0;
     }
+  }
+  .divider {
+    width: 1px;
+    height: 1.5rem;
+    background-color: var(--theme-refinput-divider);
   }
 </style>

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import core, { StatusCategory, WithLookup } from '@hcengineering/core'
-  import { createQuery, getClient, statusStore } from '@hcengineering/presentation'
+  import { getClient, statusStore } from '@hcengineering/presentation'
   import { IssueStatus } from '@hcengineering/tracker'
   import { IconSize, getPlatformColor } from '@hcengineering/ui'
   import tracker from '../../plugin'
@@ -35,8 +35,6 @@
     count: number | undefined
   } = { index: undefined, count: undefined }
 
-  const categoriesQuery = createQuery()
-
   $: if (value.category === tracker.issueStatusCategory.Started) {
     const _s = [
       ...$statusStore.filter(
@@ -48,7 +46,6 @@
     ]
     _s.sort((a, b) => a.rank.localeCompare(b.rank))
     statuses = _s
-    categoriesQuery.unsubscribe()
   }
 
   async function updateCategory (status: WithLookup<IssueStatus>, statuses: IssueStatus[]) {

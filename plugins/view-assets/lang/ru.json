@@ -70,15 +70,21 @@
     "ShowEmptyGroups": "Показывать пустые группы",
     "Overdue": "Overdue",
     "Today": "Сегодня",
+    "Yesterday": "Вчера",
     "ThisWeek": "Эта неделя",
     "NextWeek": "Следующая неделя",
     "ThisMonth": "Этот месяц",
     "NextMonth": "Следующий месяц",
     "NotSpecified": "Не указана",
     "AddSavedView": "Добавить сохраненное отображение",
-    "CustomDate": "Выбранная дата",
+    "ExactDate": "Определенная дата",
+    "BeforeDate": "До даты",
+    "AfterDate": "После даты",
+    "BetweenDates": "Между датами",
     "Public": "Публичныйы",
     "Hide": "Спрятать",
-    "SaveAs": "Сохранить как"
+    "SaveAs": "Сохранить как",
+    "And": "и",
+    "Between": "между"
   }
 }

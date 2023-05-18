@@ -88,10 +88,6 @@
     }
   }
 
-  .lower {
-    text-transform: lowercase;
-  }
-
   .bold {
     font-weight: 500;
     color: var(--caption-color);

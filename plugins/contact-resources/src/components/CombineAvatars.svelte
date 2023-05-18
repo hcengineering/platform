@@ -13,38 +13,49 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref } from '@hcengineering/core'
   import { Person as Contact } from '@hcengineering/contact'
-  import Avatar from './Avatar.svelte'
-  import { IconSize } from '@hcengineering/ui'
+  import type { Class, Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
+  import { IconSize } from '@hcengineering/ui'
+  import Avatar from './Avatar.svelte'
+  import EmptyAvatar from './icons/EmptyAvatar.svelte'
 
-  export let _class: Ref<Class<Doc>>
-  export let items: Ref<Contact>[] = []
+  export let _class: Ref<Class<Contact>>
+  export let items: (Ref<Contact> | undefined | null)[] = []
   export let size: IconSize
   export let limit: number = 3
   export let hideLimit: boolean = false
 
   let persons: Contact[] = []
+
+  $: includeEmpty = items.includes(undefined) || items.includes(null)
+
   const query = createQuery()
   $: query.query<Contact>(
     _class,
-    { _id: { $in: items } },
+    { _id: { $in: items.filter((p) => p) as Ref<Contact>[] } },
     (result) => {
       persons = result
     },
-    { limit }
+    { limit: includeEmpty ? limit - 1 : limit }
   )
+
+  function getDataOver (last: boolean, items: (Ref<Contact> | undefined | null)[]): string | undefined {
+    if (hideLimit) return
+    if (items.length > limit && last) {
+      return `+${items.length - limit + 1}`
+    }
+  }
 </script>
 
 <div class="avatars-container">
+  {#if includeEmpty}
+    <div class="combine-avatar {size}" data-over={getDataOver(persons.length === 0, items)}>
+      <EmptyAvatar {size} />
+    </div>
+  {/if}
   {#each persons as person, i}
-    <div
-      class="combine-avatar {size}"
-      data-over={i === persons.length - 1 && items.length > limit && !hideLimit
-        ? `+${items.length - limit + 1}`
-        : undefined}
-    >
+    <div class="combine-avatar {size}" data-over={getDataOver(persons.length === i + 1, items)}>
       <Avatar avatar={person.avatar} {size} />
     </div>
   {/each}

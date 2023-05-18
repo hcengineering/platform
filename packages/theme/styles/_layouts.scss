@@ -257,6 +257,7 @@ input.search {
 
 .flex-gap-3 { gap: .75rem; }
 .flex-gap-2 { gap: .5rem; }
+.flex-gap-1-5 { gap: .375rem; }
 .flex-gap-1 { gap: .25rem; }
 
 .flex-break {  
@@ -384,7 +385,6 @@ input.search {
     color: var(--theme-accent-color);
   }
   .strong { color: var(--accent-color); }
-  .lower { text-transform: lowercase; }
 }
 
 .gap-1, .gap-1-5 {

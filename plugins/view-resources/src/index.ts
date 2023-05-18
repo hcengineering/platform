@@ -33,21 +33,22 @@ import EditDoc from './components/EditDoc.svelte'
 import EnumArrayEditor from './components/EnumArrayEditor.svelte'
 import EnumEditor from './components/EnumEditor.svelte'
 import EnumPresenter from './components/EnumPresenter.svelte'
+import DateFilter from './components/filter/DateFilter.svelte'
 import FilterBar from './components/filter/FilterBar.svelte'
 import FilterTypePopup from './components/filter/FilterTypePopup.svelte'
 import ObjectFilter from './components/filter/ObjectFilter.svelte'
-import TimestampFilter from './components/filter/TimestampFilter.svelte'
-import DateFilter from './components/filter/DateFilter.svelte'
-import ValueFilter from './components/filter/ValueFilter.svelte'
 import StringFilter from './components/filter/StringFilter.svelte'
+import StringFilterPresenter from './components/filter/StringFilterPresenter.svelte'
+import TimestampFilter from './components/filter/TimestampFilter.svelte'
+import ValueFilter from './components/filter/ValueFilter.svelte'
 import HTMLEditor from './components/HTMLEditor.svelte'
 import HTMLPresenter from './components/HTMLPresenter.svelte'
 import HyperlinkPresenter from './components/HyperlinkPresenter.svelte'
 import IntlStringPresenter from './components/IntlStringPresenter.svelte'
 import GithubPresenter from './components/linkPresenters/GithubPresenter.svelte'
 import YoutubePresenter from './components/linkPresenters/YoutubePresenter.svelte'
-import GrowPresenter from './components/list/GrowPresenter.svelte'
 import DividerPresenter from './components/list/DividerPresenter.svelte'
+import GrowPresenter from './components/list/GrowPresenter.svelte'
 import ListView from './components/list/ListView.svelte'
 import SortableList from './components/list/SortableList.svelte'
 import SortableListItem from './components/list/SortableListItem.svelte'
@@ -74,6 +75,7 @@ import TimestampPresenter from './components/TimestampPresenter.svelte'
 import UpDownNavigator from './components/UpDownNavigator.svelte'
 import ValueSelector from './components/ValueSelector.svelte'
 import ViewletSettingButton from './components/ViewletSettingButton.svelte'
+import DateFilterPresenter from './components/filter/DateFilterPresenter.svelte'
 
 import {
   afterResult,
@@ -86,8 +88,8 @@ import {
   dateNotSpecified,
   dateOutdated,
   dateToday,
-  dateYesterday,
   dateWeek,
+  dateYesterday,
   nestedDontMatchResult,
   nestedMatchResult,
   objectInResult,
@@ -102,8 +104,8 @@ import { showEmptyGroups } from './viewOptions'
 export { getActions, invokeAction } from './actions'
 export { default as ActionContext } from './components/ActionContext.svelte'
 export { default as ActionHandler } from './components/ActionHandler.svelte'
-export { default as FilterButton } from './components/filter/FilterButton.svelte'
 export { default as AddSavedView } from './components/filter/AddSavedView.svelte'
+export { default as FilterButton } from './components/filter/FilterButton.svelte'
 export { default as FixedColumn } from './components/FixedColumn.svelte'
 export { default as SourcePresenter } from './components/inference/SourcePresenter.svelte'
 export { default as LinkPresenter } from './components/LinkPresenter.svelte'
@@ -120,6 +122,7 @@ export { default as StatusPresenter } from './components/status/StatusPresenter.
 export { default as StatusRefPresenter } from './components/status/StatusRefPresenter.svelte'
 export { default as TableBrowser } from './components/TableBrowser.svelte'
 export { default as ValueSelector } from './components/ValueSelector.svelte'
+export { default as FilterRemovedNotification } from './components/filter/FilterRemovedNotification.svelte'
 export * from './context'
 export * from './filter'
 export * from './selection'
@@ -222,7 +225,9 @@ export default async (): Promise<Resources> => ({
     EnumArrayEditor,
     EnumPresenter,
     StatusPresenter,
-    StatusRefPresenter
+    StatusRefPresenter,
+    DateFilterPresenter,
+    StringFilterPresenter
   },
   popup: {
     PositionElementAlignment

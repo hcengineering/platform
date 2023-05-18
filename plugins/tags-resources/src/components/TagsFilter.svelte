@@ -19,12 +19,13 @@
   import { TagCategory, TagElement } from '@hcengineering/tags'
   import {
     Button,
-    CheckBox,
+    Icon,
+    IconCheck,
+    Label,
+    Loading,
     deviceOptionsStore,
     getEventPopupPositionElement,
     getPlatformColor,
-    Label,
-    Loading,
     resizeObserver,
     showPopup
   } from '@hcengineering/ui'
@@ -204,14 +205,13 @@
                   >
                     <div class="flex-between w-full">
                       <div class="flex">
-                        <div class="check pointer-events-none">
-                          <CheckBox checked={isSelected(element)} primary />
-                        </div>
                         <div class="tag" style="background-color: {getPlatformColor(element.color)};" />
                         {element.title}
                       </div>
-                      <div class="content-dark-color ml-2">
-                        {element.refCount ?? 0}
+                      <div class="pointer-events-none">
+                        {#if isSelected(element)}
+                          <Icon icon={IconCheck} size={'small'} />
+                        {/if}
                       </div>
                     </div>
                   </button>

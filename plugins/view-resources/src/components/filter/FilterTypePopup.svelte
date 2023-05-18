@@ -15,19 +15,10 @@
 <script lang="ts">
   import core, { AnyAttribute, ArrOf, Class, Doc, Ref, RefTo, Space, Type } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import {
-    closePopup,
-    closeTooltip,
-    Icon,
-    Label,
-    resizeObserver,
-    Scroller,
-    showPopup,
-    Submenu
-  } from '@hcengineering/ui'
+  import { Label, Scroller, Submenu, closePopup, closeTooltip, resizeObserver, showPopup } from '@hcengineering/ui'
   import { ClassFilters, Filter, KeyFilter, KeyFilterPreset } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import { buildFilterKey, FilterQuery } from '../../filter'
+  import { FilterQuery, buildFilterKey } from '../../filter'
   import view from '../../plugin'
 
   export let _class: Ref<Class<Doc>>
@@ -48,7 +39,12 @@
     })
     const result: KeyFilter[] = []
     for (const filter of filters) {
-      if (filter !== undefined) result.push(filter)
+      if (filter !== undefined) {
+        if (filter.group === undefined) {
+          filter.group = 'top'
+        }
+        result.push(filter)
+      }
     }
     return result
   }
@@ -56,12 +52,10 @@
   function buildFilterFromPreset (p: KeyFilterPreset): KeyFilter | undefined {
     if (p.key !== '') {
       const attribute = hierarchy.getAttribute(p._class, p.key)
-      const clazz = hierarchy.getClass(p._class)
       return {
         ...p,
         attribute,
-        label: p.label ?? attribute.label,
-        icon: p.icon ?? attribute.icon ?? clazz.icon ?? view.icon.Setting
+        label: p.label ?? attribute.label
       }
     }
   }
@@ -108,11 +102,21 @@
   }
 
   function getTypes (_class: Ref<Class<Doc>>, nestedFrom: KeyFilter | undefined): KeyFilter[] {
+    let res: KeyFilter[] = []
     if (nestedFrom !== undefined) {
-      return getNestedTypes(nestedFrom)
+      res = getNestedTypes(nestedFrom)
     } else {
-      return getOwnTypes(_class)
+      res = getOwnTypes(_class)
     }
+    res.sort((a, b) => {
+      if (a.group === b.group) return 0
+      if (a.group === 'top') return -1
+      if (a.group === 'bottom') return 1
+      if (b.group === 'top') return 1
+      if (b.group === 'bottom') return -1
+      return 0
+    })
+    return res
   }
 
   function getNestedTypes (type: KeyFilter): KeyFilter[] {
@@ -251,6 +255,13 @@
   }
 
   const elements: HTMLElement[] = []
+
+  $: types = getTypes(_class, nestedFrom)
+
+  function nextDiffCat (types: KeyFilter[], i: number): boolean {
+    if (types[i + 1] === undefined) return false
+    return types[i].group !== types[i + 1].group
+  }
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
@@ -258,7 +269,7 @@
     {#if nestedFrom}
       <!-- svelte-ignore a11y-mouse-events-have-key-events -->
       <button
-        class="menu-item withIcon"
+        class="menu-item"
         on:keydown={(event) => keyDown(event, -1)}
         on:mouseover={(event) => {
           event.currentTarget.focus()
@@ -269,15 +280,11 @@
           }
         }}
       >
-        <div class="icon mr-3">
-          {#if nestedFrom.icon}
-            <Icon icon={nestedFrom.icon} size={'small'} />
-          {/if}
-        </div>
         <div class="overflow-label pr-1"><Label label={nestedFrom.label} /></div>
       </button>
+      <div class="divider" />
     {/if}
-    {#each getTypes(_class, nestedFrom) as type, i}
+    {#each types as type, i}
       {#if filter === undefined && hasNested(type)}
         <Submenu
           bind:element={elements[i]}
@@ -285,7 +292,6 @@
           on:mouseover={() => {
             elements[i]?.focus()
           }}
-          icon={type.icon}
           label={type.label}
           props={{
             _class,
@@ -301,7 +307,7 @@
       {:else}
         <!-- svelte-ignore a11y-mouse-events-have-key-events -->
         <button
-          class="menu-item withIcon"
+          class="menu-item"
           on:keydown={(event) => keyDown(event, i)}
           on:mouseover={(event) => {
             event.currentTarget.focus()
@@ -310,28 +316,19 @@
             click(type)
           }}
         >
-          <div class="icon mr-3">
-            {#if type.icon}
-              <Icon icon={type.icon} size={'small'} />
-            {/if}
-          </div>
           <div class="overflow-label pr-1"><Label label={type.label} /></div>
         </button>
+      {/if}
+      {#if nextDiffCat(types, i)}
+        <div class="divider" />
       {/if}
     {/each}
   </Scroller>
 </div>
 
 <style lang="scss">
-  .withIcon {
-    margin: 0;
-
-    .icon {
-      color: var(--content-color);
-    }
-
-    &:focus .icon {
-      color: var(--accent-color);
-    }
+  .divider {
+    height: 1px;
+    background-color: var(--theme-popup-divider);
   }
 </style>

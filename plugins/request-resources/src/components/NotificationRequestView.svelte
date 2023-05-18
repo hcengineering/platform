@@ -41,9 +41,3 @@
     </DocNavLink>
   {/if}
 </div>
-
-<style lang="scss">
-  .lower {
-    text-transform: lowercase;
-  }
-</style>
