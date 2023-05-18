@@ -333,7 +333,7 @@ export async function OnChannelUpdate (tx: Tx, control: TriggerControl): Promise
           )
         }
       } else {
-        control.txFactory.createTxMixin<Doc, Collaborators>(
+        const res = control.txFactory.createTxMixin<Doc, Collaborators>(
           doc._id,
           doc._class,
           doc.space,
@@ -342,7 +342,7 @@ export async function OnChannelUpdate (tx: Tx, control: TriggerControl): Promise
             collaborators: [tx.modifiedBy]
           }
         )
-        result.push()
+        result.push(res)
       }
     }
   }
