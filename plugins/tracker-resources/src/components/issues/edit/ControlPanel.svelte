@@ -197,15 +197,18 @@
   {/if}
 
   {#each mixins as mixin}
-    <div class="divider" />
-    {#each getMixinKeys(mixin._id) as key (typeof key === 'string' ? key : key.key)}
-      <AttributeBarEditor
-        {key}
-        _class={mixin._id}
-        object={hierarchy.as(issue, mixin._id)}
-        showHeader={true}
-        size={'medium'}
-      />
-    {/each}
+    {@const mixinKeys = getMixinKeys(mixin._id)}
+    {#if mixinKeys.length}
+      <div class="divider" />
+      {#each mixinKeys as key (typeof key === 'string' ? key : key.key)}
+        <AttributeBarEditor
+          {key}
+          _class={mixin._id}
+          object={hierarchy.as(issue, mixin._id)}
+          showHeader={true}
+          size={'medium'}
+        />
+      {/each}
+    {/if}
   {/each}
 </div>
