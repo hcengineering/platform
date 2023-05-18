@@ -160,7 +160,7 @@
           >
             <div class="flex-row-center flex-grow pointer-events-none">
               {#if item.component}
-                <svelte:component this={item.component} {...item.props} />
+                <div class="flex-grow clear-mins"><svelte:component this={item.component} {...item.props} /></div>
               {:else}
                 {#if item.icon}
                   <div class="icon mr-2">
@@ -171,7 +171,7 @@
                   {#if item.label}
                     <Label label={item.label} />
                   {:else if item.text}
-                    <span>{item.text}</span>
+                    {item.text}
                   {/if}
                 </span>
               {/if}
