@@ -911,6 +911,35 @@ async function fixMilestoneEmptyStatuses (client: MigrationClient): Promise<void
     { status: MilestoneStatus.Planned }
   )
 }
+async function removeLeadFromMilestones (client: MigrationClient): Promise<void> {
+  await client.update<Milestone>(
+    DOMAIN_TRACKER,
+    { _class: tracker.class.Milestone, lead: { $exists: true } },
+    { $unset: { lead: '' } }
+  )
+}
+async function removeCapacityFromMilestones (client: MigrationClient): Promise<void> {
+  await client.update<Milestone>(
+    DOMAIN_TRACKER,
+    { _class: tracker.class.Milestone, capacity: { $exists: true } },
+    { $unset: { capacity: '' } }
+  )
+}
+async function removeMembersFromMilestones (client: MigrationClient): Promise<void> {
+  await client.update<Milestone>(
+    DOMAIN_TRACKER,
+    { _class: tracker.class.Milestone, members: { $exists: true } },
+    { $unset: { members: '' } }
+  )
+}
+
+async function migrateMilestones (client: MigrationClient): Promise<void> {
+  await renameSprintToMilestone(client)
+  await fixMilestoneEmptyStatuses(client)
+  await removeLeadFromMilestones(client)
+  await removeCapacityFromMilestones(client)
+  await removeMembersFromMilestones(client)
+}
 
 export const trackerOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
@@ -926,7 +955,7 @@ export const trackerOperation: MigrateOperation = {
     await Promise.all([migrateIssueComponents(client), migrateParentIssues(client)])
     await migrateIssueParentInfo(client)
     await fillRank(client)
-    await renameSprintToMilestone(client)
+    await migrateMilestones(client)
     await renameProject(client)
     await setCreate(client)
 
@@ -945,8 +974,6 @@ export const trackerOperation: MigrateOperation = {
         ofAttribute: tracker.attribute.IssueStatus
       }
     )
-
-    await fixMilestoneEmptyStatuses(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
