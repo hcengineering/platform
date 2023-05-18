@@ -263,6 +263,7 @@ export const contactPlugin = plugin(contactId, {
     PersonFirstNamePlaceholder: '' as IntlString,
     PersonLastNamePlaceholder: '' as IntlString,
     DisplayName: '' as IntlString,
+    NumberMembers: '' as IntlString,
     Position: '' as IntlString
   },
   viewlet: {

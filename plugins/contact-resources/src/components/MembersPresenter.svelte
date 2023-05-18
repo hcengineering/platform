@@ -29,6 +29,7 @@
   export let intlTitle: IntlString
   export let intlSearchPh: IntlString
   export let retrieveMembers: (doc: Doc) => Ref<Employee>[]
+  export let shouldShowLabel: boolean = true
 
   const client = getClient()
 
@@ -81,6 +82,8 @@
   {size}
   {width}
   {justify}
+  label={shouldShowLabel ? contact.string.NumberMembers : undefined}
+  labelParams={shouldShowLabel ? { count: members.length } : {}}
   title={buttonTitle}
   icon={contact.icon.ComponentMembers}
   on:click={handleMembersEditorOpened}

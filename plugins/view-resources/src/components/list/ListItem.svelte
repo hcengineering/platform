@@ -85,6 +85,7 @@
   onMount(() => {
     dispatch('on-mount')
   })
+  // $: if (model) console.log('[!!!] model: ', model)
 </script>
 
 <div

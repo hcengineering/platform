@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { ComponentStatus } from '@hcengineering/tracker'
-  import { Button, showPopup, SelectPopup, eventToHTMLElement } from '@hcengineering/ui'
+  import { Button, showPopup, SelectPopup, eventToHTMLElement, Icon } from '@hcengineering/ui'
   import type { ButtonKind, ButtonSize, LabelAndProps } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import { defaultComponentStatuses, componentStatusAssets } from '../../utils'
@@ -60,14 +60,24 @@
   }
 </script>
 
-<Button
-  {kind}
-  {size}
-  {width}
-  {justify}
-  disabled={!isEditable}
-  icon={selectedStatusIcon}
-  label={selectedStatusLabel}
-  {showTooltip}
-  on:click={handleComponentStatusEditorOpened}
-/>
+{#if kind === 'list'}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <div
+    class="flex-no-shrink clear-mins cursor-pointer content-pointer-events-none"
+    on:click={handleComponentStatusEditorOpened}
+  >
+    <Icon icon={selectedStatusIcon} {size} />
+  </div>
+{:else}
+  <Button
+    {kind}
+    {size}
+    {width}
+    {justify}
+    disabled={!isEditable}
+    icon={selectedStatusIcon}
+    label={selectedStatusLabel}
+    {showTooltip}
+    on:click={handleComponentStatusEditorOpened}
+  />
+{/if}

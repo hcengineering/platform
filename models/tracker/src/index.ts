@@ -719,14 +719,33 @@ export function createModel (builder: Builder): void {
         {
           key: '',
           presenter: tracker.component.ComponentEditor,
-          props: { kind: 'list', size: 'small', shape: 'round', shouldShowPlaceholder: false }
+          props: {
+            kind: 'list',
+            size: 'small',
+            shouldShowPlaceholder: false,
+            listProps: { optional: true, compression: true }
+          }
         },
         {
           key: '',
           presenter: tracker.component.MilestoneEditor,
-          props: { kind: 'list', size: 'small', shape: 'round', shouldShowPlaceholder: false }
+          props: {
+            kind: 'list',
+            size: 'small',
+            shouldShowPlaceholder: false,
+            listProps: { optional: true, compression: true }
+          }
         },
-        { key: '', presenter: tracker.component.TemplateEstimationEditor, props: { kind: 'list', size: 'small' } },
+        {
+          key: '',
+          presenter: tracker.component.TemplateEstimationEditor,
+          props: {
+            kind: 'list',
+            size: 'small',
+            listProps: { optional: true, compression: true }
+          }
+        },
+        { key: '', presenter: view.component.DividerPresenter, props: { type: 'divider' } },
         {
           key: 'modifiedOn',
           presenter: tracker.component.ModificationDatePresenter,
@@ -1785,7 +1804,7 @@ export function createModel (builder: Builder): void {
       config: [
         {
           key: 'status',
-          props: { width: '1rem', kind: 'list', size: 'small', justify: 'center' }
+          props: { width: '1rem', kind: 'list', size: 'small' }
         },
         { key: '', presenter: tracker.component.MilestonePresenter, props: { shouldUseMargin: true } },
         { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
@@ -1793,14 +1812,25 @@ export function createModel (builder: Builder): void {
           key: '',
           presenter: contact.component.MembersPresenter,
           props: {
-            kind: 'link',
+            kind: 'list',
+            size: 'small',
             intlTitle: tracker.string.MilestoneMembersTitle,
-            intlSearchPh: tracker.string.MilestoneMembersSearchPlaceholder
+            intlSearchPh: tracker.string.MilestoneMembersSearchPlaceholder,
+            listProps: { optional: true, compression: true }
           }
         },
-        { key: '', presenter: tracker.component.MilestoneDatePresenter, props: { field: 'targetDate' } },
         {
-          key: 'lead',
+          key: '',
+          presenter: tracker.component.MilestoneDatePresenter,
+          props: {
+            size: 'medium',
+            field: 'targetDate',
+            listProps: { optional: true, compression: true }
+          }
+        },
+        { key: '', presenter: view.component.DividerPresenter, props: { type: 'divider' } },
+        {
+          key: '$lookup.lead',
           presenter: tracker.component.MilestoneLeadPresenter,
           props: {
             _class: tracker.class.Milestone,
@@ -1900,13 +1930,30 @@ export function createModel (builder: Builder): void {
       descriptor: view.viewlet.List,
       viewOptions: componentListViewOptions,
       config: [
-        { key: '', presenter: tracker.component.IconPresenter },
+        { key: '', presenter: tracker.component.ComponentStatusPresenter, props: { kind: 'list', size: 'small' } },
         {
           key: '',
           presenter: tracker.component.ComponentPresenter,
-          props: { kind: 'list', shouldShowAvatar: false }
+          props: { kind: 'list' }
         },
         { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
+        {
+          key: '',
+          presenter: contact.component.MembersPresenter,
+          props: {
+            kind: 'list',
+            size: 'small',
+            intlTitle: tracker.string.ComponentMembersTitle,
+            intlSearchPh: tracker.string.ComponentMembersSearchPlaceholder,
+            listProps: { optional: true, compression: true }
+          }
+        },
+        {
+          key: '',
+          presenter: tracker.component.TargetDatePresenter,
+          props: { listProps: { optional: true, compression: true } }
+        },
+        { key: '', presenter: view.component.DividerPresenter, props: { type: 'divider' } },
         {
           key: '$lookup.lead',
           presenter: tracker.component.LeadPresenter,
@@ -1914,16 +1961,9 @@ export function createModel (builder: Builder): void {
         },
         {
           key: '',
-          presenter: contact.component.MembersPresenter,
-          props: {
-            kind: 'link',
-            intlTitle: tracker.string.ComponentMembersTitle,
-            intlSearchPh: tracker.string.ComponentMembersSearchPlaceholder
-          }
-        },
-        { key: '', presenter: tracker.component.TargetDatePresenter },
-        { key: '', presenter: tracker.component.ComponentStatusPresenter, props: { width: 'min-content' } },
-        { key: '', presenter: tracker.component.DeleteComponentPresenter }
+          presenter: tracker.component.DeleteComponentPresenter,
+          props: { kind: 'transparent', size: 'small' }
+        }
       ]
     },
     tracker.viewlet.ComponentList
