@@ -1496,6 +1496,8 @@ export function createModel (builder: Builder): void {
         attribute: 'component',
         _class: tracker.class.Component,
         query: {},
+        fillQuery: { space: 'space' },
+        docMatches: ['space'],
         searchField: 'label',
         placeholder: tracker.string.Component
       },
