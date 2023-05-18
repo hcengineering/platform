@@ -174,15 +174,15 @@
     <div class="flex-between flex-row-top">
       <div class="flex-col flex-grow">
         <EditBox
-          placeholder={contact.string.PersonFirstNamePlaceholder}
-          bind:value={firstName}
+          placeholder={contact.string.PersonLastNamePlaceholder}
+          bind:value={lastName}
           kind={'large-style'}
           focus
           focusIndex={1}
         />
         <EditBox
-          placeholder={contact.string.PersonLastNamePlaceholder}
-          bind:value={lastName}
+          placeholder={contact.string.PersonFirstNamePlaceholder}
+          bind:value={firstName}
           kind={'large-style'}
           focusIndex={2}
         />

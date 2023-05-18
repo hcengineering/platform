@@ -124,27 +124,27 @@
         <div class="name select-text">
           {#if owner}
             <EditBox
-              placeholder={contact.string.PersonFirstNamePlaceholder}
-              bind:value={firstName}
+              placeholder={contact.string.PersonLastNamePlaceholder}
+              bind:value={lastName}
+              on:change={lastNameChange}
               disabled={!editable}
-              on:change={firstNameChange}
               focusIndex={1}
             />
           {:else}
-            {firstName}
+            {lastName}
           {/if}
         </div>
         <div class="name select-text">
           {#if owner}
             <EditBox
-              placeholder={contact.string.PersonLastNamePlaceholder}
-              bind:value={lastName}
-              on:change={lastNameChange}
+              placeholder={contact.string.PersonFirstNamePlaceholder}
+              bind:value={firstName}
               disabled={!editable}
+              on:change={firstNameChange}
               focusIndex={2}
             />
           {:else}
-            {lastName}
+            {firstName}
           {/if}
         </div>
         <div class="name">

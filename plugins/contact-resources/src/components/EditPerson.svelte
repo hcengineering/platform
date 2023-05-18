@@ -96,17 +96,17 @@
       <div class="flex-grow flex-col">
         <div class="name">
           <EditBox
-            placeholder={contact.string.PersonFirstNamePlaceholder}
-            bind:value={firstName}
-            on:change={firstNameChange}
+            placeholder={contact.string.PersonLastNamePlaceholder}
+            bind:value={lastName}
+            on:change={lastNameChange}
             focusIndex={1}
           />
         </div>
         <div class="name">
           <EditBox
-            placeholder={contact.string.PersonLastNamePlaceholder}
-            bind:value={lastName}
-            on:change={lastNameChange}
+            placeholder={contact.string.PersonFirstNamePlaceholder}
+            bind:value={firstName}
+            on:change={firstNameChange}
             focusIndex={2}
           />
         </div>

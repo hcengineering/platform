@@ -527,19 +527,19 @@
     <div class="flex-col">
       <EditBox
         disabled={loading}
-        placeholder={recruit.string.PersonFirstNamePlaceholder}
-        bind:value={object.firstName}
-        kind={'large-style'}
-        focus
-        maxWidth={'30rem'}
-        focusIndex={1}
-      />
-      <EditBox
-        disabled={loading}
         placeholder={recruit.string.PersonLastNamePlaceholder}
         bind:value={object.lastName}
         maxWidth={'30rem'}
         kind={'large-style'}
+        focus
+        focusIndex={1}
+      />
+      <EditBox
+        disabled={loading}
+        placeholder={recruit.string.PersonFirstNamePlaceholder}
+        bind:value={object.firstName}
+        kind={'large-style'}
+        maxWidth={'30rem'}
         focusIndex={2}
       />
       <div class="mt-1">
