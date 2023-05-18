@@ -126,7 +126,7 @@
     </div>
   {/if}
   {#if label}
-    <span class="overflow-label disabled pointer-events-none" class:ml-2={loading}>
+    <span class="overflow-label label disabled pointer-events-none" class:ml-2={loading}>
       <Label {label} params={labelParams} />
     </span>
   {/if}
