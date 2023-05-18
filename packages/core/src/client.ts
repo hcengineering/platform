@@ -15,7 +15,7 @@
 
 import { Plugin } from '@hcengineering/platform'
 import { BackupClient, DocChunk } from './backup'
-import { AttachedDoc, Class, DOMAIN_MODEL, Doc, Domain, PluginConfiguration, Ref, Timestamp } from './classes'
+import { Account, AttachedDoc, Class, DOMAIN_MODEL, Doc, Domain, PluginConfiguration, Ref, Timestamp } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { ModelDb } from './memdb'
@@ -50,13 +50,21 @@ export interface Client extends Storage {
 /**
  * @public
  */
+export interface AccountClient extends Client {
+  getAccount: () => Promise<Account>
+}
+
+/**
+ * @public
+ */
 export interface ClientConnection extends Storage, BackupClient {
   close: () => Promise<void>
   onConnect?: (apply: boolean) => Promise<void>
   loadModel: (last: Timestamp) => Promise<Tx[]>
+  getAccount: () => Promise<Account>
 }
 
-class ClientImpl implements Client, BackupClient {
+class ClientImpl implements AccountClient, BackupClient {
   notify?: (tx: Tx) => void
 
   constructor (
@@ -144,6 +152,10 @@ class ClientImpl implements Client, BackupClient {
   async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
     return await this.conn.clean(domain, docs)
   }
+
+  async getAccount (): Promise<Account> {
+    return await this.conn.getAccount()
+  }
 }
 
 /**
@@ -153,7 +165,7 @@ export async function createClient (
   connect: (txHandler: TxHandler) => Promise<ClientConnection>,
   // If set will build model with only allowed plugins.
   allowedPlugins?: Plugin[]
-): Promise<Client> {
+): Promise<AccountClient> {
   let client: ClientImpl | null = null
 
   // Temporal buffer, while we apply model

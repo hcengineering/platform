@@ -26,6 +26,13 @@ export interface SessionRequest {
 /**
  * @public
  */
+export interface StatisticsElement {
+  find: number
+  tx: number
+}
+/**
+ * @public
+ */
 export interface Session {
   getUser: () => string
   pipeline: () => Pipeline
@@ -48,6 +55,10 @@ export interface Session {
 
   binaryResponseMode: boolean
   useCompression: boolean
+
+  total: StatisticsElement
+  current: StatisticsElement
+  mins5: StatisticsElement
 }
 
 /**
@@ -141,6 +152,8 @@ export interface SessionManager {
   closeWorkspaces: (ctx: MeasureContext) => Promise<void>
 
   broadcast: (from: Session | null, workspaceId: WorkspaceId, resp: Response<any>, target?: string[]) => void
+
+  scheduleMaintenance: (timeMinutes: number) => void
 }
 
 /**

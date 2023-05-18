@@ -662,7 +662,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
       },
       templates: {
         textTemplate: '{sender} mentioned you in {doc} {data}',
-        htmlTemplate: '<p><b>{sender}</b> mentioned you in {doc}</p> {data}',
+        htmlTemplate: '<p>–{sender}</b> mentioned you in {doc}</p> {data}',
         subjectTemplate: 'You were mentioned in {doc}'
       }
     },

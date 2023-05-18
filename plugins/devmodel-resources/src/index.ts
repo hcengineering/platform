@@ -14,6 +14,8 @@
 //
 
 import core, {
+  Account,
+  AccountClient,
   Class,
   Client,
   Doc,
@@ -29,7 +31,7 @@ import core, {
 } from '@hcengineering/core'
 import { devModelId } from '@hcengineering/devmodel'
 import { Builder } from '@hcengineering/model'
-import { getMetadata, IntlString, Resources } from '@hcengineering/platform'
+import { IntlString, Resources, getMetadata } from '@hcengineering/platform'
 import view from '@hcengineering/view'
 import workbench from '@hcengineering/workbench'
 import ModelView from './components/ModelView.svelte'
@@ -50,9 +52,9 @@ export interface QueryWithResult {
 
 export const transactions: TxWitHResult[] = []
 
-class ModelClient implements Client {
+class ModelClient implements AccountClient {
   notifyEnabled = true
-  constructor (readonly client: Client) {
+  constructor (readonly client: AccountClient) {
     this.notifyEnabled = (localStorage.getItem('#platform.notification.logging') ?? 'true') === 'true'
 
     client.notify = (tx) => {
@@ -71,6 +73,10 @@ class ModelClient implements Client {
 
   getModel (): ModelDb {
     return this.client.getModel()
+  }
+
+  async getAccount (): Promise<Account> {
+    return await this.client.getAccount()
   }
 
   async findOne<T extends Doc>(
@@ -133,7 +139,7 @@ class ModelClient implements Client {
     await this.client.close()
   }
 }
-export async function Hook (client: Client): Promise<Client> {
+export async function Hook (client: AccountClient): Promise<Client> {
   console.debug('devmodel# Client HOOKED by DevModel')
 
   // Client is alive here, we could hook with some model extensions special for DevModel plugin.

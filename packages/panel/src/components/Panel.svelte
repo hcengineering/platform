@@ -62,6 +62,9 @@
   const startScrollHeightCheck = () => {
     clearTimeout(timer)
     timer = setTimeout(() => {
+      if (scroll == null) {
+        return
+      }
       if (lastScrollHeight <= scroll.scrollHeight && count <= waitCount) {
         count = lastScrollHeight < scroll.scrollHeight ? 0 : count + 1
         lastScrollHeight = scroll.scrollHeight

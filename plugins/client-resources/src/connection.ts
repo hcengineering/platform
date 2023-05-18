@@ -16,6 +16,7 @@
 
 import client, { ClientSocket, ClientSocketReadyState } from '@hcengineering/client'
 import core, {
+  Account,
   Class,
   ClientConnection,
   Doc,
@@ -338,6 +339,10 @@ class Connection implements ClientConnection {
 
   async loadModel (lastTxTime: Timestamp): Promise<Tx[]> {
     return await this.sendRequest({ method: 'loadModel', params: [lastTxTime] })
+  }
+
+  async getAccount (): Promise<Account> {
+    return await this.sendRequest({ method: 'getAccount', params: [] })
   }
 
   findAll<T extends Doc>(

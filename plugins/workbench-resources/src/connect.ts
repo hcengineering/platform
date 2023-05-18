@@ -1,6 +1,12 @@
 import client from '@hcengineering/client'
-import contact from '@hcengineering/contact'
-import core, { AccountRole, Client, setCurrentAccount, Version, versionToString } from '@hcengineering/core'
+import core, {
+  AccountRole,
+  Client,
+  AccountClient,
+  setCurrentAccount,
+  Version,
+  versionToString
+} from '@hcengineering/core'
 import login, { loginId } from '@hcengineering/login'
 import { addEventListener, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import presentation, { refreshClient, setClient } from '@hcengineering/presentation'
@@ -12,12 +18,12 @@ import ui, {
   setMetadataLocalStorage,
   showPopup
 } from '@hcengineering/ui'
-import ServerStatistics from './components/ServerStatistics.svelte'
+import ServerManager from './components/ServerManager.svelte'
 
 export let versionError: string | undefined = ''
 
 let _token: string | undefined
-let _client: Client | undefined
+let _client: AccountClient | undefined
 
 addEventListener(client.event.NetworkRequests, async (event: string, val: number) => {
   networkStatus.set(val)
@@ -95,7 +101,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   )
   console.log('logging in as', email)
 
-  const me = await _client.findOne(contact.class.EmployeeAccount, { email })
+  const me = await _client?.getAccount()
   if (me !== undefined) {
     console.log('login: employee account', me)
     setCurrentAccount(me)
@@ -143,16 +149,17 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   if (me.role === AccountRole.Owner) {
     let ep = endpoint.replace(/^ws/g, 'http')
-    if (!ep.endsWith('/')) {
-      ep += '/'
+    if (ep.endsWith('/')) {
+      ep = ep.substring(0, ep.length - 1)
     }
     setMetadata(ui.metadata.ShowNetwork, (evt: MouseEvent) => {
       showPopup(
-        ServerStatistics,
+        ServerManager,
         {
-          endpoint: ep + token
+          endpoint: ep,
+          token
         },
-        'top'
+        'content'
       )
     })
   }

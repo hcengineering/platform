@@ -143,7 +143,8 @@ export default plugin(platformId, {
     Unauthorized: '' as StatusCode,
     ExpiredLink: '' as StatusCode,
     UnknownMethod: '' as StatusCode<{ method: string }>,
-    InternalServerError: '' as StatusCode
+    InternalServerError: '' as StatusCode,
+    MaintenanceWarning: '' as StatusCode<{ time: number }>
   },
   metadata: {
     locale: '' as Metadata<string>

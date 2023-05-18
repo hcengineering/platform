@@ -13,7 +13,9 @@
 // limitations under the License.
 //
 
-import {
+import core, {
+  Account,
+  AccountRole,
   Class,
   Doc,
   DocumentQuery,
@@ -27,7 +29,7 @@ import {
 } from '@hcengineering/core'
 import { Pipeline, SessionContext } from '@hcengineering/server-core'
 import { Token } from '@hcengineering/server-token'
-import { BroadcastCall, Session, SessionRequest } from './types'
+import { BroadcastCall, Session, SessionRequest, StatisticsElement } from './types'
 
 /**
  * @public
@@ -37,6 +39,11 @@ export class ClientSession implements Session {
   binaryResponseMode: boolean = false
   useCompression: boolean = true
   sessionId = ''
+
+  total: StatisticsElement = { find: 0, tx: 0 }
+  current: StatisticsElement = { find: 0, tx: 0 }
+  mins5: StatisticsElement = { find: 0, tx: 0 }
+
   constructor (
     protected readonly broadcast: BroadcastCall,
     protected readonly token: Token,
@@ -60,18 +67,43 @@ export class ClientSession implements Session {
     return await this._pipeline.storage.loadModel(lastModelTx)
   }
 
+  async getAccount (ctx: MeasureContext): Promise<Account> {
+    const account = await this._pipeline.modelDb.findAll(core.class.Account, { email: this.token.email })
+    if (account.length === 0 && this.token.extra?.admin === 'true') {
+      // Generate fake account for admin user
+      const account = {
+        _id: core.account.System,
+        _class: 'contact:class:EmployeeAccount' as Ref<Class<Account>>,
+        name: 'System,Ghost',
+        email: this.token.email,
+        space: core.space.Model,
+        modifiedBy: core.account.System,
+        modifiedOn: Date.now(),
+        role: AccountRole.Owner
+      }
+      // Add for other services to work properly
+      this._pipeline.modelDb.addDoc(account)
+      return account
+    }
+    return account[0]
+  }
+
   async findAll<T extends Doc>(
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
+    this.total.find++
+    this.current.find++
     const context = ctx as SessionContext
     context.userEmail = this.token.email
     return await this._pipeline.findAll(context, _class, query, options)
   }
 
   async tx (ctx: MeasureContext, tx: Tx): Promise<TxResult> {
+    this.total.tx++
+    this.current.tx++
     const context = ctx as SessionContext
     context.userEmail = this.token.email
     const [result, derived, target] = await this._pipeline.tx(context, tx)

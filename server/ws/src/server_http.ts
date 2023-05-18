@@ -17,10 +17,14 @@ import { MeasureContext, generateId } from '@hcengineering/core'
 import { UNAUTHORIZED } from '@hcengineering/platform'
 import { Response, serialize } from '@hcengineering/rpc'
 import { Token, decodeToken } from '@hcengineering/server-token'
-import { IncomingMessage, ServerResponse, createServer } from 'http'
+import compression from 'compression'
+import cors from 'cors'
+import express from 'express'
+import http, { IncomingMessage } from 'http'
 import { RawData, WebSocket, WebSocketServer } from 'ws'
 import { getStatistics } from './stats'
 import { ConnectionSocket, HandleRequestFunction, LOGGING_ENABLED, PipelineFactory, SessionManager } from './types'
+
 /**
  * @public
  * @param sessionFactory -
@@ -37,6 +41,80 @@ export function startHttpServer (
   enableCompression: boolean
 ): () => Promise<void> {
   if (LOGGING_ENABLED) console.log(`starting server on port ${port} ...`)
+
+  const app = express()
+  app.use(cors())
+  app.use(
+    compression({
+      filter: (req, res) => {
+        if (req.headers['x-no-compression'] != null) {
+          // don't compress responses with this request header
+          return false
+        }
+
+        // fallback to standard filter function
+        return compression.filter(req, res)
+      },
+      level: 6
+    })
+  )
+
+  const getUsers = (): any => Array.from(sessions.sessions.entries()).map(([k, v]) => v.session.getUser())
+
+  app.get('/api/v1/statistics', (req, res) => {
+    try {
+      const token = req.query.token as string
+      const payload = decodeToken(token)
+      const admin = payload.extra?.admin === 'true'
+      res.writeHead(200)
+      const json = JSON.stringify({
+        ...getStatistics(ctx, sessions, admin),
+        users: getUsers,
+        admin
+      })
+      res.end(json)
+    } catch (err) {
+      console.error(err)
+      res.writeHead(404, {})
+      res.end()
+    }
+  })
+  app.put('/api/v1/manage', (req, res) => {
+    try {
+      const token = req.query.token as string
+      const payload = decodeToken(token)
+      if (payload.extra?.admin !== 'true') {
+        res.writeHead(404, {})
+        res.end()
+        return
+      }
+
+      const operation = req.query.operation
+
+      switch (operation) {
+        case 'maintenance': {
+          const timeMinutes = parseInt((req.query.timeout as string) ?? '5')
+          sessions.scheduleMaintenance(timeMinutes)
+
+          res.writeHead(200)
+          res.end()
+          break
+        }
+        case 'reboot': {
+          process.exit(0)
+        }
+      }
+
+      res.writeHead(404, {})
+      res.end()
+    } catch (err) {
+      console.error(err)
+      res.writeHead(404, {})
+      res.end()
+    }
+  })
+
+  const httpServer = http.createServer(app)
 
   const wss = new WebSocketServer({
     noServer: true,
@@ -121,32 +199,7 @@ export function startHttpServer (
     }
   })
 
-  const server = createServer()
-
-  server.on('request', (request: IncomingMessage, response: ServerResponse) => {
-    const url = new URL('http://localhost' + (request.url ?? ''))
-
-    const token = url.pathname.substring(1)
-    try {
-      const payload = decodeToken(token ?? '')
-      console.log(payload.workspace, 'statistics request')
-
-      response.writeHead(200, {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type'
-      })
-      const json = JSON.stringify(getStatistics(ctx, sessions))
-      response.end(json)
-    } catch (err) {
-      console.error(err)
-      response.writeHead(404, {})
-      response.end()
-    }
-  })
-
-  server.on('upgrade', (request: IncomingMessage, socket: any, head: Buffer) => {
+  httpServer.on('upgrade', (request: IncomingMessage, socket: any, head: Buffer) => {
     const url = new URL('http://localhost' + (request.url ?? ''))
     const token = url.pathname.substring(1)
 
@@ -178,13 +231,13 @@ export function startHttpServer (
       })
     }
   })
-  server.on('error', (err) => {
+  httpServer.on('error', (err) => {
     if (LOGGING_ENABLED) console.error('server error', err)
   })
 
-  server.listen(port)
+  httpServer.listen(port)
   return async () => {
-    server.close()
+    httpServer.close()
     await sessions.closeWorkspaces(ctx)
   }
 }

@@ -122,16 +122,20 @@
     })
   })
 
-  let account = getCurrentAccount() as EmployeeAccount
+  const accountId = (getCurrentAccount() as EmployeeAccount)._id
+
+  let account: EmployeeAccount | undefined
   const accountQ = createQuery()
   accountQ.query(
     contact.class.EmployeeAccount,
     {
-      _id: account._id
+      _id: accountId
     },
     (res) => {
-      account = res[0]
-      setCurrentAccount(account)
+      if (res.length > 0) {
+        account = res[0]
+        setCurrentAccount(account)
+      }
     },
     { limit: 1 }
   )
@@ -139,10 +143,10 @@
   let employee: Employee | undefined
   const employeeQ = createQuery()
 
-  employeeQ.query(
+  $: employeeQ.query(
     contact.class.Employee,
     {
-      _id: account.employee
+      _id: account?.employee
     },
     (res) => {
       employee = res[0]
@@ -156,7 +160,7 @@
   notificationQuery.query(
     notification.class.DocUpdates,
     {
-      user: account._id,
+      user: accountId,
       hidden: false
     },
     (res) => {
@@ -529,7 +533,7 @@
   let lastLoc: Location | undefined = undefined
 </script>
 
-{#if employee?.active === true}
+{#if employee?.active === true || accountId === core.account.System}
   <ActionHandler />
   <svg class="svg-mask">
     <clipPath id="notify-normal">
@@ -637,7 +641,7 @@
               showPopup(AccountPopup, {}, popupPosition)
             }}
           >
-            <Component is={contact.component.Avatar} props={{ avatar: employee.avatar, size: 'small' }} />
+            <Component is={contact.component.Avatar} props={{ avatar: employee?.avatar, size: 'small' }} />
           </div>
         </div>
       </div>

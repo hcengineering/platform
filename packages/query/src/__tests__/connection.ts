@@ -14,9 +14,9 @@
 //
 
 import type {
+  AccountClient,
   BackupClient,
   Class,
-  Client,
   Doc,
   DocumentQuery,
   Domain,
@@ -31,7 +31,7 @@ import core, { DOMAIN_TX, Hierarchy, ModelDb, TxDb } from '@hcengineering/core'
 import { genMinModel } from './minmodel'
 
 export async function connect (handler: (tx: Tx) => void): Promise<
-Client &
+AccountClient &
 BackupClient & {
   loadModel: (lastTxTime: Timestamp) => Promise<Tx[]>
 }
@@ -63,6 +63,7 @@ BackupClient & {
     findOne: async (_class, query, options) => (await findAll(_class, query, { ...options, limit: 1 })).shift(),
     getHierarchy: () => hierarchy,
     getModel: () => model,
+    getAccount: async () => ({} as unknown as any),
     tx: async (tx: Tx): Promise<TxResult> => {
       if (tx.objectSpace === core.space.Model) {
         hierarchy.tx(tx)

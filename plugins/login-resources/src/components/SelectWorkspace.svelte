@@ -15,19 +15,20 @@
 -->
 <script lang="ts">
   import { OK, Severity, Status } from '@hcengineering/platform'
+  import presentation from '@hcengineering/presentation'
   import {
     Button,
-    getCurrentLocation,
     Label,
-    navigate,
-    setMetadataLocalStorage,
+    Scroller,
     deviceOptionsStore as deviceInfo,
-    Scroller
+    getCurrentLocation,
+    navigate,
+    setMetadataLocalStorage
   } from '@hcengineering/ui'
   import login from '../plugin'
-  import { getWorkspaces, selectWorkspace, Workspace, navigateToWorkspace } from '../utils'
+  import { getWorkspaces, navigateToWorkspace, selectWorkspace } from '../utils'
   import StatusControl from './StatusControl.svelte'
-  import presentation from '@hcengineering/presentation'
+  import { Workspace } from '@hcengineering/login'
 
   export let navigateUrl: string | undefined = undefined
 

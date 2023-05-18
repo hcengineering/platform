@@ -26,6 +26,7 @@ import {
   listAccounts,
   listWorkspaces,
   replacePassword,
+  setAccountAdmin,
   setRole,
   upgradeWorkspace
 } from '@hcengineering/account'
@@ -193,6 +194,17 @@ export function devTool (
     .action(async (email: string, workspace: string, role: number, cmd) => {
       console.log(`set user ${email} role for ${workspace}...`)
       await setRole(email, workspace, productId, role)
+    })
+
+  program
+    .command('set-user-admin <email> <role>')
+    .description('set user role')
+    .action(async (email: string, role: string) => {
+      const { mongodbUri } = prepareTools()
+      console.log(`set user ${email} admin...`)
+      return await withDatabase(mongodbUri, async (db) => {
+        await setAccountAdmin(db, email, role === 'true')
+      })
     })
 
   program

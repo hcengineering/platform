@@ -74,12 +74,14 @@ export async function OnContactDelete (
   storageFx(async (adapter, bucket) => {
     await adapter.remove(bucket, [avatar])
 
-    const extra = await adapter.list(bucket, avatar)
-    if (extra.length > 0) {
-      await adapter.remove(
-        bucket,
-        Array.from(extra.entries()).map((it) => it[1].name)
-      )
+    if (avatar != null) {
+      const extra = await adapter.list(bucket, avatar)
+      if (extra.length > 0) {
+        await adapter.remove(
+          bucket,
+          Array.from(extra.entries()).map((it) => it[1].name)
+        )
+      }
     }
   })
 

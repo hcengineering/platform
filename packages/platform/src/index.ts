@@ -15,15 +15,16 @@
 //
 
 import { addStringsLoader } from './i18n'
-import { platformId } from './platform'
 import type { Metadata } from './metadata'
+import { platformId } from './platform'
 
-export * from './platform'
-export * from './status'
 export * from './event'
-export * from './resource'
 export * from './i18n'
 export * from './metadata'
+export * from './platform'
+export { default } from './platform'
+export * from './resource'
+export * from './status'
 export * from './testUtils'
 
 addStringsLoader(platformId, async (lang: string) => {
@@ -39,5 +40,3 @@ export type URL = string
  * @public
  */
 export type Asset = Metadata<URL>
-
-export { default } from './platform'

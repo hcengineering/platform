@@ -1,6 +1,6 @@
 {
   "status": {
-    "LoadingPlugin": "Загрузка плагина '<b>'{plugin}'</b>'...",
+    "LoadingPlugin": "Загрузка плагина {plugin}...",
     "UnknownError": "Неизвестная ошибка: {message}",
     "InvalidId": "Некорректный Id: {id}",
     "BadRequest": "Некорректный запрос",
@@ -8,6 +8,7 @@
     "ExpiredLink": "Ссылка истекла",
     "Unauthorized": "Неавторизован",
     "UnknownMethod": "Неизвестный метод: {method}",
-    "InternalServerError": "Внутренняя ошибка сервера"
+    "InternalServerError": "Внутренняя ошибка сервера",
+    "MaintenanceWarning": "Серверные работы запланированы через {time} минут"
   }
 }

@@ -14,8 +14,15 @@
 //
 
 import clientPlugin from '@hcengineering/client'
-import core, { Client, createClient, TxHandler, TxWorkspaceEvent, WorkspaceEvent } from '@hcengineering/core'
-import { getMetadata, getPlugins, getResource } from '@hcengineering/platform'
+import core, { AccountClient, TxHandler, TxWorkspaceEvent, WorkspaceEvent, createClient } from '@hcengineering/core'
+import platform, {
+  Severity,
+  Status,
+  getMetadata,
+  getPlugins,
+  getResource,
+  setPlatformStatus
+} from '@hcengineering/platform'
 import { connect } from './connection'
 
 export { connect }
@@ -30,7 +37,7 @@ export default async () => {
         onUpgrade?: () => void,
         onUnauthorized?: () => void,
         onConnect?: (apply: boolean) => void
-      ): Promise<Client> => {
+      ): Promise<AccountClient> => {
         const filterModel = getMetadata(clientPlugin.metadata.FilterModel) ?? false
 
         let client = createClient(
@@ -39,8 +46,13 @@ export default async () => {
             console.log('connecting to', url.href)
             const upgradeHandler: TxHandler = (tx) => {
               if (tx?._class === core.class.TxWorkspaceEvent) {
-                if ((tx as TxWorkspaceEvent).event === WorkspaceEvent.Upgrade) {
+                const event = tx as TxWorkspaceEvent
+                if (event.event === WorkspaceEvent.Upgrade) {
                   onUpgrade?.()
+                } else if (event.event === WorkspaceEvent.MaintenanceNotification) {
+                  void setPlatformStatus(
+                    new Status(Severity.WARNING, platform.status.MaintenanceWarning, { time: event.params.timeMinutes })
+                  )
                 }
               }
               handler(tx)
@@ -57,7 +69,7 @@ export default async () => {
     }
   }
 }
-async function hookClient (client: Promise<Client>): Promise<Client> {
+async function hookClient (client: Promise<AccountClient>): Promise<AccountClient> {
   const hook = getMetadata(clientPlugin.metadata.ClientHook)
   if (hook !== undefined) {
     const hookProc = await getResource(hook)

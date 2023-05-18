@@ -5,7 +5,7 @@ import { SessionManager } from './types'
 /**
  * @public
  */
-export function getStatistics (ctx: MeasureContext, sessions: SessionManager): any {
+export function getStatistics (ctx: MeasureContext, sessions: SessionManager, admin: boolean): any {
   const data: Record<string, any> = {
     metrics: metricsAggregate((ctx as any).metrics),
     statistics: {
@@ -13,8 +13,15 @@ export function getStatistics (ctx: MeasureContext, sessions: SessionManager): a
     }
   }
   data.statistics.totalClients = sessions.sessions.size
-  for (const [k, v] of sessions.workspaces) {
-    data.statistics.activeSessions[k] = v.sessions.size
+  if (admin) {
+    for (const [k, v] of sessions.workspaces) {
+      data.statistics.activeSessions[k] = Array.from(v.sessions.entries()).map(([k, v]) => ({
+        userId: v.session.getUser(),
+        mins5: v.session.mins5,
+        total: v.session.total,
+        current: v.session.current
+      }))
+    }
   }
 
   data.statistics.memoryUsed = Math.round((process.memoryUsage().heapUsed / 1024 / 1024) * 100) / 100

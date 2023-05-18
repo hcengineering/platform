@@ -110,6 +110,8 @@ export interface Account {
   hash: Binary
   salt: Binary
   workspaces: ObjectId[]
+  // Defined for server admins only
+  admin?: boolean
 }
 
 /**
@@ -171,6 +173,18 @@ export async function getAccount (db: Db, email: string): Promise<Account | null
   return await db.collection(ACCOUNT_COLLECTION).findOne<Account>({ email })
 }
 
+/**
+ * @public
+ */
+export async function setAccountAdmin (db: Db, email: string, admin: boolean): Promise<void> {
+  const account = await getAccount(db, email)
+  if (account === null) {
+    return
+  }
+  // Add workspace to account
+  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { admin } })
+}
+
 function withProductId (productId: string, query: Filter<Workspace>): Filter<Workspace> {
   return productId === ''
     ? {
@@ -218,13 +232,23 @@ async function getAccountInfo (db: Db, email: string, password: string): Promise
  */
 export async function login (db: Db, productId: string, email: string, password: string): Promise<LoginInfo> {
   console.log(`login attempt:${email}`)
-  await getAccountInfo(db, email, password)
+  const info = await getAccountInfo(db, email, password)
   const result = {
     endpoint: getEndpoint(),
     email,
-    token: generateToken(email, getWorkspaceId('', productId))
+    token: generateToken(email, getWorkspaceId('', productId), getAdminExtra(info))
   }
   return result
+}
+
+/**
+ * Will add admin=='true' in case of user is server admin
+ */
+function getAdminExtra (
+  info: Account | AccountInfo | null,
+  rec?: Record<string, string>
+): Record<string, string> | undefined {
+  return info?.admin === true ? { ...rec, admin: 'true' } : rec
 }
 
 /**
@@ -241,6 +265,17 @@ export async function selectWorkspace (
   if (accountInfo === null) {
     throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: email }))
   }
+
+  if (accountInfo.admin === true) {
+    return {
+      endpoint: getEndpoint(),
+      email,
+      token: generateToken(email, getWorkspaceId(workspace, productId), getAdminExtra(accountInfo)),
+      workspace,
+      productId
+    }
+  }
+
   const workspaceInfo = await getWorkspace(db, productId, workspace)
 
   if (workspaceInfo !== null) {
@@ -251,7 +286,7 @@ export async function selectWorkspace (
         const result = {
           endpoint: getEndpoint(),
           email,
-          token: generateToken(email, getWorkspaceId(workspace, productId)),
+          token: generateToken(email, getWorkspaceId(workspace, productId), getAdminExtra(accountInfo)),
           workspace,
           productId
         }
@@ -373,7 +408,7 @@ export async function createAccount (
   const result = {
     endpoint: getEndpoint(),
     email,
-    token: generateToken(email, getWorkspaceId('', productId))
+    token: generateToken(email, getWorkspaceId('', productId), getAdminExtra(account))
   }
   return result
 }
@@ -381,10 +416,10 @@ export async function createAccount (
 /**
  * @public
  */
-export async function listWorkspaces (db: Db, productId: string): Promise<Workspace[]> {
-  return (await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, {})).toArray()).map(
-    (it) => ({ ...it, productId })
-  )
+export async function listWorkspaces (db: Db, productId: string): Promise<WorkspaceInfoOnly[]> {
+  return (await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, {})).toArray())
+    .map((it) => ({ ...it, productId }))
+    .map(trimWorkspace)
 }
 
 /**
@@ -462,10 +497,11 @@ export const createUserWorkspace =
       await createWorkspace(version, txes, migrationOperation, db, productId, workspace, '')
       await assignWorkspace(db, productId, email, workspace)
       await setRole(email, workspace, productId, AccountRole.Owner)
+      const info = await getAccount(db, email)
       const result = {
         endpoint: getEndpoint(),
         email,
-        token: generateToken(email, getWorkspaceId(workspace, productId)),
+        token: generateToken(email, getWorkspaceId(workspace, productId), getAdminExtra(info)),
         productId
       }
       return result
@@ -501,14 +537,26 @@ export async function getInviteLink (
 /**
  * @public
  */
-export async function getUserWorkspaces (db: Db, productId: string, token: string): Promise<Workspace[]> {
+export type WorkspaceInfoOnly = Omit<Workspace, '_id' | 'accounts'>
+
+function trimWorkspace (ws: Workspace): WorkspaceInfoOnly {
+  const { _id, accounts, ...data } = ws
+  return data
+}
+
+/**
+ * @public
+ */
+export async function getUserWorkspaces (db: Db, productId: string, token: string): Promise<WorkspaceInfoOnly[]> {
   const { email } = decodeToken(token)
   const account = await getAccount(db, email)
   if (account === null) return []
-  return await db
-    .collection<Workspace>(WORKSPACE_COLLECTION)
-    .find(withProductId(productId, { _id: { $in: account.workspaces } }))
-    .toArray()
+  return (
+    await db
+      .collection<Workspace>(WORKSPACE_COLLECTION)
+      .find(withProductId(productId, account.admin === true ? {} : { _id: { $in: account.workspaces } }))
+      .toArray()
+  ).map(trimWorkspace)
 }
 
 async function getWorkspaceAndAccount (
@@ -686,9 +734,13 @@ export async function requestPassword (db: Db, productId: string, email: string)
     throw new Error('Please provide front url')
   }
 
-  const token = generateToken('@restore', getWorkspaceId('', productId), {
-    restore: email
-  })
+  const token = generateToken(
+    '@restore',
+    getWorkspaceId('', productId),
+    getAdminExtra(account, {
+      restore: email
+    })
+  )
 
   const link = concatLink(front, `/login/recovery?id=${token}`)
 

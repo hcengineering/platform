@@ -22,9 +22,13 @@
   let _value: string | undefined = undefined
 
   $: if (label !== undefined) {
-    translate(label, params ?? {}).then((r) => {
-      _value = r
-    })
+    translate(label, params ?? {})
+      .then((r) => {
+        _value = r
+      })
+      .catch((err) => {
+        console.error(err)
+      })
   } else {
     _value = label
   }

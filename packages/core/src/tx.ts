@@ -50,7 +50,8 @@ export enum WorkspaceEvent {
   UpgradeScheduled,
   Upgrade,
   IndexingUpdate,
-  SecurityChange
+  SecurityChange,
+  MaintenanceNotification
 }
 
 /**

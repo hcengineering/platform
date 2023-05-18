@@ -13,18 +13,18 @@
 // limitations under the License.
 //
 
-import { createClient, Client } from '@hcengineering/core'
-import { getMetadata, getResource } from '@hcengineering/platform'
-import { migrateOperations } from '@hcengineering/model-all'
-import { connect } from './connection'
 import clientPlugin from '@hcengineering/client'
+import { AccountClient, createClient } from '@hcengineering/core'
+import { migrateOperations } from '@hcengineering/model-all'
+import { getMetadata, getResource } from '@hcengineering/platform'
+import { connect } from './connection'
 
-let client: Client
+let client: AccountClient
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => {
   return {
     function: {
-      GetClient: async (): Promise<Client> => {
+      GetClient: async (): Promise<AccountClient> => {
         if (client === undefined) {
           client = await createClient(connect)
           for (const op of migrateOperations) {
