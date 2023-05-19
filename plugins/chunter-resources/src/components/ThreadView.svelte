@@ -164,7 +164,7 @@
     if (docUpdate === undefined || lastView === undefined) return -1
     for (let index = 0; index < comments.length; index++) {
       const comment = comments[index]
-      if (comment.createOn >= lastView) return index
+      if ((comment.createOn ?? 0) >= lastView) return index
     }
     return -1
   }

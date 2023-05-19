@@ -25,7 +25,7 @@
 
   const config: [string, IntlString, object][] = [
     ['assigned', tracker.string.Assigned, {}],
-    ['created', tracker.string.Created, {}],
+    ['created', tracker.string.Created, { value: 2 }],
     ['subscribed', tracker.string.Subscribed, {}]
   ]
   const currentUser = getCurrentAccount() as EmployeeAccount
