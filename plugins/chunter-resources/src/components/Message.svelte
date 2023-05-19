@@ -228,7 +228,7 @@
       {#if employee}
         <EmployeePresenter value={employee} shouldShowAvatar={false} inline />
       {/if}
-      <span>{getTime(message.createOn)}</span>
+      <span>{getTime(message.createOn ?? 0)}</span>
       {#if message.editedOn}
         <span use:tooltip={{ label: ui.string.TimeTooltip, props: { value: getTime(message.editedOn) } }}>
           <Label label={chunter.string.Edited} />

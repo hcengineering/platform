@@ -64,7 +64,6 @@ export async function createApplication (
     ...data,
     state: state._id,
     number: (incResult as any).object.sequence,
-    rank: calcRank(lastOne, undefined),
-    createOn: Date.now()
+    rank: calcRank(lastOne, undefined)
   })
 }

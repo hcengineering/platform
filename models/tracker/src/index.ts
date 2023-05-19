@@ -257,10 +257,6 @@ export class TIssue extends TAttachedDoc implements Issue {
   @Prop(Collection(tracker.class.TimeSpendReport), tracker.string.TimeSpendReports)
     reports!: number
 
-  @Prop(TypeTimestamp(), tracker.string.CreatedDate)
-  @ReadOnly()
-    createOn!: Timestamp
-
   declare childInfo: IssueChildInfo[]
 }
 
@@ -1780,7 +1776,8 @@ export function createModel (builder: Builder): void {
     groupBy: ['status'],
     orderBy: [
       ['modifiedOn', SortingOrder.Descending],
-      ['targetDate', SortingOrder.Descending]
+      ['targetDate', SortingOrder.Descending],
+      ['createOn', SortingOrder.Descending]
     ],
     other: []
   }
@@ -1852,7 +1849,8 @@ export function createModel (builder: Builder): void {
     groupBy: ['lead'],
     orderBy: [
       ['startDate', SortingOrder.Descending],
-      ['modifiedOn', SortingOrder.Descending]
+      ['modifiedOn', SortingOrder.Descending],
+      ['createOn', SortingOrder.Descending]
     ],
     other: []
   }
@@ -1919,7 +1917,8 @@ export function createModel (builder: Builder): void {
     groupBy: [],
     orderBy: [
       ['startDate', SortingOrder.Descending],
-      ['modifiedOn', SortingOrder.Descending]
+      ['modifiedOn', SortingOrder.Descending],
+      ['createOn', SortingOrder.Descending]
     ],
     other: [],
     groupDepth: 1

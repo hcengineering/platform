@@ -29,7 +29,6 @@ import {
   TypeMarkup,
   TypeRef,
   TypeString,
-  TypeTimestamp,
   UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
@@ -37,6 +36,7 @@ import calendar from '@hcengineering/model-calendar'
 import chunter from '@hcengineering/model-chunter'
 import contact, { TOrganization, TPerson } from '@hcengineering/model-contact'
 import core, { TAttachedDoc, TSpace } from '@hcengineering/model-core'
+import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import presentation from '@hcengineering/model-presentation'
 import tags from '@hcengineering/model-tags'
 import task, { DOMAIN_TASK, TSpaceWithStates, TTask, actionTemplates } from '@hcengineering/model-task'
@@ -59,7 +59,6 @@ import { KeyBinding, ViewOptionsModel } from '@hcengineering/view'
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
 import { TOpinion, TReview } from './review-model'
-import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 
 export { recruitId } from '@hcengineering/recruit'
 export { recruitOperation } from './migration'
@@ -167,10 +166,6 @@ export class TApplicant extends TTask implements Applicant {
 
   @Prop(TypeRef(contact.class.Employee), recruit.string.AssignedRecruiter)
   declare assignee: Ref<Employee> | null
-
-  @Prop(TypeTimestamp(), contact.string.CreatedDate)
-  @ReadOnly()
-    createOn!: Timestamp
 }
 
 @Model(recruit.class.ApplicantMatch, core.class.AttachedDoc, DOMAIN_TASK)
@@ -629,6 +624,7 @@ export function createModel (builder: Builder): void {
     orderBy: [
       ['state', SortingOrder.Ascending],
       ['modifiedOn', SortingOrder.Descending],
+      ['createOn', SortingOrder.Descending],
       ['dueDate', SortingOrder.Ascending],
       ['rank', SortingOrder.Ascending]
     ],

@@ -56,7 +56,8 @@ export interface Doc extends Obj {
   space: Ref<Space>
   modifiedOn: Timestamp
   modifiedBy: Ref<Account>
-  createdBy?: Ref<Account>
+  createdBy?: Ref<Account> // Marked as optional since it will be filled by platform.
+  createOn?: Timestamp // Marked as optional since it will be filled by platform.
 }
 
 /**

@@ -940,8 +940,7 @@ async function synchronizeUsers (
           name: combineName(u.NAME, u.LAST_NAME),
           avatar: u.PERSONAL_PHOTO,
           active: u.ACTIVE,
-          city: u.PERSONAL_CITY,
-          createOn: Date.now()
+          city: u.PERSONAL_CITY
         })
         accountId = await ops.client.createDoc(contact.class.EmployeeAccount, core.space.Model, {
           email: u.EMAIL,

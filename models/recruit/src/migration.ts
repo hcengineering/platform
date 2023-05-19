@@ -20,7 +20,6 @@ import core, {
   DOMAIN_TX,
   Ref,
   Space,
-  TxCollectionCUD,
   TxCreateDoc,
   TxFactory,
   TxOperations,
@@ -31,8 +30,8 @@ import { DOMAIN_CALENDAR } from '@hcengineering/model-calendar'
 import contact, { DOMAIN_CONTACT } from '@hcengineering/model-contact'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import tags, { TagCategory } from '@hcengineering/model-tags'
-import { createKanbanTemplate, createSequence, DOMAIN_KANBAN, DOMAIN_TASK } from '@hcengineering/model-task'
-import { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
+import { createKanbanTemplate, createSequence, DOMAIN_KANBAN } from '@hcengineering/model-task'
+import { Vacancy } from '@hcengineering/recruit'
 import task, { KanbanTemplate, Sequence } from '@hcengineering/task'
 import recruit from './plugin'
 
@@ -46,47 +45,6 @@ async function fixImportedTitle (client: MigrationClient): Promise<void> {
       $rename: { title: 'recruit:mixin:Candidate.title' }
     }
   )
-}
-
-async function setCreate (client: MigrationClient): Promise<void> {
-  while (true) {
-    const docs = await client.find<Applicant>(
-      DOMAIN_TASK,
-      {
-        _class: recruit.class.Applicant,
-        createOn: { $exists: false }
-      },
-      { limit: 500 }
-    )
-    if (docs.length === 0) break
-    const txex = await client.find<TxCollectionCUD<Candidate, Applicant>>(DOMAIN_TX, {
-      'tx.objectId': { $in: docs.map((it) => it._id) },
-      'tx._class': core.class.TxCreateDoc
-    })
-    for (const doc of docs) {
-      const tx = txex.find((it) => it.tx.objectId === doc._id)
-      if (tx !== undefined) {
-        await client.update(
-          DOMAIN_TASK,
-          {
-            _id: doc._id
-          },
-          {
-            createOn: tx.modifiedOn
-          }
-        )
-        await client.update(
-          DOMAIN_TX,
-          {
-            _id: tx._id
-          },
-          {
-            'tx.attributes.createOn': tx.modifiedOn
-          }
-        )
-      }
-    }
-  }
 }
 
 async function fillVacancyNumbers (client: MigrationClient): Promise<void> {
@@ -142,7 +100,6 @@ async function fillVacancyNumbers (client: MigrationClient): Promise<void> {
 
 export const recruitOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
-    await setCreate(client)
     await fixImportedTitle(client)
     await fillVacancyNumbers(client)
     await client.update(

@@ -2,23 +2,23 @@ import contact, { Channel, Employee, EmployeeAccount, Person } from '@hcengineer
 import core, {
   AttachedData,
   Data,
-  generateId,
   MeasureContext,
   MeasureMetricsContext,
-  metricsToString,
   MixinUpdate,
   Ref,
   TxOperations,
-  WorkspaceId
+  WorkspaceId,
+  generateId,
+  metricsToString
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import recruit from '@hcengineering/model-recruit'
 import { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
-import { genRanks, State } from '@hcengineering/task'
+import { State, genRanks } from '@hcengineering/task'
 import faker from 'faker'
 import jpeg, { BufferRet } from 'jpeg-js'
-import { addAttachments, AttachmentOptions } from './attachments'
-import { addComments, CommentOptions } from './comments'
+import { AttachmentOptions, addAttachments } from './attachments'
+import { CommentOptions, addComments } from './comments'
 import { connect } from './connect'
 import { createUpdateSpaceKanban } from './kanban'
 import { findOrUpdate, findOrUpdateAttached } from './utils'
@@ -162,8 +162,7 @@ async function genApplicant (
     doneState: null,
     rank: rank as string,
     startDate: null,
-    dueDate: null,
-    createOn: Date.now()
+    dueDate: null
   }
 
   // Update or create candidate
@@ -234,8 +233,7 @@ async function genCandidate (
   const candidate: Data<Person> = {
     name: fName + ',' + lName,
     city: faker.address.city(),
-    avatar: imgId,
-    createOn: Date.now()
+    avatar: imgId
   }
 
   const candidateMixin: MixinUpdate<Person, Candidate> = {

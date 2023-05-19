@@ -40,7 +40,6 @@ import {
   Index,
   Model,
   Prop,
-  ReadOnly,
   TypeDate,
   TypeRef,
   TypeString,
@@ -103,10 +102,6 @@ export class TContact extends TDoc implements Contact {
   @Prop(TypeString(), contact.string.Location)
   @Index(IndexKind.FullText)
     city!: string
-
-  @Prop(TypeTimestamp(), contact.string.CreatedDate)
-  @ReadOnly()
-    createOn!: Timestamp
 }
 
 @Model(contact.class.Channel, core.class.AttachedDoc, DOMAIN_CHANNEL)

@@ -92,8 +92,7 @@
     modifiedOn: Date.now(),
     modifiedBy: '' as Ref<Account>,
     startDate: null,
-    dueDate: null,
-    createOn: Date.now()
+    dueDate: null
   }
 
   const dispatch = createEventDispatcher()
@@ -149,8 +148,7 @@
         assignee: doc.assignee,
         rank: calcRank(lastOne, undefined),
         startDate: null,
-        dueDate: null,
-        createOn: Date.now()
+        dueDate: null
       },
       doc._id
     )
@@ -182,8 +180,7 @@
         modifiedOn: Date.now(),
         modifiedBy: '' as Ref<Account>,
         startDate: null,
-        dueDate: null,
-        createOn: Date.now()
+        dueDate: null
       }
       fillDefaults(hierarchy, doc, recruit.class.Applicant)
     }

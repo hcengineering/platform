@@ -131,7 +131,6 @@
         collection: 'repliesCount',
         content: message,
         createBy: me,
-        createOn: 0,
         attachments
       },
       commentId

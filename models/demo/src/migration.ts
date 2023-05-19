@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
+import contact, { EmployeeAccount } from '@hcengineering/contact'
 import core, { AccountRole, DOMAIN_TX, TxCreateDoc, TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
-import contact, { EmployeeAccount } from '@hcengineering/contact'
-import recruit from '@hcengineering/model-recruit'
 import { DOMAIN_CONTACT } from '@hcengineering/model-contact'
+import recruit from '@hcengineering/model-recruit'
 
 async function createCandidate (
   tx: TxOperations,
@@ -33,8 +33,7 @@ async function createCandidate (
   if (current !== undefined) return
   const u1 = await tx.createDoc(contact.class.Person, recruit.space.CandidatesPublic, {
     name,
-    city,
-    createOn: Date.now()
+    city
   })
   await tx.addCollection(contact.class.Channel, recruit.space.CandidatesPublic, u1, contact.class.Person, 'channels', {
     provider: contact.channelProvider.Email,
@@ -74,8 +73,7 @@ export const demoOperation: MigrateOperation = {
       const employee = await ops.createDoc(contact.class.Employee, contact.space.Employee, {
         name: 'Chen,Rosamund',
         city: 'Mountain View',
-        active: true,
-        createOn: Date.now()
+        active: true
       })
 
       await ops.createDoc<EmployeeAccount>(contact.class.EmployeeAccount, core.space.Model, {

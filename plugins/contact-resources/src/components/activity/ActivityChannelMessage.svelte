@@ -54,7 +54,7 @@
       'tx.attributes.incoming': false
     },
     (res) => {
-      const filtered = res.filter((p) => (p.tx as TxCreateDoc<ChannelItem>).attributes.sendOn >= object.createOn)
+      const filtered = res.filter((p) => (p.tx as TxCreateDoc<ChannelItem>).attributes.sendOn >= (object.createOn ?? 0))
       newTxes = createDisplayTxes(filtered)
     }
   )

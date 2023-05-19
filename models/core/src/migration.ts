@@ -13,17 +13,17 @@
 // limitations under the License.
 //
 
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import core, {
-  Doc,
+  AttachedDoc,
   DOMAIN_BLOB,
   DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MODEL,
   DOMAIN_TX,
-  TxCreateDoc,
+  Doc,
   TxCollectionCUD,
-  AttachedDoc
+  TxCreateDoc
 } from '@hcengineering/core'
+import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 
 async function fillCreatedBy (client: MigrationClient): Promise<void> {
   const h = client.hierarchy
@@ -87,9 +87,72 @@ async function fillCreatedBy (client: MigrationClient): Promise<void> {
     }
   }
 }
+async function fillCreatedOn (client: MigrationClient): Promise<void> {
+  const h = client.hierarchy
+  const domains = h.domains()
+  for (const domain of domains) {
+    if (
+      domain === DOMAIN_TX ||
+      domain === DOMAIN_MODEL ||
+      domain === DOMAIN_BLOB ||
+      domain === DOMAIN_DOC_INDEX_STATE
+    ) {
+      continue
+    }
+    while (true) {
+      try {
+        const objects = await client.find<Doc>(
+          domain,
+          { createdOn: { $exists: false } },
+          { projection: { _id: 1, modifiedOn: 1 }, limit: 10000 }
+        )
+        if (objects.length === 0) {
+          break
+        }
+        const txes = await client.find<TxCreateDoc<Doc>>(
+          DOMAIN_TX,
+          {
+            _class: core.class.TxCreateDoc,
+            objectId: { $in: Array.from(objects.map((it) => it._id)) }
+          },
+          { projection: { _id: 1, modifiedOn: 1, createOn: 1, objectId: 1 } }
+        )
+
+        const txes2 = (
+          await client.find<TxCollectionCUD<Doc, AttachedDoc>>(
+            DOMAIN_TX,
+            {
+              _class: core.class.TxCollectionCUD,
+              'tx._class': core.class.TxCreateDoc,
+              'tx.objectId': { $in: Array.from(objects.map((it) => it._id)) }
+            },
+            { projection: { _id: 1, modifiedOn: 1, createOn: 1, tx: 1 } }
+          )
+        ).map((it) => it.tx as unknown as TxCreateDoc<Doc>)
+
+        const txMap = new Map(txes.concat(txes2).map((p) => [p.objectId, p]))
+
+        console.log('migrateCreateOn', domain, objects.length)
+        await client.bulk(
+          domain,
+          objects.map((it) => {
+            const createTx = txMap.get(it._id)
+            return {
+              filter: { _id: it._id },
+              update: {
+                createdOn: createTx?.createOn ?? it.modifiedOn
+              }
+            }
+          })
+        )
+      } catch (err) {}
+    }
+  }
+}
 export const coreOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await fillCreatedBy(client)
+    await fillCreatedOn(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {}
 }
