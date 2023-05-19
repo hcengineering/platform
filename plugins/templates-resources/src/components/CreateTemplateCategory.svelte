@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core from '@hcengineering/core'
+  import core, { getCurrentAccount } from '@hcengineering/core'
   import presentation, { getClient, SpaceCreateCard } from '@hcengineering/presentation'
   import { EditBox, Grid, IconFolder, ToggleWithLabel } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -24,6 +24,7 @@
   let name: string = ''
   const description: string = ''
   let isPrivate: boolean = false
+  const me = getCurrentAccount()._id
 
   export function canClose (): boolean {
     return name === ''
@@ -37,7 +38,7 @@
       description,
       private: isPrivate,
       archived: false,
-      members: []
+      members: [me]
     })
   }
 </script>
