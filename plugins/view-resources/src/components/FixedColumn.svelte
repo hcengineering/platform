@@ -33,6 +33,7 @@
         prevKey = key
         cWidth = undefined
       }
+      if (cWidth && cWidth > ($fixedWidthStore[key] ?? 0)) $fixedWidthStore[key] = cWidth
     }
   })
 
