@@ -125,7 +125,7 @@
   <div class="ac-header__wrap-title mr-3">
     <span class="ac-header__title"><Label {label} /></span>
     <span class="componentTitle">
-      › <Label label={title} />
+      &nbsp;› <Label label={title} />
     </span>
   </div>
 

@@ -53,7 +53,6 @@ export default mergeIds(contactId, contact, {
     ViewFullProfile: '' as IntlString,
     Member: '' as IntlString,
     Members: '' as IntlString,
-    NumberMembers: '' as IntlString,
     NoMembers: '' as IntlString,
     AddMember: '' as IntlString,
     KickEmployee: '' as IntlString,
