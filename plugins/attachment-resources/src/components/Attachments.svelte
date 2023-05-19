@@ -17,11 +17,13 @@
   import { Attachment } from '@hcengineering/attachment'
   import { Class, Data, Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { Icon, Label, resizeObserver, Scroller, Spinner } from '@hcengineering/ui'
+  import { Icon, Label, resizeObserver, Scroller, Spinner, Button, IconAdd } from '@hcengineering/ui'
   import view, { BuildModelKey } from '@hcengineering/view'
   import { Table } from '@hcengineering/view-resources'
+  import { getClient } from '@hcengineering/presentation'
   import attachment from '../plugin'
-  import AddAttachment from './AddAttachment.svelte'
+  import { createAttachments } from '../utils'
+  import { createEventDispatcher } from 'svelte'
   import AttachmentDroppable from './AttachmentDroppable.svelte'
   import IconAttachments from './icons/Attachments.svelte'
   import UploadDuo from './icons/UploadDuo.svelte'
@@ -42,37 +44,67 @@
   let loading = 0
   let dragover = false
   let wSection: number
+
+  const client = getClient()
+  const dispatch = createEventDispatcher()
+
+  async function fileSelected () {
+    const list = inputFile.files
+    if (list === null || list.length === 0) return
+
+    loading++
+    try {
+      await createAttachments(
+        client,
+        list,
+        { objectClass: _class, objectId, space },
+        attachmentClass,
+        attachmentClassOptions
+      )
+    } finally {
+      loading--
+    }
+
+    if (inputFile) {
+      inputFile.value = ''
+    }
+
+    dispatch('attached')
+  }
+
+  function openFile () {
+    inputFile.click()
+  }
 </script>
 
 <div class="antiSection" use:resizeObserver={(element) => (wSection = element.clientWidth)}>
-  <div class="antiSection-header">
-    <div class="antiSection-header__icon">
-      {#if showHeader}
+  {#if showHeader}
+    <div class="antiSection-header">
+      <div class="antiSection-header__icon">
         <Icon icon={IconAttachments} size={'small'} />
-      {/if}
-    </div>
-    <span class="antiSection-header__title">
-      {#if showHeader}
+      </div>
+      <span class="antiSection-header__title">
         <Label {label} />
-      {/if}
-    </span>
-    <div class="buttons-group small-gap">
-      {#if loading}
-        <Spinner />
-      {:else if !readonly}
-        <AddAttachment
-          bind:loading
-          bind:inputFile
-          objectClass={_class}
-          {objectId}
-          {space}
-          {attachmentClass}
-          {attachmentClassOptions}
-        />
-      {/if}
+      </span>
+      <div class="buttons-group small-gap">
+        {#if loading}
+          <Spinner />
+        {:else if !readonly}
+          <Button icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={openFile} />
+        {/if}
+      </div>
     </div>
-  </div>
+  {/if}
 
+  <input
+    bind:this={inputFile}
+    multiple
+    type="file"
+    name="file"
+    id="file"
+    style="display: none"
+    on:change={fileSelected}
+  />
   {#if !loading && (attachments === null || attachments === 0) && !readonly}
     <AttachmentDroppable
       bind:loading
@@ -83,7 +115,7 @@
       {attachmentClass}
       {attachmentClassOptions}
     >
-      <div class="antiSection-empty attachments flex-col mt-3" class:solid={dragover}>
+      <div class="antiSection-empty attachments flex-col" class:mt-3={showHeader} class:solid={dragover}>
         <div class="flex-center caption-color">
           <UploadDuo size={'large'} />
         </div>
