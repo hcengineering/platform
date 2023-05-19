@@ -18,7 +18,7 @@
   import contact from '@hcengineering/contact-resources/src/plugin'
   import { AttachedData, Class, Data, Doc, generateId, MixinData, Ref, WithLookup } from '@hcengineering/core'
   import type { Customer } from '@hcengineering/lead'
-  import { Card, getClient } from '@hcengineering/presentation'
+  import { Card, getClient, InlineAttributeBar } from '@hcengineering/presentation'
   import {
     Button,
     createFocusManager,
@@ -71,7 +71,7 @@
       description: object.description
     }
 
-    const id = await client.createDoc(targetClass._id, contact.space.Contacts, candidate, customerId)
+    const id = await client.createDoc(targetClass._id, contact.space.Contacts, { ...candidate, ...object }, customerId)
     await client.createMixin(
       id as Ref<Contact>,
       targetClass._id,
@@ -234,6 +234,15 @@
       editable
       highlighted={matchedChannels.map((it) => it.provider)}
     />
+    {#if targetClass._id === contact.class.Organization}
+      <InlineAttributeBar
+        _class={contact.class.Organization}
+        {object}
+        toClass={contact.class.Contact}
+        on:update
+        extraProps={{ showNavigate: false }}
+      />
+    {/if}
   </svelte:fragment>
   <svelte:fragment slot="footer">
     {#if matches.length > 0}

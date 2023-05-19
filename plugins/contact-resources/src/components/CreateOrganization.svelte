@@ -99,24 +99,22 @@
     />
   </div>
   <svelte:fragment slot="pool">
-    <div class="flex-row-center flex-wrap">
-      <ChannelsDropdown
-        bind:value={channels}
-        focusIndex={10}
-        kind={'secondary'}
-        size={'large'}
-        editable
-        highlighted={matchedChannels.map((it) => it.provider)}
-      />
+    <ChannelsDropdown
+      bind:value={channels}
+      focusIndex={10}
+      kind={'secondary'}
+      size={'large'}
+      editable
+      highlighted={matchedChannels.map((it) => it.provider)}
+    />
 
-      <InlineAttributeBar
-        _class={contact.class.Organization}
-        {object}
-        toClass={contact.class.Contact}
-        on:update
-        extraProps={{ showNavigate: false }}
-      />
-    </div>
+    <InlineAttributeBar
+      _class={contact.class.Organization}
+      {object}
+      toClass={contact.class.Contact}
+      on:update
+      extraProps={{ showNavigate: false }}
+    />
   </svelte:fragment>
   <svelte:fragment slot="footer">
     {#if matches.length > 0}
