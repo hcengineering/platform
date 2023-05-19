@@ -78,6 +78,7 @@ import UserBoxItems from './components/UserBoxItems.svelte'
 import EmployeeFilter from './components/EmployeeFilter.svelte'
 import EmployeeFilterValuePresenter from './components/EmployeeFilterValuePresenter.svelte'
 import EmployeeAccountFilterValuePresenter from './components/EmployeeAccountFilterValuePresenter.svelte'
+import DeleteConfirmationPopup from './components/DeleteConfirmationPopup.svelte'
 
 import contact from './plugin'
 import {
@@ -298,7 +299,8 @@ export default async (): Promise<Resources> => ({
     UserBoxItems,
     EmployeeFilter,
     EmployeeFilterValuePresenter,
-    EmployeeAccountFilterValuePresenter
+    EmployeeAccountFilterValuePresenter,
+    DeleteConfirmationPopup
   },
   completion: {
     EmployeeQuery: async (
