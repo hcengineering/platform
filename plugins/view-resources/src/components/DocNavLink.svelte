@@ -28,6 +28,7 @@
   export let component: AnyComponent = view.component.EditDoc
   export let props: Record<string, any> = {}
   export let shrink: number = 0
+  export let accent: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -49,4 +50,4 @@
   $: if (object !== undefined) getHref(object)
 </script>
 
-<NavLink {disabled} {onClick} {noUnderline} {inline} {shrink} {href} {colorInherit}><slot /></NavLink>
+<NavLink {disabled} {onClick} {noUnderline} {inline} {shrink} {href} {colorInherit} {accent}><slot /></NavLink>

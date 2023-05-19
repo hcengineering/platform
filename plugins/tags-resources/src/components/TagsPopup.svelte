@@ -15,7 +15,6 @@
 <script lang="ts">
   import { Class, Doc, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
-  import { translate } from '@hcengineering/platform'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { TagCategory, TagElement } from '@hcengineering/tags'
   import {
@@ -24,13 +23,14 @@
     getPlatformColor,
     Icon,
     IconAdd,
-    IconClose,
+    IconSearch,
+    EditWithIcon,
     Label,
     showPopup,
     resizeObserver,
     deviceOptionsStore
   } from '@hcengineering/ui'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
   import CreateTagElement from './CreateTagElement.svelte'
   import IconView from './icons/View.svelte'
@@ -39,6 +39,7 @@
   export let newElements: TagElement[] = []
   export let targetClass: Ref<Class<Doc>>
   export let placeholder: IntlString = presentation.string.Search
+  export let placeholderParam: any | undefined = undefined
   export let selected: Ref<TagElement>[] = []
   export let keyLabel: string = ''
   export let hideAdd: boolean = false
@@ -46,7 +47,6 @@
   const tagShowLimit = 50
 
   let search: string = ''
-  let searchElement: HTMLInputElement
   let show: boolean = false
   let objects: TagElement[] = []
   let categories: TagCategory[] = []
@@ -58,13 +58,6 @@
   client.findAll(tags.class.TagCategory, { targetClass }).then((res) => {
     categories = res
   })
-
-  let phTraslate: string = ''
-  $: if (placeholder) {
-    translate(placeholder, {}).then((res) => {
-      phTraslate = res
-    })
-  }
 
   // TODO: Add $not: {$in: []} query
   $: query.query(tags.class.TagElement, { title: { $like: '%' + search + '%' }, targetClass }, (result) => {
@@ -98,9 +91,6 @@
     if (count > 0) return count.toString()
     return ''
   }
-  onMount(() => {
-    if (searchElement && !$deviceOptionsStore.isMobile) searchElement.focus()
-  })
   const tagSort = (a: TagElement, b: TagElement) => {
     const r = (b.refCount ?? 0) - (a.refCount ?? 0)
     if (r === 0) {
@@ -111,47 +101,33 @@
 </script>
 
 <div class="selectPopup maxHeight" use:resizeObserver={() => dispatch('changeContent')}>
-  <div class="header no-border">
-    <div class="flex-between flex-grow pr-2">
-      <div class="flex-grow">
-        <input
-          bind:this={searchElement}
-          type="text"
-          bind:value={search}
-          placeholder={phTraslate}
-          style="width: 100%;"
-          on:change
-        />
-      </div>
-      <div class="buttons-group small-gap">
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div
-          class="clear-btn"
-          class:show={search !== ''}
-          on:click={() => {
-            search = ''
-            searchElement.focus()
-          }}
-        >
-          {#if search !== ''}<div class="icon"><Icon icon={IconClose} size={'inline'} /></div>{/if}
-        </div>
-        <Button
-          kind={'transparent'}
-          size={'small'}
-          icon={show ? IconView : IconViewHide}
-          on:click={() => {
-            show = !show
-          }}
-        />
-        {#if !hideAdd}<Button kind={'transparent'} size={'small'} icon={IconAdd} on:click={createTagElement} />{/if}
-      </div>
-    </div>
+  <div class="header flex-row-center gap-2">
+    <EditWithIcon
+      icon={IconSearch}
+      size={'large'}
+      width={'100%'}
+      focus={!$deviceOptionsStore.isMobile}
+      bind:value={search}
+      {placeholder}
+      {placeholderParam}
+      on:change
+    />
+    <Button
+      kind={'transparent'}
+      size={'large'}
+      icon={show ? IconView : IconViewHide}
+      on:click={() => {
+        show = !show
+      }}
+    />
+    {#if !hideAdd}<Button kind={'transparent'} size={'large'} icon={IconAdd} on:click={createTagElement} />{/if}
   </div>
   <div class="scroll">
     <div class="box">
-      {#each categories as cat}
+      {#each categories as cat, i}
         {@const catObjects = objects.filter((el) => el.category === cat._id).sort(tagSort)}
         {#if catObjects.length > 0}
+          {#if i > 0}<div class="menu-separator" />{/if}
           <div class="sticky-wrapper">
             <button
               class="menu-group__header"
@@ -184,22 +160,22 @@
             <div class="menu-group">
               {#each catObjects.slice(0, 50) as element}
                 <button
-                  class="menu-item no-focus"
+                  class="menu-item no-focus flex-row-center"
                   class:selected={isSelected(selected, element)}
                   on:click={() => {
                     checkSelected(selected, element)
                   }}
                 >
-                  <div class="check">
+                  <div class="tag" style="background-color: {getPlatformColor(element.color)};" />
+                  <span class="lines-limit-2 flex-grow">{element.title}</span>
+                  <span class="ml-2 text-xs">
+                    ({element.refCount ?? 0})
+                  </span>
+                  <div class="check ml-3">
                     {#if isSelected(selected, element)}
                       <Icon icon={IconCheck} size={'small'} />
                     {/if}
                   </div>
-                  <div class="tag" style="background-color: {getPlatformColor(element.color)};" />
-                  <span class="lines-limit-2">{element.title}</span>
-                  <span class="ml-2 text-xs">
-                    ({element.refCount ?? 0})
-                  </span>
                 </button>
               {/each}
             </div>
@@ -213,6 +189,7 @@
       {/if}
     </div>
   </div>
+  <div class="menu-space" />
 </div>
 
 <style lang="scss">
@@ -231,6 +208,5 @@
     height: 100%;
     font-size: 0.75rem;
     color: var(--theme-dark-color);
-    border-top: 1px solid var(--theme-popup-divider);
   }
 </style>

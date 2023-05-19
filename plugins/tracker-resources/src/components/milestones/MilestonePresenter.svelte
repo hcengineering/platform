@@ -49,7 +49,7 @@
         <Icon icon={tracker.icon.Milestone} size={'small'} />
       </div>
     {/if}
-    <span title={value.label} class="label nowrap">
+    <span title={value.label} class="overflow-label label">
       {value.label}
     </span>
   </div>

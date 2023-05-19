@@ -22,6 +22,7 @@
   export let inline = false
   export let colorInherit: boolean = false
   export let shrink: number = 0
+  export let accent: boolean = false
 
   function clickHandler (e: MouseEvent) {
     if (disabled) return
@@ -55,13 +56,22 @@
     class:noUnderline
     class:inline
     class:colorInherit
+    class:fs-bold={accent}
     style:flex-shrink={shrink}
     on:click={clickHandler}
   >
     <slot />
   </span>
 {:else}
-  <a {href} class:noUnderline class:inline class:colorInherit style:flex-shrink={shrink} on:click={clickHandler}>
+  <a
+    {href}
+    class:noUnderline
+    class:inline
+    class:colorInherit
+    class:fs-bold={accent}
+    style:flex-shrink={shrink}
+    on:click={clickHandler}
+  >
     <slot />
   </a>
 {/if}
@@ -89,7 +99,6 @@
     }
 
     &.noUnderline {
-      font-weight: 500;
       &:not(.colorInherit) {
         color: var(--theme-caption-color);
       }

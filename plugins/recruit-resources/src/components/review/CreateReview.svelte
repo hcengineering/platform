@@ -28,6 +28,7 @@
   import { ObjectSearchBox } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../../plugin'
+  import IconCompany from '../icons/Company.svelte'
 
   // export let space: Ref<SpaceWithStates>
   export let candidate: Ref<Person>
@@ -174,6 +175,7 @@
       _class={contact.class.Organization}
       bind:value={company}
       label={recruit.string.Company}
+      icon={IconCompany}
       kind={'secondary'}
       size={'large'}
       showNavigate={false}

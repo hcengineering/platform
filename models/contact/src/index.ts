@@ -615,6 +615,7 @@ export function createModel (builder: Builder): void {
     {
       action: contact.actionImpl.KickEmployee,
       label: contact.string.KickEmployee,
+      icon: contact.icon.KickUser,
       query: {
         active: true
       },
@@ -634,6 +635,7 @@ export function createModel (builder: Builder): void {
     {
       action: contact.actionImpl.KickEmployee,
       label: contact.string.DeleteEmployee,
+      icon: contact.icon.KickUser,
       query: {
         active: false
       },

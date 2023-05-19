@@ -101,7 +101,7 @@
         src={url}
         alt={''}
         bind:this={imageElement}
-        on:load={(data) => {
+        on:load={() => {
           if (imageElement !== undefined) {
             try {
               accentColor = imageToColor(imageElement)
@@ -118,7 +118,7 @@
       src={url}
       alt={''}
       bind:this={imageElement}
-      on:load={(data) => {
+      on:load={() => {
         if (imageElement !== undefined) {
           try {
             accentColor = imageToColor(imageElement)
@@ -171,7 +171,7 @@
     height: 1.5rem;
   }
   .ava-smaller {
-    width: 1.75rem; // 32
+    width: 1.75rem; // 28
     height: 1.75rem;
   }
   .ava-small {

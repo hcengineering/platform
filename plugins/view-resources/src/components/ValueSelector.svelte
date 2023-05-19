@@ -152,13 +152,13 @@
       on:changeContent
     >
       <svelte:fragment slot="item" let:item>
-        <div class="flex flex-grow overflow-label" class:mt-2={huge} class:mb-2={huge}>
+        <div class="flex-row-center flex-grow overflow-label">
           <ObjectPresenter
             objectId={item._id}
             _class={item._class}
             value={item}
             inline={false}
-            props={{ disabled: true, inline: false, size }}
+            props={{ disabled: true, inline: false, size, avatarSize: 'smaller' }}
           />
         </div>
       </svelte:fragment>

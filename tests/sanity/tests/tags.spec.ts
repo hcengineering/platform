@@ -30,7 +30,7 @@ test.describe('recruit tests', () => {
     // Click .ml-4 .tooltip-trigger .flex-center
     await page.click('button:has-text("Skills")')
     // Click text=Add/Create Skill Suggested Cancel >> button
-    await page.click('.buttons-group button:nth-child(3)')
+    await page.click('.header > button:nth-child(3)')
     // Fill [placeholder="Please\ type\ Skill\ title"]
     await page.fill('[placeholder="Please\\ type\\ \\ title"]', 's1')
     // Click text=Create Skill s1 Please type description here Category Other Create Cancel >> button

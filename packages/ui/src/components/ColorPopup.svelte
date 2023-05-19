@@ -14,13 +14,14 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-  import { translate } from '@hcengineering/platform'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import { deviceOptionsStore, resizeObserver } from '..'
   import { getPlatformColor } from '../colors'
   import ListView from './ListView.svelte'
   import Icon from './Icon.svelte'
+  import EditWithIcon from './EditWithIcon.svelte'
   import IconCheck from './icons/Check.svelte'
+  import IconSearch from './icons/Search.svelte'
 
   export let placeholder: IntlString | undefined = undefined
   export let placeholderParam: any | undefined = undefined
@@ -29,13 +30,6 @@
   export let value: Array<{ id: number | string; color: number; label: string }>
 
   let search: string = ''
-
-  let phTraslate: string = ''
-  $: if (placeholder) {
-    translate(placeholder, placeholderParam ?? {}).then((res) => {
-      phTraslate = res
-    })
-  }
 
   const dispatch = createEventDispatcher()
 
@@ -66,10 +60,6 @@
       handleSelection(key, selection)
     }
   }
-  let input: HTMLElement
-  onMount(() => {
-    if (input && !$deviceOptionsStore.isMobile) input.focus()
-  })
 </script>
 
 <div
@@ -81,7 +71,16 @@
 >
   {#if searchable}
     <div class="header">
-      <input bind:this={input} type="text" bind:value={search} placeholder={phTraslate} on:input={() => {}} on:change />
+      <EditWithIcon
+        icon={IconSearch}
+        size={'large'}
+        width={'100%'}
+        focus={!$deviceOptionsStore.isMobile}
+        bind:value={search}
+        {placeholder}
+        {placeholderParam}
+        on:change
+      />
     </div>
   {/if}
   <div class="scroll">
@@ -100,16 +99,17 @@
               dispatch('close', itemValue)
             }}
           >
+            <div class="color" style="background-color: {getPlatformColor(itemValue.color)}" />
+            <span class="label">{itemValue.label}</span>
             <div class="check">
               {#if itemValue.id === selected}
                 <Icon icon={IconCheck} size={'small'} />
               {/if}
             </div>
-            <div class="color" style="background-color: {getPlatformColor(itemValue.color)}" />
-            <span class="label">{itemValue.label}</span>
           </button>
         </svelte:fragment>
       </ListView>
     </div>
   </div>
+  <div class="menu-space" />
 </div>

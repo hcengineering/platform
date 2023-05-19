@@ -23,18 +23,19 @@
 </script>
 
 <div class="antiPopup">
-  <div class="ap-space" />
+  <div class="ap-space x2" />
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
-    class="ap-menuItem ap-woScroll flex-row-center redlight"
+    class="ap-menuItem hoverable flex-row-center redlight"
     on:click={() => {
       dispatch('close')
       onDelete()
     }}
   >
-    <div class="mr-3">
+    <div class="mr-2">
       <Delete size={'small'} />
     </div>
     <Label label={task.string.Delete} />
   </div>
-  <div class="ap-space" />
+  <div class="ap-space x2" />
 </div>

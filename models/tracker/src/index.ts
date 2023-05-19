@@ -1184,7 +1184,7 @@ export function createModel (builder: Builder): void {
         element: 'top'
       },
       label: tracker.string.NewIssue,
-      icon: tracker.icon.Issue,
+      icon: tracker.icon.NewIssue,
       keyBinding: ['keyC'],
       input: 'none',
       category: tracker.category.Tracker,
@@ -1211,7 +1211,7 @@ export function createModel (builder: Builder): void {
         }
       },
       label: tracker.string.NewSubIssue,
-      icon: tracker.icon.Issue,
+      icon: tracker.icon.Subissue,
       keyBinding: [],
       input: 'focus',
       category: tracker.category.Tracker,
@@ -1223,32 +1223,6 @@ export function createModel (builder: Builder): void {
       }
     },
     tracker.action.NewSubIssue
-  )
-
-  createAction(
-    builder,
-    {
-      action: view.actionImpl.ShowPopup,
-      actionProps: {
-        component: tracker.component.CreateIssue,
-        element: 'top',
-        fillProps: {
-          _object: 'relatedTo',
-          space: 'space'
-        }
-      },
-      label: tracker.string.NewRelatedIssue,
-      icon: tracker.icon.Issue,
-      keyBinding: [],
-      input: 'focus',
-      category: tracker.category.Tracker,
-      target: core.class.Doc,
-      context: {
-        mode: ['context', 'browser', 'editor'],
-        group: 'associate'
-      }
-    },
-    tracker.action.NewRelatedIssue
   )
 
   createAction(
@@ -1275,6 +1249,32 @@ export function createModel (builder: Builder): void {
       }
     },
     tracker.action.SetParent
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: tracker.component.CreateIssue,
+        element: 'top',
+        fillProps: {
+          _object: 'relatedTo',
+          space: 'space'
+        }
+      },
+      label: tracker.string.NewRelatedIssue,
+      icon: tracker.icon.NewIssue,
+      keyBinding: [],
+      input: 'focus',
+      category: tracker.category.Tracker,
+      target: core.class.Doc,
+      context: {
+        mode: ['context', 'browser', 'editor'],
+        group: 'associate'
+      }
+    },
+    tracker.action.NewRelatedIssue
   )
 
   createAction(builder, {
@@ -1617,7 +1617,7 @@ export function createModel (builder: Builder): void {
         textProvider: tracker.function.GetIssueId
       },
       label: tracker.string.CopyIssueId,
-      icon: tracker.icon.CopyID,
+      icon: view.icon.CopyId,
       keyBinding: [],
       input: 'focus',
       category: tracker.category.Tracker,
@@ -1659,7 +1659,7 @@ export function createModel (builder: Builder): void {
         textProvider: tracker.function.GetIssueLink
       },
       label: tracker.string.CopyIssueUrl,
-      icon: tracker.icon.CopyURL,
+      icon: view.icon.CopyLink,
       keyBinding: [],
       input: 'focus',
       category: tracker.category.Tracker,
@@ -1690,7 +1690,6 @@ export function createModel (builder: Builder): void {
     },
     tracker.action.MoveToProject
   )
-  // TODO: fix icon
   createAction(
     builder,
     {
@@ -1700,7 +1699,7 @@ export function createModel (builder: Builder): void {
         attribute: ''
       },
       label: tracker.string.Relations,
-      icon: tracker.icon.Document,
+      icon: tracker.icon.Relations,
       keyBinding: [],
       input: 'focus',
       category: tracker.category.Tracker,

@@ -117,6 +117,8 @@
   --theme-kanban-card-border: transparent;
   --theme-kanban-card-footer: rgba(217, 217, 217, .07);
 
+  --theme-editbox-focus-color: rgba(255, 255, 255, .04);
+  --theme-editbox-focus-border: #5190EC;
   --theme-tablist-color: rgba(0, 0, 0, .02);
   --theme-tablist-plain-color: #2A64C4; // Light
   --theme-tablist-plain-divider: rgba(255, 255, 255, .07); // Light invert
@@ -125,11 +127,11 @@
   --theme-checkbox-border: rgba(0, 0, 0, .12);
   --theme-checkbox-disabled: #999;
   --theme-progress-color: #FFFFFF;
-  --theme-popup-color: #292938;
-  --theme-popup-hover: #32323F;
-  --theme-popup-divider: rgba(255, 255, 255, .1);
+  --theme-popup-color: #2A2939;
+  --theme-popup-hover: #333240;
+  --theme-popup-divider: rgba(255, 255, 255, .09);
   --theme-popup-header: #3A3A47;
-  --theme-popup-shadow: 0px 4px 4px rgba(0, 0, 0, 0.1); // Light
+  --theme-popup-shadow: 0 0 .5rem rgba(0, 0, 0, .2);
   --theme-panel-color: #1A1A28;
   --theme-calendar-today-color: #fff;
   --theme-calendar-holiday-color: #eb5757;
@@ -139,10 +141,11 @@
   --theme-calendar-weekend-bgcolor: rgba(242, 153, 74, .05);
 
   --theme-error-color: #eb5757;
+  --theme-urgent-color: #F5694A;
   --theme-warning-color: #f2994a;
   --theme-lost-color: #eb5757;
   --theme-won-color: #34DB80;
-  --theme-caret-color: #6e5ed2;
+  --theme-caret-color: #fff;
 
   --body-color: #1f2023;
   --body-accent: #222326;
@@ -284,6 +287,8 @@
   --theme-kanban-card-border: rgba(0, 0, 0, .04);
   --theme-kanban-card-footer: rgba(0, 0, 0, .04);
 
+  --theme-editbox-focus-color: rgba(0, 0, 0, .08);
+  --theme-editbox-focus-border: #5190EC;
   --theme-tablist-color: rgba(0, 0, 0, .02);
   --theme-tablist-plain-color: #2A64C4;
   --theme-tablist-plain-divider: rgba(0, 0, 0, .07);
@@ -293,10 +298,10 @@
   --theme-checkbox-disabled: #999;
   --theme-progress-color: rgba(0, 0, 0, .5);
   --theme-popup-color: #FFFFFF;
-  --theme-popup-hover: #F5F5F5;
-  --theme-popup-divider: rgba(0, 0, 0, .1);
+  --theme-popup-hover: #EBEBEB;
+  --theme-popup-divider: rgba(0, 0, 0, .09);
   --theme-popup-header: #EBEBEB;
-  --theme-popup-shadow: 0px 0px 8px rgba(0, 0, 0, 0.2);
+  --theme-popup-shadow: 0 0 .5rem rgba(0, 0, 0, .2);
   --theme-panel-color: #FFFFFF;
   --theme-calendar-today-color: #000;
   --theme-calendar-holiday-color: #eb5757;
@@ -306,10 +311,11 @@
   --theme-calendar-weekend-bgcolor: rgba(242, 153, 74, .1);
 
   --theme-error-color: #eb5757;  // Dark
+  --theme-urgent-color: #F5694A;
   --theme-warning-color: #f2994a;  // Dark
   --theme-lost-color: #eb5757;  // Dark
   --theme-won-color: #34DB80;  // Dark
-  --theme-caret-color: #6e5ed2;
+  --theme-caret-color: #669AFF;
 
   --body-color: #fff;
   --body-accent: #fafafa; // HZ
