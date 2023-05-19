@@ -292,7 +292,7 @@ async function deleteMilestone (milestones: Milestone | Milestone[]): Promise<vo
     showPopup(
       MoveAndDeleteMilestonePopup,
       {
-        milestoneArray,
+        milestones: milestoneArray,
         moveAndDeleteMilestone: async (selectedMilestone?: Milestone) =>
           await moveAndDeleteMilestones(client, milestoneArray, selectedMilestone)
       },
