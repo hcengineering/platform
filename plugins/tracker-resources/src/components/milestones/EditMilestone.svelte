@@ -27,8 +27,8 @@
   let oldLabel = ''
   let rawLabel = ''
 
-  function change<K extends keyof Milestone> (field: K, value: Milestone[K]) {
-    client.update(object, { [field]: value })
+  async function change<K extends keyof Milestone> (field: K, value: Milestone[K]) {
+    await client.update(object, { [field]: value })
   }
 
   $: if (oldLabel !== object.label) {
@@ -44,13 +44,13 @@
   placeholder={tracker.string.MilestoneNamePlaceholder}
   kind="large-style"
   focusable
-  on:blur={() => {
+  on:blur={async () => {
     const trimmedLabel = rawLabel.trim()
 
     if (trimmedLabel.length === 0) {
       rawLabel = oldLabel
     } else if (trimmedLabel !== object.label) {
-      change('label', trimmedLabel)
+      await change('label', trimmedLabel)
     }
   }}
 />
