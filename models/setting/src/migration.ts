@@ -74,7 +74,7 @@ async function fillMigrationCollaborator (tx: TxOperations): Promise<void> {
     if (h.hasMixin(value, notification.mixin.Collaborators)) {
       const collabs = h.as<Doc, Collaborators>(value, notification.mixin.Collaborators)
       if (collabs.collaborators === undefined || !collabs.collaborators.includes(collabs.modifiedBy)) {
-        await tx.updateMixin<Doc, Collaborators>(
+        const res = tx.txFactory.createTxMixin<Doc, Collaborators>(
           value._id,
           value._class,
           value.space,
@@ -83,9 +83,11 @@ async function fillMigrationCollaborator (tx: TxOperations): Promise<void> {
             collaborators: [collabs.createdBy ?? collabs.modifiedBy]
           }
         )
+        res.space = core.space.DerivedTx
+        await tx.tx(res)
       }
     } else {
-      await tx.createMixin<Doc, Collaborators>(
+      const res = tx.txFactory.createTxMixin<Doc, Collaborators>(
         value._id,
         setting.class.Integration,
         value.space,
@@ -94,6 +96,8 @@ async function fillMigrationCollaborator (tx: TxOperations): Promise<void> {
           collaborators: [value.createdBy ?? value.modifiedBy]
         }
       )
+      res.space = core.space.DerivedTx
+      await tx.tx(res)
     }
   }
 }
