@@ -27,7 +27,8 @@ export default mergeIds(tagsId, tags, {
     Tags: '' as AnyComponent,
     TagReferencePresenter: '' as AnyComponent,
     TagsItemPresenter: '' as AnyComponent,
-    TagsFilter: '' as AnyComponent
+    TagsFilter: '' as AnyComponent,
+    TagsFilterPresenter: '' as AnyComponent
   },
   string: {
     TagElementLabel: '' as IntlString,

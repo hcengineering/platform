@@ -15,9 +15,8 @@
 <script lang="ts">
   import core, { Class, Ref, Space } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
-  import { translate } from '@hcengineering/platform'
-  import { CheckBox, deviceOptionsStore, resizeObserver, tooltip } from '@hcengineering/ui'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { CheckBox, deviceOptionsStore, resizeObserver, tooltip, EditWithIcon, IconSearch } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
   import presentation from '..'
   import { createQuery } from '../utils'
   import SpaceInfo from './SpaceInfo.svelte'
@@ -26,13 +25,13 @@
   export let allowDeselect: boolean = false
   export let titleDeselect: IntlString | undefined = undefined
   export let placeholder: IntlString = presentation.string.Search
+  export let placeholderParam: any | undefined = undefined
   export let selected: Ref<Space> | undefined
   export let selectedSpaces: Ref<Space>[] = []
 
   let searchQuery: string = ''
   let spaces: Space[] = []
   let shownSpaces: Space[] = []
-  let input: HTMLInputElement
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
@@ -57,13 +56,6 @@
     })
   }
 
-  let phTraslate: string = ''
-  $: if (placeholder) {
-    translate(placeholder, {}).then((res) => {
-      phTraslate = res
-    })
-  }
-
   const isSelected = (space: Space): boolean => {
     if (selectedSpaces.filter((s) => s === space._id).length > 0) return true
     return false
@@ -78,15 +70,20 @@
     spaces = spaces
     dispatch('update', selectedSpaces)
   }
-
-  onMount(() => {
-    if (input && !$deviceOptionsStore.isMobile) input.focus()
-  })
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="header">
-    <input bind:this={input} type="text" bind:value={searchQuery} placeholder={phTraslate} on:change />
+    <EditWithIcon
+      icon={IconSearch}
+      size={'large'}
+      width={'100%'}
+      focus={!$deviceOptionsStore.isMobile}
+      bind:value={searchQuery}
+      {placeholder}
+      {placeholderParam}
+      on:change
+    />
   </div>
   <div class="scroll">
     <div class="box">
@@ -102,7 +99,7 @@
           </div>
           <SpaceInfo size={'medium'} value={space} />
           {#if allowDeselect && space._id === selected}
-            <div class="check-right pointer-events-none">
+            <div class="check pointer-events-none">
               {#if titleDeselect}
                 <div class="clear-mins" use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
                   <CheckBox checked circle primary />
@@ -116,4 +113,5 @@
       {/each}
     </div>
   </div>
+  <div class="menu-space" />
 </div>

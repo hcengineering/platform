@@ -56,7 +56,7 @@ export interface KeyFilterPreset {
   attribute?: AnyAttribute
   component: AnyComponent
   label?: IntlString
-  icon?: Asset | AnySvelteComponent | undefined
+  group?: 'top' | 'bottom'
 }
 
 /**
@@ -66,7 +66,7 @@ export interface KeyFilter extends KeyFilterPreset {
   attribute: AnyAttribute
   component: AnyComponent
   label: IntlString
-  icon: Asset | AnySvelteComponent | undefined
+  group?: 'top' | 'bottom'
 }
 
 /**
@@ -74,6 +74,7 @@ export interface KeyFilter extends KeyFilterPreset {
  */
 export interface FilterMode extends Doc {
   label: IntlString
+  selectedLabel?: IntlString
   disableValueSelector?: boolean
   result: FilterFunction
 }
@@ -129,6 +130,7 @@ export interface ClassFilters extends Class<Doc> {
  */
 export interface AttributeFilter extends Class<Type<any>> {
   component: AnyComponent
+  group?: 'top' | 'bottom'
 }
 
 /**
@@ -174,6 +176,13 @@ export interface CollectionPresenter extends Class<Doc> {
  * @public
  */
 export interface AttributePresenter extends Class<Doc> {
+  presenter: AnyComponent
+}
+
+/**
+ * @public
+ */
+export interface AttributeFilterPresenter extends Class<Doc> {
   presenter: AnyComponent
 }
 
@@ -653,7 +662,8 @@ const view = plugin(viewId, {
     AllValuesFunc: '' as Ref<Mixin<AllValuesFunc>>,
     ObjectPanel: '' as Ref<Mixin<ObjectPanel>>,
     LinkProvider: '' as Ref<Mixin<LinkProvider>>,
-    SpacePresenter: '' as Ref<Mixin<SpacePresenter>>
+    SpacePresenter: '' as Ref<Mixin<SpacePresenter>>,
+    AttributeFilterPresenter: '' as Ref<Mixin<AttributeFilterPresenter>>
   },
   class: {
     ViewletPreference: '' as Ref<Class<ViewletPreference>>,
@@ -729,6 +739,9 @@ const view = plugin(viewId, {
     Statuses: '' as Asset,
     Setting: '' as Asset,
     Open: '' as Asset,
+    Edit: '' as Asset,
+    CopyId: '' as Asset,
+    CopyLink: '' as Asset,
     ArrowRight: '' as Asset,
     Views: '' as Asset,
     Pin: '' as Asset,
@@ -761,7 +774,8 @@ const view = plugin(viewId, {
     FilterDateM: '' as Ref<FilterMode>,
     FilterDateNextM: '' as Ref<FilterMode>,
     FilterDateNotSpecified: '' as Ref<FilterMode>,
-    FilterDateCustom: '' as Ref<FilterMode>
+    FilterDateCustom: '' as Ref<FilterMode>,
+    FilterDateBetween: '' as Ref<FilterMode>
   },
   popup: {
     PositionElementAlignment: '' as Resource<(e?: Event) => PopupAlignment | undefined>

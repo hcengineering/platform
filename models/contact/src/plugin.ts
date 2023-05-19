@@ -52,7 +52,10 @@ export default mergeIds(contactId, contact, {
     MergeEmployee: '' as AnyComponent,
     ActivityChannelMessage: '' as AnyComponent,
     ChannelPanel: '' as AnyComponent,
-    ActivityChannelPresenter: '' as AnyComponent
+    ActivityChannelPresenter: '' as AnyComponent,
+    EmployeeFilter: '' as AnyComponent,
+    EmployeeFilterValuePresenter: '' as AnyComponent,
+    EmployeeAccountFilterValuePresenter: '' as AnyComponent
   },
   string: {
     Persons: '' as IntlString,

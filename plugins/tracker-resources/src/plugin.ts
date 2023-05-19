@@ -153,8 +153,6 @@ export default mergeIds(trackerId, tracker, {
     All: '' as IntlString,
     PastWeek: '' as IntlString,
     PastMonth: '' as IntlString,
-    Filter: '' as IntlString,
-    ClearFilters: '' as IntlString,
     Back: '' as IntlString,
     AssetLabel: '' as IntlString,
     AddToComponent: '' as IntlString,
@@ -188,11 +186,6 @@ export default mergeIds(trackerId, tracker, {
     CopyIssueId: '' as IntlString,
     CopyIssueBranch: '' as IntlString,
     CopyIssueTitle: '' as IntlString,
-
-    FilterIs: '' as IntlString,
-    FilterIsNot: '' as IntlString,
-    FilterIsEither: '' as IntlString,
-    FilterStatesCount: '' as IntlString,
 
     EditIssue: '' as IntlString,
 
@@ -326,6 +319,8 @@ export default mergeIds(trackerId, tracker, {
     TitlePresenter: '' as AnyComponent,
     ModificationDatePresenter: '' as AnyComponent,
     PriorityPresenter: '' as AnyComponent,
+    PriorityFilterValuePresenter: '' as AnyComponent,
+    StatusFilterValuePresenter: '' as AnyComponent,
     PriorityEditor: '' as AnyComponent,
     PriorityRefPresenter: '' as AnyComponent,
     ComponentEditor: '' as AnyComponent,

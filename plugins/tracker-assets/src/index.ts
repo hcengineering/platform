@@ -21,20 +21,21 @@ loadMetadata(tracker.icon, {
   TrackerApplication: `${icons}#tracker`,
   Component: `${icons}#component`,
   Issue: `${icons}#issue`,
+  Subissue: `${icons}#sub-issue`,
   Project: `${icons}#project`,
-  Document: `${icons}#document`,
+  Relations: `${icons}#relations`,
   Inbox: `${icons}#inbox`,
   MyIssues: `${icons}#myissues`,
   Views: `${icons}#views`,
   Issues: `${icons}#issues`,
   Components: `${icons}#components`,
-  NewIssue: `${icons}#newissue`,
+  NewIssue: `${icons}#new-issue`,
   Magnifier: `${icons}#magnifier`,
   Home: `${icons}#home`,
   RedCircle: `${icons}#red-circle`,
   Labels: `${icons}#priority-nopriority`, // TODO: add icon
-  DueDate: `${icons}#inbox`, // TODO: add icon
-  Parent: `${icons}#myissues`, // TODO: add icon
+  DueDate: `${icons}#dueDate`, // TODO: add icon
+  Parent: `${icons}#parent-issue`, // TODO: add icon
   Milestone: `${icons}#milestone`,
   IssueTemplates: `${icons}#issuetemplates`,
   Scrum: `${icons}#scrum`,
@@ -68,12 +69,10 @@ loadMetadata(tracker.icon, {
   MilestoneStatusCompleted: `${icons}#component-status-completed`,
   MilestoneStatusCanceled: `${icons}#component-status-canceled`,
 
-  CopyID: `${icons}#copyID`,
-  CopyURL: `${icons}#copyURL`,
   CopyBranch: `${icons}#copyBranch`,
   Duplicate: `${icons}#duplicate`,
   TimeReport: `${icons}#timeReport`,
-  Estimation: `${icons}#timeReport`,
+  Estimation: `${icons}#estimation`,
 
   Timeline: `${icons}#timeline`
 })

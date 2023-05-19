@@ -172,7 +172,9 @@ const recruit = plugin(recruitId, {
     AssignedToMe: '' as Asset,
     Reviews: '' as Asset,
     Skills: '' as Asset,
-    Issue: '' as Asset
+    Issue: '' as Asset,
+    Schedule: '' as Asset,
+    Talents: '' as Asset
   },
   resolver: {
     Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>

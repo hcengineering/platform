@@ -18,10 +18,11 @@
   import { deviceOptionsStore, resizeObserver } from '..'
   import { createFocusManager } from '../focus'
   import type { AnySvelteComponent } from '../types'
-  import EditBox from './EditBox.svelte'
+  import EditWithIcon from './EditWithIcon.svelte'
   import FocusHandler from './FocusHandler.svelte'
   import Icon from './Icon.svelte'
   import IconCheck from './icons/Check.svelte'
+  import IconSearch from './icons/Search.svelte'
   import Label from './Label.svelte'
   import ListView from './ListView.svelte'
 
@@ -125,9 +126,10 @@
 >
   {#if searchable}
     <div class="header">
-      <EditBox
-        kind={'search-style'}
-        focusIndex={1}
+      <EditWithIcon
+        icon={IconSearch}
+        size={'large'}
+        width={'100%'}
         focus={!$deviceOptionsStore.isMobile}
         bind:value={search}
         {placeholder}
@@ -135,6 +137,8 @@
         on:change
       />
     </div>
+  {:else}
+    <div class="menu-space" />
   {/if}
   {#if cHeight === 1}
     <div class="whereSelected" />
@@ -154,31 +158,31 @@
             class:selected={item.isSelected}
             on:click={() => dispatch('close', item.id)}
           >
-            <div class="flex-row-center pointer-events-none" class:mt-2={huge} class:mb-2={huge}>
-              {#if hasSelected}
-                <div class="check">
-                  {#if item.isSelected}
-                    <div bind:this={selectedDiv}>
-                      <Icon icon={IconCheck} {size} />
-                    </div>
-                  {/if}
-                </div>
-              {/if}
+            <div class="flex-row-center flex-grow pointer-events-none">
               {#if item.component}
-                <svelte:component this={item.component} {...item.props} />
+                <div class="flex-grow clear-mins"><svelte:component this={item.component} {...item.props} /></div>
               {:else}
                 {#if item.icon}
                   <div class="icon mr-2">
                     <Icon icon={item.icon} iconProps={item.iconProps} fill={item.iconColor ?? 'currentColor'} {size} />
                   </div>
                 {/if}
-                <span class="label" class:text-base={huge}>
+                <span class="label overflow-label flex-grow" class:text-base={huge}>
                   {#if item.label}
                     <Label label={item.label} />
                   {:else if item.text}
-                    <span>{item.text}</span>
+                    {item.text}
                   {/if}
                 </span>
+              {/if}
+              {#if hasSelected}
+                <div class="check">
+                  {#if item.isSelected}
+                    <div bind:this={selectedDiv}>
+                      <Icon icon={IconCheck} size={'small'} />
+                    </div>
+                  {/if}
+                </div>
               {/if}
             </div>
           </button>
@@ -186,17 +190,16 @@
         <svelte:fragment slot="category" let:item={row}>
           {@const obj = filteredObjects[row]}
           {#if obj.category && ((row === 0 && obj.category.label !== undefined) || obj.category.label !== filteredObjects[row - 1]?.category?.label)}
-            <div class="menu-group__header">
-              <div class="flex-row-center pl-1">
-                {#if obj.category.icon}
-                  <div class="clear-mins flex-no-shrink mr-2">
-                    <Icon icon={obj.category.icon} size={'small'} />
-                  </div>
-                {/if}
-                <span class="overflow-label">
-                  <Label label={obj.category.label} />
-                </span>
-              </div>
+            {#if row > 0}<div class="menu-separator" />{/if}
+            <div class="menu-group__header flex-row-center">
+              <!-- {#if obj.category.icon}
+                <div class="flex-no-shrink mr-2">
+                  <Icon icon={obj.category.icon} size={'small'} />
+                </div>
+              {/if} -->
+              <span class="overflow-label">
+                <Label label={obj.category.label} />
+              </span>
             </div>
           {/if}
         </svelte:fragment>
@@ -206,4 +209,5 @@
   {#if cHeight === -1}
     <div class="whereSelected" />
   {/if}
+  <div class="menu-space" />
 </div>

@@ -71,13 +71,19 @@ export default mergeIds(viewId, view, {
     Total: '' as IntlString,
     Overdue: '' as IntlString,
     Today: '' as IntlString,
+    Yesterday: '' as IntlString,
     ThisWeek: '' as IntlString,
     NextWeek: '' as IntlString,
     ThisMonth: '' as IntlString,
     NextMonth: '' as IntlString,
     NotSpecified: '' as IntlString,
-    CustomDate: '' as IntlString,
-    SaveAs: '' as IntlString
+    ExactDate: '' as IntlString,
+    BeforeDate: '' as IntlString,
+    AfterDate: '' as IntlString,
+    BetweenDates: '' as IntlString,
+    SaveAs: '' as IntlString,
+    And: '' as IntlString,
+    Between: '' as IntlString
   },
   function: {
     StatusSort: '' as SortFunc

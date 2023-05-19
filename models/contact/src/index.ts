@@ -363,6 +363,18 @@ export function createModel (builder: Builder): void {
     encode: contact.function.GetContactLink
   })
 
+  builder.mixin(contact.class.Employee, core.class.Class, view.mixin.AttributeFilterPresenter, {
+    presenter: contact.component.EmployeeFilterValuePresenter
+  })
+
+  builder.mixin(core.class.Account, core.class.Class, view.mixin.AttributeFilterPresenter, {
+    presenter: contact.component.EmployeeAccountFilterValuePresenter
+  })
+
+  builder.mixin(contact.class.Employee, core.class.Class, view.mixin.AttributeFilter, {
+    component: contact.component.EmployeeFilter
+  })
+
   builder.createDoc(
     contact.class.ChannelProvider,
     core.space.Model,
@@ -603,6 +615,7 @@ export function createModel (builder: Builder): void {
     {
       action: contact.actionImpl.KickEmployee,
       label: contact.string.KickEmployee,
+      icon: contact.icon.KickUser,
       query: {
         active: true
       },
@@ -622,6 +635,7 @@ export function createModel (builder: Builder): void {
     {
       action: contact.actionImpl.KickEmployee,
       label: contact.string.DeleteEmployee,
+      icon: contact.icon.KickUser,
       query: {
         active: false
       },

@@ -44,9 +44,9 @@
 </script>
 
 {#if value}
-  <DocNavLink object={value} onClick={onEdit} {disabled} noUnderline={disabled} {inline} {colorInherit}>
+  <DocNavLink object={value} onClick={onEdit} {disabled} noUnderline={disabled} {inline} {colorInherit} {accent}>
     <span
-      use:tooltip={showTooltip}
+      use:tooltip={disabled ? undefined : showTooltip}
       class="contentPresenter"
       class:text-base={enlargedText}
       class:inline-presenter={inline}
@@ -61,7 +61,7 @@
         </span>
       {/if}
       {#if shouldShowName}
-        <span class="eContentPresenterLabel" class:colorInherit>{getName(value)}</span>
+        <span class="eContentPresenterLabel" class:colorInherit class:fs-bold={accent}>{getName(value)}</span>
       {/if}
     </span>
   </DocNavLink>
@@ -72,7 +72,12 @@
   {/if}
 {:else if shouldShowPlaceholder}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <span use:tooltip={showTooltip} on:click={onEditClick} class="contentPresenter" class:text-base={enlargedText}>
+  <span
+    class="contentPresenter"
+    class:text-base={enlargedText}
+    use:tooltip={disabled ? undefined : showTooltip}
+    on:click={onEditClick}
+  >
     {#if !inline && shouldShowAvatar}
       <span
         class="eContentPresenterIcon"
@@ -83,7 +88,7 @@
       </span>
     {/if}
     {#if shouldShowName && defaultName}
-      <span class="eContentPresenterLabel" class:colorInherit>
+      <span class="eContentPresenterLabel" class:colorInherit class:fs-bold={accent}>
         <Label label={defaultName} />
       </span>
       {#if statusLabel}

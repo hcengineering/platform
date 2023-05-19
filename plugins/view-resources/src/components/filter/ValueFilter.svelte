@@ -37,7 +37,7 @@
   const key = { key: filter.key.key }
   const promise = getPresenter(client, filter.key._class, key, key)
 
-  let values = new Map<any, number>()
+  let values = new Set<any>()
   let selectedValues: Set<any> = new Set<any>(filter.value.map((p) => p[0]))
   const realValues = new Map<any, Set<any>>()
 
@@ -80,11 +80,11 @@
       }
       const realValue = getObjectValue(filter.key.key, asDoc)
       const value = getValue(realValue)
-      values.set(value, (values.get(value) ?? 0) + 1)
+      values.add(value)
       realValues.set(value, (realValues.get(value) ?? new Set()).add(realValue))
     }
     for (const object of filter.value.map((p) => p[0])) {
-      if (!values.has(object)) values.set(object, 0)
+      values.add(object)
     }
     values = values
     objectsPromise = undefined
@@ -172,11 +172,6 @@
             >
               <div class="flex-between w-full">
                 <div class="flex-row-center">
-                  <div class="check pointer-events-none">
-                    {#if isSelected(value, selectedValues)}
-                      <Icon icon={IconCheck} size={'small'} />
-                    {/if}
-                  </div>
                   {#if value !== undefined}
                     <svelte:component
                       this={attribute.presenter}
@@ -188,8 +183,10 @@
                     <Label label={ui.string.NotSelected} />
                   {/if}
                 </div>
-                <div class="content-dark-color ml-2">
-                  {values.get(value)}
+                <div class="pointer-events-none">
+                  {#if isSelected(value, selectedValues)}
+                    <Icon icon={IconCheck} size={'small'} />
+                  {/if}
                 </div>
               </div>
             </button>

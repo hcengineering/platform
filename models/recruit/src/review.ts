@@ -86,7 +86,7 @@ export function createReviewModel (builder: Builder): void {
       }
     },
     label: recruit.string.CreateReview,
-    icon: recruit.icon.Create,
+    icon: recruit.icon.Schedule,
     input: 'focus',
     category: recruit.category.Recruit,
     target: recruit.mixin.Candidate,

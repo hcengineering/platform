@@ -33,7 +33,7 @@
         <Icon icon={tracker.icon.Milestone} size="small" />
       </div>
     {/if}
-    <span class="select-text" title={value.label}>
+    <span title={value.label} class="overflow-label label">
       {value.label}
     </span>
   </div>

@@ -55,6 +55,7 @@
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')} on:keydown={onKeydown}>
+  <div class="menu-space" />
   <div class="scroll">
     <div class="box">
       <ListView bind:this={list} count={objects.length} bind:selection>
@@ -69,11 +70,12 @@
           >
             <div class="flex-grow caption-color lines-limit-2"><Label label={item[1]} /></div>
             {#if item[0] === selected}
-              <div class="check-right"><CheckBox checked primary /></div>
+              <div class="check"><CheckBox checked primary /></div>
             {/if}
           </button>
         </svelte:fragment>
       </ListView>
     </div>
   </div>
+  <div class="menu-space" />
 </div>

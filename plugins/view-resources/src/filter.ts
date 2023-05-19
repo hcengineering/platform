@@ -12,7 +12,7 @@ import core, {
 } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { LiveQuery, createQuery, getClient } from '@hcengineering/presentation'
-import { AnyComponent, locationToUrl, getCurrentResolvedLocation } from '@hcengineering/ui'
+import { AnyComponent, getCurrentResolvedLocation, locationToUrl } from '@hcengineering/ui'
 import { Filter, FilterMode, FilteredView, KeyFilter } from '@hcengineering/view'
 import { get, writable } from 'svelte/store'
 import view from './plugin'
@@ -68,11 +68,13 @@ export async function valueNinResult (filter: Filter): Promise<ObjQueryType<any>
 }
 
 export async function beforeResult (filter: Filter): Promise<ObjQueryType<any>> {
-  return { $lt: filter.value[0] }
+  const todayStart = new Date(filter.value[0]).setHours(0, 0, 0, 0)
+  return { $lte: todayStart }
 }
 
 export async function afterResult (filter: Filter): Promise<ObjQueryType<any>> {
-  return { $gt: filter.value[0] }
+  const todayStart = new Date(filter.value[0]).setHours(0, 0, 0, 0)
+  return { $gte: todayStart }
 }
 
 export async function containsResult (filter: Filter): Promise<ObjQueryType<any>> {
@@ -217,7 +219,6 @@ export function buildFilterKey (
   key: string,
   attribute: AnyAttribute
 ): KeyFilter | undefined {
-  const attrOf = hierarchy.getClass(attribute.attributeOf)
   const isRef = hierarchy.isDerived(attribute.type._class, core.class.RefTo)
   if (isRef) {
     const targetClass = (attribute.type as RefTo<Doc>).to
@@ -228,8 +229,8 @@ export function buildFilterKey (
         key,
         attribute,
         label: attribute.label,
-        icon: attribute.icon ?? filter.icon ?? attrOf.icon ?? view.icon.Setting,
-        component: filter.component
+        component: filter.component,
+        group: filter.group
       }
     }
   }
@@ -245,8 +246,8 @@ export function buildFilterKey (
     key: isCollection ? '_id' : key,
     attribute,
     label: attribute.label,
-    icon: attribute.icon ?? clazz.icon ?? attrOf.icon ?? view.icon.Setting,
-    component: filter.component
+    component: filter.component,
+    group: filter.group
   }
 }
 

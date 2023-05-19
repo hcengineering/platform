@@ -104,7 +104,7 @@
       {#each days as day, i}
         <div
           class="day {day.style}"
-          class:today={isToday(i)}
+          class:today={isToday(i + 1)}
           class:day-off={day.dayOfWeek > 5}
           style="grid-column: {day.dayOfWeek}/{day.dayOfWeek + 1};"
           on:click|stopPropagation={() => {
@@ -173,7 +173,6 @@
     position: relative;
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 0.5rem;
     padding: 0 1rem 1rem;
 
     .caption,
@@ -181,8 +180,9 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      width: 1.625rem;
-      height: 1.625rem;
+      width: 2rem;
+      height: 2rem;
+      margin: 0.125rem;
       font-size: 1rem;
       color: var(--content-color);
     }
@@ -199,25 +199,27 @@
       color: var(--accent-color);
       background-color: rgba(var(--accent-color), 0.05);
       border: 1px solid transparent;
-      border-radius: 50%;
+      border-radius: 0.25rem;
       cursor: pointer;
 
       &.day-off {
         color: var(--content-color);
       }
-      &.today {
+      &.today:not(.selected, :hover) {
         font-weight: 500;
-        color: var(--caption-color);
-        background-color: var(--button-bg-color);
-        border-color: var(--dark-color);
+        background-color: rgba(76, 56, 188, 0.2);
+        border-radius: 50%;
       }
       &.focused {
         box-shadow: 0 0 0 3px var(--primary-button-outline);
       }
-      &.selected,
+      &.selected {
+        color: var(--primary-button-color);
+        background-color: var(--primary-button-enabled);
+      }
       &:hover {
         color: var(--caption-color);
-        background-color: var(--primary-bg-color);
+        background-color: var(--primary-button-transparent);
       }
 
       &:before {

@@ -71,7 +71,9 @@ export default mergeIds(viewId, view, {
     SpaceRefPresenter: '' as AnyComponent,
     EnumPresenter: '' as AnyComponent,
     StatusPresenter: '' as AnyComponent,
-    StatusRefPresenter: '' as AnyComponent
+    StatusRefPresenter: '' as AnyComponent,
+    DateFilterPresenter: '' as AnyComponent,
+    StringFilterPresenter: '' as AnyComponent
   },
   string: {
     Table: '' as IntlString,

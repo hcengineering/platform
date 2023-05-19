@@ -49,7 +49,7 @@
         <Icon icon={tracker.icon.Component} size={'small'} />
       </div>
     {/if}
-    <span title={value.label} class="label nowrap">
+    <span title={value.label} class="overflow-label label" class:no-underline={disabled}>
       {value.label}
     </span>
   </div>

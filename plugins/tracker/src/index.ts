@@ -418,8 +418,9 @@ export default plugin(trackerId, {
     TrackerApplication: '' as Asset,
     Component: '' as Asset,
     Issue: '' as Asset,
+    Subissue: '' as Asset,
     Project: '' as Asset,
-    Document: '' as Asset,
+    Relations: '' as Asset,
     Inbox: '' as Asset,
     MyIssues: '' as Asset,
     Views: '' as Asset,
@@ -464,8 +465,6 @@ export default plugin(trackerId, {
     MilestoneStatusCompleted: '' as Asset,
     MilestoneStatusCanceled: '' as Asset,
 
-    CopyID: '' as Asset,
-    CopyURL: '' as Asset,
     CopyBranch: '' as Asset,
     Duplicate: '' as Asset,
 

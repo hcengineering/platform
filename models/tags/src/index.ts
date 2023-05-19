@@ -121,6 +121,10 @@ export function createModel (builder: Builder): void {
     actions: [view.action.Open]
   })
 
+  builder.mixin(tags.class.TagReference, core.class.Class, view.mixin.AttributeFilterPresenter, {
+    presenter: tags.component.TagsFilterPresenter
+  })
+
   builder.createDoc(
     view.class.FilterMode,
     core.space.Model,

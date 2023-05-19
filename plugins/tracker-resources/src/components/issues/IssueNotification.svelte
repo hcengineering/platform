@@ -1,6 +1,7 @@
 <script lang="ts">
   import { copyTextToClipboard, createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus } from '@hcengineering/tracker'
+  import view from '@hcengineering/view'
   import {
     AnySvelteComponent,
     Button,
@@ -119,7 +120,7 @@
   </div>
   <div class="flex-between gap-2">
     <Button label={tracker.string.ViewIssue} on:click={handleIssueOpened} />
-    <Button icon={tracker.icon.CopyURL} label={tracker.string.CopyIssueUrl} on:click={handleCopyUrl} />
+    <Button icon={view.icon.CopyLink} label={tracker.string.CopyIssueUrl} on:click={handleCopyUrl} />
   </div>
 </div>
 

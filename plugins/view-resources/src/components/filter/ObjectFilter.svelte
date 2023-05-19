@@ -47,29 +47,28 @@
 
   let values: (Doc | undefined | null)[] = []
   let objectsPromise: Promise<FindResult<Doc>> | undefined
-  const targets = new Map<any, number>()
+  const targets = new Set<any>()
   $: targetClass = (filter.key.attribute.type as RefTo<Doc>).to
   $: clazz = hierarchy.getClass(targetClass)
 
   $: isStatus = client.getHierarchy().isDerived(targetClass, core.class.Status) ?? false
-  let statusesCount: Record<string, number> = {}
 
   let filterUpdateTimeout: number | undefined
 
   const groupValues = (val: Status[]): Doc[] => {
     const statuses = val
     const result: Doc[] = []
-    statusesCount = {}
     const unique = [...new Set(val.map((v) => v.name.trim().toLocaleLowerCase()))]
     unique.forEach((label, i) => {
-      let count = 0
+      let exists = false
       statuses.forEach((state) => {
         if (state.name.trim().toLocaleLowerCase() === label) {
-          if (!count) result[i] = state
-          count += targets.get(state?._id) ?? 0
+          if (!exists) {
+            result[i] = state
+            exists = targets.has(state?._id)
+          }
         }
       })
-      ;(statusesCount as any)[label] = count
     })
     return result
   }
@@ -89,10 +88,10 @@
     })
     for (const object of baseObjects) {
       const value = getObjectValue(filter.key.key, object) ?? undefined
-      targets.set(value, (targets.get(value) ?? 0) + 1)
+      targets.add(value)
     }
     for (const object of filter.value) {
-      if (!targets.has(object)) targets.set(object, 0)
+      targets.add(object)
     }
 
     const resultQuery =
@@ -165,11 +164,6 @@
 
   const dispatch = createEventDispatcher()
   $: if (targetClass) getValues(search)
-
-  function getStatusCount (value: Doc): string {
-    const label = (value as Status).name.trim().toLowerCase()
-    return statusesCount[label]?.toString() ?? ''
-  }
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
@@ -201,11 +195,6 @@
             >
               <div class="flex-between w-full">
                 <div class="flex-row-center">
-                  <div class="check pointer-events-none">
-                    {#if isSelected(value, filter.value)}
-                      <Icon icon={IconCheck} size={'small'} />
-                    {/if}
-                  </div>
                   {#if value}
                     {#key value._id}
                       <svelte:component this={attribute.presenter} {value} {...attribute.props} disabled oneLine />
@@ -214,11 +203,9 @@
                     <Label label={ui.string.NotSelected} />
                   {/if}
                 </div>
-                <div class="content-dark-color ml-2">
-                  {#if isStatus && value}
-                    {getStatusCount(value)}
-                  {:else}
-                    {targets.get(value?._id) ?? ''}
+                <div class="pointer-events-none">
+                  {#if isSelected(value, filter.value)}
+                    <Icon icon={IconCheck} size={'small'} />
                   {/if}
                 </div>
               </div>
