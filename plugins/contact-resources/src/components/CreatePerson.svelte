@@ -16,7 +16,7 @@
   import { Channel, combineName, findPerson, Person } from '@hcengineering/contact'
   import { AttachedData, Data, generateId } from '@hcengineering/core'
   import { Card, getClient } from '@hcengineering/presentation'
-  import { EditBox, IconInfo, Label, createFocusManager, FocusHandler } from '@hcengineering/ui'
+  import { createFocusManager, EditBox, FocusHandler, IconInfo, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { ChannelsDropdown } from '..'
   import contact from '../plugin'
@@ -41,7 +41,6 @@
 
   async function createPerson () {
     const person: Data<Person> = {
-      createOn: Date.now(),
       name: combineName(firstName, lastName),
       city: object.city
     }

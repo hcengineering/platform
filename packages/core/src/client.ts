@@ -259,7 +259,16 @@ async function loadModel (
 ): Promise<Timestamp> {
   const t = Date.now()
 
-  const atxes = await conn.loadModel(lastTxTime)
+  let atxes = []
+  try {
+    atxes = await conn.loadModel(lastTxTime)
+  } catch (err: any) {
+    atxes = await conn.findAll(
+      core.class.Tx,
+      { objectSpace: core.space.Model },
+      { sort: { _id: SortingOrder.Ascending, modifiedOn: SortingOrder.Ascending } }
+    )
+  }
 
   if (reload && atxes.length > modelTransactionThreshold) {
     return -1

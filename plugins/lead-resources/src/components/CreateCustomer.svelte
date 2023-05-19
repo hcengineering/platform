@@ -61,8 +61,7 @@
   async function createCustomer () {
     const candidate: Data<Contact> = {
       name: formatName(targetClass._id, firstName, lastName, object.name),
-      city: object.city,
-      createOn: Date.now()
+      city: object.city
     }
     if (avatar !== undefined) {
       candidate.avatar = await avatarEditor.createAvatar()

@@ -16,7 +16,7 @@
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import { ChunterMessage, ChunterSpace, Message } from '@hcengineering/chunter'
-  import { generateId, getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import { Ref, Space, generateId, getCurrentAccount } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { location, navigate } from '@hcengineering/ui'
   import { get } from 'svelte/store'
@@ -44,7 +44,6 @@
       'messages',
       {
         content: message,
-        createOn: Date.now(),
         createBy: me,
         attachments
       },

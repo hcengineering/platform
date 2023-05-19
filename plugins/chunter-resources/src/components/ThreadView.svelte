@@ -144,7 +144,6 @@
       {
         content: message,
         createBy: me,
-        createOn: Date.now(),
         attachments
       },
       commentId

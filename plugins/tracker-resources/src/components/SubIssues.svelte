@@ -94,8 +94,7 @@
         estimation: subIssue.estimation,
         reports: 0,
         relations: [],
-        childInfo: [],
-        createOn: Date.now()
+        childInfo: []
       }
 
       await client.addCollection(

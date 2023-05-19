@@ -14,7 +14,7 @@
 //
 
 import { Comment, Message, ThreadMessage } from '@hcengineering/chunter'
-import core, { Doc, DOMAIN_TX, Ref, TxCreateDoc, TxOperations } from '@hcengineering/core'
+import core, { DOMAIN_TX, Doc, Ref, TxCreateDoc, TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import { DOMAIN_CHUNTER, DOMAIN_COMMENT } from './index'
 import chunter from './plugin'
@@ -79,21 +79,6 @@ async function createBacklink (tx: TxOperations): Promise<void> {
       chunter.space.Backlinks
     )
   }
-}
-
-export async function setCreate (client: TxOperations): Promise<void> {
-  const messages = (await client.findAll(chunter.class.Message, {}))
-    .filter((m) => m.createBy === undefined)
-    .map((m) => m._id)
-  if (messages.length === 0) return
-  const txes = await client.findAll(core.class.TxCreateDoc, { objectId: { $in: messages } })
-  const promises = txes.map(async (tx) => {
-    await client.updateDoc<Message>(chunter.class.Message, tx.objectSpace, tx.objectId as Ref<Message>, {
-      createBy: tx.modifiedBy,
-      createOn: tx.modifiedOn
-    })
-  })
-  await Promise.all(promises)
 }
 
 export async function migrateMessages (client: MigrationClient): Promise<void> {
@@ -188,6 +173,5 @@ export const chunterOperation: MigrateOperation = {
     await createGeneral(tx)
     await createRandom(tx)
     await createBacklink(tx)
-    await setCreate(tx)
   }
 }

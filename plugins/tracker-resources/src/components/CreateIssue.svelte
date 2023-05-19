@@ -37,8 +37,8 @@
     IssuePriority,
     IssueStatus,
     IssueTemplate,
-    Project,
-    Milestone
+    Milestone,
+    Project
   } from '@hcengineering/tracker'
   import {
     ActionIcon,
@@ -67,9 +67,9 @@
   import PriorityEditor from './issues/PriorityEditor.svelte'
   import StatusEditor from './issues/StatusEditor.svelte'
   import EstimationEditor from './issues/timereport/EstimationEditor.svelte'
+  import MilestoneSelector from './milestones/MilestoneSelector.svelte'
   import SetDueDateActionPopup from './SetDueDateActionPopup.svelte'
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
-  import MilestoneSelector from './milestones/MilestoneSelector.svelte'
   import SubIssues from './SubIssues.svelte'
 
   export let space: Ref<Project>
@@ -354,8 +354,7 @@
       estimation: object.estimation,
       reports: 0,
       relations: relatedTo !== undefined ? [{ _id: relatedTo._id, _class: relatedTo._class }] : [],
-      childInfo: [],
-      createOn: Date.now()
+      childInfo: []
     }
 
     await client.addCollection(

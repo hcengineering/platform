@@ -623,8 +623,7 @@ async function createEmployee (ops: TxOperations, name: string, email: string): 
     name,
     city: '',
     ...(hasGravatar ? { avatar: `${AvatarType.GRAVATAR}://${gravatarId}` } : {}),
-    active: true,
-    createOn: Date.now()
+    active: true
   })
   if (!hasGravatar) {
     await ops.updateDoc(contact.class.Employee, contact.space.Employee, id, {

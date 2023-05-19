@@ -142,8 +142,7 @@
       estimation: template.estimation,
       reports: 0,
       relations: [{ _id: id, _class: recruit.class.Vacancy }],
-      childInfo: [],
-      createOn: Date.now()
+      childInfo: []
     })
     if ((template.labels?.length ?? 0) > 0) {
       const tagElements = await client.findAll(tags.class.TagElement, { _id: { $in: template.labels } })

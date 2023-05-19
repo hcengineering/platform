@@ -174,8 +174,7 @@
     const candidate: Data<Person> = {
       name: combineName(object.firstName ?? '', object.lastName ?? ''),
       city: object.city,
-      channels: 0,
-      createOn: Date.now()
+      channels: 0
     }
     if (avatar !== undefined) {
       candidate.avatar = await avatarEditor.createAvatar()

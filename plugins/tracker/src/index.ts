@@ -173,8 +173,6 @@ export interface Issue extends AttachedDoc {
 
   childInfo: IssueChildInfo[]
 
-  createOn: Timestamp
-
   template?: {
     // A template issue is based on
     template: Ref<IssueTemplate>

@@ -48,7 +48,6 @@ export interface ChunterMessage extends AttachedDoc {
   content: string
   attachments?: number
   createBy: Ref<Account>
-  createOn: Timestamp
   editedOn?: Timestamp
   reactions?: number
 }

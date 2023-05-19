@@ -198,11 +198,13 @@ export async function backup (transactorUrl: string, workspaceId: WorkspaceId, s
   const connection = (await connect(transactorUrl, workspaceId, undefined, {
     mode: 'backup'
   })) as unknown as CoreClient & BackupClient
+  console.log('starting backup')
   try {
     const domains = connection
       .getHierarchy()
       .domains()
       .filter((it) => it !== DOMAIN_TRANSIENT && it !== DOMAIN_MODEL)
+    console.log('domains for dump', domains.length)
 
     let backupInfo: BackupInfo = {
       workspace: workspaceId.name,
@@ -431,7 +433,10 @@ export async function backup (transactorUrl: string, workspaceId: WorkspaceId, s
     }
 
     await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2)))
+  } catch (err: any) {
+    console.error(err)
   } finally {
+    console.log('end backup')
     await connection.close()
   }
 }

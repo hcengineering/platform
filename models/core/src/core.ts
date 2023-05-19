@@ -57,6 +57,7 @@ import {
   Mixin as MMixin,
   Model,
   Prop,
+  ReadOnly,
   TypeBoolean,
   TypeIntlString,
   TypeRecord,
@@ -101,6 +102,10 @@ export class TDoc extends TObj implements Doc {
   @Prop(TypeRef(core.class.Account), core.string.CreatedBy)
   @Index(IndexKind.Indexed)
     createdBy!: Ref<Account>
+
+  @Prop(TypeTimestamp(), core.string.CreatedDate)
+  @ReadOnly()
+    createOn!: Timestamp
 }
 
 @Model(core.class.AttachedDoc, core.class.Doc)

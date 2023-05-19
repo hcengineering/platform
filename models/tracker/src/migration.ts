@@ -15,34 +15,33 @@
 
 import core, {
   Class,
+  DOMAIN_STATUS,
+  DOMAIN_TX,
   Doc,
   DocumentUpdate,
-  DOMAIN_TX,
-  generateId,
   Ref,
   SortingOrder,
   StatusCategory,
-  TxCollectionCUD,
   TxCreateDoc,
   TxOperations,
   TxResult,
   TxUpdateDoc,
-  DOMAIN_STATUS
+  generateId
 } from '@hcengineering/core'
-import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import { MigrateOperation, MigrationClient, MigrationUpgradeClient, createOrUpdate } from '@hcengineering/model'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import tags from '@hcengineering/tags'
 import {
-  calcRank,
-  genRanks,
   Issue,
   IssueStatus,
   IssueTemplate,
   IssueTemplateChild,
-  Project,
   Milestone,
   MilestoneStatus,
-  TimeReportDayType
+  Project,
+  TimeReportDayType,
+  calcRank,
+  genRanks
 } from '@hcengineering/tracker'
 import { DOMAIN_TRACKER } from '.'
 import tracker from './plugin'
@@ -851,59 +850,6 @@ async function renameProject (client: MigrationClient): Promise<void> {
   )
 }
 
-async function setCreate (client: MigrationClient): Promise<void> {
-  while (true) {
-    const docs = await client.find<Issue>(
-      DOMAIN_TRACKER,
-      {
-        _class: tracker.class.Issue,
-        createOn: { $exists: false }
-      },
-      { limit: 500 }
-    )
-    if (docs.length === 0) {
-      break
-    }
-    const creates = await client.find<TxCollectionCUD<Issue, Issue>>(DOMAIN_TX, {
-      'tx.objectId': { $in: docs.map((it) => it._id) },
-      'tx._class': core.class.TxCreateDoc
-    })
-    for (const doc of docs) {
-      const tx = creates.find((it) => it.tx.objectId === doc._id)
-      if (tx !== undefined) {
-        await client.update(
-          DOMAIN_TRACKER,
-          {
-            _id: doc._id
-          },
-          {
-            createOn: tx.modifiedOn
-          }
-        )
-        await client.update(
-          DOMAIN_TX,
-          {
-            _id: tx._id
-          },
-          {
-            'tx.attributes.createOn': tx.modifiedOn
-          }
-        )
-      } else {
-        await client.update(
-          DOMAIN_TRACKER,
-          {
-            _id: doc._id
-          },
-          {
-            createOn: doc.modifiedOn
-          }
-        )
-      }
-    }
-  }
-}
-
 async function fixMilestoneEmptyStatuses (client: MigrationClient): Promise<void> {
   await client.update<Milestone>(
     DOMAIN_TRACKER,
@@ -928,7 +874,6 @@ export const trackerOperation: MigrateOperation = {
     await fillRank(client)
     await renameSprintToMilestone(client)
     await renameProject(client)
-    await setCreate(client)
 
     // Move all status objects into status domain
     await client.move(
