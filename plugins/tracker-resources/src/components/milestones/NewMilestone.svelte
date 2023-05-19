@@ -16,13 +16,12 @@
   import { Data, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Card, getClient, SpaceSelector } from '@hcengineering/presentation'
-  import { EmployeeBox, UserBoxList } from '@hcengineering/contact-resources'
   import { Milestone, MilestoneStatus, Project } from '@hcengineering/tracker'
   import ui, { DatePresenter, EditBox } from '@hcengineering/ui'
+  import { StyledTextArea } from '@hcengineering/text-editor'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import MilestoneStatusSelector from './MilestoneStatusSelector.svelte'
-  import { StyledTextArea } from '@hcengineering/text-editor'
 
   export let space: Ref<Project>
   const dispatch = createEventDispatcher()
@@ -32,11 +31,8 @@
     label: '' as IntlString,
     description: '',
     status: MilestoneStatus.Planned,
-    lead: null,
-    members: [],
     comments: 0,
     attachments: 0,
-    capacity: 0,
     targetDate: Date.now() + 14 * 24 * 60 * 60 * 1000
   }
 
@@ -80,22 +76,6 @@
     <MilestoneStatusSelector
       selectedMilestoneStatus={object.status}
       onMilestoneStatusChange={handleComponentStatusChanged}
-      kind={'secondary'}
-      size={'large'}
-    />
-    <EmployeeBox
-      label={tracker.string.MilestoneLead}
-      placeholder={tracker.string.AssignTo}
-      kind={'secondary'}
-      size={'large'}
-      bind:value={object.lead}
-      allowDeselect
-      titleDeselect={tracker.string.Unassigned}
-      showNavigate={false}
-    />
-    <UserBoxList
-      bind:items={object.members}
-      label={tracker.string.MilestoneMembersSearchPlaceholder}
       kind={'secondary'}
       size={'large'}
     />

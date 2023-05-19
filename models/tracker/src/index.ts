@@ -390,12 +390,6 @@ export class TMilestone extends TDoc implements Milestone {
   @Index(IndexKind.Indexed)
     status!: MilestoneStatus
 
-  @Prop(TypeRef(contact.class.Employee), tracker.string.ComponentLead)
-    lead!: Ref<Employee> | null
-
-  @Prop(ArrOf(TypeRef(contact.class.Employee)), tracker.string.Members)
-    members!: Ref<Employee>[]
-
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
     comments!: number
 
@@ -406,9 +400,6 @@ export class TMilestone extends TDoc implements Milestone {
     targetDate!: Timestamp
 
   declare space: Ref<Project>
-
-  @Prop(TypeNumber(), tracker.string.Capacity)
-    capacity!: number
 }
 
 /**
@@ -955,6 +946,10 @@ export function createModel (builder: Builder): void {
     presenter: tracker.component.MilestoneRefPresenter
   })
 
+  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.ObjectEditor, {
+    editor: tracker.component.EditMilestone
+  })
+
   builder.mixin(tracker.class.Issue, core.class.Class, setting.mixin.Editable, {
     value: true
   })
@@ -1336,9 +1331,6 @@ export function createModel (builder: Builder): void {
     filters: []
   })
 
-  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.ClassFilters, {
-    filters: []
-  })
   builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.ClassFilters, {
     filters: ['status'],
     strict: true
@@ -1766,11 +1758,10 @@ export function createModel (builder: Builder): void {
   )
 
   const milestoneOptions: ViewOptionsModel = {
-    groupBy: ['lead'],
+    groupBy: ['status'],
     orderBy: [
       ['modifiedOn', SortingOrder.Descending],
-      ['targetDate', SortingOrder.Descending],
-      ['capacity', SortingOrder.Ascending]
+      ['targetDate', SortingOrder.Descending]
     ],
     other: []
   }
@@ -1789,26 +1780,7 @@ export function createModel (builder: Builder): void {
         },
         { key: '', presenter: tracker.component.MilestonePresenter, props: { shouldUseMargin: true } },
         { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
-        {
-          key: '',
-          presenter: contact.component.MembersPresenter,
-          props: {
-            kind: 'link',
-            intlTitle: tracker.string.MilestoneMembersTitle,
-            intlSearchPh: tracker.string.MilestoneMembersSearchPlaceholder
-          }
-        },
-        { key: '', presenter: tracker.component.MilestoneDatePresenter, props: { field: 'targetDate' } },
-        {
-          key: 'lead',
-          presenter: tracker.component.MilestoneLeadPresenter,
-          props: {
-            _class: tracker.class.Milestone,
-            defaultClass: contact.class.Employee,
-            shouldShowLabel: false,
-            size: 'x-small'
-          }
-        }
+        { key: '', presenter: tracker.component.MilestoneDatePresenter, props: { field: 'targetDate' } }
       ]
     },
     tracker.viewlet.MilestoneList
@@ -1855,32 +1827,6 @@ export function createModel (builder: Builder): void {
     tracker.ids.TrackerNotificationGroup,
     [],
     ['comments', 'status', 'priority', 'assignee', 'subIssues', 'blockedBy', 'milestone', 'dueDate']
-  )
-
-  createAction(
-    builder,
-    {
-      action: view.actionImpl.ValueSelector,
-      actionPopup: view.component.ValueSelector,
-      actionProps: {
-        attribute: 'lead',
-        _class: contact.class.Employee,
-        query: {},
-        placeholder: tracker.string.MilestoneLead
-      },
-      label: tracker.string.MilestoneLead,
-      icon: contact.icon.Person,
-      keyBinding: [],
-      input: 'none',
-      category: tracker.category.Tracker,
-      target: tracker.class.Milestone,
-      context: {
-        mode: ['context'],
-        application: tracker.app.Tracker,
-        group: 'edit'
-      }
-    },
-    tracker.action.SetMilestoneLead
   )
 
   const componentListViewOptions: ViewOptionsModel = {

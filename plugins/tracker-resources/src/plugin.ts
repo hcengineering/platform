@@ -229,11 +229,6 @@ export default mergeIds(trackerId, tracker, {
     ActiveMilestones: '' as IntlString,
     ClosedMilestones: '' as IntlString,
     MilestoneNamePlaceholder: '' as IntlString,
-    MilestoneLead: '' as IntlString,
-    MilestoneLeadTitle: '' as IntlString,
-    MilestoneLeadSearchPlaceholder: '' as IntlString,
-    MilestoneMembersTitle: '' as IntlString,
-    MilestoneMembersSearchPlaceholder: '' as IntlString,
 
     NewMilestone: '' as IntlString,
     CreateMilestone: '' as IntlString,
@@ -277,7 +272,6 @@ export default mergeIds(trackerId, tracker, {
 
     ChildEstimation: '' as IntlString,
     ChildReportedTime: '' as IntlString,
-    Capacity: '' as IntlString,
     CapacityValue: '' as IntlString,
     AddedReference: '' as IntlString,
     AddedAsBlocked: '' as IntlString,
@@ -360,7 +354,7 @@ export default mergeIds(trackerId, tracker, {
     MilestoneStatusPresenter: '' as AnyComponent,
     MilestoneTitlePresenter: '' as AnyComponent,
     MilestoneDatePresenter: '' as AnyComponent,
-    MilestoneLeadPresenter: '' as AnyComponent,
+    EditMilestone: '' as AnyComponent,
     ReportedTimeEditor: '' as AnyComponent,
     TimeSpendReport: '' as AnyComponent,
     EstimationEditor: '' as AnyComponent,

@@ -124,18 +124,12 @@ export interface Milestone extends Doc {
 
   status: MilestoneStatus
 
-  lead: Ref<Employee> | null
-  members: Ref<Employee>[]
-
   space: Ref<Project>
 
   comments: number
   attachments?: number
 
   targetDate: Timestamp
-
-  // Capacity in man days.
-  capacity: number
 }
 
 /**

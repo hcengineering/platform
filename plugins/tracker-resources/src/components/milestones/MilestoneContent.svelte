@@ -1,9 +1,8 @@
 <script lang="ts">
-  import contact from '@hcengineering/contact'
   import { DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
   import { Milestone } from '@hcengineering/tracker'
   import { Component } from '@hcengineering/ui'
-  import { BuildModelKey, Viewlet, ViewOptions } from '@hcengineering/view'
+  import { Viewlet, ViewOptions } from '@hcengineering/view'
   import tracker from '../../plugin'
   import NewMilestone from './NewMilestone.svelte'
 
@@ -16,19 +15,6 @@
 
   const createItemDialog = NewMilestone
   const createItemLabel = tracker.string.CreateMilestone
-
-  const retrieveMembers = (s: Milestone) => s.members
-
-  function updateConfig (config: (string | BuildModelKey)[]): (string | BuildModelKey)[] {
-    return config.map((it) => {
-      if (typeof it === 'string') {
-        return it
-      }
-      return it.presenter === contact.component.MembersPresenter
-        ? { ...it, props: { ...it.props, retrieveMembers } }
-        : it
-    })
-  }
 </script>
 
 {#if viewlet?.$lookup?.descriptor?.component}
@@ -36,7 +22,7 @@
     is={viewlet.$lookup.descriptor.component}
     props={{
       _class: tracker.class.Milestone,
-      config: updateConfig(viewlet.config),
+      config: viewlet.config,
       options: viewlet.options,
       createItemDialog,
       createItemLabel,

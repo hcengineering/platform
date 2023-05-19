@@ -15,42 +15,26 @@
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
   import { Milestone } from '@hcengineering/tracker'
-  import { Icon, getCurrentResolvedLocation, navigate, tooltip } from '@hcengineering/ui'
+  import { Icon } from '@hcengineering/ui'
+  import { DocNavLink } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
 
   export let value: WithLookup<Milestone>
-  export let shouldShowAvatar: boolean = true
-  export let onClick: (() => void) | undefined = undefined
+  export let shouldShowAvatar = true
   export let disabled = false
-  export let inline: boolean = false
-
-  function navigateToMilestone () {
-    if (disabled) {
-      return
-    }
-    if (onClick) {
-      onClick()
-    }
-
-    const loc = getCurrentResolvedLocation()
-    loc.path[4] = 'milestones'
-    loc.path[5] = value._id
-    loc.path.length = 6
-    loc.fragment = undefined
-    navigate(loc)
-  }
+  export let inline = false
+  export let onClick: (() => void) | undefined = undefined
 </script>
 
-{#if value}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="flex-presenter" class:inline-presenter={inline} on:click={navigateToMilestone}>
+<DocNavLink object={value} {disabled} {inline} {onClick}>
+  <div class="flex-presenter" class:inline-presenter={inline}>
     {#if !inline && shouldShowAvatar}
-      <div class="icon" use:tooltip={{ label: tracker.string.Milestone }}>
-        <Icon icon={tracker.icon.Milestone} size={'small'} />
+      <div class="icon">
+        <Icon icon={tracker.icon.Milestone} size="small" />
       </div>
     {/if}
     <span title={value.label} class="overflow-label label">
       {value.label}
     </span>
   </div>
-{/if}
+</DocNavLink>
