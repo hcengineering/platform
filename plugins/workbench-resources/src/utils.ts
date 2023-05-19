@@ -16,16 +16,16 @@
 
 import type { Class, Client, Doc, Obj, Ref, Space } from '@hcengineering/core'
 import core from '@hcengineering/core'
+import type { Workspace } from '@hcengineering/login'
 import type { Asset } from '@hcengineering/platform'
 import { getResource } from '@hcengineering/platform'
-import workbench, { NavigatorModel } from '@hcengineering/workbench'
-import view from '@hcengineering/view'
-import { closePanel, getCurrentLocation, navigate } from '@hcengineering/ui'
-import { getClient } from '@hcengineering/presentation'
-import type { Application } from '@hcengineering/workbench'
 import preference from '@hcengineering/preference'
+import { getClient } from '@hcengineering/presentation'
+import { closePanel, getCurrentLocation, navigate } from '@hcengineering/ui'
+import view from '@hcengineering/view'
+import type { Application } from '@hcengineering/workbench'
+import workbench, { NavigatorModel } from '@hcengineering/workbench'
 import { writable } from 'svelte/store'
-import type { Workspace } from '@hcengineering/login'
 
 export function classIcon (client: Client, _class: Ref<Class<Obj>>): Asset | undefined {
   return client.getHierarchy().getClass(_class).icon

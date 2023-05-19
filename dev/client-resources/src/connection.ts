@@ -14,6 +14,7 @@
 //
 
 import core, {
+  Account,
   Class,
   ClientConnection,
   Doc,
@@ -63,6 +64,10 @@ class ServerStorageWrapper implements ClientConnection {
       space: core.space.Model,
       modifiedOn: { $gt: lastModelTx }
     })
+  }
+
+  async getAccount (): Promise<Account> {
+    return (await this.storage.findAll(this.measureCtx, core.class.Account, {}))[0]
   }
 
   async tx (tx: Tx): Promise<TxResult> {

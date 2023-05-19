@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { addEventListener, getMetadata, OK, PlatformEvent } from '@hcengineering/platform'
+  import platform, { addEventListener, getMetadata, OK, PlatformEvent, Status } from '@hcengineering/platform'
   import { onDestroy } from 'svelte'
   import type { AnyComponent } from '../../types'
   // import { applicationShortcutKey } from '../../utils'
@@ -13,6 +13,7 @@
   // import Mute from './icons/Mute.svelte'
   import { checkMobile, deviceOptionsStore as deviceInfo, networkStatus } from '../../'
   import uiPlugin from '../../plugin'
+  import Label from '../Label.svelte'
   import FontSizeSelector from './FontSizeSelector.svelte'
   import Computer from './icons/Computer.svelte'
   import Phone from './icons/Phone.svelte'
@@ -53,9 +54,14 @@
   )
 
   let status = OK
+  let maintenanceTime = -1
 
-  addEventListener(PlatformEvent, async (_event, _status) => {
-    status = _status
+  addEventListener(PlatformEvent, async (_event, _status: Status) => {
+    if (_status.code === platform.status.MaintenanceWarning) {
+      maintenanceTime = (_status.params as any).time
+    } else {
+      status = _status
+    }
   })
 
   let docWidth: number = window.innerWidth
@@ -99,7 +105,14 @@
           class="status-info"
           style:margin-left={(isPortrait && docWidth <= 480) || (!isPortrait && docHeight <= 480) ? '1.5rem' : '0'}
         >
-          <StatusComponent {status} />
+          <div class="flex flex-row-center flex-center">
+            {#if maintenanceTime > 0}
+              <div class="flex flex-grow flex-center flex-row-center" class:maintenanceScheduled={maintenanceTime > 0}>
+                <Label label={platform.status.MaintenanceWarning} params={{ time: maintenanceTime }} />
+              </div>
+            {/if}
+            <StatusComponent {status} />
+          </div>
         </div>
         <div class="flex-row-reverse">
           <div class="clock">
@@ -180,6 +193,17 @@
       font-size: 12px;
       line-height: 150%;
       background-color: var(--theme-statusbar-color);
+
+      .maintenanceScheduled {
+        background-color: var(--highlight-red);
+        color: var(--tooltip-bg-color);
+        border-radius: 10px;
+        padding: 0 1rem 0 1rem;
+        height: 20px;
+        align-items: center;
+        width: fit-content;
+        max-width: 18rem;
+      }
 
       .status-info {
         flex-grow: 1;

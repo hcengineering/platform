@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import { Metadata, plugin } from '@hcengineering/platform'
+import type { AccountClient } from '@hcengineering/core'
 import type { Plugin, Resource } from '@hcengineering/platform'
-import type { Client } from '@hcengineering/core'
+import { Metadata, plugin } from '@hcengineering/platform'
 // import type { LiveQuery } from '@hcengineering/query'
 
 // export type Connection = Client & LiveQuery & TxOperations
@@ -28,7 +28,7 @@ export const clientId = 'client' as Plugin
 /**
  * @public
  */
-export type ClientHook = (client: Client) => Promise<Client>
+export type ClientHook = (client: AccountClient) => Promise<AccountClient>
 
 /**
  * @public
@@ -70,7 +70,7 @@ export type ClientFactory = (
   onUpgrade?: () => void,
   onUnauthorized?: () => void,
   onConnect?: (apply: boolean) => void
-) => Promise<Client>
+) => Promise<AccountClient>
 
 export default plugin(clientId, {
   metadata: {

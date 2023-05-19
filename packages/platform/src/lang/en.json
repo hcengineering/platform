@@ -1,6 +1,6 @@
 {
   "status": {
-    "LoadingPlugin": "Loading plugin '<b>'{plugin}'</b>'...",
+    "LoadingPlugin": "Loading plugin {plugin}...",
     "UnknownError": "Unknown error: {message}",
     "InvalidId": "Invalid Id: {id}",
     "BadRequest": "Bad request",
@@ -8,6 +8,7 @@
     "ExpiredLink": "This invite link is expired",
     "Unauthorized": "Unauthorized",
     "UnknownMethod": "Unknown method: {method}",
-    "InternalServerError": "Internal server error"
+    "InternalServerError": "Internal server error",
+    "MaintenanceWarning": "Maintenance Scheduled in {time, plural, =1 {less a minute} other {# minutes}}"
   }
 }

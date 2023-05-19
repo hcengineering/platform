@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 import { Plugin, IntlString } from '@hcengineering/platform'
-import type { Class, Data, Doc, Domain, PluginConfiguration, Ref, Timestamp } from '../classes'
+import type { Account, Class, Data, Doc, Domain, PluginConfiguration, Ref, Timestamp } from '../classes'
 import { Space, ClassifierKind, DOMAIN_MODEL } from '../classes'
 import { createClient, ClientConnection } from '../client'
 import core from '../component'
@@ -113,7 +113,8 @@ describe('client', () => {
         loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => [],
         upload: async (domain: Domain, docs: Doc[]) => {},
         clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
-        loadModel: async (last: Timestamp) => txes
+        loadModel: async (last: Timestamp) => txes,
+        getAccount: async () => null as unknown as Account
       }
     }
     const spyCreate = jest.spyOn(TxProcessor, 'createDoc2Doc')

@@ -14,14 +14,14 @@
 // limitations under the License.
 //
 
-import type { Plugin, IntlString } from './platform'
-import { Status, Severity, unknownError } from './status'
-import { _IdInfo, _parseId } from './ident'
-import { setPlatformStatus } from './event'
 import { IntlMessageFormat } from 'intl-messageformat'
+import { setPlatformStatus } from './event'
+import { _IdInfo, _parseId } from './ident'
+import type { IntlString, Plugin } from './platform'
+import { Severity, Status, unknownError } from './status'
 
-import platform from './platform'
 import { getMetadata } from './metadata'
+import platform from './platform'
 
 /**
  * @public
@@ -103,6 +103,7 @@ async function getTranslation (id: _IdInfo, locale: string): Promise<IntlString 
 export async function translate<P extends Record<string, any>> (message: IntlString<P>, params: P): Promise<string> {
   const locale = getMetadata(platform.metadata.locale) ?? 'en'
   const compiled = cache.get(message)
+
   if (compiled !== undefined) {
     if (compiled instanceof Status) {
       return message

@@ -19,6 +19,8 @@ import core, {
   Space,
   Tx,
   TxFactory,
+  TxWorkspaceEvent,
+  WorkspaceEvent,
   WorkspaceId,
   generateId,
   toWorkspaceString
@@ -52,6 +54,9 @@ class TSessionManager implements SessionManager {
 
   sessions: Map<string, { session: Session, socket: ConnectionSocket }> = new Map()
 
+  maintenanceTimer: any
+  timeMinutes = 0
+
   constructor (
     readonly ctx: MeasureContext,
     readonly sessionFactory: (token: Token, pipeline: Pipeline, broadcast: BroadcastCall) => Session
@@ -59,9 +64,66 @@ class TSessionManager implements SessionManager {
     this.checkInterval = setInterval(() => this.handleInterval(), 1000)
   }
 
+  scheduleMaintenance (timeMinutes: number): void {
+    this.timeMinutes = timeMinutes
+
+    this.sendMaintenanceWarning()
+
+    const nextTime = (): number => (this.timeMinutes > 1 ? 60 * 1000 : this.timeMinutes * 60 * 1000)
+
+    const showMaintenance = (): void => {
+      if (this.timeMinutes > 1) {
+        this.timeMinutes -= 1
+        clearTimeout(this.maintenanceTimer)
+        this.maintenanceTimer = setTimeout(showMaintenance, nextTime())
+      } else {
+        this.timeMinutes = 0
+      }
+
+      this.sendMaintenanceWarning()
+    }
+
+    clearTimeout(this.maintenanceTimer)
+    this.maintenanceTimer = setTimeout(showMaintenance, nextTime())
+  }
+
+  private sendMaintenanceWarning (): void {
+    if (this.timeMinutes === 0) {
+      return
+    }
+    const event: TxWorkspaceEvent = this.createMaintenanceWarning()
+    for (const ws of this.workspaces.values()) {
+      this.broadcastAll(ws, [event])
+    }
+  }
+
+  private createMaintenanceWarning (): TxWorkspaceEvent {
+    return {
+      _id: generateId(),
+      _class: core.class.TxWorkspaceEvent,
+      event: WorkspaceEvent.MaintenanceNotification,
+      modifiedBy: core.account.System,
+      modifiedOn: Date.now(),
+      objectSpace: core.space.DerivedTx,
+      space: core.space.DerivedTx,
+      createdBy: core.account.System,
+      params: {
+        timeMinutes: this.timeMinutes
+      }
+    }
+  }
+
+  ticks = 0
+
   handleInterval (): void {
     for (const h of this.workspaces.entries()) {
       for (const s of h[1].sessions) {
+        if (this.ticks % (5 * 60) === 0) {
+          s[1].session.mins5.find = s[1].session.current.find
+          s[1].session.mins5.tx = s[1].session.current.tx
+
+          s[1].session.current = { find: 0, tx: 0 }
+        }
         for (const r of s[1].session.requests.values()) {
           const ed = Date.now()
 
@@ -71,6 +133,7 @@ class TSessionManager implements SessionManager {
         }
       }
     }
+    this.ticks++
   }
 
   createSession (token: Token, pipeline: Pipeline): Session {
@@ -121,6 +184,15 @@ class TSessionManager implements SessionManager {
       // We need to delete previous session with Id if found.
       workspace.sessions.set(session.sessionId, { session, socket: ws })
       await ctx.with('set-status', {}, () => this.setStatus(ctx, session, true))
+
+      if (this.timeMinutes > 0) {
+        void ws.send(
+          ctx,
+          { result: this.createMaintenanceWarning() },
+          session.binaryResponseMode,
+          session.useCompression
+        )
+      }
       return session
     })
   }
@@ -461,7 +533,7 @@ class TSessionManager implements SessionManager {
             id: request.id,
             error: unknownError(err)
           }
-          await ws.send(ctx, resp, false, false)
+          await ws.send(ctx, resp, service.binaryResponseMode, service.useCompression)
         }
       })
     } finally {
