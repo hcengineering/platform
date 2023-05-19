@@ -741,10 +741,18 @@
 .list-container .listitems-container,
 .list-container .listitems-container:hover,
 .list-container .button.list,
-.list-container .button.list:hover {
+.list-container .button.list:hover,
+.list-container .datetime-button,
+.list-container .datetime-button:hover {
   background-color: var(--theme-list-button-color) !important;
-  .icon { color: var(--theme-halfcontent-color) !important; }
-  .label { color: var(--theme-halfcontent-color) !important; }
+  .icon {
+    margin-right: .5rem;
+    color: var(--theme-halfcontent-color) !important;
+  }
+  .label {
+    font-size: 0.8125rem !important;
+    color: var(--theme-halfcontent-color) !important;
+  }
 }
 
 /* Kanban - global style */

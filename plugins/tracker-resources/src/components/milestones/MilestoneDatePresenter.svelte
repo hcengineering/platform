@@ -17,11 +17,12 @@
 
   import { getClient } from '@hcengineering/presentation'
   import { Milestone } from '@hcengineering/tracker'
-  import { DatePresenter } from '@hcengineering/ui'
+  import { DatePresenter, ButtonSize } from '@hcengineering/ui'
 
   export let value: Milestone
   export let field = 'targetDate'
   export let kind: 'transparent' | 'primary' | 'link' | 'list' = 'primary'
+  export let size: ButtonSize | 'x-small' = 'small'
 
   const client = getClient()
 
@@ -44,5 +45,6 @@
   shouldShowLabel={true}
   icon={'normal'}
   {kind}
+  {size}
   on:change={handleDateChanged}
 />
