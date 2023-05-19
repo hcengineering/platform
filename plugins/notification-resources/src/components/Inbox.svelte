@@ -21,12 +21,14 @@
   import { AnyComponent, Component, Label, ListView, Loading, Scroller } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ActionContext, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
+  import { NotificationClientImpl } from '../utils'
   import NotificationView from './NotificationView.svelte'
 
   export let visibileNav: boolean
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  const notificationClient = NotificationClientImpl.getClient()
   const query = createQuery()
 
   let docs: DocUpdates[] = []
@@ -74,7 +76,10 @@
     }
   }
 
-  function select (value: DocUpdates) {
+  async function select (value: DocUpdates) {
+    if (value.attachedTo !== _id && _id !== undefined) {
+      await notificationClient.read(_id)
+    }
     listProvider.updateFocus(value)
     const targetClass = hierarchy.getClass(value.attachedToClass)
     const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
