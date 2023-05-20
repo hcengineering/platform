@@ -15,7 +15,7 @@
 <script lang="ts">
   import { ChannelProvider } from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
-  import { CheckBox, Icon, Label, resizeObserver } from '@hcengineering/ui'
+  import { IconCheck, Icon, Label, resizeObserver } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { FILTER_DEBOUNCE_MS, FilterQuery, sortFilterValues } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -65,28 +65,28 @@
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
+  <div class="menu-space" />
   <div class="scroll">
     <div class="box">
       {#each sortFilterValues($channelProviders, (v) => isSelected(v, selected)) as element}
         <button
-          class="menu-item"
+          class="menu-item no-focus flex-row-center content-pointer-events-none"
           on:click={() => {
             handleFilterToggle(element)
           }}
         >
-          <div class="flex-between w-full">
-            <div class="flex">
-              <div class="check pointer-events-none">
-                <CheckBox checked={isSelected(element, selected)} primary />
-              </div>
-              {#if element.icon}
-                <span class="mr-2"><Icon icon={element.icon} size="inline" /></span>
-              {/if}
-              <Label label={element.label} />
-            </div>
+          {#if element.icon}
+            <div class="icon"><Icon icon={element.icon} size={'small'} /></div>
+          {/if}
+          <span class="overflow-label label flex-grow"><Label label={element.label} /></span>
+          <div class="check">
+            {#if isSelected(element, selected)}
+              <Icon icon={IconCheck} size={'small'} />
+            {/if}
           </div>
         </button>
       {/each}
     </div>
   </div>
+  <div class="menu-space" />
 </div>

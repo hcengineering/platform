@@ -13,10 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { translate } from '@hcengineering/platform'
-  import { Button, resizeObserver, deviceOptionsStore } from '@hcengineering/ui'
+  import { Button, resizeObserver, deviceOptionsStore, EditWithIcon, IconSearch } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
-  import { onMount, createEventDispatcher } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import view from '../../plugin'
 
   export let filter: Filter
@@ -24,9 +23,7 @@
 
   const dispatch = createEventDispatcher()
 
-  let searchInput: HTMLInputElement
   let search = filter.value[0] ?? ''
-  let phTraslate = ''
 
   filter.modes = [view.filter.FilterContains]
   filter.mode ??= filter.modes[0]
@@ -49,19 +46,19 @@
     onChange(filter)
     dispatch('close')
   }
-
-  $: translate(filter.key.label, {}).then((res) => {
-    phTraslate = res
-  })
-
-  onMount(() => {
-    if (searchInput && !$deviceOptionsStore.isMobile) searchInput.focus()
-  })
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')} on:keydown={onKeyDown}>
-  <div class="header">
-    <input bind:this={searchInput} bind:value={search} type="text" placeholder={phTraslate} />
+  <div class="header no-border">
+    <EditWithIcon
+      icon={IconSearch}
+      size={'large'}
+      width={'100%'}
+      focus={!$deviceOptionsStore.isMobile}
+      bind:value={search}
+      placeholder={filter.key.label}
+      on:change
+    />
   </div>
   <Button shape="filter" label={view.string.Apply} on:click={save} />
 </div>

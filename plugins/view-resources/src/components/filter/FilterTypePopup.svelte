@@ -265,6 +265,7 @@
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
+  <div class="menu-space" />
   <Scroller>
     {#if nestedFrom}
       <!-- svelte-ignore a11y-mouse-events-have-key-events -->
@@ -320,15 +321,9 @@
         </button>
       {/if}
       {#if nextDiffCat(types, i)}
-        <div class="divider" />
+        <div class="menu-separator" />
       {/if}
     {/each}
   </Scroller>
+  <div class="menu-space" />
 </div>
-
-<style lang="scss">
-  .divider {
-    height: 1px;
-    background-color: var(--theme-popup-divider);
-  }
-</style>

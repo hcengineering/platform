@@ -153,11 +153,7 @@
       >
         <svelte:fragment slot="item" let:item={itemId}>
           {@const item = filteredObjects[itemId]}
-          <button
-            class="menu-item withList w-full"
-            class:selected={item.isSelected}
-            on:click={() => dispatch('close', item.id)}
-          >
+          <button class="menu-item withList w-full" on:click={() => dispatch('close', item.id)}>
             <div class="flex-row-center flex-grow pointer-events-none">
               {#if item.component}
                 <div class="flex-grow clear-mins"><svelte:component this={item.component} {...item.props} /></div>

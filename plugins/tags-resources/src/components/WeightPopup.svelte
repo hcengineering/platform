@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, resizeObserver } from '@hcengineering/ui'
+  import { resizeObserver, Icon, IconCheck, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
   import { tagLevel } from '../utils'
@@ -27,34 +27,36 @@
 </script>
 
 <div class="selectPopup max-width-40" use:resizeObserver={() => dispatch('changeContent')}>
-  <div class="header no-border p-3">
-    {#each labels as l, i}
-      <div class="flex gap-2 p-1">
+  <div class="menu-space" />
+  <div class="scroll">
+    <div class="box">
+      {#each labels as l, i}
         {#if schema === '9'}
           {#each Object.entries(tagLevel) as k, j}
             {@const valueK = i * 3 + j}
-            <Button
-              label={l}
-              icon={k[1]}
-              size={'small'}
-              justify={'left'}
-              selected={value === valueK}
-              on:click={() => dispatch('close', valueK)}
-              width={'8rem'}
-            />
+            <button class="menu-item flex-row-center" on:click={() => dispatch('close', valueK)}>
+              <div class="icon"><Icon icon={k[1]} size={'small'} /></div>
+              <span class="overflow-label label flex-grow"><Label label={l} /></span>
+              <div class="check pointer-events-none">
+                {#if value === valueK}
+                  <Icon icon={IconCheck} size={'small'} />
+                {/if}
+              </div>
+            </button>
           {/each}
         {:else}
           {@const valueK = i * 3}
-          <Button
-            label={l}
-            size={'small'}
-            justify={'left'}
-            selected={value === valueK}
-            on:click={() => dispatch('close', valueK)}
-            width={'8rem'}
-          />
+          <button class="menu-item flex-row-center" on:click={() => dispatch('close', valueK)}>
+            <span class="overflow-label label flex-grow"><Label label={l} /></span>
+            <div class="check pointer-events-none">
+              {#if value === valueK}
+                <Icon icon={IconCheck} size={'small'} />
+              {/if}
+            </div>
+          </button>
         {/if}
-      </div>
-    {/each}
+      {/each}
+    </div>
   </div>
+  <div class="menu-space" />
 </div>
