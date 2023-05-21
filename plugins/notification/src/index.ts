@@ -220,6 +220,7 @@ const notification = plugin(notificationId, {
   },
   icon: {
     Notifications: '' as Asset,
+    Inbox: '' as Asset,
     Track: '' as Asset,
     DontTrack: '' as Asset,
     Hide: '' as Asset

@@ -20,6 +20,7 @@ const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(calendar.icon, {
   Calendar: `${icons}#calendar`,
   Reminder: `${icons}#reminder`,
+  Notifications: `${icons}#notifications`,
   Location: `${icons}#location`
 })
 

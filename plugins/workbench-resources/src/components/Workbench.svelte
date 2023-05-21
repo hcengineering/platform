@@ -48,6 +48,7 @@
     showPopup
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import setting from '@hcengineering/setting'
   import {
     ActionContext,
     ActionHandler,
@@ -537,14 +538,12 @@
   <ActionHandler />
   <svg class="svg-mask">
     <clipPath id="notify-normal">
-      <path
-        d="M19.4,21.8c-3,0-5.4-2.4-5.4-5.4s2.4-5.4,5.4-5.4c1.9,0,3.6,1,4.6,2.6V0H0v24h24v-4.8C23.1,20.7,21.4,21.8,19.4,21.8z"
-      />
+      <path d="M12,14c0-3.3,2.7-6,6-6c0.7,0,1.4,0.1,2,0.4V0H0v20h18C14.7,20,12,17.3,12,14z" />
+      <path d="M18,20h2v-0.4C19.4,19.9,18.7,20,18,20z" />
     </clipPath>
     <clipPath id="notify-small">
-      <path
-        d="M17,19.1c-2.6,0-4.7-2.1-4.7-4.7s2.1-4.7,4.7-4.7c1.7,0,3.2,0.9,4,2.3V0H0v21h21v-4.2C20.2,18.2,18.7,19.1,17,19.1z"
-      />
+      <path d="M10.5,12.2c0-2.9,2.4-5.2,5.2-5.2c0.6,0,1.2,0.1,1.8,0.3V0H0v17.5h15.8C12.9,17.5,10.5,15.1,10.5,12.2z" />
+      <path d="M15.8,17.5h1.8v-0.4C17,17.4,16.4,17.5,15.8,17.5z" />
     </clipPath>
     <clipPath id="nub-bg">
       <path
@@ -572,14 +571,14 @@
             icon={TopMenu}
             label={visibileNav ? workbench.string.HideMenu : workbench.string.ShowMenu}
             selected={!visibileNav}
-            mini={appsMini}
+            size={appsMini ? 'small' : 'medium'}
             on:click={toggleNav}
           />
         </div>
         <!-- <ActivityStatus status="active" /> -->
         <NavLink app={notificationId}>
           <AppItem
-            icon={notification.icon.Notifications}
+            icon={notification.icon.Inbox}
             label={notification.string.Inbox}
             selected={currentAppAlias === notificationId || inboxPopup !== undefined}
             on:click={(e) => {
@@ -613,7 +612,7 @@
         </NavLink>
         {#if $configurationStore.has(calendarId)}
           <AppItem
-            icon={calendar.icon.Reminder}
+            icon={calendar.icon.Notifications}
             label={calendar.string.Reminders}
             on:click={() => showPopup(calendar.component.RemindersPopup, {}, notifyPosition)}
           />
@@ -627,12 +626,14 @@
         />
       </div>
       <div class="info-box {appsDirection}" class:vertical-mobile={appsDirection === 'vertical'} class:mini={appsMini}>
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-        <div class="thinButton" class:shownMenu on:click={() => (shownMenu = !shownMenu)} tabindex="0">
-          <Settings size={appsMini ? 'small' : 'large'} />
-        </div>
-        <div class="flex-center" class:mt-2={appsDirection === 'vertical'} class:ml-2={appsDirection === 'horizontal'}>
+        <AppItem
+          icon={Settings}
+          label={setting.string.Settings}
+          selected={shownMenu}
+          size={appsMini ? 'small' : 'large'}
+          on:click={() => (shownMenu = !shownMenu)}
+        />
+        <div class="flex-center" class:mt-3={appsDirection === 'vertical'} class:ml-2={appsDirection === 'horizontal'}>
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
             id="profile-button"
@@ -764,13 +765,13 @@
       margin-top: 1.25rem;
 
       .logo-container {
-        margin-bottom: 0.75rem;
+        margin-bottom: 0.25rem;
       }
       .topmenu-container {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
       }
       .divider {
-        margin-top: 1.5rem;
+        margin-top: 1rem;
         width: 2.25rem;
         height: 1px;
       }
@@ -796,31 +797,11 @@
     display: flex;
     align-items: center;
 
-    .thinButton {
-      flex-shrink: 0;
-      padding: 0.25rem;
-      color: var(--theme-navpanel-icons-color);
-      border: 1px solid transparent;
-      border-radius: 0.25rem;
-      cursor: pointer;
-
-      &.shownMenu {
-        color: var(--theme-caption-color);
-        border-color: var(--theme-button-border);
-      }
-      &.shownMenu {
-        background-color: var(--theme-button-enabled);
-      }
-      &:hover {
-        color: var(--theme-caption-color);
-      }
-      &:focus {
-        box-shadow: 0 0 0 2px var(--primary-button-focused-border);
-      }
-    }
     &.vertical {
       flex-direction: column;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.25rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--theme-navpanel-divider);
 
       &-mobile {
         margin-bottom: 1rem;
@@ -834,6 +815,8 @@
     }
     &.horizontal {
       margin-right: 1rem;
+      padding-left: 1rem;
+      border-left: 1px solid var(--theme-navpanel-divider);
 
       &:not(.mini) > *:not(:last-child) {
         margin-right: 0.75rem;
@@ -863,7 +846,7 @@
     min-width: 1px;
     max-width: 1px;
     height: 100%;
-    background-color: var(--divider-color);
+    background-color: var(--theme-divider-color);
     transition: background-color 0.15s ease-in-out;
 
     &::before {

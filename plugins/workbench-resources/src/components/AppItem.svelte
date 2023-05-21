@@ -20,13 +20,13 @@
   export let label: IntlString
   export let icon: Asset | AnySvelteComponent
   export let selected: boolean = false
-  export let mini: boolean = false
+  export let size: 'small' | 'medium' | 'large' = 'large'
   export let notify: boolean = false
 </script>
 
-<button class="app" class:selected class:mini id={'app-' + label} use:tooltip={{ label }} on:click>
-  <div class="flex-center icon-container" class:mini class:noty={notify}>
-    <Icon {icon} size={mini ? 'small' : 'large'} />
+<button class="app {size}" class:selected id={'app-' + label} use:tooltip={{ label }} on:click>
+  <div class="flex-center icon-container" class:noty={notify}>
+    <Icon {icon} size={size === 'small' ? 'small' : 'medium'} />
   </div>
   {#if notify}<div class="marker" />{/if}
 </button>
@@ -36,35 +36,34 @@
     position: relative;
     flex-shrink: 0;
     padding: 0;
-    width: 2.25rem;
-    height: 2.25rem;
     background-color: transparent;
     border: 1px solid transparent;
     border-radius: 0.25rem;
     cursor: pointer;
     outline: none;
 
-    &.mini,
-    .icon-container.mini {
+    &.large {
+      width: 2.25rem;
+      height: 2.25rem;
+    }
+    &.medium {
+      width: 2rem;
+      height: 2rem;
+    }
+    &.small,
+    &.small .icon-container {
       width: calc(var(--status-bar-height) - 8px);
       height: calc(var(--status-bar-height) - 8px);
       border-radius: 0.25rem;
     }
-    &.mini.selected {
+    &.small.selected {
       background-color: var(--theme-button-pressed);
     }
 
     .icon-container {
-      width: 1.5rem;
-      height: 1.5rem;
+      width: 1.25rem;
+      height: 1.25rem;
       color: var(--theme-navpanel-icons-color);
-
-      .normal-font &.noty {
-        clip-path: url(#notify-normal);
-      }
-      .small-font &.noty {
-        clip-path: url(#notify-small);
-      }
     }
 
     &:hover .icon-container {
@@ -88,7 +87,7 @@
 
   .marker {
     position: absolute;
-    top: 1.125rem;
+    top: 1.1rem;
     right: 0.375rem;
     width: 0.425rem;
     height: 0.425rem;
