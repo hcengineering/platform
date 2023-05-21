@@ -136,9 +136,7 @@
       focus={!$deviceOptionsStore.isMobile}
       bind:value={search}
       placeholder={presentation.string.Search}
-      on:change={() => {
-        getValues(search)
-      }}
+      on:input={() => getValues(search)}
     />
     {#if schema !== '0'}
       <div class="flex-between w-full mt-2">
@@ -218,11 +216,6 @@
 </div>
 
 <style>
-  .flex {
-    display: flex;
-    align-items: center;
-  }
-
   .hidden {
     display: none;
   }
