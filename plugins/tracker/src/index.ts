@@ -424,7 +424,6 @@ export default plugin(trackerId, {
     PriorityLow: '' as Asset,
 
     ComponentsList: '' as Asset,
-    ComponentsTimeline: '' as Asset,
 
     MilestoneStatusPlanned: '' as Asset,
     MilestoneStatusInProgress: '' as Asset,
@@ -437,8 +436,6 @@ export default plugin(trackerId, {
 
     TimeReport: '' as Asset,
     Estimation: '' as Asset,
-
-    Timeline: '' as Asset,
 
     // Project icons
     Home: '' as Asset,

@@ -52,11 +52,10 @@
     if (issue.component) {
       const component = await client.findOne(tracker.class.Component, { _id: issue.component })
       projectLead = component?.lead || undefined
-      projectMembers = component?.members || []
     } else {
       projectLead = undefined
-      projectMembers = []
     }
+    projectMembers = []
     if (hasSpace(issue)) {
       const project = await client.findOne(tracker.class.Project, { _id: issue.space })
       if (project !== undefined) {
