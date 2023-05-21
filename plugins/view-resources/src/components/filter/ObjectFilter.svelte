@@ -20,13 +20,15 @@
     addNotification,
     Icon,
     IconCheck,
+    IconSearch,
     deviceOptionsStore,
     Label,
     Loading,
-    resizeObserver
+    resizeObserver,
+    EditWithIcon
   } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import view from '../../plugin'
   import { FILTER_DEBOUNCE_MS, sortFilterValues } from '../../filter'
   import { buildConfigLookup, getPresenter } from '../../utils'
@@ -152,15 +154,6 @@
   }
 
   let search: string = ''
-  let phTraslate: string = ''
-  let searchInput: HTMLInputElement
-  $: translate(presentation.string.Search, {}).then((res) => {
-    phTraslate = res
-  })
-
-  onMount(() => {
-    if (searchInput && !$deviceOptionsStore.isMobile) searchInput.focus()
-  })
 
   const dispatch = createEventDispatcher()
   $: if (targetClass) getValues(search)
@@ -169,16 +162,20 @@
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   {#if clazz.sortingKey}
     <div class="header">
-      <input
-        bind:this={searchInput}
-        type="text"
+      <EditWithIcon
+        icon={IconSearch}
+        size={'large'}
+        width={'100%'}
+        focus={!$deviceOptionsStore.isMobile}
         bind:value={search}
+        placeholder={presentation.string.Search}
         on:change={() => {
           getValues(search)
         }}
-        placeholder={phTraslate}
       />
     </div>
+  {:else}
+    <div class="menu-space" />
   {/if}
   <div class="scroll">
     <div class="box">
@@ -188,7 +185,7 @@
         {:else}
           {#each sortFilterValues(values, (v) => isSelected(v, filter.value)) as value}
             <button
-              class="menu-item no-focus"
+              class="menu-item no-focus content-pointer-events-none"
               on:click={() => {
                 handleFilterToggle(value)
               }}
@@ -215,4 +212,5 @@
       {/await}
     </div>
   </div>
+  <div class="menu-space" />
 </div>

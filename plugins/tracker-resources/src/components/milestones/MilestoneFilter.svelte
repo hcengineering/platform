@@ -14,13 +14,21 @@
 -->
 <script lang="ts">
   import { DocumentQuery, FindResult, Ref, SortingOrder } from '@hcengineering/core'
-  import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
   import { Project, Milestone, MilestoneStatus } from '@hcengineering/tracker'
-  import ui, { CheckBox, Icon, Label, Loading, deviceOptionsStore, resizeObserver } from '@hcengineering/ui'
+  import ui, {
+    IconCheck,
+    Icon,
+    Label,
+    Loading,
+    deviceOptionsStore,
+    resizeObserver,
+    EditWithIcon,
+    IconSearch
+  } from '@hcengineering/ui'
   import { FILTER_DEBOUNCE_MS, sortFilterValues } from '@hcengineering/view-resources'
   import view, { Filter } from '@hcengineering/view'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import { milestoneStatusAssets } from '../../types'
   import MilestoneTitlePresenter from './MilestoneTitlePresenter.svelte'
@@ -34,11 +42,6 @@
 
   const dispatch = createEventDispatcher()
   let search: string = ''
-  let phTraslate: string = ''
-  let searchInput: HTMLInputElement
-  $: translate(presentation.string.Search, {}).then((res) => {
-    phTraslate = res
-  })
 
   let values: Milestone[] = []
   let objectsPromise: Promise<FindResult<Milestone>> | undefined = undefined
@@ -110,23 +113,21 @@
     return res
   }
 
-  onMount(() => {
-    if (searchInput && !$deviceOptionsStore.isMobile) searchInput.focus()
-  })
-
   getValues(search)
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="header">
-    <input
-      bind:this={searchInput}
-      type="text"
+    <EditWithIcon
+      icon={IconSearch}
+      size={'large'}
+      width={'100%'}
+      focus={!$deviceOptionsStore.isMobile}
       bind:value={search}
+      placeholder={presentation.string.Search}
       on:change={() => {
         getValues(search)
       }}
-      placeholder={phTraslate}
     />
   </div>
   <div class="scroll">
@@ -135,40 +136,45 @@
         <Loading />
       {:else}
         <button
-          class="menu-item"
+          class="menu-item no-focus flex-row-center"
           on:click={() => {
             handleFilterToggle(undefined)
           }}
         >
-          <div class="flex clear-mins">
-            <div class="check pointer-events-none">
-              <CheckBox checked={isSelected(undefined, selectedValues)} primary />
-            </div>
+          <div class="overflow-label flex-grow">
             <Label label={ui.string.NotSelected} />
+          </div>
+          <div class="check pointer-events-none">
+            {#if isSelected(undefined, selectedValues)}
+              <Icon icon={IconCheck} size={'small'} />
+            {/if}
           </div>
         </button>
         {#each getStatuses() as group}
           {@const status = milestoneStatusAssets[group]}
           {@const items = getStatusItem(group, values)}
           {#if items.length > 0}
-            <div class="flex-row-center p-1">
-              <Icon icon={status.icon} size={'small'} />
-              <div class="ml-2">
-                <Label label={status.label} />
+            <div class="menu-separator" />
+            <div class="menu-group__header">
+              <div class="flex-row-center gap-2">
+                <Icon icon={status.icon} size={'small'} />
+                <span class="overflow-label"><Label label={status.label} /></span>
               </div>
             </div>
             {#each sortFilterValues(items, (v) => isSelected(v._id, selectedValues)) as doc}
               <button
-                class="menu-item"
+                class="menu-item no-focus flex-row-center"
                 on:click={() => {
                   handleFilterToggle(doc._id)
                 }}
               >
-                <div class="flex clear-mins">
-                  <div class="check pointer-events-none">
-                    <CheckBox checked={isSelected(doc._id, selectedValues)} primary />
-                  </div>
+                <div class="flex-grow clear-mins">
                   <MilestoneTitlePresenter value={doc} />
+                </div>
+                <div class="check pointer-events-none">
+                  {#if isSelected(doc._id, selectedValues)}
+                    <Icon icon={IconCheck} size={'small'} />
+                  {/if}
                 </div>
               </button>
             {/each}
@@ -177,4 +183,5 @@
       {/if}
     </div>
   </div>
+  <div class="menu-space" />
 </div>

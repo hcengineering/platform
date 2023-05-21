@@ -14,11 +14,19 @@
 -->
 <script lang="ts">
   import core, { Class, Doc, FindResult, getObjectValue, Ref, SortingOrder, Space } from '@hcengineering/core'
-  import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import ui, { Icon, IconCheck, Label, Loading, resizeObserver, deviceOptionsStore } from '@hcengineering/ui'
+  import ui, {
+    EditWithIcon,
+    Icon,
+    IconSearch,
+    IconCheck,
+    Label,
+    Loading,
+    resizeObserver,
+    deviceOptionsStore
+  } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
-  import { onMount, createEventDispatcher } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import { getPresenter } from '../../utils'
   import { FILTER_DEBOUNCE_MS, sortFilterValues } from '../../filter'
   import view from '../../plugin'
@@ -127,17 +135,8 @@
   }
 
   let search: string = ''
-  let phTraslate: string = ''
-  let searchInput: HTMLInputElement
-  $: translate(presentation.string.Search, {}).then((res) => {
-    phTraslate = res
-  })
 
   const dispatch = createEventDispatcher()
-
-  onMount(() => {
-    if (searchInput && !$deviceOptionsStore.isMobile) searchInput.focus()
-  })
 
   getValues(search)
 </script>
@@ -145,16 +144,20 @@
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   {#if isSearchable}
     <div class="header">
-      <input
-        bind:this={searchInput}
-        type="text"
+      <EditWithIcon
+        icon={IconSearch}
+        size={'large'}
+        width={'100%'}
+        focus={!$deviceOptionsStore.isMobile}
         bind:value={search}
+        placeholder={presentation.string.Search}
         on:change={() => {
           getValues(search)
         }}
-        placeholder={phTraslate}
       />
     </div>
+  {:else}
+    <div class="menu-space" />
   {/if}
   <div class="scroll">
     <div class="box">
@@ -165,29 +168,27 @@
           {#each sortFilterValues([...values.keys()], (v) => isSelected(v, selectedValues)) as value}
             {@const realValue = [...(realValues.get(value) ?? [])][0]}
             <button
-              class="menu-item no-focus"
+              class="menu-item no-focus content-pointer-events-none"
               on:click={() => {
                 handleFilterToggle(value)
               }}
             >
-              <div class="flex-between w-full">
-                <div class="flex-row-center">
-                  {#if value !== undefined}
-                    <svelte:component
-                      this={attribute.presenter}
-                      value={typeof value === 'string' ? realValue : value}
-                      {...attribute.props}
-                      oneLine
-                    />
-                  {:else}
-                    <Label label={ui.string.NotSelected} />
-                  {/if}
+              {#if value !== undefined}
+                <div class="clear-mins flex-grow">
+                  <svelte:component
+                    this={attribute.presenter}
+                    value={typeof value === 'string' ? realValue : value}
+                    {...attribute.props}
+                    oneLine
+                  />
                 </div>
-                <div class="pointer-events-none">
-                  {#if isSelected(value, selectedValues)}
-                    <Icon icon={IconCheck} size={'small'} />
-                  {/if}
-                </div>
+              {:else}
+                <span class="overflow-label flex-grow"><Label label={ui.string.NotSelected} /></span>
+              {/if}
+              <div class="check pointer-events-none">
+                {#if isSelected(value, selectedValues)}
+                  <Icon icon={IconCheck} size={'small'} />
+                {/if}
               </div>
             </button>
           {/each}
@@ -195,4 +196,5 @@
       {/await}
     </div>
   </div>
+  <div class="menu-space" />
 </div>

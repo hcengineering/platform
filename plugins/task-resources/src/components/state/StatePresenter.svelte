@@ -23,6 +23,8 @@
   export let inline: boolean = false
   export let colorInherit: boolean = false
   export let accent: boolean = false
+  export let disabled: boolean = false
+  export let oneLine: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -46,7 +48,7 @@
     {#if shouldShowAvatar}
       <div class="state-container" class:inline style="background-color: {fill}" />
     {/if}
-    <span class="label nowrap">{value.name}</span>
+    <span class="overflow-label label" class:nowrap={oneLine} class:no-underline={disabled}>{value.name}</span>
   </div>
 {/if}
 

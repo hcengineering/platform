@@ -17,11 +17,20 @@
   import core, { Doc, FindResult, getObjectValue, Ref, SortingOrder, Space } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import ui, { addNotification, deviceOptionsStore, Icon, IconCheck, Loading, resizeObserver } from '@hcengineering/ui'
+  import ui, {
+    addNotification,
+    deviceOptionsStore,
+    Icon,
+    IconCheck,
+    Loading,
+    resizeObserver,
+    EditWithIcon,
+    IconSearch
+  } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { FILTER_DEBOUNCE_MS, FilterRemovedNotification, sortFilterValues } from '@hcengineering/view-resources'
   import view from '@hcengineering/view-resources/src/plugin'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import EmployeePresenter from './EmployeePresenter.svelte'
 
   export let filter: Filter
@@ -113,15 +122,6 @@
   }
 
   let search: string = ''
-  let phTraslate: string = ''
-  let searchInput: HTMLInputElement
-  $: translate(presentation.string.Search, {}).then((res) => {
-    phTraslate = res
-  })
-
-  onMount(() => {
-    if (searchInput && !$deviceOptionsStore.isMobile) searchInput.focus()
-  })
 
   const dispatch = createEventDispatcher()
   $: getValues(search)
@@ -129,14 +129,16 @@
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="header">
-    <input
-      bind:this={searchInput}
-      type="text"
+    <EditWithIcon
+      icon={IconSearch}
+      size={'large'}
+      width={'100%'}
+      focus={!$deviceOptionsStore.isMobile}
       bind:value={search}
+      placeholder={presentation.string.Search}
       on:change={() => {
         getValues(search)
       }}
-      placeholder={phTraslate}
     />
   </div>
   <div class="scroll">
@@ -146,24 +148,23 @@
       {:else}
         {#each sortFilterValues(values, (v) => isSelected(v, filter.value)) as value}
           <button
-            class="menu-item no-focus"
+            class="menu-item no-focus flex-row-center"
             on:click={() => {
               handleFilterToggle(value)
             }}
           >
-            <div class="flex-between w-full">
-              <div class="flex-row-center">
-                <EmployeePresenter {value} shouldShowPlaceholder defaultName={ui.string.NotSelected} disabled />
-              </div>
-              <div class="pointer-events-none">
-                {#if isSelected(value, filter.value)}
-                  <Icon icon={IconCheck} size={'small'} />
-                {/if}
-              </div>
+            <div class="clear-mins flex-grow">
+              <EmployeePresenter {value} shouldShowPlaceholder defaultName={ui.string.NotSelected} disabled />
+            </div>
+            <div class="check pointer-events-none">
+              {#if isSelected(value, filter.value)}
+                <Icon icon={IconCheck} size={'small'} />
+              {/if}
             </div>
           </button>
         {/each}
       {/if}
     </div>
   </div>
+  <div class="menu-space" />
 </div>

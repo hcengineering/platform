@@ -14,13 +14,14 @@
 -->
 <script lang="ts">
   import { Class, Doc, FindResult, Ref } from '@hcengineering/core'
-  import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
   import { TagCategory, TagElement } from '@hcengineering/tags'
   import {
     Button,
     Icon,
     IconCheck,
+    IconSearch,
+    EditWithIcon,
     Label,
     Loading,
     deviceOptionsStore,
@@ -31,7 +32,7 @@
   } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { FILTER_DEBOUNCE_MS, FilterQuery, sortFilterValues } from '@hcengineering/view-resources'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
   import { tagLevel } from '../utils'
   import WeightPopup from './WeightPopup.svelte'
@@ -76,15 +77,6 @@
   }
 
   let search: string = ''
-  let phTraslate: string = ''
-  let searchInput: HTMLInputElement
-  $: translate(presentation.string.Search, {}).then((res) => {
-    phTraslate = res
-  })
-
-  onMount(() => {
-    if (searchInput && !$deviceOptionsStore.isMobile) searchInput.focus()
-  })
 
   const toggleGroup = (ev: MouseEvent): void => {
     const el: HTMLElement = ev.currentTarget as HTMLElement
@@ -137,18 +129,20 @@
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="header">
-    <input
-      bind:this={searchInput}
-      type="text"
+    <EditWithIcon
+      icon={IconSearch}
+      size={'large'}
+      width={'100%'}
+      focus={!$deviceOptionsStore.isMobile}
       bind:value={search}
+      placeholder={presentation.string.Search}
       on:change={() => {
         getValues(search)
       }}
-      placeholder={phTraslate}
     />
     {#if schema !== '0'}
-      <div class="flex-row-center flex-between flex-grow p-1">
-        <Label label={tags.string.Weight} />
+      <div class="flex-between w-full mt-2">
+        <span class="overflow-label pl-2 mr-2"><Label label={tags.string.Weight} /></span>
         <Button
           label={tagLevelLabel}
           icon={tagLevelIcon}
@@ -170,9 +164,10 @@
       {#if objectsPromise}
         <Loading />
       {:else}
-        {#each categories as cat}
+        {#each categories as cat, i}
           {@const values = objects.filter((el) => el.category === cat._id)}
           {#if values.length > 0}
+            {#if i > 0}<div class="menu-separator" />{/if}
             <div class="sticky-wrapper">
               <button
                 class="menu-group__header"
@@ -198,21 +193,17 @@
               <div class="menu-group">
                 {#each sortFilterValues(values, isSelected) as element}
                   <button
-                    class="menu-item"
+                    class="menu-item no-focus flex-row-center"
                     on:click={() => {
                       handleFilterToggle(element)
                     }}
                   >
-                    <div class="flex-between w-full">
-                      <div class="flex">
-                        <div class="tag" style="background-color: {getPlatformColor(element.color)};" />
-                        {element.title}
-                      </div>
-                      <div class="pointer-events-none">
-                        {#if isSelected(element)}
-                          <Icon icon={IconCheck} size={'small'} />
-                        {/if}
-                      </div>
+                    <div class="tag" style="background-color: {getPlatformColor(element.color)};" />
+                    <span class="overflow-label label flex-grow">{element.title}</span>
+                    <div class="check pointer-events-none">
+                      {#if isSelected(element)}
+                        <Icon icon={IconCheck} size={'small'} />
+                      {/if}
                     </div>
                   </button>
                 {/each}
@@ -223,6 +214,7 @@
       {/if}
     </div>
   </div>
+  <div class="menu-space" />
 </div>
 
 <style>
