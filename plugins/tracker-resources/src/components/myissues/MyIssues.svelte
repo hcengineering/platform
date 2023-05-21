@@ -23,6 +23,7 @@
   import IssuesView from '../issues/IssuesView.svelte'
   import { IModeSelector } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import { navigate, parseLocation } from '@hcengineering/ui'
 
   const config: [string, IntlString, object][] = [
     ['assigned', view.string.Assigned, {}],
@@ -33,6 +34,8 @@
   const assigned = { assignee: currentUser.employee }
   const created = { createdBy: currentUser._id }
   let subscribed = { _id: { $in: [] as Ref<Issue>[] } }
+  let [[mode]] = config
+  const loc = parseLocation(new URL(`${window.location.href}/${mode}`))
 
   const subscribedQuery = createQuery()
   $: subscribedQuery.query(
@@ -48,7 +51,6 @@
     { sort: { _id: 1 } }
   )
 
-  let [[mode]] = config
   function handleChangeMode (newMode: string) {
     if (newMode === mode) return
     mode = newMode
@@ -63,6 +65,8 @@
     mode,
     onChange: handleChangeMode
   } as IModeSelector
+  $: loc.path[loc.path.length - 1] = mode
+  $: navigate(loc)
 </script>
 
 <IssuesView {query} space={undefined} title={tracker.string.MyIssues} {modeSelectorProps} />

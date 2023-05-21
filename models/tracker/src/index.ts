@@ -825,6 +825,7 @@ export function createModel (builder: Builder): void {
   const milestonesId = 'milestones'
   const templatesId = 'templates'
   const myIssuesId = 'my-issues'
+  const allIssuesId = 'all-issues'
   // const scrumsId = 'scrums'
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ObjectPresenter, {
@@ -1002,7 +1003,7 @@ export function createModel (builder: Builder): void {
             component: tracker.component.MyIssues
           },
           {
-            id: 'all-issues',
+            id: allIssuesId,
             position: 'top',
             label: tracker.string.AllIssues,
             icon: tracker.icon.Issues,

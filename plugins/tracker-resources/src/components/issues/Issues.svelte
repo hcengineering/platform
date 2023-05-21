@@ -20,6 +20,7 @@
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { IModeSelector } from '@hcengineering/ui'
+  import { navigate, parseLocation } from '@hcengineering/ui'
 
   export let currentSpace: Ref<Project> | undefined = undefined
   export let baseQuery: DocumentQuery<Issue> = {}
@@ -30,6 +31,8 @@
     ['active', tracker.string.Active, {}],
     ['backlog', tracker.string.Backlog, {}]
   ]
+  let [[mode]] = config
+  const loc = parseLocation(new URL(`${window.location.href}/${mode}`))
 
   $: spaceQuery = currentSpace ? { space: currentSpace } : {}
 
@@ -58,7 +61,6 @@
     }
   )
 
-  let [[mode]] = config
   function handleChangeMode (newMode: string) {
     if (newMode === mode) return
     mode = newMode
@@ -73,6 +75,8 @@
     mode,
     onChange: handleChangeMode
   } as IModeSelector
+  $: loc.path[loc.path.length - 1] = mode
+  $: navigate(loc)
 </script>
 
 {#key query && currentSpace}
