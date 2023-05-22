@@ -35,7 +35,7 @@
     showPopup
   } from '@hcengineering/ui'
   import { ActionContext, ContextMenu, DocNavLink, UpDownNavigator, contextStore } from '@hcengineering/view-resources'
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import { generateIssueShortLink, getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
   import IssueStatusActivity from '../IssueStatusActivity.svelte'
