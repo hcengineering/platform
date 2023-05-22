@@ -13,8 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { EmployeeAccount } from '@hcengineering/contact'
-  import { getCurrentAccount } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Component, Issue, Project } from '@hcengineering/tracker'
   import { Button, Label } from '@hcengineering/ui'
@@ -41,12 +39,8 @@
   async function createMissingComponent (cur: Component): Promise<void> {
     await client.createDoc(cur._class, targetProject._id, {
       label: cur.label,
-      members: [(getCurrentAccount() as EmployeeAccount).employee],
-      status: cur.status,
-      startDate: cur.startDate,
       attachments: 0,
       description: cur.description,
-      targetDate: cur.targetDate,
       comments: 0,
       lead: cur.lead
     })

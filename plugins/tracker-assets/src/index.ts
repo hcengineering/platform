@@ -54,14 +54,6 @@ loadMetadata(tracker.icon, {
   PriorityLow: `${icons}#priority-low`,
 
   ComponentsList: `${icons}#list`,
-  ComponentsTimeline: `${icons}#timeline`,
-
-  ComponentStatusBacklog: `${icons}#component-status-backlog`,
-  ComponentStatusPlanned: `${icons}#component-status-planned`,
-  ComponentStatusInProgress: `${icons}#component-status-in-progress`,
-  ComponentStatusPaused: `${icons}#component-status-paused`,
-  ComponentStatusCompleted: `${icons}#component-status-completed`,
-  ComponentStatusCanceled: `${icons}#component-status-canceled`,
 
   MilestoneStatusPlanned: `${icons}#component-status-planned`,
   MilestoneStatusInProgress: `${icons}#component-status-in-progress`,
@@ -72,9 +64,7 @@ loadMetadata(tracker.icon, {
   CopyBranch: `${icons}#copyBranch`,
   Duplicate: `${icons}#duplicate`,
   TimeReport: `${icons}#timeReport`,
-  Estimation: `${icons}#estimation`,
-
-  Timeline: `${icons}#timeline`
+  Estimation: `${icons}#estimation`
 })
 
 addStringsLoader(trackerId, async (lang: string) => await import(`../lang/${lang}.json`))

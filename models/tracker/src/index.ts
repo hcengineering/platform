@@ -58,7 +58,6 @@ import tags, { TagElement } from '@hcengineering/tags'
 import task from '@hcengineering/task'
 import {
   Component,
-  ComponentStatus,
   Issue,
   IssueChildInfo,
   IssueParentInfo,
@@ -111,22 +110,9 @@ export class TTypeIssuePriority extends TType {}
 /**
  * @public
  */
-export function TypeComponentStatus (): Type<ComponentStatus> {
-  return { _class: tracker.class.TypeComponentStatus, label: 'TypeComponentStatus' as IntlString }
-}
-
-/**
- * @public
- */
 export function TypeMilestoneStatus (): Type<MilestoneStatus> {
   return { _class: tracker.class.TypeMilestoneStatus, label: 'TypeMilestoneStatus' as IntlString }
 }
-
-/**
- * @public
- */
-@Model(tracker.class.TypeComponentStatus, core.class.Type, DOMAIN_MODEL)
-export class TTypeComponentStatus extends TType {}
 
 /**
  * @public
@@ -345,26 +331,14 @@ export class TComponent extends TDoc implements Component {
   @Prop(TypeMarkup(), tracker.string.Description)
     description?: Markup
 
-  @Prop(TypeComponentStatus(), tracker.string.Status)
-    status!: ComponentStatus
-
   @Prop(TypeRef(contact.class.Employee), tracker.string.ComponentLead)
     lead!: Ref<Employee> | null
-
-  @Prop(ArrOf(TypeRef(contact.class.Employee)), tracker.string.Members)
-    members!: Ref<Employee>[]
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
     comments!: number
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
-
-  @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.StartDate)
-    startDate!: Timestamp | null
-
-  @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.TargetDate)
-    targetDate!: Timestamp | null
 
   declare space: Ref<Project>
 }
@@ -466,7 +440,6 @@ export function createModel (builder: Builder): void {
     TIssueTemplate,
     TIssueStatus,
     TTypeIssuePriority,
-    TTypeComponentStatus,
     TMilestone,
     TScrum,
     TScrumRecord,
@@ -930,6 +903,10 @@ export function createModel (builder: Builder): void {
     presenter: tracker.component.PriorityRefPresenter
   })
 
+  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.ObjectEditor, {
+    editor: tracker.component.EditComponent
+  })
+
   builder.mixin(tracker.class.Component, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: tracker.component.ComponentPresenter
   })
@@ -967,10 +944,6 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(tracker.class.Issue, core.class.Class, setting.mixin.Editable, {
     value: true
-  })
-
-  builder.mixin(tracker.class.TypeComponentStatus, core.class.Class, view.mixin.AttributeEditor, {
-    inlineEditor: tracker.component.ComponentStatusEditor
   })
 
   builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AllValuesFunc, {
@@ -1496,6 +1469,8 @@ export function createModel (builder: Builder): void {
         attribute: 'component',
         _class: tracker.class.Component,
         query: {},
+        fillQuery: { space: 'space' },
+        docMatches: ['space'],
         searchField: 'label',
         placeholder: tracker.string.Component
       },
@@ -1848,7 +1823,6 @@ export function createModel (builder: Builder): void {
   const componentListViewOptions: ViewOptionsModel = {
     groupBy: ['lead'],
     orderBy: [
-      ['startDate', SortingOrder.Descending],
       ['modifiedOn', SortingOrder.Descending],
       ['createOn', SortingOrder.Descending]
     ],
@@ -1863,29 +1837,12 @@ export function createModel (builder: Builder): void {
       descriptor: view.viewlet.List,
       viewOptions: componentListViewOptions,
       config: [
-        { key: '', presenter: tracker.component.ComponentStatusPresenter, props: { kind: 'list', size: 'small' } },
         {
           key: '',
           presenter: tracker.component.ComponentPresenter,
           props: { kind: 'list' }
         },
         { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
-        {
-          key: '',
-          presenter: contact.component.MembersPresenter,
-          props: {
-            kind: 'list',
-            size: 'small',
-            intlTitle: tracker.string.ComponentMembersTitle,
-            intlSearchPh: tracker.string.ComponentMembersSearchPlaceholder,
-            listProps: { optional: true, compression: true }
-          }
-        },
-        {
-          key: '',
-          presenter: tracker.component.TargetDatePresenter,
-          props: { listProps: { optional: true, compression: true } }
-        },
         { key: '', presenter: view.component.DividerPresenter, props: { type: 'divider' } },
         {
           key: '$lookup.lead',
@@ -1900,63 +1857,5 @@ export function createModel (builder: Builder): void {
       ]
     },
     tracker.viewlet.ComponentList
-  )
-
-  builder.createDoc(
-    view.class.ViewletDescriptor,
-    core.space.Model,
-    {
-      label: view.string.Timeline,
-      icon: view.icon.Timeline,
-      component: tracker.component.ComponentsTimeline
-    },
-    tracker.viewlet.Timeline
-  )
-
-  const componentTimelineViewOptions: ViewOptionsModel = {
-    groupBy: [],
-    orderBy: [
-      ['startDate', SortingOrder.Descending],
-      ['modifiedOn', SortingOrder.Descending],
-      ['createOn', SortingOrder.Descending]
-    ],
-    other: [],
-    groupDepth: 1
-  }
-
-  builder.createDoc(
-    view.class.Viewlet,
-    core.space.Model,
-    {
-      attachTo: tracker.class.Component,
-      descriptor: tracker.viewlet.Timeline,
-      viewOptions: componentTimelineViewOptions,
-      config: [
-        { key: '', presenter: tracker.component.IconPresenter },
-        {
-          key: '',
-          presenter: tracker.component.ComponentPresenter,
-          props: { kind: 'list', shouldShowAvatar: false }
-        },
-        {
-          key: '$lookup.lead',
-          presenter: tracker.component.LeadPresenter,
-          props: { _class: tracker.class.Component, defaultClass: contact.class.Employee, shouldShowLabel: false }
-        },
-        {
-          key: '',
-          presenter: contact.component.MembersPresenter,
-          props: {
-            kind: 'link',
-            intlTitle: tracker.string.ComponentMembersTitle,
-            intlSearchPh: tracker.string.ComponentMembersSearchPlaceholder
-          }
-        },
-        { key: '', presenter: tracker.component.TargetDatePresenter },
-        { key: '', presenter: tracker.component.ComponentStatusPresenter, props: { width: 'min-content' } },
-        { key: '', presenter: tracker.component.DeleteComponentPresenter }
-      ]
-    },
-    tracker.viewlet.ComponentsTimeline
   )
 }

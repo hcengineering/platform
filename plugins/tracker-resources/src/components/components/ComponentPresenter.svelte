@@ -15,42 +15,31 @@
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
   import { Component } from '@hcengineering/tracker'
-  import { Icon, getCurrentResolvedLocation, navigate, tooltip } from '@hcengineering/ui'
+  import { Icon, tooltip } from '@hcengineering/ui'
   import tracker from '../../plugin'
+  import view from '@hcengineering/view'
+  import { DocNavLink } from '@hcengineering/view-resources'
 
   export let value: WithLookup<Component>
   export let shouldShowAvatar = true
   export let onClick: (() => void) | undefined = undefined
   export let disabled = false
   export let inline: boolean = false
-
-  function navigateToComponent () {
-    if (disabled) {
-      return
-    }
-    if (onClick) {
-      onClick()
-    }
-
-    const loc = getCurrentResolvedLocation()
-    loc.path[4] = 'components'
-    loc.path[5] = value._id
-    loc.path.length = 6
-    loc.fragment = undefined
-    navigate(loc)
-  }
+  export let noUnderline = false
+  export let kind: 'list' | undefined = undefined
 </script>
 
 {#if value}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="flex-presenter" class:inline-presenter={inline} on:click={navigateToComponent}>
-    {#if !inline && shouldShowAvatar}
-      <div class="icon" use:tooltip={{ label: tracker.string.Component }}>
-        <Icon icon={tracker.icon.Component} size={'small'} />
-      </div>
-    {/if}
-    <span title={value.label} class="overflow-label label" class:no-underline={disabled}>
-      {value.label}
+  <DocNavLink object={value} {onClick} {disabled} {noUnderline} {inline} component={view.component.EditDoc}>
+    <span class="flex-presenter" class:inline class:list={kind === 'list'}>
+      {#if !inline && shouldShowAvatar}
+        <div class="icon" use:tooltip={{ label: tracker.string.Component }}>
+          <Icon icon={tracker.icon.Component} size={'small'} />
+        </div>
+      {/if}
+      <span title={value.label} class="label nowrap">
+        {value.label}
+      </span>
     </span>
-  </div>
+  </DocNavLink>
 {/if}

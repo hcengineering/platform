@@ -300,36 +300,13 @@ export interface Document extends Doc {
 /**
  * @public
  */
-export enum ComponentStatus {
-  Backlog,
-  Planned,
-  InProgress,
-  Paused,
-  Completed,
-  Canceled
-}
-
-/**
- * @public
- */
 export interface Component extends Doc {
   label: string
   description?: Markup
-
-  status: ComponentStatus
-
   lead: Ref<Employee> | null
-  members: Ref<Employee>[]
-
   space: Ref<Project>
-
   comments: number
   attachments?: number
-
-  startDate: Timestamp | null
-  targetDate: Timestamp | null
-
-  // Ref<Document>[]
 }
 
 /**
@@ -378,7 +355,6 @@ export default plugin(trackerId, {
     Component: '' as Ref<Class<Component>>,
     IssueStatus: '' as Ref<Class<IssueStatus>>,
     TypeIssuePriority: '' as Ref<Class<Type<IssuePriority>>>,
-    TypeComponentStatus: '' as Ref<Class<Type<ComponentStatus>>>,
     Milestone: '' as Ref<Class<Milestone>>,
     Scrum: '' as Ref<Class<Scrum>>,
     ScrumRecord: '' as Ref<Class<ScrumRecord>>,
@@ -448,14 +424,6 @@ export default plugin(trackerId, {
     PriorityLow: '' as Asset,
 
     ComponentsList: '' as Asset,
-    ComponentsTimeline: '' as Asset,
-
-    ComponentStatusBacklog: '' as Asset,
-    ComponentStatusPlanned: '' as Asset,
-    ComponentStatusInProgress: '' as Asset,
-    ComponentStatusPaused: '' as Asset,
-    ComponentStatusCompleted: '' as Asset,
-    ComponentStatusCanceled: '' as Asset,
 
     MilestoneStatusPlanned: '' as Asset,
     MilestoneStatusInProgress: '' as Asset,
@@ -468,8 +436,6 @@ export default plugin(trackerId, {
 
     TimeReport: '' as Asset,
     Estimation: '' as Asset,
-
-    Timeline: '' as Asset,
 
     // Project icons
     Home: '' as Asset,

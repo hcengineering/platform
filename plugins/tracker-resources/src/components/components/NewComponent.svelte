@@ -16,12 +16,11 @@
   import { Data, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Card, getClient, SpaceSelector } from '@hcengineering/presentation'
-  import { EmployeeBox, UserBoxList } from '@hcengineering/contact-resources'
-  import { Component, ComponentStatus, Project } from '@hcengineering/tracker'
-  import { DatePresenter, EditBox } from '@hcengineering/ui'
+  import { EmployeeBox } from '@hcengineering/contact-resources'
+  import { Component, Project } from '@hcengineering/tracker'
+  import { EditBox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
-  import ComponentStatusSelector from './ComponentStatusSelector.svelte'
   import { StyledTextArea } from '@hcengineering/text-editor'
 
   export let space: Ref<Project>
@@ -31,25 +30,13 @@
   const object: Data<Component> = {
     label: '' as IntlString,
     description: '',
-    status: ComponentStatus.Backlog,
     lead: null,
-    members: [],
     comments: 0,
-    attachments: 0,
-    startDate: null,
-    targetDate: null
+    attachments: 0
   }
 
   async function onSave () {
     await client.createDoc(tracker.class.Component, space, object)
-  }
-
-  const handleComponentStatusChanged = (newComponentStatus: ComponentStatus | undefined) => {
-    if (newComponentStatus === undefined) {
-      return
-    }
-
-    object.status = newComponentStatus
   }
 </script>
 
@@ -77,12 +64,6 @@
     emphasized
   />
   <svelte:fragment slot="pool">
-    <ComponentStatusSelector
-      selectedComponentStatus={object.status}
-      onComponentStatusChange={handleComponentStatusChanged}
-      kind={'secondary'}
-      size={'large'}
-    />
     <EmployeeBox
       label={tracker.string.ComponentLead}
       placeholder={tracker.string.AssignTo}
@@ -92,27 +73,6 @@
       showNavigate={false}
       kind={'secondary'}
       size={'large'}
-    />
-    <UserBoxList
-      bind:items={object.members}
-      label={tracker.string.ComponentMembersSearchPlaceholder}
-      kind={'secondary'}
-      size={'large'}
-    />
-    <!-- TODO: add labels after customize IssueNeedsToBeCompletedByThisDate -->
-    <DatePresenter
-      bind:value={object.startDate}
-      labelNull={tracker.string.StartDate}
-      kind={'secondary'}
-      size={'large'}
-      editable
-    />
-    <DatePresenter
-      bind:value={object.targetDate}
-      labelNull={tracker.string.TargetDate}
-      kind={'secondary'}
-      size={'large'}
-      editable
     />
   </svelte:fragment>
 </Card>

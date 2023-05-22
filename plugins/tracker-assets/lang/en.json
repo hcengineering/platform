@@ -29,7 +29,6 @@
     "CreateComponent": "Create component",
     "ComponentNamePlaceholder": "Component name",
     "ComponentDescriptionPlaceholder": "Description (optional)",
-    "ComponentStatusPlaceholder": "Change component status...",
     "ComponentLead": "Lead",
     "ComponentMembers": "Members",
     "StartDate": "Start date",

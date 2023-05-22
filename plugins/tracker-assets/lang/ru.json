@@ -29,7 +29,6 @@
     "CreateComponent": "Создать компонент",
     "ComponentNamePlaceholder": "Название компонента",
     "ComponentDescriptionPlaceholder": "Описание (необязательно)",
-    "ComponentStatusPlaceholder": "Сменить статус компонента...",
     "ComponentLead": "Руководитель",
     "ComponentMembers": "Участники",
     "StartDate": "Дата начала",
