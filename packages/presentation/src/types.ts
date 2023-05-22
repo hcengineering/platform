@@ -2,6 +2,8 @@ import { Client, Doc, RelatedDocument } from '@hcengineering/core'
 import { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
 
+export * from './components/breadcrumbs/types'
+
 /**
  * @public
  */

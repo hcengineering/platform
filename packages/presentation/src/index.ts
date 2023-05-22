@@ -39,6 +39,7 @@ export { default as IndexedDocumentCompare } from './components/IndexedDocumentC
 export { default as DraggableList } from './components/DraggableList.svelte'
 export { default as NavLink } from './components/NavLink.svelte'
 export { default as IconForward } from './components/icons/Forward.svelte'
+export { default as Breadcrumbs } from './components/breadcrumbs/Breadcrumbs.svelte'
 export { default as BreadcrumbsElement } from './components/breadcrumbs/BreadcrumbsElement.svelte'
 export { default } from './plugin'
 export * from './types'
