@@ -13,29 +13,25 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher, onMount } from 'svelte'
   import type { EmployeeAccount } from '@hcengineering/contact'
   import { Doc, DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import type { Issue } from '@hcengineering/tracker'
 
-  import tracker from '../../plugin'
   import IssuesView from '../issues/IssuesView.svelte'
   import { IModeSelector } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
-  import { navigate, parseLocation } from '@hcengineering/ui'
+  import tracker from '../../plugin'
 
-  const config: [string, IntlString, object][] = [
-    ['assigned', view.string.Assigned, {}],
-    ['created', view.string.Created, {}],
-    ['subscribed', view.string.Subscribed, {}]
-  ]
+  export let config: [string, IntlString, object][] = []
+
+  const dispatch = createEventDispatcher()
   const currentUser = getCurrentAccount() as EmployeeAccount
   const assigned = { assignee: currentUser.employee }
   const created = { createdBy: currentUser._id }
   let subscribed = { _id: { $in: [] as Ref<Issue>[] } }
-  let [[mode]] = config
-  const loc = parseLocation(new URL(`${window.location.href}/${mode}`))
+  let mode: string
 
   const subscribedQuery = createQuery()
   $: subscribedQuery.query(
@@ -65,8 +61,8 @@
     mode,
     onChange: handleChangeMode
   } as IModeSelector
-  $: loc.path[loc.path.length - 1] = mode
-  $: navigate(loc)
+  $: dispatch('action', mode)
+  onMount(() => ([[mode]] = config))
 </script>
 
 <IssuesView {query} space={undefined} title={tracker.string.MyIssues} {modeSelectorProps} />

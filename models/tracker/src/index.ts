@@ -1000,7 +1000,14 @@ export function createModel (builder: Builder): void {
             position: 'top',
             label: tracker.string.MyIssues,
             icon: tracker.icon.MyIssues,
-            component: tracker.component.MyIssues
+            component: tracker.component.MyIssues,
+            componentProps: {
+              config: [
+                ['assigned', tracker.string.Assigned, {}],
+                ['created', tracker.string.Created, { value: 2 }],
+                ['subscribed', tracker.string.Subscribed, {}]
+              ]
+            }
           },
           {
             id: allIssuesId,
@@ -1011,7 +1018,12 @@ export function createModel (builder: Builder): void {
             componentProps: {
               baseQuery: { '$lookup.space.archived': false },
               space: undefined,
-              title: tracker.string.AllIssues
+              title: tracker.string.AllIssues,
+              config: [
+                ['all', tracker.string.All, {}],
+                ['active', tracker.string.Active, {}],
+                ['backlog', tracker.string.Backlog, {}]
+              ]
             }
           }
         ],
@@ -1029,7 +1041,12 @@ export function createModel (builder: Builder): void {
                 icon: tracker.icon.Issues,
                 component: tracker.component.Issues,
                 componentProps: {
-                  title: tracker.string.Issues
+                  title: tracker.string.Issues,
+                  config: [
+                    ['all', tracker.string.All, {}],
+                    ['active', tracker.string.Active, {}],
+                    ['backlog', tracker.string.Backlog, {}]
+                  ]
                 }
               },
               {

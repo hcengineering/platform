@@ -39,6 +39,7 @@
     closePopup,
     closeTooltip,
     deviceOptionsStore as deviceInfo,
+    getCurrentLocation,
     location,
     navigate,
     openPanel,
@@ -583,21 +584,6 @@
             selected={currentAppAlias === notificationId || inboxPopup !== undefined}
             on:click={(e) => {
               if (e.metaKey || e.ctrlKey) return
-              // if (inboxPopup) {
-              //   inboxPopup.close()
-              // } else {
-              //   inboxPopup = showPopup(
-              //     notification.component.Inbox,
-              //     { visibileNav: true },
-              //     'content',
-              //     undefined,
-              //     undefined,
-              //     {
-              //       category: 'popup',
-              //       overlay: false
-              //     }
-              //   )
-              // }
               if (currentAppAlias === notificationId && lastLoc !== undefined) {
                 e.preventDefault()
                 e.stopPropagation()
@@ -690,6 +676,13 @@
           <Component
             is={specialComponent.component}
             props={{ model: navigatorModel, ...specialComponent.componentProps, currentSpace, visibileNav }}
+            on:action={(e) => {
+              if (e?.detail) {
+                const loc = getCurrentLocation()
+                loc.fragment = e.detail
+                navigate(loc)
+              }
+            }}
           />
         {:else if currentView?.component !== undefined}
           <Component is={currentView.component} props={{ ...currentView.componentProps, currentView, visibileNav }} />

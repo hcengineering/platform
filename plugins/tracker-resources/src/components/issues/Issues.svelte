@@ -13,26 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher, onMount } from 'svelte'
   import { DocumentQuery, Ref } from '@hcengineering/core'
   import { Issue, Project } from '@hcengineering/tracker'
-  import tracker from '../../plugin'
-  import IssuesView from './IssuesView.svelte'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
+
   import { IModeSelector } from '@hcengineering/ui'
-  import { navigate, parseLocation } from '@hcengineering/ui'
+  import tracker from '../../plugin'
+  import IssuesView from './IssuesView.svelte'
 
   export let currentSpace: Ref<Project> | undefined = undefined
   export let baseQuery: DocumentQuery<Issue> = {}
   export let title: IntlString
+  export let config: [string, IntlString, object][]
 
-  const config: [string, IntlString, object][] = [
-    ['all', tracker.string.All, {}],
-    ['active', tracker.string.Active, {}],
-    ['backlog', tracker.string.Backlog, {}]
-  ]
-  let [[mode]] = config
-  const loc = parseLocation(new URL(`${window.location.href}/${mode}`))
+  const dispatch = createEventDispatcher()
+  let mode: string
 
   $: spaceQuery = currentSpace ? { space: currentSpace } : {}
 
@@ -69,14 +66,15 @@
   function getQuery (mode: string, queries: { [key: string]: DocumentQuery<Issue> }) {
     return { ...queries[mode], '$lookup.space.archived': false }
   }
+
   $: query = getQuery(mode, { all, active, backlog })
   $: modeSelectorProps = {
     config,
     mode,
     onChange: handleChangeMode
   } as IModeSelector
-  $: loc.path[loc.path.length - 1] = mode
-  $: navigate(loc)
+  $: dispatch('action', mode)
+  onMount(() => ([[mode]] = config))
 </script>
 
 {#key query && currentSpace}
