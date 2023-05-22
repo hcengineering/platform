@@ -35,7 +35,7 @@
     showPopup
   } from '@hcengineering/ui'
   import { ActionContext, ContextMenu, DocNavLink, UpDownNavigator, contextStore } from '@hcengineering/view-resources'
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import { generateIssueShortLink, getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
   import IssueStatusActivity from '../IssueStatusActivity.svelte'
@@ -140,10 +140,6 @@
     }
   }
 
-  onMount(() => {
-    dispatch('open', { ignoreKeys: ['comments', 'name', 'description', 'number'] })
-  })
-
   const manager = createFocusManager()
   export function canClose (): boolean {
     if (descriptionBox.isFocused()) {
@@ -176,6 +172,7 @@
     {embedded}
     withoutTitle
     bind:innerWidth
+    on:open
     on:close={() => dispatch('close')}
   >
     <svelte:fragment slot="navigator">

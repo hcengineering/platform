@@ -14,7 +14,7 @@
     // limitations under the License.
     -->
 <script lang="ts">
-  import { afterUpdate } from 'svelte'
+  import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
   import { Writable, writable } from 'svelte/store'
 
   import activity from '@hcengineering/activity'
@@ -56,6 +56,8 @@
   let lastScrollHeight: number = -1
   let count: number = 0
 
+  const dispatch = createEventDispatcher()
+
   const waitCount = 10
   const PanelScrollTop: Writable<Record<string, number>> = writable<Record<string, number>>({})
 
@@ -85,6 +87,10 @@
     if (lastHref !== window.location.href) {
       startScrollHeightCheck()
     }
+  })
+
+  onMount(() => {
+    dispatch('open')
   })
 </script>
 

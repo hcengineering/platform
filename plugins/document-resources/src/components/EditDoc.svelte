@@ -380,6 +380,7 @@
     bind:innerWidth
     floatAside={false}
     useMaxWidth={true}
+    on:open
     on:close={() => dispatch('close')}
   >
     <svelte:fragment slot="navigator">

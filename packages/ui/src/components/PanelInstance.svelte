@@ -89,8 +89,20 @@
     }
   }
 
+  function _open (): void {
+    if (modalHTML && props) {
+      if (props.element === 'content') {
+        modalHTML.classList.add('bg')
+      } else {
+        modalHTML.classList.remove('bg')
+      }
+    }
+  }
+
   const _update = (): void => {
-    if (props) fitPopup(props, contentPanel)
+    if (props) {
+      fitPopup(props, contentPanel)
+    }
   }
 
   afterUpdate(() => {
@@ -120,7 +132,7 @@
     <slot name="panel-header" />
     <div
       class="panel-instance"
-      class:bg={props.element === 'content'}
+      class:bg={false}
       bind:this={modalHTML}
       style:top={options?.props?.top}
       style:bottom={options?.props?.bottom}
@@ -142,6 +154,7 @@
           rightSection={props.rightSection}
           position={props.element}
           bind:popupOptions={options}
+          on:open={_open}
           on:close={_close}
           on:update={_update}
         />
