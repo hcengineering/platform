@@ -59,7 +59,8 @@ const combineThreshold = 5 * 60 * 1000
  */
 export interface Activity {
   update: (
-    object: Doc,
+    objectId: Ref<Doc>,
+    objectClass: Ref<Class<Doc>>,
     listener: DisplayTxListener,
     sort: SortingOrder,
     editable: Map<Ref<Class<Doc>>, boolean>
@@ -71,6 +72,8 @@ class ActivityImpl implements Activity {
   private readonly attachedTxQuery: LiveQuery
   private readonly attachedChangeTxQuery: LiveQuery
   private readonly hiddenAttributes: Set<string>
+  private prevObjectId: Ref<Doc> | undefined
+  private prevObjectClass: Ref<Class<Doc>> | undefined
   private editable: Map<Ref<Class<Doc>>, boolean> | undefined
 
   private ownTxes: Array<TxCUD<Doc>> = []
@@ -87,9 +90,9 @@ class ActivityImpl implements Activity {
     this.attachedChangeTxQuery = createQuery()
   }
 
-  private notify (object: Doc, listener: DisplayTxListener, sort: SortingOrder): void {
+  private notify (objectId: Ref<Doc>, listener: DisplayTxListener, sort: SortingOrder): void {
     if (this.editable != null) {
-      this.combineTransactions(object, this.ownTxes, this.attachedTxes, this.attacheChangedTxes, this.editable).then(
+      this.combineTransactions(objectId, this.ownTxes, this.attachedTxes, this.attacheChangedTxes, this.editable).then(
         (result) => {
           const sorted = result.sort((a, b) => (a.tx.modifiedOn - b.tx.modifiedOn) * sort)
           listener(sorted)
@@ -101,26 +104,35 @@ class ActivityImpl implements Activity {
     }
   }
 
-  update (object: Doc, listener: DisplayTxListener, sort: SortingOrder, editable: Map<Ref<Class<Doc>>, boolean>): void {
+  update (
+    objectId: Ref<Doc>,
+    objectClass: Ref<Class<Doc>>,
+    listener: DisplayTxListener,
+    sort: SortingOrder,
+    editable: Map<Ref<Class<Doc>>, boolean>
+  ): void {
+    if (objectId === this.prevObjectId && objectClass === this.prevObjectClass) return
+    this.prevObjectClass = objectClass
+    this.prevObjectId = objectId
     let isAttached = false
 
-    isAttached = this.hierarchy.isDerived(object._class, core.class.AttachedDoc)
+    isAttached = this.hierarchy.isDerived(objectClass, core.class.AttachedDoc)
 
     this.editable = editable
 
     this.ownTxQuery.query<TxCUD<Doc>>(
       isAttached ? core.class.TxCollectionCUD : core.class.TxCUD,
       isAttached
-        ? { 'tx.objectId': object._id as Ref<AttachedDoc> }
+        ? { 'tx.objectId': objectId as Ref<AttachedDoc> }
         : {
-            objectId: object._id,
+            objectId,
             _class: {
               $in: [core.class.TxCreateDoc, core.class.TxUpdateDoc, core.class.TxRemoveDoc, core.class.TxMixin]
             }
           },
       (result) => {
         this.ownTxes = result
-        this.notify(object, listener, sort)
+        this.notify(objectId, listener, sort)
       },
       { sort: { modifiedOn: SortingOrder.Ascending } }
     )
@@ -128,12 +140,12 @@ class ActivityImpl implements Activity {
     this.attachedTxQuery.query<TxCollectionCUD<Doc, AttachedDoc>>(
       core.class.TxCollectionCUD,
       {
-        objectId: object._id,
+        objectId,
         'tx._class': { $in: [core.class.TxCreateDoc, core.class.TxUpdateDoc, core.class.TxRemoveDoc] }
       },
       (result) => {
         this.attachedTxes = result
-        this.notify(object, listener, sort)
+        this.notify(objectId, listener, sort)
       },
       { sort: { modifiedOn: SortingOrder.Ascending } }
     )
@@ -141,21 +153,21 @@ class ActivityImpl implements Activity {
     this.attachedChangeTxQuery.query<TxCollectionCUD<Doc, AttachedDoc>>(
       core.class.TxCollectionCUD,
       {
-        'tx.operations.attachedTo': object._id,
+        'tx.operations.attachedTo': objectId,
         'tx._class': core.class.TxUpdateDoc
       },
       (result) => {
         this.attacheChangedTxes = result
-        this.notify(object, listener, sort)
+        this.notify(objectId, listener, sort)
       },
       { sort: { modifiedOn: SortingOrder.Ascending } }
     )
     // In case editable is changed
-    this.notify(object, listener, sort)
+    this.notify(objectId, listener, sort)
   }
 
   async combineTransactions (
-    doc: Doc,
+    _id: Ref<Doc>,
     ownTxes: Array<TxCUD<Doc>>,
     attachedTxes: Array<TxCollectionCUD<Doc, AttachedDoc>>,
     attachedChangeTxes: Array<TxCollectionCUD<Doc, AttachedDoc>>,
@@ -180,7 +192,7 @@ class ActivityImpl implements Activity {
       const changeAttached = this.isChangeAttachedTx(tx)
       if (changeAttached || this.isDisplayTxRequired(tx)) {
         if (changeAttached) {
-          tx = await this.createFakeTx(doc, tx)
+          tx = await this.createFakeTx(_id, tx)
         }
         const [result, isUpdated, isMixin] = this.createDisplayTx(tx, parents, false)
         if (!(isUpdated || isMixin)) {
@@ -194,10 +206,10 @@ class ActivityImpl implements Activity {
   }
 
   private async createFakeTx (
-    doc: Doc,
+    _id: Ref<Doc>,
     cltx: TxCollectionCUD<Doc, AttachedDoc>
   ): Promise<TxCollectionCUD<Doc, AttachedDoc>> {
-    if (doc._id === cltx.objectId) {
+    if (_id === cltx.objectId) {
       cltx.tx._class = core.class.TxRemoveDoc
     } else {
       const createTx = await this.client.findOne(core.class.TxCollectionCUD, {
