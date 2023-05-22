@@ -74,7 +74,6 @@ const lead = plugin(leadId, {
     Funnel: '' as Asset,
     Lead: '' as Asset,
     LeadApplication: '' as Asset,
-    FunnelBrowser: '' as Asset,
     CreateCustomer: '' as Asset
   },
   space: {

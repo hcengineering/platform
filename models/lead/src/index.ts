@@ -125,20 +125,6 @@ export function createModel (builder: Builder): void {
       navigatorModel: {
         specials: [
           {
-            id: 'spaceBrowser',
-            component: workbench.component.SpaceBrowser,
-            icon: lead.icon.FunnelBrowser,
-            label: lead.string.FunnelBrowser,
-            position: 'top',
-            spaceClass: lead.class.Funnel,
-            componentProps: {
-              _class: lead.class.Funnel,
-              label: lead.string.FunnelBrowser,
-              createItemDialog: lead.component.CreateFunnel,
-              createItemLabel: lead.string.CreateFunnel
-            }
-          },
-          {
             id: 'customers',
             label: lead.string.Customers,
             icon: contact.icon.Person, // <-- Put contact general icon here.
