@@ -71,7 +71,8 @@ const calendarPlugin = plugin(calendarId, {
   icon: {
     Calendar: '' as Asset,
     Location: '' as Asset,
-    Reminder: '' as Asset
+    Reminder: '' as Asset,
+    Notifications: '' as Asset
   },
   space: {
     // Space for all personal events.

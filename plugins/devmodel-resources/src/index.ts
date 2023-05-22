@@ -150,7 +150,7 @@ export async function Hook (client: AccountClient): Promise<Client> {
     core.space.Model,
     {
       label: 'DevModel' as IntlString,
-      icon: view.icon.Model,
+      icon: view.icon.DevModel,
       alias: devModelId,
       hidden: false,
       navigatorModel: {

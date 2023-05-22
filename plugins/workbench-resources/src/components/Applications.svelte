@@ -41,6 +41,7 @@
     <Scroller
       invertScroll
       padding={direction === 'horizontal' ? '.75rem .5rem' : '.5rem .75rem'}
+      gap={direction === 'horizontal' ? 'gap-1' : 'gapV-1'}
       horizontal={direction === 'horizontal'}
       contentDirection={direction}
       buttons={'union'}
@@ -70,10 +71,12 @@
   .apps-horizontal {
     justify-content: center;
     margin: 0 0.5rem 0 0.25rem;
+    height: var(--app-panel-width);
     min-height: 4rem;
   }
   .apps-vertical {
-    margin: 1rem 0;
+    margin: 0.5rem 0;
+    width: var(--app-panel-width);
     min-width: 4rem;
   }
   .apps-space {

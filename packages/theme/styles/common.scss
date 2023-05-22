@@ -39,6 +39,9 @@
   }
   &.lastDivider { border-color: var(--theme-navpanel-border); }
 }
+.normal-font .antiPanel-application .app .icon-container.noty { clip-path: url(#notify-normal); }
+.small-font .antiPanel-application .app .icon-container.noty { clip-path: url(#notify-small); }
+
 .antiPanel-navigator,
 .antiPanel-component {
   flex-grow: 1;

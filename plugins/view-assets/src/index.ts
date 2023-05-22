@@ -36,6 +36,7 @@ loadMetadata(view.icon, {
   Views: `${icons}#views`,
   Pin: `${icons}#pin`,
   Model: `${icons}#model`,
+  DevModel: `${icons}#devmodel`,
   ViewButton: `${icons}#viewButton`,
   Filter: `${icons}#filter`
 })

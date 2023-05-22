@@ -18,7 +18,8 @@ import notification, { notificationId } from '@hcengineering/notification'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(notification.icon, {
-  Notifications: `${icons}#notification`,
+  Notifications: `${icons}#notifications`,
+  Inbox: `${icons}#inbox`,
   Track: `${icons}#track`,
   Hide: `${icons}#hide`,
   DontTrack: `${icons}#donttrack`

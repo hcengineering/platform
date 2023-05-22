@@ -38,7 +38,7 @@
   use:tooltip={{ label }}
 >
   <div class="flex-center icon-container" class:noty={notify}>
-    <Icon {icon} size={'large'} />
+    <Icon {icon} size={'medium'} />
   </div>
   {#if notify}<div class="marker" />{/if}
   {#if editable}
@@ -64,8 +64,8 @@
   .app {
     position: relative;
     padding: 0;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2.25rem;
+    height: 2.25rem;
     background-color: transparent;
     border: 1px solid transparent;
     border-radius: 0.25rem;
@@ -79,16 +79,9 @@
       margin: 0.125rem 0;
     }
     .icon-container {
-      width: 1.5rem;
-      height: 1.5rem;
+      width: 1.25rem;
+      height: 1.25rem;
       color: var(--theme-navpanel-icons-color);
-
-      .normal-font &.noty {
-        clip-path: url(#notify-normal);
-      }
-      .small-font &.noty {
-        clip-path: url(#notify-small);
-      }
     }
 
     &:hover .icon-container {
@@ -102,8 +95,8 @@
     }
 
     &.selected {
-      background-color: var(--theme-button-enabled);
-      border: 1px solid var(--theme-button-border);
+      background-color: var(--theme-button-pressed);
+
       .icon-container {
         color: var(--theme-caption-color);
       }
@@ -122,8 +115,8 @@
 
   .marker {
     position: absolute;
-    top: 1.25rem;
-    right: 0.5rem;
+    top: 1.1rem;
+    right: 0.375rem;
     width: 0.425rem;
     height: 0.425rem;
     border-radius: 50%;

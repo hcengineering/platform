@@ -395,6 +395,7 @@ input.search {
     & > :first-child { margin-right: 0; }
   }
 }
+.gapV-1 > *:not(:last-child) { margin-bottom: .25rem; }
 .gap-1-5 {
   &:not(.reverse) > *:not(:last-child) { margin-right: .375rem; }
   &.reverse > *:not(:first-child) { margin-left: .375rem; }
