@@ -102,9 +102,7 @@
           }}
         />
       {/if}
-      {#if !embedded}
-        {#if $$slots.navigator}<slot name="navigator" />{/if}
-      {/if}
+      {#if $$slots.navigator}<slot name="navigator" />{/if}
       <div class="popupPanel-title__content">
         {#if !twoRows && !withoutTitle}<slot name="title" />{/if}
       </div>

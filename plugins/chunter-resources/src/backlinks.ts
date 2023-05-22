@@ -58,14 +58,14 @@ function extractBacklinks (
         const ato = el.getAttribute('data-id') as Ref<Doc>
         const atoClass = el.getAttribute('data-objectclass') as Ref<Class<Doc>>
         const e = result.find((e) => e.attachedTo === ato && e.attachedToClass === atoClass)
-        if (e === undefined) {
+        if (e === undefined && ato !== attachedDocId && ato !== backlinkId) {
           result.push({
             attachedTo: ato,
             attachedToClass: atoClass,
             collection: 'backlinks',
             backlinkId,
             backlinkClass,
-            message,
+            message: el.parentElement?.innerHTML ?? '',
             attachedDocId
           })
         }
@@ -83,7 +83,7 @@ export function getBacklinks (
   content: string
 ): Array<Data<Backlink>> {
   const parser = new DOMParser()
-  const doc = parser.parseFromString(content, 'application/xhtml+xml')
+  const doc = parser.parseFromString(content, 'text/html')
   return extractBacklinks(backlinkId, backlinkClass, attachedDocId, content, doc.childNodes as NodeListOf<HTMLElement>)
 }
 
@@ -107,6 +107,10 @@ export async function createBacklinks (
     )
   }
 }
+
+/**
+ * @public
+ */
 export async function updateBacklinks (
   client: TxOperations,
   backlinkId: Ref<Doc>,
@@ -135,7 +139,9 @@ export async function updateBacklinksList (
   // We need to find ones we need to remove, and ones we need to update.
   for (const c of current) {
     // Find existing and check if we need to update message.
-    const pos = backlinks.findIndex((b) => b.backlinkId === c.backlinkId && b.backlinkClass === c.backlinkClass)
+    const pos = backlinks.findIndex(
+      (b) => b.backlinkId === c.backlinkId && b.backlinkClass === c.backlinkClass && b.attachedTo === c.attachedTo
+    )
     if (pos !== -1) {
       // We need to check and update if required.
       const data = backlinks[pos]

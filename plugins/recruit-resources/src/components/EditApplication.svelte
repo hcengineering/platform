@@ -19,9 +19,10 @@
   import { Scroller } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import CandidateCard from './CandidateCard.svelte'
-  import ExpandRightDouble from './icons/ExpandRightDouble.svelte'
   import VacancyCard from './VacancyCard.svelte'
+  import ExpandRightDouble from './icons/ExpandRightDouble.svelte'
 
+  import { getName } from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
   import recruit from '../plugin'
   import Reviews from './review/Reviews.svelte'
@@ -30,10 +31,20 @@
   let candidate: Candidate
   let vacancy: Vacancy
 
+  const dispatch = createEventDispatcher()
+  const sendOpen = () => {
+    dispatch('open', {
+      ignoreKeys: ['comments', 'number'],
+      allowedCollections: ['labels'],
+      title: `APP-${object.number} ${candidate !== undefined ? '- ' + getName(candidate) : ''}`
+    })
+  }
+
   const candidateQuery = createQuery()
   $: if (object !== undefined) {
     candidateQuery.query(recruit.mixin.Candidate, { _id: object.attachedTo as Ref<Candidate> }, (result) => {
       candidate = result[0]
+      sendOpen()
     })
   }
 
@@ -44,10 +55,8 @@
     })
   }
 
-  const dispatch = createEventDispatcher()
-
   onMount(() => {
-    dispatch('open', { ignoreKeys: ['comments', 'number'], allowedCollections: ['labels'] })
+    sendOpen()
   })
 </script>
 

@@ -62,6 +62,7 @@
     bind:content={object.description}
     placeholder={tracker.string.ComponentDescriptionPlaceholder}
     emphasized
+    showButtons={false}
   />
   <svelte:fragment slot="pool">
     <EmployeeBox

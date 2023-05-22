@@ -71,6 +71,7 @@
   import SetDueDateActionPopup from './SetDueDateActionPopup.svelte'
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
   import SubIssues from './SubIssues.svelte'
+  import { createBacklinks } from '@hcengineering/chunter-resources'
 
   export let space: Ref<Project>
   export let status: Ref<IssueStatus> | undefined = undefined
@@ -400,6 +401,9 @@
       issueUrl: currentProject && generateIssueShortLink(getIssueId(currentProject, value as Issue))
     })
 
+    // Create an backlink to document
+    await createBacklinks(client, _id, tracker.class.Issue, _id, object.description)
+
     draftController.remove()
     resetObject()
     descriptionBox?.removeDraft(false)
@@ -607,6 +611,7 @@
         alwaysEdit
         showButtons={false}
         emphasized
+        enableBackReferences={true}
         bind:content={object.description}
         placeholder={tracker.string.IssueDescriptionPlaceholder}
         on:changeSize={() => dispatch('changeContent')}

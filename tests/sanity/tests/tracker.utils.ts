@@ -68,22 +68,22 @@ export async function fillIssueForm (page: Page, props: IssueProps): Promise<voi
     await page.click(`.selectPopup button:has-text("${priority}")`)
   }
   if (labels !== undefined) {
-    await page.click(af + '.button:has-text("Labels")')
+    await page.click(af + '.antiButton:has-text("Labels")')
     for (const label of labels) {
       await page.click(`.selectPopup button:has-text("${label}") >> nth=0`)
     }
     await page.keyboard.press('Escape')
   }
   if (assignee !== undefined) {
-    await page.click(af + '.button:has-text("Assignee")')
+    await page.click(af + '.antiButton:has-text("Assignee")')
     await page.click(`.selectPopup button:has-text("${assignee}")`)
   }
   if (component !== undefined) {
-    await page.click(af + 'button:has-text("Component")')
+    await page.click(af + '.antiButton:has-text("Component")')
     await page.click(`.selectPopup button:has-text("${component}")`)
   }
   if (milestone !== undefined) {
-    await page.click(af + '.button:has-text("No Milestone")')
+    await page.click(af + '.antiButton:has-text("No Milestone")')
     await page.click(`.selectPopup button:has-text("${milestone}")`)
   }
 }

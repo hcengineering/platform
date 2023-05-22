@@ -42,6 +42,7 @@
   export let shouldSaveDraft: boolean = false
   export let useAttachmentPreview = false
   export let focusIndex: number | undefined = -1
+  export let enableBackReferences: boolean = false
 
   let draftKey = objectId ? `${objectId}_attachments` : undefined
   $: draftKey = objectId ? `${objectId}_attachments` : undefined
@@ -337,10 +338,13 @@
       {maxHeight}
       {focusable}
       {emphasized}
+      {enableBackReferences}
       on:changeSize
       on:changeContent
       on:blur
       on:focus
+      on:open-document
+      on:open-document
       on:attach={() => {
         if (fakeAttach === 'fake') dispatch('attach', { action: 'add' })
         else if (fakeAttach === 'normal') attach()

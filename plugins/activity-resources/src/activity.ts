@@ -286,7 +286,7 @@ class ActivityImpl implements Activity {
       // Check mixin classes for desired attribute
       for (const cl of this.hierarchy.getDescendants(cltx.objectClass)) {
         try {
-          collectionAttribute = this.hierarchy.getAttribute(cl, cltx.collection) as Attribute<Collection<AttachedDoc>>
+          collectionAttribute = this.hierarchy.findAttribute(cl, cltx.collection) as Attribute<Collection<AttachedDoc>>
           if (collectionAttribute !== undefined) {
             break
           }

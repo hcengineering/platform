@@ -32,22 +32,23 @@
   import { headingLevels, mInsertTable } from './extensions'
   import Attach from './icons/Attach.svelte'
   import Bold from './icons/Bold.svelte'
-  import RIBold from './icons/RIBold.svelte'
   import Code from './icons/Code.svelte'
-  import RICode from './icons/RICode.svelte'
   import CodeBlock from './icons/CodeBlock.svelte'
   import Header from './icons/Header.svelte'
   import IconTable from './icons/IconTable.svelte'
   import Italic from './icons/Italic.svelte'
-  import RIItalic from './icons/RIItalic.svelte'
   import Link from './icons/Link.svelte'
-  import RILink from './icons/RILink.svelte'
   import ListBullet from './icons/ListBullet.svelte'
   import ListNumber from './icons/ListNumber.svelte'
   import Quote from './icons/Quote.svelte'
-  import Strikethrough from './icons/Strikethrough.svelte'
+  import RIBold from './icons/RIBold.svelte'
+  import RICode from './icons/RICode.svelte'
+  import RIItalic from './icons/RIItalic.svelte'
+  import RILink from './icons/RILink.svelte'
   import RIStrikethrough from './icons/RIStrikethrough.svelte'
+  import Strikethrough from './icons/Strikethrough.svelte'
   // import RIMention from './icons/RIMention.svelte'
+  import { AnyExtension } from '@tiptap/core'
   import AddColAfter from './icons/table/AddColAfter.svelte'
   import AddColBefore from './icons/table/AddColBefore.svelte'
   import AddRowAfter from './icons/table/AddRowAfter.svelte'
@@ -75,6 +76,7 @@
   export let enableFormatting = false
   export let autofocus = false
   export let full = false
+  export let extensions: AnyExtension[] = []
 
   let textEditor: TextEditor
   let isEmpty = true
@@ -555,6 +557,7 @@
           <TextEditor
             bind:content
             {placeholder}
+            {extensions}
             bind:this={textEditor}
             bind:isEmpty
             on:value
@@ -573,7 +576,7 @@
         <TextEditor
           bind:content
           {placeholder}
-          bind:this={textEditor}
+          {extensions}
           bind:isEmpty
           on:value
           on:content={(ev) => {
