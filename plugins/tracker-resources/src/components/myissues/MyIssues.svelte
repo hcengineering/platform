@@ -13,16 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import type { EmployeeAccount } from '@hcengineering/contact'
   import { Doc, DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import type { Issue } from '@hcengineering/tracker'
+  import { resolvedLocationStore } from '@hcengineering/ui'
 
-  import IssuesView from '../issues/IssuesView.svelte'
   import { IModeSelector } from '@hcengineering/ui'
   import tracker from '../../plugin'
+  import IssuesView from '../issues/IssuesView.svelte'
 
   export let config: [string, IntlString, object][] = []
 
@@ -31,7 +32,9 @@
   const assigned = { assignee: currentUser.employee }
   const created = { createdBy: currentUser._id }
   let subscribed = { _id: { $in: [] as Ref<Issue>[] } }
-  let mode: string
+  let query: DocumentQuery<Issue> | undefined = undefined
+  let modeSelectorProps: IModeSelector | undefined = undefined
+  let mode: string | undefined = undefined
 
   const subscribedQuery = createQuery()
   $: subscribedQuery.query(
@@ -47,22 +50,23 @@
     { sort: { _id: 1 } }
   )
 
-  function handleChangeMode (newMode: string) {
-    if (newMode === mode) return
-    mode = newMode
+  $: queries = { assigned, created, subscribed }
+  $: mode = $resolvedLocationStore.query?.mode ?? undefined
+  $: if (mode === undefined || queries[mode] === undefined) {
+    ;[[mode]] = config
   }
-
-  function getQuery (mode: string, queries: { [key: string]: DocumentQuery<Issue> }) {
-    return { ...queries[mode], '$lookup.space.archived': false }
+  $: if (mode !== undefined) {
+    query = { ...queries[mode], '$lookup.space.archived': false }
+    modeSelectorProps = {
+      config,
+      mode,
+      onChange: (newMode: string) => dispatch('action', newMode)
+    }
   }
-  $: query = getQuery(mode, { assigned, created, subscribed })
-  $: modeSelectorProps = {
-    config,
-    mode,
-    onChange: handleChangeMode
-  } as IModeSelector
-  $: dispatch('action', mode)
-  onMount(() => ([[mode]] = config))
 </script>
 
-<IssuesView {query} space={undefined} title={tracker.string.MyIssues} {modeSelectorProps} />
+{#if query !== undefined && modeSelectorProps !== undefined}
+  {#key query && modeSelectorProps}
+    <IssuesView {query} space={undefined} title={tracker.string.MyIssues} {modeSelectorProps} />
+  {/key}
+{/if}

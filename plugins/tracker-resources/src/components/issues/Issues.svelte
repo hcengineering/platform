@@ -13,11 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import { DocumentQuery, Ref } from '@hcengineering/core'
   import { Issue, Project } from '@hcengineering/tracker'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
+  import { resolvedLocationStore } from '@hcengineering/ui'
 
   import { IModeSelector } from '@hcengineering/ui'
   import tracker from '../../plugin'
@@ -29,7 +30,8 @@
   export let config: [string, IntlString, object][]
 
   const dispatch = createEventDispatcher()
-  let mode: string
+  let query: DocumentQuery<Issue> | undefined = undefined
+  let modeSelectorProps: IModeSelector | undefined = undefined
 
   $: spaceQuery = currentSpace ? { space: currentSpace } : {}
 
@@ -58,25 +60,23 @@
     }
   )
 
-  function handleChangeMode (newMode: string) {
-    if (newMode === mode) return
-    mode = newMode
+  $: queries = { all, active, backlog }
+  $: mode = $resolvedLocationStore.query?.mode ?? undefined
+  $: if (mode === undefined || queries[mode] === undefined) {
+    ;[[mode]] = config
   }
-
-  function getQuery (mode: string, queries: { [key: string]: DocumentQuery<Issue> }) {
-    return { ...queries[mode], '$lookup.space.archived': false }
+  $: if (mode !== undefined) {
+    query = { ...queries[mode], '$lookup.space.archived': false }
+    modeSelectorProps = {
+      config,
+      mode,
+      onChange: (newMode: string) => dispatch('action', newMode)
+    }
   }
-
-  $: query = getQuery(mode, { all, active, backlog })
-  $: modeSelectorProps = {
-    config,
-    mode,
-    onChange: handleChangeMode
-  } as IModeSelector
-  $: dispatch('action', mode)
-  onMount(() => ([[mode]] = config))
 </script>
 
-{#key query && currentSpace}
-  <IssuesView {query} space={currentSpace} {title} {modeSelectorProps} />
-{/key}
+{#if query !== undefined && modeSelectorProps !== undefined}
+  {#key query && modeSelectorProps}
+    <IssuesView {query} space={currentSpace} {title} {modeSelectorProps} />
+  {/key}
+{/if}
