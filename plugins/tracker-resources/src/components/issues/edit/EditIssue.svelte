@@ -18,9 +18,9 @@
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Breadcrumbs, BreadcrumbsModel, createQuery, getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
-  import type { Issue, Project } from '@hcengineering/tracker'
+  import { Issue, Project } from '@hcengineering/tracker'
   import {
     Button,
     EditBox,
@@ -31,12 +31,13 @@
     Spinner,
     createFocusManager,
     getCurrentResolvedLocation,
+    locationToUrl,
     navigate,
     showPopup
   } from '@hcengineering/ui'
   import { ActionContext, ContextMenu, DocNavLink, UpDownNavigator, contextStore } from '@hcengineering/view-resources'
-  import { createEventDispatcher, onDestroy } from 'svelte'
-  import { generateIssueShortLink, getIssueId } from '../../../issues'
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import { generateIssueShortLink, getIssueId, issueLinkFragmentProvider } from '../../../issues'
   import tracker from '../../../plugin'
   import IssueStatusActivity from '../IssueStatusActivity.svelte'
   import ControlPanel from './ControlPanel.svelte'
@@ -99,6 +100,34 @@
   $: issueId = currentProject && issue && getIssueId(currentProject, issue)
   $: canSave = title.trim().length > 0
   $: parentIssue = issue?.$lookup?.attachedTo
+
+  async function getBreadcrumbsModels (issue: Issue): Promise<BreadcrumbsModel[]> {
+    const parentsMap = new Map(
+      issue.parents.length > 0
+        ? await client
+          .findAll(tracker.class.Issue, { _id: { $in: issue.parents.map((p) => p.parentId) } })
+          .then((issues) => issues.map((p) => [p._id, p]))
+        : []
+    )
+    const parents = issue.parents.reduce((acc, curr) => {
+      const parent = parentsMap.get(curr.parentId)
+      if (parent) {
+        acc.unshift(parent)
+      }
+      return acc
+    }, [] as Issue[])
+
+    return await Promise.all(
+      [...parents, issue].map(async (issue) => {
+        const loc = await issueLinkFragmentProvider(issue)
+
+        return {
+          title: issue.title,
+          href: `${window.location.origin}${locationToUrl(loc)}`
+        }
+      })
+    )
+  }
 
   let saved = false
   async function save () {
@@ -176,7 +205,11 @@
     on:close={() => dispatch('close')}
   >
     <svelte:fragment slot="navigator">
+      <!-- TODO: add horizontal scroll -->
       <UpDownNavigator element={issue} />
+      {#await getBreadcrumbsModels(issue) then models}
+        <Breadcrumbs {models} gap="none" />
+      {/await}
     </svelte:fragment>
     <svelte:fragment slot="header">
       <span class="fs-title select-text-i">

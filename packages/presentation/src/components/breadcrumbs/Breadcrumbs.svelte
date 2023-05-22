@@ -41,6 +41,7 @@
     <NavLink {href} noUnderline {onClick}>
       <BreadcrumbsElement
         label={title}
+        {title}
         position={getPosition(i)}
         selected={i === models.length - 1}
         color={color !== undefined ? getPlatformColor(color) : 'var(--accent-bg-color)'}

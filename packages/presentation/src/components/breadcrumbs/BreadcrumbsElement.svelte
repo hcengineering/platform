@@ -16,6 +16,7 @@
   import { afterUpdate } from 'svelte'
 
   export let label: string
+  export let title: string | undefined = undefined
   export let position: 'start' | 'middle' | 'end' | undefined = undefined
   export let selected = false
   export let color = 'var(--body-color)'
@@ -31,7 +32,7 @@
 <div class="hidden-text text-md font-medium" bind:this={text}>{label}</div>
 {#if lenght > 0}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="asb-bar" class:selected class:cursor-pointer={!selected} class:cursor-default={selected} on:click>
+  <div class="asb-bar" class:selected class:cursor-pointer={!selected} class:cursor-default={selected} {title} on:click>
     <svg
       class="asb-bar__back"
       viewBox="0 0 {lenght} 24"
