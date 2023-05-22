@@ -21,7 +21,7 @@
   export let noUnderline = disabled
   export let inline = false
   export let colorInherit: boolean = false
-  export let shrink: number = 0
+  export let shrink: number = 1
   export let accent: boolean = false
 
   function clickHandler (e: MouseEvent) {
@@ -84,6 +84,7 @@
     min-width: 0;
     // overflow: hidden;
     white-space: nowrap;
+    word-break: break-all;
     text-overflow: ellipsis;
     font-weight: inherit;
 

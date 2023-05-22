@@ -27,7 +27,7 @@
   export let colorInherit: boolean = false
   export let component: AnyComponent = view.component.EditDoc
   export let props: Record<string, any> = {}
-  export let shrink: number = 0
+  export let shrink: number = 1
   export let accent: boolean = false
 
   const client = getClient()

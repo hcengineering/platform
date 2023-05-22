@@ -32,7 +32,7 @@
       {#if !inline}
         <div class="icon"><Icon icon={recruit.icon.Vacancy} size={'small'} /></div>
       {/if}
-      <span class="label" class:no-underline={disabled}>{value.name}</span>
+      <span class="label nowrap" class:no-underline={disabled}>{value.name}</span>
     </div>
   </DocNavLink>
 {/if}
