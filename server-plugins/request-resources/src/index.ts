@@ -41,7 +41,7 @@ export async function OnRequestUpdate (tx: Tx, control: TriggerControl): Promise
     )
     resTx.space = core.space.Tx
 
-    await control.apply([resTx], true)
+    await control.apply([resTx, request.tx], true)
   }
   return []
 }
