@@ -64,15 +64,19 @@
   })
 
   const query = createQuery()
-  $: if (_id && _class) {
-    query.query(_class, { _id }, (result) => {
-      object = result[0]
-      if (object != null) {
-        realObjectClass = object._class
-      }
-    })
-  } else {
-    query.unsubscribe()
+  $: updateQuery(_id, _class)
+
+  function updateQuery (_id: Ref<Doc>, _class: Ref<Class<Doc>>) {
+    if (_id && _class) {
+      query.query(_class, { _id }, (result) => {
+        object = result[0]
+        if (object != null) {
+          realObjectClass = object._class
+        }
+      })
+    } else {
+      query.unsubscribe()
+    }
   }
 
   let oldClass: Ref<Class<Doc>>

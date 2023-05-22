@@ -236,7 +236,10 @@ export class LiveQuery extends TxProcessor implements Client {
     q.callbacks.set(callback.callbackId, callback.callback)
     setTimeout(async () => {
       if (q !== undefined) {
-        await this.callback(q)
+        if (q.result instanceof Promise) {
+          q.result = await q.result
+        }
+        callback.callback(q.result)
       }
     }, 0)
   }

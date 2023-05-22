@@ -65,10 +65,15 @@
 
   let loading = false
 
-  function updateTxes (object: Doc): void {
+  function updateTxes (
+    objectId: Ref<Doc>,
+    objectClass: Ref<Class<Doc>>,
+    editableMap: Map<Ref<Class<Doc>>, boolean> | undefined
+  ): void {
     loading = true
     activityQuery.update(
-      object,
+      objectId,
+      objectClass,
       (result) => {
         txes = filterCollectionTxes(result)
 
@@ -81,7 +86,7 @@
     )
   }
 
-  $: if (editableMap) updateTxes(object)
+  $: updateTxes(object._id, object._class, editableMap)
 
   let filtered: DisplayTx[] = []
 
@@ -116,7 +121,13 @@
       </div>
     {/if}
   </span>
-  <ActivityFilter {txes} {object} on:update={(e) => (filtered = e.detail)} />
+  <ActivityFilter
+    {txes}
+    {object}
+    on:update={(e) => {
+      filtered = e.detail
+    }}
+  />
 </div>
 <div class="p-activity select-text" id={activity.string.Activity}>
   {#if filtered}
