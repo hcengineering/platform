@@ -1,6 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,17 +14,14 @@
 -->
 <script lang="ts">
   import { afterUpdate } from 'svelte'
-  import type { StatesBarPosition } from '../..'
 
   export let label: string
-  export let position: StatesBarPosition = undefined
-  export let selected: boolean = false
-  export let color: string = 'var(--body-color)'
+  export let position: 'start' | 'middle' | 'end' | undefined = undefined
+  export let selected = false
+  export let color = 'var(--body-color)'
 
-  let lenght: number = 0
+  let lenght = 0
   let text: HTMLElement
-  let divBar: HTMLElement
-  let svgBack: SVGElement
 
   afterUpdate(() => {
     if (text) lenght = text.clientWidth + 32 > 300 ? 300 : text.clientWidth + 32
@@ -35,16 +31,8 @@
 <div class="hidden-text text-md font-medium" bind:this={text}>{label}</div>
 {#if lenght > 0}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div
-    bind:this={divBar}
-    class="asb-bar"
-    class:selected
-    class:cursor-pointer={!selected}
-    class:cursor-default={selected}
-    on:click|stopPropagation
-  >
+  <div class="asb-bar" class:selected class:cursor-pointer={!selected} class:cursor-default={selected} on:click>
     <svg
-      bind:this={svgBack}
       class="asb-bar__back"
       viewBox="0 0 {lenght} 24"
       xmlns="http://www.w3.org/2000/svg"

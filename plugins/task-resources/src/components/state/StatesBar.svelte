@@ -15,12 +15,11 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
-  import { statusStore } from '@hcengineering/presentation'
+  import { BreadcrumbsElement, statusStore } from '@hcengineering/presentation'
   import task, { SpaceWithStates, State } from '@hcengineering/task'
   import { getColorNumberByText, getPlatformColor, ScrollerBar } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import type { StatesBarPosition } from '../..'
-  import StatesBarElement from './StatesBarElement.svelte'
 
   export let space: Ref<SpaceWithStates>
   export let state: Ref<State> | undefined = undefined
@@ -57,12 +56,13 @@
 
 <ScrollerBar {gap} bind:scroller={divScroll}>
   {#each states as item, i (item._id)}
-    <StatesBarElement
+    <BreadcrumbsElement
       label={item.name}
       position={getPosition(i)}
       selected={item._id === state}
       color={getPlatformColor(item.color ?? getColorNumberByText(item.name))}
       on:click={(ev) => {
+        ev.stopPropagation()
         if (item._id !== state) selectItem(ev, item)
       }}
     />
