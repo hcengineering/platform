@@ -147,9 +147,7 @@
     "GotoMyIssues": "Перейи к моим задачам",
     "GotoTrackerApplication": "Перейти к приложению Трекер",
 
-    "Assigned": "Назначенные",
-    "Created": "{value, plural, =1 {Создана} other {Созданные}}",
-    "Subscribed": "Отслеживаемые",
+    "CreatedOne": "Создана",
     "MoveIssues": "Переместить задачи",
     "MoveIssuesDescription": "Выберите проект, в который вы хотите переместить задачи.",
 

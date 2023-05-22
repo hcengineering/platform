@@ -725,7 +725,10 @@ const view = plugin(viewId, {
     AddSavedView: '' as IntlString,
     Timeline: '' as IntlString,
     Public: '' as IntlString,
-    Hide: '' as IntlString
+    Hide: '' as IntlString,
+    Assigned: '' as IntlString,
+    Created: '' as IntlString,
+    Subscribed: '' as IntlString
   },
   icon: {
     Table: '' as Asset,

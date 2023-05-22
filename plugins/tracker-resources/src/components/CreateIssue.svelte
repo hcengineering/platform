@@ -396,7 +396,7 @@
     await subIssuesComponent.save(parents, _id)
     addNotification(await translate(tracker.string.IssueCreated, {}), getTitle(object.title), IssueNotification, {
       issueId: _id,
-      subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase(),
+      subTitlePostfix: (await translate(tracker.string.CreatedOne, {})).toLowerCase(),
       issueUrl: currentProject && generateIssueShortLink(getIssueId(currentProject, value as Issue))
     })
 
