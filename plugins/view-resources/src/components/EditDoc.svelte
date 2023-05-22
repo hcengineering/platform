@@ -283,6 +283,7 @@
     isAside={true}
     bind:panelWidth
     bind:innerWidth
+    on:open
     on:update={(ev) => _update(ev.detail)}
     on:close={() => {
       dispatch('close')
