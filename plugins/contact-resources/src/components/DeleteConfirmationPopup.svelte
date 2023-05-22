@@ -43,10 +43,11 @@
   ]
   const me = $employeeAccountByIdStore.get(getCurrentAccount()._id as Ref<EmployeeAccount>)?.employee
   const canDelete = (creators.length === 1 && creators.includes(me)) || (me && owners.includes(me))
+  const label = canDelete ? view.string.DeleteObject : view.string.DeletePopupNoPermissionTitle
 </script>
 
 <Card
-  label={view.string.DeleteObject}
+  {label}
   okAction={deleteAction}
   canSave={canDelete}
   okLabel={ui.string.Ok}
