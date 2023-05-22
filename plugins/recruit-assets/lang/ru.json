@@ -86,7 +86,7 @@
     "GotoTalents": "Перейте к талантам",
     "GotoVacancies": "Перейти к вакансиям",
     "GotoSkills": "Перейти к навыкам",
-    "GotoAssigned": "Перейти к моим назначениям",
+    "GotoMyApplications": "Перейти к Моим Кандидатам",
     "GotoApplicants": "Перейти к кандидатам",
     "GotoRecruitApplication": "Перейти к Приложению Рекрутинг",
     "AddDropHere": "Добавить или перетянуть резюме",
@@ -112,7 +112,8 @@
     "OpenVacancyList": "Открыть список",
     "Export": "Экспорт",
     "ConfigLabel": "Рекрутинг",
-    "ConfigDescription": "Модуль по работе с талантами/кандидатами и вакансиями"
+    "ConfigDescription": "Модуль по работе с талантами/кандидатами и вакансиями",
+    "MyApplications": "Мои кандидаты"
   },
   "status": {
     "TalentRequired": "Пожалуйста выберите таланта",
