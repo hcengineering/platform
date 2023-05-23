@@ -32,7 +32,7 @@
   export let placeholder: IntlString | undefined = undefined
   export let alwaysEdit = false
   export let showButtons = false
-  export let emphasized: boolean = false
+  export let kind: 'normal' | 'emphasized' | 'indented' = 'normal'
   export let buttonSize: IconSize = 'medium'
   export let formatButtonSize: IconSize = 'small'
   export let maxHeight: 'max' | 'card' | 'limited' | string = 'max'
@@ -302,6 +302,11 @@
   export function isEmptyContent (): boolean {
     return refInput.isEmptyContent()
   }
+
+  $: dispatch('attachments', {
+    size: attachments.size,
+    values: attachments.size === 0 ? true : attachments
+  })
 </script>
 
 <input
@@ -337,7 +342,7 @@
       {formatButtonSize}
       {maxHeight}
       {focusable}
-      {emphasized}
+      {kind}
       {enableBackReferences}
       on:changeSize
       on:changeContent

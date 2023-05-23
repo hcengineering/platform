@@ -11,6 +11,7 @@
 
 {#if value}
   <div class="flex-presenter flex-gap-1 h-full">
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="flex-center h-full" on:click>
       <div class="flex-row-center background-button-bg-color pr-1 pl-1 border-radius-1 w-full">
         {#if value.startDate}
@@ -21,7 +22,7 @@
           <DatePresenter
             bind:value={value.dueDate}
             mode={DateRangeMode.DATETIME}
-            icon={isOverdue ? 'overdue' : undefined}
+            iconModifier={isOverdue ? 'overdue' : undefined}
             {size}
             kind="transparent"
           />

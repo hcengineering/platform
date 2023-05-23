@@ -131,6 +131,7 @@ export default mergeIds(trackerId, tracker, {
     Attachments: '' as IntlString,
     Labels: '' as IntlString,
     Space: '' as IntlString,
+    NoDueDate: '' as IntlString,
     SetDueDate: '' as IntlString,
     ChangeDueDate: '' as IntlString,
     ModificationDate: '' as IntlString,

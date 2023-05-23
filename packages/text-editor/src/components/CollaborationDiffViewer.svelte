@@ -130,7 +130,7 @@
     max-height: inherit !important;
     outline: none;
     line-height: 150%;
-    color: var(--accent-color);
+    color: var(--theme-caption-color);
 
     p:not(:last-child) {
       margin-block-end: 1em;
@@ -148,9 +148,12 @@
     p.is-editor-empty:first-child::before {
       content: attr(data-placeholder);
       float: left;
-      color: var(--dark-color);
+      color: var(--theme-halfcontent-color);
       pointer-events: none;
       height: 0;
+    }
+    &:focus-within p.is-editor-empty:first-child::before {
+      color: var(--theme-trans-color);
     }
 
     &::-webkit-scrollbar-thumb {
@@ -165,14 +168,6 @@
     &::-webkit-scrollbar-track {
       margin: 0;
     }
-  }
-  /* Placeholder (at the top) */
-  .ProseMirror p.is-editor-empty:first-child::before {
-    color: #adb5bd;
-    content: attr(data-placeholder);
-    float: left;
-    height: 0;
-    pointer-events: none;
   }
 
   .lint-icon {
@@ -227,7 +222,7 @@
   }
 
   .code-block {
-    border: 1px solid var(--divider-color);
+    border: 1px solid var(--theme-divider-color);
     border-radius: 4px;
     padding: 0.5rem;
   }

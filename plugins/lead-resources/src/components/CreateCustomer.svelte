@@ -35,7 +35,6 @@
 
   let firstName = ''
   let lastName = ''
-  let createMore: boolean = false
 
   export function canClose (): boolean {
     return firstName === '' && lastName === ''
@@ -43,7 +42,7 @@
 
   let avatarEditor: EditableAvatar
 
-  let object: Customer = {
+  const object: Customer = {
     _class: contact.class.Person
   } as Customer
 
@@ -91,18 +90,6 @@
           provider: channel.provider
         }
       )
-    }
-
-    if (createMore) {
-      // Prepare for next
-      object = {
-        _class: targetClass._id
-      } as Customer
-      customerId = generateId()
-      avatar = undefined
-      firstName = ''
-      lastName = ''
-      channels = []
     }
   }
 
@@ -163,7 +150,6 @@
   on:close={() => {
     dispatch('close')
   }}
-  bind:createMore
   on:changeContent
 >
   <svelte:fragment slot="header">

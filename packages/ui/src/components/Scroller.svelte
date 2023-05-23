@@ -475,7 +475,7 @@
         divHeight = element.clientHeight
       }}
       class="scroll relative flex-shrink"
-      class:overflow-x={horizontal ? 'auto' : 'hidden'}
+      style:overflow-x={horizontal ? 'auto' : 'hidden'}
       on:scroll={(evt) => {
         if ($tooltipstore.label !== undefined) closeTooltip()
         const newPos = divScroll?.scrollTop ?? 0

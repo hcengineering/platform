@@ -33,6 +33,7 @@
   {fill}
   id={category._id}
   style:transform={category._id === tracker.issueStatusCategory.Started ? 'rotate(-90deg)' : ''}
+  style:flex-shrink={0}
   viewBox="0 0 16 16"
   xmlns="http://www.w3.org/2000/svg"
 >

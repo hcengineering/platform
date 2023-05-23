@@ -22,7 +22,7 @@
   export let content: string
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
 
-  export let emphasized: boolean = false
+  export let kind: 'normal' | 'emphasized' | 'indented' = 'normal'
   export let alwaysEdit: boolean = false
   export let showButtons: boolean = true
   export let hideAttachments: boolean = false
@@ -133,8 +133,9 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
   class="antiComponent styled-box clear-mins"
-  class:antiEmphasized={emphasized}
-  class:antiEmphasized-focus={(mode === Mode.Edit || alwaysEdit) && focused}
+  class:antiEmphasized={kind === 'emphasized'}
+  class:antiIndented={kind === 'indented'}
+  class:focusable={(mode === Mode.Edit || alwaysEdit) && focused}
   on:click={() => {
     if (alwaysEdit && focused) {
       textEditor?.focus()
@@ -230,9 +231,7 @@
 
     .label {
       padding-bottom: 0.25rem;
-      font-size: 0.75rem;
-      color: var(--caption-color);
-      opacity: 0.3;
+      color: var(--theme-halfcontent-color);
       transition: top 200ms;
       pointer-events: none;
       user-select: none;

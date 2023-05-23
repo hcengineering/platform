@@ -89,6 +89,7 @@
   label={value === undefined ? tracker.string.TimeSpendReportAdd : tracker.string.TimeSpendReportValue}
   {canSave}
   okAction={create}
+  gap={'gapV-4'}
   on:close
   okLabel={value === undefined ? presentation.string.Create : presentation.string.Save}
   on:changeContent

@@ -248,7 +248,7 @@
     max-height: inherit !important;
     outline: none;
     line-height: 150%;
-    color: var(--accent-color);
+    color: var(--theme-caption-color);
 
     p:not(:last-child) {
       margin-block-end: 1em;
@@ -262,9 +262,12 @@
     p.is-editor-empty:first-child::before {
       content: attr(data-placeholder);
       float: left;
-      color: var(--dark-color);
+      color: var(--theme-halfcontent-color);
       pointer-events: none;
       height: 0;
+    }
+    &:focus-within p.is-editor-empty:first-child::before {
+      color: var(--theme-trans-color);
     }
 
     &::-webkit-scrollbar-thumb {

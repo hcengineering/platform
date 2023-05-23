@@ -22,6 +22,7 @@
   export let colorInherit: boolean = false
   export let accent: boolean = false
   export let inline: boolean = false
+  export let shouldShowLabel: boolean = true
 
   $: icon = issuePriorities[value]?.icon
   $: label = issuePriorities[value]?.label
@@ -31,12 +32,14 @@
   {#if !inline && icon}
     <Icon {icon} {size} fill={'var(--theme-caption-color)'} />
   {/if}
-  <span
-    class="overflow-label"
-    class:ml-2={!inline && icon}
-    style:color={colorInherit ? 'inherit' : 'var(--theme-content-color)'}
-    class:fs-bold={accent}
-  >
-    <Label {label} />
-  </span>
+  {#if shouldShowLabel}
+    <span
+      class="overflow-label"
+      class:ml-2={!inline && icon}
+      style:color={colorInherit ? 'inherit' : 'var(--theme-content-color)'}
+      class:fs-bold={accent}
+    >
+      <Label {label} />
+    </span>
+  {/if}
 </div>

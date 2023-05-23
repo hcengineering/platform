@@ -104,7 +104,6 @@
   labelProps={{ word: keyTitle }}
   okAction={createTagElenent}
   canSave={title.length > 0}
-  createMore={false}
   on:close={() => {
     dispatch('close')
   }}

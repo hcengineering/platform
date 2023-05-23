@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-  import { Button, IconClose, Label, MiniToggle, Scroller } from '@hcengineering/ui'
+  import { Button, IconClose, Label, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
   import { deviceOptionsStore as deviceInfo, resizeObserver } from '@hcengineering/ui'
@@ -25,10 +25,12 @@
   export let labelProps: any | undefined = undefined
   export let okAction: () => Promise<void> | void
   export let canSave: boolean = false
-  export let createMore: boolean | undefined = undefined
   export let okLabel: IntlString = presentation.string.Create
   export let onCancel: Function | undefined = undefined
-  export let fullSize = false
+  export let fullSize: boolean = false
+  export let hideAttachments: boolean = false
+  export let hideSubheader: boolean = false
+  export let gap: string | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -44,7 +46,7 @@
     dispatch('changeContent')
   }}
 >
-  <div class="antiCard-header">
+  <div class="antiCard-header" class:withSub={$$slots.subheader && !hideSubheader}>
     <div class="antiCard-header__title-wrap">
       {#if $$slots.header}
         <slot name="header" />
@@ -58,12 +60,15 @@
         {/if}
       </span>
     </div>
-    <div class="buttons-group small-gap">
+    <div class="buttons-group small-gap content-dark-color">
       <Button
         id="card-close"
         focusIndex={10002}
         icon={IconClose}
+        iconSize={'medium'}
+        iconProps={{ fill: 'var(--theme-dark-color)' }}
         kind={'transparent'}
+        size={'small'}
         on:click={() => {
           if (onCancel) {
             onCancel()
@@ -74,24 +79,34 @@
       />
     </div>
   </div>
-  <Scroller horizontal>
-    <div class="antiCard-content">
-      <slot />
+  {#if $$slots.subheader && !hideSubheader}
+    <div class="antiCard-subheader">
+      <slot name="subheader" />
     </div>
-  </Scroller>
+  {/if}
+  <div class="antiCard-content">
+    <Scroller padding={$$slots.pool ? '.5rem 1.5rem' : '.5rem 1.5rem 1.5rem'} {gap}>
+      <slot />
+    </Scroller>
+  </div>
   {#if $$slots.pool}
     <div class="antiCard-pool">
       <slot name="pool" />
     </div>
   {/if}
-  <div class="antiCard-pool__separator" />
-  <div class="antiCard-footer reverse">
+  {#if $$slots.attachments && !hideAttachments}
+    <div class="antiCard-attachments">
+      <Scroller horizontal contentDirection={'horizontal'} {gap}>
+        <div class="antiCard-attachments__container">
+          <slot name="attachments" />
+        </div>
+      </Scroller>
+    </div>
+  {/if}
+  <div class="antiCard-footer divide reverse">
     <div class="buttons-group text-sm flex-no-shrink">
       {#if $$slots.buttons}
         <slot name="buttons" />
-      {/if}
-      {#if createMore !== undefined}
-        <MiniToggle label={presentation.string.CreateMore} bind:on={createMore} />
       {/if}
       <Button
         loading={okProcessing}
@@ -109,11 +124,9 @@
           if (r instanceof Promise) {
             r.then(() => {
               okProcessing = false
-              if (!createMore) {
-                dispatch('close')
-              }
+              dispatch('close')
             })
-          } else if (!createMore) {
+          } else {
             okProcessing = false
             dispatch('close')
           }

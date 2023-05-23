@@ -46,7 +46,6 @@ export default plugin(presentationId, {
     Remove: '' as IntlString,
     Search: '' as IntlString,
     Spaces: '' as IntlString,
-    CreateMore: '' as IntlString,
     NumberMembers: '' as IntlString,
     NumberSpaces: '' as IntlString,
     InThis: '' as IntlString,

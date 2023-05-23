@@ -183,6 +183,7 @@
   okLabel={isNew ? presentation.string.Create : presentation.string.Save}
   okAction={handleSave}
   canSave={name.length > 0 && !(members.length === 0 && isPrivate)}
+  gap={'gapV-4'}
   on:close={() => {
     dispatch('close')
   }}

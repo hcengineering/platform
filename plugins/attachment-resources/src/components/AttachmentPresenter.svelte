@@ -81,6 +81,7 @@
   >
     <div
       class="flex-center icon"
+      class:svg={value.type === 'image/svg+xml'}
       class:image={isImage(value.type)}
       style:background-image={isImage(value.type) ? `url(${getFileUrl(value.file)})` : 'none'}
     >
@@ -106,7 +107,7 @@
           on:click={(ev) => {
             ev.stopPropagation()
             ev.preventDefault()
-            dispatch('remove')
+            dispatch('remove', value)
           }}
         >
           <Label label={presentation.string.Delete} />
@@ -118,32 +119,42 @@
 
 <style lang="scss">
   .attachment-container {
-    padding: 0.375rem 0.75rem 0.375rem 0.375rem;
+    flex-shrink: 0;
     width: auto;
+    height: 3rem;
     min-width: 14rem;
     max-width: 19rem;
     background-color: var(--theme-button-enabled);
-    border: 1px solid var(--theme-button-border);
     border-radius: 0.25rem;
 
     .icon {
       flex-shrink: 0;
-      margin-right: 0.75rem;
-      width: 3.25rem;
-      height: 3.25rem;
-      border: 1px solid var(--primary-button-border);
-      border-radius: 0.25rem;
+      width: 3rem;
+      height: 3rem;
+      border: 1px solid var(--theme-button-border);
+      border-radius: 0.25rem 0 0 0.25rem;
       cursor: pointer;
 
       &:not(.image) {
         color: var(--primary-button-color);
         background-color: var(--primary-button-enabled);
       }
+      &.svg {
+        background-color: #fff;
+      }
       &.image {
         background-position: center;
         background-repeat: no-repeat;
         background-size: cover;
       }
+    }
+    .info-container {
+      padding: 0.5rem 0.75rem;
+      width: 100%;
+      height: 100%;
+      border: 1px solid var(--theme-button-border);
+      border-left: none;
+      border-radius: 0 0.25rem 0.25rem 0;
     }
     .name {
       white-space: nowrap;
@@ -152,7 +163,6 @@
       cursor: pointer;
     }
     .info-content {
-      margin-top: 0.125rem;
       white-space: nowrap;
       font-size: 0.6875rem;
       color: var(--theme-darker-color);

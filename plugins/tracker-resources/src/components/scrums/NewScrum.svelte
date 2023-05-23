@@ -64,6 +64,7 @@
   okLabel={tracker.string.CreateScrum}
   {canSave}
   okAction={onSave}
+  gap={'gapV-4'}
   on:close={() => dispatch('close')}
   on:changeContent
 >
@@ -74,7 +75,7 @@
   <StyledTextArea
     bind:content={object.description}
     placeholder={tracker.string.ScrumDescriptionPlaceholder}
-    emphasized
+    kind={'emphasized'}
   />
   <svelte:fragment slot="pool">
     <UserBoxList bind:items={object.members} label={tracker.string.ScrumMembersSearchPlaceholder} />
