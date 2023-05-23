@@ -239,7 +239,7 @@ export class LiveQuery extends TxProcessor implements Client {
         if (q.result instanceof Promise) {
           q.result = await q.result
         }
-        callback.callback(q.result)
+        callback.callback(toFindResult(this.clone(q.result), q.total))
       }
     }, 0)
   }
