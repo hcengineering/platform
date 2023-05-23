@@ -28,6 +28,10 @@
     "SelectItemAll": "Select all items",
     "SelectItemNone": "Deselect all items",
 
+    "Assigned": "Assigned",
+    "Created": "Created",
+    "Subscribed": "Subscribed",
+    
     "ShowPreview": "Show document preview",
     "ShowActions": "Show actions popup",
 

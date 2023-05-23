@@ -146,9 +146,7 @@
     "GotoMyIssues": "Go to my issues",
     "GotoTrackerApplication": "Switch to Tracker Application",
 
-    "Assigned": "Assigned",
-    "Created": "Created",
-    "Subscribed": "Subscribed",
+    "CreatedOne": "Created",
     "MoveIssues": "Move issues",
     "MoveIssuesDescription": "Select the project you want to move issues to.",
 

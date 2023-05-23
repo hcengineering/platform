@@ -14,7 +14,7 @@ test.describe('workbench tests', () => {
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
     await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit`)
     // Click text=Applications
-    await page.click('text=Applications')
+    await page.click('text=/^Applications/')
     await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit/candidates`)
     // Click text=Applications Application >> span
     await expect(page.locator('text=Applications >> nth=1')).toBeVisible()

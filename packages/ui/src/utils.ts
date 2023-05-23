@@ -15,7 +15,7 @@
 
 import { generateId } from '@hcengineering/core'
 import type { Metadata } from '@hcengineering/platform'
-import { setMetadata } from '@hcengineering/platform'
+import { IntlString, setMetadata } from '@hcengineering/platform'
 import autolinker from 'autolinker'
 import { writable } from 'svelte/store'
 import { Notification, NotificationPosition, NotificationSeverity, notificationsStore } from '.'
@@ -168,4 +168,13 @@ export function replaceURLs (text: string): string {
     sanitizeHtml: true,
     stripPrefix: false
   })
+}
+
+/**
+ * @public
+ */
+export interface IModeSelector {
+  mode: string
+  config: Array<[string, IntlString, object]>
+  onChange: (_mode: string) => void
 }

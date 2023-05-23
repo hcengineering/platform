@@ -19,7 +19,7 @@
   import IssuesView from './IssuesView.svelte'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import { IModeSelector } from '../../utils'
+  import { IModeSelector } from '@hcengineering/ui'
 
   export let currentSpace: Ref<Project> | undefined = undefined
   export let baseQuery: DocumentQuery<Issue> = {}

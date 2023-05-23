@@ -84,7 +84,7 @@
     "GotoTalents": "Go to Talents",
     "GotoVacancies": "Go to Vacancies",
     "GotoSkills": "Go to Skills",
-    "GotoAssigned": "Go to my Assigned",
+    "GotoMyApplications": "Go to My Applications",
     "GotoApplicants": "Go to Applications",
     "GotoRecruitApplication": "Switch to Recruit Application",
     "AddDropHere": "Add or drop resume",
@@ -112,7 +112,8 @@
     "OpenVacancyList": "Open list",
     "Export": "Export",
     "ConfigLabel": "Recruiting",
-    "ConfigDescription": "Extension to manage Talents/Applicants and Vacancies."
+    "ConfigDescription": "Extension to manage Talents/Applicants and Vacancies.",
+    "MyApplications": "My applications"
   },
   "status": {
     "TalentRequired": "Please select talent",

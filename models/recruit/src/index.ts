@@ -240,7 +240,7 @@ export function createModel (builder: Builder): void {
   const skillsId = 'skills'
   const candidatesId = 'candidates'
   const archiveId = 'archive'
-  const assignedId = 'assigned'
+  const myApplicationsId = 'my-applications'
   const organizationsId = 'organizations'
 
   builder.createDoc(
@@ -324,8 +324,8 @@ export function createModel (builder: Builder): void {
             position: 'bottom'
           },
           {
-            id: assignedId,
-            label: task.string.AssignedToMe,
+            id: myApplicationsId,
+            label: recruit.string.MyApplications,
             icon: recruit.icon.AssignedToMe,
             component: task.component.AssignedTasks,
             position: 'event',
@@ -941,7 +941,7 @@ export function createModel (builder: Builder): void {
   createGotoSpecialAction(builder, talentsId, 'g->e', recruit.string.GotoTalents)
   createGotoSpecialAction(builder, vacanciesId, 'g->v', recruit.string.GotoVacancies)
   createGotoSpecialAction(builder, skillsId, 'g->s', recruit.string.GotoSkills)
-  createGotoSpecialAction(builder, assignedId, 'g->h', recruit.string.GotoAssigned)
+  createGotoSpecialAction(builder, myApplicationsId, 'g->h', recruit.string.GotoMyApplications)
   createGotoSpecialAction(builder, candidatesId, 'g->a', recruit.string.GotoApplicants)
 
   createAction(builder, {

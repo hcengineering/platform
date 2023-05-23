@@ -21,12 +21,13 @@
 
   import tracker from '../../plugin'
   import IssuesView from '../issues/IssuesView.svelte'
-  import { IModeSelector } from '../../utils'
+  import { IModeSelector } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
 
   const config: [string, IntlString, object][] = [
-    ['assigned', tracker.string.Assigned, {}],
-    ['created', tracker.string.Created, { value: 2 }],
-    ['subscribed', tracker.string.Subscribed, {}]
+    ['assigned', view.string.Assigned, {}],
+    ['created', view.string.Created, {}],
+    ['subscribed', view.string.Subscribed, {}]
   ]
   const currentUser = getCurrentAccount() as EmployeeAccount
   const assigned = { assignee: currentUser.employee }

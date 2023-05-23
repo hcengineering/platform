@@ -1,12 +1,10 @@
 <script lang="ts">
   import { Ref, Space } from '@hcengineering/core'
-  import { TabList, SearchEdit } from '@hcengineering/ui'
+  import { TabList, SearchEdit, IModeSelector, ModeSelector } from '@hcengineering/ui'
   import { Viewlet } from '@hcengineering/view'
   import { FilterButton, setActiveViewletId } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import { WithLookup } from '@hcengineering/core'
-  import ModeSelector from '../ModeSelector.svelte'
-  import { IModeSelector } from '../../utils'
 
   export let space: Ref<Space> | undefined = undefined
   export let viewlet: WithLookup<Viewlet> | undefined

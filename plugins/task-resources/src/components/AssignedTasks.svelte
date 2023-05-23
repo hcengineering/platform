@@ -14,29 +14,53 @@
 -->
 <script lang="ts">
   import { EmployeeAccount } from '@hcengineering/contact'
-  import { Class, DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import tags, { selectedTagElements, TagCategory, TagElement } from '@hcengineering/tags'
   import { DoneState, Task } from '@hcengineering/task'
-  import { Component, Label, SearchEdit } from '@hcengineering/ui'
-  import { TableBrowser } from '@hcengineering/view-resources'
+  import { Component, IModeSelector, Label, resolvedLocationStore, SearchEdit, ModeSelector } from '@hcengineering/ui'
+  import {
+    activeViewlet,
+    FilterButton,
+    getViewOptions,
+    makeViewletKey,
+    TableBrowser,
+    updateActiveViewlet,
+    viewOptionStore
+  } from '@hcengineering/view-resources'
   import task from '../plugin'
+  import { IntlString } from '@hcengineering/platform'
+  import ViewletSettingButton from '@hcengineering/view-resources/src/components/ViewletSettingButton.svelte'
+  import view, { Viewlet } from '@hcengineering/view'
+  import { onDestroy } from 'svelte'
+  import FilterBar from '@hcengineering/view-resources/src/components/filter/FilterBar.svelte'
 
   export let _class: Ref<Class<Task>> = task.class.Task
   export let labelTasks = task.string.Tasks
 
   let search = ''
-  let resultQuery: DocumentQuery<Task> = {}
+  const currentUser = getCurrentAccount() as EmployeeAccount
+  const assigned = { assignee: currentUser.employee }
+  const created = { createdBy: currentUser._id }
+  let subscribed = { _id: { $in: [] as Ref<Task>[] } }
+
+  $: baseQuery = updateBaseQuery(mode, { assigned, created, subscribed })
+  function updateBaseQuery (mode: string, queries: { [key: string]: DocumentQuery<Task> }) {
+    return { ...queries[mode] }
+  }
+  let searchQuery: DocumentQuery<Task> = { ...baseQuery }
+  function updateSearchQuery (search: string): void {
+    searchQuery = search === '' ? { ...baseQuery } : { ...baseQuery, $search: search }
+  }
+  $: if (baseQuery) updateSearchQuery(search)
+  $: resultQuery = { ...searchQuery }
 
   const client = getClient()
-  const currentUser = getCurrentAccount() as EmployeeAccount
 
   let category: Ref<TagCategory> | undefined = undefined
 
   let documentIds: Ref<Task>[] = []
   function updateResultQuery (search: string, documentIds: Ref<Task>[], doneStates: DoneState[]): void {
-    resultQuery = search === '' ? {} : { $search: search }
-    resultQuery.assignee = currentUser.employee
     resultQuery.doneState = { $nin: doneStates.map((it) => it._id) }
     if (documentIds.length > 0) {
       resultQuery._id = { $in: documentIds }
@@ -60,8 +84,57 @@
       ).values()
     )
   })
+  const subscribedQuery = createQuery()
+  function getSubscribed () {
+    subscribedQuery.query(
+      _class,
+      { 'notification:mixin:Collaborators.collaborators': getCurrentAccount()._id },
+      (result) => {
+        const newSub = result.map((p) => p._id as Ref<Doc> as Ref<Task>)
+        const curSub = subscribed._id.$in
+        if (curSub.length !== newSub.length || curSub.some((id, i) => newSub[i] !== id)) {
+          subscribed = { _id: { $in: newSub } }
+        }
+      },
+      { sort: { _id: 1 } }
+    )
+  }
+  $: if (mode === 'subscribed') getSubscribed()
+  const config: [string, IntlString, object][] = [
+    ['assigned', view.string.Assigned, {}],
+    ['created', view.string.Created, {}],
+    ['subscribed', view.string.Subscribed, {}]
+  ]
+  let [[mode]] = config
+  function handleChangeMode (newMode: string) {
+    if (newMode === mode) return
+    mode = newMode
+  }
+  $: modeSelectorProps = {
+    config,
+    mode,
+    onChange: handleChangeMode
+  } as IModeSelector
 
   $: updateResultQuery(search, documentIds, doneStates)
+  let viewlets: WithLookup<Viewlet>[] | undefined
+
+  let key = makeViewletKey()
+
+  onDestroy(
+    resolvedLocationStore.subscribe((loc) => {
+      key = makeViewletKey(loc)
+    })
+  )
+  $: viewlet = viewlets && updateActiveViewlet(viewlets, active)
+  $: active = $activeViewlet[key]
+  const viewletQuery = createQuery()
+  viewletQuery.query(view.class.Viewlet, { attachTo: _class }, (res) => (viewlets = res), {
+    lookup: {
+      descriptor: view.class.ViewletDescriptor
+    }
+  })
+  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 
   function updateCategory (detail: { category: Ref<TagCategory> | null; elements: TagElement[] }) {
     category = detail.category ?? undefined
@@ -70,18 +143,34 @@
   const handleChange = (evt: any) => updateCategory(evt.detail)
 </script>
 
-<div class="ac-header full divide caption-height">
+<div
+  class="ac-header full divide"
+  class:header-with-mode-selector={modeSelectorProps !== undefined}
+  class:header-without-label={!labelTasks}
+>
   <div class="ac-header__wrap-title">
     <span class="ac-header__title"><Label label={labelTasks} /></span>
+    {#if modeSelectorProps !== undefined}
+      <ModeSelector props={modeSelectorProps} />
+    {/if}
   </div>
-
-  <SearchEdit
-    bind:value={search}
-    on:change={() => {
-      updateResultQuery(search, documentIds, doneStates)
-    }}
-  />
 </div>
+<div class="ac-header full divide search-start">
+  <div class="ac-header-full small-gap">
+    <SearchEdit
+      bind:value={search}
+      on:change={() => {
+        updateResultQuery(search, documentIds, doneStates)
+      }}
+    />
+    <div class="buttons-divider" />
+    <FilterButton {_class} />
+  </div>
+  {#if viewlet}
+    <ViewletSettingButton bind:viewOptions {viewlet} />
+  {/if}
+</div>
+<FilterBar {_class} query={searchQuery} {viewOptions} on:change={(e) => (resultQuery = e.detail)} />
 
 <Component is={tags.component.TagsCategoryBar} props={{ targetClass: _class, category }} on:change={handleChange} />
 
