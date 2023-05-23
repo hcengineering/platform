@@ -46,13 +46,7 @@
   const label = canDelete ? view.string.DeleteObject : view.string.DeletePopupNoPermissionTitle
 </script>
 
-<Card
-  {label}
-  okAction={deleteAction}
-  canSave={canDelete}
-  okLabel={ui.string.Ok}
-  on:close={() => dispatch('close')}
->
+<Card {label} okAction={deleteAction} canSave={canDelete} okLabel={ui.string.Ok} on:close={() => dispatch('close')}>
   <div class="flex-grow flex-col">
     {#if canDelete}
       <div class="mb-2">
