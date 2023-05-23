@@ -76,7 +76,7 @@
 </script>
 
 {#if query !== undefined && modeSelectorProps !== undefined}
-  {#key query && modeSelectorProps}
+  {#key query && currentSpace}
     <IssuesView {query} space={currentSpace} {title} {modeSelectorProps} />
   {/key}
 {/if}

@@ -66,7 +66,7 @@
 </script>
 
 {#if query !== undefined && modeSelectorProps !== undefined}
-  {#key query && modeSelectorProps}
+  {#key query}
     <IssuesView {query} space={undefined} title={tracker.string.MyIssues} {modeSelectorProps} />
   {/key}
 {/if}
