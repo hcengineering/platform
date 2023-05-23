@@ -944,3 +944,7 @@ export async function statusSort (
     )
   })
 }
+
+export function isAttachedDoc (doc: Doc | AttachedDoc): doc is AttachedDoc {
+  return 'attachedTo' in doc
+}

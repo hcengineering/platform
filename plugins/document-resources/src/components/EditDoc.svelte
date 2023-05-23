@@ -47,7 +47,7 @@
     SelectPopup,
     showPopup
   } from '@hcengineering/ui'
-  import { ClassAttributeBar, ContextMenu, UpDownNavigator } from '@hcengineering/view-resources'
+  import { ClassAttributeBar, ContextMenu, ParentsNavigator, UpDownNavigator } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import document from '../plugin'
   import DocumentEditor from './DocumentEditor.svelte'
@@ -385,6 +385,7 @@
   >
     <svelte:fragment slot="navigator">
       <UpDownNavigator element={documentObject} />
+      <ParentsNavigator element={documentObject} />
     </svelte:fragment>
     <svelte:fragment slot="header">
       <span class="fs-title flex-row-center flex-shrink gap-1-5">

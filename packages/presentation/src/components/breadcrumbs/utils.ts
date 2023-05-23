@@ -11,20 +11,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
+import { BreadcrumbsModel, ComponentBreadcrumbsProps } from './types'
 
-interface BreadcrumbsProps {
-  readonly color?: number | undefined
+export function hasComponent (model: BreadcrumbsModel): model is ComponentBreadcrumbsProps {
+  return 'component' in model
 }
-
-type TextBreadcrumbsProps = { title: string } & (
-  | { readonly href: string, readonly onClick?: undefined }
-  | { readonly href?: undefined, readonly onClick: (event: MouseEvent) => void }
-)
-
-export interface ComponentBreadcrumbsProps {
-  readonly component: AnyComponent | AnySvelteComponent
-  readonly props: Record<string, any>
-}
-
-export type BreadcrumbsModel = BreadcrumbsProps & (TextBreadcrumbsProps | ComponentBreadcrumbsProps)

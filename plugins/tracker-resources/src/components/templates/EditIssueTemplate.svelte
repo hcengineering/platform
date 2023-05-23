@@ -34,7 +34,7 @@
     navigate,
     showPopup
   } from '@hcengineering/ui'
-  import { ContextMenu, UpDownNavigator } from '@hcengineering/view-resources'
+  import { ContextMenu, ParentsNavigator, UpDownNavigator } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import tracker from '../../plugin'
 
@@ -184,6 +184,7 @@
   >
     <svelte:fragment slot="navigator">
       <UpDownNavigator element={template} />
+      <ParentsNavigator element={template} />
     </svelte:fragment>
     <svelte:fragment slot="header">
       <span class="fs-title">

@@ -16,7 +16,7 @@
   import core, { Class, Doc, Ref, SortingOrder, TxCUD, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import type { Scrum, ScrumRecord } from '@hcengineering/tracker'
-  import { UpDownNavigator } from '@hcengineering/view-resources'
+  import { ParentsNavigator, UpDownNavigator } from '@hcengineering/view-resources'
   import { Panel } from '@hcengineering/panel'
   import { Button, closePanel, TabItem, TabList } from '@hcengineering/ui'
   import tracker from '../../plugin'
@@ -99,6 +99,7 @@
   <Panel object={scrumRecord} isUtils={isRecording} isHeader={false} on:close>
     <svelte:fragment slot="navigator">
       <UpDownNavigator element={scrumRecord} />
+      <ParentsNavigator element={scrumRecord} />
     </svelte:fragment>
     <svelte:fragment slot="title">
       <span class="fs-title select-text-i">
