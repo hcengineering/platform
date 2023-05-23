@@ -38,7 +38,7 @@
       }
     }
 
-    return parents
+    return parents.reverse()
   }
 
   async function getBreadcrumbsModels (doc: typeof element): Promise<readonly BreadcrumbsModel[]> {
@@ -52,7 +52,7 @@
     }
 
     const models: BreadcrumbsModel[] = []
-    for (const parent of [doc, ...parents].reverse()) {
+    for (const parent of parents) {
       const attributeModel: AttributeModel | undefined = await getObjectPresenter(client, parent._class, { key: '' })
 
       if (attributeModel) {

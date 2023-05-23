@@ -44,7 +44,6 @@
       {@const { component, props } = model}
       <BreadcrumbsElement
         position={getPosition(i)}
-        selected={i === models.length - 1}
         color={color !== undefined ? getPlatformColor(color) : 'var(--accent-bg-color)'}
       >
         {#if typeof component === 'string'}
@@ -60,7 +59,6 @@
           label={title}
           {title}
           position={getPosition(i)}
-          selected={i === models.length - 1}
           color={color !== undefined ? getPlatformColor(color) : 'var(--accent-bg-color)'}
         />
       </NavLink>
