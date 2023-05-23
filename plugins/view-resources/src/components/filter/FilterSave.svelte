@@ -21,7 +21,6 @@
   async function saveFilter () {
     const loc = getCurrentResolvedLocation()
     loc.fragment = undefined
-    loc.query = undefined
     const filters = JSON.stringify($filterStore)
     await client.createDoc(view.class.FilteredView, preference.space.Preference, {
       name: filterName,
