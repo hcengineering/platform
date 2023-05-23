@@ -60,7 +60,7 @@
     modeSelectorProps = {
       config,
       mode,
-      onChange: (newMode: string) => dispatch('action', newMode)
+      onChange: (newMode: string) => dispatch('action', { mode: newMode })
     }
   }
 </script>

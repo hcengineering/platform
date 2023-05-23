@@ -679,7 +679,7 @@
             on:action={(e) => {
               if (e?.detail) {
                 const loc = getCurrentLocation()
-                loc.query = { ...loc.query, mode: e.detail }
+                loc.query = { ...loc.query, ...e.detail }
                 navigate(loc)
               }
             }}
