@@ -1003,9 +1003,9 @@ export function createModel (builder: Builder): void {
             component: tracker.component.MyIssues,
             componentProps: {
               config: [
-                ['assigned', tracker.string.Assigned, {}],
-                ['created', tracker.string.Created, { value: 2 }],
-                ['subscribed', tracker.string.Subscribed, {}]
+                ['assigned', view.string.Assigned, {}],
+                ['created', view.string.Created, { value: 2 }],
+                ['subscribed', view.string.Subscribed, {}]
               ]
             }
           },
