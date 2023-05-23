@@ -17,6 +17,7 @@ import { ContextStore, contextStore } from './context'
 import view from './plugin'
 import { FocusSelection, SelectDirection, focusStore, previewDocument, selectionStore } from './selection'
 import { deleteObjects, getObjectLinkFragment } from './utils'
+import contact from '@hcengineering/contact'
 
 /**
  * Action to be used for copying text to clipboard.
@@ -55,12 +56,10 @@ async function CopyTextToClipboard (
 
 function Delete (object: Doc | Doc[]): void {
   showPopup(
-    MessageBox,
+    contact.component.DeleteConfirmationPopup,
     {
-      label: view.string.DeleteObject,
-      message: view.string.DeleteObjectConfirm,
-      params: { count: Array.isArray(object) ? object.length : 1 },
-      action: async () => {
+      object,
+      deleteAction: async () => {
         const objs = Array.isArray(object) ? object : [object]
         await deleteObjects(getClient(), objs).catch((err) => console.error(err))
       }
