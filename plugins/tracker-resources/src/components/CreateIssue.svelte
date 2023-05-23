@@ -71,6 +71,7 @@
   import SetDueDateActionPopup from './SetDueDateActionPopup.svelte'
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
   import SubIssues from './SubIssues.svelte'
+  import { createBacklinks } from '@hcengineering/chunter-resources'
 
   export let space: Ref<Project>
   export let status: Ref<IssueStatus> | undefined = undefined
@@ -396,9 +397,12 @@
     await subIssuesComponent.save(parents, _id)
     addNotification(await translate(tracker.string.IssueCreated, {}), getTitle(object.title), IssueNotification, {
       issueId: _id,
-      subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase(),
+      subTitlePostfix: (await translate(tracker.string.CreatedOne, {})).toLowerCase(),
       issueUrl: currentProject && generateIssueShortLink(getIssueId(currentProject, value as Issue))
     })
+
+    // Create an backlink to document
+    await createBacklinks(client, _id, tracker.class.Issue, _id, object.description)
 
     draftController.remove()
     resetObject()
@@ -607,6 +611,7 @@
         alwaysEdit
         showButtons={false}
         emphasized
+        enableBackReferences={true}
         bind:content={object.description}
         placeholder={tracker.string.IssueDescriptionPlaceholder}
         on:changeSize={() => dispatch('changeContent')}

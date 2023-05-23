@@ -21,13 +21,10 @@
   import { getObjectPresenter } from '@hcengineering/view-resources'
   import chunter from '../../plugin'
 
-  // export let tx: TxCreateDoc<Backlink>
   export let value: Backlink
-  // export let edit: boolean = false
 
   const client = getClient()
   let presenter: AttributeModel | undefined
-  let targetPresenter: AttributeModel | undefined
 
   const docQuery = createQuery()
   const targetQuery = createQuery()
@@ -43,12 +40,6 @@
     target = r.shift()
   })
 
-  $: if (target !== undefined) {
-    getObjectPresenter(client, target._class, { key: '' }).then((p) => {
-      targetPresenter = p
-    })
-  }
-
   $: if (doc !== undefined) {
     getObjectPresenter(client, doc._class, { key: '' }).then((p) => {
       presenter = p
@@ -58,9 +49,6 @@
 
 {#if presenter}
   <span class="labels-row">
-    {#if targetPresenter}
-      <svelte:component this={targetPresenter.presenter} value={target} inline />
-    {/if}
     <span style:text-transform={'lowercase'}><Label label={chunter.string.In} /></span>
     <svelte:component this={presenter.presenter} value={doc} inline />
   </span>

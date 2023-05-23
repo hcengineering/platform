@@ -175,7 +175,7 @@ test('report-time-from-main-view', async ({ page }) => {
 
   await createIssue(page, { name, assignee, status })
 
-  // await page.click('.close-button > .button')
+  // await page.click('.close-button > .antiButton')
 
   // We need to fait for indexer to complete indexing.
   await fillSearch(page, name)
@@ -243,7 +243,7 @@ test('create-issue-draft', async ({ page }) => {
   await page.locator('[placeholder="Type text\\.\\.\\."]').click()
   // Fill [placeholder="Type text\.\.\."]
   await page.locator('[placeholder="Type text\\.\\.\\."]').fill('1')
-  await page.locator('.ml-2 > .button').click()
+  await page.locator('.ml-2 > .antiButton').click()
 
   // Click button:nth-child(8)
   await page.locator('#more-actions').click()

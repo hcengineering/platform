@@ -26,6 +26,7 @@
   export let icon: Asset | AnySvelteComponent = IconDescription
   export let content: string = ''
   export let maxHeight: string = '40vh'
+  export let enableBackReferences = false
 
   const dispatch = createEventDispatcher()
 
@@ -44,5 +45,14 @@
       <Label {label} />
     </span>
   </div>
-  <StyledTextBox {content} alwaysEdit focusable mode={2} hideExtraButtons {maxHeight} on:value={checkValue} />
+  <StyledTextBox
+    {content}
+    alwaysEdit
+    focusable
+    mode={2}
+    hideExtraButtons
+    {maxHeight}
+    on:value={checkValue}
+    {enableBackReferences}
+  />
 </div>

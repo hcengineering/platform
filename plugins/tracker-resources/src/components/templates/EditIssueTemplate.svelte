@@ -13,23 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachmentDocList } from '@hcengineering/attachment-resources'
-  import { Class, Data, Doc, Ref, WithLookup } from '@hcengineering/core'
+  import { AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
+  import { Class, Doc, Ref, WithLookup } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
-  import presentation, { MessageViewer, createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
   import tags from '@hcengineering/tags'
   import type { IssueTemplate, IssueTemplateChild, Project } from '@hcengineering/tracker'
   import {
     Button,
     EditBox,
-    IconAttachment,
-    IconEdit,
+    Icon,
     IconMoreH,
     Label,
-    Scroller,
     getCurrentResolvedLocation,
     navigate,
     showPopup
@@ -38,12 +36,13 @@
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import tracker from '../../plugin'
 
-  import { StyledTextBox } from '@hcengineering/text-editor'
+  import { updateBacklinks } from '@hcengineering/chunter-resources'
   import SubIssueTemplates from './IssueTemplateChilds.svelte'
   import TemplateControlPanel from './TemplateControlPanel.svelte'
 
   export let _id: Ref<IssueTemplate>
   export let _class: Ref<Class<IssueTemplate>>
+  export let embedded = false
 
   let lastId: Ref<Doc> = _id
   const query = createQuery()
@@ -55,8 +54,8 @@
   let title = ''
   let description = ''
   let innerWidth: number
-  let isEditing = false
-  let descriptionBox: StyledTextBox
+
+  let descriptionBox: AttachmentStyleBoxEditor
 
   const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
 
@@ -88,48 +87,19 @@
     )
 
   $: canSave = title.trim().length > 0
-  $: isDescriptionEmpty = !new DOMParser().parseFromString(description, 'text/html').documentElement.innerText?.trim()
 
-  function edit (ev: MouseEvent) {
-    ev.preventDefault()
+  let saved = false
 
-    isEditing = true
-  }
-
-  function cancelEditing (ev: MouseEvent) {
-    ev.preventDefault()
-
-    isEditing = false
-
-    if (template) {
-      title = template.title
-      description = template.description
-    }
-  }
-
-  async function save (ev: MouseEvent) {
-    ev.preventDefault()
-
+  async function save () {
     if (!template || !canSave) {
       return
     }
 
-    const updates: Partial<Data<IssueTemplate>> = {}
     const trimmedTitle = title.trim()
 
     if (trimmedTitle.length > 0 && trimmedTitle !== template.title) {
-      updates.title = trimmedTitle
+      await client.update(template, { title: trimmedTitle })
     }
-
-    if (description !== template.description) {
-      updates.description = description
-    }
-
-    if (Object.keys(updates).length > 0) {
-      await client.update(template, updates)
-    }
-    await descriptionBox.createAttachments()
-    isEditing = false
   }
 
   function showMenu (ev?: Event): void {
@@ -170,107 +140,73 @@
       children: evt.detail
     })
   }
+  $: descriptionKey = client.getHierarchy().getAttribute(tracker.class.IssueTemplate, 'description')
 </script>
 
 {#if template !== undefined}
   <Panel
     object={template}
-    isHeader
+    isHeader={false}
     isAside={true}
     isSub={false}
-    withoutActivity={isEditing}
+    withoutActivity={false}
+    {embedded}
     bind:innerWidth
+    on:open
     on:close={() => dispatch('close')}
   >
     <svelte:fragment slot="navigator">
-      <UpDownNavigator element={template} />
-      <ParentsNavigator element={template} />
-    </svelte:fragment>
-    <svelte:fragment slot="header">
-      <span class="fs-title">
+      {#if !embedded}
+        <UpDownNavigator element={template} />
+        <ParentsNavigator element={template} />
+      {/if}
+
+      <div class="ml-2">
+        <Icon icon={tracker.icon.IssueTemplates} size={'small'} />
+      </div>
+      <span class="fs-title flex-row-center">
         {template.title}
       </span>
     </svelte:fragment>
-    <svelte:fragment slot="tools">
-      {#if isEditing}
-        <Button kind={'transparent'} label={presentation.string.Cancel} on:click={cancelEditing} />
-        <Button disabled={!canSave} label={presentation.string.Save} on:click={save} />
-      {:else}
-        <Button icon={IconEdit} kind={'transparent'} size={'medium'} on:click={edit} />
-        <Button icon={IconMoreH} kind={'transparent'} size={'medium'} on:click={showMenu} />
+
+    <EditBox bind:value={title} placeholder={tracker.string.IssueTitlePlaceholder} kind="large-style" on:blur={save} />
+    <div class="w-full mt-6">
+      <AttachmentStyleBoxEditor
+        focusIndex={30}
+        object={template}
+        key={{ key: 'description', attr: descriptionKey }}
+        bind:this={descriptionBox}
+        placeholder={tracker.string.IssueDescriptionPlaceholder}
+        on:saved={(evt) => {
+          saved = evt.detail
+        }}
+        updateBacklinks={(doc, description) => {
+          updateBacklinks(client, doc._id, doc._class, doc._id, description)
+        }}
+      />
+    </div>
+    <div class="mt-6">
+      {#key template._id && currentProject !== undefined}
+        {#if currentProject !== undefined}
+          <SubIssueTemplates
+            maxHeight="limited"
+            project={template.space}
+            bind:children={template.children}
+            on:create-issue={createIssue}
+            on:update-issue={updateIssue}
+            on:update-issues={updateIssues}
+          />
+        {/if}
+      {/key}
+    </div>
+
+    <svelte:fragment slot="pre-utils">
+      {#if saved}
+        <Label label={tracker.string.Saved} />
       {/if}
     </svelte:fragment>
-
-    {#if isEditing}
-      <Scroller>
-        <div class="popupPanel-body__main-content py-10 clear-mins content">
-          <EditBox
-            bind:value={title}
-            maxWidth="53.75rem"
-            placeholder={tracker.string.IssueTitlePlaceholder}
-            kind="large-style"
-          />
-          <div class="flex-between mt-6">
-            <div class="flex-grow">
-              <StyledTextBox
-                bind:this={descriptionBox}
-                alwaysEdit
-                showButtons
-                maxHeight={'card'}
-                bind:content={description}
-                placeholder={tracker.string.IssueDescriptionPlaceholder}
-              />
-            </div>
-
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <div
-              class="tool"
-              on:click={() => {
-                descriptionBox.attach()
-              }}
-            >
-              <IconAttachment size={'large'} />
-            </div>
-          </div>
-        </div>
-      </Scroller>
-    {:else}
-      <span class="title select-text">{title}</span>
-      <div class="mt-6 description-preview select-text">
-        {#if isDescriptionEmpty}
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div class="placeholder" on:click={edit}>
-            <Label label={tracker.string.IssueDescriptionPlaceholder} />
-          </div>
-        {:else}
-          <MessageViewer message={description} />
-        {/if}
-      </div>
-      <div class="mt-6">
-        {#key template._id && currentProject !== undefined}
-          {#if currentProject !== undefined}
-            <SubIssueTemplates
-              maxHeight="limited"
-              project={template.space}
-              bind:children={template.children}
-              on:create-issue={createIssue}
-              on:update-issue={updateIssue}
-              on:update-issues={updateIssues}
-            />
-          {/if}
-        {/key}
-      </div>
-      <div class="mt-6">
-        <AttachmentDocList value={template} />
-      </div>
-    {/if}
-
-    <span slot="actions-label"> ID </span>
-    <svelte:fragment slot="actions">
-      <div class="flex-grow" />
-      <!-- {#if issueId}
-        <CopyToClipboard issueUrl={generateIssueShortLink(issueId)} {issueId} />
-      {/if} -->
+    <svelte:fragment slot="utils">
+      <Button icon={IconMoreH} kind={'transparent'} size={'medium'} on:click={showMenu} />
       <Button
         icon={setting.icon.Setting}
         kind={'transparent'}

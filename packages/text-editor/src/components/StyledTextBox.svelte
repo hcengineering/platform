@@ -13,8 +13,10 @@
     resizeObserver
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
   import StyledTextEditor from './StyledTextEditor.svelte'
+  import { completionConfig } from './extensions'
 
   export let label: IntlString | undefined = undefined
   export let content: string
@@ -33,6 +35,7 @@
   export let focusable: boolean = false
   export let enableFormatting = false
   export let autofocus = false
+  export let enableBackReferences: boolean = false
 
   const Mode = {
     View: 1,
@@ -119,6 +122,12 @@
       focusManager?.setFocus(idx)
     }
   }
+  const completionPlugin = Completion.configure({
+    ...completionConfig,
+    showDoc (event: MouseEvent, _id: string, _class: string) {
+      dispatch('open-document', { event, _id, _class })
+    }
+  })
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -149,6 +158,7 @@
       {focusable}
       {enableFormatting}
       {autofocus}
+      extensions={enableBackReferences ? [completionPlugin] : []}
       bind:content={rawValue}
       bind:this={textEditor}
       on:attach

@@ -650,12 +650,3 @@ export function issueToAttachedData (issue: Issue): AttachedData<Issue> {
   const { _id, _class, space, ...data } = issue
   return { ...data }
 }
-
-/**
- * @public
- */
-export interface IModeSelector {
-  mode: string
-  config: Array<[string, IntlString, object]>
-  onChange: (_mode: string) => void
-}

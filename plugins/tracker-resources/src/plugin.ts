@@ -193,9 +193,7 @@ export default mergeIds(trackerId, tracker, {
     AllFilters: '' as IntlString,
     NoDescription: '' as IntlString,
 
-    Assigned: '' as IntlString,
-    Created: '' as IntlString,
-    Subscribed: '' as IntlString,
+    CreatedOne: '' as IntlString,
 
     Relations: '' as IntlString,
     RemoveRelation: '' as IntlString,

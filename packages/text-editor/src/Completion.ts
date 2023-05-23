@@ -1,13 +1,38 @@
 import { Node, mergeAttributes } from '@tiptap/core'
 import Suggestion, { SuggestionOptions } from '@tiptap/suggestion'
 
+import { Plugin, PluginKey } from '@tiptap/pm/state'
+
 export interface CompletionOptions {
   HTMLAttributes: Record<string, any>
   renderLabel: (props: { options: CompletionOptions, node: any }) => string
   suggestion: Omit<SuggestionOptions, 'editor'>
+  showDoc?: (event: MouseEvent, _id: string, _class: string) => void
 }
 
-// export const CompletionPluginKey = new PluginKey('completion')
+export function clickHandler (opt: CompletionOptions): Plugin {
+  return new Plugin({
+    key: new PluginKey('completion-handleClickLink'),
+    props: {
+      handleClick: (view, pos, event) => {
+        if (event.button !== 0) {
+          return false
+        }
+
+        const link = (event.target as HTMLElement)?.closest('span')
+        if (link != null) {
+          const _class = link.getAttribute('data-objectclass')
+          const _id = link.getAttribute('data-id')
+          if (_id != null && _class != null) {
+            opt.showDoc?.(event, _id, _class)
+          }
+        }
+
+        return false
+      }
+    }
+  })
+}
 
 export const Completion = Node.create<CompletionOptions>({
   name: 'reference',
@@ -63,9 +88,15 @@ export const Completion = Node.create<CompletionOptions>({
 
   inline: true,
 
-  selectable: false,
+  selectable: true,
 
   atom: true,
+
+  draggable: true,
+
+  onFocus () {
+    console.log('focus')
+  },
 
   addAttributes () {
     return {
@@ -126,7 +157,15 @@ export const Completion = Node.create<CompletionOptions>({
   renderHTML ({ node, HTMLAttributes }) {
     return [
       'span',
-      mergeAttributes({ 'data-type': this.name }, this.options.HTMLAttributes, HTMLAttributes),
+      mergeAttributes(
+        {
+          'data-type': this.name,
+          class: 'antiButton secondary cursor-pointer',
+          style: 'width: fit-content;display: inline-flex;'
+        },
+        this.options.HTMLAttributes,
+        HTMLAttributes
+      ),
       this.options.renderLabel({
         options: this.options,
         node
@@ -174,7 +213,8 @@ export const Completion = Node.create<CompletionOptions>({
       Suggestion({
         editor: this.editor,
         ...this.options.suggestion
-      })
+      }),
+      clickHandler(this.options)
     ]
   }
 })

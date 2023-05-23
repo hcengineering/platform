@@ -42,7 +42,7 @@ test.describe('recruit tests', () => {
     await page.locator('.antiPopup').locator('text=Email').click()
     const emailInput = page.locator('[placeholder="john\\.appleseed@apple\\.com"]')
     await emailInput.fill(email)
-    await page.locator('#channel-ok.button').click()
+    await page.locator('#channel-ok.antiButton').click()
 
     await page.locator('.antiCard button:has-text("Create")').click()
     await page.waitForSelector('form.antiCard', { state: 'detached' })

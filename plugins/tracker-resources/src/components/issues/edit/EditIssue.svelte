@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import { Class, Data, Doc, Ref, WithLookup } from '@hcengineering/core'
+  import { AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
+  import { Class, Doc, Ref, WithLookup } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
   import { Issue, Project } from '@hcengineering/tracker'
   import {
@@ -50,6 +50,7 @@
   import CopyToClipboard from './CopyToClipboard.svelte'
   import SubIssueSelector from './SubIssueSelector.svelte'
   import SubIssues from './SubIssues.svelte'
+  import { updateBacklinks } from '@hcengineering/chunter-resources'
 
   export let _id: Ref<Issue>
   export let _class: Ref<Class<Issue>>
@@ -65,7 +66,7 @@
   let title = ''
   let description = ''
   let innerWidth: number
-  let descriptionBox: AttachmentStyledBox
+  let descriptionBox: AttachmentStyleBoxEditor
   let showAllMixins: boolean
 
   const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
@@ -89,8 +90,7 @@
       _class,
       { _id },
       async (result) => {
-        if (saveTrigger !== undefined && lastId !== _id) {
-          clearTimeout(saveTrigger)
+        if (lastId !== _id) {
           await save()
         }
         ;[issue] = result
@@ -109,36 +109,15 @@
 
   let saved = false
   async function save () {
-    clearTimeout(saveTrigger)
     if (!issue || !canSave) {
       return
     }
 
-    const updates: Partial<Data<Issue>> = {}
     const trimmedTitle = title.trim()
 
     if (trimmedTitle.length > 0 && trimmedTitle !== issue.title) {
-      updates.title = trimmedTitle
+      await client.update(issue, { title: trimmedTitle })
     }
-
-    if (description !== issue.description) {
-      updates.description = description
-    }
-
-    if (Object.keys(updates).length > 0) {
-      await client.update(issue, updates)
-      saved = true
-      setTimeout(() => {
-        saved = false
-      }, 5000)
-    }
-    await descriptionBox.createAttachments()
-  }
-
-  let saveTrigger: any
-  function triggerSave (): void {
-    clearTimeout(saveTrigger)
-    saveTrigger = setTimeout(save, 5000)
   }
 
   function showMenu (ev?: Event): void {
@@ -158,6 +137,8 @@
   // If it is embedded
   $: lastCtx = $contextStore.getLastContext()
   $: isContextEnabled = lastCtx?.mode === 'editor' || lastCtx?.mode === 'browser'
+
+  $: descriptionKey = client.getHierarchy().getAttribute(tracker.class.Issue, 'description')
 </script>
 
 {#if !embedded}
@@ -172,22 +153,22 @@
 {#if issue !== undefined}
   <Panel
     object={issue}
-    isHeader
+    isHeader={false}
     isAside={true}
     isSub={false}
     withoutActivity={false}
     {embedded}
-    withoutTitle
     bind:innerWidth
     on:open
     on:close={() => dispatch('close')}
   >
     <svelte:fragment slot="navigator">
-      <UpDownNavigator element={issue} />
-      <ParentsNavigator element={issue} />
-    </svelte:fragment>
-    <svelte:fragment slot="header">
-      <span class="fs-title select-text-i">
+      {#if !embedded}
+        <UpDownNavigator element={issue} />
+        <ParentsNavigator element={issue} />
+      {/if}
+
+      <span class="ml-4 fs-title select-text-i">
         {#if embedded}
           <DocNavLink object={issue}>
             {#if issueId}{issueId}{/if}
@@ -195,11 +176,10 @@
         {:else if issueId}{issueId}{/if}
       </span>
     </svelte:fragment>
-    <svelte:fragment slot="tools">
+    <svelte:fragment slot="pre-utils">
       {#if saved}
-        <Label label={tracker.string.Saved} />
+        <Label label={presentation.string.Saved} />
       {/if}
-      <Button icon={IconMoreH} kind={'transparent'} size={'medium'} on:click={showMenu} />
     </svelte:fragment>
 
     {#if parentIssue}
@@ -220,26 +200,19 @@
       focus={!embedded}
     />
     <div class="w-full mt-6">
-      {#key issue._id}
-        <AttachmentStyledBox
-          focusIndex={30}
-          bind:this={descriptionBox}
-          useAttachmentPreview={true}
-          objectId={_id}
-          _class={tracker.class.Issue}
-          space={issue.space}
-          alwaysEdit
-          on:attached={(e) => descriptionBox.saveNewAttachment(e.detail)}
-          on:detached={(e) => descriptionBox.removeAttachmentById(e.detail)}
-          showButtons
-          on:blur={save}
-          on:changeContent={triggerSave}
-          maxHeight={'card'}
-          focusable
-          bind:content={description}
-          placeholder={tracker.string.IssueDescriptionPlaceholder}
-        />
-      {/key}
+      <AttachmentStyleBoxEditor
+        focusIndex={30}
+        object={issue}
+        key={{ key: 'description', attr: descriptionKey }}
+        bind:this={descriptionBox}
+        placeholder={tracker.string.IssueDescriptionPlaceholder}
+        on:saved={(evt) => {
+          saved = evt.detail
+        }}
+        updateBacklinks={(doc, description) => {
+          updateBacklinks(client, doc._id, doc._class, doc._id, description)
+        }}
+      />
     </div>
 
     <div class="mt-6">
@@ -258,8 +231,8 @@
     <span slot="actions-label" class="select-text">
       {#if issueId}{issueId}{/if}
     </span>
-    <svelte:fragment slot="actions">
-      <div class="flex-grow" />
+    <svelte:fragment slot="utils">
+      <Button icon={IconMoreH} kind={'transparent'} size={'medium'} on:click={showMenu} />
       {#if issueId}
         <CopyToClipboard issueUrl={generateIssueShortLink(issueId)} {issueId} />
       {/if}

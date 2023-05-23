@@ -124,6 +124,7 @@ export default mergeIds(recruitId, recruit, {
     PerformMatch: '' as IntlString,
     MoveApplication: '' as IntlString,
     Application: '' as IntlString,
+    MyApplications: '' as IntlString,
 
     TemplateReplace: '' as IntlString,
     TemplateReplaceConfirm: '' as IntlString,

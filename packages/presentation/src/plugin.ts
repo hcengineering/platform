@@ -33,6 +33,7 @@ export default plugin(presentationId, {
     Cancel: '' as IntlString,
     Ok: '' as IntlString,
     Save: '' as IntlString,
+    Saved: '' as IntlString,
     Download: '' as IntlString,
     Delete: '' as IntlString,
     Close: '' as IntlString,

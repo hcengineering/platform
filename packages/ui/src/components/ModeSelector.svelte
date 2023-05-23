@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { TabList } from '@hcengineering/ui'
+  import TabList from './TabList.svelte'
   import { IModeSelector } from '../utils'
 
   export let props: IModeSelector
