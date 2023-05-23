@@ -34,14 +34,11 @@
   const spaceQuery = createQuery()
   let currentProject: Project | undefined = value?.$lookup?.space
 
-  $: if (projects === undefined) {
-    if (value && value?.$lookup?.space === undefined) {
-      spaceQuery.query(tracker.class.Project, { _id: value.space }, (res) => ([currentProject] = res))
-    } else {
-      spaceQuery.unsubscribe()
-    }
+  $: if (value?.$lookup?.space === undefined && !projects?.has(value.space)) {
+    spaceQuery.query(tracker.class.Project, { _id: value.space }, (res) => ([currentProject] = res))
   } else {
-    currentProject = projects.get(value.space)
+    currentProject = value?.$lookup?.space ?? projects?.get(value.space)
+    spaceQuery.unsubscribe()
   }
 
   $: title = currentProject ? `${currentProject.identifier}-${value?.number}` : `${value?.number}`
