@@ -18,9 +18,11 @@
 
   export let model: TabBase[]
   export let selected = 0
+  export let withPadding: boolean = false
+  export let size: 'small' | 'medium' = 'medium'
 </script>
 
-<div class="flex-stretch container">
+<div class="flex-stretch container" class:small={size === 'small'} class:pr-4={withPadding} class:pl-4={withPadding}>
   {#each model as tab, i}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
@@ -39,6 +41,7 @@
     </div>
   {/each}
   <div class="grow" />
+  <slot name="rightButtons" />
 </div>
 
 <slot name="content" {selected} />
@@ -50,7 +53,16 @@
     margin-bottom: 0.5rem;
     width: 100%;
     height: 4.5rem;
+    align-items: center;
     border-bottom: 1px solid var(--divider-color);
+
+    &.small {
+      height: 3.25rem;
+
+      .tab {
+        height: 3.25rem;
+      }
+    }
 
     .tab {
       height: 4.5rem;
@@ -60,7 +72,7 @@
 
       &.selected {
         border-top: 0.125rem solid transparent;
-        border-bottom: 0.125rem solid var(--caption-color);
+        border-bottom: 0.125rem solid var(--theme-tablist-plain-color);
         color: var(--caption-color);
         cursor: default;
       }

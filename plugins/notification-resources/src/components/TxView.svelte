@@ -22,30 +22,36 @@
     updateViewlet
   } from '@hcengineering/activity-resources'
   import activity from '@hcengineering/activity-resources/src/plugin'
-  import { EmployeeAccount } from '@hcengineering/contact'
-  import { employeeAccountByIdStore } from '@hcengineering/contact-resources'
-  import core, { AnyAttribute, Doc, Ref, TxCUD } from '@hcengineering/core'
+  import attachment from '@hcengineering/attachment'
+  import chunter from '@hcengineering/chunter'
+  import { Employee, EmployeeAccount } from '@hcengineering/contact'
+  import { Avatar, employeeAccountByIdStore, employeeByIdStore } from '@hcengineering/contact-resources'
+  import core, { AnyAttribute, Class, Doc, Ref, TxCUD } from '@hcengineering/core'
+  import { Asset } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { Component, Label, ShowMore } from '@hcengineering/ui'
+  import { AnyComponent, Component, Icon, IconActivityEdit, Label } from '@hcengineering/ui'
   import type { AttributeModel } from '@hcengineering/view'
   import { ObjectPresenter } from '@hcengineering/view-resources'
 
   export let tx: TxCUD<Doc>
   export let objectId: Ref<Doc>
   export let viewlets: Map<ActivityKey, TxViewlet>
-  export let contentHidden: boolean = false
   const client = getClient()
 
   let ptx: DisplayTx | undefined
   let viewlet: TxDisplayViewlet | undefined
   let props: any
 
-  let employee: EmployeeAccount | undefined
+  let account: EmployeeAccount | undefined
+  let employee: Employee | undefined
   let model: AttributeModel[] = []
+  let iconComponent: AnyComponent | undefined = undefined
+  let modelIcon: Asset | undefined = undefined
 
   $: if (tx._id !== ptx?.tx._id) {
     ptx = newDisplayTx(tx, client.getHierarchy(), objectId === tx.objectId)
-    if (tx.modifiedBy !== employee?._id) {
+    if (tx.modifiedBy !== account?._id) {
+      account = undefined
       employee = undefined
     }
     props = undefined
@@ -61,12 +67,15 @@
     updateViewlet(client, viewlets, ptx).then((result) => {
       if (result.id === tx._id) {
         viewlet = result.viewlet
+        modelIcon = result.modelIcon
+        iconComponent = result.iconComponent
         props = getProps(result.props)
         model = result.model
       }
     })
 
-  $: employee = $employeeAccountByIdStore.get(tx.modifiedBy as Ref<EmployeeAccount>)
+  $: account = $employeeAccountByIdStore.get(tx.modifiedBy as Ref<EmployeeAccount>)
+  $: employee = account ? $employeeByIdStore.get(account?.employee) : undefined
 
   function isMessageType (attr?: AnyAttribute): boolean {
     return attr?.type._class === core.class.TypeMarkup
@@ -91,12 +100,39 @@
     })
 
   $: isComment = viewlet && viewlet?.editable
-  $: isMention = viewlet?.display === 'emphasized' || isMessageType(model[0]?.attribute)
-  $: isColumn = isComment || isMention || hasMessageType
+  $: isAttached = isAttachment(tx)
+  $: isMentioned = isMention(tx.objectClass)
+  $: withAvatar = isComment || isMentioned || isAttached
+  $: isEmphasized = viewlet?.display === 'emphasized' || model.every((m) => isMessageType(m.attribute))
+  $: isColumn = isComment || isEmphasized || hasMessageType
+
+  function isAttachment (tx: TxCUD<Doc>): boolean {
+    return tx.objectClass === attachment.class.Attachment && tx._class === core.class.TxCreateDoc
+  }
+  function isMention (_class?: Ref<Class<Doc>>): boolean {
+    return _class === chunter.class.Backlink
+  }
 </script>
 
 {#if (viewlet !== undefined && !((viewlet?.hideOnRemove ?? false) && ptx?.removed)) || model.length > 0}
   <div class="msgactivity-container">
+    {#if withAvatar}
+      <div class="msgactivity-avatar">
+        <Avatar avatar={employee?.avatar} size="x-small" />
+      </div>
+    {:else}
+      <div class="msgactivity-icon">
+        {#if iconComponent}
+          <Component is={iconComponent} {props} />
+        {:else if viewlet}
+          <Icon icon={viewlet.icon} size="medium" />
+        {:else if viewlet === undefined && model.length > 0}
+          <Icon icon={modelIcon !== undefined ? modelIcon : IconActivityEdit} size="medium" />
+        {:else}
+          <Icon icon={IconActivityEdit} size="medium" />
+        {/if}
+      </div>
+    {/if}
     <div class="msgactivity-content clear-mins" class:content={isColumn} class:comment={isComment}>
       <div class="msgactivity-content__header clear-mins">
         <div class="msgactivity-content__title labels-row">
@@ -193,103 +229,27 @@
           {/if}
         </div>
       </div>
-
-      {#if viewlet && viewlet.display !== 'inline'}
-        <div class="activity-content content" class:contentHidden>
-          <ShowMore>
-            {#if typeof viewlet.component === 'string'}
-              <Component is={viewlet.component} {props} />
-            {:else}
-              <svelte:component this={viewlet.component} {...props} />
-            {/if}
-          </ShowMore>
-        </div>
-      {:else if hasMessageType && model.length > 0 && (ptx?.updateTx || ptx?.mixinTx)}
-        {#await getValue(client, model[0], ptx) then value}
-          <div class="activity-content content" class:contentHidden>
-            <ShowMore>
-              {#if value.isObjectSet}
-                <ObjectPresenter value={value.set} inline />
-              {:else}
-                <svelte:component this={model[0].presenter} value={value.set} inline />
-              {/if}
-            </ShowMore>
-          </div>
-        {/await}
-      {/if}
     </div>
   </div>
 {/if}
 
 <style lang="scss">
   .msgactivity-container {
-    position: relative;
     display: flex;
+    align-items: center;
     justify-content: space-between;
 
     .msgactivity-content {
       display: flex;
       flex-grow: 1;
+      margin-left: 0.5rem;
       margin-right: 1rem;
-      color: var(--content-color);
-
-      .msgactivity-content__header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-grow: 1;
-      }
-      .msgactivity-content__title {
-        display: inline-flex;
-        flex-wrap: nowrap;
-        align-items: baseline;
-        flex-grow: 1;
-      }
-
-      &.content {
-        flex-direction: column;
-        padding-bottom: 0.25rem;
-      }
-      &.comment {
-        .activity-content {
-          margin-top: 0.25rem;
-        }
-      }
-      &:not(.comment) {
-        .msgactivity-content__header {
-          min-height: 1.75rem;
-        }
-      }
-      &:not(.content) {
-        align-items: center;
-
-        .msgactivity-content__header {
-          justify-content: space-between;
-        }
-      }
     }
   }
-
-  :global(.msgactivity-container + .msgactivity-container::before) {
-    content: '';
-  }
-
-  .activity-content {
-    overflow: hidden;
-    visibility: visible;
-    margin-top: 0.125rem;
-    max-height: max-content;
-    opacity: 1;
-    transition-property: max-height, opacity;
-    transition-timing-function: ease-in-out;
-    transition-duration: 0.15s;
-
-    &.contentHidden {
-      visibility: hidden;
-      padding: 0;
-      margin-top: -0.5rem;
-      max-height: 0;
-      opacity: 0;
-    }
+  .msgactivity-icon,
+  .msgactivity-avatar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 </style>

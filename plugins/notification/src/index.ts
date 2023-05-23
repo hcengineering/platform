@@ -153,14 +153,23 @@ export interface Collaborators extends Doc {
 /**
  * @public
  */
+export interface DocUpdateTx {
+  _id: Ref<TxCUD<Doc>>
+  modifiedBy: Ref<Account>
+  modifiedOn: Timestamp
+  isNew: boolean
+}
+
+/**
+ * @public
+ */
 export interface DocUpdates extends Doc {
   user: Ref<Account>
   attachedTo: Ref<Doc>
   attachedToClass: Ref<Class<Doc>>
   hidden: boolean
-  lastTx?: Ref<TxCUD<Doc>>
   lastTxTime?: Timestamp
-  txes: [Ref<TxCUD<Doc>>, Timestamp][]
+  txes: DocUpdateTx[]
 }
 
 /**

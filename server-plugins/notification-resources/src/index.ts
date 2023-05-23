@@ -437,22 +437,20 @@ function pushNotification (
         attachedTo: object._id,
         attachedToClass: object._class,
         hidden: false,
-        lastTx: originTx._id,
         lastTxTime: originTx.modifiedOn,
-        txes: [[originTx._id, originTx.modifiedOn]]
+        txes: [{ _id: originTx._id, modifiedOn: originTx.modifiedOn, modifiedBy: originTx.modifiedBy, isNew: true }]
       })
     )
   } else {
     res.push(
       control.txFactory.createTxUpdateDoc(current._class, current.space, current._id, {
         $push: {
-          txes: [originTx._id, originTx.modifiedOn]
+          txes: { _id: originTx._id, modifiedOn: originTx.modifiedOn, modifiedBy: originTx.modifiedBy, isNew: true }
         }
       })
     )
     res.push(
       control.txFactory.createTxUpdateDoc(current._class, current.space, current._id, {
-        lastTx: originTx._id,
         lastTxTime: originTx.modifiedOn,
         hidden: false
       })

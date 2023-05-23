@@ -62,7 +62,8 @@ export class NotificationClientImpl implements NotificationClient {
     const client = getClient()
     const docUpdate = this.docUpdatesMap.get(_id)
     if (docUpdate !== undefined) {
-      await client.update(docUpdate, { txes: [] })
+      docUpdate.txes.forEach((p) => (p.isNew = false))
+      await client.update(docUpdate, { txes: docUpdate.txes })
     }
   }
 
@@ -70,7 +71,8 @@ export class NotificationClientImpl implements NotificationClient {
     const client = getClient()
     const docUpdate = this.docUpdatesMap.get(_id)
     if (docUpdate !== undefined) {
-      await client.update(docUpdate, { txes: [] })
+      docUpdate.txes.forEach((p) => (p.isNew = false))
+      await client.update(docUpdate, { txes: docUpdate.txes })
     } else {
       const doc = await client.findOne(_class, { _id })
       if (doc !== undefined) {
@@ -160,9 +162,9 @@ export async function hide (object: DocUpdates | DocUpdates[]): Promise<void> {
 export async function markAsUnread (object: DocUpdates): Promise<void> {
   const client = getClient()
   if (object.txes.length > 0) return
-  if (object.lastTx !== undefined && object.lastTxTime !== undefined) {
-    await client.update(object, {
-      txes: [[object.lastTx, object.lastTxTime]]
-    })
-  }
+  const txes = object.txes
+  txes[0].isNew = true
+  await client.update(object, {
+    txes
+  })
 }

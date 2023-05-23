@@ -15,12 +15,18 @@
 <script lang="ts">
   import { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Button, IconClose, eventToHTMLElement, resolvedLocationStore, showPopup } from '@hcengineering/ui'
+  import {
+    Button,
+    IconClose,
+    IconFilter,
+    eventToHTMLElement,
+    resolvedLocationStore,
+    showPopup
+  } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { filterStore, getFilterKey, setFilters } from '../../filter'
   import view from '../../plugin'
   import FilterTypePopup from './FilterTypePopup.svelte'
-  import IconFilter from '../icons/Filter.svelte'
   import IconArrowDown from '../icons/ArrowDown.svelte'
 
   export let _class: Ref<Class<Doc>> | undefined

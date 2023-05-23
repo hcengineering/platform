@@ -2,6 +2,7 @@
   "extends": "./node_modules/@hcengineering/model-rig/profiles/default/tsconfig.json",
 
   "compilerOptions": {
+    "target": "esnext",
     "rootDir": "./src",
     "outDir": "./lib",
   }

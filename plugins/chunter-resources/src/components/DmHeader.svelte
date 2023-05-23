@@ -25,6 +25,7 @@
   import { userSearch } from '../index'
 
   export let spaceId: Ref<DirectMessage> | undefined
+  export let withSearch: boolean = true
 
   let userSearch_: string = ''
   userSearch.subscribe((v) => (userSearch_ = v))
@@ -68,16 +69,18 @@
       {/await}
     {/await}
   {/if}
-  <SearchEdit
-    value={userSearch_}
-    on:change={(ev) => {
-      userSearch.set(ev.detail)
+  {#if withSearch}
+    <SearchEdit
+      value={userSearch_}
+      on:change={(ev) => {
+        userSearch.set(ev.detail)
 
-      if (ev.detail !== '') {
-        navigateToSpecial('chunterBrowser')
-      }
-    }}
-  />
+        if (ev.detail !== '') {
+          navigateToSpecial('chunterBrowser')
+        }
+      }}
+    />
+  {/if}
 </div>
 
 <style lang="scss">

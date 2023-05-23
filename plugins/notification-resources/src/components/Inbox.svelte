@@ -13,74 +13,55 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import activity, { TxViewlet } from '@hcengineering/activity'
-  import { activityKey, ActivityKey } from '@hcengineering/activity-resources'
-  import { Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
-  import notification, { DocUpdates } from '@hcengineering/notification'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { AnyComponent, Component, Label, ListView, Loading, Scroller } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
-  import { ActionContext, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
+  import { AnyComponent, Component, Tabs } from '@hcengineering/ui'
+  import Activity from './Activity.svelte'
+  import People from './People.svelte'
+  import notification from '../plugin'
+  import { Class, Doc, Ref } from '@hcengineering/core'
   import { NotificationClientImpl } from '../utils'
-  import NotificationView from './NotificationView.svelte'
+  import { getClient } from '@hcengineering/presentation'
+  import { DocUpdates } from '@hcengineering/notification'
+  import view from '@hcengineering/view'
+  import Filter from './Filter.svelte'
+  import { EmployeeAccount } from '@hcengineering/contact'
+  import EmployeeInbox from './EmployeeInbox.svelte'
+  import chunter from '@hcengineering/chunter'
 
   export let visibileNav: boolean
+  let filter: 'all' | 'read' | 'unread' = 'all'
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const notificationClient = NotificationClientImpl.getClient()
-  const query = createQuery()
 
-  let docs: DocUpdates[] = []
-  let loading = true
-
-  $: query.query(
-    notification.class.DocUpdates,
+  $: tabs = [
     {
-      user: getCurrentAccount()._id,
-      hidden: false
-    },
-    (res) => {
-      docs = res
-      listProvider.update(docs)
-      if (loading || _id === undefined) {
-        changeSelected(selected)
-      } else if (docs.find((p) => p.attachedTo === _id) === undefined) {
-        changeSelected(selected)
-      }
-      loading = false
+      label: notification.string.Activity,
+      props: { filter },
+      component: Activity
     },
     {
-      sort: {
-        lastTxTime: -1
-      }
+      label: notification.string.People,
+      props: { filter },
+      component: People
     }
-  )
+  ]
 
-  $: changeSelected(selected)
+  let component: AnyComponent | undefined
+  let _id: Ref<Doc> | undefined
+  let _class: Ref<Class<Doc>> | undefined
+  let selectedEmployee: Ref<EmployeeAccount> | undefined = undefined
 
-  function changeSelected (index: number) {
-    if (docs[index] !== undefined) {
-      select(docs[index])
-    } else if (docs.length) {
-      if (index < docs.length - 1) {
-        selected++
-      } else {
-        selected--
-      }
-    } else {
-      selected = 0
+  async function select (value: DocUpdates | undefined) {
+    if (!value) {
       component = undefined
       _id = undefined
       _class = undefined
+      return
     }
-  }
-
-  async function select (value: DocUpdates) {
     if (value.attachedTo !== _id && _id !== undefined) {
       await notificationClient.read(_id)
     }
-    listProvider.updateFocus(value)
     const targetClass = hierarchy.getClass(value.attachedToClass)
     const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
     component = panelComponent.component ?? view.component.EditDoc
@@ -88,81 +69,57 @@
     _class = value.attachedToClass
   }
 
-  let component: AnyComponent | undefined
-  let _id: Ref<Doc> | undefined
-  let _class: Ref<Class<Doc>> | undefined
-
-  let viewlets: Map<ActivityKey, TxViewlet>
-
-  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
-    if (dir === 'vertical') {
-      const value = selected + offset
-      if (docs[value] !== undefined) {
-        selected = value
-        listView?.select(selected)
-      }
+  function openDM (value: Ref<Doc>) {
+    if (value) {
+      const targetClass = hierarchy.getClass(chunter.class.DirectMessage)
+      const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
+      component = panelComponent.component ?? view.component.EditDoc
+      _id = value
+      _class = chunter.class.DirectMessage
     }
-  })
+  }
 
-  const descriptors = createQuery()
-  descriptors.query(activity.class.TxViewlet, {}, (result) => {
-    viewlets = new Map(result.map((r) => [activityKey(r.objectClass, r.txClass), r]))
-  })
-
-  let selected = 0
-  let listView: ListView
+  let selectedTab = 0
 </script>
 
-<ActionContext
-  context={{
-    mode: 'browser'
-  }}
-/>
 <div class="flex h-full">
   {#if visibileNav}
     <div class="antiPanel-component border-right filled indent aside inbox">
-      <div class="header">
-        <span class="fs-title overflow-label">
-          <Label label={notification.string.Inbox} />
-        </span>
-      </div>
-      <div class="top-divider clear-mins h-full">
-        <Scroller>
-          {#if loading}
-            <Loading />
-          {:else}
-            <ListView bind:this={listView} count={docs.length} selection={selected}>
-              <svelte:fragment slot="item" let:item>
-                <NotificationView
-                  value={docs[item]}
-                  selected={selected === item}
-                  {viewlets}
-                  on:click={() => {
-                    selected = item
-                  }}
-                />
-              </svelte:fragment>
-            </ListView>
-          {/if}
-        </Scroller>
-      </div>
+      {#if selectedEmployee === undefined}
+        <Tabs
+          bind:selected={selectedTab}
+          model={tabs}
+          on:change={(e) => select(e.detail)}
+          on:open={(e) => {
+            selectedEmployee = e.detail
+          }}
+          withPadding
+          size="small"
+        >
+          <svelte:fragment slot="rightButtons">
+            <Filter bind:filter />
+          </svelte:fragment>
+        </Tabs>
+      {:else}
+        <EmployeeInbox
+          accountId={selectedEmployee}
+          on:change={(e) => select(e.detail)}
+          on:dm={(e) => openDM(e.detail)}
+          on:close={(e) => {
+            selectedEmployee = undefined
+          }}
+        />
+      {/if}
     </div>
   {/if}
-  {#if component && _id && _class}
-    <Component is={component} props={{ embedded: true, _id, _class }} />
-  {:else}
-    <div class="antiPanel-component filled w-full" />
-  {/if}
+  <div class="antiPanel-component filled w-full">
+    {#if component && _id && _class}
+      <Component is={component} props={{ embedded: true, _id, _class }} />
+    {/if}
+  </div>
 </div>
 
 <style lang="scss">
-  .header {
-    min-height: 3.1rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 0 1.5rem;
-  }
   .inbox {
     min-width: 20rem;
   }

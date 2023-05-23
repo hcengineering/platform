@@ -25,8 +25,6 @@ export default mergeIds(chunterId, chunter, {
     CreateChannel: '' as AnyComponent,
     CreateDirectMessage: '' as AnyComponent,
     ChannelHeader: '' as AnyComponent,
-    DmHeader: '' as AnyComponent,
-    ChannelView: '' as AnyComponent,
     ChannelViewPanel: '' as AnyComponent,
     ThreadViewPanel: '' as AnyComponent,
     ThreadParentPresenter: '' as AnyComponent,

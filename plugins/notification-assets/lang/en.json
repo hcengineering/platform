@@ -19,6 +19,11 @@
     "Change": "Change",
     "AddedRemoved": "Added/removed",
     "YouAddedCollaborators": "You was added to collaborators",
-    "ChangeCollaborators": "changed collaborators"
+    "ChangeCollaborators": "changed collaborators",
+    "Activity": "Activity",
+    "People": "People",
+    "All": "All",
+    "Read": "Read",
+    "Unread": "Unread"
   }
 }

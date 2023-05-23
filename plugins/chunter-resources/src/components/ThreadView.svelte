@@ -160,7 +160,7 @@
 
   function newMessagesStart (comments: ThreadMessage[], docUpdates: Map<Ref<Doc>, DocUpdates>): number {
     const docUpdate = docUpdates.get(_id)
-    const lastView = docUpdate?.txes?.[0]?.[1]
+    const lastView = docUpdate?.txes?.[0]?.modifiedOn
     if (docUpdate === undefined || lastView === undefined) return -1
     for (let index = 0; index < comments.length; index++) {
       const comment = comments[index]

@@ -19,6 +19,11 @@
     "Change": "Изменено",
     "AddedRemoved": "Добавлено/удалено",
     "YouAddedCollaborators": "Вы были добавлены как участник",
-    "ChangeCollaborators": "изменил(а) участники"
+    "ChangeCollaborators": "изменил(а) участники",
+    "Activity": "Активность",
+    "People": "Люди",
+    "All": "Все",
+    "Read": "Прочитанное",
+    "Unread": "Не прочитанное"
   }
 }

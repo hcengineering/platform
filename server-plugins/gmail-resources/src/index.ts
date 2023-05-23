@@ -79,13 +79,17 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
         res.push(
           control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
             $push: {
-              txes: [tx._id as Ref<TxCUD<Doc>>, tx.modifiedOn]
+              txes: {
+                _id: tx._id as Ref<TxCUD<Doc>>,
+                modifiedOn: tx.modifiedOn,
+                modifiedBy: tx.modifiedBy,
+                isNew: true
+              }
             }
           })
         )
         res.push(
           control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
-            lastTx: tx._id as Ref<TxCUD<Doc>>,
             lastTxTime: tx.modifiedOn,
             hidden: false
           })
@@ -98,9 +102,10 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
             attachedTo: channel._id,
             attachedToClass: channel._class,
             hidden: false,
-            lastTx: tx._id as Ref<TxCUD<Doc>>,
             lastTxTime: tx.modifiedOn,
-            txes: [[tx._id as Ref<TxCUD<Doc>>, tx.modifiedOn]]
+            txes: [
+              { _id: tx._id as Ref<TxCUD<Doc>>, modifiedOn: tx.modifiedOn, modifiedBy: tx.modifiedBy, isNew: true }
+            ]
           })
         )
       }

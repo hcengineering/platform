@@ -13,9 +13,23 @@
 // limitations under the License.
 //
 
-import core, { AttachedDoc, Class, Collection, Data, Doc, DOMAIN_TX, Ref, TxOperations } from '@hcengineering/core'
+import core, {
+  Account,
+  AttachedDoc,
+  Class,
+  Collection,
+  Data,
+  Doc,
+  DOMAIN_TX,
+  Ref,
+  Timestamp,
+  toIdMap,
+  Tx,
+  TxCUD,
+  TxOperations
+} from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
-import notification, { DocUpdates, NotificationType } from '@hcengineering/notification'
+import notification, { DocUpdates, DocUpdateTx, NotificationType } from '@hcengineering/notification'
 import { DOMAIN_NOTIFICATION } from '.'
 
 async function fillNotificationText (client: MigrationClient): Promise<void> {
@@ -37,6 +51,75 @@ async function fillNotificationText (client: MigrationClient): Promise<void> {
       'attributes.text': ''
     }
   )
+}
+
+interface OldDocUpdates extends Doc {
+  user: Ref<Account>
+  attachedTo: Ref<Doc>
+  attachedToClass: Ref<Class<Doc>>
+  hidden: boolean
+  lastTx?: Ref<TxCUD<Doc>>
+  lastTxTime?: Timestamp
+  txes: [Ref<TxCUD<Doc>>, Timestamp][]
+}
+
+async function fillDocUpdates (client: MigrationClient): Promise<void> {
+  const notifications = await client.find<OldDocUpdates>(DOMAIN_NOTIFICATION, {
+    _class: notification.class.DocUpdates,
+    lastTx: { $exists: true }
+  })
+  while (notifications.length > 0) {
+    const docs = notifications.splice(0, 1000)
+    const txIds = docs
+      .map((p) => {
+        const res = p.txes.map((p) => p[0])
+        if (p.lastTx !== undefined) {
+          res.push(p.lastTx)
+        }
+        return res
+      })
+      .flat()
+    const txes = await client.find<Tx>(DOMAIN_TX, { _id: { $in: txIds } })
+    const txesMap = toIdMap(txes)
+    for (const doc of docs) {
+      const txes: DocUpdateTx[] = doc.txes
+        .map((p) => {
+          const tx = txesMap.get(p[0])
+          if (tx === undefined) return undefined
+          const res: DocUpdateTx = {
+            _id: tx._id as Ref<TxCUD<Doc>>,
+            modifiedBy: tx.modifiedBy,
+            modifiedOn: tx.modifiedOn,
+            isNew: true
+          }
+          return res
+        })
+        .filter((p) => p !== undefined) as DocUpdateTx[]
+      if (txes.length === 0 && doc.lastTx !== undefined) {
+        const tx = txesMap.get(doc.lastTx)
+        if (tx !== undefined) {
+          txes.unshift({
+            _id: tx._id as Ref<TxCUD<Doc>>,
+            modifiedBy: tx.modifiedBy,
+            modifiedOn: tx.modifiedOn,
+            isNew: false
+          })
+        }
+      }
+      await client.update(
+        DOMAIN_NOTIFICATION,
+        {
+          _id: doc._id
+        },
+        {
+          $unset: { lastTx: 1 },
+          $set: {
+            txes
+          }
+        }
+      )
+    }
+  }
 }
 
 async function removeSettings (client: MigrationClient): Promise<void> {
@@ -178,6 +261,7 @@ export const notificationOperation: MigrateOperation = {
     await fillNotificationText(client)
     await fillCollaborators(client)
     await fillDocUpdatesHidder(client)
+    await fillDocUpdates(client)
     await cleanOutdatedSettings(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {

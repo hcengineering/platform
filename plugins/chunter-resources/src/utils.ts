@@ -104,6 +104,7 @@ export function openMessageFromSpecial (message: ChunterMessage): void {
 
 export function navigateToSpecial (specialId: string): void {
   const loc = get(location)
+  loc.path[2] = chunterId
   loc.path[3] = specialId
   navigate(loc)
 }

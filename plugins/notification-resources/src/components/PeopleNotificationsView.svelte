@@ -15,18 +15,29 @@
 <script lang="ts">
   import { TxViewlet } from '@hcengineering/activity'
   import { ActivityKey } from '@hcengineering/activity-resources'
+  import { EmployeeAccount, getName } from '@hcengineering/contact'
+  import { Avatar, employeeByIdStore } from '@hcengineering/contact-resources'
   import core, { Doc, TxCUD, TxProcessor } from '@hcengineering/core'
   import notification, { DocUpdates } from '@hcengineering/notification'
-  import { getResource } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { AnySvelteComponent, TimeSince, getEventPositionElement, showPopup } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
-  import { Menu } from '@hcengineering/view-resources'
+  import { ActionIcon, AnySvelteComponent, Label, TimeSince } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
   import TxView from './TxView.svelte'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import view from '@hcengineering/view'
+  import { getResource } from '@hcengineering/platform'
+  import ArrowRight from './icons/ArrowRight.svelte'
 
-  export let value: DocUpdates
+  export let value: EmployeeAccount
+  export let items: DocUpdates[]
   export let viewlets: Map<ActivityKey, TxViewlet>
   export let selected: boolean
+
+  $: firstItem = items[0]
+
+  $: employee = $employeeByIdStore.get(value.employee)
+
+  $: newTxes = items.reduce((acc, cur) => acc + cur.txes.filter((p) => p.isNew).length, 0) // items.length
+  const dispatch = createEventDispatcher()
 
   let doc: Doc | undefined = undefined
   let tx: TxCUD<Doc> | undefined = undefined
@@ -34,8 +45,8 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $: value.txes[0] &&
-    client.findOne(core.class.TxCUD, { _id: value.txes[0]._id }).then((res) => {
+  $: firstItem?.txes[0] &&
+    client.findOne(core.class.TxCUD, { _id: firstItem.txes[0]._id }).then((res) => {
       if (res !== undefined) {
         tx = TxProcessor.extractTx(res) as TxCUD<Doc>
       } else {
@@ -45,48 +56,56 @@
 
   let presenter: AnySvelteComponent | undefined = undefined
   $: presenterRes =
-    hierarchy.classHierarchyMixin(value.attachedToClass, notification.mixin.NotificationObjectPresenter)?.presenter ??
-    hierarchy.classHierarchyMixin(value.attachedToClass, view.mixin.ObjectPresenter)?.presenter
+    hierarchy.classHierarchyMixin(firstItem.attachedToClass, notification.mixin.NotificationObjectPresenter)
+      ?.presenter ?? hierarchy.classHierarchyMixin(firstItem.attachedToClass, view.mixin.ObjectPresenter)?.presenter
   $: if (presenterRes) {
     getResource(presenterRes).then((res) => (presenter = res))
   }
 
   const docQuery = createQuery()
-  $: docQuery.query(value.attachedToClass, { _id: value.attachedTo }, (res) => {
+  $: docQuery.query(firstItem.attachedToClass, { _id: firstItem.attachedTo }, (res) => {
     ;[doc] = res
   })
-
-  $: newTxes = value.txes.filter((p) => p.isNew).length
-
-  function showMenu (e: MouseEvent) {
-    showPopup(Menu, { object: value, baseMenuClass: value._class }, getEventPositionElement(e))
-  }
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="container cursor-pointer" class:selected>
   <div class="notify" class:hidden={newTxes === 0} />
   {#if doc}
-    <div
-      class="clear-mins content bottom-divider"
-      class:read={newTxes === 0}
-      on:contextmenu|preventDefault={showMenu}
-      on:click
-    >
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div class="clear-mins content bottom-divider" class:read={newTxes === 0} on:click>
       <div class="w-full">
-        <div class="flex-between">
+        <div class="flex-between mb-2">
+          <div class="flex-row-center flex-gap-2">
+            <Avatar avatar={employee?.avatar} size="small" />
+            {#if employee}
+              <span class="font-medium">{getName(employee)}</span>
+            {:else}
+              <span class="font-medium"><Label label={core.string.System} /></span>
+            {/if}
+            {#if newTxes > 0}
+              <div class="counter">
+                {newTxes}
+              </div>
+            {/if}
+          </div>
+          <div>
+            <ActionIcon
+              icon={ArrowRight}
+              size="medium"
+              action={() => {
+                dispatch('open', value._id)
+              }}
+            />
+          </div>
+        </div>
+        <div>
           {#if presenter}
             <svelte:component this={presenter} value={doc} inline />
           {/if}
-          {#if newTxes > 0}
-            <div class="counter">
-              {newTxes}
-            </div>
-          {/if}
         </div>
         <div class="flex-between mt-2">
-          {#if tx}
-            <TxView {tx} {viewlets} objectId={value.attachedTo} />
+          {#if tx && firstItem}
+            <TxView {tx} {viewlets} objectId={firstItem.attachedTo} />
           {/if}
           <div class="time">
             <TimeSince value={tx?.modifiedOn} />
@@ -136,7 +155,7 @@
   .notify {
     height: 0.5rem;
     width: 0.5rem;
-    margin-top: 0.75rem;
+    margin-top: 1.25rem;
     margin-right: 0.5rem;
     background-color: #2b5190;
     border-radius: 50%;
@@ -147,7 +166,6 @@
 
   .counter {
     display: flex;
-    align-self: flex-start;
     align-items: center;
     justify-content: center;
     height: 1.25rem;

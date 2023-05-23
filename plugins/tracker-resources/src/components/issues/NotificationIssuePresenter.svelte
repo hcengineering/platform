@@ -13,41 +13,30 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery, statusStore } from '@hcengineering/presentation'
+  import { createQuery } from '@hcengineering/presentation'
   import type { Issue, Project } from '@hcengineering/tracker'
-  import { Icon } from '@hcengineering/ui'
   import tracker from '../../plugin'
-  import IssueStatusIcon from './IssueStatusIcon.svelte'
 
   export let value: Issue
 
   const spaceQuery = createQuery()
   let currentProject: Project | undefined = undefined
 
-  spaceQuery.query(tracker.class.Project, { _id: value.space }, (res) => ([currentProject] = res))
+  $: spaceQuery.query(tracker.class.Project, { _id: value.space }, (res) => ([currentProject] = res))
 
   $: title = currentProject ? `${currentProject.identifier}-${value?.number}` : `${value?.number}`
-  $: status = $statusStore.byId.get(value.status)
 </script>
 
 {#if value}
-  <div class="flex-between clear-mins">
-    <div class="flex-presenter inline-presenter mr-2">
-      {#if currentProject}
-        <div class="icon">
-          <Icon icon={currentProject.icon ?? tracker.icon.Home} size="small" />
-        </div>
-        <span class="label no-underline nowrap">
-          {currentProject.name}
-        </span>
-      {/if}
-      <span class="overflow-label ml-2">
-        <span class="caption-color">{title}</span>
-        {value.title}
+  <div class="w-full">
+    <div class="flex-presenter overflow-label clear-mins inline-presenter mb-1">
+      <span class="font-medium mr-2">{title}</span>
+      <span>
+        {currentProject?.name}
       </span>
     </div>
-    {#if status}
-      <IssueStatusIcon value={status} size="small" />
-    {/if}
+    <div class="overflow-label">
+      {value.title}
+    </div>
   </div>
 {/if}
