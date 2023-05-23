@@ -72,10 +72,10 @@ export const milestoneStatusAssets: Record<MilestoneStatus, { icon: Asset, label
 
 export const defaultPriorities = [
   IssuePriority.NoPriority,
-  IssuePriority.Urgent,
-  IssuePriority.High,
+  IssuePriority.Low,
   IssuePriority.Medium,
-  IssuePriority.Low
+  IssuePriority.High,
+  IssuePriority.Urgent
 ]
 
 export const issuesGroupBySorting: Record<IssuesGrouping, SortingQuery<Issue>> = {
