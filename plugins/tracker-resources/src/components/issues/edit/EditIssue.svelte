@@ -183,7 +183,6 @@
     on:close={() => dispatch('close')}
   >
     <svelte:fragment slot="navigator">
-      <!-- TODO: add horizontal scroll -->
       <UpDownNavigator element={issue} />
       <ParentsNavigator element={issue} />
     </svelte:fragment>
