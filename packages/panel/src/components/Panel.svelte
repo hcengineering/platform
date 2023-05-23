@@ -109,7 +109,7 @@
 >
   <svelte:fragment slot="navigator">
     {#if $$slots.navigator}
-      <div class="flex-row-center flex-gap-1-5">
+      <div class="flex-row-center flex-gap-1-5 mx-2">
         <slot name="navigator" />
       </div>
     {/if}
