@@ -18,7 +18,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import tags, { selectedTagElements, TagCategory, TagElement } from '@hcengineering/tags'
   import { DoneState, Task } from '@hcengineering/task'
-  import { Component, IModeSelector, Label, resolvedLocationStore, SearchEdit } from '@hcengineering/ui'
+  import { Component, IModeSelector, Label, resolvedLocationStore, SearchEdit, ModeSelector } from '@hcengineering/ui'
   import {
     activeViewlet,
     FilterButton,
@@ -34,7 +34,6 @@
   import view, { Viewlet } from '@hcengineering/view'
   import { onDestroy } from 'svelte'
   import FilterBar from '@hcengineering/view-resources/src/components/filter/FilterBar.svelte'
-  import ModeSelector from '@hcengineering/ui/src/components/ModeSelector.svelte'
 
   export let _class: Ref<Class<Task>> = task.class.Task
   export let labelTasks = task.string.Tasks
@@ -86,18 +85,21 @@
     )
   })
   const subscribedQuery = createQuery()
-  $: subscribedQuery.query(
-    _class,
-    { 'notification:mixin:Collaborators.collaborators': getCurrentAccount()._id },
-    (result) => {
-      const newSub = result.map((p) => p._id as Ref<Doc> as Ref<Task>)
-      const curSub = subscribed._id.$in
-      if (curSub.length !== newSub.length || curSub.some((id, i) => newSub[i] !== id)) {
-        subscribed = { _id: { $in: newSub } }
-      }
-    },
-    { sort: { _id: 1 } }
-  )
+  function getSubscribed () {
+    subscribedQuery.query(
+      _class,
+      { 'notification:mixin:Collaborators.collaborators': getCurrentAccount()._id },
+      (result) => {
+        const newSub = result.map((p) => p._id as Ref<Doc> as Ref<Task>)
+        const curSub = subscribed._id.$in
+        if (curSub.length !== newSub.length || curSub.some((id, i) => newSub[i] !== id)) {
+          subscribed = { _id: { $in: newSub } }
+        }
+      },
+      { sort: { _id: 1 } }
+    )
+  }
+  $: if (mode === 'subscribed') getSubscribed()
   const config: [string, IntlString, object][] = [
     ['assigned', view.string.Assigned, {}],
     ['created', view.string.Created, {}],

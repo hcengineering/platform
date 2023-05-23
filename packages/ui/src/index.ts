@@ -181,6 +181,7 @@ export { default as Wizard } from './components/wizard/Wizard.svelte'
 export { default as StepsDialog } from './components/StepsDialog.svelte'
 export { default as EmojiPopup } from './components/EmojiPopup.svelte'
 export { default as IconWithEmojii } from './components/IconWithEmojii.svelte'
+export { default as ModeSelector } from './components/ModeSelector.svelte'
 
 export * from './types'
 export * from './location'
