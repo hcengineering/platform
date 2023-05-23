@@ -23,11 +23,11 @@
     AttributeCategory,
     AttributeCategoryOrder,
     AttributesBar,
+    KeyedAttribute,
     createQuery,
     getAttributePresenterClass,
     getClient,
-    hasResource,
-    KeyedAttribute
+    hasResource
   } from '@hcengineering/presentation'
   import { AnyComponent, Button, Component, IconMixin, IconMoreH, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -203,20 +203,21 @@
     if (clazz.icon !== undefined) return clazz.icon
     while (clazz.extends !== undefined) {
       clazz = hierarchy.getClass(clazz.extends)
-      if (clazz.icon !== undefined) {
+      if (clazz.icon != null) {
         return clazz.icon
       }
     }
-    throw new Error(`Icon not found for ${_class}`)
+    // throw new Error(`Icon not found for ${_class}`)
   }
 
   $: icon = getIcon(realObjectClass)
 
   let title: string = ''
+  let rawTitle: string = ''
 
   $: if (object !== undefined) {
     getTitle(object).then((t) => {
-      title = t
+      rawTitle = t
     })
   }
 
@@ -266,9 +267,12 @@
     ignoreMixins = new Set(ev.detail.ignoreMixins)
     allowedCollections = ev.detail.allowedCollections ?? []
     collectionArrays = ev.detail.collectionArrays ?? []
+    title = ev.detail.title
     getMixins(object, showAllMixins)
     updateKeys()
   }
+
+  $: finalTitle = title ?? rawTitle
 </script>
 
 <ActionContext
@@ -277,10 +281,10 @@
   }}
 />
 
-{#if object !== undefined && title !== undefined}
+{#if object !== undefined && finalTitle !== undefined}
   <Panel
     {icon}
-    {title}
+    title={finalTitle}
     {object}
     {embedded}
     isHeader={mainEditor?.pinned ?? false}
@@ -296,26 +300,28 @@
     withoutInput={!activityOptions.showInput}
   >
     <svelte:fragment slot="navigator">
-      <UpDownNavigator element={object} />
+      {#if !embedded}
+        <UpDownNavigator element={object} />
+      {/if}
     </svelte:fragment>
 
     <svelte:fragment slot="utils">
       <div class="p-1">
         <Button icon={IconMoreH} kind={'transparent'} size={'medium'} on:click={showMenu} />
       </div>
+      <div class="p-1">
+        <Button
+          icon={IconMixin}
+          kind={'transparent'}
+          shape={'round'}
+          selected={showAllMixins}
+          on:click={() => {
+            showAllMixins = !showAllMixins
+          }}
+        />
+      </div>
     </svelte:fragment>
 
-    <svelte:fragment slot="actions">
-      <Button
-        icon={IconMixin}
-        kind={'transparent'}
-        shape={'round'}
-        selected={showAllMixins}
-        on:click={() => {
-          showAllMixins = !showAllMixins
-        }}
-      />
-    </svelte:fragment>
     <svelte:fragment slot="attributes" let:direction={dir}>
       {#if !headerLoading}
         {#if headerEditor !== undefined}

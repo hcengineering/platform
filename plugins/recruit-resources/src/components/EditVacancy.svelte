@@ -14,21 +14,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Attachments } from '@hcengineering/attachment-resources'
-  import core, { ClassifierKind, Doc, Mixin, Ref } from '@hcengineering/core'
+  import { AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
+  import { updateBacklinks } from '@hcengineering/chunter-resources'
+  import core, { ClassifierKind, Data, Doc, Mixin, Ref } from '@hcengineering/core'
+  import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { getResource } from '@hcengineering/platform'
+  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { Vacancy } from '@hcengineering/recruit'
-  import { FullDescriptionBox } from '@hcengineering/text-editor'
   import tracker from '@hcengineering/tracker'
-  import { Button, Component, EditBox, Grid, IconMixin, IconMoreH, LinkWrapper, showPopup } from '@hcengineering/ui'
+  import { Button, Component, EditBox, IconMixin, IconMoreH, Label, LinkWrapper, showPopup } from '@hcengineering/ui'
   import { ContextMenu, DocAttributeBar } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import recruit from '../plugin'
   import VacancyApplications from './VacancyApplications.svelte'
-  import { getResource } from '@hcengineering/platform'
-  import notification from '@hcengineering/notification'
-  import { onDestroy } from 'svelte'
 
   export let _id: Ref<Vacancy>
   export let embedded = false
@@ -36,6 +35,7 @@
   let object: Required<Vacancy>
   let rawName: string = ''
   let rawDesc: string = ''
+  let rawFullDesc: string = ''
   let lastId: Ref<Vacancy> | undefined = undefined
 
   let showAllMixins = false
@@ -63,15 +63,12 @@
         object = result[0] as Required<Vacancy>
         rawName = object.name
         rawDesc = object.description
+        rawFullDesc = object.fullDescription
       })
     }
   }
 
   $: updateObject(_id)
-
-  function onChange (key: string, value: any): void {
-    client.updateDoc(object._class, object.space, object._id, { [key]: value })
-  }
 
   function showMenu (ev?: Event): void {
     if (object !== undefined) {
@@ -97,13 +94,41 @@
   }
 
   $: getMixins(object, showAllMixins)
+
+  let descriptionBox: AttachmentStyleBoxEditor
+  $: descriptionKey = client.getHierarchy().getAttribute(recruit.class.Vacancy, 'fullDescription')
+  let saved = false
+  async function save () {
+    if (!object) {
+      return
+    }
+
+    const updates: Partial<Data<Vacancy>> = {}
+    const trimmedName = rawName.trim()
+
+    if (trimmedName.length > 0 && trimmedName !== object.name) {
+      updates.name = trimmedName
+    }
+
+    if (rawDesc !== object.description) {
+      updates.description = rawDesc
+    }
+    if (rawFullDesc !== object.fullDescription) {
+      updates.fullDescription = rawFullDesc
+    }
+
+    if (Object.keys(updates).length > 0) {
+      await client.update(object, updates)
+    }
+  }
 </script>
 
 {#if object}
   <Panel
     icon={clazz.icon}
     title={object.name}
-    isHeader={true}
+    isHeader={false}
+    isSub={false}
     isAside={true}
     {embedded}
     {object}
@@ -121,69 +146,67 @@
       {/if}
     </svelte:fragment>
 
-    <svelte:fragment slot="actions">
-      <Button
-        icon={IconMixin}
-        kind={'transparent'}
-        shape={'round'}
-        selected={showAllMixins}
-        on:click={() => {
-          showAllMixins = !showAllMixins
-        }}
-      />
-    </svelte:fragment>
     <svelte:fragment slot="attributes" let:direction={dir}>
       {#if dir === 'column'}
-        <DocAttributeBar
-          {object}
-          {mixins}
-          ignoreKeys={['name', 'description', 'fullDescription', 'private', 'archived']}
-        />
+        <DocAttributeBar {object} {mixins} ignoreKeys={['name', 'fullDescription', 'private', 'archived']} />
       {/if}
     </svelte:fragment>
 
-    <svelte:fragment slot="subheader">
-      <span class="fs-title flex-grow">
-        <EditBox
-          bind:value={object.name}
-          placeholder={recruit.string.VacancyPlaceholder}
-          kind={'large-style'}
-          focusable
-          on:blur={() => {
-            if (rawName !== object.name) onChange('name', object.name)
-          }}
-        />
-      </span>
+    <span class="fs-title flex-grow">
+      <EditBox
+        bind:value={object.name}
+        placeholder={recruit.string.VacancyPlaceholder}
+        kind={'large-style'}
+        focusable
+        focus={!embedded}
+        on:blur={save}
+      />
+    </span>
+
+    <svelte:fragment slot="pre-utils">
+      {#if saved}
+        <Label label={presentation.string.Saved} />
+      {/if}
     </svelte:fragment>
     <svelte:fragment slot="utils">
       <div class="p-1">
         <Button icon={IconMoreH} kind={'transparent'} size={'medium'} on:click={showMenu} />
       </div>
+      <div class="p-1">
+        <Button
+          icon={IconMixin}
+          kind={'transparent'}
+          shape={'round'}
+          selected={showAllMixins}
+          on:click={() => {
+            showAllMixins = !showAllMixins
+          }}
+        />
+      </div>
     </svelte:fragment>
 
-    <Grid column={1} rowGap={1.5}>
-      <EditBox
-        bind:value={object.description}
-        placeholder={recruit.string.VacancyDescription}
-        focusable
-        on:blur={() => {
-          if (rawDesc !== object.description) onChange('description', object.description)
+    <!-- <EditBox bind:value={object.description} placeholder={recruit.string.VacancyDescription} focusable on:blur={save} /> -->
+    <div class="w-full mt-6">
+      <AttachmentStyleBoxEditor
+        focusIndex={30}
+        {object}
+        key={{ key: 'fullDescription', attr: descriptionKey }}
+        bind:this={descriptionBox}
+        placeholder={recruit.string.FullDescription}
+        on:saved={(evt) => {
+          saved = evt.detail
+        }}
+        updateBacklinks={(doc, description) => {
+          updateBacklinks(client, doc._id, doc._class, doc._id, description)
         }}
       />
-      <FullDescriptionBox
-        content={object.fullDescription}
-        on:save={(res) => {
-          onChange('fullDescription', res.detail)
-        }}
-      />
-      <Attachments
-        objectId={object._id}
-        _class={object._class}
-        space={object.space}
-        attachments={object.attachments ?? 0}
-      />
+    </div>
+
+    <div class="w-full mt-6">
       <VacancyApplications objectId={object._id} />
+    </div>
+    <div class="w-full mt-6">
       <Component is={tracker.component.RelatedIssuesSection} props={{ object, label: recruit.string.RelatedIssues }} />
-    </Grid>
+    </div>
   </Panel>
 {/if}

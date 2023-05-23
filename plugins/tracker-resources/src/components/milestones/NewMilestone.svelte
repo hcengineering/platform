@@ -22,6 +22,7 @@
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import MilestoneStatusSelector from './MilestoneStatusSelector.svelte'
+  import { createBacklinks } from '@hcengineering/chunter-resources'
 
   export let space: Ref<Project>
   const dispatch = createEventDispatcher()
@@ -37,7 +38,9 @@
   }
 
   async function onSave () {
-    await client.createDoc(tracker.class.Milestone, space, object)
+    const _id = await client.createDoc(tracker.class.Milestone, space, object)
+    // Create an backlink to document
+    await createBacklinks(client, _id, tracker.class.Milestone, _id, object.description ?? '')
   }
 
   const handleComponentStatusChanged = (newMilestoneStatus: MilestoneStatus | undefined) => {
@@ -71,6 +74,7 @@
     bind:content={object.description}
     placeholder={tracker.string.ComponentDescriptionPlaceholder}
     emphasized
+    showButtons={false}
   />
   <svelte:fragment slot="pool">
     <MilestoneStatusSelector

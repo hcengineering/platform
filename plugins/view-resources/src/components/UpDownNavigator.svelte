@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Doc } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import ui, { Button, closeTooltip, IconDownOutline, IconNavPrev, IconUpOutline, navigate } from '@hcengineering/ui'
+  import { Button, IconDownOutline, IconUpOutline, navigate } from '@hcengineering/ui'
   import { tick } from 'svelte'
   import { select } from '../actionImpl'
   import view from '../plugin'
@@ -30,11 +30,6 @@
     }
   }
 
-  function goBack () {
-    closeTooltip()
-    history.back()
-  }
-
   $: select(undefined, 0, element, 'vertical')
 </script>
 
@@ -54,11 +49,3 @@
     on:click={(evt) => next(evt, false)}
   />
 {/if}
-<Button
-  focusIndex={10007}
-  showTooltip={{ label: ui.string.Back, direction: 'bottom' }}
-  icon={IconNavPrev}
-  kind={'secondary'}
-  size={'medium'}
-  on:click={goBack}
-/>

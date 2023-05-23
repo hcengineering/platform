@@ -81,16 +81,17 @@ export async function getObjectPresenter (
   preserveKey: BuildModelKey,
   isCollectionAttr: boolean = false,
   checkResource = false
-): Promise<AttributeModel> {
+): Promise<AttributeModel | undefined> {
   const hierarchy = client.getHierarchy()
   const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : view.mixin.ObjectPresenter
   const clazz = hierarchy.getClass(_class)
 
   const presenterMixin = hierarchy.classHierarchyMixin(_class, mixin, (m) => !checkResource || hasResource(m.presenter))
   if (presenterMixin?.presenter === undefined) {
-    throw new Error(
+    console.error(
       `object presenter not found for class=${_class}, mixin=${mixin}, preserve key ${JSON.stringify(preserveKey)}`
     )
+    return undefined
   }
   const presenter = await getResource(presenterMixin.presenter)
   const key = preserveKey.sortingKey ?? preserveKey.key
@@ -195,7 +196,11 @@ export async function getPresenter<T extends Doc> (
     }
   }
   if (key.key.length === 0) {
-    return await getObjectPresenter(client, _class, preserveKey, isCollectionAttr)
+    const p = await getObjectPresenter(client, _class, preserveKey, isCollectionAttr)
+    if (p === undefined) {
+      throw new Error(`object presenter not found for class=${_class}, preserve key ${JSON.stringify(preserveKey)}`)
+    }
+    return p
   } else {
     if (key.key.startsWith('$lookup')) {
       if (lookup === undefined) {

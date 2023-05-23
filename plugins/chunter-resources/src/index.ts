@@ -64,6 +64,7 @@ import { getDmName, getLink, getTitle, resolveLocation } from './utils'
 export { default as Header } from './components/Header.svelte'
 export { classIcon } from './utils'
 export { CommentPopup, CommentsPresenter }
+export { createBacklinks, updateBacklinks } from './backlinks'
 
 async function MarkUnread (object: Message): Promise<void> {
   const client = NotificationClientImpl.getClient()

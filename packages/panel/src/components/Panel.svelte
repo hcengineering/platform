@@ -141,6 +141,7 @@
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
+    <slot name="pre-utils" />
     <Component is={calendar.component.DocReminder} props={{ value: object, title, focusIndex: 9000 }} />
     {#if isUtils && $$slots.utils}
       <div class="buttons-divider" />

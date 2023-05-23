@@ -27,32 +27,30 @@
     showPopup,
     tooltip
   } from '@hcengineering/ui'
-  import { AnyExtension } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
   import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
   import { FORMAT_MODES, FormatMode, RefAction, RefInputActionItem, TextEditorHandler } from '../types'
   import LinkPopup from './LinkPopup.svelte'
-  import MentionList from './MentionList.svelte'
-  import { SvelteRenderer } from './SvelteRenderer'
   import TextEditor from './TextEditor.svelte'
+  import { completionConfig } from './extensions'
   import Attach from './icons/Attach.svelte'
   import Bold from './icons/Bold.svelte'
-  import RIBold from './icons/RIBold.svelte'
   import Code from './icons/Code.svelte'
-  import RICode from './icons/RICode.svelte'
   import CodeBlock from './icons/CodeBlock.svelte'
-  import RILink from './icons/RILink.svelte'
-  import RIMention from './icons/RIMention.svelte'
   import Italic from './icons/Italic.svelte'
-  import RIItalic from './icons/RIItalic.svelte'
   import Link from './icons/Link.svelte'
   import ListBullet from './icons/ListBullet.svelte'
   import ListNumber from './icons/ListNumber.svelte'
   import Quote from './icons/Quote.svelte'
+  import RIBold from './icons/RIBold.svelte'
+  import RICode from './icons/RICode.svelte'
+  import RIItalic from './icons/RIItalic.svelte'
+  import RILink from './icons/RILink.svelte'
+  import RIMention from './icons/RIMention.svelte'
+  import RIStrikethrough from './icons/RIStrikethrough.svelte'
   import Send from './icons/Send.svelte'
   import Strikethrough from './icons/Strikethrough.svelte'
-  import RIStrikethrough from './icons/RIStrikethrough.svelte'
   import TextStyle from './icons/TextStyle.svelte'
 
   const dispatch = createEventDispatcher()
@@ -185,42 +183,6 @@
     textEditor.submit()
   }
 
-  const editorExtensions: AnyExtension[] = [
-    Completion.configure({
-      HTMLAttributes: {
-        class: 'reference'
-      },
-      suggestion: {
-        items: async (query: { query: string }) => {
-          return []
-        },
-        render: () => {
-          let component: any
-
-          return {
-            onStart: (props: any) => {
-              component = new SvelteRenderer(MentionList, {
-                ...props,
-                close: () => {
-                  component.destroy()
-                }
-              })
-            },
-            onUpdate (props: any) {
-              component.updateProps(props)
-            },
-            onKeyDown (props: any) {
-              return component.onKeyDown(props)
-            },
-            onExit () {
-              component.destroy()
-            }
-          }
-        }
-      }
-    })
-  ]
-
   const editorHandler: TextEditorHandler = {
     insertText: (text) => {
       textEditor.insertText(text)
@@ -277,6 +239,12 @@
       focusManager?.setFocus(idx)
     }
   }
+  const completionPlugin = Completion.configure({
+    ...completionConfig,
+    showDoc (event: MouseEvent, _id: string, _class: string) {
+      dispatch('open-document', { event, _id, _class })
+    }
+  })
 </script>
 
 <div class="ref-container">
@@ -380,7 +348,7 @@
           focused = true
           updateFocus()
         }}
-        extensions={editorExtensions}
+        extensions={[completionPlugin]}
         on:selection-update={updateFormattingState}
         on:update
         placeholder={placeholder ?? textEditorPlugin.string.EditorPlaceholder}

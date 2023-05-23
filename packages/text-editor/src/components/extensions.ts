@@ -14,6 +14,9 @@ import TipTapCodeBlock from '@tiptap/extension-code-block'
 import Gapcursor from '@tiptap/extension-gapcursor'
 
 import Link from '@tiptap/extension-link'
+import { CompletionOptions } from '../Completion'
+import MentionList from './MentionList.svelte'
+import { SvelteRenderer } from './SvelteRenderer'
 
 export const tableExtensions = [
   Table.configure({
@@ -126,3 +129,40 @@ export const mInsertTable = [
     header: true
   }
 ]
+
+/**
+ * @public
+ */
+export const completionConfig: Partial<CompletionOptions> = {
+  HTMLAttributes: {
+    class: 'reference'
+  },
+  suggestion: {
+    items: async (query: { query: string }) => {
+      return []
+    },
+    render: () => {
+      let component: any
+
+      return {
+        onStart: (props: any) => {
+          component = new SvelteRenderer(MentionList, {
+            ...props,
+            close: () => {
+              component.destroy()
+            }
+          })
+        },
+        onUpdate (props: any) {
+          component.updateProps(props)
+        },
+        onKeyDown (props: any) {
+          return component.onKeyDown(props)
+        },
+        onExit () {
+          component.destroy()
+        }
+      }
+    }
+  }
+}
