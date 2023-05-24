@@ -13,19 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AnyComponent, Component, Tabs } from '@hcengineering/ui'
-  import Activity from './Activity.svelte'
-  import People from './People.svelte'
-  import notification from '../plugin'
-  import { Class, Doc, Ref } from '@hcengineering/core'
-  import { NotificationClientImpl } from '../utils'
-  import { getClient } from '@hcengineering/presentation'
-  import { DocUpdates } from '@hcengineering/notification'
-  import view from '@hcengineering/view'
-  import Filter from './Filter.svelte'
-  import { EmployeeAccount } from '@hcengineering/contact'
-  import EmployeeInbox from './EmployeeInbox.svelte'
   import chunter from '@hcengineering/chunter'
+  import { EmployeeAccount } from '@hcengineering/contact'
+  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { DocUpdates } from '@hcengineering/notification'
+  import { getClient } from '@hcengineering/presentation'
+  import { AnyComponent, Component, Tabs } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
+  import notification from '../plugin'
+  import { NotificationClientImpl } from '../utils'
+  import Activity from './Activity.svelte'
+  import EmployeeInbox from './EmployeeInbox.svelte'
+  import Filter from './Filter.svelte'
+  import People from './People.svelte'
 
   export let visibileNav: boolean
   let filter: 'all' | 'read' | 'unread' = 'all'
