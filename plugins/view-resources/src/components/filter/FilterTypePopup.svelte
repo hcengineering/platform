@@ -125,8 +125,9 @@
   }
 
   function getOwnTypes (_class: Ref<Class<Doc>>): KeyFilter[] {
-    const clazz = hierarchy.getClass(_class)
-    const mixin = hierarchy.as(clazz, view.mixin.ClassFilters)
+    const mixin = hierarchy.classHierarchyMixin(_class, view.mixin.ClassFilters)
+    if (mixin === undefined) return []
+    _class = hierarchy.getBaseClass(_class)
     const result = getFilters(_class, mixin)
 
     if (mixin.strict) {
