@@ -21,7 +21,7 @@
   import core, { Account, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocUpdates } from '@hcengineering/notification'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
-  import { ActionIcon, Button, IconBack, ListView, Loading, Scroller } from '@hcengineering/ui'
+  import { ActionIcon, Button, IconBack, Loading, Scroller } from '@hcengineering/ui'
   import { ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import NotificationView from './NotificationView.svelte'
@@ -96,7 +96,6 @@
       const value = selected + offset
       if (docs[value] !== undefined) {
         selected = value
-        listView?.select(selected)
       }
     }
   })
@@ -107,7 +106,6 @@
   })
 
   let selected = 0
-  let listView: ListView
 
   let employee: Employee | undefined = undefined
   $: newTxes = docs.reduce((acc, cur) => acc + cur.txes.filter((p) => p.isNew).length, 0) // items.length
@@ -193,7 +191,6 @@
 
   .counter {
     display: flex;
-    align-self: flex-start;
     align-items: center;
     justify-content: center;
     height: 1.25rem;

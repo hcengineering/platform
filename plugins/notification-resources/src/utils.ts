@@ -112,7 +112,7 @@ export class NotificationClientImpl implements NotificationClient {
  */
 export async function hasntNotifications (object: DocUpdates): Promise<boolean> {
   if (object._class !== notification.class.DocUpdates) return false
-  return object.txes.length === 0
+  return !object.txes.some((p) => p.isNew)
 }
 
 /**
@@ -161,7 +161,7 @@ export async function hide (object: DocUpdates | DocUpdates[]): Promise<void> {
  */
 export async function markAsUnread (object: DocUpdates): Promise<void> {
   const client = getClient()
-  if (object.txes.length > 0) return
+  if (object.txes.length === 0) return
   const txes = object.txes
   txes[0].isNew = true
   await client.update(object, {
