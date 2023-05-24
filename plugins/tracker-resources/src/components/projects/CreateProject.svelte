@@ -17,7 +17,7 @@
   import { AccountArrayEditor, AssigneeBox } from '@hcengineering/contact-resources'
   import core, { Account, DocumentUpdate, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
-  import presentation, { Card, getClient } from '@hcengineering/presentation'
+  import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
   import { IssueStatus, Project, TimeReportDayType, genRanks } from '@hcengineering/tracker'
   import {
@@ -42,6 +42,7 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  const projectsQuery = createQuery()
 
   let name: string = project?.name ?? ''
   let description: string = project?.description ?? ''
@@ -51,6 +52,7 @@
   let defaultAssignee: Ref<Employee> | null | undefined = project?.defaultAssignee ?? null
   let members: Ref<Account>[] =
     project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount()._id]
+  let projectsIdentifiers: Set<string> = new Set()
 
   const dispatch = createEventDispatcher()
 
@@ -170,19 +172,28 @@
     })
   }
   function changeIdentity (ev: MouseEvent) {
-    showPopup(ChangeIdentity, { project }, eventToHTMLElement(ev), (result) => {
+    showPopup(ChangeIdentity, { identifier, projectsIdentifiers }, eventToHTMLElement(ev), (result) => {
       if (result != null) {
         identifier = result
       }
     })
   }
+
+  $: projectsQuery.query(
+    tracker.class.Project,
+    { _id: { $nin: project ? [project._id] : [] } },
+    (res) => (projectsIdentifiers = new Set(res.map(({ identifier }) => identifier)))
+  )
 </script>
 
 <Card
   label={isNew ? tracker.string.NewProject : tracker.string.EditProject}
   okLabel={isNew ? presentation.string.Create : presentation.string.Save}
   okAction={handleSave}
-  canSave={name.length > 0 && !(members.length === 0 && isPrivate)}
+  canSave={name.length > 0 &&
+    identifier.length > 0 &&
+    !projectsIdentifiers.has(identifier) &&
+    !(members.length === 0 && isPrivate)}
   on:close={() => {
     dispatch('close')
   }}
@@ -200,7 +211,7 @@
         }
       }}
     />
-    <div class="flex-row-center">
+    <div class="flex-row-center relative">
       <EditBox
         bind:value={identifier}
         disabled={!isNew}
@@ -208,7 +219,13 @@
         kind={'large-style'}
       />
       {#if !isNew}
-        <Button size={'small'} icon={IconEdit} on:click={changeIdentity} />
+        <div class="ml-1">
+          <Button size={'small'} icon={IconEdit} on:click={changeIdentity} />
+        </div>
+      {:else if projectsIdentifiers.has(identifier)}
+        <div class="absolute overflow-label duplicated-identifier">
+          <Label label={tracker.string.IdentifierExists} />
+        </div>
       {/if}
     </div>
   </div>
@@ -266,3 +283,11 @@
     />
   </div>
 </Card>
+
+<style lang="scss">
+  .duplicated-identifier {
+    right: 0;
+    bottom: -1rem;
+    color: var(--theme-warning-color);
+  }
+</style>

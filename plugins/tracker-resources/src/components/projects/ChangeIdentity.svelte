@@ -1,34 +1,26 @@
 <script lang="ts">
-  import presentation, { Card, getClient } from '@hcengineering/presentation'
-  import { Project } from '@hcengineering/tracker'
+  import presentation, { Card } from '@hcengineering/presentation'
   import EditBox from '@hcengineering/ui/src/components/EditBox.svelte'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
 
-  export let project: Project
+  export let identifier: string
+  export let projectsIdentifiers: Set<string>
 
-  let identifier = project.identifier
+  let newIdentifier = identifier
 
   const dispatch = createEventDispatcher()
 
   function save () {
-    dispatch('close', identifier)
+    dispatch('close', newIdentifier)
   }
-
-  let projects: Set<string> = new Set()
-
-  $: getClient()
-    .findAll(tracker.class.Project, {})
-    .then((pr) => {
-      projects = new Set(pr.map((p) => p.identifier))
-    })
 </script>
 
 <Card
-  label={projects.has(identifier) ? tracker.string.IdentifierExists : tracker.string.Identifier}
+  label={projectsIdentifiers.has(newIdentifier) ? tracker.string.IdentifierExists : tracker.string.Identifier}
   okLabel={presentation.string.Save}
   okAction={save}
-  canSave={identifier !== project.identifier && !projects.has(identifier)}
+  canSave={!!newIdentifier && newIdentifier !== identifier && !projectsIdentifiers.has(newIdentifier)}
   on:close={() => {
     dispatch('close')
   }}
@@ -36,7 +28,7 @@
 >
   <div class="float-left-box">
     <div class="float-left p-2">
-      <EditBox bind:value={identifier} />
+      <EditBox bind:value={newIdentifier} />
     </div>
   </div>
 </Card>
