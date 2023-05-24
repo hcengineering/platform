@@ -30,13 +30,7 @@ import {
 import { Client, Doc, getCurrentAccount, IdMap, ObjQueryType, Ref, Timestamp, toIdMap } from '@hcengineering/core'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { TemplateDataProvider } from '@hcengineering/templates'
-import {
-  DropdownIntlItem,
-  getCurrentResolvedLocation,
-  getPanelURI,
-  Location,
-  ResolvedLocation
-} from '@hcengineering/ui'
+import { TabItem, getCurrentResolvedLocation, getPanelURI, Location, ResolvedLocation } from '@hcengineering/ui'
 import view, { Filter } from '@hcengineering/view'
 import { FilterQuery } from '@hcengineering/view-resources'
 import { get, writable } from 'svelte/store'
@@ -269,21 +263,21 @@ function fillStores (): void {
 
 fillStores()
 
-export function getAvatarTypeDropdownItems (hasGravatar: boolean): DropdownIntlItem[] {
+export function getAvatarTypeDropdownItems (hasGravatar: boolean): TabItem[] {
   return [
     {
       id: AvatarType.COLOR,
-      label: contact.string.UseColor
+      labelIntl: contact.string.UseColor
     },
     {
       id: AvatarType.IMAGE,
-      label: contact.string.UseImage
+      labelIntl: contact.string.UseImage
     },
     ...(hasGravatar
       ? [
           {
             id: AvatarType.GRAVATAR,
-            label: contact.string.UseGravatar
+            labelIntl: contact.string.UseGravatar
           }
         ]
       : [])

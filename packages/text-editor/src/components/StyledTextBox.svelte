@@ -36,6 +36,7 @@
   export let enableFormatting = false
   export let autofocus = false
   export let enableBackReferences: boolean = false
+  export let isScrollable: boolean = true
 
   const Mode = {
     View: 1,
@@ -159,6 +160,7 @@
       {focusable}
       {enableFormatting}
       {autofocus}
+      {isScrollable}
       extensions={enableBackReferences ? [completionPlugin] : []}
       bind:content={rawValue}
       bind:this={textEditor}

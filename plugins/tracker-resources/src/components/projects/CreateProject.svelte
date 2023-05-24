@@ -26,13 +26,14 @@
     IconEdit,
     IconWithEmojii,
     Label,
-    ToggleWithLabel,
+    Toggle,
     eventToHTMLElement,
     getColorNumberByText,
     getPlatformColorDef,
     getPlatformColorForTextDef,
     showPopup,
-    themeStore
+    themeStore,
+    Grid
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
@@ -184,13 +185,18 @@
   okLabel={isNew ? presentation.string.Create : presentation.string.Save}
   okAction={handleSave}
   canSave={name.length > 0 && !(members.length === 0 && isPrivate)}
-  gap={'gapV-4'}
+  accentHeader
+  width={'medium'}
+  gap={'gapV-8'}
   on:close={() => {
     dispatch('close')
   }}
   on:changeContent
 >
-  <div class="flex-row-center flex-between">
+  <Grid rowGap={1} columnGap={1} alignItems={'center'}>
+    <div class="grid-header">
+      <Label label={tracker.string.ProjectTitle} />
+    </div>
     <EditBox
       bind:value={name}
       placeholder={tracker.string.ProjectTitlePlaceholder}
@@ -202,32 +208,37 @@
         }
       }}
     />
+
+    <div class="grid-header flex-col">
+      <Label label={tracker.string.Identifier} />
+      <span><Label label={tracker.string.UsedInIssueIDs} /></span>
+    </div>
     <div class="flex-row-center">
       <EditBox
         bind:value={identifier}
         disabled={!isNew}
         placeholder={tracker.string.ProjectIdentifierPlaceholder}
         kind={'large-style'}
+        uppercase
       />
       {#if !isNew}
         <Button size={'small'} icon={IconEdit} on:click={changeIdentity} />
       {/if}
     </div>
-  </div>
-  <StyledTextBox
-    alwaysEdit
-    showButtons={false}
-    bind:content={description}
-    placeholder={tracker.string.IssueDescriptionPlaceholder}
-  />
-  <ToggleWithLabel
-    label={presentation.string.MakePrivate}
-    description={presentation.string.MakePrivateDescription}
-    bind:on={isPrivate}
-    disabled={!isPrivate && members.length === 0}
-  />
-  <div class="flex-between">
-    <div class="caption">
+
+    <div class="grid-header">
+      <Label label={tracker.string.Description} />
+    </div>
+    <StyledTextBox
+      alwaysEdit
+      showButtons={false}
+      bind:content={description}
+      placeholder={tracker.string.IssueDescriptionPlaceholder}
+    />
+  </Grid>
+
+  <Grid rowGap={1} columnGap={1} alignItems={'center'}>
+    <div class="grid-header">
       <Label label={tracker.string.ChooseIcon} />
     </div>
     <Button
@@ -240,36 +251,50 @@
                 ? getPlatformColorDef(color, $themeStore.dark).icon
                 : getPlatformColorForTextDef(name, $themeStore.dark).icon
           }}
-      kind="no-border"
-      size="medium"
+      size={'large'}
       on:click={chooseIcon}
     />
-  </div>
 
-  <div class="flex-between">
-    <div class="caption">
+    <div class="grid-header flex-col">
+      <Label label={presentation.string.MakePrivate} />
+      <span><Label label={presentation.string.MakePrivateDescription} /></span>
+    </div>
+    <Toggle bind:on={isPrivate} disabled={!isPrivate && members.length === 0} />
+
+    <div class="grid-header">
       <Label label={tracker.string.Members} />
     </div>
     <AccountArrayEditor
       value={members}
       label={tracker.string.Members}
       onChange={(refs) => (members = refs)}
-      kind="link-bordered"
+      kind={'secondary'}
+      size={'large'}
     />
-  </div>
 
-  <div class="flex-between">
-    <div class="caption">
+    <div class="grid-header">
       <Label label={tracker.string.DefaultAssignee} />
     </div>
     <AssigneeBox
       label={tracker.string.Assignee}
       placeholder={tracker.string.Assignee}
-      kind="link-bordered"
+      kind={'secondary'}
+      size={'large'}
+      avatarSize={'card'}
       bind:value={defaultAssignee}
       titleDeselect={tracker.string.Unassigned}
       showNavigate={false}
       showTooltip={{ label: tracker.string.DefaultAssignee }}
     />
-  </div>
+  </Grid>
 </Card>
+
+<style lang="scss">
+  .grid-header {
+    color: var(--theme-caption-color);
+    span {
+      font-size: 0.75rem;
+      color: var(--theme-halfcontent-color);
+    }
+  }
+</style>

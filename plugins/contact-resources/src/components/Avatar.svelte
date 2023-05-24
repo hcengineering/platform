@@ -73,7 +73,7 @@
 
 <div class="ava-{size} flex-center avatar-container" class:no-img={!url}>
   {#if url}
-    {#if size === 'large' || size === 'x-large'}
+    {#if size === 'large' || size === 'x-large' || size === '2x-large'}
       <img class="ava-{size} ava-blur" src={url} alt={''} bind:this={imageElement} />
     {/if}
     <img class="ava-{size} ava-mask" src={url} alt={''} bind:this={imageElement} />
@@ -138,6 +138,10 @@
     width: 7.5rem; // 120
     height: 7.5rem;
   }
+  .ava-2x-large {
+    width: 10rem; // 120
+    height: 10rem;
+  }
 
   .ava-blur {
     position: absolute;
@@ -147,6 +151,11 @@
     position: absolute;
     border: 1px solid var(--avatar-border-color);
     border-radius: 50%;
+  }
+  .ava-large .ava-mask,
+  .ava-x-large .ava-mask,
+  .ava-2x-large .ava-mask {
+    border-width: 2px;
   }
 
   .ava-inline .ava-mask,

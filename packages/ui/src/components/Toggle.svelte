@@ -37,9 +37,9 @@
 <style lang="scss">
   .toggle {
     display: inline-block;
-    width: 2rem;
-    min-width: 2rem;
-    height: 1.5rem;
+    width: 2.25rem;
+    min-width: 2.25rem;
+    height: 1.25rem;
     // line-height: 1.75rem;
     vertical-align: middle;
     font-size: inherit;
@@ -55,13 +55,13 @@
       overflow: hidden;
 
       &:checked + .toggle-switch {
-        background-color: var(--toggle-on-bg-color);
+        background-color: var(--theme-toggle-on-bg-color);
         &:hover {
-          background-color: var(--toggle-on-bg-hover);
+          background-color: var(--theme-toggle-on-bg-hover);
         }
         &:before {
-          left: 0.75rem;
-          background: var(--toggle-on-sw-color);
+          left: 1.125rem;
+          background: var(--theme-toggle-on-sw-color);
         }
       }
       &:not(:disabled) + .toggle-switch {
@@ -79,26 +79,26 @@
     .toggle-switch {
       position: relative;
       display: inline-block;
-      width: 2rem;
-      height: 1.5rem;
-      border-radius: 4.5rem;
-      background-color: var(--toggle-bg-color);
+      width: 2.25rem;
+      height: 1.25rem;
+      border-radius: 1.25rem;
+      background-color: var(--theme-toggle-bg-color);
       transition: left 0.2s, background-color 0.2s;
       &:before {
         content: '';
         position: absolute;
-        top: 0.25rem;
-        left: 0.25rem;
+        top: 0.125rem;
+        left: 0.125rem;
         display: inline-block;
         width: 1rem;
         height: 1rem;
         border-radius: 50%;
-        background: var(--toggle-sw-color);
-        box-shadow: 1px 2px 7px rgba(119, 129, 142, 0.1);
+        background: var(--theme-toggle-sw-color);
+        box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.15), 0px 3px 1px rgba(0, 0, 0, 0.06);
         transition: 0.15s;
       }
       &:hover {
-        background-color: var(--toggle-bg-hover);
+        background-color: var(--theme-toggle-bg-hover);
       }
     }
   }

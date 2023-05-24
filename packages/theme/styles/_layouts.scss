@@ -413,6 +413,8 @@ input.search {
   &.reverse > *:not(:last-child) { margin-right: 1rem; }
 }
 .gapV-4 > *:not(:last-child) { margin-bottom: 1rem; }
+.gapV-6 > *:not(:last-child) { margin-bottom: 1.5rem; }
+.gapV-8 > *:not(:last-child) { margin-bottom: 2rem; }
 .gap-around-2 > * { margin: .25rem; }
 .gap-around-4 > * { margin: .5rem; }
 

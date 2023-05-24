@@ -22,7 +22,7 @@
   export let selected: string | string[] = ''
   export let multiselect: boolean = false
   export let items: TabItem[]
-  export let kind: 'normal' | 'secondary' | 'plain' | 'separated' = 'normal'
+  export let kind: 'normal' | 'secondary' | 'plain' | 'separated' | 'separated-free' = 'normal'
   export let onlyIcons: boolean = false
   export let size: 'small' | 'medium' = 'medium'
 
@@ -50,7 +50,8 @@
       <div
         bind:this={tabs[i]}
         class={kind === 'normal' || kind === 'secondary' ? 'button' : 'plain'}
-        class:separated={kind === 'separated'}
+        class:separated={kind === 'separated' || kind === 'separated-free'}
+        class:free={kind === 'separated-free'}
         class:onlyIcons
         class:selected={getSelected(item.id, selected)}
         data-view={item.tooltip}
@@ -233,6 +234,9 @@
           height: 2rem;
           background-color: var(--theme-tablist-plain-divider);
           transform: translateY(-50%);
+        }
+        &.free:first-child::before {
+          content: none;
         }
       }
     }

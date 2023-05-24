@@ -60,21 +60,17 @@
     dispatch('close')
   }}
 />
-<div class="root">
+<div class="editavatar-container">
   {#await CropperP then Cropper}
     <div class="cropper">
       <Cropper bind:this={cropper} image={file} />
     </div>
     <div class="footer">
-      <div>
-        <Button label={presentation.string.Save} kind={'primary'} on:click={onCrop} />
+      <Button label={presentation.string.Save} kind={'primary'} size={'large'} on:click={onCrop} />
+      <div class="mx-3 clear-mins">
+        <Button label={presentation.string.Change} size={'large'} on:click={selectAnother} />
       </div>
-      <div class="ml-4 mr-4">
-        <Button label={presentation.string.Change} on:click={selectAnother} />
-      </div>
-      <div>
-        <Button label={presentation.string.Remove} on:click={remove} />
-      </div>
+      <Button label={presentation.string.Remove} size={'large'} on:click={remove} />
     </div>
   {/await}
 </div>
@@ -87,11 +83,11 @@
     bottom: 0;
     right: 0;
 
-    background: var(--card-overlay-color);
+    background: var(--theme-overlay-color);
     touch-action: none;
   }
 
-  .root {
+  .editavatar-container {
     position: absolute;
     top: 0;
     bottom: 0;
@@ -105,21 +101,20 @@
 
     transform: translate(-50%, -50%);
 
-    background: var(--popup-bg-color);
+    background: var(--theme-popup-color);
     border-radius: 1.25rem;
-    box-shadow: 0px 44px 154px rgba(0, 0, 0, 0.75);
+    box-shadow: var(--theme-popup-shadow);
 
     display: grid;
     grid-template-rows: minmax(min-content, 1fr) auto;
-  }
 
-  .cropper {
-    width: inherit;
-  }
-
-  .footer {
-    display: flex;
-    flex-direction: row-reverse;
-    padding: 1rem 1.5rem;
+    .cropper {
+      width: inherit;
+    }
+    .footer {
+      display: flex;
+      flex-direction: row-reverse;
+      padding: 1rem 1.5rem;
+    }
   }
 </style>
