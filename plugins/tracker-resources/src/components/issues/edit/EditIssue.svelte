@@ -34,12 +34,7 @@
     navigate,
     showPopup
   } from '@hcengineering/ui'
-  import {
-    ContextMenu,
-    DocNavLink,
-    ParentsNavigator,
-    UpDownNavigator
-  } from '@hcengineering/view-resources'
+  import { ContextMenu, DocNavLink, ParentsNavigator, UpDownNavigator } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { generateIssueShortLink, getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
