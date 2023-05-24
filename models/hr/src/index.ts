@@ -50,6 +50,7 @@ import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import { Asset, IntlString } from '@hcengineering/platform'
 import hr from './plugin'
+import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 
 export { hrId } from '@hcengineering/hr'
 export { hrOperation } from './migration'
@@ -243,7 +244,7 @@ export function createModel (builder: Builder): void {
     {
       label: hr.string.Sick,
       icon: hr.icon.Sick,
-      color: 11,
+      color: PaletteColorIndexes.Turquoise,
       value: -1
     },
     hr.ids.Sick
@@ -255,7 +256,7 @@ export function createModel (builder: Builder): void {
     {
       label: hr.string.PTO,
       icon: hr.icon.PTO,
-      color: 9,
+      color: PaletteColorIndexes.Firework,
       value: -1
     },
     hr.ids.PTO
@@ -267,7 +268,7 @@ export function createModel (builder: Builder): void {
     {
       label: hr.string.PTO2,
       icon: hr.icon.PTO,
-      color: 9,
+      color: PaletteColorIndexes.Watermelon,
       value: -0.5
     },
     hr.ids.PTO2
@@ -279,7 +280,7 @@ export function createModel (builder: Builder): void {
     {
       label: hr.string.Overtime,
       icon: hr.icon.Overtime,
-      color: 5,
+      color: PaletteColorIndexes.Waterway,
       value: 1
     },
     hr.ids.Overtime
@@ -291,7 +292,7 @@ export function createModel (builder: Builder): void {
     {
       label: hr.string.Overtime2,
       icon: hr.icon.Overtime,
-      color: 5,
+      color: PaletteColorIndexes.Cerulean,
       value: 0.5
     },
     hr.ids.Overtime2
@@ -303,7 +304,7 @@ export function createModel (builder: Builder): void {
     {
       label: hr.string.Remote,
       icon: hr.icon.Remote,
-      color: 4,
+      color: PaletteColorIndexes.Coin,
       value: 0
     },
     hr.ids.Remote

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { TagElement } from '@hcengineering/tags'
-  import { getPlatformColor } from '@hcengineering/ui'
+  import { getPlatformColorDef, themeStore } from '@hcengineering/ui'
 
   export let values: TagElement[]
   export let limit: number = 4
@@ -22,11 +22,12 @@
 
 <div class="container">
   {#each values as value, i}
+    {@const valueColor = getPlatformColorDef(value.color ?? 0, $themeStore.dark)}
     {#if i < limit}
       <div class="item" class:last={i === limit - 1} class:first={i === 0}>
-        <div class="color" style:background-color={getPlatformColor(value.color ?? 0)} />
+        <div class="color" style:background-color={valueColor.background} />
         {#if i === limit - 1 && values.length <= limit}
-          <span class="label overflow-label ml-1-5 max-w-40">
+          <span class="label overflow-label ml-1-5 max-w-40" style:color={valueColor.title}>
             {value.title}
           </span>
         {/if}

@@ -29,9 +29,10 @@
     ToggleWithLabel,
     eventToHTMLElement,
     getColorNumberByText,
-    getPlatformColor,
-    getPlatformColorForText,
-    showPopup
+    getPlatformColorDef,
+    getPlatformColorForTextDef,
+    showPopup,
+    themeStore
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
@@ -233,7 +234,12 @@
       icon={icon === tracker.component.IconWithEmojii ? IconWithEmojii : icon ?? tracker.icon.Home}
       iconProps={icon === tracker.component.IconWithEmojii
         ? { icon: color }
-        : { fill: color !== undefined ? getPlatformColor(color) : getPlatformColorForText(name) }}
+        : {
+            fill:
+              color !== undefined
+                ? getPlatformColorDef(color, $themeStore.dark).icon
+                : getPlatformColorForTextDef(name, $themeStore.dark).icon
+          }}
       kind="no-border"
       size="medium"
       on:click={chooseIcon}

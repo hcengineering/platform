@@ -15,6 +15,9 @@
 <script lang="ts">
   import activity, { TxViewlet } from '@hcengineering/activity'
   import { activityKey, ActivityKey } from '@hcengineering/activity-resources'
+  import chunter from '@hcengineering/chunter'
+  import { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
+  import { Avatar, employeeAccountByIdStore, employeeByIdStore } from '@hcengineering/contact-resources'
   import core, { Account, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocUpdates } from '@hcengineering/notification'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -22,9 +25,6 @@
   import { ActionContext, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import NotificationView from './NotificationView.svelte'
-  import { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
-  import { Avatar, employeeAccountByIdStore, employeeByIdStore } from '@hcengineering/contact-resources'
-  import chunter from '@hcengineering/chunter'
 
   export let accountId: Ref<Account>
   const dispatch = createEventDispatcher()

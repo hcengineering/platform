@@ -539,7 +539,7 @@ export interface ViewOption {
   defaultValue: any
   label: IntlString
   hidden?: (viewOptions: ViewOptions) => boolean
-  actionTarget?: 'query' | 'category'
+  actionTarget?: 'query' | 'category' | 'display'
   action?: Resource<(value: any, ...params: any) => any>
 }
 /**

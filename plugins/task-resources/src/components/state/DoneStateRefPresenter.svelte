@@ -18,12 +18,18 @@
   import { statusStore } from '@hcengineering/presentation'
   import type { DoneState } from '@hcengineering/task'
   import DoneStatePresenter from './DoneStatePresenter.svelte'
+  import DoneStateEditor from './DoneStateEditor.svelte'
 
   export let value: Ref<DoneState> | StatusValue
   export let showTitle: boolean = true
+  export let onChange: ((value: Ref<DoneState>) => void) | undefined = undefined
 </script>
 
 {#if value}
   {@const state = $statusStore.get(typeof value === 'string' ? value : value.values[0]._id)}
-  <DoneStatePresenter value={state} {showTitle} />
+  {#if onChange !== undefined && state !== undefined}
+    <DoneStateEditor value={state._id} space={state.space} {onChange} kind="link" size="medium" />
+  {:else}
+    <DoneStatePresenter value={state} {showTitle} />
+  {/if}
 {/if}

@@ -29,6 +29,7 @@
 </script>
 
 {#if value}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div class="flex-presenter" class:inline-presenter={inline} on:click={(ev) => show(ev.target)}>
     <div class="icon">
       <Icon icon={task.icon.Task} size={'small'} />

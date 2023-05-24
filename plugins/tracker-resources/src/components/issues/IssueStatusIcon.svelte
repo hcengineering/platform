@@ -16,13 +16,12 @@
   import core, { StatusCategory, WithLookup } from '@hcengineering/core'
   import { getClient, statusStore } from '@hcengineering/presentation'
   import { IssueStatus } from '@hcengineering/tracker'
-  import { IconSize, getPlatformColor } from '@hcengineering/ui'
+  import { IconSize } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import StatusIcon from '../icons/StatusIcon.svelte'
 
   export let value: WithLookup<IssueStatus>
   export let size: IconSize
-  export let fill: string | undefined = undefined
 
   const dynamicFillCategories = [tracker.issueStatusCategory.Started]
 
@@ -69,11 +68,7 @@
 
   $: updateCategory(value, statuses)
   $: icon = category?.icon
-  $: color =
-    fill ??
-    (value.color !== undefined ? getPlatformColor(value.color) : undefined) ??
-    (category !== undefined ? getPlatformColor(category.color) : undefined) ??
-    'currentColor'
+  $: color = value.color !== undefined ? value.color : category !== undefined ? category.color : -1
 </script>
 
 {#if icon !== undefined && color !== undefined && category !== undefined}

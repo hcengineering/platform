@@ -14,15 +14,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getPlatformColor } from '@hcengineering/ui'
+  import { getPlatformColor, themeStore } from '@hcengineering/ui'
 
   export let value: boolean
   export let trueColor = 0
-  export let falseColor = 11
+  export let falseColor = 16
   export let useInvert = false
 
   $: val = useInvert ? !value : value
-  $: color = val ? getPlatformColor(trueColor) : getPlatformColor(falseColor)
+  $: color = val ? getPlatformColor(trueColor, $themeStore.dark) : getPlatformColor(falseColor, $themeStore.dark)
 </script>
 
 {#if val}

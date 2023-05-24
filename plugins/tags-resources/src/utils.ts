@@ -3,14 +3,16 @@
 import { Doc, DocumentQuery, FindResult, Ref } from '@hcengineering/core'
 import { Asset } from '@hcengineering/platform'
 import { InitialKnowledge, TagReference } from '@hcengineering/tags'
+import { ColorDefinition } from '@hcengineering/ui'
 import { Filter } from '@hcengineering/view'
 import { FilterQuery } from '@hcengineering/view-resources'
 import tags from './plugin'
 
-export function getTagStyle (color: string, selected = false): string {
+export function getTagStyle (color: ColorDefinition, selected = false): string {
   return `
-    background: ${color + (selected ? 'ff' : '33')};
-    border: 1px solid ${color + (selected ? 'ff' : '66')};
+    background: ${color.color + (selected ? 'ff' : '33')};
+    border: 1px solid ${color.color + (selected ? 'ff' : '66')};
+    color: ${color.title ?? 'var(--theme-caption-color)'};
   `
 }
 

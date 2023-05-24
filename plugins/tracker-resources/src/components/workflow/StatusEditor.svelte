@@ -13,12 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import { Data } from '@hcengineering/core'
-  import { IssueStatus } from '@hcengineering/tracker'
-  import { Button, eventToHTMLElement, getPlatformColor, IconCircles, showPopup } from '@hcengineering/ui'
   import presentation from '@hcengineering/presentation'
+  import { IssueStatus } from '@hcengineering/tracker'
+  import {
+    Button,
+    eventToHTMLElement,
+    getPlatformColorDef,
+    IconCircles,
+    showPopup,
+    themeStore
+  } from '@hcengineering/ui'
   import { ColorsPopup } from '@hcengineering/view-resources'
+  import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import StatusInput from './StatusInput.svelte'
 
@@ -31,9 +38,13 @@
   function pickColor (evt: MouseEvent) {
     showPopup(
       ColorsPopup,
-      { selected: value.color ? getPlatformColor(value.color) : undefined },
+      { selected: value.color ? getPlatformColorDef(value.color, $themeStore.dark).name : undefined },
       eventToHTMLElement(evt),
-      (newColor) => (value.color = newColor)
+      (newColor) => {
+        if (value != null) {
+          value.color = newColor
+        }
+      }
     )
   }
 
@@ -47,7 +58,7 @@
     </div>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="flex-no-shrink ml-2 color" on:click={pickColor}>
-      <div class="dot" style="background-color: {getPlatformColor(value.color ?? 0)}" />
+      <div class="dot" style="background-color: {getPlatformColorDef(value.color ?? 0, $themeStore.dark).color}" />
     </div>
     <div class="ml-2 w-full name">
       <StatusInput bind:value={value.name} placeholder={tracker.string.Name} focus fill />

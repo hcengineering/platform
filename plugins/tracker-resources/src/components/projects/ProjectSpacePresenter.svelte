@@ -15,7 +15,13 @@
 <script lang="ts">
   import { Ref, Space } from '@hcengineering/core'
   import { Project } from '@hcengineering/tracker'
-  import { IconWithEmojii, getPlatformColor, getPlatformColorForText, getCurrentLocation } from '@hcengineering/ui'
+  import {
+    IconWithEmojii,
+    getCurrentLocation,
+    getPlatformColorDef,
+    getPlatformColorForTextDef,
+    themeStore
+  } from '@hcengineering/ui'
   import { NavLink, TreeNode } from '@hcengineering/view-resources'
   import { SpacesNavModel } from '@hcengineering/workbench'
   import { SpecialElement } from '@hcengineering/workbench-resources'
@@ -40,7 +46,12 @@
     icon={space?.icon === tracker.component.IconWithEmojii ? IconWithEmojii : space?.icon ?? model.icon}
     iconProps={space?.icon === tracker.component.IconWithEmojii
       ? { icon: space.color }
-      : { fill: space.color !== undefined ? getPlatformColor(space.color) : getPlatformColorForText(space.name) }}
+      : {
+          fill:
+            space.color !== undefined
+              ? getPlatformColorDef(space.color, $themeStore.dark).icon
+              : getPlatformColorForTextDef(space.name, $themeStore.dark).icon
+        }}
     title={space.name}
     actions={() => getActions(space)}
     on:click={() => localStorage.setItem(getSpaceCollapsedKey(), collapsed ? '' : COLLAPSED)}

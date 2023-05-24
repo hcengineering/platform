@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { themeStore } from '@hcengineering/theme'
   import { getPlatformColor } from '../colors'
   export let values: Progress[]
   export let min: number = 0
@@ -56,10 +57,10 @@
       class="bar fs-title"
       class:first={i === 0}
       class:last={i === filtred.length - 1}
-      style="background-color: {getPlatformColor(item.color)}; left: {getLeft(width, i)}%; width: calc(100% * {proc !==
-      0
-        ? getWidth(filtred, i)
-        : 0} / 100);"
+      style="background-color: {getPlatformColor(item.color, $themeStore.dark)}; left: {getLeft(
+        width,
+        i
+      )}%; width: calc(100% * {proc !== 0 ? getWidth(filtred, i) : 0} / 100);"
     >
       {item.value}
     </div>

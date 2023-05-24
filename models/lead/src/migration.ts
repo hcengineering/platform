@@ -19,6 +19,7 @@ import core from '@hcengineering/model-core'
 import { createKanbanTemplate, createSequence } from '@hcengineering/model-task'
 import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
 import lead from './plugin'
+import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 
 async function createSpace (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(core.class.Space, {
@@ -62,12 +63,12 @@ async function createSpace (tx: TxOperations): Promise<void> {
 async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<KanbanTemplate>> {
   const defaultKanban = {
     states: [
-      { color: 9, name: 'Incoming' },
-      { color: 10, name: 'Negotation' },
-      { color: 1, name: 'Offer preparing' },
-      { color: 0, name: 'Make a decision' },
-      { color: 11, name: 'Contract conclusion' },
-      { color: 9, name: 'Done' }
+      { color: PaletteColorIndexes.Coin, name: 'Incoming' },
+      { color: PaletteColorIndexes.Arctic, name: 'Negotation' },
+      { color: PaletteColorIndexes.Watermelon, name: 'Offer preparing' },
+      { color: PaletteColorIndexes.Orange, name: 'Make a decision' },
+      { color: PaletteColorIndexes.Ocean, name: 'Contract conclusion' },
+      { color: PaletteColorIndexes.Grass, name: 'Done' }
     ],
     doneStates: [
       { isWon: true, name: 'Won' },

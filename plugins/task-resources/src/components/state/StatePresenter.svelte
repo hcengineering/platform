@@ -14,9 +14,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte'
   import type { State } from '@hcengineering/task'
-  import { getColorNumberByText, getPlatformColor, hexToRgb, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import {
+    ColorDefinition,
+    defaultBackground,
+    getColorNumberByText,
+    getPlatformColorDef,
+    themeStore
+  } from '@hcengineering/ui'
+  import { createEventDispatcher, onMount } from 'svelte'
 
   export let value: State | undefined
   export let shouldShowAvatar = true
@@ -28,25 +34,24 @@
 
   const dispatch = createEventDispatcher()
 
-  const defaultFill = 'currentColor'
-  $: fill = value ? getPlatformColor(value.color ?? getColorNumberByText(value.name)) : defaultFill
-  $: lth = $deviceInfo.theme === 'theme-light'
-  const dispatchAccentColor = (fill: string) =>
-    dispatch(
-      'accent-color',
-      fill !== defaultFill ? hexToRgb(fill) : lth ? { r: 220, g: 220, b: 220 } : { r: 100, g: 100, b: 108 }
-    )
-  $: dispatchAccentColor(fill)
+  $: color = value ? getPlatformColorDef(value.color ?? getColorNumberByText(value.name), $themeStore.dark) : undefined
+  const dispatchAccentColor = (color?: ColorDefinition) => dispatch('accent-color', color)
+
+  $: dispatchAccentColor(color)
 
   onMount(() => {
-    dispatchAccentColor(fill)
+    dispatchAccentColor(color)
   })
 </script>
 
 {#if value}
   <div class="flex-presenter" class:inline-presenter={inline}>
     {#if shouldShowAvatar}
-      <div class="state-container" class:inline style="background-color: {fill}" />
+      <div
+        class="state-container"
+        class:inline
+        style="background-color: {color?.color ?? defaultBackground($themeStore.dark)}"
+      />
     {/if}
     <span class="overflow-label label" class:nowrap={oneLine} class:no-underline={disabled}>{value.name}</span>
   </div>

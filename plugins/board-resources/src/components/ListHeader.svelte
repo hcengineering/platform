@@ -3,10 +3,11 @@
   import {
     Button,
     getEventPositionElement,
-    getPlatformColor,
-    getPlatformColorForText,
+    getPlatformColorDef,
+    getPlatformColorForTextDef,
     IconMoreV,
-    showPopup
+    showPopup,
+    themeStore
   } from '@hcengineering/ui'
   import { ContextMenu } from '@hcengineering/view-resources'
   export let state: State
@@ -21,7 +22,9 @@
   <div class="flex-col h-16">
     <div
       class="h-2 border-radius-1"
-      style="background-color: {state.color ? getPlatformColor(state.color) : getPlatformColorForText(state.name)}"
+      style="background-color: {state.color
+        ? getPlatformColorDef(state.color, $themeStore.dark).background
+        : getPlatformColorForTextDef(state.name, $themeStore.dark).background}"
     />
     <div class="flex-between h-full font-medium pr-2 pl-4">
       <span class="lines-limit-2">{state.name}</span>
