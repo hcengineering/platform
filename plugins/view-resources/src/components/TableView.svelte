@@ -16,7 +16,7 @@
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
   import { TableBrowser } from '..'
-  import ActionContext from './ActionContext.svelte'
+  import { ActionContext } from '@hcengineering/presentation'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined

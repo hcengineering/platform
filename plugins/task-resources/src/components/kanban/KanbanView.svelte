@@ -26,7 +26,7 @@
   } from '@hcengineering/core'
   import { Item, Kanban as KanbanUI } from '@hcengineering/kanban'
   import { getResource } from '@hcengineering/platform'
-  import { createQuery, getClient, statusStore } from '@hcengineering/presentation'
+  import { createQuery, getClient, statusStore, ActionContext } from '@hcengineering/presentation'
   import { Kanban, SpaceWithStates, Task, TaskGrouping, TaskOrdering } from '@hcengineering/task'
   import {
     getEventPositionElement,
@@ -46,7 +46,6 @@
     ViewQueryOption
   } from '@hcengineering/view'
   import {
-    ActionContext,
     focusStore,
     getCategories,
     getCategorySpaces,

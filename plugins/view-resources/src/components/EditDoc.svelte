@@ -24,6 +24,7 @@
     AttributeCategoryOrder,
     AttributesBar,
     KeyedAttribute,
+    ActionContext,
     createQuery,
     getAttributePresenterClass,
     getClient,
@@ -34,7 +35,6 @@
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { ContextMenu, ParentsNavigator } from '..'
   import { categorizeFields, getCollectionCounter, getFiltredKeys } from '../utils'
-  import ActionContext from './ActionContext.svelte'
   import DocAttributeBar from './DocAttributeBar.svelte'
   import UpDownNavigator from './UpDownNavigator.svelte'
 

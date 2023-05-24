@@ -4,7 +4,8 @@
   import { AnyComponent, Scroller } from '@hcengineering/ui'
   import { BuildModelKey, ViewOptions, Viewlet } from '@hcengineering/view'
   import { onMount } from 'svelte'
-  import { ActionContext, ListSelectionProvider, SelectDirection, focusStore, selectionStore } from '../..'
+  import { ActionContext } from '@hcengineering/presentation'
+  import { ListSelectionProvider, SelectDirection, focusStore, selectionStore } from '../..'
 
   import List from './List.svelte'
 

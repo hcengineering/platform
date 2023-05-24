@@ -18,11 +18,11 @@
   import { Scroller, tableSP, FadeOptions } from '@hcengineering/ui'
   import { BuildModelKey } from '@hcengineering/view'
   import { onMount } from 'svelte'
-  import { ActionContext } from '..'
   import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '../selection'
   import { LoadingProps } from '../utils'
   import SourcePresenter from './inference/SourcePresenter.svelte'
   import Table from './Table.svelte'
+  import { ActionContext } from '@hcengineering/presentation'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>

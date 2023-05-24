@@ -19,9 +19,9 @@
   import { employeeAccountByIdStore } from '@hcengineering/contact-resources'
   import { Account, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocUpdates } from '@hcengineering/notification'
-  import { createQuery } from '@hcengineering/presentation'
+  import { ActionContext, createQuery } from '@hcengineering/presentation'
   import { ListView, Loading, Scroller } from '@hcengineering/ui'
-  import { ActionContext, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
+  import { ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
   import PeopleNotificationView from './PeopleNotificationsView.svelte'
 
   export let filter: 'all' | 'read' | 'unread' = 'all'

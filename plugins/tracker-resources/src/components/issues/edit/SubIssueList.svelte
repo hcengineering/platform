@@ -17,14 +17,9 @@
   import { Issue, Project } from '@hcengineering/tracker'
   import { registerFocus } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
-  import {
-    ActionContext,
-    List,
-    ListSelectionProvider,
-    SelectDirection,
-    selectionStore
-  } from '@hcengineering/view-resources'
+  import { List, ListSelectionProvider, SelectDirection, selectionStore } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
+  import { ActionContext } from '@hcengineering/presentation'
 
   export let query: DocumentQuery<Issue> | undefined = undefined
   export let issues: Issue[] | undefined = undefined

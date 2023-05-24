@@ -18,7 +18,7 @@
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
-  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+  import presentation, { createQuery, getClient, ActionContext, contextStore } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
   import { Issue, Project } from '@hcengineering/tracker'
   import {
@@ -34,14 +34,7 @@
     navigate,
     showPopup
   } from '@hcengineering/ui'
-  import {
-    ActionContext,
-    ContextMenu,
-    DocNavLink,
-    ParentsNavigator,
-    UpDownNavigator,
-    contextStore
-  } from '@hcengineering/view-resources'
+  import { ContextMenu, DocNavLink, ParentsNavigator, UpDownNavigator } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { generateIssueShortLink, getIssueId } from '../../../issues'
   import tracker from '../../../plugin'

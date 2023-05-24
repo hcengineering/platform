@@ -19,6 +19,7 @@ import { presentationId } from './plugin'
 export * from './attributes'
 export { default as AttributeBarEditor } from './components/AttributeBarEditor.svelte'
 export { default as AttributeEditor } from './components/AttributeEditor.svelte'
+export { default as ActionContext } from './components/ActionContext.svelte'
 export { default as InlineAttributeBarEditor } from './components/InlineAttributeBarEditor.svelte'
 export { default as InlineAttributeBar } from './components/InlineAttributeBar.svelte'
 export { default as AttributesBar } from './components/AttributesBar.svelte'
@@ -47,6 +48,7 @@ export * from './utils'
 export * from './drafts'
 export { presentationId }
 export * from './configuration'
+export * from './context'
 
 addStringsLoader(presentationId, async (lang: string) => {
   return await import(`../lang/${lang}.json`)

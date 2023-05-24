@@ -32,6 +32,16 @@ export interface PopupResult {
 
 export const popupstore = writable<CompAndProps[]>([])
 
+export function updatePopup (id: string, props: Partial<CompAndProps>): void {
+  popupstore.update((popups) => {
+    const popupIndex = popups.findIndex((p) => p.id === id)
+    if (popupIndex !== -1) {
+      popups[popupIndex] = { ...popups[popupIndex], ...props }
+    }
+    return popups
+  })
+}
+
 function addPopup (props: CompAndProps): void {
   popupstore.update((popups) => {
     popups.push(props)
