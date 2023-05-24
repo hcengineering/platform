@@ -124,7 +124,7 @@
     height: 3rem;
     min-width: 14rem;
     max-width: 19rem;
-    background-color: var(--theme-button-enabled);
+    background-color: var(--theme-button-hovered);
     border-radius: 0.25rem;
 
     .icon {
