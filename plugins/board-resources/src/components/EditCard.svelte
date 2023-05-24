@@ -32,7 +32,13 @@
     Label,
     showPopup
   } from '@hcengineering/ui'
-  import { ContextMenu, DocAttributeBar, invokeAction, UpDownNavigator } from '@hcengineering/view-resources'
+  import {
+    ContextMenu,
+    DocAttributeBar,
+    invokeAction,
+    ParentsNavigator,
+    UpDownNavigator
+  } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import board from '../plugin'
   import { getCardActions } from '../utils/CardActionUtils'
@@ -116,6 +122,7 @@
   >
     <svelte:fragment slot="navigator">
       <UpDownNavigator element={object} />
+      <ParentsNavigator element={object} />
     </svelte:fragment>
     <svelte:fragment slot="header">
       <div class="flex fs-title flex-gap-1">

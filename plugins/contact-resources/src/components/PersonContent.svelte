@@ -119,7 +119,6 @@
       color: var(--theme-caption-color);
 
       overflow: hidden;
-      visibility: visible;
       display: -webkit-box;
       /* autoprefixer: ignore next */
       -webkit-box-orient: vertical;

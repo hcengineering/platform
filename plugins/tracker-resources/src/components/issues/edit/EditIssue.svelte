@@ -20,7 +20,7 @@
   import { getResource } from '@hcengineering/platform'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
-  import type { Issue, Project } from '@hcengineering/tracker'
+  import { Issue, Project } from '@hcengineering/tracker'
   import {
     Button,
     EditBox,
@@ -34,7 +34,14 @@
     navigate,
     showPopup
   } from '@hcengineering/ui'
-  import { ActionContext, ContextMenu, DocNavLink, UpDownNavigator, contextStore } from '@hcengineering/view-resources'
+  import {
+    ActionContext,
+    ContextMenu,
+    DocNavLink,
+    ParentsNavigator,
+    UpDownNavigator,
+    contextStore
+  } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { generateIssueShortLink, getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
@@ -158,6 +165,7 @@
     <svelte:fragment slot="navigator">
       {#if !embedded}
         <UpDownNavigator element={issue} />
+        <ParentsNavigator element={issue} />
       {/if}
 
       <span class="ml-4 fs-title select-text-i">

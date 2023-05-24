@@ -123,6 +123,7 @@ export { default as StatusRefPresenter } from './components/status/StatusRefPres
 export { default as TableBrowser } from './components/TableBrowser.svelte'
 export { default as ValueSelector } from './components/ValueSelector.svelte'
 export { default as FilterRemovedNotification } from './components/filter/FilterRemovedNotification.svelte'
+export { default as ParentsNavigator } from './components/ParentsNavigator.svelte'
 export * from './context'
 export * from './filter'
 export * from './selection'

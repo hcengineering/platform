@@ -32,7 +32,7 @@
   import { AnyComponent, Button, Component, IconMixin, IconMoreH, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import { ContextMenu } from '..'
+  import { ContextMenu, ParentsNavigator } from '..'
   import { categorizeFields, getCollectionCounter, getFiltredKeys } from '../utils'
   import ActionContext from './ActionContext.svelte'
   import DocAttributeBar from './DocAttributeBar.svelte'
@@ -302,6 +302,7 @@
     <svelte:fragment slot="navigator">
       {#if !embedded}
         <UpDownNavigator element={object} />
+        <ParentsNavigator element={object} />
       {/if}
     </svelte:fragment>
 

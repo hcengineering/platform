@@ -341,6 +341,7 @@
       &:hover { fill: var(--theme-button-hovered); }
     }
     &__selected { fill: var(--theme-button-pressed); }
+    &__disabled { pointer-events: none; }
 
     .asb-label__container {
       position: absolute;
@@ -356,7 +357,8 @@
       font-weight: 500;
       font-size: 0.8125rem;
       color: var(--theme-dark-color);
-      pointer-events: none;
+      
+      &.disabled { pointer-events: none; }
 
       &.selected {
         color: var(--theme-caption-color);
