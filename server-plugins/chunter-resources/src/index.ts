@@ -207,7 +207,7 @@ export async function ChunterTrigger (tx: Tx, control: TriggerControl): Promise<
 /**
  * @public
  */
-export async function IsDirectMessagee (
+export async function IsDirectMessage (
   tx: Tx,
   doc: Doc,
   user: Ref<Account>,
@@ -221,7 +221,7 @@ export async function IsDirectMessagee (
 /**
  * @public
  */
-export async function IsChannelMessagee (
+export async function IsChannelMessage (
   tx: Tx,
   doc: Doc,
   user: Ref<Account>,
@@ -241,7 +241,7 @@ export default async () => ({
     CommentRemove,
     ChannelHTMLPresenter: channelHTMLPresenter,
     ChannelTextPresenter: channelTextPresenter,
-    IsDirectMessagee,
-    IsChannelMessagee
+    IsDirectMessage,
+    IsChannelMessage
   }
 })

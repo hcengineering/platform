@@ -41,6 +41,7 @@ import type {
 import templates from '@hcengineering/templates'
 import view from '@hcengineering/view'
 import telegram from './plugin'
+import notification from '@hcengineering/model-notification'
 
 export { telegramId } from '@hcengineering/telegram'
 export { telegramOperation } from './migration'
@@ -173,6 +174,34 @@ export function createModel (builder: Builder): void {
       hideOnRemove: true
     },
     telegram.ids.TxSharedCreate
+  )
+
+  builder.createDoc(
+    notification.class.NotificationGroup,
+    core.space.Model,
+    {
+      label: telegram.string.Telegram,
+      icon: contact.icon.Telegram
+    },
+    telegram.ids.NotificationGroup
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      label: telegram.string.NewMessage,
+      generated: false,
+      allowedForAuthor: true,
+      hidden: false,
+      txClasses: [core.class.TxCreateDoc],
+      objectClass: telegram.class.Message,
+      group: telegram.ids.NotificationGroup,
+      providers: {
+        [notification.providers.PlatformNotification]: true
+      }
+    },
+    telegram.ids.NewMessageNotification
   )
 
   builder.mixin(telegram.class.Message, core.class.Class, core.mixin.FullTextSearchContext, {

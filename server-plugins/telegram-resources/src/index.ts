@@ -15,6 +15,7 @@
 
 import contact, { Channel } from '@hcengineering/contact'
 import {
+  Account,
   Class,
   Doc,
   DocumentQuery,
@@ -29,7 +30,7 @@ import {
 } from '@hcengineering/core'
 import { TriggerControl } from '@hcengineering/server-core'
 import telegram, { TelegramMessage } from '@hcengineering/telegram'
-import notification from '@hcengineering/notification'
+import notification, { NotificationType } from '@hcengineering/notification'
 
 /**
  * @public
@@ -113,12 +114,27 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
   return res
 }
 
+/**
+ * @public
+ */
+export async function IsIncomingMessage (
+  tx: Tx,
+  doc: Doc,
+  user: Ref<Account>,
+  type: NotificationType,
+  control: TriggerControl
+): Promise<boolean> {
+  const message = doc as TelegramMessage
+  return message.incoming
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
     OnMessageCreate
   },
   function: {
+    IsIncomingMessage,
     FindMessages
   }
 })

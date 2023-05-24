@@ -17,6 +17,7 @@ import { ChannelItem } from '@hcengineering/contact'
 import type { Account, AttachedDoc, Class, Doc, Ref, Space, Timestamp } from '@hcengineering/core'
 import type { Plugin } from '@hcengineering/platform'
 import { Metadata, plugin } from '@hcengineering/platform'
+import { NotificationType } from '@hcengineering/notification'
 import type { Handler, IntegrationType } from '@hcengineering/setting'
 import type { AnyComponent } from '@hcengineering/ui'
 
@@ -98,6 +99,9 @@ export default plugin(gmailId, {
     NewMessage: '' as Ref<Class<NewMessage>>,
     SharedMessages: '' as Ref<Class<SharedMessages>>,
     SharedMessage: '' as Ref<Class<SharedMessage>>
+  },
+  ids: {
+    EmailNotification: '' as Ref<NotificationType>
   },
   space: {
     Gmail: '' as Ref<Space>

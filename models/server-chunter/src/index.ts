@@ -46,7 +46,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(chunter.ids.DMNotification, notification.class.NotificationType, serverNotification.mixin.TypeMatch, {
-    func: serverChunter.function.IsDirectMessagee
+    func: serverChunter.function.IsDirectMessage
   })
 
   builder.mixin(
@@ -54,7 +54,7 @@ export function createModel (builder: Builder): void {
     notification.class.NotificationType,
     serverNotification.mixin.TypeMatch,
     {
-      func: serverChunter.function.IsChannelMessagee
+      func: serverChunter.function.IsChannelMessage
     }
   )
 }

@@ -20,6 +20,8 @@ import core, { Class, Doc } from '@hcengineering/core'
 import serverCore, { ObjectDDParticipant } from '@hcengineering/server-core'
 import serverTelegram from '@hcengineering/server-telegram'
 import telegram from '@hcengineering/telegram'
+import notification from '@hcengineering/notification'
+import serverNotification from '@hcengineering/server-notification'
 
 export { serverTelegramId } from '@hcengineering/server-telegram'
 
@@ -41,4 +43,13 @@ export function createModel (builder: Builder): void {
       'tx._class': core.class.TxCreateDoc
     }
   })
+
+  builder.mixin(
+    telegram.ids.NewMessageNotification,
+    notification.class.NotificationType,
+    serverNotification.mixin.TypeMatch,
+    {
+      func: serverTelegram.function.IsIncomingMessage
+    }
+  )
 }

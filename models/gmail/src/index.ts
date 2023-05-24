@@ -31,6 +31,7 @@ import {
 import attachment from '@hcengineering/model-attachment'
 import contact from '@hcengineering/model-contact'
 import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
+import notification from '@hcengineering/model-notification'
 import view, { createAction } from '@hcengineering/model-view'
 import setting from '@hcengineering/setting'
 import gmail from './plugin'
@@ -211,6 +212,34 @@ export function createModel (builder: Builder): void {
       }
     },
     gmail.action.WriteEmail
+  )
+
+  builder.createDoc(
+    notification.class.NotificationGroup,
+    core.space.Model,
+    {
+      label: gmail.string.Email,
+      icon: contact.icon.Email
+    },
+    gmail.ids.EmailNotificationGroup
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      label: gmail.string.NewMessage,
+      generated: false,
+      hidden: false,
+      txClasses: [core.class.TxCreateDoc],
+      objectClass: gmail.class.Message,
+      group: gmail.ids.EmailNotificationGroup,
+      allowedForAuthor: true,
+      providers: {
+        [notification.providers.PlatformNotification]: true
+      }
+    },
+    gmail.ids.EmailNotification
   )
 
   builder.mixin(gmail.class.Message, core.class.Class, core.mixin.FullTextSearchContext, {

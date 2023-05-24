@@ -17,6 +17,7 @@
 import { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref } from '@hcengineering/core'
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
+import { TypeMatchFunc } from '@hcengineering/server-notification'
 import { TriggerFunc } from '@hcengineering/server-core'
 
 /**
@@ -32,6 +33,7 @@ export default plugin(serverTelegramId, {
     OnMessageCreate: '' as Resource<TriggerFunc>
   },
   function: {
+    IsIncomingMessage: '' as TypeMatchFunc,
     FindMessages: '' as Resource<
     (
       doc: Doc,

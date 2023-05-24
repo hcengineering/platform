@@ -18,8 +18,10 @@ import { Builder } from '@hcengineering/model'
 import contact from '@hcengineering/contact'
 import core, { Class, Doc } from '@hcengineering/core'
 import gmail from '@hcengineering/gmail'
+import notification from '@hcengineering/notification'
 import serverCore, { ObjectDDParticipant } from '@hcengineering/server-core'
 import serverGmail from '@hcengineering/server-gmail'
+import serverNotification from '@hcengineering/server-notification'
 export { serverGmailId } from '@hcengineering/server-gmail'
 
 export function createModel (builder: Builder): void {
@@ -39,5 +41,9 @@ export function createModel (builder: Builder): void {
       'tx.objectClass': gmail.class.Message,
       'tx._class': core.class.TxCreateDoc
     }
+  })
+
+  builder.mixin(gmail.ids.EmailNotification, notification.class.NotificationType, serverNotification.mixin.TypeMatch, {
+    func: serverGmail.function.IsIncomingMessage
   })
 }

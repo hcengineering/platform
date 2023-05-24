@@ -21,6 +21,7 @@ import gmail from '@hcengineering/gmail-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui'
 import type { TxViewlet } from '@hcengineering/activity'
 import { Action } from '@hcengineering/view'
+import { NotificationGroup } from '@hcengineering/notification'
 
 export default mergeIds(gmailId, gmail, {
   action: {
@@ -42,7 +43,8 @@ export default mergeIds(gmailId, gmail, {
     ConfigDescription: '' as IntlString
   },
   ids: {
-    TxSharedCreate: '' as Ref<TxViewlet>
+    TxSharedCreate: '' as Ref<TxViewlet>,
+    EmailNotificationGroup: '' as Ref<NotificationGroup>
   },
   activity: {
     TxSharedCreate: '' as AnyComponent,
