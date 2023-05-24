@@ -53,9 +53,11 @@
   export let accent: boolean = false
 
   // $: iconSize = size === 'inline' ? 'inline' : 'small'
+  let iconOnly: boolean = false
   $: iconOnly =
     label === undefined &&
-    ($$slots.content === undefined || $$slots.icon !== undefined || $$slots.iconRight !== undefined)
+    $$slots.content === undefined &&
+    (icon !== undefined || iconRight !== undefined || $$slots.icon || $$slots.iconRight)
 
   onMount(() => {
     if (focus && input) {
@@ -102,6 +104,8 @@
   class:highlight
   class:selected
   class:notSelected
+  class:iconL={(icon || $$slots.icon) && (label || $$slots.content)}
+  class:iconR={(iconRight || $$slots.iconRight) && (label || $$slots.content)}
   disabled={disabled || loading}
   class:short
   style:width
@@ -149,11 +153,18 @@
       width: 1.375rem;
     }
   }
-  .small {
+  .x-small {
     height: 1.5rem;
     font-size: 0.75rem;
     &.only-icon {
       width: 1.5rem;
+    }
+  }
+  .small {
+    height: 1.75rem;
+    font-size: 0.8125rem;
+    &.only-icon {
+      width: 1.75rem;
     }
   }
   .medium {

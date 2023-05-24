@@ -80,6 +80,7 @@
 
   let textEditor: TextEditor
   let isEmpty = true
+  let contentHeight: number
 
   export function submit (): void {
     textEditor.submit()
@@ -551,7 +552,13 @@
     </div>
   {/if}
   <div class="textInput" class:focusable>
-    <div class="inputMsg" class:scrollable={isScrollable} style="--texteditor-maxheight: {varsStyle};">
+    <div
+      bind:clientHeight={contentHeight}
+      class="inputMsg"
+      class:scrollable={isScrollable}
+      class:showScroll={contentHeight > 32}
+      style="--texteditor-maxheight: {varsStyle};"
+    >
       {#if isScrollable}
         <Scroller>
           <TextEditor
@@ -617,27 +624,30 @@
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    min-height: 4.5rem;
+    min-height: 1.25rem;
 
     .textInput {
       flex-grow: 1;
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-      min-height: 2.75rem;
+      min-height: 1.25rem;
       background-color: transparent;
 
       .inputMsg {
         align-self: stretch;
         width: 100%;
         min-height: 0;
-        color: var(--content-color);
+        color: var(--theme-caption-color);
         background-color: transparent;
 
         :global(.ProseMirror) {
           min-height: 0;
           // max-height: 100%;
           height: 100%;
+        }
+        &:not(.showScroll)::-webkit-scrollbar-thumb {
+          background-color: transparent;
         }
 
         &.scrollable {

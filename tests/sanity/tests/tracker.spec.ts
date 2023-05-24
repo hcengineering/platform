@@ -245,10 +245,8 @@ test('create-issue-draft', async ({ page }) => {
   await page.locator('[placeholder="Type text\\.\\.\\."]').fill('1')
   await page.locator('.ml-2 > .antiButton').click()
 
-  // Click button:nth-child(8)
-  await page.locator('#more-actions').click()
-  // Click button:has-text("Set due date…")
-  await page.locator('button:has-text("Set due date…")').click()
+  // Click button:has-text("No due date")
+  await page.locator('button:has-text("No due date")').click()
   // Click text=24 >> nth=0
   await page.locator('.date-popup-container >> text=24').first().click()
 

@@ -111,7 +111,6 @@
     type: string
     lastModified: number
   }
-  let createMore: boolean = false
 
   export function canClose (): boolean {
     return true
@@ -271,9 +270,7 @@
 
     await applyOps.commit()
     draftController.remove()
-    if (!createMore) {
-      dispatch('close', object._id)
-    }
+    dispatch('close', object._id)
     resetObject()
   }
 
@@ -516,7 +513,6 @@
     dispatch('close')
   }}
   onCancel={showConfirmationDialog}
-  bind:createMore
   on:changeContent
 >
   <svelte:fragment slot="header">

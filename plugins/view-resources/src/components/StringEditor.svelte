@@ -23,6 +23,7 @@
   export let placeholder: IntlString
   export let value: string
   export let focus: boolean = false
+  export let select: boolean = false
   export let onChange: (value: string) => void = () => {}
   export let kind: ButtonKind | undefined = undefined
   export let readonly = false
@@ -70,5 +71,5 @@
     <span class="content-dark-color"><Label label={placeholder} /></span>
   {/if}
 {:else}
-  <EditBox {placeholder} bind:value {focus} on:change={_onchange} />
+  <EditBox {placeholder} bind:value {focus} {select} on:change={_onchange} />
 {/if}

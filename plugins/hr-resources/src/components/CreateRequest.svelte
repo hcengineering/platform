@@ -106,6 +106,7 @@
   labelProps={{ type: typeLabel }}
   okAction={saveRequest}
   canSave={value !== undefined && !notLimit}
+  gap={'gapV-4'}
   on:close={() => {
     dispatch('close')
   }}

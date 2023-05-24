@@ -28,7 +28,7 @@
   export let value: number | null | undefined = null
   export let mode: DateRangeMode = DateRangeMode.DATE
   export let editable: boolean = false
-  export let icon: 'normal' | 'warning' | 'overdue' = 'normal'
+  export let iconModifier: 'normal' | 'warning' | 'overdue' = 'normal'
   export let labelNull: IntlString = ui.string.NoDate
   export let kind: 'default' | 'no-border' | 'link' | 'secondary' = 'default'
   export let size: 'small' | 'medium' | 'large' = 'small'
@@ -392,7 +392,7 @@
       </div>
     {/if}
   {:else}
-    <div class="btn-icon {icon}">
+    <div class="btn-icon {iconModifier}">
       <Icon icon={DPCalendar} size={'full'} />
     </div>
     {#if value !== undefined && value !== null && value.toString() !== ''}

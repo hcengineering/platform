@@ -37,7 +37,7 @@
 </script>
 
 {#if isAsset(icon)}
-  <svg class="svg-{size}" fill={_fill}>
+  <svg class="svg-{size}" fill={_fill} {...iconProps}>
     <use href={url} />
   </svg>
 {:else if typeof icon !== 'string'}

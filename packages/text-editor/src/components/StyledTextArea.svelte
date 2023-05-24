@@ -12,7 +12,7 @@
   export let showButtons = true
   export let buttonSize: IconSize = 'small'
   export let focus = false
-  export let emphasized: boolean = false
+  export let kind: 'normal' | 'emphasized' | 'indented' = 'normal'
   export let isScrollable: boolean = false
   export let maxHeight: 'max' | 'card' | 'limited' | string | undefined = undefined
   export let required = false
@@ -49,8 +49,9 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
-  class="antiComponent styled-box clear-mins"
-  class:antiEmphasized={emphasized}
+  class="antiComponent styled-box focusable clear-mins"
+  class:antiEmphasized={kind === 'emphasized'}
+  class:antiIndented={kind === 'indented'}
   on:click={() => {
     textEditor?.focus()
   }}

@@ -62,6 +62,7 @@
   label={recruit.string.Opinion}
   okAction={editOpinion}
   canSave={value.length > 0}
+  gap={'gapV-4'}
   on:close={() => {
     dispatch('close')
   }}
@@ -75,5 +76,5 @@
     placeholder={recruit.string.OpinionValue}
     focus
   />
-  <StyledTextArea placeholder={recruit.string.Description} bind:content={description} emphasized />
+  <StyledTextArea placeholder={recruit.string.Description} bind:content={description} kind={'emphasized'} />
 </Card>

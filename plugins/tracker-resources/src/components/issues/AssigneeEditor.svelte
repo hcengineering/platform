@@ -30,6 +30,7 @@
   export let tooltipAlignment: TooltipAlignment | undefined = undefined
   export let width: string = '100%'
   export let focusIndex: number | undefined = undefined
+  export let short: boolean = false
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -99,6 +100,7 @@
     {kind}
     {avatarSize}
     {width}
+    {short}
     showNavigate={false}
     justify={'left'}
     showTooltip={{ label: tracker.string.AssignTo, direction: tooltipAlignment }}

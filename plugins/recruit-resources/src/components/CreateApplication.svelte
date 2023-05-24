@@ -71,13 +71,12 @@
   export let preserveVacancy = false
 
   let status: Status = OK
-  let createMore: boolean = false
 
   let _space = space
 
   $: _candidate = candidate
 
-  let doc: Applicant = {
+  const doc: Applicant = {
     state: '' as Ref<State>,
     doneState: null,
     number: 0,
@@ -159,30 +158,6 @@
       await client.addCollection(chunter.class.Comment, _space, doc._id, recruit.class.Applicant, 'comments', {
         message: _comment
       })
-    }
-
-    if (createMore) {
-      // Prepare for next
-      _candidate = '' as Ref<Candidate>
-      _comment = ''
-      doc = {
-        state: selectedState?._id as Ref<State>,
-        doneState: null,
-        number: 0,
-        assignee,
-        rank: '',
-        attachedTo: _candidate,
-        attachedToClass: recruit.mixin.Candidate,
-        _class: recruit.class.Applicant,
-        space: _space,
-        _id: generateId(),
-        collection: 'applications',
-        modifiedOn: Date.now(),
-        modifiedBy: '' as Ref<Account>,
-        startDate: null,
-        dueDate: null
-      }
-      fillDefaults(hierarchy, doc, recruit.class.Applicant)
     }
   }
 
@@ -295,7 +270,7 @@
   label={recruit.string.CreateApplication}
   okAction={createApplication}
   canSave={status.severity === Severity.OK}
-  bind:createMore
+  gap={'gapV-4'}
   on:close={() => {
     dispatch('close')
   }}
@@ -367,7 +342,7 @@
       space={_space}
       alwaysEdit
       showButtons={false}
-      emphasized
+      kind={'emphasized'}
       bind:content={_comment}
       placeholder={recruit.string.Description}
       on:changeSize={() => dispatch('changeContent')}

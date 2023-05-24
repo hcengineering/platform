@@ -236,6 +236,7 @@
   label={recruit.string.CreateVacancy}
   okAction={createVacancy}
   canSave={!!name}
+  gap={'gapV-4'}
   on:close={() => {
     dispatch('close')
   }}
@@ -266,7 +267,7 @@
       maxHeight={'card'}
       bind:content={fullDescription}
       placeholder={recruit.string.FullDescription}
-      emphasized
+      kind={'emphasized'}
     />
   {/key}
 

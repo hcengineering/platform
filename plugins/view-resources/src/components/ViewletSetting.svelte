@@ -306,6 +306,7 @@
   okAction={save}
   okLabel={presentation.string.Save}
   canSave={true}
+  gap={'gapV-4'}
   on:close={() => {
     dispatch('close')
   }}

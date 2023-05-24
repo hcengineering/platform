@@ -23,7 +23,7 @@
   export let title: IntlString
   export let value: number | null | undefined = null
   export let withTime: boolean = false
-  export let icon: 'normal' | 'warning' | 'overdue' = 'normal'
+  export let iconModifier: 'normal' | 'warning' | 'overdue' = 'normal'
   export let labelNull: IntlString = ui.string.NoDate
 
   const dispatch = createEventDispatcher()
@@ -39,6 +39,13 @@
 <div class="antiSelect antiWrapper cursor-default">
   <div class="flex-col">
     <span class="label mb-1"><Label label={title} /></span>
-    <DateRangePresenter {value} mode={DateRangeMode.DATETIME} {icon} {labelNull} editable on:change={changeValue} />
+    <DateRangePresenter
+      {value}
+      mode={DateRangeMode.DATETIME}
+      {iconModifier}
+      {labelNull}
+      editable
+      on:change={changeValue}
+    />
   </div>
 </div>

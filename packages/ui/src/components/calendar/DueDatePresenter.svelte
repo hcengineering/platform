@@ -93,6 +93,6 @@
         }
       : undefined}
   >
-    <DatePresenter {value} {editable} icon={iconModifier} {kind} {size} {width} on:change={handleDueDateChanged} />
+    <DatePresenter {value} {editable} {iconModifier} {kind} {size} {width} on:change={handleDueDateChanged} />
   </div>
 {/if}

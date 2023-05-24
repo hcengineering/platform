@@ -41,7 +41,6 @@
     Project
   } from '@hcengineering/tracker'
   import {
-    ActionIcon,
     addNotification,
     Button,
     Component,
@@ -50,11 +49,11 @@
     EditBox,
     FocusHandler,
     IconAttachment,
-    IconMoreH,
     Label,
-    Menu,
     showPopup
   } from '@hcengineering/ui'
+  import { Attachment } from '@hcengineering/attachment'
+  import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
@@ -68,7 +67,6 @@
   import StatusEditor from './issues/StatusEditor.svelte'
   import EstimationEditor from './issues/timereport/EstimationEditor.svelte'
   import MilestoneSelector from './milestones/MilestoneSelector.svelte'
-  import SetDueDateActionPopup from './SetDueDateActionPopup.svelte'
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
   import SubIssues from './SubIssues.svelte'
   import { createBacklinks } from '@hcengineering/chunter-resources'
@@ -409,51 +407,17 @@
     descriptionBox?.removeDraft(false)
   }
 
-  async function showMoreActions (ev: Event) {
-    ev.preventDefault()
-
-    const selectDueDate = {
-      label: object.dueDate === null ? tracker.string.SetDueDate : tracker.string.ChangeDueDate,
-      icon: tracker.icon.DueDate,
-      action: async () =>
-        showPopup(
-          SetDueDateActionPopup,
-          { value: object },
-          'top',
-          undefined,
-          (newDueDate) => newDueDate !== undefined && (object.dueDate = newDueDate)
-        )
-    }
-
-    const setParentIssue = {
-      label: parentIssue ? tracker.string.ChangeParent : tracker.string.SetParent,
-      icon: tracker.icon.Parent,
-      action: async () =>
-        showPopup(
-          SetParentIssueActionPopup,
-          { value: { ...object, space: _space, attachedTo: parentIssue?._id } },
-          'top',
-          (selectedIssue) => {
-            if (selectedIssue !== undefined) {
-              parentIssue = selectedIssue
-              object.parentIssue = parentIssue?._id
-            }
-          }
-        )
-    }
-
-    const removeParentIssue = parentIssue && {
-      label: tracker.string.RemoveParent,
-      icon: tracker.icon.Parent,
-      action: clearParentIssue
-    }
-
+  async function setParentIssue () {
     showPopup(
-      Menu,
-      {
-        actions: [selectDueDate, setParentIssue, ...(removeParentIssue ? [removeParentIssue] : [])]
-      },
-      ev.target as HTMLElement
+      SetParentIssueActionPopup,
+      { value: { ...object, space: _space, attachedTo: parentIssue?._id } },
+      'top',
+      (selectedIssue) => {
+        if (selectedIssue !== undefined) {
+          parentIssue = selectedIssue
+          object.parentIssue = parentIssue?._id
+        }
+      }
     )
   }
 
@@ -530,6 +494,8 @@
 
   $: objectId = object._id
   const manager = createFocusManager()
+
+  let attachments: Map<Ref<Attachment>, Attachment> = new Map<Ref<Attachment>, Attachment>()
 </script>
 
 <FocusHandler {manager} />
@@ -540,8 +506,9 @@
   {canSave}
   okLabel={tracker.string.SaveIssue}
   on:close={() => dispatch('close')}
-  createMore={false}
   onCancel={showConfirmationDialog}
+  hideAttachments={attachments.size === 0}
+  hideSubheader={!parentIssue}
   on:changeContent
 >
   <svelte:fragment slot="header">
@@ -550,7 +517,7 @@
       label={tracker.string.Project}
       bind:space={_space}
       kind={'secondary'}
-      size={'large'}
+      size={'small'}
     />
     <ObjectBox
       _class={tracker.class.IssueTemplate}
@@ -560,7 +527,7 @@
       }}
       on:change={handleTemplateChange}
       kind={'secondary'}
-      size={'large'}
+      size={'small'}
       label={tracker.string.NoIssueTemplate}
       icon={tracker.icon.IssueTemplates}
       searchField={'title'}
@@ -576,20 +543,29 @@
         <Label {label} />
       </div>
       {#if relatedTo}
-        <div class="mr-2">
+        <div class="lower mr-2">
           <Label label={tracker.string.RelatedTo} />
         </div>
         <Component
           is={view.component.ObjectPresenter}
-          props={{ value: relatedTo, _class: relatedTo._class, objectId: relatedTo._id, inline: true }}
+          props={{
+            value: relatedTo,
+            _class: relatedTo._class,
+            objectId: relatedTo._id,
+            inline: true,
+            shouldShowAvatar: false,
+            noUnderline: true
+          }}
         />
       {/if}
     </div>
   </svelte:fragment>
-  {#if parentIssue}
-    <ParentIssue issue={parentIssue} on:close={clearParentIssue} />
-  {/if}
-  <div id="issue-name">
+  <svelte:fragment slot="subheader">
+    {#if parentIssue}
+      <ParentIssue issue={parentIssue} on:close={clearParentIssue} />
+    {/if}
+  </svelte:fragment>
+  <div id="issue-name" class="m-3 clear-mins">
     <EditBox
       focusIndex={1}
       bind:value={object.title}
@@ -610,7 +586,8 @@
         space={_space}
         alwaysEdit
         showButtons={false}
-        emphasized
+        kind={'indented'}
+        fakeAttach={'hidden'}
         enableBackReferences={true}
         bind:content={object.description}
         placeholder={tracker.string.IssueDescriptionPlaceholder}
@@ -618,6 +595,13 @@
         on:attach={(ev) => {
           if (ev.detail.action === 'saved') {
             object.attachments = ev.detail.value
+          }
+        }}
+        on:attachments={(ev) => {
+          if (ev.detail.size > 0) attachments = ev.detail.values
+          else if (ev.detail.size === 0 && ev.detail.values) {
+            attachments.clear()
+            attachments = attachments
           }
         }}
       />
@@ -640,6 +624,7 @@
         size={'large'}
         defaultIssueStatus={currentProject?.defaultIssueStatus}
         shouldShowLabel={true}
+        short
         on:refocus={() => {
           manager.setFocusPos(3)
         }}
@@ -672,6 +657,7 @@
         kind={'secondary'}
         size={'large'}
         width={'min-content'}
+        short
         on:change={({ detail }) => {
           object.assignee = detail
           manager.setFocusPos(5)
@@ -696,9 +682,6 @@
         object.labels = object.labels.filter((it) => it._id !== evt.detail)
       }}
     />
-    <div id="estimation-editor">
-      <EstimationEditor focusIndex={7} kind={'secondary'} size={'large'} value={object} />
-    </div>
     <ComponentSelector
       focusIndex={8}
       value={object.component}
@@ -706,25 +689,63 @@
       isEditable={true}
       kind={'secondary'}
       size={'large'}
+      short
     />
-    <MilestoneSelector
-      focusIndex={9}
-      value={object.milestone}
-      onChange={handleMilestoneIdChanged}
-      useComponent={(!originalIssue && object.component) || undefined}
-      kind={'secondary'}
-      size={'large'}
-    />
-    {#if object.dueDate !== null}
-      <DatePresenter bind:value={object.dueDate} kind={'secondary'} size={'large'} editable />
+    <div id="estimation-editor" class="new-line">
+      <EstimationEditor focusIndex={7} kind={'secondary'} size={'large'} value={object} />
+    </div>
+    <div id="milestone-editor" class="new-line">
+      <MilestoneSelector
+        focusIndex={9}
+        value={object.milestone}
+        onChange={handleMilestoneIdChanged}
+        useComponent={(!originalIssue && object.component) || undefined}
+        kind={'secondary'}
+        size={'large'}
+        short
+      />
+    </div>
+    <div id="duedate-editor" class="new-line">
+      <DatePresenter
+        bind:value={object.dueDate}
+        labelNull={tracker.string.NoDueDate}
+        icon={tracker.icon.DueDate}
+        kind={'secondary'}
+        size={'large'}
+        editable
+      />
+    </div>
+    <div id="parentissue-editor" class="new-line">
+      <Button
+        icon={tracker.icon.Parent}
+        label={object.parentIssue ? tracker.string.RemoveParent : tracker.string.SetParent}
+        kind={'secondary'}
+        size={'large'}
+        notSelected={object.parentIssue === undefined}
+        on:click={object.parentIssue ? clearParentIssue : setParentIssue}
+      />
+    </div>
+  </svelte:fragment>
+  <svelte:fragment slot="attachments">
+    {#if attachments.size > 0}
+      {#each Array.from(attachments.values()) as attachment}
+        <AttachmentPresenter
+          value={attachment}
+          removable
+          on:remove={(result) => {
+            if (result.detail !== undefined) descriptionBox.removeAttachmentById(result.detail._id)
+          }}
+        />
+      {/each}
     {/if}
-    <div id="more-actions"><ActionIcon icon={IconMoreH} size={'medium'} action={showMoreActions} /></div>
   </svelte:fragment>
   <svelte:fragment slot="footer">
     <Button
       focusIndex={10}
       icon={IconAttachment}
+      iconProps={{ fill: 'var(--theme-dark-color)' }}
       size={'large'}
+      kind={'transparent'}
       on:click={() => {
         descriptionBox.attach()
       }}

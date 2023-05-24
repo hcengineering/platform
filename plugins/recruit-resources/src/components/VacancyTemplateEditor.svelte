@@ -54,7 +54,7 @@
   <div class="mt-3">
     {#key template._id}
       <StyledTextBox
-        emphasized
+        kind={'emphasized'}
         alwaysEdit
         showButtons={false}
         content={template.description ?? ''}
