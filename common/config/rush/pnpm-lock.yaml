@@ -10336,6 +10336,10 @@ packages:
     resolution: {integrity: sha512-wLTv2a28wjUyWkbnX7u/ABZBkUkIF2fCd73V6P2oFqEGEktDfzWx4UxrSqtPRw0xPRAcjeAOIiJWqZm3pP4u3g==}
     dev: false
 
+  /fast-copy/3.0.1:
+    resolution: {integrity: sha512-Knr7NOtK3HWRYGtHoJrjkaWepqT8thIVGAwt0p0aUs1zqkAzXZV4vo9fFNwyb5fcqK1GKYFYxldQdIDVKhUAfA==}
+    dev: false
+
   /fast-deep-equal/3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
     dev: false
@@ -22303,7 +22307,7 @@ packages:
     dev: false
 
   file:projects/workbench-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-VebVsqc3qYlrnTSou483RMk2CUrBy03h0ro1kSjLUKBNsAxFnf5EBXtp+ElQ6PQPVxhlPZ67KGDriF2P2ReVag==, tarball: file:projects/workbench-resources.tgz}
+    resolution: {integrity: sha512-9nAIyeFf60w230QCexBCp2YC/2uJDcWWWJkARH8Ghh4ugdIKs78mCbwxLsItlyILH8yvcwDtmWcf+svjPwbhlQ==, tarball: file:projects/workbench-resources.tgz}
     id: file:projects/workbench-resources.tgz
     name: '@rush-temp/workbench-resources'
     version: 0.0.0
@@ -22316,6 +22320,7 @@ packages:
       eslint-plugin-n: 15.5.1_eslint@8.27.0
       eslint-plugin-promise: 6.1.1_eslint@8.27.0
       eslint-plugin-svelte3: 4.0.0_eslint@8.27.0+svelte@3.55.1
+      fast-copy: 3.0.1
       fast-equals: 2.0.4
       prettier: 2.8.8
       prettier-plugin-svelte: 2.8.0_prettier@2.8.8+svelte@3.55.1

@@ -47,6 +47,7 @@
     "@hcengineering/notification-resources": "^0.6.0",
     "@hcengineering/preference": "^0.6.6",
     "@hcengineering/contact": "^0.6.16",
-    "@hcengineering/view-resources": "^0.6.0"
+    "@hcengineering/view-resources": "^0.6.0",
+    "fast-copy": "~3.0.1"
   }
 }
