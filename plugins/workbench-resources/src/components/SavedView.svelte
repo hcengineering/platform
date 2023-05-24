@@ -19,6 +19,7 @@
     viewOptionStore
   } from '@hcengineering/view-resources'
   import { Application } from '@hcengineering/workbench'
+  import copy from 'fast-copy'
   import { createEventDispatcher } from 'svelte'
 
   export let currentApplication: Application | undefined
@@ -78,7 +79,7 @@
       const viewlet = await client.findOne(view.class.Viewlet, { _id: fv.viewletId })
       setActiveViewletId(fv.viewletId, fv.location)
       if (viewlet !== undefined && fv.viewOptions !== undefined) {
-        setViewOptions(viewlet, fv.viewOptions)
+        setViewOptions(viewlet, copy(fv.viewOptions))
       }
     }
   }
