@@ -15,6 +15,7 @@
 
 import { ChannelItem } from '@hcengineering/contact'
 import type { AttachedDoc, Class, Doc, Ref, Space, Timestamp } from '@hcengineering/core'
+import { NotificationType } from '@hcengineering/notification'
 import type { Plugin } from '@hcengineering/platform'
 import { Metadata, plugin } from '@hcengineering/platform'
 import type { Handler, IntegrationType } from '@hcengineering/setting'
@@ -74,6 +75,9 @@ export default plugin(telegramId, {
   },
   handler: {
     DisconnectHandler: '' as Handler
+  },
+  ids: {
+    NewMessageNotification: '' as Ref<NotificationType>
   },
   class: {
     Message: '' as Ref<Class<TelegramMessage>>,

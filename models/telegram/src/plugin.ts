@@ -21,6 +21,7 @@ import telegram from '@hcengineering/telegram-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui'
 import type { TxViewlet } from '@hcengineering/activity'
 import { TemplateFieldFunc } from '@hcengineering/templates'
+import { NotificationGroup } from '@hcengineering/notification'
 
 export default mergeIds(telegramId, telegram, {
   string: {
@@ -33,11 +34,13 @@ export default mergeIds(telegramId, telegram, {
     TelegramIntegrationDesc: '' as IntlString,
     Status: '' as IntlString,
     ConfigLabel: '' as IntlString,
-    ConfigDescription: '' as IntlString
+    ConfigDescription: '' as IntlString,
+    NewMessage: '' as IntlString
   },
   ids: {
     TxMessage: '' as Ref<TxViewlet>,
-    TxSharedCreate: '' as Ref<TxViewlet>
+    TxSharedCreate: '' as Ref<TxViewlet>,
+    NotificationGroup: '' as Ref<NotificationGroup>
   },
   function: {
     GetCurrentEmployeeTG: '' as Resource<TemplateFieldFunc>,
