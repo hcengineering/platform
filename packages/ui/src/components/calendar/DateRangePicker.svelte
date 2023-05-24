@@ -39,6 +39,13 @@
 <div class="antiSelect antiWrapper cursor-default">
   <div class="flex-col">
     <span class="label mb-1"><Label label={title} /></span>
-    <DateRangePresenter {value} mode={DateRangeMode.DATETIME} {iconModifier} {labelNull} editable on:change={changeValue} />
+    <DateRangePresenter
+      {value}
+      mode={DateRangeMode.DATETIME}
+      {iconModifier}
+      {labelNull}
+      editable
+      on:change={changeValue}
+    />
   </div>
 </div>
