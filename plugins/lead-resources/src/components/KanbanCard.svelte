@@ -16,16 +16,22 @@
 <script lang="ts">
   import { AttachmentsPresenter } from '@hcengineering/attachment-resources'
   import { CommentsPresenter } from '@hcengineering/chunter-resources'
+  import contact from '@hcengineering/contact'
   import { ContactPresenter } from '@hcengineering/contact-resources'
   import type { WithLookup } from '@hcengineering/core'
   import type { Lead } from '@hcengineering/lead'
-  import { ActionIcon, Component, IconMoreH, showPanel, showPopup } from '@hcengineering/ui'
+  import { ActionIcon, Component, DueDatePresenter, IconMoreH, showPanel, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ContextMenu } from '@hcengineering/view-resources'
   import lead from '../plugin'
   import notification from '@hcengineering/notification'
+  import { getClient } from '@hcengineering/presentation'
+  import { AssigneePresenter } from '@hcengineering/task-resources'
+  import LeadPresenter from './LeadPresenter.svelte'
 
   export let object: WithLookup<Lead>
+  const client = getClient()
+  const assigneeAttribute = client.getHierarchy().getAttribute(lead.class.Lead, 'assignee')
 
   function showMenu (ev?: Event): void {
     showPopup(ContextMenu, { object }, (ev as MouseEvent).target as HTMLElement)
@@ -55,21 +61,41 @@
       />
     </div>
   </div>
-  <div class="flex-between">
-    {#if object.$lookup?.attachedTo}
-      <ContactPresenter value={object.$lookup.attachedTo} />
-    {/if}
-    <div class="flex-row-center">
-      {#if (object.attachments ?? 0) > 0}
-        <div class="step-lr75">
-          <AttachmentsPresenter value={object.attachments} {object} />
-        </div>
+  <div class="flex-col">
+    <div class="flex-between">
+      {#if object.$lookup?.attachedTo}
+        <ContactPresenter value={object.$lookup.attachedTo} />
       {/if}
-      {#if (object.comments ?? 0) > 0}
-        <div class="step-lr75">
-          <CommentsPresenter value={object.comments} {object} />
-        </div>
-      {/if}
+      <div class="flex-row-center">
+        {#if (object.attachments ?? 0) > 0}
+          <div class="step-lr75">
+            <AttachmentsPresenter value={object.attachments} {object} />
+          </div>
+        {/if}
+        {#if (object.comments ?? 0) > 0}
+          <div class="step-lr75">
+            <CommentsPresenter value={object.comments} {object} />
+          </div>
+        {/if}
+      </div>
+    </div>
+    <div class="flex-row-reverse flex-between mt-2">
+      <AssigneePresenter
+        value={object.assignee}
+        issueId={object._id}
+        defaultClass={contact.class.Employee}
+        currentSpace={object.space}
+        placeholderLabel={assigneeAttribute.label}
+      />
+      <DueDatePresenter
+        value={object.dueDate}
+        shouldRender={object.dueDate !== null && object.dueDate !== undefined}
+        shouldIgnoreOverdue={object.doneState !== null}
+        onChange={async (e) => {
+          await client.update(object, { dueDate: e })
+        }}
+      />
+      <LeadPresenter value={object} />
     </div>
   </div>
 </div>
