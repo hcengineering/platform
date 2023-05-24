@@ -29,13 +29,12 @@
   import { createQuery, getClient, statusStore, ActionContext } from '@hcengineering/presentation'
   import { Kanban, SpaceWithStates, Task, TaskGrouping, TaskOrdering } from '@hcengineering/task'
   import {
+    ColorDefinition,
+    defaultBackground,
     getEventPositionElement,
     Label,
     showPopup,
-    deviceOptionsStore as deviceInfo,
-    hslToRgb,
-    rgbToHsl,
-    AccentColor
+    themeStore
   } from '@hcengineering/ui'
   import {
     AttributeModel,
@@ -81,8 +80,11 @@
 
   $: dontUpdateRank = orderBy[0] !== TaskOrdering.Manual
 
-  $: lth = $deviceInfo.theme === 'theme-light'
-  const accentColors: AccentColor[] = []
+  let accentColors: Map<string, ColorDefinition> = new Map()
+  const setAccentColor = (n: number, ev: CustomEvent<ColorDefinition>) => {
+    accentColors.set(`${n}${$themeStore.dark}${groupByKey}`, ev.detail)
+    accentColors = accentColors
+  }
 
   const spaceQuery = createQuery()
 
@@ -170,14 +172,6 @@
     viewOptionsModel: ViewOptionModel[] | undefined
   ) {
     categories = await getCategories(client, _class, docs, groupByKey, $statusStore, viewlet.descriptor)
-    categories.forEach((_, i) => {
-      if (accentColors[i] === undefined) {
-        accentColors[i] = {
-          textColor: 'var(--theme-caption-color)',
-          backgroundColor: lth ? '230, 230, 230' : '100, 100, 108'
-        }
-      }
-    })
     for (const viewOption of viewOptionsModel ?? []) {
       if (viewOption.actionTarget !== 'category') continue
       const categoryFunc = viewOption as CategoryOption
@@ -244,16 +238,6 @@
   })
 
   const getDoneUpdate = (e: any) => ({ doneState: e.detail._id } as DocumentUpdate<Doc>)
-
-  const setAccentColor = (n: number, ev: CustomEvent) => {
-    const accColor = rgbToHsl(ev.detail.r, ev.detail.g, ev.detail.b)
-    const textColor = !lth ? { r: 255, g: 255, b: 255 } : hslToRgb(accColor.h, accColor.s, 0.3)
-    const bgColor = !lth ? hslToRgb(accColor.h, accColor.s, 0.55) : hslToRgb(accColor.h, accColor.s, 0.9)
-    accentColors[n] = {
-      textColor: !lth ? 'var(--theme-caption-color)' : `rgb(${textColor.r}, ${textColor.g}, ${textColor.b})`,
-      backgroundColor: `${bgColor.r}, ${bgColor.g}, ${bgColor.b}`
-    }
-  }
 </script>
 
 {#await cardPresenter then presenter}
@@ -283,37 +267,33 @@
     on:contextmenu={(evt) => showMenu(evt.detail.evt, evt.detail.objects)}
   >
     <svelte:fragment slot="header" let:state let:count let:index>
-      <!-- {@const status = $statusStore.get(state._id)} -->
-      {#key lth}
-        <div
-          style:--kanban-header-rgb-color={accentColors[index]?.backgroundColor}
-          class="header flex-row-center"
-          class:gradient={!lth}
+      {@const color = accentColors.get(`${index}${$themeStore.dark}${groupByKey}`)}
+      {@const headerBGColor = color?.background ?? defaultBackground($themeStore.dark)}
+
+      <div style:background={headerBGColor} class="header flex-row-center">
+        <span
+          class="clear-mins fs-bold overflow-label pointer-events-none"
+          style:color={color?.title ?? 'var(--theme-caption-color)'}
         >
-          <span
-            class="clear-mins fs-bold overflow-label pointer-events-none"
-            style:color={accentColors[index]?.textColor}
-          >
-            {#if groupByKey === noCategory}
-              <Label label={view.string.NoGrouping} />
-            {:else if headerComponent}
-              <svelte:component
-                this={headerComponent.presenter}
-                value={state}
-                {space}
-                size={'small'}
-                kind={'list-header'}
-                colorInherit={lth}
-                accent
-                on:accent-color={(ev) => setAccentColor(index, ev)}
-              />
-            {/if}
-          </span>
-          <span class="counter ml-1">
-            {count}
-          </span>
-        </div>
-      {/key}
+          {#if groupByKey === noCategory}
+            <Label label={view.string.NoGrouping} />
+          {:else if headerComponent}
+            <svelte:component
+              this={headerComponent.presenter}
+              value={state}
+              {space}
+              size={'small'}
+              kind={'list-header'}
+              colorInherit={!$themeStore.dark}
+              accent
+              on:accent-color={(ev) => setAccentColor(index, ev)}
+            />
+          {/if}
+        </span>
+        <span class="counter ml-1">
+          {count}
+        </span>
+      </div>
     </svelte:fragment>
     <svelte:fragment slot="card" let:object let:dragged>
       <svelte:component this={presenter} {object} {dragged} {groupByKey} />
@@ -339,17 +319,6 @@
     min-height: 2.5rem;
     border: 1px solid var(--theme-divider-color);
     border-radius: 0.25rem;
-
-    &:not(.gradient) {
-      background: rgba(var(--kanban-header-rgb-color), 1);
-    }
-    &.gradient {
-      background: linear-gradient(
-        90deg,
-        rgba(var(--kanban-header-rgb-color), 0.15),
-        rgba(var(--kanban-header-rgb-color), 0.05)
-      );
-    }
 
     .counter {
       color: var(--theme-dark-color);

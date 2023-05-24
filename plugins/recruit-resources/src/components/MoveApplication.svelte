@@ -17,21 +17,22 @@
   import ExpandRightDouble from '@hcengineering/contact-resources/src/components/icons/ExpandRightDouble.svelte'
   import { FindOptions, SortingOrder } from '@hcengineering/core'
   import { OK, Severity, Status } from '@hcengineering/platform'
-  import presentation, { Card, createQuery, getClient, SpaceSelect } from '@hcengineering/presentation'
+  import presentation, { Card, SpaceSelect, createQuery, getClient } from '@hcengineering/presentation'
   import type { Applicant, Vacancy } from '@hcengineering/recruit'
   import task, { State } from '@hcengineering/task'
   import ui, {
     Button,
     ColorPopup,
-    createFocusManager,
-    deviceOptionsStore as deviceInfo,
     FocusHandler,
-    getColorNumberByText,
-    getPlatformColor,
     Label,
     ListView,
+    Status as StatusControl,
+    createFocusManager,
+    deviceOptionsStore as deviceInfo,
+    getColorNumberByText,
+    getPlatformColorDef,
     showPopup,
-    Status as StatusControl
+    themeStore
   } from '@hcengineering/ui'
   import { moveToSpace } from '@hcengineering/view-resources/src/utils'
   import { createEventDispatcher } from 'svelte'
@@ -197,9 +198,10 @@
           {#if selectedState}
             <div
               class="color"
-              style="background-color: {getPlatformColor(
-                selectedState.color ?? getColorNumberByText(selectedState.name)
-              )}"
+              style="background-color: {getPlatformColorDef(
+                selectedState.color ?? getColorNumberByText(selectedState.name),
+                $themeStore.dark
+              ).background}"
             />
             <span class="label overflow-label">{selectedState.name}</span>
           {:else}

@@ -17,7 +17,7 @@
   import { Class, ClassifierKind, Doc, Mixin, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
-  import { Icon, Label, tooltip } from '@hcengineering/ui'
+  import { Icon, Label, themeStore, tooltip } from '@hcengineering/ui'
   import { getMixinStyle } from '../utils'
 
   export let value: Doc
@@ -54,7 +54,11 @@
   <div class="mixin-container">
     {#each mixins as mixin}
       {@const userMixin = hierarchy.hasMixin(mixin, setting.mixin.UserMixin)}
-      <div class="mixin-selector" class:user-selector={userMixin} style={getMixinStyle(mixin._id, true)}>
+      <div
+        class="mixin-selector"
+        class:user-selector={userMixin}
+        style={getMixinStyle(mixin._id, true, $themeStore.dark)}
+      >
         {#if !userMixin}
           <Label label={mixin.label} />
         {:else}

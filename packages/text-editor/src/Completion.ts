@@ -94,10 +94,6 @@ export const Completion = Node.create<CompletionOptions>({
 
   draggable: true,
 
-  onFocus () {
-    console.log('focus')
-  },
-
   addAttributes () {
     return {
       id: {

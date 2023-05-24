@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { themeStore } from '@hcengineering/theme'
   import { getPlatformColor } from '../colors'
   import { IconSize } from '../types'
 
@@ -48,7 +49,7 @@
     cy={8}
     r={7}
     class="progress-circle"
-    style:stroke={primary ? 'var(--primary-bg-color)' : getPlatformColor(color)}
+    style:stroke={primary ? 'var(--primary-bg-color)' : getPlatformColor(color, $themeStore.dark)}
     style:opacity={dashOffset === 0 ? 0 : 1}
     style:transform={'rotate(-82deg)'}
     style:stroke-dasharray={lenghtC}

@@ -16,7 +16,7 @@
   import { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { TagCategory, TagElement } from '@hcengineering/tags'
-  import { Button, getPlatformColorForText, showPopup } from '@hcengineering/ui'
+  import { Button, getPlatformColorForTextDef, showPopup, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
   import { getTagStyle } from '../utils'
@@ -169,12 +169,13 @@
     <div class="flex-row-center caption-color states">
       <div class="antiStatesBar mask-none {stepStyle}">
         {#each visibleCategories as item, i}
+          {@const color = getPlatformColorForTextDef(item.label, $themeStore.dark)}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
             bind:this={visibleCategoriesRef[i]}
             class="categoryElement flex-center"
             id={item.label}
-            style={getTagStyle(getPlatformColorForText(item.label), item._id === category)}
+            style={getTagStyle(color, item._id === category)}
             on:click={(evt) => {
               if (mode === 'category') {
                 selectItem(item)

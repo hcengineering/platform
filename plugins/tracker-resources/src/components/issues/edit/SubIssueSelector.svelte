@@ -23,9 +23,10 @@
     SelectPopup,
     Spinner,
     closeTooltip,
-    getPlatformColor,
+    getPlatformColorDef,
     navigate,
     showPopup,
+    themeStore,
     tooltip
   } from '@hcengineering/ui'
   import { ListSelectionProvider } from '@hcengineering/view-resources'
@@ -72,7 +73,7 @@
               icon,
               isSelected: iss._id === issue._id,
               ...(project !== undefined ? { text: `${getIssueId(project, iss)} ${iss.title}` } : undefined),
-              ...(color !== undefined ? { iconColor: getPlatformColor(color) } : undefined)
+              ...(color !== undefined ? { iconColor: getPlatformColorDef(color, $themeStore.dark).icon } : undefined)
             }
           }),
           width: 'large'

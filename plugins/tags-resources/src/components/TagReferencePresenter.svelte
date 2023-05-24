@@ -15,7 +15,7 @@
 <script lang="ts">
   import { AnyAttribute } from '@hcengineering/core'
   import type { TagReference } from '@hcengineering/tags'
-  import { getPlatformColor, Icon, IconClose, resizeObserver } from '@hcengineering/ui'
+  import { getPlatformColorDef, Icon, IconClose, resizeObserver, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import TagItem from './TagItem.svelte'
 
@@ -27,6 +27,8 @@
   export let inline: boolean = false
 
   const dispatch = createEventDispatcher()
+
+  $: color = getPlatformColorDef(value.color ?? 0, $themeStore.dark)
 </script>
 
 {#if value}
@@ -41,8 +43,10 @@
         realWidth = element.clientWidth
       }}
     >
-      <div class="color" style:background-color={getPlatformColor(value.color ?? 0)} />
-      <span class="label overflow-label ml-1 text-sm caption-color max-w-40">{value.title}</span>
+      <div class="color" style:background-color={color.background} />
+      <span class="label overflow-label ml-1 text-sm caption-color max-w-40" style:color={color.title}
+        >{value.title}</span
+      >
     </button>
   {:else if kind === 'list'}
     <div
@@ -52,8 +56,8 @@
         realWidth = element.clientWidth
       }}
     >
-      <div class="color" style:background-color={getPlatformColor(value.color ?? 0)} />
-      <span class="label overflow-label ml-1-5 max-w-40">
+      <div class="color" style:background-color={color.background} />
+      <span class="label overflow-label ml-1-5 max-w-40" style:color={color.title}>
         {value.title}
       </span>
       {#if isEditable}

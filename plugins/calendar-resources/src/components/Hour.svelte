@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Event } from '@hcengineering/calendar'
   import { Ref } from '@hcengineering/core'
-  import { areDatesEqual, getPlatformColorForText, showPanel, tooltip } from '@hcengineering/ui'
+  import { areDatesEqual, getPlatformColorForTextDef, showPanel, themeStore, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import EventPresenter from './EventPresenter.svelte'
@@ -77,7 +77,7 @@
 
   function getStyle (events: Event[], i: number, date: Date): string {
     const e = events[i]
-    let res = `background-color: ${getPlatformColorForText(e._class)};`
+    let res = `background-color: ${getPlatformColorForTextDef(e._class, $themeStore.dark).background};`
     res += `left: ${getShift(events, i)}rem;`
     if (startCell(e.date, date)) {
       res += ` top: ${getTop(e)};`
@@ -89,6 +89,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
   class="cursor-pointer w-full h-full"
   on:click={() => {

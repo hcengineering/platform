@@ -17,7 +17,7 @@
   import { Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import task, { SpaceWithStates, State } from '@hcengineering/task'
-  import { getColorNumberByText, getPlatformColor, resizeObserver } from '@hcengineering/ui'
+  import { getColorNumberByText, getPlatformColorDef, resizeObserver, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let space: Ref<SpaceWithStates>
@@ -42,16 +42,14 @@
   <div class="scroll">
     <div class="box">
       {#each states as state}
+        {@const color = getPlatformColorDef(state.color ?? getColorNumberByText(state.name), $themeStore.dark)}
         <button
           class="menu-item"
           on:click={() => {
             dispatch('close', state)
           }}
         >
-          <div
-            class="color"
-            style="background-color: {getPlatformColor(state.color ?? getColorNumberByText(state.name))}"
-          />
+          <div class="color" style:background-color={color.color} />
           <span class="label">{state.name}</span>
         </button>
       {/each}

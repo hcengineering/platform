@@ -20,7 +20,7 @@
   import { WithLookup } from '@hcengineering/core'
   import { MessageViewer } from '@hcengineering/presentation'
   import type { SharedTelegramMessage } from '@hcengineering/telegram'
-  import { CheckBox, getPlatformColorForText } from '@hcengineering/ui'
+  import { CheckBox, getPlatformColorForText, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let message: WithLookup<SharedTelegramMessage>
@@ -48,7 +48,9 @@
     <div class="message-container" class:out={!message.incoming}>
       <div class="message" class:outcoming={!message.incoming} class:selected>
         {#if showName}
-          <div class="name" style="color: {getPlatformColorForText(message.sender)}">{formatName(message.sender)}</div>
+          <div class="name" style="color: {getPlatformColorForText(message.sender, $themeStore.dark)}">
+            {formatName(message.sender)}
+          </div>
         {/if}
         {#if attachments}
           <AttachmentList {attachments} />

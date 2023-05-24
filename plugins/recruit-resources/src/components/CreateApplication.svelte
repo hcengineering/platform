@@ -23,35 +23,36 @@
     Class,
     Client,
     Doc,
-    fillDefaults,
     FindOptions,
-    generateId,
     Markup,
     Ref,
     SortingOrder,
-    Space
+    Space,
+    fillDefaults,
+    generateId
   } from '@hcengineering/core'
-  import { getResource, OK, Resource, Severity, Status } from '@hcengineering/platform'
+  import { OK, Resource, Severity, Status, getResource } from '@hcengineering/platform'
   import presentation, {
     Card,
-    createQuery,
-    getClient,
     InlineAttributeBar,
-    SpaceSelect
+    SpaceSelect,
+    createQuery,
+    getClient
   } from '@hcengineering/presentation'
   import type { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
-  import task, { calcRank, State } from '@hcengineering/task'
+  import task, { State, calcRank } from '@hcengineering/task'
   import ui, {
     Button,
     ColorPopup,
+    FocusHandler,
+    Label,
+    Status as StatusControl,
     createFocusManager,
     deviceOptionsStore as deviceInfo,
-    FocusHandler,
     getColorNumberByText,
-    getPlatformColor,
-    Label,
+    getPlatformColorDef,
     showPopup,
-    Status as StatusControl
+    themeStore
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
@@ -390,9 +391,10 @@
             {#if selectedState}
               <div
                 class="color"
-                style="background-color: {getPlatformColor(
-                  selectedState.color ?? getColorNumberByText(selectedState.name)
-                )}"
+                style="background-color: {getPlatformColorDef(
+                  selectedState.color ?? getColorNumberByText(selectedState.name),
+                  $themeStore.dark
+                ).background}"
               />
               <span class="label overflow-label">{selectedState.name}</span>
             {:else}

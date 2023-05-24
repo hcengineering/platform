@@ -326,8 +326,3 @@ export interface DialogStep {
   readonly component: AnyComponent | AnySvelteComponent
   props?: Record<string, any>
 }
-
-export interface AccentColor {
-  textColor: string
-  backgroundColor: string
-}

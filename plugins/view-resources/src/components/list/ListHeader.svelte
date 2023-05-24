@@ -19,6 +19,7 @@
     ActionIcon,
     AnyComponent,
     Button,
+    ColorDefinition,
     Component,
     IconAdd,
     IconBack,
@@ -26,13 +27,12 @@
     IconCollapseArrow,
     IconMoreH,
     Label,
-    deviceOptionsStore as deviceInfo,
+    defaultBackground,
     eventToHTMLElement,
-    hslToRgb,
-    rgbToHsl,
-    showPopup
+    showPopup,
+    themeStore
   } from '@hcengineering/ui'
-  import { AttributeModel } from '@hcengineering/view'
+  import { AttributeModel, ViewOptions } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../../plugin'
   import { selectionStore, selectionStoreMap } from '../../selection'
@@ -55,15 +55,18 @@
   export let props: Record<string, any> = {}
   export let newObjectProps: (doc: Doc) => Record<string, any> | undefined
 
+  export let viewOptions: ViewOptions
+
   const dispatch = createEventDispatcher()
 
-  $: lth = $deviceInfo.theme === 'theme-light'
+  let accentColor: ColorDefinition | undefined = undefined
 
-  let accentColor = lth ? { h: 0, s: 0, l: 1 } : { h: 0, s: 0, l: 0.3 }
+  $: headerBGColor =
+    level === 0 && (viewOptions as any).shouldShowColors
+      ? accentColor?.background ?? defaultBackground($themeStore.dark)
+      : defaultBackground($themeStore.dark)
 
-  $: headerBGColor = !lth ? hslToRgb(accentColor.h, accentColor.s, 0.35) : hslToRgb(accentColor.h, accentColor.s, 0.9)
-
-  $: headerTextColor = !lth ? { r: 255, g: 255, b: 255 } : hslToRgb(accentColor.h, accentColor.s, 0.3)
+  $: headerTextColor = accentColor?.title ?? 'var(--theme-caption-color)'
 
   const handleCreateItem = (event: MouseEvent) => {
     if (createItemDialog === undefined) return
@@ -78,9 +81,8 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     style:z-index={10 - level}
-    style:--list-header-rgb-color={`${headerBGColor.r}, ${headerBGColor.g}, ${headerBGColor.b}`}
+    style:background={headerBGColor}
     class="flex-between categoryHeader row"
-    class:gradient={!lth}
     class:flat
     class:collapsed
     class:subLevel={level !== 0}
@@ -108,22 +110,17 @@
           <Label label={view.string.NoGrouping} />
         </span>
       {:else if headerComponent}
-        <span
-          class="clear-mins"
-          style:color={lth
-            ? `rgb(${headerTextColor.r}, ${headerTextColor.g}, ${headerTextColor.b})`
-            : 'var(--theme-caption-color)'}
-        >
+        <span class="clear-mins" style:color={headerTextColor}>
           <svelte:component
             this={headerComponent.presenter}
             value={category}
             {space}
             size={'small'}
             kind={'list-header'}
-            colorInherit={lth && level === 0}
+            colorInherit={!$themeStore.dark && level === 0}
             accent={level === 0}
             on:accent-color={(evt) => {
-              accentColor = rgbToHsl(evt.detail.r, evt.detail.g, evt.detail.b)
+              accentColor = evt.detail
             }}
           />
         </span>
@@ -214,16 +211,6 @@
       transform-origin: center;
       transform: rotate(90deg);
       transition: transform 0.15s ease-in-out;
-    }
-    &:not(.gradient)::before {
-      background: rgba(var(--list-header-rgb-color), 1);
-    }
-    &.gradient::before {
-      background: linear-gradient(
-        90deg,
-        rgba(var(--list-header-rgb-color), 0.15),
-        rgba(var(--list-header-rgb-color), 0.05)
-      );
     }
     &::before,
     &::after {

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { MessageViewer } from '@hcengineering/presentation'
-  import { getPlatformColor, Label as LabelComponent } from '@hcengineering/ui'
+  import { getPlatformColor, Label as LabelComponent, themeStore } from '@hcengineering/ui'
   import view from '../../plugin'
 
   export let href: string
@@ -63,7 +63,7 @@
 </script>
 
 <div class="flex mt-2">
-  <div class="line" style="background-color: {getPlatformColor(7)}" />
+  <div class="line" style="background-color: {getPlatformColor(7, $themeStore.dark)}" />
   {#await getData(href) then data}
     <div class="flex-col">
       <a class="fs-title mb-1" {href}>#{data.number} {data.title}</a>

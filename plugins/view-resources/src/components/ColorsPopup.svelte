@@ -14,13 +14,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { ColorDefinition, getPlatformColors, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { getPlatformColors } from '@hcengineering/ui'
-  import PopupDialog from './PopupDialog.svelte'
   import view from '../plugin'
+  import PopupDialog from './PopupDialog.svelte'
 
-  export let colors: readonly string[] = getPlatformColors()
-  export let columns: number = 5
+  export let colors: readonly ColorDefinition[] = getPlatformColors($themeStore.dark)
+  export let columns: number = 8
   export let selected: string | undefined = undefined
 
   const dispatch = createEventDispatcher()
@@ -32,8 +32,8 @@
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
         class="color"
-        class:selected={selected === color}
-        style="background-color: {color}"
+        class:selected={selected === color.name}
+        style="background-color: {color.color}"
         on:click={() => {
           dispatch('close', i)
         }}

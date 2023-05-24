@@ -13,39 +13,37 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { setContext, onMount } from 'svelte'
   import platform, { loadPluginStrings, setMetadata } from '@hcengineering/platform'
-  import { themeStore as themeOptions } from './'
+  import { onMount, setContext } from 'svelte'
+  import { ThemeOptions, getCurrentFontSize, getCurrentLanguage, getCurrentTheme, themeStore as themeOptions } from './'
 
-  const getCurrentTheme = (): string => localStorage.getItem('theme') ?? 'theme-dark'
-  const getCurrnetFontSize = (): string => localStorage.getItem('fontsize') ?? 'normal-font'
-  const getCurrnetLanguage = (): string => localStorage.getItem('lang') ?? 'en'
   const currentTheme = getCurrentTheme()
-  const currentFontSize = getCurrnetFontSize()
-  let currentLanguage = getCurrnetLanguage()
+  const currentFontSize = getCurrentFontSize()
+  let currentLanguage = getCurrentLanguage()
 
   const setRootColors = (theme: string) => {
-    document.documentElement.setAttribute('class', `${theme} ${getCurrnetFontSize()}`)
+    document.documentElement.setAttribute('class', `${theme} ${getCurrentFontSize()}`)
+    themeOptions.set(
+      new ThemeOptions(getCurrentFontSize() === 'normal-font' ? 16 : 14, getCurrentTheme() === 'theme-dark')
+    )
   }
   const setRootFontSize = (fontsize: string) => {
     document.documentElement.setAttribute('class', `${getCurrentTheme()} ${fontsize}`)
-    themeOptions.update((opt) => {
-      return { ...opt, fontSize: fontsize === 'normal-font' ? 16 : 14 }
-    })
+    themeOptions.set(new ThemeOptions(fontsize === 'normal-font' ? 16 : 14, getCurrentTheme() === 'theme-dark'))
   }
 
   setContext('theme', {
     currentTheme,
     setTheme: (name: string) => {
-      setRootColors(name)
       localStorage.setItem('theme', name)
+      setRootColors(name)
     }
   })
   setContext('fontsize', {
     currentFontSize,
     setFontSize: (fontsize: string) => {
-      setRootFontSize(fontsize)
       localStorage.setItem('fontsize', fontsize)
+      setRootFontSize(fontsize)
     }
   })
   setContext('lang', {

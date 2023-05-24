@@ -19,22 +19,25 @@
   import type { DoneState, KanbanTemplate, KanbanTemplateSpace, State } from '@hcengineering/task'
   import {
     CircleButton,
+    Component,
     IconAdd,
+    IconCircles,
     IconMoreH,
     Label,
-    showPopup,
-    getPlatformColor,
+    PaletteColorIndexes,
+    defaultBackground,
     eventToHTMLElement,
-    Component,
-    IconCircles,
-    getColorNumberByText
+    getColorNumberByText,
+    getPlatformColorDef,
+    showPopup,
+    themeStore
   } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
   import { ColorsPopup } from '@hcengineering/view-resources'
-  import StatusesPopup from './StatusesPopup.svelte'
+  import { createEventDispatcher } from 'svelte'
   import task from '../../plugin'
-  import Won from '../icons/Won.svelte'
   import Lost from '../icons/Lost.svelte'
+  import Won from '../icons/Won.svelte'
+  import StatusesPopup from './StatusesPopup.svelte'
 
   export let template: KanbanTemplate | undefined = undefined
   export let space: KanbanTemplateSpace | undefined = undefined
@@ -77,7 +80,7 @@
   const onColorChange =
     (state: State) =>
       async (color: number | undefined): Promise<void> => {
-        if (color === undefined) {
+        if (color == null) {
           return
         }
 
@@ -104,10 +107,12 @@
 </div>
 <div class="mt-3">
   {#each states as state, i}
+    {@const color = getPlatformColorDef(state.color ?? getColorNumberByText(state.name), $themeStore.dark)}
     {#if state}
       <div
         bind:this={elements[i]}
         class="flex-between states"
+        style:background={color.background ?? defaultBackground($themeStore.dark)}
         draggable={true}
         on:dragover|preventDefault={(ev) => {
           dragover(ev, i)
@@ -127,14 +132,9 @@
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="color"
-          style="background-color: {getPlatformColor(state.color ?? getColorNumberByText(state.name))}"
+          style:background-color={color.color}
           on:click={() => {
-            showPopup(
-              ColorsPopup,
-              { selected: getPlatformColor(state.color ?? getColorNumberByText(state.name)) },
-              elements[i],
-              onColorChange(state)
-            )
+            showPopup(ColorsPopup, { selected: color.name }, elements[i], onColorChange(state))
           }}
         />
         <div class="flex-grow caption-color">
@@ -173,8 +173,13 @@
   </div>
   <div class="mt-4">
     {#each wonStates as state}
+      {@const color = getPlatformColorDef(PaletteColorIndexes.Crocodile, $themeStore.dark)}
       {#if state}
-        <div class="states flex-row-center">
+        <div
+          class="states flex-row-center"
+          style:color={color.title}
+          style:background={color.background ?? defaultBackground($themeStore.dark)}
+        >
           <div class="bar" />
           <div class="mr-2">
             <Won size={'medium'} />
@@ -216,8 +221,13 @@
   </div>
   <div class="mt-4 mb-10">
     {#each lostStates as state}
+      {@const color = getPlatformColorDef(PaletteColorIndexes.Firework, $themeStore.dark)}
       {#if state}
-        <div class="states flex-row-center">
+        <div
+          class="states flex-row-center"
+          style:color={color.title}
+          style:background={color.background ?? defaultBackground($themeStore.dark)}
+        >
           <div class="bar" />
           <div class="mr-2">
             <Lost size={'medium'} />

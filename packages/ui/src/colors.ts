@@ -1,3 +1,208 @@
+/**
+ * @public
+ */
+export interface RGBColor {
+  r: number
+  g: number
+  b: number
+}
+/**
+ * @public
+ */
+export interface ColorDefinition {
+  name: string
+  color: string
+  icon?: string
+  title?: string
+  number?: string
+  background?: string
+}
+
+const define = (
+  name: string,
+  color: string,
+  icon: string,
+  title: string,
+  number: string,
+  background: string,
+  percents: number[]
+): ColorDefinition => {
+  return {
+    name,
+    color: defineAlpha(color),
+    icon: defineAlpha(icon),
+    title: defineAlpha(title),
+    number: defineAlpha(number, percents[0]),
+    background:
+      percents.length > 2
+        ? `linear-gradient(90deg, ${defineAlpha(color, percents[1])}, ${defineAlpha(color, percents[2])})`
+        : defineAlpha(color, percents[1])
+  }
+}
+
+const defineAvatarColor = (name: string, h: number, s: number, l: number, gradient: number[]): ColorDefinition => {
+  const background = rgbToHex(hslToRgb(h / 360, s / 100, l / 100))
+  return {
+    name,
+    color: background,
+    icon: undefined,
+    title: undefined,
+    number: undefined,
+    background:
+      gradient.length === 1
+        ? defineAlpha(background)
+        : `linear-gradient(90deg, ${gradient.map((it) => defineAlpha(background, it)).join(',')})`
+  }
+}
+
+/**
+ * @public
+ */
+export enum PaletteColorIndexes {
+  Firework,
+  Watermelon,
+  Pink,
+  Fuschia,
+  Lavander,
+  Mauve,
+  Heather,
+  Orchid,
+  Blueberry,
+  Arctic,
+  Sky,
+  Cerulean,
+  Waterway,
+  Ocean,
+  Turquoise,
+  Houseplant,
+  Crocodile,
+  Grass,
+  Sunshine,
+  Orange,
+  Pumpkin,
+  Cloud,
+  Coin,
+  Porpoise
+}
+
+/**
+ * @public
+ */
+export const whitePalette = Object.freeze<ColorDefinition[]>([
+  define('Firework', 'D15045', 'D15045', 'C03B2F', 'C03B2F', 'C03B2F', [60, 20]),
+  define('Watermelon', 'DB877D', 'DB877D', 'D2685B', 'D2685B', 'D2685B', [60, 20]),
+  define('Pink', 'EF86AA', 'EF86AA', 'E9588A', 'E9588A', 'E9588A', [60, 20]),
+  define('Fuschia', 'EB5181', 'EB5181', 'E62360', 'E62360', 'E62360', [60, 20]),
+  define('Lavander', 'DC85F5', 'DC85F5', 'CE55F1', 'CE55F1', 'CE55F1', [60, 20]),
+  define('Mauve', '925CB1', '925CB1', '784794', '784794', '784794', [60, 20]),
+  define('Heather', '7B86C6', '7B86C6', '5866B7', '5866B7', '5866B7', [60, 20]),
+  define('Orchid', '8458E3 ', '8458E3', '6A3ACF', '6A3ACF', '6A3ACF', [60, 20]),
+  define('Blueberry', '6260C2', '6260C2', '4542AD', '4542AD', '4542AD', [60, 20]),
+  define('Arctic', '8BB0F9', '8BB0F9', '5A8FF6', '5A8FF6', '5A8FF6', [60, 20]),
+  define('Sky', '4CA6EE', '4CA6EE', '1F90EA', '1F90EA', '1F90EA', [60, 20]),
+  define('Cerulean', '5195D7', '5195D7', '2E7CC7', '2E7CC7', '2E7CC7', [60, 20]),
+  define('Waterway', '1467B3', '1467B3', '0F4C85', '0F4C85', '0F4C85', [60, 20]),
+  define('Ocean', '167B82', '167B82', '0F5357', '0F5357', '0F5357', [60, 20]),
+  define('Turquoise', '58B99D', '58B99D', '429E84', '429E84', '429E84', [60, 20]),
+  define('Houseplant', '46A44F', '46A44F', '37813E', '37813E', '37813E', [60, 20]),
+  define('Crocodile', '709A3F', '709A3F', '577731', '577731', '577731', [60, 20]),
+  define('Grass', '83AF12', '83AF12', '719C40', '60810E', '60810E', [60, 20]),
+  define('Sunshine', 'D29840', 'D29840', 'C1811F', 'C1811F', 'C1811F', [60, 20]),
+  define('Orange', 'D27540', 'D27540', 'B65D2B', 'B65D2B', 'B65D2B', [60, 20]),
+  define('Pumpkin', 'BF5C24', 'BF5C24', '96481C', '96481C', '96481C', [60, 20]),
+  define('Cloud', 'A1A1A1', 'A1A1A1', '878787', '878787', '878787', [60, 20]),
+  define('Coin', '939395', '939395', '79797C', '79797C', '79797C', [60, 20]),
+  define('Porpoise', '758595', '758595', '5D6B79', '5D6B79', '5D6B79', [60, 20])
+])
+
+/**
+ * @public
+ */
+export const blackPalette = Object.freeze<ColorDefinition[]>([
+  define('Firework', 'D15045', 'D15045', 'FFFFFF', 'FFFFFF', 'C03B2F', [60, 15, 0]),
+  define('Watermelon', 'DB877D', 'DB877D', 'FFFFFF', 'FFFFFF', 'D2685B', [60, 15, 0]),
+  define('Pink', 'EF86AA', 'EF86AA', 'FFFFFF', 'FFFFFF', 'E9588A', [60, 15, 0]),
+  define('Fuschia', 'EB5181', 'EB5181', 'FFFFFF', 'FFFFFF', 'E62360', [60, 15, 0]),
+  define('Lavander', 'DC85F5', 'DC85F5', 'FFFFFF', 'FFFFFF', 'CE55F1', [60, 15, 0]),
+  define('Mauve', '925CB1', '925CB1', 'FFFFFF', 'FFFFFF', '784794', [60, 15, 0]),
+  define('Heather', '7B86C6', '7B86C6', 'FFFFFF', 'FFFFFF', '5866B7', [60, 15, 0]),
+  define('Orchid', '8862D9', '8862D9', 'FFFFFF', 'FFFFFF', '6A3ACF', [60, 15, 0]),
+  define('Blueberry', '6260C2', '6260C2', 'FFFFFF', 'FFFFFF', '4542AD', [60, 15, 0]),
+  define('Arctic', '8BB0F9', '8BB0F9', 'FFFFFF', 'FFFFFF', '5A8FF6', [60, 15, 0]),
+  define('Sky', '4CA6EE', '4CA6EE', 'FFFFFF', 'FFFFFF', '1F90EA', [60, 15, 0]),
+  define('Cerulean', '5195D7', '5195D7', 'FFFFFF', 'FFFFFF', '2E7CC7', [60, 15, 0]),
+  define('Waterway', '1467B3', '1467B3', 'FFFFFF', 'FFFFFF', '0F4C85', [60, 15, 0]),
+  define('Ocean', '167B82', '167B82', 'FFFFFF', 'FFFFFF', '0F5357', [60, 15, 0]),
+  define('Turquoise', '58B99D', '58B99D', 'FFFFFF', 'FFFFFF', '429E84', [60, 15, 0]),
+  define('Houseplant', '46A44F', '46A44F', 'FFFFFF', 'FFFFFF', '37813E', [60, 15, 0]),
+  define('Crocodile', '709A3F', '709A3F', 'FFFFFF', 'FFFFFF', '577731', [60, 15, 0]),
+  define('Grass', '83AF12', '83AF12', 'FFFFFF', 'FFFFFF', '83AF12', [60, 15, 0]),
+  define('Sunshine', 'D29840', 'D29840', 'FFFFFF', 'FFFFFF', 'B67E2B', [60, 15, 0]),
+  define('Orange', 'D27540', 'D27540', 'FFFFFF', 'FFFFFF', 'B65D2B', [60, 15, 0]),
+  define('Pumpkin', 'BF5C24', 'BF5C24', 'FFFFFF', 'FFFFFF', '96481C', [60, 15, 0]),
+  define('Cloud', 'A1A1A1', 'A1A1A1', 'FFFFFF', 'FFFFFF', '878787', [60, 15, 0]),
+  define('Coin', '939395', '939395', 'FFFFFF', 'FFFFFF', '79797C', [60, 15, 0]),
+  define('Porpoise', '758595', '758595', 'FFFFFF', 'FFFFFF', '5D6B79', [60, 15, 0])
+])
+
+export const avatarWhiteColors = Object.freeze<ColorDefinition[]>([
+  defineAvatarColor('Unassigned', 0, 0, 91, [20]),
+  defineAvatarColor('Magic', 235, 14, 89, [20]),
+  defineAvatarColor('Waterlily', 222, 16, 87, [20]),
+  defineAvatarColor('Light', 216, 16, 87, [20]),
+  defineAvatarColor('Aqua', 200, 8, 85, [20]),
+  defineAvatarColor('Turtle', 192, 14, 85, [20]),
+  defineAvatarColor('Ocean', 186, 13, 85, [20]),
+  defineAvatarColor('Heather', 153, 11, 86, [20]),
+  defineAvatarColor('Juice', 108, 10, 90, [20]),
+  defineAvatarColor('Lime', 70, 9, 87, [20]),
+  defineAvatarColor('Warmth', 45, 13, 88, [20]),
+  defineAvatarColor('Desert', 30, 14, 89, [20]),
+  defineAvatarColor('Sand', 25, 14, 89, [20]),
+  defineAvatarColor('Rust', 23, 12, 87, [20]),
+  defineAvatarColor('Magnolia', 334, 11, 88, [20]),
+  defineAvatarColor('Blossom', 300, 14, 89, [20]),
+  defineAvatarColor('Unicorn', 274, 11, 88, [20]),
+  defineAvatarColor('Violet', 252, 16, 87, [20]),
+  defineAvatarColor('Happy', 232, 16, 87, [20]),
+  defineAvatarColor('Blueish', 222, 13, 85, [20]),
+  defineAvatarColor('Baby blue', 210, 12, 87, [20]),
+  defineAvatarColor('Grey 3', 213, 9, 81, [20]),
+  defineAvatarColor('Grey 2', 210, 10, 84, [20]),
+  defineAvatarColor('Grey 1', 210, 11, 89, [20])
+])
+
+export const avatarBlackColors = Object.freeze<ColorDefinition[]>([
+  defineAvatarColor('Unassigned', 0, 0, 91, [20, 0, 0]),
+  defineAvatarColor('Magic', 235, 14 + 50, 89 - 20, [20, 2, 0]),
+  defineAvatarColor('Waterlily', 222, 16 + 50, 87 - 20, [20, 2, 0]),
+  defineAvatarColor('Light', 216, 16 + 50, 87 - 20, [20, 2, 0]),
+  defineAvatarColor('Aqua', 200, 8 + 50, 85 - 20, [20, 2, 0]),
+  defineAvatarColor('Turtle', 192, 14 + 50, 85 - 20, [20, 2, 0]),
+  defineAvatarColor('Ocean', 186, 13 + 50, 85 - 20, [20, 2, 0]),
+  defineAvatarColor('Heather', 153, 11 + 50, 86 - 20, [20, 2, 0]),
+  defineAvatarColor('Juice', 108, 10 + 50, 90 - 20, [20, 2, 0]),
+  defineAvatarColor('Lime', 70, 9 + 50, 87 - 20, [20, 2, 0]),
+  defineAvatarColor('Warmth', 45, 13 + 50, 88 - 20, [20, 2, 0]),
+  defineAvatarColor('Desert', 30, 14 + 50, 89 - 20, [20, 2, 0]),
+  defineAvatarColor('Sand', 25, 14 + 50, 89 - 20, [20, 2, 0]),
+  defineAvatarColor('Rust', 23, 12 + 50, 87 - 20, [20, 2, 0]),
+  defineAvatarColor('Magnolia', 334, 11 + 50, 88 - 20, [20, 2, 0]),
+  defineAvatarColor('Blossom', 300, 14 + 50, 89 - 20, [20, 2, 0]),
+  defineAvatarColor('Unicorn', 274, 11 + 50, 88 - 20, [20, 2, 0]),
+  defineAvatarColor('Violet', 252, 16 + 50, 87 - 20, [20, 2, 0]),
+  defineAvatarColor('Happy', 232, 16 + 50, 87 - 20, [20, 2, 0]),
+  defineAvatarColor('Blueish', 222, 13 + 50, 85 - 20, [20, 2, 0]),
+  defineAvatarColor('Baby blue', 210, 12 + 50, 87 - 20, [20, 2, 0]),
+  defineAvatarColor('Grey 3', 213, 9, 81, [20, 2, 0]),
+  defineAvatarColor('Grey 2', 210, 10, 84, [20, 2, 0]),
+  defineAvatarColor('Grey 1', 210, 11, 89, [20, 2, 0])
+])
+
+export function defaultBackground (dark: boolean): string {
+  return dark ? 'linear-gradient(90deg, #262634, #26263400)' : '#FFFFFF'
+}
+
 export const FeijoaColor = '#A5D179'
 export const DeYorkColor = '#77C07B'
 export const FernColor = '#60B96E' // green
@@ -20,45 +225,55 @@ export const CrayolaColor = '#F2C94C'
 export const SlateBlueColor = '#5E6AD2'
 export const CadetGreyColor = '#95A2B3'
 
-const blackColors = Object.freeze([
-  FeijoaColor,
-  DeYorkColor,
-  FernColor,
-  PuertoRicoColor,
-  MediumTurquoiseColor,
-  SummerSkyColor,
-  MalibuColor,
-  SeagullColor,
-  EastSideColor,
-  MoodyBlueColor,
-  ChetwodeBlueColor,
-  SalmonColor,
-  SilverSandColor,
-  PlatinumColor,
-  CrayolaColor,
-  SlateBlueColor,
-  CadetGreyColor
-])
-
 /**
  * @public
  */
-export function getPlatformColor (hash: number): string {
-  return blackColors[Math.abs(hash) % blackColors.length]
+export function getPlatformColor (hash: number, blackTheme: boolean): string {
+  const palette = blackTheme ? blackPalette : whitePalette
+  return (palette[Math.abs(hash) % palette.length] ?? palette[0]).color
 }
 
 /**
  * @public
  */
-export function getPlatformColorForText (text: string): string {
-  return getPlatformColor(hashCode(text))
+export function getPlatformColorDef (hash: number, blackTheme: boolean): ColorDefinition {
+  const palette = blackTheme ? blackPalette : whitePalette
+  return palette[Math.abs(hash) % palette.length] ?? palette[0]
 }
 
 /**
  * @public
  */
-export function getPlatformColors (): readonly string[] {
-  return blackColors
+export function getPlatformAvatarColorDef (hash: number, blackTheme: boolean): ColorDefinition {
+  const palette = blackTheme ? avatarBlackColors : avatarWhiteColors
+  return palette[Math.abs(hash) % palette.length] ?? palette[0]
+}
+
+/**
+ * @public
+ */
+export function getPlatformAvatarColorForTextDef (text: string, blackTheme: boolean): ColorDefinition {
+  return getPlatformAvatarColorDef(hashCode(text), blackTheme)
+}
+
+/**
+ * @public
+ */
+export function getPlatformColorForText (text: string, blackTheme: boolean): string {
+  return getPlatformColor(hashCode(text), blackTheme)
+}
+/**
+ * @public
+ */
+export function getPlatformColorForTextDef (text: string, blackTheme: boolean): ColorDefinition {
+  return getPlatformColorDef(hashCode(text), blackTheme)
+}
+
+/**
+ * @public
+ */
+export function getPlatformColors (blackTheme: boolean): readonly ColorDefinition[] {
+  return blackTheme ? blackPalette : whitePalette
 }
 
 function hashCode (str: string): number {
@@ -85,7 +300,7 @@ export function hexColorToNumber (hexColor: string): number {
 /**
  * @public
  */
-export function hexToRgb (color: string): { r: number, g: number, b: number } {
+export function hexToRgb (color: string): RGBColor {
   if (!color.startsWith('#')) {
     return { r: 128, g: 128, b: 128 }
   }
@@ -96,11 +311,43 @@ export function hexToRgb (color: string): { r: number, g: number, b: number } {
       .map((c) => c + c)
       .join('')
   }
+  color = color.toLowerCase()
   return {
     r: parseInt(color.slice(0, 2), 16),
     g: parseInt(color.slice(2, 4), 16),
     b: parseInt(color.slice(4, 6), 16)
   }
+}
+
+/**
+ * @public
+ */
+export function hexHSLToRgb (color: string, percent = 100): RGBColor {
+  const h = parseInt(color.slice(0, 2), 16)
+  const s = parseInt(color.slice(2, 4), 16)
+  const l = parseInt(color.slice(4, 6), 16)
+  return hslToRgb(h, s, (l / 100) * percent)
+}
+
+function addZero (d: string): string {
+  if (d.length < 2) {
+    return '0' + d
+  }
+  return d
+}
+
+/**
+ * @public
+ */
+export function defineAlpha (color: string, percent = 100): string {
+  let rgb = color
+  if (!rgb.startsWith('#')) {
+    rgb = '#' + rgb
+  }
+  if (percent === 100) {
+    return rgb
+  }
+  return rgb + addZero(Math.round((percent / 100) * 255).toString(16))
 }
 
 /**
@@ -131,7 +378,7 @@ export function numberToRGB (color: number, alpha?: number): string {
 /**
  * @public
  */
-export function hslToRgb (h: number, s: number, l: number): { r: number, g: number, b: number } {
+export function hslToRgb (h: number, s: number, l: number): RGBColor {
   let r, g, b
 
   if (s === 0) {
@@ -159,13 +406,7 @@ export function hslToRgb (h: number, s: number, l: number): { r: number, g: numb
 /**
  * @public
  */
-export function rgbToHex (color: { r: number, g: number, b: number }): string {
-  function addZero (d: string): string {
-    if (d.length < 2) {
-      return '0' + d
-    }
-    return d
-  }
+export function rgbToHex (color: RGBColor): string {
   return (
     '#' +
     addZero((Math.round(color.r) % 255).toString(16)) +
@@ -174,7 +415,7 @@ export function rgbToHex (color: { r: number, g: number, b: number }): string {
   )
 }
 
-export async function svgToColor (img: SVGSVGElement): Promise<{ r: number, g: number, b: number } | undefined> {
+export async function svgToColor (img: SVGSVGElement): Promise<RGBColor | undefined> {
   const outerHTML = img.outerHTML
   const blob = new Blob([outerHTML], { type: 'image/svg+xml;charset=utf-8' })
   const blobURL = URL.createObjectURL(blob)
@@ -191,7 +432,7 @@ export async function svgToColor (img: SVGSVGElement): Promise<{ r: number, g: n
 /**
  * @public
  */
-export function imageToColor (image: HTMLImageElement): { r: number, g: number, b: number } | undefined {
+export function imageToColor (image: HTMLImageElement): RGBColor | undefined {
   const canvas = document.createElement('canvas')
 
   const height = (canvas.height = image.naturalHeight ?? image.offsetHeight ?? image.height)

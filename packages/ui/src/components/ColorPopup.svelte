@@ -15,11 +15,11 @@
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
-  import { deviceOptionsStore, resizeObserver } from '..'
-  import { getPlatformColor } from '../colors'
-  import ListView from './ListView.svelte'
-  import Icon from './Icon.svelte'
+  import { deviceOptionsStore, resizeObserver, themeStore } from '..'
+  import { getPlatformColorDef } from '../colors'
   import EditWithIcon from './EditWithIcon.svelte'
+  import Icon from './Icon.svelte'
+  import ListView from './ListView.svelte'
   import IconCheck from './icons/Check.svelte'
   import IconSearch from './icons/Search.svelte'
 
@@ -93,14 +93,15 @@
       >
         <svelte:fragment slot="item" let:item>
           {@const itemValue = objects[item]}
+          {@const color = getPlatformColorDef(itemValue.color, $themeStore.dark)}
           <button
             class="menu-item withList w-full"
             on:click={() => {
               dispatch('close', itemValue)
             }}
           >
-            <div class="color" style="background-color: {getPlatformColor(itemValue.color)}" />
-            <span class="label">{itemValue.label}</span>
+            <div class="color" style:background-color={color.background}>{color.name}</div>
+            <span class="label" style:color={color.title}>{itemValue.label}</span>
             <div class="check">
               {#if itemValue.id === selected}
                 <Icon icon={IconCheck} size={'small'} />
