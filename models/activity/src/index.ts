@@ -31,7 +31,7 @@ export class TTxViewlet extends TDoc implements TxViewlet {
   // Component to display on.
   component!: AnyComponent
   // Filter
-  match!: DocumentQuery<Tx>
+  match?: DocumentQuery<Tx>
   label!: IntlString
   display!: 'inline' | 'content' | 'emphasized'
   editable!: boolean
