@@ -20,9 +20,9 @@
 
   export let value: number | null | undefined
   export let editable: boolean = false
-  export let icon: 'normal' | 'warning' | 'overdue' = 'normal'
+  export let iconModifier: 'normal' | 'warning' | 'overdue' = 'normal'
   export let labelNull: IntlString = ui.string.NoDate
   export let noShift: boolean = false
 </script>
 
-<DateRangePresenter bind:value mode={DateRangeMode.DATETIME} {editable} {icon} {labelNull} {noShift} />
+<DateRangePresenter bind:value mode={DateRangeMode.DATETIME} {editable} {iconModifier} {labelNull} {noShift} />
