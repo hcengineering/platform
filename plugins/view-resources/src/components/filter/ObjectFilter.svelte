@@ -15,22 +15,22 @@
 <script lang="ts">
   import core, { Doc, FindResult, getObjectValue, Ref, RefTo, SortingOrder, Space, Status } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
-  import presentation, { getClient } from '@hcengineering/presentation'
+  import presentation, { getClient, statusStore } from '@hcengineering/presentation'
   import ui, {
     addNotification,
+    deviceOptionsStore,
+    EditWithIcon,
     Icon,
     IconCheck,
     IconSearch,
-    deviceOptionsStore,
     Label,
     Loading,
-    resizeObserver,
-    EditWithIcon
+    resizeObserver
   } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import view from '../../plugin'
   import { FILTER_DEBOUNCE_MS, sortFilterValues } from '../../filter'
+  import view from '../../plugin'
   import { buildConfigLookup, getPresenter } from '../../utils'
   import FilterRemovedNotification from './FilterRemovedNotification.svelte'
 
@@ -116,8 +116,7 @@
     }
     if (values.length !== targets.size) {
       const oldSize = filter.value.length
-      const set = new Set(values.map((p) => p?._id))
-      filter.value = filter.value.filter((p) => set.has(p))
+      filter.value = filter.value.filter((p) => targets.has(p))
       const removed = oldSize - (filter.value.length ?? 0)
       if (removed > 0) {
         onChange(filter)
@@ -130,6 +129,14 @@
   }
 
   function isSelected (value: Doc | undefined | null, values: any[]): boolean {
+    if (isStatus) {
+      const statusSet = new Set(
+        $statusStore
+          .filter((it) => it.name.trim().toLocaleLowerCase() === (value as Status)?.name?.trim()?.toLocaleLowerCase())
+          .map((it) => it._id)
+      )
+      return values.some((it) => statusSet.has(it))
+    }
     return values.includes(value?._id ?? value)
   }
 
