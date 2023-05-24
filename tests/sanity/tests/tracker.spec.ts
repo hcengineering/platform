@@ -39,7 +39,7 @@ test('create-issue-and-sub-issue', async ({ page }) => {
   await checkIssue(page, props)
   props.name = `sub${props.name}`
   await createSubissue(page, props)
-  await page.click(`.antiList__row:has-text("${props.name}") .name a`)
+  await openIssue(page, props.name)
   await checkIssue(page, props)
 })
 

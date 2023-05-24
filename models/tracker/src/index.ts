@@ -825,6 +825,7 @@ export function createModel (builder: Builder): void {
   const milestonesId = 'milestones'
   const templatesId = 'templates'
   const myIssuesId = 'my-issues'
+  const allIssuesId = 'all-issues'
   // const scrumsId = 'scrums'
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ObjectPresenter, {
@@ -999,10 +1000,17 @@ export function createModel (builder: Builder): void {
             position: 'top',
             label: tracker.string.MyIssues,
             icon: tracker.icon.MyIssues,
-            component: tracker.component.MyIssues
+            component: tracker.component.MyIssues,
+            componentProps: {
+              config: [
+                ['assigned', view.string.Assigned, {}],
+                ['created', view.string.Created, { value: 2 }],
+                ['subscribed', view.string.Subscribed, {}]
+              ]
+            }
           },
           {
-            id: 'all-issues',
+            id: allIssuesId,
             position: 'top',
             label: tracker.string.AllIssues,
             icon: tracker.icon.Issues,
@@ -1010,7 +1018,12 @@ export function createModel (builder: Builder): void {
             componentProps: {
               baseQuery: { '$lookup.space.archived': false },
               space: undefined,
-              title: tracker.string.AllIssues
+              title: tracker.string.AllIssues,
+              config: [
+                ['all', tracker.string.All, {}],
+                ['active', tracker.string.Active, {}],
+                ['backlog', tracker.string.Backlog, {}]
+              ]
             }
           }
         ],
@@ -1028,7 +1041,12 @@ export function createModel (builder: Builder): void {
                 icon: tracker.icon.Issues,
                 component: tracker.component.Issues,
                 componentProps: {
-                  title: tracker.string.Issues
+                  title: tracker.string.Issues,
+                  config: [
+                    ['all', tracker.string.All, {}],
+                    ['active', tracker.string.Active, {}],
+                    ['backlog', tracker.string.Backlog, {}]
+                  ]
                 }
               },
               {
