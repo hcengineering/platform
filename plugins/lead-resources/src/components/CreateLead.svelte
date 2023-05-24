@@ -14,12 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Contact, Employee } from '@hcengineering/contact'
+  import contact, { Contact } from '@hcengineering/contact'
   import { AttachedData, generateId, Ref, SortingOrder, Space } from '@hcengineering/core'
   import type { Customer, Funnel, Lead } from '@hcengineering/lead'
   import { OK, Status } from '@hcengineering/platform'
-  import { Card, createQuery, getClient, SpaceSelector } from '@hcengineering/presentation'
-  import { EmployeeBox, UserBox } from '@hcengineering/contact-resources'
+  import { Card, createQuery, getClient, InlineAttributeBar, SpaceSelector } from '@hcengineering/presentation'
+  import { UserBox } from '@hcengineering/contact-resources'
   import task, { calcRank } from '@hcengineering/task'
   import { Button, createFocusManager, EditBox, FocusHandler, Label, Status as StatusControl } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -33,6 +33,7 @@
   const status: Status = OK
 
   let title: string = ''
+  const object: Partial<Lead> = {}
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -51,8 +52,6 @@
       _space = funnels[0]?._id
     }
   }
-
-  let assignee: Ref<Employee> | undefined = undefined
 
   async function createLead () {
     const state = await client.findOne(task.class.State, { space: _space }, { sort: { rank: SortingOrder.Ascending } })
@@ -75,7 +74,8 @@
       rank: calcRank(lastOne, undefined),
       assignee: null,
       startDate: null,
-      dueDate: null
+      dueDate: null,
+      ...object
     }
 
     const customerInstance = await client.findOne(contact.class.Contact, { _id: customer! })
@@ -151,16 +151,6 @@
   </div>
 
   <svelte:fragment slot="pool">
-    <EmployeeBox
-      focusIndex={2}
-      label={lead.string.Assignee}
-      kind={'secondary'}
-      size={'large'}
-      bind:value={assignee}
-      allowDeselect
-      showNavigate={false}
-      titleDeselect={lead.string.UnAssign}
-    />
     {#if !preserveCustomer}
       <UserBox
         focusIndex={2}
@@ -173,5 +163,12 @@
         create={{ component: lead.component.CreateCustomer, label: lead.string.CreateCustomer }}
       />
     {/if}
+    <InlineAttributeBar
+      _class={lead.class.Lead}
+      {object}
+      toClass={task.class.Task}
+      on:update
+      extraProps={{ showNavigate: false }}
+    />
   </svelte:fragment>
 </Card>
