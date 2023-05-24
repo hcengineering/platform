@@ -15,8 +15,10 @@
 -->
 <script lang="ts">
   import type { DisplayTx, TxViewlet } from '@hcengineering/activity'
+  import attachment from '@hcengineering/attachment'
+  import chunter from '@hcengineering/chunter'
   import contact, { Employee, EmployeeAccount, getName } from '@hcengineering/contact'
-  import core, { AnyAttribute, Doc, getCurrentAccount, Ref, Class, TxCUD } from '@hcengineering/core'
+  import core, { AnyAttribute, Class, Doc, Ref, TxCUD, getCurrentAccount } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import ui, {
@@ -24,23 +26,21 @@
     AnyComponent,
     Component,
     Icon,
+    IconActivityEdit,
     IconEdit,
     IconMoreH,
     Label,
     ShowMore,
-    showPopup,
-    TimeSince
+    TimeSince,
+    showPopup
   } from '@hcengineering/ui'
   import type { AttributeModel } from '@hcengineering/view'
-  import attachment from '@hcengineering/attachment'
-  import chunter from '@hcengineering/chunter'
   import { Menu, ObjectPresenter } from '@hcengineering/view-resources'
+  import { tick } from 'svelte'
   import { ActivityKey } from '../activity'
   import activity from '../plugin'
-  import { getPrevValue, getValue, TxDisplayViewlet, updateViewlet } from '../utils'
+  import { TxDisplayViewlet, getPrevValue, getValue, updateViewlet } from '../utils'
   import TxViewTx from './TxViewTx.svelte'
-  import Edit from './icons/Edit.svelte'
-  import { tick } from 'svelte'
 
   export let tx: DisplayTx
   export let viewlets: Map<ActivityKey, TxViewlet>
@@ -200,9 +200,9 @@
           {:else if viewlet}
             <Icon icon={viewlet.icon} size="small" />
           {:else if viewlet === undefined && model.length > 0}
-            <Icon icon={modelIcon !== undefined ? modelIcon : Edit} size="small" />
+            <Icon icon={modelIcon !== undefined ? modelIcon : IconActivityEdit} size="small" />
           {:else}
-            <Icon icon={Edit} size="small" />
+            <Icon icon={IconActivityEdit} size="small" />
           {/if}
         </div>
       {/if}

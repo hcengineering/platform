@@ -43,15 +43,8 @@ import EditVacancy from './components/EditVacancy.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
 import MatchVacancy from './components/MatchVacancy.svelte'
 import NewCandidateHeader from './components/NewCandidateHeader.svelte'
+import NotificationApplicantPresenter from './components/NotificationApplicantPresenter.svelte'
 import Organizations from './components/Organizations.svelte'
-import CreateOpinion from './components/review/CreateOpinion.svelte'
-import CreateReview from './components/review/CreateReview.svelte'
-import EditReview from './components/review/EditReview.svelte'
-import OpinionPresenter from './components/review/OpinionPresenter.svelte'
-import Opinions from './components/review/Opinions.svelte'
-import OpinionsPresenter from './components/review/OpinionsPresenter.svelte'
-import ReviewPresenter from './components/review/ReviewPresenter.svelte'
-import Reviews from './components/review/Reviews.svelte'
 import SkillsView from './components/SkillsView.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
 import Vacancies from './components/Vacancies.svelte'
@@ -62,6 +55,14 @@ import VacancyList from './components/VacancyList.svelte'
 import VacancyModifiedPresenter from './components/VacancyModifiedPresenter.svelte'
 import VacancyPresenter from './components/VacancyPresenter.svelte'
 import VacancyTemplateEditor from './components/VacancyTemplateEditor.svelte'
+import CreateOpinion from './components/review/CreateOpinion.svelte'
+import CreateReview from './components/review/CreateReview.svelte'
+import EditReview from './components/review/EditReview.svelte'
+import OpinionPresenter from './components/review/OpinionPresenter.svelte'
+import Opinions from './components/review/Opinions.svelte'
+import OpinionsPresenter from './components/review/OpinionsPresenter.svelte'
+import ReviewPresenter from './components/review/ReviewPresenter.svelte'
+import Reviews from './components/review/Reviews.svelte'
 import recruit from './plugin'
 import {
   getAppTitle,
@@ -317,7 +318,8 @@ export default async (): Promise<Resources> => ({
     VacancyList,
     VacancyTemplateEditor,
 
-    MatchVacancy
+    MatchVacancy,
+    NotificationApplicantPresenter
   },
   completion: {
     ApplicationQuery: async (

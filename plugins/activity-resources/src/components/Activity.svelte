@@ -15,15 +15,15 @@
 <script lang="ts">
   import activity, { DisplayTx, TxViewlet } from '@hcengineering/activity'
   import chunter from '@hcengineering/chunter'
-  import core, { Class, Doc, Ref, SortingOrder, TxCUD } from '@hcengineering/core'
+  import core, { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
+  import notification, { DocUpdateTx, DocUpdates, Writable } from '@hcengineering/notification'
+  import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Component, Grid, Label, Spinner } from '@hcengineering/ui'
   import { ActivityKey, activityKey, newActivity } from '../activity'
   import { filterCollectionTxes } from '../utils'
   import ActivityFilter from './ActivityFilter.svelte'
   import TxView from './TxView.svelte'
-  import notification, { DocUpdates, Writable } from '@hcengineering/notification'
-  import { getResource } from '@hcengineering/platform'
 
   export let object: Doc
   export let showCommenInput: boolean = true
@@ -93,7 +93,7 @@
   let newTxIndexes: number[] = []
   $: newTxIndexes = getNewTxes(filtered, newTxes)
 
-  function getNewTxes (filtered: DisplayTx[], newTxes: [Ref<TxCUD<Doc>>, number][]): number[] {
+  function getNewTxes (filtered: DisplayTx[], newTxes: DocUpdateTx[]): number[] {
     const res: number[] = []
     for (let i = 0; i < filtered.length; i++) {
       if (isNew(filtered[i], newTxes)) {
@@ -103,9 +103,9 @@
     return res
   }
 
-  function isNew (tx: DisplayTx | undefined, newTxes: [Ref<TxCUD<Doc>>, number][]): boolean {
+  function isNew (tx: DisplayTx | undefined, newTxes: DocUpdateTx[]): boolean {
     if (tx === undefined) return false
-    const index = newTxes.findIndex((p) => p[0] === tx.originTx._id)
+    const index = newTxes.findIndex((p) => p._id === tx.originTx._id && p.isNew)
     return index !== -1
   }
 

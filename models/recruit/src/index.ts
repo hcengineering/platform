@@ -1077,6 +1077,10 @@ export function createModel (builder: Builder): void {
     component: recruit.component.ApplicantFilter
   })
 
+  builder.mixin(recruit.class.Applicant, core.class.Class, notification.mixin.NotificationObjectPresenter, {
+    presenter: recruit.component.NotificationApplicantresenter
+  })
+
   builder.createDoc(
     notification.class.NotificationGroup,
     core.space.Model,

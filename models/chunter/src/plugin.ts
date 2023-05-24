@@ -61,7 +61,6 @@ export default mergeIds(chunterId, chunter, {
     MentionedIn: '' as IntlString,
     Content: '' as IntlString,
     Comment: '' as IntlString,
-    Message: '' as IntlString,
     Reference: '' as IntlString,
     Chat: '' as IntlString,
     CreateBy: '' as IntlString,

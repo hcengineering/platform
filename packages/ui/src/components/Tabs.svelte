@@ -19,16 +19,25 @@
 
   export let model: TabModel
   export let selected = 0
+  export let withPadding: boolean = false
+  export let size: 'small' | 'medium' = 'medium'
 </script>
 
-<TabsControl {model} bind:selected>
+<TabsControl {model} {withPadding} {size} bind:selected>
+  <svelte:fragment slot="rightButtons">
+    {#if $$slots.rightButtons}
+      <div class="flex">
+        <slot name="rightButtons" />
+      </div>
+    {/if}
+  </svelte:fragment>
   <svelte:fragment slot="content" let:selected>
     {@const tab = model[selected]}
     {#if tab}
       {#if typeof tab.component === 'string'}
-        <Component is={tab.component} props={tab.props} on:change />
+        <Component is={tab.component} props={tab.props} on:change on:open />
       {:else}
-        <svelte:component this={tab.component} {...tab.props} on:change />
+        <svelte:component this={tab.component} {...tab.props} on:change on:open />
       {/if}
     {/if}
   </svelte:fragment>

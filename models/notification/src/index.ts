@@ -37,6 +37,7 @@ import view, { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import {
   DocUpdates,
+  DocUpdateTx,
   EmailNotification,
   Notification,
   NotificationGroup,
@@ -124,7 +125,7 @@ export class TNotificationProvider extends TDoc implements NotificationProvider 
 
 @Model(notification.class.NotificationSetting, preference.class.Preference)
 export class TNotificationSetting extends TPreference implements NotificationSetting {
-  attachedTo!: Ref<TNotificationProvider>
+  declare attachedTo: Ref<TNotificationProvider>
   type!: Ref<TNotificationType>
   enabled!: boolean
 }
@@ -159,9 +160,8 @@ export class TDocUpdates extends TDoc implements DocUpdates {
     hidden!: boolean
 
   attachedToClass!: Ref<Class<Doc>>
-  lastTx?: Ref<TxCUD<Doc>>
   lastTxTime?: Timestamp
-  txes!: [Ref<TxCUD<Doc>>, Timestamp][]
+  txes!: DocUpdateTx[]
 }
 
 export function createModel (builder: Builder): void {

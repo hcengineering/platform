@@ -41,6 +41,8 @@
     "@hcengineering/activity": "^0.6.0",
     "@hcengineering/contact": "^0.6.16",
     "@hcengineering/contact-resources": "^0.6.0",
+    "@hcengineering/attachment": "^0.6.6",
+    "@hcengineering/chunter": "^0.6.7",
     "@hcengineering/core": "^0.6.25",
     "@hcengineering/view": "^0.6.6",
     "@hcengineering/view-resources": "^0.6.0"

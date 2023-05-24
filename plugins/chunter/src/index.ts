@@ -129,6 +129,8 @@ export default plugin(chunterId, {
   },
   component: {
     CommentInput: '' as AnyComponent,
+    DmHeader: '' as AnyComponent,
+    ChannelView: '' as AnyComponent,
     CommentsPresenter: '' as AnyComponent
   },
   class: {
@@ -154,6 +156,7 @@ export default plugin(chunterId, {
     ArchiveChannel: '' as IntlString,
     UnarchiveChannel: '' as IntlString,
     ArchiveConfirm: '' as IntlString,
+    Message: '' as IntlString,
     UnarchiveConfirm: '' as IntlString,
     ConvertToPrivate: '' as IntlString
   },

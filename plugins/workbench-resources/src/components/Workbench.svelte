@@ -165,7 +165,7 @@
       hidden: false
     },
     (res) => {
-      hasNotification = res.some((p) => p.txes.length > 0)
+      hasNotification = res.some((p) => p.txes.some((p) => p.isNew))
     }
   )
 
