@@ -28,11 +28,13 @@
     resizeObserver
   } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
+  import tracker, { Component } from '@hcengineering/tracker'
   import { createEventDispatcher } from 'svelte'
   import { FILTER_DEBOUNCE_MS, sortFilterValues } from '../../filter'
   import view from '../../plugin'
   import { buildConfigLookup, getPresenter } from '../../utils'
   import FilterRemovedNotification from './FilterRemovedNotification.svelte'
+  import { componentStore } from '@hcengineering/presentation/src/component'
 
   export let filter: Filter
   export let space: Ref<Space> | undefined = undefined
@@ -54,17 +56,36 @@
   $: clazz = hierarchy.getClass(targetClass)
 
   $: isStatus = client.getHierarchy().isDerived(targetClass, core.class.Status) ?? false
+  $: isComponent = client.getHierarchy().isDerived(targetClass, tracker.class.Component) ?? false
 
   let filterUpdateTimeout: number | undefined
 
-  const groupValues = (val: Status[]): Doc[] => {
-    const statuses = val
+  const groupStatusValues = (val: Status[]): Doc[] => {
+    const values = val
     const result: Doc[] = []
     const unique = [...new Set(val.map((v) => v.name.trim().toLocaleLowerCase()))]
     unique.forEach((label, i) => {
       let exists = false
-      statuses.forEach((state) => {
+      values.forEach((state) => {
         if (state.name.trim().toLocaleLowerCase() === label) {
+          if (!exists) {
+            result[i] = state
+            exists = targets.has(state?._id)
+          }
+        }
+      })
+    })
+    return result
+  }
+
+  const groupComponentValues = (val: Component[]): Doc[] => {
+    const values = val
+    const result: Doc[] = []
+    const unique = [...new Set(val.map((v) => v.label.trim().toLocaleLowerCase()))]
+    unique.forEach((label, i) => {
+      let exists = false
+      values.forEach((state) => {
+        if (state.label.trim().toLocaleLowerCase() === label) {
           if (!exists) {
             result[i] = state
             exists = targets.has(state?._id)
@@ -109,7 +130,9 @@
     objectsPromise = client.findAll(targetClass, resultQuery, options)
     values = await objectsPromise
     if (isStatus) {
-      values = groupValues(values as Status[])
+      values = groupStatusValues(values as Status[])
+    } else if (isComponent) {
+      values = groupComponentValues(values as Component[])
     }
     if (targets.has(undefined)) {
       values.unshift(undefined)
@@ -136,6 +159,13 @@
           .map((it) => it._id)
       )
       return values.some((it) => statusSet.has(it))
+    } else if (isComponent) {
+      const componentSet = new Set(
+        $componentStore
+          .filter((it) => it.label.trim().toLocaleLowerCase() === (value as Component)?.label?.trim()?.toLocaleLowerCase())
+          .map((it) => it._id)
+      )
+      return values.some((it) => componentSet.has(it))
     }
     return values.includes(value?._id ?? value)
   }

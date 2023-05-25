@@ -17,6 +17,7 @@
 import core, {
   AccountRole,
   AttachedDoc,
+  AggregateValue,
   CategoryType,
   Class,
   Client,
@@ -35,9 +36,9 @@ import core, {
   Space,
   Status,
   StatusManager,
-  StatusValue,
   TxOperations,
-  WithLookup
+  WithLookup,
+  StatusValue
 } from '@hcengineering/core'
 import type { IntlString } from '@hcengineering/platform'
 import { getResource } from '@hcengineering/platform'
@@ -59,6 +60,8 @@ import {
 } from '@hcengineering/ui'
 import type { BuildModelOptions, Viewlet, ViewletDescriptor } from '@hcengineering/view'
 import view, { AttributeModel, BuildModelKey } from '@hcengineering/view'
+import tracker, { Component, ComponentManager } from '@hcengineering/tracker'
+
 import { get, writable } from 'svelte/store'
 import plugin from './plugin'
 import { noCategory } from './viewOptions'
@@ -575,7 +578,7 @@ export function groupBy<T extends Doc> (docs: T[], key: string, categories?: Cat
         if (typeof c === 'object') {
           const st = c.values.find((it) => it._id === group)
           if (st !== undefined) {
-            group = st.name
+            group = st.name ?? st.label
             break
           }
         }
@@ -594,7 +597,7 @@ export function groupBy<T extends Doc> (docs: T[], key: string, categories?: Cat
  */
 export function getGroupByValues<T extends Doc> (groupByDocs: Record<any, T[]>, category: CategoryType): T[] {
   if (typeof category === 'object') {
-    return groupByDocs[category.name] ?? []
+    return groupByDocs[category.name as any] ?? []
   } else {
     return groupByDocs[category as any] ?? []
   }
@@ -609,7 +612,7 @@ export function setGroupByValues (
   docs: Doc[]
 ): void {
   if (typeof category === 'object') {
-    groupByDocs[category.name] = docs
+    groupByDocs[category.name as any] = docs
   } else if (category !== undefined) {
     groupByDocs[category] = docs
   }
@@ -623,9 +626,10 @@ export async function groupByCategory (
   client: TxOperations,
   _class: Ref<Class<Doc>>,
   key: string,
-  categories: any[],
+  categories: CategoryType[],
   mgr: StatusManager,
-  viewletDescriptorId?: Ref<ViewletDescriptor>
+  viewletDescriptorId?: Ref<ViewletDescriptor>,
+  componentMgr?: ComponentManager
 ): Promise<CategoryType[]> {
   const h = client.getHierarchy()
   const attr = h.getAttribute(_class, key)
@@ -635,10 +639,14 @@ export async function groupByCategory (
   const attrClass = getAttributePresenterClass(h, attr).attrClass
 
   const isStatusField = h.isDerived(attrClass, core.class.Status)
+  const isComponentField = h.isDerived(attrClass, tracker.class.Component)
 
   let existingCategories: any[] = []
 
-  if (isStatusField) {
+  // get and use categorieser from models or default
+  if (componentMgr !== undefined && isComponentField) {
+    existingCategories = await groupByComponentCategories(h, attrClass, categories, componentMgr, viewletDescriptorId)
+  } else if (isStatusField) {
     existingCategories = await groupByStatusCategories(h, attrClass, categories, mgr, viewletDescriptorId)
   } else {
     const valueSet = new Set<any>()
@@ -661,9 +669,9 @@ export async function groupByStatusCategories (
   categories: any[],
   mgr: StatusManager,
   viewletDescriptorId?: Ref<ViewletDescriptor>
-): Promise<StatusValue[]> {
-  const existingCategories: StatusValue[] = []
-  const statusMap = new Map<string, StatusValue>()
+): Promise<AggregateValue[]> {
+  const existingCategories: AggregateValue[] = []
+  const statusMap = new Map<string, AggregateValue>()
 
   const usedSpaces = new Set<Ref<Space>>()
   const statusesList: Array<WithLookup<Status>> = []
@@ -696,13 +704,48 @@ export async function groupByStatusCategories (
   return await sortCategories(hierarchy, attrClass, existingCategories, viewletDescriptorId)
 }
 
+async function groupByComponentCategories (h: Hierarchy, attrClass: Ref<Class<Doc>>, categories: any[], mgr: ComponentManager, viewletDescriptorId: Ref<ViewletDescriptor> | undefined): Promise<any[] | PromiseLike<any[]>> {
+  const existingCategories: AggregateValue[] = [new AggregateValue(undefined, [])]
+  const componentMap = new Map<string, AggregateValue>()
+
+  const usedSpaces = new Set<Ref<Space>>()
+  const componentsList: Array<WithLookup<Component>> = []
+  for (const v of categories) {
+    const component = mgr.byId.get(v)
+    if (component !== undefined) {
+      componentsList.push(component)
+      usedSpaces.add(component.space)
+    }
+  }
+
+  for (const component of componentsList) {
+    if (component !== undefined) {
+      let fst = componentMap.get(component.label.toLowerCase().trim())
+      if (fst === undefined) {
+        const components = mgr.components
+          .filter(
+            (it) =>
+              it.label.toLowerCase().trim() === component.label.toLowerCase().trim() &&
+              (categories.includes(it._id) || usedSpaces.has(it.space))
+          )
+          .sort((a, b) => a.label.localeCompare(b.label))
+        fst = new AggregateValue(component.label, components)
+        componentMap.set(component.label.toLowerCase().trim(), fst)
+        existingCategories.push(fst)
+      }
+    }
+  }
+  return await sortCategories(h, attrClass, existingCategories, viewletDescriptorId)
+}
+
 export async function getCategories (
   client: TxOperations,
   _class: Ref<Class<Doc>>,
   docs: Doc[],
   key: string,
   mgr: StatusManager,
-  viewletDescriptorId?: Ref<ViewletDescriptor>
+  viewletDescriptorId?: Ref<ViewletDescriptor>,
+  componentMgr?: ComponentManager
 ): Promise<CategoryType[]> {
   if (key === noCategory) return [undefined]
 
@@ -712,7 +755,8 @@ export async function getCategories (
     key,
     docs.map((it) => getObjectValue(key, it) ?? undefined),
     mgr,
-    viewletDescriptorId
+    viewletDescriptorId,
+    componentMgr
   )
 }
 
@@ -721,7 +765,7 @@ export async function getCategories (
  */
 export function getCategorySpaces (categories: CategoryType[]): Array<Ref<Space>> {
   return Array.from(
-    (categories.filter((it) => typeof it === 'object') as StatusValue[]).reduce<Set<Ref<Space>>>((arr, val) => {
+    (categories.filter((it) => typeof it === 'object') as AggregateValue[]).reduce<Set<Ref<Space>>>((arr, val) => {
       val.values.forEach((it) => arr.add(it.space))
       return arr
     }, new Set())
@@ -730,12 +774,12 @@ export function getCategorySpaces (categories: CategoryType[]): Array<Ref<Space>
 
 export function concatCategories (arr1: CategoryType[], arr2: CategoryType[]): CategoryType[] {
   const uniqueValues: Set<string | number | undefined> = new Set()
-  const uniqueObjects: Map<string | number, StatusValue> = new Map()
+  const uniqueObjects: Map<string | number, AggregateValue> = new Map()
 
   for (const item of arr1) {
     if (typeof item === 'object') {
       const id = item.name
-      uniqueObjects.set(id, item)
+      uniqueObjects.set(id as any, item)
     } else {
       uniqueValues.add(item)
     }
@@ -744,8 +788,8 @@ export function concatCategories (arr1: CategoryType[], arr2: CategoryType[]): C
   for (const item of arr2) {
     if (typeof item === 'object') {
       const id = item.name
-      if (!uniqueObjects.has(id)) {
-        uniqueObjects.set(id, item)
+      if (!uniqueObjects.has(id as any)) {
+        uniqueObjects.set(id as any, item)
       }
     } else {
       uniqueValues.add(item)

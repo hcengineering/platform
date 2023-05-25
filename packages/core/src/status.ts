@@ -16,7 +16,7 @@
 import { Asset, IntlString } from '@hcengineering/platform'
 import { Attribute, Doc, Domain, Ref } from './classes'
 import { WithLookup } from './storage'
-import { IdMap, toIdMap } from './utils'
+import { AggregateValue, IdMap, toIdMap } from './utils'
 
 /**
  * @public
@@ -60,8 +60,10 @@ export interface Status extends Doc {
 /**
  * @public
  */
-export class StatusValue {
-  constructor (readonly name: string, readonly color: number | undefined, readonly values: WithLookup<Status>[]) {}
+export class StatusValue extends AggregateValue {
+  constructor (readonly name: string | undefined, readonly color: number | undefined, readonly values: WithLookup<Status>[]) {
+    super(name, values)
+  }
 }
 
 /**
@@ -84,8 +86,3 @@ export class StatusManager {
     return this.statuses.filter(predicate)
   }
 }
-
-/**
- * @public
- */
-export type CategoryType = number | string | undefined | Ref<Doc> | StatusValue

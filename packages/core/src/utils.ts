@@ -16,7 +16,7 @@
 import { Account, AnyAttribute, Class, Doc, DocData, DocIndexState, IndexKind, Obj, Ref } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
-import { FindResult } from './storage'
+import { FindResult, WithLookup } from './storage'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -182,7 +182,7 @@ export function isFullTextAttribute (attr: AnyAttribute): boolean {
 /**
  * @public
  */
-export interface IdMap<T extends Doc> extends Map<Ref<T>, T> {}
+export interface IdMap<T extends Doc> extends Map<Ref<T>, T> { }
 
 /**
  * @public
@@ -224,3 +224,15 @@ export function fillDefaults<T extends Doc> (
   }
   return object
 }
+
+/**
+ * @public
+ */
+export class AggregateValue {
+  constructor (readonly name: string | undefined, readonly values: WithLookup<Doc & { name?: string, label?: string } >[]) { }
+}
+
+/**
+ * @public
+ */
+export type CategoryType = number | string | undefined | Ref<Doc> | AggregateValue

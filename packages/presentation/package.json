@@ -39,6 +39,7 @@
     "@hcengineering/view": "^0.6.6",
     "svelte": "3.55.1",
     "@hcengineering/client": "^0.6.11",
-    "fast-equals": "^2.0.3"
+    "fast-equals": "^2.0.3",
+    "@hcengineering/tracker": "^0.6.8"
   }
 }

@@ -938,6 +938,10 @@ export function createModel (builder: Builder): void {
     inlineEditor: tracker.component.ComponentSelector
   })
 
+  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: tracker.component.ComponentRefPresenter
+  })
+
   builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: tracker.component.MilestonePresenter
   })

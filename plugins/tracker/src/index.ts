@@ -14,11 +14,12 @@
 //
 
 import { Employee, EmployeeAccount } from '@hcengineering/contact'
-import type {
+import {
   AttachedDoc,
   Attribute,
   Class,
   Doc,
+  IdMap,
   Markup,
   Ref,
   RelatedDocument,
@@ -26,7 +27,8 @@ import type {
   Status,
   StatusCategory,
   Timestamp,
-  Type
+  Type,
+  toIdMap
 } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -307,6 +309,27 @@ export interface Component extends Doc {
   space: Ref<Project>
   comments: number
   attachments?: number
+}
+
+/**
+ * @public
+ *
+ * Allow to query for component keys/values.
+ */
+export class ComponentManager {
+  byId: IdMap<Component>
+
+  constructor (readonly components: Component[]) {
+    this.byId = toIdMap(components)
+  }
+
+  get (ref: Ref<Component>): Component | undefined {
+    return this.byId.get(ref)
+  }
+
+  filter (predicate: (value: Component) => boolean): Component[] {
+    return this.components.filter(predicate)
+  }
 }
 
 /**

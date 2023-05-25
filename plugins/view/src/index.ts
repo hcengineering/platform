@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type {
+import {
   Account,
   AnyAttribute,
   CategoryType,
@@ -37,8 +37,8 @@ import type {
   UXObject
 } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, Resource, Status, plugin } from '@hcengineering/platform'
-import type { Preference } from '@hcengineering/preference'
-import type {
+import { Preference } from '@hcengineering/preference'
+import {
   AnyComponent,
   AnySvelteComponent,
   Location,
@@ -286,6 +286,8 @@ export interface ListHeaderExtra extends Class<Doc> {
 export type SortFunc = Resource<
 (values: (PrimitiveType | StatusValue)[], viewletDescriptorId?: Ref<ViewletDescriptor>) => Promise<any[]>
 >
+
+// group func for class
 
 /**
  * @public

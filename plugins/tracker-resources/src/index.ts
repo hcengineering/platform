@@ -29,6 +29,7 @@ import { Issue, Project, Scrum, ScrumRecord, Milestone } from '@hcengineering/tr
 import { showPopup } from '@hcengineering/ui'
 import ComponentEditor from './components/components/ComponentEditor.svelte'
 import ComponentPresenter from './components/components/ComponentPresenter.svelte'
+import ComponentRefPresenter from './components/components/ComponentRefPresenter.svelte'
 import Components from './components/components/Components.svelte'
 import ComponentTitlePresenter from './components/components/ComponentTitlePresenter.svelte'
 import EditComponent from './components/components/EditComponent.svelte'
@@ -387,6 +388,7 @@ export default async (): Promise<Resources> => ({
     Views,
     IssuePresenter,
     ComponentPresenter,
+    ComponentRefPresenter,
     ComponentTitlePresenter,
     TitlePresenter,
     ModificationDatePresenter,
