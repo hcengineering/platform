@@ -140,10 +140,15 @@ test('report-time-from-issue-card', async ({ page }) => {
     const random = Math.floor(Math.random() * values.length)
     const time = values[random]
     const name = getIssueName()
-    await createIssue(page, { name, assignee, status })
-    await page.waitForSelector(`text="${name}"`)
-    await page.waitForSelector('text="View issue"')
-    await page.click('text="View issue"')
+    try {
+      await page.evaluate(() => localStorage.setItem('#platform.notification.timeout', '5000'))
+      await createIssue(page, { name, assignee, status })
+      await page.waitForSelector(`text="${name}"`)
+      await page.waitForSelector('text="View issue"')
+      await page.click('text="View issue"')
+    } finally {
+      await page.evaluate(() => localStorage.setItem('#platform.notification.timeout', '1'))
+    }
 
     await page.click('#ReportedTimeEditor')
     await page.waitForSelector('text="Time spend reports"')
