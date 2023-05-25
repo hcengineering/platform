@@ -9,7 +9,7 @@ import serverPlugin from './plugin'
 export interface Token {
   email: string
   workspace: WorkspaceId
-  extra?: Record<string, string>
+  extra?: Record<string, any>
 }
 
 const getSecret = (): string => {

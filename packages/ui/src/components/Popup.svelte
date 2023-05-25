@@ -16,7 +16,7 @@
   import { popupstore as modal } from '../popups'
   import PopupInstance from './PopupInstance.svelte'
 
-  export let contentPanel: HTMLElement
+  export let contentPanel: HTMLElement | undefined = undefined
 
   const instances: PopupInstance[] = []
 

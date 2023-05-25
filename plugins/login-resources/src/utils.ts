@@ -617,6 +617,40 @@ export async function requestPassword (email: string): Promise<Status> {
   }
 }
 
+export async function confirm (email: string): Promise<[Status, LoginInfo | undefined]> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
+  if (overrideToken !== undefined) {
+    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
+    if (endpoint !== undefined) {
+      return [OK, { token: overrideToken, endpoint, email }]
+    }
+  }
+  const request = {
+    method: 'confirm',
+    params: [email]
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+    const result = await response.json()
+    return [result.error ?? OK, result.result]
+  } catch (err) {
+    return [unknownError(err), undefined]
+  }
+}
+
 export async function restorePassword (token: string, password: string): Promise<[Status, LoginInfo | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 

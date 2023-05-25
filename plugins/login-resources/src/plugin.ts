@@ -56,6 +56,8 @@ export default mergeIds(loginId, login, {
     RecoveryLinkSent: '' as IntlString,
     UseWorkspaceInviteSettings: '' as IntlString,
     GetLink: '' as IntlString,
-    AlreadyJoined: '' as IntlString
+    AlreadyJoined: '' as IntlString,
+    ConfirmationSent: '' as IntlString,
+    ConfirmationSent2: '' as IntlString
   }
 })

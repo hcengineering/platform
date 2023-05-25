@@ -14,13 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Status, Severity, OK, setMetadata } from '@hcengineering/platform'
+  import { OK, Severity, Status } from '@hcengineering/platform'
 
-  import Form from './Form.svelte'
-  import { signUp } from '../utils'
+  import { getCurrentLocation, navigate } from '@hcengineering/ui'
   import login from '../plugin'
-  import { getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
-  import presentation from '@hcengineering/presentation'
+  import { signUp } from '../utils'
+  import Form from './Form.svelte'
 
   const fields = [
     { id: 'given-name', name: 'first', i18n: login.string.FirstName, short: true },
@@ -50,11 +49,8 @@
       status = loginStatus
 
       if (result !== undefined) {
-        setMetadata(presentation.metadata.Token, result.token)
-        setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
-        setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
         const loc = getCurrentLocation()
-        loc.path[1] = 'selectWorkspace'
+        loc.path[1] = 'confirmationSend'
         loc.path.length = 2
         navigate(loc)
       }
