@@ -298,8 +298,8 @@ export class ApplyOperations extends TxOperations {
     super(txClient, ops.user)
   }
 
-  match<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>): ApplyOperations {
-    this.matches.push({ _class, query })
+  match<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, notMatched?: boolean): ApplyOperations {
+    this.matches.push({ _class, query, notMatched })
     return this
   }
 
