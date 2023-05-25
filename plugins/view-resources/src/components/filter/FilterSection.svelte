@@ -165,7 +165,7 @@
   {/await}
   <div class="divider" />
   <button
-    class="filter-button hoverable"
+    class="filter-button square hoverable"
     on:click={() => {
       dispatch('remove')
     }}
@@ -199,9 +199,8 @@
     align-items: center;
     flex-shrink: 0;
     padding: 0 0.375rem;
-    font-size: 0.75rem;
-    height: 1.5rem;
-    min-width: 1.5rem;
+    height: 1.75rem;
+    min-width: 1.75rem;
     white-space: nowrap;
     color: var(--theme-content-color);
     border: 1px solid transparent;
@@ -209,10 +208,21 @@
     transition-property: border, background-color, color, box-shadow;
     transition-duration: 0.15s;
 
+    .left-round {
+      padding-left: 0.5rem;
+    }
     .btn-icon {
-      color: var(--theme-dark-color);
+      color: var(--theme-halfcontent-color);
       transition: color 0.15s;
       pointer-events: none;
+
+      &.square {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0;
+        width: 1.75rem;
+      }
     }
     span {
       white-space: nowrap;
@@ -228,12 +238,9 @@
         color: var(--theme-caption-color);
       }
     }
-
-    &:last-child {
-      margin-right: 0;
-    }
   }
   .divider {
+    flex-shrink: 0;
     width: 1px;
     height: 1.5rem;
     background-color: var(--theme-refinput-divider);

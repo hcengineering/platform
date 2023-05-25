@@ -25,7 +25,7 @@
     {@const valueColor = getPlatformColorDef(value.color ?? 0, $themeStore.dark)}
     {#if i < limit}
       <div class="item" class:last={i === limit - 1} class:first={i === 0}>
-        <div class="color" style:background-color={valueColor.background} />
+        <div class="color" style:background-color={valueColor.color} />
         {#if i === limit - 1 && values.length <= limit}
           <span class="label overflow-label ml-1-5 max-w-40" style:color={valueColor.title}>
             {value.title}

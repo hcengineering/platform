@@ -168,7 +168,7 @@
                     checkSelected(selected, element)
                   }}
                 >
-                  <div class="tag" style:background-color={color.background} />
+                  <div class="tag" style:background-color={color.color} />
                   <span class="lines-limit-2 flex-grow" style:color={color.title}>{element.title}</span>
                   <span class="ml-2 text-xs">
                     ({element.refCount ?? 0})
