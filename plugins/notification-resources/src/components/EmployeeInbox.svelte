@@ -115,8 +115,9 @@
   const client = getClient()
 
   async function openDM () {
-    const current = (await client.findAll(chunter.class.DirectMessage, { members: accountId })).find(
-      (p) => p.members.length === 2
+    const res = await client.findAll(chunter.class.DirectMessage, { members: accountId })
+    const current = res.find(
+      (p) => p.members.includes(me) && p.members.length === 2
     )
     if (current !== undefined) {
       dispatch('dm', current._id)
