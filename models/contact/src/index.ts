@@ -327,7 +327,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(contact.class.Channel, core.class.Class, notification.mixin.ClassCollaborators, {
-    fields: []
+    fields: ['modifiedBy']
   })
 
   builder.mixin(contact.class.Channel, core.class.Class, notification.mixin.NotificationObjectPresenter, {

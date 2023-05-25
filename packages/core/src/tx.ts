@@ -354,7 +354,7 @@ export abstract class TxProcessor implements WithTx {
       modifiedBy: tx.modifiedBy,
       modifiedOn: tx.modifiedOn,
       createdBy: tx.createdBy ?? tx.modifiedBy,
-      createOn: tx.createOn ?? tx.modifiedBy
+      createOn: tx.createOn ?? tx.modifiedOn
     } as T
   }
 
