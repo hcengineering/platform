@@ -13,24 +13,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@hcengineering/platform'
+  import type { IntlString, Asset } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
 
   import { DateRangeMode } from '@hcengineering/core'
   import ui from '../../plugin'
   import { showPopup } from '../../popups'
-  import { ButtonKind, ButtonSize } from '../../types'
+  import { ButtonKind, ButtonSize, AnySvelteComponent } from '../../types'
   import Icon from '../Icon.svelte'
   import Label from '../Label.svelte'
   import DatePopup from './DatePopup.svelte'
   import DPCalendar from './icons/DPCalendar.svelte'
   import { getMonthName } from './internal/DateUtils'
+  import { ComponentType } from 'svelte'
 
   export let value: number | null | undefined
   export let mode: DateRangeMode = DateRangeMode.DATE
   export let mondayStart: boolean = true
   export let editable: boolean = false
-  export let icon: 'normal' | 'warning' | 'critical' | 'overdue' = 'normal'
+  export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
+  export let iconModifier: 'normal' | 'warning' | 'critical' | 'overdue' = 'normal'
   export let labelNull: IntlString = ui.string.NoDate
   export let showIcon = true
   export let shouldShowLabel: boolean = true
@@ -68,6 +70,7 @@
   class:editable
   class:dateTimeButtonNoLabel={!shouldShowLabel}
   class:text-xs={size === 'x-small'}
+  class:noDate={!value}
   style:width
   on:click={(e) => {
     if (editable && !opened) {
@@ -89,8 +92,8 @@
   }}
 >
   {#if showIcon}
-    <div class="btn-icon {icon}" class:buttonIconNoLabel={!shouldShowLabel}>
-      <Icon icon={DPCalendar} size="full" />
+    <div class="btn-icon {iconModifier}" class:buttonIconNoLabel={!shouldShowLabel}>
+      <Icon icon={icon ?? DPCalendar} size="full" />
     </div>
   {/if}
   {#if value !== null && value !== undefined}
@@ -185,7 +188,7 @@
       transition-duration: 0;
 
       .not-selected {
-        color: var(--theme-caption-color);
+        color: var(--theme-content-color);
       }
     }
     &.editable {
@@ -322,6 +325,13 @@
       &.selected:hover {
         background-color: var(--highlight-select-hover);
       }
+    }
+
+    &.noDate .btn-icon {
+      color: var(--theme-dark-color);
+    }
+    &.noDate:hover .btn-icon {
+      color: var(--theme-content-color);
     }
 
     .time-divider {

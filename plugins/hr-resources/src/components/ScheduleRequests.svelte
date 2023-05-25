@@ -15,7 +15,7 @@
 <script lang="ts">
   import hr, { Department, Request, RequestType, Staff } from '@hcengineering/hr'
   import { getClient } from '@hcengineering/presentation'
-  import { closeTooltip, getPlatformColor, Icon, isWeekend, showPopup } from '@hcengineering/ui'
+  import { closeTooltip, getPlatformColor, Icon, isWeekend, showPopup, themeStore } from '@hcengineering/ui'
   import { ContextMenu } from '@hcengineering/view-resources'
   import { getHolidayDatesForEmployee, isHoliday } from '../utils'
   import { Ref } from '@hcengineering/core'
@@ -40,8 +40,8 @@
     let res = `background-color: ${
       (isWeekend(date) || isHoliday(getHolidayDatesForEmployee(staffDepartmentMap, employee._id, holidays), date)) &&
       noWeekendHolidayType.includes(type._id)
-        ? getPlatformColor(16)
-        : getPlatformColor(type.color)
+        ? getPlatformColor(16, $themeStore.dark)
+        : getPlatformColor(type.color, $themeStore.dark)
     };`
     if (Math.abs(type.value % 1) === 0.5) {
       res += ' height: 50%;'

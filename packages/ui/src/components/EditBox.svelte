@@ -34,6 +34,7 @@
   export let maxDigitsAfterPoint: number | undefined = undefined
   export let kind: EditStyle = 'editbox'
   export let focus: boolean = false
+  export let select: boolean = false
   export let focusable: boolean = false
   export let disabled: boolean = false
   export let fullSize = false
@@ -89,6 +90,10 @@
       input.focus()
       focus = false
     }
+    if (select) {
+      input.select()
+      select = false
+    }
     computeSize(input)
   })
 
@@ -98,6 +103,9 @@
 
   export function focusInput () {
     input?.focus()
+  }
+  export function selectInput () {
+    input?.select()
   }
 
   // Focusable control with index
@@ -218,12 +226,11 @@
 
       input {
         padding: 0.25rem 0.5rem;
-        background-color: var(--accent-bg-color);
-        border: 1px solid transparent;
+        background-color: var(--theme-editbox-focus-color);
         border-radius: 0.25rem;
 
         &:focus {
-          border: 1px solid var(--primary-edit-border-color);
+          box-shadow: 0 0 0 1px var(--theme-editbox-focus-border);
         }
       }
     }
@@ -231,12 +238,11 @@
       margin: 0 -0.75rem;
       padding: 0.625rem 0.75rem;
       width: calc(100% + 1.5rem);
-      border: 1px solid transparent;
       border-radius: 0.25rem;
       transition: border-color 0.15s ease-in-out;
 
       &:focus-within {
-        border-color: var(--primary-edit-border-color);
+        box-shadow: 0 0 0 1px var(--theme-editbox-focus-border);
       }
     }
 
@@ -244,7 +250,7 @@
       margin: 0;
       padding: 0;
       min-width: 0;
-      color: var(--caption-color);
+      color: var(--theme-caption-color);
       border: none;
       border-radius: 2px;
 

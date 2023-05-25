@@ -27,12 +27,11 @@
     WithLookup
   } from '@hcengineering/core'
   import { Kanban as KanbanUI } from '@hcengineering/kanban'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import type { DocWithRank, Kanban, SpaceWithStates, State } from '@hcengineering/task'
   import task, { calcRank } from '@hcengineering/task'
   import { getEventPositionElement, showPopup } from '@hcengineering/ui'
   import {
-    ActionContext,
     ContextMenu,
     focusStore,
     getGroupByValues,

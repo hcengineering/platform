@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import Play from '../icons/Play.svelte'
-  import { getPlatformColor } from '@hcengineering/ui'
+  import { getPlatformColor, themeStore } from '@hcengineering/ui'
 
   export let href: string
   const maxWidth = 400
@@ -56,7 +56,7 @@
 </script>
 
 <div class="flex mt-2">
-  <div class="line" style="background-color: {getPlatformColor(2)}" />
+  <div class="line" style="background-color: {getPlatformColor(2, $themeStore.dark)}" />
   {#await getData(href) then data}
     <div class="flex-col">
       <div class="mb-1"><a class="fs-title" {href}>{data.title}</a></div>

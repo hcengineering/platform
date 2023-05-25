@@ -23,35 +23,36 @@
     Class,
     Client,
     Doc,
-    fillDefaults,
     FindOptions,
-    generateId,
     Markup,
     Ref,
     SortingOrder,
-    Space
+    Space,
+    fillDefaults,
+    generateId
   } from '@hcengineering/core'
-  import { getResource, OK, Resource, Severity, Status } from '@hcengineering/platform'
+  import { OK, Resource, Severity, Status, getResource } from '@hcengineering/platform'
   import presentation, {
     Card,
-    createQuery,
-    getClient,
     InlineAttributeBar,
-    SpaceSelect
+    SpaceSelect,
+    createQuery,
+    getClient
   } from '@hcengineering/presentation'
   import type { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
-  import task, { calcRank, State } from '@hcengineering/task'
+  import task, { State, calcRank } from '@hcengineering/task'
   import ui, {
     Button,
     ColorPopup,
+    FocusHandler,
+    Label,
+    Status as StatusControl,
     createFocusManager,
     deviceOptionsStore as deviceInfo,
-    FocusHandler,
     getColorNumberByText,
-    getPlatformColor,
-    Label,
+    getPlatformColorDef,
     showPopup,
-    Status as StatusControl
+    themeStore
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
@@ -71,13 +72,12 @@
   export let preserveVacancy = false
 
   let status: Status = OK
-  let createMore: boolean = false
 
   let _space = space
 
   $: _candidate = candidate
 
-  let doc: Applicant = {
+  const doc: Applicant = {
     state: '' as Ref<State>,
     doneState: null,
     number: 0,
@@ -159,30 +159,6 @@
       await client.addCollection(chunter.class.Comment, _space, doc._id, recruit.class.Applicant, 'comments', {
         message: _comment
       })
-    }
-
-    if (createMore) {
-      // Prepare for next
-      _candidate = '' as Ref<Candidate>
-      _comment = ''
-      doc = {
-        state: selectedState?._id as Ref<State>,
-        doneState: null,
-        number: 0,
-        assignee,
-        rank: '',
-        attachedTo: _candidate,
-        attachedToClass: recruit.mixin.Candidate,
-        _class: recruit.class.Applicant,
-        space: _space,
-        _id: generateId(),
-        collection: 'applications',
-        modifiedOn: Date.now(),
-        modifiedBy: '' as Ref<Account>,
-        startDate: null,
-        dueDate: null
-      }
-      fillDefaults(hierarchy, doc, recruit.class.Applicant)
     }
   }
 
@@ -295,7 +271,7 @@
   label={recruit.string.CreateApplication}
   okAction={createApplication}
   canSave={status.severity === Severity.OK}
-  bind:createMore
+  gap={'gapV-4'}
   on:close={() => {
     dispatch('close')
   }}
@@ -367,7 +343,7 @@
       space={_space}
       alwaysEdit
       showButtons={false}
-      emphasized
+      kind={'emphasized'}
       bind:content={_comment}
       placeholder={recruit.string.Description}
       on:changeSize={() => dispatch('changeContent')}
@@ -415,9 +391,10 @@
             {#if selectedState}
               <div
                 class="color"
-                style="background-color: {getPlatformColor(
-                  selectedState.color ?? getColorNumberByText(selectedState.name)
-                )}"
+                style="background-color: {getPlatformColorDef(
+                  selectedState.color ?? getColorNumberByText(selectedState.name),
+                  $themeStore.dark
+                ).background}"
               />
               <span class="label overflow-label">{selectedState.name}</span>
             {:else}

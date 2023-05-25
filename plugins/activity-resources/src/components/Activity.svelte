@@ -71,7 +71,7 @@
     editableMap: Map<Ref<Class<Doc>>, boolean> | undefined
   ): void {
     loading = true
-    activityQuery.update(
+    const res = activityQuery.update(
       objectId,
       objectClass,
       (result) => {
@@ -84,6 +84,9 @@
       SortingOrder.Ascending,
       editableMap ?? new Map()
     )
+    if (!res) {
+      loading = false
+    }
   }
 
   $: updateTxes(object._id, object._class, editableMap)

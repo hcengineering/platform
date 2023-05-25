@@ -131,6 +131,7 @@ export default mergeIds(trackerId, tracker, {
     Attachments: '' as IntlString,
     Labels: '' as IntlString,
     Space: '' as IntlString,
+    NoDueDate: '' as IntlString,
     SetDueDate: '' as IntlString,
     ChangeDueDate: '' as IntlString,
     ModificationDate: '' as IntlString,
@@ -299,7 +300,8 @@ export default mergeIds(trackerId, tracker, {
 
     NoStatusFound: '' as IntlString,
     CreateMissingStatus: '' as IntlString,
-    UnsetParent: '' as IntlString
+    UnsetParent: '' as IntlString,
+    ShowColors: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,

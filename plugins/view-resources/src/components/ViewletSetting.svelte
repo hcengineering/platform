@@ -30,6 +30,7 @@
     Loading,
     SelectPopup,
     showPopup,
+    themeStore,
     ToggleButton
   } from '@hcengineering/ui'
   import { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
@@ -273,13 +274,13 @@
     }
   }
 
-  function getColor (attribute: AttributeConfig): string {
-    const color = getPlatformColorForText(attribute._class)
+  function getColor (attribute: AttributeConfig, black: boolean): string {
+    const color = getPlatformColorForText(attribute._class, black)
     return `${color + (attribute.enabled ? 'cc' : '33')};`
   }
 
-  function getStyle (attribute: AttributeConfig): string {
-    const color = getPlatformColorForText(attribute._class)
+  function getStyle (attribute: AttributeConfig, black: boolean): string {
+    const color = getPlatformColorForText(attribute._class, black)
     return `border: 1px solid ${color + (attribute.enabled ? 'ff' : 'cc')};`
   }
 
@@ -306,6 +307,7 @@
   okAction={save}
   okLabel={presentation.string.Save}
   canSave={true}
+  gap={'gapV-4'}
   on:close={() => {
     dispatch('close')
   }}
@@ -318,7 +320,7 @@
       {#each enabled as attribute, i}
         <div
           class="m-0-5 border-radius-1 overflow-label"
-          style={getStyle(attribute)}
+          style={getStyle(attribute, $themeStore.dark)}
           bind:this={elements[i]}
           draggable={true}
           on:dragover|preventDefault={(ev) => {
@@ -333,7 +335,7 @@
           }}
         >
           <ToggleButton
-            backgroundColor={getColor(attribute)}
+            backgroundColor={getColor(attribute, $themeStore.dark)}
             icon={attribute.icon}
             label={attribute.label}
             bind:value={attribute.enabled}

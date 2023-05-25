@@ -66,7 +66,7 @@ export function startHttpServer (
       const token = req.query.token as string
       const payload = decodeToken(token)
       const admin = payload.extra?.admin === 'true'
-      res.writeHead(200)
+      res.writeHead(200, { 'Content-Type': 'application/json' })
       const json = JSON.stringify({
         ...getStatistics(ctx, sessions, admin),
         users: getUsers,

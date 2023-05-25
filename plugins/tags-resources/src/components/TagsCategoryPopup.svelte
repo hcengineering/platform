@@ -18,7 +18,16 @@
   import { translate } from '@hcengineering/platform'
   import presentation, { createQuery } from '@hcengineering/presentation'
   import { TagCategory, TagElement } from '@hcengineering/tags'
-  import { Button, CheckBox, getPlatformColor, Icon, IconClose, Label, resizeObserver } from '@hcengineering/ui'
+  import {
+    Button,
+    CheckBox,
+    Icon,
+    IconClose,
+    Label,
+    getPlatformColorDef,
+    resizeObserver,
+    themeStore
+  } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import tags from '../plugin'
 
@@ -110,6 +119,7 @@
         />
       </div>
       <div class="buttons-group small-gap">
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="clear-btn"
           class:show={search !== ''}
@@ -129,6 +139,7 @@
         <div class="sticky-wrapper">
           <div class="menu-group" style:overflow="visible">
             {#each elements.filter((it) => tagElements?.has(it._id)) as element}
+              {@const color = getPlatformColorDef(element.color, $themeStore.dark)}
               <button
                 class="menu-item"
                 on:click={() => {
@@ -138,11 +149,13 @@
                 <div class="check pointer-events-none">
                   <CheckBox checked={isSelected(element, selected)} primary />
                 </div>
-                <div class="tag" style="background-color: {getPlatformColor(element.color)};" />
-                {element.title}
-                {#if (tagElements?.get(element._id)?.count ?? 0) > 0}
-                  ({tagElements?.get(element._id)?.count})
-                {/if}
+                <div class="tag" style="background-color: {color.background};" />
+                <span style:color={color.title}>
+                  {element.title}
+                  {#if (tagElements?.get(element._id)?.count ?? 0) > 0}
+                    ({tagElements?.get(element._id)?.count})
+                  {/if}
+                </span>
               </button>
             {/each}
           </div>

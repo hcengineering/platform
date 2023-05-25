@@ -1009,6 +1009,32 @@ export function createModel (builder: Builder): void {
       group: 'edit'
     }
   })
+  createAction(builder, {
+    action: view.actionImpl.ValueSelector,
+    actionPopup: view.component.ValueSelector,
+    actionProps: {
+      attribute: 'doneState',
+      _class: task.class.DoneState,
+      query: {},
+      searchField: 'name',
+      // should match space
+      fillQuery: { space: 'space' },
+      // Only apply for same vacancy
+      docMatches: ['space'],
+      placeholder: task.string.DoneState
+    },
+    label: task.string.DoneState,
+    icon: task.icon.TaskState,
+    keyBinding: [],
+    input: 'none',
+    category: recruit.category.Recruit,
+    target: recruit.class.Applicant,
+    context: {
+      mode: ['context'],
+      application: recruit.app.Recruit,
+      group: 'edit'
+    }
+  })
   createAction(
     builder,
     {

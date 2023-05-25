@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Component, ScrollerBar, getPlatformColor } from '@hcengineering/ui'
-  import BreadcrumbsElement from './BreadcrumbsElement.svelte'
+  import { Component, ScrollerBar, getPlatformColor, themeStore } from '@hcengineering/ui'
   import { NavLink } from '../..'
+  import BreadcrumbsElement from './BreadcrumbsElement.svelte'
   import { BreadcrumbsModel } from './types'
   import { hasComponent } from './utils'
 
@@ -44,7 +44,7 @@
       {@const { component, props } = model}
       <BreadcrumbsElement
         position={getPosition(i)}
-        color={color !== undefined ? getPlatformColor(color) : 'var(--accent-bg-color)'}
+        color={color !== undefined ? getPlatformColor(color, $themeStore.dark) : 'var(--accent-bg-color)'}
       >
         {#if typeof component === 'string'}
           <Component is={component} {props} />
@@ -59,7 +59,7 @@
           label={title}
           {title}
           position={getPosition(i)}
-          color={color !== undefined ? getPlatformColor(color) : 'var(--accent-bg-color)'}
+          color={color !== undefined ? getPlatformColor(color, $themeStore.dark) : 'var(--accent-bg-color)'}
         />
       </NavLink>
     {/if}

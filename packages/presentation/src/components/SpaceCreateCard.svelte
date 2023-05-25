@@ -36,7 +36,7 @@
       </div>
     {/if}
   </div>
-  <div class="antiCard-content"><slot /></div>
+  <div class="antiCard-content px-6"><slot /></div>
   <div class="antiCard-footer">
     <Button
       disabled={!canSave}

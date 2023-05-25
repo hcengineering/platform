@@ -45,6 +45,7 @@
   okAction={onSave}
   canSave={object.label !== ''}
   okLabel={tracker.string.CreateComponent}
+  gap={'gapV-4'}
   on:close={() => dispatch('close')}
   on:changeContent
 >
@@ -61,7 +62,7 @@
   <StyledTextArea
     bind:content={object.description}
     placeholder={tracker.string.ComponentDescriptionPlaceholder}
-    emphasized
+    kind={'emphasized'}
     showButtons={false}
   />
   <svelte:fragment slot="pool">

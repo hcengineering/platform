@@ -16,12 +16,13 @@
   import { SortingOrder } from '@hcengineering/core'
   import { Scrum, ScrumRecord } from '@hcengineering/tracker'
   import { Button, Icon, IconDetails, IconDetailsFilled } from '@hcengineering/ui'
-  import { ActionContext, List } from '@hcengineering/view-resources'
+  import { List } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import RecordScrumButton from './RecordScrumButton.svelte'
   import ScrumEditor from './ScrumEditor.svelte'
   import ScrumHeader from './ScrumHeader.svelte'
   import ScrumRecordPresenter from './ScrumRecordPresenter.svelte'
+  import { ActionContext } from '@hcengineering/presentation'
 
   export let scrum: Scrum
   export let activeScrumRecord: ScrumRecord | undefined

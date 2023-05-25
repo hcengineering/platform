@@ -69,13 +69,14 @@
   --theme-button-pressed: rgba(255, 255, 255, .08);
   --theme-button-focused: rgba(255, 255, 255, .04);
   --theme-button-disabled: rgba(255, 255, 255, .02);
-  --theme-button-border: rgba(255, 255, 255, .06);
+  --theme-button-border: rgba(255, 255, 255, .09);
 
   --theme-refinput-color: rgba(255, 255, 255, .03);
   --theme-refinput-divider: rgba(255, 255, 255, .07);
   --theme-refinput-border: rgba(255, 255, 255, .03);
 
   --theme-bg-color: #1A1A28;
+  --theme-bg-accent-color: rgba(0, 0, 0, .08);
   --theme-back-color: #0f0f18;
   --theme-overlay-color: rgba(0, 0, 0, .3);
   --theme-statusbar-color: #2C2C35;
@@ -239,13 +240,14 @@
   --theme-button-pressed: rgba(0, 0, 0, .08);
   --theme-button-focused: rgba(0, 0, 0, .04);
   --theme-button-disabled: rgba(0, 0, 0, .02);
-  --theme-button-border: rgba(0, 0, 0, .06);
+  --theme-button-border: rgba(0, 0, 0, .09);
 
   --theme-refinput-color: rgba(0, 0, 0, .03);
   --theme-refinput-divider: rgba(0, 0, 0, .07);
   --theme-refinput-border: rgba(0, 0, 0, .03);
 
   --theme-bg-color: #F1F1F4;
+  --theme-bg-accent-color: rgba(255, 255, 255, .08);
   --theme-back-color: #D9D9DD;
   --theme-overlay-color: rgba(0, 0, 0, .2);
   --theme-statusbar-color: #bfbfc6;

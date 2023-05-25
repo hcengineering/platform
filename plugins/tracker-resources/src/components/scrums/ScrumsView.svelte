@@ -17,12 +17,13 @@
   import { Ref, SortingOrder } from '@hcengineering/core'
   import { ScrumRecord, Project, Scrum } from '@hcengineering/tracker'
   import { Button, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
-  import { ActionContext, List } from '@hcengineering/view-resources'
+  import { List } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import NewScrum from './NewScrum.svelte'
   import RecordScrumPresenter from './RecordScrumPresenter.svelte'
   import ScrumDatePresenter from './ScrumDatePresenter.svelte'
   import ScrumPresenter from './ScrumPresenter.svelte'
+  import { ActionContext } from '@hcengineering/presentation'
 
   export let currentSpace: Ref<Project>
   export let activeScrumRecord: ScrumRecord | undefined

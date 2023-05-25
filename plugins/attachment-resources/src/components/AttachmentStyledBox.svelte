@@ -18,12 +18,13 @@
   import { IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
-  import { IconSize } from '@hcengineering/ui'
+  import { IconSize, updatePopup } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import attachment from '../plugin'
   import { deleteFile, uploadFile } from '../utils'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
   import AttachmentPreview from './AttachmentPreview.svelte'
+  import { ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
 
   export let objectId: Ref<Doc> | undefined = undefined
   export let space: Ref<Space> | undefined = undefined
@@ -32,7 +33,7 @@
   export let placeholder: IntlString | undefined = undefined
   export let alwaysEdit = false
   export let showButtons = false
-  export let emphasized: boolean = false
+  export let kind: 'normal' | 'emphasized' | 'indented' = 'normal'
   export let buttonSize: IconSize = 'medium'
   export let formatButtonSize: IconSize = 'small'
   export let maxHeight: 'max' | 'card' | 'limited' | string = 'max'
@@ -48,6 +49,18 @@
   $: draftKey = objectId ? `${objectId}_attachments` : undefined
 
   const dispatch = createEventDispatcher()
+  let attachmentPopupId: string = ''
+  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
+    const currentAttachmentIndex = listProvider.current()
+    if (currentAttachmentIndex === undefined) return
+    const selected = currentAttachmentIndex + offset
+    const sel = listProvider.docs()[selected] as Attachment
+    if (sel !== undefined && attachmentPopupId !== '') {
+      listProvider.updateFocus(sel)
+      updatePopup(attachmentPopupId, { props: { file: sel.file, name: sel.name, contentType: sel.type } })
+    }
+  })
+  $: listProvider.update(Array.from(attachments.values()).filter((attachment) => attachment.type.startsWith('image/')))
 
   export function focus (): void {
     refInput.focus()
@@ -302,6 +315,11 @@
   export function isEmptyContent (): boolean {
     return refInput.isEmptyContent()
   }
+
+  $: dispatch('attachments', {
+    size: attachments.size,
+    values: attachments.size === 0 ? true : attachments
+  })
 </script>
 
 <input
@@ -337,7 +355,7 @@
       {formatButtonSize}
       {maxHeight}
       {focusable}
-      {emphasized}
+      {kind}
       {enableBackReferences}
       on:changeSize
       on:changeContent
@@ -353,10 +371,10 @@
   </div>
   {#if attachments.size && fakeAttach === 'normal'}
     <div class="flex-row-center list scroll-divider-color">
-      {#each Array.from(attachments.values()) as attachment}
+      {#each Array.from(attachments.values()) as attachment, index}
         <div class="item flex-center flex-no-shrink clear-mins">
           {#if useAttachmentPreview}
-            <AttachmentPreview value={attachment} />
+            <AttachmentPreview value={attachment} {listProvider} on:open={(res) => (attachmentPopupId = res.detail)} />
           {:else}
             <AttachmentPresenter
               value={attachment}

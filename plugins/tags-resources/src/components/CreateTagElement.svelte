@@ -23,9 +23,10 @@
     EditBox,
     eventToHTMLElement,
     getColorNumberByText,
-    getPlatformColor,
+    getPlatformColorDef,
     IconFolder,
-    showPopup
+    showPopup,
+    themeStore
   } from '@hcengineering/ui'
   import { ColorsPopup } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -90,12 +91,17 @@
     dispatch('close')
   }
   const showColorPopup = (evt: MouseEvent) => {
-    showPopup(ColorsPopup, { selected: getPlatformColor(color) }, eventToHTMLElement(evt), (col) => {
-      if (col != null) {
-        color = col
-        colorSet = true
+    showPopup(
+      ColorsPopup,
+      { selected: getPlatformColorDef(color, $themeStore.dark).name },
+      eventToHTMLElement(evt),
+      (col) => {
+        if (col != null) {
+          color = col
+          colorSet = true
+        }
       }
-    })
+    )
   }
 </script>
 
@@ -104,7 +110,6 @@
   labelProps={{ word: keyTitle }}
   okAction={createTagElenent}
   canSave={title.length > 0}
-  createMore={false}
   on:close={() => {
     dispatch('close')
   }}
@@ -114,7 +119,7 @@
     <div class="mr-3">
       <Button size={'medium'} kind={'link-bordered'} on:click={showColorPopup}>
         <svelte:fragment slot="content">
-          <div class="color pointer-events-none" style={getTagStyle(getPlatformColor(color))} />
+          <div class="color pointer-events-none" style={getTagStyle(getPlatformColorDef(color, $themeStore.dark))} />
         </svelte:fragment>
       </Button>
     </div>

@@ -51,6 +51,7 @@ export type DisplayTxListener = (txes: DisplayTx[]) => void
 
 // Use 5 minutes to combine similar transactions.
 const combineThreshold = 5 * 60 * 1000
+const createCombineThreshold = 10 * 1000
 
 /**
  * Define activity.
@@ -64,7 +65,7 @@ export interface Activity {
     listener: DisplayTxListener,
     sort: SortingOrder,
     editable: Map<Ref<Class<Doc>>, boolean>
-  ) => void
+  ) => boolean
 }
 
 class ActivityImpl implements Activity {
@@ -110,15 +111,16 @@ class ActivityImpl implements Activity {
     listener: DisplayTxListener,
     sort: SortingOrder,
     editable: Map<Ref<Class<Doc>>, boolean>
-  ): void {
-    if (objectId === this.prevObjectId && objectClass === this.prevObjectClass) return
+  ): boolean {
+    this.editable = editable
+    if (objectId === this.prevObjectId && objectClass === this.prevObjectClass) {
+      return false
+    }
     this.prevObjectClass = objectClass
     this.prevObjectId = objectId
     let isAttached = false
 
     isAttached = this.hierarchy.isDerived(objectClass, core.class.AttachedDoc)
-
-    this.editable = editable
 
     this.ownTxQuery.query<TxCUD<Doc>>(
       isAttached ? core.class.TxCollectionCUD : core.class.TxCUD,
@@ -164,6 +166,7 @@ class ActivityImpl implements Activity {
     )
     // In case editable is changed
     this.notify(objectId, listener, sort)
+    return true
   }
 
   async combineTransactions (
@@ -404,7 +407,7 @@ class ActivityImpl implements Activity {
         (result.tx.objectId === prevTx.createTx.objectId ||
           (result.doc as AttachedDoc)?.attachedTo === prevTx.createTx.objectId)
       ) {
-        return result.tx.modifiedOn - prevTx.createTx.modifiedOn < combineThreshold
+        return result.tx.modifiedOn - prevTx.createTx.modifiedOn < createCombineThreshold
       }
     }
     return false

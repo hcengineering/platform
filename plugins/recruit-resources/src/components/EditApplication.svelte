@@ -22,7 +22,6 @@
   import VacancyCard from './VacancyCard.svelte'
   import ExpandRightDouble from './icons/ExpandRightDouble.svelte'
 
-  import { getName } from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
   import recruit from '../plugin'
   import Reviews from './review/Reviews.svelte'
@@ -36,7 +35,7 @@
     dispatch('open', {
       ignoreKeys: ['comments', 'number'],
       allowedCollections: ['labels'],
-      title: `APP-${object.number} ${candidate !== undefined ? '- ' + getName(candidate) : ''}`
+      title: `APP-${object.number}`
     })
   }
 

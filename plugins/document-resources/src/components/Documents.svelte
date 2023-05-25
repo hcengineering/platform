@@ -17,11 +17,10 @@
 <script lang="ts">
   import { Doc, DocumentQuery } from '@hcengineering/core'
   import { Document } from '@hcengineering/document'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient, ActionContext } from '@hcengineering/presentation'
   import { Label, Loading, SearchEdit } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
   import {
-    ActionContext,
     FilterButton,
     getViewOptions,
     setActiveViewletId,

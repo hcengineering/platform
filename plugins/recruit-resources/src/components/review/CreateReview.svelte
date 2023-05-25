@@ -150,6 +150,7 @@
   labelProps={{ label: '' }}
   okAction={createReview}
   canSave={status.severity === Severity.OK && title.trim().length > 0 && doc.attachedTo !== undefined}
+  gap={'gapV-4'}
   on:close={() => {
     dispatch('close')
   }}
@@ -158,7 +159,7 @@
   <StatusControl slot="error" {status} />
   <EditBox placeholder={recruit.string.Title} bind:value={title} kind={'large-style'} focus />
   <EditBox placeholder={recruit.string.Location} bind:value={location} kind={'small-style'} />
-  <StyledTextArea bind:content={description} placeholder={recruit.string.AddDescription} emphasized />
+  <StyledTextArea bind:content={description} placeholder={recruit.string.AddDescription} kind={'emphasized'} />
   <svelte:fragment slot="pool">
     {#if !preserveCandidate}
       <UserBox

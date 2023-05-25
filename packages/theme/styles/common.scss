@@ -424,6 +424,17 @@
 // Replacing the background of a text editor in Activity
 .activity-content .ref-container .textInput { background-color: var(--body-color) !important; }
 
+// Indented
+.antiIndented {
+  margin: .75rem;
+  border-radius: .25rem;
+
+  &:hover,
+  &.focusable:focus-within {
+    border-color: var(--theme-divider-color);
+  }
+}
+
 // Emphasized
 .antiEmphasized {
   padding: .75rem;
@@ -435,7 +446,7 @@
   transition-timing-function: var(--timing-main);
 
   &:hover,
-  &:focus-within {
+  &.focusable:focus-within {
     // background-color: var(--body-color);
     border-color: var(--theme-list-divider-color);
   }

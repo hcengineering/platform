@@ -34,6 +34,7 @@ import { createKanbanTemplate, createSequence, DOMAIN_KANBAN } from '@hcengineer
 import { Vacancy } from '@hcengineering/recruit'
 import task, { KanbanTemplate, Sequence } from '@hcengineering/task'
 import recruit from './plugin'
+import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 
 async function fixImportedTitle (client: MigrationClient): Promise<void> {
   await client.update(
@@ -189,10 +190,10 @@ async function createDefaults (tx: TxOperations): Promise<void> {
 async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<KanbanTemplate>> {
   const defaultKanban = {
     states: [
-      { color: 9, name: 'HR Interview' },
-      { color: 10, name: 'Technical Interview' },
-      { color: 1, name: 'Test task' },
-      { color: 0, name: 'Offer' }
+      { color: PaletteColorIndexes.Coin, name: 'HR Interview' },
+      { color: PaletteColorIndexes.Cerulean, name: 'Technical Interview' },
+      { color: PaletteColorIndexes.Waterway, name: 'Test task' },
+      { color: PaletteColorIndexes.Grass, name: 'Offer' }
     ],
     doneStates: [
       { isWon: true, name: 'Won' },

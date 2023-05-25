@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { getPlatformColor } from '../../colors'
-  import { Component, WizardModel, WizardItemPosition } from '../..'
+  import { Component, WizardModel, WizardItemPosition, themeStore } from '../..'
   import ScrollerBar from '../ScrollerBar.svelte'
   import WizardStep from './WizardStep.svelte'
 
@@ -43,8 +43,8 @@
       label={item.label}
       position={getPosition(i)}
       positionState={selected === i ? 'current' : i < selected ? 'prev' : 'next'}
-      prevColor={getPlatformColor(COLOR)}
-      currentColor={getPlatformColor(COLOR)}
+      prevColor={getPlatformColor(COLOR, $themeStore.dark)}
+      currentColor={getPlatformColor(COLOR, $themeStore.dark)}
       nextColor="var(--trans-content-10)"
     />
   {/each}

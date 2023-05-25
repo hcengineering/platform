@@ -80,7 +80,7 @@
     </div>
     <div class="mb-2">
       <StyledTextBox
-        emphasized
+        kind={'emphasized'}
         content={object.description}
         on:value={(evt) => {
           client.update(object, { description: evt.detail })

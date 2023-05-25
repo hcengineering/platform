@@ -136,6 +136,7 @@
   .notify {
     height: 0.5rem;
     width: 0.5rem;
+    min-width: 0.5rem;
     margin-top: 0.75rem;
     margin-right: 0.5rem;
     background-color: #2b5190;

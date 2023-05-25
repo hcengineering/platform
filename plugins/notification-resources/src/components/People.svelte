@@ -20,8 +20,8 @@
   import { Account, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocUpdates } from '@hcengineering/notification'
   import { createQuery } from '@hcengineering/presentation'
-  import { ListView, Loading, Scroller } from '@hcengineering/ui'
-  import { ActionContext, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
+  import { Loading, Scroller } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
   import PeopleNotificationView from './PeopleNotificationsView.svelte'
 
   export let filter: 'all' | 'read' | 'unread' = 'all'
@@ -79,15 +79,16 @@
     for (const item of filtered) {
       for (const tx of item.txes) {
         const arr = map.get(tx.modifiedBy) ?? []
-        arr.push(item)
-        map.set(tx.modifiedBy, arr)
+        if (arr.findIndex((p) => p._id === item._id) === -1) {
+          arr.push(item)
+          map.set(tx.modifiedBy, arr)
+        }
       }
     }
     map = map
     accounts = Array.from(map.keys())
       .map((p) => $employeeAccountByIdStore.get(p as Ref<EmployeeAccount>))
       .filter((p) => p !== undefined) as EmployeeAccount[]
-    listProvider.update(accounts)
     if (loading || _id === undefined) {
       changeSelected(selected)
     } else if (filtered.find((p) => p.attachedTo === _id) === undefined) {
@@ -100,30 +101,20 @@
   $: changeSelected(selected)
 
   function changeSelected (index: number) {
-    if (accounts[index] !== undefined) {
-      listProvider.updateFocus(accounts[index])
-    } else if (accounts.length) {
-      if (index < accounts.length - 1) {
-        selected++
+    if (accounts[index] === undefined) {
+      if (accounts.length) {
+        if (index < accounts.length - 1) {
+          selected++
+        } else {
+          selected--
+        }
       } else {
-        selected--
+        selected = 0
       }
-    } else {
-      selected = 0
     }
   }
 
   let viewlets: Map<ActivityKey, TxViewlet>
-
-  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
-    if (dir === 'vertical') {
-      const value = selected + offset
-      if (accounts[value] !== undefined) {
-        selected = value
-        listView?.select(selected)
-      }
-    }
-  })
 
   const descriptors = createQuery()
   descriptors.query(activity.class.TxViewlet, {}, (result) => {
@@ -131,25 +122,40 @@
   })
 
   let selected = 0
-  let listView: ListView
+
+  const dispatch = createEventDispatcher()
+  function onKeydown (key: KeyboardEvent): void {
+    if (key.code === 'ArrowUp') {
+      key.stopPropagation()
+      key.preventDefault()
+      selected--
+    }
+    if (key.code === 'ArrowDown') {
+      key.stopPropagation()
+      key.preventDefault()
+      selected++
+    }
+    if (key.code === 'Enter') {
+      key.preventDefault()
+      key.stopPropagation()
+      dispatch('open', accounts[selected]._id)
+    }
+  }
 </script>
 
-<ActionContext
-  context={{
-    mode: 'browser'
-  }}
-/>
 <div class="clear-mins">
   <Scroller>
     {#if loading}
       <Loading />
     {:else}
       {#each accounts as account, i}
+        <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
         <PeopleNotificationView
           value={account}
           items={map.get(account._id) ?? []}
           selected={selected === i}
           {viewlets}
+          on:keydown={onKeydown}
           on:open
           on:click={() => {
             selected = i
@@ -159,3 +165,12 @@
     {/if}
   </Scroller>
 </div>
+<!-- 
+<style lang="scss">
+  .container:focus-visible {
+    outline: none;
+  }
+  .container:focus {
+    border: 1px solid red;
+  }
+</style> -->

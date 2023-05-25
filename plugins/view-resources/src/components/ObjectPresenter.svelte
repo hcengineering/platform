@@ -24,6 +24,7 @@
   export let props: Record<string, any> = {}
   export let inline: boolean = true
   export let shouldShowAvatar: boolean = true
+  export let noUnderline: boolean = false
 
   const client = getClient()
   let presenter: AttributeModel | undefined
@@ -58,5 +59,5 @@
 </script>
 
 {#if presenter}
-  <svelte:component this={presenter.presenter} value={doc} {...props} {inline} {shouldShowAvatar} />
+  <svelte:component this={presenter.presenter} value={doc} {...props} {inline} {shouldShowAvatar} {noUnderline} />
 {/if}

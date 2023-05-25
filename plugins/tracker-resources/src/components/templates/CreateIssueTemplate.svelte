@@ -125,10 +125,10 @@
   okAction={createIssueTemplate}
   {canSave}
   okLabel={tracker.string.SaveProcess}
+  gap={'gapV-4'}
   on:close={() => {
     dispatch('close')
   }}
-  createMore={false}
   on:changeContent
 >
   <svelte:fragment slot="header">
@@ -148,7 +148,7 @@
   <StyledTextBox
     alwaysEdit
     showButtons={false}
-    emphasized
+    kind={'emphasized'}
     bind:content={object.description}
     placeholder={tracker.string.IssueDescriptionPlaceholder}
   />

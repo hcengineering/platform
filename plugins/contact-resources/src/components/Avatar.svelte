@@ -31,8 +31,7 @@
   import { Client, Ref } from '@hcengineering/core'
   import { Asset, getResource } from '@hcengineering/platform'
   import { getBlobURL, getClient } from '@hcengineering/presentation'
-  import { AnySvelteComponent, Icon, IconSize, hexToRgb, imageToColor } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { AnySvelteComponent, Icon, IconSize } from '@hcengineering/ui'
   import { getAvatarProviderId } from '../utils'
   import AvatarIcon from './icons/Avatar.svelte'
 
@@ -43,8 +42,6 @@
 
   let url: string | undefined
   let avatarProvider: AvatarProvider | undefined
-
-  const dispatch = createEventDispatcher()
 
   async function update (size: IconSize, avatar?: string | null, direct?: Blob) {
     if (direct !== undefined) {
@@ -71,64 +68,15 @@
   }
   $: update(size, avatar, direct)
 
-  let style = ''
-
-  async function updateStyle (avatar?: string | null, avatarProvider?: AvatarProvider) {
-    if (!avatar || avatarProvider?.type !== AvatarType.COLOR) {
-      style = ''
-    } else {
-      const uri = avatar.split('://')[1]
-
-      const color: string | undefined = (await getResource(avatarProvider.getUrl))(uri, size)
-      if (color != null) {
-        style = `background-color: ${color}`
-        accentColor = hexToRgb(color)
-        dispatch('accent-color', accentColor)
-      }
-    }
-  }
-  $: updateStyle(avatar, avatarProvider)
-
   let imageElement: HTMLImageElement | undefined = undefined
-  let accentColor: any | undefined
 </script>
 
-<div class="ava-{size} flex-center avatar-container" class:no-img={!url} {style}>
+<div class="ava-{size} flex-center avatar-container" class:no-img={!url}>
   {#if url}
     {#if size === 'large' || size === 'x-large'}
-      <img
-        class="ava-{size} ava-blur"
-        src={url}
-        alt={''}
-        bind:this={imageElement}
-        on:load={() => {
-          if (imageElement !== undefined) {
-            try {
-              accentColor = imageToColor(imageElement)
-              dispatch('accent-color', accentColor)
-            } catch (err) {
-              // Ignore
-            }
-          }
-        }}
-      />
+      <img class="ava-{size} ava-blur" src={url} alt={''} bind:this={imageElement} />
     {/if}
-    <img
-      class="ava-{size} ava-mask"
-      src={url}
-      alt={''}
-      bind:this={imageElement}
-      on:load={() => {
-        if (imageElement !== undefined) {
-          try {
-            accentColor = imageToColor(imageElement)
-            dispatch('accent-color', accentColor)
-          } catch (err) {
-            // ignore
-          }
-        }
-      }}
-    />
+    <img class="ava-{size} ava-mask" src={url} alt={''} bind:this={imageElement} />
   {:else}
     <Icon icon={icon ?? AvatarIcon} size={size === 'card' ? 'x-small' : size} />
   {/if}

@@ -64,6 +64,7 @@
   export let showTooltip: LabelAndProps | undefined = undefined
   export let showNavigate = true
   export let id: string | undefined = undefined
+  export let short: boolean = false
 
   const icon = IconPerson
 
@@ -147,7 +148,7 @@
         >
           {#if selected}
             {#if hideIcon || selected}
-              <UserInfo value={selected} size={avatarSize} {icon} on:accent-color />
+              <UserInfo value={selected} size={avatarSize} {icon} {short} on:accent-color />
             {:else}
               {getName(selected)}
             {/if}

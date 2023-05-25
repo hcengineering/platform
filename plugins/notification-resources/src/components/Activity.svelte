@@ -17,9 +17,9 @@
   import { activityKey, ActivityKey } from '@hcengineering/activity-resources'
   import { Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocUpdates } from '@hcengineering/notification'
-  import { createQuery } from '@hcengineering/presentation'
-  import { ListView, Loading, Scroller } from '@hcengineering/ui'
-  import { ActionContext, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
+  import { ActionContext, createQuery } from '@hcengineering/presentation'
+  import { Loading, Scroller } from '@hcengineering/ui'
+  import { ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import NotificationView from './NotificationView.svelte'
 
@@ -96,7 +96,6 @@
       const value = selected + offset
       if (filtered[value] !== undefined) {
         selected = value
-        listView?.select(selected)
       }
     }
   })
@@ -107,7 +106,6 @@
   })
 
   let selected = 0
-  let listView: ListView
 </script>
 
 <ActionContext

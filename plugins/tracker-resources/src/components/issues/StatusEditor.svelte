@@ -40,6 +40,7 @@
   export let width: string | undefined = undefined
   export let defaultIssueStatus: Ref<IssueStatus> | undefined = undefined
   export let focusIndex: number | undefined = undefined
+  export let short: boolean = false
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -120,7 +121,10 @@
         {#if selectedStatus}<IssueStatusIcon value={selectedStatus} size={kind === 'list' ? 'small' : 'medium'} />{/if}
       </div>
       {#if selectedStatusLabel}
-        <span class="{kind === 'list' ? 'ml-1 text-md' : 'ml-2 text-base'} overflow-label disabled content-color">
+        <span
+          class="{kind === 'list' ? 'ml-1 text-md' : 'ml-2 text-base'} overflow-label disabled content-color"
+          class:max-w-20={short}
+        >
           {selectedStatusLabel}
         </span>
       {/if}
@@ -134,22 +138,25 @@
       {kind}
       {width}
       {focusIndex}
+      {short}
       on:click={handleStatusEditorOpened}
     >
-      <span slot="content" class="flex-row-center pointer-events-none">
+      <svelte:fragment slot="icon">
         {#if selectedStatus}
           <IssueStatusIcon value={selectedStatus} size={iconSize} />
         {/if}
+      </svelte:fragment>
+      <svelte:fragment slot="content">
         {#if selectedStatusLabel}
           <span
             class="overflow-label disabled"
-            class:ml-1={selectedStatus && smallgap}
+            class:ml-1-5={selectedStatus && smallgap}
             class:ml-2={selectedStatus && !smallgap}
           >
             {selectedStatusLabel}
           </span>
         {/if}
-      </span>
+      </svelte:fragment>
     </Button>
   {/if}
 {/if}

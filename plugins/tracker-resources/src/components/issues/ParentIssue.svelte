@@ -15,10 +15,11 @@
 <script lang="ts">
   import { createQuery } from '@hcengineering/presentation'
   import { Project, Issue } from '@hcengineering/tracker'
-  import { Spinner, IconClose, tooltip } from '@hcengineering/ui'
+  import { Spinner, IconClose, Button } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import { getIssueId } from '../../issues'
+  import PriorityRefPresenter from './PriorityRefPresenter.svelte'
 
   export let issue: Issue
 
@@ -31,51 +32,65 @@
   $: issueId = project && getIssueId(project, issue)
 </script>
 
-<div class="flex-center root">
+<div class="parentIssue-container">
+  <div class="flex-no-shrink mr-1-5">
+    <PriorityRefPresenter value={issue.priority} shouldShowLabel={false} />
+  </div>
   {#if issueId}
-    <span class="overflow-label flex-no-shrink">{issueId}</span>
+    <span class="overflow-label flex-no-shrink content-dark-color">{issueId}</span>
   {:else}
     <Spinner size="small" />
   {/if}
   <span class="overflow-label issue-title">{issue.title}</span>
+  <Button
+    icon={IconClose}
+    showTooltip={{ label: tracker.string.RemoveParent, direction: 'bottom' }}
+    kind={'transparent'}
+    size={'small'}
+    on:click={() => dispatch('close')}
+  />
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div
+  <!-- <div
     class="button-close"
     use:tooltip={{ label: tracker.string.RemoveParent, direction: 'bottom' }}
     on:click={() => dispatch('close')}
   >
     <IconClose size="x-small" />
-  </div>
+  </div> -->
 </div>
 
 <style lang="scss">
-  .root {
-    padding: 0.375rem 0.75rem;
-    line-height: 150%;
+  .parentIssue-container {
+    display: flex;
+    align-items: center;
+    padding: 0.25rem 0.25rem 0.25rem 0.75rem;
     max-width: fit-content;
-    border: 1px solid var(--button-border-color);
+    min-width: 0;
+    // line-height: 150%;
+    height: 2.25rem;
+    border: 1px solid var(--theme-button-border);
     border-radius: 0.25rem;
-    box-shadow: var(--button-shadow);
   }
 
   .issue-title {
-    margin: 0 0.75rem 0 0.5rem;
+    margin: 0 0.25rem 0 0.375rem;
     padding-right: 0.75rem;
-    color: var(--accent-color);
-    border-right: 1px solid var(--button-border-color);
+    min-width: 0;
+    color: var(--theme-caption-color);
+    border-right: 1px solid var(--theme-button-border);
   }
 
   .button-close {
     cursor: pointer;
     position: relative;
-    color: var(--content-color);
+    color: var(--theme-dark-color);
     transition: color 0.15s;
 
     &:hover {
-      color: var(--caption-color);
+      color: var(--theme-content-color);
     }
     &:active {
-      color: var(--accent-color);
+      color: var(--theme-dark-color);
     }
     &::before {
       position: absolute;

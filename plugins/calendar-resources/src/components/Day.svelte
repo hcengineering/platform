@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Event } from '@hcengineering/calendar'
   import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
-  import { addZero, Label, tooltip, getPlatformColorForText } from '@hcengineering/ui'
+  import { Label, addZero, getPlatformColorForTextDef, themeStore, tooltip } from '@hcengineering/ui'
   import { BuildModelKey } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
@@ -51,6 +51,7 @@
 {#if size === 'huge'}
   <div class="flex-grow h-full w-full p-1 flex-col" use:tooltip={tip}>
     <div class="flex flex-reverse fs-title">
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
         class="date flex-center"
         class:today
@@ -63,6 +64,7 @@
         {date.getDate()}
       </div>
     </div>
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
       class="flex-col flex-grow mt-1"
       on:click={() => {
@@ -72,7 +74,7 @@
       {#each events.slice(0, eventCount) as e}
         <div
           class="overflow-label mt-1 py-1 flex flex-between event"
-          style="background-color: {getPlatformColorForText(e._class)};"
+          style="background-color: {getPlatformColorForTextDef(e._class, $themeStore.dark).background};"
         >
           {e.title}
           <div>

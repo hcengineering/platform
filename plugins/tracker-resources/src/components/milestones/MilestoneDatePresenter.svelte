@@ -43,7 +43,7 @@
   value={dateMs}
   editable={true}
   shouldShowLabel={true}
-  icon={'normal'}
+  iconModifier={'normal'}
   {kind}
   {size}
   on:change={handleDateChanged}
