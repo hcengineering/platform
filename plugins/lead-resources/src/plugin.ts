@@ -31,6 +31,7 @@ export default mergeIds(leadId, lead, {
     SelectCustomer: '' as IntlString,
     Customers: '' as IntlString,
     Leads: '' as IntlString,
+    MyLeads: '' as IntlString,
     NoLeadsForDocument: '' as IntlString,
     LeadPlaceholder: '' as IntlString,
     CreateCustomer: '' as IntlString,
@@ -47,7 +48,8 @@ export default mergeIds(leadId, lead, {
     CreateCustomer: '' as AnyComponent,
     LeadsPresenter: '' as AnyComponent,
     CreateFunnel: '' as AnyComponent,
-    EditFunnel: '' as AnyComponent
+    EditFunnel: '' as AnyComponent,
+    MyLeads: '' as AnyComponent
   },
   function: {
     LeadTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>

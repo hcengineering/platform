@@ -125,6 +125,13 @@ export function createModel (builder: Builder): void {
       navigatorModel: {
         specials: [
           {
+            id: 'my-leads',
+            label: lead.string.MyLeads,
+            icon: lead.icon.Lead,
+            component: lead.component.MyLeads,
+            position: 'top'
+          },
+          {
             id: 'customers',
             label: lead.string.Customers,
             icon: contact.icon.Person, // <-- Put contact general icon here.
@@ -376,6 +383,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(lead.class.Lead, core.class.Class, view.mixin.ClassFilters, {
     filters: ['attachedTo']
+  })
+
+  builder.mixin(lead.class.Lead, core.class.Class, notification.mixin.ClassCollaborators, {
+    fields: ['createdBy', 'assignee']
   })
 
   builder.mixin(lead.mixin.Customer, core.class.Class, view.mixin.ClassFilters, {
