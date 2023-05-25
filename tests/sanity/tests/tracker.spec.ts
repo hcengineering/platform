@@ -246,7 +246,7 @@ test('create-issue-draft', async ({ page }) => {
   await page.locator('.ml-2 > .antiButton').click()
 
   // Click button:has-text("No due date")
-  await page.locator('button:has-text("No due date")').click()
+  await page.locator('button:has-text("Due date")').click()
   // Click text=24 >> nth=0
   await page.locator('.date-popup-container >> text=24').first().click()
 

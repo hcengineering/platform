@@ -587,7 +587,6 @@
         alwaysEdit
         showButtons={false}
         kind={'indented'}
-        fakeAttach={'hidden'}
         enableBackReferences={true}
         bind:content={object.description}
         placeholder={tracker.string.IssueDescriptionPlaceholder}
