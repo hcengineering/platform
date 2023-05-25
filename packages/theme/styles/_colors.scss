@@ -75,6 +75,7 @@
   --theme-refinput-divider: rgba(255, 255, 255, .07);
   --theme-refinput-border: rgba(255, 255, 255, .03);
 
+  // Be aware to update defineAlpha() function in colors.ts
   --theme-bg-color: #1A1A28;
   --theme-bg-accent-color: rgba(0, 0, 0, .08);
   --theme-back-color: #0f0f18;
@@ -246,6 +247,7 @@
   --theme-refinput-divider: rgba(0, 0, 0, .07);
   --theme-refinput-border: rgba(0, 0, 0, .03);
 
+  // Be aware to update defineAlpha() function in colors.ts
   --theme-bg-color: #F1F1F4;
   --theme-bg-accent-color: rgba(255, 255, 255, .08);
   --theme-back-color: #D9D9DD;
