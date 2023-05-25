@@ -99,9 +99,10 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const parentQuery = createQuery()
-  let _space = space
-
+  
+  let _space = draft?.space ?? space
   let object = draft ?? getDefaultObject(id)
+  let isAssigneeTouched = false
 
   function objectChange (object: IssueDraft, empty: any) {
     if (shouldSaveDraft) {
@@ -188,7 +189,7 @@
     component,
     milestone,
     priority,
-    space
+    space: _space
   }
 
   $: if (object.space !== _space) {
@@ -288,7 +289,7 @@
   }
 
   function updateAssigneeId (object: IssueDraft, currentProject: Project | undefined) {
-    if (object.assignee == null && currentProject !== undefined) {
+    if (!isAssigneeTouched && currentProject !== undefined) {
       if (currentProject.defaultAssignee !== undefined) {
         object.assignee = currentProject.defaultAssignee
       } else {
@@ -405,6 +406,7 @@
     draftController.remove()
     resetObject()
     descriptionBox?.removeDraft(false)
+    isAssigneeTouched = false
   }
 
   async function setParentIssue () {
@@ -659,6 +661,7 @@
         width={'min-content'}
         short
         on:change={({ detail }) => {
+          isAssigneeTouched = true
           object.assignee = detail
           manager.setFocusPos(5)
         }}
