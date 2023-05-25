@@ -17,12 +17,11 @@
   export let rowGap: number = 2.5
   export let columnGap: number = 1.5
   export let topGap: boolean = false
-  export let alignItems: 'start' | 'center' | 'end' | 'stretch' = 'start'
 
   $: style = `grid-template-columns: repeat(${column}, 1fr); row-gap: ${rowGap}rem; column-gap: ${columnGap}rem;`
 </script>
 
-<div class="grid" {style} style:margin-top={topGap ? `${rowGap}rem` : 0} style:align-items={alignItems}>
+<div class="grid" {style} style:margin-top={topGap ? `${rowGap}rem` : 0}>
   <slot />
 </div>
 
