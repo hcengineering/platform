@@ -25,7 +25,7 @@
 </script>
 
 <Card
-  label={projects.has(identifier) ? tracker.string.ProjectIdentifierExists : tracker.string.ProjectIdentifier}
+  label={projects.has(identifier) ? tracker.string.IdentifierExists : tracker.string.ProjectIdentifier}
   okLabel={presentation.string.Save}
   okAction={save}
   canSave={identifier !== project.identifier && !projects.has(identifier)}
