@@ -15,7 +15,15 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { AccountArrayEditor, AssigneeBox } from '@hcengineering/contact-resources'
-  import core, { Account, DocumentUpdate, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
+  import core, {
+    Account,
+    ApplyOperations,
+    DocumentUpdate,
+    Ref,
+    SortingOrder,
+    generateId,
+    getCurrentAccount
+  } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
@@ -54,13 +62,20 @@
   let members: Ref<Account>[] =
     project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount()._id]
   let projectsIdentifiers: Set<string> = new Set()
+  let isSaving = false
+
+  let changeIdentityRef: HTMLElement
 
   const dispatch = createEventDispatcher()
 
   $: isNew = !project
 
   async function handleSave () {
-    isNew ? createProject() : updateProject()
+    if (isNew) {
+      await createProject()
+    } else {
+      await updateProject()
+    }
   }
 
   let identifier: string = project?.identifier ?? 'TSK'
@@ -86,6 +101,10 @@
   }
 
   async function updateProject () {
+    if (!project) {
+      return
+    }
+
     const { sequence, issueStatuses, defaultIssueStatus, ...projectData } = getProjectData()
     const update: DocumentUpdate<Project> = {}
     if (projectData.name !== project?.name) {
@@ -123,21 +142,48 @@
       }
     }
     if (Object.keys(update).length > 0) {
-      await client.update(project!, update)
+      const ops = client
+        .apply(project._id)
+        .match(tracker.class.Project, { identifier: { $ne: projectData.identifier } }, true)
+
+      isSaving = true
+      await ops.update(project, update)
+      const succeeded = await ops.commit()
+      isSaving = false
+
+      if (succeeded) {
+        close()
+      } else {
+        changeIdentity(changeIdentityRef)
+      }
     }
   }
 
   async function createProject () {
-    const id = await client.createDoc(tracker.class.Project, core.space.Space, getProjectData())
-    await createProjectIssueStatuses(id, defaultStatusId)
+    const projectId = generateId<Project>()
+    const projectData = getProjectData()
+    const ops = client.apply(projectId).match(tracker.class.Project, { identifier: projectData.identifier }, true)
+
+    isSaving = true
+    await ops.createDoc(tracker.class.Project, core.space.Space, projectData, projectId)
+    await createProjectIssueStatuses(ops, projectId, defaultStatusId)
+    const succeeded = await ops.commit()
+    isSaving = false
+
+    if (succeeded) {
+      close()
+    } else {
+      changeIdentity(changeIdentityRef)
+    }
   }
 
   async function createProjectIssueStatuses (
+    ops: ApplyOperations,
     projectId: Ref<Project>,
     defaultStatusId: Ref<IssueStatus>,
     defaultCategoryId = tracker.issueStatusCategory.Backlog
   ): Promise<void> {
-    const categories = await client.findAll(
+    const categories = await ops.findAll(
       core.class.StatusCategory,
       { ofAttribute: tracker.attribute.IssueStatus },
       { sort: { order: SortingOrder.Ascending } }
@@ -149,7 +195,7 @@
       const rank = issueStatusRanks[i]
 
       if (defaultStatusName !== undefined) {
-        await client.createDoc(
+        await ops.createDoc(
           tracker.class.IssueStatus,
           projectId,
           {
@@ -172,12 +218,16 @@
       }
     })
   }
-  function changeIdentity (ev: MouseEvent) {
-    showPopup(ChangeIdentity, { identifier, projectsIdentifiers }, eventToHTMLElement(ev), (result) => {
+  function changeIdentity (element: HTMLElement) {
+    showPopup(ChangeIdentity, { identifier, projectsIdentifiers }, element, (result) => {
       if (result != null) {
         identifier = result
       }
     })
+  }
+
+  function close () {
+    dispatch('close')
   }
 
   $: projectsQuery.query(
@@ -191,14 +241,12 @@
   label={isNew ? tracker.string.NewProject : tracker.string.EditProject}
   okLabel={isNew ? presentation.string.Create : presentation.string.Save}
   okAction={handleSave}
+  onCancel={close}
   canSave={name.length > 0 &&
     identifier.length > 0 &&
     !projectsIdentifiers.has(identifier) &&
     !(members.length === 0 && isPrivate)}
   gap="gapV-4"
-  on:close={() => {
-    dispatch('close')
-  }}
   on:changeContent
 >
   <div class="flex-row-center flex-between">
@@ -213,7 +261,7 @@
         }
       }}
     />
-    <div class="flex-row-center relative">
+    <div bind:this={changeIdentityRef} class="flex-row-center relative">
       <EditBox
         bind:value={identifier}
         disabled={!isNew}
@@ -222,9 +270,9 @@
       />
       {#if !isNew}
         <div class="ml-1">
-          <Button size={'small'} icon={IconEdit} on:click={changeIdentity} />
+          <Button size={'small'} icon={IconEdit} on:click={(ev) => changeIdentity(eventToHTMLElement(ev))} />
         </div>
-      {:else if projectsIdentifiers.has(identifier)}
+      {:else if !isSaving && projectsIdentifiers.has(identifier)}
         <div class="absolute overflow-label duplicated-identifier">
           <Label label={tracker.string.IdentifierExists} />
         </div>
