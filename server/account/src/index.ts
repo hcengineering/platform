@@ -355,12 +355,7 @@ export async function join (
 /**
  * @public
  */
-export async function confirm (db: Db, productId: string, token: string): Promise<LoginInfo> {
-  const decode = decodeToken(token)
-  const email = decode.extra?.confirm
-  if (email === undefined) {
-    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: accountId }))
-  }
+export async function confirmEmail (db: Db, email: string): Promise<Account> {
   const account = await getAccount(db, email)
 
   if (account === null) {
@@ -369,6 +364,19 @@ export async function confirm (db: Db, productId: string, token: string): Promis
 
   await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { confirmed: true } })
   account.confirmed = true
+  return account
+}
+
+/**
+ * @public
+ */
+export async function confirm (db: Db, productId: string, token: string): Promise<LoginInfo> {
+  const decode = decodeToken(token)
+  const email = decode.extra?.confirm
+  if (email === undefined) {
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: accountId }))
+  }
+  const account = await confirmEmail(db, email)
 
   const result = {
     endpoint: getEndpoint(),
@@ -432,7 +440,7 @@ export async function signUpJoin (
 ): Promise<WorkspaceLoginInfo> {
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(invite, email)
-  await createAccount(db, productId, email, password, first, last, invite?.emailMask === email)
+  await createAcc(db, productId, email, password, first, last, invite?.emailMask === email)
   await assignWorkspace(db, productId, email, workspace.name)
 
   const token = (await login(db, productId, email, password)).token
@@ -441,10 +449,7 @@ export async function signUpJoin (
   return result
 }
 
-/**
- * @public
- */
-export async function createAccount (
+async function createAcc (
   db: Db,
   productId: string,
   email: string,
@@ -452,7 +457,7 @@ export async function createAccount (
   first: string,
   last: string,
   confirmed: boolean = false
-): Promise<LoginInfo> {
+): Promise<Account> {
   const salt = randomBytes(32)
   const hash = hashWithSalt(password, salt)
 
@@ -483,11 +488,26 @@ export async function createAccount (
   if (!confirmed) {
     await sendConfirmation(productId, newAccount)
   }
+  return newAccount
+}
+
+/**
+ * @public
+ */
+export async function createAccount (
+  db: Db,
+  productId: string,
+  email: string,
+  password: string,
+  first: string,
+  last: string
+): Promise<LoginInfo> {
+  const account = await createAcc(db, productId, email, password, first, last, false)
 
   const result = {
     endpoint: getEndpoint(),
     email,
-    token: generateToken(email, getWorkspaceId('', productId), getExtra(newAccount))
+    token: generateToken(email, getWorkspaceId('', productId), getExtra(account))
   }
   return result
 }
