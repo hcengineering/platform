@@ -20,7 +20,7 @@
 </script>
 
 <div class="container">
-  <div class="color" style:background-color={getPlatformColorDef(value.color ?? 0, $themeStore.dark).background} />
+  <div class="color" style:background-color={getPlatformColorDef(value.color ?? 0, $themeStore.dark).color} />
   <span class="label overflow-label ml-1-5 max-w-40">
     {value.title}
   </span>

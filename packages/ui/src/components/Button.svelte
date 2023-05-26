@@ -51,6 +51,7 @@
   export let iconRightSize: IconSize = 'x-small'
   export let short: boolean = false
   export let accent: boolean = false
+  export let noFocus: boolean = false
 
   // $: iconSize = size === 'inline' ? 'inline' : 'small'
   let iconOnly: boolean = false
@@ -100,6 +101,7 @@
   bind:this={input}
   class="antiButton {kind} {size} jf-{justify} sh-{shape ?? 'no-shape'} bs-{borderStyle}"
   class:only-icon={iconOnly}
+  class:no-focus={noFocus}
   class:accent
   class:highlight
   class:selected
@@ -143,46 +145,3 @@
   {#if $$slots.content}<slot name="content" />{/if}
   {#if $$slots.iconRight}<slot name="iconRight" />{/if}
 </button>
-
-<style lang="scss">
-  .inline {
-    height: 1.375rem;
-    font-size: 0.75rem;
-    line-height: 0.75rem;
-    &.only-icon {
-      width: 1.375rem;
-    }
-  }
-  .x-small {
-    height: 1.5rem;
-    font-size: 0.75rem;
-    &.only-icon {
-      width: 1.5rem;
-    }
-  }
-  .small {
-    height: 1.75rem;
-    font-size: 0.8125rem;
-    &.only-icon {
-      width: 1.75rem;
-    }
-  }
-  .medium {
-    height: 2rem;
-    &.only-icon {
-      width: 2rem;
-    }
-  }
-  .large {
-    height: 2.25rem;
-    &.only-icon {
-      width: 2.25rem;
-    }
-  }
-  .x-large {
-    height: 2.75rem;
-    &.only-icon {
-      width: 2.75rem;
-    }
-  }
-</style>
