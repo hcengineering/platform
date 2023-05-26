@@ -373,8 +373,8 @@
 
 <style lang="scss">
   .duplicated-identifier {
-    right: 0;
-    bottom: -1rem;
+    left: 0;
+    bottom: -0.25rem;
     color: var(--theme-warning-color);
   }
 </style>
