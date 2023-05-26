@@ -345,11 +345,6 @@
   }
 
   const listItems: ListItem[] = []
-
-  $: if (category || !category) {
-    console.log('category')
-    console.log(category)
-  }
 </script>
 
 <div

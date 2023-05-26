@@ -1387,6 +1387,12 @@ export function createModel (builder: Builder): void {
     filters: []
   })
 
+  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.GroupFuncs, {
+    groupBy: tracker.function.GroupByComponents,
+    groupByCategories: tracker.function.GroupByCategoriesFunc,
+    groupValues: tracker.function.GroupValuesFunc
+  })
+
   builder.createDoc(
     presentation.class.ObjectSearchCategory,
     core.space.Model,

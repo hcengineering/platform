@@ -228,6 +228,13 @@ export function fillDefaults<T extends Doc> (
 /**
  * @public
  */
+export class AggregateValueData {
+  constructor (readonly name: string, readonly _id: Ref<Doc>, readonly rank?: string) { }
+}
+
+/**
+ * @public
+ */
 export class AggregateValue {
   constructor (readonly name: string | undefined, readonly values: WithLookup<Doc & { name?: string, label?: string } >[]) { }
 }

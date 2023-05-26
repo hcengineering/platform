@@ -117,7 +117,11 @@ import {
   issueStatusSort,
   moveIssuesToAnotherMilestone,
   milestoneSort,
-  subIssueQuery
+  subIssueQuery,
+  groupByComponents,
+  groupByComponentCategories,
+  groupComponentValues,
+  hasComponentValue
 } from './utils'
 
 import { EmployeeAccount } from '@hcengineering/contact'
@@ -466,7 +470,11 @@ export default async (): Promise<Resources> => ({
     SubIssueQuery: subIssueQuery,
     GetAllPriority: getAllPriority,
     GetAllComponents: getAllComponents,
-    GetAllMilestones: getAllMilestones
+    GetAllMilestones: getAllMilestones,
+    GroupByComponents: groupByComponents,
+    GroupByCategoriesFunc: groupByComponentCategories,
+    GroupValuesFunc: groupComponentValues,
+    HasValueFunc: hasComponentValue
   },
   actionImpl: {
     Move: move,

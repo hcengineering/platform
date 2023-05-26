@@ -22,7 +22,6 @@
   export let kind: 'list' | undefined = undefined
 
   $: componentValue = typeof value === 'string' ? value : (value?.values?.[0]?._id as Ref<Component>)
-  $: console.log(componentValue)
 </script>
 
 <ComponentPresenter value={$componentStore.get(componentValue)} {kind} on:accent-color />

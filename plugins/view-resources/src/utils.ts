@@ -60,7 +60,6 @@ import {
 } from '@hcengineering/ui'
 import type { BuildModelOptions, Viewlet, ViewletDescriptor } from '@hcengineering/view'
 import view, { AttributeModel, BuildModelKey } from '@hcengineering/view'
-import tracker, { Component, ComponentManager } from '@hcengineering/tracker'
 
 import { get, writable } from 'svelte/store'
 import plugin from './plugin'
@@ -628,8 +627,7 @@ export async function groupByCategory (
   key: string,
   categories: CategoryType[],
   mgr: StatusManager,
-  viewletDescriptorId?: Ref<ViewletDescriptor>,
-  componentMgr?: ComponentManager
+  viewletDescriptorId?: Ref<ViewletDescriptor>
 ): Promise<CategoryType[]> {
   const h = client.getHierarchy()
   const attr = h.getAttribute(_class, key)
@@ -639,15 +637,20 @@ export async function groupByCategory (
   const attrClass = getAttributePresenterClass(h, attr).attrClass
 
   const isStatusField = h.isDerived(attrClass, core.class.Status)
-  const isComponentField = h.isDerived(attrClass, tracker.class.Component)
+
+  console.log(attrClass)
+  console.log(h.getClass(attrClass))
+
+  const mixin = h.classHierarchyMixin(attrClass, view.mixin.GroupFuncs)
 
   let existingCategories: any[] = []
 
   // get and use categorieser from models or default
-  if (componentMgr !== undefined && isComponentField) {
-    existingCategories = await groupByComponentCategories(h, attrClass, categories, componentMgr, viewletDescriptorId)
+  if (mixin?.groupByCategories !== undefined) {
+    const f = await getResource(mixin.groupByCategories)
+    existingCategories = f(categories)
   } else if (isStatusField) {
-    existingCategories = await groupByStatusCategories(h, attrClass, categories, mgr, viewletDescriptorId)
+    existingCategories = await groupByStatusCategories(categories, mgr)
   } else {
     const valueSet = new Set<any>()
     for (const v of categories) {
@@ -663,13 +666,10 @@ export async function groupByCategory (
 /**
  * @public
  */
-export async function groupByStatusCategories (
-  hierarchy: Hierarchy,
-  attrClass: Ref<Class<Doc>>,
+export function groupByStatusCategories (
   categories: any[],
-  mgr: StatusManager,
-  viewletDescriptorId?: Ref<ViewletDescriptor>
-): Promise<AggregateValue[]> {
+  mgr: StatusManager
+): AggregateValue[] {
   const existingCategories: AggregateValue[] = []
   const statusMap = new Map<string, AggregateValue>()
 
@@ -701,41 +701,7 @@ export async function groupByStatusCategories (
       }
     }
   }
-  return await sortCategories(hierarchy, attrClass, existingCategories, viewletDescriptorId)
-}
-
-async function groupByComponentCategories (h: Hierarchy, attrClass: Ref<Class<Doc>>, categories: any[], mgr: ComponentManager, viewletDescriptorId: Ref<ViewletDescriptor> | undefined): Promise<any[] | PromiseLike<any[]>> {
-  const existingCategories: AggregateValue[] = [new AggregateValue(undefined, [])]
-  const componentMap = new Map<string, AggregateValue>()
-
-  const usedSpaces = new Set<Ref<Space>>()
-  const componentsList: Array<WithLookup<Component>> = []
-  for (const v of categories) {
-    const component = mgr.byId.get(v)
-    if (component !== undefined) {
-      componentsList.push(component)
-      usedSpaces.add(component.space)
-    }
-  }
-
-  for (const component of componentsList) {
-    if (component !== undefined) {
-      let fst = componentMap.get(component.label.toLowerCase().trim())
-      if (fst === undefined) {
-        const components = mgr.components
-          .filter(
-            (it) =>
-              it.label.toLowerCase().trim() === component.label.toLowerCase().trim() &&
-              (categories.includes(it._id) || usedSpaces.has(it.space))
-          )
-          .sort((a, b) => a.label.localeCompare(b.label))
-        fst = new AggregateValue(component.label, components)
-        componentMap.set(component.label.toLowerCase().trim(), fst)
-        existingCategories.push(fst)
-      }
-    }
-  }
-  return await sortCategories(h, attrClass, existingCategories, viewletDescriptorId)
+  return existingCategories
 }
 
 export async function getCategories (
@@ -744,8 +710,7 @@ export async function getCategories (
   docs: Doc[],
   key: string,
   mgr: StatusManager,
-  viewletDescriptorId?: Ref<ViewletDescriptor>,
-  componentMgr?: ComponentManager
+  viewletDescriptorId?: Ref<ViewletDescriptor>
 ): Promise<CategoryType[]> {
   if (key === noCategory) return [undefined]
 
@@ -755,8 +720,7 @@ export async function getCategories (
     key,
     docs.map((it) => getObjectValue(key, it) ?? undefined),
     mgr,
-    viewletDescriptorId,
-    componentMgr
+    viewletDescriptorId
   )
 }
 

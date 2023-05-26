@@ -76,12 +76,6 @@
   let mouseOver = false
 
   $: selected = items.filter((it) => $selectionStoreMap.has(it._id))
-
-  $: console.log(headerComponent)
-  $: if (category || !category) {
-    console.log('category')
-    console.log(category)
-  }
 </script>
 
 {#if headerComponent || groupByKey === noCategory}

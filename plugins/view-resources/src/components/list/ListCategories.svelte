@@ -31,7 +31,6 @@
   } from '../../utils'
   import { CategoryQuery, noCategory } from '../../viewOptions'
   import ListCategory from './ListCategory.svelte'
-  import { componentStore } from '@hcengineering/presentation/src/component'
 
   export let docs: Doc[]
   export let _class: Ref<Class<Doc>>
@@ -84,7 +83,7 @@
     viewOptions: ViewOptions,
     viewOptionsModel: ViewOptionModel[] | undefined
   ) {
-    categories = await getCategories(client, _class, docs, groupByKey, $statusStore, undefined, $componentStore)
+    categories = await getCategories(client, _class, docs, groupByKey, $statusStore, undefined)
     if (level === 0) {
       for (const viewOption of viewOptionsModel ?? []) {
         if (viewOption.actionTarget !== 'category') continue
@@ -280,17 +279,6 @@
 
   const listCategory: SvelteComponentTyped[] = []
   const listListCategory: ListCategory[] = []
-
-  // $: console.log(categories)
-  // $: console.log(listCategory)
-  // $: console.log(listListCategory)
-  // $: console.log(groupByDocs)
-  // $: if (categories.length > 0) {
-  //   categories.forEach((c, i) => {
-  //     const items = groupByKey === noCategory ? docs : getGroupByValues(groupByDocs, c)
-  //     console.log(items)
-  //   })
-  // }
 </script>
 
 {#each categories as category, i (typeof category === 'object' ? category.name : category)}

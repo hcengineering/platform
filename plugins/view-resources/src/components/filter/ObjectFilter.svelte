@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import core, { Doc, FindResult, getObjectValue, Ref, RefTo, SortingOrder, Space, Status } from '@hcengineering/core'
-  import { translate } from '@hcengineering/platform'
+  import { getResource, translate } from '@hcengineering/platform'
   import presentation, { getClient, statusStore } from '@hcengineering/presentation'
   import ui, {
     addNotification,
@@ -28,13 +28,11 @@
     resizeObserver
   } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
-  import tracker, { Component } from '@hcengineering/tracker'
   import { createEventDispatcher } from 'svelte'
   import { FILTER_DEBOUNCE_MS, sortFilterValues } from '../../filter'
   import view from '../../plugin'
   import { buildConfigLookup, getPresenter } from '../../utils'
   import FilterRemovedNotification from './FilterRemovedNotification.svelte'
-  import { componentStore } from '@hcengineering/presentation/src/component'
 
   export let filter: Filter
   export let space: Ref<Space> | undefined = undefined
@@ -51,12 +49,19 @@
 
   let values: (Doc | undefined | null)[] = []
   let objectsPromise: Promise<FindResult<Doc>> | undefined
+  let hasValue: (value: Doc | null | undefined, values: any[]) => boolean
+
   const targets = new Set<any>()
   $: targetClass = (filter.key.attribute.type as RefTo<Doc>).to
   $: clazz = hierarchy.getClass(targetClass)
 
-  $: isStatus = client.getHierarchy().isDerived(targetClass, core.class.Status) ?? false
-  $: isComponent = client.getHierarchy().isDerived(targetClass, tracker.class.Component) ?? false
+  $: isStatus = hierarchy.isDerived(targetClass, core.class.Status) ?? false
+
+  $: mixin = hierarchy.classHierarchyMixin(targetClass, view.mixin.GroupFuncs)
+
+  $: if (mixin?.hasValue !== undefined) {
+    getResource(mixin.hasValue).then((f) => (hasValue = f))
+  }
 
   let filterUpdateTimeout: number | undefined
 
@@ -68,24 +73,6 @@
       let exists = false
       values.forEach((state) => {
         if (state.name.trim().toLocaleLowerCase() === label) {
-          if (!exists) {
-            result[i] = state
-            exists = targets.has(state?._id)
-          }
-        }
-      })
-    })
-    return result
-  }
-
-  const groupComponentValues = (val: Component[]): Doc[] => {
-    const values = val
-    const result: Doc[] = []
-    const unique = [...new Set(val.map((v) => v.label.trim().toLocaleLowerCase()))]
-    unique.forEach((label, i) => {
-      let exists = false
-      values.forEach((state) => {
-        if (state.label.trim().toLocaleLowerCase() === label) {
           if (!exists) {
             result[i] = state
             exists = targets.has(state?._id)
@@ -129,10 +116,12 @@
     const options = clazz.sortingKey !== undefined ? { sort: { [clazz.sortingKey]: SortingOrder.Ascending } } : {}
     objectsPromise = client.findAll(targetClass, resultQuery, options)
     values = await objectsPromise
-    if (isStatus) {
+
+    if (mixin?.groupValues !== undefined) {
+      const f = await getResource(mixin.groupValues)
+      values = await f(values as Doc[], targets)
+    } else if (isStatus) {
       values = groupStatusValues(values as Status[])
-    } else if (isComponent) {
-      values = groupComponentValues(values as Component[])
     }
     if (targets.has(undefined)) {
       values.unshift(undefined)
@@ -159,13 +148,8 @@
           .map((it) => it._id)
       )
       return values.some((it) => statusSet.has(it))
-    } else if (isComponent) {
-      const componentSet = new Set(
-        $componentStore
-          .filter((it) => it.label.trim().toLocaleLowerCase() === (value as Component)?.label?.trim()?.toLocaleLowerCase())
-          .map((it) => it._id)
-      )
-      return values.some((it) => componentSet.has(it))
+    } else if (hasValue !== undefined) {
+      return hasValue(value, values)
     }
     return values.includes(value?._id ?? value)
   }

@@ -25,6 +25,7 @@ import type {
   ActionCategory,
   ActivityAttributePresenter,
   AllValuesFunc,
+  GroupFuncs,
   ArrayEditor,
   AttributeEditor,
   AttributeFilter,
@@ -68,7 +69,11 @@ import type {
   ViewOptionsModel,
   Viewlet,
   ViewletDescriptor,
-  ViewletPreference
+  ViewletPreference,
+  GroupByFunc,
+  GroupByCategoriesFunc,
+  GroupValuesFunc,
+  HasValueFunc
 } from '@hcengineering/view'
 import view from './plugin'
 
@@ -260,6 +265,14 @@ export class TAllValuesFunc extends TClass implements AllValuesFunc {
   func!: GetAllValuesFunc
 }
 
+@Mixin(view.mixin.GroupFuncs, core.class.Class)
+export class TGroupFuncs extends TClass implements GroupFuncs {
+  groupBy!: GroupByFunc
+  groupByCategories!: GroupByCategoriesFunc
+  groupValues!: GroupValuesFunc
+  hasValue!: HasValueFunc
+}
+
 @Model(view.class.ViewletPreference, preference.class.Preference)
 export class TViewletPreference extends TPreference implements ViewletPreference {
   attachedTo!: Ref<Viewlet>
@@ -408,7 +421,8 @@ export function createModel (builder: Builder): void {
     TArrayEditor,
     TInlineAttributEditor,
     TFilteredView,
-    TAllValuesFunc
+    TAllValuesFunc,
+    TGroupFuncs
   )
 
   classPresenter(

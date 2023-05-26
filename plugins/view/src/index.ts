@@ -16,6 +16,7 @@
 
 import {
   Account,
+  AggregateValue,
   AnyAttribute,
   CategoryType,
   Class,
@@ -308,6 +309,44 @@ export type GetAllValuesFunc = Resource<
  */
 export interface AllValuesFunc extends Class<Doc> {
   func: GetAllValuesFunc
+}
+
+/**
+ * @public
+ */
+export type GroupByFunc = Resource<
+  <T extends Doc> (docs: T[], key: string, categories?: CategoryType[]) => Record<any, T[]>
+>
+
+/**
+ * @public
+ */
+export type GroupByCategoriesFunc = Resource<
+(categories: any[]) => AggregateValue[]
+>
+
+/**
+ * @public
+ */
+export type GroupValuesFunc = Resource<
+(val: Doc[], targets: Set<any>) => Doc[]
+>
+
+/**
+ * @public
+ */
+export type HasValueFunc = Resource<
+(value: Doc | undefined | null, values: any[]) => boolean
+>
+
+/**
+ * @public
+ */
+export interface GroupFuncs extends Class<Doc> {
+  groupBy: GroupByFunc
+  groupByCategories: GroupByCategoriesFunc
+  groupValues: GroupValuesFunc
+  hasValue: HasValueFunc
 }
 
 /**
@@ -663,6 +702,7 @@ const view = plugin(viewId, {
     ListHeaderExtra: '' as Ref<Mixin<ListHeaderExtra>>,
     SortFuncs: '' as Ref<Mixin<ClassSortFuncs>>,
     AllValuesFunc: '' as Ref<Mixin<AllValuesFunc>>,
+    GroupFuncs: '' as Ref<Mixin<GroupFuncs>>,
     ObjectPanel: '' as Ref<Mixin<ObjectPanel>>,
     LinkProvider: '' as Ref<Mixin<LinkProvider>>,
     SpacePresenter: '' as Ref<Mixin<SpacePresenter>>,

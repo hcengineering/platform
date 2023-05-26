@@ -17,7 +17,7 @@ import type { Asset, IntlString, Metadata, Resource } from '@hcengineering/platf
 import { mergeIds } from '@hcengineering/platform'
 import { IssueDraft } from '@hcengineering/tracker'
 import { AnyComponent, Location } from '@hcengineering/ui'
-import { GetAllValuesFunc, SortFunc, Viewlet, ViewletDescriptor, ViewQueryAction } from '@hcengineering/view'
+import { GroupByCategoriesFunc, GroupByFunc, GetAllValuesFunc, SortFunc, Viewlet, ViewletDescriptor, ViewQueryAction, GroupValuesFunc, HasValueFunc } from '@hcengineering/view'
 import tracker, { trackerId } from '../../tracker/lib'
 
 export default mergeIds(trackerId, tracker, {
@@ -382,6 +382,10 @@ export default mergeIds(trackerId, tracker, {
     SubIssueQuery: '' as ViewQueryAction,
     GetAllPriority: '' as GetAllValuesFunc,
     GetAllComponents: '' as GetAllValuesFunc,
-    GetAllMilestones: '' as GetAllValuesFunc
+    GetAllMilestones: '' as GetAllValuesFunc,
+    GroupByComponents: '' as GroupByFunc,
+    GroupByCategoriesFunc: '' as GroupByCategoriesFunc,
+    GroupValuesFunc: '' as GroupValuesFunc,
+    HasValueFunc: '' as HasValueFunc
   }
 })
