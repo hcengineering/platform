@@ -71,6 +71,7 @@
   class:dateTimeButtonNoLabel={!shouldShowLabel}
   class:text-xs={size === 'x-small'}
   class:noDate={!value}
+  class:withIcon={showIcon}
   style:width
   on:click={(e) => {
     if (editable && !opened) {
@@ -292,12 +293,17 @@
       }
     }
     &.secondary {
-      padding: 0 0.625rem;
       color: var(--theme-caption-color);
       background-color: var(--theme-button-enabled);
       border-color: var(--theme-button-border);
       border-radius: 0.25rem;
 
+      &.withIcon {
+        padding: 0 1rem 0 0.75rem;
+      }
+      &:not(.withIcon) {
+        padding: 0 0.75rem;
+      }
       .btn-icon {
         color: var(--theme-content-color);
       }

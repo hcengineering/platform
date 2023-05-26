@@ -83,7 +83,7 @@ export async function fillIssueForm (page: Page, props: IssueProps): Promise<voi
     await page.click(`.selectPopup button:has-text("${component}")`)
   }
   if (milestone !== undefined) {
-    await page.click(af + '.antiButton:has-text("No Milestone")')
+    await page.click(af + '.antiButton:has-text("Milestone")')
     await page.click(`.selectPopup button:has-text("${milestone}")`)
   }
 }

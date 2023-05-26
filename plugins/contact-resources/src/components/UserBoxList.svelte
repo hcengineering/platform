@@ -85,9 +85,9 @@
     {#if persons.length > 0}
       <div class="flex-row-center flex-nowrap pointer-events-none">
         {#if persons.length === 1}
-          <UserInfo value={persons[0]} size={'inline'} />
+          <UserInfo value={persons[0]} size={'card'} />
         {:else}
-          <CombineAvatars {_class} bind:items size={'inline'} hideLimit />
+          <CombineAvatars {_class} bind:items size={'card'} hideLimit />
           <span class="overflow-label ml-1-5">
             <Label label={plugin.string.NumberMembers} params={{ count: persons.length }} />
           </span>

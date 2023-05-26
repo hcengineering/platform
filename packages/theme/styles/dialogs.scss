@@ -58,6 +58,8 @@
       min-width: 0;
       line-height: 150%;
       color: var(--theme-caption-color);
+
+      &.accentHeader { font-size: 1rem; }
     }
     &__divider { color: var(--theme-dark-color); }
     &__error {
@@ -190,10 +192,25 @@
   }
 
   &.dialog {
-    width: 45rem;
     height: auto;
-    max-width: 60rem;
     max-height: inherit;
+
+    &.large {
+      width: 45rem;
+      max-width: 60rem;
+    }
+    &.medium {
+      width: 37.5rem;
+      max-width: 37.5rem;
+    }
+    &.small {
+      width: 30rem;
+      max-width: 30rem;
+    }
+    &.x-small {
+      width: 25rem;
+      max-width: 25rem;
+    }
     &.full {
       width: max-content;
       // max-width: 100%;

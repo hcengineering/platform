@@ -127,7 +127,7 @@ export class TTypeMilestoneStatus extends TType {}
 @Model(tracker.class.Project, core.class.Space, DOMAIN_SPACE)
 @UX(tracker.string.Project, tracker.icon.Issues, 'Project', 'name')
 export class TProject extends TSpace implements Project {
-  @Prop(TypeString(), tracker.string.Identifier)
+  @Prop(TypeString(), tracker.string.ProjectIdentifier)
   @Index(IndexKind.FullText)
     identifier!: IntlString
 

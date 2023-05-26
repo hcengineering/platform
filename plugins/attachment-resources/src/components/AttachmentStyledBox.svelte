@@ -339,7 +339,7 @@
   on:dragleave={() => {}}
   on:drop|preventDefault|stopPropagation={(ev) => {
     if (fakeAttach === 'fake') dispatch('attach', { action: 'drop', event: ev })
-    else if (fakeAttach === 'normal') fileDrop(ev)
+    else fileDrop(ev)
   }}
 >
   <div class="expand-collapse">

@@ -156,7 +156,7 @@
             <div class="flex-presenter not-selected">
               {#if icon}
                 <div class="icon w-4 flex-no-shrink" class:small-gap={size === 'inline' || size === 'small'}>
-                  <Icon {icon} size={avatarSize} />
+                  <Icon {icon} size={'small'} />
                 </div>
               {/if}
               <div class="label no-underline">

@@ -94,25 +94,28 @@
         {trimFilename(value.name)}
       </a>
     </div>
-    <div class="info-content">
-      {filesize(value.size, { spacer: '' })} •
-      <a class="no-line colorInherit" href={getFileUrl(value.file)} download={value.name} bind:this={download}>
-        <Label label={presentation.string.Download} />
-      </a>
-      {#if removable}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        •
-        <span
-          class="remove-link"
-          on:click={(ev) => {
-            ev.stopPropagation()
-            ev.preventDefault()
-            dispatch('remove', value)
-          }}
-        >
-          <Label label={presentation.string.Delete} />
-        </span>
-      {/if}
+    <div class="info-content flex-row-center">
+      {filesize(value.size, { spacer: '' })}
+      <span class="actions inline-flex clear-mins ml-1 gap-1">
+        <span>•</span>
+        <a class="no-line colorInherit" href={getFileUrl(value.file)} download={value.name} bind:this={download}>
+          <Label label={presentation.string.Download} />
+        </a>
+        {#if removable}
+          <span>•</span>
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <span
+            class="remove-link"
+            on:click={(ev) => {
+              ev.stopPropagation()
+              ev.preventDefault()
+              dispatch('remove', value)
+            }}
+          >
+            <Label label={presentation.string.Delete} />
+          </span>
+        {/if}
+      </span>
     </div>
   </div>
 </div>
@@ -124,7 +127,6 @@
     height: 3rem;
     min-width: 14rem;
     max-width: 19rem;
-    background-color: var(--theme-button-hovered);
     border-radius: 0.25rem;
 
     .icon {
@@ -152,20 +154,41 @@
       padding: 0.5rem 0.75rem;
       width: 100%;
       height: 100%;
+      background-color: var(--theme-button-enabled);
       border: 1px solid var(--theme-button-border);
       border-left: none;
       border-radius: 0 0.25rem 0.25rem 0;
+    }
+    .no-line:hover ~ .info-container,
+    .info-container:hover {
+      background-color: var(--theme-button-hovered);
+
+      .actions {
+        opacity: 1;
+      }
     }
     .name {
       white-space: nowrap;
       font-size: 0.8125rem;
       color: var(--theme-caption-color);
       cursor: pointer;
+
+      &:hover ~ .info-content .actions {
+        opacity: 1;
+      }
     }
     .info-content {
       white-space: nowrap;
       font-size: 0.6875rem;
       color: var(--theme-darker-color);
+
+      .actions {
+        opacity: 0;
+        transition: opacity 0.1s var(--timing-main);
+      }
+      &:hover .actions {
+        opacity: 1;
+      }
     }
     .remove-link {
       color: var(--theme-error-color);
