@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute, Class, Doc, DocumentQuery, FindOptions, Lookup, Ref } from '@hcengineering/core'
+  import core, { AnyAttribute, Class, Doc, DocumentQuery, FindOptions, Lookup, Mixin, Ref } from '@hcengineering/core'
   import { getObjectValue, SortingOrder } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { createQuery, getClient, updateAttribute } from '@hcengineering/presentation'
@@ -219,8 +219,9 @@
     if (attr === undefined) return true
     if (attribute.collectionAttr) return true
     if (attribute.isLookup) return true
-    const key = attribute.castRequest ? attribute.key.substring(attribute.castRequest.length + 1) : attribute.key
-    return hierarchy.findAttribute(attr?.attributeOf ?? doc._class, key) !== undefined
+    return hierarchy.isMixin(doc._class)
+      ? hierarchy.isDerived(doc._class, attr.attributeOf)
+      : hierarchy.isDerived(doc._class, hierarchy.getBaseClass(attr.attributeOf as Ref<Mixin<Doc>>))
   }
 
   let width: number

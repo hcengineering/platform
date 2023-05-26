@@ -27,7 +27,7 @@
   export let viewlet: Viewlet | undefined
   export let kind: ButtonKind = 'secondary'
   export let viewOptions: ViewOptions
-  export let viewOptionClasses: Ref<Class<Doc>>[] | undefined
+  export let viewOptionClasses: Ref<Class<Doc>>[] | undefined = undefined
 
   const dispatch = createEventDispatcher()
 

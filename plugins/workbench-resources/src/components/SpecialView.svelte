@@ -50,7 +50,7 @@
   export let createComponentProps: Record<string, any> = {}
   export let isCreationDisabled = false
   export let descriptors: Ref<ViewletDescriptor>[] | undefined = undefined
-  export let viewOptionClasses: Ref<Class<Doc>>[] | undefined
+  export let viewOptionClasses: Ref<Class<Doc>>[] | undefined = undefined
 
   let search = ''
   let viewlet: WithLookup<Viewlet> | undefined

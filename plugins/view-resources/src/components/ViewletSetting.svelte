@@ -40,7 +40,7 @@
   import { buildConfigLookup, getKeyLabel } from '../utils'
 
   export let viewlet: Viewlet
-  export let viewOptionClasses: Ref<Class<Doc>>[] | undefined
+  export let viewOptionClasses: Ref<Class<Doc>>[] | undefined = undefined
 
   let preference: ViewletPreference | undefined
   const preferenceQuery = createQuery()
