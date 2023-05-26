@@ -47,7 +47,7 @@
       dispatch('open', popupInfo.id)
     }}
   >
-    <img src={getFileUrl(value.file)} alt={value.name} />
+    <img src={getFileUrl(value.file, 'large')} alt={value.name} />
     <div class="actions conner">
       <AttachmentActions attachment={value} {isSaved} />
     </div>

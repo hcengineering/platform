@@ -597,6 +597,7 @@
         showButtons={false}
         kind={'indented'}
         enableBackReferences={true}
+        enableAttachments={false}
         bind:content={object.description}
         placeholder={tracker.string.IssueDescriptionPlaceholder}
         on:changeSize={() => dispatch('changeContent')}

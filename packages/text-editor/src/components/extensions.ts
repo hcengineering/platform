@@ -17,6 +17,7 @@ import Link from '@tiptap/extension-link'
 import { CompletionOptions } from '../Completion'
 import MentionList from './MentionList.svelte'
 import { SvelteRenderer } from './SvelteRenderer'
+import { ImageRef } from './imageExt'
 
 export const tableExtensions = [
   Table.configure({
@@ -166,3 +167,8 @@ export const completionConfig: Partial<CompletionOptions> = {
     }
   }
 }
+
+/**
+ * @public
+ */
+export const imagePlugin = ImageRef.configure({ inline: false, HTMLAttributes: {} })

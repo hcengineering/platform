@@ -37,6 +37,9 @@
     "CategoryColumn": "Колонки",
     "Table": "Таблица",
     "InsertTable": "Добавить таблицу",
-    "TableOptions": "Настроить таблицу"
+    "TableOptions": "Настроить таблицу",
+    "Width": "Щирина",
+    "Height": "Высота",
+    "Unset": "Убрать"
   }
 }

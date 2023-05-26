@@ -16,7 +16,7 @@
   import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
   import StyledTextEditor from './StyledTextEditor.svelte'
-  import { completionConfig } from './extensions'
+  import { completionConfig, imagePlugin } from './extensions'
 
   export let label: IntlString | undefined = undefined
   export let content: string
@@ -161,7 +161,7 @@
       {enableFormatting}
       {autofocus}
       {isScrollable}
-      extensions={enableBackReferences ? [completionPlugin] : []}
+      extensions={enableBackReferences ? [completionPlugin, imagePlugin] : [imagePlugin]}
       bind:content={rawValue}
       bind:this={textEditor}
       on:attach
