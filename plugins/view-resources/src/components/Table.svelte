@@ -218,13 +218,9 @@
     const attr = attribute.attribute
     if (attr === undefined) return true
     if (attribute.collectionAttr) return true
+    if (attribute.isLookup) return true
     const key = attribute.castRequest ? attribute.key.substring(attribute.castRequest.length + 1) : attribute.key
-    try {
-      const r = hierarchy.findAttribute(doc._class, key)
-      return r !== undefined
-    } catch (e) {
-      return false
-    }
+    return hierarchy.findAttribute(attr?.attributeOf ?? doc._class, key) !== undefined
   }
 
   let width: number
