@@ -14,6 +14,8 @@
 //
 
 import core, {
+  AggregateValue,
+  AggregateValueData,
   AnyAttribute,
   Attribute,
   Class,
@@ -28,13 +30,16 @@ import core, {
   RefTo,
   SortingOrder,
   SortingRules,
+  Space,
   Status,
   StatusManager,
+  StatusValue,
   Tx,
-  TxResult
+  TxResult,
+  WithLookup
 } from '@hcengineering/core'
 import { LiveQuery } from '@hcengineering/query'
-import { writable } from 'svelte/store'
+import { get, writable } from 'svelte/store'
 import { BasePresentationMiddleware, PresentationMiddleware } from './pipeline'
 
 // Issue status live query
@@ -313,4 +318,79 @@ export class StatusMiddleware extends BasePresentationMiddleware implements Pres
   async tx (tx: Tx): Promise<TxResult> {
     return await this.provideTx(tx)
   }
+}
+
+/**
+ * @public
+ */
+export function GroupByStatusCategories (categories: any[]): AggregateValue[] {
+  const mgr = get(statusStore)
+
+  const existingCategories: AggregateValue[] = []
+  const statusMap = new Map<string, AggregateValue>()
+
+  const usedSpaces = new Set<Ref<Space>>()
+  const statusesList: Array<WithLookup<Status>> = []
+  for (const v of categories) {
+    const status = mgr.byId.get(v)
+    if (status !== undefined) {
+      statusesList.push(status)
+      usedSpaces.add(status.space)
+    }
+  }
+
+  for (const status of statusesList) {
+    if (status !== undefined) {
+      let fst = statusMap.get(status.name.toLowerCase().trim())
+      if (fst === undefined) {
+        const statuses = mgr.statuses
+          .filter(
+            (it) =>
+              it.ofAttribute === status.ofAttribute &&
+              it.name.toLowerCase().trim() === status.name.toLowerCase().trim() &&
+              (categories.includes(it._id) || usedSpaces.has(it.space))
+          )
+          .sort((a, b) => a.rank.localeCompare(b.rank))
+          .map((it) => new AggregateValueData(it.name, it._id, it.space, it.rank, it.category))
+        fst = new StatusValue(status.name, status.color, statuses)
+        statusMap.set(status.name.toLowerCase().trim(), fst)
+        existingCategories.push(fst)
+      }
+    }
+  }
+  return existingCategories
+}
+
+/**
+ * @public
+ */
+export function GroupStatusValues (val: Status[], targets: Set<any>): Doc[] {
+  const values = val
+  const result: Doc[] = []
+  const unique = [...new Set(val.map((v) => v.name.trim().toLocaleLowerCase()))]
+  unique.forEach((label, i) => {
+    let exists = false
+    values.forEach((state) => {
+      if (state.name.trim().toLocaleLowerCase() === label) {
+        if (!exists) {
+          result[i] = state
+          exists = targets.has(state?._id)
+        }
+      }
+    })
+  })
+  return result
+}
+
+/**
+ * @public
+ */
+export function HasStatusValue (value: Doc | undefined | null, values: any[]): boolean {
+  const mgr = get(statusStore)
+  const statusSet = new Set(
+    mgr
+      .filter((it) => it.name.trim().toLocaleLowerCase() === (value as Status)?.name?.trim()?.toLocaleLowerCase())
+      .map((it) => it._id)
+  )
+  return values.some((it) => statusSet.has(it))
 }

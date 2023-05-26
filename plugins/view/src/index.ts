@@ -314,13 +314,6 @@ export interface AllValuesFunc extends Class<Doc> {
 /**
  * @public
  */
-export type GroupByFunc = Resource<
-  <T extends Doc> (docs: T[], key: string, categories?: CategoryType[]) => Record<any, T[]>
->
-
-/**
- * @public
- */
 export type GroupByCategoriesFunc = Resource<
 (categories: any[]) => AggregateValue[]
 >
@@ -343,7 +336,6 @@ export type HasValueFunc = Resource<
  * @public
  */
 export interface GroupFuncs extends Class<Doc> {
-  groupBy: GroupByFunc
   groupByCategories: GroupByCategoriesFunc
   groupValues: GroupValuesFunc
   hasValue: HasValueFunc

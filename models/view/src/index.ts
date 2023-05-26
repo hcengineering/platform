@@ -13,14 +13,13 @@
 // limitations under the License.
 //
 
-import type { Account, Class, Client, Data, Doc, DocumentQuery, Domain, Ref, Space } from '@hcengineering/core'
-import { DOMAIN_MODEL } from '@hcengineering/core'
+import Core, { DOMAIN_MODEL, Account, Class, Client, Data, Doc, DocumentQuery, Domain, Ref, Space } from '@hcengineering/core'
 import { Builder, Mixin, Model } from '@hcengineering/model'
 import core, { TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
-import type { Asset, IntlString, Resource, Status } from '@hcengineering/platform'
-import type { AnyComponent, Location } from '@hcengineering/ui'
-import type {
+import { Asset, IntlString, Resource, Status } from '@hcengineering/platform'
+import { AnyComponent, Location } from '@hcengineering/ui'
+import {
   Action,
   ActionCategory,
   ActivityAttributePresenter,
@@ -70,7 +69,6 @@ import type {
   Viewlet,
   ViewletDescriptor,
   ViewletPreference,
-  GroupByFunc,
   GroupByCategoriesFunc,
   GroupValuesFunc,
   HasValueFunc
@@ -267,7 +265,6 @@ export class TAllValuesFunc extends TClass implements AllValuesFunc {
 
 @Mixin(view.mixin.GroupFuncs, core.class.Class)
 export class TGroupFuncs extends TClass implements GroupFuncs {
-  groupBy!: GroupByFunc
   groupByCategories!: GroupByCategoriesFunc
   groupValues!: GroupValuesFunc
   hasValue!: HasValueFunc
@@ -958,27 +955,6 @@ export function createModel (builder: Builder): void {
 
   classPresenter(builder, core.class.EnumOf, view.component.EnumPresenter, view.component.EnumEditor)
 
-  // createAction(
-  //   builder,
-  //   {
-  //     action: view.actionImpl.ShowPopup,
-  //     actionProps: {
-  //       component: view.component.IndexedDocumentPreview,
-  //       fillProps: {
-  //         _id: 'objectId'
-  //       }
-  //     },
-  //     label: presenation.string.DocumentPreview,
-  //     keyBinding: [''],
-  //     input: 'focus',
-  //     icon: view.icon.Open,
-  //     category: view.category.GeneralNavigation,
-  //     target: core.class.Doc,
-  //     context: { mode: ['context', 'browser', 'editor'] }
-  //   },
-  //   view.action.Preview
-  // )
-
   createAction(
     builder,
     {
@@ -1000,6 +976,12 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(core.class.Status, core.class.Class, view.mixin.AttributePresenter, {
     presenter: view.component.StatusRefPresenter
+  })
+
+  builder.mixin(Core.class.Status, core.class.Class, view.mixin.GroupFuncs, {
+    groupByCategories: view.function.GroupByStatusCategoriesFunc,
+    groupValues: view.function.GroupStatusValuesFunc,
+    hasValue: view.function.HasStatusValueFunc
   })
 }
 

@@ -118,7 +118,6 @@ import {
   moveIssuesToAnotherMilestone,
   milestoneSort,
   subIssueQuery,
-  groupByComponents,
   groupByComponentCategories,
   groupComponentValues,
   hasComponentValue
@@ -472,7 +471,6 @@ export default async (): Promise<Resources> => ({
     GetAllPriority: getAllPriority,
     GetAllComponents: getAllComponents,
     GetAllMilestones: getAllMilestones,
-    GroupByComponents: groupByComponents,
     GroupByCategoriesFunc: groupByComponentCategories,
     GroupValuesFunc: groupComponentValues,
     HasValueFunc: hasComponentValue,

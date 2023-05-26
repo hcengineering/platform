@@ -36,10 +36,7 @@ import core, {
   Space,
   Status,
   StatusManager,
-  TxOperations,
-  WithLookup,
-  StatusValue,
-  AggregateValueData
+  TxOperations
 } from '@hcengineering/core'
 import type { IntlString } from '@hcengineering/platform'
 import { getResource } from '@hcengineering/platform'
@@ -636,18 +633,12 @@ export async function groupByCategory (
   if (key === noCategory) return [undefined]
 
   const attrClass = getAttributePresenterClass(h, attr).attrClass
-
-  const isStatusField = h.isDerived(attrClass, core.class.Status)
-
   const mixin = h.classHierarchyMixin(attrClass, view.mixin.GroupFuncs)
-
   let existingCategories: any[] = []
 
   if (mixin?.groupByCategories !== undefined) {
     const f = await getResource(mixin.groupByCategories)
     existingCategories = f(categories)
-  } else if (isStatusField) {
-    existingCategories = await groupByStatusCategories(categories, mgr)
   } else {
     const valueSet = new Set<any>()
     for (const v of categories) {
@@ -658,48 +649,6 @@ export async function groupByCategory (
     }
   }
   return await sortCategories(h, attrClass, existingCategories, viewletDescriptorId)
-}
-
-/**
- * @public
- */
-export function groupByStatusCategories (
-  categories: any[],
-  mgr: StatusManager
-): AggregateValue[] {
-  const existingCategories: AggregateValue[] = []
-  const statusMap = new Map<string, AggregateValue>()
-
-  const usedSpaces = new Set<Ref<Space>>()
-  const statusesList: Array<WithLookup<Status>> = []
-  for (const v of categories) {
-    const status = mgr.byId.get(v)
-    if (status !== undefined) {
-      statusesList.push(status)
-      usedSpaces.add(status.space)
-    }
-  }
-
-  for (const status of statusesList) {
-    if (status !== undefined) {
-      let fst = statusMap.get(status.name.toLowerCase().trim())
-      if (fst === undefined) {
-        const statuses = mgr.statuses
-          .filter(
-            (it) =>
-              it.ofAttribute === status.ofAttribute &&
-              it.name.toLowerCase().trim() === status.name.toLowerCase().trim() &&
-              (categories.includes(it._id) || usedSpaces.has(it.space))
-          )
-          .sort((a, b) => a.rank.localeCompare(b.rank))
-          .map((it) => new AggregateValueData(it.name, it._id, it.space, it.rank, it.category))
-        fst = new StatusValue(status.name, status.color, statuses)
-        statusMap.set(status.name.toLowerCase().trim(), fst)
-        existingCategories.push(fst)
-      }
-    }
-  }
-  return existingCategories
 }
 
 export async function getCategories (

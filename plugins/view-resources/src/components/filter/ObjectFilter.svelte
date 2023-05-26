@@ -54,34 +54,12 @@
   const targets = new Set<any>()
   $: targetClass = (filter.key.attribute.type as RefTo<Doc>).to
   $: clazz = hierarchy.getClass(targetClass)
-
-  $: isStatus = hierarchy.isDerived(targetClass, core.class.Status) ?? false
-
   $: mixin = hierarchy.classHierarchyMixin(targetClass, view.mixin.GroupFuncs)
-
   $: if (mixin?.hasValue !== undefined) {
     getResource(mixin.hasValue).then((f) => (hasValue = f))
   }
 
   let filterUpdateTimeout: number | undefined
-
-  const groupStatusValues = (val: Status[]): Doc[] => {
-    const values = val
-    const result: Doc[] = []
-    const unique = [...new Set(val.map((v) => v.name.trim().toLocaleLowerCase()))]
-    unique.forEach((label, i) => {
-      let exists = false
-      values.forEach((state) => {
-        if (state.name.trim().toLocaleLowerCase() === label) {
-          if (!exists) {
-            result[i] = state
-            exists = targets.has(state?._id)
-          }
-        }
-      })
-    })
-    return result
-  }
 
   async function getValues (search: string): Promise<void> {
     if (objectsPromise) {
@@ -119,9 +97,7 @@
 
     if (mixin?.groupValues !== undefined) {
       const f = await getResource(mixin.groupValues)
-      values = await f(values as Doc[], targets)
-    } else if (isStatus) {
-      values = groupStatusValues(values as Status[])
+      values = f(values as Doc[], targets)
     }
     if (targets.has(undefined)) {
       values.unshift(undefined)
@@ -141,14 +117,7 @@
   }
 
   function isSelected (value: Doc | undefined | null, values: any[]): boolean {
-    if (isStatus) {
-      const statusSet = new Set(
-        $statusStore
-          .filter((it) => it.name.trim().toLocaleLowerCase() === (value as Status)?.name?.trim()?.toLocaleLowerCase())
-          .map((it) => it._id)
-      )
-      return values.some((it) => statusSet.has(it))
-    } else if (hasValue !== undefined) {
+    if (hasValue !== undefined) {
       return hasValue(value, values)
     }
     return values.includes(value?._id ?? value)

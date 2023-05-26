@@ -1388,9 +1388,9 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(tracker.class.Component, core.class.Class, view.mixin.GroupFuncs, {
-    groupBy: tracker.function.GroupByComponents,
     groupByCategories: tracker.function.GroupByCategoriesFunc,
-    groupValues: tracker.function.GroupValuesFunc
+    groupValues: tracker.function.GroupValuesFunc,
+    hasValue: tracker.function.HasValueFunc
   })
 
   builder.createDoc(

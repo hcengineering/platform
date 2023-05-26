@@ -16,7 +16,7 @@
 
 import { IntlString, mergeIds } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
-import view, { SortFunc, viewId } from '@hcengineering/view'
+import view, { GroupByCategoriesFunc, GroupValuesFunc, HasValueFunc, SortFunc, viewId } from '@hcengineering/view'
 
 export default mergeIds(viewId, view, {
   component: {
@@ -91,6 +91,9 @@ export default mergeIds(viewId, view, {
     ShowColors: '' as IntlString
   },
   function: {
-    StatusSort: '' as SortFunc
+    StatusSort: '' as SortFunc,
+    GroupByStatusCategoriesFunc: '' as GroupByCategoriesFunc,
+    GroupStatusValuesFunc: '' as GroupValuesFunc,
+    HasStatusValueFunc: '' as HasValueFunc
   }
 })

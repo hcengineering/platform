@@ -98,8 +98,8 @@ import {
   valueNinResult
 } from './filter'
 
-import { IndexedDocumentPreview } from '@hcengineering/presentation'
-import { statusSort } from './utils'
+import { IndexedDocumentPreview, GroupByStatusCategories, GroupStatusValues, HasStatusValue } from '@hcengineering/presentation'
+import { groupBy, statusSort } from './utils'
 import { showEmptyGroups } from './viewOptions'
 export { getActions, invokeAction } from './actions'
 export { default as ActionHandler } from './components/ActionHandler.svelte'
@@ -251,6 +251,9 @@ export default async (): Promise<Resources> => ({
     FilterDateMonth: dateMonth,
     FilterDateNextMonth: dateNextMonth,
     FilterDateNotSpecified: dateNotSpecified,
-    FilterDateCustom: dateCustom
+    FilterDateCustom: dateCustom,
+    GroupByStatusCategoriesFunc: GroupByStatusCategories,
+    GroupStatusValuesFunc: GroupStatusValues,
+    HasStatusValueFunc: HasStatusValue
   }
 })
