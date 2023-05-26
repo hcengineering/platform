@@ -214,6 +214,19 @@
     return (value: any) => onChange(value, doc, key, attr)
   }
 
+  function hasAttribute (doc: Doc, attribute: AttributeModel) {
+    const attr = attribute.attribute
+    if (attr === undefined) return true
+    if (attribute.collectionAttr) return true
+    const key = attribute.castRequest ? attribute.key.substring(attribute.castRequest.length + 1) : attribute.key
+    try {
+      const r = hierarchy.findAttribute(doc._class, key)
+      return r !== undefined
+    } catch (e) {
+      return false
+    }
+  }
+
   let width: number
 </script>
 
@@ -321,12 +334,14 @@
               <td>
                 <div class:antiTable-cells__firstCell={!cell}>
                   <!-- {getOnChange(object, attribute) !== undefined} -->
-                  <svelte:component
-                    this={attribute.presenter}
-                    value={getValue(attribute, object)}
-                    onChange={getOnChange(object, attribute)}
-                    {...joinProps(attribute, object)}
-                  />
+                  {#if hasAttribute(object, attribute)}
+                    <svelte:component
+                      this={attribute.presenter}
+                      value={getValue(attribute, object)}
+                      onChange={getOnChange(object, attribute)}
+                      {...joinProps(attribute, object)}
+                    />
+                  {/if}
                 </div>
               </td>
             {/each}
