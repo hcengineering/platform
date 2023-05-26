@@ -19,6 +19,7 @@ import { IssueDraft } from '@hcengineering/tracker'
 import { AnyComponent, Location } from '@hcengineering/ui'
 import { GroupByCategoriesFunc, GroupByFunc, GetAllValuesFunc, SortFunc, Viewlet, ViewletDescriptor, ViewQueryAction, GroupValuesFunc, HasValueFunc } from '@hcengineering/view'
 import tracker, { trackerId } from '../../tracker/lib'
+import { PresentationMiddlewareCreator } from '@hcengineering/presentation'
 
 export default mergeIds(trackerId, tracker, {
   viewlet: {
@@ -386,6 +387,7 @@ export default mergeIds(trackerId, tracker, {
     GroupByComponents: '' as GroupByFunc,
     GroupByCategoriesFunc: '' as GroupByCategoriesFunc,
     GroupValuesFunc: '' as GroupValuesFunc,
-    HasValueFunc: '' as HasValueFunc
+    HasValueFunc: '' as HasValueFunc,
+    CreateComponentMiddleware: '' as Resource<PresentationMiddlewareCreator>
   }
 })

@@ -152,6 +152,7 @@ export async function configurePlatform() {
   addLocation(documentId, () => import(/* webpackChunkName: "document" */ '@hcengineering/document-resources'))
   addLocation(bitrixId, () => import(/* webpackChunkName: "bitrix" */ '@hcengineering/bitrix-resources'))
   addLocation(requestId, () => import(/* webpackChunkName: "request" */ '@hcengineering/request-resources'))
+  addLocation(presentationId, () => import(/* webpackChunkName: "presentation" */ '@hcengineering/presentation/src/resources'))
 
   setMetadata(client.metadata.FilterModel, true)
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])

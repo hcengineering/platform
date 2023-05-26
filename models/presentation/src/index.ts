@@ -20,6 +20,7 @@ import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 // Import types to prevent .svelte components to being exposed to type typescript.
 import { ObjectSearchCategory, ObjectSearchFactory } from '@hcengineering/presentation/src/types'
 import presentation from './plugin'
+import { PresentationMiddlewareCreator, PresentationMiddlewareFactory } from '@hcengineering/presentation'
 
 export { presentationId } from '@hcengineering/presentation/src/plugin'
 export { default } from './plugin'
@@ -34,6 +35,20 @@ export class TObjectSearchCategory extends TDoc implements ObjectSearchCategory 
   query!: Resource<ObjectSearchFactory>
 }
 
+@Model(presentation.class.PresentationMiddlewareFactory, core.class.Doc, DOMAIN_MODEL)
+export class TPresentationMiddlewareFactory extends TDoc implements PresentationMiddlewareFactory {
+  createPresentationMiddleware!: Resource<PresentationMiddlewareCreator>
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TObjectSearchCategory)
+  builder.createModel(TObjectSearchCategory, TPresentationMiddlewareFactory)
+
+  builder.createDoc(
+    presentation.class.PresentationMiddlewareFactory,
+    core.space.Model,
+    {
+      createPresentationMiddleware: presentation.function.CreateStatusMiddleware
+    },
+    presentation.pipeline.PresentationMiddleware
+  )
 }

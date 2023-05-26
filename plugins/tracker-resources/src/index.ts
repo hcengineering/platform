@@ -138,6 +138,7 @@ import ProjectSpacePresenter from './components/projects/ProjectSpacePresenter.s
 import IssueStatistics from './components/milestones/IssueStatistics.svelte'
 import MilestoneRefPresenter from './components/milestones/MilestoneRefPresenter.svelte'
 import MilestoneFilter from './components/milestones/MilestoneFilter.svelte'
+import { ComponentMiddleware } from '@hcengineering/presentation/src/component'
 
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 
@@ -474,7 +475,8 @@ export default async (): Promise<Resources> => ({
     GroupByComponents: groupByComponents,
     GroupByCategoriesFunc: groupByComponentCategories,
     GroupValuesFunc: groupComponentValues,
-    HasValueFunc: hasComponentValue
+    HasValueFunc: hasComponentValue,
+    CreateComponentMiddleware: ComponentMiddleware.create
   },
   actionImpl: {
     Move: move,

@@ -46,6 +46,7 @@
     "@hcengineering/model-presentation": "^0.6.0",
     "@hcengineering/setting": "^0.6.7",
     "@hcengineering/task": "^0.6.8",
-    "@hcengineering/tags": "^0.6.9"
+    "@hcengineering/tags": "^0.6.9",
+    "@hcengineering/presentation": "^0.6.2"
   }
 }

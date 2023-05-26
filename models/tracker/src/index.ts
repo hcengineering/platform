@@ -1394,6 +1394,15 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(
+    presentation.class.PresentationMiddlewareFactory,
+    core.space.Model,
+    {
+      createPresentationMiddleware: tracker.function.CreateComponentMiddleware
+    },
+    tracker.pipeline.PresentationMiddleware
+  )
+
+  builder.createDoc(
     presentation.class.ObjectSearchCategory,
     core.space.Model,
     {

@@ -639,14 +639,10 @@ export async function groupByCategory (
 
   const isStatusField = h.isDerived(attrClass, core.class.Status)
 
-  console.log(attrClass)
-  console.log(h.getClass(attrClass))
-
   const mixin = h.classHierarchyMixin(attrClass, view.mixin.GroupFuncs)
 
   let existingCategories: any[] = []
 
-  // get and use categorieser from models or default
   if (mixin?.groupByCategories !== undefined) {
     const f = await getResource(mixin.groupByCategories)
     existingCategories = f(categories)
