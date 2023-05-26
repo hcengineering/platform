@@ -75,7 +75,7 @@
           }
         }
         const loc = getCurrentLocation()
-        loc.path[1] = 'selectWorkspace'
+        loc.path[1] = result.confirmed ? 'selectWorkspace' : 'confirmationSend'
         loc.path.length = 2
         if (navigateUrl !== undefined) {
           loc.query = { ...loc.query, navigateUrl }

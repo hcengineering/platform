@@ -26,13 +26,18 @@
     setMetadataLocalStorage
   } from '@hcengineering/ui'
   import login from '../plugin'
-  import { getWorkspaces, navigateToWorkspace, selectWorkspace } from '../utils'
+  import { getAccount, getWorkspaces, navigateToWorkspace, selectWorkspace } from '../utils'
   import StatusControl from './StatusControl.svelte'
-  import { Workspace } from '@hcengineering/login'
+  import { LoginInfo, Workspace } from '@hcengineering/login'
+  import { onMount } from 'svelte'
 
   export let navigateUrl: string | undefined = undefined
 
   let status = OK
+
+  let account: LoginInfo | undefined = undefined
+
+  onMount(async () => (account = await getAccount()))
 
   async function select (workspace: string) {
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
@@ -88,7 +93,7 @@
             {workspace.workspace}
           </div>
         {/each}
-        {#if !workspaces.length}
+        {#if !workspaces.length && account?.confirmed === true}
           <div class="form-row send">
             <Button label={login.string.CreateWorkspace} kind={'primary'} width="100%" on:click={createWorkspace} />
           </div>

@@ -42,6 +42,7 @@ export interface WorkspaceLoginInfo extends LoginInfo {
 export interface LoginInfo {
   token: string
   endpoint: string
+  confirmed: boolean
   email: string
 }
 

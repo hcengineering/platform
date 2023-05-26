@@ -223,6 +223,15 @@ async function getAccountInfo (db: Db, email: string, password: string): Promise
   return toAccountInfo(account)
 }
 
+async function getAccountInfoByToken (db: Db, productId: string, token: string): Promise<AccountInfo> {
+  const { email } = decodeToken(token)
+  const account = await getAccount(db, email)
+  if (account === null) {
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: email }))
+  }
+  return toAccountInfo(account)
+}
+
 /**
  * @public
  * @param db -
@@ -237,6 +246,7 @@ export async function login (db: Db, productId: string, email: string, password:
   const result = {
     endpoint: getEndpoint(),
     email,
+    confirmed: info.confirmed ?? true,
     token: generateToken(email, getWorkspaceId('', productId), getExtra(info))
   }
   return result
@@ -1172,7 +1182,8 @@ export function getMethods (
     requestPassword: wrap(requestPassword),
     restorePassword: wrap(restorePassword),
     sendInvite: wrap(sendInvite),
-    confirm: wrap(confirm)
+    confirm: wrap(confirm),
+    getAccountInfoByToken: wrap(getAccountInfoByToken)
     // updateAccount: wrap(updateAccount)
   }
 }
