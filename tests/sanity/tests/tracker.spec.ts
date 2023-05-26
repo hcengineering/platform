@@ -140,10 +140,15 @@ test('report-time-from-issue-card', async ({ page }) => {
     const random = Math.floor(Math.random() * values.length)
     const time = values[random]
     const name = getIssueName()
-    await createIssue(page, { name, assignee, status })
-    await page.waitForSelector(`text="${name}"`)
-    await page.waitForSelector('text="View issue"')
-    await page.click('text="View issue"')
+    try {
+      await page.evaluate(() => localStorage.setItem('#platform.notification.timeout', '5000'))
+      await createIssue(page, { name, assignee, status })
+      await page.waitForSelector(`text="${name}"`)
+      await page.waitForSelector('text="View issue"')
+      await page.click('text="View issue"')
+    } finally {
+      await page.evaluate(() => localStorage.setItem('#platform.notification.timeout', '1'))
+    }
 
     await page.click('#ReportedTimeEditor')
     await page.waitForSelector('text="Time spend reports"')
@@ -246,7 +251,7 @@ test('create-issue-draft', async ({ page }) => {
   await page.locator('.ml-2 > .antiButton').click()
 
   // Click button:has-text("No due date")
-  await page.locator('button:has-text("No due date")').click()
+  await page.locator('button:has-text("Due date")').click()
   // Click text=24 >> nth=0
   await page.locator('.date-popup-container >> text=24').first().click()
 

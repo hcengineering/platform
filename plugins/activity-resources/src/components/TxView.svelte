@@ -399,7 +399,7 @@
       flex-grow: 1;
       margin-right: 1rem;
       min-width: 0;
-      color: var(--content-color);
+      color: var(--theme-dark-color);
 
       .msgactivity-content__header {
         display: flex;
@@ -520,13 +520,13 @@
   }
 
   .show-diff {
-    color: var(--accent-color);
+    color: var(--theme-content-color);
     cursor: pointer;
     &:hover {
-      color: var(--caption-color);
+      color: var(--theme-caption-color);
     }
     &:active {
-      color: var(--accent-color);
+      color: var(--theme-content-color);
     }
   }
 </style>

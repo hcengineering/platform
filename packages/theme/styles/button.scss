@@ -11,6 +11,47 @@
   transition-property: border, background-color, color, box-shadow;
   transition-duration: 0.15s;
 
+  &.inline {
+    height: 1.375rem;
+    font-size: 0.75rem;
+    line-height: 0.75rem;
+    &.only-icon {
+      width: 1.375rem;
+    }
+  }
+  &.x-small {
+    height: 1.5rem;
+    font-size: 0.75rem;
+    &.only-icon {
+      width: 1.5rem;
+    }
+  }
+  &.small {
+    height: 1.75rem;
+    font-size: 0.8125rem;
+    &.only-icon {
+      width: 1.75rem;
+    }
+  }
+  &.medium {
+    height: 2rem;
+    &.only-icon {
+      width: 2rem;
+    }
+  }
+  &.large {
+    height: 2.25rem;
+    &.only-icon {
+      width: 2.25rem;
+    }
+  }
+  &.x-large {
+    height: 2.75rem;
+    &.only-icon {
+      width: 2.75rem;
+    }
+  }
+
   &.iconL:not(.iconR) {
     padding: 0 1rem 0 0.75rem;
   }
@@ -89,7 +130,7 @@
       color: var(--theme-caption-color);
     }
   }
-  &:focus {
+  &:not(.no-focus):focus {
     &:not(.sh-filter) {
       box-shadow: 0 0 0 2px var(--primary-button-focused-border);
     }
@@ -239,7 +280,7 @@
       background-color: var(--theme-button-hovered);
       border-color: var(--theme-button-border);
     }
-    &:focus {
+    &:not(.no-focus):focus {
       box-shadow: none;
     }
   }
@@ -287,7 +328,7 @@
     &:hover {
       background-color: var(--dangerous-bg-hover);
     }
-    &:focus {
+    &:not(.no-focus):focus {
       box-shadow: var(--dangerous-shadow);
     }
   }

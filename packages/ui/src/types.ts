@@ -185,6 +185,7 @@ export type IconSize =
   | 'medium'
   | 'large'
   | 'x-large'
+  | '2x-large'
   | 'full'
 
 export interface DateOrShift {
@@ -325,9 +326,4 @@ export interface DialogStep {
   readonly additionalInfo?: string
   readonly component: AnyComponent | AnySvelteComponent
   props?: Record<string, any>
-}
-
-export interface AccentColor {
-  textColor: string
-  backgroundColor: string
 }

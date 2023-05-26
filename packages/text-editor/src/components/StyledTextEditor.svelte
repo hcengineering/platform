@@ -646,13 +646,19 @@
           // max-height: 100%;
           height: 100%;
         }
-        &:not(.showScroll)::-webkit-scrollbar-thumb {
-          background-color: transparent;
-        }
-
         &.scrollable {
-          overflow: auto;
           max-height: var(--texteditor-maxheight);
+
+          &.showScroll {
+            overflow: auto;
+          }
+        }
+        &:not(.showScroll) {
+          overflow-y: hidden;
+
+          &::-webkit-scrollbar-thumb {
+            background-color: transparent;
+          }
         }
       }
 

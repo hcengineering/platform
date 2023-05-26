@@ -37,6 +37,8 @@ export type {
   TabItem,
   DeviceOptions
 } from './types'
+
+export { themeStore } from '@hcengineering/theme'
 // export { applicationShortcutKey } from './utils'
 export { getCurrentLocation, locationToUrl, navigate, location } from './location'
 

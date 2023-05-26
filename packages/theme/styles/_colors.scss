@@ -59,7 +59,7 @@
   --primary-button-hovered: #1A53AF;
   --primary-button-pressed: #144CA8;
   --primary-button-focused: #144CA8;
-  --primary-button-disabled: #6E9FED;
+  --primary-button-disabled: #484662;
   --primary-button-focused-border: #6E9FED;
   --primary-button-border: rgba(255, 255, 255, .09);
   --primary-button-outline: rgba(87, 132, 255, .3); // OLD
@@ -75,6 +75,7 @@
   --theme-refinput-divider: rgba(255, 255, 255, .07);
   --theme-refinput-border: rgba(255, 255, 255, .03);
 
+  // Be aware to update defineAlpha() function in colors.ts
   --theme-bg-color: #1A1A28;
   --theme-bg-accent-color: rgba(0, 0, 0, .08);
   --theme-back-color: #0f0f18;
@@ -140,6 +141,13 @@
   --theme-calendar-today-bgcolor: rgba(32, 93, 194, .1);
   --theme-calendar-holiday-bgcolor: rgba(235, 87, 87, .1);
   --theme-calendar-weekend-bgcolor: rgba(242, 153, 74, .05);
+
+  --theme-toggle-sw-color: #fff;
+  --theme-toggle-on-sw-color: #fff;
+  --theme-toggle-bg-color: rgba(120, 120, 128, 0.32);
+  --theme-toggle-bg-hover: rgba(120, 120, 128, 0.64);
+  --theme-toggle-on-bg-color: #205dc2;
+  --theme-toggle-on-bg-hover: #1A53AF;
 
   --theme-error-color: #eb5757;
   --theme-urgent-color: #F5694A;
@@ -207,13 +215,6 @@
   --dangerous-bg-hover: #ff6464;
   --dangerous-shadow: var(--dangerous-bg-color) 0px 0px 12px -1px;
 
-  --toggle-sw-color: #27282b;
-  --toggle-on-sw-color: #fff;
-  --toggle-bg-color: #3c3f44;
-  --toggle-bg-hover: #45484e;
-  --toggle-on-bg-color: #5e6ad2;
-  --toggle-on-bg-hover: #828fff;
-
   --incoming-msg: rgba(67, 67, 72, .3);
   --outcoming-msg: rgba(67, 67, 72, .6);
 
@@ -225,12 +226,12 @@
 /* Light Theme */
 .theme-light {
   --primary-button-color: #fff;
-  --primary-button-enabled: rgb(43, 82, 144);
-  --primary-button-transparent: rgba(43, 82, 144, 0.2);
-  --primary-button-hovered: #1A53AF; // DARK
-  --primary-button-pressed: #144CA8; // DARK
-  --primary-button-focused: #144CA8; // DARK
-  --primary-button-disabled: #6E9FED; // DARK
+  --primary-button-enabled: #205DC2;
+  --primary-button-transparent: rgba(32, 93, 194, 0.2);
+  --primary-button-hovered: #1A53AF;
+  --primary-button-pressed: #144CA8;
+  --primary-button-focused: #144CA8;
+  --primary-button-disabled: #EBEBEB;
   --primary-button-focused-border: #6E9FED; // DARK
   --primary-button-border: rgba(255, 255, 255, .09);
   --primary-button-outline: rgba(87, 132, 255, .3); // OLD
@@ -246,6 +247,7 @@
   --theme-refinput-divider: rgba(0, 0, 0, .07);
   --theme-refinput-border: rgba(0, 0, 0, .03);
 
+  // Be aware to update defineAlpha() function in colors.ts
   --theme-bg-color: #F1F1F4;
   --theme-bg-accent-color: rgba(255, 255, 255, .08);
   --theme-back-color: #D9D9DD;
@@ -311,6 +313,12 @@
   --theme-calendar-today-bgcolor: rgba(43, 81, 144, .1);
   --theme-calendar-holiday-bgcolor: rgba(235, 87, 87, .1);
   --theme-calendar-weekend-bgcolor: rgba(242, 153, 74, .1);
+  --theme-toggle-sw-color: #fff;
+  --theme-toggle-on-sw-color: #fff;
+  --theme-toggle-bg-color: rgba(120, 120, 128, 0.32);
+  --theme-toggle-bg-hover: rgba(120, 120, 128, 0.64);
+  --theme-toggle-on-bg-color: #205dc2;
+  --theme-toggle-on-bg-hover: #1A53AF;
 
   --theme-error-color: #eb5757;  // Dark
   --theme-urgent-color: #F5694A;
@@ -377,13 +385,6 @@
   --dangerous-bg-color: #eb5757;
   --dangerous-bg-hover: #d44e4e;
   --dangerous-shadow: var(--dangerous-bg-color) 0px 0px 12px -1px;
-
-  --toggle-sw-color: #fff;
-  --toggle-on-sw-color: #fff;
-  --toggle-bg-color: #dfe1e4;
-  --toggle-bg-hover: #c9cbcd;
-  --toggle-on-bg-color: #6e79d6;
-  --toggle-on-bg-hover: #535db3;
 
   --incoming-msg: rgba(67, 67, 72, .1);
   --outcoming-msg: rgba(67, 67, 72, .2);

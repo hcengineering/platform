@@ -37,8 +37,9 @@
   export let select: boolean = false
   export let focusable: boolean = false
   export let disabled: boolean = false
-  export let fullSize = false
-  export let required = false
+  export let fullSize: boolean = false
+  export let required: boolean = false
+  export let uppercase: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -134,6 +135,7 @@
   class="editbox-container"
   class:flex-grow={fullSize}
   class:w-full={focusable || fullSize}
+  class:uppercase
   on:click={() => {
     input.focus()
   }}
@@ -210,8 +212,8 @@
     align-items: flex-start;
 
     .large-style {
-      font-weight: 500;
-      font-size: 1.125rem;
+      font-weight: 400;
+      font-size: 1.25rem;
     }
     .small-style {
       font-weight: 400;
@@ -270,6 +272,10 @@
     }
     input[type='number'] {
       -moz-appearance: textfield;
+    }
+    &.uppercase .hidden-text,
+    &.uppercase input {
+      text-transform: uppercase;
     }
   }
 </style>

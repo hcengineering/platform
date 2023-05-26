@@ -15,9 +15,17 @@
 <script lang="ts">
   import { Employee, getName, Person } from '@hcengineering/contact'
   import { IntlString } from '@hcengineering/platform'
-  import { Label, LabelAndProps, tooltip } from '@hcengineering/ui'
-  import type { IconSize } from '@hcengineering/ui'
+  import {
+    getPlatformAvatarColorDef,
+    getPlatformAvatarColorForTextDef,
+    IconSize,
+    Label,
+    LabelAndProps,
+    themeStore,
+    tooltip
+  } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
+  import { createEventDispatcher, onMount } from 'svelte'
   import Avatar from './Avatar.svelte'
 
   export let value: Person | Employee | undefined | null
@@ -25,6 +33,7 @@
   export let disabled = false
   export let shouldShowAvatar: boolean = true
   export let shouldShowName = true
+  export let element: HTMLElement | undefined = undefined
   export let shouldShowPlaceholder = false
   export let defaultName: IntlString | undefined = undefined
   export let statusLabel: IntlString | undefined = undefined
@@ -32,7 +41,6 @@
   export let onEdit: ((event: MouseEvent) => void) | undefined = undefined
   export let showTooltip: LabelAndProps | undefined = undefined
   export let enlargedText = false
-  export let element: HTMLElement | undefined = undefined
   export let colorInherit: boolean = false
   export let accent: boolean = false
 
@@ -41,6 +49,18 @@
       onEdit?.(evt)
     }
   }
+  const dispatch = createEventDispatcher()
+
+  $: accentColor =
+    value?.name !== undefined
+      ? getPlatformAvatarColorForTextDef(value?.name ?? '', $themeStore.dark)
+      : getPlatformAvatarColorDef(0, $themeStore.dark)
+
+  $: dispatch('accent-color', accentColor)
+
+  onMount(() => {
+    dispatch('accent-color', accentColor)
+  })
 </script>
 
 {#if value}
@@ -57,7 +77,7 @@
           class:mr-2={shouldShowName && !enlargedText}
           class:mr-3={shouldShowName && enlargedText}
         >
-          <Avatar size={avatarSize} avatar={value.avatar} on:accent-color />
+          <Avatar size={avatarSize} avatar={value.avatar} />
         </span>
       {/if}
       {#if shouldShowName}

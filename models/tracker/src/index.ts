@@ -65,21 +65,22 @@ import {
   IssueStatus,
   IssueTemplate,
   IssueTemplateChild,
+  Milestone,
+  MilestoneStatus,
   Project,
   Scrum,
   ScrumRecord,
-  Milestone,
-  MilestoneStatus,
   TimeReportDayType,
   TimeSpendReport,
   trackerId
 } from '@hcengineering/tracker'
-import { KeyBinding, ViewOptionsModel } from '@hcengineering/view'
+import { KeyBinding, ViewOptionModel, ViewOptionsModel } from '@hcengineering/view'
 import tracker from './plugin'
 
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import presentation from '@hcengineering/model-presentation'
 import { defaultPriorities, issuePriorities } from '@hcengineering/tracker-resources/src/types'
+import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 
 export { trackerId } from '@hcengineering/tracker'
 export { trackerOperation } from './migration'
@@ -126,7 +127,7 @@ export class TTypeMilestoneStatus extends TType {}
 @Model(tracker.class.Project, core.class.Space, DOMAIN_SPACE)
 @UX(tracker.string.Project, tracker.icon.Issues, 'Project', 'name')
 export class TProject extends TSpace implements Project {
-  @Prop(TypeString(), tracker.string.Identifier)
+  @Prop(TypeString(), tracker.string.ProjectIdentifier)
   @Index(IndexKind.FullText)
     identifier!: IntlString
 
@@ -448,7 +449,15 @@ export function createModel (builder: Builder): void {
     TTypeReportedTime
   )
 
-  const issuesOptions: ViewOptionsModel = {
+  const showColors: ViewOptionModel = {
+    key: 'shouldShowColors',
+    type: 'toggle',
+    defaultValue: false,
+    actionTarget: 'display',
+    label: tracker.string.ShowColors
+  }
+
+  const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
     groupBy: ['status', 'assignee', 'priority', 'component', 'milestone'],
     orderBy: [
       ['status', SortingOrder.Ascending],
@@ -474,9 +483,10 @@ export function createModel (builder: Builder): void {
         actionTarget: 'category',
         action: view.function.ShowEmptyGroups,
         label: view.string.ShowEmptyGroups
-      }
+      },
+      ...(!kanban ? [showColors] : [])
     ]
-  }
+  })
 
   builder.createDoc(
     view.class.Viewlet,
@@ -484,7 +494,7 @@ export function createModel (builder: Builder): void {
     {
       attachTo: tracker.class.Issue,
       descriptor: view.viewlet.List,
-      viewOptions: issuesOptions,
+      viewOptions: issuesOptions(false),
       config: [
         {
           key: '',
@@ -586,7 +596,7 @@ export function createModel (builder: Builder): void {
       ['dueDate', SortingOrder.Ascending]
     ],
     groupDepth: 1,
-    other: []
+    other: [showColors]
   }
 
   builder.createDoc(
@@ -665,7 +675,7 @@ export function createModel (builder: Builder): void {
           ['dueDate', SortingOrder.Ascending],
           ['rank', SortingOrder.Ascending]
         ],
-        other: []
+        other: [showColors]
       },
       config: [
         // { key: '', presenter: tracker.component.PriorityEditor, props: { kind: 'list', size: 'small' } },
@@ -728,7 +738,7 @@ export function createModel (builder: Builder): void {
       attachTo: tracker.class.Issue,
       descriptor: tracker.viewlet.Kanban,
       viewOptions: {
-        ...issuesOptions,
+        ...issuesOptions(true),
         groupDepth: 1
       },
       config: []
@@ -754,7 +764,7 @@ export function createModel (builder: Builder): void {
       ofAttribute: tracker.attribute.IssueStatus,
       label: tracker.string.CategoryBacklog,
       icon: tracker.icon.CategoryBacklog,
-      color: 12,
+      color: PaletteColorIndexes.Cloud,
       defaultStatusName: 'Backlog',
       order: 0
     },
@@ -768,7 +778,7 @@ export function createModel (builder: Builder): void {
       ofAttribute: tracker.attribute.IssueStatus,
       label: tracker.string.CategoryUnstarted,
       icon: tracker.icon.CategoryUnstarted,
-      color: 13,
+      color: PaletteColorIndexes.Porpoise,
       defaultStatusName: 'Todo',
       order: 1
     },
@@ -782,7 +792,7 @@ export function createModel (builder: Builder): void {
       ofAttribute: tracker.attribute.IssueStatus,
       label: tracker.string.CategoryStarted,
       icon: tracker.icon.CategoryStarted,
-      color: 14,
+      color: PaletteColorIndexes.Cerulean,
       defaultStatusName: 'In Progress',
       order: 2
     },
@@ -796,7 +806,7 @@ export function createModel (builder: Builder): void {
       ofAttribute: tracker.attribute.IssueStatus,
       label: tracker.string.CategoryCompleted,
       icon: tracker.icon.CategoryCompleted,
-      color: 15,
+      color: PaletteColorIndexes.Grass,
       defaultStatusName: 'Done',
       order: 3
     },
@@ -810,7 +820,7 @@ export function createModel (builder: Builder): void {
       ofAttribute: tracker.attribute.IssueStatus,
       label: tracker.string.CategoryCanceled,
       icon: tracker.icon.CategoryCanceled,
-      color: 16,
+      color: PaletteColorIndexes.Coin,
       defaultStatusName: 'Canceled',
       order: 4
     },
@@ -1772,7 +1782,7 @@ export function createModel (builder: Builder): void {
       ['targetDate', SortingOrder.Descending],
       ['createOn', SortingOrder.Descending]
     ],
-    other: []
+    other: [showColors]
   }
 
   builder.createDoc(
@@ -1844,7 +1854,7 @@ export function createModel (builder: Builder): void {
       ['modifiedOn', SortingOrder.Descending],
       ['createOn', SortingOrder.Descending]
     ],
-    other: []
+    other: [showColors]
   }
 
   builder.createDoc(

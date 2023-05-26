@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getPlatformColor, Label } from '@hcengineering/ui'
+  import { getPlatformColor, Label, themeStore } from '@hcengineering/ui'
   import task from '../../plugin'
   export let value: boolean
 
-  $: color = value ? getPlatformColor(2) : getPlatformColor(10)
+  $: color = value ? getPlatformColor(2, $themeStore.dark) : getPlatformColor(16, $themeStore.dark)
   $: text = value ? task.string.DoneState : task.string.UndoneState
 </script>
 

@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { themeStore } from '@hcengineering/theme'
   import { getPlatformColor } from '../colors'
   export let value: number
   export let min: number = 0
@@ -33,10 +34,11 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="container" on:click={click} class:cursor-pointer={editable}>
   <div
     class="bar"
-    style="background-color: {getPlatformColor(color)}; width: calc(100% * {proc !== 0
+    style="background-color: {getPlatformColor(color, $themeStore.dark)}; width: calc(100% * {proc !== 0
       ? Math.round((value - min) / proc)
       : 0} / 100);"
   />

@@ -16,7 +16,14 @@
   import core, { Data, DocumentUpdate } from '@hcengineering/core'
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
   import { TagElement, TagReference } from '@hcengineering/tags'
-  import { DropdownLabels, EditBox, eventToHTMLElement, getPlatformColor, showPopup } from '@hcengineering/ui'
+  import {
+    DropdownLabels,
+    EditBox,
+    eventToHTMLElement,
+    getPlatformColorDef,
+    showPopup,
+    themeStore
+  } from '@hcengineering/ui'
   import { DropdownTextItem } from '@hcengineering/ui/src/types'
   import { ColorsPopup } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -106,13 +113,18 @@
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="color"
-          style={getTagStyle(getPlatformColor(data.color))}
+          style={getTagStyle(getPlatformColorDef(data.color, $themeStore.dark))}
           on:click={(evt) => {
-            showPopup(ColorsPopup, { selected: getPlatformColor(data.color) }, eventToHTMLElement(evt), (col) => {
-              if (col != null) {
-                data.color = col
+            showPopup(
+              ColorsPopup,
+              { selected: getPlatformColorDef(data.color, $themeStore.dark).name },
+              eventToHTMLElement(evt),
+              (col) => {
+                if (col != null) {
+                  data.color = col
+                }
               }
-            })
+            )
           }}
         />
         <EditBox placeholder={tags.string.TagName} placeholderParam={{ word: keyTitle }} bind:value={data.title} />

@@ -91,6 +91,7 @@
     user-select: none;
 
     .list-item {
+      margin: 0 0.5rem;
       min-width: 0;
       border-radius: 0.25rem;
     }

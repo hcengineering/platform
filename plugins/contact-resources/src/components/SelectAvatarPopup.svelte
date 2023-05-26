@@ -17,7 +17,7 @@
 
   import { AvatarType, buildGravatarId, checkHasGravatar, getAvatarColorForId } from '@hcengineering/contact'
   import { Asset } from '@hcengineering/platform'
-  import { AnySvelteComponent, DropdownLabelsIntl, Label, showPopup } from '@hcengineering/ui'
+  import { AnySvelteComponent, Label, showPopup, TabList } from '@hcengineering/ui'
 
   import presentation, { Card, getFileUrl } from '@hcengineering/presentation'
   import contact from '../plugin'
@@ -29,7 +29,7 @@
   export let email: string | undefined
   export let id: string
   export let file: Blob | undefined
-  export let icon: Asset | AnySvelteComponent | undefined
+  export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let onSubmit: (avatarType?: AvatarType, avatar?: string, file?: Blob) => void
 
   const [schema, uri] = avatar?.split('://') || []
@@ -151,6 +151,8 @@
 <Card
   label={contact.string.SelectAvatar}
   okLabel={presentation.string.Save}
+  width={'x-small'}
+  accentHeader
   canSave={selectedAvatarType !== initialSelectedType ||
     selectedAvatar !== initialSelectedAvatar ||
     selectedFile !== file ||
@@ -161,36 +163,39 @@
   }}
   on:changeContent
 >
-  <div class="flex-row-center">
-    <Label label={contact.string.AvatarProvider} />
-    <DropdownLabelsIntl
-      kind={'link-bordered'}
+  <div class="flex-col-center gapV-4 mx-6">
+    {#if selectedAvatarType === AvatarType.IMAGE}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <div class="cursor-pointer" on:click|self={handleImageAvatarClick}>
+        <AvatarComponent avatar={selectedAvatar} direct={selectedFile} size={'2x-large'} {icon} />
+      </div>
+    {:else}
+      <AvatarComponent avatar={`${selectedAvatarType}://${selectedAvatar}`} size={'2x-large'} {icon} />
+    {/if}
+    <TabList
       items={getAvatarTypeDropdownItems(hasGravatar)}
-      label={contact.string.SelectAvatar}
+      kind={'separated-free'}
       bind:selected={selectedAvatarType}
-      on:selected={handleDropdownSelection}
+      on:select={handleDropdownSelection}
     />
   </div>
-  {#if selectedAvatarType === AvatarType.IMAGE}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="cursor-pointer" on:click|self={handleImageAvatarClick}>
-      <AvatarComponent avatar={selectedAvatar} direct={selectedFile} size={'x-large'} {icon} />
-    </div>
-  {:else}
-    <AvatarComponent avatar={`${selectedAvatarType}://${selectedAvatar}`} size={'x-large'} {icon} />
-  {/if}
-  {#if selectedAvatarType === AvatarType.GRAVATAR}
-    <span>
-      <Label label={contact.string.GravatarsManaged} />
-      <a target="”_blank”" href="//gravatar.com">Gravatar.com</a>
-    </span>
-  {/if}
-  <input
-    style="display: none;"
-    type="file"
-    bind:this={inputRef}
-    on:change={onSelectFile}
-    on:click={() => (document.body.onfocus = handleFileSelectionCancel)}
-    accept={targetMimes.join(',')}
-  />
+  <svelte:fragment slot="footer">
+    {#if selectedAvatarType === AvatarType.GRAVATAR}
+      <div class="flex-col">
+        <Label label={contact.string.GravatarsManaged} />
+        <span class="inline-flex clear-mins">
+          <Label label={contact.string.Through} />
+          <a target="”_blank”" class="ml-1" href="//gravatar.com">Gravatar.com</a>
+        </span>
+      </div>
+    {/if}
+    <input
+      style="display: none;"
+      type="file"
+      bind:this={inputRef}
+      on:change={onSelectFile}
+      on:click={() => (document.body.onfocus = handleFileSelectionCancel)}
+      accept={targetMimes.join(',')}
+    />
+  </svelte:fragment>
 </Card>

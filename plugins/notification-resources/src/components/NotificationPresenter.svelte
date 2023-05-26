@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Doc } from '@hcengineering/core'
-  import { getPlatformColor } from '@hcengineering/ui'
+  import { getPlatformColor, themeStore } from '@hcengineering/ui'
   import { NotificationClientImpl } from '../utils'
 
   export let value: Doc
@@ -24,11 +24,11 @@
   const store = notificationClient.docUpdatesStore
   $: docUpdate = $store.get(value._id)
 
-  $: hasNotification = (docUpdate?.txes?.length ?? 0) > 0 && docUpdate?.hidden !== true
+  $: hasNotification = docUpdate?.txes?.some((p) => p.isNew) && docUpdate?.hidden !== true
 </script>
 
 {#if hasNotification}
-  <div class="notify-{kind}-kind" style="color: {getPlatformColor(11)}" />
+  <div class="notify-{kind}-kind" style="color: {getPlatformColor(11, $themeStore.dark)}" />
 {/if}
 
 <style lang="scss">

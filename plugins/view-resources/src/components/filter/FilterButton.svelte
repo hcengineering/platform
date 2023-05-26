@@ -15,19 +15,12 @@
 <script lang="ts">
   import { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import {
-    Button,
-    IconClose,
-    IconFilter,
-    eventToHTMLElement,
-    resolvedLocationStore,
-    showPopup
-  } from '@hcengineering/ui'
+  import { Button, IconFilter, eventToHTMLElement, resolvedLocationStore, showPopup } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { filterStore, getFilterKey, setFilters } from '../../filter'
   import view from '../../plugin'
   import FilterTypePopup from './FilterTypePopup.svelte'
-  import IconArrowDown from '../icons/ArrowDown.svelte'
+  import IconClose from '../icons/Close.svelte'
 
   export let _class: Ref<Class<Doc>> | undefined
   export let space: Ref<Space> | undefined = undefined
@@ -84,9 +77,9 @@
 
 {#if visible}
   <Button
-    icon={IconFilter}
+    icon={$filterStore.length === 0 ? IconFilter : IconClose}
+    iconProps={{ fill: $filterStore.length === 0 ? 'var(--theme-content-color)' : 'var(--theme-halfcontent-color)' }}
     label={$filterStore.length === 0 ? view.string.Filter : view.string.ClearFilters}
-    iconRight={$filterStore.length === 0 ? IconArrowDown : IconClose}
     on:click={(ev) => {
       if ($filterStore.length === 0) add(ev)
       else setFilters([])

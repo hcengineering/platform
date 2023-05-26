@@ -26,12 +26,13 @@
     IconEdit,
     IconWithEmojii,
     Label,
-    ToggleWithLabel,
+    Toggle,
     eventToHTMLElement,
     getColorNumberByText,
-    getPlatformColor,
-    getPlatformColorForText,
-    showPopup
+    getPlatformColorDef,
+    getPlatformColorForTextDef,
+    showPopup,
+    themeStore
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
@@ -183,87 +184,124 @@
   okLabel={isNew ? presentation.string.Create : presentation.string.Save}
   okAction={handleSave}
   canSave={name.length > 0 && !(members.length === 0 && isPrivate)}
-  gap={'gapV-4'}
+  accentHeader
+  width={'medium'}
+  gap={'gapV-6'}
   on:close={() => {
     dispatch('close')
   }}
   on:changeContent
 >
-  <div class="flex-row-center flex-between">
-    <EditBox
-      bind:value={name}
-      placeholder={tracker.string.ProjectTitlePlaceholder}
-      kind={'large-style'}
-      focus
-      on:input={() => {
-        if (isNew) {
-          identifier = name.toLocaleUpperCase().replaceAll(' ', '_').substring(0, 5)
-        }
-      }}
-    />
-    <div class="flex-row-center">
-      <EditBox
-        bind:value={identifier}
-        disabled={!isNew}
-        placeholder={tracker.string.ProjectIdentifierPlaceholder}
-        kind={'large-style'}
+  <div class="antiGrid">
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header">
+        <Label label={tracker.string.ProjectTitle} />
+      </div>
+      <div class="padding">
+        <EditBox
+          bind:value={name}
+          placeholder={tracker.string.ProjectTitlePlaceholder}
+          kind={'large-style'}
+          focus
+          on:input={() => {
+            if (isNew) {
+              identifier = name.toLocaleUpperCase().replaceAll(' ', '_').substring(0, 5)
+            }
+          }}
+        />
+      </div>
+    </div>
+
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header withDesciption">
+        <Label label={tracker.string.Identifier} />
+        <span><Label label={tracker.string.UsedInIssueIDs} /></span>
+      </div>
+      <div class="padding flex-row-center">
+        <EditBox
+          bind:value={identifier}
+          disabled={!isNew}
+          placeholder={tracker.string.ProjectIdentifierPlaceholder}
+          kind={'large-style'}
+          uppercase
+        />
+        {#if !isNew}
+          <Button size={'small'} icon={IconEdit} on:click={changeIdentity} />
+        {/if}
+      </div>
+    </div>
+
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header topAlign">
+        <Label label={tracker.string.Description} />
+      </div>
+      <div class="padding clear-mins">
+        <StyledTextBox
+          alwaysEdit
+          showButtons={false}
+          bind:content={description}
+          placeholder={tracker.string.IssueDescriptionPlaceholder}
+        />
+      </div>
+    </div>
+  </div>
+
+  <div class="antiGrid">
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header">
+        <Label label={tracker.string.ChooseIcon} />
+      </div>
+      <Button
+        icon={icon === tracker.component.IconWithEmojii ? IconWithEmojii : icon ?? tracker.icon.Home}
+        iconProps={icon === tracker.component.IconWithEmojii
+          ? { icon: color }
+          : {
+              fill:
+                color !== undefined
+                  ? getPlatformColorDef(color, $themeStore.dark).icon
+                  : getPlatformColorForTextDef(name, $themeStore.dark).icon
+            }}
+        size={'large'}
+        on:click={chooseIcon}
       />
-      {#if !isNew}
-        <Button size={'small'} icon={IconEdit} on:click={changeIdentity} />
-      {/if}
     </div>
-  </div>
-  <StyledTextBox
-    alwaysEdit
-    showButtons={false}
-    bind:content={description}
-    placeholder={tracker.string.IssueDescriptionPlaceholder}
-  />
-  <ToggleWithLabel
-    label={presentation.string.MakePrivate}
-    description={presentation.string.MakePrivateDescription}
-    bind:on={isPrivate}
-    disabled={!isPrivate && members.length === 0}
-  />
-  <div class="flex-between">
-    <div class="caption">
-      <Label label={tracker.string.ChooseIcon} />
-    </div>
-    <Button
-      icon={icon === tracker.component.IconWithEmojii ? IconWithEmojii : icon ?? tracker.icon.Home}
-      iconProps={icon === tracker.component.IconWithEmojii
-        ? { icon: color }
-        : { fill: color !== undefined ? getPlatformColor(color) : getPlatformColorForText(name) }}
-      kind="no-border"
-      size="medium"
-      on:click={chooseIcon}
-    />
-  </div>
 
-  <div class="flex-between">
-    <div class="caption">
-      <Label label={tracker.string.Members} />
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header withDesciption">
+        <Label label={presentation.string.MakePrivate} />
+        <span><Label label={presentation.string.MakePrivateDescription} /></span>
+      </div>
+      <Toggle bind:on={isPrivate} disabled={!isPrivate && members.length === 0} />
     </div>
-    <AccountArrayEditor
-      value={members}
-      label={tracker.string.Members}
-      onChange={(refs) => (members = refs)}
-      kind="link-bordered"
-    />
-  </div>
 
-  <div class="flex-between">
-    <div class="caption">
-      <Label label={tracker.string.DefaultAssignee} />
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header">
+        <Label label={tracker.string.Members} />
+      </div>
+      <AccountArrayEditor
+        value={members}
+        label={tracker.string.Members}
+        onChange={(refs) => (members = refs)}
+        kind={'secondary'}
+        size={'large'}
+      />
     </div>
-    <AssigneeBox
-      label={tracker.string.Assignee}
-      placeholder={tracker.string.Assignee}
-      kind="link-bordered"
-      bind:value={defaultAssignee}
-      titleDeselect={tracker.string.Unassigned}
-      showNavigate={false}
-      showTooltip={{ label: tracker.string.DefaultAssignee }}
-    />
+
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header">
+        <Label label={tracker.string.DefaultAssignee} />
+      </div>
+      <AssigneeBox
+        label={tracker.string.Assignee}
+        placeholder={tracker.string.Assignee}
+        kind={'secondary'}
+        size={'large'}
+        avatarSize={'card'}
+        bind:value={defaultAssignee}
+        titleDeselect={tracker.string.Unassigned}
+        showNavigate={false}
+        showTooltip={{ label: tracker.string.DefaultAssignee }}
+      />
+    </div>
   </div>
 </Card>

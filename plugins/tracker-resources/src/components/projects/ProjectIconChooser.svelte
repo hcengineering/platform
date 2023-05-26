@@ -8,7 +8,9 @@
     TabsControl,
     eventToHTMLElement,
     getPlatformColor,
-    showPopup
+    getPlatformColorDef,
+    showPopup,
+    themeStore
   } from '@hcengineering/ui'
   import { ColorsPopup } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -27,10 +29,16 @@
     dispatch('close', { icon: _icon, color: _color })
   }
   function pickColor (evt: MouseEvent) {
-    showPopup(ColorsPopup, { selected: _color }, eventToHTMLElement(evt), (newColor) => {
-      _color = newColor
-      console.log(newColor)
-    })
+    showPopup(
+      ColorsPopup,
+      { selected: getPlatformColorDef(_color, $themeStore.dark).name },
+      eventToHTMLElement(evt),
+      (newColor) => {
+        if (newColor != null) {
+          _color = newColor
+        }
+      }
+    )
   }
 </script>
 
@@ -54,14 +62,14 @@
           <div class="flex-row-center">
             <Label label={tracker.string.ProjectColor} />
             <div class="flex-no-shrink ml-2 color" on:click={pickColor}>
-              <div class="dot" style="background-color: {getPlatformColor(_color ?? 0)}" />
+              <div class="dot" style="background-color: {getPlatformColor(_color ?? 0, $themeStore.dark)}" />
             </div>
           </div>
           {#each icons as obj}
             <div class="float-left p-2">
               <Button
                 icon={obj}
-                iconProps={{ fill: getPlatformColor(_color ?? 0) }}
+                iconProps={{ fill: getPlatformColor(_color ?? 0, $themeStore.dark) }}
                 size="medium"
                 kind={obj === _icon ? 'primary' : 'transparent'}
                 on:click={() => {

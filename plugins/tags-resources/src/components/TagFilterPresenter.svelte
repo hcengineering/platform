@@ -14,13 +14,13 @@
 -->
 <script lang="ts">
   import { TagElement } from '@hcengineering/tags'
-  import { getPlatformColor } from '@hcengineering/ui'
+  import { getPlatformColorDef, themeStore } from '@hcengineering/ui'
 
   export let value: TagElement
 </script>
 
 <div class="container">
-  <div class="color" style:background-color={getPlatformColor(value.color ?? 0)} />
+  <div class="color" style:background-color={getPlatformColorDef(value.color ?? 0, $themeStore.dark).color} />
   <span class="label overflow-label ml-1-5 max-w-40">
     {value.title}
   </span>

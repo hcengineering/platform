@@ -33,7 +33,8 @@
     IconObjects,
     IconSize,
     SelectPopup,
-    showPopup
+    showPopup,
+    themeStore
   } from '@hcengineering/ui'
   import { WebsocketProvider } from 'y-websocket'
   import * as Y from 'yjs'
@@ -246,7 +247,7 @@
             provider: wsProvider,
             user: {
               name: currentUser.email,
-              color: getPlatformColorForText(currentUser.email)
+              color: getPlatformColorForText(currentUser.email, $themeStore.dark)
             }
           }),
           DecorationExtension

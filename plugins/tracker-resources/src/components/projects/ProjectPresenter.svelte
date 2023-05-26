@@ -14,19 +14,25 @@
 -->
 <script lang="ts">
   import { Project } from '@hcengineering/tracker'
-  import { Icon, IconWithEmojii, getPlatformColor, getPlatformColorForText } from '@hcengineering/ui'
+  import { Icon, IconWithEmojii, getPlatformColorDef, getPlatformColorForTextDef, themeStore } from '@hcengineering/ui'
   import tracker from '../../plugin'
 
   export let value: Project
+  export let inline = false
 </script>
 
-<div class="flex-presenter cursor-default">
-  <div class="icon">
+<div class="flex-presenter cursor-default" class:inline-presenter={inline}>
+  <div class="icon" class:emoji={value.icon === tracker.component.IconWithEmojii}>
     <Icon
       icon={value.icon === tracker.component.IconWithEmojii ? IconWithEmojii : value.icon ?? tracker.icon.Home}
       iconProps={value.icon === tracker.component.IconWithEmojii
         ? { icon: value.color }
-        : { fill: value.color !== undefined ? getPlatformColor(value.color) : getPlatformColorForText(value.name) }}
+        : {
+            fill:
+              value.color !== undefined
+                ? getPlatformColorDef(value.color, $themeStore.dark).icon
+                : getPlatformColorForTextDef(value.name, $themeStore.dark).icon
+          }}
       size="small"
     />
   </div>

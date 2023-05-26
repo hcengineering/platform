@@ -17,12 +17,12 @@
   import { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { DoneState, SpaceWithStates } from '@hcengineering/task'
-  import { getPlatformColor, Label, resizeObserver } from '@hcengineering/ui'
+  import { Label, PaletteColorIndexes, getPlatformColor, resizeObserver, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import task from '../../plugin'
-  import Won from '../icons/Won.svelte'
   import Lost from '../icons/Lost.svelte'
   import Unknown from '../icons/Unknown.svelte'
+  import Won from '../icons/Won.svelte'
 
   export let space: Ref<SpaceWithStates>
   let states: DoneState[] = []
@@ -42,7 +42,9 @@
     }
   )
   function getColor (_class: Ref<Class<Doc>>): string {
-    return _class === task.class.WonState ? getPlatformColor(0) : getPlatformColor(11)
+    return _class === task.class.WonState
+      ? getPlatformColor(PaletteColorIndexes.Crocodile, $themeStore.dark)
+      : getPlatformColor(PaletteColorIndexes.Firework, $themeStore.dark)
   }
 </script>
 

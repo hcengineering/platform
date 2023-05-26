@@ -19,16 +19,17 @@
   import { TagCategory, TagElement } from '@hcengineering/tags'
   import {
     Button,
-    IconCheck,
-    getPlatformColor,
+    EditWithIcon,
     Icon,
     IconAdd,
+    IconCheck,
     IconSearch,
-    EditWithIcon,
     Label,
-    showPopup,
+    deviceOptionsStore,
+    getPlatformColorDef,
     resizeObserver,
-    deviceOptionsStore
+    showPopup,
+    themeStore
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
@@ -159,6 +160,7 @@
             </button>
             <div class="menu-group">
               {#each catObjects.slice(0, 50) as element}
+                {@const color = getPlatformColorDef(element.color, $themeStore.dark)}
                 <button
                   class="menu-item no-focus flex-row-center"
                   class:selected={isSelected(selected, element)}
@@ -166,8 +168,8 @@
                     checkSelected(selected, element)
                   }}
                 >
-                  <div class="tag" style="background-color: {getPlatformColor(element.color)};" />
-                  <span class="lines-limit-2 flex-grow">{element.title}</span>
+                  <div class="tag" style:background-color={color.color} />
+                  <span class="lines-limit-2 flex-grow" style:color={color.title}>{element.title}</span>
                   <span class="ml-2 text-xs">
                     ({element.refCount ?? 0})
                   </span>

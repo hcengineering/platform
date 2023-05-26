@@ -13,6 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { AttachmentsPresenter } from '@hcengineering/attachment-resources'
+  import { CommentsPresenter } from '@hcengineering/chunter-resources'
   import contact from '@hcengineering/contact'
   import { employeeByIdStore } from '@hcengineering/contact-resources'
   import {
@@ -34,18 +36,17 @@
   import { Issue, IssuesGrouping, IssuesOrdering, Project } from '@hcengineering/tracker'
   import {
     Button,
+    ColorDefinition,
     Component,
+    defaultBackground,
     getEventPositionElement,
     IconAdd,
     Label,
     Loading,
     showPanel,
     showPopup,
-    tooltip,
-    deviceOptionsStore as deviceInfo,
-    hslToRgb,
-    rgbToHsl,
-    AccentColor
+    themeStore,
+    tooltip
   } from '@hcengineering/ui'
   import {
     AttributeModel,
@@ -70,20 +71,18 @@
     setGroupByValues
   } from '@hcengineering/view-resources'
   import view from '@hcengineering/view-resources/src/plugin'
-  import { AttachmentsPresenter } from '@hcengineering/attachment-resources'
-  import { CommentsPresenter } from '@hcengineering/chunter-resources'
   import { onMount } from 'svelte'
   import tracker from '../../plugin'
   import ComponentEditor from '../components/ComponentEditor.svelte'
   import CreateIssue from '../CreateIssue.svelte'
   import AssigneePresenter from './AssigneePresenter.svelte'
+  import DueDatePresenter from './DueDatePresenter.svelte'
   import SubIssuesSelector from './edit/SubIssuesSelector.svelte'
   import IssuePresenter from './IssuePresenter.svelte'
   import ParentNamesPresenter from './ParentNamesPresenter.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
   import StatusEditor from './StatusEditor.svelte'
   import EstimationEditor from './timereport/EstimationEditor.svelte'
-  import DueDatePresenter from './DueDatePresenter.svelte'
 
   export let space: Ref<Project> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
@@ -97,10 +96,11 @@
   $: orderBy = viewOptions.orderBy
   $: sort = { [orderBy[0]]: orderBy[1] }
 
-  $: lth = $deviceInfo.theme === 'theme-light'
-  const accentColors: AccentColor[] = []
-
-  // issuesGroupBySorting[groupByKey]
+  let accentColors: Map<string, ColorDefinition> = new Map()
+  const setAccentColor = (n: number, ev: CustomEvent<ColorDefinition>) => {
+    accentColors.set(`${n}${$themeStore.dark}${groupByKey}`, ev.detail)
+    accentColors = accentColors
+  }
 
   $: dontUpdateRank = orderBy[0] !== IssuesOrdering.Manual
 
@@ -197,14 +197,6 @@
     viewOptionsModel: ViewOptionModel[] | undefined
   ) {
     categories = await getCategories(client, _class, docs, groupByKey, $statusStore, viewlet.descriptor)
-    categories.forEach((_, i) => {
-      if (accentColors[i] === undefined) {
-        accentColors[i] = {
-          textColor: 'var(--theme-caption-color)',
-          backgroundColor: lth ? '230, 230, 230' : '100, 100, 108'
-        }
-      }
-    })
     for (const viewOption of viewOptionsModel ?? []) {
       if (viewOption.actionTarget !== 'category') continue
       const categoryFunc = viewOption as CategoryOption
@@ -259,16 +251,6 @@
       space: doc.space
     }
   }
-
-  const setAccentColor = (n: number, ev: CustomEvent) => {
-    const accColor = rgbToHsl(ev.detail.r, ev.detail.g, ev.detail.b)
-    const textColor = !lth ? { r: 255, g: 255, b: 255 } : hslToRgb(accColor.h, accColor.s, 0.3)
-    const bgColor = !lth ? hslToRgb(accColor.h, accColor.s, 0.55) : hslToRgb(accColor.h, accColor.s, 0.9)
-    accentColors[n] = {
-      textColor: !lth ? 'var(--theme-caption-color)' : `rgb(${textColor.r}, ${textColor.g}, ${textColor.b})`,
-      backgroundColor: `${bgColor.r}, ${bgColor.g}, ${bgColor.b}`
-    }
-  }
 </script>
 
 {#if categories.length === 0}
@@ -301,49 +283,44 @@
     on:contextmenu={(evt) => showMenu(evt.detail.evt, evt.detail.objects)}
   >
     <svelte:fragment slot="header" let:state let:count let:index>
-      <!-- {@const status = $statusStore.get(state._id)} -->
-      {#key lth}
-        <div
-          style:--kanban-header-rgb-color={accentColors[index]?.backgroundColor}
-          class="header flex-between"
-          class:gradient={!lth}
-        >
-          <div class="flex-row-center gap-1">
-            <span
-              class="clear-mins fs-bold overflow-label pointer-events-none"
-              style:color={accentColors[index]?.textColor}
-            >
-              {#if groupByKey === noCategory}
-                <Label label={view.string.NoGrouping} />
-              {:else if headerComponent}
-                <svelte:component
-                  this={headerComponent.presenter}
-                  value={state}
-                  {space}
-                  size={'small'}
-                  kind={'list-header'}
-                  colorInherit={lth}
-                  accent
-                  on:accent-color={(ev) => setAccentColor(index, ev)}
-                />
-              {/if}
-            </span>
-            <span class="counter">
-              {count}
-            </span>
-          </div>
-          <div class="tools gap-1">
-            <Button
-              icon={IconAdd}
-              kind={'transparent'}
-              showTooltip={{ label: tracker.string.AddIssueTooltip, direction: 'left' }}
-              on:click={() => {
-                showPopup(CreateIssue, { space: currentSpace, [groupByKey]: state._id }, 'top')
-              }}
-            />
-          </div>
+      {@const color = accentColors.get(`${index}${$themeStore.dark}${groupByKey}`)}
+      {@const headerBGColor = color?.background ?? defaultBackground($themeStore.dark)}
+      <div style:background={headerBGColor} class="header flex-between">
+        <div class="flex-row-center gap-1">
+          <span
+            class="clear-mins fs-bold overflow-label pointer-events-none"
+            style:color={color?.title ?? 'var(--theme-caption-color)'}
+          >
+            {#if groupByKey === noCategory}
+              <Label label={view.string.NoGrouping} />
+            {:else if headerComponent}
+              <svelte:component
+                this={headerComponent.presenter}
+                value={state}
+                {space}
+                size={'small'}
+                kind={'list-header'}
+                colorInherit={!$themeStore.dark}
+                accent
+                on:accent-color={(ev) => setAccentColor(index, ev)}
+              />
+            {/if}
+          </span>
+          <span class="counter">
+            {count}
+          </span>
         </div>
-      {/key}
+        <div class="tools gap-1">
+          <Button
+            icon={IconAdd}
+            kind={'transparent'}
+            showTooltip={{ label: tracker.string.AddIssueTooltip, direction: 'left' }}
+            on:click={() => {
+              showPopup(CreateIssue, { space: currentSpace, [groupByKey]: state._id }, 'top')
+            }}
+          />
+        </div>
+      </div>
     </svelte:fragment>
     <svelte:fragment slot="card" let:object>
       {@const issue = toIssue(object)}
@@ -450,17 +427,6 @@
     min-height: 2.5rem;
     border: 1px solid var(--theme-divider-color);
     border-radius: 0.25rem;
-
-    &:not(.gradient) {
-      background: rgba(var(--kanban-header-rgb-color), 1);
-    }
-    &.gradient {
-      background: linear-gradient(
-        90deg,
-        rgba(var(--kanban-header-rgb-color), 0.15),
-        rgba(var(--kanban-header-rgb-color), 0.05)
-      );
-    }
 
     .counter {
       color: var(--theme-dark-color);

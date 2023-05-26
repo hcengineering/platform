@@ -19,12 +19,12 @@
   import { Avatar, employeeByIdStore } from '@hcengineering/contact-resources'
   import core, { Doc, TxCUD, TxProcessor } from '@hcengineering/core'
   import notification, { DocUpdates } from '@hcengineering/notification'
+  import { getResource } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { ActionIcon, AnySvelteComponent, Label, TimeSince } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import TxView from './TxView.svelte'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import view from '@hcengineering/view'
-  import { getResource } from '@hcengineering/platform'
   import ArrowRight from './icons/ArrowRight.svelte'
 
   export let value: EmployeeAccount
@@ -36,7 +36,7 @@
 
   $: employee = $employeeByIdStore.get(value.employee)
 
-  $: newTxes = items.reduce((acc, cur) => acc + cur.txes.filter((p) => p.isNew).length, 0) // items.length
+  $: newTxes = items.reduce((acc, cur) => acc + cur.txes.filter((p) => p.isNew && p.modifiedBy === value._id).length, 0) // items.length
   const dispatch = createEventDispatcher()
 
   let doc: Doc | undefined = undefined
@@ -45,8 +45,10 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $: firstItem?.txes[0] &&
-    client.findOne(core.class.TxCUD, { _id: firstItem.txes[0]._id }).then((res) => {
+  $: txRef = firstItem ? firstItem.txes[firstItem.txes.length - 1]._id : undefined
+
+  $: txRef &&
+    client.findOne(core.class.TxCUD, { _id: txRef }).then((res) => {
       if (res !== undefined) {
         tx = TxProcessor.extractTx(res) as TxCUD<Doc>
       } else {
@@ -66,13 +68,24 @@
   $: docQuery.query(firstItem.attachedToClass, { _id: firstItem.attachedTo }, (res) => {
     ;[doc] = res
   })
+
+  let div: HTMLDivElement
+
+  $: if (selected && div !== undefined) div.focus()
 </script>
 
-<div class="container cursor-pointer" class:selected>
-  <div class="notify" class:hidden={newTxes === 0} />
-  {#if doc}
+{#if doc}
+  <div
+    class="container cursor-pointer"
+    on:keydown
+    class:selected
+    tabindex="-1"
+    bind:this={div}
+    on:click={() => dispatch('open', value._id)}
+  >
+    <div class="notify" class:hidden={newTxes === 0} />
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="clear-mins content bottom-divider" class:read={newTxes === 0} on:click>
+    <div class="clear-mins content bottom-divider" class:read={newTxes === 0}>
       <div class="w-full">
         <div class="flex-between mb-2">
           <div class="flex-row-center flex-gap-2">
@@ -113,8 +126,8 @@
         </div>
       </div>
     </div>
-  {/if}
-</div>
+  </div>
+{/if}
 
 <style lang="scss">
   .time {
@@ -128,6 +141,10 @@
     display: flex;
     border-radius: 0.25rem;
     flex-grow: 1;
+
+    &:focus-visible {
+      outline: none;
+    }
 
     &:hover {
       background-color: var(--highlight-hover);
@@ -155,6 +172,7 @@
   .notify {
     height: 0.5rem;
     width: 0.5rem;
+    min-width: 0.5rem;
     margin-top: 1.25rem;
     margin-right: 0.5rem;
     background-color: #2b5190;

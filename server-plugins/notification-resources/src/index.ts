@@ -495,6 +495,7 @@ async function createCollabDocInfo (
   isSpace: boolean = false
 ): Promise<Tx[]> {
   let res: Tx[] = []
+  if (originTx.space === core.space.DerivedTx) return res
   const targets = new Set(collaborators)
   const docUpdates = await control.findAll(notification.class.DocUpdates, { attachedTo: object._id })
   for (const target of targets) {
@@ -578,11 +579,9 @@ export async function collaboratorDocHandler (
 ): Promise<Tx[]> {
   switch (tx._class) {
     case core.class.TxCreateDoc:
-      if (tx.space === core.space.DerivedTx) return []
       return await createCollaboratorDoc(tx as TxCreateDoc<Doc>, control, originTx ?? tx)
     case core.class.TxUpdateDoc:
     case core.class.TxMixin: {
-      if (tx.space === core.space.DerivedTx) return []
       let res = await updateCollaboratorDoc(tx as TxUpdateDoc<Doc>, control, originTx ?? tx)
       res = res.concat(await updateCollaboratorsMixin(tx as TxMixin<Doc, Collaborators>, control, originTx ?? tx))
       return res

@@ -1,12 +1,12 @@
 <script lang="ts">
   import { StatusCategory } from '@hcengineering/core'
-  import { IconSize, hexToRgb } from '@hcengineering/ui'
+  import { ColorDefinition, IconSize, getPlatformColorDef, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'
 
   export let size: IconSize
-  const defaultFill = 'currentColor'
-  export let fill: string = defaultFill
+
+  export let fill: number = -1
   export let category: StatusCategory
   export let statusIcon: {
     index: number | undefined
@@ -17,20 +17,20 @@
 
   const dispatch = createEventDispatcher()
 
-  const dispatchAccentColor = (fill: string) =>
-    dispatch('accent-color', fill !== defaultFill ? hexToRgb(fill) : { r: 127, g: 127, b: 127 })
+  const dispatchAccentColor = (color?: ColorDefinition) => dispatch('accent-color', color)
 
-  $: dispatchAccentColor(fill)
+  $: color = getPlatformColorDef(fill, $themeStore.dark)
+  $: dispatchAccentColor(color)
 
   onMount(() => {
-    dispatchAccentColor(fill)
+    dispatchAccentColor(color)
   })
 </script>
 
 <svg
   bind:this={element}
   class="svg-{size}"
-  {fill}
+  fill={color?.icon ?? 'currentColor'}
   id={category._id}
   style:transform={category._id === tracker.issueStatusCategory.Started ? 'rotate(-90deg)' : ''}
   style:flex-shrink={0}

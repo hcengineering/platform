@@ -59,7 +59,7 @@
 
   $: handleSelectedMilestoneIdUpdated(value, rawMilestones)
 
-  $: translate(tracker.string.NoMilestone, {}).then((result) => (defaultMilestoneLabel = result))
+  $: translate(tracker.string.Milestone, {}).then((result) => (defaultMilestoneLabel = result))
   const milestoneIcon = tracker.icon.Milestone
   $: milestoneText = shouldShowLabel ? selectedMilestone?.label ?? defaultMilestoneLabel : undefined
 
@@ -81,7 +81,7 @@
       {
         id: null,
         icon: tracker.icon.Milestone,
-        label: tracker.string.NoMilestone,
+        label: tracker.string.Milestone,
         isSelected: sp === undefined
       },
       ...rawMilestones.map((p) => ({

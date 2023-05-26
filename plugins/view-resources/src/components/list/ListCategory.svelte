@@ -374,6 +374,7 @@
       {collapsed}
       {props}
       {lastCat}
+      {viewOptions}
       on:more={() => {
         if (limit !== undefined) limit += 20
       }}

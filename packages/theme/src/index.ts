@@ -18,7 +18,22 @@ import { writable } from 'svelte/store'
 
 export { default as Theme } from './Theme.svelte'
 
-export interface ThemeOptions {
-  fontSize: number
+/**
+ * @public
+ */
+export const getCurrentTheme = (): string => localStorage.getItem('theme') ?? 'theme-dark'
+/**
+ * @public
+ */
+export const getCurrentFontSize = (): string => localStorage.getItem('fontsize') ?? 'normal-font'
+/**
+ * @public
+ */
+export const getCurrentLanguage = (): string => localStorage.getItem('lang') ?? 'en'
+
+export class ThemeOptions {
+  constructor (readonly fontSize: number, readonly dark: boolean) {}
 }
-export const themeStore = writable<ThemeOptions>()
+export const themeStore = writable<ThemeOptions>(
+  new ThemeOptions(getCurrentFontSize() === 'normal-font' ? 16 : 14, getCurrentTheme() === 'theme-dark')
+)

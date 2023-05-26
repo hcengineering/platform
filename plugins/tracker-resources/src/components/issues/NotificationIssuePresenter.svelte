@@ -28,7 +28,7 @@
 </script>
 
 {#if value}
-  <div class="w-full">
+  <div class="w-full clear-mins">
     <div class="flex-presenter overflow-label clear-mins inline-presenter mb-1">
       <span class="font-medium mr-2">{title}</span>
       <span>

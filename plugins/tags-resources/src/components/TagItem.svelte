@@ -15,7 +15,15 @@
 <script lang="ts">
   import { Asset } from '@hcengineering/platform'
   import { TagElement, TagReference } from '@hcengineering/tags'
-  import { ActionIcon, AnySvelteComponent, getPlatformColor, Icon, tooltip } from '@hcengineering/ui'
+  import {
+    ActionIcon,
+    AnySvelteComponent,
+    Icon,
+    getPlatformColor,
+    getPlatformColorDef,
+    themeStore,
+    tooltip
+  } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
   import { getTagStyle, tagLevel } from '../utils'
@@ -37,7 +45,7 @@
 {#if inline}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <span
-    style={`--tag-color:${getPlatformColor(tag?.color ?? element?.color ?? 0)}`}
+    style={`--tag-color:${getPlatformColor(tag?.color ?? element?.color ?? 0, $themeStore.dark)}`}
     class="tag-item-inline overflow-label max-w-40"
     on:click
     use:tooltip={{
@@ -51,7 +59,7 @@
 {:else}
   <div
     class="tag-item"
-    style={`${getTagStyle(getPlatformColor(tag?.color ?? element?.color ?? 0), selected)}`}
+    style={`${getTagStyle(getPlatformColorDef(tag?.color ?? element?.color ?? 0, $themeStore.dark), selected)}`}
     on:click
     on:keydown
     use:tooltip={{

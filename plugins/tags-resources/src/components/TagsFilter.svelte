@@ -18,17 +18,18 @@
   import { TagCategory, TagElement } from '@hcengineering/tags'
   import {
     Button,
+    EditWithIcon,
     Icon,
     IconCheck,
     IconSearch,
-    EditWithIcon,
     Label,
     Loading,
     deviceOptionsStore,
     getEventPopupPositionElement,
-    getPlatformColor,
+    getPlatformColorDef,
     resizeObserver,
-    showPopup
+    showPopup,
+    themeStore
   } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { FILTER_DEBOUNCE_MS, FilterQuery, sortFilterValues } from '@hcengineering/view-resources'
@@ -190,14 +191,15 @@
               </button>
               <div class="menu-group">
                 {#each sortFilterValues(values, isSelected) as element}
+                  {@const color = getPlatformColorDef(element.color, $themeStore.dark)}
                   <button
                     class="menu-item no-focus flex-row-center"
                     on:click={() => {
                       handleFilterToggle(element)
                     }}
                   >
-                    <div class="tag" style="background-color: {getPlatformColor(element.color)};" />
-                    <span class="overflow-label label flex-grow">{element.title}</span>
+                    <div class="tag" style:background-color={color.background} />
+                    <span class="overflow-label label flex-grow" style:color={color.title}>{element.title}</span>
                     <div class="check pointer-events-none">
                       {#if isSelected(element)}
                         <Icon icon={IconCheck} size={'small'} />
