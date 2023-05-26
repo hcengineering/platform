@@ -23,16 +23,9 @@
   export let colorInherit: boolean = false
   export let accent: boolean = false
 
-  $: statusValue = $statusStore.get(typeof value === 'string' ? value : value?.values?.[0]?._id as Ref<Status>)
+  $: statusValue = $statusStore.get(typeof value === 'string' ? value : (value?.values?.[0]?._id as Ref<Status>))
 </script>
 
 {#if value}
-  <StatusPresenter
-    value={statusValue}
-    {size}
-    {kind}
-    {colorInherit}
-    {accent}
-    on:accent-color
-  />
+  <StatusPresenter value={statusValue} {size} {kind} {colorInherit} {accent} on:accent-color />
 {/if}

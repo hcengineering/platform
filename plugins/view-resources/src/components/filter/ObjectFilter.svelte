@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Doc, FindResult, getObjectValue, Ref, RefTo, SortingOrder, Space, Status } from '@hcengineering/core'
+  import core, { Doc, FindResult, getObjectValue, Ref, RefTo, SortingOrder, Space } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
-  import presentation, { getClient, statusStore } from '@hcengineering/presentation'
+  import presentation, { getClient } from '@hcengineering/presentation'
   import ui, {
     addNotification,
     deviceOptionsStore,

@@ -115,7 +115,7 @@ export async function setClient (_client: Client): Promise<void> {
     await pipeline.close()
   }
   const factories = await _client.findAll(plugin.class.PresentationMiddlewareFactory, {})
-  const promises = factories.map(async it => await getResource(it.createPresentationMiddleware))
+  const promises = factories.map(async (it) => await getResource(it.createPresentationMiddleware))
   const creators = await Promise.all(promises)
   pipeline = PresentationPipelineImpl.create(_client, creators)
 

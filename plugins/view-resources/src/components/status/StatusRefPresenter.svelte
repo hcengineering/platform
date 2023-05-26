@@ -24,7 +24,7 @@
   export let size: 'small' | 'medium' = 'medium'
   export let icon: Asset | AnySvelteComponent | undefined = undefined
 
-  $: statusValue = $statusStore.get(typeof value === 'string' ? value : value?.values?.[0]?._id as Ref<Status>)
+  $: statusValue = $statusStore.get(typeof value === 'string' ? value : (value?.values?.[0]?._id as Ref<Status>))
 </script>
 
 {#if value}

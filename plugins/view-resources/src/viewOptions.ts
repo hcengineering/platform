@@ -146,7 +146,7 @@ export async function showEmptyGroups (
       statusList = matchQuery<Status>(statusList, resQuery, _class, hierarchy) as unknown as Array<WithLookup<Status>>
     }
     const statuses = statusList.map((it) => it._id)
-    return await groupByCategory(client, _class, key, statuses, mgr, viewletDescriptorId)
+    return await groupByCategory(client, _class, key, statuses, viewletDescriptorId)
   }
 
   const mixin = hierarchy.as(attributeClass, view.mixin.AllValuesFunc)
@@ -154,7 +154,7 @@ export async function showEmptyGroups (
     const f = await getResource(mixin.func)
     const res = await f(query, onUpdate, queryId)
     if (res !== undefined) {
-      return await groupByCategory(client, _class, key, res, mgr, viewletDescriptorId)
+      return await groupByCategory(client, _class, key, res, viewletDescriptorId)
     }
   }
 }

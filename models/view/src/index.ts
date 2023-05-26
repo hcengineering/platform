@@ -13,7 +13,18 @@
 // limitations under the License.
 //
 
-import Core, { DOMAIN_MODEL, Account, Class, Client, Data, Doc, DocumentQuery, Domain, Ref, Space } from '@hcengineering/core'
+import Core, {
+  DOMAIN_MODEL,
+  Account,
+  Class,
+  Client,
+  Data,
+  Doc,
+  DocumentQuery,
+  Domain,
+  Ref,
+  Space
+} from '@hcengineering/core'
 import { Builder, Mixin, Model } from '@hcengineering/model'
 import core, { TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'

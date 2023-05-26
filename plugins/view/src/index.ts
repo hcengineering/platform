@@ -314,23 +314,17 @@ export interface AllValuesFunc extends Class<Doc> {
 /**
  * @public
  */
-export type GroupByCategoriesFunc = Resource<
-(categories: any[]) => AggregateValue[]
->
+export type GroupByCategoriesFunc = Resource<(categories: any[]) => AggregateValue[]>
 
 /**
  * @public
  */
-export type GroupValuesFunc = Resource<
-(val: Doc[], targets: Set<any>) => Doc[]
->
+export type GroupValuesFunc = Resource<(val: Doc[], targets: Set<any>) => Doc[]>
 
 /**
  * @public
  */
-export type HasValueFunc = Resource<
-(value: Doc | undefined | null, values: any[]) => boolean
->
+export type HasValueFunc = Resource<(value: Doc | undefined | null, values: any[]) => boolean>
 
 /**
  * @public

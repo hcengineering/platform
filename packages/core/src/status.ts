@@ -61,7 +61,11 @@ export interface Status extends Doc {
  * @public
  */
 export class StatusValue extends AggregateValue {
-  constructor (readonly name: string | undefined, readonly color: number | undefined, readonly values: AggregateValueData[]) {
+  constructor (
+    readonly name: string | undefined,
+    readonly color: number | undefined,
+    readonly values: AggregateValueData[]
+  ) {
     super(name, values)
   }
 }

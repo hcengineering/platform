@@ -182,7 +182,7 @@ export function isFullTextAttribute (attr: AnyAttribute): boolean {
 /**
  * @public
  */
-export interface IdMap<T extends Doc> extends Map<Ref<T>, T> { }
+export interface IdMap<T extends Doc> extends Map<Ref<T>, T> {}
 
 /**
  * @public
@@ -229,7 +229,13 @@ export function fillDefaults<T extends Doc> (
  * @public
  */
 export class AggregateValueData {
-  constructor (readonly name: string, readonly _id: Ref<Doc>, readonly space: Ref<Space>, readonly rank?: string, readonly category?: Ref<Doc>) { }
+  constructor (
+    readonly name: string,
+    readonly _id: Ref<Doc>,
+    readonly space: Ref<Space>,
+    readonly rank?: string,
+    readonly category?: Ref<Doc>
+  ) {}
 
   getRank (): string {
     return this.rank ?? ''
@@ -240,7 +246,7 @@ export class AggregateValueData {
  * @public
  */
 export class AggregateValue {
-  constructor (readonly name: string | undefined, readonly values: AggregateValueData[]) { }
+  constructor (readonly name: string | undefined, readonly values: AggregateValueData[]) {}
 }
 
 /**

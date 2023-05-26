@@ -35,7 +35,6 @@ import core, {
   ReverseLookups,
   Space,
   Status,
-  StatusManager,
   TxOperations
 } from '@hcengineering/core'
 import type { IntlString } from '@hcengineering/platform'
@@ -624,7 +623,6 @@ export async function groupByCategory (
   _class: Ref<Class<Doc>>,
   key: string,
   categories: CategoryType[],
-  mgr: StatusManager,
   viewletDescriptorId?: Ref<ViewletDescriptor>
 ): Promise<CategoryType[]> {
   const h = client.getHierarchy()
@@ -656,7 +654,6 @@ export async function getCategories (
   _class: Ref<Class<Doc>>,
   docs: Doc[],
   key: string,
-  mgr: StatusManager,
   viewletDescriptorId?: Ref<ViewletDescriptor>
 ): Promise<CategoryType[]> {
   if (key === noCategory) return [undefined]
@@ -666,7 +663,6 @@ export async function getCategories (
     _class,
     key,
     docs.map((it) => getObjectValue(key, it) ?? undefined),
-    mgr,
     viewletDescriptorId
   )
 }

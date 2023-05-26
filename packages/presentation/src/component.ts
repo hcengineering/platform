@@ -37,7 +37,6 @@ import tracker, { Component, ComponentManager } from '@hcengineering/tracker'
 
 import { BasePresentationMiddleware, PresentationMiddleware } from './pipeline'
 
-// Issue component live query
 export const componentStore = writable<ComponentManager>(new ComponentManager([]))
 
 interface ComponentSubscriber<T extends Doc = Doc> {
@@ -196,14 +195,16 @@ export class ComponentMiddleware extends BasePresentationMiddleware implements P
     return result
   }
 
-  private categorizeComponent (mgr: ComponentManager, attr: AnyAttribute, target: Array<Ref<Component>>): Array<Ref<Component>> {
+  private categorizeComponent (
+    mgr: ComponentManager,
+    attr: AnyAttribute,
+    target: Array<Ref<Component>>
+  ): Array<Ref<Component>> {
     for (const componentId of [...target]) {
       const component = mgr.byId.get(componentId)
       if (component !== undefined) {
         const components = mgr.components.filter(
-          (it) =>
-            it.label.toLowerCase().trim() === component.label.toLowerCase().trim() &&
-            it._id !== component._id
+          (it) => it.label.toLowerCase().trim() === component.label.toLowerCase().trim() && it._id !== component._id
         )
         target.push(...components.map((it) => it._id))
       }
@@ -220,7 +221,10 @@ export class ComponentMiddleware extends BasePresentationMiddleware implements P
   ): Promise<void> {
     for (const attr of allAttrs.values()) {
       try {
-        if (attr.type._class === core.class.RefTo && h.isDerived((attr.type as RefTo<Doc>).to, tracker.class.Component)) {
+        if (
+          attr.type._class === core.class.RefTo &&
+          h.isDerived((attr.type as RefTo<Doc>).to, tracker.class.Component)
+        ) {
           const mgr = await this.getManager()
           let target: Array<Ref<Component>> = []
           let targetNin: Array<Ref<Component>> = []

@@ -17,7 +17,16 @@ import type { Asset, IntlString, Metadata, Resource } from '@hcengineering/platf
 import { mergeIds } from '@hcengineering/platform'
 import { IssueDraft } from '@hcengineering/tracker'
 import { AnyComponent, Location } from '@hcengineering/ui'
-import { GroupByCategoriesFunc, GetAllValuesFunc, SortFunc, Viewlet, ViewletDescriptor, ViewQueryAction, GroupValuesFunc, HasValueFunc } from '@hcengineering/view'
+import {
+  GroupByCategoriesFunc,
+  GetAllValuesFunc,
+  SortFunc,
+  Viewlet,
+  ViewletDescriptor,
+  ViewQueryAction,
+  GroupValuesFunc,
+  HasValueFunc
+} from '@hcengineering/view'
 import tracker, { trackerId } from '../../tracker/lib'
 import { PresentationMiddlewareCreator } from '@hcengineering/presentation'
 
