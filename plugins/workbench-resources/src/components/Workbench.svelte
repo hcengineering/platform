@@ -596,6 +596,7 @@
           />
         </NavLink>
         {#if $configurationStore.has(calendarId)}
+          <div class="spacer" />
           <AppItem
             icon={calendar.icon.Notifications}
             label={calendar.string.Reminders}
@@ -771,8 +772,13 @@
 
     .logo-container,
     .topmenu-container,
-    .divider {
+    .divider,
+    .spacer {
       flex-shrink: 0;
+    }
+    .spacer {
+      width: 0.25rem;
+      height: 0.25rem;
     }
     .topmenu-container.mini {
       position: fixed;
