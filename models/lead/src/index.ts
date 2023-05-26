@@ -139,7 +139,8 @@ export function createModel (builder: Builder): void {
             componentProps: {
               _class: lead.mixin.Customer,
               icon: lead.icon.Lead,
-              label: lead.string.Customers
+              label: lead.string.Customers,
+              viewOptionClasses: [contact.class.Organization]
             },
             position: 'top'
           },

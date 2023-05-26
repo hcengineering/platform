@@ -22,10 +22,12 @@
   import ViewOptionsEditor from './ViewOptions.svelte'
   import ViewletSetting from './ViewletSetting.svelte'
   import IconArrowDown from './icons/ArrowDown.svelte'
+  import { Class, Doc, Ref } from '@hcengineering/core'
 
   export let viewlet: Viewlet | undefined
   export let kind: ButtonKind = 'secondary'
   export let viewOptions: ViewOptions
+  export let viewOptionClasses: Ref<Class<Doc>>[] | undefined
 
   const dispatch = createEventDispatcher()
 
@@ -52,7 +54,7 @@
         }
       )
     } else {
-      showPopup(ViewletSetting, { viewlet }, btn)
+      showPopup(ViewletSetting, { viewlet, viewOptionClasses }, btn)
     }
   }
 </script>

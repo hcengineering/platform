@@ -50,6 +50,7 @@
   export let createComponentProps: Record<string, any> = {}
   export let isCreationDisabled = false
   export let descriptors: Ref<ViewletDescriptor>[] | undefined = undefined
+  export let viewOptionClasses: Ref<Class<Doc>>[] | undefined
 
   let search = ''
   let viewlet: WithLookup<Viewlet> | undefined
@@ -181,7 +182,7 @@
     <FilterButton {_class} />
   </div>
   <div class="ac-header-full medium-gap">
-    <ViewletSettingButton bind:viewOptions {viewlet} />
+    <ViewletSettingButton bind:viewOptions {viewlet} {viewOptionClasses} />
     <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
   </div>
 </div>

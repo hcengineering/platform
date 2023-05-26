@@ -40,6 +40,7 @@
   import { buildConfigLookup, getKeyLabel } from '../utils'
 
   export let viewlet: Viewlet
+  export let viewOptionClasses: Ref<Class<Doc>>[] | undefined
 
   let preference: ViewletPreference | undefined
   const preferenceQuery = createQuery()
@@ -187,6 +188,14 @@
     const allAttributes = hierarchy.getAllAttributes(viewlet.attachTo)
     for (const [, attribute] of allAttributes) {
       processAttribute(attribute, result)
+    }
+    if (viewOptionClasses !== undefined) {
+      for (const _class of viewOptionClasses) {
+        const allAttributes = hierarchy.getAllAttributes(_class)
+        for (const [, attribute] of allAttributes) {
+          processAttribute(attribute, result, true)
+        }
+      }
     }
 
     hierarchy.getDescendants(viewlet.attachTo).forEach((it) => {
