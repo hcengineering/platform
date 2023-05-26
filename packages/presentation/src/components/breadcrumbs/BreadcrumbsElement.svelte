@@ -13,21 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { resizeObserver } from '@hcengineering/ui'
-
   export let label: string | undefined = undefined
   export let title: string | undefined = undefined
   export let position: 'start' | 'middle' | 'end' | undefined = undefined
   export let selected = false
   export let color = 'var(--body-color)'
 
-  let lenght = 0
+  let clientWidth = 0
+
+  $: lenght = clientWidth + 32 > 300 ? 300 : clientWidth + 32
 </script>
 
-<div
-  class="hidden-text text-md font-medium pointer-events-none content-pointer-events-none"
-  use:resizeObserver={(element) => (lenght = element.clientWidth + 32 > 300 ? 300 : element.clientWidth + 32)}
->
+<div class="hidden-text text-md font-medium pointer-events-none content-pointer-events-none" bind:clientWidth>
   {#if $$slots.default}
     <slot />
   {:else}
@@ -45,6 +42,7 @@
     on:click
   >
     <svg
+      style={`width: ${lenght}px;`}
       class="asb-bar__back"
       viewBox="0 0 {lenght} 24"
       xmlns="http://www.w3.org/2000/svg"
