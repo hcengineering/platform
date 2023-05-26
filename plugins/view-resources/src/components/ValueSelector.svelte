@@ -158,6 +158,7 @@
             _class={item._class}
             value={item}
             inline={false}
+            noUnderline
             props={{ disabled: true, inline: false, size, avatarSize: 'smaller' }}
           />
         </div>

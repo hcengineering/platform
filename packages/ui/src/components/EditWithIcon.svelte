@@ -19,6 +19,7 @@
   import plugin from '../plugin'
   import type { AnySvelteComponent } from '../types'
   import Icon from './Icon.svelte'
+  import Button from './Button.svelte'
   import IconClose from './icons/Close.svelte'
 
   export let icon: Asset | AnySvelteComponent | ComponentType
@@ -46,25 +47,29 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="flex-between editbox {size}" style={width ? 'width: ' + width : ''} on:click={() => textHTML.focus()}>
-  <div class="mr-2 icon"><Icon {icon} size={'small'} /></div>
+  <div class="mr-2 content-dark-color"><Icon {icon} size={'small'} /></div>
   <input bind:this={textHTML} type="text" bind:value placeholder={phTraslate} on:change on:input on:keydown />
   <slot name="extra" />
   {#if value}
-    <div
-      class="ml-2 btn"
-      on:click={() => {
-        value = ''
-        dispatch('change', '')
-      }}
-    >
-      <Icon icon={IconClose} size={'x-small'} />
+    <div class="ml-2">
+      <Button
+        icon={IconClose}
+        kind={'transparent'}
+        size={'small'}
+        noFocus
+        on:click={() => {
+          value = ''
+          dispatch('change', '')
+          textHTML.focus()
+        }}
+      />
     </div>
   {/if}
 </div>
 
 <style lang="scss">
   .editbox {
-    padding: 0 0.5rem 0 0.5rem;
+    padding: 0 0.25rem 0 0.5rem;
     min-width: 10rem;
     color: var(--theme-caption-color);
     border-radius: 0.25rem;
@@ -92,17 +97,6 @@
       &::placeholder {
         color: var(--theme-dark-color);
       }
-    }
-
-    .btn {
-      color: var(--theme-dark-color);
-      cursor: pointer;
-      &:hover {
-        color: var(--theme-caption-color);
-      }
-    }
-    .icon {
-      color: var(--theme-dark-color);
     }
   }
 </style>

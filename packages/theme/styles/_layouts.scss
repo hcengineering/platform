@@ -282,6 +282,7 @@ input.search {
     &:not(.small-gap, .large-gap) { margin-right: .375rem; }
     &.small-gap { margin-right: .25rem; }
     &.large-gap { margin-right: .5rem; }
+    &.flow:last-child { margin-right: 0; }
   }
   .label {
     min-width: 0;
@@ -338,6 +339,7 @@ input.search {
   .icon.circle { transform: translateY(.375rem); }
   .avatar-container:not(.no-img) { transform: translateY(.375rem); }
   .avatar-container.no-img { transform: translateY(.15rem); }
+  .emoji { transform: none; }
 }
 
 .buttons-group {
@@ -413,6 +415,8 @@ input.search {
   &.reverse > *:not(:last-child) { margin-right: 1rem; }
 }
 .gapV-4 > *:not(:last-child) { margin-bottom: 1rem; }
+.gapV-6 > *:not(:last-child) { margin-bottom: 1.5rem; }
+.gapV-8 > *:not(:last-child) { margin-bottom: 2rem; }
 .gap-around-2 > * { margin: .25rem; }
 .gap-around-4 > * { margin: .5rem; }
 

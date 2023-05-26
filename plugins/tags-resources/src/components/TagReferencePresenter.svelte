@@ -43,7 +43,7 @@
         realWidth = element.clientWidth
       }}
     >
-      <div class="color" style:background-color={color.background} />
+      <div class="color" style:background-color={color.color} />
       <span class="label overflow-label ml-1 text-sm caption-color max-w-40" style:color={color.title}
         >{value.title}</span
       >
@@ -56,7 +56,7 @@
         realWidth = element.clientWidth
       }}
     >
-      <div class="color" style:background-color={color.background} />
+      <div class="color" style:background-color={color.color} />
       <span class="label overflow-label ml-1-5 max-w-40" style:color={color.title}>
         {value.title}
       </span>

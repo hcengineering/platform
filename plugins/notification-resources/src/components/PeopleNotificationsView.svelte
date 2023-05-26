@@ -45,8 +45,10 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $: firstItem?.txes[0] &&
-    client.findOne(core.class.TxCUD, { _id: firstItem.txes[0]._id }).then((res) => {
+  $: txRef = firstItem ? firstItem.txes[firstItem.txes.length - 1]._id : undefined
+
+  $: txRef &&
+    client.findOne(core.class.TxCUD, { _id: txRef }).then((res) => {
       if (res !== undefined) {
         tx = TxProcessor.extractTx(res) as TxCUD<Doc>
       } else {
@@ -72,16 +74,16 @@
   $: if (selected && div !== undefined) div.focus()
 </script>
 
-<div
-  class="container cursor-pointer"
-  on:keydown
-  class:selected
-  tabindex="-1"
-  bind:this={div}
-  on:click={() => dispatch('open', value._id)}
->
-  <div class="notify" class:hidden={newTxes === 0} />
-  {#if doc}
+{#if doc}
+  <div
+    class="container cursor-pointer"
+    on:keydown
+    class:selected
+    tabindex="-1"
+    bind:this={div}
+    on:click={() => dispatch('open', value._id)}
+  >
+    <div class="notify" class:hidden={newTxes === 0} />
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="clear-mins content bottom-divider" class:read={newTxes === 0}>
       <div class="w-full">
@@ -124,8 +126,8 @@
         </div>
       </div>
     </div>
-  {/if}
-</div>
+  </div>
+{/if}
 
 <style lang="scss">
   .time {

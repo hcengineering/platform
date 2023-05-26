@@ -148,10 +148,10 @@ export function fitPopupPositionedElement (
   } else {
     // Vertical
     if (rect.bottom + rectPopup.height + 28 <= docHeight) {
-      newProps.top = `${rect.bottom + 1}px`
+      newProps.top = `${rect.bottom + 16}px`
       direction = 'bottom'
     } else if (rectPopup.height + 28 < rect.top) {
-      newProps.bottom = `${docHeight - rect.top + 1}px`
+      newProps.bottom = `${docHeight - rect.top + 16}px`
       direction = 'top'
     } else {
       newProps.top = newProps.bottom = '16px'

@@ -185,6 +185,7 @@ export type IconSize =
   | 'medium'
   | 'large'
   | 'x-large'
+  | '2x-large'
   | 'full'
 
 export interface DateOrShift {

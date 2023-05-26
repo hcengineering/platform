@@ -587,7 +587,6 @@
         alwaysEdit
         showButtons={false}
         kind={'indented'}
-        fakeAttach={'hidden'}
         enableBackReferences={true}
         bind:content={object.description}
         placeholder={tracker.string.IssueDescriptionPlaceholder}
@@ -708,8 +707,7 @@
     <div id="duedate-editor" class="new-line">
       <DatePresenter
         bind:value={object.dueDate}
-        labelNull={tracker.string.NoDueDate}
-        icon={tracker.icon.DueDate}
+        labelNull={tracker.string.DueDate}
         kind={'secondary'}
         size={'large'}
         editable

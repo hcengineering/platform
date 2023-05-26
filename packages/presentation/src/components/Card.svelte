@@ -30,7 +30,9 @@
   export let fullSize: boolean = false
   export let hideAttachments: boolean = false
   export let hideSubheader: boolean = false
+  export let accentHeader: boolean = false
   export let gap: string | undefined = undefined
+  export let width: 'large' | 'medium' | 'small' | 'x-small' = 'large'
 
   const dispatch = createEventDispatcher()
 
@@ -39,7 +41,7 @@
 
 <form
   id={label}
-  class="antiCard {$deviceInfo.isMobile ? 'mobile' : 'dialog'}"
+  class="antiCard {$deviceInfo.isMobile ? 'mobile' : 'dialog'} {width}"
   class:full={fullSize}
   on:submit|preventDefault={() => {}}
   use:resizeObserver={() => {
@@ -52,7 +54,7 @@
         <slot name="header" />
         <span class="antiCard-header__divider"><IconForward size={'small'} /></span>
       {/if}
-      <span class="antiCard-header__title">
+      <span class="antiCard-header__title" class:accentHeader>
         {#if $$slots.title}
           <slot name="title" {label} labelProps={labelProps ?? {}} />
         {:else}
