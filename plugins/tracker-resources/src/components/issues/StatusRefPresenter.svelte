@@ -22,11 +22,13 @@
   export let kind: 'list-header' | undefined = undefined
   export let colorInherit: boolean = false
   export let accent: boolean = false
+
+  $: statusValue = $statusStore.get(typeof value === 'string' ? value : value?.values?.[0]?._id as Ref<Status>)
 </script>
 
 {#if value}
   <StatusPresenter
-    value={$statusStore.get(typeof value === 'string' ? value : value.values?.[0]?._id)}
+    value={statusValue}
     {size}
     {kind}
     {colorInherit}

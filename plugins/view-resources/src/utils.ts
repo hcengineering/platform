@@ -38,7 +38,8 @@ import core, {
   StatusManager,
   TxOperations,
   WithLookup,
-  StatusValue
+  StatusValue,
+  AggregateValueData
 } from '@hcengineering/core'
 import type { IntlString } from '@hcengineering/platform'
 import { getResource } from '@hcengineering/platform'
@@ -577,7 +578,7 @@ export function groupBy<T extends Doc> (docs: T[], key: string, categories?: Cat
         if (typeof c === 'object') {
           const st = c.values.find((it) => it._id === group)
           if (st !== undefined) {
-            group = st.name ?? st.label
+            group = st.name
             break
           }
         }
@@ -695,6 +696,7 @@ export function groupByStatusCategories (
               (categories.includes(it._id) || usedSpaces.has(it.space))
           )
           .sort((a, b) => a.rank.localeCompare(b.rank))
+          .map((it) => new AggregateValueData(it.name, it._id, it.space, it.rank, it.category))
         fst = new StatusValue(status.name, status.color, statuses)
         statusMap.set(status.name.toLowerCase().trim(), fst)
         existingCategories.push(fst)

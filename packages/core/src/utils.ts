@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import { Account, AnyAttribute, Class, Doc, DocData, DocIndexState, IndexKind, Obj, Ref } from './classes'
+import { Account, AnyAttribute, Class, Doc, DocData, DocIndexState, IndexKind, Obj, Ref, Space } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
-import { FindResult, WithLookup } from './storage'
+import { FindResult } from './storage'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -229,14 +229,18 @@ export function fillDefaults<T extends Doc> (
  * @public
  */
 export class AggregateValueData {
-  constructor (readonly name: string, readonly _id: Ref<Doc>, readonly rank?: string) { }
+  constructor (readonly name: string, readonly _id: Ref<Doc>, readonly space: Ref<Space>, readonly rank?: string, readonly category?: Ref<Doc>) { }
+
+  getRank (): string {
+    return this.rank ?? ''
+  }
 }
 
 /**
  * @public
  */
 export class AggregateValue {
-  constructor (readonly name: string | undefined, readonly values: WithLookup<Doc & { name?: string, label?: string } >[]) { }
+  constructor (readonly name: string | undefined, readonly values: AggregateValueData[]) { }
 }
 
 /**

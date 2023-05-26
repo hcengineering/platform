@@ -16,6 +16,7 @@
 import { Employee } from '@hcengineering/contact'
 import core, {
   AggregateValue,
+  AggregateValueData,
   ApplyOperations,
   AttachedData,
   AttachedDoc,
@@ -304,7 +305,7 @@ export async function issueStatusSort (
         listIssueKanbanStatusOrder.indexOf(a.values[0].category as Ref<StatusCategory>) -
         listIssueKanbanStatusOrder.indexOf(b.values[0].category as Ref<StatusCategory>)
       if (res === 0) {
-        return a.values[0].rank.localeCompare(b.values[0].rank)
+        return a.values[0].getRank().localeCompare(b.values[0].getRank())
       }
       return res
     })
@@ -314,7 +315,7 @@ export async function issueStatusSort (
         listIssueStatusOrder.indexOf(a.values[0].category as Ref<StatusCategory>) -
         listIssueStatusOrder.indexOf(b.values[0].category as Ref<StatusCategory>)
       if (res === 0) {
-        return a.values[0].rank.localeCompare(b.values[0].rank)
+        return a.values[0].getRank().localeCompare(b.values[0].getRank())
       }
       return res
     })
@@ -671,7 +672,7 @@ export function groupByComponents<T extends Doc> (docs: T[], key: string, catego
         if (typeof c === 'object') {
           const st = c.values.find((it) => it._id === group)
           if (st !== undefined) {
-            group = st.label
+            group = st.name
             break
           }
         }
@@ -713,6 +714,7 @@ export function groupByComponentCategories (categories: any[]): AggregateValue[]
               (categories.includes(it._id) || usedSpaces.has(it.space))
           )
           .sort((a, b) => a.label.localeCompare(b.label))
+          .map((it) => new AggregateValueData(it.label, it._id, it.space))
         fst = new AggregateValue(component.label, components)
         componentMap.set(component.label.toLowerCase().trim(), fst)
         existingCategories.push(fst)
