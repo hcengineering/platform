@@ -130,6 +130,7 @@
         const newPerson = await client.findOne(_class, { _id: res })
         if (newPerson !== undefined) {
           search = c.update?.(newPerson) ?? ''
+          dispatch('search', search)
         }
       }
     })
