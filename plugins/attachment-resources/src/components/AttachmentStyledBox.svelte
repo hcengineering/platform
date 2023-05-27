@@ -38,11 +38,11 @@
   export let formatButtonSize: IconSize = 'small'
   export let maxHeight: 'max' | 'card' | 'limited' | string = 'max'
   export let focusable: boolean = false
-  export let fakeAttach: 'fake' | 'hidden' | 'normal' = 'normal'
   export let refContainer: HTMLElement | undefined = undefined
   export let shouldSaveDraft: boolean = false
   export let useAttachmentPreview = false
   export let focusIndex: number | undefined = -1
+  export let enableAttachments: boolean = true
   export let enableBackReferences: boolean = false
 
   let draftKey = objectId ? `${objectId}_attachments` : undefined
@@ -334,12 +334,11 @@
 
 <div
   class="flex-col clear-mins"
-  on:paste={(ev) => (fakeAttach === 'normal' ? pasteAction(ev) : undefined)}
+  on:paste={(ev) => pasteAction(ev)}
   on:dragover|preventDefault={() => {}}
   on:dragleave={() => {}}
   on:drop|preventDefault|stopPropagation={(ev) => {
-    if (fakeAttach === 'fake') dispatch('attach', { action: 'drop', event: ev })
-    else fileDrop(ev)
+    fileDrop(ev)
   }}
 >
   <div class="expand-collapse">
@@ -350,7 +349,7 @@
       {placeholder}
       {alwaysEdit}
       {showButtons}
-      hideAttachments={fakeAttach === 'hidden'}
+      hideAttachments={!enableAttachments}
       {buttonSize}
       {formatButtonSize}
       {maxHeight}
@@ -364,12 +363,11 @@
       on:open-document
       on:open-document
       on:attach={() => {
-        if (fakeAttach === 'fake') dispatch('attach', { action: 'add' })
-        else if (fakeAttach === 'normal') attach()
+        attach()
       }}
     />
   </div>
-  {#if attachments.size && fakeAttach === 'normal'}
+  {#if attachments.size && enableAttachments}
     <div class="flex-row-center list scroll-divider-color">
       {#each Array.from(attachments.values()) as attachment, index}
         <div class="item flex-center flex-no-shrink clear-mins">

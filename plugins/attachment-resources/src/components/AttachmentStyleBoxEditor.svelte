@@ -83,7 +83,7 @@
     {focusIndex}
     enableBackReferences={true}
     bind:this={descriptionBox}
-    useAttachmentPreview={true}
+    useAttachmentPreview={false}
     objectId={object._id}
     _class={object._class}
     space={object.space}

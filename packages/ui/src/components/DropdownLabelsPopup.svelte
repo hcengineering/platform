@@ -29,6 +29,7 @@
   export let items: DropdownTextItem[]
   export let selected: DropdownTextItem['id'] | DropdownTextItem['id'][] | undefined = undefined
   export let multiselect: boolean = false
+  export let enableSearch = true
 
   let search: string = ''
   const dispatch = createEventDispatcher()
@@ -91,18 +92,20 @@
     dispatch('changeContent')
   }}
 >
-  <div class="header">
-    <EditWithIcon
-      icon={IconSearch}
-      size={'large'}
-      width={'100%'}
-      focus={!$deviceOptionsStore.isMobile}
-      bind:value={search}
-      {placeholder}
-      {placeholderParam}
-      on:change
-    />
-  </div>
+  {#if enableSearch}
+    <div class="header">
+      <EditWithIcon
+        icon={IconSearch}
+        size={'large'}
+        width={'100%'}
+        focus={!$deviceOptionsStore.isMobile}
+        bind:value={search}
+        {placeholder}
+        {placeholderParam}
+        on:change
+      />
+    </div>
+  {/if}
   <div class="scroll">
     <div class="box">
       <ListView bind:this={list} count={objects.length} bind:selection>

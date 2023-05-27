@@ -115,7 +115,7 @@
           bind:this={attachments[i]}
           alwaysEdit
           showButtons
-          fakeAttach={withoutAttach ? 'hidden' : i < items.length - 1 ? 'fake' : 'normal'}
+          enableAttachments={!withoutAttach}
           bind:content={item.content}
           placeholder={textEditorPlugin.string.EditorPlaceholder}
           {objectId}
