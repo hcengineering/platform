@@ -99,6 +99,9 @@ async function fillCreatedOn (client: MigrationClient): Promise<void> {
     ) {
       continue
     }
+
+    await client.update<Doc>(domain, { createOn: { $exists: true } }, { $unset: { createOn: 1 } })
+
     while (true) {
       try {
         const objects = await client.find<Doc>(
@@ -115,7 +118,7 @@ async function fillCreatedOn (client: MigrationClient): Promise<void> {
             _class: core.class.TxCreateDoc,
             objectId: { $in: Array.from(objects.map((it) => it._id)) }
           },
-          { projection: { _id: 1, modifiedOn: 1, createOn: 1, objectId: 1 } }
+          { projection: { _id: 1, modifiedOn: 1, createdOn: 1, objectId: 1 } }
         )
 
         const txes2 = (
@@ -126,13 +129,13 @@ async function fillCreatedOn (client: MigrationClient): Promise<void> {
               'tx._class': core.class.TxCreateDoc,
               'tx.objectId': { $in: Array.from(objects.map((it) => it._id)) }
             },
-            { projection: { _id: 1, modifiedOn: 1, createOn: 1, tx: 1 } }
+            { projection: { _id: 1, modifiedOn: 1, createdOn: 1, tx: 1 } }
           )
         ).map((it) => it.tx as unknown as TxCreateDoc<Doc>)
 
         const txMap = new Map(txes.concat(txes2).map((p) => [p.objectId, p]))
 
-        console.log('migrateCreateOn', domain, objects.length)
+        console.log('migratecreatedOn', domain, objects.length)
         await client.bulk(
           domain,
           objects.map((it) => {
@@ -140,7 +143,7 @@ async function fillCreatedOn (client: MigrationClient): Promise<void> {
             return {
               filter: { _id: it._id },
               update: {
-                createdOn: createTx?.createOn ?? it.modifiedOn
+                createdOn: createTx?.createdOn ?? it.modifiedOn
               }
             }
           })

@@ -127,7 +127,7 @@ export async function IsIncomingMessage (
   control: TriggerControl
 ): Promise<boolean> {
   const message = TxProcessor.createDoc2Doc(TxProcessor.extractTx(tx) as TxCreateDoc<Message>)
-  return message.incoming && message.sendOn > (doc.createOn ?? doc.modifiedOn)
+  return message.incoming && message.sendOn > (doc.createdOn ?? doc.modifiedOn)
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

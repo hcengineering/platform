@@ -75,7 +75,7 @@ export const doc1: Task = {
   rate: 20,
   modifiedBy: 'user' as Ref<Account>,
   modifiedOn: 10,
-  // createOn: 10,
+  // createdOn: 10,
   space: '' as Ref<Space>
 }
 

@@ -109,7 +109,7 @@
     if (docUpdate === undefined || lastView === undefined) return -1
     for (let index = 0; index < messages.length; index++) {
       const message = messages[index]
-      if ((message.createOn ?? 0) >= lastView) return index
+      if ((message.createdOn ?? 0) >= lastView) return index
     }
     return -1
   }
@@ -209,8 +209,8 @@
       {#if newMessagesPos === i}
         <ChannelSeparator title={chunter.string.New} line reverse isNew />
       {/if}
-      {#if i === 0 || isOtherDay(message.createOn ?? 0, messages[i - 1].createOn ?? 0)}
-        <JumpToDateSelector selectedDate={message.createOn} on:jumpToDate={handleJumpToDate} />
+      {#if i === 0 || isOtherDay(message.createdOn ?? 0, messages[i - 1].createdOn ?? 0)}
+        <JumpToDateSelector selectedDate={message.createdOn} on:jumpToDate={handleJumpToDate} />
       {/if}
       <MessageComponent
         isHighlighted={$messageIdForScroll === message._id && $isMessageHighlighted}

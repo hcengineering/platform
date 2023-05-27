@@ -37,7 +37,7 @@ export class ModifiedMiddleware extends BaseMiddleware implements Middleware {
   async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
     if (tx.modifiedBy !== core.account.System) {
       tx.modifiedOn = Date.now()
-      tx.createOn = tx.createOn ?? tx.modifiedOn
+      tx.createdOn = tx.createdOn ?? tx.modifiedOn
     }
     return await this.provideTx(ctx, tx)
   }

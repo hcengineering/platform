@@ -463,7 +463,7 @@ export function createModel (builder: Builder): void {
       ['status', SortingOrder.Ascending],
       ['priority', SortingOrder.Ascending],
       ['modifiedOn', SortingOrder.Descending],
-      ['createOn', SortingOrder.Descending],
+      ['createdOn', SortingOrder.Descending],
       ['dueDate', SortingOrder.Ascending],
       ['rank', SortingOrder.Ascending]
     ],
@@ -592,7 +592,7 @@ export function createModel (builder: Builder): void {
       ['status', SortingOrder.Ascending],
       ['priority', SortingOrder.Ascending],
       ['modifiedOn', SortingOrder.Descending],
-      ['createOn', SortingOrder.Descending],
+      ['createdOn', SortingOrder.Descending],
       ['dueDate', SortingOrder.Ascending]
     ],
     groupDepth: 1,
@@ -1780,7 +1780,7 @@ export function createModel (builder: Builder): void {
     orderBy: [
       ['modifiedOn', SortingOrder.Descending],
       ['targetDate', SortingOrder.Descending],
-      ['createOn', SortingOrder.Descending]
+      ['createdOn', SortingOrder.Descending]
     ],
     other: [showColors]
   }
@@ -1852,7 +1852,7 @@ export function createModel (builder: Builder): void {
     groupBy: ['lead'],
     orderBy: [
       ['modifiedOn', SortingOrder.Descending],
-      ['createOn', SortingOrder.Descending]
+      ['createdOn', SortingOrder.Descending]
     ],
     other: [showColors]
   }

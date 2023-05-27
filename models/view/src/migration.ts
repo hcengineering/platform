@@ -59,13 +59,17 @@ async function migrateViewletPreference (client: MigrationClient): Promise<void>
 }
 
 async function migrateSavedFilters (client: MigrationClient): Promise<void> {
-  await client.move(
-    DOMAIN_PREFERENCE,
-    {
-      _class: view.class.FilteredView
-    },
-    DOMAIN_VIEW
-  )
+  try {
+    await client.move(
+      DOMAIN_PREFERENCE,
+      {
+        _class: view.class.FilteredView
+      },
+      DOMAIN_VIEW
+    )
+  } catch (err: any) {
+    console.log(err)
+  }
   const preferences = await client.find<FilteredView>(DOMAIN_VIEW, {
     _class: view.class.FilteredView,
     users: { $exists: false }

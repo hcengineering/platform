@@ -70,7 +70,7 @@
     const options: FindOptions<ThreadMessage> = {
       lookup,
       sort: {
-        createOn: SortingOrder.Descending
+        createdOn: SortingOrder.Descending
       },
       total: true
     }
