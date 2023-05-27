@@ -57,7 +57,8 @@ export default plugin(presentationId, {
     DocumentPreview: '' as IntlString,
     MakePrivate: '' as IntlString,
     MakePrivateDescription: '' as IntlString,
-    OpenInANewTab: '' as IntlString
+    OpenInANewTab: '' as IntlString,
+    Created: '' as IntlString
   },
   metadata: {
     RequiredVersion: '' as Metadata<string>,
