@@ -223,10 +223,8 @@ export async function extractIndexedValues (
         continue
       }
       // Check if attribute is indexable
-      let keyAttr: AnyAttribute
-      try {
-        keyAttr = hierarchy.getAttribute(_class, attr)
-      } catch (err: any) {
+      const keyAttr: AnyAttribute | undefined = hierarchy.findAttribute(_class, attr)
+      if (keyAttr === undefined) {
         // Skip if there is no attribute.
         continue
       }

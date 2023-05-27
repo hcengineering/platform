@@ -617,14 +617,23 @@ abstract class MongoAdapterBase implements DbAdapter {
   async update (domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
     const coll = this.db.collection(domain)
 
-    try {
-      // remove old and insert new ones
-      const ops = Array.from(operations.entries())
-      if (ops.length > 0) {
-        const part = ops.splice(0, 500)
+    // remove old and insert new ones
+    const ops = Array.from(operations.entries())
+    let skip = 500
+    while (ops.length > 0) {
+      const part = ops.splice(0, skip)
+      try {
         await coll.bulkWrite(
           part.map((it) => {
             const { $unset, ...set } = it[1] as any
+            if ($unset !== undefined) {
+              for (const k of Object.keys(set)) {
+                if ($unset[k] === '') {
+                  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+                  delete $unset[k]
+                }
+              }
+            }
             return {
               updateOne: {
                 filter: { _id: it[0] },
@@ -636,9 +645,13 @@ abstract class MongoAdapterBase implements DbAdapter {
             }
           })
         )
+      } catch (err: any) {
+        if (skip !== 1) {
+          ops.push(...part)
+          skip = 1 // Let's update one by one, to loose only one failed variant.
+        }
+        console.error(err)
       }
-    } catch (err: any) {
-      console.error(err)
     }
   }
 
