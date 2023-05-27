@@ -49,7 +49,8 @@ export default mergeIds(leadId, lead, {
     LeadsPresenter: '' as AnyComponent,
     CreateFunnel: '' as AnyComponent,
     EditFunnel: '' as AnyComponent,
-    MyLeads: '' as AnyComponent
+    MyLeads: '' as AnyComponent,
+    TitlePresenter: '' as AnyComponent
   },
   function: {
     LeadTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>

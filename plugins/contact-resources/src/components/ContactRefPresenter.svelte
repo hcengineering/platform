@@ -22,6 +22,8 @@
 
   export let value: Ref<Contact>
   export let disabled = false
+  export let maxWidth = ''
+  export let inline = false
 
   let doc: Contact | undefined
   const query = createQuery()
@@ -29,5 +31,5 @@
 </script>
 
 {#if doc}
-  <ContactPresenter value={doc} {disabled} />
+  <ContactPresenter value={doc} {disabled} {maxWidth} {inline} />
 {/if}
