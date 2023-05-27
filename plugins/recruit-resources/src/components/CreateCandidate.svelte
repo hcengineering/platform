@@ -270,7 +270,7 @@
 
     await applyOps.commit()
     draftController.remove()
-    dispatch('close', object._id)
+    dispatch('close', _id)
     resetObject()
   }
 
