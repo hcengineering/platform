@@ -105,7 +105,7 @@ export class TDoc extends TObj implements Doc {
 
   @Prop(TypeTimestamp(), core.string.CreatedDate)
   @ReadOnly()
-    createOn!: Timestamp
+    createdOn!: Timestamp
 }
 
 @Model(core.class.AttachedDoc, core.class.Doc)

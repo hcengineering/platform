@@ -263,7 +263,7 @@ export function createModel (builder: Builder): void {
     orderBy: [
       ['state', SortingOrder.Ascending],
       ['modifiedOn', SortingOrder.Descending],
-      ['createOn', SortingOrder.Descending],
+      ['createdOn', SortingOrder.Descending],
       ['dueDate', SortingOrder.Ascending],
       ['rank', SortingOrder.Ascending]
     ],

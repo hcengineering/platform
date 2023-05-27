@@ -184,7 +184,8 @@ async function ThreadMessageDelete (tx: Tx, control: TriggerControl): Promise<Tx
     comment.attachedTo,
     {
       replies: comments.map((comm) => (control.modelDb.getObject(comm.createBy) as EmployeeAccount).employee),
-      lastReply: comments.length > 0 ? Math.max(...comments.map((comm) => comm.createOn ?? comm.modifiedOn)) : undefined
+      lastReply:
+        comments.length > 0 ? Math.max(...comments.map((comm) => comm.createdOn ?? comm.modifiedOn)) : undefined
     }
   )
 

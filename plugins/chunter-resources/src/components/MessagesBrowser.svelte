@@ -34,7 +34,7 @@
         ...resultQuery
       },
       {
-        sort: { createOn: SortingOrder.Descending },
+        sort: { createdOn: SortingOrder.Descending },
         limit: 100,
         lookup: {
           _id: { attachments: attachment.class.Attachment },

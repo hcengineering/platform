@@ -180,7 +180,7 @@
   $: resultChannels = mergeChannels(oldChannels, targetChannels, enabledChannels)
 
   const attributes = hierarchy.getAllAttributes(contact.class.Employee, core.class.Doc)
-  const ignoreKeys = ['name', 'avatar', 'createOn']
+  const ignoreKeys = ['name', 'avatar', 'createdOn']
   const objectAttributes = Array.from(attributes.entries()).filter(
     (p) => !p[1].hidden && !ignoreKeys.includes(p[0]) && !isCollectionAttr(hierarchy, { key: p[0], attr: p[1] })
   )
