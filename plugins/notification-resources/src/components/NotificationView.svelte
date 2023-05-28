@@ -128,6 +128,7 @@
       display: flex;
       flex-grow: 1;
       padding: 0.5rem 0;
+      color: var(--theme-caption-color);
 
       &.read {
         opacity: 0.6;
