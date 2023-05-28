@@ -61,13 +61,13 @@
       overflow: hidden;
 
       &:checked + .toggle-switch {
-        background-color: var(--toggle-on-bg-color);
+        background-color: var(--theme-toggle-on-bg-color);
         &:hover {
-          background-color: var(--toggle-on-bg-hover);
+          background-color: var(--theme-toggle-on-bg-hover);
         }
         &:before {
           left: 9px;
-          background: var(--toggle-on-sw-color);
+          background: var(--theme-toggle-on-sw-color);
         }
       }
       &:not(:disabled) + .toggle-switch {
@@ -88,7 +88,7 @@
       width: 22px;
       height: 14px;
       border-radius: 4.5rem;
-      background-color: var(--toggle-bg-color);
+      background-color: var(--theme-toggle-bg-color);
       transition: left 0.2s, background-color 0.2s;
       &:before {
         content: '';
@@ -99,12 +99,12 @@
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        background: var(--toggle-sw-color);
+        background: var(--theme-toggle-sw-color);
         // box-shadow: 1px 2px 7px rgba(119, 129, 142, 0.1);
         transition: all 0.1s ease-out;
       }
       &:hover {
-        background-color: var(--toggle-bg-hover);
+        background-color: var(--theme-toggle-bg-hover);
       }
     }
 
