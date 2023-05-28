@@ -22,11 +22,17 @@
 
   export let value: Organization
   export let inline: boolean = false
+  export let maxWidth = ''
 </script>
 
 {#if value}
   <DocNavLink {inline} object={value}>
-    <div class="flex-presenter" class:inline-presenter={inline} use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
+    <div
+      class="flex-presenter overflow-label"
+      style:max-width={maxWidth}
+      class:inline-presenter={inline}
+      use:tooltip={{ label: getEmbeddedLabel(value.name) }}
+    >
       {#if !inline}
         <div class="icon circle"><Company size={'small'} /></div>
       {/if}

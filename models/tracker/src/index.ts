@@ -573,7 +573,12 @@ export function createModel (builder: Builder): void {
         {
           key: 'assignee',
           presenter: tracker.component.AssigneePresenter,
-          props: { defaultClass: contact.class.Employee, shouldShowLabel: false }
+          props: {
+            listProps: { key: 'assigee', fixed: 'right' },
+            key: 'assignee',
+            defaultClass: contact.class.Employee,
+            shouldShowLabel: false
+          }
         }
       ],
       options: {

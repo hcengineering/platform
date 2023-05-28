@@ -25,6 +25,7 @@
   export let value: Contact
   export let inline: boolean = false
   export let disabled = false
+  export let maxWidth = ''
 
   function isPerson (value: Contact): boolean {
     const client = getClient()
@@ -45,5 +46,5 @@
 {:else if isPerson(value)}
   <PersonPresenter {disabled} {value} {inline} />
 {:else}
-  <OrganizationPresenter value={toOrg(value)} {inline} />
+  <OrganizationPresenter value={toOrg(value)} {inline} {maxWidth} />
 {/if}

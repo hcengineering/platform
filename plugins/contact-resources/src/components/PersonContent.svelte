@@ -43,6 +43,7 @@
   export let enlargedText = false
   export let colorInherit: boolean = false
   export let accent: boolean = false
+  export let maxWidth = ''
 
   const onEditClick = (evt: MouseEvent) => {
     if (!disabled) {
@@ -70,6 +71,7 @@
       class="contentPresenter"
       class:text-base={enlargedText}
       class:inline-presenter={inline}
+      style:max-width={maxWidth}
     >
       {#if !inline && shouldShowAvatar}
         <span

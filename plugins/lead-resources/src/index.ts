@@ -28,6 +28,7 @@ import NewItemsHeader from './components/NewItemsHeader.svelte'
 import { getLeadTitle } from './utils'
 import EditFunnel from './components/EditFunnel.svelte'
 import MyLeads from './components/MyLeads.svelte'
+import TitlePresenter from './components/TitlePresenter.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -42,7 +43,8 @@ export default async (): Promise<Resources> => ({
     CreateCustomer,
     NewItemsHeader,
     EditFunnel,
-    MyLeads
+    MyLeads,
+    TitlePresenter
   },
   function: {
     LeadTitleProvider: getLeadTitle
