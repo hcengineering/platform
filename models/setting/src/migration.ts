@@ -73,14 +73,15 @@ async function fillMigrationCollaborator (tx: TxOperations): Promise<void> {
   for (const value of settings) {
     if (h.hasMixin(value, notification.mixin.Collaborators)) {
       const collabs = h.as<Doc, Collaborators>(value, notification.mixin.Collaborators)
-      if (collabs.collaborators === undefined || !collabs.collaborators.includes(collabs.modifiedBy)) {
+      const target = collabs.createdBy ?? collabs.modifiedBy
+      if (collabs.collaborators === undefined || !collabs.collaborators.includes(target)) {
         const res = tx.txFactory.createTxMixin<Doc, Collaborators>(
           value._id,
           value._class,
           value.space,
           notification.mixin.Collaborators,
           {
-            collaborators: [collabs.createdBy ?? collabs.modifiedBy]
+            collaborators: [target]
           }
         )
         res.space = core.space.DerivedTx
