@@ -32,7 +32,7 @@
   export let hideSubheader: boolean = false
   export let accentHeader: boolean = false
   export let gap: string | undefined = undefined
-  export let width: 'large' | 'medium' | 'small' | 'x-small' = 'large'
+  export let width: 'large' | 'medium' | 'small' | 'x-small' | 'menu' = 'large'
 
   const dispatch = createEventDispatcher()
 

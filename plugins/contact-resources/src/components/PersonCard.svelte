@@ -37,7 +37,7 @@
   )
 </script>
 
-<div class="flex-col h-full card-container">
+<div class="antiContactCard">
   <div class="label uppercase"><Label label={contact.string.Person} /></div>
   <div class="flex-center logo">
     <Avatar avatar={object.avatar} size={'large'} icon={contact.icon.Company} />
@@ -50,63 +50,21 @@
       </div>
     </DocNavLink>
     <div class="description overflow-label">{object.city ?? ''}</div>
-    <div class="footer flex flex-reverse flex-grow">
-      <div class="flex-center flex-wrap">
+    <div class="footer">
+      <div class="flex-row-center gap-2">
         <Component
           is={attachment.component.AttachmentsPresenter}
-          props={{ value: object.attachments, object, size: 'medium', showCounter: true }}
+          props={{ value: object.attachments, object, size: 'small', showCounter: true }}
         />
       </div>
       {#if channels[0]}
-        <div class="flex flex-grow">
-          <ChannelsEditor
-            attachedTo={channels[0].attachedTo}
-            attachedClass={channels[0].attachedToClass}
-            length={'short'}
-            editable={false}
-          />
-        </div>
+        <ChannelsEditor
+          attachedTo={channels[0].attachedTo}
+          attachedClass={channels[0].attachedToClass}
+          length={'short'}
+          editable={false}
+        />
       {/if}
     </div>
   {/if}
 </div>
-
-<style lang="scss">
-  .card-container {
-    padding: 1rem 1.5rem 1.25rem;
-    background-color: var(--board-card-bg-color);
-    border: 1px solid var(--divider-color);
-    border-radius: 0.5rem;
-    transition-property: box-shadow, background-color, border-color;
-    transition-timing-function: var(--timing-shadow);
-    transition-duration: 0.15s;
-    user-select: text;
-
-    &:hover {
-      background-color: var(--board-card-bg-hover);
-      border-color: var(--button-border-color);
-      box-shadow: var(--accent-shadow);
-    }
-
-    .label {
-      margin-bottom: 1.75rem;
-      font-weight: 500;
-      font-size: 0.625rem;
-      color: var(--dark-color);
-    }
-    .name {
-      margin: 1rem 0 0.25rem;
-      font-weight: 500;
-      font-size: 1rem;
-      color: var(--caption-color);
-    }
-    .description {
-      font-size: 0.75rem;
-      color: var(--dark-color);
-    }
-    .footer {
-      margin-top: 1.5rem;
-      // overflow: hidden;
-    }
-  }
-</style>

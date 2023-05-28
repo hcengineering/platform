@@ -195,6 +195,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        flex-shrink: 0;
         width: 100%;
         min-width: 0;
         min-height: 3.5rem;

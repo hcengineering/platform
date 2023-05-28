@@ -23,6 +23,7 @@
   import DropdownLabelsPopupIntl from './DropdownLabelsPopupIntl.svelte'
   import Label from './Label.svelte'
   import ui from '../plugin'
+  import DropdownIcon from './icons/Dropdown.svelte'
 
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let label: IntlString = ui.string.DropdownDefaultLabel
@@ -84,8 +85,11 @@
     showTooltip={{ label, direction: labelDirection }}
     on:click={openPopup}
   >
-    <span slot="content" class="overflow-label disabled">
+    <span slot="content" class="overflow-label disabled flex-grow text-left mr-2">
       <Label label={selectedItem ? selectedItem.label : label} />
     </span>
+    <svelte:fragment slot="iconRight">
+      <DropdownIcon size={'small'} fill={'var(--theme-dark-color)'} />
+    </svelte:fragment>
   </Button>
 </div>

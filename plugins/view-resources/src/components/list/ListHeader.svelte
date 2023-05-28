@@ -81,7 +81,7 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     style:z-index={10 - level}
-    style:background={headerBGColor}
+    style:--header-bg-color={headerBGColor}
     class="flex-between categoryHeader row"
     class:flat
     class:collapsed
@@ -150,7 +150,7 @@
       {:else}
         <span class="antiSection-header__counter ml-2">{items.length}</span>
       {/if}
-      <div class="flex-row-center flex-reverse flex-grow">
+      <div class="flex-row-center flex-reverse flex-grow mr-2 gap-2 reverse">
         {#each extraHeaders ?? [] as extra}
           <Component is={extra} props={{ ...props, value: category, category: groupByKey, docs: items }} />
         {/each}
@@ -228,6 +228,7 @@
       border-bottom-color: transparent;
     }
     &::before {
+      background: var(--header-bg-color);
       z-index: -1;
     }
 
@@ -250,8 +251,8 @@
       top: 2.75rem;
       padding: 0 2.5rem;
       background: var(--theme-list-subheader-color);
-      border-left: 1px solid var(--theme-list-border-color);
-      border-right: 1px solid var(--theme-list-border-color);
+      border-left: 1px solid var(--theme-list-subheader-divider);
+      border-right: 1px solid var(--theme-list-subheader-divider);
       border-bottom: 1px solid var(--theme-list-subheader-divider);
       // here should be top 3rem for sticky, but with ExpandCollapse it gives strange behavior
 
