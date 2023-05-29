@@ -14,14 +14,8 @@
 // limitations under the License.
 //
 
-import { Ref } from '@hcengineering/core'
 import { mergeIds } from '@hcengineering/platform'
-import { PresentationMiddlewareFactory } from '@hcengineering/presentation'
 // Import plugin directly to prevent .svelte components to being exposed to type typescript.
 import presentation, { presentationId } from '@hcengineering/presentation/src/plugin'
 
-export default mergeIds(presentationId, presentation, {
-  pipeline: {
-    PresentationMiddleware: '' as Ref<PresentationMiddlewareFactory>
-  }
-})
+export default mergeIds(presentationId, presentation, {})

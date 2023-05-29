@@ -14,10 +14,19 @@
 -->
 <script lang="ts">
   import { AttachedData, Ref, StatusManager, WithLookup } from '@hcengineering/core'
-  import { getClient, statusStore } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { Issue, IssueDraft, IssueStatus, Project } from '@hcengineering/tracker'
-  import type { ButtonKind, ButtonSize, IconSize } from '@hcengineering/ui'
-  import { Button, SelectPopup, TooltipAlignment, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import {
+    ButtonKind,
+    ButtonSize,
+    IconSize,
+    Button,
+    SelectPopup,
+    TooltipAlignment,
+    eventToHTMLElement,
+    showPopup
+  } from '@hcengineering/ui'
+  import { statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import IssueStatusIcon from './IssueStatusIcon.svelte'

@@ -31,7 +31,7 @@
   import { Item, Kanban } from '@hcengineering/kanban'
   import notification from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
-  import { createQuery, getClient, statusStore, ActionContext } from '@hcengineering/presentation'
+  import { createQuery, getClient, ActionContext } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import { Issue, IssuesGrouping, IssuesOrdering, Project } from '@hcengineering/tracker'
   import {
@@ -68,7 +68,8 @@
     noCategory,
     SelectDirection,
     selectionStore,
-    setGroupByValues
+    setGroupByValues,
+    statusStore
   } from '@hcengineering/view-resources'
   import view from '@hcengineering/view-resources/src/plugin'
   import { onMount } from 'svelte'

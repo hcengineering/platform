@@ -26,7 +26,7 @@
   } from '@hcengineering/core'
   import { Item, Kanban as KanbanUI } from '@hcengineering/kanban'
   import { getResource } from '@hcengineering/platform'
-  import { createQuery, getClient, statusStore, ActionContext } from '@hcengineering/presentation'
+  import { createQuery, getClient, ActionContext } from '@hcengineering/presentation'
   import { Kanban, SpaceWithStates, Task, TaskGrouping, TaskOrdering } from '@hcengineering/task'
   import {
     ColorDefinition,
@@ -56,7 +56,8 @@
     noCategory,
     SelectDirection,
     selectionStore,
-    setGroupByValues
+    setGroupByValues,
+    statusStore
   } from '@hcengineering/view-resources'
   import view from '@hcengineering/view-resources/src/plugin'
   import { onMount } from 'svelte'

@@ -15,10 +15,10 @@
 //
 
 import { Class, Ref } from '@hcengineering/core'
-import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
+import type { Asset, IntlString, Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { ObjectSearchCategory } from './types'
-import { PresentationMiddlewareCreator, PresentationMiddlewareFactory } from './pipeline'
+import { PresentationMiddlewareFactory } from './pipeline'
 
 /**
  * @public
@@ -68,8 +68,5 @@ export default plugin(presentationId, {
     UploadURL: '' as Metadata<string>,
     Token: '' as Metadata<string>,
     FrontUrl: '' as Asset
-  },
-  function: {
-    CreateStatusMiddleware: '' as Resource<PresentationMiddlewareCreator>
   }
 })

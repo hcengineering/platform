@@ -17,7 +17,7 @@
   import { Issue } from '@hcengineering/tracker'
   import { floorFractionDigits, Label } from '@hcengineering/ui'
   import tracker from '../../plugin'
-  import { statusStore } from '@hcengineering/presentation'
+  import { statusStore } from '@hcengineering/view-resources'
   import EstimationProgressCircle from '../issues/timereport/EstimationProgressCircle.svelte'
   import TimePresenter from '../issues/timereport/TimePresenter.svelte'
   import { FixedColumn } from '@hcengineering/view-resources'

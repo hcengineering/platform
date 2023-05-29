@@ -98,14 +98,10 @@ import {
   valueNinResult
 } from './filter'
 
-import {
-  IndexedDocumentPreview,
-  GroupByStatusCategories,
-  GroupStatusValues,
-  HasStatusValue
-} from '@hcengineering/presentation'
+import { IndexedDocumentPreview } from '@hcengineering/presentation'
 import { statusSort } from './utils'
 import { showEmptyGroups } from './viewOptions'
+import { GroupByStatusCategories, GroupStatusValues, HasStatusValue, StatusMiddleware } from './status'
 export { getActions, invokeAction } from './actions'
 export { default as ActionHandler } from './components/ActionHandler.svelte'
 export { default as AddSavedView } from './components/filter/AddSavedView.svelte'
@@ -131,6 +127,7 @@ export { default as ParentsNavigator } from './components/ParentsNavigator.svelt
 export * from './filter'
 export * from './selection'
 export * from './utils'
+export * from './status'
 export {
   buildModel,
   getActiveViewletId,
@@ -259,6 +256,7 @@ export default async (): Promise<Resources> => ({
     FilterDateCustom: dateCustom,
     GroupByStatusCategoriesFunc: GroupByStatusCategories,
     GroupStatusValuesFunc: GroupStatusValues,
-    HasStatusValueFunc: HasStatusValue
+    HasStatusValueFunc: HasStatusValue,
+    CreateStatusMiddleware: StatusMiddleware.create
   }
 })

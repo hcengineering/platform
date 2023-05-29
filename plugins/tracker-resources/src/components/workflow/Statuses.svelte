@@ -28,13 +28,13 @@
     Scroller,
     showPopup
   } from '@hcengineering/ui'
-  import { statusStore } from '@hcengineering/presentation'
   import { createEventDispatcher } from 'svelte'
   import { flip } from 'svelte/animate'
   import tracker from '../../plugin'
   import StatusEditor from './StatusEditor.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
   import RemoveStatus from './RemoveStatus.svelte'
+  import { statusStore } from '@hcengineering/view-resources'
 
   export let projectId: Ref<Project>
   export let projectClass: Ref<Class<Project>>

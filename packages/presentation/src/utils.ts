@@ -45,8 +45,6 @@ import { onDestroy } from 'svelte'
 import { KeyedAttribute } from '..'
 import { PresentationPipeline, PresentationPipelineImpl } from './pipeline'
 import plugin from './plugin'
-import { statusStore } from './status'
-export { statusStore }
 
 let liveQuery: LQ
 let client: TxOperations

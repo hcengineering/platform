@@ -15,8 +15,9 @@
 <script lang="ts">
   import { IssueStatus } from '@hcengineering/tracker'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
-  import { createQuery, statusStore } from '@hcengineering/presentation'
+  import { createQuery } from '@hcengineering/presentation'
   import core, { IdMap, Ref, StatusCategory, toIdMap } from '@hcengineering/core'
+  import { statusStore } from '@hcengineering/view-resources'
 
   export let value: Ref<IssueStatus>[]
 

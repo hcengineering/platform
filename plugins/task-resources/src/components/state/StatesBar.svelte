@@ -15,9 +15,10 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
-  import { BreadcrumbsElement, statusStore } from '@hcengineering/presentation'
+  import { BreadcrumbsElement } from '@hcengineering/presentation'
   import task, { SpaceWithStates, State } from '@hcengineering/task'
   import { ScrollerBar, getColorNumberByText, getPlatformColor, themeStore } from '@hcengineering/ui'
+  import { statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import type { StatesBarPosition } from '../..'
 

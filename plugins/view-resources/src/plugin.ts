@@ -14,7 +14,8 @@
 // limitations under the License.
 //
 
-import { IntlString, mergeIds } from '@hcengineering/platform'
+import { IntlString, Resource, mergeIds } from '@hcengineering/platform'
+import { PresentationMiddlewareCreator } from '@hcengineering/presentation'
 import { AnyComponent } from '@hcengineering/ui'
 import view, { GroupByCategoriesFunc, GroupValuesFunc, HasValueFunc, SortFunc, viewId } from '@hcengineering/view'
 
@@ -94,6 +95,7 @@ export default mergeIds(viewId, view, {
     StatusSort: '' as SortFunc,
     GroupByStatusCategoriesFunc: '' as GroupByCategoriesFunc,
     GroupStatusValuesFunc: '' as GroupValuesFunc,
-    HasStatusValueFunc: '' as HasValueFunc
+    HasStatusValueFunc: '' as HasValueFunc,
+    CreateStatusMiddleware: '' as Resource<PresentationMiddlewareCreator>
   }
 })

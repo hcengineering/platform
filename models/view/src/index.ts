@@ -84,6 +84,7 @@ import {
   GroupValuesFunc,
   HasValueFunc
 } from '@hcengineering/view'
+import presentation from '@hcengineering/model-presentation'
 import view from './plugin'
 
 export { viewId } from '@hcengineering/view'
@@ -537,6 +538,15 @@ export function createModel (builder: Builder): void {
       component: view.component.ListView
     },
     view.viewlet.List
+  )
+
+  builder.createDoc(
+    presentation.class.PresentationMiddlewareFactory,
+    core.space.Model,
+    {
+      createPresentationMiddleware: view.function.CreateStatusMiddleware
+    },
+    view.pipeline.PresentationMiddleware
   )
 
   createAction(

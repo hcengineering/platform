@@ -16,7 +16,7 @@
   import { AggregateValue, Ref } from '@hcengineering/core'
   import ComponentPresenter from './ComponentPresenter.svelte'
   import { Component } from '@hcengineering/tracker'
-  
+
   import { componentStore } from '../../component'
 
   export let value: Ref<Component> | AggregateValue | undefined

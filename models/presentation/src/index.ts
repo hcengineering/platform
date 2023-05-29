@@ -16,7 +16,7 @@
 import { DOMAIN_MODEL } from '@hcengineering/core'
 import { Builder, Model } from '@hcengineering/model'
 import core, { TDoc } from '@hcengineering/model-core'
-import type { Asset, IntlString, Resource } from '@hcengineering/platform'
+import { Asset, IntlString, Resource } from '@hcengineering/platform'
 // Import types to prevent .svelte components to being exposed to type typescript.
 import { ObjectSearchCategory, ObjectSearchFactory } from '@hcengineering/presentation/src/types'
 import presentation from './plugin'
@@ -42,13 +42,4 @@ export class TPresentationMiddlewareFactory extends TDoc implements Presentation
 
 export function createModel (builder: Builder): void {
   builder.createModel(TObjectSearchCategory, TPresentationMiddlewareFactory)
-
-  builder.createDoc(
-    presentation.class.PresentationMiddlewareFactory,
-    core.space.Model,
-    {
-      createPresentationMiddleware: presentation.function.CreateStatusMiddleware
-    },
-    presentation.pipeline.PresentationMiddleware
-  )
 }

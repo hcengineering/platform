@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Issue, Project } from '@hcengineering/tracker'
-  import { statusStore } from '@hcengineering/presentation'
+  import { statusStore } from '@hcengineering/view-resources'
 
   import IssueStatusIcon from '../IssueStatusIcon.svelte'
   import { getIssueId } from '../../../issues'

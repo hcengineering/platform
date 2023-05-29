@@ -14,9 +14,10 @@
 -->
 <script lang="ts">
   import { Ref, Status } from '@hcengineering/core'
-  import { getClient, statusStore } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { Issue, Project } from '@hcengineering/tracker'
   import { Button, Label } from '@hcengineering/ui'
+  import { statusStore } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
   import { findTargetStatus } from '../../../utils'
   import StatusRefPresenter from '../StatusRefPresenter.svelte'

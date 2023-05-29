@@ -15,7 +15,7 @@
 <script lang="ts">
   import { CategoryType, Class, Doc, DocumentQuery, generateId, Lookup, Ref, Space } from '@hcengineering/core'
   import { getResource, IntlString } from '@hcengineering/platform'
-  import { getClient, statusStore } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { AnyComponent } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, CategoryOption, ViewOptionModel, ViewOptions } from '@hcengineering/view'
   import { createEventDispatcher, onDestroy, SvelteComponentTyped } from 'svelte'
@@ -31,6 +31,7 @@
   } from '../../utils'
   import { CategoryQuery, noCategory } from '../../viewOptions'
   import ListCategory from './ListCategory.svelte'
+  import { statusStore } from '../../status'
 
   export let docs: Doc[]
   export let _class: Ref<Class<Doc>>

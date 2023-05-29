@@ -47,6 +47,7 @@
     "@hcengineering/setting": "^0.6.7",
     "@hcengineering/text-editor": "^0.6.0",
     "@hcengineering/tracker": "^0.6.8",
+    "@hcengineering/query": "^0.6.5",
     "fast-equals": "^2.0.3"
   }
 }

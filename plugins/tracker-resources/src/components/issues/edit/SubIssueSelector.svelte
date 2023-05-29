@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import core, { SortingOrder, WithLookup } from '@hcengineering/core'
-  import { createQuery, statusStore } from '@hcengineering/presentation'
+  import { createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus } from '@hcengineering/tracker'
   import {
     Icon,
@@ -29,7 +29,7 @@
     themeStore,
     tooltip
   } from '@hcengineering/ui'
-  import { ListSelectionProvider } from '@hcengineering/view-resources'
+  import { ListSelectionProvider, statusStore } from '@hcengineering/view-resources'
   import { getIssueId, issueLinkFragmentProvider } from '../../../issues'
   import tracker from '../../../plugin'
   import IssueStatusIcon from '../IssueStatusIcon.svelte'

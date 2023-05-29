@@ -2,11 +2,11 @@
   import { Ref } from '@hcengineering/core'
   import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import { Button, Label, SelectPopup, eventToHTMLElement, showPopup } from '@hcengineering/ui'
-  import presentation, { getClient, statusStore } from '@hcengineering/presentation'
+  import presentation, { getClient } from '@hcengineering/presentation'
   import tracker from '../../plugin'
   import { createEventDispatcher } from 'svelte'
   import IssueStatusIcon from '../issues/IssueStatusIcon.svelte'
-  import { StatusPresenter } from '@hcengineering/view-resources'
+  import { StatusPresenter, statusStore } from '@hcengineering/view-resources'
 
   export let projectId: Ref<Project>
   export let issues: Issue[]

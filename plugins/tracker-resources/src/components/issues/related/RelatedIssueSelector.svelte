@@ -26,9 +26,9 @@
     showPanel,
     showPopup
   } from '@hcengineering/ui'
+  import { statusStore } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
   import { subIssueListProvider } from '../../../utils'
-  import { statusStore } from '@hcengineering/presentation'
   import RelatedIssuePresenter from './RelatedIssuePresenter.svelte'
 
   export let object: WithLookup<Doc & { related: number }> | undefined

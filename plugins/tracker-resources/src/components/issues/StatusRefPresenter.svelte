@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Ref, Status, StatusValue } from '@hcengineering/core'
-  import { statusStore } from '@hcengineering/presentation'
+  import { statusStore } from '@hcengineering/view-resources'
   import StatusPresenter from './StatusPresenter.svelte'
 
   export let value: Ref<Status> | StatusValue | undefined

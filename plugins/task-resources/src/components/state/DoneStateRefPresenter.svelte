@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { Ref, Status, StatusValue } from '@hcengineering/core'
-  import { statusStore } from '@hcengineering/presentation'
+  import { statusStore } from '@hcengineering/view-resources'
   import type { DoneState } from '@hcengineering/task'
   import DoneStatePresenter from './DoneStatePresenter.svelte'
   import DoneStateEditor from './DoneStateEditor.svelte'

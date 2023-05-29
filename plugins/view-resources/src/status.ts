@@ -40,7 +40,7 @@ import core, {
 } from '@hcengineering/core'
 import { LiveQuery } from '@hcengineering/query'
 import { get, writable } from 'svelte/store'
-import { BasePresentationMiddleware, PresentationMiddleware } from './pipeline'
+import { BasePresentationMiddleware, PresentationMiddleware } from '@hcengineering/presentation'
 
 // Issue status live query
 export const statusStore = writable<StatusManager>(new StatusManager([]))
