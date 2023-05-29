@@ -19,4 +19,4 @@
   export let value: Ref<Space>
 </script>
 
-<ObjectPresenter objectId={value} _class={core.class.Space} />
+<ObjectPresenter objectId={value} _class={core.class.Space} on:accent-color />

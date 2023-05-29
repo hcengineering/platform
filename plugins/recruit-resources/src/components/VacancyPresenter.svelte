@@ -17,13 +17,22 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
 
   import { Vacancy } from '@hcengineering/recruit'
-  import { Icon, tooltip } from '@hcengineering/ui'
+  import { Icon, getPlatformAvatarColorForTextDef, themeStore, tooltip } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
+  import { createEventDispatcher, onMount } from 'svelte'
   import recruit from '../plugin'
 
   export let value: Vacancy
   export let inline: boolean = false
   export let disabled = false
+
+  const dispatch = createEventDispatcher()
+  $: accentColor = getPlatformAvatarColorForTextDef(value.name, $themeStore.dark)
+
+  $: dispatch('accent-color', accentColor)
+  onMount(() => {
+    dispatch('accent-color', accentColor)
+  })
 </script>
 
 {#if value}

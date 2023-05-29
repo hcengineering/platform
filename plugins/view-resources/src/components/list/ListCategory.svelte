@@ -380,6 +380,14 @@
       }}
       on:collapse={() => {
         collapsed = !collapsed
+        if (collapsed) {
+          if ($focusStore.focus !== undefined) {
+            const fid = $focusStore.focus._id
+            if (items.some((it) => it._id === fid)) {
+              $focusStore = { provider: $focusStore.provider }
+            }
+          }
+        }
         localStorage.setItem(categoryCollapseKey, collapsed ? 'true' : 'false')
       }}
     />

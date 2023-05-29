@@ -63,6 +63,7 @@ import type {
   ViewAction,
   ViewActionInput,
   ViewContext,
+  ViewOptionModel,
   ViewOptions,
   ViewOptionsModel,
   Viewlet,
@@ -361,6 +362,14 @@ export const actionTemplates = template({
     category: view.category.General
   }
 })
+
+export const showColorsViewOption: ViewOptionModel = {
+  key: 'shouldShowColors',
+  type: 'toggle',
+  defaultValue: true,
+  actionTarget: 'display',
+  label: view.string.ShowColors
+}
 
 export function createModel (builder: Builder): void {
   builder.createModel(

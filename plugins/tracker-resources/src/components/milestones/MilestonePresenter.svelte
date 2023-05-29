@@ -15,8 +15,9 @@
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
   import { Milestone } from '@hcengineering/tracker'
-  import { Icon } from '@hcengineering/ui'
+  import { Icon, getPlatformAvatarColorDef, getPlatformAvatarColorForTextDef, themeStore } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
+  import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'
 
   export let value: WithLookup<Milestone>
@@ -24,6 +25,17 @@
   export let disabled = false
   export let inline = false
   export let onClick: (() => void) | undefined = undefined
+
+  const dispatch = createEventDispatcher()
+  $: accentColor =
+    value?.label !== undefined
+      ? getPlatformAvatarColorForTextDef(value?.label, $themeStore.dark)
+      : getPlatformAvatarColorDef(0, $themeStore.dark)
+
+  $: dispatch('accent-color', accentColor)
+  onMount(() => {
+    dispatch('accent-color', accentColor)
+  })
 </script>
 
 <DocNavLink object={value} {disabled} {inline} {onClick}>

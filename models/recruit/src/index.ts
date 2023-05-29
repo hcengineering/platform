@@ -41,7 +41,7 @@ import presentation from '@hcengineering/model-presentation'
 import tags from '@hcengineering/model-tags'
 import task, { DOMAIN_TASK, TSpaceWithStates, TTask, actionTemplates } from '@hcengineering/model-task'
 import tracker from '@hcengineering/model-tracker'
-import view, { createAction, actionTemplates as viewTemplates } from '@hcengineering/model-view'
+import view, { createAction, showColorsViewOption, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench, { Application, createNavigateAction } from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import { IntlString, getEmbeddedLabel } from '@hcengineering/platform'
@@ -624,25 +624,31 @@ export function createModel (builder: Builder): void {
     }
   }
 
-  const applicantViewOptions: ViewOptionsModel = {
-    groupBy: ['state', 'assignee', 'space'],
-    orderBy: [
-      ['state', SortingOrder.Ascending],
-      ['modifiedOn', SortingOrder.Descending],
-      ['createdOn', SortingOrder.Descending],
-      ['dueDate', SortingOrder.Ascending],
-      ['rank', SortingOrder.Ascending]
-    ],
-    other: [
-      {
-        key: 'shouldShowAll',
-        type: 'toggle',
-        defaultValue: false,
-        actionTarget: 'category',
-        action: view.function.ShowEmptyGroups,
-        label: view.string.ShowEmptyGroups
-      }
-    ]
+  const applicantViewOptions = (colors: boolean): ViewOptionsModel => {
+    const model: ViewOptionsModel = {
+      groupBy: ['state', 'assignee', 'space'],
+      orderBy: [
+        ['state', SortingOrder.Ascending],
+        ['modifiedOn', SortingOrder.Descending],
+        ['createdOn', SortingOrder.Descending],
+        ['dueDate', SortingOrder.Ascending],
+        ['rank', SortingOrder.Ascending]
+      ],
+      other: [
+        {
+          key: 'shouldShowAll',
+          type: 'toggle',
+          defaultValue: false,
+          actionTarget: 'category',
+          action: view.function.ShowEmptyGroups,
+          label: view.string.ShowEmptyGroups
+        }
+      ]
+    }
+    if (colors) {
+      model.other.push(showColorsViewOption)
+    }
+    return model
   }
   builder.createDoc(
     view.class.Viewlet,
@@ -710,7 +716,7 @@ export function createModel (builder: Builder): void {
         doneState: null,
         '$lookup.space.archived': false
       },
-      viewOptions: applicantViewOptions
+      viewOptions: applicantViewOptions(true)
     },
     recruit.viewlet.ListApplicant
   )
@@ -727,7 +733,7 @@ export function createModel (builder: Builder): void {
         '$lookup.space.archived': false
       },
       viewOptions: {
-        ...applicantViewOptions,
+        ...applicantViewOptions(false),
         groupDepth: 1
       },
       options: {

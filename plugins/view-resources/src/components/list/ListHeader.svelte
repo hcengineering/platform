@@ -62,7 +62,7 @@
   let accentColor: ColorDefinition | undefined = undefined
 
   $: headerBGColor =
-    level === 0 && (viewOptions as any).shouldShowColors
+    level === 0 && (viewOptions as any).shouldShowColors !== false
       ? accentColor?.background ?? defaultBackground($themeStore.dark)
       : defaultBackground($themeStore.dark)
 

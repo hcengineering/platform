@@ -59,5 +59,13 @@
 </script>
 
 {#if presenter}
-  <svelte:component this={presenter.presenter} value={doc} {...props} {inline} {shouldShowAvatar} {noUnderline} />
+  <svelte:component
+    this={presenter.presenter}
+    value={doc}
+    {...props}
+    {inline}
+    {shouldShowAvatar}
+    {noUnderline}
+    on:accent-color
+  />
 {/if}

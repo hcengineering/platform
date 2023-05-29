@@ -283,8 +283,7 @@
 
     "NoStatusFound": "No matching status found",
     "CreateMissingStatus": "Create missing status",
-    "UnsetParent": "Parent issue will be unset",
-    "ShowColors": "Use colors"
+    "UnsetParent": "Parent issue will be unset"    
   },
   "status": {}
 }

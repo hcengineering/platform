@@ -44,9 +44,9 @@ import {
   IssuesDateModificationPeriod,
   IssuesGrouping,
   IssuesOrdering,
-  Project,
   Milestone,
   MilestoneStatus,
+  Project,
   TimeReportDayType
 } from '@hcengineering/tracker'
 import {
@@ -55,12 +55,13 @@ import {
   areDatesEqual,
   getMillisecondsInMonth,
   isWeekend,
-  MILLISECONDS_IN_WEEK
+  MILLISECONDS_IN_WEEK,
+  PaletteColorIndexes
 } from '@hcengineering/ui'
 import { ViewletDescriptor } from '@hcengineering/view'
 import { CategoryQuery, groupBy, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
 import tracker from './plugin'
-import { defaultPriorities, defaultMilestoneStatuses } from './types'
+import { defaultMilestoneStatuses, defaultPriorities } from './types'
 
 export * from './types'
 
@@ -98,14 +99,6 @@ export const issuesOrderKeyMap: Record<IssuesOrdering, IssuesOrderByKeys> = {
   [IssuesOrdering.LastUpdated]: 'modifiedOn',
   [IssuesOrdering.DueDate]: 'dueDate',
   [IssuesOrdering.Manual]: 'rank'
-}
-
-export const issuesSortOrderMap: Record<IssuesOrderByKeys, SortingOrder> = {
-  status: SortingOrder.Ascending,
-  priority: SortingOrder.Ascending,
-  modifiedOn: SortingOrder.Descending,
-  dueDate: SortingOrder.Ascending,
-  rank: SortingOrder.Ascending
 }
 
 export const issuesGroupEditorMap: Record<'status' | 'priority' | 'component' | 'milestone', AnyComponent | undefined> =
@@ -326,7 +319,7 @@ export async function issuePrioritySort (value: IssuePriority[]): Promise<IssueP
     const i1 = defaultPriorities.indexOf(a)
     const i2 = defaultPriorities.indexOf(b)
 
-    return i1 - i2
+    return i2 - i1
   })
   return value
 }
@@ -649,4 +642,15 @@ export function findTargetStatus (
 export function issueToAttachedData (issue: Issue): AttachedData<Issue> {
   const { _id, _class, space, ...data } = issue
   return { ...data }
+}
+
+/**
+ * @public
+ */
+export const IssuePriorityColor = {
+  [IssuePriority.NoPriority]: PaletteColorIndexes.Blueberry,
+  [IssuePriority.Urgent]: PaletteColorIndexes.Orange,
+  [IssuePriority.High]: PaletteColorIndexes.Sunshine,
+  [IssuePriority.Medium]: PaletteColorIndexes.Ocean,
+  [IssuePriority.Low]: PaletteColorIndexes.Cloud
 }

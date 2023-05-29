@@ -300,6 +300,7 @@
                 {space}
                 size={'small'}
                 kind={'list-header'}
+                display={'kanban'}
                 colorInherit={!$themeStore.dark}
                 accent
                 on:accent-color={(ev) => setAccentColor(index, ev)}
