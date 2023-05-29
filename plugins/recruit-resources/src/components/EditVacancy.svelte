@@ -106,7 +106,7 @@
     const updates: Partial<Data<Vacancy>> = {}
     const trimmedName = rawName.trim()
 
-    if (trimmedName.length > 0 && trimmedName !== object.name) {
+    if (trimmedName.length > 0 && trimmedName !== object.name?.trim()) {
       updates.name = trimmedName
     }
 

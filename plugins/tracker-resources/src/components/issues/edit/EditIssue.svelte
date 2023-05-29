@@ -108,7 +108,7 @@
 
     const trimmedTitle = title.trim()
 
-    if (trimmedTitle.length > 0 && trimmedTitle !== issue.title) {
+    if (trimmedTitle.length > 0 && trimmedTitle !== issue.title?.trim()) {
       await client.update(issue, { title: trimmedTitle })
     }
   }
