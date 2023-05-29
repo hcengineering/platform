@@ -106,7 +106,7 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
 async function fixProjectIssueStatusesOrder (tx: TxOperations, project: Project): Promise<TxResult> {
   const statuses = await tx.findAll(
     tracker.class.IssueStatus,
-    { attachedTo: project._id },
+    { space: project._id },
     { lookup: { category: core.class.StatusCategory } }
   )
   statuses.sort((a, b) => (a.$lookup?.category?.order ?? 0) - (b.$lookup?.category?.order ?? 0))
