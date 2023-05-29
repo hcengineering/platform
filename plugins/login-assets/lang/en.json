@@ -39,6 +39,8 @@
     "InviteLimit": "Invite limit:",
     "GetLink": "Get invite link",
     "NoLimit": "No limit",
-    "AlreadyJoined": "Already joined?"
+    "AlreadyJoined": "Already joined?",
+    "ConfirmationSent": "A message has been sent to your email containing a link to confirm the your address.",
+    "ConfirmationSent2": "Please follow the link to complete your sign up."
   }
 }

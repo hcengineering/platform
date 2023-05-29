@@ -27,7 +27,7 @@
   export let zIndex: number
   export let top: boolean
   export let close: () => void
-  export let contentPanel: HTMLElement
+  export let contentPanel: HTMLElement | undefined
 
   let modalHTML: HTMLElement
   let componentInstance: any
@@ -68,7 +68,11 @@
     _close(undefined)
   }
 
-  const fitPopup = (modalHTML: HTMLElement, element: PopupAlignment | undefined, contentPanel: HTMLElement): void => {
+  const fitPopup = (
+    modalHTML: HTMLElement,
+    element: PopupAlignment | undefined,
+    contentPanel: HTMLElement | undefined
+  ): void => {
     if ((fullSize || docSize) && (element === 'float' || element === 'centered')) {
       options = fitPopupElement(modalHTML, 'full', contentPanel)
       options.props.maxHeight = '100vh'

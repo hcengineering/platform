@@ -17,6 +17,7 @@
 import {
   ACCOUNT_DB,
   assignWorkspace,
+  confirmEmail,
   createAccount,
   createWorkspace,
   dropAccount,
@@ -369,6 +370,16 @@ export function devTool (
         txes,
         migrateOperations
       )
+    })
+
+  program
+    .command('confirm-email <email>')
+    .description('confirm user email')
+    .action(async (email: string, cmd) => {
+      const { mongodbUri } = prepareTools()
+      return await withDatabase(mongodbUri, async (db) => {
+        await confirmEmail(db, email)
+      })
     })
 
   program
