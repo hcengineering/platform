@@ -137,7 +137,7 @@ import ProjectSpacePresenter from './components/projects/ProjectSpacePresenter.s
 import IssueStatistics from './components/milestones/IssueStatistics.svelte'
 import MilestoneRefPresenter from './components/milestones/MilestoneRefPresenter.svelte'
 import MilestoneFilter from './components/milestones/MilestoneFilter.svelte'
-import { ComponentMiddleware } from '@hcengineering/presentation/src/component'
+import { ComponentMiddleware } from './component'
 
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 

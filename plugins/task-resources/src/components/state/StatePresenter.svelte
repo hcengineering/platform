@@ -27,8 +27,6 @@
   export let value: State | undefined
   export let shouldShowAvatar = true
   export let inline: boolean = false
-  export let colorInherit: boolean = false
-  export let accent: boolean = false
   export let disabled: boolean = false
   export let oneLine: boolean = false
 

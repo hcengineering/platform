@@ -13,8 +13,6 @@
 // limitations under the License.
 //
 
-import { writable } from 'svelte/store'
-
 import core, {
   AnyAttribute,
   Attribute,
@@ -32,10 +30,10 @@ import core, {
   Tx,
   TxResult
 } from '@hcengineering/core'
+import { BasePresentationMiddleware, PresentationMiddleware } from '@hcengineering/presentation'
 import { LiveQuery } from '@hcengineering/query'
 import tracker, { Component, ComponentManager } from '@hcengineering/tracker'
-
-import { BasePresentationMiddleware, PresentationMiddleware } from './pipeline'
+import { writable } from 'svelte/store'
 
 export const componentStore = writable<ComponentManager>(new ComponentManager([]))
 

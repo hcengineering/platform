@@ -67,8 +67,8 @@ import { ViewletDescriptor } from '@hcengineering/view'
 import { CategoryQuery, groupBy, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
 import tracker from './plugin'
 import { defaultPriorities, defaultMilestoneStatuses } from './types'
-import { componentStore } from '@hcengineering/presentation/src/component'
 import { get } from 'svelte/store'
+import { componentStore } from './component'
 
 export * from './types'
 
