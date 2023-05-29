@@ -100,7 +100,7 @@
               dispatch('close', itemValue)
             }}
           >
-            <div class="color" style:background-color={color.background}>{color.name}</div>
+            <div class="color" style:background={color.color} />
             <span class="label" style:color={color.title}>{itemValue.label}</span>
             <div class="check">
               {#if itemValue.id === selected}

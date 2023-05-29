@@ -41,7 +41,7 @@
   </div>
 </div>
 <audio bind:duration bind:currentTime={time} bind:paused>
-  <source src={getFileUrl(value.file)} type={value.type} />
+  <source src={getFileUrl(value.file, 'full', value.name)} type={value.type} />
 </audio>
 
 <style lang="scss">

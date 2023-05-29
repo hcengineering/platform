@@ -391,10 +391,10 @@
             {#if selectedState}
               <div
                 class="color"
-                style="background-color: {getPlatformColorDef(
+                style="background: {getPlatformColorDef(
                   selectedState.color ?? getColorNumberByText(selectedState.name),
                   $themeStore.dark
-                ).background}"
+                ).color}"
               />
               <span class="label overflow-label">{selectedState.name}</span>
             {:else}
