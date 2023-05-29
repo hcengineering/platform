@@ -164,6 +164,37 @@
     }
   }
 
+  .antiCard-menu__item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    margin: 0 .5rem;
+    padding: .25rem .5rem;
+    min-width: 0;
+    min-height: 2.5rem;
+    border-radius: .25rem;
+
+    &.hoverable{
+      cursor: pointer;
+
+      &:hover { background-color: var(--theme-popup-hover); }
+    }
+    span {
+      margin-right: .5rem;
+      color: var(--theme-caption-color);
+    }
+  }
+  .antiCard-menu__spacer {
+    flex-shrink: 0;
+    height: .5rem;
+  }
+  .antiCard-menu__divider {
+    flex-shrink: 0;
+    margin: .5rem 0;
+    height: 1px;
+    background-color: var(--theme-popup-divider);
+  }
   .antiCard-group {
     padding: .5rem 1rem;
 
@@ -195,21 +226,25 @@
     height: auto;
     max-height: inherit;
 
-    &.large {
+    &.large {   // 720
       width: 45rem;
       max-width: 60rem;
     }
-    &.medium {
+    &.medium {   // 600
       width: 37.5rem;
       max-width: 37.5rem;
     }
-    &.small {
+    &.small {   // 480
       width: 30rem;
       max-width: 30rem;
     }
-    &.x-small {
+    &.x-small { // 400
       width: 25rem;
       max-width: 25rem;
+    }
+    &.menu { // 280
+      width: 17.5rem;
+      max-width: 17.5rem;
     }
     &.full {
       width: max-content;

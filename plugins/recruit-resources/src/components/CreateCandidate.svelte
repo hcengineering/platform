@@ -187,7 +187,7 @@
 
     // Store all extra values.
     for (const [k, v] of Object.entries(object)) {
-      if (v != null && k !== 'createOn' && k !== 'avatar') {
+      if (v != null && k !== 'createdOn' && k !== 'avatar') {
         const attr = hierarchy.findAttribute(recruit.mixin.Candidate, k)
         if (attr === undefined) continue
         if (attr.attributeOf === recruit.mixin.Candidate) {
@@ -270,7 +270,7 @@
 
     await applyOps.commit()
     draftController.remove()
-    dispatch('close', object._id)
+    dispatch('close', _id)
     resetObject()
   }
 

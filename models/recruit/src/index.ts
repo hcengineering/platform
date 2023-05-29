@@ -284,7 +284,12 @@ export function createModel (builder: Builder): void {
               label: recruit.string.Applications,
               createLabel: recruit.string.ApplicationCreateLabel,
               createComponent: recruit.component.CreateApplication,
-              descriptors: [view.viewlet.Table, task.viewlet.Kanban, recruit.viewlet.ApplicantDashboard]
+              descriptors: [
+                view.viewlet.Table,
+                view.viewlet.List,
+                task.viewlet.Kanban,
+                recruit.viewlet.ApplicantDashboard
+              ]
             },
             position: 'vacancy'
           },
@@ -556,8 +561,8 @@ export function createModel (builder: Builder): void {
           label: tracker.string.Issues
         },
         'state',
-        'comments',
         'attachments',
+        'comments',
         'modifiedOn',
         '$lookup.space.company',
         {
@@ -624,7 +629,7 @@ export function createModel (builder: Builder): void {
     orderBy: [
       ['state', SortingOrder.Ascending],
       ['modifiedOn', SortingOrder.Descending],
-      ['createOn', SortingOrder.Descending],
+      ['createdOn', SortingOrder.Descending],
       ['dueDate', SortingOrder.Ascending],
       ['rank', SortingOrder.Ascending]
     ],
@@ -639,6 +644,76 @@ export function createModel (builder: Builder): void {
       }
     ]
   }
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: recruit.class.Applicant,
+      descriptor: view.viewlet.List,
+      config: [
+        { key: '', props: { listProps: { fixed: 'left', key: 'app' } } },
+        {
+          key: '$lookup.attachedTo',
+          presenter: contact.component.PersonPresenter,
+          label: recruit.string.Talent,
+          sortingKey: '$lookup.attachedTo.name',
+          props: {
+            _class: recruit.mixin.Candidate,
+            listProps: { fixed: 'left', key: 'talent' },
+            inline: true
+          }
+        },
+        { key: 'state', props: { listProps: { fixed: 'left', key: 'state' }, inline: true, showLabel: false } },
+        {
+          key: '$lookup.space.company',
+          props: {
+            listProps: { fixed: 'left', key: 'company' },
+            inline: true,
+            maxWidth: '10rem'
+          }
+        },
+        {
+          key: '',
+          presenter: tracker.component.RelatedIssueSelector,
+          label: tracker.string.Issues,
+          props: { listProps: { fixed: 'left', key: 'issues' } }
+        },
+        { key: 'attachments', props: { listProps: { fixed: 'left', key: 'attachments' } } },
+        { key: 'comments', props: { listProps: { fixed: 'left' }, key: 'comments' } },
+        { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
+        { key: '', presenter: view.component.DividerPresenter, props: { type: 'divider' } },
+        {
+          key: '$lookup.attachedTo.$lookup.channels',
+          label: contact.string.ContactInfo,
+          sortingKey: ['$lookup.attachedTo.$lookup.channels.lastMessage', '$lookup.attachedTo.channels'],
+          props: {
+            listProps: {
+              fixed: 'left',
+              key: 'channels'
+            }
+          }
+        },
+        { key: '', presenter: view.component.DividerPresenter, props: { type: 'divider' } },
+        { key: 'modifiedOn', props: { listProps: { key: 'modified', fixed: 'left' } } },
+        { key: 'assignee', props: { listProps: { key: 'assignee', fixed: 'right' }, shouldShowLabel: false } }
+      ],
+      options: {
+        lookup: {
+          _id: {
+            related: [tracker.class.Issue, 'relations._id']
+          },
+          space: recruit.class.Vacancy
+        }
+      },
+      hiddenKeys: ['name', 'attachedTo'],
+      baseQuery: {
+        doneState: null,
+        '$lookup.space.archived': false
+      },
+      viewOptions: applicantViewOptions
+    },
+    recruit.viewlet.ListApplicant
+  )
 
   builder.createDoc(
     view.class.Viewlet,

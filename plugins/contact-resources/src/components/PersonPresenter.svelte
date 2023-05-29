@@ -34,6 +34,7 @@
   export let element: HTMLElement | undefined = undefined
   export let colorInherit: boolean = false
   export let accent: boolean = false
+  export let maxWidth = ''
 
   function getTooltip (
     tooltipLabels: PersonLabelTooltip | undefined,
@@ -79,6 +80,7 @@
     {statusLabel}
     {colorInherit}
     {accent}
+    {maxWidth}
     bind:element
     on:accent-color
   />

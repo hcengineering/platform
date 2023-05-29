@@ -112,6 +112,7 @@ export interface Account {
   workspaces: ObjectId[]
   // Defined for server admins only
   admin?: boolean
+  confirmed?: boolean
 }
 
 /**
@@ -222,6 +223,15 @@ async function getAccountInfo (db: Db, email: string, password: string): Promise
   return toAccountInfo(account)
 }
 
+async function getAccountInfoByToken (db: Db, productId: string, token: string): Promise<AccountInfo> {
+  const { email } = decodeToken(token)
+  const account = await getAccount(db, email)
+  if (account === null) {
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: email }))
+  }
+  return toAccountInfo(account)
+}
+
 /**
  * @public
  * @param db -
@@ -236,19 +246,22 @@ export async function login (db: Db, productId: string, email: string, password:
   const result = {
     endpoint: getEndpoint(),
     email,
-    token: generateToken(email, getWorkspaceId('', productId), getAdminExtra(info))
+    confirmed: info.confirmed ?? true,
+    token: generateToken(email, getWorkspaceId('', productId), getExtra(info))
   }
   return result
 }
 
 /**
- * Will add admin=='true' in case of user is server admin
+ * Will add extra props
  */
-function getAdminExtra (
-  info: Account | AccountInfo | null,
-  rec?: Record<string, string>
-): Record<string, string> | undefined {
-  return info?.admin === true ? { ...rec, admin: 'true' } : rec
+function getExtra (info: Account | AccountInfo | null, rec?: Record<string, any>): Record<string, any> | undefined {
+  const res = rec ?? {}
+  if (info?.admin === true) {
+    res.admin = 'true'
+  }
+  res.confirmed = info?.confirmed ?? true
+  return res
 }
 
 /**
@@ -270,7 +283,7 @@ export async function selectWorkspace (
     return {
       endpoint: getEndpoint(),
       email,
-      token: generateToken(email, getWorkspaceId(workspace, productId), getAdminExtra(accountInfo)),
+      token: generateToken(email, getWorkspaceId(workspace, productId), getExtra(accountInfo)),
       workspace,
       productId
     }
@@ -286,7 +299,7 @@ export async function selectWorkspace (
         const result = {
           endpoint: getEndpoint(),
           email,
-          token: generateToken(email, getWorkspaceId(workspace, productId), getAdminExtra(accountInfo)),
+          token: generateToken(email, getWorkspaceId(workspace, productId), getExtra(accountInfo)),
           workspace,
           productId
         }
@@ -352,6 +365,80 @@ export async function join (
 /**
  * @public
  */
+export async function confirmEmail (db: Db, email: string): Promise<Account> {
+  const account = await getAccount(db, email)
+
+  if (account === null) {
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: accountId }))
+  }
+
+  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { confirmed: true } })
+  account.confirmed = true
+  return account
+}
+
+/**
+ * @public
+ */
+export async function confirm (db: Db, productId: string, token: string): Promise<LoginInfo> {
+  const decode = decodeToken(token)
+  const email = decode.extra?.confirm
+  if (email === undefined) {
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: accountId }))
+  }
+  const account = await confirmEmail(db, email)
+
+  const result = {
+    endpoint: getEndpoint(),
+    email,
+    token: generateToken(email, getWorkspaceId('', productId), getExtra(account))
+  }
+  return result
+}
+
+async function sendConfirmation (productId: string, account: Account): Promise<void> {
+  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
+  if (sesURL === undefined || sesURL === '') {
+    throw new Error('Please provide email service url')
+  }
+  const front = getMetadata(accountPlugin.metadata.FrontURL)
+  if (front === undefined || front === '') {
+    throw new Error('Please provide front url')
+  }
+
+  const token = generateToken(
+    '@confirm',
+    getWorkspaceId('', productId),
+    getExtra(account, {
+      confirm: account.email
+    })
+  )
+
+  const link = concatLink(front, `/login/confirm?id=${token}`)
+
+  const text = `To confirm your email, please paste the following link in your web browser's address bar: ${link}. If you did not make this request, please ignore this email.`
+  const html = `<p>To confirm your email, please click the link below: <a href=${link}>Confirm Your Email</a></p><p>
+  If the link above does not work, paste the following link in your web browser's address bar: ${link}
+</p><p>If you did not make this request, please ignore this email.</p>`
+  const subject = 'Confirm Your Email'
+  const to = account.email
+  await fetch(concatLink(sesURL, '/send'), {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      text,
+      html,
+      subject,
+      to
+    })
+  })
+}
+
+/**
+ * @public
+ */
 export async function signUpJoin (
   db: Db,
   productId: string,
@@ -363,7 +450,7 @@ export async function signUpJoin (
 ): Promise<WorkspaceLoginInfo> {
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(invite, email)
-  await createAccount(db, productId, email, password, first, last)
+  await createAcc(db, productId, email, password, first, last, invite?.emailMask === email)
   await assignWorkspace(db, productId, email, workspace.name)
 
   const token = (await login(db, productId, email, password)).token
@@ -372,17 +459,15 @@ export async function signUpJoin (
   return result
 }
 
-/**
- * @public
- */
-export async function createAccount (
+async function createAcc (
   db: Db,
   productId: string,
   email: string,
   password: string,
   first: string,
-  last: string
-): Promise<LoginInfo> {
+  last: string,
+  confirmed: boolean = false
+): Promise<Account> {
   const salt = randomBytes(32)
   const hash = hashWithSalt(password, salt)
 
@@ -402,13 +487,37 @@ export async function createAccount (
     salt,
     first,
     last,
+    confirmed,
     workspaces: []
   })
+
+  const newAccount = await getAccount(db, email)
+  if (newAccount === null) {
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountAlreadyExists, { account: email }))
+  }
+  if (!confirmed) {
+    await sendConfirmation(productId, newAccount)
+  }
+  return newAccount
+}
+
+/**
+ * @public
+ */
+export async function createAccount (
+  db: Db,
+  productId: string,
+  email: string,
+  password: string,
+  first: string,
+  last: string
+): Promise<LoginInfo> {
+  const account = await createAcc(db, productId, email, password, first, last, false)
 
   const result = {
     endpoint: getEndpoint(),
     email,
-    token: generateToken(email, getWorkspaceId('', productId), getAdminExtra(account))
+    token: generateToken(email, getWorkspaceId('', productId), getExtra(account))
   }
   return result
 }
@@ -493,7 +602,10 @@ export async function upgradeWorkspace (
 export const createUserWorkspace =
   (version: Data<Version>, txes: Tx[], migrationOperation: [string, MigrateOperation][]) =>
     async (db: Db, productId: string, token: string, workspace: string): Promise<LoginInfo> => {
-      const { email } = decodeToken(token)
+      const { email, extra } = decodeToken(token)
+      if (extra?.confirmed === false) {
+        throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: email }))
+      }
       await createWorkspace(version, txes, migrationOperation, db, productId, workspace, '')
       await assignWorkspace(db, productId, email, workspace)
       await setRole(email, workspace, productId, AccountRole.Owner)
@@ -501,7 +613,7 @@ export const createUserWorkspace =
       const result = {
         endpoint: getEndpoint(),
         email,
-        token: generateToken(email, getWorkspaceId(workspace, productId), getAdminExtra(info)),
+        token: generateToken(email, getWorkspaceId(workspace, productId), getExtra(info)),
         productId
       }
       return result
@@ -736,7 +848,7 @@ export async function requestPassword (db: Db, productId: string, email: string)
   const token = generateToken(
     '@restore',
     getWorkspaceId('', productId),
-    getAdminExtra(account, {
+    getExtra(account, {
       restore: email
     })
   )
@@ -1069,7 +1181,9 @@ export function getMethods (
     changePassword: wrap(changePassword),
     requestPassword: wrap(requestPassword),
     restorePassword: wrap(restorePassword),
-    sendInvite: wrap(sendInvite)
+    sendInvite: wrap(sendInvite),
+    confirm: wrap(confirm),
+    getAccountInfoByToken: wrap(getAccountInfoByToken)
     // updateAccount: wrap(updateAccount)
   }
 }

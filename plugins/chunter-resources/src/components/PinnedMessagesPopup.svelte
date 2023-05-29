@@ -66,7 +66,7 @@
         </div>
       </div>
       <MessageViewer message={message.content} />
-      <span class="time">{getTime(message.createOn ?? 0)}</span>
+      <span class="time">{getTime(message.createdOn ?? 0)}</span>
     </div>
   {/each}
 </div>

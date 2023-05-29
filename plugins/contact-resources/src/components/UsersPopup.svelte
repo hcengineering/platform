@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Contact, getFirstName, Person } from '@hcengineering/contact'
+  import { Contact, getFirstName, getLastName, Person } from '@hcengineering/contact'
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
   import type { Asset, IntlString } from '@hcengineering/platform'
   import presentation, { getClient, ObjectCreate, ObjectPopup } from '@hcengineering/presentation'
@@ -37,14 +37,15 @@
   export let readonly = false
 
   const hierarchy = getClient().getHierarchy()
+  // const dispatch = createEventDispatcher()
 
   $: _create =
     create !== undefined
       ? {
           ...create,
           update: (doc: Doc) => {
-            const name = getFirstName((doc as Contact).name)
-            return name.length > 0 ? name : (doc as Contact).name
+            const name = getFirstName((doc as Contact).name).split(' ')[0]
+            return name.length > 0 ? name : getLastName((doc as Contact).name).split(' ')[0]
           }
         }
       : undefined

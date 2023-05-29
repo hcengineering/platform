@@ -42,6 +42,7 @@ import { ViewOptionsModel } from '@hcengineering/view'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import notification from '@hcengineering/notification'
 import lead from './plugin'
+import tracker from '@hcengineering/model-tracker'
 
 export { leadId } from '@hcengineering/lead'
 export { leadOperation } from './migration'
@@ -193,6 +194,13 @@ export function createModel (builder: Builder): void {
         '',
         '_class',
         'leads',
+        'attachments',
+        {
+          key: '',
+          presenter: tracker.component.RelatedIssueSelector,
+          label: tracker.string.Relations
+        },
+        'comments',
         'modifiedOn',
         {
           key: '$lookup.channels',
@@ -200,7 +208,14 @@ export function createModel (builder: Builder): void {
           sortingKey: ['$lookup.channels.lastMessage', 'channels']
         }
       ],
-      hiddenKeys: ['name']
+      hiddenKeys: ['name'],
+      options: {
+        lookup: {
+          _id: {
+            related: [tracker.class.Issue, 'relations._id']
+          }
+        }
+      }
     },
     lead.viewlet.TableCustomer
   )
@@ -215,55 +230,44 @@ export function createModel (builder: Builder): void {
         '',
         'title',
         'attachedTo',
+        'assignee',
+        {
+          key: '',
+          presenter: tracker.component.RelatedIssueSelector,
+          label: tracker.string.Issues
+        },
         'state',
         'doneState',
         'attachments',
+        {
+          key: '',
+          presenter: tracker.component.RelatedIssueSelector,
+          label: tracker.string.Relations
+        },
         'comments',
         'modifiedOn',
         {
           key: '$lookup.attachedTo.$lookup.channels',
           sortingKey: ['$lookup.attachedTo.$lookup.channels.lastMessage', '$lookup.attachedTo.channels']
         }
-      ]
+      ],
+      options: {
+        lookup: {
+          _id: {
+            related: [tracker.class.Issue, 'relations._id']
+          }
+        }
+      }
     },
     lead.viewlet.TableLead
   )
 
-  builder.createDoc(
-    view.class.Viewlet,
-    core.space.Model,
-    {
-      attachTo: lead.class.Lead,
-      descriptor: view.viewlet.List,
-      config: [
-        { key: '', props: { listProps: { fixed: 'left' } } },
-        { key: 'title', props: { listProps: { fixed: 'left' } } },
-        { key: 'state', props: { listProps: { fixed: 'left' } } },
-        { key: 'doneState', props: { listProps: { fixed: 'left' } } },
-        { key: '', presenter: view.component.GrowPresenter },
-        'attachments',
-        'comments',
-        'assignee'
-      ],
-      viewOptions: {
-        groupBy: ['assignee', 'state', 'attachedTo'],
-        orderBy: [
-          ['assignee', -1],
-          ['state', 1],
-          ['attachedTo', 1],
-          ['modifiedOn', -1]
-        ],
-        other: []
-      }
-    },
-    lead.viewlet.ListLead
-  )
   const leadViewOptions: ViewOptionsModel = {
     groupBy: ['state', 'assignee'],
     orderBy: [
       ['state', SortingOrder.Ascending],
       ['modifiedOn', SortingOrder.Descending],
-      ['createOn', SortingOrder.Descending],
+      ['createdOn', SortingOrder.Descending],
       ['dueDate', SortingOrder.Ascending],
       ['rank', SortingOrder.Ascending]
     ],
@@ -278,6 +282,61 @@ export function createModel (builder: Builder): void {
       }
     ]
   }
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: lead.class.Lead,
+      descriptor: view.viewlet.List,
+      config: [
+        { key: '', props: { listProps: { fixed: 'left', key: 'lead' } } },
+        {
+          key: '',
+          presenter: lead.component.TitlePresenter,
+          props: { listProps: { fixed: 'left', key: 'title' }, maxWidth: '10rem' }
+        },
+        {
+          key: '$lookup.attachedTo',
+          presenter: contact.component.PersonPresenter,
+          label: lead.string.Customer,
+          sortingKey: '$lookup.attachedTo.name',
+          props: {
+            _class: lead.mixin.Customer,
+            listProps: { fixed: 'left', key: 'talent' },
+            inline: true,
+            maxWidth: '10rem'
+          }
+        },
+        { key: 'state', props: { listProps: { fixed: 'left', key: 'state' } } },
+        {
+          key: '',
+          presenter: tracker.component.RelatedIssueSelector,
+          label: tracker.string.Relations,
+          props: { listProps: { fixed: 'left', key: 'issues' } }
+        },
+        { key: 'attachments', props: { listProps: { fixed: 'left', key: 'attachments' } } },
+        { key: 'comments', props: { listProps: { fixed: 'left' }, key: 'comments' } },
+        { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
+        { key: '', presenter: view.component.DividerPresenter, props: { type: 'divider' } },
+        {
+          key: '$lookup.attachedTo.$lookup.channels',
+          label: contact.string.ContactInfo,
+          sortingKey: ['$lookup.attachedTo.$lookup.channels.lastMessage', '$lookup.attachedTo.channels'],
+          props: {
+            listProps: {
+              fixed: 'left',
+              key: 'channels'
+            }
+          }
+        },
+        { key: '', presenter: view.component.DividerPresenter, props: { type: 'divider' } },
+        { key: 'modifiedOn', props: { listProps: { key: 'modified', fixed: 'left' } } },
+        { key: 'assignee', props: { listProps: { key: 'assignee', fixed: 'right' }, shouldShowLabel: false } }
+      ],
+      viewOptions: leadViewOptions
+    },
+    lead.viewlet.ListLead
+  )
 
   const lookupLeadOptions: FindOptions<Lead> = {
     lookup: {

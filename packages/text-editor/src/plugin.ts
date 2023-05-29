@@ -64,6 +64,9 @@ export default plugin(textEditorId, {
     CategoryRow: '' as IntlString,
     CategoryColumn: '' as IntlString,
     Table: '' as IntlString,
-    TableOptions: '' as IntlString
+    TableOptions: '' as IntlString,
+    Width: '' as IntlString,
+    Height: '' as IntlString,
+    Unset: '' as IntlString
   }
 })

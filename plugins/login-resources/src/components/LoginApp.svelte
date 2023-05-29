@@ -27,6 +27,8 @@
   import { getMetadata } from '@hcengineering/platform'
   import PasswordRequest from './PasswordRequest.svelte'
   import PasswordRestore from './PasswordRestore.svelte'
+  import Confirmation from './Confirmation.svelte'
+  import ConfirmationSend from './ConfirmationSend.svelte'
 
   export let page: string = 'login'
 
@@ -68,6 +70,10 @@
       <SelectWorkspace {navigateUrl} />
     {:else if page === 'join'}
       <Join />
+    {:else if page === 'confirm'}
+      <Confirmation />
+    {:else if page === 'confirmationSend'}
+      <ConfirmationSend />
     {/if}
   </div>
   <Intro landscape={$deviceInfo.docWidth <= 768} mini={$deviceInfo.docWidth <= 480} />

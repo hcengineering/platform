@@ -11,6 +11,7 @@ export SERVER_SECRET=secret
 node ../dev/tool/bundle.js create-workspace sanity-ws -o SanityTest
 # Create user record in accounts
 node ../dev/tool/bundle.js create-account user1 -f John -l Appleseed -p 1234
+node ../dev/tool/bundle.js confirm-email user1
 
 
 # Restore workspace contents in mongo/elastic

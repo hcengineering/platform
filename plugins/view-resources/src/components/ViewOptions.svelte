@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { DropdownIntlItem, DropdownLabelsIntl, Label, MiniToggle } from '@hcengineering/ui'
-  import { Viewlet, ViewOptions, ViewOptionsModel } from '@hcengineering/view'
+  import { DropdownIntlItem, DropdownLabelsIntl, Label, Toggle } from '@hcengineering/ui'
+  import { Viewlet, ViewOptions, ViewOptionsModel, ViewOptionModel } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
   import { buildConfigLookup, getKeyLabel } from '../utils'
@@ -59,68 +59,80 @@
     const notAllowed = current.slice(0, i)
     return groupBy.filter((p) => !notAllowed.includes(p.id as string))
   }
+
+  const changeToggle = (model: ViewOptionModel) => {
+    viewOptions[model.key] = !viewOptions[model.key]
+    dispatch('update', { key: model.key, value: viewOptions[model.key] })
+  }
 </script>
 
-<div class="antiCard">
-  <div class="antiCard-group grid">
-    {#each groups as group, i}
-      <span class="label"><Label label={i === 0 ? view.string.Grouping : view.string.Then} /></span>
-      <div class="value grouping">
-        <DropdownLabelsIntl
-          label={view.string.Grouping}
-          items={getItems(groupBy, i, viewOptions.groupBy)}
-          selected={group}
-          width="10rem"
-          justify="left"
-          on:selected={(e) => selectGrouping(e.detail, i)}
-        />
-      </div>
-    {/each}
-    <span class="label"><Label label={view.string.Ordering} /></span>
-    <div class="value ordering">
+<div class="antiCard dialog menu">
+  <div class="antiCard-menu__spacer" />
+  {#each groups as group, i}
+    <div class="antiCard-menu__item grouping">
+      <span class="overflow-label"><Label label={i === 0 ? view.string.Grouping : view.string.Then} /></span>
       <DropdownLabelsIntl
-        label={view.string.Ordering}
-        items={orderBy}
-        selected={viewOptions.orderBy[0]}
+        label={view.string.Grouping}
+        kind={'secondary'}
+        size={'medium'}
+        items={getItems(groupBy, i, viewOptions.groupBy)}
+        selected={group}
         width="10rem"
         justify="left"
-        on:selected={(e) => {
-          const key = e.detail
-          const value = config.orderBy.find((p) => p[0] === key)
-          if (value !== undefined) {
-            viewOptions.orderBy = value
-            dispatch('update', { key: 'orderBy', value })
-          }
-        }}
+        on:selected={(e) => selectGrouping(e.detail, i)}
       />
     </div>
-    {#each config.other.filter((p) => !p.hidden?.(viewOptions)) as model}
-      <span class="label"><Label label={model.label} /></span>
-      <div class="value">
-        {#if isToggleType(model)}
-          <MiniToggle
-            on={viewOptions[model.key] ?? model.defaultValue}
-            on:change={() => {
-              viewOptions[model.key] = !viewOptions[model.key]
-              dispatch('update', { key: model.key, value: viewOptions[model.key] })
-            }}
-          />
-        {:else if isDropdownType(model)}
-          {@const items = model.values.filter(({ hidden }) => !hidden?.(viewOptions))}
-          <DropdownLabelsIntl
-            label={model.label}
-            {items}
-            selected={viewOptions[model.key] ?? model.defaultValue}
-            width="10rem"
-            justify="left"
-            on:selected={(e) => {
-              viewOptions[model.key] = e.detail
-              dispatch('update', { key: model.key, value: e.detail })
-            }}
-          />
-        {/if}
-      </div>
-    {/each}
-    <slot name="extra" />
+  {/each}
+  <div class="antiCard-menu__item ordering">
+    <span class="overflow-label"><Label label={view.string.Ordering} /></span>
+    <DropdownLabelsIntl
+      label={view.string.Ordering}
+      kind={'secondary'}
+      size={'medium'}
+      items={orderBy}
+      selected={viewOptions.orderBy[0]}
+      width="10rem"
+      justify="left"
+      on:selected={(e) => {
+        const key = e.detail
+        const value = config.orderBy.find((p) => p[0] === key)
+        if (value !== undefined) {
+          viewOptions.orderBy = value
+          dispatch('update', { key: 'orderBy', value })
+        }
+      }}
+    />
   </div>
+  <div class="antiCard-menu__divider" />
+  {#each config.other.filter((p) => !p.hidden?.(viewOptions)) as model}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div
+      class="antiCard-menu__item hoverable ordering"
+      on:click={() => {
+        if (isToggleType(model)) changeToggle(model)
+      }}
+    >
+      <span class="overflow-label"><Label label={model.label} /></span>
+      {#if isToggleType(model)}
+        <Toggle on={viewOptions[model.key] ?? model.defaultValue} on:change={() => changeToggle(model)} />
+      {:else if isDropdownType(model)}
+        {@const items = model.values.filter(({ hidden }) => !hidden?.(viewOptions))}
+        <DropdownLabelsIntl
+          label={model.label}
+          kind={'secondary'}
+          size={'medium'}
+          {items}
+          selected={viewOptions[model.key] ?? model.defaultValue}
+          width="10rem"
+          justify="left"
+          on:selected={(e) => {
+            viewOptions[model.key] = e.detail
+            dispatch('update', { key: model.key, value: e.detail })
+          }}
+        />
+      {/if}
+    </div>
+  {/each}
+  <slot name="extra" />
+  <div class="antiCard-menu__spacer" />
 </div>

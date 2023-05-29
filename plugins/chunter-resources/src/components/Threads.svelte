@@ -37,7 +37,7 @@
     },
     {
       sort: {
-        createOn: SortingOrder.Descending
+        createdOn: SortingOrder.Descending
       }
     }
   )

@@ -137,7 +137,7 @@ export async function migrateThreadMessages (client: MigrationClient): Promise<v
       modifiedOn: message.modifiedOn,
       modifiedBy: message.modifiedBy,
       createBy: message.modifiedBy,
-      createOn: message.modifiedOn,
+      createdOn: message.modifiedOn,
       _id: message._id as string as Ref<ThreadMessage>
     })
   }
@@ -156,7 +156,7 @@ export async function migrateThreadMessages (client: MigrationClient): Promise<v
       {
         objectClass: chunter.class.ThreadMessage,
         'attributes.createBy': tx.modifiedBy,
-        'attributes.createOn': tx.modifiedOn,
+        'attributes.createdOn': tx.modifiedOn,
         'attributes.content': tx.attributes.message
       }
     )

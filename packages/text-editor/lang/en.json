@@ -37,6 +37,9 @@
     "CategoryColumn": "Columns",
     "Table": "Table",
     "InsertTable": "Insert table",
-    "TableOptions": "Customize table"
+    "TableOptions": "Customize table",
+    "Width": "Width",
+    "Height": "Height",
+    "Unset": "Unset"
   }
 }

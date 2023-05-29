@@ -17,11 +17,12 @@
   import { Status, Severity, OK, setMetadata } from '@hcengineering/platform'
 
   import Form from './Form.svelte'
-  import { createWorkspace } from '../utils'
+  import { createWorkspace, getAccount } from '../utils'
   import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
   import login from '../plugin'
   import { workbenchId } from '@hcengineering/workbench'
   import presentation from '@hcengineering/presentation'
+  import { onMount } from 'svelte'
 
   const fields = [
     {
@@ -37,6 +38,16 @@
   }
 
   let status: Status<any> = OK
+
+  onMount(async () => {
+    const account = await getAccount()
+    if (account?.confirmed !== true) {
+      const loc = getCurrentLocation()
+      loc.path[1] = 'confirmationSend'
+      loc.path.length = 2
+      navigate(loc)
+    }
+  })
 
   const action = {
     i18n: login.string.CreateWorkspace,

@@ -44,7 +44,7 @@
   const client = getClient()
 </script>
 
-<div class="flex-col h-full flex-grow card-container">
+<div class="antiContactCard">
   <div class="label uppercase"><Label label={recruit.string.Talent} /></div>
   <Avatar avatar={candidate?.avatar} size={'large'} />
   {#if candidate}
@@ -61,69 +61,25 @@
       {/if}
     {/if}
     <div class="description overflow-label">{candidate.city ?? ''}</div>
-    <div class="footer flex flex-reverse flex-grow">
-      <div class="flex-center flex-wrap">
+    <div class="footer">
+      <div class="flex-row-center gap-2">
         <Component
           is={chunter.component.CommentsPresenter}
-          props={{ value: candidate.comments, object: candidate, size: 'medium', showCounter: true }}
+          props={{ value: candidate.comments, object: candidate, size: 'small', showCounter: true }}
         />
         <Component
           is={attachment.component.AttachmentsPresenter}
-          props={{ value: candidate.attachments, object: candidate, size: 'medium', showCounter: true }}
+          props={{ value: candidate.attachments, object: candidate, size: 'small', showCounter: true }}
         />
       </div>
       {#if channels[0]}
-        <div class="flex flex-grow">
-          <ChannelsEditor
-            attachedTo={channels[0].attachedTo}
-            attachedClass={channels[0].attachedToClass}
-            length={'short'}
-            editable={false}
-          />
-        </div>
+        <ChannelsEditor
+          attachedTo={channels[0].attachedTo}
+          attachedClass={channels[0].attachedToClass}
+          length={'short'}
+          editable={false}
+        />
       {/if}
     </div>
   {/if}
 </div>
-
-<style lang="scss">
-  .card-container {
-    padding: 1rem 1.5rem 1.25rem;
-    background-color: var(--theme-button-enabled);
-    border: 1px solid var(--theme-button-border);
-    border-radius: 0.5rem;
-    transition-property: box-shadow, background-color, border-color;
-    transition-timing-function: var(--timing-shadow);
-    transition-duration: 0.15s;
-    user-select: text;
-    min-width: 15rem;
-    min-height: 15rem;
-    max-width: 25rem;
-
-    &:hover {
-      background-color: var(--theme-button-hovered);
-      box-shadow: var(--accent-shadow);
-    }
-
-    .label {
-      margin-bottom: 1.75rem;
-      font-weight: 500;
-      font-size: 0.625rem;
-      color: var(--theme-dark-color);
-    }
-    .name {
-      margin: 1rem 0 0.25rem;
-      font-weight: 500;
-      font-size: 1rem;
-      color: var(--theme-caption-color);
-    }
-    .description {
-      font-size: 0.75rem;
-      color: var(--theme-dark-color);
-    }
-    .footer {
-      margin-top: 1.5rem;
-      // overflow: hidden;
-    }
-  }
-</style>

@@ -601,6 +601,7 @@ async function updateCollaboratorsMixin (
   originTx: TxCUD<Doc>
 ): Promise<Tx[]> {
   if (tx._class !== core.class.TxMixin) return []
+  if (originTx.space === core.space.DerivedTx) return []
   if (!control.hierarchy.isDerived(tx.mixin, notification.mixin.Collaborators)) return []
   const res: Tx[] = []
   if (tx.attributes.collaborators !== undefined) {
