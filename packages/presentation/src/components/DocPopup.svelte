@@ -24,12 +24,12 @@
     IconCheck,
     IconSearch,
     ListView,
+    closeTooltip,
     createFocusManager,
     deviceOptionsStore,
     resizeObserver,
     showPopup,
-    tooltip,
-    closeTooltip
+    tooltip
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
@@ -58,6 +58,7 @@
   export let create: ObjectCreate | undefined = undefined
   export let readonly = false
   export let disallowDeselect: Ref<Doc>[] | undefined = undefined
+  export let created: Doc[] = []
 
   let search: string = ''
 
@@ -66,6 +67,7 @@
   const dispatch = createEventDispatcher()
 
   $: showCategories =
+    created.length > 0 ||
     objects.map((it) => (it as any)[groupBy]).filter((it, index, arr) => arr.indexOf(it) === index).length > 1
 
   const checkSelected = (item: Doc): void => {
@@ -130,6 +132,7 @@
         const newPerson = await client.findOne(_class, { _id: res })
         if (newPerson !== undefined) {
           search = c.update?.(newPerson) ?? ''
+          dispatch('created', newPerson)
           dispatch('search', search)
         }
       }
@@ -177,6 +180,13 @@
   $: updateLocation(scrollDiv, selectedDiv, objects, selected)
 
   const forbiddenDeselectItemIds = new Set(disallowDeselect)
+
+  function getGroup (doc: Doc, groupBy: any): any {
+    if (created.find((it) => it._id === doc._id) !== undefined) {
+      return '_created'
+    }
+    return toAny(doc)[groupBy]
+  }
 </script>
 
 <FocusHandler {manager} />
@@ -225,7 +235,7 @@
         <svelte:fragment slot="category" let:item>
           {#if showCategories}
             {@const obj = toAny(objects[item])}
-            {#if item === 0 || (item > 0 && toAny(objects[item - 1])[groupBy] !== obj[groupBy])}
+            {#if item === 0 || (item > 0 && getGroup(objects[item - 1], groupBy) !== getGroup(obj, groupBy))}
               <!--Category for first item-->
               {#if item > 0}<div class="menu-separator" />{/if}
               <div class="category-box">

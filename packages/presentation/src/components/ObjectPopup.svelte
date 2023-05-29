@@ -15,6 +15,7 @@
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
+  import { Label } from '@hcengineering/ui'
   import presentation from '..'
   import { ObjectCreate } from '../types'
   import { createQuery } from '../utils'
@@ -45,6 +46,8 @@
   export let readonly = false
   export let disallowDeselect: Ref<Doc>[] | undefined = undefined
 
+  const created: Doc[] = []
+
   let search: string = ''
   let objects: Doc[] = []
 
@@ -68,7 +71,12 @@
         const bval: string = `${(b as any)[groupBy]}`
         return aval.localeCompare(bval)
       })
-      objects = result
+      if (created.length > 0) {
+        const cmap = new Set(created.map((it) => it._id))
+        objects = [...created, ...result.filter((d) => !cmap.has(d._id))]
+      } else {
+        objects = result
+      }
     },
     { ...(options ?? {}), limit: 200 }
   )
@@ -98,6 +106,8 @@
   on:close
   on:changeContent
   on:search={(e) => (search = e.detail)}
+  on:created={(doc) => created.push(doc.detail)}
+  {created}
 >
   <svelte:fragment slot="item" let:item>
     {#if $$slots.item}
@@ -105,7 +115,13 @@
     {/if}
   </svelte:fragment>
   <svelte:fragment slot="category" let:item>
-    {#if $$slots.category}
+    {#if created.length > 0 && created.find((it) => it._id === item._id) !== undefined}
+      <div class="menu-group__header">
+        <span class="overflow-label">
+          <Label label={presentation.string.Created} />
+        </span>
+      </div>
+    {:else if $$slots.category}
       <slot name="category" {item} />
     {/if}
   </svelte:fragment>

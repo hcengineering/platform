@@ -26,6 +26,7 @@
     "Edit": "Редактировать",    
     "DocumentPreview": "Предпросмотр",
     "MakePrivate": "Сделать личным",
-    "MakePrivateDescription": "Только пользователи могут видеть это"
+    "MakePrivateDescription": "Только пользователи могут видеть это",
+    "Created": "Созданные"
   }
 }
