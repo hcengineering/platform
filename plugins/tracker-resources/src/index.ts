@@ -471,9 +471,9 @@ export default async (): Promise<Resources> => ({
     GetAllPriority: getAllPriority,
     GetAllComponents: getAllComponents,
     GetAllMilestones: getAllMilestones,
-    GroupByCategoriesFunc: groupByComponentCategories,
-    GroupValuesFunc: groupComponentValues,
-    HasValueFunc: hasComponentValue,
+    GroupByComponentCategoriesFunc: groupByComponentCategories,
+    GroupComponentValuesFunc: groupComponentValues,
+    HasComponentValueFunc: hasComponentValue,
     CreateComponentMiddleware: ComponentMiddleware.create
   },
   actionImpl: {

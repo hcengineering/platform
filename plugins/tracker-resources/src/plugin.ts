@@ -393,9 +393,9 @@ export default mergeIds(trackerId, tracker, {
     GetAllPriority: '' as GetAllValuesFunc,
     GetAllComponents: '' as GetAllValuesFunc,
     GetAllMilestones: '' as GetAllValuesFunc,
-    GroupByCategoriesFunc: '' as GroupByCategoriesFunc,
-    GroupValuesFunc: '' as GroupValuesFunc,
-    HasValueFunc: '' as HasValueFunc,
+    GroupByComponentCategoriesFunc: '' as GroupByCategoriesFunc,
+    GroupComponentValuesFunc: '' as GroupValuesFunc,
+    HasComponentValueFunc: '' as HasValueFunc,
     CreateComponentMiddleware: '' as Resource<PresentationMiddlewareCreator>
   }
 })
