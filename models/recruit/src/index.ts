@@ -1179,7 +1179,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, notification.mixin.NotificationObjectPresenter, {
-    presenter: recruit.component.NotificationApplicantresenter
+    presenter: recruit.component.NotificationApplicantPresenter
   })
 
   builder.createDoc(

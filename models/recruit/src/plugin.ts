@@ -102,7 +102,7 @@ export default mergeIds(recruitId, recruit, {
     ApplicationMatchPresenter: '' as AnyComponent,
 
     MatchVacancy: '' as AnyComponent,
-    NotificationApplicantresenter: '' as AnyComponent
+    NotificationApplicantPresenter: '' as AnyComponent
   },
   template: {
     DefaultVacancy: '' as Ref<KanbanTemplate>,
