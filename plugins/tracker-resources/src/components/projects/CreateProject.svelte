@@ -142,9 +142,7 @@
       }
     }
     if (Object.keys(update).length > 0) {
-      const ops = client
-        .apply(project._id)
-        .match(tracker.class.Project, { identifier: { $ne: projectData.identifier } }, true)
+      const ops = client.apply(project._id).notMatch(tracker.class.Project, { identifier: projectData.identifier })
 
       isSaving = true
       await ops.update(project, update)
@@ -162,7 +160,7 @@
   async function createProject () {
     const projectId = generateId<Project>()
     const projectData = getProjectData()
-    const ops = client.apply(projectId).match(tracker.class.Project, { identifier: projectData.identifier }, true)
+    const ops = client.apply(projectId).notMatch(tracker.class.Project, { identifier: projectData.identifier })
 
     isSaving = true
     await ops.createDoc(tracker.class.Project, core.space.Space, projectData, projectId)

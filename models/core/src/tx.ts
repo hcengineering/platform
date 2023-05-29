@@ -96,5 +96,7 @@ export class TTxApplyIf extends TTx implements TxApplyIf {
 
   // All matches should be true with at least one document.
   match!: DocumentClassQuery<Doc>[]
+  // All matches should be false for all documents.
+  notMatch!: DocumentClassQuery<Doc>[]
   txes!: TxCUD<Doc>[]
 }
