@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import core, { ApplyOperations, SortingOrder, Status, TxOperations, generateId } from '@hcengineering/core'
 import { LexoRank, LexoDecimal, LexoNumeralSystem36 } from 'lexorank'
 import LexoRankBucket from 'lexorank/lib/lexoRank/lexoRankBucket'
 
@@ -43,4 +44,41 @@ export const calcRank = (prev?: { rank: string }, next?: { rank: string }): stri
     return a.genNext().toString()
   }
   return a.between(b).toString()
+}
+
+/**
+ * Generates statuses for provided space.
+ *
+ * @public
+ */
+export async function createStatuses (
+  client: TxOperations | ApplyOperations,
+  spaceId: Status['space'],
+  statusClass: Status['_class'],
+  categoryOfAttribute: Status['ofAttribute'],
+  defaultStatusId: Status['_id']
+): Promise<void> {
+  const categories = await client.findAll(
+    core.class.StatusCategory,
+    { ofAttribute: categoryOfAttribute },
+    { sort: { order: SortingOrder.Ascending } }
+  )
+  const ranks = [...genRanks(categories.length)]
+
+  for (const [i, category] of categories.entries()) {
+    const statusId = i === 0 ? defaultStatusId : generateId<Status>()
+    const rank = ranks[i]
+
+    await client.createDoc(
+      statusClass,
+      spaceId,
+      {
+        ofAttribute: categoryOfAttribute,
+        name: category.defaultStatusName,
+        category: category._id,
+        rank
+      },
+      statusId
+    )
+  }
 }

@@ -21,7 +21,6 @@ import core, {
   DocumentUpdate,
   Ref,
   SortingOrder,
-  StatusCategory,
   TxCreateDoc,
   TxOperations,
   TxResult,
@@ -41,6 +40,7 @@ import {
   Project,
   TimeReportDayType,
   calcRank,
+  createStatuses,
   genRanks
 } from '@hcengineering/tracker'
 import { DOMAIN_TRACKER } from '.'
@@ -54,14 +54,6 @@ enum DeprecatedIssueStatus {
   Canceled
 }
 
-interface CreateProjectIssueStatusesArgs {
-  tx: TxOperations
-  projectId: Ref<Project>
-  categories: StatusCategory[]
-  defaultStatusId?: Ref<IssueStatus>
-  defaultCategoryId?: Ref<StatusCategory>
-}
-
 const categoryByDeprecatedIssueStatus = {
   [DeprecatedIssueStatus.Backlog]: tracker.issueStatusCategory.Backlog,
   [DeprecatedIssueStatus.Todo]: tracker.issueStatusCategory.Unstarted,
@@ -69,30 +61,6 @@ const categoryByDeprecatedIssueStatus = {
   [DeprecatedIssueStatus.Done]: tracker.issueStatusCategory.Completed,
   [DeprecatedIssueStatus.Canceled]: tracker.issueStatusCategory.Canceled
 } as const
-
-async function createProjectIssueStatuses ({
-  tx,
-  projectId: attachedTo,
-  categories,
-  defaultStatusId,
-  defaultCategoryId = tracker.issueStatusCategory.Backlog
-}: CreateProjectIssueStatusesArgs): Promise<void> {
-  const issueStatusRanks = [...genRanks(categories.length)]
-
-  for (const [i, statusCategory] of categories.entries()) {
-    const { _id: category, defaultStatusName } = statusCategory
-    const rank = issueStatusRanks[i]
-
-    if (defaultStatusName !== undefined) {
-      await tx.createDoc(
-        tracker.class.IssueStatus,
-        attachedTo,
-        { ofAttribute: tracker.attribute.IssueStatus, name: defaultStatusName, category, rank },
-        category === defaultCategoryId ? defaultStatusId : undefined
-      )
-    }
-  }
-}
 
 async function createDefaultProject (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(tracker.class.Project, {
@@ -106,7 +74,6 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
   // Create new if not deleted by customers.
   if (current === undefined && currentDeleted === undefined) {
     const defaultStatusId: Ref<IssueStatus> = generateId()
-    const categories = await tx.findAll(core.class.StatusCategory, {}, { sort: { order: SortingOrder.Ascending } })
 
     await tx.createDoc<Project>(
       tracker.class.Project,
@@ -126,7 +93,13 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
       },
       tracker.project.DefaultProject
     )
-    await createProjectIssueStatuses({ tx, projectId: tracker.project.DefaultProject, categories, defaultStatusId })
+    await createStatuses(
+      tx,
+      tracker.project.DefaultProject,
+      tracker.class.IssueStatus,
+      tracker.attribute.IssueStatus,
+      defaultStatusId
+    )
   }
 }
 
@@ -167,13 +140,11 @@ async function upgradeProjectIssueStatuses (tx: TxOperations): Promise<void> {
   const projects = await tx.findAll(tracker.class.Project, { issueStatuses: undefined })
 
   if (projects.length > 0) {
-    const categories = await tx.findAll(core.class.StatusCategory, {}, { sort: { order: SortingOrder.Ascending } })
-
     for (const project of projects) {
       const defaultStatusId: Ref<IssueStatus> = generateId()
 
       await tx.update(project, { issueStatuses: 0, defaultIssueStatus: defaultStatusId })
-      await createProjectIssueStatuses({ tx, projectId: project._id, categories, defaultStatusId })
+      await createStatuses(tx, project._id, tracker.class.IssueStatus, tracker.attribute.IssueStatus, defaultStatusId)
     }
   }
 }

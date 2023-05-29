@@ -26,7 +26,7 @@ export interface StatusCategory extends Doc {
   icon: Asset
   label: IntlString
   color: number
-  defaultStatusName?: string
+  defaultStatusName: string
   order: number // category order
 }
 /**
