@@ -183,7 +183,9 @@ export function fitPopupPositionedElement (
 export function fitPopupElement (
   modalHTML: HTMLElement,
   element?: PopupAlignment,
-  contentPanel?: HTMLElement
+  contentPanel?: HTMLElement,
+  clientWidth?: number,
+  clientHeight?: number
 ): PopupOptions {
   let show = true
   const newProps: Record<string, string | number> = {}
@@ -205,9 +207,13 @@ export function fitPopupElement (
       show = true
     } else if (element === 'top') {
       newProps.top = '15vh'
-      newProps.left = '50%'
       newProps.maxHeight = '75vh'
-      newProps.transform = 'translateX(-50%)'
+      if (clientWidth !== undefined && clientHeight !== undefined) {
+        newProps.left = `calc(50% - ${clientWidth / 2}px`
+      } else {
+        newProps.left = '50%'
+        newProps.transform = 'translateX(-50%)'
+      }
       show = true
     } else if (element === 'float') {
       newProps.top = 'calc(var(--status-bar-height) + 4px)'
@@ -216,9 +222,14 @@ export function fitPopupElement (
       newProps.right = '4px'
       show = true
     } else if (element === 'center') {
-      newProps.top = '50%'
-      newProps.left = '50%'
-      newProps.transform = 'translate(-50%, -50%)'
+      if (clientWidth !== undefined && clientHeight !== undefined) {
+        newProps.top = `calc(50% - ${clientHeight / 2}px`
+        newProps.left = `calc(50% - ${clientWidth / 2}px`
+      } else {
+        newProps.top = '50%'
+        newProps.left = '50%'
+        newProps.transform = 'translate(-50%, -50%)'
+      }
       show = true
     } else if (element === 'centered') {
       newProps.top = newProps.bottom = '15%'
@@ -285,8 +296,13 @@ export function fitPopupElement (
         newProps.top = '15%'
       }
       newProps.bottom = '12px'
-      newProps.left = '50%'
-      newProps.transform = 'translateX(-50%)'
+
+      if (clientWidth !== undefined && clientHeight !== undefined) {
+        newProps.left = `calc(50% - ${clientWidth / 2}px`
+      } else {
+        newProps.left = '50%'
+        newProps.transform = 'translateX(-50%)'
+      }
     } else if (element === 'help-center') {
       newProps.top = 'calc(var(--status-bar-height) + 12px)'
       newProps.bottom = '12px'
@@ -294,9 +310,14 @@ export function fitPopupElement (
       show = true
     }
   } else {
-    newProps.top = '50%'
-    newProps.left = '50%'
-    newProps.transform = 'translate(-50%, -50%)'
+    if (clientWidth !== undefined && clientHeight !== undefined) {
+      newProps.top = `calc(50% - ${clientHeight / 2}px`
+      newProps.left = `calc(50% - ${clientWidth / 2}px`
+    } else {
+      newProps.top = '50%'
+      newProps.left = '50%'
+      newProps.transform = 'translate(-50%, -50%)'
+    }
     show = true
   }
   // applyStyle(newProps, modalHTML)
