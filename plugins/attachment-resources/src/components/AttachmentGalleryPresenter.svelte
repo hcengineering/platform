@@ -55,7 +55,7 @@
     {#if isImage(value.type)}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div class="cellImagePreview" on:click={openAttachment}>
-        <img class={'img-fit'} src={getFileUrl(value.file)} alt={value.name} />
+        <img class={'img-fit'} src={getFileUrl(value.file, 'full', value.name)} alt={value.name} />
       </div>
     {:else}
       <div class="cellMiscPreview">
@@ -65,7 +65,7 @@
             {extensionIconLabel(value.name)}
           </div>
         {:else}
-          <a class="no-line" href={getFileUrl(value.file)} download={value.name}>
+          <a class="no-line" href={getFileUrl(value.file, 'full', value.name)} download={value.name}>
             <div class="flex-center extensionIcon">{extensionIconLabel(value.name)}</div>
           </a>
         {/if}
@@ -79,7 +79,7 @@
           {extensionIconLabel(value.name)}
         </div>
       {:else}
-        <a class="no-line" href={getFileUrl(value.file)} download={value.name}>
+        <a class="no-line" href={getFileUrl(value.file, 'full', value.name)} download={value.name}>
           <div class="flex-center extensionIcon">{extensionIconLabel(value.name)}</div>
         </a>
       {/if}
@@ -91,7 +91,7 @@
           </div>
         {:else}
           <div class="eCellInfoFilename">
-            <a href={getFileUrl(value.file)} download={value.name}>{trimFilename(value.name)}</a>
+            <a href={getFileUrl(value.file, 'full', value.name)} download={value.name}>{trimFilename(value.name)}</a>
           </div>
         {/if}
         <div class="eCellInfoFilesize">{filesize(value.size)}</div>

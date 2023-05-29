@@ -146,7 +146,7 @@
           click(ev, image)
         }}
       >
-        <img src={getFileUrl(image.file)} alt={image.name} />
+        <img src={getFileUrl(image.file, 'full', image.name)} alt={image.name} />
       </div>
     {/each}
     <!-- svelte-ignore a11y-click-events-have-key-events -->

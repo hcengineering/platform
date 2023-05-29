@@ -56,7 +56,7 @@
       <AttachmentGalleryPresenter value={attachment}>
         <svelte:fragment slot="rowMenu">
           <div class="eAttachmentCellActions" class:fixed={i === selectedFileNumber}>
-            <a href={getFileUrl(attachment.file)} download={attachment.name}>
+            <a href={getFileUrl(attachment.file, 'full', attachment.name)} download={attachment.name}>
               <Icon icon={FileDownload} size={'small'} />
             </a>
             <div class="eAttachmentCellMenu" on:click={(event) => showFileMenu(event, attachment, i)}>

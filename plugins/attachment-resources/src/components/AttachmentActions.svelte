@@ -63,7 +63,12 @@
 </script>
 
 <div class="flex">
-  <a class="mr-1" href={getFileUrl(attachment.file)} download={attachment.name} on:click|stopPropagation>
+  <a
+    class="mr-1"
+    href={getFileUrl(attachment.file, 'full', attachment.name)}
+    download={attachment.name}
+    on:click|stopPropagation
+  >
     <ActionIcon icon={FileDownload} size={'small'} action={() => {}} />
   </a>
   <ActionIcon icon={IconMoreH} size={'small'} action={showMenu} />

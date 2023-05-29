@@ -83,7 +83,7 @@
             <AttachmentPresenter value={attachment} />
           </div>
           <div class="eAttachmentRowActions" class:fixed={i === selectedRowNumber}>
-            <a href={getFileUrl(attachment.file)} download={attachment.name}>
+            <a href={getFileUrl(attachment.file, 'full', attachment.name)} download={attachment.name}>
               <Icon icon={FileDownload} size={'small'} />
             </a>
             <!-- svelte-ignore a11y-click-events-have-key-events -->

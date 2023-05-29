@@ -74,7 +74,7 @@
 <div class="flex-row-center attachment-container">
   <a
     class="no-line"
-    href={getFileUrl(value.file)}
+    href={getFileUrl(value.file, 'full', value.name)}
     download={value.name}
     on:click={clickHandler}
     on:mousedown={middleClickHandler}
@@ -90,7 +90,12 @@
   </a>
   <div class="flex-col info-container">
     <div class="name">
-      <a href={getFileUrl(value.file)} download={value.name} on:click={clickHandler} on:mousedown={middleClickHandler}>
+      <a
+        href={getFileUrl(value.file, 'full', value.name)}
+        download={value.name}
+        on:click={clickHandler}
+        on:mousedown={middleClickHandler}
+      >
         {trimFilename(value.name)}
       </a>
     </div>
@@ -98,7 +103,12 @@
       {filesize(value.size, { spacer: '' })}
       <span class="actions inline-flex clear-mins ml-1 gap-1">
         <span>•</span>
-        <a class="no-line colorInherit" href={getFileUrl(value.file)} download={value.name} bind:this={download}>
+        <a
+          class="no-line colorInherit"
+          href={getFileUrl(value.file, 'full', value.name)}
+          download={value.name}
+          bind:this={download}
+        >
           <Label label={presentation.string.Download} />
         </a>
         {#if removable}
