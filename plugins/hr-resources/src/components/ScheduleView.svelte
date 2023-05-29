@@ -276,42 +276,44 @@
     }
     return map
   }
+  let staffDepartmentMap = new Map()
+  $: getDepartmentsForEmployee(departmentStaff).then((res) => {
+    staffDepartmentMap = res
+  })
 </script>
 
-{#if departmentStaff.length}
-  {#await getDepartmentsForEmployee(departmentStaff) then staffDepartmentMap}
-    {#if mode === CalendarMode.Year}
-      <YearView {departmentStaff} {employeeRequests} {types} {currentDate} {holidays} {staffDepartmentMap} />
-    {:else if mode === CalendarMode.Month}
-      {#if display === 'chart'}
-        <MonthView
-          {departmentStaff}
-          {employeeRequests}
-          {types}
-          {startDate}
-          {endDate}
-          {editableList}
-          {currentDate}
-          {timeReports}
-          {holidays}
-          {department}
-          {departments}
-          {staffDepartmentMap}
-        />
-      {:else if display === 'stats'}
-        <MonthTableView
-          {departmentStaff}
-          {employeeRequests}
-          {types}
-          {currentDate}
-          {timeReports}
-          {holidays}
-          {staffDepartmentMap}
-          {getHolidays}
-        />
-      {/if}
+{#if staffDepartmentMap.size > 0}
+  {#if mode === CalendarMode.Year}
+    <YearView {departmentStaff} {employeeRequests} {types} {currentDate} {holidays} {staffDepartmentMap} />
+  {:else if mode === CalendarMode.Month}
+    {#if display === 'chart'}
+      <MonthView
+        {departmentStaff}
+        {employeeRequests}
+        {types}
+        {startDate}
+        {endDate}
+        {editableList}
+        {currentDate}
+        {timeReports}
+        {holidays}
+        {department}
+        {departments}
+        {staffDepartmentMap}
+      />
+    {:else if display === 'stats'}
+      <MonthTableView
+        {departmentStaff}
+        {employeeRequests}
+        {types}
+        {currentDate}
+        {timeReports}
+        {holidays}
+        {staffDepartmentMap}
+        {getHolidays}
+      />
     {/if}
-  {/await}
+  {/if}
 {:else}
   <div class="flex-center h-full w-full flex-grow fs-title">
     <Label label={hr.string.NoEmployeesInDepartment} />

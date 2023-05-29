@@ -417,7 +417,10 @@ abstract class MongoAdapterBase implements DbAdapter {
       }
     })
     const domain = this.hierarchy.getDomain(clazz)
-    const cursor = this.db.collection(domain).aggregate(pipeline)
+    const cursor = this.db.collection(domain).aggregate(pipeline, {
+      checkKeys: false,
+      enableUtf8Validation: false
+    })
     cursor.maxTimeMS(30000)
     const res = (await cursor.toArray())[0]
     const result = res.results as WithLookup<T>[]

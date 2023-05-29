@@ -83,7 +83,7 @@ export function protoDeserialize (data: any, binary: boolean): any {
   if (!binary) {
     return JSON.parse(data, receiver)
   }
-  return packr.unpack(new Uint8Array(data))
+  return packr.unpack(new Uint8Array(replacer('', data)))
 }
 
 /**
@@ -92,6 +92,9 @@ export function protoDeserialize (data: any, binary: boolean): any {
  * @returns
  */
 export function serialize (object: Request<any> | Response<any>, binary: boolean): any {
+  if ((object as any).result !== undefined) {
+    ;(object as any).result = replacer('result', (object as any).result)
+  }
   return protoSerialize(object, binary)
 }
 
@@ -101,7 +104,11 @@ export function serialize (object: Request<any> | Response<any>, binary: boolean
  * @returns
  */
 export function readResponse<D> (response: any, binary: boolean): Response<D> {
-  return protoDeserialize(response, binary)
+  const data = protoDeserialize(response, binary)
+  if (data.result !== undefined) {
+    data.result = receiver('result', data.result)
+  }
+  return data
 }
 
 function replacer (key: string, value: any): any {

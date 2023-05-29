@@ -416,6 +416,7 @@ export class LiveQuery extends TxProcessor implements Client {
 
   protected override async txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
     const hierarchy = this.client.getHierarchy()
+
     for (const queries of this.queries) {
       const isTx = hierarchy.isDerived(queries[0], core.class.Tx)
       const isMixin = hierarchy.isDerived(tx.mixin, queries[0])
@@ -433,16 +434,22 @@ export class LiveQuery extends TxProcessor implements Client {
           // If query contains search we must check use fulltext
           if (q.query.$search != null && q.query.$search.length > 0) {
             const searchRefresh = await this.checkSearch(q, tx.objectId)
-            if (searchRefresh) return {}
+            if (searchRefresh) {
+              continue
+            }
           } else {
             const updatedDoc = q.result[pos]
             if (updatedDoc.modifiedOn < tx.modifiedOn) {
               await this.__updateMixinDoc(q, updatedDoc, tx)
               const updateRefresh = await this.checkUpdatedDocMatch(q, updatedDoc)
-              if (updateRefresh) return {}
+              if (updateRefresh) {
+                continue
+              }
             } else {
               const currentRefresh = await this.getCurrentDoc(q, updatedDoc._id)
-              if (currentRefresh) return {}
+              if (currentRefresh) {
+                continue
+              }
             }
           }
           await this.sort(q, tx)

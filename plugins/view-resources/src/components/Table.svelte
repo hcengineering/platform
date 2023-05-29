@@ -18,7 +18,8 @@
   import { getObjectValue, SortingOrder } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { createQuery, getClient, updateAttribute } from '@hcengineering/presentation'
-  import {
+  import ui, {
+    Button,
     CheckBox,
     Component,
     getEventPositionElement,
@@ -49,6 +50,8 @@
   export let readonly = false
   export let showFooter = false
 
+  export let totalQuery: DocumentQuery<Doc> | undefined = undefined
+
   export let prefferedSorting: string = 'modifiedOn'
 
   export let limit = 200
@@ -75,7 +78,8 @@
   let userSorting = false
 
   let objects: Doc[] = []
-  let total: number
+  let gtotal: number = 0
+  let total: number = 0
   let objectsRecieved = false
   const refs: HTMLElement[] = []
 
@@ -109,6 +113,7 @@
       (result) => {
         objects = result
         total = result.total === -1 ? 0 : result.total
+
         objectsRecieved = true
         if (sortingFunction !== undefined) {
           const sf = sortingFunction
@@ -215,6 +220,20 @@
   }
 
   let width: number
+
+  const totalQueryQ = createQuery()
+  $: totalQueryQ.query(
+    _class,
+    totalQuery ?? query ?? {},
+    (result) => {
+      gtotal = result.total
+    },
+    {
+      lookup,
+      limit: 1,
+      total: true
+    }
+  )
 </script>
 
 {#await buildModel({ client, _class, keys: config, lookup })}
@@ -362,17 +381,26 @@
   <div class="space" />
   <div class="footer" style="width: {width}px;">
     <div class="content" class:padding={showNotification || enableChecking}>
-      <Label label={view.string.Total} />: {total}
-      {#if objects.length > 0 && objects.length < total}
+      <span class="select-text">
+        <Label label={view.string.Total} params={{ total: gtotal }} />
+      </span>
+      {#if objects.length > 0 && objects.length < gtotal}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div
-          class="cursor-pointer ml-2"
+        <span class="select-text ml-2">
+          <Label
+            label={view.string.Shown}
+            params={{ total: objects.length === total ? -1 : total, len: objects.length }}
+          />
+        </span>
+
+        <Button
+          label={ui.string.ShowMore}
+          kind={'transparent'}
+          size={'small'}
           on:click={() => {
             limit = limit + 100
           }}
-        >
-          <Label label={view.string.Shown} />: {objects.length}
-        </div>
+        />
       {/if}
     </div>
   </div>

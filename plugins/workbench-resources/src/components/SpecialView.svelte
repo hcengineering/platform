@@ -209,7 +209,8 @@
       viewOptionsConfig: viewlet.viewOptions?.other,
       createItemDialog: createComponent,
       createItemLabel: createLabel,
-      query: resultQuery
+      query: resultQuery,
+      totalQuery: query
     }}
   />
 {/if}

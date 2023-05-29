@@ -26,6 +26,7 @@
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
+  export let totalQuery: DocumentQuery<Doc> | undefined = undefined
   export let showNotification: boolean = false
   export let options: FindOptions<Doc> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
@@ -91,6 +92,7 @@
     config={_config}
     {options}
     {query}
+    {totalQuery}
     {showNotification}
     {baseMenuClass}
     {loadingProps}
