@@ -16,6 +16,7 @@
   import contact, { Contact, Member, Organization } from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
+  import { Scroller } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import ExpandRightDouble from './icons/ExpandRightDouble.svelte'
   import OrganizationCard from './OrganizationCard.svelte'
@@ -51,11 +52,13 @@
 </script>
 
 {#if object !== undefined && refContact !== undefined && organization !== undefined}
-  <div class="flex-between">
-    <div class="card"><PersonCard object={refContact} on:click /></div>
-    <div class="arrows"><ExpandRightDouble /></div>
-    <div class="card"><OrganizationCard {organization} /></div>
-  </div>
+  <Scroller horizontal>
+    <div class="flex-between min-w-min">
+      <div class="card"><PersonCard object={refContact} on:click /></div>
+      <div class="arrows"><ExpandRightDouble /></div>
+      <div class="card"><OrganizationCard {organization} /></div>
+    </div>
+  </Scroller>
 {/if}
 
 <style lang="scss">

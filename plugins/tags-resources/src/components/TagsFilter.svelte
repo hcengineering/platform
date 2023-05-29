@@ -198,7 +198,7 @@
                       handleFilterToggle(element)
                     }}
                   >
-                    <div class="tag" style:background-color={color.background} />
+                    <div class="tag" style:background-color={color.color} />
                     <span class="overflow-label label flex-grow" style:color={color.title}>{element.title}</span>
                     <div class="check pointer-events-none">
                       {#if isSelected(element)}

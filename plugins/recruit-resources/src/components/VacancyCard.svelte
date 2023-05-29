@@ -64,7 +64,7 @@
   }
 </script>
 
-<div class="flex-col h-full card-container" class:inline>
+<div class="antiContactCard" class:inline>
   {#if !inline}
     <div class="label uppercase"><Label label={recruit.string.Vacancy} /></div>
     <div class="flex-center logo">
@@ -74,110 +74,45 @@
   {#if vacancy}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <NavLink {disabled} space={vacancy._id} app={recruitId}>
-      <div class="name lines-limit-2">
-        <div class="text-md">
-          {#if inline}
-            <div class="flex-row-center">
-              <VacancyIcon size={'small'} />
-              <span class="ml-2">
-                {vacancy.name}
-              </span>
-            </div>
-          {:else}
-            {vacancy.name}
-          {/if}
-        </div>
+      <div class="name">
+        {#if inline}
+          <div class="flex-row-center">
+            <VacancyIcon size={'small'} />
+            <span class="ml-2">
+              {vacancy.name}
+            </span>
+          </div>
+        {:else}
+          {vacancy.name}
+        {/if}
       </div>
     </NavLink>
     {#if company}
-      <span class="label">{company.name}</span>
+      <span class="label overflow-label">{company.name}</span>
     {/if}
     {#if !inline || vacancy.description}
       <div class="description lines-limit-2 text-md">{vacancy.description ?? ''}</div>
     {/if}
 
-    <div class="footer flex flex-reverse flex-grow">
-      <div class="flex-center flex-wrap">
+    <div class="footer">
+      <div class="flex-row-center gap-2">
         <Component
           is={chunter.component.CommentsPresenter}
-          props={{ value: vacancy.comments, object: vacancy, size: 'medium', showCounter: true }}
+          props={{ value: vacancy.comments, object: vacancy, size: 'small', showCounter: true }}
         />
         <Component
           is={attachment.component.AttachmentsPresenter}
-          props={{ value: vacancy.attachments, object: vacancy, size: 'medium', showCounter: true }}
+          props={{ value: vacancy.attachments, object: vacancy, size: 'small', showCounter: true }}
         />
       </div>
       {#if channels[0]}
-        <div class="flex flex-grow">
-          <ChannelsEditor
-            attachedTo={channels[0].attachedTo}
-            attachedClass={channels[0].attachedToClass}
-            length={'short'}
-            editable={false}
-          />
-        </div>
+        <ChannelsEditor
+          attachedTo={channels[0].attachedTo}
+          attachedClass={channels[0].attachedToClass}
+          length={'short'}
+          editable={false}
+        />
       {/if}
     </div>
   {/if}
 </div>
-
-<style lang="scss">
-  .card-container {
-    padding: 1rem 1.5rem 1.25rem;
-    background-color: var(--theme-button-enabled);
-    border: 1px solid var(--theme-button-border);
-    border-radius: 0.5rem;
-    transition-property: box-shadow, background-color, border-color;
-    transition-timing-function: var(--timing-shadow);
-    transition-duration: 0.15s;
-    user-select: text;
-    min-width: 15rem;
-    min-height: 15rem;
-
-    &:hover {
-      background-color: var(--theme-button-hovered);
-      box-shadow: var(--accent-shadow);
-    }
-
-    .logo {
-      width: 4.5rem;
-      height: 4.5rem;
-      color: var(--primary-button-color);
-      background-color: var(--primary-button-enabled);
-      border-radius: 50%;
-    }
-    .label {
-      margin-bottom: 1.75rem;
-      font-weight: 500;
-      font-size: 0.625rem;
-      color: var(--dark-color);
-    }
-    .name {
-      margin: 1rem 0 0.25rem;
-      font-weight: 500;
-      font-size: 1rem;
-      color: var(--caption-color);
-    }
-    .description {
-      font-size: 0.75rem;
-      color: var(--dark-color);
-    }
-
-    &.inline {
-      padding: 0.5rem 0.5rem 0.25rem;
-      min-width: 1rem;
-      min-height: 1rem;
-
-      background-color: inherit;
-      border: inherit;
-      border-radius: inherit;
-      .name {
-        margin: 0.25rem 0 0.25rem;
-        font-size: 0.75rem;
-      }
-      .label {
-        margin-bottom: 0rem;
-      }
-    }
-  }
-</style>

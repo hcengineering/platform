@@ -15,7 +15,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { DropdownIntlItem } from '../types'
-  import CheckBox from './CheckBox.svelte'
+  import IconCheck from './icons/Check.svelte'
   import Label from './Label.svelte'
   import { resizeObserver } from '..'
 
@@ -50,10 +50,10 @@
             dispatch('close', item.id)
           }}
         >
-          <div class="flex-grow caption-color lines-limit-2"><Label label={item.label} /></div>
-          {#if item.id === selected}
-            <div class="check"><CheckBox checked primary /></div>
-          {/if}
+          <div class="flex-grow caption-color nowrap"><Label label={item.label} /></div>
+          <div class="check">
+            {#if item.id === selected}<IconCheck size={'small'} />{/if}
+          </div>
         </button>
       {/each}
     </div>
