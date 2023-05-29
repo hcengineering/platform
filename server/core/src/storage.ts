@@ -587,9 +587,9 @@ class TServerStorage implements ServerStorage {
       })
     )
     let passed = true
-    for (const { _class, query, notMatched } of applyIf.match) {
+    for (const { _class, query } of applyIf.match) {
       const res = await findAll(ctx, _class, query, { limit: 1 })
-      if (notMatched === true ? res.length > 0 : res.length === 0) {
+      if (res.length === 0) {
         passed = false
         break
       }

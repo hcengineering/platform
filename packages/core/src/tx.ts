@@ -107,7 +107,6 @@ export interface TxCollectionCUD<T extends Doc, P extends AttachedDoc> extends T
 export interface DocumentClassQuery<T extends Doc> {
   _class: Ref<Class<T>>
   query: DocumentQuery<T>
-  notMatched?: boolean
 }
 
 /**
@@ -118,7 +117,7 @@ export interface TxApplyIf extends Tx {
   // only one operation per scope is allowed at one time.
   scope: string
 
-  // All matches should be true (or false if "notMatched") with at least one document.
+  // All matches should be true with at least one document.
   match: DocumentClassQuery<Doc>[]
 
   // If all matched execute following transactions.
