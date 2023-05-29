@@ -55,6 +55,7 @@
   function getFiltered (docs: DocUpdates[], filter: 'all' | 'read' | 'unread'): void {
     const filtered: DocUpdates[] = []
     for (const doc of docs) {
+      if (doc.txes.length === 0) continue
       if (filter === 'read') {
         const txes = doc.txes.filter((p) => !p.isNew)
         if (txes.length > 0) {
