@@ -45,6 +45,7 @@
     (res) => {
       docs = []
       for (const doc of res) {
+        if (doc.txes.length === 0) continue
         const txes = doc.txes.filter((p) => p.modifiedBy === accountId)
         if (txes.length > 0) {
           docs.push({

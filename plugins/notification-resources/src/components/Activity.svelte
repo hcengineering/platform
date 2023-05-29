@@ -53,11 +53,11 @@
 
   function getFiltered (docs: DocUpdates[], filter: 'all' | 'read' | 'unread'): void {
     if (filter === 'read') {
-      filtered = docs.filter((p) => !p.txes.some((p) => p.isNew))
+      filtered = docs.filter((p) => !p.txes.some((p) => p.isNew) && p.txes.length > 0)
     } else if (filter === 'unread') {
-      filtered = docs.filter((p) => p.txes.some((p) => p.isNew))
+      filtered = docs.filter((p) => p.txes.some((p) => p.isNew) && p.txes.length > 0)
     } else {
-      filtered = docs
+      filtered = docs.filter((p) => p.txes.length > 0)
     }
     listProvider.update(filtered)
     if (loading || _id === undefined) {

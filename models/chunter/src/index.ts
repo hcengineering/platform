@@ -456,7 +456,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
       icon: chunter.icon.Chunter,
       txClass: core.class.TxCreateDoc,
       component: chunter.activity.TxCommentCreate,
-      // label: chunter.string.LeftComment,
+      label: chunter.string.LeftComment,
       display: 'content',
       editable: true,
       hideOnRemove: true
