@@ -16,12 +16,21 @@
   import { Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Milestone } from '@hcengineering/tracker'
-  import { ButtonKind, DatePresenter, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import {
+    ButtonKind,
+    DatePresenter,
+    deviceOptionsStore as deviceInfo,
+    getPlatformAvatarColorDef,
+    getPlatformAvatarColorForTextDef,
+    themeStore
+  } from '@hcengineering/ui'
+  import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'
   import MilestoneSelector from './MilestoneSelector.svelte'
 
   export let value: Ref<Milestone>
   export let kind: ButtonKind = 'link'
+  export let display: 'kanban' | 'list' | undefined = undefined
 
   const milestoneQuery = createQuery()
   let milestone: Milestone | undefined
@@ -30,6 +39,17 @@
   })
 
   $: twoRows = $deviceInfo.twoRows
+
+  const dispatch = createEventDispatcher()
+  $: accentColor =
+    milestone?.label !== undefined
+      ? getPlatformAvatarColorForTextDef(milestone?.label, $themeStore.dark)
+      : getPlatformAvatarColorDef(0, $themeStore.dark)
+
+  $: dispatch('accent-color', accentColor)
+  onMount(() => {
+    dispatch('accent-color', accentColor)
+  })
 </script>
 
 <div
@@ -41,7 +61,7 @@
     <MilestoneSelector {kind} isEditable={false} enlargedText {value} />
   </div>
 
-  {#if milestone && kind === 'list-header'}
+  {#if milestone && kind === 'list-header' && display !== 'kanban'}
     <div class="flex-row-center" class:minus-margin-space={kind === 'list-header'} class:text-sm={twoRows}>
       {#if milestone}
         <DatePresenter value={milestone.targetDate} kind={'transparent'} />

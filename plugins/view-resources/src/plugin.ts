@@ -87,7 +87,8 @@ export default mergeIds(viewId, view, {
     BetweenDates: '' as IntlString,
     SaveAs: '' as IntlString,
     And: '' as IntlString,
-    Between: '' as IntlString
+    Between: '' as IntlString,
+    ShowColors: '' as IntlString
   },
   function: {
     StatusSort: '' as SortFunc

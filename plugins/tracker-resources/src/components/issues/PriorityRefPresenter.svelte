@@ -14,8 +14,9 @@
 -->
 <script lang="ts">
   import { IssuePriority } from '@hcengineering/tracker'
-  import { Icon, Label } from '@hcengineering/ui'
-  import { issuePriorities } from '../../utils'
+  import { Icon, Label, getPlatformColorDef, themeStore } from '@hcengineering/ui'
+  import { createEventDispatcher, onMount } from 'svelte'
+  import { IssuePriorityColor, issuePriorities } from '../../utils'
 
   export let value: IssuePriority
   export let size: 'small' | 'medium' = 'small'
@@ -26,6 +27,14 @@
 
   $: icon = issuePriorities[value]?.icon
   $: label = issuePriorities[value]?.label
+
+  const dispatch = createEventDispatcher()
+  $: accentColor = getPlatformColorDef(IssuePriorityColor[value], $themeStore.dark)
+
+  $: dispatch('accent-color', accentColor)
+  onMount(() => {
+    dispatch('accent-color', accentColor)
+  })
 </script>
 
 <div class="flex-presenter cursor-default">

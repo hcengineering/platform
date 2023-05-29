@@ -49,7 +49,7 @@ import {
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
 import core, { DOMAIN_SPACE, TAttachedDoc, TDoc, TSpace, TStatus, TType } from '@hcengineering/model-core'
-import view, { actionTemplates, classPresenter, createAction } from '@hcengineering/model-view'
+import view, { actionTemplates, classPresenter, createAction, showColorsViewOption } from '@hcengineering/model-view'
 import workbench, { createNavigateAction } from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import { IntlString } from '@hcengineering/platform'
@@ -74,7 +74,7 @@ import {
   TimeSpendReport,
   trackerId
 } from '@hcengineering/tracker'
-import { KeyBinding, ViewOptionModel, ViewOptionsModel } from '@hcengineering/view'
+import { KeyBinding, ViewOptionsModel } from '@hcengineering/view'
 import tracker from './plugin'
 
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
@@ -449,19 +449,11 @@ export function createModel (builder: Builder): void {
     TTypeReportedTime
   )
 
-  const showColors: ViewOptionModel = {
-    key: 'shouldShowColors',
-    type: 'toggle',
-    defaultValue: false,
-    actionTarget: 'display',
-    label: tracker.string.ShowColors
-  }
-
   const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
     groupBy: ['status', 'assignee', 'priority', 'component', 'milestone'],
     orderBy: [
       ['status', SortingOrder.Ascending],
-      ['priority', SortingOrder.Ascending],
+      ['priority', SortingOrder.Descending],
       ['modifiedOn', SortingOrder.Descending],
       ['createdOn', SortingOrder.Descending],
       ['dueDate', SortingOrder.Ascending],
@@ -484,7 +476,7 @@ export function createModel (builder: Builder): void {
         action: view.function.ShowEmptyGroups,
         label: view.string.ShowEmptyGroups
       },
-      ...(!kanban ? [showColors] : [])
+      ...(!kanban ? [showColorsViewOption] : [])
     ]
   })
 
@@ -601,7 +593,7 @@ export function createModel (builder: Builder): void {
       ['dueDate', SortingOrder.Ascending]
     ],
     groupDepth: 1,
-    other: [showColors]
+    other: [showColorsViewOption]
   }
 
   builder.createDoc(
@@ -680,7 +672,7 @@ export function createModel (builder: Builder): void {
           ['dueDate', SortingOrder.Ascending],
           ['rank', SortingOrder.Ascending]
         ],
-        other: [showColors]
+        other: [showColorsViewOption]
       },
       config: [
         // { key: '', presenter: tracker.component.PriorityEditor, props: { kind: 'list', size: 'small' } },
@@ -1787,7 +1779,7 @@ export function createModel (builder: Builder): void {
       ['targetDate', SortingOrder.Descending],
       ['createdOn', SortingOrder.Descending]
     ],
-    other: [showColors]
+    other: [showColorsViewOption]
   }
 
   builder.createDoc(
@@ -1859,7 +1851,7 @@ export function createModel (builder: Builder): void {
       ['modifiedOn', SortingOrder.Descending],
       ['createdOn', SortingOrder.Descending]
     ],
-    other: [showColors]
+    other: [showColorsViewOption]
   }
 
   builder.createDoc(

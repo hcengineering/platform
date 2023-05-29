@@ -282,8 +282,7 @@
     "ProjectEmojiiCategory": "Эмодзи",
     "NoStatusFound": "Статус не найдет",
     "CreateMissingStatus": "Создать отсутствущий статус",
-    "UnsetParent": "Родительская задача будет убрана",
-    "ShowColors": "Использовать цвета"
+    "UnsetParent": "Родительская задача будет убрана"    
   },
   "status": {}
 }

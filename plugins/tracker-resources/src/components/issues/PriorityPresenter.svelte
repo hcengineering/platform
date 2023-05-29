@@ -15,13 +15,25 @@
 <script lang="ts">
   import { Asset, IntlString } from '@hcengineering/platform'
   import { IssuePriority } from '@hcengineering/tracker'
-  import { Icon, Label } from '@hcengineering/ui'
-  import { issuePriorities } from '../../utils'
+  import { Icon, Label, getPlatformColorDef, themeStore } from '@hcengineering/ui'
+  import { createEventDispatcher, onMount } from 'svelte'
+  import { IssuePriorityColor, issuePriorities } from '../../utils'
 
   export let value: IssuePriority | undefined
 
   let label: IntlString, icon: Asset
   $: if (value !== undefined) ({ label, icon } = issuePriorities[value])
+
+  const dispatch = createEventDispatcher()
+  $: accentColor = getPlatformColorDef(
+    IssuePriorityColor[value !== undefined ? value : IssuePriority.NoPriority],
+    $themeStore.dark
+  )
+
+  $: dispatch('accent-color', accentColor)
+  onMount(() => {
+    dispatch('accent-color', accentColor)
+  })
 </script>
 
 {#if value !== undefined}

@@ -321,6 +321,7 @@
     &.transparent {
       padding: 0 0.625rem;
       border-radius: 0.25rem;
+      background-color: inherit;
 
       &:hover {
         background-color: var(--theme-button-hovered);
