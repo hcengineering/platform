@@ -42,7 +42,7 @@
     })
   }
 
-  $: statuses = sort(value.map((p) => $statusStore.byId.get(p)) as IssueStatus[], categories)
+  $: statuses = sort(value.map((p) => $statusStore.getIdMap().get(p)) as IssueStatus[], categories)
 </script>
 
 <div class="flex-presenter flex-gap-1-5">

@@ -101,7 +101,18 @@ import {
 import { IndexedDocumentPreview } from '@hcengineering/presentation'
 import { statusSort } from './utils'
 import { showEmptyGroups } from './viewOptions'
-import { GroupByStatusCategories, GroupStatusValues, HasStatusValue, StatusMiddleware } from './status'
+import {
+  getStatusClass,
+  getStatusFindOptions,
+  getStatusManager,
+  getStatusStore,
+  GroupByStatusCategories,
+  GroupStatusValues,
+  HasStatusValue,
+  statusCategorize,
+  statusUpdateCustomSorting
+} from './status'
+import { DocMiddleware } from './middleware'
 export { getActions, invokeAction } from './actions'
 export { default as ActionHandler } from './components/ActionHandler.svelte'
 export { default as AddSavedView } from './components/filter/AddSavedView.svelte'
@@ -128,6 +139,7 @@ export * from './filter'
 export * from './selection'
 export * from './utils'
 export * from './status'
+export * from './middleware'
 export {
   buildModel,
   getActiveViewletId,
@@ -257,6 +269,12 @@ export default async (): Promise<Resources> => ({
     GroupByStatusCategoriesFunc: GroupByStatusCategories,
     GroupStatusValuesFunc: GroupStatusValues,
     HasStatusValueFunc: HasStatusValue,
-    CreateStatusMiddleware: StatusMiddleware.create
+    CreateDocMiddleware: DocMiddleware.create,
+    GetStatusManager: getStatusManager,
+    GetStatusStore: getStatusStore,
+    GetStatusFindOptions: getStatusFindOptions,
+    GetStatusClass: getStatusClass,
+    StatusCategorize: statusCategorize,
+    StatusUpdateCustomSorting: statusUpdateCustomSorting
   }
 })

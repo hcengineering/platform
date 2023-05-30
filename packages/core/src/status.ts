@@ -15,8 +15,8 @@
 
 import { Asset, IntlString } from '@hcengineering/platform'
 import { Attribute, Doc, Domain, Ref } from './classes'
+import { AggregateValue, AggregateValueData, DocManager, IdMap } from './utils'
 import { WithLookup } from './storage'
-import { AggregateValue, AggregateValueData, IdMap, toIdMap } from './utils'
 
 /**
  * @public
@@ -75,18 +75,20 @@ export class StatusValue extends AggregateValue {
  *
  * Allow to query for status keys/values.
  */
-export class StatusManager {
-  byId: IdMap<WithLookup<Status>>
-
-  constructor (readonly statuses: WithLookup<Status>[]) {
-    this.byId = toIdMap(statuses)
+export class StatusManager extends DocManager {
+  get (ref: Ref<WithLookup<Status>>): WithLookup<Status> | undefined {
+    return this.getIdMap().get(ref) as WithLookup<Status>
   }
 
-  get (ref: Ref<Status>): WithLookup<Status> | undefined {
-    return this.byId.get(ref)
+  getDocs (): Array<WithLookup<Status>> {
+    return this.docs as Status[]
   }
 
-  filter (predicate: (value: WithLookup<Status>) => boolean): WithLookup<Status>[] {
-    return this.statuses.filter(predicate)
+  getIdMap (): IdMap<WithLookup<Status>> {
+    return this.byId as IdMap<WithLookup<Status>>
+  }
+
+  filter (predicate: (value: Status) => boolean): Status[] {
+    return this.getDocs().filter(predicate)
   }
 }

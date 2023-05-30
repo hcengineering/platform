@@ -1393,14 +1393,13 @@ export function createModel (builder: Builder): void {
     hasValue: tracker.function.HasComponentValueFunc
   })
 
-  builder.createDoc(
-    presentation.class.PresentationMiddlewareFactory,
-    core.space.Model,
-    {
-      createPresentationMiddleware: tracker.function.CreateComponentMiddleware
-    },
-    tracker.pipeline.PresentationMiddleware
-  )
+  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.MiddlewareFuncs, {
+    GetManager: tracker.function.GetComponentManager,
+    GetStore: tracker.function.GetComponentStore,
+    GetFindOptions: tracker.function.GetComponentFindOptions,
+    GetAttrClass: tracker.function.GetComponentClass,
+    Categorize: tracker.function.ComponentCategorize
+  })
 
   builder.createDoc(
     presentation.class.ObjectSearchCategory,

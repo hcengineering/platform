@@ -17,7 +17,19 @@
 import { IntlString, Resource, mergeIds } from '@hcengineering/platform'
 import { PresentationMiddlewareCreator } from '@hcengineering/presentation'
 import { AnyComponent } from '@hcengineering/ui'
-import view, { GroupByCategoriesFunc, GroupValuesFunc, HasValueFunc, SortFunc, viewId } from '@hcengineering/view'
+import view, {
+  Categorize,
+  GetAttrClass,
+  GetFindOptions,
+  GetManager,
+  GetStore,
+  GroupByCategoriesFunc,
+  GroupValuesFunc,
+  HasValueFunc,
+  SortFunc,
+  UpdateCustomSorting,
+  viewId
+} from '@hcengineering/view'
 
 export default mergeIds(viewId, view, {
   component: {
@@ -96,6 +108,12 @@ export default mergeIds(viewId, view, {
     GroupByStatusCategoriesFunc: '' as GroupByCategoriesFunc,
     GroupStatusValuesFunc: '' as GroupValuesFunc,
     HasStatusValueFunc: '' as HasValueFunc,
-    CreateStatusMiddleware: '' as Resource<PresentationMiddlewareCreator>
+    CreateDocMiddleware: '' as Resource<PresentationMiddlewareCreator>,
+    GetStatusManager: '' as GetManager,
+    GetStatusStore: '' as GetStore,
+    GetStatusFindOptions: '' as GetFindOptions,
+    GetStatusClass: '' as GetAttrClass,
+    StatusCategorize: '' as Categorize,
+    StatusUpdateCustomSorting: '' as UpdateCustomSorting
   }
 })

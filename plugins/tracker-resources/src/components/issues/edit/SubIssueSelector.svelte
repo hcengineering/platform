@@ -118,7 +118,7 @@
     subIssuesQeury.unsubscribe()
   }
 
-  $: parentStatus = parentIssue ? $statusStore.byId.get(parentIssue.status) : undefined
+  $: parentStatus = parentIssue ? $statusStore.getIdMap().get(parentIssue.status) : undefined
 </script>
 
 {#if parentIssue}

@@ -25,10 +25,15 @@ import {
   ViewletDescriptor,
   ViewQueryAction,
   GroupValuesFunc,
-  HasValueFunc
+  HasValueFunc,
+  Categorize,
+  GetAttrClass,
+  GetFindOptions,
+  GetManager,
+  GetStore,
+  UpdateCustomSorting
 } from '@hcengineering/view'
 import tracker, { trackerId } from '../../tracker/lib'
-import { PresentationMiddlewareCreator } from '@hcengineering/presentation'
 
 export default mergeIds(trackerId, tracker, {
   viewlet: {
@@ -396,6 +401,11 @@ export default mergeIds(trackerId, tracker, {
     GroupByComponentCategoriesFunc: '' as GroupByCategoriesFunc,
     GroupComponentValuesFunc: '' as GroupValuesFunc,
     HasComponentValueFunc: '' as HasValueFunc,
-    CreateComponentMiddleware: '' as Resource<PresentationMiddlewareCreator>
+    GetComponentManager: '' as GetManager,
+    GetComponentStore: '' as GetStore,
+    GetComponentFindOptions: '' as GetFindOptions,
+    GetComponentClass: '' as GetAttrClass,
+    ComponentCategorize: '' as Categorize,
+    ComponentUpdateCustomSorting: '' as UpdateCustomSorting
   }
 })

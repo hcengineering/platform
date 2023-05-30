@@ -78,7 +78,8 @@
   }
 
   $: if (subIssues) {
-    const doneStatuses = $statusStore.statuses
+    const doneStatuses = $statusStore
+      .getDocs()
       .filter(
         (s) =>
           s.category === tracker.issueStatusCategory.Completed || s.category === tracker.issueStatusCategory.Canceled

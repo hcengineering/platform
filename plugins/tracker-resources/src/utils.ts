@@ -15,8 +15,6 @@
 
 import { Employee } from '@hcengineering/contact'
 import core, {
-  AggregateValue,
-  AggregateValueData,
   ApplyOperations,
   AttachedData,
   AttachedDoc,
@@ -27,7 +25,6 @@ import core, {
   DocumentUpdate,
   Ref,
   SortingOrder,
-  Space,
   Status,
   StatusCategory,
   StatusManager,
@@ -36,8 +33,7 @@ import core, {
   TxCollectionCUD,
   TxOperations,
   TxResult,
-  TxUpdateDoc,
-  WithLookup
+  TxUpdateDoc
 } from '@hcengineering/core'
 import { Asset, IntlString } from '@hcengineering/platform'
 import { createQuery } from '@hcengineering/presentation'
@@ -51,8 +47,7 @@ import {
   Milestone,
   MilestoneStatus,
   Project,
-  TimeReportDayType,
-  Component
+  TimeReportDayType
 } from '@hcengineering/tracker'
 import {
   AnyComponent,
@@ -67,8 +62,6 @@ import { ViewletDescriptor } from '@hcengineering/view'
 import { CategoryQuery, groupBy, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
 import tracker from './plugin'
 import { defaultPriorities, defaultMilestoneStatuses } from './types'
-import { get } from 'svelte/store'
-import { componentStore } from './component'
 
 export * from './types'
 
@@ -660,98 +653,4 @@ export const IssuePriorityColor = {
   [IssuePriority.High]: PaletteColorIndexes.Sunshine,
   [IssuePriority.Medium]: PaletteColorIndexes.Ocean,
   [IssuePriority.Low]: PaletteColorIndexes.Cloud
-}
-
-export function groupByComponents<T extends Doc> (docs: T[], key: string, categories?: CategoryType[]): Record<any, T[]> {
-  return docs.reduce((storage: { [key: string]: T[] }, item: T) => {
-    let group = getObjectValue(key, item) ?? undefined
-    if (categories !== undefined) {
-      for (const c of categories) {
-        if (typeof c === 'object') {
-          const st = c.values.find((it) => it._id === group)
-          if (st !== undefined) {
-            group = st.name
-            break
-          }
-        }
-      }
-    }
-    storage[group] = storage[group] ?? []
-    storage[group].push(item)
-    return storage
-  }, {})
-}
-
-/**
- * @public
- */
-export function groupByComponentCategories (categories: any[]): AggregateValue[] {
-  const mgr = get(componentStore)
-
-  const existingCategories: AggregateValue[] = [new AggregateValue(undefined, [])]
-  const componentMap = new Map<string, AggregateValue>()
-
-  const usedSpaces = new Set<Ref<Space>>()
-  const componentsList: Array<WithLookup<Component>> = []
-  for (const v of categories) {
-    const component = mgr.byId.get(v)
-    if (component !== undefined) {
-      componentsList.push(component)
-      usedSpaces.add(component.space)
-    }
-  }
-
-  for (const component of componentsList) {
-    if (component !== undefined) {
-      let fst = componentMap.get(component.label.toLowerCase().trim())
-      if (fst === undefined) {
-        const components = mgr.components
-          .filter(
-            (it) =>
-              it.label.toLowerCase().trim() === component.label.toLowerCase().trim() &&
-              (categories.includes(it._id) || usedSpaces.has(it.space))
-          )
-          .sort((a, b) => a.label.localeCompare(b.label))
-          .map((it) => new AggregateValueData(it.label, it._id, it.space))
-        fst = new AggregateValue(component.label, components)
-        componentMap.set(component.label.toLowerCase().trim(), fst)
-        existingCategories.push(fst)
-      }
-    }
-  }
-  return existingCategories
-}
-
-/**
- * @public
- */
-export const groupComponentValues = (val: Component[], targets: Set<any>): Doc[] => {
-  const values = val
-  const result: Doc[] = []
-  const unique = [...new Set(val.map((v) => v.label.trim().toLocaleLowerCase()))]
-  unique.forEach((label, i) => {
-    let exists = false
-    values.forEach((state) => {
-      if (state.label.trim().toLocaleLowerCase() === label) {
-        if (!exists) {
-          result[i] = state
-          exists = targets.has(state?._id)
-        }
-      }
-    })
-  })
-  return result
-}
-
-/**
- * @public
- */
-export function hasComponentValue (value: Doc | undefined | null, values: any[]): boolean {
-  const mgr = get(componentStore)
-  const componentSet = new Set(
-    mgr
-      .filter((it) => it.label.trim().toLocaleLowerCase() === (value as Component)?.label?.trim()?.toLocaleLowerCase())
-      .map((it) => it._id)
-  )
-  return values.some((it) => componentSet.has(it))
 }

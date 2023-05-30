@@ -117,10 +117,7 @@ import {
   issueStatusSort,
   moveIssuesToAnotherMilestone,
   milestoneSort,
-  subIssueQuery,
-  groupByComponentCategories,
-  groupComponentValues,
-  hasComponentValue
+  subIssueQuery
 } from './utils'
 
 import { EmployeeAccount } from '@hcengineering/contact'
@@ -137,7 +134,16 @@ import ProjectSpacePresenter from './components/projects/ProjectSpacePresenter.s
 import IssueStatistics from './components/milestones/IssueStatistics.svelte'
 import MilestoneRefPresenter from './components/milestones/MilestoneRefPresenter.svelte'
 import MilestoneFilter from './components/milestones/MilestoneFilter.svelte'
-import { ComponentMiddleware } from './component'
+import {
+  componentCategorize,
+  getComponentClass,
+  getComponentFindOptions,
+  getComponentManager,
+  getComponentStore,
+  groupByComponentCategories,
+  groupComponentValues,
+  hasComponentValue
+} from './component'
 
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 
@@ -474,7 +480,11 @@ export default async (): Promise<Resources> => ({
     GroupByComponentCategoriesFunc: groupByComponentCategories,
     GroupComponentValuesFunc: groupComponentValues,
     HasComponentValueFunc: hasComponentValue,
-    CreateComponentMiddleware: ComponentMiddleware.create
+    GetComponentManager: getComponentManager,
+    GetComponentStore: getComponentStore,
+    GetComponentFindOptions: getComponentFindOptions,
+    GetComponentClass: getComponentClass,
+    ComponentCategorize: componentCategorize
   },
   actionImpl: {
     Move: move,

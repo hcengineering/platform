@@ -19,6 +19,7 @@ import {
   Attribute,
   Class,
   Doc,
+  DocManager,
   IdMap,
   Markup,
   Ref,
@@ -28,7 +29,7 @@ import {
   StatusCategory,
   Timestamp,
   Type,
-  toIdMap
+  WithLookup
 } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -314,21 +315,23 @@ export interface Component extends Doc {
 /**
  * @public
  *
- * Allow to query for component keys/values.
+ * Allow to query for status keys/values.
  */
-export class ComponentManager {
-  byId: IdMap<Component>
-
-  constructor (readonly components: Component[]) {
-    this.byId = toIdMap(components)
+export class ComponentManager extends DocManager {
+  get (ref: Ref<WithLookup<Component>>): WithLookup<Component> | undefined {
+    return this.getIdMap().get(ref) as WithLookup<Component>
   }
 
-  get (ref: Ref<Component>): Component | undefined {
-    return this.byId.get(ref)
+  getDocs (): Array<WithLookup<Component>> {
+    return this.docs as Component[]
+  }
+
+  getIdMap (): IdMap<WithLookup<Component>> {
+    return this.byId as IdMap<WithLookup<Component>>
   }
 
   filter (predicate: (value: Component) => boolean): Component[] {
-    return this.components.filter(predicate)
+    return this.getDocs().filter(predicate)
   }
 }
 

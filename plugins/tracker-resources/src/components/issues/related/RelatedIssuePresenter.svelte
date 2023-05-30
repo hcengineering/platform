@@ -23,7 +23,7 @@
   export let issue: Issue
   export let size: 'small' | 'medium' | 'large' = 'small'
 
-  $: status = $statusStore.byId.get(issue.status)
+  $: status = $statusStore.getIdMap().get(issue.status)
   $: huge = size === 'medium' || size === 'large'
   $: text = project ? `${getIssueId(project, issue)} ${issue.title}` : issue.title
 </script>

@@ -84,7 +84,7 @@
     displaySt = result
   }
 
-  $: updateStatus(txes, $statusStore.byId, $ticker)
+  $: updateStatus(txes, $statusStore.getIdMap(), $ticker)
 </script>
 
 <Row>

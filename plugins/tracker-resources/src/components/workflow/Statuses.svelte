@@ -68,9 +68,10 @@
 
   async function addStatus () {
     if (editingStatus?.name && editingStatus?.category) {
-      const categoryStatuses = $statusStore.statuses.filter((s) => s.category === editingStatus!.category)
+      const categoryStatuses = $statusStore.getDocs().filter((s) => s.category === editingStatus!.category)
       const prevStatus = categoryStatuses[categoryStatuses.length - 1]
-      const nextStatus = $statusStore.statuses[$statusStore.statuses.findIndex(({ _id }) => _id === prevStatus._id) + 1]
+      const nextStatus =
+        $statusStore.getDocs()[$statusStore.getDocs().findIndex(({ _id }) => _id === prevStatus._id) + 1]
 
       isSaving = true
       await client.createDoc(tracker.class.IssueStatus, projectId, {
@@ -90,7 +91,7 @@
   async function editStatus () {
     if (statusCategories && editingStatus?.name && editingStatus?.category && '_id' in editingStatus) {
       const statusId = '_id' in editingStatus ? editingStatus._id : undefined
-      const status = statusId && $statusStore.byId.get(statusId)
+      const status = statusId && $statusStore.getIdMap().get(statusId)
 
       if (!status) {
         return
@@ -152,9 +153,9 @@
             await client.removeDoc(status._class, status.space, status._id)
 
             if (project.defaultIssueStatus === status._id) {
-              const newDefaultStatus = $statusStore.statuses.find(
-                (s) => s._id !== status._id && s.category === status.category && s.space === status.space
-              )
+              const newDefaultStatus = $statusStore
+                .getDocs()
+                .find((s) => s._id !== status._id && s.category === status.category && s.space === status.space)
               if (newDefaultStatus?._id) {
                 await updateProjectDefaultStatus(newDefaultStatus._id)
               }
@@ -188,8 +189,8 @@
       const fromIndex = getStatusIndex(draggingStatus)
       const toIndex = getStatusIndex(toItem)
       const [prev, next] = [
-        $statusStore.statuses[fromIndex < toIndex ? toIndex : toIndex - 1],
-        $statusStore.statuses[fromIndex < toIndex ? toIndex + 1 : toIndex]
+        $statusStore.getDocs()[fromIndex < toIndex ? toIndex : toIndex - 1],
+        $statusStore.getDocs()[fromIndex < toIndex ? toIndex + 1 : toIndex]
       ]
 
       isSaving = true
@@ -203,7 +204,7 @@
   }
 
   function getStatusIndex (status: IssueStatus) {
-    return $statusStore.statuses.findIndex(({ _id }) => _id === status._id) ?? -1
+    return $statusStore.getDocs().findIndex(({ _id }) => _id === status._id) ?? -1
   }
 
   function resetDrag () {
@@ -232,14 +233,14 @@
     </div>
   </svelte:fragment>
 
-  {#if project === undefined || statusCategories === undefined || $statusStore.statuses.length === 0}
+  {#if project === undefined || statusCategories === undefined || $statusStore.getDocs().length === 0}
     <Loading />
   {:else}
     <Scroller>
       <div class="popupPanel-body__main-content py-10 clear-mins flex-no-shrink">
         {#each statusCategories as category}
           {@const statuses =
-            $statusStore.statuses.filter((s) => s.space === projectId && s.category === category._id) ?? []}
+            $statusStore.getDocs().filter((s) => s.space === projectId && s.category === category._id) ?? []}
           {@const isSingle = statuses.length === 1}
           <div class="flex-between category-name">
             <Label label={category.label} />

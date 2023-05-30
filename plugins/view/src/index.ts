@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import { Writable } from 'svelte/store'
 import {
   Account,
   AggregateValue,
@@ -22,6 +23,7 @@ import {
   Class,
   Client,
   Doc,
+  DocManager,
   DocumentQuery,
   FindOptions,
   Lookup,
@@ -288,8 +290,6 @@ export type SortFunc = Resource<
 (values: (PrimitiveType | StatusValue)[], viewletDescriptorId?: Ref<ViewletDescriptor>) => Promise<any[]>
 >
 
-// group func for class
-
 /**
  * @public
  */
@@ -333,6 +333,52 @@ export interface GroupFuncs extends Class<Doc> {
   groupByCategories: GroupByCategoriesFunc
   groupValues: GroupValuesFunc
   hasValue: HasValueFunc
+}
+
+/**
+ * @public
+ */
+export type GetManager = Resource<<T extends DocManager>(docs: Doc[]) => T>
+
+/**
+ * @public
+ */
+export type GetStore = Resource<<T extends DocManager>() => Writable<T>>
+
+/**
+ * @public
+ */
+export type GetFindOptions = Resource<<T extends Doc>() => FindOptions<T>>
+
+/**
+ * @public
+ */
+export type GetAttrClass = Resource<() => Ref<Class<Doc>>>
+
+/**
+ * @public
+ */
+export type Categorize = Resource<
+  <T extends DocManager, U extends Doc>(mgr: T, attr: AnyAttribute, target: Array<Ref<U>>) => Array<Ref<U>>
+>
+
+/**
+ * @public
+ */
+export type UpdateCustomSorting = Resource<
+  <T extends Doc>(finalOptions: FindOptions<T>, attr: AnyAttribute, mgr: DocManager) => void
+>
+
+/**
+ * @public
+ */
+export interface MiddlewareFuncs extends Class<Doc> {
+  GetManager: GetManager
+  GetStore: GetStore
+  GetFindOptions: GetFindOptions
+  GetAttrClass: GetAttrClass
+  Categorize: Categorize
+  UpdateCustomSorting: UpdateCustomSorting
 }
 
 /**
@@ -689,6 +735,7 @@ const view = plugin(viewId, {
     SortFuncs: '' as Ref<Mixin<ClassSortFuncs>>,
     AllValuesFunc: '' as Ref<Mixin<AllValuesFunc>>,
     GroupFuncs: '' as Ref<Mixin<GroupFuncs>>,
+    MiddlewareFuncs: '' as Ref<Mixin<MiddlewareFuncs>>,
     ObjectPanel: '' as Ref<Mixin<ObjectPanel>>,
     LinkProvider: '' as Ref<Mixin<LinkProvider>>,
     SpacePresenter: '' as Ref<Mixin<SpacePresenter>>,

@@ -82,7 +82,14 @@ import {
   ViewletPreference,
   GroupByCategoriesFunc,
   GroupValuesFunc,
-  HasValueFunc
+  HasValueFunc,
+  MiddlewareFuncs,
+  Categorize,
+  GetFindOptions,
+  GetManager,
+  GetStore,
+  UpdateCustomSorting,
+  GetAttrClass
 } from '@hcengineering/view'
 import presentation from '@hcengineering/model-presentation'
 import view from './plugin'
@@ -282,6 +289,16 @@ export class TGroupFuncs extends TClass implements GroupFuncs {
   hasValue!: HasValueFunc
 }
 
+@Mixin(view.mixin.MiddlewareFuncs, core.class.Class)
+export class TMiddlewareFuncs extends TClass implements MiddlewareFuncs {
+  GetManager!: GetManager
+  GetStore!: GetStore
+  GetFindOptions!: GetFindOptions
+  GetAttrClass!: GetAttrClass
+  Categorize!: Categorize
+  UpdateCustomSorting!: UpdateCustomSorting
+}
+
 @Model(view.class.ViewletPreference, preference.class.Preference)
 export class TViewletPreference extends TPreference implements ViewletPreference {
   attachedTo!: Ref<Viewlet>
@@ -431,7 +448,8 @@ export function createModel (builder: Builder): void {
     TInlineAttributEditor,
     TFilteredView,
     TAllValuesFunc,
-    TGroupFuncs
+    TGroupFuncs,
+    TMiddlewareFuncs
   )
 
   classPresenter(
@@ -544,7 +562,7 @@ export function createModel (builder: Builder): void {
     presentation.class.PresentationMiddlewareFactory,
     core.space.Model,
     {
-      createPresentationMiddleware: view.function.CreateStatusMiddleware
+      createPresentationMiddleware: view.function.CreateDocMiddleware
     },
     view.pipeline.PresentationMiddleware
   )
@@ -1003,6 +1021,15 @@ export function createModel (builder: Builder): void {
     groupByCategories: view.function.GroupByStatusCategoriesFunc,
     groupValues: view.function.GroupStatusValuesFunc,
     hasValue: view.function.HasStatusValueFunc
+  })
+
+  builder.mixin(Core.class.Status, core.class.Class, view.mixin.MiddlewareFuncs, {
+    GetManager: view.function.GetStatusManager,
+    GetStore: view.function.GetStatusStore,
+    GetFindOptions: view.function.GetStatusFindOptions,
+    GetAttrClass: view.function.GetStatusClass,
+    Categorize: view.function.StatusCategorize,
+    UpdateCustomSorting: view.function.StatusUpdateCustomSorting
   })
 }
 

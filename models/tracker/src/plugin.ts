@@ -24,7 +24,6 @@ import { Action, ViewAction, Viewlet } from '@hcengineering/view'
 import { Application } from '@hcengineering/workbench'
 import { TxViewlet } from '@hcengineering/activity'
 import { NotificationGroup, NotificationType } from '@hcengineering/notification'
-import { PresentationMiddlewareFactory } from '@hcengineering/presentation'
 
 export default mergeIds(trackerId, tracker, {
   string: {
@@ -87,8 +86,5 @@ export default mergeIds(trackerId, tracker, {
     NewRelatedIssue: '' as Ref<Action<Doc, Record<string, any>>>,
     DeleteMilestone: '' as Ref<Action<Doc, Record<string, any>>>,
     DeleteProject: '' as Ref<Action<Doc, Record<string, any>>>
-  },
-  pipeline: {
-    PresentationMiddleware: '' as Ref<PresentationMiddlewareFactory>
   }
 })

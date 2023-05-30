@@ -253,3 +253,30 @@ export class AggregateValue {
  * @public
  */
 export type CategoryType = number | string | undefined | Ref<Doc> | AggregateValue
+
+/**
+ * @public
+ */
+export class DocManager {
+  protected readonly byId: IdMap<Doc>
+
+  constructor (protected readonly docs: Doc[]) {
+    this.byId = toIdMap(docs)
+  }
+
+  get (ref: Ref<Doc>): Doc | undefined {
+    return this.byId.get(ref)
+  }
+
+  getDocs (): Doc[] {
+    return this.docs
+  }
+
+  getIdMap (): IdMap<Doc> {
+    return this.byId
+  }
+
+  filter (predicate: (value: Doc) => boolean): Doc[] {
+    return this.docs.filter(predicate)
+  }
+}
