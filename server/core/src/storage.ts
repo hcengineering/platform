@@ -611,7 +611,7 @@ class TServerStorage implements ServerStorage {
 
     for (const tx of txes) {
       const res = await ctx.with('apply', {}, (ctx) => this.tx(ctx, tx))
-       // send transactions
+      // send transactions
       if (broadcast) {
         this.options?.broadcast?.([tx])
         this.options?.broadcast?.(res[1])
