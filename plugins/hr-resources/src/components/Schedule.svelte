@@ -15,30 +15,30 @@
 <script lang="ts">
   import { CalendarMode } from '@hcengineering/calendar-resources'
   import calendar from '@hcengineering/calendar-resources/src/plugin'
+  import { EmployeeAccount } from '@hcengineering/contact'
+  import { employeeByIdStore } from '@hcengineering/contact-resources'
   import { DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
   import { Department, Staff } from '@hcengineering/hr'
-  import { createQuery, getClient, SpaceSelector } from '@hcengineering/presentation'
-  import {
-    Button,
-    IconBack,
-    IconForward,
-    Label,
-    deviceOptionsStore as deviceInfo,
-    TabList,
-    SearchEdit
-  } from '@hcengineering/ui'
+  import { createQuery, SpaceSelector } from '@hcengineering/presentation'
   import type { TabItem } from '@hcengineering/ui'
+  import { Button, IconBack, IconForward, Label, SearchEdit, TabList } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import hr from '../plugin'
   import ScheduleView from './ScheduleView.svelte'
-  import { EmployeeAccount } from '@hcengineering/contact'
-  import { employeeByIdStore } from '@hcengineering/contact-resources'
 
-  const hierarchy = getClient().getHierarchy()
   const accountEmployee = $employeeByIdStore.get((getCurrentAccount() as EmployeeAccount).employee)
-  const accountStaff = accountEmployee !== undefined ? hierarchy.as(accountEmployee, hr.mixin.Staff) : undefined
+  let accountStaff: Staff | undefined
+
+  const accountStaffQ = createQuery()
 
   let department = accountStaff !== undefined ? accountStaff.department : hr.ids.Head
+  $: if (accountEmployee !== undefined) {
+    accountStaffQ.query(hr.mixin.Staff, { _id: accountEmployee._id as Ref<Staff> }, (res) => {
+      accountStaff = res[0]
+      department = accountStaff !== undefined ? accountStaff.department : hr.ids.Head
+    })
+  }
+
   let currentDate: Date = new Date()
 
   let search = ''
@@ -89,7 +89,6 @@
     }).format(date)
   }
 
-  $: twoRows = $deviceInfo.twoRows
   const handleSelect = (result: any) => {
     if (result.type === 'select') {
       const res = result.detail
