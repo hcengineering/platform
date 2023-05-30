@@ -21,6 +21,7 @@
   import { employeeAccountByIdStore } from '../utils'
   import ui, { Button, Label } from '@hcengineering/ui'
   import EmployeeAccountRefPresenter from './EmployeeAccountRefPresenter.svelte'
+  import EmployeeAccountPresenter from './EmployeeAccountPresenter.svelte'
 
   export let object: Doc | Doc[]
   export let deleteAction: () => void
@@ -69,7 +70,7 @@
         <Label label={view.string.DeletePopupOwnerLabel} />
         {#each owners as owner}
           <div class="my-2">
-            <EmployeeAccountRefPresenter value={owner._id} />
+            <EmployeeAccountPresenter value={owner} />
           </div>
         {/each}
       </div>
