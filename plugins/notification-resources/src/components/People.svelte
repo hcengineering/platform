@@ -98,7 +98,7 @@
         changeSelected(selected)
       } else {
         const doc = filtered[index]
-        const acc = accounts.findIndex((p) => p._id === doc.txes[doc.txes.length -1].modifiedBy)
+        const acc = accounts.findIndex((p) => p._id === doc.txes[doc.txes.length - 1].modifiedBy)
         if (acc !== -1) {
           selected = acc
         }
