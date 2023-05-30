@@ -96,7 +96,7 @@ test.describe('contact tests', () => {
     })
     await page.click('text="Delete"')
     // Click text=Ok
-    await page.click('text=Ok')
+    await page.click('text=Yes')
 
     await expect(page.locator(`td:has-text("${first} ${last}")`)).toHaveCount(0)
   })
