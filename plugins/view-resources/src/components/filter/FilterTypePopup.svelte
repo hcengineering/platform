@@ -35,7 +35,7 @@
   function getFilters (_class: Ref<Class<Doc>>, mixin: ClassFilters): KeyFilter[] {
     if (mixin.filters === undefined) return []
     const filters = mixin.filters.map((p) => {
-      return typeof p === 'string' ? buildFilterFromKey(_class, p) : buildFilterFromPreset(p)
+      return typeof p === 'string' ? buildFilterFromKey(mixin._id, p) : buildFilterFromPreset(p)
     })
     const result: KeyFilter[] = []
     for (const filter of filters) {
