@@ -323,7 +323,7 @@ export class TTimeSpendReport extends TAttachedDoc implements TimeSpendReport {
  * @public
  */
 @Model(tracker.class.Component, core.class.Doc, DOMAIN_TRACKER)
-@UX(tracker.string.Component, tracker.icon.Component, 'COMPONENT')
+@UX(tracker.string.Component, tracker.icon.Component, 'COMPONENT', 'label')
 export class TComponent extends TDoc implements Component {
   @Prop(TypeString(), tracker.string.Title)
   @Index(IndexKind.FullText)
@@ -348,7 +348,7 @@ export class TComponent extends TDoc implements Component {
  * @public
  */
 @Model(tracker.class.Milestone, core.class.Doc, DOMAIN_TRACKER)
-@UX(tracker.string.Milestone, tracker.icon.Milestone)
+@UX(tracker.string.Milestone, tracker.icon.Milestone, '', 'label')
 export class TMilestone extends TDoc implements Milestone {
   @Prop(TypeString(), tracker.string.Title)
   // @Index(IndexKind.FullText)
@@ -1336,7 +1336,25 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['status', 'priority', 'space', 'createdBy', 'assignee'],
+    filters: [
+      'status',
+      'priority',
+      'space',
+      'createdBy',
+      'assignee',
+      {
+        _class: tracker.class.Issue,
+        key: 'component',
+        component: view.component.ObjectFilter,
+        showNested: false
+      },
+      {
+        _class: tracker.class.Issue,
+        key: 'milestone',
+        component: view.component.ObjectFilter,
+        showNested: false
+      }
+    ],
     ignoreKeys: ['number', 'estimation', 'attachedTo']
   })
 

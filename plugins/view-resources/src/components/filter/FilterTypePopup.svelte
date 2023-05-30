@@ -231,6 +231,9 @@
   }
 
   function hasNested (type: KeyFilter): boolean {
+    if (type.showNested === false) {
+      return false
+    }
     const targetClass = (hierarchy.getAttribute(type._class, type.key).type as RefTo<Doc>).to
     if (targetClass === undefined) return false
     const clazz = hierarchy.getClass(targetClass)
