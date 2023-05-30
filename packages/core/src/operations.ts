@@ -281,6 +281,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
 export class ApplyOperations extends TxOperations {
   txes: TxCUD<Doc>[] = []
   matches: DocumentClassQuery<Doc>[] = []
+  notMatches: DocumentClassQuery<Doc>[] = []
   constructor (readonly ops: TxOperations, readonly scope: string) {
     const txClient: Client = {
       getHierarchy: () => ops.client.getHierarchy(),
@@ -303,10 +304,15 @@ export class ApplyOperations extends TxOperations {
     return this
   }
 
+  notMatch<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>): ApplyOperations {
+    this.notMatches.push({ _class, query })
+    return this
+  }
+
   async commit (): Promise<boolean> {
     if (this.txes.length > 0) {
       return await ((await this.ops.tx(
-        this.ops.txFactory.createTxApplyIf(core.space.Tx, this.scope, this.matches, this.txes)
+        this.ops.txFactory.createTxApplyIf(core.space.Tx, this.scope, this.matches, this.notMatches, this.txes)
       )) as Promise<boolean>)
     }
     return true

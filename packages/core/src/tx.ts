@@ -120,6 +120,9 @@ export interface TxApplyIf extends Tx {
   // All matches should be true with at least one document.
   match: DocumentClassQuery<Doc>[]
 
+  // All matches should be false for all documents.
+  notMatch: DocumentClassQuery<Doc>[]
+
   // If all matched execute following transactions.
   txes: TxCUD<Doc>[]
 }
@@ -586,6 +589,7 @@ export class TxFactory {
     space: Ref<Space>,
     scope: string,
     match: DocumentClassQuery<Doc>[],
+    notMatch: DocumentClassQuery<Doc>[],
     txes: TxCUD<Doc>[],
     modifiedOn?: Timestamp,
     modifiedBy?: Ref<Account>
@@ -599,6 +603,7 @@ export class TxFactory {
       objectSpace: space,
       scope,
       match,
+      notMatch,
       txes
     }
   }
