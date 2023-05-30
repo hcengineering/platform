@@ -271,16 +271,11 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     return users.map((p) => p.email)
   }
 
-  async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
+  private async getTxTargets (ctx: SessionContext, tx: Tx): Promise<string[] | undefined> {
     const h = this.storage.hierarchy
     let targets: string[] | undefined
 
     if (h.isDerived(tx._class, core.class.TxCUD)) {
-      const cudTx = tx as TxCUD<Doc>
-      const isSpace = h.isDerived(cudTx.objectClass, core.class.Space)
-      if (isSpace) {
-        await this.handleTx(ctx, cudTx as TxCUD<Space>)
-      }
       const account = await getUser(this.storage, ctx)
       if (tx.objectSpace === (account._id as string)) {
         targets = [account.email]
@@ -289,6 +284,8 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
         if (space !== undefined) {
           targets = await this.getTargets(space.members)
           if (!isOwner(account)) {
+            const cudTx = tx as TxCUD<Doc>
+            const isSpace = h.isDerived(cudTx.objectClass, core.class.Space)
             const allowed = this.allowedSpaces[account._id]
             if (allowed === undefined || !allowed.includes(isSpace ? (cudTx.objectId as Ref<Space>) : tx.objectSpace)) {
               throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
@@ -302,6 +299,19 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
           }
         }
       }
+    }
+
+    return targets
+  }
+
+  private async proccessTx (ctx: SessionContext, tx: Tx): Promise<void> {
+    const h = this.storage.hierarchy
+    if (h.isDerived(tx._class, core.class.TxCUD)) {
+      const cudTx = tx as TxCUD<Doc>
+      const isSpace = h.isDerived(cudTx.objectClass, core.class.Space)
+      if (isSpace) {
+        await this.handleTx(ctx, cudTx as TxCUD<Space>)
+      }
       if (h.isDerived(cudTx.objectClass, core.class.Account) && cudTx._class === core.class.TxUpdateDoc) {
         const ctx = cudTx as TxUpdateDoc<Account>
         if (ctx.operations.role !== undefined) {
@@ -309,8 +319,15 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
         }
       }
     }
+  }
 
+  async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
+    await this.proccessTx(ctx, tx)
+    const targets = await this.getTxTargets(ctx, tx)
     const res = await this.provideTx(ctx, tx)
+    for (const tx of res[1]) {
+      await this.proccessTx(ctx, tx)
+    }
     return [res[0], res[1], mergeTargets(targets, res[2])]
   }
 

@@ -57,7 +57,8 @@
   let description: string = project?.description ?? ''
   let isPrivate: boolean = project?.private ?? false
   let icon: Asset | undefined = project?.icon ?? undefined
-  let color: number | undefined = project?.color ?? undefined
+  let color = project?.color ?? getColorNumberByText(name)
+  let isColorSelected = false
   let defaultAssignee: Ref<Employee> | null | undefined = project?.defaultAssignee ?? null
   let members: Ref<Account>[] =
     project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount()._id]
@@ -141,20 +142,14 @@
         }
       }
     }
+
     if (Object.keys(update).length > 0) {
-      const ops = client.apply(project._id).notMatch(tracker.class.Project, { identifier: projectData.identifier })
-
       isSaving = true
-      await ops.update(project, update)
-      const succeeded = await ops.commit()
+      await client.update(project, update)
       isSaving = false
-
-      if (succeeded) {
-        close()
-      } else {
-        changeIdentity(changeIdentityRef)
-      }
     }
+
+    close()
   }
 
   async function createProject () {
@@ -209,10 +204,11 @@
   }
 
   function chooseIcon (ev: MouseEvent) {
-    showPopup(ProjectIconChooser, { icon, color: color ?? getColorNumberByText(name) }, 'top', (result) => {
+    showPopup(ProjectIconChooser, { icon, color }, 'top', (result) => {
       if (result !== undefined && result !== null) {
         icon = result.icon
         color = result.color
+        isColorSelected = true
       }
     })
   }
@@ -263,6 +259,7 @@
           on:input={() => {
             if (isNew) {
               identifier = name.toLocaleUpperCase().replaceAll(' ', '_').substring(0, 5)
+              color = isColorSelected ? color : getColorNumberByText(name)
             }
           }}
         />
