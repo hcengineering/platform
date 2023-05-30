@@ -105,8 +105,10 @@
     edits = edits
   }
 
-  export const isNull = (currentDate: Date | null, full: boolean = false): boolean => {
-    dateToEdits(currentDate)
+  export const isNull = (currentDate: Date | null | undefined = undefined, full: boolean = false): boolean => {
+    if (currentDate !== undefined) {
+      dateToEdits(currentDate)
+    }
     let result: boolean = false
     edits.forEach((edit, i) => {
       if (edit.value === -1 && full && i > 2) result = true
@@ -134,7 +136,7 @@
         } else {
           edits[index].value = edits[index].value * 10 + num
         }
-        if (!isNull(currentDate, false) && !startTyping) {
+        if (!isNull() && !startTyping) {
           fixEdits()
           currentDate = setValue(edits[index].value, currentDate, ed)
           dateToEdits(currentDate)
@@ -148,7 +150,7 @@
         else if (selected === 'hour' && (shouldNext || edits[3].value > 2)) selected = 'min'
       }
       if (ev.code === 'Enter') {
-        if (!isNull(currentDate, false)) dispatch('close')
+        if (!isNull(currentDate)) dispatch('close')
       }
       if (ev.code === 'Backspace') {
         edits[index].value = -1
