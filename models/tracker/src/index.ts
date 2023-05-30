@@ -1889,7 +1889,7 @@ export function createModel (builder: Builder): void {
       config: [
         {
           key: '',
-          presenter: tracker.component.ComponentRefPresenter,
+          presenter: tracker.component.ComponentPresenter,
           props: { kind: 'list' }
         },
         { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
