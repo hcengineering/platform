@@ -17,15 +17,15 @@
   import core, { Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Applicant, Vacancy } from '@hcengineering/recruit'
-  import { Button, Label, Loading, SearchEdit, showPopup, IconAdd } from '@hcengineering/ui'
+  import { Button, IconAdd, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
   import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
   import {
     FilterBar,
     FilterButton,
-    getViewOptions,
-    setActiveViewletId,
     TableBrowser,
     ViewletSettingButton,
+    getViewOptions,
+    setActiveViewletId,
     viewOptionStore
   } from '@hcengineering/view-resources'
   import recruit from '../plugin'
@@ -239,7 +239,7 @@
     <SearchEdit bind:value={search} on:change={(e) => (search = e.detail)} />
     <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
     <div class="buttons-divider" />
-    <FilterButton _class={recruit.class.Vacancy} />
+    <FilterButton _class={recruit.mixin.VacancyList} />
   </div>
   <div class="ac-header-full medium-gap">
     <ViewletSettingButton bind:viewOptions viewlet={descr} />
