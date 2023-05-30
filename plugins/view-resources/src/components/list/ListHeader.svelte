@@ -61,9 +61,9 @@
 
   let accentColor: ColorDefinition | undefined = undefined
 
-  $: showColors = (viewOptions as any).shouldShowColors
+  $: showColors = (viewOptions as any).shouldShowColors !== false
   $: headerBGColor =
-    level === 0 && showColors !== false
+    level === 0 && showColors
       ? accentColor?.background ?? defaultBackground($themeStore.dark)
       : defaultBackground($themeStore.dark)
 
