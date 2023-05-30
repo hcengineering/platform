@@ -92,8 +92,17 @@
       .filter((p) => p !== undefined) as EmployeeAccount[]
     if (loading || _id === undefined) {
       changeSelected(selected)
-    } else if (filtered.find((p) => p.attachedTo === _id) === undefined) {
-      changeSelected(selected)
+    } else {
+      const index = filtered.findIndex((p) => p.attachedTo === _id)
+      if (index === -1) {
+        changeSelected(selected)
+      } else {
+        const doc = filtered[index]
+        const acc = accounts.findIndex((p) => p._id === doc.txes[doc.txes.length -1].modifiedBy)
+        if (acc !== -1) {
+          selected = acc
+        }
+      }
     }
   }
 
