@@ -459,7 +459,10 @@ export async function signUpJoin (
   return result
 }
 
-async function createAcc (
+/**
+ * @public
+ */
+export async function createAcc (
   db: Db,
   productId: string,
   email: string,
