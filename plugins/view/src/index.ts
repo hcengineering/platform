@@ -366,7 +366,7 @@ export type UpdateCustomSorting = <T extends Doc>(
 /**
  * @public
  */
-export interface AggregationManger {
+export interface AggregationManager {
   GroupByCategories: GroupByCategoriesFunc
   GroupValues: GroupValuesFunc
   HasValue: HasValueFunc
@@ -378,8 +378,16 @@ export interface AggregationManger {
   UpdateCustomSorting?: UpdateCustomSorting
 }
 
+/**
+ * @public
+ */
+export type AggregationManagerResource = Resource<AggregationManager>
+
+/**
+ * @public
+ */
 export interface Aggregation extends Class<Doc> {
-  aggregationManager: Resource<AggregationManger>
+  aggregationManager: AggregationManagerResource
 }
 
 /**

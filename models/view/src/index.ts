@@ -80,7 +80,7 @@ import {
   ViewletDescriptor,
   ViewletPreference,
   Aggregation,
-  AggregationManger
+  AggregationManagerResource
 } from '@hcengineering/view'
 import presentation from '@hcengineering/model-presentation'
 import view from './plugin'
@@ -275,7 +275,7 @@ export class TAllValuesFunc extends TClass implements AllValuesFunc {
 
 @Mixin(view.mixin.Aggregation, core.class.Class)
 export class TAggregation extends TClass implements Aggregation {
-  aggregationManager!: Resource<AggregationManger>
+  aggregationManager!: AggregationManagerResource
 }
 
 @Model(view.class.ViewletPreference, preference.class.Preference)

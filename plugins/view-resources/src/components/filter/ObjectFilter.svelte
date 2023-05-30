@@ -27,7 +27,7 @@
     Loading,
     resizeObserver
   } from '@hcengineering/ui'
-  import { AggregationManger, Filter } from '@hcengineering/view'
+  import { AggregationManager, Filter } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { FILTER_DEBOUNCE_MS, sortFilterValues } from '../../filter'
   import view from '../../plugin'
@@ -49,7 +49,7 @@
 
   let values: (Doc | undefined | null)[] = []
   let objectsPromise: Promise<FindResult<Doc>> | undefined
-  let aggregationManager: AggregationManger
+  let aggregationManager: AggregationManager
 
   const targets = new Set<any>()
   $: targetClass = (filter.key.attribute.type as RefTo<Doc>).to
