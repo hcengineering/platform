@@ -141,20 +141,14 @@
         }
       }
     }
+
     if (Object.keys(update).length > 0) {
-      const ops = client.apply(project._id).notMatch(tracker.class.Project, { identifier: projectData.identifier })
-
       isSaving = true
-      await ops.update(project, update)
-      const succeeded = await ops.commit()
+      await client.update(project, update)
       isSaving = false
-
-      if (succeeded) {
-        close()
-      } else {
-        changeIdentity(changeIdentityRef)
-      }
     }
+
+    close()
   }
 
   async function createProject () {
