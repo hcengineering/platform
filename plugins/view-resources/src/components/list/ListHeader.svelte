@@ -61,8 +61,9 @@
 
   let accentColor: ColorDefinition | undefined = undefined
 
+  $: showColors = (viewOptions as any).shouldShowColors
   $: headerBGColor =
-    level === 0 && (viewOptions as any).shouldShowColors !== false
+    level === 0 && showColors !== false
       ? accentColor?.background ?? defaultBackground($themeStore.dark)
       : defaultBackground($themeStore.dark)
 
@@ -84,6 +85,7 @@
     style:--header-bg-color={headerBGColor}
     class="flex-between categoryHeader row"
     class:flat
+    class:noDivide={showColors}
     class:collapsed
     class:subLevel={level !== 0}
     class:lastCat
@@ -225,6 +227,8 @@
     }
     &::after {
       border: 1px solid var(--theme-list-border-color);
+    }
+    &.noDivide::after {
       border-bottom-color: transparent;
     }
     &::before {

@@ -16,15 +16,18 @@
 <script lang="ts">
   import { EmployeeAccount } from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
+  import { IconSize } from '@hcengineering/ui'
   import { employeeAccountByIdStore } from '../utils'
   import EmployeeAccountPresenter from './EmployeeAccountPresenter.svelte'
 
   export let value: Ref<EmployeeAccount>
+  export let avatarSize: IconSize = 'x-small'
   export let disabled = false
+  export let inline = false
 
   $: account = $employeeAccountByIdStore.get(value)
 </script>
 
 {#if account}
-  <EmployeeAccountPresenter value={account} {disabled} />
+  <EmployeeAccountPresenter value={account} {disabled} {inline} {avatarSize} />
 {/if}

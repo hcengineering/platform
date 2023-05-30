@@ -17,12 +17,13 @@
   import { EmployeeAccount } from '@hcengineering/contact'
   import core, { Account, systemAccountEmail } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Label, tooltip } from '@hcengineering/ui'
+  import { Label, tooltip, IconSize } from '@hcengineering/ui'
   import { employeeByIdStore } from '../utils'
   import Avatar from './Avatar.svelte'
   import EmployeePresenter from './EmployeePresenter.svelte'
 
   export let value: Account
+  export let avatarSize: IconSize = 'x-small'
   export let disabled = false
   export let inline = false
 
@@ -34,10 +35,10 @@
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   {#if employee}
-    <EmployeePresenter value={employee} {disabled} {inline} />
+    <EmployeePresenter value={employee} {disabled} {inline} {avatarSize} />
   {:else}
     <div class="flex-row-center">
-      <Avatar size="x-small" />
+      <Avatar size={avatarSize} />
       <span class="overflow-label user" use:tooltip={{ label: valueLabel }}><Label label={valueLabel} /></span>
     </div>
   {/if}

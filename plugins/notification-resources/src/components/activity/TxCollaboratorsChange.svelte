@@ -59,21 +59,23 @@
 </script>
 
 {#if diff}
-  <div class="flex-presenter">
-    <Label label={notification.string.ChangeCollaborators} />
-    {#if diff.added.length > 0}
-      <IconAdd size={'x-small'} fill={'var(--theme-trans-color)'} />
-      {#each diff.added as add}
-        <EmployeeAccountRefPresenter value={add} disabled />
-      {/each}
-    {/if}
-    {#if diff.removed.length > 0}
-      <IconDelete size={'x-small'} fill={'var(--theme-trans-color)'} />
-      {#each diff.removed as removed}
-        <EmployeeAccountRefPresenter value={removed} disabled />
-      {/each}
-    {/if}
-  </div>
+  <Label label={notification.string.ChangeCollaborators} />
+  {#if diff.added.length > 0}
+    <div class="antiHSpacer" />
+    <IconAdd size={'x-small'} fill={'var(--theme-trans-color)'} />
+    {#each diff.added as add}
+      <EmployeeAccountRefPresenter value={add} disabled inline />
+      <div class="antiHSpacer" />
+    {/each}
+  {/if}
+  {#if diff.removed.length > 0}
+    <div class="antiHSpacer" />
+    <IconDelete size={'x-small'} fill={'var(--theme-trans-color)'} />
+    {#each diff.removed as removed}
+      <EmployeeAccountRefPresenter value={removed} disabled inline />
+      <div class="antiHSpacer" />
+    {/each}
+  {/if}
 {:else}
   <Label label={notification.string.YouAddedCollaborators} />
 {/if}

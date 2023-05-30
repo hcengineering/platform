@@ -16,9 +16,18 @@
   import { WithLookup, Doc } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
   import { createQuery, getClient, ActionContext } from '@hcengineering/presentation'
-  import ui, { Button, closePopup, Component, Icon, IconArrowLeft, Label } from '@hcengineering/ui'
+  import ui, {
+    Button,
+    closePopup,
+    Component,
+    Icon,
+    IconArrowLeft,
+    Label,
+    EditWithIcon,
+    IconSearch,
+    deviceOptionsStore
+  } from '@hcengineering/ui'
   import { Action, ViewContext } from '@hcengineering/view'
-  import { onMount } from 'svelte'
   import { filterActions, getSelection } from '../actions'
   import view from '../plugin'
   import { focusStore, selectionStore } from '../selection'
@@ -31,7 +40,7 @@
 
   let search: string = ''
   let actions: WithLookup<Action>[] = []
-  let input: HTMLInputElement | undefined
+  let input: EditWithIcon
 
   const query = createQuery()
 
@@ -111,15 +120,6 @@
     }
   }
   $: filterSearchActions(supportedActions, search)
-
-  let phTraslate: string = ''
-  $: translate(view.string.ActionPlaceholder, {}).then((res) => {
-    phTraslate = res
-  })
-
-  onMount(() => {
-    if (input) input.focus()
-  })
 
   let selection = 0
   let list: ListView
@@ -202,34 +202,36 @@
   on:keydown={onKeydown}
   use:resizeObserver={() => dispatch('changeContent')}
 >
-  <div class="mt-2 ml-2 flex-between">
-    {#if $selectionStore.length > 0}
-      <div class="item-box">
-        {$selectionStore.length} items
-      </div>
-    {:else if $focusStore.focus !== undefined}
-      <div class="item-box">
-        <ObjectPresenter
-          objectId={$focusStore.focus._id}
-          _class={$focusStore.focus._class}
-          value={$focusStore.focus}
-          props={{ inline: true }}
-        />
-      </div>
-    {/if}
-    {#if activeAction && activeAction?.actionPopup !== undefined}
-      <div class="mt-2 mb-2 mr-2">
-        <Button
-          icon={IconArrowLeft}
-          label={ui.string.Back}
-          on:click={() => {
-            activeAction = undefined
-          }}
-          width={'fit-content'}
-        />
-      </div>
-    {/if}
-  </div>
+  {#if $selectionStore.length > 0 || $focusStore.focus !== undefined || (activeAction && activeAction?.actionPopup !== undefined)}
+    <div class="mt-2 ml-2 flex-between">
+      {#if $selectionStore.length > 0}
+        <div class="item-box">
+          {$selectionStore.length} items
+        </div>
+      {:else if $focusStore.focus !== undefined}
+        <div class="item-box">
+          <ObjectPresenter
+            objectId={$focusStore.focus._id}
+            _class={$focusStore.focus._class}
+            value={$focusStore.focus}
+            props={{ inline: true }}
+          />
+        </div>
+      {/if}
+      {#if activeAction && activeAction?.actionPopup !== undefined}
+        <div class="mt-2 mb-2 mr-2">
+          <Button
+            icon={IconArrowLeft}
+            label={ui.string.Back}
+            on:click={() => {
+              activeAction = undefined
+            }}
+            width={'fit-content'}
+          />
+        </div>
+      {/if}
+    </div>
+  {/if}
   {#if activeAction && activeAction?.actionPopup !== undefined}
     <Component
       is={activeAction?.actionPopup}
@@ -242,12 +244,20 @@
       on:close={async () => {
         activeAction = undefined
         await tick()
-        input?.focus()
+        input?.focused()
       }}
     />
   {:else}
     <div class="header">
-      <input bind:this={input} type="text" bind:value={search} placeholder={phTraslate} />
+      <EditWithIcon
+        bind:this={input}
+        icon={IconSearch}
+        size={'large'}
+        width={'100%'}
+        focus={!$deviceOptionsStore.isMobile}
+        bind:value={search}
+        placeholder={view.string.ActionPlaceholder}
+      />
     </div>
     <div class="scroll">
       <div class="box">
@@ -312,7 +322,7 @@
     min-width: 1.5rem;
     color: var(--theme-caption-color);
     background-color: var(--theme-button-enabled);
-    border: 1px solid var(--theme-divider-color);
+    border: 1px solid var(--theme-button-border);
     border-radius: 0.25rem;
   }
   .key-box + .key-box {
@@ -326,9 +336,13 @@
     border-radius: 0.25rem;
   }
   .category-box {
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    min-height: 2rem;
+    text-transform: uppercase;
+    font-weight: 500;
+    font-size: 0.625rem;
     color: var(--theme-caption-color);
-    background-color: var(--theme-comp-header-color);
-    padding: 0.5rem;
   }
 </style>

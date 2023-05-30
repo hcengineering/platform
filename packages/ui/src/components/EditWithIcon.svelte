@@ -34,14 +34,16 @@
   let textHTML: HTMLInputElement
   let phTraslate: string = ''
 
+  export function focused () {
+    textHTML.focus()
+    focus = false
+  }
+
   $: translate(placeholder, placeholderParam ?? {}).then((res) => {
     phTraslate = res
   })
   $: if (textHTML !== undefined) {
-    if (focus) {
-      textHTML.focus()
-      focus = false
-    }
+    if (focus) focused()
   }
 </script>
 
