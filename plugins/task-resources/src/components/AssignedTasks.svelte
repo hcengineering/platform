@@ -18,7 +18,15 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import tags, { selectedTagElements, TagCategory, TagElement } from '@hcengineering/tags'
   import { DoneState, Task } from '@hcengineering/task'
-  import { Component, IModeSelector, Label, resolvedLocationStore, SearchEdit, ModeSelector } from '@hcengineering/ui'
+  import {
+    Component,
+    IModeSelector,
+    Label,
+    resolvedLocationStore,
+    SearchEdit,
+    ModeSelector,
+    Loading
+  } from '@hcengineering/ui'
   import {
     activeViewlet,
     FilterButton,
@@ -31,7 +39,7 @@
   import task from '../plugin'
   import { IntlString } from '@hcengineering/platform'
   import ViewletSettingButton from '@hcengineering/view-resources/src/components/ViewletSettingButton.svelte'
-  import view, { Viewlet } from '@hcengineering/view'
+  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
   import { onDestroy } from 'svelte'
   import FilterBar from '@hcengineering/view-resources/src/components/filter/FilterBar.svelte'
 
@@ -58,6 +66,8 @@
   const client = getClient()
 
   let category: Ref<TagCategory> | undefined = undefined
+  let loading = true
+  let preference: ViewletPreference | undefined
 
   let documentIds: Ref<Task>[] = []
   function updateResultQuery (search: string, documentIds: Ref<Task>[], doneStates: DoneState[]): void {
@@ -129,10 +139,20 @@
   $: viewlet = viewlets && updateActiveViewlet(viewlets, active)
   $: active = $activeViewlet[key]
   const viewletQuery = createQuery()
-  viewletQuery.query(view.class.Viewlet, { attachTo: _class }, (res) => (viewlets = res), {
-    lookup: {
-      descriptor: view.class.ViewletDescriptor
-    }
+  const preferenceQuery = createQuery()
+  viewletQuery.query(view.class.Viewlet, { attachTo: _class, descriptor: task.viewlet.StatusTable }, (res) => {
+    viewlets = res
+    preferenceQuery.query(
+      view.class.ViewletPreference,
+      {
+        attachedTo: res[0]._id
+      },
+      (pref) => {
+        preference = pref[0]
+        loading = false
+      },
+      { limit: 1 }
+    )
   })
   $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 
@@ -174,9 +194,16 @@
 
 <Component is={tags.component.TagsCategoryBar} props={{ targetClass: _class, category }} on:change={handleChange} />
 
-<TableBrowser
-  {_class}
-  config={['', 'attachedTo', 'assignee', 'state', 'doneState', 'attachments', 'comments', 'modifiedOn']}
-  query={resultQuery}
-  showNotification
-/>
+{#if viewlet}
+  {#if loading}
+    <Loading />
+  {:else}
+    <TableBrowser
+      {_class}
+      config={preference?.config ?? viewlet.config}
+      options={viewlet.options}
+      query={resultQuery}
+      showNotification
+    />
+  {/if}
+{/if}
