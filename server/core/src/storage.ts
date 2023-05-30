@@ -606,42 +606,21 @@ class TServerStorage implements ServerStorage {
     return { passed, onEnd }
   }
 
-  async apply (ctx: MeasureContext, tx: Tx[], broadcast: boolean): Promise<Tx[]> {
-    const triggerFx = new Effects()
-    const _findAll = createFindAll(this)
+  async apply (ctx: MeasureContext, txes: Tx[], broadcast: boolean): Promise<Tx[]> {
+    const derived: Tx[] = []
 
-    const txToStore = tx.filter(
-      (it) => it.space !== core.space.DerivedTx && !this.hierarchy.isDerived(it._class, core.class.TxApplyIf)
-    )
-    await ctx.with('domain-tx', {}, async () => await this.getAdapter(DOMAIN_TX).tx(...txToStore))
+    for (const tx of txes) {
+      const res = await ctx.with('apply', {}, (ctx) => this.tx(ctx, tx))
+       // send transactions
+      if (broadcast) {
+        this.options?.broadcast?.([tx])
+        this.options?.broadcast?.(res[1])
+      }
 
-    const removedMap = new Map<Ref<Doc>, Doc>()
-    await ctx.with('apply', {}, (ctx) => this.routeTx(ctx, removedMap, ...tx))
-
-    // send transactions
-    if (broadcast) {
-      this.options?.broadcast?.(tx)
-    }
-    // invoke triggers and store derived objects
-    const derived = await this.processDerived(ctx, tx, triggerFx, _findAll, removedMap)
-
-    // index object
-    for (const _tx of tx) {
-      await ctx.with('fulltext', {}, (ctx) => this.fulltext.tx(ctx, _tx))
+      derived.push(...res[1])
     }
 
-    // index derived objects
-    for (const tx of derived) {
-      await ctx.with('derived-processor', { _class: txClass(tx) }, (ctx) => this.fulltext.tx(ctx, tx))
-    }
-
-    for (const fx of triggerFx.effects) {
-      await fx()
-    }
-    if (broadcast && derived.length > 0) {
-      this.options?.broadcast?.(derived)
-    }
-    return [...tx, ...derived]
+    return [...txes, ...derived]
   }
 
   async tx (ctx: MeasureContext, tx: Tx): Promise<[TxResult, Tx[]]> {
