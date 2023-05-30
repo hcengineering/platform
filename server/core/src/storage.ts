@@ -607,88 +607,97 @@ class TServerStorage implements ServerStorage {
   }
 
   async apply (ctx: MeasureContext, txes: Tx[], broadcast: boolean): Promise<Tx[]> {
-    const derived: Tx[] = []
+    const result = await this.processTxes(ctx, txes)
+    let derived: Tx[] = []
 
-    for (const tx of txes) {
-      const res = await ctx.with('apply', {}, (ctx) => this.tx(ctx, tx))
-      // send transactions
-      if (broadcast) {
-        this.options?.broadcast?.([tx])
-        this.options?.broadcast?.(res[1])
-      }
+    derived = result[1]
 
-      derived.push(...res[1])
+    if (broadcast) {
+      this.options?.broadcast?.(txes)
+      this.options?.broadcast?.(derived)
     }
 
     return [...txes, ...derived]
   }
 
-  async tx (ctx: MeasureContext, tx: Tx): Promise<[TxResult, Tx[]]> {
-    // store tx
-    const _class = txClass(tx)
-    const _findAll = createFindAll(this)
-    const objClass = txObjectClass(tx)
-    const removedDocs = new Map<Ref<Doc>, Doc>()
-    return await ctx.with('tx', { _class, objClass }, async (ctx) => {
-      if (tx.space !== core.space.DerivedTx && !this.hierarchy.isDerived(tx._class, core.class.TxApplyIf)) {
-        await ctx.with('domain-tx', { _class, objClass }, async () => await this.getAdapter(DOMAIN_TX).tx(tx))
+  fillTxes (txes: Tx[], txToStore: Tx[], modelTx: Tx[], txToProcess: Tx[], applyTxes: Tx[]): void {
+    for (const tx of txes) {
+      if (!this.hierarchy.isDerived(tx._class, core.class.TxApplyIf)) {
+        if (tx.space !== core.space.DerivedTx) {
+          txToStore.push(tx)
+        }
+        if (tx.objectSpace === core.space.Model) {
+          modelTx.push(tx)
+        }
+        txToProcess.push(tx)
+      } else {
+        applyTxes.push(tx)
       }
+    }
+  }
 
-      if (tx.objectSpace === core.space.Model) {
+  async processTxes (ctx: MeasureContext, txes: Tx[]): Promise<[TxResult, Tx[]]> {
+    // store tx
+    const _findAll = createFindAll(this)
+    const txToStore: Tx[] = []
+    const modelTx: Tx[] = []
+    const applyTxes: Tx[] = []
+    const txToProcess: Tx[] = []
+    const triggerFx = new Effects()
+    const removedMap = new Map<Ref<Doc>, Doc>()
+    const onEnds: (() => void)[] = []
+    let result: TxResult = {}
+    let derived: Tx[] = []
+
+    try {
+      this.fillTxes(txes, txToStore, modelTx, txToProcess, applyTxes)
+      for (const tx of applyTxes) {
+        const applyIf = tx as TxApplyIf
+        // Wait for scope promise if found
+        const passed = await this.verifyApplyIf(ctx, applyIf, _findAll)
+        onEnds.push(passed.onEnd)
+        if (passed.passed) {
+          this.fillTxes(applyIf.txes, txToStore, modelTx, txToProcess, applyTxes)
+        }
+      }
+      for (const tx of modelTx) {
         // maintain hierarchy and triggers
         this.hierarchy.tx(tx)
         await this.triggers.tx(tx)
         await this.modelDb.tx(tx)
         this.model.push(tx)
       }
+      await ctx.with('domain-tx', {}, async () => await this.getAdapter(DOMAIN_TX).tx(...txToStore))
+      result = await ctx.with('apply', {}, (ctx) => this.routeTx(ctx, removedMap, ...txToProcess))
 
-      const triggerFx = new Effects()
+      // invoke triggers and store derived objects
+      derived = await this.processDerived(ctx, txToProcess, triggerFx, _findAll, removedMap)
 
-      let result: TxResult = {}
-      let derived: Tx[] = []
-      let onEnd = (): void => {}
-
-      try {
-        if (this.hierarchy.isDerived(tx._class, core.class.TxApplyIf)) {
-          const applyIf = tx as TxApplyIf
-          // Wait for scope promise if found
-          let passed: boolean
-          ;({ passed, onEnd } = await this.verifyApplyIf(ctx, applyIf, _findAll))
-          result = passed
-          if (passed) {
-            // Store apply if transaction's if required
-            await ctx.with('domain-tx', { _class, objClass }, async () => {
-              const atx = await this.getAdapter(DOMAIN_TX)
-              await atx.tx(...applyIf.txes)
-            })
-            derived = await this.processDerivedTxes(applyIf.txes, ctx, triggerFx, _findAll, removedDocs)
-          }
-        } else {
-          // store object
-          result = await ctx.with('route-tx', { _class, objClass }, (ctx) => this.routeTx(ctx, removedDocs, tx))
-          // invoke triggers and store derived objects
-          derived = await this.processDerived(ctx, [tx], triggerFx, _findAll, removedDocs)
-        }
-
-        // index object
-        await ctx.with('fulltext', { _class, objClass }, (ctx) => this.fulltext.tx(ctx, tx))
-        // index derived objects
-        for (const tx of derived) {
-          await ctx.with('derived-fulltext', { _class: txClass(tx) }, (ctx) => this.fulltext.tx(ctx, tx))
-        }
-
-        for (const fx of triggerFx.effects) {
-          await fx()
-        }
-      } catch (err: any) {
-        console.log(err)
-        throw err
-      } finally {
-        onEnd()
+      // index object
+      for (const _tx of txToProcess) {
+        await ctx.with('fulltext', {}, (ctx) => this.fulltext.tx(ctx, _tx))
       }
 
-      return [result, derived]
-    })
+      // index derived objects
+      for (const tx of derived) {
+        await ctx.with('derived-processor', { _class: txClass(tx) }, (ctx) => this.fulltext.tx(ctx, tx))
+      }
+
+      for (const fx of triggerFx.effects) {
+        await fx()
+      }
+    } catch (err: any) {
+      console.log(err)
+      throw err
+    } finally {
+      onEnds.forEach((p) => p())
+    }
+
+    return [result, derived]
+  }
+
+  async tx (ctx: MeasureContext, tx: Tx): Promise<[TxResult, Tx[]]> {
+    return await this.processTxes(ctx, [tx])
   }
 
   find (domain: Domain): StorageIterator {
@@ -719,12 +728,6 @@ class Effects {
   get effects (): Effect[] {
     return [...this._effects]
   }
-}
-
-function txObjectClass (tx: Tx): string {
-  return tx._class === core.class.TxCollectionCUD
-    ? (tx as TxCollectionCUD<Doc, AttachedDoc>).tx.objectClass
-    : (tx as TxCUD<Doc>).objectClass
 }
 
 function txClass (tx: Tx): Ref<Class<Tx>> {
