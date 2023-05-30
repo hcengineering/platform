@@ -13,40 +13,41 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Card, createQuery } from '@hcengineering/presentation'
-  import { AccountRole, Doc, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
+  import { Card } from '@hcengineering/presentation'
+  import { AccountRole, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import view from '@hcengineering/view-resources/src/plugin'
   import { createEventDispatcher } from 'svelte'
-  import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
-  import EmployeePresenter from './EmployeePresenter.svelte'
+  import { EmployeeAccount } from '@hcengineering/contact'
   import { employeeAccountByIdStore } from '../utils'
-  import ui, { Label } from '@hcengineering/ui'
+  import ui, { Button, Label } from '@hcengineering/ui'
+  import EmployeeAccountRefPresenter from './EmployeeAccountRefPresenter.svelte'
 
   export let object: Doc | Doc[]
   export let deleteAction: () => void
   const objectArray = Array.isArray(object) ? object : [object]
-  let owners: Ref<Employee>[] = []
-  const query = createQuery()
-  query.query(
-    contact.class.EmployeeAccount,
-    { role: AccountRole.Owner },
-    (res) => {
-      owners = res.map((account) => account.employee)
-    },
-    {
-      sort: { name: SortingOrder.Descending }
-    }
+  const owners: EmployeeAccount[] = Array.from($employeeAccountByIdStore.values()).filter(
+    (acc) => acc.role === AccountRole.Owner
   )
   const dispatch = createEventDispatcher()
-  const creators = [
-    ...new Set(objectArray.map((obj) => $employeeAccountByIdStore.get(obj.createdBy as Ref<EmployeeAccount>)?.employee))
-  ]
-  const me = $employeeAccountByIdStore.get(getCurrentAccount()._id as Ref<EmployeeAccount>)?.employee
-  const canDelete = (creators.length === 1 && creators.includes(me)) || (me && owners.includes(me))
-  const label = canDelete ? view.string.DeleteObject : view.string.DeletePopupNoPermissionTitle
+  $: creators = [...new Set(objectArray.map((obj) => obj.createdBy as Ref<EmployeeAccount>))]
+  $: canDelete =
+    (creators.length === 1 && creators.includes(getCurrentAccount()._id as Ref<EmployeeAccount>)) ||
+    getCurrentAccount().role === AccountRole.Owner
+  $: label = canDelete ? view.string.DeleteObject : view.string.DeletePopupNoPermissionTitle
 </script>
 
-<Card {label} okAction={deleteAction} canSave={canDelete} okLabel={ui.string.Ok} on:close={() => dispatch('close')}>
+<Card
+  {label}
+  okAction={deleteAction}
+  canSave={canDelete}
+  okLabel={canDelete ? view.string.LabelYes : ui.string.Ok}
+  on:close={() => dispatch('close')}
+>
+  <svelte:fragment slot="buttons">
+    {#if canDelete}
+      <Button label={view.string.LabelNo} on:click={() => dispatch('close')} />
+    {/if}
+  </svelte:fragment>
   <div class="flex-grow flex-col">
     {#if canDelete}
       <div class="mb-2">
@@ -58,17 +59,17 @@
       </div>
       <div class="mb-2">
         <Label label={view.string.DeletePopupCreatorLabel} />
-        {#each creators as employee}
+        {#each creators as account}
           <div class="my-2">
-            <EmployeePresenter value={employee} />
+            <EmployeeAccountRefPresenter value={account} />
           </div>
         {/each}
       </div>
       <div class="mb-2">
         <Label label={view.string.DeletePopupOwnerLabel} />
-        {#each owners as employee}
+        {#each owners as owner}
           <div class="my-2">
-            <EmployeePresenter value={employee} />
+            <EmployeeAccountRefPresenter value={owner._id} />
           </div>
         {/each}
       </div>
