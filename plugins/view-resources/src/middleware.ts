@@ -68,7 +68,7 @@ export class DocMiddleware extends BasePresentationMiddleware implements Present
 
   async getManager (_class: Ref<Class<Doc>>): Promise<DocManager> {
     const h = this.client.getHierarchy()
-    const mixin = h.classHierarchyMixin(_class, view.mixin.MiddlewareFuncs)
+    const mixin = h.classHierarchyMixin(_class, view.mixin.CategoryAggregationView)
     if (mixin?.GetManager === undefined) {
       throw new Error('GetManager not found')
     }
@@ -170,7 +170,7 @@ export class DocMiddleware extends BasePresentationMiddleware implements Present
         if (attr.type._class !== core.class.RefTo) {
           continue
         }
-        const mixin = h.classHierarchyMixin((attr.type as RefTo<Doc>).to, view.mixin.MiddlewareFuncs)
+        const mixin = h.classHierarchyMixin((attr.type as RefTo<Doc>).to, view.mixin.CategoryAggregationView)
         if (mixin?.GetAttrClass === undefined) {
           continue
         }

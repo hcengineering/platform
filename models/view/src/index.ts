@@ -35,7 +35,6 @@ import {
   ActionCategory,
   ActivityAttributePresenter,
   AllValuesFunc,
-  GroupFuncs,
   ArrayEditor,
   AttributeEditor,
   AttributeFilter,
@@ -83,13 +82,13 @@ import {
   GroupByCategoriesFunc,
   GroupValuesFunc,
   HasValueFunc,
-  MiddlewareFuncs,
   Categorize,
   GetFindOptions,
   GetManager,
   GetStore,
   UpdateCustomSorting,
-  GetAttrClass
+  GetAttrClass,
+  CategoryAggregationView
 } from '@hcengineering/view'
 import presentation from '@hcengineering/model-presentation'
 import view from './plugin'
@@ -282,15 +281,11 @@ export class TAllValuesFunc extends TClass implements AllValuesFunc {
   func!: GetAllValuesFunc
 }
 
-@Mixin(view.mixin.GroupFuncs, core.class.Class)
-export class TGroupFuncs extends TClass implements GroupFuncs {
-  groupByCategories!: GroupByCategoriesFunc
-  groupValues!: GroupValuesFunc
-  hasValue!: HasValueFunc
-}
-
-@Mixin(view.mixin.MiddlewareFuncs, core.class.Class)
-export class TMiddlewareFuncs extends TClass implements MiddlewareFuncs {
+@Mixin(view.mixin.CategoryAggregationView, core.class.Class)
+export class TCategoryAggregationView extends TClass implements CategoryAggregationView {
+  GroupByCategories!: GroupByCategoriesFunc
+  GroupValues!: GroupValuesFunc
+  HasValue!: HasValueFunc
   GetManager!: GetManager
   GetStore!: GetStore
   GetFindOptions!: GetFindOptions
@@ -448,8 +443,7 @@ export function createModel (builder: Builder): void {
     TInlineAttributEditor,
     TFilteredView,
     TAllValuesFunc,
-    TGroupFuncs,
-    TMiddlewareFuncs
+    TCategoryAggregationView
   )
 
   classPresenter(
@@ -1017,13 +1011,10 @@ export function createModel (builder: Builder): void {
     presenter: view.component.StatusRefPresenter
   })
 
-  builder.mixin(Core.class.Status, core.class.Class, view.mixin.GroupFuncs, {
-    groupByCategories: view.function.GroupByStatusCategoriesFunc,
-    groupValues: view.function.GroupStatusValuesFunc,
-    hasValue: view.function.HasStatusValueFunc
-  })
-
-  builder.mixin(Core.class.Status, core.class.Class, view.mixin.MiddlewareFuncs, {
+  builder.mixin(Core.class.Status, core.class.Class, view.mixin.CategoryAggregationView, {
+    GroupByCategories: view.function.GroupByStatusCategoriesFunc,
+    GroupValues: view.function.GroupStatusValuesFunc,
+    HasValue: view.function.HasStatusValueFunc,
     GetManager: view.function.GetStatusManager,
     GetStore: view.function.GetStatusStore,
     GetFindOptions: view.function.GetStatusFindOptions,

@@ -329,15 +329,6 @@ export type HasValueFunc = Resource<(value: Doc | undefined | null, values: any[
 /**
  * @public
  */
-export interface GroupFuncs extends Class<Doc> {
-  groupByCategories: GroupByCategoriesFunc
-  groupValues: GroupValuesFunc
-  hasValue: HasValueFunc
-}
-
-/**
- * @public
- */
 export type GetManager = Resource<<T extends DocManager>(docs: Doc[]) => T>
 
 /**
@@ -369,10 +360,10 @@ export type UpdateCustomSorting = Resource<
   <T extends Doc>(finalOptions: FindOptions<T>, attr: AnyAttribute, mgr: DocManager) => void
 >
 
-/**
- * @public
- */
-export interface MiddlewareFuncs extends Class<Doc> {
+export interface CategoryAggregationView extends Class<Doc> {
+  GroupByCategories: GroupByCategoriesFunc
+  GroupValues: GroupValuesFunc
+  HasValue: HasValueFunc
   GetManager: GetManager
   GetStore: GetStore
   GetFindOptions: GetFindOptions
@@ -734,12 +725,11 @@ const view = plugin(viewId, {
     ListHeaderExtra: '' as Ref<Mixin<ListHeaderExtra>>,
     SortFuncs: '' as Ref<Mixin<ClassSortFuncs>>,
     AllValuesFunc: '' as Ref<Mixin<AllValuesFunc>>,
-    GroupFuncs: '' as Ref<Mixin<GroupFuncs>>,
-    MiddlewareFuncs: '' as Ref<Mixin<MiddlewareFuncs>>,
     ObjectPanel: '' as Ref<Mixin<ObjectPanel>>,
     LinkProvider: '' as Ref<Mixin<LinkProvider>>,
     SpacePresenter: '' as Ref<Mixin<SpacePresenter>>,
-    AttributeFilterPresenter: '' as Ref<Mixin<AttributeFilterPresenter>>
+    AttributeFilterPresenter: '' as Ref<Mixin<AttributeFilterPresenter>>,
+    CategoryAggregationView: '' as Ref<Mixin<CategoryAggregationView>>
   },
   class: {
     ViewletPreference: '' as Ref<Class<ViewletPreference>>,

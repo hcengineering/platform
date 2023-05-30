@@ -22,7 +22,9 @@
   export let value: Ref<Component> | AggregateValue | undefined
   export let kind: 'list' | undefined = undefined
 
-  $: componentValue = typeof value === 'string' ? value : (value?.values?.[0]?._id as Ref<Component>)
+  $: componentValue = $componentStore.get(
+    typeof value === 'string' ? value : (value?.values?.[0]?._id as Ref<Component>)
+  )
 </script>
 
-<ComponentPresenter value={$componentStore.get(componentValue)} {kind} on:accent-color />
+<ComponentPresenter value={componentValue} {kind} on:accent-color />

@@ -30,8 +30,7 @@ import {
   GetAttrClass,
   GetFindOptions,
   GetManager,
-  GetStore,
-  UpdateCustomSorting
+  GetStore
 } from '@hcengineering/view'
 import tracker, { trackerId } from '../../tracker/lib'
 
@@ -405,7 +404,6 @@ export default mergeIds(trackerId, tracker, {
     GetComponentStore: '' as GetStore,
     GetComponentFindOptions: '' as GetFindOptions,
     GetComponentClass: '' as GetAttrClass,
-    ComponentCategorize: '' as Categorize,
-    ComponentUpdateCustomSorting: '' as UpdateCustomSorting
+    ComponentCategorize: '' as Categorize
   }
 })

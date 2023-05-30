@@ -631,11 +631,11 @@ export async function groupByCategory (
   if (key === noCategory) return [undefined]
 
   const attrClass = getAttributePresenterClass(h, attr).attrClass
-  const mixin = h.classHierarchyMixin(attrClass, view.mixin.GroupFuncs)
+  const mixin = h.classHierarchyMixin(attrClass, view.mixin.CategoryAggregationView)
   let existingCategories: any[] = []
 
-  if (mixin?.groupByCategories !== undefined) {
-    const f = await getResource(mixin.groupByCategories)
+  if (mixin?.GroupByCategories !== undefined) {
+    const f = await getResource(mixin.GroupByCategories)
     existingCategories = f(categories)
   } else {
     const valueSet = new Set<any>()

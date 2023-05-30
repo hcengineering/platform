@@ -54,9 +54,9 @@
   const targets = new Set<any>()
   $: targetClass = (filter.key.attribute.type as RefTo<Doc>).to
   $: clazz = hierarchy.getClass(targetClass)
-  $: mixin = hierarchy.classHierarchyMixin(targetClass, view.mixin.GroupFuncs)
-  $: if (mixin?.hasValue !== undefined) {
-    getResource(mixin.hasValue).then((f) => (hasValue = f))
+  $: mixin = hierarchy.classHierarchyMixin(targetClass, view.mixin.CategoryAggregationView)
+  $: if (mixin?.HasValue !== undefined) {
+    getResource(mixin.HasValue).then((f) => (hasValue = f))
   }
 
   let filterUpdateTimeout: number | undefined
@@ -95,8 +95,8 @@
     objectsPromise = client.findAll(targetClass, resultQuery, options)
     values = await objectsPromise
 
-    if (mixin?.groupValues !== undefined) {
-      const f = await getResource(mixin.groupValues)
+    if (mixin?.GroupValues !== undefined) {
+      const f = await getResource(mixin.GroupValues)
       values = f(values as Doc[], targets)
     }
     if (targets.has(undefined)) {
