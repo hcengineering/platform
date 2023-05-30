@@ -1361,10 +1361,6 @@ export function createModel (builder: Builder): void {
     component: view.component.ValueFilter
   })
 
-  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.ClassFilters, {
-    filters: []
-  })
-
   builder.createDoc(
     presentation.class.ObjectSearchCategory,
     core.space.Model,
