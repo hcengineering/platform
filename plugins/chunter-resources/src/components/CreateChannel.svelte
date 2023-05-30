@@ -62,7 +62,7 @@
       icon={IconFolder}
       bind:value={name}
       placeholder={chunter.string.ChannelNamePlaceholder}
-      focus
+      autoFocus
     />
     <ToggleWithLabel
       label={presentation.string.MakePrivate}

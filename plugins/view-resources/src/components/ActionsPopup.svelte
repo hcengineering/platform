@@ -244,7 +244,7 @@
       on:close={async () => {
         activeAction = undefined
         await tick()
-        input?.focused()
+        input?.focus()
       }}
     />
   {:else}
@@ -254,7 +254,7 @@
         icon={IconSearch}
         size={'large'}
         width={'100%'}
-        focus={!$deviceOptionsStore.isMobile}
+        autoFocus={!$deviceOptionsStore.isMobile}
         bind:value={search}
         placeholder={view.string.ActionPlaceholder}
       />

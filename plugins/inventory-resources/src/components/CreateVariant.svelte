@@ -66,7 +66,7 @@
   on:changeContent
 >
   <Grid column={1} rowGap={1.75}>
-    <EditBox label={inventory.string.Variant} bind:value={doc.name} placeholder={inventory.string.Variant} focus />
+    <EditBox label={inventory.string.Variant} bind:value={doc.name} placeholder={inventory.string.Variant} autoFocus />
     <EditBox label={inventory.string.SKU} bind:value={doc.sku} placeholder={inventory.string.SKU} />
   </Grid>
 </Card>

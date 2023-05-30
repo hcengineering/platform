@@ -147,7 +147,13 @@
     <div class="mr-3">
       <Button focusIndex={1} icon={lead.icon.Lead} size={'medium'} kind={'link-bordered'} disabled />
     </div>
-    <EditBox focusIndex={1} bind:value={title} placeholder={lead.string.LeadPlaceholder} kind={'large-style'} focus />
+    <EditBox
+      focusIndex={1}
+      bind:value={title}
+      placeholder={lead.string.LeadPlaceholder}
+      kind={'large-style'}
+      autoFocus
+    />
   </div>
 
   <svelte:fragment slot="pool">

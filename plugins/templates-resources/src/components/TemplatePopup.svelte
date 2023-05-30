@@ -95,7 +95,7 @@
       icon={IconSearch}
       bind:value={query}
       placeholder={templates.string.SearchTemplate}
-      focus={!$deviceOptionsStore.isMobile}
+      autoFocus={!$deviceOptionsStore.isMobile}
     />
   </div>
   <div class="scroll mt-2">

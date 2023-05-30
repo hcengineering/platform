@@ -114,7 +114,7 @@
       placeholder={document.string.DocumentNamePlaceholder}
       bind:value={object.name}
       kind={'large-style'}
-      focus
+      autoFocus
       focusIndex={1}
     />
   </div>

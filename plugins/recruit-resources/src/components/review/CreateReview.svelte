@@ -157,7 +157,7 @@
   on:changeContent
 >
   <StatusControl slot="error" {status} />
-  <EditBox placeholder={recruit.string.Title} bind:value={title} kind={'large-style'} focus />
+  <EditBox placeholder={recruit.string.Title} bind:value={title} kind={'large-style'} autoFocus />
   <EditBox placeholder={recruit.string.Location} bind:value={location} kind={'small-style'} />
   <StyledTextArea bind:content={description} placeholder={recruit.string.AddDescription} kind={'emphasized'} />
   <svelte:fragment slot="pool">

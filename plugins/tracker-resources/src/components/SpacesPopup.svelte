@@ -44,7 +44,7 @@
       icon={IconSearch}
       bind:value={search}
       placeholder={ui.string.SearchDots}
-      focus={!$deviceOptionsStore.isMobile}
+      autoFocus={!$deviceOptionsStore.isMobile}
     />
     <div class="ap-caption"><Label label={ui.string.Suggested} /></div>
   </div>

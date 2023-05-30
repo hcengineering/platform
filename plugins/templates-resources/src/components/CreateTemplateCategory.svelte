@@ -57,7 +57,7 @@
       icon={IconFolder}
       bind:value={name}
       placeholder={templates.string.TemplateCategory}
-      focus
+      autoFocus
     />
     <ToggleWithLabel
       label={presentation.string.MakePrivate}

@@ -46,7 +46,7 @@
         {#if typeClass === core.class.TypeString || typeClass === core.class.TypeMarkup}
           <EditBox bind:value />
         {:else if typeClass === core.class.TypeNumber}
-          <NumberEditor value={Number(value)} {onChange} focus={true} placeholder={ui.string.EditBoxPlaceholder} />
+          <NumberEditor value={Number(value)} {onChange} autoFocus placeholder={ui.string.EditBoxPlaceholder} />
         {:else if typeClass === core.class.TypeBoolean}
           <BooleanEditor {value} {onChange} />
         {/if}

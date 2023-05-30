@@ -144,7 +144,12 @@
     <Label {label} />
   </svelte:fragment>
 
-  <EditBox bind:value={object.title} placeholder={tracker.string.IssueTitlePlaceholder} kind={'large-style'} focus />
+  <EditBox
+    bind:value={object.title}
+    placeholder={tracker.string.IssueTitlePlaceholder}
+    kind={'large-style'}
+    autoFocus
+  />
   <StyledTextBox
     alwaysEdit
     showButtons={false}

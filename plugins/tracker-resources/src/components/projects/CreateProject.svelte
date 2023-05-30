@@ -202,7 +202,7 @@
           bind:value={name}
           placeholder={tracker.string.ProjectTitlePlaceholder}
           kind={'large-style'}
-          focus
+          autoFocus
           on:input={() => {
             if (isNew) {
               identifier = name.toLocaleUpperCase().replaceAll(' ', '_').substring(0, 5)

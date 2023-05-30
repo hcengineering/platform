@@ -94,7 +94,7 @@
       placeholder={contact.string.OrganizationNamePlaceholder}
       bind:value={object.name}
       kind={'large-style'}
-      focus
+      autoFocus
       focusIndex={1}
     />
   </div>
