@@ -987,6 +987,10 @@ export function createModel (builder: Builder): void {
     filters: []
   })
 
+  builder.mixin(recruit.mixin.VacancyList, core.class.Class, view.mixin.ClassFilters, {
+    filters: []
+  })
+
   createReviewModel(builder)
 
   createAction(builder, {
