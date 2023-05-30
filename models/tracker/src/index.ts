@@ -938,10 +938,6 @@ export function createModel (builder: Builder): void {
     inlineEditor: tracker.component.ComponentSelector
   })
 
-  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: tracker.component.ComponentRefPresenter
-  })
-
   builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: tracker.component.MilestonePresenter
   })
@@ -1385,20 +1381,6 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(tracker.class.Component, core.class.Class, view.mixin.ClassFilters, {
     filters: []
-  })
-
-  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.GroupFuncs, {
-    groupByCategories: tracker.function.GroupByComponentCategoriesFunc,
-    groupValues: tracker.function.GroupComponentValuesFunc,
-    hasValue: tracker.function.HasComponentValueFunc
-  })
-
-  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.MiddlewareFuncs, {
-    GetManager: tracker.function.GetComponentManager,
-    GetStore: tracker.function.GetComponentStore,
-    GetFindOptions: tracker.function.GetComponentFindOptions,
-    GetAttrClass: tracker.function.GetComponentClass,
-    Categorize: tracker.function.ComponentCategorize
   })
 
   builder.createDoc(
