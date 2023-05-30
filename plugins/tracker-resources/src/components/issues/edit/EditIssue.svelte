@@ -190,7 +190,7 @@
       placeholder={tracker.string.IssueTitlePlaceholder}
       kind="large-style"
       on:blur={save}
-      focus={!embedded}
+      autoFocus={!embedded}
     />
     <div class="w-full mt-6">
       <AttachmentStyleBoxEditor

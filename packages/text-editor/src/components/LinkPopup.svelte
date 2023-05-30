@@ -41,5 +41,5 @@
   }}
   on:changeContent
 >
-  <EditBox placeholder={linkPlaceholder} bind:value={link} focus />
+  <EditBox placeholder={linkPlaceholder} bind:value={link} autoFocus />
 </Card>

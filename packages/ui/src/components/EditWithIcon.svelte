@@ -27,21 +27,23 @@
   export let value: string | undefined = undefined
   export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
   export let placeholderParam: any | undefined = undefined
-  export let focus: boolean = false
+  export let autoFocus: boolean = false
   export let size: 'small' | 'medium' | 'large' = 'medium'
 
   const dispatch = createEventDispatcher()
   let textHTML: HTMLInputElement
   let phTraslate: string = ''
 
+  export function focus () {
+    textHTML.focus()
+    autoFocus = false
+  }
+
   $: translate(placeholder, placeholderParam ?? {}).then((res) => {
     phTraslate = res
   })
   $: if (textHTML !== undefined) {
-    if (focus) {
-      textHTML.focus()
-      focus = false
-    }
+    if (autoFocus) focus()
   }
 </script>
 

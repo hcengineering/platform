@@ -108,7 +108,7 @@
             placeholder={contact.string.PersonFirstNamePlaceholder}
             bind:value={firstName}
             kind={'large-style'}
-            focus
+            autoFocus
             focusIndex={1}
             on:change={async () => {
               const changeName = await getResource(login.function.ChangeName)

@@ -69,7 +69,7 @@
   }}
   on:changeContent
 >
-  <EditBox bind:value={title} placeholder={calendar.string.Title} kind={'large-style'} focus />
+  <EditBox bind:value={title} placeholder={calendar.string.Title} kind={'large-style'} autoFocus />
   <svelte:fragment slot="pool">
     <!-- <TimeShiftPicker title={calendar.string.Date} bind:value direction="after" /> -->
     <DateRangePresenter

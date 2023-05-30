@@ -70,7 +70,7 @@
         bind:value={name}
         placeholder={hr.string.DepartmentPlaceholder}
         kind={'large-style'}
-        focus
+        autoFocus
       />
     </div>
   </div>

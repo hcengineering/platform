@@ -158,7 +158,7 @@
         placeholder={recruit.string.VacancyPlaceholder}
         kind={'large-style'}
         focusable
-        focus={!embedded}
+        autoFocus={!embedded}
         on:blur={save}
       />
     </span>

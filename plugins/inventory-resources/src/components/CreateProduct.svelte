@@ -80,7 +80,7 @@
     <div class="mr-3">
       <Button focusIndex={1} icon={inventory.icon.Products} size={'medium'} kind={'link-bordered'} disabled />
     </div>
-    <EditBox bind:value={doc.name} placeholder={inventory.string.Product} kind={'large-style'} focus />
+    <EditBox bind:value={doc.name} placeholder={inventory.string.Product} kind={'large-style'} autoFocus />
   </div>
   <svelte:fragment slot="pool">
     <DropdownLabels

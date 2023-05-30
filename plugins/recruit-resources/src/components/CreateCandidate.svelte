@@ -525,7 +525,7 @@
         placeholder={recruit.string.PersonFirstNamePlaceholder}
         bind:value={object.firstName}
         kind={'large-style'}
-        focus
+        autoFocus
         maxWidth={'30rem'}
         focusIndex={1}
       />

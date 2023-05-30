@@ -78,7 +78,7 @@
       bind:value={name}
       icon={task.icon.Task}
       placeholder={plugin.string.TodoDescriptionPlaceholder}
-      focus
+      autoFocus
     />
     <DatePicker title={plugin.string.TodoDueDate} bind:value={dueTo} />
   </Grid>

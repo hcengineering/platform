@@ -252,7 +252,7 @@
         bind:value={name}
         placeholder={recruit.string.VacancyPlaceholder}
         kind={'large-style'}
-        focus
+        autoFocus
       />
     </div>
   </div>

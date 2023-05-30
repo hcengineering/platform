@@ -163,7 +163,7 @@
         bind:focusInput={focusIssueTitle}
         kind={'large-style'}
         placeholder={tracker.string.SubIssueTitlePlaceholder}
-        focus
+        autoFocus
         fullSize
       />
     </div>

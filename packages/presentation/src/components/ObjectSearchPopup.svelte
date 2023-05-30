@@ -178,7 +178,7 @@
       {/each}
     </div>
     <EditBox
-      focus={!$deviceOptionsStore.isMobile}
+      autoFocus={!$deviceOptionsStore.isMobile}
       icon={IconSearch}
       kind={'search-style'}
       focusIndex={0}

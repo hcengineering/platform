@@ -580,7 +580,7 @@
       bind:value={object.title}
       placeholder={tracker.string.IssueTitlePlaceholder}
       kind={'large-style'}
-      focus
+      autoFocus
       fullSize
     />
   </div>

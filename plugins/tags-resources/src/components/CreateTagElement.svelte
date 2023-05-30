@@ -129,7 +129,7 @@
         placeholder={tags.string.TagName}
         placeholderParam={{ word: keyTitle }}
         kind={'large-style'}
-        focus
+        autoFocus
       />
       <div class="mt-2">
         <EditBox bind:value={description} placeholder={tags.string.TagDescriptionPlaceholder} kind={'small-style'} />

@@ -71,7 +71,7 @@
   {/if}
 </div>
 {#if withInput}
-  <div class="mt-2">
+  <div class="mt-2 max-w-120">
     <CommentInput {object} />
   </div>
 {/if}

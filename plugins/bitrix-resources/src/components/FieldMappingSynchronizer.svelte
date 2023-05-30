@@ -153,7 +153,7 @@
     <NumberEditor
       kind={'button'}
       value={syncPeriod}
-      focus={false}
+      autoFocus={false}
       placeholder={getEmbeddedLabel('Period')}
       onChange={(val) => {
         if (val) {
@@ -165,7 +165,7 @@
       <NumberEditor
         kind={'button'}
         value={limit}
-        focus={false}
+        autoFocus={false}
         placeholder={getEmbeddedLabel('Limit')}
         onChange={(val) => {
           if (val) {

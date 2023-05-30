@@ -70,7 +70,12 @@
       bind:space
     />
   </svelte:fragment>
-  <EditBox bind:value={object.label} placeholder={tracker.string.MilestoneNamePlaceholder} kind={'large-style'} focus />
+  <EditBox
+    bind:value={object.label}
+    placeholder={tracker.string.MilestoneNamePlaceholder}
+    kind={'large-style'}
+    autoFocus
+  />
   <StyledTextArea
     bind:content={object.description}
     placeholder={tracker.string.ComponentDescriptionPlaceholder}

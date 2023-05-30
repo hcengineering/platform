@@ -96,7 +96,7 @@
         placeholder={contact.string.PersonFirstNamePlaceholder}
         bind:value={firstName}
         kind={'large-style'}
-        focus
+        autoFocus
         focusIndex={1}
       />
       <EditBox

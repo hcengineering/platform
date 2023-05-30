@@ -89,7 +89,7 @@
       bind:value={title}
       icon={board.icon.Card}
       placeholder={board.string.CardPlaceholder}
-      focus
+      autoFocus
     />
   </Grid>
 </Card>

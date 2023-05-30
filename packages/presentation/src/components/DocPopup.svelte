@@ -206,7 +206,7 @@
       icon={IconSearch}
       size={'large'}
       width={'100%'}
-      focus={!$deviceOptionsStore.isMobile}
+      autoFocus={!$deviceOptionsStore.isMobile}
       bind:value={search}
       on:change={() => dispatch('search', search)}
       on:input={() => dispatch('search', search)}

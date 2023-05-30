@@ -60,7 +60,7 @@
       icon={IconFolder}
       bind:value={name}
       placeholder={board.string.Board}
-      focus
+      autoFocus
     />
     <!-- <ToggleWithLabel label={board.string.MakePrivate} description={board.string.MakePrivateDescription} /> -->
 

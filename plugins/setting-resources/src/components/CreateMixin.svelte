@@ -62,5 +62,5 @@
     </div>
   </svelte:fragment>
 
-  <div class="mb-2"><EditBox focus bind:value={name} placeholder={core.string.Name} /></div>
+  <div class="mb-2"><EditBox autoFocus bind:value={name} placeholder={core.string.Name} /></div>
 </Card>
