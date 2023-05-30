@@ -18,19 +18,12 @@ import { mergeIds } from '@hcengineering/platform'
 import { IssueDraft } from '@hcengineering/tracker'
 import { AnyComponent, Location } from '@hcengineering/ui'
 import {
-  GroupByCategoriesFunc,
+  AggregationManger,
   GetAllValuesFunc,
   SortFunc,
   Viewlet,
   ViewletDescriptor,
-  ViewQueryAction,
-  GroupValuesFunc,
-  HasValueFunc,
-  Categorize,
-  GetAttrClass,
-  GetFindOptions,
-  GetManager,
-  GetStore
+  ViewQueryAction
 } from '@hcengineering/view'
 import tracker, { trackerId } from '../../tracker/lib'
 
@@ -396,14 +389,9 @@ export default mergeIds(trackerId, tracker, {
     SubIssueQuery: '' as ViewQueryAction,
     GetAllPriority: '' as GetAllValuesFunc,
     GetAllComponents: '' as GetAllValuesFunc,
-    GetAllMilestones: '' as GetAllValuesFunc,
-    GroupByComponentCategoriesFunc: '' as GroupByCategoriesFunc,
-    GroupComponentValuesFunc: '' as GroupValuesFunc,
-    HasComponentValueFunc: '' as HasValueFunc,
-    GetComponentManager: '' as GetManager,
-    GetComponentStore: '' as GetStore,
-    GetComponentFindOptions: '' as GetFindOptions,
-    GetComponentClass: '' as GetAttrClass,
-    ComponentCategorize: '' as Categorize
+    GetAllMilestones: '' as GetAllValuesFunc
+  },
+  aggregation: {
+    ComponentAggregationManager: '' as Resource<AggregationManger>
   }
 })

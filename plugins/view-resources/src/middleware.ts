@@ -68,21 +68,15 @@ export class DocMiddleware extends BasePresentationMiddleware implements Present
 
   async getManager (_class: Ref<Class<Doc>>): Promise<DocManager> {
     const h = this.client.getHierarchy()
-    const mixin = h.classHierarchyMixin(_class, view.mixin.CategoryAggregationView)
-    if (mixin?.GetManager === undefined) {
-      throw new Error('GetManager not found')
+    const mixin = h.classHierarchyMixin(_class, view.mixin.Aggregation)
+    if (mixin?.aggregationManager === undefined) {
+      throw new Error('aggregationManager not found')
     }
-    const getManager = await getResource(mixin.GetManager)
-
-    if (mixin?.GetStore === undefined) {
-      throw new Error('GetStore not found')
-    }
-    const getStore = await getResource(mixin.GetStore)
+    const aggregationManager = await getResource(mixin.aggregationManager)
 
     let findOptions = {}
-    if (mixin?.GetFindOptions !== undefined) {
-      const getFindOptions = await getResource(mixin.GetFindOptions)
-      findOptions = getFindOptions()
+    if (aggregationManager.GetFindOptions !== undefined) {
+      findOptions = aggregationManager.GetFindOptions()
     }
 
     let mgr = this.mgrs.get(_class)
@@ -100,9 +94,9 @@ export class DocMiddleware extends BasePresentationMiddleware implements Present
         (res) => {
           const first = this.docs === undefined
           this.docs = res
-          const mgr = getManager(res)
+          const mgr = aggregationManager.GetManager(res)
           this.mgrs.set(_class, mgr)
-          getStore().set(mgr)
+          aggregationManager.SetManager(mgr)
           if (!first) {
             this.refreshSubscribers()
           }
@@ -170,12 +164,12 @@ export class DocMiddleware extends BasePresentationMiddleware implements Present
         if (attr.type._class !== core.class.RefTo) {
           continue
         }
-        const mixin = h.classHierarchyMixin((attr.type as RefTo<Doc>).to, view.mixin.CategoryAggregationView)
-        if (mixin?.GetAttrClass === undefined) {
+        const mixin = h.classHierarchyMixin((attr.type as RefTo<Doc>).to, view.mixin.Aggregation)
+        if (mixin?.aggregationManager === undefined) {
           continue
         }
-        const getAttrClass = await getResource(mixin.GetAttrClass)
-        if (h.isDerived((attr.type as RefTo<Doc>).to, getAttrClass())) {
+        const aggregationManager = await getResource(mixin.aggregationManager)
+        if (h.isDerived((attr.type as RefTo<Doc>).to, aggregationManager.GetAttrClass())) {
           const mgr = await this.getManager((attr.type as RefTo<Doc>).to)
           let target: Array<Ref<Doc>> = []
           let targetNin: Array<Ref<Doc>> = []
@@ -197,12 +191,8 @@ export class DocMiddleware extends BasePresentationMiddleware implements Present
             }
 
             // Find all similar name statues for same attribute name.
-            if (mixin?.Categorize === undefined) {
-              throw new Error('Categorize not found')
-            }
-            const categories = await getResource(mixin.Categorize)
-            target = categories(mgr, attr, target)
-            targetNin = categories(mgr, attr, targetNin)
+            target = aggregationManager.Categorize(mgr, attr, target)
+            targetNin = aggregationManager.Categorize(mgr, attr, targetNin)
             if (target.length > 0 || targetNin.length > 0) {
               ;(query as any)[attr.name] = {}
               if (target.length > 0) {
@@ -222,9 +212,8 @@ export class DocMiddleware extends BasePresentationMiddleware implements Present
           }
 
           // Update sorting if defined.
-          if (mixin?.UpdateCustomSorting !== undefined) {
-            const updateCustomSorting = await getResource(mixin.UpdateCustomSorting)
-            updateCustomSorting(finalOptions, attr, mgr)
+          if (aggregationManager.UpdateCustomSorting !== undefined) {
+            aggregationManager.UpdateCustomSorting(finalOptions, attr, mgr)
           }
         }
       } catch (err: any) {

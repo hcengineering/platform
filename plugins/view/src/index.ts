@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-import { Writable } from 'svelte/store'
 import {
   Account,
   AggregateValue,
@@ -314,62 +313,73 @@ export interface AllValuesFunc extends Class<Doc> {
 /**
  * @public
  */
-export type GroupByCategoriesFunc = Resource<(categories: any[]) => AggregateValue[]>
+export type GroupByCategoriesFunc = (categories: any[]) => AggregateValue[]
 
 /**
  * @public
  */
-export type GroupValuesFunc = Resource<(val: Doc[], targets: Set<any>) => Doc[]>
+export type GroupValuesFunc = <T extends Doc>(val: T[], targets: Set<any>) => T[]
 
 /**
  * @public
  */
-export type HasValueFunc = Resource<(value: Doc | undefined | null, values: any[]) => boolean>
+export type HasValueFunc = <T extends Doc>(value: T | undefined | null, values: any[]) => boolean
 
 /**
  * @public
  */
-export type GetManager = Resource<<T extends DocManager>(docs: Doc[]) => T>
+export type SetManager = <T extends DocManager>(mgr: T) => void
 
 /**
  * @public
  */
-export type GetStore = Resource<<T extends DocManager>() => Writable<T>>
+export type GetManager = <T extends DocManager>(docs: Doc[]) => T
 
 /**
  * @public
  */
-export type GetFindOptions = Resource<<T extends Doc>() => FindOptions<T>>
+export type GetFindOptions = <T extends Doc>() => FindOptions<T>
 
 /**
  * @public
  */
-export type GetAttrClass = Resource<() => Ref<Class<Doc>>>
+export type GetAttrClass = <T extends Doc>() => Ref<Class<T>>
 
 /**
  * @public
  */
-export type Categorize = Resource<
-  <T extends DocManager, U extends Doc>(mgr: T, attr: AnyAttribute, target: Array<Ref<U>>) => Array<Ref<U>>
->
+export type Categorize = <T extends DocManager, U extends Doc>(
+  mgr: T,
+  attr: AnyAttribute,
+  target: Array<Ref<U>>
+) => Array<Ref<U>>
 
 /**
  * @public
  */
-export type UpdateCustomSorting = Resource<
-  <T extends Doc>(finalOptions: FindOptions<T>, attr: AnyAttribute, mgr: DocManager) => void
->
+export type UpdateCustomSorting = <T extends Doc>(
+  finalOptions: FindOptions<T>,
+  attr: AnyAttribute,
+  mgr: DocManager
+) => void
 
-export interface CategoryAggregationView extends Class<Doc> {
+/**
+ * @public
+ */
+export interface AggregationManger {
   GroupByCategories: GroupByCategoriesFunc
   GroupValues: GroupValuesFunc
   HasValue: HasValueFunc
+  SetManager: SetManager
   GetManager: GetManager
-  GetStore: GetStore
-  GetFindOptions: GetFindOptions
+  GetFindOptions?: GetFindOptions
   GetAttrClass: GetAttrClass
   Categorize: Categorize
-  UpdateCustomSorting: UpdateCustomSorting
+  UpdateCustomSorting?: UpdateCustomSorting
+}
+
+export interface Aggregation extends Class<Doc> {
+  aggregationManager: Resource<AggregationManger>
 }
 
 /**
@@ -729,7 +739,7 @@ const view = plugin(viewId, {
     LinkProvider: '' as Ref<Mixin<LinkProvider>>,
     SpacePresenter: '' as Ref<Mixin<SpacePresenter>>,
     AttributeFilterPresenter: '' as Ref<Mixin<AttributeFilterPresenter>>,
-    CategoryAggregationView: '' as Ref<Mixin<CategoryAggregationView>>
+    Aggregation: '' as Ref<Mixin<Aggregation>>
   },
   class: {
     ViewletPreference: '' as Ref<Class<ViewletPreference>>,

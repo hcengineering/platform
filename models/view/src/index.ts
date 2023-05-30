@@ -79,16 +79,8 @@ import {
   Viewlet,
   ViewletDescriptor,
   ViewletPreference,
-  GroupByCategoriesFunc,
-  GroupValuesFunc,
-  HasValueFunc,
-  Categorize,
-  GetFindOptions,
-  GetManager,
-  GetStore,
-  UpdateCustomSorting,
-  GetAttrClass,
-  CategoryAggregationView
+  Aggregation,
+  AggregationManger
 } from '@hcengineering/view'
 import presentation from '@hcengineering/model-presentation'
 import view from './plugin'
@@ -281,17 +273,9 @@ export class TAllValuesFunc extends TClass implements AllValuesFunc {
   func!: GetAllValuesFunc
 }
 
-@Mixin(view.mixin.CategoryAggregationView, core.class.Class)
-export class TCategoryAggregationView extends TClass implements CategoryAggregationView {
-  GroupByCategories!: GroupByCategoriesFunc
-  GroupValues!: GroupValuesFunc
-  HasValue!: HasValueFunc
-  GetManager!: GetManager
-  GetStore!: GetStore
-  GetFindOptions!: GetFindOptions
-  GetAttrClass!: GetAttrClass
-  Categorize!: Categorize
-  UpdateCustomSorting!: UpdateCustomSorting
+@Mixin(view.mixin.Aggregation, core.class.Class)
+export class TAggregation extends TClass implements Aggregation {
+  aggregationManager!: Resource<AggregationManger>
 }
 
 @Model(view.class.ViewletPreference, preference.class.Preference)
@@ -443,7 +427,7 @@ export function createModel (builder: Builder): void {
     TInlineAttributEditor,
     TFilteredView,
     TAllValuesFunc,
-    TCategoryAggregationView
+    TAggregation
   )
 
   classPresenter(
@@ -1011,16 +995,8 @@ export function createModel (builder: Builder): void {
     presenter: view.component.StatusRefPresenter
   })
 
-  builder.mixin(Core.class.Status, core.class.Class, view.mixin.CategoryAggregationView, {
-    GroupByCategories: view.function.GroupByStatusCategoriesFunc,
-    GroupValues: view.function.GroupStatusValuesFunc,
-    HasValue: view.function.HasStatusValueFunc,
-    GetManager: view.function.GetStatusManager,
-    GetStore: view.function.GetStatusStore,
-    GetFindOptions: view.function.GetStatusFindOptions,
-    GetAttrClass: view.function.GetStatusClass,
-    Categorize: view.function.StatusCategorize,
-    UpdateCustomSorting: view.function.StatusUpdateCustomSorting
+  builder.mixin(Core.class.Status, core.class.Class, view.mixin.Aggregation, {
+    aggregationManager: view.aggregation.StatusAggregationManager
   })
 }
 

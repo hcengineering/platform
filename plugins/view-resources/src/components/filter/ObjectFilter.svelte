@@ -27,7 +27,7 @@
     Loading,
     resizeObserver
   } from '@hcengineering/ui'
-  import { Filter } from '@hcengineering/view'
+  import { AggregationManger, Filter } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { FILTER_DEBOUNCE_MS, sortFilterValues } from '../../filter'
   import view from '../../plugin'
@@ -49,14 +49,14 @@
 
   let values: (Doc | undefined | null)[] = []
   let objectsPromise: Promise<FindResult<Doc>> | undefined
-  let hasValue: (value: Doc | null | undefined, values: any[]) => boolean
+  let aggregationManager: AggregationManger
 
   const targets = new Set<any>()
   $: targetClass = (filter.key.attribute.type as RefTo<Doc>).to
   $: clazz = hierarchy.getClass(targetClass)
-  $: mixin = hierarchy.classHierarchyMixin(targetClass, view.mixin.CategoryAggregationView)
-  $: if (mixin?.HasValue !== undefined) {
-    getResource(mixin.HasValue).then((f) => (hasValue = f))
+  $: mixin = hierarchy.classHierarchyMixin(targetClass, view.mixin.Aggregation)
+  $: if (mixin?.aggregationManager !== undefined) {
+    getResource(mixin.aggregationManager).then((mgr) => (aggregationManager = mgr))
   }
 
   let filterUpdateTimeout: number | undefined
@@ -94,10 +94,8 @@
     const options = clazz.sortingKey !== undefined ? { sort: { [clazz.sortingKey]: SortingOrder.Ascending } } : {}
     objectsPromise = client.findAll(targetClass, resultQuery, options)
     values = await objectsPromise
-
-    if (mixin?.GroupValues !== undefined) {
-      const f = await getResource(mixin.GroupValues)
-      values = f(values as Doc[], targets)
+    if (aggregationManager !== undefined) {
+      values = aggregationManager.GroupValues(values as Doc[], targets)
     }
     if (targets.has(undefined)) {
       values.unshift(undefined)
@@ -117,8 +115,8 @@
   }
 
   function isSelected (value: Doc | undefined | null, values: any[]): boolean {
-    if (hasValue !== undefined) {
-      return hasValue(value, values)
+    if (aggregationManager !== undefined) {
+      return aggregationManager.HasValue(value, values)
     }
     return values.includes(value?._id ?? value)
   }

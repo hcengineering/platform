@@ -27,9 +27,20 @@ import {
   WithLookup
 } from '@hcengineering/core'
 import tracker, { Component, ComponentManager } from '@hcengineering/tracker'
-import { get, Writable, writable } from 'svelte/store'
+import { get, writable } from 'svelte/store'
 
 export const componentStore = writable<ComponentManager>(new ComponentManager([]))
+
+export const componentAggregationManager = {
+  GroupByCategories: groupByComponentCategories,
+  GroupValues: groupComponentValues,
+  HasValue: hasComponentValue,
+  SetManager: setComponentManager,
+  GetManager: getComponentManager,
+  GetFindOptions: getComponentFindOptions,
+  GetAttrClass: getComponentClass,
+  Categorize: componentCategorize
+}
 
 /**
  * @public
@@ -41,8 +52,8 @@ export function getComponentManager (docs: Doc[]): ComponentManager {
 /**
  * @public
  */
-export function getComponentStore (): Writable<DocManager> {
-  return componentStore
+export function setComponentManager (mgr: ComponentManager): void {
+  return componentStore.set(mgr)
 }
 
 /**
@@ -59,7 +70,9 @@ export function getComponentFindOptions (): FindOptions<Component> {
 /**
  * @public
  */
-export const getComponentClass = (): Ref<Class<Doc>> => tracker.class.Component
+export function getComponentClass (): Ref<Class<Doc>> {
+  return tracker.class.Component
+}
 
 /**
  * @public
@@ -122,7 +135,7 @@ export function groupByComponentCategories (categories: any[]): AggregateValue[]
 /**
  * @public
  */
-export const groupComponentValues = (val: Component[], targets: Set<any>): Doc[] => {
+export function groupComponentValues (val: Component[], targets: Set<any>): Doc[] {
   const values = val
   const result: Doc[] = []
   const unique = [...new Set(val.map((v) => v.label.trim().toLocaleLowerCase()))]

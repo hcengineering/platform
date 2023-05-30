@@ -134,16 +134,7 @@ import ProjectSpacePresenter from './components/projects/ProjectSpacePresenter.s
 import IssueStatistics from './components/milestones/IssueStatistics.svelte'
 import MilestoneRefPresenter from './components/milestones/MilestoneRefPresenter.svelte'
 import MilestoneFilter from './components/milestones/MilestoneFilter.svelte'
-import {
-  componentCategorize,
-  getComponentClass,
-  getComponentFindOptions,
-  getComponentManager,
-  getComponentStore,
-  groupByComponentCategories,
-  groupComponentValues,
-  hasComponentValue
-} from './component'
+import { componentAggregationManager } from './component'
 
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 
@@ -476,15 +467,7 @@ export default async (): Promise<Resources> => ({
     SubIssueQuery: subIssueQuery,
     GetAllPriority: getAllPriority,
     GetAllComponents: getAllComponents,
-    GetAllMilestones: getAllMilestones,
-    GroupByComponentCategoriesFunc: groupByComponentCategories,
-    GroupComponentValuesFunc: groupComponentValues,
-    HasComponentValueFunc: hasComponentValue,
-    GetComponentManager: getComponentManager,
-    GetComponentStore: getComponentStore,
-    GetComponentFindOptions: getComponentFindOptions,
-    GetComponentClass: getComponentClass,
-    ComponentCategorize: componentCategorize
+    GetAllMilestones: getAllMilestones
   },
   actionImpl: {
     Move: move,
@@ -495,5 +478,8 @@ export default async (): Promise<Resources> => ({
   },
   resolver: {
     Location: resolveLocation
+  },
+  aggregation: {
+    ComponentAggregationManager: componentAggregationManager
   }
 })

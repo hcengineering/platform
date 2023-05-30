@@ -30,10 +30,22 @@ import core, {
   StatusValue,
   WithLookup
 } from '@hcengineering/core'
-import { get, Writable, writable } from 'svelte/store'
+import { get, writable } from 'svelte/store'
 
 // Issue status live query
 export const statusStore = writable<StatusManager>(new StatusManager([]))
+
+export const statusAggregationManager = {
+  GroupByCategories: groupByStatusCategories,
+  GroupValues: groupStatusValues,
+  HasValue: hasStatusValue,
+  SetManager: setStatusManager,
+  GetManager: getStatusManager,
+  GetFindOptions: getStatusFindOptions,
+  GetAttrClass: getStatusClass,
+  Categorize: statusCategorize,
+  UpdateCustomSorting: statusUpdateCustomSorting
+}
 
 /**
  * @public
@@ -45,8 +57,8 @@ export function getStatusManager (docs: Doc[]): StatusManager {
 /**
  * @public
  */
-export function getStatusStore (): Writable<DocManager> {
-  return statusStore
+export function setStatusManager (mgr: StatusManager): void {
+  return statusStore.set(mgr)
 }
 
 /**
@@ -66,7 +78,9 @@ export function getStatusFindOptions (): FindOptions<Status> {
 /**
  * @public
  */
-export const getStatusClass = (): Ref<Class<Doc>> => core.class.Status
+export function getStatusClass (): Ref<Class<Doc>> {
+  return core.class.Status
+}
 
 /**
  * @public
@@ -130,7 +144,7 @@ export function statusUpdateCustomSorting<T extends Doc> (
 /**
  * @public
  */
-export function GroupByStatusCategories (categories: any[]): AggregateValue[] {
+export function groupByStatusCategories (categories: any[]): AggregateValue[] {
   const mgr = get(statusStore)
 
   const existingCategories: AggregateValue[] = []
@@ -172,7 +186,7 @@ export function GroupByStatusCategories (categories: any[]): AggregateValue[] {
 /**
  * @public
  */
-export function GroupStatusValues (val: Status[], targets: Set<any>): Doc[] {
+export function groupStatusValues (val: Status[], targets: Set<any>): Doc[] {
   const values = val
   const result: Doc[] = []
   const unique = [...new Set(val.map((v) => v.name.trim().toLocaleLowerCase()))]
@@ -193,7 +207,7 @@ export function GroupStatusValues (val: Status[], targets: Set<any>): Doc[] {
 /**
  * @public
  */
-export function HasStatusValue (value: Doc | undefined | null, values: any[]): boolean {
+export function hasStatusValue (value: Doc | undefined | null, values: any[]): boolean {
   const mgr = get(statusStore)
   const statusSet = new Set(
     mgr

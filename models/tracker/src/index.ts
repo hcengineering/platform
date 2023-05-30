@@ -941,15 +941,8 @@ export function createModel (builder: Builder): void {
     presenter: tracker.component.ComponentRefPresenter
   })
 
-  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.CategoryAggregationView, {
-    GroupByCategories: tracker.function.GroupByComponentCategoriesFunc,
-    GroupValues: tracker.function.GroupComponentValuesFunc,
-    HasValue: tracker.function.HasComponentValueFunc,
-    GetManager: tracker.function.GetComponentManager,
-    GetStore: tracker.function.GetComponentStore,
-    GetFindOptions: tracker.function.GetComponentFindOptions,
-    GetAttrClass: tracker.function.GetComponentClass,
-    Categorize: tracker.function.ComponentCategorize
+  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.Aggregation, {
+    aggregationManager: tracker.aggregation.ComponentAggregationManager
   })
 
   builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.ObjectPresenter, {
