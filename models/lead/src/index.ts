@@ -208,7 +208,9 @@ export function createModel (builder: Builder): void {
           sortingKey: ['$lookup.channels.lastMessage', 'channels']
         }
       ],
-      hiddenKeys: ['name'],
+      configOptions: {
+        hiddenKeys: ['name']
+      },
       options: {
         lookup: {
           _id: {
@@ -288,50 +290,56 @@ export function createModel (builder: Builder): void {
     {
       attachTo: lead.class.Lead,
       descriptor: view.viewlet.List,
+      configOptions: {
+        hiddenKeys: ['title'],
+        extraProps: {
+          displayProps: {
+            optional: true
+          }
+        }
+      },
       config: [
-        { key: '', props: { listProps: { fixed: 'left', key: 'lead' } } },
+        { key: '', displayProps: { fixed: 'left', key: 'lead' } },
         {
           key: '',
           presenter: lead.component.TitlePresenter,
-          props: { listProps: { fixed: 'left', key: 'title' }, maxWidth: '10rem' }
+          label: lead.string.Title,
+          displayProps: { fixed: 'left', key: 'title' },
+          props: { maxWidth: '10rem' }
         },
         {
           key: '$lookup.attachedTo',
           presenter: contact.component.PersonPresenter,
           label: lead.string.Customer,
           sortingKey: '$lookup.attachedTo.name',
+          displayProps: { fixed: 'left', key: 'talent' },
           props: {
             _class: lead.mixin.Customer,
-            listProps: { fixed: 'left', key: 'talent' },
             inline: true,
             maxWidth: '10rem'
           }
         },
-        { key: 'state', props: { listProps: { fixed: 'left', key: 'state' } } },
+        { key: 'state', displayProps: { fixed: 'left', key: 'state' } },
         {
           key: '',
           presenter: tracker.component.RelatedIssueSelector,
           label: tracker.string.Relations,
-          props: { listProps: { fixed: 'left', key: 'issues' } }
+          displayProps: { fixed: 'left', key: 'issues' }
         },
-        { key: 'attachments', props: { listProps: { fixed: 'left', key: 'attachments' } } },
-        { key: 'comments', props: { listProps: { fixed: 'left' }, key: 'comments' } },
-        { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
-        { key: '', presenter: view.component.DividerPresenter, props: { type: 'divider' } },
+        { key: 'attachments', displayProps: { fixed: 'left', key: 'attachments' } },
+        { key: 'comments', displayProps: { fixed: 'left', key: 'comments' } },
         {
           key: '$lookup.attachedTo.$lookup.channels',
           label: contact.string.ContactInfo,
           sortingKey: ['$lookup.attachedTo.$lookup.channels.lastMessage', '$lookup.attachedTo.channels'],
-          props: {
-            listProps: {
-              fixed: 'left',
-              key: 'channels'
-            }
+          displayProps: {
+            fixed: 'left',
+            key: 'channels',
+            dividerBefore: true
           }
         },
-        { key: '', presenter: view.component.DividerPresenter, props: { type: 'divider' } },
-        { key: 'modifiedOn', props: { listProps: { key: 'modified', fixed: 'left' } } },
-        { key: 'assignee', props: { listProps: { key: 'assignee', fixed: 'right' }, shouldShowLabel: false } }
+        { key: 'modifiedOn', displayProps: { key: 'modified', fixed: 'left', dividerBefore: true } },
+        { key: 'assignee', displayProps: { key: 'assignee', fixed: 'right' }, props: { shouldShowLabel: false } }
       ],
       viewOptions: leadViewOptions
     },
@@ -399,7 +407,10 @@ export function createModel (builder: Builder): void {
         groupDepth: 1
       },
       options: lookupLeadOptions,
-      config: []
+      config: ['attachedTo', 'attachments', 'comments', 'dueDate', 'assignee'],
+      configOptions: {
+        strict: true
+      }
     },
     lead.viewlet.KanbanLead
   )

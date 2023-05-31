@@ -399,7 +399,9 @@ export function createModel (builder: Builder): void {
           sortingKey: ['$lookup.channels.lastMessage', 'channels']
         }
       ],
-      hiddenKeys: ['name'],
+      configOptions: {
+        hiddenKeys: ['name']
+      },
       options: {
         lookup: {
           _id: {
@@ -457,7 +459,9 @@ export function createModel (builder: Builder): void {
           label: core.string.ModifiedDate
         }
       ],
-      hiddenKeys: ['name', 'space', 'modifiedOn']
+      configOptions: {
+        hiddenKeys: ['name', 'space', 'modifiedOn']
+      }
     },
     recruit.viewlet.TableVacancy
   )
@@ -487,7 +491,9 @@ export function createModel (builder: Builder): void {
           label: core.string.ModifiedDate
         }
       ],
-      hiddenKeys: ['name', 'space', 'modifiedOn']
+      configOptions: {
+        hiddenKeys: ['name', 'space', 'modifiedOn']
+      }
     },
     recruit.viewlet.TableVacancyList
   )
@@ -526,7 +532,9 @@ export function createModel (builder: Builder): void {
           sortingKey: ['$lookup.attachedTo.$lookup.channels.lastMessage', '$lookup.attachedTo.channels']
         }
       ],
-      hiddenKeys: ['name', 'attachedTo'],
+      configOptions: {
+        hiddenKeys: ['name', 'attachedTo']
+      },
       options: {
         lookup: {
           _id: {
@@ -579,7 +587,9 @@ export function createModel (builder: Builder): void {
           space: recruit.class.Vacancy
         }
       },
-      hiddenKeys: ['name', 'attachedTo'],
+      configOptions: {
+        hiddenKeys: ['name', 'attachedTo']
+      },
       baseQuery: {
         doneState: null,
         '$lookup.space.archived': false
@@ -595,7 +605,6 @@ export function createModel (builder: Builder): void {
       attachTo: recruit.class.ApplicantMatch,
       descriptor: view.viewlet.Table,
       config: ['', 'response', 'attachedTo', 'space', 'modifiedOn'],
-      hiddenKeys: [],
       options: {
         lookup: {
           space: recruit.class.Vacancy
@@ -657,23 +666,23 @@ export function createModel (builder: Builder): void {
       attachTo: recruit.class.Applicant,
       descriptor: view.viewlet.List,
       config: [
-        { key: '', props: { listProps: { fixed: 'left', key: 'app' } } },
+        { key: '', displayProps: { fixed: 'left', key: 'app' } },
         {
           key: '$lookup.attachedTo',
           presenter: contact.component.PersonPresenter,
           label: recruit.string.Talent,
           sortingKey: '$lookup.attachedTo.name',
+          displayProps: { fixed: 'left', key: 'talent' },
           props: {
             _class: recruit.mixin.Candidate,
-            listProps: { fixed: 'left', key: 'talent' },
             inline: true
           }
         },
-        { key: 'state', props: { listProps: { fixed: 'left', key: 'state' }, inline: true, showLabel: false } },
+        { key: 'state', displayProps: { fixed: 'left', key: 'state' }, props: { inline: true, showLabel: false } },
         {
           key: '$lookup.space.company',
+          displayProps: { fixed: 'left', key: 'company' },
           props: {
-            listProps: { fixed: 'left', key: 'company' },
             inline: true,
             maxWidth: '10rem'
           }
@@ -682,26 +691,26 @@ export function createModel (builder: Builder): void {
           key: '',
           presenter: tracker.component.RelatedIssueSelector,
           label: tracker.string.Issues,
-          props: { listProps: { fixed: 'left', key: 'issues' } }
+          displayProps: { fixed: 'left', key: 'issues' }
         },
-        { key: 'attachments', props: { listProps: { fixed: 'left', key: 'attachments' } } },
-        { key: 'comments', props: { listProps: { fixed: 'left' }, key: 'comments' } },
-        { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
-        { key: '', presenter: view.component.DividerPresenter, props: { type: 'divider' } },
+        { key: 'attachments', displayProps: { fixed: 'left', key: 'attachments' } },
+        { key: 'comments', displayProps: { fixed: 'left', key: 'comments' } },
         {
           key: '$lookup.attachedTo.$lookup.channels',
           label: contact.string.ContactInfo,
           sortingKey: ['$lookup.attachedTo.$lookup.channels.lastMessage', '$lookup.attachedTo.channels'],
           props: {
-            listProps: {
-              fixed: 'left',
-              key: 'channels'
-            }
+            length: 'full',
+            size: 'inline'
+          },
+          displayProps: {
+            fixed: 'left',
+            key: 'channels',
+            dividerBefore: true
           }
         },
-        { key: '', presenter: view.component.DividerPresenter, props: { type: 'divider' } },
-        { key: 'modifiedOn', props: { listProps: { key: 'modified', fixed: 'left' } } },
-        { key: 'assignee', props: { listProps: { key: 'assignee', fixed: 'right' }, shouldShowLabel: false } }
+        { key: 'modifiedOn', displayProps: { key: 'modified', fixed: 'left', dividerBefore: true } },
+        { key: 'assignee', displayProps: { key: 'assignee', fixed: 'right' }, props: { shouldShowLabel: false } }
       ],
       options: {
         lookup: {
@@ -711,7 +720,14 @@ export function createModel (builder: Builder): void {
           space: recruit.class.Vacancy
         }
       },
-      hiddenKeys: ['name', 'attachedTo'],
+      configOptions: {
+        hiddenKeys: ['name', 'attachedTo'],
+        extraProps: {
+          displayProps: {
+            optional: true
+          }
+        }
+      },
       baseQuery: {
         doneState: null,
         '$lookup.space.archived': false
@@ -739,7 +755,25 @@ export function createModel (builder: Builder): void {
       options: {
         lookup: applicantKanbanLookup
       },
-      config: []
+      configOptions: {
+        strict: true
+      },
+      config: [
+        'space',
+        'assignee',
+        'state',
+        'attachments',
+        'dueDate',
+        'comments',
+        {
+          key: 'company',
+          label: recruit.string.Company
+        },
+        {
+          key: 'channels',
+          label: contact.string.ContactInfo
+        }
+      ]
     },
     recruit.viewlet.ApplicantKanban
   )

@@ -50,6 +50,7 @@
   } from '@hcengineering/ui'
   import {
     AttributeModel,
+    BuildModelKey,
     CategoryOption,
     Viewlet,
     ViewOptionModel,
@@ -57,6 +58,7 @@
     ViewQueryOption
   } from '@hcengineering/view'
   import {
+    enabledConfig,
     focusStore,
     getCategories,
     getCategorySpaces,
@@ -90,6 +92,7 @@
   export let viewOptionsConfig: ViewOptionModel[] | undefined
   export let viewOptions: ViewOptions
   export let viewlet: Viewlet
+  export let config: (string | BuildModelKey)[]
 
   $: currentSpace = space || tracker.project.DefaultProject
   $: groupByKey = (viewOptions.groupBy[0] ?? noCategory) as IssuesGrouping
@@ -251,6 +254,21 @@
       space: doc.space
     }
   }
+
+  function shouldShowFooter (
+    config: (string | BuildModelKey)[],
+    reports: number,
+    estimations: number,
+    issue: WithLookup<Issue>
+  ): boolean {
+    if (enabledConfig(config, 'estimation') && (reports > 0 || estimations > 0)) return true
+    if (enabledConfig(config, 'comments')) {
+      if ((issue.comments ?? 0) > 0) return true
+      if ((issue.$lookup?.attachedTo?.comments ?? 0) > 0) return true
+    }
+    if (enabledConfig(config, 'attachments') && (issue.attachments ?? 0) > 0) return true
+    return false
+  }
 </script>
 
 {#if categories.length === 0}
@@ -361,53 +379,70 @@
             {object.title}
           </div>
           <div class="card-labels">
-            {#if issue && issue.subIssues > 0}
+            {#if enabledConfig(config, 'subIssues') && issue && issue.subIssues > 0}
               <SubIssuesSelector value={issue} {currentProject} size={'small'} />
             {/if}
-            <PriorityEditor value={issue} isEditable={true} kind={'link-bordered'} size={'small'} justify={'center'} />
-            <ComponentEditor
-              value={issue}
-              isEditable={true}
-              kind={'link-bordered'}
-              size={'small'}
-              justify={'center'}
-              width={''}
-              bind:onlyIcon={fullFilled[issueId]}
-            />
-            <DueDatePresenter value={issue} size={'small'} kind={'link-bordered'} />
+            {#if enabledConfig(config, 'priority')}
+              <PriorityEditor
+                value={issue}
+                isEditable={true}
+                kind={'link-bordered'}
+                size={'small'}
+                justify={'center'}
+              />
+            {/if}
+            {#if enabledConfig(config, 'component')}
+              <ComponentEditor
+                value={issue}
+                isEditable={true}
+                kind={'link-bordered'}
+                size={'small'}
+                justify={'center'}
+                width={''}
+                bind:onlyIcon={fullFilled[issueId]}
+              />
+            {/if}
+            {#if enabledConfig(config, 'dueDate')}
+              <DueDatePresenter value={issue} size={'small'} kind={'link-bordered'} />
+            {/if}
           </div>
-          <div
-            class="card-labels labels"
-            use:tooltip={{
-              component: fullFilled[issueId] ? tags.component.LabelsPresenter : undefined,
-              props: { object: issue, kind: 'full' }
-            }}
-          >
-            <Component
-              is={tags.component.LabelsPresenter}
-              props={{ value: issue.labels, object: issue, ckeckFilled: fullFilled[issueId], kind: 'kanban' }}
-              on:change={(res) => {
-                if (res.detail.full) fullFilled[issueId] = true
+          {#if enabledConfig(config, 'labels')}
+            <div
+              class="card-labels labels"
+              use:tooltip={{
+                component: fullFilled[issueId] ? tags.component.LabelsPresenter : undefined,
+                props: { object: issue, kind: 'full' }
               }}
-            />
-          </div>
-          {#if reports > 0 || estimations > 0 || (object.comments ?? 0) > 0 || (object.$lookup?.attachedTo !== undefined && (object.$lookup.attachedTo.comments ?? 0) > 0)}
+            >
+              <Component
+                is={tags.component.LabelsPresenter}
+                props={{ value: issue.labels, object: issue, ckeckFilled: fullFilled[issueId], kind: 'kanban' }}
+                on:change={(res) => {
+                  if (res.detail.full) fullFilled[issueId] = true
+                }}
+              />
+            </div>
+          {/if}
+          {#if shouldShowFooter(config, reports, estimations, object)}
             <div class="card-footer flex-between">
-              <EstimationEditor kind={'list'} size={'small'} value={issue} />
-              <!-- {@debug issue} -->
+              {#if enabledConfig(config, 'estimation')}
+                <EstimationEditor kind={'list'} size={'small'} value={issue} />
+              {/if}
               <div class="flex-row-center gap-3 reverse">
-                {#if (object.attachments ?? 0) > 0}
+                {#if enabledConfig(config, 'attachments') && (object.attachments ?? 0) > 0}
                   <AttachmentsPresenter value={object.attachments} {object} />
                 {/if}
-                {#if (object.comments ?? 0) > 0}
-                  <CommentsPresenter value={object.comments} {object} />
-                {/if}
-                {#if object.$lookup?.attachedTo !== undefined && (object.$lookup.attachedTo.comments ?? 0) > 0}
-                  <CommentsPresenter
-                    value={object.$lookup?.attachedTo?.comments}
-                    object={object.$lookup?.attachedTo}
-                    withInput={false}
-                  />
+                {#if enabledConfig(config, 'comments')}
+                  {#if (object.comments ?? 0) > 0}
+                    <CommentsPresenter value={object.comments} {object} />
+                  {/if}
+                  {#if object.$lookup?.attachedTo !== undefined && (object.$lookup.attachedTo.comments ?? 0) > 0}
+                    <CommentsPresenter
+                      value={object.$lookup?.attachedTo?.comments}
+                      object={object.$lookup?.attachedTo}
+                      withInput={false}
+                    />
+                  {/if}
                 {/if}
               </div>
             </div>

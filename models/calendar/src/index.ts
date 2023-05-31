@@ -120,7 +120,9 @@ export function createModel (builder: Builder): void {
       descriptor: calendar.viewlet.Calendar,
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       config: [''],
-      hiddenKeys: ['title', 'date']
+      configOptions: {
+        hiddenKeys: ['title', 'date']
+      }
     },
     calendar.viewlet.CalendarEvent
   )

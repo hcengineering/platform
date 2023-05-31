@@ -134,6 +134,7 @@
     }
     &.small {
       height: 1.5rem;
+      padding: 0 0.25rem;
     }
     &.medium {
       height: 2rem;
@@ -238,6 +239,10 @@
       padding: 0 0.875rem;
       color: var(--theme-dark-color);
       border-radius: 0.25rem;
+
+      &.small {
+        padding: 0 0.25rem;
+      }
 
       .btn-icon {
         color: var(--theme-darker-color);

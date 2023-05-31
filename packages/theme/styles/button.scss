@@ -244,6 +244,9 @@
         color: var(--theme-content-color);
       }
     }
+    &.small {
+      padding: 0 0.25rem;
+    }
   }
   &.link-bordered {
     padding: 0 0.5rem;

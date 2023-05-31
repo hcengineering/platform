@@ -136,6 +136,7 @@ export interface Milestone extends Doc {
  * @public
  */
 export interface Issue extends AttachedDoc {
+  attachedTo: Ref<Issue>
   title: string
   description: Markup
   status: Ref<IssueStatus>

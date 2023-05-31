@@ -15,34 +15,56 @@
 <script lang="ts">
   import { DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
   import { Component } from '@hcengineering/tracker'
-  import { Component as ViewComponent } from '@hcengineering/ui'
-  import { Viewlet, ViewOptions } from '@hcengineering/view'
+  import { Loading, Component as ViewComponent } from '@hcengineering/ui'
+  import view, { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
   import tracker from '../../plugin'
   import CreateComponent from './NewComponent.svelte'
+  import { createQuery } from '@hcengineering/presentation'
 
   export let viewlet: WithLookup<Viewlet>
   export let viewOptions: ViewOptions
   export let query: DocumentQuery<Component> = {}
   export let space: Ref<Space> | undefined
 
+  const preferenceQuery = createQuery()
+  let preference: ViewletPreference | undefined
+  let loading = true
+
+  $: viewlet &&
+    preferenceQuery.query(
+      view.class.ViewletPreference,
+      {
+        attachedTo: viewlet._id
+      },
+      (res) => {
+        preference = res[0]
+        loading = false
+      },
+      { limit: 1 }
+    )
+
   const createItemDialog = CreateComponent
   const createItemLabel = tracker.string.Component
 </script>
 
 {#if viewlet?.$lookup?.descriptor?.component}
-  <ViewComponent
-    is={viewlet.$lookup.descriptor.component}
-    props={{
-      _class: tracker.class.Component,
-      config: viewlet.config,
-      options: viewlet.options,
-      createItemDialog,
-      createItemLabel,
-      viewOptions,
-      viewOptionsConfig: viewlet.viewOptions?.other,
-      viewlet,
-      space,
-      query
-    }}
-  />
+  {#if loading}
+    <Loading />
+  {:else}
+    <ViewComponent
+      is={viewlet.$lookup.descriptor.component}
+      props={{
+        _class: tracker.class.Component,
+        config: preference?.config ?? viewlet.config,
+        options: viewlet.options,
+        createItemDialog,
+        createItemLabel,
+        viewOptions,
+        viewOptionsConfig: viewlet.viewOptions?.other,
+        viewlet,
+        space,
+        query
+      }}
+    />
+  {/if}
 {/if}

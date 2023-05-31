@@ -88,7 +88,8 @@ export default mergeIds(viewId, view, {
     SaveAs: '' as IntlString,
     And: '' as IntlString,
     Between: '' as IntlString,
-    ShowColors: '' as IntlString
+    ShowColors: '' as IntlString,
+    Show: '' as IntlString
   },
   function: {
     StatusSort: '' as SortFunc

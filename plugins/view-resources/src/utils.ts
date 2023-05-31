@@ -107,6 +107,7 @@ export async function getObjectPresenter (
     _class,
     label: preserveKey.label ?? clazz.label,
     presenter,
+    displayProps: preserveKey.displayProps,
     props: preserveKey.props,
     sortingKey,
     collectionAttr: isCollectionAttr,
@@ -167,6 +168,7 @@ async function getAttributePresenter (
     label: preserveKey.label ?? attribute.shortLabel ?? attribute.label,
     presenter,
     props: preserveKey.props,
+    displayProps: preserveKey.displayProps,
     icon: presenterMixin.icon,
     attribute,
     collectionAttr: isCollectionAttr,
@@ -191,6 +193,7 @@ export async function getPresenter<T extends Doc> (
       label: label as IntlString,
       presenter: typeof presenter === 'string' ? await getResource(presenter) : presenter,
       props: preserveKey.props,
+      displayProps: preserveKey.displayProps,
       collectionAttr: isCollectionAttr,
       isLookup: false
     }
@@ -796,6 +799,9 @@ export function getKeyLabel<T extends Doc> (
     const lookupProperty = getLookupProperty(key)
     const lookupKey = { key: lookupProperty[0] }
     return getLookupLabel(client, lookupClass[1], lookupClass[0], lookupKey, lookupProperty[1])
+  } else if (key.length === 0) {
+    const clazz = client.getHierarchy().getClass(_class)
+    return clazz.label
   } else {
     const attribute = client.getHierarchy().getAttribute(_class, key)
     return attribute.label
@@ -952,4 +958,15 @@ export async function statusSort (
 
 export function isAttachedDoc (doc: Doc | AttachedDoc): doc is AttachedDoc {
   return 'attachedTo' in doc
+}
+
+export function enabledConfig (config: Array<string | BuildModelKey>, key: string): boolean {
+  for (const value of config) {
+    if (typeof value === 'string') {
+      if (value === key) return true
+    } else {
+      if (value.key === key) return true
+    }
+  }
+  return false
 }

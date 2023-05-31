@@ -21,6 +21,8 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import { FixedColumn } from '../..'
   import view from '../../plugin'
+  import GrowPresenter from './GrowPresenter.svelte'
+  import DividerPresenter from './DividerPresenter.svelte'
 
   export let docObject: Doc
   export let model: AttributeModel[]
@@ -64,11 +66,7 @@
   }
 
   function joinProps (attribute: AttributeModel, object: Doc, props: Record<string, any>) {
-    let clearAttributeProps = attribute.props
-    if (attribute.props?.listProps !== undefined) {
-      const { listProps, ...other } = attribute.props as any
-      clearAttributeProps = other
-    }
+    const clearAttributeProps = attribute.props
     if (attribute.attribute?.type._class === core.class.EnumOf) {
       return { ...clearAttributeProps, type: attribute.attribute.type, ...props }
     }
@@ -79,12 +77,14 @@
   $: if (model) {
     noCompressed = -1
     model.forEach((m, i) => {
-      if (m.props?.listProps?.compression) noCompressed = i
+      if (m.displayProps?.compression) noCompressed = i
     })
   }
   onMount(() => {
     dispatch('on-mount')
   })
+
+  $: growBefore = Math.ceil(model.filter((p) => p.displayProps?.optional !== true).length / 2)
 </script>
 
 <div
@@ -131,36 +131,47 @@
       />
     </div>
   </div>
-  {#each model.filter((m) => !m.props?.listProps?.optional) as attributeModel, i}
-    {@const listProps = attributeModel.props?.listProps}
-    {#if attributeModel.props?.type === 'grow'}
-      <svelte:component this={attributeModel.presenter} />
-
-      {#if !compactMode}
-        <div class="optional-bar">
-          {#each model.filter((m) => m.props?.listProps?.optional) as attrModel, j}
-            {@const lp = attrModel.props?.listProps}
-            {@const v = getObjectValue(attrModel.key, docObject)}
-            {#if lp?.excludeByKey !== groupByKey && v !== undefined}
+  {#each model.filter((p) => !p.displayProps?.optional) as attributeModel, i}
+    {@const displayProps = attributeModel.displayProps}
+    {#if !groupByKey || displayProps?.excludeByKey !== groupByKey}
+      {#if !(compactMode && displayProps?.compression)}
+        {#if i === growBefore}
+          <GrowPresenter />
+          {#each model.filter((p) => p.displayProps?.optional) as attributeModel, i}
+            {@const dp = attributeModel.displayProps}
+            {#if dp?.dividerBefore === true}
+              <DividerPresenter />
+            {/if}
+            {#if dp?.fixed}
+              <FixedColumn key={`list_item_${dp.key}`} justify={dp.fixed}>
+                <svelte:component
+                  this={attributeModel.presenter}
+                  value={getObjectValue(attributeModel.key, docObject)}
+                  kind={'list'}
+                  onChange={getOnChange(docObject, attributeModel)}
+                  {...joinProps(attributeModel, docObject, props)}
+                />
+              </FixedColumn>
+            {:else}
               <svelte:component
-                this={attrModel.presenter}
-                value={getObjectValue(attrModel.key, docObject) ?? ''}
-                onChange={getOnChange(docObject, attrModel)}
+                this={attributeModel.presenter}
+                value={getObjectValue(attributeModel.key, docObject)}
+                onChange={getOnChange(docObject, attributeModel)}
                 kind={'list'}
-                compression
-                {...joinProps(attrModel, docObject, props)}
+                compression={dp?.compression && i !== noCompressed}
+                {...joinProps(attributeModel, docObject, props)}
               />
             {/if}
           {/each}
-        </div>
-      {/if}
-    {:else if (!groupByKey || listProps?.excludeByKey !== groupByKey) && !listProps?.optional}
-      {#if !(compactMode && listProps?.compression)}
-        {#if listProps?.fixed}
-          <FixedColumn key={`list_item_${attributeModel.props?.listProps.key}`} justify={listProps.fixed}>
+        {/if}
+        {#if i !== 0 && displayProps?.dividerBefore === true}
+          <DividerPresenter />
+        {/if}
+        {#if displayProps?.fixed}
+          <FixedColumn key={`list_item_${displayProps.key}`} justify={displayProps.fixed}>
             <svelte:component
               this={attributeModel.presenter}
-              value={getObjectValue(attributeModel.key, docObject) ?? ''}
+              value={getObjectValue(attributeModel.key, docObject)}
               kind={'list'}
               onChange={getOnChange(docObject, attributeModel)}
               {...joinProps(attributeModel, docObject, props)}
@@ -169,10 +180,10 @@
         {:else}
           <svelte:component
             this={attributeModel.presenter}
-            value={getObjectValue(attributeModel.key, docObject) ?? ''}
+            value={getObjectValue(attributeModel.key, docObject)}
             onChange={getOnChange(docObject, attributeModel)}
             kind={'list'}
-            compression={listProps?.compression && i !== noCompressed}
+            compression={displayProps?.compression && i !== noCompressed}
             {...joinProps(attributeModel, docObject, props)}
           />
         {/if}
@@ -193,13 +204,16 @@
         <IconCircles />
       </div>
       <div class="scroll-box gap-2">
-        {#each model.filter((m) => m.props?.listProps?.optional || m.props?.listProps?.compression) as attributeModel}
-          {@const listProps = attributeModel.props?.listProps}
+        {#each model.filter((m) => m.displayProps?.optional || m.displayProps?.compression) as attributeModel, j}
+          {@const displayProps = attributeModel.displayProps}
           {@const value = getObjectValue(attributeModel.key, docObject)}
-          {#if listProps?.excludeByKey !== groupByKey && value !== undefined}
+          {#if displayProps?.excludeByKey !== groupByKey && value !== undefined}
+            {#if j !== 0 && displayProps?.dividerBefore === true}
+              <DividerPresenter />
+            {/if}
             <svelte:component
               this={attributeModel.presenter}
-              value={getObjectValue(attributeModel.key, docObject) ?? ''}
+              value={getObjectValue(attributeModel.key, docObject)}
               onChange={getOnChange(docObject, attributeModel)}
               kind={'list'}
               {...joinProps(attributeModel, docObject, props)}
