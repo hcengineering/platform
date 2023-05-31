@@ -76,9 +76,12 @@ import UpDownNavigator from './components/UpDownNavigator.svelte'
 import ValueSelector from './components/ValueSelector.svelte'
 import ViewletSettingButton from './components/ViewletSettingButton.svelte'
 import DateFilterPresenter from './components/filter/DateFilterPresenter.svelte'
+import ArrayFilter from './components/filter/ArrayFilter.svelte'
 
 import {
   afterResult,
+  arrayAllResult,
+  arrayAnyResult,
   beforeResult,
   containsResult,
   dateCustom,
@@ -179,6 +182,7 @@ function PositionElementAlignment (e?: Event): PopupAlignment | undefined {
 export default async (): Promise<Resources> => ({
   actionImpl,
   component: {
+    ArrayFilter,
     ClassPresenter,
     ClassRefPresenter,
     ObjectFilter,
@@ -232,6 +236,8 @@ export default async (): Promise<Resources> => ({
     PositionElementAlignment
   },
   function: {
+    FilterArrayAllResult: arrayAllResult,
+    FilterArrayAnyResult: arrayAnyResult,
     FilterObjectInResult: objectInResult,
     FilterObjectNinResult: objectNinResult,
     FilterValueInResult: valueInResult,

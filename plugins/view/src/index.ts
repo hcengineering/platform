@@ -787,6 +787,8 @@ const view = plugin(viewId, {
     MarkdownFormatting: '' as Ref<ActionCategory>
   },
   filter: {
+    FilterArrayAll: '' as Ref<FilterMode>,
+    FilterArrayAny: '' as Ref<FilterMode>,
     FilterObjectIn: '' as Ref<FilterMode>,
     FilterObjectNin: '' as Ref<FilterMode>,
     FilterValueIn: '' as Ref<FilterMode>,
