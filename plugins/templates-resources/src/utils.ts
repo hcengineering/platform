@@ -49,7 +49,7 @@ class TemplateDataProviderImpl implements TemplateDataProvider {
   destroy (): void {
     for (const key of templateData.keys()) {
       const data = templateData.get(key) ?? []
-      const res = data.filter((p) => p.owner === this.id)
+      const res = data.filter((p) => p.owner !== this.id)
       templateData.set(key, res)
     }
   }
