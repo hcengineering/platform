@@ -16,26 +16,10 @@
   import core, { AnyAttribute, ArrOf, Class, Doc, Ref, Type } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
   import preferencePlugin from '@hcengineering/preference'
-  import presentation, {
-    Card,
-    createQuery,
-    getAttributePresenterClass,
-    getClient,
-    hasResource
-  } from '@hcengineering/presentation'
-  import {
-    Button,
-    getEventPositionElement,
-    getPlatformColorForText,
-    Loading,
-    SelectPopup,
-    showPopup,
-    themeStore,
-    ToggleButton
-  } from '@hcengineering/ui'
+  import { createQuery, getAttributePresenterClass, getClient, hasResource } from '@hcengineering/presentation'
+  import { Loading, ToggleWithLabel } from '@hcengineering/ui'
   import { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { deepEqual } from 'fast-equals'
-  import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
   import { buildConfigLookup, getKeyLabel } from '../utils'
 
@@ -53,7 +37,7 @@
       (res) => {
         preference = res[0]
         attributes = getConfig(viewlet, preference)
-        enabled = attributes.filter((p) => p.enabled)
+        classes = groupByClasses(attributes)
         loading = false
       },
       { limit: 1 }
@@ -64,9 +48,7 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const dispatch = createEventDispatcher()
   let attributes: AttributeConfig[] = []
-  let enabled: AttributeConfig[] = []
   let loading = true
 
   interface AttributeConfig {
@@ -94,6 +76,7 @@
     const clazz = hierarchy.getClass(viewlet.attachTo)
     for (const param of viewlet.config) {
       if (typeof param === 'string') {
+        if (viewlet.configOptions?.hiddenKeys?.includes(param)) continue
         if (param.length === 0) {
           result.push(getObjectConfig(viewlet.attachTo, param))
         } else {
@@ -106,9 +89,10 @@
           })
         }
       } else {
+        if (viewlet.configOptions?.hiddenKeys?.includes(param.key)) continue
         result.push({
           value: param,
-          label: param.label as IntlString,
+          label: param.label ?? getKeyLabel(client, viewlet.attachTo, param.key, lookup),
           enabled: true,
           _class: viewlet.attachTo,
           icon: clazz.icon
@@ -130,11 +114,14 @@
 
   function processAttribute (attribute: AnyAttribute, result: AttributeConfig[], useMixinProxy = false): void {
     if (attribute.hidden === true || attribute.label === undefined) return
-    if (viewlet.hiddenKeys?.includes(attribute.name)) return
+    if (viewlet.configOptions?.hiddenKeys?.includes(attribute.name)) return
     if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) return
     const value = getValue(attribute.name, attribute.type)
-    if (result.findIndex((p) => p.value === attribute.name) !== -1) return
-    if (result.findIndex((p) => p.value === value) !== -1) return
+    for (const res of result) {
+      const key = typeof res.value === 'string' ? res.value : res.value.key
+      if (key === attribute.name) return
+      if (key === value) return
+    }
     const { attrClass, category } = getAttributePresenterClass(hierarchy, attribute)
     const mixin =
       category === 'object'
@@ -145,7 +132,7 @@
     const presenter = hierarchy.classHierarchyMixin(attrClass, mixin, (m) => hasResource(m.presenter))?.presenter
     if (presenter === undefined) return
     const clazz = hierarchy.getClass(attribute.attributeOf)
-
+    const extraProps = viewlet.configOptions?.extraProps
     if (useMixinProxy) {
       const newValue = {
         value: attribute.attributeOf + '.' + attribute.name,
@@ -159,7 +146,7 @@
       }
     } else {
       const newValue = {
-        value,
+        value: extraProps ? { ...extraProps, key: value } : value,
         label: attribute.label,
         enabled: false,
         _class: attribute.attributeOf,
@@ -184,35 +171,40 @@
   function getConfig (viewlet: Viewlet, preference: ViewletPreference | undefined): AttributeConfig[] {
     const result = getBaseConfig(viewlet)
 
-    const allAttributes = hierarchy.getAllAttributes(viewlet.attachTo)
-    for (const [, attribute] of allAttributes) {
-      processAttribute(attribute, result)
+    if (viewlet.configOptions?.strict !== true) {
+      const allAttributes = hierarchy.getAllAttributes(viewlet.attachTo)
+      for (const [, attribute] of allAttributes) {
+        processAttribute(attribute, result)
+      }
+
+      hierarchy.getDescendants(viewlet.attachTo).forEach((it) => {
+        hierarchy.getOwnAttributes(it).forEach((attr) => {
+          processAttribute(attr, result, true)
+        })
+      })
+
+      const ancestors = new Set(hierarchy.getAncestors(viewlet.attachTo))
+      const parent = hierarchy.getParentClass(viewlet.attachTo)
+      const parentMixins = hierarchy
+        .getDescendants(parent)
+        .map((p) => hierarchy.getClass(p))
+        .filter((p) => hierarchy.isMixin(p._id) && p.extends && ancestors.has(p.extends))
+
+      parentMixins.forEach((it) => {
+        hierarchy.getOwnAttributes(it._id).forEach((attr) => {
+          processAttribute(attr, result, true)
+        })
+      })
     }
-
-    hierarchy.getDescendants(viewlet.attachTo).forEach((it) => {
-      hierarchy.getOwnAttributes(it).forEach((attr) => {
-        processAttribute(attr, result, true)
-      })
-    })
-
-    const ancestors = new Set(hierarchy.getAncestors(viewlet.attachTo))
-    const parent = hierarchy.getParentClass(viewlet.attachTo)
-    const parentMixins = hierarchy
-      .getDescendants(parent)
-      .map((p) => hierarchy.getClass(p))
-      .filter((p) => hierarchy.isMixin(p._id) && p.extends && ancestors.has(p.extends))
-
-    parentMixins.forEach((it) => {
-      hierarchy.getOwnAttributes(it._id).forEach((attr) => {
-        processAttribute(attr, result, true)
-      })
-    })
 
     return preference === undefined ? result : setStatus(result, preference)
   }
 
   async function save (): Promise<void> {
-    const config = enabled.map((p) => p.value)
+    const config = Array.from(classes.values())
+      .flat()
+      .filter((p) => p.enabled)
+      .map((p) => p.value)
     if (preference !== undefined) {
       await client.update(preference, {
         config
@@ -225,69 +217,21 @@
     }
   }
 
-  function restoreDefault (): void {
-    attributes = getConfig(viewlet, undefined)
-    enabled = attributes.filter((p) => p.enabled)
-  }
+  // function restoreDefault (): void {
+  //   attributes = getConfig(viewlet, undefined)
+  //   classes = groupByClasses(attributes)
+  // }
 
   function setStatus (result: AttributeConfig[], preference: ViewletPreference): AttributeConfig[] {
     for (const key of result) {
       key.enabled = preference.config.findIndex((p) => deepEqual(p, key.value)) !== -1
     }
-    result.sort((a, b) => {
-      if (a.enabled !== b.enabled) {
-        return a.enabled ? -1 : 1
-      }
-      return (
-        preference.config.findIndex((p) => deepEqual(p, a.value)) -
-        preference.config.findIndex((p) => deepEqual(p, b.value))
-      )
-    })
     return result
-  }
-
-  const elements: HTMLElement[] = []
-  let selected: number | undefined
-
-  function dragswap (ev: MouseEvent, i: number, s: number): boolean {
-    if (i < s) {
-      if (elements[i].offsetTop !== elements[s].offsetTop) {
-        return ev.offsetY < elements[i].offsetHeight / 2
-      } else {
-        return ev.offsetX < elements[i].offsetWidth / 2
-      }
-    } else if (i > s) {
-      if (elements[i].offsetTop !== elements[s].offsetTop) {
-        return ev.offsetY > elements[i].offsetHeight / 2
-      } else {
-        return ev.offsetX > elements[i].offsetWidth / 2
-      }
-    }
-    return false
-  }
-
-  function dragover (ev: MouseEvent, i: number) {
-    const s = selected as number
-    if (dragswap(ev, i, s)) {
-      ;[enabled[i], enabled[s]] = [enabled[s], enabled[i]]
-      selected = i
-    }
-  }
-
-  function getColor (attribute: AttributeConfig, black: boolean): string {
-    const color = getPlatformColorForText(attribute._class, black)
-    return `${color + (attribute.enabled ? 'cc' : '33')};`
-  }
-
-  function getStyle (attribute: AttributeConfig, black: boolean): string {
-    const color = getPlatformColorForText(attribute._class, black)
-    return `border: 1px solid ${color + (attribute.enabled ? 'ff' : 'cc')};`
   }
 
   function groupByClasses (attributes: AttributeConfig[]): Map<Ref<Class<Doc>>, AttributeConfig[]> {
     const res = new Map()
     for (const attribute of attributes) {
-      if (attribute.enabled) continue
       const arr = res.get(attribute._class) ?? []
       arr.push(attribute)
       res.set(attribute._class, arr)
@@ -295,88 +239,42 @@
     return res
   }
 
-  $: classes = groupByClasses(attributes)
-
-  function getClassLabel (_class: Ref<Class<Doc>>): IntlString {
-    return hierarchy.getClass(_class).label
-  }
+  let classes: Map<Ref<Class<Doc>>, AttributeConfig[]> = new Map()
 </script>
 
-<Card
-  label={view.string.CustomizeView}
-  okAction={save}
-  okLabel={presentation.string.Save}
-  canSave={true}
-  gap={'gapV-4'}
-  on:close={() => {
-    dispatch('close')
-  }}
-  on:changeContent
->
-  {#if loading}
-    <Loading />
-  {:else}
-    <div class="flex-row-stretch flex-wrap">
-      {#each enabled as attribute, i}
-        <div
-          class="m-0-5 border-radius-1 overflow-label"
-          style={getStyle(attribute, $themeStore.dark)}
-          bind:this={elements[i]}
-          draggable={true}
-          on:dragover|preventDefault={(ev) => {
-            dragover(ev, i)
-          }}
-          on:drop|preventDefault
-          on:dragstart={() => {
-            selected = i
-          }}
-          on:dragend={() => {
-            selected = undefined
-          }}
-        >
-          <ToggleButton
-            backgroundColor={getColor(attribute, $themeStore.dark)}
-            icon={attribute.icon}
-            label={attribute.label}
-            bind:value={attribute.enabled}
-            on:change={() => {
-              enabled.splice(i, 1)
-              enabled = enabled
-            }}
-          />
-        </div>
+<div class="selectPopup p-2">
+  <div class="scroll">
+    {#if loading}
+      <Loading />
+    {:else}
+      {#each Array.from(classes.keys()) as _class, i}
+        {@const items = classes.get(_class) ?? []}
+        {#if i !== 0}
+          <div class="menu-separator" />
+        {/if}
+        {#each items as item}
+          <div class="item">
+            <ToggleWithLabel
+              on={item.enabled}
+              label={item.label}
+              on:change={(e) => {
+                item.enabled = e.detail
+                save()
+              }}
+            />
+          </div>
+        {/each}
       {/each}
-    </div>
-    <div class="flex-row-stretch flex-wrap">
-      {#each Array.from(classes.keys()) as _class}
-        <div class="m-0-5">
-          <Button
-            label={getClassLabel(_class)}
-            on:click={(e) => {
-              showPopup(
-                SelectPopup,
-                {
-                  value: classes.get(_class)?.map((it) => ({ id: it.value, label: it.label }))
-                },
-                getEventPositionElement(e),
-                (val) => {
-                  if (val !== undefined) {
-                    const value = classes.get(_class)?.find((it) => it.value === val)
-                    if (value) {
-                      value.enabled = true
-                      enabled.push(value)
-                      enabled = enabled
-                    }
-                  }
-                }
-              )
-            }}
-          />
-        </div>
-      {/each}
-    </div>
-  {/if}
-  <svelte:fragment slot="footer">
-    <Button label={view.string.RestoreDefaults} on:click={restoreDefault} />
-  </svelte:fragment>
-</Card>
+    {/if}
+  </div>
+</div>
+
+<style lang="scss">
+  .item {
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    &:hover {
+      background-color: var(--theme-button-hovered);
+    }
+  }
+</style>

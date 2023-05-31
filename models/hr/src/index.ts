@@ -391,8 +391,7 @@ export function createModel (builder: Builder): void {
           sortingKey: ['$lookup.channels.lastMessage', 'channels']
         },
         'modifiedOn'
-      ],
-      hiddenKeys: []
+      ]
     },
     hr.viewlet.TableMember
   )
@@ -403,8 +402,7 @@ export function createModel (builder: Builder): void {
     {
       attachTo: hr.mixin.Staff,
       descriptor: view.viewlet.Table,
-      config: [''],
-      hiddenKeys: []
+      config: ['']
     },
     hr.viewlet.StaffStats
   )

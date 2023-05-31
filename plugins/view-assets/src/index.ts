@@ -38,7 +38,8 @@ loadMetadata(view.icon, {
   Model: `${icons}#model`,
   DevModel: `${icons}#devmodel`,
   ViewButton: `${icons}#viewButton`,
-  Filter: `${icons}#filter`
+  Filter: `${icons}#filter`,
+  Configure: `${icons}#configure`
 })
 
 addStringsLoader(viewId, async (lang: string) => await import(`../lang/${lang}.json`))

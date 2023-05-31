@@ -13,58 +13,33 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, ButtonKind, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { Button, ButtonKind, showPopup } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
-  import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
-  import { focusStore } from '../selection'
-  import { setViewOptions } from '../viewOptions'
-  import ViewOptionsEditor from './ViewOptions.svelte'
+  import ViewOptionsButton from './ViewOptionsButton.svelte'
   import ViewletSetting from './ViewletSetting.svelte'
-  import IconArrowDown from './icons/ArrowDown.svelte'
 
   export let viewlet: Viewlet | undefined
   export let kind: ButtonKind = 'secondary'
   export let viewOptions: ViewOptions
 
-  const dispatch = createEventDispatcher()
-
   let btn: HTMLButtonElement
 
   function clickHandler (event: MouseEvent) {
-    if (viewlet?.viewOptions !== undefined) {
-      showPopup(
-        ViewOptionsEditor,
-        { viewlet, config: viewlet.viewOptions, viewOptions },
-        eventToHTMLElement(event),
-        undefined,
-        (result) => {
-          if (result?.key === undefined) return
-          if (viewlet) {
-            viewOptions = { ...viewOptions, [result.key]: result.value }
-
-            // Clear selection on view settings change.
-            focusStore.set({})
-
-            dispatch('viewOptions', viewOptions)
-            setViewOptions(viewlet, viewOptions)
-          }
-        }
-      )
-    } else {
-      showPopup(ViewletSetting, { viewlet }, btn)
-    }
+    showPopup(ViewletSetting, { viewlet }, btn)
   }
 </script>
 
 {#if viewlet}
-  <Button
-    icon={view.icon.ViewButton}
-    label={view.string.View}
-    iconRight={IconArrowDown}
-    {kind}
-    showTooltip={{ label: view.string.CustomizeView }}
-    bind:input={btn}
-    on:click={clickHandler}
-  />
+  <div class="flex-row-center">
+    <div class="mr-3"><ViewOptionsButton {viewlet} {kind} {viewOptions} /></div>
+    <Button
+      icon={view.icon.Configure}
+      label={view.string.Show}
+      {kind}
+      showTooltip={{ label: view.string.CustomizeView }}
+      bind:input={btn}
+      on:click={clickHandler}
+    />
+  </div>
 {/if}

@@ -21,8 +21,8 @@
   import type { WithLookup } from '@hcengineering/core'
   import type { Lead } from '@hcengineering/lead'
   import { ActionIcon, Component, DueDatePresenter, IconMoreH, showPanel, showPopup } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
-  import { ContextMenu } from '@hcengineering/view-resources'
+  import view, { BuildModelKey } from '@hcengineering/view'
+  import { ContextMenu, enabledConfig } from '@hcengineering/view-resources'
   import lead from '../plugin'
   import notification from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
@@ -30,6 +30,8 @@
   import LeadPresenter from './LeadPresenter.svelte'
 
   export let object: WithLookup<Lead>
+  export let config: (string | BuildModelKey)[]
+
   const client = getClient()
   const assigneeAttribute = client.getHierarchy().getAttribute(lead.class.Lead, 'assignee')
 
@@ -63,39 +65,40 @@
   </div>
   <div class="flex-col">
     <div class="flex-between">
-      {#if object.$lookup?.attachedTo}
+      {#if enabledConfig(config, 'attachedTo') && object.$lookup?.attachedTo}
         <ContactPresenter value={object.$lookup.attachedTo} />
       {/if}
-      <div class="flex-row-center">
-        {#if (object.attachments ?? 0) > 0}
-          <div class="step-lr75">
-            <AttachmentsPresenter value={object.attachments} {object} />
-          </div>
+      <div class="flex-row-center gap-3">
+        {#if enabledConfig(config, 'attachments') && (object.attachments ?? 0) > 0}
+          <AttachmentsPresenter value={object.attachments} {object} />
         {/if}
-        {#if (object.comments ?? 0) > 0}
-          <div class="step-lr75">
-            <CommentsPresenter value={object.comments} {object} />
-          </div>
+        {#if enabledConfig(config, 'comments') && (object.comments ?? 0) > 0}
+          <CommentsPresenter value={object.comments} {object} />
         {/if}
       </div>
     </div>
-    <div class="flex-row-reverse flex-between mt-2">
-      <AssigneePresenter
-        value={object.assignee}
-        issueId={object._id}
-        defaultClass={contact.class.Employee}
-        currentSpace={object.space}
-        placeholderLabel={assigneeAttribute.label}
-      />
-      <DueDatePresenter
-        value={object.dueDate}
-        shouldRender={object.dueDate !== null && object.dueDate !== undefined}
-        shouldIgnoreOverdue={object.doneState !== null}
-        onChange={async (e) => {
-          await client.update(object, { dueDate: e })
-        }}
-      />
+    <div class="flex-row-center flex-between mt-2">
       <LeadPresenter value={object} />
+      {#if enabledConfig(config, 'dueDate')}
+        <DueDatePresenter
+          size={'small'}
+          value={object.dueDate}
+          shouldRender={object.dueDate !== null && object.dueDate !== undefined}
+          shouldIgnoreOverdue={object.doneState !== null}
+          onChange={async (e) => {
+            await client.update(object, { dueDate: e })
+          }}
+        />
+      {/if}
+      {#if enabledConfig(config, 'assignee')}
+        <AssigneePresenter
+          value={object.assignee}
+          issueId={object._id}
+          defaultClass={contact.class.Employee}
+          currentSpace={object.space}
+          placeholderLabel={assigneeAttribute.label}
+        />
+      {/if}
     </div>
   </div>
 </div>

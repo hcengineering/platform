@@ -317,9 +317,18 @@ export interface Viewlet extends Doc {
   descriptor: Ref<ViewletDescriptor>
   options?: FindOptions<Doc>
   config: (BuildModelKey | string)[]
-  hiddenKeys?: string[]
+  configOptions?: ViewletConfigOptions
   viewOptions?: ViewOptionsModel
   variant?: string
+}
+
+/**
+ * @public
+ */
+export interface ViewletConfigOptions {
+  hiddenKeys?: string[]
+  strict?: boolean
+  extraProps?: Omit<BuildModelKey, 'key'>
 }
 
 /**
@@ -459,11 +468,25 @@ export const viewId = 'view' as Plugin
 /**
  * @public
  */
+export interface DisplayProps {
+  key?: string
+  excludeByKey?: string
+  fixed?: 'left' | 'right' // using for align items in row
+  optional?: boolean
+  compression?: boolean
+  dividerBefore?: boolean // should show divider before
+}
+
+/**
+ * @public
+ */
 export interface BuildModelKey {
   key: string
   presenter?: AnyComponent | AnySvelteComponent
   // A set of extra props passed to presenter.
   props?: Record<string, any>
+  // A set of extra props which using for display.
+  displayProps?: DisplayProps
 
   label?: IntlString
   sortingKey?: string | string[]
@@ -482,6 +505,7 @@ export interface AttributeModel {
   presenter: AnySvelteComponent
   // Extra properties for component
   props?: Record<string, any>
+  displayProps?: DisplayProps
   sortingKey: string | string[]
   // Extra icon if applicable
   icon?: Asset
@@ -752,7 +776,8 @@ const view = plugin(viewId, {
     Model: '' as Asset,
     DevModel: '' as Asset,
     ViewButton: '' as Asset,
-    Filter: '' as Asset
+    Filter: '' as Asset,
+    Configure: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,

@@ -13,13 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery } from '@hcengineering/presentation'
-  import core, { Doc, Ref, SortingOrder, TxCollectionCUD, TxCreateDoc, TxCUD, TxUpdateDoc } from '@hcengineering/core'
-  import { Issue, TimeSpendReport } from '@hcengineering/tracker'
-  import tracker from '../../plugin'
   import { Employee } from '@hcengineering/contact'
-  import view from '@hcengineering/view'
+  import core, { Doc, Ref, SortingOrder, TxCollectionCUD, TxCreateDoc, TxCUD, TxUpdateDoc } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Issue, TimeSpendReport } from '@hcengineering/tracker'
   import { List } from '@hcengineering/view-resources'
+  import tracker from '../../plugin'
 
   type TimeSpendByEmployee = { [key: Ref<Employee>]: number | undefined }
   type TimeSpendByIssue = { [key: Ref<Issue>]: TimeSpendByEmployee | undefined }
@@ -165,19 +164,22 @@
       props: { shouldUseMargin: true, showParent: false, onClick: onNavigate }
     },
     { key: '', presenter: tracker.component.SubIssuesSelector, props: {} },
-    { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
-    { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list', isEditable: false } },
+    {
+      key: '',
+      presenter: tracker.component.DueDatePresenter,
+      props: { kind: 'list', isEditable: false }
+    },
     {
       key: '',
       presenter: tracker.component.MilestoneEditor,
+      displayProps: {
+        excludeByKey: 'milestone'
+      },
       props: {
         kind: 'list',
         size: 'small',
         shape: 'round',
         shouldShowPlaceholder: false,
-        listProps: {
-          excludeByKey: 'milestone'
-        },
         isEditable: false
       }
     },

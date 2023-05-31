@@ -253,7 +253,9 @@ export function createModel (builder: Builder): void {
         },
         'modifiedOn'
       ],
-      hiddenKeys: ['name', 'contact']
+      configOptions: {
+        hiddenKeys: ['name', 'contact']
+      }
     },
     contact.viewlet.TableMember
   )
@@ -282,7 +284,9 @@ export function createModel (builder: Builder): void {
           sortingKey: ['$lookup.channels.lastMessage', 'channels']
         }
       ],
-      hiddenKeys: ['name']
+      configOptions: {
+        hiddenKeys: ['name']
+      }
     },
     contact.viewlet.TableContact
   )

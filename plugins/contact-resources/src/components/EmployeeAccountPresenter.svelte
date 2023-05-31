@@ -28,9 +28,9 @@
   export let inline: boolean = false
   export let accent: boolean = false
 
-  $: employee = $employeeByIdStore.get((value as EmployeeAccount).employee)
+  $: employee = $employeeByIdStore.get((value as EmployeeAccount)?.employee)
 
-  const valueLabel = value.email === systemAccountEmail ? core.string.System : getEmbeddedLabel(value.email)
+  const valueLabel = value?.email === systemAccountEmail ? core.string.System : getEmbeddedLabel(value?.email)
 </script>
 
 {#if value}
