@@ -120,10 +120,11 @@ export function createModel (builder: Builder): void {
     {
       hidden: false,
       objectClass: request.class.Request,
-      txClasses: [core.class.TxCreateDoc],
+      txClasses: [core.class.TxCreateDoc, core.class.TxUpdateDoc],
+      field: 'requested',
       generated: false,
       group: request.ids.RequestNotificationGroup,
-      label: request.string.Requested,
+      label: request.string.Request,
       allowedForAuthor: true,
       providers: {
         [notification.providers.PlatformNotification]: true
@@ -136,7 +137,7 @@ export function createModel (builder: Builder): void {
     builder,
     request.class.Request,
     request.ids.RequestNotificationGroup,
-    [],
+    ['requested'],
     ['comments', 'approved', 'rejected', 'status']
   )
 
