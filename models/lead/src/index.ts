@@ -396,6 +396,57 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
+    notification.class.NotificationGroup,
+    core.space.Model,
+    {
+      label: lead.string.Customers,
+      icon: lead.icon.CreateCustomer,
+      objectClass: lead.mixin.Customer
+    },
+    lead.ids.CustomerNotificationGroup
+  )
+
+  generateClassNotificationTypes(
+    builder,
+    lead.mixin.Customer,
+    lead.ids.CustomerNotificationGroup,
+    [],
+    ['comments', 'attachments']
+  )
+
+  builder.createDoc(
+    notification.class.NotificationGroup,
+    core.space.Model,
+    {
+      label: lead.string.Funnels,
+      icon: lead.icon.Funnel,
+      objectClass: lead.class.Funnel
+    },
+    lead.ids.FunnelNotificationGroup
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: false,
+      generated: false,
+      label: lead.string.LeadCreateLabel,
+      group: lead.ids.FunnelNotificationGroup,
+      field: 'space',
+      txClasses: [core.class.TxCreateDoc, core.class.TxUpdateDoc],
+      objectClass: lead.class.Funnel,
+      spaceSubscribe: true,
+      providers: {
+        [notification.providers.PlatformNotification]: false
+      }
+    },
+    lead.ids.LeadCreateNotification
+  )
+
+  generateClassNotificationTypes(builder, lead.class.Funnel, lead.ids.FunnelNotificationGroup, [], ['comments'])
+
+  builder.createDoc(
     view.class.Viewlet,
     core.space.Model,
     {

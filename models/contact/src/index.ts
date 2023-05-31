@@ -52,6 +52,7 @@ import core, { TAccount, TAttachedDoc, TDoc, TSpace } from '@hcengineering/model
 import presentation from '@hcengineering/model-presentation'
 import view, { ViewAction, Viewlet, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
+import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import notification from '@hcengineering/notification'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
@@ -789,4 +790,42 @@ export function createModel (builder: Builder): void {
   builder.mixin(contact.class.Contact, core.class.Class, activity.mixin.ExtraActivityComponent, {
     component: contact.component.ActivityChannelMessage
   })
+
+  builder.createDoc(
+    notification.class.NotificationGroup,
+    core.space.Model,
+    {
+      label: contact.string.Organizations,
+      icon: contact.icon.Company,
+      objectClass: contact.class.Organization
+    },
+    contact.ids.OrganizationNotificationGroup
+  )
+
+  generateClassNotificationTypes(
+    builder,
+    contact.class.Organization,
+    contact.ids.OrganizationNotificationGroup,
+    [],
+    ['comments', 'attachments', 'members']
+  )
+
+  builder.createDoc(
+    notification.class.NotificationGroup,
+    core.space.Model,
+    {
+      label: contact.string.Persons,
+      icon: contact.icon.Person,
+      objectClass: contact.class.Person
+    },
+    contact.ids.PersonNotificationGroup
+  )
+
+  generateClassNotificationTypes(
+    builder,
+    contact.class.Person,
+    contact.ids.PersonNotificationGroup,
+    [],
+    ['comments', 'attachments']
+  )
 }
