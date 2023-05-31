@@ -719,6 +719,10 @@ export function createModel (builder: Builder): void {
     component: view.component.ValueFilter
   })
 
+  builder.mixin(core.class.ArrOf, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.ArrayFilter
+  })
+
   builder.mixin(core.class.RefTo, core.class.Class, view.mixin.AttributeFilter, {
     component: view.component.ObjectFilter
   })
@@ -727,6 +731,26 @@ export function createModel (builder: Builder): void {
     component: view.component.DateFilter,
     group: 'bottom'
   })
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.FilterArrayAll,
+      result: view.function.FilterArrayAllResult
+    },
+    view.filter.FilterArrayAll
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.FilterArrayAny,
+      result: view.function.FilterArrayAnyResult
+    },
+    view.filter.FilterArrayAny
+  )
 
   builder.createDoc(
     view.class.FilterMode,

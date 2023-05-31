@@ -51,6 +51,14 @@ export function updateFilter (filter: Filter): void {
   filterStore.set(old)
 }
 
+export async function arrayAllResult (filter: Filter): Promise<ObjQueryType<any>> {
+  return { $all: filter.value.map((p) => p[1]).flat() }
+}
+
+export async function arrayAnyResult (filter: Filter): Promise<ObjQueryType<any>> {
+  return { $in: filter.value.map((p) => p[1]).flat() }
+}
+
 export async function objectInResult (filter: Filter): Promise<ObjQueryType<any>> {
   return { $in: filter.value }
 }
@@ -213,7 +221,7 @@ export async function getRefs (filter: Filter, onUpdate: () => void): Promise<Ar
   return await promise
 }
 
-export function buildFilterKey (
+function buildRefFilterKey (
   hierarchy: Hierarchy,
   _class: Ref<Class<Doc>>,
   key: string,
@@ -234,6 +242,16 @@ export function buildFilterKey (
       }
     }
   }
+}
+
+export function buildFilterKey (
+  hierarchy: Hierarchy,
+  _class: Ref<Class<Doc>>,
+  key: string,
+  attribute: AnyAttribute
+): KeyFilter | undefined {
+  const ref = buildRefFilterKey(hierarchy, _class, key, attribute)
+  if (ref != null) return ref
 
   const isCollection = hierarchy.isDerived(attribute.type._class, core.class.Collection)
   const targetClass = isCollection ? (attribute.type as Collection<AttachedDoc>).of : attribute.type._class
