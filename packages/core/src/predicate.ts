@@ -41,8 +41,27 @@ const predicates: Record<string, PredicateFactory> = {
     if (!Array.isArray(o)) {
       throw new Error('$in predicate requires array')
     }
-    // eslint-disable-next-line eqeqeq
-    return (docs) => execPredicate(docs, propertyKey, (value) => o.some((p) => p == value))
+    return (docs) =>
+      execPredicate(docs, propertyKey, (value) => {
+        if (Array.isArray(value)) {
+          return o.some((p) => value.includes(p))
+        } else {
+          // eslint-disable-next-line eqeqeq
+          return o.some((p) => p == value)
+        }
+      })
+  },
+  $all: (o, propertyKey) => {
+    if (!Array.isArray(o)) {
+      throw new Error('$all predicate requires array')
+    }
+    return (docs) =>
+      execPredicate(docs, propertyKey, (value: any[]) => {
+        for (const val of o) {
+          if (!value.includes(val)) return false
+        }
+        return true
+      })
   },
   $nin: (o, propertyKey) => {
     if (!Array.isArray(o)) {
