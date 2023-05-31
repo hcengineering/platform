@@ -119,7 +119,7 @@
   }}
 />
 <div class="inbox-activity">
-  <Scroller>
+  <Scroller noStretch>
     {#if loading}
       <Loading />
     {:else}
