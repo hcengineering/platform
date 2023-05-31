@@ -67,97 +67,30 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 {#if doc}
-  <div class="container cursor-pointer" class:selected>
-    <div class="notify" class:hidden={newTxes === 0} />
+  <div class="inbox-activity__container" class:selected>
+    {#if newTxes > 0 && !selected}<div class="notify" />{/if}
     <div
-      class="clear-mins content bottom-divider"
+      class="inbox-activity__content clear-mins"
       class:read={newTxes === 0}
       on:contextmenu|preventDefault={showMenu}
       on:click
     >
-      <div class="w-full">
-        <div class="flex-between">
-          {#if presenter}
-            <svelte:component this={presenter} value={doc} inline />
-          {/if}
-          {#if newTxes > 0}
-            <div class="counter">
-              {newTxes}
-            </div>
-          {/if}
-        </div>
-        <div class="flex-between mt-2">
-          {#if tx}
-            <TxView {tx} {viewlets} objectId={value.attachedTo} />
-          {/if}
-          <div class="time">
-            <TimeSince value={tx?.modifiedOn} />
-          </div>
+      <div class="flex-row-center flex-no-shrink mr-8">
+        {#if presenter}
+          <svelte:component this={presenter} value={doc} inline accent />
+        {/if}
+        {#if newTxes > 0 && !selected}
+          <div class="counter float">{newTxes}</div>
+        {/if}
+      </div>
+      <div class="flex-between flex-baseline mt-3">
+        {#if tx}
+          <TxView {tx} {viewlets} objectId={value.attachedTo} />
+        {/if}
+        <div class="time">
+          <TimeSince value={tx?.modifiedOn} />
         </div>
       </div>
     </div>
   </div>
 {/if}
-
-<style lang="scss">
-  .time {
-    align-self: flex-end;
-    margin-bottom: 0.25rem;
-  }
-
-  .container {
-    margin-right: 0.5rem;
-    margin-left: 0.5rem;
-    display: flex;
-    border-radius: 0.25rem;
-    flex-grow: 1;
-
-    &:hover {
-      background-color: var(--highlight-hover);
-    }
-    &.selected {
-      background-color: var(--highlight-select);
-
-      &:hover {
-        background-color: var(--highlight-select-hover);
-      }
-    }
-
-    .content {
-      margin-right: 0.5rem;
-      display: flex;
-      flex-grow: 1;
-      padding: 0.5rem 0;
-      color: var(--theme-caption-color);
-
-      &.read {
-        opacity: 0.6;
-      }
-    }
-  }
-
-  .notify {
-    height: 0.5rem;
-    width: 0.5rem;
-    min-width: 0.5rem;
-    margin-top: 0.75rem;
-    margin-right: 0.5rem;
-    background-color: #2b5190;
-    border-radius: 50%;
-    &.hidden {
-      opacity: 0;
-    }
-  }
-
-  .counter {
-    display: flex;
-    align-self: flex-start;
-    align-items: center;
-    justify-content: center;
-    height: 1.25rem;
-    width: 1.25rem;
-    color: #2b5190;
-    background-color: var(--theme-calendar-today-bgcolor);
-    border-radius: 50%;
-  }
-</style>

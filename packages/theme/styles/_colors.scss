@@ -142,6 +142,15 @@
   --theme-calendar-holiday-bgcolor: rgba(235, 87, 87, .1);
   --theme-calendar-weekend-bgcolor: rgba(242, 153, 74, .05);
 
+  --theme-inbox-notify: #F47758;
+  --theme-inbox-people-notify: #2B5190;
+  --theme-inbox-activity-bgcolor: #1A1A28;
+  --theme-inbox-activitymsg-bgcolor: rgba(255, 255, 255, .03);
+  --theme-inbox-activitymsg-divider: rgba(255, 255, 255, .1);
+  --theme-inbox-activitymsg-border: rgba(255, 255, 255, .03);
+  --theme-inbox-counter-bgcolor: rgba(255, 255, 255, .06);
+  --theme-inbox-people-counter-bgcolor: rgba(43, 81, 144, .1);
+
   --theme-toggle-sw-color: #fff;
   --theme-toggle-on-sw-color: #fff;
   --theme-toggle-bg-color: rgba(120, 120, 128, 0.32);
@@ -313,6 +322,16 @@
   --theme-calendar-today-bgcolor: rgba(43, 81, 144, .1);
   --theme-calendar-holiday-bgcolor: rgba(235, 87, 87, .1);
   --theme-calendar-weekend-bgcolor: rgba(242, 153, 74, .1);
+
+  --theme-inbox-notify: #F47758;
+  --theme-inbox-people-notify: #2B5190;
+  --theme-inbox-activity-bgcolor: #fff;
+  --theme-inbox-activitymsg-bgcolor: #F2F2F2;
+  --theme-inbox-activitymsg-divider: rgba(0, 0, 0, .1);
+  --theme-inbox-activitymsg-border: rgba(0, 0, 0, .03);
+  --theme-inbox-counter-bgcolor: rgba(0, 0, 0, .06);
+  --theme-inbox-people-counter-bgcolor: rgba(43, 81, 144, .1);
+
   --theme-toggle-sw-color: #fff;
   --theme-toggle-on-sw-color: #fff;
   --theme-toggle-bg-color: rgba(120, 120, 128, 0.32);

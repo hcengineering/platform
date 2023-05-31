@@ -118,7 +118,7 @@
     mode: 'browser'
   }}
 />
-<div class="clear-mins container">
+<div class="inbox-activity">
   <Scroller>
     {#if loading}
       <Loading />
@@ -136,9 +136,3 @@
     {/if}
   </Scroller>
 </div>
-
-<style lang="scss">
-  .container {
-    margin-top: -0.5rem;
-  }
-</style>

@@ -24,7 +24,8 @@
 
   export let value: Contact
   export let inline: boolean = false
-  export let disabled = false
+  export let disabled: boolean = false
+  export let accent: boolean = false
   export let maxWidth = ''
 
   function isPerson (value: Contact): boolean {
@@ -42,9 +43,9 @@
 </script>
 
 {#if isEmployee(value)}
-  <EmployeePresenter {disabled} value={toEmployee(value)} {inline} />
+  <EmployeePresenter {disabled} value={toEmployee(value)} {inline} {accent} />
 {:else if isPerson(value)}
-  <PersonPresenter {disabled} {value} {inline} />
+  <PersonPresenter {disabled} {value} {inline} {accent} />
 {:else}
-  <OrganizationPresenter value={toOrg(value)} {inline} {maxWidth} />
+  <OrganizationPresenter value={toOrg(value)} {inline} {accent} {maxWidth} />
 {/if}

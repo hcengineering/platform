@@ -22,14 +22,15 @@
   export let value: Member
   export let disabled: boolean = false
   export let inline: boolean = false
+  export let accent: boolean = false
 
   const contactRef = getClient().findOne(contact.class.Contact, { _id: value.contact })
 </script>
 
-<DocNavLink object={value} {inline} {disabled} noUnderline={disabled}>
+<DocNavLink object={value} {inline} {disabled} {accent} noUnderline={disabled}>
   {#await contactRef then ct}
     {#if ct}
-      <ContactPresenter disabled={true} value={ct} {inline} />
+      <ContactPresenter disabled={true} value={ct} {inline} {accent} />
     {/if}
   {/await}
 </DocNavLink>

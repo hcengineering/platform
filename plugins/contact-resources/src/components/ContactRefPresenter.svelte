@@ -21,9 +21,10 @@
   import ContactPresenter from './ContactPresenter.svelte'
 
   export let value: Ref<Contact>
-  export let disabled = false
+  export let disabled: boolean = false
+  export let accent: boolean = false
   export let maxWidth = ''
-  export let inline = false
+  export let inline: boolean = false
 
   let doc: Contact | undefined
   const query = createQuery()
@@ -31,5 +32,5 @@
 </script>
 
 {#if doc}
-  <ContactPresenter value={doc} {disabled} {maxWidth} {inline} />
+  <ContactPresenter value={doc} {disabled} {maxWidth} {inline} {accent} />
 {/if}

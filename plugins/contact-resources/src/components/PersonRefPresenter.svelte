@@ -25,6 +25,7 @@
   export let inline = false
   export let enlargedText = false
   export let disabled = false
+  export let accent: boolean = false
   export let shouldShowAvatar = true
   export let shouldShowName = true
   export let shouldShowPlaceholder = false
@@ -57,4 +58,5 @@
   {enlargedText}
   {disabled}
   {inline}
+  {accent}
 />

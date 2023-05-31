@@ -22,8 +22,9 @@
 
   export let value: Ref<EmployeeAccount>
   export let avatarSize: IconSize = 'x-small'
-  export let disabled = false
-  export let inline = false
+  export let disabled: boolean = false
+  export let inline: boolean = false
+  export let accent: boolean = false
 
   $: account = $employeeAccountByIdStore.get(value)
 </script>
