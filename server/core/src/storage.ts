@@ -658,6 +658,7 @@ class TServerStorage implements ServerStorage {
         onEnds.push(passed.onEnd)
         if (passed.passed) {
           this.fillTxes(applyIf.txes, txToStore, modelTx, txToProcess, applyTxes)
+          derived = [...applyIf.txes]
         }
       }
       for (const tx of modelTx) {
@@ -671,7 +672,7 @@ class TServerStorage implements ServerStorage {
       result = await ctx.with('apply', {}, (ctx) => this.routeTx(ctx, removedMap, ...txToProcess))
 
       // invoke triggers and store derived objects
-      derived = await this.processDerived(ctx, txToProcess, triggerFx, _findAll, removedMap)
+      derived = derived.concat(await this.processDerived(ctx, txToProcess, triggerFx, _findAll, removedMap))
 
       // index object
       for (const _tx of txToProcess) {
