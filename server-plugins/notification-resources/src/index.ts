@@ -688,7 +688,10 @@ async function getNewCollaborators (
   if (ops.$push !== undefined) {
     for (const key in ops.$push) {
       if (mixin.fields.includes(key)) {
-        const value = (ops.$push as any)[key]
+        let value = (ops.$push as any)[key]
+        if (typeof value !== 'string') {
+          value = value.$each
+        }
         const newCollabs = await getKeyCollaborators(doc, value, key, control)
         if (newCollabs !== undefined) {
           for (const newCollab of newCollabs) {
