@@ -13,8 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Label } from '@hcengineering/ui'
+  import { Label, getCurrentLocation, navigate } from '@hcengineering/ui'
   import login from '../plugin'
+  import { getAccount } from '../utils'
+  import { onMount } from 'svelte'
+
+  onMount(async () => {
+    const account = await getAccount()
+    if (account?.confirmed !== true) {
+      const loc = getCurrentLocation()
+      loc.path[1] = 'selectWorkspace'
+      loc.path.length = 2
+      navigate(loc)
+    }
+  })
 </script>
 
 <div class="flex-center h-full p-10">
