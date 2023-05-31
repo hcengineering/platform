@@ -30,7 +30,6 @@ import StatusTableView from './components/StatusTableView.svelte'
 import TaskHeader from './components/TaskHeader.svelte'
 import TaskPresenter from './components/TaskPresenter.svelte'
 import KanbanTemplatePresenter from './components/KanbanTemplatePresenter.svelte'
-import TemplatesIcon from './components/TemplatesIcon.svelte'
 import TodoItemPresenter from './components/todos/TodoItemPresenter.svelte'
 import TodoItemsPopup from './components/todos/TodoItemsPopup.svelte'
 import Todos from './components/todos/Todos.svelte'
@@ -54,7 +53,6 @@ export default async (): Promise<Resources> => ({
     TaskPresenter,
     KanbanTemplatePresenter,
     Dashboard,
-    TemplatesIcon,
     KanbanView,
     StatePresenter,
     StateEditor,
