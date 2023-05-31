@@ -1941,7 +1941,7 @@ export function createModel (builder: Builder): void {
       viewOptions: componentListViewOptions,
       configOptions: {
         hiddenKeys: ['label', 'description'],
-        extraProps: { displayProps: { optional: true }}
+        extraProps: { displayProps: { optional: true } }
       },
       config: [
         {
