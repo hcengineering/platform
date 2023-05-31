@@ -1360,7 +1360,13 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(recruit.mixin.Candidate, core.class.Class, core.mixin.FullTextSearchContext, {
     fullTextSummary: true,
-    propagate: [recruit.class.Applicant]
+    propagate: [recruit.class.Applicant],
+    propagateClasses: [
+      tags.class.TagReference,
+      chunter.class.Comment,
+      attachment.class.Attachment,
+      contact.class.Channel
+    ]
   })
 
   // Allow to use fuzzy search for mixins

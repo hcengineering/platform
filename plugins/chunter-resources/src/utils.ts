@@ -192,7 +192,7 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Reso
     return undefined
   }
   const classLabel = tokens[0]
-  const lastId = tokens[1] as Ref<Doc>
+  const lastId = tokens.slice(1).join('-') as Ref<Doc>
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const classes = [chunter.class.Message, chunter.class.ThreadMessage, chunter.class.Comment]

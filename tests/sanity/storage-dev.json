@@ -18,7 +18,7 @@
         },
         {
           "name": "#platform.notification.timeout",
-          "value": "1"
+          "value": "0"
         },
         {
           "name": "#platform.notification.logging",

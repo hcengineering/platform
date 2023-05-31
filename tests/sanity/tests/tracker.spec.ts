@@ -147,7 +147,7 @@ test('report-time-from-issue-card', async ({ page }) => {
       await page.waitForSelector('text="View issue"')
       await page.click('text="View issue"')
     } finally {
-      await page.evaluate(() => localStorage.setItem('#platform.notification.timeout', '1'))
+      await page.evaluate(() => localStorage.setItem('#platform.notification.timeout', '0'))
     }
 
     await page.click('#ReportedTimeEditor')
