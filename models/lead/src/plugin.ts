@@ -66,6 +66,9 @@ export default mergeIds(leadId, lead, {
   },
   ids: {
     LeadNotificationGroup: '' as Ref<NotificationGroup>,
+    CustomerNotificationGroup: '' as Ref<NotificationGroup>,
+    FunnelNotificationGroup: '' as Ref<NotificationGroup>,
+    LeadCreateNotification: '' as Ref<NotificationType>,
     AssigneeNotification: '' as Ref<NotificationType>
   }
 })

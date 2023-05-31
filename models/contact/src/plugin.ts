@@ -18,6 +18,7 @@ import contact from '@hcengineering/contact-resources/src/plugin'
 import type { Client, Doc, Ref } from '@hcengineering/core'
 import {} from '@hcengineering/core'
 import { ObjectSearchCategory, ObjectSearchFactory } from '@hcengineering/model-presentation'
+import { NotificationGroup } from '@hcengineering/notification'
 import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
 import { TemplateFieldFunc } from '@hcengineering/templates'
 import type { AnyComponent } from '@hcengineering/ui'
@@ -103,6 +104,10 @@ export default mergeIds(contactId, contact, {
   },
   category: {
     Contact: '' as Ref<ActionCategory>
+  },
+  ids: {
+    OrganizationNotificationGroup: '' as Ref<NotificationGroup>,
+    PersonNotificationGroup: '' as Ref<NotificationGroup>
   },
   action: {
     KickEmployee: '' as Ref<Action>,
