@@ -20,6 +20,7 @@
   import { ObjectCreate } from '../types'
   import { createQuery } from '../utils'
   import DocPopup from './DocPopup.svelte'
+  import { createEventDispatcher } from 'svelte'
 
   export let _class: Ref<Class<Doc>>
   export let options: FindOptions<Doc> | undefined = undefined
@@ -47,6 +48,7 @@
   export let disallowDeselect: Ref<Doc>[] | undefined = undefined
 
   const created: Doc[] = []
+  const dispatch = createEventDispatcher()
 
   let search: string = ''
   let objects: Doc[] = []
@@ -106,7 +108,12 @@
   on:close
   on:changeContent
   on:search={(e) => (search = e.detail)}
-  on:created={(doc) => created.push(doc.detail)}
+  on:created={(doc) => {
+      created.push(doc.detail)
+      if (!multiSelect) dispatch('created', doc.detail)
+    }
+  }
+      
   {created}
 >
   <svelte:fragment slot="item" let:item>

@@ -47,7 +47,7 @@
 
     person.avatar = await avatarEditor.createAvatar()
 
-    await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
+    const personId = await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
 
     for (const channel of channels) {
       await client.addCollection(contact.class.Channel, contact.space.Contacts, id, contact.class.Person, 'channels', {
@@ -55,7 +55,7 @@
         provider: channel.provider
       })
     }
-    dispatch('close')
+    dispatch('close', personId)
   }
 
   let channels: AttachedData<Channel>[] = []
