@@ -114,7 +114,7 @@
       bind:focusInput={focusIssueTitle}
       kind={'large-style'}
       placeholder={tracker.string.SubIssueTitlePlaceholder}
-      focus
+      autoFocus
     />
     <div class="mt-4 clear-mins">
       {#key newIssue.description}

@@ -79,7 +79,7 @@
           icon={clazz.icon}
           bind:value={space.name}
           placeholder={clazz.label}
-          focus
+          autoFocus
           on:change={onNameChange}
         />
         <!-- <AttributeBarEditor maxWidth="39rem" object={space} key="name"/> -->

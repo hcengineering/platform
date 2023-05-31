@@ -97,7 +97,7 @@
   }}
   on:changeContent
 >
-  <EditBox bind:value={title} placeholder={calendar.string.Title} kind={'large-style'} focus />
+  <EditBox bind:value={title} placeholder={calendar.string.Title} kind={'large-style'} autoFocus />
   <svelte:fragment slot="pool">
     <DateRangePresenter
       value={startDate}

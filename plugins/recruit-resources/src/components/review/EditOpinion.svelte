@@ -74,7 +74,7 @@
     bind:value
     icon={recruit.icon.Application}
     placeholder={recruit.string.OpinionValue}
-    focus
+    autoFocus
   />
   <StyledTextArea placeholder={recruit.string.Description} bind:content={description} kind={'emphasized'} />
 </Card>

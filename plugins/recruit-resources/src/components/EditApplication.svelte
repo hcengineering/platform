@@ -32,11 +32,13 @@
 
   const dispatch = createEventDispatcher()
   const sendOpen = () => {
-    dispatch('open', {
-      ignoreKeys: ['comments', 'number'],
-      allowedCollections: ['labels'],
-      title: `APP-${object.number}`
-    })
+    if (object !== undefined && object.number !== undefined) {
+      dispatch('open', {
+        ignoreKeys: ['comments', 'number'],
+        allowedCollections: ['labels'],
+        title: `APP-${object.number}`
+      })
+    }
   }
 
   const candidateQuery = createQuery()

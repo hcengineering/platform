@@ -57,7 +57,7 @@
         placeholder={view.string.FilteredViewName}
         bind:value={filterName}
         kind={'large-style'}
-        focus
+        autoFocus
         focusIndex={1}
       />
     </div>

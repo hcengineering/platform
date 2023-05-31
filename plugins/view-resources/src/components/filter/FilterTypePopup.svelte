@@ -35,7 +35,7 @@
   function getFilters (_class: Ref<Class<Doc>>, mixin: ClassFilters): KeyFilter[] {
     if (mixin.filters === undefined) return []
     const filters = mixin.filters.map((p) => {
-      return typeof p === 'string' ? buildFilterFromKey(_class, p) : buildFilterFromPreset(p)
+      return typeof p === 'string' ? buildFilterFromKey(mixin._id, p) : buildFilterFromPreset(p)
     })
     const result: KeyFilter[] = []
     for (const filter of filters) {
@@ -231,6 +231,9 @@
   }
 
   function hasNested (type: KeyFilter): boolean {
+    if (type.showNested === false) {
+      return false
+    }
     const targetClass = (hierarchy.getAttribute(type._class, type.key).type as RefTo<Doc>).to
     if (targetClass === undefined) return false
     const clazz = hierarchy.getClass(targetClass)

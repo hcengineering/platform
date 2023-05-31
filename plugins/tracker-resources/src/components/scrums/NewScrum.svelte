@@ -71,7 +71,12 @@
   <svelte:fragment slot="header">
     <SpaceSelector _class={tracker.class.Project} label={tracker.string.Project} bind:space />
   </svelte:fragment>
-  <EditBox bind:value={object.title} placeholder={tracker.string.ScrumTitlePlaceholder} kind={'large-style'} focus />
+  <EditBox
+    bind:value={object.title}
+    placeholder={tracker.string.ScrumTitlePlaceholder}
+    kind={'large-style'}
+    autoFocus
+  />
   <StyledTextArea
     bind:content={object.description}
     placeholder={tracker.string.ScrumDescriptionPlaceholder}

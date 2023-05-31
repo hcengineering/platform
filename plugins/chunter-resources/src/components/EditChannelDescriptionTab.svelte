@@ -59,14 +59,13 @@
         label={chunter.string.Topic}
         bind:value={channel.topic}
         placeholder={chunter.string.Topic}
-        focus
+        autoFocus
         on:change={onTopicChange}
       />
       <EditBox
         label={chunter.string.ChannelDescription}
         bind:value={channel.description}
         placeholder={chunter.string.ChannelDescription}
-        focus
         on:change={onDescriptionChange}
       />
       <Button

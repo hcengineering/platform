@@ -33,7 +33,7 @@
   export let format: 'text' | 'password' | 'number' = 'text'
   export let maxDigitsAfterPoint: number | undefined = undefined
   export let kind: EditStyle = 'editbox'
-  export let focus: boolean = false
+  export let autoFocus: boolean = false
   export let select: boolean = false
   export let focusable: boolean = false
   export let disabled: boolean = false
@@ -87,9 +87,9 @@
   }
 
   onMount(() => {
-    if (focus) {
+    if (autoFocus) {
       input.focus()
-      focus = false
+      autoFocus = false
     }
     if (select) {
       input.select()
@@ -125,7 +125,7 @@
     input.addEventListener('focus', updateFocus, { once: true })
   }
 
-  export function focused (): void {
+  export function focus (): void {
     input.focus()
   }
 </script>

@@ -57,6 +57,7 @@ export interface KeyFilterPreset {
   component: AnyComponent
   label?: IntlString
   group?: 'top' | 'bottom'
+  showNested?: boolean
 }
 
 /**

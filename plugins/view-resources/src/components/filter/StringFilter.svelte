@@ -54,7 +54,7 @@
       icon={IconSearch}
       size={'large'}
       width={'100%'}
-      focus={!$deviceOptionsStore.isMobile}
+      autoFocus={!$deviceOptionsStore.isMobile}
       bind:value={search}
       placeholder={filter.key.label}
       on:change

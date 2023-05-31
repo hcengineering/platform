@@ -191,6 +191,8 @@
     class:doublePadding={$tooltip.label}
     use:resizeObserver={(element) => {
       clWidth = element.clientWidth
+      if (kind === 'submenu') fitSubmenu()
+      else fitTooltip(tooltipHTML)
     }}
     bind:this={tooltipHTML}
   >

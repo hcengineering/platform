@@ -110,7 +110,7 @@
             <div class="fs-title text-lg">
               <EditBox
                 bind:value={object.title}
-                focus
+                autoFocus
                 on:change={() => updateCard(client, object, 'title', object?.title)}
               />
             </div>
@@ -158,7 +158,7 @@
           <div class="fs-title text-lg">
             <EditBox
               bind:value={object.title}
-              focus
+              autoFocus
               on:change={() => updateCard(client, object, 'title', object?.title)}
             />
           </div>

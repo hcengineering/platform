@@ -58,8 +58,13 @@
       listProvider.update(docs)
       if (loading || _id === undefined) {
         changeSelected(selected)
-      } else if (docs.find((p) => p.attachedTo === _id) === undefined) {
-        changeSelected(selected)
+      } else {
+        const index = docs.findIndex((p) => p.attachedTo === _id)
+        if (index === -1) {
+          changeSelected(selected)
+        } else {
+          selected = index
+        }
       }
       loading = false
     },

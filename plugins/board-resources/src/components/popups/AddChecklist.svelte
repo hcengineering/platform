@@ -118,7 +118,7 @@
   <div class="flex-col flex-gap-1">
     <Label label={board.string.Title} />
     <div class="p-2 mt-1 mb-1 border-divider-color border-radius-1">
-      <EditBox bind:value={name} focus={true} />
+      <EditBox bind:value={name} autoFocus />
     </div>
   </div>
 

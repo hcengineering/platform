@@ -94,7 +94,7 @@
     bind:value={doc.value}
     label={recruit.string.OpinionValue}
     placeholder={recruit.string.OpinionValuePlaceholder}
-    focus
+    autoFocus
   />
   <StyledTextArea placeholder={recruit.string.Description} bind:content={doc.description} kind={'emphasized'} />
 </Card>

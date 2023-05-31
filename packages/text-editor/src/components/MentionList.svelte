@@ -114,6 +114,6 @@
     // max-width: 30rem;
     // min-height: 0;
     // max-height: 30rem;
-    z-index: 2000;
+    z-index: 10001;
   }
 </style>

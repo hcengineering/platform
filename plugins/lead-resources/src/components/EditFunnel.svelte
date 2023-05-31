@@ -86,7 +86,7 @@
         bind:value={object.name}
         placeholder={lead.string.FunnelPlaceholder}
         kind={'large-style'}
-        focus
+        autoFocus
         focusable
         on:blur={() => {
           if (rawName !== object.name) onChange('name', object.name)

@@ -101,7 +101,7 @@
   </svelte:fragment>
   <div class="flex-row-center gap-2">
     <EditBox
-      focus
+      autoFocus
       bind:value={data.value}
       {placeholder}
       maxWidth={'9rem'}

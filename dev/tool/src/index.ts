@@ -18,7 +18,7 @@ import {
   ACCOUNT_DB,
   assignWorkspace,
   confirmEmail,
-  createAccount,
+  createAcc,
   createWorkspace,
   dropAccount,
   dropWorkspace,
@@ -116,7 +116,7 @@ export function devTool (
       const { mongodbUri } = prepareTools()
       return await withDatabase(mongodbUri, async (db) => {
         console.log(`creating account ${cmd.first as string} ${cmd.last as string} (${email})...`)
-        await createAccount(db, productId, email, cmd.password, cmd.first, cmd.last)
+        await createAcc(db, productId, email, cmd.password, cmd.first, cmd.last, true)
       })
     })
 

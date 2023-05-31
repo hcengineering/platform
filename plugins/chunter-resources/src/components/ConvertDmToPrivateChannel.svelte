@@ -66,6 +66,6 @@
     icon={IconFolder}
     bind:value={name}
     placeholder={chunter.string.ChannelNamePlaceholder}
-    focus
+    autoFocus
   />
 </Card>

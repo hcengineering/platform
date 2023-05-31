@@ -25,7 +25,7 @@
 {#if noPanel}
   <div class="p-1 flex-col">
     <Label label={presentation.string.DocumentPreview} />
-    <EditBox focus bind:value={search} kind="search-style" />
+    <EditBox autoFocus bind:value={search} kind="search-style" />
   </div>
   <div class="indexed-background">
     <div class="indexed-doc text-base max-h-125">
@@ -36,7 +36,7 @@
   </div>
 {:else}
   <Panel on:changeContent on:close>
-    <EditBox focus bind:value={search} kind="search-style" />
+    <EditBox autoFocus bind:value={search} kind="search-style" />
     <div class="indexed-background">
       <div class="indexed-doc text-base max-h-125">
         {#if indexDoc}
