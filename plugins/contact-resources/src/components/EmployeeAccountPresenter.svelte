@@ -24,8 +24,9 @@
 
   export let value: Account
   export let avatarSize: IconSize = 'x-small'
-  export let disabled = false
-  export let inline = false
+  export let disabled: boolean = false
+  export let inline: boolean = false
+  export let accent: boolean = false
 
   $: employee = $employeeByIdStore.get((value as EmployeeAccount).employee)
 
@@ -35,11 +36,13 @@
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   {#if employee}
-    <EmployeePresenter value={employee} {disabled} {inline} {avatarSize} />
+    <EmployeePresenter value={employee} {disabled} {inline} {accent} {avatarSize} />
   {:else}
     <div class="flex-row-center">
       <Avatar size={avatarSize} />
-      <span class="overflow-label user" use:tooltip={{ label: valueLabel }}><Label label={valueLabel} /></span>
+      <span class="overflow-label user" class:fs-bold={accent} use:tooltip={{ label: valueLabel }}>
+        <Label label={valueLabel} />
+      </span>
     </div>
   {/if}
 {/if}

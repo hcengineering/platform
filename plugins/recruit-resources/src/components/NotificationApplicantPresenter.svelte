@@ -35,17 +35,15 @@
 </script>
 
 {#if value}
-  <div class="w-full clear-mins">
-    <div class="flex-presenter clear-mins inline-presenter mb-1">
-      <span class="font-medium mr-2">{title}</span>
+  <div class="flex-col">
+    <div class="flex-row-center crop-presenter">
+      <span class="font-medium mr-2 whitespace-nowrap clear-mins">{title}</span>
       <span class="overflow-label">
         {currentVacancy?.name}
       </span>
     </div>
-    <div>
-      <span class="overflow-label">
-        {candidate ? getName(candidate) : ''}
-      </span>
-    </div>
+    <span class="overflow-label mt-10px">
+      {candidate ? getName(candidate) : ''}
+    </span>
   </div>
 {/if}

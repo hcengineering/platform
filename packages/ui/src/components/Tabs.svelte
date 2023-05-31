@@ -20,10 +20,11 @@
   export let model: TabModel
   export let selected = 0
   export let withPadding: boolean = false
+  export let noMargin: boolean = false
   export let size: 'small' | 'medium' = 'medium'
 </script>
 
-<TabsControl {model} {withPadding} {size} bind:selected>
+<TabsControl {model} {withPadding} {noMargin} {size} bind:selected>
   <svelte:fragment slot="rightButtons">
     {#if $$slots.rightButtons}
       <div class="flex">

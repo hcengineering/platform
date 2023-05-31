@@ -28,15 +28,15 @@
 </script>
 
 {#if value}
-  <div class="w-full clear-mins">
-    <div class="flex-presenter overflow-label clear-mins inline-presenter mb-1">
-      <span class="font-medium mr-2">{title}</span>
-      <span>
+  <div class="flex-col">
+    <div class="flex-row-center crop-presenter">
+      <span class="font-medium mr-2 whitespace-nowrap clear-mins">{title}</span>
+      <span class="overflow-label">
         {currentProject?.name}
       </span>
     </div>
-    <div class="overflow-label">
+    <span class="overflow-label mt-10px">
       {value.title}
-    </div>
+    </span>
   </div>
 {/if}

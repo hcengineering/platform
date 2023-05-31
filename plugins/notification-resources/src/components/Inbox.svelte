@@ -82,9 +82,9 @@
   let selectedTab = 0
 </script>
 
-<div class="flex h-full">
+<div class="flex-row-top h-full">
   {#if visibileNav}
-    <div class="antiPanel-component border-right filled indent aside inbox">
+    <div class="antiPanel-component border-right indent aside min-w-100">
       {#if selectedEmployee === undefined}
         <Tabs
           bind:selected={selectedTab}
@@ -94,6 +94,7 @@
             selectedEmployee = e.detail
           }}
           withPadding
+          noMargin
           size="small"
         >
           <svelte:fragment slot="rightButtons">
@@ -118,9 +119,3 @@
     {/if}
   </div>
 </div>
-
-<style lang="scss">
-  .inbox {
-    min-width: 20rem;
-  }
-</style>

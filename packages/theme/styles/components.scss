@@ -765,6 +765,102 @@
   }
 }
 
+/* Inbox */
+.inbox-activity {
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  background-color: var(--theme-inbox-activity-bgcolor);
+
+  &__container {
+    position: relative;
+    display: flex;
+    flex-grow: 1;
+    flex-shrink: 0;
+    min-width: 0;
+    min-height: 0;
+    font-size: .8125rem;
+    border: 1px solid transparent;
+    outline: none;
+
+    &:not(.selected) {
+      margin: 0 1.75rem;
+      cursor: pointer;
+    }
+
+    .crop-presenter,
+    .inline-presenter { margin: -.3125rem 0; }
+
+    .inbox-activity__content {
+      display: flex;
+      flex-direction: column;
+      // flex-grow: 1;
+      color: var(--theme-caption-color);
+
+      &.shrink { padding: .75rem 0; }
+      &:not(.shrink) { padding: 1rem 0; }
+      &.read {
+        opacity: .6;
+
+        .time { color: var(--theme-content-color); }
+      }
+    }
+    
+    .time { color: var(--theme-halfcontent-color); }
+    .notify {
+      position: absolute;
+      top: 1rem;
+      left: -1.125rem;
+      height: 0.5rem;
+      width: 0.5rem;
+      background-color: var(--theme-inbox-notify);
+      border-radius: 50%;
+
+      &.people { background-color: var(--theme-inbox-counter-bgcolor); }
+    }
+    .counter {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 1.375rem;
+      width: 1.375rem;
+      color: var(--theme-dark-color);
+      background-color: var(--theme-inbox-counter-bgcolor);
+      border-radius: 50%;
+
+      &.float {
+        position: absolute;
+        top: .5625rem;
+        right: 0;
+      }
+      &.people {
+        color: var(--theme-inbox-people-notify);
+        background-color: var(--theme-inbox-counter-bgcolor);
+      }
+    }
+    .arrow {
+      position: absolute;
+      top: 1.125rem;
+      right: 0;
+    }
+
+    &:last-child:not(.selected) { border-bottom: 1px solid var(--theme-inbox-activitymsg-divider); }
+    &:not(.selected) + &:not(.selected) { border-top-color: var(--theme-inbox-activitymsg-divider); }
+
+    &.selected {
+      margin: 0 0.5rem;
+      background-color: var(--theme-inbox-activitymsg-bgcolor);
+      border: 1px solid var(--theme-inbox-activitymsg-border);
+      border-radius: 0.25rem;
+
+      .notify { left: .125rem; }
+      .inbox-activity__content { padding: 1rem 1.25rem; }
+      .counter.float { right: 1.25rem; }
+      .arrow { right: 1.25rem; }
+    }
+  }
+}
+
 /* ListView - global style */
 .list-container .category-container .categoryHeader.subLevel.closed {
   border-radius: 0 0 0.25rem 0.25rem;

@@ -22,21 +22,22 @@
 
   export let value: Applicant
   export let inline: boolean = false
-  export let disabled = false
+  export let disabled: boolean = false
+  export let accent: boolean = false
 
   const client = getClient()
   const shortLabel = value && client.getHierarchy().getClass(value._class).shortLabel
 </script>
 
 {#if value && shortLabel}
-  <DocNavLink object={value} {inline} {disabled}>
+  <DocNavLink object={value} {inline} {disabled} noUnderline={disabled} {accent}>
     <div class="flex-presenter" class:inline-presenter={inline}>
       {#if !inline}
         <div class="icon">
           <Icon icon={recruit.icon.Application} size={'small'} />
         </div>
       {/if}
-      <span class="label nowrap">
+      <span class="label nowrap" class:no-underline={disabled} class:fs-bold={accent}>
         {#if shortLabel}{shortLabel}-{/if}{value.number}
       </span>
     </div>

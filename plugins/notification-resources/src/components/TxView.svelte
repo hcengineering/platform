@@ -188,9 +188,9 @@
                   {#if !hasMessageType}
                     <span class="strong">
                       {#if value.isObjectSet}
-                        <ObjectPresenter value={value.set} inline />
+                        <ObjectPresenter value={value.set} inline accent />
                       {:else}
-                        <svelte:component this={m.presenter} value={value.set} inline />
+                        <svelte:component this={m.presenter} value={value.set} inline accent />
                       {/if}
                     </span>
                   {/if}
@@ -211,9 +211,9 @@
                   {#if !hasMessageType}
                     <div class="strong">
                       {#if value.isObjectSet}
-                        <ObjectPresenter value={value.set} inline />
+                        <ObjectPresenter value={value.set} inline accent />
                       {:else}
-                        <svelte:component this={m.presenter} value={value.set} inline />
+                        <svelte:component this={m.presenter} value={value.set} inline accent />
                       {/if}
                     </div>
                   {/if}

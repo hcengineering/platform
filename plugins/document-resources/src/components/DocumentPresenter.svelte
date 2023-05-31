@@ -21,7 +21,9 @@
   import document from '../plugin'
 
   export let value: WithLookup<Document>
-  export let inline = false
+  export let inline: boolean = false
+  export let disabled: boolean = false
+  export let accent: boolean = false
 </script>
 
 {#if value}
@@ -35,6 +37,6 @@
         <Icon icon={document.icon.Document} size={'small'} />
       </div>
     {/if}
-    <span class="label">{value.name}-{value.version}</span>
+    <span class="label nowrap" class:no-underline={disabled} class:fs-bold={accent}>{value.name}-{value.version}</span>
   </a>
 {/if}

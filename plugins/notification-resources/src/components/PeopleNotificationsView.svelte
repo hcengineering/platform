@@ -76,60 +76,56 @@
 
 {#if doc}
   <div
-    class="container cursor-pointer"
+    class="inbox-activity__container"
     on:keydown
     class:selected
     tabindex="-1"
     bind:this={div}
     on:click={() => dispatch('open', value._id)}
   >
-    <div class="notify" class:hidden={newTxes === 0} />
+    {#if newTxes > 0 && !selected}<div class="notify people" />{/if}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="clear-mins content bottom-divider" class:read={newTxes === 0}>
-      <div class="w-full">
-        <div class="flex-between mb-2">
-          <div class="flex-row-center flex-gap-2">
-            <Avatar avatar={employee?.avatar} size="small" />
-            {#if employee}
-              <span class="font-medium">{getName(employee)}</span>
-            {:else}
-              <span class="font-medium"><Label label={core.string.System} /></span>
-            {/if}
-            {#if newTxes > 0}
-              <div class="counter">
-                {newTxes}
-              </div>
-            {/if}
+    <div class="inbox-activity__content shrink clear-mins" class:read={newTxes === 0}>
+      <div class="flex-row-center gap-2">
+        <Avatar avatar={employee?.avatar} size="small" />
+        {#if employee}
+          <span class="font-medium">{getName(employee)}</span>
+        {:else}
+          <span class="font-medium"><Label label={core.string.System} /></span>
+        {/if}
+        {#if newTxes > 0}
+          <div class="counter people">
+            {newTxes}
           </div>
-          <div>
-            <ActionIcon
-              icon={ArrowRight}
-              size="medium"
-              action={() => {
-                dispatch('open', value._id)
-              }}
-            />
-          </div>
+        {/if}
+        <div class="arrow">
+          <ActionIcon
+            icon={ArrowRight}
+            size="medium"
+            action={() => {
+              dispatch('open', value._id)
+            }}
+          />
         </div>
-        <div>
-          {#if presenter}
-            <svelte:component this={presenter} value={doc} inline />
-          {/if}
-        </div>
-        <div class="flex-between mt-2">
-          {#if tx && firstItem}
-            <TxView {tx} {viewlets} objectId={firstItem.attachedTo} />
-          {/if}
-          <div class="time">
-            <TimeSince value={tx?.modifiedOn} />
-          </div>
+      </div>
+      <div class="clear-mins flex-no-shrink mt-4">
+        {#if presenter}
+          <svelte:component this={presenter} value={doc} inline />
+        {/if}
+      </div>
+      <div class="flex-between flex-baseline mt-3">
+        {#if tx && firstItem}
+          <TxView {tx} {viewlets} objectId={firstItem.attachedTo} />
+        {/if}
+        <div class="time">
+          <TimeSince value={tx?.modifiedOn} />
         </div>
       </div>
     </div>
   </div>
 {/if}
 
-<style lang="scss">
+<!-- <style lang="scss">
   .time {
     align-self: flex-end;
     margin-bottom: 0.25rem;
@@ -192,4 +188,4 @@
     background-color: var(--theme-calendar-today-bgcolor);
     border-radius: 50%;
   }
-</style>
+</style> -->

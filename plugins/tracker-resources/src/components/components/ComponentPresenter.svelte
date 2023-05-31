@@ -25,19 +25,25 @@
   export let onClick: (() => void) | undefined = undefined
   export let disabled = false
   export let inline: boolean = false
+  export let accent: boolean = false
   export let noUnderline = false
   export let kind: 'list' | undefined = undefined
 </script>
 
 {#if value}
-  <DocNavLink object={value} {onClick} {disabled} {noUnderline} {inline} component={view.component.EditDoc}>
+  <DocNavLink object={value} {onClick} {disabled} {noUnderline} {inline} {accent} component={view.component.EditDoc}>
     <span class="flex-presenter" class:inline-presenter={inline} class:list={kind === 'list'}>
       {#if !inline && shouldShowAvatar}
         <div class="icon" use:tooltip={{ label: tracker.string.Component }}>
           <Icon icon={tracker.icon.Component} size={'small'} />
         </div>
       {/if}
-      <span title={value.label} class="label nowrap" class:no-underline={disabled || noUnderline}>
+      <span
+        title={value.label}
+        class="label nowrap"
+        class:no-underline={disabled || noUnderline}
+        class:fs-bold={accent}
+      >
         {value.label}
       </span>
     </span>

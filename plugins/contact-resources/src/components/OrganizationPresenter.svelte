@@ -22,13 +22,15 @@
 
   export let value: Organization
   export let inline: boolean = false
+  export let disabled: boolean = false
+  export let accent: boolean = false
   export let maxWidth = ''
 </script>
 
 {#if value}
-  <DocNavLink {inline} object={value}>
+  <DocNavLink {disabled} {inline} object={value} {accent} noUnderline={disabled}>
     <div
-      class="flex-presenter overflow-label"
+      class="flex-presenter"
       style:max-width={maxWidth}
       class:inline-presenter={inline}
       use:tooltip={{ label: getEmbeddedLabel(value.name) }}
@@ -36,7 +38,7 @@
       {#if !inline}
         <div class="icon circle"><Company size={'small'} /></div>
       {/if}
-      <span class="label">{value.name}</span>
+      <span class="overflow-label label" class:no-underline={disabled} class:fs-bold={accent}>{value.name}</span>
     </div>
   </DocNavLink>
 {/if}
