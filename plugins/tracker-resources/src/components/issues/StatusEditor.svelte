@@ -67,7 +67,7 @@
 
     showPopup(
       SelectPopup,
-      { value: statusesInfo, placeholder: tracker.string.SetStatus, searchable: true },
+      { value: statusesInfo, placeholder: tracker.string.SetStatus },
       eventToHTMLElement(event),
       changeStatus
     )

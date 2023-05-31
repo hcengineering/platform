@@ -15,19 +15,11 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { AccountArrayEditor, AssigneeBox } from '@hcengineering/contact-resources'
-  import core, {
-    Account,
-    ApplyOperations,
-    DocumentUpdate,
-    Ref,
-    SortingOrder,
-    generateId,
-    getCurrentAccount
-  } from '@hcengineering/core'
+  import core, { Account, DocumentUpdate, Ref, generateId, getCurrentAccount } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
-  import { IssueStatus, Project, TimeReportDayType, genRanks } from '@hcengineering/tracker'
+  import { IssueStatus, Project, TimeReportDayType, createStatuses } from '@hcengineering/tracker'
   import {
     Button,
     EditBox,
@@ -159,7 +151,7 @@
 
     isSaving = true
     await ops.createDoc(tracker.class.Project, core.space.Space, projectData, projectId)
-    await createProjectIssueStatuses(ops, projectId, defaultStatusId)
+    await createStatuses(ops, projectId, tracker.class.IssueStatus, tracker.attribute.IssueStatus, defaultStatusId)
     const succeeded = await ops.commit()
     isSaving = false
 
@@ -167,39 +159,6 @@
       close()
     } else {
       changeIdentity(changeIdentityRef)
-    }
-  }
-
-  async function createProjectIssueStatuses (
-    ops: ApplyOperations,
-    projectId: Ref<Project>,
-    defaultStatusId: Ref<IssueStatus>,
-    defaultCategoryId = tracker.issueStatusCategory.Backlog
-  ): Promise<void> {
-    const categories = await ops.findAll(
-      core.class.StatusCategory,
-      { ofAttribute: tracker.attribute.IssueStatus },
-      { sort: { order: SortingOrder.Ascending } }
-    )
-    const issueStatusRanks = [...genRanks(categories.length)]
-
-    for (const [i, statusCategory] of categories.entries()) {
-      const { _id: category, defaultStatusName } = statusCategory
-      const rank = issueStatusRanks[i]
-
-      if (defaultStatusName !== undefined) {
-        await ops.createDoc(
-          tracker.class.IssueStatus,
-          projectId,
-          {
-            ofAttribute: tracker.attribute.IssueStatus,
-            name: defaultStatusName,
-            category,
-            rank
-          },
-          category === defaultCategoryId ? defaultStatusId : undefined
-        )
-      }
     }
   }
 
