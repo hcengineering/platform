@@ -15,9 +15,9 @@
 
 import { Class, Doc, Domain, Ref, Space, TxOperations, DOMAIN_STATUS } from '@hcengineering/core'
 import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
-import core from '@hcengineering/model-core'
+import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import tags from '@hcengineering/model-tags'
-import { createKanban, DoneStateTemplate, genRanks, KanbanTemplate, StateTemplate } from '@hcengineering/task'
+import { DoneStateTemplate, genRanks, KanbanTemplate, StateTemplate } from '@hcengineering/task'
 import { DOMAIN_TASK, DOMAIN_KANBAN } from '.'
 import task from './plugin'
 
@@ -127,66 +127,8 @@ async function createDefaultSequence (tx: TxOperations): Promise<void> {
   }
 }
 
-async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<KanbanTemplate>> {
-  const defaultKanban = {
-    states: [
-      { color: 9, name: 'Open' },
-      { color: 10, name: 'In Progress' },
-      { color: 1, name: 'Under review' },
-      { color: 0, name: 'Done' },
-      { color: 11, name: 'Invalid' }
-    ],
-    doneStates: [
-      { isWon: true, name: 'Won' },
-      { isWon: false, name: 'Lost' }
-    ]
-  }
-
-  return await createKanbanTemplate(tx, {
-    kanbanId: task.template.DefaultProject,
-    space: task.space.ProjectTemplates as Ref<Doc> as Ref<Space>,
-    title: 'Default project',
-    description: '',
-    shortDescription: '',
-    states: defaultKanban.states,
-    doneStates: defaultKanban.doneStates
-  })
-}
-
-async function createDefaultKanban (tx: TxOperations): Promise<void> {
-  const current = await tx.findOne(task.class.Kanban, {
-    attachedTo: task.space.TasksPublic
-  })
-  if (current !== undefined) return
-  const defaultTmpl = await createDefaultKanbanTemplate(tx)
-  await createKanban(tx, task.space.TasksPublic, defaultTmpl)
-}
-
-async function createSpace (tx: TxOperations): Promise<void> {
-  const currentTemplate = await tx.findOne(core.class.Space, {
-    _id: task.space.ProjectTemplates
-  })
-  if (currentTemplate === undefined) {
-    await tx.createDoc(
-      task.class.KanbanTemplateSpace,
-      core.space.Space,
-      {
-        name: task.string.Projects,
-        description: task.string.ManageProjectStatues,
-        icon: task.component.TemplatesIcon,
-        private: false,
-        members: [],
-        archived: false
-      },
-      task.space.ProjectTemplates
-    )
-  }
-}
-
 async function createDefaults (tx: TxOperations): Promise<void> {
-  await createSpace(tx)
   await createDefaultSequence(tx)
-  await createDefaultKanban(tx)
 }
 
 async function migrateTodoItems (client: MigrationClient): Promise<void> {
@@ -237,6 +179,8 @@ export const taskOperation: MigrateOperation = {
       { _class: { $in: [...stateTemplateClasses, ...doneStateTemplatesClasses] }, title: { $exists: true } },
       { $rename: { title: 'name' } }
     )
+
+    await client.delete(DOMAIN_SPACE, 'task:space:ProjectTemplates' as Space['_id'])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)

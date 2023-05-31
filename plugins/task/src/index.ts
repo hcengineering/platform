@@ -226,8 +226,6 @@ const task = plugin(taskId, {
     MarkAsUndone: '' as IntlString,
     Kanban: '' as IntlString,
     ApplicationLabelTask: '' as IntlString,
-    Projects: '' as IntlString,
-    ManageProjectStatues: '' as IntlString,
     TodoItems: '' as IntlString,
     AssignedToMe: '' as IntlString,
     Dashboard: '' as IntlString
@@ -268,7 +266,6 @@ const task = plugin(taskId, {
     Task: '' as Ref<Task>
   },
   space: {
-    ProjectTemplates: '' as Ref<KanbanTemplateSpace>,
     Sequence: '' as Ref<Space>
   },
   component: {
