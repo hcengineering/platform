@@ -18,6 +18,7 @@
   import ui, {
     ActionIcon,
     AnyComponent,
+    AnySvelteComponent,
     Button,
     ColorDefinition,
     Component,
@@ -49,7 +50,8 @@
   export let lastCat = false
   export let level: number
 
-  export let createItemDialog: AnyComponent | undefined
+  export let createItemDialog: AnyComponent | AnySvelteComponent | undefined
+  export let createItemDialogProps: Record<string, any> | undefined
   export let createItemLabel: IntlString | undefined
   export let extraHeaders: AnyComponent[] | undefined
   export let props: Record<string, any> = {}
@@ -71,7 +73,11 @@
 
   const handleCreateItem = (event: MouseEvent) => {
     if (createItemDialog === undefined) return
-    showPopup(createItemDialog, newObjectProps(items[0]), eventToHTMLElement(event))
+    showPopup(
+      createItemDialog,
+      { ...(createItemDialogProps ?? {}), ...newObjectProps(items[0]) },
+      eventToHTMLElement(event)
+    )
   }
   let mouseOver = false
 
