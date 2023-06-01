@@ -665,7 +665,6 @@
         {object}
         kind={'secondary'}
         size={'large'}
-        width={'min-content'}
         short
         on:change={({ detail }) => {
           isAssigneeTouched = true

@@ -30,7 +30,7 @@
   export let size: ButtonSize = 'large'
   export let avatarSize: IconSize = 'card'
   export let tooltipAlignment: TooltipAlignment | undefined = undefined
-  export let width: string = '100%'
+  export let width: string = 'min-content'
   export let focusIndex: number | undefined = undefined
   export let short: boolean = false
   export let shouldShowName = true

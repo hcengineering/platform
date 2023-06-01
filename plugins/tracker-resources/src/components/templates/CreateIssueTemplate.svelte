@@ -179,7 +179,6 @@
       object={{ ...object, space }}
       kind={'secondary'}
       size={'large'}
-      width={'min-content'}
       on:change={({ detail }) => (object.assignee = detail)}
     />
     <Component
