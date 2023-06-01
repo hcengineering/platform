@@ -13,15 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import calendar, { calendarId } from '@hcengineering/calendar'
   import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
   import core, { Class, Doc, Ref, Space, getCurrentAccount, setCurrentAccount } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import notification, { notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, NotificationClientImpl } from '@hcengineering/notification-resources'
   import { IntlString, getMetadata, getResource } from '@hcengineering/platform'
-  import { ActionContext, configurationStore, createQuery, getClient } from '@hcengineering/presentation'
-  import { resolvedLocationStore } from '@hcengineering/ui'
+  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import {
     AnyComponent,
     CompAndProps,
@@ -46,6 +44,7 @@
     openPanel,
     popupstore,
     resizeObserver,
+    resolvedLocationStore,
     setResolvedLocation,
     showPopup
   } from '@hcengineering/ui'
@@ -604,14 +603,6 @@
             notify={hasNotification}
           />
         </NavLink>
-        {#if $configurationStore.has(calendarId)}
-          <div class="spacer" />
-          <AppItem
-            icon={calendar.icon.Notifications}
-            label={calendar.string.Reminders}
-            on:click={() => showPopup(calendar.component.RemindersPopup, {}, notifyPosition)}
-          />
-        {/if}
         <div class="divider" />
         <Applications
           apps={getApps(apps)}
