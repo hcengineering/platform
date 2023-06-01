@@ -39,8 +39,7 @@
   export let selected: Ref<Person> | undefined
   export let docQuery: DocumentQuery<Contact> | undefined = undefined
   export let prevAssigned: Ref<Employee>[] | undefined = []
-  export let projectLead: Ref<Employee> | undefined = undefined
-  export let projectMembers: Ref<Employee>[] | undefined = []
+  export let componentLead: Ref<Employee> | undefined = undefined
   export let members: Ref<Employee>[] | undefined = []
   export let allowDeselect = true
   export let titleDeselect: IntlString | undefined
@@ -49,7 +48,6 @@
   export let ignoreUsers: Ref<Person>[] = []
   export let shadows: boolean = true
   export let width: 'medium' | 'large' | 'full' = 'medium'
-  export let size: 'small' | 'medium' | 'large' = 'small'
   export let searchField: string = 'name'
   export let showCategories: boolean = true
   export let icon: Asset | AnySvelteComponent | undefined = undefined
@@ -83,22 +81,20 @@
     { ...(options ?? {}), limit: 200, sort: { name: 1 } }
   )
 
-  $: updateCategories(objects, currentEmployee, prevAssigned, projectLead, members, projectMembers)
+  $: updateCategories(objects, currentEmployee, prevAssigned, componentLead, members)
 
   function updateCategories (
     objects: Contact[],
     currentEmployee: Ref<Person>,
     prevAssigned: Ref<Person>[] | undefined,
-    projectLead: Ref<Person> | undefined,
-    members: Ref<Person>[] | undefined,
-    projectMembers: Ref<Person>[] | undefined
+    componentLead: Ref<Person> | undefined,
+    members: Ref<Person>[] | undefined
   ) {
     const persons = new Map<Ref<Person>, AssigneeCategory>(objects.map((t) => [t._id, 'Other']))
-    if (projectLead) {
-      persons.set(projectLead, 'ProjectLead')
+    if (componentLead) {
+      persons.set(componentLead, 'ComponentLead')
     }
     members?.forEach((p) => persons.set(p, 'Members'))
-    projectMembers?.forEach((p) => persons.set(p, 'ProjectMembers'))
     prevAssigned?.forEach((p) => persons.set(p, 'PreviouslyAssigned'))
     if (selected) {
       persons.set(selected, 'Assigned')

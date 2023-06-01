@@ -176,10 +176,9 @@
       on:change={({ detail }) => (object.priority = detail)}
     />
     <AssigneeEditor
-      value={object}
+      object={{ ...object, space }}
       kind={'secondary'}
       size={'large'}
-      width={'min-content'}
       on:change={({ detail }) => (object.assignee = detail)}
     />
     <Component

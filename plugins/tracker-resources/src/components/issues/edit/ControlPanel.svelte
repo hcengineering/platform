@@ -161,7 +161,7 @@
   <span class="label">
     <Label label={tracker.string.Assignee} />
   </span>
-  <AssigneeEditor value={issue} size={'medium'} avatarSize={'card'} />
+  <AssigneeEditor object={issue} size={'medium'} avatarSize={'card'} width="100%" />
 
   <span class="labelTop">
     <Label label={tracker.string.Labels} />

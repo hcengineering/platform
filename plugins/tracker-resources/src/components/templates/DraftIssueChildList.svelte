@@ -163,7 +163,7 @@
         }}
       />
       <AssigneeEditor
-        value={issue}
+        object={issue}
         on:change={(evt) => {
           dispatch('update-issue', { id: issue._id, assignee: evt.detail })
           issue.assignee = evt.detail

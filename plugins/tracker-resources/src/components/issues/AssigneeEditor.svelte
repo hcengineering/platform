@@ -15,85 +15,86 @@
 <script lang="ts">
   import { Employee, EmployeeAccount } from '@hcengineering/contact'
   import { AssigneeBox, employeeAccountByIdStore } from '@hcengineering/contact-resources'
-  import { AttachedData, Ref } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
-  import { Issue, IssueDraft, IssueTemplateData } from '@hcengineering/tracker'
+  import { Doc, DocumentQuery, Ref } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Issue, Project } from '@hcengineering/tracker'
   import { ButtonKind, ButtonSize, IconSize, TooltipAlignment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import tracker from '../../plugin'
   import { getPreviousAssignees } from '../../utils'
+  import tracker from '../../plugin'
 
-  export let value: Issue | AttachedData<Issue> | IssueTemplateData | IssueDraft
+  type Object = (Doc | {}) & Pick<Issue, 'space' | 'component' | 'assignee'>
+
+  export let object: Object
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
   export let avatarSize: IconSize = 'card'
   export let tooltipAlignment: TooltipAlignment | undefined = undefined
-  export let width: string = '100%'
+  export let width: string = 'min-content'
   export let focusIndex: number | undefined = undefined
   export let short: boolean = false
+  export let shouldShowName = true
 
   const client = getClient()
   const dispatch = createEventDispatcher()
+  const projectQuery = createQuery()
 
+  let project: Project | undefined
   let prevAssigned: Ref<Employee>[] = []
-  let projectLead: Ref<Employee> | undefined = undefined
-  let projectMembers: Ref<Employee>[] = []
+  let componentLead: Ref<Employee> | undefined = undefined
   let members: Ref<Employee>[] = []
+  let docQuery: DocumentQuery<Employee> = { active: true }
 
-  $: '_class' in value &&
-    getPreviousAssignees(value).then((res) => {
+  $: '_class' in object &&
+    getPreviousAssignees(object._id).then((res) => {
       prevAssigned = res
     })
 
-  function hasSpace (issue: Issue | AttachedData<Issue> | IssueTemplateData | IssueDraft): issue is Issue {
-    return (issue as Issue).space !== undefined
-  }
-
-  async function updateComponentMembers (issue: Issue | AttachedData<Issue> | IssueTemplateData | IssueDraft) {
+  async function updateComponentMembers (project: Project, issue: Object) {
     if (issue.component) {
       const component = await client.findOne(tracker.class.Component, { _id: issue.component })
-      projectLead = component?.lead || undefined
+      componentLead = component?.lead || undefined
     } else {
-      projectLead = undefined
+      componentLead = undefined
     }
-    projectMembers = []
-    if (hasSpace(issue)) {
-      const project = await client.findOne(tracker.class.Project, { _id: issue.space })
-      if (project !== undefined) {
-        const accounts = project.members
-          .map((p) => $employeeAccountByIdStore.get(p as Ref<EmployeeAccount>))
-          .filter((p) => p !== undefined) as EmployeeAccount[]
-        members = accounts.map((p) => p.employee)
-      } else {
-        members = []
-      }
+    if (project !== undefined) {
+      const accounts = project.members
+        .map((p) => $employeeAccountByIdStore.get(p as Ref<EmployeeAccount>))
+        .filter((p) => p !== undefined) as EmployeeAccount[]
+      members = accounts.map((p) => p.employee)
+    } else {
+      members = []
     }
+
+    docQuery = project?.private ? { _id: { $in: members }, active: true } : { active: true }
   }
 
-  $: updateComponentMembers(value)
-
   const handleAssigneeChanged = async (newAssignee: Ref<Employee> | undefined) => {
-    if (newAssignee === undefined || value.assignee === newAssignee) {
+    if (newAssignee === undefined || object.assignee === newAssignee) {
       return
     }
 
     dispatch('change', newAssignee)
 
-    if ('_class' in value) {
-      await client.update(value, { assignee: newAssignee })
+    if ('_class' in object) {
+      await client.update(object, { assignee: newAssignee })
     }
   }
+
+  $: projectQuery.query(tracker.class.Project, { _id: object.space }, (res) => ([project] = res))
+  $: project && updateComponentMembers(project, object)
+  $: docQuery = project?.private ? { _id: { $in: members }, active: true } : { active: true }
 </script>
 
-{#if value}
+{#if object}
   <AssigneeBox
+    {docQuery}
     {focusIndex}
     label={tracker.string.Assignee}
     placeholder={tracker.string.Assignee}
-    value={value.assignee}
+    value={object.assignee}
     {prevAssigned}
-    {projectLead}
-    {projectMembers}
+    {componentLead}
     {members}
     titleDeselect={tracker.string.Unassigned}
     {size}
@@ -101,9 +102,15 @@
     {avatarSize}
     {width}
     {short}
+    {shouldShowName}
     showNavigate={false}
     justify={'left'}
-    showTooltip={{ label: tracker.string.AssignTo, direction: tooltipAlignment }}
+    showTooltip={{
+      label: tracker.string.AssignTo,
+      personLabel: tracker.string.AssignedTo,
+      placeholderLabel: tracker.string.Unassigned,
+      direction: tooltipAlignment
+    }}
     on:change={({ detail }) => handleAssigneeChanged(detail)}
   />
 {/if}

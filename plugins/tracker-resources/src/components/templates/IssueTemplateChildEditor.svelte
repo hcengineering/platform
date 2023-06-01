@@ -17,7 +17,13 @@
   import presentation, { createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import { StyledTextArea } from '@hcengineering/text-editor'
-  import { IssuePriority, IssueTemplateChild, Component as ComponentType, Milestone } from '@hcengineering/tracker'
+  import {
+    IssuePriority,
+    IssueTemplateChild,
+    Component as ComponentType,
+    Milestone,
+    Project
+  } from '@hcengineering/tracker'
   import { Button, Component, EditBox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
@@ -25,6 +31,7 @@
   import PriorityEditor from '../issues/PriorityEditor.svelte'
   import EstimationEditor from './EstimationEditor.svelte'
 
+  export let projectId: Ref<Project>
   export let milestone: Ref<Milestone> | null = null
   export let component: Ref<ComponentType> | null = null
   export let childIssue: IssueTemplateChild | undefined = undefined
@@ -142,7 +149,7 @@
       />
       {#key newIssue.assignee}
         <AssigneeEditor
-          value={newIssue}
+          object={{ ...newIssue, space: projectId }}
           size="small"
           kind="no-border"
           width="auto"

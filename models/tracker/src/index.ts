@@ -604,13 +604,9 @@ export function createModel (builder: Builder): void {
         },
         {
           key: 'assignee',
-          presenter: tracker.component.AssigneePresenter,
+          presenter: tracker.component.AssigneeEditor,
           displayProps: { key: 'assigee', fixed: 'right' },
-          props: {
-            key: 'assignee',
-            defaultClass: contact.class.Employee,
-            shouldShowLabel: false
-          }
+          props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' }
         }
       ],
       options: {
@@ -715,8 +711,8 @@ export function createModel (builder: Builder): void {
         },
         {
           key: 'assignee',
-          presenter: tracker.component.AssigneePresenter,
-          props: { defaultClass: contact.class.Employee, shouldShowLabel: false }
+          presenter: tracker.component.AssigneeEditor,
+          props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' }
         }
       ]
     },
@@ -791,8 +787,8 @@ export function createModel (builder: Builder): void {
         },
         {
           key: 'assignee',
-          presenter: tracker.component.AssigneePresenter,
-          props: { defaultClass: contact.class.Employee, shouldShowLabel: false }
+          presenter: tracker.component.AssigneeEditor,
+          props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' }
         }
       ]
     },

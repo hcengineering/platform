@@ -210,7 +210,7 @@
       <div id="sub-issue-assignee-editor">
         {#key object.assignee}
           <AssigneeEditor
-            value={object}
+            {object}
             size="small"
             kind="no-border"
             on:change={({ detail }) => (object.assignee = detail)}

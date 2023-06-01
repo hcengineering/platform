@@ -4,21 +4,13 @@ import contact from './plugin'
 /**
  * @public
  */
-export type AssigneeCategory =
-  | 'CurrentUser'
-  | 'Assigned'
-  | 'PreviouslyAssigned'
-  | 'ProjectLead'
-  | 'ProjectMembers'
-  | 'Members'
-  | 'Other'
+export type AssigneeCategory = 'CurrentUser' | 'Assigned' | 'PreviouslyAssigned' | 'ComponentLead' | 'Members' | 'Other'
 
 const assigneeCategoryTitleMap: Record<AssigneeCategory, IntlString> = Object.freeze({
   CurrentUser: contact.string.CategoryCurrentUser,
   Assigned: contact.string.Assigned,
   PreviouslyAssigned: contact.string.CategoryPreviousAssigned,
-  ProjectLead: contact.string.CategoryProjectLead,
-  ProjectMembers: contact.string.CategoryProjectMembers,
+  ComponentLead: contact.string.CategoryComponentLead,
   Members: contact.string.Members,
   Other: contact.string.CategoryOther
 })
@@ -30,8 +22,7 @@ export const assigneeCategoryOrder: AssigneeCategory[] = [
   'CurrentUser',
   'Assigned',
   'PreviouslyAssigned',
-  'ProjectLead',
-  'ProjectMembers',
+  'ComponentLead',
   'Members',
   'Other'
 ]

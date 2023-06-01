@@ -47,6 +47,7 @@
             label: getEmbeddedLabel(getName(value))
           }
     }
+    const direction = tooltipLabels?.direction
     const component = value ? tooltipLabels.component : undefined
     const label = value
       ? tooltipLabels.personLabel
@@ -59,7 +60,8 @@
     return {
       component,
       label,
-      props
+      props,
+      direction
     }
   }
 </script>

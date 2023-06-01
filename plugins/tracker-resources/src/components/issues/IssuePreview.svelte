@@ -83,7 +83,7 @@
       <StatusEditor value={issue} shouldShowLabel kind={'secondary'} />
       <PriorityEditor value={issue} shouldShowLabel kind={'secondary'} />
       {#if issue.assignee}
-        <AssigneeEditor value={issue} width={'min-content'} kind={'secondary'} />
+        <AssigneeEditor object={issue} kind={'secondary'} />
       {/if}
     </div>
 
