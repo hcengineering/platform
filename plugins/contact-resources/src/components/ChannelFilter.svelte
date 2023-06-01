@@ -62,13 +62,15 @@
   }
 
   const dispatch = createEventDispatcher()
+
+  const sortedElemenets = sortFilterValues($channelProviders, (v) => isSelected(v, selected))
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="menu-space" />
   <div class="scroll">
     <div class="box">
-      {#each sortFilterValues($channelProviders, (v) => isSelected(v, selected)) as element}
+      {#each sortedElemenets as element}
         <button
           class="menu-item no-focus flex-row-center content-pointer-events-none"
           on:click={() => {

@@ -14,12 +14,13 @@
 -->
 <script lang="ts">
   import { Doc, DocumentQuery, Ref } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
+  import { ActionContext } from '@hcengineering/presentation'
   import { Issue, Project } from '@hcengineering/tracker'
-  import { registerFocus } from '@hcengineering/ui'
+  import { AnyComponent, AnySvelteComponent, registerFocus } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
   import { List, ListSelectionProvider, SelectDirection, selectionStore } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
-  import { ActionContext } from '@hcengineering/presentation'
 
   export let query: DocumentQuery<Issue> | undefined = undefined
   export let issues: Issue[] | undefined = undefined
@@ -57,6 +58,10 @@
     },
     isFocus: () => focused
   })
+
+  export let createItemDialog: AnySvelteComponent | AnyComponent | undefined = undefined
+  export let createItemLabel: IntlString | undefined = undefined
+  export let createItemDialogProps: Record<string, any> | undefined = undefined
 </script>
 
 <ActionContext
@@ -77,6 +82,9 @@
     flatHeaders={true}
     props={{ projects }}
     {disableHeader}
+    {createItemDialog}
+    {createItemDialogProps}
+    {createItemLabel}
     selectedObjectIds={$selectionStore ?? []}
     on:row-focus={(event) => {
       listProvider.updateFocus(event.detail ?? undefined)

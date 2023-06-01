@@ -16,7 +16,7 @@
   import { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
   import { IntlString, getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { AnyComponent } from '@hcengineering/ui'
+  import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
   import { BuildModelKey, ViewOptionModel, ViewOptions, ViewQueryOption } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { buildConfigLookup } from '../../utils'
@@ -29,7 +29,8 @@
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let config: (string | BuildModelKey)[]
   export let selectedObjectIds: Doc[] = []
-  export let createItemDialog: AnyComponent | undefined = undefined
+  export let createItemDialog: AnyComponent | AnySvelteComponent | undefined = undefined
+  export let createItemDialogProps: Record<string, any> | undefined = undefined
   export let createItemLabel: IntlString | undefined = undefined
   export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
   export let viewOptions: ViewOptions
@@ -128,6 +129,7 @@
     level={0}
     groupPersistKey={''}
     {createItemDialog}
+    {createItemDialogProps}
     {createItemLabel}
     on:check
     on:uncheckAll={uncheckAll}

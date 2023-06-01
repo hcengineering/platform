@@ -20,6 +20,7 @@
   import { ViewOptions, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../../plugin'
+  import CreateIssue from '../../CreateIssue.svelte'
   import AddIssueDuo from '../../icons/AddIssueDuo.svelte'
   import SubIssueList from '../edit/SubIssueList.svelte'
 
@@ -52,7 +53,16 @@
 
 {#if subIssues !== undefined && viewlet !== undefined}
   {#if projects && subIssues.length > 0}
-    <SubIssueList bind:viewOptions {viewlet} issues={subIssues} {projects} {disableHeader} />
+    <SubIssueList
+      bind:viewOptions
+      {viewlet}
+      issues={subIssues}
+      {projects}
+      {disableHeader}
+      createItemDialog={CreateIssue}
+      createItemLabel={tracker.string.AddIssueTooltip}
+      createItemDialogProps={{ relatedTo: object }}
+    />
   {:else}
     <div class="antiSection-empty solid flex-col mt-3">
       <div class="flex-center content-color">

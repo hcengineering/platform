@@ -14,11 +14,9 @@
 -->
 <script lang="ts">
   import type { Ref } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
   import { Scroller } from '@hcengineering/ui'
   import { NavLink } from '@hcengineering/view-resources'
   import type { Application } from '@hcengineering/workbench'
-  import workbench from '@hcengineering/workbench'
   import { hideApplication, showApplication } from '../utils'
   import App from './App.svelte'
 
@@ -27,13 +25,13 @@
   export let direction: 'vertical' | 'horizontal' = 'vertical'
   export let shown: boolean = false
 
-  let loaded: boolean = false
-  let hiddenAppsIds: Ref<Application>[] = []
-  const hiddenAppsIdsQuery = createQuery()
-  hiddenAppsIdsQuery.query(workbench.class.HiddenApplication, {}, (res) => {
-    hiddenAppsIds = res.map((r) => r.attachedTo)
-    loaded = true
-  })
+  const loaded: boolean = true
+  const hiddenAppsIds: Ref<Application>[] = []
+  // const hiddenAppsIdsQuery = createQuery()
+  // hiddenAppsIdsQuery.query(workbench.class.HiddenApplication, {}, (res) => {
+  //   hiddenAppsIds = res.map((r) => r.attachedTo)
+  //   loaded = true
+  // })
 </script>
 
 <div class="flex-{direction === 'horizontal' ? 'row-center' : 'col-center'} clear-mins apps-{direction} relative">

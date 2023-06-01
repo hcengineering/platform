@@ -20,7 +20,6 @@
   import { BrowserNotificatator, NotificationClientImpl } from '@hcengineering/notification-resources'
   import { IntlString, getMetadata, getResource } from '@hcengineering/platform'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
-  import setting from '@hcengineering/setting'
   import {
     AnyComponent,
     CompAndProps,
@@ -44,8 +43,7 @@
     navigate,
     openPanel,
     popupstore,
-    resizeObserver,
-    setResolvedLocation,
+    resizeObserver, resolvedLocationStore, setResolvedLocation,
     showPopup
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -70,7 +68,6 @@
   import Navigator from './Navigator.svelte'
   import SelectWorkspaceMenu from './SelectWorkspaceMenu.svelte'
   import SpaceView from './SpaceView.svelte'
-  import Settings from './icons/Settings.svelte'
   import TopMenu from './icons/TopMenu.svelte'
 
   let contentPanel: HTMLElement
@@ -573,7 +570,7 @@
             showPopup(SelectWorkspaceMenu, {}, popupSpacePosition)
           }}
         >
-          <Logo mini={appsMini} />
+          <Logo mini={appsMini} workspace={$resolvedLocationStore.path[1]} />
         </div>
         <div class="topmenu-container clear-mins flex-no-shrink" class:mini={appsMini}>
           <AppItem
@@ -613,13 +610,13 @@
         />
       </div>
       <div class="info-box {appsDirection}" class:vertical-mobile={appsDirection === 'vertical'} class:mini={appsMini}>
-        <AppItem
+        <!-- <AppItem
           icon={Settings}
           label={setting.string.Settings}
           selected={shownMenu}
           size={appsMini ? 'small' : 'large'}
           on:click={() => (shownMenu = !shownMenu)}
-        />
+        /> -->
         <div class="flex-center" class:mt-3={appsDirection === 'vertical'} class:ml-2={appsDirection === 'horizontal'}>
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
