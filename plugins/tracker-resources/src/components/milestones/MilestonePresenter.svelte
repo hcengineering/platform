@@ -24,6 +24,7 @@
   export let shouldShowAvatar = true
   export let disabled = false
   export let inline = false
+  export let accent: boolean = false
   export let onClick: (() => void) | undefined = undefined
 
   const dispatch = createEventDispatcher()
@@ -38,14 +39,14 @@
   })
 </script>
 
-<DocNavLink object={value} {disabled} {inline} {onClick}>
+<DocNavLink object={value} {disabled} {inline} {accent} noUnderline={disabled} {onClick}>
   <div class="flex-presenter" class:inline-presenter={inline}>
     {#if !inline && shouldShowAvatar}
       <div class="icon">
         <Icon icon={tracker.icon.Milestone} size="small" />
       </div>
     {/if}
-    <span title={value.label} class="overflow-label label">
+    <span title={value.label} class="overflow-label label" class:no-underline={disabled} class:fs-bold={accent}>
       {value.label}
     </span>
   </div>

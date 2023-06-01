@@ -23,11 +23,14 @@
     Location,
     locationToUrl,
     navigate,
-    setMetadataLocalStorage
+    resolvedLocationStore,
+    setMetadataLocalStorage,
+    IconCheck
   } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
   import { workspacesStore } from '../utils'
+  import Drag from './icons/Drag.svelte'
 
   onMount(() => {
     getResource(login.function.GetWorkspaces).then(async (f) => {
@@ -122,38 +125,48 @@
 
 {#if $workspacesStore.length}
   <div class="antiPopup" on:keydown={keyDown}>
-    <div class="ap-space" />
+    <div class="ap-space x2" />
     <div class="ap-scroll">
       <div class="ap-box">
         {#each $workspacesStore as ws, i}
           <a class="stealth" href={getWorkspaceLink(ws)} on:click={(e) => clickHandler(e, ws.workspace)}>
             <button
               bind:this={btns[i]}
-              class="ap-menuItem flex-row-center withIcon w-full"
+              class="ap-menuItem flex-row-center withDrag"
               class:hover={btns[i] === activeElement}
               on:mousemove={() => {
                 focusTarget(btns[i])
               }}
             >
-              <span class="overflow-label pr-1 flex-grow">{ws.workspace}</span>
+              <div class="drag"><Drag size={'small'} /></div>
+              <!-- <div class="logo empty" /> -->
+              <!-- <div class="flex-col flex-grow"> -->
+              <span class="label overflow-label flex-grow">{ws.workspace}</span>
+              <!-- <span class="description overflow-label">Description</span> -->
+              <!-- </div> -->
+              <div class="check">
+                {#if $resolvedLocationStore.path[1] === ws.workspace}
+                  <IconCheck size={'small'} />
+                {/if}
+              </div>
             </button>
           </a>
         {/each}
         <a class="stealth" href={locationToUrl(loginPath)} on:click={handleOther}>
           <button
             bind:this={btns[last]}
-            class="ap-menuItem flex-row-center withIcon w-full"
+            class="ap-menuItem flex-grow"
             class:hover={btns[last] === activeElement}
             on:mousemove={() => {
               focusTarget(btns[last])
             }}
           >
-            <span class="overflow-label pr-1 flex-grow">...</span>
+            ...
           </button>
         </a>
       </div>
     </div>
-    <div class="ap-space" />
+    <div class="ap-space x2" />
   </div>
 {:else}
   <div class="antiPopup"><Loading /></div>

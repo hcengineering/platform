@@ -15,7 +15,6 @@
 <script lang="ts">
   import core, { AttachedDoc, Doc, SortingOrder, TxCollectionCUD, TxCUD } from '@hcengineering/core'
   import { Issue } from '@hcengineering/tracker'
-  import view from '@hcengineering/view'
   import { groupBy, List } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import ChangedObjectPresenter from './ChangedObjectPresenter.svelte'
@@ -101,7 +100,6 @@
       presenter: ChangedObjectPresenter,
       props: { onNavigate }
     },
-    { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
     {
       key: 'modifiedOn',
       presenter: tracker.component.ModificationDatePresenter,

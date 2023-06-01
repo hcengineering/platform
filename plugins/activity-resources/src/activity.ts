@@ -47,7 +47,7 @@ function isEqualOps (op1: any, op2: any): boolean {
 /**
  * @public
  */
-export type DisplayTxListener = (txes: DisplayTx[]) => void
+export type DisplayTxListener = (objectId: Ref<Doc>, txes: DisplayTx[]) => void
 
 // Use 5 minutes to combine similar transactions.
 const combineThreshold = 5 * 60 * 1000
@@ -96,7 +96,7 @@ class ActivityImpl implements Activity {
       this.combineTransactions(objectId, this.ownTxes, this.attachedTxes, this.attacheChangedTxes, this.editable).then(
         (result) => {
           const sorted = result.sort((a, b) => (a.tx.modifiedOn - b.tx.modifiedOn) * sort)
-          listener(sorted)
+          listener(objectId, sorted)
         },
         (err) => {
           console.error(err)

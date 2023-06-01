@@ -176,13 +176,15 @@ export class LiveQuery {
     if (!this.needUpdate(_class, query, callback, options) && !this.clientRecreated) {
       return false
     }
+    // We need to prevent callback with old values to be happening
     // One time refresh in case of client recreation
     this.clientRecreated = false
-    void this.doQuery<T>(_class, query, callback, options)
+    void this.doQuery<T>(++this.reqId, _class, query, callback, options)
     return true
   }
 
   private async doQuery<T extends Doc>(
+    id: number,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     callback: (result: FindResult<T>) => void,
@@ -197,7 +199,6 @@ export class LiveQuery {
 
       return
     }
-    const id = ++this.reqId
     const piplineQuery = await pipeline.subscribe(_class, query, options, () => {
       // Refresh query if pipeline decide it is required.
       this.refreshClient()
@@ -214,7 +215,17 @@ export class LiveQuery {
     this.oldOptions = options
     this.oldQuery = query
 
-    const unsub = liveQuery.query(_class, piplineQuery.query ?? query, callback, piplineQuery.options ?? options)
+    const unsub = liveQuery.query(
+      _class,
+      piplineQuery.query ?? query,
+      (result) => {
+        // If we have one more request after this one, no need to do something.
+        if (id === this.reqId) {
+          callback(result)
+        }
+      },
+      piplineQuery.options ?? options
+    )
     this.unsubscribe = () => {
       unsub()
       piplineQuery.unsubscribe()
@@ -233,7 +244,7 @@ export class LiveQuery {
       const query = this.oldQuery
       const callback = this.oldCallback
       const options = this.oldOptions
-      void this.doQuery(_class, query, callback, options)
+      void this.doQuery(++this.reqId, _class, query, callback, options)
     }
   }
 

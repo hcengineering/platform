@@ -68,10 +68,7 @@
 
   async function addStatus () {
     if (editingStatus?.name && editingStatus?.category) {
-      const categoryStatuses = $statusStore.getDocs().filter((s) => s.category === editingStatus!.category)
-      const prevStatus = categoryStatuses[categoryStatuses.length - 1]
-      const nextStatus =
-        $statusStore.getDocs()[$statusStore.getDocs().findIndex(({ _id }) => _id === prevStatus._id) + 1]
+      const [prevStatus, nextStatus] = getSiblingsForNewStatus(editingStatus.category)
 
       isSaving = true
       await client.createDoc(tracker.class.IssueStatus, projectId, {
@@ -153,9 +150,9 @@
             await client.removeDoc(status._class, status.space, status._id)
 
             if (project.defaultIssueStatus === status._id) {
-              const newDefaultStatus = $statusStore
-                .getDocs()
-                .find((s) => s._id !== status._id && s.category === status.category && s.space === status.space)
+              const newDefaultStatus = projectStatuses.find(
+                (s) => s._id !== status._id && s.category === status.category
+              )
               if (newDefaultStatus?._id) {
                 await updateProjectDefaultStatus(newDefaultStatus._id)
               }
@@ -189,8 +186,8 @@
       const fromIndex = getStatusIndex(draggingStatus)
       const toIndex = getStatusIndex(toItem)
       const [prev, next] = [
-        $statusStore.getDocs()[fromIndex < toIndex ? toIndex : toIndex - 1],
-        $statusStore.getDocs()[fromIndex < toIndex ? toIndex + 1 : toIndex]
+        projectStatuses[fromIndex < toIndex ? toIndex : toIndex - 1],
+        projectStatuses[fromIndex < toIndex ? toIndex + 1 : toIndex]
       ]
 
       isSaving = true
@@ -204,7 +201,34 @@
   }
 
   function getStatusIndex (status: IssueStatus) {
-    return $statusStore.getDocs().findIndex(({ _id }) => _id === status._id) ?? -1
+    return projectStatuses.findIndex(({ _id }) => _id === status._id) ?? -1
+  }
+
+  function getSiblingsForNewStatus (
+    categoryId: StatusCategory['_id']
+  ): readonly [] | readonly [IssueStatus | undefined, IssueStatus | undefined] {
+    const categoryStatuses = projectStatuses.filter((s) => s.category === categoryId)
+    if (categoryStatuses.length > 0) {
+      const prev = categoryStatuses[categoryStatuses.length - 1]
+      const next = projectStatuses[getStatusIndex(prev) + 1]
+
+      return [prev, next]
+    }
+
+    const category = statusCategories?.find(({ _id }) => _id === categoryId)
+    if (!category) {
+      return []
+    }
+
+    const { order } = category
+    const prev = projectStatuses.findLast(
+      (s) => s.$lookup?.category?.order !== undefined && s.$lookup.category.order < order
+    )
+    const next = projectStatuses.find(
+      (s) => s.$lookup?.category?.order !== undefined && s.$lookup.category.order > order
+    )
+
+    return [prev, next]
   }
 
   function resetDrag () {
@@ -214,6 +238,7 @@
 
   $: projectQuery.query(projectClass, { _id: projectId }, (result) => ([project] = result), { limit: 1 })
   $: updateStatusCategories()
+  $: projectStatuses = $statusStore.getDocs().filter((status) => status.space === projectId)
 </script>
 
 <Panel isHeader={false} isAside={false} on:fullsize on:close={() => dispatch('close')}>
@@ -233,14 +258,13 @@
     </div>
   </svelte:fragment>
 
-  {#if project === undefined || statusCategories === undefined || $statusStore.getDocs().length === 0}
+  {#if project === undefined || statusCategories === undefined || projectStatuses.length === 0}
     <Loading />
   {:else}
     <Scroller>
       <div class="popupPanel-body__main-content py-10 clear-mins flex-no-shrink">
         {#each statusCategories as category}
-          {@const statuses =
-            $statusStore.getDocs().filter((s) => s.space === projectId && s.category === category._id) ?? []}
+          {@const statuses = projectStatuses.filter((s) => s.category === category._id) ?? []}
           {@const isSingle = statuses.length === 1}
           <div class="flex-between category-name">
             <Label label={category.label} />

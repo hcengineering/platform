@@ -23,6 +23,7 @@
   export let value: Doc | RelatedDocument | undefined = undefined
   export let props: Record<string, any> = {}
   export let inline: boolean = true
+  export let accent: boolean = true
   export let shouldShowAvatar: boolean = true
   export let noUnderline: boolean = false
 
@@ -64,6 +65,7 @@
     value={doc}
     {...props}
     {inline}
+    {accent}
     {shouldShowAvatar}
     {noUnderline}
     on:accent-color

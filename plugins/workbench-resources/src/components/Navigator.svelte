@@ -192,7 +192,7 @@
     <div class="an-element__icon">
       <Icon icon={setting.icon.Support} size={'small'} />
     </div>
-    <span class="an-element__label content-color">
+    <span class="an-element__label title dark">
       <Label label={workbench.string.HelpAndSupport} />
     </span>
   </div>

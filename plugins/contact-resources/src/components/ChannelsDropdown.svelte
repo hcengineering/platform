@@ -94,7 +94,7 @@
 
   function isNew (item: Channel, docUpdates: Map<Ref<Doc>, DocUpdates>): boolean {
     const docUpdate = docUpdates.get(item._id)
-    return docUpdate ? docUpdate.txes.length > 0 : (item.items ?? 0) > 0
+    return docUpdate ? docUpdate.txes.some((p) => p.isNew) : (item.items ?? 0) > 0
   }
 
   async function update (

@@ -18,7 +18,8 @@
   import tracker from '../../plugin'
 
   export let value: Project
-  export let inline = false
+  export let inline: boolean = false
+  export let accent: boolean = false
 </script>
 
 <div class="flex-presenter cursor-default" class:inline-presenter={inline}>
@@ -36,7 +37,7 @@
       size="small"
     />
   </div>
-  <span class="label no-underline nowrap">
+  <span class="label no-underline nowrap" class:fs-bold={accent}>
     {value.name}
   </span>
 </div>

@@ -74,11 +74,13 @@
     const res = activityQuery.update(
       objectId,
       objectClass,
-      (result) => {
-        txes = filterCollectionTxes(result)
+      (_id, result) => {
+        if (_id === objectId) {
+          txes = filterCollectionTxes(result)
 
-        if (txes.length > 0) {
-          loading = false
+          if (txes.length > 0) {
+            loading = false
+          }
         }
       },
       SortingOrder.Ascending,

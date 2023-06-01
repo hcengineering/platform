@@ -141,6 +141,9 @@ export type PopupPosAlignment =
   | 'right'
   | 'top'
   | 'float'
+  | 'logo'
+  | 'logo-mini'
+  | 'logo-portrait'
   | 'account'
   | 'account-portrait'
   | 'account-mobile'
@@ -159,6 +162,9 @@ export function isPopupPosAlignment (x: any): x is PopupPosAlignment {
     (x === 'right' ||
       x === 'top' ||
       x === 'float' ||
+      x === 'logo' ||
+      x === 'logo-mini' ||
+      x === 'logo-portrait' ||
       x === 'account' ||
       x === 'full' ||
       x === 'content' ||

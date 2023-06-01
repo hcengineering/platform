@@ -15,19 +15,11 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { AccountArrayEditor, AssigneeBox } from '@hcengineering/contact-resources'
-  import core, {
-    Account,
-    ApplyOperations,
-    DocumentUpdate,
-    Ref,
-    SortingOrder,
-    generateId,
-    getCurrentAccount
-  } from '@hcengineering/core'
+  import core, { Account, DocumentUpdate, Ref, generateId, getCurrentAccount } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
-  import { IssueStatus, Project, TimeReportDayType, genRanks } from '@hcengineering/tracker'
+  import { IssueStatus, Project, TimeReportDayType, createStatuses } from '@hcengineering/tracker'
   import {
     Button,
     EditBox,
@@ -57,7 +49,8 @@
   let description: string = project?.description ?? ''
   let isPrivate: boolean = project?.private ?? false
   let icon: Asset | undefined = project?.icon ?? undefined
-  let color: number | undefined = project?.color ?? undefined
+  let color = project?.color ?? getColorNumberByText(name)
+  let isColorSelected = false
   let defaultAssignee: Ref<Employee> | null | undefined = project?.defaultAssignee ?? null
   let members: Ref<Account>[] =
     project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount()._id]
@@ -141,20 +134,14 @@
         }
       }
     }
+
     if (Object.keys(update).length > 0) {
-      const ops = client.apply(project._id).notMatch(tracker.class.Project, { identifier: projectData.identifier })
-
       isSaving = true
-      await ops.update(project, update)
-      const succeeded = await ops.commit()
+      await client.update(project, update)
       isSaving = false
-
-      if (succeeded) {
-        close()
-      } else {
-        changeIdentity(changeIdentityRef)
-      }
     }
+
+    close()
   }
 
   async function createProject () {
@@ -164,7 +151,7 @@
 
     isSaving = true
     await ops.createDoc(tracker.class.Project, core.space.Space, projectData, projectId)
-    await createProjectIssueStatuses(ops, projectId, defaultStatusId)
+    await createStatuses(ops, projectId, tracker.class.IssueStatus, tracker.attribute.IssueStatus, defaultStatusId)
     const succeeded = await ops.commit()
     isSaving = false
 
@@ -175,44 +162,12 @@
     }
   }
 
-  async function createProjectIssueStatuses (
-    ops: ApplyOperations,
-    projectId: Ref<Project>,
-    defaultStatusId: Ref<IssueStatus>,
-    defaultCategoryId = tracker.issueStatusCategory.Backlog
-  ): Promise<void> {
-    const categories = await ops.findAll(
-      core.class.StatusCategory,
-      { ofAttribute: tracker.attribute.IssueStatus },
-      { sort: { order: SortingOrder.Ascending } }
-    )
-    const issueStatusRanks = [...genRanks(categories.length)]
-
-    for (const [i, statusCategory] of categories.entries()) {
-      const { _id: category, defaultStatusName } = statusCategory
-      const rank = issueStatusRanks[i]
-
-      if (defaultStatusName !== undefined) {
-        await ops.createDoc(
-          tracker.class.IssueStatus,
-          projectId,
-          {
-            ofAttribute: tracker.attribute.IssueStatus,
-            name: defaultStatusName,
-            category,
-            rank
-          },
-          category === defaultCategoryId ? defaultStatusId : undefined
-        )
-      }
-    }
-  }
-
   function chooseIcon (ev: MouseEvent) {
-    showPopup(ProjectIconChooser, { icon, color: color ?? getColorNumberByText(name) }, 'top', (result) => {
+    showPopup(ProjectIconChooser, { icon, color }, 'top', (result) => {
       if (result !== undefined && result !== null) {
         icon = result.icon
         color = result.color
+        isColorSelected = true
       }
     })
   }
@@ -263,6 +218,7 @@
           on:input={() => {
             if (isNew) {
               identifier = name.toLocaleUpperCase().replaceAll(' ', '_').substring(0, 5)
+              color = isColorSelected ? color : getColorNumberByText(name)
             }
           }}
         />

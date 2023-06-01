@@ -153,8 +153,8 @@
   }
 </script>
 
-<div class="clear-mins">
-  <Scroller>
+<div class="inbox-activity">
+  <Scroller noStretch>
     {#if loading}
       <Loading />
     {:else}
@@ -175,12 +175,3 @@
     {/if}
   </Scroller>
 </div>
-<!-- 
-<style lang="scss">
-  .container:focus-visible {
-    outline: none;
-  }
-  .container:focus {
-    border: 1px solid red;
-  }
-</style> -->

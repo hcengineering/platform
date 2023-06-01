@@ -24,6 +24,7 @@ export default mergeIds(viewId, view, {
     ObjectFilter: '' as AnyComponent,
     DateFilter: '' as AnyComponent,
     ValueFilter: '' as AnyComponent,
+    ArrayFilter: '' as AnyComponent,
     StringFilter: '' as AnyComponent,
     TimestampFilter: '' as AnyComponent,
     FilterTypePopup: '' as AnyComponent,
@@ -51,6 +52,8 @@ export default mergeIds(viewId, view, {
     ClearFilters: '' as IntlString,
     FilterIsNot: '' as IntlString,
     FilterIsEither: '' as IntlString,
+    FilterArrayAll: '' as IntlString,
+    FilterArrayAny: '' as IntlString,
     FilterStatesCount: '' as IntlString,
     FilterRemoved: '' as IntlString,
     FilterUpdated: '' as IntlString,
@@ -89,7 +92,8 @@ export default mergeIds(viewId, view, {
     SaveAs: '' as IntlString,
     And: '' as IntlString,
     Between: '' as IntlString,
-    ShowColors: '' as IntlString
+    ShowColors: '' as IntlString,
+    Show: '' as IntlString
   },
   function: {
     StatusSort: '' as SortFunc,

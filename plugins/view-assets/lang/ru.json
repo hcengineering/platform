@@ -93,6 +93,9 @@
     "SaveAs": "Сохранить как",
     "And": "и",
     "Between": "между",
-    "ShowColors": "Использовать цвета"
+    "ShowColors": "Использовать цвета",
+    "Show": "Отображение",
+    "FilterArrayAll": "содержит все",
+    "FilterArrayAny": "содержит любое из"
   }
 }

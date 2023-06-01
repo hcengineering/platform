@@ -17,7 +17,7 @@
 import type { Ref, Space } from '@hcengineering/core'
 import { mergeIds } from '@hcengineering/platform'
 import { TagCategory } from '@hcengineering/tags'
-import { KanbanTemplate, taskId } from '@hcengineering/task'
+import { taskId } from '@hcengineering/task'
 import task from '@hcengineering/task-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui'
 import type { Action, ActionCategory, ViewAction, Viewlet } from '@hcengineering/view'
@@ -47,7 +47,6 @@ export default mergeIds(taskId, task, {
     TaskPresenter: '' as AnyComponent,
     KanbanTemplatePresenter: '' as AnyComponent,
     KanbanCard: '' as AnyComponent,
-    TemplatesIcon: '' as AnyComponent,
     StatePresenter: '' as AnyComponent,
     DoneStatePresenter: '' as AnyComponent,
     StateEditor: '' as AnyComponent,
@@ -63,9 +62,6 @@ export default mergeIds(taskId, task, {
   },
   space: {
     TasksPublic: '' as Ref<Space>
-  },
-  template: {
-    DefaultProject: '' as Ref<KanbanTemplate>
   },
   viewlet: {
     TableIssue: '' as Ref<Viewlet>,

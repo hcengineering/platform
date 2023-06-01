@@ -54,10 +54,10 @@
 /* Dark Theme */
 .theme-dark {
   --primary-button-color: #fff;
-  --primary-button-enabled: #205dc2;
-  --primary-button-transparent: rgba(32, 93, 194, 0.2);
-  --primary-button-hovered: #1A53AF;
-  --primary-button-pressed: #144CA8;
+  --primary-button-enabled: #2B5190;
+  --primary-button-transparent: rgba(43, 81, 144, 0.2);
+  --primary-button-hovered: #325FA9;
+  --primary-button-pressed: #284B86;
   --primary-button-focused: #144CA8;
   --primary-button-disabled: #484662;
   --primary-button-focused-border: #6E9FED;
@@ -141,6 +141,15 @@
   --theme-calendar-today-bgcolor: rgba(32, 93, 194, .1);
   --theme-calendar-holiday-bgcolor: rgba(235, 87, 87, .1);
   --theme-calendar-weekend-bgcolor: rgba(242, 153, 74, .05);
+
+  --theme-inbox-notify: #F47758;
+  --theme-inbox-people-notify: #2B5190;
+  --theme-inbox-activity-bgcolor: #1A1A28;
+  --theme-inbox-activitymsg-bgcolor: rgba(255, 255, 255, .03);
+  --theme-inbox-activitymsg-divider: rgba(255, 255, 255, .1);
+  --theme-inbox-activitymsg-border: rgba(255, 255, 255, .03);
+  --theme-inbox-counter-bgcolor: rgba(255, 255, 255, .06);
+  --theme-inbox-people-counter-bgcolor: rgba(43, 81, 144, .1);
 
   --theme-toggle-sw-color: #fff;
   --theme-toggle-on-sw-color: #fff;
@@ -226,10 +235,10 @@
 /* Light Theme */
 .theme-light {
   --primary-button-color: #fff;
-  --primary-button-enabled: #205DC2;
-  --primary-button-transparent: rgba(32, 93, 194, 0.2);
-  --primary-button-hovered: #1A53AF;
-  --primary-button-pressed: #144CA8;
+  --primary-button-enabled: #2B5190;
+  --primary-button-transparent: rgba(43, 81, 144, 0.2);
+  --primary-button-hovered: #325FA9;
+  --primary-button-pressed: #284B86;
   --primary-button-focused: #144CA8;
   --primary-button-disabled: #EBEBEB;
   --primary-button-focused-border: #6E9FED; // DARK
@@ -254,8 +263,8 @@
   --theme-overlay-color: rgba(0, 0, 0, .2);
   --theme-statusbar-color: #bfbfc6;
   --theme-navpanel-color: #E8E8ED;
-  --theme-navpanel-hovered: rgba(218, 218, 231, .5);
-  --theme-navpanel-selected: #DADAE7;
+  --theme-navpanel-hovered: rgba(0, 0, 0, .04);
+  --theme-navpanel-selected: rgba(0, 0, 0, .08);
   --theme-navpanel-divider: rgba(0, 0, 0, .06);
   --theme-navpanel-border: rgba(0, 0, 0, .06);
   --theme-navpanel-icons-color: #7F7F7F;
@@ -313,6 +322,16 @@
   --theme-calendar-today-bgcolor: rgba(43, 81, 144, .1);
   --theme-calendar-holiday-bgcolor: rgba(235, 87, 87, .1);
   --theme-calendar-weekend-bgcolor: rgba(242, 153, 74, .1);
+
+  --theme-inbox-notify: #F47758;
+  --theme-inbox-people-notify: #2B5190;
+  --theme-inbox-activity-bgcolor: #fff;
+  --theme-inbox-activitymsg-bgcolor: #F2F2F2;
+  --theme-inbox-activitymsg-divider: rgba(0, 0, 0, .1);
+  --theme-inbox-activitymsg-border: rgba(0, 0, 0, .03);
+  --theme-inbox-counter-bgcolor: rgba(0, 0, 0, .06);
+  --theme-inbox-people-counter-bgcolor: rgba(43, 81, 144, .1);
+
   --theme-toggle-sw-color: #fff;
   --theme-toggle-on-sw-color: #fff;
   --theme-toggle-bg-color: rgba(120, 120, 128, 0.32);

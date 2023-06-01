@@ -24,6 +24,7 @@
   export let attachedTo: Ref<Doc>
   export let attachedToClass: Ref<Class<Doc>>
   export let title: string = ''
+  let _title = title
 
   let value: number | null | undefined = null
   const currentUser = getCurrentAccount() as EmployeeAccount
@@ -34,7 +35,7 @@
   const client = getClient()
 
   export function canClose (): boolean {
-    return title !== undefined && title.trim().length === 0 && participants.length === 0
+    return _title !== undefined && _title.trim().length === 0 && participants.length === 0
   }
 
   async function saveReminder () {
@@ -50,7 +51,7 @@
       date,
       description: '',
       participants,
-      title
+      title: _title
     })
 
     await client.createMixin(_id, calendar.class.Event, space, calendar.mixin.Reminder, {
@@ -63,13 +64,13 @@
 <Card
   label={calendar.string.CreateReminder}
   okAction={saveReminder}
-  canSave={title !== undefined && title.trim().length > 0 && participants.length > 0 && value !== undefined}
+  canSave={_title !== undefined && _title.trim().length > 0 && participants.length > 0 && value !== undefined}
   on:close={() => {
     dispatch('close')
   }}
   on:changeContent
 >
-  <EditBox bind:value={title} placeholder={calendar.string.Title} kind={'large-style'} autoFocus />
+  <EditBox bind:value={_title} placeholder={calendar.string.Title} kind={'large-style'} autoFocus />
   <svelte:fragment slot="pool">
     <!-- <TimeShiftPicker title={calendar.string.Date} bind:value direction="after" /> -->
     <DateRangePresenter

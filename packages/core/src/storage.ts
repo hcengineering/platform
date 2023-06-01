@@ -23,6 +23,7 @@ import type { Tx } from './tx'
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type QuerySelector<T> = {
   $in?: T[]
+  $all?: T extends Array<any> ? T : never
   $nin?: T[]
   $ne?: T
   $gt?: T extends number ? number : never

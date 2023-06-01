@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
+import { Comment } from '@hcengineering/chunter'
 import { EmployeeAccount } from '@hcengineering/contact'
-import type { AttachedDoc, Class, Doc, Mixin, Ref, TxCUD } from '@hcengineering/core'
+import type { AttachedDoc, Class, Doc, Mixin, Ref, Tx } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
-import { Comment } from '@hcengineering/chunter'
 
 /**
  * @public
@@ -29,7 +29,7 @@ export interface Request extends AttachedDoc {
   requiredApprovesCount: number
   rejected?: Ref<EmployeeAccount>
   status: RequestStatus
-  tx: TxCUD<Doc>
+  tx: Tx
   comments?: number
 }
 

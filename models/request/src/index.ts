@@ -17,7 +17,7 @@ import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
 import type { EmployeeAccount } from '@hcengineering/contact'
 import contact from '@hcengineering/contact'
-import { Doc, Domain, IndexKind, Ref, TxCUD } from '@hcengineering/core'
+import { Domain, IndexKind, Ref, Tx } from '@hcengineering/core'
 import {
   ArrOf,
   Builder,
@@ -33,12 +33,12 @@ import {
 } from '@hcengineering/model'
 import { TComment } from '@hcengineering/model-chunter'
 import core, { TAttachedDoc, TClass } from '@hcengineering/model-core'
+import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import view from '@hcengineering/model-view'
+import notification from '@hcengineering/notification'
 import { Request, RequestDecisionComment, RequestPresenter, RequestStatus } from '@hcengineering/request'
 import { AnyComponent } from '@hcengineering/ui'
 import request from './plugin'
-import notification from '@hcengineering/notification'
-import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 
 export { requestId } from '@hcengineering/request'
 export { default } from './plugin'
@@ -62,7 +62,7 @@ export class TRequest extends TAttachedDoc implements Request {
   @Index(IndexKind.Indexed)
     status!: RequestStatus
 
-  tx!: TxCUD<Doc>
+  tx!: Tx
 
   @Prop(TypeRef(contact.class.EmployeeAccount), request.string.Rejected)
   @ReadOnly()
@@ -120,10 +120,11 @@ export function createModel (builder: Builder): void {
     {
       hidden: false,
       objectClass: request.class.Request,
-      txClasses: [core.class.TxCreateDoc],
+      txClasses: [core.class.TxCreateDoc, core.class.TxUpdateDoc],
+      field: 'requested',
       generated: false,
       group: request.ids.RequestNotificationGroup,
-      label: request.string.Requested,
+      label: request.string.Request,
       allowedForAuthor: true,
       providers: {
         [notification.providers.PlatformNotification]: true
@@ -136,7 +137,7 @@ export function createModel (builder: Builder): void {
     builder,
     request.class.Request,
     request.ids.RequestNotificationGroup,
-    [],
+    ['requested'],
     ['comments', 'approved', 'rejected', 'status']
   )
 

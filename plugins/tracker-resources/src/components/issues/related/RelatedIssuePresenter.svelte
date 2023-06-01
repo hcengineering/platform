@@ -28,11 +28,13 @@
   $: text = project ? `${getIssueId(project, issue)} ${issue.title}` : issue.title
 </script>
 
-{#if status}
-  <div class="icon mr-2">
-    <IssueStatusIcon value={status} {size} />
-  </div>
-{/if}
-<span class="label" class:text-base={huge}>
-  <span>{text}</span>
-</span>
+<div class="flex-row-center">
+  {#if status}
+    <div class="icon mr-2">
+      <IssueStatusIcon value={status} {size} />
+    </div>
+  {/if}
+  <span class="label" class:text-base={huge}>
+    <span>{text}</span>
+  </span>
+</div>

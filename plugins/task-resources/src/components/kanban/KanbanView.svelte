@@ -38,6 +38,7 @@
   } from '@hcengineering/ui'
   import {
     AttributeModel,
+    BuildModelKey,
     CategoryOption,
     Viewlet,
     ViewOptionModel,
@@ -71,6 +72,7 @@
   export let viewOptionsConfig: ViewOptionModel[] | undefined
   export let viewOptions: ViewOptions
   export let viewlet: Viewlet
+  export let config: (string | BuildModelKey)[]
 
   export let options: FindOptions<Task> | undefined
 
@@ -297,7 +299,7 @@
       </div>
     </svelte:fragment>
     <svelte:fragment slot="card" let:object let:dragged>
-      <svelte:component this={presenter} {object} {dragged} {groupByKey} />
+      <svelte:component this={presenter} {object} {dragged} {groupByKey} {config} />
     </svelte:fragment>
     <!-- eslint-disable-next-line no-undef -->
     <svelte:fragment slot="doneBar" let:onDone>

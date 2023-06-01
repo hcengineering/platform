@@ -24,7 +24,8 @@
 
   export let value: Vacancy
   export let inline: boolean = false
-  export let disabled = false
+  export let disabled: boolean = false
+  export let accent: boolean = false
 
   const dispatch = createEventDispatcher()
   $: accentColor = getPlatformAvatarColorForTextDef(value.name, $themeStore.dark)
@@ -36,12 +37,19 @@
 </script>
 
 {#if value}
-  <DocNavLink {disabled} object={value} {inline} noUnderline={disabled} component={recruit.component.EditVacancy}>
+  <DocNavLink
+    {disabled}
+    object={value}
+    {inline}
+    {accent}
+    noUnderline={disabled}
+    component={recruit.component.EditVacancy}
+  >
     <div class="flex-presenter" class:inline-presenter={inline} use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
       {#if !inline}
         <div class="icon"><Icon icon={recruit.icon.Vacancy} size={'small'} /></div>
       {/if}
-      <span class="label nowrap" class:no-underline={disabled}>{value.name}</span>
+      <span class="label nowrap" class:no-underline={disabled} class:fs-bold={accent}>{value.name}</span>
     </div>
   </DocNavLink>
 {/if}

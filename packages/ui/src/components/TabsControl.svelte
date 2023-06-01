@@ -19,10 +19,17 @@
   export let model: TabBase[]
   export let selected = 0
   export let withPadding: boolean = false
+  export let noMargin: boolean = false
   export let size: 'small' | 'medium' = 'medium'
 </script>
 
-<div class="flex-stretch container" class:small={size === 'small'} class:pr-4={withPadding} class:pl-4={withPadding}>
+<div
+  class="flex-stretch tabs-container"
+  class:small={size === 'small'}
+  class:pr-4={withPadding}
+  class:pl-4={withPadding}
+  class:noMargin
+>
   {#each model as tab, i}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
@@ -47,15 +54,17 @@
 <slot name="content" {selected} />
 
 <style lang="scss">
-  .container {
+  .tabs-container {
     flex-shrink: 0;
     flex-wrap: nowrap;
-    margin-bottom: 0.5rem;
     width: 100%;
     height: 4.5rem;
     align-items: center;
-    border-bottom: 1px solid var(--divider-color);
+    border-bottom: 1px solid var(--theme-divider-color);
 
+    &:not(.noMargin) {
+      margin-bottom: 0.5rem;
+    }
     &.small {
       height: 3.25rem;
 
@@ -66,18 +75,18 @@
 
     .tab {
       height: 4.5rem;
-      color: var(--dark-color);
+      color: var(--theme-dark-color);
       cursor: pointer;
       user-select: none;
 
       &.selected {
         border-top: 0.125rem solid transparent;
         border-bottom: 0.125rem solid var(--theme-tablist-plain-color);
-        color: var(--caption-color);
+        color: var(--theme-caption-color);
         cursor: default;
       }
       &:not(.selected):hover {
-        color: var(--accent-color);
+        color: var(--theme-content-color);
       }
     }
     .tab + .tab {

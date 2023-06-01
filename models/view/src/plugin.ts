@@ -101,6 +101,8 @@ export default mergeIds(viewId, view, {
     MarkdownFormatting: '' as IntlString
   },
   function: {
+    FilterArrayAllResult: '' as FilterFunction,
+    FilterArrayAnyResult: '' as FilterFunction,
     FilterObjectInResult: '' as FilterFunction,
     FilterObjectNinResult: '' as FilterFunction,
     FilterValueInResult: '' as FilterFunction,
