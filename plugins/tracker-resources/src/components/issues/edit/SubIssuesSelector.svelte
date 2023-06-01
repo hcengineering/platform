@@ -35,7 +35,7 @@
   export let currentProject: Project | undefined = undefined
 
   export let kind: ButtonKind = 'link-bordered'
-  export let size: ButtonSize = 'inline'
+  export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = 'min-contet'
 
