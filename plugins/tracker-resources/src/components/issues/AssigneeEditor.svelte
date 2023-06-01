@@ -106,6 +106,7 @@
     showNavigate={false}
     justify={'left'}
     showTooltip={{
+      label: tracker.string.AssignTo,
       personLabel: tracker.string.AssignedTo,
       placeholderLabel: tracker.string.Unassigned,
       direction: tooltipAlignment
