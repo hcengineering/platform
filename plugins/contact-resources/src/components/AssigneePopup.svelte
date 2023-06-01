@@ -40,7 +40,6 @@
   export let docQuery: DocumentQuery<Contact> | undefined = undefined
   export let prevAssigned: Ref<Employee>[] | undefined = []
   export let projectLead: Ref<Employee> | undefined = undefined
-  export let projectMembers: Ref<Employee>[] | undefined = []
   export let members: Ref<Employee>[] | undefined = []
   export let allowDeselect = true
   export let titleDeselect: IntlString | undefined
@@ -83,7 +82,7 @@
     { ...(options ?? {}), limit: 200, sort: { name: 1 } }
   )
 
-  $: updateCategories(objects, currentEmployee, prevAssigned, projectLead, members, projectMembers)
+  $: updateCategories(objects, currentEmployee, prevAssigned, projectLead, members)
 
   function updateCategories (
     objects: Contact[],
@@ -91,14 +90,12 @@
     prevAssigned: Ref<Person>[] | undefined,
     projectLead: Ref<Person> | undefined,
     members: Ref<Person>[] | undefined,
-    projectMembers: Ref<Person>[] | undefined
   ) {
     const persons = new Map<Ref<Person>, AssigneeCategory>(objects.map((t) => [t._id, 'Other']))
     if (projectLead) {
       persons.set(projectLead, 'ProjectLead')
     }
     members?.forEach((p) => persons.set(p, 'Members'))
-    projectMembers?.forEach((p) => persons.set(p, 'ProjectMembers'))
     prevAssigned?.forEach((p) => persons.set(p, 'PreviouslyAssigned'))
     if (selected) {
       persons.set(selected, 'Assigned')

@@ -38,7 +38,6 @@
 
   let prevAssigned: Ref<Employee>[] = []
   let projectLead: Ref<Employee> | undefined = undefined
-  let projectMembers: Ref<Employee>[] = []
   let members: Ref<Employee>[] = []
 
   $: '_class' in object &&
@@ -57,7 +56,6 @@
     } else {
       projectLead = undefined
     }
-    projectMembers = []
     if (hasSpace(issue)) {
       const project = await client.findOne(tracker.class.Project, { _id: issue.space })
       if (project !== undefined) {
@@ -94,7 +92,6 @@
     value={object.assignee}
     {prevAssigned}
     {projectLead}
-    {projectMembers}
     {members}
     titleDeselect={tracker.string.Unassigned}
     {size}
