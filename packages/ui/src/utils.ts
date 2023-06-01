@@ -78,6 +78,7 @@ export function addNotification (
   component: AnyComponent | AnySvelteComponent,
   params?: { [key: string]: any }
 ): void {
+  const closeTimeout = parseInt(localStorage.getItem('#platform.notification.timeout') ?? '10000')
   const notification: Notification = {
     id: generateId(),
     title,
@@ -85,11 +86,13 @@ export function addNotification (
     severity: NotificationSeverity.Success,
     position: NotificationPosition.BottomRight,
     component,
-    closeTimeout: parseInt(localStorage.getItem('#platform.notification.timeout') ?? '10000'),
+    closeTimeout,
     params
   }
 
-  notificationsStore.addNotification(notification)
+  if (closeTimeout !== 0) {
+    notificationsStore.addNotification(notification)
+  }
 }
 
 /**

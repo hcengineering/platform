@@ -29,11 +29,12 @@ import core, {
   TxFactory,
   WorkspaceId,
   _getOperator,
-  setObjectValue
+  setObjectValue,
+  versionToString
 } from '@hcengineering/core'
 import { DbAdapter } from '../adapter'
-import type { IndexedDoc } from '../types'
 import { RateLimitter } from '../limitter'
+import type { IndexedDoc } from '../types'
 import { FullTextPipeline, FullTextPipelineStage } from './types'
 import { createStateDoc, isClassIndexable } from './utils'
 
@@ -226,8 +227,10 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       // Filter unsupported stages
       udoc.stages = update.stages
 
-      this.currentStages[stageId] = (this.currentStages[stageId] ?? 0) + 1
-      this.stageChanged++
+      if (Object.keys(update).length > 0) {
+        this.currentStages[stageId] = (this.currentStages[stageId] ?? 0) + 1
+        this.stageChanged++
+      }
     }
 
     const current = this.pending.get(docId)
@@ -530,6 +533,17 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   }
 
   async checkIndexConsistency (dbStorage: ServerStorage): Promise<void> {
+    if (process.env.MODEL_VERSION !== undefined) {
+      const modelVersion = await (await this.model.findAll(core.class.Version, {})).shift()
+      if (modelVersion !== undefined) {
+        const modelVersionString = versionToString(modelVersion)
+        if (modelVersionString !== process.env.MODEL_VERSION) {
+          console.error('Indexer: Model version mismatch', modelVersionString, process.env.MODEL_VERSION)
+          return
+        }
+      }
+    }
+
     this.hierarchy.domains()
     const allClasses = this.hierarchy.getDescendants(core.class.Doc)
     for (const c of allClasses) {
@@ -541,6 +555,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         // No need, since no indexable fields or attachments.
         continue
       }
+
+      console.log(this.workspace.name, 'checking index', c)
 
       // All saved state documents
       const states = (

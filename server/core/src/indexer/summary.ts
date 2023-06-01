@@ -33,12 +33,12 @@ import { translate } from '@hcengineering/platform'
 import { convert } from 'html-to-text'
 import { IndexedDoc } from '../types'
 import { contentStageId, DocUpdateHandler, fieldStateId, FullTextPipeline, FullTextPipelineStage } from './types'
-import { collectPropagate, getFullTextContext, loadIndexStageStage } from './utils'
+import { collectPropagate, collectPropagateClasses, getFullTextContext, loadIndexStageStage } from './utils'
 
 /**
  * @public
  */
-export const summaryStageId = 'sum-v4'
+export const summaryStageId = 'sum-v5'
 
 /**
  * @public
@@ -53,7 +53,7 @@ export class FullSummaryStage implements FullTextPipelineStage {
 
   updateFields: DocUpdateHandler[] = []
 
-  // If specified, index only fields with content speciffied.
+  // If specified, index only fields with content specified.
   matchExtra: string[] = [] // 'content', 'base64'] // '#en'
 
   fieldFilter: ((attr: AnyAttribute, value: string) => boolean)[] = []
@@ -69,8 +69,11 @@ export class FullSummaryStage implements FullTextPipelineStage {
 
   async initialize (storage: Storage, pipeline: FullTextPipeline): Promise<void> {
     const indexable = (
-      await pipeline.model.findAll(core.class.Class, { [core.mixin.FullTextSearchContext + '.fullTextSummary']: true })
-    ).map((it) => it._id)
+      await pipeline.model.findAll(core.class.Class, { [core.mixin.FullTextSearchContext]: { $exists: true } })
+    )
+      .map((it) => pipeline.hierarchy.as(it, core.mixin.FullTextSearchContext))
+      .filter((it) => it.fullTextSummary)
+      .map((it) => it._id + (it.propagateClasses ?? []).join('|'))
     indexable.sort()
     ;[this.stageValue, this.indexState] = await loadIndexStageStage(storage, this.indexState, this.stageId, 'config', {
       classes: indexable,
@@ -130,10 +133,12 @@ export class FullSummaryStage implements FullTextPipelineStage {
               if (embeddingText.length > this.summaryLimit) {
                 break
               }
-              embeddingText += await extractIndexedValues(c, pipeline.hierarchy, {
-                matchExtra: this.matchExtra,
-                fieldFilter: this.fieldFilter
-              })
+              embeddingText +=
+                '\n' +
+                (await extractIndexedValues(c, pipeline.hierarchy, {
+                  matchExtra: this.matchExtra,
+                  fieldFilter: this.fieldFilter
+                }))
             }
           }
         }
@@ -148,13 +153,34 @@ export class FullSummaryStage implements FullTextPipelineStage {
               { _id: doc.attachedTo as Ref<DocIndexState> }
             )
             if (parentDoc !== undefined) {
+              const ctx = collectPropagateClasses(pipeline, parentDoc.objectClass)
+              if (ctx.length > 0) {
+                for (const p of ctx) {
+                  const collections = await this.dbStorage.findAll(
+                    metrics.newChild('propagate', {}),
+                    core.class.DocIndexState,
+                    { attachedTo: parentDoc._id, objectClass: p }
+                  )
+                  for (const c of collections) {
+                    embeddingText +=
+                      '\n' +
+                      (await extractIndexedValues(c, pipeline.hierarchy, {
+                        matchExtra: this.matchExtra,
+                        fieldFilter: this.fieldFilter
+                      }))
+                  }
+                }
+              }
+
               if (embeddingText.length > this.summaryLimit) {
                 break
               }
-              embeddingText += await extractIndexedValues(parentDoc, pipeline.hierarchy, {
-                matchExtra: this.matchExtra,
-                fieldFilter: this.fieldFilter
-              })
+              embeddingText +=
+                '\n' +
+                (await extractIndexedValues(parentDoc, pipeline.hierarchy, {
+                  matchExtra: this.matchExtra,
+                  fieldFilter: this.fieldFilter
+                }))
             }
           }
         }

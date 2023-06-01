@@ -62,17 +62,28 @@ export class IndexedFieldStage implements FullTextPipelineStage {
   constructor (private readonly dbStorage: ServerStorage) {}
 
   async initialize (storage: Storage, pipeline: FullTextPipeline): Promise<void> {
-    const indexable = (
-      await pipeline.model.findAll(core.class.Class, { [core.mixin.FullTextSearchContext + '.propagate']: true })
-    ).map((it) => it._id)
+    const indexablePropogate = (
+      await pipeline.model.findAll(core.class.Class, {
+        [core.mixin.FullTextSearchContext]: { $exists: true }
+      })
+    )
+      .map((it) => pipeline.hierarchy.as(it, core.mixin.FullTextSearchContext))
+      .filter((it) => it.propagate != null || it.parentPropagate)
+      .map((it) =>
+        JSON.stringify({
+          id: it._id,
+          propogate: it.propagate,
+          parentPropgate: it.parentPropagate
+        })
+      )
 
     const forceIndexing = (
       await pipeline.model.findAll(core.class.Class, { [core.mixin.FullTextSearchContext + '.forceIndex']: true })
     ).map((it) => it._id)
 
-    indexable.sort()
+    indexablePropogate.sort()
     ;[this.stageValue, this.indexState] = await loadIndexStageStage(storage, this.indexState, this.stageId, 'config', {
-      classes: indexable,
+      classes: indexablePropogate,
       forceIndex: forceIndexing
     })
   }
@@ -143,7 +154,9 @@ export class IndexedFieldStage implements FullTextPipelineStage {
             // Full re-index in case stage value is changed
             if (!deepEqual(docState.attributes[dKey], v.value)) {
               changes++
-              ;(docUpdate as any)[dUKey] = v.value
+              if (typeof v.value !== 'object') {
+                ;(docUpdate as any)[dUKey] = v.value
+              }
             }
           }
           if (docState.attachedTo != null && changes > 0) {

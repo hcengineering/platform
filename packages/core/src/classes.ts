@@ -419,6 +419,8 @@ export interface FullTextSearchContext extends Class<Doc> {
 
   // If defined, will propagate changes to child's with defined set of classes
   propagate?: Ref<Class<Doc>>[]
+  // If defined, will propagate all document from child's based on class
+  propagateClasses?: Ref<Class<Doc>>[]
 
   // Do we need to propagate child value to parent one. Default(true)
   parentPropagate?: boolean

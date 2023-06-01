@@ -46,7 +46,7 @@ async function generateIdLocation (loc: Location, shortLink: string): Promise<Re
   const hierarchy = client.getHierarchy()
 
   const classLabel = tokens[0]
-  const _id = tokens[1]
+  const _id = tokens.slice(1).join('-')
   const classes = [recruit.mixin.VacancyList, recruit.mixin.Candidate]
   let _class: Ref<Class<Doc>> | undefined
   for (const clazz of classes) {
