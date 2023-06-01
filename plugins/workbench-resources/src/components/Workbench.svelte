@@ -21,6 +21,7 @@
   import { BrowserNotificatator, NotificationClientImpl } from '@hcengineering/notification-resources'
   import { IntlString, getMetadata, getResource } from '@hcengineering/platform'
   import { ActionContext, configurationStore, createQuery, getClient } from '@hcengineering/presentation'
+  import { resolvedLocationStore } from '@hcengineering/ui'
   import {
     AnyComponent,
     CompAndProps,
@@ -572,7 +573,7 @@
             showPopup(SelectWorkspaceMenu, {}, popupSpacePosition)
           }}
         >
-          <Logo mini={appsMini} />
+          <Logo mini={appsMini} workspace={$resolvedLocationStore.path[1]} />
         </div>
         <div class="topmenu-container clear-mins flex-no-shrink" class:mini={appsMini}>
           <AppItem
