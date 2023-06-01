@@ -16,7 +16,7 @@
 <script lang="ts">
   import type { Channel, ChannelProvider } from '@hcengineering/contact'
   import contact from '@hcengineering/contact'
-  import type { AttachedData, Doc, Ref } from '@hcengineering/core'
+  import { AttachedData, Doc, Ref, toIdMap } from '@hcengineering/core'
   import notification, { DocUpdates } from '@hcengineering/notification'
   import { Asset, IntlString, getResource } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
@@ -36,7 +36,7 @@
   import { invokeAction } from '@hcengineering/view-resources'
   import { createEventDispatcher, tick } from 'svelte'
   import { Writable, writable } from 'svelte/store'
-  import { channelProviders, getChannelProviders } from '../utils'
+  import { channelProviders } from '../utils'
   import ChannelEditor from './ChannelEditor.svelte'
 
   export let value: AttachedData<Channel>[] | Channel | null
@@ -106,8 +106,9 @@
       displayItems = []
       return
     }
+
     const result: Item[] = []
-    const map = getChannelProviders(channelProviders)
+    const map = toIdMap(channelProviders)
     if (Array.isArray(value)) {
       for (const item of value) {
         const provider = getProvider(item, map, docUpdates)
@@ -139,27 +140,22 @@
   const focusManager = getFocusManager()
 
   const updateMenu = (_displayItems: Item[], providers: ChannelProvider[]): void => {
-    actions = []
-    providers.forEach((pr) => {
-      if (_displayItems.filter((it) => it.provider === pr._id).length === 0) {
-        actions.push({
-          icon: pr.icon ?? contact.icon.SocialEdit,
-          label: pr.label,
-          action: async () => {
-            const provider = getProvider({ provider: pr._id, value: '' }, getChannelProviders(providers), $docUpdates)
-            if (provider !== undefined) {
-              if (_displayItems.filter((it) => it.provider === pr._id).length === 0) {
-                displayItems = [..._displayItems, provider]
-                if (focusIndex !== -1) {
-                  await tick()
-                  focusManager?.setFocusPos(focusIndex + displayItems.length)
-                  await tick()
-                  editChannel(btns[displayItems.length - 1], displayItems.length - 1, provider)
-                }
-              }
+    actions = providers.map((pr) => {
+      return {
+        icon: pr.icon ?? contact.icon.SocialEdit,
+        label: pr.label,
+        action: async () => {
+          const provider = getProvider({ provider: pr._id, value: '' }, toIdMap(providers), $docUpdates)
+          if (provider !== undefined) {
+            displayItems = [..._displayItems, provider]
+            if (focusIndex !== -1) {
+              await tick()
+              focusManager?.setFocusPos(focusIndex + displayItems.length)
+              await tick()
+              editChannel(btns[displayItems.length - 1], displayItems.length - 1, provider)
             }
           }
-        })
+        }
       }
     })
   }
@@ -170,7 +166,6 @@
   }
   const saveItems = (): void => {
     value = filterUndefined(displayItems)
-    dispatch('change', value)
     updateMenu(displayItems, $channelProviders)
   }
 
@@ -180,6 +175,12 @@
         focusManager?.setFocusPos(focusIndex + 2 + displayItems.length)
       }
     })
+  }
+
+  function remove (n: number) {
+    const removed = displayItems[n]
+    displayItems = dropItem(n)
+    dispatch('remove', removed.channel)
   }
 
   const editChannel = (el: HTMLElement, n: number, item: Item): void => {
@@ -195,7 +196,9 @@
         },
         el,
         (result) => {
-          if (result === undefined && item.value === '') displayItems = dropItem(n)
+          if (result === undefined && item.value === '') {
+            remove(n)
+          }
           if (result === 'open') {
             if (item.action) {
               const doc = item.channel as Channel
@@ -205,12 +208,14 @@
             }
           } else if (result != null) {
             if (result === '') {
-              displayItems = dropItem(n)
+              remove(n)
             } else {
               item.value = result
-              if (displayItems.find((it) => item.value === it.value) === undefined) {
+              if (displayItems[n] === undefined) {
                 displayItems = [...displayItems, item]
               }
+              item.channel.value = item.value
+              dispatch('save', item.channel)
             }
             saveItems()
             focusManager?.setFocusPos(focusIndex + 1 + n)
@@ -220,11 +225,12 @@
         (result) => {
           if (result != null) {
             if (result === '') {
-              displayItems = dropItem(n)
+              remove(n)
             } else {
               item.value = result
+              saveItems()
+              dispatch('save', item.channel)
             }
-            saveItems()
           }
         }
       )
