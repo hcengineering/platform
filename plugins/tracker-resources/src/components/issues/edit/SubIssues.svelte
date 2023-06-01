@@ -39,6 +39,7 @@
   import tracker from '../../../plugin'
   import SubIssueList from './SubIssueList.svelte'
   import { afterUpdate } from 'svelte'
+  import CreateIssue from '../../CreateIssue.svelte'
 
   export let issue: Issue
   export let projects: Map<Ref<Project>, Project>
@@ -149,6 +150,9 @@
       <ExpandCollapse isExpanded={!isCollapsed}>
         <div class="list" class:collapsed={isCollapsed}>
           <SubIssueList
+            createItemDialog={CreateIssue}
+            createItemLabel={tracker.string.AddIssueTooltip}
+            createItemDialogProps={{ space: issue.space, parentIssue: issue, shouldSaveDraft }}
             focusIndex={focusIndex === -1 ? -1 : focusIndex + 1}
             projects={_projects}
             {viewlet}
