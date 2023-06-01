@@ -85,7 +85,7 @@
   >
     {#if newTxes > 0 && !selected}<div class="notify people" />{/if}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="inbox-activity__content shrink clear-mins" class:read={newTxes === 0}>
+    <div class="inbox-activity__content shrink flex-grow clear-mins" class:read={newTxes === 0}>
       <div class="flex-row-center gap-2">
         <Avatar avatar={employee?.avatar} size="small" />
         {#if employee}
@@ -124,64 +124,3 @@
     </div>
   </div>
 {/if}
-
-<!-- <style lang="scss">
-  .time {
-    align-self: flex-end;
-    margin-bottom: 0.25rem;
-  }
-
-  .container {
-    margin-right: 0.5rem;
-    margin-left: 0.5rem;
-    display: flex;
-    border-radius: 0.25rem;
-    flex-grow: 1;
-
-    &:focus-visible {
-      outline: none;
-    }
-
-    &:hover {
-      background-color: var(--highlight-hover);
-    }
-    &.selected {
-      background-color: var(--highlight-select);
-
-      &:hover {
-        background-color: var(--highlight-select-hover);
-      }
-    }
-
-    .content {
-      margin-right: 0.5rem;
-      display: flex;
-      flex-grow: 1;
-      padding: 0.5rem 0;      
-    }
-  }
-
-  .notify {
-    height: 0.5rem;
-    width: 0.5rem;
-    min-width: 0.5rem;
-    margin-top: 1.25rem;
-    margin-right: 0.5rem;
-    background-color: #2b5190;
-    border-radius: 50%;
-    &.hidden {
-      opacity: 0;
-    }
-  }
-
-  .counter {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 1.25rem;
-    width: 1.25rem;
-    color: #2b5190;
-    background-color: var(--theme-calendar-today-bgcolor);
-    border-radius: 50%;
-  }
-</style> -->

@@ -63,17 +63,19 @@
   function showMenu (e: MouseEvent) {
     showPopup(Menu, { object: value, baseMenuClass: value._class }, getEventPositionElement(e))
   }
+
+  let div: HTMLDivElement
+  $: if (selected && div !== undefined) div.focus()
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 {#if doc}
-  <div class="inbox-activity__container" class:selected>
+  <div bind:this={div} class="inbox-activity__container" class:selected tabindex="-1" on:keydown on:click>
     {#if newTxes > 0 && !selected}<div class="notify" />{/if}
     <div
-      class="inbox-activity__content clear-mins"
+      class="inbox-activity__content flex-grow clear-mins"
       class:read={newTxes === 0}
       on:contextmenu|preventDefault={showMenu}
-      on:click
     >
       <div class="flex-row-center flex-no-shrink mr-8">
         {#if presenter}

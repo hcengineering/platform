@@ -111,6 +111,24 @@
   })
 
   let selected = 0
+
+  function onKeydown (key: KeyboardEvent): void {
+    if (key.code === 'ArrowUp') {
+      key.stopPropagation()
+      key.preventDefault()
+      selected--
+    }
+    if (key.code === 'ArrowDown') {
+      key.stopPropagation()
+      key.preventDefault()
+      selected++
+    }
+    if (key.code === 'Enter') {
+      key.preventDefault()
+      key.stopPropagation()
+      // dispatch('open', selected)
+    }
+  }
 </script>
 
 <ActionContext
@@ -128,6 +146,7 @@
           value={item}
           selected={selected === i}
           {viewlets}
+          on:keydown={onKeydown}
           on:click={() => {
             selected = i
           }}

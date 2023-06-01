@@ -136,6 +136,24 @@
       dispatch('dm', id)
     }
   }
+
+  function onKeydown (key: KeyboardEvent): void {
+    if (key.code === 'ArrowUp') {
+      key.stopPropagation()
+      key.preventDefault()
+      selected--
+    }
+    if (key.code === 'ArrowDown') {
+      key.stopPropagation()
+      key.preventDefault()
+      selected++
+    }
+    if (key.code === 'Enter') {
+      key.preventDefault()
+      key.stopPropagation()
+      changeSelected(selected)
+    }
+  }
 </script>
 
 <ActionContext
@@ -144,32 +162,32 @@
   }}
 />
 <div class="flex-between header bottom-divider">
-  <div class="flex-row-center flex-gap-1">
-    <ActionIcon
-      icon={IconBack}
-      size="medium"
-      action={() => {
-        dispatch('close')
-      }}
-    />
+  <div class="flex-row-center">
+    <div class="clear-mins flex-no-shrink mr-4">
+      <ActionIcon
+        icon={IconBack}
+        size="medium"
+        action={() => {
+          dispatch('close')
+        }}
+      />
+    </div>
     {#if employee}
-      <Avatar size="medium" avatar={employee.avatar} />
-      <span class="font-medium">{getName(employee)}</span>
+      <Avatar size="smaller" avatar={employee.avatar} />
+      <span class="font-medium mx-2">{getName(employee)}</span>
     {/if}
     {#if newTxes > 0}
-      <div class="counter">
+      <span class="counter">
         {newTxes}
-      </div>
+      </span>
     {/if}
   </div>
   {#if me !== accountId}
-    <div>
-      <Button label={chunter.string.Message} kind="primary" on:click={openDM} />
-    </div>
+    <Button label={chunter.string.Message} kind="primary" on:click={openDM} />
   {/if}
 </div>
-<div class="clear-mins container">
-  <Scroller>
+<div class="inbox-activity">
+  <Scroller noStretch>
     {#if loading}
       <Loading />
     {:else}
@@ -178,6 +196,7 @@
           value={item}
           selected={selected === i}
           {viewlets}
+          on:keydown={onKeydown}
           on:click={() => {
             selected = i
             changeSelected(selected)
@@ -190,18 +209,21 @@
 
 <style lang="scss">
   .header {
-    padding: 0.5rem 1rem;
-    height: 3.25rem;
+    flex-shrink: 0;
+    padding: 0.625rem 1.25rem 0.625rem 1.75rem;
+    min-width: 0;
+    min-height: 3.25rem;
+    background-color: var(--theme-comp-header-color);
   }
 
   .counter {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 1.25rem;
-    width: 1.25rem;
-    color: #2b5190;
-    background-color: var(--theme-calendar-today-bgcolor);
+    height: 1.375rem;
+    width: 1.375rem;
+    color: var(--theme-inbox-people-notify);
+    background-color: var(--theme-inbox-people-counter-bgcolor);
     border-radius: 50%;
   }
 </style>
