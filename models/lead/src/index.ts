@@ -209,7 +209,8 @@ export function createModel (builder: Builder): void {
         }
       ],
       configOptions: {
-        hiddenKeys: ['name']
+        hiddenKeys: ['name'],
+        sortable: true
       },
       options: {
         lookup: {
@@ -241,11 +242,6 @@ export function createModel (builder: Builder): void {
         'state',
         'doneState',
         'attachments',
-        {
-          key: '',
-          presenter: tracker.component.RelatedIssueSelector,
-          label: tracker.string.Relations
-        },
         'comments',
         'modifiedOn',
         {
@@ -253,6 +249,9 @@ export function createModel (builder: Builder): void {
           sortingKey: ['$lookup.attachedTo.$lookup.channels.lastMessage', '$lookup.attachedTo.channels']
         }
       ],
+      configOptions: {
+        sortable: true
+      },
       options: {
         lookup: {
           _id: {
@@ -292,6 +291,7 @@ export function createModel (builder: Builder): void {
       descriptor: view.viewlet.List,
       configOptions: {
         hiddenKeys: ['title'],
+        sortable: true,
         extraProps: {
           displayProps: {
             optional: true

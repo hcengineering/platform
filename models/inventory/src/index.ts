@@ -111,7 +111,10 @@ export function createModel (builder: Builder): void {
     {
       attachTo: inventory.class.Product,
       descriptor: view.viewlet.Table,
-      config: ['', 'attachedTo', 'modifiedOn']
+      config: ['', 'attachedTo', 'modifiedOn'],
+      configOptions: {
+        sortable: true
+      }
     },
     inventory.viewlet.TableProduct
   )
