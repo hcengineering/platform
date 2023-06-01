@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import calendar, { calendarId } from '@hcengineering/calendar'
   import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
   import core, { Class, Doc, Ref, Space, getCurrentAccount, setCurrentAccount } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import notification, { notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, NotificationClientImpl } from '@hcengineering/notification-resources'
   import { IntlString, getMetadata, getResource } from '@hcengineering/platform'
-  import { configurationStore, createQuery, getClient, ActionContext } from '@hcengineering/presentation'
+  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
+  import setting from '@hcengineering/setting'
   import {
     AnyComponent,
     CompAndProps,
@@ -49,7 +49,6 @@
     showPopup
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import setting from '@hcengineering/setting'
   import {
     ActionHandler,
     ListSelectionProvider,
@@ -69,8 +68,8 @@
   import Logo from './Logo.svelte'
   import NavHeader from './NavHeader.svelte'
   import Navigator from './Navigator.svelte'
-  import SpaceView from './SpaceView.svelte'
   import SelectWorkspaceMenu from './SelectWorkspaceMenu.svelte'
+  import SpaceView from './SpaceView.svelte'
   import Settings from './icons/Settings.svelte'
   import TopMenu from './icons/TopMenu.svelte'
 
