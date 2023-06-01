@@ -268,34 +268,34 @@ export function createModel (builder: Builder): void {
   //   },
   //   setting.ids.Support
   // )
-  builder.createDoc(
-    setting.class.SettingsCategory,
-    core.space.Model,
-    {
-      name: 'privacy',
-      label: setting.string.Privacy,
-      icon: setting.icon.Privacy,
-      component: setting.component.Privacy,
-      group: 'main',
-      secured: false,
-      order: 6000
-    },
-    setting.ids.Privacy
-  )
-  builder.createDoc(
-    setting.class.SettingsCategory,
-    core.space.Model,
-    {
-      name: 'terms',
-      label: setting.string.Terms,
-      icon: setting.icon.Terms,
-      component: setting.component.Terms,
-      group: 'main',
-      secured: false,
-      order: 10000
-    },
-    setting.ids.Terms
-  )
+  // builder.createDoc(
+  //   setting.class.SettingsCategory,
+  //   core.space.Model,
+  //   {
+  //     name: 'privacy',
+  //     label: setting.string.Privacy,
+  //     icon: setting.icon.Privacy,
+  //     component: setting.component.Privacy,
+  //     group: 'main',
+  //     secured: false,
+  //     order: 6000
+  //   },
+  //   setting.ids.Privacy
+  // )
+  // builder.createDoc(
+  //   setting.class.SettingsCategory,
+  //   core.space.Model,
+  //   {
+  //     name: 'terms',
+  //     label: setting.string.Terms,
+  //     icon: setting.icon.Terms,
+  //     component: setting.component.Terms,
+  //     group: 'main',
+  //     secured: false,
+  //     order: 10000
+  //   },
+  //   setting.ids.Terms
+  // )
 
   builder.createDoc(
     workbench.class.Application,
