@@ -176,7 +176,7 @@
       on:change={({ detail }) => (object.priority = detail)}
     />
     <AssigneeEditor
-      value={object}
+      {object}
       kind={'secondary'}
       size={'large'}
       width={'min-content'}

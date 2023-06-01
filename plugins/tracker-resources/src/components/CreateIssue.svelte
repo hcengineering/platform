@@ -662,7 +662,7 @@
     <div id="assignee-editor">
       <AssigneeEditor
         focusIndex={5}
-        value={object}
+        {object}
         kind={'secondary'}
         size={'large'}
         width={'min-content'}

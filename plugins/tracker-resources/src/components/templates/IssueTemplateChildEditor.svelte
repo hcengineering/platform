@@ -142,7 +142,7 @@
       />
       {#key newIssue.assignee}
         <AssigneeEditor
-          value={newIssue}
+          object={newIssue}
           size="small"
           kind="no-border"
           width="auto"

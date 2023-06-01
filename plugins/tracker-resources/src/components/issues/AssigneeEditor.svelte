@@ -23,7 +23,7 @@
   import tracker from '../../plugin'
   import { getPreviousAssignees } from '../../utils'
 
-  export let value: Issue | AttachedData<Issue> | IssueTemplateData | IssueDraft
+  export let object: Issue | AttachedData<Issue> | IssueTemplateData | IssueDraft
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
   export let avatarSize: IconSize = 'card'
@@ -31,6 +31,7 @@
   export let width: string = '100%'
   export let focusIndex: number | undefined = undefined
   export let short: boolean = false
+  export let shouldShowName = true
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -40,8 +41,8 @@
   let projectMembers: Ref<Employee>[] = []
   let members: Ref<Employee>[] = []
 
-  $: '_class' in value &&
-    getPreviousAssignees(value).then((res) => {
+  $: '_class' in object &&
+    getPreviousAssignees(object).then((res) => {
       prevAssigned = res
     })
 
@@ -70,27 +71,27 @@
     }
   }
 
-  $: updateComponentMembers(value)
+  $: updateComponentMembers(object)
 
   const handleAssigneeChanged = async (newAssignee: Ref<Employee> | undefined) => {
-    if (newAssignee === undefined || value.assignee === newAssignee) {
+    if (newAssignee === undefined || object.assignee === newAssignee) {
       return
     }
 
     dispatch('change', newAssignee)
 
-    if ('_class' in value) {
-      await client.update(value, { assignee: newAssignee })
+    if ('_class' in object) {
+      await client.update(object, { assignee: newAssignee })
     }
   }
 </script>
 
-{#if value}
+{#if object}
   <AssigneeBox
     {focusIndex}
     label={tracker.string.Assignee}
     placeholder={tracker.string.Assignee}
-    value={value.assignee}
+    value={object.assignee}
     {prevAssigned}
     {projectLead}
     {projectMembers}
@@ -101,9 +102,14 @@
     {avatarSize}
     {width}
     {short}
+    {shouldShowName}
     showNavigate={false}
     justify={'left'}
-    showTooltip={{ label: tracker.string.AssignTo, direction: tooltipAlignment }}
+    showTooltip={{
+      personLabel: tracker.string.AssignedTo,
+      placeholderLabel: tracker.string.Unassigned,
+      direction: tooltipAlignment
+    }}
     on:change={({ detail }) => handleAssigneeChanged(detail)}
   />
 {/if}

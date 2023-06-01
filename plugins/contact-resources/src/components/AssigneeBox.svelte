@@ -35,9 +35,11 @@
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import presentation, { getClient } from '@hcengineering/presentation'
+  import { PersonLabelTooltip, employeeByIdStore } from '..'
   import AssigneePopup from './AssigneePopup.svelte'
   import IconPerson from './icons/Person.svelte'
   import UserInfo from './UserInfo.svelte'
+  import EmployeePresenter from './EmployeePresenter.svelte'
 
   export let _class: Ref<Class<Employee>> = contact.class.Employee
   export let excluded: Ref<Contact>[] | undefined = undefined
@@ -61,8 +63,9 @@
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
   export let focusIndex = -1
-  export let showTooltip: LabelAndProps | undefined = undefined
+  export let showTooltip: LabelAndProps | PersonLabelTooltip | undefined = undefined
   export let showNavigate = true
+  export let shouldShowName = true
   export let id: string | undefined = undefined
   export let short: boolean = false
 
@@ -76,7 +79,7 @@
   const client = getClient()
 
   async function updateSelected (value: Ref<Employee> | null | undefined) {
-    selected = value ? await client.findOne(_class, { _id: value }) : undefined
+    selected = value ? $employeeByIdStore.get(value) ?? (await client.findOne(_class, { _id: value })) : undefined
   }
 
   $: updateSelected(value)
@@ -85,6 +88,9 @@
 
   const _click = (ev: MouseEvent): void => {
     if (!readonly) {
+      ev.preventDefault()
+      ev.stopPropagation()
+
       showPopup(
         AssigneePopup,
         {
@@ -131,6 +137,15 @@
     >
       <slot name="content" />
     </div>
+  {:else if !shouldShowName}
+    <EmployeePresenter
+      value={selected}
+      {avatarSize}
+      tooltipLabels={showTooltip}
+      shouldShowName={false}
+      shouldShowPlaceholder
+      onEmployeeEdit={_click}
+    />
   {:else}
     <Button {focusIndex} width={width ?? 'min-content'} {size} {kind} {justify} {showTooltip} on:click={_click}>
       <span

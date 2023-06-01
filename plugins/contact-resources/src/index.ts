@@ -19,7 +19,7 @@ import { Class, Client, DocumentQuery, Ref, RelatedDocument, WithLookup } from '
 import login from '@hcengineering/login'
 import { IntlString, Resources, getResource } from '@hcengineering/platform'
 import { MessageBox, ObjectSearchResult, getClient, getFileUrl } from '@hcengineering/presentation'
-import { AnyComponent, AnySvelteComponent, showPopup } from '@hcengineering/ui'
+import { AnyComponent, AnySvelteComponent, TooltipAlignment, showPopup } from '@hcengineering/ui'
 import AccountArrayEditor from './components/AccountArrayEditor.svelte'
 import AccountBox from './components/AccountBox.svelte'
 import AssigneeBox from './components/AssigneeBox.svelte'
@@ -246,6 +246,7 @@ async function openChannelURL (doc: Channel): Promise<void> {
 export interface PersonLabelTooltip {
   personLabel?: IntlString
   placeholderLabel?: IntlString
+  direction?: TooltipAlignment
   component?: AnySvelteComponent | AnyComponent
   props?: any
 }

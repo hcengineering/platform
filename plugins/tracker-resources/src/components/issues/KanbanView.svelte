@@ -15,8 +15,6 @@
 <script lang="ts">
   import { AttachmentsPresenter } from '@hcengineering/attachment-resources'
   import { CommentsPresenter } from '@hcengineering/chunter-resources'
-  import contact from '@hcengineering/contact'
-  import { employeeByIdStore } from '@hcengineering/contact-resources'
   import {
     CategoryType,
     Class,
@@ -77,7 +75,7 @@
   import tracker from '../../plugin'
   import ComponentEditor from '../components/ComponentEditor.svelte'
   import CreateIssue from '../CreateIssue.svelte'
-  import AssigneePresenter from './AssigneePresenter.svelte'
+  import AssigneeEditor from './AssigneeEditor.svelte'
   import DueDatePresenter from './DueDatePresenter.svelte'
   import SubIssuesSelector from './edit/SubIssuesSelector.svelte'
   import IssuePresenter from './IssuePresenter.svelte'
@@ -366,13 +364,7 @@
             </div>
             <div class="flex-row-center gap-2 reverse flex-no-shrink">
               <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
-              <AssigneePresenter
-                value={issue.assignee ? $employeeByIdStore.get(issue.assignee) : null}
-                defaultClass={contact.class.Employee}
-                object={issue}
-                isEditable={true}
-                avatarSize={'card'}
-              />
+              <AssigneeEditor object={issue} avatarSize={'card'} shouldShowName={false} />
             </div>
           </div>
           <div class="card-content text-md caption-color lines-limit-2">
