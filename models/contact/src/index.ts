@@ -227,8 +227,52 @@ export function createModel (builder: Builder): void {
       icon: contact.icon.ContactApplication,
       alias: contactId,
       hidden: false,
-      component: contact.component.ContactsTabs,
-      locationResolver: contact.resolver.Location
+      // component: contact.component.ContactsTabs,
+      locationResolver: contact.resolver.Location,
+      navigatorModel: {
+        spaces: [],
+        specials: [
+          {
+            id: 'employees',
+            component: workbench.component.SpecialView,
+            icon: contact.icon.Person,
+            label: contact.string.Employee,
+            componentProps: {
+              _class: contact.class.Employee,
+              icon: contact.icon.Person,
+              label: contact.string.Employee,
+              createLabel: contact.string.CreateEmployee,
+              createComponent: contact.component.CreateEmployee
+            }
+          },
+          {
+            id: 'persons',
+            component: workbench.component.SpecialView,
+            icon: contact.icon.Person,
+            label: contact.string.Person,
+            componentProps: {
+              _class: contact.class.Person,
+              icon: contact.icon.Person,
+              label: contact.string.Person,
+              createLabel: contact.string.CreatePerson,
+              createComponent: contact.component.CreatePerson
+            }
+          },
+          {
+            id: 'companies',
+            component: workbench.component.SpecialView,
+            icon: contact.icon.Company,
+            label: contact.string.Organization,
+            componentProps: {
+              _class: contact.class.Organization,
+              icon: contact.icon.Company,
+              label: contact.string.Organization,
+              createLabel: contact.string.CreateOrganization,
+              createComponent: contact.component.CreateOrganization
+            }
+          }
+        ]
+      }
     },
     contact.app.Contacts
   )
@@ -255,7 +299,8 @@ export function createModel (builder: Builder): void {
         'modifiedOn'
       ],
       configOptions: {
-        hiddenKeys: ['name', 'contact']
+        hiddenKeys: ['name', 'contact'],
+        sortable: true
       }
     },
     contact.viewlet.TableMember
@@ -270,11 +315,41 @@ export function createModel (builder: Builder): void {
     view.class.Viewlet,
     core.space.Model,
     {
-      attachTo: contact.class.Contact,
+      attachTo: contact.class.Person,
       descriptor: view.viewlet.Table,
       config: [
         '',
-        '_class',
+        'city',
+        'attachments',
+        'modifiedOn',
+        { key: '', presenter: view.component.RolePresenter, label: view.string.Role },
+        {
+          key: '$lookup.channels',
+          label: contact.string.ContactInfo,
+          sortingKey: ['$lookup.channels.lastMessage', 'channels']
+        }
+      ],
+      configOptions: {
+        hiddenKeys: ['name'],
+        sortable: true
+      },
+      baseQuery: {
+        _class: {
+          $in: [contact.class.Person],
+          $nin: [contact.class.Employee]
+        }
+      }
+    },
+    contact.viewlet.TablePerson
+  )
+  builder.createDoc<Viewlet>(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: contact.class.Employee,
+      descriptor: view.viewlet.Table,
+      config: [
+        '',
         'city',
         'attachments',
         'modifiedOn',
@@ -290,7 +365,33 @@ export function createModel (builder: Builder): void {
         sortable: true
       }
     },
-    contact.viewlet.TableContact
+    contact.viewlet.TableEmployee
+  )
+
+  builder.createDoc<Viewlet>(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: contact.class.Organization,
+      descriptor: view.viewlet.Table,
+      config: [
+        '',
+        'city',
+        'attachments',
+        'modifiedOn',
+        { key: '', presenter: view.component.RolePresenter, label: view.string.Role },
+        {
+          key: '$lookup.channels',
+          label: contact.string.ContactInfo,
+          sortingKey: ['$lookup.channels.lastMessage', 'channels']
+        }
+      ],
+      configOptions: {
+        hiddenKeys: ['name'],
+        sortable: true
+      }
+    },
+    contact.viewlet.TableOrganization
   )
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.ObjectEditor, {
@@ -559,7 +660,17 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(contact.class.Contact, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['_class']
+    filters: []
+  })
+
+  builder.mixin(contact.class.Person, core.class.Class, view.mixin.ClassFilters, {
+    filters: []
+  })
+  builder.mixin(contact.class.Employee, core.class.Class, view.mixin.ClassFilters, {
+    filters: []
+  })
+  builder.mixin(contact.class.Organization, core.class.Class, view.mixin.ClassFilters, {
+    filters: []
   })
 
   builder.mixin(contact.class.Channel, core.class.Class, view.mixin.AttributeFilter, {

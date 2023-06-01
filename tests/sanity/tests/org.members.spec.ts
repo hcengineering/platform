@@ -13,7 +13,7 @@ test.describe('recruit tests', () => {
 
   test('org-add-member', async ({ page }) => {
     await page.click('[id="app-contact\\:string\\:Contacts"]')
-    await page.click('button:has-text("Contact")')
+    await page.click('.antiNav-element:has-text("Company")')
     await page.click('button:has-text("Company")')
     await page.click('[placeholder="Company name"]')
     const orgId = 'Company-' + generateId()

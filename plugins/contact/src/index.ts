@@ -268,7 +268,9 @@ export const contactPlugin = plugin(contactId, {
   },
   viewlet: {
     TableMember: '' as Ref<Viewlet>,
-    TableContact: '' as Ref<Viewlet>
+    TablePerson: '' as Ref<Viewlet>,
+    TableEmployee: '' as Ref<Viewlet>,
+    TableOrganization: '' as Ref<Viewlet>
   },
   filter: {
     FilterChannelIn: '' as Ref<FilterMode>,

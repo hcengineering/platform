@@ -47,7 +47,8 @@ test.describe('workbench tests', () => {
     await expect(page.locator('.textInput')).toBeVisible()
 
     await page.click('[id="app-contact\\:string\\:Contacts"]')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/contact`)
+    await page.click('.antiNav-element:has-text("Employee")')
+    await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/contact/employees`)
     // Click text=John Appleseed
     await expect(page.locator('text=Appleseed John')).toBeVisible()
   })
