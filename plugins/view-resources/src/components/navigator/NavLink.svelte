@@ -20,6 +20,7 @@
   export let space: string | undefined = undefined
   export let special: string | undefined = undefined
   export let disabled = false
+  export let shrink: number | undefined = undefined
 
   $: loc = createLocation($location, app, space, special)
 
@@ -60,7 +61,7 @@
 {#if disabled}
   <slot />
 {:else}
-  <a class="noUnderline" {href} on:click={clickHandler}>
+  <a class="noUnderline" style:flex-shrink={shrink} {href} on:click={clickHandler}>
     <slot />
   </a>
 {/if}

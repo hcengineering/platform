@@ -12,7 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-<div class="antiLogo red">P</div>
+<script lang="ts">
+  export let mini: boolean = false
+</script>
+
+<div class="antiLogo red" class:mini>P</div>
 
 <style lang="scss">
   .antiLogo {
@@ -20,13 +24,20 @@
     justify-content: center;
     align-items: center;
     flex-shrink: 0;
-    width: 2rem;
-    height: 2rem;
     font-weight: 500;
     color: var(--primary-button-color);
     border-radius: 0.25rem;
     outline: none;
+    cursor: pointer;
 
+    &:not(.mini) {
+      width: 2rem;
+      height: 2rem;
+    }
+    &.mini {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
     &.red {
       background-color: #c93030;
     }

@@ -169,7 +169,7 @@
                   }}
                 >
                   <div class="tag" style:background-color={color.color} />
-                  <span class="lines-limit-2 flex-grow" style:color={color.title}>{element.title}</span>
+                  <span class="lines-limit-2 flex-grow">{element.title}</span>
                   <span class="ml-2 text-xs">
                     ({element.refCount ?? 0})
                   </span>

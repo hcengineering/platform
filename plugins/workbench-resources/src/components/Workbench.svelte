@@ -70,6 +70,7 @@
   import NavHeader from './NavHeader.svelte'
   import Navigator from './Navigator.svelte'
   import SpaceView from './SpaceView.svelte'
+  import SelectWorkspaceMenu from './SelectWorkspaceMenu.svelte'
   import Settings from './icons/Settings.svelte'
   import TopMenu from './icons/TopMenu.svelte'
 
@@ -491,6 +492,8 @@
       : appsDirection === 'vertical' && $deviceInfo.isMobile
         ? 'account-mobile'
         : 'account'
+  let popupSpacePosition: PopupPosAlignment
+  $: popupSpacePosition = appsMini ? 'logo-mini' : appsDirection === 'horizontal' ? 'logo-portrait' : 'logo'
   let notifyPosition: PopupPosAlignment
   $: notifyPosition = appsDirection === 'horizontal' ? 'notify-mobile' : 'notify'
 
@@ -563,10 +566,17 @@
         class:portrait={appsDirection === 'horizontal'}
         class:landscape={appsDirection === 'vertical'}
       >
-        <div class="logo-container clear-mins">
-          <Logo />
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <div
+          class="logo-container clear-mins"
+          class:mini={appsMini}
+          on:click={() => {
+            showPopup(SelectWorkspaceMenu, {}, popupSpacePosition)
+          }}
+        >
+          <Logo mini={appsMini} />
         </div>
-        <div class="topmenu-container clear-mins" class:mini={appsMini}>
+        <div class="topmenu-container clear-mins flex-no-shrink" class:mini={appsMini}>
           <AppItem
             icon={TopMenu}
             label={visibileNav ? workbench.string.HideMenu : workbench.string.ShowMenu}
@@ -576,7 +586,7 @@
           />
         </div>
         <!-- <ActivityStatus status="active" /> -->
-        <NavLink app={notificationId}>
+        <NavLink app={notificationId} shrink={0}>
           <AppItem
             icon={notification.icon.Inbox}
             label={notification.string.Inbox}
@@ -780,10 +790,18 @@
       width: 0.25rem;
       height: 0.25rem;
     }
+    .logo-container.mini,
     .topmenu-container.mini {
       position: fixed;
       top: 4px;
+    }
+    .logo-container.mini {
       left: 4px;
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+    .topmenu-container.mini {
+      left: calc(1.5rem + 8px);
     }
     .divider {
       flex-shrink: 0;

@@ -47,7 +47,7 @@
       buttons={'union'}
     >
       {#each apps.filter((it) => (shown ? true : !hiddenAppsIds.includes(it._id))) as app}
-        <NavLink app={app.alias}>
+        <NavLink app={app.alias} shrink={0}>
           <App
             selected={app._id === active}
             icon={app.icon}
