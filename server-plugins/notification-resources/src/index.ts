@@ -38,7 +38,8 @@ import core, {
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc,
-  generateId
+  generateId,
+  matchQuery
 } from '@hcengineering/core'
 import notification, {
   ClassCollaborators,
@@ -159,11 +160,17 @@ async function getHtmlPart (doc: Doc, control: TriggerControl): Promise<string |
   return htmlPart
 }
 
-function getHTMLPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy): HTMLPresenter | undefined {
+/**
+ * @public
+ */
+export function getHTMLPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy): HTMLPresenter | undefined {
   return hierarchy.classHierarchyMixin(_class, serverNotification.mixin.HTMLPresenter)
 }
 
-function getTextPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy): TextPresenter | undefined {
+/**
+ * @public
+ */
+export function getTextPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy): TextPresenter | undefined {
   return hierarchy.classHierarchyMixin(_class, serverNotification.mixin.TextPresenter)
 }
 
@@ -361,6 +368,10 @@ function isTypeMatched (
     if (extractedTx._class === core.class.TxMixin) {
       if (!fieldUpdated(type.field, (extractedTx as TxMixin<Doc, Doc>).attributes)) return false
     }
+  }
+  if (type.txMatch !== undefined) {
+    const res = matchQuery([extractedTx], type.txMatch, extractedTx._class, control.hierarchy, true)
+    if (res.length === 0) return false
   }
   return true
 }
