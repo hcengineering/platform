@@ -14,9 +14,8 @@ test.describe('contact tests', () => {
     // Create a new context with the saved storage state.
     await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
 
-    await page.click('button:has-text("Contact")')
-
-    await (await page.locator('.ap-menuItem')).locator('text=Person').click()
+    await page.click('.antiNav-element:has-text("Person")')
+    await page.click('button:has-text("Person")')
 
     const first = 'Elton-' + generateId(5)
     const last = 'John-' + generateId(5)
@@ -35,9 +34,8 @@ test.describe('contact tests', () => {
   test('create-company', async ({ page }) => {
     await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
 
-    await page.click('button:has-text("Contact")')
-
-    await (await page.locator('.ap-menuItem')).locator('text=Company').click()
+    await page.click('.antiNav-element:has-text("Company")')
+    await page.click('button:has-text("Company")')
 
     const orgName = 'Company' + generateId(5)
 
@@ -52,6 +50,8 @@ test.describe('contact tests', () => {
   test('contact-search', async ({ page }) => {
     await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
 
+    await page.click('.antiNav-element:has-text("Person")')
+
     await expect(page.locator('text=M. Marina')).toBeVisible()
     expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThan(5)
 
@@ -63,17 +63,16 @@ test.describe('contact tests', () => {
 
     await fillSearch(page, '')
 
-    await expect(page.locator('text=Chen Rosamund')).toBeVisible()
-    expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThan(5)
+    await expect(page.locator('text=P. Andrey')).toBeVisible()
+    expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThan(3)
   })
 
   test('delete-contact', async ({ page }) => {
     // Create a new context with the saved storage state.
     await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
 
-    await page.click('button:has-text("Contact")')
-
-    await (await page.locator('.ap-menuItem')).locator('text=Person').click()
+    await page.click('.antiNav-element:has-text("Person")')
+    await page.click('button:has-text("Person")')
 
     const first = 'Elton-' + generateId(5)
     const last = 'John-' + generateId(5)
