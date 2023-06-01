@@ -17,6 +17,7 @@
 import { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref } from '@hcengineering/core'
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
+import { Presenter } from '@hcengineering/server-notification'
 
 /**
  * @public
@@ -28,6 +29,8 @@ export const serverCalendarId = 'server-calendar' as Plugin
  */
 export default plugin(serverCalendarId, {
   function: {
+    EventHTMLPresenter: '' as Resource<Presenter>,
+    EventTextPresenter: '' as Resource<Presenter>,
     FindReminders: '' as Resource<
     (
       doc: Doc,
