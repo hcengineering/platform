@@ -24,11 +24,11 @@
   import NotificationView from './NotificationView.svelte'
 
   export let filter: 'all' | 'read' | 'unread' = 'all'
+  export let _id: Ref<Doc> | undefined
   const dispatch = createEventDispatcher()
 
   const query = createQuery()
 
-  let _id: Ref<Doc> | undefined
   let docs: DocUpdates[] = []
   let filtered: DocUpdates[] = []
   let loading = true
@@ -60,7 +60,7 @@
       filtered = docs.filter((p) => p.txes.length > 0)
     }
     listProvider.update(filtered)
-    if (loading || _id === undefined) {
+    if (_id === undefined) {
       changeSelected(selected)
     } else {
       const index = filtered.findIndex((p) => p.attachedTo === _id)

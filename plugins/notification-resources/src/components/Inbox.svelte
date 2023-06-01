@@ -37,12 +37,12 @@
   $: tabs = [
     {
       label: notification.string.Activity,
-      props: { filter },
+      props: { filter, _id },
       component: Activity
     },
     {
       label: notification.string.People,
-      props: { filter },
+      props: { filter, _id },
       component: People
     }
   ]

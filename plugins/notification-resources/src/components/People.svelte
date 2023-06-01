@@ -25,10 +25,10 @@
   import PeopleNotificationView from './PeopleNotificationsView.svelte'
 
   export let filter: 'all' | 'read' | 'unread' = 'all'
+  export let _id: Ref<Doc> | undefined
 
   const query = createQuery()
 
-  let _id: Ref<Doc> | undefined
   let docs: DocUpdates[] = []
   let map: Map<Ref<Account>, DocUpdates[]> = new Map()
   let accounts: EmployeeAccount[] = []
@@ -90,7 +90,7 @@
     accounts = Array.from(map.keys())
       .map((p) => $employeeAccountByIdStore.get(p as Ref<EmployeeAccount>))
       .filter((p) => p !== undefined) as EmployeeAccount[]
-    if (loading || _id === undefined) {
+    if (_id === undefined) {
       changeSelected(selected)
     } else {
       const index = filtered.findIndex((p) => p.attachedTo === _id)
