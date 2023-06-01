@@ -43,7 +43,9 @@
     navigate,
     openPanel,
     popupstore,
-    resizeObserver, resolvedLocationStore, setResolvedLocation,
+    resizeObserver,
+    resolvedLocationStore,
+    setResolvedLocation,
     showPopup
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
