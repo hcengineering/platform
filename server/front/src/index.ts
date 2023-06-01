@@ -140,6 +140,7 @@ export function start (
     rekoniUrl: string
     telegramUrl: string
     gmailUrl: string
+    title?: string
   },
   port: number
 ): () => void {
@@ -175,7 +176,8 @@ export function start (
       COLLABORATOR_URL: config.collaboratorUrl,
       REKONI_URL: config.rekoniUrl,
       TELEGRAM_URL: config.telegramUrl,
-      GMAIL_URL: config.gmailUrl
+      GMAIL_URL: config.gmailUrl,
+      TITLE: config.title
     })
   })
 

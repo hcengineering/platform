@@ -98,6 +98,7 @@ services:
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
+      - TITLE=DevPlatform
     restart: unless-stopped
   # tracker-front:
   #   image: hardcoreeng/tracker-front
