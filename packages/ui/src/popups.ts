@@ -235,6 +235,24 @@ export function fitPopupElement (
       newProps.top = newProps.bottom = '15%'
       newProps.left = newProps.right = '25%'
       show = true
+    } else if (element === 'logo') {
+      newProps.top = '2.75rem'
+      newProps.left = '5rem'
+      newProps.maxWidth = '42rem'
+      newProps.maxHeight = 'calc(100vh - 5.5rem)'
+      show = true
+    } else if (element === 'logo-mini') {
+      newProps.top = '2.5rem'
+      newProps.left = '.5rem'
+      newProps.maxWidth = '42rem'
+      newProps.maxHeight = 'calc(100vh - 5.5rem)'
+      show = true
+    } else if (element === 'logo-portrait') {
+      newProps.bottom = 'calc(var(--app-panel-width) + .75rem)'
+      newProps.left = '.5rem'
+      newProps.maxWidth = 'calc(100vw - 1rem)'
+      newProps.maxHeight = 'calc(100vh - var(--app-panel-width) - 1.5rem)'
+      show = true
     } else if (element === 'account') {
       newProps.bottom = '2.75rem'
       newProps.left = '5rem'

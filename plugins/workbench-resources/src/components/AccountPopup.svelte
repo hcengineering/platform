@@ -31,14 +31,12 @@
     getCurrentResolvedLocation,
     locationToUrl,
     navigate,
-    resolvedLocationStore,
     setMetadataLocalStorage,
     showPopup
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import workbench from '../plugin'
   import HelpAndSupport from './HelpAndSupport.svelte'
-  import SelectWorkspaceMenu from './SelectWorkspaceMenu.svelte'
 
   let items: SettingsCategory[] = []
 
@@ -67,12 +65,12 @@
     { limit: 1 }
   )
 
-  function selectCategory (sp: SettingsCategory): void {
+  function selectCategory (sp?: SettingsCategory): void {
     closePopup()
     closePanel()
     const loc = getCurrentResolvedLocation()
     loc.path[2] = settingId
-    loc.path[3] = sp.name
+    if (sp) loc.path[3] = sp.name
     loc.path.length = 4
     navigate(loc)
   }
@@ -135,23 +133,13 @@
   let actions: Action[] = []
   $: {
     actions = []
-    const subActions: Action[] = getMenu(items, ['settings', 'settings-editor'])
     actions.push({
       icon: view.icon.Setting,
       label: setting.string.Settings,
-      action: async () => {},
-      component: Menu,
-      props: { actions: subActions }
+      action: async () => selectCategory()
     })
     actions.push(
       ...getMenu(items, ['main']),
-      {
-        icon: setting.icon.SelectWorkspace,
-        label: setting.string.SelectWorkspace,
-        action: async () => {},
-        component: SelectWorkspaceMenu,
-        group: 'end'
-      },
       {
         icon: login.icon.InviteWorkspace,
         label: setting.string.InviteWorkspace,
@@ -179,9 +167,8 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <svelte:component this={Menu} bind:this={menu} {actions} {addClass} on:close>
   <svelte:fragment slot="header">
-    <div class="p-1 ml-2 overflow-label fs-bold caption-color">{$resolvedLocationStore.path[1]}</div>
     <div
-      class="ap-menuHeader mb-2"
+      class="ap-menuItem hoverable flex-row-center withIcon flex-grow"
       on:mousemove={() => {
         menu.clearFocus()
       }}
@@ -199,5 +186,6 @@
         {/if}
       </div>
     </div>
+    <div class="ap-menuItem separator" />
   </svelte:fragment>
 </svelte:component>

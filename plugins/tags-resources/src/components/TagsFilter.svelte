@@ -199,7 +199,7 @@
                     }}
                   >
                     <div class="tag" style:background-color={color.color} />
-                    <span class="overflow-label label flex-grow" style:color={color.title}>{element.title}</span>
+                    <span class="overflow-label label flex-grow">{element.title}</span>
                     <div class="check pointer-events-none">
                       {#if isSelected(element)}
                         <Icon icon={IconCheck} size={'small'} />

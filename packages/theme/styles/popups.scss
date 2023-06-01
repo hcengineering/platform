@@ -232,6 +232,7 @@
   .ap-scroll {
     flex-grow: 1;
     margin: 0;
+    min-width: 0;
     min-height: 0;
     overflow-x: hidden;
     overflow-y: auto;
@@ -246,11 +247,13 @@
     flex-direction: column;
     padding: 0;
     height: 100%;
+    min-width: 0;
   }
   .ap-menuItem {
     flex-shrink: 0;
     justify-content: flex-start;
     text-align: left;
+    min-width: 0;
     color: var(--theme-caption-color);
     cursor: pointer;
     
@@ -278,7 +281,42 @@
     &.withIcon {
       .icon { color: var(--theme-dark-color); }
       &.hover .icon { color: var(--theme-dark-color); }
-    }  
+    }
+    &.withDrag {
+      width: calc(100% - 1rem);
+      padding: .5rem .5rem .5rem .125rem;
+
+      .drag {
+        flex-shrink: 0;
+        margin-right: .375rem;
+        color: var(--theme-trans-color);
+      }
+      .icon {
+        flex-shrink: 0;
+        margin-right: .5rem;
+      }
+      .logo {
+        overflow: hidden;
+        flex-shrink: 0;
+        margin-right: .5rem;
+        width: 2rem;
+        height: 2rem;
+        border-radius: .25rem;
+
+        &.empty { background-color: var(--theme-button-pressed); }
+      }
+      .label { font-weight: 500; }
+      .description {
+        font-size: 0.6875rem;
+        color: var(--theme-halfcontent-color);
+      }
+      .check {
+        flex-shrink: 0;
+        margin-left: .5rem;
+        width: 1rem;
+        color: var(--theme-dark-color);
+      }
+    }
 
     // &:hover { background-color: var(--popup-bg-hover); }
     &.hover {

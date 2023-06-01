@@ -42,10 +42,10 @@ test.describe('contact tests', () => {
     // Click #profile-button
     await page.click('#profile-button')
     // Click button:has-text("Settings")
-    await page.hover('button:has-text("Settings")')
+    // await page.hover('button:has-text("Settings")')
     await page.click('button:has-text("Settings")')
     // Click text=Workspace Notifications >> button
-    await page.click('text=Workspace Notifications >> button')
+    await page.click('.antiPanel-navigator > div:nth-child(5)')
     await page.click('text=Templates')
     // Click .flex-center.icon-button
     await page.click('#create-template')
@@ -75,10 +75,10 @@ test.describe('contact tests', () => {
     // Click #profile-button
     await page.click('#profile-button')
     // await page.click('text=Workspace')
-    await page.hover('button:has-text("Settings")')
+    // await page.hover('button:has-text("Settings")')
     await page.click('button:has-text("Settings")')
     // Click text=Workspace Notifications >> button
-    await page.click('text=Workspace Notifications >> button')
+    await page.click('.antiPanel-navigator > div:nth-child(5)')
     // Click button:has-text("Manage Templates")
     await page.click('text="Manage Templates"')
     // Click text=Vacancies
