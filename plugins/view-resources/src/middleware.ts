@@ -11,7 +11,8 @@ import core, {
   FindResult,
   Attribute,
   Hierarchy,
-  RefTo
+  RefTo,
+  generateId
 } from '@hcengineering/core'
 import { BasePresentationMiddleware, PresentationMiddleware } from '@hcengineering/presentation'
 import view, { AggregationManager } from '@hcengineering/view'
@@ -69,6 +70,49 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
       // TODO: Do something more smart and track if used component field is changed.
       s.refresh()
     }
+  }
+
+  async subscribe<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options: FindOptions<T> | undefined,
+    refresh: () => void
+  ): Promise<{
+      unsubscribe: () => void
+      query?: DocumentQuery<T>
+      options?: FindOptions<T>
+    }> {
+    const ret = await this.provideSubscribe(_class, query, options, refresh)
+    const h = this.client.getHierarchy()
+
+    const id = generateId()
+    const s: DocSubScriber<T> = {
+      _class,
+      query,
+      refresh,
+      options,
+      attributes: []
+    }
+    const statusFields: Array<Attribute<Doc>> = []
+    const allAttrs = h.getAllAttributes(_class)
+
+    const updatedQuery: DocumentQuery<T> = { ...(ret.query ?? query) }
+    const finalOptions = { ...(ret.options ?? options ?? {}) }
+
+    await this.updateQueryOptions<T>(allAttrs, h, statusFields, updatedQuery, finalOptions)
+
+    if (statusFields.length > 0) {
+      this.subscribers.set(id, s)
+      return {
+        unsubscribe: () => {
+          ret.unsubscribe()
+          this.subscribers.delete(id)
+        },
+        query: updatedQuery,
+        options: finalOptions
+      }
+    }
+    return { unsubscribe: (await ret).unsubscribe }
   }
 
   private async getAggregationManager (_class: Ref<Class<Doc>>): Promise<AggregationManager | undefined> {
