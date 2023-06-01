@@ -229,7 +229,9 @@ async function getAccountInfoByToken (db: Db, productId: string, token: string):
   if (account === null) {
     throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: email }))
   }
-  return toAccountInfo(account)
+  const res = toAccountInfo(account)
+  res.confirmed = res.confirmed ?? true
+  return res
 }
 
 /**
