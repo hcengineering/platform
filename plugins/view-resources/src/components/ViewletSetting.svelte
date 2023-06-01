@@ -17,7 +17,7 @@
   import { Asset, IntlString } from '@hcengineering/platform'
   import preferencePlugin from '@hcengineering/preference'
   import { createQuery, getAttributePresenterClass, getClient, hasResource } from '@hcengineering/presentation'
-  import { Loading, ToggleWithLabel } from '@hcengineering/ui'
+  import { Button, Loading, ToggleWithLabel } from '@hcengineering/ui'
   import { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { deepEqual } from 'fast-equals'
   import view from '../plugin'
@@ -36,8 +36,7 @@
       },
       (res) => {
         preference = res[0]
-        attributes = getConfig(viewlet, preference)
-        classes = groupByClasses(attributes)
+        items = getConfig(viewlet, preference)
         loading = false
       },
       { limit: 1 }
@@ -48,7 +47,7 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  let attributes: AttributeConfig[] = []
+  let items: AttributeConfig[] = []
   let loading = true
 
   interface AttributeConfig {
@@ -57,6 +56,7 @@
     value: string | BuildModelKey
     _class: Ref<Class<Doc>>
     icon: Asset | undefined
+    order?: number
   }
 
   function getObjectConfig (_class: Ref<Class<Doc>>, param: string): AttributeConfig {
@@ -201,10 +201,7 @@
   }
 
   async function save (): Promise<void> {
-    const config = Array.from(classes.values())
-      .flat()
-      .filter((p) => p.enabled)
-      .map((p) => p.value)
+    const config = items.filter((p) => p.enabled).map((p) => p.value)
     if (preference !== undefined) {
       await client.update(preference, {
         config
@@ -217,29 +214,51 @@
     }
   }
 
-  // function restoreDefault (): void {
-  //   attributes = getConfig(viewlet, undefined)
-  //   classes = groupByClasses(attributes)
-  // }
+  function restoreDefault (): void {
+    items = getConfig(viewlet, undefined)
+    save()
+  }
 
   function setStatus (result: AttributeConfig[], preference: ViewletPreference): AttributeConfig[] {
     for (const key of result) {
-      key.enabled = preference.config.findIndex((p) => deepEqual(p, key.value)) !== -1
+      const index = preference.config.findIndex((p) => deepEqual(p, key.value))
+      key.enabled = index !== -1
+      key.order = index !== -1 ? index : undefined
     }
+    result.sort((a, b) => {
+      if (a.order === undefined && b.order === undefined) return 0
+      if (a.order === undefined) return 1
+      if (b.order === undefined) return -1
+      return a.order - b.order
+    })
     return result
   }
 
-  function groupByClasses (attributes: AttributeConfig[]): Map<Ref<Class<Doc>>, AttributeConfig[]> {
-    const res = new Map()
-    for (const attribute of attributes) {
-      const arr = res.get(attribute._class) ?? []
-      arr.push(attribute)
-      res.set(attribute._class, arr)
-    }
-    return res
+  function dragEnd () {
+    selected = undefined
+    save()
   }
 
-  let classes: Map<Ref<Class<Doc>>, AttributeConfig[]> = new Map()
+  function dragOver (e: DragEvent, i: number) {
+    const s = selected as number
+    if (dragswap(e, i, s)) {
+      ;[items[i], items[s]] = [items[s], items[i]]
+      selected = i
+    }
+  }
+
+  const elements: HTMLElement[] = []
+
+  function dragswap (ev: MouseEvent, i: number, s: number): boolean {
+    if (i < s) {
+      return ev.offsetY < elements[i].offsetHeight / 2
+    } else if (i > s) {
+      return ev.offsetY > elements[i].offsetHeight / 2
+    }
+    return false
+  }
+
+  let selected: number | undefined
 </script>
 
 <div class="selectPopup p-2">
@@ -247,23 +266,29 @@
     {#if loading}
       <Loading />
     {:else}
-      {#each Array.from(classes.keys()) as _class, i}
-        {@const items = classes.get(_class) ?? []}
-        {#if i !== 0}
-          <div class="menu-separator" />
-        {/if}
-        {#each items as item}
-          <div class="item">
-            <ToggleWithLabel
-              on={item.enabled}
-              label={item.label}
-              on:change={(e) => {
-                item.enabled = e.detail
-                save()
-              }}
-            />
-          </div>
-        {/each}
+      <div class="flex-row-reverse">
+        <Button on:click={restoreDefault} label={view.string.RestoreDefaults} size={'x-small'} kind={'link'} noFocus />
+      </div>
+      {#each items as item, i}
+        <div
+          class="item"
+          bind:this={elements[i]}
+          draggable={viewlet.configOptions?.sortable}
+          on:dragstart={() => {
+            selected = i
+          }}
+          on:dragover|preventDefault={(e) => dragOver(e, i)}
+          on:dragend={dragEnd}
+        >
+          <ToggleWithLabel
+            on={item.enabled}
+            label={item.label}
+            on:change={(e) => {
+              item.enabled = e.detail
+              save()
+            }}
+          />
+        </div>
       {/each}
     {/if}
   </div>

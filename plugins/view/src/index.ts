@@ -329,6 +329,7 @@ export interface ViewletConfigOptions {
   hiddenKeys?: string[]
   strict?: boolean
   extraProps?: Omit<BuildModelKey, 'key'>
+  sortable?: boolean
 }
 
 /**
