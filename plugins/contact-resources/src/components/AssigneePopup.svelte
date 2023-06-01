@@ -48,7 +48,6 @@
   export let ignoreUsers: Ref<Person>[] = []
   export let shadows: boolean = true
   export let width: 'medium' | 'large' | 'full' = 'medium'
-  export let size: 'small' | 'medium' | 'large' = 'small'
   export let searchField: string = 'name'
   export let showCategories: boolean = true
   export let icon: Asset | AnySvelteComponent | undefined = undefined
@@ -89,7 +88,7 @@
     currentEmployee: Ref<Person>,
     prevAssigned: Ref<Person>[] | undefined,
     componentLead: Ref<Person> | undefined,
-    members: Ref<Person>[] | undefined,
+    members: Ref<Person>[] | undefined
   ) {
     const persons = new Map<Ref<Person>, AssigneeCategory>(objects.map((t) => [t._id, 'Other']))
     if (componentLead) {

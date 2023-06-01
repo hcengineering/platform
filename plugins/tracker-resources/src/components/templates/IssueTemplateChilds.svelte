@@ -105,6 +105,7 @@
 {#if isCreating}
   <ExpandCollapse isExpanded={!isCollapsed} on:changeContent>
     <IssueTemplateChildEditor
+      projectId={project}
       {component}
       {milestone}
       {isScrollable}

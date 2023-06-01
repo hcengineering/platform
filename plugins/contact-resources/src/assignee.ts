@@ -4,13 +4,7 @@ import contact from './plugin'
 /**
  * @public
  */
-export type AssigneeCategory =
-  | 'CurrentUser'
-  | 'Assigned'
-  | 'PreviouslyAssigned'
-  | 'ComponentLead'
-  | 'Members'
-  | 'Other'
+export type AssigneeCategory = 'CurrentUser' | 'Assigned' | 'PreviouslyAssigned' | 'ComponentLead' | 'Members' | 'Other'
 
 const assigneeCategoryTitleMap: Record<AssigneeCategory, IntlString> = Object.freeze({
   CurrentUser: contact.string.CategoryCurrentUser,

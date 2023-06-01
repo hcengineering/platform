@@ -463,13 +463,13 @@ export function subIssueListProvider (subIssues: Issue[], target: Ref<Issue>): v
   }
 }
 
-export async function getPreviousAssignees (issue: Issue): Promise<Array<Ref<Employee>>> {
+export async function getPreviousAssignees (objectId: Ref<Doc>): Promise<Array<Ref<Employee>>> {
   return await new Promise((resolve) => {
     const query = createQuery(true)
     query.query(
       core.class.Tx,
       {
-        'tx.objectId': issue._id,
+        'tx.objectId': objectId,
         'tx.operations.assignee': { $exists: true }
       },
       (res) => {
