@@ -605,14 +605,6 @@
             notify={hasNotification}
           />
         </NavLink>
-        {#if $configurationStore.has(calendarId)}
-          <div class="spacer" />
-          <AppItem
-            icon={calendar.icon.Notifications}
-            label={calendar.string.Reminders}
-            on:click={() => showPopup(calendar.component.RemindersPopup, {}, notifyPosition)}
-          />
-        {/if}
         <div class="divider" />
         <Applications
           apps={getApps(apps)}

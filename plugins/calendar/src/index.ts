@@ -85,8 +85,7 @@ const calendarPlugin = plugin(calendarId, {
     PersonsPresenter: '' as AnyComponent,
     Events: '' as AnyComponent,
     DateTimePresenter: '' as AnyComponent,
-    DocReminder: '' as AnyComponent,
-    RemindersPopup: '' as AnyComponent
+    DocReminder: '' as AnyComponent
   },
   string: {
     Title: '' as IntlString,
