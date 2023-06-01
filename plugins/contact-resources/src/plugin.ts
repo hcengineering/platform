@@ -77,7 +77,9 @@ export default mergeIds(contactId, contact, {
     CategoryPreviousAssigned: '' as IntlString,
     CategoryProjectLead: '' as IntlString,
     CategoryOther: '' as IntlString,
-    DeleteEmployee: '' as IntlString
+    DeleteEmployee: '' as IntlString,
+    HasMessages: '' as IntlString,
+    HasNewMessages: '' as IntlString
   },
   function: {
     GetContactLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,

@@ -56,7 +56,7 @@
     filterUpdateTimeout = setTimeout(() => {
       filter.value = [...newValues]
       // Replace last one with value with level
-      filter.props = { level }
+      filter.props = { ...filter?.props, level }
       onChange(filter)
     }, FILTER_DEBOUNCE_MS)
   }
@@ -68,6 +68,40 @@
   <div class="menu-space" />
   <div class="scroll">
     <div class="box">
+      <button
+        class="menu-item no-focus flex-row-center content-pointer-events-none"
+        on:click={() => {
+          filter.props = {
+            ...filter?.props,
+            hasMessages: filter?.props?.hasMessages !== undefined ? !filter.props.hasMessages : true
+          }
+          updateFilter(selected)
+        }}
+      >
+        <span class="overflow-label label flex-grow"><Label label={contact.string.HasMessages} /></span>
+        <div class="check">
+          {#if filter?.props?.hasMessages}
+            <Icon icon={IconCheck} size={'small'} />
+          {/if}
+        </div>
+      </button>
+      <button
+        class="menu-item no-focus flex-row-center content-pointer-events-none"
+        on:click={() => {
+          filter.props = {
+            ...filter?.props,
+            hasNewMessages: filter?.props?.hasNewMessages !== undefined ? !filter.props.hasNewMessages : true
+          }
+          updateFilter(selected)
+        }}
+      >
+        <span class="overflow-label label flex-grow"><Label label={contact.string.HasNewMessages} /></span>
+        <div class="check">
+          {#if filter?.props?.hasNewMessages}
+            <Icon icon={IconCheck} size={'small'} />
+          {/if}
+        </div>
+      </button>
       {#each sortFilterValues($channelProviders, (v) => isSelected(v, selected)) as element}
         <button
           class="menu-item no-focus flex-row-center content-pointer-events-none"

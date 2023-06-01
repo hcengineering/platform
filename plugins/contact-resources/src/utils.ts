@@ -35,6 +35,8 @@ import view, { Filter } from '@hcengineering/view'
 import { FilterQuery } from '@hcengineering/view-resources'
 import { get, writable } from 'svelte/store'
 import contact from './plugin'
+import notification, { DocUpdateTx } from '@hcengineering/notification'
+import { getResource } from '@hcengineering/platform'
 
 export function getChannelProviders (providers: ChannelProvider[]): Map<Ref<ChannelProvider>, ChannelProvider> {
   const map = new Map<Ref<ChannelProvider>, ChannelProvider>()
@@ -91,17 +93,29 @@ export async function filterChannelNinResult (filter: Filter, onUpdate: () => vo
 
 export async function getRefs (filter: Filter, onUpdate: () => void): Promise<Array<Ref<Doc>>> {
   const lq = FilterQuery.getLiveQuery(filter.index)
+  const docUpdates = await get((await getResource(notification.function.GetNotificationClient))().docUpdatesStore)
   const client = getClient()
   const mode = await client.findOne(view.class.FilterMode, { _id: filter.mode })
   if (mode === undefined) return []
   const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
+    const newMessagesCheck =
+      filter.props?.hasMessages !== undefined && filter.props.hasMessages === true ? { items: { $gt: 0 } } : {}
+    const checkProvider = filter.value.length > 0 ? { provider: { $in: filter.value } } : {}
     const refresh = lq.query(
       contact.class.Channel,
       {
-        provider: { $in: filter.value }
+        ...checkProvider,
+        ...newMessagesCheck
       },
       (refs) => {
-        const result = Array.from(new Set(refs.map((p) => p.attachedTo)))
+        const filteredRefs =
+          filter.props?.hasNewMessages !== undefined && filter.props.hasNewMessages === true
+            ? refs.filter((channel) => {
+              const docUpdate = docUpdates.get(channel._id)
+              return docUpdate != null ? docUpdate.txes.some((p: DocUpdateTx) => p.isNew) : (channel.items ?? 0) > 0
+            })
+            : refs
+        const result = Array.from(new Set(filteredRefs.map((p) => p.attachedTo)))
         FilterQuery.results.set(filter.index, result)
         resolve(result)
         onUpdate()
