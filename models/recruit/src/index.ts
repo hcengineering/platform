@@ -759,6 +759,7 @@ export function createModel (builder: Builder): void {
         strict: true
       },
       config: [
+        '',
         'space',
         'assignee',
         'state',
