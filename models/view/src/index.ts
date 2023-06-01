@@ -80,7 +80,9 @@ import {
   ViewletDescriptor,
   ViewletPreference,
   Aggregation,
-  AggregationManagerResource
+  CreateAggregationManagerFunc,
+  GrouppingManagerResource,
+  Groupping
 } from '@hcengineering/view'
 import presentation from '@hcengineering/model-presentation'
 import view from './plugin'
@@ -273,9 +275,14 @@ export class TAllValuesFunc extends TClass implements AllValuesFunc {
   func!: GetAllValuesFunc
 }
 
+@Mixin(view.mixin.Groupping, core.class.Class)
+export class TGroupping extends TClass implements Groupping {
+  grouppingManager!: GrouppingManagerResource
+}
+
 @Mixin(view.mixin.Aggregation, core.class.Class)
 export class TAggregation extends TClass implements Aggregation {
-  aggregationManager!: AggregationManagerResource
+  createAggregationManager!: CreateAggregationManagerFunc
 }
 
 @Model(view.class.ViewletPreference, preference.class.Preference)
@@ -427,7 +434,8 @@ export function createModel (builder: Builder): void {
     TInlineAttributEditor,
     TFilteredView,
     TAllValuesFunc,
-    TAggregation
+    TAggregation,
+    TGroupping
   )
 
   classPresenter(
@@ -996,7 +1004,11 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(Core.class.Status, core.class.Class, view.mixin.Aggregation, {
-    aggregationManager: view.aggregation.StatusAggregationManager
+    createAggregationManager: view.aggregation.CreateStatusAggregationManager
+  })
+
+  builder.mixin(Core.class.Status, core.class.Class, view.mixin.Groupping, {
+    grouppingManager: view.aggregation.GrouppingStatusManager
   })
 }
 

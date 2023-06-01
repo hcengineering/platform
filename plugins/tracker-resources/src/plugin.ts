@@ -18,8 +18,9 @@ import { mergeIds } from '@hcengineering/platform'
 import { IssueDraft } from '@hcengineering/tracker'
 import { AnyComponent, Location } from '@hcengineering/ui'
 import {
-  AggregationManagerResource,
+  CreateAggregationManagerFunc,
   GetAllValuesFunc,
+  GrouppingManagerResource,
   SortFunc,
   Viewlet,
   ViewletDescriptor,
@@ -392,6 +393,7 @@ export default mergeIds(trackerId, tracker, {
     GetAllMilestones: '' as GetAllValuesFunc
   },
   aggregation: {
-    ComponentAggregationManager: '' as AggregationManagerResource
+    CreateComponentAggregationManager: '' as CreateAggregationManagerFunc,
+    GrouppingComponentManager: '' as GrouppingManagerResource
   }
 })

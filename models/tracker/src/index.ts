@@ -942,7 +942,11 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(tracker.class.Component, core.class.Class, view.mixin.Aggregation, {
-    aggregationManager: tracker.aggregation.ComponentAggregationManager
+    createAggregationManager: tracker.aggregation.CreateComponentAggregationManager
+  })
+
+  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.Groupping, {
+    grouppingManager: tracker.aggregation.GrouppingComponentManager
   })
 
   builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.ObjectPresenter, {

@@ -11,12 +11,10 @@ import core, {
   FindResult,
   Attribute,
   Hierarchy,
-  RefTo,
-  DocManager
+  RefTo
 } from '@hcengineering/core'
 import { BasePresentationMiddleware, PresentationMiddleware } from '@hcengineering/presentation'
-import { LiveQuery } from '@hcengineering/query'
-import view from '@hcengineering/view'
+import view, { AggregationManager } from '@hcengineering/view'
 import { getResource } from '@hcengineering/platform'
 
 /**
@@ -35,30 +33,30 @@ export interface DocSubScriber<T extends Doc = Doc> {
 /**
  * @public
  */
-export class DocMiddleware extends BasePresentationMiddleware implements PresentationMiddleware {
-  mgrs: Map<Ref<Class<Doc>>, DocManager | Promise<DocManager> | undefined>
+export class AggregationMiddleware extends BasePresentationMiddleware implements PresentationMiddleware {
+  mgrs: Map<Ref<Class<Doc>>, AggregationManager> = new Map<Ref<Class<Doc>>, AggregationManager>()
   docs: Doc[] | undefined
-  query: (() => void) | undefined
-  lq: LiveQuery
 
   subscribers: Map<string, DocSubScriber> = new Map()
   private constructor (client: Client, next?: PresentationMiddleware) {
     super(client, next)
-    this.lq = new LiveQuery(client)
-    this.mgrs = new Map<Ref<Class<Doc>>, DocManager | Promise<DocManager> | undefined>()
   }
 
-  static create (client: Client, next?: PresentationMiddleware): DocMiddleware {
-    return new DocMiddleware(client, next)
+  static create (client: Client, next?: PresentationMiddleware): AggregationMiddleware {
+    return new AggregationMiddleware(client, next)
   }
 
   async notifyTx (tx: Tx): Promise<void> {
-    await this.lq.tx(tx)
+    const promises: Array<Promise<void>> = []
+    for (const [, value] of this.mgrs) {
+      promises.push(value.notifyTx(tx))
+    }
+    await Promise.all(promises)
     await this.provideNotifyTx(tx)
   }
 
   async close (): Promise<void> {
-    this.query?.()
+    this.mgrs.forEach((mgr) => mgr.close())
     return await this.provideClose()
   }
 
@@ -66,55 +64,27 @@ export class DocMiddleware extends BasePresentationMiddleware implements Present
     return await this.provideTx(tx)
   }
 
-  async getManager (_class: Ref<Class<Doc>>): Promise<DocManager> {
-    const h = this.client.getHierarchy()
-    const mixin = h.classHierarchyMixin(_class, view.mixin.Aggregation)
-    if (mixin?.aggregationManager === undefined) {
-      throw new Error('aggregationManager not found')
-    }
-    const aggregationManager = await getResource(mixin.aggregationManager)
-
-    let findOptions = {}
-    if (aggregationManager.GetFindOptions !== undefined) {
-      findOptions = aggregationManager.GetFindOptions()
-    }
-
-    let mgr = this.mgrs.get(_class)
-    if (mgr !== undefined) {
-      if (mgr instanceof Promise) {
-        mgr = await mgr
-        this.mgrs.set(_class, mgr)
-      }
-      return mgr
-    }
-    mgr = new Promise<DocManager>((resolve) => {
-      this.query = this.lq.query(
-        _class,
-        {},
-        (res) => {
-          const first = this.docs === undefined
-          this.docs = res
-          const mgr = aggregationManager.GetManager(res)
-          this.mgrs.set(_class, mgr)
-          aggregationManager.SetManager(mgr)
-          if (!first) {
-            this.refreshSubscribers()
-          }
-          resolve(mgr)
-        },
-        findOptions
-      )
-    })
-    this.mgrs.set(_class, mgr)
-
-    return await mgr
-  }
-
   private refreshSubscribers (): void {
     for (const s of this.subscribers.values()) {
       // TODO: Do something more smart and track if used component field is changed.
       s.refresh()
     }
+  }
+
+  private async getAggregationManager (_class: Ref<Class<Doc>>): Promise<AggregationManager | undefined> {
+    let mgr = this.mgrs.get(_class)
+
+    if (mgr === undefined) {
+      const h = this.client.getHierarchy()
+      const mixin = h.classHierarchyMixin(_class, view.mixin.Aggregation)
+      if (mixin?.createAggregationManager !== undefined) {
+        const f = await getResource(mixin.createAggregationManager)
+        mgr = f(this.client, this.refreshSubscribers)
+        this.mgrs.set(_class, mgr)
+      }
+    }
+
+    return mgr
   }
 
   async findAll<T extends Doc>(
@@ -140,11 +110,9 @@ export class DocMiddleware extends BasePresentationMiddleware implements Present
             resultDoc.$lookup = {}
           }
 
-          // TODO: Check for mixin?
-          const value = (r as any)[attr.name]
-          const doc = (await this.getManager((attr.type as RefTo<Doc>).to)).getIdMap().get(value)
-          if (doc !== undefined) {
-            ;(resultDoc.$lookup as any)[attr.name] = doc
+          const mgr = await this.getAggregationManager((attr.type as RefTo<Doc>).to)
+          if (mgr !== undefined) {
+            await mgr.updateLookup(resultDoc, attr)
           }
         }
       }
@@ -164,13 +132,11 @@ export class DocMiddleware extends BasePresentationMiddleware implements Present
         if (attr.type._class !== core.class.RefTo) {
           continue
         }
-        const mixin = h.classHierarchyMixin((attr.type as RefTo<Doc>).to, view.mixin.Aggregation)
-        if (mixin?.aggregationManager === undefined) {
+        const mgr = await this.getAggregationManager((attr.type as RefTo<Doc>).to)
+        if (mgr === undefined) {
           continue
         }
-        const aggregationManager = await getResource(mixin.aggregationManager)
-        if (h.isDerived((attr.type as RefTo<Doc>).to, aggregationManager.GetAttrClass())) {
-          const mgr = await this.getManager((attr.type as RefTo<Doc>).to)
+        if (h.isDerived((attr.type as RefTo<Doc>).to, mgr.getAttrClass())) {
           let target: Array<Ref<Doc>> = []
           let targetNin: Array<Ref<Doc>> = []
           docFields.push(attr)
@@ -191,8 +157,8 @@ export class DocMiddleware extends BasePresentationMiddleware implements Present
             }
 
             // Find all similar name statues for same attribute name.
-            target = aggregationManager.Categorize(mgr, attr, target)
-            targetNin = aggregationManager.Categorize(mgr, attr, targetNin)
+            target = await mgr.categorize(target, attr)
+            targetNin = await mgr.categorize(targetNin, attr)
             if (target.length > 0 || targetNin.length > 0) {
               ;(query as any)[attr.name] = {}
               if (target.length > 0) {
@@ -212,8 +178,8 @@ export class DocMiddleware extends BasePresentationMiddleware implements Present
           }
 
           // Update sorting if defined.
-          if (aggregationManager.UpdateCustomSorting !== undefined) {
-            aggregationManager.UpdateCustomSorting(finalOptions, attr, mgr)
+          if (mgr.updateSorting !== undefined) {
+            await mgr.updateSorting(finalOptions, attr)
           }
         }
       } catch (err: any) {

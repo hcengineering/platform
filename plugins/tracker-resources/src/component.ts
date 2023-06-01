@@ -17,78 +17,117 @@ import {
   AggregateValue,
   AggregateValueData,
   AnyAttribute,
+  Attribute,
   Class,
+  Client,
   Doc,
-  DocManager,
-  FindOptions,
   Ref,
   SortingOrder,
   Space,
+  Tx,
   WithLookup
 } from '@hcengineering/core'
+import { LiveQuery } from '@hcengineering/query'
 import tracker, { Component, ComponentManager } from '@hcengineering/tracker'
+import { AggregationManager, GrouppingManager } from '@hcengineering/view'
 import { get, writable } from 'svelte/store'
 
 export const componentStore = writable<ComponentManager>(new ComponentManager([]))
 
-export const componentAggregationManager = {
-  GroupByCategories: groupByComponentCategories,
-  GroupValues: groupComponentValues,
-  HasValue: hasComponentValue,
-  SetManager: setComponentManager,
-  GetManager: getComponentManager,
-  GetFindOptions: getComponentFindOptions,
-  GetAttrClass: getComponentClass,
-  Categorize: componentCategorize
-}
-
 /**
  * @public
  */
-export function getComponentManager (docs: Doc[]): ComponentManager {
-  return new ComponentManager(docs)
-}
+export class ComponentAggregationManager implements AggregationManager {
+  docs: Doc[] | undefined
+  mgr: ComponentManager | Promise<ComponentManager> | undefined
+  query: (() => void) | undefined
+  lq: LiveQuery
+  lqCallback: () => void
 
-/**
- * @public
- */
-export function setComponentManager (mgr: ComponentManager): void {
-  return componentStore.set(mgr)
-}
-
-/**
- * @public
- */
-export function getComponentFindOptions (): FindOptions<Component> {
-  return {
-    sort: {
-      label: SortingOrder.Ascending
-    }
+  private constructor (client: Client, lqCallback: () => void) {
+    this.lq = new LiveQuery(client)
+    this.lqCallback = lqCallback ?? (() => {})
   }
-}
 
-/**
- * @public
- */
-export function getComponentClass (): Ref<Class<Doc>> {
-  return tracker.class.Component
-}
+  static create (client: Client, lqCallback: () => void): ComponentAggregationManager {
+    return new ComponentAggregationManager(client, lqCallback)
+  }
 
-/**
- * @public
- */
-export function componentCategorize (mgr: DocManager, attr: AnyAttribute, target: Array<Ref<Doc>>): Array<Ref<Doc>> {
-  for (const sid of [...target]) {
-    const s = mgr.getIdMap().get(sid) as WithLookup<Component>
-    if (s !== undefined) {
-      let components = mgr.getDocs() as Array<WithLookup<Component>>
-      components = components.filter(
-        (it) => it.label.toLowerCase().trim() === s.label.toLowerCase().trim() && it._id !== s._id
+  private async getManager (): Promise<ComponentManager> {
+    if (this.mgr !== undefined) {
+      if (this.mgr instanceof Promise) {
+        this.mgr = await this.mgr
+      }
+      return this.mgr
+    }
+    this.mgr = new Promise<ComponentManager>((resolve) => {
+      this.query = this.lq.query(
+        tracker.class.Component,
+        {},
+        (res) => {
+          const first = this.docs === undefined
+          this.docs = res
+          this.mgr = new ComponentManager(res)
+          componentStore.set(this.mgr)
+          if (!first) {
+            this.lqCallback()
+          }
+          resolve(this.mgr)
+        },
+        {
+          sort: {
+            label: SortingOrder.Ascending
+          }
+        }
       )
-      target.push(...components.map((it) => it._id))
+    })
+
+    return await this.mgr
+  }
+
+  close (): void {
+    this.query?.()
+  }
+
+  async notifyTx (tx: Tx): Promise<void> {
+    await this.lq.tx(tx)
+  }
+
+  getAttrClass (): Ref<Class<Doc>> {
+    return tracker.class.Component
+  }
+
+  async categorize (target: Array<Ref<Doc>>, attr: AnyAttribute): Promise<Array<Ref<Doc>>> {
+    const mgr = await this.getManager()
+    for (const sid of [...target]) {
+      const c = mgr.getIdMap().get(sid as Ref<Component>) as WithLookup<Component>
+      if (c !== undefined) {
+        let components = mgr.getDocs()
+        components = components.filter(
+          (it) => it.label.toLowerCase().trim() === c.label.toLowerCase().trim() && it._id !== c._id
+        )
+        target.push(...components.map((it) => it._id))
+      }
+    }
+    return target.filter((it, idx, arr) => arr.indexOf(it) === idx)
+  }
+
+  async updateLookup (resultDoc: WithLookup<Doc>, attr: Attribute<Doc>): Promise<void> {
+    const value = (resultDoc as any)[attr.name]
+    const doc = (await this.getManager()).getIdMap().get(value)
+    if (doc !== undefined) {
+      ;(resultDoc.$lookup as any)[attr.name] = doc
     }
   }
-  return target.filter((it, idx, arr) => arr.indexOf(it) === idx)
+}
+
+/**
+ * @public
+ */
+export const grouppingComponentManager: GrouppingManager = {
+  groupByCategories: groupByComponentCategories,
+  groupValues: groupComponentValues,
+  hasValue: hasComponentValue
 }
 
 /**
@@ -135,17 +174,17 @@ export function groupByComponentCategories (categories: any[]): AggregateValue[]
 /**
  * @public
  */
-export function groupComponentValues (val: Component[], targets: Set<any>): Doc[] {
+export function groupComponentValues (val: Doc[], targets: Set<any>): Doc[] {
   const values = val
   const result: Doc[] = []
-  const unique = [...new Set(val.map((v) => v.label.trim().toLocaleLowerCase()))]
+  const unique = [...new Set(val.map((c) => (c as Component).label.trim().toLocaleLowerCase()))]
   unique.forEach((label, i) => {
     let exists = false
-    values.forEach((state) => {
-      if (state.label.trim().toLocaleLowerCase() === label) {
+    values.forEach((c) => {
+      if ((c as Component).label.trim().toLocaleLowerCase() === label) {
         if (!exists) {
-          result[i] = state
-          exists = targets.has(state?._id)
+          result[i] = c
+          exists = targets.has(c?._id)
         }
       }
     })

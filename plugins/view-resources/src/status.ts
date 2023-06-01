@@ -17,9 +17,10 @@ import core, {
   AggregateValue,
   AggregateValueData,
   AnyAttribute,
+  Attribute,
   Class,
+  Client,
   Doc,
-  DocManager,
   FindOptions,
   Ref,
   SortingOrder,
@@ -28,117 +29,148 @@ import core, {
   Status,
   StatusManager,
   StatusValue,
+  Tx,
   WithLookup
 } from '@hcengineering/core'
+import { LiveQuery } from '@hcengineering/query'
+import { AggregationManager, GrouppingManager } from '@hcengineering/view'
 import { get, writable } from 'svelte/store'
 
 // Issue status live query
 export const statusStore = writable<StatusManager>(new StatusManager([]))
 
-export const statusAggregationManager = {
-  GroupByCategories: groupByStatusCategories,
-  GroupValues: groupStatusValues,
-  HasValue: hasStatusValue,
-  SetManager: setStatusManager,
-  GetManager: getStatusManager,
-  GetFindOptions: getStatusFindOptions,
-  GetAttrClass: getStatusClass,
-  Categorize: statusCategorize,
-  UpdateCustomSorting: statusUpdateCustomSorting
-}
-
 /**
  * @public
  */
-export function getStatusManager (docs: Doc[]): StatusManager {
-  return new StatusManager(docs)
-}
+export class StatusAggregationManager implements AggregationManager {
+  docs: Doc[] | undefined
+  mgr: StatusManager | Promise<StatusManager> | undefined
+  query: (() => void) | undefined
+  lq: LiveQuery
+  lqCallback: () => void
 
-/**
- * @public
- */
-export function setStatusManager (mgr: StatusManager): void {
-  return statusStore.set(mgr)
-}
-
-/**
- * @public
- */
-export function getStatusFindOptions (): FindOptions<Status> {
-  return {
-    lookup: {
-      category: core.class.StatusCategory
-    },
-    sort: {
-      rank: SortingOrder.Ascending
-    }
+  private constructor (client: Client, lqCallback: () => void) {
+    this.lq = new LiveQuery(client)
+    this.lqCallback = lqCallback ?? (() => {})
   }
-}
 
-/**
- * @public
- */
-export function getStatusClass (): Ref<Class<Doc>> {
-  return core.class.Status
-}
-
-/**
- * @public
- */
-export function statusCategorize (mgr: DocManager, attr: AnyAttribute, target: Array<Ref<Doc>>): Array<Ref<Doc>> {
-  for (const sid of [...target]) {
-    const s = mgr.getIdMap().get(sid) as WithLookup<Status>
-    if (s !== undefined) {
-      let statuses = mgr.getDocs() as Array<WithLookup<Status>>
-      statuses = statuses.filter(
-        (it) =>
-          it.ofAttribute === attr._id &&
-          it.name.toLowerCase().trim() === s.name.toLowerCase().trim() &&
-          it._id !== s._id
-      )
-      target.push(...statuses.map((it) => it._id))
-    }
+  static create (client: Client, lqCallback: () => void): StatusAggregationManager {
+    return new StatusAggregationManager(client, lqCallback)
   }
-  return target.filter((it, idx, arr) => arr.indexOf(it) === idx)
-}
 
-/**
- * @public
- */
-export function statusUpdateCustomSorting<T extends Doc> (
-  finalOptions: FindOptions<T>,
-  attr: AnyAttribute,
-  mgr: DocManager
-): void {
-  const attrSort = finalOptions.sort?.[attr.name]
-  if (attrSort !== undefined && typeof attrSort !== 'object') {
-    // Fill custom sorting.
-    let statuses = mgr.getDocs() as Array<WithLookup<Status>>
-    statuses = statuses.filter((it) => it.ofAttribute === attr._id)
-    statuses.sort((a, b) => {
-      let ret = 0
-      if (a.category !== undefined && b.category !== undefined) {
-        ret = (a.$lookup?.category?.order ?? 0) - (b.$lookup?.category?.order ?? 0)
+  private async getManager (): Promise<StatusManager> {
+    if (this.mgr !== undefined) {
+      if (this.mgr instanceof Promise) {
+        this.mgr = await this.mgr
       }
-      if (ret === 0) {
-        if (a.name.toLowerCase().trim() === b.name.toLowerCase().trim()) {
-          return 0
+      return this.mgr
+    }
+    this.mgr = new Promise<StatusManager>((resolve) => {
+      this.query = this.lq.query(
+        core.class.Status,
+        {},
+        (res) => {
+          const first = this.docs === undefined
+          this.docs = res
+          this.mgr = new StatusManager(res)
+          statusStore.set(this.mgr)
+          if (!first) {
+            this.lqCallback()
+          }
+          resolve(this.mgr)
+        },
+        {
+          lookup: {
+            category: core.class.StatusCategory
+          },
+          sort: {
+            rank: SortingOrder.Ascending
+          }
         }
-        ret = a.rank.localeCompare(b.rank)
-      }
-      return ret
+      )
     })
-    if (finalOptions.sort === undefined) {
-      finalOptions.sort = {}
-    }
 
-    const rules: SortingRules<any> = {
-      order: attrSort,
-      cases: statuses.map((it, idx) => ({ query: it._id, index: idx })),
-      default: statuses.length + 1
-    }
-    ;(finalOptions.sort as any)[attr.name] = rules
+    return await this.mgr
   }
+
+  close (): void {
+    this.query?.()
+  }
+
+  async notifyTx (tx: Tx): Promise<void> {
+    await this.lq.tx(tx)
+  }
+
+  getAttrClass (): Ref<Class<Doc>> {
+    return core.class.Status
+  }
+
+  async categorize (target: Array<Ref<Doc>>, attr: AnyAttribute): Promise<Array<Ref<Doc>>> {
+    const mgr = await this.getManager()
+    for (const sid of [...target]) {
+      const s = mgr.getIdMap().get(sid as Ref<Status>) as WithLookup<Status>
+      if (s !== undefined) {
+        let statuses = mgr.getDocs()
+        statuses = statuses.filter(
+          (it) =>
+            it.ofAttribute === attr._id &&
+            it.name.toLowerCase().trim() === s.name.toLowerCase().trim() &&
+            it._id !== s._id
+        )
+        target.push(...statuses.map((it) => it._id))
+      }
+    }
+    return target.filter((it, idx, arr) => arr.indexOf(it) === idx)
+  }
+
+  async updateLookup (resultDoc: WithLookup<Doc>, attr: Attribute<Doc>): Promise<void> {
+    const value = (resultDoc as any)[attr.name]
+    const doc = (await this.getManager()).getIdMap().get(value)
+    if (doc !== undefined) {
+      ;(resultDoc.$lookup as any)[attr.name] = doc
+    }
+  }
+
+  async updateSorting<T extends Doc>(finalOptions: FindOptions<T>, attr: AnyAttribute): Promise<void> {
+    const attrSort = finalOptions.sort?.[attr.name]
+    if (attrSort !== undefined && typeof attrSort !== 'object') {
+      // Fill custom sorting.
+      let statuses = (await this.getManager()).getDocs()
+      statuses = statuses.filter((it) => it.ofAttribute === attr._id)
+      statuses.sort((a, b) => {
+        let ret = 0
+        if (a.category !== undefined && b.category !== undefined) {
+          ret = (a.$lookup?.category?.order ?? 0) - (b.$lookup?.category?.order ?? 0)
+        }
+        if (ret === 0) {
+          if (a.name.toLowerCase().trim() === b.name.toLowerCase().trim()) {
+            return 0
+          }
+          ret = a.rank.localeCompare(b.rank)
+        }
+        return ret
+      })
+      if (finalOptions.sort === undefined) {
+        finalOptions.sort = {}
+      }
+
+      const rules: SortingRules<any> = {
+        order: attrSort,
+        cases: statuses.map((it, idx) => ({ query: it._id, index: idx })),
+        default: statuses.length + 1
+      }
+      ;(finalOptions.sort as any)[attr.name] = rules
+    }
+  }
+}
+
+/**
+ * @public
+ */
+export const grouppingStatusManager: GrouppingManager = {
+  groupByCategories: groupByStatusCategories,
+  groupValues: groupStatusValues,
+  hasValue: hasStatusValue
 }
 
 /**
@@ -186,17 +218,17 @@ export function groupByStatusCategories (categories: any[]): AggregateValue[] {
 /**
  * @public
  */
-export function groupStatusValues (val: Status[], targets: Set<any>): Doc[] {
+export function groupStatusValues (val: Doc[], targets: Set<any>): Doc[] {
   const values = val
   const result: Doc[] = []
-  const unique = [...new Set(val.map((v) => v.name.trim().toLocaleLowerCase()))]
+  const unique = [...new Set(val.map((v) => (v as Status).name.trim().toLocaleLowerCase()))]
   unique.forEach((label, i) => {
     let exists = false
-    values.forEach((state) => {
-      if (state.name.trim().toLocaleLowerCase() === label) {
+    values.forEach((value) => {
+      if ((value as Status).name.trim().toLocaleLowerCase() === label) {
         if (!exists) {
-          result[i] = state
-          exists = targets.has(state?._id)
+          result[i] = value
+          exists = targets.has(value?._id)
         }
       }
     })

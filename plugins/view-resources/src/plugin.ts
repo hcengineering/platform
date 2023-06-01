@@ -17,7 +17,7 @@
 import { IntlString, Resource, mergeIds } from '@hcengineering/platform'
 import { PresentationMiddlewareCreator } from '@hcengineering/presentation'
 import { AnyComponent } from '@hcengineering/ui'
-import view, { AggregationManagerResource, SortFunc, viewId } from '@hcengineering/view'
+import view, { CreateAggregationManagerFunc, GrouppingManagerResource, SortFunc, viewId } from '@hcengineering/view'
 
 export default mergeIds(viewId, view, {
   component: {
@@ -96,6 +96,7 @@ export default mergeIds(viewId, view, {
     CreateDocMiddleware: '' as Resource<PresentationMiddlewareCreator>
   },
   aggregation: {
-    StatusAggregationManager: '' as AggregationManagerResource
+    CreateStatusAggregationManager: '' as CreateAggregationManagerFunc,
+    GrouppingStatusManager: '' as GrouppingManagerResource
   }
 })

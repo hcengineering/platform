@@ -631,12 +631,12 @@ export async function groupByCategory (
   if (key === noCategory) return [undefined]
 
   const attrClass = getAttributePresenterClass(h, attr).attrClass
-  const mixin = h.classHierarchyMixin(attrClass, view.mixin.Aggregation)
+  const mixin = h.classHierarchyMixin(attrClass, view.mixin.Groupping)
   let existingCategories: any[] = []
 
-  if (mixin?.aggregationManager !== undefined) {
-    const aggregationManager = await getResource(mixin.aggregationManager)
-    existingCategories = aggregationManager.GroupByCategories(categories)
+  if (mixin?.grouppingManager !== undefined) {
+    const grouppingManager = await getResource(mixin.grouppingManager)
+    existingCategories = grouppingManager.groupByCategories(categories)
   } else {
     const valueSet = new Set<any>()
     for (const v of categories) {

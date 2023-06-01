@@ -18,11 +18,11 @@ import {
   Account,
   AggregateValue,
   AnyAttribute,
+  Attribute,
   CategoryType,
   Class,
   Client,
   Doc,
-  DocManager,
   DocumentQuery,
   FindOptions,
   Lookup,
@@ -35,8 +35,10 @@ import {
   Space,
   StatusManager,
   StatusValue,
+  Tx,
   Type,
-  UXObject
+  UXObject,
+  WithLookup
 } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, Resource, Status, plugin } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
@@ -313,69 +315,34 @@ export interface AllValuesFunc extends Class<Doc> {
 /**
  * @public
  */
-export type GroupByCategoriesFunc = (categories: any[]) => AggregateValue[]
+export interface GrouppingManager {
+  groupByCategories: (categories: any[]) => AggregateValue[]
+  groupValues: (val: Doc[], targets: Set<any>) => Doc[]
+  hasValue: (value: Doc | undefined | null, values: any[]) => boolean
+}
 
 /**
  * @public
  */
-export type GroupValuesFunc = <T extends Doc>(val: T[], targets: Set<any>) => T[]
+export type GrouppingManagerResource = Resource<GrouppingManager>
 
 /**
  * @public
  */
-export type HasValueFunc = <T extends Doc>(value: T | undefined | null, values: any[]) => boolean
-
-/**
- * @public
- */
-export type SetManager = <T extends DocManager>(mgr: T) => void
-
-/**
- * @public
- */
-export type GetManager = <T extends DocManager>(docs: Doc[]) => T
-
-/**
- * @public
- */
-export type GetFindOptions = <T extends Doc>() => FindOptions<T>
-
-/**
- * @public
- */
-export type GetAttrClass = <T extends Doc>() => Ref<Class<T>>
-
-/**
- * @public
- */
-export type Categorize = <T extends DocManager, U extends Doc>(
-  mgr: T,
-  attr: AnyAttribute,
-  target: Array<Ref<U>>
-) => Array<Ref<U>>
-
-/**
- * @public
- */
-export type UpdateCustomSorting = <T extends Doc>(
-  finalOptions: FindOptions<T>,
-  attr: AnyAttribute,
-  mgr: DocManager
-) => void
+export interface Groupping extends Class<Doc> {
+  grouppingManager: GrouppingManagerResource
+}
 
 /**
  * @public
  */
 export interface AggregationManager {
-  GroupByCategories: GroupByCategoriesFunc
-  GroupValues: GroupValuesFunc
-  HasValue: HasValueFunc
-  SetManager: SetManager
-  GetManager: GetManager
-  GetFindOptions?: GetFindOptions
-  GetAttrClass: GetAttrClass
-  Categorize: Categorize
-  UpdateCustomSorting?: UpdateCustomSorting
+  close: () => void
+  notifyTx: (tx: Tx) => Promise<void>
+  updateLookup: (resultDoc: WithLookup<Doc>, attr: Attribute<Doc>) => Promise<void>
+  categorize: (target: Array<Ref<Doc>>, attr: AnyAttribute) => Promise<Array<Ref<Doc>>>
+  getAttrClass: () => Ref<Class<Doc>>
+  updateSorting?: (finalOptions: FindOptions<Doc>, attr: AnyAttribute) => Promise<void>
 }
 
 /**
@@ -386,8 +353,13 @@ export type AggregationManagerResource = Resource<AggregationManager>
 /**
  * @public
  */
+export type CreateAggregationManagerFunc = Resource<(client: Client, lqCallback: () => void) => AggregationManager>
+
+/**
+ * @public
+ */
 export interface Aggregation extends Class<Doc> {
-  aggregationManager: AggregationManagerResource
+  createAggregationManager: CreateAggregationManagerFunc
 }
 
 /**
@@ -747,7 +719,8 @@ const view = plugin(viewId, {
     LinkProvider: '' as Ref<Mixin<LinkProvider>>,
     SpacePresenter: '' as Ref<Mixin<SpacePresenter>>,
     AttributeFilterPresenter: '' as Ref<Mixin<AttributeFilterPresenter>>,
-    Aggregation: '' as Ref<Mixin<Aggregation>>
+    Aggregation: '' as Ref<Mixin<Aggregation>>,
+    Groupping: '' as Ref<Mixin<Groupping>>
   },
   class: {
     ViewletPreference: '' as Ref<Class<ViewletPreference>>,

@@ -27,7 +27,7 @@
     Loading,
     resizeObserver
   } from '@hcengineering/ui'
-  import { AggregationManager, Filter } from '@hcengineering/view'
+  import { Filter, GrouppingManager } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { FILTER_DEBOUNCE_MS, sortFilterValues } from '../../filter'
   import view from '../../plugin'
@@ -49,14 +49,14 @@
 
   let values: (Doc | undefined | null)[] = []
   let objectsPromise: Promise<FindResult<Doc>> | undefined
-  let aggregationManager: AggregationManager
+  let grouppingManager: GrouppingManager | undefined
 
   const targets = new Set<any>()
   $: targetClass = (filter.key.attribute.type as RefTo<Doc>).to
   $: clazz = hierarchy.getClass(targetClass)
-  $: mixin = hierarchy.classHierarchyMixin(targetClass, view.mixin.Aggregation)
-  $: if (mixin?.aggregationManager !== undefined) {
-    getResource(mixin.aggregationManager).then((mgr) => (aggregationManager = mgr))
+  $: mixin = hierarchy.classHierarchyMixin(targetClass, view.mixin.Groupping)
+  $: if (mixin?.grouppingManager !== undefined) {
+    getResource(mixin.grouppingManager).then((mgr) => (grouppingManager = mgr))
   }
 
   let filterUpdateTimeout: number | undefined
@@ -94,8 +94,8 @@
     const options = clazz.sortingKey !== undefined ? { sort: { [clazz.sortingKey]: SortingOrder.Ascending } } : {}
     objectsPromise = client.findAll(targetClass, resultQuery, options)
     values = await objectsPromise
-    if (aggregationManager !== undefined) {
-      values = aggregationManager.GroupValues(values as Doc[], targets)
+    if (grouppingManager !== undefined) {
+      values = grouppingManager.groupValues(values as Doc[], targets)
     }
     if (targets.has(undefined)) {
       values.unshift(undefined)
@@ -115,8 +115,8 @@
   }
 
   function isSelected (value: Doc | undefined | null, values: any[]): boolean {
-    if (aggregationManager !== undefined) {
-      return aggregationManager.HasValue(value, values)
+    if (grouppingManager !== undefined) {
+      return grouppingManager.hasValue(value, values)
     }
     return values.includes(value?._id ?? value)
   }

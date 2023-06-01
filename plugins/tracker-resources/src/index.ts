@@ -134,7 +134,7 @@ import ProjectSpacePresenter from './components/projects/ProjectSpacePresenter.s
 import IssueStatistics from './components/milestones/IssueStatistics.svelte'
 import MilestoneRefPresenter from './components/milestones/MilestoneRefPresenter.svelte'
 import MilestoneFilter from './components/milestones/MilestoneFilter.svelte'
-import { componentAggregationManager } from './component'
+import { ComponentAggregationManager, grouppingComponentManager } from './component'
 
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 
@@ -480,6 +480,7 @@ export default async (): Promise<Resources> => ({
     Location: resolveLocation
   },
   aggregation: {
-    ComponentAggregationManager: componentAggregationManager
+    CreateComponentAggregationManager: ComponentAggregationManager.create,
+    GrouppingComponentManager: grouppingComponentManager
   }
 })

@@ -101,8 +101,8 @@ import {
 import { IndexedDocumentPreview } from '@hcengineering/presentation'
 import { statusSort } from './utils'
 import { showEmptyGroups } from './viewOptions'
-import { DocMiddleware } from './middleware'
-import { statusAggregationManager } from './status'
+import { AggregationMiddleware } from './middleware'
+import { grouppingStatusManager, StatusAggregationManager } from './status'
 export { getActions, invokeAction } from './actions'
 export { default as ActionHandler } from './components/ActionHandler.svelte'
 export { default as AddSavedView } from './components/filter/AddSavedView.svelte'
@@ -256,9 +256,10 @@ export default async (): Promise<Resources> => ({
     FilterDateNextMonth: dateNextMonth,
     FilterDateNotSpecified: dateNotSpecified,
     FilterDateCustom: dateCustom,
-    CreateDocMiddleware: DocMiddleware.create
+    CreateDocMiddleware: AggregationMiddleware.create
   },
   aggregation: {
-    StatusAggregationManager: statusAggregationManager
+    CreateStatusAggregationManager: StatusAggregationManager.create,
+    GrouppingStatusManager: grouppingStatusManager
   }
 })
