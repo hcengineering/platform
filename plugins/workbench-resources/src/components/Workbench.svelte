@@ -20,7 +20,8 @@
   import notification, { notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, NotificationClientImpl } from '@hcengineering/notification-resources'
   import { IntlString, getMetadata, getResource } from '@hcengineering/platform'
-  import { configurationStore, createQuery, getClient, ActionContext } from '@hcengineering/presentation'
+  import { ActionContext, configurationStore, createQuery, getClient } from '@hcengineering/presentation'
+  import { resolvedLocationStore } from '@hcengineering/ui'
   import {
     AnyComponent,
     CompAndProps,
@@ -49,7 +50,6 @@
     showPopup
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import setting from '@hcengineering/setting'
   import {
     ActionHandler,
     ListSelectionProvider,
@@ -69,9 +69,8 @@
   import Logo from './Logo.svelte'
   import NavHeader from './NavHeader.svelte'
   import Navigator from './Navigator.svelte'
-  import SpaceView from './SpaceView.svelte'
   import SelectWorkspaceMenu from './SelectWorkspaceMenu.svelte'
-  import Settings from './icons/Settings.svelte'
+  import SpaceView from './SpaceView.svelte'
   import TopMenu from './icons/TopMenu.svelte'
 
   let contentPanel: HTMLElement
@@ -574,7 +573,7 @@
             showPopup(SelectWorkspaceMenu, {}, popupSpacePosition)
           }}
         >
-          <Logo mini={appsMini} />
+          <Logo mini={appsMini} workspace={$resolvedLocationStore.path[1]} />
         </div>
         <div class="topmenu-container clear-mins flex-no-shrink" class:mini={appsMini}>
           <AppItem
@@ -622,13 +621,13 @@
         />
       </div>
       <div class="info-box {appsDirection}" class:vertical-mobile={appsDirection === 'vertical'} class:mini={appsMini}>
-        <AppItem
+        <!-- <AppItem
           icon={Settings}
           label={setting.string.Settings}
           selected={shownMenu}
           size={appsMini ? 'small' : 'large'}
           on:click={() => (shownMenu = !shownMenu)}
-        />
+        /> -->
         <div class="flex-center" class:mt-3={appsDirection === 'vertical'} class:ml-2={appsDirection === 'horizontal'}>
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div

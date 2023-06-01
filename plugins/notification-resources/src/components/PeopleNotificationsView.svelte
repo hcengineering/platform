@@ -157,11 +157,7 @@
       margin-right: 0.5rem;
       display: flex;
       flex-grow: 1;
-      padding: 0.5rem 0;
-
-      &.read {
-        opacity: 0.6;
-      }
+      padding: 0.5rem 0;      
     }
   }
 

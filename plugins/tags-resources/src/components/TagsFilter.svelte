@@ -55,26 +55,43 @@
 
   let categories: TagCategory[] = []
   let objects: TagElement[] = []
+
+  let catsSorted = false
+
   client.findAll(tags.class.TagCategory, { targetClass: _class }).then((res) => {
     categories = res
   })
 
   let objectsPromise: Promise<FindResult<TagElement>> | undefined
+  let queryId = 0
 
   async function getValues (search: string): Promise<void> {
-    if (objectsPromise) {
-      await objectsPromise
-    }
+    const qid = ++queryId
     const resultQuery =
       search !== ''
         ? {
-            title: { $like: '%' + search + '%' },
+            title: { $like: search.replace('*', '%') + '%' },
             targetClass: _class
           }
         : { targetClass: _class }
     objectsPromise = client.findAll(tags.class.TagElement, resultQuery)
-    objects = await objectsPromise
+    const _objects = await objectsPromise
+    if (qid !== queryId) {
+      return
+    }
+    objects = _objects
     objectsPromise = undefined
+  }
+
+  $: if (!catsSorted && categories.length > 0 && objects.length > 0 && selected.length > 0) {
+    categories.sort((a, b) => {
+      const alen = objects.filter((el) => el.category === a._id && isSelected(el))
+      const blen = objects.filter((el) => el.category === b._id && isSelected(el))
+      console.log(alen.length, blen.length, selected.length)
+      return blen.length - alen.length
+    })
+    categories = categories
+    catsSorted = true
   }
 
   let search: string = ''
@@ -105,16 +122,16 @@
     objects = objects
     categories = categories
 
-    updateFilter(selected)
+    updateFilter(selected, level)
   }
 
-  function updateFilter (newValues: Ref<TagElement>[]) {
+  function updateFilter (newValues: Ref<TagElement>[], newLevel: number) {
     clearTimeout(filterUpdateTimeout)
 
     filterUpdateTimeout = setTimeout(() => {
       filter.value = [...newValues]
       // Replace last one with value with level
-      filter.props = { level }
+      filter.props = { level: newLevel }
       onChange(filter)
     }, FILTER_DEBOUNCE_MS)
   }
@@ -150,6 +167,7 @@
               if (Number.isFinite(res) && res >= 0 && res <= 8) {
                 if (res != null) {
                   level = res
+                  updateFilter(selected, level)
                 }
               }
             })
@@ -164,7 +182,10 @@
         <Loading />
       {:else}
         {#each categories as cat, i}
-          {@const values = objects.filter((el) => el.category === cat._id)}
+          {@const values = sortFilterValues(
+            objects.filter((el) => el.category === cat._id),
+            isSelected
+          )}
           {#if values.length > 0}
             {#if i > 0}<div class="menu-separator" />{/if}
             <div class="sticky-wrapper">
@@ -190,7 +211,7 @@
                 {/if}
               </button>
               <div class="menu-group">
-                {#each sortFilterValues(values, isSelected) as element}
+                {#each values as element}
                   {@const color = getPlatformColorDef(element.color, $themeStore.dark)}
                   <button
                     class="menu-item no-focus flex-row-center"

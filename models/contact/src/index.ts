@@ -286,7 +286,8 @@ export function createModel (builder: Builder): void {
         }
       ],
       configOptions: {
-        hiddenKeys: ['name']
+        hiddenKeys: ['name'],
+        sortable: true
       }
     },
     contact.viewlet.TableContact

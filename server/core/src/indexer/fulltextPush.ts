@@ -36,7 +36,7 @@ import {
   FullTextPipelineStage,
   fullTextPushStageId
 } from './types'
-import { collectPropagate, docKey, getFullTextContext } from './utils'
+import { collectPropagate, collectPropagateClasses, docKey, getFullTextContext } from './utils'
 
 /**
  * @public
@@ -49,7 +49,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
 
   updateFields: DocUpdateHandler[] = []
 
-  limit = 100
+  limit = 10
 
   dimmVectors: Record<string, number[]> = {}
 
@@ -144,6 +144,20 @@ export class FullTextPushStage implements FullTextPipelineStage {
               )
               if (parentDoc !== undefined) {
                 updateDoc2Elastic(parentDoc.attributes, elasticDoc, parentDoc._id)
+
+                const ctx = collectPropagateClasses(pipeline, parentDoc.objectClass)
+                if (ctx.length > 0) {
+                  for (const p of ctx) {
+                    const collections = await this.dbStorage.findAll(
+                      metrics.newChild('propagate', {}),
+                      core.class.DocIndexState,
+                      { attachedTo: parentDoc._id, objectClass: p }
+                    )
+                    for (const c of collections) {
+                      updateDoc2Elastic(c.attributes, elasticDoc, c._id)
+                    }
+                  }
+                }
               }
             }
           }
@@ -215,7 +229,9 @@ function updateDoc2Elastic (attributes: Record<string, any>, doc: IndexedDoc, do
 
     docId = docIdOverride ?? docId
     if (docId === undefined) {
-      doc[k] = vv
+      if (typeof vv !== 'object') {
+        doc[k] = vv
+      }
       continue
     }
     const docIdAttr = '|' + docKey(attr, { _class, extra: extra.filter((it) => it !== 'base64') })
@@ -223,7 +239,9 @@ function updateDoc2Elastic (attributes: Record<string, any>, doc: IndexedDoc, do
       // Since we replace array of values, we could ignore null
       doc[docIdAttr] = [...(doc[docIdAttr] ?? [])]
       if (vv !== '') {
-        doc[docIdAttr].push(vv)
+        if (typeof vv !== 'object') {
+          doc[docIdAttr].push(vv)
+        }
       }
     }
   }

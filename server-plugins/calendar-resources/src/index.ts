@@ -13,8 +13,11 @@
 // limitations under the License.
 //
 
-import calendar from '@hcengineering/calendar'
+import calendar, { Event } from '@hcengineering/calendar'
 import { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref } from '@hcengineering/core'
+import { getResource } from '@hcengineering/platform'
+import { TriggerControl } from '@hcengineering/server-core'
+import { getHTMLPresenter, getTextPresenter } from '@hcengineering/server-notification-resources'
 
 /**
  * @public
@@ -32,9 +35,40 @@ export async function FindReminders (
   return result
 }
 
+/**
+ * @public
+ */
+export async function EventHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string | undefined> {
+  const event = doc as Event
+  const target = (await control.findAll(event.attachedToClass, { _id: event.attachedTo }, { limit: 1 }))[0]
+  if (target !== undefined) {
+    const HTMLPresenter = getHTMLPresenter(target._class, control.hierarchy)
+    const htmlPart =
+      HTMLPresenter !== undefined ? await (await getResource(HTMLPresenter.presenter))(target, control) : undefined
+    return htmlPart
+  }
+}
+
+/**
+ * @public
+ */
+export async function EventTextPresenter (doc: Doc, control: TriggerControl): Promise<string | undefined> {
+  const event = doc as Event
+  const target = (await control.findAll(event.attachedToClass, { _id: event.attachedTo }, { limit: 1 }))[0]
+  if (target !== undefined) {
+    const TextPresenter = getTextPresenter(target._class, control.hierarchy)
+    if (TextPresenter === undefined) return
+    return await (
+      await getResource(TextPresenter.presenter)
+    )(target, control)
+  }
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   function: {
+    EventHTMLPresenter,
+    EventTextPresenter,
     FindReminders
   }
 })

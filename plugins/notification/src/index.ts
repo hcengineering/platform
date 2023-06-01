@@ -19,6 +19,7 @@ import {
   AttachedDoc,
   Class,
   Doc,
+  DocumentQuery,
   Mixin,
   Ref,
   Space,
@@ -103,6 +104,7 @@ export interface NotificationType extends Doc {
   attachedToClass?: Ref<Class<Doc>>
   // use for update/mixin txes
   field?: string
+  txMatch?: DocumentQuery<Tx>
   // use for space collaborators, not object
   spaceSubscribe?: boolean
   // allowed providers and default value for it

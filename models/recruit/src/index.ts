@@ -400,7 +400,8 @@ export function createModel (builder: Builder): void {
         }
       ],
       configOptions: {
-        hiddenKeys: ['name']
+        hiddenKeys: ['name'],
+        sortable: true
       },
       options: {
         lookup: {
@@ -420,6 +421,9 @@ export function createModel (builder: Builder): void {
       attachTo: recruit.class.Applicant,
       descriptor: view.viewlet.Table,
       config: ['', '$lookup.attachedTo', 'state', 'doneState', 'modifiedOn'],
+      configOptions: {
+        sortable: true
+      },
       variant: 'short'
     },
     recruit.viewlet.VacancyApplicationsShort
@@ -432,6 +436,9 @@ export function createModel (builder: Builder): void {
       attachTo: recruit.class.Applicant,
       descriptor: view.viewlet.Table,
       config: ['', '$lookup.space.name', '$lookup.space.$lookup.company', 'state', 'comments', 'doneState'],
+      configOptions: {
+        sortable: true
+      },
       variant: 'embedded'
     },
     recruit.viewlet.VacancyApplicationsEmbeddeed
@@ -460,7 +467,8 @@ export function createModel (builder: Builder): void {
         }
       ],
       configOptions: {
-        hiddenKeys: ['name', 'space', 'modifiedOn']
+        hiddenKeys: ['name', 'space', 'modifiedOn'],
+        sortable: true
       }
     },
     recruit.viewlet.TableVacancy
@@ -492,7 +500,8 @@ export function createModel (builder: Builder): void {
         }
       ],
       configOptions: {
-        hiddenKeys: ['name', 'space', 'modifiedOn']
+        hiddenKeys: ['name', 'space', 'modifiedOn'],
+        sortable: true
       }
     },
     recruit.viewlet.TableVacancyList
@@ -533,7 +542,8 @@ export function createModel (builder: Builder): void {
         }
       ],
       configOptions: {
-        hiddenKeys: ['name', 'attachedTo']
+        hiddenKeys: ['name', 'attachedTo'],
+        sortable: true
       },
       options: {
         lookup: {
@@ -588,7 +598,8 @@ export function createModel (builder: Builder): void {
         }
       },
       configOptions: {
-        hiddenKeys: ['name', 'attachedTo']
+        hiddenKeys: ['name', 'attachedTo'],
+        sortable: true
       },
       baseQuery: {
         doneState: null,
@@ -722,6 +733,7 @@ export function createModel (builder: Builder): void {
       },
       configOptions: {
         hiddenKeys: ['name', 'attachedTo'],
+        sortable: true,
         extraProps: {
           displayProps: {
             optional: true
@@ -759,6 +771,7 @@ export function createModel (builder: Builder): void {
         strict: true
       },
       config: [
+        '',
         'space',
         'assignee',
         'state',
@@ -1360,7 +1373,13 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(recruit.mixin.Candidate, core.class.Class, core.mixin.FullTextSearchContext, {
     fullTextSummary: true,
-    propagate: [recruit.class.Applicant]
+    propagate: [recruit.class.Applicant],
+    propagateClasses: [
+      tags.class.TagReference,
+      chunter.class.Comment,
+      attachment.class.Attachment,
+      contact.class.Channel
+    ]
   })
 
   // Allow to use fuzzy search for mixins

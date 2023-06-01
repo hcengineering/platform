@@ -68,7 +68,6 @@ import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.sv
 import MilestoneDatePresenter from './components/milestones/MilestoneDatePresenter.svelte'
 import EditMilestone from './components/milestones/EditMilestone.svelte'
 import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
-import Views from './components/views/Views.svelte'
 import Statuses from './components/workflow/Statuses.svelte'
 
 import {
@@ -386,7 +385,6 @@ export default async (): Promise<Resources> => ({
     Inbox,
     MyIssues,
     Components,
-    Views,
     IssuePresenter,
     ComponentPresenter,
     ComponentRefPresenter,

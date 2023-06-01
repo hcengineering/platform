@@ -236,52 +236,52 @@ export const CadetGreyColor = '#95A2B3'
 /**
  * @public
  */
-export function getPlatformColor (hash: number, blackTheme: boolean): string {
-  const palette = blackTheme ? darkPalette : whitePalette
+export function getPlatformColor (hash: number, darkTheme: boolean): string {
+  const palette = darkTheme ? darkPalette : whitePalette
   return (palette[Math.abs(hash) % palette.length] ?? palette[0]).color
 }
 
 /**
  * @public
  */
-export function getPlatformColorDef (hash: number, blackTheme: boolean): ColorDefinition {
-  const palette = blackTheme ? darkPalette : whitePalette
+export function getPlatformColorDef (hash: number, darkTheme: boolean): ColorDefinition {
+  const palette = darkTheme ? darkPalette : whitePalette
   return palette[Math.abs(hash) % palette.length] ?? palette[0]
 }
 
 /**
  * @public
  */
-export function getPlatformAvatarColorDef (hash: number, blackTheme: boolean): ColorDefinition {
-  const palette = blackTheme ? avatarDarkColors : avatarWhiteColors
+export function getPlatformAvatarColorDef (hash: number, darkTheme: boolean): ColorDefinition {
+  const palette = darkTheme ? avatarDarkColors : avatarWhiteColors
   return palette[Math.abs(hash) % palette.length] ?? palette[0]
 }
 
 /**
  * @public
  */
-export function getPlatformAvatarColorForTextDef (text: string, blackTheme: boolean): ColorDefinition {
-  return getPlatformAvatarColorDef(hashCode(text), blackTheme)
+export function getPlatformAvatarColorForTextDef (text: string, darkTheme: boolean): ColorDefinition {
+  return getPlatformAvatarColorDef(hashCode(text), darkTheme)
 }
 
 /**
  * @public
  */
-export function getPlatformColorForText (text: string, blackTheme: boolean): string {
-  return getPlatformColor(hashCode(text), blackTheme)
+export function getPlatformColorForText (text: string, darkTheme: boolean): string {
+  return getPlatformColor(hashCode(text), darkTheme)
 }
 /**
  * @public
  */
-export function getPlatformColorForTextDef (text: string, blackTheme: boolean): ColorDefinition {
-  return getPlatformColorDef(hashCode(text), blackTheme)
+export function getPlatformColorForTextDef (text: string, darkTheme: boolean): ColorDefinition {
+  return getPlatformColorDef(hashCode(text), darkTheme)
 }
 
 /**
  * @public
  */
-export function getPlatformColors (blackTheme: boolean): readonly ColorDefinition[] {
-  return blackTheme ? darkPalette : whitePalette
+export function getPlatformColors (darkTheme: boolean): readonly ColorDefinition[] {
+  return darkTheme ? darkPalette : whitePalette
 }
 
 function hashCode (str: string): number {

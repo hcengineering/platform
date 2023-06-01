@@ -19,6 +19,7 @@
   import { DocWithRank, calcRank } from '@hcengineering/task'
   import {
     AnyComponent,
+    AnySvelteComponent,
     ExpandCollapse,
     Spinner,
     getEventPositionElement,
@@ -42,7 +43,8 @@
   export let space: Ref<Space> | undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined
   export let items: Doc[]
-  export let createItemDialog: AnyComponent | undefined
+  export let createItemDialog: AnyComponent | AnySvelteComponent | undefined
+  export let createItemDialogProps: Record<string, any> | undefined
   export let createItemLabel: IntlString | undefined
   export let selectedObjectIds: Doc[]
   export let itemModels: AttributeModel[]
@@ -367,6 +369,7 @@
       {items}
       {headerComponent}
       {createItemDialog}
+      {createItemDialogProps}
       {createItemLabel}
       {extraHeaders}
       newObjectProps={_newObjectProps}

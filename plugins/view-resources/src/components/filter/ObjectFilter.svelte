@@ -111,6 +111,7 @@
         })
       }
     }
+    values = sortFilterValues(values, (v) => isSelected(v, filter.value))
     objectsPromise = undefined
   }
 
@@ -171,7 +172,7 @@
         {#if objectsPromise}
           <Loading />
         {:else}
-          {#each sortFilterValues(values, (v) => isSelected(v, filter.value)) as value}
+          {#each values as value}
             <button
               class="menu-item no-focus content-pointer-events-none"
               on:click={() => {

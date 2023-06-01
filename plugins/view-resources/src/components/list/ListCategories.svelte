@@ -16,18 +16,18 @@
   import { CategoryType, Class, Doc, DocumentQuery, generateId, Lookup, Ref, Space } from '@hcengineering/core'
   import { getResource, IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { AnyComponent } from '@hcengineering/ui'
+  import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, CategoryOption, ViewOptionModel, ViewOptions } from '@hcengineering/view'
   import { createEventDispatcher, onDestroy, SvelteComponentTyped } from 'svelte'
   import {
     buildModel,
     concatCategories,
+    fixedWidthStore,
     getAdditionalHeader,
     getCategories,
     getGroupByValues,
     getPresenter,
-    groupBy,
-    fixedWidthStore
+    groupBy
   } from '../../utils'
   import { CategoryQuery, noCategory } from '../../viewOptions'
   import ListCategory from './ListCategory.svelte'
@@ -41,7 +41,8 @@
   export let baseMenuClass: Ref<Class<Doc>> | undefined
   export let config: (string | BuildModelKey)[]
   export let selectedObjectIds: Doc[] = []
-  export let createItemDialog: AnyComponent | undefined
+  export let createItemDialog: AnyComponent | AnySvelteComponent | undefined
+  export let createItemDialogProps: Record<string, any> | undefined
   export let createItemLabel: IntlString | undefined
   export let viewOptions: ViewOptions
   export let flatHeaders = false
@@ -307,6 +308,7 @@
     {items}
     {newObjectProps}
     {createItemDialog}
+    {createItemDialogProps}
     {createItemLabel}
     {viewOptionsConfig}
     on:check

@@ -340,7 +340,7 @@ export function getFilterKey (_class: Ref<Class<Doc>> | undefined): string {
  * @param {(value: T) => boolean} checkIsSelected
  * @returns {readonly T[]}
  */
-export function sortFilterValues<T> (values: T[], checkIsSelected: (value: T) => boolean): readonly T[] {
+export function sortFilterValues<T> (values: T[], checkIsSelected: (value: T) => boolean): T[] {
   const selectedValues: T[] = []
   const notSelectedValues: T[] = []
 

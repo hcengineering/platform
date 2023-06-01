@@ -15,13 +15,23 @@
 
 import { Builder } from '@hcengineering/model'
 
+import calendar from '@hcengineering/calendar'
 import core, { Class, Doc } from '@hcengineering/core'
+import serverNotification from '@hcengineering/server-notification'
 import serverCalendar from '@hcengineering/server-calendar'
 import serverCore, { ObjectDDParticipant } from '@hcengineering/server-core'
 
 export { serverCalendarId } from '@hcengineering/server-calendar'
 
 export function createModel (builder: Builder): void {
+  builder.mixin(calendar.class.Event, core.class.Class, serverNotification.mixin.HTMLPresenter, {
+    presenter: serverCalendar.function.EventHTMLPresenter
+  })
+
+  builder.mixin(calendar.class.Event, core.class.Class, serverNotification.mixin.TextPresenter, {
+    presenter: serverCalendar.function.EventTextPresenter
+  })
+
   builder.mixin<Class<Doc>, ObjectDDParticipant>(
     core.class.Doc,
     core.class.Class,

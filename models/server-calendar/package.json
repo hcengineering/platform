@@ -28,6 +28,8 @@
     "@hcengineering/core": "^0.6.25",
     "@hcengineering/model": "^0.6.4",
     "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/server-notification": "^0.6.0",
+    "@hcengineering/calendar": "^0.6.9",
     "@hcengineering/server-calendar": "^0.6.0",
     "@hcengineering/server-core": "^0.6.1"
   }

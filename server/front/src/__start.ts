@@ -107,6 +107,8 @@ if (serverSecret === undefined) {
   process.exit(1)
 }
 
+const title = process.env.TITLE
+
 setMetadata(serverToken.metadata.Secret, serverSecret)
 
 const config = {
@@ -119,7 +121,8 @@ const config = {
   collaboratorUrl,
   gmailUrl,
   telegramUrl,
-  rekoniUrl
+  rekoniUrl,
+  title
 }
 console.log('Starting Front service with', config)
 const shutdown = start(config, SERVER_PORT)

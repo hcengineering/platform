@@ -137,6 +137,10 @@ export function createModel (builder: Builder): void {
     calendar.ids.CalendarNotificationGroup
   )
 
+  builder.mixin(calendar.class.Event, core.class.Class, notification.mixin.ClassCollaborators, {
+    fields: ['participants']
+  })
+
   builder.createDoc(
     notification.class.NotificationType,
     core.space.Model,
@@ -145,7 +149,9 @@ export function createModel (builder: Builder): void {
       generated: false,
       label: calendar.string.Reminder,
       group: calendar.ids.CalendarNotificationGroup,
-      txClasses: [],
+      txClasses: [core.class.TxMixin],
+      field: 'state',
+      txMatch: { 'attributes.state': 'done' },
       objectClass: calendar.mixin.Reminder,
       allowedForAuthor: true,
       templates: {
@@ -168,7 +174,7 @@ export function createModel (builder: Builder): void {
       objectClass: calendar.mixin.Reminder,
       icon: calendar.icon.Reminder,
       txClass: core.class.TxMixin,
-      label: calendar.string.CreatedReminder,
+      label: calendar.string.Reminder,
       component: calendar.activity.ReminderViewlet,
       display: 'emphasized',
       editable: false,

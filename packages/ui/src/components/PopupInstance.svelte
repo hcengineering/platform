@@ -61,6 +61,7 @@
 
   function _close (result: any): void {
     if (onClose !== undefined) onClose(result)
+    overlay = false
     close()
   }
 

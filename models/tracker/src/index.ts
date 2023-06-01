@@ -504,6 +504,7 @@ export function createModel (builder: Builder): void {
           'dueDate',
           'attachedTo'
         ],
+        sortable: true,
         extraProps: {
           displayProps: {
             optional: true
@@ -642,32 +643,51 @@ export function createModel (builder: Builder): void {
       descriptor: view.viewlet.List,
       viewOptions: subIssuesOptions,
       variant: 'subissue',
+      configOptions: {
+        sortable: true,
+        hiddenKeys: ['priority', 'number', 'status', 'title', 'dueDate', 'milestone', 'estimation'],
+        extraProps: {
+          displayProps: {
+            optional: true
+          }
+        }
+      },
       config: [
         {
           key: '',
+          label: tracker.string.Priority,
           presenter: tracker.component.PriorityEditor,
           props: { type: 'priority', kind: 'list', size: 'small' }
         },
         {
           key: '',
+          label: tracker.string.Issue,
           presenter: tracker.component.IssuePresenter,
           props: { type: 'issue' },
           displayProps: { fixed: 'left' }
         },
         {
           key: '',
+          label: tracker.string.Status,
           presenter: tracker.component.StatusEditor,
           props: { kind: 'list', size: 'small', justify: 'center' }
         },
-        { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true, showParent: false } },
-        { key: '', presenter: tracker.component.SubIssuesSelector, props: {} },
         {
           key: '',
+          label: tracker.string.Title,
+          presenter: tracker.component.TitlePresenter,
+          props: { shouldUseMargin: true, showParent: false }
+        },
+        { key: '', label: tracker.string.SubIssues, presenter: tracker.component.SubIssuesSelector, props: {} },
+        {
+          key: '',
+          label: tracker.string.DueDate,
           presenter: tracker.component.DueDatePresenter,
           props: { kind: 'list' }
         },
         {
           key: '',
+          label: tracker.string.Milestone,
           presenter: tracker.component.MilestoneEditor,
           props: {
             kind: 'list',
@@ -682,6 +702,7 @@ export function createModel (builder: Builder): void {
         },
         {
           key: '',
+          label: tracker.string.Estimation,
           presenter: tracker.component.EstimationEditor,
           props: { kind: 'list', size: 'small' },
           displayProps: { optional: true }
@@ -719,7 +740,8 @@ export function createModel (builder: Builder): void {
       },
       configOptions: {
         hiddenKeys: ['milestone', 'estimation', 'component', 'title', 'description'],
-        extraProps: { displayProps: { optional: true } }
+        extraProps: { displayProps: { optional: true } },
+        sortable: true
       },
       config: [
         // { key: '', presenter: tracker.component.PriorityEditor, props: { kind: 'list', size: 'small' } },
@@ -1872,7 +1894,8 @@ export function createModel (builder: Builder): void {
       viewOptions: milestoneOptions,
       configOptions: {
         hiddenKeys: ['targetDate', 'label', 'description'],
-        extraProps: { displayProps: { optional: true } }
+        extraProps: { displayProps: { optional: true } },
+        sortable: true
       },
       config: [
         {
@@ -1952,7 +1975,8 @@ export function createModel (builder: Builder): void {
       viewOptions: componentListViewOptions,
       configOptions: {
         hiddenKeys: ['label', 'description'],
-        extraProps: { displayProps: { optional: true } }
+        extraProps: { displayProps: { optional: true } },
+        sortable: true
       },
       config: [
         {
