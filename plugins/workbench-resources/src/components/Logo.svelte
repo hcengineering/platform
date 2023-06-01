@@ -13,13 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getPlatformColorForTextDef, themeStore } from '@hcengineering/ui'
-
   export let mini: boolean = false
-
   export let workspace: string
-
-  $: color = getPlatformColorForTextDef(workspace, $themeStore.dark).color
 </script>
 
 <div class="antiLogo red" class:mini>{workspace.toUpperCase()[0]}</div>
