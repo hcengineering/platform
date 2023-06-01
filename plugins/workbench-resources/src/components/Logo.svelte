@@ -14,9 +14,10 @@
 -->
 <script lang="ts">
   export let mini: boolean = false
+  export let workspace: string
 </script>
 
-<div class="antiLogo red" class:mini>P</div>
+<div class="antiLogo red" class:mini>{workspace.toUpperCase()[0]}</div>
 
 <style lang="scss">
   .antiLogo {
@@ -30,6 +31,9 @@
     outline: none;
     cursor: pointer;
 
+    &:hover {
+      opacity: 0.8;
+    }
     &:not(.mini) {
       width: 2rem;
       height: 2rem;
@@ -39,7 +43,7 @@
       height: 1.5rem;
     }
     &.red {
-      background-color: #c93030;
+      background-color: rgb(246, 105, 77);
     }
     &.blue {
       background-color: #2b5190;

@@ -46,6 +46,7 @@
   const promise = getPresenter(client, filter.key._class, key, key)
 
   let values = new Set<any>()
+  let sortedValues: any[] = []
   let selectedValues: Set<any> = new Set<any>(filter.value.map((p) => p[0]))
   const realValues = new Map<any, Set<any>>()
 
@@ -95,6 +96,7 @@
       values.add(object)
     }
     values = values
+    sortedValues = sortFilterValues([...values.keys()], (v) => isSelected(v, selectedValues))
     objectsPromise = undefined
   }
 
@@ -165,7 +167,7 @@
         {#if objectsPromise}
           <Loading />
         {:else}
-          {#each sortFilterValues([...values.keys()], (v) => isSelected(v, selectedValues)) as value}
+          {#each sortedValues as value}
             {@const realValue = [...(realValues.get(value) ?? [])][0]}
             <button
               class="menu-item no-focus content-pointer-events-none"

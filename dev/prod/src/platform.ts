@@ -87,6 +87,7 @@ interface Config {
   REKONI_URL: string
   TELEGRAM_URL: string
   GMAIL_URL: string
+  TITLE?: string
 }
 
 const devConfig = process.env.CLIENT_TYPE === 'dev-production'
@@ -161,5 +162,5 @@ export async function configurePlatform() {
   // Disable for now, since it causes performance issues on linux/docker/kubernetes boxes for now.
   setMetadata(client.metadata.UseProtocolCompression, true)
 
-  setMetadata(workbench.metadata.PlatformTitle, 'Platform')
+  setMetadata(workbench.metadata.PlatformTitle, config.TITLE ?? 'Platform')
 }

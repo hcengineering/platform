@@ -105,7 +105,9 @@
   }
 
   function getStatusItem (status: MilestoneStatus, docs: Milestone[]): Milestone[] {
-    return docs.filter((p) => p.status === status)
+    let vals = docs.filter((p) => p.status === status)
+    vals = sortFilterValues(vals, (v) => isSelected(v._id, selectedValues))
+    return vals
   }
 
   function getStatuses (): MilestoneStatus[] {
@@ -161,7 +163,7 @@
                 <span class="overflow-label"><Label label={status.label} /></span>
               </div>
             </div>
-            {#each sortFilterValues(items, (v) => isSelected(v._id, selectedValues)) as doc}
+            {#each items as doc}
               <button
                 class="menu-item no-focus flex-row-center"
                 on:click={() => {
