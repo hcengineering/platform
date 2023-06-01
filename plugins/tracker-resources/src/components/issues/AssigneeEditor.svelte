@@ -37,7 +37,7 @@
   const dispatch = createEventDispatcher()
 
   let prevAssigned: Ref<Employee>[] = []
-  let projectLead: Ref<Employee> | undefined = undefined
+  let componentLead: Ref<Employee> | undefined = undefined
   let members: Ref<Employee>[] = []
 
   $: '_class' in object &&
@@ -52,9 +52,9 @@
   async function updateComponentMembers (issue: Issue | AttachedData<Issue> | IssueTemplateData | IssueDraft) {
     if (issue.component) {
       const component = await client.findOne(tracker.class.Component, { _id: issue.component })
-      projectLead = component?.lead || undefined
+      componentLead = component?.lead || undefined
     } else {
-      projectLead = undefined
+      componentLead = undefined
     }
     if (hasSpace(issue)) {
       const project = await client.findOne(tracker.class.Project, { _id: issue.space })
@@ -91,7 +91,7 @@
     placeholder={tracker.string.Assignee}
     value={object.assignee}
     {prevAssigned}
-    {projectLead}
+    {componentLead}
     {members}
     titleDeselect={tracker.string.Unassigned}
     {size}

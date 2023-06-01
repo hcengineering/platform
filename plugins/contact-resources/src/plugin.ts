@@ -69,13 +69,12 @@ export default mergeIds(contactId, contact, {
     Through: '' as IntlString,
     AvatarProvider: '' as IntlString,
 
-    CategoryProjectMembers: '' as IntlString,
     AddMembersHeader: '' as IntlString,
     Assigned: '' as IntlString,
     Unassigned: '' as IntlString,
     CategoryCurrentUser: '' as IntlString,
     CategoryPreviousAssigned: '' as IntlString,
-    CategoryProjectLead: '' as IntlString,
+    CategoryComponentLead: '' as IntlString,
     CategoryOther: '' as IntlString,
     DeleteEmployee: '' as IntlString
   },

@@ -51,7 +51,7 @@
   export let placeholder: IntlString = presentation.string.Search
   export let value: Ref<Employee> | null | undefined
   export let prevAssigned: Ref<Employee>[] | undefined = []
-  export let projectLead: Ref<Employee> | undefined = undefined
+  export let componentLead: Ref<Employee> | undefined = undefined
   export let members: Ref<Employee>[] | undefined = []
   export let allowDeselect = true
   export let titleDeselect: IntlString | undefined = undefined
@@ -97,7 +97,7 @@
           options,
           docQuery,
           prevAssigned,
-          projectLead,
+          componentLead,
           members,
           ignoreUsers: excluded ?? [],
           icon,
