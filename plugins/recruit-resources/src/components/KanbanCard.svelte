@@ -93,9 +93,11 @@
   <div class="flex-between">
     <div class="flex-row-center">
       <div class="sm-tool-icon step-lr75">
-        <div class="mr-2">
-          <ApplicationPresenter value={object} inline />
-        </div>
+        {#if enabledConfig(config, '')}
+          <div class="mr-2">
+            <ApplicationPresenter value={object} inline />
+          </div>
+        {/if}
         <Component showLoading={false} is={tracker.component.RelatedIssueSelector} props={{ object }} />
       </div>
       {#if enabledConfig(config, 'dueDate')}
