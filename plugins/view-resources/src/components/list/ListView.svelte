@@ -21,7 +21,6 @@
   export let props: Record<string, any> = {}
 
   let list: List
-  let scroll: Scroller
 
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
     if (dir === 'vertical') {
@@ -43,7 +42,6 @@
 
 <div class="w-full h-full py-4 clear-mins">
   <Scroller
-    bind:this={scroll}
     fade={{ multipler: { top: 2.75 * viewOptions.groupBy.length, bottom: 0 } }}
     padding={'0 1rem'}
     noFade
@@ -69,13 +67,8 @@
       on:check={(event) => {
         listProvider.updateSelection(event.detail.docs, event.detail.value)
       }}
-      on:content={(event) => {
-        listProvider.update(event.detail)
-      }}
-      on:collapsed={(event) => {
-        scroll.enableSafariScrollJumpFix(false)
-        event.detail.div.scrollIntoView(true)
-        scroll.enableSafariScrollJumpFix(true)
+      on:content={(evt) => {
+        listProvider.update(evt.detail)
       }}
     />
   </Scroller>
