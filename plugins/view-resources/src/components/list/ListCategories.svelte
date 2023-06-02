@@ -319,6 +319,7 @@
         index: e.detail.index + getInitIndex(categories, i)
       })
     }}
+    on:collapsed
     {flatHeaders}
     {disableHeader}
     {props}
