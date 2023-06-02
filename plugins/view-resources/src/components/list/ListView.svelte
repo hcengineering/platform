@@ -22,7 +22,6 @@
 
   let list: List
   let scroll: Scroller
-  let divScroll: HTMLDivElement
 
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
     if (dir === 'vertical') {
@@ -45,7 +44,6 @@
 <div class="w-full h-full py-4 clear-mins">
   <Scroller
     bind:this={scroll}
-    bind:divScroll
     fade={{ multipler: { top: 2.75 * viewOptions.groupBy.length, bottom: 0 } }}
     padding={'0 1rem'}
     noFade
