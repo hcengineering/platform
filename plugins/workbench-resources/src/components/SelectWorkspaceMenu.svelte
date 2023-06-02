@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import login, { loginId, Workspace } from '@hcengineering/login'
+  import login, { Workspace } from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
   import {
     closePopup,
@@ -30,7 +30,7 @@
   import { workbenchId } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
   import { workspacesStore } from '../utils'
-  import Drag from './icons/Drag.svelte'
+  // import Drag from './icons/Drag.svelte'
 
   onMount(() => {
     getResource(login.function.GetWorkspaces).then(async (f) => {
@@ -57,10 +57,6 @@
       })
     )
     setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
-  }
-
-  const loginPath: Location = {
-    path: [loginId, 'selectWorkspace']
   }
 
   function getWorkspaceLink (ws: Workspace): string {
@@ -113,13 +109,6 @@
     }
   }
 
-  function handleOther (e: MouseEvent) {
-    if (e.metaKey || e.ctrlKey) return
-    e.preventDefault()
-    closePopup()
-    navigate({ path: [loginId, 'selectWorkspace'] })
-  }
-
   $: last = $workspacesStore.length
 </script>
 
@@ -132,19 +121,19 @@
           <a class="stealth" href={getWorkspaceLink(ws)} on:click={(e) => clickHandler(e, ws.workspace)}>
             <button
               bind:this={btns[i]}
-              class="ap-menuItem flex-row-center withDrag"
+              class="ap-menuItem flex-row-center flex-grow"
               class:hover={btns[i] === activeElement}
               on:mousemove={() => {
                 focusTarget(btns[i])
               }}
             >
-              <div class="drag"><Drag size={'small'} /></div>
+              <!-- <div class="drag"><Drag size={'small'} /></div> -->
               <!-- <div class="logo empty" /> -->
               <!-- <div class="flex-col flex-grow"> -->
               <span class="label overflow-label flex-grow">{ws.workspace}</span>
               <!-- <span class="description overflow-label">Description</span> -->
               <!-- </div> -->
-              <div class="check">
+              <div class="ap-check">
                 {#if $resolvedLocationStore.path[1] === ws.workspace}
                   <IconCheck size={'small'} />
                 {/if}
@@ -152,18 +141,6 @@
             </button>
           </a>
         {/each}
-        <a class="stealth" href={locationToUrl(loginPath)} on:click={handleOther}>
-          <button
-            bind:this={btns[last]}
-            class="ap-menuItem flex-grow"
-            class:hover={btns[last] === activeElement}
-            on:mousemove={() => {
-              focusTarget(btns[last])
-            }}
-          >
-            ...
-          </button>
-        </a>
       </div>
     </div>
     <div class="ap-space x2" />

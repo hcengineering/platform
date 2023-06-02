@@ -680,7 +680,7 @@ export function createModel (builder: Builder): void {
           key: '',
           label: tracker.string.DueDate,
           presenter: tracker.component.DueDatePresenter,
-          props: { kind: 'list' }
+          props: { kind: 'list', size: 'small' }
         },
         {
           key: '',

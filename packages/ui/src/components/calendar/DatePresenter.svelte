@@ -244,14 +244,14 @@
         padding: 0 0.25rem;
       }
 
-      .btn-icon {
+      .btn-icon:not(.warning, .critical, .overdue) {
         color: var(--theme-darker-color);
       }
       &:hover {
         color: var(--theme-content-color);
         background-color: var(--theme-bg-color);
         border-color: var(--theme-divider-color);
-        .btn-icon {
+        .btn-icon:not(.warning, .critical, .overdue) {
           color: var(--theme-content-color);
         }
       }
@@ -271,8 +271,8 @@
         background-color: var(--theme-list-button-hover);
         border-color: var(--theme-divider-color);
       }
-      .btn-icon,
-      &:hover .btn-icon {
+      .btn-icon:not(.warning, .critical, .overdue),
+      &:hover .btn-icon:not(.warning, .critical, .overdue) {
         color: var(--theme-halfcontent-color) !important;
       }
       &.medium {
@@ -289,7 +289,7 @@
         color: var(--theme-caption-color);
         background-color: var(--theme-link-button-hover);
         border-color: var(--theme-list-divider-color);
-        .btn-icon {
+        .btn-icon:not(.warning, .critical, .overdue) {
           color: var(--theme-caption-color);
         }
       }
@@ -309,13 +309,13 @@
       &:not(.withIcon) {
         padding: 0 0.75rem;
       }
-      .btn-icon {
+      .btn-icon:not(.warning, .critical, .overdue) {
         color: var(--theme-content-color);
       }
       &:hover {
         background-color: var(--theme-button-hovered);
         border-color: var(--theme-divider-color);
-        .btn-icon {
+        .btn-icon:not(.warning, .critical, .overdue) {
           color: var(--theme-content-color);
         }
       }
@@ -339,10 +339,10 @@
       }
     }
 
-    &.noDate .btn-icon {
+    &.noDate .btn-icon:not(.warning, .critical, .overdue) {
       color: var(--theme-dark-color);
     }
-    &.noDate:hover .btn-icon {
+    &.noDate:hover .btn-icon:not(.warning, .critical, .overdue) {
       color: var(--theme-content-color);
     }
 
