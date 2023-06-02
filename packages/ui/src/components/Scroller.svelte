@@ -453,6 +453,14 @@
       ? 'visible'
       : 'hidden'
   let scrollY: number = 0
+
+  let safariScrollJumpfix: boolean = true
+  export const enableSafariScrollJumpFix = (enable: boolean): void => {
+    if (enable) {
+      scrollY = divScroll?.scrollTop ?? 0
+    }
+    safariScrollJumpfix = enable
+  }
 </script>
 
 <svelte:window on:resize={_resize} />
@@ -476,24 +484,25 @@
       }}
       class="scroll relative flex-shrink"
       style:overflow-x={horizontal ? 'auto' : 'hidden'}
-      on:scroll={(evt) => {
+      on:scroll={() => {
         if ($tooltipstore.label !== undefined) closeTooltip()
-        const newPos = divScroll?.scrollTop ?? 0
 
         // TODO: Workaround: https://front.hc.engineering/workbench/platform/tracker/TSK-760
         // In Safari scroll could jump on click, with no particular reason.
-
-        if (
-          !scrolling &&
-          !isScrolling &&
-          scrollY !== 0 &&
-          Math.abs(newPos - scrollY) > 100 &&
-          divScroll !== undefined &&
-          isSafari()
-        ) {
-          divScroll.scrollTop = scrollY
+        if (safariScrollJumpfix) {
+          const newPos = divScroll?.scrollTop ?? 0
+          if (
+            !scrolling &&
+            !isScrolling &&
+            scrollY !== 0 &&
+            Math.abs(newPos - scrollY) > 100 &&
+            divScroll !== undefined &&
+            isSafari()
+          ) {
+            divScroll.scrollTop = scrollY
+          }
+          scrollY = divScroll?.scrollTop ?? 0
         }
-        scrollY = divScroll?.scrollTop ?? 0
       }}
     >
       <div

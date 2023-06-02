@@ -198,7 +198,6 @@
 
 <style lang="scss">
   .categoryHeader {
-    position: relative;
     position: sticky;
     top: 0;
     padding: 0 2.5rem 0 0.75rem;
