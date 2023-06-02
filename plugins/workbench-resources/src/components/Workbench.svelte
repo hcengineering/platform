@@ -19,6 +19,7 @@
   import notification, { notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, NotificationClientImpl } from '@hcengineering/notification-resources'
   import { IntlString, getMetadata, getResource } from '@hcengineering/platform'
+  import setting from '@hcengineering/setting'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import {
     AnyComponent,
@@ -71,9 +72,10 @@
   import SelectWorkspaceMenu from './SelectWorkspaceMenu.svelte'
   import SpaceView from './SpaceView.svelte'
   import TopMenu from './icons/TopMenu.svelte'
+  import IconSettings from './icons/Settings.svelte'
+  import AppSwitcher from './AppSwitcher.svelte'
 
   let contentPanel: HTMLElement
-  let shownMenu: boolean = false
 
   const { setTheme } = getContext('theme') as any
 
@@ -604,21 +606,15 @@
           />
         </NavLink>
         <div class="divider" />
-        <Applications
-          apps={getApps(apps)}
-          active={currentApplication?._id}
-          direction={appsDirection}
-          bind:shown={shownMenu}
-        />
+        <Applications apps={getApps(apps)} active={currentApplication?._id} direction={appsDirection} />
       </div>
       <div class="info-box {appsDirection}" class:vertical-mobile={appsDirection === 'vertical'} class:mini={appsMini}>
-        <!-- <AppItem
-          icon={Settings}
+        <AppItem
+          icon={IconSettings}
           label={setting.string.Settings}
-          selected={shownMenu}
           size={appsMini ? 'small' : 'large'}
-          on:click={() => (shownMenu = !shownMenu)}
-        /> -->
+          on:click={() => showPopup(AppSwitcher, { apps: getApps(apps) }, popupPosition)}
+        />
         <div class="flex-center" class:mt-3={appsDirection === 'vertical'} class:ml-2={appsDirection === 'horizontal'}>
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
