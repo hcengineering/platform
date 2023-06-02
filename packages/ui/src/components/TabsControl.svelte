@@ -18,18 +18,12 @@
 
   export let model: TabBase[]
   export let selected = 0
-  export let withPadding: boolean = false
+  export let padding: string | undefined = undefined
   export let noMargin: boolean = false
   export let size: 'small' | 'medium' = 'medium'
 </script>
 
-<div
-  class="flex-stretch tabs-container"
-  class:small={size === 'small'}
-  class:pr-4={withPadding}
-  class:pl-4={withPadding}
-  class:noMargin
->
+<div class="flex-stretch tabs-container" class:small={size === 'small'} style:padding class:noMargin>
   {#each model as tab, i}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div

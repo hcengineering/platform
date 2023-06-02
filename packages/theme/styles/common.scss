@@ -51,6 +51,7 @@
   min-height: 0;
   overflow: hidden;
   
+  &.header { background-color: var(--theme-comp-header-color); }
   &.filled { background-color: var(--theme-bg-color); }
   &.filledNav { background-color: var(--theme-navpanel-color); }
   &.border-left { border-left: 1px solid var(--theme-divider-color); }

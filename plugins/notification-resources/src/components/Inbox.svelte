@@ -84,7 +84,7 @@
 
 <div class="flex-row-top h-full">
   {#if visibileNav}
-    <div class="antiPanel-component border-right indent aside min-w-100">
+    <div class="antiPanel-component header border-right aside min-w-100 flex-no-shrink">
       {#if selectedEmployee === undefined}
         <Tabs
           bind:selected={selectedTab}
@@ -93,7 +93,7 @@
           on:open={(e) => {
             selectedEmployee = e.detail
           }}
-          withPadding
+          padding={'0 1.75rem'}
           noMargin
           size="small"
         >
