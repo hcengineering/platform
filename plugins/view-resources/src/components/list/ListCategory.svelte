@@ -390,6 +390,7 @@
               $focusStore = { provider: $focusStore.provider }
             }
           }
+          dispatch('collapsed', { div })
         }
         localStorage.setItem(categoryCollapseKey, collapsed ? 'true' : 'false')
       }}
@@ -460,11 +461,6 @@
 </div>
 
 <style lang="scss">
-  .expandCollapse {
-    overflow: hidden;
-    transition: height 0.3s ease-out;
-    height: auto;
-  }
   .zero-container {
     border-radius: 0.25rem;
 
