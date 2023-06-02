@@ -31,7 +31,6 @@
   } from '../../utils'
   import { CategoryQuery, noCategory } from '../../viewOptions'
   import ListCategory from './ListCategory.svelte'
-  import { statusStore } from '../../status'
 
   export let docs: Doc[]
   export let _class: Ref<Class<Doc>>
@@ -92,7 +91,7 @@
         const categoryFunc = viewOption as CategoryOption
         if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
           const f = await getResource(categoryFunc.action)
-          const res = hierarchy.clone(await f(_class, query, groupByKey, update, queryId, $statusStore))
+          const res = hierarchy.clone(await f(_class, query, groupByKey, update, queryId))
           if (res !== undefined) {
             categories = concatCategories(res, categories)
             return

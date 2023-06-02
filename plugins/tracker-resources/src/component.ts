@@ -21,11 +21,14 @@ import {
   Class,
   Client,
   Doc,
+  DocumentQuery,
+  Hierarchy,
   Ref,
   SortingOrder,
   Space,
   Tx,
-  WithLookup
+  WithLookup,
+  matchQuery
 } from '@hcengineering/core'
 import { LiveQuery } from '@hcengineering/query'
 import tracker, { Component, ComponentManager } from '@hcengineering/tracker'
@@ -127,6 +130,7 @@ export class ComponentAggregationManager implements AggregationManager {
 export const grouppingComponentManager: GrouppingManager = {
   groupByCategories: groupByComponentCategories,
   groupValues: groupComponentValues,
+  groupValuesWithEmpty: groupComponentValuesWithEmpty,
   hasValue: hasComponentValue
 }
 
@@ -203,4 +207,32 @@ export function hasComponentValue (value: Doc | undefined | null, values: any[])
       .map((it) => it._id)
   )
   return values.some((it) => componentSet.has(it))
+}
+
+/**
+ * @public
+ */
+export function groupComponentValuesWithEmpty (
+  hierarchy: Hierarchy,
+  _class: Ref<Class<Doc>>,
+  key: string,
+  query: DocumentQuery<Doc> | undefined
+): Array<Ref<Doc>> {
+  const mgr = get(componentStore)
+  // We do not need extensions for all status categories.
+  let componentsList = mgr.getDocs()
+  if (query !== undefined) {
+    const { [key]: st, space } = query
+    const resQuery: DocumentQuery<Doc> = {}
+    if (space !== undefined) {
+      resQuery.space = space
+    }
+    if (st !== undefined) {
+      resQuery._id = st
+    }
+    componentsList = matchQuery<Doc>(componentsList, resQuery, _class, hierarchy) as unknown as Array<
+    WithLookup<Component>
+    >
+  }
+  return componentsList.map((it) => it._id)
 }

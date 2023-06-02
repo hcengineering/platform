@@ -25,6 +25,7 @@ import {
   Doc,
   DocumentQuery,
   FindOptions,
+  Hierarchy,
   Lookup,
   Mixin,
   Obj,
@@ -33,7 +34,6 @@ import {
   Ref,
   SortingOrder,
   Space,
-  StatusManager,
   StatusValue,
   Tx,
   Type,
@@ -318,6 +318,12 @@ export interface AllValuesFunc extends Class<Doc> {
 export interface GrouppingManager {
   groupByCategories: (categories: any[]) => AggregateValue[]
   groupValues: (val: Doc[], targets: Set<any>) => Doc[]
+  groupValuesWithEmpty: (
+    hierarchy: Hierarchy,
+    _class: Ref<Class<Doc>>,
+    key: string,
+    query: DocumentQuery<Doc> | undefined
+  ) => Array<Ref<Doc>>
   hasValue: (value: Doc | undefined | null, values: any[]) => boolean
 }
 
@@ -631,7 +637,6 @@ export type ViewCategoryActionFunc = (
   key: string,
   onUpdate: () => void,
   queryId: Ref<Doc>,
-  mgr: StatusManager,
   viewletDescriptorId?: Ref<ViewletDescriptor>
 ) => Promise<CategoryType[] | undefined>
 /**

@@ -21,7 +21,9 @@ import core, {
   Class,
   Client,
   Doc,
+  DocumentQuery,
   FindOptions,
+  Hierarchy,
   Ref,
   SortingOrder,
   SortingRules,
@@ -30,7 +32,8 @@ import core, {
   StatusManager,
   StatusValue,
   Tx,
-  WithLookup
+  WithLookup,
+  matchQuery
 } from '@hcengineering/core'
 import { LiveQuery } from '@hcengineering/query'
 import { AggregationManager, GrouppingManager } from '@hcengineering/view'
@@ -170,6 +173,7 @@ export class StatusAggregationManager implements AggregationManager {
 export const grouppingStatusManager: GrouppingManager = {
   groupByCategories: groupByStatusCategories,
   groupValues: groupStatusValues,
+  groupValuesWithEmpty: groupStatusValuesWithEmpty,
   hasValue: hasStatusValue
 }
 
@@ -247,4 +251,33 @@ export function hasStatusValue (value: Doc | undefined | null, values: any[]): b
       .map((it) => it._id)
   )
   return values.some((it) => statusSet.has(it))
+}
+
+/**
+ * @public
+ */
+export function groupStatusValuesWithEmpty (
+  hierarchy: Hierarchy,
+  _class: Ref<Class<Doc>>,
+  key: string,
+  query: DocumentQuery<Doc> | undefined
+): Array<Ref<Doc>> {
+  const mgr = get(statusStore)
+  const attr = hierarchy.getAttribute(_class, key)
+  // We do not need extensions for all status categories.
+  let statusList = mgr.filter((it) => {
+    return it.ofAttribute === attr._id
+  })
+  if (query !== undefined) {
+    const { [key]: st, space } = query
+    const resQuery: DocumentQuery<Doc> = {}
+    if (space !== undefined) {
+      resQuery.space = space
+    }
+    if (st !== undefined) {
+      resQuery._id = st
+    }
+    statusList = matchQuery<Doc>(statusList, resQuery, _class, hierarchy) as unknown as Array<WithLookup<Status>>
+  }
+  return statusList.map((it) => it._id)
 }

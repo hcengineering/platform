@@ -70,8 +70,7 @@
     noCategory,
     SelectDirection,
     selectionStore,
-    setGroupByValues,
-    statusStore
+    setGroupByValues
   } from '@hcengineering/view-resources'
   import view from '@hcengineering/view-resources/src/plugin'
   import { onMount } from 'svelte'
@@ -217,7 +216,6 @@
           groupByKey,
           update,
           queryId,
-          $statusStore,
           viewlet.descriptor
         )
         if (res !== undefined) {
