@@ -576,7 +576,8 @@ export function createModel (builder: Builder): void {
     {
       label: contact.string.Profile,
       icon: contact.icon.Profile,
-      placeholder: contact.string.ProfilePlaceholder
+      placeholder: contact.string.ProfilePlaceholder,
+      action: contact.actionImpl.OpenChannel
     },
     contact.channelProvider.Profile
   )
