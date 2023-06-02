@@ -78,13 +78,15 @@ export default mergeIds(contactId, contact, {
     CategoryProjectLead: '' as IntlString,
     CategoryOther: '' as IntlString,
     DeleteEmployee: '' as IntlString,
-    HasMessages: '' as IntlString,
-    HasNewMessages: '' as IntlString
+    HasMessagesIn: '' as IntlString,
+    HasNewMessagesIn: '' as IntlString
   },
   function: {
     GetContactLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     EmployeeSort: '' as SortFunc,
     FilterChannelInResult: '' as FilterFunction,
-    FilterChannelNinResult: '' as FilterFunction
+    FilterChannelNinResult: '' as FilterFunction,
+    FilterChannelHasMessagesResult: '' as FilterFunction,
+    FilterChannelHasNewMessagesResult: '' as FilterFunction
   }
 })

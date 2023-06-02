@@ -84,6 +84,8 @@ import contact from './plugin'
 import {
   contactTitleProvider,
   employeeSort,
+  filterChannelHasMessagesResult,
+  filterChannelHasNewMessagesResult,
   filterChannelInResult,
   filterChannelNinResult,
   getContactFirstName,
@@ -323,6 +325,8 @@ export default async (): Promise<Resources> => ({
     EmployeeSort: employeeSort,
     FilterChannelInResult: filterChannelInResult,
     FilterChannelNinResult: filterChannelNinResult,
+    FilterChannelHasMessagesResult: filterChannelHasMessagesResult,
+    FilterChannelHasNewMessagesResult: filterChannelHasNewMessagesResult,
     GetCurrentEmployeeName: getCurrentEmployeeName,
     GetCurrentEmployeeEmail: getCurrentEmployeeEmail,
     GetCurrentEmployeePosition: getCurrentEmployeePosition,
