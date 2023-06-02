@@ -20,12 +20,12 @@
   import ui, {
     addNotification,
     deviceOptionsStore,
+    EditWithIcon,
     Icon,
     IconCheck,
+    IconSearch,
     Loading,
-    resizeObserver,
-    EditWithIcon,
-    IconSearch
+    resizeObserver
   } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { FILTER_DEBOUNCE_MS, FilterRemovedNotification, sortFilterValues } from '@hcengineering/view-resources'
@@ -84,8 +84,7 @@
     }
     if (values.length !== targets.size) {
       const oldSize = filter.value.length
-      const set = new Set(values.map((p) => p?._id))
-      filter.value = filter.value.filter((p) => set.has(p))
+      filter.value = filter.value.filter((p) => targets.has(p))
       const removed = oldSize - (filter.value.length ?? 0)
       if (removed > 0) {
         onChange(filter)

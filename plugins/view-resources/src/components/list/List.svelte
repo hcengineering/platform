@@ -148,7 +148,6 @@
     on:select-prev={(evt) => {
       select(-2, evt.detail)
     }}
-    on:collapsed
   />
 </div>
 
