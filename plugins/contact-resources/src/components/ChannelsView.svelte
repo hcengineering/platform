@@ -15,14 +15,14 @@
 -->
 <script lang="ts">
   import type { Channel, ChannelProvider } from '@hcengineering/contact'
-  import type { AttachedData, Doc, Ref } from '@hcengineering/core'
+  import { AttachedData, Doc, Ref, toIdMap } from '@hcengineering/core'
   import notification, { DocUpdates } from '@hcengineering/notification'
   import { Asset, IntlString, getResource } from '@hcengineering/platform'
   import type { AnyComponent } from '@hcengineering/ui'
   import { Button } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { Writable, writable } from 'svelte/store'
-  import { channelProviders, getChannelProviders } from '../utils'
+  import { channelProviders } from '../utils'
   import ChannelsPopup from './ChannelsPopup.svelte'
 
   export let value: AttachedData<Channel>[] | Channel | null
@@ -81,7 +81,7 @@
       return
     }
     const result: any[] = []
-    const map = getChannelProviders(channels)
+    const map = toIdMap(channels)
     if (Array.isArray(value)) {
       for (const item of value) {
         const provider = getProvider(item, map, docUpdates)

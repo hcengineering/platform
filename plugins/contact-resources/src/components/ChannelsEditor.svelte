@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref, TxResult } from '@hcengineering/core'
+  import type { AttachedData, Class, Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { ButtonKind, ButtonSize, closeTooltip } from '@hcengineering/ui'
 
@@ -38,13 +38,6 @@
 
   let channels: Channel[] = []
 
-  function findValue (provider: Ref<ChannelProvider>): Channel | undefined {
-    for (let i = 0; i < channels.length; i++) {
-      if (channels[i].provider === provider) return channels[i]
-    }
-    return undefined
-  }
-
   const query = createQuery()
   $: attachedTo &&
     query.query(
@@ -59,52 +52,25 @@
 
   const client = getClient()
 
-  async function save (newValues: Channel[]): Promise<void> {
-    const currentProviders = new Set(channels.map((p) => p.provider))
-    const promises: Array<Promise<TxResult>> = []
-    for (const value of newValues) {
-      const oldChannel = findValue(value.provider)
-      if (oldChannel === undefined) {
-        if (value.value.length === 0) continue
-        promises.push(
-          client.addCollection(contact.class.Channel, contact.space.Contacts, attachedTo, attachedClass, 'channels', {
-            value: value.value,
-            provider: value.provider
-          })
-        )
-      } else {
-        currentProviders.delete(value.provider)
-        if (value.value === oldChannel.value) continue
-        promises.push(
-          client.updateCollection(
-            oldChannel._class,
-            oldChannel.space,
-            oldChannel._id,
-            oldChannel.attachedTo,
-            oldChannel.attachedToClass,
-            oldChannel.collection,
-            {
-              value: value.value
-            }
-          )
-        )
-      }
+  async function remove (value: Channel | AttachedData<Channel>): Promise<void> {
+    if (!editable) return
+    if ('_id' in value) {
+      await client.remove(value)
     }
-    for (const value of currentProviders) {
-      const oldChannel = findValue(value)
-      if (oldChannel === undefined) continue
-      promises.push(
-        client.removeCollection(
-          oldChannel._class,
-          oldChannel.space,
-          oldChannel._id,
-          oldChannel.attachedTo,
-          oldChannel.attachedToClass,
-          oldChannel.collection
-        )
-      )
+  }
+
+  async function saveHandler (value: Channel | AttachedData<Channel>): Promise<void> {
+    if (!editable) return
+    if ('_id' in value) {
+      await client.update(value, {
+        value: value.value
+      })
+    } else {
+      await client.addCollection(contact.class.Channel, contact.space.Contacts, attachedTo, attachedClass, 'channels', {
+        value: value.value,
+        provider: value.provider
+      })
     }
-    Promise.all(promises)
   }
 
   function _open (ev: any) {
@@ -127,8 +93,11 @@
   {restricted}
   {shape}
   {focusIndex}
-  on:change={(e) => {
-    if (editable) save(e.detail)
+  on:remove={(e) => {
+    remove(e.detail)
+  }}
+  on:save={(e) => {
+    saveHandler(e.detail)
   }}
   on:open={_open}
 />

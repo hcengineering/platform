@@ -36,14 +36,6 @@ import { FilterQuery } from '@hcengineering/view-resources'
 import { get, writable } from 'svelte/store'
 import contact from './plugin'
 
-export function getChannelProviders (providers: ChannelProvider[]): Map<Ref<ChannelProvider>, ChannelProvider> {
-  const map = new Map<Ref<ChannelProvider>, ChannelProvider>()
-  for (const provider of providers) {
-    map.set(provider._id, provider)
-  }
-  return map
-}
-
 export function formatDate (dueDateMs: Timestamp): string {
   return new Date(dueDateMs).toLocaleString('default', {
     month: 'short',
