@@ -16,6 +16,7 @@
   export let viewlet: Viewlet
   export let config: (string | BuildModelKey)[]
   export let createItemDialog: AnyComponent | undefined
+  export let createItemDialogProps: Record<string, any> | undefined = undefined
   export let createItemLabel: IntlString | undefined
   export let viewOptions: ViewOptions
   export let props: Record<string, any> = {}
@@ -57,6 +58,7 @@
       {config}
       {options}
       {createItemDialog}
+      {createItemDialogProps}
       {createItemLabel}
       {viewOptions}
       {props}
