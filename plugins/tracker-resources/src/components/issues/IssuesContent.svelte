@@ -32,6 +32,7 @@
 
   const createItemDialog = CreateIssue
   const createItemLabel = tracker.string.AddIssueTooltip
+  const createItemDialogProps = { shouldSaveDraft: true }
 </script>
 
 {#if viewlet?.$lookup?.descriptor?.component}
@@ -45,6 +46,7 @@
         config: preference?.config ?? viewlet.config,
         options: viewlet.options,
         createItemDialog,
+        createItemDialogProps,
         createItemLabel,
         viewlet,
         viewOptions,
