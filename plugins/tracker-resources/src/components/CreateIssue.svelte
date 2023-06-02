@@ -73,10 +73,10 @@
 
   export let space: Ref<Project>
   export let status: Ref<IssueStatus> | undefined = undefined
-  export let priority: IssuePriority = IssuePriority.NoPriority
+  export let priority: IssuePriority | undefined = undefined
   export let assignee: Ref<Employee> | null = null
-  export let component: Ref<ComponentType> | null = $activeComponent ?? null
-  export let milestone: Ref<Milestone> | null = $activeMilestone ?? null
+  export let component: Ref<ComponentType> | null = null
+  export let milestone: Ref<Milestone> | null = null
   export let relatedTo: Doc | undefined
   export let shouldSaveDraft: boolean = false
   export let parentIssue: Issue | undefined
@@ -101,7 +101,7 @@
   const parentQuery = createQuery()
 
   let _space = draft?.space ?? space
-  let object = draft ?? getDefaultObject(id)
+  let object = getDefaultObjectFromDraft() ?? getDefaultObject(id)
   let isAssigneeTouched = false
 
   function objectChange (object: IssueDraft, empty: any) {
@@ -127,18 +127,33 @@
     parentIssue = undefined
   }
 
+  function getDefaultObjectFromDraft (): IssueDraft | undefined {
+    if (!draft) {
+      return
+    }
+
+    return {
+      ...draft,
+      ...(status != null ? { status } : {}),
+      ...(priority != null ? { priority } : {}),
+      ...(assignee != null ? { assignee } : {}),
+      ...(component != null ? { component } : {}),
+      ...(milestone != null ? { milestone } : {})
+    }
+  }
+
   function getDefaultObject (id: Ref<Issue> | undefined = undefined, ignoreOriginal = false): IssueDraft {
     const base: IssueDraft = {
       _id: id ?? generateId(),
       title: '',
       description: '',
-      priority,
+      priority: priority ?? IssuePriority.NoPriority,
       space: _space,
-      component,
+      component: component ?? $activeComponent ?? null,
       dueDate: null,
       attachments: 0,
       estimation: 0,
-      milestone,
+      milestone: milestone ?? $activeMilestone ?? null,
       status,
       assignee,
       labels: [],
@@ -186,9 +201,9 @@
     status: status ?? currentProject?.defaultIssueStatus,
     parentIssue: parentIssue?._id,
     description: '<p></p>',
-    component,
-    milestone,
-    priority,
+    component: component ?? $activeComponent ?? null,
+    milestone: milestone ?? $activeMilestone ?? null,
+    priority: priority ?? IssuePriority.NoPriority,
     space: _space
   }
 
