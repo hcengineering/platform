@@ -96,6 +96,8 @@
     "CategoryOther": "Прочие",
     "Position": "Должность",
     "ConfigLabel": "Контакты",
-    "ConfigDescription": "Расширение по работе с сотрудниками и другими контактами."
+    "ConfigDescription": "Расширение по работе с сотрудниками и другими контактами.",
+    "HasMessagesIn": "имеет сообщения в",
+    "HasNewMessagesIn": "имеет новые сообщения в"
   }
 }

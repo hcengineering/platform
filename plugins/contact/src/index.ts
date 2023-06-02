@@ -274,7 +274,9 @@ export const contactPlugin = plugin(contactId, {
   },
   filter: {
     FilterChannelIn: '' as Ref<FilterMode>,
-    FilterChannelNin: '' as Ref<FilterMode>
+    FilterChannelNin: '' as Ref<FilterMode>,
+    FilterChannelHasMessages: '' as Ref<FilterMode>,
+    FilterChannelHasNewMessages: '' as Ref<FilterMode>
   },
   resolver: {
     Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>

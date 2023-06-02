@@ -32,7 +32,12 @@
 
   let filterUpdateTimeout: number | undefined
 
-  filter.modes = [contact.filter.FilterChannelIn, contact.filter.FilterChannelNin]
+  filter.modes = [
+    contact.filter.FilterChannelIn,
+    contact.filter.FilterChannelNin,
+    contact.filter.FilterChannelHasMessages,
+    contact.filter.FilterChannelHasNewMessages
+  ]
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
 
   const isSelected = (element: ChannelProvider, selected: Ref<ChannelProvider>[]): boolean => {

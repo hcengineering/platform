@@ -816,6 +816,26 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: contact.string.HasMessagesIn,
+      result: contact.function.FilterChannelHasMessagesResult
+    },
+    contact.filter.FilterChannelHasMessages
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: contact.string.HasNewMessagesIn,
+      result: contact.function.FilterChannelHasNewMessagesResult
+    },
+    contact.filter.FilterChannelHasNewMessages
+  )
+
+  builder.createDoc(
     templates.class.TemplateFieldCategory,
     core.space.Model,
     {
