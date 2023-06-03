@@ -1070,11 +1070,11 @@ export function createModel (builder: Builder): void {
     })
   }
 
-  createGotoSpecialAction(builder, talentsId, 'g->e', recruit.string.GotoTalents)
-  createGotoSpecialAction(builder, vacanciesId, 'g->v', recruit.string.GotoVacancies)
-  createGotoSpecialAction(builder, skillsId, 'g->s', recruit.string.GotoSkills)
-  createGotoSpecialAction(builder, myApplicationsId, 'g->h', recruit.string.GotoMyApplications)
-  createGotoSpecialAction(builder, candidatesId, 'g->a', recruit.string.GotoApplicants)
+  createGotoSpecialAction(builder, talentsId, 'keyG-keyE', recruit.string.GotoTalents)
+  createGotoSpecialAction(builder, vacanciesId, 'keyG->keyV', recruit.string.GotoVacancies)
+  createGotoSpecialAction(builder, skillsId, 'keyG->keyS', recruit.string.GotoSkills)
+  createGotoSpecialAction(builder, myApplicationsId, 'keyG->keyM', recruit.string.GotoMyApplications)
+  createGotoSpecialAction(builder, candidatesId, 'keyG->keyA', recruit.string.GotoApplicants)
 
   createAction(builder, {
     action: workbench.actionImpl.Navigate,

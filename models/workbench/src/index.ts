@@ -73,6 +73,7 @@ export function createNavigateAction (
     space?: Ref<Space>
     spaceClass?: Ref<Class<Space>>
     spaceSpecial?: string
+    query?: Record<string, string | null>
   }
 ): void {
   createAction(builder, {
