@@ -37,6 +37,7 @@
     "@hcengineering/model": "^0.6.4",
     "@hcengineering/server-token": "^0.6.4",
     "@hcengineering/mongo": "^0.6.1",
-    "@hcengineering/minio": "^0.6.0"
+    "@hcengineering/minio": "^0.6.0",
+    "@hcengineering/demo": "^0.6.0"
   }
 }

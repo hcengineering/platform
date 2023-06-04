@@ -100,6 +100,7 @@
     "ShowColors": "Use colors",
     "Show": "Show",
     "FilterArrayAll": "includes all",
-    "FilterArrayAny": "includes any"
+    "FilterArrayAny": "includes any",
+    "Or": "Or"
   }
 }

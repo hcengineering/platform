@@ -45,7 +45,7 @@ import platform, {
   StatusCode
 } from '@hcengineering/platform'
 import { decodeToken, generateToken } from '@hcengineering/server-token'
-import toolPlugin, { connect, initModel, upgradeModel } from '@hcengineering/server-tool'
+import toolPlugin, { connect, initModel, initWS, upgradeModel } from '@hcengineering/server-tool'
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { Binary, Db, Filter, ObjectId } from 'mongodb'
 import fetch from 'node-fetch'
@@ -568,6 +568,7 @@ export async function createWorkspace (
     })
     .then((e) => e.insertedId.toHexString())
   await initModel(getTransactor(), getWorkspaceId(workspace, productId), txes, migrationOperation)
+  await initWS(getTransactor(), getWorkspaceId(workspace, productId))
   return result
 }
 

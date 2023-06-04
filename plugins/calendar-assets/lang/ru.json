@@ -38,7 +38,7 @@
     "AndMore": "И еще {count}",
     "CreateEvent": "Создать событие",
     "EventFor": "Событие для: ",
-    "ConfigLabel": "Календаоь",
+    "ConfigLabel": "Календарь",
     "ConfigDescription": "Расширение для календаря с событиями"
   }
 }

@@ -702,11 +702,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/model-demo",
-      "projectFolder": "models/demo",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/image-cropper",
       "projectFolder": "plugins/image-cropper",
       "shouldPublish": false
@@ -1509,5 +1504,10 @@
       "projectFolder": "server-plugins/view-resources",
       "shouldPublish": false
     },
+    {
+      "packageName": "@hcengineering/demo",
+      "projectFolder": "demo",
+      "shouldPublish": false
+    }
   ]
 }

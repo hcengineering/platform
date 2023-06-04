@@ -35,6 +35,7 @@ import { Db, Document, MongoClient } from 'mongodb'
 import { connect } from './connect'
 import toolPlugin from './plugin'
 import { MigrateClientImpl } from './upgrade'
+import { initWorkspace } from '@hcengineering/demo'
 
 export * from './connect'
 export * from './plugin'
@@ -84,6 +85,23 @@ export function prepareTools (rawTxes: Tx[]): { mongodbUri: string, minio: Minio
   })
 
   return { mongodbUri, minio, txes: JSON.parse(JSON.stringify(rawTxes)) as Tx[] }
+}
+
+/**
+ * @public
+ */
+export async function initWS (transactorUrl: string, workspaceId: WorkspaceId): Promise<void> {
+  const { minio } = prepareTools([])
+  const connection = (await connect(transactorUrl, workspaceId, undefined, {
+    model: 'upgrade'
+  })) as unknown as CoreClient & BackupClient
+  try {
+    await initWorkspace(workspaceId, connection, minio)
+  } catch (e) {
+    console.log(e)
+  } finally {
+    await connection.close()
+  }
 }
 
 /**

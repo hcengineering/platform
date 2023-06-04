@@ -753,6 +753,10 @@ const view = plugin(viewId, {
     Public: '' as IntlString,
     Hide: '' as IntlString,
     Assigned: '' as IntlString,
+    Open: '' as IntlString,
+    Delete: '' as IntlString,
+    Then: '' as IntlString,
+    Or: '' as IntlString,
     Created: '' as IntlString,
     Subscribed: '' as IntlString
   },

@@ -77,7 +77,6 @@ export default mergeIds(viewId, view, {
   },
   string: {
     Table: '' as IntlString,
-    Delete: '' as IntlString,
     Role: '' as IntlString,
     // Keybaord actions
     MoveUp: '' as IntlString,
@@ -91,7 +90,6 @@ export default mergeIds(viewId, view, {
     SelectDown: '' as IntlString,
     ShowPreview: '' as IntlString,
     ShowActions: '' as IntlString,
-    Open: '' as IntlString,
     // Action categories
     General: '' as IntlString,
     Navigation: '' as IntlString,

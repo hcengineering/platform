@@ -291,12 +291,12 @@
                 {#if action.keyBinding}
                   {#each action.keyBinding as key, i}
                     {#if i !== 0}
-                      <div class="ml-2 mr-2">or</div>
+                      <div class="ml-2 mr-2 lower"><Label label={view.sring.Or} /></div>
                     {/if}
                     <div class="flex-row-center">
                       {#each formatKey(key) as k, jj}
                         {#if jj !== 0}
-                          <div class="ml-1 mr-1">then</div>
+                          <div class="ml-1 mr-1 lower"><Label label={view.sring.Then} /></div>
                         {/if}
                         {#each k as kk, j}
                           <div class="flex-center text-sm key-box">

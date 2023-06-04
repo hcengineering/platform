@@ -1542,7 +1542,7 @@ export function createModel (builder: Builder): void {
       },
       label: tracker.string.Priority,
       icon: tracker.icon.PriorityHigh,
-      keyBinding: ['keyP-keyR'],
+      keyBinding: ['keyP->keyR'],
       input: 'any',
       category: tracker.category.Tracker,
       target: tracker.class.Issue,

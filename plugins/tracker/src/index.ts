@@ -466,7 +466,8 @@ export default plugin(trackerId, {
     SetLabels: '' as Ref<Action>
   },
   project: {
-    DefaultProject: '' as Ref<Project>
+    DefaultProject: '' as Ref<Project>,
+    DemoProject: '' as Ref<Project>
   },
   resolver: {
     Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
