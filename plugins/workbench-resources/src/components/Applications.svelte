@@ -19,7 +19,7 @@
   import { NavLink } from '@hcengineering/view-resources'
   import type { Application } from '@hcengineering/workbench'
   import workbench from '@hcengineering/workbench'
-  import App from './App.svelte'
+  import AppItem from './AppItem.svelte'
 
   export let active: Ref<Application> | undefined
   export let apps: Application[] = []
@@ -46,7 +46,7 @@
     >
       {#each apps.filter((it) => !hiddenAppsIds.includes(it._id)) as app}
         <NavLink app={app.alias} shrink={0}>
-          <App selected={app._id === active} icon={app.icon} label={app.label} />
+          <AppItem selected={app._id === active} icon={app.icon} label={app.label} />
         </NavLink>
       {/each}
       <div class="apps-space-{direction}" />
