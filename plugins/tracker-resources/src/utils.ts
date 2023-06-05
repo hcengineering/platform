@@ -25,6 +25,7 @@ import core, {
   DocumentUpdate,
   Ref,
   SortingOrder,
+  Space,
   Status,
   StatusCategory,
   StatusManager,
@@ -58,7 +59,7 @@ import {
   MILLISECONDS_IN_WEEK,
   PaletteColorIndexes
 } from '@hcengineering/ui'
-import { ViewletDescriptor } from '@hcengineering/view'
+import { KeyFilter, ViewletDescriptor } from '@hcengineering/view'
 import { CategoryQuery, groupBy, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
 import tracker from './plugin'
 import { defaultMilestoneStatuses, defaultPriorities } from './types'
@@ -653,4 +654,9 @@ export const IssuePriorityColor = {
   [IssuePriority.High]: PaletteColorIndexes.Sunshine,
   [IssuePriority.Medium]: PaletteColorIndexes.Ocean,
   [IssuePriority.Low]: PaletteColorIndexes.Cloud
+}
+
+export async function getVisibleFilters (filters: KeyFilter[], space?: Ref<Space>): Promise<KeyFilter[]> {
+  // Removes the "Project" filter if a specific space is provided
+  return space === undefined ? filters : filters.filter((f) => f.key !== 'space')
 }

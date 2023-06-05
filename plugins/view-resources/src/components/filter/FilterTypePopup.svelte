@@ -17,6 +17,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { Label, Scroller, Submenu, closePopup, closeTooltip, resizeObserver, showPopup } from '@hcengineering/ui'
   import { ClassFilters, Filter, KeyFilter, KeyFilterPreset } from '@hcengineering/view'
+  import { getResource } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
   import { FilterQuery, buildFilterKey } from '../../filter'
   import view from '../../plugin'
@@ -101,12 +102,12 @@
     }
   }
 
-  function getTypes (_class: Ref<Class<Doc>>, nestedFrom: KeyFilter | undefined): KeyFilter[] {
+  async function getTypes (_class: Ref<Class<Doc>>, nestedFrom: KeyFilter | undefined): Promise<KeyFilter[]> {
     let res: KeyFilter[] = []
     if (nestedFrom !== undefined) {
-      res = getNestedTypes(nestedFrom)
+      res = await getNestedTypes(nestedFrom)
     } else {
-      res = getOwnTypes(_class)
+      res = await getOwnTypes(_class)
     }
     res.sort((a, b) => {
       if (a.group === b.group) return 0
@@ -119,20 +120,23 @@
     return res
   }
 
-  function getNestedTypes (type: KeyFilter): KeyFilter[] {
+  async function getNestedTypes (type: KeyFilter): Promise<KeyFilter[]> {
     const targetClass = (hierarchy.getAttribute(type._class, type.key).type as RefTo<Doc>).to
-    return getOwnTypes(targetClass)
+    return await getOwnTypes(targetClass)
   }
 
-  function getOwnTypes (_class: Ref<Class<Doc>>): KeyFilter[] {
+  async function getOwnTypes (_class: Ref<Class<Doc>>): Promise<KeyFilter[]> {
     const mixin = hierarchy.classHierarchyMixin(_class, view.mixin.ClassFilters)
     if (mixin === undefined) return []
     _class = hierarchy.getBaseClass(_class)
     const result = getFilters(_class, mixin)
+    const getVisibleFilters = mixin.getVisibleFilters
+      ? await getResource(mixin.getVisibleFilters)
+      : async (filters: KeyFilter[]) => filters
 
     if (mixin.strict) {
-      // Attributes not specified in "mixing.filters" are ignored
-      return result
+      // Attributes not specified in "mixin.filters" are ignored in "strict" mode
+      return await getVisibleFilters(result, space)
     }
 
     const allAttributes = hierarchy.getAllAttributes(_class)
@@ -166,7 +170,7 @@
       }
     }
 
-    return result
+    return await getVisibleFilters(result, space)
   }
 
   const actionElements: HTMLButtonElement[] = []
@@ -260,8 +264,6 @@
 
   const elements: HTMLElement[] = []
 
-  $: types = getTypes(_class, nestedFrom)
-
   function nextDiffCat (types: KeyFilter[], i: number): boolean {
     if (types[i + 1] === undefined) return false
     return types[i].group !== types[i + 1].group
@@ -289,45 +291,47 @@
       </button>
       <div class="divider" />
     {/if}
-    {#each types as type, i}
-      {#if filter === undefined && hasNested(type)}
-        <Submenu
-          bind:element={elements[i]}
-          on:keydown={(event) => keyDown(event, i)}
-          on:mouseover={() => {
-            elements[i]?.focus()
-          }}
-          label={type.label}
-          props={{
-            _class,
-            space,
-            index,
-            target,
-            onChange,
-            nestedFrom: type
-          }}
-          options={{ component: view.component.FilterTypePopup }}
-          withHover
-        />
-      {:else}
-        <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-        <button
-          class="menu-item"
-          on:keydown={(event) => keyDown(event, i)}
-          on:mouseover={(event) => {
-            event.currentTarget.focus()
-          }}
-          on:click={() => {
-            click(type)
-          }}
-        >
-          <div class="overflow-label pr-1"><Label label={type.label} /></div>
-        </button>
-      {/if}
-      {#if nextDiffCat(types, i)}
-        <div class="menu-separator" />
-      {/if}
-    {/each}
+    {#await getTypes(_class, nestedFrom) then types}
+      {#each types as type, i}
+        {#if filter === undefined && hasNested(type)}
+          <Submenu
+            bind:element={elements[i]}
+            on:keydown={(event) => keyDown(event, i)}
+            on:mouseover={() => {
+              elements[i]?.focus()
+            }}
+            label={type.label}
+            props={{
+              _class,
+              space,
+              index,
+              target,
+              onChange,
+              nestedFrom: type
+            }}
+            options={{ component: view.component.FilterTypePopup }}
+            withHover
+          />
+        {:else}
+          <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+          <button
+            class="menu-item"
+            on:keydown={(event) => keyDown(event, i)}
+            on:mouseover={(event) => {
+              event.currentTarget.focus()
+            }}
+            on:click={() => {
+              click(type)
+            }}
+          >
+            <div class="overflow-label pr-1"><Label label={type.label} /></div>
+          </button>
+        {/if}
+        {#if nextDiffCat(types, i)}
+          <div class="menu-separator" />
+        {/if}
+      {/each}
+    {/await}
   </Scroller>
   <div class="menu-space" />
 </div>

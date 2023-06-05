@@ -42,6 +42,7 @@ import type {
   IgnoreActions,
   InlineAttributEditor,
   KeyBinding,
+  KeyFilter,
   KeyFilterPreset,
   LinkPresenter,
   LinkProvider,
@@ -138,6 +139,7 @@ export class TClassFilters extends TClass implements ClassFilters {
   filters!: (string | KeyFilterPreset)[]
   ignoreKeys?: string[] | undefined
   strict?: boolean | undefined
+  getVisibleFilters?: Resource<(filters: KeyFilter[], space?: Ref<Space>) => Promise<KeyFilter[]>>
 }
 
 @Mixin(view.mixin.AttributeFilter, core.class.Class)

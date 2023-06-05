@@ -115,7 +115,8 @@ import {
   issueStatusSort,
   moveIssuesToAnotherMilestone,
   milestoneSort,
-  subIssueQuery
+  subIssueQuery,
+  getVisibleFilters
 } from './utils'
 
 import { EmployeeAccount } from '@hcengineering/contact'
@@ -462,7 +463,8 @@ export default async (): Promise<Resources> => ({
     SubIssueQuery: subIssueQuery,
     GetAllPriority: getAllPriority,
     GetAllComponents: getAllComponents,
-    GetAllMilestones: getAllMilestones
+    GetAllMilestones: getAllMilestones,
+    GetVisibleFilters: getVisibleFilters
   },
   actionImpl: {
     Move: move,

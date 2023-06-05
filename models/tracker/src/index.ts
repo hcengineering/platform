@@ -1432,7 +1432,8 @@ export function createModel (builder: Builder): void {
         showNested: false
       }
     ],
-    ignoreKeys: ['number', 'estimation', 'attachedTo']
+    ignoreKeys: ['number', 'estimation', 'attachedTo'],
+    getVisibleFilters: tracker.function.GetVisibleFilters
   })
 
   builder.mixin(tracker.class.IssueTemplate, core.class.Class, view.mixin.ClassFilters, {
