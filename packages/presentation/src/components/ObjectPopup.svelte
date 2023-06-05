@@ -109,11 +109,9 @@
   on:changeContent
   on:search={(e) => (search = e.detail)}
   on:created={(doc) => {
-      created.push(doc.detail)
-      if (!multiSelect) dispatch('created', doc.detail)
-    }
-  }
-      
+    created.push(doc.detail)
+    if (!multiSelect) dispatch('created', doc.detail)
+  }}
   {created}
 >
   <svelte:fragment slot="item" let:item>
