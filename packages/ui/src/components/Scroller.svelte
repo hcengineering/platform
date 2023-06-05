@@ -473,7 +473,7 @@
       }}
       class="scroll relative flex-shrink"
       style:overflow-x={horizontal ? 'auto' : 'hidden'}
-      on:scroll={(evt) => {
+      on:scroll={() => {
         if ($tooltipstore.label !== undefined) closeTooltip()
       }}
     >
