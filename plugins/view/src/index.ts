@@ -756,6 +756,8 @@ const view = plugin(viewId, {
     Open: '' as IntlString,
     Created: '' as IntlString,
     Delete: '' as IntlString,
+    Then: '' as IntlString,
+    Or: '' as IntlString,
     Subscribed: '' as IntlString
   },
   icon: {
