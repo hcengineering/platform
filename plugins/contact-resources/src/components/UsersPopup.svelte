@@ -19,6 +19,7 @@
   import presentation, { getClient, ObjectCreate, ObjectPopup } from '@hcengineering/presentation'
   import { AnySvelteComponent, Label } from '@hcengineering/ui'
   import UserInfo from './UserInfo.svelte'
+  import { createEventDispatcher } from 'svelte'
 
   export let _class: Ref<Class<Contact>>
   export let options: FindOptions<Contact> | undefined = undefined
@@ -37,7 +38,7 @@
   export let readonly = false
 
   const hierarchy = getClient().getHierarchy()
-  // const dispatch = createEventDispatcher()
+  const dispatch = createEventDispatcher()
 
   $: _create =
     create !== undefined
@@ -68,6 +69,7 @@
   on:update
   on:close
   on:changeContent
+  on:created={(doc) => dispatch('close', doc.detail)}
   {readonly}
 >
   <svelte:fragment slot="item" let:item={person}>
