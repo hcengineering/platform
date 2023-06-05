@@ -185,7 +185,8 @@ export function replaceURLs (text: string): string {
  * @returns {string} string with parsed URL
  */
 export function parseURL (text: string): string {
-  return autolinker.parse(text, { urls: true })[0].getAnchorHref()
+  const matches = autolinker.parse(text, { urls: true })
+  return matches.length > 0 ? matches[0].getAnchorHref() : ''
 }
 
 /**
