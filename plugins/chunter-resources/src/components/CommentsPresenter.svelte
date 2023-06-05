@@ -37,7 +37,7 @@
       class="sm-tool-icon"
     >
       <span class="icon"><IconThread {size} /></span>
-      {#if showCounter}
+      {#if showCounter && value && value !== 0}
         &nbsp;{value}
       {/if}
     </div>
