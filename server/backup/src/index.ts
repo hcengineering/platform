@@ -15,6 +15,7 @@
 //
 
 import core, {
+  AttachedDoc,
   BackupClient,
   BlobData,
   Client as CoreClient,
@@ -23,6 +24,7 @@ import core, {
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   Ref,
+  TxCollectionCUD,
   WorkspaceId
 } from '@hcengineering/core'
 import { connect } from '@hcengineering/server-tool'
@@ -189,6 +191,125 @@ async function writeChanges (storage: BackupStorage, snapshot: string, changes: 
       resolve(null)
     })
   )
+}
+
+/**
+ * @public
+ */
+export async function cloneWorkspace (
+  transactorUrl: string,
+  sourceWorkspaceId: WorkspaceId,
+  targetWorkspaceId: WorkspaceId,
+  clearTime: boolean = true
+): Promise<void> {
+  const sourceConnection = (await connect(transactorUrl, sourceWorkspaceId, undefined, {
+    mode: 'backup'
+  })) as unknown as CoreClient & BackupClient
+  const targetConnection = (await connect(transactorUrl, targetWorkspaceId, undefined, {
+    mode: 'backup'
+  })) as unknown as CoreClient & BackupClient
+  try {
+    const domains = sourceConnection
+      .getHierarchy()
+      .domains()
+      .filter((it) => it !== DOMAIN_TRANSIENT && it !== DOMAIN_MODEL)
+
+    for (const c of domains) {
+      console.log('clone domain...', c)
+
+      const changes: Snapshot = {
+        added: new Map(),
+        updated: new Map(),
+        removed: []
+      }
+
+      let idx: number | undefined
+
+      // update digest tar
+      const needRetrieveChunks: Ref<Doc>[][] = []
+
+      let processed = 0
+      let st = Date.now()
+      // Load all digest from collection.
+      while (true) {
+        try {
+          const it = await sourceConnection.loadChunk(c, idx)
+          idx = it.idx
+
+          const needRetrieve: Ref<Doc>[] = []
+
+          for (const [k, v] of Object.entries(it.docs)) {
+            processed++
+            if (processed % 10000 === 0) {
+              console.log('processed', processed, Date.now() - st)
+              st = Date.now()
+            }
+
+            changes.added.set(k as Ref<Doc>, v)
+            needRetrieve.push(k as Ref<Doc>)
+          }
+          if (needRetrieve.length > 0) {
+            needRetrieveChunks.push(needRetrieve)
+          }
+          if (it.finished) {
+            await sourceConnection.closeChunk(idx)
+            break
+          }
+        } catch (err: any) {
+          console.error(err)
+          if (idx !== undefined) {
+            await sourceConnection.closeChunk(idx)
+          }
+          // Try again
+          idx = undefined
+          processed = 0
+        }
+      }
+      while (needRetrieveChunks.length > 0) {
+        const needRetrieve = needRetrieveChunks.shift() as Ref<Doc>[]
+
+        console.log('Retrieve chunk:', needRetrieve.length)
+        let docs: Doc[] = []
+        try {
+          docs = await sourceConnection.loadDocs(c, needRetrieve)
+          if (clearTime) {
+            docs = docs.map((p) => {
+              if (sourceConnection.getHierarchy().isDerived(p._class, core.class.TxCollectionCUD)) {
+                return {
+                  ...p,
+                  modifiedOn: Date.now(),
+                  createdOn: Date.now(),
+                  tx: {
+                    ...(p as TxCollectionCUD<Doc, AttachedDoc>).tx,
+                    modifiedOn: Date.now(),
+                    createdOn: Date.now()
+                  }
+                }
+              } else {
+                return {
+                  ...p,
+                  modifiedOn: Date.now(),
+                  createdOn: Date.now()
+                }
+              }
+            })
+          }
+          await targetConnection.upload(c, docs)
+        } catch (err: any) {
+          console.log(err)
+          // Put back.
+          needRetrieveChunks.push(needRetrieve)
+          continue
+        }
+      }
+    }
+  } catch (err: any) {
+    console.error(err)
+  } finally {
+    console.log('end clone')
+    await sourceConnection.close()
+    await targetConnection.close()
+  }
 }
 
 /**

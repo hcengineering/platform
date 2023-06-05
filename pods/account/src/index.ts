@@ -57,6 +57,11 @@ export function serveAccount (methods: Record<string, AccountMethod>, productId 
   setMetadata(account.metadata.FrontURL, frontURL)
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
+
+  const initWS = process.env.INIT_WORKSPACE
+  if (initWS !== undefined) {
+    setMetadata(toolPlugin.metadata.InitWorkspace, initWS)
+  }
   setMetadata(toolPlugin.metadata.Endpoint, endpointUri)
   setMetadata(toolPlugin.metadata.Transactor, transactorUri)
 

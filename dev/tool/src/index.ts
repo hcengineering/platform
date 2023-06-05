@@ -91,6 +91,11 @@ export function devTool (
     return elasticUrl
   }
 
+  const initWS = process.env.INIT_WORKSPACE
+  if (initWS !== undefined) {
+    setMetadata(toolPlugin.metadata.InitWorkspace, initWS)
+  }
+
   setMetadata(toolPlugin.metadata.Endpoint, transactorUrl)
   setMetadata(toolPlugin.metadata.Transactor, transactorUrl)
   setMetadata(serverToken.metadata.Secret, serverSecret)

@@ -44,6 +44,7 @@ import platform, {
   Status,
   StatusCode
 } from '@hcengineering/platform'
+import { cloneWorkspace } from '@hcengineering/server-backup'
 import { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin, { connect, initModel, upgradeModel } from '@hcengineering/server-tool'
 import { pbkdf2Sync, randomBytes } from 'crypto'
@@ -568,6 +569,12 @@ export async function createWorkspace (
     })
     .then((e) => e.insertedId.toHexString())
   await initModel(getTransactor(), getWorkspaceId(workspace, productId), txes, migrationOperation)
+  const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
+  if (initWS !== undefined) {
+    if ((await getWorkspace(db, productId, initWS)) !== null) {
+      await cloneWorkspace(getTransactor(), getWorkspaceId(initWS, productId), getWorkspaceId(workspace, productId))
+    }
+  }
   return result
 }
 
