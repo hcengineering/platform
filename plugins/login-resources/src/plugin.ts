@@ -58,6 +58,7 @@ export default mergeIds(loginId, login, {
     GetLink: '' as IntlString,
     AlreadyJoined: '' as IntlString,
     ConfirmationSent: '' as IntlString,
-    ConfirmationSent2: '' as IntlString
+    ConfirmationSent2: '' as IntlString,
+    Slogan: '' as IntlString
   }
 })

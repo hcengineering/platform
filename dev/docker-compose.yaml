@@ -99,6 +99,7 @@ services:
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
       - TITLE=DevPlatform
+      - DEFAULT_LANGUAGE=ru
     restart: unless-stopped
   # tracker-front:
   #   image: hardcoreeng/tracker-front

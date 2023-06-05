@@ -21,6 +21,15 @@ export { default as Theme } from './Theme.svelte'
 /**
  * @public
  */
+export const setDefaultLanguage = (language: string): void => {
+  if (localStorage.getItem('lang') === null) {
+    localStorage.setItem('lang', language)
+  }
+}
+
+/**
+ * @public
+ */
 export const getCurrentTheme = (): string => localStorage.getItem('theme') ?? 'theme-dark'
 /**
  * @public

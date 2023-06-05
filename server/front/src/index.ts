@@ -141,6 +141,7 @@ export function start (
     telegramUrl: string
     gmailUrl: string
     title?: string
+    defaultLanguage: string
   },
   port: number
 ): () => void {
@@ -177,7 +178,8 @@ export function start (
       REKONI_URL: config.rekoniUrl,
       TELEGRAM_URL: config.telegramUrl,
       GMAIL_URL: config.gmailUrl,
-      TITLE: config.title
+      TITLE: config.title,
+      DEFAULT_LANGUAGE: config.defaultLanguage
     })
   })
 
