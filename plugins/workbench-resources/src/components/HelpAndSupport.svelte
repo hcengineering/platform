@@ -59,18 +59,18 @@
     const rawActions = await client.findAll(view.class.Action, [])
 
     const openAction = rawActions.find(
-      (action) => action.label === 'view:string:Open' && action.category === 'view:category:General'
+      (action) => action.label === view.string.Open && action.category === view.category.General
     )
     const deleteAction = rawActions.find(
-      (action) => action.label === 'view:string:Delete' && action.category === 'view:category:General'
+      (action) => action.label === view.string.Delete && action.category === view.category.General
     )
 
     actions = rawActions.filter(
       (action) =>
         action.keyBinding &&
         action.keyBinding.length !== 0 &&
-        action.label !== 'view:string:Open' &&
-        action.label !== 'view:string:Delete'
+        action.label !== view.string.Open &&
+        action.label !== view.string.Delete
     )
 
     deleteAction && actions.unshift(deleteAction)
@@ -165,12 +165,12 @@
               {#if action.keyBinding}
                 {#each action.keyBinding as key, i}
                   {#if i !== 0}
-                    <div class="ml-2 mr-2">or</div>
+                    <div class="ml-2 mr-2 lower"><Label label={view.string.Or} /></div>
                   {/if}
                   <div class="flex-row-center">
                     {#each formatKey(key) as k, jj}
                       {#if jj !== 0}
-                        <div class="ml-1 mr-1">then</div>
+                        <div class="ml-1 mr-1 lower"><Label label={view.string.Then} /></div>
                       {/if}
                       {#each k as kk, j}
                         <div class="flex-center text-sm key-box">

@@ -96,6 +96,7 @@
     "ShowColors": "Использовать цвета",
     "Show": "Отображение",
     "FilterArrayAll": "содержит все",
-    "FilterArrayAny": "содержит любое из"
+    "FilterArrayAny": "содержит любое из",
+    "Or": "Или"
   }
 }
