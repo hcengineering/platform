@@ -83,8 +83,6 @@
   onMount(() => {
     dispatch('on-mount')
   })
-
-  $: growBefore = Math.ceil(model.filter((p) => p.displayProps?.optional !== true).length / 2)
 </script>
 
 <div
@@ -135,7 +133,7 @@
     {@const displayProps = attributeModel.displayProps}
     {#if !groupByKey || displayProps?.excludeByKey !== groupByKey}
       {#if !(compactMode && displayProps?.compression)}
-        {#if i === growBefore}
+        {#if displayProps?.grow}
           <GrowPresenter />
           {#each model.filter((p) => p.displayProps?.optional) as attributeModel, i}
             {@const dp = attributeModel.displayProps}
@@ -163,29 +161,30 @@
               />
             {/if}
           {/each}
-        {/if}
-        {#if i !== 0 && displayProps?.dividerBefore === true}
-          <DividerPresenter />
-        {/if}
-        {#if displayProps?.fixed}
-          <FixedColumn key={`list_item_${displayProps.key}`} justify={displayProps.fixed}>
+        {:else}
+          {#if i !== 0 && displayProps?.dividerBefore === true}
+            <DividerPresenter />
+          {/if}
+          {#if displayProps?.fixed}
+            <FixedColumn key={`list_item_${displayProps.key}`} justify={displayProps.fixed}>
+              <svelte:component
+                this={attributeModel.presenter}
+                value={getObjectValue(attributeModel.key, docObject)}
+                kind={'list'}
+                onChange={getOnChange(docObject, attributeModel)}
+                {...joinProps(attributeModel, docObject, props)}
+              />
+            </FixedColumn>
+          {:else}
             <svelte:component
               this={attributeModel.presenter}
               value={getObjectValue(attributeModel.key, docObject)}
-              kind={'list'}
               onChange={getOnChange(docObject, attributeModel)}
+              kind={'list'}
+              compression={displayProps?.compression && i !== noCompressed}
               {...joinProps(attributeModel, docObject, props)}
             />
-          </FixedColumn>
-        {:else}
-          <svelte:component
-            this={attributeModel.presenter}
-            value={getObjectValue(attributeModel.key, docObject)}
-            onChange={getOnChange(docObject, attributeModel)}
-            kind={'list'}
-            compression={displayProps?.compression && i !== noCompressed}
-            {...joinProps(attributeModel, docObject, props)}
-          />
+          {/if}
         {/if}
       {/if}
     {/if}
