@@ -19,7 +19,7 @@ import { Class, Client, DocumentQuery, Ref, RelatedDocument, WithLookup } from '
 import login from '@hcengineering/login'
 import { IntlString, Resources, getResource } from '@hcengineering/platform'
 import { MessageBox, ObjectSearchResult, getClient, getFileUrl } from '@hcengineering/presentation'
-import { AnyComponent, AnySvelteComponent, TooltipAlignment, showPopup } from '@hcengineering/ui'
+import { AnyComponent, AnySvelteComponent, TooltipAlignment, parseURL, showPopup } from '@hcengineering/ui'
 import AccountArrayEditor from './components/AccountArrayEditor.svelte'
 import AccountBox from './components/AccountBox.svelte'
 import AssigneeBox from './components/AssigneeBox.svelte'
@@ -240,8 +240,9 @@ async function kickEmployee (doc: Employee): Promise<void> {
   }
 }
 async function openChannelURL (doc: Channel): Promise<void> {
-  if (doc.value.startsWith('http://') || doc.value.startsWith('https://')) {
-    window.open(doc.value)
+  const url = parseURL(doc.value)
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    window.open(url)
   }
 }
 
