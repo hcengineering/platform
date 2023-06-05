@@ -727,6 +727,10 @@ export async function setRole (email: string, workspace: string, productId: stri
  * @public
  */
 export async function assignWorkspace (db: Db, productId: string, email: string, workspace: string): Promise<void> {
+  const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
+  if (initWS !== undefined && initWS === workspace) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
   const { workspaceId, accountId } = await getWorkspaceAndAccount(db, productId, email, workspace)
   const account = await db.collection<Account>(ACCOUNT_COLLECTION).findOne({ _id: accountId })
 

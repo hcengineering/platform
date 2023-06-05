@@ -277,10 +277,14 @@ export async function cloneWorkspace (
               if (sourceConnection.getHierarchy().isDerived(p._class, core.class.TxCollectionCUD)) {
                 return {
                   ...p,
+                  createdBy: core.account.System,
+                  modifiedBy: core.account.System,
                   modifiedOn: Date.now(),
                   createdOn: Date.now(),
                   tx: {
                     ...(p as TxCollectionCUD<Doc, AttachedDoc>).tx,
+                    createdBy: core.account.System,
+                    modifiedBy: core.account.System,
                     modifiedOn: Date.now(),
                     createdOn: Date.now()
                   }
@@ -288,6 +292,8 @@ export async function cloneWorkspace (
               } else {
                 return {
                   ...p,
+                  createdBy: core.account.System,
+                  modifiedBy: core.account.System,
                   modifiedOn: Date.now(),
                   createdOn: Date.now()
                 }
