@@ -22,7 +22,6 @@
   import IconUpOutline from './icons/UpOutline.svelte'
   import IconDownOutline from './icons/DownOutline.svelte'
   import HalfUpDown from './icons/HalfUpDown.svelte'
-  import { isSafari } from '../utils'
 
   export let padding: string | undefined = undefined
   export let autoscroll: boolean = false
@@ -375,7 +374,6 @@
     } else if (deltaY > 0 && autoscroll && !scrolling && belowContent && belowContent <= 10) {
       scrolling = true
     }
-    scrollY += deltaY
   }
 
   let observer: IntersectionObserver
@@ -452,7 +450,6 @@
     (orientir === 'horizontal' && (maskH === 'left' || maskH === 'both'))
       ? 'visible'
       : 'hidden'
-  let scrollY: number = 0
 </script>
 
 <svelte:window on:resize={_resize} />
@@ -478,22 +475,6 @@
       style:overflow-x={horizontal ? 'auto' : 'hidden'}
       on:scroll={(evt) => {
         if ($tooltipstore.label !== undefined) closeTooltip()
-        const newPos = divScroll?.scrollTop ?? 0
-
-        // TODO: Workaround: https://front.hc.engineering/workbench/platform/tracker/TSK-760
-        // In Safari scroll could jump on click, with no particular reason.
-
-        if (
-          !scrolling &&
-          !isScrolling &&
-          scrollY !== 0 &&
-          Math.abs(newPos - scrollY) > 100 &&
-          divScroll !== undefined &&
-          isSafari()
-        ) {
-          divScroll.scrollTop = scrollY
-        }
-        scrollY = divScroll?.scrollTop ?? 0
       }}
     >
       <div

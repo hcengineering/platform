@@ -77,8 +77,7 @@
     }
 
     &.selected {
-      background-color: var(--theme-button-enabled);
-      border: 1px solid var(--theme-button-border);
+      background-color: var(--theme-button-pressed);
       .icon-container {
         color: var(--theme-caption-color);
       }
