@@ -159,7 +159,7 @@
       font-size: 0.8rem;
       color: var(--theme-caption-color);
       span {
-        opacity: 0.3;
+        opacity: 0.8;
       }
       a {
         text-decoration: none;
