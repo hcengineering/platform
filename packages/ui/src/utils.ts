@@ -174,6 +174,21 @@ export function replaceURLs (text: string): string {
 }
 
 /**
+ * Parse first URL from the given text or html
+ *
+ * @example
+ * replaceURLs("github.com")
+ * returns: "http://github.com"
+ *
+ * @export
+ * @param {string} text
+ * @returns {string} string with parsed URL
+ */
+export function parseURL (text: string): string {
+  return autolinker.parse(text, { urls: true })[0].getAnchorHref()
+}
+
+/**
  * @public
  */
 export interface IModeSelector {
