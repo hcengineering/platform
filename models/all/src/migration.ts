@@ -34,7 +34,6 @@ import { templatesOperation } from '@hcengineering/model-templates'
 import { viewOperation } from '@hcengineering/model-view'
 import { trackerOperation } from '@hcengineering/model-tracker'
 import { boardOperation } from '@hcengineering/model-board'
-import { demoOperation } from '@hcengineering/model-demo'
 import { hrOperation } from '@hcengineering/model-hr'
 import { documentOperation } from '@hcengineering/model-document'
 import { bitrixOperation } from '@hcengineering/model-bitrix'
@@ -44,7 +43,6 @@ export const migrateOperations: [string, MigrateOperation][] = [
   ['core', coreOperation],
   ['chunter', chunterOperation],
   ['calendar', calendarOperation],
-  ['demo', demoOperation],
   ['gmail', gmailOperation],
   ['templates', templatesOperation],
   ['telegram', telegramOperation],
