@@ -35,6 +35,8 @@ import view, { Filter } from '@hcengineering/view'
 import { FilterQuery } from '@hcengineering/view-resources'
 import { get, writable } from 'svelte/store'
 import contact from './plugin'
+import notification, { DocUpdates, DocUpdateTx } from '@hcengineering/notification'
+import { getResource } from '@hcengineering/platform'
 
 export function formatDate (dueDateMs: Timestamp): string {
   return new Date(dueDateMs).toLocaleString('default', {
@@ -71,6 +73,20 @@ export async function employeeSort (value: Array<Ref<Employee>>): Promise<Array<
   })
 }
 
+export async function filterChannelHasMessagesResult (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
+  const result = await getRefs(filter, onUpdate, true)
+  return { $in: result }
+}
+
+export async function filterChannelHasNewMessagesResult (
+  filter: Filter,
+  onUpdate: () => void
+): Promise<ObjQueryType<any>> {
+  const docUpdates = await get((await getResource(notification.function.GetNotificationClient))().docUpdatesStore)
+  const result = await getRefs(filter, onUpdate, undefined, docUpdates)
+  return { $in: result }
+}
+
 export async function filterChannelInResult (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
   const result = await getRefs(filter, onUpdate)
   return { $in: result }
@@ -81,19 +97,33 @@ export async function filterChannelNinResult (filter: Filter, onUpdate: () => vo
   return { $nin: result }
 }
 
-export async function getRefs (filter: Filter, onUpdate: () => void): Promise<Array<Ref<Doc>>> {
+export async function getRefs (
+  filter: Filter,
+  onUpdate: () => void,
+  hasMessages?: boolean,
+  docUpdates?: Map<Ref<Doc>, DocUpdates>
+): Promise<Array<Ref<Doc>>> {
   const lq = FilterQuery.getLiveQuery(filter.index)
   const client = getClient()
   const mode = await client.findOne(view.class.FilterMode, { _id: filter.mode })
   if (mode === undefined) return []
   const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
+    const hasMessagesQuery = hasMessages === true ? { items: { $gt: 0 } } : {}
     const refresh = lq.query(
       contact.class.Channel,
       {
-        provider: { $in: filter.value }
+        provider: { $in: filter.value },
+        ...hasMessagesQuery
       },
       (refs) => {
-        const result = Array.from(new Set(refs.map((p) => p.attachedTo)))
+        const filteredRefs =
+          docUpdates !== undefined
+            ? refs.filter((channel) => {
+              const docUpdate = docUpdates.get(channel._id)
+              return docUpdate != null ? docUpdate.txes.some((p: DocUpdateTx) => p.isNew) : (channel.items ?? 0) > 0
+            })
+            : refs
+        const result = Array.from(new Set(filteredRefs.map((p) => p.attachedTo)))
         FilterQuery.results.set(filter.index, result)
         resolve(result)
         onUpdate()

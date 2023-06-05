@@ -576,7 +576,8 @@ export function createModel (builder: Builder): void {
     {
       label: contact.string.Profile,
       icon: contact.icon.Profile,
-      placeholder: contact.string.ProfilePlaceholder
+      placeholder: contact.string.ProfilePlaceholder,
+      action: contact.actionImpl.OpenChannel
     },
     contact.channelProvider.Profile
   )
@@ -813,6 +814,26 @@ export function createModel (builder: Builder): void {
       result: contact.function.FilterChannelNinResult
     },
     contact.filter.FilterChannelNin
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: contact.string.HasMessagesIn,
+      result: contact.function.FilterChannelHasMessagesResult
+    },
+    contact.filter.FilterChannelHasMessages
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: contact.string.HasNewMessagesIn,
+      result: contact.function.FilterChannelHasNewMessagesResult
+    },
+    contact.filter.FilterChannelHasNewMessages
   )
 
   builder.createDoc(

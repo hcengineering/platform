@@ -77,11 +77,9 @@
         listProvider.update(event.detail)
       }}
       on:collapsed={(event) => {
-        scroll.enableSafariScrollJumpFix(false)
         if (divScroll.getBoundingClientRect().top > event.detail.div.getBoundingClientRect().top) {
           event.detail.div.scrollIntoView(true)
         }
-        scroll.enableSafariScrollJumpFix(true)
       }}
     />
   </Scroller>

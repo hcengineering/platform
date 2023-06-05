@@ -895,9 +895,6 @@ export function createModel (builder: Builder): void {
   )
 
   const issuesId = 'issues'
-  const activeId = 'active'
-  const backlogId = 'backlog'
-  const boardId = 'board'
   const componentsId = 'components'
   const milestonesId = 'milestones'
   const templatesId = 'templates'
@@ -1153,21 +1150,31 @@ export function createModel (builder: Builder): void {
     tracker.app.Tracker
   )
 
-  function createGotoSpecialAction (builder: Builder, id: string, key: KeyBinding, label: IntlString): void {
+  function createGotoSpecialAction (
+    builder: Builder,
+    id: string,
+    key: KeyBinding,
+    label: IntlString,
+    query?: Record<string, string | null>
+  ): void {
     createNavigateAction(builder, key, label, tracker.app.Tracker, {
       application: trackerId,
       mode: 'space',
       spaceSpecial: id,
-      spaceClass: tracker.class.Project
+      spaceClass: tracker.class.Project,
+      query
     })
   }
 
-  createGotoSpecialAction(builder, issuesId, 'g->e', tracker.string.GotoIssues)
-  createGotoSpecialAction(builder, activeId, 'g->a', tracker.string.GotoActive)
-  createGotoSpecialAction(builder, backlogId, 'g->b', tracker.string.GotoBacklog)
-  createGotoSpecialAction(builder, boardId, 'g->d', tracker.string.GotoBoard)
-  createGotoSpecialAction(builder, componentsId, 'g->c', tracker.string.GotoComponents)
-  createGotoSpecialAction(builder, myIssuesId, 'g->m', tracker.string.GotoMyIssues)
+  createGotoSpecialAction(builder, issuesId, 'keyG->keyE', tracker.string.GotoIssues)
+  createGotoSpecialAction(builder, issuesId, 'keyG->keyA', tracker.string.GotoActive, { mode: 'active' })
+  createGotoSpecialAction(builder, issuesId, 'keyG->keyB', tracker.string.GotoBacklog, { mode: 'backlog' })
+  createGotoSpecialAction(builder, componentsId, 'keyG->keyC', tracker.string.GotoComponents)
+  createNavigateAction(builder, 'keyG->keyM', tracker.string.GotoMyIssues, tracker.app.Tracker, {
+    application: trackerId,
+    mode: 'special',
+    special: myIssuesId
+  })
 
   createAction(builder, {
     action: workbench.actionImpl.Navigate,

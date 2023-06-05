@@ -67,6 +67,7 @@ export async function doNavigate (
     space?: Ref<Space>
     // If no space is selected, select first space from list
     spaceClass?: Ref<Class<Space>>
+    query?: Record<string, string | null>
   }
 ): Promise<void> {
   evt?.preventDefault()
@@ -83,6 +84,8 @@ export async function doNavigate (
       } else {
         loc.path.length = 3
       }
+      loc.query = props.query
+      loc.fragment = undefined
       navigate(loc)
       break
     case 'special':
@@ -91,6 +94,8 @@ export async function doNavigate (
       }
       loc.path[3] = props.special ?? ''
       loc.path.length = 4
+      loc.query = props.query
+      loc.fragment = undefined
       navigate(loc)
       break
     case 'space': {
@@ -114,6 +119,8 @@ export async function doNavigate (
         }
       }
       loc.path.length = 5
+      loc.query = props.query
+      loc.fragment = undefined
       navigate(loc)
 
       break
