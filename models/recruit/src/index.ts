@@ -704,6 +704,7 @@ export function createModel (builder: Builder): void {
           label: tracker.string.Issues,
           displayProps: { fixed: 'left', key: 'issues' }
         },
+        { key: '', displayProps: { grow: true } },
         { key: 'attachments', displayProps: { fixed: 'left', key: 'attachments' } },
         { key: 'comments', displayProps: { fixed: 'left', key: 'comments' } },
         {
@@ -732,13 +733,8 @@ export function createModel (builder: Builder): void {
         }
       },
       configOptions: {
-        hiddenKeys: ['name', 'attachedTo'],
-        sortable: true,
-        extraProps: {
-          displayProps: {
-            optional: true
-          }
-        }
+        strict: true,
+        hiddenKeys: ['name', 'attachedTo']
       },
       baseQuery: {
         doneState: null,

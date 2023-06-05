@@ -488,6 +488,7 @@ export function createModel (builder: Builder): void {
       descriptor: view.viewlet.List,
       viewOptions: issuesOptions(false),
       configOptions: {
+        strict: true,
         hiddenKeys: [
           'title',
           'blockedBy',
@@ -503,14 +504,10 @@ export function createModel (builder: Builder): void {
           'estimation',
           'status',
           'dueDate',
-          'attachedTo'
-        ],
-        sortable: true,
-        extraProps: {
-          displayProps: {
-            optional: true
-          }
-        }
+          'attachedTo',
+          'createdBy',
+          'modifiedBy'
+        ]
       },
       config: [
         {
@@ -549,6 +546,8 @@ export function createModel (builder: Builder): void {
           displayProps: { optional: true, compression: true },
           props: { kind: 'list', full: false }
         },
+        { key: 'attachments', displayProps: { key: 'attachments', optional: true } },
+        { key: 'comments', displayProps: { key: 'comments', optional: true } },
         {
           key: '',
           label: tracker.string.DueDate,
@@ -590,6 +589,7 @@ export function createModel (builder: Builder): void {
             optional: true
           }
         },
+        { key: '', displayProps: { grow: true } },
         {
           key: '',
           label: tracker.string.Estimation,
@@ -641,13 +641,18 @@ export function createModel (builder: Builder): void {
       viewOptions: subIssuesOptions,
       variant: 'subissue',
       configOptions: {
-        sortable: true,
-        hiddenKeys: ['priority', 'number', 'status', 'title', 'dueDate', 'milestone', 'estimation'],
-        extraProps: {
-          displayProps: {
-            optional: true
-          }
-        }
+        strict: true,
+        hiddenKeys: [
+          'priority',
+          'number',
+          'status',
+          'title',
+          'dueDate',
+          'milestone',
+          'estimation',
+          'createdBy',
+          'modifiedBy'
+        ]
       },
       config: [
         {
@@ -704,6 +709,7 @@ export function createModel (builder: Builder): void {
           props: { kind: 'list', size: 'small' },
           displayProps: { optional: true }
         },
+        { key: '', displayProps: { grow: true } },
         {
           key: 'modifiedOn',
           presenter: tracker.component.ModificationDatePresenter,
@@ -736,9 +742,8 @@ export function createModel (builder: Builder): void {
         other: [showColorsViewOption]
       },
       configOptions: {
-        hiddenKeys: ['milestone', 'estimation', 'component', 'title', 'description'],
-        extraProps: { displayProps: { optional: true } },
-        sortable: true
+        strict: true,
+        hiddenKeys: ['milestone', 'estimation', 'component', 'title', 'description', 'createdBy', 'modifiedBy']
       },
       config: [
         // { key: '', presenter: tracker.component.PriorityEditor, props: { kind: 'list', size: 'small' } },
@@ -780,6 +785,7 @@ export function createModel (builder: Builder): void {
           },
           displayProps: { key: 'estimation', optional: true, compression: true }
         },
+        { key: '', displayProps: { grow: true } },
         {
           key: 'modifiedOn',
           presenter: tracker.component.ModificationDatePresenter,
@@ -1885,9 +1891,8 @@ export function createModel (builder: Builder): void {
       descriptor: view.viewlet.List,
       viewOptions: milestoneOptions,
       configOptions: {
-        hiddenKeys: ['targetDate', 'label', 'description'],
-        extraProps: { displayProps: { optional: true } },
-        sortable: true
+        strict: true,
+        hiddenKeys: ['targetDate', 'label', 'description']
       },
       config: [
         {
@@ -1895,6 +1900,7 @@ export function createModel (builder: Builder): void {
           props: { width: '1rem', kind: 'list', size: 'small', justify: 'center' }
         },
         { key: '', presenter: tracker.component.MilestonePresenter, props: { shouldUseMargin: true } },
+        { key: '', displayProps: { grow: true } },
         {
           key: '',
           label: tracker.string.TargetDate,
@@ -1966,9 +1972,8 @@ export function createModel (builder: Builder): void {
       descriptor: view.viewlet.List,
       viewOptions: componentListViewOptions,
       configOptions: {
-        hiddenKeys: ['label', 'description'],
-        extraProps: { displayProps: { optional: true } },
-        sortable: true
+        strict: true,
+        hiddenKeys: ['label', 'description']
       },
       config: [
         {
@@ -1976,6 +1981,7 @@ export function createModel (builder: Builder): void {
           presenter: tracker.component.ComponentPresenter,
           props: { kind: 'list' }
         },
+        { key: '', displayProps: { grow: true } },
         {
           key: '$lookup.lead',
           presenter: tracker.component.LeadPresenter,
