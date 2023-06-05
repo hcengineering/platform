@@ -126,7 +126,15 @@ export type ButtonKind =
   | 'list'
   | 'list-header'
 export type ButtonSize = 'inline' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
-export type ButtonShape = 'rectangle' | 'rectangle-left' | 'rectangle-right' | 'circle' | 'round' | 'filter' | undefined
+export type ButtonShape =
+  | 'rectangle'
+  | 'rectangle-left'
+  | 'rectangle-right'
+  | 'circle'
+  | 'round'
+  | 'round2'
+  | 'filter'
+  | undefined
 export type EditStyle = 'editbox' | 'large-style' | 'small-style' | 'search-style' | 'underline'
 export interface PopupPositionElement {
   getBoundingClientRect: () => DOMRect

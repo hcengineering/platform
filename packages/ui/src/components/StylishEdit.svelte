@@ -99,7 +99,7 @@
       left: 1.25rem;
       font-size: 0.75rem;
       color: var(--theme-caption-color);
-      opacity: 0.3;
+      opacity: 0.8;
       transition: top 200ms;
       pointer-events: none;
       user-select: none;
