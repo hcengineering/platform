@@ -78,6 +78,7 @@ import presentation, { presentationId } from '@hcengineering/presentation'
 import { textEditorId } from '@hcengineering/text-editor'
 
 import { setMetadata } from '@hcengineering/platform'
+import { setDefaultLanguage } from '@hcengineering/theme'
 
 interface Config {
   ACCOUNTS_URL: string
@@ -88,6 +89,7 @@ interface Config {
   TELEGRAM_URL: string
   GMAIL_URL: string
   TITLE?: string
+  DEFAULT_LANGUAGE?: string
 }
 
 const devConfig = process.env.CLIENT_TYPE === 'dev-production'
@@ -163,4 +165,5 @@ export async function configurePlatform() {
   setMetadata(client.metadata.UseProtocolCompression, true)
 
   setMetadata(workbench.metadata.PlatformTitle, config.TITLE ?? 'Platform')
+  setDefaultLanguage(config.DEFAULT_LANGUAGE ?? 'en')
 }

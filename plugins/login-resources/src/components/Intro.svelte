@@ -14,10 +14,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { translate } from '@hcengineering/platform'
   import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
-
+  import plugin from '../plugin'
   export let landscape: boolean = false
   export let mini: boolean = false
+
+  let slogan = ''
+
+  translate(plugin.string.Slogan, {})
+    .then((r) => {
+      slogan = r
+    })
+    .catch((err) => {
+      console.error(err)
+    })
 </script>
 
 <div class="intro" class:landscape class:mini>
@@ -25,8 +36,11 @@
     <div class="logo {$deviceInfo.theme === 'theme-light' ? 'dark' : 'light'}" />
   </div>
   <div class="slogan">
-    <p>A unique place to manage all of your work</p>
-    <p>Welcome to the Platform</p>
+    {#each slogan.split('\n') as p}
+      <p>
+        {p}
+      </p>
+    {/each}
   </div>
 </div>
 

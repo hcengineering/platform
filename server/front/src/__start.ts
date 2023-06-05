@@ -19,6 +19,7 @@ import { setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
 import { start } from '.'
 
+const defaultLanguage = process.env.DEFAULT_LANGUAGE ?? 'en'
 const SERVER_PORT = parseInt(process.env.SERVER_PORT ?? '8080')
 
 const transactorEndpoint = process.env.TRANSACTOR_URL
@@ -122,7 +123,8 @@ const config = {
   gmailUrl,
   telegramUrl,
   rekoniUrl,
-  title
+  title,
+  defaultLanguage
 }
 console.log('Starting Front service with', config)
 const shutdown = start(config, SERVER_PORT)
