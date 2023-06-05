@@ -1,5 +1,5 @@
 {
-  "extends": "./node_modules/@hcengineering/model-rig/profiles/default/tsconfig.json",
+  "extends": "./node_modules/@hcengineering/platform-rig/profiles/default/tsconfig.json",
 
   "compilerOptions": {
     "rootDir": "./src",

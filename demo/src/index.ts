@@ -5,6 +5,9 @@ import { InitOperation } from './types'
 
 const plugins: InitOperation[] = [trackerInit]
 
+/**
+ * @public
+ */
 export async function initWorkspace (
   workspaceId: WorkspaceId,
   client: Client,

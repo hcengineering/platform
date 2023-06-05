@@ -7,7 +7,7 @@
    * (Required) The name of the rig package to inherit from.
    * It should be an NPM package name with the "-rig" suffix.
    */
-  "rigPackageName": "@hcengineering/model-rig"
+  "rigPackageName": "@hcengineering/platform-rig"
 
   /**
    * (Optional) Selects a config profile from the rig package.  The name must consist of
