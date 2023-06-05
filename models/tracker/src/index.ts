@@ -1078,7 +1078,7 @@ export function createModel (builder: Builder): void {
             componentProps: {
               config: [
                 ['assigned', view.string.Assigned, {}],
-                ['created', view.string.Created, { value: 2 }],
+                ['created', view.string.Created, {}],
                 ['subscribed', view.string.Subscribed, {}]
               ]
             }

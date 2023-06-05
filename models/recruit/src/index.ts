@@ -336,7 +336,12 @@ export function createModel (builder: Builder): void {
             position: 'event',
             componentProps: {
               labelTasks: recruit.string.Applications,
-              _class: recruit.class.Applicant
+              _class: recruit.class.Applicant,
+              config: [
+                ['assigned', view.string.Assigned, {}],
+                ['created', view.string.Created, {}],
+                ['subscribed', view.string.Subscribed, {}]
+              ]
             }
           },
           {
