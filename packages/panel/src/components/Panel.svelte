@@ -197,10 +197,12 @@
     <div class="popupPanel-body__mobile-content clear-mins" class:max={useMaxWidth}>
       <slot />
       {#if !withoutActivity}
-        <Component
-          is={activity.component.Activity}
-          props={{ object, showCommenInput: !withoutInput, shouldScroll: embedded, focusIndex: 1000 }}
-        />
+        {#key object._id}
+          <Component
+            is={activity.component.Activity}
+            props={{ object, showCommenInput: !withoutInput, shouldScroll: embedded, focusIndex: 1000 }}
+          />
+        {/key}
       {/if}
     </div>
   {:else}
@@ -215,10 +217,12 @@
       <div class="popupPanel-body__main-content py-8 clear-mins" class:max={useMaxWidth}>
         <slot />
         {#if !withoutActivity}
-          <Component
-            is={activity.component.Activity}
-            props={{ object, showCommenInput: !withoutInput, shouldScroll: embedded, focusIndex: 1000 }}
-          />
+          {#key object._id}
+            <Component
+              is={activity.component.Activity}
+              props={{ object, showCommenInput: !withoutInput, shouldScroll: embedded, focusIndex: 1000 }}
+            />
+          {/key}
         {/if}
       </div>
     </Scroller>

@@ -379,6 +379,7 @@
             <AttachmentPresenter
               value={attachment}
               removable
+              showPreview
               on:remove={(result) => {
                 if (result !== undefined) removeAttachment(attachment)
               }}

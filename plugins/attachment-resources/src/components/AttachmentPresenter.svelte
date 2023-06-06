@@ -22,6 +22,7 @@
 
   export let value: Attachment
   export let removable: boolean = false
+  export let showPreview = false
 
   const dispatch = createEventDispatcher()
 
@@ -91,17 +92,20 @@
     on:click={clickHandler}
     on:mousedown={middleClickHandler}
   >
-    <!-- <div
-      class="flex-center icon"
-      class:svg={value.type === 'image/svg+xml'}
-      class:image={isImage(value.type)}
-      style={imgStyle}
-    >
-      {#if !isImage(value.type)}{iconLabel(value.name)}{/if}
-    </div> -->
-    <div class="flex-center icon">
-      {iconLabel(value.name)}
-    </div>
+    {#if showPreview}
+      <div
+        class="flex-center icon"
+        class:svg={value.type === 'image/svg+xml'}
+        class:image={isImage(value.type)}
+        style={imgStyle}
+      >
+        {#if !isImage(value.type)}{iconLabel(value.name)}{/if}
+      </div>
+    {:else}
+      <div class="flex-center icon">
+        {iconLabel(value.name)}
+      </div>
+    {/if}
   </a>
   <div class="flex-col info-container">
     <div class="name">
