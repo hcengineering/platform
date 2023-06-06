@@ -21,7 +21,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
   import tags from '@hcengineering/tags'
-  import type { IssueTemplate, IssueTemplateChild, Project } from '@hcengineering/tracker'
+  import { IssueTemplate, IssueTemplateChild, Project } from '@hcengineering/tracker'
   import {
     Button,
     EditBox,
@@ -33,6 +33,7 @@
     showPopup
   } from '@hcengineering/ui'
   import { ContextMenu, ParentsNavigator, UpDownNavigator } from '@hcengineering/view-resources'
+  import view from '@hcengineering/view'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import tracker from '../../plugin'
 
@@ -104,7 +105,11 @@
 
   function showMenu (ev?: Event): void {
     if (template) {
-      showPopup(ContextMenu, { object: template }, (ev as MouseEvent).target as HTMLElement)
+      showPopup(
+        ContextMenu,
+        { object: template, excludedActions: [view.action.Open] },
+        (ev as MouseEvent).target as HTMLElement
+      )
     }
   }
 
@@ -232,35 +237,3 @@
     </svelte:fragment>
   </Panel>
 {/if}
-
-<style lang="scss">
-  .title {
-    font-weight: 500;
-    font-size: 1.125rem;
-    color: var(--caption-color);
-  }
-
-  .content {
-    height: auto;
-  }
-
-  .description-preview {
-    color: var(--content-color);
-    line-height: 150%;
-
-    .placeholder {
-      color: var(--dark-color);
-    }
-  }
-
-  .tool {
-    align-self: start;
-    width: 20px;
-    height: 20px;
-    opacity: 0.3;
-    cursor: pointer;
-    &:hover {
-      opacity: 1;
-    }
-  }
-</style>

@@ -23,6 +23,7 @@
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { Vacancy } from '@hcengineering/recruit'
   import tracker from '@hcengineering/tracker'
+  import view from '@hcengineering/view'
   import { Button, Component, EditBox, IconMixin, IconMoreH, Label, LinkWrapper, showPopup } from '@hcengineering/ui'
   import { ContextMenu, DocAttributeBar } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
@@ -72,7 +73,7 @@
 
   function showMenu (ev?: Event): void {
     if (object !== undefined) {
-      showPopup(ContextMenu, { object }, (ev as MouseEvent).target as HTMLElement)
+      showPopup(ContextMenu, { object, excludedActions: [view.action.Open] }, (ev as MouseEvent).target as HTMLElement)
     }
   }
 

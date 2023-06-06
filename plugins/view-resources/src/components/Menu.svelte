@@ -13,16 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref } from '@hcengineering/core'
-  import type { Asset } from '@hcengineering/platform'
+  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { Asset } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Action, Menu } from '@hcengineering/ui'
-  import type { ActionGroup, ViewContextType } from '@hcengineering/view'
+  import { ActionGroup, ViewContextType } from '@hcengineering/view'
   import { getActions, invokeAction } from '../actions'
 
   export let object: Doc | Doc[]
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let actions: Action[] = []
+  export let excludedActions: string[] = []
   export let mode: ViewContextType | undefined = undefined
   let resActions = actions
 
@@ -40,7 +41,16 @@
   }
 
   getActions(client, object, baseMenuClass, mode).then((result) => {
-    const newActions: Action[] = result.map((a) => ({
+    const filtered = result.filter((a) => {
+      if (excludedActions.includes(a._id)) {
+        return false
+      }
+      if (a.override && a.override.filter((o) => excludedActions.includes(o)).length > 0) {
+        return false
+      }
+      return true
+    })
+    const newActions: Action[] = filtered.map((a) => ({
       label: a.label,
       icon: a.icon as Asset,
       inline: a.inline,
