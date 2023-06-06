@@ -538,6 +538,8 @@ export function createModel (builder: Builder): void {
           props: {},
           displayProps: { key: 'title' }
         },
+        { key: 'comments', displayProps: { key: 'comments' } },
+        { key: 'attachments', displayProps: { key: 'attachments' } },
         { key: '', label: tracker.string.SubIssues, presenter: tracker.component.SubIssuesSelector, props: {} },
         {
           key: 'labels',
@@ -545,14 +547,22 @@ export function createModel (builder: Builder): void {
           displayProps: { optional: true, compression: true },
           props: { kind: 'list', full: false }
         },
-        { key: 'attachments', displayProps: { key: 'attachments', optional: true } },
-        { key: 'comments', displayProps: { key: 'comments', optional: true } },
         {
           key: '',
-          label: tracker.string.DueDate,
-          presenter: tracker.component.DueDatePresenter,
-          displayProps: { key: 'dueDate', optional: true, compression: true },
-          props: { kind: 'list' }
+          label: tracker.string.Milestone,
+          presenter: tracker.component.MilestoneEditor,
+          props: {
+            kind: 'list',
+            size: 'small',
+            shape: 'round',
+            shouldShowPlaceholder: false
+          },
+          displayProps: {
+            key: 'milestone',
+            excludeByKey: 'milestone',
+            compression: true,
+            optional: true
+          }
         },
         {
           key: '',
@@ -573,20 +583,10 @@ export function createModel (builder: Builder): void {
         },
         {
           key: '',
-          label: tracker.string.Milestone,
-          presenter: tracker.component.MilestoneEditor,
-          props: {
-            kind: 'list',
-            size: 'small',
-            shape: 'round',
-            shouldShowPlaceholder: false
-          },
-          displayProps: {
-            key: 'milestone',
-            excludeByKey: 'milestone',
-            compression: true,
-            optional: true
-          }
+          label: tracker.string.DueDate,
+          presenter: tracker.component.DueDatePresenter,
+          displayProps: { key: 'dueDate', optional: true, compression: true },
+          props: { kind: 'list' }
         },
         { key: '', displayProps: { grow: true } },
         {
