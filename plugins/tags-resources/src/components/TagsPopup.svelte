@@ -51,6 +51,7 @@
   let show: boolean = false
   let objects: TagElement[] = []
   let categories: TagCategory[] = []
+  let isSingleCategory = true
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
@@ -58,6 +59,7 @@
   const client = getClient()
   client.findAll(tags.class.TagCategory, { targetClass }).then((res) => {
     categories = res
+    isSingleCategory = categories.length <= 1
   })
 
   // TODO: Add $not: {$in: []} query
@@ -113,14 +115,16 @@
       {placeholderParam}
       on:change
     />
-    <Button
-      kind={'transparent'}
-      size={'large'}
-      icon={show ? IconView : IconViewHide}
-      on:click={() => {
-        show = !show
-      }}
-    />
+    {#if !isSingleCategory}
+      <Button
+        kind={'transparent'}
+        size={'large'}
+        icon={show ? IconView : IconViewHide}
+        on:click={() => {
+          show = !show
+        }}
+      />
+    {/if}
     {#if !hideAdd}<Button kind={'transparent'} size={'large'} icon={IconAdd} on:click={createTagElement} />{/if}
   </div>
   <div class="scroll">
@@ -132,7 +136,8 @@
           <div class="sticky-wrapper">
             <button
               class="menu-group__header"
-              class:show={categories.length === 1 || search !== '' || show}
+              class:show={isSingleCategory || search !== '' || show}
+              class:hidden={isSingleCategory}
               on:click={toggleGroup}
             >
               <div class="flex-row-center">
@@ -210,5 +215,8 @@
     height: 100%;
     font-size: 0.75rem;
     color: var(--theme-dark-color);
+  }
+  .hidden {
+    display: none;
   }
 </style>
