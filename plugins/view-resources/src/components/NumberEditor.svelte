@@ -60,7 +60,7 @@
     }}
   >
     <svelte:fragment slot="content">
-      {#if value !== undefined}
+      {#if value != null}
         <span class="caption-color overflow-label pointer-events-none">{value}</span>
       {:else}
         <span class="content-dark-color pointer-events-none"><Label label={placeholder} /></span>
@@ -68,7 +68,7 @@
     </svelte:fragment>
   </Button>
 {:else if readonly}
-  {#if value !== undefined}
+  {#if value != null}
     <span class="caption-color overflow-label">{value}</span>
   {:else}
     <span class="content-dark-color"><Label label={placeholder} /></span>
