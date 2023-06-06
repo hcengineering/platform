@@ -19,7 +19,7 @@ export async function objectLinkProvider (doc: RecruitDocument): Promise<string>
 }
 
 function isShortId (shortLink: string): boolean {
-  return /^\w+-\d+$/.test(shortLink)
+  return /^\S+-\d+$/.test(shortLink)
 }
 
 export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {

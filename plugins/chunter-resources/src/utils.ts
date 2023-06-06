@@ -259,5 +259,5 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Reso
 }
 
 function isShortId (shortLink: string): boolean {
-  return /^\w+-\w+$/.test(shortLink)
+  return /^\S+-\S+$/.test(shortLink)
 }
