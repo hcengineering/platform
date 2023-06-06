@@ -109,7 +109,7 @@
   }
 </script>
 
-<form class="container" style:padding={$deviceInfo.docWidth <= 480 ? '1.25rem' : '5rem'}>
+<form class="container" style:padding={$deviceInfo.docWidth <= 480 ? '.25rem 1.25rem' : '4rem 5rem'}>
   <div class="grow-separator" />
   <div class="title"><Label label={caption} /></div>
   <div class="status">
@@ -135,7 +135,7 @@
       <div class="form-row send">
         <Button
           label={action.i18n}
-          kind={'primary'}
+          kind={'contrast'}
           shape={'round2'}
           size={'x-large'}
           width="100%"
@@ -176,11 +176,12 @@
 
 <style lang="scss">
   .container {
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    flex-grow: 1;
-    overflow: hidden;
+    // width: 100%;
+    // flex-grow: 1;
     // height: 100%;
     // padding: 5rem;
 

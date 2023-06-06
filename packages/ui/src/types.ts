@@ -125,6 +125,7 @@ export type ButtonKind =
   | 'dangerous'
   | 'list'
   | 'list-header'
+  | 'contrast'
 export type ButtonSize = 'inline' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
 export type ButtonShape =
   | 'rectangle'

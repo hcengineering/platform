@@ -311,6 +311,30 @@
       background-color: var(--primary-button-disabled);
     }
   }
+  &.contrast {
+    padding: .75rem 1rem;
+    font-weight: 500;
+    color: var(--theme-button-contrast-color);
+    background-color: var(--theme-button-contrast-enabled);
+    border-color: var(--theme-button-contrast-border);
+
+    .btn-icon {
+      color: var(--theme-button-contrast-color);
+    }
+    &:hover {
+      background-color: var(--theme-button-contrast-hovered);
+    }
+    &:active {
+      background-color: var(--theme-button-contrast-pressed);
+    }
+    &:focus {
+      background-color: var(--theme-button-contrast-hovered);
+    }
+    &:disabled {
+      color: var(--theme-button-contrast-disabled-color);
+      background-color: var(--theme-button-contrast-disabled);
+    }
+  }
 
   &.notSelected {
     color: var(--theme-dark-color);
