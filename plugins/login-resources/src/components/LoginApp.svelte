@@ -32,6 +32,15 @@
   import LoginIcon from './icons/LoginIcon.svelte'
   import workbench from '@hcengineering/workbench'
 
+  import loginBack from '../../img/login_back.png'
+  import loginBack2x from '../../img/login_back_2x.png'
+
+  import loginBackAvif from '../../img/login_back.avif'
+  import loginBack2xAvif from '../../img/login_back_2x.avif'
+
+  import loginBackWebp from '../../img/login_back.webp'
+  import loginBack2xWebp from '../../img/login_back_2x.webp'
+
   export let page: string = 'login'
 
   let navigateUrl: string | undefined
@@ -51,110 +60,162 @@
 </script>
 
 <div class="theme-dark w-full h-full backd" class:paneld={$deviceInfo.docWidth <= 768} class:white={!$themeStore.dark}>
-  <div class:back={$deviceInfo.docWidth > 768} class="w-full h-full">
-    <div style:position="fixed" style:left={'28px'} style:top={'48px'} class="flex-row-center">
+  <div class="bg-image clear-mins" class:back={$deviceInfo.docWidth > 768} class:p-4={$deviceInfo.docWidth > 768}>
+    <picture>
+      <source srcset={`${loginBackAvif}, ${loginBack2xAvif} 2x`} type="image/avif" />
+      <source srcset={`${loginBackWebp}, ${loginBack2xWebp} 2x`} type="image/webp" />
+
+      <img
+        class="back-image"
+        src={loginBack}
+        style:display={$deviceInfo.docWidth <= 768 ? 'none' : 'block'}
+        srcset={`${loginBack} 1x, ${loginBack2x} 2x`}
+        alt=""
+      />
+    </picture>
+
+    <div
+      style:position="fixed"
+      style:left={$deviceInfo.docWidth <= 480 ? '.75rem' : '1.75rem'}
+      style:top={'3rem'}
+      class="flex-row-center"
+    >
       <LoginIcon /><span class="fs-title">{getMetadata(workbench.metadata.PlatformTitle)}</span>
     </div>
 
-    <Scroller padding={'1.25rem'} contentDirection={$deviceInfo.docWidth <= 768 ? 'vertical-reverse' : 'horizontal'}>
-      <div class="flex-grow" />
-      <div
-        class:mt-8={$deviceInfo.docWidth < 768}
-        class:panel={$deviceInfo.docWidth > 768}
-        class:white={!$themeStore.dark}
-        class:minHeight={!$deviceInfo.isPortrait}
-        class:landscape={$deviceInfo.docWidth > 768}
-        style:border-radius={$deviceInfo.docWidth <= 480 ? '.75rem' : '1.25rem'}
-      >
-        <div class="flex-grow" />
-        {#if page === 'login'}
-          <LoginForm {navigateUrl} />
-        {:else if page === 'signup'}
-          <SignupForm />
-        {:else if page === 'createWorkspace'}
-          <CreateWorkspaceForm />
-        {:else if page === 'password'}
-          <PasswordRequest />
-        {:else if page === 'recovery'}
-          <PasswordRestore />
-        {:else if page === 'selectWorkspace'}
-          <SelectWorkspace {navigateUrl} />
-        {:else if page === 'join'}
-          <Join />
-        {:else if page === 'confirm'}
-          <Confirmation />
-        {:else if page === 'confirmationSend'}
-          <ConfirmationSend />
-        {/if}
-      </div>
-    </Scroller>
+    <div
+      class="panel-base"
+      class:panel={$deviceInfo.docWidth > 768}
+      class:white={!$themeStore.dark}
+      class:minHeight={!$deviceInfo.isPortrait}
+      class:landscape={$deviceInfo.docWidth > 768}
+      style:border-radius={$deviceInfo.docWidth <= 480 ? '.75rem' : '1.25rem'}
+    >
+      <Scroller padding={'1rem 0'}>
+        <div class="form-content">
+          {#if page === 'login'}
+            <LoginForm {navigateUrl} />
+          {:else if page === 'signup'}
+            <SignupForm />
+          {:else if page === 'createWorkspace'}
+            <CreateWorkspaceForm />
+          {:else if page === 'password'}
+            <PasswordRequest />
+          {:else if page === 'recovery'}
+            <PasswordRestore />
+          {:else if page === 'selectWorkspace'}
+            <SelectWorkspace {navigateUrl} />
+          {:else if page === 'join'}
+            <Join />
+          {:else if page === 'confirm'}
+            <Confirmation />
+          {:else if page === 'confirmationSend'}
+            <ConfirmationSend />
+          {/if}
+        </div>
+      </Scroller>
+    </div>
+
     <Popup />
   </div>
 </div>
 
 <style lang="scss">
-  .backd {
-    background-color: 'rgb(0,0,0)';
-
-    &.paneld {
-      background: linear-gradient(180deg, #232324 0%, #171719 100%);
-    }
+  .back-image {
+    position: fixed;
+    top: 32px;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: left top;
   }
-  .back {
-    background-image: url('../../img/login_back.png');
-    background-image: -webkit-image-set(
-      '../../img/login_back.avif' 1x,
-      '../../img/login_back_2x.avif' 2x,
-      '../../img/login_back.png' 1x,
-      '../../img/login_back_2x.png' 2x,
-      '../../img/login_back.webp' 1x,
-      '../../img/login_back_2x.webp' 2x,
-      '../../img/login_back.jpg' 1x,
-      '../../img/login_back_2x.jpg' 2x
-    ); /* Temporary fallback for Chrome and Safari browsers until they support 'image-set()' better */
-    background-image: image-set(
-      '../../img/login_back.avif' 1x,
-      '../../img/login_back_2x.avif' 2x,
-      '../../img/login_back.png' 1x,
-      '../../img/login_back_2x.png' 2x,
-      '../../img/login_back.webp' 1x,
-      '../../img/login_back_2x.webp' 2x,
-      '../../img/login_back.jpg' 1x,
-      '../../img/login_back_2x.jpg' 2x
-    );
-    background-size: cover;
-    background-position-y: center;
+  .backd {
+    position: relative;
+    background-color: var(--theme-bg-color);
 
-    background-repeat: no-repeat;
+    .bg-image {
+      display: flex;
+      flex-direction: row-reverse;
+      width: 100%;
+      height: 100%;
+    }
+    &.paneld {
+      background: rgba(45, 50, 160, 0.5);
+
+      .panel-base {
+        padding-top: 4rem;
+        padding-bottom: 1rem;
+        width: 100%;
+      }
+    }
   }
 
   .panel {
     position: relative;
     display: flex;
     flex-direction: column;
-    height: calc(100% - 5rem);
-    background: linear-gradient(180deg, #232324 0%, #171719 100%);
+    justify-content: center;
+    width: 50%;
+    height: 100%;
+    min-width: 35rem;
+    max-width: 41rem;
+    background: rgba(45, 50, 160, 0.5);
+    mix-blend-mode: normal;
+    box-shadow: -30px 1.52px 173.87px #121437;
+    backdrop-filter: blur(157.855px);
+    border-radius: 1rem !important;
 
-    &.white {
-      background: radial-gradient(94.31% 94.31% at 6.36% 5.69%, #484a4f 0%, #505257 100%);
-    }
-    border-radius: 7.5658px !important;
-    box-shadow: 30px 11.52px 193.87px rgba(0, 0, 0, 0.7);
-
-    &.minHeight {
-      min-height: 40rem;
-    }
-
-    &::before,
     &::after {
-      content: '';
+      overflow: hidden;
       position: absolute;
-      border-radius: 50%;
+      content: '';
+      inset: 0;
+      background: radial-gradient(161.92% 96.11% at 11.33% 3.89%, #313d9a 0%, #202669 100%);
+      border-radius: 1rem;
       z-index: -1;
     }
-    &.landscape {
-      margin-right: 1.25rem;
-      width: 41.75rem;
+    &::before {
+      position: absolute;
+      content: '';
+      inset: 0;
+      padding: 1px;
+      background: conic-gradient(
+          rgba(255, 255, 255, 0.18) 10%,
+          rgba(126, 120, 165, 0.5),
+          rgba(191, 216, 253, 0.5),
+          rgba(246, 247, 249, 0.32),
+          rgba(219, 229, 242, 0.34) 60%,
+          rgba(163, 203, 255, 0.24) 90%
+        )
+        border-box;
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      border-radius: 1rem;
+      transform: rotate(180deg);
+      transition: opacity 0.15s var(--timing-main);
+      opacity: 0.7;
+      // z-index: -1;
     }
+  }
+  .backd.paneld::after,
+  .panel::after {
+    overflow: hidden;
+    position: absolute;
+    content: '';
+    inset: 0;
+    background: radial-gradient(161.92% 96.11% at 11.33% 3.89%, #313d9a 0%, #202669 100%);
+    z-index: -1;
+  }
+  .panel::after {
+    border-radius: 1rem;
+  }
+  .form-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-grow: 1;
+    height: max-content;
   }
 </style>

@@ -30,15 +30,15 @@
 <style lang="scss">
   .container {
     padding: 0.75rem 1rem;
-    background-color: var(--theme-comp-header-color);
-    border: 1px solid var(--theme-divider-color);
+    background-color: var(--theme-button-enabled);
+    border: 1px solid var(--theme-button-border);
     border-radius: 0.5rem;
   }
 
   .error {
     color: var(--system-error-color);
     fill: var(--system-error-color);
-    background-color: var(--theme-comp-header-color);
+    background-color: var(--theme-button-enabled);
     border-color: var(--system-error-60-color);
   }
 </style>
