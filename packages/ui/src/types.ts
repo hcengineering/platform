@@ -189,6 +189,7 @@ export type TooltipAlignment = 'top' | 'bottom' | 'left' | 'right'
 export type VerticalAlignment = 'top' | 'bottom'
 export type HorizontalAlignment = 'left' | 'right'
 
+// Be aware to update front getResizeID() to properly store resized images.
 export type IconSize =
   | 'inline'
   | 'tiny'
@@ -201,6 +202,26 @@ export type IconSize =
   | 'x-large'
   | '2x-large'
   | 'full'
+
+export function getIconSize2x (size: IconSize): IconSize {
+  switch (size) {
+    case 'inline':
+    case 'tiny':
+    case 'x-small':
+    case 'small':
+    case 'card':
+    case 'smaller':
+    case 'medium':
+      return 'large'
+    case 'large':
+      return 'x-large'
+    case 'x-large':
+      return '2x-large'
+    case '2x-large':
+    case 'full':
+      return 'full'
+  }
+}
 
 export interface DateOrShift {
   date?: number
