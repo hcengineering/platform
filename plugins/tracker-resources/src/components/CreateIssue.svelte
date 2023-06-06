@@ -78,7 +78,7 @@
   export let component: Ref<ComponentType> | null = null
   export let milestone: Ref<Milestone> | null = null
   export let relatedTo: Doc | undefined
-  export let shouldSaveDraft: boolean = false
+  export let shouldSaveDraft: boolean = true
   export let parentIssue: Issue | undefined
   export let originalIssue: Issue | undefined
 
