@@ -452,7 +452,7 @@ dependencies:
   '@rush-temp/lead-resources': file:projects/lead-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
   '@rush-temp/login': file:projects/login.tgz
   '@rush-temp/login-assets': file:projects/login-assets.tgz_typescript@4.8.4
-  '@rush-temp/login-resources': file:projects/login-resources.tgz_a1d864769aaf53d09b76fe134ab55e60
+  '@rush-temp/login-resources': file:projects/login-resources.tgz_6b663ee09b2196220fd64c9f6c0fe6d4
   '@rush-temp/middleware': file:projects/middleware.tgz
   '@rush-temp/minio': file:projects/minio.tgz
   '@rush-temp/model': file:projects/model.tgz
@@ -16495,6 +16495,23 @@ packages:
       punycode: 2.1.1
     dev: false
 
+  /url-loader/4.1.1_file-loader@6.2.0+webpack@5.75.0:
+    resolution: {integrity: sha512-3BTV812+AVHHOJQO8O5MkWgZ5aosP7GnROJwvzLS9hWDj00lZ6Z0wNak423Lp9PBZN05N+Jk/N5Si8jRAlGyWA==}
+    engines: {node: '>= 10.13.0'}
+    peerDependencies:
+      file-loader: '*'
+      webpack: ^4.0.0 || ^5.0.0
+    peerDependenciesMeta:
+      file-loader:
+        optional: true
+    dependencies:
+      file-loader: 6.2.0_webpack@5.75.0
+      loader-utils: 2.0.4
+      mime-types: 2.1.35
+      schema-utils: 3.1.1
+      webpack: 5.75.0_c5a9b74f1e48ccd7ef01359287c5ad78
+    dev: false
+
   /url-parse/1.5.10:
     resolution: {integrity: sha512-WypcfiRhfeUP9vvF0j6rw0J3hrWrw6iZv3+22h6iRMJ/8z1Tj6XfLP4DsUix5MhMPnXpiHDoKyoZ/bdCkwBCiQ==}
     dependencies:
@@ -17160,7 +17177,7 @@ packages:
     dev: false
 
   file:projects/account.tgz_bufferutil@4.0.7:
-    resolution: {integrity: sha512-baPWYIMSu02ZqsK1UY9gUO2dsdHSRgwPr8zxLOtl0PW9uzlFiW3QBF3mccPOg5KRbn9lMu09cEv1m0IVXbJ+ug==, tarball: file:projects/account.tgz}
+    resolution: {integrity: sha512-wFsMbYAgJVzoIL3Q/RDCuQEtSG+/9n2pxt7SSMY9pcl6t3CuW5QtrjWszLGs+LKbqhmWiVVDJEK/7naWcm0J7Q==, tarball: file:projects/account.tgz}
     id: file:projects/account.tgz
     name: '@rush-temp/account'
     version: 0.0.0
@@ -18632,8 +18649,8 @@ packages:
       - typescript
     dev: false
 
-  file:projects/login-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-RGXKBQhU8Jy6/mvZPk9rWS+nPrSaDdqKVgPAlKe/z28BG0Sbt0oi+ANNdYbfIgJI6E5o483HwMFm1nlLIgxoVg==, tarball: file:projects/login-resources.tgz}
+  file:projects/login-resources.tgz_6b663ee09b2196220fd64c9f6c0fe6d4:
+    resolution: {integrity: sha512-r5B2Yb5okUeMrcW08WrB4FYijiPPIwr/fO50FIv5zjEkSMjbLJFIrXKOTdiXGGmnVqlPsd0AhLCPjPQhFC3SSA==, tarball: file:projects/login-resources.tgz}
     id: file:projects/login-resources.tgz
     name: '@rush-temp/login-resources'
     version: 0.0.0
@@ -18654,9 +18671,11 @@ packages:
       svelte-loader: 3.1.4_svelte@3.55.1
       svelte-preprocess: 5.0.3_6420a3eba9d5580d9c2f627c17e61722
       typescript: 4.8.4
+      url-loader: 4.1.1_file-loader@6.2.0+webpack@5.75.0
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
+      - file-loader
       - less
       - postcss
       - postcss-load-config
@@ -18664,6 +18683,7 @@ packages:
       - stylus
       - sugarss
       - supports-color
+      - webpack
     dev: false
 
   file:projects/login.tgz:

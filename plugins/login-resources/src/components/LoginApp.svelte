@@ -32,11 +32,20 @@
   import LoginIcon from './icons/LoginIcon.svelte'
   import workbench from '@hcengineering/workbench'
 
+  import loginBack from '../../img/login_back.png'
+  import loginBack2x from '../../img/login_back_2x.png'
+
+  import loginBackAvif from '../../img/login_back.avif'
+  import loginBack2xAvif from '../../img/login_back_2x.avif'
+
+  import loginBackWebp from '../../img/login_back.webp'
+  import loginBack2xWebp from '../../img/login_back_2x.webp'
+
   export let page: string = 'login'
 
   let navigateUrl: string | undefined
 
-  function getToken (timer: number): string | undefined {
+  function getToken(timer: number): string | undefined {
     return getMetadata(presentation.metadata.Token)
   }
   $: token = getToken($ticker)
@@ -51,11 +60,25 @@
 </script>
 
 <div class="theme-dark w-full h-full backd" class:paneld={$deviceInfo.docWidth <= 768} class:white={!$themeStore.dark}>
-  <div class:back={$deviceInfo.docWidth > 768} class="w-full h-full">
-    <div style:position="fixed" style:left={'28px'} style:top={'48px'} class="flex-row-center">
-      <LoginIcon /><span class="fs-title">{getMetadata(workbench.metadata.PlatformTitle)}</span>
-    </div>
+  <picture>
+    <source srcset={`${loginBackAvif}, ${loginBack2xAvif} 2x`} type="image/avif" />
+    <source srcset={`${loginBackWebp}, ${loginBack2xWebp} 2x`} type="image/webp" />
 
+    <img
+      style:position="fixed"
+      style:top={'32px'}
+      style:right={'0px'}
+      style:bottom={'0px'}
+      src={loginBack}
+      style:height={'100%'}
+      srcset={`${loginBack} 1x, ${loginBack2x} 2x`}
+      alt=""
+    />
+  </picture>
+  <div style:position="fixed" style:left={'28px'} style:top={'48px'} class="flex-row-center">
+    <LoginIcon /><span class="fs-title">{getMetadata(workbench.metadata.PlatformTitle)}</span>
+  </div>
+  <div class="fixed" style:top={'48px'} style:right={'48px'} style:bottom={'48px'} style:height={'100%'}>
     <Scroller padding={'1.25rem'} contentDirection={$deviceInfo.docWidth <= 768 ? 'vertical-reverse' : 'horizontal'}>
       <div class="flex-grow" />
       <div
@@ -99,33 +122,6 @@
     &.paneld {
       background: linear-gradient(180deg, #232324 0%, #171719 100%);
     }
-  }
-  .back {
-    background-image: url('../../img/login_back.png');
-    background-image: -webkit-image-set(
-      '../../img/login_back.avif' 1x,
-      '../../img/login_back_2x.avif' 2x,
-      '../../img/login_back.png' 1x,
-      '../../img/login_back_2x.png' 2x,
-      '../../img/login_back.webp' 1x,
-      '../../img/login_back_2x.webp' 2x,
-      '../../img/login_back.jpg' 1x,
-      '../../img/login_back_2x.jpg' 2x
-    ); /* Temporary fallback for Chrome and Safari browsers until they support 'image-set()' better */
-    background-image: image-set(
-      '../../img/login_back.avif' 1x,
-      '../../img/login_back_2x.avif' 2x,
-      '../../img/login_back.png' 1x,
-      '../../img/login_back_2x.png' 2x,
-      '../../img/login_back.webp' 1x,
-      '../../img/login_back_2x.webp' 2x,
-      '../../img/login_back.jpg' 1x,
-      '../../img/login_back_2x.jpg' 2x
-    );
-    background-size: cover;
-    background-position-y: center;
-
-    background-repeat: no-repeat;
   }
 
   .panel {

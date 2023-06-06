@@ -28,7 +28,8 @@
     "eslint": "^8.26.0",
     "prettier": "^2.7.1",
     "svelte-check": "3.2.0",
-    "typescript": "^4.3.5"
+    "typescript": "^4.3.5",
+    "url-loader": "~4.1.1"
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.9",

@@ -114,6 +114,6 @@
   {fields}
   {object}
   {action}
-  bottomActions={[recoveryAction, signUpAction]}
+  bottomActions={[signUpAction, recoveryAction]}
   ignoreInitialValidation
 />
