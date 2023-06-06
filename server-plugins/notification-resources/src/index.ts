@@ -70,6 +70,7 @@ export async function OnBacklinkCreate (tx: Tx, control: TriggerControl): Promis
 
   if (!checkTx(ptx, hierarchy)) return []
 
+  if (!hierarchy.isDerived(ptx.objectClass, contact.class.Employee)) return []
   const receiver = await getEmployeeAccount(ptx.objectId as Ref<Employee>, control)
   if (receiver === undefined) return []
 

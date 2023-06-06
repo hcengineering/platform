@@ -649,7 +649,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
       label: chunter.string.MentionNotification,
       generated: false,
       hidden: false,
-      txClasses: [core.class.TxCreateDoc],
+      txClasses: [],
       objectClass: chunter.class.Backlink,
       group: chunter.ids.ChunterNotificationGroup,
       providers: {
@@ -658,7 +658,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
       },
       templates: {
         textTemplate: '{sender} mentioned you in {doc} {data}',
-        htmlTemplate: '<p>–{sender}</b> mentioned you in {doc}</p> {data}',
+        htmlTemplate: '<p>{sender}</b> mentioned you in {doc}</p> {data}',
         subjectTemplate: 'You were mentioned in {doc}'
       }
     },
