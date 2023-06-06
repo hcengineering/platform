@@ -21,7 +21,6 @@
   import { AnyComponent, Component, Tabs } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import notification from '../plugin'
-  import { NotificationClientImpl } from '../utils'
   import Activity from './Activity.svelte'
   import EmployeeInbox from './EmployeeInbox.svelte'
   import Filter from './Filter.svelte'
@@ -32,7 +31,6 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const notificationClient = NotificationClientImpl.getClient()
 
   $: tabs = [
     {
@@ -59,14 +57,17 @@
       _class = undefined
       return
     }
-    if (value.attachedTo !== _id && _id !== undefined) {
-      await notificationClient.read(_id)
-    }
     const targetClass = hierarchy.getClass(value.attachedToClass)
     const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
     component = panelComponent.component ?? view.component.EditDoc
     _id = value.attachedTo
     _class = value.attachedToClass
+    await read(value)
+  }
+
+  async function read (docUpdate: DocUpdates): Promise<void> {
+    docUpdate.txes.forEach((p) => (p.isNew = false))
+    await client.update(docUpdate, { txes: docUpdate.txes })
   }
 
   function openDM (value: Ref<Doc>) {
