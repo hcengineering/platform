@@ -15,30 +15,50 @@
 -->
 <script lang="ts">
   import type { Doc } from '@hcengineering/core'
-  import { IconAttachment, tooltip } from '@hcengineering/ui'
+  import { Button, ButtonKind, ButtonSize, IconAttachment, tooltip } from '@hcengineering/ui'
   import { DocNavLink } from '@hcengineering/view-resources'
   import AttachmentPopup from './AttachmentPopup.svelte'
 
   export let value: number | undefined
   export let object: Doc
-  export let size: 'small' | 'medium' | 'large' = 'small'
+  export let size: ButtonSize = 'small'
+  export let kind: ButtonKind = 'link'
   export let showCounter = true
 </script>
 
 {#if value && value > 0}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <DocNavLink {object} inline noUnderline={true}>
-    <div
-      use:tooltip={{
-        component: AttachmentPopup,
-        props: { objectId: object._id, attachments: value, object }
-      }}
-      class="sm-tool-icon"
-    >
-      <span class="icon"><IconAttachment {size} /></span>
-      {#if showCounter}
-        {value}
-      {/if}
-    </div>
+    {#if kind === 'list'}
+      <div
+        use:tooltip={{
+          component: AttachmentPopup,
+          props: { objectId: object._id, attachments: value, object }
+        }}
+        class="sm-tool-icon"
+      >
+        <Button {kind} {size}>
+          <div slot="content" class="flex-row-center">
+            <span class="icon"><IconAttachment {size} /></span>
+            {#if showCounter}
+              {value}
+            {/if}
+          </div></Button
+        >
+      </div>
+    {:else}
+      <div
+        use:tooltip={{
+          component: AttachmentPopup,
+          props: { objectId: object._id, attachments: value, object }
+        }}
+        class="sm-tool-icon"
+      >
+        <span class="icon"><IconAttachment {size} /></span>
+        {#if showCounter}
+          {value}
+        {/if}
+      </div>
+    {/if}
   </DocNavLink>
 {/if}
