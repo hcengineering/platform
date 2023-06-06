@@ -19,14 +19,15 @@
   export let value: string
   export let inline: boolean = false
   let divScroll: HTMLElement
+  $: _value = value ?? ''
 </script>
 
 {#if inline}
-  <a href={value} target="_blank" rel="noreferrer" class="select-text">{value}</a>
+  <a href={value} target="_blank" rel="noreferrer" class="select-text">{_value}</a>
 {:else}
   <div class="clear-mins max-w-80">
     <ScrollerBar bind:scroller={divScroll}>
-      <a href={value} target="_blank" rel="noreferrer" class="select-text">{value}</a>
+      <a href={value} target="_blank" rel="noreferrer" class="select-text">{_value}</a>
     </ScrollerBar>
   </div>
 {/if}
