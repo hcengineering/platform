@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import chunter, { chunterId, ChunterSpace, Comment, Message, ThreadMessage } from '@hcengineering/chunter'
-import { EmployeeAccount } from '@hcengineering/contact'
+import chunter, { Backlink, chunterId, ChunterSpace, Comment, Message, ThreadMessage } from '@hcengineering/chunter'
+import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
 import core, {
   Account,
   Class,
@@ -26,6 +26,7 @@ import core, {
   Hierarchy,
   Ref,
   Tx,
+  TxCollectionCUD,
   TxCreateDoc,
   TxCUD,
   TxProcessor,
@@ -219,6 +220,41 @@ export async function IsDirectMessage (
   return space !== undefined
 }
 
+function isBacklink (ptx: TxCollectionCUD<Doc, Backlink>, hierarchy: Hierarchy): boolean {
+  if (ptx._class !== core.class.TxCollectionCUD) {
+    return false
+  }
+
+  if (
+    ptx.tx._class !== core.class.TxCreateDoc ||
+    !hierarchy.isDerived(ptx.tx.objectClass, chunter.class.Backlink) ||
+    !hierarchy.isDerived(ptx.objectClass, contact.class.Employee)
+  ) {
+    return false
+  }
+  return true
+}
+
+/**
+ * @public
+ */
+export async function IsMeMentioned (
+  tx: Tx,
+  doc: Doc,
+  user: Ref<Account>,
+  type: NotificationType,
+  control: TriggerControl
+): Promise<boolean> {
+  const ptx = tx as TxCollectionCUD<Doc, Backlink>
+  if (!isBacklink(ptx, control.hierarchy)) return false
+  const backlink = TxProcessor.createDoc2Doc(ptx.tx as TxCreateDoc<Backlink>)
+  if (!control.hierarchy.isDerived(backlink.backlinkClass, contact.class.Employee)) return false
+  const acc = (
+    await control.modelDb.findAll(contact.class.EmployeeAccount, { employee: backlink.backlinkId as Ref<Employee> })
+  )[0]
+  return acc._id === user
+}
+
 /**
  * @public
  */
@@ -243,6 +279,7 @@ export default async () => ({
     ChannelHTMLPresenter: channelHTMLPresenter,
     ChannelTextPresenter: channelTextPresenter,
     IsDirectMessage,
+    IsMeMentioned,
     IsChannelMessage
   }
 })

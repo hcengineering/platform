@@ -649,7 +649,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
       label: chunter.string.MentionNotification,
       generated: false,
       hidden: false,
-      txClasses: [],
+      txClasses: [core.class.TxCreateDoc],
       objectClass: chunter.class.Backlink,
       group: chunter.ids.ChunterNotificationGroup,
       providers: {
