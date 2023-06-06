@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Client, Doc, Ref } from '@hcengineering/core'
+import { Client, Doc, Ref, Space } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { IssueDraft } from '@hcengineering/tracker'
@@ -24,7 +24,8 @@ import {
   SortFunc,
   Viewlet,
   ViewletDescriptor,
-  ViewQueryAction
+  ViewQueryAction,
+  KeyFilter
 } from '@hcengineering/view'
 import tracker, { trackerId } from '../../tracker/lib'
 
@@ -392,7 +393,8 @@ export default mergeIds(trackerId, tracker, {
     SubIssueQuery: '' as ViewQueryAction,
     GetAllPriority: '' as GetAllValuesFunc,
     GetAllComponents: '' as GetAllValuesFunc,
-    GetAllMilestones: '' as GetAllValuesFunc
+    GetAllMilestones: '' as GetAllValuesFunc,
+    GetVisibleFilters: '' as Resource<(filters: KeyFilter[], space?: Ref<Space>) => Promise<KeyFilter[]>>
   },
   aggregation: {
     CreateComponentAggregationManager: '' as CreateAggregationManagerFunc,

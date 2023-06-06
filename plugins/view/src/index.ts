@@ -128,6 +128,8 @@ export interface ClassFilters extends Class<Doc> {
 
   // Ignore attributes not specified in the "filters" array
   strict?: boolean
+  // Allows to filter out the provided keys, leaving only the necessary ones
+  getVisibleFilters?: Resource<(filters: KeyFilter[], space?: Ref<Space>) => Promise<KeyFilter[]>>
 }
 
 /**
