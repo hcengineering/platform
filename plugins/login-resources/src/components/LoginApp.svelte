@@ -94,14 +94,34 @@
 
 <style lang="scss">
   .backd {
-    background: '#000';
+    background-color: 'rgb(0,0,0)';
 
     &.paneld {
       background: linear-gradient(180deg, #232324 0%, #171719 100%);
     }
   }
   .back {
-    background: url('../../img/back_signin.png');
+    // background: url('../../img/back_signin.png');
+    background-image: -webkit-image-set(
+      '../../img/login_back.avif' 1x,
+      '../../img/login_back_2x.avif' 2x,
+      '../../img/login_back.png' 1x,
+      '../../img/login_back_2x.png' 2x,
+      '../../img/login_back.webp' 1x,
+      '../../img/login_back_2x.webp' 2x,
+      '../../img/login_back.jpg' 1x,
+      '../../img/login_back_2x.jpg' 2x
+    ); /* Temporary fallback for Chrome and Safari browsers until they support 'image-set()' better */
+    background-image: image-set(
+      '../../img/login_back.avif' 1x,
+      '../../img/login_back_2x.avif' 2x,
+      '../../img/login_back.png' 1x,
+      '../../img/login_back_2x.png' 2x,
+      '../../img/login_back.webp' 1x,
+      '../../img/login_back_2x.webp' 2x,
+      '../../img/login_back.jpg' 1x,
+      '../../img/login_back_2x.jpg' 2x
+    );
     background-size: cover;
     background-position-y: center;
 
