@@ -258,7 +258,7 @@
 
   function showMenu (ev?: Event): void {
     if (object !== undefined) {
-      showPopup(ContextMenu, { object }, (ev as MouseEvent).target as HTMLElement)
+      showPopup(ContextMenu, { object, excludedActions: [view.action.Open] }, (ev as MouseEvent).target as HTMLElement)
     }
   }
   function handleOpen (ev: CustomEvent): void {
