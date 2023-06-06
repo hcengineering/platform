@@ -14,7 +14,7 @@ export function getIssueId (project: Project, issue: Issue): string {
 }
 
 export function isIssueId (shortLink: string): boolean {
-  return /^\w+-\d+$/.test(shortLink)
+  return /^\S+-\d+$/.test(shortLink)
 }
 
 export async function getIssueTitle (client: TxOperations, ref: Ref<Doc>): Promise<string> {
