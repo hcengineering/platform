@@ -44,6 +44,7 @@
   export let focusIndex: number | undefined = -1
   export let enableAttachments: boolean = true
   export let enableBackReferences: boolean = false
+  export let isScrollable = true
 
   let draftKey = objectId ? `${objectId}_attachments` : undefined
   $: draftKey = objectId ? `${objectId}_attachments` : undefined
@@ -356,6 +357,7 @@
       {focusable}
       {kind}
       {enableBackReferences}
+      {isScrollable}
       on:changeSize
       on:changeContent
       on:blur

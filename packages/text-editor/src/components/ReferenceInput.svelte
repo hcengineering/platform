@@ -196,6 +196,9 @@
   }
 
   function updateFormattingState () {
+    if (textEditor?.checkIsActive === undefined) {
+      return
+    }
     activeModes = new Set(FORMAT_MODES.filter(textEditor.checkIsActive))
     isSelectionEmpty = textEditor.checkIsSelectionEmpty()
   }
