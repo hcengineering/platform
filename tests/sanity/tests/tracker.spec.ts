@@ -6,8 +6,6 @@ import {
   checkIssue,
   checkIssueDraft,
   createIssue,
-  createLabel,
-  createSubissue,
   fillIssueForm,
   navigate,
   openIssue
