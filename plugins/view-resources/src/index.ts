@@ -104,6 +104,8 @@ import {
 import { IndexedDocumentPreview } from '@hcengineering/presentation'
 import { statusSort } from './utils'
 import { showEmptyGroups } from './viewOptions'
+import { AggregationMiddleware } from './middleware'
+import { grouppingStatusManager, StatusAggregationManager } from './status'
 export { getActions, invokeAction } from './actions'
 export { default as ActionHandler } from './components/ActionHandler.svelte'
 export { default as AddSavedView } from './components/filter/AddSavedView.svelte'
@@ -129,6 +131,8 @@ export { default as ParentsNavigator } from './components/ParentsNavigator.svelt
 export * from './filter'
 export * from './selection'
 export * from './utils'
+export * from './status'
+export * from './middleware'
 export {
   buildModel,
   getActiveViewletId,
@@ -257,6 +261,11 @@ export default async (): Promise<Resources> => ({
     FilterDateMonth: dateMonth,
     FilterDateNextMonth: dateNextMonth,
     FilterDateNotSpecified: dateNotSpecified,
-    FilterDateCustom: dateCustom
+    FilterDateCustom: dateCustom,
+    CreateDocMiddleware: AggregationMiddleware.create
+  },
+  aggregation: {
+    CreateStatusAggregationManager: StatusAggregationManager.create,
+    GrouppingStatusManager: grouppingStatusManager
   }
 })

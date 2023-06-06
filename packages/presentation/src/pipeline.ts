@@ -12,6 +12,7 @@ import {
   TxResult,
   WithLookup
 } from '@hcengineering/core'
+import { Resource } from '@hcengineering/platform'
 
 /**
  * @public
@@ -231,4 +232,11 @@ export abstract class BasePresentationMiddleware {
     }
     return { unsubscribe: () => {} }
   }
+}
+
+/**
+ * @public
+ */
+export interface PresentationMiddlewareFactory extends Doc {
+  createPresentationMiddleware: Resource<PresentationMiddlewareCreator>
 }

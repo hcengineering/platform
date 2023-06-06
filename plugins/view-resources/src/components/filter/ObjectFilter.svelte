@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Doc, FindResult, getObjectValue, Ref, RefTo, SortingOrder, Space, Status } from '@hcengineering/core'
-  import { translate } from '@hcengineering/platform'
-  import presentation, { getClient, statusStore } from '@hcengineering/presentation'
+  import core, { Doc, FindResult, getObjectValue, Ref, RefTo, SortingOrder, Space } from '@hcengineering/core'
+  import { getResource, translate } from '@hcengineering/platform'
+  import presentation, { getClient } from '@hcengineering/presentation'
   import ui, {
     addNotification,
     deviceOptionsStore,
@@ -27,7 +27,7 @@
     Loading,
     resizeObserver
   } from '@hcengineering/ui'
-  import { Filter } from '@hcengineering/view'
+  import { Filter, GrouppingManager } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { FILTER_DEBOUNCE_MS, sortFilterValues } from '../../filter'
   import view from '../../plugin'
@@ -49,31 +49,17 @@
 
   let values: (Doc | undefined | null)[] = []
   let objectsPromise: Promise<FindResult<Doc>> | undefined
+  let grouppingManager: GrouppingManager | undefined
+
   const targets = new Set<any>()
   $: targetClass = (filter.key.attribute.type as RefTo<Doc>).to
   $: clazz = hierarchy.getClass(targetClass)
-
-  $: isStatus = client.getHierarchy().isDerived(targetClass, core.class.Status) ?? false
+  $: mixin = hierarchy.classHierarchyMixin(targetClass, view.mixin.Groupping)
+  $: if (mixin?.grouppingManager !== undefined) {
+    getResource(mixin.grouppingManager).then((mgr) => (grouppingManager = mgr))
+  }
 
   let filterUpdateTimeout: number | undefined
-
-  const groupValues = (val: Status[]): Doc[] => {
-    const statuses = val
-    const result: Doc[] = []
-    const unique = [...new Set(val.map((v) => v.name.trim().toLocaleLowerCase()))]
-    unique.forEach((label, i) => {
-      let exists = false
-      statuses.forEach((state) => {
-        if (state.name.trim().toLocaleLowerCase() === label) {
-          if (!exists) {
-            result[i] = state
-            exists = targets.has(state?._id)
-          }
-        }
-      })
-    })
-    return result
-  }
 
   async function getValues (search: string): Promise<void> {
     if (objectsPromise) {
@@ -108,8 +94,8 @@
     const options = clazz.sortingKey !== undefined ? { sort: { [clazz.sortingKey]: SortingOrder.Ascending } } : {}
     objectsPromise = client.findAll(targetClass, resultQuery, options)
     values = await objectsPromise
-    if (isStatus) {
-      values = groupValues(values as Status[])
+    if (grouppingManager !== undefined) {
+      values = grouppingManager.groupValues(values as Doc[], targets)
     }
     if (targets.has(undefined)) {
       values.unshift(undefined)
@@ -130,13 +116,8 @@
   }
 
   function isSelected (value: Doc | undefined | null, values: any[]): boolean {
-    if (isStatus) {
-      const statusSet = new Set(
-        $statusStore
-          .filter((it) => it.name.trim().toLocaleLowerCase() === (value as Status)?.name?.trim()?.toLocaleLowerCase())
-          .map((it) => it._id)
-      )
-      return values.some((it) => statusSet.has(it))
+    if (grouppingManager !== undefined) {
+      return grouppingManager.hasValue(value, values)
     }
     return values.includes(value?._id ?? value)
   }

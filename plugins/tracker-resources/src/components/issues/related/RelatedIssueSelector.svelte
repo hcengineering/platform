@@ -26,9 +26,9 @@
     showPanel,
     showPopup
   } from '@hcengineering/ui'
+  import { statusStore } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
   import { subIssueListProvider } from '../../../utils'
-  import { statusStore } from '@hcengineering/presentation'
   import RelatedIssuePresenter from './RelatedIssuePresenter.svelte'
 
   export let object: WithLookup<Doc & { related: number }> | undefined
@@ -69,7 +69,8 @@
   }
 
   $: if (subIssues) {
-    const doneStatuses = $statusStore.statuses
+    const doneStatuses = $statusStore
+      .getDocs()
       .filter((s) => s.category === tracker.issueStatusCategory.Completed)
       .map((p) => p._id)
     countComplete = subIssues.filter((si) => doneStatuses.includes(si.status)).length

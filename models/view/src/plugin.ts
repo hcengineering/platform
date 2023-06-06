@@ -13,9 +13,11 @@
 // limitations under the License.
 //
 
+import { Ref } from '@hcengineering/core'
 import { IntlString, mergeIds } from '@hcengineering/platform'
-import type { AnyComponent } from '@hcengineering/ui'
+import { AnyComponent } from '@hcengineering/ui'
 import { FilterFunction, ViewAction, ViewCategoryAction, viewId } from '@hcengineering/view'
+import { PresentationMiddlewareFactory } from '@hcengineering/presentation'
 import view from '@hcengineering/view-resources/src/plugin'
 
 export default mergeIds(viewId, view, {
@@ -118,5 +120,8 @@ export default mergeIds(viewId, view, {
     FilterDateNotSpecified: '' as FilterFunction,
     FilterDateCustom: '' as FilterFunction,
     ShowEmptyGroups: '' as ViewCategoryAction
+  },
+  pipeline: {
+    PresentationMiddleware: '' as Ref<PresentationMiddlewareFactory>
   }
 })

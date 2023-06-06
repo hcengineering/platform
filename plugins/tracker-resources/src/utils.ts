@@ -61,7 +61,7 @@ import {
 import { ViewletDescriptor } from '@hcengineering/view'
 import { CategoryQuery, groupBy, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
 import tracker from './plugin'
-import { defaultMilestoneStatuses, defaultPriorities } from './types'
+import { defaultPriorities, defaultMilestoneStatuses } from './types'
 
 export * from './types'
 
@@ -296,7 +296,7 @@ export async function issueStatusSort (
         listIssueKanbanStatusOrder.indexOf(a.values[0].category as Ref<StatusCategory>) -
         listIssueKanbanStatusOrder.indexOf(b.values[0].category as Ref<StatusCategory>)
       if (res === 0) {
-        return a.values[0].rank.localeCompare(b.values[0].rank)
+        return a.values[0].getRank().localeCompare(b.values[0].getRank())
       }
       return res
     })
@@ -306,7 +306,7 @@ export async function issueStatusSort (
         listIssueStatusOrder.indexOf(a.values[0].category as Ref<StatusCategory>) -
         listIssueStatusOrder.indexOf(b.values[0].category as Ref<StatusCategory>)
       if (res === 0) {
-        return a.values[0].rank.localeCompare(b.values[0].rank)
+        return a.values[0].getRank().localeCompare(b.values[0].getRank())
       }
       return res
     })

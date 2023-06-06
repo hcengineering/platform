@@ -13,14 +13,24 @@
 // limitations under the License.
 //
 
-import type { Account, Class, Client, Data, Doc, DocumentQuery, Domain, Ref, Space } from '@hcengineering/core'
-import { DOMAIN_MODEL } from '@hcengineering/core'
+import Core, {
+  DOMAIN_MODEL,
+  Account,
+  Class,
+  Client,
+  Data,
+  Doc,
+  DocumentQuery,
+  Domain,
+  Ref,
+  Space
+} from '@hcengineering/core'
 import { Builder, Mixin, Model } from '@hcengineering/model'
 import core, { TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
-import type { Asset, IntlString, Resource, Status } from '@hcengineering/platform'
-import type { AnyComponent, Location } from '@hcengineering/ui'
-import type {
+import { Asset, IntlString, Resource, Status } from '@hcengineering/platform'
+import { AnyComponent, Location } from '@hcengineering/ui'
+import {
   Action,
   ActionCategory,
   ActivityAttributePresenter,
@@ -68,8 +78,13 @@ import type {
   ViewOptionsModel,
   Viewlet,
   ViewletDescriptor,
-  ViewletPreference
+  ViewletPreference,
+  Aggregation,
+  CreateAggregationManagerFunc,
+  GrouppingManagerResource,
+  Groupping
 } from '@hcengineering/view'
+import presentation from '@hcengineering/model-presentation'
 import view from './plugin'
 
 export { viewId } from '@hcengineering/view'
@@ -260,6 +275,16 @@ export class TAllValuesFunc extends TClass implements AllValuesFunc {
   func!: GetAllValuesFunc
 }
 
+@Mixin(view.mixin.Groupping, core.class.Class)
+export class TGroupping extends TClass implements Groupping {
+  grouppingManager!: GrouppingManagerResource
+}
+
+@Mixin(view.mixin.Aggregation, core.class.Class)
+export class TAggregation extends TClass implements Aggregation {
+  createAggregationManager!: CreateAggregationManagerFunc
+}
+
 @Model(view.class.ViewletPreference, preference.class.Preference)
 export class TViewletPreference extends TPreference implements ViewletPreference {
   attachedTo!: Ref<Viewlet>
@@ -408,7 +433,9 @@ export function createModel (builder: Builder): void {
     TArrayEditor,
     TInlineAttributEditor,
     TFilteredView,
-    TAllValuesFunc
+    TAllValuesFunc,
+    TAggregation,
+    TGroupping
   )
 
   classPresenter(
@@ -515,6 +542,15 @@ export function createModel (builder: Builder): void {
       component: view.component.ListView
     },
     view.viewlet.List
+  )
+
+  builder.createDoc(
+    presentation.class.PresentationMiddlewareFactory,
+    core.space.Model,
+    {
+      createPresentationMiddleware: view.function.CreateDocMiddleware
+    },
+    view.pipeline.PresentationMiddleware
   )
 
   createAction(
@@ -989,6 +1025,14 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(core.class.Status, core.class.Class, view.mixin.AttributePresenter, {
     presenter: view.component.StatusRefPresenter
+  })
+
+  builder.mixin(Core.class.Status, core.class.Class, view.mixin.Aggregation, {
+    createAggregationManager: view.aggregation.CreateStatusAggregationManager
+  })
+
+  builder.mixin(Core.class.Status, core.class.Class, view.mixin.Groupping, {
+    grouppingManager: view.aggregation.GrouppingStatusManager
   })
 }
 

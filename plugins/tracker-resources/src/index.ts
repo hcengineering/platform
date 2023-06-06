@@ -30,6 +30,7 @@ import { Issue, Project, Scrum, ScrumRecord, Milestone } from '@hcengineering/tr
 import { showPopup } from '@hcengineering/ui'
 import ComponentEditor from './components/components/ComponentEditor.svelte'
 import ComponentPresenter from './components/components/ComponentPresenter.svelte'
+import ComponentRefPresenter from './components/components/ComponentRefPresenter.svelte'
 import Components from './components/components/Components.svelte'
 import ComponentTitlePresenter from './components/components/ComponentTitlePresenter.svelte'
 import EditComponent from './components/components/EditComponent.svelte'
@@ -133,6 +134,7 @@ import ProjectSpacePresenter from './components/projects/ProjectSpacePresenter.s
 import IssueStatistics from './components/milestones/IssueStatistics.svelte'
 import MilestoneRefPresenter from './components/milestones/MilestoneRefPresenter.svelte'
 import MilestoneFilter from './components/milestones/MilestoneFilter.svelte'
+import { ComponentAggregationManager, grouppingComponentManager } from './component'
 
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 
@@ -417,6 +419,7 @@ export default async (): Promise<Resources> => ({
     Components,
     IssuePresenter,
     ComponentPresenter,
+    ComponentRefPresenter,
     ComponentTitlePresenter,
     TitlePresenter,
     ModificationDatePresenter,
@@ -506,5 +509,9 @@ export default async (): Promise<Resources> => ({
   },
   resolver: {
     Location: resolveLocation
+  },
+  aggregation: {
+    CreateComponentAggregationManager: ComponentAggregationManager.create,
+    GrouppingComponentManager: grouppingComponentManager
   }
 })

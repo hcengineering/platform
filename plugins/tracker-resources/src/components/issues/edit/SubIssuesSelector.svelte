@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Ref, SortingOrder, WithLookup } from '@hcengineering/core'
-  import { createQuery, statusStore } from '@hcengineering/presentation'
+  import { createQuery } from '@hcengineering/presentation'
   import { Issue, Project } from '@hcengineering/tracker'
   import {
     Button,
@@ -26,6 +26,7 @@
     showPanel,
     showPopup
   } from '@hcengineering/ui'
+  import { statusStore } from '@hcengineering/view-resources'
   import { getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
   import { subIssueListProvider } from '../../../utils'
@@ -77,7 +78,8 @@
   }
 
   $: if (subIssues) {
-    const doneStatuses = $statusStore.statuses
+    const doneStatuses = $statusStore
+      .getDocs()
       .filter(
         (s) =>
           s.category === tracker.issueStatusCategory.Completed || s.category === tracker.issueStatusCategory.Canceled

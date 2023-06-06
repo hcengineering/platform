@@ -20,7 +20,7 @@
   import { ActivityFilter } from '@hcengineering/activity'
   import activity from '../plugin'
 
-  export let selectedFilter: Ref<Doc>[] | 'All' = 'All'
+  export let selectedFiltersRefs: Ref<Doc>[] | 'All' = 'All'
   export let filters: ActivityFilter[] = []
 
   const dispatch = createEventDispatcher()
@@ -38,8 +38,8 @@
     }
   ]
   filters.map((fl) => menu.push({ label: fl.label, checked: false, value: fl._id }))
-  if (selectedFilter !== 'All') {
-    selectedFilter.forEach((fl) => {
+  if (selectedFiltersRefs !== 'All') {
+    selectedFiltersRefs.forEach((fl) => {
       const index = menu.findIndex((el) => el.value === fl)
       if (index !== -1) menu[index].checked = true
     })
@@ -76,35 +76,35 @@
 
   const checkAll = () => {
     menu.forEach((el, i) => (el.checked = i === 0))
-    selectedFilter = 'All'
+    selectedFiltersRefs = 'All'
   }
   const uncheckAll = () => {
     menu.forEach((el) => (el.checked = true))
     const temp = filters.map((fl) => fl._id as Ref<Doc>)
-    selectedFilter = temp
+    selectedFiltersRefs = temp
   }
 
   const selectRow = (n: number) => {
     if (n === 0) {
-      if (selectedFilter === 'All') uncheckAll()
+      if (selectedFiltersRefs === 'All') uncheckAll()
       else checkAll()
     } else {
-      if (selectedFilter === 'All') {
+      if (selectedFiltersRefs === 'All') {
         menu[n].checked = true
-        selectedFilter = [menu[n].value as Ref<Doc>]
+        selectedFiltersRefs = [menu[n].value as Ref<Doc>]
       } else if (menu[n].checked) {
         if (menu.filter((el) => el.checked).length === 2) checkAll()
         else {
           menu[n].checked = false
-          selectedFilter = selectedFilter.filter((fl) => fl !== menu[n].value)
+          selectedFiltersRefs = selectedFiltersRefs.filter((fl) => fl !== menu[n].value)
         }
       } else {
         menu[n].checked = true
-        selectedFilter.push(menu[n].value as Ref<Doc>)
+        selectedFiltersRefs.push(menu[n].value as Ref<Doc>)
       }
     }
     menu = menu
-    dispatch('update', { action: 'select', value: selectedFilter })
+    dispatch('update', { action: 'select', value: selectedFiltersRefs })
     setTimeout(() => dispatch('changeContent'), 0)
   }
 
@@ -137,7 +137,7 @@
           on:click={() => selectRow(i)}
         >
           <div class="flex-center justify-end mr-3 pointer-events-none">
-            <CheckBox checked={item.checked} symbol={selectedFilter !== 'All' && i === 0 ? 'minus' : 'check'} />
+            <CheckBox checked={item.checked} symbol={selectedFiltersRefs !== 'All' && i === 0 ? 'minus' : 'check'} />
           </div>
           <span class="overflow-label">
             <Label label={item.label} />

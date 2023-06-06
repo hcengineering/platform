@@ -13,20 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, Status, StatusValue } from '@hcengineering/core'
-  import { Asset } from '@hcengineering/platform'
-  import { AnySvelteComponent } from '@hcengineering/ui'
+  import { AggregateValue, Ref } from '@hcengineering/core'
+  import ComponentPresenter from './ComponentPresenter.svelte'
+  import { Component } from '@hcengineering/tracker'
 
-  import StatusPresenter from './StatusPresenter.svelte'
-  import { statusStore } from '../../status'
+  import { componentStore } from '../../component'
 
-  export let value: Ref<Status> | StatusValue | undefined
-  export let size: 'small' | 'medium' = 'medium'
-  export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let value: Ref<Component> | AggregateValue | undefined
+  export let kind: 'list' | undefined = undefined
 
-  $: statusValue = $statusStore.get(typeof value === 'string' ? value : (value?.values?.[0]?._id as Ref<Status>))
+  $: componentValue = $componentStore.get(
+    typeof value === 'string' ? value : (value?.values?.[0]?._id as Ref<Component>)
+  )
 </script>
 
-{#if value}
-  <StatusPresenter value={statusValue} {size} {icon} />
-{/if}
+<ComponentPresenter value={componentValue} {kind} on:accent-color />

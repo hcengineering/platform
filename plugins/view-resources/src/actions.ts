@@ -25,7 +25,7 @@ import core, {
   Ref
 } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
-import type { Action, ViewAction, ViewActionInput, ViewContextType } from '@hcengineering/view'
+import { Action, ViewAction, ViewActionInput, ViewContextType } from '@hcengineering/view'
 import view from './plugin'
 import { FocusSelection } from './selection'
 

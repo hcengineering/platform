@@ -14,15 +14,18 @@
 // limitations under the License.
 //
 
-import type {
+import {
   Account,
+  AggregateValue,
   AnyAttribute,
+  Attribute,
   CategoryType,
   Class,
   Client,
   Doc,
   DocumentQuery,
   FindOptions,
+  Hierarchy,
   Lookup,
   Mixin,
   Obj,
@@ -31,14 +34,15 @@ import type {
   Ref,
   SortingOrder,
   Space,
-  StatusManager,
   StatusValue,
+  Tx,
   Type,
-  UXObject
+  UXObject,
+  WithLookup
 } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, Resource, Status, plugin } from '@hcengineering/platform'
-import type { Preference } from '@hcengineering/preference'
-import type {
+import { Preference } from '@hcengineering/preference'
+import {
   AnyComponent,
   AnySvelteComponent,
   Location,
@@ -311,6 +315,62 @@ export interface AllValuesFunc extends Class<Doc> {
 /**
  * @public
  */
+export interface GrouppingManager {
+  groupByCategories: (categories: any[]) => AggregateValue[]
+  groupValues: (val: Doc[], targets: Set<any>) => Doc[]
+  groupValuesWithEmpty: (
+    hierarchy: Hierarchy,
+    _class: Ref<Class<Doc>>,
+    key: string,
+    query: DocumentQuery<Doc> | undefined
+  ) => Array<Ref<Doc>>
+  hasValue: (value: Doc | undefined | null, values: any[]) => boolean
+}
+
+/**
+ * @public
+ */
+export type GrouppingManagerResource = Resource<GrouppingManager>
+
+/**
+ * @public
+ */
+export interface Groupping extends Class<Doc> {
+  grouppingManager: GrouppingManagerResource
+}
+
+/**
+ * @public
+ */
+export interface AggregationManager {
+  close: () => void
+  notifyTx: (tx: Tx) => Promise<void>
+  updateLookup: (resultDoc: WithLookup<Doc>, attr: Attribute<Doc>) => Promise<void>
+  categorize: (target: Array<Ref<Doc>>, attr: AnyAttribute) => Promise<Array<Ref<Doc>>>
+  getAttrClass: () => Ref<Class<Doc>>
+  updateSorting?: (finalOptions: FindOptions<Doc>, attr: AnyAttribute) => Promise<void>
+}
+
+/**
+ * @public
+ */
+export type AggregationManagerResource = Resource<AggregationManager>
+
+/**
+ * @public
+ */
+export type CreateAggregationManagerFunc = Resource<(client: Client, lqCallback: () => void) => AggregationManager>
+
+/**
+ * @public
+ */
+export interface Aggregation extends Class<Doc> {
+  createAggregationManager: CreateAggregationManagerFunc
+}
+
+/**
+ * @public
+ */
 export interface Viewlet extends Doc {
   attachTo: Ref<Class<Doc>>
   baseQuery?: DocumentQuery<Doc>
@@ -578,7 +638,6 @@ export type ViewCategoryActionFunc = (
   key: string,
   onUpdate: () => void,
   queryId: Ref<Doc>,
-  mgr: StatusManager,
   viewletDescriptorId?: Ref<ViewletDescriptor>
 ) => Promise<CategoryType[] | undefined>
 /**
@@ -690,7 +749,9 @@ const view = plugin(viewId, {
     ObjectPanel: '' as Ref<Mixin<ObjectPanel>>,
     LinkProvider: '' as Ref<Mixin<LinkProvider>>,
     SpacePresenter: '' as Ref<Mixin<SpacePresenter>>,
-    AttributeFilterPresenter: '' as Ref<Mixin<AttributeFilterPresenter>>
+    AttributeFilterPresenter: '' as Ref<Mixin<AttributeFilterPresenter>>,
+    Aggregation: '' as Ref<Mixin<Aggregation>>,
+    Groupping: '' as Ref<Mixin<Groupping>>
   },
   class: {
     ViewletPreference: '' as Ref<Class<ViewletPreference>>,

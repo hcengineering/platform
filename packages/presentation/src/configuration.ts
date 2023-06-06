@@ -17,8 +17,6 @@ import core, { PluginConfiguration, SortingOrder } from '@hcengineering/core'
 import { Plugin, Resource, getResourcePlugin } from '@hcengineering/platform'
 import { writable } from 'svelte/store'
 import { createQuery } from '.'
-import { statusStore } from './status'
-export { statusStore }
 
 /**
  * @public
