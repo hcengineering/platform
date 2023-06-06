@@ -25,7 +25,6 @@
     ButtonSize,
     getEventPositionElement,
     getFocusManager,
-    IconOpen,
     Label,
     LabelAndProps,
     showPanel,
@@ -151,7 +150,7 @@
         </div>
         {#if selected && showNavigate}
           <ActionIcon
-            icon={IconOpen}
+            icon={view.icon.Open}
             size={'small'}
             action={() => {
               if (selected) {
