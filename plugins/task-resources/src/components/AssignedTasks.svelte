@@ -38,25 +38,28 @@
   } from '@hcengineering/view-resources'
   import task from '../plugin'
   import { IntlString } from '@hcengineering/platform'
-  import ViewletSettingButton from '@hcengineering/view-resources/src/components/ViewletSettingButton.svelte'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { onDestroy } from 'svelte'
-  import FilterBar from '@hcengineering/view-resources/src/components/filter/FilterBar.svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
+  import { FilterBar, ViewletSettingButton } from '@hcengineering/view-resources'
 
   export let _class: Ref<Class<Task>> = task.class.Task
   export let labelTasks = task.string.Tasks
+  export let config: [string, IntlString, object][] = []
 
   let search = ''
+  const dispatch = createEventDispatcher()
   const currentUser = getCurrentAccount() as EmployeeAccount
   const assigned = { assignee: currentUser.employee }
   const created = { createdBy: currentUser._id }
   let subscribed = { _id: { $in: [] as Ref<Task>[] } }
+  let mode: string | undefined = undefined
+  let baseQuery: DocumentQuery<Task> | undefined = undefined
+  let modeSelectorProps: IModeSelector | undefined = undefined
 
-  $: baseQuery = updateBaseQuery(mode, { assigned, created, subscribed })
-  function updateBaseQuery (mode: string, queries: { [key: string]: DocumentQuery<Task> }) {
-    return { ...queries[mode] }
-  }
-  let searchQuery: DocumentQuery<Task> = { ...baseQuery }
+  $: queries = { assigned, created, subscribed }
+  $: mode = $resolvedLocationStore.query?.mode ?? undefined
+
+  let searchQuery: DocumentQuery<Task> = { baseQuery }
   function updateSearchQuery (search: string): void {
     searchQuery = search === '' ? { ...baseQuery } : { ...baseQuery, $search: search }
   }
@@ -110,21 +113,17 @@
     )
   }
   $: if (mode === 'subscribed') getSubscribed()
-  const config: [string, IntlString, object][] = [
-    ['assigned', view.string.Assigned, {}],
-    ['created', view.string.Created, {}],
-    ['subscribed', view.string.Subscribed, {}]
-  ]
-  let [[mode]] = config
-  function handleChangeMode (newMode: string) {
-    if (newMode === mode) return
-    mode = newMode
+  $: if (mode === undefined || queries[mode as keyof typeof queries] === undefined) {
+    ;[[mode]] = config
   }
-  $: modeSelectorProps = {
-    config,
-    mode,
-    onChange: handleChangeMode
-  } as IModeSelector
+  $: if (mode !== undefined) {
+    baseQuery = { ...queries[mode as keyof typeof queries] }
+    modeSelectorProps = {
+      config,
+      mode,
+      onChange: (newMode: string) => dispatch('action', { mode: newMode })
+    }
+  }
 
   $: updateResultQuery(search, documentIds, doneStates)
   let viewlets: WithLookup<Viewlet>[] | undefined

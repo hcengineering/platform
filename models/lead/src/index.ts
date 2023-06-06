@@ -130,6 +130,13 @@ export function createModel (builder: Builder): void {
             label: lead.string.MyLeads,
             icon: lead.icon.Lead,
             component: lead.component.MyLeads,
+            componentProps: {
+              config: [
+                ['assigned', view.string.Assigned, {}],
+                ['created', view.string.Created, {}],
+                ['subscribed', view.string.Subscribed, {}]
+              ]
+            },
             position: 'top'
           },
           {
