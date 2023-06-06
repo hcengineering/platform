@@ -38,19 +38,13 @@
   } from '@hcengineering/view-resources'
   import task from '../plugin'
   import { IntlString } from '@hcengineering/platform'
-  import ViewletSettingButton from '@hcengineering/view-resources/src/components/ViewletSettingButton.svelte'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import FilterBar from '@hcengineering/view-resources/src/components/filter/FilterBar.svelte'
+  import { FilterBar, ViewletSettingButton } from '@hcengineering/view-resources'
 
   export let _class: Ref<Class<Task>> = task.class.Task
   export let labelTasks = task.string.Tasks
   export let config: [string, IntlString, object][] = []
-  // const config: [string, IntlString, object][] = [
-  //   ['assigned', view.string.Assigned, {}],
-  //   ['created', view.string.Created, {}],
-  //   ['subscribed', view.string.Subscribed, {}]
-  // ]
 
   let search = ''
   const dispatch = createEventDispatcher()

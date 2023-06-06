@@ -26,10 +26,9 @@
     viewOptionStore
   } from '@hcengineering/view-resources'
   import { IntlString } from '@hcengineering/platform'
-  import ViewletSettingButton from '@hcengineering/view-resources/src/components/ViewletSettingButton.svelte'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import FilterBar from '@hcengineering/view-resources/src/components/filter/FilterBar.svelte'
+  import { FilterBar, ViewletSettingButton } from '@hcengineering/view-resources'
   import lead from '../plugin'
   import { Lead } from '@hcengineering/lead'
 
