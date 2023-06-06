@@ -28,7 +28,6 @@
     getEventPositionElement,
     getFocusManager,
     Icon,
-    IconOpen,
     Label,
     LabelAndProps,
     showPanel,
@@ -173,7 +172,7 @@
         {#if selected && showNavigate}
           <div class="min-w-2" />
           <ActionIcon
-            icon={IconOpen}
+            icon={view.icon.Open}
             size={'small'}
             action={() => {
               if (selected) {
