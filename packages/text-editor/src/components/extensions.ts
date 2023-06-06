@@ -11,6 +11,7 @@ import Highlight from '@tiptap/extension-highlight'
 import StarterKit from '@tiptap/starter-kit'
 
 import TipTapCodeBlock from '@tiptap/extension-code-block'
+import Code from '@tiptap/extension-code'
 import Gapcursor from '@tiptap/extension-gapcursor'
 
 import Link from '@tiptap/extension-link'
@@ -18,6 +19,8 @@ import { CompletionOptions } from '../Completion'
 import MentionList from './MentionList.svelte'
 import { SvelteRenderer } from './SvelteRenderer'
 import { ImageRef } from './imageExt'
+import Typography from '@tiptap/extension-typography'
+import { AnyExtension } from '@tiptap/core'
 
 export const tableExtensions = [
   Table.configure({
@@ -43,7 +46,7 @@ export const taskListExtensions = [
 
 export const headingLevels: Level[] = [1, 2, 3, 4, 5, 6]
 
-export const defaultExtensions = [
+export const defaultExtensions: AnyExtension[] = [
   StarterKit,
   Highlight.configure({
     multicolor: false
@@ -56,6 +59,12 @@ export const defaultExtensions = [
       class: 'code-block'
     }
   }),
+  Code.configure({
+    HTMLAttributes: {
+      class: 'proseCode'
+    }
+  }),
+  Typography.configure({}),
   Gapcursor,
   Heading.configure({
     levels: headingLevels

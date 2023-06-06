@@ -231,6 +231,9 @@
   })
 
   function updateFormattingState () {
+    if (textEditor?.checkIsActive === undefined) {
+      return
+    }
     activeModes = new Set(FORMAT_MODES.filter(textEditor.checkIsActive))
     for (const l of headingLevels) {
       if (textEditor.checkIsActive('heading', { level: l })) {

@@ -93,7 +93,7 @@ const shutdown = start(url, {
   port: serverPort,
   serverFactory,
   indexParallel: 2,
-  indexProcessing: 500,
+  indexProcessing: 50,
   productId: '',
   enableCompression
 })
