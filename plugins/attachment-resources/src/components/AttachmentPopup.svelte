@@ -14,40 +14,113 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Doc, Ref } from '@hcengineering/core'
-  import { DocNavLink, ObjectPresenter, Table } from '@hcengineering/view-resources'
-
-  import { Label } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import type { Doc } from '@hcengineering/core'
+  import { Attachment } from '@hcengineering/attachment'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { ActionIcon, IconAdd, Label } from '@hcengineering/ui'
+  import { AttachmentPresenter } from '..'
   import attachment from '../plugin'
+  import { uploadFile } from '../utils'
 
-  export let objectId: Ref<Doc>
   export let attachments: number
   export let object: Doc
+
+  const client = getClient()
+
+  let docs: Attachment[] = []
+
+  const query = createQuery()
+  $: query.query(
+    attachment.class.Attachment,
+    {
+      attachedTo: object._id
+    },
+    (res) => {
+      docs = res
+    }
+  )
+
+  function add () {
+    inputFile.click()
+  }
+
+  async function createAttachment (file: File) {
+    const uuid = await uploadFile(file)
+    await client.addCollection(attachment.class.Attachment, object.space, object._id, object._class, 'attachments', {
+      name: file.name,
+      file: uuid,
+      type: file.type,
+      size: file.size,
+      lastModified: file.lastModified
+    })
+  }
+
+  function fileSelected () {
+    const list = inputFile.files
+    if (list === null || list.length === 0) return
+    for (let index = 0; index < list.length; index++) {
+      const file = list.item(index)
+      if (file !== null) createAttachment(file)
+    }
+    inputFile.value = ''
+  }
+
+  let inputFile: HTMLInputElement
+
+  async function remove (doc: Attachment): Promise<void> {
+    await client.remove(doc)
+  }
 </script>
 
-<div class="flex flex-between flex-grow p-1 mb-4">
-  <div class="fs-title">
-    <Label label={attachment.string.Attachments} />
+<div class="container">
+  <input
+    bind:this={inputFile}
+    multiple
+    type="file"
+    name="file"
+    id="file"
+    style="display: none"
+    on:change={fileSelected}
+  />
+  <div class="flex flex-between flex-grow header clear-mins">
+    <div class="fs-title">
+      <Label label={attachment.string.Attachments} />
+    </div>
+    <div>
+      <ActionIcon size={'medium'} icon={IconAdd} action={add} />
+    </div>
   </div>
-  <DocNavLink {object}>
-    <ObjectPresenter _class={object._class} objectId={object._id} value={object} />
-  </DocNavLink>
+  <div class="content">
+    {#each docs as doc}
+      <div class="item">
+        <AttachmentPresenter value={doc} removable on:remove={() => remove(doc)} />
+      </div>
+    {/each}
+  </div>
 </div>
-<Table
-  _class={attachment.class.Attachment}
-  config={[
-    '',
-    'description',
-    {
-      key: 'pinned',
-      presenter: view.component.BooleanTruePresenter,
-      label: attachment.string.Pinned,
-      sortingKey: 'pinned'
-    },
-    'lastModified'
-  ]}
-  options={{ sort: { pinned: -1 } }}
-  query={{ attachedTo: objectId }}
-  loadingProps={{ length: attachments }}
-/>
+
+<style lang="scss">
+  .header {
+    border-bottom: 1px solid var(--theme-divider-color);
+    padding: 1rem 1.5rem;
+    margin-right: -0.5rem;
+    margin-left: -0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .container {
+    max-height: 30rem;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .content {
+    overflow-y: scroll;
+    flex: 1;
+  }
+
+  .item {
+    margin: 0.5rem 1rem;
+  }
+</style>

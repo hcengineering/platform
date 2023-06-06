@@ -39,42 +39,44 @@
       comments = res
       loading = false
     },
-    { sort: { modifiedOn: SortingOrder.Descending } }
+    { sort: { modifiedOn: SortingOrder.Ascending } }
   )
   const dispatch = createEventDispatcher()
 </script>
 
-<div
-  class="flex flex-between flex-grow p-1 mb-4"
-  use:resizeObserver={() => {
-    dispatch('changeContent')
-  }}
->
-  <div class="fs-title mr-2">
-    <Label label={chunter.string.Comments} />
-  </div>
-  <DocNavLink {object}>
-    <ObjectPresenter _class={object._class} objectId={object._id} value={object} />
-  </DocNavLink>
-</div>
-<div class="comments max-h-120 flex-row">
-  {#if loading}
-    <div class="flex-center">
-      <Spinner />
+<div class="container">
+  <div
+    class="flex flex-between flex-grow header"
+    use:resizeObserver={() => {
+      dispatch('changeContent')
+    }}
+  >
+    <div class="fs-title mr-2">
+      <Label label={chunter.string.Comments} />
     </div>
-  {:else}
-    {#each comments as comment}
-      <div class="item">
-        <CommentPresenter value={comment} />
+    <DocNavLink {object}>
+      <ObjectPresenter _class={object._class} objectId={object._id} value={object} />
+    </DocNavLink>
+  </div>
+  <div class="comments">
+    {#if loading}
+      <div class="flex-center">
+        <Spinner />
       </div>
-    {/each}
+    {:else}
+      {#each comments as comment}
+        <div class="item">
+          <CommentPresenter value={comment} />
+        </div>
+      {/each}
+    {/if}
+  </div>
+  {#if withInput}
+    <div class="max-w-120 input">
+      <CommentInput {object} />
+    </div>
   {/if}
 </div>
-{#if withInput}
-  <div class="mt-2 max-w-120">
-    <CommentInput {object} />
-  </div>
-{/if}
 
 <style lang="scss">
   .item {
@@ -83,7 +85,31 @@
   .item + .item {
     margin-top: 0.75rem;
   }
+
+  .input {
+    padding: 1rem;
+    padding-top: 0;
+  }
+
   .comments {
     overflow: auto;
+    flex: 1;
+    padding: 1rem;
+    padding-top: 0;
+  }
+
+  .container {
+    max-height: 30rem;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .header {
+    border-bottom: 1px solid var(--theme-divider-color);
+    padding: 1rem 1.5rem;
+    margin-right: -0.5rem;
+    margin-left: -0.5rem;
+    margin-bottom: 1rem;
   }
 </style>
