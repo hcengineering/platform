@@ -14,8 +14,7 @@
 //
 
 import activity from '@hcengineering/activity'
-import type { Employee, EmployeeAccount } from '@hcengineering/contact'
-import contact from '@hcengineering/contact'
+import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
 import {
   DOMAIN_MODEL,
   DateRangeMode,
@@ -1009,6 +1008,18 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(tracker.class.Component, core.class.Class, view.mixin.AttributeEditor, {
     inlineEditor: tracker.component.ComponentSelector
+  })
+
+  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: tracker.component.ComponentRefPresenter
+  })
+
+  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.Aggregation, {
+    createAggregationManager: tracker.aggregation.CreateComponentAggregationManager
+  })
+
+  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.Groupping, {
+    grouppingManager: tracker.aggregation.GrouppingComponentManager
   })
 
   builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.ObjectPresenter, {

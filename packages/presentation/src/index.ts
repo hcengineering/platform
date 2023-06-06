@@ -49,6 +49,7 @@ export * from './drafts'
 export { presentationId }
 export * from './configuration'
 export * from './context'
+export * from './pipeline'
 
 addStringsLoader(presentationId, async (lang: string) => {
   return await import(`../lang/${lang}.json`)

@@ -14,14 +14,14 @@
 -->
 <script lang="ts">
   import { TxUpdateDoc } from '@hcengineering/core'
-  import { statusStore } from '@hcengineering/presentation'
   import { Issue } from '@hcengineering/tracker'
+  import { statusStore } from '@hcengineering/view-resources'
   import IssueStatusIcon from '../issues/IssueStatusIcon.svelte'
 
   export let tx: TxUpdateDoc<Issue>
   $: value = tx.operations.status
 
-  $: status = value && $statusStore.byId.get(value)
+  $: status = value && $statusStore.getIdMap().get(value)
 </script>
 
 <div class="icon">

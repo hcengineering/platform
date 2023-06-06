@@ -15,10 +15,11 @@
 -->
 <script lang="ts">
   import { DocumentUpdate, Ref } from '@hcengineering/core'
-  import { SpaceSelect, createQuery, getClient, statusStore } from '@hcengineering/presentation'
+  import { SpaceSelect, createQuery, getClient } from '@hcengineering/presentation'
   import { Component, Issue, Project } from '@hcengineering/tracker'
   import ui, { Button, Label, Spinner } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import { statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import { collectIssues, findTargetStatus, moveIssueToSpace } from '../../utils'

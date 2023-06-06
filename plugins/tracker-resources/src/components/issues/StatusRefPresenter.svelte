@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Ref, Status, StatusValue } from '@hcengineering/core'
-  import { statusStore } from '@hcengineering/presentation'
+  import { statusStore } from '@hcengineering/view-resources'
   import StatusPresenter from './StatusPresenter.svelte'
 
   export let value: Ref<Status> | StatusValue | undefined
@@ -22,15 +22,10 @@
   export let kind: 'list-header' | undefined = undefined
   export let colorInherit: boolean = false
   export let accent: boolean = false
+
+  $: statusValue = $statusStore.get(typeof value === 'string' ? value : (value?.values?.[0]?._id as Ref<Status>))
 </script>
 
 {#if value}
-  <StatusPresenter
-    value={$statusStore.get(typeof value === 'string' ? value : value.values?.[0]?._id)}
-    {size}
-    {kind}
-    {colorInherit}
-    {accent}
-    on:accent-color
-  />
+  <StatusPresenter value={statusValue} {size} {kind} {colorInherit} {accent} on:accent-color />
 {/if}

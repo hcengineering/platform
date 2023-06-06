@@ -1,19 +1,10 @@
-import core, {
-  Class,
-  Doc,
-  DocumentQuery,
-  Ref,
-  SortingOrder,
-  Status,
-  StatusManager,
-  WithLookup,
-  matchQuery
-} from '@hcengineering/core'
+import { Class, Doc, DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { LiveQuery, createQuery, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
 import { locationToUrl, getCurrentResolvedLocation } from '@hcengineering/ui'
 import {
   DropdownViewOption,
+  Groupping,
   ToggleViewOption,
   ViewOptionModel,
   ViewOptions,
@@ -118,7 +109,6 @@ export async function showEmptyGroups (
   key: string,
   onUpdate: () => void,
   queryId: Ref<Doc>,
-  mgr: StatusManager,
   viewletDescriptorId?: Ref<ViewletDescriptor>
 ): Promise<any[] | undefined> {
   const client = getClient()
@@ -129,32 +119,27 @@ export async function showEmptyGroups (
   const { attrClass } = getAttributePresenterClass(hierarchy, attr)
   const attributeClass = hierarchy.getClass(attrClass)
 
-  if (hierarchy.isDerived(attrClass, core.class.Status)) {
-    // We do not need extensions for all status categories.
-    let statusList = mgr.filter((it) => {
-      return it.ofAttribute === attr._id
-    })
-    if (query !== undefined) {
-      const { [key]: st, space } = query
-      const resQuery: DocumentQuery<Status> = {}
-      if (space !== undefined) {
-        resQuery.space = space
-      }
-      if (st !== undefined) {
-        resQuery._id = st
-      }
-      statusList = matchQuery<Status>(statusList, resQuery, _class, hierarchy) as unknown as Array<WithLookup<Status>>
+  let groupMixin: Groupping | undefined
+  if (hierarchy.hasMixin(attributeClass, view.mixin.Groupping)) {
+    groupMixin = hierarchy.as(attributeClass, view.mixin.Groupping)
+  } else {
+    const _attributeClass = hierarchy.classHierarchyMixin(attrClass, view.mixin.Groupping)
+    if (_attributeClass !== undefined) {
+      groupMixin = hierarchy.as(_attributeClass, view.mixin.Groupping)
     }
-    const statuses = statusList.map((it) => it._id)
-    return await groupByCategory(client, _class, key, statuses, mgr, viewletDescriptorId)
+  }
+  if (groupMixin?.grouppingManager !== undefined) {
+    const grouppingManager = await getResource(groupMixin.grouppingManager)
+    const docs = grouppingManager.groupValuesWithEmpty(hierarchy, _class, key, query)
+    return await groupByCategory(client, _class, key, docs, viewletDescriptorId)
   }
 
-  const mixin = hierarchy.as(attributeClass, view.mixin.AllValuesFunc)
-  if (mixin.func !== undefined) {
-    const f = await getResource(mixin.func)
+  const allValuesMixin = hierarchy.as(attributeClass, view.mixin.AllValuesFunc)
+  if (allValuesMixin.func !== undefined) {
+    const f = await getResource(allValuesMixin.func)
     const res = await f(query, onUpdate, queryId)
     if (res !== undefined) {
-      return await groupByCategory(client, _class, key, res, mgr, viewletDescriptorId)
+      return await groupByCategory(client, _class, key, res, viewletDescriptorId)
     }
   }
 }

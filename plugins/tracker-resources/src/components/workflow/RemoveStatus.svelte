@@ -2,11 +2,11 @@
   import { Ref } from '@hcengineering/core'
   import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import { Button, Label, SelectPopup, eventToHTMLElement, showPopup } from '@hcengineering/ui'
-  import presentation, { getClient, statusStore } from '@hcengineering/presentation'
+  import presentation, { getClient } from '@hcengineering/presentation'
   import tracker from '../../plugin'
   import { createEventDispatcher } from 'svelte'
   import IssueStatusIcon from '../issues/IssueStatusIcon.svelte'
-  import { StatusPresenter } from '@hcengineering/view-resources'
+  import { StatusPresenter, statusStore } from '@hcengineering/view-resources'
 
   export let projectId: Ref<Project>
   export let issues: Issue[]
@@ -17,10 +17,10 @@
   const client = getClient()
 
   let newStatus: IssueStatus =
-    $statusStore.statuses.find(
-      (s) => s._id !== status._id && s.category === status.category && s.space === projectId
-    ) ??
-    $statusStore.statuses.find((s) => s._id !== status._id && s.space === projectId) ??
+    $statusStore
+      .getDocs()
+      .find((s) => s._id !== status._id && s.category === status.category && s.space === projectId) ??
+    $statusStore.getDocs().find((s) => s._id !== status._id && s.space === projectId) ??
     status
 
   async function remove () {
@@ -54,7 +54,7 @@
       SelectPopup,
       { value: statusesInfo, placeholder: tracker.string.SetStatus, searchable: true },
       eventToHTMLElement(event),
-      (val) => (newStatus = $statusStore.byId.get(val) ?? newStatus)
+      (val) => (newStatus = $statusStore.getIdMap().get(val) ?? newStatus)
     )
   }
 </script>

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref, Space } from '@hcengineering/core'
+  import { AggregateValue, Doc, PrimitiveType, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import ui, {
     ActionIcon,
@@ -40,7 +40,7 @@
   import { noCategory } from '../../viewOptions'
 
   export let groupByKey: string
-  export let category: any
+  export let category: PrimitiveType | AggregateValue
   export let headerComponent: AttributeModel | undefined
   export let space: Ref<Space> | undefined
   export let limited: number

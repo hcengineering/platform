@@ -26,7 +26,7 @@
   } from '@hcengineering/core'
   import { Item, Kanban as KanbanUI } from '@hcengineering/kanban'
   import { getResource } from '@hcengineering/platform'
-  import { createQuery, getClient, statusStore, ActionContext } from '@hcengineering/presentation'
+  import { createQuery, getClient, ActionContext } from '@hcengineering/presentation'
   import { Kanban, SpaceWithStates, Task, TaskGrouping, TaskOrdering } from '@hcengineering/task'
   import {
     ColorDefinition,
@@ -173,7 +173,7 @@
     viewOptions: ViewOptions,
     viewOptionsModel: ViewOptionModel[] | undefined
   ) {
-    categories = await getCategories(client, _class, docs, groupByKey, $statusStore, viewlet.descriptor)
+    categories = await getCategories(client, _class, docs, groupByKey, viewlet.descriptor)
     for (const viewOption of viewOptionsModel ?? []) {
       if (viewOption.actionTarget !== 'category') continue
       const categoryFunc = viewOption as CategoryOption
@@ -191,7 +191,6 @@
           groupByKey,
           update,
           queryId,
-          $statusStore,
           viewlet.descriptor
         )
         if (res !== undefined) {

@@ -14,9 +14,10 @@
 // limitations under the License.
 //
 
-import { IntlString, mergeIds } from '@hcengineering/platform'
+import { IntlString, Resource, mergeIds } from '@hcengineering/platform'
+import { PresentationMiddlewareCreator } from '@hcengineering/presentation'
 import { AnyComponent } from '@hcengineering/ui'
-import view, { SortFunc, viewId } from '@hcengineering/view'
+import view, { CreateAggregationManagerFunc, GrouppingManagerResource, SortFunc, viewId } from '@hcengineering/view'
 
 export default mergeIds(viewId, view, {
   component: {
@@ -94,6 +95,11 @@ export default mergeIds(viewId, view, {
     Show: '' as IntlString
   },
   function: {
-    StatusSort: '' as SortFunc
+    StatusSort: '' as SortFunc,
+    CreateDocMiddleware: '' as Resource<PresentationMiddlewareCreator>
+  },
+  aggregation: {
+    CreateStatusAggregationManager: '' as CreateAggregationManagerFunc,
+    GrouppingStatusManager: '' as GrouppingManagerResource
   }
 })

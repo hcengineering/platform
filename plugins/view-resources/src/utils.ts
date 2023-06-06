@@ -17,6 +17,7 @@
 import core, {
   AccountRole,
   AttachedDoc,
+  AggregateValue,
   CategoryType,
   Class,
   Client,
@@ -34,10 +35,7 @@ import core, {
   ReverseLookups,
   Space,
   Status,
-  StatusManager,
-  StatusValue,
-  TxOperations,
-  WithLookup
+  TxOperations
 } from '@hcengineering/core'
 import type { IntlString } from '@hcengineering/platform'
 import { getResource } from '@hcengineering/platform'
@@ -59,6 +57,7 @@ import {
 } from '@hcengineering/ui'
 import type { BuildModelOptions, Viewlet, ViewletDescriptor } from '@hcengineering/view'
 import view, { AttributeModel, BuildModelKey } from '@hcengineering/view'
+
 import { get, writable } from 'svelte/store'
 import plugin from './plugin'
 import { noCategory } from './viewOptions'
@@ -597,7 +596,7 @@ export function groupBy<T extends Doc> (docs: T[], key: string, categories?: Cat
  */
 export function getGroupByValues<T extends Doc> (groupByDocs: Record<any, T[]>, category: CategoryType): T[] {
   if (typeof category === 'object') {
-    return groupByDocs[category.name] ?? []
+    return groupByDocs[category.name as any] ?? []
   } else {
     return groupByDocs[category as any] ?? []
   }
@@ -612,7 +611,7 @@ export function setGroupByValues (
   docs: Doc[]
 ): void {
   if (typeof category === 'object') {
-    groupByDocs[category.name] = docs
+    groupByDocs[category.name as any] = docs
   } else if (category !== undefined) {
     groupByDocs[category] = docs
   }
@@ -626,8 +625,7 @@ export async function groupByCategory (
   client: TxOperations,
   _class: Ref<Class<Doc>>,
   key: string,
-  categories: any[],
-  mgr: StatusManager,
+  categories: CategoryType[],
   viewletDescriptorId?: Ref<ViewletDescriptor>
 ): Promise<CategoryType[]> {
   const h = client.getHierarchy()
@@ -636,13 +634,12 @@ export async function groupByCategory (
   if (key === noCategory) return [undefined]
 
   const attrClass = getAttributePresenterClass(h, attr).attrClass
-
-  const isStatusField = h.isDerived(attrClass, core.class.Status)
-
+  const mixin = h.classHierarchyMixin(attrClass, view.mixin.Groupping)
   let existingCategories: any[] = []
 
-  if (isStatusField) {
-    existingCategories = await groupByStatusCategories(h, attrClass, categories, mgr, viewletDescriptorId)
+  if (mixin?.grouppingManager !== undefined) {
+    const grouppingManager = await getResource(mixin.grouppingManager)
+    existingCategories = grouppingManager.groupByCategories(categories)
   } else {
     const valueSet = new Set<any>()
     for (const v of categories) {
@@ -655,56 +652,11 @@ export async function groupByCategory (
   return await sortCategories(h, attrClass, existingCategories, viewletDescriptorId)
 }
 
-/**
- * @public
- */
-export async function groupByStatusCategories (
-  hierarchy: Hierarchy,
-  attrClass: Ref<Class<Doc>>,
-  categories: any[],
-  mgr: StatusManager,
-  viewletDescriptorId?: Ref<ViewletDescriptor>
-): Promise<StatusValue[]> {
-  const existingCategories: StatusValue[] = []
-  const statusMap = new Map<string, StatusValue>()
-
-  const usedSpaces = new Set<Ref<Space>>()
-  const statusesList: Array<WithLookup<Status>> = []
-  for (const v of categories) {
-    const status = mgr.byId.get(v)
-    if (status !== undefined) {
-      statusesList.push(status)
-      usedSpaces.add(status.space)
-    }
-  }
-
-  for (const status of statusesList) {
-    if (status !== undefined) {
-      let fst = statusMap.get(status.name.toLowerCase().trim())
-      if (fst === undefined) {
-        const statuses = mgr.statuses
-          .filter(
-            (it) =>
-              it.ofAttribute === status.ofAttribute &&
-              it.name.toLowerCase().trim() === status.name.toLowerCase().trim() &&
-              (categories.includes(it._id) || usedSpaces.has(it.space))
-          )
-          .sort((a, b) => a.rank.localeCompare(b.rank))
-        fst = new StatusValue(status.name, status.color, statuses)
-        statusMap.set(status.name.toLowerCase().trim(), fst)
-        existingCategories.push(fst)
-      }
-    }
-  }
-  return await sortCategories(hierarchy, attrClass, existingCategories, viewletDescriptorId)
-}
-
 export async function getCategories (
   client: TxOperations,
   _class: Ref<Class<Doc>>,
   docs: Doc[],
   key: string,
-  mgr: StatusManager,
   viewletDescriptorId?: Ref<ViewletDescriptor>
 ): Promise<CategoryType[]> {
   if (key === noCategory) return [undefined]
@@ -714,7 +666,6 @@ export async function getCategories (
     _class,
     key,
     docs.map((it) => getObjectValue(key, it) ?? undefined),
-    mgr,
     viewletDescriptorId
   )
 }
@@ -724,7 +675,7 @@ export async function getCategories (
  */
 export function getCategorySpaces (categories: CategoryType[]): Array<Ref<Space>> {
   return Array.from(
-    (categories.filter((it) => typeof it === 'object') as StatusValue[]).reduce<Set<Ref<Space>>>((arr, val) => {
+    (categories.filter((it) => typeof it === 'object') as AggregateValue[]).reduce<Set<Ref<Space>>>((arr, val) => {
       val.values.forEach((it) => arr.add(it.space))
       return arr
     }, new Set())
@@ -733,12 +684,12 @@ export function getCategorySpaces (categories: CategoryType[]): Array<Ref<Space>
 
 export function concatCategories (arr1: CategoryType[], arr2: CategoryType[]): CategoryType[] {
   const uniqueValues: Set<string | number | undefined> = new Set()
-  const uniqueObjects: Map<string | number, StatusValue> = new Map()
+  const uniqueObjects: Map<string | number, AggregateValue> = new Map()
 
   for (const item of arr1) {
     if (typeof item === 'object') {
       const id = item.name
-      uniqueObjects.set(id, item)
+      uniqueObjects.set(id as any, item)
     } else {
       uniqueValues.add(item)
     }
@@ -747,8 +698,8 @@ export function concatCategories (arr1: CategoryType[], arr2: CategoryType[]): C
   for (const item of arr2) {
     if (typeof item === 'object') {
       const id = item.name
-      if (!uniqueObjects.has(id)) {
-        uniqueObjects.set(id, item)
+      if (!uniqueObjects.has(id as any)) {
+        uniqueObjects.set(id as any, item)
       }
     } else {
       uniqueValues.add(item)

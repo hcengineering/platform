@@ -17,7 +17,15 @@ import type { Asset, IntlString, Metadata, Resource } from '@hcengineering/platf
 import { mergeIds } from '@hcengineering/platform'
 import { IssueDraft } from '@hcengineering/tracker'
 import { AnyComponent, Location } from '@hcengineering/ui'
-import { GetAllValuesFunc, SortFunc, Viewlet, ViewletDescriptor, ViewQueryAction } from '@hcengineering/view'
+import {
+  CreateAggregationManagerFunc,
+  GetAllValuesFunc,
+  GrouppingManagerResource,
+  SortFunc,
+  Viewlet,
+  ViewletDescriptor,
+  ViewQueryAction
+} from '@hcengineering/view'
 import tracker, { trackerId } from '../../tracker/lib'
 
 export default mergeIds(trackerId, tracker, {
@@ -314,6 +322,7 @@ export default mergeIds(trackerId, tracker, {
     IssuePresenter: '' as AnyComponent,
     ComponentTitlePresenter: '' as AnyComponent,
     ComponentPresenter: '' as AnyComponent,
+    ComponentRefPresenter: '' as AnyComponent,
     TitlePresenter: '' as AnyComponent,
     ModificationDatePresenter: '' as AnyComponent,
     PriorityPresenter: '' as AnyComponent,
@@ -382,5 +391,9 @@ export default mergeIds(trackerId, tracker, {
     GetAllPriority: '' as GetAllValuesFunc,
     GetAllComponents: '' as GetAllValuesFunc,
     GetAllMilestones: '' as GetAllValuesFunc
+  },
+  aggregation: {
+    CreateComponentAggregationManager: '' as CreateAggregationManagerFunc,
+    GrouppingComponentManager: '' as GrouppingManagerResource
   }
 })

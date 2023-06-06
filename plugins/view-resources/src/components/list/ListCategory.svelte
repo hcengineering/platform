@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentUpdate, Lookup, PrimitiveType, Ref, Space, StatusValue } from '@hcengineering/core'
+  import { AggregateValue, Class, Doc, DocumentUpdate, Lookup, PrimitiveType, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { DocWithRank, calcRank } from '@hcengineering/task'
@@ -34,7 +34,7 @@
   import ListHeader from './ListHeader.svelte'
   import ListItem from './ListItem.svelte'
 
-  export let category: PrimitiveType | StatusValue
+  export let category: PrimitiveType | AggregateValue
   export let headerComponent: AttributeModel | undefined
   export let singleCat: boolean
   export let oneCat: boolean

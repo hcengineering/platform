@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import { DocumentUpdate, Ref } from '@hcengineering/core'
-  import { statusStore } from '@hcengineering/presentation'
   import { Issue, Project } from '@hcengineering/tracker'
   import { Label } from '@hcengineering/ui'
+  import { statusStore } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
   import { findTargetStatus, issueToAttachedData } from '../../../utils'
   import StatusEditor from '../StatusEditor.svelte'
