@@ -54,13 +54,19 @@ export function getGravatarUrl (
     case 'x-small':
     case 'small':
     case 'medium':
-      width = 64
+      width = 128
       break
     case 'large':
       width = 256
       break
     case 'x-large':
       width = 512
+      break
+    case '2x-large':
+      width = 1024
+      break
+    case 'full':
+      width = 2048
       break
   }
   return `https://gravatar.com/avatar/${gravatarId}?s=${width}&d=${placeholder}`

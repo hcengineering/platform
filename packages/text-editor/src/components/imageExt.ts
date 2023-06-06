@@ -1,6 +1,6 @@
 import { getEmbeddedLabel } from '@hcengineering/platform'
 import { getFileUrl } from '@hcengineering/presentation'
-import { Action, Menu, getEventPositionElement, showPopup } from '@hcengineering/ui'
+import { Action, IconSize, Menu, getEventPositionElement, getIconSize2x, showPopup } from '@hcengineering/ui'
 import { Node, createNodeFromContent, mergeAttributes, nodeInputRule } from '@tiptap/core'
 import { Plugin, PluginKey } from 'prosemirror-state'
 import plugin from '../plugin'
@@ -88,6 +88,27 @@ export const ImageRef = Node.create<ImageOptions>({
       HTMLAttributes
     )
     merged.src = getFileUrl(merged['file-id'], 'full')
+    let width: IconSize | undefined
+    switch (merged.width) {
+      case '32px':
+        width = 'small'
+        break
+      case '64px':
+        width = 'medium'
+        break
+      case '128px':
+      case '256px':
+        width = 'large'
+        break
+      case '512px':
+        width = 'x-large'
+        break
+    }
+    if (width !== undefined) {
+      merged.src = getFileUrl(merged['file-id'], width)
+      merged.srcset =
+        getFileUrl(merged['file-id'], width) + ' 1x,' + getFileUrl(merged['file-id'], getIconSize2x(width)) + ' 2x'
+    }
     merged.class = 'textEditorImage'
     return ['img', merged]
   },

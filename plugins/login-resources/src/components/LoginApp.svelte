@@ -101,7 +101,7 @@
     }
   }
   .back {
-    // background: url('../../img/back_signin.png');
+    background-image: url('../../img/login_back.png');
     background-image: -webkit-image-set(
       '../../img/login_back.avif' 1x,
       '../../img/login_back_2x.avif' 2x,

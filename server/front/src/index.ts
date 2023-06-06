@@ -491,6 +491,19 @@ export function start (
     server.close()
   }
 }
+
+// export type IconSize =
+//   | 'inline'
+//   | 'tiny'
+//   | 'card'
+//   | 'x-small'
+//   | 'smaller'
+//   | 'small'
+//   | 'medium'
+//   | 'large'
+//   | 'x-large'
+//   | '2x-large'
+//   | 'full'
 async function getResizeID (
   size: string,
   uuid: string,
@@ -502,7 +515,9 @@ async function getResizeID (
     switch (size) {
       case 'inline':
       case 'tiny':
+      case 'card':
       case 'x-small':
+      case 'smaller':
       case 'small':
       case 'medium':
         width = 64
@@ -512,6 +527,10 @@ async function getResizeID (
         break
       case 'x-large':
         width = 512
+        break
+      case '2x-large':
+        size = '2x-large_v2'
+        width = 1024
         break
     }
     let hasSmall = false
