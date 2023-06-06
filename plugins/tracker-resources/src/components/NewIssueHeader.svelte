@@ -53,7 +53,9 @@
       space = project?._id
     }
     closed = false
-    showPopup(CreateIssue, { space, shouldSaveDraft: true }, 'top', () => (closed = true))
+    showPopup(CreateIssue, { space, shouldSaveDraft: true }, 'top', () => {
+      closed = true
+    })
   }
 </script>
 

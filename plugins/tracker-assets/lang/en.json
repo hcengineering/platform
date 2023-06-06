@@ -196,6 +196,9 @@
     "NewSubIssue": "Add sub-issue...",
     "AddLabel": "Add label",
 
+    "DeleteIssue": "Delete {issueCount, plural, =1 {issue} other {# issues}}",
+    "DeleteIssueConfirm": "Do you want to delete {issueCount, plural, =1 {issue} other {issues}}{subIssueCount, plural, =0 {?} =1 { and sub-issue?} other { and sub-issues?}}",
+
     "Milestone": "Milestone",
     "NoMilestone": "No Milestone",
     "MoveToMilestone": "Select Milestone",

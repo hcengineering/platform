@@ -196,6 +196,9 @@
     "NewSubIssue": "Добавить под-задачу...",
     "AddLabel": "Добавить метку",
 
+    "DeleteIssue": "Удалить {issueCount, plural, =1 {задачу} other {задачи}}",
+    "DeleteIssueConfirm": "Вы действительно хотите удалить {issueCount, plural, =1 {задачу} other {задачи}}{subIssueCount, plural, =0 {?} =1 { и под-задачи?} other { и под-задачи?}}",
+
     "Milestone": "Майлстоун",
     "NoMilestone": "Без Майлстоуна",
     "MoveToMilestone": "Выбрать Майлстоун",

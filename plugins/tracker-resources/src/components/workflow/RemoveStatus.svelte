@@ -54,7 +54,9 @@
       SelectPopup,
       { value: statusesInfo, placeholder: tracker.string.SetStatus, searchable: true },
       eventToHTMLElement(event),
-      (val) => (newStatus = $statusStore.byId.get(val) ?? newStatus)
+      (val) => {
+        newStatus = $statusStore.byId.get(val) ?? newStatus
+      }
     )
   }
 </script>
