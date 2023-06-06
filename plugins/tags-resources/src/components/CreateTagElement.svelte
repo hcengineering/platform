@@ -137,19 +137,21 @@
     </div>
   </div>
   <svelte:fragment slot="pool">
-    <div class="ml-12">
-      <DropdownLabels
-        icon={IconFolder}
-        label={tags.string.CategoryLabel}
-        kind={'secondary'}
-        size={'large'}
-        bind:selected={category}
-        items={categoryItems}
-        on:selected={() => {
-          categoryWasSet = true
-        }}
-      />
-    </div>
+    {#if categories.length > 1}
+      <div class="ml-12">
+        <DropdownLabels
+          icon={IconFolder}
+          label={tags.string.CategoryLabel}
+          kind={'secondary'}
+          size={'large'}
+          bind:selected={category}
+          items={categoryItems}
+          on:selected={() => {
+            categoryWasSet = true
+          }}
+        />
+      </div>
+    {/if}
   </svelte:fragment>
 </Card>
 
