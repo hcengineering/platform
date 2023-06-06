@@ -46,8 +46,26 @@ table.proseTable {
   }
 }
 
-.proseCode {
-  background-color: var(--theme-overlay-color);
-  border-radius: 0.25rem;
-  padding: 0.25em;
+.theme-dark .proseCode {
+  padding: 0px 4px;
+
+  color: #EB7861;
+    
+  /* Button/Theme Dark/Default */
+  background: rgba(255, 255, 255, 0.02);
+  /* Button/Theme Dark/Stroke */
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 4px;
+}
+
+.theme-light .proseCode {
+  padding: 0px 4px;
+
+  color: #377AE6;
+    
+  /* Button/Theme Light/Default */
+  background: rgba(0, 0, 0, 0.02);
+  /* Button/Theme Light/Stroke */
+  border: 1px solid rgba(0, 0, 0, 0.09);
+  border-radius: 4px;
 }
