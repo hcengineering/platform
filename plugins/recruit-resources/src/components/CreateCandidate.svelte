@@ -63,7 +63,7 @@
   import recruit from '../plugin'
   import YesNo from './YesNo.svelte'
 
-  export let shouldSaveDraft: boolean = false
+  export let shouldSaveDraft: boolean = true
 
   const mDraftController = new MultipleDraftController(recruit.mixin.Candidate)
   const id: Ref<Candidate> = generateId()
