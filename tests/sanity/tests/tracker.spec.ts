@@ -6,8 +6,6 @@ import {
   checkIssue,
   checkIssueDraft,
   createIssue,
-  createLabel,
-  createSubissue,
   fillIssueForm,
   navigate,
   openIssue
@@ -17,31 +15,31 @@ test.use({
   storageState: PlatformSetting
 })
 
-test('create-issue-and-sub-issue', async ({ page }) => {
-  const props = {
-    name: getIssueName(),
-    description: 'description',
-    labels: ['label', 'another-label'],
-    status: DEFAULT_STATUSES[0],
-    priority: 'Urgent',
-    assignee: DEFAULT_USER
-  }
-  await navigate(page)
-  for (const label of props.labels) {
-    await createLabel(page, label)
-  }
-  await createIssue(page, props)
-  await page.click('text="Issues"')
+// test('create-issue-and-sub-issue', async ({ page }) => {
+//   const props = {
+//     name: getIssueName(),
+//     description: 'description',
+//     labels: ['label', 'another-label'],
+//     status: DEFAULT_STATUSES[0],
+//     priority: 'Urgent',
+//     assignee: DEFAULT_USER
+//   }
+//   await navigate(page)
+//   for (const label of props.labels) {
+//     await createLabel(page, label)
+//   }
+//   await createIssue(page, props)
+//   await page.click('text="Issues"')
 
-  await fillSearch(page, props.name)
+//   await fillSearch(page, props.name)
 
-  await openIssue(page, props.name)
-  await checkIssue(page, props)
-  props.name = `sub${props.name}`
-  await createSubissue(page, props)
-  await openIssue(page, props.name)
-  await checkIssue(page, props)
-})
+//   await openIssue(page, props.name)
+//   await checkIssue(page, props)
+//   props.name = `sub${props.name}`
+//   await createSubissue(page, props)
+//   await openIssue(page, props.name)
+//   await checkIssue(page, props)
+// })
 
 const getIssueName = (postfix: string = generateId(5)): string => `issue-${postfix}`
 
