@@ -79,13 +79,16 @@
     on:click={clickHandler}
     on:mousedown={middleClickHandler}
   >
-    <div
+    <!-- <div
       class="flex-center icon"
       class:svg={value.type === 'image/svg+xml'}
       class:image={isImage(value.type)}
       style:background-image={isImage(value.type) ? `url(${getFileUrl(value.file, 'large')})` : 'none'}
     >
       {#if !isImage(value.type)}{iconLabel(value.name)}{/if}
+    </div> -->
+    <div class="flex-center icon">
+      {iconLabel(value.name)}
     </div>
   </a>
   <div class="flex-col info-container">
