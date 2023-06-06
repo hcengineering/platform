@@ -14,21 +14,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { location, Popup, ticker, Scroller, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import { Popup, Scroller, deviceOptionsStore as deviceInfo, location, ticker } from '@hcengineering/ui'
 
-  import LoginForm from './LoginForm.svelte'
-  import SignupForm from './SignupForm.svelte'
-  import CreateWorkspaceForm from './CreateWorkspaceForm.svelte'
-  import SelectWorkspace from './SelectWorkspace.svelte'
-  import Join from './Join.svelte'
-  import Intro from './Intro.svelte'
-  import { onDestroy } from 'svelte'
-  import presentation from '@hcengineering/presentation'
   import { getMetadata } from '@hcengineering/platform'
-  import PasswordRequest from './PasswordRequest.svelte'
-  import PasswordRestore from './PasswordRestore.svelte'
+  import presentation from '@hcengineering/presentation'
+  import { themeStore } from '@hcengineering/theme'
+  import { onDestroy } from 'svelte'
   import Confirmation from './Confirmation.svelte'
   import ConfirmationSend from './ConfirmationSend.svelte'
+  import CreateWorkspaceForm from './CreateWorkspaceForm.svelte'
+  import Join from './Join.svelte'
+  import LoginForm from './LoginForm.svelte'
+  import PasswordRequest from './PasswordRequest.svelte'
+  import PasswordRestore from './PasswordRestore.svelte'
+  import SelectWorkspace from './SelectWorkspace.svelte'
+  import SignupForm from './SignupForm.svelte'
+  import LoginIcon from './icons/LoginIcon.svelte'
+  import workbench from '@hcengineering/workbench'
 
   export let page: string = 'login'
 
@@ -48,54 +50,101 @@
   )
 </script>
 
-<Scroller padding={'1.25rem'} contentDirection={$deviceInfo.docWidth <= 768 ? 'vertical-reverse' : 'horizontal'}>
-  <div
-    class="panel"
-    class:minHeight={!$deviceInfo.isPortrait}
-    class:landscape={$deviceInfo.docWidth > 768}
-    style:border-radius={$deviceInfo.docWidth <= 480 ? '.75rem' : '1.25rem'}
-  >
-    <div class="flex-grow" />
-    {#if page === 'login'}
-      <LoginForm {navigateUrl} />
-    {:else if page === 'signup'}
-      <SignupForm />
-    {:else if page === 'createWorkspace'}
-      <CreateWorkspaceForm />
-    {:else if page === 'password'}
-      <PasswordRequest />
-    {:else if page === 'recovery'}
-      <PasswordRestore />
-    {:else if page === 'selectWorkspace'}
-      <SelectWorkspace {navigateUrl} />
-    {:else if page === 'join'}
-      <Join />
-    {:else if page === 'confirm'}
-      <Confirmation />
-    {:else if page === 'confirmationSend'}
-      <ConfirmationSend />
-    {/if}
+<div class="theme-dark w-full h-full backd" class:paneld={$deviceInfo.docWidth <= 768} class:white={!$themeStore.dark}>
+  <div class:back={$deviceInfo.docWidth > 768} class="w-full h-full">
+    <div style:position="fixed" style:left={'28px'} style:top={'48px'} class="flex-row-center">
+      <LoginIcon /><span class="fs-title">{getMetadata(workbench.metadata.PlatformTitle)}</span>
+    </div>
+
+    <Scroller padding={'1.25rem'} contentDirection={$deviceInfo.docWidth <= 768 ? 'vertical-reverse' : 'horizontal'}>
+      <div class="flex-grow" />
+      <div
+        class:mt-8={$deviceInfo.docWidth < 768}
+        class:panel={$deviceInfo.docWidth > 768}
+        class:white={!$themeStore.dark}
+        class:minHeight={!$deviceInfo.isPortrait}
+        class:landscape={$deviceInfo.docWidth > 768}
+        style:border-radius={$deviceInfo.docWidth <= 480 ? '.75rem' : '1.25rem'}
+      >
+        <div class="flex-grow" />
+        {#if page === 'login'}
+          <LoginForm {navigateUrl} />
+        {:else if page === 'signup'}
+          <SignupForm />
+        {:else if page === 'createWorkspace'}
+          <CreateWorkspaceForm />
+        {:else if page === 'password'}
+          <PasswordRequest />
+        {:else if page === 'recovery'}
+          <PasswordRestore />
+        {:else if page === 'selectWorkspace'}
+          <SelectWorkspace {navigateUrl} />
+        {:else if page === 'join'}
+          <Join />
+        {:else if page === 'confirm'}
+          <Confirmation />
+        {:else if page === 'confirmationSend'}
+          <ConfirmationSend />
+        {/if}
+      </div>
+    </Scroller>
+    <Popup />
   </div>
-  <Intro landscape={$deviceInfo.docWidth <= 768} mini={$deviceInfo.docWidth <= 480} />
-</Scroller>
-<Popup />
+</div>
 
 <style lang="scss">
+  .backd {
+    background-color: 'rgb(0,0,0)';
+
+    &.paneld {
+      background: linear-gradient(180deg, #232324 0%, #171719 100%);
+    }
+  }
+  .back {
+    background-image: url('../../img/login_back.png');
+    background-image: -webkit-image-set(
+      '../../img/login_back.avif' 1x,
+      '../../img/login_back_2x.avif' 2x,
+      '../../img/login_back.png' 1x,
+      '../../img/login_back_2x.png' 2x,
+      '../../img/login_back.webp' 1x,
+      '../../img/login_back_2x.webp' 2x,
+      '../../img/login_back.jpg' 1x,
+      '../../img/login_back_2x.jpg' 2x
+    ); /* Temporary fallback for Chrome and Safari browsers until they support 'image-set()' better */
+    background-image: image-set(
+      '../../img/login_back.avif' 1x,
+      '../../img/login_back_2x.avif' 2x,
+      '../../img/login_back.png' 1x,
+      '../../img/login_back_2x.png' 2x,
+      '../../img/login_back.webp' 1x,
+      '../../img/login_back_2x.webp' 2x,
+      '../../img/login_back.jpg' 1x,
+      '../../img/login_back_2x.jpg' 2x
+    );
+    background-size: cover;
+    background-position-y: center;
+
+    background-repeat: no-repeat;
+  }
+
   .panel {
     position: relative;
     display: flex;
     flex-direction: column;
-    height: 100%;
-    background: var(--theme-list-row-color);
-    box-shadow: var(--popup-aside-shadow);
+    height: calc(100% - 5rem);
+    background: linear-gradient(180deg, #232324 0%, #171719 100%);
+
+    &.white {
+      background: radial-gradient(94.31% 94.31% at 6.36% 5.69%, #484a4f 0%, #505257 100%);
+    }
+    border-radius: 7.5658px !important;
+    box-shadow: 30px 11.52px 193.87px rgba(0, 0, 0, 0.7);
 
     &.minHeight {
       min-height: 40rem;
     }
 
-    $circle-size: calc(1vh + 1vw);
-    $r1: 23;
-    $r2: 17;
     &::before,
     &::after {
       content: '';
@@ -103,36 +152,9 @@
       border-radius: 50%;
       z-index: -1;
     }
-    &::before {
-      top: calc(-1 * $circle-size * $r1 / 2 + $circle-size * 5);
-      left: auto;
-      right: calc(-1 * $circle-size * $r1 / 2);
-      width: calc($circle-size * $r1);
-      height: calc($circle-size * $r1);
-      border: 1px solid var(--content-color);
-      opacity: 0.05;
-    }
-    &::after {
-      top: calc(-1 * $circle-size * $r2 / 2 + $circle-size * 5);
-      left: auto;
-      right: calc(-1 * $circle-size * $r2 / 2);
-      width: calc($circle-size * $r2);
-      height: calc($circle-size * $r2);
-      background: var(--dark-color);
-      border: 1px solid var(--caption-color);
-      opacity: 0.05;
-    }
     &.landscape {
       margin-right: 1.25rem;
       width: 41.75rem;
-      &::before {
-        left: calc(-1 * $circle-size * $r1 / 2);
-        right: auto;
-      }
-      &::after {
-        left: calc(-1 * $circle-size * $r2 / 2);
-        right: auto;
-      }
     }
   }
 </style>

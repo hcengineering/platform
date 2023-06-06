@@ -28,13 +28,13 @@
     Scroller,
     showPopup
   } from '@hcengineering/ui'
-  import { statusStore } from '@hcengineering/presentation'
   import { createEventDispatcher } from 'svelte'
   import { flip } from 'svelte/animate'
   import tracker from '../../plugin'
   import StatusEditor from './StatusEditor.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
   import RemoveStatus from './RemoveStatus.svelte'
+  import { statusStore } from '@hcengineering/view-resources'
 
   export let projectId: Ref<Project>
   export let projectClass: Ref<Class<Project>>
@@ -88,7 +88,7 @@
   async function editStatus () {
     if (statusCategories && editingStatus?.name && editingStatus?.category && '_id' in editingStatus) {
       const statusId = '_id' in editingStatus ? editingStatus._id : undefined
-      const status = statusId && $statusStore.byId.get(statusId)
+      const status = statusId && $statusStore.getIdMap().get(statusId)
 
       if (!status) {
         return
@@ -238,7 +238,7 @@
 
   $: projectQuery.query(projectClass, { _id: projectId }, (result) => ([project] = result), { limit: 1 })
   $: updateStatusCategories()
-  $: projectStatuses = $statusStore.statuses.filter((status) => status.space === projectId)
+  $: projectStatuses = $statusStore.getDocs().filter((status) => status.space === projectId)
 </script>
 
 <Panel isHeader={false} isAside={false} on:fullsize on:close={() => dispatch('close')}>

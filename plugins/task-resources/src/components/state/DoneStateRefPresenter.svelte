@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, StatusValue } from '@hcengineering/core'
-  import { statusStore } from '@hcengineering/presentation'
+  import { Ref, Status, StatusValue } from '@hcengineering/core'
+  import { statusStore } from '@hcengineering/view-resources'
   import type { DoneState } from '@hcengineering/task'
   import DoneStatePresenter from './DoneStatePresenter.svelte'
   import DoneStateEditor from './DoneStateEditor.svelte'
@@ -23,10 +23,11 @@
   export let value: Ref<DoneState> | StatusValue
   export let showTitle: boolean = true
   export let onChange: ((value: Ref<DoneState>) => void) | undefined = undefined
+
+  $: state = $statusStore.get(typeof value === 'string' ? value : (value?.values?.[0]?._id as Ref<Status>))
 </script>
 
 {#if value}
-  {@const state = $statusStore.get(typeof value === 'string' ? value : value.values[0]._id)}
   {#if onChange !== undefined && state !== undefined}
     <DoneStateEditor value={state._id} space={state.space} {onChange} kind="link" size="medium" />
   {:else}

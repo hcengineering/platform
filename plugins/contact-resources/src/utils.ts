@@ -232,13 +232,18 @@ async function generateLocation (loc: Location, id: Ref<Contact>): Promise<Resol
   }
   const appComponent = loc.path[0] ?? ''
   const workspace = loc.path[1] ?? ''
+  const special = client.getHierarchy().isDerived(doc._class, contact.class.Organization)
+    ? 'companies'
+    : client.getHierarchy().isDerived(doc._class, contact.class.Employee)
+      ? 'employees'
+      : 'persons'
   return {
     loc: {
       path: [appComponent, workspace],
       fragment: getPanelURI(view.component.EditDoc, doc._id, doc._class, 'content')
     },
     defaultLocation: {
-      path: [appComponent, workspace, contactId],
+      path: [appComponent, workspace, contactId, special],
       fragment: getPanelURI(view.component.EditDoc, doc._id, doc._class, 'content')
     }
   }

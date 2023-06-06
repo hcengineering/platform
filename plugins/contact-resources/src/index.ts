@@ -19,12 +19,22 @@ import { Class, Client, DocumentQuery, Ref, RelatedDocument, WithLookup } from '
 import login from '@hcengineering/login'
 import { IntlString, Resources, getResource } from '@hcengineering/platform'
 import { MessageBox, ObjectSearchResult, getClient, getFileUrl } from '@hcengineering/presentation'
-import { AnyComponent, AnySvelteComponent, TooltipAlignment, parseURL, showPopup } from '@hcengineering/ui'
+import {
+  AnyComponent,
+  AnySvelteComponent,
+  IconSize,
+  TooltipAlignment,
+  getIconSize2x,
+  parseURL,
+  showPopup
+} from '@hcengineering/ui'
 import AccountArrayEditor from './components/AccountArrayEditor.svelte'
 import AccountBox from './components/AccountBox.svelte'
 import AssigneeBox from './components/AssigneeBox.svelte'
 import Avatar from './components/Avatar.svelte'
 import ChannelFilter from './components/ChannelFilter.svelte'
+import ChannelPanel from './components/ChannelPanel.svelte'
+import ChannelPresenter from './components/ChannelPresenter.svelte'
 import Channels from './components/Channels.svelte'
 import ChannelsDropdown from './components/ChannelsDropdown.svelte'
 import ChannelsEditor from './components/ChannelsEditor.svelte'
@@ -39,17 +49,21 @@ import ContactsTabs from './components/ContactsTabs.svelte'
 import CreateEmployee from './components/CreateEmployee.svelte'
 import CreateOrganization from './components/CreateOrganization.svelte'
 import CreatePerson from './components/CreatePerson.svelte'
+import DeleteConfirmationPopup from './components/DeleteConfirmationPopup.svelte'
 import EditEmployee from './components/EditEmployee.svelte'
 import EditMember from './components/EditMember.svelte'
 import EditOrganization from './components/EditOrganization.svelte'
 import EditPerson from './components/EditPerson.svelte'
 import EditableAvatar from './components/EditableAvatar.svelte'
+import EmployeeAccountFilterValuePresenter from './components/EmployeeAccountFilterValuePresenter.svelte'
 import EmployeeAccountPresenter from './components/EmployeeAccountPresenter.svelte'
 import EmployeeAccountRefPresenter from './components/EmployeeAccountRefPresenter.svelte'
 import EmployeeArrayEditor from './components/EmployeeArrayEditor.svelte'
 import EmployeeBox from './components/EmployeeBox.svelte'
 import EmployeeBrowser from './components/EmployeeBrowser.svelte'
 import EmployeeEditor from './components/EmployeeEditor.svelte'
+import EmployeeFilter from './components/EmployeeFilter.svelte'
+import EmployeeFilterValuePresenter from './components/EmployeeFilterValuePresenter.svelte'
 import EmployeePresenter from './components/EmployeePresenter.svelte'
 import EmployeeRefPresenter from './components/EmployeeRefPresenter.svelte'
 import MemberPresenter from './components/MemberPresenter.svelte'
@@ -61,24 +75,18 @@ import OrganizationPresenter from './components/OrganizationPresenter.svelte'
 import PersonEditor from './components/PersonEditor.svelte'
 import PersonPresenter from './components/PersonPresenter.svelte'
 import PersonRefPresenter from './components/PersonRefPresenter.svelte'
+import SelectAvatars from './components/SelectAvatars.svelte'
 import SocialEditor from './components/SocialEditor.svelte'
 import SpaceMembers from './components/SpaceMembers.svelte'
 import UserBox from './components/UserBox.svelte'
+import UserBoxItems from './components/UserBoxItems.svelte'
 import UserBoxList from './components/UserBoxList.svelte'
 import UserInfo from './components/UserInfo.svelte'
 import UsersPopup from './components/UsersPopup.svelte'
 import ActivityChannelMessage from './components/activity/ActivityChannelMessage.svelte'
+import ActivityChannelPresenter from './components/activity/ActivityChannelPresenter.svelte'
 import ExpandRightDouble from './components/icons/ExpandRightDouble.svelte'
 import IconMembers from './components/icons/Members.svelte'
-import ChannelPresenter from './components/ChannelPresenter.svelte'
-import ChannelPanel from './components/ChannelPanel.svelte'
-import ActivityChannelPresenter from './components/activity/ActivityChannelPresenter.svelte'
-import SelectAvatars from './components/SelectAvatars.svelte'
-import UserBoxItems from './components/UserBoxItems.svelte'
-import EmployeeFilter from './components/EmployeeFilter.svelte'
-import EmployeeFilterValuePresenter from './components/EmployeeFilterValuePresenter.svelte'
-import EmployeeAccountFilterValuePresenter from './components/EmployeeAccountFilterValuePresenter.svelte'
-import DeleteConfirmationPopup from './components/DeleteConfirmationPopup.svelte'
 
 import contact from './plugin'
 import {
@@ -98,6 +106,7 @@ import {
   resolveLocation
 } from './utils'
 
+export * from './utils'
 export { employeeByIdStore, employeesStore } from './utils'
 export {
   Channels,
@@ -254,8 +263,6 @@ export interface PersonLabelTooltip {
   props?: any
 }
 
-export * from './utils'
-
 export default async (): Promise<Resources> => ({
   actionImpl: {
     KickEmployee: kickEmployee,
@@ -321,9 +328,19 @@ export default async (): Promise<Resources> => ({
     ) => await queryContact(contact.class.Organization, client, query, filter)
   },
   function: {
-    GetFileUrl: getFileUrl,
-    GetGravatarUrl: getGravatarUrl,
-    GetColorUrl: (uri: string) => uri,
+    GetFileUrl: (file: string, size: IconSize, fileName?: string) => {
+      return [
+        getFileUrl(file, size, fileName),
+        getFileUrl(file, size, fileName) + ' 1x',
+        getFileUrl(file, getIconSize2x(size), fileName) + ' 2x'
+      ]
+    },
+    GetGravatarUrl: (file: string, size: IconSize, fileName?: string) => [
+      getGravatarUrl(file, size),
+      getGravatarUrl(file, size) + ' 1x',
+      getGravatarUrl(file, getIconSize2x(size)) + ' 2x'
+    ],
+    GetColorUrl: (uri: string) => [uri],
     EmployeeSort: employeeSort,
     FilterChannelInResult: filterChannelInResult,
     FilterChannelNinResult: filterChannelNinResult,

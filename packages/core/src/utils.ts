@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Account, AnyAttribute, Class, Doc, DocData, DocIndexState, IndexKind, Obj, Ref } from './classes'
+import { Account, AnyAttribute, Class, Doc, DocData, DocIndexState, IndexKind, Obj, Ref, Space } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { FindResult } from './storage'
@@ -223,4 +223,60 @@ export function fillDefaults<T extends Doc> (
     }
   }
   return object
+}
+
+/**
+ * @public
+ */
+export class AggregateValueData {
+  constructor (
+    readonly name: string,
+    readonly _id: Ref<Doc>,
+    readonly space: Ref<Space>,
+    readonly rank?: string,
+    readonly category?: Ref<Doc>
+  ) {}
+
+  getRank (): string {
+    return this.rank ?? ''
+  }
+}
+
+/**
+ * @public
+ */
+export class AggregateValue {
+  constructor (readonly name: string | undefined, readonly values: AggregateValueData[]) {}
+}
+
+/**
+ * @public
+ */
+export type CategoryType = number | string | undefined | Ref<Doc> | AggregateValue
+
+/**
+ * @public
+ */
+export class DocManager {
+  protected readonly byId: IdMap<Doc>
+
+  constructor (protected readonly docs: Doc[]) {
+    this.byId = toIdMap(docs)
+  }
+
+  get (ref: Ref<Doc>): Doc | undefined {
+    return this.byId.get(ref)
+  }
+
+  getDocs (): Doc[] {
+    return this.docs
+  }
+
+  getIdMap (): IdMap<Doc> {
+    return this.byId
+  }
+
+  filter (predicate: (value: Doc) => boolean): Doc[] {
+    return this.docs.filter(predicate)
+  }
 }

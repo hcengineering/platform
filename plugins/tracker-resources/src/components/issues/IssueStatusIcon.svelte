@@ -14,9 +14,10 @@
 -->
 <script lang="ts">
   import core, { StatusCategory, WithLookup } from '@hcengineering/core'
-  import { getClient, statusStore } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { IssueStatus } from '@hcengineering/tracker'
   import { IconSize } from '@hcengineering/ui'
+  import { statusStore } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import StatusIcon from '../icons/StatusIcon.svelte'
 

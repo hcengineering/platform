@@ -15,7 +15,7 @@
 <script lang="ts">
   import { CategoryType, Class, Doc, DocumentQuery, generateId, Lookup, Ref, Space } from '@hcengineering/core'
   import { getResource, IntlString } from '@hcengineering/platform'
-  import { getClient, statusStore } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, CategoryOption, ViewOptionModel, ViewOptions } from '@hcengineering/view'
   import { createEventDispatcher, onDestroy, SvelteComponentTyped } from 'svelte'
@@ -84,14 +84,14 @@
     viewOptions: ViewOptions,
     viewOptionsModel: ViewOptionModel[] | undefined
   ) {
-    categories = await getCategories(client, _class, docs, groupByKey, $statusStore)
+    categories = await getCategories(client, _class, docs, groupByKey)
     if (level === 0) {
       for (const viewOption of viewOptionsModel ?? []) {
         if (viewOption.actionTarget !== 'category') continue
         const categoryFunc = viewOption as CategoryOption
         if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
           const f = await getResource(categoryFunc.action)
-          const res = hierarchy.clone(await f(_class, query, groupByKey, update, queryId, $statusStore))
+          const res = hierarchy.clone(await f(_class, query, groupByKey, update, queryId))
           if (res !== undefined) {
             categories = concatCategories(res, categories)
             return

@@ -40,13 +40,13 @@
   export let size: IconSize
   export let icon: Asset | AnySvelteComponent | undefined = undefined
 
-  let url: string | undefined
+  let url: string[] | undefined
   let avatarProvider: AvatarProvider | undefined
 
   async function update (size: IconSize, avatar?: string | null, direct?: Blob) {
     if (direct !== undefined) {
       getBlobURL(direct).then((blobURL) => {
-        url = blobURL
+        url = [blobURL]
         avatarProvider = undefined
       })
     } else if (avatar) {
@@ -69,14 +69,16 @@
   $: update(size, avatar, direct)
 
   let imageElement: HTMLImageElement | undefined = undefined
+
+  $: srcset = url?.slice(1)?.join(', ')
 </script>
 
 <div class="ava-{size} flex-center avatar-container" class:no-img={!url}>
   {#if url}
     {#if size === 'large' || size === 'x-large' || size === '2x-large'}
-      <img class="ava-{size} ava-blur" src={url} alt={''} bind:this={imageElement} />
+      <img class="ava-{size} ava-blur" src={url[0]} {srcset} alt={''} bind:this={imageElement} />
     {/if}
-    <img class="ava-{size} ava-mask" src={url} alt={''} bind:this={imageElement} />
+    <img class="ava-{size} ava-mask" src={url[0]} {srcset} alt={''} bind:this={imageElement} />
   {:else}
     <Icon icon={icon ?? AvatarIcon} size={size === 'card' ? 'x-small' : size} />
   {/if}

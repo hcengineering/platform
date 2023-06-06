@@ -81,7 +81,7 @@ export enum AvatarType {
 /**
  * @public
  */
-export type GetAvatarUrl = (uri: string, size: IconSize) => string
+export type GetAvatarUrl = (uri: string, size: IconSize) => string[]
 
 /**
  * @public

@@ -3,8 +3,8 @@
   import { createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus } from '@hcengineering/tracker'
   import { Label, ticker, Row } from '@hcengineering/ui'
+  import { statusStore } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
-  import { statusStore } from '@hcengineering/presentation'
   import Duration from './Duration.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
 
@@ -84,7 +84,7 @@
     displaySt = result
   }
 
-  $: updateStatus(txes, $statusStore.byId, $ticker)
+  $: updateStatus(txes, $statusStore.getIdMap(), $ticker)
 </script>
 
 <Row>

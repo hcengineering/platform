@@ -32,6 +32,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import { CollaborationDiffViewer } from '@hcengineering/text-editor'
+  import view from '@hcengineering/view'
 
   import {
     Button,
@@ -136,7 +137,11 @@
 
   function showMenu (ev?: Event): void {
     if (documentObject) {
-      showPopup(ContextMenu, { object: documentObject }, (ev as MouseEvent).target as HTMLElement)
+      showPopup(
+        ContextMenu,
+        { object: documentObject, excludedActions: [view.action.Open] },
+        (ev as MouseEvent).target as HTMLElement
+      )
     }
   }
 

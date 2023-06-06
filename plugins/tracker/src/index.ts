@@ -14,11 +14,13 @@
 //
 
 import { Employee, EmployeeAccount } from '@hcengineering/contact'
-import type {
+import {
   AttachedDoc,
   Attribute,
   Class,
   Doc,
+  DocManager,
+  IdMap,
   Markup,
   Ref,
   RelatedDocument,
@@ -26,7 +28,8 @@ import type {
   Status,
   StatusCategory,
   Timestamp,
-  Type
+  Type,
+  WithLookup
 } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -308,6 +311,29 @@ export interface Component extends Doc {
   space: Ref<Project>
   comments: number
   attachments?: number
+}
+
+/**
+ * @public
+ *
+ * Allow to query for status keys/values.
+ */
+export class ComponentManager extends DocManager {
+  get (ref: Ref<WithLookup<Component>>): WithLookup<Component> | undefined {
+    return this.getIdMap().get(ref) as WithLookup<Component>
+  }
+
+  getDocs (): Array<WithLookup<Component>> {
+    return this.docs as Component[]
+  }
+
+  getIdMap (): IdMap<WithLookup<Component>> {
+    return this.byId as IdMap<WithLookup<Component>>
+  }
+
+  filter (predicate: (value: Component) => boolean): Component[] {
+    return this.getDocs().filter(predicate)
+  }
 }
 
 /**

@@ -16,7 +16,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Attachment } from '@hcengineering/attachment'
-  import { showPopup, closeTooltip, Label } from '@hcengineering/ui'
+  import { showPopup, closeTooltip, Label, getIconSize2x } from '@hcengineering/ui'
   import presentation, { PDFViewer, getFileUrl } from '@hcengineering/presentation'
   import filesize from 'filesize'
 
@@ -69,6 +69,18 @@
   }
 
   let download: HTMLAnchorElement
+
+  $: imgStyle = isImage(value.type)
+    ? `background-image: url(${getFileUrl(value.file, 'large')});
+       background-image: -webkit-image-set(
+        ${getFileUrl(value.file, 'large')} 1x,
+        ${getFileUrl(value.file, getIconSize2x('large'))} 2x
+      );
+      background-image: image-set(
+        ${getFileUrl(value.file, 'large')} 1x,
+        ${getFileUrl(value.file, getIconSize2x('large'))} 2x
+      );`
+    : ''
 </script>
 
 <div class="flex-row-center attachment-container">
@@ -79,13 +91,16 @@
     on:click={clickHandler}
     on:mousedown={middleClickHandler}
   >
-    <div
+    <!-- <div
       class="flex-center icon"
       class:svg={value.type === 'image/svg+xml'}
       class:image={isImage(value.type)}
-      style:background-image={isImage(value.type) ? `url(${getFileUrl(value.file, 'large')})` : 'none'}
+      style={imgStyle}
     >
       {#if !isImage(value.type)}{iconLabel(value.name)}{/if}
+    </div> -->
+    <div class="flex-center icon">
+      {iconLabel(value.name)}
     </div>
   </a>
   <div class="flex-col info-container">

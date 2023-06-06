@@ -155,7 +155,7 @@ module.exports = {
         }
       },
       {
-        test: /\.(jpg|png)$/,
+        test: /\.(jpg|png|webp|heic|avif)$/,
         use: {
           loader: 'file-loader',
           options: {

@@ -19,8 +19,9 @@
   import tracker from '../../plugin'
   import view from '@hcengineering/view'
   import { DocNavLink } from '@hcengineering/view-resources'
+  import { translate } from '@hcengineering/platform'
 
-  export let value: WithLookup<Component>
+  export let value: WithLookup<Component> | undefined
   export let shouldShowAvatar = true
   export let onClick: (() => void) | undefined = undefined
   export let disabled = false
@@ -28,24 +29,32 @@
   export let accent: boolean = false
   export let noUnderline = false
   export let kind: 'list' | undefined = undefined
+
+  let label: string
+
+  $: if (value !== undefined) {
+    label = value.label
+  } else {
+    translate(tracker.string.NoComponent, {})
+      .then((r) => {
+        label = r
+      })
+      .catch((err) => {
+        console.error(err)
+      })
+  }
+  $: disabled = disabled || value === undefined
 </script>
 
-{#if value}
-  <DocNavLink object={value} {onClick} {disabled} {noUnderline} {inline} {accent} component={view.component.EditDoc}>
-    <span class="flex-presenter" class:inline-presenter={inline} class:list={kind === 'list'}>
-      {#if !inline && shouldShowAvatar}
-        <div class="icon" use:tooltip={{ label: tracker.string.Component }}>
-          <Icon icon={tracker.icon.Component} size={'small'} />
-        </div>
-      {/if}
-      <span
-        title={value.label}
-        class="label nowrap"
-        class:no-underline={disabled || noUnderline}
-        class:fs-bold={accent}
-      >
-        {value.label}
-      </span>
+<DocNavLink object={value} {onClick} {disabled} {noUnderline} {inline} {accent} component={view.component.EditDoc}>
+  <span class="flex-presenter" class:inline-presenter={inline} class:list={kind === 'list'}>
+    {#if !inline && shouldShowAvatar}
+      <div class="icon" use:tooltip={{ label: tracker.string.Component }}>
+        <Icon icon={tracker.icon.Component} size={'small'} />
+      </div>
+    {/if}
+    <span title={label} class="label nowrap" class:no-underline={disabled || noUnderline} class:fs-bold={accent}>
+      {label}
     </span>
-  </DocNavLink>
-{/if}
+  </span>
+</DocNavLink>

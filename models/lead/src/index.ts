@@ -290,13 +290,8 @@ export function createModel (builder: Builder): void {
       attachTo: lead.class.Lead,
       descriptor: view.viewlet.List,
       configOptions: {
-        hiddenKeys: ['title'],
-        sortable: true,
-        extraProps: {
-          displayProps: {
-            optional: true
-          }
-        }
+        strict: true,
+        hiddenKeys: ['title']
       },
       config: [
         { key: '', displayProps: { fixed: 'left', key: 'lead' } },
@@ -324,10 +319,11 @@ export function createModel (builder: Builder): void {
           key: '',
           presenter: tracker.component.RelatedIssueSelector,
           label: tracker.string.Relations,
-          displayProps: { fixed: 'left', key: 'issues' }
+          displayProps: { fixed: 'left', key: 'issues', optional: true }
         },
-        { key: 'attachments', displayProps: { fixed: 'left', key: 'attachments' } },
-        { key: 'comments', displayProps: { fixed: 'left', key: 'comments' } },
+        { key: 'attachments', displayProps: { key: 'attachments', optional: true } },
+        { key: 'comments', displayProps: { key: 'comments', optional: true } },
+        { key: '', displayProps: { grow: true } },
         {
           key: '$lookup.attachedTo.$lookup.channels',
           label: contact.string.ContactInfo,

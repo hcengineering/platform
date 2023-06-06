@@ -47,13 +47,18 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  let items: AttributeConfig[] = []
+  let items: (Config | AttributeConfig)[] = []
   let loading = true
 
-  interface AttributeConfig {
+  interface Config {
+    value: string | BuildModelKey | undefined
+    type: 'divider' | 'attribute'
+  }
+
+  interface AttributeConfig extends Config {
+    type: 'attribute'
     enabled: boolean
     label: IntlString
-    value: string | BuildModelKey
     _class: Ref<Class<Doc>>
     icon: Asset | undefined
     order?: number
@@ -62,6 +67,7 @@
   function getObjectConfig (_class: Ref<Class<Doc>>, param: string): AttributeConfig {
     const clazz = hierarchy.getClass(_class)
     return {
+      type: 'attribute',
       value: param,
       label: clazz.label,
       enabled: true,
@@ -70,10 +76,11 @@
     }
   }
 
-  function getBaseConfig (viewlet: Viewlet): AttributeConfig[] {
+  function getBaseConfig (viewlet: Viewlet): Config[] {
     const lookup = buildConfigLookup(hierarchy, viewlet.attachTo, viewlet.config, viewlet.options?.lookup)
-    const result: AttributeConfig[] = []
+    const result: Config[] = []
     const clazz = hierarchy.getClass(viewlet.attachTo)
+    let wasOptional = false
     for (const param of viewlet.config) {
       if (typeof param === 'string') {
         if (viewlet.configOptions?.hiddenKeys?.includes(param)) continue
@@ -81,22 +88,38 @@
           result.push(getObjectConfig(viewlet.attachTo, param))
         } else {
           result.push({
+            type: 'attribute',
             value: param,
             enabled: true,
             label: getKeyLabel(client, viewlet.attachTo, param, lookup),
             _class: viewlet.attachTo,
             icon: clazz.icon
-          })
+          } as AttributeConfig)
         }
       } else {
         if (viewlet.configOptions?.hiddenKeys?.includes(param.key)) continue
-        result.push({
-          value: param,
-          label: param.label ?? getKeyLabel(client, viewlet.attachTo, param.key, lookup),
-          enabled: true,
-          _class: viewlet.attachTo,
-          icon: clazz.icon
-        })
+        if (param.displayProps?.grow === true) {
+          result.push({
+            type: 'divider',
+            value: param
+          })
+        } else {
+          if (param.displayProps?.optional === true && !wasOptional) {
+            wasOptional = true
+            result.push({
+              type: 'divider',
+              value: ''
+            })
+          }
+          result.push({
+            type: 'attribute',
+            value: param,
+            label: param.label ?? getKeyLabel(client, viewlet.attachTo, param.key, lookup),
+            enabled: true,
+            _class: viewlet.attachTo,
+            icon: clazz.icon
+          } as AttributeConfig)
+        }
       }
     }
     return result
@@ -112,13 +135,14 @@
     return name
   }
 
-  function processAttribute (attribute: AnyAttribute, result: AttributeConfig[], useMixinProxy = false): void {
+  function processAttribute (attribute: AnyAttribute, result: Config[], useMixinProxy = false): void {
     if (attribute.hidden === true || attribute.label === undefined) return
     if (viewlet.configOptions?.hiddenKeys?.includes(attribute.name)) return
     if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) return
     const value = getValue(attribute.name, attribute.type)
     for (const res of result) {
-      const key = typeof res.value === 'string' ? res.value : res.value.key
+      const key = typeof res.value === 'string' ? res.value : res.value?.key
+      if (key === undefined) return
       if (key === attribute.name) return
       if (key === value) return
     }
@@ -134,7 +158,8 @@
     const clazz = hierarchy.getClass(attribute.attributeOf)
     const extraProps = viewlet.configOptions?.extraProps
     if (useMixinProxy) {
-      const newValue = {
+      const newValue: AttributeConfig = {
+        type: 'attribute',
         value: attribute.attributeOf + '.' + attribute.name,
         label: attribute.label,
         enabled: false,
@@ -145,7 +170,8 @@
         result.push(newValue)
       }
     } else {
-      const newValue = {
+      const newValue: AttributeConfig = {
+        type: 'attribute',
         value: extraProps ? { ...extraProps, key: value } : value,
         label: attribute.label,
         enabled: false,
@@ -158,8 +184,14 @@
     }
   }
 
-  function isExist (result: AttributeConfig[], newValue: AttributeConfig): boolean {
+  function isAttribute (val: Config): val is AttributeConfig {
+    return val.type === 'attribute'
+  }
+
+  function isExist (result: Config[], newValue: Config): boolean {
     for (const res of result) {
+      if (!isAttribute(res)) continue
+      if (!isAttribute(newValue)) continue
       if (res._class !== newValue._class) continue
       if (typeof res.value === 'string') {
         if (res.value === newValue.value) return true
@@ -168,7 +200,7 @@
     return false
   }
 
-  function getConfig (viewlet: Viewlet, preference: ViewletPreference | undefined): AttributeConfig[] {
+  function getConfig (viewlet: Viewlet, preference: ViewletPreference | undefined): Config[] {
     const result = getBaseConfig(viewlet)
 
     if (viewlet.configOptions?.strict !== true) {
@@ -201,7 +233,12 @@
   }
 
   async function save (): Promise<void> {
-    const config = items.filter((p) => p.enabled).map((p) => p.value)
+    const config = items
+      .filter(
+        (p) =>
+          p.value !== undefined && (p.type === 'divider' || (p.type === 'attribute' && (p as AttributeConfig).enabled))
+      )
+      .map((p) => p.value as string | BuildModelKey)
     if (preference !== undefined) {
       await client.update(preference, {
         config
@@ -214,23 +251,28 @@
     }
   }
 
-  function restoreDefault (): void {
-    items = getConfig(viewlet, undefined)
-    save()
+  async function restoreDefault (): Promise<void> {
+    if (preference !== undefined) {
+      await client.remove(preference)
+    }
   }
 
-  function setStatus (result: AttributeConfig[], preference: ViewletPreference): AttributeConfig[] {
+  function setStatus (result: Config[], preference: ViewletPreference): Config[] {
     for (const key of result) {
+      if (!isAttribute(key)) continue
       const index = preference.config.findIndex((p) => deepEqual(p, key.value))
       key.enabled = index !== -1
       key.order = index !== -1 ? index : undefined
     }
-    result.sort((a, b) => {
-      if (a.order === undefined && b.order === undefined) return 0
-      if (a.order === undefined) return 1
-      if (b.order === undefined) return -1
-      return a.order - b.order
-    })
+    if (viewlet.configOptions?.sortable) {
+      result.sort((a, b) => {
+        if (!isAttribute(a) || !isAttribute(b)) return 0
+        if (a.order === undefined && b.order === undefined) return 0
+        if (a.order === undefined) return 1
+        if (b.order === undefined) return -1
+        return a.order - b.order
+      })
+    }
     return result
   }
 
@@ -240,6 +282,8 @@
   }
 
   function dragOver (e: DragEvent, i: number) {
+    e.preventDefault()
+    e.stopPropagation()
     const s = selected as number
     if (dragswap(e, i, s)) {
       ;[items[i], items[s]] = [items[s], items[i]]
@@ -258,6 +302,13 @@
     return false
   }
 
+  function change (item: Config, value: boolean): void {
+    if (isAttribute(item)) {
+      item.enabled = value
+      save()
+    }
+  }
+
   let selected: number | undefined
 </script>
 
@@ -270,25 +321,34 @@
         <Button on:click={restoreDefault} label={view.string.RestoreDefaults} size={'x-small'} kind={'link'} noFocus />
       </div>
       {#each items as item, i}
-        <div
-          class="item"
-          bind:this={elements[i]}
-          draggable={viewlet.configOptions?.sortable}
-          on:dragstart={() => {
-            selected = i
-          }}
-          on:dragover|preventDefault={(e) => dragOver(e, i)}
-          on:dragend={dragEnd}
-        >
-          <ToggleWithLabel
-            on={item.enabled}
-            label={item.label}
-            on:change={(e) => {
-              item.enabled = e.detail
-              save()
+        {#if isAttribute(item)}
+          <div
+            class="item"
+            bind:this={elements[i]}
+            draggable={viewlet.configOptions?.sortable && item.enabled}
+            on:dragstart={(ev) => {
+              if (ev.dataTransfer) {
+                ev.dataTransfer.effectAllowed = 'move'
+                ev.dataTransfer.dropEffect = 'move'
+              }
+              // ev.preventDefault()
+              ev.stopPropagation()
+              selected = i
             }}
-          />
-        </div>
+            on:dragover|preventDefault={(e) => dragOver(e, i)}
+            on:dragend={dragEnd}
+          >
+            <ToggleWithLabel
+              on={item.enabled}
+              label={item.label}
+              on:change={(e) => {
+                change(item, e.detail)
+              }}
+            />
+          </div>
+        {:else}
+          <div class="antiDivider" />
+        {/if}
       {/each}
     {/if}
   </div>

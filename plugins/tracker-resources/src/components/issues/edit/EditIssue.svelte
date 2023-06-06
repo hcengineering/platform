@@ -35,6 +35,7 @@
     showPopup
   } from '@hcengineering/ui'
   import { ContextMenu, DocNavLink, ParentsNavigator, UpDownNavigator } from '@hcengineering/view-resources'
+  import view from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { generateIssueShortLink, getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
@@ -115,7 +116,11 @@
 
   function showMenu (ev?: Event): void {
     if (issue) {
-      showPopup(ContextMenu, { object: issue }, (ev as MouseEvent).target as HTMLElement)
+      showPopup(
+        ContextMenu,
+        { object: issue, excludedActions: [view.action.Open] },
+        (ev as MouseEvent).target as HTMLElement
+      )
     }
   }
 

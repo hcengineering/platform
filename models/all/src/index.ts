@@ -31,9 +31,9 @@ import gmail, { gmailId, createModel as gmailModel } from '@hcengineering/model-
 import hr, { hrId, createModel as hrModel } from '@hcengineering/model-hr'
 import inventory, { inventoryId, createModel as inventoryModel } from '@hcengineering/model-inventory'
 import lead, { leadId, createModel as leadModel } from '@hcengineering/model-lead'
-import { notificationId, createModel as notificationModel } from '@hcengineering/model-notification'
+import notification, { notificationId, createModel as notificationModel } from '@hcengineering/model-notification'
 import { preferenceId, createModel as preferenceModel } from '@hcengineering/model-preference'
-import { presentationId, createModel as presentationModel } from '@hcengineering/model-presentation'
+import presentation, { presentationId, createModel as presentationModel } from '@hcengineering/model-presentation'
 import recruit, { recruitId, createModel as recruitModel } from '@hcengineering/model-recruit'
 import { requestId, createModel as requestModel } from '@hcengineering/model-request'
 import { serverAttachmentId, createModel as serverAttachmentModel } from '@hcengineering/model-server-attachment'
@@ -100,7 +100,11 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         enabled: true,
         beta: false,
         icon: contact.icon.ContactApplication,
-        classFilter: [workbench.class.Application]
+        classFilter: [
+          workbench.class.Application,
+          presentation.class.ObjectSearchCategory,
+          notification.class.NotificationGroup
+        ]
       }
     ],
     [
@@ -125,7 +129,12 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         enabled: true,
         beta: false,
         icon: recruit.icon.RecruitApplication,
-        classFilter: [workbench.class.Application, view.class.Action]
+        classFilter: [
+          workbench.class.Application,
+          view.class.Action,
+          presentation.class.ObjectSearchCategory,
+          notification.class.NotificationGroup
+        ]
       }
     ],
     [settingModel, settingId],
@@ -221,7 +230,12 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         enabled: true,
         beta: false,
         icon: tracker.icon.TrackerApplication,
-        classFilter: [workbench.class.Application, view.class.Action]
+        classFilter: [
+          workbench.class.Application,
+          view.class.Action,
+          presentation.class.ObjectSearchCategory,
+          notification.class.NotificationGroup
+        ]
       }
     ],
     [

@@ -19,7 +19,7 @@
   import view from '../plugin'
   import { getObjectLinkFragment } from '../utils'
 
-  export let object: Doc
+  export let object: Doc | undefined
   export let disabled = false
   export let onClick: ((event: MouseEvent) => void) | undefined = undefined
   export let noUnderline = false

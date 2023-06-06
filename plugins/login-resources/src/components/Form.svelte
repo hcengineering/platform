@@ -136,6 +136,7 @@
         <Button
           label={action.i18n}
           kind={'primary'}
+          shape={'round2'}
           size={'x-large'}
           width="100%"
           loading={inAction}
@@ -216,7 +217,7 @@
       font-size: 0.8rem;
       color: var(--theme-caption-color);
       span {
-        opacity: 0.3;
+        opacity: 0.8;
       }
       a {
         text-decoration: none;

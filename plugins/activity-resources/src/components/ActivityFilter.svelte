@@ -15,7 +15,7 @@
 <script lang="ts">
   import activity, { ActivityFilter, DisplayTx } from '@hcengineering/activity'
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { IntlString, getResource } from '@hcengineering/platform'
+  import { getResource } from '@hcengineering/platform'
   import { getClient, hasResource } from '@hcengineering/presentation'
   import { ActionIcon, AnyComponent, Icon, Label, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -31,20 +31,21 @@
   const client = getClient()
   let filters: ActivityFilter[] = []
   const saved = localStorage.getItem('activity-filter')
-  let selectedFilter: Ref<Doc>[] | 'All' =
+  let selectedFiltersRefs: Ref<Doc>[] | 'All' =
     saved !== null && saved !== undefined ? (JSON.parse(saved) as Ref<Doc>[] | 'All') : 'All'
-  $: localStorage.setItem('activity-filter', JSON.stringify(selectedFilter))
+  let selectedFilters: ActivityFilter[] = []
+  $: localStorage.setItem('activity-filter', JSON.stringify(selectedFiltersRefs))
   client.findAll(activity.class.ActivityFilter, {}).then((res) => {
     filters = res
     if (saved !== null && saved !== undefined) {
       const temp: Ref<Doc>[] | 'All' = JSON.parse(saved)
       if (temp !== 'All' && Array.isArray(temp)) {
-        selectedFilter = temp.filter((it) => filters.findIndex((f) => it === f._id) > -1)
-        if ((selectedFilter as Ref<Doc>[]).length === 0) {
-          selectedFilter = 'All'
+        selectedFiltersRefs = temp.filter((it) => filters.findIndex((f) => it === f._id) > -1)
+        if ((selectedFiltersRefs as Ref<Doc>[]).length === 0) {
+          selectedFiltersRefs = 'All'
         }
       } else {
-        selectedFilter = 'All'
+        selectedFiltersRefs = 'All'
       }
     }
   })
@@ -65,17 +66,18 @@
   const handleOptions = (ev: MouseEvent) => {
     showPopup(
       FilterPopup,
-      { selectedFilter, filters },
+      { selectedFiltersRefs, filters },
       eventToHTMLElement(ev),
       () => {},
       (res) => {
         if (res === undefined) return
-        if (res.action === 'select') selectedFilter = res.value as Ref<Doc>[] | 'All'
+        const selected = res.value as Ref<Doc>[]
+        const isAll = selected.length === filters.length || selected.length === 0
+        if (res.action === 'select') selectedFiltersRefs = isAll ? 'All' : selected
       }
     )
   }
 
-  let labels: IntlString[] = []
   const dispatch = createEventDispatcher()
 
   async function updateFilterActions (
@@ -87,11 +89,9 @@
       filtered = txes
       dispatch('update', filtered)
     } else {
-      const selectedFilters = filters.filter((filter) => selected.includes(filter._id))
+      selectedFilters = filters.filter((filter) => selected.includes(filter._id))
       const filterActions: ((tx: DisplayTx, _class?: Ref<Doc>) => boolean)[] = []
-      labels = []
       for (const filter of selectedFilters) {
-        labels.push(filter.label)
         const fltr = await getResource(filter.filter)
         filterActions.push(fltr)
       }
@@ -100,18 +100,27 @@
     }
   }
 
-  $: updateFilterActions(txes, filters, selectedFilter)
+  $: updateFilterActions(txes, filters, selectedFiltersRefs)
 </script>
 
-{#if selectedFilter === 'All'}
+{#if selectedFiltersRefs === 'All'}
   <div class="antiSection-header__tag highlight">
     <Label label={activityPlg.string.All} />
   </div>
 {:else}
-  {#each labels as label}
+  {#each selectedFilters as filter}
     <div class="antiSection-header__tag overflow-label">
-      <Label {label} />
-      <div class="tag-icon">
+      <Label label={filter.label} />
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <div
+        class="tag-icon"
+        on:click={() => {
+          if (selectedFiltersRefs !== 'All') {
+            const ids = selectedFiltersRefs.filter((it) => it !== filter._id)
+            selectedFiltersRefs = ids.length > 0 ? ids : 'All'
+          }
+        }}
+      >
         <Icon icon={IconClose} size={'small'} />
       </div>
     </div>

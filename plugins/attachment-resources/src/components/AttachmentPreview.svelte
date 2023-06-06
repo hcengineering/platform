@@ -16,7 +16,7 @@
 <script lang="ts">
   import type { Attachment } from '@hcengineering/attachment'
   import { getFileUrl, PDFViewer } from '@hcengineering/presentation'
-  import { showPopup, closeTooltip } from '@hcengineering/ui'
+  import { showPopup, closeTooltip, getIconSize2x } from '@hcengineering/ui'
   import { getType } from '../utils'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
   import AttachmentActions from './AttachmentActions.svelte'
@@ -47,7 +47,15 @@
       dispatch('open', popupInfo.id)
     }}
   >
-    <img src={getFileUrl(value.file, 'large')} alt={value.name} />
+    <img
+      src={getFileUrl(value.file, 'large')}
+      srcset={`${getFileUrl(value.file, 'large', value.name)} 1x, ${getFileUrl(
+        value.file,
+        getIconSize2x('large'),
+        value.name
+      )} 2x`}
+      alt={value.name}
+    />
     <div class="actions conner">
       <AttachmentActions attachment={value} {isSaved} />
     </div>

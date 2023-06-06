@@ -19743,7 +19743,7 @@ packages:
     dev: false
 
   file:projects/model-view.tgz_typescript@4.8.4:
-    resolution: {integrity: sha512-MXdgL834gD1r+h6dZaXCpGCSiHrO2TxGXDHfF951mTThYcbz2X5P950/XcADZgvC4riAXQoJRVCjn1iR1paanA==, tarball: file:projects/model-view.tgz}
+    resolution: {integrity: sha512-nswV/jP/DzqP9yt1TnthbVdziRUYEW3rs/mqG3VTSIwO0Z0Sy0hGbFDr21n8YjxBf756QK3qAItBlJwRq4N3Tg==, tarball: file:projects/model-view.tgz}
     id: file:projects/model-view.tgz
     name: '@rush-temp/model-view'
     version: 0.0.0
@@ -22070,7 +22070,7 @@ packages:
     dev: false
 
   file:projects/tracker-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-jMfAS0PwGvid0QCtAiVe3bDOLx4PnRdtmz23urZXRSf+s9mtZNpKIGPNDic8wragI9GjAbjJ85bHt8fZaxsSlw==, tarball: file:projects/tracker-resources.tgz}
+    resolution: {integrity: sha512-aahQ2kYGfdS+98z6xeLjeFffJYcfU106RpeslK2u9g9zaAPmdZa6L72ZRFiEDkW1y6n2d3TpDasCCshMw2lEHg==, tarball: file:projects/tracker-resources.tgz}
     id: file:projects/tracker-resources.tgz
     name: '@rush-temp/tracker-resources'
     version: 0.0.0
@@ -22210,7 +22210,7 @@ packages:
     dev: false
 
   file:projects/view-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-jeJXZ80aZypm/6JrOsW+XJ6z8mzAUf7CJpVfPP8qTYIV2FsTqYBY4aHK0roPkaUVEAd/Ox9oAwKDksoR8EgB/w==, tarball: file:projects/view-resources.tgz}
+    resolution: {integrity: sha512-Taw9Dsr8rIkwsDJBqW4FddqW78UyIqHptCBk+J2c4nJlYnEUYKzbJaszb0N/fOkTN43I72SoxOQlyygIH85sKw==, tarball: file:projects/view-resources.tgz}
     id: file:projects/view-resources.tgz
     name: '@rush-temp/view-resources'
     version: 0.0.0
@@ -22245,7 +22245,7 @@ packages:
     dev: false
 
   file:projects/view.tgz:
-    resolution: {integrity: sha512-BKoOzFnUY/wlXgnnf7GsXZi9v3rZao+9EUVJznob9Dd0PK919rBLq/3XtXduTsX9I5XL63X6aThlzp6BpUyCNQ==, tarball: file:projects/view.tgz}
+    resolution: {integrity: sha512-Q5nEEe6n/qr7hJMMUeD2WSC2/MDdStM4h1maedLCV4OB6t2x0HTmNxm7b8mjROeuTV9lsxUezlMuq2xnBbF7ug==, tarball: file:projects/view.tgz}
     name: '@rush-temp/view'
     version: 0.0.0
     dependencies:
@@ -22259,6 +22259,7 @@ packages:
       eslint-plugin-n: 15.5.1_eslint@8.27.0
       eslint-plugin-promise: 6.1.1_eslint@8.27.0
       prettier: 2.8.8
+      svelte: 3.55.1
       typescript: 4.8.4
     transitivePeerDependencies:
       - supports-color

@@ -29,7 +29,7 @@
   import { Item, Kanban } from '@hcengineering/kanban'
   import notification from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
-  import { createQuery, getClient, statusStore, ActionContext } from '@hcengineering/presentation'
+  import { createQuery, getClient, ActionContext } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import { Issue, IssuesGrouping, IssuesOrdering, Project } from '@hcengineering/tracker'
   import {
@@ -197,7 +197,7 @@
     viewOptions: ViewOptions,
     viewOptionsModel: ViewOptionModel[] | undefined
   ) {
-    categories = await getCategories(client, _class, docs, groupByKey, $statusStore, viewlet.descriptor)
+    categories = await getCategories(client, _class, docs, groupByKey, viewlet.descriptor)
     for (const viewOption of viewOptionsModel ?? []) {
       if (viewOption.actionTarget !== 'category') continue
       const categoryFunc = viewOption as CategoryOption
@@ -214,7 +214,6 @@
           groupByKey,
           update,
           queryId,
-          $statusStore,
           viewlet.descriptor
         )
         if (res !== undefined) {

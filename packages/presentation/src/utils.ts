@@ -45,8 +45,6 @@ import { onDestroy } from 'svelte'
 import { KeyedAttribute } from '..'
 import { PresentationPipeline, PresentationPipelineImpl } from './pipeline'
 import plugin from './plugin'
-import { StatusMiddleware, statusStore } from './status'
-export { statusStore }
 
 let liveQuery: LQ
 let client: TxOperations
@@ -114,7 +112,10 @@ export async function setClient (_client: Client): Promise<void> {
   if (pipeline !== undefined) {
     await pipeline.close()
   }
-  pipeline = PresentationPipelineImpl.create(_client, [StatusMiddleware.create])
+  const factories = await _client.findAll(plugin.class.PresentationMiddlewareFactory, {})
+  const promises = factories.map(async (it) => await getResource(it.createPresentationMiddleware))
+  const creators = await Promise.all(promises)
+  pipeline = PresentationPipelineImpl.create(_client, creators)
 
   const needRefresh = liveQuery !== undefined
   liveQuery = new LQ(pipeline)
