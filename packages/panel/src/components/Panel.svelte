@@ -80,7 +80,7 @@
         $PanelScrollTop[window.location.href] = 0
         lastHref = window.location.href
       }
-    }, 1)
+    }, 50)
   }
 
   afterUpdate(() => {

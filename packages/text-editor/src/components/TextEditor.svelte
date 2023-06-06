@@ -18,7 +18,6 @@
 
   import type { FocusPosition } from '@tiptap/core'
   import { AnyExtension, Editor, Extension, HTMLContent } from '@tiptap/core'
-  // import Typography from '@tiptap/extension-typography'
   import { Level } from '@tiptap/extension-heading'
   import Placeholder from '@tiptap/extension-placeholder'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
@@ -244,6 +243,7 @@
 <style lang="scss" global>
   .ProseMirror {
     overflow-y: auto;
+    font: inherit;
     min-height: inherit !important;
     max-height: inherit !important;
     outline: none;

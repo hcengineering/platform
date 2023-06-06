@@ -45,3 +45,9 @@ table.proseTable {
     margin: 0;
   }
 }
+
+.proseCode {
+  background-color: var(--theme-overlay-color);
+  border-radius: 0.25rem;
+  padding: 0.25em;
+}
