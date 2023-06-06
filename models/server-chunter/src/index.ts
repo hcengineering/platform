@@ -50,6 +50,15 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(
+    chunter.ids.MentionNotification,
+    notification.class.NotificationType,
+    serverNotification.mixin.TypeMatch,
+    {
+      func: serverChunter.function.IsMeMentioned
+    }
+  )
+
+  builder.mixin(
     chunter.ids.ChannelNotification,
     notification.class.NotificationType,
     serverNotification.mixin.TypeMatch,

@@ -46,6 +46,7 @@ export default plugin(serverChunterId, {
     ChannelHTMLPresenter: '' as Resource<Presenter>,
     ChannelTextPresenter: '' as Resource<Presenter>,
     IsDirectMessage: '' as TypeMatchFunc,
-    IsChannelMessage: '' as TypeMatchFunc
+    IsChannelMessage: '' as TypeMatchFunc,
+    IsMeMentioned: '' as TypeMatchFunc
   }
 })
