@@ -174,7 +174,7 @@
   function changeIdentity (element: HTMLElement) {
     showPopup(ChangeIdentity, { identifier, projectsIdentifiers }, element, (result) => {
       if (result != null) {
-        identifier = result
+        identifier = result.toLocaleUpperCase()
       }
     })
   }

@@ -28,7 +28,7 @@
 >
   <div class="float-left-box">
     <div class="float-left p-2">
-      <EditBox bind:value={newIdentifier} />
+      <EditBox bind:value={newIdentifier} uppercase />
     </div>
   </div>
 </Card>
