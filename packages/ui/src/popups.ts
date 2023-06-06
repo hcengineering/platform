@@ -53,8 +53,8 @@ export function showPopup (
   component: AnySvelteComponent | AnyComponent | ComponentType,
   props: any,
   element?: PopupAlignment,
-  onClose?: (result: any) => void,
-  onUpdate?: (result: any) => void,
+  onClose?: (result: any) => void | Promise<void>,
+  onUpdate?: (result: any) => void | Promise<void>,
   options: {
     category: string
     overlay: boolean

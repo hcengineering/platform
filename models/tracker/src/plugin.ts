@@ -79,11 +79,13 @@ export default mergeIds(trackerId, tracker, {
     EditWorkflowStatuses: '' as ViewAction,
     EditProject: '' as ViewAction,
     DeleteProject: '' as ViewAction,
+    DeleteIssue: '' as ViewAction,
     DeleteMilestone: '' as ViewAction
   },
   action: {
     NewRelatedIssue: '' as Ref<Action<Doc, Record<string, any>>>,
     DeleteMilestone: '' as Ref<Action<Doc, Record<string, any>>>,
-    DeleteProject: '' as Ref<Action<Doc, Record<string, any>>>
+    DeleteProject: '' as Ref<Action<Doc, Record<string, any>>>,
+    DeleteIssue: '' as Ref<Action<Doc, Record<string, any>>>
   }
 })

@@ -16,6 +16,7 @@
 import {
   Class,
   Client,
+  Doc,
   DocumentQuery,
   getCurrentAccount,
   Ref,
@@ -104,7 +105,7 @@ import ComponentSelector from './components/ComponentSelector.svelte'
 import IssueTemplatePresenter from './components/templates/IssueTemplatePresenter.svelte'
 import IssueTemplates from './components/templates/IssueTemplates.svelte'
 
-import { deleteObject } from '@hcengineering/view-resources'
+import { deleteObject, deleteObjects } from '@hcengineering/view-resources'
 import MoveAndDeleteMilestonePopup from './components/milestones/MoveAndDeleteMilestonePopup.svelte'
 import EditIssueTemplate from './components/templates/EditIssueTemplate.svelte'
 import TemplateEstimationEditor from './components/templates/EstimationEditor.svelte'
@@ -206,6 +207,37 @@ async function editProject (project: Project | undefined): Promise<void> {
   if (project !== undefined) {
     showPopup(CreateProject, { project })
   }
+}
+
+async function deleteIssue (issue: Issue | Issue[]): Promise<void> {
+  const issueCount = Array.isArray(issue) ? issue.length : 1
+  let subissues: number = 0
+  if (Array.isArray(issue)) {
+    issue.forEach((it) => {
+      subissues += it.subIssues
+    })
+  } else {
+    subissues = issue.subIssues
+  }
+  showPopup(
+    MessageBox,
+    {
+      label: tracker.string.DeleteIssue,
+      labelProps: { issueCount },
+      message: tracker.string.DeleteIssueConfirm,
+      params: {
+        issueCount,
+        subIssueCount: subissues
+      }
+    },
+    undefined,
+    async (result?: boolean) => {
+      if (result === true) {
+        const objs = Array.isArray(issue) ? issue : [issue]
+        await deleteObjects(getClient(), objs as unknown as Doc[]).catch((err) => console.error(err))
+      }
+    }
+  )
 }
 
 async function deleteProject (project: Project | undefined): Promise<void> {
@@ -472,7 +504,8 @@ export default async (): Promise<Resources> => ({
     EditWorkflowStatuses: editWorkflowStatuses,
     EditProject: editProject,
     DeleteMilestone: deleteMilestone,
-    DeleteProject: deleteProject
+    DeleteProject: deleteProject,
+    DeleteIssue: deleteIssue
   },
   resolver: {
     Location: resolveLocation

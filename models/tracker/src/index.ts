@@ -1270,6 +1270,24 @@ export function createModel (builder: Builder): void {
     tracker.action.DeleteProject
   )
 
+  createAction(
+    builder,
+    {
+      action: tracker.actionImpl.DeleteIssue,
+      label: workbench.string.Delete,
+      icon: view.icon.Delete,
+      input: 'any',
+      category: tracker.category.Tracker,
+      target: tracker.class.Issue,
+      context: {
+        mode: ['context', 'browser'],
+        group: 'edit'
+      },
+      override: [view.action.Delete]
+    },
+    tracker.action.DeleteIssue
+  )
+
   builder.createDoc(
     view.class.ActionCategory,
     core.space.Model,
