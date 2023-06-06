@@ -14,7 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  export let size: 'small' | 'medium' | 'large'
+  import { ButtonSize } from '../../types'
+
+  export let size: ButtonSize
   export let fill: string = 'currentColor'
 </script>
 
