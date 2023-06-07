@@ -87,6 +87,7 @@
 <div class="flex-row-center attachment-container">
   <a
     class="no-line"
+    style:flex-shrink={0}
     href={getFileUrl(value.file, 'full', value.name)}
     download={value.name}
     on:click={clickHandler}

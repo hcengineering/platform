@@ -83,14 +83,7 @@
       <LoginIcon /><span class="fs-title">{getMetadata(workbench.metadata.PlatformTitle)}</span>
     </div>
 
-    <div
-      class="panel-base"
-      class:panel={$deviceInfo.docWidth > 768}
-      class:white={!$themeStore.dark}
-      class:minHeight={!$deviceInfo.isPortrait}
-      class:landscape={$deviceInfo.docWidth > 768}
-      style:border-radius={$deviceInfo.docWidth <= 480 ? '.75rem' : '1.25rem'}
-    >
+    <div class="panel-base" class:panel={$deviceInfo.docWidth > 768} class:white={!$themeStore.dark}>
       <Scroller padding={'1rem 0'}>
         <div class="form-content">
           {#if page === 'login'}
@@ -164,7 +157,7 @@
     mix-blend-mode: normal;
     box-shadow: -30px 1.52px 173.87px #121437;
     backdrop-filter: blur(157.855px);
-    border-radius: 1rem !important;
+    border-radius: 1rem;
 
     &::after {
       overflow: hidden;
@@ -196,7 +189,6 @@
       transform: rotate(180deg);
       transition: opacity 0.15s var(--timing-main);
       opacity: 0.7;
-      // z-index: -1;
     }
   }
   .backd.paneld::after,
