@@ -50,7 +50,15 @@
 
   async function _getWorkspaces (): Promise<Workspace[]> {
     try {
-      return getWorkspaces()
+      const res = await getWorkspaces()
+      if (res.length === 0 && account?.confirmed === false) {
+        const loc = getCurrentLocation()
+        loc.path[1] = 'confirmationSend'
+        loc.path.length = 2
+        navigate(loc)
+        return []
+      }
+      return res
     } catch (err: any) {
       setMetadataLocalStorage(presentation.metadata.Token, null)
       setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
