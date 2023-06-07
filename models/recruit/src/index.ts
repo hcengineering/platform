@@ -1073,7 +1073,7 @@ export function createModel (builder: Builder): void {
     })
   }
 
-  createGotoSpecialAction(builder, talentsId, 'keyG-keyE', recruit.string.GotoTalents)
+  createGotoSpecialAction(builder, talentsId, 'keyG->keyE', recruit.string.GotoTalents)
   createGotoSpecialAction(builder, vacanciesId, 'keyG->keyV', recruit.string.GotoVacancies)
   createGotoSpecialAction(builder, skillsId, 'keyG->keyS', recruit.string.GotoSkills)
   createGotoSpecialAction(builder, myApplicationsId, 'keyG->keyM', recruit.string.GotoMyApplications)

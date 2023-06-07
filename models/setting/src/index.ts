@@ -390,7 +390,7 @@ export function createModel (builder: Builder): void {
       action: setting.actionImpl.DeleteMixin,
       label: view.string.Delete,
       icon: view.icon.Delete,
-      keyBinding: ['Meta + Backspace', 'Ctrl + Backspace'],
+      keyBinding: ['Meta + Backspace'],
       category: view.category.General,
       input: 'any',
       target: setting.mixin.UserMixin,

@@ -452,7 +452,7 @@ export function createModel (builder: Builder): void {
       },
       label: view.string.Delete,
       icon: view.icon.Delete,
-      keyBinding: ['Meta + Backspace', 'Ctrl + Backspace'],
+      keyBinding: ['Meta + Backspace'],
       category: board.category.Card,
       input: 'any',
       target: board.class.Card,

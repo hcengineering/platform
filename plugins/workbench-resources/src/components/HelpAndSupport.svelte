@@ -34,6 +34,8 @@
     navigate(loc)
   }
 
+  const capitalizeFirstLetter = (str: string): string => str.charAt(0).toUpperCase() + str.slice(1)
+
   function formatKey (key: string): string[][] {
     const thens = key.split('->')
     const result: string[][] = []
@@ -42,7 +44,7 @@
         r.split('+').map((it) =>
           it
             .replaceAll('key', '')
-            .replaceAll(/Meta|meta/g, '⌘')
+            .replaceAll(/Meta|meta/g, isMac ? '⌘' : 'Ctrl')
             .replaceAll('ArrowUp', '↑')
             .replaceAll('ArrowDown', '↓')
             .replaceAll('ArrowLeft', '←')
@@ -78,7 +80,9 @@
 
     actions.sort((a, b) => a.category.localeCompare(b.category))
   }
-  $: getActions()
+  getActions()
+
+  const isMac = /Macintosh/i.test(navigator.userAgent)
 
   const cards = [
     {
@@ -174,7 +178,7 @@
                       {/if}
                       {#each k as kk, j}
                         <div class="flex-center text-sm key-box">
-                          {kk}
+                          {capitalizeFirstLetter(kk.trim())}
                         </div>
                       {/each}
                     {/each}
