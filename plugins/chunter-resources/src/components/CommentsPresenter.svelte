@@ -40,9 +40,9 @@
       >
         <Button {kind} {size}>
           <div slot="content" class="flex-row-center">
-            <span class="icon"><IconThread size={'x-small'} /></span>
+            <span class="icon"><IconThread size={'small'} /></span>
             {#if showCounter}
-              &nbsp;{value ?? 0}
+              {value ?? 0}
             {/if}
           </div>
         </Button>
@@ -57,7 +57,7 @@
       >
         <span class="icon"><IconThread {size} /></span>
         {#if showCounter && value && value !== 0}
-          &nbsp;{value}
+          {value}
         {/if}
       </div>
     {/if}
