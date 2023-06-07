@@ -1488,6 +1488,10 @@ export function createModel (builder: Builder): void {
     presenter: tracker.component.MilestoneStatusPresenter
   })
 
+  builder.mixin(tracker.class.TypeMilestoneStatus, core.class.Class, view.mixin.AttributeEditor, {
+    inlineEditor: tracker.component.MilestoneStatusEditor
+  })
+
   builder.mixin(tracker.class.TypeMilestoneStatus, core.class.Class, view.mixin.AttributeFilter, {
     component: view.component.ValueFilter
   })
