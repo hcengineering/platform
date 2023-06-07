@@ -58,6 +58,9 @@
     },
     (res) => {
       channel = res[0]
+      if (channel !== undefined) {
+        notificationClient.forceRead(channel._id, channel._class)
+      }
     }
   )
 
@@ -77,9 +80,6 @@
 
   async function selectHandler (e: CustomEvent): Promise<void> {
     currentMessage = e.detail
-    if (channel !== undefined) {
-      await notificationClient.read(channel._id)
-    }
   }
 
   const settingsQuery = createQuery()

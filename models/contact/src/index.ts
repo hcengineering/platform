@@ -801,6 +801,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: view.string.FilterIsEither,
+      selectedLabel: view.string.FilterIsEitherPlural,
       result: contact.function.FilterChannelInResult
     },
     contact.filter.FilterChannelIn

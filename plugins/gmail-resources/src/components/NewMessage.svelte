@@ -73,7 +73,7 @@
       },
       objectId
     )
-    await notificationClient.read(channel._id)
+    await notificationClient.forceRead(channel._id, channel._class)
     objectId = generateId()
     dispatch('close')
   }
