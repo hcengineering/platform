@@ -16,7 +16,9 @@
   import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
   import StyledTextEditor from './StyledTextEditor.svelte'
-  import { completionConfig, imagePlugin } from './extensions'
+  import { completionConfig } from './extensions'
+  import { ImageRef, FileAttachFunction } from './imageExt'
+  import { Node as ProseMirrorNode } from '@tiptap/pm/model'
 
   export let label: IntlString | undefined = undefined
   export let content: string
@@ -37,6 +39,8 @@
   export let autofocus = false
   export let enableBackReferences: boolean = false
   export let isScrollable: boolean = true
+
+  export let attachFile: FileAttachFunction | undefined = undefined
 
   const Mode = {
     View: 1,
@@ -129,6 +133,27 @@
       dispatch('open-document', { event, _id, _class })
     }
   })
+
+  const attachments = new Map<string, ProseMirrorNode>()
+
+  const imagePlugin = ImageRef.configure({
+    inline: false,
+    HTMLAttributes: {},
+    attachFile,
+    reportNode: (id, node) => {
+      attachments.set(id, node)
+    }
+  })
+
+  /**
+   * @public
+   */
+  export function removeAttachment (id: string): void {
+    const nde = attachments.get(id)
+    if (nde !== undefined) {
+      textEditor.removeNode(nde)
+    }
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->

@@ -33,6 +33,7 @@
   export let accentHeader: boolean = false
   export let gap: string | undefined = undefined
   export let width: 'large' | 'medium' | 'small' | 'x-small' | 'menu' = 'large'
+  export let noFade = false
 
   const dispatch = createEventDispatcher()
 
@@ -87,7 +88,7 @@
     </div>
   {/if}
   <div class="antiCard-content">
-    <Scroller padding={$$slots.pool ? '.5rem 1.5rem' : '.5rem 1.5rem 1.5rem'} {gap}>
+    <Scroller padding={$$slots.pool ? '.5rem 1.5rem' : '.5rem 1.5rem 1.5rem'} {gap} {noFade}>
       <slot />
     </Scroller>
   </div>
