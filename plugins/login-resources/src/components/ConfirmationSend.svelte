@@ -20,7 +20,7 @@
 
   onMount(async () => {
     const account = await getAccount()
-    if (account?.confirmed !== true) {
+    if (account?.confirmed === true) {
       const loc = getCurrentLocation()
       loc.path[1] = 'selectWorkspace'
       loc.path.length = 2
@@ -29,7 +29,7 @@
   })
 </script>
 
-<div class="flex-center h-full p-10">
+<div class="flex-center h-full p-10 caption-color">
   <div class="flex-col-center text-center">
     <h4>
       <Label label={login.string.ConfirmationSent} />
