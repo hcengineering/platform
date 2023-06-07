@@ -1043,19 +1043,6 @@ export function createModel (builder: Builder): void {
 
   createAction(builder, {
     ...viewTemplates.open,
-    target: recruit.class.Vacancy,
-    context: {
-      mode: ['browser', 'context'],
-      group: 'create'
-    },
-    action: workbench.actionImpl.Navigate,
-    actionProps: {
-      mode: 'space'
-    }
-  })
-
-  createAction(builder, {
-    ...viewTemplates.open,
     target: recruit.class.ApplicantMatch,
     context: {
       mode: ['browser', 'context'],
