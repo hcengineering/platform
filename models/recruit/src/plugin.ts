@@ -63,7 +63,8 @@ export default mergeIds(recruitId, recruit, {
     GotoRecruitApplication: '' as IntlString,
     VacancyList: '' as IntlString,
     ConfigLabel: '' as IntlString,
-    ConfigDescription: '' as IntlString
+    ConfigDescription: '' as IntlString,
+    ShowApplications: '' as IntlString
   },
   validator: {
     ApplicantValidator: '' as Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>

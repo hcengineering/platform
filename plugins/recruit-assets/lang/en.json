@@ -113,7 +113,9 @@
     "Export": "Export",
     "ConfigLabel": "Recruiting",
     "ConfigDescription": "Extension to manage Talents/Applicants and Vacancies.",
-    "MyApplications": "My applications"
+    "MyApplications": "My applications",
+
+    "ShowApplications": "Show Applications"
   },
   "status": {
     "TalentRequired": "Please select talent",

@@ -997,8 +997,8 @@ export function createModel (builder: Builder): void {
   createAction(builder, { ...actionTemplates.unarchiveSpace, target: recruit.class.Vacancy })
 
   createAction(builder, {
-    label: recruit.string.EditVacancy,
-    icon: view.icon.Edit,
+    label: view.string.Open,
+    icon: view.icon.Open,
     action: view.actionImpl.ShowPanel,
     actionProps: {
       component: recruit.component.EditVacancy,
@@ -1040,6 +1040,21 @@ export function createModel (builder: Builder): void {
   })
 
   createReviewModel(builder)
+
+  createAction(builder, {
+    ...viewTemplates.open,
+    label: recruit.string.ShowApplications,
+    icon: recruit.icon.Application,
+    target: recruit.class.Vacancy,
+    context: {
+      mode: ['browser', 'context'],
+      group: 'create'
+    },
+    action: workbench.actionImpl.Navigate,
+    actionProps: {
+      mode: 'space'
+    }
+  })
 
   createAction(builder, {
     ...viewTemplates.open,
