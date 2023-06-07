@@ -21,7 +21,7 @@
   import { StyledTextArea } from '@hcengineering/text-editor'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
-  import MilestoneStatusSelector from './MilestoneStatusSelector.svelte'
+  import MilestoneStatusEditor from './MilestoneStatusEditor.svelte'
   import { createBacklinks } from '@hcengineering/chunter-resources'
 
   export let space: Ref<Project>
@@ -41,14 +41,6 @@
     const _id = await client.createDoc(tracker.class.Milestone, space, object)
     // Create an backlink to document
     await createBacklinks(client, _id, tracker.class.Milestone, _id, object.description ?? '')
-  }
-
-  const handleComponentStatusChanged = (newMilestoneStatus: MilestoneStatus | undefined) => {
-    if (newMilestoneStatus === undefined) {
-      return
-    }
-
-    object.status = newMilestoneStatus
   }
 </script>
 
@@ -83,12 +75,7 @@
     showButtons={false}
   />
   <svelte:fragment slot="pool">
-    <MilestoneStatusSelector
-      selectedMilestoneStatus={object.status}
-      onMilestoneStatusChange={handleComponentStatusChanged}
-      kind={'secondary'}
-      size={'large'}
-    />
+    <MilestoneStatusEditor bind:value={object.status} {object} kind="secondary" />
     <DatePresenter
       bind:value={object.targetDate}
       editable

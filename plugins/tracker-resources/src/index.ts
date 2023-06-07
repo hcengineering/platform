@@ -87,6 +87,7 @@ import MilestonePresenter from './components/milestones/MilestonePresenter.svelt
 import Milestones from './components/milestones/Milestones.svelte'
 import MilestoneSelector from './components/milestones/MilestoneSelector.svelte'
 import MilestoneStatusPresenter from './components/milestones/MilestoneStatusPresenter.svelte'
+import MilestoneStatusEditor from './components/milestones/MilestoneStatusEditor.svelte'
 import MilestoneTitlePresenter from './components/milestones/MilestoneTitlePresenter.svelte'
 
 import ScrumRecordPanel from './components/scrums/ScrumRecordPanel.svelte'
@@ -456,6 +457,7 @@ export default async (): Promise<Resources> => ({
     Scrums,
     ScrumRecordPanel,
     MilestoneStatusPresenter,
+    MilestoneStatusEditor,
     MilestoneTitlePresenter,
     MilestoneSelector,
     MilestoneEditor,

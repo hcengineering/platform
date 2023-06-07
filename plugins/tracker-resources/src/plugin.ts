@@ -359,6 +359,7 @@ export default mergeIds(trackerId, tracker, {
     Milestones: '' as AnyComponent,
     MilestonePresenter: '' as AnyComponent,
     MilestoneStatusPresenter: '' as AnyComponent,
+    MilestoneStatusEditor: '' as AnyComponent,
     MilestoneTitlePresenter: '' as AnyComponent,
     MilestoneDatePresenter: '' as AnyComponent,
     EditMilestone: '' as AnyComponent,
