@@ -113,7 +113,9 @@
     "Export": "Экспорт",
     "ConfigLabel": "Рекрутинг",
     "ConfigDescription": "Модуль по работе с талантами/кандидатами и вакансиями",
-    "MyApplications": "Мои кандидаты"
+    "MyApplications": "Мои кандидаты",
+
+    "ShowApplications": "Показать кандидатов"
   },
   "status": {
     "TalentRequired": "Пожалуйста выберите таланта",
