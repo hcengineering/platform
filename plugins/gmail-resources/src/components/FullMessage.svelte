@@ -92,7 +92,7 @@
       <div class="flex-row-center list mt-2">
         {#each attachments as attachment}
           <div class="item flex">
-            <AttachmentPresenter value={attachment} />
+            <AttachmentPresenter value={attachment} showPreview />
           </div>
         {/each}
       </div>

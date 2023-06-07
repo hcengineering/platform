@@ -93,7 +93,7 @@
   <div class="content">
     {#each docs as doc}
       <div class="item">
-        <AttachmentPresenter value={doc} removable on:remove={() => remove(doc)} />
+        <AttachmentPresenter value={doc} showPreview removable on:remove={() => remove(doc)} />
       </div>
     {/each}
   </div>

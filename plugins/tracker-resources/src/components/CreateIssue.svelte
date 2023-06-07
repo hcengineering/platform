@@ -754,6 +754,7 @@
       {#each Array.from(attachments.values()) as attachment}
         <AttachmentPresenter
           value={attachment}
+          showPreview
           removable
           on:remove={(result) => {
             if (result.detail !== undefined) descriptionBox.removeAttachmentById(result.detail._id)
