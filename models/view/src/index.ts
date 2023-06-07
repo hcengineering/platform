@@ -561,7 +561,7 @@ export function createModel (builder: Builder): void {
       action: view.actionImpl.Delete,
       label: view.string.Delete,
       icon: view.icon.Delete,
-      keyBinding: ['Meta + Backspace', 'Ctrl + Backspace'],
+      keyBinding: ['Meta + Backspace'],
       category: view.category.General,
       input: 'any',
       target: core.class.Doc,
@@ -669,7 +669,7 @@ export function createModel (builder: Builder): void {
     {
       label: view.string.SelectItemAll,
       action: view.actionImpl.SelectItemAll,
-      keyBinding: ['meta + keyA', 'ctrl + keyA'],
+      keyBinding: ['Meta + keyA'],
       category: view.category.General,
       input: 'none',
       target: core.class.Doc,
@@ -697,7 +697,7 @@ export function createModel (builder: Builder): void {
     {
       action: view.actionImpl.ShowActions,
       label: view.string.ShowActions,
-      keyBinding: ['meta + keyK', 'ctrl + keyK'],
+      keyBinding: ['Meta + keyK'],
       category: view.category.GeneralNavigation,
       input: 'none',
       target: core.class.Doc,

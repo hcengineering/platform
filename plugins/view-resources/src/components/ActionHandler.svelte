@@ -63,12 +63,14 @@
   $: mode = $contextStore.getLastContext()?.mode
   $: application = $contextStore.getLastContext()?.application
 
+  const isMac = /Macintosh/i.test(navigator.userAgent)
+
   function keyPrefix (key: KeyboardEvent): string {
     return (
       (key.altKey ? 'Alt + ' : '') +
       (key.shiftKey ? 'Shift + ' : '') +
       (key.metaKey ? 'Meta + ' : '') +
-      (key.ctrlKey ? 'Ctrl + ' : '')
+      (key.ctrlKey ? (isMac ? 'Ctrl + ' : 'Meta + ') : '')
     )
   }
   function m (s1: string, s2: string): boolean {

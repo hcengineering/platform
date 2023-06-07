@@ -167,6 +167,10 @@
       handleSelection(key, selection)
     }
   }
+  const capitalizeFirstLetter = (str: string): string => str.charAt(0).toUpperCase() + str.slice(1)
+
+  const isMac = /Macintosh/i.test(navigator.userAgent)
+
   function formatKey (key: string): string[][] {
     const thens = key.split('->')
     const result: string[][] = []
@@ -175,7 +179,7 @@
         r.split('+').map((it) =>
           it
             .replaceAll('key', '')
-            .replaceAll(/Meta|meta/g, '⌘')
+            .replaceAll(/Meta|meta/g, isMac ? '⌘' : 'Ctrl')
             .replaceAll('ArrowUp', '↑')
             .replaceAll('ArrowDown', '↓')
             .replaceAll('ArrowLeft', '←')
@@ -300,7 +304,7 @@
                         {/if}
                         {#each k as kk, j}
                           <div class="flex-center text-sm key-box">
-                            {kk}
+                            {capitalizeFirstLetter(kk.trim())}
                           </div>
                         {/each}
                       {/each}

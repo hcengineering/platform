@@ -1883,7 +1883,7 @@ export function createModel (builder: Builder): void {
       action: tracker.actionImpl.DeleteMilestone,
       label: view.string.Delete,
       icon: view.icon.Delete,
-      keyBinding: ['Meta + Backspace', 'Ctrl + Backspace'],
+      keyBinding: ['Meta + Backspace'],
       category: tracker.category.Tracker,
       input: 'any',
       target: tracker.class.Milestone,

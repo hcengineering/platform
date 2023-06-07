@@ -334,7 +334,7 @@ export function createModel (builder: Builder): void {
       icon: view.icon.Archive,
       input: 'any',
       category: hr.category.HR,
-      keyBinding: ['Meta + Backspace', 'Ctrl + Backspace'],
+      keyBinding: ['Meta + Backspace'],
       query: {
         'members.length': 0,
         _id: { $nin: [hr.ids.Head] }
