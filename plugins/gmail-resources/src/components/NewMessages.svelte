@@ -324,6 +324,7 @@
             <div class="item flex-row-center flex-no-shrink">
               <AttachmentPresenter
                 value={attachment}
+                showPreview
                 removable
                 on:remove={(result) => {
                   if (result !== undefined) removeAttachment(attachment)
