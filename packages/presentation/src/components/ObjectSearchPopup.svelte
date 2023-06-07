@@ -32,12 +32,14 @@
   import presentation from '../plugin'
   import { ObjectSearchCategory, ObjectSearchResult } from '../types'
   import { getClient } from '../utils'
+  import { hasResource } from '..'
 
   export let query: string = ''
   export let label: IntlString | undefined = undefined
   export let relatedDocuments: RelatedDocument[] | undefined = undefined
   export let ignore: RelatedDocument[] | undefined = undefined
   export let allowCategory: Ref<ObjectSearchCategory>[] | undefined = undefined
+  export let hideButtons = false
 
   let items: ObjectSearchResult[] = []
 
@@ -52,7 +54,7 @@
       allowCategory !== undefined ? { _id: { $in: allowCategory } } : {}
     )
     .then((r) => {
-      categories = r
+      categories = r.filter((it) => hasResource(it.query))
       category = categories[0]
     })
 
@@ -151,7 +153,11 @@
 
 <FocusHandler {manager} />
 
-<form class="antiCard dialog completion" on:keydown={onKeyDown} use:resizeObserver={() => dispatch('changeSize')}>
+<form
+  class="antiCard dialog completion objectPopup"
+  on:keydown={onKeyDown}
+  use:resizeObserver={() => dispatch('changeSize')}
+>
   <div class="header-dialog">
     {#if label}
       <div class="fs-title flex-grow mb-4">
@@ -188,22 +194,24 @@
     />
     <Label label={ui.string.Suggested} />
   </div>
-  <div class="antiCard-content min-h-60 max-h-60">
+  <div class="antiCard-content min-h-60 max-h-60 p-4">
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <ListView bind:this={list} bind:selection count={items.length}>
       <svelte:fragment slot="item" let:item>
         {@const doc = items[item]}
-
         <div class="p-1 cursor-pointer" on:click={() => dispatchItem(doc)}>
           <svelte:component this={doc.component} value={doc.doc} {...doc.componentProps ?? {}} />
         </div>
       </svelte:fragment>
     </ListView>
   </div>
-  <div class="antiCard-footer reverse">
-    <div class="buttons-group text-sm flex-no-shrink">
-      <Button label={presentation.string.Cancel} on:click={() => dispatch('close')} />
+  {#if !hideButtons}
+    <div class="antiCard-footer reverse">
+      <div class="buttons-group text-sm flex-no-shrink">
+        <Button label={presentation.string.Cancel} on:click={() => dispatch('close')} />
+      </div>
     </div>
-  </div>
+  {/if}
 </form>
 
 <style lang="scss">
@@ -217,5 +225,9 @@
   }
   .completion {
     z-index: 2000;
+  }
+  .objectPopup {
+    min-height: 10rem;
+    min-width: 10rem;
   }
 </style>
