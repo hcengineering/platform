@@ -795,6 +795,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: view.string.FilterIsEither,
+      selectedLabel: view.string.FilterIsEitherPlural,
       result: view.function.FilterValueInResult
     },
     view.filter.FilterValueIn
@@ -815,6 +816,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: view.string.FilterIsEither,
+      selectedLabel: view.string.FilterIsEitherPlural,
       result: view.function.FilterObjectInResult
     },
     view.filter.FilterObjectIn
@@ -942,7 +944,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: view.string.ExactDate,
-      selectedLabel: view.string.FilterIsEither,
+      selectedLabel: view.string.FilterIsEitherPlural,
       result: view.function.FilterDateCustom
     },
     view.filter.FilterDateCustom

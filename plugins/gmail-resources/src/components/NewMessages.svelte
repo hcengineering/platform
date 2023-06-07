@@ -92,7 +92,7 @@
           .map((m) => m.trim())
           .filter((m) => m.length)
       })
-      await notificationClient.read(channel._id)
+      await notificationClient.forceRead(channel._id, channel._class)
       for (const attachment of attachments) {
         await client.addCollection(
           attachmentP.class.Attachment,

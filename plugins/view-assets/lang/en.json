@@ -49,6 +49,7 @@
     "ClearFilters": "Clear filters",
     "FilterIsNot": "is not",
     "FilterIsEither": "is",
+    "FilterIsEitherPlural": "is",
     "FilterStatesCount": "{value, plural, =1 {1 state} other {# states}}",
     "FilterUpdated": "Filter was updated",
     "FilterRemoved": "{count, plural, =1 {# non-existing value was} other {# non-existing values were}} removed from the filter",

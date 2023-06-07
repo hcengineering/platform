@@ -130,6 +130,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: view.string.FilterIsEither,
+      selectedLabel: view.string.FilterIsEitherPlural,
       result: tags.function.FilterTagsInResult
     },
     tags.filter.FilterTagsIn
