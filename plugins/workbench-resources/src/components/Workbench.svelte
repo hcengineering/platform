@@ -500,13 +500,13 @@
 
   onMount(() => subscribeMobile(setTheme))
 
-  async function checkIsHeaderHidden () {
+  async function checkIsHeaderHidden (currentApplication: Application | undefined) {
     return (
       currentApplication?.checkIsHeaderHidden && (await (await getResource(currentApplication.checkIsHeaderHidden))())
     )
   }
 
-  async function checkIsHeaderDisabled () {
+  async function checkIsHeaderDisabled (currentApplication: Application | undefined) {
     return (
       currentApplication?.checkIsHeaderDisabled &&
       (await (
@@ -644,9 +644,9 @@
           {#if currentApplication}
             <NavHeader label={currentApplication.label} />
             {#if currentApplication.navHeaderComponent}
-              {#await checkIsHeaderHidden() then isHidden}
+              {#await checkIsHeaderHidden(currentApplication) then isHidden}
                 {#if !isHidden}
-                  {#await checkIsHeaderDisabled() then disabled}
+                  {#await checkIsHeaderDisabled(currentApplication) then disabled}
                     <Component is={currentApplication.navHeaderComponent} props={{ currentSpace, disabled }} shrink />
                   {/await}
                 {/if}
