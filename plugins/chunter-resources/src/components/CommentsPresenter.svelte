@@ -27,7 +27,7 @@
   export let withInput: boolean = true
 </script>
 
-{#if (value && value > 0) || withInput}
+{#if (value && value > 0)}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <DocNavLink {object} inline noUnderline={true}>
     {#if kind === 'list'}
