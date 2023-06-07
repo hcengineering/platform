@@ -91,7 +91,7 @@
   let currentView: ViewConfiguration | undefined
   let createItemDialog: AnyComponent | undefined
   let createItemLabel: IntlString | undefined
-
+  let isCurrentSpaceUpdated = true
   migrateViewOpttions()
 
   const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
@@ -393,11 +393,19 @@
 
   async function updateSpace (spaceId?: Ref<Space>): Promise<void> {
     if (spaceId === currentSpace) return
+    isCurrentSpaceUpdated = false
     clear(2)
-    if (spaceId === undefined) return
+    if (spaceId === undefined) {
+      isCurrentSpaceUpdated = true
+      return
+    }
     const space = await client.findOne(core.class.Space, { _id: spaceId })
-    if (space === undefined) return
+    if (space === undefined) {
+      isCurrentSpaceUpdated = true
+      return
+    }
     currentSpace = spaceId
+    isCurrentSpaceUpdated = true
     const spaceClass = client.getHierarchy().getClass(space._class)
     const view = client.getHierarchy().as(spaceClass, workbench.mixin.SpaceView)
     currentView = view.view
@@ -647,7 +655,9 @@
               {#await checkIsHeaderHidden() then isHidden}
                 {#if !isHidden}
                   {#await checkIsHeaderDisabled() then disabled}
-                    <Component is={currentApplication.navHeaderComponent} props={{ currentSpace, disabled }} shrink />
+                    {#if isCurrentSpaceUpdated}
+                      <Component is={currentApplication.navHeaderComponent} props={{ currentSpace, disabled }} shrink />
+                    {/if}
                   {/await}
                 {/if}
               {/await}
