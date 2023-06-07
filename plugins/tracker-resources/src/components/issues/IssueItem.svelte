@@ -16,17 +16,23 @@
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
   import type { Issue, Project } from '@hcengineering/tracker'
-  import { Icon } from '@hcengineering/ui'
-  import tracker from '../../plugin'
+  import { FixedColumn, statusStore } from '@hcengineering/view-resources'
   import { getIssueId } from '../../issues'
+  import IssueStatusIcon from './IssueStatusIcon.svelte'
 
   export let value: WithLookup<Issue>
   $: title = getIssueId(value.$lookup?.space as Project, value)
+  $: st = $statusStore.get(value.status)
 </script>
 
-<div class="flex item">
-  <Icon icon={tracker.icon.TrackerApplication} size={'medium'} />
-  <div class="ml-2">
+<div class="flex item h-8">
+  <!-- <Icon icon={tracker.icon.TrackerApplication} size={'medium'} /> -->
+  <FixedColumn key="object-popup-issue-status">
+    {#if st}
+      <IssueStatusIcon value={st} size={'small'} />
+    {/if}
+  </FixedColumn>
+  <div class="ml-2 max-w-120 overflow-label">
     {title} - {value.title}
   </div>
 </div>

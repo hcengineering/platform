@@ -15,11 +15,10 @@
 -->
 <script lang="ts">
   import contact, { getName, Person } from '@hcengineering/contact'
+  import PersonPresenter from '@hcengineering/contact-resources/src/components/PersonPresenter.svelte'
   import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import type { Applicant } from '@hcengineering/recruit'
-  import { Icon } from '@hcengineering/ui'
-  import recruit from '../plugin'
 
   export let value: Applicant
 
@@ -34,7 +33,8 @@
 </script>
 
 <div class="flex item">
-  <Icon icon={recruit.icon.Application} size={'medium'} />
+  <!-- <Icon icon={recruit.icon.Application} size={'medium'} /> -->
+  <PersonPresenter value={person} shouldShowName={false} />
   <div class="ml-2">
     {#if shortLabel}{shortLabel}-{/if}{value.number}
   </div>

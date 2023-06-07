@@ -95,7 +95,7 @@
     updateStyle()
   }}
 >
-  <ObjectSearchPopup bind:this={searchPopup} {query} on:close={(evt) => dispatchItem(evt.detail)} />
+  <ObjectSearchPopup bind:this={searchPopup} {query} on:close={(evt) => dispatchItem(evt.detail)} hideButtons={true} />
 </div>
 
 <style lang="scss">

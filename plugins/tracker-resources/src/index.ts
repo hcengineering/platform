@@ -179,8 +179,11 @@ export async function queryIssue<D extends Issue> (
       }
       const numbered = await client.findAll<Issue>(_class, q2, { limit: 200, lookup: { space: tracker.class.Project } })
       for (const d of numbered) {
-        if (!named.has(d._id)) {
-          named.set(d._id, d)
+        const shortId = `${projects.find((it) => it._id === d.space)?.identifier ?? ''}-${d.number}`
+        if (shortId.includes(search) || d.title.includes(search)) {
+          if (!named.has(d._id)) {
+            named.set(d._id, d)
+          }
         }
       }
     }
