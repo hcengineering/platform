@@ -29,7 +29,7 @@ function syncDrafts (): void {
 
 // #region Broadcast
 
-const bc = new BroadcastChannel(activeDraftsKey)
+const bc = BroadcastChannel !== undefined ? new BroadcastChannel(activeDraftsKey) : undefined
 
 type BroadcastMessage = BroadcastGetMessage | BroadcastGetResp | BroadcastAddMessage | BroadcastRemoveMessage
 
@@ -53,7 +53,7 @@ interface BroadcastAddMessage {
 }
 
 function sendMessage (req: BroadcastMessage): void {
-  bc.postMessage(req)
+  bc?.postMessage(req)
 }
 
 function syncActive (): void {
@@ -66,23 +66,25 @@ function loadActiveDrafts (): void {
   sendMessage({ type: 'get_all' })
 }
 
-bc.onmessage = (e: MessageEvent<BroadcastMessage>) => {
-  if (e.data.type === 'get_all') {
-    sendMessage({ type: 'get_all_response', value: Array.from(activeDrafts.values()) })
-  }
-  if (e.data.type === 'get_all_response') {
-    for (const val of e.data.value) {
-      activeDrafts.add(val)
+if (bc !== undefined) {
+  bc.onmessage = (e: MessageEvent<BroadcastMessage>) => {
+    if (e.data.type === 'get_all') {
+      sendMessage({ type: 'get_all_response', value: Array.from(activeDrafts.values()) })
     }
-    syncActive()
-  }
-  if (e.data.type === 'add') {
-    activeDrafts.add(e.data.value)
-    syncActive()
-  }
-  if (e.data.type === 'remove') {
-    activeDrafts.delete(e.data.value)
-    syncActive()
+    if (e.data.type === 'get_all_response') {
+      for (const val of e.data.value) {
+        activeDrafts.add(val)
+      }
+      syncActive()
+    }
+    if (e.data.type === 'add') {
+      activeDrafts.add(e.data.value)
+      syncActive()
+    }
+    if (e.data.type === 'remove') {
+      activeDrafts.delete(e.data.value)
+      syncActive()
+    }
   }
 }
 
