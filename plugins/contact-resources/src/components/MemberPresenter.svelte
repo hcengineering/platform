@@ -24,7 +24,8 @@
   export let inline: boolean = false
   export let accent: boolean = false
 
-  const contactRef = getClient().findOne(contact.class.Contact, { _id: value.contact })
+  const contactRef =
+    value?.contact !== undefined ? getClient().findOne(contact.class.Contact, { _id: value.contact }) : undefined
 </script>
 
 <DocNavLink object={value} {inline} {disabled} {accent} noUnderline={disabled}>
