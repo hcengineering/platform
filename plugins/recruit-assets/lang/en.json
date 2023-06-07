@@ -118,6 +118,7 @@
     "ShowApplications": "Show applications"
   },
   "status": {
+    "ApplicationExists": "Application already exists",
     "TalentRequired": "Please select talent",
     "VacancyRequired": "Please select vacancy"
   }
