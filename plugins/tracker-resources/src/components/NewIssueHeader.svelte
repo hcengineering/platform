@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Ref, Space } from '@hcengineering/core'
-  import { MultipleDraftController, getClient } from '@hcengineering/presentation'
+  import { MultipleDraftController } from '@hcengineering/presentation'
   import { Button, IconAdd, showPopup } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import tracker from '../plugin'
@@ -22,11 +22,7 @@
 
   export let currentSpace: Ref<Space> | undefined
 
-  const client = getClient()
-
-  let space: Ref<Space> | undefined
   let closed = true
-  $: updateSpace(currentSpace)
 
   let draftExists = false
 
@@ -36,24 +32,9 @@
       draftExists = res
     })
   )
-
-  async function updateSpace (spaceId: Ref<Space> | undefined): Promise<void> {
-    if (spaceId !== undefined) {
-      space = spaceId
-      return
-    }
-
-    const project = await client.findOne(tracker.class.Project, {})
-    space = project?._id
-  }
-
   async function newIssue (): Promise<void> {
-    if (!space) {
-      const project = await client.findOne(tracker.class.Project, {})
-      space = project?._id
-    }
     closed = false
-    showPopup(CreateIssue, { space, shouldSaveDraft: true }, 'top', () => {
+    showPopup(CreateIssue, { space: currentSpace, shouldSaveDraft: true }, 'top', () => {
       closed = true
     })
   }
