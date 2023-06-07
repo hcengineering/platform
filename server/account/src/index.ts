@@ -573,6 +573,7 @@ export async function createWorkspace (
   if (initWS !== undefined) {
     if ((await getWorkspace(db, productId, initWS)) !== null) {
       await cloneWorkspace(getTransactor(), getWorkspaceId(initWS, productId), getWorkspaceId(workspace, productId))
+      await upgradeModel(getTransactor(), getWorkspaceId(workspace, productId), txes, migrationOperation)
     }
   }
   return result

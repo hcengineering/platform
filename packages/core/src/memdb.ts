@@ -172,7 +172,13 @@ export abstract class MemDb extends TxProcessor implements Storage {
 
   addDoc (doc: Doc): void {
     this.hierarchy.getAncestors(doc._class).forEach((_class) => {
-      this.getObjectsByClass(_class).push(doc)
+      const arr = this.getObjectsByClass(_class)
+      const index = arr.findIndex((p) => p._id === doc._id)
+      if (index === -1) {
+        arr.push(doc)
+      } else {
+        arr[index] = doc
+      }
     })
     this.objectById.set(doc._id, doc)
   }
