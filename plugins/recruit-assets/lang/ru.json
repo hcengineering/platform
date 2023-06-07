@@ -118,6 +118,7 @@
     "ShowApplications": "Показать кандидатов"
   },
   "status": {
+    "ApplicationExists": "Кандидат уже существует",
     "TalentRequired": "Пожалуйста выберите таланта",
     "VacancyRequired": "Пожалуйста выберите вакансию"
   }
