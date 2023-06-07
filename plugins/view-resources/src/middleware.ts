@@ -38,7 +38,7 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
   mgrs: Map<Ref<Class<Doc>>, AggregationManager> = new Map<Ref<Class<Doc>>, AggregationManager>()
   docs: Doc[] | undefined
 
-  subscribers: Map<string, DocSubScriber> = new Map()
+  subscribers: Map<string, DocSubScriber> = new Map<string, DocSubScriber>()
   private constructor (client: Client, next?: PresentationMiddleware) {
     super(client, next)
   }
