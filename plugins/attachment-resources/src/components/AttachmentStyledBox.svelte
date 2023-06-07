@@ -138,7 +138,7 @@
     }
   }
 
-  async function createAttachment (file: File) {
+  async function createAttachment (file: File): Promise<{ file: string; type: string } | undefined> {
     if (space === undefined || objectId === undefined || _class === undefined) return
     try {
       const uuid = await uploadFile(file)
@@ -164,6 +164,7 @@
       saveDraft()
       dispatch('attach', { action: 'saved', value: attachments.size })
       dispatch('attached', _id)
+      return { file: uuid, type: file.type }
     } catch (err: any) {
       setPlatformStatus(unknownError(err))
     }
@@ -199,6 +200,7 @@
     removedAttachments.add(attachment)
     attachments.delete(attachment._id)
     attachments = attachments
+    refInput.removeAttachment(attachment.file)
     saveDraft()
     dispatch('detached', attachment._id)
   }
@@ -366,6 +368,9 @@
       on:open-document
       on:attach={() => {
         attach()
+      }}
+      attachFile={async (file) => {
+        return createAttachment(file)
       }}
     />
   </div>

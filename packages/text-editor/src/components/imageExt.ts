@@ -5,11 +5,23 @@ import { Node, createNodeFromContent, mergeAttributes, nodeInputRule } from '@ti
 import { Plugin, PluginKey } from 'prosemirror-state'
 import plugin from '../plugin'
 
+import { Node as ProseMirrorNode } from '@tiptap/pm/model'
+
+/**
+ * @public
+ */
+export type FileAttachFunction = (file: File) => Promise<{ file: string, type: string } | undefined>
+
+/**
+ * @public
+ */
 export interface ImageOptions {
   inline: boolean
   HTMLAttributes: Record<string, any>
 
-  showPreview?: (event: MouseEvent, fileId: string) => void
+  attachFile?: FileAttachFunction
+
+  reportNode?: (id: string, node: ProseMirrorNode) => void
 }
 
 declare module '@tiptap/core' {
@@ -23,8 +35,14 @@ declare module '@tiptap/core' {
   }
 }
 
+/**
+ * @public
+ */
 export const inputRegex = /(?:^|\s)(!\[(.+|:?)]\((\S+)(?:(?:\s+)["'](\S+)["'])?\))$/
 
+/**
+ * @public
+ */
 export const ImageRef = Node.create<ImageOptions>({
   name: 'image',
 
@@ -79,7 +97,7 @@ export const ImageRef = Node.create<ImageOptions>({
     ]
   },
 
-  renderHTML ({ HTMLAttributes }) {
+  renderHTML ({ node, HTMLAttributes }) {
     const merged = mergeAttributes(
       {
         'data-type': this.name
@@ -87,7 +105,8 @@ export const ImageRef = Node.create<ImageOptions>({
       this.options.HTMLAttributes,
       HTMLAttributes
     )
-    merged.src = getFileUrl(merged['file-id'], 'full')
+    const id = merged['file-id']
+    merged.src = getFileUrl(id, 'full')
     let width: IconSize | undefined
     switch (merged.width) {
       case '32px':
@@ -105,11 +124,11 @@ export const ImageRef = Node.create<ImageOptions>({
         break
     }
     if (width !== undefined) {
-      merged.src = getFileUrl(merged['file-id'], width)
-      merged.srcset =
-        getFileUrl(merged['file-id'], width) + ' 1x,' + getFileUrl(merged['file-id'], getIconSize2x(width)) + ' 2x'
+      merged.src = getFileUrl(id, width)
+      merged.srcset = getFileUrl(id, width) + ' 1x,' + getFileUrl(id, getIconSize2x(width)) + ' 2x'
     }
     merged.class = 'textEditorImage'
+    this.options.reportNode?.(id, node)
     return ['img', merged]
   },
 
@@ -140,6 +159,7 @@ export const ImageRef = Node.create<ImageOptions>({
     ]
   },
   addProseMirrorPlugins () {
+    const opt = this.options
     return [
       new Plugin({
         key: new PluginKey('handle-image-paste'),
@@ -149,10 +169,9 @@ export const ImageRef = Node.create<ImageOptions>({
               .split('\r\n')
               .filter((it) => !it.startsWith('#'))
             let result = false
+            const pos = view.posAtCoords({ left: event.x, top: event.y })
             for (const uri of uris) {
               if (uri !== '') {
-                const pos = view.posAtCoords({ left: event.x, top: event.y })
-
                 const url = new URL(uri)
                 if (url.hostname !== location.hostname) {
                   return
@@ -164,7 +183,7 @@ export const ImageRef = Node.create<ImageOptions>({
                   return
                 }
                 const content = createNodeFromContent(
-                  `<img data-type='image' width='25%' file-id='${_file}'></img>`,
+                  `<img data-type='image' width='75%' file-id='${_file}'></img>`,
                   view.state.schema,
                   {
                     parseOptions: {
@@ -176,6 +195,36 @@ export const ImageRef = Node.create<ImageOptions>({
                 event.stopPropagation()
                 view.dispatch(view.state.tr.insert(pos?.pos ?? 0, content))
                 result = true
+              }
+            }
+            if (result) {
+              return result
+            }
+
+            const files = event.dataTransfer?.files
+            if (files !== undefined && opt.attachFile !== undefined) {
+              event.preventDefault()
+              event.stopPropagation()
+              for (let i = 0; i < files.length; i++) {
+                const file = files.item(i)
+                if (file != null) {
+                  void opt.attachFile(file).then((id) => {
+                    if (id !== undefined) {
+                      if (id.type.includes('image')) {
+                        const content = createNodeFromContent(
+                          `<img data-type='image' width='75%' file-id='${id.file}'></img>`,
+                          view.state.schema,
+                          {
+                            parseOptions: {
+                              preserveWhitespace: 'full'
+                            }
+                          }
+                        )
+                        view.dispatch(view.state.tr.insert(pos?.pos ?? 0, content))
+                      }
+                    }
+                  })
+                }
               }
             }
             return result
@@ -199,18 +248,27 @@ export const ImageRef = Node.create<ImageOptions>({
                   action: async (props, event) => {},
                   component: Menu,
                   props: {
-                    actions: ['32px', '64px', '128px', '256px', '512px', '25%', '50%', '100%', plugin.string.Unset].map(
-                      (it) => {
-                        return {
-                          label: it === plugin.string.Unset ? it : getEmbeddedLabel(it),
-                          action: async () => {
-                            view.dispatch(
-                              view.state.tr.setNodeAttribute(pos, 'width', it === plugin.string.Unset ? null : it)
-                            )
-                          }
+                    actions: [
+                      '32px',
+                      '64px',
+                      '128px',
+                      '256px',
+                      '512px',
+                      '25%',
+                      '50%',
+                      '75%',
+                      '100%',
+                      plugin.string.Unset
+                    ].map((it) => {
+                      return {
+                        label: it === plugin.string.Unset ? it : getEmbeddedLabel(it),
+                        action: async () => {
+                          view.dispatch(
+                            view.state.tr.setNodeAttribute(pos, 'width', it === plugin.string.Unset ? null : it)
+                          )
                         }
                       }
-                    )
+                    })
                   }
                 },
                 {
@@ -218,18 +276,27 @@ export const ImageRef = Node.create<ImageOptions>({
                   action: async (props, event) => {},
                   component: Menu,
                   props: {
-                    actions: ['32px', '64px', '128px', '256px', '512px', '25%', '50%', '100%', plugin.string.Unset].map(
-                      (it) => {
-                        return {
-                          label: it === plugin.string.Unset ? it : getEmbeddedLabel(it),
-                          action: async () => {
-                            view.dispatch(
-                              view.state.tr.setNodeAttribute(pos, 'height', it === plugin.string.Unset ? null : it)
-                            )
-                          }
+                    actions: [
+                      '32px',
+                      '64px',
+                      '128px',
+                      '256px',
+                      '512px',
+                      '25%',
+                      '50%',
+                      '75%',
+                      '100%',
+                      plugin.string.Unset
+                    ].map((it) => {
+                      return {
+                        label: it === plugin.string.Unset ? it : getEmbeddedLabel(it),
+                        action: async () => {
+                          view.dispatch(
+                            view.state.tr.setNodeAttribute(pos, 'height', it === plugin.string.Unset ? null : it)
+                          )
                         }
                       }
-                    )
+                    })
                   }
                 }
               ]

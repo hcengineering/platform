@@ -10,17 +10,16 @@ import Heading, { Level } from '@tiptap/extension-heading'
 import Highlight from '@tiptap/extension-highlight'
 import StarterKit from '@tiptap/starter-kit'
 
-import TipTapCodeBlock from '@tiptap/extension-code-block'
 import Code from '@tiptap/extension-code'
+import TipTapCodeBlock from '@tiptap/extension-code-block'
 import Gapcursor from '@tiptap/extension-gapcursor'
 
+import { AnyExtension } from '@tiptap/core'
 import Link from '@tiptap/extension-link'
+import Typography from '@tiptap/extension-typography'
 import { CompletionOptions } from '../Completion'
 import MentionList from './MentionList.svelte'
 import { SvelteRenderer } from './SvelteRenderer'
-import { ImageRef } from './imageExt'
-import Typography from '@tiptap/extension-typography'
-import { AnyExtension } from '@tiptap/core'
 
 export const tableExtensions = [
   Table.configure({
@@ -176,8 +175,3 @@ export const completionConfig: Partial<CompletionOptions> = {
     }
   }
 }
-
-/**
- * @public
- */
-export const imagePlugin = ImageRef.configure({ inline: false, HTMLAttributes: {} })

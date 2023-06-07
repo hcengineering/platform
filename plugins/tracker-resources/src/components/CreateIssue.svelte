@@ -533,6 +533,7 @@
   onCancel={showConfirmationDialog}
   hideAttachments={attachments.size === 0}
   hideSubheader={!parentIssue}
+  noFade={true}
   on:changeContent
 >
   <svelte:fragment slot="header">
@@ -611,6 +612,7 @@
         alwaysEdit
         showButtons={false}
         kind={'indented'}
+        isScrollable={false}
         enableBackReferences={true}
         enableAttachments={false}
         bind:content={object.description}

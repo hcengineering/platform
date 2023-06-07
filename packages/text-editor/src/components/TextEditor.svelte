@@ -16,7 +16,7 @@
 <script lang="ts">
   import { IntlString, translate } from '@hcengineering/platform'
 
-  import type { FocusPosition } from '@tiptap/core'
+  import { FocusPosition } from '@tiptap/core'
   import { AnyExtension, Editor, Extension, HTMLContent } from '@tiptap/core'
   import { Level } from '@tiptap/extension-heading'
   import Placeholder from '@tiptap/extension-placeholder'
@@ -24,6 +24,7 @@
   import textEditorPlugin from '../plugin'
   import { FormatMode } from '../types'
   import { defaultExtensions } from './extensions'
+  import { Node as ProseMirrorNode } from '@tiptap/pm/model'
 
   export let content: string = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
@@ -236,6 +237,22 @@
       editor.destroy()
     }
   })
+
+  /**
+   * @public
+   */
+  export function removeNode (nde: ProseMirrorNode): void {
+    const deleteOp = (n: ProseMirrorNode, pos: number) => {
+      if (nde === n) {
+        // const pos = editor.view.posAtDOM(nde, 0)
+        editor.view.dispatch(editor.view.state.tr.delete(pos, pos + 1))
+      }
+      n.descendants(deleteOp)
+    }
+    editor.view.state.doc.descendants((n, pos) => {
+      deleteOp(n, pos)
+    })
+  }
 </script>
 
 <div class="select-text" style="width: 100%;" bind:this={element} />

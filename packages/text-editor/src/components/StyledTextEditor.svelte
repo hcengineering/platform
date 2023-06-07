@@ -60,6 +60,7 @@
   import LinkPopup from './LinkPopup.svelte'
   import StyleButton from './StyleButton.svelte'
   import TextEditor from './TextEditor.svelte'
+  import { Node as ProseMirrorNode } from '@tiptap/pm/model'
 
   const dispatch = createEventDispatcher()
 
@@ -450,6 +451,13 @@
       : buttonSize === 'medium'
         ? 'h-5 max-h-5'
         : 'h-4 max-h-4'
+
+  /**
+   * @public
+   */
+  export function removeNode (nde: ProseMirrorNode): void {
+    textEditor.removeNode(nde)
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -587,6 +595,7 @@
           bind:content
           {placeholder}
           {extensions}
+          bind:this={textEditor}
           bind:isEmpty
           on:value
           on:content={(ev) => {
