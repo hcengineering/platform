@@ -78,7 +78,7 @@
       <span class="overflow-label text-xl caption-color">{issue.title}</span>
     </div>
   </div>
-  <Scroller padding={'0.75rem 1.75rem 0'}>
+  <Scroller padding={'0.75rem 1.75rem 0'} noFade>
     <div class="flex-row-center gap-2 mb-2">
       <StatusEditor value={issue} shouldShowLabel kind={'secondary'} />
       <PriorityEditor value={issue} shouldShowLabel kind={'secondary'} />
