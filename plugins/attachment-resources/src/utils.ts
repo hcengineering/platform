@@ -17,7 +17,7 @@
 import { Attachment } from '@hcengineering/attachment'
 import { Class, concatLink, Data, Doc, Ref, Space, TxOperations as Client } from '@hcengineering/core'
 import presentation from '@hcengineering/presentation'
-import { getMetadata, setPlatformStatus, unknownError } from '@hcengineering/platform'
+import { PlatformError, Severity, Status, getMetadata, setPlatformStatus, unknownError } from '@hcengineering/platform'
 
 import attachment from './plugin'
 
@@ -40,7 +40,11 @@ export async function uploadFile (file: File): Promise<string> {
   })
 
   if (resp.status !== 200) {
-    throw Error(`Failed to upload file: ${resp.statusText}`)
+    if (resp.status === 413) {
+      throw new PlatformError(new Status(Severity.ERROR, attachment.status.FileTooLarge, {}))
+    } else {
+      throw Error(`Failed to upload file: ${resp.statusText}`)
+    }
   }
 
   return await resp.text()
