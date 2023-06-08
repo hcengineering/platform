@@ -724,12 +724,6 @@
     white-space: nowrap;
   }
 
-  .code-block {
-    border: 1px solid var(--divider-color);
-    border-radius: 4px;
-    padding: 0.5rem;
-  }
-
   cmark {
     border-top: 1px solid lightblue;
     border-bottom: 1px solid lightblue;

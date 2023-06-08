@@ -20,11 +20,12 @@ class FocusManagerImpl implements FocusManager {
     order: number
     focus: () => boolean
     isFocus: () => boolean
+    canBlur?: () => boolean
   }> = []
 
   current = 0
-  register (order: number, focus: () => boolean, isFocus: () => boolean): number {
-    const el = { id: this.counter++, order, focus, isFocus }
+  register (order: number, focus: () => boolean, isFocus: () => boolean, canBlur?: () => boolean): number {
+    const el = { id: this.counter++, order, focus, isFocus, canBlur }
     this.elements.push(el)
     this.sort()
     return el.id
@@ -43,6 +44,10 @@ class FocusManagerImpl implements FocusManager {
   }
 
   next (inc?: 1 | -1): void {
+    const current = this.elements[this.current]
+    if (!(current?.canBlur?.() ?? false)) {
+      return
+    }
     while (true) {
       this.current = this.current + (inc ?? 1)
       if (this.elements[Math.abs(this.current) % this.elements.length].focus()) {
@@ -116,13 +121,13 @@ export function getFocusManager (): FocusManager | undefined {
  */
 export function registerFocus (
   order: number,
-  item: { focus: () => boolean, isFocus: () => boolean }
+  item: { focus: () => boolean, isFocus: () => boolean, canBlur?: () => boolean }
 ): { idx: number, focusManager?: FocusManager } {
   const focusManager = getFocusManager() as FocusManagerImpl
   if (order === -1) {
     return { idx: -1, focusManager }
   }
-  const idx = focusManager?.register(order, item.focus, item.isFocus) ?? -1
+  const idx = focusManager?.register(order, item.focus, item.isFocus, item.canBlur) ?? -1
   if (idx !== -1) {
     onDestroy(() => {
       focusManager.unregister(idx)

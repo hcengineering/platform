@@ -6,12 +6,10 @@ import TableRow from '@tiptap/extension-table-row'
 import TaskItem from '@tiptap/extension-task-item'
 import TaskList from '@tiptap/extension-task-list'
 
-import Heading, { Level } from '@tiptap/extension-heading'
+import { Level } from '@tiptap/extension-heading'
 import Highlight from '@tiptap/extension-highlight'
 import StarterKit from '@tiptap/starter-kit'
 
-import Code from '@tiptap/extension-code'
-import TipTapCodeBlock from '@tiptap/extension-code-block'
 import Gapcursor from '@tiptap/extension-gapcursor'
 
 import { AnyExtension } from '@tiptap/core'
@@ -46,28 +44,29 @@ export const taskListExtensions = [
 export const headingLevels: Level[] = [1, 2, 3, 4, 5, 6]
 
 export const defaultExtensions: AnyExtension[] = [
-  StarterKit,
+  StarterKit.configure({
+    code: {
+      HTMLAttributes: {
+        class: 'proseCode'
+      }
+    },
+    codeBlock: {
+      languageClassPrefix: 'language-',
+      exitOnArrowDown: true,
+      exitOnTripleEnter: true,
+      HTMLAttributes: {
+        class: 'proseCodeBlock'
+      }
+    },
+    heading: {
+      levels: headingLevels
+    }
+  }),
   Highlight.configure({
     multicolor: false
   }),
-  TipTapCodeBlock.configure({
-    languageClassPrefix: 'language-',
-    exitOnArrowDown: true,
-    exitOnTripleEnter: true,
-    HTMLAttributes: {
-      class: 'code-block'
-    }
-  }),
-  Code.configure({
-    HTMLAttributes: {
-      class: 'proseCode'
-    }
-  }),
   Typography.configure({}),
   Gapcursor,
-  Heading.configure({
-    levels: headingLevels
-  }),
   Link.configure({
     openOnClick: true,
     HTMLAttributes: { class: 'cursor-pointer', rel: 'noopener noreferrer', target: '_blank' }
