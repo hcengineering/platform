@@ -44,9 +44,9 @@ test.use({
 const getIssueName = (postfix: string = generateId(5)): string => `issue-${postfix}`
 
 const panelStatusMap = new Map([
-  ['Issues', DEFAULT_STATUSES],
-  ['Active', ['Todo', 'In Progress']],
-  ['Backlog', ['Backlog']]
+  ['Issues/All', DEFAULT_STATUSES],
+  ['Issues/Active', ['Todo', 'In Progress']],
+  ['Issues/Backlog', ['Backlog']]
 ])
 
 test('issues-status-display', async ({ page }) => {
@@ -56,14 +56,24 @@ test('issues-status-display', async ({ page }) => {
     await createIssue(page, { name: getIssueName(status), status })
   }
   for (const [panel, statuses] of panelStatusMap) {
+    const pPage = panel.split('/')
+    await performPanelTest(statuses, pPage[0], pPage[1])
+  }
+
+  async function performPanelTest (statuses: string[], panel: string, mode: string): Promise<void> {
     const excluded = DEFAULT_STATUSES.filter((status) => !statuses.includes(status))
-    await page.locator(`text="${panel}"`).click()
+    await page.locator(`.antiNav-element__dropbox > a > .antiNav-element:has-text("${panel}")`).click()
+    await page.locator(`.ac-header .overflow-label:has-text("${mode}")`).click()
     await page.click(ViewletSelectors.Table)
     await expect(locator).toContainText(statuses)
-    if (excluded.length > 0) await expect(locator).not.toContainText(excluded)
+    if (excluded.length > 0) {
+      await expect(locator).not.toContainText(excluded)
+    }
     await page.click(ViewletSelectors.Board)
 
-    if (excluded.length > 0) await expect(locator).not.toContainText(excluded)
+    if (excluded.length > 0) {
+      await expect(locator).not.toContainText(excluded)
+    }
     for (const status of statuses) {
       await expect(
         page.locator('.panel-container', {

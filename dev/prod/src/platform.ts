@@ -39,7 +39,7 @@ import { tagsId } from '@hcengineering/tags'
 import { taskId } from '@hcengineering/task'
 import telegram, { telegramId } from '@hcengineering/telegram'
 import { templatesId } from '@hcengineering/templates'
-import { trackerId } from '@hcengineering/tracker'
+import tracker, { trackerId } from '@hcengineering/tracker'
 import uiPlugin from '@hcengineering/ui'
 import { viewId } from '@hcengineering/view'
 import workbench, { workbenchId } from '@hcengineering/workbench'
@@ -166,4 +166,7 @@ export async function configurePlatform() {
 
   setMetadata(workbench.metadata.PlatformTitle, config.TITLE ?? 'Platform')
   setDefaultLanguage(config.DEFAULT_LANGUAGE ?? 'en')
+  setMetadata(workbench.metadata.DefaultApplication, 'tracker')
+  setMetadata(workbench.metadata.DefaultSpace, tracker.project.DefaultProject)
+  setMetadata(workbench.metadata.DefaultSpecial, 'issues')
 }
