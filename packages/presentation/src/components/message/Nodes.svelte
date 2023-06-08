@@ -172,7 +172,7 @@
   code {
     padding: 0 0.25rem;
     font-family: var(--mono-font);
-    color: var(--theme-code-color);
+    color: var(--theme-link-color);
     background-color: var(--theme-button-enabled);
     border: 1px solid var(--theme-button-border);
     border-radius: 0.25rem;

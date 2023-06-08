@@ -27,7 +27,7 @@
   export let autoscroll: boolean = false
   export let bottomStart: boolean = false
   export let fade: FadeOptions = defaultSP
-  export let noFade: boolean = false
+  export let noFade: boolean = true
   export let invertScroll: boolean = false
   export let horizontal: boolean = false
   export let contentDirection: 'vertical' | 'vertical-reverse' | 'horizontal' = 'vertical'
