@@ -17,7 +17,7 @@
     "LastModified": "Последнее изменение",
     "Name": "Название",
     "FileBrowser": "Браузер файлов",
-    "FileBrowserFileCounter": "{results, plural, =1 {# результат} =2 {# результата} =3 {# результата} =4 {# результата} other {# результатов}}",
+    "FileBrowserFileCounter": "{results, plural, one {# результат} few {# результата} other {# результатов}}",
     "FileBrowserListView": "Список",
     "FileBrowserGridView": "Таблица",
     "FileBrowserFilterFrom": "От",

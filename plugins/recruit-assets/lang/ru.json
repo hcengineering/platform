@@ -81,7 +81,7 @@
     "NoParticipants": "Участники не добавлены",
     "PersonsLabel": "{name}",
     "AddDescription": "Add description",
-    "NumberSkills": "{count, plural, =0 {нет навыков} =1 {1 навык} =2 {2 навыка} other {# навыков}}",
+    "NumberSkills": "{count, plural, =0 {нет навыков} one {# навык} few {# навыка} other {# навыков}}",
 
     "GotoTalents": "Перейте к талантам",
     "GotoVacancies": "Перейти к вакансиям",
