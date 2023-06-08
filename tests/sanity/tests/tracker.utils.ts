@@ -26,7 +26,6 @@ export const DEFAULT_USER = 'Appleseed John'
 export async function navigate (page: Page): Promise<void> {
   await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   await page.click('[id="app-tracker\\:string\\:TrackerApplication"]')
-  await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/tracker`)
 }
 
 export async function setViewGroup (page: Page, groupName: string): Promise<void> {

@@ -123,7 +123,7 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
       const mixin = h.classHierarchyMixin(_class, view.mixin.Aggregation)
       if (mixin?.createAggregationManager !== undefined) {
         const f = await getResource(mixin.createAggregationManager)
-        mgr = f(this.client, this.refreshSubscribers)
+        mgr = f(this.client, () => this.refreshSubscribers())
         this.mgrs.set(_class, mgr)
       }
     }

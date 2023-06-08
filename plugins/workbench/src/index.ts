@@ -130,7 +130,10 @@ export default plugin(workbenchId, {
   },
   metadata: {
     PlatformTitle: '' as Metadata<string>,
-    ExcludedApplications: '' as Metadata<Ref<Application>[]>
+    ExcludedApplications: '' as Metadata<Ref<Application>[]>,
+    DefaultApplication: '' as Metadata<string>,
+    DefaultSpace: '' as Metadata<Ref<Space>>,
+    DefaultSpecial: '' as Metadata<string>
   },
   actionImpl: {
     Navigate: '' as ViewAction<{

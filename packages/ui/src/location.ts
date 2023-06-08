@@ -122,7 +122,7 @@ export function setResolvedLocation (location: PlatformLocation): void {
   resolvedLocationStore.set(justClone(location))
 }
 
-export function navigate (location: PlatformLocation, store = true): void {
+export function navigate (location: PlatformLocation, store = true): boolean {
   closePopup()
   const url = locationToUrl(location)
   if (locationToUrl(getCurrentLocation()) !== url) {
@@ -134,5 +134,7 @@ export function navigate (location: PlatformLocation, store = true): void {
       }
     }
     locationWritable.set(location)
+    return true
   }
+  return false
 }
