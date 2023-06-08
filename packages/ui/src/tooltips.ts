@@ -64,7 +64,7 @@ export function showTooltip (
   props?: any,
   anchor?: HTMLElement,
   onUpdate?: (result: any) => void,
-  kind?: 'tooltip' | 'submenu'
+  kind?: 'tooltip' | 'submenu' | 'popup'
 ): void {
   storedValue = {
     label,
@@ -74,9 +74,19 @@ export function showTooltip (
     props,
     anchor,
     onUpdate,
-    kind: kind ?? 'tooltip'
+    kind: undefined
   }
-  tooltipstore.set(storedValue)
+  tooltipstore.update((old) => {
+    if (old.component === storedValue.component) {
+      if (old.kind !== undefined && storedValue.kind === undefined) {
+        storedValue.kind = old.kind
+      }
+      if (storedValue.kind === undefined) {
+        storedValue.kind = 'tooltip'
+      }
+    }
+    return storedValue
+  })
 }
 
 export function closeTooltip (): void {

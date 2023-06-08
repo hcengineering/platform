@@ -18,7 +18,7 @@
 
   import chunter, { Comment } from '@hcengineering/chunter'
   import { createQuery } from '@hcengineering/presentation'
-  import { Label, resizeObserver, Spinner } from '@hcengineering/ui'
+  import { Label, resizeObserver, Spinner, closeTooltip } from '@hcengineering/ui'
   import { DocNavLink, ObjectPresenter } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import CommentInput from './CommentInput.svelte'
@@ -42,6 +42,11 @@
     { sort: { modifiedOn: SortingOrder.Ascending } }
   )
   const dispatch = createEventDispatcher()
+  let commentMode = false
+
+  $: if (commentMode) {
+    dispatch('tooltip', { kind: 'popup' })
+  }
 </script>
 
 <div class="container">
@@ -49,6 +54,14 @@
     class="flex flex-between flex-grow header"
     use:resizeObserver={() => {
       dispatch('changeContent')
+    }}
+    on:keydown={(evt) => {
+      console.log(evt)
+      if (commentMode) {
+        evt.preventDefault()
+        evt.stopImmediatePropagation()
+        closeTooltip()
+      }
     }}
   >
     <div class="fs-title mr-2">
@@ -73,7 +86,12 @@
   </div>
   {#if withInput}
     <div class="max-w-120 input">
-      <CommentInput {object} />
+      <CommentInput
+        {object}
+        on:focus={(evt) => {
+          commentMode = true
+        }}
+      />
     </div>
   {/if}
 </div>

@@ -237,7 +237,7 @@ export interface LabelAndProps {
   props?: any
   anchor?: HTMLElement
   onUpdate?: (result: any) => void
-  kind?: 'tooltip' | 'submenu'
+  kind?: 'tooltip' | 'submenu' | 'popup'
 }
 
 export interface ListItem {

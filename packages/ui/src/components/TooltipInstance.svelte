@@ -161,7 +161,9 @@
       const inPopup: boolean =
         ev.x >= rectP.left && ev.x <= rectP.right && ev.y >= rectP.top - dT && ev.y <= rectP.bottom + dB
 
-      if ((tooltipSW && !inTrigger) || !(inTrigger || inPopup)) hideTooltip()
+      if ($tooltip.kind !== 'popup') {
+        if ((tooltipSW && !inTrigger) || !(inTrigger || inPopup)) hideTooltip()
+      }
     }
   }
 
@@ -170,15 +172,27 @@
   onDestroy(() => hideTooltip())
 </script>
 
+{#if $tooltip.kind === 'popup'}
+  <div
+    class="modal-overlay antiOverlay"
+    on:click|stopPropagation|preventDefault={() => closeTooltip()}
+    on:keydown|stopPropagation|preventDefault={() => {}}
+  />
+{/if}
+
 <svelte:window
   bind:innerWidth={docWidth}
   bind:innerHeight={docHeight}
-  on:resize={hideTooltip}
+  on:resize={() => {
+    if ($tooltip.kind !== 'popup') {
+      hideTooltip()
+    }
+  }}
   on:mousemove={(ev) => {
     whileShow(ev)
   }}
   on:keydown={(evt) => {
-    if (($tooltip.component || $tooltip.label) && evt.key === 'Escape') {
+    if (($tooltip.component || $tooltip.label) && evt.key === 'Escape' && $tooltip.kind !== 'popup') {
       evt.preventDefault()
       evt.stopImmediatePropagation()
       hideTooltip()
@@ -211,6 +225,9 @@
       <svelte:component
         this={$tooltip.component}
         {...$tooltip.props}
+        on:tooltip={(evt) => {
+          $tooltip = { ...$tooltip, ...evt.detail }
+        }}
         on:update={onUpdate !== undefined ? onUpdate : async () => {}}
       />
     {/if}
@@ -429,5 +446,16 @@
     &::before {
       content: none;
     }
+  }
+  .modal-overlay {
+    z-index: 10000;
+
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    pointer-events: all;
+    touch-action: none;
   }
 </style>
