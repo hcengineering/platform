@@ -68,6 +68,7 @@
         changeSelected(selected)
       } else {
         selected = index
+        markAsRead(selected)
       }
     }
   }
@@ -76,11 +77,20 @@
 
   $: changeSelected(selected)
 
+  function markAsRead (index: number) {
+    if (filtered[index] !== undefined) {
+      filtered[index].txes.forEach((p) => (p.isNew = false))
+      filtered[index].txes = filtered[index].txes
+      filtered = filtered
+    }
+  }
+
   function changeSelected (index: number) {
     if (filtered[index] !== undefined) {
       listProvider.updateFocus(filtered[index])
       _id = filtered[index]?.attachedTo
       dispatch('change', filtered[index])
+      markAsRead(index)
     } else if (filtered.length) {
       if (index < filtered.length - 1) {
         selected++

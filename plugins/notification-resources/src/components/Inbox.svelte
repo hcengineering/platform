@@ -49,7 +49,7 @@
   let _id: Ref<Doc> | undefined
   let _class: Ref<Class<Doc>> | undefined
   let selectedEmployee: Ref<EmployeeAccount> | undefined = undefined
-  const prevValue: DocUpdates | undefined = undefined
+  let prevValue: DocUpdates | undefined = undefined
 
   async function select (value: DocUpdates | undefined) {
     if (!value) {
@@ -59,14 +59,16 @@
       return
     }
     if (prevValue !== undefined) {
-      await client.update(prevValue, { txes: prevValue.txes })
+      prevValue.txes.forEach((p) => (p.isNew = false))
+      const txes = prevValue.txes
+      await client.update(prevValue, { txes })
     }
     const targetClass = hierarchy.getClass(value.attachedToClass)
     const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)
     component = panelComponent.component ?? view.component.EditDoc
     _id = value.attachedTo
     _class = value.attachedToClass
-    value.txes.forEach((p) => (p.isNew = false))
+    prevValue = value
   }
 
   function openDM (value: Ref<Doc>) {
