@@ -17,7 +17,7 @@
     "Remove": "Удалить",    
     "Search": "Поиск...",
     "Spaces": "Пространства",
-    "NumberSpaces": "{count, plural, =0 {В} =1 {В 1 месте} other {В # местах}}",
+    "NumberSpaces": "{count, plural, =0 {В} one {В # месте} other {В # местах}}",
     "InThis": "В этом {space}",
     "NoMatchesInThis": "В этом {space} совпадения не обнаружены",
     "NoMatchesFound": "Не найдено соответствий",
