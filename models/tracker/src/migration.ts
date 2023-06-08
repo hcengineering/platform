@@ -21,6 +21,7 @@ import core, {
   DocumentUpdate,
   Ref,
   SortingOrder,
+  StatusCategory,
   TxCreateDoc,
   TxOperations,
   TxResult,
@@ -829,6 +830,35 @@ async function fixMilestoneEmptyStatuses (client: MigrationClient): Promise<void
   )
 }
 
+async function removeExtraStatuses (client: TxOperations): Promise<void> {
+  const projects = await client.findAll(tracker.class.Project, {})
+  for (const project of projects) {
+    const projectStatuses = await client.findAll(tracker.class.IssueStatus, { space: project._id })
+    const statusesMap: Map<Ref<StatusCategory>, Map<string, IssueStatus[]>> = new Map()
+    for (const status of projectStatuses) {
+      if (status.category === undefined) continue
+      const map = statusesMap.get(status.category) ?? new Map<string, IssueStatus[]>()
+      const arr = map.get(status.name) ?? []
+      arr.push(status)
+      map.set(status.name, arr)
+      statusesMap.set(status.category, map)
+    }
+    for (const statuses of statusesMap.values()) {
+      for (const statusesArr of statuses.values()) {
+        if (statusesArr.length < 2) continue
+        const migrateTo = statusesArr[0]._id
+        for (let index = 1; index < statusesArr.length; index++) {
+          const status = statusesArr[index]
+          const tasks = await client.findAll(tracker.class.Issue, { status: status._id })
+          for (const task of tasks) {
+            await client.update(task, { status: migrateTo})
+          }
+        }
+      }
+    }
+  }
+}
+
 export const trackerOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await client.update(
@@ -869,5 +899,6 @@ export const trackerOperation: MigrateOperation = {
     await createDefaults(tx)
     await upgradeProjects(tx)
     await upgradeIssues(tx)
+    await removeExtraStatuses(tx)
   }
 }
