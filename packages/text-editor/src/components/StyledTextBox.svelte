@@ -120,7 +120,13 @@
       }
       return editable
     },
-    isFocus: () => focused
+    isFocus: () => focused,
+    canBlur: () => {
+      if (focused) {
+        return !textEditor.catHandleTab()
+      }
+      return true
+    }
   })
   const updateFocus = () => {
     if (focusIndex !== -1) {
