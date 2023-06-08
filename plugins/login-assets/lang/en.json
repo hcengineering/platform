@@ -6,7 +6,7 @@
     "IncorrectValue": "Incorrect value {field}. {descr}"
   },
   "string": {
-    "LogIn": "Login",
+    "LogIn": "Log In",
     "SignUp": "Sign Up",
     "CreateWorkspace": "Create workspace",
     "HaveWorkspace": "Already have a workspace?",

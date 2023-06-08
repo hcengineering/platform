@@ -137,7 +137,7 @@
       background: rgba(45, 50, 160, 0.5);
 
       .panel-base {
-        padding-top: 4rem;
+        padding-top: 5rem;
         padding-bottom: 1rem;
         width: 100%;
       }

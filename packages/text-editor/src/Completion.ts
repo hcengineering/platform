@@ -156,8 +156,7 @@ export const Completion = Node.create<CompletionOptions>({
       mergeAttributes(
         {
           'data-type': this.name,
-          class: 'antiButton secondary cursor-pointer',
-          style: 'width: fit-content;display: inline-flex;'
+          class: 'antiMention'
         },
         this.options.HTMLAttributes,
         HTMLAttributes
