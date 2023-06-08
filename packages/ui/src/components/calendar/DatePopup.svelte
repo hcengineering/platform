@@ -57,7 +57,7 @@
       currentDate = null
       dispatch('update', null)
     }
-    dispatch('close', currentDate)
+    dispatch('close', { value: currentDate })
   }
 
   const updateDate = (date: Date | null): void => {
