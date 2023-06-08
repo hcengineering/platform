@@ -21,7 +21,7 @@ test.describe('login test', () => {
     await password.click()
     await password.fill('1234')
 
-    const button = page.locator('button:has-text("Login")')
+    const button = page.locator('button:has-text("Log In")')
     expect(await button.isEnabled()).toBe(true)
 
     await button.click()
