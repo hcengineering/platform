@@ -268,7 +268,7 @@
         label: labelNull
       },
       undefined,
-      (result) => !result ? closeDP() : saveDate(),
+      (result) => (!result ? closeDP() : saveDate()),
       (result) => {
         if (result !== undefined) {
           currentDate = result
