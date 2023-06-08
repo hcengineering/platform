@@ -13,9 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@hcengineering/platform'
-  import { getClient } from '../utils'
+  import { createEventDispatcher, ComponentType } from 'svelte'
 
+  import { Asset, IntlString } from '@hcengineering/platform'
+  import { getPlatformColorDef, getPlatformColorForTextDef, IconWithEmojii, themeStore } from '@hcengineering/ui'
   import {
     AnySvelteComponent,
     Button,
@@ -29,11 +30,12 @@
     showPopup,
     TooltipAlignment
   } from '@hcengineering/ui'
-  import SpacesPopup from './SpacesPopup.svelte'
+  import { Class, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
+  import { IconProps } from '@hcengineering/view'
 
-  import type { Class, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
-  import { createEventDispatcher } from 'svelte'
+  import SpacesPopup from './SpacesPopup.svelte'
   import { ObjectCreate } from '../types'
+  import { getClient } from '../utils'
 
   export let _class: Ref<Class<Space>>
   export let spaceQuery: DocumentQuery<Space> | undefined = { archived: false }
@@ -54,8 +56,10 @@
   export let componentProps: any | undefined = undefined
   export let autoSelect = true
   export let readonly = false
+  export let iconWithEmojii: AnySvelteComponent | Asset | ComponentType | undefined = undefined
+  export let defaultIcon: AnySvelteComponent | Asset | ComponentType = IconFolder
 
-  let selected: Space | undefined
+  let selected: (Space & IconProps) | undefined
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -117,7 +121,15 @@
     {focus}
     disabled={readonly}
     {focusIndex}
-    icon={IconFolder}
+    icon={selected?.icon === iconWithEmojii ? IconWithEmojii : selected?.icon ?? defaultIcon}
+    iconProps={selected?.icon === iconWithEmojii
+      ? { icon: selected?.color }
+      : {
+          fill:
+            selected?.color !== undefined
+              ? getPlatformColorDef(selected?.color, $themeStore.dark).icon
+              : getPlatformColorForTextDef(selected?.name ?? '', $themeStore.dark).icon
+        }}
     {size}
     {kind}
     {justify}

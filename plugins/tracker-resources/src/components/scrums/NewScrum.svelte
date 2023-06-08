@@ -22,6 +22,7 @@
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import { StyledTextArea } from '@hcengineering/text-editor'
+  import ProjectPresenter from '../projects/ProjectPresenter.svelte'
 
   export let space: Ref<Project>
 
@@ -69,7 +70,14 @@
   on:changeContent
 >
   <svelte:fragment slot="header">
-    <SpaceSelector _class={tracker.class.Project} label={tracker.string.Project} bind:space />
+    <SpaceSelector
+      _class={tracker.class.Project}
+      label={tracker.string.Project}
+      bind:space
+      component={ProjectPresenter}
+      iconWithEmojii={tracker.component.IconWithEmojii}
+      defaultIcon={tracker.icon.Home}
+    />
   </svelte:fragment>
   <EditBox
     bind:value={object.title}

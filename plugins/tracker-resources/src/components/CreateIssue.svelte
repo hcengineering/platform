@@ -70,6 +70,7 @@
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
   import SubIssues from './SubIssues.svelte'
   import { createBacklinks } from '@hcengineering/chunter-resources'
+  import ProjectPresenter from './projects/ProjectPresenter.svelte'
 
   export let space: Ref<Project>
   export let status: Ref<IssueStatus> | undefined = undefined
@@ -543,6 +544,9 @@
       bind:space={_space}
       kind={'secondary'}
       size={'small'}
+      component={ProjectPresenter}
+      iconWithEmojii={tracker.component.IconWithEmojii}
+      defaultIcon={tracker.icon.Home}
     />
     <ObjectBox
       _class={tracker.class.IssueTemplate}

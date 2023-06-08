@@ -31,12 +31,10 @@ import {
   Type,
   WithLookup
 } from '@hcengineering/core'
-import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
-import { plugin } from '@hcengineering/platform'
-import type { TagCategory, TagElement } from '@hcengineering/tags'
-import { TagReference } from '@hcengineering/tags'
+import { Asset, IntlString, Plugin, Resource, plugin } from '@hcengineering/platform'
+import { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
 import { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
-import { Action, ActionCategory } from '@hcengineering/view'
+import { Action, ActionCategory, IconProps } from '@hcengineering/view'
 
 /**
  * @public
@@ -46,14 +44,12 @@ export interface IssueStatus extends Status {}
 /**
  * @public
  */
-export interface Project extends Space {
+export interface Project extends Space, IconProps {
   identifier: string // Project identifier
   sequence: number
   issueStatuses: number
   defaultIssueStatus: Ref<IssueStatus>
   defaultAssignee?: Ref<Employee>
-  icon?: Asset
-  color?: number
   defaultTimeReportDay: TimeReportDayType
 }
 
