@@ -851,7 +851,7 @@ async function removeExtraStatuses (client: TxOperations): Promise<void> {
           const status = statusesArr[index]
           const tasks = await client.findAll(tracker.class.Issue, { status: status._id })
           for (const task of tasks) {
-            await client.update(task, { status: migrateTo})
+            await client.update(task, { status: migrateTo })
           }
         }
       }
