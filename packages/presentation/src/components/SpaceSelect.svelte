@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher, ComponentType } from 'svelte'
+
   import { Asset, IntlString } from '@hcengineering/platform'
   import { getPlatformColorDef, getPlatformColorForTextDef, IconWithEmojii, themeStore } from '@hcengineering/ui'
-  import { getClient } from '../utils'
-
   import {
     AnySvelteComponent,
     Button,
@@ -30,12 +30,12 @@
     showPopup,
     TooltipAlignment
   } from '@hcengineering/ui'
-  import SpacesPopup from './SpacesPopup.svelte'
-
   import { Class, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
-  import { createEventDispatcher } from 'svelte'
+  import { IconProps } from '@hcengineering/view'
+
+  import SpacesPopup from './SpacesPopup.svelte'
   import { ObjectCreate } from '../types'
-  import { ComponentType } from 'svelte'
+  import { getClient } from '../utils'
 
   export let _class: Ref<Class<Space>>
   export let spaceQuery: DocumentQuery<Space> | undefined = { archived: false }
@@ -59,7 +59,7 @@
   export let iconWithEmojii: AnySvelteComponent | Asset | ComponentType | undefined = undefined
   export let defaultIcon: AnySvelteComponent | Asset | ComponentType = IconFolder
 
-  let selected: (Space & { icon?: Asset; color?: number }) | undefined
+  let selected: (Space & IconProps) | undefined
 
   const client = getClient()
   const dispatch = createEventDispatcher()

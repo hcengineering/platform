@@ -722,6 +722,14 @@ export interface ViewOptionsModel {
 /**
  * @public
  */
+export interface IconProps {
+  icon?: Asset
+  color?: number
+}
+
+/**
+ * @public
+ */
 const view = plugin(viewId, {
   mixin: {
     ClassFilters: '' as Ref<Mixin<ClassFilters>>,

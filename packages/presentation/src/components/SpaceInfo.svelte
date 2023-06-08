@@ -15,7 +15,7 @@
 <script lang="ts">
   import { IconFolder, IconSize, Label } from '@hcengineering/ui'
 
-  import type { Space } from '@hcengineering/core'
+  import { Space } from '@hcengineering/core'
   import presentation from '..'
 
   export let value: Space
