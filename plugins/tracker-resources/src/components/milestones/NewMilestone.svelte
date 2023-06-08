@@ -23,6 +23,7 @@
   import tracker from '../../plugin'
   import MilestoneStatusEditor from './MilestoneStatusEditor.svelte'
   import { createBacklinks } from '@hcengineering/chunter-resources'
+  import ProjectPresenter from '../projects/ProjectPresenter.svelte'
 
   export let space: Ref<Project>
   const dispatch = createEventDispatcher()
@@ -60,6 +61,9 @@
       kind={'secondary'}
       size={'large'}
       bind:space
+      component={ProjectPresenter}
+      iconWithEmojii={tracker.component.IconWithEmojii}
+      defaultIcon={tracker.icon.Home}
     />
   </svelte:fragment>
   <EditBox

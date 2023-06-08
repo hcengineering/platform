@@ -29,6 +29,7 @@
   import MilestoneSelector from '../milestones/MilestoneSelector.svelte'
   import EstimationEditor from './EstimationEditor.svelte'
   import SubIssueTemplates from './IssueTemplateChilds.svelte'
+  import ProjectPresenter from '../projects/ProjectPresenter.svelte'
 
   export let space: Ref<Project>
   export let priority: IssuePriority = IssuePriority.NoPriority
@@ -138,6 +139,9 @@
       bind:space={_space}
       kind={'secondary'}
       size={'large'}
+      component={ProjectPresenter}
+      iconWithEmojii={tracker.component.IconWithEmojii}
+      defaultIcon={tracker.icon.Home}
     />
   </svelte:fragment>
   <svelte:fragment slot="title" let:label>

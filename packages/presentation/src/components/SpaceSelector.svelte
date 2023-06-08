@@ -14,11 +14,12 @@
 -->
 <script lang="ts">
   import type { Class, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
-  import type { IntlString } from '@hcengineering/platform'
+  import type { Asset, IntlString } from '@hcengineering/platform'
   import { AnySvelteComponent, ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { ObjectCreate } from '../types'
   import SpaceSelect from './SpaceSelect.svelte'
   import { createEventDispatcher } from 'svelte'
+  import { ComponentType } from 'svelte'
 
   export let space: Ref<Space> | undefined = undefined
   export let _class: Ref<Class<Space>>
@@ -34,6 +35,8 @@
   export let component: AnySvelteComponent | undefined = undefined
   export let componentProps: any | undefined = undefined
   export let autoSelect = true
+  export let iconWithEmojii: AnySvelteComponent | Asset | ComponentType | undefined = undefined
+  export let defaultIcon: AnySvelteComponent | Asset | ComponentType | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -56,6 +59,8 @@
   {component}
   {componentProps}
   {autoSelect}
+  {iconWithEmojii}
+  {defaultIcon}
   bind:value={space}
   on:change={(evt) => {
     space = evt.detail
