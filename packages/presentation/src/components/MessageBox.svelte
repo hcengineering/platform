@@ -22,6 +22,7 @@
   export let labelProps: IntlString
   export let message: IntlString
   export let params: Record<string, any> = {}
+  export let okLabel: IntlString | undefined = undefined
   export let canSubmit = true
   export let action: (() => Promise<void>) | undefined = undefined
 
@@ -40,7 +41,7 @@
     <Button
       focus
       focusIndex={1}
-      label={presentation.string.Ok}
+      label={okLabel ?? presentation.string.Ok}
       size={'large'}
       kind={'primary'}
       loading={processing}

@@ -474,7 +474,8 @@
       MessageBox,
       {
         label: tracker.string.TemplateReplace,
-        message: tracker.string.TemplateReplaceConfirm
+        message: tracker.string.TemplateReplaceConfirm,
+        okLabel: tracker.string.Apply
       },
       'top',
       (result?: boolean) => {
