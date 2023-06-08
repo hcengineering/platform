@@ -106,8 +106,9 @@
     "SearchVacancy": "Search vacancy...",
     "Organizations": "Companies",
 
-    "TemplateReplace": "You you replace selected template?",
-    "TemplateReplaceConfirm": "All field changes will be override by template values",
+    "TemplateReplace": "Do you want to apply the new template?",
+    "TemplateReplaceConfirm": "All fields will be overwritten by the new template values",
+    "Apply": "Apply",
 
     "OpenVacancyList": "Open list",
     "Export": "Export",

@@ -219,7 +219,8 @@
       MessageBox,
       {
         label: recruit.string.TemplateReplace,
-        message: recruit.string.TemplateReplaceConfirm
+        message: recruit.string.TemplateReplaceConfirm,
+        okLabel: recruit.string.Apply
       },
       'top',
       (result?: boolean) => {
