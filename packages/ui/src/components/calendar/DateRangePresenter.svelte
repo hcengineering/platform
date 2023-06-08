@@ -48,7 +48,7 @@
   const startDate = new Date(0)
   const defaultSelected: TEdits = mode === DateRangeMode.TIME ? 'hour' : 'day'
 
-  let currentDate: Date
+  let currentDate: Date | null = null
   let selected: TEdits = defaultSelected
 
   let edit: boolean = false
@@ -120,9 +120,14 @@
     edits = edits
   }
   export const saveDate = (): void => {
-    currentDate.setSeconds(0, 0)
-    value = currentDate.getTime()
-    dateToEdits()
+    if (currentDate === null) {
+      value = null
+      setEmptyEdits()
+    } else {
+      currentDate.setSeconds(0, 0)
+      value = currentDate.getTime()
+      dateToEdits()
+    }
     dispatch('change', value)
   }
 
@@ -142,11 +147,6 @@
     return result
   }
   const closeDP = (): void => {
-    if (!isNull()) saveDate()
-    else {
-      value = null
-      dispatch('change', null)
-    }
     edit = opened = false
   }
 
@@ -155,29 +155,30 @@
 
     if (ev.key >= '0' && ev.key <= '9') {
       const num: number = parseInt(ev.key, 10)
+      const date = currentDate ?? new Date()
 
       if (startTyping) {
         edits[index].value = num
-      } else if (edits[index].value * 10 + num > getMaxValue(currentDate, ed)) {
-        edits[index].value = getMaxValue(currentDate, ed)
+      } else if (edits[index].value * 10 + num > getMaxValue(date, ed)) {
+        edits[index].value = getMaxValue(date, ed)
       } else {
         edits[index].value = edits[index].value * 10 + num
       }
 
       if (!isNull() && edits[2].value > 999) {
         fixEdits()
-        setCurrentDate(setValue(edits[index].value, currentDate, ed))
+        setCurrentDate(setValue(edits[index].value, date, ed))
         dateToEdits()
       }
       edits = edits
 
-      if (selected === 'day' && edits[0].value > getMaxValue(currentDate, 'day') / 10) selected = 'month'
+      if (selected === 'day' && edits[0].value > getMaxValue(date, 'day') / 10) selected = 'month'
       else if (selected === 'month' && edits[1].value > 1) selected = 'year'
       else if (selected === 'year' && withTime && edits[2].value > 999) selected = 'hour'
       else if (selected === 'hour' && (edits[3].value > 2 || !startTyping)) selected = 'min'
       startTyping = false
     }
-    if (ev.code === 'Enter') closeDP()
+    if (ev.code === 'Enter') saveDate()
     if (ev.code === 'Backspace') {
       edits[index].value = -1
       startTyping = true
@@ -267,10 +268,13 @@
         label: labelNull
       },
       undefined,
-      saveDate,
+      (result) => (!result ? closeDP() : saveDate()),
       (result) => {
         if (result !== undefined) {
           currentDate = result
+          if (result === null) {
+            setEmptyEdits()
+          }
         }
       }
     )
@@ -278,7 +282,7 @@
 
   export const adaptValue = () => {
     setCurrentDate(new Date(value ?? Date.now()))
-    currentDate.setSeconds(0, 0)
+    currentDate?.setSeconds(0, 0)
     if (value !== null && value !== undefined) {
       dateToEdits()
     } else if (value === null) {
