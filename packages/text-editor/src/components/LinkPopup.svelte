@@ -15,16 +15,16 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
 
+  import { getEmbeddedLabel } from '@hcengineering/platform'
   import { Card } from '@hcengineering/presentation'
   import { EditBox } from '@hcengineering/ui'
-  import type { IntlString } from '@hcengineering/platform'
 
   import textEditorPlugin from '../plugin'
 
   export let link = ''
 
   const dispatch = createEventDispatcher()
-  const linkPlaceholder = 'http://my.link.net' as IntlString
+  const linkPlaceholder = getEmbeddedLabel('http://my.link.net')
 
   function save () {
     dispatch('update', link)
