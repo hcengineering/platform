@@ -95,17 +95,6 @@
       navigate(loc)
     }
   }
-
-  const signUpAction = {
-    caption: login.string.DoNotHaveAnAccount,
-    i18n: login.string.SignUp,
-    func: () => {
-      const loc = getCurrentLocation()
-      loc.path[1] = 'signup'
-      loc.path.length = 2
-      navigate(loc)
-    }
-  }
 </script>
 
 <Form
@@ -114,6 +103,6 @@
   {fields}
   {object}
   {action}
-  bottomActions={[signUpAction, recoveryAction]}
+  bottomActions={[recoveryAction]}
   ignoreInitialValidation
 />

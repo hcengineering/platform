@@ -14,7 +14,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { StylishEdit, Label, Button, Scroller, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import {
+    getCurrentLocation,
+    navigate,
+    StylishEdit,
+    Label,
+    Button,
+    deviceOptionsStore as deviceInfo
+  } from '@hcengineering/ui'
   import StatusControl from './StatusControl.svelte'
   import { OK, Status, Severity } from '@hcengineering/platform'
   import type { IntlString } from '@hcengineering/platform'
@@ -107,62 +114,95 @@
   function trim (field: string): void {
     object[field] = (object[field] as string).trim()
   }
+
+  const goTab = (path: string) => {
+    const loc = getCurrentLocation()
+    loc.path[1] = path
+    loc.path.length = 2
+    navigate(loc)
+  }
+  $: loginState = caption === login.string.LogIn ? 'login' : caption === login.string.SignUp ? 'signup' : 'none'
 </script>
 
-<form class="container" style:padding={$deviceInfo.docWidth <= 480 ? '.25rem 1.25rem' : '4rem 5rem'}>
-  <div class="grow-separator" />
-  <div class="title"><Label label={caption} /></div>
+<form
+  class="container"
+  style:padding={$deviceInfo.docWidth <= 480 ? '.25rem 1.25rem' : '4rem 5rem'}
+  style:min-height={$deviceInfo.docHeight > 720 ? '42rem' : '0'}
+>
+  {#if loginState !== 'none'}
+    <div class="flex-row-center caption">
+      <a
+        class="title"
+        class:selected={loginState === 'signup'}
+        href="."
+        on:click|preventDefault={() => {
+          if (loginState !== 'signup') goTab('signup')
+        }}
+      >
+        <Label label={login.string.SignUp} />
+      </a>
+      <a
+        class="title"
+        class:selected={loginState === 'login'}
+        href="."
+        on:click|preventDefault={() => {
+          if (loginState !== 'login') goTab('login')
+        }}
+      >
+        <Label label={login.string.LogIn} />
+      </a>
+    </div>
+  {:else}
+    <div class="title"><Label label={caption} /></div>
+  {/if}
   <div class="status">
     <StatusControl {status} />
   </div>
-  <Scroller padding={'.125rem 0'}>
-    <div class="form">
-      {#each fields as field (field.name)}
-        <div class={field.short && !($deviceInfo.docWidth <= 600) ? 'form-col' : 'form-row'}>
-          <StylishEdit
-            label={field.i18n}
-            name={field.id}
-            password={field.password}
-            bind:value={object[field.name]}
-            on:input={validate}
-            on:blur={() => {
-              trim(field.name)
-            }}
-          />
-        </div>
-      {/each}
-
-      <div class="form-row send">
-        <Button
-          label={action.i18n}
-          kind={'contrast'}
-          shape={'round2'}
-          size={'x-large'}
-          width="100%"
-          loading={inAction}
-          disabled={status.severity !== Severity.OK && status.severity !== Severity.ERROR}
-          on:click={(e) => {
-            e.preventDefault()
-            performAction(action)
+  <div class="form">
+    {#each fields as field (field.name)}
+      <div class={field.short && !($deviceInfo.docWidth <= 600) ? 'form-col' : 'form-row'}>
+        <StylishEdit
+          label={field.i18n}
+          name={field.id}
+          password={field.password}
+          bind:value={object[field.name]}
+          on:input={validate}
+          on:blur={() => {
+            trim(field.name)
           }}
         />
       </div>
-      {#if secondaryButtonLabel && secondaryButtonAction}
-        <div class="form-row">
-          <Button
-            label={secondaryButtonLabel}
-            width="100%"
-            on:click={(e) => {
-              e.preventDefault()
-              secondaryButtonAction?.()
-            }}
-          />
-        </div>
-      {/if}
+    {/each}
+
+    <div class="form-row send">
+      <Button
+        label={action.i18n}
+        kind={'contrast'}
+        shape={'round2'}
+        size={'x-large'}
+        width="100%"
+        loading={inAction}
+        disabled={status.severity !== Severity.OK && status.severity !== Severity.ERROR}
+        on:click={(e) => {
+          e.preventDefault()
+          performAction(action)
+        }}
+      />
     </div>
-  </Scroller>
+    {#if secondaryButtonLabel && secondaryButtonAction}
+      <div class="form-row">
+        <Button
+          label={secondaryButtonLabel}
+          width="100%"
+          on:click={(e) => {
+            e.preventDefault()
+            secondaryButtonAction?.()
+          }}
+        />
+      </div>
+    {/if}
+  </div>
   {#if bottomActions.length}
-    <div class="grow-separator" />
     <div class="footer">
       {#each bottomActions as action}
         <div>
@@ -179,16 +219,33 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    // width: 100%;
-    // flex-grow: 1;
-    // height: 100%;
-    // padding: 5rem;
 
     .title {
-      font-weight: 600;
-      font-size: 1.5rem;
+      font-weight: 500;
+      font-size: 1.25rem;
       color: var(--theme-caption-color);
+    }
+    .caption a {
+      padding-bottom: 0.375rem;
+      border-bottom: 2px solid var(--theme-caption-color);
+
+      &:not(.selected) {
+        color: var(--theme-dark-color);
+        border-bottom-color: transparent;
+
+        &:hover {
+          color: var(--theme-caption-color);
+        }
+      }
+      &.selected {
+        cursor: default;
+      }
+      &:first-child {
+        margin-right: 1.75rem;
+      }
+      &:hover {
+        text-decoration: none;
+      }
     }
     .status {
       min-height: 7.5rem;
@@ -214,19 +271,16 @@
       flex-grow: 1;
     }
     .footer {
-      margin-top: 3.5rem;
+      margin-top: 1.75rem;
       font-size: 0.8rem;
-      color: var(--theme-caption-color);
+      color: var(--theme-content-color);
       span {
-        opacity: 0.8;
+        color: var(--theme-darker-color);
       }
       a {
-        text-decoration: none;
-        color: var(--theme-caption-color);
-        opacity: 0.8;
-        &:hover {
-          opacity: 1;
-        }
+        font-weight: 500;
+        text-decoration: underline;
+        color: var(--theme-content-color);
       }
     }
   }

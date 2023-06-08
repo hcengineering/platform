@@ -347,6 +347,16 @@
   }
 }
 
+.antiMention {
+  display: inline-flex;
+  padding: 0 .25rem;
+  width: fit-content;
+  color: var(--theme-link-color);
+  background-color: var(--theme-mention-bg-color);
+  border-radius: .25rem;
+  cursor: pointer;
+}
+
 .antiDivider {
   margin: .25rem 0;
   min-height: 1px;
