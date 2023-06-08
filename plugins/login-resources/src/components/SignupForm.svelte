@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { OK, Severity, Status } from '@hcengineering/platform'
-
+  import { OK, Severity, Status, setMetadata } from '@hcengineering/platform'
+  import presentation from '@hcengineering/presentation'
   import { getCurrentLocation, navigate } from '@hcengineering/ui'
   import login from '../plugin'
   import { signUp } from '../utils'
@@ -49,6 +49,7 @@
       status = loginStatus
 
       if (result !== undefined) {
+        setMetadata(presentation.metadata.Token, result.token)
         const loc = getCurrentLocation()
         loc.path[1] = 'confirmationSend'
         loc.path.length = 2

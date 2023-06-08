@@ -144,7 +144,15 @@ export default plugin(platformId, {
     ExpiredLink: '' as StatusCode,
     UnknownMethod: '' as StatusCode<{ method: string }>,
     InternalServerError: '' as StatusCode,
-    MaintenanceWarning: '' as StatusCode<{ time: number }>
+    MaintenanceWarning: '' as StatusCode<{ time: number }>,
+    AccountNotFound: '' as StatusCode<{ account: string }>,
+    WorkspaceNotFound: '' as StatusCode<{ workspace: string }>,
+    InvalidPassword: '' as StatusCode<{ account: string }>,
+    AccountAlreadyExists: '' as StatusCode<{ account: string }>,
+    AccountAlreadyConfirmed: '' as StatusCode<{ account: string }>,
+    AccountWasMerged: '' as StatusCode<{ account: string }>,
+    WorkspaceAlreadyExists: '' as StatusCode<{ workspace: string }>,
+    ProductIdMismatch: '' as StatusCode<{ productId: string }>
   },
   metadata: {
     locale: '' as Metadata<string>
