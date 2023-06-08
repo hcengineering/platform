@@ -412,11 +412,13 @@ async function sendConfirmation (productId: string, account: Account): Promise<v
 
   const link = concatLink(front, `/login/confirm?id=${token}`)
 
-  const text = `To confirm your email, please paste the following link in your web browser's address bar: ${link}. If you did not make this request, please ignore this email.`
-  const html = `<p>To confirm your email, please click the link below: <a href=${link}>Confirm Your Email</a></p><p>
-  If the link above does not work, paste the following link in your web browser's address bar: ${link}
-</p><p>If you did not make this request, please ignore this email.</p>`
-  const subject = 'Confirm Your Email'
+  const text = `Спасибо за ваш интерес к Bold. Для завершения регистрации копируйте ссылку в адресную строку вашего браузера ${link}. С уважением, Команда Bold.`
+  const html = `<p>Здравствуйте,</p>
+  <p>Спасибо за ваш интерес к Bold. Для завершения регистрации пройдите по <a href=${link}>этой ссылке</a> или скопируйте ссылку ниже в адресную строку вашего браузера.</p>
+  <p>${link}</p>
+  <p>С уважением,</p>
+  <p>Команда Bold.</p>`
+  const subject = 'Подтвердите адрес электронной почты для регистрации на Bold.ru'
   const to = account.email
   await fetch(concatLink(sesURL, '/send'), {
     method: 'post',
