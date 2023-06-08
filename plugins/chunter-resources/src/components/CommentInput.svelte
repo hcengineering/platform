@@ -118,5 +118,7 @@
   {shouldSaveDraft}
   on:message={onMessage}
   on:update={onUpdate}
+  on:focus
+  on:blur
   bind:loading
 />

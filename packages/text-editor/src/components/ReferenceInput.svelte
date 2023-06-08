@@ -344,12 +344,14 @@
             textEditor.clear()
           }
         }}
-        on:on:blur={() => {
+        on:blur={() => {
           focused = false
+          dispatch('blur', focused)
         }}
         on:focus={() => {
           focused = true
           updateFocus()
+          dispatch('focus', focused)
         }}
         extensions={[completionPlugin]}
         on:selection-update={updateFormattingState}

@@ -286,6 +286,8 @@
       {labelSend}
       {showSend}
       {loading}
+      on:focus
+      on:blur
       on:message={onMessage}
       haveAttachment={attachments.size > 0}
       withoutTopBorder={attachments.size > 0}
