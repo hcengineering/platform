@@ -9,6 +9,14 @@
     "Unauthorized": "Неавторизован",
     "UnknownMethod": "Неизвестный метод: {method}",
     "InternalServerError": "Внутренняя ошибка сервера",
-    "MaintenanceWarning": "Серверные работы запланированы через {time} минут"
+    "MaintenanceWarning": "Серверные работы запланированы через {time} минут",
+    "AccountNotFound": "Аккаунт не найден",
+    "WorkspaceNotFound": "Рабочее пространство не найдено",
+    "InvalidPassword": "Неверный пароль",
+    "AccountAlreadyExists": "Аккаунт уже существует",
+    "AccountAlreadyConfirmed": "Аккаунт уже подтвержден",
+    "AccountWasMerged": "Аккаунт был объединен",
+    "WorkspaceAlreadyExists": "Рабочее пространство уже существует",
+    "ProductIdMismatch": "Продукт не соответсвует"
   }
 }
