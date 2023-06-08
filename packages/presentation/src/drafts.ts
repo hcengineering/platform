@@ -29,7 +29,7 @@ function syncDrafts (): void {
 
 // #region Broadcast
 
-const bc = BroadcastChannel !== undefined ? new BroadcastChannel(activeDraftsKey) : undefined
+const bc = 'BroadcastChannel' in window ? new BroadcastChannel(activeDraftsKey) : undefined
 
 type BroadcastMessage = BroadcastGetMessage | BroadcastGetResp | BroadcastAddMessage | BroadcastRemoveMessage
 
