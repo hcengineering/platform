@@ -74,6 +74,7 @@ const accountPlugin = plugin(accountId, {
     WorkspaceNotFound: '' as StatusCode<{ workspace: string }>,
     InvalidPassword: '' as StatusCode<{ account: string }>,
     AccountAlreadyExists: '' as StatusCode<{ account: string }>,
+    AccountAlreadyConfirmed: '' as StatusCode<{ account: string }>,
     AccountWasMerged: '' as StatusCode<{ account: string }>,
     WorkspaceAlreadyExists: '' as StatusCode<{ workspace: string }>,
     ProductIdMismatch: '' as StatusCode<{ productId: string }>
@@ -374,6 +375,11 @@ export async function confirmEmail (db: Db, email: string): Promise<Account> {
   if (account === null) {
     throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: accountId }))
   }
+  if (account.confirmed === true) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, accountPlugin.status.AccountAlreadyConfirmed, { account: accountId })
+    )
+  }
 
   await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { confirmed: true } })
   account.confirmed = true
@@ -568,14 +574,16 @@ export async function createWorkspace (
       productId
     })
     .then((e) => e.insertedId.toHexString())
-  await initModel(getTransactor(), getWorkspaceId(workspace, productId), txes, migrationOperation)
   const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
   if (initWS !== undefined) {
     if ((await getWorkspace(db, productId, initWS)) !== null) {
+      await initModel(getTransactor(), getWorkspaceId(workspace, productId), txes, [])
       await cloneWorkspace(getTransactor(), getWorkspaceId(initWS, productId), getWorkspaceId(workspace, productId))
       await upgradeModel(getTransactor(), getWorkspaceId(workspace, productId), txes, migrationOperation)
+      return result
     }
   }
+  await initModel(getTransactor(), getWorkspaceId(workspace, productId), txes, migrationOperation)
   return result
 }
 
