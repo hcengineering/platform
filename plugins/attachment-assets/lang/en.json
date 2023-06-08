@@ -52,5 +52,8 @@
     "UnPinAttachment": "Mark less important",
     "FilterAttachments": "Attachments",
     "RemovedAttachment": "Removed attachment"
+  }, 
+  "status": {
+    "FileTooLarge": "File too large"
   }
 }
