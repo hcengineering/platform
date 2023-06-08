@@ -266,12 +266,22 @@ jobs:
         run: |
           cd ./tests/sanity
           node ../../common/scripts/install-run-rushx.js uitest
+      - name: Archive DB
+        run: |
+          cd ./tests
+          ./update-snapshot.sh ./tests/db_dump
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v3
         with:
           name: playwright-results
           path: ./tests/sanity/playwright-report/
+      - name: Upload DB snapshot
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: db-snapshot
+          path: ./tests/db_dump
   docker-build:
     if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
     needs: [build, uitest, test, svelte-check]

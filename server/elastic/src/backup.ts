@@ -68,59 +68,67 @@ class ElasticDataAdapter implements DbAdapter {
     let finished = false
     return {
       next: async () => {
-        if (!listRecieved) {
-          const q = {
-            index: toWorkspaceString(this.workspaceId),
-            type: '_doc',
-            scroll: '23h',
-            // search_type: 'scan', //if I use search_type then it requires size otherwise it shows 0 result
-            size: 2500,
-            body: {
-              query: {
-                match_all: {}
+        try {
+          if (!listRecieved) {
+            const q = {
+              index: toWorkspaceString(this.workspaceId),
+              type: '_doc',
+              scroll: '23h',
+              // search_type: 'scan', //if I use search_type then it requires size otherwise it shows 0 result
+              size: 2500,
+              body: {
+                query: {
+                  match_all: {}
+                }
               }
             }
+            resp = await this.client.search(q)
+            if (resp.statusCode !== 200) {
+              console.error('failed elastic query', q, resp)
+              throw new PlatformError(unknownStatus(`failed to elastic query ${JSON.stringify(resp)}`))
+            }
+            buffer = resp.body.hits.hits.map((hit: any) => ({ _id: hit._id, data: hit._source }))
+            if (buffer.length === 0) {
+              finished = true
+            }
+            listRecieved = true
           }
-          resp = await this.client.search(q)
-          if (resp.statusCode !== 200) {
-            console.error('failed elastic query', q, resp)
-            throw new PlatformError(unknownStatus(`failed to elastic query ${JSON.stringify(resp)}`))
+          if (pos === buffer.length && !finished) {
+            const params = {
+              scrollId: resp.body._scroll_id as string,
+              scroll: '23h'
+            }
+            resp = await this.client.scroll(params, { maxRetries: 5 })
+            if (resp.statusCode !== 200) {
+              console.error('failed elastic query scroll', params, resp)
+              throw new PlatformError(unknownStatus(`failed to elastic query ${JSON.stringify(resp)}`))
+            }
+            buffer = resp.body.hits.hits.map((hit: any) => ({ _id: hit._id, data: hit._source }))
+            if (buffer.length === 0) {
+              finished = true
+            }
+            pos = 0
           }
-          buffer = resp.body.hits.hits.map((hit: any) => ({ _id: hit._id, data: hit._source }))
-          if (buffer.length === 0) {
-            finished = true
+          if (pos < buffer.length) {
+            const item = buffer[pos]
+            const hash = createHash('sha256')
+            const json = JSON.stringify(item.data)
+            hash.update(json)
+            const digest = hash.digest('base64')
+            const result = {
+              id: item._id,
+              hash: digest,
+              size: json.length
+            }
+            pos++
+            return result
           }
-          listRecieved = true
-        }
-        if (pos === buffer.length && !finished) {
-          const params = {
-            scrollId: resp.body._scroll_id as string,
-            scroll: '23h'
+        } catch (e: any) {
+          if (e?.meta?.body?.error?.type === 'index_not_found_exception') {
+            return undefined
           }
-          resp = await this.client.scroll(params, { maxRetries: 5 })
-          if (resp.statusCode !== 200) {
-            console.error('failed elastic query scroll', params, resp)
-            throw new PlatformError(unknownStatus(`failed to elastic query ${JSON.stringify(resp)}`))
-          }
-          buffer = resp.body.hits.hits.map((hit: any) => ({ _id: hit._id, data: hit._source }))
-          if (buffer.length === 0) {
-            finished = true
-          }
-          pos = 0
-        }
-        if (pos < buffer.length) {
-          const item = buffer[pos]
-          const hash = createHash('sha256')
-          const json = JSON.stringify(item.data)
-          hash.update(json)
-          const digest = hash.digest('base64')
-          const result = {
-            id: item._id,
-            hash: digest,
-            size: json.length
-          }
-          pos++
-          return result
+          console.error(e)
+          throw new PlatformError(e)
         }
       },
       close: async () => {}
@@ -162,22 +170,29 @@ class ElasticDataAdapter implements DbAdapter {
   async upload (domain: Domain, docs: Doc[]): Promise<void> {
     while (docs.length > 0) {
       const part = docs.splice(0, 10000)
-      await this.client.deleteByQuery(
-        {
-          type: '_doc',
-          index: toWorkspaceString(this.workspaceId),
-          body: {
-            query: {
-              terms: {
-                _id: Array.from(part.map((it) => it._id)),
-                boost: 1.0
-              }
-            },
-            size: part.length
-          }
-        },
-        undefined
-      )
+      try {
+        await this.client.deleteByQuery(
+          {
+            type: '_doc',
+            index: toWorkspaceString(this.workspaceId),
+            body: {
+              query: {
+                terms: {
+                  _id: Array.from(part.map((it) => it._id)),
+                  boost: 1.0
+                }
+              },
+              size: part.length
+            }
+          },
+          undefined
+        )
+      } catch (e: any) {
+        if (e?.meta?.body?.error?.type !== 'index_not_found_exception') {
+          console.error(e)
+          throw new PlatformError(e)
+        }
+      }
 
       const operations = part.flatMap((doc) => [
         { index: { _index: toWorkspaceString(this.workspaceId), _id: doc._id } },

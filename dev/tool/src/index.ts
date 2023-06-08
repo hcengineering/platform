@@ -45,7 +45,7 @@ import toolPlugin from '@hcengineering/server-tool'
 import { program } from 'commander'
 import { Db, MongoClient } from 'mongodb'
 import { clearTelegramHistory } from './telegram'
-import { diffWorkspace, dumpWorkspace, restoreWorkspace } from './workspace'
+import { diffWorkspace } from './workspace'
 
 import { Data, getWorkspaceId, Tx, Version } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
@@ -54,7 +54,6 @@ import { openAIConfigDefaults } from '@hcengineering/openai'
 import { benchmark } from './benchmark'
 import { cleanArchivedSpaces, cleanRemovedTransactions, cleanWorkspace } from './clean'
 import { changeConfiguration } from './configuration'
-import { rebuildElastic } from './elastic'
 import { openAIConfig } from './openai'
 
 /**
@@ -294,14 +293,6 @@ export function devTool (
     })
 
   program
-    .command('dump-workspace <workspace> <dirName>')
-    .description('dump workspace transactions and minio resources')
-    .action(async (workspace: string, dirName: string, cmd) => {
-      const { mongodbUri, minio } = prepareTools()
-      return await dumpWorkspace(mongodbUri, getWorkspaceId(workspace, productId), dirName, minio)
-    })
-
-  program
     .command('backup <dirName> <workspace>')
     .description('dump workspace transactions and minio resources')
     .action(async (dirName: string, workspace: string, cmd) => {
@@ -361,23 +352,6 @@ export function devTool (
     })
 
   program
-    .command('restore-workspace <workspace> <dirName>')
-    .description('restore workspace transactions and minio resources from previous dump.')
-    .action(async (workspace: string, dirName: string, cmd) => {
-      const { mongodbUri, minio, txes, migrateOperations } = prepareTools()
-      return await restoreWorkspace(
-        mongodbUri,
-        getWorkspaceId(workspace, productId),
-        dirName,
-        minio,
-        getElasticUrl(),
-        transactorUrl,
-        txes,
-        migrateOperations
-      )
-    })
-
-  program
     .command('confirm-email <email>')
     .description('confirm user email')
     .action(async (email: string, cmd) => {
@@ -430,25 +404,6 @@ export function devTool (
         for (const w of workspaces) {
           console.log(`clearing ${w.workspace} history:`)
           await clearTelegramHistory(mongodbUri, getWorkspaceId(w.workspace, productId), telegramDB, minio)
-        }
-      })
-    })
-
-  program
-    .command('rebuild-elastic [workspace]')
-    .description('rebuild elastic index')
-    .action(async (workspace: string, cmd) => {
-      const { mongodbUri, minio } = prepareTools()
-      return await withDatabase(mongodbUri, async (db) => {
-        if (workspace === undefined) {
-          const workspaces = await listWorkspaces(db, productId)
-
-          for (const w of workspaces) {
-            await rebuildElastic(mongodbUri, getWorkspaceId(w.workspace, productId), minio, getElasticUrl())
-          }
-        } else {
-          await rebuildElastic(mongodbUri, getWorkspaceId(workspace, productId), minio, getElasticUrl())
-          console.log('rebuild end')
         }
       })
     })

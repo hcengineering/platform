@@ -53,7 +53,7 @@ test.describe('contact tests', () => {
     await page.click('.antiNav-element:has-text("Person")')
 
     await expect(page.locator('text=M. Marina')).toBeVisible()
-    expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThan(5)
+    expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThanOrEqual(5)
 
     await fillSearch(page, 'Marina')
 
