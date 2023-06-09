@@ -187,11 +187,8 @@ class ElasticDataAdapter implements DbAdapter {
           },
           undefined
         )
-      } catch (e: any) {
-        if (e?.meta?.body?.error?.type !== 'index_not_found_exception') {
-          console.error(e)
-          throw new PlatformError(e)
-        }
+      } catch (err: any) {
+        console.error(err)
       }
 
       const operations = part.flatMap((doc) => [

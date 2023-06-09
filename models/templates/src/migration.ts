@@ -13,15 +13,12 @@
 // limitations under the License.
 //
 
-import core, { DOMAIN_TX, TxOperations } from '@hcengineering/core'
+import core, { TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
-import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import templates from './plugin'
 
 export const templatesOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await changeClass(client)
-  },
+  async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     const current = await tx.findOne(core.class.Space, {
@@ -44,35 +41,4 @@ export const templatesOperation: MigrateOperation = {
       await tx.update(current, { private: false })
     }
   }
-}
-
-async function changeClass (client: MigrationClient): Promise<void> {
-  await client.update(
-    DOMAIN_SPACE,
-    {
-      _id: templates.space.Templates,
-      _class: core.class.Space
-    },
-    {
-      _class: templates.class.TemplateCategory,
-      private: false,
-      name: 'Public templates',
-      description: 'Space for public templates'
-    }
-  )
-
-  await client.update(
-    DOMAIN_TX,
-    {
-      objectId: templates.space.Templates,
-      objectClass: core.class.Space,
-      _class: core.class.TxCreateDoc
-    },
-    {
-      objectClass: templates.class.TemplateCategory,
-      'attributes.private': false,
-      'attributes.name': 'Public templates',
-      'attributes.description': 'Space for public templates'
-    }
-  )
 }

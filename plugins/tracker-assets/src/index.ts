@@ -38,7 +38,6 @@ loadMetadata(tracker.icon, {
   Parent: `${icons}#parent-issue`, // TODO: add icon
   Milestone: `${icons}#milestone`,
   IssueTemplates: `${icons}#issuetemplates`,
-  Scrum: `${icons}#scrum`,
   Start: `${icons}#start`,
   Stop: `${icons}#stop`,
 

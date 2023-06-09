@@ -13,12 +13,11 @@
 // limitations under the License.
 //
 
-import { Class, Doc, Domain, Ref, Space, TxOperations, DOMAIN_STATUS } from '@hcengineering/core'
-import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
-import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
+import { Class, Doc, Domain, Ref, Space, TxOperations } from '@hcengineering/core'
+import { MigrateOperation, MigrationClient, MigrationUpgradeClient, createOrUpdate } from '@hcengineering/model'
+import core from '@hcengineering/model-core'
 import tags from '@hcengineering/model-tags'
-import { DoneStateTemplate, genRanks, KanbanTemplate, StateTemplate } from '@hcengineering/task'
-import { DOMAIN_TASK, DOMAIN_KANBAN } from '.'
+import { DoneStateTemplate, KanbanTemplate, StateTemplate, genRanks } from '@hcengineering/task'
 import task from './plugin'
 
 /**
@@ -131,57 +130,8 @@ async function createDefaults (tx: TxOperations): Promise<void> {
   await createDefaultSequence(tx)
 }
 
-async function migrateTodoItems (client: MigrationClient): Promise<void> {
-  const assigneeTodos = await client.find(DOMAIN_TASK, { _class: task.class.TodoItem, assignee: { $exists: false } })
-  for (const todo of assigneeTodos) {
-    await client.update(DOMAIN_TASK, { _id: todo._id }, { assignee: null })
-  }
-
-  const dueToTodos = await client.find(DOMAIN_TASK, { _class: task.class.TodoItem, dueTo: { $exists: false } })
-  for (const todo of dueToTodos) {
-    await client.update(DOMAIN_TASK, { _id: todo._id }, { dueTo: null })
-  }
-}
-
 export const taskOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await Promise.all([migrateTodoItems(client)])
-
-    const stateClasses = client.hierarchy.getDescendants(task.class.State)
-    const doneStateClasses = client.hierarchy.getDescendants(task.class.DoneState)
-
-    const stateTemplateClasses = client.hierarchy.getDescendants(task.class.StateTemplate)
-    const doneStateTemplatesClasses = client.hierarchy.getDescendants(task.class.DoneStateTemplate)
-
-    try {
-      await client.move(DOMAIN_STATE, { _class: { $in: [...stateClasses, ...doneStateClasses] } }, DOMAIN_STATUS)
-    } catch (err) {}
-
-    await client.update(
-      DOMAIN_STATUS,
-      { _class: { $in: stateClasses }, ofAttribute: { $exists: false } },
-      { ofAttribute: task.attribute.State }
-    )
-    await client.update(
-      DOMAIN_STATUS,
-      { _class: { $in: doneStateClasses }, ofAttribute: { $exists: false } },
-      { ofAttribute: task.attribute.DoneState }
-    )
-
-    await client.update(
-      DOMAIN_STATUS,
-      { _class: { $in: [...stateClasses, ...doneStateClasses] }, title: { $exists: true } },
-      { $rename: { title: 'name' } }
-    )
-
-    await client.update(
-      DOMAIN_KANBAN,
-      { _class: { $in: [...stateTemplateClasses, ...doneStateTemplatesClasses] }, title: { $exists: true } },
-      { $rename: { title: 'name' } }
-    )
-
-    await client.delete(DOMAIN_SPACE, 'task:space:ProjectTemplates' as Space['_id'])
-  },
+  async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createDefaults(tx)
