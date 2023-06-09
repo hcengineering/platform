@@ -116,7 +116,7 @@
   }
 
   function isSelected (value: Doc | undefined | null, values: any[]): boolean {
-    if (grouppingManager !== undefined) {
+    if (value != null && grouppingManager !== undefined) {
       return grouppingManager.hasValue(value, values)
     }
     return values.includes(value?._id ?? value)
