@@ -96,7 +96,6 @@
             selectedEmployee = e.detail
           }}
           padding={'0 1.75rem'}
-          noMargin
           size="small"
         >
           <svelte:fragment slot="rightButtons">
