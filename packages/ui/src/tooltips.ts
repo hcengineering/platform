@@ -74,7 +74,7 @@ export function showTooltip (
     props,
     anchor,
     onUpdate,
-    kind: undefined
+    kind
   }
   tooltipstore.update((old) => {
     if (old.component === storedValue.component) {
