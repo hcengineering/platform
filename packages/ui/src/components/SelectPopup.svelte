@@ -82,35 +82,6 @@
   $: filteredObjects = value.filter((el) => (el.label ?? el.text ?? '').toLowerCase().includes(search.toLowerCase()))
 
   $: huge = size === 'medium' || size === 'large'
-
-  let selectedDiv: HTMLElement | undefined
-  let scrollDiv: HTMLElement | undefined
-  let cHeight = 0
-
-  const updateLocation = (scrollDiv?: HTMLElement, selectedDiv?: HTMLElement, objects?: ValueType[]) => {
-    const objIt = objects?.find((it) => it.isSelected)
-    if (objIt === undefined) {
-      cHeight = 0
-      return
-    }
-    if (scrollDiv && selectedDiv) {
-      const r = selectedDiv.getBoundingClientRect()
-      const r2 = scrollDiv.getBoundingClientRect()
-      if (r && r2) {
-        if (r.top > r2.top && r.bottom < r2.bottom) {
-          cHeight = 0
-        } else {
-          if (r.bottom < r2.bottom) {
-            cHeight = 1
-          } else {
-            cHeight = -1
-          }
-        }
-      }
-    }
-  }
-
-  $: updateLocation(scrollDiv, selectedDiv, filteredObjects)
 </script>
 
 <FocusHandler {manager} />
@@ -140,10 +111,7 @@
   {:else}
     <div class="menu-space" />
   {/if}
-  {#if cHeight === 1}
-    <div class="whereSelected" />
-  {/if}
-  <div class="scroll" on:scroll={() => updateLocation(scrollDiv, selectedDiv, filteredObjects)} bind:this={scrollDiv}>
+  <div class="scroll">
     <div class="box">
       <ListView
         bind:this={list}
@@ -174,9 +142,7 @@
               {#if hasSelected}
                 <div class="check">
                   {#if item.isSelected}
-                    <div bind:this={selectedDiv}>
-                      <Icon icon={IconCheck} size={'small'} />
-                    </div>
+                    <Icon icon={IconCheck} size={'small'} />
                   {/if}
                 </div>
               {/if}
@@ -202,8 +168,5 @@
       </ListView>
     </div>
   </div>
-  {#if cHeight === -1}
-    <div class="whereSelected" />
-  {/if}
   <div class="menu-space" />
 </div>

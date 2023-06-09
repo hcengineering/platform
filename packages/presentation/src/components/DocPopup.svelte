@@ -24,7 +24,6 @@
     IconCheck,
     IconSearch,
     ListView,
-    closeTooltip,
     createFocusManager,
     deviceOptionsStore,
     resizeObserver,
@@ -142,43 +141,6 @@
     return obj
   }
 
-  let selectedDiv: HTMLElement | undefined
-  let scrollDiv: HTMLElement | undefined
-  let cHeight = 0
-  let timer: any = null
-
-  const updateLocation = (scrollDiv?: HTMLElement, selectedDiv?: HTMLElement, objects?: Doc[], selected?: Ref<Doc>) => {
-    const objIt = objects?.find((it) => it._id === selected)
-    if (objIt === undefined) {
-      cHeight = 0
-      return
-    }
-    if (scrollDiv && selectedDiv) {
-      const r = selectedDiv.getBoundingClientRect()
-      const r2 = scrollDiv.getBoundingClientRect()
-      if (r && r2) {
-        if (r.top > r2.top && r.bottom < r2.bottom) {
-          cHeight = 0
-        } else {
-          if (r.bottom < r2.bottom) {
-            cHeight = 1
-          } else {
-            cHeight = -1
-          }
-        }
-      }
-    }
-    if (!timer) {
-      timer = setTimeout(() => {
-        closeTooltip()
-        clearTimeout(timer)
-        timer = null
-      }, 50)
-    }
-  }
-
-  $: updateLocation(scrollDiv, selectedDiv, objects, selected)
-
   const forbiddenDeselectItemIds = new Set(disallowDeselect)
 
   function getGroup (doc: Doc, groupBy: any): any {
@@ -226,10 +188,7 @@
       </div>
     {/if}
   </div>
-  {#if cHeight === 1}
-    <div class="whereSelected" />
-  {/if}
-  <div class="scroll" on:scroll={() => updateLocation(scrollDiv, selectedDiv, objects, selected)} bind:this={scrollDiv}>
+  <div class="scroll">
     <div class="box">
       <ListView bind:this={list} count={objects.length} bind:selection>
         <svelte:fragment slot="category" let:item>
@@ -260,7 +219,7 @@
             {#if (allowDeselect && selected) || multiSelect || selected}
               <div class="check" class:disabled={readonly}>
                 {#if obj._id === selected || selectedElements.has(obj._id)}
-                  <div bind:this={selectedDiv} use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
+                  <div use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
                     <Icon icon={IconCheck} size={'small'} />
                   </div>
                 {/if}
@@ -271,9 +230,6 @@
       </ListView>
     </div>
   </div>
-  {#if cHeight === -1}
-    <div class="whereSelected" />
-  {/if}
   <div class="menu-space" />
 </div>
 
