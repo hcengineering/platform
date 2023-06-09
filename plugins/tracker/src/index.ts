@@ -481,6 +481,7 @@ export default plugin(trackerId, {
     MoveToProject: '' as Ref<Action>,
     Duplicate: '' as Ref<Action>,
     Relations: '' as Ref<Action>,
+    NewIssue: '' as Ref<Action>,
     NewSubIssue: '' as Ref<Action>,
     EditWorkflowStatuses: '' as Ref<Action>,
     EditProject: '' as Ref<Action>,

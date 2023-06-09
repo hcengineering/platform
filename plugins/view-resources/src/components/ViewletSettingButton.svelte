@@ -37,7 +37,7 @@
       icon={view.icon.Configure}
       label={view.string.Show}
       {kind}
-      showTooltip={{ label: view.string.CustomizeView }}
+      showTooltip={{ label: view.string.CustomizeView, direction: 'bottom' }}
       bind:input={btn}
       on:click={clickHandler}
     />

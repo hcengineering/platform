@@ -18,6 +18,7 @@
   import IconNavNext from '../icons/NavNext.svelte'
   import Icon from '../Icon.svelte'
   import { firstDay, day, getWeekDayName, areDatesEqual, getMonthName, weekday, isWeekend } from './internal/DateUtils'
+  import { capitalizeFirstLetter } from '../../utils'
 
   export let currentDate: Date | null
   export let viewDate: Date
@@ -32,7 +33,6 @@
   $: firstDayOfCurrentMonth = firstDay(viewDate, mondayStart)
   let monthYear: string
   const today: Date = new Date(Date.now())
-  const capitalizeFirstLetter = (str: string): string => str.charAt(0).toUpperCase() + str.slice(1)
 
   afterUpdate(() => {
     monthYear = capitalizeFirstLetter(getMonthName(viewDate)) + ' ' + viewDate.getFullYear()

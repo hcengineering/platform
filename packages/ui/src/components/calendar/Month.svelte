@@ -27,6 +27,7 @@
     TCellStyle,
     ICell
   } from './internal/DateUtils'
+  import { capitalizeFirstLetter } from '../../utils'
 
   export let currentDate: Date | null
   export let mondayStart: boolean = true
@@ -42,7 +43,6 @@
     if (areDatesEqual(today, new Date(viewDate.getFullYear(), viewDate.getMonth(), n))) return true
     return false
   }
-  const capitalizeFirstLetter = (str: string): string => str.charAt(0).toUpperCase() + str.slice(1)
 
   let days: Array<ICell> = []
   const getDateStyle = (date: Date): TCellStyle => {

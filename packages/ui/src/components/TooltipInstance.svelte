@@ -19,6 +19,7 @@
   import type { TooltipAlignment } from '../types'
   import Component from './Component.svelte'
   import Label from './Label.svelte'
+  import { capitalizeFirstLetter, formatKey } from '../utils'
 
   let tooltipHTML: HTMLElement
   let nubHTML: HTMLElement
@@ -236,6 +237,25 @@
 {:else if $tooltip.label && $tooltip.kind !== 'submenu'}
   <div class="tooltip {dir ?? ''}" bind:this={tooltipHTML}>
     <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
+    {#if $tooltip.keys !== undefined}
+      <div class="keys">
+        {#each $tooltip.keys as key, i}
+          {#if i !== 0}
+            <div class="mr-1 ml-1">/</div>
+          {/if}
+          {#each formatKey(key) as k, jj}
+            <div class="key">
+              {#each k as kk, j}
+                {#if j !== 0}
+                  +
+                {/if}
+                {capitalizeFirstLetter(kk.trim())}
+              {/each}
+            </div>
+          {/each}
+        {/each}
+      </div>
+    {/if}
   </div>
 {:else if $tooltip.kind === 'submenu'}
   <div
@@ -361,25 +381,36 @@
     }
   }
 
+  .keys {
+    margin-left: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.125rem;
+  }
+
+  .key {
+    border-radius: 0.125rem;
+    font-size: 0.75rem;
+    min-width: 1.5rem;
+    padding: 0.25rem;
+    background-color: var(--theme-tooltip-key-bg);
+  }
+
   .tooltip {
     position: fixed;
-    padding: 0.5rem 0.75rem;
+    padding: 0.5rem;
     text-align: center;
-    color: var(--theme-content-color);
-    background-color: var(--theme-popup-color);
+    font-size: 0.75rem;
+    color: var(--theme-tooltip-color);
+    background-color: var(--theme-tooltip-bg);
     border: 1px solid var(--theme-popup-divider);
-    border-radius: 0.75rem;
+    border-radius: 0.25rem;
     box-shadow: var(--theme-popup-shadow);
     user-select: none;
     z-index: 10000;
+    display: flex;
+    align-items: center;
 
-    &::after,
-    &::before {
-      content: '';
-      position: absolute;
-      width: 18px;
-      height: 7px;
-    }
     &::before {
       background-color: var(--theme-popup-color);
       clip-path: url('#nub-bg');
@@ -389,55 +420,6 @@
       background-color: var(--theme-popup-divider);
       clip-path: url('#nub-border');
       z-index: 2;
-    }
-
-    &.top::after,
-    &.bottom::after,
-    &.top::before,
-    &.bottom::before {
-      left: 50%;
-      margin-left: -9px;
-    }
-    &.top {
-      bottom: 100%;
-      &::after,
-      &::before {
-        bottom: -6px;
-        transform: rotate(180deg);
-      }
-    }
-    &.bottom {
-      top: 100%;
-      &::after,
-      &::before {
-        top: -7px;
-      }
-    }
-
-    &.right::after,
-    &.left::after,
-    &.right::before,
-    &.left::before {
-      top: 50%;
-      margin-top: -9px;
-    }
-    &.right {
-      left: 100%;
-      &::after,
-      &::before {
-        transform-origin: right top;
-        left: -24px;
-        transform: rotate(-90deg);
-      }
-    }
-    &.left {
-      right: 100%;
-      &::after,
-      &::before {
-        transform-origin: left top;
-        right: -24px;
-        transform: rotate(90deg);
-      }
     }
   }
   .no-arrow {

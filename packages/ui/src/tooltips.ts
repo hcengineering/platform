@@ -10,6 +10,7 @@ const emptyTooltip: LabelAndProps = {
   props: undefined,
   anchor: undefined,
   onUpdate: undefined,
+  keys: undefined,
   kind: 'tooltip'
 }
 let storedValue: LabelAndProps = emptyTooltip
@@ -27,10 +28,30 @@ export function tooltip (node: HTMLElement, options?: LabelAndProps): any {
       if (opt.kind !== 'submenu') {
         clearTimeout(toHandler)
         toHandler = setTimeout(() => {
-          showTooltip(opt.label, node, opt.direction, opt.component, opt.props, opt.anchor, opt.onUpdate, opt.kind)
+          showTooltip(
+            opt.label,
+            node,
+            opt.direction,
+            opt.component,
+            opt.props,
+            opt.anchor,
+            opt.onUpdate,
+            opt.kind,
+            opt.keys
+          )
         }, 250)
       } else {
-        showTooltip(opt.label, node, opt.direction, opt.component, opt.props, opt.anchor, opt.onUpdate, opt.kind)
+        showTooltip(
+          opt.label,
+          node,
+          opt.direction,
+          opt.component,
+          opt.props,
+          opt.anchor,
+          opt.onUpdate,
+          opt.kind,
+          opt.keys
+        )
       }
     }
   }
@@ -45,7 +66,17 @@ export function tooltip (node: HTMLElement, options?: LabelAndProps): any {
       if (node !== storedValue.element) return
       const shown = !!(storedValue.label !== undefined || storedValue.component !== undefined)
       if (shown) {
-        showTooltip(opt.label, node, opt.direction, opt.component, opt.props, opt.anchor, opt.onUpdate, opt.kind)
+        showTooltip(
+          opt.label,
+          node,
+          opt.direction,
+          opt.component,
+          opt.props,
+          opt.anchor,
+          opt.onUpdate,
+          opt.kind,
+          opt.keys
+        )
       }
     },
 
@@ -64,7 +95,8 @@ export function showTooltip (
   props?: any,
   anchor?: HTMLElement,
   onUpdate?: (result: any) => void,
-  kind?: 'tooltip' | 'submenu' | 'popup'
+  kind?: 'tooltip' | 'submenu' | 'popup',
+  keys?: string[]
 ): void {
   storedValue = {
     label,
@@ -74,7 +106,8 @@ export function showTooltip (
     props,
     anchor,
     onUpdate,
-    kind
+    kind,
+    keys
   }
   tooltipstore.update((old) => {
     if (old.component === storedValue.component) {

@@ -56,7 +56,7 @@
     icon={view.icon.ViewButton}
     label={view.string.View}
     {kind}
-    showTooltip={{ label: view.string.CustomizeView }}
+    showTooltip={{ label: view.string.CustomizeView, direction: 'bottom' }}
     bind:input={btn}
     on:click={clickHandler}
   />

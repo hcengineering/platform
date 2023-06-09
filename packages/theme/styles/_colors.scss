@@ -154,6 +154,10 @@
   --theme-calendar-holiday-bgcolor: rgba(235, 87, 87, .1);
   --theme-calendar-weekend-bgcolor: rgba(242, 153, 74, .05);
 
+  --theme-tooltip-color: rgba(255, 255, 255, .8);
+  --theme-tooltip-bg: #353347;
+  --theme-tooltip-key-bg: rgba(255, 255, 255, .08);
+
   --theme-inbox-notify: #F47758;
   --theme-inbox-people-notify: #2B5190;
   --theme-inbox-activity-bgcolor: #1A1A28;
@@ -346,6 +350,10 @@
   --theme-calendar-today-bgcolor: rgba(43, 81, 144, .1);
   --theme-calendar-holiday-bgcolor: rgba(235, 87, 87, .1);
   --theme-calendar-weekend-bgcolor: rgba(242, 153, 74, .1);
+
+  --theme-tooltip-color: #FFF;
+  --theme-tooltip-bg: #444248;
+  --theme-tooltip-key-bg: rgba(255, 255, 255, .08);
 
   --theme-inbox-notify: #F47758;
   --theme-inbox-people-notify: #2B5190;

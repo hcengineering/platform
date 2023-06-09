@@ -1315,7 +1315,7 @@ export function createModel (builder: Builder): void {
         group: 'create'
       }
     },
-    tracker.action.NewSubIssue
+    tracker.action.NewIssue
   )
 
   createAction(

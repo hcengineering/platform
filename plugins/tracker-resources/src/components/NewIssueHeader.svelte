@@ -14,8 +14,9 @@
 -->
 <script lang="ts">
   import { Ref, Space } from '@hcengineering/core'
-  import { MultipleDraftController } from '@hcengineering/presentation'
+  import { MultipleDraftController, getClient } from '@hcengineering/presentation'
   import { Button, IconAdd, showPopup } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { onDestroy } from 'svelte'
   import tracker from '../plugin'
   import CreateIssue from './CreateIssue.svelte'
@@ -38,18 +39,31 @@
       closed = true
     })
   }
+
+  $: label = draftExists || !closed ? tracker.string.ResumeDraft : tracker.string.NewIssue
+
+  const client = getClient()
+
+  let keys: string[] | undefined = undefined
+
+  client.findOne(view.class.Action, { _id: tracker.action.NewIssue }).then((p) => (keys = p?.keyBinding))
 </script>
 
 <div class="antiNav-subheader">
   <Button
     icon={IconAdd}
-    label={draftExists || !closed ? tracker.string.ResumeDraft : tracker.string.NewIssue}
+    {label}
     justify={'left'}
     kind={'primary'}
     width={'100%'}
     size={'large'}
     on:click={newIssue}
     id="new-issue"
+    showTooltip={{
+      direction: 'bottom',
+      label,
+      keys
+    }}
   >
     <div slot="content" class="draft-circle-container">
       {#if draftExists}
