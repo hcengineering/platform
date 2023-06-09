@@ -60,6 +60,7 @@ import StatusPresenter from './components/issues/StatusPresenter.svelte'
 import TitlePresenter from './components/issues/TitlePresenter.svelte'
 import PriorityFilterValuePresenter from './components/issues/PriorityFilterValuePresenter.svelte'
 import StatusFilterValuePresenter from './components/issues/StatusFilterValuePresenter.svelte'
+import ProjectFilterValuePresenter from './components/projects/ProjectFilterValuePresenter.svelte'
 import MyIssues from './components/myissues/MyIssues.svelte'
 import NewIssueHeader from './components/NewIssueHeader.svelte'
 import NopeComponent from './components/NopeComponent.svelte'
@@ -485,7 +486,8 @@ export default async (): Promise<Resources> => ({
     NotificationIssuePresenter,
     MilestoneFilter,
     PriorityFilterValuePresenter,
-    StatusFilterValuePresenter
+    StatusFilterValuePresenter,
+    ProjectFilterValuePresenter
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>
