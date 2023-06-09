@@ -1503,6 +1503,6 @@
       "packageName": "@hcengineering/server-view-resources",
       "projectFolder": "server-plugins/view-resources",
       "shouldPublish": false
-    },
+    }
   ]
 }

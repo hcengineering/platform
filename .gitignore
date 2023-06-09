@@ -82,3 +82,4 @@ pods/front/dist
 *.pyc
 metrics.txt
 dev/tool/report*.csv
+tests/db_dump

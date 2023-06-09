@@ -85,7 +85,11 @@ setMetadata(serverCore.metadata.FrontUrl, frontUrl)
 setMetadata(serverToken.metadata.Secret, serverSecret)
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
-console.log(`starting server on ${serverPort}`)
+console.log(
+  `starting server on ${serverPort} git_version: ${process.env.GIT_REVISION ?? ''} model_version: ${
+    process.env.MODEL_VERSION ?? ''
+  }`
+)
 const shutdown = start(url, {
   fullTextUrl: elasticUrl,
   minioConf,

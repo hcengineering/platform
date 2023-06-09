@@ -2,7 +2,7 @@
 
 name: CI
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
@@ -14,7 +14,7 @@ on:
     tags:
       - v*
   pull_request:
-    branches: [main, develop]   
+    branches: [main, develop]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -59,6 +59,9 @@ jobs:
 
       - name: Building...
         run: node common/scripts/install-run-rush.js build
+
+      - name: Bundle
+        run: node common/scripts/install-run-rush.js bundle --verbose
 
       - name: Cache build results for next jobs
         uses: actions/cache@v3
@@ -245,15 +248,18 @@ jobs:
 
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
+        
+      - name: Setting model version from git release...
+        run: node common/scripts/install-run-rush.js bump-model-version
+
+      - name: Building...
+        run: node common/scripts/install-run-rush.js build
+
       - name: Bundle
-        run: node common/scripts/install-run-rush.js bundle --verbose
+        run: node common/scripts/install-run-rush.js bundle
+
       - name: Docker build
-        run: node common/scripts/install-run-rush.js docker:build --verbose
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: hardcoreeng
-          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}        
+        run: node common/scripts/install-run-rush.js docker:build
       - name: Prepare server
         run: |
           cd ./tests
@@ -266,12 +272,22 @@ jobs:
         run: |
           cd ./tests/sanity
           node ../../common/scripts/install-run-rushx.js uitest
+      # - name: Archive DB
+      #   run: |
+      #     cd ./tests
+      #     ./update-snapshot-ci.sh ./tests/db_dump
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v3
         with:
           name: playwright-results
           path: ./tests/sanity/playwright-report/
+      - name: Upload DB snapshot
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: db-snapshot
+          path: ./tests/db_dump
   docker-build:
     if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
     needs: [build, uitest, test, svelte-check]
