@@ -289,7 +289,7 @@
         const specialRef = getMetadata(workbench.metadata.DefaultSpecial) as Ref<Space>
         const loc = getCurrentLocation()
         // Be sure URI is not yet changed
-        if (loc.path[2] === undefined) {
+        if (loc.path[2] === undefined && loc.path[0] === 'workbench') {
           loc.path[2] = appShort
           let len = 3
           if (spaceRef !== undefined && specialRef !== undefined) {
