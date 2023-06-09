@@ -272,10 +272,10 @@ jobs:
         run: |
           cd ./tests/sanity
           node ../../common/scripts/install-run-rushx.js uitest
-      - name: Archive DB
-        run: |
-          cd ./tests
-          ./update-snapshot.sh ./tests/db_dump
+      # - name: Archive DB
+      #   run: |
+      #     cd ./tests
+      #     ./update-snapshot-ci.sh ./tests/db_dump
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v3
