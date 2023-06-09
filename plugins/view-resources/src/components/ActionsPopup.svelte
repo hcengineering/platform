@@ -25,7 +25,9 @@
     Label,
     EditWithIcon,
     IconSearch,
-    deviceOptionsStore
+    deviceOptionsStore,
+    capitalizeFirstLetter,
+    formatKey
   } from '@hcengineering/ui'
   import { Action, ViewContext } from '@hcengineering/view'
   import { filterActions, getSelection } from '../actions'
@@ -167,30 +169,7 @@
       handleSelection(key, selection)
     }
   }
-  const capitalizeFirstLetter = (str: string): string => str.charAt(0).toUpperCase() + str.slice(1)
 
-  const isMac = /Macintosh/i.test(navigator.userAgent)
-
-  function formatKey (key: string): string[][] {
-    const thens = key.split('->')
-    const result: string[][] = []
-    for (const r of thens) {
-      result.push(
-        r.split('+').map((it) =>
-          it
-            .replaceAll('key', '')
-            .replaceAll(/Meta|meta/g, isMac ? '⌘' : 'Ctrl')
-            .replaceAll('ArrowUp', '↑')
-            .replaceAll('ArrowDown', '↓')
-            .replaceAll('ArrowLeft', '←')
-            .replaceAll('ArrowRight', '→')
-            .replaceAll('Backspace', '⌫')
-            .toLocaleLowerCase()
-        )
-      )
-    }
-    return result
-  }
   const dispatch = createEventDispatcher()
 </script>
 

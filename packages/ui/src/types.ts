@@ -238,6 +238,7 @@ export interface LabelAndProps {
   anchor?: HTMLElement
   onUpdate?: (result: any) => void
   kind?: 'tooltip' | 'submenu' | 'popup'
+  keys?: string[]
 }
 
 export interface ListItem {

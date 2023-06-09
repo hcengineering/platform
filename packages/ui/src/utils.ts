@@ -197,3 +197,36 @@ export interface IModeSelector {
   config: Array<[string, IntlString, object]>
   onChange: (_mode: string) => void
 }
+
+/**
+ * @public
+ */
+export function capitalizeFirstLetter (str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+const isMac = /Macintosh/i.test(navigator.userAgent)
+
+/**
+ * @public
+ */
+export function formatKey (key: string): string[][] {
+  const thens = key.split('->')
+  const result: string[][] = []
+  for (const r of thens) {
+    result.push(
+      r.split('+').map((it) =>
+        it
+          .replace(/key/g, '')
+          .replace(/Meta|meta/g, isMac ? '⌘' : 'Ctrl')
+          .replace(/ArrowUp/g, '↑')
+          .replace(/ArrowDown/g, '↓')
+          .replace(/ArrowLeft/g, '←')
+          .replace(/ArrowRight/g, '→')
+          .replace(/Backspace/g, '⌫')
+          .toLocaleLowerCase()
+      )
+    )
+  }
+  return result
+}

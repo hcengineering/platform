@@ -3,7 +3,9 @@
   import setting, { settingId } from '@hcengineering/setting'
   import {
     Button,
+    capitalizeFirstLetter,
     closePopup,
+    formatKey,
     getCurrentResolvedLocation,
     Icon,
     IconArrowLeft,
@@ -34,28 +36,6 @@
     navigate(loc)
   }
 
-  const capitalizeFirstLetter = (str: string): string => str.charAt(0).toUpperCase() + str.slice(1)
-
-  function formatKey (key: string): string[][] {
-    const thens = key.split('->')
-    const result: string[][] = []
-    for (const r of thens) {
-      result.push(
-        r.split('+').map((it) =>
-          it
-            .replaceAll('key', '')
-            .replaceAll(/Meta|meta/g, isMac ? '⌘' : 'Ctrl')
-            .replaceAll('ArrowUp', '↑')
-            .replaceAll('ArrowDown', '↓')
-            .replaceAll('ArrowLeft', '←')
-            .replaceAll('ArrowRight', '→')
-            .replaceAll('Backspace', '⌫')
-        )
-      )
-    }
-    return result
-  }
-
   async function getActions () {
     categories = await getClient().findAll(view.class.ActionCategory, [])
     const rawActions = await client.findAll(view.class.Action, [])
@@ -81,8 +61,6 @@
     actions.sort((a, b) => a.category.localeCompare(b.category))
   }
   getActions()
-
-  const isMac = /Macintosh/i.test(navigator.userAgent)
 
   const cards = [
     {
