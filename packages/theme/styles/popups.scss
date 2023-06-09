@@ -194,10 +194,6 @@
       &.show + .menu-group { height: auto; }
     }
   }
-  .whereSelected {
-    height: 2px;
-    background-color: var(--theme-caret-color);
-  }
   .menu-space {
     flex-shrink: 0;
     height: .5rem;

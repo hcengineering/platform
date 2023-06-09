@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact, { Contact, Employee, EmployeeAccount, Person } from '@hcengineering/contact'
-  import { Doc, DocumentQuery, FindOptions, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { DocumentQuery, FindOptions, getCurrentAccount, Ref } from '@hcengineering/core'
   import type { Asset, IntlString } from '@hcengineering/platform'
   import {
     createFocusManager,
@@ -144,36 +144,6 @@
   function toAny (obj: any): any {
     return obj
   }
-
-  let selectedDiv: HTMLElement | undefined
-  let scrollDiv: HTMLElement | undefined
-  let cHeight = 0
-
-  const updateLocation = (scrollDiv?: HTMLElement, selectedDiv?: HTMLElement, objects?: Doc[], selected?: Ref<Doc>) => {
-    const objIt = objects?.find((it) => it._id === selected)
-    if (objIt === undefined) {
-      cHeight = 0
-      return
-    }
-    if (scrollDiv && selectedDiv) {
-      const r = selectedDiv.getBoundingClientRect()
-      const r2 = scrollDiv.getBoundingClientRect()
-
-      if (r && r2) {
-        if (r.top > r2.top && r.bottom < r2.bottom) {
-          cHeight = 0
-        } else {
-          if (r.bottom < r2.bottom) {
-            cHeight = 1
-          } else {
-            cHeight = -1
-          }
-        }
-      }
-    }
-  }
-
-  $: updateLocation(scrollDiv, selectedDiv, contacts, selected)
 </script>
 
 <FocusHandler {manager} />
@@ -200,14 +170,7 @@
       on:change
     />
   </div>
-  {#if cHeight === 1}
-    <div class="whereSelected" />
-  {/if}
-  <div
-    class="scroll"
-    on:scroll={() => updateLocation(scrollDiv, selectedDiv, contacts, selected)}
-    bind:this={scrollDiv}
-  >
+  <div class="scroll">
     <div class="box">
       <ListView bind:this={list} count={contacts.length} bind:selection>
         <svelte:fragment slot="category" let:item>
@@ -244,7 +207,7 @@
             {#if allowDeselect && selected}
               <div class="check">
                 {#if obj._id === selected}
-                  <div bind:this={selectedDiv} use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
+                  <div use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
                     <Icon icon={IconCheck} size={'small'} />
                   </div>
                 {/if}
@@ -255,9 +218,6 @@
       </ListView>
     </div>
   </div>
-  {#if cHeight === -1}
-    <div class="whereSelected" />
-  {/if}
   <div class="menu-space" />
 </div>
 
