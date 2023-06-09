@@ -22,7 +22,7 @@
   export let icon: Asset | undefined = undefined
   export let title: string
   export let notifications = 0
-  export let actions: () => Promise<Action[]> = async () => []
+  export let actions: (originalEvent?: MouseEvent) => Promise<Action[]> = async () => []
   export let selected: boolean = false
   export let bold = false
   export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
