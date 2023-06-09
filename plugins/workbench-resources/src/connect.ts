@@ -1,15 +1,16 @@
 import client from '@hcengineering/client'
 import core, {
+  AccountClient,
   AccountRole,
   Client,
-  AccountClient,
-  setCurrentAccount,
   Version,
+  getCurrentAccount,
+  setCurrentAccount,
   versionToString
 } from '@hcengineering/core'
 import login, { loginId } from '@hcengineering/login'
 import { addEventListener, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
-import presentation, { refreshClient, setClient } from '@hcengineering/presentation'
+import presentation, { closeClient, refreshClient, setClient } from '@hcengineering/presentation'
 import ui, {
   fetchMetadataLocalStorage,
   getCurrentLocation,
@@ -153,14 +154,19 @@ export async function connect (title: string): Promise<Client | undefined> {
       ep = ep.substring(0, ep.length - 1)
     }
     setMetadata(ui.metadata.ShowNetwork, (evt: MouseEvent) => {
-      showPopup(
-        ServerManager,
-        {
-          endpoint: ep,
-          token
-        },
-        'content'
-      )
+      if (getMetadata(presentation.metadata.Token) == null) {
+        return
+      }
+      if (getCurrentAccount()?.role === AccountRole.Owner) {
+        showPopup(
+          ServerManager,
+          {
+            endpoint: ep,
+            token
+          },
+          'content'
+        )
+      }
     })
   }
 
@@ -178,4 +184,5 @@ function clearMetadata (ws: string): void {
   setMetadata(presentation.metadata.Token, null)
   setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
   setMetadataLocalStorage(login.metadata.LoginEmail, null)
+  void closeClient()
 }
