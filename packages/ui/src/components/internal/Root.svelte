@@ -107,7 +107,7 @@
         >
           <div class="flex flex-row-center flex-center">
             {#if maintenanceTime > 0}
-              <div class="flex flex-grow flex-center flex-row-center" class:maintenanceScheduled={maintenanceTime > 0}>
+              <div class="flex-grow flex-center flex-row-center" class:maintenanceScheduled={maintenanceTime > 0}>
                 <Label label={platform.status.MaintenanceWarning} params={{ time: maintenanceTime }} />
               </div>
             {/if}
@@ -195,14 +195,13 @@
       background-color: var(--theme-statusbar-color);
 
       .maintenanceScheduled {
-        background-color: var(--highlight-red);
-        color: var(--tooltip-bg-color);
-        border-radius: 10px;
-        padding: 0 1rem 0 1rem;
-        height: 20px;
-        align-items: center;
+        padding: 0 0.5rem;
         width: fit-content;
-        max-width: 18rem;
+        height: 1.25rem;
+        max-width: 22rem;
+        color: var(--tooltip-bg-color);
+        background-color: var(--highlight-red);
+        border-radius: 0.625rem;
       }
 
       .status-info {
