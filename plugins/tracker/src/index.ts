@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Employee, EmployeeAccount } from '@hcengineering/contact'
+import { Employee } from '@hcengineering/contact'
 import {
   AttachedDoc,
   Attribute,
@@ -47,7 +47,6 @@ export interface IssueStatus extends Status {}
 export interface Project extends Space, IconProps {
   identifier: string // Project identifier
   sequence: number
-  issueStatuses: number
   defaultIssueStatus: Ref<IssueStatus>
   defaultAssignee?: Ref<Employee>
   defaultTimeReportDay: TimeReportDayType
@@ -335,37 +334,6 @@ export class ComponentManager extends DocManager {
 /**
  * @public
  */
-export interface ScrumRecord extends AttachedDoc {
-  label: string
-  startTs: Timestamp
-  endTs?: Timestamp
-  scrumRecorder: Ref<EmployeeAccount>
-
-  comments: number
-  attachments?: number
-
-  space: Ref<Project>
-  attachedTo: Ref<Scrum>
-}
-
-/**
- * @public
- */
-export interface Scrum extends Doc {
-  title: string
-  description?: Markup
-  beginTime: Timestamp
-  endTime: Timestamp
-  members: Ref<Employee>[]
-  space: Ref<Project>
-
-  scrumRecords?: number
-  attachments?: number
-}
-
-/**
- * @public
- */
 export const trackerId = 'tracker' as Plugin
 
 export * from './utils'
@@ -379,8 +347,6 @@ export default plugin(trackerId, {
     IssueStatus: '' as Ref<Class<IssueStatus>>,
     TypeIssuePriority: '' as Ref<Class<Type<IssuePriority>>>,
     Milestone: '' as Ref<Class<Milestone>>,
-    Scrum: '' as Ref<Class<Scrum>>,
-    ScrumRecord: '' as Ref<Class<ScrumRecord>>,
     TypeMilestoneStatus: '' as Ref<Class<Type<MilestoneStatus>>>,
     TimeSpendReport: '' as Ref<Class<TimeSpendReport>>,
     TypeReportedTime: '' as Ref<Class<Type<number>>>
@@ -430,7 +396,6 @@ export default plugin(trackerId, {
     Parent: '' as Asset,
     Milestone: '' as Asset,
     IssueTemplates: '' as Asset,
-    Scrum: '' as Asset,
     Start: '' as Asset,
     Stop: '' as Asset,
 

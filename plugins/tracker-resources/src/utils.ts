@@ -228,8 +228,6 @@ export type ComponentsFilterMode = 'all' | 'backlog' | 'active' | 'closed'
 
 export type MilestoneViewMode = 'all' | 'planned' | 'active' | 'closed'
 
-export type ScrumRecordViewMode = 'timeReports' | 'objects'
-
 export const getIncludedMilestoneStatuses = (mode: MilestoneViewMode): MilestoneStatus[] => {
   switch (mode) {
     case 'all': {
@@ -262,11 +260,6 @@ export const milestoneTitleMap: Record<MilestoneViewMode, IntlString> = Object.f
   planned: tracker.string.PlannedMilestones,
   active: tracker.string.ActiveMilestones,
   closed: tracker.string.ClosedMilestones
-})
-
-export const scrumRecordTitleMap: Record<ScrumRecordViewMode, IntlString> = Object.freeze({
-  timeReports: tracker.string.ScrumRecordTimeReports,
-  objects: tracker.string.ScrumRecordObjects
 })
 
 const listIssueStatusOrder = [
