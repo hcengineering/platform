@@ -31,12 +31,12 @@
   export let selected = false
   export let bold = false
   export let shortDropbox = false
-  export let actions: () => Promise<Action[]> = async () => []
+  export let actions: (originalEvent?: MouseEvent) => Promise<Action[]> = async () => []
   export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
 
   let hovered = false
   async function onMenuClick (ev: MouseEvent) {
-    showPopup(Menu, { actions: await actions(), ctx: _id }, ev.target as HTMLElement, () => {
+    showPopup(Menu, { actions: await actions(ev), ctx: _id }, ev.target as HTMLElement, () => {
       hovered = false
     })
     hovered = true

@@ -824,6 +824,7 @@ const view = plugin(viewId, {
     Timeline: '' as IntlString,
     Public: '' as IntlString,
     Hide: '' as IntlString,
+    Rename: '' as IntlString,
     Assigned: '' as IntlString,
     Open: '' as IntlString,
     Created: '' as IntlString,
