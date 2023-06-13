@@ -75,7 +75,10 @@
     const isDerivedFromSpace = hierarchy.isDerived(_class, core.class.Space)
     objectsPromise = client.findAll(
       _class,
-      { ...resultQuery, ...(space ? { space } : isDerivedFromSpace ? { archived: false} : { '$lookup.space.archived': false }) },
+      {
+        ...resultQuery,
+        ...(space ? { space } : isDerivedFromSpace ? { archived: false } : { '$lookup.space.archived': false })
+      },
       {
         sort: { [filter.key.key]: SortingOrder.Ascending },
         projection: { [prefix + filter.key.key]: 1, space: 1 },
