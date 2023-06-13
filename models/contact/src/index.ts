@@ -705,7 +705,7 @@ export function createModel (builder: Builder): void {
     presentation.class.ObjectSearchCategory,
     core.space.Model,
     {
-      icon: contact.icon.Person,
+      icon: contact.icon.Persona,
       label: contact.string.SearchPerson,
       query: contact.completion.PersonQuery
     },

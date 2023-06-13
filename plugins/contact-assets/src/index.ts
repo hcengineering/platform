@@ -34,6 +34,7 @@ loadMetadata(contact.icon, {
   GitHub: `${icons}#github`,
   Edit: `${icons}#edit`,
   Person: `${icons}#person`,
+  Persona: `${icons}#persona`,
   Company: `${icons}#company`,
   SocialEdit: `${icons}#social-edit`,
   Homepage: `${icons}#homepage`,

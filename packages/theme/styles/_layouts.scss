@@ -726,11 +726,15 @@ input.search {
   width: 1.5rem;
   height: 1.5rem;
 }
+.svg-x-large {
+  width: 1.75rem;
+  height: 1.75rem;
+}
 .svg-full {
   width: inherit;
   height: inherit;
 }
-.svg-card, .svg-x-small, .svg-small, .svg-medium, .svg-large { flex-shrink: 0; }
+.svg-card, .svg-x-small, .svg-small, .svg-medium, .svg-large, .svg-x-large { flex-shrink: 0; }
 
 .svg-mask {
   position: absolute;

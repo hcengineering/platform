@@ -237,6 +237,7 @@ export const contactPlugin = plugin(contactId, {
     GitHub: '' as Asset,
     Edit: '' as Asset,
     Person: '' as Asset,
+    Persona: '' as Asset,
     Company: '' as Asset,
     SocialEdit: '' as Asset,
     Homepage: '' as Asset,

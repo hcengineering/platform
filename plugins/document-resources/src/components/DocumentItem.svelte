@@ -26,18 +26,14 @@
   const lastVersion = versions.length > 0 ? versions[versions.length - 1] : undefined
 </script>
 
-<div class="flex item">
-  <Icon icon={document.icon.Document} size={'medium'} />
-  <div class="ml-2">
+<div class="flex-row-center">
+  <div class="flex-center p-1 content-dark-color flex-no-shrink mr-2-5">
+    <Icon icon={document.icon.Document} size={'medium'} />
+  </div>
+  <span class="overflow-label">
     {value.name}
     {#if lastVersion}
       - {lastVersion?.version}
     {/if}
-  </div>
+  </span>
 </div>
-
-<style lang="scss">
-  .item {
-    align-items: center;
-  }
-</style>

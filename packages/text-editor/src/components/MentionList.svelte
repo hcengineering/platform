@@ -65,9 +65,11 @@
     let tempStyle = ''
     if (rect.top < hDoc - rect.bottom) {
       // 20rem - 1.75rem
-      tempStyle = `top: calc(${rect.bottom}px + .75rem); max-height: calc(${hDoc - rect.bottom}px - 1.75rem); `
+      const maxH: number = hDoc - rect.bottom - 40 >= 480 ? 480 : hDoc - rect.bottom - 40
+      tempStyle = `top: calc(${rect.bottom}px + .75rem); max-height: ${maxH}px; `
     } else {
-      tempStyle = `bottom: calc(${hDoc - rect.top}px + .75rem); max-height: calc(${rect.top}px - 1.75rem); `
+      const maxH: number = rect.top - 40 >= 480 ? 480 : rect.top - 40
+      tempStyle = `bottom: calc(${hDoc - rect.top}px + .75rem); max-height: ${maxH}px; `
     }
     if (rect.left + wPopup > wDoc - 16) {
       // 30rem - 1.75rem
@@ -95,7 +97,7 @@
     updateStyle()
   }}
 >
-  <ObjectSearchPopup bind:this={searchPopup} {query} on:close={(evt) => dispatchItem(evt.detail)} hideButtons={true} />
+  <ObjectSearchPopup bind:this={searchPopup} {query} on:close={(evt) => dispatchItem(evt.detail)} />
 </div>
 
 <style lang="scss">
@@ -110,10 +112,10 @@
 
   .completion {
     position: absolute;
-    // min-width: 20rem;
-    // max-width: 30rem;
-    // min-height: 0;
-    // max-height: 30rem;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
     z-index: 10001;
   }
 </style>
