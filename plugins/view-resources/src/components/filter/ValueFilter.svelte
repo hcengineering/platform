@@ -67,26 +67,27 @@
           }
         : {}
     let prefix = ''
-    const hieararchy = client.getHierarchy()
-    const attr = hieararchy.getAttribute(filter.key._class, filter.key.key)
-    if (hieararchy.isMixin(attr.attributeOf)) {
+    const hierarchy = client.getHierarchy()
+    const attr = hierarchy.getAttribute(filter.key._class, filter.key.key)
+    if (hierarchy.isMixin(attr.attributeOf)) {
       prefix = attr.attributeOf + '.'
     }
+    const isDerivedFromSpace = hierarchy.isDerived(_class, core.class.Space)
     objectsPromise = client.findAll(
       _class,
-      { ...resultQuery, ...(space ? { space } : { '$lookup.space.archived': false }) },
+      { ...resultQuery, ...(space ? { space } : isDerivedFromSpace ? { archived: false} : { '$lookup.space.archived': false }) },
       {
         sort: { [filter.key.key]: SortingOrder.Ascending },
         projection: { [prefix + filter.key.key]: 1, space: 1 },
-        ...(space ? {} : { lookup: { space: core.class.Space } })
+        ...(space || isDerivedFromSpace ? {} : { lookup: { space: core.class.Space } })
       }
     )
     const res = await objectsPromise
 
     for (const object of res) {
       let asDoc = object
-      if (hieararchy.isMixin(filter.key._class)) {
-        asDoc = hieararchy.as(object, filter.key._class)
+      if (hierarchy.isMixin(filter.key._class)) {
+        asDoc = hierarchy.as(object, filter.key._class)
       }
       const realValue = getObjectValue(filter.key.key, asDoc)
       const value = getValue(realValue)
