@@ -25,7 +25,7 @@
   $: st = $statusStore.get(value.status)
 </script>
 
-<div class="flex item h-8">
+<div class="flex-row-center h-8">
   <!-- <Icon icon={tracker.icon.TrackerApplication} size={'medium'} /> -->
   <FixedColumn key="object-popup-issue-status">
     {#if st}
@@ -36,9 +36,3 @@
     {title} - {value.title}
   </div>
 </div>
-
-<style lang="scss">
-  .item {
-    align-items: center;
-  }
-</style>

@@ -18,15 +18,16 @@
 
   import { getResource, IntlString } from '@hcengineering/platform'
   import ui, {
-    Button,
     createFocusManager,
     deviceOptionsStore,
-    EditBox,
     FocusHandler,
     IconSearch,
     Label,
     ListView,
-    resizeObserver
+    resizeObserver,
+    Icon,
+    tooltip,
+    EditWithIcon
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '../plugin'
@@ -39,7 +40,6 @@
   export let relatedDocuments: RelatedDocument[] | undefined = undefined
   export let ignore: RelatedDocument[] | undefined = undefined
   export let allowCategory: Ref<ObjectSearchCategory>[] | undefined = undefined
-  export let hideButtons = false
 
   let items: ObjectSearchResult[] = []
 
@@ -153,81 +153,58 @@
 
 <FocusHandler {manager} />
 
-<form
-  class="antiCard dialog completion objectPopup"
-  on:keydown={onKeyDown}
-  use:resizeObserver={() => dispatch('changeSize')}
->
-  <div class="header-dialog">
+<form class="antiPopup" on:keydown={onKeyDown} use:resizeObserver={() => dispatch('changeSize')}>
+  <div class="ap-menuHeader">
     {#if label}
-      <div class="fs-title flex-grow mb-4">
+      <div class="ap-subheader caption">
         <Label {label} />
       </div>
     {/if}
-    <div class="flex-row-center gap-1">
+    <div class="tabs">
       {#each categories as c, i}
         {@const status = categoryStatus[c._id] ?? 0}
-        <div class="ap-categoryItem">
-          <Button
-            focusIndex={i + 1}
-            kind={'transparent'}
-            showTooltip={{ label: c.label }}
-            selected={category?._id === c._id}
-            icon={c.icon}
-            size={'x-large'}
-            disabled={status === 0}
-            on:click={() => {
-              category = c
-            }}
-          />
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+        <div
+          class="tab"
+          class:selected={category?._id === c._id}
+          class:disabled={status === 0}
+          use:tooltip={{ label: c.label }}
+          tabindex={i + 1}
+          on:click={() => (category = c)}
+        >
+          <Icon icon={c.icon} size={'small'} />
         </div>
       {/each}
     </div>
-    <EditBox
-      autoFocus={!$deviceOptionsStore.isMobile}
+  </div>
+  <div class="pt-2 pb-1 pl-2 pr-2">
+    <EditWithIcon
       icon={IconSearch}
-      kind={'search-style'}
-      focusIndex={0}
+      size={'large'}
+      width={'100%'}
+      autoFocus={!$deviceOptionsStore.isMobile}
       bind:value={query}
-      on:input={() => updateItems(category, query, relatedDocuments)}
       placeholder={category?.label}
+      on:input={() => updateItems(category, query, relatedDocuments)}
     />
+  </div>
+  <div class="ap-menuItem separator halfMargin" />
+  <div class="ap-subheader">
     <Label label={ui.string.Suggested} />
   </div>
-  <div class="antiCard-content min-h-60 max-h-60 p-4">
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <ListView bind:this={list} bind:selection count={items.length}>
-      <svelte:fragment slot="item" let:item>
-        {@const doc = items[item]}
-        <div class="p-1 cursor-pointer" on:click={() => dispatchItem(doc)}>
-          <svelte:component this={doc.component} value={doc.doc} {...doc.componentProps ?? {}} />
-        </div>
-      </svelte:fragment>
-    </ListView>
-  </div>
-  {#if !hideButtons}
-    <div class="antiCard-footer reverse">
-      <div class="buttons-group text-sm flex-no-shrink">
-        <Button label={presentation.string.Cancel} on:click={() => dispatch('close')} />
-      </div>
+  <div class="ap-scroll">
+    <div class="ap-box">
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <ListView bind:this={list} bind:selection count={items.length}>
+        <svelte:fragment slot="item" let:item>
+          {@const doc = items[item]}
+          <div class="ap-menuItem withComp" on:click={() => dispatchItem(doc)}>
+            <svelte:component this={doc.component} value={doc.doc} {...doc.componentProps ?? {}} />
+          </div>
+        </svelte:fragment>
+      </ListView>
     </div>
-  {/if}
+  </div>
+  <div class="ap-space x2" />
 </form>
-
-<style lang="scss">
-  .header-dialog {
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
-    padding: 1.125rem 1.125rem 0;
-    min-width: 0;
-    min-height: 0;
-  }
-  .completion {
-    z-index: 2000;
-  }
-  .objectPopup {
-    min-height: 10rem;
-    min-width: 10rem;
-  }
-</style>

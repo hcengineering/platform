@@ -244,6 +244,7 @@
     padding: 0;
     height: 100%;
     min-width: 0;
+    min-height: 0;
   }
   .ap-menuItem {
     flex-shrink: 0;
@@ -255,9 +256,17 @@
     
     &:not(.separator) {
       margin: 0 .5rem;
-      padding: .25rem .5rem;
       min-height: 2.25rem;
       border-radius: .25rem;
+    }
+    &:not(.separator, .withComp) { padding: .25rem .5rem; }
+    &.withComp {
+      display: flex;
+      align-items: center;
+      flex-wrap: nowrap;
+      padding: .25rem .5rem .25rem 0;
+      min-width: 0;
+      min-height: 0;
     }
     &.selected,
     &.hoverable:hover { background: var(--theme-popup-hover); }
@@ -324,9 +333,11 @@
 
     &.separator {
       flex-shrink: 0;
-      margin: .5rem 0;
       height: 1px;
       background-color: var(--theme-popup-divider);
+      
+      &:not(.halfMargin) { margin: .5rem 0; }
+      &.halfMargin { margin: .25rem 0; }
     }
   }
   .ap-check {
@@ -336,20 +347,60 @@
     height: 1rem;
     color: var(--theme-dark-color);
   }
+  .ap-subheader {
+    flex-shrink: 0;
+    padding: .5rem 1rem;
+    min-width: 0;
+    min-height: 2rem;
+    text-transform: uppercase;
+    font-weight: 500;
+    font-size: .625rem;
+    color: var(--theme-dark-color);
+
+    &:not(.caption) { letter-spacing: 1px; }
+    &.caption {
+      padding-top: 1rem;
+      color: var(--theme-caption-color);
+    }
+  }
   .ap-menuHeader {
     display: flex;
-    // justify-content: center;
-    align-items: center;
-    padding: 0 .5rem;
-    width: 100%;
-    height: 3rem;
-    color: var(--theme-caption-color);
-    text-align: left;
-    cursor: pointer;
+    flex-direction: column;
+    border-bottom: 1px solid var(--theme-popup-divider);
 
-    &:hover {
-      background-color: var(--theme-popup-divider);
-      outline: none;
+    .tabs {
+      display: flex;
+      align-items: center;
+      padding: 0 .375rem;
+      min-width: 0;
+
+      .tab {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-width: 2.25rem;
+        min-height: 2.75rem;
+        color: var(--theme-dark-color);
+        outline: none;
+
+        &:not(:last-child) { margin-right: .375rem; }
+        &:not(.selected, .disabled) { cursor: pointer; }
+        &.disabled { color: var(--theme-darker-color); }
+        &.selected {
+          color: var(--theme-caption-color);
+
+          &::after {
+            position: absolute;
+            content: '';
+            left: 0;
+            bottom: -1px;
+            width: 100%;
+            height: 2px;
+            background-color: var(--theme-link-color);
+          }
+        }
+      }
     }
   }
 
