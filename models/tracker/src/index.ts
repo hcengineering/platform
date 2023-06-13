@@ -14,7 +14,7 @@
 //
 
 import activity from '@hcengineering/activity'
-import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
+import contact, { Employee } from '@hcengineering/contact'
 import {
   DOMAIN_MODEL,
   DateRangeMode,
@@ -42,7 +42,6 @@ import {
   TypeNumber,
   TypeRef,
   TypeString,
-  TypeTimestamp,
   UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
@@ -67,8 +66,6 @@ import {
   Milestone,
   MilestoneStatus,
   Project,
-  Scrum,
-  ScrumRecord,
   TimeReportDayType,
   TimeSpendReport,
   trackerId
@@ -133,9 +130,6 @@ export class TProject extends TSpace implements Project {
   @Prop(TypeNumber(), tracker.string.Number)
   @Hidden()
     sequence!: number
-
-  @Prop(Collection(tracker.class.IssueStatus), tracker.string.IssueStatuses)
-    issueStatuses!: number
 
   @Prop(TypeRef(tracker.class.IssueStatus), tracker.string.DefaultIssueStatus)
     defaultIssueStatus!: Ref<IssueStatus>
@@ -372,62 +366,6 @@ export class TMilestone extends TDoc implements Milestone {
   declare space: Ref<Project>
 }
 
-/**
- * @public
- */
-@Model(tracker.class.Scrum, core.class.Doc, DOMAIN_TRACKER)
-@UX(tracker.string.Scrum, tracker.icon.Scrum)
-export class TScrum extends TDoc implements Scrum {
-  @Prop(TypeString(), tracker.string.Title)
-    title!: string
-
-  @Prop(TypeMarkup(), tracker.string.Description)
-    description?: Markup
-
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
-    attachments?: number
-
-  @Prop(ArrOf(TypeRef(contact.class.Employee)), tracker.string.Members)
-    members!: Ref<Employee>[]
-
-  @Prop(Collection(tracker.class.Scrum), tracker.string.ScrumRecords)
-    scrumRecords?: number
-
-  @Prop(TypeDate(DateRangeMode.TIME), tracker.string.ScrumBeginTime)
-    beginTime!: Timestamp
-
-  @Prop(TypeDate(DateRangeMode.TIME), tracker.string.ScrumEndTime)
-    endTime!: Timestamp
-
-  declare space: Ref<Project>
-}
-
-/**
- * @public
- */
-@Model(tracker.class.ScrumRecord, core.class.Doc, DOMAIN_TRACKER)
-@UX(tracker.string.ScrumRecord, tracker.icon.Scrum)
-export class TScrumRecord extends TAttachedDoc implements ScrumRecord {
-  @Prop(TypeString(), tracker.string.Title)
-    label!: string
-
-  @Prop(TypeTimestamp(), tracker.string.ScrumBeginTime)
-    startTs!: Timestamp
-
-  @Prop(TypeTimestamp(), tracker.string.ScrumEndTime)
-    endTs?: Timestamp
-
-  @Prop(Collection(chunter.class.Comment), tracker.string.Comments)
-    comments!: number
-
-  @Prop(Collection(attachment.class.Attachment), tracker.string.Attachments)
-    attachments!: number
-
-  declare attachedTo: Ref<Scrum>
-  declare space: Ref<Project>
-  declare scrumRecorder: Ref<EmployeeAccount>
-}
-
 @UX(core.string.Number)
 @Model(tracker.class.TypeReportedTime, core.class.Type)
 export class TTypeReportedTime extends TType {}
@@ -441,8 +379,6 @@ export function createModel (builder: Builder): void {
     TIssueStatus,
     TTypeIssuePriority,
     TMilestone,
-    TScrum,
-    TScrumRecord,
     TTypeMilestoneStatus,
     TTimeSpendReport,
     TTypeReportedTime

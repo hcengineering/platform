@@ -18,7 +18,7 @@
   import { getCurrentAccount } from '@hcengineering/core'
   import login, { loginId } from '@hcengineering/login'
   import { setMetadata } from '@hcengineering/platform'
-  import presentation from '@hcengineering/presentation'
+  import presentation, { closeClient } from '@hcengineering/presentation'
   import setting, { SettingsCategory, settingId } from '@hcengineering/setting'
   import {
     Icon,
@@ -57,6 +57,7 @@
     setMetadata(presentation.metadata.Token, null)
     setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
     setMetadataLocalStorage(login.metadata.LoginEmail, null)
+    closeClient()
     navigate({ path: [loginId] })
   }
 

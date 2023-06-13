@@ -143,6 +143,13 @@ export async function refreshClient (): Promise<void> {
   }
 }
 
+/**
+ * @public
+ */
+export async function closeClient (): Promise<void> {
+  await client?.close()
+}
+
 const globalQueries: LiveQuery[] = []
 
 /**

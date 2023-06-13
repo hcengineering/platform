@@ -13,20 +13,10 @@
 // limitations under the License.
 //
 
-import {
-  Class,
-  Client,
-  Doc,
-  DocumentQuery,
-  getCurrentAccount,
-  Ref,
-  RelatedDocument,
-  toIdMap,
-  TxOperations
-} from '@hcengineering/core'
+import { Class, Client, Doc, DocumentQuery, Ref, RelatedDocument, toIdMap, TxOperations } from '@hcengineering/core'
 import { Resources, translate } from '@hcengineering/platform'
 import { getClient, MessageBox, ObjectSearchResult } from '@hcengineering/presentation'
-import { Issue, Project, Scrum, ScrumRecord, Milestone } from '@hcengineering/tracker'
+import { Issue, Milestone, Project } from '@hcengineering/tracker'
 import { showPopup } from '@hcengineering/ui'
 import ComponentEditor from './components/components/ComponentEditor.svelte'
 import ComponentPresenter from './components/components/ComponentPresenter.svelte'
@@ -51,25 +41,25 @@ import KanbanView from './components/issues/KanbanView.svelte'
 import ModificationDatePresenter from './components/issues/ModificationDatePresenter.svelte'
 import NotificationIssuePresenter from './components/issues/NotificationIssuePresenter.svelte'
 import PriorityEditor from './components/issues/PriorityEditor.svelte'
+import PriorityFilterValuePresenter from './components/issues/PriorityFilterValuePresenter.svelte'
 import PriorityPresenter from './components/issues/PriorityPresenter.svelte'
 import PriorityRefPresenter from './components/issues/PriorityRefPresenter.svelte'
 import RelatedIssueSelector from './components/issues/related/RelatedIssueSelector.svelte'
 import RelatedIssuesSection from './components/issues/related/RelatedIssuesSection.svelte'
 import StatusEditor from './components/issues/StatusEditor.svelte'
+import StatusFilterValuePresenter from './components/issues/StatusFilterValuePresenter.svelte'
 import StatusPresenter from './components/issues/StatusPresenter.svelte'
 import TitlePresenter from './components/issues/TitlePresenter.svelte'
-import PriorityFilterValuePresenter from './components/issues/PriorityFilterValuePresenter.svelte'
-import StatusFilterValuePresenter from './components/issues/StatusFilterValuePresenter.svelte'
-import ProjectFilterValuePresenter from './components/projects/ProjectFilterValuePresenter.svelte'
-import ComponentFilterValuePresenter from './components/components/ComponentFilterValuePresenter.svelte'
+import EditMilestone from './components/milestones/EditMilestone.svelte'
+import MilestoneDatePresenter from './components/milestones/MilestoneDatePresenter.svelte'
 import MyIssues from './components/myissues/MyIssues.svelte'
 import NewIssueHeader from './components/NewIssueHeader.svelte'
 import NopeComponent from './components/NopeComponent.svelte'
+import ProjectFilterValuePresenter from './components/projects/ProjectFilterValuePresenter.svelte'
+import ComponentFilterValuePresenter from './components/components/ComponentFilterValuePresenter.svelte'
 import RelationsPopup from './components/RelationsPopup.svelte'
 import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
-import MilestoneDatePresenter from './components/milestones/MilestoneDatePresenter.svelte'
-import EditMilestone from './components/milestones/EditMilestone.svelte'
 import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
 import Statuses from './components/workflow/Statuses.svelte'
 
@@ -88,12 +78,9 @@ import MilestoneEditor from './components/milestones/MilestoneEditor.svelte'
 import MilestonePresenter from './components/milestones/MilestonePresenter.svelte'
 import Milestones from './components/milestones/Milestones.svelte'
 import MilestoneSelector from './components/milestones/MilestoneSelector.svelte'
-import MilestoneStatusPresenter from './components/milestones/MilestoneStatusPresenter.svelte'
 import MilestoneStatusEditor from './components/milestones/MilestoneStatusEditor.svelte'
+import MilestoneStatusPresenter from './components/milestones/MilestoneStatusPresenter.svelte'
 import MilestoneTitlePresenter from './components/milestones/MilestoneTitlePresenter.svelte'
-
-import ScrumRecordPanel from './components/scrums/ScrumRecordPanel.svelte'
-import Scrums from './components/scrums/Scrums.svelte'
 
 import SubIssuesSelector from './components/issues/edit/SubIssuesSelector.svelte'
 import EstimationEditor from './components/issues/timereport/EstimationEditor.svelte'
@@ -114,17 +101,17 @@ import EditIssueTemplate from './components/templates/EditIssueTemplate.svelte'
 import TemplateEstimationEditor from './components/templates/EstimationEditor.svelte'
 import {
   getAllComponents,
-  getAllPriority,
   getAllMilestones,
+  getAllPriority,
+  getVisibleFilters,
   issuePrioritySort,
   issueStatusSort,
-  moveIssuesToAnotherMilestone,
   milestoneSort,
-  subIssueQuery,
-  getVisibleFilters
+  moveIssuesToAnotherMilestone,
+  subIssueQuery
 } from './utils'
 
-import { EmployeeAccount } from '@hcengineering/contact'
+import { ComponentAggregationManager, grouppingComponentManager } from './component'
 import PriorityIcon from './components/activity/PriorityIcon.svelte'
 import StatusIcon from './components/activity/StatusIcon.svelte'
 import TxIssueCreated from './components/activity/TxIssueCreated.svelte'
@@ -132,13 +119,12 @@ import DeleteComponentPresenter from './components/components/DeleteComponentPre
 import MoveIssues from './components/issues/Move.svelte'
 import StatusRefPresenter from './components/issues/StatusRefPresenter.svelte'
 import TimeSpendReportPopup from './components/issues/timereport/TimeSpendReportPopup.svelte'
+import IssueStatistics from './components/milestones/IssueStatistics.svelte'
+import MilestoneFilter from './components/milestones/MilestoneFilter.svelte'
+import MilestoneRefPresenter from './components/milestones/MilestoneRefPresenter.svelte'
 import CreateProject from './components/projects/CreateProject.svelte'
 import ProjectPresenter from './components/projects/ProjectPresenter.svelte'
 import ProjectSpacePresenter from './components/projects/ProjectSpacePresenter.svelte'
-import IssueStatistics from './components/milestones/IssueStatistics.svelte'
-import MilestoneRefPresenter from './components/milestones/MilestoneRefPresenter.svelte'
-import MilestoneFilter from './components/milestones/MilestoneFilter.svelte'
-import { ComponentAggregationManager, grouppingComponentManager } from './component'
 
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 
@@ -339,79 +325,6 @@ async function deleteMilestone (milestones: Milestone | Milestone[]): Promise<vo
   }
 }
 
-async function startRecordingScrum (
-  client: TxOperations,
-  newRecordingScrum: Scrum,
-  previousScrumRecord?: ScrumRecord
-): Promise<void> {
-  const newRecordLabel = `${newRecordingScrum.title}-${newRecordingScrum.scrumRecords ?? 0}`
-  const startRecord = async (): Promise<void> => {
-    await client.addCollection(
-      tracker.class.ScrumRecord,
-      newRecordingScrum.space,
-      newRecordingScrum._id,
-      tracker.class.Scrum,
-      'scrumRecords',
-      {
-        label: newRecordLabel,
-        scrumRecorder: getCurrentAccount()._id as Ref<EmployeeAccount>,
-        startTs: Date.now(),
-        comments: 0
-      }
-    )
-  }
-
-  if (previousScrumRecord !== undefined) {
-    showPopup(
-      MessageBox,
-      {
-        label: tracker.string.ChangeScrumRecord,
-        message: tracker.string.ChangeScrumRecordConfirm,
-        params: { previousRecord: previousScrumRecord.label, newRecord: newRecordLabel }
-      },
-      undefined,
-      (result?: boolean) => {
-        if (result === true) {
-          void client
-            .updateCollection(
-              tracker.class.ScrumRecord,
-              previousScrumRecord.space,
-              previousScrumRecord._id,
-              previousScrumRecord.attachedTo,
-              tracker.class.Scrum,
-              'scrumRecords',
-              { endTs: Date.now() }
-            )
-            .then(async () => await startRecord())
-        }
-      }
-    )
-  } else {
-    await startRecord()
-  }
-}
-
-export async function handleRecordingScrum (
-  client: TxOperations,
-  currentScrum: Scrum,
-  activeScrumRecord?: ScrumRecord
-): Promise<void> {
-  // Stop recording scrum if active record attached to current scrum
-  if (activeScrumRecord?.attachedTo === currentScrum._id) {
-    await client.updateCollection(
-      tracker.class.ScrumRecord,
-      activeScrumRecord.space,
-      activeScrumRecord._id,
-      activeScrumRecord.attachedTo,
-      tracker.class.Scrum,
-      'scrumRecords',
-      { endTs: Date.now() }
-    )
-  } else {
-    await startRecordingScrum(client, currentScrum, activeScrumRecord)
-  }
-}
-
 export default async (): Promise<Resources> => ({
   activity: {
     TxIssueCreated,
@@ -456,8 +369,6 @@ export default async (): Promise<Resources> => ({
     Milestones,
     MilestonePresenter,
     EditMilestone,
-    Scrums,
-    ScrumRecordPanel,
     MilestoneStatusPresenter,
     MilestoneStatusEditor,
     MilestoneTitlePresenter,

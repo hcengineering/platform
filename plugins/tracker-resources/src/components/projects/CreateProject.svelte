@@ -84,7 +84,6 @@
       archived: false,
       identifier,
       sequence: 0,
-      issueStatuses: 0,
       defaultIssueStatus: defaultStatusId,
       defaultAssignee: defaultAssignee ?? undefined,
       icon,
@@ -98,7 +97,7 @@
       return
     }
 
-    const { sequence, issueStatuses, defaultIssueStatus, ...projectData } = getProjectData()
+    const { sequence, defaultIssueStatus, ...projectData } = getProjectData()
     const update: DocumentUpdate<Project> = {}
     if (projectData.name !== project?.name) {
       update.name = projectData.name

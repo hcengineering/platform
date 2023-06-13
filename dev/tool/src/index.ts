@@ -52,7 +52,7 @@ import { MinioService } from '@hcengineering/minio'
 import { MigrateOperation } from '@hcengineering/model'
 import { openAIConfigDefaults } from '@hcengineering/openai'
 import { benchmark } from './benchmark'
-import { cleanArchivedSpaces, cleanRemovedTransactions, cleanWorkspace } from './clean'
+import { cleanArchivedSpaces, cleanRemovedTransactions, cleanWorkspace, fixCommentDoubleIdCreate } from './clean'
 import { changeConfiguration } from './configuration'
 import { openAIConfig } from './openai'
 
@@ -453,6 +453,13 @@ export function devTool (
     .description('clean archived spaces')
     .action(async (workspace: string, cmd: any) => {
       await cleanArchivedSpaces(getWorkspaceId(workspace, productId), transactorUrl)
+    })
+
+  program
+    .command('chunter-fix-comments <workspace>')
+    .description('chunter-fix-comments')
+    .action(async (workspace: string, cmd: any) => {
+      await fixCommentDoubleIdCreate(getWorkspaceId(workspace, productId), transactorUrl)
     })
 
   program

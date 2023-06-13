@@ -17,7 +17,7 @@
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import { Comment } from '@hcengineering/chunter'
   import { AttachedData, Doc, generateId, Ref } from '@hcengineering/core'
-  import { DraftController, draftsStore, getClient } from '@hcengineering/presentation'
+  import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import { createBacklinks } from '../backlinks'
   import chunter from '../plugin'
 
@@ -40,9 +40,21 @@
 
   let commentInputBox: AttachmentRefInput
   const draftComment = shouldSaveDraft ? $draftsStore[draftKey] : undefined
+
   let comment: CommentDraft = draftComment ?? getDefault()
   let _id: Ref<Comment> = comment._id
   let inputContent: string = comment.message
+
+  const createdQuery = createQuery()
+
+  $: createdQuery.query(chunter.class.Comment, { _id }, (docs) => {
+    if (docs.length > 0) {
+      // Ouch we have got comment with same id created already.
+      comment = getDefault()
+      _id = comment._id
+      commentInputBox.removeDraft(false)
+    }
+  })
 
   function objectChange (object: CommentDraft, empty: any) {
     if (shouldSaveDraft) {
@@ -98,8 +110,8 @@
       await createBacklinks(client, object._id, object._class, _id, message)
 
       // Remove draft from Local Storage
-      _id = generateId()
       comment = getDefault()
+      _id = comment._id
     } catch (err) {
       console.error(err)
     } finally {

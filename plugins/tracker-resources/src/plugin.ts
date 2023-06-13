@@ -249,26 +249,6 @@ export default mergeIds(trackerId, tracker, {
     MoveAndDeleteMilestone: '' as IntlString,
     MoveAndDeleteMilestoneConfirm: '' as IntlString,
 
-    Scrum: '' as IntlString,
-    Scrums: '' as IntlString,
-    ScrumMembersTitle: '' as IntlString,
-    ScrumMembersSearchPlaceholder: '' as IntlString,
-    ScrumBeginTime: '' as IntlString,
-    ScrumEndTime: '' as IntlString,
-    NewScrum: '' as IntlString,
-    CreateScrum: '' as IntlString,
-    ScrumTitlePlaceholder: '' as IntlString,
-    ScrumDescriptionPlaceholder: '' as IntlString,
-    ScrumRecords: '' as IntlString,
-    ScrumRecord: '' as IntlString,
-    StartRecord: '' as IntlString,
-    StopRecord: '' as IntlString,
-    ChangeScrumRecord: '' as IntlString,
-    ChangeScrumRecordConfirm: '' as IntlString,
-    ScrumRecorder: '' as IntlString,
-    ScrumRecordTimeReports: '' as IntlString,
-    ScrumRecordObjects: '' as IntlString,
-
     Estimation: '' as IntlString,
     ReportedTime: '' as IntlString,
     TimeSpendReport: '' as IntlString,
@@ -371,9 +351,6 @@ export default mergeIds(trackerId, tracker, {
     EstimationEditor: '' as AnyComponent,
     TemplateEstimationEditor: '' as AnyComponent,
     DeleteComponentPresenter: '' as AnyComponent,
-
-    Scrums: '' as AnyComponent,
-    ScrumRecordPanel: '' as AnyComponent,
 
     ComponentSelector: '' as AnyComponent,
 

@@ -19,6 +19,7 @@
   import { getMetadata } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
   import { themeStore } from '@hcengineering/theme'
+  import workbench from '@hcengineering/workbench'
   import { onDestroy } from 'svelte'
   import Confirmation from './Confirmation.svelte'
   import ConfirmationSend from './ConfirmationSend.svelte'
@@ -30,7 +31,6 @@
   import SelectWorkspace from './SelectWorkspace.svelte'
   import SignupForm from './SignupForm.svelte'
   import LoginIcon from './icons/LoginIcon.svelte'
-  import workbench from '@hcengineering/workbench'
 
   import loginBack from '../../img/login_back.png'
   import loginBack2x from '../../img/login_back_2x.png'
@@ -50,9 +50,23 @@
   }
   $: token = getToken($ticker)
 
+  const pages = [
+    'login',
+    'signup',
+    'createWorkspace',
+    'password',
+    'recovery',
+    'selectWorkspace',
+    'join',
+    'confirm',
+    'confirmationSend'
+  ]
   onDestroy(
     location.subscribe(async (loc) => {
       page = loc.path[1] ?? (token ? 'selectWorkspace' : 'login')
+      if (!pages.includes(page)) {
+        page = 'login'
+      }
 
       navigateUrl = loc.query?.navigateUrl ?? undefined
     })

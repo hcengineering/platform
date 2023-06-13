@@ -13,10 +13,8 @@
 // limitations under the License.
 //
 
-import { Comment, Message, ThreadMessage } from '@hcengineering/chunter'
-import core, { DOMAIN_TX, Doc, Ref, TxCreateDoc, TxOperations } from '@hcengineering/core'
+import core, { TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
-import { DOMAIN_CHUNTER, DOMAIN_COMMENT } from './index'
 import chunter from './plugin'
 
 export async function createGeneral (tx: TxOperations): Promise<void> {
@@ -81,93 +79,8 @@ async function createBacklink (tx: TxOperations): Promise<void> {
   }
 }
 
-export async function migrateMessages (client: MigrationClient): Promise<void> {
-  const messages = await client.find(DOMAIN_CHUNTER, {
-    _class: chunter.class.Message,
-    attachedTo: { $exists: false }
-  })
-  for (const message of messages) {
-    await client.update(
-      DOMAIN_CHUNTER,
-      {
-        _id: message._id
-      },
-      {
-        attachedTo: message.space,
-        attachedToClass: chunter.class.Channel,
-        collection: 'messages'
-      }
-    )
-  }
-
-  const txes = await client.find<TxCreateDoc<Doc>>(DOMAIN_TX, {
-    _class: core.class.TxCreateDoc,
-    objectClass: chunter.class.Message
-  })
-  for (const tx of txes) {
-    await client.update(
-      DOMAIN_TX,
-      {
-        _id: tx._id
-      },
-      {
-        'attributes.attachedTo': tx.objectSpace,
-        'attributes.attachedToClass': chunter.class.Channel,
-        'attributes.collection': 'messages'
-      }
-    )
-  }
-}
-
-export async function migrateThreadMessages (client: MigrationClient): Promise<void> {
-  const messages = await client.find<Comment>(DOMAIN_COMMENT, {
-    _class: chunter.class.Comment,
-    attachedToClass: chunter.class.Message
-  })
-  for (const message of messages) {
-    await client.delete(DOMAIN_COMMENT, message._id)
-    await client.create<ThreadMessage>(DOMAIN_CHUNTER, {
-      attachedTo: message.attachedTo as Ref<Message>,
-      attachedToClass: message.attachedToClass,
-      attachments: message.attachments,
-      content: message.message,
-      collection: message.collection,
-      _class: chunter.class.ThreadMessage,
-      space: message.space,
-      modifiedOn: message.modifiedOn,
-      modifiedBy: message.modifiedBy,
-      createBy: message.modifiedBy,
-      createdOn: message.modifiedOn,
-      _id: message._id as string as Ref<ThreadMessage>
-    })
-  }
-
-  const txes = await client.find<TxCreateDoc<Comment>>(DOMAIN_TX, {
-    _class: core.class.TxCreateDoc,
-    objectClass: chunter.class.Comment,
-    'attributes.attachedToClass': chunter.class.Message
-  })
-  for (const tx of txes) {
-    await client.update(
-      DOMAIN_TX,
-      {
-        _id: tx._id
-      },
-      {
-        objectClass: chunter.class.ThreadMessage,
-        'attributes.createBy': tx.modifiedBy,
-        'attributes.createdOn': tx.modifiedOn,
-        'attributes.content': tx.attributes.message
-      }
-    )
-  }
-}
-
 export const chunterOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await migrateMessages(client)
-    await migrateThreadMessages(client)
-  },
+  async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createGeneral(tx)

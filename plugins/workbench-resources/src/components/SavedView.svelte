@@ -1,11 +1,20 @@
 <script lang="ts">
-  import { Ref, getCurrentAccount } from '@hcengineering/core'
+  import { Ref, getCurrentAccount, toIdMap } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
-  import { Action, IconAdd, Location, eventToHTMLElement, location, navigate, showPopup } from '@hcengineering/ui'
+  import {
+    Action,
+    IconAdd,
+    Location,
+    eventToHTMLElement,
+    location,
+    navigate,
+    showPopup,
+    SelectPopup,
+    getEventPopupPositionElement
+  } from '@hcengineering/ui'
   import view, { Filter, FilteredView, ViewOptions, Viewlet } from '@hcengineering/view'
   import {
-    AddSavedView,
     TreeItem,
     TreeNode,
     activeViewlet,
@@ -16,11 +25,13 @@
     setActiveViewletId,
     setFilters,
     setViewOptions,
-    viewOptionStore
+    viewOptionStore,
+    EditBoxPopup
   } from '@hcengineering/view-resources'
   import { Application } from '@hcengineering/workbench'
   import copy from 'fast-copy'
   import { createEventDispatcher } from 'svelte'
+  import contact from '@hcengineering/contact'
 
   export let currentApplication: Application | undefined
 
@@ -48,8 +59,33 @@
     ]
   }
 
-  async function viewAction (filteredView: FilteredView): Promise<Action[]> {
-    if (filteredView.createdBy === me) return await removeAction(filteredView)
+  async function renameAction (object: FilteredView, originalEvent: MouseEvent | undefined): Promise<Action[]> {
+    return [
+      {
+        icon: contact.icon.Edit,
+        label: view.string.Rename,
+        action: async (ctx: any, evt: Event) => {
+          showPopup(
+            EditBoxPopup,
+            { value: object.name, format: 'text' },
+            getEventPopupPositionElement(originalEvent ?? evt),
+            async (res) => {
+              if (res !== undefined) {
+                await client.update(object, { name: res })
+              }
+            }
+          )
+        }
+      }
+    ]
+  }
+
+  async function viewAction (filteredView: FilteredView, originalEvent: MouseEvent | undefined): Promise<Action[]> {
+    const rename = await renameAction(filteredView, originalEvent)
+    if (filteredView.createdBy === me) {
+      const remove = await removeAction(filteredView)
+      return [...remove, ...rename]
+    }
     return await hideAction(filteredView)
   }
 
@@ -142,11 +178,21 @@
 
   async function getActions (availableFilteredViews: FilteredView[]): Promise<Action[]> {
     if (availableFilteredViews.length > 0) {
+      const filteredViewsIdMap = toIdMap(availableFilteredViews)
+      const pushMeToFV = async (id: Ref<FilteredView>) => {
+        if (id === undefined) return
+        const filteredView = filteredViewsIdMap.get(id)
+        if (filteredView) await client.update(filteredView, { $push: { users: me } })
+      }
+      const value = availableFilteredViews.map((p) => ({
+        id: p._id,
+        text: p.name
+      }))
       const add: Action = {
         label: view.string.AddSavedView,
         icon: IconAdd,
         action: async (_, e): Promise<void> => {
-          showPopup(AddSavedView, { attachedTo: currentApplication?.alias }, eventToHTMLElement(e as MouseEvent))
+          showPopup(SelectPopup, { value, searchable: true }, eventToHTMLElement(e as MouseEvent), pushMeToFV)
         }
       }
       return [add]
@@ -164,7 +210,7 @@
         title={fv.name}
         selected={selectedId === fv._id}
         on:click={() => load(fv)}
-        actions={() => viewAction(fv)}
+        actions={(ov) => viewAction(fv, ov)}
       />
     {/each}
   </TreeNode>

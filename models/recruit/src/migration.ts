@@ -14,133 +14,16 @@
 //
 
 import { getCategories } from '@anticrm/skillset'
-import { Organization } from '@hcengineering/contact'
-import core, {
-  Doc,
-  DOMAIN_TX,
-  Ref,
-  Space,
-  TxCreateDoc,
-  TxFactory,
-  TxOperations,
-  TxProcessor
-} from '@hcengineering/core'
-import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
-import { DOMAIN_CALENDAR } from '@hcengineering/model-calendar'
-import contact, { DOMAIN_CONTACT } from '@hcengineering/model-contact'
-import { DOMAIN_SPACE } from '@hcengineering/model-core'
+import core, { Doc, Ref, Space, TxOperations } from '@hcengineering/core'
+import { MigrateOperation, MigrationClient, MigrationUpgradeClient, createOrUpdate } from '@hcengineering/model'
 import tags, { TagCategory } from '@hcengineering/model-tags'
-import { createKanbanTemplate, createSequence, DOMAIN_KANBAN } from '@hcengineering/model-task'
-import { Vacancy } from '@hcengineering/recruit'
-import task, { KanbanTemplate, Sequence } from '@hcengineering/task'
-import recruit from './plugin'
+import { createKanbanTemplate, createSequence } from '@hcengineering/model-task'
+import task, { KanbanTemplate } from '@hcengineering/task'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
-
-async function fixImportedTitle (client: MigrationClient): Promise<void> {
-  await client.update(
-    DOMAIN_CONTACT,
-    {
-      title: { $exists: true }
-    },
-    {
-      $rename: { title: 'recruit:mixin:Candidate.title' }
-    }
-  )
-}
-
-async function fillVacancyNumbers (client: MigrationClient): Promise<void> {
-  const docs = await client.find<Vacancy>(DOMAIN_SPACE, {
-    _class: recruit.class.Vacancy,
-    number: { $exists: false }
-  })
-  if (docs.length === 0) return
-  const txex = await client.find<TxCreateDoc<Vacancy>>(DOMAIN_TX, {
-    objectId: { $in: docs.map((it) => it._id) },
-    _class: core.class.TxCreateDoc
-  })
-  let number = 1
-  for (const doc of docs) {
-    await client.update(
-      DOMAIN_SPACE,
-      {
-        _id: doc._id
-      },
-      {
-        number
-      }
-    )
-    const tx = txex.find((it) => it.objectId === doc._id)
-    if (tx !== undefined) {
-      await client.update(
-        DOMAIN_TX,
-        {
-          _id: tx._id
-        },
-        {
-          'attributes.number': number
-        }
-      )
-    }
-    number++
-  }
-  const current = await client.find<Sequence>(DOMAIN_KANBAN, {
-    _class: task.class.Sequence,
-    attachedto: recruit.class.Vacancy
-  })
-  if (current.length === 0) {
-    const factory = new TxFactory(core.account.System)
-    const tx = factory.createTxCreateDoc(task.class.Sequence, task.space.Sequence, {
-      attachedTo: recruit.class.Vacancy,
-      sequence: number
-    })
-    const doc = TxProcessor.createDoc2Doc(tx)
-    await client.create(DOMAIN_KANBAN, doc)
-    await client.create(DOMAIN_TX, tx)
-  }
-}
+import recruit from './plugin'
 
 export const recruitOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await fixImportedTitle(client)
-    await fillVacancyNumbers(client)
-    await client.update(
-      DOMAIN_CALENDAR,
-      {
-        _class: recruit.class.Review,
-        space: { $nin: [recruit.space.Reviews] }
-      },
-      {
-        space: recruit.space.Reviews
-      }
-    )
-
-    const vacancies = await client.find<Vacancy>(
-      DOMAIN_SPACE,
-      { _class: recruit.class.Vacancy, company: { $exists: true } },
-      { projection: { _id: 1, company: 1 } }
-    )
-
-    const orgIds = Array.from(vacancies.map((it) => it.company))
-      .filter((it) => it != null)
-      .filter((it, idx, arr) => arr.indexOf(it) === idx) as Ref<Organization>[]
-    const orgs = await client.find<Organization>(DOMAIN_CONTACT, {
-      _class: contact.class.Organization,
-      _id: { $in: orgIds }
-    })
-    for (const o of orgs) {
-      if ((o as any)[recruit.mixin.VacancyList] === undefined) {
-        await client.update(
-          DOMAIN_CONTACT,
-          { _id: o._id },
-          {
-            [recruit.mixin.VacancyList]: {
-              vacancies: vacancies.filter((it) => it.company === o._id).reduce((a) => a + 1, 0)
-            }
-          }
-        )
-      }
-    }
-  },
+  async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createDefaults(tx)

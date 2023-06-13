@@ -12,11 +12,12 @@
   export let token: string
 
   let data: any
-
+  let admin = false
   onDestroy(
     ticker.subscribe(() => {
       fetch(endpoint + `/api/v1/statistics?token=${token}`, {}).then(async (json) => {
         data = await json.json()
+        admin = data?.admin ?? false
       })
     })
   )
@@ -87,7 +88,7 @@
   </svelte:fragment>
   {#if data}
     {#if selectedTab === 'general'}
-      <Scroller>
+      {#if admin}
         <div class="flex flex-col">
           <div class="flex-row-center p-1">
             <div class="p-3">1.</div>
@@ -120,44 +121,42 @@
             />
           </div>
         </div>
-      </Scroller>
+      {/if}
     {:else if selectedTab === 'users'}
-      <div class="flex-column p-3">
-        <Scroller>
-          {#each Object.entries(activeSessions) as act}
-            <span class="flex-col">
-              <div class="fs-title">
-                Workspace: {act[0]}: {act[1].length}
-              </div>
+      <div class="flex-column p-3 h-full" style:overflow="auto">
+        {#each Object.entries(activeSessions) as act}
+          <span class="flex-col">
+            <div class="fs-title">
+              Workspace: {act[0]}: {act[1].length}
+            </div>
 
-              <div class="flex-col">
-                {#each act[1] as user}
-                  {@const employee = employees.get(user.userId)}
-                  <div class="p-1 flex-row-center">
-                    {#if employee}
-                      <ObjectPresenter
-                        _class={contact.class.Employee}
-                        objectId={employee.employee}
-                        props={{ shouldShowAvatar: true }}
-                      />
-                    {:else}
-                      {user.userId}
-                    {/if}
-                    <div class="p-1">
-                      Total: {user.total.find}/{user.total.tx}
-                    </div>
-                    <div class="p-1">
-                      Previous 5 mins: {user.mins5.find}/{user.mins5.tx}
-                    </div>
-                    <div class="p-1">
-                      Current 5 mins: {user.current.find}/{user.current.tx}
-                    </div>
+            <div class="flex-col">
+              {#each act[1] as user}
+                {@const employee = employees.get(user.userId)}
+                <div class="p-1 flex-row-center">
+                  {#if employee}
+                    <ObjectPresenter
+                      _class={contact.class.Employee}
+                      objectId={employee.employee}
+                      props={{ shouldShowAvatar: true }}
+                    />
+                  {:else}
+                    {user.userId}
+                  {/if}
+                  <div class="p-1">
+                    Total: {user.total.find}/{user.total.tx}
                   </div>
-                {/each}
-              </div>
-            </span>
-          {/each}
-        </Scroller>
+                  <div class="p-1">
+                    Previous 5 mins: {user.mins5.find}/{user.mins5.tx}
+                  </div>
+                  <div class="p-1">
+                    Current 5 mins: {user.current.find}/{user.current.tx}
+                  </div>
+                </div>
+              {/each}
+            </div>
+          </span>
+        {/each}
       </div>
     {:else if selectedTab === 'statistics'}
       <Scroller>

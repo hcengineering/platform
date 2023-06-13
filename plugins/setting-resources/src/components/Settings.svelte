@@ -17,7 +17,7 @@
   import { AccountRole, getCurrentAccount } from '@hcengineering/core'
   import login, { loginId } from '@hcengineering/login'
   import { setMetadata } from '@hcengineering/platform'
-  import presentation, { createQuery } from '@hcengineering/presentation'
+  import presentation, { closeClient, createQuery } from '@hcengineering/presentation'
   import setting, { SettingsCategory } from '@hcengineering/setting'
   import {
     Component,
@@ -76,6 +76,7 @@
     setMetadata(presentation.metadata.Token, null)
     setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
     setMetadataLocalStorage(login.metadata.LoginEmail, null)
+    closeClient()
     navigate({ path: [loginId] })
   }
   function selectWorkspace (): void {

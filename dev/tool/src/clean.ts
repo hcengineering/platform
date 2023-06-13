@@ -14,14 +14,29 @@
 //
 
 import attachment from '@hcengineering/attachment'
+import chunter, { Comment } from '@hcengineering/chunter'
 import contact from '@hcengineering/contact'
-import core, { BackupClient, Client as CoreClient, DOMAIN_TX, TxOperations, WorkspaceId } from '@hcengineering/core'
+import core, {
+  BackupClient,
+  Client as CoreClient,
+  DOMAIN_TX,
+  Doc,
+  Domain,
+  Ref,
+  TxCreateDoc,
+  TxOperations,
+  TxProcessor,
+  WorkspaceId,
+  generateId
+} from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { getWorkspaceDB } from '@hcengineering/mongo'
 import recruit from '@hcengineering/recruit'
 import { connect } from '@hcengineering/server-tool'
 import tracker from '@hcengineering/tracker'
 import { MongoClient } from 'mongodb'
+
+export const DOMAIN_COMMENT = 'comment' as Domain
 
 export async function cleanWorkspace (
   mongoUrl: string,
@@ -198,6 +213,57 @@ export async function cleanArchivedSpaces (workspaceId: WorkspaceId, transactorU
     }
 
     console.log('total docs with remove', count)
+  } catch (err: any) {
+    console.trace(err)
+  } finally {
+    await connection.close()
+  }
+}
+
+export async function fixCommentDoubleIdCreate (workspaceId: WorkspaceId, transactorUrl: string): Promise<void> {
+  const connection = (await connect(transactorUrl, workspaceId, undefined, {
+    mode: 'backup'
+  })) as unknown as CoreClient & BackupClient
+  try {
+    const commentTxes = await connection.findAll(core.class.TxCollectionCUD, {
+      'tx._class': core.class.TxCreateDoc,
+      'tx.objectClass': chunter.class.Comment
+    })
+    const commentTxesRemoved = await connection.findAll(core.class.TxCollectionCUD, {
+      'tx._class': core.class.TxRemoveDoc,
+      'tx.objectClass': chunter.class.Comment
+    })
+    const removed = new Map(commentTxesRemoved.map((it) => [it.tx.objectId, it]))
+    // Do not checked removed
+    const objSet = new Set<Ref<Doc>>()
+    const oldValue = new Map<Ref<Doc>, string>()
+    for (const c of commentTxes) {
+      const cid = c.tx.objectId
+      if (removed.has(cid)) {
+        continue
+      }
+      const has = objSet.has(cid)
+      objSet.add(cid)
+      if (has) {
+        // We have found duplicate one, let's rename it.
+        const doc = TxProcessor.createDoc2Doc<Comment>(c.tx as unknown as TxCreateDoc<Comment>)
+        if (doc.message !== '' && doc.message.trim() !== '<p></p>') {
+          await connection.clean(DOMAIN_TX, [c._id])
+          if (oldValue.get(cid) === doc.message.trim()) {
+            console.log('delete tx', cid, doc.message)
+          } else {
+            oldValue.set(doc._id, doc.message)
+            console.log('renaming', cid, doc.message)
+            // Remove previous transaction.
+            c.tx.objectId = generateId()
+            doc._id = c.tx.objectId as Ref<Comment>
+            await connection.upload(DOMAIN_TX, [c])
+            // Also we need to create snapsot
+            await connection.upload(DOMAIN_COMMENT, [doc])
+          }
+        }
+      }
+    }
   } catch (err: any) {
     console.trace(err)
   } finally {
