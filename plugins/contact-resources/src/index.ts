@@ -150,7 +150,7 @@ const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({
   icon: Avatar,
   iconProps: { size: 'x-small', avatar: e.avatar },
   component: UserInfo,
-  componentProps: { size: 'x-small' }
+  componentProps: { size: 'smaller' }
 })
 
 async function queryContact (
