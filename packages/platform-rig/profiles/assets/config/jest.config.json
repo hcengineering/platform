@@ -1,6 +1,6 @@
 {
-  "extends": "@rushstack/heft-jest-plugin/includes/jest-shared.config.json",
   "testEnvironment": "node",
+  "preset": "ts-jest",
   "roots": [
       "<rootDir>/src"
   ],

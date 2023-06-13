@@ -87,6 +87,7 @@ import ActivityChannelMessage from './components/activity/ActivityChannelMessage
 import ActivityChannelPresenter from './components/activity/ActivityChannelPresenter.svelte'
 import ExpandRightDouble from './components/icons/ExpandRightDouble.svelte'
 import IconMembers from './components/icons/Members.svelte'
+import MembersBox from './components/MembersBox.svelte'
 
 import contact from './plugin'
 import {
@@ -141,7 +142,8 @@ export {
   UserInfo,
   IconMembers,
   SelectAvatars,
-  UserBoxItems
+  UserBoxItems,
+  MembersBox
 }
 
 const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({

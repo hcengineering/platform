@@ -4,7 +4,7 @@
     "target": "esnext",
     "module": "commonjs",
     "sourceMap": true,
-    "types": ["node", "heft-jest"],
+    "types": ["node", "jest"],
     "declaration": true,
     "outDir": "./lib",
     "strict": true,

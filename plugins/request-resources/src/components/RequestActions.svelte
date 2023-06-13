@@ -15,7 +15,7 @@
 <script lang="ts">
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import chunter, { Comment } from '@hcengineering/chunter'
-  import { updateBacklinks } from '@hcengineering/chunter-resources/src/backlinks'
+  import { updateBacklinks } from '@hcengineering/chunter-resources'
   import { EmployeeAccount } from '@hcengineering/contact'
   import { AttachedData, getCurrentAccount, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'

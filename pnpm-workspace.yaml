@@ -1,0 +1,8 @@
+packages:
+  - packages/*
+  - plugins/*
+  - server/*
+  - server-plugins/*
+  - models/*
+  - pods/*
+  - dev/*

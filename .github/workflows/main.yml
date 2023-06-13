@@ -36,55 +36,62 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./common/temp
+          path: ./node_modules
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
       - name: Cache PR common
         uses: actions/cache@v3
         with:
-          path: ./common/temp
+          path: ./node_modules
           key: ${{ runner.os }}-build-ref-${{ github.ref }}
           restore-keys: |
             ${{ runner.os }}-build-ref-${{ github.ref }}
 
-      - name: Checking for mis-matching dependencies...
-        run: node common/scripts/install-run-rush.js check
+      - uses: pnpm/action-setup@v2.0.1
+        with:
+          version: 8.6.2
 
-      - name: Installing...
-        run: node common/scripts/install-run-rush.js install
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --strict-peer-dependencies
 
       - name: Setting model version from git release...
-        run: node common/scripts/install-run-rush.js bump-model-version
+        run: pnpm bump-model-version
 
       - name: Building...
-        run: node common/scripts/install-run-rush.js build
+        run: pnpm build
 
       - name: Bundle
-        run: node common/scripts/install-run-rush.js bundle --verbose
+        run: pnpm bundle
 
       - name: Cache build results for next jobs
         uses: actions/cache@v3
         env:
           cache-name: cache-build-results
         with:
-          path: |
-            cloud
+          path: |          
             common
-            deploy
             dev
             models
+            node_modules
             packages
             plugins
             pods
-            products
             server
             server-plugins
             templates
             tests
-            rush.json
-            .prettierrc
             tools
+            .gitignore
+            .npmrc
+            .prettierrc
+            *.json
+            *.yaml
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
   svelte-check:
@@ -101,27 +108,39 @@ jobs:
           cache-name: cache-build-results
         with:
           path: |
-            cloud
             common
-            deploy
             dev
             models
+            node_modules
             packages
             plugins
             pods
-            products
             server
             server-plugins
             templates
             tests
-            rush.json
-            .prettierrc
             tools
+            .gitignore
+            .npmrc
+            .prettierrc
+            *.json
+            *.yaml
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
+      - uses: pnpm/action-setup@v2.0.1
+        with:
+          version: 8.6.2
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --strict-peer-dependencies
       - name: Checking svelte sources...
-        run: node common/scripts/install-run-rush.js svelte-check
+        run: pnpm svelte-check
   formatting:
     needs: build
     runs-on: ubuntu-latest
@@ -135,29 +154,39 @@ jobs:
           cache-name: cache-build-results
         with:
           path: |
-            cloud
             common
-            deploy
             dev
             models
+            node_modules
             packages
             plugins
             pods
-            products
             server
             server-plugins
             templates
             tests
-            rush.json
-            .prettierrc
             tools
+            .gitignore
+            .npmrc
+            .prettierrc
+            *.json
+            *.yaml
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
-      - name: Install...
-        run: node common/scripts/install-run-rush.js install
+      - uses: pnpm/action-setup@v2.0.1
+        with:
+          version: 8.6.2
+  
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --strict-peer-dependencies
       - name: Formatting...
-        run: node common/scripts/install-run-rush.js fast-format
+        run: pnpm fast-format
       - name: Check files formatting
         run: |
           echo '================================================================'
@@ -180,22 +209,23 @@ jobs:
           cache-name: cache-build-results
         with:
           path: |
-            cloud
             common
-            deploy
             dev
             models
+            node_modules
             packages
             plugins
             pods
-            products
             server
             server-plugins
             templates
             tests
-            rush.json
-            .prettierrc
             tools
+            .gitignore
+            .npmrc
+            .prettierrc
+            *.json
+            *.yaml
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
@@ -204,15 +234,17 @@ jobs:
         with:
           mongodb-version: 5.0
 
-      - name: Testing...
-        uses: paambaati/codeclimate-action@v3.2.0
-        env:
-          CC_TEST_REPORTER_ID: 346a83855d7124e9da8e6ec36a4fd01dc432f5cdc755eb28da7d9c44da9d1142
+      - uses: pnpm/action-setup@v2.0.1
         with:
-          coverageCommand: node common/scripts/install-run-rush.js test --verbose
-          coverageLocations: |
-            ${{github.workspace}}/packages/*/coverage/lcov.info:lcov
-            ${{github.workspace}}/server/*/coverage/lcov.info:lcov
+          version: 8.6.2
+  
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'pnpm'
+      - name: Test
+        run: pnpm test
   uitest:
     needs: build
     runs-on: ubuntu-latest
@@ -227,39 +259,48 @@ jobs:
           cache-name: cache-build-results
         with:
           path: |
-            cloud
             common
-            deploy
             dev
             models
+            node_modules
             packages
             plugins
             pods
-            products
             server
             server-plugins
             templates
             tests
-            rush.json
-            .prettierrc
             tools
+            .gitignore
+            .npmrc
+            .prettierrc
+            *.json
+            *.yaml
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
-      - name: Installing...
-        run: node common/scripts/install-run-rush.js install
-        
+      - uses: pnpm/action-setup@v2.0.1
+        with:
+          version: 8.6.2
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --strict-peer-dependencies
       - name: Setting model version from git release...
-        run: node common/scripts/install-run-rush.js bump-model-version
+        run: pnpm bump-model-version
 
       - name: Building...
-        run: node common/scripts/install-run-rush.js build
+        run: pnpm build
 
       - name: Bundle
-        run: node common/scripts/install-run-rush.js bundle
+        run: pnpm bundle
 
       - name: Docker build
-        run: node common/scripts/install-run-rush.js docker:build
+        run: pnpm docker:build
       - name: Prepare server
         run: |
           cd ./tests
@@ -267,11 +308,11 @@ jobs:
       - name: Install Playwright
         run: |
           cd ./tests/sanity
-          node ../../common/scripts/install-run-rushx.js ci
+          pnpm run ci
       - name: Run UI tests
         run: |
           cd ./tests/sanity
-          node ../../common/scripts/install-run-rushx.js uitest
+          pnpm uitest
       # - name: Archive DB
       #   run: |
       #     cd ./tests
@@ -303,35 +344,46 @@ jobs:
           cache-name: cache-build-results
         with:
           path: |
-            cloud
             common
-            deploy
             dev
             models
+            node_modules
             packages
             plugins
             pods
-            products
             server
             server-plugins
             templates
             tests
-            rush.json
-            .prettierrc
             tools
+            .gitignore
+            .npmrc
+            .prettierrc
+            *.json
+            *.yaml
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
-      - name: Installing...
-        run: node common/scripts/install-run-rush.js install
+      - uses: pnpm/action-setup@v2.0.1
+        with:
+          version: 8.6.2
+  
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --strict-peer-dependencies
+
       - name: Setting model version from git release...
-        run: node common/scripts/install-run-rush.js bump-model-version
+        run: pnpm bump-model-version
       - name: Build, to include new model version
-        run: node common/scripts/install-run-rush.js build
+        run: pnpm build
       - name: Bundle
-        run: node common/scripts/install-run-rush.js bundle
+        run: pnpm bundle
       - name: Docker build
-        run: node common/scripts/install-run-rush.js docker:build
+        run: pnpm docker:build
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
@@ -340,9 +392,9 @@ jobs:
 
       - name: Docker push staging
         if: ${{ github.ref == 'refs/heads/main' }}
-        run: node common/scripts/install-run-rush.js docker:staging
+        run: pnpm docker:staging
       - name: Docker push tag
         if: ${{ startsWith(github.ref, 'refs/tags/v') }}
         run: |
           echo Pushing release of tag ${{ github.ref }}
-          node common/scripts/install-run-rush.js docker:push
+          node pnpm docker:push

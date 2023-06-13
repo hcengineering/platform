@@ -1,0 +1,23 @@
+{
+  "scripts": {
+    "build": "turbo build",
+    "bundle": "turbo bundle",
+    "test": "turbo test",
+    "lint": "turbo lint",
+    "svelte-check": "turbo svelte-check",
+    "docker:build": "turbo docker:build",
+    "docker:staging": "turbo docker:staging",
+    "docker:push": "turbo docker:push",
+    "apply-templates": "node ./templates/apply.js",
+    "fast-format": "./common/scripts/each-diff.sh turbo format",
+    "bump-model-version": "cd ./models/all/ && npx ts-node ./src/__bumpversion.ts",
+    "dev-server": "cd ./dev/prod/ && turbo dev-server",
+    "dev-production": "cd ./dev/prod/ && turbo dev-production"
+  },
+  "devDependencies": {
+    "turbo": "^1.10.3"
+  },
+  "dependencies": {
+    "pnpm": "^8.6.2"
+  }
+}

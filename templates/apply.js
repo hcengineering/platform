@@ -93,9 +93,8 @@ function updatePackage(packageRoot, templates) {
 }
 
 function listPackages() {
-  const out = spawnSync('rush', ['list', '--json'], { encoding : 'utf8' }).stdout
-  const projects = JSON.parse(out)
-  return projects.projects.map(it => it.fullPath)
+  const out = spawnSync(`find`, ['.', '-iname', 'package.json', '-and', '-not', '-path', '*/node_modules/*', '-and', '-not', '-path', '*/templates/*'], { encoding : 'utf8' }).stdout
+  return out.split('\n').map(it => it.replace('/package.json', ''))
 }
 
 console.log('running at:', __dirname)

@@ -5,7 +5,7 @@
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
-    "build": "heft build",
+    "build": "tsc",
     "build:watch": "tsc",
     "lint:fix": "eslint --fix src",
     "bundle": "esbuild src/__start.ts --define:process.env.MODEL_VERSION=$(node ../../models/all/lib/__showversion.js) --bundle --minify --platform=node --external:sharp > bundle.js & rm -rf ./dist && cp -r ../../dev/prod/dist . && cp -r ../../dev/prod/public/* ./dist/ && rm ./dist/config.json",
@@ -19,7 +19,6 @@
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",
-    "@types/heft-jest": "^1.0.3",
     "@types/node": "~16.11.12",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "@typescript-eslint/parser": "^5.41.0",
@@ -34,13 +33,15 @@
     "@types/cors": "^2.8.12",
     "esbuild": "^0.16.14",
     "prettier": "^2.7.1",
-    "@rushstack/heft": "^0.47.9",
-    "typescript": "^4.3.5",
+    "typescript": "4.8.4",
     "@types/body-parser": "~1.19.2",
     "cross-env": "~7.0.3",
     "ts-node": "^10.8.0",
     "@types/compression": "~1.7.2",
-    "@types/sharp": "~0.30.4"
+    "@types/sharp": "~0.30.4",
+    "jest": "^29.5.0",
+    "@types/jest": "^29.5.2",
+    "ts-jest": "^29.1.0"
   },
   "dependencies": {
     "@hcengineering/front": "^0.6.0",
@@ -54,6 +55,7 @@
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-token": "^0.6.4",
     "@hcengineering/attachment": "^0.6.6",
+    "@hcengineering/prod": "^1.0.1",
     "body-parser": "~1.19.1",
     "compression": "~1.7.4",
     "sharp": "~0.30.7"

@@ -3,7 +3,7 @@
   import hr from '../plugin'
   import { createEventDispatcher } from 'svelte'
   import { DropdownLabelsIntl, Label } from '@hcengineering/ui'
-  import { RequestType } from '@hcengineering/hr'
+  import { Request, RequestType } from '@hcengineering/hr'
   import { Ref } from '@hcengineering/core'
 
   const dispatch = createEventDispatcher()
@@ -19,9 +19,11 @@
     types = res
     if (object !== undefined && object.type !== undefined) {
       type = types.find((t) => t._id === object.type)
-      typesToChange = requestPairMap.get(type?._id)?.map((t) => types.find((x) => t === x._id))
-      if (typesToChange !== undefined) {
-        newType = typesToChange[0]
+      if (type !== undefined) {
+        typesToChange = requestPairMap.get(type._id)?.map((t) => types.find((x) => t === x._id))
+        if (typesToChange !== undefined) {
+          newType = typesToChange[0]
+        }
       }
     }
   })
@@ -36,18 +38,22 @@
     newType = types.find((p) => p._id === _id)
   }
   async function changeType () {
+    if (newType === undefined) {
+      return
+    }
     await client.updateCollection(
       hr.class.Request,
       object.space,
       object._id,
       object.attachedTo,
       object.attachedToClass,
-      object.collecttion,
+      object.collection,
       {
         type: newType._id
       }
     )
   }
+  $: filtered = (typesToChange?.filter((p) => p !== undefined) as RequestType[]) ?? []
 </script>
 
 {#if object && type && type.label}
@@ -66,7 +72,7 @@
       {#if typesToChange !== undefined}
         <Label label={hr.string.ChooseNewType} />
         <DropdownLabelsIntl
-          items={typesToChange.map((p) => {
+          items={filtered.map((p) => {
             return { id: p._id, label: p.label }
           })}
           label={hr.string.RequestType}

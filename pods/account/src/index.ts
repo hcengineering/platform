@@ -81,7 +81,7 @@ export function serveAccount (methods: Record<string, AccountMethod>, productId 
   router.post('rpc', '/', async (ctx) => {
     const token = extractToken(ctx.request.headers)
 
-    const request = ctx.request.body as any
+    const request = ctx.request.body
     const method = (methods as { [key: string]: AccountMethod })[request.method]
     if (method === undefined) {
       const response = {

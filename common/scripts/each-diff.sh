@@ -3,7 +3,7 @@
 FILES=$(git diff origin/main --name-only --diff-filter=ACMR | sed 's| |\\ |g')
 [ -z "$FILES" ] && exit 0
 
-roots=$(rush list -p --json | grep "path" | cut -f 2 -d ':' | cut -f 2 -d '"')
+roots=$(find . -iname package.json -and -not -path '*/node_modules/*' -and -not -path '*/templates/*' | xargs dirname)
 
 declare -a changed_roots
 
