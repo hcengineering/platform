@@ -54,14 +54,23 @@
   <div class="flex-col">
     {#each missingComponents as comp}
       <div class="status-option p-1 flex-row-center flex-between">
-        <div class="flex-row-center">
-          <div class="mr-2">
-            <Label label={tracker.string.NoComponent} />
-          </div>
+        <div class="side-columns aligned-text">
           <ComponentPresenter value={comp} disabled />
         </div>
-        <Button label={tracker.string.CreateComponent} on:click={() => createMissingComponent(comp)} />
+        <div class="side-columns">
+          <Button label={tracker.string.CreateComponent} on:click={() => createMissingComponent(comp)} />
+        </div>
       </div>
     {/each}
   </div>
 {/if}
+
+<style lang="scss">
+  .side-columns {
+    width: 50%;
+  }
+  .aligned-text {
+    display: flex;
+    align-items: center;
+  }
+</style>

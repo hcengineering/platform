@@ -58,14 +58,23 @@
   <div class="flex-col">
     {#each missingStatuses as st}
       <div class="status-option p-1 flex-row-center flex-between">
-        <div class="flex-row-center">
-          <div class="mr-2">
-            <Label label={tracker.string.NoStatusFound} />
-          </div>
+        <div class="side-columns aligned-text">
           <StatusRefPresenter value={st} kind={'list-header'} />
         </div>
-        <Button label={tracker.string.CreateMissingStatus} on:click={() => createMissingStatus(st)} />
+        <div class="side-columns">
+          <Button label={tracker.string.CreateMissingStatus} on:click={() => createMissingStatus(st)} />
+        </div>
       </div>
     {/each}
   </div>
 {/if}
+
+<style lang="scss">
+  .side-columns {
+    width: 50%;
+  }
+  .aligned-text {
+    display: flex;
+    align-items: center;
+  }
+</style>

@@ -13,57 +13,53 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DocumentUpdate, Ref } from '@hcengineering/core'
+  import { Ref } from '@hcengineering/core'
   import { Component, Issue, Project } from '@hcengineering/tracker'
-  import { Label } from '@hcengineering/ui'
-  import tracker from '../../../plugin'
-  import { issueToAttachedData } from '../../../utils'
+  import { IssueToUpdate, issueToAttachedData } from '../../../utils'
   import ComponentEditor from '../../components/ComponentEditor.svelte'
   import ComponentPresenter from '../../components/ComponentPresenter.svelte'
 
   export let issue: Issue
   export let currentProject: Project
-  export let issueToUpdate: Map<Ref<Issue>, DocumentUpdate<Issue>> = new Map()
+  export let issueToUpdate: Map<Ref<Issue>, IssueToUpdate> = new Map()
   export let components: Component[]
 
   $: currentComponent = components.find((it) => it._id === issue.component)
-
-  $: targetComponent = components.find((it) => it.space === currentProject._id && it.label === currentComponent?.label)
 </script>
 
 {#if currentComponent !== undefined}
-  <div class="flex-row-center p-1" class:no-component={targetComponent === undefined}>
-    <div class="p-1">
-      <ComponentPresenter value={currentComponent} />
+  <div class="flex-row-center p-1">
+    <div class="side-columns aligned-text">
+      <ComponentPresenter value={currentComponent} disabled />
     </div>
-
-    <div class="p-1 flex-row-center">
-      <span class="p-1"> => </span>
-      <!--Find appropriate status in target Project -->
-      {#if targetComponent === undefined}
-        <div class="flex-row-center">
-          <div class="mr-2">
-            <Label label={tracker.string.NoComponent} />
-          </div>
-          <span class="p-1"> => </span>
-        </div>
-      {/if}
+    <span class="middle-column aligned-text">-></span>
+    <div class="side-columns">
       <ComponentEditor
-        shouldShowLabel={true}
+        shouldShowLabel
+        kind={'secondary'}
+        width={'min-content'}
         space={currentProject._id}
         value={{
           ...issueToAttachedData(issue),
           component: issueToUpdate.get(issue._id)?.component || null,
           space: currentProject._id
         }}
-        on:change={(evt) => issueToUpdate.set(issue._id, { ...issueToUpdate.get(issue._id), status: evt.detail })}
+        on:change={(e) =>
+          issueToUpdate.set(issue._id, { ...issueToUpdate.get(issue._id), component: e.detail, useComponent: true })}
       />
     </div>
   </div>
 {/if}
 
 <style lang="scss">
-  .no-component {
-    background-color: var(--accent-bg-color);
+  .side-columns {
+    width: 45%;
+  }
+  .middle-column {
+    width: 10%;
+  }
+  .aligned-text {
+    display: flex;
+    align-items: center;
   }
 </style>

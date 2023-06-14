@@ -14,32 +14,38 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DocumentUpdate, Ref } from '@hcengineering/core'
-  import { SpaceSelect, createQuery, getClient } from '@hcengineering/presentation'
-  import { Component, Issue, Project } from '@hcengineering/tracker'
-  import ui, { Button, Label, Spinner } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
+
+  import { Ref } from '@hcengineering/core'
+  import { SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
+  import { Component, Issue, IssueStatus, Project } from '@hcengineering/tracker'
+  import ui, { Button, IconClose, Label, Spinner } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { statusStore } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+
   import tracker from '../../plugin'
-  import { collectIssues, findTargetStatus, moveIssueToSpace } from '../../utils'
+  import { IssueToUpdate, collectIssues, findTargetStatus, moveIssueToSpace } from '../../utils'
+  import ProjectPresenter from '../projects/ProjectPresenter.svelte'
   import IssuePresenter from './IssuePresenter.svelte'
   import TitlePresenter from './TitlePresenter.svelte'
   import ComponentMove from './move/ComponentMove.svelte'
   import ComponentMovePresenter from './move/ComponentMovePresenter.svelte'
   import StatusMove from './move/StatusMove.svelte'
   import StatusMovePresenter from './move/StatusMovePresenter.svelte'
+  import SelectReplacement from './move/SelectReplacement.svelte'
+  import PriorityEditor from './PriorityEditor.svelte'
 
   export let selected: Issue | Issue[]
   $: docs = Array.isArray(selected) ? selected : [selected]
 
-  let currentSpace: Project | undefined
   const client = getClient()
   const dispatch = createEventDispatcher()
   const hierarchy = client.getHierarchy()
+
+  let currentSpace: Project | undefined
   let space: Ref<Project>
 
-  $: _class = hierarchy.getClass(tracker.class.Project).label
   $: {
     const doc = docs[0]
     if (space === undefined) {
@@ -54,6 +60,26 @@
       return
     }
     processing = true
+    for (const c of toMove) {
+      const upd = issueToUpdate.get(c._id) ?? {}
+
+      if (c.status !== undefined && !upd.useStatus) {
+        const newStatus = statusToUpdate[c.status]
+        if (newStatus !== undefined) {
+          upd.status = newStatus
+        }
+      }
+
+      if (c.component !== undefined && c.component !== null && !upd.useComponent) {
+        const newComponent = componentToUpdate[c.component]
+        if (newComponent !== undefined) {
+          upd.component = newComponent
+        }
+      }
+
+      issueToUpdate.set(c._id, upd)
+    }
+
     await moveIssueToSpace(client, docs, currentSpace, issueToUpdate)
     processing = false
     dispatch('close')
@@ -61,7 +87,9 @@
 
   const targetSpaceQuery = createQuery()
 
-  let issueToUpdate: Map<Ref<Issue>, DocumentUpdate<Issue>> = new Map()
+  let issueToUpdate: Map<Ref<Issue>, IssueToUpdate> = new Map()
+  let statusToUpdate: Record<Ref<IssueStatus>, Ref<IssueStatus> | undefined> = {}
+  let componentToUpdate: Record<Ref<Component>, Ref<Component> | undefined> = {}
 
   $: targetSpaceQuery.query(tracker.class.Project, { _id: space }, (res) => {
     ;[currentSpace] = res
@@ -118,76 +146,142 @@
   $: componentQuery.query(tracker.class.Component, {}, (res) => {
     components = res
   })
+
+  const keepOriginalAttribytes: boolean = false
+  let showManageAttributes: boolean = false
+  $: isManageAttributesAvailable = issueToUpdate.size > 0 && docs[0]?.space !== currentSpace?._id
 </script>
 
 <div class="container">
-  <div class="overflow-label fs-title">
-    <Label label={tracker.string.MoveIssues} />
-  </div>
-  <div class="caption-color mt-4 mb-4">
-    <Label label={tracker.string.MoveIssuesDescription} />
-  </div>
-  <div class="spaceSelect">
-    {#if currentSpace && _class}
-      <SpaceSelect _class={currentSpace._class} label={_class} bind:value={space} />
-    {/if}
-  </div>
-  <div class="mt-2">
-    <Label label={tracker.string.Issues} />
-  </div>
-  <div class="issues-move flex-col">
-    {#if loading}
-      <Spinner />
-    {:else if toMove.length > 0 && currentSpace}
-      {#each toMove as issue}
-        {@const upd = issueToUpdate.get(issue._id) ?? {}}
-        <div class="issue-move p-3">
-          <div class="flex-row-center p-1">
-            <IssuePresenter value={issue} disabled kind={'list'} />
-            <div class="ml-2 max-w-30">
-              <TitlePresenter disabled value={issue} showParent={false} />
-            </div>
-          </div>
-          {#if issue.space !== currentSpace._id}
-            {#key upd.status}
-              <StatusMovePresenter {issue} {issueToUpdate} currentProject={currentSpace} />
-            {/key}
-            {#key upd.component}
-              <ComponentMovePresenter {issue} {issueToUpdate} currentProject={currentSpace} {components} />
-            {/key}
-            {#if upd.attachedTo === tracker.ids.NoParent && issue.attachedTo !== tracker.ids.NoParent}
-              <div class="p-1 unset-parent">
-                <Label label={tracker.string.SetParent} />
-              </div>
-            {/if}
-          {/if}
-        </div>
-      {/each}
-    {/if}
-  </div>
+  {#if !showManageAttributes}
+    <div class="space-between">
+      <span class="fs-title aligned-text">
+        <Label label={tracker.string.MoveIssues} />
+      </span>
+      <Button icon={IconClose} iconProps={{ size: 'medium' }} kind="transparent" on:click={() => dispatch('close')} />
+    </div>
 
-  {#if currentSpace !== undefined}
-    <StatusMove issues={toMove} targetProject={currentSpace} />
-    <ComponentMove issues={toMove} targetProject={currentSpace} {components} />
+    <div>
+      <Label label={tracker.string.MoveIssuesDescription} />
+    </div>
+
+    <div class="space-between mt-6 mb-4">
+      {#if currentSpace !== undefined}
+        <SpaceSelector
+          _class={currentSpace._class}
+          label={hierarchy.getClass(tracker.class.Project).label}
+          bind:space
+          kind={'secondary'}
+          size={'small'}
+          component={ProjectPresenter}
+          iconWithEmojii={tracker.component.IconWithEmojii}
+          defaultIcon={tracker.icon.Home}
+        />
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <span
+          class="aligned-text"
+          class:disabled={!isManageAttributesAvailable}
+          class:link={!keepOriginalAttribytes}
+          on:click|stopPropagation={() => {
+            if (!isManageAttributesAvailable) {
+              return
+            }
+            showManageAttributes = !showManageAttributes
+          }}
+        >
+          Manage attributes >
+        </span>
+      {/if}
+    </div>
+
+    <div class="divider" />
+    {#if currentSpace !== undefined && !keepOriginalAttribytes}
+      <SelectReplacement
+        {components}
+        targetProject={currentSpace}
+        issues={toMove}
+        bind:statusToUpdate
+        bind:componentToUpdate
+      />
+      <div class="divider" />
+    {/if}
+  {:else}
+    <div class="space-between pb-4">
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <span
+        class="fs-title aligned-text"
+        on:click|stopPropagation={() => (showManageAttributes = !showManageAttributes)}
+      >
+        <Label label={getEmbeddedLabel('<    Manage attributes')} />
+      </span>
+      <Button icon={IconClose} iconProps={{ size: 'medium' }} kind="transparent" on:click={() => dispatch('close')} />
+    </div>
+    <div class="divider" />
+
+    <div class="issues-move flex-col">
+      {#if loading}
+        <Spinner />
+      {:else if toMove.length > 0 && currentSpace}
+        {#each toMove as issue}
+          {@const upd = issueToUpdate.get(issue._id) ?? {}}
+          {#if issue.space !== currentSpace._id && (upd.status !== undefined || upd.component !== undefined)}
+            <div class="issue-move pb-2">
+              <div class="flex-row-center pl-1">
+                <PriorityEditor value={issue} isEditable={false} />
+                <IssuePresenter value={issue} disabled kind={'list'} />
+                <div class="ml-2 max-w-30">
+                  <TitlePresenter disabled value={issue} showParent={false} />
+                </div>
+              </div>
+              <div class="pl-4">
+                {#key upd.status}
+                  <StatusMovePresenter {issue} bind:issueToUpdate currentProject={currentSpace} />
+                {/key}
+                {#key upd.component}
+                  <ComponentMovePresenter {issue} bind:issueToUpdate currentProject={currentSpace} {components} />
+                {/key}
+              </div>
+            </div>
+          {/if}
+        {/each}
+      {/if}
+    </div>
+
+    {#if currentSpace !== undefined}
+      <StatusMove issues={toMove} targetProject={currentSpace} />
+      <ComponentMove issues={toMove} targetProject={currentSpace} {components} />
+    {/if}
   {/if}
 
-  <div class="footer">
-    <Button
-      label={view.string.Move}
-      size={'small'}
-      disabled={docs[0]?.space === currentSpace?._id}
-      kind={'primary'}
-      on:click={moveAll}
-      loading={processing}
-    />
-    <Button
-      size={'small'}
-      label={ui.string.Cancel}
-      on:click={() => {
-        dispatch('close')
+  <div class="space-between mt-4">
+    <!-- <div
+      class="aligned-text"
+      use:tooltip={{
+        component: Label,
+        props: { label: tracker.string.KeepOriginalAttributesTooltip }
       }}
-      disabled={processing}
-    />
+    >
+      <div class="mr-2"><Toggle bind:on={keepOriginalAttribytes} /></div>
+      <Label label={tracker.string.KeepOriginalAttributes} />
+    </div> -->
+    <div class="buttons">
+      <Button
+        label={view.string.Move}
+        size={'small'}
+        disabled={docs[0]?.space === currentSpace?._id}
+        kind={'primary'}
+        on:click={moveAll}
+        loading={processing}
+      />
+      <Button
+        size={'small'}
+        label={ui.string.Cancel}
+        on:click={() => {
+          dispatch('close')
+        }}
+        disabled={processing}
+      />
+    </div>
   </div>
 </div>
 
@@ -195,45 +289,47 @@
   .container {
     display: flex;
     flex-direction: column;
-    padding: 2rem 1.75rem 1.75rem;
-    width: 55rem;
+    padding: 1.25rem 1.5rem 1rem;
+    width: 480px;
     max-width: 40rem;
     background: var(--popup-bg-color);
-    border-radius: 1.25rem;
+    border-radius: 8px;
     user-select: none;
-    box-shadow: var(--popup-shadow);
 
-    .spaceSelect {
-      padding: 0.75rem;
-      background-color: var(--body-color);
-      border: 1px solid var(--popup-divider);
-      border-radius: 0.75rem;
+    .aligned-text {
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
-    .footer {
+    .space-between {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .buttons {
       flex-shrink: 0;
       display: grid;
       grid-auto-flow: column;
       direction: rtl;
       justify-content: start;
       align-items: center;
-      margin-top: 1rem;
       column-gap: 0.5rem;
     }
     .issues-move {
-      height: 30rem;
       overflow: auto;
     }
     .issue-move {
-      border: 1px solid var(--popup-divider);
-    }
-
-    .status-option {
-      border: 1px solid var(--popup-divider);
+      border-bottom: 1px solid var(--popup-divider);
     }
   }
 
-  .unset-parent {
-    background-color: var(--accent-bg-color);
+  .divider {
+    border-bottom: 1px solid var(--theme-divider-color);
+  }
+
+  .disabled {
+    cursor: not-allowed;
+    color: var(--dark-color);
   }
 </style>

@@ -653,3 +653,9 @@ export async function getVisibleFilters (filters: KeyFilter[], space?: Ref<Space
   // Removes the "Project" filter if a specific space is provided
   return space === undefined ? filters : filters.filter((f) => f.key !== 'space')
 }
+
+interface ManualUpdates {
+  useStatus: boolean
+  useComponent: boolean
+}
+export type IssueToUpdate = DocumentUpdate<Issue> & Partial<ManualUpdates>
