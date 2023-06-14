@@ -48,8 +48,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-ref-${{ github.ref }}
 
-      - uses: pnpm/action-setup@v2.0.1
+      - uses: pnpm/action-setup@v2
         with:
+          node-version: 18
           version: 8.6.2
 
       - name: Setup Node.js environment
@@ -128,7 +129,7 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
-      - uses: pnpm/action-setup@v2.0.1
+      - uses: pnpm/action-setup@v2
         with:
           version: 8.6.2
 
@@ -174,7 +175,7 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
-      - uses: pnpm/action-setup@v2.0.1
+      - uses: pnpm/action-setup@v2
         with:
           version: 8.6.2
   
@@ -234,7 +235,7 @@ jobs:
         with:
           mongodb-version: 5.0
 
-      - uses: pnpm/action-setup@v2.0.1
+      - uses: pnpm/action-setup@v2
         with:
           version: 8.6.2
   
@@ -279,7 +280,7 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
-      - uses: pnpm/action-setup@v2.0.1
+      - uses: pnpm/action-setup@v2
         with:
           version: 8.6.2
 
@@ -364,7 +365,7 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
-      - uses: pnpm/action-setup@v2.0.1
+      - uses: pnpm/action-setup@v2
         with:
           version: 8.6.2
   

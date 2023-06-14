@@ -9,7 +9,8 @@
       "dependsOn": ["^build"],
       // note: output globs are relative to each package's `package.json`
       // (and not the monorepo root)
-      "outputs": ["lib/**", "dist/**", "bundle.js"]
+      "outputs": ["lib/**", "dist/**", "bundle.js"],
+      "inputs": ["src/**/*.ts", "src/**/*.svelte", "package.json"]
     },
     "test": {    
       "dependsOn": ["build"],
