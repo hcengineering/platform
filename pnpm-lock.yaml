@@ -15832,6 +15832,58 @@ importers:
         specifier: 4.8.4
         version: 4.8.4
 
+  tests/sanity:
+    dependencies:
+      '@hcengineering/client-resources':
+        specifier: ^0.6.19
+        version: link:../../plugins/client-resources
+      '@hcengineering/core':
+        specifier: ^0.6.25
+        version: link:../../packages/core
+      cross-env:
+        specifier: ~7.0.3
+        version: 7.0.3
+      dotenv:
+        specifier: ~16.0.0
+        version: 16.0.0
+    devDependencies:
+      '@hcengineering/platform-rig':
+        specifier: ^0.6.0
+        version: link:../../packages/platform-rig
+      '@playwright/test':
+        specifier: ~1.23.0
+        version: 1.23.0
+      '@types/node':
+        specifier: ~16.11.12
+        version: 16.11.12
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^5.41.0
+        version: 5.41.0(@typescript-eslint/parser@5.41.0)(eslint@8.26.0)(typescript@4.8.4)
+      '@typescript-eslint/parser':
+        specifier: ^5.41.0
+        version: 5.41.0(eslint@8.26.0)(typescript@4.8.4)
+      eslint:
+        specifier: ^8.26.0
+        version: 8.26.0
+      eslint-config-standard-with-typescript:
+        specifier: ^23.0.0
+        version: 23.0.0(@typescript-eslint/eslint-plugin@5.41.0)(eslint-plugin-import@2.26.0)(eslint-plugin-n@15.4.0)(eslint-plugin-promise@6.1.1)(eslint@8.26.0)(typescript@4.8.4)
+      eslint-plugin-import:
+        specifier: ^2.26.0
+        version: 2.26.0(@typescript-eslint/parser@5.41.0)(eslint@8.26.0)
+      eslint-plugin-n:
+        specifier: ^15.4.0
+        version: 15.4.0(eslint@8.26.0)
+      eslint-plugin-promise:
+        specifier: ^6.1.1
+        version: 6.1.1(eslint@8.26.0)
+      prettier:
+        specifier: ^2.7.1
+        version: 2.7.1
+      typescript:
+        specifier: 4.8.4
+        version: 4.8.4
+
 packages:
 
   /@ampproject/remapping@2.2.1:
@@ -20031,6 +20083,15 @@ packages:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.15.0
 
+  /@playwright/test@1.23.0:
+    resolution: {integrity: sha512-RPWI8AHBVBiDyfTuxi1BhOaY3yaVy3S5ZsGKkSGGeWpZtSgN4SerInCYvgh9+EunIAK4RJQo+bzupbAn5pVqHQ==}
+    engines: {node: '>=14'}
+    hasBin: true
+    dependencies:
+      '@types/node': 16.11.12
+      playwright-core: 1.23.0
+    dev: true
+
   /@polka/url@1.0.0-next.21:
     resolution: {integrity: sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==}
     dev: true
@@ -24170,7 +24231,6 @@ packages:
     hasBin: true
     dependencies:
       cross-spawn: 7.0.3
-    dev: true
 
   /cross-fetch@3.1.5:
     resolution: {integrity: sha512-lvb1SBsI0Z7GDwmuid+mU3kWVBwTVUbe7S0H52yaaAdQOXq2YktTCZdlAcNKFzE6QtRz0snpw9bNiPeOIkkQvw==}
@@ -29048,6 +29108,12 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       find-up: 5.0.0
+    dev: true
+
+  /playwright-core@1.23.0:
+    resolution: {integrity: sha512-Zzhyr5RZGoJ1ek2sgfJCt2076kdOg8hnNwFBqAYeLySiutXyxSQk93vZ5gbnFiWV1sHvueCcwla9n35acUTxtA==}
+    engines: {node: '>=14'}
+    hasBin: true
     dev: true
 
   /png-js@1.0.0:

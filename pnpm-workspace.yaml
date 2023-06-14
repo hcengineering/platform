@@ -6,3 +6,4 @@ packages:
   - models/*
   - pods/*
   - dev/*
+  - tests/sanity
