@@ -2,7 +2,6 @@
   "name": "@hcengineering/theme",
   "version": "0.6.3",
   "main": "src/index.ts",
-  "svelte": "3.55.1",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
