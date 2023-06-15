@@ -365,7 +365,6 @@
       on:blur
       on:focus
       on:open-document
-      on:open-document
       on:attach={() => {
         attach()
       }}
