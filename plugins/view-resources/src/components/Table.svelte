@@ -230,7 +230,6 @@
     },
     {
       lookup,
-      limit: 1,
       total: true
     }
   )
