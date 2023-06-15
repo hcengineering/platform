@@ -150,6 +150,8 @@
   $: updateItems(category, query, relatedDocuments)
 
   const manager = createFocusManager()
+
+  const isStatusDisabled = (status: number) => status === 0
 </script>
 
 <FocusHandler {manager} />
@@ -169,7 +171,7 @@
         <div
           class="tab"
           class:selected={category?._id === c._id}
-          class:disabled={status === 0}
+          class:disabled={isStatusDisabled(status)}
           use:tooltip={{ label: c.label }}
           tabindex={i + 1}
           on:click={() => (category = c)}
