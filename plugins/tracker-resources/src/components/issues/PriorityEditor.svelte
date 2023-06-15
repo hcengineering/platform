@@ -42,7 +42,7 @@
 
   const client = getClient()
   const dispatch = createEventDispatcher()
-  let selectedPriority: IssuePriority | undefined = value.priority
+  $: selectedPriority = value.priority
 
   const handlePriorityEditorOpened = (event: MouseEvent) => {
     event.stopPropagation()
