@@ -16,22 +16,28 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
 
-  import { Ref } from '@hcengineering/core'
+  import { Ref, Status } from '@hcengineering/core'
   import { SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
   import { Component, Issue, IssueStatus, Project } from '@hcengineering/tracker'
-  import ui, { Button, IconClose, Label, Spinner } from '@hcengineering/ui'
+  import ui, { Button, IconClose, Label, Spinner, Toggle, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { statusStore } from '@hcengineering/view-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
 
   import tracker from '../../plugin'
-  import { IssueToUpdate, collectIssues, findTargetStatus, moveIssueToSpace } from '../../utils'
+  import {
+    ComponentToUpdate,
+    IssueToUpdate,
+    StatusToUpdate,
+    collectIssues,
+    findTargetStatus,
+    moveIssueToSpace
+  } from '../../utils'
+  import { componentStore } from '../../component'
   import ProjectPresenter from '../projects/ProjectPresenter.svelte'
   import IssuePresenter from './IssuePresenter.svelte'
   import TitlePresenter from './TitlePresenter.svelte'
-  import ComponentMove from './move/ComponentMove.svelte'
   import ComponentMovePresenter from './move/ComponentMovePresenter.svelte'
-  import StatusMove from './move/StatusMove.svelte'
   import StatusMovePresenter from './move/StatusMovePresenter.svelte'
   import SelectReplacement from './move/SelectReplacement.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
@@ -55,29 +61,77 @@
 
   let processing = false
 
+  async function createMissingStatus (st: Ref<Status>): Promise<void> {
+    const cur = $statusStore.get(st)
+    const statuses = $statusStore.filter((it) => it.space === currentSpace?._id)
+    if (cur === undefined || currentSpace === undefined || statuses.find((s) => s.name === cur.name) !== undefined) {
+      return
+    }
+    await client.createDoc(cur._class, currentSpace._id, {
+      name: cur.name,
+      ofAttribute: cur.ofAttribute,
+      category: cur.category,
+      color: cur.color,
+      description: cur.description,
+      rank: cur.rank
+    })
+  }
+
+  async function createMissingComponent (c: Ref<Component>): Promise<void> {
+    const cur = $componentStore.get(c)
+    const components = $componentStore.filter((it) => it.space === currentSpace?._id)
+    if (
+      cur === undefined ||
+      currentSpace === undefined ||
+      components.find((c) => c.label === cur.label) !== undefined
+    ) {
+      return
+    }
+    await client.createDoc(cur._class, currentSpace._id, {
+      label: cur.label,
+      attachments: 0,
+      description: cur.description,
+      comments: 0,
+      lead: cur.lead
+    })
+  }
+
   const moveAll = async () => {
     if (currentSpace === undefined) {
       return
     }
     processing = true
-    for (const c of toMove) {
-      const upd = issueToUpdate.get(c._id) ?? {}
-
-      if (c.status !== undefined && !upd.useStatus) {
-        const newStatus = statusToUpdate[c.status]
-        if (newStatus !== undefined) {
-          upd.status = newStatus
+    for (const issue of toMove) {
+      const upd = issueToUpdate.get(issue._id) ?? {}
+      if (issue.status !== undefined) {
+        if (!upd.useStatus) {
+          const newStatus = statusToUpdate[issue.status]
+          if (newStatus !== undefined) {
+            if (newStatus.create) {
+              await createMissingStatus(newStatus.ref)
+            }
+            upd.status = newStatus.ref
+          }
+        } else if (upd.createStatus) {
+          await createMissingStatus(issue.status)
         }
       }
 
-      if (c.component !== undefined && c.component !== null && !upd.useComponent) {
-        const newComponent = componentToUpdate[c.component]
-        if (newComponent !== undefined) {
-          upd.component = newComponent
+      if (issue.component !== undefined && issue.component !== null) {
+        if (!upd.useComponent) {
+          const newComponent = componentToUpdate[issue.component]
+          if (newComponent !== undefined) {
+            if (newComponent.create) {
+              await createMissingComponent(newComponent.ref)
+            }
+            upd.component = newComponent.ref
+          }
+        } else if (upd.createComponent) {
+          await createMissingComponent(issue.component)
         }
       }
 
-      issueToUpdate.set(c._id, upd)
+      issueToUpdate.set(issue._id, upd)
     }
 
     await moveIssueToSpace(client, docs, currentSpace, issueToUpdate)
@@ -88,8 +142,8 @@
   const targetSpaceQuery = createQuery()
 
   let issueToUpdate: Map<Ref<Issue>, IssueToUpdate> = new Map()
-  let statusToUpdate: Record<Ref<IssueStatus>, Ref<IssueStatus> | undefined> = {}
-  let componentToUpdate: Record<Ref<Component>, Ref<Component> | undefined> = {}
+  let statusToUpdate: Record<Ref<IssueStatus>, StatusToUpdate | undefined> = {}
+  let componentToUpdate: Record<Ref<Component>, ComponentToUpdate | undefined> = {}
 
   $: targetSpaceQuery.query(tracker.class.Project, { _id: space }, (res) => {
     ;[currentSpace] = res
@@ -104,20 +158,75 @@
     })
   }
 
-  $: if (currentSpace !== undefined) {
-    for (const c of toMove) {
-      const upd = issueToUpdate.get(c._id) ?? {}
+  $: if (keepOriginalAttribytes) {
+    setOriginalAttributes()
+  } else if (currentSpace !== undefined) {
+    statusToUpdate = {}
+    componentToUpdate = {}
+    setReplacementAttributres(currentSpace)
+  }
+
+  const componentQuery = createQuery()
+  let components: Component[] = []
+  $: componentQuery.query(tracker.class.Component, {}, (res) => {
+    components = res
+  })
+
+  $: statuses = $statusStore.filter((it) => it.space === currentSpace?._id)
+
+  let keepOriginalAttribytes: boolean = false
+  let showManageAttributes: boolean = false
+  $: isManageAttributesAvailable = issueToUpdate.size > 0 && docs[0]?.space !== currentSpace?._id
+
+  function setOriginalAttributes () {
+    for (const issue of toMove) {
+      const upd = issueToUpdate.get(issue._id) ?? {}
+      upd.createStatus = false
+      upd.useStatus = false
+      upd.createComponent = false
+      upd.useComponent = false
+      issueToUpdate.set(issue._id, upd)
+    }
+    for (const status in Object.keys(statusToUpdate)) {
+      statusToUpdate[status] = { ref: status, create: true }
+    }
+    for (const component in Object.keys(componentToUpdate)) {
+      componentToUpdate[component] = { ref: component, create: true }
+    }
+
+    for (const issue of toMove) {
+      let upd = issueToUpdate.get(issue._id) ?? {}
+      if (issue.status !== undefined) {
+        upd = {
+          ...upd,
+          status: issue.status
+        }
+      }
+
+      if (issue.component !== undefined && issue.component !== null) {
+        upd = {
+          ...upd,
+          component: issue.component
+        }
+      }
+      issueToUpdate.set(issue._id, upd)
+    }
+  }
+
+  function setReplacementAttributres (currentSpace: Project) {
+    for (const issue of toMove) {
+      const upd = issueToUpdate.get(issue._id) ?? {}
 
       // In case of target space change
-      if (upd.status !== undefined && $statusStore.get(upd.status)?.space !== currentSpace._id) {
+      if (upd.status !== undefined && $statusStore.get(upd.status)?.space !== currentSpace._id && !upd.createStatus) {
         upd.status = undefined
       }
       if (upd.status === undefined) {
-        upd.status = findTargetStatus($statusStore, c.status, space, true) ?? currentSpace.defaultIssueStatus
+        upd.status = findTargetStatus($statusStore, issue.status, space, true) ?? currentSpace.defaultIssueStatus
       }
 
-      if (c.component !== undefined) {
-        const cur = components.find((it) => it._id === c.component)
+      if (issue.component !== undefined) {
+        const cur = components.find((it) => it._id === issue.component)
 
         if (cur !== undefined) {
           if (
@@ -131,25 +240,13 @@
           }
         }
       }
-      if (c.attachedTo !== tracker.ids.NoParent && toMove.find((it) => it._id === c.attachedTo) === undefined) {
+      if (issue.attachedTo !== tracker.ids.NoParent && toMove.find((it) => it._id === issue.attachedTo) === undefined) {
         upd.attachedTo = tracker.ids.NoParent
         upd.attachedToClass = tracker.class.Issue
       }
-      issueToUpdate.set(c._id, upd)
+      issueToUpdate.set(issue._id, upd)
     }
-    issueToUpdate = issueToUpdate
   }
-
-  const componentQuery = createQuery()
-  let components: Component[] = []
-
-  $: componentQuery.query(tracker.class.Component, {}, (res) => {
-    components = res
-  })
-
-  const keepOriginalAttribytes: boolean = false
-  let showManageAttributes: boolean = false
-  $: isManageAttributesAvailable = issueToUpdate.size > 0 && docs[0]?.space !== currentSpace?._id
 </script>
 
 <div class="container">
@@ -181,7 +278,6 @@
         <span
           class="aligned-text"
           class:disabled={!isManageAttributesAvailable}
-          class:link={!keepOriginalAttribytes}
           on:click|stopPropagation={() => {
             if (!isManageAttributesAvailable) {
               return
@@ -197,6 +293,7 @@
     <div class="divider" />
     {#if currentSpace !== undefined && !keepOriginalAttribytes}
       <SelectReplacement
+        {statuses}
         {components}
         targetProject={currentSpace}
         issues={toMove}
@@ -224,46 +321,49 @@
       {:else if toMove.length > 0 && currentSpace}
         {#each toMove as issue}
           {@const upd = issueToUpdate.get(issue._id) ?? {}}
-          {#if issue.space !== currentSpace._id && (upd.status !== undefined || upd.component !== undefined)}
-            <div class="issue-move pb-2">
-              <div class="flex-row-center pl-1">
-                <PriorityEditor value={issue} isEditable={false} />
-                <IssuePresenter value={issue} disabled kind={'list'} />
-                <div class="ml-2 max-w-30">
-                  <TitlePresenter disabled value={issue} showParent={false} />
+          {@const originalComponent = components.find((it) => it._id === issue.component)}
+          {@const targetComponent = components.find(
+            (it) => it.space === currentSpace?._id && it.label === originalComponent?.label
+          )}
+          {#key keepOriginalAttribytes}
+            {#if issue.space !== currentSpace._id && (upd.status !== undefined || upd.component !== undefined)}
+              <div class="issue-move pb-2">
+                <div class="flex-row-center pl-1">
+                  <PriorityEditor value={issue} isEditable={false} />
+                  <IssuePresenter value={issue} disabled kind={'list'} />
+                  <div class="ml-2 max-w-30">
+                    <TitlePresenter disabled value={issue} showParent={false} />
+                  </div>
+                </div>
+                <div class="pl-4">
+                  {#key upd.status}
+                    <StatusMovePresenter {issue} bind:issueToUpdate targetProject={currentSpace} {statuses} />
+                  {/key}
+                  {#if targetComponent === undefined}
+                    {#key upd.component}
+                      <ComponentMovePresenter {issue} bind:issueToUpdate targetProject={currentSpace} {components} />
+                    {/key}
+                  {/if}
                 </div>
               </div>
-              <div class="pl-4">
-                {#key upd.status}
-                  <StatusMovePresenter {issue} bind:issueToUpdate currentProject={currentSpace} />
-                {/key}
-                {#key upd.component}
-                  <ComponentMovePresenter {issue} bind:issueToUpdate currentProject={currentSpace} {components} />
-                {/key}
-              </div>
-            </div>
-          {/if}
+            {/if}
+          {/key}
         {/each}
       {/if}
     </div>
-
-    {#if currentSpace !== undefined}
-      <StatusMove issues={toMove} targetProject={currentSpace} />
-      <ComponentMove issues={toMove} targetProject={currentSpace} {components} />
-    {/if}
   {/if}
 
   <div class="space-between mt-4">
-    <!-- <div
+    <div
       class="aligned-text"
       use:tooltip={{
         component: Label,
         props: { label: tracker.string.KeepOriginalAttributesTooltip }
       }}
     >
-      <div class="mr-2"><Toggle bind:on={keepOriginalAttribytes} /></div>
+      <div class="mr-2"><Toggle disabled={!isManageAttributesAvailable} bind:on={keepOriginalAttribytes} /></div>
       <Label label={tracker.string.KeepOriginalAttributes} />
-    </div> -->
+    </div>
     <div class="buttons">
       <Button
         label={view.string.Move}

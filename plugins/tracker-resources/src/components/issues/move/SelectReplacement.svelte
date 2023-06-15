@@ -14,47 +14,53 @@
 -->
 <script lang="ts">
   import { Ref, Status } from '@hcengineering/core'
-  import { Button, Label, SelectPopup, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { Button, Label, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { Component, Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import { statusStore } from '@hcengineering/view-resources'
 
   import tracker from '../../../plugin'
-  import { findTargetStatus } from '../../../utils'
-  import { componentStore } from '../../../component'
+  import { ComponentToUpdate, StatusToUpdate, findTargetStatus } from '../../../utils'
   import ComponentPresenter from '../../components/ComponentPresenter.svelte'
   import ComponentRefPresenter from '../../components/ComponentRefPresenter.svelte'
   import StatusRefPresenter from '../StatusRefPresenter.svelte'
+  import StatusReplacementPopup from './StatusReplacementPopup.svelte'
+  import ComponentReplacementPopup from './ComponentReplacementPopup.svelte'
 
   export let targetProject: Project
   export let issues: Issue[]
+  export let statuses: IssueStatus[] = []
   export let components: Component[] = []
-  export let statusToUpdate: Record<Ref<IssueStatus>, Ref<IssueStatus> | undefined>
-  export let componentToUpdate: Record<Ref<Component>, Ref<Component> | undefined>
+  export let statusToUpdate: Record<Ref<IssueStatus>, StatusToUpdate | undefined>
+  export let componentToUpdate: Record<Ref<Component>, ComponentToUpdate | undefined>
 
   $: if (targetProject !== undefined) {
     for (const i of issues) {
       const status = statusToUpdate[i.status]
-      if (status !== undefined) {
-        if ($statusStore.get(status)?.space !== targetProject._id) {
+      if (status !== undefined && !status.create) {
+        if ($statusStore.get(status.ref)?.space !== targetProject._id) {
           statusToUpdate[i.status] = undefined
         }
       }
       if (statusToUpdate[i.status] === undefined) {
         const targetStatus = findTargetStatus($statusStore, i.status, targetProject._id, true)
-        statusToUpdate[i.status] = targetStatus ?? targetProject.defaultIssueStatus
+        statusToUpdate[i.status] = { ref: targetStatus ?? targetProject.defaultIssueStatus }
       }
 
       if (i.component !== undefined && i.component !== null) {
         const cur = components.find((it) => it._id === i.component)
         if (cur !== undefined) {
           const component = componentToUpdate[i.component]
-          if (component !== undefined && components.find((it) => it._id === component)?.space !== targetProject._id) {
+          if (
+            component !== undefined &&
+            components.find((it) => it._id === component.ref)?.space !== targetProject._id
+          ) {
             componentToUpdate[cur._id] = undefined
           }
           if (component === undefined) {
-            componentToUpdate[cur._id] = components.find(
-              (it) => it.space === targetProject?._id && it.label === cur.label
-            )?._id
+            const componentRef = components.find((it) => it.space === targetProject?._id && it.label === cur.label)?._id
+            if (componentRef !== undefined) {
+              componentToUpdate[cur._id] = { ref: componentRef }
+            }
           }
         }
       }
@@ -70,27 +76,6 @@
 
     return targetComponent === undefined && arr.indexOf(it) === idx
   })
-
-  $: statusValues = $statusStore
-    .filter((it) => it.space === targetProject._id)
-    .map((it) => ({
-      id: it._id,
-      isSelected: false,
-      component: StatusRefPresenter,
-      props: { value: it._id, size: 'small' }
-    }))
-
-  $: componentValues = [
-    { id: null, icon: tracker.icon.Components, label: tracker.string.NoComponent, isSelected: false },
-    ...$componentStore
-      .filter((it) => it.space === targetProject._id)
-      .map((it) => ({
-        id: it._id,
-        isSelected: false,
-        component: ComponentRefPresenter,
-        props: { value: it._id }
-      }))
-  ]
 
   const getStatusRef = (status: string) => status as Ref<Status>
 </script>
@@ -123,19 +108,25 @@
               <Button
                 on:click={(event) => {
                   showPopup(
-                    SelectPopup,
-                    { value: statusValues, searchable: true },
+                    StatusReplacementPopup,
+                    {
+                      statuses,
+                      original: $statusStore.get(getStatusRef(status)),
+                      selected: getStatusRef(newStatus.ref)
+                    },
                     eventToHTMLElement(event),
                     (value) => {
                       if (value) {
-                        statusToUpdate = { ...statusToUpdate, [status]: value }
+                        const createStatus = typeof value === 'object'
+                        const s = createStatus ? value.create : value
+                        statusToUpdate = { ...statusToUpdate, [status]: { ref: s, create: createStatus } }
                       }
                     }
                   )
                 }}
               >
                 <span slot="content" class="flex-row-center pointer-events-none">
-                  <StatusRefPresenter value={newStatus} />
+                  <StatusRefPresenter value={getStatusRef(newStatus.ref)} />
                 </span>
               </Button>
             </div>
@@ -144,7 +135,7 @@
       </div>
       <div class="mt-4">
         {#each missingComponents as component}
-          {@const componentRef = componentToUpdate[component._id]}
+          {@const componentRef = componentToUpdate[component._id]?.ref}
           <div class="missing-items mt-4">
             <div class="side-columns aligned-text">
               <ComponentPresenter value={component} disabled />
@@ -154,12 +145,18 @@
               <Button
                 on:click={(event) => {
                   showPopup(
-                    SelectPopup,
-                    { value: componentValues, searchable: true },
+                    ComponentReplacementPopup,
+                    {
+                      components: components.filter((it) => it.space === targetProject._id),
+                      original: component,
+                      selected: componentRef
+                    },
                     eventToHTMLElement(event),
                     (value) => {
                       if (value !== undefined) {
-                        componentToUpdate = { ...componentToUpdate, [component._id]: value }
+                        const createComponent = typeof value === 'object'
+                        const c = createComponent ? value.create : value
+                        statusToUpdate = { ...statusToUpdate, [component._id]: { ref: c, create: createComponent } }
                       }
                     }
                   )

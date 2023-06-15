@@ -14,39 +14,58 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
+  import { Button, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { Component, Issue, Project } from '@hcengineering/tracker'
-  import { IssueToUpdate, issueToAttachedData } from '../../../utils'
-  import ComponentEditor from '../../components/ComponentEditor.svelte'
+
+  import { IssueToUpdate } from '../../../utils'
   import ComponentPresenter from '../../components/ComponentPresenter.svelte'
+  import ComponentReplacementPopup from './ComponentReplacementPopup.svelte'
 
   export let issue: Issue
-  export let currentProject: Project
+  export let targetProject: Project
   export let issueToUpdate: Map<Ref<Issue>, IssueToUpdate> = new Map()
   export let components: Component[]
 
-  $: currentComponent = components.find((it) => it._id === issue.component)
+  $: current = components.find((it) => it._id === issue.component)
+  $: replace = components.find((it) => it._id === issueToUpdate.get(issue._id)?.component)
 </script>
 
-{#if currentComponent !== undefined}
+{#if current !== undefined}
   <div class="flex-row-center p-1">
     <div class="side-columns aligned-text">
-      <ComponentPresenter value={currentComponent} disabled />
+      <ComponentPresenter value={current} disabled />
     </div>
     <span class="middle-column aligned-text">-></span>
     <div class="side-columns">
-      <ComponentEditor
-        shouldShowLabel
-        kind={'secondary'}
-        width={'min-content'}
-        space={currentProject._id}
-        value={{
-          ...issueToAttachedData(issue),
-          component: issueToUpdate.get(issue._id)?.component || null,
-          space: currentProject._id
+      <Button
+        on:click={(event) => {
+          showPopup(
+            ComponentReplacementPopup,
+            {
+              components: components.filter((it) => it.space === targetProject._id),
+              original: current,
+              selected: replace
+            },
+            eventToHTMLElement(event),
+            (value) => {
+              if (value) {
+                const createComponent = typeof value === 'object'
+                const c = createComponent ? value.create : value
+                issueToUpdate.set(issue._id, {
+                  ...issueToUpdate.get(issue._id),
+                  component: c,
+                  useComponent: true,
+                  createComponent
+                })
+              }
+            }
+          )
         }}
-        on:change={(e) =>
-          issueToUpdate.set(issue._id, { ...issueToUpdate.get(issue._id), component: e.detail, useComponent: true })}
-      />
+      >
+        <span slot="content" class="flex-row-center pointer-events-none">
+          <ComponentPresenter value={replace} />
+        </span>
+      </Button>
     </div>
   </div>
 {/if}

@@ -185,6 +185,8 @@ export default mergeIds(trackerId, tracker, {
     SelectReplacement: '' as IntlString,
     MissingItem: '' as IntlString,
     Replacement: '' as IntlString,
+    Original: '' as IntlString,
+    OriginalDescription: '' as IntlString,
 
     TypeIssuePriority: '' as IntlString,
     IssueTitlePlaceholder: '' as IntlString,

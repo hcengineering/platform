@@ -14,14 +14,21 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
-  import { Issue, Project } from '@hcengineering/tracker'
-  import { IssueToUpdate, issueToAttachedData } from '../../../utils'
-  import StatusEditor from '../StatusEditor.svelte'
+  import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
+  import { Button, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+
+  import { IssueToUpdate } from '../../../utils'
   import StatusRefPresenter from '../StatusRefPresenter.svelte'
+  import StatusReplacementPopup from './StatusReplacementPopup.svelte'
+  import { statusStore } from '@hcengineering/view-resources'
 
   export let issue: Issue
-  export let currentProject: Project
+  export let targetProject: Project
   export let issueToUpdate: Map<Ref<Issue>, IssueToUpdate> = new Map()
+  export let statuses: IssueStatus[]
+
+  $: replace = issueToUpdate.get(issue._id)?.status ?? targetProject.defaultIssueStatus
+  $: original = $statusStore.get(issue.status)
 </script>
 
 <div class="flex-row-center p-1">
@@ -30,19 +37,31 @@
   </div>
   <span class="middle-column aligned-text">-></span>
   <div class="side-columns">
-    <StatusEditor
-      shouldShowLabel
-      kind={'secondary'}
-      width={'min-content'}
-      iconSize={'small'}
-      value={{
-        ...issueToAttachedData(issue),
-        status: issueToUpdate.get(issue._id)?.status ?? currentProject.defaultIssueStatus,
-        space: currentProject._id
+    <Button
+      on:click={(event) => {
+        showPopup(
+          StatusReplacementPopup,
+          { statuses, original, selected: replace },
+          eventToHTMLElement(event),
+          (value) => {
+            if (value) {
+              const createStatus = typeof value === 'object'
+              const s = createStatus ? value.create : value
+              issueToUpdate.set(issue._id, {
+                ...issueToUpdate.get(issue._id),
+                status: s,
+                useStatus: true,
+                createStatus
+              })
+            }
+          }
+        )
       }}
-      on:change={(e) =>
-        issueToUpdate.set(issue._id, { ...issueToUpdate.get(issue._id), status: e.detail, useStatus: true })}
-    />
+    >
+      <span slot="content" class="flex-row-center pointer-events-none">
+        <StatusRefPresenter value={replace} />
+      </span>
+    </Button>
   </div>
 </div>
 

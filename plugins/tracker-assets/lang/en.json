@@ -156,6 +156,8 @@
     "SelectReplacement": "The following items are not available in the new project. Select a replacement.",
     "MissingItem": "MISSING ITEM",
     "Replacement": "REPLACEMENT",
+    "Original": "ORIGINAL",
+    "OriginalDescription": "Items from this section will be created in the new project",
 
     "Relations": "Relations",
     "RemoveRelation": "Remove relation...",
