@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Markup, updateAttribute } from '@hcengineering/core'
+  import { Class, Doc, Markup, Ref, updateAttribute } from '@hcengineering/core'
 
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getAttribute, getClient, KeyedAttribute } from '@hcengineering/presentation'
@@ -28,7 +28,8 @@
   export let placeholder: IntlString
   export let focusIndex = -1
   export let updateBacklinks: ((doc: Doc, description: Markup) => void) | undefined = undefined
-
+  let _id: Ref<Doc> | undefined = undefined
+  let _class: Ref<Class<Doc>> | undefined = undefined
   const client = getClient()
 
   const queryClient = createQuery()
@@ -36,13 +37,20 @@
   let description = ''
 
   let doc: Doc | undefined
-
-  $: queryClient.query(object._class, { _id: object._id }, async (result) => {
-    ;[doc] = result
-    if (doc) {
-      description = getAttribute(client, object, key)
-    }
-  })
+  function checkForNewObject (object: Doc) {
+    if (object._id !== _id) return true
+    if (object._class !== _class) return true
+    return false
+  }
+  $: object &&
+    queryClient.query(object._class, { _id: object._id }, async (result) => {
+      ;[doc] = result
+      if (doc && checkForNewObject(object)) {
+        _class = object._class
+        _id = object._id
+        description = getAttribute(client, object, key)
+      }
+    })
 
   const dispatch = createEventDispatcher()
 
@@ -56,7 +64,7 @@
 
     const old = getAttribute(client, object, key)
     if (description !== old) {
-      updateAttribute(client, object, object._class, key, description)
+      await updateAttribute(client, object, object._class, key, description)
       dispatch('saved', true)
       setTimeout(() => {
         dispatch('saved', false)
