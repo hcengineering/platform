@@ -56,6 +56,7 @@ import MyIssues from './components/myissues/MyIssues.svelte'
 import NewIssueHeader from './components/NewIssueHeader.svelte'
 import NopeComponent from './components/NopeComponent.svelte'
 import ProjectFilterValuePresenter from './components/projects/ProjectFilterValuePresenter.svelte'
+import ComponentFilterValuePresenter from './components/components/ComponentFilterValuePresenter.svelte'
 import RelationsPopup from './components/RelationsPopup.svelte'
 import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
@@ -398,7 +399,8 @@ export default async (): Promise<Resources> => ({
     MilestoneFilter,
     PriorityFilterValuePresenter,
     StatusFilterValuePresenter,
-    ProjectFilterValuePresenter
+    ProjectFilterValuePresenter,
+    ComponentFilterValuePresenter
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>

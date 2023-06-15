@@ -313,6 +313,7 @@ export default mergeIds(trackerId, tracker, {
     PriorityFilterValuePresenter: '' as AnyComponent,
     StatusFilterValuePresenter: '' as AnyComponent,
     ProjectFilterValuePresenter: '' as AnyComponent,
+    ComponentFilterValuePresenter: '' as AnyComponent,
     PriorityEditor: '' as AnyComponent,
     PriorityRefPresenter: '' as AnyComponent,
     ComponentEditor: '' as AnyComponent,
