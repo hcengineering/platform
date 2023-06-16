@@ -68,6 +68,7 @@ import EmployeePresenter from './components/EmployeePresenter.svelte'
 import EmployeeRefPresenter from './components/EmployeeRefPresenter.svelte'
 import MemberPresenter from './components/MemberPresenter.svelte'
 import Members from './components/Members.svelte'
+import MembersBox from './components/MembersBox.svelte'
 import MembersPresenter from './components/MembersPresenter.svelte'
 import MergeEmployee from './components/MergeEmployee.svelte'
 import OrganizationEditor from './components/OrganizationEditor.svelte'
@@ -141,7 +142,8 @@ export {
   UserInfo,
   IconMembers,
   SelectAvatars,
-  UserBoxItems
+  UserBoxItems,
+  MembersBox
 }
 
 const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({
@@ -311,7 +313,8 @@ export default async (): Promise<Resources> => ({
     EmployeeFilter,
     EmployeeFilterValuePresenter,
     EmployeeAccountFilterValuePresenter,
-    DeleteConfirmationPopup
+    DeleteConfirmationPopup,
+    EmployeeAccountRefPresenter
   },
   completion: {
     EmployeeQuery: async (

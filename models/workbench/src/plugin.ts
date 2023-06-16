@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { Space } from '@hcengineering/core'
-import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
+import { Doc, Space } from '@hcengineering/core'
+import { IntlString, Resource, mergeIds } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
 import workbench from '@hcengineering/workbench-resources/src/plugin'
@@ -32,6 +32,7 @@ export default mergeIds(workbenchId, workbench, {
     HiddenApplication: '' as IntlString
   },
   function: {
-    HasArchiveSpaces: '' as Resource<(spaces: Space[]) => Promise<boolean>>
+    HasArchiveSpaces: '' as Resource<(spaces: Space[]) => Promise<boolean>>,
+    IsOwner: '' as Resource<(docs: Doc[]) => Promise<boolean>>
   }
 })

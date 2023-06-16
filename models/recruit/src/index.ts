@@ -651,7 +651,7 @@ export function createModel (builder: Builder): void {
 
   const applicantViewOptions = (colors: boolean): ViewOptionsModel => {
     const model: ViewOptionsModel = {
-      groupBy: ['state', 'assignee', 'space'],
+      groupBy: ['state', 'assignee', 'space', 'createdBy', 'modifiedBy'],
       orderBy: [
         ['state', SortingOrder.Ascending],
         ['modifiedOn', SortingOrder.Descending],

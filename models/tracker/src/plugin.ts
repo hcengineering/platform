@@ -40,7 +40,10 @@ export default mergeIds(trackerId, tracker, {
     CreatedDate: '' as IntlString,
     ChangeStatus: '' as IntlString,
     ConfigLabel: '' as IntlString,
-    ConfigDescription: '' as IntlString
+    ConfigDescription: '' as IntlString,
+    Unarchive: '' as IntlString,
+    UnarchiveConfirm: '' as IntlString,
+    AllProjects: '' as IntlString
   },
   activity: {
     TxIssueCreated: '' as AnyComponent,
@@ -62,7 +65,8 @@ export default mergeIds(trackerId, tracker, {
     IssueTemplateList: '' as Ref<Viewlet>,
     IssueKanban: '' as Ref<Viewlet>,
     MilestoneList: '' as Ref<Viewlet>,
-    ComponentList: '' as Ref<Viewlet>
+    ComponentList: '' as Ref<Viewlet>,
+    ProjectList: '' as Ref<Viewlet>
   },
   ids: {
     TxIssueCreated: '' as Ref<TxViewlet>,

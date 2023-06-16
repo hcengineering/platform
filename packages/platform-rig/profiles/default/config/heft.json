@@ -7,6 +7,18 @@
       "heftEvent": "clean",
       "actionId": "defaultClean",
       "globsToDelete": ["dist", "lib", "temp"]
+    },
+    {
+      "actionKind": "copyFiles",
+      "heftEvent": "pre-compile",
+      "actionId": "copy-lang",
+      "copyOperations": [
+        {
+          "sourceFolder": "src",
+          "destinationFolders": ["lib"],
+          "includeGlobs": ["lang"]
+        }
+      ]
     }
   ],
   "heftPlugins": [

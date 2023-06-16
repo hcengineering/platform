@@ -627,6 +627,9 @@ export function createModel (builder: Builder): void {
   builder.mixin(core.class.Account, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: contact.component.EmployeeAccountPresenter
   })
+  builder.mixin(core.class.Account, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: contact.component.EmployeeAccountRefPresenter
+  })
 
   builder.mixin(contact.class.Organization, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: contact.component.OrganizationPresenter

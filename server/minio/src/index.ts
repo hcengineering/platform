@@ -57,17 +57,24 @@ export class MinioService {
   }
 
   async list (workspaceId: WorkspaceId, prefix?: string): Promise<MinioWorkspaceItem[]> {
-    const items = new Map<string, BucketItem & { metaData: ItemBucketMetadata }>()
-    const list = await this.client.listObjects(getBucketId(workspaceId), prefix, true)
-    await new Promise((resolve) => {
-      list.on('data', (data) => {
-        items.set(data.name, { metaData: {}, ...data })
+    try {
+      const items = new Map<string, BucketItem & { metaData: ItemBucketMetadata }>()
+      const list = await this.client.listObjects(getBucketId(workspaceId), prefix, true)
+      await new Promise((resolve) => {
+        list.on('data', (data) => {
+          items.set(data.name, { metaData: {}, ...data })
+        })
+        list.on('end', () => {
+          resolve(null)
+        })
       })
-      list.on('end', () => {
-        resolve(null)
-      })
-    })
-    return Array.from(items.values())
+      return Array.from(items.values())
+    } catch (err: any) {
+      if (((err?.message as string) ?? '').includes('Invalid bucket name')) {
+        return []
+      }
+      throw err
+    }
   }
 
   async stat (workspaceId: WorkspaceId, objectName: string): Promise<BucketItemStat> {

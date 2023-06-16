@@ -27,7 +27,7 @@
     "WantAnotherWorkspace": "Want to create another workspace?",
     "ChangeAccount": "Change account",
     "NotSeeingWorkspace": "Not seeing your workspace?",
-    "WorkspaceNameRule": "The workspace name can contain lowercase letters, numbers and symbol -",
+    "WorkspaceNameRule": "The workspace name can contain lowercase letters, numbers and symbol - (inside name)",
     "ForgotPassword": "Forgot your password?",
     "KnowPassword": "Know your password?",
     "Recover": "Recover",

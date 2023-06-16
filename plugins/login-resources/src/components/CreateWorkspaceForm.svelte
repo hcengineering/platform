@@ -28,7 +28,7 @@
     {
       name: 'workspace',
       i18n: login.string.Workspace,
-      rule: /^[0-9a-z\-)(]{3,63}$/,
+      rule: /^[0-9a-z][0-9a-z-]{2,62}[0-9a-z]$/,
       ruleDescr: login.string.WorkspaceNameRule
     }
   ]

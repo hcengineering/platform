@@ -104,6 +104,7 @@ export interface Account {
   // Defined for server admins only
   admin?: boolean
   confirmed?: boolean
+  lastWorkspace?: number
 }
 
 /**
@@ -115,6 +116,7 @@ export interface Workspace {
   organisation: string
   accounts: ObjectId[]
   productId: string
+  disabled?: boolean
 }
 
 /**
@@ -285,6 +287,9 @@ export async function selectWorkspace (
   const workspaceInfo = await getWorkspace(db, productId, workspace)
 
   if (workspaceInfo !== null) {
+    if (workspaceInfo.disabled === true) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace }))
+    }
     const workspaces = accountInfo.workspaces
 
     for (const w of workspaces) {
@@ -347,6 +352,7 @@ export async function join (
 ): Promise<WorkspaceLoginInfo> {
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(invite, email)
+  console.log(`join attempt:${email}, ${workspace.name}`)
   await assignWorkspace(db, productId, email, workspace.name)
 
   const token = (await login(db, productId, email, password)).token
@@ -360,6 +366,7 @@ export async function join (
  */
 export async function confirmEmail (db: Db, email: string): Promise<Account> {
   const account = await getAccount(db, email)
+  console.log(`confirm email:${email}`)
 
   if (account === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: accountId }))
@@ -446,6 +453,7 @@ export async function signUpJoin (
   last: string,
   inviteId: ObjectId
 ): Promise<WorkspaceLoginInfo> {
+  console.log(`signup join:${email} ${first} ${last}`)
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(invite, email)
   await createAcc(db, productId, email, password, first, last, invite?.emailMask === email)
@@ -529,6 +537,7 @@ export async function createAccount (
 export async function listWorkspaces (db: Db, productId: string): Promise<WorkspaceInfoOnly[]> {
   return (await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, {})).toArray())
     .map((it) => ({ ...it, productId }))
+    .filter((it) => it.disabled !== true)
     .map(trimWorkspace)
 }
 
@@ -612,20 +621,59 @@ export async function upgradeWorkspace (
 export const createUserWorkspace =
   (version: Data<Version>, txes: Tx[], migrationOperation: [string, MigrateOperation][]) =>
     async (db: Db, productId: string, token: string, workspace: string): Promise<LoginInfo> => {
+      if (!/^[0-9a-z][0-9a-z-]{2,62}[0-9a-z]$/.test(workspace)) {
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidId, { id: workspace }))
+      }
+
       const { email, extra } = decodeToken(token)
-      if (extra?.confirmed === false) {
+      const nonConfirmed = extra?.confirmed === false
+      console.log(`Creating workspace ${workspace} for ${email} ${nonConfirmed ? 'non confirmed' : 'confirmed'}`)
+
+      if (nonConfirmed) {
         throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
       }
-      await createWorkspace(version, txes, migrationOperation, db, productId, workspace, '')
+      const info = await getAccount(db, email)
+      if (info === null) {
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
+      }
+
+      if (info.lastWorkspace !== undefined) {
+        if (Date.now() - info.lastWorkspace < 60 * 1000) {
+          throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceRateLimit, { workspace }))
+        }
+      }
+
+      try {
+        await createWorkspace(version, txes, migrationOperation, db, productId, workspace, '')
+      } catch (err: any) {
+        console.error(err)
+        // We need to drop workspace, to prevent wrong data usage.
+        const ws = await getWorkspace(db, productId, workspace)
+        if (ws === null) {
+          throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace }))
+        }
+        await db.collection(WORKSPACE_COLLECTION).updateOne(
+          {
+            _id: ws._id
+          },
+          { $set: { disabled: true } }
+        )
+        throw err
+      }
+      info.lastWorkspace = Date.now()
+
+      // Update last workspace time.
+      await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: info._id }, { $set: { lastWorkspace: Date.now() } })
+
       await assignWorkspace(db, productId, email, workspace)
       await setRole(email, workspace, productId, AccountRole.Owner)
-      const info = await getAccount(db, email)
       const result = {
         endpoint: getEndpoint(),
         email,
         token: generateToken(email, getWorkspaceId(workspace, productId), getExtra(info)),
         productId
       }
+      console.log(`Creating workspace ${workspace} Done`)
       return result
     }
 
@@ -678,7 +726,9 @@ export async function getUserWorkspaces (db: Db, productId: string, token: strin
       .collection<Workspace>(WORKSPACE_COLLECTION)
       .find(withProductId(productId, account.admin === true ? {} : { _id: { $in: account.workspaces } }))
       .toArray()
-  ).map(trimWorkspace)
+  )
+    .filter((it) => it.disabled !== true)
+    .map(trimWorkspace)
 }
 
 async function getWorkspaceAndAccount (

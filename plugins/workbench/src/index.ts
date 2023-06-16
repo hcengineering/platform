@@ -59,6 +59,8 @@ export interface SpacesNavModel {
 
   // Child special items.
   specials?: SpecialNavModel[]
+
+  visibleIf?: Resource<(space: Space) => Promise<boolean>>
 }
 
 /**

@@ -49,7 +49,7 @@
   $: queries = { assigned, created, subscribed }
   $: mode = $resolvedLocationStore.query?.mode ?? undefined
 
-  let searchQuery: DocumentQuery<Lead> = { ...baseQuery }
+  let searchQuery: DocumentQuery<Lead> = { ...(baseQuery ?? {}) }
   function updateSearchQuery (search: string): void {
     searchQuery = search === '' ? { ...baseQuery } : { ...baseQuery, $search: search }
   }
@@ -72,11 +72,11 @@
     )
   }
   $: if (mode === 'subscribed') getSubscribed()
-  $: if (mode === undefined || queries[mode] === undefined) {
+  $: if (mode === undefined || (queries as any)[mode] === undefined) {
     ;[[mode]] = config
   }
   $: if (mode !== undefined) {
-    baseQuery = { ...queries[mode] }
+    baseQuery = { ...((queries as any)[mode] ?? {}) }
     modeSelectorProps = {
       config,
       mode,
@@ -101,6 +101,9 @@
     .findOne<Viewlet>(view.class.Viewlet, { attachTo: _class, descriptor: task.viewlet.StatusTable })
     .then((res) => {
       viewlet = res
+      if (res == null) {
+        return
+      }
       preferenceQuery.query(
         view.class.ViewletPreference,
         {

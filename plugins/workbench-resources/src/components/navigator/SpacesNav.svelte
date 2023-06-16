@@ -117,6 +117,32 @@
       return await getResource(value.presenter)
     }
   }
+
+  let visibleIf: ((space: Space) => Promise<boolean>) | undefined
+
+  $: if (model.visibleIf) {
+    getResource(model.visibleIf).then((r) => {
+      visibleIf = r
+    })
+  }
+
+  let filteredSpaces: Space[] = []
+
+  async function updateSpaces (spaces: Space[], visibleIf: (space: Space) => Promise<boolean>): Promise<void> {
+    const result: Space[] = []
+    for (const s of spaces) {
+      if (await visibleIf(s)) {
+        result.push(s)
+      }
+    }
+    filteredSpaces = result
+  }
+
+  $: if (visibleIf) {
+    updateSpaces(spaces, visibleIf)
+  } else {
+    filteredSpaces = spaces
+  }
 </script>
 
 <TreeNode
@@ -125,7 +151,7 @@
   actions={async () => getParentActions()}
   shortDropbox={model.specials !== undefined}
 >
-  {#each spaces as space, i (space._id)}
+  {#each filteredSpaces as space, i (space._id)}
     {#await getPresenter(space._class) then presenter}
       {#if separate && model.specials && i !== 0}<TreeSeparator line />{/if}
       {#if model.specials && presenter}

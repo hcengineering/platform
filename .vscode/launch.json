@@ -69,7 +69,10 @@
         "TRANSACTOR_URL": "ws:/localhost:3333",
         "ACCOUNT_PORT": "3000",
         "FRONT_URL": "http://localhost:8080",
-        "SES_URL": "http://localhost:8091"
+        "SES_URL": "http://localhost:8091",
+        "MINIO_ACCESS_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin",
+        "MINIO_ENDPOINT": "localhost"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,

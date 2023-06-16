@@ -14,6 +14,7 @@
     "WorkspaceNotFound": "Workspace not found",
     "InvalidPassword": "Invalid password",
     "AccountAlreadyExists": "Account already exists",
+    "WorkspaceRateLimit": "Server is busy, Please wait a bit and try again",
     "AccountAlreadyConfirmed": "Account already confirmed",
     "AccountWasMerged": "Account was merged",
     "WorkspaceAlreadyExists": "Workspace already exists",

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Space } from '@hcengineering/core'
+import { AccountRole, Space, getCurrentAccount } from '@hcengineering/core'
 import { Resources } from '@hcengineering/platform'
 import ApplicationPresenter from './components/ApplicationPresenter.svelte'
 import Archive from './components/Archive.svelte'
@@ -42,7 +42,8 @@ export default async (): Promise<Resources> => ({
     Workbench
   },
   function: {
-    HasArchiveSpaces: hasArchiveSpaces
+    HasArchiveSpaces: hasArchiveSpaces,
+    IsOwner: async (docs: Space[]) => getCurrentAccount().role === AccountRole.Owner
   },
   actionImpl: {
     Navigate: doNavigate
