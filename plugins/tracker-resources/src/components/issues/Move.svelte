@@ -161,8 +161,6 @@
   $: if (keepOriginalAttribytes) {
     setOriginalAttributes()
   } else if (currentSpace !== undefined) {
-    statusToUpdate = {}
-    componentToUpdate = {}
     setReplacementAttributres(currentSpace)
   }
 
@@ -361,7 +359,18 @@
         props: { label: tracker.string.KeepOriginalAttributesTooltip }
       }}
     >
-      <div class="mr-2"><Toggle disabled={!isManageAttributesAvailable} bind:on={keepOriginalAttribytes} /></div>
+      <div class="mr-2">
+        <Toggle
+          disabled={!isManageAttributesAvailable}
+          on:change={() => {
+            keepOriginalAttribytes = !keepOriginalAttribytes
+            if (!keepOriginalAttribytes) {
+              statusToUpdate = {}
+              componentToUpdate = {}
+            }
+          }}
+        />
+      </div>
       <Label label={tracker.string.KeepOriginalAttributes} />
     </div>
     <div class="buttons">

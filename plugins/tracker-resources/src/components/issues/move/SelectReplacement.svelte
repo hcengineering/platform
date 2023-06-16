@@ -156,7 +156,7 @@
                       if (value !== undefined) {
                         const createComponent = typeof value === 'object'
                         const c = createComponent ? value.create : value
-                        statusToUpdate = { ...statusToUpdate, [component._id]: { ref: c, create: createComponent } }
+                        componentToUpdate = { ...componentToUpdate, [component._id]: { ref: c, create: createComponent } }
                       }
                     }
                   )
