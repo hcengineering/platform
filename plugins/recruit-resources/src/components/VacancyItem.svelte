@@ -21,15 +21,11 @@
   export let value: Vacancy
 </script>
 
-<div class="flex item">
-  <Icon icon={recruit.icon.Vacancy} size={'medium'} />
-  <div class="ml-2">
-    {value.name}
+<div class="flex-row-center">
+  <div class="flex-center p-1 content-dark-color flex-no-shrink mr-2-5">
+    <Icon icon={recruit.icon.Vacancy} size={'medium'} />
   </div>
+  <span class="overflow-label">
+    {value.name}
+  </span>
 </div>
-
-<style lang="scss">
-  .item {
-    align-items: center;
-  }
-</style>

@@ -32,19 +32,13 @@
   })
 </script>
 
-<div class="flex item">
+<div class="flex-row-center">
   <!-- <Icon icon={recruit.icon.Application} size={'medium'} /> -->
-  <PersonPresenter value={person} shouldShowName={false} />
-  <div class="ml-2">
+  <PersonPresenter value={person} avatarSize={'smaller'} shouldShowName={false} />
+  <span class="ml-2">
     {#if shortLabel}{shortLabel}-{/if}{value.number}
-  </div>
+  </span>
   {#if person}
-    <div class="ml-1">{getName(person)}</div>
+    <span class="ml-1">{getName(person)}</span>
   {/if}
 </div>
-
-<style lang="scss">
-  .item {
-    align-items: center;
-  }
-</style>
