@@ -275,11 +275,13 @@
   $: finalTitle = title ?? rawTitle
 </script>
 
-<ActionContext
-  context={{
-    mode: 'editor'
-  }}
-/>
+{#if !embedded}
+  <ActionContext
+    context={{
+      mode: 'editor'
+    }}
+  />
+{/if}
 
 {#if object !== undefined && finalTitle !== undefined}
   <Panel
