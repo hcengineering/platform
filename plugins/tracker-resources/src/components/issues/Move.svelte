@@ -14,32 +14,44 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DocumentUpdate, Ref } from '@hcengineering/core'
-  import { SpaceSelect, createQuery, getClient } from '@hcengineering/presentation'
-  import { Component, Issue, Project } from '@hcengineering/tracker'
-  import ui, { Button, Label, Spinner } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
+
+  import { Ref, Status } from '@hcengineering/core'
+  import { SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
+  import { Component, Issue, IssueStatus, Project } from '@hcengineering/tracker'
+  import ui, { Button, IconClose, Label, Spinner, Toggle, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { statusStore } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+
   import tracker from '../../plugin'
-  import { collectIssues, findTargetStatus, moveIssueToSpace } from '../../utils'
+  import {
+    ComponentToUpdate,
+    IssueToUpdate,
+    StatusToUpdate,
+    collectIssues,
+    findTargetStatus,
+    moveIssueToSpace
+  } from '../../utils'
+  import { componentStore } from '../../component'
+  import ProjectPresenter from '../projects/ProjectPresenter.svelte'
   import IssuePresenter from './IssuePresenter.svelte'
   import TitlePresenter from './TitlePresenter.svelte'
-  import ComponentMove from './move/ComponentMove.svelte'
   import ComponentMovePresenter from './move/ComponentMovePresenter.svelte'
-  import StatusMove from './move/StatusMove.svelte'
   import StatusMovePresenter from './move/StatusMovePresenter.svelte'
+  import SelectReplacement from './move/SelectReplacement.svelte'
+  import PriorityEditor from './PriorityEditor.svelte'
 
   export let selected: Issue | Issue[]
   $: docs = Array.isArray(selected) ? selected : [selected]
 
-  let currentSpace: Project | undefined
   const client = getClient()
   const dispatch = createEventDispatcher()
   const hierarchy = client.getHierarchy()
+
+  let currentSpace: Project | undefined
   let space: Ref<Project>
 
-  $: _class = hierarchy.getClass(tracker.class.Project).label
   $: {
     const doc = docs[0]
     if (space === undefined) {
@@ -49,11 +61,79 @@
 
   let processing = false
 
+  async function createMissingStatus (st: Ref<Status>): Promise<void> {
+    const cur = $statusStore.get(st)
+    const statuses = $statusStore.filter((it) => it.space === currentSpace?._id)
+    if (cur === undefined || currentSpace === undefined || statuses.find((s) => s.name === cur.name) !== undefined) {
+      return
+    }
+    await client.createDoc(cur._class, currentSpace._id, {
+      name: cur.name,
+      ofAttribute: cur.ofAttribute,
+      category: cur.category,
+      color: cur.color,
+      description: cur.description,
+      rank: cur.rank
+    })
+  }
+
+  async function createMissingComponent (c: Ref<Component>): Promise<void> {
+    const cur = $componentStore.get(c)
+    const components = $componentStore.filter((it) => it.space === currentSpace?._id)
+    if (
+      cur === undefined ||
+      currentSpace === undefined ||
+      components.find((c) => c.label === cur.label) !== undefined
+    ) {
+      return
+    }
+    await client.createDoc(cur._class, currentSpace._id, {
+      label: cur.label,
+      attachments: 0,
+      description: cur.description,
+      comments: 0,
+      lead: cur.lead
+    })
+  }
+
   const moveAll = async () => {
     if (currentSpace === undefined) {
       return
     }
     processing = true
+    for (const issue of toMove) {
+      const upd = issueToUpdate.get(issue._id) ?? {}
+      if (issue.status !== undefined) {
+        if (!upd.useStatus) {
+          const newStatus = statusToUpdate[issue.status]
+          if (newStatus !== undefined) {
+            if (newStatus.create) {
+              await createMissingStatus(newStatus.ref)
+            }
+            upd.status = newStatus.ref
+          }
+        } else if (upd.createStatus) {
+          await createMissingStatus(issue.status)
+        }
+      }
+
+      if (issue.component !== undefined && issue.component !== null) {
+        if (!upd.useComponent) {
+          const newComponent = componentToUpdate[issue.component]
+          if (newComponent !== undefined) {
+            if (newComponent.create) {
+              await createMissingComponent(newComponent.ref)
+            }
+            upd.component = newComponent.ref
+          }
+        } else if (upd.createComponent) {
+          await createMissingComponent(issue.component)
+        }
+      }
+
+      issueToUpdate.set(issue._id, upd)
+    }
+
     await moveIssueToSpace(client, docs, currentSpace, issueToUpdate)
     processing = false
     dispatch('close')
@@ -61,7 +141,9 @@
 
   const targetSpaceQuery = createQuery()
 
-  let issueToUpdate: Map<Ref<Issue>, DocumentUpdate<Issue>> = new Map()
+  let issueToUpdate: Map<Ref<Issue>, IssueToUpdate> = new Map()
+  let statusToUpdate: Record<Ref<IssueStatus>, StatusToUpdate | undefined> = {}
+  let componentToUpdate: Record<Ref<Component>, ComponentToUpdate | undefined> = {}
 
   $: targetSpaceQuery.query(tracker.class.Project, { _id: space }, (res) => {
     ;[currentSpace] = res
@@ -76,20 +158,75 @@
     })
   }
 
-  $: if (currentSpace !== undefined) {
-    for (const c of toMove) {
-      const upd = issueToUpdate.get(c._id) ?? {}
+  $: if (keepOriginalAttribytes) {
+    setOriginalAttributes()
+  } else if (currentSpace !== undefined) {
+    statusToUpdate = {}
+    componentToUpdate = {}
+    setReplacementAttributres(currentSpace)
+  }
+
+  const componentQuery = createQuery()
+  let components: Component[] = []
+  $: componentQuery.query(tracker.class.Component, {}, (res) => {
+    components = res
+  })
+
+  $: statuses = $statusStore.filter((it) => it.space === currentSpace?._id)
+
+  let keepOriginalAttribytes: boolean = false
+  let showManageAttributes: boolean = false
+  $: isManageAttributesAvailable = issueToUpdate.size > 0 && docs[0]?.space !== currentSpace?._id
+
+  function setOriginalAttributes () {
+    for (const issue of toMove) {
+      const upd = issueToUpdate.get(issue._id) ?? {}
+      upd.createStatus = false
+      upd.useStatus = false
+      upd.createComponent = false
+      upd.useComponent = false
+      issueToUpdate.set(issue._id, upd)
+    }
+    for (const status in Object.keys(statusToUpdate)) {
+      statusToUpdate[status] = { ref: status, create: true }
+    }
+    for (const component in Object.keys(componentToUpdate)) {
+      componentToUpdate[component] = { ref: component, create: true }
+    }
+
+    for (const issue of toMove) {
+      let upd = issueToUpdate.get(issue._id) ?? {}
+      if (issue.status !== undefined) {
+        upd = {
+          ...upd,
+          status: issue.status
+        }
+      }
+
+      if (issue.component !== undefined && issue.component !== null) {
+        upd = {
+          ...upd,
+          component: issue.component
+        }
+      }
+      issueToUpdate.set(issue._id, upd)
+    }
+  }
+
+  function setReplacementAttributres (currentSpace: Project) {
+    for (const issue of toMove) {
+      const upd = issueToUpdate.get(issue._id) ?? {}
 
       // In case of target space change
-      if (upd.status !== undefined && $statusStore.get(upd.status)?.space !== currentSpace._id) {
+      if (upd.status !== undefined && $statusStore.get(upd.status)?.space !== currentSpace._id && !upd.createStatus) {
         upd.status = undefined
       }
       if (upd.status === undefined) {
-        upd.status = findTargetStatus($statusStore, c.status, space, true) ?? currentSpace.defaultIssueStatus
+        upd.status = findTargetStatus($statusStore, issue.status, space, true) ?? currentSpace.defaultIssueStatus
       }
 
-      if (c.component !== undefined) {
-        const cur = components.find((it) => it._id === c.component)
+      if (issue.component !== undefined) {
+        const cur = components.find((it) => it._id === issue.component)
 
         if (cur !== undefined) {
           if (
@@ -103,91 +240,148 @@
           }
         }
       }
-      if (c.attachedTo !== tracker.ids.NoParent && toMove.find((it) => it._id === c.attachedTo) === undefined) {
+      if (issue.attachedTo !== tracker.ids.NoParent && toMove.find((it) => it._id === issue.attachedTo) === undefined) {
         upd.attachedTo = tracker.ids.NoParent
         upd.attachedToClass = tracker.class.Issue
       }
-      issueToUpdate.set(c._id, upd)
+      issueToUpdate.set(issue._id, upd)
     }
-    issueToUpdate = issueToUpdate
   }
-
-  const componentQuery = createQuery()
-  let components: Component[] = []
-
-  $: componentQuery.query(tracker.class.Component, {}, (res) => {
-    components = res
-  })
 </script>
 
 <div class="container">
-  <div class="overflow-label fs-title">
-    <Label label={tracker.string.MoveIssues} />
-  </div>
-  <div class="caption-color mt-4 mb-4">
-    <Label label={tracker.string.MoveIssuesDescription} />
-  </div>
-  <div class="spaceSelect">
-    {#if currentSpace && _class}
-      <SpaceSelect _class={currentSpace._class} label={_class} bind:value={space} />
+  {#if !showManageAttributes}
+    <div class="space-between">
+      <span class="fs-title aligned-text">
+        <Label label={tracker.string.MoveIssues} />
+      </span>
+      <Button icon={IconClose} iconProps={{ size: 'medium' }} kind="transparent" on:click={() => dispatch('close')} />
+    </div>
+
+    <div>
+      <Label label={tracker.string.MoveIssuesDescription} />
+    </div>
+
+    <div class="space-between mt-6 mb-4">
+      {#if currentSpace !== undefined}
+        <SpaceSelector
+          _class={currentSpace._class}
+          label={hierarchy.getClass(tracker.class.Project).label}
+          bind:space
+          kind={'secondary'}
+          size={'small'}
+          component={ProjectPresenter}
+          iconWithEmojii={tracker.component.IconWithEmojii}
+          defaultIcon={tracker.icon.Home}
+        />
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <span
+          class="aligned-text"
+          class:disabled={!isManageAttributesAvailable}
+          on:click|stopPropagation={() => {
+            if (!isManageAttributesAvailable) {
+              return
+            }
+            showManageAttributes = !showManageAttributes
+          }}
+        >
+          Manage attributes >
+        </span>
+      {/if}
+    </div>
+
+    <div class="divider" />
+    {#if currentSpace !== undefined && !keepOriginalAttribytes}
+      <SelectReplacement
+        {statuses}
+        {components}
+        targetProject={currentSpace}
+        issues={toMove}
+        bind:statusToUpdate
+        bind:componentToUpdate
+      />
+      <div class="divider" />
     {/if}
-  </div>
-  <div class="mt-2">
-    <Label label={tracker.string.Issues} />
-  </div>
-  <div class="issues-move flex-col">
-    {#if loading}
-      <Spinner />
-    {:else if toMove.length > 0 && currentSpace}
-      {#each toMove as issue}
-        {@const upd = issueToUpdate.get(issue._id) ?? {}}
-        <div class="issue-move p-3">
-          <div class="flex-row-center p-1">
-            <IssuePresenter value={issue} disabled kind={'list'} />
-            <div class="ml-2 max-w-30">
-              <TitlePresenter disabled value={issue} showParent={false} />
-            </div>
-          </div>
-          {#if issue.space !== currentSpace._id}
-            {#key upd.status}
-              <StatusMovePresenter {issue} {issueToUpdate} currentProject={currentSpace} />
-            {/key}
-            {#key upd.component}
-              <ComponentMovePresenter {issue} {issueToUpdate} currentProject={currentSpace} {components} />
-            {/key}
-            {#if upd.attachedTo === tracker.ids.NoParent && issue.attachedTo !== tracker.ids.NoParent}
-              <div class="p-1 unset-parent">
-                <Label label={tracker.string.SetParent} />
+  {:else}
+    <div class="space-between pb-4">
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <span
+        class="fs-title aligned-text"
+        on:click|stopPropagation={() => (showManageAttributes = !showManageAttributes)}
+      >
+        <Label label={getEmbeddedLabel('<    Manage attributes')} />
+      </span>
+      <Button icon={IconClose} iconProps={{ size: 'medium' }} kind="transparent" on:click={() => dispatch('close')} />
+    </div>
+    <div class="divider" />
+
+    <div class="issues-move flex-col">
+      {#if loading}
+        <Spinner />
+      {:else if toMove.length > 0 && currentSpace}
+        {#each toMove as issue}
+          {@const upd = issueToUpdate.get(issue._id) ?? {}}
+          {@const originalComponent = components.find((it) => it._id === issue.component)}
+          {@const targetComponent = components.find(
+            (it) => it.space === currentSpace?._id && it.label === originalComponent?.label
+          )}
+          {#key keepOriginalAttribytes}
+            {#if issue.space !== currentSpace._id && (upd.status !== undefined || upd.component !== undefined)}
+              <div class="issue-move pb-2">
+                <div class="flex-row-center pl-1">
+                  <PriorityEditor value={issue} isEditable={false} />
+                  <IssuePresenter value={issue} disabled kind={'list'} />
+                  <div class="ml-2 max-w-30">
+                    <TitlePresenter disabled value={issue} showParent={false} />
+                  </div>
+                </div>
+                <div class="pl-4">
+                  {#key upd.status}
+                    <StatusMovePresenter {issue} bind:issueToUpdate targetProject={currentSpace} {statuses} />
+                  {/key}
+                  {#if targetComponent === undefined}
+                    {#key upd.component}
+                      <ComponentMovePresenter {issue} bind:issueToUpdate targetProject={currentSpace} {components} />
+                    {/key}
+                  {/if}
+                </div>
               </div>
             {/if}
-          {/if}
-        </div>
-      {/each}
-    {/if}
-  </div>
-
-  {#if currentSpace !== undefined}
-    <StatusMove issues={toMove} targetProject={currentSpace} />
-    <ComponentMove issues={toMove} targetProject={currentSpace} {components} />
+          {/key}
+        {/each}
+      {/if}
+    </div>
   {/if}
 
-  <div class="footer">
-    <Button
-      label={view.string.Move}
-      size={'small'}
-      disabled={docs[0]?.space === currentSpace?._id}
-      kind={'primary'}
-      on:click={moveAll}
-      loading={processing}
-    />
-    <Button
-      size={'small'}
-      label={ui.string.Cancel}
-      on:click={() => {
-        dispatch('close')
+  <div class="space-between mt-4">
+    <div
+      class="aligned-text"
+      use:tooltip={{
+        component: Label,
+        props: { label: tracker.string.KeepOriginalAttributesTooltip }
       }}
-      disabled={processing}
-    />
+    >
+      <div class="mr-2"><Toggle disabled={!isManageAttributesAvailable} bind:on={keepOriginalAttribytes} /></div>
+      <Label label={tracker.string.KeepOriginalAttributes} />
+    </div>
+    <div class="buttons">
+      <Button
+        label={view.string.Move}
+        size={'small'}
+        disabled={docs[0]?.space === currentSpace?._id}
+        kind={'primary'}
+        on:click={moveAll}
+        loading={processing}
+      />
+      <Button
+        size={'small'}
+        label={ui.string.Cancel}
+        on:click={() => {
+          dispatch('close')
+        }}
+        disabled={processing}
+      />
+    </div>
   </div>
 </div>
 
@@ -195,45 +389,47 @@
   .container {
     display: flex;
     flex-direction: column;
-    padding: 2rem 1.75rem 1.75rem;
-    width: 55rem;
+    padding: 1.25rem 1.5rem 1rem;
+    width: 480px;
     max-width: 40rem;
     background: var(--popup-bg-color);
-    border-radius: 1.25rem;
+    border-radius: 8px;
     user-select: none;
-    box-shadow: var(--popup-shadow);
 
-    .spaceSelect {
-      padding: 0.75rem;
-      background-color: var(--body-color);
-      border: 1px solid var(--popup-divider);
-      border-radius: 0.75rem;
+    .aligned-text {
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
-    .footer {
+    .space-between {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .buttons {
       flex-shrink: 0;
       display: grid;
       grid-auto-flow: column;
       direction: rtl;
       justify-content: start;
       align-items: center;
-      margin-top: 1rem;
       column-gap: 0.5rem;
     }
     .issues-move {
-      height: 30rem;
       overflow: auto;
     }
     .issue-move {
-      border: 1px solid var(--popup-divider);
-    }
-
-    .status-option {
-      border: 1px solid var(--popup-divider);
+      border-bottom: 1px solid var(--popup-divider);
     }
   }
 
-  .unset-parent {
-    background-color: var(--accent-bg-color);
+  .divider {
+    border-bottom: 1px solid var(--theme-divider-color);
+  }
+
+  .disabled {
+    cursor: not-allowed;
+    color: var(--dark-color);
   }
 </style>

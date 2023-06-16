@@ -180,6 +180,13 @@ export default mergeIds(trackerId, tracker, {
     Duplicate: '' as IntlString,
     MoveIssues: '' as IntlString,
     MoveIssuesDescription: '' as IntlString,
+    KeepOriginalAttributes: '' as IntlString,
+    KeepOriginalAttributesTooltip: '' as IntlString,
+    SelectReplacement: '' as IntlString,
+    MissingItem: '' as IntlString,
+    Replacement: '' as IntlString,
+    Original: '' as IntlString,
+    OriginalDescription: '' as IntlString,
 
     TypeIssuePriority: '' as IntlString,
     IssueTitlePlaceholder: '' as IntlString,

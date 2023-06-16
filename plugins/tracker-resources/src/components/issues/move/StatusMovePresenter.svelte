@@ -13,51 +13,67 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DocumentUpdate, Ref } from '@hcengineering/core'
-  import { Issue, Project } from '@hcengineering/tracker'
-  import { Label } from '@hcengineering/ui'
-  import { statusStore } from '@hcengineering/view-resources'
-  import tracker from '../../../plugin'
-  import { findTargetStatus, issueToAttachedData } from '../../../utils'
-  import StatusEditor from '../StatusEditor.svelte'
+  import { Ref } from '@hcengineering/core'
+  import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
+  import { Button, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+
+  import { IssueToUpdate } from '../../../utils'
   import StatusRefPresenter from '../StatusRefPresenter.svelte'
+  import StatusReplacementPopup from './StatusReplacementPopup.svelte'
+  import { statusStore } from '@hcengineering/view-resources'
 
   export let issue: Issue
-  export let currentProject: Project
-  export let issueToUpdate: Map<Ref<Issue>, DocumentUpdate<Issue>> = new Map()
+  export let targetProject: Project
+  export let issueToUpdate: Map<Ref<Issue>, IssueToUpdate> = new Map()
+  export let statuses: IssueStatus[]
 
-  $: targetStatus = findTargetStatus($statusStore, issue.status, currentProject._id)
+  $: replace = issueToUpdate.get(issue._id)?.status ?? targetProject.defaultIssueStatus
+  $: original = $statusStore.get(issue.status)
 </script>
 
-<div class="flex-row-center p-1" class:no-status={targetStatus === undefined}>
-  <div class="p-1">
+<div class="flex-row-center p-1">
+  <div class="side-columns aligned-text">
     <StatusRefPresenter value={issue.status} size={'small'} />
   </div>
-
-  <div class="p-1 flex-row-center">
-    <span class="p-1"> => </span>
-    <!--Find appropriate status in target Project -->
-    {#if targetStatus === undefined}
-      <div class="flex-row-center">
-        <Label label={tracker.string.NoStatusFound} />
-        <span class="p-1"> => </span>
-      </div>
-    {/if}
-    <StatusEditor
-      iconSize={'small'}
-      shouldShowLabel={true}
-      value={{
-        ...issueToAttachedData(issue),
-        status: issueToUpdate.get(issue._id)?.status ?? currentProject.defaultIssueStatus,
-        space: currentProject._id
+  <span class="middle-column aligned-text">-></span>
+  <div class="side-columns">
+    <Button
+      on:click={(event) => {
+        showPopup(
+          StatusReplacementPopup,
+          { statuses, original, selected: replace },
+          eventToHTMLElement(event),
+          (value) => {
+            if (value) {
+              const createStatus = typeof value === 'object'
+              const s = createStatus ? value.create : value
+              issueToUpdate.set(issue._id, {
+                ...issueToUpdate.get(issue._id),
+                status: s,
+                useStatus: true,
+                createStatus
+              })
+            }
+          }
+        )
       }}
-      on:change={(evt) => issueToUpdate.set(issue._id, { ...issueToUpdate.get(issue._id), status: evt.detail })}
-    />
+    >
+      <span slot="content" class="flex-row-center pointer-events-none">
+        <StatusRefPresenter value={replace} />
+      </span>
+    </Button>
   </div>
 </div>
 
 <style lang="scss">
-  .no-status {
-    background-color: var(--accent-bg-color);
+  .side-columns {
+    width: 45%;
+  }
+  .middle-column {
+    width: 10%;
+  }
+  .aligned-text {
+    display: flex;
+    align-items: center;
   }
 </style>

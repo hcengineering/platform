@@ -57,7 +57,7 @@
 
   $: handleSelectedComponentIdUpdated(value, rawComponents)
 
-  $: translate(tracker.string.Component, {}).then((result) => (defaultComponentLabel = result))
+  $: translate(tracker.string.NoComponent, {}).then((result) => (defaultComponentLabel = result))
   $: componentText = shouldShowLabel ? selectedComponent?.label ?? defaultComponentLabel : undefined
 
   const handleSelectedComponentIdUpdated = async (

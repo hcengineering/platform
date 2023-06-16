@@ -40,11 +40,13 @@ import { Asset, IntlString } from '@hcengineering/platform'
 import { createQuery } from '@hcengineering/presentation'
 import { calcRank } from '@hcengineering/task'
 import {
+  Component,
   Issue,
   IssuePriority,
   IssuesDateModificationPeriod,
   IssuesGrouping,
   IssuesOrdering,
+  IssueStatus,
   Milestone,
   MilestoneStatus,
   Project,
@@ -652,4 +654,22 @@ export const IssuePriorityColor = {
 export async function getVisibleFilters (filters: KeyFilter[], space?: Ref<Space>): Promise<KeyFilter[]> {
   // Removes the "Project" filter if a specific space is provided
   return space === undefined ? filters : filters.filter((f) => f.key !== 'space')
+}
+
+interface ManualUpdates {
+  useStatus: boolean
+  useComponent: boolean
+  createStatus: boolean
+  createComponent: boolean
+}
+export type IssueToUpdate = DocumentUpdate<Issue> & Partial<ManualUpdates>
+
+export interface StatusToUpdate {
+  ref: Ref<IssueStatus>
+  create?: boolean
+}
+
+export interface ComponentToUpdate {
+  ref: Ref<Component>
+  create?: boolean
 }

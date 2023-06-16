@@ -13,57 +13,72 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DocumentUpdate, Ref } from '@hcengineering/core'
+  import { Ref } from '@hcengineering/core'
+  import { Button, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { Component, Issue, Project } from '@hcengineering/tracker'
-  import { Label } from '@hcengineering/ui'
-  import tracker from '../../../plugin'
-  import { issueToAttachedData } from '../../../utils'
-  import ComponentEditor from '../../components/ComponentEditor.svelte'
+
+  import { IssueToUpdate } from '../../../utils'
   import ComponentPresenter from '../../components/ComponentPresenter.svelte'
+  import ComponentReplacementPopup from './ComponentReplacementPopup.svelte'
 
   export let issue: Issue
-  export let currentProject: Project
-  export let issueToUpdate: Map<Ref<Issue>, DocumentUpdate<Issue>> = new Map()
+  export let targetProject: Project
+  export let issueToUpdate: Map<Ref<Issue>, IssueToUpdate> = new Map()
   export let components: Component[]
 
-  $: currentComponent = components.find((it) => it._id === issue.component)
-
-  $: targetComponent = components.find((it) => it.space === currentProject._id && it.label === currentComponent?.label)
+  $: current = components.find((it) => it._id === issue.component)
+  $: replace = components.find((it) => it._id === issueToUpdate.get(issue._id)?.component)
 </script>
 
-{#if currentComponent !== undefined}
-  <div class="flex-row-center p-1" class:no-component={targetComponent === undefined}>
-    <div class="p-1">
-      <ComponentPresenter value={currentComponent} />
+{#if current !== undefined}
+  <div class="flex-row-center p-1">
+    <div class="side-columns aligned-text">
+      <ComponentPresenter value={current} disabled />
     </div>
-
-    <div class="p-1 flex-row-center">
-      <span class="p-1"> => </span>
-      <!--Find appropriate status in target Project -->
-      {#if targetComponent === undefined}
-        <div class="flex-row-center">
-          <div class="mr-2">
-            <Label label={tracker.string.NoComponent} />
-          </div>
-          <span class="p-1"> => </span>
-        </div>
-      {/if}
-      <ComponentEditor
-        shouldShowLabel={true}
-        space={currentProject._id}
-        value={{
-          ...issueToAttachedData(issue),
-          component: issueToUpdate.get(issue._id)?.component || null,
-          space: currentProject._id
+    <span class="middle-column aligned-text">-></span>
+    <div class="side-columns">
+      <Button
+        on:click={(event) => {
+          showPopup(
+            ComponentReplacementPopup,
+            {
+              components: components.filter((it) => it.space === targetProject._id),
+              original: current,
+              selected: replace
+            },
+            eventToHTMLElement(event),
+            (value) => {
+              if (value) {
+                const createComponent = typeof value === 'object'
+                const c = createComponent ? value.create : value
+                issueToUpdate.set(issue._id, {
+                  ...issueToUpdate.get(issue._id),
+                  component: c,
+                  useComponent: true,
+                  createComponent
+                })
+              }
+            }
+          )
         }}
-        on:change={(evt) => issueToUpdate.set(issue._id, { ...issueToUpdate.get(issue._id), status: evt.detail })}
-      />
+      >
+        <span slot="content" class="flex-row-center pointer-events-none">
+          <ComponentPresenter value={replace} />
+        </span>
+      </Button>
     </div>
   </div>
 {/if}
 
 <style lang="scss">
-  .no-component {
-    background-color: var(--accent-bg-color);
+  .side-columns {
+    width: 45%;
+  }
+  .middle-column {
+    width: 10%;
+  }
+  .aligned-text {
+    display: flex;
+    align-items: center;
   }
 </style>
