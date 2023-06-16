@@ -21,11 +21,11 @@ import {
   CreateAggregationManagerFunc,
   GetAllValuesFunc,
   GrouppingManagerResource,
+  KeyFilter,
   SortFunc,
-  Viewlet,
-  ViewletDescriptor,
   ViewQueryAction,
-  KeyFilter
+  Viewlet,
+  ViewletDescriptor
 } from '@hcengineering/view'
 import tracker, { trackerId } from '../../tracker/lib'
 
@@ -382,7 +382,8 @@ export default mergeIds(trackerId, tracker, {
     GetAllPriority: '' as GetAllValuesFunc,
     GetAllComponents: '' as GetAllValuesFunc,
     GetAllMilestones: '' as GetAllValuesFunc,
-    GetVisibleFilters: '' as Resource<(filters: KeyFilter[], space?: Ref<Space>) => Promise<KeyFilter[]>>
+    GetVisibleFilters: '' as Resource<(filters: KeyFilter[], space?: Ref<Space>) => Promise<KeyFilter[]>>,
+    IsProjectJoined: '' as Resource<(space: Space) => Promise<boolean>>
   },
   aggregation: {
     CreateComponentAggregationManager: '' as CreateAggregationManagerFunc,

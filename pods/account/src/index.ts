@@ -97,7 +97,6 @@ export function serveAccount (methods: Record<string, AccountMethod>, productId 
     }
     const db = client.db(ACCOUNT_DB)
     const result = await method(db, productId, request, token)
-    console.log(result)
     ctx.body = result
   })
 

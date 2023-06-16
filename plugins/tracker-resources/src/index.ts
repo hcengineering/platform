@@ -13,7 +13,17 @@
 // limitations under the License.
 //
 
-import { Class, Client, Doc, DocumentQuery, Ref, RelatedDocument, toIdMap, TxOperations } from '@hcengineering/core'
+import {
+  Class,
+  Client,
+  Doc,
+  DocumentQuery,
+  getCurrentAccount,
+  Ref,
+  RelatedDocument,
+  toIdMap,
+  TxOperations
+} from '@hcengineering/core'
 import { Resources, translate } from '@hcengineering/platform'
 import { getClient, MessageBox, ObjectSearchResult } from '@hcengineering/presentation'
 import { Issue, Milestone, Project } from '@hcengineering/tracker'
@@ -419,7 +429,8 @@ export default async (): Promise<Resources> => ({
     GetAllPriority: getAllPriority,
     GetAllComponents: getAllComponents,
     GetAllMilestones: getAllMilestones,
-    GetVisibleFilters: getVisibleFilters
+    GetVisibleFilters: getVisibleFilters,
+    IsProjectJoined: async (project: Project) => !project.private || project.members.includes(getCurrentAccount()._id)
   },
   actionImpl: {
     Move: move,

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref, Space, WithLookup } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import {
@@ -50,6 +50,7 @@
   export let createComponentProps: Record<string, any> = {}
   export let isCreationDisabled = false
   export let descriptors: Ref<ViewletDescriptor>[] | undefined = undefined
+  export let baseQuery: DocumentQuery<Doc> | undefined = undefined
 
   let search = ''
   let viewlet: WithLookup<Viewlet> | undefined
@@ -116,7 +117,7 @@
     preferenceQuery.unsubscribe()
   }
 
-  $: query = viewlet?.baseQuery ?? {}
+  $: query = { ...(baseQuery ?? {}), ...(viewlet?.baseQuery ?? {}) }
   $: searchQuery = search === '' ? query : { ...query, $search: search }
   $: resultQuery = searchQuery
 
@@ -186,7 +187,7 @@
   </div>
 </div>
 
-{#if !viewlet?.$lookup?.descriptor?.component || viewlet?.attachTo !== _class || (preference !== undefined && viewlet?._id !== preference.attachedTo)}}
+{#if !viewlet?.$lookup?.descriptor?.component || viewlet?.attachTo !== _class || (preference !== undefined && viewlet?._id !== preference.attachedTo)}
   <Loading />
 {:else}
   <FilterBar

@@ -70,7 +70,7 @@ import {
   TimeSpendReport,
   trackerId
 } from '@hcengineering/tracker'
-import { KeyBinding, ViewOptionsModel } from '@hcengineering/view'
+import { KeyBinding, ViewAction, ViewOptionsModel } from '@hcengineering/view'
 import tracker from './plugin'
 
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
@@ -385,7 +385,7 @@ export function createModel (builder: Builder): void {
   )
 
   const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
-    groupBy: ['status', 'assignee', 'priority', 'component', 'milestone'],
+    groupBy: ['status', 'assignee', 'priority', 'component', 'milestone', 'createdBy', 'modifiedBy'],
     orderBy: [
       ['status', SortingOrder.Ascending],
       ['priority', SortingOrder.Descending],
@@ -554,7 +554,7 @@ export function createModel (builder: Builder): void {
   )
 
   const subIssuesOptions: ViewOptionsModel = {
-    groupBy: ['status', 'assignee', 'priority', 'milestone'],
+    groupBy: ['status', 'assignee', 'priority', 'milestone', 'createdBy', 'modifiedBy'],
     orderBy: [
       ['rank', SortingOrder.Ascending],
       ['status', SortingOrder.Ascending],
@@ -667,7 +667,7 @@ export function createModel (builder: Builder): void {
       attachTo: tracker.class.IssueTemplate,
       descriptor: view.viewlet.List,
       viewOptions: {
-        groupBy: ['assignee', 'priority', 'component', 'milestone'],
+        groupBy: ['assignee', 'priority', 'component', 'milestone', 'createdBy', 'modifiedBy'],
         orderBy: [
           ['priority', SortingOrder.Ascending],
           ['modifiedOn', SortingOrder.Descending],
@@ -1060,6 +1060,20 @@ export function createModel (builder: Builder): void {
                 ['backlog', tracker.string.Backlog, {}]
               ]
             }
+          },
+          {
+            id: 'all-projects',
+            component: workbench.component.SpecialView,
+            icon: view.icon.Archive,
+            label: tracker.string.AllProjects,
+            position: 'bottom',
+            visibleIf: workbench.function.IsOwner,
+            spaceClass: tracker.class.Project,
+            componentProps: {
+              _class: tracker.class.Project,
+              label: tracker.string.AllIssues,
+              icon: tracker.icon.Issues
+            }
           }
         ],
         spaces: [
@@ -1068,6 +1082,7 @@ export function createModel (builder: Builder): void {
             spaceClass: tracker.class.Project,
             addSpaceLabel: tracker.string.CreateProject,
             createComponent: tracker.component.CreateProject,
+            visibleIf: tracker.function.IsProjectJoined,
             icon: tracker.icon.Home,
             specials: [
               {
@@ -1162,9 +1177,7 @@ export function createModel (builder: Builder): void {
       input: 'focus',
       category: tracker.category.Tracker,
       target: tracker.class.Project,
-      query: {
-        archived: false
-      },
+      query: {},
       context: {
         mode: ['context', 'browser'],
         group: 'edit'
@@ -1182,9 +1195,7 @@ export function createModel (builder: Builder): void {
       input: 'focus',
       category: tracker.category.Tracker,
       target: tracker.class.Project,
-      query: {
-        archived: false
-      },
+      query: {},
       context: {
         mode: ['context', 'browser'],
         group: 'edit'
@@ -1213,6 +1224,28 @@ export function createModel (builder: Builder): void {
     },
     tracker.action.DeleteProject
   )
+  createAction(builder, {
+    label: tracker.string.Unarchive,
+    icon: view.icon.Archive,
+    action: view.actionImpl.UpdateDocument as ViewAction,
+    actionProps: {
+      key: 'archived',
+      ask: true,
+      value: false,
+      label: tracker.string.Unarchive,
+      message: tracker.string.UnarchiveConfirm
+    },
+    input: 'any',
+    category: tracker.category.Tracker,
+    query: {
+      archived: true
+    },
+    context: {
+      mode: ['context', 'browser'],
+      group: 'tools'
+    },
+    target: tracker.class.Project
+  })
 
   createAction(
     builder,
@@ -1389,6 +1422,10 @@ export function createModel (builder: Builder): void {
       group: 'create'
     },
     override: [view.action.Open]
+  })
+
+  builder.mixin(tracker.class.Project, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [view.action.Open]
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ClassFilters, {
@@ -1852,7 +1889,7 @@ export function createModel (builder: Builder): void {
   )
 
   const milestoneOptions: ViewOptionsModel = {
-    groupBy: ['status'],
+    groupBy: ['status', 'createdBy', 'modifiedBy'],
     orderBy: [
       ['modifiedOn', SortingOrder.Descending],
       ['targetDate', SortingOrder.Descending],
@@ -1934,7 +1971,7 @@ export function createModel (builder: Builder): void {
   )
 
   const componentListViewOptions: ViewOptionsModel = {
-    groupBy: ['lead'],
+    groupBy: ['lead', 'createdBy', 'modifiedBy'],
     orderBy: [
       ['modifiedOn', SortingOrder.Descending],
       ['createdOn', SortingOrder.Descending]
@@ -1972,5 +2009,34 @@ export function createModel (builder: Builder): void {
       ]
     },
     tracker.viewlet.ComponentList
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: tracker.class.Project,
+      descriptor: view.viewlet.List,
+      viewOptions: {
+        groupBy: ['createdBy'],
+        orderBy: [
+          ['modifiedOn', SortingOrder.Descending],
+          ['createdOn', SortingOrder.Descending]
+        ],
+        other: [showColorsViewOption]
+      },
+      configOptions: {
+        strict: true,
+        hiddenKeys: ['label', 'description']
+      },
+      config: [
+        {
+          key: '',
+          props: { kind: 'list' }
+        },
+        { key: '', displayProps: { grow: true } }
+      ]
+    },
+    tracker.viewlet.ProjectList
   )
 }

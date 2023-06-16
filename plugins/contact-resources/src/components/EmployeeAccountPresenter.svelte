@@ -36,7 +36,7 @@
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   {#if employee}
-    <EmployeePresenter value={employee} {disabled} {inline} {accent} {avatarSize} />
+    <EmployeePresenter value={employee} {disabled} {inline} {accent} {avatarSize} on:accent-color />
   {:else}
     <div class="flex-row-center">
       <Avatar size={avatarSize} />

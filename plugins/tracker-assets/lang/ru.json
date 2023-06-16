@@ -272,7 +272,10 @@
     "ProjectEmojiiCategory": "Эмодзи",
     "NoStatusFound": "Статус не найдет",
     "CreateMissingStatus": "Создать отсутствущий статус",
-    "UnsetParent": "Родительская задача будет убрана"    
+    "UnsetParent": "Родительская задача будет убрана",
+    "Unarchive": "Разархивировать",
+    "UnarchiveConfirm": "Вы действительно хотите разархивировать?",
+    "AllProjects": "All projects"
   },
   "status": {}
 }
