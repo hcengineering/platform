@@ -1617,7 +1617,7 @@ export function createModel (builder: Builder): void {
       },
       label: tracker.string.Component,
       icon: tracker.icon.Component,
-      keyBinding: ['keyC'],
+      keyBinding: ['keyM->keyT'],
       input: 'any',
       category: tracker.category.Tracker,
       target: tracker.class.Issue,
