@@ -9,6 +9,7 @@
     "build": "heft build",
     "build:watch": "tsc",
     "lint:fix": "eslint --fix src",
+    "bundle": "esbuild src/index.ts --bundle --minify --platform=node > apm.js",
     "lint": "eslint src",
     "format": "prettier --write src && eslint --fix src"
   },

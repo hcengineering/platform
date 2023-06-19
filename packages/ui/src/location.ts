@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { derived, writable } from 'svelte/store'
+import { derived, get, writable } from 'svelte/store'
 import { closePopup } from './popups'
 import justClone from 'just-clone'
 import { Location as PlatformLocation } from './types'
@@ -100,7 +100,7 @@ function parseHash (hash: string): string {
 
 // ------------------------
 
-export function getCurrentLocation (): PlatformLocation {
+export function getRawCurrentLocation (): PlatformLocation {
   return parseLocation(window.location)
 }
 
@@ -108,26 +108,47 @@ export function getCurrentResolvedLocation (): PlatformLocation {
   return justClone(resolvedLocation)
 }
 
-const locationWritable = writable(getCurrentLocation())
-window.addEventListener('popstate', () => {
-  locationWritable.set(getCurrentLocation())
-})
+declare global {
+  interface Window {
+    embeddedPlatform?: boolean
+  }
+}
+const embeddedPlatform = window.embeddedPlatform ?? false
+const locationWritable = writable(embeddedPlatform ? { path: [] } : getRawCurrentLocation())
 
-export const location = derived(locationWritable, (loc) => loc)
-export const resolvedLocationStore = writable(getCurrentLocation())
-let resolvedLocation = getCurrentLocation()
+console.log('embeddedPlatform', window.embeddedPlatform)
+
+if (!embeddedPlatform) {
+  window.addEventListener('popstate', () => {
+    locationWritable.set(getRawCurrentLocation())
+  })
+}
+
+export const location = embeddedPlatform ? locationWritable : derived(locationWritable, (loc) => loc)
+export const resolvedLocationStore = writable(getRawCurrentLocation())
+let resolvedLocation = getRawCurrentLocation()
 
 export function setResolvedLocation (location: PlatformLocation): void {
   resolvedLocation = location
   resolvedLocationStore.set(justClone(location))
 }
 
+export function getCurrentLocation (): PlatformLocation {
+  if (embeddedPlatform) {
+    return justClone(get(locationWritable))
+  }
+  return getRawCurrentLocation()
+}
+
 export function navigate (location: PlatformLocation, store = true): boolean {
   closePopup()
+  const cur = locationToUrl(getCurrentLocation())
   const url = locationToUrl(location)
-  if (locationToUrl(getCurrentLocation()) !== url) {
+  if (cur !== url) {
     if (store) {
-      history.pushState(null, '', url)
+      if (!embeddedPlatform) {
+        history.pushState(null, '', url)
+      }
       localStorage.setItem('platform_last_loc', JSON.stringify(location))
       if (location.path[1] !== undefined) {
         localStorage.setItem(`platform_last_loc_${location.path[1]}`, JSON.stringify(location))
