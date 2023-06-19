@@ -29,21 +29,20 @@ export async function syncRushFiles (
     const sPath = path.dirname(path.resolve(prj)).split(path.sep)
     const diff = path.join(...sPath.slice(abs.length))
     const rushJsonSource = (await parse((await readFile(prj)).toString())) as CommentObject
-    console.log('Processing', prj, (rushJsonSource.projects as any)?.length)
     const sprojects = rushJsonSource.projects as unknown as CommentArray<RushPackage>
     for (const [k, v] of Object.entries(rushJsonSource)) {
       platformJson[k] = v
     }
 
-    projects.push(
-      ...sprojects
-        .filter((it) => filterPackage(it, include, exclude))
-        .map((it) => ({
+    projects
+      .filter((it) => filterPackage(it, include, exclude))
+      .push(
+        ...sprojects.map((it) => ({
           ...it,
           projectFolder: join(diff, it.projectFolder),
           shouldPublish: diff === '.' ? it.shouldPublish : false
         }))
-    )
+      )
   }
 
   platformJson.projects = projects as unknown as CommentArray<CommentObject>
@@ -54,16 +53,13 @@ function filterPackage (it: RushPackage, include: string[], exclude: string[]): 
   const pkgName = it.packageName
   for (const i of include) {
     if (pkgName.includes(i)) {
-      console.log('include', pkgName, i)
       return true
     }
   }
   for (const i of exclude) {
     if (pkgName.includes(i)) {
-      console.log('exclude', pkgName, i)
       return false
     }
   }
-  console.log('filter', pkgName, 'true')
   return true
 }
