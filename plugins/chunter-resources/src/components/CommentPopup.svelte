@@ -51,7 +51,7 @@
 
 <div class="container">
   <div
-    class="flex flex-between flex-grow header"
+    class="flex-between header"
     use:resizeObserver={() => {
       dispatch('changeContent')
     }}
@@ -117,10 +117,10 @@
   }
 
   .container {
-    max-height: 30rem;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    max-height: 30rem;
   }
 
   .header {
