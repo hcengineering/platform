@@ -2,7 +2,7 @@
   import TabList from './TabList.svelte'
   import { IModeSelector } from '../utils'
   import { getCurrentLocation } from '../location'
-  import { onMount } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
 
   export let props: IModeSelector
 
@@ -20,6 +20,10 @@
   onMount(() => {
     props.onChange(props.config[0][0])
     sessionStorage.setItem('last_mode', JSON.stringify(getCurrentLocation()))
+  })
+
+  onDestroy(() => {
+    sessionStorage.removeItem('last_mode')
   })
 </script>
 
