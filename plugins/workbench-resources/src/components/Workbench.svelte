@@ -157,7 +157,9 @@
   )
 
   let hasNotification = false
+  let newNotificationsCount: number = 0
   const notificationQuery = createQuery()
+  $: newNotificationsCount && updateWindowTitle(getCurrentLocation())
 
   notificationQuery.query(
     notification.class.DocUpdates,
@@ -167,6 +169,7 @@
     },
     (res) => {
       hasNotification = res.some((p) => p.txes.some((p) => p.isNew))
+      newNotificationsCount = res.flatMap(p => p.txes).filter(p => p.isNew).length
     }
   )
 
@@ -184,11 +187,14 @@
   async function updateWindowTitle (loc: Location) {
     const ws = loc.path[1]
     const docTitle = await getWindowTitle(loc)
+    const unreadCountTitle = newNotificationsCount > 0 ? '(' + newNotificationsCount + ') ' : ''
     if (docTitle !== undefined && docTitle !== '') {
-      document.title = ws == null ? docTitle : `${docTitle} - ${ws}`
+      const title = ws == null ? docTitle : `${docTitle} - ${ws}`
+      document.title = unreadCountTitle + title
     } else {
       const title = getMetadata(workbench.metadata.PlatformTitle) ?? 'Platform'
-      document.title = ws == null ? title : `${ws} - ${title}`
+      const wsTitle = ws == null ? title : `${ws} - ${title}`
+      document.title = unreadCountTitle + wsTitle
     }
     broadcastEvent(workbench.event.NotifyTitle, document.title)
   }
