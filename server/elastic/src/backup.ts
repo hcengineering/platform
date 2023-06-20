@@ -84,6 +84,9 @@ class ElasticDataAdapter implements DbAdapter {
             }
             resp = await this.client.search(q)
             if (resp.statusCode !== 200) {
+              if (resp.body?.error?.type === 'index_not_found_exception') {
+                return undefined
+              }
               console.error('failed elastic query', q, resp)
               throw new PlatformError(unknownStatus(`failed to elastic query ${JSON.stringify(resp)}`))
             }
