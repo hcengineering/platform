@@ -1,5 +1,5 @@
 {
-  "incrementalBuildIgnoredGlobs": ["temp/**", "dist_cache/**", "lib/**"],
+  "incrementalBuildIgnoredGlobs": ["temp/**", "dist_cache/**", "lib/**", "dist/**"],
   "disableBuildCacheForProject": false,
 
   "operationSettings": [
