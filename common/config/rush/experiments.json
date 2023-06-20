@@ -28,5 +28,33 @@
    * If true, the chmod field in temporary project tar headers will not be normalized.
    * This normalization can help ensure consistent tarball integrity across platforms.
    */
-  // "noChmodFieldInTarHeaderNormalization": true
+  // "noChmodFieldInTarHeaderNormalization": true,
+
+  /**
+   * If true, build caching will respect the allowWarningsInSuccessfulBuild flag and cache builds with warnings.
+   * This will not replay warnings from the cached build.
+   */
+  // "buildCacheWithAllowWarningsInSuccessfulBuild": true,
+
+  /**
+   * If true, the phased commands feature is enabled. To use this feature, create a "phased" command
+   * in common/config/rush/command-line.json.
+   */
+  "phasedCommands": true,
+
+  /**
+   * If true, perform a clean install after when running `rush install` or `rush update` if the
+   * `.npmrc` file has changed since the last install.
+   */
+  // "cleanInstallAfterNpmrcChanges": true,
+
+  /**
+   * If true, print the outputs of shell commands defined in event hooks to the console.
+   */
+  // "printEventHooksOutputToConsole": true,
+
+  /**
+   * If true, Rush will not allow node_modules in the repo folder or in parent folders.
+   */
+  // "forbidPhantomResolvableNodeModulesFolders": true
 }

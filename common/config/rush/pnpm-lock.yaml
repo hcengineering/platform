@@ -18727,13 +18727,14 @@ packages:
     dev: false
 
   file:projects/minio.tgz:
-    resolution: {integrity: sha512-96cz8nKgyHNMc6UQeMrIlPof2LUv8btuUhg6JHXQs19caEbFGRDajG8tbJZ83Mm8eQHP2CBwDDXgP3hlDDK62g==, tarball: file:projects/minio.tgz}
+    resolution: {integrity: sha512-HDxYF3wfgSvuq+57ZoxfNDaC92St3f+/ybevhmwexFmiDEyyQNN4pMZi0LtOkjLiP4bNJ1tLkkb9ooQc1pr+VA==, tarball: file:projects/minio.tgz}
     name: '@rush-temp/minio'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.47.11
       '@types/heft-jest': 1.0.3
       '@types/minio': 7.0.14
+      '@types/node': 16.11.68
       '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
       '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
       eslint: 8.27.0

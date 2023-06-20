@@ -10,11 +10,11 @@ concurrency:
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [main, develop]
+    branches: [main]
     tags:
       - v*
   pull_request:
-    branches: [main, develop]
+    branches: [main]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -205,14 +205,7 @@ jobs:
           mongodb-version: 5.0
 
       - name: Testing...
-        uses: paambaati/codeclimate-action@v3.2.0
-        env:
-          CC_TEST_REPORTER_ID: 346a83855d7124e9da8e6ec36a4fd01dc432f5cdc755eb28da7d9c44da9d1142
-        with:
-          coverageCommand: node common/scripts/install-run-rush.js test --verbose
-          coverageLocations: |
-            ${{github.workspace}}/packages/*/coverage/lcov.info:lcov
-            ${{github.workspace}}/server/*/coverage/lcov.info:lcov
+        run: node common/scripts/install-run-rush.js test --verbose
   uitest:
     needs: build
     runs-on: ubuntu-latest
@@ -282,12 +275,12 @@ jobs:
         with:
           name: playwright-results
           path: ./tests/sanity/playwright-report/
-      - name: Upload DB snapshot
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: db-snapshot
-          path: ./tests/db_dump
+      # - name: Upload DB snapshot
+      #   if: always()
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: db-snapshot
+      #     path: ./tests/db_dump
   docker-build:
     if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
     needs: [build, uitest, test, svelte-check]

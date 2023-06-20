@@ -130,6 +130,10 @@ export default plugin(workbenchId, {
   icon: {
     Search: '' as Asset
   },
+  event: {
+    NotifyConnection: '' as Metadata<string>,
+    NotifyTitle: '' as Metadata<string>
+  },
   metadata: {
     PlatformTitle: '' as Metadata<string>,
     ExcludedApplications: '' as Metadata<Ref<Application>[]>,

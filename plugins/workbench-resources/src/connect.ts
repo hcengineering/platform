@@ -9,7 +9,7 @@ import core, {
   versionToString
 } from '@hcengineering/core'
 import login, { loginId } from '@hcengineering/login'
-import { addEventListener, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
+import { addEventListener, broadcastEvent, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import presentation, { closeClient, refreshClient, setClient } from '@hcengineering/presentation'
 import ui, {
   fetchMetadataLocalStorage,
@@ -20,6 +20,7 @@ import ui, {
   showPopup
 } from '@hcengineering/ui'
 import ServerManager from './components/ServerManager.svelte'
+import plugin from './plugin'
 
 export let versionError: string | undefined = ''
 
@@ -169,6 +170,7 @@ export async function connect (title: string): Promise<Client | undefined> {
       }
     })
   }
+  await broadcastEvent(plugin.event.NotifyConnection, getCurrentAccount())
 
   return _client
 }

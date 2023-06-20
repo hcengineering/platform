@@ -2,7 +2,7 @@
  * This configuration file manages Rush's build cache feature.
  * More documentation is available on the Rush website: https://rushjs.io
  */
- {
+{
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/build-cache.schema.json",
 
   /**
@@ -21,9 +21,16 @@
 
   /**
    * Setting this property overrides the cache entry ID.  If this property is set, it must contain
-   * a [hash] token. It may also contain a [projectName] or a [projectName:normalize] token.
+   * a [hash] token.
+   *
+   * Other available tokens:
+   *  - [projectName]
+   *  - [projectName:normalize]
+   *  - [phaseName]
+   *  - [phaseName:normalize]
+   *  - [phaseName:trimPrefix]
    */
-  "cacheEntryNamePattern": "[projectName:normalize]-[hash]",
+  // "cacheEntryNamePattern": "[projectName:normalize]-[phaseName:normalize]-[hash]"
 
   /**
    * Use this configuration with "cacheProvider"="azure-blob-storage"
@@ -62,22 +69,74 @@
    */
   "amazonS3Configuration": {
     /**
-     * (Required) The Amazon S3 region of the bucket to use for build cache (e.g. "us-east-1").
+     * (Required unless s3Endpoint is specified) The name of the bucket to use for build cache.
+     * Example: "my-bucket"
+     */
+    // "s3Bucket": "my-bucket",
+
+    /**
+     * (Required unless s3Bucket is specified) The Amazon S3 endpoint of the bucket to use for build cache.
+     * This should not include any path; use the s3Prefix to set the path.
+     * Examples: "my-bucket.s3.us-east-2.amazonaws.com" or "http://localhost:9000"
+     */
+    // "s3Endpoint": "https://my-bucket.s3.us-east-2.amazonaws.com",
+
+    /**
+     * (Required) The Amazon S3 region of the bucket to use for build cache.
+     * Example: "us-east-1"
      */
     // "s3Region": "us-east-1",
 
     /**
-     * The name of the bucket in Amazon S3 to use for build cache.
-     */
-    // (Required) "s3Bucket": "my-bucket",
-
-    /**
-     * An optional prefix ("folder") for cache items.
+     * An optional prefix ("folder") for cache items. It should not start with "/".
      */
     // "s3Prefix": "my-prefix",
 
     /**
      * If set to true, allow writing to the cache. Defaults to false.
+     */
+    // "isCacheWriteAllowed": true
+  },
+
+  /**
+   * Use this configuration with "cacheProvider"="http"
+   */
+  "httpConfiguration": {
+    /**
+     * (Required) The URL of the server that stores the caches.
+     * Example: "https://build-cacches.example.com/"
+     */
+    // "url": "https://build-cacches.example.com/",
+
+    /**
+     * (Optional) The HTTP method to use when writing to the cache (defaults to PUT).
+     * Should be one of PUT, POST, or PATCH.
+     * Example: "PUT"
+     */
+    // "uploadMethod": "PUT",
+
+    /**
+     * (Optional) HTTP headers to pass to the cache server.
+     * Example: { "X-HTTP-Company-Id": "109283" }
+     */
+    // "headers": {},
+
+    /**
+     * (Optional) Shell command that prints the authorization token needed to communicate with the
+     * cache server, and exits with exit code 0. This command will be executed from the root of
+     * the monorepo.
+     * Example: { "exec": "node", "args": ["common/scripts/auth.js"] }
+     */
+    // "tokenHandler": { "exec": "node", "args": ["common/scripts/auth.js"] },
+
+    /**
+     * (Optional) Prefix for cache keys.
+     * Example: "my-company-"
+     */
+    // "cacheKeyPrefix": "",
+
+    /**
+     * (Optional) If set to true, allow writing to the cache. Defaults to false.
      */
     // "isCacheWriteAllowed": true
   }

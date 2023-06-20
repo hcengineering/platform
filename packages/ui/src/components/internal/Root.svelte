@@ -39,9 +39,16 @@
         if (last === null) {
           last = localStorage.getItem('platform_last_loc')
         }
+        let useDefault = true
         if (last !== null) {
-          navigate(JSON.parse(last))
-        } else {
+          const storedLoc = JSON.parse(last)
+          const key = storedLoc.path?.[0]
+          if (Array.from(routes.values()).includes(key) || Array.from(routes.keys()).includes(key)) {
+            useDefault = false
+            navigate(storedLoc)
+          }
+        }
+        if (useDefault) {
           application = getMetadata(uiPlugin.metadata.DefaultApplication)
           if (application !== undefined) {
             const loc = getCurrentLocation()
@@ -187,6 +194,7 @@
     // height: var(--app-height);
 
     .antiStatusBar {
+      -webkit-app-region: drag;
       min-height: var(--status-bar-height);
       height: var(--status-bar-height);
       // min-width: 600px;
@@ -214,6 +222,7 @@
         user-select: none;
       }
       .widget {
+        -webkit-app-region: no-drag;
         width: 16px;
         height: 16px;
         font-size: 14px;

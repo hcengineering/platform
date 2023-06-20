@@ -18,9 +18,9 @@
   import login from '@hcengineering/login'
   import notification, { notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, NotificationClientImpl } from '@hcengineering/notification-resources'
-  import { IntlString, getMetadata, getResource } from '@hcengineering/platform'
-  import setting from '@hcengineering/setting'
+  import { IntlString, broadcastEvent, getMetadata, getResource } from '@hcengineering/platform'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
+  import setting from '@hcengineering/setting'
   import {
     AnyComponent,
     CompAndProps,
@@ -65,15 +65,15 @@
   import { workspacesStore } from '../utils'
   import AccountPopup from './AccountPopup.svelte'
   import AppItem from './AppItem.svelte'
+  import AppSwitcher from './AppSwitcher.svelte'
   import Applications from './Applications.svelte'
   import Logo from './Logo.svelte'
   import NavHeader from './NavHeader.svelte'
   import Navigator from './Navigator.svelte'
   import SelectWorkspaceMenu from './SelectWorkspaceMenu.svelte'
   import SpaceView from './SpaceView.svelte'
-  import TopMenu from './icons/TopMenu.svelte'
   import IconSettings from './icons/Settings.svelte'
-  import AppSwitcher from './AppSwitcher.svelte'
+  import TopMenu from './icons/TopMenu.svelte'
 
   let contentPanel: HTMLElement
 
@@ -190,6 +190,7 @@
       const title = getMetadata(workbench.metadata.PlatformTitle) ?? 'Platform'
       document.title = ws == null ? title : `${ws} - ${title}`
     }
+    broadcastEvent(workbench.event.NotifyTitle, document.title)
   }
   async function getWindowTitle (loc: Location) {
     if (loc.fragment == null) return
