@@ -17,8 +17,14 @@ program
       cmd.source.split(',').map((it) => join(process.cwd(), it.trim())),
       process.cwd(),
       root,
-      cmd.include.split(','),
-      cmd.exclude.split(',')
+      cmd.include
+        .split(',')
+        .map((it) => it.trim())
+        .filter((it) => it.length > 0),
+      cmd.exclude
+        .split(',')
+        .map((it) => it.trim())
+        .filter((it) => it.length > 0)
     )
   })
 
