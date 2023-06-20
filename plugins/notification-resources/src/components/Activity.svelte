@@ -17,39 +17,47 @@
   import { activityKey, ActivityKey } from '@hcengineering/activity-resources'
   import { Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocUpdates } from '@hcengineering/notification'
-  import { ActionContext, createQuery } from '@hcengineering/presentation'
+  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import { Loading, Scroller } from '@hcengineering/ui'
   import { ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import NotificationView from './NotificationView.svelte'
 
   export let filter: 'all' | 'read' | 'unread' = 'all'
   export let _id: Ref<Doc> | undefined
   const dispatch = createEventDispatcher()
 
-  const query = createQuery()
-
   let docs: DocUpdates[] = []
   let filtered: DocUpdates[] = []
   let loading = true
+  const client = getClient()
+  let timer: any
+  function updateDocs () {
+    client
+      .findAll(
+        notification.class.DocUpdates,
+        {
+          user: getCurrentAccount()._id,
+          hidden: false
+        },
+        {
+          sort: {
+            lastTxTime: -1
+          }
+        }
+      )
+      .then((res) => {
+        docs = res as Array<DocUpdates>
+        getFiltered(docs, filter)
+        loading = false
+      })
+  }
 
-  $: query.query(
-    notification.class.DocUpdates,
-    {
-      user: getCurrentAccount()._id,
-      hidden: false
-    },
-    (res) => {
-      docs = res
-      getFiltered(docs, filter)
-      loading = false
-    },
-    {
-      sort: {
-        lastTxTime: -1
-      }
-    }
-  )
+  onMount(() => {
+    updateDocs()
+    timer = setInterval(updateDocs, 500)
+  })
+  onDestroy(() => clearInterval(timer))
 
   function getFiltered (docs: DocUpdates[], filter: 'all' | 'read' | 'unread'): void {
     if (filter === 'read') {
