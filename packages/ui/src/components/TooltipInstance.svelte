@@ -31,12 +31,14 @@
   let clWidth: number
   let docWidth: number
   let docHeight: number
+  let shown: boolean = false
 
   $: tooltipSW = !$tooltip.component && $tooltip.kind !== 'submenu'
   $: onUpdate = $tooltip.onUpdate
   $: kind = $tooltip.kind
 
   const clearStyles = (): void => {
+    shown = false
     tooltipHTML.style.top =
       tooltipHTML.style.bottom =
       tooltipHTML.style.left =
@@ -122,7 +124,11 @@
         tooltipHTML.classList.add('no-arrow')
       }
       tooltipHTML.style.visibility = 'visible'
-    } else if (tooltipHTML) tooltipHTML.style.visibility = 'hidden'
+      shown = true
+    } else if (tooltipHTML) {
+      shown = false
+      tooltipHTML.style.visibility = 'hidden'
+    }
   }
 
   const fitSubmenu = (): void => {
@@ -203,11 +209,11 @@
 {#if $tooltip.component && $tooltip.kind !== 'submenu'}
   <div
     class="popup-tooltip"
+    class:shown
     class:doublePadding={$tooltip.label}
     use:resizeObserver={(element) => {
       clWidth = element.clientWidth
-      if (kind === 'submenu') fitSubmenu()
-      else fitTooltip(tooltipHTML)
+      fitTooltip(tooltipHTML)
     }}
     bind:this={tooltipHTML}
   >
@@ -233,7 +239,7 @@
       />
     {/if}
   </div>
-  <div bind:this={nubHTML} class="nub {nubDirection ?? ''}" />
+  <div bind:this={nubHTML} class="nub {nubDirection ?? ''}" class:shown />
 {:else if $tooltip.label && $tooltip.kind !== 'submenu'}
   <div class="tooltip {dir ?? ''}" bind:this={tooltipHTML}>
     <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
@@ -302,6 +308,7 @@
     border-radius: 0.75rem;
     box-shadow: var(--theme-popup-shadow);
     user-select: none;
+    opacity: 0;
     z-index: 10000;
 
     &.doublePadding {
@@ -314,6 +321,7 @@
     // background-color: rgba(255, 255, 0, .5);
     user-select: none;
     pointer-events: none;
+    opacity: 0;
     z-index: 10000;
 
     &::after,
@@ -379,6 +387,10 @@
       right: -0.25rem;
       transform: rotate(-90deg);
     }
+  }
+  .shown {
+    transition: opacity 0.1s ease-in-out 0.15s;
+    opacity: 1;
   }
 
   .keys {
