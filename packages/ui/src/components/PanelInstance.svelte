@@ -21,6 +21,7 @@
   import { fitPopupElement, popupstore } from '../popups'
   import type { AnySvelteComponent, PopupOptions } from '../types'
   import Spinner from './Spinner.svelte'
+  import { navigate } from '../location'
 
   export let contentPanel: HTMLElement
 
@@ -48,6 +49,10 @@
   let props: PanelProps | undefined
   function _close () {
     closePanel()
+    const lastTab = sessionStorage.getItem('last_mode')
+    if (lastTab != null) {
+      navigate(JSON.parse(lastTab))
+    }
   }
 
   $: if ($panelstore.panel !== undefined) {

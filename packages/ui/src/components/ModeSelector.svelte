@@ -1,6 +1,8 @@
 <script lang="ts">
   import TabList from './TabList.svelte'
   import { IModeSelector } from '../utils'
+  import { getCurrentLocation } from '../location'
+  import { onMount } from 'svelte'
 
   export let props: IModeSelector
 
@@ -9,8 +11,15 @@
       id: c[0],
       labelIntl: c[1],
       labelParams: c[2],
-      action: () => props.onChange(c[0])
+      action: () => {
+        props.onChange(c[0])
+        sessionStorage.setItem('last_mode', JSON.stringify(getCurrentLocation()))
+      }
     }
+  })
+  onMount(() => {
+    props.onChange(props.config[0][0])
+    sessionStorage.setItem('last_mode', JSON.stringify(getCurrentLocation()))
   })
 </script>
 
