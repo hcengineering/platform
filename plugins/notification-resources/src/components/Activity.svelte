@@ -33,24 +33,26 @@
   const client = getClient()
   let timer: any
   function updateDocs () {
-    client
-      .findAll(
-        notification.class.DocUpdates,
-        {
-          user: getCurrentAccount()._id,
-          hidden: false
-        },
-        {
-          sort: {
-            lastTxTime: -1
+    if (filter !== 'unread') {
+      client
+        .findAll(
+          notification.class.DocUpdates,
+          {
+            user: getCurrentAccount()._id,
+            hidden: false
+          },
+          {
+            sort: {
+              lastTxTime: -1
+            }
           }
-        }
-      )
-      .then((res) => {
-        docs = res as Array<DocUpdates>
-        getFiltered(docs, filter)
-        loading = false
-      })
+        )
+        .then((res) => {
+          docs = res as Array<DocUpdates>
+          getFiltered(docs, filter)
+          loading = false
+        })
+    }
   }
 
   onMount(() => {
