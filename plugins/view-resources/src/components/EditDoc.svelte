@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import contact, { Contact, getName } from '@hcengineering/contact'
-  import core, { Class, ClassifierKind, Doc, Mixin, Obj, Ref } from '@hcengineering/core'
+  import { Class, Doc, Mixin, Obj, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { Asset, getResource, translate } from '@hcengineering/platform'
@@ -34,7 +34,7 @@
   import view from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { ContextMenu, ParentsNavigator } from '..'
-  import { categorizeFields, getCollectionCounter, getFiltredKeys } from '../utils'
+  import { categorizeFields, getCollectionCounter, getFiltredKeys, getMixins } from '../utils'
   import DocAttributeBar from './DocAttributeBar.svelte'
   import UpDownNavigator from './UpDownNavigator.svelte'
 
@@ -95,20 +95,7 @@
 
   const dispatch = createEventDispatcher()
 
-  function getMixins (object: Doc, showAllMixins: boolean): void {
-    if (object === undefined) return
-    const descendants = hierarchy.getDescendants(core.class.Doc).map((p) => hierarchy.getClass(p))
-
-    mixins = descendants.filter(
-      (m) =>
-        m.kind === ClassifierKind.MIXIN &&
-        !ignoreMixins.has(m._id) &&
-        (hierarchy.hasMixin(object, m._id) ||
-          (showAllMixins && hierarchy.isDerived(realObjectClass, hierarchy.getBaseClass(m._id))))
-    )
-  }
-
-  $: getMixins(object, showAllMixins)
+  $: mixins = getMixins(object, ignoreMixins, showAllMixins)
 
   let ignoreKeys: string[] = []
   let activityOptions = { enabled: true, showInput: true }
@@ -268,7 +255,7 @@
     allowedCollections = ev.detail.allowedCollections ?? []
     collectionArrays = ev.detail.collectionArrays ?? []
     title = ev.detail.title
-    getMixins(object, showAllMixins)
+    mixins = getMixins(object, ignoreMixins, showAllMixins)
     updateKeys()
   }
 

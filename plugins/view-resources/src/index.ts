@@ -62,6 +62,8 @@ import TreeNode from './components/navigator/TreeNode.svelte'
 import NumberEditor from './components/NumberEditor.svelte'
 import NumberPresenter from './components/NumberPresenter.svelte'
 import ObjectPresenter from './components/ObjectPresenter.svelte'
+import PdfPreviewPresenter from './components/PdfPreviewPresenter.svelte'
+import PdfPreview from './components/PdfPreview.svelte'
 import RolePresenter from './components/RolePresenter.svelte'
 import SpacePresenter from './components/SpacePresenter.svelte'
 import SpaceRefPresenter from './components/SpaceRefPresenter.svelte'
@@ -207,6 +209,8 @@ export default async (): Promise<Resources> => ({
     DatePresenter,
     RolePresenter,
     ObjectPresenter,
+    PdfPreviewPresenter,
+    PdfPreview,
     EditDoc,
     HTMLPresenter,
     IntlStringPresenter,

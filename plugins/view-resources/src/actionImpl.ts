@@ -183,6 +183,21 @@ async function Open (
   navigate(loc)
 }
 
+async function PreviewPdf (doc: Doc | Doc[], event: Event): Promise<void> {
+  event.preventDefault()
+
+  const object: Doc | undefined = Array.isArray(doc) ? doc[0] : doc
+
+  if (object === undefined) {
+    return
+  }
+
+  const hierarchy = getClient().getHierarchy()
+  const loc = await getObjectLinkFragment(hierarchy, object, {}, view.component.PdfPreview)
+
+  navigate(loc)
+}
+
 /**
  * Quick action for show panel
  * Require props:
@@ -438,6 +453,7 @@ export const actionImpl = {
   ShowActions,
   ShowPreview,
   Open,
+  PreviewPdf,
   UpdateDocument,
   ShowPanel,
   ShowPopup,

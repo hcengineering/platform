@@ -66,6 +66,7 @@ import {
   ObjectPresenter,
   ObjectTitle,
   ObjectValidator,
+  PdfPreviewPresenter,
   PreviewPresenter,
   SortFunc,
   SpaceHeader,
@@ -171,6 +172,7 @@ export class TAttributeEditor extends TClass implements AttributeEditor {
 @Mixin(view.mixin.CollectionPresenter, core.class.Class)
 export class TCollectionPresenter extends TClass implements CollectionPresenter {
   presenter!: AnyComponent
+  pdfPresenter?: AnyComponent
 }
 
 @Mixin(view.mixin.CollectionEditor, core.class.Class)
@@ -193,6 +195,7 @@ export class TArrayEditor extends TClass implements ArrayEditor {
 @Mixin(view.mixin.AttributePresenter, core.class.Class)
 export class TAttributePresenter extends TClass implements AttributePresenter {
   presenter!: AnyComponent
+  pdfPresenter?: AnyComponent
 }
 
 @Mixin(view.mixin.AttributeFilterPresenter, core.class.Class)
@@ -213,6 +216,14 @@ export class TSpacePresenter extends TClass implements SpacePresenter {
 @Mixin(view.mixin.ObjectPresenter, core.class.Class)
 export class TObjectPresenter extends TClass implements ObjectPresenter {
   presenter!: AnyComponent
+  pdfPresenter?: AnyComponent
+}
+
+@Mixin(view.mixin.PdfPreviewPresenter, core.class.Class)
+export class TPdfPreviewPresenter extends TClass implements PdfPreviewPresenter {
+  presenter!: AnyComponent
+  keys?: string[]
+  ignoreKeys?: string[]
 }
 
 @Mixin(view.mixin.ListItemPresenter, core.class.Class)
@@ -414,6 +425,7 @@ export function createModel (builder: Builder): void {
     TCollectionPresenter,
     TObjectEditor,
     TObjectPresenter,
+    TPdfPreviewPresenter,
     TSortFuncs,
     TListHeaderExtra,
     TViewletPreference,
@@ -492,6 +504,10 @@ export function createModel (builder: Builder): void {
   })
 
   classPresenter(builder, core.class.TypeRelatedDocument, view.component.ObjectPresenter)
+
+  builder.mixin(core.class.Doc, core.class.Class, view.mixin.PdfPreviewPresenter, {
+    presenter: view.component.PdfPreviewPresenter
+  })
 
   builder.createDoc(
     view.class.ActionCategory,

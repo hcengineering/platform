@@ -20,6 +20,7 @@ import core, {
   AggregateValue,
   CategoryType,
   Class,
+  ClassifierKind,
   Client,
   Collection,
   Doc,
@@ -28,6 +29,7 @@ import core, {
   getObjectValue,
   Hierarchy,
   Lookup,
+  Mixin,
   Obj,
   Ref,
   RefTo,
@@ -43,6 +45,7 @@ import {
   AttributeCategory,
   createQuery,
   getAttributePresenterClass,
+  getClient,
   hasResource,
   KeyedAttribute
 } from '@hcengineering/presentation'
@@ -79,20 +82,28 @@ export async function getObjectPresenter (
   _class: Ref<Class<Obj>>,
   preserveKey: BuildModelKey,
   isCollectionAttr: boolean = false,
-  checkResource = false
+  checkResource = false,
+  forPdf = false
 ): Promise<AttributeModel | undefined> {
   const hierarchy = client.getHierarchy()
   const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : view.mixin.ObjectPresenter
   const clazz = hierarchy.getClass(_class)
 
-  const presenterMixin = hierarchy.classHierarchyMixin(_class, mixin, (m) => !checkResource || hasResource(m.presenter))
-  if (presenterMixin?.presenter === undefined) {
+  const getPresenterResourceFromMixin = (key: 'presenter' | 'pdfPresenter'): AnyComponent | undefined => {
+    const presenterMixin = hierarchy.classHierarchyMixin(_class, mixin, (m) => !checkResource || hasResource(m[key]))
+    return presenterMixin?.[key]
+  }
+
+  const presenterResource = forPdf
+    ? getPresenterResourceFromMixin('pdfPresenter') ?? getPresenterResourceFromMixin('presenter')
+    : getPresenterResourceFromMixin('presenter')
+  if (presenterResource === undefined) {
     console.error(
       `object presenter not found for class=${_class}, mixin=${mixin}, preserve key ${JSON.stringify(preserveKey)}`
     )
     return undefined
   }
-  const presenter = await getResource(presenterMixin.presenter)
+  const presenter = await getResource(presenterResource)
   const key = preserveKey.sortingKey ?? preserveKey.key
   const sortingKey = Array.isArray(key)
     ? key
@@ -141,7 +152,8 @@ async function getAttributePresenter (
   client: Client,
   _class: Ref<Class<Obj>>,
   key: string,
-  preserveKey: BuildModelKey
+  preserveKey: BuildModelKey,
+  forPdf = false
 ): Promise<AttributeModel> {
   const hierarchy = client.getHierarchy()
   const attribute = hierarchy.getAttribute(_class, key)
@@ -149,7 +161,10 @@ async function getAttributePresenter (
   const isCollectionAttr = presenterClass.category === 'collection'
   const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : view.mixin.AttributePresenter
   const presenterMixin = hierarchy.classHierarchyMixin(presenterClass.attrClass, mixin)
-  if (presenterMixin?.presenter === undefined) {
+  const presenterResource = forPdf
+    ? presenterMixin?.pdfPresenter ?? presenterMixin?.presenter
+    : presenterMixin?.presenter
+  if (presenterMixin === undefined || presenterResource === undefined) {
     throw new Error('attribute presenter not found for ' + JSON.stringify(preserveKey))
   }
   const resultKey = preserveKey.sortingKey ?? preserveKey.key
@@ -158,7 +173,7 @@ async function getAttributePresenter (
     : attribute.type._class === core.class.ArrOf
       ? resultKey + '.length'
       : resultKey
-  const presenter = await getResource(presenterMixin.presenter)
+  const presenter = await getResource(presenterResource)
 
   return {
     key: preserveKey.key,
@@ -181,7 +196,8 @@ export async function getPresenter<T extends Doc> (
   key: BuildModelKey,
   preserveKey: BuildModelKey,
   lookup?: Lookup<T>,
-  isCollectionAttr: boolean = false
+  isCollectionAttr: boolean = false,
+  forPdf = false
 ): Promise<AttributeModel> {
   if (key.presenter !== undefined) {
     const { presenter, label, sortingKey } = key
@@ -198,7 +214,7 @@ export async function getPresenter<T extends Doc> (
     }
   }
   if (key.key.length === 0) {
-    const p = await getObjectPresenter(client, _class, preserveKey, isCollectionAttr)
+    const p = await getObjectPresenter(client, _class, preserveKey, isCollectionAttr, false, forPdf)
     if (p === undefined) {
       throw new Error(`object presenter not found for class=${_class}, preserve key ${JSON.stringify(preserveKey)}`)
     }
@@ -208,9 +224,9 @@ export async function getPresenter<T extends Doc> (
       if (lookup === undefined) {
         throw new Error(`lookup class does not provided for ${key.key}`)
       }
-      return await getLookupPresenter(client, _class, key, preserveKey, lookup)
+      return await getLookupPresenter(client, _class, key, preserveKey, lookup, forPdf)
     }
-    return await getAttributePresenter(client, _class, key.key, preserveKey)
+    return await getAttributePresenter(client, _class, key.key, preserveKey, forPdf)
   }
 }
 
@@ -285,14 +301,14 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
             const realKey = key.key.substring(pos + 1)
             const rkey = { ...key, key: realKey }
             return {
-              ...(await getPresenter(options.client, mixinName, rkey, rkey, options.lookup)),
+              ...(await getPresenter(options.client, mixinName, rkey, rkey, options.lookup, false, options.forPdf)),
               castRequest: mixinName,
               key: key.key,
               sortingKey: key.key
             }
           }
         }
-        return await getPresenter(options.client, options._class, key, key, options.lookup)
+        return await getPresenter(options.client, options._class, key, key, options.lookup, false, options.forPdf)
       } catch (err: any) {
         if (options.ignoreMissing ?? false) {
           return undefined
@@ -359,12 +375,13 @@ async function getLookupPresenter<T extends Doc> (
   _class: Ref<Class<T>>,
   key: BuildModelKey,
   preserveKey: BuildModelKey,
-  lookup: Lookup<T>
+  lookup: Lookup<T>,
+  forPdf = false
 ): Promise<AttributeModel> {
   const lookupClass = getLookupClass(key.key, lookup, _class)
   const lookupProperty = getLookupProperty(key.key)
   const lookupKey = { ...key, key: lookupProperty[0] }
-  const model = await getPresenter(client, lookupClass[0], lookupKey, preserveKey, undefined, lookupClass[2])
+  const model = await getPresenter(client, lookupClass[0], lookupKey, preserveKey, undefined, lookupClass[2], forPdf)
   model.label = getLookupLabel(client, lookupClass[1], lookupClass[0], lookupKey, lookupProperty[1])
   model.isLookup = true
   return model
@@ -920,4 +937,18 @@ export function enabledConfig (config: Array<string | BuildModelKey>, key: strin
     }
   }
   return false
+}
+
+export function getMixins (object: Doc, ignoreMixins: Set<Ref<Mixin<Doc>>>, showAllMixins: boolean): Array<Mixin<Doc>> {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const descendants = hierarchy.getDescendants(core.class.Doc).map((descendant) => hierarchy.getClass(descendant))
+
+  return descendants.filter(
+    (mixin) =>
+      mixin.kind === ClassifierKind.MIXIN &&
+      !ignoreMixins.has(mixin._id) &&
+      (hierarchy.hasMixin(object, mixin._id) ||
+        (showAllMixins && hierarchy.isDerived(object._class, hierarchy.getBaseClass(mixin._id))))
+  )
 }

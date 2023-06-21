@@ -177,6 +177,7 @@ export interface ArrayEditor extends Class<Doc> {
  */
 export interface CollectionPresenter extends Class<Doc> {
   presenter: AnyComponent
+  pdfPresenter?: AnyComponent
 }
 
 /**
@@ -184,6 +185,7 @@ export interface CollectionPresenter extends Class<Doc> {
  */
 export interface AttributePresenter extends Class<Doc> {
   presenter: AnyComponent
+  pdfPresenter?: AnyComponent
 }
 
 /**
@@ -212,6 +214,16 @@ export interface SpacePresenter extends Class<Doc> {
  */
 export interface ObjectPresenter extends Class<Doc> {
   presenter: AnyComponent
+  pdfPresenter?: AnyComponent
+}
+
+/**
+ * @public
+ */
+export interface PdfPreviewPresenter extends Class<Doc> {
+  presenter: AnyComponent
+  keys?: string[]
+  ignoreKeys?: string[]
 }
 
 /**
@@ -590,6 +602,7 @@ export interface BuildModelOptions {
   keys: (BuildModelKey | string)[]
   lookup?: Lookup<Doc>
   ignoreMissing?: boolean
+  forPdf?: boolean
 }
 
 /**
@@ -744,6 +757,7 @@ const view = plugin(viewId, {
     ListItemPresenter: '' as Ref<Mixin<ListItemPresenter>>,
     ObjectEditor: '' as Ref<Mixin<ObjectEditor>>,
     ObjectPresenter: '' as Ref<Mixin<ObjectPresenter>>,
+    PdfPreviewPresenter: '' as Ref<Mixin<PdfPreviewPresenter>>,
     ObjectEditorHeader: '' as Ref<Mixin<ObjectEditorHeader>>,
     ObjectEditorFooter: '' as Ref<Mixin<ObjectEditorFooter>>,
     ObjectValidator: '' as Ref<Mixin<ObjectValidator>>,
@@ -791,6 +805,7 @@ const view = plugin(viewId, {
     ShowPreview: '' as Ref<Action>,
     ShowActions: '' as Ref<Action>,
     Preview: '' as Ref<Action>,
+    PreviewPdf: '' as Ref<Action>,
 
     // Edit document
     Open: '' as Ref<Action>
@@ -801,6 +816,8 @@ const view = plugin(viewId, {
   },
   component: {
     ObjectPresenter: '' as AnyComponent,
+    PdfPreviewPresenter: '' as AnyComponent,
+    PdfPreview: '' as AnyComponent,
     EditDoc: '' as AnyComponent,
     SpacePresenter: '' as AnyComponent,
     BooleanTruePresenter: '' as AnyComponent,
@@ -827,11 +844,13 @@ const view = plugin(viewId, {
     Rename: '' as IntlString,
     Assigned: '' as IntlString,
     Open: '' as IntlString,
+    PreviewPdf: '' as IntlString,
     Created: '' as IntlString,
     Delete: '' as IntlString,
     Then: '' as IntlString,
     Or: '' as IntlString,
-    Subscribed: '' as IntlString
+    Subscribed: '' as IntlString,
+    Properties: '' as IntlString
   },
   icon: {
     Table: '' as Asset,
