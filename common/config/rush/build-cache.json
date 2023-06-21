@@ -10,7 +10,7 @@
    *
    * See https://rushjs.io/pages/maintainer/build_cache/ for details about this experimental feature.
    */
-  "buildCacheEnabled": false,
+  "buildCacheEnabled": true,
 
   /**
    * (Required) Choose where project build outputs will be cached.

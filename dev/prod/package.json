@@ -17,6 +17,7 @@
     "deploy": "cp -p public/* dist && aws s3 sync dist s3://anticrm-platform --delete --acl public-read"
   },
   "devDependencies": {
+    "@hcengineering/platform-rig": "^0.6.0",
     "cross-env": "~7.0.3",
     "webpack-cli": "^5.0.1",
     "webpack": "^5.75.0",

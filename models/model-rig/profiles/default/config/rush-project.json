@@ -1,11 +1,11 @@
 {
-    "incrementalBuildIgnoredGlobs": ["temp/**"],  
-    "disableBuildCacheForProject": false,
-  
-    "operationSettings": [
-      {
-        "operationName": "build",
-        "outputFolderNames": ["lib", "dist"]
-      }     
-    ]
-  }
+  "incrementalBuildIgnoredGlobs": ["temp/**", "dist_cache/**", "lib/**", "dist/**"],
+  "disableBuildCacheForProject": false,
+
+  "operationSettings": [
+    {
+      "operationName": "build",
+      "outputFolderNames": ["dist", "lib", "dist_cache"]
+    }     
+  ]
+}
