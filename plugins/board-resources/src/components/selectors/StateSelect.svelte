@@ -4,7 +4,7 @@
   import { IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import task, { State } from '@hcengineering/task'
-  import { DropdownLabels, DropdownTextItem } from '@hcengineering/ui'
+  import { DropdownLabels, DropdownTextItem, themeStore } from '@hcengineering/ui'
   import board from '../../plugin'
 
   export let object: Card
@@ -23,7 +23,11 @@
       ;[{ _id: selected }] = result
       if (object.space === space) {
         const index = states.findIndex(({ id }) => id === object.state)
-        states[index].label = await translate(board.string.Current, { label: states[index].label })
+        states[index].label = await translate(
+          board.string.Current,
+          { label: states[index].label },
+          $themeStore.language
+        )
         selected = object.state
       }
     },

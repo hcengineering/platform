@@ -18,7 +18,7 @@
   import { createQuery } from '@hcengineering/presentation'
   import { Component, Project } from '@hcengineering/tracker'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
-  import { Button, ButtonShape, Label, SelectPopup, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { Button, ButtonShape, Label, SelectPopup, eventToHTMLElement, showPopup, themeStore } from '@hcengineering/ui'
   import tracker from '../plugin'
 
   export let value: Ref<Component> | null | undefined
@@ -57,7 +57,7 @@
 
   $: handleSelectedComponentIdUpdated(value, rawComponents)
 
-  $: translate(tracker.string.NoComponent, {}).then((result) => (defaultComponentLabel = result))
+  $: translate(tracker.string.NoComponent, {}, $themeStore.language).then((result) => (defaultComponentLabel = result))
   $: componentText = shouldShowLabel ? selectedComponent?.label ?? defaultComponentLabel : undefined
 
   const handleSelectedComponentIdUpdated = async (

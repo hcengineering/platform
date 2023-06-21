@@ -41,8 +41,12 @@ export const getCurrentFontSize = (): string => localStorage.getItem('fontsize')
 export const getCurrentLanguage = (): string => localStorage.getItem('lang') ?? 'en'
 
 export class ThemeOptions {
-  constructor (readonly fontSize: number, readonly dark: boolean) {}
+  constructor (readonly fontSize: number, readonly dark: boolean, readonly language: string) {}
 }
 export const themeStore = writable<ThemeOptions>(
-  new ThemeOptions(getCurrentFontSize() === 'normal-font' ? 16 : 14, getCurrentTheme() === 'theme-dark')
+  new ThemeOptions(
+    getCurrentFontSize() === 'normal-font' ? 16 : 14,
+    getCurrentTheme() === 'theme-dark',
+    getCurrentLanguage()
+  )
 )

@@ -17,6 +17,7 @@
   import { IntlString, translate } from '@hcengineering/platform'
   import { afterUpdate } from 'svelte'
   import { WizardItemPosition, WizardItemPositionState } from '../..'
+  import { themeStore } from '@hcengineering/theme'
 
   export let label: IntlString
   export let position: WizardItemPosition
@@ -44,7 +45,7 @@
   }
 
   $: style = getStyle(positionState)
-  $: label && translate(label, {}).then((t) => (translation = t))
+  $: label && translate(label, {}, $themeStore.language).then((t) => (translation = t))
 
   afterUpdate(() => {
     if (text) lenght = text.clientWidth + 32 > 300 ? 300 : text.clientWidth + 32

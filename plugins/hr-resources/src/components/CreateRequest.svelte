@@ -21,7 +21,14 @@
   import { translate } from '@hcengineering/platform'
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
   import { EmployeeBox } from '@hcengineering/contact-resources'
-  import ui, { Button, DateRangePresenter, DropdownLabelsIntl, IconAttachment, Label } from '@hcengineering/ui'
+  import ui, {
+    Button,
+    DateRangePresenter,
+    DropdownLabelsIntl,
+    IconAttachment,
+    Label,
+    themeStore
+  } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import hr from '../plugin'
   import { getRequests } from '../utils'
@@ -45,7 +52,7 @@
   let types: RequestType[] = []
   let type: RequestType | undefined = undefined
   let typeLabel = ''
-  $: type && translate(type.label, {}).then((p) => (typeLabel = p))
+  $: type && translate(type.label, {}, $themeStore.language).then((p) => (typeLabel = p))
 
   typesQuery.query(hr.class.RequestType, {}, (res) => {
     types = res

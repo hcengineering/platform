@@ -18,7 +18,7 @@
   import { createQuery } from '@hcengineering/presentation'
   import { Component, Milestone } from '@hcengineering/tracker'
   import type { ButtonKind, ButtonSize, LabelAndProps } from '@hcengineering/ui'
-  import { Button, ButtonShape, eventToHTMLElement, SelectPopup, showPopup, Label } from '@hcengineering/ui'
+  import { Button, ButtonShape, eventToHTMLElement, SelectPopup, showPopup, Label, themeStore } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import { milestoneStatusAssets } from '../../types'
 
@@ -59,7 +59,7 @@
 
   $: handleSelectedMilestoneIdUpdated(value, rawMilestones)
 
-  $: translate(tracker.string.Milestone, {}).then((result) => (defaultMilestoneLabel = result))
+  $: translate(tracker.string.Milestone, {}, $themeStore.language).then((result) => (defaultMilestoneLabel = result))
   const milestoneIcon = tracker.icon.Milestone
   $: milestoneText = shouldShowLabel ? selectedMilestone?.label ?? defaultMilestoneLabel : undefined
 

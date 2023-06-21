@@ -18,7 +18,16 @@
   import { getAttributePresenterClass, getClient } from '@hcengineering/presentation'
   import type { State } from '@hcengineering/task'
   import task from '@hcengineering/task'
-  import { AnyComponent, Component, eventToHTMLElement, Icon, IconClose, Label, showPopup } from '@hcengineering/ui'
+  import {
+    AnyComponent,
+    Component,
+    eventToHTMLElement,
+    Icon,
+    IconClose,
+    Label,
+    showPopup,
+    themeStore
+  } from '@hcengineering/ui'
   import { Filter, FilterMode } from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import view from '../../plugin'
@@ -55,7 +64,7 @@
   let countLabel: string = ''
   async function getLabel (): Promise<void> {
     const count = isState ? await getCountStates(currentFilter.value) : currentFilter.value.length
-    countLabel = await translate(view.string.FilterStatesCount, { value: count })
+    countLabel = await translate(view.string.FilterStatesCount, { value: count }, $themeStore.language)
   }
 
   let valueComponent: AnyComponent | undefined

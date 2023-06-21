@@ -16,7 +16,7 @@
   import { Event } from '@hcengineering/calendar'
   import { DateRangeMode } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
-  import { DateRangePresenter } from '@hcengineering/ui'
+  import { DateRangePresenter, themeStore } from '@hcengineering/ui'
   import calendar from '../plugin'
 
   export let value: Event
@@ -45,11 +45,11 @@
     let passed = interval
     if (interval < 0) passed = 0
     if (passed < HOUR) {
-      return await translate(calendar.string.DueMinutes, { minutes: Math.floor(passed / MINUTE) })
+      return await translate(calendar.string.DueMinutes, { minutes: Math.floor(passed / MINUTE) }, $themeStore.language)
     } else if (passed < DAY) {
-      return await translate(calendar.string.DueHours, { hours: Math.floor(passed / HOUR) })
+      return await translate(calendar.string.DueHours, { hours: Math.floor(passed / HOUR) }, $themeStore.language)
     } else {
-      return await translate(calendar.string.DueDays, { days: Math.floor(passed / DAY) })
+      return await translate(calendar.string.DueDays, { days: Math.floor(passed / DAY) }, $themeStore.language)
     }
   }
 </script>

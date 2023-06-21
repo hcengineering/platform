@@ -4,7 +4,7 @@
   import { IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { calcRank, State } from '@hcengineering/task'
-  import { DropdownLabels, DropdownTextItem } from '@hcengineering/ui'
+  import { DropdownLabels, DropdownTextItem, themeStore } from '@hcengineering/ui'
   import board from '../../plugin'
 
   export let object: Card
@@ -36,7 +36,7 @@
 
           ranks[index] = {
             id: selectedRank,
-            label: await translate(board.string.Current, { label: ranks[index].label })
+            label: await translate(board.string.Current, { label: ranks[index].label }, $themeStore.language)
           }
         }
       }

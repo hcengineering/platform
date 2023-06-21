@@ -17,7 +17,7 @@
   import { Asset, IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { TagCategory, TagElement } from '@hcengineering/tags'
-  import { AnySvelteComponent, Button, Label, SearchEdit, showPopup, IconAdd } from '@hcengineering/ui'
+  import { AnySvelteComponent, Button, Label, SearchEdit, showPopup, IconAdd, themeStore } from '@hcengineering/ui'
   import { TableBrowser } from '@hcengineering/view-resources'
   import tags from '../plugin'
   import CategoryBar from './CategoryBar.svelte'
@@ -32,7 +32,7 @@
   export let onTag: ((tag: TagElement) => void) | undefined = undefined
 
   let keyTitle: string
-  $: translate(item, {}).then((t) => {
+  $: translate(item, {}, $themeStore.language).then((t) => {
     keyTitle = t.toLowerCase()
   })
 

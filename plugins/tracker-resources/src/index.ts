@@ -27,7 +27,7 @@ import {
 import { Resources, translate } from '@hcengineering/platform'
 import { getClient, MessageBox, ObjectSearchResult } from '@hcengineering/presentation'
 import { Issue, Milestone, Project } from '@hcengineering/tracker'
-import { showPopup } from '@hcengineering/ui'
+import { showPopup, themeStore } from '@hcengineering/ui'
 import ComponentEditor from './components/components/ComponentEditor.svelte'
 import ComponentPresenter from './components/components/ComponentPresenter.svelte'
 import ComponentRefPresenter from './components/components/ComponentRefPresenter.svelte'
@@ -135,6 +135,8 @@ import MilestoneRefPresenter from './components/milestones/MilestoneRefPresenter
 import CreateProject from './components/projects/CreateProject.svelte'
 import ProjectPresenter from './components/projects/ProjectPresenter.svelte'
 import ProjectSpacePresenter from './components/projects/ProjectSpacePresenter.svelte'
+
+import { get } from 'svelte/store'
 
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 
@@ -286,7 +288,7 @@ async function moveAndDeleteMilestones (
   oldMilestones: Milestone[],
   newMilestone?: Milestone
 ): Promise<void> {
-  const noMilestoneLabel = await translate(tracker.string.NoMilestone, {})
+  const noMilestoneLabel = await translate(tracker.string.NoMilestone, {}, get(themeStore).language)
 
   showPopup(
     MessageBox,
@@ -302,8 +304,8 @@ async function moveAndDeleteMilestones (
     (result?: boolean) => {
       if (result === true) {
         for (const oldMilestone of oldMilestones) {
-          void moveIssuesToAnotherMilestone(client, oldMilestone, newMilestone).then((succes) => {
-            if (succes) {
+          void moveIssuesToAnotherMilestone(client, oldMilestone, newMilestone).then((success) => {
+            if (success) {
               void deleteObject(client, oldMilestone)
             }
           })

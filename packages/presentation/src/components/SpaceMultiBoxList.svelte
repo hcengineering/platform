@@ -20,6 +20,7 @@
   import { showPopup, Button } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation, { SpacesMultiPopup } from '..'
+  import { themeStore } from '@hcengineering/ui'
 
   export let selectedItems: Ref<Space>[] = []
   export let _classes: Ref<Class<Space>>[] = []
@@ -65,7 +66,7 @@
   <svelte:fragment slot="content">
     {#if selectedItems.length > 0}
       <div class="flex-row-center flex-nowrap">
-        {#await translate(presentation.string.NumberSpaces, { count: selectedItems.length }) then text}
+        {#await translate(presentation.string.NumberSpaces, { count: selectedItems.length }, $themeStore.language) then text}
           <span class="overflow-label disabled ml-1-5">{text}</span>
         {/await}
       </div>

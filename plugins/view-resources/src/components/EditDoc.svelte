@@ -30,7 +30,7 @@
     getClient,
     hasResource
   } from '@hcengineering/presentation'
-  import { AnyComponent, Button, Component, IconMixin, IconMoreH, showPopup } from '@hcengineering/ui'
+  import { AnyComponent, Button, Component, IconMixin, IconMoreH, showPopup, themeStore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { ContextMenu, ParentsNavigator } from '..'
@@ -230,7 +230,7 @@
       return name
     }
     const label = hierarchy.getClass(object._class).label
-    return await translate(label, {})
+    return await translate(label, {}, $themeStore.language)
   }
 
   async function getHeaderEditor (_class: Ref<Class<Doc>>): Promise<AnyComponent | undefined> {

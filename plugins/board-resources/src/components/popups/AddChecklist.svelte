@@ -6,7 +6,7 @@
   import task, { calcRank, TodoItem } from '@hcengineering/task'
   import { translate } from '@hcengineering/platform'
   import presentation, { Card as Popup, createQuery, getClient } from '@hcengineering/presentation'
-  import { Label, Dropdown, EditBox } from '@hcengineering/ui'
+  import { Label, Dropdown, EditBox, themeStore } from '@hcengineering/ui'
   import type { ListItem } from '@hcengineering/ui'
 
   import board from '../../plugin'
@@ -27,7 +27,7 @@
   const templatesQuery = createQuery()
   const dispatch = createEventDispatcher()
 
-  translate(board.string.ChecklistDropdownNone, {}).then((result) => {
+  translate(board.string.ChecklistDropdownNone, {}, $themeStore.language).then((result) => {
     noneListItem.label = result
   })
 

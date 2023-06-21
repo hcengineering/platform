@@ -47,7 +47,7 @@
 
   let phTraslate: string = ''
   $: if (placeholder) {
-    translate(placeholder, {}).then((res) => {
+    translate(placeholder, {}, $themeStore.language).then((res) => {
       phTraslate = res
     })
   }

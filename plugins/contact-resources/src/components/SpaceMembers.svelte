@@ -17,7 +17,7 @@
   import { Account, AccountRole, DocumentQuery, getCurrentAccount, Ref, SortingOrder, Space } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import { ActionIcon, IconAdd, IconClose, Label, SearchEdit, showPopup } from '@hcengineering/ui'
+  import { ActionIcon, IconAdd, IconClose, Label, SearchEdit, showPopup, themeStore } from '@hcengineering/ui'
   import AddMembersPopup from './AddMembersPopup.svelte'
   import UserInfo from './UserInfo.svelte'
 
@@ -29,7 +29,7 @@
   $: label = hierarchy.getClass(space._class).label
   let spaceClass = ''
   $: {
-    translate(label, {}).then((p) => (spaceClass = p.toLowerCase()))
+    translate(label, {}, $themeStore.language).then((p) => (spaceClass = p.toLowerCase()))
   }
   let search: string = ''
   $: isSearch = search.trim().length

@@ -15,8 +15,9 @@
 
 import core, { PluginConfiguration, SortingOrder } from '@hcengineering/core'
 import { Plugin, Resource, getResourcePlugin } from '@hcengineering/platform'
-import { writable } from 'svelte/store'
+import { get, writable } from 'svelte/store'
 import { createQuery } from '.'
+import { location as platformLocation } from '@hcengineering/ui'
 
 /**
  * @public
@@ -41,6 +42,9 @@ export const configurationStore = writable<ConfigurationManager>(configuration)
 
 const configQuery = createQuery(true)
 
+let hashString = ''
+let workspaceId: string = ''
+
 /**
  * @public
  */
@@ -52,10 +56,15 @@ configQuery.query(
   core.class.PluginConfiguration,
   {},
   (res) => {
-    if (configuration.list.length > 0) {
-      // Configuration
+    const newHash = res.map((it) => `${it.pluginId}=${it.enabled ? '+' : '-'}`).join('&')
+    const wsId = get(platformLocation).path[1]
+
+    if (hashString !== '' && hashString !== newHash && workspaceId !== '' && workspaceId === wsId) {
+      // Configuration is changed for same workspace.
       location.reload()
     }
+    workspaceId = wsId
+    hashString = newHash
     configuration = new ConfigurationManager(res, new Map(res.map((it) => [it.pluginId, it])))
     configurationStore.set(configuration)
   },

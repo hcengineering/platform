@@ -21,38 +21,45 @@
   const currentFontSize = getCurrentFontSize()
   let currentLanguage = getCurrentLanguage()
 
-  const setRootColors = (theme: string) => {
-    document.documentElement.setAttribute('class', `${theme} ${getCurrentFontSize()}`)
-    themeOptions.set(
-      new ThemeOptions(getCurrentFontSize() === 'normal-font' ? 16 : 14, getCurrentTheme() === 'theme-dark')
-    )
+  const setOptions = (currentFont: string, theme: string, language: string) => {
+    themeOptions.set(new ThemeOptions(currentFont === 'normal-font' ? 16 : 14, theme === 'theme-dark', language))
   }
-  const setRootFontSize = (fontsize: string) => {
+
+  const setRootColors = (theme: string, set = true) => {
+    if (set) {
+      localStorage.setItem('theme', theme)
+    }
+    document.documentElement.setAttribute('class', `${theme} ${getCurrentFontSize()}`)
+    setOptions(getCurrentFontSize(), theme, getCurrentLanguage())
+  }
+  const setRootFontSize = (fontsize: string, set = true) => {
+    if (set) {
+      localStorage.setItem('fontsize', fontsize)
+    }
     document.documentElement.setAttribute('class', `${getCurrentTheme()} ${fontsize}`)
-    themeOptions.set(new ThemeOptions(fontsize === 'normal-font' ? 16 : 14, getCurrentTheme() === 'theme-dark'))
+    setOptions(fontsize, getCurrentTheme(), getCurrentLanguage())
+  }
+  const setLanguage = async (language: string, set: boolean = true) => {
+    currentLanguage = language
+    if (set) {
+      localStorage.setItem('lang', language)
+    }
+    setMetadata(platform.metadata.locale, currentLanguage)
+    await loadPluginStrings(currentLanguage, set)
+    setOptions(getCurrentFontSize(), getCurrentTheme(), language)
   }
 
   setContext('theme', {
     currentTheme,
-    setTheme: (name: string) => {
-      localStorage.setItem('theme', name)
-      setRootColors(name)
-    }
+    setTheme: setRootColors
   })
   setContext('fontsize', {
     currentFontSize,
-    setFontSize: (fontsize: string) => {
-      localStorage.setItem('fontsize', fontsize)
-      setRootFontSize(fontsize)
-    }
+    setFontSize: setRootFontSize
   })
   setContext('lang', {
     currentLanguage,
-    setLanguage: (lang: string) => {
-      currentLanguage = lang
-      localStorage.setItem('lang', lang)
-      location.reload()
-    }
+    setLanguage
   })
 
   const setDocumentLanguage = (): void => {
@@ -60,9 +67,9 @@
   }
 
   onMount(() => {
-    setRootColors(currentTheme)
-    setRootFontSize(currentFontSize)
-    setMetadata(platform.metadata.locale, currentLanguage)
+    setRootColors(currentTheme, false)
+    setRootFontSize(currentFontSize, false)
+    setLanguage(currentLanguage, false)
     loadPluginStrings(currentLanguage)
     setDocumentLanguage()
   })

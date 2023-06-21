@@ -1,6 +1,18 @@
 # Changelog
 
-## 0.6.32 (upcoming)
+## 0.6.110 (upcoming)
+
+- UBER-526: Live reload on language changes.
+
+  Function translate is updated to pass language, so be aware to use `$themeState.language` to properly use translation.
+
+  ```javascript
+    function translate(id:string, params: Record<string, any>, language?:string): Promise<string> {
+      //...
+    }
+  ```
+
+## 0.6.32
 
 Tracker:
 

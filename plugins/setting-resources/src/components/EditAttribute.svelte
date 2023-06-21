@@ -17,7 +17,15 @@
   import { getEmbeddedLabel, translate } from '@hcengineering/platform'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
   import setting from '../plugin'
-  import { AnyComponent, Component, DropdownIntlItem, DropdownLabelsIntl, EditBox, Label } from '@hcengineering/ui'
+  import {
+    AnyComponent,
+    Component,
+    DropdownIntlItem,
+    DropdownLabelsIntl,
+    EditBox,
+    Label,
+    themeStore
+  } from '@hcengineering/ui'
   import view from '@hcengineering/view-resources/src/plugin'
   import { createEventDispatcher } from 'svelte'
 
@@ -33,7 +41,7 @@
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
-  translate(attribute.label, {}).then((p) => (name = p))
+  translate(attribute.label, {}, $themeStore.language).then((p) => (name = p))
 
   async function save (): Promise<void> {
     const update: DocumentUpdate<AnyAttribute> = {}

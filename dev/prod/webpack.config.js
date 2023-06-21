@@ -212,6 +212,8 @@ module.exports = {
     // https://webpack.js.org/configuration/watch/#watchoptionsignored
     // don't use this pattern, if you have a monorepo with linked packages
     ignored: /node_modules/,
+    aggregateTimeout: 500,
+    poll: 1000
   },
   devtool: prod ? false : 'inline-source-map',
   devServer: {

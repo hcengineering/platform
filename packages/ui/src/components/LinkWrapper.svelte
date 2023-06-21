@@ -17,12 +17,13 @@
 
   import { IntlString, translate } from '@hcengineering/platform'
   import { replaceURLs } from '../utils'
+  import { themeStore } from '@hcengineering/theme'
 
   export let text: string | undefined = undefined
   export let label: IntlString | undefined = undefined
   export let params: Readonly<Record<string, any>> = {}
 
-  $: label && translate(label, params).then((result) => (text = result))
+  $: label && translate(label, params, $themeStore.language).then((result) => (text = result))
 </script>
 
 {#if text}

@@ -114,7 +114,7 @@
 
   let placeHolderStr: string = ''
 
-  $: ph = translate(placeholder, {}).then((r) => {
+  $: ph = translate(placeholder, {}, $themeStore.language).then((r) => {
     placeHolderStr = r
   })
 

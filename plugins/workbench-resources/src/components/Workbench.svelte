@@ -170,8 +170,14 @@
     }
   )
 
+  const workspaceId = $location.path[1]
+
   onDestroy(
     location.subscribe(async (loc) => {
+      if (workspaceId !== $location.path[1]) {
+        // Switch of workspace
+        return
+      }
       closeTooltip()
       closePopup()
 

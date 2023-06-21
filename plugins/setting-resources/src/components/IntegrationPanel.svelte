@@ -20,6 +20,7 @@
   import setting from '../plugin'
   import PluginCard from './PluginCard.svelte'
   import { translate } from '@hcengineering/platform'
+  import { themeStore } from '@hcengineering/ui'
 
   export let _id: Ref<Integration>
   export let _class: Ref<Class<Integration>>
@@ -49,7 +50,7 @@
     )
 
   let title: string = ''
-  translate(setting.string.Integrations, {}).then((res) => (title = res))
+  translate(setting.string.Integrations, {}, $themeStore.language).then((res) => (title = res))
 </script>
 
 {#if integration}

@@ -25,7 +25,8 @@
     IconCheck,
     IconSearch,
     Loading,
-    resizeObserver
+    resizeObserver,
+    themeStore
   } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { FILTER_DEBOUNCE_MS, FilterRemovedNotification, sortFilterValues } from '@hcengineering/view-resources'
@@ -88,9 +89,14 @@
       const removed = oldSize - (filter.value.length ?? 0)
       if (removed > 0) {
         onChange(filter)
-        addNotification(await translate(view.string.FilterUpdated, {}), filter.key.label, FilterRemovedNotification, {
-          description: await translate(view.string.FilterRemoved, { count: removed })
-        })
+        addNotification(
+          await translate(view.string.FilterUpdated, {}, $themeStore.language),
+          filter.key.label,
+          FilterRemovedNotification,
+          {
+            description: await translate(view.string.FilterRemoved, { count: removed }, $themeStore.language)
+          }
+        )
       }
     }
     values = sortFilterValues(values, (v) => isSelected(v, filter.value))

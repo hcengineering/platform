@@ -26,6 +26,7 @@
   import { OK, Status, Severity } from '@hcengineering/platform'
   import type { IntlString } from '@hcengineering/platform'
   import { translate } from '@hcengineering/platform'
+  import { themeStore } from '@hcengineering/ui'
 
   import login from '../plugin'
   import { onMount } from 'svelte'
@@ -62,13 +63,15 @@
   export let object: any
   export let ignoreInitialValidation: boolean = false
 
-  async function validate () {
+  async function validate (language: string) {
     if (ignoreInitialValidation) return
     for (const field of fields) {
       const v = object[field.name]
       const f = field
       if (!f.optional && (!v || v === '')) {
-        status = new Status(Severity.INFO, login.status.RequiredField, { field: await translate(field.i18n, {}) })
+        status = new Status(Severity.INFO, login.status.RequiredField, {
+          field: await translate(field.i18n, {}, language)
+        })
         return
       }
       if (f.id !== undefined) {
@@ -77,8 +80,8 @@
           const v = object[field.name]
           if (v !== object[f.name]) {
             status = new Status(Severity.INFO, login.status.FieldsDoNotMatch, {
-              field: await translate(field.i18n, {}),
-              field2: await translate(f.i18n, {})
+              field: await translate(field.i18n, {}, language),
+              field2: await translate(f.i18n, {}, language)
             })
             return
           }
@@ -88,7 +91,7 @@
         if (!f.rule.test(v)) {
           status = new Status(Severity.INFO, login.status.IncorrectValue, {
             field: await translate(field.i18n, {}),
-            descr: field.ruleDescr ? await translate(field.ruleDescr, {}) : ''
+            descr: field.ruleDescr ? await translate(field.ruleDescr, {}, language) : ''
           })
           return
         }
@@ -96,7 +99,7 @@
     }
     status = OK
   }
-  validate()
+  validate($themeStore.language)
 
   let inAction = false
 
