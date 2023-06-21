@@ -298,7 +298,6 @@ export const emojiSP: FadeOptions = { multipler: { top: 1.5, bottom: 0 } }
 export interface DeviceOptions {
   docWidth: number
   docHeight: number
-  pixelRatio: number
   isPortrait: boolean
   isMobile: boolean
   fontSize: number

@@ -217,7 +217,6 @@ addLocation(uiId, async () => ({ default: async () => ({}) }))
 export const deviceOptionsStore = writable<DeviceOptions>({
   docWidth: 0,
   docHeight: 0,
-  pixelRatio: 1,
   isPortrait: false,
   isMobile: false,
   fontSize: 0,
