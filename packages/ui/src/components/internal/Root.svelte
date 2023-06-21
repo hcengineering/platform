@@ -71,6 +71,22 @@
     }
   })
 
+  let replaceRatio: any = null
+  let pixelRatio: number = 0
+  const updatePixelRatio = () => {
+    if (replaceRatio !== null) replaceRatio()
+
+    const mqString = `(resolution: ${window.devicePixelRatio}dppx)`
+    const media = matchMedia(mqString)
+    media.addEventListener('change', updatePixelRatio)
+    replaceRatio = function () {
+      media.removeEventListener('change', updatePixelRatio)
+    }
+
+    pixelRatio = window.devicePixelRatio
+  }
+  updatePixelRatio()
+
   let docWidth: number = window.innerWidth
   let docHeight: number = window.innerHeight
 
@@ -82,6 +98,7 @@
 
   $: $deviceInfo.docWidth = docWidth
   $: $deviceInfo.docHeight = docHeight
+  $: $deviceInfo.pixelRatio = pixelRatio
   $: $deviceInfo.isPortrait = isPortrait
   $: $deviceInfo.isMobile = isMobile
   $: $deviceInfo.minWidth = docWidth <= 480

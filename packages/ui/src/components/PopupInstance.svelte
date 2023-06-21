@@ -16,7 +16,7 @@
 <script lang="ts">
   import { deviceOptionsStore as deviceInfo, resizeObserver } from '..'
   import { fitPopupElement } from '../popups'
-  import type { AnySvelteComponent, PopupAlignment, PopupOptions, PopupPositionElement } from '../types'
+  import type { AnySvelteComponent, PopupAlignment, PopupOptions, PopupPositionElement, DeviceOptions } from '../types'
 
   export let is: AnySvelteComponent
   export let props: object
@@ -77,12 +77,13 @@
     element: PopupAlignment | undefined,
     contentPanel: HTMLElement | undefined
   ): void => {
+    const device: DeviceOptions = $deviceInfo
     if ((fullSize || docSize) && (element === 'float' || element === 'centered')) {
-      options = fitPopupElement(modalHTML, 'full', contentPanel, clientWidth, clientHeight)
+      options = fitPopupElement(modalHTML, 'full', contentPanel, clientWidth, clientHeight, device)
       options.props.maxHeight = '100vh'
       if (!modalHTML.classList.contains('fullsize')) modalHTML.classList.add('fullsize')
     } else {
-      options = fitPopupElement(modalHTML, element, contentPanel, clientWidth, clientHeight)
+      options = fitPopupElement(modalHTML, element, contentPanel, clientWidth, clientHeight, device)
       if (modalHTML.classList.contains('fullsize')) modalHTML.classList.remove('fullsize')
     }
     options.fullSize = fullSize

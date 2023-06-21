@@ -8,7 +8,8 @@ import type {
   PopupAlignment,
   PopupOptions,
   PopupPositionElement,
-  VerticalAlignment
+  VerticalAlignment,
+  DeviceOptions
 } from './types'
 
 export interface CompAndProps {
@@ -185,7 +186,8 @@ export function fitPopupElement (
   element?: PopupAlignment,
   contentPanel?: HTMLElement,
   clientWidth?: number,
-  clientHeight?: number
+  clientHeight?: number,
+  device?: DeviceOptions
 ): PopupOptions {
   let show = true
   const newProps: Record<string, string | number> = {}
@@ -206,14 +208,19 @@ export function fitPopupElement (
       newProps.maxWidth = '50%'
       show = true
     } else if (element === 'top') {
-      newProps.top = '15vh'
-      newProps.maxHeight = '75vh'
+      const fullHeight =
+        clientHeight !== undefined &&
+        clientHeight / (device?.docHeight ?? 1080) > 0.745 &&
+        device?.pixelRatio !== 1 &&
+        device?.pixelRatio !== 2
       if (clientWidth !== undefined && clientHeight !== undefined) {
         newProps.left = `calc(50% - ${clientWidth / 2}px`
       } else {
         newProps.left = '50%'
         newProps.transform = 'translateX(-50%)'
       }
+      newProps.top = fullHeight ? '1rem' : '15vh'
+      newProps.maxHeight = fullHeight ? 'calc(100vh - 2rem)' : '75vh'
       show = true
     } else if (element === 'float') {
       newProps.top = 'calc(var(--status-bar-height) + 4px)'
