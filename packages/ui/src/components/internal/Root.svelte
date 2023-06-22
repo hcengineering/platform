@@ -5,7 +5,7 @@
   // import { applicationShortcutKey } from '../../utils'
   import { getCurrentLocation, location, navigate } from '../../location'
 
-  import { Theme } from '@hcengineering/theme'
+  import { Theme, themeStore } from '@hcengineering/theme'
   import Component from '../Component.svelte'
 
   import StatusComponent from '../Status.svelte'
@@ -108,6 +108,7 @@
   <div id="ui-root">
     <div class="antiStatusBar">
       <div class="flex-row-center h-full content-color">
+        {$themeStore.language}
         <div
           class="status-info"
           style:margin-left={(isPortrait && docWidth <= 480) || (!isPortrait && docHeight <= 480) ? '1.5rem' : '0'}

@@ -47,10 +47,13 @@ export function addStringsLoader (plugin: Plugin, loader: Loader): void {
  * Perform load of all internationalization sources for all plugins available.
  * @public
  */
-export async function loadPluginStrings (locale: string): Promise<void> {
+export async function loadPluginStrings (locale: string, force: boolean = false): Promise<void> {
+  if (force) {
+    cache.clear()
+  }
   for (const [plugin] of loaders) {
     let messages = translations.get(plugin)
-    if (messages === undefined) {
+    if (messages === undefined || force) {
       messages = await loadTranslationsForComponent(plugin, locale)
       translations.set(plugin, messages)
     }
@@ -100,8 +103,12 @@ async function getTranslation (id: _IdInfo, locale: string): Promise<IntlString 
  * @param params -
  * @returns
  */
-export async function translate<P extends Record<string, any>> (message: IntlString<P>, params: P): Promise<string> {
-  const locale = getMetadata(platform.metadata.locale) ?? 'en'
+export async function translate<P extends Record<string, any>> (
+  message: IntlString<P>,
+  params: P,
+  language?: string
+): Promise<string> {
+  const locale = language ?? getMetadata(platform.metadata.locale) ?? 'en'
   const compiled = cache.get(message)
 
   if (compiled !== undefined) {

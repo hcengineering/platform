@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Doc, Ref } from '@hcengineering/core'
-  import { Button, showPopup, eventToHTMLElement } from '@hcengineering/ui'
+  import { Button, showPopup, eventToHTMLElement, themeStore } from '@hcengineering/ui'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import contact, { Employee } from '@hcengineering/contact'
   import { getClient } from '@hcengineering/presentation'
@@ -36,7 +36,7 @@
   let buttonTitle = ''
 
   $: members = retrieveMembers(value)
-  $: translate(intlTitle, {}).then((res) => {
+  $: translate(intlTitle, {}, $themeStore.language).then((res) => {
     buttonTitle = res
   })
 

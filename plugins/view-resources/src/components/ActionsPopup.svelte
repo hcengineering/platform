@@ -27,7 +27,8 @@
     IconSearch,
     deviceOptionsStore,
     capitalizeFirstLetter,
-    formatKey
+    formatKey,
+    themeStore
   } from '@hcengineering/ui'
   import { Action, ViewContext } from '@hcengineering/view'
   import { filterActions, getSelection } from '../actions'
@@ -111,7 +112,7 @@
     search = search.trim().toLowerCase()
     if (search.length > 0) {
       for (const a of actions) {
-        const tr = await translate(a.label, {})
+        const tr = await translate(a.label, {}, $themeStore.language)
         if (tr.toLowerCase().indexOf(search) !== -1) {
           res.push(a)
         }

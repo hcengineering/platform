@@ -21,6 +21,7 @@
   import type { AnySvelteComponent, ListItem } from '../types'
   import Icon from './Icon.svelte'
   import ListView from './ListView.svelte'
+  import { themeStore } from '@hcengineering/theme'
 
   export let icon: Asset | AnySvelteComponent
   export let placeholder: IntlString = plugin.string.SearchDots
@@ -29,7 +30,7 @@
   let search: string = ''
   let phTraslate: string = ''
   $: if (placeholder) {
-    translate(placeholder, {}).then((res) => {
+    translate(placeholder, {}, $themeStore.language).then((res) => {
       phTraslate = res
     })
   }

@@ -23,6 +23,7 @@
   import Label from './Label.svelte'
   import { resizeObserver } from '../resize'
   import { floorFractionDigits } from '../utils'
+  import { themeStore } from '@hcengineering/theme'
 
   export let label: IntlString | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
@@ -62,7 +63,7 @@
   $: style = `max-width: ${
     maxWidth || (parentWidth ? (icon ? `calc(${parentWidth}px - 1.25rem)` : `${parentWidth}px`) : 'max-content')
   };`
-  $: translate(placeholder, placeholderParam ?? {}).then((res) => {
+  $: translate(placeholder, placeholderParam ?? {}, $themeStore.language).then((res) => {
     phTraslate = res
   })
 

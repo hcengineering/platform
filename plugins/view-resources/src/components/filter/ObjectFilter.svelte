@@ -25,7 +25,8 @@
     IconSearch,
     Label,
     Loading,
-    resizeObserver
+    resizeObserver,
+    themeStore
   } from '@hcengineering/ui'
   import { Filter, GrouppingManager } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
@@ -106,9 +107,14 @@
       const removed = oldSize - (filter.value.length ?? 0)
       if (removed > 0) {
         onChange(filter)
-        addNotification(await translate(view.string.FilterUpdated, {}), filter.key.label, FilterRemovedNotification, {
-          description: await translate(view.string.FilterRemoved, { count: removed })
-        })
+        addNotification(
+          await translate(view.string.FilterUpdated, {}, $themeStore.language),
+          filter.key.label,
+          FilterRemovedNotification,
+          {
+            description: await translate(view.string.FilterRemoved, { count: removed }, $themeStore.language)
+          }
+        )
       }
     }
     values = sortFilterValues(values, (v) => isSelected(v, filter.value))

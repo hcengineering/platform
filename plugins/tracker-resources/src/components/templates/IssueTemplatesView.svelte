@@ -3,7 +3,15 @@
   import { IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { IssueTemplate } from '@hcengineering/tracker'
-  import { Button, IconAdd, IconDetails, IconDetailsFilled, resolvedLocationStore, showPopup } from '@hcengineering/ui'
+  import {
+    Button,
+    IconAdd,
+    IconDetails,
+    IconDetailsFilled,
+    resolvedLocationStore,
+    showPopup,
+    themeStore
+  } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
   import {
     FilterBar,
@@ -59,7 +67,7 @@
   $: active = $activeViewlet[key]
 
   $: if (!label && title) {
-    translate(title, {}).then((res) => {
+    translate(title, {}, $themeStore.language).then((res) => {
       label = res
     })
   }

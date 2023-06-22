@@ -5,24 +5,25 @@ import core, {
   Client,
   Collection,
   Doc,
-  getObjectValue,
   Obj,
   Ref,
+  TxCUD,
   TxCollectionCUD,
   TxCreateDoc,
-  TxCUD,
   TxMixin,
   TxOperations,
   TxProcessor,
-  TxUpdateDoc
+  TxUpdateDoc,
+  getObjectValue
 } from '@hcengineering/core'
 import { Asset, IntlString, getResource, translate } from '@hcengineering/platform'
-import { AnyComponent, AnySvelteComponent, ErrorPresenter } from '@hcengineering/ui'
+import { getAttributePresenterClass } from '@hcengineering/presentation'
+import { AnyComponent, AnySvelteComponent, ErrorPresenter, themeStore } from '@hcengineering/ui'
 import view, { AttributeModel, BuildModelKey, BuildModelOptions } from '@hcengineering/view'
 import { getObjectPresenter } from '@hcengineering/view-resources'
+import { get } from 'svelte/store'
 import { ActivityKey, activityKey } from './activity'
 import activity from './plugin'
-import { getAttributePresenterClass } from '@hcengineering/presentation'
 
 const valueTypes: ReadonlyArray<Ref<Class<Doc>>> = [
   core.class.TypeString,
@@ -47,11 +48,12 @@ async function createPseudoViewlet (
 ): Promise<TxDisplayViewlet> {
   const docClass: Class<Doc> = client.getModel().getObject(dtx.tx.objectClass)
 
-  let trLabel = docClass.label !== undefined ? await translate(docClass.label, {}) : undefined
+  const language = get(themeStore).language
+  let trLabel = docClass.label !== undefined ? await translate(docClass.label, {}, language) : undefined
   if (dtx.collectionAttribute !== undefined) {
     const itemLabel = (dtx.collectionAttribute.type as Collection<AttachedDoc>).itemLabel
     if (itemLabel !== undefined) {
-      trLabel = await translate(itemLabel, {})
+      trLabel = await translate(itemLabel, {}, language)
     }
   }
 
@@ -60,7 +62,7 @@ async function createPseudoViewlet (
   if (presenter !== undefined) {
     let collection = ''
     if (dtx.collectionAttribute?.label !== undefined) {
-      collection = await translate(dtx.collectionAttribute.label, {})
+      collection = await translate(dtx.collectionAttribute.label, {}, language)
     }
     return {
       display,

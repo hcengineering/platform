@@ -24,7 +24,8 @@
     IconClose,
     Label,
     ShowMore,
-    showPopup
+    showPopup,
+    themeStore
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
@@ -45,7 +46,7 @@
 
   $: itemLabel = (key.attr.type as Collection<AttachedDoc>).itemLabel
 
-  $: translate(itemLabel ?? key.attr.label, {}).then((v) => {
+  $: translate(itemLabel ?? key.attr.label, {}, $themeStore.language).then((v) => {
     keyLabel = v
   })
 

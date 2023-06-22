@@ -16,7 +16,7 @@
   import type { IntlString } from '@hcengineering/platform'
   import { translate } from '@hcengineering/platform'
   import { copyTextToClipboard } from '@hcengineering/presentation'
-  import type { PopupOptions } from '@hcengineering/ui'
+  import { PopupOptions, themeStore } from '@hcengineering/ui'
   import {
     Button,
     createFocusManager,
@@ -39,10 +39,10 @@
   const dispatch = createEventDispatcher()
   let input: HTMLInputElement
   let phTraslate: string
-  $: translate(placeholder, {}).then((tr) => (phTraslate = tr))
+  $: translate(placeholder, {}, $themeStore.language).then((tr) => (phTraslate = tr))
   let label: IntlString = plugin.string.CopyToClipboard
   let lTraslate: string
-  $: translate(label, {}).then((tr) => (lTraslate = tr))
+  $: translate(label, {}, $themeStore.language).then((tr) => (lTraslate = tr))
   let show: boolean = false
 
   const copyChannel = (): void => {

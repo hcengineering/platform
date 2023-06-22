@@ -50,7 +50,8 @@
     FocusHandler,
     IconAttachment,
     Label,
-    showPopup
+    showPopup,
+    themeStore
   } from '@hcengineering/ui'
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
@@ -417,11 +418,16 @@
         ]
       : [{ parentId: _id, parentTitle: value.title }]
     await subIssuesComponent.save(parents, _id)
-    addNotification(await translate(tracker.string.IssueCreated, {}), getTitle(object.title), IssueNotification, {
-      issueId: _id,
-      subTitlePostfix: (await translate(tracker.string.CreatedOne, {})).toLowerCase(),
-      issueUrl: currentProject && generateIssueShortLink(getIssueId(currentProject, value as Issue))
-    })
+    addNotification(
+      await translate(tracker.string.IssueCreated, {}, $themeStore.language),
+      getTitle(object.title),
+      IssueNotification,
+      {
+        issueId: _id,
+        subTitlePostfix: (await translate(tracker.string.CreatedOne, {}, $themeStore.language)).toLowerCase(),
+        issueUrl: currentProject && generateIssueShortLink(getIssueId(currentProject, value as Issue))
+      }
+    )
 
     // Create an backlink to document
     await createBacklinks(client, _id, tracker.class.Issue, _id, object.description)

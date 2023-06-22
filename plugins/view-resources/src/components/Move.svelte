@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { Button, Label, Status as StatusControl } from '@hcengineering/ui'
+  import { Button, Label, Status as StatusControl, themeStore } from '@hcengineering/ui'
 
   import core, { Class, Client, Doc, Ref, SortingOrder, Space } from '@hcengineering/core'
   import { getResource, OK, Resource, Status, translate } from '@hcengineering/platform'
@@ -41,9 +41,11 @@
   $: {
     const doc = docs[0]
     if (space === undefined) space = doc.space
-    translate(hierarchy.getClass(doc._class).label, {}).then((res) => (label = res.toLocaleLowerCase()))
+    translate(hierarchy.getClass(doc._class).label, {}, $themeStore.language).then(
+      (res) => (label = res.toLocaleLowerCase())
+    )
   }
-  $: _class && translate(_class, {}).then((res) => (classLabel = res.toLocaleLowerCase()))
+  $: _class && translate(_class, {}, $themeStore.language).then((res) => (classLabel = res.toLocaleLowerCase()))
 
   async function move (doc: Doc): Promise<void> {
     const needStates = currentSpace ? hierarchy.isDerived(currentSpace._class, task.class.SpaceWithStates) : false

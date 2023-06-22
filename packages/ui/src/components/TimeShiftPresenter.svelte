@@ -15,6 +15,7 @@
 <script lang="ts">
   import { translate } from '@hcengineering/platform'
   import ui from '../plugin'
+  import { themeStore } from '@hcengineering/theme'
 
   export let value: number
 
@@ -28,20 +29,20 @@
   async function formatTime (value: number) {
     if (value > 0) {
       if (value < HOUR) {
-        time = await translate(ui.string.MinutesAfter, { minutes: Math.floor(value / MINUTE) })
+        time = await translate(ui.string.MinutesAfter, { minutes: Math.floor(value / MINUTE) }, $themeStore.language)
       } else if (value < DAY) {
-        time = await translate(ui.string.HoursAfter, { hours: Math.floor(value / HOUR) })
+        time = await translate(ui.string.HoursAfter, { hours: Math.floor(value / HOUR) }, $themeStore.language)
       } else {
-        time = await translate(ui.string.DaysAfter, { days: Math.floor(value / DAY) })
+        time = await translate(ui.string.DaysAfter, { days: Math.floor(value / DAY) }, $themeStore.language)
       }
     } else {
       const abs = Math.abs(value)
       if (abs < HOUR) {
-        time = await translate(ui.string.MinutesBefore, { minutes: Math.floor(abs / MINUTE) })
+        time = await translate(ui.string.MinutesBefore, { minutes: Math.floor(abs / MINUTE) }, $themeStore.language)
       } else if (abs < DAY) {
-        time = await translate(ui.string.HoursBefore, { hours: Math.floor(abs / HOUR) })
+        time = await translate(ui.string.HoursBefore, { hours: Math.floor(abs / HOUR) }, $themeStore.language)
       } else {
-        time = await translate(ui.string.DaysBefore, { days: Math.floor(abs / DAY) })
+        time = await translate(ui.string.DaysBefore, { days: Math.floor(abs / DAY) }, $themeStore.language)
       }
     }
   }

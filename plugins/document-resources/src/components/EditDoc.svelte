@@ -33,6 +33,7 @@
   import tags from '@hcengineering/tags'
   import { CollaborationDiffViewer } from '@hcengineering/text-editor'
   import view from '@hcengineering/view'
+  import { themeStore } from '@hcengineering/ui'
 
   import {
     Button,
@@ -174,14 +175,14 @@
     [DocumentVersionState.Rejected]: ''
   }
 
-  async function updateLabels (): Promise<void> {
+  async function updateLabels (lang: string): Promise<void> {
     labels = {
-      [DocumentVersionState.Draft]: await translate(document.string.Draft, {}),
-      [DocumentVersionState.Approved]: await translate(document.string.Approved, {}),
-      [DocumentVersionState.Rejected]: await translate(document.string.Rejected, {})
+      [DocumentVersionState.Draft]: await translate(document.string.Draft, {}, lang),
+      [DocumentVersionState.Approved]: await translate(document.string.Approved, {}, lang),
+      [DocumentVersionState.Rejected]: await translate(document.string.Rejected, {}, lang)
     }
   }
-  updateLabels()
+  updateLabels($themeStore.language)
 
   $: {
     const ifo: any = [

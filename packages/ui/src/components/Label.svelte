@@ -15,6 +15,7 @@
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
   import { translate } from '@hcengineering/platform'
+  import { themeStore } from '@hcengineering/theme'
 
   export let label: IntlString
   export let params: Record<string, any> = {}
@@ -22,7 +23,7 @@
   let _value: string | undefined = undefined
 
   $: if (label !== undefined) {
-    translate(label, params ?? {})
+    translate(label, params ?? {}, $themeStore.language)
       .then((r) => {
         _value = r
       })

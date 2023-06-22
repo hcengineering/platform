@@ -15,6 +15,7 @@
 <script lang="ts">
   import { IntlString, translate } from '@hcengineering/platform'
   import { onMount } from 'svelte'
+  import { themeStore } from '@hcengineering/ui'
 
   export let value: string | undefined = undefined
   export let placeholder: IntlString | undefined
@@ -26,7 +27,7 @@
 
   async function updatePlaceholderTranslation (ph: IntlString | undefined) {
     if (ph) {
-      placeholderTranslation = await translate(ph, {})
+      placeholderTranslation = await translate(ph, {}, $themeStore.language)
     }
   }
 

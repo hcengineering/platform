@@ -25,6 +25,7 @@
   import { FormatMode } from '../types'
   import { defaultExtensions } from './extensions'
   import { Node as ProseMirrorNode } from '@tiptap/pm/model'
+  import { themeStore } from '@hcengineering/ui'
 
   export let content: string = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
@@ -37,7 +38,7 @@
 
   let placeHolderStr: string = ''
 
-  $: ph = translate(placeholder, {}).then((r) => {
+  $: ph = translate(placeholder, {}, $themeStore.language).then((r) => {
     placeHolderStr = r
   })
 

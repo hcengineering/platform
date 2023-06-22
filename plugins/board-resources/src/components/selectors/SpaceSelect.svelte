@@ -3,7 +3,7 @@
   import { Ref } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import { DropdownLabels, DropdownTextItem } from '@hcengineering/ui'
+  import { DropdownLabels, DropdownTextItem, themeStore } from '@hcengineering/ui'
   import board from '../../plugin'
 
   export let object: Card
@@ -15,7 +15,7 @@
   spacesQuery.query(board.class.Board, {}, async (result) => {
     spaces = result.map(({ _id, name }) => ({ id: _id, label: name }))
     const index = spaces.findIndex(({ id }) => id === object.space)
-    spaces[index].label = await translate(board.string.Current, { label: spaces[index].label })
+    spaces[index].label = await translate(board.string.Current, { label: spaces[index].label }, $themeStore.language)
   })
 </script>
 

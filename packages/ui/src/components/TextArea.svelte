@@ -17,6 +17,7 @@
   import { translate } from '@hcengineering/platform'
   import plugin from '../plugin'
   import Label from './Label.svelte'
+  import { themeStore } from '@hcengineering/theme'
 
   export let label: IntlString | undefined = undefined
   export let width: string | undefined = undefined
@@ -30,7 +31,7 @@
   let input: HTMLTextAreaElement
   let phTraslate: string = ''
 
-  $: translate(placeholder, placeholderParam ?? {}).then((res) => {
+  $: translate(placeholder, placeholderParam ?? {}, $themeStore.language).then((res) => {
     phTraslate = res
   })
 

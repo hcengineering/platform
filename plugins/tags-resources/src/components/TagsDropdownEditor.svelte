@@ -18,7 +18,7 @@
   import { KeyedAttribute } from '@hcengineering/presentation'
   import { TagElement, TagReference } from '@hcengineering/tags'
   import type { ButtonKind, ButtonSize, TooltipAlignment } from '@hcengineering/ui'
-  import { Button, showPopup } from '@hcengineering/ui'
+  import { Button, showPopup, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
   import TagsPopup from './TagsPopup.svelte'
@@ -43,7 +43,7 @@
 
   $: itemLabel = (key.attr.type as Collection<AttachedDoc>).itemLabel
 
-  $: translate(itemLabel ?? key.attr.label, {}).then((v) => {
+  $: translate(itemLabel ?? key.attr.label, {}, $themeStore.language).then((v) => {
     keyLabel = v
   })
 
@@ -90,7 +90,7 @@
   <svelte:fragment slot="content">
     {#if items.length > 0}
       <span class="flex-row-center flex-nowrap overflow-label disabled">
-        {#await translate(countLabel, { count: items.length }) then text}
+        {#await translate(countLabel, { count: items.length }, $themeStore.language) then text}
           {text}
         {/await}
       </span>

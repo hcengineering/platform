@@ -20,6 +20,7 @@
   import { translate } from '@hcengineering/platform'
   import MilestonePopup from './MilestonePopup.svelte'
   import { Milestone } from '@hcengineering/tracker'
+  import { themeStore } from '@hcengineering/ui'
 
   export let milestones: Milestone[]
   export let moveAndDeleteMilestone: (selectedMilestone?: Milestone) => Promise<void>
@@ -27,7 +28,7 @@
   let selectedMilestone: Milestone | undefined
   let noMilestoneLabel: string
 
-  $: translate(tracker.string.NoMilestone, {}).then((label) => (noMilestoneLabel = label))
+  $: translate(tracker.string.NoMilestone, {}, $themeStore.language).then((label) => (noMilestoneLabel = label))
   $: selectedMilestoneLabel = selectedMilestone?.label ?? noMilestoneLabel
 </script>
 

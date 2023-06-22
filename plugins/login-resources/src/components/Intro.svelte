@@ -15,14 +15,14 @@
 -->
 <script lang="ts">
   import { translate } from '@hcengineering/platform'
-  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import { deviceOptionsStore as deviceInfo, themeStore } from '@hcengineering/ui'
   import plugin from '../plugin'
   export let landscape: boolean = false
   export let mini: boolean = false
 
   let slogan = ''
 
-  translate(plugin.string.Slogan, {})
+  translate(plugin.string.Slogan, {}, $themeStore.language)
     .then((r) => {
       slogan = r
     })

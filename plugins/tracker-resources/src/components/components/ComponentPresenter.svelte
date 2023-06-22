@@ -15,7 +15,7 @@
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
   import { Component } from '@hcengineering/tracker'
-  import { Icon, tooltip } from '@hcengineering/ui'
+  import { Icon, tooltip, themeStore } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import view from '@hcengineering/view'
   import { DocNavLink } from '@hcengineering/view-resources'
@@ -35,7 +35,7 @@
   $: if (value !== undefined) {
     label = value.label
   } else {
-    translate(tracker.string.NoComponent, {})
+    translate(tracker.string.NoComponent, {}, $themeStore.language)
       .then((r) => {
         label = r
       })
