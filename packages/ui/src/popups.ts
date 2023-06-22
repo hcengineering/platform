@@ -183,11 +183,11 @@ export function fitPopupPositionedElement (
  */
 export function fitPopupElement (
   modalHTML: HTMLElement,
+  device: DeviceOptions,
   element?: PopupAlignment,
   contentPanel?: HTMLElement,
   clientWidth?: number,
-  clientHeight?: number,
-  device?: DeviceOptions
+  clientHeight?: number
 ): PopupOptions {
   let show = true
   const newProps: Record<string, string | number> = {}
@@ -208,7 +208,7 @@ export function fitPopupElement (
       newProps.maxWidth = '50%'
       show = true
     } else if (element === 'top') {
-      const fullHeight = clientHeight !== undefined && device !== undefined && clientHeight / device.docHeight > 0.745
+      const fullHeight = clientHeight !== undefined && clientHeight / device.docHeight > 0.745
       if (clientWidth !== undefined && clientHeight !== undefined) {
         newProps.left = `calc(50% - ${clientWidth / 2}px`
       } else {
