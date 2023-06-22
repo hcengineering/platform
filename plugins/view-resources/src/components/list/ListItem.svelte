@@ -13,16 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute, Doc, getObjectValue } from '@hcengineering/core'
+  import { AnyAttribute, Doc, getObjectValue } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { getClient, updateAttribute } from '@hcengineering/presentation'
   import { CheckBox, Component, deviceOptionsStore as deviceInfo, IconCircles, tooltip } from '@hcengineering/ui'
   import { AttributeModel } from '@hcengineering/view'
   import { createEventDispatcher, onMount } from 'svelte'
-  import { FixedColumn } from '../..'
   import view from '../../plugin'
   import GrowPresenter from './GrowPresenter.svelte'
-  import DividerPresenter from './DividerPresenter.svelte'
+  import ListPresenter from './ListPresenter.svelte'
 
   export let docObject: Doc
   export let model: AttributeModel[]
@@ -65,13 +64,13 @@
     return (value: any) => onChange(value, docObject, attribute.key, attr)
   }
 
-  function joinProps (attribute: AttributeModel, object: Doc, props: Record<string, any>) {
-    const clearAttributeProps = attribute.props
-    if (attribute.attribute?.type._class === core.class.EnumOf) {
-      return { ...clearAttributeProps, type: attribute.attribute.type, ...props }
-    }
-    return { object, ...clearAttributeProps, ...props }
-  }
+  // function joinProps (attribute: AttributeModel, object: Doc, props: Record<string, any>) {
+  //   const clearAttributeProps = attribute.props
+  //   if (attribute.attribute?.type._class === core.class.EnumOf) {
+  //     return { ...clearAttributeProps, type: attribute.attribute.type, ...props }
+  //   }
+  //   return { object, ...clearAttributeProps, ...props }
+  // }
 
   let noCompressed: number
   $: if (model) {
@@ -129,63 +128,33 @@
       />
     </div>
   </div>
-  {#each model.filter((p) => !p.displayProps?.optional) as attributeModel, i}
+  {#each model.filter((p) => !(p.displayProps?.optional === true)) as attributeModel, i}
     {@const displayProps = attributeModel.displayProps}
     {#if !groupByKey || displayProps?.excludeByKey !== groupByKey}
-      {#if !(compactMode && displayProps?.compression)}
-        {#if displayProps?.grow}
-          <GrowPresenter />
-          {#each model.filter((p) => p.displayProps?.optional) as attributeModel, i}
-            {@const dp = attributeModel.displayProps}
-            {#if dp?.dividerBefore === true}
-              <DividerPresenter />
-            {/if}
-            {#if dp?.fixed}
-              <FixedColumn key={`list_item_${dp.key}`} justify={dp.fixed}>
-                <svelte:component
-                  this={attributeModel.presenter}
-                  value={getObjectValue(attributeModel.key, docObject)}
-                  kind={'list'}
-                  onChange={getOnChange(docObject, attributeModel)}
-                  {...joinProps(attributeModel, docObject, props)}
-                />
-              </FixedColumn>
-            {:else}
-              <svelte:component
-                this={attributeModel.presenter}
-                value={getObjectValue(attributeModel.key, docObject)}
-                onChange={getOnChange(docObject, attributeModel)}
-                kind={'list'}
-                compression={dp?.compression && i !== noCompressed}
-                {...joinProps(attributeModel, docObject, props)}
-              />
-            {/if}
-          {/each}
-        {:else}
-          {#if i !== 0 && displayProps?.dividerBefore === true}
-            <DividerPresenter />
-          {/if}
-          {#if displayProps?.fixed}
-            <FixedColumn key={`list_item_${displayProps.key}`} justify={displayProps.fixed}>
-              <svelte:component
-                this={attributeModel.presenter}
-                value={getObjectValue(attributeModel.key, docObject)}
-                kind={'list'}
-                onChange={getOnChange(docObject, attributeModel)}
-                {...joinProps(attributeModel, docObject, props)}
-              />
-            </FixedColumn>
-          {:else}
-            <svelte:component
-              this={attributeModel.presenter}
-              value={getObjectValue(attributeModel.key, docObject)}
-              onChange={getOnChange(docObject, attributeModel)}
-              kind={'list'}
-              compression={displayProps?.compression && i !== noCompressed}
-              {...joinProps(attributeModel, docObject, props)}
+      {#if displayProps?.grow}
+        <GrowPresenter />
+        {#if !compactMode}
+          {#each model.filter((p) => p.displayProps?.optional === true) as attrModel, j}
+            <ListPresenter
+              {docObject}
+              attributeModel={attrModel}
+              {props}
+              compression={j !== noCompressed}
+              value={getObjectValue(attrModel.key, docObject)}
+              onChange={getOnChange(docObject, attrModel)}
             />
-          {/if}
+          {/each}
         {/if}
+      {:else}
+        <ListPresenter
+          {docObject}
+          {attributeModel}
+          {props}
+          compression={i !== noCompressed}
+          value={getObjectValue(attributeModel.key, docObject)}
+          onChange={getOnChange(docObject, attributeModel)}
+          hideDivider={i === 0}
+        />
       {/if}
     {/if}
   {/each}
@@ -207,15 +176,13 @@
           {@const displayProps = attributeModel.displayProps}
           {@const value = getObjectValue(attributeModel.key, docObject)}
           {#if displayProps?.excludeByKey !== groupByKey && value !== undefined}
-            {#if j !== 0 && displayProps?.dividerBefore === true}
-              <DividerPresenter />
-            {/if}
-            <svelte:component
-              this={attributeModel.presenter}
+            <ListPresenter
+              {docObject}
+              {attributeModel}
+              {props}
               value={getObjectValue(attributeModel.key, docObject)}
               onChange={getOnChange(docObject, attributeModel)}
-              kind={'list'}
-              {...joinProps(attributeModel, docObject, props)}
+              hideDivider={j === 0}
             />
           {/if}
         {/each}
