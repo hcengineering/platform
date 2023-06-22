@@ -114,7 +114,7 @@ declare global {
   }
 }
 const embeddedPlatform = window.embeddedPlatform ?? false
-const locationWritable = writable(embeddedPlatform ? { path: [] } : getRawCurrentLocation())
+const locationWritable = writable(getRawCurrentLocation())
 
 console.log('embeddedPlatform', window.embeddedPlatform)
 
@@ -124,7 +124,15 @@ if (!embeddedPlatform) {
   })
 }
 
-export const location = embeddedPlatform ? locationWritable : derived(locationWritable, (loc) => loc)
+export const location = derived(locationWritable, (loc) => justClone(loc))
+
+/**
+ * @public
+ */
+export function getLocation (): PlatformLocation {
+  return justClone(get(location))
+}
+
 export const resolvedLocationStore = writable(getRawCurrentLocation())
 let resolvedLocation = getRawCurrentLocation()
 

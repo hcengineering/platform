@@ -28,7 +28,7 @@ import { NotificationClientImpl } from '@hcengineering/notification-resources'
 import { IntlString, Resources, translate } from '@hcengineering/platform'
 import preference from '@hcengineering/preference'
 import { MessageBox, getClient } from '@hcengineering/presentation'
-import { location, navigate, showPopup } from '@hcengineering/ui'
+import { getLocation, navigate, showPopup } from '@hcengineering/ui'
 import ChannelHeader from './components/ChannelHeader.svelte'
 import ChannelPresenter from './components/ChannelPresenter.svelte'
 import ChannelView from './components/ChannelView.svelte'
@@ -57,7 +57,7 @@ import TxCommentCreate from './components/activity/TxCommentCreate.svelte'
 import TxMessageCreate from './components/activity/TxMessageCreate.svelte'
 
 import notification from '@hcengineering/notification'
-import { get, writable } from 'svelte/store'
+import { writable } from 'svelte/store'
 import { updateBacklinksList } from './backlinks'
 import { getDmName, getLink, getTitle, resolveLocation } from './utils'
 
@@ -179,7 +179,7 @@ export async function ArchiveChannel (channel: Channel, evt: any, afterArchive?:
         client.update(channel, { archived: true })
         if (afterArchive != null) afterArchive()
 
-        const loc = get(location)
+        const loc = getLocation()
         if (loc.path[3] === channel._id) {
           loc.path.length = 3
           navigate(loc)

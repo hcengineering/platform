@@ -18,8 +18,7 @@
   import { ChunterMessage, ChunterSpace, Message } from '@hcengineering/chunter'
   import { Ref, Space, generateId, getCurrentAccount } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { location, navigate } from '@hcengineering/ui'
-  import { get } from 'svelte/store'
+  import { getLocation, navigate } from '@hcengineering/ui'
   import { createBacklinks } from '../backlinks'
   import chunter from '../plugin'
   import Channel from './Channel.svelte'
@@ -59,7 +58,7 @@
   }
 
   function openThread (_id: Ref<Message>) {
-    const loc = get(location)
+    const loc = getLocation()
     loc.path[4] = _id
     navigate(loc)
   }
