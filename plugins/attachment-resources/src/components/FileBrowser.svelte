@@ -17,9 +17,8 @@
   import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
   import core, { Class, getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Label, Loading, location, navigate, TabList, SearchEdit } from '@hcengineering/ui'
+  import { Label, Loading, navigate, TabList, SearchEdit, getLocation } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { get } from 'svelte/store'
   import { dateFileBrowserFilters, FileBrowserSortMode, fileTypeFileBrowserFilters, sortModeToOptionObject } from '..'
   import attachment from '../plugin'
   import AttachmentsGalleryView from './AttachmentsGalleryView.svelte'
@@ -30,11 +29,11 @@
   export let withHeader: boolean = true
 
   const client = getClient()
-  const loc = get(location)
+  const loc = getLocation()
   const spaceId: Ref<Space> | undefined = loc.query?.spaceId as Ref<Space> | undefined
 
   $: if (spaceId !== undefined) {
-    const loc = get(location)
+    const loc = getLocation()
     loc.query = undefined
     navigate(loc)
   }

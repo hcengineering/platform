@@ -41,6 +41,7 @@
     deviceOptionsStore as deviceInfo,
     getCurrentLocation,
     location,
+    getLocation,
     navigate,
     openPanel,
     popupstore,
@@ -59,7 +60,6 @@
   } from '@hcengineering/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
-  import { get } from 'svelte/store'
   import { subscribeMobile } from '../mobile'
   import workbench from '../plugin'
   import { workspacesStore } from '../utils'
@@ -423,7 +423,7 @@
   }
 
   function closeAside (): void {
-    const loc = get(location)
+    const loc = getLocation()
     loc.path.length = 4
     checkOnHide()
     navigate(loc)
