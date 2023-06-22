@@ -271,7 +271,11 @@
   async function syncLoc (loc: Location): Promise<void> {
     const originalLoc = JSON.stringify(loc)
     // resolve short links
-    const resolvedLoc = await resolveShortLink(loc)
+    let resolvedLoc: ResolvedLocation | undefined
+    if (loc.path.length > 3 && getSpecialComponent(loc.path[3]) === undefined) {
+      resolvedLoc = await resolveShortLink(loc)
+    }
+
     if (resolvedLoc && !areLocationsEqual(loc, resolvedLoc.loc)) {
       loc = mergeLoc(loc, resolvedLoc)
     }
