@@ -19,7 +19,8 @@
 
   import { closePanel, PanelProps, panelstore } from '../panelup'
   import { fitPopupElement, popupstore } from '../popups'
-  import type { AnySvelteComponent, PopupOptions } from '../types'
+  import { deviceOptionsStore as deviceInfo } from '..'
+  import type { AnySvelteComponent, PopupOptions, DeviceOptions } from '../types'
   import Spinner from './Spinner.svelte'
 
   export let contentPanel: HTMLElement
@@ -79,7 +80,8 @@
 
   const fitPopup = (props: PanelProps, contentPanel: HTMLElement): void => {
     if (modalHTML) {
-      options = fitPopupElement(modalHTML, props.element, contentPanel)
+      const device: DeviceOptions = $deviceInfo
+      options = fitPopupElement(modalHTML, device, props.element, contentPanel)
     }
   }
 
