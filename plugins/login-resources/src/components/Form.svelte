@@ -63,7 +63,7 @@
   export let object: any
   export let ignoreInitialValidation: boolean = false
 
-  async function validate (language: string) {
+  async function validate (language: string): Promise<boolean> {
     if (ignoreInitialValidation) return
     for (const field of fields) {
       const v = object[field.name]
@@ -72,7 +72,7 @@
         status = new Status(Severity.INFO, login.status.RequiredField, {
           field: await translate(field.i18n, {}, language)
         })
-        return
+        return false
       }
       if (f.id !== undefined) {
         const sameFields = fields.filter((f) => f.id === field.id)
@@ -83,7 +83,7 @@
               field: await translate(field.i18n, {}, language),
               field2: await translate(f.i18n, {}, language)
             })
-            return
+            return false
           }
         }
       }
@@ -93,11 +93,12 @@
             field: await translate(field.i18n, {}),
             descr: field.ruleDescr ? await translate(field.ruleDescr, {}, language) : ''
           })
-          return
+          return false
         }
       }
     }
     status = OK
+    return true
   }
   validate($themeStore.language)
 
@@ -131,6 +132,15 @@
   class="container"
   style:padding={$deviceInfo.docWidth <= 480 ? '.25rem 1.25rem' : '4rem 5rem'}
   style:min-height={$deviceInfo.docHeight > 720 ? '42rem' : '0'}
+  on:keydown={(evt) => {
+    if (evt.key === 'Enter' && !inAction) {
+      validate().then((res) => {
+        if (res) {
+          performAction(action)
+        }
+      })
+    }
+  }}
 >
   {#if loginState !== 'none'}
     <div class="flex-row-center caption">

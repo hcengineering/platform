@@ -84,6 +84,15 @@ type BuilderConfig = [(b: Builder) => void, Plugin] | [(b: Builder) => void, Plu
 export default function buildModel (enabled: string[] = ['*'], disabled: string[] = []): Builder {
   const builder = new Builder()
 
+  const defaultFilter = [
+    workbench.class.Application,
+    presentation.class.ObjectSearchCategory,
+    notification.class.NotificationGroup,
+    view.class.Action,
+    contact.class.ChannelProvider,
+    setting.class.IntegrationType
+  ]
+
   const builders: BuilderConfig[] = [
     [coreModel, coreId],
     [activityModel, activityId],
@@ -100,11 +109,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         enabled: true,
         beta: false,
         icon: contact.icon.ContactApplication,
-        classFilter: [
-          workbench.class.Application,
-          presentation.class.ObjectSearchCategory,
-          notification.class.NotificationGroup
-        ]
+        classFilter: defaultFilter
       }
     ],
     [
@@ -129,12 +134,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         enabled: true,
         beta: false,
         icon: recruit.icon.RecruitApplication,
-        classFilter: [
-          workbench.class.Application,
-          view.class.Action,
-          presentation.class.ObjectSearchCategory,
-          notification.class.NotificationGroup
-        ]
+        classFilter: defaultFilter
       }
     ],
     [settingModel, settingId],
@@ -146,12 +146,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         description: telegram.string.ConfigDescription,
         enabled: true,
         beta: false,
-        classFilter: [
-          workbench.class.Application,
-          view.class.Action,
-          contact.class.ChannelProvider,
-          setting.class.IntegrationType
-        ]
+        classFilter: defaultFilter
       }
     ],
     [
@@ -162,7 +157,8 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         description: lead.string.ConfigDescription,
         enabled: false,
         beta: true,
-        icon: lead.icon.LeadApplication
+        icon: lead.icon.LeadApplication,
+        classFilter: defaultFilter
       }
     ],
     [
@@ -173,12 +169,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         description: gmail.string.ConfigDescription,
         enabled: true,
         beta: false,
-        classFilter: [
-          workbench.class.Application,
-          view.class.Action,
-          contact.class.ChannelProvider,
-          setting.class.IntegrationType
-        ]
+        classFilter: defaultFilter
       }
     ],
     [
@@ -190,7 +181,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         enabled: false,
         beta: true,
         icon: inventory.icon.InventoryApplication,
-        classFilter: [workbench.class.Application, view.class.Action]
+        classFilter: defaultFilter
       }
     ],
     [presentationModel, presentationId],
@@ -207,7 +198,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         enabled: false,
         beta: true,
         icon: hr.icon.Structure,
-        classFilter: [workbench.class.Application, view.class.Action]
+        classFilter: defaultFilter
       }
     ],
     [
@@ -218,7 +209,8 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         description: document.string.ConfigDescription,
         enabled: false,
         beta: true,
-        icon: document.icon.DocumentApplication
+        icon: document.icon.DocumentApplication,
+        classFilter: defaultFilter
       }
     ],
     [
@@ -230,12 +222,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         enabled: true,
         beta: false,
         icon: tracker.icon.TrackerApplication,
-        classFilter: [
-          workbench.class.Application,
-          view.class.Action,
-          presentation.class.ObjectSearchCategory,
-          notification.class.NotificationGroup
-        ]
+        classFilter: defaultFilter
       }
     ],
     [
@@ -247,7 +234,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         enabled: false,
         beta: true,
         icon: board.icon.Board,
-        classFilter: [workbench.class.Application, view.class.Action]
+        classFilter: defaultFilter
       }
     ],
     [
@@ -259,7 +246,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         enabled: false,
         beta: true,
         icon: calendar.icon.Calendar,
-        classFilter: [workbench.class.Application]
+        classFilter: defaultFilter
       }
     ],
     [
@@ -270,7 +257,8 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         description: bitrix.string.ConfigDescription,
         enabled: false,
         beta: true,
-        icon: bitrix.icon.Bitrix
+        icon: bitrix.icon.Bitrix,
+        classFilter: defaultFilter
       }
     ],
     [
@@ -281,7 +269,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         // description: request.string.ConfigDescription,
         enabled: false,
         beta: true,
-        classFilter: [workbench.class.Application, view.class.Action]
+        classFilter: defaultFilter
       }
     ],
     [automationModel, automationId],
