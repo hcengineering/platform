@@ -270,6 +270,7 @@ jobs:
       #     cd ./tests
       #     ./update-snapshot-ci.sh ./tests/db_dump
       - name: "Store docker logs"
+        if: always()
         run: |
           cd ./tests/sanity
           mkdir logs
@@ -281,9 +282,13 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: playwright-results
-          path: |
-            ./tests/sanity/playwright-report/
-            ./tests/sanity/logs
+          path: ./tests/sanity/playwright-report/
+      - name: Upload Logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-logs
+          path: ./tests/sanity/logs
       # - name: Upload DB snapshot
       #   if: always()
       #   uses: actions/upload-artifact@v3
