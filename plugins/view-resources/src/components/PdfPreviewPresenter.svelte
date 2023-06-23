@@ -29,7 +29,7 @@
   let mixins: Mixin<Doc>[] = []
   let visibleKeys: string[] = []
 
-  function getKeys(objectClass: Ref<Class<Doc>>, objectMixins: Mixin<Doc>[], keysToIgnore: string[]): string[] {
+  function getKeys (objectClass: Ref<Class<Doc>>, objectMixins: Mixin<Doc>[], keysToIgnore: string[]): string[] {
     const filteredKeys = getFiltredKeys(hierarchy, objectClass, keysToIgnore)
     const keyById = new Map(filteredKeys.map((key) => [key.attr._id, key]))
 
@@ -54,7 +54,7 @@
 {#await buildModel({ client, _class: object._class, keys: visibleKeys, ignoreMissing: !keys })}
   <Loading />
 {:then model}
-  <div class="text-lg font-medium mb-8"><Label label={view.string.Properties}/></div>
+  <div class="text-lg font-medium mb-8"><Label label={view.string.Properties} /></div>
   <div class="content">
     {#each model as attribute}
       <Label label={attribute.label} />
