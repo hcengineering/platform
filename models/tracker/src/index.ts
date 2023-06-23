@@ -477,6 +477,7 @@ export function createModel (builder: Builder): void {
         { key: 'comments', displayProps: { key: 'comments' } },
         { key: 'attachments', displayProps: { key: 'attachments' } },
         { key: '', label: tracker.string.SubIssues, presenter: tracker.component.SubIssuesSelector, props: {} },
+        { key: '', displayProps: { grow: true } },
         {
           key: 'labels',
           presenter: tags.component.LabelsPresenter,
@@ -524,7 +525,6 @@ export function createModel (builder: Builder): void {
           displayProps: { key: 'dueDate', optional: true, compression: true },
           props: { kind: 'list' }
         },
-        { key: '', displayProps: { grow: true } },
         {
           key: '',
           label: tracker.string.Estimation,

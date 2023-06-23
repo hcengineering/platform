@@ -72,7 +72,7 @@
 <style lang="scss">
   .editbox {
     padding: 0 0.25rem 0 0.5rem;
-    min-width: 10rem;
+    min-width: 8rem;
     color: var(--theme-caption-color);
     border-radius: 0.25rem;
 
