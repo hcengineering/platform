@@ -146,6 +146,7 @@ export function navigate (location: PlatformLocation, store = true): boolean {
   const url = locationToUrl(location)
   if (cur !== url) {
     if (store) {
+      sessionStorage.setItem('prev_loc', JSON.stringify(getCurrentLocation()))
       if (!embeddedPlatform) {
         history.pushState(null, '', url)
       }

@@ -48,8 +48,8 @@
 
   let props: PanelProps | undefined
   function _close () {
+    const lastTab = sessionStorage.getItem('before_panel')
     closePanel()
-    const lastTab = sessionStorage.getItem('last_mode')
     if (lastTab != null) {
       navigate(JSON.parse(lastTab))
     }
@@ -96,6 +96,8 @@
 
   function _open (): void {
     if (modalHTML && props) {
+      const prev = sessionStorage.getItem('prev_loc')
+      if (prev != null) sessionStorage.setItem('before_panel', prev)
       if (props.element === 'content') {
         modalHTML.classList.add('bg')
       } else {
