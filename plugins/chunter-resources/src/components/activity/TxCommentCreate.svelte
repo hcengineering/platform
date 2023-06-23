@@ -22,6 +22,7 @@
   import { updateBacklinks } from '../../backlinks'
   import chunter from '../../plugin'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
+  import { LinkPresenter } from '@hcengineering/view-resources'
 
   export let tx: TxCreateDoc<Comment>
   export let value: Comment
@@ -57,6 +58,27 @@
   }
   let refInput: AttachmentRefInput
   let loading = false
+
+  $: links = getLinks(value.message)
+
+  function getLinks (content: string): HTMLLinkElement[] {
+    const parser = new DOMParser()
+    const parent = parser.parseFromString(content, 'text/html').firstChild?.childNodes[1] as HTMLElement
+    return parseLinks(parent.childNodes)
+  }
+
+  function parseLinks (nodes: NodeListOf<ChildNode>): HTMLLinkElement[] {
+    const res: HTMLLinkElement[] = []
+    nodes.forEach((p) => {
+      if (p.nodeType !== Node.TEXT_NODE) {
+        if (p.nodeName === 'A') {
+          res.push(p as HTMLLinkElement)
+        }
+        res.push(...parseLinks(p.childNodes))
+      }
+    })
+    return res
+  }
 </script>
 
 <div class:editing class="content-color">
@@ -83,6 +105,9 @@
   {:else}
     <MessageViewer message={value.message} />
     <AttachmentDocList {value} />
+    {#each links as link}
+      <LinkPresenter {link} />
+    {/each}
   {/if}
 </div>
 
