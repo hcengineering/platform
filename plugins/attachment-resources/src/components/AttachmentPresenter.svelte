@@ -82,6 +82,9 @@
         ${getFileUrl(value.file, getIconSize2x('large'))} 2x
       );`
     : ''
+  function dragStart (event: DragEvent): void {
+    event.dataTransfer?.setData('application/contentType', value.type)
+  }
 </script>
 
 <div class="flex-row-center attachment-container">
@@ -92,6 +95,7 @@
     download={value.name}
     on:click={clickHandler}
     on:mousedown={middleClickHandler}
+    on:dragstart={dragStart}
   >
     {#if showPreview}
       <div

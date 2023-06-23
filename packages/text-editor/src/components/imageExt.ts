@@ -1,11 +1,12 @@
-import { getEmbeddedLabel } from '@hcengineering/platform'
-import { getFileUrl } from '@hcengineering/presentation'
+import { getEmbeddedLabel, getMetadata } from '@hcengineering/platform'
+import presentation, { getFileUrl } from '@hcengineering/presentation'
 import { Action, IconSize, Menu, getEventPositionElement, getIconSize2x, showPopup } from '@hcengineering/ui'
 import { Node, createNodeFromContent, mergeAttributes, nodeInputRule } from '@tiptap/core'
 import { Plugin, PluginKey } from 'prosemirror-state'
 import plugin from '../plugin'
 
-import { Node as ProseMirrorNode } from '@tiptap/pm/model'
+import { Fragment, Node as ProseMirrorNode } from '@tiptap/pm/model'
+import { EditorView } from 'prosemirror-view'
 
 /**
  * @public
@@ -39,6 +40,14 @@ declare module '@tiptap/core' {
  * @public
  */
 export const inputRegex = /(?:^|\s)(!\[(.+|:?)]\((\S+)(?:(?:\s+)["'](\S+)["'])?\))$/
+
+function getType (type: string): 'image' | 'other' {
+  if (type.startsWith('image/')) {
+    return 'image'
+  }
+
+  return 'other'
+}
 
 /**
  * @public
@@ -160,74 +169,97 @@ export const ImageRef = Node.create<ImageOptions>({
   },
   addProseMirrorPlugins () {
     const opt = this.options
+    function handleDrop (
+      view: EditorView,
+      pos: { pos: number, inside: number } | null,
+      dataTransfer: DataTransfer
+    ): any {
+      const uris = (dataTransfer.getData('text/uri-list') ?? '').split('\r\n').filter((it) => !it.startsWith('#'))
+      let result = false
+      for (const uri of uris) {
+        if (uri !== '') {
+          const url = new URL(uri)
+          const uploadUrl = getMetadata(presentation.metadata.UploadURL)
+          if (uploadUrl === undefined || !url.href.includes(uploadUrl)) {
+            continue
+          }
+
+          const _file = (url.searchParams.get('file') ?? '').split('/').join('')
+
+          if (_file.trim().length === 0) {
+            continue
+          }
+
+          const ctype = dataTransfer.getData('application/contentType')
+          const type = getType(ctype ?? 'other')
+
+          let content: ProseMirrorNode | Fragment | undefined
+          if (type === 'image') {
+            content = createNodeFromContent(
+              `<img data-type='image' width='75%' file-id='${_file}'></img>`,
+              view.state.schema,
+              {
+                parseOptions: {
+                  preserveWhitespace: 'full'
+                }
+              }
+            )
+          }
+          if (content !== undefined) {
+            view.dispatch(view.state.tr.insert(pos?.pos ?? 0, content))
+            result = true
+          }
+        }
+      }
+      if (result) {
+        return result
+      }
+
+      const files = dataTransfer?.files
+      if (files !== undefined && opt.attachFile !== undefined) {
+        for (let i = 0; i < files.length; i++) {
+          const file = files.item(i)
+          if (file != null) {
+            void opt.attachFile(file).then((id) => {
+              if (id !== undefined) {
+                if (id.type.includes('image')) {
+                  const content = createNodeFromContent(
+                    `<img data-type='image' width='75%' file-id='${id.file}'></img>`,
+                    view.state.schema,
+                    {
+                      parseOptions: {
+                        preserveWhitespace: 'full'
+                      }
+                    }
+                  )
+                  view.dispatch(view.state.tr.insert(pos?.pos ?? 0, content))
+                }
+              }
+            })
+          }
+        }
+      }
+      return true
+    }
     return [
       new Plugin({
         key: new PluginKey('handle-image-paste'),
         props: {
+          handlePaste (view, event, slice) {
+            event.preventDefault()
+            event.stopPropagation()
+            const dataTransfer = event.clipboardData
+            if (dataTransfer !== null) {
+              return handleDrop(view, { pos: view.state.selection.$from.pos, inside: 0 }, dataTransfer)
+            }
+          },
           handleDrop (view, event, slice) {
-            const uris = (event.dataTransfer?.getData('text/uri-list') ?? '')
-              .split('\r\n')
-              .filter((it) => !it.startsWith('#'))
-            let result = false
-            const pos = view.posAtCoords({ left: event.x, top: event.y })
-            for (const uri of uris) {
-              if (uri !== '') {
-                const url = new URL(uri)
-                if (url.hostname !== location.hostname) {
-                  return
-                }
-
-                const _file = (url.searchParams.get('file') ?? '').split('/').join('')
-
-                if (_file.trim().length === 0) {
-                  return
-                }
-                const content = createNodeFromContent(
-                  `<img data-type='image' width='75%' file-id='${_file}'></img>`,
-                  view.state.schema,
-                  {
-                    parseOptions: {
-                      preserveWhitespace: 'full'
-                    }
-                  }
-                )
-                event.preventDefault()
-                event.stopPropagation()
-                view.dispatch(view.state.tr.insert(pos?.pos ?? 0, content))
-                result = true
-              }
+            event.preventDefault()
+            event.stopPropagation()
+            const dataTransfer = event.dataTransfer
+            if (dataTransfer !== null) {
+              return handleDrop(view, view.posAtCoords({ left: event.x, top: event.y }), dataTransfer)
             }
-            if (result) {
-              return result
-            }
-
-            const files = event.dataTransfer?.files
-            if (files !== undefined && opt.attachFile !== undefined) {
-              event.preventDefault()
-              event.stopPropagation()
-              for (let i = 0; i < files.length; i++) {
-                const file = files.item(i)
-                if (file != null) {
-                  void opt.attachFile(file).then((id) => {
-                    if (id !== undefined) {
-                      if (id.type.includes('image')) {
-                        const content = createNodeFromContent(
-                          `<img data-type='image' width='75%' file-id='${id.file}'></img>`,
-                          view.state.schema,
-                          {
-                            parseOptions: {
-                              preserveWhitespace: 'full'
-                            }
-                          }
-                        )
-                        view.dispatch(view.state.tr.insert(pos?.pos ?? 0, content))
-                      }
-                    }
-                  })
-                }
-              }
-            }
-            return result
           },
           handleClick: (view, pos, event) => {
             if (event.button !== 0) {

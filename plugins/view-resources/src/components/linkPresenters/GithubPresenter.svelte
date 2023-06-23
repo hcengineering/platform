@@ -37,13 +37,14 @@
   }
 
   async function getData (href: string): Promise<Data> {
-    const params = href.replace(/(http.:\/\/)?(www.)?github.com\//, '')
+    let params = href.replace(/(http.:\/\/)?(www.)?github.com\//, '')
+    params = params.replace('/pull/', '/pulls/')
     const res = await (await fetch(`https://api.github.com/repos/${params}`)).json()
     return {
       number: res.number,
       body: format(res.body),
       title: res.title,
-      assignees: res.assignees.map((p: any) => {
+      assignees: res.assignees?.map((p: any) => {
         return {
           login: p.login,
           url: p.html_url
@@ -73,7 +74,7 @@
         </div>
       {/if}
       <div class="flex-between">
-        {#if data.assignees.length}
+        {#if data.assignees?.length}
           <div class="flex-col">
             <div class="fs-title"><LabelComponent label={view.string.Assignees} /></div>
             <div>
@@ -83,7 +84,7 @@
             </div>
           </div>
         {/if}
-        {#if data.labels.length}
+        {#if data.labels?.length}
           <div class="flex-col">
             <div class="fs-title"><LabelComponent label={view.string.Labels} /></div>
             <div>
