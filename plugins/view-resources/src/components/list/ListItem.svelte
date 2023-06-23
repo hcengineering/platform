@@ -64,14 +64,6 @@
     return (value: any) => onChange(value, docObject, attribute.key, attr)
   }
 
-  // function joinProps (attribute: AttributeModel, object: Doc, props: Record<string, any>) {
-  //   const clearAttributeProps = attribute.props
-  //   if (attribute.attribute?.type._class === core.class.EnumOf) {
-  //     return { ...clearAttributeProps, type: attribute.attribute.type, ...props }
-  //   }
-  //   return { object, ...clearAttributeProps, ...props }
-  // }
-
   let noCompressed: number
   $: if (model) {
     noCompressed = -1
