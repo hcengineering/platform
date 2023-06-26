@@ -188,7 +188,7 @@
     const ws = loc.path[1]
     const docTitle = await getWindowTitle(loc)
     const unreadCountTitle =
-      newNotificationsCount > 0 ? `Inbox (${newNotificationsCount > 99 ? '99+' : newNotificationsCount}) -` : ''
+      newNotificationsCount > 0 ? `Inbox (${newNotificationsCount > 99 ? '99+' : newNotificationsCount}) - ` : ''
     if (docTitle !== undefined && docTitle !== '') {
       const title = ws == null ? docTitle : `${docTitle} - ${ws}`
       document.title = unreadCountTitle + title
