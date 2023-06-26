@@ -25,7 +25,8 @@
     navigate,
     resolvedLocationStore,
     setMetadataLocalStorage,
-    IconCheck
+    IconCheck,
+    locationStorageKeyId
   } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
@@ -72,7 +73,7 @@
       closePopup()
       closePopup()
       if (ws !== getCurrentLocation().path[1]) {
-        const last = localStorage.getItem(`platform_last_loc_${ws}`)
+        const last = localStorage.getItem(`${locationStorageKeyId}_${ws}`)
         if (last !== null) {
           navigate(JSON.parse(last))
         } else navigate({ path: [workbenchId, ws] })

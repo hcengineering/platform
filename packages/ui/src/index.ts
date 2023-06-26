@@ -40,7 +40,7 @@ export type {
 
 export { themeStore } from '@hcengineering/theme'
 // export { applicationShortcutKey } from './utils'
-export { getCurrentLocation, locationToUrl, navigate, location } from './location'
+export { getCurrentLocation, locationToUrl, navigate, location, setLocationStorageKey } from './location'
 
 export { default as EditBox } from './components/EditBox.svelte'
 export { default as Label } from './components/Label.svelte'

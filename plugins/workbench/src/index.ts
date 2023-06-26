@@ -139,7 +139,9 @@ export default plugin(workbenchId, {
     ExcludedApplications: '' as Metadata<Ref<Application>[]>,
     DefaultApplication: '' as Metadata<string>,
     DefaultSpace: '' as Metadata<Ref<Space>>,
-    DefaultSpecial: '' as Metadata<string>
+    DefaultSpecial: '' as Metadata<string>,
+    // Default for navigation expanded state
+    NavigationExpandedDefault: '' as Metadata<boolean>
   },
   actionImpl: {
     Navigate: '' as ViewAction<{

@@ -3,7 +3,7 @@
   import { onDestroy } from 'svelte'
   import type { AnyComponent } from '../../types'
   // import { applicationShortcutKey } from '../../utils'
-  import { getCurrentLocation, location, navigate } from '../../location'
+  import { getCurrentLocation, location, navigate, locationStorageKeyId } from '../../location'
 
   import { Theme } from '@hcengineering/theme'
   import Component from '../Component.svelte'
@@ -35,9 +35,9 @@
       }
 
       if (application === undefined) {
-        let last = loc.path[1] !== undefined ? localStorage.getItem(`platform_last_loc_${loc.path[1]}`) : null
+        let last = loc.path[1] !== undefined ? localStorage.getItem(`${locationStorageKeyId}_${loc.path[1]}`) : null
         if (last === null) {
-          last = localStorage.getItem('platform_last_loc')
+          last = localStorage.getItem(locationStorageKeyId)
         }
         let useDefault = true
         if (last !== null) {

@@ -21,6 +21,7 @@
   import { IntlString, broadcastEvent, getMetadata, getResource } from '@hcengineering/platform'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
+  import { locationStorageKeyId } from '@hcengineering/ui'
   import {
     AnyComponent,
     CompAndProps,
@@ -107,7 +108,7 @@
   let panelInstance: PanelInstance
   let popupInstance: Popup
 
-  let visibileNav: boolean = true
+  let visibileNav: boolean = getMetadata(workbench.metadata.NavigationExpandedDefault) ?? true
   async function toggleNav (): Promise<void> {
     visibileNav = !visibileNav
     closeTooltip()
@@ -288,7 +289,7 @@
     const fragment = loc.fragment
     let navigateDone = false
     if (app === undefined) {
-      const last = localStorage.getItem(`platform_last_loc_${loc.path[1]}`)
+      const last = localStorage.getItem(`${locationStorageKeyId}_${loc.path[1]}`)
       if (last != null) {
         const lastValue = JSON.parse(last)
         navigateDone = navigate(lastValue)
@@ -332,7 +333,7 @@
       space === undefined &&
       ((navigatorModel?.spaces?.length ?? 0) > 0 || (navigatorModel?.specials?.length ?? 0) > 0)
     ) {
-      const last = localStorage.getItem(`platform_last_loc_${app}`)
+      const last = localStorage.getItem(`${locationStorageKeyId}_${app}`)
       if (last !== null) {
         const newLocation: Location = JSON.parse(last)
         if (newLocation.path[3] != null) {
@@ -363,7 +364,7 @@
       }
     }
     if (app !== undefined) {
-      localStorage.setItem(`platform_last_loc_${app}`, originalLoc)
+      localStorage.setItem(`${locationStorageKeyId}_${app}`, originalLoc)
     }
     currentQuery = loc.query
     if (fragment !== currentFragment) {
@@ -514,8 +515,10 @@
     visibileNav = false
     navFloat = true
   } else if ($deviceInfo.docWidth > 1024 && navFloat) {
-    navFloat = false
-    visibileNav = true
+    if (getMetadata(workbench.metadata.NavigationExpandedDefault) === undefined) {
+      navFloat = false
+      visibileNav = true
+    }
   }
   const checkOnHide = (): void => {
     if (visibileNav && $deviceInfo.docWidth <= 1024) visibileNav = false
