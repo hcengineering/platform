@@ -3,10 +3,12 @@
   import { createQuery } from '@hcengineering/presentation'
   import type { TagReference } from '@hcengineering/tags'
   import tags from '@hcengineering/tags'
-  import { getEventPopupPositionElement, resizeObserver, showPopup } from '@hcengineering/ui'
+  import { getEventPopupPositionElement, resizeObserver, showPopup, tooltip } from '@hcengineering/ui'
   import { afterUpdate, createEventDispatcher } from 'svelte'
   import TagReferencePresenter from './TagReferencePresenter.svelte'
+  import TagsReferencePresenter from './TagsReferencePresenter.svelte'
   import TagsEditorPopup from './TagsEditorPopup.svelte'
+  import TagsItemPresenter from './TagsItemPresenter.svelte'
 
   export let value: number
   export let object: WithLookup<Doc>
@@ -51,11 +53,23 @@
 </script>
 
 {#if kind === 'list' || kind === 'link'}
-  {#each items as value}
-    <div class="label-box no-shrink" title={value.title}>
-      <TagReferencePresenter attr={undefined} {value} {kind} />
+  {#if items.length > 4}
+    <div
+      class="label-box no-shrink"
+      use:tooltip={{
+        component: TagsItemPresenter,
+        props: { value: items, kind: 'list' }
+      }}
+    >
+      <TagsReferencePresenter {items} {kind} />
     </div>
-  {/each}
+  {:else}
+    {#each items as value}
+      <div class="label-box no-shrink" title={value.title}>
+        <TagReferencePresenter attr={undefined} {value} {kind} />
+      </div>
+    {/each}
+  {/if}
 {:else}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
@@ -93,15 +107,15 @@
   .label-box {
     display: flex;
     align-items: center;
-    flex-shrink: 10;
+    // flex-shrink: 10;
     width: auto;
     min-width: 0;
     border-radius: 0.25rem;
     transition: box-shadow 0.15s ease-in-out;
 
-    &:not(.no-shrink):last-child {
-      flex-shrink: 0;
-    }
+    // &:not(.no-shrink):last-child {
+    //   flex-shrink: 0;
+    // }
   }
   .wrap-short:not(:last-child) {
     margin-right: 0.375rem;

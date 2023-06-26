@@ -56,7 +56,6 @@
     {value}
     {onChange}
     kind={'list'}
-    compression={dp?.compression && compression}
     {...joinProps(attributeModel, docObject, props)}
   />
 {/if}

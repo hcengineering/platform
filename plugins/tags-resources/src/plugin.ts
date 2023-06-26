@@ -49,7 +49,8 @@ export default mergeIds(tagsId, tags, {
     Weight: '' as IntlString,
     Expert: '' as IntlString,
     Meaningfull: '' as IntlString,
-    Initial: '' as IntlString
+    Initial: '' as IntlString,
+    NumberLabels: '' as IntlString
   },
   function: {
     FilterTagsInResult: '' as FilterFunction,

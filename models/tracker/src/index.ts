@@ -474,14 +474,20 @@ export function createModel (builder: Builder): void {
           props: {},
           displayProps: { key: 'title' }
         },
-        { key: 'comments', displayProps: { key: 'comments' } },
-        { key: 'attachments', displayProps: { key: 'attachments' } },
-        { key: '', label: tracker.string.SubIssues, presenter: tracker.component.SubIssuesSelector, props: {} },
+        { key: 'comments', displayProps: { key: 'comments', suffix: true } },
+        { key: 'attachments', displayProps: { key: 'attachments', suffix: true } },
+        {
+          key: '',
+          label: tracker.string.SubIssues,
+          presenter: tracker.component.SubIssuesSelector,
+          props: {},
+          displayProps: { suffix: true }
+        },
         { key: '', displayProps: { grow: true } },
         {
           key: 'labels',
           presenter: tags.component.LabelsPresenter,
-          displayProps: { optional: true, compression: true },
+          displayProps: { optional: true },
           props: { kind: 'list', full: false }
         },
         {
@@ -497,7 +503,6 @@ export function createModel (builder: Builder): void {
           displayProps: {
             key: 'milestone',
             excludeByKey: 'milestone',
-            compression: true,
             optional: true
           }
         },
@@ -514,7 +519,6 @@ export function createModel (builder: Builder): void {
           displayProps: {
             key: 'component',
             excludeByKey: 'component',
-            compression: true,
             optional: true
           }
         },
@@ -522,7 +526,7 @@ export function createModel (builder: Builder): void {
           key: '',
           label: tracker.string.DueDate,
           presenter: tracker.component.DueDatePresenter,
-          displayProps: { key: 'dueDate', optional: true, compression: true },
+          displayProps: { key: 'dueDate', optional: true },
           props: { kind: 'list' }
         },
         {
@@ -530,7 +534,7 @@ export function createModel (builder: Builder): void {
           label: tracker.string.Estimation,
           presenter: tracker.component.EstimationEditor,
           props: { kind: 'list', size: 'small' },
-          displayProps: { key: 'estimation', fixed: 'left', compression: true, dividerBefore: true }
+          displayProps: { key: 'estimation', fixed: 'left', dividerBefore: true }
         },
         {
           key: 'modifiedOn',
@@ -697,7 +701,7 @@ export function createModel (builder: Builder): void {
             size: 'small',
             shouldShowPlaceholder: false
           },
-          displayProps: { key: 'component', optional: true, compression: true }
+          displayProps: { key: 'component', optional: true }
         },
         {
           key: '',
@@ -708,7 +712,7 @@ export function createModel (builder: Builder): void {
             size: 'small',
             shouldShowPlaceholder: false
           },
-          displayProps: { key: 'milestone', optional: true, compression: true }
+          displayProps: { key: 'milestone', optional: true }
         },
         {
           key: '',
@@ -718,7 +722,7 @@ export function createModel (builder: Builder): void {
             kind: 'list',
             size: 'small'
           },
-          displayProps: { key: 'estimation', optional: true, compression: true }
+          displayProps: { key: 'estimation', optional: true }
         },
         { key: '', displayProps: { grow: true } },
         {

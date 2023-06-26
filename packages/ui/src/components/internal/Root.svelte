@@ -100,6 +100,44 @@
   document.addEventListener('dblclick', (event) => {
     event.preventDefault()
   })
+
+  let remove: any = null
+  const getSize = (width: number): 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' => {
+    return width <= 480
+      ? 'xs'
+      : width <= 680
+        ? 'sm'
+        : width <= 760
+          ? 'md'
+          : width <= 1024
+            ? 'lg'
+            : width <= 1208
+              ? 'xl'
+              : 'xxl'
+  }
+  const updateDeviceSize = () => {
+    if (remove !== null) remove()
+    const size = getSize(docWidth)
+    const mqString =
+      size === 'xs'
+        ? '(max-width: 480px)'
+        : size === 'sm'
+          ? '(min-width: 480.01px) and (max-width: 680px)'
+          : size === 'md'
+            ? '(min-width: 680.01px) and (max-width: 760px)'
+            : size === 'lg'
+              ? '(min-width: 760.01px) and (max-width: 1024px)'
+              : size === 'xl'
+                ? '(min-width: 1024.01px) and (max-width: 1208px)'
+                : '(min-width: 1208.01px)'
+    const media = matchMedia(mqString)
+    $deviceInfo.size = size
+    media.addEventListener('change', updateDeviceSize)
+    remove = () => {
+      media.removeEventListener('change', updateDeviceSize)
+    }
+  }
+  updateDeviceSize()
 </script>
 
 <svelte:window bind:innerWidth={docWidth} bind:innerHeight={docHeight} />

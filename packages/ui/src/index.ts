@@ -220,6 +220,7 @@ export const deviceOptionsStore = writable<DeviceOptions>({
   isPortrait: false,
   isMobile: false,
   fontSize: 0,
+  size: null,
   minWidth: false,
   twoRows: false
 })

@@ -301,6 +301,7 @@ export interface DeviceOptions {
   isPortrait: boolean
   isMobile: boolean
   fontSize: number
+  size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | null
   minWidth: boolean
   twoRows: boolean
   theme?: any

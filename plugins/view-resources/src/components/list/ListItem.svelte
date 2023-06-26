@@ -64,13 +64,6 @@
     return (value: any) => onChange(value, docObject, attribute.key, attr)
   }
 
-  let noCompressed: number
-  $: if (model) {
-    noCompressed = -1
-    model.forEach((m, i) => {
-      if (m.displayProps?.compression) noCompressed = i
-    })
-  }
   onMount(() => {
     dispatch('on-mount')
   })
@@ -126,23 +119,23 @@
       {#if displayProps?.grow}
         <GrowPresenter />
         {#if !compactMode}
-          {#each model.filter((p) => p.displayProps?.optional === true) as attrModel, j}
-            <ListPresenter
-              {docObject}
-              attributeModel={attrModel}
-              {props}
-              compression={j !== noCompressed}
-              value={getObjectValue(attrModel.key, docObject)}
-              onChange={getOnChange(docObject, attrModel)}
-            />
-          {/each}
+          <div class="optional-bar">
+            {#each model.filter((p) => p.displayProps?.optional === true) as attrModel, j}
+              <ListPresenter
+                {docObject}
+                attributeModel={attrModel}
+                {props}
+                value={getObjectValue(attrModel.key, docObject)}
+                onChange={getOnChange(docObject, attrModel)}
+              />
+            {/each}
+          </div>
         {/if}
       {:else}
         <ListPresenter
           {docObject}
           {attributeModel}
           {props}
-          compression={i !== noCompressed}
           value={getObjectValue(attributeModel.key, docObject)}
           onChange={getOnChange(docObject, attributeModel)}
           hideDivider={i === 0}
@@ -164,7 +157,7 @@
         <IconCircles />
       </div>
       <div class="scroll-box gap-2">
-        {#each model.filter((m) => m.displayProps?.optional || m.displayProps?.compression) as attributeModel, j}
+        {#each model.filter((m) => m.displayProps?.optional) as attributeModel, j}
           {@const displayProps = attributeModel.displayProps}
           {@const value = getObjectValue(attributeModel.key, docObject)}
           {#if displayProps?.excludeByKey !== groupByKey && value !== undefined}

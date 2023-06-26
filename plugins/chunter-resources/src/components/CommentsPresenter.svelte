@@ -29,7 +29,7 @@
 
 {#if value && value > 0}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <DocNavLink {object} inline noUnderline={true}>
+  <DocNavLink {object} inline noUnderline={true} shrink={0}>
     {#if kind === 'list'}
       <div
         use:tooltip={{
