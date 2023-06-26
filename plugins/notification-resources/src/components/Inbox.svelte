@@ -59,9 +59,11 @@
       return
     }
     if (prevValue !== undefined) {
-      prevValue.txes.forEach((p) => (p.isNew = false))
-      const txes = prevValue.txes
-      await client.update(prevValue, { txes })
+      if (prevValue.txes.some((p) => p.isNew)) {
+        prevValue.txes.forEach((p) => (p.isNew = false))
+        const txes = prevValue.txes
+        await client.update(prevValue, { txes })
+      }
     }
     const targetClass = hierarchy.getClass(value.attachedToClass)
     const panelComponent = hierarchy.as(targetClass, view.mixin.ObjectPanel)

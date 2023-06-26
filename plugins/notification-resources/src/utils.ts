@@ -62,8 +62,10 @@ export class NotificationClientImpl implements NotificationClient {
     const client = getClient()
     const docUpdate = this.docUpdatesMap.get(_id)
     if (docUpdate !== undefined) {
-      docUpdate.txes.forEach((p) => (p.isNew = false))
-      await client.update(docUpdate, { txes: docUpdate.txes })
+      if (docUpdate.txes.some((p) => p.isNew)) {
+        docUpdate.txes.forEach((p) => (p.isNew = false))
+        await client.update(docUpdate, { txes: docUpdate.txes })
+      }
     }
   }
 
@@ -71,8 +73,10 @@ export class NotificationClientImpl implements NotificationClient {
     const client = getClient()
     const docUpdate = this.docUpdatesMap.get(_id)
     if (docUpdate !== undefined) {
-      docUpdate.txes.forEach((p) => (p.isNew = false))
-      await client.update(docUpdate, { txes: docUpdate.txes })
+      if (docUpdate.txes.some((p) => p.isNew)) {
+        docUpdate.txes.forEach((p) => (p.isNew = false))
+        await client.update(docUpdate, { txes: docUpdate.txes })
+      }
     } else {
       const doc = await client.findOne(_class, { _id })
       if (doc !== undefined) {
