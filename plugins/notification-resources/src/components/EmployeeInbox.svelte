@@ -76,8 +76,6 @@
     }
   )
 
-  $: changeSelected(selected)
-
   function markAsRead (index: number) {
     if (docs[index] !== undefined) {
       docs[index].txes.forEach((p) => (p.isNew = false))
@@ -98,6 +96,7 @@
       } else {
         selected--
       }
+      changeSelected(selected)
     } else {
       selected = 0
       _id = undefined
@@ -112,6 +111,7 @@
       const value = selected + offset
       if (docs[value] !== undefined) {
         selected = value
+        changeSelected(selected)
       }
     }
   })
@@ -152,11 +152,13 @@
       key.stopPropagation()
       key.preventDefault()
       selected--
+      changeSelected(selected)
     }
     if (key.code === 'ArrowDown') {
       key.stopPropagation()
       key.preventDefault()
       selected++
+      changeSelected(selected)
     }
     if (key.code === 'Enter') {
       key.preventDefault()

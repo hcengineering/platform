@@ -75,8 +75,6 @@
 
   $: getFiltered(docs, filter)
 
-  $: changeSelected(selected)
-
   function markAsRead (index: number) {
     if (filtered[index] !== undefined) {
       filtered[index].txes.forEach((p) => (p.isNew = false))
@@ -97,6 +95,7 @@
       } else {
         selected--
       }
+      changeSelected(selected)
     } else {
       selected = 0
       _id = undefined
@@ -111,6 +110,7 @@
       const value = selected + offset
       if (filtered[value] !== undefined) {
         selected = value
+        changeSelected(selected)
       }
     }
   })
