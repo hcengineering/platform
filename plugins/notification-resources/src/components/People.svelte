@@ -101,14 +101,13 @@
         const acc = accounts.findIndex((p) => p._id === doc.txes[doc.txes.length - 1].modifiedBy)
         if (acc !== -1) {
           selected = acc
+          changeSelected(selected)
         }
       }
     }
   }
 
   $: getFiltered(docs, filter)
-
-  $: changeSelected(selected)
 
   function changeSelected (index: number) {
     if (accounts[index] === undefined) {
@@ -118,6 +117,7 @@
         } else {
           selected--
         }
+        changeSelected(selected)
       } else {
         selected = 0
       }
@@ -139,11 +139,13 @@
       key.stopPropagation()
       key.preventDefault()
       selected--
+      changeSelected(selected)
     }
     if (key.code === 'ArrowDown') {
       key.stopPropagation()
       key.preventDefault()
       selected++
+      changeSelected(selected)
     }
     if (key.code === 'Enter') {
       key.preventDefault()
