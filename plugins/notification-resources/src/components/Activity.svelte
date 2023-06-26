@@ -32,6 +32,7 @@
   let docs: DocUpdates[] = []
   let filtered: DocUpdates[] = []
   let loading = true
+  let previousFilter: 'all' | 'read' | 'unread' = filter
 
   $: query.query(
     notification.class.DocUpdates,
@@ -55,10 +56,11 @@
     if (filter === 'read') {
       filtered = docs.filter((p) => !p.txes.some((p) => p.isNew) && p.txes.length > 0)
     } else if (filter === 'unread') {
-      filtered = docs.filter((p) => p.txes.some((p) => p.isNew) && p.txes.length > 0)
+      if (previousFilter !== 'unread') filtered = docs.filter((p) => p.txes.some((p) => p.isNew) && p.txes.length > 0)
     } else {
       filtered = docs.filter((p) => p.txes.length > 0)
     }
+    previousFilter = filter
     listProvider.update(filtered)
     if (_id === undefined) {
       changeSelected(selected)
