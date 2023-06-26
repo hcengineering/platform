@@ -20,7 +20,7 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'
 
-  export let value: WithLookup<Milestone>
+  export let value: WithLookup<Milestone> | undefined
   export let shouldShowAvatar = true
   export let disabled = false
   export let inline = false
@@ -39,15 +39,17 @@
   })
 </script>
 
-<DocNavLink object={value} {disabled} {inline} {accent} noUnderline={disabled} {onClick}>
-  <div class="flex-presenter" class:inline-presenter={inline}>
-    {#if !inline && shouldShowAvatar}
-      <div class="icon">
-        <Icon icon={tracker.icon.Milestone} size="small" />
-      </div>
-    {/if}
-    <span title={value.label} class="overflow-label label" class:no-underline={disabled} class:fs-bold={accent}>
-      {value.label}
-    </span>
-  </div>
-</DocNavLink>
+{#if value}
+  <DocNavLink object={value} {disabled} {inline} {accent} noUnderline={disabled} {onClick}>
+    <div class="flex-presenter" class:inline-presenter={inline}>
+      {#if !inline && shouldShowAvatar}
+        <div class="icon">
+          <Icon icon={tracker.icon.Milestone} size="small" />
+        </div>
+      {/if}
+      <span title={value.label} class="overflow-label label" class:no-underline={disabled} class:fs-bold={accent}>
+        {value.label}
+      </span>
+    </div>
+  </DocNavLink>
+{/if}
