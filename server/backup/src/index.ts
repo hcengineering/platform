@@ -625,9 +625,8 @@ export async function restore (
     model: 'upgrade'
   })) as unknown as CoreClient & BackupClient
 
-  try {
-    for (const c of domains) {
-      console.log('loading server changeset for', c)
+  async function processDomain (c: Domain): Promise<boolean> {
+    try {
       const changeset = await loadDigest(storage, snapshots, c, date)
       // We need to load full changeset from server
       const serverChangeset = new Map<Ref<Doc>, string>()
@@ -796,6 +795,23 @@ export async function restore (
         while (docsToRemove.length > 0) {
           const part = docsToRemove.splice(0, 10000)
           await connection.clean(c, part)
+        }
+      }
+      return true
+    } catch (err: any) {
+      console.log('error', err)
+      return false
+    }
+  }
+
+  try {
+    for (const c of domains) {
+      console.log('loading server changeset for', c)
+      let retry = 3
+      while (retry > 0) {
+        retry--
+        if (await processDomain(c)) {
+          break
         }
       }
     }

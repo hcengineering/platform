@@ -130,7 +130,7 @@ class ElasticDataAdapter implements DbAdapter {
           if (e?.meta?.body?.error?.type === 'index_not_found_exception') {
             return undefined
           }
-          console.error(e)
+          console.error('elastic error:', e)
           throw new PlatformError(e)
         }
       },
