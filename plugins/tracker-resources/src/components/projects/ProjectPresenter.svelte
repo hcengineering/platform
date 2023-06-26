@@ -17,27 +17,29 @@
   import { Icon, IconWithEmojii, getPlatformColorDef, getPlatformColorForTextDef, themeStore } from '@hcengineering/ui'
   import tracker from '../../plugin'
 
-  export let value: Project
+  export let value: Project | undefined
   export let inline: boolean = false
   export let accent: boolean = false
 </script>
 
-<div class="flex-presenter cursor-default" class:inline-presenter={inline}>
-  <div class="icon" class:emoji={value.icon === tracker.component.IconWithEmojii}>
-    <Icon
-      icon={value.icon === tracker.component.IconWithEmojii ? IconWithEmojii : value.icon ?? tracker.icon.Home}
-      iconProps={value.icon === tracker.component.IconWithEmojii
-        ? { icon: value.color }
-        : {
-            fill:
-              value.color !== undefined
-                ? getPlatformColorDef(value.color, $themeStore.dark).icon
-                : getPlatformColorForTextDef(value.name, $themeStore.dark).icon
-          }}
-      size="small"
-    />
+{#if value}
+  <div class="flex-presenter cursor-default" class:inline-presenter={inline}>
+    <div class="icon" class:emoji={value.icon === tracker.component.IconWithEmojii}>
+      <Icon
+        icon={value.icon === tracker.component.IconWithEmojii ? IconWithEmojii : value.icon ?? tracker.icon.Home}
+        iconProps={value.icon === tracker.component.IconWithEmojii
+          ? { icon: value.color }
+          : {
+              fill:
+                value.color !== undefined
+                  ? getPlatformColorDef(value.color, $themeStore.dark).icon
+                  : getPlatformColorForTextDef(value.name, $themeStore.dark).icon
+            }}
+        size="small"
+      />
+    </div>
+    <span class="label no-underline nowrap" class:fs-bold={accent}>
+      {value.name}
+    </span>
   </div>
-  <span class="label no-underline nowrap" class:fs-bold={accent}>
-    {value.name}
-  </span>
-</div>
+{/if}
