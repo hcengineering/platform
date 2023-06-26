@@ -29,7 +29,8 @@ import {
   fetchMetadataLocalStorage,
   getCurrentLocation,
   navigate,
-  setMetadataLocalStorage
+  setMetadataLocalStorage,
+  locationStorageKeyId
 } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
 
@@ -333,7 +334,7 @@ export function navigateToWorkspace (workspace: string, loginInfo?: WorkspaceLog
       // Json parse error could be ignored
     }
   }
-  const last = localStorage.getItem(`platform_last_loc_${workspace}`)
+  const last = localStorage.getItem(`${locationStorageKeyId}_${workspace}`)
   if (last !== null) {
     navigate(JSON.parse(last))
   } else {

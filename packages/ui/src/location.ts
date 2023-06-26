@@ -148,6 +148,15 @@ export function getCurrentLocation (): PlatformLocation {
   return getRawCurrentLocation()
 }
 
+/**
+ * @public
+ */
+export let locationStorageKeyId = 'platform_last_loc'
+
+export function setLocationStorageKey (storageKey: string): void {
+  locationStorageKeyId = storageKey
+}
+
 export function navigate (location: PlatformLocation, store = true): boolean {
   closePopup()
   const cur = locationToUrl(getCurrentLocation())
@@ -157,9 +166,9 @@ export function navigate (location: PlatformLocation, store = true): boolean {
       if (!embeddedPlatform) {
         history.pushState(null, '', url)
       }
-      localStorage.setItem('platform_last_loc', JSON.stringify(location))
+      localStorage.setItem(locationStorageKeyId, JSON.stringify(location))
       if (location.path[1] !== undefined) {
-        localStorage.setItem(`platform_last_loc_${location.path[1]}`, JSON.stringify(location))
+        localStorage.setItem(`${locationStorageKeyId}_${location.path[1]}`, JSON.stringify(location))
       }
     }
     locationWritable.set(location)
