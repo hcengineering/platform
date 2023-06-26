@@ -82,6 +82,7 @@
   let currentAppAlias: string | undefined
   let currentSpace: Ref<Space> | undefined
   let currentSpecial: string | undefined
+  let currentQuery: Record<string, string | null> | undefined
   let specialComponent: SpecialNavModel | undefined
   let asideId: string | undefined
   let currentFragment: string | undefined = ''
@@ -264,6 +265,7 @@
         break
       }
     }
+    loc.query = resolved.loc.query ?? loc.query ?? currentQuery ?? resolved.defaultLocation.query
     loc.fragment = resolved.loc.fragment ?? loc.fragment ?? resolved.defaultLocation.fragment
     return loc
   }
@@ -363,6 +365,7 @@
     if (app !== undefined) {
       localStorage.setItem(`platform_last_loc_${app}`, originalLoc)
     }
+    currentQuery = loc.query
     if (fragment !== currentFragment) {
       currentFragment = fragment
       if (fragment !== undefined && fragment.trim().length > 0) {
@@ -533,8 +536,6 @@
         : 'account'
   let popupSpacePosition: PopupPosAlignment
   $: popupSpacePosition = appsMini ? 'logo-mini' : appsDirection === 'horizontal' ? 'logo-portrait' : 'logo'
-  let notifyPosition: PopupPosAlignment
-  $: notifyPosition = appsDirection === 'horizontal' ? 'notify-mobile' : 'notify'
 
   onMount(() => subscribeMobile(setTheme))
 

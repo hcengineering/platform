@@ -53,10 +53,10 @@ export function parseLocation (location: Location | URL): PlatformLocation {
   }
 }
 
-function parseQuery (query: string): Record<string, string | null> {
+function parseQuery (query: string): Record<string, string | null> | undefined {
   query = query.trim()
   if (query.length === 0 || !query.startsWith('?')) {
-    return {}
+    return
   }
   query = decodeURIComponent(query).substring(1)
   const vars = query.split('&')
