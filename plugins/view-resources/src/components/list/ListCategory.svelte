@@ -66,6 +66,7 @@
   export let listDiv: HTMLDivElement
   export let index: number
   export let groupPersistKey: string
+  export let compactMode: boolean = false
 
   $: lastLevel = level + 1 >= viewOptions.groupBy.length
 
@@ -448,6 +449,7 @@
             on:mouseover={mouseAttractor(() => handleRowFocused(docObject))}
             on:mouseenter={mouseAttractor(() => handleRowFocused(docObject))}
             {props}
+            {compactMode}
             on:on-mount={() => {
               wasLoaded = true
             }}

@@ -25,6 +25,7 @@
   export let props: Record<string, any>
   export let compression: boolean = false
   export let hideDivider: boolean = false
+  export let compactMode: boolean = false
 
   $: dp = attributeModel?.displayProps
 
@@ -47,6 +48,7 @@
       {value}
       {onChange}
       kind={'list'}
+      {compactMode}
       {...joinProps(attributeModel, docObject, props)}
     />
   </FixedColumn>
@@ -56,6 +58,7 @@
     {value}
     {onChange}
     kind={'list'}
+    {compactMode}
     {...joinProps(attributeModel, docObject, props)}
   />
 {/if}

@@ -453,6 +453,7 @@ input.search {
       width: 1.5rem;
       height: 1.5rem;
     }
+    &.halfcontent { color: var(--theme-halfcontent-color); }
   }
   &:hover .icon { color: var(--theme-caption-color); }
 }
@@ -904,6 +905,7 @@ a.no-line {
 
 .content-trans-color { color: var(--theme-trans-color); }
 .content-darker-color { color: var(--theme-darker-color); }
+.content-halfcontent-color { color: var(--theme-halfcontent-color); }
 .content-dark-color { color: var(--theme-dark-color); }
 .content-color { color: var(--theme-content-color); }
 .caption-color { color: var(--theme-caption-color); }

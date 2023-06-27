@@ -24,6 +24,7 @@
   let list: List
   let scroll: Scroller
   let divScroll: HTMLDivElement
+  let listWidth: number
 
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
     if (dir === 'vertical') {
@@ -43,7 +44,7 @@
   }}
 />
 
-<div class="w-full h-full py-4 clear-mins">
+<div bind:clientWidth={listWidth} class="w-full h-full py-4 clear-mins">
   <Scroller
     bind:this={scroll}
     bind:divScroll
@@ -64,6 +65,7 @@
       {createItemLabel}
       {viewOptions}
       {props}
+      compactMode={listWidth <= 800}
       viewOptionsConfig={viewlet.viewOptions?.other}
       selectedObjectIds={$selectionStore ?? []}
       selection={listProvider.current($focusStore)}

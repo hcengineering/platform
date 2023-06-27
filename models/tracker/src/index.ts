@@ -474,15 +474,14 @@ export function createModel (builder: Builder): void {
           props: {},
           displayProps: { key: 'title' }
         },
-        { key: 'comments', displayProps: { key: 'comments', suffix: true } },
-        { key: 'attachments', displayProps: { key: 'attachments', suffix: true } },
         {
           key: '',
           label: tracker.string.SubIssues,
           presenter: tracker.component.SubIssuesSelector,
-          props: {},
-          displayProps: { suffix: true }
+          props: {}
         },
+        { key: 'comments', displayProps: { key: 'comments', suffix: true } },
+        { key: 'attachments', displayProps: { key: 'attachments', suffix: true } },
         { key: '', displayProps: { grow: true } },
         {
           key: 'labels',

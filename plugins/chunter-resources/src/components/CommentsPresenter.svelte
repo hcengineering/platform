@@ -23,7 +23,8 @@
   export let object: Doc
   export let size: ButtonSize = 'small'
   export let kind: ButtonKind = 'link'
-  export let showCounter = true
+  export let showCounter: boolean = true
+  export let compactMode: boolean = false
   export let withInput: boolean = true
 </script>
 
@@ -31,22 +32,32 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <DocNavLink {object} inline noUnderline={true} shrink={0}>
     {#if kind === 'list'}
-      <div
-        use:tooltip={{
-          component: CommentPopup,
-          props: { objectId: object._id, object, withInput }
-        }}
-        class="sm-tool-icon"
-      >
-        <Button {kind} {size}>
-          <div slot="content" class="flex-row-center">
-            <span class="icon"><IconThread size={'small'} /></span>
-            {#if showCounter}
-              {value ?? 0}
-            {/if}
+      {#if compactMode}
+        <div
+          use:tooltip={{
+            component: CommentPopup,
+            props: { objectId: object._id, object, withInput }
+          }}
+          class="sm-tool-icon"
+        >
+          <div class="icon halfcontent"><IconThread {size} /></div>
+          {#if showCounter}{value ?? 0}{/if}
+        </div>
+      {:else}
+        <Button
+          {kind}
+          {size}
+          showTooltip={{
+            component: CommentPopup,
+            props: { objectId: object._id, object, withInput }
+          }}
+        >
+          <div slot="icon"><IconThread {size} /></div>
+          <div slot="content" style:margin-left={showCounter ? '.375rem' : '0'}>
+            {#if showCounter}{value ?? 0}{/if}
           </div>
         </Button>
-      </div>
+      {/if}
     {:else}
       <div
         use:tooltip={{

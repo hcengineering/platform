@@ -16,7 +16,7 @@
   import { AnyAttribute, Doc, getObjectValue } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { getClient, updateAttribute } from '@hcengineering/presentation'
-  import { CheckBox, Component, deviceOptionsStore as deviceInfo, IconCircles, tooltip } from '@hcengineering/ui'
+  import { CheckBox, Component, IconCircles, tooltip } from '@hcengineering/ui'
   import { AttributeModel } from '@hcengineering/view'
   import { createEventDispatcher, onMount } from 'svelte'
   import view from '../../plugin'
@@ -31,6 +31,7 @@
   export let last: boolean = false
   export let lastCat: boolean = false
   export let props: Record<string, any> = {}
+  export let compactMode: boolean = false
 
   export function scroll () {
     elem?.scrollIntoView({ behavior: 'auto', block: 'nearest' })
@@ -47,8 +48,6 @@
   export function getElement () {
     return elem
   }
-
-  $: compactMode = $deviceInfo.twoRows
 
   const client = getClient()
 
@@ -113,14 +112,25 @@
       />
     </div>
   </div>
-  {#each model.filter((p) => !(p.displayProps?.optional === true)) as attributeModel, i}
+  {#each model.filter((p) => !(p.displayProps?.optional === true || p.displayProps?.suffix === true)) as attributeModel, i}
     {@const displayProps = attributeModel.displayProps}
     {#if !groupByKey || displayProps?.excludeByKey !== groupByKey}
       {#if displayProps?.grow}
+        {#if !compactMode}
+          {#each model.filter((p) => p.displayProps?.suffix === true) as attrModel}
+            <ListPresenter
+              {docObject}
+              attributeModel={attrModel}
+              {props}
+              value={getObjectValue(attrModel.key, docObject)}
+              onChange={getOnChange(docObject, attrModel)}
+            />
+          {/each}
+        {/if}
         <GrowPresenter />
         {#if !compactMode}
           <div class="optional-bar">
-            {#each model.filter((p) => p.displayProps?.optional === true) as attrModel, j}
+            {#each model.filter((p) => p.displayProps?.optional === true) as attrModel}
               <ListPresenter
                 {docObject}
                 attributeModel={attrModel}
@@ -130,6 +140,17 @@
               />
             {/each}
           </div>
+        {:else}
+          {#each model.filter((p) => p.displayProps?.suffix === true) as attrModel}
+            <ListPresenter
+              {docObject}
+              attributeModel={attrModel}
+              {props}
+              value={getObjectValue(attrModel.key, docObject)}
+              onChange={getOnChange(docObject, attrModel)}
+              compactMode
+            />
+          {/each}
         {/if}
       {:else}
         <ListPresenter
@@ -139,6 +160,7 @@
           value={getObjectValue(attributeModel.key, docObject)}
           onChange={getOnChange(docObject, attributeModel)}
           hideDivider={i === 0}
+          {compactMode}
         />
       {/if}
     {/if}

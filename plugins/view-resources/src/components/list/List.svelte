@@ -38,6 +38,7 @@
   export let disableHeader = false
   export let props: Record<string, any> = {}
   export let selection: number | undefined = undefined
+  export let compactMode: boolean = false
 
   export let documents: Doc[] | undefined = undefined
 
@@ -138,6 +139,7 @@
     {disableHeader}
     {props}
     {listDiv}
+    {compactMode}
     bind:dragItem
     on:select={(evt) => {
       select(0, evt.detail)
