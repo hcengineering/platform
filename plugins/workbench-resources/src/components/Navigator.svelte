@@ -14,13 +14,13 @@
 -->
 <script lang="ts">
   import core, { Doc, Ref, SortingOrder, Space } from '@hcengineering/core'
-  import { getResource } from '@hcengineering/platform'
+  import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
   import preference, { SpacePreference } from '@hcengineering/preference'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
-  import { Icon, Label, Scroller, showPopup } from '@hcengineering/ui'
+  import { AnyComponent, Icon, Label, Scroller, showPopup } from '@hcengineering/ui'
   import { NavLink } from '@hcengineering/view-resources'
-  import type { Application, NavigatorModel, SpecialNavModel } from '@hcengineering/workbench'
+  import { savedViewId, Application, NavigatorModel, SpecialNavModel } from '@hcengineering/workbench'
   import workbench from '../plugin'
   import { getSpecialSpaceClass } from '../utils'
   import HelpAndSupport from './HelpAndSupport.svelte'
@@ -38,6 +38,12 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const query = createQuery()
+  const savedView = {
+    id: savedViewId,
+    position: savedViewId,
+    label: getEmbeddedLabel(savedViewId),
+    component: undefined as unknown as AnyComponent
+  }
 
   let spaces: Space[] = []
   let starred: Space[] = []
@@ -73,7 +79,7 @@
   })
 
   let requestIndex = 0
-  async function update (model: NavigatorModel, spaces: Space[], preferences: Map<Ref<Doc>, SpacePreference>) {
+  async function update(model: NavigatorModel, spaces: Space[], preferences: Map<Ref<Doc>, SpacePreference>) {
     shownSpaces = spaces.filter((sp) => !sp.archived && !preferences.has(sp._id))
     starred = spaces.filter((sp) => preferences.has(sp._id))
     if (model.specials !== undefined) {
@@ -91,15 +97,18 @@
       }
 
       result.push(...bottomSpecials)
+      if (model.specials.find((sp) => sp.position === savedViewId) === undefined) {
+        result.push(savedView)
+      }
       specials = result
     } else {
-      specials = []
+      specials = [savedView]
     }
   }
 
   $: if (model) update(model, spaces, preferences)
 
-  async function updateSpecials (
+  async function updateSpecials(
     specials: SpecialNavModel[],
     spaces: Space[],
     requestIndex: number
@@ -129,7 +138,7 @@
     return [result, requestIndex]
   }
 
-  async function checkIsDisabled (special: SpecialNavModel) {
+  async function checkIsDisabled(special: SpecialNavModel) {
     return special.checkIsDisabled && (await (await getResource(special.checkIsDisabled))())
   }
 
@@ -139,12 +148,18 @@
 
 {#if model}
   <Scroller shrink>
-    {#if model.specials}
-      {#each specials as special, row}
-        {#if row > 0 && specials[row].position !== specials[row - 1].position}
-          <TreeSeparator line />
-        {/if}
-        {#await checkIsDisabled(special) then disabled}
+    {#each specials as special, row}
+      {#if row > 0 && specials[row].position !== specials[row - 1].position}
+        <TreeSeparator line />
+      {/if}
+      {#await checkIsDisabled(special) then disabled}
+        {#if special.position === savedViewId}
+          <SavedView
+            {currentApplication}
+            on:shown={(res) => (savedMenu = res.detail)}
+            on:select={(res) => (menuSelection = res.detail)}
+          />
+        {:else}
           <NavLink space={special.id} {disabled}>
             <SpecialElement
               label={special.label}
@@ -154,16 +169,11 @@
               indent={special.nestingLevel === 1 ? 'ml-2' : (special.nestingLevel === 2 && 'ml-4') || undefined}
             />
           </NavLink>
-        {/await}
-      {/each}
-    {/if}
+        {/if}
+      {/await}
+    {/each}
 
-    {#if specials.length > 0 && (starred.length > 0 || savedMenu)}<TreeSeparator line />{/if}
-    <SavedView
-      {currentApplication}
-      on:shown={(res) => (savedMenu = res.detail)}
-      on:select={(res) => (menuSelection = res.detail)}
-    />
+    {#if specials.length > 0 && starred.length > 0}<TreeSeparator line />{/if}
     {#if starred.length}
       <StarredNav label={preference.string.Starred} spaces={starred} on:space {currentSpace} />
     {/if}

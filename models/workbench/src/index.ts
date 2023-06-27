@@ -24,7 +24,7 @@ import type { Application, HiddenApplication, SpaceView, ViewConfiguration } fro
 import core, { TClass, TDoc } from '@hcengineering/model-core'
 import workbench from './plugin'
 
-export { workbenchId } from '@hcengineering/workbench'
+export { workbenchId, savedViewId } from '@hcengineering/workbench'
 export { Application }
 
 @Model(workbench.class.Application, core.class.Doc, DOMAIN_MODEL)

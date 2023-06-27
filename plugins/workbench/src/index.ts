@@ -115,6 +115,11 @@ export interface SpaceView extends Class<Obj> {
  */
 export const workbenchId = 'workbench' as Plugin
 
+/**
+ * @public
+ */
+export const savedViewId = 'SAVED_VIEW'
+
 export default plugin(workbenchId, {
   class: {
     Application: '' as Ref<Class<Application>>,
@@ -139,9 +144,7 @@ export default plugin(workbenchId, {
     ExcludedApplications: '' as Metadata<Ref<Application>[]>,
     DefaultApplication: '' as Metadata<string>,
     DefaultSpace: '' as Metadata<Ref<Space>>,
-    DefaultSpecial: '' as Metadata<string>,
-    // Default for navigation expanded state
-    NavigationExpandedDefault: '' as Metadata<boolean>
+    DefaultSpecial: '' as Metadata<string>
   },
   actionImpl: {
     Navigate: '' as ViewAction<{
