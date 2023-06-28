@@ -357,7 +357,12 @@ export function devTool (
     .action(async (email: string, cmd) => {
       const { mongodbUri } = prepareTools()
       return await withDatabase(mongodbUri, async (db) => {
-        await confirmEmail(db, email)
+        const account = await getAccount(db, email)
+        if (account?.confirmed === true) {
+          console.log(`Already confirmed:${email}`)
+        } else {
+          await confirmEmail(db, email)
+        }
       })
     })
 
