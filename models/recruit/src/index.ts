@@ -684,17 +684,29 @@ export function createModel (builder: Builder): void {
       config: [
         { key: '', displayProps: { fixed: 'left', key: 'app' } },
         {
+          key: 'state',
+          props: { kind: 'list', size: 'small', shouldShowName: false },
+          displayProps: { excludeByKey: 'state' }
+        },
+        {
           key: '$lookup.attachedTo',
           presenter: contact.component.PersonPresenter,
           label: recruit.string.Talent,
           sortingKey: '$lookup.attachedTo.name',
-          displayProps: { fixed: 'left', key: 'talent' },
           props: {
             _class: recruit.mixin.Candidate,
             inline: true
           }
         },
-        { key: 'state', displayProps: { fixed: 'left', key: 'state' }, props: { inline: true, showLabel: false } },
+        { key: 'attachments', displayProps: { key: 'attachments', suffix: true } },
+        { key: 'comments', displayProps: { key: 'comments', suffix: true } },
+        {
+          key: '',
+          presenter: tracker.component.RelatedIssueSelector,
+          label: tracker.string.Issues,
+          props: { size: 'small' }
+        },
+        { key: '', displayProps: { grow: true } },
         {
           key: '$lookup.space.company',
           displayProps: { fixed: 'left', key: 'company' },
@@ -704,30 +716,20 @@ export function createModel (builder: Builder): void {
           }
         },
         {
-          key: '',
-          presenter: tracker.component.RelatedIssueSelector,
-          label: tracker.string.Issues,
-          displayProps: { fixed: 'left', key: 'issues' }
-        },
-        { key: '', displayProps: { grow: true } },
-        { key: 'attachments', displayProps: { fixed: 'left', key: 'attachments' } },
-        { key: 'comments', displayProps: { fixed: 'left', key: 'comments' } },
-        {
           key: '$lookup.attachedTo.$lookup.channels',
           label: contact.string.ContactInfo,
           sortingKey: ['$lookup.attachedTo.$lookup.channels.lastMessage', '$lookup.attachedTo.channels'],
           props: {
             length: 'full',
             size: 'inline'
-          },
-          displayProps: {
-            fixed: 'left',
-            key: 'channels',
-            dividerBefore: true
           }
         },
-        { key: 'modifiedOn', displayProps: { key: 'modified', fixed: 'left', dividerBefore: true } },
-        { key: 'assignee', displayProps: { key: 'assignee', fixed: 'right' }, props: { shouldShowLabel: false } }
+        { key: 'modifiedOn', displayProps: { key: 'modified', fixed: 'right', dividerBefore: true } },
+        {
+          key: 'assignee',
+          props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' },
+          displayProps: { key: 'assignee', fixed: 'right', excludeByKey: 'assignee' }
+        }
       ],
       options: {
         lookup: {

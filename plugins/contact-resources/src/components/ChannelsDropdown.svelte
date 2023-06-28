@@ -253,58 +253,95 @@
   }
 </script>
 
-<div
-  class="{displayItems.length === 0 ? 'clear-mins' : 'buttons-group'} {kind === 'no-border'
-    ? 'xsmall-gap'
-    : 'xxsmall-gap'}"
-  class:short={displayItems.length > 4 && length === 'short'}
-  class:tiny={displayItems.length > 2 && length === 'tiny'}
->
+{#if kind === 'list'}
   {#each displayItems as item, i}
-    <Button
-      focusIndex={focusIndex === -1 ? focusIndex : focusIndex + 1 + i}
-      id={item.label}
-      bind:input={btns[i]}
-      icon={item.icon}
-      kind={highlighted.includes(item.provider) ? 'dangerous' : kind}
-      {size}
-      {shape}
-      highlight={item.integration || item.notification}
-      on:click={(ev) => {
-        if (editable && !restricted.includes(item.provider)) {
-          closeTooltip()
-          editChannel(eventToHTMLElement(ev), i, item)
-        } else {
-          dispatch('open', item)
-        }
-      }}
-      showTooltip={{
-        component: opened !== i ? ChannelEditor : undefined,
-        props: {
-          value: item.value,
-          placeholder: item.placeholder,
-          editable: editable !== undefined ? false : undefined,
-          openable: item.presenter ?? item.action ?? false
-        },
-        onUpdate: (result) => {
-          updateTooltip(result, item, i)
-        }
-      }}
-    />
+    <div class="label-wrapper">
+      <Button
+        focusIndex={focusIndex === -1 ? focusIndex : focusIndex + 1 + i}
+        id={item.label}
+        bind:input={btns[i]}
+        icon={item.icon}
+        kind={highlighted.includes(item.provider) ? 'dangerous' : kind}
+        {size}
+        {shape}
+        highlight={item.integration || item.notification}
+        on:click={(ev) => {
+          if (editable && !restricted.includes(item.provider)) {
+            closeTooltip()
+            editChannel(eventToHTMLElement(ev), i, item)
+          } else {
+            dispatch('open', item)
+          }
+        }}
+        showTooltip={{
+          component: opened !== i ? ChannelEditor : undefined,
+          props: {
+            value: item.value,
+            placeholder: item.placeholder,
+            editable: editable !== undefined ? false : undefined,
+            openable: item.presenter ?? item.action ?? false
+          },
+          onUpdate: (result) => {
+            updateTooltip(result, item, i)
+          }
+        }}
+      />
+    </div>
   {/each}
-  {#if actions.length > 0 && editable}
-    <Button
-      focusIndex={focusIndex === -1 ? focusIndex : focusIndex + 2 + displayItems.length}
-      id={presentation.string.AddSocialLinks}
-      bind:input={addBtn}
-      icon={contact.icon.SocialEdit}
-      label={displayItems.length === 0 ? presentation.string.AddSocialLinks : undefined}
-      notSelected={displayItems.length === 0}
-      {kind}
-      {size}
-      {shape}
-      showTooltip={{ label: presentation.string.AddSocialLinks }}
-      on:click={showMenu}
-    />
-  {/if}
-</div>
+{:else}
+  <div
+    class="{displayItems.length === 0 ? 'clear-mins' : 'buttons-group'} {kind === 'no-border'
+      ? 'xsmall-gap'
+      : 'xxsmall-gap'}"
+    class:short={displayItems.length > 4 && length === 'short'}
+    class:tiny={displayItems.length > 2 && length === 'tiny'}
+  >
+    {#each displayItems as item, i}
+      <Button
+        focusIndex={focusIndex === -1 ? focusIndex : focusIndex + 1 + i}
+        id={item.label}
+        bind:input={btns[i]}
+        icon={item.icon}
+        kind={highlighted.includes(item.provider) ? 'dangerous' : kind}
+        {size}
+        {shape}
+        highlight={item.integration || item.notification}
+        on:click={(ev) => {
+          if (editable && !restricted.includes(item.provider)) {
+            closeTooltip()
+            editChannel(eventToHTMLElement(ev), i, item)
+          } else {
+            dispatch('open', item)
+          }
+        }}
+        showTooltip={{
+          component: opened !== i ? ChannelEditor : undefined,
+          props: {
+            value: item.value,
+            placeholder: item.placeholder,
+            editable: editable !== undefined ? false : undefined,
+            openable: item.presenter ?? item.action ?? false
+          },
+          onUpdate: (result) => {
+            updateTooltip(result, item, i)
+          }
+        }}
+      />
+    {/each}
+    {#if actions.length > 0 && editable}
+      <Button
+        focusIndex={focusIndex === -1 ? focusIndex : focusIndex + 2 + displayItems.length}
+        id={presentation.string.AddSocialLinks}
+        bind:input={addBtn}
+        icon={contact.icon.SocialEdit}
+        label={displayItems.length === 0 ? presentation.string.AddSocialLinks : undefined}
+        notSelected={displayItems.length === 0}
+        {kind}
+        {size}
+        {shape}
+        showTooltip={{ label: presentation.string.AddSocialLinks }}
+        on:click={showMenu}
+      />
+    {/if}
+  </div>
+{/if}

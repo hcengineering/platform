@@ -53,16 +53,16 @@
     .names {
       display: inline-flex;
       min-width: 0;
-      color: var(--content-color);
+      color: var(--theme-dark-color);
     }
 
     .name {
       &:hover {
-        color: var(--caption-color);
+        color: var(--theme-caption-color);
         text-decoration: underline;
       }
       &:active {
-        color: var(--accent-color);
+        color: var(--theme-content-color);
       }
       &::before {
         content: '›';

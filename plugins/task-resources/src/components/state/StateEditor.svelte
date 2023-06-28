@@ -29,6 +29,7 @@
   export let size: ButtonSize = 'small'
   export let width: string = 'min-content'
   export let justify: 'left' | 'center' = 'center'
+  export let shouldShowName: boolean = true
 
   let state: State
   let opened: boolean = false
@@ -56,12 +57,16 @@
   }
 </script>
 
-<Button {kind} {size} {width} {justify} on:click={handleClick}>
-  <svelte:fragment slot="content">
-    {#if state}
-      <div class="pointer-events-none clear-mins">
-        <StatePresenter value={state} />
-      </div>
-    {/if}
-  </svelte:fragment>
-</Button>
+{#if kind === 'list' || kind === 'list-header'}
+  <StatePresenter value={state} {shouldShowName} shouldShowTooltip on:click={handleClick} />
+{:else}
+  <Button {kind} {size} {width} {justify} on:click={handleClick}>
+    <svelte:fragment slot="content">
+      {#if state}
+        <div class="pointer-events-none clear-mins">
+          <StatePresenter value={state} {shouldShowName} />
+        </div>
+      {/if}
+    </svelte:fragment>
+  </Button>
+{/if}

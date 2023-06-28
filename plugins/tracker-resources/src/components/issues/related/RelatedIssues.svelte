@@ -27,7 +27,8 @@
   export let object: Doc
   export let viewlet: Viewlet
   export let viewOptions: ViewOptions
-  export let disableHeader = false
+  export let disableHeader: boolean = false
+  export let compactMode: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -59,12 +60,13 @@
       issues={subIssues}
       {projects}
       {disableHeader}
+      {compactMode}
       createItemDialog={CreateIssue}
       createItemLabel={tracker.string.AddIssueTooltip}
       createItemDialogProps={{ relatedTo: object }}
     />
   {:else}
-    <div class="antiSection-empty solid flex-col mt-3">
+    <div class="antiSection-empty solid flex-col">
       <div class="flex-center content-color">
         <AddIssueDuo size={'large'} />
       </div>
@@ -78,7 +80,7 @@
     </div>
   {/if}
 {:else}
-  <div class="flex-center pt-3">
+  <div class="flex-center">
     <Spinner />
   </div>
 {/if}

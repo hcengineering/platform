@@ -312,46 +312,56 @@
   let selected: number | undefined
 </script>
 
-<div class="selectPopup p-2">
+<div class="selectPopup">
+  <div class="menu-space" />
   <div class="scroll">
-    {#if loading}
-      <Loading />
-    {:else}
-      <div class="flex-row-reverse">
-        <Button on:click={restoreDefault} label={view.string.RestoreDefaults} size={'x-small'} kind={'link'} noFocus />
-      </div>
-      {#each items as item, i}
-        {#if isAttribute(item)}
-          <div
-            class="item"
-            bind:this={elements[i]}
-            draggable={viewlet.configOptions?.sortable && item.enabled}
-            on:dragstart={(ev) => {
-              if (ev.dataTransfer) {
-                ev.dataTransfer.effectAllowed = 'move'
-                ev.dataTransfer.dropEffect = 'move'
-              }
-              // ev.preventDefault()
-              ev.stopPropagation()
-              selected = i
-            }}
-            on:dragover|preventDefault={(e) => dragOver(e, i)}
-            on:dragend={dragEnd}
-          >
-            <ToggleWithLabel
-              on={item.enabled}
-              label={item.label}
-              on:change={(e) => {
-                change(item, e.detail)
+    <div class="box">
+      {#if loading}
+        <Loading />
+      {:else}
+        <div class="flex-row-reverse mb-2 mr-2">
+          <Button
+            on:click={restoreDefault}
+            label={view.string.RestoreDefaults}
+            size={'x-small'}
+            kind={'link'}
+            noFocus
+          />
+        </div>
+        {#each items as item, i}
+          {#if isAttribute(item)}
+            <div
+              class="menu-item flex-row-center"
+              bind:this={elements[i]}
+              draggable={viewlet.configOptions?.sortable && item.enabled}
+              on:dragstart={(ev) => {
+                if (ev.dataTransfer) {
+                  ev.dataTransfer.effectAllowed = 'move'
+                  ev.dataTransfer.dropEffect = 'move'
+                }
+                // ev.preventDefault()
+                ev.stopPropagation()
+                selected = i
               }}
-            />
-          </div>
-        {:else}
-          <div class="antiDivider" />
-        {/if}
-      {/each}
-    {/if}
+              on:dragover|preventDefault={(e) => dragOver(e, i)}
+              on:dragend={dragEnd}
+            >
+              <ToggleWithLabel
+                on={item.enabled}
+                label={item.label}
+                on:change={(e) => {
+                  change(item, e.detail)
+                }}
+              />
+            </div>
+          {:else}
+            <div class="antiDivider" />
+          {/if}
+        {/each}
+      {/if}
+    </div>
   </div>
+  <div class="menu-space" />
 </div>
 
 <style lang="scss">

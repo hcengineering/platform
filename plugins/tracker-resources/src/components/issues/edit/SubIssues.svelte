@@ -46,6 +46,7 @@
   export let shouldSaveDraft: boolean = false
 
   let isCollapsed = false
+  let listWidth: number
 
   $: hasSubIssues = issue.subIssues > 0
 
@@ -84,11 +85,10 @@
   })
 </script>
 
-<div class="flex-between">
+<div class="flex-between mb-1">
   {#if hasSubIssues}
     <Button
       width="min-content"
-      size="small"
       kind="transparent"
       on:click={() => {
         isCollapsed = !isCollapsed
@@ -100,16 +100,14 @@
       </svelte:fragment>
     </Button>
   {/if}
-  <div class="flex-row-center">
+  <div class="flex-row-center gap-2">
     {#if viewlet && hasSubIssues && viewOptions}
       <ViewletSettingButton bind:viewOptions {viewlet} kind={'transparent'} />
     {/if}
     {#if hasSubIssues}
       <Button
-        width="min-content"
         icon={IconScaleFull}
         kind={'transparent'}
-        size={'small'}
         showTooltip={{ label: tracker.string.OpenSubIssues, direction: 'bottom' }}
         on:click={() => {
           const filter = createFilter(tracker.class.Issue, 'attachedTo', [issue._id])
@@ -129,12 +127,10 @@
     {/if}
     <Button
       id="add-sub-issue"
-      width="min-content"
       icon={hasSubIssues ? IconAdd : undefined}
       label={hasSubIssues ? undefined : tracker.string.AddSubIssues}
       labelParams={{ subIssues: 0 }}
       kind={'transparent'}
-      size={'small'}
       showTooltip={{ label: tracker.string.AddSubIssues, props: { subIssues: 1 }, direction: 'bottom' }}
       on:click={() => {
         isCollapsed = false
@@ -144,29 +140,29 @@
     />
   </div>
 </div>
-<div class="mt-1">
-  {#if hasSubIssues && viewOptions && viewlet}
-    {#if !isCollapsed}
-      <ExpandCollapse isExpanded={!isCollapsed}>
-        <div class="list" class:collapsed={isCollapsed}>
-          <SubIssueList
-            createItemDialog={CreateIssue}
-            createItemLabel={tracker.string.AddIssueTooltip}
-            createItemDialogProps={{ space: issue.space, parentIssue: issue, shouldSaveDraft }}
-            focusIndex={focusIndex === -1 ? -1 : focusIndex + 1}
-            projects={_projects}
-            {viewlet}
-            {viewOptions}
-            query={{ attachedTo: issue._id }}
-          />
-        </div>
-      </ExpandCollapse>
-    {/if}
+{#if hasSubIssues && viewOptions && viewlet}
+  {#if !isCollapsed}
+    <ExpandCollapse isExpanded={!isCollapsed}>
+      <div class="list" class:collapsed={isCollapsed} bind:clientWidth={listWidth}>
+        <SubIssueList
+          createItemDialog={CreateIssue}
+          createItemLabel={tracker.string.AddIssueTooltip}
+          createItemDialogProps={{ space: issue.space, parentIssue: issue, shouldSaveDraft }}
+          focusIndex={focusIndex === -1 ? -1 : focusIndex + 1}
+          projects={_projects}
+          {viewlet}
+          {viewOptions}
+          query={{ attachedTo: issue._id }}
+          compactMode={listWidth <= 600}
+        />
+      </div>
+    </ExpandCollapse>
   {/if}
-</div>
+{/if}
 
 <style lang="scss">
   .list {
+    padding-top: 0.75rem;
     border-top: 1px solid var(--divider-color);
 
     &.collapsed {

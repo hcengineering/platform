@@ -30,6 +30,7 @@
   import { themeStore } from '@hcengineering/theme'
 
   export let value: number | undefined
+  export let kind: 'no-border' | 'list' = 'no-border'
 
   let time: string = ''
 
@@ -73,6 +74,11 @@
     : undefined
 </script>
 
-<span use:tooltip={{ label: ui.string.TimeTooltip, props: { value: tooltipValue } }} class="overflow-label">
+<span
+  use:tooltip={{ label: ui.string.TimeTooltip, props: { value: tooltipValue } }}
+  class="overflow-label"
+  class:text-sm={kind === 'list'}
+  class:content-dark-color={kind === 'list'}
+>
   {time}
 </span>

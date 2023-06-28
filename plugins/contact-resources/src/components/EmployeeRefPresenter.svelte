@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
-  import { ButtonKind } from '@hcengineering/ui'
+  import { ButtonKind, IconSize } from '@hcengineering/ui'
   import { PersonLabelTooltip } from '..'
   import EmployeeAttributePresenter from './EmployeeAttributePresenter.svelte'
 
@@ -11,7 +11,9 @@
   export let onChange: ((value: Ref<Employee>) => void) | undefined = undefined
   export let colorInherit: boolean = false
   export let accent: boolean = false
-  export let inline = false
+  export let inline: boolean = false
+  export let shouldShowName: boolean = true
+  export let avatarSize: IconSize = kind === 'secondary' ? 'small' : 'card'
 </script>
 
 {#if Array.isArray(value)}
@@ -25,6 +27,8 @@
         {inline}
         {colorInherit}
         {accent}
+        {shouldShowName}
+        {avatarSize}
         on:accent-color
       />
     {/each}
@@ -38,6 +42,8 @@
     {inline}
     {colorInherit}
     {accent}
+    {shouldShowName}
+    {avatarSize}
     on:accent-color
   />
 {/if}

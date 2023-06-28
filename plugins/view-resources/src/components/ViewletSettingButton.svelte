@@ -31,12 +31,13 @@
 </script>
 
 {#if viewlet}
-  <div class="flex-row-center">
-    <div class="mr-3"><ViewOptionsButton {viewlet} {kind} {viewOptions} /></div>
+  <div class="flex-row-center gap-2 reverse">
+    <ViewOptionsButton {viewlet} {kind} {viewOptions} />
     <Button
       icon={view.icon.Configure}
       label={view.string.Show}
       {kind}
+      shrink={1}
       showTooltip={{ label: view.string.CustomizeView, direction: 'bottom' }}
       bind:input={btn}
       on:click={clickHandler}

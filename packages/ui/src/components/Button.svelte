@@ -50,6 +50,7 @@
   export let iconSize: IconSize = size === 'inline' ? 'inline' : 'small'
   export let iconRightSize: IconSize = 'x-small'
   export let short: boolean = false
+  export let shrink: number = 0
   export let accent: boolean = false
   export let noFocus: boolean = false
 
@@ -112,6 +113,7 @@
   class:short
   style:width
   style:height
+  style:flex-shrink={shrink}
   {title}
   type={kind === 'primary' ? 'submit' : 'button'}
   on:click|stopPropagation|preventDefault

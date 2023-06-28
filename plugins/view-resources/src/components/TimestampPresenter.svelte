@@ -17,7 +17,7 @@
   import { Button, ButtonSize, TimeSince } from '@hcengineering/ui'
 
   export let value: number
-  export let kind: 'no-border' | 'link' = 'no-border'
+  export let kind: 'no-border' | 'link' | 'list' = 'no-border'
   export let readonly = false
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
@@ -31,5 +31,5 @@
     </svelte:fragment>
   </Button>
 {:else}
-  <TimeSince {value} />
+  <TimeSince {value} {kind} />
 {/if}

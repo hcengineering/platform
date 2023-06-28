@@ -597,20 +597,22 @@ export function createModel (builder: Builder): void {
           key: '',
           label: tracker.string.Priority,
           presenter: tracker.component.PriorityEditor,
-          props: { type: 'priority', kind: 'list', size: 'small' }
+          props: { type: 'priority', kind: 'list', size: 'small' },
+          displayProps: { key: 'subpriority' }
         },
         {
           key: '',
           label: tracker.string.Issue,
           presenter: tracker.component.IssuePresenter,
           props: { type: 'issue' },
-          displayProps: { fixed: 'left' }
+          displayProps: { key: 'subissue', fixed: 'left' }
         },
         {
           key: '',
           label: tracker.string.Status,
           presenter: tracker.component.StatusEditor,
-          props: { kind: 'list', size: 'small', justify: 'center' }
+          props: { kind: 'list', size: 'small', justify: 'center' },
+          displayProps: { key: 'substatus' }
         },
         {
           key: '',
@@ -619,12 +621,7 @@ export function createModel (builder: Builder): void {
           props: { shouldUseMargin: true, showParent: false }
         },
         { key: '', label: tracker.string.SubIssues, presenter: tracker.component.SubIssuesSelector, props: {} },
-        {
-          key: '',
-          label: tracker.string.DueDate,
-          presenter: tracker.component.DueDatePresenter,
-          props: { kind: 'list', size: 'small' }
-        },
+        { key: '', displayProps: { grow: true } },
         {
           key: '',
           label: tracker.string.Milestone,
@@ -642,20 +639,26 @@ export function createModel (builder: Builder): void {
         },
         {
           key: '',
+          label: tracker.string.DueDate,
+          presenter: tracker.component.DueDatePresenter,
+          displayProps: { key: 'dueDate', optional: true },
+          props: { kind: 'list', size: 'small' }
+        },
+        {
+          key: '',
           label: tracker.string.Estimation,
           presenter: tracker.component.EstimationEditor,
-          props: { kind: 'list', size: 'small' },
-          displayProps: { optional: true }
+          props: { kind: 'list', size: 'small' }
         },
-        { key: '', displayProps: { grow: true } },
         {
           key: 'modifiedOn',
           presenter: tracker.component.ModificationDatePresenter,
-          displayProps: { fixed: 'right', optional: true }
+          displayProps: { key: 'submodified', fixed: 'right' }
         },
         {
           key: 'assignee',
           presenter: tracker.component.AssigneeEditor,
+          displayProps: { key: 'assigee', fixed: 'right' },
           props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' }
         }
       ]
