@@ -39,11 +39,7 @@
     return contentType.startsWith('image/')
   }
   function openEmbedded (contentType: string) {
-    return (
-      contentType.includes('application/pdf') ||
-      contentType.startsWith('image/') ||
-      contentType.startsWith('application/msword')
-    )
+    return contentType.includes('application/pdf') || contentType.startsWith('image/')
   }
 
   function clickHandler (e: MouseEvent) {
