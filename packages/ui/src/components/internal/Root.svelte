@@ -1,7 +1,7 @@
 <script lang="ts">
   import platform, { addEventListener, getMetadata, OK, PlatformEvent, Status } from '@hcengineering/platform'
   import { onDestroy } from 'svelte'
-  import type { AnyComponent } from '../../types'
+  import type { AnyComponent, WidthType } from '../../types'
   // import { applicationShortcutKey } from '../../utils'
   import { getCurrentLocation, location, navigate, locationStorageKeyId } from '../../location'
 
@@ -100,6 +100,41 @@
   document.addEventListener('dblclick', (event) => {
     event.preventDefault()
   })
+
+  let remove: any = null
+  const sizes: Record<WidthType, boolean> = { xs: false, sm: false, md: false, lg: false, xl: false, xxl: false }
+  const css: Record<WidthType, string> = { xs: '', sm: '', md: '', lg: '', xl: '', xxl: '' }
+  const deviceSizes: WidthType[] = ['xs', 'sm', 'md', 'lg', 'xl', 'xxl']
+  const deviceWidths = [480, 680, 760, 1024, 1208, -1]
+  deviceSizes.forEach((ds, i) => {
+    if (i === 0) css[ds] = `(max-width: ${deviceWidths[i]}px)`
+    else if (i === deviceSizes.length - 1) css[ds] = `(min-width: ${deviceWidths[i - 1]}.01px)`
+    else css[ds] = `(min-width: ${deviceWidths[i - 1]}.01px) and (max-width: ${deviceWidths[i]}px)`
+  })
+  const getSize = (width: number): WidthType => {
+    return deviceSizes[
+      deviceWidths.findIndex((it) => (it === -1 ? deviceWidths[deviceWidths.length - 2] < width : it > width))
+    ]
+  }
+  const updateDeviceSize = () => {
+    if (remove !== null) remove()
+    const size = getSize(docWidth)
+    const mqString = css[size]
+    const media = matchMedia(mqString)
+
+    deviceWidths.forEach((_, i) => (sizes[deviceSizes[i]] = false))
+    deviceWidths.forEach((dw, i) => {
+      sizes[deviceSizes[i]] =
+        dw === -1 ? deviceWidths[deviceWidths.length - 2] < docWidth : docWidth > dw || size === deviceSizes[i]
+    })
+    $deviceInfo.size = size
+    $deviceInfo.sizes = sizes
+    media.addEventListener('change', updateDeviceSize)
+    remove = () => {
+      media.removeEventListener('change', updateDeviceSize)
+    }
+  }
+  updateDeviceSize()
 </script>
 
 <svelte:window bind:innerWidth={docWidth} bind:innerHeight={docHeight} />

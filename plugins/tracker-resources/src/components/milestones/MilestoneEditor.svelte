@@ -78,7 +78,7 @@
 
 {#if kind === 'list'}
   {#if value.milestone}
-    <div class="clear-mins" class:label-wrapper={compression}>
+    <div class="label-wrapper">
       <MilestoneSelector
         {kind}
         {size}
@@ -90,7 +90,7 @@
         {popupPlaceholder}
         {onlyIcon}
         {enlargedText}
-        short={compression}
+        short
         showTooltip={{ label: value.milestone ? tracker.string.MoveToMilestone : tracker.string.AddToMilestone }}
         value={value.milestone}
         onChange={handleMilestoneIdChanged}

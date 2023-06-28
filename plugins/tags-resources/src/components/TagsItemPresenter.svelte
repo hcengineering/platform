@@ -14,13 +14,25 @@
 -->
 <script lang="ts">
   import { TagReference } from '@hcengineering/tags'
+  import TagReferencePresenter from './TagReferencePresenter.svelte'
   import TagItem from './TagItem.svelte'
 
   export let value: TagReference[] | TagReference
+  export let kind: 'tag' | 'list' = 'tag'
 
   $: values = Array.isArray(value) ? value : [value]
 </script>
 
-{#each values as v}
-  <TagItem tag={v} />
-{/each}
+{#if kind === 'list'}
+  <div class="flex-center flex-wrap">
+    {#each values as v}
+      <div class="m-0-5">
+        <TagReferencePresenter attr={undefined} value={v} {kind} />
+      </div>
+    {/each}
+  </div>
+{:else}
+  {#each values as v}
+    <TagItem tag={v} />
+  {/each}
+{/if}

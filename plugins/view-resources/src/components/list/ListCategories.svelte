@@ -58,6 +58,7 @@
   export let listDiv: HTMLDivElement
   export let selection: number | undefined = undefined
   export let groupPersistKey: string
+  export let compactMode: boolean = false
 
   $: groupByKey = viewOptions.groupBy[level] ?? noCategory
   let categories: CategoryType[] = []
@@ -310,6 +311,7 @@
     {createItemDialogProps}
     {createItemLabel}
     {viewOptionsConfig}
+    {compactMode}
     on:check
     on:uncheckAll
     on:row-focus

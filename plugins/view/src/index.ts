@@ -535,8 +535,8 @@ export interface DisplayProps {
   key?: string
   excludeByKey?: string
   fixed?: 'left' | 'right' // using for align items in row
+  suffix?: boolean
   optional?: boolean
-  compression?: boolean
   grow?: boolean
   dividerBefore?: boolean // should show divider before
 }

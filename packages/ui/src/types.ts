@@ -295,12 +295,16 @@ export const tableHRscheduleY: FadeOptions = { multipler: { top: 5, bottom: 0 } 
 export const issueSP: FadeOptions = { multipler: { top: 2.75, bottom: 0 } }
 export const emojiSP: FadeOptions = { multipler: { top: 1.5, bottom: 0 } }
 
+export type WidthType = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'
+
 export interface DeviceOptions {
   docWidth: number
   docHeight: number
   isPortrait: boolean
   isMobile: boolean
   fontSize: number
+  size: WidthType | null
+  sizes: Record<WidthType, boolean>
   minWidth: boolean
   twoRows: boolean
   theme?: any

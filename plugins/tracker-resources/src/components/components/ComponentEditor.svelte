@@ -56,9 +56,8 @@
 
 {#if (value.component && value.component !== $activeComponent && groupBy !== 'component') || shouldShowPlaceholder}
   <div
-    class="clear-mins"
+    class="label-wrapper"
     class:minus-margin={kind === 'list-header'}
-    class:label-wrapper={compression}
     use:tooltip={{ label: value.component ? tracker.string.MoveToComponent : tracker.string.AddToComponent }}
   >
     <ComponentSelector
@@ -74,7 +73,7 @@
       {onlyIcon}
       {enlargedText}
       value={value.component}
-      short={compression}
+      short
       onChange={handleComponentIdChanged}
     />
   </div>

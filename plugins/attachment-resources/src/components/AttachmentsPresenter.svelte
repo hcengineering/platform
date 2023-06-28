@@ -23,29 +23,40 @@
   export let object: Doc
   export let size: ButtonSize = 'small'
   export let kind: ButtonKind = 'link'
-  export let showCounter = true
+  export let showCounter: boolean = true
+  export let compactMode: boolean = false
 </script>
 
 {#if value && value > 0}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <DocNavLink {object} inline noUnderline={true}>
+  <DocNavLink {object} inline noUnderline={true} shrink={0}>
     {#if kind === 'list'}
-      <div
-        use:tooltip={{
-          component: AttachmentPopup,
-          props: { objectId: object._id, attachments: value, object }
-        }}
-        class="sm-tool-icon"
-      >
-        <Button {kind} {size}>
-          <div slot="content" class="flex-row-center">
-            <span class="icon"><IconAttachment {size} /></span>
-            {#if showCounter}
-              {value}
-            {/if}
-          </div></Button
+      {#if compactMode}
+        <div
+          use:tooltip={{
+            component: AttachmentPopup,
+            props: { objectId: object._id, attachments: value, object }
+          }}
+          class="sm-tool-icon"
         >
-      </div>
+          <div class="icon halfcontent"><IconAttachment {size} /></div>
+          {#if showCounter}{value ?? 0}{/if}
+        </div>
+      {:else}
+        <Button
+          {kind}
+          {size}
+          showTooltip={{
+            component: AttachmentPopup,
+            props: { objectId: object._id, attachments: value, object }
+          }}
+        >
+          <div slot="icon"><IconAttachment {size} /></div>
+          <div slot="content" style:margin-left={showCounter ? '.375rem' : '0'}>
+            {#if showCounter}{value ?? 0}{/if}
+          </div>
+        </Button>
+      {/if}
     {:else}
       <div
         use:tooltip={{

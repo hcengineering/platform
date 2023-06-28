@@ -16,7 +16,7 @@
   import { AnyAttribute, Doc, getObjectValue } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { getClient, updateAttribute } from '@hcengineering/presentation'
-  import { CheckBox, Component, deviceOptionsStore as deviceInfo, IconCircles, tooltip } from '@hcengineering/ui'
+  import { CheckBox, Component, IconCircles, tooltip } from '@hcengineering/ui'
   import { AttributeModel } from '@hcengineering/view'
   import { createEventDispatcher, onMount } from 'svelte'
   import view from '../../plugin'
@@ -31,6 +31,7 @@
   export let last: boolean = false
   export let lastCat: boolean = false
   export let props: Record<string, any> = {}
+  export let compactMode: boolean = false
 
   export function scroll () {
     elem?.scrollIntoView({ behavior: 'auto', block: 'nearest' })
@@ -48,8 +49,6 @@
     return elem
   }
 
-  $: compactMode = $deviceInfo.twoRows
-
   const client = getClient()
 
   function onChange (value: any, doc: Doc, key: string, attribute: AnyAttribute) {
@@ -64,13 +63,6 @@
     return (value: any) => onChange(value, docObject, attribute.key, attr)
   }
 
-  let noCompressed: number
-  $: if (model) {
-    noCompressed = -1
-    model.forEach((m, i) => {
-      if (m.displayProps?.compression) noCompressed = i
-    })
-  }
   onMount(() => {
     dispatch('on-mount')
   })
@@ -120,20 +112,43 @@
       />
     </div>
   </div>
-  {#each model.filter((p) => !(p.displayProps?.optional === true)) as attributeModel, i}
+  {#each model.filter((p) => !(p.displayProps?.optional === true || p.displayProps?.suffix === true)) as attributeModel, i}
     {@const displayProps = attributeModel.displayProps}
     {#if !groupByKey || displayProps?.excludeByKey !== groupByKey}
       {#if displayProps?.grow}
-        <GrowPresenter />
         {#if !compactMode}
-          {#each model.filter((p) => p.displayProps?.optional === true) as attrModel, j}
+          {#each model.filter((p) => p.displayProps?.suffix === true) as attrModel}
             <ListPresenter
               {docObject}
               attributeModel={attrModel}
               {props}
-              compression={j !== noCompressed}
               value={getObjectValue(attrModel.key, docObject)}
               onChange={getOnChange(docObject, attrModel)}
+            />
+          {/each}
+        {/if}
+        <GrowPresenter />
+        {#if !compactMode}
+          <div class="optional-bar">
+            {#each model.filter((p) => p.displayProps?.optional === true) as attrModel}
+              <ListPresenter
+                {docObject}
+                attributeModel={attrModel}
+                {props}
+                value={getObjectValue(attrModel.key, docObject)}
+                onChange={getOnChange(docObject, attrModel)}
+              />
+            {/each}
+          </div>
+        {:else}
+          {#each model.filter((p) => p.displayProps?.suffix === true) as attrModel}
+            <ListPresenter
+              {docObject}
+              attributeModel={attrModel}
+              {props}
+              value={getObjectValue(attrModel.key, docObject)}
+              onChange={getOnChange(docObject, attrModel)}
+              compactMode
             />
           {/each}
         {/if}
@@ -142,10 +157,10 @@
           {docObject}
           {attributeModel}
           {props}
-          compression={i !== noCompressed}
           value={getObjectValue(attributeModel.key, docObject)}
           onChange={getOnChange(docObject, attributeModel)}
           hideDivider={i === 0}
+          {compactMode}
         />
       {/if}
     {/if}
@@ -164,7 +179,7 @@
         <IconCircles />
       </div>
       <div class="scroll-box gap-2">
-        {#each model.filter((m) => m.displayProps?.optional || m.displayProps?.compression) as attributeModel, j}
+        {#each model.filter((m) => m.displayProps?.optional) as attributeModel, j}
           {@const displayProps = attributeModel.displayProps}
           {@const value = getObjectValue(attributeModel.key, docObject)}
           {#if displayProps?.excludeByKey !== groupByKey && value !== undefined}
