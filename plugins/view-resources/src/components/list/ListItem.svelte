@@ -141,6 +141,7 @@
             {/each}
           </div>
         {:else}
+          <GrowPresenter />
           {#each model.filter((p) => p.displayProps?.suffix === true) as attrModel}
             <ListPresenter
               {docObject}

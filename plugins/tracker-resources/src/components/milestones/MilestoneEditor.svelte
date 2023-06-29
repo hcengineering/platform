@@ -83,7 +83,6 @@
         {kind}
         {size}
         {shape}
-        {width}
         {justify}
         {isEditable}
         {shouldShowLabel}

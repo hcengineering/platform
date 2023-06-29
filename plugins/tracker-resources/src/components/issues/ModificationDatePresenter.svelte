@@ -45,6 +45,6 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     font-size: 0.75rem;
-    color: var(--content-color);
+    color: var(--theme-dark-color);
   }
 </style>

@@ -166,7 +166,7 @@
         <ParentsNavigator element={issue} />
       {/if}
 
-      <span class="ml-4 fs-title select-text-i">
+      <span class="ml-4 fs-title select-text-i overflow-label">
         {#if embedded}
           <DocNavLink object={issue}>
             {#if issueId}{issueId}{/if}

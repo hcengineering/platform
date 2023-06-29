@@ -63,7 +63,7 @@
   export let focusIndex = -1
   export let showTooltip: LabelAndProps | PersonLabelTooltip | undefined = undefined
   export let showNavigate = true
-  export let shouldShowName = true
+  export let shouldShowName: boolean = true
   export let id: string | undefined = undefined
   export let short: boolean = false
 

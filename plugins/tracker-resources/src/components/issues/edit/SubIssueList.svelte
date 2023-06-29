@@ -26,7 +26,8 @@
   export let issues: Issue[] | undefined = undefined
   export let viewlet: Viewlet
   export let viewOptions: ViewOptions
-  export let disableHeader = false
+  export let disableHeader: boolean = false
+  export let compactMode: boolean = false
 
   // Extra properties
   export let projects: Map<Ref<Project>, Project> | undefined
@@ -86,6 +87,7 @@
     {createItemDialogProps}
     {createItemLabel}
     selectedObjectIds={$selectionStore ?? []}
+    {compactMode}
     on:row-focus={(event) => {
       listProvider.updateFocus(event.detail ?? undefined)
     }}

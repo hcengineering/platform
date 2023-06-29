@@ -28,7 +28,7 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="flex-between">
+<div class="flex-between w-full">
   <div class="caption">
     <Label {label} />
     {#if description}

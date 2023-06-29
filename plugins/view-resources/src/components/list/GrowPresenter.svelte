@@ -1,12 +1,11 @@
-<span class="root" />
+<div class="grow-container" />
 
 <style lang="scss">
-  .root {
+  .grow-container {
     display: flex;
     flex-grow: 1;
     min-width: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    flex-shrink: 10;
+    flex-shrink: initial;
+    flex-basis: initial;
   }
 </style>

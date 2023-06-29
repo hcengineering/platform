@@ -21,6 +21,7 @@
 
   const client = getClient()
   let viewlet: Viewlet | undefined
+  let listWidth: number
 
   const vquery = createQuery()
   $: vquery.query(view.class.Viewlet, { _id: tracker.viewlet.SubIssues }, (res) => {
@@ -41,12 +42,12 @@
 </script>
 
 {#if $configurationStore.has(trackerId)}
-  <div class="antiSection">
-    <div class="antiSection-header">
+  <div class="antiSection" bind:clientWidth={listWidth}>
+    <div class="antiSection-header mb-3">
       <div class="antiSection-header__icon">
         <Icon icon={tracker.icon.Issue} size={'small'} />
       </div>
-      <span class="antiSection-header__title short">
+      <span class="antiSection-header__title short overflow-label">
         <Label {label} />
       </span>
       {#if headerRemoval}
@@ -64,7 +65,7 @@
       {:else}
         <span class="flex-grow" />
       {/if}
-      <div class="buttons-group small-gap">
+      <div class="flex-row-center gap-2">
         {#if viewlet && viewOptions}
           <ViewletSettingButton bind:viewOptions {viewlet} kind={'transparent'} />
         {/if}
@@ -74,13 +75,19 @@
           label={undefined}
           labelParams={{ subIssues: 0 }}
           kind={'transparent'}
-          shape={'circle'}
           on:click={createIssue}
         />
       </div>
     </div>
     {#if viewlet}
-      <RelatedIssues {object} {viewOptions} {viewlet} on:add-issue={createIssue} disableHeader={headerRemoval} />
+      <RelatedIssues
+        {object}
+        {viewOptions}
+        {viewlet}
+        on:add-issue={createIssue}
+        disableHeader={headerRemoval}
+        compactMode={listWidth <= 600}
+      />
     {/if}
   </div>
 {/if}

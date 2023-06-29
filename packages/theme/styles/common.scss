@@ -365,6 +365,7 @@
 
   &.dark { background-color: var(--body-accent); }
   &.noMargin { margin: 0; }
+  & + & { display: none; }
 }
 
 .antiHSpacer {
@@ -390,7 +391,7 @@
     align-items: center;
     height: 2.5rem;
     min-height: 2.5rem;
-    border-bottom: 1px solid var(--divider-color);
+    border-bottom: 1px solid var(--theme-divider-color);
     
     &.high {
       padding-right: 1rem;
@@ -403,7 +404,7 @@
       align-items: center;
       margin-right: .5rem;
       height: 2rem;
-      color: var(--caption-color);
+      color: var(--theme-caption-color);
     }
     &__title {
       min-width: 0;
@@ -422,7 +423,7 @@
       min-width: 0;
       font-weight: 500;
       font-size: 1rem;
-      color: var(--caption-color);
+      color: var(--theme-caption-color);
       background: var(--header-bg-color);
       border-radius: .5rem .5rem 0 0;
     }

@@ -32,7 +32,6 @@
     class="name overflow-label select-text"
     class:with-margin={shouldUseMargin}
     class:list={kind === 'list'}
-    style:max-width={showParent ? `${value.parents.length !== 0 ? 95 : 100}%` : '100%'}
     title={value.title}
   >
     <DocNavLink

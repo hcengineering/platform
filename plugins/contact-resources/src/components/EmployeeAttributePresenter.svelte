@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
-  import { ButtonKind } from '@hcengineering/ui'
+  import { ButtonKind, IconSize } from '@hcengineering/ui'
   import { PersonLabelTooltip } from '..'
   import contact from '../plugin'
   import { employeeByIdStore } from '../utils'
@@ -14,7 +14,9 @@
   export let onChange: ((value: Ref<Employee>) => void) | undefined = undefined
   export let colorInherit: boolean = false
   export let accent: boolean = false
-  export let inline = false
+  export let inline: boolean = false
+  export let shouldShowName: boolean = true
+  export let avatarSize: IconSize = kind === 'list-header' ? 'smaller' : 'x-small'
 
   $: employee = value ? $employeeByIdStore.get(value) : undefined
 
@@ -37,6 +39,8 @@
     kind={'link'}
     showNavigate={false}
     justify={'left'}
+    {shouldShowName}
+    {avatarSize}
     on:change={({ detail }) => onChange?.(detail)}
     on:accent-color
   />
@@ -49,8 +53,8 @@
     shouldShowAvatar
     shouldShowPlaceholder
     defaultName={contact.string.NotSpecified}
-    shouldShowName={kind !== 'list'}
-    avatarSize={kind === 'list-header' ? 'smaller' : 'x-small'}
+    shouldShowName={shouldShowName ? kind !== 'list' : false}
+    {avatarSize}
     {colorInherit}
     {accent}
     on:accent-color

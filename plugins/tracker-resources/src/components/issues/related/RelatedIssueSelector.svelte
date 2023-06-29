@@ -39,6 +39,7 @@
   export let size: ButtonSize = 'inline'
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = 'min-contet'
+  export let compactMode: boolean = false
 
   let btn: HTMLElement
 
@@ -130,9 +131,11 @@
       <svelte:fragment slot="content">
         {#if subIssues}
           <div class="flex-row-center content-color text-sm pointer-events-none">
-            <div class="mr-1">
-              <ProgressCircle bind:value={countComplete} bind:max={subIssues.length} size={'inline'} primary />
-            </div>
+            {#if !compactMode}
+              <div class="mr-1-5">
+                <ProgressCircle bind:value={countComplete} bind:max={subIssues.length} size={'small'} primary />
+              </div>
+            {/if}
             {countComplete}/{subIssues.length}
           </div>
         {/if}

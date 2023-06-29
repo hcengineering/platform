@@ -39,6 +39,7 @@
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
+  <div class="menu-space" />
   <div class="scroll">
     <div class="box">
       {#each states as state}
@@ -55,6 +56,7 @@
       {/each}
     </div>
   </div>
+  <div class="menu-space" />
 </div>
 
 <style lang="scss">

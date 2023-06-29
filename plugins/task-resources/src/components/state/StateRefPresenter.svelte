@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { Ref, Status, StatusValue } from '@hcengineering/core'
-  import type { ButtonSize } from '@hcengineering/ui'
+  import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { State } from '@hcengineering/task'
   import { statusStore } from '@hcengineering/view-resources'
   import StateEditor from './StateEditor.svelte'
@@ -23,14 +23,17 @@
 
   export let value: Ref<State> | StatusValue
   export let onChange: ((value: Ref<State>) => void) | undefined = undefined
+  export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'medium'
+  export let shouldShowName: boolean = true
+
   $: state = $statusStore.get(typeof value === 'string' ? value : (value?.values?.[0]?._id as Ref<Status>))
 </script>
 
 {#if value}
   {#if onChange !== undefined && state !== undefined}
-    <StateEditor value={state._id} space={state.space} {onChange} kind="link" {size} />
+    <StateEditor value={state._id} space={state.space} {onChange} {kind} {size} {shouldShowName} />
   {:else}
-    <StatePresenter value={state} on:accent-color />
+    <StatePresenter value={state} {shouldShowName} on:accent-color />
   {/if}
 {/if}

@@ -29,6 +29,8 @@
   export let inline: boolean = false
   export let disabled: boolean = false
   export let oneLine: boolean = false
+  export let shouldShowName: boolean = true
+  export let shouldShowTooltip: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -43,22 +45,26 @@
 </script>
 
 {#if value}
-  <div class="flex-presenter" class:inline-presenter={inline}>
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <div class="flex-presenter" class:inline-presenter={inline} on:click>
     {#if shouldShowAvatar}
       <div
         class="state-container"
         class:inline
+        class:mr-2={shouldShowName}
         style="background-color: {color?.color ?? defaultBackground($themeStore.dark)}"
+        title={shouldShowTooltip ? value.name : undefined}
       />
     {/if}
-    <span class="overflow-label label" class:nowrap={oneLine} class:no-underline={disabled}>{value.name}</span>
+    {#if shouldShowName}
+      <span class="overflow-label label" class:nowrap={oneLine} class:no-underline={disabled}>{value.name}</span>
+    {/if}
   </div>
 {/if}
 
 <style lang="scss">
   .state-container {
     flex-shrink: 0;
-    margin-right: 0.5rem;
     width: 0.875rem;
     height: 0.875rem;
     border: 1px solid rgba(0, 0, 0, 0.1);
