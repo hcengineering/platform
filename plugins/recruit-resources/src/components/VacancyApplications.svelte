@@ -98,7 +98,7 @@
         <FileDuo size={'large'} />
       </div>
       <span class="content-dark-color">
-        <Label label={recruit.string.NoApplicationsForVacany} />
+        <Label label={recruit.string.NoApplicationsForVacancy} />
       </span>
       <span class="over-underline content-color" on:click={createApp}>
         <Label label={recruit.string.CreateAnApplication} />
