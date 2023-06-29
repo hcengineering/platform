@@ -7,6 +7,8 @@ import view, { createAction } from '@hcengineering/model-view'
 import { Review } from '@hcengineering/recruit'
 import { BuildModelKey } from '@hcengineering/view'
 import recruit from './plugin'
+import notification from '@hcengineering/notification'
+import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 
 export const reviewTableOptions: FindOptions<Review> = {
   lookup: {
@@ -112,6 +114,36 @@ export function createReviewModel (builder: Builder): void {
       ]
     },
     recruit.viewlet.CalendarReview
+  )
+
+  builder.createDoc(
+    notification.class.NotificationGroup,
+    core.space.Model,
+    {
+      label: recruit.string.Review,
+      icon: recruit.icon.Reviews,
+      objectClass: recruit.class.Review
+    },
+    recruit.ids.ReviewNotificationGroup
+  )
+
+  generateClassNotificationTypes(builder, recruit.class.Review, recruit.ids.ReviewNotificationGroup, [], ['comments'])
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: false,
+      generated: false,
+      label: recruit.string.NewReview,
+      group: recruit.ids.ReviewNotificationGroup,
+      txClasses: [core.class.TxCreateDoc, core.class.TxUpdateDoc],
+      objectClass: recruit.class.Review,
+      providers: {
+        [notification.providers.PlatformNotification]: true
+      }
+    },
+    recruit.ids.ReviewCreateNotification
   )
 }
 

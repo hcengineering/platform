@@ -91,6 +91,7 @@ export default mergeIds(recruitId, recruit, {
 
     Review: '' as IntlString,
     ReviewCreateLabel: '' as IntlString,
+    NewReview: '' as IntlString,
     CreateReview: '' as IntlString,
     CreateReviewParams: '' as IntlString,
     Reviews: '' as IntlString,
