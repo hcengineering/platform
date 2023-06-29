@@ -35,7 +35,7 @@
   export let component: AnySvelteComponent | undefined = undefined
   export let componentProps: any | undefined = undefined
   export let autoSelect = true
-  export let iconWithEmojii: AnySvelteComponent | Asset | ComponentType | undefined = undefined
+  export let iconWithEmoji: AnySvelteComponent | Asset | ComponentType | undefined = undefined
   export let defaultIcon: AnySvelteComponent | Asset | ComponentType | undefined = undefined
 
   const dispatch = createEventDispatcher()
@@ -59,7 +59,7 @@
   {component}
   {componentProps}
   {autoSelect}
-  {iconWithEmojii}
+  {iconWithEmoji}
   {defaultIcon}
   bind:value={space}
   on:change={(evt) => {

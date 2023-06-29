@@ -297,7 +297,7 @@ export default mergeIds(trackerId, tracker, {
     ProjectColor: '' as IntlString,
 
     ProjectIconCategory: '' as IntlString,
-    ProjectEmojiiCategory: '' as IntlString,
+    ProjectEmojiCategory: '' as IntlString,
 
     NoStatusFound: '' as IntlString,
     CreateMissingStatus: '' as IntlString,
@@ -364,7 +364,7 @@ export default mergeIds(trackerId, tracker, {
     IssueTemplates: '' as AnyComponent,
     IssueTemplatePresenter: '' as AnyComponent,
     SubIssuesSelector: '' as AnyComponent,
-    IconWithEmojii: '' as Asset
+    IconWithEmoji: '' as Asset
   },
   metadata: {
     CreateIssueDraft: '' as Metadata<IssueDraft>

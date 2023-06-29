@@ -16,7 +16,7 @@
   import { Ref, Space } from '@hcengineering/core'
   import { Project } from '@hcengineering/tracker'
   import {
-    IconWithEmojii,
+    IconWithEmoji,
     getCurrentLocation,
     getPlatformColorDef,
     getPlatformColorForTextDef,
@@ -43,8 +43,8 @@
 {#if model.specials}
   <TreeNode
     {collapsed}
-    icon={space?.icon === tracker.component.IconWithEmojii ? IconWithEmojii : space?.icon ?? model.icon}
-    iconProps={space?.icon === tracker.component.IconWithEmojii
+    icon={space?.icon === tracker.component.IconWithEmoji ? IconWithEmoji : space?.icon ?? model.icon}
+    iconProps={space?.icon === tracker.component.IconWithEmoji
       ? { icon: space.color }
       : {
           fill:

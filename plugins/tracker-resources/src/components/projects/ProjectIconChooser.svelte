@@ -55,7 +55,7 @@
   <div class="float-left-box">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <TabsControl
-      model={[{ label: tracker.string.ProjectIconCategory }, { label: tracker.string.ProjectEmojiiCategory }]}
+      model={[{ label: tracker.string.ProjectIconCategory }, { label: tracker.string.ProjectEmojiCategory }]}
     >
       <svelte:fragment slot="content" let:selected>
         {#if selected === 0}
@@ -82,7 +82,7 @@
           <EmojiPopup
             embedded
             on:close={(evt) => {
-              dispatch('close', { icon: tracker.component.IconWithEmojii, color: evt.detail.codePointAt(0) })
+              dispatch('close', { icon: tracker.component.IconWithEmoji, color: evt.detail.codePointAt(0) })
             }}
           />
         {/if}

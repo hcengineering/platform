@@ -79,8 +79,10 @@
     <DateRangePresenter bind:value={date} />
   </div>
   <svelte:fragment slot="pool">
-    <Label label={hr.string.Department} />
-    <SpaceSelector _class={hr.class.Department} label={hr.string.ParentDepartmentLabel} bind:space={department} />
+    <div class="flex-row-center flex-grow flex-gap-3">
+      <Label label={hr.string.Department} />
+      <SpaceSelector _class={hr.class.Department} label={hr.string.ParentDepartmentLabel} bind:space={department} />
+    </div>
   </svelte:fragment>
   <svelte:fragment slot="buttons">
     {#if existingHoliday}

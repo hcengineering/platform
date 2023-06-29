@@ -16,7 +16,7 @@
   import { createEventDispatcher, ComponentType } from 'svelte'
 
   import { Asset, IntlString } from '@hcengineering/platform'
-  import { getPlatformColorDef, getPlatformColorForTextDef, IconWithEmojii, themeStore } from '@hcengineering/ui'
+  import { getPlatformColorDef, getPlatformColorForTextDef, IconWithEmoji, themeStore } from '@hcengineering/ui'
   import {
     AnySvelteComponent,
     Button,
@@ -56,7 +56,7 @@
   export let componentProps: any | undefined = undefined
   export let autoSelect = true
   export let readonly = false
-  export let iconWithEmojii: AnySvelteComponent | Asset | ComponentType | undefined = undefined
+  export let iconWithEmoji: AnySvelteComponent | Asset | ComponentType | undefined = undefined
   export let defaultIcon: AnySvelteComponent | Asset | ComponentType = IconFolder
 
   let selected: (Space & IconProps) | undefined
@@ -121,8 +121,8 @@
     {focus}
     disabled={readonly}
     {focusIndex}
-    icon={selected?.icon === iconWithEmojii ? IconWithEmojii : selected?.icon ?? defaultIcon}
-    iconProps={selected?.icon === iconWithEmojii
+    icon={selected?.icon === iconWithEmoji && iconWithEmoji ? IconWithEmoji : selected?.icon ?? defaultIcon}
+    iconProps={selected?.icon === iconWithEmoji && iconWithEmoji
       ? { icon: selected?.color }
       : {
           fill:

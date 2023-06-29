@@ -552,7 +552,7 @@
       kind={'secondary'}
       size={'small'}
       component={ProjectPresenter}
-      iconWithEmojii={tracker.component.IconWithEmojii}
+      iconWithEmoji={tracker.component.IconWithEmoji}
       defaultIcon={tracker.icon.Home}
     />
     <ObjectBox
