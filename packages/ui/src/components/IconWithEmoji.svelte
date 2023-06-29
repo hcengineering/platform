@@ -24,50 +24,50 @@
   } catch (err) {}
 </script>
 
-<div class="emojii-{size} flex-row-center emojii">
+<div class="emoji-{size} flex-row-center emoji">
   {value}
 </div>
 
 <style lang="scss">
-  .emojii {
+  .emoji {
     display: flex;
     align-items: center;
     justify-content: center;
     color: black;
   }
-  .emojii-inline {
+  .emoji-inline {
     width: 1em;
     height: 1em;
     font-size: 1rem;
   }
-  .emojii-x-small {
+  .emoji-x-small {
     width: 0.75rem;
     height: 0.75rem;
     font-size: 0.75rem;
   }
-  .emojii-small {
+  .emoji-small {
     width: 1rem;
     height: 1rem;
     font-size: 1rem;
   }
-  .emojii-medium {
+  .emoji-medium {
     width: 1.25rem;
     height: 1.25rem;
     font-size: 1.25rem;
   }
-  .emojii-large {
+  .emoji-large {
     width: 1.5rem;
     height: 1.5rem;
     font-size: 1.5rem;
   }
-  .semojiivg-full {
+  .semojivg-full {
     width: inherit;
     height: inherit;
   }
-  .emojii-x-small,
-  .emojii-small,
-  .emojii-medium,
-  .emojii-large {
+  .emoji-x-small,
+  .emoji-small,
+  .emoji-medium,
+  .emoji-large {
     flex-shrink: 0;
   }
 </style>

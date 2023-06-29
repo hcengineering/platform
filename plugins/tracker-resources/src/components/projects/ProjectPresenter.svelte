@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Project } from '@hcengineering/tracker'
-  import { Icon, IconWithEmojii, getPlatformColorDef, getPlatformColorForTextDef, themeStore } from '@hcengineering/ui'
+  import { Icon, IconWithEmoji, getPlatformColorDef, getPlatformColorForTextDef, themeStore } from '@hcengineering/ui'
   import tracker from '../../plugin'
 
   export let value: Project | undefined
@@ -24,10 +24,10 @@
 
 {#if value}
   <div class="flex-presenter cursor-default" class:inline-presenter={inline}>
-    <div class="icon" class:emoji={value.icon === tracker.component.IconWithEmojii}>
+    <div class="icon" class:emoji={value.icon === tracker.component.IconWithEmoji}>
       <Icon
-        icon={value.icon === tracker.component.IconWithEmojii ? IconWithEmojii : value.icon ?? tracker.icon.Home}
-        iconProps={value.icon === tracker.component.IconWithEmojii
+        icon={value.icon === tracker.component.IconWithEmoji ? IconWithEmoji : value.icon ?? tracker.icon.Home}
+        iconProps={value.icon === tracker.component.IconWithEmoji
           ? { icon: value.color }
           : {
               fill:

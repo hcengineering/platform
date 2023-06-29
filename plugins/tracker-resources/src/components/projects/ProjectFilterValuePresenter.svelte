@@ -16,7 +16,7 @@
   import { Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Project } from '@hcengineering/tracker'
-  import { Icon, IconWithEmojii, getPlatformColorDef, getPlatformColorForTextDef, themeStore } from '@hcengineering/ui'
+  import { Icon, IconWithEmoji, getPlatformColorDef, getPlatformColorForTextDef, themeStore } from '@hcengineering/ui'
   import tracker from '../../plugin'
 
   export let value: [Ref<Project>, Ref<Project>[]][]
@@ -37,9 +37,9 @@
   {#each projects as project, i}
     {#if value && i < MAX_VISIBLE_PROJECTS}
       {@const icon =
-        project.icon === tracker.component.IconWithEmojii ? IconWithEmojii : project.icon ?? tracker.icon.Home}
+        project.icon === tracker.component.IconWithEmoji ? IconWithEmoji : project.icon ?? tracker.icon.Home}
       {@const iconProps =
-        project.icon === tracker.component.IconWithEmojii
+        project.icon === tracker.component.IconWithEmoji
           ? { icon: project.color }
           : {
               fill:

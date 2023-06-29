@@ -24,7 +24,7 @@
     Button,
     EditBox,
     IconEdit,
-    IconWithEmojii,
+    IconWithEmoji,
     Label,
     Toggle,
     eventToHTMLElement,
@@ -270,8 +270,8 @@
         <Label label={tracker.string.ChooseIcon} />
       </div>
       <Button
-        icon={icon === tracker.component.IconWithEmojii ? IconWithEmojii : icon ?? tracker.icon.Home}
-        iconProps={icon === tracker.component.IconWithEmojii
+        icon={icon === tracker.component.IconWithEmoji ? IconWithEmoji : icon ?? tracker.icon.Home}
+        iconProps={icon === tracker.component.IconWithEmoji
           ? { icon: color }
           : {
               fill:
