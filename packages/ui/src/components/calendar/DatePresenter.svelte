@@ -19,8 +19,7 @@
   import { DateRangeMode } from '@hcengineering/core'
   import ui from '../../plugin'
   import { showPopup } from '../../popups'
-  import { tooltip } from '../../tooltips'
-  import { ButtonKind, ButtonSize, AnySvelteComponent, LabelAndProps } from '../../types'
+  import { ButtonKind, ButtonSize, AnySvelteComponent } from '../../types'
   import Icon from '../Icon.svelte'
   import Label from '../Label.svelte'
   import DatePopup from './DatePopup.svelte'
@@ -42,7 +41,6 @@
   export let width: string | undefined = undefined
   export let label = ui.string.DueDate
   export let detail = ui.string.NeedsToBeCompletedByThisDate
-  export let showTooltip: LabelAndProps | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -75,7 +73,6 @@
   class:noDate={!value}
   class:withIcon={showIcon}
   style:width
-  use:tooltip={showTooltip}
   on:click={(e) => {
     if (editable && !opened) {
       e.stopPropagation()

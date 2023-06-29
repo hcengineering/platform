@@ -15,6 +15,7 @@
 <script lang="ts">
   import { Timestamp } from '@hcengineering/core'
   import DueDatePopup from './DueDatePopup.svelte'
+  import { tooltip } from '../../tooltips'
   import DatePresenter from './DatePresenter.svelte'
   import { getDaysDifference } from './internal/DateUtils'
   import { ButtonKind, ButtonSize } from '../../types'
@@ -26,7 +27,7 @@
   export let editable: boolean = true
   export let shouldIgnoreOverdue: boolean = false
   export let size: ButtonSize = 'medium'
-  export let width: string | undefined = undefined
+  export let width: string | undefined = 'auto'
 
   const today = new Date(new Date(Date.now()).setHours(0, 0, 0, 0))
   $: isOverdue = value !== null && value < today.getTime()
@@ -75,15 +76,10 @@
 </script>
 
 {#if shouldRender}
-  <DatePresenter
-    {value}
-    {editable}
-    {iconModifier}
-    {kind}
-    {size}
-    {width}
-    on:change={handleDueDateChanged}
-    showTooltip={formattedDate
+  <div
+    class="clear-mins"
+    style:width
+    use:tooltip={formattedDate
       ? {
           direction: 'top',
           component: DueDatePopup,
@@ -96,5 +92,7 @@
           }
         }
       : undefined}
-  />
+  >
+    <DatePresenter {value} {editable} {iconModifier} {kind} {size} {width} on:change={handleDueDateChanged} />
+  </div>
 {/if}
