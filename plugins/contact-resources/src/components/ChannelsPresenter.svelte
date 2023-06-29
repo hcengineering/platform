@@ -33,7 +33,7 @@
     if (ev.detail.presenter !== undefined && Array.isArray(value)) {
       showPopup(
         ev.detail.presenter,
-        { _id: ev.detail.channel.attachedTo, _class: ev.detail.channel.attachedToClass },
+        { channel: ev.detail.channel },
         'float'
       )
     }

@@ -24,7 +24,7 @@
     getName as getContactName
   } from '@hcengineering/contact'
   import { Avatar, employeeAccountByIdStore, employeeByIdStore } from '@hcengineering/contact-resources'
-  import { Class, IdMap, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
+  import { IdMap, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -49,30 +49,16 @@
   import Reconnect from './Reconnect.svelte'
   import TelegramIcon from './icons/Telegram.svelte'
 
-  export let _id: Ref<Contact>
-  export let _class: Ref<Class<Contact>>
+  export let channel: Channel
   export let embedded = false
 
   let object: Contact
-  let channel: Channel | undefined = undefined
   let objectId: Ref<NewTelegramMessage> = generateId()
 
   const dispatch = createEventDispatcher()
 
   const client = getClient()
   const notificationClient = NotificationClientImpl.getClient()
-  const channelQuery = createQuery()
-
-  $: channelQuery.query(
-    contact.class.Channel,
-    {
-      attachedTo: _id,
-      provider: contact.channelProvider.Telegram
-    },
-    (res) => {
-      channel = res[0]
-    }
-  )
 
   let templateProvider: TemplateDataProvider | undefined
 
@@ -88,11 +74,9 @@
   $: templateProvider && integration && templateProvider.set(setting.class.Integration, integration)
 
   const query = createQuery()
-  $: _id &&
-    _class &&
-    query.query(_class, { _id }, (result) => {
-      object = result[0]
-    })
+  $: query.query(channel.attachedToClass, { _id: channel.attachedTo }, (result) => {
+    object = result[0] as Contact
+  })
 
   let messages: TelegramMessage[] = []
   let integration: Integration | undefined
