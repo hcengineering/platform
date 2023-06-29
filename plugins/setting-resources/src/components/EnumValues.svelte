@@ -29,6 +29,7 @@
 
   async function add () {
     if (newValue.trim().length === 0) return
+    if (value.enumValues.includes(newValue.trim())) return
     await client.update(value, {
       $push: { enumValues: newValue }
     })
@@ -123,7 +124,13 @@
       bind:value={newValue}
     />
     <div class="flex gap-2">
-      <ActionIcon icon={IconAdd} label={setting.string.Add} action={add} size={'small'} />
+      <ActionIcon
+        icon={IconAdd}
+        label={setting.string.Add}
+        action={add}
+        size={'small'}
+        disabled={value.enumValues.includes(newValue.trim())}
+      />
 
       <ActionIcon
         icon={IconAttachment}

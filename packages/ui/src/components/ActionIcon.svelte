@@ -28,6 +28,7 @@
   export let size: 'x-small' | 'small' | 'medium' | 'large'
   export let action: (ev: MouseEvent) => Promise<void> | void = async () => {}
   export let invisible: boolean = false
+  export let disabled: boolean = false
 </script>
 
 <button
@@ -35,6 +36,7 @@
   use:tooltip={{ label, direction, props: labelProps }}
   tabindex="0"
   on:click|stopPropagation|preventDefault={action}
+  {disabled}
 >
   <div class="icon {size}" class:invisible>
     <Icon {icon} {size} {iconProps} />
@@ -53,7 +55,7 @@
         opacity: 0;
       }
     }
-    &:hover .icon {
+    &:not(:disabled):hover .icon {
       color: var(--theme-caption-color);
       opacity: 1;
     }
@@ -63,6 +65,9 @@
         color: var(--theme-caption-color);
         opacity: 1;
       }
+    }
+    &:disabled {
+      cursor: default;
     }
   }
   .small {
