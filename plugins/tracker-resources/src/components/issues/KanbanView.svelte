@@ -43,8 +43,7 @@
     Loading,
     showPanel,
     showPopup,
-    themeStore,
-    tooltip
+    themeStore
   } from '@hcengineering/ui'
   import {
     AttributeModel,
@@ -389,7 +388,7 @@
                 kind={'link-bordered'}
                 size={'small'}
                 justify={'center'}
-                width={''}
+                shrink={1}
                 bind:onlyIcon={fullFilled[issueId]}
               />
             {/if}
@@ -398,16 +397,16 @@
             {/if}
           </div>
           {#if enabledConfig(config, 'labels')}
-            <div
-              class="card-labels labels"
-              use:tooltip={{
-                component: fullFilled[issueId] ? tags.component.LabelsPresenter : undefined,
-                props: { object: issue, kind: 'full' }
-              }}
-            >
+            <div class="card-labels labels">
               <Component
                 is={tags.component.LabelsPresenter}
-                props={{ value: issue.labels, object: issue, ckeckFilled: fullFilled[issueId], kind: 'kanban' }}
+                props={{
+                  value: issue.labels,
+                  object: issue,
+                  ckeckFilled: fullFilled[issueId],
+                  kind: 'link',
+                  compression: true
+                }}
                 on:change={(res) => {
                   if (res.detail.full) fullFilled[issueId] = true
                 }}
@@ -487,6 +486,7 @@
 
       &.labels {
         overflow: hidden;
+        flex-shrink: 1;
         margin: 0 1rem;
         width: calc(100% - 2rem);
         border-radius: 0 0.24rem 0.24rem 0;

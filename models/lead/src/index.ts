@@ -303,10 +303,13 @@ export function createModel (builder: Builder): void {
       config: [
         { key: '', displayProps: { fixed: 'left', key: 'lead' } },
         {
+          key: 'state',
+          props: { kind: 'list', size: 'small', shouldShowName: false }
+        },
+        {
           key: '',
           presenter: lead.component.TitlePresenter,
           label: lead.string.Title,
-          displayProps: { fixed: 'left', key: 'title' },
           props: { maxWidth: '10rem' }
         },
         {
@@ -314,35 +317,38 @@ export function createModel (builder: Builder): void {
           presenter: contact.component.PersonPresenter,
           label: lead.string.Customer,
           sortingKey: '$lookup.attachedTo.name',
-          displayProps: { fixed: 'left', key: 'talent' },
           props: {
             _class: lead.mixin.Customer,
             inline: true,
             maxWidth: '10rem'
           }
         },
-        { key: 'state', displayProps: { fixed: 'left', key: 'state' } },
         {
           key: '',
           presenter: tracker.component.RelatedIssueSelector,
           label: tracker.string.Relations,
-          displayProps: { fixed: 'left', key: 'issues', optional: true }
+          props: { size: 'small' }
         },
-        { key: 'attachments', displayProps: { key: 'attachments', optional: true } },
-        { key: 'comments', displayProps: { key: 'comments', optional: true } },
+        { key: 'attachments', displayProps: { key: 'attachments', suffix: true } },
+        { key: 'comments', displayProps: { key: 'comments', suffix: true } },
         { key: '', displayProps: { grow: true } },
         {
           key: '$lookup.attachedTo.$lookup.channels',
           label: contact.string.ContactInfo,
           sortingKey: ['$lookup.attachedTo.$lookup.channels.lastMessage', '$lookup.attachedTo.channels'],
-          displayProps: {
-            fixed: 'left',
-            key: 'channels',
-            dividerBefore: true
-          }
+          props: {
+            length: 'full',
+            size: 'small',
+            kind: 'list'
+          },
+          displayProps: { optional: true }
         },
-        { key: 'modifiedOn', displayProps: { key: 'modified', fixed: 'left', dividerBefore: true } },
-        { key: 'assignee', displayProps: { key: 'assignee', fixed: 'right' }, props: { shouldShowLabel: false } }
+        { key: 'modifiedOn', displayProps: { key: 'modified', fixed: 'right', dividerBefore: true } },
+        {
+          key: 'assignee',
+          props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' },
+          displayProps: { key: 'assignee', fixed: 'right' }
+        }
       ],
       viewOptions: leadViewOptions
     },

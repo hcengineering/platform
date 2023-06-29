@@ -58,7 +58,7 @@
       class="label-box no-shrink"
       use:tooltip={{
         component: TagsItemPresenter,
-        props: { value: items, kind: 'list' }
+        props: { value: items, kind: 'link' }
       }}
     >
       <TagsReferencePresenter {items} {kind} />
@@ -99,7 +99,7 @@
     overflow: hidden;
     display: flex;
     align-items: center;
-    // flex-shrink: 0;
+    flex-shrink: 1;
     min-width: 0;
     border-radius: 0.25rem;
   }
@@ -107,15 +107,10 @@
   .label-box {
     display: flex;
     align-items: center;
-    // flex-shrink: 10;
     width: auto;
     min-width: 0;
     border-radius: 0.25rem;
     transition: box-shadow 0.15s ease-in-out;
-
-    // &:not(.no-shrink):last-child {
-    //   flex-shrink: 0;
-    // }
   }
   .wrap-short:not(:last-child) {
     margin-right: 0.375rem;

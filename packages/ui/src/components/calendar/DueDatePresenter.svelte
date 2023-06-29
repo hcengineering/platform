@@ -15,7 +15,6 @@
 <script lang="ts">
   import { Timestamp } from '@hcengineering/core'
   import DueDatePopup from './DueDatePopup.svelte'
-  import { tooltip } from '../../tooltips'
   import DatePresenter from './DatePresenter.svelte'
   import { getDaysDifference } from './internal/DateUtils'
   import { ButtonKind, ButtonSize } from '../../types'
@@ -76,10 +75,15 @@
 </script>
 
 {#if shouldRender}
-  <div
-    class="clear-mins"
-    style:width
-    use:tooltip={formattedDate
+  <DatePresenter
+    {value}
+    {editable}
+    {iconModifier}
+    {kind}
+    {size}
+    {width}
+    on:change={handleDueDateChanged}
+    showTooltip={formattedDate
       ? {
           direction: 'top',
           component: DueDatePopup,
@@ -92,7 +96,5 @@
           }
         }
       : undefined}
-  >
-    <DatePresenter {value} {editable} {iconModifier} {kind} {size} {width} on:change={handleDueDateChanged} />
-  </div>
+  />
 {/if}

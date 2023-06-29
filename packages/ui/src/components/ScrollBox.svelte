@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { afterUpdate } from 'svelte'
+  import { closeTooltip } from '..'
 
   export let vertical: boolean = false
   export let stretch: boolean = false
@@ -29,6 +30,7 @@
   })
 
   function setAutoscroll () {
+    closeTooltip()
     autoscroll = div.scrollTop > div.scrollHeight - div.clientHeight - 50
   }
 </script>

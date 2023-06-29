@@ -261,7 +261,7 @@
         id={item.label}
         bind:input={btns[i]}
         icon={item.icon}
-        kind={highlighted.includes(item.provider) ? 'dangerous' : kind}
+        kind={'link-bordered'}
         {size}
         {shape}
         highlight={item.integration || item.notification}

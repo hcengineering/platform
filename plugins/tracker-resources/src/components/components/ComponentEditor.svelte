@@ -37,6 +37,7 @@
   export let groupBy: string | undefined = undefined
   export let enlargedText = false
   export let compression: boolean = false
+  export let shrink: number = 0
   export let space: Ref<Project> | undefined = undefined
 
   const client = getClient()
@@ -72,6 +73,7 @@
       {popupPlaceholder}
       {onlyIcon}
       {enlargedText}
+      {shrink}
       value={value.component}
       short
       onChange={handleComponentIdChanged}
