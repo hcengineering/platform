@@ -68,6 +68,7 @@
         changeSelected(selected)
       } else {
         selected = index
+        changeSelected(selected)
         markAsRead(selected)
       }
     }
@@ -127,11 +128,13 @@
       key.stopPropagation()
       key.preventDefault()
       selected--
+      changeSelected(selected)
     }
     if (key.code === 'ArrowDown') {
       key.stopPropagation()
       key.preventDefault()
       selected++
+      changeSelected(selected)
     }
     if (key.code === 'Enter') {
       key.preventDefault()
@@ -159,6 +162,7 @@
           on:keydown={onKeydown}
           on:click={() => {
             selected = i
+            changeSelected(selected)
           }}
         />
       {/each}
