@@ -133,10 +133,10 @@ export async function IsIncomingMessage (
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    IsIncomingMessage,
     OnMessageCreate
   },
   function: {
+    IsIncomingMessage,
     FindMessages
   }
 })
