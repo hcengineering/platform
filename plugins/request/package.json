@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/request",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -31,5 +31,9 @@
     "@hcengineering/chunter": "^0.6.7",
     "@hcengineering/ui": "^0.6.8",
     "@hcengineering/contact": "^0.6.16"
+  },
+  "repository": "https://github.com/hcengineering/anticrm",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }
