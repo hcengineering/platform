@@ -226,7 +226,7 @@
           if (result != null) {
             if (result === '') {
               remove(n)
-            } else {
+            } else if (item.value !== result) {
               item.value = result
               saveItems()
               dispatch('save', item.channel)
