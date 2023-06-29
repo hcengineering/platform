@@ -36,7 +36,7 @@
     "@hcengineering/presentation": "^0.6.2",
     "svelte": "3.55.1",
     "@hcengineering/ui": "^0.6.8",
-    "@hcengineering/request": "^0.6.0",
+    "@hcengineering/request": "^0.6.1",
     "@hcengineering/activity": "^0.6.0",
     "@hcengineering/activity-resources": "^0.6.1",
     "@hcengineering/contact": "^0.6.16",

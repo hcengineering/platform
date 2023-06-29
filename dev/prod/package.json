@@ -163,7 +163,7 @@
     "@hcengineering/bitrix": "^0.6.36",
     "@hcengineering/bitrix-assets": "^0.6.0",
     "@hcengineering/bitrix-resources": "^0.6.0",
-    "@hcengineering/request": "^0.6.0",
+    "@hcengineering/request": "^0.6.1",
     "@hcengineering/request-assets": "^0.6.0",
     "@hcengineering/request-resources": "^0.6.0",
     "@hcengineering/server-request": "^0.6.0",

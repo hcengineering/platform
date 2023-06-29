@@ -1437,7 +1437,7 @@
     {
       "packageName": "@hcengineering/request",
       "projectFolder": "plugins/request",
-      "shouldPublish": false
+      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/request-assets",
