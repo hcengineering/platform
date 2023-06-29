@@ -72,9 +72,11 @@ export default mergeIds(recruitId, recruit, {
   ids: {
     VacancyNotificationGroup: '' as Ref<NotificationGroup>,
     CandidateNotificationGroup: '' as Ref<NotificationGroup>,
+    ReviewNotificationGroup: '' as Ref<NotificationGroup>,
     ApplicationNotificationGroup: '' as Ref<NotificationGroup>,
     AssigneeNotification: '' as Ref<NotificationType>,
-    ApplicationCreateNotification: '' as Ref<NotificationType>
+    ApplicationCreateNotification: '' as Ref<NotificationType>,
+    ReviewCreateNotification: '' as Ref<NotificationType>
   },
   component: {
     CreateApplication: '' as AnyComponent,

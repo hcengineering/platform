@@ -126,6 +126,18 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     ],
     [taskModel, taskId],
     [
+      calendarModel,
+      calendarId,
+      {
+        label: calendar.string.ConfigLabel,
+        description: calendar.string.ConfigDescription,
+        enabled: false,
+        beta: true,
+        icon: calendar.icon.Calendar,
+        classFilter: defaultFilter
+      }
+    ],
+    [
       recruitModel,
       recruitId,
       {
@@ -238,18 +250,6 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       }
     ],
     [
-      calendarModel,
-      calendarId,
-      {
-        label: calendar.string.ConfigLabel,
-        description: calendar.string.ConfigDescription,
-        enabled: false,
-        beta: true,
-        icon: calendar.icon.Calendar,
-        classFilter: defaultFilter
-      }
-    ],
-    [
       bitrixModel,
       bitrixId,
       {
@@ -284,8 +284,8 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverTagsModel, serverTagsId],
     [serverTaskModel, serverTaskId],
     [serverTrackerModel, serverTrackerId],
-    [serverRecruitModel, serverRecruitId],
     [serverCalendarModel, serverCalendarId],
+    [serverRecruitModel, serverRecruitId],
     [serverGmailModel, serverGmailId],
     [serverTelegramModel, serverTelegramId],
     [serverHrModel, serverHrId],
