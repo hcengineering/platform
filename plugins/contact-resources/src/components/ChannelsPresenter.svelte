@@ -31,11 +31,7 @@
 
   async function _open (ev: CustomEvent): Promise<void> {
     if (ev.detail.presenter !== undefined && Array.isArray(value)) {
-      showPopup(
-        ev.detail.presenter,
-        { _id: ev.detail.channel.attachedTo, _class: ev.detail.channel.attachedToClass },
-        'float'
-      )
+      showPopup(ev.detail.presenter, { channel: ev.detail.channel }, 'float')
     }
     if (ev.detail.action !== undefined && Array.isArray(value)) {
       const action = await getResource(ev.detail.action as ViewAction)

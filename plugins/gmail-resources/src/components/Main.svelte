@@ -15,26 +15,25 @@
 -->
 <script lang="ts">
   import contact, { Channel, Contact, getName } from '@hcengineering/contact'
-  import { Class, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { employeeByIdStore } from '@hcengineering/contact-resources'
+  import { getCurrentAccount } from '@hcengineering/core'
   import { Message, SharedMessage } from '@hcengineering/gmail'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import setting, { Integration } from '@hcengineering/setting'
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
-  import { Button, eventToHTMLElement, Icon, Label, Panel, showPopup } from '@hcengineering/ui'
+  import { Button, Icon, Label, Panel, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import gmail from '../plugin'
+  import { convertMessage } from '../utils'
   import Chats from './Chats.svelte'
   import Connect from './Connect.svelte'
   import FullMessage from './FullMessage.svelte'
   import IntegrationSelector from './IntegrationSelector.svelte'
   import NewMessage from './NewMessage.svelte'
-  import { convertMessage } from '../utils'
-  import { employeeByIdStore } from '@hcengineering/contact-resources'
 
-  export let _id: Ref<Contact>
-  export let _class: Ref<Class<Contact>>
+  export let channel: Channel
   export let embedded = false
   export let message: Message | undefined = undefined
 
@@ -42,34 +41,18 @@
   let currentMessage: SharedMessage | undefined = undefined
 
   let newMessage: boolean = false
-  let channel: Channel | undefined = undefined
   const notificationClient = NotificationClientImpl.getClient()
   let integrations: Integration[] = []
   let selectedIntegration: Integration | undefined = undefined
 
-  const channelQuery = createQuery()
+  notificationClient.forceRead(channel._id, channel._class)
+
   const dispatch = createEventDispatcher()
 
-  $: channelQuery.query(
-    contact.class.Channel,
-    {
-      attachedTo: _id,
-      provider: contact.channelProvider.Email
-    },
-    (res) => {
-      channel = res[0]
-      if (channel !== undefined) {
-        notificationClient.forceRead(channel._id, channel._class)
-      }
-    }
-  )
-
   const query = createQuery()
-  $: _id &&
-    _class &&
-    query.query(_class, { _id }, (result) => {
-      object = result[0]
-    })
+  $: query.query(channel.attachedToClass, { _id: channel.attachedTo }, (result) => {
+    object = result[0] as Contact
+  })
 
   function back () {
     if (newMessage) {
