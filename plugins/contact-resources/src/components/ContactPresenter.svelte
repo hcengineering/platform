@@ -21,12 +21,14 @@
 
   import OrganizationPresenter from './OrganizationPresenter.svelte'
   import PersonPresenter from './PersonPresenter.svelte'
+  import { IconSize } from '@hcengineering/ui'
 
   export let value: Contact
   export let inline: boolean = false
   export let disabled: boolean = false
   export let accent: boolean = false
   export let maxWidth = ''
+  export let avatarSize: IconSize = 'x-small'
 
   function isPerson (value: Contact): boolean {
     const client = getClient()
@@ -43,9 +45,9 @@
 </script>
 
 {#if isEmployee(value)}
-  <EmployeePresenter {disabled} value={toEmployee(value)} {inline} {accent} />
+  <EmployeePresenter {disabled} value={toEmployee(value)} {inline} {accent} {avatarSize} />
 {:else if isPerson(value)}
-  <PersonPresenter {disabled} {value} {inline} {accent} />
+  <PersonPresenter {disabled} {value} {inline} {accent} {avatarSize} />
 {:else}
   <OrganizationPresenter value={toOrg(value)} {inline} {accent} {maxWidth} />
 {/if}

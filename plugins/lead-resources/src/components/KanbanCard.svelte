@@ -44,11 +44,10 @@
   }
 </script>
 
-<div class="flex-col pt-2 pb-2 pr-4 pl-4">
-  <div class="flex-between mb-4">
-    <div class="flex-col">
-      <div class="fs-title cursor-pointer" on:click={showLead}>{object.title}</div>
-    </div>
+<div class="flex-col pt-3 pb-3 pr-4 pl-4">
+  <div class="flex-between mb-3">
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div class="fs-title cursor-pointer" on:click={showLead}>{object.title}</div>
     <div class="flex-row-center">
       <div class="mr-2">
         <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
@@ -63,42 +62,44 @@
       />
     </div>
   </div>
-  <div class="flex-col">
-    <div class="flex-between">
-      {#if enabledConfig(config, 'attachedTo') && object.$lookup?.attachedTo}
-        <ContactPresenter value={object.$lookup.attachedTo} />
-      {/if}
-      <div class="flex-row-center gap-3">
-        {#if enabledConfig(config, 'attachments') && (object.attachments ?? 0) > 0}
-          <AttachmentsPresenter value={object.attachments} {object} />
-        {/if}
-        {#if enabledConfig(config, 'comments') && (object.comments ?? 0) > 0}
-          <CommentsPresenter value={object.comments} {object} />
-        {/if}
-      </div>
+  <div class="flex-between mb-2">
+    {#if enabledConfig(config, 'attachedTo') && object.$lookup?.attachedTo}
+      <ContactPresenter value={object.$lookup.attachedTo} avatarSize={'small'} />
+    {/if}
+  </div>
+  {#if enabledConfig(config, 'dueDate')}
+    <div class="card-labels labels mb-2">
+      <DueDatePresenter
+        size={'small'}
+        kind={'link-bordered'}
+        width={'fit-content'}
+        value={object.dueDate}
+        shouldRender={object.dueDate !== null && object.dueDate !== undefined}
+        shouldIgnoreOverdue={object.doneState !== null}
+        onChange={async (e) => {
+          await client.update(object, { dueDate: e })
+        }}
+      />
     </div>
-    <div class="flex-row-center flex-between mt-2">
+  {/if}
+  <div class="flex-between">
+    <div class="flex-row-center gap-3 reverse mr-4">
       <LeadPresenter value={object} />
-      {#if enabledConfig(config, 'dueDate')}
-        <DueDatePresenter
-          size={'small'}
-          value={object.dueDate}
-          shouldRender={object.dueDate !== null && object.dueDate !== undefined}
-          shouldIgnoreOverdue={object.doneState !== null}
-          onChange={async (e) => {
-            await client.update(object, { dueDate: e })
-          }}
-        />
+      {#if enabledConfig(config, 'attachments') && (object.attachments ?? 0) > 0}
+        <AttachmentsPresenter value={object.attachments} {object} />
       {/if}
-      {#if enabledConfig(config, 'assignee')}
-        <AssigneePresenter
-          value={object.assignee}
-          issueId={object._id}
-          defaultClass={contact.class.Employee}
-          currentSpace={object.space}
-          placeholderLabel={assigneeAttribute.label}
-        />
+      {#if enabledConfig(config, 'comments') && (object.comments ?? 0) > 0}
+        <CommentsPresenter value={object.comments} {object} />
       {/if}
     </div>
+    {#if enabledConfig(config, 'assignee')}
+      <AssigneePresenter
+        value={object.assignee}
+        issueId={object._id}
+        defaultClass={contact.class.Employee}
+        currentSpace={object.space}
+        placeholderLabel={assigneeAttribute.label}
+      />
+    {/if}
   </div>
 </div>

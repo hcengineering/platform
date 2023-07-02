@@ -941,9 +941,11 @@
   }
 }
 .kanban-container .card-container .card-labels .datetime-button {
+  padding: 0 0.25rem !important;
   height: 1.75rem !important;
   font-size: .8125rem !important;
 }
+.kanban-container .card-container .card-labels .label { font-size: .8125rem !important; }
 
 /* ListView & Kanban */
 .list-container .optional-bar .label-wrapper,
