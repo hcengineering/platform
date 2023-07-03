@@ -48,9 +48,9 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="flex-col pt-2 pb-2 pr-4 pl-4 cursor-pointer" on:click={showCandidate}>
+<div class="flex-col pt-3 pb-3 pr-4 pl-4" on:click={showCandidate}>
   {#if enabledConfig(config, 'space') || enabledConfig(config, 'company')}
-    <div class="p-1 flex-between gap-2">
+    <div class="flex-between mb-3">
       {#if enabledConfig(config, 'space')}
         <ObjectPresenter _class={recruit.class.Vacancy} objectId={object.space} value={object.$lookup?.space} />
       {/if}
@@ -59,7 +59,7 @@
       {/if}
     </div>
   {/if}
-  <div class="flex-between mb-3">
+  <div class="flex-between mb-1">
     <div class="flex-row-center">
       <Avatar avatar={object.$lookup?.attachedTo?.avatar} size={'medium'} />
       <div class="flex-grow flex-col min-w-0 ml-2">
@@ -71,63 +71,69 @@
         {/if}
       </div>
     </div>
-    <div class="tool mr-1 flex-row-center">
+    <div class="tool flex-row-center">
       {#if !dragged}
         <div class="mr-2">
           <Component showLoading={false} is={notification.component.NotificationPresenter} props={{ value: object }} />
         </div>
       {/if}
     </div>
-    {#if channels && channels.length > 0 && enabledConfig(config, 'channels')}
-      <div class="tool mr-1 flex-row-center">
-        <div class="step-lr75">
-          <Component
-            showLoading={false}
-            is={contact.component.ChannelsPresenter}
-            props={{ value: channels, object: object.$lookup?.attachedTo, length: 'tiny', size: 'inline' }}
-          />
-        </div>
-      </div>
+  </div>
+  {#if channels && channels.length > 0 && enabledConfig(config, 'channels')}
+    <div class="card-labels labels mb-2">
+      <Component
+        showLoading={false}
+        is={contact.component.ChannelsPresenter}
+        props={{ value: channels, object: object.$lookup?.attachedTo, length: 'full', size: 'inline', kind: 'list' }}
+      />
+    </div>
+  {/if}
+  <div class="card-labels mb-2">
+    {#if groupByKey !== 'state' && enabledConfig(config, 'state')}
+      <StateRefPresenter
+        size={'small'}
+        kind={'link-bordered'}
+        shrink={1}
+        value={object.state}
+        onChange={(state) => {
+          client.update(object, { state })
+        }}
+      />
+    {/if}
+    <Component showLoading={false} is={tracker.component.RelatedIssueSelector} props={{ object, size: 'small' }} />
+    {#if enabledConfig(config, 'dueDate')}
+      <DueDatePresenter
+        size={'small'}
+        kind={'link-bordered'}
+        value={object.dueDate}
+        shouldRender={object.dueDate !== null && object.dueDate !== undefined}
+        shouldIgnoreOverdue={object.doneState !== null}
+        onChange={async (e) => {
+          await client.update(object, { dueDate: e })
+        }}
+      />
     {/if}
   </div>
   <div class="flex-between">
-    <div class="flex-row-center">
-      <div class="sm-tool-icon step-lr75">
-        {#if enabledConfig(config, '')}
-          <div class="mr-2">
-            <ApplicationPresenter value={object} inline />
-          </div>
-        {/if}
-        <Component showLoading={false} is={tracker.component.RelatedIssueSelector} props={{ object }} />
-      </div>
-      {#if enabledConfig(config, 'dueDate')}
-        <DueDatePresenter
-          size={'small'}
-          value={object.dueDate}
-          shouldRender={object.dueDate !== null && object.dueDate !== undefined}
-          shouldIgnoreOverdue={object.doneState !== null}
-          onChange={async (e) => {
-            await client.update(object, { dueDate: e })
-          }}
-        />
+    <div class="flex-row-center gap-3 reverse mr-4">
+      {#if enabledConfig(config, '')}
+        <ApplicationPresenter value={object} inline />
       {/if}
-      <div class="flex-row-center gap-3">
-        {#if (object.attachments ?? 0) > 0 && enabledConfig(config, 'attachments')}
-          <AttachmentsPresenter value={object.attachments} {object} />
+      {#if (object.attachments ?? 0) > 0 && enabledConfig(config, 'attachments')}
+        <AttachmentsPresenter value={object.attachments} {object} />
+      {/if}
+      {#if enabledConfig(config, 'comments')}
+        {#if (object.comments ?? 0) > 0}
+          <CommentsPresenter value={object.comments} {object} />
         {/if}
-        {#if enabledConfig(config, 'comments')}
-          {#if (object.comments ?? 0) > 0}
-            <CommentsPresenter value={object.comments} {object} />
-          {/if}
-          {#if object.$lookup?.attachedTo !== undefined && (object.$lookup.attachedTo.comments ?? 0) > 0}
-            <CommentsPresenter
-              value={object.$lookup?.attachedTo?.comments}
-              object={object.$lookup?.attachedTo}
-              withInput={false}
-            />
-          {/if}
+        {#if object.$lookup?.attachedTo !== undefined && (object.$lookup.attachedTo.comments ?? 0) > 0}
+          <CommentsPresenter
+            value={object.$lookup?.attachedTo?.comments}
+            object={object.$lookup?.attachedTo}
+            withInput={false}
+          />
         {/if}
-      </div>
+      {/if}
     </div>
     {#if enabledConfig(config, 'assignee')}
       <AssigneePresenter
@@ -139,13 +145,18 @@
       />
     {/if}
   </div>
-  {#if groupByKey !== 'state' && enabledConfig(config, 'state')}
-    <StateRefPresenter
-      size={'small'}
-      value={object.state}
-      onChange={(state) => {
-        client.update(object, { state })
-      }}
-    />
-  {/if}
 </div>
+
+<style lang="scss">
+  .card-labels {
+    display: flex;
+    flex-wrap: nowrap;
+    min-width: 0;
+
+    &.labels {
+      overflow: hidden;
+      flex-shrink: 1;
+      border-radius: 0.5rem;
+    }
+  }
+</style>

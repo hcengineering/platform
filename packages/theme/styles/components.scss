@@ -901,11 +901,6 @@
       flex-shrink: .5;
       min-width: initial;
     }
-    .label-wrapper {
-      display: flex;
-      align-items: center;
-      min-width: 0;
-    }
     & > *:last-child {
       flex-shrink: 0;
       width: max-content;
@@ -936,8 +931,26 @@
 }
 
 /* Kanban - global style */
-.kanban-container .card-container .card-labels > * { margin: .25rem .25rem 0 0; }
-.kanban-container .card-container .card-labels.labels > *:last-child {
-  flex-shrink: 0;
-  margin-right: 0;
+.kanban-container .card-container .card-labels > *:not(.labels-container),
+.kanban-container .card-container .card-labels.labels .labels-container > * {
+  margin: .25rem .25rem 0 0;
+
+  &:last-child {
+    flex-shrink: 0;
+    margin-right: 0;
+  }
+}
+.kanban-container .card-container .card-labels .datetime-button {
+  padding: 0 0.25rem !important;
+  height: 1.75rem !important;
+  font-size: .8125rem !important;
+}
+.kanban-container .card-container .card-labels .label { font-size: .8125rem !important; }
+
+/* ListView & Kanban */
+.list-container .optional-bar .label-wrapper,
+.kanban-container .card-container .card-labels .label-wrapper {
+  display: flex;
+  align-items: center;
+  min-width: 0;
 }

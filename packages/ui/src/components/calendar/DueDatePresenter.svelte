@@ -27,7 +27,7 @@
   export let editable: boolean = true
   export let shouldIgnoreOverdue: boolean = false
   export let size: ButtonSize = 'medium'
-  export let width: string | undefined = undefined
+  export let width: string | undefined = 'auto'
 
   const today = new Date(new Date(Date.now()).setHours(0, 0, 0, 0))
   $: isOverdue = value !== null && value < today.getTime()

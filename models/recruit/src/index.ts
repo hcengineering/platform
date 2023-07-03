@@ -685,8 +685,7 @@ export function createModel (builder: Builder): void {
         { key: '', displayProps: { fixed: 'left', key: 'app' } },
         {
           key: 'state',
-          props: { kind: 'list', size: 'small', shouldShowName: false },
-          displayProps: { excludeByKey: 'state' }
+          props: { kind: 'list', size: 'small', shouldShowName: false }
         },
         {
           key: '$lookup.attachedTo',
@@ -721,14 +720,16 @@ export function createModel (builder: Builder): void {
           sortingKey: ['$lookup.attachedTo.$lookup.channels.lastMessage', '$lookup.attachedTo.channels'],
           props: {
             length: 'full',
-            size: 'inline'
-          }
+            size: 'small',
+            kind: 'list'
+          },
+          displayProps: { optional: true }
         },
         { key: 'modifiedOn', displayProps: { key: 'modified', fixed: 'right', dividerBefore: true } },
         {
           key: 'assignee',
           props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' },
-          displayProps: { key: 'assignee', fixed: 'right', excludeByKey: 'assignee' }
+          displayProps: { key: 'assignee', fixed: 'right' }
         }
       ],
       options: {

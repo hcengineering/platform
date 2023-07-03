@@ -47,7 +47,15 @@
 </script>
 
 {#if value}
-  <DocNavLink object={value} {onClick} {disabled} {noUnderline} {inline} component={tracker.component.EditIssue}>
+  <DocNavLink
+    object={value}
+    {onClick}
+    {disabled}
+    {noUnderline}
+    {inline}
+    component={tracker.component.EditIssue}
+    shrink={0}
+  >
     <span class="issuePresenterRoot" class:inline class:list={kind === 'list'}>
       {#if !inline && shouldShowAvatar}
         <div class="icon" use:tooltip={{ label: tracker.string.Issue }}>

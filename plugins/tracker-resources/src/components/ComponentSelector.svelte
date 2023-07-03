@@ -34,6 +34,7 @@
   export let onlyIcon: boolean = false
   export let enlargedText: boolean = false
   export let short: boolean = false
+  export let shrink: number = 0
   export let focusIndex: number | undefined = undefined
   export let space: Ref<Project> | undefined = undefined
 
@@ -110,6 +111,7 @@
     disabled={!isEditable}
     {loading}
     {short}
+    {shrink}
     on:click={handleComponentEditorOpened}
   />
 {:else}
@@ -125,6 +127,7 @@
     {loading}
     notSelected={!value}
     {short}
+    {shrink}
     on:click={handleComponentEditorOpened}
   >
     <svelte:fragment slot="content">

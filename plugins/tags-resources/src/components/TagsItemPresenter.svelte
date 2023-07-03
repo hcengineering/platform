@@ -18,12 +18,12 @@
   import TagItem from './TagItem.svelte'
 
   export let value: TagReference[] | TagReference
-  export let kind: 'tag' | 'list' = 'tag'
+  export let kind: 'tag' | 'list' | 'link' = 'tag'
 
   $: values = Array.isArray(value) ? value : [value]
 </script>
 
-{#if kind === 'list'}
+{#if kind === 'list' || kind === 'link'}
   <div class="flex-center flex-wrap">
     {#each values as v}
       <div class="m-0-5">
