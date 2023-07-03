@@ -269,7 +269,7 @@
     "ConfigDescription": "Extension to manage work items and do all jobs done.",
     "ProjectColor": "Choose project icon color",
     "ProjectIconCategory": "Icon",
-    "ProjectEmojiiCategory": "Emojii",
+    "ProjectEmojiCategory": "Emoji",
 
     "NoStatusFound": "No matching status found",
     "CreateMissingStatus": "Create missing status",
