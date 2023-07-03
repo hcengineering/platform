@@ -269,7 +269,7 @@
     "ConfigDescription": "Расширение по управлению задачами, чтобы все было в срок.",
     "ProjectColor": "Выберете цвет проекта",
     "ProjectIconCategory": "Иконка",
-    "ProjectEmojiiCategory": "Эмодзи",
+    "ProjectEmojiCategory": "Эмодзи",
     "NoStatusFound": "Статус не найдет",
     "CreateMissingStatus": "Создать отсутствущий статус",
     "UnsetParent": "Родительская задача будет убрана",
