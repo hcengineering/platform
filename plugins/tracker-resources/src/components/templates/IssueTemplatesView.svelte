@@ -15,6 +15,7 @@
   import view, { Viewlet } from '@hcengineering/view'
   import {
     FilterBar,
+    SpaceHeader,
     ViewletSettingButton,
     activeViewlet,
     getViewOptions,
@@ -24,7 +25,6 @@
   } from '@hcengineering/view-resources'
   import { onDestroy } from 'svelte'
   import tracker from '../../plugin'
-  import IssuesHeader from '../issues/IssuesHeader.svelte'
   import CreateIssueTemplate from './CreateIssueTemplate.svelte'
   import IssueTemplatesContent from './IssueTemplatesContent.svelte'
 
@@ -91,7 +91,15 @@
   $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 </script>
 
-<IssuesHeader {space} {viewlets} {label} bind:viewlet bind:search showLabelSelector={$$slots.label_selector}>
+<SpaceHeader
+  _class={tracker.class.IssueTemplate}
+  {space}
+  {viewlets}
+  {label}
+  bind:viewlet
+  bind:search
+  showLabelSelector={$$slots.label_selector}
+>
   <svelte:fragment slot="label_selector">
     <slot name="label_selector" />
   </svelte:fragment>
@@ -115,7 +123,7 @@
       <ViewletSettingButton bind:viewOptions {viewlet} />
     {/if}
   </svelte:fragment>
-</IssuesHeader>
+</SpaceHeader>
 <slot name="afterHeader" />
 <FilterBar
   _class={tracker.class.IssueTemplate}

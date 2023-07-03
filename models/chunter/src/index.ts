@@ -421,12 +421,14 @@ export function createModel (builder: Builder, options = { addApplication: true 
           ],
           spaces: [
             {
+              id: 'channels',
               label: chunter.string.Channels,
               spaceClass: chunter.class.Channel,
               addSpaceLabel: chunter.string.CreateChannel,
               createComponent: chunter.component.CreateChannel
             },
             {
+              id: 'directMessages',
               label: chunter.string.DirectMessages,
               spaceClass: chunter.class.DirectMessage,
               addSpaceLabel: chunter.string.NewDirectMessage,

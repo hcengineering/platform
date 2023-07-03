@@ -149,6 +149,7 @@ export function createModel (builder: Builder): void {
       navigatorModel: {
         spaces: [
           {
+            id: 'boards',
             label: board.string.MyBoards,
             spaceClass: board.class.Board,
             addSpaceLabel: board.string.BoardCreateLabel,

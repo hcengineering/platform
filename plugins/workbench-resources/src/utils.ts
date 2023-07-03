@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Class, Client, Doc, Obj, Ref, Space } from '@hcengineering/core'
+import type { Class, Client, Doc, Obj, Ref, Space, TxOperations } from '@hcengineering/core'
 import core from '@hcengineering/core'
 import type { Workspace } from '@hcengineering/login'
 import type { Asset } from '@hcengineering/platform'
@@ -146,3 +146,38 @@ export async function showApplication (app: Application): Promise<void> {
 }
 
 export const workspacesStore = writable<Workspace[]>([])
+
+/**
+ * @public
+ */
+export async function buildNavModel (
+  client: TxOperations,
+  currentApplication?: Application
+): Promise<NavigatorModel | undefined> {
+  let newNavModel = currentApplication?.navigatorModel
+  if (currentApplication !== undefined) {
+    const models = await client.findAll(workbench.class.ApplicationNavModel, { extends: currentApplication._id })
+    for (const nm of models) {
+      const spaces = newNavModel?.spaces ?? []
+      // Check for extending
+      for (const sp of spaces) {
+        const extend = (nm.spaces ?? []).find((p) => p.id === sp.id)
+        if (extend !== undefined) {
+          sp.label = sp.label ?? extend.label
+          sp.createComponent = sp.createComponent ?? extend.createComponent
+          sp.addSpaceLabel = sp.addSpaceLabel ?? extend.addSpaceLabel
+          sp.icon = sp.icon ?? extend.icon
+          sp.visibleIf = sp.visibleIf ?? extend.visibleIf
+          sp.specials = [...(sp.specials ?? []), ...(extend.specials ?? [])]
+        }
+      }
+      const newSpaces = (nm.spaces ?? []).filter((it) => !spaces.some((sp) => sp.id === it.id))
+      newNavModel = {
+        spaces: [...spaces, ...newSpaces],
+        specials: [...(newNavModel?.specials ?? []), ...(nm.specials ?? [])],
+        aside: newNavModel?.aside ?? nm?.aside
+      }
+    }
+  }
+  return newNavModel
+}

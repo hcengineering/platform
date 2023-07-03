@@ -14,6 +14,8 @@
   import view, { Viewlet } from '@hcengineering/view'
   import {
     FilterBar,
+    SpaceHeader,
+    ViewletContentView,
     ViewletSettingButton,
     activeViewlet,
     getViewOptions,
@@ -23,8 +25,7 @@
   } from '@hcengineering/view-resources'
   import { onDestroy } from 'svelte'
   import tracker from '../../plugin'
-  import IssuesContent from './IssuesContent.svelte'
-  import IssuesHeader from './IssuesHeader.svelte'
+  import CreateIssue from '../CreateIssue.svelte'
 
   export let space: Ref<Space> | undefined = undefined
   export let query: DocumentQuery<Issue> = {}
@@ -88,7 +89,8 @@
   $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 </script>
 
-<IssuesHeader
+<SpaceHeader
+  _class={tracker.class.Issue}
   bind:viewlet
   bind:search
   showLabelSelector={$$slots.label_selector}
@@ -117,12 +119,21 @@
       />
     {/if}
   </svelte:fragment>
-</IssuesHeader>
+</SpaceHeader>
 <FilterBar _class={tracker.class.Issue} query={searchQuery} {viewOptions} on:change={(e) => (resultQuery = e.detail)} />
 <slot name="afterHeader" />
 <div class="popupPanel rowContent">
   {#if viewlet}
-    <IssuesContent {viewlet} query={resultQuery} {space} {viewOptions} />
+    <ViewletContentView
+      _class={tracker.class.Issue}
+      {viewlet}
+      query={resultQuery}
+      {space}
+      {viewOptions}
+      createItemDialog={CreateIssue}
+      createItemLabel={tracker.string.AddIssueTooltip}
+      createItemDialogProps={{ shouldSaveDraft: true }}
+    />
   {/if}
   {#if $$slots.aside !== undefined && asideShown}
     <div class="popupPanel-body__aside" class:shown={asideShown}>

@@ -19,7 +19,13 @@ import preference, { TPreference } from '@hcengineering/model-preference'
 import { createAction } from '@hcengineering/model-view'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import view, { KeyBinding } from '@hcengineering/view'
-import type { Application, HiddenApplication, SpaceView, ViewConfiguration } from '@hcengineering/workbench'
+import type {
+  Application,
+  ApplicationNavModel,
+  HiddenApplication,
+  SpaceView,
+  ViewConfiguration
+} from '@hcengineering/workbench'
 
 import core, { TClass, TDoc } from '@hcengineering/model-core'
 import workbench from './plugin'
@@ -37,6 +43,12 @@ export class TApplication extends TDoc implements Application {
   hidden!: boolean
 }
 
+@Model(workbench.class.ApplicationNavModel, core.class.Doc, DOMAIN_MODEL)
+@UX(workbench.string.Application)
+export class TApplicationNavModel extends TDoc implements ApplicationNavModel {
+  extends!: Ref<Application>
+}
+
 @Model(workbench.class.HiddenApplication, preference.class.Preference)
 export class THiddenApplication extends TPreference implements HiddenApplication {
   @Prop(TypeRef(workbench.class.Application), workbench.string.HiddenApplication)
@@ -49,7 +61,7 @@ export class TSpaceView extends TClass implements SpaceView {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TApplication, TSpaceView, THiddenApplication)
+  builder.createModel(TApplication, TSpaceView, THiddenApplication, TApplicationNavModel)
   builder.mixin(workbench.class.Application, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: workbench.component.ApplicationPresenter
   })

@@ -1,12 +1,13 @@
 <script lang="ts">
-  import { Ref, Space } from '@hcengineering/core'
+  import { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { TabList, SearchEdit, IModeSelector, ModeSelector } from '@hcengineering/ui'
   import { Viewlet } from '@hcengineering/view'
-  import { FilterButton, setActiveViewletId } from '@hcengineering/view-resources'
-  import tracker from '../../plugin'
   import { WithLookup } from '@hcengineering/core'
+  import { setActiveViewletId } from '../utils'
+  import FilterButton from './filter/FilterButton.svelte'
 
   export let space: Ref<Space> | undefined = undefined
+  export let _class: Ref<Class<Doc>>
   export let viewlet: WithLookup<Viewlet> | undefined
   export let viewlets: WithLookup<Viewlet>[] = []
   export let label: string
@@ -65,7 +66,7 @@
     <SearchEdit bind:value={search} on:change={() => {}} />
     <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
     <div class="buttons-divider" />
-    <FilterButton _class={tracker.class.Issue} {space} />
+    <FilterButton {_class} {space} />
   </div>
   <div class="ac-header-full medium-gap">
     <slot name="extra" />

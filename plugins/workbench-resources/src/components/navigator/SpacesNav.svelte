@@ -17,11 +17,12 @@
   import core from '@hcengineering/core'
   import { DocUpdates } from '@hcengineering/notification'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
-  import { getResource } from '@hcengineering/platform'
+  import { IntlString, getResource } from '@hcengineering/platform'
   import preference from '@hcengineering/preference'
   import { getClient } from '@hcengineering/presentation'
   import {
     Action,
+    AnyComponent,
     AnySvelteComponent,
     IconAdd,
     IconEdit,
@@ -49,14 +50,14 @@
   const client = getClient()
   const dispatch = createEventDispatcher()
 
-  const addSpace: Action = {
-    label: model.addSpaceLabel,
+  const addSpace = (addSpaceLabel: IntlString, createComponent: AnyComponent): Action => ({
+    label: addSpaceLabel,
     icon: IconAdd,
     action: async (_id: Ref<Doc>): Promise<void> => {
       dispatch('open')
-      showPopup(model.createComponent, {}, 'top')
+      showPopup(createComponent, {}, 'top')
     }
-  }
+  })
 
   const browseSpaces: Action = {
     label: plugin.string.BrowseSpaces,
@@ -108,7 +109,11 @@
   }
 
   function getParentActions (): Action[] {
-    return hasSpaceBrowser ? [browseSpaces, addSpace] : [addSpace]
+    const result = hasSpaceBrowser ? [browseSpaces] : []
+    if (model.addSpaceLabel !== undefined && model.createComponent !== undefined) {
+      result.push(addSpace(model.addSpaceLabel, model.createComponent))
+    }
+    return result
   }
 
   async function getPresenter (_class: Ref<Class<Doc>>): Promise<AnySvelteComponent | undefined> {

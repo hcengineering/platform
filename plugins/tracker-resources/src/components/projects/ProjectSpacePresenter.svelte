@@ -23,9 +23,10 @@
     themeStore
   } from '@hcengineering/ui'
   import { NavLink, TreeNode } from '@hcengineering/view-resources'
-  import { SpacesNavModel } from '@hcengineering/workbench'
+  import { SpacesNavModel, SpecialNavModel } from '@hcengineering/workbench'
   import { SpecialElement } from '@hcengineering/workbench-resources'
   import tracker from '../../plugin'
+  import { getResource } from '@hcengineering/platform'
 
   export let space: Project
   export let model: SpacesNavModel
@@ -38,9 +39,30 @@
   const getSpaceCollapsedKey = () => `${getCurrentLocation().path[1]}_${space._id}_collapsed`
 
   $: collapsed = localStorage.getItem(getSpaceCollapsedKey()) === COLLAPSED
+
+  let specials: SpecialNavModel[] = []
+
+  async function updateSpecials (model: SpacesNavModel, space: Project): Promise<void> {
+    const newSpecials: SpecialNavModel[] = []
+    for (const sp of model.specials ?? []) {
+      let shouldAdd = true
+      if (sp.visibleIf !== undefined) {
+        const visibleIf = await getResource(sp.visibleIf)
+        if (visibleIf !== undefined) {
+          shouldAdd = await visibleIf([space])
+        }
+      }
+      if (shouldAdd) {
+        newSpecials.push(sp)
+      }
+    }
+    specials = newSpecials
+  }
+
+  $: updateSpecials(model, space)
 </script>
 
-{#if model.specials}
+{#if specials}
   <TreeNode
     {collapsed}
     icon={space?.icon === tracker.component.IconWithEmoji ? IconWithEmoji : space?.icon ?? model.icon}
@@ -56,7 +78,7 @@
     actions={() => getActions(space)}
     on:click={() => localStorage.setItem(getSpaceCollapsedKey(), collapsed ? '' : COLLAPSED)}
   >
-    {#each model.specials as special}
+    {#each specials as special}
       <NavLink space={space._id} special={special.id}>
         <SpecialElement
           indent={'ml-2'}
