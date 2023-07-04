@@ -25,17 +25,21 @@
   export let kind: ButtonKind = 'link'
   export let showCounter: boolean = true
   export let compactMode: boolean = false
+  export let disabled = false
+  export let canAdd = true
+  export let canRemove = true
 </script>
 
 {#if value && value > 0}
+  {@const popupProps = { objectId: object._id, attachments: value, object, canAdd, canRemove }}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <DocNavLink {object} inline noUnderline={true} shrink={0}>
+  <DocNavLink {object} {disabled} inline noUnderline shrink={0}>
     {#if kind === 'list'}
       {#if compactMode}
         <div
           use:tooltip={{
             component: AttachmentPopup,
-            props: { objectId: object._id, attachments: value, object }
+            props: popupProps
           }}
           class="sm-tool-icon"
         >
@@ -48,7 +52,7 @@
           {size}
           showTooltip={{
             component: AttachmentPopup,
-            props: { objectId: object._id, attachments: value, object }
+            props: popupProps
           }}
         >
           <div slot="icon"><IconAttachment {size} /></div>
@@ -61,7 +65,7 @@
       <div
         use:tooltip={{
           component: AttachmentPopup,
-          props: { objectId: object._id, attachments: value, object }
+          props: popupProps
         }}
         class="sm-tool-icon"
       >
