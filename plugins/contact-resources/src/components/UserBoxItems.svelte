@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact, { Employee } from '@hcengineering/contact'
-  import type { Class, DocumentQuery, Ref } from '@hcengineering/core'
+  import type { Class, DocumentQuery, IdMap, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import { Label, showPopup, ActionIcon, IconClose, IconAdd, Icon } from '@hcengineering/ui'
   import type { IconSize } from '@hcengineering/ui'
@@ -37,10 +37,10 @@
   export let width: string | undefined = undefined
   export let readonly: boolean = false
 
-  let persons: Employee[] = getPersons(items)
-  $: persons = getPersons(items)
-  let readonlyPersons: Employee[] = getPersons(readonlyItems)
-  $: readonlyPersons = getPersons(readonlyItems)
+  let persons: Employee[] = getPersons(items, $employeeByIdStore)
+  $: persons = getPersons(items, $employeeByIdStore)
+  let readonlyPersons: Employee[] = getPersons(readonlyItems, $employeeByIdStore)
+  $: readonlyPersons = getPersons(readonlyItems, $employeeByIdStore)
 
   const dispatch = createEventDispatcher()
 
@@ -68,8 +68,8 @@
     )
   }
 
-  function getPersons (employees: Ref<Employee>[]) {
-    return employees.map((p) => $employeeByIdStore.get(p)).filter((p) => p !== undefined) as Employee[]
+  function getPersons (employees: Ref<Employee>[], employeeById: IdMap<Employee>) {
+    return employees.map((p) => employeeById.get(p)).filter((p) => p !== undefined) as Employee[]
   }
 
   const removePerson = (removed: Employee) => {
