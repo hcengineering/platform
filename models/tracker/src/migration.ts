@@ -76,10 +76,21 @@ async function createDefaults (tx: TxOperations): Promise<void> {
   )
 }
 
+async function fixProjectIcons (tx: TxOperations): Promise<void> {
+  // @ts-expect-error
+  const projectsWithWrongIcon = await tx.findAll(tracker.class.Project, { icon: 'tracker:component:IconWithEmojii' })
+  const promises = []
+  for (const project of projectsWithWrongIcon) {
+    promises.push(tx.update(project, { icon: tracker.component.IconWithEmoji }))
+  }
+  await Promise.all(promises)
+}
+
 export const trackerOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createDefaults(tx)
+    await fixProjectIcons(tx)
   }
 }
