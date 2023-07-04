@@ -1,3 +1,4 @@
+import { deepEqual } from 'fast-equals'
 import { DocumentUpdate, Hierarchy, MixinData, MixinUpdate, ModelDb, toFindResult } from '.'
 import type {
   Account,
@@ -15,7 +16,7 @@ import type {
 import { Client } from './client'
 import core from './component'
 import type { DocumentQuery, FindOptions, FindResult, TxResult, WithLookup } from './storage'
-import { DocumentClassQuery, Tx, TxCUD, TxFactory } from './tx'
+import { DocumentClassQuery, Tx, TxCUD, TxFactory, TxProcessor } from './tx'
 
 /**
  * @public
@@ -268,6 +269,57 @@ export class TxOperations implements Omit<Client, 'notify'> {
 
   apply (scope: string): ApplyOperations {
     return new ApplyOperations(this, scope)
+  }
+
+  async diffUpdate (doc: Doc, raw: Doc | Data<Doc>, date: Timestamp): Promise<Doc> {
+    // We need to update fields if they are different.
+    const documentUpdate: DocumentUpdate<Doc> = {}
+    for (const [k, v] of Object.entries(raw)) {
+      if (['_class', '_id', 'modifiedBy', 'modifiedOn', 'space', 'attachedTo', 'attachedToClass'].includes(k)) {
+        continue
+      }
+      const dv = (doc as any)[k]
+      if (!deepEqual(dv, v) && v != null) {
+        ;(documentUpdate as any)[k] = v
+      }
+    }
+    if (Object.keys(documentUpdate).length > 0) {
+      await this.update(doc, documentUpdate, false, date, doc.modifiedBy)
+      TxProcessor.applyUpdate(doc, documentUpdate)
+    }
+    return doc
+  }
+
+  async mixinDiffUpdate (
+    doc: Doc,
+    raw: Doc | Data<Doc>,
+    mixin: Ref<Class<Mixin<Doc>>>,
+    modifiedBy: Ref<Account>,
+    modifiedOn: Timestamp
+  ): Promise<Doc> {
+    // We need to update fields if they are different.
+
+    if (!this.getHierarchy().hasMixin(doc, mixin)) {
+      await this.createMixin(doc._id, doc._class, doc.space, mixin, raw as MixinData<Doc, Doc>, modifiedOn, modifiedBy)
+      TxProcessor.applyUpdate(this.getHierarchy().as(doc, mixin), raw)
+      return doc
+    }
+
+    const documentUpdate: MixinUpdate<Doc, Doc> = {}
+    for (const [k, v] of Object.entries(raw)) {
+      if (['_class', '_id', 'modifiedBy', 'modifiedOn', 'space', 'attachedTo', 'attachedToClass'].includes(k)) {
+        continue
+      }
+      const dv = (doc as any)[k]
+      if (!deepEqual(dv, v) && v != null) {
+        ;(documentUpdate as any)[k] = v
+      }
+    }
+    if (Object.keys(documentUpdate).length > 0) {
+      await this.updateMixin(doc._id, doc._class, doc.space, mixin, documentUpdate, modifiedOn, modifiedBy)
+      TxProcessor.applyUpdate(this.getHierarchy().as(doc, mixin), documentUpdate)
+    }
+    return doc
   }
 }
 

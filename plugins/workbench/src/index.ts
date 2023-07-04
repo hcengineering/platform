@@ -16,9 +16,9 @@
 import type { Class, Doc, Mixin, Obj, Ref, Space } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
+import type { Preference } from '@hcengineering/preference'
 import { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
 import { ViewAction } from '@hcengineering/view'
-import type { Preference } from '@hcengineering/preference'
 
 /**
  * @public
@@ -28,7 +28,10 @@ export interface Application extends Doc {
   alias: string
   icon: Asset
   hidden: boolean
+
+  // Also attached ApplicationNavModel will be joined after this one main.
   navigatorModel?: NavigatorModel
+
   locationResolver?: Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
 
   // Component will be displayed in case navigator model is not defined, or nothing is selected in navigator model
@@ -43,6 +46,17 @@ export interface Application extends Doc {
 /**
  * @public
  */
+export interface ApplicationNavModel extends Doc {
+  extends: Ref<Application>
+
+  spaces?: SpacesNavModel[]
+  specials?: SpecialNavModel[]
+  aside?: AnyComponent
+}
+
+/**
+ * @public
+ */
 export interface HiddenApplication extends Preference {
   attachedTo: Ref<Application>
 }
@@ -51,10 +65,11 @@ export interface HiddenApplication extends Preference {
  * @public
  */
 export interface SpacesNavModel {
-  label: IntlString
+  id: string // Id could be used for extending of navigation model
+  label?: IntlString
   spaceClass: Ref<Class<Space>>
-  addSpaceLabel: IntlString
-  createComponent: AnyComponent
+  addSpaceLabel?: IntlString
+  createComponent?: AnyComponent
   icon?: Asset
 
   // Child special items.
@@ -118,6 +133,7 @@ export const workbenchId = 'workbench' as Plugin
 export default plugin(workbenchId, {
   class: {
     Application: '' as Ref<Class<Application>>,
+    ApplicationNavModel: '' as Ref<Class<ApplicationNavModel>>,
     HiddenApplication: '' as Ref<Class<HiddenApplication>>
   },
   mixin: {

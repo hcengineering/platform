@@ -1,17 +1,20 @@
 <script lang="ts">
-  import { DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
-  import { Issue } from '@hcengineering/tracker'
-  import { Component, Loading } from '@hcengineering/ui'
+  import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
+  import { AnySvelteComponent, Component, Loading } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
-  import tracker from '../../plugin'
-  import CreateIssue from '../CreateIssue.svelte'
   import { createQuery } from '@hcengineering/presentation'
+  import { IntlString } from '@hcengineering/platform'
 
   export let viewlet: WithLookup<Viewlet>
-  export let query: DocumentQuery<Issue> = {}
+  export let _class: Ref<Class<Doc>>
+  export let query: DocumentQuery<Doc> = {}
   export let space: Ref<Space> | undefined
 
   export let viewOptions: ViewOptions
+
+  export let createItemDialog: AnySvelteComponent | undefined = undefined
+  export let createItemLabel: IntlString | undefined = undefined
+  export let createItemDialogProps = { shouldSaveDraft: true }
 
   const preferenceQuery = createQuery()
   let preference: ViewletPreference | undefined
@@ -29,10 +32,6 @@
       },
       { limit: 1 }
     )
-
-  const createItemDialog = CreateIssue
-  const createItemLabel = tracker.string.AddIssueTooltip
-  const createItemDialogProps = { shouldSaveDraft: true }
 </script>
 
 {#if viewlet?.$lookup?.descriptor?.component}
@@ -42,7 +41,7 @@
     <Component
       is={viewlet.$lookup.descriptor.component}
       props={{
-        _class: tracker.class.Issue,
+        _class,
         config: preference?.config ?? viewlet.config,
         options: viewlet.options,
         createItemDialog,

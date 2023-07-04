@@ -543,7 +543,7 @@ export function createModel (builder: Builder): void {
         {
           key: 'assignee',
           presenter: tracker.component.AssigneeEditor,
-          displayProps: { key: 'assigee', fixed: 'right' },
+          displayProps: { key: 'assignee', fixed: 'right' },
           props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' }
         }
       ],
@@ -1084,6 +1084,7 @@ export function createModel (builder: Builder): void {
         ],
         spaces: [
           {
+            id: 'projects',
             label: tracker.string.Projects,
             spaceClass: tracker.class.Project,
             addSpaceLabel: tracker.string.CreateProject,

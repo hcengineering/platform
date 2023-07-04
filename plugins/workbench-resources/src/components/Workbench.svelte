@@ -63,7 +63,7 @@
   import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { subscribeMobile } from '../mobile'
   import workbench from '../plugin'
-  import { workspacesStore } from '../utils'
+  import { buildNavModel, workspacesStore } from '../utils'
   import AccountPopup from './AccountPopup.svelte'
   import AppItem from './AppItem.svelte'
   import AppSwitcher from './AppSwitcher.svelte'
@@ -326,7 +326,7 @@
       clear(1)
       currentAppAlias = app
       currentApplication = await client.findOne(workbench.class.Application, { alias: app })
-      navigatorModel = currentApplication?.navigatorModel
+      navigatorModel = await buildNavModel(client, currentApplication)
     }
 
     if (

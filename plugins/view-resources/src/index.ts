@@ -77,6 +77,8 @@ import ValueSelector from './components/ValueSelector.svelte'
 import ViewletSettingButton from './components/ViewletSettingButton.svelte'
 import DateFilterPresenter from './components/filter/DateFilterPresenter.svelte'
 import ArrayFilter from './components/filter/ArrayFilter.svelte'
+import SpaceHeader from './components/SpaceHeader.svelte'
+import ViewletContentView from './components/ViewletContentView.svelte'
 
 import {
   afterResult,
@@ -175,7 +177,9 @@ export {
   DocNavLink,
   EnumEditor,
   StringPresenter,
-  EditBoxPopup
+  EditBoxPopup,
+  SpaceHeader,
+  ViewletContentView
 }
 
 function PositionElementAlignment (e?: Event): PopupAlignment | undefined {

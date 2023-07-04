@@ -163,6 +163,7 @@ export function createModel (builder: Builder): void {
         ],
         spaces: [
           {
+            id: 'funnels',
             label: lead.string.Funnels,
             spaceClass: lead.class.Funnel,
             addSpaceLabel: lead.string.CreateFunnel,
