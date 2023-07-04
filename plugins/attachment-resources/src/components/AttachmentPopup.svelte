@@ -24,6 +24,8 @@
 
   export let attachments: number
   export let object: Doc
+  export let canAdd = true
+  export let canRemove = true
 
   const client = getClient()
 
@@ -41,7 +43,9 @@
   )
 
   function add () {
-    inputFile.click()
+    if (canAdd) {
+      inputFile.click()
+    }
   }
 
   async function createAttachment (file: File) {
@@ -68,7 +72,9 @@
   let inputFile: HTMLInputElement
 
   async function remove (doc: Attachment): Promise<void> {
-    await client.remove(doc)
+    if (canRemove) {
+      await client.remove(doc)
+    }
   }
 </script>
 
@@ -86,14 +92,16 @@
     <div class="fs-title">
       <Label label={attachment.string.Attachments} />
     </div>
-    <div>
-      <ActionIcon size={'medium'} icon={IconAdd} action={add} />
-    </div>
+    {#if canAdd}
+      <div>
+        <ActionIcon size={'medium'} icon={IconAdd} action={add} />
+      </div>
+    {/if}
   </div>
   <div class="content">
     {#each docs as doc}
       <div class="item">
-        <AttachmentPresenter value={doc} showPreview removable on:remove={() => remove(doc)} />
+        <AttachmentPresenter value={doc} showPreview removable={canRemove} on:remove={() => remove(doc)} />
       </div>
     {/each}
   </div>
