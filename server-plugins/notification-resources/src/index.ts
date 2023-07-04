@@ -631,8 +631,9 @@ async function updateCollaboratorsMixin (
     const mixinTxes = await control.findAll(core.class.TxMixin, {
       objectId: tx.objectId
     })
-    const prevDoc = TxProcessor.buildDoc2Doc([createTx, ...mixinTxes]) as Collaborators
-    const set = new Set(prevDoc?.collaborators ?? [])
+    const prevDoc = TxProcessor.buildDoc2Doc([createTx, ...mixinTxes].filter((t) => t._id !== tx._id)) as Collaborators
+    const prevDocMixin = control.hierarchy.as(prevDoc, notification.mixin.Collaborators)
+    const set = new Set(prevDocMixin?.collaborators ?? [])
     const newCollabs: Ref<Account>[] = []
     for (const collab of tx.attributes.collaborators) {
       if (!set.has(collab)) {
