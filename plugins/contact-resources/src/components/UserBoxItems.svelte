@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022-2023 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -25,6 +25,7 @@
   import UsersPopup from './UsersPopup.svelte'
 
   export let items: Ref<Employee>[] = []
+  export let readonlyItems: Ref<Employee>[] = []
   export let _class: Ref<Class<Employee>> = contact.class.Employee
   export let docQuery: DocumentQuery<Employee> | undefined = {
     active: true
@@ -36,8 +37,10 @@
   export let width: string | undefined = undefined
   export let readonly: boolean = false
 
-  let persons: Employee[] = items.map((p) => $employeeByIdStore.get(p)).filter((p) => p !== undefined) as Employee[]
-  $: persons = items.map((p) => $employeeByIdStore.get(p)).filter((p) => p !== undefined) as Employee[]
+  let persons: Employee[] = getPersons(items)
+  $: persons = getPersons(items)
+  let readonlyPersons: Employee[] = getPersons(readonlyItems)
+  $: readonlyPersons = getPersons(readonlyItems)
 
   const dispatch = createEventDispatcher()
 
@@ -51,6 +54,7 @@
         multiSelect: true,
         allowDeselect: false,
         selectedUsers: items,
+        ignoreUsers: readonlyItems,
         readonly
       },
       evt.target as HTMLElement,
@@ -64,6 +68,10 @@
     )
   }
 
+  function getPersons (employees: Ref<Employee>[]) {
+    return employees.map((p) => $employeeByIdStore.get(p)).filter((p) => p !== undefined) as Employee[]
+  }
+
   const removePerson = (removed: Employee) => {
     const newItems = items.filter((it) => it !== removed._id)
     dispatch('update', newItems)
@@ -72,6 +80,11 @@
 
 <div class="flex-col" style:width={width ?? 'auto'}>
   <div class="flex-row-center flex-wrap">
+    {#each readonlyPersons as person}
+      <div class="usertag-container gap-1-5">
+        <UserInfo value={person} {size} />
+      </div>
+    {/each}
     {#each persons as person}
       <div class="usertag-container gap-1-5">
         <UserInfo value={person} {size} />
