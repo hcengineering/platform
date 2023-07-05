@@ -82,9 +82,6 @@
     {@const cl = hierarchy.getClass(person._class)}
     <div class="menu-group__header">
       <span class="overflow-label">
-        <!-- {#if cl.icon}
-          <Icon icon={cl.icon} size={'small'} />
-        {/if} -->
         <Label label={cl.label} />
       </span>
     </div>
