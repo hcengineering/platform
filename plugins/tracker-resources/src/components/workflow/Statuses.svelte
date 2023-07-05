@@ -273,7 +273,7 @@
               width="min-content"
               icon={IconAdd}
               size="small"
-              kind="transparent"
+              kind="ghost"
               on:click={() => {
                 closeTooltip()
                 editingStatus = { category: category._id, color: category.color }

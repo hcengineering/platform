@@ -70,7 +70,7 @@
       color: var(--theme-caption-color);
     }
     &:focus {
-      box-shadow: 0 0 0 2px var(--primary-button-focused-border);
+      box-shadow: 0 0 0 2px var(--accented-button-outline);
       .icon-container {
         color: var(--theme-caption-color);
       }

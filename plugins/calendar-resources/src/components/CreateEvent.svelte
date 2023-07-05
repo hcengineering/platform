@@ -104,7 +104,7 @@
       labelNull={ui.string.SelectDate}
       on:change={async (event) => await handleNewStartDate(event.detail)}
       mode={DateRangeMode.DATETIME}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
       editable
     />
@@ -114,10 +114,10 @@
       labelNull={calendar.string.DueTo}
       on:change={async (event) => await handleNewDueDate(event.detail)}
       mode={DateRangeMode.DATETIME}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
       editable
     />
-    <UserBoxList bind:items={participants} label={calendar.string.Participants} kind={'secondary'} size={'large'} />
+    <UserBoxList bind:items={participants} label={calendar.string.Participants} kind={'regular'} size={'large'} />
   </svelte:fragment>
 </Card>

@@ -50,7 +50,7 @@
     }
     &:focus {
       color: var(--theme-caption-color);
-      box-shadow: 0 0 0 2px var(--primary-button-focused-border);
+      box-shadow: 0 0 0 2px var(--accented-button-focused-border);
     }
     &.selected {
       background-color: var(--theme-button-pressed);

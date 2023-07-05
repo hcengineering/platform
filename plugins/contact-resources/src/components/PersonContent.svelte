@@ -166,7 +166,7 @@
     padding: 0.125rem 0.25rem;
     font-size: 0.75rem;
     color: var(--theme-content-color);
-    background-color: var(--theme-button-enabled);
+    background-color: var(--theme-button-default);
     border-radius: 0.25rem;
   }
 </style>

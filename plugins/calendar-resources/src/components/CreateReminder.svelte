@@ -78,9 +78,9 @@
       mode={DateRangeMode.DATETIME}
       editable={true}
       labelNull={ui.string.SelectDate}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
     />
-    <UserBoxList bind:items={participants} label={calendar.string.Participants} kind={'secondary'} size={'large'} />
+    <UserBoxList bind:items={participants} label={calendar.string.Participants} kind={'regular'} size={'large'} />
   </svelte:fragment>
 </Card>

@@ -225,7 +225,7 @@
               <div class="ml-2">
                 <Button
                   disabled={newTemplate.title.trim().length === 0}
-                  kind={'primary'}
+                  kind={'accented'}
                   label={templatesPlugin.string.SaveTemplate}
                   on:click={saveNewTemplate}
                 />
@@ -250,7 +250,7 @@
           </div>
           <div class="flex flex-reverse">
             <Button
-              kind={'primary'}
+              kind={'accented'}
               label={templatesPlugin.string.EditTemplate}
               on:click={() => {
                 mode = Mode.Edit

@@ -244,7 +244,7 @@
       />
     </div>
     <div class="buttons-group small-gap">
-      <Button label={presentation.string.Cancel} size="small" kind="transparent" on:click={close} />
+      <Button label={presentation.string.Cancel} size="small" kind="ghost" on:click={close} />
       <Button
         disabled={!canSave}
         label={presentation.string.Save}

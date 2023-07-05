@@ -73,7 +73,7 @@
       <span class="overflow-label"><Label label={i === 0 ? view.string.Grouping : view.string.Then} /></span>
       <DropdownLabelsIntl
         label={view.string.Grouping}
-        kind={'secondary'}
+        kind={'regular'}
         size={'medium'}
         items={getItems(groupBy, i, viewOptions.groupBy)}
         selected={group}
@@ -87,7 +87,7 @@
     <span class="overflow-label"><Label label={view.string.Ordering} /></span>
     <DropdownLabelsIntl
       label={view.string.Ordering}
-      kind={'secondary'}
+      kind={'regular'}
       size={'medium'}
       items={orderBy}
       selected={viewOptions.orderBy[0]}
@@ -119,7 +119,7 @@
         {@const items = model.values.filter(({ hidden }) => !hidden?.(viewOptions))}
         <DropdownLabelsIntl
           label={model.label}
-          kind={'secondary'}
+          kind={'regular'}
           size={'medium'}
           {items}
           selected={viewOptions[model.key] ?? model.defaultValue}

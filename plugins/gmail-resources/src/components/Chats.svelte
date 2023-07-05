@@ -91,7 +91,7 @@
           <Button
             label={gmail.string.PublishSelected}
             size={'small'}
-            kind={'primary'}
+            kind={'accented'}
             disabled={!selected.size}
             on:click={share}
           />
@@ -102,7 +102,7 @@
         <Button
           label={gmail.string.CreateMessage}
           size={'small'}
-          kind={'primary'}
+          kind={'accented'}
           on:click={() => {
             newMessage = true
           }}
@@ -110,7 +110,7 @@
       {/if}
       <Button
         icon={IconShare}
-        kind={'transparent'}
+        kind={'ghost'}
         showTooltip={{ label: gmail.string.ShareMessages }}
         on:click={async () => {
           selectable = !selectable

@@ -121,7 +121,7 @@
     <Button
       icon={IconAdd}
       label={board.string.AddACard}
-      kind="transparent"
+      kind="ghost"
       width={'100%'}
       justify={'left'}
       on:click={onOpen}

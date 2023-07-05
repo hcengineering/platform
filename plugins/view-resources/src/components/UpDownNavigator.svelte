@@ -37,14 +37,14 @@
   <Button
     focusIndex={10005}
     icon={IconDownOutline}
-    kind={'secondary'}
+    kind={'regular'}
     size={'medium'}
     on:click={(evt) => next(evt, true)}
   />
   <Button
     focusIndex={10006}
     icon={IconUpOutline}
-    kind={'secondary'}
+    kind={'regular'}
     size={'medium'}
     on:click={(evt) => next(evt, false)}
   />

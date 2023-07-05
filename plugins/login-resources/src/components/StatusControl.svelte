@@ -30,7 +30,7 @@
 <style lang="scss">
   .container {
     padding: 0.75rem 1rem;
-    background-color: var(--theme-button-enabled);
+    background-color: var(--theme-button-default);
     border: 1px solid var(--theme-button-border);
     border-radius: 0.5rem;
   }
@@ -38,7 +38,7 @@
   .error {
     color: var(--system-error-color);
     fill: var(--system-error-color);
-    background-color: var(--theme-button-enabled);
+    background-color: var(--theme-button-default);
     border-color: var(--system-error-60-color);
   }
 </style>

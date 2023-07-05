@@ -142,7 +142,7 @@
         <DropdownLabels
           icon={IconFolder}
           label={tags.string.CategoryLabel}
-          kind={'secondary'}
+          kind={'regular'}
           size={'large'}
           bind:selected={category}
           items={categoryItems}

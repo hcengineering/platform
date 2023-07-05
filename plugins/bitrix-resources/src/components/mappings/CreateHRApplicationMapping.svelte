@@ -177,12 +177,12 @@
               width={'10rem'}
               label={getEmbeddedLabel('Source state')}
               items={sourceStates}
-              kind={m.sourceName !== '' ? 'primary' : 'secondary'}
+              kind={m.sourceName !== '' ? 'accented' : 'regular'}
               bind:selected={m.sourceName}
             /> =>
             <DropdownLabels
               width={'10rem'}
-              kind={m.targetName !== '' ? 'primary' : 'secondary'}
+              kind={m.targetName !== '' ? 'accented' : 'regular'}
               label={getEmbeddedLabel('Final state')}
               items={stateTitles}
               bind:selected={m.targetName}
@@ -190,7 +190,7 @@
             <span class="ml-4"> Done state: </span>
             <DropdownLabels
               width={'10rem'}
-              kind={m.doneState !== '' ? 'primary' : 'secondary'}
+              kind={m.doneState !== '' ? 'accented' : 'regular'}
               label={getEmbeddedLabel('Done state')}
               items={doneStateTitles}
               bind:selected={m.doneState}

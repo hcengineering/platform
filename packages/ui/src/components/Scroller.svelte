@@ -623,7 +623,7 @@
       background-color: var(--theme-button-hovered);
     }
     &:focus {
-      box-shadow: 0 0 0 2px var(--primary-button-focused-border);
+      box-shadow: 0 0 0 2px var(--accented-button-outline);
     }
     &.vertical {
       width: 2rem;

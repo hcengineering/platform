@@ -133,6 +133,7 @@
     isAside={true}
     {embedded}
     {object}
+    on:open
     on:close={() => {
       dispatch('close')
     }}
@@ -170,20 +171,15 @@
       {/if}
     </svelte:fragment>
     <svelte:fragment slot="utils">
-      <div class="p-1">
-        <Button icon={IconMoreH} kind={'transparent'} size={'medium'} on:click={showMenu} />
-      </div>
-      <div class="p-1">
-        <Button
-          icon={IconMixin}
-          kind={'transparent'}
-          shape={'round'}
-          selected={showAllMixins}
-          on:click={() => {
-            showAllMixins = !showAllMixins
-          }}
-        />
-      </div>
+      <Button icon={IconMoreH} kind={'ghost'} size={'medium'} on:click={showMenu} />
+      <Button
+        icon={IconMixin}
+        kind={'ghost'}
+        selected={showAllMixins}
+        on:click={() => {
+          showAllMixins = !showAllMixins
+        }}
+      />
     </svelte:fragment>
 
     <!-- <EditBox bind:value={object.description} placeholder={recruit.string.VacancyDescription} focusable on:blur={save} /> -->

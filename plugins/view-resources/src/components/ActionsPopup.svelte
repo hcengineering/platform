@@ -305,7 +305,7 @@
     padding: 0 0.5rem;
     min-width: 1.5rem;
     color: var(--theme-caption-color);
-    background-color: var(--theme-button-enabled);
+    background-color: var(--theme-button-default);
     border: 1px solid var(--theme-button-border);
     border-radius: 0.25rem;
   }

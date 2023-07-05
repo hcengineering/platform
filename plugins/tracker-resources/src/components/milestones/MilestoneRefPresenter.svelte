@@ -64,7 +64,7 @@
   {#if milestone && kind === 'list-header' && display !== 'kanban'}
     <div class="flex-row-center" class:minus-margin-space={kind === 'list-header'} class:text-sm={twoRows}>
       {#if milestone}
-        <DatePresenter value={milestone.targetDate} kind={'transparent'} />
+        <DatePresenter value={milestone.targetDate} kind={'ghost'} />
       {/if}
     </div>
   {/if}

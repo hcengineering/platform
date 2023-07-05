@@ -108,9 +108,9 @@
     <span class="antiSection-header__title">
       <Label label={hr.string.Members} />
     </span>
-    <div class="buttons-group xsmall-gap">
-      <ViewletSettingButton bind:viewOptions viewlet={descr} />
-      <Button id={hr.string.AddEmployee} icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={add} />
+    <div class="flex-row-center gap-2 reverse">
+      <ViewletSettingButton bind:viewOptions viewlet={descr} kind={'ghost'} />
+      <Button id={hr.string.AddEmployee} icon={IconAdd} kind={'ghost'} on:click={add} />
     </div>
   </div>
   {#if (value?.members.length ?? 0) > 0}

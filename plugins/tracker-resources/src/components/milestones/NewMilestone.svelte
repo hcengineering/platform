@@ -58,7 +58,7 @@
     <SpaceSelector
       _class={tracker.class.Project}
       label={tracker.string.Project}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
       bind:space
       component={ProjectPresenter}
@@ -79,13 +79,13 @@
     showButtons={false}
   />
   <svelte:fragment slot="pool">
-    <MilestoneStatusEditor bind:value={object.status} {object} kind="secondary" />
+    <MilestoneStatusEditor bind:value={object.status} {object} kind="regular" />
     <DatePresenter
       bind:value={object.targetDate}
       editable
       label={tracker.string.TargetDate}
       detail={ui.string.SelectDate}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
     />
   </svelte:fragment>

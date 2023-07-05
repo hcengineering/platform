@@ -493,7 +493,7 @@
           />
         {/if}
       {/if}
-      <Button icon={IconMoreH} kind={'transparent'} size={'medium'} on:click={showMenu} />
+      <Button icon={IconMoreH} kind={'ghost'} size={'medium'} on:click={showMenu} />
     </svelte:fragment>
 
     <div class="description-preview select-text mt-2 emphasized">
@@ -574,8 +574,8 @@
     transition: border-color 0.1s var(--timing-main), box-shadow 0.1s var(--timing-main);
 
     &:focus-within {
-      border-color: var(--primary-button-focused-border);
-      box-shadow: 0 0 0 3px var(--primary-button-outline);
+      border-color: var(--accented-button-focused-border);
+      box-shadow: 0 0 0 3px var(--accented-button-outline);
     }
   }
 </style>

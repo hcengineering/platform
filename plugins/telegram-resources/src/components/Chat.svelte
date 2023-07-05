@@ -250,7 +250,7 @@
       {#if integration === undefined}
         <Button
           label={telegram.string.Connect}
-          kind={'primary'}
+          kind={'accented'}
           on:click={(e) => {
             showPopup(Connect, {}, eventToHTMLElement(e), onConnectClose)
           }}
@@ -258,7 +258,7 @@
       {:else if integration.disabled}
         <Button
           label={setting.string.Reconnect}
-          kind={'primary'}
+          kind={'accented'}
           on:click={(e) => {
             showPopup(Reconnect, {}, eventToHTMLElement(e), onReconnect)
           }}
@@ -266,7 +266,7 @@
       {/if}
       <Button
         icon={IconShare}
-        kind={'transparent'}
+        kind={'ghost'}
         size={'medium'}
         showTooltip={{ label: telegram.string.Share }}
         on:click={async () => {
@@ -293,7 +293,7 @@
               <Button
                 label={telegram.string.PublishSelected}
                 size={'medium'}
-                kind={'primary'}
+                kind={'accented'}
                 disabled={!selected.size}
                 on:click={share}
               />

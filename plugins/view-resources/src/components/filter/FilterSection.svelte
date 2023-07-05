@@ -188,7 +188,7 @@
     display: flex;
     align-items: center;
     margin-bottom: 0.375rem;
-    background-color: var(--theme-button-enabled);
+    background-color: var(--theme-button-default);
     padding: 0.125rem;
     border-radius: 0.25rem;
 

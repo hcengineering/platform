@@ -21,7 +21,7 @@
   import tracker from '../../plugin'
 
   export let value: Component
-  export let kind: ButtonKind = 'secondary'
+  export let kind: ButtonKind = 'regular'
   export let size: ButtonSize = 'medium'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = 'min-content'

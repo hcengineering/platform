@@ -78,7 +78,7 @@
 
 {#if kind === 'list'}
   {#if value.milestone}
-    <div class="label-wrapper">
+    <div class={compression ? 'label-wrapper' : 'clear-mins'}>
       <MilestoneSelector
         {kind}
         {size}
@@ -89,7 +89,7 @@
         {popupPlaceholder}
         {onlyIcon}
         {enlargedText}
-        short
+        short={compression}
         showTooltip={{ label: value.milestone ? tracker.string.MoveToMilestone : tracker.string.AddToMilestone }}
         value={value.milestone}
         onChange={handleMilestoneIdChanged}
@@ -128,7 +128,7 @@
     {#if milestone && kind === 'list-header'}
       <div class="flex-row-center" class:minus-margin-space={kind === 'list-header'} class:text-sm={twoRows}>
         {#if milestone}
-          <DatePresenter value={milestone.targetDate} kind={'transparent'} />
+          <DatePresenter value={milestone.targetDate} kind={'ghost'} />
         {/if}
       </div>
     {/if}

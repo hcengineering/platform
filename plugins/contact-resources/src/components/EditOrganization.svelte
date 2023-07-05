@@ -76,8 +76,8 @@
   .logo {
     width: 5rem;
     height: 5rem;
-    color: var(--primary-button-color);
-    background-color: var(--primary-button-enabled);
+    color: var(--accented-button-color);
+    background-color: var(--accented-button-default);
     border-radius: 50%;
   }
   .name {

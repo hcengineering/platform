@@ -187,7 +187,7 @@
             width="min-content"
             icon={IconAdd}
             size="small"
-            kind="transparent"
+            kind="ghost"
             on:click={create}
           />
         </div>

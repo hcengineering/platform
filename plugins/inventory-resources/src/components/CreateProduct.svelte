@@ -78,14 +78,14 @@
 >
   <div class="flex-row-center clear-mins">
     <div class="mr-3">
-      <Button focusIndex={1} icon={inventory.icon.Products} size={'medium'} kind={'link-bordered'} disabled />
+      <Button focusIndex={1} icon={inventory.icon.Products} size={'medium'} kind={'link-bordered'} noFocus />
     </div>
     <EditBox bind:value={doc.name} placeholder={inventory.string.Product} kind={'large-style'} autoFocus />
   </div>
   <svelte:fragment slot="pool">
     <DropdownLabels
       items={categories}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
       bind:selected={doc.attachedTo}
       placeholder={inventory.string.Categories}

@@ -76,7 +76,7 @@
     <Button
       label={board.string.Save}
       size={'small'}
-      kind={'primary'}
+      kind={'accented'}
       on:click={() => {
         update()
         dispatch('close')

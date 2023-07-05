@@ -33,7 +33,7 @@
     <span class="antiSection-header__title">
       <Label label={inventory.string.Variants} />
     </span>
-    <Button icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={create} />
+    <Button icon={IconAdd} kind={'ghost'} on:click={create} />
   </div>
   {#if variants > 0}
     <Table

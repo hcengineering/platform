@@ -43,7 +43,7 @@
     width: fit-content;
     font-weight: 500;
     color: var(--theme-caption-color);
-    background-color: var(--theme-button-enabled);
+    background-color: var(--theme-button-default);
     border-radius: 1.25rem;
     user-select: text;
   }

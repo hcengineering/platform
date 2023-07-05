@@ -168,8 +168,8 @@
       cursor: pointer;
 
       &:not(.image) {
-        color: var(--primary-button-color);
-        background-color: var(--primary-button-enabled);
+        color: var(--accented-button-color);
+        background-color: var(--accented-button-default);
       }
       &.svg {
         background-color: #fff;
@@ -184,7 +184,7 @@
       padding: 0.5rem 0.75rem;
       width: 100%;
       height: 100%;
-      background-color: var(--theme-button-enabled);
+      background-color: var(--theme-button-default);
       border: 1px solid var(--theme-button-border);
       border-left: none;
       border-radius: 0 0.25rem 0.25rem 0;

@@ -211,15 +211,15 @@
         border-radius: 50%;
       }
       &.focused {
-        box-shadow: 0 0 0 3px var(--primary-button-outline);
+        box-shadow: 0 0 0 3px var(--accented-button-outline);
       }
       &.selected {
-        color: var(--primary-button-color);
-        background-color: var(--primary-button-enabled);
+        color: var(--accented-button-color);
+        background-color: var(--accented-button-default);
       }
       &:hover {
         color: var(--caption-color);
-        background-color: var(--primary-button-transparent);
+        background-color: var(--accented-button-transparent);
       }
 
       &:before {

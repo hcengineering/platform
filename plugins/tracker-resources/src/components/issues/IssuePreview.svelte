@@ -80,10 +80,10 @@
   </div>
   <Scroller padding={'0.75rem 1.75rem 0'} noFade>
     <div class="flex-row-center gap-2 mb-2">
-      <StatusEditor value={issue} shouldShowLabel kind={'secondary'} />
-      <PriorityEditor value={issue} shouldShowLabel kind={'secondary'} />
+      <StatusEditor value={issue} shouldShowLabel kind={'regular'} />
+      <PriorityEditor value={issue} shouldShowLabel kind={'regular'} />
       {#if issue.assignee}
-        <AssigneeEditor object={issue} kind={'secondary'} />
+        <AssigneeEditor object={issue} kind={'regular'} />
       {/if}
     </div>
 

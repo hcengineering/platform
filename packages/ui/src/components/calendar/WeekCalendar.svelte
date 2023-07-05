@@ -100,7 +100,7 @@
     width: calc(calc(100% - 50px) / 7);
   }
   .cell:hover:not(.wrongMonth) {
-    color: var(--primary-button-color);
+    color: var(--accented-button-color);
     background-color: var(--highlight-hover);
   }
 </style>

@@ -193,15 +193,15 @@
           <Button
             label={hideDoneItems ? board.string.ShowDoneChecklistItems : board.string.HideDoneChecklistItems}
             labelParams={{ done }}
-            kind="transparent"
+            kind="ghost"
             size="small"
             on:click={() => {
               hideDoneItems = !hideDoneItems
             }}
           />
         {/if}
-        <Button icon={IconAdd} kind="transparent" size="small" on:click={startAddingItem} />
-        <Button icon={IconDelete} kind="transparent" size="small" on:click={deleteChecklist} />
+        <Button icon={IconAdd} kind="ghost" size="small" on:click={startAddingItem} />
+        <Button icon={IconDelete} kind="ghost" size="small" on:click={deleteChecklist} />
       {/if}
     </div>
     <div class="flex-row-stretch mb-2 mt-1">
@@ -282,7 +282,7 @@
                 updateItemAssignee(item, e.detail)
               }}
             />
-            <Button icon={IconMoreH} kind="transparent" size="small" on:click={(e) => showItemMenu(item, e)} />
+            <Button icon={IconMoreH} kind="ghost" size="small" on:click={(e) => showItemMenu(item, e)} />
           </div>
         {/if}
       </div>

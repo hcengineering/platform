@@ -549,7 +549,7 @@
       _class={tracker.class.Project}
       label={tracker.string.Project}
       bind:space={_space}
-      kind={'secondary'}
+      kind={'regular'}
       size={'small'}
       component={ProjectPresenter}
       iconWithEmoji={tracker.component.IconWithEmoji}
@@ -562,7 +562,7 @@
         space: _space
       }}
       on:change={handleTemplateChange}
-      kind={'secondary'}
+      kind={'regular'}
       size={'small'}
       label={tracker.string.NoIssueTemplate}
       icon={tracker.icon.IssueTemplates}
@@ -657,7 +657,7 @@
       <StatusEditor
         focusIndex={3}
         value={object}
-        kind={'secondary'}
+        kind={'regular'}
         size={'large'}
         defaultIssueStatus={currentProject?.defaultIssueStatus}
         shouldShowLabel={true}
@@ -678,7 +678,7 @@
         value={object}
         shouldShowLabel
         isEditable
-        kind={'secondary'}
+        kind={'regular'}
         size={'large'}
         justify="center"
         on:change={({ detail }) => {
@@ -691,7 +691,7 @@
       <AssigneeEditor
         focusIndex={5}
         {object}
-        kind={'secondary'}
+        kind={'regular'}
         size={'large'}
         short
         on:change={({ detail }) => {
@@ -709,7 +709,7 @@
         key,
         targetClass: tracker.class.Issue,
         countLabel: tracker.string.NumberLabels,
-        kind: 'secondary',
+        kind: 'regular',
         size: 'large'
       }}
       on:open={(evt) => {
@@ -724,12 +724,12 @@
       value={object.component}
       onChange={handleComponentIdChanged}
       isEditable={true}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
       short
     />
     <div id="estimation-editor" class="new-line">
-      <EstimationEditor focusIndex={7} kind={'secondary'} size={'large'} value={object} />
+      <EstimationEditor focusIndex={7} kind={'regular'} size={'large'} value={object} />
     </div>
     <div id="milestone-editor" class="new-line">
       <MilestoneSelector
@@ -737,7 +737,7 @@
         value={object.milestone}
         onChange={handleMilestoneIdChanged}
         useComponent={(!originalIssue && object.component) || undefined}
-        kind={'secondary'}
+        kind={'regular'}
         size={'large'}
         short
       />
@@ -746,7 +746,7 @@
       <DatePresenter
         bind:value={object.dueDate}
         labelNull={tracker.string.DueDate}
-        kind={'secondary'}
+        kind={'regular'}
         size={'large'}
         editable
       />
@@ -755,7 +755,7 @@
       <Button
         icon={tracker.icon.Parent}
         label={object.parentIssue ? tracker.string.RemoveParent : tracker.string.SetParent}
-        kind={'secondary'}
+        kind={'regular'}
         size={'large'}
         notSelected={object.parentIssue === undefined}
         on:click={object.parentIssue ? clearParentIssue : setParentIssue}
@@ -782,7 +782,7 @@
       icon={IconAttachment}
       iconProps={{ fill: 'var(--theme-dark-color)' }}
       size={'large'}
-      kind={'transparent'}
+      kind={'ghost'}
       on:click={() => {
         descriptionBox.attach()
       }}

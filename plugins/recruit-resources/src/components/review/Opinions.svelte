@@ -34,7 +34,7 @@
     <span class="antiSection-header__title">
       <Label label={recruit.string.Opinions} />
     </span>
-    <Button icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createApp} />
+    <Button icon={IconAdd} kind={'ghost'} on:click={createApp} />
   </div>
   {#if opinions > 0}
     <Table

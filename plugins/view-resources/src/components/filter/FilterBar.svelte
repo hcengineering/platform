@@ -183,7 +183,7 @@
         />
       {/each}
       <div class="add-filter">
-        <Button size={'small'} icon={IconAdd} kind={'transparent'} on:click={add} />
+        <Button size={'small'} icon={IconAdd} kind={'ghost'} on:click={add} />
       </div>
     </div>
 

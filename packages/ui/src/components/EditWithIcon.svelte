@@ -56,7 +56,7 @@
     <div class="ml-2">
       <Button
         icon={IconClose}
-        kind={'transparent'}
+        kind={'ghost'}
         size={'small'}
         noFocus
         on:click={() => {

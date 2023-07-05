@@ -116,10 +116,13 @@ export interface TabItem {
 }
 
 export type ButtonKind =
-  | 'primary'
-  | 'secondary'
+  | 'accented'
+  | 'brand'
+  | 'positive'
+  | 'negative'
+  | 'regular'
+  | 'ghost'
   | 'no-border'
-  | 'transparent'
   | 'link'
   | 'link-bordered'
   | 'dangerous'
@@ -203,6 +206,11 @@ export type IconSize =
   | 'x-large'
   | '2x-large'
   | 'full'
+export interface IconProps {
+  icon?: number
+  size?: IconSize
+  fill?: string
+}
 
 export function getIconSize2x (size: IconSize): IconSize {
   switch (size) {

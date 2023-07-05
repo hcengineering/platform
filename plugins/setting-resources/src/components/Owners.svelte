@@ -76,7 +76,7 @@
             <DropdownLabelsIntl
               label={setting.string.Role}
               disabled={account.role > currentRole || (account.role === AccountRole.Owner && owners.length === 1)}
-              kind={'primary'}
+              kind={'accented'}
               size={'medium'}
               {items}
               selected={account.role.toString()}

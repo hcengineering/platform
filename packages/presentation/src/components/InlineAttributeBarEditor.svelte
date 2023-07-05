@@ -61,7 +61,7 @@
           readonly={isReadonly}
           label={attribute?.label}
           placeholder={attribute?.label}
-          kind={'secondary'}
+          kind={'regular'}
           size={'large'}
           width={'100%'}
           justify={'left'}

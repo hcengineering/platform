@@ -395,7 +395,7 @@
 
         <Button
           label={ui.string.ShowMore}
-          kind={'transparent'}
+          kind={'ghost'}
           size={'small'}
           on:click={() => {
             limit = limit + 100

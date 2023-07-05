@@ -54,8 +54,8 @@
       cursor: pointer;
 
       &:hover {
-        border-color: var(--primary-button-focused-border);
-        box-shadow: 0 0 0 3px var(--primary-button-outline);
+        border-color: var(--accented-button-focused-border);
+        box-shadow: 0 0 0 3px var(--accented-button-outline);
       }
       &.selected {
         border-color: var(--caption-color);

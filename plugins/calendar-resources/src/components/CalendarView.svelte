@@ -174,21 +174,21 @@
   <div class="flex-row-center gap-2">
     <Button
       icon={IconBack}
-      kind={'transparent'}
+      kind={'ghost'}
       on:click={() => {
         inc(-1)
       }}
     />
     <Button
       label={calendar.string.Today}
-      kind={'transparent'}
+      kind={'ghost'}
       on:click={() => {
         inc(0)
       }}
     />
     <Button
       icon={IconForward}
-      kind={'transparent'}
+      kind={'ghost'}
       on:click={() => {
         inc(1)
       }}

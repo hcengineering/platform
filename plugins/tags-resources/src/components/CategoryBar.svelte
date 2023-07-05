@@ -158,7 +158,7 @@
     <div class="buttons-group small-gap">
       <Button
         label={tags.string.AllCategories}
-        kind={'transparent'}
+        kind={'ghost'}
         size={'large'}
         on:click={() => {
           category = undefined

@@ -114,7 +114,7 @@
     <SpaceSelector
       _class={lead.class.Funnel}
       label={lead.string.FunnelName}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
       bind:space={_space}
       create={{
@@ -134,7 +134,7 @@
           label={lead.string.Leads}
           placeholder={lead.string.Leads}
           bind:value={customer}
-          kind={'secondary'}
+          kind={'regular'}
           size={'large'}
         />
       {/if}
@@ -145,7 +145,7 @@
   <StatusControl slot="error" {status} />
   <div class="flex-row-center clear-mins">
     <div class="mr-3">
-      <Button focusIndex={1} icon={lead.icon.Lead} size={'medium'} kind={'link-bordered'} disabled />
+      <Button focusIndex={1} icon={lead.icon.Lead} size={'medium'} kind={'link-bordered'} noFocus />
     </div>
     <EditBox
       focusIndex={1}
@@ -164,7 +164,7 @@
         label={lead.string.Customer}
         placeholder={lead.string.SelectCustomer}
         bind:value={customer}
-        kind={'secondary'}
+        kind={'regular'}
         size={'large'}
         create={{ component: lead.component.CreateCustomer, label: lead.string.CreateCustomer }}
       />

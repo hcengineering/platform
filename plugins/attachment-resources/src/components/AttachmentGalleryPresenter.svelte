@@ -180,8 +180,8 @@
     height: 2rem;
     font-weight: 500;
     font-size: 0.625rem;
-    color: var(--primary-button-color);
-    background-color: var(--primary-button-enabled);
+    color: var(--accented-button-color);
+    background-color: var(--accented-button-default);
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 0.5rem;
     cursor: pointer;

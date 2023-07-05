@@ -71,7 +71,7 @@
     </div>
   {/if}
   <div class="mt-2">
-    <Button label={presentation.string.Save} size={'medium'} kind={'primary'} on:click={() => setInviteSettings()} />
+    <Button label={presentation.string.Save} size={'medium'} kind={'accented'} on:click={() => setInviteSettings()} />
   </div>
 </div>
 

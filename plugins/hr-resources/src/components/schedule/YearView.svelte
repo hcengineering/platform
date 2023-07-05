@@ -205,7 +205,7 @@
       border: none;
       color: var(--caption-color);
       &.today {
-        background-color: var(--primary-button-disabled);
+        background-color: var(--accented-button-disabled);
       }
       &.summary {
         font-weight: 600;

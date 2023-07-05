@@ -16,7 +16,7 @@
     <Button
       icon={isAdding ? IconBack : IconAdd}
       label={isAdding ? ui.string.Cancel : automation.string.Automation}
-      kind={isAdding ? 'no-border' : 'primary'}
+      kind={isAdding ? 'no-border' : 'accented'}
       on:click={() => {
         isAdding = !isAdding
       }}

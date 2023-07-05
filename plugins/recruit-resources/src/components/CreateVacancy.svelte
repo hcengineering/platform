@@ -245,7 +245,7 @@
 >
   <div class="flex-row-center clear-mins">
     <div class="mr-3">
-      <Button focusIndex={1} icon={Vacancy} size={'medium'} kind={'link-bordered'} disabled />
+      <Button focusIndex={1} icon={Vacancy} size={'medium'} kind={'link-bordered'} noFocus />
     </div>
     <div class="clear-mins flex-grow">
       <EditBox
@@ -282,7 +282,7 @@
       bind:value={company}
       allowDeselect
       titleDeselect={recruit.string.UnAssignCompany}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
       icon={Company}
       readonly={preserveCompany}
@@ -295,7 +295,7 @@
         folders: [recruit.space.VacancyTemplates],
         template: templateId,
         focusIndex: 4,
-        kind: 'secondary',
+        kind: 'regular',
         size: 'large'
       }}
       on:change={handleTemplateChange}

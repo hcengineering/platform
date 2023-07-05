@@ -363,7 +363,7 @@
         bind:value={doc.assignee}
         allowDeselect
         showNavigate={false}
-        kind={'secondary'}
+        kind={'regular'}
         size={'large'}
         titleDeselect={recruit.string.UnAssignRecruiter}
       />

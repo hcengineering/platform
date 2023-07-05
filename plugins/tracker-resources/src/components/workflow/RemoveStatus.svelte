@@ -89,7 +89,7 @@
       focus
       label={presentation.string.Ok}
       size={'small'}
-      kind={'primary'}
+      kind={'accented'}
       loading={processing}
       on:click={remove}
     />

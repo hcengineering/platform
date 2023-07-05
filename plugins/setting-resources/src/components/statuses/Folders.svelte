@@ -69,7 +69,7 @@
   }
   .item {
     padding: 1.25rem 1rem 1.25rem 1.25rem;
-    background-color: var(--theme-button-enabled);
+    background-color: var(--theme-button-default);
     border: 1px solid var(--theme-button-border);
     border-radius: 0.75rem;
     cursor: pointer;

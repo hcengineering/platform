@@ -176,7 +176,7 @@
       width="min-content"
       icon={isCollapsed ? Collapsed : Expanded}
       size="small"
-      kind="transparent"
+      kind="ghost"
       label={tracker.string.SubIssuesList}
       labelParams={{ subIssues: subIssues.length }}
       on:click={() => (isCollapsed = !isCollapsed)}

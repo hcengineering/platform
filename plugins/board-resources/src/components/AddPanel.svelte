@@ -32,7 +32,7 @@
       icon={IconAdd}
       label={board.string.NewList}
       justify={'left'}
-      kind={'transparent'}
+      kind={'ghost'}
       on:click={() => {
         isOpened = true
       }}

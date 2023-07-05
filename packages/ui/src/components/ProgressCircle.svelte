@@ -22,7 +22,7 @@
   export let max: number = 100
   export let color: number = 5
   export let size: IconSize = 'small'
-  export let primary: boolean = false
+  export let accented: boolean = false
 
   if (value > max) value = max
   if (value < min) value = min
@@ -49,7 +49,7 @@
     cy={8}
     r={7}
     class="progress-circle"
-    style:stroke={primary ? 'var(--primary-bg-color)' : getPlatformColor(color, $themeStore.dark)}
+    style:stroke={accented ? 'var(--primary-bg-color)' : getPlatformColor(color, $themeStore.dark)}
     style:opacity={dashOffset === 0 ? 0 : 1}
     style:transform={'rotate(-82deg)'}
     style:stroke-dasharray={lenghtC}

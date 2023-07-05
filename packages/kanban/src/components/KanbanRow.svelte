@@ -146,7 +146,7 @@
     }
     &.selection,
     &.checked.selection {
-      box-shadow: 0 0 1px 1px var(--primary-button-enabled);
+      box-shadow: 0 0 1px 1px var(--accented-button-default);
       animation: anim-border 1s ease-in-out;
 
       &:hover {

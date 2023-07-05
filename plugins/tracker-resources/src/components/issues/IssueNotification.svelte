@@ -101,7 +101,7 @@
       {/if}
       <span class="overflow-label fs-bold caption-color">{title}</span>
     </div>
-    <Button icon={IconClose} kind="transparent" size="small" on:click={onRemove} />
+    <Button icon={IconClose} kind="ghost" size="small" on:click={onRemove} />
   </div>
 
   <div class="content flex-row-center flex-wrap gap-2 reverse">

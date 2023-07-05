@@ -108,7 +108,7 @@
 >
   <div class="flex-row-center clear-mins">
     <div class="mr-3">
-      <Button icon={document.icon.Document} size={'medium'} kind={'link-bordered'} disabled />
+      <Button icon={document.icon.Document} size={'medium'} kind={'link-bordered'} noFocus />
     </div>
     <EditBox
       placeholder={document.string.DocumentNamePlaceholder}
@@ -123,7 +123,7 @@
       items={object.authors}
       label={document.string.Authors}
       emptyLabel={document.string.Authors}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
       width={'min-content'}
       on:update={({ detail }) => (object.authors = detail)}
@@ -132,7 +132,7 @@
       items={object.approvers}
       label={document.string.Approvers}
       emptyLabel={document.string.Approvers}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
       width={'min-content'}
       on:update={({ detail }) => (object.approvers = detail)}
@@ -141,7 +141,7 @@
       items={object.reviewers}
       label={document.string.Reviewers}
       emptyLabel={document.string.Reviewers}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
       width={'min-content'}
       on:update={({ detail }) => (object.reviewers = detail)}

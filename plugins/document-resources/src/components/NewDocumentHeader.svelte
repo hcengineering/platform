@@ -28,7 +28,7 @@
     label={document.string.CreateDocument}
     justify={'left'}
     width={'100%'}
-    kind={'primary'}
+    kind={'accented'}
     size={'large'}
     on:click={newDocument}
   />

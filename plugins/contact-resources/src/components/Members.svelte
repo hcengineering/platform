@@ -111,8 +111,8 @@
       <Label label={contact.string.Members} />
     </span>
     <div class="buttons-group xsmall-gap">
-      <ViewletSettingButton bind:viewOptions viewlet={descr} />
-      <Button id={contact.string.AddMember} icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createApp} />
+      <ViewletSettingButton bind:viewOptions viewlet={descr} kind={'ghost'} />
+      <Button id={contact.string.AddMember} icon={IconAdd} kind={'ghost'} on:click={createApp} />
     </div>
   </div>
   {#if members > 0 && descr}

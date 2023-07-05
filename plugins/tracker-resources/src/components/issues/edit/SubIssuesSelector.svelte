@@ -153,7 +153,7 @@
           <div class="flex-row-center content-color text-sm pointer-events-none">
             {#if !compactMode}
               <div class="mr-1-5">
-                <ProgressCircle bind:value={countComplete} bind:max={subIssues.length} size={'small'} primary />
+                <ProgressCircle bind:value={countComplete} bind:max={subIssues.length} size={'small'} accented />
               </div>
             {/if}
             {countComplete}/{subIssues.length}

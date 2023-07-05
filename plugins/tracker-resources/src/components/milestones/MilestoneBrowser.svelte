@@ -130,7 +130,7 @@
   </div>
 
   <div class="ac-header-full medium-gap mb-1">
-    <Button icon={IconAdd} label={tracker.string.Milestone} kind={'primary'} on:click={showCreateDialog} />
+    <Button icon={IconAdd} label={tracker.string.Milestone} kind={'accented'} on:click={showCreateDialog} />
   </div>
 </div>
 <div class="ac-header full divide search-start">

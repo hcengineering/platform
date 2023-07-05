@@ -121,7 +121,7 @@
       label={view.string.Move}
       size={'small'}
       disabled={space === currentSpace?._id || status !== OK}
-      kind={'primary'}
+      kind={'accented'}
       on:click={moveAll}
     />
     <Button

@@ -55,7 +55,7 @@
   <Button
     label={presentation.string.Save}
     disabled={!name || !trigger || !commands.length}
-    kind="primary"
+    kind="accented"
     on:click={save}
   />
 </div>

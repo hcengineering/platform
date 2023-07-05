@@ -248,7 +248,7 @@
     {#if integrations.length === 0}
       <Button
         label={plugin.string.Connect}
-        kind={'primary'}
+        kind={'accented'}
         on:click={(e) => {
           showPopup(Connect, {}, eventToHTMLElement(e))
         }}
@@ -287,7 +287,7 @@
       <div class="buttons-group small-gap">
         <Button
           icon={IconAttachment}
-          kind={'transparent'}
+          kind={'ghost'}
           disabled={channels.length === 0}
           on:click={() => {
             inputFile.click()
@@ -297,7 +297,7 @@
           <Button
             label={plugin.string.Send}
             size={'small'}
-            kind={'primary'}
+            kind={'accented'}
             disabled={channels.length === 0}
             on:click={sendMsg}
           />

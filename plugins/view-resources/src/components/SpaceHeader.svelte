@@ -73,13 +73,3 @@
     <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
   </div>
 </div>
-
-<style lang="scss">
-  .header-with-mode-selector {
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-  .header-without-label {
-    padding-left: 0;
-  }
-</style>

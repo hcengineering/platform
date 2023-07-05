@@ -57,7 +57,7 @@
   export let readonly = false
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
-  export let avatarSize: IconSize = kind === 'secondary' ? 'small' : 'card'
+  export let avatarSize: IconSize = kind === 'regular' ? 'small' : 'card'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
   export let focusIndex = -1

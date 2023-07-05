@@ -90,7 +90,7 @@
         {#if loading}
           <Spinner />
         {:else if !readonly}
-          <Button icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={openFile} />
+          <Button icon={IconAdd} kind={'ghost'} on:click={openFile} />
         {/if}
       </div>
     </div>

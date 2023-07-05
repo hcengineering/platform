@@ -73,9 +73,9 @@
           background: #eee;
         }
       }
-      // &:focus-within + .toggle-switch { box-shadow: 0 0 0 2px var(--primary-button-outline); }
+      // &:focus-within + .toggle-switch { box-shadow: 0 0 0 2px var(--accented-button-outline); }
     }
-    // &:active > .toggle-switch { box-shadow: 0 0 0 2px var(--primary-button-outline); }
+    // &:active > .toggle-switch { box-shadow: 0 0 0 2px var(--accented-button-outline); }
     .toggle-switch {
       position: relative;
       display: inline-block;

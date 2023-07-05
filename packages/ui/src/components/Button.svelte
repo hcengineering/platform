@@ -17,20 +17,20 @@
   import { onMount, ComponentType } from 'svelte'
   import { registerFocus } from '../focus'
   import { tooltip } from '../tooltips'
-  import type { AnySvelteComponent, ButtonKind, ButtonShape, ButtonSize, LabelAndProps, IconSize } from '../types'
+  import type { AnySvelteComponent, ButtonKind, ButtonShape, ButtonSize, LabelAndProps, IconProps } from '../types'
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
   import Spinner from './Spinner.svelte'
 
   export let label: IntlString | undefined = undefined
   export let labelParams: Record<string, any> = {}
-  export let kind: ButtonKind = 'secondary'
+  export let kind: ButtonKind = 'regular'
   export let size: ButtonSize = 'medium'
   export let shape: ButtonShape = undefined
   export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
-  export let iconProps: any | undefined = undefined
+  export let iconProps: IconProps = {}
   export let iconRight: Asset | AnySvelteComponent | ComponentType | undefined = undefined
-  export let iconRightProps: any | undefined = undefined
+  export let iconRightProps: IconProps = {}
   export let justify: 'left' | 'center' = 'center'
   export let disabled: boolean = false
   export let loading: boolean = false
@@ -47,14 +47,14 @@
   export let id: string | undefined = undefined
   export let input: HTMLButtonElement | undefined = undefined
   export let showTooltip: LabelAndProps | undefined = undefined
-  export let iconSize: IconSize = size === 'inline' ? 'inline' : 'small'
-  export let iconRightSize: IconSize = 'x-small'
   export let short: boolean = false
   export let shrink: number = 0
   export let accent: boolean = false
   export let noFocus: boolean = false
 
-  // $: iconSize = size === 'inline' ? 'inline' : 'small'
+  $: iconSize =
+    iconProps && iconProps.size !== undefined ? iconProps.size : size && size === 'inline' ? 'inline' : 'small'
+  $: iconRightSize = iconRightProps && iconRightProps.size !== undefined ? iconRightProps.size : 'x-small'
   let iconOnly: boolean = false
   $: iconOnly =
     label === undefined &&
@@ -115,7 +115,7 @@
   style:height
   style:flex-shrink={shrink}
   {title}
-  type={kind === 'primary' ? 'submit' : 'button'}
+  type={kind === 'accented' ? 'submit' : 'button'}
   on:click|stopPropagation|preventDefault
   on:focus
   on:blur

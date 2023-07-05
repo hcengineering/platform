@@ -60,7 +60,7 @@
       width="min-content"
       icon={isCollapsed ? Collapsed : Expanded}
       size="small"
-      kind="transparent"
+      kind="ghost"
       label={tracker.string.SubIssuesList}
       labelParams={{ subIssues: children.length }}
       on:click={() => {
@@ -76,7 +76,7 @@
     icon={hasSubIssues ? IconAdd : undefined}
     label={hasSubIssues ? undefined : tracker.string.AddSubIssues}
     labelParams={{ subIssues: 0 }}
-    kind={'transparent'}
+    kind={'ghost'}
     size={'small'}
     showTooltip={{ label: tracker.string.AddSubIssues, props: { subIssues: 1 } }}
     on:click={() => {

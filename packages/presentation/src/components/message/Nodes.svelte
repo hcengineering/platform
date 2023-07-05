@@ -173,7 +173,7 @@
     padding: 0 0.25rem;
     font-family: var(--mono-font);
     color: var(--theme-content-color);
-    background-color: var(--theme-button-enabled);
+    background-color: var(--theme-button-default);
     border: 1px solid var(--theme-button-border);
     border-radius: 0.25rem;
   }

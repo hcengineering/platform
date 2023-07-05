@@ -195,7 +195,7 @@
     {/if}
   </div>
   {#if me !== accountId}
-    <Button label={chunter.string.Message} kind="primary" on:click={openDM} />
+    <Button label={chunter.string.Message} kind="accented" on:click={openDM} />
   {/if}
 </div>
 <div class="inbox-activity">

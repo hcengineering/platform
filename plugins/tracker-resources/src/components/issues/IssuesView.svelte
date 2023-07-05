@@ -110,7 +110,7 @@
       <div class="buttons-divider" />
       <Button
         icon={asideShown ? IconDetailsFilled : IconDetails}
-        kind={'transparent'}
+        kind={'ghost'}
         size={'medium'}
         selected={asideShown}
         on:click={() => {

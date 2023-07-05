@@ -95,17 +95,17 @@
           }}
         >
           <div class="check pointer-events-none">
-            <CheckBox checked={isSelected(space)} primary />
+            <CheckBox checked={isSelected(space)} accented />
           </div>
           <SpaceInfo size={'medium'} value={space} />
           {#if allowDeselect && space._id === selected}
             <div class="check pointer-events-none">
               {#if titleDeselect}
                 <div class="clear-mins" use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
-                  <CheckBox checked circle primary />
+                  <CheckBox checked circle accented />
                 </div>
               {:else}
-                <CheckBox checked circle primary />
+                <CheckBox checked circle accented />
               {/if}
             </div>
           {/if}

@@ -35,7 +35,7 @@
     props={{
       items: selectedParticipants,
       label: attachment.string.FileBrowserFilterFrom,
-      kind: 'transparent',
+      kind: 'ghost',
       size: 'medium'
     }}
     on:update={(evt) => {
@@ -46,7 +46,7 @@
     _classes={requestedSpaceClasses}
     label={attachment.string.FileBrowserFilterIn}
     selectedItems={spaceId ? [spaceId] : []}
-    kind={'transparent'}
+    kind={'ghost'}
     size={'medium'}
     on:update={(evt) => {
       selectedSpaces = evt.detail
@@ -56,14 +56,14 @@
     items={dateFileBrowserFilters}
     label={attachment.string.FileBrowserFilterDate}
     bind:selected={selectedDateId}
-    kind={'transparent'}
+    kind={'ghost'}
     size={'medium'}
   />
   <DropdownLabelsIntl
     items={fileTypeFileBrowserFilters}
     label={attachment.string.FileBrowserFilterFileType}
     bind:selected={selectedFileTypeId}
-    kind={'transparent'}
+    kind={'ghost'}
     size={'medium'}
   />
 </div>

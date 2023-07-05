@@ -75,7 +75,7 @@
     padding: 1rem;
     width: 24rem;
     height: 10rem;
-    background-color: var(--theme-button-enabled);
+    background-color: var(--theme-button-default);
     border: 1px solid var(--theme-button-border);
     border-radius: 0.5rem;
     &.enabled {

@@ -143,7 +143,7 @@
       height: 2.25rem;
     }
 
-    &.primary {
+    &.accented {
       padding: 0 0.5rem;
       min-width: 1.5rem;
       background-color: var(--noborder-bg-color);
@@ -297,9 +297,9 @@
         margin-right: 0.25rem;
       }
     }
-    &.secondary {
+    &.regular {
       color: var(--theme-caption-color);
-      background-color: var(--theme-button-enabled);
+      background-color: var(--theme-button-default);
       border-color: var(--theme-button-border);
       border-radius: 0.25rem;
 
@@ -323,7 +323,7 @@
       //   padding: 0 0.5rem;
       // }
     }
-    &.transparent {
+    &.ghost {
       padding: 0 0.625rem;
       border-radius: 0.25rem;
       background-color: inherit;

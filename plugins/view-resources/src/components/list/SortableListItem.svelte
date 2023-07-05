@@ -47,10 +47,10 @@
     {#if areButtonsVisible}
       <div class="ml-auto pl-2 buttons-group small-gap flex-no-shrink">
         {#if isEditing}
-          <Button label={presentation.string.Cancel} kind="secondary" on:click={() => dispatch('cancel')} />
+          <Button label={presentation.string.Cancel} kind="regular" on:click={() => dispatch('cancel')} />
           <Button
             label={presentation.string.Save}
-            kind="primary"
+            kind="accented"
             loading={isSaving}
             disabled={!canSave}
             on:click={() => dispatch('save')}

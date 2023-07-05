@@ -123,7 +123,7 @@
     <EmployeeBox
       label={hr.string.SelectEmployee}
       placeholder={hr.string.SelectEmployee}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
       bind:value={employee}
       {readonly}
@@ -150,12 +150,12 @@
     placeholder={core.string.Description}
   />
   <svelte:fragment slot="pool">
-    <DateRangePresenter bind:value editable labelNull={ui.string.SelectDate} kind={'secondary'} size={'large'} />
+    <DateRangePresenter bind:value editable labelNull={ui.string.SelectDate} kind={'regular'} size={'large'} />
     <DateRangePresenter
       bind:value={dueDate}
       labelNull={calendar.string.DueTo}
       editable
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
     />
   </svelte:fragment>

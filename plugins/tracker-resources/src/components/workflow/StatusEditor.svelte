@@ -68,8 +68,8 @@
     </div>
   </div>
   <div class="buttons-group small-gap flex-no-shrink ml-2 mr-1">
-    <Button label={presentation.string.Cancel} kind="secondary" on:click={() => dispatch('cancel')} />
-    <Button label={presentation.string.Save} kind="primary" disabled={!canSave} on:click={() => dispatch('save')} />
+    <Button label={presentation.string.Cancel} kind="regular" on:click={() => dispatch('cancel')} />
+    <Button label={presentation.string.Save} kind="accented" disabled={!canSave} on:click={() => dispatch('save')} />
   </div>
 </div>
 

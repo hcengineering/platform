@@ -54,7 +54,7 @@
     <span class="antiSection-header__title">
       <Label label={recruit.string.Vacancies} />
     </span>
-    <Button id="appls.add" icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createApp} />
+    <Button id="appls.add" icon={IconAdd} kind={'ghost'} on:click={createApp} />
   </div>
   {#if (vacancies ?? 0) > 0}
     <Scroller horizontal>

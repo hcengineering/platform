@@ -55,7 +55,7 @@
       <ScrollBox vertical stretch><slot /></ScrollBox>
     </div>
     <div class="footer">
-      <Button label={okLabel} kind={'primary'} />
+      <Button label={okLabel} kind={'accented'} />
       <Button
         label={ui.string.Cancel}
         on:click={() => {

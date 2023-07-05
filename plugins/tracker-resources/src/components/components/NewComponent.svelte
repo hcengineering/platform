@@ -55,7 +55,7 @@
       _class={tracker.class.Project}
       label={tracker.string.Project}
       bind:space
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
       component={ProjectPresenter}
       iconWithEmoji={tracker.component.IconWithEmoji}
@@ -82,7 +82,7 @@
       allowDeselect
       titleDeselect={tracker.string.Unassigned}
       showNavigate={false}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
     />
   </svelte:fragment>

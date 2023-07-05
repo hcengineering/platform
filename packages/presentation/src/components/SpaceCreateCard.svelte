@@ -41,7 +41,7 @@
     <Button
       disabled={!canSave}
       label={presentation.string.Create}
-      kind={'primary'}
+      kind={'accented'}
       on:click={() => {
         okAction()
         dispatch('close')

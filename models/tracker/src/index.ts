@@ -496,12 +496,12 @@ export function createModel (builder: Builder): void {
           props: {
             kind: 'list',
             size: 'small',
-            shape: 'round',
             shouldShowPlaceholder: false
           },
           displayProps: {
             key: 'milestone',
             excludeByKey: 'milestone',
+            compression: true,
             optional: true
           }
         },
@@ -512,12 +512,12 @@ export function createModel (builder: Builder): void {
           props: {
             kind: 'list',
             size: 'small',
-            shape: 'round',
             shouldShowPlaceholder: false
           },
           displayProps: {
             key: 'component',
             excludeByKey: 'component',
+            compression: true,
             optional: true
           }
         },
@@ -629,11 +629,11 @@ export function createModel (builder: Builder): void {
           props: {
             kind: 'list',
             size: 'small',
-            shape: 'round',
             shouldShowPlaceholder: false
           },
           displayProps: {
             excludeByKey: 'milestone',
+            compression: true,
             optional: true
           }
         },
@@ -703,7 +703,7 @@ export function createModel (builder: Builder): void {
             size: 'small',
             shouldShowPlaceholder: false
           },
-          displayProps: { key: 'component', optional: true }
+          displayProps: { key: 'component', compression: true, optional: true }
         },
         {
           key: '',
@@ -714,7 +714,7 @@ export function createModel (builder: Builder): void {
             size: 'small',
             shouldShowPlaceholder: false
           },
-          displayProps: { key: 'milestone', optional: true }
+          displayProps: { key: 'milestone', compression: true, optional: true }
         },
         {
           key: '',

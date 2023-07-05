@@ -211,10 +211,10 @@
       {/if}
     </svelte:fragment>
     <svelte:fragment slot="utils">
-      <Button icon={IconMoreH} kind={'transparent'} size={'medium'} on:click={showMenu} />
+      <Button icon={IconMoreH} kind={'ghost'} size={'medium'} on:click={showMenu} />
       <Button
         icon={setting.icon.Setting}
-        kind={'transparent'}
+        kind={'ghost'}
         showTooltip={{ label: setting.string.ClassSetting }}
         on:click={(ev) => {
           ev.stopPropagation()

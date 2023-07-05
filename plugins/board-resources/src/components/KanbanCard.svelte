@@ -97,7 +97,7 @@
       {/if}
       {#if !isEditMode}
         <div class="absolute mr-1 mt-1" style:top="0" style:right="0">
-          <Button icon={IconMoreV} kind="transparent" on:click={enterEditMode} />
+          <Button icon={IconMoreV} kind="ghost" on:click={enterEditMode} />
         </div>
       {/if}
       <div
@@ -129,7 +129,7 @@
     {#if object.cover}
       <div class="relative h-9 border-radius-top-1" style={coverBackground}>
         <div class="absolute mr-1 mt-1" style:top="0" style:right="0">
-          <Button icon={IconMoreV} kind="transparent" on:click={enterEditMode} />
+          <Button icon={IconMoreV} kind="ghost" on:click={enterEditMode} />
         </div>
       </div>
     {/if}
@@ -146,7 +146,7 @@
       {/if}
       {#if !isEditMode && !object.cover}
         <div class="absolute mr-1 mt-1" style:top="0" style:right="0">
-          <Button icon={IconMoreV} kind="transparent" on:click={enterEditMode} />
+          <Button icon={IconMoreV} kind="ghost" on:click={enterEditMode} />
         </div>
       {/if}
       <div

@@ -71,7 +71,7 @@
           <Button
             label={plugin.string.Messages}
             selected={searchType === SearchType.Messages}
-            kind="transparent"
+            kind="ghost"
             on:click={() => {
               searchType = SearchType.Messages
             }}
@@ -80,7 +80,7 @@
         <div class="ml-1 p-1 btn">
           <Button
             label={plugin.string.Channels}
-            kind="transparent"
+            kind="ghost"
             selected={searchType === SearchType.Channels}
             on:click={() => {
               searchType = SearchType.Channels
@@ -90,7 +90,7 @@
         <div class="ml-1 p-1 btn">
           <Button
             label={attachment.string.Files}
-            kind="transparent"
+            kind="ghost"
             selected={searchType === SearchType.Files}
             on:click={() => {
               searchType = SearchType.Files
@@ -99,7 +99,7 @@
         </div>
         <div class="ml-1 p-1 btn">
           <Button
-            kind="transparent"
+            kind="ghost"
             label={contact.string.Contacts}
             selected={searchType === SearchType.Contacts}
             on:click={() => {

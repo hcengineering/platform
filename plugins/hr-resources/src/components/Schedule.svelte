@@ -124,7 +124,7 @@
       label={hr.string.Department}
       bind:space={department}
       size={'medium'}
-      kind={'secondary'}
+      kind={'regular'}
     />
   </div>
 </div>
@@ -142,21 +142,21 @@
   <div class="ac-header-full small-gap">
     <Button
       icon={IconBack}
-      kind={'transparent'}
+      kind={'ghost'}
       on:click={() => {
         inc(-1)
       }}
     />
     <Button
       label={calendar.string.Today}
-      kind={'transparent'}
+      kind={'ghost'}
       on:click={() => {
         currentDate = new Date()
       }}
     />
     <Button
       icon={IconForward}
-      kind={'transparent'}
+      kind={'ghost'}
       on:click={() => {
         inc(1)
       }}

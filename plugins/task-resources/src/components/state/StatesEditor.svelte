@@ -261,7 +261,7 @@
   .states {
     padding: 0.5rem 1rem;
     color: var(--theme-caption-color);
-    background-color: var(--theme-button-enabled);
+    background-color: var(--theme-button-default);
     border: 1px solid var(--theme-button-border);
     border-radius: 0.5rem;
     user-select: none;

@@ -47,7 +47,7 @@
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    background-color: var(--theme-button-enabled);
+    background-color: var(--theme-button-default);
     height: 1.5rem;
     border-radius: 1.5rem;
     border: 1px solid var(--theme-button-border);

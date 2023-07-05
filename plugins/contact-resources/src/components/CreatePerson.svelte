@@ -119,6 +119,6 @@
     </div>
   </div>
   <svelte:fragment slot="pool">
-    <ChannelsDropdown bind:value={channels} focusIndex={10} kind={'secondary'} size={'large'} editable />
+    <ChannelsDropdown bind:value={channels} focusIndex={10} kind={'regular'} size={'large'} editable />
   </svelte:fragment>
 </Card>

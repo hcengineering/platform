@@ -74,10 +74,12 @@
         <Label label={recruit.string.Applications} />
       </NavLink>
     </span>
-    {#if viewlet && viewOptions}
-      <ViewletSettingButton bind:viewOptions {viewlet} kind={'transparent'} />
-    {/if}
-    <Button id="appls.add" icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createApp} />
+    <div class="flex-row-center gap-2 reverse">
+      {#if viewlet && viewOptions}
+        <ViewletSettingButton bind:viewOptions {viewlet} kind={'ghost'} />
+      {/if}
+      <Button id="appls.add" icon={IconAdd} kind={'ghost'} on:click={createApp} />
+    </div>
   </div>
   {#if applications > 0}
     {#if viewlet && !loading}

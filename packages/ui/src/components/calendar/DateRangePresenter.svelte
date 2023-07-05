@@ -30,7 +30,7 @@
   export let editable: boolean = false
   export let iconModifier: 'normal' | 'warning' | 'overdue' = 'normal'
   export let labelNull: IntlString = ui.string.NoDate
-  export let kind: 'default' | 'no-border' | 'link' | 'secondary' = 'default'
+  export let kind: 'default' | 'no-border' | 'link' | 'regular' = 'default'
   export let size: 'small' | 'medium' | 'large' = 'small'
   export let noShift: boolean = false
 
@@ -482,7 +482,7 @@
     &.no-border {
       font-weight: 400;
       color: var(--theme-content-color);
-      background-color: var(--theme-button-enabled);
+      background-color: var(--theme-button-default);
       box-shadow: var(--button-shadow);
 
       &:hover {
@@ -565,10 +565,10 @@
       }
     }
 
-    &.secondary {
+    &.regular {
       padding: 0 0.625rem;
       color: var(--theme-caption-color);
-      background-color: var(--theme-button-enabled);
+      background-color: var(--theme-button-default);
       border-color: var(--theme-button-border);
 
       .btn-icon {
@@ -594,7 +594,7 @@
       width: 0.75rem;
       height: 0.75rem;
       color: var(--theme-content-color);
-      background-color: var(--theme-button-enabled);
+      background-color: var(--theme-button-default);
       outline: none;
       border-radius: 50%;
       cursor: pointer;

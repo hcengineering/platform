@@ -300,7 +300,7 @@
         value={members}
         label={tracker.string.Members}
         onChange={(refs) => (members = refs)}
-        kind={'secondary'}
+        kind={'regular'}
         size={'large'}
       />
     </div>
@@ -312,7 +312,7 @@
       <AssigneeBox
         label={tracker.string.Assignee}
         placeholder={tracker.string.Assignee}
-        kind={'secondary'}
+        kind={'regular'}
         size={'large'}
         avatarSize={'card'}
         bind:value={defaultAssignee}

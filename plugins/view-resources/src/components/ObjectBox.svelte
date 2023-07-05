@@ -122,7 +122,7 @@
       {focusIndex}
       width={width ?? 'min-content'}
       {icon}
-      iconProps={{ size: kind === 'link' || kind === 'secondary' ? 'small' : size }}
+      iconProps={{ size: kind === 'link' || kind === 'regular' ? 'small' : size }}
       {size}
       {kind}
       {justify}

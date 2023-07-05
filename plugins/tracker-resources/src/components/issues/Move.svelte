@@ -253,7 +253,7 @@
       <span class="fs-title aligned-text">
         <Label label={tracker.string.MoveIssues} />
       </span>
-      <Button icon={IconClose} iconProps={{ size: 'medium' }} kind="transparent" on:click={() => dispatch('close')} />
+      <Button icon={IconClose} iconProps={{ size: 'medium' }} kind="ghost" on:click={() => dispatch('close')} />
     </div>
 
     <div>
@@ -266,7 +266,7 @@
           _class={currentSpace._class}
           label={hierarchy.getClass(tracker.class.Project).label}
           bind:space
-          kind={'secondary'}
+          kind={'regular'}
           size={'small'}
           component={ProjectPresenter}
           iconWithEmoji={tracker.component.IconWithEmoji}
@@ -309,7 +309,7 @@
       >
         <Label label={getEmbeddedLabel('<    Manage attributes')} />
       </span>
-      <Button icon={IconClose} iconProps={{ size: 'medium' }} kind="transparent" on:click={() => dispatch('close')} />
+      <Button icon={IconClose} iconProps={{ size: 'medium' }} kind="ghost" on:click={() => dispatch('close')} />
     </div>
     <div class="divider" />
 
@@ -378,7 +378,7 @@
         label={view.string.Move}
         size={'small'}
         disabled={docs[0]?.space === currentSpace?._id}
-        kind={'primary'}
+        kind={'accented'}
         on:click={moveAll}
         loading={processing}
       />

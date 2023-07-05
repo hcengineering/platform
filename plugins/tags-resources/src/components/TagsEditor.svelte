@@ -97,8 +97,7 @@
       <div class="buttons-group x-small">
         <Button
           icon={IconAdd}
-          kind={'transparent'}
-          shape={'circle'}
+          kind={'ghost'}
           showTooltip={{ label: tags.string.AddTagTooltip, props: { word: keyLabel } }}
           id={'add-tag'}
           on:click={addTag}

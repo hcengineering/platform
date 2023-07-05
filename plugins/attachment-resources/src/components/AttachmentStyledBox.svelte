@@ -404,7 +404,7 @@
     color: var(--theme-caption-color);
     overflow-x: auto;
     overflow-y: hidden;
-    background-color: var(--theme-button-enabled);
+    background-color: var(--theme-button-default);
     border: 1px solid var(--theme-button-border);
     border-radius: 0.25rem;
 
