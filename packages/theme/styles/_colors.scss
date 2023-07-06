@@ -16,27 +16,27 @@
 /* Common Colors */
 * {
   --accented-button-color: #fff;
+  --accented-button-content-color: rgba(255, 255, 255, .8);
   --accented-button-border: rgba(255, 255, 255, .09);
-  --accented-button-focused-border: #fff;
   --accented-button-outline: #5190EC;
   --accented-button-transparent: rgba(43, 81, 144, 0.2);
 
   --accented-button-default: #2B5190;
   --accented-button-hovered: #325FA9;
   --accented-button-pressed: #284B86;
-  --accented-button-focused: #284B86;
+  --accented-button-focused: #2B5190;
   --brand-button-default: #4169E1;
   --brand-button-hovered: #587BE5;
   --brand-button-pressed: #2C58DE;
-  --brand-button-focused: #2C58DE;
+  --brand-button-focused: #4169E1;
   --positive-button-default: #26A869;
   --positive-button-hovered: #2BBB75;
   --positive-button-pressed: #21915B;
-  --positive-button-focused: #21915B;
+  --positive-button-focused: #26A869;
   --negative-button-default: #CA4242;
   --negative-button-hovered: #D05858;
   --negative-button-pressed: #BF3636;
-  --negative-button-focused: #BF3636;
+  --negative-button-focused: #CA4242;
 
   --white-color: #fff;
   --duotone-color: rgba(126, 134, 158, .25);
@@ -66,21 +66,21 @@
 
 /* Dark Theme */
 .theme-dark {
-  --accented-button-disabled: #12213B;
-  --accented-button-disabled-color: #5E88CF;
-  --brand-button-disabled: #111F4B;
-  --brand-button-disabled-color: #6585E7;
-  --positive-button-disabled: #092518;
-  --positive-button-disabled-color: #25A265;
-  --negative-button-disabled: #330F0F;
-  --negative-button-disabled-color: #D06262;
+  --accented-button-disabled: rgba(255, 255, 255, .12);
+  --accented-button-disabled-color: rgba(255, 255, 255, .4);
+  --brand-button-disabled: rgba(255, 255, 255, .12);
+  --brand-button-disabled-color: rgba(255, 255, 255, .4);
+  --positive-button-disabled: rgba(38, 168, 105, .2);
+  --positive-button-disabled-color: rgba(38, 168, 105, .6);
+  --negative-button-disabled: rgba(202, 66, 66, .2);
+  --negative-button-disabled-color: rgba(202, 66, 66, .6);
 
   --theme-button-default: rgba(255, 255, 255, .02);
   --theme-button-hovered: rgba(255, 255, 255, .04);
   --theme-button-pressed: rgba(255, 255, 255, .08);
   --theme-button-focused: rgba(255, 255, 255, .04);
   --theme-button-focused-border: rgba(255, 255, 255, .09);
-  --theme-button-disabled: rgba(255, 255, 255, .08);
+  --theme-button-disabled: transparent;
   --theme-button-border: rgba(255, 255, 255, .09);
 
   --theme-button-contrast-color: #000;
@@ -260,14 +260,14 @@
 
 /* Light Theme */
 .theme-light {
-  --accented-button-disabled: #E0E8F6;
-  --accented-button-disabled-color: #284B86;
-  --brand-button-disabled: #DCE3F9;
-  --brand-button-disabled-color: #2C58DE;
-  --positive-button-disabled: #DEF7EB;
-  --positive-button-disabled-color: #1A7046;
-  --negative-button-disabled: #F6E0E0;
-  --negative-button-disabled-color: #962C2C;
+  --accented-button-disabled: rgba(0, 0, 0, .12);
+  --accented-button-disabled-color: rgba(0, 0, 0, .4);
+  --brand-button-disabled: rgba(0, 0, 0, .12);
+  --brand-button-disabled-color: rgba(0, 0, 0, .4);
+  --positive-button-disabled: rgba(38, 168, 105, .2);
+  --positive-button-disabled-color: rgba(33, 145, 91, .6);
+  --negative-button-disabled: rgba(202, 66, 66, .2);
+  --negative-button-disabled-color: rgba(202, 66, 66, .6);
 
   --theme-button-default: rgba(0, 0, 0, .02);
   --theme-button-hovered: rgba(0, 0, 0, .04);

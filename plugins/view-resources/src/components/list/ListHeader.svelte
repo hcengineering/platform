@@ -109,7 +109,7 @@
     }}
     on:click={() => dispatch('collapse')}
   >
-    <div class="flex-row-center clear-mins flex-grow">
+    <div class="flex-row-center flex-grow" style:color={headerComponent ? headerTextColor : 'inherit'}>
       {#if level === 0}
         <div class="chevron"><IconCollapseArrow size={'small'} /></div>
       {/if}
@@ -118,20 +118,18 @@
           <Label label={view.string.NoGrouping} />
         </span>
       {:else if headerComponent}
-        <span class="clear-mins" style:color={headerTextColor}>
-          <svelte:component
-            this={headerComponent.presenter}
-            value={category}
-            {space}
-            size={'small'}
-            kind={'list-header'}
-            colorInherit={!$themeStore.dark && level === 0}
-            accent={level === 0}
-            on:accent-color={(evt) => {
-              accentColor = evt.detail
-            }}
-          />
-        </span>
+        <svelte:component
+          this={headerComponent.presenter}
+          value={category}
+          {space}
+          size={'small'}
+          kind={'list-header'}
+          colorInherit={!$themeStore.dark && level === 0}
+          accent={level === 0}
+          on:accent-color={(evt) => {
+            accentColor = evt.detail
+          }}
+        />
       {/if}
 
       {#if selected.length > 0}

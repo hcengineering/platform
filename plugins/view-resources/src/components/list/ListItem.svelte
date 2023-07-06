@@ -112,25 +112,24 @@
       />
     </div>
   </div>
-  {#each model.filter((p) => !(p.displayProps?.optional === true || p.displayProps?.suffix === true)) as attributeModel, i}
+  {#each model.filter((p) => !(p.displayProps?.optional === true || p.displayProps?.compression === true || p.displayProps?.suffix === true)) as attributeModel, i}
     {@const displayProps = attributeModel.displayProps}
     {#if !groupByKey || displayProps?.excludeByKey !== groupByKey}
       {#if displayProps?.grow}
-        {#if !compactMode}
-          {#each model.filter((p) => p.displayProps?.suffix === true) as attrModel}
-            <ListPresenter
-              {docObject}
-              attributeModel={attrModel}
-              {props}
-              value={getObjectValue(attrModel.key, docObject)}
-              onChange={getOnChange(docObject, attrModel)}
-            />
-          {/each}
-        {/if}
+        {#each model.filter((p) => p.displayProps?.suffix === true) as attrModel}
+          <ListPresenter
+            {docObject}
+            attributeModel={attrModel}
+            {props}
+            {compactMode}
+            value={getObjectValue(attrModel.key, docObject)}
+            onChange={getOnChange(docObject, attrModel)}
+          />
+        {/each}
         <GrowPresenter />
         {#if !compactMode}
-          <div class="optional-bar">
-            {#each model.filter((p) => p.displayProps?.optional === true) as attrModel}
+          <div class="compression-bar">
+            {#each model.filter((p) => p.displayProps?.compression === true) as attrModel}
               <ListPresenter
                 {docObject}
                 attributeModel={attrModel}
@@ -140,16 +139,13 @@
               />
             {/each}
           </div>
-        {:else}
-          <GrowPresenter />
-          {#each model.filter((p) => p.displayProps?.suffix === true) as attrModel}
+          {#each model.filter((p) => p.displayProps?.optional === true) as attrModel}
             <ListPresenter
               {docObject}
               attributeModel={attrModel}
               {props}
               value={getObjectValue(attrModel.key, docObject)}
               onChange={getOnChange(docObject, attrModel)}
-              compactMode
             />
           {/each}
         {/if}
@@ -180,7 +176,26 @@
         <IconCircles />
       </div>
       <div class="scroll-box gap-2">
+        <div class="compression-bar">
+          {#each model.filter((m) => m.displayProps?.compression) as attributeModel, j}
+            {@const displayProps = attributeModel.displayProps}
+            {@const value = getObjectValue(attributeModel.key, docObject)}
+            {#if displayProps?.excludeByKey !== groupByKey && value !== undefined}
+              <ListPresenter
+                {docObject}
+                {attributeModel}
+                {props}
+                value={getObjectValue(attributeModel.key, docObject)}
+                onChange={getOnChange(docObject, attributeModel)}
+                hideDivider={j === 0}
+              />
+            {/if}
+          {/each}
+        </div>
         {#each model.filter((m) => m.displayProps?.optional) as attributeModel, j}
+          {#if j === 0}
+            <GrowPresenter />
+          {/if}
           {@const displayProps = attributeModel.displayProps}
           {@const value = getObjectValue(attributeModel.key, docObject)}
           {#if displayProps?.excludeByKey !== groupByKey && value !== undefined}
@@ -190,7 +205,6 @@
               {props}
               value={getObjectValue(attributeModel.key, docObject)}
               onChange={getOnChange(docObject, attributeModel)}
-              hideDivider={j === 0}
             />
           {/if}
         {/each}

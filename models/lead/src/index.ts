@@ -342,7 +342,7 @@ export function createModel (builder: Builder): void {
             size: 'small',
             kind: 'list'
           },
-          displayProps: { optional: true }
+          displayProps: { compression: true }
         },
         { key: 'modifiedOn', displayProps: { key: 'modified', fixed: 'right', dividerBefore: true } },
         {

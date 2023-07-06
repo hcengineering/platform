@@ -32,32 +32,19 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <DocNavLink {object} inline noUnderline={true} shrink={0}>
     {#if kind === 'list'}
-      {#if compactMode}
-        <div
-          use:tooltip={{
-            component: CommentPopup,
-            props: { objectId: object._id, object, withInput }
-          }}
-          class="sm-tool-icon"
-        >
-          <div class="icon halfcontent"><IconThread {size} /></div>
-          {#if showCounter}{value ?? 0}{/if}
+      <Button
+        {kind}
+        {size}
+        showTooltip={{
+          component: CommentPopup,
+          props: { objectId: object._id, object, withInput }
+        }}
+      >
+        <div slot="icon"><IconThread {size} /></div>
+        <div slot="content" style:margin-left={showCounter && !compactMode ? '.375rem' : '0'}>
+          {#if showCounter && !compactMode}{value ?? 0}{/if}
         </div>
-      {:else}
-        <Button
-          {kind}
-          {size}
-          showTooltip={{
-            component: CommentPopup,
-            props: { objectId: object._id, object, withInput }
-          }}
-        >
-          <div slot="icon"><IconThread {size} /></div>
-          <div slot="content" style:margin-left={showCounter ? '.375rem' : '0'}>
-            {#if showCounter}{value ?? 0}{/if}
-          </div>
-        </Button>
-      {/if}
+      </Button>
     {:else}
       <div
         use:tooltip={{
