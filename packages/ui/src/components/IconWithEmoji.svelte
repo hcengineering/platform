@@ -48,7 +48,7 @@
   .emoji-small {
     width: 1rem;
     height: 1rem;
-    font-size: 1rem;
+    font-size: 0.8125rem;
   }
   .emoji-medium {
     width: 1.25rem;
@@ -60,7 +60,7 @@
     height: 1.5rem;
     font-size: 1.5rem;
   }
-  .semojivg-full {
+  .emoji-full {
     width: inherit;
     height: inherit;
   }
