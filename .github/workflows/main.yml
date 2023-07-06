@@ -39,16 +39,16 @@ jobs:
           path: |
             ./common/temp
             !./common/temp/build-cache
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('./common/temp/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('./common/temp/pnpm-lock.yaml') }}
       - name: Cache Build cache
         uses: actions/cache@v3
         with:
           path: ./common/temp/build-cache
-          key: build-cache-${{ hashFiles('**/pnpm-lock.yaml') }}
+          key: build-cache-${{ hashFiles('./common/temp/pnpm-lock.yaml') }}
           restore-keys: |
-            build-cache-${{ hashFiles('**/pnpm-lock.yaml') }}
+            build-cache-${{ hashFiles('./common/temp/pnpm-lock.yaml') }}
 
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
@@ -71,7 +71,6 @@ jobs:
           cache-name: cache-build-results
         with:
           path: |
-            cloud
             common
             deploy
             dev
@@ -103,7 +102,6 @@ jobs:
           cache-name: cache-build-results
         with:
           path: |
-            cloud
             common
             deploy
             dev
@@ -137,7 +135,6 @@ jobs:
           cache-name: cache-build-results
         with:
           path: |
-            cloud
             common
             deploy
             dev
@@ -182,7 +179,6 @@ jobs:
           cache-name: cache-build-results
         with:
           path: |
-            cloud
             common
             deploy
             dev
@@ -204,9 +200,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./common/temp/build-cache
-          key: build-cache-${{ hashFiles('**/pnpm-lock.yaml') }}
+          key: build-cache-${{ hashFiles('./common/temp/pnpm-lock.yaml') }}
           restore-keys: |
-            build-cache-${{ hashFiles('**/pnpm-lock.yaml') }}
+            build-cache-${{ hashFiles('./common/temp/pnpm-lock.yaml') }}
       - name: Start MongoDB
         uses: supercharge/mongodb-github-action@1.9.0
         with:
@@ -225,16 +221,15 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./common/temp/build-cache
-          key: build-cache-${{ hashFiles('**/pnpm-lock.yaml') }}
+          key: build-cache-${{ hashFiles('./common/temp/pnpm-lock.yaml') }}
           restore-keys: |
-            build-cache-${{ hashFiles('**/pnpm-lock.yaml') }}
+            build-cache-${{ hashFiles('./common/temp/pnpm-lock.yaml') }}
       - name: Cache build results
         uses: actions/cache@v3
         env:
           cache-name: cache-build-results
         with:
           path: |
-            cloud
             common
             deploy
             dev
@@ -321,16 +316,15 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./common/temp/build-cache
-          key: build-cache-${{ hashFiles('**/pnpm-lock.yaml') }}
+          key: build-cache-${{ hashFiles('./common/temp/pnpm-lock.yaml') }}
           restore-keys: |
-            build-cache-${{ hashFiles('**/pnpm-lock.yaml') }}
+            build-cache-${{ hashFiles('./common/temp/pnpm-lock.yaml') }}
       - name: Cache build results
         uses: actions/cache@v3
         env:
           cache-name: cache-build-results
         with:
           path: |
-            cloud
             common
             deploy
             dev

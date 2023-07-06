@@ -26,14 +26,14 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.25",
+    "@hcengineering/core": "^0.6.27",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/recruit": "^0.6.13",
-    "@hcengineering/view": "^0.6.6",
-    "@hcengineering/login": "^0.6.5",
-    "@hcengineering/workbench": "^0.6.6",
-    "@hcengineering/contact": "^0.6.16",
+    "@hcengineering/recruit": "^0.6.15",
+    "@hcengineering/view": "^0.6.8",
+    "@hcengineering/login": "^0.6.7",
+    "@hcengineering/workbench": "^0.6.8",
+    "@hcengineering/contact": "^0.6.18",
     "@hcengineering/server-task-resources": "^0.6.0"
   }
 }

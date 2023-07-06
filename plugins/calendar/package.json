@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/calendar",
-  "version": "0.6.9",
+  "version": "0.6.11",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -27,10 +27,10 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/ui": "^0.6.8",
-    "@hcengineering/notification": "^0.6.12",
-    "@hcengineering/core": "^0.6.25",
-    "@hcengineering/contact": "^0.6.16"
+    "@hcengineering/ui": "^0.6.10",
+    "@hcengineering/notification": "^0.6.14",
+    "@hcengineering/core": "^0.6.27",
+    "@hcengineering/contact": "^0.6.18"
   },
   "repository": "https://github.com/hcengineering/anticrm",
   "publishConfig": {

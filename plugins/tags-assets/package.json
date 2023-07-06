@@ -31,6 +31,6 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/tags": "^0.6.9"
+    "@hcengineering/tags": "^0.6.11"
   }
 }

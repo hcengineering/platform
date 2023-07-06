@@ -33,12 +33,12 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/core": "^0.6.25",
-    "@hcengineering/query": "^0.6.5",
-    "@hcengineering/ui": "^0.6.8",
-    "@hcengineering/view": "^0.6.6",
+    "@hcengineering/core": "^0.6.27",
+    "@hcengineering/query": "^0.6.7",
+    "@hcengineering/ui": "^0.6.10",
+    "@hcengineering/view": "^0.6.8",
     "svelte": "3.55.1",
-    "@hcengineering/client": "^0.6.11",
+    "@hcengineering/client": "^0.6.13",
     "fast-equals": "^2.0.3"
   }
 }

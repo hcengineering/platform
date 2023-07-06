@@ -32,17 +32,17 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.25",
+    "@hcengineering/core": "^0.6.27",
     "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/ui": "^0.6.8",
+    "@hcengineering/ui": "^0.6.10",
     "@hcengineering/presentation": "^0.6.2",
-    "@hcengineering/calendar": "^0.6.9",
+    "@hcengineering/calendar": "^0.6.11",
     "svelte": "3.55.1",
     "@hcengineering/text-editor": "^0.6.0",
-    "@hcengineering/contact": "^0.6.16",
+    "@hcengineering/contact": "^0.6.18",
     "@hcengineering/contact-resources": "^0.6.0",
     "@hcengineering/view-resources": "^0.6.0",
-    "@hcengineering/view": "^0.6.6",
-    "@hcengineering/workbench": "^0.6.6"
+    "@hcengineering/view": "^0.6.8",
+    "@hcengineering/workbench": "^0.6.8"
   }
 }

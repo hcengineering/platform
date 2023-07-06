@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/board",
-  "version": "0.6.7",
+  "version": "0.6.9",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -26,14 +26,14 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@hcengineering/contact": "^0.6.16",
-    "@hcengineering/core": "^0.6.25",
+    "@hcengineering/contact": "^0.6.18",
+    "@hcengineering/core": "^0.6.27",
     "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/view": "^0.6.6",
-    "@hcengineering/task": "^0.6.8",
-    "@hcengineering/ui": "^0.6.8",
-    "@hcengineering/preference": "^0.6.6",
-    "@hcengineering/tags": "^0.6.9"
+    "@hcengineering/view": "^0.6.8",
+    "@hcengineering/task": "^0.6.10",
+    "@hcengineering/ui": "^0.6.10",
+    "@hcengineering/preference": "^0.6.8",
+    "@hcengineering/tags": "^0.6.11"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {
