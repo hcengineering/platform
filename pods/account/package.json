@@ -42,14 +42,14 @@
   "dependencies": {
     "@hcengineering/account": "^0.6.0",
     "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/core": "^0.6.25",
+    "@hcengineering/core": "^0.6.27",
     "mongodb": "^4.11.0",
     "koa": "^2.13.1",
     "koa-router": "^10.1.1",
     "koa-bodyparser": "^4.3.0",
     "@koa/cors": "^3.1.0",
     "@hcengineering/server-tool": "^0.6.0",
-    "@hcengineering/server-token": "^0.6.4",
+    "@hcengineering/server-token": "^0.6.6",
     "@hcengineering/model-all": "^0.6.0"
   }
 }

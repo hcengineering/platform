@@ -15,7 +15,12 @@ node ../dev/tool/bundle.js confirm-email user1
 
 
 # Restore workspace contents in mongo/elastic
-node ../dev/tool/bundle.js restore-workspace sanity-ws sanity-ws/
+node ../dev/tool/bundle.js backup-restore ./sanity-ws sanity-ws
+
+node ../dev/tool/bundle.js upgrade-workspace sanity-ws
 
 # Re-assign user to workspace.
 node ../dev/tool/bundle.js assign-workspace user1 sanity-ws
+
+node ../dev/tool/bundle.js configure sanity-ws --enable=*
+node ../dev/tool/bundle.js configure sanity-ws --list

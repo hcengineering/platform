@@ -33,21 +33,21 @@
   "dependencies": {
     "@hcengineering/platform": "^0.6.9",
     "svelte": "3.55.1",
-    "@hcengineering/calendar": "^0.6.9",
+    "@hcengineering/calendar": "^0.6.11",
     "@hcengineering/calendar-resources": "^0.6.0",
-    "@hcengineering/hr": "^0.6.7",
-    "@hcengineering/ui": "^0.6.8",
+    "@hcengineering/hr": "^0.6.9",
+    "@hcengineering/ui": "^0.6.10",
     "@hcengineering/presentation": "^0.6.2",
-    "@hcengineering/core": "^0.6.25",
-    "@hcengineering/panel": "^0.6.7",
-    "@hcengineering/contact": "^0.6.16",
-    "@hcengineering/view": "^0.6.6",
+    "@hcengineering/core": "^0.6.27",
+    "@hcengineering/panel": "^0.6.9",
+    "@hcengineering/contact": "^0.6.18",
+    "@hcengineering/view": "^0.6.8",
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/contact-resources": "^0.6.0",
     "@hcengineering/attachment-resources": "^0.6.0",
     "@hcengineering/text-editor": "^0.6.0",
-    "@hcengineering/setting": "^0.6.7",
-    "@hcengineering/attachment": "^0.6.6",
-    "@hcengineering/tracker": "^0.6.8"
+    "@hcengineering/setting": "^0.6.9",
+    "@hcengineering/attachment": "^0.6.8",
+    "@hcengineering/tracker": "^0.6.10"
   }
 }

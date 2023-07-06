@@ -30,7 +30,7 @@
   "dependencies": {
     "@hcengineering/dev-storage": "^0.6.6",
     "@hcengineering/server-ws": "^0.6.11",
-    "@hcengineering/core": "^0.6.25",
+    "@hcengineering/core": "^0.6.27",
     "@hcengineering/platform": "^0.6.9",
     "jwt-simple": "~0.5.6",
     "@hcengineering/server-core": "^0.6.1"

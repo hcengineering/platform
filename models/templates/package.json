@@ -26,18 +26,18 @@
   },
   "dependencies": {
     "@hcengineering/activity": "^0.6.0",
-    "@hcengineering/model": "^0.6.4",
-    "@hcengineering/core": "^0.6.25",
+    "@hcengineering/model": "^0.6.6",
+    "@hcengineering/core": "^0.6.27",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/model-core": "^0.6.0",
     "@hcengineering/model-contact": "^0.6.1",
-    "@hcengineering/view": "^0.6.6",
+    "@hcengineering/view": "^0.6.8",
     "@hcengineering/model-view": "^0.6.0",
     "@hcengineering/model-tracker": "^0.6.0",
-    "@hcengineering/templates": "^0.6.4",
+    "@hcengineering/templates": "^0.6.6",
     "@hcengineering/templates-resources": "^0.6.0",
-    "@hcengineering/setting": "^0.6.7",
-    "@hcengineering/ui": "^0.6.8",
+    "@hcengineering/setting": "^0.6.9",
+    "@hcengineering/ui": "^0.6.10",
     "@hcengineering/model-text-editor": "^0.6.0"
   }
 }

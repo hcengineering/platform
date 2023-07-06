@@ -30,11 +30,11 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/core": "^0.6.25",
-    "@hcengineering/contact": "^0.6.16",
-    "@hcengineering/client-resources": "^0.6.19",
-    "@hcengineering/client": "^0.6.11",
-    "@hcengineering/model": "^0.6.4",
+    "@hcengineering/core": "^0.6.27",
+    "@hcengineering/contact": "^0.6.18",
+    "@hcengineering/client-resources": "^0.6.21",
+    "@hcengineering/client": "^0.6.13",
+    "@hcengineering/model": "^0.6.6",
     "tar-stream": "^2.2.0",
     "@hcengineering/server-tool": "^0.6.0",
     "@hcengineering/minio": "^0.6.0"

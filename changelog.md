@@ -2,14 +2,34 @@
 
 ## 0.6.110 (upcoming)
 
+- UBER-560: filter out current transaction and get mixin
+- UBER-413: Allow extensible navigator model
+- UBER-538: fixed ListView and KanbanView.
+- UBER-509: do not update list of unread right after reading
+- UBER-537: review support in inbox
+- UBER-473: show icon for department
+- UBER-538: update ListView layout. Subissues, related issues.
+- UBER-462: prevent creating existing enum value and disable the button in…
+- Not open docx preview
+- UBER-504: fix presenters on ListItem. Add DeviceSizes.
+- UBER-472: don't update when it's not needed 
+- UBER-472: Fast Keyboard Up/Down enable Jimbo mode for inbox
+- UBER-491: Opening issue from Active on close switch to All issues mode
+- UBER-520: Fix images drag & drop
+- UBER-504: correct display of optional presenters
+- UBER-525: fixed popup logic placement for top 
+- UBER-505: Fix resolve errors in console
+- UBER-526/UBER-523
+- UBER-428: displaying tooltips with a delay
+- UBER-498: replace component shortcut
 - UBER-526: Live reload on language changes.
 
   Function translate is updated to pass language, so be aware to use `$themeState.language` to properly use translation.
 
   ```javascript
-    function translate(id:string, params: Record<string, any>, language?:string): Promise<string> {
-      //...
-    }
+  function translate(id: string, params: Record<string, any>, language?: string): Promise<string> {
+    //...
+  }
   ```
 
 ## 0.6.32

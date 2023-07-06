@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/client",
-  "version": "0.6.11",
+  "version": "0.6.13",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/core": "^0.6.25"
+    "@hcengineering/core": "^0.6.27"
   },
   "repository": "https://github.com/hcengineering/anticrm",
   "publishConfig": {
