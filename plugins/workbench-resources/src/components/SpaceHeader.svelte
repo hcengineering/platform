@@ -108,7 +108,7 @@
         />
       {/if}
       {#if createItemDialog}
-        <Button icon={IconAdd} label={createItemLabel} kind={'primary'} on:click={(ev) => showCreateDialog(ev)} />
+        <Button icon={IconAdd} label={createItemLabel} kind={'accented'} on:click={(ev) => showCreateDialog(ev)} />
       {/if}
     </div>
   </div>

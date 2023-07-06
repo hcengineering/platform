@@ -78,7 +78,7 @@
         icon={IconAdd}
         label={undefined}
         labelParams={{ subIssues: 0 }}
-        kind={'transparent'}
+        kind={'ghost'}
         size={'small'}
         on:click={() => showPopup(tracker.component.CreateIssueTemplate, { relatedTo: template })}
       />

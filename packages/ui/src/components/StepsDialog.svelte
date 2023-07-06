@@ -108,13 +108,13 @@
 
     {#if currentStepIndex > 0}
       <Button
-        kind="secondary"
+        kind="regular"
         label={ui.string.Back}
         on:click={async () => await handleStepSelect(currentStepIndex - 1)}
       />
     {/if}
     <Button
-      kind="primary"
+      kind="accented"
       label={isDone ? doneLabel : ui.string.Next}
       disabled={!isStepValid}
       loading={isSaving}
@@ -231,7 +231,7 @@
       background-color: var(--accent-bg-color);
 
       &::before {
-        background-color: var(--primary-button-outline);
+        background-color: var(--accented-button-outline);
       }
     }
 

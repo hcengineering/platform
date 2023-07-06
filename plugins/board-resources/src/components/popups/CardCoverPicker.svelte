@@ -100,6 +100,6 @@
     </div>
   </div>
   <svelte:fragment slot="buttons">
-    <Button label={board.string.RemoveCover} kind="transparent" on:click={removeCover} />
+    <Button label={board.string.RemoveCover} kind="ghost" on:click={removeCover} />
   </svelte:fragment>
 </Popup>

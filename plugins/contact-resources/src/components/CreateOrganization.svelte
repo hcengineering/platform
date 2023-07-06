@@ -88,7 +88,7 @@
 >
   <div class="flex-row-center clear-mins">
     <div class="mr-3">
-      <Button icon={Company} size={'medium'} kind={'link-bordered'} disabled />
+      <Button icon={Company} size={'medium'} kind={'link-bordered'} noFocus />
     </div>
     <EditBox
       placeholder={contact.string.OrganizationNamePlaceholder}
@@ -102,7 +102,7 @@
     <ChannelsDropdown
       bind:value={channels}
       focusIndex={10}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
       editable
       highlighted={matchedChannels.map((it) => it.provider)}

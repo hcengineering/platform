@@ -102,7 +102,7 @@
             />
           {/if}
         </div>
-        <Button size={'medium'} kind={'transparent'} on:click={(ev) => flip(i, ev)}>
+        <Button size={'medium'} kind={'ghost'} on:click={(ev) => flip(i, ev)}>
           <svelte:fragment slot="icon">
             <div class="rotated-icon {item.state}">
               <IconDownOutline size={'medium'} />

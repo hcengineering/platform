@@ -52,6 +52,6 @@
         {/if}
       </div>
     </div>
-    <Button icon={IconAdd} kind="transparent" on:click={add} />
+    <Button icon={IconAdd} kind="ghost" on:click={add} />
   </div>
 {/if}

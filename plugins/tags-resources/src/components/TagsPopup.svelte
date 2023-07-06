@@ -117,7 +117,7 @@
     />
     {#if !isSingleCategory}
       <Button
-        kind={'transparent'}
+        kind={'ghost'}
         size={'large'}
         icon={show ? IconView : IconViewHide}
         on:click={() => {
@@ -125,7 +125,7 @@
         }}
       />
     {/if}
-    {#if !hideAdd}<Button kind={'transparent'} size={'large'} icon={IconAdd} on:click={createTagElement} />{/if}
+    {#if !hideAdd}<Button kind={'ghost'} size={'large'} icon={IconAdd} on:click={createTagElement} />{/if}
   </div>
   <div class="scroll">
     <div class="box">

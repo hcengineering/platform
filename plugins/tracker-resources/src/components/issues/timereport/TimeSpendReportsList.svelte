@@ -96,7 +96,7 @@
         <FixedColumn key={'timespend_assignee'} justify={'left'}>
           <UserBox
             width={'100%'}
-            kind={'transparent'}
+            kind={'ghost'}
             label={tracker.string.Assignee}
             _class={contact.class.Employee}
             value={report.employee}
@@ -108,7 +108,7 @@
           <TimePresenter value={report.value} />
         </FixedColumn>
         <FixedColumn key={'timespend_date'} justify={'left'}>
-          <DatePresenter value={report.date} kind={'transparent'} size={'small'} />
+          <DatePresenter value={report.date} kind={'ghost'} size={'small'} />
         </FixedColumn>
       </div>
     </div></svelte:fragment

@@ -68,9 +68,8 @@
         id="card-close"
         focusIndex={10002}
         icon={IconClose}
-        iconSize={'medium'}
-        iconProps={{ fill: 'var(--theme-dark-color)' }}
-        kind={'transparent'}
+        iconProps={{ size: 'medium', fill: 'var(--theme-dark-color)' }}
+        kind={'ghost'}
         size={'small'}
         on:click={() => {
           if (onCancel) {
@@ -116,7 +115,7 @@
         focusIndex={10001}
         disabled={!canSave}
         label={okLabel}
-        kind={'primary'}
+        kind={'accented'}
         size={'large'}
         on:click={() => {
           if (okProcessing) {

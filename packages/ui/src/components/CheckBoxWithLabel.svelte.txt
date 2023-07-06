@@ -119,7 +119,7 @@
       overflow-wrap: break-word;
 
       &:focus {
-        border-color: var(--primary-button-enabled);
+        border-color: var(--accented-button-default);
       }
 
       &::-webkit-contacts-auto-fill-button,

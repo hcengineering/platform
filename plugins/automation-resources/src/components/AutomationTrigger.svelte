@@ -22,7 +22,7 @@
   {#if trigger}
     <div class="flex-between">
       <TriggerPresenter value={trigger} />
-      <Button icon={IconDelete} kind="transparent" on:click={clearTrigger} />
+      <Button icon={IconDelete} kind="ghost" on:click={clearTrigger} />
     </div>
   {:else}
     <AddActionTrigger on:trigger on:targetClass />

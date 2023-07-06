@@ -23,7 +23,6 @@
   export let onChange: ((value: any) => void) | undefined
   export let value: any
   export let props: Record<string, any>
-  export let compression: boolean = false
   export let hideDivider: boolean = false
   export let compactMode: boolean = false
 

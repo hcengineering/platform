@@ -116,13 +116,13 @@
   }
   .today {
     color: var(--caption-color);
-    background-color: var(--primary-button-enabled);
-    border-color: var(--primary-button-focused-border);
+    background-color: var(--accented-button-default);
+    border-color: var(--accented-button-outline);
   }
   .selected:not(.today, .wrongMonth) {
     color: var(--caption-color);
-    background-color: var(--primary-button-disabled);
-    border-color: var(--primary-button-focused-border);
+    background-color: var(--accented-button-disabled);
+    border-color: var(--accented-button-outline);
   }
   .marker {
     position: absolute;

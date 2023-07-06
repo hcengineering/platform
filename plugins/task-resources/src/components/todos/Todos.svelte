@@ -45,7 +45,7 @@
     <span class="antiSection-header__title">
       <Label label={plugin.string.Todos} />
     </span>
-    <Button icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createApp} />
+    <Button icon={IconAdd} kind={'ghost'} on:click={createApp} />
   </div>
   {#if todos.length > 0}
     {#if wSection < 640}

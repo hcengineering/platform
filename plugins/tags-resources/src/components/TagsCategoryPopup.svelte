@@ -147,7 +147,7 @@
                 }}
               >
                 <div class="check pointer-events-none">
-                  <CheckBox checked={isSelected(element, selected)} primary />
+                  <CheckBox checked={isSelected(element, selected)} accented />
                 </div>
                 <div class="tag" style="background-color: {color.background};" />
                 <span style:color={color.title}>
@@ -170,14 +170,14 @@
   </div>
   <div class="flex-between p-2">
     <Button
-      kind={'transparent'}
+      kind={'ghost'}
       label={tags.string.SelectAll}
       on:click={() => {
         selected = elements.map((it) => it._id)
       }}
     />
     <Button
-      kind={'transparent'}
+      kind={'ghost'}
       label={tags.string.SelectNone}
       on:click={() => {
         selected = []

@@ -167,7 +167,7 @@
         bind:value={doc.attachedTo}
         label={recruit.string.Talent}
         placeholder={recruit.string.Talents}
-        kind={'secondary'}
+        kind={'regular'}
         size={'large'}
         create={{ component: recruit.component.CreateCandidate, label: recruit.string.CreateTalent }}
       />
@@ -177,7 +177,7 @@
       bind:value={company}
       label={recruit.string.Company}
       icon={IconCompany}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
       showNavigate={false}
       create={{ component: contact.component.CreateOrganization, label: contact.string.CreateOrganization }}
@@ -187,7 +187,7 @@
       bind:value={application}
       label={recruit.string.Application}
       placeholder={recruit.string.ApplicationCreateLabel}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
       searchField={'number'}
       showNavigate={false}
@@ -198,7 +198,7 @@
       labelNull={recruit.string.StartDate}
       mode={DateRangeMode.DATETIME}
       editable
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
       on:change={updateStart}
     />
@@ -207,9 +207,9 @@
       labelNull={recruit.string.DueDate}
       mode={DateRangeMode.DATETIME}
       editable
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
     />
-    <UserBoxList bind:items={doc.participants} label={calendar.string.Participants} kind={'secondary'} size={'large'} />
+    <UserBoxList bind:items={doc.participants} label={calendar.string.Participants} kind={'regular'} size={'large'} />
   </svelte:fragment>
 </Card>

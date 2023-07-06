@@ -13,7 +13,7 @@
   export let accent: boolean = false
   export let inline: boolean = false
   export let shouldShowName: boolean = true
-  export let avatarSize: IconSize = kind === 'secondary' ? 'small' : 'card'
+  export let avatarSize: IconSize = kind === 'regular' ? 'small' : 'card'
 </script>
 
 {#if Array.isArray(value)}

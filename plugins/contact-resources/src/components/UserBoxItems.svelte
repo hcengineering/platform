@@ -115,7 +115,7 @@
     align-items: center;
     margin: 0 0.5rem 0.5rem 0;
     padding: 0.375rem 0.625rem 0.375rem 0.5rem;
-    background-color: var(--theme-button-enabled);
+    background-color: var(--theme-button-default);
     border: 1px solid var(--theme-button-border);
     border-radius: 0.25rem;
   }

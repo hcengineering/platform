@@ -108,8 +108,7 @@
     {:else}
       <Button
         icon={IconAdd}
-        kind={'transparent'}
-        shape={'circle'}
+        kind={'ghost'}
         on:click={() => {
           inputFile.click()
         }}

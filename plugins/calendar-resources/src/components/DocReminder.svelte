@@ -59,7 +59,7 @@
 
 <Button
   size={'medium'}
-  kind={'transparent'}
+  kind={'ghost'}
   icon={calendar.icon.Reminder}
   showTooltip={{ label: isEvent ? calendar.string.RemindMeAt : calendar.string.Reminders }}
   on:click={(e) => click(e)}

@@ -133,13 +133,13 @@
     <UserBox
       _class={contact.class.Employee}
       label={contact.string.Employee}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
       bind:value={data.employee}
       showNavigate={false}
     />
     <TimeReportDayDropdown
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
       bind:selected={selectedTimeReportDay}
       on:selected={({ detail }) => (data.date = getTimeReportDate(detail))}
@@ -147,7 +147,7 @@
     <DatePresenter
       bind:value={data.date}
       editable
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
       on:change={({ detail }) => (selectedTimeReportDay = getTimeReportDayType(detail))}
     />

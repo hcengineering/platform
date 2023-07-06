@@ -135,7 +135,7 @@
     <svelte:fragment slot="tools">
       <Button
         icon={IconMoreH}
-        kind="transparent"
+        kind="ghost"
         size="medium"
         on:click={(e) => {
           showPopup(

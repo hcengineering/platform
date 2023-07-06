@@ -54,7 +54,7 @@
     <span class="antiSection-header__title">
       <Label {label} />
     </span>
-    <Button icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createApp} />
+    <Button icon={IconAdd} kind={'ghost'} on:click={createApp} />
   </div>
   {#if reviews > 0}
     <Scroller horizontal>

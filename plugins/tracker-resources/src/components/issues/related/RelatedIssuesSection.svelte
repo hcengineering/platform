@@ -67,14 +67,14 @@
       {/if}
       <div class="flex-row-center gap-2">
         {#if viewlet && viewOptions}
-          <ViewletSettingButton bind:viewOptions {viewlet} kind={'transparent'} />
+          <ViewletSettingButton bind:viewOptions {viewlet} kind={'ghost'} />
         {/if}
         <Button
           id="add-sub-issue"
           icon={IconAdd}
           label={undefined}
           labelParams={{ subIssues: 0 }}
-          kind={'transparent'}
+          kind={'ghost'}
           on:click={createIssue}
         />
       </div>

@@ -20,7 +20,7 @@
   import ViewletSetting from './ViewletSetting.svelte'
 
   export let viewlet: Viewlet | undefined
-  export let kind: ButtonKind = 'secondary'
+  export let kind: ButtonKind = 'regular'
   export let viewOptions: ViewOptions
 
   let btn: HTMLButtonElement

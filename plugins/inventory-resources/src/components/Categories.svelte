@@ -42,7 +42,7 @@
   </div>
 
   <div class="mb-1 clear-mins">
-    <Button icon={IconAdd} label={inventory.string.CategoryCreateLabel} kind={'primary'} on:click={showCreateDialog} />
+    <Button icon={IconAdd} label={inventory.string.CategoryCreateLabel} kind={'accented'} on:click={showCreateDialog} />
   </div>
 </div>
 <div class="ac-header full divide search-start">

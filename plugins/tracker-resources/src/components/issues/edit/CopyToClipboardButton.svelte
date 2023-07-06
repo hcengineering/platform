@@ -24,7 +24,7 @@
 
 <Button
   {icon}
-  kind={'transparent'}
+  kind={'ghost'}
   showTooltip={{ label: title, direction: 'bottom' }}
   on:click={() => copyTextToClipboard(text)}
 />

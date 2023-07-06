@@ -28,7 +28,7 @@
     label={lead.string.CreateCustomerLabel}
     justify={'left'}
     width={'100%'}
-    kind={'primary'}
+    kind={'accented'}
     size={'large'}
     on:click={newIssue}
   />

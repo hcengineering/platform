@@ -54,7 +54,7 @@
     <div class="flex-row-center clear-mins">
       <Button
         icon={IconArrowLeft}
-        kind={'transparent'}
+        kind={'ghost'}
         on:click={() => {
           dispatch('close')
         }}
@@ -73,7 +73,7 @@
       <Button
         label={gmail.string.Reply}
         size={'small'}
-        kind={'primary'}
+        kind={'accented'}
         on:click={() => {
           newMessage = true
         }}

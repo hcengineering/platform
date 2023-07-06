@@ -166,15 +166,10 @@
     </div>
     {#if createItemDialog !== undefined && createItemLabel !== undefined}
       <div class:on-hover={!mouseOver} class="flex-row-center">
-        <Button
-          icon={IconAdd}
-          kind={'transparent'}
-          showTooltip={{ label: createItemLabel }}
-          on:click={handleCreateItem}
-        />
+        <Button icon={IconAdd} kind={'ghost'} showTooltip={{ label: createItemLabel }} on:click={handleCreateItem} />
         <Button
           icon={selected.length > 0 ? IconBack : IconCheck}
-          kind={'transparent'}
+          kind={'ghost'}
           showTooltip={{ label: view.string.Select }}
           on:click={() => {
             let newSelection = [...$selectionStore]

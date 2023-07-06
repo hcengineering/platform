@@ -120,7 +120,7 @@
 </script>
 
 <div
-  class="ac-header full divide"
+  class="ac-header short divide caption-height"
   class:header-with-mode-selector={modeSelectorProps !== undefined}
   class:header-without-label={!labelTasks}
 >

@@ -62,7 +62,7 @@
 >
   <div class="flex-row-center clear-mins">
     <div class="mr-3">
-      <Button focusIndex={1} icon={hr.icon.Department} size={'medium'} kind={'link-bordered'} disabled />
+      <Button focusIndex={1} icon={hr.icon.Department} size={'medium'} kind={'link-bordered'} noFocus />
     </div>
     <div class="clear-mins flex-grow">
       <EditBox
@@ -79,7 +79,7 @@
       _class={hr.class.Department}
       label={hr.string.ParentDepartmentLabel}
       bind:space
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
     />
   </svelte:fragment>
@@ -88,7 +88,7 @@
       focusIndex={3}
       label={hr.string.TeamLead}
       placeholder={hr.string.TeamLead}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
       bind:value={lead}
       allowDeselect

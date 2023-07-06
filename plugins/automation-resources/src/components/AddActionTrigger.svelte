@@ -95,7 +95,7 @@
           />
         </div>
       </div>
-      <Button icon={IconAdd} kind="transparent" disabled={!name || !selectedActionMode} on:click={addActionTrigger} />
+      <Button icon={IconAdd} kind="ghost" disabled={!name || !selectedActionMode} on:click={addActionTrigger} />
     </div>
   {/if}
 </div>

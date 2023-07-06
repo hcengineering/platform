@@ -21,7 +21,7 @@
   export let type: TypeDate | undefined
   export let label: IntlString | undefined = undefined
   export let onChange: (value: any) => void
-  export let kind: 'no-border' | 'link' | 'secondary' = 'no-border'
+  export let kind: 'no-border' | 'link' | 'regular' = 'no-border'
   export let size: 'small' | 'medium' | 'large' = 'small'
 </script>
 

@@ -15,15 +15,28 @@
 
 /* Common Colors */
 * {
-  // --primary-button-color: #fff;
-  // --primary-button-enabled: #4474F6;
-  // --primary-button-hovered: #2A5FF6;
-  // --primary-button-pressed: #194CD7;
-  // --primary-button-focused: #194CD7;
-  // --primary-button-disabled: #5771B9;
-  // --primary-button-focused-border: #7393EB;
-  // --primary-button-outline: rgba(87, 132, 255, .3);
-  // --primary-button-border: rgba(255, 255, 255, .09);
+  --accented-button-color: #fff;
+  --accented-button-border: rgba(255, 255, 255, .09);
+  --accented-button-focused-border: #fff;
+  --accented-button-outline: #5190EC;
+  --accented-button-transparent: rgba(43, 81, 144, 0.2);
+
+  --accented-button-default: #2B5190;
+  --accented-button-hovered: #325FA9;
+  --accented-button-pressed: #284B86;
+  --accented-button-focused: #284B86;
+  --brand-button-default: #4169E1;
+  --brand-button-hovered: #587BE5;
+  --brand-button-pressed: #2C58DE;
+  --brand-button-focused: #2C58DE;
+  --positive-button-default: #26A869;
+  --positive-button-hovered: #2BBB75;
+  --positive-button-pressed: #21915B;
+  --positive-button-focused: #21915B;
+  --negative-button-default: #CA4242;
+  --negative-button-hovered: #D05858;
+  --negative-button-pressed: #BF3636;
+  --negative-button-focused: #BF3636;
 
   --white-color: #fff;
   --duotone-color: rgba(126, 134, 158, .25);
@@ -53,24 +66,21 @@
 
 /* Dark Theme */
 .theme-dark {
-  --primary-button-color: #fff;
-  --primary-button-enabled: #2B5190;
-  --primary-button-transparent: rgba(43, 81, 144, 0.2);
-  --primary-button-hovered: #325FA9;
-  --primary-button-pressed: #284B86;
-  --primary-button-focused: #144CA8;
-  --primary-button-disabled: #484662;
-  --primary-button-disabled-color: rgba(255, 255, 255, .5);
-  --primary-button-focused-border: #6E9FED;
-  --primary-button-border: rgba(255, 255, 255, .09);
-  --primary-button-outline: rgba(87, 132, 255, .3); // OLD
+  --accented-button-disabled: #12213B;
+  --accented-button-disabled-color: #5E88CF;
+  --brand-button-disabled: #111F4B;
+  --brand-button-disabled-color: #6585E7;
+  --positive-button-disabled: #092518;
+  --positive-button-disabled-color: #25A265;
+  --negative-button-disabled: #330F0F;
+  --negative-button-disabled-color: #D06262;
 
-  --theme-button-enabled: rgba(255, 255, 255, .02);
+  --theme-button-default: rgba(255, 255, 255, .02);
   --theme-button-hovered: rgba(255, 255, 255, .04);
   --theme-button-pressed: rgba(255, 255, 255, .08);
   --theme-button-focused: rgba(255, 255, 255, .04);
-  --theme-button-disabled: rgba(255, 255, 255, .02);
-  --theme-button-disabled-color: rgba(255, 255, 255, .5);
+  --theme-button-focused-border: rgba(255, 255, 255, .09);
+  --theme-button-disabled: rgba(255, 255, 255, .08);
   --theme-button-border: rgba(255, 255, 255, .09);
 
   --theme-button-contrast-color: #000;
@@ -250,24 +260,21 @@
 
 /* Light Theme */
 .theme-light {
-  --primary-button-color: #fff;
-  --primary-button-enabled: #2B5190;
-  --primary-button-transparent: rgba(43, 81, 144, 0.2);
-  --primary-button-hovered: #325FA9;
-  --primary-button-pressed: #284B86;
-  --primary-button-focused: #144CA8;
-  --primary-button-disabled: #EBEBEB;
-  --primary-button-disabled-color: rgba(0, 0, 0, .5);
-  --primary-button-focused-border: #6E9FED; // DARK
-  --primary-button-border: rgba(255, 255, 255, .09);
-  --primary-button-outline: rgba(87, 132, 255, .3); // OLD
-  
-  --theme-button-enabled: rgba(0, 0, 0, .02);
+  --accented-button-disabled: #E0E8F6;
+  --accented-button-disabled-color: #284B86;
+  --brand-button-disabled: #DCE3F9;
+  --brand-button-disabled-color: #2C58DE;
+  --positive-button-disabled: #DEF7EB;
+  --positive-button-disabled-color: #1A7046;
+  --negative-button-disabled: #F6E0E0;
+  --negative-button-disabled-color: #962C2C;
+
+  --theme-button-default: rgba(0, 0, 0, .02);
   --theme-button-hovered: rgba(0, 0, 0, .04);
   --theme-button-pressed: rgba(0, 0, 0, .08);
-  --theme-button-focused: rgba(0, 0, 0, .04);
-  --theme-button-disabled: rgba(0, 0, 0, .02);
-  --theme-button-disabled-color: rgba(0, 0, 0, .5);
+  --theme-button-focused: rgba(0, 0, 0, .08);
+  --theme-button-focused-border: #fff;
+  --theme-button-disabled: rgba(0, 0, 0, .08);
   --theme-button-border: rgba(0, 0, 0, .09);
 
   --theme-button-contrast-color: #fff;

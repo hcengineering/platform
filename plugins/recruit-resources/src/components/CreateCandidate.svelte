@@ -573,7 +573,7 @@
       focusIndex={10}
       bind:value={object.channels}
       highlighted={matchedChannels.map((it) => it.provider)}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
     />
     <YesNo
@@ -582,7 +582,7 @@
       label={recruit.string.Onsite}
       tooltip={recruit.string.WorkLocationPreferences}
       bind:value={object.onsite}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
     />
     <YesNo
@@ -591,7 +591,7 @@
       label={recruit.string.Remote}
       tooltip={recruit.string.WorkLocationPreferences}
       bind:value={object.remote}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
     />
     <Component
@@ -606,7 +606,7 @@
         elements,
         newElements,
         countLabel: recruit.string.NumberSkills,
-        kind: 'secondary',
+        kind: 'regular',
         size: 'large'
       }}
       on:open={(evt) => {
@@ -722,12 +722,12 @@
 
 <style lang="scss">
   .resume {
-    box-shadow: 0 0 0 0 var(--primary-button-focused-border);
+    box-shadow: 0 0 0 0 var(--accented-button-outline);
     border-radius: 0.25rem;
     transition: box-shadow 0.15s ease-in-out;
 
     &.solid {
-      box-shadow: 0 0 0 2px var(--primary-button-focused-border);
+      box-shadow: 0 0 0 2px var(--accented-button-outline);
     }
   }
   .skills-box {

@@ -172,7 +172,7 @@
     <div class="buttons-group">
       <Button
         icon={IconArrowLeft}
-        kind={'transparent'}
+        kind={'ghost'}
         on:click={() => {
           dispatch('close')
         }}
@@ -185,12 +185,12 @@
     <div class="buttons-group small-gap">
       <Button
         icon={IconAttachment}
-        kind={'transparent'}
+        kind={'ghost'}
         on:click={() => {
           inputFile.click()
         }}
       />
-      <Button label={plugin.string.Send} size={'small'} kind={'primary'} on:click={sendMsg} />
+      <Button label={plugin.string.Send} size={'small'} kind={'accented'} on:click={sendMsg} />
     </div>
   </div>
 </div>

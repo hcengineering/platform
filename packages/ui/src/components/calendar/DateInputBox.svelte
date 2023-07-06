@@ -304,7 +304,7 @@
     transition: border-color 0.15s ease;
 
     &:hover {
-      border-color: var(--theme-button-enabled);
+      border-color: var(--theme-button-default);
     }
     &:focus-within {
       color: var(--theme-caption-color);
@@ -319,7 +319,7 @@
       width: 0.75rem;
       height: 0.75rem;
       color: var(--theme-content-color);
-      background-color: var(--theme-button-enabled);
+      background-color: var(--theme-button-default);
       outline: none;
       border-radius: 50%;
       cursor: pointer;
@@ -340,8 +340,8 @@
       border-radius: 0.125rem;
 
       &:focus {
-        color: var(--primary-button-color);
-        background-color: var(--primary-button-enabled);
+        color: var(--accented-button-color);
+        background-color: var(--accented-button-default);
       }
       &::after {
         position: absolute;

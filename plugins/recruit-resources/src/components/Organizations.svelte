@@ -231,7 +231,7 @@
     <span class="ac-header__title"><Label label={recruit.string.Organizations} /></span>
   </div>
   <div class="clear-mins mb-1">
-    <Button icon={IconAdd} label={recruit.string.CompanyCreateLabel} kind={'primary'} on:click={showCreateDialog} />
+    <Button icon={IconAdd} label={recruit.string.CompanyCreateLabel} kind={'accented'} on:click={showCreateDialog} />
   </div>
 </div>
 <div class="ac-header full divide search-start">

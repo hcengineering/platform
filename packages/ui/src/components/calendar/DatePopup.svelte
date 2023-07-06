@@ -128,7 +128,7 @@
   </div>
   <div class="footer">
     <Button
-      kind={'primary'}
+      kind={'accented'}
       label={ui.string.Save}
       size={'x-large'}
       width={'100%'}

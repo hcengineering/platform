@@ -230,13 +230,13 @@
       {#if issueId}{issueId}{/if}
     </span>
     <svelte:fragment slot="utils">
-      <Button icon={IconMoreH} kind={'transparent'} size={'medium'} on:click={showMenu} />
+      <Button icon={IconMoreH} kind={'ghost'} size={'medium'} on:click={showMenu} />
       {#if issueId}
         <CopyToClipboard issueUrl={generateIssueShortLink(issueId)} {issueId} />
       {/if}
       <Button
         icon={setting.icon.Setting}
-        kind={'transparent'}
+        kind={'ghost'}
         showTooltip={{ label: setting.string.ClassSetting }}
         on:click={(ev) => {
           ev.stopPropagation()
@@ -251,7 +251,7 @@
         }}
       />
       <Button
-        kind={'transparent'}
+        kind={'ghost'}
         selected={showAllMixins}
         on:click={() => {
           showAllMixins = !showAllMixins

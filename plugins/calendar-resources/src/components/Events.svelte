@@ -127,7 +127,7 @@
         }}
       />
     {/if}
-    <Button icon={IconAdd} label={createLabel} kind={'primary'} on:click={showCreateDialog} />
+    <Button icon={IconAdd} label={createLabel} kind={'accented'} on:click={showCreateDialog} />
   </div>
 </div>
 <div class="ac-header full divide search-start">

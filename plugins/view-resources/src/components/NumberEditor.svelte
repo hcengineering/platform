@@ -43,7 +43,7 @@
 
 {#if kind === 'button' || kind === 'link'}
   <Button
-    kind={kind === 'button' ? 'secondary' : kind}
+    kind={kind === 'button' ? 'regular' : kind}
     {size}
     {justify}
     {width}

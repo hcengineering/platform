@@ -67,7 +67,7 @@
   <StatusControl slot="error" {status} />
   <div class="flex-row-center clear-mins">
     <div class="mr-3">
-      <Button focusIndex={1} icon={inventory.icon.Categories} size={'medium'} kind={'link-bordered'} disabled />
+      <Button focusIndex={1} icon={inventory.icon.Categories} size={'medium'} kind={'link-bordered'} noFocus />
     </div>
     <EditBox bind:value={name} placeholder={inventory.string.Category} kind={'large-style'} autoFocus />
   </div>

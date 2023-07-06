@@ -26,7 +26,7 @@
     align-items: center;
     flex-shrink: 0;
     font-weight: 500;
-    color: var(--primary-button-color);
+    color: var(--accented-button-color);
     border-radius: 0.25rem;
     outline: none;
     cursor: pointer;

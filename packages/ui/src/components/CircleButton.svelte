@@ -19,9 +19,9 @@
 
   export let icon: Asset | AnySvelteComponent | undefined
   export let size: ButtonSize = 'large'
-  export let transparent: boolean = false
+  export let ghost: boolean = false
   export let selected: boolean = false
-  export let primary: boolean = false
+  export let accented: boolean = false
   export let id: string | undefined = undefined
 </script>
 
@@ -30,8 +30,8 @@
   {id}
   class="flex-center icon-button icon-{size}"
   class:selected
-  class:transparent
-  class:primary
+  class:ghost
+  class:accented
   on:click|stopPropagation
   on:mousemove
 >
@@ -61,22 +61,22 @@
     &.selected {
       background-color: var(--menu-bg-select);
     }
-    &.transparent {
+    &.ghost {
       background-color: var(--menu-bg-select-trans);
 
       &:hover {
         background-color: var(--menu-bg-select);
       }
     }
-    &.primary {
-      color: var(--primary-button-color);
-      background-color: var(--primary-button-enabled);
-      border-color: var(--primary-button-border);
+    &.accented {
+      color: var(--accented-button-color);
+      background-color: var(--accented-button-default);
+      border-color: var(--accented-button-border);
       &:hover {
-        background-color: var(--primary-button-hovered);
+        background-color: var(--accented-button-hovered);
       }
       &:active {
-        background-color: var(--primary-button-pressed);
+        background-color: var(--accented-button-pressed);
       }
     }
   }

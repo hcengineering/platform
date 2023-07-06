@@ -95,7 +95,7 @@
         <Button
           focusIndex={10000}
           icon={IconClose}
-          kind={'transparent'}
+          kind={'ghost'}
           size={'medium'}
           on:click={() => {
             dispatch('close')
@@ -115,7 +115,7 @@
           <Button
             focusIndex={10008}
             icon={IconDetails}
-            kind={'transparent'}
+            kind={'ghost'}
             size={'medium'}
             selected={asideShown}
             on:click={() => {
@@ -127,7 +127,7 @@
           <Button
             focusIndex={10009}
             icon={useMaxWidth ? IconMaxWidth : IconMinWidth}
-            kind={'transparent'}
+            kind={'ghost'}
             size={'medium'}
             selected={useMaxWidth}
             on:click={() => {
@@ -140,7 +140,7 @@
           <Button
             focusIndex={100010}
             icon={fullSize ? IconScale : IconScaleFull}
-            kind={'transparent'}
+            kind={'ghost'}
             size={'medium'}
             selected={fullSize}
             on:click={() => {

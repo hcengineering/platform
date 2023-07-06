@@ -98,7 +98,7 @@
         <Button
           {label}
           {disabled}
-          kind={'primary'}
+          kind={'accented'}
           on:click={() => {
             save()
           }}

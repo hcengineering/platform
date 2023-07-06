@@ -29,7 +29,7 @@
 {#if page}
   <div class="ac-header flex-between w-full divide">
     {#if trace.length}
-      <Button icon={IconBack} kind="transparent" size="x-large" on:click={onBack} />
+      <Button icon={IconBack} kind="ghost" size="x-large" on:click={onBack} />
     {:else}
       <div class="ml-12" />
     {/if}
@@ -38,7 +38,7 @@
     </div>
     <Button
       icon={IconClose}
-      kind="transparent"
+      kind="ghost"
       size="x-large"
       on:click={() => {
         dispatch('close')

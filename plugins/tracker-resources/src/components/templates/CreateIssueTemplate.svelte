@@ -137,7 +137,7 @@
       _class={tracker.class.Project}
       label={tracker.string.Project}
       bind:space={_space}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
       component={ProjectPresenter}
       iconWithEmoji={tracker.component.IconWithEmoji}
@@ -174,14 +174,14 @@
       value={object}
       shouldShowLabel
       isEditable
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
       justify="center"
       on:change={({ detail }) => (object.priority = detail)}
     />
     <AssigneeEditor
       object={{ ...object, space }}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
       on:change={({ detail }) => (object.assignee = detail)}
     />
@@ -192,7 +192,7 @@
         key,
         targetClass: tracker.class.Issue,
         countLabel: tracker.string.NumberLabels,
-        kind: 'secondary',
+        kind: 'regular',
         size: 'large'
       }}
       on:open={(evt) => {
@@ -202,19 +202,19 @@
         labels = labels.filter((it) => it._id !== evt.detail)
       }}
     />
-    <EstimationEditor kind={'secondary'} size={'large'} value={object} />
+    <EstimationEditor kind={'regular'} size={'large'} value={object} />
     <ComponentSelector
       value={object.component}
       onChange={handleComponentIdChanged}
       isEditable={true}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
     />
     <MilestoneSelector
       value={object.milestone}
       onChange={handleMilestoneIdChanged}
       useComponent={object.component ?? undefined}
-      kind={'secondary'}
+      kind={'regular'}
       size={'large'}
     />
   </svelte:fragment>

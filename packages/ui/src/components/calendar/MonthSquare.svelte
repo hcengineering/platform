@@ -237,7 +237,7 @@
       &.range:not(.wrongMonth),
       &.selected:not(.wrongMonth) {
         color: var(--caption-color);
-        background-color: var(--primary-button-transparent);
+        background-color: var(--accented-button-transparent);
       }
       &.startRow:not(.wrongMonth) {
         border-top-left-radius: 0.25rem;
@@ -275,13 +275,13 @@
         border-radius: 50%;
       }
       &.selected:not(.wrongMonth) {
-        color: var(--primary-button-color);
-        background-color: var(--primary-button-enabled);
+        color: var(--accented-button-color);
+        background-color: var(--accented-button-default);
       }
 
       &:not(.wrongMonth):hover {
         color: var(--caption-color);
-        background-color: var(--primary-button-transparent);
+        background-color: var(--accented-button-transparent);
       }
     }
 

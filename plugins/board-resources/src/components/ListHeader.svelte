@@ -29,7 +29,7 @@
     <div class="flex-between h-full font-medium pr-2 pl-4">
       <span class="lines-limit-2">{state.name}</span>
       <div class="flex">
-        <Button icon={IconMoreV} kind="transparent" on:click={showMenu} />
+        <Button icon={IconMoreV} kind="ghost" on:click={showMenu} />
       </div>
     </div>
   </div>

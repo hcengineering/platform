@@ -163,7 +163,7 @@
 
 <style lang="scss">
   .container {
-    background-color: var(--theme-button-enabled);
+    background-color: var(--theme-button-default);
     border: 1px solid var(--theme-button-border);
     border-radius: 0.5rem;
 
@@ -172,7 +172,7 @@
       cursor: pointer;
     }
     &.dragging {
-      border-color: var(--primary-button-focused-border);
+      border-color: var(--accented-button-outline);
     }
   }
 </style>

@@ -59,7 +59,7 @@
 >
   <div class="flex-row-center clear-mins">
     <!-- <div class="mr-3">
-      <Button focusIndex={1} icon={Vacancy} size={'medium'} kind={'link-bordered'} disabled />
+      <Button focusIndex={1} icon={Vacancy} size={'medium'} kind={'link-bordered'} />
     </div>    -->
   </div>
   <svelte:fragment slot="pool">

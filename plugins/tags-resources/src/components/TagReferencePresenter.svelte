@@ -77,7 +77,7 @@
     height: 1.75rem;
     min-width: 0;
     min-height: 0;
-    background-color: var(--theme-button-enabled);
+    background-color: var(--theme-button-default);
     border: 1px solid var(--theme-button-border);
     border-radius: 1.5rem;
     user-select: none;

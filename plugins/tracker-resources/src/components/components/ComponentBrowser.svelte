@@ -104,7 +104,7 @@
           (viewlet = viewlets && detail?.id ? updateActiveViewlet(viewlets, detail.id) : viewlet)}
       />
     {/if}
-    <Button icon={IconAdd} label={tracker.string.Component} kind="primary" on:click={showCreateDialog} />
+    <Button icon={IconAdd} label={tracker.string.Component} kind="accented" on:click={showCreateDialog} />
   </div>
 </div>
 <div class="ac-header full divide search-start">

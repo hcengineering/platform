@@ -64,7 +64,7 @@
         <FixedColumn key={'estimation_issue_assignee'} justify={'right'}>
           <AssigneeBox
             width={'100%'}
-            kind={'transparent'}
+            kind={'ghost'}
             label={tracker.string.Assignee}
             _class={contact.class.Employee}
             value={issue.assignee}

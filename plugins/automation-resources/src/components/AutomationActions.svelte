@@ -71,7 +71,7 @@
       <CommandPresenter value={command} />
       <Button
         icon={IconDelete}
-        kind="transparent"
+        kind="ghost"
         on:click={() => {
           removeCommand(command)
         }}

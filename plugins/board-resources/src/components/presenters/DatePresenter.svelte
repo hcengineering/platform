@@ -15,7 +15,7 @@
     <div class="flex-center h-full" on:click>
       <div class="flex-row-center background-button-bg-color pr-1 pl-1 border-radius-1 w-full">
         {#if value.startDate}
-          <DatePresenter bind:value={value.startDate} {size} kind="transparent" />
+          <DatePresenter bind:value={value.startDate} {size} kind="ghost" />
         {/if}
         {#if value.startDate && value.dueDate}-{/if}
         {#if value.dueDate}
@@ -24,7 +24,7 @@
             mode={DateRangeMode.DATETIME}
             iconModifier={isOverdue ? 'overdue' : undefined}
             {size}
-            kind="transparent"
+            kind="ghost"
           />
         {/if}
       </div>

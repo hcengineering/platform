@@ -95,7 +95,7 @@
     cursor: pointer;
   }
   .cell:hover {
-    color: var(--primary-button-color);
+    color: var(--accented-button-color);
     background-color: var(--highlight-hover);
   }
   .weekend {

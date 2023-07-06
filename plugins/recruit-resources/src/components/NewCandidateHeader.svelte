@@ -38,7 +38,7 @@
     icon={IconAdd}
     label={draftExists ? recruit.string.ResumeDraft : recruit.string.CreateTalent}
     justify={'left'}
-    kind={'primary'}
+    kind={'accented'}
     width={'100%'}
     size={'large'}
     on:click={newCandidate}

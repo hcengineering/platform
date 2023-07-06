@@ -89,7 +89,7 @@
   {#if hasSubIssues}
     <Button
       width="min-content"
-      kind="transparent"
+      kind="ghost"
       on:click={() => {
         isCollapsed = !isCollapsed
       }}
@@ -102,12 +102,12 @@
   {/if}
   <div class="flex-row-center gap-2">
     {#if viewlet && hasSubIssues && viewOptions}
-      <ViewletSettingButton bind:viewOptions {viewlet} kind={'transparent'} />
+      <ViewletSettingButton bind:viewOptions {viewlet} kind={'ghost'} />
     {/if}
     {#if hasSubIssues}
       <Button
         icon={IconScaleFull}
-        kind={'transparent'}
+        kind={'ghost'}
         showTooltip={{ label: tracker.string.OpenSubIssues, direction: 'bottom' }}
         on:click={() => {
           const filter = createFilter(tracker.class.Issue, 'attachedTo', [issue._id])
@@ -130,7 +130,7 @@
       icon={hasSubIssues ? IconAdd : undefined}
       label={hasSubIssues ? undefined : tracker.string.AddSubIssues}
       labelParams={{ subIssues: 0 }}
-      kind={'transparent'}
+      kind={'ghost'}
       showTooltip={{ label: tracker.string.AddSubIssues, props: { subIssues: 1 }, direction: 'bottom' }}
       on:click={() => {
         isCollapsed = false

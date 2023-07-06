@@ -70,7 +70,7 @@
   
       &.show {
         color: var(--theme-content-color);
-        background-color: var(--theme-button-enabled);
+        background-color: var(--theme-button-default);
         cursor: pointer;
         &:hover {
           color: var(--theme-caption-color);

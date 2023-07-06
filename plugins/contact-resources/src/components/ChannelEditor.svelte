@@ -110,7 +110,7 @@
     </div>
     <Button
       focusIndex={2}
-      kind={'transparent'}
+      kind={'ghost'}
       size={'small'}
       icon={IconClose}
       disabled={value === ''}
@@ -124,7 +124,7 @@
     <Button
       id="channel-ok"
       focusIndex={3}
-      kind={'transparent'}
+      kind={'ghost'}
       size={'small'}
       icon={IconBlueCheck}
       on:click={() => {
@@ -134,7 +134,7 @@
     {#if openable}
       <Button
         focusIndex={4}
-        kind={'transparent'}
+        kind={'ghost'}
         size={'small'}
         icon={IconArrowRight}
         on:click={() => {
@@ -161,7 +161,7 @@
     >
     <Button
       focusIndex={3}
-      kind={'transparent'}
+      kind={'ghost'}
       size={'small'}
       icon={IconCopy}
       on:mousemove={() => {
@@ -183,7 +183,7 @@
     {#if openable}
       <Button
         focusIndex={5}
-        kind={'transparent'}
+        kind={'ghost'}
         size={'small'}
         icon={IconArrowRight}
         on:click={() => {

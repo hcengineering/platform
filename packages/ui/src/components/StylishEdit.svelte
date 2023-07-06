@@ -72,7 +72,7 @@
     padding: 0;
     min-width: 3rem;
     height: 3.25rem;
-    background-color: var(--theme-button-enabled);
+    background-color: var(--theme-button-default);
     border: 1px solid var(--theme-button-border);
     border-radius: 0.75rem;
     caret-color: var(--theme-caret-color);

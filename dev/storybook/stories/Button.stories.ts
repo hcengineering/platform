@@ -17,11 +17,11 @@ const meta = {
     },
     kind: {
       control: 'select',
-      options: ['primary', 'secondary', 'no-border', 'transparent', 'link', 'link-bordered', 'dangerous', 'list', 'list-header'],
+      options: ['accented', 'regular', 'no-border', 'ghost', 'link', 'link-bordered', 'dangerous', 'list', 'list-header'],
       description: 'kind description',
       table: {
         type: { summary: 'ButtonKind' },
-        defaultValue: { summary: '"secondary"' },
+        defaultValue: { summary: '"regular"' },
       }
     },
     size: {
@@ -109,7 +109,7 @@ type Story = StoryObj<typeof meta>;
 export const Ok: Story = {
   args: {
     label: uiPlugin.string.Ok,
-    kind: 'primary',
+    kind: 'accented',
     size: 'medium',
     shape: undefined,
     justify: 'left',
@@ -125,7 +125,7 @@ export const Ok: Story = {
 export const Cancel: Story = {
   args: {
     label: uiPlugin.string.Cancel,
-    kind: 'primary',
+    kind: 'accented',
     size: 'medium',
     shape: undefined,
     justify: 'left',

@@ -29,7 +29,7 @@
     <BooleanPresenter value={true} />
     {#if value === true}
       <div class="check">
-        <CheckBox checked={value === true} primary />
+        <CheckBox checked={value === true} accented />
       </div>
     {/if}
   </div>
@@ -37,7 +37,7 @@
     <BooleanPresenter value={false} />
     {#if value === false}
       <div class="check">
-        <CheckBox checked={value === false} primary />
+        <CheckBox checked={value === false} accented />
       </div>
     {/if}
   </div>
@@ -46,7 +46,7 @@
       <BooleanPresenter value={undefined} />
       {#if value === undefined}
         <div class="check">
-          <CheckBox checked={value === undefined} primary />
+          <CheckBox checked={value === undefined} accented />
         </div>
       {/if}
     </div>

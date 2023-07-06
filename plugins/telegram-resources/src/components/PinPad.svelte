@@ -116,8 +116,8 @@
     }
 
     &:focus {
-      border: 1px solid var(--primary-button-focused-border);
-      box-shadow: 0 0 0 3px var(--primary-button-outline);
+      border: 1px solid var(--accented-button-focused-border);
+      box-shadow: 0 0 0 3px var(--accented-button-outline);
     }
   }
 

@@ -173,7 +173,7 @@
     <Button
       id="contact-us"
       icon={setting.icon.Support}
-      kind={'transparent'}
+      kind={'ghost'}
       disabled={true}
       label={workbench.string.ContactUs}
     />
@@ -210,7 +210,7 @@
     padding: 0 0.5rem;
     min-width: 1.5rem;
     color: var(--theme-caption-color);
-    background-color: var(--theme-button-enabled);
+    background-color: var(--theme-button-default);
     border: 1px solid var(--theme-divider-color);
     border-radius: 0.25rem;
   }

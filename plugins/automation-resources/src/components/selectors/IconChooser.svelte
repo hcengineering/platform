@@ -47,7 +47,7 @@
         <Button
           icon={obj}
           size="medium"
-          kind={obj === icon ? 'primary' : 'transparent'}
+          kind={obj === icon ? 'accented' : 'ghost'}
           on:click={() => {
             icon = obj
           }}

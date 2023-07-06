@@ -88,7 +88,7 @@
       resize: none;
 
       &:focus {
-        border-color: var(--primary-button-enabled);
+        border-color: var(--accented-button-default);
       }
       &::placeholder {
         color: var(--dark-color);

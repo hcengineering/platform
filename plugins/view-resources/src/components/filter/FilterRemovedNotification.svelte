@@ -18,7 +18,7 @@
     </div>
   </div>
   <div class="close-button">
-    <Button icon={IconClose} kind="transparent" size="small" on:click={onRemove} />
+    <Button icon={IconClose} kind="ghost" size="small" on:click={onRemove} />
   </div>
 </div>
 

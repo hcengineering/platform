@@ -48,7 +48,7 @@
         items={viewslist}
         multiselect={false}
         selected={viewlet?._id}
-        kind={'secondary'}
+        kind={'regular'}
         size={'small'}
         on:select={(result) => {
           if (result.detail !== undefined) {

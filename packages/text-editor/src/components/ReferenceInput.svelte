@@ -255,7 +255,7 @@
     <div class="formatPanelRef buttons-group xsmall-gap" class:withoutTopBorder>
       <Button
         icon={Bold}
-        kind={'transparent'}
+        kind={'ghost'}
         size={'small'}
         selected={activeModes.has('bold')}
         showTooltip={{ label: textEditorPlugin.string.Bold }}
@@ -263,7 +263,7 @@
       />
       <Button
         icon={Italic}
-        kind={'transparent'}
+        kind={'ghost'}
         size={'small'}
         selected={activeModes.has('italic')}
         showTooltip={{ label: textEditorPlugin.string.Italic }}
@@ -271,7 +271,7 @@
       />
       <Button
         icon={Strikethrough}
-        kind={'transparent'}
+        kind={'ghost'}
         size={'small'}
         selected={activeModes.has('strike')}
         showTooltip={{ label: textEditorPlugin.string.Strikethrough }}
@@ -279,7 +279,7 @@
       />
       <Button
         icon={Link}
-        kind={'transparent'}
+        kind={'ghost'}
         size={'small'}
         selected={activeModes.has('link')}
         disabled={isSelectionEmpty && !activeModes.has('link')}
@@ -289,7 +289,7 @@
       <div class="buttons-divider" />
       <Button
         icon={ListNumber}
-        kind={'transparent'}
+        kind={'ghost'}
         size={'small'}
         selected={activeModes.has('orderedList')}
         showTooltip={{ label: textEditorPlugin.string.OrderedList }}
@@ -297,7 +297,7 @@
       />
       <Button
         icon={ListBullet}
-        kind={'transparent'}
+        kind={'ghost'}
         size={'small'}
         selected={activeModes.has('bulletList')}
         showTooltip={{ label: textEditorPlugin.string.BulletedList }}
@@ -306,7 +306,7 @@
       <div class="buttons-divider" />
       <Button
         icon={Quote}
-        kind={'transparent'}
+        kind={'ghost'}
         size={'small'}
         selected={activeModes.has('blockquote')}
         showTooltip={{ label: textEditorPlugin.string.Blockquote }}
@@ -315,7 +315,7 @@
       <div class="buttons-divider" />
       <Button
         icon={Code}
-        kind={'transparent'}
+        kind={'ghost'}
         size={'small'}
         selected={activeModes.has('code')}
         showTooltip={{ label: textEditorPlugin.string.Code }}
@@ -323,7 +323,7 @@
       />
       <Button
         icon={CodeBlock}
-        kind={'transparent'}
+        kind={'ghost'}
         size={'small'}
         selected={activeModes.has('codeBlock')}
         showTooltip={{ label: textEditorPlugin.string.CodeBlock }}
@@ -513,7 +513,7 @@
           }
         }
         &:focus {
-          box-shadow: 0 0 0 2px var(--primary-button-focused-border);
+          box-shadow: 0 0 0 2px var(--accented-button-outline);
 
           & > .icon {
             color: var(--theme-caption-color);

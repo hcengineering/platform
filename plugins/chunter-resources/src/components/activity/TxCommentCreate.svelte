@@ -113,6 +113,6 @@
 
 <style lang="scss">
   .editing {
-    border: 1px solid var(--primary-button-focused-border);
+    border: 1px solid var(--accented-button-outline);
   }
 </style>

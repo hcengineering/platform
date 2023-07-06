@@ -22,7 +22,7 @@
   export let selected: string | string[] = ''
   export let multiselect: boolean = false
   export let items: TabItem[]
-  export let kind: 'normal' | 'secondary' | 'plain' | 'separated' | 'separated-free' = 'normal'
+  export let kind: 'normal' | 'regular' | 'plain' | 'separated' | 'separated-free' = 'normal'
   export let onlyIcons: boolean = false
   export let size: 'small' | 'medium' = 'medium'
 
@@ -49,7 +49,7 @@
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
         bind:this={tabs[i]}
-        class={kind === 'normal' || kind === 'secondary' ? 'button' : 'plain'}
+        class={kind === 'normal' || kind === 'regular' ? 'button' : 'plain'}
         class:separated={kind === 'separated' || kind === 'separated-free'}
         class:free={kind === 'separated-free'}
         class:onlyIcons
@@ -139,7 +139,7 @@
       &.normal .button {
         height: 1.5rem;
       }
-      &.secondary .button {
+      &.regular .button {
         height: 1.375rem;
       }
     }
@@ -162,7 +162,7 @@
 
         &.selected {
           color: var(--theme-caption-color);
-          background-color: var(--theme-button-enabled);
+          background-color: var(--theme-button-default);
           border-color: var(--theme-button-border);
 
           &:hover {
@@ -171,8 +171,8 @@
         }
       }
     }
-    &.secondary {
-      background-color: var(--theme-button-enabled);
+    &.regular {
+      background-color: var(--theme-button-default);
       border: 1px solid var(--theme-button-border);
       border-radius: 0.25rem;
 

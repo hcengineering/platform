@@ -36,7 +36,7 @@
     <Icon icon={board.icon.Card} {size} />
     &nbsp;{done}/{total}
     {#if item.dueTo !== null}
-      &nbsp;<DatePresenter value={item.dueTo} size="x-small" iconModifier={getDateIcon(item)} kind="transparent" />
+      &nbsp;<DatePresenter value={item.dueTo} size="x-small" iconModifier={getDateIcon(item)} kind="ghost" />
     {/if}
   </div>
 {/if}

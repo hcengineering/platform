@@ -178,7 +178,7 @@
       <div class="ml-2">
         <Button
           focusIndex={2}
-          kind={'transparent'}
+          kind={'ghost'}
           {size}
           icon={IconAdd}
           showTooltip={{ label: create.label }}
