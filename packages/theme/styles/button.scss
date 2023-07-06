@@ -189,6 +189,7 @@
   &.brand,
   &.positive,
   &.negative {
+    padding: 0 1.5rem;
     color: var(--accented-button-color);
     border-color: var(--accented-button-border);
 
