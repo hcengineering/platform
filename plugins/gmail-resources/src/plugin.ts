@@ -29,7 +29,7 @@ export default mergeIds(gmailId, gmail, {
     ShareMessages: '' as IntlString,
     Connect: '' as IntlString,
     RedirectGoogle: '' as IntlString,
-    ConnectGmai: '' as IntlString,
+    ConnectGmail: '' as IntlString,
     Reply: '' as IntlString,
     Subject: '' as IntlString,
     Send: '' as IntlString,

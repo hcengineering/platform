@@ -48,7 +48,7 @@
 
 <div class="card">
   <div class="flex-between header">
-    <div class="overflow-label fs-title"><Label label={gmail.string.ConnectGmai} /></div>
+    <div class="overflow-label fs-title"><Label label={gmail.string.ConnectGmail} /></div>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
       class="tool"
