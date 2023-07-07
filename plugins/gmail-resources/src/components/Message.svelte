@@ -24,6 +24,7 @@
   export let message: SharedMessage
   export let selected: boolean = false
   export let selectable: boolean = false
+  const isError = message?.status === 'error'
 
   const dispatch = createEventDispatcher()
 </script>
@@ -42,7 +43,7 @@
       </div>
       <div class="content-dark-color flex">
         <AttachmentsPresenter value={message.attachments} object={message} />
-        <span class="content-color">{getTime(message.sendOn)}</span>
+        <span class="content-color">{!isError ? getTime(message.sendOn) : getTime(message.modifiedOn)}</span>
       </div>
     </div>
     <div class="content-dark-color text-sm overflow-label mr-4 mb-4">
@@ -52,9 +53,16 @@
     <div class="fs-title overflow-label mb-1">
       {message.subject}
     </div>
-    <div class="overflow-label">
-      {message.textContent}
-    </div>
+    {#if !isError}
+      <div class="overflow-label">
+        {message.textContent}
+      </div>
+    {/if}
+    {#if isError}
+      <div class="error-color top-divider mt-2 pt-2">
+        Error: {JSON.parse(message.error)?.data?.error_description ?? 'unknown error'}
+      </div>
+    {/if}
   </div>
   {#if selectable}
     <div class="ml-4"><CheckBox circle accented bind:checked={selected} /></div>

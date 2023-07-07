@@ -20,7 +20,7 @@
   import { IconArrowLeft, Label, Scroller, tooltip } from '@hcengineering/ui'
   import gmail from '../plugin'
   import FullMessageContent from './FullMessageContent.svelte'
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
@@ -34,6 +34,7 @@
   const dispatch = createEventDispatcher()
 
   const query = createQuery()
+  const client = getClient()
   let attachments: Attachment[] = []
 
   $: currentMessage._id &&
@@ -71,11 +72,15 @@
     </div>
     <div class="buttons-group small-gap">
       <Button
-        label={gmail.string.Reply}
+        label={currentMessage.status === 'error' ? gmail.string.Resend : gmail.string.Reply}
         size={'small'}
         kind={'accented'}
         on:click={() => {
-          newMessage = true
+          if (currentMessage.status === 'error') {
+            const messageId = currentMessage._id
+            client.updateDoc(gmail.class.NewMessage, currentMessage.space, messageId, { status: 'new' })
+            dispatch('close')
+          } else newMessage = true
         }}
       />
     </div>
