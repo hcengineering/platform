@@ -14,24 +14,35 @@
 -->
 <script lang="ts">
   import { Event } from '@hcengineering/calendar'
-  import { DateTimeRangePresenter, showPanel } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import { DatePresenter, DateTimeRangePresenter, showPopup } from '@hcengineering/ui'
+  import calendar from '../plugin'
 
   export let value: Event
   export let inline: boolean = false
 
   function click (): void {
-    showPanel(view.component.EditDoc, value._id, value._class, 'content')
+    showPopup(
+      value._class === calendar.class.ReccuringInstance
+        ? calendar.component.EditRecEvent
+        : calendar.component.EditEvent,
+      { object: value },
+      'content'
+    )
   }
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="antiSelect w-full cursor-pointer flex-center flex-between" on:click={click}>
   {#if value}
     <div class="mr-4">
       {value.title}
     </div>
     {#if !inline}
-      <DateTimeRangePresenter value={value.date} />
+      {#if value.allDay}
+        <DatePresenter value={value.date} />
+      {:else}
+        <DateTimeRangePresenter value={value.date} />
+      {/if}
     {/if}
   {/if}
 </div>

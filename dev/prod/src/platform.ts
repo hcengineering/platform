@@ -19,7 +19,7 @@ import { activityId } from '@hcengineering/activity'
 import { attachmentId } from '@hcengineering/attachment'
 import { automationId } from '@hcengineering/automation'
 import { boardId } from '@hcengineering/board'
-import { calendarId } from '@hcengineering/calendar'
+import calendar, { calendarId } from '@hcengineering/calendar'
 import { chunterId } from '@hcengineering/chunter'
 import client, { clientId } from '@hcengineering/client'
 import { contactId } from '@hcengineering/contact'
@@ -88,6 +88,7 @@ interface Config {
   REKONI_URL: string
   TELEGRAM_URL: string
   GMAIL_URL: string
+  CALENDAR_URL: string
   TITLE?: string
   DEFAULT_LANGUAGE?: string
 }
@@ -108,6 +109,7 @@ export async function configurePlatform() {
   }
   setMetadata(telegram.metadata.TelegramURL, config.TELEGRAM_URL ?? 'http://localhost:8086')
   setMetadata(gmail.metadata.GmailURL, config.GMAIL_URL ?? 'http://localhost:8087')
+  setMetadata(calendar.metadata.CalendarServiceURL, config.CALENDAR_URL ?? 'http://localhost:8095')
   
   setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
 

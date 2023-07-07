@@ -11,12 +11,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Employee } from '@hcengineering/contact'
-import type { AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
-import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
-import { plugin } from '@hcengineering/platform'
-import { AnyComponent } from '@hcengineering/ui'
+import { Contact } from '@hcengineering/contact'
+import type { AttachedDoc, Class, Doc, Markup, Ref, Space, Timestamp } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
+import type { Asset, IntlString, Metadata, Plugin } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
+import type { Handler, IntegrationType } from '@hcengineering/setting'
+import { AnyComponent } from '@hcengineering/ui'
 
 /**
  * @public
@@ -25,31 +26,72 @@ export interface Calendar extends Space {}
 
 /**
  * @public
+ * RFC5545
  */
-export interface Event extends AttachedDoc {
-  title: string
-  description: Markup
-
-  location?: string
-
-  // Event scheduled date
-  date: Timestamp
-
-  // Event due date for long events.
-  dueDate?: Timestamp
-
-  attachments?: number
-  comments?: number
-
-  participants?: Ref<Employee>[]
+export interface RecurringRule {
+  freq: 'SECONDLY' | 'MINUTELY' | 'HOURLY' | 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY'
+  endDate?: Timestamp
+  count?: number
+  interval?: number
+  bySecond?: number[]
+  byMinute?: number[]
+  byHour?: number[]
+  byDay?: string[]
+  byMonthDay?: number[]
+  byYearDay?: number[]
+  byWeekNo?: number[]
+  byMonth?: number[]
+  bySetPos?: number[]
+  wkst?: 'SU' | 'MO' | 'TU' | 'WE' | 'TH' | 'FR' | 'SA'
 }
 
 /**
  * @public
  */
-export interface Reminder extends Event {
-  shift: Timestamp
-  state: 'active' | 'done'
+export interface ReccuringEvent extends Event {
+  rules: RecurringRule[]
+  exdate: Timestamp[]
+  rdate: Timestamp[]
+}
+
+/**
+ * @public
+ */
+export interface Event extends AttachedDoc {
+  eventId: string
+  title: string
+  description: Markup
+
+  location?: string
+
+  allDay: boolean
+
+  // Event scheduled date
+  date: Timestamp
+
+  // Event due date for long events.
+  dueDate: Timestamp
+
+  attachments?: number
+
+  participants: Ref<Contact>[]
+
+  externalParticipants?: string[]
+
+  reminders?: Timestamp[]
+
+  access: 'freeBusyReader' | 'reader' | 'writer' | 'owner'
+}
+
+/**
+ * @public
+ * use for an instance of a recurring event
+ */
+export interface ReccuringInstance extends Event {
+  recurringEventId: string
+  originalStartTime: number
+  isCancelled?: boolean
+  virtual?: boolean
 }
 
 /**
@@ -63,10 +105,9 @@ export const calendarId = 'calendar' as Plugin
 const calendarPlugin = plugin(calendarId, {
   class: {
     Calendar: '' as Ref<Class<Calendar>>,
-    Event: '' as Ref<Class<Event>>
-  },
-  mixin: {
-    Reminder: '' as Ref<Mixin<Reminder>>
+    Event: '' as Ref<Class<Event>>,
+    ReccuringEvent: '' as Ref<Class<ReccuringEvent>>,
+    ReccuringInstance: '' as Ref<Class<ReccuringInstance>>
   },
   icon: {
     Calendar: '' as Asset,
@@ -75,7 +116,7 @@ const calendarPlugin = plugin(calendarId, {
     Notifications: '' as Asset
   },
   space: {
-    // Space for all personal events.
+    // deprecated
     PersonalEvents: '' as Ref<Space>
   },
   app: {
@@ -102,6 +143,15 @@ const calendarPlugin = plugin(calendarId, {
     EventNumber: '' as IntlString,
     Reminders: '' as IntlString
   },
+  handler: {
+    DisconnectHandler: '' as Handler
+  },
+  integrationType: {
+    Calendar: '' as Ref<IntegrationType>
+  },
+  metadata: {
+    CalendarServiceURL: '' as Metadata<string>
+  },
   ids: {
     ReminderNotification: '' as Ref<NotificationType>,
     NoAttached: '' as Ref<Event>
@@ -109,3 +159,4 @@ const calendarPlugin = plugin(calendarId, {
 })
 
 export default calendarPlugin
+export * from './utils'

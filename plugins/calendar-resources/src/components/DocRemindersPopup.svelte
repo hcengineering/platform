@@ -13,22 +13,37 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Event } from '@hcengineering/calendar'
   import { EmployeeAccount } from '@hcengineering/contact'
   import { Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
-  import { Button, showPopup, Label, Scroller, IconAdd, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
-  import { Table } from '@hcengineering/view-resources'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Button, deviceOptionsStore as deviceInfo, IconAdd, Label, Scroller, showPopup } from '@hcengineering/ui'
   import calendar from '../plugin'
   import CreateReminder from './CreateReminder.svelte'
+  import ReminderPresenter from './ReminderPresenter.svelte'
 
   export let attachedTo: Ref<Doc>
   export let attachedToClass: Ref<Class<Doc>>
   export let title: string | undefined
 
-  function click (ev: Event): void {
+  const currentUser = getCurrentAccount() as EmployeeAccount
+  let events: Event[] = []
+  const query = createQuery()
+  $: query.query(
+    calendar.class.Event,
+    {
+      attachedTo,
+      participants: currentUser.employee
+    },
+    (res) => {
+      events = res.filter((p) => p.reminders !== undefined && p.reminders.length > 0)
+    }
+  )
+
+  function click (ev: MouseEvent): void {
     showPopup(CreateReminder, { attachedTo, attachedToClass, title }, ev.target as HTMLElement)
   }
 
-  const currentUser = getCurrentAccount() as EmployeeAccount
   $: isMobile = $deviceInfo.isMobile
 </script>
 
@@ -39,13 +54,9 @@
   </div>
   <Scroller>
     <div class="px-4 clear-mins">
-      <Table
-        _class={calendar.mixin.Reminder}
-        config={['']}
-        options={{}}
-        query={{ attachedTo, state: 'active', participants: currentUser.employee }}
-        hiddenHeader
-      />
+      {#each events as event}
+        <ReminderPresenter value={event} />
+      {/each}
     </div>
   </Scroller>
 </div>

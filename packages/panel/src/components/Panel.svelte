@@ -96,7 +96,7 @@
 
 <Panel
   bind:isAside
-  isHeader={$$slots.header || isHeader}
+  isHeader={isHeader && $$slots.header}
   bind:panelWidth
   bind:innerWidth
   bind:withoutTitle

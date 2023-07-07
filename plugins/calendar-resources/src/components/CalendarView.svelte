@@ -13,21 +13,32 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Event } from '@hcengineering/calendar'
-  import { Class, Doc, DocumentQuery, FindOptions, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import { Calendar, Event, getAllEvents } from '@hcengineering/calendar'
+  import {
+    Class,
+    Doc,
+    DocumentQuery,
+    FindOptions,
+    Ref,
+    SortingOrder,
+    Space,
+    Timestamp,
+    getCurrentAccount
+  } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import {
     AnyComponent,
-    areDatesEqual,
     Button,
     IconBack,
     IconForward,
     MonthCalendar,
     Scroller,
-    showPopup,
     WeekCalendar,
     YearCalendar,
-    defaultSP
+    areDatesEqual,
+    defaultSP,
+    getMonday,
+    showPopup
   } from '@hcengineering/ui'
   import { BuildModelKey } from '@hcengineering/view'
   import { CalendarMode } from '../index'
@@ -51,53 +62,98 @@
 
   let objects: Event[] = []
 
+  function getFrom (date: Date, mode: CalendarMode): Timestamp {
+    switch (mode) {
+      case CalendarMode.Day: {
+        return new Date(date).setHours(0, 0, 0, 0)
+      }
+      case CalendarMode.Week: {
+        return getMonday(date, mondayStart).setHours(0, 0, 0, 0)
+      }
+      case CalendarMode.Month: {
+        return new Date(new Date(date).setDate(1)).setHours(0, 0, 0, 0)
+      }
+      case CalendarMode.Year: {
+        return new Date(new Date(date).setMonth(0, 1)).setHours(0, 0, 0, 0)
+      }
+    }
+  }
+
+  function getTo (date: Date, mode: CalendarMode): Timestamp {
+    switch (mode) {
+      case CalendarMode.Day: {
+        return new Date(date).setDate(date.getDate() + 1)
+      }
+      case CalendarMode.Week: {
+        const monday = getMonday(date, mondayStart)
+        return new Date(monday.setDate(monday.getDate() + 7)).setHours(0, 0, 0, 0)
+      }
+      case CalendarMode.Month: {
+        return new Date(new Date(date).setMonth(date.getMonth() + 1, 1)).setHours(0, 0, 0, 0)
+      }
+      case CalendarMode.Year: {
+        return new Date(new Date(date).setMonth(12, 1)).setHours(0, 0, 0, 0)
+      }
+    }
+  }
+
+  $: from = getFrom(currentDate, mode)
+  $: to = getTo(currentDate, mode)
+
+  const calendarsQuery = createQuery()
+
+  let calendars: Calendar[] = []
+
+  calendarsQuery.query(calendar.class.Calendar, { createdBy: getCurrentAccount()._id }, (res) => {
+    calendars = res
+  })
+
   const q = createQuery()
 
-  async function update (_class: Ref<Class<Event>>, query: DocumentQuery<Event>, options?: FindOptions<Event>) {
+  async function update (
+    _class: Ref<Class<Event>>,
+    query: DocumentQuery<Event>,
+    from: Timestamp,
+    to: Timestamp,
+    calendars: Calendar[],
+    options?: FindOptions<Event>
+  ) {
     q.query<Event>(
       _class,
-      query,
+      {
+        space: { $in: calendars.map((p) => p._id) },
+        ...query
+      },
       (result) => {
-        objects = result
+        objects = getAllEvents(result, from, to)
       },
       { sort: { date: SortingOrder.Ascending }, ...options }
     )
   }
-  $: update(_class, query, options)
+  $: update(_class, query, from, to, calendars, options)
 
-  function areDatesLess (firstDate: Date, secondDate: Date): boolean {
-    return (
-      firstDate.getFullYear() <= secondDate.getFullYear() &&
-      firstDate.getMonth() <= secondDate.getMonth() &&
-      firstDate.getDate() <= secondDate.getDate()
-    )
+  function inRange (start: Date, end: Date, startPeriod: Date, period: 'day' | 'hour'): boolean {
+    const endPeriod =
+      period === 'day'
+        ? new Date(startPeriod).setDate(startPeriod.getDate() + 1)
+        : new Date(startPeriod).setHours(startPeriod.getHours() + 1)
+    if (end.getTime() - 1 <= startPeriod.getTime()) return false
+    if (start.getTime() >= endPeriod) return false
+
+    return true
   }
 
   function findEvents (events: Event[], date: Date, minutes = false): Event[] {
     return events.filter((it) => {
-      const d1 = new Date(it.date)
-      const d2 = new Date(it.dueDate ?? it.date)
-      const inDays = areDatesLess(d1, date) && areDatesLess(date, d2)
-
-      if (minutes) {
-        if (areDatesEqual(d1, date)) {
-          return (
-            (date.getTime() <= d1.getTime() && d1.getTime() < date.getTime() + 60 * 60 * 1000) ||
-            (d1.getTime() <= date.getTime() && date.getTime() < d2.getTime())
-          )
-        }
-
-        if (areDatesEqual(d2, date)) {
-          return (
-            (date.getTime() < d2.getTime() && d2.getTime() < date.getTime() + 60 * 60 * 1000) ||
-            (d1.getTime() <= date.getTime() && date.getTime() < d2.getTime())
-          )
-        }
-
-        // Somethere in middle
-        return inDays
+      let d1 = new Date(it.date)
+      let d2 = new Date(it.dueDate ?? it.date)
+      if (it.allDay) {
+        if (minutes) return false
+        d1 = new Date(d1.getTime() + new Date().getTimezoneOffset() * 60 * 1000)
+        d2 = new Date(d2.getTime() + new Date().getTimezoneOffset() * 60 * 1000)
+        return inRange(d1, d2, date, minutes ? 'hour' : 'day')
       }
-      return inDays
+      return inRange(d1, d2, date, minutes ? 'hour' : 'day')
     })
   }
 

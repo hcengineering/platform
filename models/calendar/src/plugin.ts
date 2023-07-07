@@ -25,20 +25,22 @@ import { Action, ActionCategory, ViewAction, Viewlet, ViewletDescriptor } from '
 
 export default mergeIds(calendarId, calendar, {
   component: {
+    IntegrationConnect: '' as AnyComponent,
     CreateCalendar: '' as AnyComponent,
     CalendarView: '' as AnyComponent,
-    EditEvent: '' as AnyComponent,
-    ReminderPresenter: '' as AnyComponent,
-    EventPresenter: '' as AnyComponent
+    EventPresenter: '' as AnyComponent,
+    CalendarIntegrationIcon: '' as AnyComponent
   },
   action: {
-    SaveEventReminder: '' as Ref<Action>
+    SaveEventReminder: '' as Ref<Action>,
+    DeleteRecEvent: '' as Ref<Action>
   },
   category: {
     Calendar: '' as Ref<ActionCategory>
   },
   actionImpl: {
-    SaveEventReminder: '' as ViewAction
+    SaveEventReminder: '' as ViewAction,
+    DeleteRecEvent: '' as ViewAction
   },
   string: {
     ApplicationLabelCalendar: '' as IntlString,
@@ -48,7 +50,8 @@ export default mergeIds(calendarId, calendar, {
     State: '' as IntlString,
     CreatedReminder: '' as IntlString,
     ConfigLabel: '' as IntlString,
-    ConfigDescription: '' as IntlString
+    ConfigDescription: '' as IntlString,
+    IntegrationDescr: '' as IntlString
   },
   viewlet: {
     Calendar: '' as Ref<ViewletDescriptor>,

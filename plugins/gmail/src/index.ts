@@ -91,8 +91,7 @@ export default plugin(gmailId, {
     Gmail: '' as Ref<IntegrationType>
   },
   handler: {
-    DisconnectHandler: '' as Handler,
-    ReconnectHandler: '' as Handler
+    DisconnectHandler: '' as Handler
   },
   class: {
     Message: '' as Ref<Class<Message>>,

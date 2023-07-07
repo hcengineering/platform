@@ -29,7 +29,7 @@
     "@hcengineering/core": "^0.6.27",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/recruit": "^0.6.15",
+    "@hcengineering/recruit": "^0.6.16",
     "@hcengineering/view": "^0.6.8",
     "@hcengineering/login": "^0.6.7",
     "@hcengineering/workbench": "^0.6.8",

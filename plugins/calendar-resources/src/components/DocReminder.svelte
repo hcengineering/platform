@@ -35,9 +35,8 @@
       showPopup(SaveEventReminder, { objectId: value._id, objectClass: value._class }, ev.target as HTMLElement)
     } else {
       const currentUser = getCurrentAccount() as EmployeeAccount
-      const current = await client.findOne(calendar.mixin.Reminder, {
+      const current = await client.findOne(calendar.class.Event, {
         attachedTo: value._id,
-        state: 'active',
         participants: currentUser.employee
       })
       if (current === undefined) {

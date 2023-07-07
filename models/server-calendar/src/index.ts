@@ -20,16 +20,33 @@ import core, { Class, Doc } from '@hcengineering/core'
 import serverNotification from '@hcengineering/server-notification'
 import serverCalendar from '@hcengineering/server-calendar'
 import serverCore, { ObjectDDParticipant } from '@hcengineering/server-core'
+import contact from '@hcengineering/contact'
 
 export { serverCalendarId } from '@hcengineering/server-calendar'
 
 export function createModel (builder: Builder): void {
   builder.mixin(calendar.class.Event, core.class.Class, serverNotification.mixin.HTMLPresenter, {
-    presenter: serverCalendar.function.EventHTMLPresenter
+    presenter: serverCalendar.function.ReminderHTMLPresenter
   })
 
   builder.mixin(calendar.class.Event, core.class.Class, serverNotification.mixin.TextPresenter, {
-    presenter: serverCalendar.function.EventTextPresenter
+    presenter: serverCalendar.function.ReminderTextPresenter
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverCalendar.trigger.OnEmployeeAccountCreate,
+    txMatch: {
+      _class: core.class.TxCreateDoc,
+      objectClass: contact.class.EmployeeAccount
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverCalendar.trigger.OnEvent,
+    txMatch: {
+      _class: core.class.TxCollectionCUD,
+      objectClass: calendar.class.Event
+    }
   })
 
   builder.mixin<Class<Doc>, ObjectDDParticipant>(

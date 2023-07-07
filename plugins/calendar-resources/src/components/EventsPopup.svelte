@@ -14,23 +14,11 @@
 -->
 <script lang="ts">
   import type { Event } from '@hcengineering/calendar'
-  import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
-  import { Table } from '@hcengineering/view-resources'
+  import EventPresenter from './EventPresenter.svelte'
 
   export let value: Event[]
-
-  export let _class: Ref<Class<Doc>>
-  export let query: DocumentQuery<Event> = {}
-  export let options: FindOptions<Event> | undefined = undefined
-  export let baseMenuClass: Ref<Class<Event>> | undefined = undefined
-  export let config: string[]
 </script>
 
-<Table
-  {_class}
-  {config}
-  {baseMenuClass}
-  {options}
-  query={{ ...query, _id: { $in: value.map((it) => it._id) } }}
-  loadingProps={{ length: value.length ?? 0 }}
-/>
+{#each value as val}
+  <EventPresenter value={val} />
+{/each}

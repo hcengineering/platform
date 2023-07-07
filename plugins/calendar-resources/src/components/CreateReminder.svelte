@@ -13,23 +13,25 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Calendar, Event, generateEventId } from '@hcengineering/calendar'
   import { Employee, EmployeeAccount } from '@hcengineering/contact'
-  import { Class, DateRangeMode, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
-  import { Card, getClient } from '@hcengineering/presentation'
   import { UserBoxList } from '@hcengineering/contact-resources'
-  import ui, { EditBox, DateRangePresenter } from '@hcengineering/ui'
+  import { Class, DateRangeMode, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
+  import { Card, getClient } from '@hcengineering/presentation'
+  import ui, { DateRangePresenter, EditBox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
 
   export let attachedTo: Ref<Doc>
   export let attachedToClass: Ref<Class<Doc>>
+  export let event: Event | undefined = undefined
   export let title: string = ''
   let _title = title
 
   let value: number | null | undefined = null
   const currentUser = getCurrentAccount() as EmployeeAccount
   let participants: Ref<Employee>[] = [currentUser.employee]
-  const space = calendar.space.PersonalEvents
+  const defaultDuration = 30 * 60 * 1000
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -41,22 +43,18 @@
   async function saveReminder () {
     let date: number | undefined
     if (value != null) date = value
-    // if (value.date !== undefined) {
-    //   date = new Date(value.date).getTime()
-    // } else if (value.shift !== undefined) {
-    //   date = new Date().getTime() + value.shift
-    // }
     if (date === undefined) return
-    const _id = await client.addCollection(calendar.class.Event, space, attachedTo, attachedToClass, 'reminders', {
+    const space = `${getCurrentAccount()._id}_calendar` as Ref<Calendar>
+    await client.addCollection(calendar.class.Event, space, attachedTo, attachedToClass, 'events', {
+      eventId: generateEventId(),
       date,
+      dueDate: date + defaultDuration,
       description: '',
       participants,
-      title: _title
-    })
-
-    await client.createMixin(_id, calendar.class.Event, space, calendar.mixin.Reminder, {
-      shift: 0,
-      state: 'active'
+      title: _title,
+      allDay: false,
+      reminders: [0],
+      access: 'owner'
     })
   }
 </script>
@@ -72,7 +70,6 @@
 >
   <EditBox bind:value={_title} placeholder={calendar.string.Title} kind={'large-style'} autoFocus />
   <svelte:fragment slot="pool">
-    <!-- <TimeShiftPicker title={calendar.string.Date} bind:value direction="after" /> -->
     <DateRangePresenter
       bind:value
       mode={DateRangeMode.DATETIME}

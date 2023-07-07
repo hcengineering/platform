@@ -30,6 +30,7 @@ import core, {
   Ref,
   ServerStorage,
   Space,
+  systemAccountEmail,
   Tx,
   TxCreateDoc,
   TxCUD,
@@ -265,10 +266,11 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     }
   }
 
-  async getTargets (accounts: Ref<Account>[] | undefined): Promise<string[] | undefined> {
-    if (accounts === undefined) return
+  async getTargets (accounts: Ref<Account>[]): Promise<string[]> {
     const users = await this.storage.modelDb.findAll(core.class.Account, { _id: { $in: accounts } })
-    return users.map((p) => p.email)
+    const res = users.map((p) => p.email)
+    res.push(systemAccountEmail)
+    return res
   }
 
   private async getTxTargets (ctx: SessionContext, tx: Tx): Promise<string[] | undefined> {
@@ -278,7 +280,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     if (h.isDerived(tx._class, core.class.TxCUD)) {
       const account = await getUser(this.storage, ctx)
       if (tx.objectSpace === (account._id as string)) {
-        targets = [account.email]
+        targets = [account.email, systemAccountEmail]
       } else {
         const space = this.privateSpaces[tx.objectSpace]
         if (space !== undefined) {
@@ -290,12 +292,8 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
             if (allowed === undefined || !allowed.includes(isSpace ? (cudTx.objectId as Ref<Space>) : tx.objectSpace)) {
               throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
             }
-          } else {
-            if (targets === undefined) {
-              targets = [account.email]
-            } else if (!targets.includes(account.email)) {
-              targets.push(account.email)
-            }
+          } else if (!targets.includes(account.email)) {
+            targets.push(account.email)
           }
         }
       }

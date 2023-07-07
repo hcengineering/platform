@@ -14,32 +14,33 @@
 //
 
 import activity from '@hcengineering/activity'
-import { Calendar, Event, Reminder, calendarId } from '@hcengineering/calendar'
-import { Employee } from '@hcengineering/contact'
+import { Calendar, Event, ReccuringEvent, ReccuringInstance, RecurringRule, calendarId } from '@hcengineering/calendar'
+import { Contact } from '@hcengineering/contact'
 import { DateRangeMode, Domain, IndexKind, Markup, Ref, Timestamp } from '@hcengineering/core'
 import {
   ArrOf,
   Builder,
   Collection,
-  Hidden,
   Index,
-  Mixin,
   Model,
   Prop,
+  ReadOnly,
+  TypeBoolean,
   TypeDate,
   TypeMarkup,
   TypeRef,
   TypeString,
+  TypeTimestamp,
   UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
-import chunter from '@hcengineering/model-chunter'
 import contact from '@hcengineering/model-contact'
 import core, { TAttachedDoc } from '@hcengineering/model-core'
 import { TSpaceWithStates } from '@hcengineering/model-task'
 import view, { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
+import setting from '@hcengineering/setting'
 import calendar from './plugin'
 
 export * from '@hcengineering/calendar'
@@ -50,11 +51,16 @@ export const DOMAIN_CALENDAR = 'calendar' as Domain
 
 @Model(calendar.class.Calendar, core.class.Space)
 @UX(calendar.string.Calendar, calendar.icon.Calendar)
-export class TCalendar extends TSpaceWithStates implements Calendar {}
+export class TCalendar extends TSpaceWithStates implements Calendar {
+  @Prop(TypeString(), calendar.string.HideDetails)
+    hideDetails?: boolean
+}
 
 @Model(calendar.class.Event, core.class.AttachedDoc, DOMAIN_CALENDAR)
 @UX(calendar.string.Event, calendar.icon.Calendar)
 export class TEvent extends TAttachedDoc implements Event {
+  eventId!: string
+
   @Prop(TypeString(), calendar.string.Title)
   @Index(IndexKind.FullText)
     title!: string
@@ -67,6 +73,10 @@ export class TEvent extends TAttachedDoc implements Event {
   @Index(IndexKind.FullText)
     location?: string
 
+  @Prop(TypeBoolean(), calendar.string.AllDay)
+  @ReadOnly()
+    allDay!: boolean
+
   @Prop(TypeDate(DateRangeMode.DATETIME), calendar.string.Date)
     date!: Timestamp
 
@@ -76,28 +86,37 @@ export class TEvent extends TAttachedDoc implements Event {
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
-  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
-    comments?: number
+  @Prop(ArrOf(TypeRef(contact.class.Contact)), calendar.string.Participants)
+    participants!: Ref<Contact>[]
 
-  @Prop(ArrOf(TypeRef(contact.class.Employee)), calendar.string.Participants)
-    participants!: Ref<Employee>[]
+  @Prop(ArrOf(TypeTimestamp()), calendar.string.Reminders)
+    reminders?: number[]
+
+  @Prop(ArrOf(TypeString()), calendar.string.ExternalParticipants)
+    externalParticipants?: string[]
+
+  access!: 'freeBusyReader' | 'reader' | 'writer' | 'owner'
 }
 
-@Mixin(calendar.mixin.Reminder, calendar.class.Event)
-@UX(calendar.string.Reminder, calendar.icon.Calendar)
-export class TReminder extends TEvent implements Reminder {
-  @Prop(TypeDate(DateRangeMode.DATETIME), calendar.string.Shift)
-  @Hidden()
-    shift!: Timestamp
+@Model(calendar.class.ReccuringEvent, calendar.class.Event)
+@UX(calendar.string.ReccuringEvent, calendar.icon.Calendar)
+export class TReccuringEvent extends TEvent implements ReccuringEvent {
+  rules!: RecurringRule[]
+  exdate!: Timestamp[]
+  rdate!: Timestamp[]
+}
 
-  @Prop(TypeString(), calendar.string.State)
-  @Index(IndexKind.Indexed)
-  @Hidden()
-    state!: 'active' | 'done'
+@Model(calendar.class.ReccuringInstance, calendar.class.Event)
+@UX(calendar.string.Event, calendar.icon.Calendar)
+export class TReccuringInstance extends TEvent implements ReccuringInstance {
+  recurringEventId!: Ref<ReccuringEvent>
+  originalStartTime!: number
+  isCancelled?: boolean
+  virtual?: boolean
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TCalendar, TEvent, TReminder)
+  builder.createModel(TCalendar, TReccuringEvent, TReccuringInstance, TEvent)
 
   builder.createDoc(
     workbench.class.Application,
@@ -128,6 +147,20 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
+    setting.class.IntegrationType,
+    core.space.Model,
+    {
+      label: calendar.string.Calendar,
+      description: calendar.string.IntegrationDescr,
+      icon: calendar.component.CalendarIntegrationIcon,
+      createComponent: calendar.component.IntegrationConnect,
+      onDisconnect: calendar.handler.DisconnectHandler,
+      reconnectComponent: calendar.component.IntegrationConnect
+    },
+    calendar.integrationType.Calendar
+  )
+
+  builder.createDoc(
     notification.class.NotificationGroup,
     core.space.Model,
     {
@@ -149,10 +182,8 @@ export function createModel (builder: Builder): void {
       generated: false,
       label: calendar.string.Reminder,
       group: calendar.ids.CalendarNotificationGroup,
-      txClasses: [core.class.TxMixin],
-      field: 'state',
-      txMatch: { 'attributes.state': 'done' },
-      objectClass: calendar.mixin.Reminder,
+      txClasses: [],
+      objectClass: calendar.class.Event,
       allowedForAuthor: true,
       templates: {
         textTemplate: 'Reminder: {doc}',
@@ -171,9 +202,9 @@ export function createModel (builder: Builder): void {
     activity.class.TxViewlet,
     core.space.Model,
     {
-      objectClass: calendar.mixin.Reminder,
+      objectClass: calendar.class.Event,
       icon: calendar.icon.Reminder,
-      txClass: core.class.TxMixin,
+      txClass: core.class.TxUpdateDoc,
       label: calendar.string.Reminder,
       component: calendar.activity.ReminderViewlet,
       display: 'emphasized',
@@ -218,12 +249,28 @@ export function createModel (builder: Builder): void {
     calendar.action.SaveEventReminder
   )
 
-  builder.mixin(calendar.mixin.Reminder, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: calendar.component.ReminderPresenter
-  })
+  createAction(
+    builder,
+    {
+      action: calendar.actionImpl.DeleteRecEvent,
+      override: [view.action.Delete],
+      label: view.string.Delete,
+      icon: view.icon.Delete,
+      keyBinding: ['Meta + Backspace'],
+      category: view.category.General,
+      input: 'any',
+      target: core.class.Doc,
+      context: { mode: ['context', 'browser'], group: 'tools' }
+    },
+    calendar.action.DeleteRecEvent
+  )
 
   builder.mixin(calendar.class.Event, core.class.Class, view.mixin.ObjectEditor, {
     editor: calendar.component.EditEvent
+  })
+
+  builder.mixin(calendar.class.ReccuringInstance, core.class.Class, view.mixin.ObjectEditor, {
+    editor: calendar.component.EditRecEvent
   })
 
   builder.mixin(calendar.class.Event, core.class.Class, view.mixin.ObjectPresenter, {

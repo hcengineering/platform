@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Event } from '@hcengineering/calendar'
-  import { DateRangeMode, Doc } from '@hcengineering/core'
+  import { Event, ReccuringInstance, generateEventId } from '@hcengineering/calendar'
+  import { DateRangeMode, Doc, DocumentUpdate, WithLookup } from '@hcengineering/core'
   import { Panel } from '@hcengineering/panel'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
@@ -27,14 +27,16 @@
     IconMoreH,
     Label,
     ToggleWithLabel,
+    closePopup,
     showPopup
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ContextMenu, ObjectPresenter, getObjectPreview } from '@hcengineering/view-resources'
   import { createEventDispatcher, tick } from 'svelte'
   import calendar from '../plugin'
+  import UpdateRecInstancePopup from './UpdateRecInstancePopup.svelte'
 
-  export let object: Event
+  export let object: WithLookup<ReccuringInstance>
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -64,8 +66,90 @@
   const allDayDuration = 24 * 60 * 60 * 1000
   let duration = object.dueDate - object.date
 
+  async function updatePast (ops: DocumentUpdate<Event>) {
+    const origin = await client.findOne(calendar.class.ReccuringEvent, {
+      eventId: object.recurringEventId,
+      space: object.space
+    })
+    if (origin !== undefined) {
+      await client.addCollection(
+        calendar.class.ReccuringEvent,
+        origin.space,
+        origin.attachedTo,
+        origin.attachedToClass,
+        origin.collection,
+        {
+          ...origin,
+          date: object.date,
+          dueDate: object.dueDate,
+          ...ops,
+          eventId: generateEventId()
+        }
+      )
+      const targetDate = ops.date ?? object.date
+      await client.update(origin, {
+        rules: [{ ...origin.rules[0], endDate: targetDate - 1 }],
+        rdate: origin.rdate.filter((p) => p < targetDate)
+      })
+      const instances = await client.findAll(calendar.class.ReccuringInstance, {
+        recurringEventId: origin.eventId,
+        date: { $gte: targetDate }
+      })
+      for (const instance of instances) {
+        await client.remove(instance)
+      }
+    }
+  }
+
+  async function updateHandler (ops: DocumentUpdate<Event>) {
+    if (object.virtual !== true) {
+      await client.update(object, ops)
+    } else {
+      showPopup(UpdateRecInstancePopup, {}, undefined, async (res) => {
+        if (res !== null) {
+          if (res.mode === 'current') {
+            await client.addCollection(
+              object._class,
+              object.space,
+              object.attachedTo,
+              object.attachedToClass,
+              object.collection,
+              {
+                title: object.title,
+                description: object.description,
+                date: object.date,
+                dueDate: object.dueDate,
+                allDay: object.allDay,
+                participants: object.participants,
+                externalParticipants: object.externalParticipants,
+                originalStartTime: object.originalStartTime,
+                recurringEventId: object.recurringEventId,
+                reminders: object.reminders,
+                location: object.location,
+                eventId: object.eventId,
+                access: 'owner'
+              },
+              object._id
+            )
+          } else if (res.mode === 'all') {
+            const base = await client.findOne(calendar.class.ReccuringEvent, {
+              space: object.space,
+              eventId: object.recurringEventId
+            })
+            if (base !== undefined) {
+              await client.update(base, ops)
+            }
+          } else if (res.mode === 'next') {
+            await updatePast(ops)
+          }
+        }
+        closePopup()
+      })
+    }
+  }
+
   async function updateDate () {
-    await client.update(object, {
+    await updateHandler({
       date: object.date,
       dueDate: object.dueDate,
       allDay: object.allDay
@@ -165,7 +249,7 @@
       <EditBox
         label={calendar.string.Title}
         bind:value={object.title}
-        on:change={() => client.update(object, { title: object.title })}
+        on:change={() => updateHandler({ title: object.title })}
       />
     </div>
     <div class="mb-2">
@@ -173,7 +257,7 @@
         kind={'emphasized'}
         content={object.description}
         on:value={(evt) => {
-          client.update(object, { description: evt.detail })
+          updateHandler({ description: evt.detail })
         }}
         label={calendar.string.Description}
         placeholder={calendar.string.Description}

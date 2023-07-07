@@ -39,6 +39,18 @@
     "CreateEvent": "Create event",
     "EventFor": "Event for: ",
     "ConfigLabel": "Calendar",
-    "ConfigDescription": "Extension to see calendar with Events"
+    "ConfigDescription": "Extension to see calendar with Events",
+    "HideDetails": "Hide details",
+    "ReccuringEvent": "Reccuring event",
+    "ExternalParticipants": "External participants",
+    "IntegrationDescr": "Use Google Calendar integration",
+    "Connect": "Connect",
+    "RedirectGoogle": "You will be redirect to google auth page",
+    "ConnectCalendar": "Connect Google Calendar account",
+    "EditRecEvent": "Edit recurring event",
+    "RemoveRecEvent": "Remove recurring event",
+    "ThisEvent": "This event",
+    "ThisAndNext": "This and following events",
+    "AllEvents": "All events"
   }
 }
