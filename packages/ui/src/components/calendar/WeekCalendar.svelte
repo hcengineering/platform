@@ -36,7 +36,7 @@
     : new Date(new Date(currentDate).setHours(0, 0, 0, 0))
 </script>
 
-<table class="">
+<table>
   <thead class="scroller-thead">
     <tr class="scroller-thead__tr">
       <th><Label label={ui.string.HoursLabel} /></th>
