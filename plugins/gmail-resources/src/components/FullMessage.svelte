@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { SharedMessage } from '@hcengineering/gmail'
+  import { NewMessage, SharedMessage } from '@hcengineering/gmail'
   import Button from '@hcengineering/ui/src/components/Button.svelte'
   import { createEventDispatcher } from 'svelte'
   import { IconArrowLeft, Label, Scroller, tooltip } from '@hcengineering/ui'
@@ -24,6 +24,7 @@
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { Ref } from '@hcengineering/core'
 
   export let currentMessage: SharedMessage
   export let newMessage: boolean
@@ -32,10 +33,16 @@
   $: if (editor) editor.innerHTML = currentMessage.content
 
   const dispatch = createEventDispatcher()
+  const hasError = (currentMessage as unknown as NewMessage)?.status === 'error'
 
   const query = createQuery()
   const client = getClient()
   let attachments: Attachment[] = []
+
+  async function resendMessage (): Promise<void> {
+    const messageId = currentMessage._id as string as Ref<NewMessage>
+    await client.updateDoc(gmail.class.NewMessage, currentMessage.space, messageId, { status: 'new' })
+  }
 
   $: currentMessage._id &&
     query.query(
@@ -72,13 +79,12 @@
     </div>
     <div class="buttons-group small-gap">
       <Button
-        label={currentMessage.status === 'error' ? gmail.string.Resend : gmail.string.Reply}
+        label={hasError ? gmail.string.Resend : gmail.string.Reply}
         size={'small'}
         kind={'accented'}
         on:click={() => {
-          if (currentMessage.status === 'error') {
-            const messageId = currentMessage._id
-            client.updateDoc(gmail.class.NewMessage, currentMessage.space, messageId, { status: 'new' })
+          if (hasError) {
+            resendMessage()
             dispatch('close')
           } else newMessage = true
         }}

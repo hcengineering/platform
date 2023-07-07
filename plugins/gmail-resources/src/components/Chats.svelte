@@ -50,7 +50,7 @@
       status: 'error'
     },
     (res) => {
-      newMessages = res
+      newMessages = res as unknown as Message[]
     },
     { sort: { createdOn: SortingOrder.Descending } }
   )

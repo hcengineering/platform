@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { SharedMessage } from '@hcengineering/gmail'
+  import type { NewMessage, SharedMessage } from '@hcengineering/gmail'
   import { AttachmentsPresenter } from '@hcengineering/attachment-resources'
   import { CheckBox, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -24,7 +24,8 @@
   export let message: SharedMessage
   export let selected: boolean = false
   export let selectable: boolean = false
-  const isError = message?.status === 'error'
+  const isError = (message as unknown as NewMessage)?.status === 'error'
+  const errorMessage = isError ? (message as unknown as NewMessage) : undefined
 
   const dispatch = createEventDispatcher()
 </script>
@@ -60,7 +61,9 @@
     {/if}
     {#if isError}
       <div class="error-color top-divider mt-2 pt-2">
-        Error: {JSON.parse(message.error)?.data?.error_description ?? 'unknown error'}
+        Error: {errorMessage && errorMessage?.error
+          ? JSON.parse(errorMessage.error)?.data?.error_description
+          : undefined ?? 'unknown error'}
       </div>
     {/if}
   </div>
