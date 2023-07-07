@@ -60,6 +60,7 @@
     label === undefined &&
     $$slots.content === undefined &&
     (icon !== undefined || iconRight !== undefined || $$slots.icon || $$slots.iconRight)
+  $: primary = ['accented', 'brand', 'positive', 'negative'].some((p) => p === kind)
 
   onMount(() => {
     if (focus && input) {
@@ -129,7 +130,11 @@
     </div>
   {/if}
   {#if loading}
-    <div class="btn-icon pointer-events-none caption-color spinner" class:resetIconSize>
+    <div
+      class="btn-icon pointer-events-none spinner"
+      class:resetIconSize
+      style:color={primary ? 'var(--accented-button-color)' : 'var(--theme-caption-color)'}
+    >
       <Spinner size={iconSize === 'inline' ? 'inline' : 'small'} />
     </div>
   {/if}

@@ -60,8 +60,7 @@
       color: var(--caption-color);
     }
     &:focus {
-      border: 1px solid var(--accented-button-focused-border);
-      box-shadow: 0 0 0 3px var(--accented-button-outline);
+      box-shadow: 0 0 0 2px var(--accented-button-outline);
       .icon-container {
         color: var(--caption-color);
       }
@@ -70,7 +69,7 @@
     &.selected {
       background-color: var(--menu-bg-select);
       .icon-container {
-        color: var(--caption-color);
+        color: var(--theme-caption-color);
       }
     }
   }

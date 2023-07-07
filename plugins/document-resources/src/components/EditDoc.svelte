@@ -574,7 +574,6 @@
     transition: border-color 0.1s var(--timing-main), box-shadow 0.1s var(--timing-main);
 
     &:focus-within {
-      border-color: var(--accented-button-focused-border);
       box-shadow: 0 0 0 3px var(--accented-button-outline);
     }
   }

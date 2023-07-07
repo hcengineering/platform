@@ -54,16 +54,15 @@
       cursor: pointer;
 
       &:hover {
-        border-color: var(--accented-button-focused-border);
-        box-shadow: 0 0 0 3px var(--accented-button-outline);
+        box-shadow: 0 0 0 2px var(--accented-button-outline);
       }
       &.selected {
         border-color: var(--caption-color);
-        box-shadow: 0 0 0 3px var(--trans-content-20);
+        box-shadow: 0 0 0 2px var(--trans-content-20);
 
         &:hover {
           border-color: var(--system-error-color);
-          box-shadow: 0 0 0 3px var(--trans-content-20);
+          box-shadow: 0 0 0 2px var(--trans-content-20);
         }
       }
     }
