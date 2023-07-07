@@ -59,29 +59,27 @@
   }}
 >
   <span class="an-element__label" class:bold class:title={node}>
-    <div class="flex-row-center">
-      {#if icon && !parent}
-        <div
-          class="an-element__icon"
-          class:indent-2={indent === 'ml-2'}
-          class:indent-4={indent === 'ml-4'}
-          class:indent-8={indent === 'ml-8'}
-        >
-          <Icon {icon} {iconProps} size={'small'} />
-        </div>
-      {/if}
-      <span class="overflow-label">
-        {#if label}<Label {label} />{:else}{title}{/if}
-      </span>
+    {#if icon && !parent}
+      <div
+        class="an-element__icon"
+        class:indent-2={indent === 'ml-2'}
+        class:indent-4={indent === 'ml-4'}
+        class:indent-8={indent === 'ml-8'}
+      >
+        <Icon {icon} {iconProps} size={'small'} />
+      </div>
+    {/if}
+    <span class="overflow-label">
+      {#if label}<Label {label} />{:else}{title}{/if}
+    </span>
 
-      {#if node}
-        <div class="an-element__icon-arrow" class:collapsed>
-          <svg fill="currentColor" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-            <polygon points="11.3,5.8 8,9.1 4.7,5.8 4,6.5 8,10.5 12,6.5 " />
-          </svg>
-        </div>
-      {/if}
-    </div>
+    {#if node}
+      <div class="an-element__icon-arrow" class:collapsed>
+        <svg fill="currentColor" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="11.3,5.8 8,9.1 4.7,5.8 4,6.5 8,10.5 12,6.5 " />
+        </svg>
+      </div>
+    {/if}
   </span>
   {#if node === false}
     <div class="an-element__tool" on:click|preventDefault|stopPropagation={onMenuClick}>

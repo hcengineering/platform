@@ -29,7 +29,7 @@
 
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="antiNav-element" class:selected class:disabled>
+<div class="antiNav-element special" class:selected class:disabled>
   <div
     class="an-element__icon"
     class:indent-2={indent === 'ml-2'}
