@@ -33,7 +33,7 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "intl-messageformat": "^9.7.1"    
+    "intl-messageformat": "^9.7.1"
   },
   "repository": "https://github.com/hcengineering/anticrm",
   "publishConfig": {
