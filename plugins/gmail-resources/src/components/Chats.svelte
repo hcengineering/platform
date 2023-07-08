@@ -31,21 +31,36 @@
   export let newMessage: boolean
   export let enabled: boolean
 
-  let messages: Message[] = []
+  let plainMessages: Message[] = []
+  let newMessages: Message[] = []
+  $: messages = newMessages.concat(plainMessages)
 
   let selected: Set<Ref<SharedMessage>> = new Set<Ref<SharedMessage>>()
   let selectable = false
 
   const messagesQuery = createQuery()
+  const newMessageQuery = createQuery()
 
   const notificationClient = NotificationClientImpl.getClient()
+
+  newMessageQuery.query(
+    gmail.class.NewMessage,
+    {
+      to: channel.value,
+      status: 'error'
+    },
+    (res) => {
+      newMessages = res as unknown as Message[]
+    },
+    { sort: { createdOn: SortingOrder.Descending } }
+  )
 
   function updateMessagesQuery (channelId: Ref<Channel>): void {
     messagesQuery.query(
       gmail.class.Message,
       { attachedTo: channelId },
       (res) => {
-        messages = res
+        plainMessages = res
         notificationClient.read(channelId)
       },
       { sort: { sendOn: SortingOrder.Descending } }
