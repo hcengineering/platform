@@ -1,28 +1,52 @@
 # Changelog
 
-## 0.6.110 (upcoming)
+## 0.6.111 (upcoming)
 
-- UBER-560: filter out current transaction and get mixin
-- UBER-413: Allow extensible navigator model
-- UBER-538: fixed ListView and KanbanView.
-- UBER-509: do not update list of unread right after reading
-- UBER-537: review support in inbox
-- UBER-473: show icon for department
-- UBER-538: update ListView layout. Subissues, related issues.
-- UBER-462: prevent creating existing enum value and disable the button in…
-- Not open docx preview
-- UBER-504: fix presenters on ListItem. Add DeviceSizes.
-- UBER-472: don't update when it's not needed 
-- UBER-472: Fast Keyboard Up/Down enable Jimbo mode for inbox
-- UBER-491: Opening issue from Active on close switch to All issues mode
-- UBER-520: Fix images drag & drop
-- UBER-504: correct display of optional presenters
-- UBER-525: fixed popup logic placement for top 
-- UBER-505: Fix resolve errors in console
-- UBER-526/UBER-523
-- UBER-428: displaying tooltips with a delay
-- UBER-498: replace component shortcut
-- UBER-526: Live reload on language changes.
+## 0.6.110
+
+- UBER-498: replace component shortcut by @ThetaDR in https://github.com/hcengineering/anticrm/pull/3441
+- UBER-428: displaying tooltips with a delay by @SasLord in https://github.com/hcengineering/anticrm/pull/3442
+- UBER-477: Uberflow dependencies by @haiodo in https://github.com/hcengineering/anticrm/pull/3440
+- Enable build cache by @haiodo in https://github.com/hcengineering/anticrm/pull/3446
+- UBER-526/UBER-523 by @haiodo in https://github.com/hcengineering/anticrm/pull/3447
+- UBER-505: Fix resolve errors in console by @haiodo in https://github.com/hcengineering/anticrm/pull/3449
+- UBER-525: fixed popup logic placement for top by @SasLord in https://github.com/hcengineering/anticrm/pull/3448
+- UBER-528: Fix navigation in embedded mode by @haiodo in https://github.com/hcengineering/anticrm/pull/3450
+- Fix build script by @haiodo in https://github.com/hcengineering/anticrm/pull/3451
+- UBER-504: correct display of optional presenters by @SasLord in https://github.com/hcengineering/anticrm/pull/3452
+- UBER-520: Fix images drag & drop by @haiodo in https://github.com/hcengineering/anticrm/pull/3453
+- TSK-1575 by @BykhovDenis in https://github.com/hcengineering/anticrm/pull/3455
+- UBER-491 by @BykhovDenis in https://github.com/hcengineering/anticrm/pull/3456
+- UBER-507: Process undefined in ProjectPresenter and MilestonePresenter by @wazsone in https://github.com/hcengineering/anticrm/pull/3458
+- UBER-472 by @BykhovDenis in https://github.com/hcengineering/anticrm/pull/3457
+- UBER-513: Fix desktop app navigation by @haiodo in https://github.com/hcengineering/anticrm/pull/3459
+- UBER-472: don't update when it's not needed by @ThetaDR in https://github.com/hcengineering/anticrm/pull/3460
+- UBER-504: fix presenters on ListItem. Add DeviceSizes. by @SasLord in https://github.com/hcengineering/anticrm/pull/3463
+- Not open docx preview by @BykhovDenis in https://github.com/hcengineering/anticrm/pull/3462
+- UBER-462: prevent creating existing enum value and disable the button in that case by @ThetaDR in https://github.com/hcengineering/anticrm/pull/3465
+- UBER-538: update ListView layout. Subissues, related issues. by @SasLord in https://github.com/hcengineering/anticrm/pull/3467
+- UBER-536: Fix test stability by @haiodo in https://github.com/hcengineering/anticrm/pull/3466
+- Publish request module by @haiodo in https://github.com/hcengineering/anticrm/pull/3468
+- QFix Notification selection by @haiodo in https://github.com/hcengineering/anticrm/pull/3469
+- channels_dropdown_qfix by @BykhovDenis in https://github.com/hcengineering/anticrm/pull/3470
+- UBER-473: show icon for department by @ThetaDR in https://github.com/hcengineering/anticrm/pull/3472
+- UBER-537: review support in inbox by @ThetaDR in https://github.com/hcengineering/anticrm/pull/3471
+- UBER-509: do not update list of unread right after reading by @ThetaDR in https://github.com/hcengineering/anticrm/pull/3461
+- Fix gmail error by @BykhovDenis in https://github.com/hcengineering/anticrm/pull/3473
+- Fix multiple channels by @BykhovDenis in https://github.com/hcengineering/anticrm/pull/3474
+- UBER-538: fixed ListView and KanbanView. by @SasLord in https://github.com/hcengineering/anticrm/pull/3475
+- fix label by @ThetaDR in https://github.com/hcengineering/anticrm/pull/3476
+- UBER-413: Allow extensible navigator model by @haiodo in https://github.com/hcengineering/anticrm/pull/3477
+- UBER-556: add migration for icons with typo in it by @ThetaDR in https://github.com/hcengineering/anticrm/pull/3478
+- UBER-560: filter out current transaction and get mixin by @ThetaDR in https://github.com/hcengineering/anticrm/pull/3480
+- Add the ability to restrict adding / removing attachments by @s0gorelkov in https://github.com/hcengineering/anticrm/pull/3479
+- UBER-298: Add readonly users option to the UserBoxItems component by @wazsone in https://github.com/hcengineering/anticrm/pull/3481
+- Bump versions properly by @haiodo in https://github.com/hcengineering/anticrm/pull/3483
+- UBER-142: update buttons. Cleaning CSS. by @SasLord in https://github.com/hcengineering/anticrm/pull/3482
+- UBER-573,-574: updated button styles, fixed ListView by @SasLord in https://github.com/hcengineering/anticrm/pull/3484
+- UBER-572: fixed overflow for emoji. by @SasLord in https://github.com/hcengineering/anticrm/pull/3485
+- Publish rpc by @BykhovDenis in https://github.com/hcengineering/anticrm/pull/3487
+- UBER-554: show messages with error and allow resending by @ThetaDR in https://github.com/hcengineering/anticrm/pull/3488
 
   Function translate is updated to pass language, so be aware to use `$themeState.language` to properly use translation.
 
