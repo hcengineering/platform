@@ -86,6 +86,7 @@ npm install -g @microsoft/rush
     rushx run-local confirm-email user1
     ```
 8. Go to http://localhost:8087 to access the platform in **production** mode.  If you want to access the platform in **development** mode, follow these steps:
+   
     a. Change the directory to ./dev/prod.
     ```bash
     cd ./dev/prod
@@ -95,6 +96,7 @@ npm install -g @microsoft/rush
     rushx dev-server
     ```
     c. Go to http://localhost:8080 to access the platform in development mode.
+   
 9. Use `user1` and `1234` as the username and password, respectively, to log in to the platform.
 
 ## Local Environment Limitations
