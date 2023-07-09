@@ -81,9 +81,9 @@
       display: flex;
       visibility: hidden;
       padding: 0.5rem;
-      border: 1px solid var(--divider-color);
+      background-color: var(--theme-comp-header-color);
+      border: 1px solid var(--theme-divider-color);
       border-radius: 0.25rem;
-      background-color: var(--board-bg-color);
     }
 
     .eAttachmentCellMenu {

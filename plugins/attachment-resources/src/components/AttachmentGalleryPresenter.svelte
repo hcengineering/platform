@@ -115,7 +115,7 @@
     border-radius: 0.75rem;
     justify-content: space-between;
     overflow: hidden;
-    border: 1px solid var(--divider-color);
+    border: 1px solid var(--theme-divider-color);
   }
 
   .cellImagePreview {
@@ -123,7 +123,7 @@
     justify-content: center;
     height: 10rem;
     overflow: hidden;
-    background-color: var(--body-color);
+    background-color: var(--theme-bg-color);
     cursor: pointer;
   }
 
@@ -143,10 +143,11 @@
   .cellInfo {
     display: flex;
     flex-direction: row;
-    border-top: 1px solid var(--divider-color);
+    align-items: center;
     padding: 0.75rem;
     height: 4rem;
-    align-items: center;
+    background-color: var(--theme-bg-accent-color);
+    border-top: 1px solid var(--theme-divider-color);
 
     .eCellInfoData {
       display: flex;
@@ -163,14 +164,14 @@
 
     .eCellInfoFilename {
       font-weight: 500;
-      color: var(--accent-color);
+      color: var(--theme-caption-color);
       white-space: nowrap;
       cursor: pointer;
     }
 
     .eCellInfoFilesize {
       font-size: 0.75rem;
-      color: var(--dark-color);
+      color: var(--theme-dark-color);
     }
   }
 
@@ -195,7 +196,7 @@
   .cellMiscPreview:hover + .cellInfo .eCellInfoFilename a // not embedded on preview hover
   {
     text-decoration: underline;
-    color: var(--caption-color);
+    color: var(--theme-caption-color);
   }
   .eCellInfoFilename:active,
   .extensionIcon:active + .eCellInfoData > .eCellInfoFilename, // embedded on extension hover
@@ -205,6 +206,6 @@
   .cellMiscPreview:active + .cellInfo .eCellInfoFilename a // not embedded on preview hover
   {
     text-decoration: underline;
-    color: var(--accent-color);
+    color: var(--theme-caption-color);
   }
 </style>

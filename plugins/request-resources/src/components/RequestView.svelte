@@ -64,7 +64,7 @@
 
 <style lang="scss">
   .container {
-    background-color: var(--body-color);
+    background-color: var(--theme-bg-color);
     padding: 0.5rem 0.75rem 0.75rem;
     min-height: 0;
     border-radius: 0.75rem;

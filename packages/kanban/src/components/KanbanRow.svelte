@@ -134,7 +134,7 @@
     // transition: box-shadow .15s ease-in-out;
 
     // &:hover {
-    //   background-color: var(--board-card-bg-hover);
+    //   background-color: var(--highlight-hover);
     // }
     &.checked {
       background-color: var(--highlight-select);
@@ -161,7 +161,7 @@
       cursor: grab;
     }
     &.dragged {
-      background-color: var(--board-bg-color);
+      background-color: var(--theme-bg-accent-color);
     }
   }
   @keyframes anim-border {

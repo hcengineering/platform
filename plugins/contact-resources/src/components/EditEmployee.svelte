@@ -20,7 +20,7 @@
   import { getResource } from '@hcengineering/platform'
   import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
   import setting, { IntegrationType } from '@hcengineering/setting'
-  import { createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
+  import { createFocusManager, EditBox, FocusHandler, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import { ChannelsDropdown } from '..'
   import contact from '../plugin'
@@ -103,7 +103,7 @@
 
 {#if object !== undefined}
   <div class="flex-row-stretch flex-grow">
-    <div class="mr-8">
+    <div class="flex-no-shrink mr-8">
       {#key object}
         {#if editable}
           <EditableAvatar
@@ -120,60 +120,51 @@
       {/key}
     </div>
     <div class="flex-grow flex-col">
-      <div class="flex-grow flex-col">
-        <div class="name select-text">
-          {#if owner}
-            <EditBox
-              placeholder={contact.string.PersonFirstNamePlaceholder}
-              bind:value={firstName}
-              disabled={!editable}
-              on:change={firstNameChange}
-              focusIndex={1}
-            />
-          {:else}
-            {firstName}
-          {/if}
-        </div>
-        <div class="name select-text">
-          {#if owner}
-            <EditBox
-              placeholder={contact.string.PersonLastNamePlaceholder}
-              bind:value={lastName}
-              on:change={lastNameChange}
-              disabled={!editable}
-              focusIndex={2}
-            />
-          {:else}
-            {lastName}
-          {/if}
-        </div>
-        <div class="name">
-          {#if editable}
-            <EditBox
-              placeholder={contact.string.DisplayName}
-              bind:value={displayName}
-              on:change={changeDisplayName}
-              disabled={!editable}
-              focusIndex={1}
-            />
-          {:else}
-            {displayName}
-          {/if}
-        </div>
-        <div class="location">
-          <AttributeEditor
-            maxWidth="20rem"
-            _class={contact.class.Person}
-            {editable}
-            {object}
-            key="city"
-            focusIndex={3}
+      <div class="name select-text">
+        {#if owner}
+          <EditBox
+            placeholder={contact.string.PersonFirstNamePlaceholder}
+            bind:value={firstName}
+            disabled={!editable}
+            on:change={firstNameChange}
+            focusIndex={1}
           />
-        </div>
+        {:else}
+          {firstName}
+        {/if}
+      </div>
+      <div class="name select-text">
+        {#if owner}
+          <EditBox
+            placeholder={contact.string.PersonLastNamePlaceholder}
+            bind:value={lastName}
+            on:change={lastNameChange}
+            disabled={!editable}
+            focusIndex={2}
+          />
+        {:else}
+          {lastName}
+        {/if}
+      </div>
+      <div class="name">
+        {#if editable}
+          <EditBox
+            placeholder={contact.string.DisplayName}
+            bind:value={displayName}
+            on:change={changeDisplayName}
+            disabled={!editable}
+            focusIndex={1}
+          />
+        {:else}
+          {displayName}
+        {/if}
+      </div>
+      <div class="location">
+        <AttributeEditor maxWidth="20rem" _class={contact.class.Person} {editable} {object} key="city" focusIndex={3} />
       </div>
 
       <div class="separator" />
-      <div class="flex-row-center">
+      <Scroller contentDirection={'horizontal'} padding={'.125rem .125rem .5rem'} stickedScrollBars thinScrollBars>
         {#if channels === undefined}
           <ChannelsEditor
             attachedTo={object._id}
@@ -193,7 +184,7 @@
             shape={'circle'}
           />
         {/if}
-      </div>
+      </Scroller>
     </div>
   </div>
 {/if}

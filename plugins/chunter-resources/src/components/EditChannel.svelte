@@ -45,6 +45,8 @@
 <Panel
   isHeader={false}
   isAside={_class === chunter.class.Channel}
+  on:open
+  on:update
   on:close={() => {
     dispatch('close')
   }}

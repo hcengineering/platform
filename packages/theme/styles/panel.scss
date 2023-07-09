@@ -262,17 +262,6 @@
           box-shadow: var(--popup-aside-shadow);
           transform: translateX(-100%);
           visibility: visible;
-
-          &::after {
-            position: absolute;
-            content: '';
-            top: 0;
-            left: 100%;
-            width: 360px;
-            height: 100%;
-            background-color: var(--board-card-bg-color);
-            border: 1px solid var(--board-card-bg-color);
-          }
         }
       }
 

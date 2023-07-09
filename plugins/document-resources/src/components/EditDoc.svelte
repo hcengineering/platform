@@ -568,7 +568,7 @@
   }
   .emphasized {
     padding: 1rem;
-    background-color: var(--body-color);
+    background-color: var(--theme-bg-color);
     border: 1px solid var(--divider-color);
     border-radius: 0.5rem;
     transition: border-color 0.1s var(--timing-main), box-shadow 0.1s var(--timing-main);

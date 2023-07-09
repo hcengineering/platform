@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { afterUpdate, createEventDispatcher } from 'svelte'
+  import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
   import { deviceOptionsStore as deviceInfo } from '../../'
   import { resizeObserver } from '../resize'
   import Button from './Button.svelte'
@@ -76,6 +76,8 @@
       checkPanel()
     }, 500)
   })
+
+  onMount(() => dispatch('open'))
 </script>
 
 <div

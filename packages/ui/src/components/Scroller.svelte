@@ -29,14 +29,16 @@
   export let fade: FadeOptions = defaultSP
   export let noFade: boolean = true
   export let invertScroll: boolean = false
-  export let horizontal: boolean = false
   export let contentDirection: 'vertical' | 'vertical-reverse' | 'horizontal' = 'vertical'
+  export let horizontal: boolean = contentDirection === 'horizontal'
   export let gap: string | undefined = undefined
   export let noStretch: boolean = autoscroll
   export let buttons: 'normal' | 'union' | false = false
   export let shrink: boolean = false
   export let divScroll: HTMLElement | undefined = undefined
-  export let checkForHeaders = false
+  export let checkForHeaders: boolean = false
+  export let stickedScrollBars: boolean = false
+  export let thinScrollBars: boolean = false
 
   export function scroll (top: number, left?: number, behavior: 'auto' | 'smooth' = 'auto') {
     if (divScroll) {
@@ -458,10 +460,12 @@
   class="scroller-container {orientir} {invertScroll ? 'invert' : 'normal'}"
   class:buttons={buttons === 'normal'}
   class:union={buttons === 'union'}
+  class:sticked={stickedScrollBars}
+  class:thin={thinScrollBars}
   class:shrink
   style:user-select={isScrolling ? 'none' : 'inherit'}
   style:--scroller-header-height={`${(fade.multipler?.top ?? 0) * fz + 2}px`}
-  style:--scroller-footer-height={`${(fade.multipler?.bottom ?? 0) * fz + 2}px`}
+  style:--scroller-footer-height={`${(fade.multipler?.bottom ?? 0) * fz + (stickedScrollBars ? 0 : 2)}px`}
   style:--scroller-left-offset={`${(fade.multipler?.left ?? 0) * fz + 2}px`}
   style:--scroller-right-offset={`${(fade.multipler?.right ?? 0) * fz + (mask !== 'none' ? 12 : 2)}px`}
 >
@@ -815,6 +819,39 @@
         visibility: visible;
         transform: scaleY(1);
       }
+    }
+  }
+
+  .scroller-container.sticked,
+  .scroller-container.thin {
+    .bar,
+    .track {
+      transform-origin: center right;
+    }
+    .bar-horizontal,
+    .track-horizontal {
+      transform-origin: bottom center;
+    }
+  }
+
+  .scroller-container.sticked {
+    .bar,
+    .track {
+      right: 0;
+    }
+    .bar-horizontal,
+    .track-horizontal {
+      bottom: var(--scroller-footer-height, 0);
+    }
+  }
+  .scroller-container.thin {
+    .bar,
+    .track {
+      width: 6px;
+    }
+    .bar-horizontal,
+    .track-horizontal {
+      height: 6px;
     }
   }
 </style>

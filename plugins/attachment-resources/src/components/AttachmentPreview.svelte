@@ -105,9 +105,9 @@
       top: 0.25rem;
       right: 0.25rem;
       padding: 0.25rem;
-      background-color: var(--button-bg-color);
+      background-color: var(--theme-comp-header-color);
+      border: 1px solid var(--theme-divider-color);
       border-radius: 0.75rem;
-      box-shadow: var(--board-card-shadow);
 
       &.conner {
         top: 0;

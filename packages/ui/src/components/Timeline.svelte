@@ -451,7 +451,7 @@
     flex-shrink: 0;
     padding: 0 2.25rem;
     height: 100%;
-    background-color: var(--body-accent);
+    background-color: var(--theme-comp-header-color);
     box-shadow: var(--accent-shadow);
     // z-index: 2;
   }
@@ -460,7 +460,7 @@
     position: relative;
     flex-grow: 1;
     height: 100%;
-    background-color: var(--body-color);
+    background-color: var(--theme-bg-color);
     mask-image: linear-gradient(
       90deg,
       rgba(0, 0, 0, 0) 0,
@@ -542,7 +542,7 @@
   }
   .timeline-background__headers {
     left: 0;
-    background-color: var(--body-accent);
+    background-color: var(--theme-comp-header-color);
   }
   .timeline-background__viewbox,
   .timeline-foreground__viewbox {

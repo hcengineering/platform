@@ -74,7 +74,7 @@
     height: 100vh;
     min-height: 100vh;
     max-height: 100vh;
-    background-color: var(--body-color);
+    background-color: var(--theme-bg-color);
     border-radius: 1.875rem 0 0 1.875rem;
     box-shadow: 0px 3.125rem 7.5rem rgba(0, 0, 0, 0.4);
 

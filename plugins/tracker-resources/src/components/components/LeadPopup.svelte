@@ -39,7 +39,6 @@
   .root {
     display: flex;
     width: 20rem;
-    background-color: var(--board-card-bg-color);
   }
 
   .icon {
@@ -58,7 +57,7 @@
   }
 
   .title {
-    color: var(--content-color);
+    color: var(--theme-caption-color);
     font-weight: 500;
   }
 

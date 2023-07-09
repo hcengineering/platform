@@ -74,7 +74,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      background-color: var(--body-color);
+      background-color: var(--theme-bg-color);
       border-radius: 50%;
 
       span {
@@ -87,7 +87,7 @@
         font-weight: 500;
         line-height: 0.5;
         color: var(--caption-color);
-        background-color: var(--body-accent);
+        background-color: var(--theme-bg-accent-color);
         border-radius: 50%;
       }
     }
@@ -98,7 +98,7 @@
 
     &:hover {
       border: 1px solid var(--button-border-hover);
-      background-color: var(--body-color);
+      background-color: var(--theme-bg-color);
     }
   }
 </style>

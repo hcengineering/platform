@@ -148,7 +148,7 @@
 
     .spaceSelect {
       padding: 0.75rem;
-      background-color: var(--body-color);
+      background-color: var(--theme-bg-color);
       border: 1px solid var(--popup-divider);
       border-radius: 0.75rem;
     }

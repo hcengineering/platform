@@ -18,7 +18,7 @@
   import { getCurrentAccount, Ref } from '@hcengineering/core'
   import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
   import setting, { IntegrationType } from '@hcengineering/setting'
-  import { createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
+  import { createFocusManager, EditBox, FocusHandler, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import contact from '../plugin'
   import ChannelsEditor from './ChannelsEditor.svelte'
@@ -81,7 +81,7 @@
 
 {#if object !== undefined}
   <div class="flex-row-stretch flex-grow">
-    <div class="mr-8">
+    <div class="flex-no-shrink mr-8">
       {#key object}
         <EditableAvatar
           avatar={object.avatar}
@@ -93,30 +93,28 @@
       {/key}
     </div>
     <div class="flex-grow flex-col">
-      <div class="flex-grow flex-col">
-        <div class="name">
-          <EditBox
-            placeholder={contact.string.PersonFirstNamePlaceholder}
-            bind:value={firstName}
-            on:change={firstNameChange}
-            focusIndex={1}
-          />
-        </div>
-        <div class="name">
-          <EditBox
-            placeholder={contact.string.PersonLastNamePlaceholder}
-            bind:value={lastName}
-            on:change={lastNameChange}
-            focusIndex={2}
-          />
-        </div>
-        <div class="location">
-          <AttributeEditor maxWidth="20rem" _class={contact.class.Person} {object} key="city" focusIndex={3} />
-        </div>
+      <div class="name">
+        <EditBox
+          placeholder={contact.string.PersonFirstNamePlaceholder}
+          bind:value={firstName}
+          on:change={firstNameChange}
+          focusIndex={1}
+        />
+      </div>
+      <div class="name">
+        <EditBox
+          placeholder={contact.string.PersonLastNamePlaceholder}
+          bind:value={lastName}
+          on:change={lastNameChange}
+          focusIndex={2}
+        />
+      </div>
+      <div class="location">
+        <AttributeEditor maxWidth="20rem" _class={contact.class.Person} {object} key="city" focusIndex={3} />
       </div>
 
       <div class="separator" />
-      <div class="flex-row-center">
+      <Scroller contentDirection={'horizontal'} padding={'.125rem .125rem .5rem'} stickedScrollBars thinScrollBars>
         <ChannelsEditor
           attachedTo={object._id}
           attachedClass={object._class}
@@ -124,7 +122,7 @@
           shape={'circle'}
           focusIndex={10}
         />
-      </div>
+      </Scroller>
     </div>
   </div>
 {/if}

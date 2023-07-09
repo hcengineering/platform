@@ -745,7 +745,7 @@
   .ref-container .formatPanel {
     margin: -0.5rem -0.25rem 0.5rem;
     padding: 0.375rem;
-    background-color: var(--body-accent);
+    background-color: var(--theme-comp-header-color);
     border-radius: 0.5rem;
     box-shadow: var(--button-shadow);
     z-index: 1;
