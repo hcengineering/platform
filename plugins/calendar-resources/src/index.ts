@@ -33,6 +33,8 @@ import UpdateRecInstancePopup from './components/UpdateRecInstancePopup.svelte'
 import ReminderViewlet from './components/activity/ReminderViewlet.svelte'
 import CalendarIntegrationIcon from './components/icons/Calendar.svelte'
 import calendar from './plugin'
+import contact from '@hcengineering/contact'
+import { deleteObjects } from '@hcengineering/view-resources'
 
 async function saveEventReminder (object: Doc): Promise<void> {
   showPopup(SaveEventReminder, { objectId: object._id, objectClass: object._class })
@@ -87,9 +89,18 @@ async function deleteRecEvent (object: ReccuringInstance): Promise<void> {
       }
     })
   } else {
-    const client = getClient()
-    await client.remove(object)
-    closePopup()
+    showPopup(
+      contact.component.DeleteConfirmationPopup,
+      {
+        object,
+        deleteAction: async () => {
+          const objs = Array.isArray(object) ? object : [object]
+          await deleteObjects(getClient(), objs).catch((err) => console.error(err))
+          closePopup()
+        }
+      },
+      undefined
+    )
   }
 }
 

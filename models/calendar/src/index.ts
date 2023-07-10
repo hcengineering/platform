@@ -259,7 +259,7 @@ export function createModel (builder: Builder): void {
       keyBinding: ['Meta + Backspace'],
       category: view.category.General,
       input: 'any',
-      target: core.class.Doc,
+      target: calendar.class.ReccuringInstance,
       context: { mode: ['context', 'browser'], group: 'tools' }
     },
     calendar.action.DeleteRecEvent
