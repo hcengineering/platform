@@ -141,7 +141,7 @@
 >
   <svelte:fragment slot="utils">
     <div class="p-1">
-      <Button icon={IconMoreH} kind={'transparent'} size={'medium'} on:click={showMenu} />
+      <Button icon={IconMoreH} kind={'ghost'} size={'medium'} on:click={showMenu} />
     </div>
   </svelte:fragment>
 
@@ -190,7 +190,7 @@
         labelNull={ui.string.SelectDate}
         on:change={async (event) => await handleNewStartDate(event.detail)}
         {mode}
-        kind={'secondary'}
+        kind={'regular'}
         size={'large'}
         editable
       />
@@ -202,7 +202,7 @@
         labelNull={calendar.string.DueTo}
         on:change={async (event) => await handleNewDueDate(event.detail)}
         {mode}
-        kind={'secondary'}
+        kind={'regular'}
         size={'large'}
         editable
       />

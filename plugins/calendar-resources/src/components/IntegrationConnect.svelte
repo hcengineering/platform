@@ -61,7 +61,7 @@
   <div class="content">
     <Label label={calendar.string.RedirectGoogle} />
     <div class="footer">
-      <Button label={calendar.string.Connect} kind={'primary'} disabled={connecting} on:click={sendRequest} />
+      <Button label={calendar.string.Connect} kind={'accented'} disabled={connecting} on:click={sendRequest} />
     </div>
   </div>
 </div>
