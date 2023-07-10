@@ -23,7 +23,9 @@
     IconSize,
     Scroller,
     SelectPopup,
-    showPopup
+    showPopup,
+    deviceOptionsStore as deviceInfo,
+    checkAdaptiveMatching
   } from '@hcengineering/ui'
   import { Level } from '@tiptap/extension-heading'
   import { createEventDispatcher } from 'svelte'
@@ -445,14 +447,9 @@
       }
     )
   }
-  $: buttonsGap =
-    buttonSize === 'large' || buttonSize === 'x-large' || buttonSize === 'full'
-      ? 'large-gap'
-      : buttonSize === 'medium'
-        ? 'medium-gap'
-        : buttonSize === 'small'
-          ? 'small-gap'
-          : 'xsmall-gap'
+
+  $: devSize = $deviceInfo.size
+  $: buttonsGap = checkAdaptiveMatching(devSize, 'sm') ? 'small-gap' : 'large-gap'
   $: buttonsHeight =
     buttonSize === 'large' || buttonSize === 'x-large' || buttonSize === 'full'
       ? 'h-6 max-h-6'

@@ -25,7 +25,9 @@
     handler,
     registerFocus,
     showPopup,
-    tooltip
+    tooltip,
+    deviceOptionsStore as deviceInfo,
+    checkAdaptiveMatching
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { Completion } from '../Completion'
@@ -73,6 +75,8 @@
   let isEmpty = true
 
   $: setContent(content)
+  $: devSize = $deviceInfo.size
+  $: shrinkButtons = checkAdaptiveMatching(devSize, 'sm')
 
   function setContent (content: string) {
     textEditor?.setContent(content)
@@ -379,7 +383,7 @@
     {/if}
   </div>
   <div class="flex-between clear-mins" style:margin={'.75rem .75rem 0'}>
-    <div class="buttons-group large-gap">
+    <div class="buttons-group {shrinkButtons ? 'medium-gap' : 'large-gap'}">
       {#each actions as a}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
@@ -395,7 +399,7 @@
       {/each}
     </div>
     {#if extraActions && extraActions.length > 0}
-      <div class="buttons-group large-gap">
+      <div class="buttons-group {shrinkButtons ? 'medium-gap' : 'large-gap'}">
         {#each extraActions as a}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div

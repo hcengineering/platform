@@ -19,7 +19,7 @@ import { IntlString, setMetadata } from '@hcengineering/platform'
 import autolinker from 'autolinker'
 import { writable } from 'svelte/store'
 import { Notification, NotificationPosition, NotificationSeverity, notificationsStore } from '.'
-import { AnyComponent, AnySvelteComponent } from './types'
+import { AnyComponent, AnySvelteComponent, WidthType, deviceSizes } from './types'
 
 /**
  * @public
@@ -63,6 +63,14 @@ export function checkMobile (): boolean {
  */
 export function isSafari (): boolean {
   return navigator.userAgent.toLowerCase().includes('safari/')
+}
+
+/**
+ * @public
+ */
+export function checkAdaptiveMatching (size: WidthType | null, limit: WidthType): boolean {
+  const range = new Set(deviceSizes.slice(0, deviceSizes.findIndex((ds) => ds === limit) + 1))
+  return size !== null ? range.has(size) : false
 }
 
 export function floorFractionDigits (n: number | string, amount: number): number {

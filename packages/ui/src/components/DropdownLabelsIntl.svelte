@@ -27,10 +27,11 @@
 
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let label: IntlString = ui.string.DropdownDefaultLabel
+  export let params: Record<string, any> = {}
   export let items: DropdownIntlItem[]
   export let selected: DropdownIntlItem['id'] | undefined = undefined
   export let disabled: boolean = false
-  export let kind: ButtonKind = 'no-border'
+  export let kind: ButtonKind = 'regular'
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
@@ -86,7 +87,7 @@
     on:click={openPopup}
   >
     <span slot="content" class="overflow-label disabled flex-grow text-left mr-2">
-      <Label label={selectedItem ? selectedItem.label : label} />
+      <Label label={selectedItem ? selectedItem.label : label} {params} />
     </span>
     <svelte:fragment slot="iconRight">
       <DropdownIcon size={'small'} fill={'var(--theme-dark-color)'} />

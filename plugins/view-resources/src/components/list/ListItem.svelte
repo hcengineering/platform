@@ -16,7 +16,7 @@
   import { AnyAttribute, Doc, getObjectValue } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { getClient, updateAttribute } from '@hcengineering/presentation'
-  import { CheckBox, Component, IconCircles, tooltip } from '@hcengineering/ui'
+  import { CheckBox, Component, IconCircles, tooltip, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { AttributeModel } from '@hcengineering/view'
   import { createEventDispatcher, onMount } from 'svelte'
   import view from '../../plugin'
@@ -62,6 +62,8 @@
     if (attribute.isLookup) return
     return (value: any) => onChange(value, docObject, attribute.key, attr)
   }
+
+  $: mobile = $deviceInfo.isMobile
 
   onMount(() => {
     dispatch('on-mount')
@@ -116,16 +118,18 @@
     {@const displayProps = attributeModel.displayProps}
     {#if !groupByKey || displayProps?.excludeByKey !== groupByKey}
       {#if displayProps?.grow}
-        {#each model.filter((p) => p.displayProps?.suffix === true) as attrModel}
-          <ListPresenter
-            {docObject}
-            attributeModel={attrModel}
-            {props}
-            {compactMode}
-            value={getObjectValue(attrModel.key, docObject)}
-            onChange={getOnChange(docObject, attrModel)}
-          />
-        {/each}
+        {#if !(compactMode && mobile)}
+          {#each model.filter((p) => p.displayProps?.suffix === true) as attrModel}
+            <ListPresenter
+              {docObject}
+              attributeModel={attrModel}
+              {props}
+              {compactMode}
+              value={getObjectValue(attrModel.key, docObject)}
+              onChange={getOnChange(docObject, attrModel)}
+            />
+          {/each}
+        {/if}
         <GrowPresenter />
         {#if !compactMode}
           <div class="compression-bar">
@@ -176,6 +180,18 @@
         <IconCircles />
       </div>
       <div class="scroll-box gap-2">
+        {#if mobile}
+          {#each model.filter((p) => p.displayProps?.suffix === true) as attrModel}
+            <ListPresenter
+              {docObject}
+              attributeModel={attrModel}
+              {props}
+              {compactMode}
+              value={getObjectValue(attrModel.key, docObject)}
+              onChange={getOnChange(docObject, attrModel)}
+            />
+          {/each}
+        {/if}
         <div class="compression-bar">
           {#each model.filter((m) => m.displayProps?.compression) as attributeModel, j}
             {@const displayProps = attributeModel.displayProps}

@@ -266,6 +266,7 @@ export interface DropdownTextItem {
 export interface DropdownIntlItem {
   id: string | number
   label: IntlString
+  params?: Record<string, any>
 }
 
 export interface PopupOptions {
@@ -304,6 +305,8 @@ export const issueSP: FadeOptions = { multipler: { top: 2.75, bottom: 0 } }
 export const emojiSP: FadeOptions = { multipler: { top: 1.5, bottom: 0 } }
 
 export type WidthType = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'
+export const deviceSizes: WidthType[] = ['xs', 'sm', 'md', 'lg', 'xl', 'xxl']
+export const deviceWidths = [480, 680, 760, 1024, 1208, -1]
 
 export interface DeviceOptions {
   docWidth: number

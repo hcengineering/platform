@@ -15,9 +15,11 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { tooltip } from '../tooltips'
-  import type { TabItem, IconSize } from '../types'
+  import type { TabItem, IconSize, WidthType, DropdownIntlItem } from '../types'
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
+  import DropdownLabelsIntl from './DropdownLabelsIntl.svelte'
+  import { checkAdaptiveMatching, deviceOptionsStore as deviceInfo } from '..'
 
   export let selected: string | string[] = ''
   export let multiselect: boolean = false
@@ -25,6 +27,7 @@
   export let kind: 'normal' | 'regular' | 'plain' | 'separated' | 'separated-free' = 'normal'
   export let onlyIcons: boolean = false
   export let size: 'small' | 'medium' = 'medium'
+  export let adaptiveShrink: WidthType | null = null
 
   const dispatch = createEventDispatcher()
 
@@ -41,52 +44,72 @@
 
   let iconSize: IconSize
   $: iconSize = onlyIcons ? (size === 'small' ? 'small' : 'medium') : size === 'small' ? 'x-small' : 'small'
+
+  $: devSize = $deviceInfo.size
+  $: adaptive = adaptiveShrink !== null ? checkAdaptiveMatching(devSize, adaptiveShrink) : false
+
+  let ddItems: DropdownIntlItem[]
+  $: ddItems = items.map((it) => ({ id: it.id, label: it.labelIntl, params: it.labelParams } as DropdownIntlItem))
 </script>
 
 {#if items.length > 0}
-  <div class="tablist-container {kind} {size}">
-    {#each items as item, i}
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <div
-        bind:this={tabs[i]}
-        class={kind === 'normal' || kind === 'regular' ? 'button' : 'plain'}
-        class:separated={kind === 'separated' || kind === 'separated-free'}
-        class:free={kind === 'separated-free'}
-        class:onlyIcons
-        class:selected={getSelected(item.id, selected)}
-        data-view={item.tooltip}
-        data-id={`tab-${item.id}`}
-        use:tooltip={{ label: item.tooltip ?? undefined, element: tabs[i] ?? undefined }}
-        on:click={() => {
-          if (multiselect) {
-            if (Array.isArray(selected)) {
-              if (selected.includes(item.id)) selected = selected.filter((it) => it !== item.id)
-              else selected.push(item.id)
-            }
-          } else selected = item.id
-          dispatch('select', item)
-          items = items
-        }}
-      >
-        {#if item.icon}
-          <div class="icon">
-            <Icon icon={item.icon} size={iconSize} fill={item.color ?? 'currentColor'} />
-          </div>
-        {:else if item.color}
-          <div class="color" style:background-color={item.color} />
-        {/if}
-        {#if item.label || item.labelIntl}
-          <span class="overflow-label" class:ml-1-5={item.icon || item.color}>
-            {#if item.label}
-              {item.label}
-            {:else if item.labelIntl}
-              <Label label={item.labelIntl} params={item.labelParams} />
-            {/if}
-          </span>
-        {/if}
-      </div>
-    {/each}
-  </div>
+  {#if adaptive}
+    <DropdownLabelsIntl
+      items={ddItems}
+      {size}
+      selected={Array.isArray(selected) ? selected[0] : selected}
+      on:selected={(e) => {
+        const item = items.filter((it) => it.id === e.detail)[0]
+        if (Array.isArray(selected)) selected[0] = item.id
+        else selected = item.id
+        dispatch('select', item)
+      }}
+    />
+  {:else}
+    <div class="tablist-container {kind} {size}">
+      {#each items as item, i}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <div
+          bind:this={tabs[i]}
+          class={kind === 'normal' || kind === 'regular' ? 'button' : 'plain'}
+          class:separated={kind === 'separated' || kind === 'separated-free'}
+          class:free={kind === 'separated-free'}
+          class:onlyIcons
+          class:selected={getSelected(item.id, selected)}
+          data-view={item.tooltip}
+          data-id={`tab-${item.id}`}
+          use:tooltip={{ label: item.tooltip ?? undefined, element: tabs[i] ?? undefined }}
+          on:click={() => {
+            if (multiselect) {
+              if (Array.isArray(selected)) {
+                if (selected.includes(item.id)) selected = selected.filter((it) => it !== item.id)
+                else selected.push(item.id)
+              }
+            } else selected = item.id
+            dispatch('select', item)
+            items = items
+          }}
+        >
+          {#if item.icon}
+            <div class="icon">
+              <Icon icon={item.icon} size={iconSize} fill={item.color ?? 'currentColor'} />
+            </div>
+          {:else if item.color}
+            <div class="color" style:background-color={item.color} />
+          {/if}
+          {#if item.label || item.labelIntl}
+            <span class="overflow-label" class:ml-1-5={item.icon || item.color}>
+              {#if item.label}
+                {item.label}
+              {:else if item.labelIntl}
+                <Label label={item.labelIntl} params={item.labelParams} />
+              {/if}
+            </span>
+          {/if}
+        </div>
+      {/each}
+    </div>
+  {/if}
 {/if}
 
 <style lang="scss">
