@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Event } from '@hcengineering/calendar'
   import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
-  import { Label, addZero, getPlatformColorForTextDef, themeStore, tooltip } from '@hcengineering/ui'
+  import { Label, addZero, getPlatformColorForTextDef, showPopup, themeStore, tooltip } from '@hcengineering/ui'
   import { BuildModelKey } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
@@ -38,14 +38,11 @@
   const dispatch = createEventDispatcher()
   const eventCount = 3
 
-  $: tip =
-    events.length > 0
-      ? {
-          label: calendar.string.Events,
-          component: EventsPopup,
-          props: { value: events, _class, query, options, baseMenuClass, config }
-        }
-      : undefined
+  $: tip = {
+    label: calendar.string.Events,
+    component: EventsPopup,
+    props: { value: events }
+  }
 </script>
 
 {#if size === 'huge'}
@@ -73,13 +70,24 @@
     >
       {#each events.slice(0, eventCount) as e}
         <div
-          class="overflow-label mt-1 py-1 flex flex-between event"
-          style="background-color: {getPlatformColorForTextDef(e._class, $themeStore.dark).background};"
+          class="overflow-label mt-1 py-1 flex flex-between event cursor-pointer"
+          style="background-color: {getPlatformColorForTextDef(e.space, $themeStore.dark).color};"
+          on:click|stopPropagation|preventDefault={() => {
+            showPopup(
+              e._class === calendar.class.ReccuringInstance
+                ? calendar.component.EditRecEvent
+                : calendar.component.EditEvent,
+              { object: e },
+              'content'
+            )
+          }}
         >
           {e.title}
-          <div>
-            {addZero(new Date(e.date).getHours())}:{addZero(new Date(e.date).getMinutes())}
-          </div>
+          {#if !e.allDay}
+            <div>
+              {addZero(new Date(e.date).getHours())}:{addZero(new Date(e.date).getMinutes())}
+            </div>
+          {/if}
         </div>
       {/each}
       {#if events.length > eventCount}
@@ -92,15 +100,12 @@
 {:else}
   <div class="w-full h-full relative flex-center cell" class:today class:selected class:wrongMonth use:tooltip={tip}>
     {date.getDate()}
-    {#if events.length > 0}
-      <div class="marker" />
-    {/if}
   </div>
 {/if}
 
 <style lang="scss">
   .event {
-    border-radius: 0.5rem;
+    border-radius: 0.25rem;
     padding: 0rem 0.5rem;
     color: var(--accent-color);
   }
@@ -111,7 +116,7 @@
     padding: 0.25rem;
   }
   .cell {
-    border-radius: 0.5rem;
+    border-radius: 0.25rem;
     border: 1px solid transparent;
   }
   .today {

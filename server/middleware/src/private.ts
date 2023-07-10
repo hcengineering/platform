@@ -26,7 +26,8 @@ import core, {
   Ref,
   ServerStorage,
   Tx,
-  TxCUD
+  TxCUD,
+  systemAccountEmail
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { BroadcastFunc, Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
@@ -63,7 +64,7 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
         if (account !== tx.modifiedBy && account !== core.account.System) {
           throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
         }
-        target = [ctx.userEmail]
+        target = [ctx.userEmail, systemAccountEmail]
       }
     }
     const res = await this.provideTx(ctx, tx)

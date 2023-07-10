@@ -39,6 +39,18 @@
     "CreateEvent": "Создать событие",
     "EventFor": "Событие для: ",
     "ConfigLabel": "Календарь",
-    "ConfigDescription": "Расширение для календаря с событиями"
+    "ConfigDescription": "Расширение для календаря с событиями",
+    "ReccuringEvent": "Повторяющиеся событие",
+    "HideDetails": "Скрыть детали",
+    "ExternalParticipants": "Внешние участники",
+    "IntegrationDescr": "Подключить Google Каледнарь",
+    "Connect": "Подключить",
+    "RedirectGoogle": "Вы будете перенаправлены на страницу авторизации Google",
+    "ConnectCalendar": "Подключить Google Каледнарь",
+    "EditRecEvent": "Изменение повторяющегося события",
+    "RemoveRecEvent": "Удаление повторяющегося события",
+    "ThisEvent": "Только это событие",
+    "ThisAndNext": "Это и последующие события",
+    "AllEvents": "Все события"
   }
 }

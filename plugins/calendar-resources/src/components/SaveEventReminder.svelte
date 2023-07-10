@@ -44,9 +44,10 @@
       return
     }
 
-    await client.updateMixin(event._id, event._class, event.space, calendar.mixin.Reminder, {
-      shift,
-      state: 'active'
+    await client.update(event, {
+      $push: {
+        reminders: shift
+      }
     })
   }
 </script>

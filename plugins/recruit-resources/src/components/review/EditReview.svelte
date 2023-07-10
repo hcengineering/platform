@@ -14,7 +14,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import calendar from '@hcengineering/calendar'
   import contact, { Contact } from '@hcengineering/contact'
   import { UserBox } from '@hcengineering/contact-resources'
   import { Hierarchy } from '@hcengineering/core'
@@ -41,8 +40,7 @@
 
   onMount(() => {
     dispatch('open', {
-      ignoreKeys: ['number', 'comments', 'title', 'description', 'verdict'],
-      ignoreMixins: [calendar.mixin.Reminder]
+      ignoreKeys: ['number', 'comments', 'title', 'description', 'verdict']
     })
   })
 

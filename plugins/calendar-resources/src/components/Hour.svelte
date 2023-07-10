@@ -47,7 +47,7 @@
   }
 
   function getHeight (e: Event, date: Date): string {
-    if (e.dueDate !== undefined && new Date(e.dueDate).getHours() === date.getHours()) {
+    if (new Date(e.dueDate).getHours() === date.getHours()) {
       return `${(new Date(e.dueDate).getMinutes() / 60) * 100}%`
     }
     return '100%'
@@ -75,9 +75,10 @@
     return total
   }
 
-  function getStyle (events: Event[], i: number, date: Date): string {
+  function getStyle (events: Event[], i: number, date: Date, dark: boolean): string {
     const e = events[i]
-    let res = `background-color: ${getPlatformColorForTextDef(e._class, $themeStore.dark).background};`
+    const color = getPlatformColorForTextDef(e.space, dark)
+    let res = `background: ${color.color}33; border: 1px solid ${color.color}99; border-left: 0.25rem solid ${color.color}; `
     res += `left: ${getShift(events, i)}rem;`
     if (startCell(e.date, date)) {
       res += ` top: ${getTop(e)};`
@@ -110,7 +111,7 @@
           class:isStart={startCell(e.date, date)}
           class:isEnd={endCell(e.dueDate ?? e.date, date)}
           class:wide
-          style={getStyle(events, i, date)}
+          style={getStyle(events, i, date, $themeStore.dark)}
           on:click|stopPropagation={() => {
             showPanel(view.component.EditDoc, e._id, e._class, 'content')
           }}
@@ -130,13 +131,10 @@
     padding: 0 0.5rem;
     height: 100%;
     border: 1px solid #00000033;
-    width: 1rem;
-    &.wide {
-      width: 5rem;
-      &.isStart {
-        .title {
-          visibility: visible;
-        }
+    width: 100%;
+    &.isStart {
+      .title {
+        visibility: visible;
       }
     }
 
@@ -145,12 +143,12 @@
     }
 
     &.isStart {
-      border-top-left-radius: 0.5rem;
-      border-top-right-radius: 0.5rem;
+      border-top-left-radius: 0.25rem;
+      border-top-right-radius: 0.25rem;
     }
     &.isEnd {
-      border-bottom-left-radius: 0.5rem;
-      border-bottom-right-radius: 0.5rem;
+      border-bottom-left-radius: 0.25rem;
+      border-bottom-right-radius: 0.25rem;
     }
   }
 </style>

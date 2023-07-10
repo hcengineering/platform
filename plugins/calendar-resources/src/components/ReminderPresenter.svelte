@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Reminder } from '@hcengineering/calendar'
+  import { Event } from '@hcengineering/calendar'
   import { getResource } from '@hcengineering/platform'
   import { DateTimeRangePresenter, showPanel, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
 
-  export let value: Reminder
+  export let value: Event
 
   function click (): void {
     showPanel(view.component.EditDoc, value._id, value._class, 'content')
@@ -34,6 +34,10 @@
         {value.title}
       </div>
     {/await}
-    <DateTimeRangePresenter value={value.date + value.shift} />
+    <div class="flex-row-center">
+      {#each value.reminders ?? [] as reminder}
+        <DateTimeRangePresenter value={value.date + reminder} />
+      {/each}
+    </div>
   {/if}
 </div>

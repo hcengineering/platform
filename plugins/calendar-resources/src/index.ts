@@ -13,23 +13,116 @@
 // limitations under the License.
 //
 
-import { Doc } from '@hcengineering/core'
-import { Resources } from '@hcengineering/platform'
-import { showPopup } from '@hcengineering/ui'
+import { ReccuringInstance } from '@hcengineering/calendar'
+import { Doc, TxOperations, concatLink } from '@hcengineering/core'
+import { Resources, getMetadata } from '@hcengineering/platform'
+import presentation, { getClient } from '@hcengineering/presentation'
+import { closePopup, showPopup } from '@hcengineering/ui'
 import CalendarView from './components/CalendarView.svelte'
-import SaveEventReminder from './components/SaveEventReminder.svelte'
+import CreateEvent from './components/CreateEvent.svelte'
 import DateTimePresenter from './components/DateTimePresenter.svelte'
 import DocReminder from './components/DocReminder.svelte'
-import PersonsPresenter from './components/PersonsPresenter.svelte'
-import Events from './components/Events.svelte'
-import ReminderPresenter from './components/ReminderPresenter.svelte'
-import ReminderViewlet from './components/activity/ReminderViewlet.svelte'
 import EditEvent from './components/EditEvent.svelte'
+import EditRecEvent from './components/EditRecEvent.svelte'
 import EventPresenter from './components/EventPresenter.svelte'
-import CreateEvent from './components/CreateEvent.svelte'
+import Events from './components/Events.svelte'
+import IntegrationConnect from './components/IntegrationConnect.svelte'
+import PersonsPresenter from './components/PersonsPresenter.svelte'
+import SaveEventReminder from './components/SaveEventReminder.svelte'
+import UpdateRecInstancePopup from './components/UpdateRecInstancePopup.svelte'
+import ReminderViewlet from './components/activity/ReminderViewlet.svelte'
+import CalendarIntegrationIcon from './components/icons/Calendar.svelte'
+import calendar from './plugin'
+import contact from '@hcengineering/contact'
+import { deleteObjects } from '@hcengineering/view-resources'
 
 async function saveEventReminder (object: Doc): Promise<void> {
   showPopup(SaveEventReminder, { objectId: object._id, objectClass: object._class })
+}
+
+async function deleteRecHandler (res: any, object: ReccuringInstance): Promise<void> {
+  const client = getClient()
+  if (res.mode === 'current') {
+    await client.addCollection(
+      object._class,
+      object.space,
+      object.attachedTo,
+      object.attachedToClass,
+      object.collection,
+      {
+        eventId: object.eventId,
+        title: object.title,
+        description: object.description,
+        date: object.date,
+        dueDate: object.dueDate,
+        allDay: object.allDay,
+        participants: object.participants,
+        externalParticipants: object.externalParticipants,
+        originalStartTime: object.originalStartTime,
+        recurringEventId: object.recurringEventId,
+        reminders: object.reminders,
+        location: object.location,
+        isCancelled: true,
+        access: 'owner'
+      },
+      object._id
+    )
+  } else if (res.mode === 'all') {
+    const base = await client.findOne(calendar.class.ReccuringEvent, {
+      space: object.space,
+      eventId: object.recurringEventId
+    })
+    if (base !== undefined) {
+      await client.remove(base)
+    }
+  } else if (res.mode === 'next') {
+    await removePast(client, object)
+  }
+}
+
+async function deleteRecEvent (object: ReccuringInstance): Promise<void> {
+  if (object.virtual === true) {
+    showPopup(UpdateRecInstancePopup, { label: calendar.string.RemoveRecEvent }, undefined, async (res) => {
+      if (res !== null) {
+        await deleteRecHandler(res, object)
+        closePopup()
+      }
+    })
+  } else {
+    showPopup(
+      contact.component.DeleteConfirmationPopup,
+      {
+        object,
+        deleteAction: async () => {
+          const objs = Array.isArray(object) ? object : [object]
+          await deleteObjects(getClient(), objs).catch((err) => console.error(err))
+          closePopup()
+        }
+      },
+      undefined
+    )
+  }
+}
+
+async function removePast (client: TxOperations, object: ReccuringInstance): Promise<void> {
+  const origin = await client.findOne(calendar.class.ReccuringEvent, {
+    eventId: object.recurringEventId,
+    space: object.space
+  })
+  if (origin !== undefined) {
+    const target = object.date
+    await client.update(origin, {
+      rules: [{ ...origin.rules[0], endDate: target - 1 }],
+      rdate: origin.rdate.filter((p) => p < target)
+    })
+    const instances = await client.findAll(calendar.class.ReccuringInstance, {
+      eventId: origin.eventId,
+      date: { $gte: target }
+    })
+    for (const instance of instances) {
+      await client.remove(instance)
+    }
+  }
 }
 
 export enum CalendarMode {
@@ -42,19 +135,36 @@ export enum CalendarMode {
 export default async (): Promise<Resources> => ({
   component: {
     EditEvent,
-    ReminderPresenter,
+    EditRecEvent,
     PersonsPresenter,
     CalendarView,
     Events,
     DateTimePresenter,
     DocReminder,
     EventPresenter,
-    CreateEvent
+    CreateEvent,
+    IntegrationConnect,
+    CalendarIntegrationIcon
   },
   activity: {
     ReminderViewlet
   },
   actionImpl: {
-    SaveEventReminder: saveEventReminder
+    SaveEventReminder: saveEventReminder,
+    DeleteRecEvent: deleteRecEvent
+  },
+  handler: {
+    DisconnectHandler: async () => {
+      const url = getMetadata(calendar.metadata.CalendarServiceURL)
+      const token = getMetadata(presentation.metadata.Token)
+      if (url === undefined || token === undefined) return
+      await fetch(concatLink(url, '/signout'), {
+        method: 'GET',
+        headers: {
+          Authorization: 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        }
+      })
+    }
   }
 })

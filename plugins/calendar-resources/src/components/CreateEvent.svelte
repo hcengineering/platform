@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Calendar, generateEventId } from '@hcengineering/calendar'
   import { Employee, EmployeeAccount } from '@hcengineering/contact'
-  import { Class, DateRangeMode, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
-  import { Card, getClient } from '@hcengineering/presentation'
   import { UserBoxList } from '@hcengineering/contact-resources'
-  import ui, { EditBox, DateRangePresenter } from '@hcengineering/ui'
-  import { tick } from 'svelte'
-  import { createEventDispatcher } from 'svelte'
+  import { Class, DateRangeMode, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
+  import { Card, getClient } from '@hcengineering/presentation'
+  import ui, { DateRangePresenter, EditBox, ToggleWithLabel } from '@hcengineering/ui'
+  import { createEventDispatcher, tick } from 'svelte'
   import calendar from '../plugin'
 
   export let attachedTo: Ref<Doc> = calendar.ids.NoAttached
@@ -30,16 +30,17 @@
 
   const now = new Date()
   const defaultDuration = 30 * 60 * 1000
+  const allDayDuration = 24 * 60 * 60 * 1000
 
   let startDate =
     date === undefined ? now.getTime() : withTime ? date.getTime() : date.setHours(now.getHours(), now.getMinutes())
   let duration = defaultDuration
   let dueDate = startDate + duration
   let dueDateRef: DateRangePresenter
+  let allDay = false
 
   const currentUser = getCurrentAccount() as EmployeeAccount
   let participants: Ref<Employee>[] = [currentUser.employee]
-  const space = calendar.space.PersonalEvents
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -52,22 +53,23 @@
     let date: number | undefined
     if (startDate != null) date = startDate
     if (date === undefined) return
-    await client.createDoc(calendar.class.Event, space, {
-      attachedTo,
-      attachedToClass,
-      collection: 'events',
-      date,
-      dueDate,
+    const space = `${getCurrentAccount()._id}_calendar` as Ref<Calendar>
+    await client.addCollection(calendar.class.Event, space, attachedTo, attachedToClass, 'events', {
+      eventId: generateEventId(),
+      date: new Date(date).setUTCHours(0, 0, 0, 0),
+      dueDate: new Date(dueDate).setUTCHours(0, 0, 0, 0),
       description: '',
       participants,
-      title
+      title,
+      allDay,
+      access: 'owner'
     })
   }
 
   const handleNewStartDate = async (newStartDate: number | null) => {
     if (newStartDate !== null) {
       startDate = newStartDate
-      dueDate = startDate + duration
+      dueDate = startDate + (allDay ? allDayDuration : duration)
       await tick()
       dueDateRef.adaptValue()
     }
@@ -80,12 +82,14 @@
         dueDate = newDueDate
         duration = diff
       } else {
-        dueDate = startDate + duration
+        dueDate = startDate + (allDay ? allDayDuration : duration)
       }
       await tick()
       dueDateRef.adaptValue()
     }
   }
+
+  $: mode = allDay ? DateRangeMode.DATE : DateRangeMode.DATETIME
 </script>
 
 <Card
@@ -99,12 +103,13 @@
 >
   <EditBox bind:value={title} placeholder={calendar.string.Title} kind={'large-style'} autoFocus />
   <svelte:fragment slot="pool">
+    <ToggleWithLabel bind:on={allDay} label={calendar.string.AllDay} />
     <DateRangePresenter
       value={startDate}
       labelNull={ui.string.SelectDate}
       on:change={async (event) => await handleNewStartDate(event.detail)}
-      mode={DateRangeMode.DATETIME}
       kind={'regular'}
+      {mode}
       size={'large'}
       editable
     />
@@ -113,8 +118,8 @@
       value={dueDate}
       labelNull={calendar.string.DueTo}
       on:change={async (event) => await handleNewDueDate(event.detail)}
-      mode={DateRangeMode.DATETIME}
       kind={'regular'}
+      {mode}
       size={'large'}
       editable
     />

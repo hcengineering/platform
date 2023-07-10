@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Event, Reminder } from '@hcengineering/calendar'
-  import { Ref, TxMixin } from '@hcengineering/core'
+  import { Event } from '@hcengineering/calendar'
+  import { Ref, TxUpdateDoc } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { DateTimePresenter, showPanel } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import calendar from '../../plugin'
 
-  export let tx: TxMixin<Event, Reminder>
+  export let tx: TxUpdateDoc<Event>
 
   const client = getClient()
 

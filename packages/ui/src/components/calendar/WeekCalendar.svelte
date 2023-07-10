@@ -36,7 +36,7 @@
     : new Date(new Date(currentDate).setHours(0, 0, 0, 0))
 </script>
 
-<table class="antiTable">
+<table>
   <thead class="scroller-thead">
     <tr class="scroller-thead__tr">
       <th><Label label={ui.string.HoursLabel} /></th>
@@ -45,7 +45,7 @@
         <th>
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
-            class="antiTable-cells cursor-pointer uppercase flex-col-center"
+            class="cursor-pointer uppercase flex-col-center"
             class:today={areDatesEqual(todayDate, day)}
             on:click={() => {
               dispatch('select', day)
@@ -59,18 +59,15 @@
     </tr>
   </thead>
   <tbody>
-    {#if $$slots.cell}
-      <slot name="header" date={getDay(weekMonday, 0)} days={displayedDaysCount} />
-    {/if}
     {#each [...Array(displayedHours).keys()] as hourOfDay}
-      <tr class="antiTable-body__row">
-        <td style="width: 50px;" class="calendar-td">
-          <div class="antiTable-cells__firstCell">
+      <tr>
+        <td style="width: 50px;" class="calendar-td first">
+          {#if hourOfDay !== 0}
             {addZero(hourOfDay)}:00
-          </div>
+          {/if}
         </td>
         {#each [...Array(displayedDaysCount).keys()] as dayIndex}
-          <td class="antiTable-body__border calendar-td cell" style={`height: ${cellHeight};`}>
+          <td class="calendar-td cell" style={`height: ${cellHeight};`}>
             {#if $$slots.cell}
               <slot name="cell" date={getDay(weekMonday, dayIndex, hourOfDay * 60)} />
             {/if}
@@ -92,14 +89,21 @@
     color: var(--theme-caption-color);
   }
   .calendar-td {
+    &:not(.first) {
+      border: 1px solid var(--theme-table-border-color);
+    }
     padding: 0;
     margin: 0;
+    &.first {
+      display: flex;
+      margin-top: -0.5rem;
+    }
   }
   .cell {
-    overflow: hidden;
+    padding: 2px;
     width: calc(calc(100% - 50px) / 7);
   }
-  .cell:hover:not(.wrongMonth) {
+  .cell:hover {
     color: var(--accented-button-color);
     background-color: var(--highlight-hover);
   }

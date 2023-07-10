@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/recruit",
-  "version": "0.6.15",
+  "version": "0.6.16",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -31,7 +31,7 @@
     "@hcengineering/contact": "^0.6.18",
     "@hcengineering/chunter": "^0.6.9",
     "@hcengineering/task": "^0.6.10",
-    "@hcengineering/calendar": "^0.6.11",
+    "@hcengineering/calendar": "^0.6.12",
     "@hcengineering/ui": "^0.6.10",
     "@hcengineering/tags": "^0.6.11"
   },
