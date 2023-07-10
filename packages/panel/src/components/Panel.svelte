@@ -12,9 +12,9 @@
     // 
     // See the License for the specific language governing permissions and
     // limitations under the License.
-    -->
+-->
 <script lang="ts">
-  import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
+  import { afterUpdate } from 'svelte'
   import { Writable, writable } from 'svelte/store'
 
   import activity from '@hcengineering/activity'
@@ -56,8 +56,6 @@
   let lastScrollHeight: number = -1
   let count: number = 0
 
-  const dispatch = createEventDispatcher()
-
   const waitCount = 10
   const PanelScrollTop: Writable<Record<string, number>> = writable<Record<string, number>>({})
 
@@ -88,18 +86,15 @@
       startScrollHeightCheck()
     }
   })
-
-  onMount(() => {
-    dispatch('open')
-  })
 </script>
 
 <Panel
   bind:isAside
-  isHeader={isHeader && $$slots.header}
+  {isHeader}
   bind:panelWidth
   bind:innerWidth
   bind:withoutTitle
+  on:open
   on:close
   {allowClose}
   {floatAside}

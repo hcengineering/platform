@@ -31,6 +31,7 @@
     deviceOptionsStore as deviceInfo,
     getColorNumberByText,
     getPlatformColorDef,
+    defaultBackground,
     showPopup,
     themeStore
   } from '@hcengineering/ui'
@@ -116,6 +117,10 @@
   let verticalContent: boolean = false
   $: verticalContent = $deviceInfo.isMobile && $deviceInfo.isPortrait
   let btn: HTMLButtonElement
+
+  $: color = selectedState
+    ? getPlatformColorDef(selectedState.color ?? getColorNumberByText(selectedState.name), $themeStore.dark)
+    : undefined
 </script>
 
 <FocusHandler {manager} />
@@ -137,7 +142,7 @@
   </svelte:fragment>
   <StatusControl slot="error" {status} />
   <div class:candidate-vacancy={!verticalContent} class:flex-col={verticalContent}>
-    <div class="flex flex-stretch vacancyList">
+    <div class="vacancyList">
       <ListView count={selected.length}>
         <svelte:fragment slot="item" let:item>
           <ApplicationPresenter value={selected[item]} />
@@ -176,9 +181,8 @@
     {#if states.length > 0}
       <Button
         focusIndex={3}
-        width="min-content"
-        size="small"
-        kind="no-border"
+        width={'min-content'}
+        size={'large'}
         bind:input={btn}
         on:click={() => {
           showPopup(
@@ -196,13 +200,7 @@
       >
         <div slot="content" class="flex-row-center" class:empty={!selectedState}>
           {#if selectedState}
-            <div
-              class="color"
-              style="background-color: {getPlatformColorDef(
-                selectedState.color ?? getColorNumberByText(selectedState.name),
-                $themeStore.dark
-              ).background}"
-            />
+            <div class="color" style:background-color={color?.color ?? defaultBackground($themeStore.dark)} />
             <span class="label overflow-label">{selectedState.name}</span>
           {:else}
             <div class="color" />
@@ -240,23 +238,23 @@
 
   .empty {
     .color {
-      border-color: var(--content-color);
+      border-color: var(--theme-content-color);
     }
     .label {
-      color: var(--content-color);
+      color: var(--theme-content-color);
     }
     &:hover .color {
-      border-color: var(--accent-color);
+      border-color: var(--theme-caption-color);
     }
     &:hover .label {
-      color: var(--accent-color);
+      color: var(--theme-caption-color);
     }
   }
 
   .vacancyList {
     padding: 1rem 1.5rem 1.25rem;
-    background-color: var(--board-card-bg-color);
-    border: 1px solid var(--divider-color);
+    background-color: var(--theme-button-default);
+    border: 1px solid var(--theme-button-border);
     border-radius: 0.5rem;
     transition-property: box-shadow, background-color, border-color;
     transition-timing-function: var(--timing-shadow);
@@ -266,8 +264,6 @@
     min-height: 15rem;
 
     &:hover {
-      background-color: var(--board-card-bg-hover);
-      border-color: var(--button-border-color);
       box-shadow: var(--accent-shadow);
     }
   }

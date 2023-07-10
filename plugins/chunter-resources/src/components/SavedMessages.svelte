@@ -151,7 +151,7 @@
     padding: 2rem;
 
     &:hover {
-      background-color: var(--board-card-bg-hover);
+      background-color: var(--highlight-hover);
     }
 
     .label {

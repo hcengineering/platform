@@ -17,7 +17,7 @@
   export let title: string | undefined = undefined
   export let position: 'start' | 'middle' | 'end' | undefined = undefined
   export let selected = false
-  export let color = 'var(--body-color)'
+  export let color = 'var(--theme-bg-color)'
 
   let clientWidth = 0
 

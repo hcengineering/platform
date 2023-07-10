@@ -764,7 +764,7 @@
     {
       "packageName": "@hcengineering/rpc",
       "projectFolder": "server/rpc",
-      "shouldPublish": false
+      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/pod-front",

@@ -32,7 +32,7 @@
     width: 400px;
     overflow: hidden;
     color: var(--caption-color);
-    background-color: var(--body-color);
+    background-color: var(--theme-bg-color);
     border: 1px solid var(--divider-color);
     border-radius: 6px;
     padding: 10px;

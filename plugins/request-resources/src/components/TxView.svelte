@@ -202,7 +202,7 @@
 
   .emphasized {
     margin-top: 0.5rem;
-    background-color: var(--body-color);
+    background-color: var(--theme-bg-color);
     border: 1px solid var(--divider-color);
     border-radius: 0.5rem;
     padding: 0.75rem 1rem;
