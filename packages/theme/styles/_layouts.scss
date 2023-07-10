@@ -894,7 +894,7 @@ a.no-line {
   &:hover { color: var(--theme-caption-color); }
 }
 
-.background-body-color { background-color: var(--body-color); }
+.background-body-color { background-color: var(--theme-bg-color); }
 .background-accent-bg-color { background-color: var(--accent-bg-color); }
 .background-highlight-select { background-color: var(--highlight-select); }
 .background-highlight-red { background-color: var(--highlight-red); }

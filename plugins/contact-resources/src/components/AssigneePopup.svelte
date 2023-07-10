@@ -224,7 +224,7 @@
 <style lang="scss">
   .plainContainer {
     color: var(--caption-color);
-    background-color: var(--body-color);
+    background-color: var(--theme-bg-color);
     border: 1px solid var(--button-border-color);
     border-radius: 0.25rem;
     box-shadow: none;

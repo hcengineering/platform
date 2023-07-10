@@ -117,7 +117,6 @@
   onMount(() => {
     if (props) fitPopup(props, contentPanel)
   })
-  $: console.log('[!!!] element: ', props?.element)
 </script>
 
 <svelte:window

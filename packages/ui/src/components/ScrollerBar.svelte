@@ -163,7 +163,7 @@
     background-color: var(--scrollbar-bar-color);
     border-radius: 0.125rem;
     opacity: 0;
-    box-shadow: 0 0 1px 1px var(--board-bg-color);
+    box-shadow: 0 0 1px 1px var(--theme-bg-accent-color);
     cursor: pointer;
     z-index: 1;
     transition: all 0.15s;

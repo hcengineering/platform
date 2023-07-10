@@ -52,7 +52,7 @@
         class="state-container"
         class:inline
         class:mr-2={shouldShowName}
-        style="background-color: {color?.color ?? defaultBackground($themeStore.dark)}"
+        style:background-color={color?.color ?? defaultBackground($themeStore.dark)}
         title={shouldShowTooltip ? value.name : undefined}
       />
     {/if}

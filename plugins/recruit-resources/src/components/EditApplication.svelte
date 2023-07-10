@@ -62,7 +62,7 @@
 </script>
 
 {#if object !== undefined && candidate !== undefined}
-  <Scroller horizontal>
+  <Scroller horizontal stickedScrollBars>
     <div class="flex-between min-w-min">
       <div class="card"><CandidateCard {candidate} on:click /></div>
       <div class="flex-center arrows"><ExpandRightDouble /></div>

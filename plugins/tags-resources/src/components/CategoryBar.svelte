@@ -209,14 +209,4 @@
   .categoryElement + .categoryElement {
     margin-left: 0.125rem;
   }
-
-  .header {
-    padding: 0.75rem 0.75rem 0.75rem 2.5rem;
-    background-color: var(--board-bg-color);
-    border-top: 1px solid var(--divider-color);
-
-    .states {
-      max-width: 75%;
-    }
-  }
 </style>

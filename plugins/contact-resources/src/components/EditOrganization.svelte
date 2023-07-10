@@ -18,7 +18,7 @@
   import { getCurrentAccount, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { IntegrationType } from '@hcengineering/setting'
-  import { createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
+  import { createFocusManager, EditBox, FocusHandler, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import contact from '../plugin'
   import ChannelsEditor from './ChannelsEditor.svelte'
@@ -52,7 +52,7 @@
 
 {#if object !== undefined}
   <div class="flex-row-center">
-    <div class="mr-8 flex-center logo">
+    <div class="mr-8 flex-center flex-no-shrink logo">
       <Company size={'large'} />
     </div>
     <div class="flex-grow flex-col">
@@ -65,9 +65,9 @@
         />
       </div>
       <div class="separator" />
-      <div class="flex-row-center">
+      <Scroller contentDirection={'horizontal'} padding={'.125rem .125rem .5rem'} stickedScrollBars thinScrollBars>
         <ChannelsEditor attachedTo={object._id} attachedClass={object._class} {integrations} focusIndex={10} on:click />
-      </div>
+      </Scroller>
     </div>
   </div>
 {/if}

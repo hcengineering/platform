@@ -138,6 +138,7 @@
     .an-element__label { padding-left: .5rem; }
   }
   .an-element__icon {
+    flex-shrink: 0;
     min-width: 1rem;
     color: var(--theme-dark-color);
 
@@ -379,7 +380,7 @@
   height: 1px;
   background-color: var(--theme-divider-color);
 
-  &.dark { background-color: var(--body-accent); }
+  &.dark { background-color: var(--theme-bg-accent-color); }
   &.noMargin { margin: 0; }
   & + & { display: none; }
 }
@@ -528,7 +529,7 @@
 
   &:hover,
   &.focusable:focus-within {
-    // background-color: var(--body-color);
+    // background-color: var(--theme-bg-color);
     border-color: var(--theme-list-divider-color);
   }
 }
@@ -543,17 +544,14 @@
   .description {
     // overflow: hidden;
     padding: 0.75rem;
-    background-color: var(--body-accent);
-    border: 1px solid var(--button-border-color);
+    background-color: var(--theme-bg-color);
+    border: 1px solid var(--theme-divider-color);
     // border-radius: .5rem;
     transition-property: background-color, height;
     transition-duration: .15s;
     transition-timing-function: var(--timing-main);
 
-    .label {
-      color: var(--dark-color);
-      text-shadow: var(--button-shadow);
-    }
+    .label { color: var(--theme-dark-color); }
     .caption {
       display: flex;
       align-items: center;
@@ -567,8 +565,8 @@
 
       font-weight: 500;
       font-size: 1rem;
-      color: var(--caption-color);
-      background: var(--popup-bg-color);
+      color: var(--theme-caption-color);
+      background-color: var(--theme-comp-header-color);
       border: 1px solid transparent;
       border-radius: .125rem;
       transition: margin-bottom .15s var(--timing-main),
@@ -644,9 +642,9 @@
     &:not(:first-child):not(:last-child) { border-top: none; }
 
     &:hover,
-    &:focus-within { background-color: var(--body-color); }
-    // &:focus-within .caption { box-shadow: 0 0 2px 1px var(--primary-edit-border-color); }
-    &:focus-within .caption { border-color: var(--primary-edit-border-color); }
+    &:focus-within { background-color: var(--theme-bg-color); }
+    // &:focus-within .caption { box-shadow: 0 0 2px 1px var(--accented-button-outline); }
+    &:focus-within .caption { border-color: var(--accented-button-outline); }
   }
 }
 

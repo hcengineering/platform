@@ -67,7 +67,7 @@
 * {
   box-sizing: border-box;
   touch-action: manipulation;
-  scrollbar-color: var(--body-accent) var(--board-bg-color);
+  scrollbar-color: var(--theme-comp-header-color) var(--theme-back-color);
   scrollbar-width: none;
   --body-font-size: .875rem;
   --panel-aside-width: 25rem; // 20rem;
