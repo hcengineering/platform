@@ -56,8 +56,8 @@
     const space = `${getCurrentAccount()._id}_calendar` as Ref<Calendar>
     await client.addCollection(calendar.class.Event, space, attachedTo, attachedToClass, 'events', {
       eventId: generateEventId(),
-      date: new Date(date).setUTCHours(0, 0, 0, 0),
-      dueDate: new Date(dueDate).setUTCHours(0, 0, 0, 0),
+      date: allDay ? new Date(date).setUTCHours(0, 0, 0, 0) : date,
+      dueDate: allDay ? new Date(dueDate).setUTCHours(0, 0, 0, 0) : dueDate,
       description: '',
       participants,
       title,
@@ -89,6 +89,20 @@
     }
   }
 
+  async function allDayChangeHandler () {
+    if (allDay) {
+      startDate = new Date(startDate).setUTCHours(0, 0, 0, 0)
+      if (dueDate - startDate < allDayDuration) {
+        dueDate = allDayDuration + startDate
+      }
+      dueDate = new Date(dueDate).setUTCHours(0, 0, 0, 0)
+    } else {
+      dueDate = startDate + defaultDuration
+    }
+    await tick()
+    dueDateRef.adaptValue()
+  }
+
   $: mode = allDay ? DateRangeMode.DATE : DateRangeMode.DATETIME
 </script>
 
@@ -103,7 +117,7 @@
 >
   <EditBox bind:value={title} placeholder={calendar.string.Title} kind={'large-style'} autoFocus />
   <svelte:fragment slot="pool">
-    <ToggleWithLabel bind:on={allDay} label={calendar.string.AllDay} />
+    <ToggleWithLabel bind:on={allDay} label={calendar.string.AllDay} on:change={allDayChangeHandler} />
     <DateRangePresenter
       value={startDate}
       labelNull={ui.string.SelectDate}
