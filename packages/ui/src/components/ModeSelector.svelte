@@ -19,6 +19,7 @@
     items={modeList}
     selected={props.mode}
     kind={'separated'}
+    adaptiveShrink={'sm'}
     on:select={(result) => {
       if (result.detail !== undefined && result.detail.action) result.detail.action()
     }}

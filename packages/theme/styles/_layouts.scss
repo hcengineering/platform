@@ -263,7 +263,7 @@ input.search {
 }
 .justify-between { justify-content: space-between; }
 .justify-start { justify-content: flex-start; }
-.justify-end { justify-content: flex-end; }
+.justify-end { justify-content: flex-end !important; }
 .justify-center { justify-content: center; }
 .justify-stretch { justify-content: stretch; }
 .items-baseline { align-items: baseline; }

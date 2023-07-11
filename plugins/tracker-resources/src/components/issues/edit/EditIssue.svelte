@@ -155,6 +155,7 @@
     isAside={true}
     isSub={false}
     withoutActivity={false}
+    withoutTitle
     {embedded}
     bind:innerWidth
     on:open
@@ -252,15 +253,12 @@
       />
       <Button
         kind={'ghost'}
+        icon={IconMixin}
         selected={showAllMixins}
         on:click={() => {
           showAllMixins = !showAllMixins
         }}
-      >
-        <svelte:fragment slot="icon">
-          <IconMixin size={'small'} />
-        </svelte:fragment>
-      </Button>
+      />
     </svelte:fragment>
 
     <svelte:fragment slot="custom-attributes">

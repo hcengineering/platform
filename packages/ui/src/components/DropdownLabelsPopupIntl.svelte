@@ -50,7 +50,7 @@
             dispatch('close', item.id)
           }}
         >
-          <div class="flex-grow caption-color nowrap"><Label label={item.label} /></div>
+          <div class="flex-grow caption-color nowrap"><Label label={item.label} params={item.params} /></div>
           <div class="check">
             {#if item.id === selected}<IconCheck size={'small'} />{/if}
           </div>

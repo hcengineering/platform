@@ -41,8 +41,8 @@
     &.only-icon { width: 2.75rem; }
   }
 
-  &.iconL:not(.iconR) { padding: 0 1rem 0 .75rem; }
-  &.iconR:not(.iconL) { padding: 0 .75rem 0 1rem; }
+  &.iconL:not(.iconR, .only-icon) { padding: 0 1rem 0 .75rem; }
+  &.iconR:not(.iconL, .only-icon) { padding: 0 .75rem 0 1rem; }
   .btn-icon {
     color: var(--theme-content-color);
     transition: color .15s;
@@ -88,7 +88,10 @@
   &.bs-dashed { border-style: dashed; }
   &.jf-left { justify-content: flex-start; }
   &.jf-center { justify-content: center; }
-  &.only-icon { padding: 0; }
+  &.only-icon {
+    flex-shrink: 0 !important;
+    padding: 0;
+  }
 
   &.regular {
     background-color: var(--theme-button-default);

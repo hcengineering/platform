@@ -2,6 +2,7 @@
   import platform, { addEventListener, getMetadata, OK, PlatformEvent, Status } from '@hcengineering/platform'
   import { onDestroy } from 'svelte'
   import type { AnyComponent, WidthType } from '../../types'
+  import { deviceSizes, deviceWidths } from '../../types'
   // import { applicationShortcutKey } from '../../utils'
   import { getCurrentLocation, location, navigate, locationStorageKeyId } from '../../location'
 
@@ -104,8 +105,6 @@
   let remove: any = null
   const sizes: Record<WidthType, boolean> = { xs: false, sm: false, md: false, lg: false, xl: false, xxl: false }
   const css: Record<WidthType, string> = { xs: '', sm: '', md: '', lg: '', xl: '', xxl: '' }
-  const deviceSizes: WidthType[] = ['xs', 'sm', 'md', 'lg', 'xl', 'xxl']
-  const deviceWidths = [480, 680, 760, 1024, 1208, -1]
   deviceSizes.forEach((ds, i) => {
     if (i === 0) css[ds] = `(max-width: ${deviceWidths[i]}px)`
     else if (i === deviceSizes.length - 1) css[ds] = `(min-width: ${deviceWidths[i - 1]}.01px)`

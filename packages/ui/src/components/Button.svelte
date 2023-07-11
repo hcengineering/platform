@@ -17,7 +17,16 @@
   import { onMount, ComponentType } from 'svelte'
   import { registerFocus } from '../focus'
   import { tooltip } from '../tooltips'
-  import type { AnySvelteComponent, ButtonKind, ButtonShape, ButtonSize, LabelAndProps, IconProps } from '../types'
+  import type {
+    AnySvelteComponent,
+    ButtonKind,
+    ButtonShape,
+    ButtonSize,
+    LabelAndProps,
+    IconProps,
+    WidthType
+  } from '../types'
+  import { checkAdaptiveMatching, deviceOptionsStore as deviceInfo } from '..'
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
   import Spinner from './Spinner.svelte'
@@ -51,6 +60,7 @@
   export let shrink: number = 0
   export let accent: boolean = false
   export let noFocus: boolean = false
+  export let adaptiveShrink: WidthType | null = null
 
   $: iconSize =
     iconProps && iconProps.size !== undefined ? iconProps.size : size && size === 'inline' ? 'inline' : 'small'
@@ -61,6 +71,9 @@
     $$slots.content === undefined &&
     (icon !== undefined || iconRight !== undefined || $$slots.icon || $$slots.iconRight)
   $: primary = ['accented', 'brand', 'positive', 'negative'].some((p) => p === kind)
+
+  $: devSize = $deviceInfo.size
+  $: adaptive = adaptiveShrink !== null ? checkAdaptiveMatching(devSize, adaptiveShrink) : false
 
   onMount(() => {
     if (focus && input) {
@@ -102,7 +115,7 @@
   use:tooltip={showTooltip}
   bind:this={input}
   class="antiButton {kind} {size} jf-{justify} sh-{shape ?? 'no-shape'} bs-{borderStyle}"
-  class:only-icon={iconOnly}
+  class:only-icon={iconOnly || adaptive}
   class:no-focus={noFocus}
   class:accent
   class:highlight
@@ -138,7 +151,7 @@
       <Spinner size={iconSize === 'inline' ? 'inline' : 'small'} />
     </div>
   {/if}
-  {#if label}
+  {#if label && !adaptive}
     <span class="overflow-label label disabled pointer-events-none" class:ml-2={loading}>
       <Label {label} params={labelParams} />
     </span>

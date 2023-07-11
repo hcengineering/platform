@@ -56,6 +56,7 @@
     icon={view.icon.ViewButton}
     label={view.string.View}
     {kind}
+    adaptiveShrink={'sm'}
     showTooltip={{ label: view.string.CustomizeView, direction: 'bottom' }}
     bind:input={btn}
     on:click={clickHandler}

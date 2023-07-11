@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
-  import { deviceOptionsStore as deviceInfo } from '../../'
+  import { deviceOptionsStore as deviceInfo, checkAdaptiveMatching } from '../../'
   import { resizeObserver } from '../resize'
   import Button from './Button.svelte'
   import Scroller from './Scroller.svelte'
@@ -41,7 +41,10 @@
   let asideFloat: boolean = false
   let asideShown: boolean = true
   let fullSize: boolean = false
-  $: twoRows = $deviceInfo.minWidth
+
+  $: devSize = $deviceInfo.size
+  $: twoRows = checkAdaptiveMatching(devSize, 'xs')
+  $: moveUtils = checkAdaptiveMatching(devSize, 'sm')
 
   let oldWidth = ''
   let hideTimer: number | undefined
@@ -109,7 +112,9 @@
         {#if !twoRows && !withoutTitle}<slot name="title" />{/if}
       </div>
       <div class="buttons-group xsmall-gap">
-        <slot name="utils" />
+        {#if !moveUtils}
+          <slot name="utils" />
+        {/if}
         {#if isFullSize || useMaxWidth !== undefined || ($$slots.aside && isAside)}
           <div class="buttons-divider" />
         {/if}
@@ -193,6 +198,11 @@
     {/if}
     {#if $$slots.aside && isAside && asideShown}
       <div class="popupPanel-body__aside" class:float={asideFloat} class:shown={asideShown}>
+        {#if moveUtils}
+          <div class="buttons-group justify-end xsmall-gap" style:margin={'.5rem 2rem 0'}>
+            <slot name="utils" />
+          </div>
+        {/if}
         <slot name="aside" />
       </div>
     {/if}
