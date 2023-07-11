@@ -220,6 +220,7 @@ export const ImageRef = Node.create<ImageOptions>({
         for (let i = 0; i < files.length; i++) {
           const file = files.item(i)
           if (file != null) {
+            result = true
             void opt.attachFile(file).then((id) => {
               if (id !== undefined) {
                 if (id.type.includes('image')) {
@@ -239,18 +240,21 @@ export const ImageRef = Node.create<ImageOptions>({
           }
         }
       }
-      return true
+      return result
     }
     return [
       new Plugin({
         key: new PluginKey('handle-image-paste'),
         props: {
           handlePaste (view, event, slice) {
-            event.preventDefault()
-            event.stopPropagation()
             const dataTransfer = event.clipboardData
             if (dataTransfer !== null) {
-              return handleDrop(view, { pos: view.state.selection.$from.pos, inside: 0 }, dataTransfer)
+              const res = handleDrop(view, { pos: view.state.selection.$from.pos, inside: 0 }, dataTransfer)
+              if (res === true) {
+                event.preventDefault()
+                event.stopPropagation()
+              }
+              return res
             }
           },
           handleDrop (view, event, slice) {
