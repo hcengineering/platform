@@ -104,17 +104,19 @@
 
     if (hierarchy.isDerived(_class, task.class.DoneState)) {
       const targetClass = _class === task.class.WonState ? task.class.WonStateTemplate : task.class.LostStateTemplate
-      await client.addCollection(targetClass, kanban.space, kanban._id, kanban._class, 'doneStatesC', {
+      await client.createDoc(targetClass, kanban.space, {
         ofAttribute: task.attribute.DoneState,
         name: 'New Done State',
-        rank: calcRank(lastOne, undefined)
+        rank: calcRank(lastOne, undefined),
+        attachedTo: kanban._id
       })
     } else {
-      await client.addCollection(task.class.StateTemplate, kanban.space, kanban._id, kanban._class, 'statesC', {
+      await client.createDoc(task.class.StateTemplate, kanban.space, {
         name: 'New State',
         ofAttribute: task.attribute.DoneState,
         color: 9,
-        rank: calcRank(lastOne, undefined)
+        rank: calcRank(lastOne, undefined),
+        attachedTo: kanban._id
       })
     }
   }

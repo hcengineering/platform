@@ -57,19 +57,13 @@
       title: 'New Template'
     })
 
-    await client.addCollection(
-      task.class.StateTemplate,
-      space as Ref<Doc> as Ref<Space>,
-      template,
-      task.class.KanbanTemplate,
-      'statesC',
-      {
-        ofAttribute: task.attribute.State,
-        name: 'New State',
-        color: 9,
-        rank: [...genRanks(1)][0]
-      }
-    )
+    await client.createDoc(task.class.StateTemplate, space as Ref<Doc> as Ref<Space>, {
+      attachedTo: template,
+      ofAttribute: task.attribute.State,
+      name: 'New State',
+      color: 9,
+      rank: [...genRanks(1)][0]
+    })
 
     const ranks = [...genRanks(2)]
     const doneStates = [
@@ -87,18 +81,12 @@
 
     await Promise.all(
       doneStates.map(async (ds) => {
-        await client.addCollection(
-          ds.class,
-          space as Ref<Doc> as Ref<Space>,
-          template,
-          task.class.KanbanTemplate,
-          'doneStatesC',
-          {
-            ofAttribute: task.attribute.DoneState,
-            name: ds.name,
-            rank: ds.rank
-          }
-        )
+        await client.createDoc(ds.class, space as Ref<Doc> as Ref<Space>, {
+          attachedTo: template,
+          ofAttribute: task.attribute.DoneState,
+          name: ds.name,
+          rank: ds.rank
+        })
       })
     )
   }

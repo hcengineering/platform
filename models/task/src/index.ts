@@ -162,10 +162,12 @@ export class TKanbanTemplateSpace extends TSpace implements KanbanTemplateSpace 
   attachedToClass!: Ref<Class<Doc>>
 }
 
-@Model(task.class.StateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN)
-export class TStateTemplate extends TAttachedDoc implements StateTemplate {
+@Model(task.class.StateTemplate, core.class.Doc, DOMAIN_KANBAN)
+export class TStateTemplate extends TDoc implements StateTemplate {
   // We attach to attribute, so we could distinguish between
   ofAttribute!: Ref<Attribute<Status>>
+
+  attachedTo!: Ref<KanbanTemplate>
 
   @Prop(TypeString(), task.string.StateTemplateTitle)
     name!: string
@@ -176,10 +178,12 @@ export class TStateTemplate extends TAttachedDoc implements StateTemplate {
   declare rank: string
 }
 
-@Model(task.class.DoneStateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN)
-export class TDoneStateTemplate extends TAttachedDoc implements DoneStateTemplate {
+@Model(task.class.DoneStateTemplate, core.class.Doc, DOMAIN_KANBAN)
+export class TDoneStateTemplate extends TDoc implements DoneStateTemplate {
   // We attach to attribute, so we could distinguish between
   ofAttribute!: Ref<Attribute<Status>>
+
+  attachedTo!: Ref<KanbanTemplate>
 
   @Prop(TypeString(), task.string.StateTemplateTitle)
     name!: string

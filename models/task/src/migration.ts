@@ -76,25 +76,20 @@ export async function createKanbanTemplate (
   const doneStateRanks = [...genRanks(data.doneStates.length)]
   await Promise.all(
     data.doneStates.map((st, i) =>
-      client.addCollection(
-        st.isWon ? task.class.WonStateTemplate : task.class.LostStateTemplate,
-        data.space,
-        data.kanbanId,
-        task.class.KanbanTemplate,
-        'doneStatesC',
-        {
-          ofAttribute: task.attribute.DoneState,
-          rank: doneStateRanks[i],
-          name: st.name
-        }
-      )
+      client.createDoc(st.isWon ? task.class.WonStateTemplate : task.class.LostStateTemplate, data.space, {
+        rank: doneStateRanks[i],
+        ofAttribute: task.attribute.DoneState,
+        name: st.name,
+        attachedTo: data.kanbanId
+      })
     )
   )
 
   const stateRanks = [...genRanks(data.states.length)]
   await Promise.all(
     data.states.map((st, i) =>
-      client.addCollection(task.class.StateTemplate, data.space, data.kanbanId, task.class.KanbanTemplate, 'statesC', {
+      client.createDoc(task.class.StateTemplate, data.space, {
+        attachedTo: data.kanbanId,
         ofAttribute: task.attribute.State,
         rank: stateRanks[i],
         name: st.name,
