@@ -37,11 +37,7 @@ export function createModel (builder: Builder): void {
     txMatch: {
       _class: core.class.TxCreateDoc,
       objectClass: {
-        $in: [
-          task.class.StateTemplate,
-          task.class.LostStateTemplate,
-          task.class.WonStateTemplate
-        ]
+        $in: [task.class.StateTemplate, task.class.LostStateTemplate, task.class.WonStateTemplate]
       }
     }
   })
