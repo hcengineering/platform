@@ -109,6 +109,13 @@ async function createDefaults (tx: TxOperations): Promise<void> {
   )
 }
 
+async function fixTemplateSpace (tx: TxOperations): Promise<void> {
+  const templateSpace = await tx.findOne(task.class.KanbanTemplateSpace, { _id: board.space.BoardTemplates })
+  if (templateSpace !== undefined && templateSpace?.attachedToClass === undefined) {
+    await tx.update(templateSpace, { attachedToClass: board.class.Board })
+  }
+}
+
 async function migrateLabels (client: MigrationClient): Promise<void> {}
 export const boardOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
@@ -117,5 +124,6 @@ export const boardOperation: MigrateOperation = {
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const ops = new TxOperations(client, core.account.System)
     await createDefaults(ops)
+    await fixTemplateSpace(ops)
   }
 }
