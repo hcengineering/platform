@@ -194,10 +194,6 @@ export class FullTextPushStage implements FullTextPipelineStage {
           if (docCtx.propagateRefsAttributes !== undefined) {
             await this.indexRefAttributes(docCtx.propagateRefsAttributes, doc, elasticDoc, metrics)
           }
-          // Include all parent ref attributes
-          if (docCtx.propagateParentRefsAttributes !== undefined) {
-            await this.indexRefAttributes(docCtx.propagateParentRefsAttributes, doc, elasticDoc, metrics)
-          }
 
           this.checkIntegrity(elasticDoc)
           bulk.push(elasticDoc)
