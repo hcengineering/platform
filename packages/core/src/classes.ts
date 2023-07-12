@@ -424,6 +424,11 @@ export interface FullTextSearchContext extends Class<Doc> {
 
   // Do we need to propagate child value to parent one. Default(true)
   parentPropagate?: boolean
+
+  // Will propagate changes to childs with defined set of references
+  propagateRefsAttributes?: string[]
+  // Will propagate changes to parents with defined set of references
+  propagateParentRefsAttributes?: string[]
 }
 
 /**

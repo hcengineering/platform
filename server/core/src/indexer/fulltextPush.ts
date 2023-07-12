@@ -95,6 +95,33 @@ export class FullTextPushStage implements FullTextPipelineStage {
     return { docs: [], pass: true }
   }
 
+  async indexRefAttributes (
+    attributes: string[],
+    doc: DocIndexState,
+    elasticDoc: IndexedDoc,
+    metrics: MeasureContext
+  ): Promise<void> {
+    for (const attribute in doc.attributes) {
+      const { attr } = extractDocKey(attribute)
+      if (attributes.includes(attr)) {
+        const refs = doc.attributes[attribute].split(',')
+        const refDocs = await metrics.with(
+          'ref-docs',
+          {},
+          async (ctx) =>
+            await this.dbStorage.findAll(ctx, core.class.DocIndexState, {
+              _id: { $in: refs }
+            })
+        )
+        if (refDocs.length > 0) {
+          refDocs.forEach((c) => {
+            updateDoc2Elastic(c.attributes, elasticDoc, c._id)
+          })
+        }
+      }
+    }
+  }
+
   async collect (toIndex: DocIndexState[], pipeline: FullTextPipeline, metrics: MeasureContext): Promise<void> {
     const bulk: IndexedDoc[] = []
 
@@ -162,6 +189,16 @@ export class FullTextPushStage implements FullTextPipelineStage {
             }
           }
 
+          const docCtx = getFullTextContext(pipeline.hierarchy, doc.objectClass)
+          // Include all child ref attributes
+          if (docCtx.propagateRefsAttributes !== undefined) {
+            await this.indexRefAttributes(docCtx.propagateRefsAttributes, doc, elasticDoc, metrics)
+          }
+          // Include all parent ref attributes
+          if (docCtx.propagateParentRefsAttributes !== undefined) {
+            await this.indexRefAttributes(docCtx.propagateParentRefsAttributes, doc, elasticDoc, metrics)
+          }
+
           this.checkIntegrity(elasticDoc)
           bulk.push(elasticDoc)
         } catch (err: any) {
@@ -212,6 +249,7 @@ export function createElasticDoc (upd: DocIndexState): IndexedDoc {
   }
   return doc
 }
+
 function updateDoc2Elastic (attributes: Record<string, any>, doc: IndexedDoc, docIdOverride?: Ref<DocIndexState>): void {
   for (const [k, v] of Object.entries(attributes)) {
     if (v == null) {
