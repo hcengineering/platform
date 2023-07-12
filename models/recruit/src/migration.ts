@@ -148,7 +148,8 @@ async function createSpaces (tx: TxOperations): Promise<void> {
         editor: recruit.component.VacancyTemplateEditor,
         private: false,
         members: [],
-        archived: false
+        archived: false,
+        attachedToClass: recruit.class.Vacancy
       },
       recruit.space.VacancyTemplates
     )

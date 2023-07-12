@@ -149,7 +149,9 @@ export class TKanban extends TDoc implements Kanban {
 }
 
 @Model(task.class.SpaceWithStates, core.class.Space)
-export class TSpaceWithStates extends TSpace {}
+export class TSpaceWithStates extends TSpace {
+  templateId!: Ref<KanbanTemplate>
+}
 
 @Model(task.class.KanbanTemplateSpace, core.class.Space)
 export class TKanbanTemplateSpace extends TSpace implements KanbanTemplateSpace {
@@ -157,6 +159,7 @@ export class TKanbanTemplateSpace extends TSpace implements KanbanTemplateSpace 
   description!: IntlString
   icon!: AnyComponent
   editor!: AnyComponent
+  attachedToClass!: Ref<Class<Doc>>
 }
 
 @Model(task.class.StateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN)

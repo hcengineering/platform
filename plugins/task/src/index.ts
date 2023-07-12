@@ -45,7 +45,9 @@ export interface DocWithRank extends Doc {
 /**
  * @public
  */
-export interface SpaceWithStates extends Space {}
+export interface SpaceWithStates extends Space {
+  templateId?: Ref<KanbanTemplate>
+}
 
 // S T A T E
 
@@ -159,6 +161,7 @@ export interface KanbanTemplateSpace extends Space {
   description: IntlString
   icon: AnyComponent
   editor?: AnyComponent
+  attachedToClass: Ref<Class<Doc>>
 }
 
 /**

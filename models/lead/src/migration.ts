@@ -53,7 +53,8 @@ async function createSpace (tx: TxOperations): Promise<void> {
         icon: lead.component.TemplatesIcon,
         private: false,
         members: [],
-        archived: false
+        archived: false,
+        attachedToClass: lead.class.Funnel
       },
       lead.space.FunnelTemplates
     )

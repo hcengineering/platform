@@ -52,7 +52,8 @@ async function createSpace (tx: TxOperations): Promise<void> {
         icon: board.component.TemplatesIcon,
         private: false,
         archived: false,
-        members: []
+        members: [],
+        attachedToClass: board.class.Board
       },
       board.space.BoardTemplates
     )
