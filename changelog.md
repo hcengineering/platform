@@ -1,6 +1,15 @@
 # Changelog
 
-## 0.6.111 (upcoming)
+## 0.6.112 (upcoming)
+
+## 0.6.111
+
+- UBER-524: cleaned CSS, UI fixes. by @SasLord in https://github.com/hcengineering/anticrm/pull/3491
+- UBER-535 by @BykhovDenis in https://github.com/hcengineering/anticrm/pull/3486
+- Fix create event time by @BykhovDenis in https://github.com/hcengineering/anticrm/pull/3493
+- TSK-336: mobile UI adaptation by @SasLord in https://github.com/hcengineering/anticrm/pull/3492
+- UBER-581 by @BykhovDenis in https://github.com/hcengineering/anticrm/pull/3494
+- ATS-9: update states once template updates by @ThetaDR in https://github.com/hcengineering/anticrm/pull/3496
 
 ## 0.6.110
 
