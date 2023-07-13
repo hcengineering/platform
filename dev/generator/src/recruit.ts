@@ -158,7 +158,7 @@ async function genApplicant (
   const applicant: AttachedData<Applicant> = {
     number: faker.datatype.number(),
     assignee: faker.random.arrayElement(emoloyeeIds),
-    state: faker.random.arrayElement(states),
+    status: faker.random.arrayElement(states),
     doneState: null,
     rank: rank as string,
     startDate: null,
@@ -201,7 +201,7 @@ async function genApplicant (
         recruit.class.Applicant,
         'applications',
         {
-          state: faker.random.arrayElement(states)
+          status: faker.random.arrayElement(states)
         }
       )
     )

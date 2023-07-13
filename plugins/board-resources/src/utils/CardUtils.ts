@@ -16,7 +16,7 @@ import board from '../plugin'
 export async function createCard (
   client: Client,
   space: Ref<Space>,
-  state: Ref<State>,
+  status: Ref<State>,
   attribues: Partial<AttachedData<Card>>
 ): Promise<Ref<Card>> {
   const sequence = await client.findOne(task.class.Sequence, { attachedTo: board.class.Card })
@@ -29,7 +29,7 @@ export async function createCard (
 
   const value: AttachedData<Card> = {
     title: '',
-    state,
+    status,
     doneState: null,
     startDate: null,
     dueDate: null,

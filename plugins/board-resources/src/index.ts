@@ -44,7 +44,7 @@ async function ConvertToCard (object: TodoItem): Promise<void> {
   const client = getClient()
   const todoItemCard = await getCardFromTodoItem(client, object)
   if (todoItemCard === undefined) return
-  await createCard(client, todoItemCard.space, todoItemCard.state, {
+  await createCard(client, todoItemCard.space, todoItemCard.status, {
     title: object.name,
     assignee: object.assignee,
     dueDate: object.dueTo

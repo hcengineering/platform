@@ -50,13 +50,13 @@
   async function move (doc: Doc): Promise<void> {
     const needStates = currentSpace ? hierarchy.isDerived(currentSpace._class, task.class.SpaceWithStates) : false
     if (needStates) {
-      const state = await client.findOne(task.class.State, { space: doc.space })
-      if (state === undefined) {
-        throw new Error('Move: state not found')
+      const status = await client.findOne(task.class.State, { space: doc.space })
+      if (status === undefined) {
+        throw new Error('Move: status not found')
       }
       const lastOne = await client.findOne((doc as Task)._class, {}, { sort: { rank: SortingOrder.Descending } })
       await moveToSpace(client, doc, space, {
-        state: state._id,
+        status: status._id,
         rank: calcRank(lastOne, undefined)
       })
     } else {

@@ -78,7 +78,7 @@
   $: _candidate = candidate
 
   const doc: Applicant = {
-    state: '' as Ref<State>,
+    status: '' as Ref<State>,
     doneState: null,
     number: 0,
     assignee,
@@ -142,7 +142,7 @@
       'applications',
       {
         ...doc,
-        state: state._id,
+        status: state._id,
         doneState: null,
         number: (incResult as any).object.sequence,
         assignee: doc.assignee,

@@ -125,7 +125,7 @@
     }
   )
   $: listProvider.update(cards)
-  $: groupByDocs = groupBy(cards, 'state')
+  $: groupByDocs = groupBy(cards, 'status')
 
   const getUpdateProps = (doc: Doc, category: CategoryType): DocumentUpdate<DocWithRank> | undefined => {
     const groupValue =

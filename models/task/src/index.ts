@@ -15,6 +15,8 @@
 
 import type { Employee } from '@hcengineering/contact'
 import contact from '@hcengineering/contact'
+import attachment from '@hcengineering/model-attachment'
+import chunter from '@hcengineering/model-chunter'
 import { Arr, Attribute, Class, Doc, Domain, IndexKind, Ref, Space, Status, Timestamp } from '@hcengineering/core'
 import {
   Builder,
@@ -88,8 +90,8 @@ export class TLostState extends TDoneState implements LostState {}
 @Model(task.class.Task, core.class.AttachedDoc, DOMAIN_TASK)
 @UX(task.string.Task, task.icon.Task, task.string.Task)
 export class TTask extends TAttachedDoc implements Task {
-  @Prop(TypeRef(task.class.State), task.string.TaskState, { _id: task.attribute.State })
-    state!: Ref<State>
+  @Prop(TypeRef(core.class.Status), task.string.TaskState, { _id: task.attribute.State })
+    status!: Ref<Status>
 
   @Prop(TypeRef(task.class.DoneState), task.string.TaskStateDone, { _id: task.attribute.DoneState })
     doneState!: Ref<DoneState> | null
@@ -105,13 +107,16 @@ export class TTask extends TAttachedDoc implements Task {
   @Prop(TypeDate(), task.string.DueDate, { editor: task.component.DueDateEditor })
     dueDate!: Timestamp | null
 
-  @Prop(TypeDate(), task.string.StartDate)
-    startDate!: Timestamp | null
-
   declare rank: string
 
   @Prop(Collection(tags.class.TagReference, task.string.TaskLabels), task.string.TaskLabels)
-    labels!: number
+    labels?: number
+
+  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
+    comments?: number
+
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
+    attachments?: number
 }
 
 @Model(task.class.TodoItem, core.class.AttachedDoc, DOMAIN_TASK)

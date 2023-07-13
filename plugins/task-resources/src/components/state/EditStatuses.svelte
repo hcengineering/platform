@@ -63,7 +63,7 @@
     if (hierarchy.isDerived(state._class, task.class.DoneState)) {
       query = { doneState: state._id }
     } else {
-      query = { state: state._id }
+      query = { status: state._id }
     }
 
     const objectsInThisState = await client.findAll(containingClass, query)

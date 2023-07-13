@@ -15,11 +15,11 @@
 //
 
 import type { Contact } from '@hcengineering/contact'
-import type { Class, Doc, Ref } from '@hcengineering/core'
+import type { Class, Doc, Ref, Timestamp } from '@hcengineering/core'
 import { Mixin } from '@hcengineering/core'
 import type { Asset, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@hcengineering/task'
+import type { KanbanTemplateSpace, SpaceWithStates, State, Task } from '@hcengineering/task'
 
 /**
  * @public
@@ -44,11 +44,9 @@ export interface Customer extends Contact {
  */
 export interface Lead extends Task {
   attachedTo: Ref<Customer>
-
+  status: Ref<State>
+  startDate: Timestamp | null
   title: string
-
-  comments?: number
-  attachments?: number
 }
 
 /**

@@ -69,7 +69,7 @@
     const op = client.apply('application.states')
 
     for (const a of selected) {
-      await moveToSpace(op, a, _space, { state: state._id, doneState: null })
+      await moveToSpace(op, a, _space, { status: state._id, doneState: null })
     }
     await op.commit()
     loading = false

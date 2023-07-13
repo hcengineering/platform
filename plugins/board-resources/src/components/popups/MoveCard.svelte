@@ -19,7 +19,7 @@
   let status: Status = OK
   const selected = {
     space: value.space,
-    state: value.state,
+    status: value.status,
     rank: value.rank
   }
 
@@ -30,7 +30,7 @@
       update.space = selected.space
     }
 
-    if (selected.state !== value.state) update.state = selected.state
+    if (selected.status !== value.status) update.status = selected.status
     if (selected.rank !== value.rank) update.rank = selected.rank
     client.update(value, update)
     dispatch('close')
@@ -60,7 +60,7 @@
 
 <Popup
   label={board.string.MoveCard}
-  canSave={status === OK && (value.state !== selected.state || value.rank !== selected.rank)}
+  canSave={status === OK && (value.status !== selected.status || value.rank !== selected.rank)}
   okAction={move}
   okLabel={board.string.Move}
   on:close={() => {
@@ -82,15 +82,15 @@
       <Label label={board.string.List} />
     </div>
     {#key selected.space}
-      <StateSelect label={board.string.List} object={value} space={selected.space} bind:selected={selected.state} />
+      <StateSelect label={board.string.List} object={value} space={selected.space} bind:selected={selected.status} />
     {/key}
   </div>
   <div class="w-full flex ml-2">
     <div style:flex-basis="10%" class="text-md">
       <Label label={board.string.Position} />
     </div>
-    {#key selected.state}
-      <RankSelect label={board.string.Position} object={value} state={selected.state} bind:selected={selected.rank} />
+    {#key selected.status}
+      <RankSelect label={board.string.Position} object={value} state={selected.status} bind:selected={selected.rank} />
     {/key}
   </div>
 </Popup>

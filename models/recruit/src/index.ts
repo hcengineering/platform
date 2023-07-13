@@ -55,6 +55,7 @@ import {
   recruitId
 } from '@hcengineering/recruit'
 import setting from '@hcengineering/setting'
+import { State } from '@hcengineering/task'
 import { KeyBinding, ViewOptionsModel } from '@hcengineering/view'
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
@@ -158,14 +159,14 @@ export class TApplicant extends TTask implements Applicant {
   @Index(IndexKind.Indexed)
   declare space: Ref<Vacancy>
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
-    attachments?: number
-
-  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
-    comments?: number
+  @Prop(TypeDate(), task.string.StartDate)
+    startDate!: Timestamp | null
 
   @Prop(TypeRef(contact.class.Employee), recruit.string.AssignedRecruiter)
   declare assignee: Ref<Employee> | null
+
+  @Prop(TypeRef(task.class.State), task.string.TaskState, { _id: task.attribute.State })
+  declare status: Ref<State>
 }
 
 @Model(recruit.class.ApplicantMatch, core.class.AttachedDoc, DOMAIN_TASK)
@@ -425,7 +426,7 @@ export function createModel (builder: Builder): void {
     {
       attachTo: recruit.class.Applicant,
       descriptor: view.viewlet.Table,
-      config: ['', '$lookup.attachedTo', 'state', 'doneState', 'modifiedOn'],
+      config: ['', '$lookup.attachedTo', 'status', 'doneState', 'modifiedOn'],
       configOptions: {
         sortable: true
       },
@@ -440,7 +441,7 @@ export function createModel (builder: Builder): void {
     {
       attachTo: recruit.class.Applicant,
       descriptor: view.viewlet.Table,
-      config: ['', '$lookup.space.name', '$lookup.space.$lookup.company', 'state', 'comments', 'doneState'],
+      config: ['', '$lookup.space.name', '$lookup.space.$lookup.company', 'status', 'comments', 'doneState'],
       configOptions: {
         sortable: true
       },
@@ -535,7 +536,7 @@ export function createModel (builder: Builder): void {
           presenter: tracker.component.RelatedIssueSelector,
           label: tracker.string.Issues
         },
-        'state',
+        'status',
         'doneState',
         'attachments',
         'comments',
@@ -583,7 +584,7 @@ export function createModel (builder: Builder): void {
           presenter: tracker.component.RelatedIssueSelector,
           label: tracker.string.Issues
         },
-        'state',
+        'status',
         'attachments',
         'comments',
         'modifiedOn',
@@ -651,9 +652,9 @@ export function createModel (builder: Builder): void {
 
   const applicantViewOptions = (colors: boolean): ViewOptionsModel => {
     const model: ViewOptionsModel = {
-      groupBy: ['state', 'assignee', 'space', 'createdBy', 'modifiedBy'],
+      groupBy: ['status', 'assignee', 'space', 'createdBy', 'modifiedBy'],
       orderBy: [
-        ['state', SortingOrder.Ascending],
+        ['status', SortingOrder.Ascending],
         ['modifiedOn', SortingOrder.Descending],
         ['createdOn', SortingOrder.Descending],
         ['dueDate', SortingOrder.Ascending],
@@ -684,7 +685,7 @@ export function createModel (builder: Builder): void {
       config: [
         { key: '', displayProps: { fixed: 'left', key: 'app' } },
         {
-          key: 'state',
+          key: 'status',
           props: { kind: 'list', size: 'small', shouldShowName: false }
         },
         {
@@ -778,7 +779,7 @@ export function createModel (builder: Builder): void {
         '',
         'space',
         'assignee',
-        'state',
+        'status',
         'attachments',
         'dueDate',
         'comments',
@@ -1125,7 +1126,7 @@ export function createModel (builder: Builder): void {
     action: view.actionImpl.ValueSelector,
     actionPopup: view.component.ValueSelector,
     actionProps: {
-      attribute: 'state',
+      attribute: 'status',
       _class: task.class.State,
       query: {},
       searchField: 'name',
@@ -1285,7 +1286,7 @@ export function createModel (builder: Builder): void {
     recruit.class.Applicant,
     recruit.ids.ApplicationNotificationGroup,
     [],
-    ['comments', 'state', 'doneState', 'dueDate']
+    ['comments', 'status', 'doneState', 'dueDate']
   )
 
   builder.createDoc(

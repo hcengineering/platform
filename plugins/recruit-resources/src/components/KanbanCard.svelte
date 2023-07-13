@@ -89,14 +89,14 @@
     </div>
   {/if}
   <div class="card-labels mb-2">
-    {#if groupByKey !== 'state' && enabledConfig(config, 'state')}
+    {#if groupByKey !== 'status' && enabledConfig(config, 'status')}
       <StateRefPresenter
         size={'small'}
         kind={'link-bordered'}
         shrink={1}
-        value={object.state}
-        onChange={(state) => {
-          client.update(object, { state })
+        value={object.status}
+        onChange={(status) => {
+          client.update(object, { status })
         }}
       />
     {/if}

@@ -79,12 +79,13 @@ export interface LostState extends DoneState {}
  * @public
  */
 export interface Task extends AttachedDoc, DocWithRank {
-  state: Ref<State>
+  status: Ref<Status>
   doneState: Ref<DoneState> | null
   number: number
   assignee: Ref<Employee> | null
   dueDate: Timestamp | null
-  startDate: Timestamp | null
+  comments?: number
+  attachments?: number
   todoItems?: number
   labels?: number
 }

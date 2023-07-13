@@ -517,8 +517,8 @@ export async function convert (
             }
 
             if (existing !== undefined) {
-              if (existing.state !== state?._id) {
-                update.state = state._id
+              if (existing.status !== state?._id) {
+                update.status = state._id
               }
               if (Object.keys(update).length > 0) {
                 await ops.update(existing, update)

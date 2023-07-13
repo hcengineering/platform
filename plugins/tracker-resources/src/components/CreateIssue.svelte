@@ -359,6 +359,7 @@
     )
 
     const value: AttachedData<Issue> = {
+      doneState: null,
       title: getTitle(object.title),
       description: object.description,
       assignee: object.assignee,

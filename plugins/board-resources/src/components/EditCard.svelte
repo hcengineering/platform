@@ -63,7 +63,7 @@
   let checklists: TodoItem[] = []
   const mixins: Mixin<Doc>[] = []
   const allowedCollections = ['labels']
-  const ignoreKeys = ['isArchived', 'location', 'title', 'description', 'state', 'number', 'assignee', 'doneState']
+  const ignoreKeys = ['isArchived', 'location', 'title', 'description', 'status', 'number', 'assignee', 'doneState']
 
   function change (field: string, value: any) {
     if (object) {
@@ -79,8 +79,8 @@
     object = result[0]
   })
 
-  $: object?.state &&
-    stateQuery.query(task.class.State, { _id: object.state }, (result) => {
+  $: object?.status &&
+    stateQuery.query(task.class.State, { _id: object.status }, (result) => {
       state = result[0]
     })
 
@@ -128,7 +128,7 @@
       <div class="flex fs-title flex-gap-1">
         <span class="over-underline" on:click={handleMove}>{space?.name}</span>><span
           class="over-underline"
-          on:click={handleMove}>{state?.title}</span
+          on:click={handleMove}>{state?.name}</span
         >
       </div>
     </svelte:fragment>

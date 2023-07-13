@@ -46,6 +46,7 @@ import {
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
+import { TTask } from '@hcengineering/model-task'
 import core, { DOMAIN_SPACE, TAttachedDoc, TDoc, TSpace, TStatus, TType } from '@hcengineering/model-core'
 import view, { actionTemplates, classPresenter, createAction, showColorsViewOption } from '@hcengineering/model-view'
 import workbench, { createNavigateAction } from '@hcengineering/model-workbench'
@@ -53,7 +54,7 @@ import notification from '@hcengineering/notification'
 import { IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import tags, { TagElement } from '@hcengineering/tags'
-import task from '@hcengineering/task'
+import task, { DoneState } from '@hcengineering/task'
 import {
   Component,
   Issue,
@@ -150,9 +151,9 @@ export function TypeReportedTime (): Type<number> {
 /**
  * @public
  */
-@Model(tracker.class.Issue, core.class.AttachedDoc, DOMAIN_TRACKER)
+@Model(tracker.class.Issue, task.class.Task)
 @UX(tracker.string.Issue, tracker.icon.Issue, 'TSK', 'title')
-export class TIssue extends TAttachedDoc implements Issue {
+export class TIssue extends TTask implements Issue {
   @Prop(TypeRef(tracker.class.Issue), tracker.string.Parent)
   declare attachedTo: Ref<Issue>
 
@@ -202,14 +203,12 @@ export class TIssue extends TAttachedDoc implements Issue {
 
   parents!: IssueParentInfo[]
 
-  @Prop(Collection(chunter.class.Comment), tracker.string.Comments, { icon: chunter.icon.Chunter })
-    comments!: number
-
-  @Prop(Collection(attachment.class.Attachment), tracker.string.Attachments, { icon: attachment.icon.Attachment })
-    attachments!: number
-
   @Prop(Collection(tags.class.TagReference), tracker.string.Labels)
-    labels?: number
+  declare labels: number
+
+  @Prop(TypeRef(task.class.DoneState), task.string.TaskStateDone, { _id: task.attribute.DoneState })
+  @Hidden()
+  declare doneState: Ref<DoneState> | null
 
   @Prop(TypeRef(tracker.class.Project), tracker.string.Project, { icon: tracker.icon.Issues })
   @Index(IndexKind.Indexed)
