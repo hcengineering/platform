@@ -32,7 +32,6 @@
     if (template === undefined) {
       return
     }
-    const hierarchy = client.getHierarchy()
 
     showPopup(
       MessageBox,
@@ -43,15 +42,7 @@
       undefined,
       async (result) => {
         if (result && template !== undefined) {
-          const collection = hierarchy.isDerived(state._class, task.class.DoneStateTemplate) ? 'doneStatesC' : 'statesC'
-          await client.removeCollection(
-            state._class,
-            template.space,
-            state._id,
-            template._id,
-            template._class,
-            collection
-          )
+          await client.removeDoc(state._class, template.space, state._id)
         }
       }
     )

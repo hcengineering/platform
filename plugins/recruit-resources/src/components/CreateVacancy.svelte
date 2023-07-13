@@ -184,7 +184,8 @@
         archived: false,
         number: (incResult as any).object.sequence,
         company,
-        members: [getCurrentAccount()._id]
+        members: [getCurrentAccount()._id],
+        templateId
       },
       objectId
     )

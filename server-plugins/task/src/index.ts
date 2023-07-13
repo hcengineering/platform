@@ -16,6 +16,7 @@
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { Presenter } from '@hcengineering/server-notification'
+import { TriggerFunc } from '@hcengineering/server-core'
 
 /**
  * @public
@@ -29,5 +30,9 @@ export default plugin(serverTaskId, {
   function: {
     IssueHTMLPresenter: '' as Resource<Presenter>,
     IssueTextPresenter: '' as Resource<Presenter>
+  },
+  trigger: {
+    OnTemplateStateUpdate: '' as Resource<TriggerFunc>,
+    OnTemplateStateCreate: '' as Resource<TriggerFunc>
   }
 })

@@ -53,7 +53,8 @@ async function createSpace (tx: TxOperations): Promise<void> {
         icon: lead.component.TemplatesIcon,
         private: false,
         members: [],
-        archived: false
+        archived: false,
+        attachedToClass: lead.class.Funnel
       },
       lead.space.FunnelTemplates
     )
@@ -94,10 +95,18 @@ async function createDefaultKanban (tx: TxOperations): Promise<void> {
   await createKanban(tx, lead.space.DefaultFunnel, defaultTmpl)
 }
 
+async function fixTemplateSpace (tx: TxOperations): Promise<void> {
+  const templateSpace = await tx.findOne(task.class.KanbanTemplateSpace, { _id: lead.space.FunnelTemplates })
+  if (templateSpace !== undefined && templateSpace?.attachedToClass === undefined) {
+    await tx.update(templateSpace, { attachedToClass: lead.class.Funnel })
+  }
+}
+
 async function createDefaults (tx: TxOperations): Promise<void> {
   await createSpace(tx)
   await createSequence(tx, lead.class.Lead)
   await createDefaultKanban(tx)
+  await fixTemplateSpace(tx)
 }
 
 export const leadOperation: MigrateOperation = {
