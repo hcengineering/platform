@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup, Doc } from '@hcengineering/core'
+  import { WithLookup, Doc, Ref } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
   import { createQuery, getClient, ActionContext } from '@hcengineering/presentation'
   import ui, {
@@ -94,6 +94,13 @@
     }
     if (docs.length === 0) {
       fActions = fActions.filter((it) => it.input === 'none')
+      const overrideRemove: Array<Ref<Action>> = []
+      for (const fAction of fActions) {
+        if (fAction.override !== undefined) {
+          overrideRemove.push(...fAction.override)
+        }
+      }
+      fActions = fActions.filter((it) => !overrideRemove.includes(it._id))
     }
     fActions = fActions.filter(
       (it) =>
