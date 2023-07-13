@@ -27,7 +27,7 @@
 
   const options: FindOptions<Applicant> = {
     lookup: {
-      state: task.class.State,
+      status: task.class.State,
       space: core.class.Space,
       doneState: task.class.DoneState,
       attachedTo: recruit.mixin.Candidate

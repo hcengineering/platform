@@ -23,7 +23,7 @@
 
   const options: FindOptions<Applicant> = {
     lookup: {
-      state: task.class.State,
+      status: task.class.State,
       space: core.class.Space,
       doneState: task.class.DoneState,
       attachedTo: recruit.mixin.Candidate
@@ -35,7 +35,7 @@
 <div class="popup-table">
   <Table
     _class={recruit.class.Applicant}
-    config={['', 'attachedTo', 'state', 'doneState', 'modifiedOn']}
+    config={['', 'attachedTo', 'status', 'doneState', 'modifiedOn']}
     {options}
     query={{ ...(resultQuery ?? {}), space: { $in: value } }}
     loadingProps={{ length: 0 }}

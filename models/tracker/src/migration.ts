@@ -18,6 +18,8 @@ import { MigrateOperation, MigrationClient, MigrationUpgradeClient, createOrUpda
 import tags from '@hcengineering/tags'
 import { IssueStatus, Project, TimeReportDayType, createStatuses } from '@hcengineering/tracker'
 import tracker from './plugin'
+import { DOMAIN_TRACKER } from '.'
+import { DOMAIN_TASK } from '@hcengineering/model-task'
 
 async function createDefaultProject (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(tracker.class.Project, {
@@ -86,8 +88,17 @@ async function fixProjectIcons (tx: TxOperations): Promise<void> {
   await Promise.all(promises)
 }
 
+async function moveIssues (client: MigrationClient): Promise<void> {
+  const docs = await client.find(DOMAIN_TRACKER, { _class: tracker.class.Issue })
+  if (docs.length > 0) {
+    await client.move(DOMAIN_TRACKER, { _class: tracker.class.Issue }, DOMAIN_TASK)
+  }
+}
+
 export const trackerOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (client: MigrationClient): Promise<void> {
+    await moveIssues(client)
+  },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createDefaults(tx)

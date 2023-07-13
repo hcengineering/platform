@@ -43,7 +43,7 @@
 
   function updateConfig (config: string[]): string[] {
     if (state !== undefined) {
-      return config.filter((p) => p !== 'state')
+      return config.filter((p) => p !== 'status')
     }
     if (selectedDoneStates.size === 1) {
       return config.filter((p) => p !== 'doneState')
@@ -85,7 +85,7 @@
     resConfig = updateConfig(config)
     const result = client.getHierarchy().clone(query)
     if (state) {
-      result.state = state
+      result.status = state
     }
     if (selectedDoneStates.size > 0) {
       result.doneState = {

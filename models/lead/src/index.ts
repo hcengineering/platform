@@ -15,7 +15,7 @@
 
 // To help typescript locate view plugin properly
 import type { Employee } from '@hcengineering/contact'
-import { FindOptions, IndexKind, Ref, SortingOrder } from '@hcengineering/core'
+import { FindOptions, IndexKind, Ref, SortingOrder, Timestamp } from '@hcengineering/core'
 import { Customer, Funnel, Lead, leadId } from '@hcengineering/lead'
 import {
   Builder,
@@ -25,6 +25,7 @@ import {
   Model,
   Prop,
   ReadOnly,
+  TypeDate,
   TypeMarkup,
   TypeRef,
   TypeString,
@@ -69,15 +70,12 @@ export class TLead extends TTask implements Lead {
   @ReadOnly()
   declare attachedTo: Ref<Customer>
 
+  @Prop(TypeDate(), task.string.StartDate)
+    startDate!: Timestamp | null
+
   @Prop(TypeString(), lead.string.Title)
   @Index(IndexKind.FullText)
     title!: string
-
-  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
-    comments?: number
-
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
-    attachments?: number
 
   @Prop(TypeRef(contact.class.Employee), lead.string.Assignee)
   declare assignee: Ref<Employee> | null
@@ -247,7 +245,7 @@ export function createModel (builder: Builder): void {
           presenter: tracker.component.RelatedIssueSelector,
           label: tracker.string.Issues
         },
-        'state',
+        'status',
         'doneState',
         'attachments',
         'comments',
@@ -272,9 +270,9 @@ export function createModel (builder: Builder): void {
   )
 
   const leadViewOptions: ViewOptionsModel = {
-    groupBy: ['state', 'assignee'],
+    groupBy: ['status', 'assignee'],
     orderBy: [
-      ['state', SortingOrder.Ascending],
+      ['status', SortingOrder.Ascending],
       ['modifiedOn', SortingOrder.Descending],
       ['createdOn', SortingOrder.Descending],
       ['dueDate', SortingOrder.Ascending],
@@ -304,7 +302,7 @@ export function createModel (builder: Builder): void {
       config: [
         { key: '', displayProps: { fixed: 'left', key: 'lead' } },
         {
-          key: 'state',
+          key: 'status',
           props: { kind: 'list', size: 'small', shouldShowName: false }
         },
         {
@@ -402,7 +400,7 @@ export function createModel (builder: Builder): void {
     lead.class.Lead,
     lead.ids.LeadNotificationGroup,
     [],
-    ['comments', 'state', 'doneState']
+    ['comments', 'status', 'doneState']
   )
 
   builder.createDoc(

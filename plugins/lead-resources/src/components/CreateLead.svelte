@@ -67,7 +67,7 @@
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
     const value: AttachedData<Lead> = {
-      state: state._id,
+      status: state._id,
       doneState: null,
       number: (incResult as any).object.sequence,
       title,

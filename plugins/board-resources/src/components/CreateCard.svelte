@@ -52,7 +52,7 @@
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
     const value: AttachedData<BoardCard> = {
-      state: state._id,
+      status: state._id,
       doneState: null,
       number: (incResult as any).object.sequence,
       title,

@@ -17,22 +17,20 @@
 import automation, { AutomationSupport } from '@hcengineering/automation'
 import { Board, boardId, Card, CardCover, CommonBoardPreference, MenuPage } from '@hcengineering/board'
 import type { Employee } from '@hcengineering/contact'
-import { Class, DOMAIN_MODEL, IndexKind, Markup, Ref, Type } from '@hcengineering/core'
+import { Class, DOMAIN_MODEL, IndexKind, Markup, Ref, Timestamp, Type } from '@hcengineering/core'
 import {
   ArrOf,
   Builder,
-  Collection,
   Index,
   Model,
   Prop,
   TypeBoolean,
+  TypeDate,
   TypeMarkup,
   TypeRef,
   TypeString,
   UX
 } from '@hcengineering/model'
-import attachment from '@hcengineering/model-attachment'
-import chunter from '@hcengineering/model-chunter'
 import contact from '@hcengineering/model-contact'
 import core, { TDoc, TType } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
@@ -90,12 +88,6 @@ export class TCard extends TTask implements Card {
   @Index(IndexKind.FullText)
     location?: string
 
-  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
-    comments?: number
-
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
-    attachments?: number
-
   @Prop(TypeRef(contact.class.Employee), board.string.Assignee)
   declare assignee: Ref<Employee> | null
 
@@ -104,6 +96,9 @@ export class TCard extends TTask implements Card {
 
   @Prop(TypeCardCover(), board.string.Cover)
     cover?: CardCover
+
+  @Prop(TypeDate(), task.string.StartDate)
+    startDate!: Timestamp | null
 }
 
 @Model(board.class.MenuPage, core.class.Doc, DOMAIN_MODEL)

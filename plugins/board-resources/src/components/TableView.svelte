@@ -23,7 +23,7 @@
   {_class}
   config={[
     'title',
-    'state',
+    'status',
     {
       key: '',
       presenter: tags.component.TagsPresenter,
@@ -40,5 +40,5 @@
     'modifiedOn'
   ]}
   {options}
-  query={{ isArchived, state: { $in: states } }}
+  query={{ isArchived, status: { $in: states } }}
 />

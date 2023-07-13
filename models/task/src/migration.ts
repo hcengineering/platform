@@ -13,11 +13,13 @@
 // limitations under the License.
 //
 
-import { Class, Doc, Domain, Ref, Space, TxOperations } from '@hcengineering/core'
+import { Class, DOMAIN_TX, Doc, Domain, Ref, Space, TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient, createOrUpdate } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import tags from '@hcengineering/model-tags'
 import { DoneStateTemplate, KanbanTemplate, StateTemplate, genRanks } from '@hcengineering/task'
+import view, { Filter } from '@hcengineering/view'
+import { DOMAIN_TASK } from '.'
 import task from './plugin'
 
 /**
@@ -125,8 +127,72 @@ async function createDefaults (tx: TxOperations): Promise<void> {
   await createDefaultSequence(tx)
 }
 
+async function renameState (client: MigrationClient): Promise<void> {
+  const toUpdate = await client.find(DOMAIN_TASK, { state: { $exists: true } })
+  if (toUpdate.length > 0) {
+    for (const doc of toUpdate) {
+      await client.update(
+        DOMAIN_TX,
+        { objectId: doc._id },
+        { $rename: { 'attributes.state': 'attributes.status', 'operations.state': 'operations.status' } }
+      )
+      await client.update(
+        DOMAIN_TX,
+        { 'tx.objectId': doc._id },
+        { $rename: { 'tx.attributes.state': 'tx.attributes.status', 'tx.operations.state': 'tx.operations.status' } }
+      )
+    }
+    await client.update(DOMAIN_TASK, { _id: { $in: toUpdate.map((p) => p._id) } }, { $rename: { state: 'status' } })
+  }
+}
+
+async function renameStatePrefs (client: MigrationUpgradeClient): Promise<void> {
+  const txop = new TxOperations(client, core.account.System)
+  const prefs = await client.findAll(view.class.ViewletPreference, {})
+  for (const pref of prefs) {
+    let update = false
+    const config = pref.config
+    for (let index = 0; index < config.length; index++) {
+      const conf = config[index]
+      if (typeof conf === 'string') {
+        if (conf === 'state') {
+          config[index] = 'status'
+          update = true
+        } else if (conf === '$lookup.state') {
+          config[index] = '$lookup.status'
+          update = true
+        }
+      } else if (conf.key === 'state') {
+        conf.key = 'status'
+        update = true
+      }
+    }
+    if (update) {
+      await txop.update(pref, {
+        config
+      })
+    }
+  }
+  const res = await client.findAll(view.class.FilteredView, { filters: /"key":"state"/ as any })
+  if (res.length > 0) {
+    for (const doc of res) {
+      const filters = JSON.parse(doc.filters) as Filter[]
+      for (const filter of filters) {
+        if (filter.key.key === 'state') {
+          filter.key.key = 'status'
+        }
+      }
+      await txop.update(doc, {
+        filters: JSON.stringify(filters)
+      })
+    }
+  }
+}
+
 export const taskOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (client: MigrationClient): Promise<void> {
+    await renameState(client)
+  },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createDefaults(tx)
@@ -144,5 +210,6 @@ export const taskOperation: MigrateOperation = {
       },
       task.category.TaskTag
     )
+    await renameStatePrefs(client)
   }
 }

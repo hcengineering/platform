@@ -62,7 +62,7 @@ export async function createApplication (
 
   await client.addCollection(recruit.class.Applicant, _space, doc._id, recruit.mixin.Candidate, 'applications', {
     ...data,
-    state: state._id,
+    status: state._id,
     number: (incResult as any).object.sequence,
     rank: calcRank(lastOne, undefined)
   })

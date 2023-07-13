@@ -40,6 +40,7 @@
     "@hcengineering/model-notification": "^0.6.0",
     "@hcengineering/tracker": "^0.6.10",
     "@hcengineering/tracker-resources": "^0.6.0",
+    "@hcengineering/model-task": "^0.6.0",
     "@hcengineering/model-chunter": "^0.6.0",
     "@hcengineering/workbench": "^0.6.8",
     "@hcengineering/view": "^0.6.8",

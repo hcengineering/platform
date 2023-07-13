@@ -19,16 +19,16 @@
     { space, isArchived: { $nin: [true] } },
     async (result) => {
       if (!result) return
-      states = result.map(({ _id, title }) => ({ id: _id, label: title }))
+      states = result.map(({ _id, name }) => ({ id: _id, label: name }))
       ;[{ _id: selected }] = result
       if (object.space === space) {
-        const index = states.findIndex(({ id }) => id === object.state)
+        const index = states.findIndex(({ id }) => id === object.status)
         states[index].label = await translate(
           board.string.Current,
           { label: states[index].label },
           $themeStore.language
         )
-        selected = object.state
+        selected = object.status
       }
     },
     { sort: { rank: SortingOrder.Ascending } }

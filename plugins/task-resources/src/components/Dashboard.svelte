@@ -117,7 +117,7 @@
           })
         )
         for (const value of result) {
-          const group = template.get(value.state)
+          const group = template.get(value.status)
           if (group === undefined) continue
           if (value.doneState === null) {
             group.values[0].value++
@@ -127,13 +127,13 @@
             const index = won ? 1 : 2
             group.values[index].value++
           }
-          template.set(value.state, group)
+          template.set(value.status, group)
         }
         items = Array.from(template.values())
       },
       {
         projection: {
-          state: 1,
+          status: 1,
           doneState: 1
         }
       }
