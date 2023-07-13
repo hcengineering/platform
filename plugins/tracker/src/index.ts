@@ -33,6 +33,7 @@ import {
 } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, Resource, plugin } from '@hcengineering/platform'
 import { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
+import { Task } from '@hcengineering/task'
 import { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
 import { Action, ActionCategory, IconProps } from '@hcengineering/view'
 
@@ -133,15 +134,13 @@ export interface Milestone extends Doc {
 /**
  * @public
  */
-export interface Issue extends AttachedDoc {
+export interface Issue extends Task {
   attachedTo: Ref<Issue>
   title: string
   description: Markup
   status: Ref<IssueStatus>
   priority: IssuePriority
 
-  number: number
-  assignee: Ref<Employee> | null
   component: Ref<Component> | null
 
   // For subtasks
@@ -150,15 +149,7 @@ export interface Issue extends AttachedDoc {
   relations?: RelatedDocument[]
   parents: IssueParentInfo[]
 
-  comments: number
-  attachments?: number
-  labels?: number
-
   space: Ref<Project>
-
-  dueDate: Timestamp | null
-
-  rank: string
 
   milestone?: Ref<Milestone> | null
 

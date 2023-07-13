@@ -145,7 +145,7 @@
       lookup: {
         ...options?.lookup,
         space: task.class.SpaceWithStates,
-        state: task.class.State,
+        status: task.class.State,
         doneState: task.class.DoneState
       },
       sort: {

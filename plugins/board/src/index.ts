@@ -15,11 +15,11 @@
 //
 
 import { Employee } from '@hcengineering/contact'
-import type { Class, Doc, Markup, Ref, Type } from '@hcengineering/core'
+import type { Class, Doc, Markup, Ref, Timestamp, Type } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
-import type { DoneState, KanbanTemplateSpace, SpaceWithStates, Task } from '@hcengineering/task'
+import type { DoneState, KanbanTemplateSpace, SpaceWithStates, State, Task } from '@hcengineering/task'
 import type { AnyComponent } from '@hcengineering/ui'
 import { Action, ActionCategory } from '@hcengineering/view'
 import { TagCategory } from '@hcengineering/tags'
@@ -63,9 +63,8 @@ export interface Card extends Task {
   location?: string
 
   cover?: CardCover | null
-
-  comments?: number
-  attachments?: number
+  status: Ref<State>
+  startDate: Timestamp | null
 }
 
 /**

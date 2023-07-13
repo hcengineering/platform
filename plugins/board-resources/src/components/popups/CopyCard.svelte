@@ -24,7 +24,7 @@
   let status: Status = OK
   const selected = {
     space: value.space,
-    state: value.state,
+    status: value.status,
     rank: value.rank
   }
 
@@ -39,7 +39,7 @@
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
     const copy: AttachedData<Card> = {
-      state: selected.state,
+      status: selected.status,
       doneState: null,
       number: (incResult as any).object.sequence,
       title,
@@ -119,18 +119,18 @@
       <Label label={board.string.List} />
     </div>
     {#key selected.space}
-      <StateSelect label={board.string.List} object={value} space={selected.space} bind:selected={selected.state} />
+      <StateSelect label={board.string.List} object={value} space={selected.space} bind:selected={selected.status} />
     {/key}
   </div>
   <div class="w-full flex ml-2">
     <div style:flex-basis="10%" class="text-md">
       <Label label={board.string.Position} />
     </div>
-    {#key selected.state}
+    {#key selected.status}
       <RankSelect
         label={board.string.Position}
         object={value}
-        state={selected.state}
+        state={selected.status}
         bind:selected={selected.rank}
         isCopying={true}
       />

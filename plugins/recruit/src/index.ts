@@ -19,7 +19,7 @@ import type { AttachedData, AttachedDoc, Class, Doc, Mixin, Ref, Space, Timestam
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { TagReference } from '@hcengineering/tags'
-import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@hcengineering/task'
+import type { KanbanTemplateSpace, SpaceWithStates, State, Task } from '@hcengineering/task'
 import { AnyComponent, ResolvedLocation } from '@hcengineering/ui'
 
 /**
@@ -87,8 +87,8 @@ export interface CandidateDraft {
 export interface Applicant extends Task {
   space: Ref<Vacancy>
   attachedTo: Ref<Candidate>
-  attachments?: number
-  comments?: number
+  status: Ref<State>
+  startDate: Timestamp | null
 }
 
 /**

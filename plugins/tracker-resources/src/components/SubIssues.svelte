@@ -77,6 +77,7 @@
       )
       const childId = subIssue._id
       const cvalue: AttachedData<Issue> = {
+        doneState: null,
         title: subIssue.title.trim(),
         description: subIssue.description,
         assignee: subIssue.assignee,
