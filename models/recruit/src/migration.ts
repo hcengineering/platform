@@ -27,6 +27,14 @@ export const recruitOperation: MigrateOperation = {
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createDefaults(tx)
+    await fixTemplateSpace(tx)
+  }
+}
+
+async function fixTemplateSpace (tx: TxOperations): Promise<void> {
+  const templateSpace = await tx.findOne(task.class.KanbanTemplateSpace, { _id: recruit.space.VacancyTemplates })
+  if (templateSpace !== undefined && templateSpace?.attachedToClass === undefined) {
+    await tx.update(templateSpace, { attachedToClass: recruit.class.Vacancy })
   }
 }
 
@@ -148,7 +156,8 @@ async function createSpaces (tx: TxOperations): Promise<void> {
         editor: recruit.component.VacancyTemplateEditor,
         private: false,
         members: [],
-        archived: false
+        archived: false,
+        attachedToClass: recruit.class.Vacancy
       },
       recruit.space.VacancyTemplates
     )

@@ -30,7 +30,8 @@ export async function createBoard (
     description,
     private: false,
     archived: false,
-    members: [getCurrentAccount()._id]
+    members: [getCurrentAccount()._id],
+    templateId
   })
 
   await Promise.all([createKanban(client, boardRef, templateId)])

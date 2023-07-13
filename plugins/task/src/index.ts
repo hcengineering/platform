@@ -45,7 +45,9 @@ export interface DocWithRank extends Doc {
 /**
  * @public
  */
-export interface SpaceWithStates extends Space {}
+export interface SpaceWithStates extends Space {
+  templateId?: Ref<KanbanTemplate>
+}
 
 // S T A T E
 
@@ -123,12 +125,16 @@ export interface Sequence extends Doc {
 /**
  * @public
  */
-export interface StateTemplate extends AttachedDoc, State {}
+export interface StateTemplate extends Doc, State {
+  attachedTo: Ref<KanbanTemplate>
+}
 
 /**
  * @public
  */
-export interface DoneStateTemplate extends AttachedDoc, DoneState {}
+export interface DoneStateTemplate extends Doc, DoneState {
+  attachedTo: Ref<KanbanTemplate>
+}
 
 /**
  * @public
@@ -159,6 +165,7 @@ export interface KanbanTemplateSpace extends Space {
   description: IntlString
   icon: AnyComponent
   editor?: AnyComponent
+  attachedToClass: Ref<Class<Doc>>
 }
 
 /**

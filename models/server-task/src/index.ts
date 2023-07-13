@@ -14,7 +14,31 @@
 //
 
 import { Builder } from '@hcengineering/model'
+import serverCore from '@hcengineering/server-core'
+import core from '@hcengineering/core/lib/component'
+import serverTask from '@hcengineering/server-task'
+import task from '@hcengineering/task'
 
 export { serverTaskId } from '@hcengineering/server-task'
 
-export function createModel (builder: Builder): void {}
+export function createModel (builder: Builder): void {
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverTask.trigger.OnTemplateStateUpdate,
+    txMatch: {
+      _class: core.class.TxUpdateDoc,
+      objectClass: {
+        $in: [task.class.StateTemplate, task.class.LostStateTemplate, task.class.WonStateTemplate]
+      }
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverTask.trigger.OnTemplateStateCreate,
+    txMatch: {
+      _class: core.class.TxCreateDoc,
+      objectClass: {
+        $in: [task.class.StateTemplate, task.class.LostStateTemplate, task.class.WonStateTemplate]
+      }
+    }
+  })
+}
