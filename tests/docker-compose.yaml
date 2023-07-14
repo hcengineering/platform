@@ -83,6 +83,7 @@ services:
       - TRANSACTOR_URL=ws://localhost:3334
       - ELASTIC_URL=http://elastic:9200
       - GMAIL_URL=http://localhost:8088
+      - CALENDAR_URL=http://localhost:8095
       - TELEGRAM_URL=http://localhost:8086
       - REKONI_URL=http://rekoni:4005
       - MINIO_ENDPOINT=minio
