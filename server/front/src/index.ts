@@ -140,6 +140,7 @@ export function start (
     rekoniUrl: string
     telegramUrl: string
     gmailUrl: string
+    calendarUrl: string
     title?: string
     defaultLanguage: string
   },
@@ -178,6 +179,7 @@ export function start (
       REKONI_URL: config.rekoniUrl,
       TELEGRAM_URL: config.telegramUrl,
       GMAIL_URL: config.gmailUrl,
+      CALENDAR_URL: config.calendarUrl,
       TITLE: config.title,
       DEFAULT_LANGUAGE: config.defaultLanguage
     })

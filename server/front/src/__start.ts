@@ -84,6 +84,12 @@ if (gmailUrl === undefined) {
   process.exit(1)
 }
 
+const calendarUrl = process.env.CALENDAR_URL
+if (calendarUrl === undefined) {
+  console.error('please provide calendar service url')
+  process.exit(1)
+}
+
 const telegramUrl = process.env.TELEGRAM_URL
 if (telegramUrl === undefined) {
   console.error('please provide telegram url')
@@ -123,6 +129,7 @@ const config = {
   gmailUrl,
   telegramUrl,
   rekoniUrl,
+  calendarUrl,
   title,
   defaultLanguage
 }
