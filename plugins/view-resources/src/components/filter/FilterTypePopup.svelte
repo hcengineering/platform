@@ -293,7 +293,7 @@
     {/if}
     {#await getTypes(_class, nestedFrom) then types}
       {#each types as type, i}
-        {#if filter === undefined && hasNested(type)}
+        {#if filter === undefined && hasNested(type) && nestedFrom === undefined}
           <Submenu
             bind:element={elements[i]}
             on:keydown={(event) => keyDown(event, i)}
