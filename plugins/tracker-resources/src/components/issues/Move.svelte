@@ -169,7 +169,7 @@
   $: componentQuery.query(tracker.class.Component, {}, (res) => {
     components = res
   })
-  
+
   const milestoneQuery = createQuery()
   let milestones: Milestone[] = []
   $: milestoneQuery.query(tracker.class.Milestone, {}, (res) => {
@@ -249,7 +249,9 @@
         const currentMilestone = milestones.find((it) => it._id === issue.milestone)
         if (currentMilestone !== undefined) {
           if (upd.milestone === undefined) {
-            upd.milestone = milestones.find((it) => it.space === currentSpace?._id && it.label === currentMilestone.label)?._id
+            upd.milestone = milestones.find(
+              (it) => it.space === currentSpace?._id && it.label === currentMilestone.label
+            )?._id
           }
         }
       }
