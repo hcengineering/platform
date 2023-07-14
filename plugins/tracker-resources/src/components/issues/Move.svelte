@@ -18,7 +18,7 @@
 
   import { Ref, Status } from '@hcengineering/core'
   import { SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
-  import { Component, Issue, IssueStatus, Project } from '@hcengineering/tracker'
+  import { Component, Issue, IssueStatus, Milestone, Project } from '@hcengineering/tracker'
   import ui, { Button, IconClose, Label, Spinner, Toggle, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { statusStore } from '@hcengineering/view-resources'
@@ -170,6 +170,12 @@
     components = res
   })
 
+  const milestoneQuery = createQuery()
+  let milestones: Milestone[] = []
+  $: milestoneQuery.query(tracker.class.Milestone, {}, (res) => {
+    milestones = res
+  })
+
   $: statuses = $statusStore.filter((it) => it.space === currentSpace?._id)
 
   let keepOriginalAttribytes: boolean = false
@@ -238,6 +244,18 @@
           }
         }
       }
+
+      if (issue.milestone != null) {
+        const currentMilestone = milestones.find((it) => it._id === issue.milestone)
+        if (currentMilestone !== undefined) {
+          if (upd.milestone === undefined) {
+            upd.milestone = milestones.find(
+              (it) => it.space === currentSpace?._id && it.label === currentMilestone.label
+            )?._id
+          }
+        }
+      }
+
       if (issue.attachedTo !== tracker.ids.NoParent && toMove.find((it) => it._id === issue.attachedTo) === undefined) {
         upd.attachedTo = tracker.ids.NoParent
         upd.attachedToClass = tracker.class.Issue
