@@ -14,6 +14,8 @@
 -->
 <script lang="ts">
   import MonthCalendar from './MonthCalendar.svelte'
+  import Scroller from '../Scroller.svelte'
+  import { defaultSP } from '../..'
 
   /**
    * If passed, calendars will use monday as first day
@@ -35,25 +37,27 @@
   }
 </script>
 
-<div class="year-erp-calendar">
-  {#each [...Array(12).keys()] as m}
-    <div class="antiComponentBox flex-col flex-grow flex-wrap" style={`min-width: ${minWidth};`}>
-      <span class="month-caption">{getMonthName(month(currentDate, m))}</span>
-      <MonthCalendar
-        {cellHeight}
-        weekFormat="narrow"
-        bind:selectedDate
-        currentDate={month(currentDate, m)}
-        {mondayStart}
-        on:change
-      >
-        <svelte:fragment slot="cell" let:date let:today let:selected let:wrongMonth>
-          <slot name="cell" {date} {today} {selected} {wrongMonth} />
-        </svelte:fragment>
-      </MonthCalendar>
-    </div>
-  {/each}
-</div>
+<Scroller padding={'0 2.25rem'} fade={defaultSP}>
+  <div class="year-erp-calendar">
+    {#each [...Array(12).keys()] as m}
+      <div class="antiComponentBox flex-col flex-grow flex-wrap" style={`min-width: ${minWidth};`}>
+        <span class="month-caption">{getMonthName(month(currentDate, m))}</span>
+        <MonthCalendar
+          {cellHeight}
+          weekFormat="narrow"
+          bind:selectedDate
+          currentDate={month(currentDate, m)}
+          {mondayStart}
+          on:change
+        >
+          <svelte:fragment slot="cell" let:date let:today let:selected let:wrongMonth>
+            <slot name="cell" {date} {today} {selected} {wrongMonth} />
+          </svelte:fragment>
+        </MonthCalendar>
+      </div>
+    {/each}
+  </div>
+</Scroller>
 
 <style lang="scss">
   .year-erp-calendar {

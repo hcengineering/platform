@@ -17,25 +17,9 @@
   import { Class, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import {
-    AnyComponent,
-    Button,
-    Component,
-    Label,
-    Loading,
-    SearchEdit,
-    showPopup,
-    TabList,
-    IconAdd
-  } from '@hcengineering/ui'
+  import { AnyComponent, Button, Component, Label, Loading, showPopup, TabList, IconAdd } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import {
-    FilterButton,
-    getViewOptions,
-    setActiveViewletId,
-    ViewletSettingButton,
-    viewOptionStore
-  } from '@hcengineering/view-resources'
+  import { getViewOptions, setActiveViewletId, viewOptionStore } from '@hcengineering/view-resources'
   import calendar from '../plugin'
   // import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
@@ -50,7 +34,7 @@
   export let createLabel: IntlString | undefined = calendar.string.CreateEvent
 
   const viewletQuery = createQuery()
-  let search = ''
+  const search = ''
   let resultQuery: DocumentQuery<Event> = {}
 
   let viewlets: WithLookup<Viewlet>[] = []
@@ -106,8 +90,6 @@
     }
   })
 
-  // $: twoRows = $deviceInfo.twoRows
-
   $: viewOptions = getViewOptions(selectedViewlet, $viewOptionStore)
 </script>
 
@@ -130,35 +112,25 @@
     <Button icon={IconAdd} label={createLabel} kind={'accented'} on:click={showCreateDialog} />
   </div>
 </div>
-<div class="ac-header full divide search-start">
-  <div class="ac-header-full small-gap">
-    <SearchEdit bind:value={search} on:change={() => updateResultQuery(search)} />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
-    <div class="buttons-divider" />
-    <FilterButton {_class} />
-  </div>
-  <div class="ac-header-full medium-gap">
-    <ViewletSettingButton bind:viewOptions viewlet={selectedViewlet} />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
-  </div>
-</div>
-{#if selectedViewlet?.$lookup?.descriptor?.component}
-  {#if loading}
-    <Loading />
-  {:else}
-    <Component
-      is={selectedViewlet.$lookup?.descriptor?.component}
-      props={{
-        _class,
-        space,
-        options: selectedViewlet.options,
-        config: preference?.config ?? selectedViewlet.config,
-        viewOptions,
-        viewlet: selectedViewlet,
-        query: resultQuery,
-        search,
-        createComponent
-      }}
-    />
+<div class="flex-col w-full h-full background-comp-header-color">
+  {#if selectedViewlet?.$lookup?.descriptor?.component}
+    {#if loading}
+      <Loading />
+    {:else}
+      <Component
+        is={selectedViewlet.$lookup?.descriptor?.component}
+        props={{
+          _class,
+          space,
+          options: selectedViewlet.options,
+          config: preference?.config ?? selectedViewlet.config,
+          viewOptions,
+          viewlet: selectedViewlet,
+          query: resultQuery,
+          search,
+          createComponent
+        }}
+      />
+    {/if}
   {/if}
-{/if}
+</div>

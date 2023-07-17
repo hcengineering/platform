@@ -379,3 +379,15 @@ export interface DialogStep {
   readonly component: AnyComponent | AnySvelteComponent
   props?: Record<string, any>
 }
+
+/**
+ * @public
+ */
+export interface CalendarItem {
+  eventId: string
+  allDay: boolean
+  date: Timestamp
+  dueDate: Timestamp
+  day: number
+  access: 'freeBusyReader' | 'reader' | 'writer' | 'owner'
+}

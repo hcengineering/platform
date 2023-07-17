@@ -168,6 +168,7 @@ export { default as Panel } from './components/Panel.svelte'
 export { default as MonthCalendar } from './components/calendar/MonthCalendar.svelte'
 export { default as YearCalendar } from './components/calendar/YearCalendar.svelte'
 export { default as WeekCalendar } from './components/calendar/WeekCalendar.svelte'
+export { default as DayCalendar } from './components/calendar/DayCalendar.svelte'
 
 export { default as FocusHandler } from './components/FocusHandler.svelte'
 export { default as ListView } from './components/ListView.svelte'
