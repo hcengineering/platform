@@ -14,8 +14,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import ui from '../../plugin'
-  import Label from '../Label.svelte'
+  import ui, { Scroller, Label } from '../..'
   import { addZero, areDatesEqual, day as getDay, getMonday, getWeekDayName } from './internal/DateUtils'
 
   export let mondayStart = true
@@ -36,47 +35,49 @@
     : new Date(new Date(currentDate).setHours(0, 0, 0, 0))
 </script>
 
-<table>
-  <thead class="scroller-thead">
-    <tr class="scroller-thead__tr">
-      <th><Label label={ui.string.HoursLabel} /></th>
-      {#each [...Array(displayedDaysCount).keys()] as dayOfWeek}
-        {@const day = getDay(weekMonday, dayOfWeek)}
-        <th>
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div
-            class="cursor-pointer uppercase flex-col-center"
-            class:today={areDatesEqual(todayDate, day)}
-            on:click={() => {
-              dispatch('select', day)
-            }}
-          >
-            <div class="flex-center">{getWeekDayName(day, 'short')}</div>
-            <div class="flex-center">{day.getDate()}</div>
-          </div>
-        </th>
-      {/each}
-    </tr>
-  </thead>
-  <tbody>
-    {#each [...Array(displayedHours).keys()] as hourOfDay}
-      <tr>
-        <td style="width: 50px;" class="calendar-td first">
-          {#if hourOfDay !== 0}
-            {addZero(hourOfDay)}:00
-          {/if}
-        </td>
-        {#each [...Array(displayedDaysCount).keys()] as dayIndex}
-          <td class="calendar-td cell" style={`height: ${cellHeight};`}>
-            {#if $$slots.cell}
-              <slot name="cell" date={getDay(weekMonday, dayIndex, hourOfDay * 60)} />
-            {/if}
-          </td>
+<Scroller fade={{ multipler: { top: 3, bottom: 0 } }}>
+  <table>
+    <thead class="scroller-thead">
+      <tr class="scroller-thead__tr">
+        <th><Label label={ui.string.HoursLabel} /></th>
+        {#each [...Array(displayedDaysCount).keys()] as dayOfWeek}
+          {@const day = getDay(weekMonday, dayOfWeek)}
+          <th>
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <div
+              class="cursor-pointer uppercase flex-col-center"
+              class:today={areDatesEqual(todayDate, day)}
+              on:click={() => {
+                dispatch('select', day)
+              }}
+            >
+              <div class="flex-center">{getWeekDayName(day, 'short')}</div>
+              <div class="flex-center">{day.getDate()}</div>
+            </div>
+          </th>
         {/each}
       </tr>
-    {/each}
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      {#each [...Array(displayedHours).keys()] as hourOfDay}
+        <tr>
+          <td style="width: 50px;" class="calendar-td first">
+            {#if hourOfDay !== 0}
+              {addZero(hourOfDay)}:00
+            {/if}
+          </td>
+          {#each [...Array(displayedDaysCount).keys()] as dayIndex}
+            <td class="calendar-td cell" style:height={cellHeight}>
+              {#if $$slots.cell}
+                <slot name="cell" date={getDay(weekMonday, dayIndex, hourOfDay * 60)} />
+              {/if}
+            </td>
+          {/each}
+        </tr>
+      {/each}
+    </tbody>
+  </table>
+</Scroller>
 
 <style lang="scss">
   table {

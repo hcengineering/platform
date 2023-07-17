@@ -127,6 +127,7 @@ async function removePast (client: TxOperations, object: ReccuringInstance): Pro
 
 export enum CalendarMode {
   Day,
+  Days,
   Week,
   Month,
   Year
