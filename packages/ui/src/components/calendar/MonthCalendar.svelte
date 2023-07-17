@@ -15,6 +15,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { areDatesEqual, day, firstDay, getWeekDayName, isWeekend, weekday } from './internal/DateUtils'
+  import { Scroller, defaultSP } from '../..'
 
   export let mondayStart = true
   export let weekFormat: 'narrow' | 'short' | 'long' | undefined = 'short'
@@ -34,43 +35,45 @@
   const todayDate = new Date()
 </script>
 
-<div class="month-calendar flex-grow">
-  <div class="days-of-week-header">
-    {#each [...Array(7).keys()] as dayOfWeek}
-      <div class="day-name">{getWeekDayName(day(firstDayOfCurrentMonth, dayOfWeek), weekFormat)}</div>
-    {/each}
-  </div>
-  <div class="days-of-month">
-    {#each [...Array(displayedWeeksCount).keys()] as weekIndex}
+<Scroller fade={defaultSP}>
+  <div class="month-calendar flex-grow">
+    <div class="days-of-week-header">
       {#each [...Array(7).keys()] as dayOfWeek}
-        {@const date = weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek)}
-        <div style={`grid-column-start: ${dayOfWeek + 1}; grid-row-start: ${weekIndex + 1}`}>
-          <div style={`display: flex; width: 100%; height: ${cellHeight ? `${cellHeight};` : '100%;'}`}>
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <div
-              class="cell flex-center"
-              class:weekend={isWeekend(date)}
-              class:wrongMonth={date.getMonth() !== currentDate.getMonth()}
-              on:click={() => onSelect(date)}
-            >
-              {#if !$$slots.cell}
-                {date.getDate()}
-              {:else}
-                <slot
-                  name="cell"
-                  {date}
-                  today={areDatesEqual(todayDate, date)}
-                  selected={areDatesEqual(selectedDate, date)}
-                  wrongMonth={date.getMonth() !== currentDate.getMonth()}
-                />
-              {/if}
+        <div class="day-name">{getWeekDayName(day(firstDayOfCurrentMonth, dayOfWeek), weekFormat)}</div>
+      {/each}
+    </div>
+    <div class="days-of-month">
+      {#each [...Array(displayedWeeksCount).keys()] as weekIndex}
+        {#each [...Array(7).keys()] as dayOfWeek}
+          {@const date = weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek)}
+          <div style={`grid-column-start: ${dayOfWeek + 1}; grid-row-start: ${weekIndex + 1}`}>
+            <div style={`display: flex; width: 100%; height: ${cellHeight ? `${cellHeight};` : '100%;'}`}>
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <div
+                class="cell flex-center"
+                class:weekend={isWeekend(date)}
+                class:wrongMonth={date.getMonth() !== currentDate.getMonth()}
+                on:click={() => onSelect(date)}
+              >
+                {#if !$$slots.cell}
+                  {date.getDate()}
+                {:else}
+                  <slot
+                    name="cell"
+                    {date}
+                    today={areDatesEqual(todayDate, date)}
+                    selected={areDatesEqual(selectedDate, date)}
+                    wrongMonth={date.getMonth() !== currentDate.getMonth()}
+                  />
+                {/if}
+              </div>
             </div>
           </div>
-        </div>
+        {/each}
       {/each}
-    {/each}
+    </div>
   </div>
-</div>
+</Scroller>
 
 <style lang="scss">
   .month-calendar {

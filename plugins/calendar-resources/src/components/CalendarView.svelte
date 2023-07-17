@@ -32,19 +32,23 @@
     IconBack,
     IconForward,
     MonthCalendar,
-    Scroller,
+    CalendarItem,
+    DayCalendar,
     WeekCalendar,
     YearCalendar,
     areDatesEqual,
-    defaultSP,
     getMonday,
-    showPopup
+    DropdownLabelsIntl,
+    showPopup,
+    MILLISECONDS_IN_DAY
   } from '@hcengineering/ui'
   import { BuildModelKey } from '@hcengineering/view'
   import { CalendarMode } from '../index'
   import calendar from '../plugin'
   import Day from './Day.svelte'
   import Hour from './Hour.svelte'
+  import EventElement from './EventElement.svelte'
+  import { IntlString } from '@hcengineering/platform'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
@@ -64,6 +68,9 @@
 
   function getFrom (date: Date, mode: CalendarMode): Timestamp {
     switch (mode) {
+      case CalendarMode.Days: {
+        return new Date(date).setHours(0, 0, 0, 0)
+      }
       case CalendarMode.Day: {
         return new Date(date).setHours(0, 0, 0, 0)
       }
@@ -81,6 +88,9 @@
 
   function getTo (date: Date, mode: CalendarMode): Timestamp {
     switch (mode) {
+      case CalendarMode.Days: {
+        return new Date(date).setDate(date.getDate() + 1)
+      }
       case CalendarMode.Day: {
         return new Date(date).setDate(date.getDate() + 1)
       }
@@ -163,6 +173,10 @@
       return
     }
     switch (mode) {
+      case CalendarMode.Days: {
+        currentDate.setDate(currentDate.getDate() + val * 3)
+        break
+      }
       case CalendarMode.Day: {
         currentDate.setDate(currentDate.getDate() + val)
         break
@@ -187,31 +201,8 @@
       month: 'long'
     }).format(date)
   }
-  function getWeekName (date: Date): string {
-    const onejan = new Date(date.getFullYear(), 0, 1)
-    const week = Math.ceil(((date.getTime() - onejan.getTime()) / 86400000 + onejan.getDay() + 1) / 7)
 
-    return `W${week}`
-  }
-
-  let mode: CalendarMode = CalendarMode.Year
-
-  function label (date: Date, mode: CalendarMode): string {
-    switch (mode) {
-      case CalendarMode.Day: {
-        return `${date.getDate()} ${getMonthName(date)} ${date.getFullYear()}`
-      }
-      case CalendarMode.Week: {
-        return `${getWeekName(date)} ${getMonthName(date)} ${date.getFullYear()}`
-      }
-      case CalendarMode.Month: {
-        return `${getMonthName(date)} ${date.getFullYear()}`
-      }
-      case CalendarMode.Year: {
-        return `${date.getFullYear()}`
-      }
-    }
-  }
+  let mode: CalendarMode = CalendarMode.Days
 
   function showCreateDialog (date: Date, withTime: boolean) {
     if (createComponent === undefined) {
@@ -221,25 +212,73 @@
   }
 
   let indexes = new Map<Ref<Event>, number>()
+
+  const ddItems: {
+    id: string | number
+    label: IntlString
+    mode: CalendarMode
+    params?: Record<string, any>
+  }[] = [
+    { id: 'day', label: calendar.string.ModeDay, mode: CalendarMode.Day },
+    { id: 'days', label: calendar.string.DueDays, mode: CalendarMode.Days, params: { days: 3 } },
+    { id: 'week', label: calendar.string.ModeWeek, mode: CalendarMode.Week },
+    { id: 'month', label: calendar.string.ModeMonth, mode: CalendarMode.Month },
+    { id: 'year', label: calendar.string.ModeYear, mode: CalendarMode.Year }
+  ]
+
+  const toCalendar = (events: Event[], date: Date, days: number = 1): CalendarItem[] => {
+    const result: CalendarItem[] = []
+    for (let day = 0; day < days; day++) {
+      const startDate = new Date(MILLISECONDS_IN_DAY * day + date.getTime()).setHours(0, 0, 0)
+      const lastDate = new Date(MILLISECONDS_IN_DAY * day + date.getTime()).setHours(23, 59, 59)
+      events.forEach((event) => {
+        const eventStart = event.allDay
+          ? new Date(event.date + new Date().getTimezoneOffset() * 60 * 1000).getTime()
+          : event.date
+        const eventEnd = event.allDay
+          ? new Date(event.dueDate + new Date().getTimezoneOffset() * 60 * 1000).getTime()
+          : event.dueDate
+        if ((eventStart <= startDate && eventEnd > startDate) || (eventStart >= startDate && eventStart < lastDate)) {
+          result.push({
+            eventId: event.eventId,
+            allDay: event.allDay,
+            date: event.date,
+            dueDate: event.dueDate,
+            day,
+            access: event.access
+          })
+        }
+      })
+    }
+    return result
+  }
 </script>
 
-<div class="text-lg fs-bold px-10 my-4 flex-no-shrink clear-mins">
-  {label(currentDate, mode)}
-</div>
-<div class="flex-between mb-4 px-10 flex-no-shrink clear-mins">
+<div class="calendar-header">
+  <div class="title">
+    {getMonthName(currentDate)}
+    <span>{currentDate.getFullYear()}</span>
+  </div>
   <div class="flex-row-center gap-2">
+    <DropdownLabelsIntl
+      items={ddItems.map((it) => {
+        return { id: it.id, label: it.label, params: it.params }
+      })}
+      size={'medium'}
+      selected={ddItems.find((it) => it.mode === mode)?.id}
+      on:selected={(e) => (mode = ddItems.find((it) => it.id === e.detail)?.mode ?? ddItems[0].mode)}
+    />
+    <Button
+      label={calendar.string.Today}
+      on:click={() => {
+        inc(0)
+      }}
+    />
     <Button
       icon={IconBack}
       kind={'ghost'}
       on:click={() => {
         inc(-1)
-      }}
-    />
-    <Button
-      label={calendar.string.Today}
-      kind={'ghost'}
-      on:click={() => {
-        inc(0)
       }}
     />
     <Button
@@ -250,139 +289,176 @@
       }}
     />
   </div>
-  <div class="flex-row-center gap-2 clear-mins">
-    <Button
-      label={calendar.string.ModeDay}
-      on:click={() => {
-        mode = CalendarMode.Day
-      }}
-    />
-    <Button
-      label={calendar.string.ModeWeek}
-      on:click={() => {
-        mode = CalendarMode.Week
-      }}
-    />
-    <Button
-      label={calendar.string.ModeMonth}
-      on:click={() => {
-        mode = CalendarMode.Month
-      }}
-    />
-    <Button
-      label={calendar.string.ModeYear}
-      on:click={() => {
-        mode = CalendarMode.Year
-      }}
-    />
-  </div>
 </div>
 
-<Scroller
-  padding={'0 2.25rem'}
-  fade={mode === CalendarMode.Week || mode === CalendarMode.Day ? { multipler: { top: 3, bottom: 0 } } : defaultSP}
->
-  {#if mode === CalendarMode.Year}
-    <YearCalendar
-      {mondayStart}
-      cellHeight={'2.5rem'}
-      bind:selectedDate
-      bind:currentDate
-      on:change={(e) => {
-        currentDate = e.detail
-        if (areDatesEqual(selectedDate, currentDate)) {
-          mode = CalendarMode.Month
-        }
-        selectedDate = e.detail
-      }}
-    >
-      <svelte:fragment slot="cell" let:date let:today let:selected let:wrongMonth>
-        <Day
-          events={findEvents(objects, date)}
-          {date}
-          {_class}
-          {baseMenuClass}
-          {options}
-          {config}
-          {today}
-          {selected}
-          {wrongMonth}
-          {query}
-        />
-      </svelte:fragment>
-    </YearCalendar>
-  {:else if mode === CalendarMode.Month}
-    <MonthCalendar {mondayStart} cellHeight={'8.5rem'} bind:selectedDate bind:currentDate>
-      <svelte:fragment slot="cell" let:date let:today let:selected let:wrongMonth>
-        <Day
-          events={findEvents(objects, date)}
-          {date}
-          size={'huge'}
-          {_class}
-          {baseMenuClass}
-          {options}
-          {config}
-          {today}
-          {selected}
-          {wrongMonth}
-          {query}
-          on:select={(e) => {
-            currentDate = e.detail
-            if (areDatesEqual(selectedDate, currentDate)) {
-              mode = CalendarMode.Day
-            }
-            selectedDate = e.detail
-          }}
-          on:create={(e) => {
-            showCreateDialog(e.detail, false)
-          }}
-        />
-      </svelte:fragment>
-    </MonthCalendar>
-  {:else if mode === CalendarMode.Week}
-    <WeekCalendar
-      {mondayStart}
-      cellHeight={'4.5rem'}
-      bind:selectedDate
-      bind:currentDate
-      on:select={(e) => {
-        currentDate = e.detail
-        selectedDate = e.detail
-        mode = CalendarMode.Day
-      }}
-    >
-      <svelte:fragment slot="cell" let:date>
-        <Hour
-          events={findEvents(objects, date, true)}
-          {date}
-          bind:indexes
+{#if mode === CalendarMode.Year}
+  <YearCalendar
+    {mondayStart}
+    cellHeight={'2.5rem'}
+    bind:selectedDate
+    bind:currentDate
+    on:change={(e) => {
+      currentDate = e.detail
+      if (areDatesEqual(selectedDate, currentDate)) {
+        mode = CalendarMode.Month
+      }
+      selectedDate = e.detail
+    }}
+  >
+    <svelte:fragment slot="cell" let:date let:today let:selected let:wrongMonth>
+      <Day
+        events={findEvents(objects, date)}
+        {date}
+        {_class}
+        {baseMenuClass}
+        {options}
+        {config}
+        {today}
+        {selected}
+        {wrongMonth}
+        {query}
+      />
+    </svelte:fragment>
+  </YearCalendar>
+{:else if mode === CalendarMode.Month}
+  <MonthCalendar {mondayStart} cellHeight={'8.5rem'} bind:selectedDate bind:currentDate>
+    <svelte:fragment slot="cell" let:date let:today let:selected let:wrongMonth>
+      <Day
+        events={findEvents(objects, date)}
+        {date}
+        size={'huge'}
+        {_class}
+        {baseMenuClass}
+        {options}
+        {config}
+        {today}
+        {selected}
+        {wrongMonth}
+        {query}
+        on:select={(e) => {
+          currentDate = e.detail
+          if (areDatesEqual(selectedDate, currentDate)) {
+            mode = CalendarMode.Day
+          }
+          selectedDate = e.detail
+        }}
+        on:create={(e) => {
+          showCreateDialog(e.detail, false)
+        }}
+      />
+    </svelte:fragment>
+  </MonthCalendar>
+{:else if mode === CalendarMode.Week}
+  <DayCalendar
+    events={toCalendar(objects, currentDate, 7)}
+    {mondayStart}
+    displayedDaysCount={7}
+    startFromWeekStart={false}
+    bind:selectedDate
+    bind:currentDate
+    on:create={(e) => showCreateDialog(e.detail.date, true)}
+  >
+    <svelte:fragment slot="allday" let:id>
+      {@const event = objects.find((event) => event.eventId === id)}
+      {#if event}
+        <EventElement
+          {event}
+          allday
           on:create={(e) => {
             showCreateDialog(e.detail, true)
           }}
         />
-      </svelte:fragment>
-    </WeekCalendar>
-  {:else if mode === CalendarMode.Day}
-    <WeekCalendar
+      {/if}
+    </svelte:fragment>
+    <svelte:fragment slot="event" let:id>
+      {@const event = objects.find((event) => event.eventId === id)}
+      {#if event}
+        <EventElement
+          {event}
+          on:create={(e) => {
+            showCreateDialog(e.detail, true)
+          }}
+        />
+      {/if}
+    </svelte:fragment>
+  </DayCalendar>
+{:else if mode === CalendarMode.Day || mode === CalendarMode.Days}
+  {#key mode}
+    <DayCalendar
+      events={toCalendar(objects, currentDate, mode === CalendarMode.Days ? 3 : 1)}
       {mondayStart}
-      displayedDaysCount={1}
+      displayedDaysCount={mode === CalendarMode.Days ? 3 : 1}
       startFromWeekStart={false}
-      cellHeight={'4.5rem'}
       bind:selectedDate
       bind:currentDate
+      on:create={(e) => showCreateDialog(e.detail.date, true)}
     >
-      <svelte:fragment slot="cell" let:date>
-        <Hour
-          events={findEvents(objects, date, true)}
-          {date}
-          bind:indexes
-          wide
-          on:create={(e) => {
-            showCreateDialog(e.detail, true)
-          }}
-        />
+      <svelte:fragment slot="allday" let:id>
+        {@const event = objects.find((event) => event.eventId === id)}
+        {#if event}
+          <EventElement
+            {event}
+            allday
+            on:create={(e) => {
+              showCreateDialog(e.detail, true)
+            }}
+          />
+        {/if}
       </svelte:fragment>
-    </WeekCalendar>
-  {/if}
-</Scroller>
-<div class="min-h-4 max-h-4 h-4 flex-no-shrink" />
+      <svelte:fragment slot="event" let:id>
+        {@const event = objects.find((event) => event.eventId === id)}
+        {#if event}
+          <EventElement
+            {event}
+            on:create={(e) => {
+              showCreateDialog(e.detail, true)
+            }}
+          />
+        {/if}
+      </svelte:fragment>
+    </DayCalendar>
+  {/key}
+{:else if mode === CalendarMode.Day}
+  <WeekCalendar
+    {mondayStart}
+    displayedDaysCount={1}
+    startFromWeekStart={false}
+    cellHeight={'4.5rem'}
+    bind:selectedDate
+    bind:currentDate
+  >
+    <svelte:fragment slot="cell" let:date>
+      <Hour
+        events={findEvents(objects, date, true)}
+        {date}
+        bind:indexes
+        wide
+        on:create={(e) => {
+          showCreateDialog(e.detail, true)
+        }}
+      />
+    </svelte:fragment>
+  </WeekCalendar>
+{/if}
+
+<!-- <div class="min-h-4 max-h-4 h-4 flex-no-shrink" /> -->
+<style lang="scss">
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.75rem 0.75rem 2.25rem;
+
+    .title {
+      font-size: 1.25rem;
+      color: var(--theme-caption-color);
+
+      &::first-letter {
+        text-transform: uppercase;
+      }
+      span {
+        opacity: 0.4;
+      }
+    }
+  }
+</style>
