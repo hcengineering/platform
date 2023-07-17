@@ -27,6 +27,7 @@
     {#each items as item, i}
       <RadioButton
         bind:group={selected}
+        id={item.id}
         label={item.label}
         labelIntl={item.labelIntl}
         labelParams={item.labelParams}

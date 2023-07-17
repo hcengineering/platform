@@ -116,6 +116,7 @@ export interface TabItem {
 }
 
 export interface RadioItem {
+  id?: string
   label?: string
   labelIntl?: IntlString
   labelParams?: Record<string, any>
