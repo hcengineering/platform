@@ -115,6 +115,16 @@ export interface TabItem {
   action?: () => void
 }
 
+export interface RadioItem {
+  id?: string
+  label?: string
+  labelIntl?: IntlString
+  labelParams?: Record<string, any>
+  value: any
+  disabled?: boolean
+  action?: () => void
+}
+
 export type ButtonKind =
   | 'accented'
   | 'brand'
